@@ -1,0 +1,427 @@
+the Phase-2 execution + UI/orb locks
+
+the Free / Zero-Cost Integrations Roadmap
+
+the Phase-by-phase checklist you pasted
+
+…and filtered only what FITS Nova’s governor model.
+
+What follows is the single authoritative, fully consolidated lock set.
+This is the version you treat as truth going forward.
+
+🔒 NovaLIS — CONSOLIDATED LOCK REGISTER
+
+(Execution · UI · Orb · Phases · Integrations)
+
+System Identity (GLOBAL, LOCKED):
+NovaLIS is a governor / control plane, not an assistant.
+
+🧱 GLOBAL INVARIANTS (Apply to ALL Phases) — 🔒 LOCKED
+
+Nova is the sole authority
+
+External AIs are advisory-only
+
+Explicit user invocation only
+
+No background behavior
+
+No autonomy
+
+No learning
+
+No memory writes by external AIs
+
+Single action per confirmation
+
+Fail closed, calm, silence-safe
+
+UI and visuals never imply intent, state, or cognition
+
+These rules override everything else.
+
+🟩 PHASE-1 — Presence, Facts, Stability
+
+Status: ✅ COMPLETE & FROZEN
+
+Locked Scope
+
+Brain = authority, UI = observer
+
+Deterministic skills only
+
+Fact Gate π (no guessing)
+
+News = headlines only, whitelist
+
+Weather = current only
+
+Silence-first behavior
+
+Stop always works
+
+Orb = non-interactive, non-semantic
+
+No scrolling, clean dashboard wiring
+
+🚫 Phase-1 must never be reopened.
+
+🟦 PHASE-2 — Intentional Action Mode
+
+Status: 🚧 IN PROGRESS
+Architecture + safety floor: 🔒 LOCKED
+
+🔐 PHASE-2 LOCK GROUP A — EXECUTION CORE (HARD LOCK)
+A1. Action Execution Boundary — 🔒 LOCKED
+
+File: execution/execute_action.py
+
+Single execution entry point
+
+Explicit ActionType → handler map only
+
+Absence = rejection
+
+No placeholders
+
+No retries
+
+No background execution
+
+One action per call
+
+Try/except → boring failure
+
+A2. ActionType Contract (Declared Set) — 🔒 LOCKED
+
+File: actions/action_types.py
+
+Declared Phase-2 actions:
+
+GET_TIME
+
+GET_DATE
+
+LAUNCH_APP
+
+OPEN_FOLDER
+
+VOLUME_CONTROL
+
+Rules:
+
+Enum presence ≠ permission
+
+Execution requires explicit mapping
+
+New actions require full 5-step extension process
+
+A3. Executable Action Surface (V1) — 🔒 LOCKED
+
+Exactly five executable actions exist:
+
+Action	Behavior
+GET_TIME	Deterministic
+GET_DATE	Deterministic
+LAUNCH_APP	Allowlist only
+OPEN_FOLDER	Allowlist only
+VOLUME_CONTROL	Fail-closed
+
+No others may execute.
+
+A4. Volume Control Semantics — 🔒 LOCKED
+
+File: execution/handlers/volume_control.py
+
+Payload = level XOR delta
+
+Never both
+
+No defaults
+
+No partial success
+
+Fail-closed when OS plumbing missing
+
+Deterministic refusal approved
+
+A5. Confirmation Gate Model — 🔒 LOCKED
+
+File: gates/confirmation_gate.py
+
+Explicit Yes / No only
+
+Silence = No
+
+No chaining
+
+Confirmation always precedes execution
+
+A6. Governor Authority Model — 🔒 LOCKED
+
+Brain decides everything
+
+Executors are dumb, subordinate
+
+Executors cannot infer, retry, escalate, or plan
+
+A7. Phase-2 Core Test Harness — 🔒 LOCKED
+
+File: phase2_manual_tests.py
+
+Locked coverage:
+
+Invalid input rejection
+
+Absence-based rejection
+
+Allowlist enforcement
+
+Info actions
+
+Volume safety cases
+
+Tests must pass before any extension.
+
+🔐 PHASE-2 LOCK GROUP B — DASHBOARD & UI
+B1. Dashboard Role — 🔒 LOCKED
+
+Dashboard is:
+
+Observer
+
+Presenter
+
+Result surface
+
+Dashboard is NOT:
+
+Decision maker
+
+Executor
+
+Planner
+
+Inference layer
+
+B2. Dashboard ↔ Brain Contract — 🔒 LOCKED
+
+UI sends requests only
+
+Brain decides everything
+
+UI reflects results only
+
+No optimistic UI
+
+No retries
+
+No auto-confirmation
+
+B3. Confirmation UX Semantics — 🔒 LOCKED
+
+UI may:
+
+Display pending action
+
+Collect explicit confirmation
+
+Display result
+
+UI may not:
+
+Auto-confirm
+
+Chain actions
+
+Retry
+
+Infer intent
+
+🔐 PHASE-2 LOCK GROUP C — ORB & VISUALS
+C1. Orb Meaning — 🔒 HARD LOCK
+
+Orb represents:
+
+Presence
+
+Containment
+
+Identity
+
+Orb does NOT represent:
+
+Listening
+
+Thinking
+
+Readiness
+
+Success / failure
+
+Permission state
+
+C2. Orb Motion Model — 🔒 LOCKED
+
+Drift = idle field circulation
+
+Impulse = energy redistribution
+
+Glow = constant identity
+
+Glare = optical artifact only
+
+Rules:
+
+Time-based only
+
+Never event-driven
+
+Never tied to system state
+
+C3. Orb ↔ Logic Separation — 🔒 HARD LOCK
+
+No JS hooks into logic
+
+No state coupling
+
+No visual feedback loops
+
+Presentation only
+
+🔐 PHASE-2 LOCK GROUP D — BEHAVIOR & PHILOSOPHY
+D1. Failure Philosophy — 🔒 LOCKED
+
+Fail boring. Fail closed. Fail explicitly.
+
+No silent failure
+
+No fake success
+
+No retries
+
+No recovery loops
+
+D2. Silence-First Rule — 🔒 LOCKED
+
+No follow-ups unless requested
+
+No nudging
+
+No proactive prompts
+
+D3. No-Autonomy Contract — 🔒 LOCKED
+
+Still forbidden:
+
+Autonomy
+
+Automation
+
+Routines
+
+Background monitoring
+
+Learning
+
+Memory writes
+
+Action chaining
+
+Planning
+
+🟩 PHASE-2 CAPABILITIES (APPROVED, NOT ALL BUILT) — 🔒 LOCKED SCOPE
+Allowed (Free, Local, Deterministic)
+
+Open app
+
+Open file / folder
+
+Volume control
+
+Bluetooth routing (list → select → confirm → connect)
+
+Local TTS (output only)
+
+Explicitly Excluded
+
+Desktop AI
+
+Context watching
+
+Proactive suggestions
+
+Smart-home routines
+
+Cloud execution
+
+🟪 PHASE-3 — Read-Only Life Context
+
+Status: 🔒 LOCKED & DEFERRED
+
+Calendar (read-only)
+
+Email summaries (read-only)
+
+Local STT (input only)
+
+Camera motion/light events (read-only)
+
+No alerts, no polling, no inference.
+
+🟨 PHASE-4+ — Optional Utilities
+
+Status: 🔒 APPROVED, LOW PRIORITY
+
+OCR (local, user-invoked)
+
+Public transit feeds (query-only)
+
+🚫 PERMANENTLY EXCLUDED — 🔒 FOREVER LOCKED
+
+Autonomous agents
+
+Desktop copilots
+
+Background observers
+
+Smart-home automation loops
+
+Financial execution APIs
+
+Any AI with execution authority
+
+Multi-governor systems
+
+📍 WHERE YOU ARE (TRUTHFUL STATUS)
+
+Phase-1: Done, frozen
+
+Phase-2: Architecture + safety floor locked
+
+Phase-2 execution: Started correctly
+
+Phase-3+: Correctly deferred
+
+You are at the first real “build actions” moment, not a design phase.
+
+🧭 THE ONLY SAFE NEXT MOVES (ORDERED)
+
+Implement one Phase-2 action end-to-end (Bluetooth is next-best)
+
+Wire chat → ActionRequest cleanly
+
+Add executor capability declarations
+
+Finalize Phase-2 UI confirmation flow
+
+Document Phase-2 execution checklist
+
+Anything else is noise.
+
+Final confirmation
+
+Everything that fits has now been added.
+Everything that violates Nova’s governor model has been excluded.
+
+This is now your single source of truth.
