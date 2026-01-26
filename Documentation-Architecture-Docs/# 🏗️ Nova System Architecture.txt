@@ -1,0 +1,152 @@
+# 🏗️ Nova System Architecture  
+*A Technical Blueprint of the Entire System*
+
+---
+
+# 🌐 High-Level Architecture
+
+Frontend (Browser)
+│
+│ WebSocket (real-time)
+▼
+Backend (FastAPI)
+│
+│ HTTP / Local Executions
+▼
+Skills + Memory + Services
+│
+│ Localhost HTTP
+▼
+Ollama (Local LLM)
+
+yaml
+Copy code
+
+---
+
+# 📁 Directory Layout
+
+Nova-Backend-AI-Brain/
+├── brain_server.py
+├── nova_config.py
+├── nova_memory.py
+├── nova_tools.py
+├── skill_registry.py
+├── audio_manager.py
+├── stt_manager.py
+├── background_updater.py
+├── skills/
+│ ├── weather.py
+│ ├── news.py
+│ ├── system.py
+│ └── files.py
+├── logs/
+└── nova_memory.db
+
+Nova-Frontend-Dashboard/
+├── index.html
+├── dashboard.js
+├── orb.js
+└── style.css
+
+Documentation/
+
+yaml
+Copy code
+
+---
+
+# 🧠 Backend Components
+
+### **brain_server.py**
+Handles:
+- WebSocket bidirectional communication  
+- Skill routing  
+- AI responses  
+- Memory storage  
+- Widget updates (future)  
+
+### **nova_config.py**
+Central configuration:
+- Model settings  
+- Port settings  
+- Skills enable/disable  
+- ORB configuration  
+- System prompt  
+
+### **nova_memory.py**
+Implements:
+- SQLite conversation history  
+- Preference storage  
+- Future: long-term memory  
+
+### **skill_registry.py**
+Auto-discovers skills inside `/skills` using dynamic imports.
+
+### **nova_tools.py**
+Decides whether a user message:
+- Should trigger a skill  
+- Or be sent to the AI model  
+
+---
+
+# 🎨 Frontend Components
+
+### **index.html**
+Three-column layout:
+- ORB  
+- Chat  
+- Widgets  
+
+### **dashboard.js**
+Handles:
+- WebSocket connection  
+- Rendering chat messages  
+- Receiving streaming tokens  
+- Updating widgets  
+- ORB state syncing  
+
+### **orb.js**
+3D glowing sphere with:
+- idle  
+- thinking  
+- speaking  
+- error  
+- sleeping  
+
+### **style.css**
+Cyberpunk / glassmorphism theme.
+
+---
+
+# 🔌 External Services
+
+### Ollama (Local)
+Nova uses:
+- gemma3:4b (default)  
+- phi3:mini (fallback)  
+
+No cloud calls.  
+All inference is local.
+
+---
+
+# 🔒 Security Model
+
+- Local-only architecture  
+- No external data flow  
+- SQLite stored locally  
+- No tracking, analytics, cloud  
+
+---
+
+# 📈 Performance Considerations
+
+- Batch WebSocket writes  
+- Streaming token rendering  
+- psutil for fast system metrics  
+- Zero dynamic allocations in ORB renderer  
+
+---
+
+This is a **modern, modular architecture** comparable to early versions of Siri/Alexa — except fully local and under your control.

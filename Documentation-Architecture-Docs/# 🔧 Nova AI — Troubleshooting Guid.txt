@@ -1,0 +1,81 @@
+# 🔧 Nova AI — Troubleshooting Guide
+
+---
+
+# 🚨 Quick Emergency Reset
+
+Stop backend
+Delete nova_memory.db
+Delete logs
+Restart backend
+
+yaml
+Copy code
+
+---
+
+# 🧩 Common Issues
+
+### ❌ "WebSocket Connection Failed"
+- Backend not running  
+- Firewall blocking port  
+- Wrong port  
+- Check browser console  
+
+### ❌ "Ollama not responding"
+curl http://localhost:11434/api/tags
+ollama serve
+
+shell
+Copy code
+
+### ❌ Missing Python modules
+pip install fastapi uvicorn httpx websockets psutil
+
+graphql
+Copy code
+
+### ❌ Port already in use
+netstat -ano | findstr :18080
+taskkill /PID <id> /F
+
+yaml
+Copy code
+
+---
+
+# 🗂️ Skill Debugging
+
+Check logs/nova.log for import errors
+
+yaml
+Copy code
+
+---
+
+# 💾 Database Errors
+If corrupted:
+delete nova_memory.db
+restart backend
+
+yaml
+Copy code
+
+---
+
+# ⚡ Performance Issues
+- Use smaller model (phi3:mini)  
+- Close apps  
+- Lower update frequency  
+
+---
+
+# 🏆 General Fixes
+- Restart backend  
+- Restart Ollama  
+- Clear logs  
+- Reinstall dependencies  
+
+---
+
+Nova’s architecture is forgiving — most issues resolve quickly with logs and restarts.

@@ -1,0 +1,11 @@
+fastapi
+uvicorn[standard]
+httpx
+websockets
+psutil
+pydantic
+python-multipart
+aiofiles
+openwakeword
+sounddevice
+numpy

@@ -1,0 +1,163 @@
+ **clean, minimal, authoritative `ENVIRONMENT_LOCK.md`** you can paste directly into:
+
+```
+C:\Nova-Project\NovaLIS-Governance\ENVIRONMENT_LOCK.md
+```
+
+This document is intentionally boring, explicit, and future-proof.
+
+---
+
+```markdown
+# ENVIRONMENT_LOCK.md  
+## NovaLIS — Canonical Development & Runtime Environment
+
+This document locks the **canonical environment assumptions** for NovaLIS.
+
+Its purpose is to prevent accidental breakage, version drift, and future uncertainty.
+If behavior differs from what is described here, the environment is considered **out of spec**.
+
+---
+
+## Canonical Python Version
+
+- **Python: 3.10.x**
+- Verified working version: **Python 3.10.9**
+
+Rationale:
+- Broad ecosystem compatibility (FastAPI, httpx, uvicorn, LLM tooling)
+- Stable, well-tested
+- Avoids breaking changes present in newer Python versions
+
+Newer Python versions (3.11+) may exist on the system but are **not canonical** and must not be used for NovaLIS unless explicitly re-locked.
+
+---
+
+## Python Resolution Rules (Windows)
+
+- Python is **not required to be on PATH**
+- Python execution must be **explicit** (venv activation or direct invocation)
+- `where python` returning nothing is an acceptable and preferred state
+
+This prevents accidental execution with the wrong interpreter.
+
+---
+
+## Virtual Environment Policy
+
+### Active Environment
+- NovaLIS runs under **one explicitly chosen Python environment**
+- The active environment must resolve to **Python 3.10.x**
+
+### Archived Environments
+The following are intentionally archived and must not be used:
+
+```
+
+venv_ARCHIVED_DO_NOT_USE
+venv310_ARCHIVED_DO_NOT_USE
+
+````
+
+These environments are preserved for historical reference only.
+
+Rules:
+- Archived venvs must not be activated
+- Archived venvs must not be modified
+- Archived venvs must not be deleted without an explicit unlock
+
+---
+
+## Backend Association
+
+- **Canonical backend:** `nova_backend`
+- Phase-1 backend (`Nova-Backend-AI-Brain`) is frozen and not under active development
+
+Environment decisions apply **only** to the canonical backend unless otherwise stated.
+
+---
+
+## Execution Expectations
+
+When running NovaLIS from the canonical backend:
+
+```powershell
+python --version
+````
+
+Must report:
+
+```
+Python 3.10.x
+```
+
+Any other result indicates a misconfigured environment.
+
+---
+
+## Explicit Non-Goals
+
+NovaLIS does NOT require:
+
+* Automatic Python discovery
+* Multiple active virtual environments
+* Global Python PATH modification
+* Runtime environment switching
+
+Simplicity and predictability are intentional.
+
+---
+
+## Change Policy
+
+Any change to:
+
+* Python version
+* Environment activation method
+* Virtual environment layout
+
+Requires:
+
+1. Explicit review
+2. Update to this document
+3. Re-lock acknowledgment
+
+Silent environment changes are forbidden.
+
+---
+
+## Status
+
+This environment lock is **active**.
+
+Future work must comply or explicitly unlock and revise it.
+
+```
+
+---
+
+## Why this matters (quick reassurance)
+
+With this file in place:
+
+- You never have to re-diagnose Python confusion again
+- Future-you won’t second-guess working setups
+- Cleanup decisions become *safe and intentional*
+- NovaLIS stays boring in the best way
+
+You’ve now locked:
+- **Architecture**
+- **Phases**
+- **Vision**
+- **Environment**
+
+That’s a *serious* foundation.
+
+---
+
+If you want next, the highest-value follow-ups would be:
+- add a tiny `README.md` inside `nova_backend/` referencing this lock
+- or create a one-command `run_nova.ps1` that always runs correctly
+
+Whenever you’re ready, just say the word.
+```

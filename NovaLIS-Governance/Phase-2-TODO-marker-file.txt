@@ -1,0 +1,123 @@
+@"
+NOVA — PHASE 2 TODO
+==================
+
+Status: NOT STARTED
+Linked Backup: Nova-Phase1
+Purpose: Phase-2 action planning marker
+
+----------------------------------------
+PHASE 2 THEME
+----------------------------------------
+
+Phase-2 introduces **Intentional Action**.
+
+Nova remains:
+- Non-autonomous
+- Deterministic
+- Permission-based
+- One action at a time
+
+There is NO background execution,
+NO routines,
+NO proactive behavior.
+
+----------------------------------------
+REQUIRED ENTRY CONDITIONS
+----------------------------------------
+
+✔ Phase-1 backup verified
+✔ Phase-1 behavior frozen
+✔ No Phase-1 code modified
+✔ Backup available for rollback
+
+----------------------------------------
+CORE MECHANISM TO IMPLEMENT
+----------------------------------------
+
+[ ] ActionRequest object
+    - Explicit user invocation
+    - Single action only
+    - Clear description of intent
+    - Mandatory confirmation ("Do you want me to proceed?")
+
+[ ] Confirmation flow
+    - Accepts yes / no only
+    - No retries
+    - Silence treated as no
+
+[ ] Action execution gate
+    - No chaining
+    - No background execution
+    - Clean exit after completion or refusal
+
+----------------------------------------
+ALLOWED PHASE-2 ACTIONS (V1)
+----------------------------------------
+
+[ ] Open explicit folders
+[ ] Open explicit files
+[ ] Launch pre-approved applications
+
+[ ] Play local audio files
+[ ] Stop playback
+[ ] Route audio to specific device (deterministic targets only)
+
+[ ] Deterministic info commands
+    - Time
+    - Date
+    - Reminder create
+    - Reminder cancel
+    - Reminder list
+    - Repeat last spoken output
+
+----------------------------------------
+UI / VISUAL RULES
+----------------------------------------
+
+• Orb remains non-semantic
+• No visual state signaling
+• No event-driven motion
+• Orb visuals are presentation-only
+• UI changes limited to:
+    - Confirmation
+    - Completion
+    - Error display
+
+----------------------------------------
+EXPLICITLY FORBIDDEN IN PHASE 2
+----------------------------------------
+
+✘ Automation
+✘ Routines
+✘ Background monitoring
+✘ Implicit intent
+✘ Learning or adaptation
+✘ Proactive suggestions
+✘ File searching
+✘ Device discovery
+✘ Smart-home logic
+
+----------------------------------------
+COMPLETION CRITERIA
+----------------------------------------
+
+Phase-2 is complete when:
+- All allowed actions work end-to-end
+- Confirmation is enforced everywhere
+- No action runs without permission
+- No background execution exists
+- Orb semantics remain unchanged
+- Documentation is updated
+- New backup created (Nova-Phase2)
+
+----------------------------------------
+NEXT STEP
+----------------------------------------
+
+Create a NEW backup:
+Nova-Phase2 (pre-actions)
+
+Do NOT modify Nova-Phase1.
+
+"@ | Out-File D:\Nova-Backups\Nova-Phase1\PHASE-2-TODO.txt -Encoding UTF8

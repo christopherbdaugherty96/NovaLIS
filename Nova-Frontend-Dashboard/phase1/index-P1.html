@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nova Dashboard</title>
+  <link rel="stylesheet" href="./style.phase1.css">
+</head>
+<body>
+
+  <!-- Orb Layer (background visual only) -->
+  <div class="orb-container" aria-hidden="true">
+    <div class="orb"></div>
+  </div>
+
+  <!-- Dashboard Grid -->
+  <div class="dashboard">
+
+    <!-- Header -->
+    <header class="header">
+      <div class="header-left">
+        <h1>Nova</h1>
+      </div>
+
+      <div class="header-right widget" id="weather-widget">
+        <h3>Weather</h3>
+        <div id="weather-line">Current weather will appear here</div>
+        <div id="weather-alerts"></div>
+        <div class="weather-meta">
+          <span id="weather-updated">Not updated yet</span>
+          <a id="weather-details-link"
+             class="weather-details"
+             href="#"
+             style="display:none">Details</a>
+        </div>
+        <button id="btn-weather-update">Update</button>
+      </div>
+    </header>
+
+    <!-- Main Chat Area -->
+    <main class="main">
+      <section class="panel conversation">
+        <div id="chat-log"></div>
+      </section>
+    </main>
+
+    <!-- News Panel -->
+    <aside class="news-panel">
+      <div id="news-widget" class="widget">
+        <h3>Top News</h3>
+        <ul id="news-list"></ul>
+        <button id="btn-news">Refresh</button>
+      </div>
+    </aside>
+
+    <!-- Chat Input (INSIDE dashboard grid) -->
+    <div class="chat-input">
+      <input type="text" id="chat-input" placeholder="Type your message..." />
+      <button id="send-btn">Send</button>
+    </div>
+
+  </div> <!-- END dashboard -->
+
+  <script src="dashboard.js"></script>
+</body>
+</html>

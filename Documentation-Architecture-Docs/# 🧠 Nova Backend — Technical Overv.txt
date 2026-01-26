@@ -1,0 +1,83 @@
+# 🧠 Nova Backend — Technical Overview
+
+---
+
+# 💡 Purpose
+The backend is the **brain** of Nova.  
+It handles:
+- AI reasoning  
+- Skill execution  
+- Memory  
+- Streaming  
+- Voice processing (future)  
+- WebSocket communication  
+
+---
+
+# 📌 Core Components
+
+## 1. brain_server.py
+The main event loop of the entire assistant.
+
+Responsibilities:
+- Accept WebSocket connections  
+- Receive messages from frontend  
+- Run skill routing  
+- Stream AI responses back  
+- Save memory  
+- Send widget updates  
+
+## 2. nova_tools.py
+Responsible for:
+- Detecting skill-triggering phrases  
+- Calling the correct skill  
+- Returning structured data  
+
+If no skill matches → message goes to the AI.
+
+## 3. nova_memory.py
+SQLite wrapper that:
+- Stores conversation pairs  
+- Returns last N history items  
+- Future: preference system  
+
+## 4. skill_registry.py
+Automatically loads Python modules from `/skills`.
+
+## 5. Skills
+Each skill is a Python file with:
+def skill_xxx(...):
+return { structured data }
+def register(registry):
+registry.register_skill(...)
+
+yaml
+Copy code
+
+---
+
+# 🧠 LLM Integration (Ollama)
+Nova sends:
+- system prompt  
+- memory context  
+- user input  
+Into Ollama’s `/api/chat` endpoint and streams chunks.
+
+---
+
+# ⚙️ Background Tasks (Planned)
+- Weather updater  
+- News updater  
+- System status updater  
+- ORB heartbeat  
+
+---
+
+# 🛡️ Error Handling
+- Try/except around every skill  
+- Logging to nova.log  
+- Safe WebSocket disconnect handling  
+
+---
+
+The backend is built for **extensibility, clarity, and reliability.**

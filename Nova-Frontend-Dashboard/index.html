@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Nova</title>
+
+  <!-- Phase-3 LIVE CSS -->
+  <link rel="stylesheet" href="style.phase1.css" />
+</head>
+
+<body>
+  <!-- ===============================
+       ORB BACKGROUND (NON-INTERACTIVE)
+       =============================== -->
+ <div class="orb-container">
+  <img
+    class="orb-image"
+    src="orb.png"
+    alt=""
+    aria-hidden="true"
+  />
+  <div id="orb-status" class="orb-status">READY</div>
+</div>
+
+  <!-- ===============================
+       DASHBOARD GRID
+       =============================== -->
+  <div class="dashboard">
+
+    <!-- ---------- HEADER ---------- -->
+    <header class="header">
+      <div class="header-left">
+        <h1>Nova</h1>
+      </div>
+
+      <!-- Weather widget lives in header by design -->
+      <div id="weather-widget" class="widget">
+        <h3>Weather</h3>
+        <div id="weather-line">—</div>
+
+        <div class="weather-meta">
+          <span id="weather-updated"></span>
+        </div>
+
+        <button id="btn-weather-update" type="button">
+          Update
+        </button>
+      </div>
+    </header>
+
+    <!-- ---------- MAIN COLUMN ---------- -->
+    <main class="main">
+      <div class="panel conversation">
+        <div id="chat-log" class="chat-log"></div>
+      </div>
+    </main>
+
+    <!-- ---------- NEWS PANEL ---------- -->
+    <aside class="news-panel">
+      <div id="news-widget" class="widget">
+        <h3>Top News</h3>
+
+        <!-- SCROLL CONTAINER (CSS targets this) -->
+        <ul id="news-list"></ul>
+
+        <button id="btn-news" type="button">
+          Get headlines
+        </button>
+      </div>
+    </aside>
+
+    <!-- ---------- CHAT INPUT ---------- -->
+    <div class="chat-input">
+      <input
+        id="chat-input"
+        type="text"
+        placeholder="Type a message…"
+        autocomplete="off"
+        spellcheck="false"
+      />
+
+      <button id="send-btn" type="button">
+        Send
+      </button>
+
+      <button
+        id="ptt-btn"
+        type="button"
+        aria-label="Push to talk"
+        title="Push to talk"
+      >
+        🎤
+      </button>
+    </div>
+
+  </div>
+
+  <!-- ===============================
+       PHASE-3 DASHBOARD LOGIC
+       =============================== -->
+  <script src="dashboard.js"></script>
+</body>
+</html>

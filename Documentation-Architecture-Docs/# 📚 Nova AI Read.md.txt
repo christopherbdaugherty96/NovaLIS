@@ -1,0 +1,48 @@
+# 📚 Nova AI Documentation Directory
+
+This folder contains the complete documentation suite for Nova AI.
+
+---
+
+# 📑 Documentation Index
+
+## Vision & Strategy
+1. **VISION.md** — The big picture  
+2. **STATUS.md** — What works today  
+3. **ROADMAP.md** — Development timeline  
+
+## Technical Architecture
+4. **ARCHITECTURE.md** — System blueprint  
+5. **SYSTEM_FLOW.md** — How data moves  
+6. **BACKEND_OVERVIEW.md** — Backend details  
+7. **FRONTEND_OVERVIEW.md** — UI + ORB details  
+8. **SKILLS_OVERVIEW.md** — Skill development  
+
+## Practical Guides
+9. **QUICK_START.md** — Setup in minutes  
+10. **TROUBLESHOOTING.md** — Errors & solutions  
+
+---
+
+# 🎯 Purpose
+
+This documentation allows:
+- Fast onboarding  
+- Clear system understanding  
+- Clean development process  
+- Easy debugging  
+- Long-term growth  
+
+---
+
+# 🛠️ Update Process
+Update documentation when:
+- Adding new skills  
+- Changing architecture  
+- Introducing new features  
+- Updating the roadmap  
+
+---
+
+Nova AI is designed to evolve.  
+This documentation ensures clarity throughout its growth.

@@ -1,0 +1,240 @@
+# 🎨 Nova Frontend Dashboard — Technical Overview
+
+---
+
+# ⭐ Purpose
+The dashboard is Nova’s **face**, providing:
+- Visual ORB interface  
+- Real-time chat  
+- System widgets  
+- Voice controls (future)  
+
+---
+
+# 📁 File Overview
+
+### **index.html**
+Defines the layout:
+- Left: ORB  
+- Center: Chat  
+- Right: Widgets  
+
+### **dashboard.js**
+Handles:
+- WebSocket connection  
+- Chat message rendering  
+- Streaming text  
+- Widget updates  
+- ORB state syncing  
+
+### **orb.js**
+A custom 3D renderer for the glowing ORB.
+
+### **style.css**
+High-end cyberpunk/glassmorphism theme.
+
+---
+
+# 🔌 WebSocket Message Types
+
+Frontend receives:
+- `chat_chunk`  
+- `chat_done`  
+- `skill_response`  
+- `widget_update`  
+- `orb_state`  
+
+Frontend sends:
+- `chat_message`  
+- (future) `audio_chunk`  
+
+---
+
+# 🟣 ORB Behavior
+States:
+- idle  
+- thinking  
+- speaking  
+- error  
+- sleeping  
+
+Uses particle and wave effects for emotion simulation.
+
+---
+
+# 📱 Responsiveness
+Breakpoints:
+- Desktop  
+- Tablet  
+- Mobile  
+
+All widgets reorganize dynamically.
+
+---
+
+The frontend is visually expressive, responsive, and real-time reactive.
+============================================
+8. SKILLS_OVERVIEW.md
+============================================
+markdown
+Copy code
+# 🧩 Nova Skills System — Complete Guide
+
+---
+
+# ⭐ What Are Skills?
+
+Skills are **modular Python functions** that extend Nova’s abilities.
+
+They can:
+- Return structured data  
+- Trigger widget updates  
+- Act autonomously (if scheduled)  
+- Be added/removed easily  
+
+---
+
+# 📁 Skills Structure
+
+skills/
+├── weather.py
+├── news.py
+├── system.py
+└── files.py
+
+yaml
+Copy code
+
+---
+
+# 🏗️ Skill Template
+
+```python
+def skill_example(param="test"):
+    return {
+        "success": True,
+        "data": {...},
+        "widget_data": {...}
+    }
+
+def register(registry):
+    registry.register_skill("example", skill_example)
+🔧 Existing Skills
+Weather Skill
+Mock data
+
+Returns temp, condition, humidity, wind
+
+News Skill
+Mock headlines
+
+Returns category + headlines
+
+System Skill
+psutil-based
+
+CPU, RAM, disk, network
+
+Files Skill
+List files
+
+Get file info
+
+🚀 Creating a New Skill
+Create skills/my_skill.py
+
+Implement skill function
+
+Add register()
+
+Restart backend
+
+📊 Widget Integration
+Any skill can return:
+
+arduino
+Copy code
+"widget_data": {
+    "type": "weather",
+    "data": {...}
+}
+dashboard.js will update the widget automatically.
+
+The skills system is intentionally simple and extremely powerful.
+
+yaml
+Copy code
+
+---
+
+# ============================================
+# **9. QUICK_START.md**
+# ============================================
+
+```markdown
+# 🚀 Nova AI — Quick Start Guide
+
+---
+
+# 1. Install Requirements
+
+### Required:
+- Python 3.10  
+- Ollama  
+- pip packages:
+pip install fastapi uvicorn httpx websockets psutil
+
+yaml
+Copy code
+
+---
+
+# 2. Start Ollama
+
+ollama serve
+ollama pull gemma3:4b
+
+yaml
+Copy code
+
+---
+
+# 3. Run Backend
+
+cd Nova-Backend-AI-Brain
+$env:OLLAMA_MODEL="gemma3:4b"
+python brain_server.py
+
+yaml
+Copy code
+
+---
+
+# 4. Open Dashboard
+
+Visit:
+http://localhost:18080/dashboard
+
+yaml
+Copy code
+
+---
+
+# 5. Test Commands
+Try in chat:
+- "What's the weather?"  
+- "Show me system status"  
+- "List files in C:\"  
+
+---
+
+# 6. Logs
+
+logs/nova.log
+
+yaml
+Copy code
+
+---
+
+If everything loads, your system is fully operational.
