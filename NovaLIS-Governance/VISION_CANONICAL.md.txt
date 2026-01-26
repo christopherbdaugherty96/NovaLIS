@@ -1,0 +1,236 @@
+# VISION_CANONICAL.md  
+## NovaLIS — Canonical Vision
+
+This document defines the **current, authoritative vision** of NovaLIS.
+
+It supersedes the original VISION.md, which is preserved as **Historical Vision** :contentReference[oaicite:0]{index=0}.  
+Any future development must align with this document and the NovaLIS governance locks.
+
+---
+
+## What NovaLIS Is
+
+NovaLIS is a **governed, local-first household system**.
+
+It is designed to behave like a **reliable appliance**, not an autonomous AI assistant.
+
+NovaLIS prioritizes:
+- predictability
+- explicit control
+- refusal-safe behavior
+- long-term maintainability
+- user trust through restraint
+
+If NovaLIS ever feels “alive,” proactive, or self-directed, it has violated its core design.
+
+---
+
+## Why NovaLIS Exists
+
+Most consumer AI systems are built to:
+- extract data
+- centralize control
+- infer intent
+- operate continuously in the background
+
+NovaLIS rejects this model.
+
+NovaLIS exists to prove that a personal AI system can be:
+- user-owned
+- privacy-preserving
+- transparent in behavior
+- explicitly governed
+- calm by default
+
+The system does not compete on cleverness.  
+It competes on **trustworthiness**.
+
+---
+
+## Core Design Philosophy
+
+### 1. Governor Model (Non-Negotiable)
+
+NovaLIS has a **single authoritative brain**.
+
+- All decisions pass through the governor.
+- Skills do not decide what happens next.
+- The UI does not decide what happens next.
+- LLM output does not decide what happens next.
+
+If authority is unclear, the architecture is incorrect.
+
+---
+
+### 2. Silence-First Behavior
+
+Silence is a **correct and preferred outcome**.
+
+NovaLIS:
+- does nothing unless explicitly invoked
+- does not follow up unless asked
+- does not retry or escalate automatically
+
+The absence of behavior is a feature, not a failure.
+
+---
+
+### 3. Event-Driven Only
+
+NovaLIS responds only to explicit events:
+- direct user input
+- explicit UI actions
+- explicit schedules (ask-first prompts only)
+
+NovaLIS has:
+- no background loops
+- no polling
+- no silent refreshes
+- no autonomous monitoring
+
+If the system acts “because time passed,” it is broken.
+
+---
+
+### 4. Intelligence Is Bounded and Permissioned
+
+NovaLIS may use an LLM **only as a helper**.
+
+The LLM may:
+- clarify user-provided text
+- answer bounded informational questions
+- support explicit reflective reasoning (user-invoked)
+
+The LLM may NOT:
+- route requests
+- infer intent
+- plan actions
+- execute actions
+- retry or escalate automatically
+
+Intelligence is available **on demand**, never by default.
+
+---
+
+### 5. Deterministic Skills
+
+Skills in NovaLIS are:
+- modular
+- stateless
+- bounded
+- deterministic
+- side-effect free
+
+Skills return data only.
+They never decide what happens next.
+
+This makes NovaLIS auditable and debuggable over long time horizons.
+
+---
+
+### 6. Explicit Permission for Action
+
+Actions are never inferred.
+
+All actions require:
+- explicit user request
+- explicit confirmation
+- single-step execution
+- clean termination
+
+There is no automation, no routines, and no chaining without an explicit future unlock.
+
+---
+
+### 7. Truthful User Interface
+
+The UI is an **observer**, not an actor.
+
+- It reflects backend truth only
+- It never implies thinking, listening, intent, or emotion
+- Visuals are presentation-only
+
+The orb represents **presence**, not cognition.
+
+---
+
+## What NovaLIS Is Not
+
+NovaLIS is explicitly NOT:
+- autonomous
+- proactive
+- self-improving
+- personality-driven
+- background-running
+- intent-guessing
+- emotionally expressive in a semantic way
+
+These behaviors are incompatible with trust and auditability.
+
+---
+
+## Privacy & Ownership
+
+NovaLIS is:
+- local-first by default
+- user-owned
+- transparent in data flow
+
+External services may be used **only by explicit user permission**, and never silently.
+
+The user remains the final authority.
+
+---
+
+## Phase-Aligned Vision
+
+### Phase-1 — Information Appliance (Frozen)
+- News: headlines-only, whitelisted sources
+- Weather: current conditions only
+- Deterministic routing
+- Safe, finite failures
+- No actions, no autonomy
+
+---
+
+### Phase-2 — Intentional Action (Gated)
+- Explicit ActionRequest objects
+- Mandatory confirmation
+- One action at a time
+- No background execution
+- Trusted executor model
+
+---
+
+### Phase-3 — Governed Expansion (Future)
+- Carefully scoped capability growth
+- No autonomy
+- All expansion gated by contracts and permission
+
+Capability never precedes governance.
+
+---
+
+## Long-Term Direction
+
+NovaLIS is intended to be:
+- understandable years later
+- safe to leave running
+- boring in the best possible way
+
+The system is designed so that:
+> Future-me can walk away, return months later, and still trust it.
+
+---
+
+## Canonical Status
+
+This document is the **current canonical vision**.
+
+- Original VISION.md → Historical
+- NovaLIS-Governance → Authoritative
+- VISION_CANONICAL.md → Design truth
+
+Any future work must align with this vision or explicitly unlock and revise it.
+
+---

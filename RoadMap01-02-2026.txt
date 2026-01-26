@@ -1,0 +1,334 @@
+# Nova / NovaLIS
+## Nova Canon v1
+
+**A calm, local, human-friendly assistant built on a strict, governed intelligence engine.**
+
+This document is the **single source of truth** for what Nova is, how it works, what is complete, what is planned, and—most importantly—what it will never become.
+
+Nova is designed to **augment human agency**, not replace it.
+
+---
+
+## 🔑 Legend
+
+- ✅ **Complete / Frozen**
+- 🟡 **In Progress (Current)**
+- 🔒 **Defined & Locked (Not Started)**
+- 🧠 **Planned (Future, Not Locked Yet)**
+- ⚠️ **Deferred / Requires Care**
+- 🚫 **Explicitly Not Possible / Not Wise**
+
+---
+
+# PHASE 0 — Philosophy, Trust & Identity ✅
+
+> *Define what Nova is, what it prioritizes, and what it will never become.*
+
+### Core Identity (LOCKED)
+- Local-first, privacy-first
+- Offline-capable by default
+- Calm, human-friendly assistant
+- Presence, not personality
+- Deterministic behavior
+- Explicit intent only
+- Forgiving grammar, spelling, phrasing
+- Honest uncertainty (“I’m not confident”)
+- Conversation is allowed; control is governed
+
+### Explicit Non-Goals (LOCKED)
+- No autonomy
+- No background listening
+- No silent actions
+- No emotional manipulation
+- No behavioral profiling
+- No cloud dependence by default
+
+---
+
+# PHASE 1 — Presence & Observation Layer ✅
+
+> *Nova exists, is visible, and is clearly not in control.*
+
+### Features
+- Web dashboard (HTTP)
+- Passive observer UI
+- WebSocket communication
+- Nova Message Protocol (NMP v1)
+- CSS-only orb (presence indicator)
+- Clear “not listening” state
+
+**Status:** FROZEN
+
+---
+
+# PHASE 2 — Governed Intelligence (NovaLIS Engine) ✅
+
+> *All authority lives here — nowhere else.*
+
+### Engine & Governance (LOCKED)
+- Brain Server as sole authority
+- Skill Registry (allow-listed)
+- Explicit `can_handle()` routing
+- Schema validation on every request
+- Hard refusals on ambiguity
+- No action chaining
+- UI has zero execution authority
+
+### Assistant UX Behavior (LOCKED)
+- Calm clarification instead of guessing  
+  > “I think you’re asking about the weather — is that right?”
+
+**Status:** FROZEN
+
+---
+
+# PHASE 3 — Sensory Input & Live Data 🟡 ← CURRENT PHASE
+
+> *Nova can listen (explicitly) and report.*
+
+### Implemented
+- Push-to-talk Speech-to-Text
+- Explicit audio codec selection
+- FFmpeg audio normalization
+- Weather skill auto-load
+- News skill auto-load
+- Clickable news links
+- CSS-only orb polish
+
+### Remaining (BLOCKING)
+- Final end-to-end STT verification
+- Phase-3 Definition of Done sign-off
+
+### Tech / APIs (LOCKED)
+- STT: Vosk (offline)
+- Audio: FFmpeg
+- Weather: Visual Crossing API
+- News: Provider abstracted (no UI calls)
+
+---
+
+# PHASE 3.5 — Usability & Trust Surfacing 🔒
+
+> *Make Nova’s constraints visible and understandable.*
+
+### Features
+- Text-based state indicators (READY / LISTENING / PROCESSING)
+- Subtle non-verbal audio cues (optional)
+- “What can I do?” command
+- “Why did you do that?” / Explain response UI
+- Philosophy / Trust / Why page in UI
+- Graceful degradation messaging
+
+### Locks
+- No proactive suggestions
+- No nudging
+- No hidden state
+
+---
+
+# PHASE 4 — Grounded Intelligence & Language Foundations 🔒
+
+> *Helpful without being speculative.*
+
+### Knowledge & Search
+- Explicit web lookup (user-initiated only)
+- Source-aware answers
+- Confidence signaling
+- Wikipedia lookup
+- Basic fallback web search (clearly labeled lower confidence)
+
+### Free / Free-Tier APIs
+- Brave Search API
+- Wikipedia API
+- Fallback: simple HTML fetch (clearly labeled)
+
+### Language & Voice
+- Language detection
+- Explicit translation
+- Gated auto-translate (read-only content only)
+- Text-to-Speech output (short, factual)
+
+### Free / Local Tech
+- Language detection: fastText
+- Translation: Argos Translate, OPUS-MT
+- TTS: Piper TTS
+
+### Locks
+- No silent search
+- No silent translation
+- No speaking unless responding
+
+---
+
+# PHASE 5 — System, Environment & Integrity Awareness 🔒
+
+> *Observe → report only.*
+
+### System Awareness
+- CPU / memory / disk telemetry
+- Temperature monitoring (Pi)
+- Network status awareness
+- Clipboard intelligence
+- File & log explanation (read-only)
+
+### Security & Integrity
+- Read-only self-diagnostics
+- Malware / intrusion alert summarization
+- Network device awareness
+
+### Free Tools
+- OS APIs / Python standard library
+- ClamAV
+- OSSEC
+
+### Locks
+- No fixing
+- No blocking
+- No remediation
+- No privilege escalation
+
+---
+
+## 🚫 REALISM CONSTRAINTS — EXPLICITLY NOT POSSIBLE OR NOT WISE
+
+These limits are **intentional** and **locked**.
+
+### Hardware Self-Throttling
+- ❌ Nova cannot truly self-throttle hardware without OS-level integration  
+- ✅ What *is* possible:
+  - Advisory warnings
+  - Voluntary degradation suggestions
+  - User-approved actions only
+
+### Absolute Air-Gap Guarantees
+- ❌ Absolute air-gap security is symbolic without physical switches  
+- ✅ What *is* possible:
+  - Verifiable software kill-switch
+  - Clear UI indicators
+  - Auditable offline mode
+
+### “Kid Mode” Without Classification
+- ❌ Safe child mode without content classification is non-trivial  
+- ✅ What *is* possible:
+  - Reduced feature surface
+  - No memory
+  - No web access
+  - Read-only conversational mode
+
+---
+
+# PHASE 6 — Time, Tasks & Location (Explicit Only) 🔒
+
+> *Daily usefulness without creep.*
+
+### Capabilities
+- Simple reminders
+- Simple tasks
+- One-step confirmations
+- Clear feedback
+- Natural language time parsing
+- Location & distance queries
+
+### Free Tech
+- Time parsing: Duckling
+- Maps / geocoding: OpenStreetMap (Nominatim)
+
+### Locks
+- No suggestions
+- No inference
+- No chaining
+
+---
+
+# PHASE 7 — Conversation, Memory & Maintenance Assistance 🔒
+
+> *Nova can think with you — not for you.*
+
+### Conversation Mode
+- Open philosophy & idea discussion
+- General chat (non-operational)
+- Hard separation from action mode
+
+### Memory (Local, Optional)
+- Session memory
+- Explicit long-term memory (ideas / notes)
+- User-approved saves only
+- Editable & deletable
+- Memory informs conversation, never authority
+
+### Maintenance Assistance
+- Codebase health scans (read-only)
+- Contract mismatch detection
+- Patch suggestions (human-approved only)
+
+### Locks
+- No auto-writes
+- No self-modifying code
+- No behavioral drift
+
+---
+
+# PHASE 8 — Home, Media & External Context 🧠
+
+> *Observe first.*
+
+- Home Assistant integration (read-only)
+- Device state awareness
+- Music metadata lookup
+
+### Free APIs
+- Home Assistant (local)
+- MusicBrainz
+
+---
+
+# PHASE 9 — Multi-Surface Presence 🧠
+
+> *Always reachable, never invasive.*
+
+- Desktop background / overlay widget
+- Multiple dashboards
+- Multiple orbs
+- Phone app (permissions required)
+
+### Locks
+- Explicit activation only
+- No background listening
+
+---
+
+# PHASE 10 — Hardware, Wake Word & Appliance Model 🧠
+
+> *Nova becomes an appliance.*
+
+- Raspberry Pi deployment
+- Physical orb hardware
+- Offline boot & recovery
+- Power-loss resilience
+- Wake word: “Nova”, “Hey Nova” (optional, long-term)
+
+### Locks
+- Wake word disabled by default
+- Visible listening indicator
+- No cloud wake word
+
+---
+
+# EXPLICITLY DEFERRED (REQUIRES CARE) ⚠️
+
+- Automatic account linking (email, calendar)
+- Phone background services
+- Always-on permissions
+- Household / multi-user inference
+
+---
+
+# CURRENT STATUS SUMMARY
+
+**NovaLIS is in Phase 3 with all architectural foundations complete.  
+Remaining work is final STT verification.  
+All assistant UX, memory, safety, and realism constraints are now formally merged, locked, and documented.**
+
+---
+
+**Nova Canon v1 — Locked**

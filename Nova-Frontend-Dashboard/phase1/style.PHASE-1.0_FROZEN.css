@@ -1,0 +1,196 @@
+:root {
+  --bg: #0a0a1a;
+  --panel: rgba(255,255,255,0.05);
+  --text-main: #eef0ff;
+  --text-muted: #b6bcf2;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text-main);
+  font-family: system-ui, sans-serif;
+}
+
+/* =========================
+   DASHBOARD LAYOUT
+   ========================= */
+.dashboard {
+  display: grid;
+  grid-template-columns: 1fr 360px;
+  grid-template-rows: auto 1fr auto;
+  height: 100vh;
+  position: relative;
+  z-index: 1;
+}
+
+/* =========================
+   HEADER
+   ========================= */
+.header {
+  grid-column: 1 / -1;
+  grid-row: 1;               /* FIXED */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+}
+
+.header-left h1 {
+  margin: 0;
+  font-size: 20px;
+}
+
+/* =========================
+   MAIN CONTENT
+   ========================= */
+.main {
+  grid-row: 2;               /* FIXED */
+  overflow-y: auto;          /* FIXED */
+  pointer-events: auto;      /* FIXED */
+}
+
+.panel.conversation {
+  max-width: 880px;
+  margin: 0 auto;
+  padding: 16px;
+}
+
+/* =========================
+   SIDEBAR / NEWS
+   ========================= */
+.news-panel {
+  padding: 16px;
+}
+
+.widget {
+  background: var(--panel);
+  padding: 14px 16px;
+  border-radius: 12px;
+}
+
+.widget h3 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  color: var(--text-muted);
+}
+
+/* News list */
+#news-widget ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#news-widget li {
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.news-link {
+  color: var(--text-main);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+.news-source {
+  display: block;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+/* =========================
+   WEATHER
+   ========================= */
+.weather-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.weather-alert {
+  margin-top: 8px;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 13px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.weather-alert.advisory { color: #ffd28a; }
+.weather-alert.alert    { color: #ffb36a; }
+.weather-alert.warning  { color: #ff8a8a; }
+
+.weather-details {
+  font-size: 12px;
+  color: var(--text-muted);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.12);
+}
+
+/* =========================
+   CHAT INPUT (FIXED)
+   ========================= */
+.chat-input {
+  grid-column: 1 / -1;
+  grid-row: 3;               /* FIXED */
+  padding: 16px;
+  display: flex;
+  gap: 8px;
+  margin-bottom: 64px;       /* ~1 inch up */
+  z-index: 2;                /* Safety layer */
+}
+
+.chat-input input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: none;
+  font-size: 14px;
+}
+
+.chat-input button {
+  padding: 10px 16px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(123,109,255,0.6);
+  color: white;
+  cursor: pointer;
+}
+
+/* =========================
+   ORB PRESENCE LAYER
+   ========================= */
+.orb-container {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.orb {
+  width: min(50vmin, 520px);
+  height: min(50vmin, 520px);
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 45% 40%,
+    rgba(170,120,255,0.35),
+    rgba(60,120,255,0.18),
+    rgba(0,0,0,0) 68%
+  );
+  opacity: 0.95;
+}
+
+/* =========================
+   ACCESSIBILITY
+   ========================= */
+:focus-visible {
+  outline: 2px solid rgba(123,109,255,0.6);
+  outline-offset: 2px;
+}

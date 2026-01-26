@@ -1,0 +1,107 @@
+# 🗺️ Nova AI — Development Roadmap  
+*Solo Developer Timeline (Chris)*
+
+---
+
+# 📅 Phase 1 — Core Stability (Dec 2025)
+
+## Week 1 — Auto-Update Engine (HIGH)
+- Build background_updater.py  
+- Create scheduled tasks  
+- Integrate WebSocket broadcast  
+- Update dashboard.js to consume widget_update  
+- Remove mock widget data  
+
+## Week 2 — Voice Integration (HIGH)
+- Install audio dependencies  
+- Build STT → Chat → TTS loop  
+- Add microphone UI controls  
+- Stream audio via WebSocket  
+
+## Week 3 — Environment + Polish (MEDIUM)
+- Fix venv310  
+- Add requirements.txt  
+- Refactor file structure  
+- Improve dashboard styling  
+
+## Week 4 — Stability + Testing (HIGH)
+- Full component testing  
+- Bug cleanup  
+- Load testing  
+- v1.0 release candidate  
+
+---
+
+# 📅 Phase 2 — Daily Life Features (Jan 2026)
+
+### Email Integration
+- OAuth login  
+- Message sync  
+- Smart replies  
+- Notifications  
+
+### Calendar Integration
+- Agenda widget  
+- Scheduling assistant  
+- Auto-reminders  
+
+### Routines Engine
+- Morning Mode  
+- Focus Mode  
+- Evening Mode  
+- Custom automations  
+
+---
+
+# 📅 Phase 3 — Smart Home (Feb 2026)
+
+### Home Assistant Integration
+- OAuth connection  
+- Device discovery  
+- Voice control  
+
+### Automation Engine  
+- IF-THEN rules  
+- Time-based triggers  
+- Sensor integrations  
+
+---
+
+# 📅 Phase 4 — Platform Expansion (Mar–Apr 2026)
+
+### Mobile App
+- Remote commands  
+- Push notifications  
+- Voice on-the-go  
+
+### Plugin/Skill Marketplace
+- Private skill repository  
+- Versioning  
+- Sandbox environment  
+
+### Advanced AI
+- Long-term memory  
+- Prediction engine  
+- Emotional state model  
+
+---
+
+# 📅 Phase 5 — Physical ORB Device (May 2026+)
+- Raspberry Pi OS image  
+- LED visualizer  
+- Wake word engine  
+- Multi-device sync  
+- Room awareness  
+
+---
+
+# 🎯 Success Metrics
+- <2s response time  
+- 5+ daily interactions  
+- 99.9% uptime  
+- 1 new skill per week  
+
+---
+
+This roadmap evolves as the system grows, but the vision remains constant:  
+**Nova becomes a full personal AI operating system you own.**
