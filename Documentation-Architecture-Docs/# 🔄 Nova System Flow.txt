@@ -1,0 +1,100 @@
+# 🔄 Nova System Flow  
+*End-to-End Data Flow of the Entire System*
+
+---
+
+# 1. Chat Flow (User → AI → UI)
+
+User types message
+→ dashboard.js sends WS message
+→ brain_server receives it
+→ nova_tools checks for skills
+→ If skill matches → return skill_response
+→ Else send to Ollama
+→ Ollama streams tokens
+→ brain_server relays chunks
+→ dashboard.js displays tokens in real-time
+→ ORB state changes (thinking → speaking → idle)
+→ Memory stored
+
+yaml
+Copy code
+
+---
+
+# 2. Auto-Update Flow (Future)
+
+Every X seconds:
+background_updater.py
+→ runs skill (e.g., system_status)
+→ formats widget_update message
+→ WebSocket broadcast
+→ dashboard updates widget
+→ widget flashes green for change confirmation
+
+yaml
+Copy code
+
+---
+
+# 3. Voice Flow (Future)
+
+### STT Pipeline
+Mic → Browser → WS (audio blobs)
+→ stt_manager.py
+→ text
+→ sent into normal chat flow
+
+shell
+Copy code
+
+### TTS Pipeline
+AI response → TTS engine → audio
+→ WS → browser → playback
+
+yaml
+Copy code
+
+---
+
+# 4. Skill Flow
+
+User input
+→ skill_registry finds matching skill
+→ execute skill
+→ return structured JSON
+→ widget_update (optional)
+→ display to chat + widgets
+
+yaml
+Copy code
+
+---
+
+# 5. Memory Flow
+
+Incoming user message
+→ outgoing AI response
+→ nova_memory.save_interaction
+→ SQLite stores conversation
+→ next prompt includes last 5 pairs
+
+yaml
+Copy code
+
+---
+
+# 6. Error Handling
+
+- Invalid WS messages → ignored  
+- Skill exceptions → fallback AI response  
+- Ollama failure → Retry mechanism  
+- Missing skill → fallback AI response  
+
+---
+
+This flow design ensures Nova remains:
+- Responsive  
+- Extensible  
+- Fault-tolerant  
+- Real-time  

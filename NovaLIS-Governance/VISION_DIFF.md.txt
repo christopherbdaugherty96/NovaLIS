@@ -1,0 +1,226 @@
+# VISION_DIFF.md  
+## Evolution from Nova (Original Vision) → NovaLIS (Canonical System)
+
+This document explains how the original Nova vision evolved into the current NovaLIS architecture.
+
+It exists for **future-me** so that constraints are understood as *intentional corrections*, not forgotten compromises.
+
+Original reference: VISION.md (early Nova vision) :contentReference[oaicite:0]{index=0}
+
+---
+
+## Executive Summary
+
+The original Nova vision was **directionally correct** but **architecturally under-constrained**.
+
+NovaLIS represents a refinement:
+- from emotionally expressive AI → governed presence  
+- from implicit intelligence → explicit, permissioned intelligence  
+- from autonomous potential → auditable, appliance-like behavior  
+
+Nothing important was abandoned.  
+What changed was *how responsibility, safety, and trust are enforced*.
+
+---
+
+## Core Vision: What Stayed the Same
+
+The following principles remain fully intact:
+
+- **Local-first / privacy-first**
+- **User ownership**
+- **Modular skill architecture**
+- **Long-term extensibility**
+- **Non-corporate, non-extractive AI**
+- **A calm, persistent household presence**
+
+NovaLIS still exists to empower the user — not monetize them.
+
+---
+
+## Major Evolutions (What Changed and Why)
+
+### 1. “Emotionally Intelligent AI” → **Non-Anthropomorphic Presence**
+
+**Original Vision**
+- Nova described as “emotionally intelligent”
+- Orb colors and motion represent internal state
+- Goal: AI that *feels alive* :contentReference[oaicite:1]{index=1}
+
+**NovaLIS**
+- Orb is **non-semantic**
+- No internal emotional or cognitive state
+- Motion is physics-based, time-based, not state-based
+- No implication of thinking, listening, or intent
+
+**Why this changed**
+Emotional signaling implies:
+- hidden cognition
+- implied autonomy
+- miscalibrated user trust
+- unsafe assumptions about system awareness
+
+**Key insight**
+Presence ≠ agency.
+
+NovaLIS preserves *identity and calm presence* without implying intelligence it does not have.
+
+This is a **safety and honesty correction**, not a loss of character.
+
+---
+
+### 2. “Learns Your Routines” → **Explicit, User-Authorized State**
+
+**Original Vision**
+- Learns routines
+- Remembers context automatically
+- Memory-powered conversation engine :contentReference[oaicite:2]{index=2}
+
+**NovaLIS**
+- No implicit learning
+- No background adaptation
+- Memory only via explicit user action
+- Deterministic task objects (e.g., reminders)
+
+**Why this changed**
+Implicit learning introduces:
+- unpredictability
+- silent behavior changes
+- debugging impossibility
+- privacy ambiguity
+
+**Conceptual shift**
+From:
+> “AI learns me”
+
+To:
+> “System reflects what I explicitly give it”
+
+This makes NovaLIS:
+- auditable
+- predictable
+- trustworthy long-term
+
+This is the **single most important architectural correction**.
+
+---
+
+### 3. “Unified Home Intelligence Hub” → **Governor + Executors**
+
+**Original Vision**
+- One assistant to rule devices, files, sensors, automations :contentReference[oaicite:3]{index=3}
+
+**NovaLIS**
+- Central governor (brain)
+- Explicit ActionRequest objects
+- Trusted executors (clients)
+- No background automation
+- No routines or agent planning
+
+**Why this changed**
+Unconstrained “home intelligence” leads to:
+- cascading side effects
+- autonomous planning
+- unsafe automation
+- impossible failure reasoning
+
+**What was preserved**
+- Single point of authority
+- Multi-device future
+- Extensibility
+
+**What was removed**
+- Autonomy
+- Background orchestration
+- Implicit routines
+
+NovaLIS now matches **safety-critical system design**, not hobby automation.
+
+---
+
+### 4. “Real Intelligence” → **Bounded, Permissioned Intelligence**
+
+**Original Vision**
+- Reasoning-based responses
+- Streaming tokens
+- Memory-powered conversation :contentReference[oaicite:4]{index=4}
+
+**NovaLIS**
+- LLM as helper only
+- Explicit reasoning / reflective mode
+- User-invoked
+- Non-persistent
+- Never routing, acting, or retrying
+
+**Why this changed**
+Unbounded reasoning systems:
+- become default decision-makers
+- blur authority boundaries
+- silently replace deterministic logic
+
+**Result**
+NovaLIS still reasons — but **only when asked**, and **never as authority**.
+
+This is a professional-grade boundary.
+
+---
+
+## What Was Intentionally Deferred (Not Removed)
+
+The following ideas were **not rejected**, only deferred until they can be governed safely:
+
+- Physical orb hardware
+- Multi-room presence
+- Expanded system actions
+- Object/location memory
+- Smart-home integrations
+
+All of these now require:
+- explicit contracts
+- permission gates
+- phase entry criteria
+
+---
+
+## Phase Model: Then vs Now
+
+**Original Vision**
+- Phase-based growth focused on capability expansion
+
+**NovaLIS**
+- Phase-based growth focused on **governance first**
+
+Key change:
+> Capability is no longer the gate.  
+> **Trustworthiness is the gate.**
+
+---
+
+## Final Assessment
+
+The original VISION.md captured:
+- aspiration
+- motivation
+- philosophical direction
+
+NovaLIS captures:
+- responsibility
+- safety
+- engineering reality
+
+**The dream did not shrink.  
+It was put on rails.**
+
+Most projects fail by preserving fantasy.
+NovaLIS survives by constraining it.
+
+---
+
+## Canonical Status
+
+- Original VISION.md is preserved as **Historical Vision**
+- NovaLIS architecture + governance docs are **Canonical**
+- Any future expansion must comply with NovaLIS locks
+
+This document exists to prevent future confusion — including my own.
+
