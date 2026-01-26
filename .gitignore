@@ -18,3 +18,26 @@ node_modules/
 # OS / editor
 .DS_Store
 .vscode/
+
+# ===============================
+# Local runtime artifacts (DO NOT COMMIT)
+# ===============================
+nova_backend/models/
+nova_backend/tools/
+*.wav
+*.m4a
+
+# ===============================
+# Python / environment noise
+# ===============================
+__pycache__/
+*.pyc
+.env
+venv/
+
+# ===============================
+# Editor / OS noise
+# ===============================
+.vscode/
+.DS_Store
+Thumbs.db
