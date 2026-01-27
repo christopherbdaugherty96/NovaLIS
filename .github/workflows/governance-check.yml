@@ -1,0 +1,49 @@
+name: NovaLIS Governance Check
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  governance:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Verify required governance files exist
+        run: |
+          test -f REPO_MAP.md
+          test -f CONTRIBUTING.md
+          test -f NovaLIS-Governance/PHASE_1_LOCK.md
+          test -f NovaLIS-Governance/PHASE_2_LOCK.md
+          test -f NovaLIS-Governance/PHASE_3_LOCK.md
+          test -f NovaLIS-Governance/ARCHITECT_CONTRACT.md
+
+      - name: Ensure forbidden runtime artifacts are not committed
+        run: |
+          if [ -d "nova_backend/models" ]; then
+            echo "ERROR: nova_backend/models should not be committed"
+            exit 1
+          fi
+
+          if [ -d "nova_backend/tools/ffmpeg" ]; then
+            echo "ERROR: ffmpeg binaries should not be committed"
+            exit 1
+          fi
+
+          if ls **/*.wav 1> /dev/null 2>&1; then
+            echo "ERROR: .wav files should not be committed"
+            exit 1
+          fi
+
+          if ls **/*.m4a 1> /dev/null 2>&1; then
+            echo "ERROR: .m4a files should not be committed"
+            exit 1
+          fi
+
+      - name: Read-only confirmation
+        run: |
+          echo "Governance check passed."
+          echo "No build, no execution, no behavior changes performed."
