@@ -286,3 +286,20 @@ These documents together define the \*\*single source of truth\*\* for NovaLIS.
 
 
 
+
+
+
+## Phase Gates
+
+**GOVERNED ACTIONS ARE DISABLED**
+
+Actions such as:
+- Opening applications
+- File operations
+- Email or messaging actions
+- Smart-home or system control
+
+remain **structurally blocked** until **Phase 3.5 verification is complete** and the Phase-4 gate is explicitly unlocked.
+
+_End of README._
+
