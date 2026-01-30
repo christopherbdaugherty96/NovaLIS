@@ -1,3 +1,6 @@
+⚠️ ARCHIVED — SUPERSEDED BY FINAL CANONICAL TRUTH-NovaLIS.txt
+This document is historical only and must not be used for implementation decisions.
+
 # NOVA: CANONICAL TRUTH DOCUMENT (RECONCILED v3.0)
 ## Governed Intelligence Through Deliberate Constraint
 
