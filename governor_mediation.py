@@ -73,21 +73,24 @@ class GovernorMediator:
             # 1. Parse intent (deterministic Phase 2 only)
             action_request = self._parse_intent_phase2(user_input)
             if not action_request:
-                return ActionResult.refusal(
-                    reason="Could not parse intent in Phase 2 mode"
+                return ActionResult(
+                    result_type=ActionResultType.REFUSAL,
+                    message="Could not parse intent in Phase 2 mode"
                 )
             
             # 2. Phase enforcement
             if not self._enforce_phase_restrictions(action_request):
-                return ActionResult.refusal(
-                    reason=f"Action {action_request.action_type} not permitted in Phase 2"
+                return ActionResult(
+                    result_type=ActionResultType.REFUSAL,
+                    message=f"Action {action_request.action_type} not permitted in Phase 2"
                 )
             
             # 3. Confirm with user
             self.state = GovernorState.CONFIRMING
             if not self.confirmation_gate.confirm(action_request):
-                return ActionResult.refusal(
-                    reason="User declined confirmation"
+                return ActionResult(
+                    result_type=ActionResultType.REFUSAL,
+                    message="User declined confirmation"
                 )
             
             # 4. Execute (single action boundary)
@@ -99,11 +102,11 @@ class GovernorMediator:
             return result
             
         except Exception as e:
-            # FAIL CLOSED - Governor failure means system failure
             self.state = GovernorState.FAILED
             logger.error(f"Governor failed: {e}\n{traceback.format_exc()}")
-            return ActionResult.failure(
-                reason=f"Governor system failure: {str(e)}"
+            return ActionResult(
+                result_type=ActionResultType.FAILURE,
+                message=f"Governor system failure: {str(e)}"
             )
     
     def _parse_intent_phase2(self, user_input: str) -> Optional[ActionRequest]:
@@ -124,7 +127,8 @@ class GovernorMediator:
             
             return ActionRequest(
                 action_type=ActionType.OPEN_FOLDER,
-                parameters={"path": path}
+                title="Open Folder",
+                payload={"path": path}
             )
         
         # Phase 2: Only OPEN_FOLDER is supported
