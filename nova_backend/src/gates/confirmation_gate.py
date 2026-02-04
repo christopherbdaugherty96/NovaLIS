@@ -1,66 +1,81 @@
 """
-Confirmation Gate — Phase-3 (Execution-Structurally-Unreachable)
+ConfirmationGate — Phase-3.5 (Provably Passive)
 
-Phase-3 update: Removes all ActionRequest references while maintaining
-gate functionality for future phases.
+Constitutional Contract:
+- Gate is silent (message=None) when no confirmation pending
+- Only speaks when explicitly engaged with pending context
+- Binary confirmation: only "yes" or "no" accepted
+- No inference, no language normalization
 """
 
 from dataclasses import dataclass
-from typing import Optional, Any
-import time
-
+from typing import Optional
 
 @dataclass
 class GateResult:
-    handled: bool
-    # Phase-3: No action reference, execution structurally unreachable
-    gate_context: Optional[dict] = None  # Generic context for future phases
+    """Phase-3.5: Gate only speaks through message field."""
+    message: Optional[str] = None  # None = gate is silent
+    confirmed: bool = False  # Always boolean, never None
+    gate_context: Optional[dict] = None  # Future Phase-4 use
 
 
 class ConfirmationGate:
-    def __init__(self, timeout_seconds: int = 30) -> None:
-        self._pending_context: Optional[dict] = None
-        self._expires_at: Optional[float] = None
-        self._timeout = timeout_seconds
-
-    def set_pending(self, context: Optional[dict] = None) -> None:
-        """
-        Phase-3: Set pending confirmation without ActionRequest.
-        context: Generic dictionary for future phase expansion.
-        """
-        self._pending_context = context or {}
-        self._expires_at = time.time() + self._timeout
-
-    def clear(self) -> None:
+    """Passive gate that only responds when explicitly engaged."""
+    
+    def __init__(self):
+        # Internal state: only set by explicit user commands (Phase-4)
         self._pending_context = None
-        self._expires_at = None
-
+    
     def try_resolve(self, text: str) -> GateResult:
         """
-        Attempt to resolve a pending confirmation.
-        Phase-3: Returns generic context, no action reference.
+        Phase-3.5: Gate is provably silent when idle.
+        
+        Constitutional Proof:
+        - Line 33: If no pending context → message=None (silent)
+        - Line 39: Only two valid responses: "yes" or "no"
+        - Line 45: All other input → message=None (silent)
         """
         if not self._pending_context:
-            return GateResult(handled=False)
+            # 🔒 PROOF: Gate is idle → always silent
+            return GateResult(message=None)
+        
+        # Only reachable if confirmation flow was explicitly started
+        lowered = text.strip().lower()
+        
+        # Phase-3.5: Binary confirmation only
+        if lowered == "yes":
+            self._pending_context = None
+            return GateResult(
+                message="Okay.",
+                confirmed=True,
+                gate_context=None
+            )
+        elif lowered == "no":
+            self._pending_context = None
+            return GateResult(
+                message="Cancelled.",
+                confirmed=False,
+                gate_context=None
+            )
+        else:
+            # Not a confirmation response → gate is silent
+            return GateResult(message=None)
+    
+    def set_pending(self, context: dict) -> None:
+        """
+        Phase-4 placeholder: explicit confirmation initiation.
+        
+        Contract:
+        - Only called by future Phase-4 authority boundaries
+        - Never called in Phase-3.5
+        - Exists to preserve structural honesty
+        """
+        self._pending_context = context
+    
+    def clear(self) -> None:
+        """Reset to idle state."""
+        self._pending_context = None
 
-        if self._expires_at and time.time() > self._expires_at:
-            self.clear()
-            return GateResult(handled=True, gate_context={"reason": "timeout"})
 
-        if text in {"yes", "y"}:
-            context = self._pending_context.copy()
-            self.clear()
-            return GateResult(handled=True, gate_context=context)
-
-        if text in {"no", "n"}:
-            self.clear()
-            return GateResult(handled=True, gate_context={"reason": "declined"})
-
-        return GateResult(handled=False)
-
-
-# ------------------------------------------------------------
-# Singleton instance
-# ------------------------------------------------------------
-
+# Global instance
 confirmation_gate = ConfirmationGate()
