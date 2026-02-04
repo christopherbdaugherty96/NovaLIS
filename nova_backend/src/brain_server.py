@@ -10,6 +10,7 @@ Behavior: Deterministic, silence-first
 from __future__ import annotations
 
 # Phase-3.5 staged governed memory (explicit user corrections)
+
 from .memory.quick_corrections import record_correction
 
 from nova_backend.src.routers.stt import router as stt_router
@@ -35,7 +36,13 @@ app = FastAPI()
 
 from fastapi.staticfiles import StaticFiles
 
-app.mount("/static", StaticFiles(directory="static"), name="static")
+from pathlib import Path
+from starlette.staticfiles import StaticFiles
+
+STATIC_DIR = Path("static")
+
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
 
 app.include_router(stt_router)
 

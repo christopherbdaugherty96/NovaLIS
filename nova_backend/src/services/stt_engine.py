@@ -17,17 +17,40 @@ FFMPEG_PATH = r"C:\Nova-Project\nova_backend\tools\ffmpeg\ffmpeg.exe"
 
 # --------------------------------------------------
 # Model loading (ONCE, deterministic, local)
+# Phase-3.5 SAFE: fail-closed, never crash Nova
 # --------------------------------------------------
+
+from pathlib import Path
+from vosk import Model
 
 VOSK_MODEL_PATH = Path("models/vosk-model-small-en-us-0.15")
 
-if not VOSK_MODEL_PATH.exists():
-    raise RuntimeError(
-        "Vosk model not found. "
-        "Download and extract to: models/vosk-model-small-en-us-0.15"
-    )
+_vosk_model = None
 
-vosk_model = Model(str(VOSK_MODEL_PATH))
+
+def get_vosk_model():
+    """
+    Lazily load the Vosk model.
+    Phase-3.5 rule:
+    - STT must NEVER crash server at import time
+    - If model is missing, STT fails closed (returns empty text)
+    """
+    global _vosk_model
+
+    if _vosk_model is not None:
+        return _vosk_model
+
+    if not VOSK_MODEL_PATH.exists():
+        # Phase-3.5 compliant: fail closed, do not raise
+        print(
+            "[STT] Vosk model not found at "
+            "models/vosk-model-small-en-us-0.15 — STT disabled."
+        )
+        return None
+
+    _vosk_model = Model(str(VOSK_MODEL_PATH))
+    return _vosk_model
+
 
 # --------------------------------------------------
 # Core transcription function
