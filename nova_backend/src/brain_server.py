@@ -12,7 +12,7 @@ from __future__ import annotations
 # Phase-3.5 staged governed memory (explicit user corrections)
 from .memory.quick_corrections import record_correction
 
-from src.routers.stt import router as stt_router
+from nova_backend.src.routers.stt import router as stt_router
 
 import json
 import logging
