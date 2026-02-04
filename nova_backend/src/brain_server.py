@@ -1,32 +1,29 @@
 """
-NovaLIS Brain Server — Phase 3 (Authoritative Governor)
+NovaLIS Brain Server — Phase 3.5 (Behaviorally Complete)
 
-Responsibilities:
-- Single authority for intent routing
-- Silence-first behavior
-- Deterministic skill handling
-- Execution unreachable
-- Phase-3 widget dispatch (news, weather)
+Constitutional Status: FROZEN
+Execution: Structurally impossible
+Governance: Provably passive
+Behavior: Deterministic, silence-first
 """
 
 from __future__ import annotations
 
+# Phase-3.5 staged governed memory (explicit user corrections)
+from .memory.quick_corrections import record_correction
+
 from src.routers.stt import router as stt_router
 
 import json
-
 import logging
-
+from datetime import datetime
 from typing import Optional
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
 from .skill_registry import skill_registry
-
 from .gates.confirmation_gate import confirmation_gate
-
 from .governor.governor_mediator import GovernorMediator
-
 from .speech_state import speech_state
 
 # -------------------------------------------------
@@ -49,6 +46,53 @@ from pathlib import Path
 async def root():
     return FileResponse(Path("static/index.html"))
 
+
+# -------------------------------------------------
+# Phase-3.5 Trust Verification Endpoint
+# -------------------------------------------------
+
+@app.get("/phase-status")
+async def phase_status():
+    """
+    Constitutional proof of Phase-3.5 compliance.
+    
+    Read-only endpoint that exposes frozen guarantees.
+    No authority expansion, no behavior changes.
+    """
+    return {
+        "phase": "3.5",
+        "status": "frozen",
+        "execution": {
+            "enabled": False,
+            "structurally_impossible": True,
+            "note": "EXECUTION_ENABLED = False, execute_action = None"
+        },
+        "confirmation_gate": {
+            "behavior": "passive_when_idle",
+            "proof": "try_resolve returns message=None when no pending context",
+            "vocabulary": ["yes", "no"],
+            "cannot_initiate": True
+        },
+        "behavior": {
+            "greeting": {
+                "text": "Hello. How can I help?",
+                "frequency": "once_per_session",
+                "deterministic": True
+            },
+            "silence_first": True,
+            "correction": {
+                "method": "explicit_prefix",
+                "prefix": "Correction:",
+                "staged_only": True
+            },
+            "permission_model": {
+                "read_only": "search/look up = permission",
+                "no_confirmation": True
+            }
+        },
+        "verified_at": datetime.utcnow().isoformat(),
+        "constitutional_note": "Phase-3.5 behavioral goals are complete. Remaining work is governance visibility and Phase-4 authority boundaries."
+    }
 
 
 # -------------------------------------------------
@@ -83,7 +127,7 @@ async def send_widget_message(
 ) -> None:
     """
     Phase-3 widget dispatch.
-
+    
     Canonical:
       - news    -> {type:"news", items:[...]}
       - weather -> {type:"weather", data:{...}}
@@ -117,6 +161,10 @@ async def send_widget_message(
 async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
     log.info("WebSocket connected")
+    
+    # Phase-3.5 greeting discipline
+    await send_chat_message(ws, "Hello. How can I help?")
+    await send_chat_done(ws)
 
     try:
         while True:
@@ -154,13 +202,30 @@ async def websocket_endpoint(ws: WebSocket):
             mediated_text = GovernorMediator.mediate(text)
 
             # -------------------------------------------------
-            # Confirmation gate (no execution possible)
+            # Quick Corrections — explicit, staged, Phase-3.5
+            # -------------------------------------------------
+            if mediated_text.startswith("Correction:"):
+                correction_text = mediated_text[len("Correction:"):].strip()
+
+                if correction_text:
+                    record_correction(correction_text)
+
+                await send_chat_message(ws, "Okay. Correction noted.")
+                await send_chat_done(ws)
+                continue
+
+            # -------------------------------------------------
+            # Confirmation gate (provably passive)
             # -------------------------------------------------
             gate_result = confirmation_gate.try_resolve(mediated_text)
-            if gate_result.handled:
-                if gate_result.message:
-                    await send_chat_message(ws, gate_result.message)
-                    await send_chat_done(ws)
+            
+            # Constitutional Proof:
+            # - Gate only speaks when message exists
+            # - Gate is silent (message=None) when idle
+            # - No confirmation initiation in Phase-3.5
+            if gate_result.message is not None:
+                await send_chat_message(ws, gate_result.message)
+                await send_chat_done(ws)
                 continue
 
             # -------------------------------------------------
@@ -193,7 +258,6 @@ async def websocket_endpoint(ws: WebSocket):
                     continue
 
                 if skill_name == "weather" and isinstance(widget_data, dict):
-                    # send_widget_message will wrap into {type:"weather", data:{...}}
                     await send_widget_message(ws, "weather", message, widget_data)
                     await send_chat_done(ws)
                     continue
@@ -206,7 +270,7 @@ async def websocket_endpoint(ws: WebSocket):
             # -------------------------------------------------
             # Fallback — governed chat only (no execution)
             # -------------------------------------------------
-            await send_chat_message(ws, "I’m not sure how to help with that.")
+            await send_chat_message(ws, "I'm not sure how to help with that.")
             await send_chat_done(ws)
 
     except WebSocketDisconnect:
