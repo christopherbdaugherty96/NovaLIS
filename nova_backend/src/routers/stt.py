@@ -4,7 +4,7 @@
 from fastapi import APIRouter, UploadFile, File
 from fastapi.responses import JSONResponse
 
-from src.services.stt_engine import transcribe_bytes
+from nova_backend.src.services.stt_engine import transcribe_bytes
 
 # IMPORTANT:
 # No prefix here. Full path is defined explicitly.
