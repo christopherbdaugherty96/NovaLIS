@@ -1,4 +1,14 @@
-﻿# Phase 3.5 Frozen Status Report
+﻿> ## 🔒 PHASE-3.5 STATUS UPDATE — CLOSED
+>
+> **Phase-3.5 is formally COMPLETE and CLOSED.**  
+> All Phase-3.5 acceptance criteria have been mechanically verified and CI-enforced, including execution quarantine, Governor containment, passive confirmation gating, and runtime refusal proofs.
+>
+> This document may reference Phase-3.5 as “active” for historical context only.  
+> **No Phase-3.5 work remains open.** Phase-4 remains hard-locked pending a separate unlock artifact.
+>
+> **Authoritative closure record:** `docs/PHASE_3.5_CLOSURE.md`
+------------------------------------------------
+# Phase 3.5 Frozen Status Report
 
 **Date:** 2026-02-09
 **Status:** 🔒 FROZEN (Execution Surface Guarantee Proven)
@@ -132,6 +142,6 @@ Nova's value is what it refuses to do — and can prove it cannot do.**
 
 ---
 
-## SIGNED: NOVA CANONICAL AUTHORITY
+## SIGNED: NOVA CANONICAL AUTHORITY- Chris D
 **DATE:** 2026-02-09
 **REFERENCE:** Nova Canonical Synthesis v5.1 - Phase-Aligned Truth

@@ -6,7 +6,6 @@ import tempfile
 import os
 import json
 from pathlib import Path
-
 from vosk import Model, KaldiRecognizer
 
 # --------------------------------------------------
@@ -20,10 +19,8 @@ FFMPEG_PATH = r"C:\Nova-Project\nova_backend\tools\ffmpeg\ffmpeg.exe"
 # Phase-3.5 SAFE: fail-closed, never crash Nova
 # --------------------------------------------------
 
-from pathlib import Path
-from vosk import Model
-
-VOSK_MODEL_PATH = Path("models/vosk-model-small-en-us-0.15")
+BASE_DIR = Path(__file__).resolve().parents[2]
+VOSK_MODEL_PATH = BASE_DIR / "models" / "vosk-model-small-en-us-0.15"
 
 _vosk_model = None
 
@@ -49,6 +46,7 @@ def get_vosk_model():
         return None
 
     _vosk_model = Model(str(VOSK_MODEL_PATH))
+    print("[STT] Vosk model loaded successfully")
     return _vosk_model
 
 
@@ -65,11 +63,15 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
         str: transcribed text (may be empty)
     """
 
+    print(f"[STT] Starting transcription - Received {len(audio_bytes)} bytes")
+    
     if not audio_bytes:
+        print("[STT] No audio bytes received, returning empty")
         return ""
 
     # Ensure filename is always valid
     safe_name = filename or "audio.webm"
+    print(f"[STT] Processing file: {safe_name}")
 
     with tempfile.TemporaryDirectory() as tmpdir:
         input_path = os.path.join(tmpdir, safe_name)
@@ -91,17 +93,26 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
         ]
 
         try:
+            print("[STT] Converting audio to WAV format...")
             subprocess.run(
                 ffmpeg_cmd,
                 stdout=subprocess.DEVNULL,
                 stderr=subprocess.DEVNULL,
                 check=True,
             )
+            print("[STT] Audio conversion successful")
         except subprocess.CalledProcessError:
+            print("[STT] Audio conversion failed")
             return ""
 
-        # Transcribe WAV
-        recognizer = KaldiRecognizer(vosk_model, 16000)
+        # Transcribe WAV - CORRECTED: Use lazy-loaded model
+        model = get_vosk_model()
+        if model is None:
+            print("[STT] Model unavailable, transcription disabled")
+            return ""  # Phase-3.5: STT disabled, fail closed
+
+        print("[STT] Model available, starting transcription...")
+        recognizer = KaldiRecognizer(model, 16000)
 
         with open(wav_path, "rb") as wf:
             while True:
@@ -114,6 +125,9 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
 
         try:
             parsed = json.loads(result)
-            return parsed.get("text", "").strip()
+            text = parsed.get("text", "").strip()
+            print(f"[STT] Transcription completed: '{text}' ({len(text)} chars)")
+            return text
         except json.JSONDecodeError:
+            print("[STT] JSON parse error in transcription result")
             return ""
