@@ -1,0 +1,1062 @@
+⚠️ PHASE NOTICE  
+Status: **Phase 5+ Design Only**  
+This document represents speculative future integration.  
+Nothing here is available or permitted in Phase-3.5 or Phase-4.
+
+
+------------------------
+
+
+Nova: Personal Intelligence Hub Architecture
+
+🏠 EXECUTIVE VISION
+
+Nova transforms from a governed intelligence container into a Personal Intelligence Hub—a local-first, user-sovereign system that orchestrates smart devices, sensors, and data without ever assuming decision authority. It remains fully governed, transparent, and orthogonally structured while becoming the central nervous system for personal environments.
+
+---
+
+🎯 CORE PRINCIPLES (IMMUTABLE)
+
+1. Local-First Sovereignty
+
+· Runs on Raspberry Pi, personal server, or dedicated hardware
+· Zero external AI dependencies for core cognition
+· All data stays local unless explicitly exported
+· User owns the entire stack
+
+2. Intelligence-Authority Split Maintained
+
+```
+Devices = Data sources & actuators
+Nova Agents = Intelligence lenses
+User = Decision authority
+Governor = Single choke point enforcement
+```
+
+3. Orthogonal Integration
+
+Each device/sensor/API becomes an input agent or output agent, not a cognitive agent. They feed data to cognitive agents or execute user-approved actions.
+
+---
+
+🏗️ EXTENDED ARCHITECTURE
+
+System Overview
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    User Environment                          │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐    │
+│  │  Camera  │  │ Thermostat│  │   IoT    │  │  Smart   │    │
+│  │   Agent  │  │   Agent   │  │  Sensors │  │  Lights  │    │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘    │
+│       │              │              │              │         │
+└───────┼──────────────┼──────────────┼──────────────┼─────────┘
+        │              │              │              │
+        └──────────────┼──────────────┼──────────────┘
+                       │              │
+                ┌──────▼──────────────▼──────┐
+                │       Governor Spine        │
+                │   (Single Choke Point)      │
+                └──────────────┬──────────────┘
+                               │
+               ┌───────────────▼─────────────────┐
+               │     Orthogonal Agent Stack      │
+               │  (Cognitive Intelligence)       │
+               │  • Audit Agent                  │
+               │  • Memory Agent                 │
+               │  • Assumption Agent             │
+               │  • Structural Agent             │
+               │  • Contradiction Aggregator     │
+               └───────────────┬─────────────────┘
+                               │
+               ┌───────────────▼─────────────────┐
+               │    Personality Agent            │
+               │  (Social Intelligence)          │
+               │  • Presents raw outputs         │
+               │  • Manages routines             │
+               │  • Zero synthesis               │
+               └───────────────┬─────────────────┘
+                               │
+                    ┌──────────▼──────────┐
+                    │        User         │
+                    │  (Decision Maker)   │
+                    └─────────────────────┘
+```
+
+New Agent Categories
+
+Device/Sensor Input Agents
+
+```python
+class DeviceInputAgent(Agent):
+    """
+    Reads device/sensor data without interpretation.
+    """
+    def read(self, device: Device) -> RawData:
+        # Returns raw measurements
+        return {
+            "device": device.id,
+            "timestamp": now(),
+            "readings": device.get_readings(),
+            "units": device.units,
+            "accuracy": device.accuracy,
+            # NO interpretation
+            # NO "this is high/low"
+            # NO "you should adjust"
+        }
+```
+
+Actuator Output Agents
+
+```python
+class ActuatorAgent(Agent):
+    """
+    Executes device actions with explicit user approval.
+    """
+    def execute(self, action: Action) -> ExecutionResult:
+        # Must have Governor approval
+        if not self.governor.approve_action(action):
+            return ExecutionResult(
+                success=False,
+                reason="Governor rejected",
+                # NO retry suggestion
+            )
+        
+        # Execute with timeout
+        result = self.device.execute(action)
+        
+        return ExecutionResult(
+            success=result.success,
+            execution_id=result.id,
+            timestamp=now(),
+            audit_trail=result.audit_trail
+        )
+```
+
+Routine Agent
+
+```python
+class RoutineAgent(Agent):
+    """
+    Manages user-defined routines as agent sequences.
+    """
+    def execute_routine(self, routine_id: str) -> RoutineExecution:
+        """
+        Runs predefined agent sequence with transparency.
+        """
+        routine = self.routine_store.get(routine_id)
+        
+        # Present routine plan to user
+        plan = self._create_execution_plan(routine)
+        
+        # Personality Agent presents plan
+        self.personality_agent.present_plan(plan)
+        
+        # Wait for explicit user confirmation
+        if not self._get_user_confirmation():
+            return RoutineExecution(
+                status="CANCELLED_BY_USER",
+                # NO persuasion to continue
+            )
+        
+        # Execute each step with Governor oversight
+        results = []
+        for step in routine.steps:
+            step_result = self.governor.execute_step(step)
+            results.append(step_result)
+            
+            # Present each result as it happens
+            self.personality_agent.present_step_result(step, step_result)
+            
+            # Check for required confirmations
+            if step.requires_confirmation:
+                if not self._get_user_confirmation():
+                    return RoutineExecution(
+                        status="PAUSED_AT_STEP",
+                        completed_steps=results,
+                        # NO "you should continue"
+                    )
+        
+        return RoutineExecution(
+            status="COMPLETED",
+            results=results,
+            audit_trail=self._generate_audit_trail(routine, results)
+        )
+```
+
+---
+
+🔌 DEVICE INTEGRATION PATTERNS
+
+1. Stateless Device Agents
+
+Each device gets its own agent with:
+
+· Read-only data access (unless actuator)
+· No persistent state (ephemeral connections)
+· No inter-device communication (through Governor only)
+· No inference (raw data only)
+
+2. Multi-Modal Awareness Architecture
+
+```
+Camera → Camera Agent → Raw frames/video → [if user approved] → 
+          ↓
+  Object Detection Agent → Labels only (no interpretation)
+          ↓
+  Privacy Filter Agent → Blurs/removes sensitive content
+          ↓
+  Presentation via Personality Agent
+
+Microphone → Audio Agent → Raw audio → [if user approved] →
+          ↓
+  Speech-to-Text Agent → Text only (no intent inference)
+          ↓
+  Command Detection Agent → Matches to known commands
+          ↓
+  Presentation via Personality Agent
+
+Sensors → Sensor Agent → Raw measurements → 
+          ↓
+  Trend Agent → Data patterns only (no predictions)
+          ↓
+  Anomaly Agent → Statistical deviations only
+          ↓
+  Presentation via Personality Agent
+```
+
+3. Contradiction Detection Example
+
+```python
+class MultiModalContradictionAgent(Agent):
+    """
+    Detects contradictions across device/sensor inputs.
+    """
+    def analyze(self, device_readings: Dict[str, RawData]) -> ContradictionReport:
+        report = ContradictionReport()
+        
+        # Example: Temperature contradictions
+        indoor_temp = device_readings["living_room_thermostat"]["temperature"]
+        weather_temp = device_readings["weather_api"]["current_temp"]
+        
+        if abs(indoor_temp - weather_temp) > 10:  # Large discrepancy
+            report.add_contradiction(
+                sources=["living_room_thermostat", "weather_api"],
+                measurements=[indoor_temp, weather_temp],
+                contradiction="Temperature discrepancy >10°",
+                # NO "which is correct?"
+                # NO "probable cause is..."
+            )
+        
+        return report
+```
+
+---
+
+🔄 ROUTINE MANAGEMENT SYSTEM
+
+Routine Definition Language
+
+```yaml
+routine:
+  id: "morning_routine_v1"
+  name: "Morning Wake-up"
+  requires_explicit_activation: true
+  audit_level: "full"
+  
+  steps:
+    - step: 1
+      agent: "weather_agent"
+      action: "get_forecast"
+      params: {"hours_ahead": 12}
+      requires_confirmation: false
+      
+    - step: 2
+      agent: "calendar_agent" 
+      action: "get_today_events"
+      params: {}
+      requires_confirmation: false
+      
+    - step: 3
+      agent: "smart_lights_agent"
+      action: "turn_on"
+      params: {"device": "bedroom_lamp", "brightness": 30}
+      requires_confirmation: true  # User must confirm device control
+      
+    - step: 4
+      agent: "coffee_maker_agent"
+      action: "start_brew"
+      params: {"strength": "medium"}
+      requires_confirmation: true
+      
+    - step: 5
+      agent: "news_agent"
+      action: "get_headlines"
+      params: {"categories": ["technology", "world"]}
+      requires_confirmation: false
+      
+  presentation_template: "morning_routine_v1_presentation.md"
+```
+
+Routine Execution Flow
+
+```
+1. User: "Start morning routine"
+2. Personality Agent: "I'll run Morning Wake-up routine. Steps:
+   - Get weather forecast (no confirmation needed)
+   - Check calendar (no confirmation needed)
+   - Turn on bedroom lights (requires confirmation)
+   - Start coffee maker (requires confirmation)
+   - Get news headlines (no confirmation needed)
+   
+   No steps will be synthesized or prioritized.
+   Proceed?"
+3. User: "Proceed"
+4. Governor executes each step, presenting raw outputs
+5. At confirmation steps: "Turn on bedroom lights? [Yes/No]"
+6. After completion: "Routine complete. Raw outputs available."
+```
+
+Conditional Routines (Phase 5.1+)
+
+```yaml
+conditional_routine:
+  id: "energy_saver_v1"
+  conditions:
+    - condition: "time_of_day"
+      value: "22:00-06:00"
+    - condition: "no_motion_detected"
+      duration: "30 minutes"
+      sensor: "living_room_motion"
+      
+  actions:
+    - agent: "smart_plugs_agent"
+      action: "turn_off"
+      devices: ["tv_plug", "game_console_plug"]
+      requires_confirmation: true  # ALWAYS for conditional triggers
+```
+
+---
+
+🔐 GOVERNANCE EXTENSIONS FOR DEVICE CONTROL
+
+New Constitutional Amendments
+
+```
+Article 11: Device and Routine Governance
+
+11.1 Device Access Principle
+     a) Devices are data sources or actuators, not cognitive agents
+     b) Device agents output raw data only, no interpretation
+     c) Actuator agents require explicit user approval per action
+     d) No device may autonomously control another device
+
+11.2 Routine Execution Principle
+     a) Routines are predefined sequences of agent invocations
+     b) Each routine step's output is presented raw to user
+     c) User may pause, modify, or cancel at any step
+     d) No routine may include hidden or inferred steps
+
+11.3 Multi-Modal Data Principle
+     a) Sensor data is processed locally by default
+     b) Privacy filters must be applied before storage/display
+     c) Contradictions between sensors are surfaced, not resolved
+     d) No sensor fusion that creates synthetic interpretations
+
+11.4 Local-First Principle
+     a) Core cognition operates without external AI
+     b) External APIs are optional enhancements, not requirements
+     c) User data never leaves local environment without explicit export
+     d) System remains functional during network outages
+```
+
+Approval Matrix for Device Actions
+
+```python
+DEVICE_ACTION_APPROVAL_MATRIX = {
+    "read_temperature": {
+        "phase": "4.2",
+        "approval": "none",
+        "audit": "basic"
+    },
+    "turn_on_light": {
+        "phase": "5.0", 
+        "approval": "explicit",
+        "audit": "full",
+        "confirmation_required": True
+    },
+    "adjust_thermostat": {
+        "phase": "5.1",
+        "approval": "explicit",
+        "audit": "full+video",
+        "confirmation_required": True,
+        "safety_check": True  # Prevents extreme temps
+    },
+    "start_appliance": {
+        "phase": "5.2",
+        "approval": "explicit+reason",
+        "audit": "complete",
+        "confirmation_required": True,
+        "safety_check": True,
+        "energy_check": True  # Checks energy limits
+    }
+}
+```
+
+---
+
+🎭 PERSONALITY AGENT ENHANCEMENTS
+
+Device-Aware Presentation
+
+```python
+class DevicePersonalityExtension:
+    """
+    Extends Personality Agent for device/routine interactions.
+    """
+    def present_device_data(self, device_readings: Dict) -> str:
+        """
+        Presents device data without interpretation.
+        """
+        presentation = []
+        
+        for device_id, readings in device_readings.items():
+            presentation.append(f"### {device_id}")
+            presentation.append(f"*Last updated: {readings['timestamp']}*")
+            presentation.append("")
+            
+            # Present raw readings
+            for key, value in readings['data'].items():
+                presentation.append(f"- {key}: {value} {readings.get('units', {}).get(key, '')}")
+            
+            presentation.append("")
+            presentation.append("*These are raw measurements. No interpretation provided.*")
+            presentation.append("---")
+        
+        return "\n".join(presentation)
+    
+    def present_routine_plan(self, routine: Routine) -> str:
+        """
+        Presents routine execution plan without persuasion.
+        """
+        plan = []
+        
+        plan.append(f"## Routine: {routine.name}")
+        plan.append(f"ID: {routine.id}")
+        plan.append("")
+        plan.append("### Steps")
+        
+        for i, step in enumerate(routine.steps, 1):
+            confirmation = "✓" if not step.requires_confirmation else "[Requires confirmation]"
+            plan.append(f"{i}. {step.agent}.{step.action} {confirmation}")
+        
+        plan.append("")
+        plan.append("### Important")
+        plan.append("- No steps will be synthesized or prioritized")
+        plan.append("- You may pause or cancel at any step")
+        plan.append("- Each step's output will be presented raw")
+        plan.append("- I will not suggest modifications or optimizations")
+        plan.append("")
+        plan.append("Proceed with this exact sequence?")
+        
+        return "\n".join(plan)
+```
+
+Multi-Modal Awareness Interface
+
+```python
+    def present_multi_modal_awareness(self, sensor_data: Dict) -> str:
+        """
+        Presents data from multiple sensors without fusion.
+        """
+        presentation = []
+        
+        presentation.append("## Current Environment State")
+        presentation.append("*Raw sensor data. No inference or fusion.*")
+        presentation.append("")
+        
+        # Group by sensor type
+        for sensor_type, sensors in self._group_by_type(sensor_data).items():
+            presentation.append(f"### {sensor_type.replace('_', ' ').title()}")
+            
+            for sensor_id, data in sensors.items():
+                presentation.append(f"**{sensor_id}**:")
+                for reading in data['readings']:
+                    presentation.append(f"  - {reading['metric']}: {reading['value']} {reading.get('unit', '')}")
+            
+            presentation.append("")
+        
+        # Present contradictions if any
+        contradictions = self.contradiction_agent.analyze(sensor_data)
+        if contradictions:
+            presentation.append("### Sensor Contradictions")
+            presentation.append("*These are discrepancies, not errors. You decide which is correct.*")
+            
+            for contradiction in contradictions:
+                presentation.append(f"- {contradiction['description']}")
+                presentation.append(f"  Sources: {', '.join(contradiction['sources'])}")
+                presentation.append(f"  Values: {contradiction['values']}")
+            
+            presentation.append("")
+        
+        return "\n".join(presentation)
+```
+
+---
+
+🏠 DEPLOYMENT ARCHITECTURE
+
+Hardware Requirements
+
+```
+Minimum (Raspberry Pi 4):
+- 4GB RAM
+- 32GB SD card
+- WiFi/Bluetooth
+- Optional: Camera module, temperature sensors
+
+Recommended (Home Server):
+- 8GB RAM
+- 128GB SSD
+- Docker support
+- USB ports for devices
+- POE for cameras
+
+Advanced (Dedicated Hub):
+- 16GB RAM  
+- 256GB NVMe
+- GPU for local ML
+- Zigbee/Z-Wave support
+- UPS backup
+```
+
+Software Stack
+
+```
+Base OS: Raspberry Pi OS / Ubuntu Server
+Container: Docker
+Core Services:
+  - Nova Governor
+  - Orthogonal Agent Stack
+  - Personality Agent
+  - Device Agents
+  - Routine Engine
+  - Audit Database (SQLite/PostgreSQL)
+  - Local Vector Database (for memory)
+
+Local AI Models (Optional):
+  - Whisper (speech-to-text)
+  - Piper (text-to-speech)
+  - YOLO (object detection)
+  - Local LLM (7B parameter)
+```
+
+Network Architecture
+
+```
+Local Network Only (Default):
+Nova Hub ─┬─ WiFi ── Smart Devices
+          ├─ Bluetooth ── Wearables
+          ├─ Zigbee ── Sensors
+          └─ Ethernet ── Cameras
+
+Optional External Access (User-Configured):
+VPN → Nova Hub (read-only status)
+          ↓
+      User Mobile App
+```
+
+---
+
+🚀 IMPLEMENTATION ROADMAP
+
+Phase 5.0: Device Integration Foundation
+
+```
+Months 1-3:
+├── Device Agent Framework
+├── Basic sensor integration (temperature, motion)
+├── Simple routines (time-based triggers)
+├── Local-first deployment scripts
+└── Enhanced Personality Agent for devices
+
+Months 4-6:
+├── Actuator support (lights, plugs)
+├── Routine editor UI
+├── Multi-modal contradiction detection
+└── Privacy filtering for cameras/microphones
+```
+
+Phase 5.1: Advanced Orchestration
+
+```
+Months 7-9:
+├── Conditional routines (sensor-based triggers)
+├── Energy monitoring agents
+├── Cross-device safety checks
+└── Local AI model integration
+
+Months 10-12:
+├── Predictive maintenance agents (data only, no actions)
+├── Advanced visualization of device states
+├── Team/household collaboration features
+└── Backup/restore system
+```
+
+Phase 5.2: Ecosystem Integration
+
+```
+Months 13-15:
+├── Home Assistant integration
+├── Apple HomeKit / Google Home bridges
+├── IFTTT compatibility (governed)
+└── Advanced privacy controls
+
+Months 16-18:
+├── Federated learning (opt-in)
+├── Community routine sharing
+├── Advanced anomaly detection
+└── Professional monitoring interfaces
+```
+
+---
+
+🔒 SECURITY & PRIVACY
+
+Data Flow Control
+
+```
+Raw Sensor Data → Privacy Filter → Local Processing → [if user approved] → Presentation
+                             ↓
+                       Never leaves local
+                       unless explicitly
+                       exported by user
+```
+
+Privacy Filters
+
+```python
+class PrivacyFilterAgent(Agent):
+    """
+    Applies privacy filters to sensitive data.
+    """
+    FILTERS = {
+        "camera": [
+            BlurFacesFilter(),
+            RemoveLicensePlatesFilter(),
+            BlurTextFilter(),
+        ],
+        "microphone": [
+            RemoveNamesFilter(),
+            AnonymizeVoicesFilter(),
+        ],
+        "location": [
+            ReducePrecisionFilter(accuracy=100),  # 100m precision
+            RemoveHomeLocationFilter(),
+        ]
+    }
+    
+    def apply(self, data: RawData, data_type: str) -> FilteredData:
+        """
+        Applies filters based on user privacy settings.
+        """
+        filtered = data.copy()
+        
+        for filter in self.FILTERS.get(data_type, []):
+            if filter.should_apply(data, self.user_privacy_settings):
+                filtered = filter.apply(filtered)
+        
+        return FilteredData(
+            data=filtered,
+            filters_applied=[f.name for f in applied_filters],
+            original_hash=hash(data),  # For audit
+            filtered_hash=hash(filtered)
+        )
+```
+
+Access Control Matrix
+
+```yaml
+access_control:
+  user:
+    - full_control: true
+    - can_add_devices: true
+    - can_create_routines: true
+    - can_export_data: true
+  
+  family_member:
+    - full_control: false
+    - can_view_devices: ["living_room", "kitchen"]
+    - can_trigger_routines: ["morning", "evening"]
+    - can_export_data: false
+  
+  guest:
+    - full_control: false
+    - can_view_devices: []
+    - can_trigger_routines: []
+    - temporary_access: "24 hours"
+```
+
+---
+
+📊 SUCCESS METRICS
+
+Governance Metrics
+
+· Zero autonomy violations: No device actions without explicit approval
+· Full transparency: All routine steps logged and auditable
+· Privacy compliance: No data leaks beyond user-configured boundaries
+
+User Experience Metrics
+
+· Latency: <2s for routine execution
+· Reliability: 99.9% uptime for core services
+· Usability: Routine creation <5 minutes
+
+Technical Metrics
+
+· Local processing: >95% of data processed locally
+· Energy efficiency: <10W average power consumption
+· Storage efficiency: 90-day audit logs <1GB
+
+---
+
+🎯 THE NOVA PROMISE: PERSONAL INTELLIGENCE HUB
+
+"A system that shows you everything, decides nothing, and empowers you completely."
+
+What Nova Is
+
+· Your personal intelligence orchestrator
+· A transparent window into your environment
+· A tool for creating custom automations
+· A local-first, privacy-respecting system
+
+What Nova Is Not
+
+· An autonomous smart home controller
+· A cloud-dependent service
+· A decision-maker for your life
+· A black box of "magic" automation
+
+The Ultimate Test
+
+```
+"Could I unplug Nova for a week and still understand 
+exactly what my routines were doing and why?"
+
+If yes → Nova succeeded (transparency)
+If no → Nova failed (opacity)
+```
+
+---
+
+✅ VERIFICATION CHECKLIST FOR PERSONAL INTELLIGENCE HUB
+
+Before Device Integration
+
+· All orthogonal agents functional without devices
+· Personality Agent strictly non-synthetic
+· Governor single choke point proven
+· Audit system logs all interactions
+
+Device Integration Readiness
+
+· Device agent framework complete
+· Approval matrix for all device actions
+· Privacy filters for all sensor types
+· Routine engine with transparency
+
+Deployment Readiness
+
+· Local-first deployment scripts
+· Hardware compatibility verified
+· Backup/restore system
+· Security audit completed
+
+User Safety
+
+· No device can autonomously control another
+· All actions require explicit or pre-approved consent
+· Emergency stop functions for all routines
+· Physical safety interlocks where applicable
+
+---
+
+Document Status: Phase 5.0 Architecture Specification
+Governance Status: Extended but maintained
+Risk Level: Medium (new complexity, same governance)
+Recommendation: ✅ Proceed with phased implementation
+Storage: /docs/canon/hub/personal-intelligence-hub.md
+
+
+
+
+
+
+     
+
+
+
+
+
+
+
+
+
+
+
+     
+
+
+
+
+
+
+Nova Personal Intelligence Hub: Architecture Map
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                                                                             │
+│                     NOVA PERSONAL INTELLIGENCE HUB                          │
+│         Governed Intelligence • Local-First • User-Sovereign                │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                            LOCAL ENVIRONMENT                                │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐           │
+│  │   CAMERAS  │  │  SENSORS   │  │  SPEAKERS  │  │  DISPLAYS  │           │
+│  │  • Vision  │  │ • Temp     │  │ • Audio    │  │ • Status   │           │
+│  │  • Motion  │  │ • Motion   │  │ • Alerts   │  │ • Output   │           │
+│  │  • Privacy │  │ • Light    │  │ • TTS      │  │ • Visuals  │           │
+│  └─────┬──────┘  └─────┬──────┘  └─────┬──────┘  └─────┬──────┘           │
+│        │                │                │                │                 │
+│  ┌─────▼──────┐  ┌─────▼──────┐  ┌─────▼──────┐  ┌─────▼──────┐           │
+│  │   DEVICE   │  │   DEVICE   │  │   DEVICE   │  │   DEVICE   │           │
+│  │  AGENTS    │  │  AGENTS    │  │  AGENTS    │  │  AGENTS    │           │
+│  │  (Input)   │  │  (Input)   │  │ (Output)   │  │ (Output)   │           │
+│  └─────┬──────┘  └─────┬──────┘  └─────┬──────┘  └─────┬──────┘           │
+│        └─────────────────────────────────────────────────┘                 │
+│                                  │                                         │
+│                            ┌─────▼──────────────────┐                      │
+│                            │      GOVERNOR           │                      │
+│                            │  (Single Choke Point)   │                      │
+│                            │  • Phase Enforcement   │                      │
+│                            │  • Action Approval      │                      │
+│                            │  • Audit Logging        │                      │
+│                            │  • Emergency Stop       │                      │
+│                            └──────────┬─────────────┘                      │
+│                                       │                                     │
+│                  ┌────────────────────▼─────────────────────┐               │
+│                  │     ORTHOGONAL AGENT STACK               │               │
+│                  │  (Cognitive Intelligence)                │               │
+│                  │                                          │               │
+│   ┌──────────────┼──────────────┐    ┌─────────────────────┼──────────────┐│
+│   │   BUILDER    │    AUDIT     │    │    MEMORY          │  ASSUMPTION  ││
+│   │  • Creates   │  • Verifies  │    │  • Recalls        │  • Exposes    ││
+│   │  • Drafts    │  • Scrutinizes│    │  • Maps context   │  • Risks      ││
+│   └──────────────┴──────────────┘    └─────────────────────┴──────────────┘│
+│                                                                             │
+│   ┌──────────────┼──────────────┐    ┌─────────────────────┼──────────────┐│
+│   │  ARCHITECT   │CONTRADICTION │    │    ROUTINE         │ EXTERNALIZER ││
+│   │  • Structures│  • Detects   │    │  • Executes        │  • Prepares  ││
+│   │  • Organizes │  • Surfaces  │    │  • Sequences       │  • Tests     ││
+│   └──────────────┴──────────────┘    └─────────────────────┴──────────────┘│
+│                                                                             │
+│                  └────────────────────┬─────────────────────┘               │
+│                                       │                                     │
+│                            ┌──────────▼─────────────┐                      │
+│                            │   PERSONALITY AGENT    │                      │
+│                            │  (Social Intelligence) │                      │
+│                            │  • Conversational      │                      │
+│                            │  • Presentation        │                      │
+│                            │  • Zero Synthesis      │                      │
+│                            │  • Routine Interface   │                      │
+│                            └──────────┬─────────────┘                      │
+│                                       │                                     │
+│                            ┌──────────▼─────────────┐                      │
+│                            │        USER            │                      │
+│                            │  (Decision Authority)  │                      │
+│                            │  • Approves Actions    │                      │
+│                            │  • Synthesizes Outputs │                      │
+│                            │  • Defines Routines    │                      │
+│                            └────────────────────────┘                      │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                        SUPPORTING INFRASTRUCTURE                            │
+│                                                                             │
+│  ┌────────────┐  ┌────────────┐  ┌────────────┐  ┌────────────┐           │
+│  │   AUDIT    │  │   MEMORY   │  │   ROUTINE  │  │   DEVICE   │           │
+│  │  DATABASE  │  │  DATABASE  │  │   STORE    │  │   REGISTRY │           │
+│  │ • Logs all │  │ • Context  │  │ • Templates │  │ • State    │           │
+│  │   actions  │  │ • History  │  │ • Sequences │  │ • Config   │           │
+│  │ • Immutable│  │ • Learning │  │ • Triggers  │  │ • Health   │           │
+│  └────────────┘  └────────────┘  └────────────┘  └────────────┘           │
+│                                                                             │
+│  ┌─────────────────────────────────────────────────────────────────────┐   │
+│  │                         LOCAL AI MODELS                              │   │
+│  │  • Speech-to-Text  • Object Detection  • Local LLM  • TTS Engine    │   │
+│  │  (Optional)        (Privacy-filtered)  (7B param)   (Piper/Coqui)   │   │
+│  └─────────────────────────────────────────────────────────────────────┘   │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          KEY DATA FLOWS                                    │
+│                                                                             │
+│  1. SENSOR → DEVICE AGENT → GOVERNOR → COGNITIVE AGENT → PERSONALITY → USER│
+│     (Raw data only, no interpretation)                                      │
+│                                                                             │
+│  2. USER → PERSONALITY → GOVERNOR → ROUTINE AGENT → [ACTUATORS] → USER     │
+│     (Explicit approval at each confirmation point)                          │
+│                                                                             │
+│  3. CONTRADICTION → PERSONALITY → USER → DECISION                          │
+│     (Surfaced, not resolved)                                                │
+│                                                                             │
+│  4. EMERGENCY → GOVERNOR → [STOP ALL] → USER NOTIFICATION                  │
+│     (Absolute override)                                                     │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          GOVERNANCE BOUNDARIES                             │
+│                                                                             │
+│  │──────────────────────────────────────────────────────────────────────│  │
+│  │  NO CROSS-BOUNDARY COMMUNICATION WITHOUT GOVERNOR APPROVAL           │  │
+│  │                                                                      │  │
+│  │  DEVICES  │   AGENTS   │   PERSONALITY   │    USER     │             │  │
+│  │  ──────── │ ────────── │ ─────────────── │ ─────────── │             │  │
+│  │  Read/Act │  Analyze   │   Present       │   Decide    │             │  │
+│  │           │  (No act)  │   (No decide)   │             │             │  │
+│  └──────────────────────────────────────────────────────────────────────┘  │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          DEPLOYMENT OPTIONS                                │
+│                                                                             │
+│  ┌────────────┐        ┌────────────┐        ┌────────────┐               │
+│  │ RASPBERRY  │        │  HOME      │        │ DEDICATED  │               │
+│  │    PI      │        │  SERVER    │        │   HUB      │               │
+│  │  • 4GB RAM │        │ • 8GB RAM  │        │ • 16GB RAM │               │
+│  │  • 32GB SD │        │ • 128GB SSD│        │ • 256GB    │               │
+│  │  • Basic   │        │ • Full     │        │ • Advanced │               │
+│  │    agents  │        │   stack    │        │   features │               │
+│  └────────────┘        └────────────┘        └────────────┘               │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                          PHASE ROADMAP (SUMMARY)                           │
+│                                                                             │
+│  PHASE 5.0: Device Foundation    • Device agents, basic routines           │
+│  PHASE 5.1: Advanced Orchestration • Conditional routines, safety checks   │
+│  PHASE 5.2: Ecosystem Integration • HomeKit/Google Home, federated opts    │
+│                                                                             │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+QUICK REFERENCE GUIDE
+
+Core Components
+
+1. Devices → Sensors and actuators in the environment
+2. Device Agents → Stateless interfaces to devices (input/output)
+3. Governor → Single choke point for all communication
+4. Orthogonal Agents → Specialized cognitive lenses (no overlap)
+5. Personality Agent → Conversational facade (no synthesis)
+6. User → Ultimate decision authority
+
+Key Principles
+
+· Intelligence-Authority Split: Cognitive agents analyze, Personality Agent presents, User decides
+· Local-First: All processing local by default
+· No Synthesis: Raw outputs only, no merging or interpretation
+· Explicit Approval: All actions require user confirmation
+· Full Audit: Every interaction logged and immutable
+
+Critical Boundaries
+
+· Device ↔ Agent: Only through Governor
+· Agent ↔ Agent: No direct communication
+· Personality ↔ Decision: Never crosses epistemic boundary
+· Local ↔ External: Opt-in only, with privacy filters
+
+Deployment Path
+
+1. Start: Raspberry Pi with basic sensors
+2. Expand: Add actuators and routines
+3. Scale: Dedicated hub with advanced features
+4. Integrate: Optional ecosystem connections
+
+Emergency Protocol
+
+```
+Physical Button → Governor → [STOP ALL]
+                                  ↓
+                          All routines paused
+                          All actuators safe state
+                          User notified immediately
+```
+
+PHASE IMPLEMENTATION CHECKLIST
+
+Phase 5.0 Ready?
+
+· Governor extended for device approval
+· Basic device agents (temperature, motion)
+· Personality Agent device presentation
+· Simple time-based routines
+· Local deployment scripts
+
+Phase 5.1 Ready?
+
+· Conditional routine engine
+· Multi-modal contradiction detection
+· Safety interlocks for actuators
+· Energy monitoring agents
+
+Phase 5.2 Ready?
+
+· Ecosystem bridges (Home Assistant, etc.)
+· Advanced privacy controls
+· Federated learning options
+· Professional monitoring interfaces
+
+THE NOVA PROMISE VISUALIZED
+
+```
+       ┌─────────────────────────────────────┐
+       │  TRANSPARENT  •  LOCAL  •  YOURS    │
+       └─────────────────────────────────────┘
+                    ╱            ╲
+          ┌─────────┐            ┌─────────┐
+          │  SHOWS  │            │  NEVER  │
+          │  EVERY- │            │  DECIDES│
+          │  THING  │            │  FOR YOU│
+          └─────────┘            └─────────┘
+                ╲                    ╱
+            ┌───────────────────────────┐
+            │    PERSONAL INTELLIGENCE  │
+            │           HUB             │
+            └───────────────────────────┘
+```
+
+NEXT STEPS (Based on Current Phase 3.5)
+
+1. Complete Phase 3.5 Verification → Prove governance walls hold
+2. Implement Orthogonal Agent Stack → Phase 4.2 foundation
+3. Add Personality Agent with strict validation → No synthesis boundary
+4. Begin Device Agent Framework → Phase 5.0 preparation
+5. Local Deployment Testing → Raspberry Pi proof of concept
+
+Current Status: Architecture designed, governance preserved, ready for incremental implementation starting from current Phase 3.5 foundation.
+
+Risk Level: Low (incremental, governed expansion)
+Novelty: High (unique approach to personal AI)
+Feasibility: High (builds on existing Nova architecture)
+

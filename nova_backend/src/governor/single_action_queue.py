@@ -14,3 +14,4 @@ class SingleActionQueue:
 
     def clear(self):
         self._pending = None
+
