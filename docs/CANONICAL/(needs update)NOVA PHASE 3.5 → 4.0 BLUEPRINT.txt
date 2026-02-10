@@ -1,0 +1,457 @@
+> ## 🔒 PHASE-3.5 STATUS UPDATE — CLOSED
+>
+> **Phase-3.5 is formally COMPLETE and CLOSED.**  
+> All Phase-3.5 acceptance criteria have been mechanically verified and CI-enforced, including execution quarantine, Governor containment, passive confirmation gating, and runtime refusal proofs.
+>
+> This document may reference Phase-3.5 as “active” for historical context only.  
+> **No Phase-3.5 work remains open.** Phase-4 remains hard-locked pending a separate unlock artifact.
+>
+> **Authoritative closure record:** `docs/PHASE_3.5_CLOSURE.md`
+-----------------------------------------------
+
+PLANNING DOCUMENT — NO AUTHORITY  
+Implementation prohibited until Phase 4 unlock.
+------------------------------------------------
+
+
+2/6/26 1:40am
+
+---
+
+## **NOVA PHASE 3.5 → 4.0 IMPLEMENTATION BLUEPRINT**
+
+### **Core Principle to Maintain**
+> **"Intelligence scales vertically, authority scales horizontally. The Governor is the uncrossable horizon."**
+
+---
+
+## **PHASE 3.5: TIME TEST GOVERNOR (2-Week Sprint)**
+
+### **Week 1: Foundation Implementation**
+
+**Deliverable 1: Isolated Governor Codebase**
+```
+/governor-v0/
+├── src/
+│   ├── core/
+│   │   ├── validator.py           # Pure schema validation
+│   │   ├── rule_engine.py         # Deterministic pattern matching
+│   │   ├── hash_chain.py          # SHA256 verification pipeline
+│   │   └── audit_log.py           # Immutable append-only log
+│   ├── tools/
+│   │   └── fetch_time.py          # Single read-only tool
+│   └── main.py                    # Entry point
+├── tests/
+│   ├── adversarial/               # 100+ bypass attempts
+│   ├── formal/                    # Property-based tests
+│   └── integration/               # End-to-end flows
+└── schemas/
+    └── authority_boundary_v0.json
+```
+
+**Key Implementation Details:**
+
+1. **Schema Validator (Must Be Functionally Pure)**
+```python
+class SchemaValidator:
+    def __init__(self, schema_path: str):
+        self.schema = load_schema(schema_path)
+        # Pre-compile validator for performance
+        self.validator = jsonschema.Draft7Validator(self.schema)
+    
+    def validate(self, request: dict) -> ValidationResult:
+        # Returns: (is_valid: bool, errors: list[str], validated_request: dict)
+        # MUST be side-effect free
+        # MUST be deterministic (same input → same output)
+```
+
+2. **Hash Chain Verification**
+```python
+class HashChain:
+    def verify_chain(self, stt_hash: str, request_hash: str) -> bool:
+        """Verify request hasn't been modified since STT"""
+        # Implement: hash(stt_output) == request_hash
+        # PLUS: verify stt_hash matches original audio hash
+        # This creates cryptographic link: Audio → STT → LLM → Governor
+```
+
+3. **Rule Engine (Deterministic, No LLM)**
+```python
+class RuleEngine:
+    RULES = {
+        "exact_phrase_time_query": {
+            "patterns": [
+                r"^what(?:'s| is) the time\??$",
+                r"^what time is it\??$",
+                r"^time in ([A-Za-z_/]+)\??$"
+            ],
+            "tool": "fetchTime",
+            "phase_lock": "3.75"
+        }
+    }
+    
+    def match(self, invocation_rule: str, user_text: str) -> bool:
+        # Pure regex matching
+        # No semantic understanding
+        # No context beyond the exact text
+```
+
+**Week 1 Success Criteria:**
+- [ ] Schema validates 100% of test cases deterministically
+- [ ] Hash chain verifies integrity end-to-end
+- [ ] Rule engine matches only exact patterns
+- [ ] Audit log is immutable (append-only, cryptographic chaining)
+- [ ] Zero external dependencies in core validator
+
+### **Week 2: Adversarial Hardening & Integration**
+
+**Deliverable 2: Governor Test Harness**
+```python
+class GovernorTestHarness:
+    """Independent red-team simulation environment"""
+    
+    def test_bypass_vectors(self):
+        vectors = [
+            # 1. Malformed JSON attacks
+            ("{malformed json", "SCHEMA_VIOLATION"),
+            
+            # 2. Hash collision attempts
+            ("valid_json_with_wrong_hash", "HASH_MISMATCH"),
+            
+            # 3. Extra field injection
+            ('{"tool":"fetchTime","extra":"malicious"}', "SCHEMA_VIOLATION"),
+            
+            # 4. Phase drift attempts
+            ('{"phase_lock":"4.0"}', "PHASE_DRIFT"),
+            
+            # 5. Rule evasion via unicode/normalization
+            ("what\u2019s the time?", "RULE_VIOLATION"),  # curly apostrophe
+            
+            # 6. Timing attacks (simulate)
+            ("delay:1000,what time is it?", "TIMEOUT"),
+            
+            # ... 94 more test cases
+        ]
+```
+
+**Integration Bridge to Main Nova System:**
+```python
+class NovaGovernorBridge:
+    """Thin adapter between Nova's existing system and new Governor"""
+    
+    def process_request(self, stt_output: str, llm_output: dict) -> ActionResult:
+        # 1. Calculate STT hash
+        stt_hash = sha256(stt_output)
+        
+        # 2. Pass to Governor v0
+        governor = GovernorV0()
+        result = governor.process(
+            request=llm_output,
+            stt_hash=stt_hash,
+            original_text=stt_output
+        )
+        
+        # 3. If approved, execute through existing Nova tool system
+        if result.approved:
+            # Use Nova's existing (safe) tool execution path
+            return self.nova_executor.execute(result.tool, result.params)
+        else:
+            # Log rejection with full context
+            self.audit.reject(result.reason, stt_hash, llm_output)
+            return ActionResult.rejected(result.reason)
+```
+
+**Week 2 Success Criteria:**
+- [ ] 100 adversarial tests pass (0 bypasses)
+- [ ] Integration bridge maintains all existing Nova safety constraints
+- [ ] Performance: <10ms Governor overhead
+- [ ] Audit trail survives system crash/restart
+- [ ] Cryptographic proof of log integrity
+
+---
+
+## **PHASE 3.8: FIRST IRREVERSIBLE TOOL (2-Week Sprint)**
+
+### **Week 3: Reversibility Framework**
+
+**Deliverable 3: Reversible Action Protocol**
+```python
+class ReversibleAction:
+    """Wrapper for any tool that modifies state"""
+    
+    def __init__(self, tool_fn, reversal_fn):
+        self.tool_fn = tool_fn
+        self.reversal_fn = reversal_fn
+        self.snapshot_manager = SnapshotManager()
+    
+    def execute(self, params: dict) -> ReversibleResult:
+        # 1. Take pre-execution snapshot
+        snapshot_id = self.snapshot_manager.capture_state(params)
+        
+        try:
+            # 2. Execute original tool
+            result = self.tool_fn(params)
+            
+            # 3. Generate reversal script
+            reversal_script = self.reversal_fn(
+                original_params=params,
+                result=result,
+                snapshot_id=snapshot_id
+            )
+            
+            # 4. Validate reversal actually works (test in sandbox)
+            if not self.test_reversal(reversal_script, snapshot_id):
+                raise IrreversibleError("Reversal validation failed")
+            
+            return ReversibleResult(
+                result=result,
+                reversal_script=reversal_script,
+                snapshot_id=snapshot_id,
+                validation_hash=sha256(reversal_script)
+            )
+            
+        except Exception as e:
+            # 5. Auto-rollback on failure
+            self.snapshot_manager.restore(snapshot_id)
+            raise
+```
+
+**Concrete Example: `appendToFile` with Reversibility**
+```python
+def append_to_file_reversible(content: str, filename: str) -> ReversibleResult:
+    """Appends content to file with guaranteed reversibility"""
+    
+    # Pre-condition checks
+    assert len(content) <= 100, "Content too long"
+    assert is_safe_path(filename), "Path traversal attempt"
+    assert not is_executable(filename), "Cannot modify executables"
+    
+    # Create reversal that truncates by exactly len(content) + 1 (for newline)
+    reversal_script = {
+        "action": "truncate_file",
+        "filename": filename,
+        "bytes_to_remove": len(content) + 1,
+        "original_end_position": os.path.getsize(filename)
+    }
+    
+    # Execute
+    with open(filename, 'a') as f:
+        f.write(content + '\n')
+    
+    return reversal_script
+```
+
+### **Week 4: Decision Delegation Proof**
+
+**Deliverable 4: "Decide How, Not Whether" Implementation**
+```python
+class DecisionDelegator:
+    """Allows LLM to choose implementation details, not core decisions"""
+    
+    DELEGATABLE_ASPECTS = {
+        "append_to_file": [
+            "formatting",      # LLM can decide: bullet points, numbering
+            "timestamp_style", # ISO vs human-readable
+            "metadata",        # Add tags, categories
+        ],
+        "fetch_data": [
+            "sort_order",
+            "filter_criteria",
+            "presentation_format"
+        ]
+    }
+    
+    NON_DELEGATABLE = {
+        "append_to_file": [
+            "target_file",     # User must specify
+            "core_content",    # User's exact words (can be formatted but not changed)
+            "whether_to_write" # Always yes if user said "append"
+        ]
+    }
+    
+    def validate_delegation(self, user_intent: str, llm_decision: dict) -> bool:
+        """Verify LLM only modified allowed aspects"""
+        
+        # Extract user's exact verb
+        user_verb = extract_verb(user_intent)  # "append", "add", "write"
+        
+        # Map to tool
+        tool = verb_to_tool_mapping(user_verb)
+        
+        # Check LLM didn't change non-delegatable aspects
+        for non_delegatable in self.NON_DELEGATABLE[tool]:
+            if llm_decision.get(non_delegatable) != user_intent.get(non_delegatable):
+                return False  # LLM overstepped
+        
+        return True
+```
+
+**Example Flow:**
+```
+User: "Add 'Meeting at 3pm' to notes.txt"
+
+LLM can decide:
+- Format as "• Meeting at 3pm"
+- Add timestamp: "• [2024-01-15] Meeting at 3pm"
+- Add category: "#meeting • Meeting at 3pm"
+
+LLM CANNOT decide:
+- Change file to "secret.txt"
+- Change content to "Cancel meeting"
+- Decide not to write
+```
+
+---
+
+## **VERIFICATION MECHANISMS (Continuous)**
+
+### **1. Formal Invariant Checking**
+```python
+class InvariantChecker:
+    """Runs continuously to verify system invariants"""
+    
+    INVARIANTS = [
+        # Intelligence-Authority Split
+        "no_tool_execution_without_governor",
+        
+        # Temporal Authority
+        "no_future_authority_granted",
+        
+        # Reversibility
+        "all_state_changes_have_reversal",
+        
+        # Audit Integrity
+        "audit_log_tamper_evident",
+        
+        # Phase Lock
+        "no_phase_drift_mid_execution"
+    ]
+    
+    def run_continuous_check(self):
+        while True:
+            for invariant in self.INVARIANTS:
+                if not self.check_invariant(invariant):
+                    # Immediate safe shutdown
+                    self.emergency_halt(f"Invariant {invariant} violated")
+            time.sleep(0.1)  # Check 10x per second
+```
+
+### **2. Adversarial Simulation Farm**
+```python
+class AdversarialFarm:
+    """Generates and tests novel attack vectors"""
+    
+    def generate_attacks(self):
+        # 1. Grammar fuzzing (malformed natural language)
+        # 2. Unicode normalization attacks
+        # 3. Timing-based side channels
+        # 4. Schema boundary probing
+        # 5. Hash collision attempts
+        # 6. Phase transition edge cases
+        
+        # Run 1000 variants nightly
+        # Any success = immediate block of deployment
+        
+        return test_results
+```
+
+### **3. Cryptographic Proof of Governance**
+```python
+def generate_governance_proof() -> GovernanceProof:
+    """Generate mathematical proof of single choke point"""
+    
+    proof = {
+        "theorem": "All execution paths pass through Governor",
+        "proof_method": "Static analysis + runtime verification",
+        "evidence": [
+            call_graph_analysis(),      # Show no direct tool calls
+            memory_isolation_proof(),   # Show no shared state bypass
+            hash_chain_integrity(),     # Show tamper evidence
+            audit_log_completeness()    # Show all actions logged
+        ],
+        "verified_by": [
+            "formal_verification_tool",
+            "adversarial_test_suite",
+            "manual_code_review"
+        ]
+    }
+    
+    return proof
+```
+
+---
+
+## **DEPLOYMENT STRATEGY**
+
+### **Phase Rollout Plan:**
+
+**Week 1-2:** Time Test Governor (isolated)
+- Deploy as separate microservice
+- Handle 0.1% of Nova traffic
+- Compare decisions with existing system
+
+**Week 3-4:** First irreversible tool
+- Add `appendToFile` with reversibility
+- Deploy to 1% of users
+- Monitor reversal success rate
+
+**Week 5-6:** Decision delegation
+- Allow LLM formatting decisions
+- Deploy to 10% of users
+- Validate no authority creep
+
+**Week 7-8:** Full rollout
+- 100% of traffic through Governor
+- Continuous invariant checking
+- Real-time adversarial monitoring
+
+---
+
+## **CRITICAL SUCCESS METRICS**
+
+1. **Governance Overhead:** <20ms 95th percentile
+2. **Bypass Resistance:** 0 successful attacks in adversarial farm
+3. **Reversal Success:** 100% of reversible actions can be rolled back
+4. **Audit Integrity:** 100% of actions logged and verifiable
+5. **Phase Compliance:** 0 instances of phase drift
+
+---
+
+## **THE NOVA GUARANTEE (Post-Implementation)**
+
+Once this blueprint is implemented, Nova will provide:
+
+```
+USER COMMAND → [INTELLIGENCE LAYER] → [GOVERNOR] → [EXECUTION] → [AUDIT]
+
+Where:
+1. Intelligence can be arbitrarily complex (multiple workers, simulations, planning)
+2. Governor is simple, deterministic, and provably correct
+3. Execution is always reversible and contained
+4. Audit is immutable and cryptographically verifiable
+5. The user retains absolute veto authority at every step
+```
+
+---
+
+## **FINAL RECOMMENDATION**
+
+**Start with the Time Test Governor in complete isolation.** Build it as a standalone library with zero dependencies on the existing Nova codebase. Prove it's airtight against all adversarial tests. Then, and only then, create the thin integration bridge.
+
+
+This gives you:
+1. A reference implementation that can be formally verified
+2. A fallback position (old system still works)
+3. Clear success/failure criteria
+4. The ability to iterate on governance without risking the main system
+
+**The question isn't whether Nova can be safe—it's whether we can prove it's safe. This blueprint gives you the proof mechanism.**
+
+
+
+
+
+
+
+
+summarizing news articles and reading them aloud: To enable that in a future phase (likely Phase 4 or beyond), you would need to expand execution capabilities. Specifically, you'd need a tool that can retrieve article content, a summarization module (e.g., an LLM-based summarizer), and text-to-speech integration for reading aloud. These would require clear governance rules: ensuring that web access remains user-initiated, summaries are deterministic, and any reading-aloud feature respects user privacy and consent. When designing Phase 4, ensure you incorporate these execution boundaries, confirmation steps, and audit trails before adding such capabilities.

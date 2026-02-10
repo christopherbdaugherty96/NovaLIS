@@ -1,3 +1,14 @@
+> ## 🔒 PHASE-3.5 STATUS UPDATE — CLOSED
+>
+> **Phase-3.5 is formally COMPLETE and CLOSED.**  
+> All Phase-3.5 acceptance criteria have been mechanically verified and CI-enforced, including execution quarantine, Governor containment, passive confirmation gating, and runtime refusal proofs.
+>
+> This document may reference Phase-3.5 as “active” for historical context only.  
+> **No Phase-3.5 work remains open.** Phase-4 remains hard-locked pending a separate unlock artifact.
+>
+> **Authoritative closure record:** `docs/PHASE_3.5_CLOSURE.md`
+------------------------------------------------
+
 ![Phase 3 Complete](https://img.shields.io/badge/Phase--3-COMPLETE-brightgreen?style=flat-square)
 ![Phase 3.5 Frozen](https://img.shields.io/badge/Phase--3.5-FROZEN-blue?style=flat-square)
 ![Execution Disabled](https://img.shields.io/badge/Execution-DISABLED-red?style=flat-square)

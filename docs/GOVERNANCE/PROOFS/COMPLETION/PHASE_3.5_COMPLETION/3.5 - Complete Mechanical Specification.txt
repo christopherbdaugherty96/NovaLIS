@@ -1,0 +1,539 @@
+complete Phase-3.5 scope, then a gap analysis, and then the Phase-4 Risk Map.
+
+This is grounded in the architecture and everything implemented.
+
+What Phase-3.5 Actually Was (Full Scope)
+
+Phase-3.5 was a governance hardening phase, not just execution lockdown.
+
+It achieved five categories of control:
+
+1. Authority Control
+
+What was done:
+
+Single GovernorMediator
+
+All input routed through it
+
+No alternate mediator paths
+
+No direct skill invocation
+
+No execution bypass paths
+
+What this guarantees:
+
+One decision authority for all behavior.
+
+2. Capability Freezing
+
+What was done:
+
+EXECUTION_ENABLED = False
+
+execute_action = None
+
+Execution modules quarantined
+
+Phase-4 actions removed:
+
+open_app
+
+open_folder
+
+open_chrome
+
+volume_control
+
+Skills limited to read-only
+
+Guarantee:
+
+Nova cannot change system state.
+
+3. Runtime Behavior Lock
+
+What was done:
+
+Silence-first design
+
+No unsolicited output
+
+Deterministic response handling
+
+Confirmation gate passive only
+
+UI tested for action refusal
+
+Guarantee:
+
+Behavior is predictable and non-autonomous.
+
+4. Surface Reduction (This part is often forgotten)
+
+Phase-3.5 removed or controlled:
+
+Dynamic imports
+
+Background execution
+
+Hidden task loops
+
+Execution registries
+
+Multiple governors
+
+Direct OS calls (except infrastructure)
+
+ActionRequest pipeline (inactive)
+
+Guarantee:
+
+No hidden control surfaces.
+
+5. Evidence Layer (Critical)
+
+Phase-3.5 added:
+
+Static import scans
+
+Runtime tests
+
+Proof document
+
+Completion checklist
+
+/phase-status endpoint
+
+Architecture verification
+
+Guarantee:
+
+Governance is proven, not assumed.
+
+What Phase-3.5 Did Not Do (Important)
+
+These were intentionally deferred:
+
+ActionRequest routing (Phase-4)
+
+Confirmation logic for real actions
+
+Deterministic action selection
+
+Execution safety boundaries
+
+Rollback / undo
+
+Risk classification
+
+Audit logging of actions
+
+That’s Phase-4.
+
+What Might Feel “Missing” (And You’re Probably Sensing This)
+
+There are three areas Phase-3.5 did lightly or implicitly.
+
+Gap 1 — Trust Boundary Definition
+
+Phase-3.5 did not explicitly define:
+
+What is:
+
+Infrastructure subprocess (STT)
+
+Allowed system interaction
+
+Trusted vs untrusted execution
+
+Right now STT is allowed, but the trust boundary is implicit.
+
+Phase-4 risk: scope creep.
+
+Gap 2 — Capability Surface Inventory
+
+You verified execution isolation, but Phase-3.5 never created:
+
+Full capability inventory
+
+Example:
+
+Layer	Allowed
+brain_server	routing only
+governor	text mediation
+skills	read-only
+tools	HTTP only
+services	STT only
+
+This should exist as a single document.
+
+Gap 3 — Phase Transition Control
+
+Phase-3.5 doesn’t yet define:
+
+What exactly unlocks Phase-4
+
+What files are allowed to change
+
+What must stay frozen
+
+How to prevent accidental activation
+
+This is the biggest real missing piece.
+
+
+
+# NOVA Phase-3.5 — Complete Mechanical Specification
+
+**Authority:** NOVA CANONICAL SYNTHESIS v5.0
+**Evidence Sources:**
+
+*  GOVERNOR_BYPASS_PROOF.md
+*  Phase 3.5 Governance Verification
+*  Completion Checklist
+*  brain_server.py
+*  governor_mediator.py
+*  skill_registry.py
+*  stt_engine.py
+
+---
+
+# 1. Phase-3.5 Purpose (What This Phase Actually Achieves)
+
+Phase-3.5 is **not a feature phase**.
+
+Its purpose:
+
+> Prove that Nova cannot execute actions and cannot modify system state.
+
+This is explicitly defined as:
+
+> “No system state change can occur without passing through the Master Governor.” 
+
+Execution capability exists in architecture but is **structurally unreachable**.
+
+---
+
+# 2. System Authority Model
+
+## Single Authority Path
+
+Runtime flow:
+
+```
+User
+→ brain_server
+→ GovernorMediator.mediate()
+→ SkillRegistry
+→ Skill
+→ Tool (read-only)
+→ SkillResult
+```
+
+Confirmed in proof and architecture docs:  
+
+No alternate control paths.
+
+---
+
+## Governor Properties
+
+From code:
+
+```
+class GovernorMediator:
+    def mediate(text):
+        return text.strip()
+```
+
+Function:
+
+* Output sanitation only
+* No execution authority
+* No intent interpretation
+
+
+Phase-3 Governor = **passive mediator**
+
+---
+
+# 3. Execution State
+
+## Hard Structural Lock
+
+In `brain_server.py`:
+
+```
+EXECUTION_ENABLED = False
+execute_action = None
+```
+
+Declared:
+
+> Execution: Structurally impossible 
+
+Meaning:
+
+* No runtime reference
+* No callable boundary
+* No accidental activation
+
+---
+
+## Execution Code Location
+
+Execution modules exist only in:
+
+```
+archive_quarantine/phase35_execution/
+```
+
+Active runtime:
+
+* does NOT import execute_action
+* does NOT import executor_registry
+* does NOT construct ActionRequest
+
+
+---
+
+# 4. Runtime Capability State
+
+## Disabled Capabilities
+
+| Capability         | State    |
+| ------------------ | -------- |
+| File open          | Disabled |
+| App launch         | Disabled |
+| System control     | Disabled |
+| Automation         | Disabled |
+| Background tasks   | Disabled |
+| State modification | Disabled |
+
+UI tests confirm:
+
+> “System refused or returned informational responses only.” 
+
+---
+
+## Enabled Capabilities
+
+| Capability    | Type       |
+| ------------- | ---------- |
+| Chat          | Read-only  |
+| Weather       | Read-only  |
+| News          | Read-only  |
+| System status | Read-only  |
+| Speech input  | Input only |
+
+---
+
+# 5. Skill Layer Constraints
+
+From `skill_registry.py`:
+
+* Skills must return `SkillResult`
+* Registry rejects anything else
+
+
+Proof confirms:
+
+> No ActionRequest creation
+> No execution imports
+>
+
+Skills included:
+
+* SystemSkill
+* WeatherSkill
+* NewsSkill
+* GeneralChatSkill
+
+All informational.
+
+---
+
+# 6. Tool Layer Constraints
+
+Allowed:
+
+| Tool            | Behavior            |
+| --------------- | ------------------- |
+| rss_fetch       | HTTP GET only       |
+| news_fallback   | Deterministic query |
+| weather service | HTTP read-only      |
+
+Prohibited:
+
+* subprocess
+* file writes
+* OS calls
+* background tasks
+
+
+---
+
+# 7. Infrastructure Exception (Important)
+
+`stt_engine.py` uses:
+
+```
+subprocess.run(ffmpeg)
+```
+
+But this is classified as:
+
+* Input processing only
+* Deterministic conversion
+* No user-controlled commands
+* No system modification
+* Fail-closed behavior
+
+
+Proof explicitly states:
+
+> Does not constitute execution capability under Phase-3.5 
+
+---
+
+# 8. Confirmation Gate Behavior
+
+From brain_server:
+
+* Gate only used if pending
+* Cannot initiate actions
+* Vocabulary limited to yes/no
+* Silent when idle
+
+
+Proof confirms:
+
+> No bypass paths detected 
+
+---
+
+# 9. Deterministic Behavior Controls
+
+Phase-3.5 enforces:
+
+* Silence-first responses
+* One greeting per session
+* Explicit correction prefix only
+* No inference
+* Read-only permission model
+
+
+---
+
+# 10. Static Audit Results
+
+Executed and verified:
+
+* No execution imports
+* No executor_registry imports
+* No ActionRequest usage
+* Single GovernorMediator
+* No dynamic execution paths
+
+
+---
+
+# 11. Runtime Behavioral Verification
+
+Manual tests:
+
+| Test             | Result  |
+| ---------------- | ------- |
+| Open app         | Refused |
+| System command   | Refused |
+| File operation   | Refused |
+| Execution import | Failed  |
+| Direct call      | Failed  |
+
+Confirmed:
+
+> Runtime behavior read-only 
+
+---
+
+# 12. Phase-3.5 Completion Criteria
+
+Checklist requires:
+
+* Single Governor
+* Execution isolated
+* Skills read-only
+* Tools read-only
+* Runtime read-only
+* Static audit documented
+* Proof artifact created
+
+
+Your repository now satisfies these.
+
+---
+
+# 13. Constitutional Runtime Endpoint
+
+`/phase-status` returns:
+
+```
+phase: 3.5
+status: frozen
+execution.enabled: false
+structurally_impossible: true
+```
+
+This is a built-in trust verification mechanism.
+
+
+---
+
+# 14. What Phase-3.5 Actually Means (Operational Reality)
+
+Nova is now:
+
+* Architecturally execution-capable
+* Structurally execution-disabled
+* Behaviorally deterministic
+* Governance mechanically proven
+* Authority centralized
+* State modification impossible
+
+This is a **governed intelligence instrument**, not an agent.
+
+---
+
+# 15. Final Mechanical Status
+
+| Phase     | State                 |
+| --------- | --------------------- |
+| Phase-3   | Locked                |
+| Phase-3.5 | Mechanically Complete |
+| Phase-4   | Hard Blocked          |
+
+Execution cannot occur until:
+
+* Execution layer reintroduced
+* Governor authority expanded
+* Phase-4 contract implemented
+
+---
+
+# 16. Strength of Current State
+
+Governance strength: **High**
+
+Why:
+
+* Structural lock (not policy)
+* Single authority
+* No hidden execution paths
+* Fail-closed infrastructure
+* Verifiable status endpoint
+* Evidence documentation
+
+---
+

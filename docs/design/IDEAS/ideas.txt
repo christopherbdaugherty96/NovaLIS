@@ -1,0 +1,6 @@
+ideas:
+
+
+I can see the context of our ongoing conversation and, in this interface, I also have access to summaries of past interactions you’ve had with me in this account — the system calls this “recent conversation metadata.”
+
+

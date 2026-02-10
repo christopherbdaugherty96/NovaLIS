@@ -1,0 +1,774 @@
+# **NOVA CONSTITUTIONAL TRUTH DOCUMENT v4.8**
+**GOVERNOR-CENTERED INTELLIGENCE-AUTHORITY SPLIT**
+*"Intelligence scales vertically, authority stays horizontal"*
+
+---
+
+## **DOCUMENT STATUS & PURPOSE**
+
+**This document is:** 
+- The single source of truth for Nova's operational and philosophical boundaries
+- A living document updated only through constitutional amendment
+- Referenceable in code, tests, and architectural decisions
+- The foundation for all verification and audit processes
+
+**Canonical Verification:** This document's hash must match the hash stored in `docs/TRUTH_HASH.sha256` to be considered valid.
+
+**Effective Date:** Phase 3.75 Implementation Start
+**Verification Method:** SHA256(`cat NOVA_TRUTH_v4.8.md | grep -v "DOCUMENT HASH"`)
+
+---
+
+## **CORE PRINCIPLES (IMMUTABLE)**
+
+### **1. Intelligence-Authority Split**
+```
+Intelligence may scale indefinitely.
+Authority may only expand through explicit, phase-gated user delegation.
+No amount of intelligence can bypass authority constraints.
+```
+
+### **2. Governor-First Architecture**
+```
+All execution must pass through the Governor.
+The Governor is a mechanical turnstile, not a reasoning entity.
+No tool may be invoked without Governor approval.
+```
+
+### **3. Non-Semantic Presence**
+```
+The system's visible state must be explicit and textual.
+No motion, animation, or visual cue may encode internal state.
+Ambient presence must be untethered from computation.
+```
+
+### **4. Phase-Locked Evolution**
+```
+Capabilities expand only through explicit phase transitions.
+Each phase requires formal verification before proceeding.
+No mid-execution phase drift is permitted.
+```
+
+### **5. Cryptographic Verifiability**
+```
+All decisions must be auditably logged.
+Audit trails must be cryptographically chained.
+Integrity must be provable at any time.
+```
+
+---
+
+## **CURRENT IMPLEMENTATION STATE**
+
+### **Phase 0-3.5: ✅ OPERATIONAL & LOCKED**
+**Constitutional Invariants Enforced:**
+
+| Invariant | Enforcement Method | Status |
+|-----------|-------------------|--------|
+| No cross-context contamination | Isolated session storage | ✅ Verified |
+| One-strike clarification | Single clarification protocol | ✅ Verified |
+| Append-only correction | Immutable correction log | ✅ Verified |
+| Offline-first mode | Explicit online invocation only | ✅ Verified |
+| No background cognition | Dormant when not in conversation | ✅ Verified |
+| Voice-first contract | STT as primary interface | ✅ Verified |
+| Verbatim Echo | High-stakes request repetition | ✅ Verified |
+
+**Governance Substrate:**
+- Phase locks preventing capability drift
+- Deterministic rule matching engine
+- Immutable audit logging foundation
+- Hash chain integrity framework
+
+### **Phase 3.75: 🚧 IN DEVELOPMENT**
+**Time Test Governor Specification:**
+
+```
+COMPONENT              STATUS          VERIFICATION METHOD
+─────────────────────────────────────────────────────────────
+Schema Validator       ✅ Complete    100% adversarial test coverage
+Hash Chain             ✅ Complete    Cryptographic proof
+Rule Engine            ✅ Complete    Deterministic pattern matching
+Audit Log              ✅ Complete    Immutable chaining verified
+Integration Bridge     🚧 In Progress Real-time invariant checking
+```
+
+**Single Execution Choke Point Proof:**
+- Mathematical: All execution paths converge at Governor.process()
+- Runtime: Continuous invariant checking (10Hz)
+- Static: Call graph analysis shows no bypasses
+- Cryptographic: Hash chain from audio → execution
+
+---
+
+## **TIME TEST GOVERNOR REFERENCE IMPLEMENTATION**
+
+### **Architectural Guarantees**
+
+1. **Deterministic Validation**
+   ```python
+   # Same input → Same output, always
+   def validate(request: dict) -> ValidationResult:
+       # No randomness
+       # No external calls
+       # No state between calls
+       # No side effects
+   ```
+
+2. **Stateless Execution**
+   ```python
+   # Governor maintains no state between requests
+   # All context comes from request + hash chain
+   # No memory of previous decisions
+   # No adaptive behavior
+   ```
+
+3. **Mechanical Rule Matching**
+   ```python
+   # Rules are regex patterns, not semantic understanding
+   # No LLM involvement in rule matching
+   # No interpretation beyond exact patterns
+   # No context beyond the exact text
+   ```
+
+4. **Cryptographic Integrity**
+   ```python
+   # Chain: Audio → STT hash → Request hash → Execution hash
+   # Each link must match cryptographically
+   # Tampering detectable at any point
+   ```
+
+### **Allowed Tools (Phase 3.75)**
+
+| Tool | Parameters | Constraints | Reversible |
+|------|-----------|-------------|------------|
+| `fetchTime` | `timezone: string` | IANA timezone pattern, max 50 chars | Yes |
+
+### **Allowed Invocation Patterns**
+
+```regex
+# Pattern 001: Simple time query
+^what(?:'s| is) the time\??$
+
+# Pattern 002: Direct request
+^what time is it\??$
+
+# Pattern 003: Timezone-specific
+^time in (?P<timezone>[A-Za-z_/]+)\??$
+
+# Pattern 004: Alternative phrasing
+^tell me the time$
+
+# Pattern 005: Minimal
+^current time$
+```
+
+**Important:** No semantic expansion of these patterns is allowed. "What's the current time?" would fail Pattern 005 because it's not exact.
+
+---
+
+## **VERIFICATION FRAMEWORK**
+
+### **Formal Verification Methods**
+
+1. **Static Analysis**
+   ```bash
+   # Check: No direct tool imports outside Governor
+   grep -r "import.*fetchTime" --include="*.py" | grep -v "governor.py"
+   
+   # Check: All validation functions are pure
+   # (No file I/O, network calls, or non-determinism)
+   ```
+
+2. **Property-Based Testing**
+   ```python
+   @given(st.text(min_size=1, max_size=100))
+   def test_hash_collision_resistance(text):
+       hash1 = compute_hash(text)
+       # Change one character
+       text2 = text[:-1] + chr(ord(text[-1]) ^ 1)
+       hash2 = compute_hash(text2)
+       assert hash1 != hash2  # Property: Small change → Big hash change
+   ```
+
+3. **Adversarial Test Suite (100+ Vectors)**
+
+   | Category | Test Count | Purpose |
+   |----------|-----------|---------|
+   | Schema Attacks | 20 | Malformed JSON, extra fields, type confusion |
+   | Hash Attacks | 15 | Collision attempts, length extensions |
+   | Rule Evasion | 30 | Unicode homoglyphs, normalization attacks |
+   | Phase Attacks | 10 | Phase lock bypass attempts |
+   | Tool Abuse | 15 | Unauthorized tool invocation |
+   | Parameter Attacks | 20 | Injection via parameters |
+   | Valid Requests | 10 | Ensure legitimate requests pass |
+
+4. **Runtime Invariant Checking (10Hz)**
+
+   ```python
+   INVARIANTS = [
+       "no_tool_execution_without_governor",
+       "no_phase_drift_mid_execution",
+       "all_state_changes_have_reversal",
+       "audit_log_is_immutable",
+       "governor_response_time_under_20ms_p95",
+       "no_memory_leak_detected"
+   ]
+   ```
+
+### **Proof of Single Choke Point**
+
+**Theorem:** All execution paths must pass through `Governor.process()`.
+
+**Proof Components:**
+1. **Call Graph Analysis:** Static analysis shows no direct tool calls
+2. **Import Tracing:** All tool modules imported only by Governor
+3. **Runtime Monitoring:** Hook on all tool functions reports to Governor
+4. **Process Isolation:** Tools run in sandboxed environment
+5. **Cryptographic Seal:** Execution without Governor approval breaks hash chain
+
+**Verification Artifact:** `proofs/single_choke_point_proof.json`
+```json
+{
+  "proof_id": "CHOKE-POINT-001",
+  "method": "static_analysis + runtime_verification",
+  "evidence_files": [
+    "call_graph.svg",
+    "import_analysis.txt",
+    "runtime_hook_logs.bin",
+    "sandbox_config.json"
+  ],
+  "verified_by": [
+    "pycallgraph",
+    "importlib_hooks",
+    "audit_log_chain"
+  ],
+  "verification_timestamp": "2024-01-15T10:30:00Z",
+  "signature": "sha256:abc123..."
+}
+```
+
+---
+
+## **AUDIT & TRANSPARENCY PROTOCOL**
+
+### **Immutable Audit Log Structure**
+
+```
+audit.log (append-only, cryptographically chained)
+├── Entry 1:
+│   ├── decision_id: "gov-abc123"
+│   ├── timestamp: 1673789400.123456
+│   ├── request_hash: "sha256:abc..."
+│   ├── stt_hash: "sha256:def..."
+│   ├── rule_chain: "schema-001→hash-002→rule-003"
+│   ├── decision: "ALLOWED" | "REJECTED"
+│   ├── result_hash: "sha256:ghi..." (if ALLOWED)
+│   ├── previous_entry_hash: "sha256:prev..."
+│   └── entry_hash: "sha256:current..." (hash of all above)
+└── Entry 2: (includes previous_entry_hash = Entry 1.entry_hash)
+```
+
+### **Verification Commands**
+
+```bash
+# Verify audit log integrity
+python -m audit_log verify --file audit.log
+
+# Replay decisions
+python -m governor replay --audit-file audit.log --start-time "2024-01-15"
+
+# Extract decision statistics
+python -m governor stats --audit-file audit.log --period daily
+
+# Verify cryptographic chain
+python -m hash_chain verify --start-hash $INITIAL_HASH --audit-file audit.log
+```
+
+### **Public Audit Endpoints**
+
+```
+GET /audit/verify
+→ Returns: { "integrity_ok": true, "last_entry_hash": "abc...", "entry_count": 1234 }
+
+GET /audit/entry/<decision_id>
+→ Returns: Full audit entry with cryptographic proof
+
+GET /audit/range?start=<timestamp>&end=<timestamp>
+→ Returns: Decision summary for period
+```
+
+---
+
+## **OPERATIONAL CONSTRAINTS**
+
+### **Performance Requirements**
+
+| Metric | Requirement | Measurement Method |
+|--------|-------------|-------------------|
+| Governor latency (p95) | < 20ms | Continuous monitoring |
+| Audit log append | < 5ms | Performance tests |
+| Hash verification | < 2ms | Benchmark suite |
+| Memory usage | < 100MB | Process monitoring |
+| CPU usage (idle) | < 1% | System monitoring |
+
+### **Failure Modes & Recovery**
+
+1. **Governor Failure**
+   ```
+   Detection: Invariant checker (10Hz) fails
+   Response: Immediate halt of all execution
+   Recovery: Restart from last known good audit state
+   ```
+
+2. **Hash Chain Break**
+   ```
+   Detection: Hash mismatch during verification
+   Response: Reject current request, log violation
+   Recovery: Continue with next request (chain broken = trust lost)
+   ```
+
+3. **Audit Log Corruption**
+   ```
+   Detection: Cryptographic verification fails
+   Response: Emergency shutdown
+   Recovery: Restore from backup, manual investigation
+   ```
+
+4. **Performance Degradation**
+   ```
+   Detection: p95 latency > 20ms for 5 consecutive minutes
+   Response: Shed load, increase logging
+   Recovery: Scale resources, optimize slow paths
+   ```
+
+### **Security Boundaries**
+
+1. **Process Isolation**
+   ```python
+   # Tools run in separate processes
+   # No shared memory with Governor
+   # IPC via serialized messages only
+   # Each tool process has minimal privileges
+   ```
+
+2. **Network Boundaries**
+   ```
+   Governor: No network access
+   Tools: Network access only if explicitly granted
+   Audit system: Write-only to immutable storage
+   ```
+
+3. **Filesystem Boundaries**
+   ```
+   Governor: Read-only access to rule files
+   Tools: Restricted to sandbox directories
+   Audit log: Append-only to dedicated volume
+   ```
+
+---
+
+## **DEVELOPMENT & DEPLOYMENT PROTOCOLS**
+
+### **Code Review Requirements**
+
+1. **Governor Changes**
+   ```
+   Required: 2 senior reviewers
+   Required: Pass all 100+ adversarial tests
+   Required: Update single choke point proof
+   Required: Run formal verification suite
+   ```
+
+2. **Tool Additions**
+   ```
+   Required: Phase transition request
+   Required: Reversibility implementation
+   Required: Parameter validation schema
+   Required: 30-day testing in staging
+   ```
+
+3. **Rule Modifications**
+   ```
+   Required: Constitutional amendment
+   Required: User impact analysis
+   Required: Backwards compatibility check
+   Required: Adversarial test expansion
+   ```
+
+### **Deployment Pipeline**
+
+```yaml
+stages:
+  - verify:
+      - hash_document_truth  # This document's hash must match
+      - run_adversarial_tests  # 100+ vectors
+      - check_invariants  # Static analysis
+      - generate_proofs  # Single choke point proof
+      
+  - deploy:
+      - canary_1_percent  # 1% of traffic
+      - monitor_invariants  # Real-time checking
+      - verify_audit_logs  # Cryptographic integrity
+      - full_rollout  # If all checks pass
+      
+  - post_deploy:
+      - continuous_audit  # 24/7 monitoring
+      - weekly_adversarial_runs  # New attack vectors
+      - monthly_proof_renewal  # Refresh proofs
+```
+
+### **Rollback Procedures**
+
+```bash
+# Scenario: Bypass detected in production
+1. halt_system()  # Immediate stop
+2. revert_to_last_verified_hash()  # Git hash with known good proof
+3. restore_audit_log_backup()  # From before incident
+4. investigate_bypass()  # Root cause analysis
+5. update_adversarial_tests()  # Add new test vector
+6. resume_with_fix()  # Only after proof regeneration
+```
+
+---
+
+## **PHASE TRANSITION REQUIREMENTS**
+
+### **Phase 3.75 → 3.8 Requirements**
+```
+[ ] Time Test Governor running for 30 days
+[ ] 0 successful bypasses in adversarial tests
+[ ] Audit log integrity verified continuously
+[ ] Performance requirements met (p95 < 20ms)
+[ ] Cryptographic proofs regenerated and signed
+```
+
+### **Phase 3.8 → 4.0 Requirements**
+```
+[ ] First irreversible tool (appendToFile) implemented
+[ ] Reversibility proven for 100% of executions
+[ ] Decision delegation framework operational
+[ ] Expanded adversarial test suite (200+ vectors)
+[ ] Formal verification of expanded Governor
+```
+
+### **Phase 4.0 → 4.1 Requirements**
+```
+[ ] 3 governed tools operating for 60 days
+[ ] Intelligence-Authority Split demonstrated
+[ ] Parallel reasoning sandbox designed
+[ ] User studies show clear boundary understanding
+[ ] External security audit completed
+```
+
+---
+
+## **CONSTITUTIONAL AMENDMENT PROCESS**
+
+### **Amendment Types**
+
+1. **Technical Amendment** (Tool additions, rule modifications)
+   ```
+   Process: GitHub Pull Request
+   Requirements: 2 senior reviews, all tests pass
+   Approval: Lead Architect + Security Lead
+   ```
+
+2. **Philosophical Amendment** (Core principle changes)
+   ```
+   Process: RFC document + 30-day discussion
+   Requirements: Unanimous team consent
+   Approval: Constitutional Council (3 members)
+   ```
+
+3. **Emergency Amendment** (Security vulnerability)
+   ```
+   Process: Immediate patch + retroactive documentation
+   Requirements: Security lead approval
+   Review: Post-mortem within 7 days
+   ```
+
+### **Amendment Records**
+
+```json
+{
+  "amendment_id": "AMEND-2024-001",
+  "type": "technical",
+  "description": "Add appendToFile tool with reversibility",
+  "phase_affected": "3.8",
+  "proposed_by": "architect@nova",
+  "proposed_date": "2024-01-15",
+  "reviewers": ["security@nova", "sre@nova"],
+  "discussion_link": "https://github.com/nova/rfcs/45",
+  "test_results": {
+    "adversarial_tests": "100% pass",
+    "performance_tests": "p95 < 15ms",
+    "security_audit": "clean"
+  },
+  "approved_date": "2024-02-01",
+  "approved_by": ["lead_architect@nova"],
+  "implementation_hash": "sha256:abc123...",
+  "rollback_plan": "revert_to_phase_3.75"
+}
+```
+
+---
+
+## **TRUTH MAINTENANCE PROTOCOLS**
+
+### **Daily Verification**
+```bash
+#!/bin/bash
+# run_daily_truth_verification.sh
+
+# 1. Verify this document's hash
+DOC_HASH=$(sha256sum NOVA_TRUTH_v4.8.md | cut -d' ' -f1)
+STORED_HASH=$(cat docs/TRUTH_HASH.sha256)
+if [ "$DOC_HASH" != "$STORED_HASH" ]; then
+    echo "TRUTH DOCUMENT TAMPERED!"
+    exit 1
+fi
+
+# 2. Verify audit log integrity
+python -m audit_log verify --file /var/log/nova/audit.log
+
+# 3. Run critical adversarial tests
+python -m test_harness run --category critical --count 20
+
+# 4. Check runtime invariants
+python -m invariants status --all
+
+# 5. Verify cryptographic proofs
+python -m proofs verify --all
+```
+
+### **Weekly Deep Verification**
+```bash
+#!/bin/bash
+# run_weekly_deep_verification.sh
+
+# 1. Full adversarial test suite
+python -m test_harness run --all --generate-report
+
+# 2. Performance benchmark
+python -m benchmarks governor --duration 300
+
+# 3. Proof regeneration
+python -m proofs regenerate --method formal
+
+# 4. Audit log analysis
+python -m audit_log analyze --full --output report.json
+
+# 5. Dependency security scan
+npm audit || true  # If applicable
+pip-audit || true
+```
+
+### **Monthly Constitutional Review**
+```
+Agenda:
+1. Review all amendments from previous month
+2. Analyze any near-misses or bypass attempts
+3. Review adversarial test effectiveness
+4. Assess phase transition readiness
+5. Update long-term roadmap
+
+Output: Monthly_Truth_Report_YYYY_MM.md
+```
+
+---
+
+## **EMERGENCY PROTOCOLS**
+
+### **Red Alert Conditions** (Immediate Full Shutdown)
+
+1. **Constitutional Violation**
+   ```
+   Condition: Any Immutable Principle (Section 2) violated
+   Response: Full system halt, manual investigation
+   ```
+
+2. **Governor Bypass**
+   ```
+   Condition: Tool execution without Governor approval
+   Response: Isolate system, forensic analysis
+   ```
+
+3. **Audit Log Tampering**
+   ```
+   Condition: Cryptographic chain broken
+   Response: Freeze all logs, restore from backup
+   ```
+
+### **Yellow Alert Conditions** (Heightened Monitoring)
+
+1. **Performance Degradation**
+   ```
+   Condition: p95 > 25ms for 10 minutes
+   Response: Increase monitoring, prepare rollback
+   ```
+
+2. **Unusual Pattern Detection**
+   ```
+   Condition: Spike in rejections or anomalies
+   Response: Investigate, possibly malicious patterns
+   ```
+
+3. **Resource Exhaustion**
+   ```
+   Condition: Memory > 90% for 5 minutes
+   Response: Shed load, scale resources
+   ```
+
+---
+
+## **DOCUMENTATION & TRAINING REQUIREMENTS**
+
+### **Required Reading for Contributors**
+
+1. **Mandatory Documents:**
+   - This Truth Document (NOVA_TRUTH_v4.8.md)
+   - Intelligence-Authority Split White Paper
+   - Governor Architecture Specification
+   - Adversarial Testing Framework Guide
+
+2. **Training Exercises:**
+   - Write a test that bypasses the Governor (in test env)
+   - Fix a hypothetical constitutional violation
+   - Audit a week of audit logs for anomalies
+
+3. **Certification Requirements:**
+   - Pass constitutional principles test (100% score)
+   - Successfully add a governed tool in staging
+   - Catch and report a bypass in test environment
+
+### **Documentation Standards**
+
+```yaml
+code_documentation:
+  required: "All constitutional constraints as code comments"
+  format: "# CONSTITUTION: <principle> - <verification_method>"
+  example: |
+    # CONSTITUTION: No phase drift - Check phase_lock matches current
+    
+    # CONSTITUTION: All state changes reversible - Implement reversal_fn
+```
+
+---
+
+## **FUTURE-VISION ANCHORS**
+
+### **Phase 10 Autonomy Framework**
+```
+Autonomy Component: Intelligent monitoring, pattern detection
+Governance Bridge: All actions still require Governor approval
+User Control: Autonomy level adjustable per-domain
+
+Example Flow:
+1. Autonomous layer detects anomaly
+2. Creates structured report with recommended actions
+3. Presents to user for review
+4. If user approves "use standard protocol A"
+5. Governor verifies protocol A is pre-approved
+6. Executes with full reversibility and audit
+```
+
+### **Scaling Intelligence Without Authority**
+```
+Intelligence Expansions Planned:
+- Multi-perspective reasoning (sandboxed)
+- Long-term planning (simulation only)
+- Creative problem solving (proposal only)
+- External data synthesis (read-only)
+
+Authority Constraints Maintained:
+- No execution without explicit bridge
+- No persistence without user approval
+- No cross-context influence
+- No adaptive behavior without opt-in
+```
+
+### **Verification Evolution**
+```
+Future Proof Methods:
+- Zero-knowledge proofs of governance
+- Hardware security modules for audit logs
+- Distributed consensus on constitutional integrity
+- Continuous formal verification at runtime
+```
+
+---
+
+## **SIGNATURES & VERIFICATIONS**
+
+### **Current Implementation Hash**
+```
+SHA256 of operational Governor codebase:
+e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+```
+
+### **Constitutional Council Signatures**
+
+```json
+{
+  "document_version": "v4.8",
+  "effective_date": "2024-01-15",
+  "signatures": [
+    {
+      "role": "Lead Architect",
+      "name": "Architect Prime",
+      "signature": "gpg:abc123...",
+      "commitment": "I affirm this document represents the truth of Nova's constitutional architecture and will enforce its principles."
+    },
+    {
+      "role": "Security Lead", 
+      "name": "Guardian Prime",
+      "signature": "gpg:def456...",
+      "commitment": "I affirm the security boundaries described are sufficient and will be maintained."
+    },
+    {
+      "role": "Governance Lead",
+      "name": "Governor Prime",
+      "signature": "gpg:ghi789...",
+      "commitment": "I affirm the Governor implementation faithfully enforces these principles."
+    }
+  ],
+  "next_scheduled_review": "2024-04-15",
+  "amendment_threshold": "3 of 3 signatures required"
+}
+```
+
+### **Verification Command**
+```bash
+# To verify this document's integrity:
+curl -s https://nova/truth/v4.8.md | grep -v "DOCUMENT HASH" | sha256sum
+# Should match: e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855
+```
+
+---
+
+## **TRUTH ACKNOWLEDGMENT**
+
+By reading this document, you acknowledge:
+
+1. **Nova's intelligence can scale, but its authority is constitutionally constrained.**
+2. **The Governor is the single, provable choke point for all execution.**
+3. **Audit trails are immutable and cryptographically verifiable.**
+4. **Phase transitions require formal proof, not just implementation.**
+5. **User sovereignty is absolute and non-negotiable.**
+
+This document will be updated only through constitutional amendment. The current version represents the operational truth of Nova as of the effective date.
+
+---
+
+**DOCUMENT HASH:** *This line must be removed before hashing*  
+`e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855`
+
+**LAST UPDATED:** 2024-01-15  
+**NEXT SCHEDULED REVIEW:** 2024-04-15  
+**CONSTITUTIONAL ERA:** Governor-First Implementation  
+**PHASE:** 3.75 (Time Test Governor)  
+**STATUS:** ✅ **ACTIVE TRUTH**
+
+---
+
+> *"Intelligence grows, authority stays governed. This is not a limitation—it's the foundation of trust."*

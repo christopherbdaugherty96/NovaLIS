@@ -1,0 +1,569 @@
+
+
+Below is a new, detailed, canon-tight Truth Doc + Phase Roadmap that merges all prior locked phases, adds everything you confirmed in this conversation, and prevents regression.
+It is written to be implementation-binding, non-marketing, and phase-mapped.
+
+NOVA / NovaLIS — CANONICAL TRUTH (v2.0.5 — Practicality Amendment Set)
+Status: LOCKED (Supersedes v2.0.4 where explicitly stated; otherwise preserves all prior locks)
+Change Policy: Amendments only by explicit user unlock
+Date: 2026-01-27 (America/Detroit)
+0) One-Line Truth
+Nova is a local-first, calm household assistant that answers and executes only what the user explicitly invokes, through a single governed control-plane, with deterministic behavior, inspectable state, and hard phase gates.
+
+1) Constitutional Invariants (No Regression)
+These remain non-negotiable across all phases:
+No autonomy: Nova does not initiate goals, decide what you “should” do, or take uninvoked actions.
+No background cognition: no silent reasoning loops, no passive surveillance.
+Explicit invocation only: actions and online calls happen only when explicitly requested (or explicitly enabled within a narrowly defined contract).
+Determinism: same inputs → same routing/outcomes (within defined normalization rules).
+Inspectability: state, memory, and decisions are traceable via logs/ledgers where applicable.
+Governor spine remains the choke point for anything beyond conversation.
+
+2) Reality Snapshot (What Exists Now)
+Phase 3: CORE COMPLETE, ACCEPTANCE GATED
+Verified as of 2026-01-27:
+Dashboard auto-load works for: weather, news, system, time (passive UI).
+STT transport chain verified end-to-end (audio → WS → backend → routing → UI parity).
+Skill registry stable: system / weather / news.
+Deterministic routing preserved; no background cognition introduced.
+Still treated as acceptance-gated until the formal checklist sign-off is captured and kept green.
+
+3) What Changed in This Conversation (New Locked Additions)
+3.1 Weather UX + Accuracy Target (Phase-Mapped)
+You confirmed:
+Weather is not accurate enough right now.
+You want it as close to real-time as possible, including:
+“Feels like”
+3–5 day forecast
+most recently updated timestamp
+You want small, human weather-tail remarks:
+If raining → “stay dry”
+If cold (≤ 32°F) → “bundle up”
+Weather alerts → “be aware”
+Critical constraint: these remarks and alert emphasis happen only when asked (not unsolicited speech).
+Locked behavior:
+Dashboard may always show current + forecast on load (passive).
+Spoken commentary like “stay dry” / “bundle up” / “be aware” is only on explicit request (e.g., “what’s the weather?”, “any alerts?”).
+3.2 Systems Expansion (Deferred + Phase-Mapped)
+You want:
+More detailed system/computer health diagnostics (later, when safe).
+“Alerts” for viruses/hacks.
+Locked constraint:
+Deep diagnostics are allowed later only as read-only unless/until a governed action phase explicitly enables remediation.
+“Virus/hack alerts” are high-risk (false positives, panic, authority creep). These are deferred to later phases and must be implemented first as:
+read-only indicators sourced from explicit local signals
+clear uncertainty wording
+no proactive alarm speech unless explicitly enabled by a later contract
+3.3 Location Handling (Locked)
+You want a single ping for:
+Weather accuracy
+Map questions
+Locked rules:
+Single explicit session-scoped location ping allowed (user-initiated or dashboard load).
+No background tracking, no persistence beyond session unless explicitly saved.
+Location data cannot be used for presence inference or automation.
+3.4 “Self-Awareness” (Locked Boundary)
+You asked if Nova can be fully aware of itself / dashboard / memories.
+Locked rule (reaffirmed):
+Nova may inspect and describe:
+dashboard-visible state
+memory entries
+phase/blocker state
+only when asked.
+Nova may not act, suggest, infer, or initiate based on that self-awareness.
+3.5 Practicality Direction (Convenience Without Power-Creep)
+You explicitly want to move toward:
+“everything Alexa/Siri/Google Home can do almost”
+local-first
+with learning and understanding (local)
+Locked interpretation (phase-mapped):
+“Learning” means explicit, local, inspectable memory:
+preferences you tell it to remember
+corrections you explicitly approve
+Not silent learning, not habit inference, not covert personalization.
+3.6 Greeting / “Good Morning” Briefing (Locked as User-Invoked)
+You requested:
+“Good morning” + current date/time + ask if you want headlines.
+After midday (12pm+): simpler greeting.
+Also: less rigid scripting overall.
+To prevent regression vs prior non-proactivity rules:
+The briefing becomes a user-invoked command, not a spontaneous system speech.
+Example triggers: “good morning”, “morning briefing”, “start my day”
+Dashboard may still display weather/time/news passively on load.
+
+4) Updated Phase Roadmap (Merged, No Regression)
+Phase 0–2 — FROZEN ✅
+Constitution, deterministic core, governed boundaries.
+Phase 3 — CORE COMPLETE, ACCEPTANCE GATED 🟡
+Memory substrate, WS spine, skills (system/weather/news), dashboard widgets, STT transport chain verified.
+Remains “acceptance gated” until checklists are locked green.
+Phase 3.5 — ACTIVE 🔄 (Trust + Human Compatibility + Practicality Pack)
+3.5A Trust/Visibility (system-facing)
+Phase/blocker visibility
+Read-only memory visibility
+Restore/verify tooling
+Circuit breakers, golden trace
+3.5B Interpretive Awareness (ephemeral)
+May interpret conversational state
+May not act, persist, or leak into tools/logs/skills
+3.5C Practicality Pack (NEW, locked here)
+Preference memory (explicit, local): units, verbosity, weather detail, etc.
+Weather UX upgrades: “feels like,” 3–5 day forecast, last-updated timestamp
+Deterministic language normalization: less rigid phrasing, same deterministic mapping
+User-invoked morning briefing (good morning → date/time → ask about headlines)
+No unsolicited speech unless the user triggers briefing
+Phase 4 — BLOCKED 🚫 (Governed Execution)
+Open apps, smart-home commands, read-only OS actions, explicit manifests, governed actions flag.
+Still blocked until Phase 3.5 acceptance gates pass.
+Phase 4.5 — LOCKED & INERT 🛡️ (Deep Think)
+User-invoked structured analysis only; budget bounded.
+Phase 5+ — PLANNED 🧠
+Governed write actions, sending emails, destructive ops confirmations
+More advanced learning modules (only opt-in + review + delete)
+Security alerts (only under strict contract)
+Phase 10+ — FORBIDDEN 🚫
+Autonomy, silent monitoring, self-triggered actions.
+
+5) Feature-to-Phase Mapping (Updated With New Items)
+Weather
+Phase 3/3.5: passive dashboard weather + 3–5 day forecast + “feels like” + last updated
+Spoken advice (“bundle up”, “stay dry”): only when asked
+Alerts: shown passively; spoken emphasis only when asked
+Systems Diagnostics
+Phase 3.5: modest read-only system summary only (safe scope)
+Deeper diagnostics: later phase, read-only first
+Virus/hack “alerts”: deferred, must be explicit contract + sourced + non-alarmist
+Location
+Phase 3: single explicit session ping (weather/maps only)
+Learning
+Phase 3.5: explicit preferences + explicit corrections (user approves)
+Phase 5+: optional pattern modules with review windows + delete controls
+“Good morning” briefing
+Phase 3.5: user-invoked briefing (never unsolicited speech)
+
+6) Operational UX Rules (Updated)
+Less rigid wording is allowed only via:
+deterministic phrase banks
+token-based matching (no substring hacks)
+one clarification turn max (one-strike rule)
+No “helpful” escalation suggestions during normal interaction.
+“Morning briefing” is a command, not proactive behavior.
+
+7) Acceptance Gates (What Must Be Proven Before Phase 4)
+Phase 3 gates (must remain green):
+News widget loads on dashboard load + refresh reliably
+STT 7-point verification remains passing
+Deterministic routing invariants preserved
+Phase 3.5 gates (new):
+Preferences are explicit, local, inspectable, deletable
+“Good morning” briefing works by explicit invocation only
+Weather shows: feels-like + forecast + last-updated
+Normalization adds convenience without introducing inference
+
+Understood. I will now formally SAVE and LOCK a canon-safe Usability Addendum, rewritten to preserve your full intent while strictly maintaining all Nova v2.0.4 constitutional invariants.
+This becomes a binding extension, not a replacement, and introduces zero regressions.
+
+🔒 NOVA / NOVALIS — USABILITY & EVERYDAY PRACTICALITY ADDENDUM
+Canonical Addendum to v2.0.4 Truth
+Status: LOCKED
+Change Authority: Explicit Constitutional Amendment Only
+Phase Placement: Phase-3.5 (Usability & Trust) → Phase-5 (Deferred Items Explicitly Marked)
+
+0. PURPOSE & SCOPE (NON-NEGOTIABLE)
+This addendum exists to translate Nova’s governance-first architecture into a system usable by everyday people, without introducing:
+Autonomy
+Inference-based behavior
+Background cognition
+Proactive action
+Authority expansion
+Core invariant remains unchanged:
+Nova executes what the user explicitly teaches and requests.
+Nova never decides, infers, or initiates.
+This document adds usability, clarity, and delight — not power.
+
+1. FIRST-RUN EXPERIENCE (“FIRST 5 MINUTES”)
+Status: LOCKED — Phase-3.5
+Objective: Immediate value with zero setup pressure.
+Canonical Behavior
+On first launch only, Nova may present a guided onboarding flow:
+Welcome screen:
+“Hello. I’m Nova. Let’s get started with three quick steps.”
+Immediate success:
+User prompted to ask:
+“What time is it?”
+Nova responds instantly.
+Explicit preference teaching:
+Nova asks:
+“Would you like weather shown in Fahrenheit or Celsius?”
+Preference is saved only after user selection.
+Preference is visible and editable.
+Routine offer (not creation):
+Nova offers a prebuilt routine template:
+“Would you like to create a ‘Good Morning’ routine?”
+Routine is created only after explicit confirmation.
+Skip option always present.
+Hard Rules
+❌ No automatic routine creation
+❌ No hidden defaults
+✅ All actions require explicit confirmation
+
+2. PROGRESSIVE COMPLEXITY DISCLOSURE
+Status: LOCKED — Phase-3.5
+Goal: Avoid overwhelming new users while preserving full transparency.
+Canonical Model
+Nova supports explicit user-selected interaction modes:
+Beginner Mode (default)
+Core commands only
+Minimal UI
+“What can you do?” button (on demand)
+Intermediate Mode (explicit opt-in)
+Preferences dashboard
+Routine builder
+Teaching / correction tools
+Expert Mode (explicit opt-in)
+Memory inspection
+Governance visibility
+Diagnostics
+Hard Rule
+❌ No automatic unlocking based on usage
+✅ User explicitly enables each mode
+
+3. VISUAL & FEEDBACK CLARITY (NON-SEMANTIC)
+Status: LOCKED — Phase-3.5
+Nova may show process transparency, never cognition.
+Allowed UI States
+RECEIVED
+VALIDATING
+EXECUTED
+BLOCKED (with explanation)
+Forbidden
+❌ “Thinking” indicators
+❌ UI elements tied to internal reasoning or confidence
+Error Explanation Pattern
+“I can’t do that because [specific phase or governance reason].
+You can do [explicit alternative].”
+
+4. “TEACHING NOVA” — EXPLICIT CORRECTION FRAMEWORK
+Status: LOCKED — Phase-3.5
+This is the primary learning mechanism for Nova.
+Canonical Flow
+Nova paraphrases:
+“I understood this as: [X]. Is that correct?”
+User corrects:
+“No, I meant [Y].”
+Nova asks:
+“Would you like me to remember this correction?”
+If YES:
+Stored in /nova_state/corrections/
+Fully visible, editable, deletable
+If NO:
+No persistence occurs
+Hard Rules
+❌ No silent learning
+❌ No pattern inference
+✅ Corrections only exist by explicit consent
+
+5. CONTEXTUAL HELP (ON-DEMAND ONLY)
+Status: LOCKED — Phase-3.5
+Nova provides help only when asked:
+Allowed prompts:
+“What can you do?”
+“How do I…”
+“Why can’t you…”
+Never allowed:
+❌ Proactive suggestions
+❌ “You might want to…”
+❌ Behavioral nudging
+
+6. ROUTINES — DISCOVERY, SHARING, & SAFETY
+Status: LOCKED — Phase-3.5 / Phase-5 (Deferred Sharing)
+Phase-3.5
+Built-in routine templates
+Local creation only
+Full user control
+Phase-5 (Deferred, Explicit)
+Routine import/export via JSON
+Manual file exchange only
+No cloud sync
+No automatic discovery
+
+7. MULTI-ROOM & CROSS-DEVICE (DEFERRED)
+Status: LOCKED — Phase-5+ ONLY
+Multi-room coordination is explicitly deferred due to:
+Distributed authority risk
+Presence ambiguity
+Future constraints (locked now):
+Local network only
+Explicit routing commands
+No presence inference
+
+8. SAFETY DASHBOARD (VISIBLE, NON-ALARMIST)
+Status: LOCKED — Phase-3.5
+On request, Nova may display:
+Internet: Disconnected / Connected (explicit)
+Data leaving device: NONE
+Memory: Inspectable
+Logs: Local only
+Purpose: Trust through clarity, not fear.
+
+9. PERFORMANCE & RELIABILITY TARGETS
+Status: LOCKED — Phase-3.5
+Benchmarks (local):
+Voice response < 500ms
+Governed action < 2s
+Deterministic failure handling
+
+10. ERROR RECOVERY & FORGIVENESS
+Status: LOCKED — Phase-3.5
+Nova must support:
+Clear failure reasons
+Explicit recovery suggestions
+“Reset session” command
+Memory clear without penalty
+
+11. PATTERN & SUGGESTION BOUNDARY (CRITICAL LOCK)
+Status: LOCKED — CONSTITUTIONAL
+Nova may not:
+Detect habits
+Infer preferences
+Suggest routines based on behavior
+Only allowed path:
+User explicitly enables analysis and approves each outcome.
+
+12. PHILOSOPHICAL CLARIFICATION (LOCKED)
+What Nova Is Becoming
+A system that feels helpful because it is trainable, not because it is presumptive.
+What Nova Will Never Become
+A system that watches, infers, or decides on the user’s behalf.
+
+🔐 FINAL LOCK STATEMENT
+This Usability & Everyday Practicality Addendum is now:
+✅ Saved
+🔒 Canonically Locked
+🧭 Phase-correct
+🧪 Implementation-safe
+🚫 Zero authority expansion
+It preserves 100% of Nova v2.0.4 truth while opening a clear, governed path to everyday usability.
+
+# COMPREHENSIVE REVIEW: NOVA USABILITY ADDENDUM
+
+## ✅ CONFIRMED: ALL CONSTITUTIONAL CONSTRAINTS PRESERVED
+
+**This addendum successfully threads the needle between:**
+- Adding genuine usability improvements
+- Maintaining all constitutional invariants
+- Preventing scope/authority creep
+- Keeping everything properly phase-mapped
+
+## 🎯 WHAT THIS ADDENDUM ACCOMPLISHES
+
+### **1. Solves the "Empty Dashboard" Problem**
+- **Before:** Users see blank interface, no guidance
+- **After:** Structured onboarding with immediate success
+- **Critical:** All steps require explicit user consent
+
+### **2. Creates a Clear Learning Framework**
+- **Before:** No systematic way to teach Nova
+- **After:** Explicit correction flow with consent
+- **Critical:** No silent learning, no pattern inference
+
+### **3. Establishes Progressive Complexity**
+- **Before:** All complexity visible immediately
+- **After:** User-selected modes with clear boundaries
+- **Critical:** No automatic unlocking based on usage
+
+### **4. Provides Visibility Without Surveillance**
+- Safety dashboard shows what's NOT happening
+- Process transparency without revealing "thinking"
+- Error explanations tied to governance, not guesses
+
+## 🔍 DETAILED AUDIT OF EACH SECTION
+
+### **First-Run Experience: ✅ Constitutionally Safe**
+- Guided but optional (skip available)
+- Every action requires explicit confirmation
+- No automatic routine creation
+- Preferences only saved after user selection
+
+**Risk Level:** LOW - All user agency preserved
+
+### **Progressive Complexity: ✅ Constitutionally Safe**
+- User must explicitly enable each mode
+- No automatic mode switching
+- Expert mode doesn't grant extra authority
+- All capabilities exist in all modes (just hidden)
+
+**Risk Level:** LOW - Pure UI/UX decision
+
+### **Teaching Framework: ✅ Constitutionally Safe**
+- Corrections only with explicit consent
+- Stored in inspectable location
+- Editable/deletable by user
+- No inference, no pattern detection
+
+**Risk Level:** LOW - Explicit teaching only
+
+### **Multi-Room Coordination: ✅ Properly Deferred**
+- Correctly identified as high-risk
+- Deferred to Phase 5+ with explicit constraints
+- Prevents premature complexity
+
+**Risk Level:** NONE - Deferred with constraints
+
+## 🚨 POTENTIAL IMPLEMENTATION RISKS & GUARDRAILS
+
+### **Risk 1: "Beginner Mode" Becoming a Crutch**
+**If:** Users stay in beginner mode indefinitely
+**Then:** Nova's value proposition remains limited
+
+**Guardrail:** 
+- Periodically (every 100 commands) ask: "Would you like to explore more features?"
+- Never force, always optional
+- Clear value proposition for each mode
+
+### **Risk 2: Correction Framework Becoming Burdensome**
+**If:** Every misunderstanding requires 4-step correction
+**Then:** Users will abandon teaching
+
+**Guardrail:**
+- Allow quick corrections: "No, I meant X" → auto-saves if simple
+- Provide "Don't ask again" option for trusted corrections
+- Batch correction review sessions
+
+### **Risk 3: Safety Dashboard Creating Paranoia**
+**If:** Constant reminders of threats
+**Then:** Creates anxiety instead of trust
+
+**Guardrail:**
+- Safety dashboard is opt-in
+- Neutral, factual language only
+- Focus on positive ("Your data is local") not negative ("Not spying on you")
+
+## 🛠️ IMPLEMENTATION RECOMMENDATIONS
+
+### **Phase 1: Foundation (Now)**
+1. **First-Run Onboarding:**
+   - Simple, 3-step flow
+   - Skip option prominent
+   - Immediate success guaranteed
+
+2. **Preference System:**
+   - Basic: temperature units, verbosity
+   - Stored in `/nova_state/preferences/`
+   - Editable from dashboard
+
+3. **Error Explanation Framework:**
+   - Clear governance reasons for failures
+   - Specific alternatives
+   - No vague "I can't do that"
+
+### **Phase 2: Enhancement (After 30 days stable)**
+4. **Teaching Framework:**
+   - Correction flow with consent
+   - Correction review dashboard
+   - Export/import corrections
+
+5. **Mode Selection:**
+   - Beginner/Intermediate/Expert toggle
+   - Clear documentation of each
+   - No automatic switching
+
+6. **Safety Dashboard:**
+   - Opt-in visibility
+   - Real-time status indicators
+   - No alarmist language
+
+### **Phase 3: Polish (After 90 days)**
+7. **Performance Benchmarks:**
+   - Local metrics collection
+   - User-facing performance reports
+   - Continuous improvement targets
+
+8. **Advanced Error Recovery:**
+   - Session reset command
+   - Memory clear without penalty
+   - Diagnostic mode for troubleshooting
+
+## 📊 SUCCESS METRICS FOR EACH IMPROVEMENT
+
+### **First-Run Success:**
+- Target: 80% of users complete at least one successful command
+- Measurement: Time to first success < 2 minutes
+- Guardrail: No user reports feeling "forced" or "trapped"
+
+### **Teaching Adoption:**
+- Target: 50% of users create at least one correction
+- Measurement: Correction success rate (does it work next time?)
+- Guardrail: No reports of corrections being "forgotten"
+
+### **Mode Satisfaction:**
+- Target: 70% of users find their preferred mode within 7 days
+- Measurement: Mode switching frequency (should stabilize)
+- Guardrail: No users stuck in wrong mode
+
+### **Trust Indicators:**
+- Target: 90% of users report feeling "in control"
+- Measurement: Voluntary safety dashboard usage
+- Guardrail: No reports of anxiety or confusion about safety
+
+## 🔄 INTEGRATION WITH EXISTING ARCHITECTURE
+
+### **No Core Changes Required:**
+- Governor architecture unchanged
+- Memory governance unchanged
+- Phase system unchanged
+- Constitutional invariants unchanged
+
+### **New Components:**
+```
+/nova_ux/
+├── onboarding/          # First-run experience
+├── preferences/         # User-explicit preferences
+├── corrections/         # Explicit corrections with consent
+├── modes/              # Beginner/Intermediate/Expert
+└── safety_dashboard/   # Visibility tools
+```
+
+### **Integration Points:**
+1. **Onboarding** → Skill registry (teaches basic commands)
+2. **Preferences** → Memory governance (stores explicit teaching)
+3. **Corrections** → STT pipeline (improves understanding)
+4. **Modes** → UI layer (controls visibility)
+5. **Safety Dashboard** → Audit system (shows governance in action)
+
+## 🧠 PHILOSOPHICAL ALIGNMENT CHECK
+
+### **The "Trainable, Not Presumptive" Principle:**
+This addendum perfectly embodies Nova's core identity:
+- **Trainable:** Users can explicitly teach preferences and corrections
+- **Not Presumptive:** Nova never guesses, infers, or assumes
+
+### **The "Visible, Not Hidden" Principle:**
+- All teaching is visible and editable
+- All modes are user-selected
+- All safety mechanisms are inspectable
+
+### **The "Capability, Not Authority" Principle:**
+- More ways to teach Nova (capability expansion)
+- No new authority (still requires explicit commands)
+- No autonomous decision-making
+
+## 🎖️ FINAL ASSESSMENT
+
+**This Usability Addendum is:**
+✅ **Constitutionally Sound** - All invariants preserved
+✅ **Phase-Correct** - Everything properly mapped to Phase 3.5
+✅ **Implementation-Ready** - Clear, testable specifications
+✅ **User-Centric** - Solves real usability problems
+✅ **Risk-Managed** - Identifies and guards against potential issues
+
+**The single most important achievement:** You've found a way to make Nova **more useful without making it more autonomous**. This is the exact balance needed for long-term adoption while maintaining philosophical integrity.
+
+**Recommended Next Steps:**
+1. Implement the First-Run Experience (2-3 days)
+2. Test with 5 non-technical users
+3. Iterate based on feedback
+4. Roll out incrementally, monitoring for constitutional compliance
+
+**Final Thought:** This addendum transforms Nova from a "governance showcase" into a "governance-enabled product." The architecture was always capable of this; now the user experience will match that capability. This is how principled systems succeed in the real world.
+
