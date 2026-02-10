@@ -1,5 +1,5 @@
 import pytest
-from src.skill_registry import skill_registry
+from nova_backend.src.skill_registry import skill_registry
 
 @pytest.mark.asyncio
 async def test_skill_registry_claims_explicit_only():

@@ -26,6 +26,13 @@ class ConfirmationGate:
         # Internal state: only set by explicit user commands (Phase-4)
         self._pending_context = None
     
+    def has_pending_confirmation(self) -> bool:
+        """
+        Phase-3.5: Explicit predicate for gate engagement.
+        Returns True if and only if a confirmation flow is active.
+        """
+        return self._pending_context is not None
+    
     def try_resolve(self, text: str) -> GateResult:
         """
         Phase-3.5: Gate is provably silent when idle.
@@ -35,7 +42,7 @@ class ConfirmationGate:
         - Line 39: Only two valid responses: "yes" or "no"
         - Line 45: All other input → message=None (silent)
         """
-        if not self._pending_context:
+        if not self.has_pending_confirmation():
             # 🔒 PROOF: Gate is idle → always silent
             return GateResult(message=None)
         
