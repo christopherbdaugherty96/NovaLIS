@@ -1,16 +1,15 @@
-> ## 🔒 PHASE-3.5 STATUS UPDATE — CLOSED
+> ## 🔒 PHASE-3.5 STATUS UPDATE — SEALED
 >
-> **Phase-3.5 is formally COMPLETE and CLOSED.**  
+> **Phase-3.5 is formally COMPLETE and SEALED.**  
 > All Phase-3.5 acceptance criteria have been mechanically verified and CI-enforced, including execution quarantine, Governor containment, passive confirmation gating, and runtime refusal proofs.
 >
-> This document may reference Phase-3.5 as “active” for historical context only.  
-> **No Phase-3.5 work remains open.** Phase-4 remains hard-locked pending a separate unlock artifact.
+> This document may reference Phase-3.5 as "active" for historical context only.  
+> **No Phase-3.5 work remains open.** Phase-4 is design‑unlocked but runtime‑locked pending a separate unlock artifact.
 >
 > **Authoritative closure record:** `docs/PHASE_3.5_CLOSURE.md`
 ------------------------------------------------
 
-
-# REPO_MAP — NovaLIS (AI Navigation)
+# REPO_MAP — Nova (AI Navigation)
 
 Purpose: Give humans + AI a deterministic map of this repository and the safe "review order".
 
@@ -22,19 +21,22 @@ Scope: Navigation + review guidance only. No behavior changes.
 
 The **single authoritative source of truth** for this repository is:
 
-→ **NOVA CANONICAL SYNTHESIS v5.1 - Phase-Aligned Truth**
+→ **`NOVA COMPLETE CONSTITUTIONAL BLUEPRINT 1.8.md`**
 
-All other documents (including phase locks, governance contracts, and design specs) are authoritative **only insofar as they do not conflict** with v5.1.
+All other documents (including phase locks, governance contracts, and design specs) are authoritative **only insofar as they do not conflict** with v1.8.
 
-If any document conflicts with v5.1, it is **invalid by definition** unless explicitly unlocked.
+If any document conflicts with v1.8, it is **invalid by definition** unless explicitly unlocked.
 
 **Non-negotiables (high-level):**
-- Phase 3.5: FROZEN (Execution Surface Guarantee Proven)
+- Phase 3.5: **SEALED** (no execution authority, GovernorMediator only)
+- Phase-3.5 closure is recorded in `docs/PHASE_3.5_CLOSURE.md` and is authoritative for execution status
 - Governor: GovernorMediator (text sanitizer only)
-- Execution: Disabled (execute_action = None)
-- Phase 4: HARD BLOCKED (Design phase only, no implementation)
+- Execution: Disabled (`execute_action = None`, `GOVERNED_ACTIONS_ENABLED = false` hard‑coded)
+- Phase 4: Design‑Unlocked, Runtime‑Locked (no implementation)
+- Agent Identity: Nova is non-autonomous coordinator (Intelligence–Authority Split)
+- Memory Governance: Memory is filing system, not learning system
 - Offline-first by default; online only by explicit user request
-- Deterministic behavior; no inferred intent; token-based matching (no substrings)
+- Deterministic behavior; no inferred intent; literal word‑boundary triggers
 - No background cognition / no proactive tasks outside explicit contracts
 
 ---
@@ -52,7 +54,7 @@ Key subpaths:
   &nbsp; - `services/` — service abstractions (e.g., WeatherService using Visual Crossing)
   &nbsp; - `routers/` — API routes (e.g., STT router)
   &nbsp; - `governor/` — GovernorMediator (text sanitizer only, not enforcement engine)
-  &nbsp; - `execution/` — execution disabled (execute_action = None)
+  &nbsp; - `execution/` — execution disabled (`execute_action = None`)
 - `nova_backend/tests/` — tests (unit/contract tests)
 - `nova_backend/static/` — static dashboard assets served by backend (if used)
 
@@ -72,12 +74,11 @@ Key files:
 ---
 
 ### `NovaLIS-Governance/`
-Governance contracts, phase locks, acceptance gates, and "do not drift" rules.
-
-These documents are **binding only where they align with v5.1**. If a conflict exists, v5.1 prevails.
+Governance contracts, phase locks, acceptance gates, and "do not drift" rules.  
+*Note: This folder may contain legacy documents; the canonical truth is v1.8.*
 
 **Key documents:**
-- `PHASE_3.5_FROZEN_STATUS.md` — Current phase status (FROZEN)
+- `PHASE_3.5_FROZEN_STATUS.md` — Current phase status (SEALED; should be updated to match v1.8)
 - Phase completion certificates (archival)
 
 ---
@@ -85,7 +86,7 @@ These documents are **binding only where they align with v5.1**. If a conflict e
 ### `Documentation-Architecture-Docs/` and `docs/`
 Legacy and supporting documentation. Useful context, not always canonical.
 
-**Note:** For current phase status, refer to `NovaLIS-Governance/PHASE_3.5_FROZEN_STATUS.md`
+**Note:** For current phase status, refer to `docs/PHASE_3.5_CLOSURE.md` and v1.8.
 
 ---
 
@@ -94,13 +95,13 @@ Legacy and supporting documentation. Useful context, not always canonical.
 Use this deterministic review order:
 
 0) **Final Canonical Truth**
-   &nbsp;  - `NOVA CANONICAL SYNTHESIS v5.1` — Required reading before any code, governance, or review activity
+   &nbsp;  - `NOVA COMPLETE CONSTITUTIONAL BLUEPRINT 1.8.md` — Required reading before any code, governance, or review activity
 
 1) **Current Phase Status**
-   &nbsp;  - `NovaLIS-Governance/PHASE_3.5_FROZEN_STATUS.md` — Current operational reality
+   &nbsp;  - `docs/PHASE_3.5_CLOSURE.md` — Current operational reality
 
 2) **Governance / locks**
-   &nbsp;  - `NovaLIS-Governance/PHASE_*.md`
+   &nbsp;  - `NovaLIS-Governance/PHASE_*.md` (verify against v1.8)
    &nbsp;  - `NovaLIS-Governance/ARCHITECT_CONTRACT.md`
 
 3) **Backend orchestration**
@@ -134,11 +135,11 @@ Use this deterministic review order:
 ## 3) AI Review Rules (Hard Constraints)
 
 An AI reviewer may:
-- Identify mismatches vs governance docs
+- Identify mismatches vs governance docs (especially v1.8)
 - Propose minimal diffs
 - Add tests that enforce locked behavior
 - Add documentation that clarifies setup without adding capability
-- Verify phase alignment with v5.1
+- Verify phase alignment with v1.8
 
 An AI reviewer must NOT:
 - Add new capabilities, new skills, or broaden scope
@@ -146,7 +147,8 @@ An AI reviewer must NOT:
 - Add background tasks, watchers, telemetry, analytics, or "helpful" auto-actions
 - Add silent online behavior or implicit web search
 - Introduce probabilistic/ranked intent selection
-- Suggest capabilities beyond Phase 3.5 frozen state
+- Suggest capabilities beyond Phase 3.5 sealed state
+- Reinterpret "design documents" as approval for implementation
 
 Preferred output format for AI review:
 - Findings grouped by (a) lock violations (b) correctness bugs (c) safety gaps (d) low-risk cleanup
@@ -166,18 +168,26 @@ Preferred output format for AI review:
 ## 5) Phase Documentation Reference
 
 **Current Operational Status:**
-- `NovaLIS-Governance/PHASE_3.5_FROZEN_STATUS.md` — Phase 3.5 is FROZEN (Execution Surface Guarantee Proven)
+- `docs/PHASE_3.5_CLOSURE.md` — Phase 3.5 is SEALED (no execution authority)
 
 **Historical Completion Certificates:**
 - `docs/PHASE_3_COMPLETION.md` — Phase 3 was COMPLETE & LOCKED
 
 **Canonical Truth:**
-- `NOVA CANONICAL SYNTHESIS v5.1` — Single source of truth
+- `NOVA COMPLETE CONSTITUTIONAL BLUEPRINT 1.8.md` — Single source of truth
 
 **Design Documents (Phase 4+ only - NOT IMPLEMENTED):**
 - Nova Orthogonal Cognition Stack.txt (Phase 4.2+)
 - Nova Personal Intelligence Hub Arch.txt (Phase 5+)
 - NOVA MIND ARCHITECTURE WITH DEEPSEEK.txt (Phase 4+)
+
+**Audit & Governance Frameworks (Phase 4+):**
+- `DEEPSEEK INTEGRATION AUDIT.md` - Constitutional audit requirements for DeepSeek integration
+
+**Philosophical Context (Reference Only):**
+- `CorePhilosophy.md` - Project philosophy and governance-first mindset
+
+**Note:** Phase-10+ documents describe speculative, non-binding end-state ideas. They do **not** imply roadmap intent, prioritization, or inevitability.
 
 **Important:** Design documents describe future architecture only. No implementation exists in current runtime.
 

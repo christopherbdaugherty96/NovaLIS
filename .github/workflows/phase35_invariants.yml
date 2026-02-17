@@ -1,0 +1,50 @@
+name: Phase‑3.5 Invariants
+
+on: [push, pull_request]
+
+jobs:
+  check-invariants:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: No EXECUTION_ENABLED in runtime (allow docstrings)
+        shell: pwsh
+        run: |
+          $hits = Get-ChildItem -Path .\src\ -Recurse -File |
+                  Select-String -Pattern "EXECUTION_ENABLED" |
+                  Where-Object { $_.Path -notmatch "archive_quarantine|tests|__pycache__" }
+          if ($hits) { Write-Error "Found EXECUTION_ENABLED in runtime: $hits"; exit 1 }
+
+      - name: No execute_action( calls
+        shell: pwsh
+        run: |
+          $hits = Get-ChildItem -Path .\src\ -Recurse -File |
+                  Select-String -Pattern "execute_action\(" |
+                  Where-Object { $_.Path -notmatch "archive_quarantine|tests|__pycache__" }
+          if ($hits) { Write-Error "Found execute_action( call: $hits"; exit 1 }
+
+      - name: No quarantine imports
+        shell: pwsh
+        run: |
+          $hits = Get-ChildItem -Path .\src\ -Recurse -File |
+                  Select-String -Pattern "archive_quarantine|phase35_execution" |
+                  Where-Object { $_.Path -notmatch "tests|__pycache__" }
+          if ($hits) { Write-Error "Found quarantine import: $hits"; exit 1 }
+
+      - name: ExecuteBoundary fails closed
+        shell: pwsh
+        run: |
+          python -c "
+import sys
+sys.path.insert(0, '.')
+from src.governor.execute_boundary import ExecuteBoundary
+from src.actions.action_request import ActionRequest
+import uuid
+b = ExecuteBoundary()
+req = ActionRequest(id=str(uuid.uuid4()), action_type='test', title='', payload={}, created_utc='')
+res = b.evaluate(req)
+assert not res.success
+assert 'requires execution' in res.error
+print('PASS')
+"

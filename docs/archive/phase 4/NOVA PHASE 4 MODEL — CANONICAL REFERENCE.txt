@@ -1,0 +1,881 @@
+# 🔒 NOVA PHASE 4 MODEL — CANONICAL REFERENCE
+
+-----------------------------------------------
+
+> ## ⚠️ PHASE‑4 STATUS — RUNTIME LOCKED (DESIGN‑ONLY, NON‑AUTHORIZING)
+
+Phase-4 runtime is locked because:
+
+The Admission Gate checklist is not satisfied.
+
+The Evidence Bundle does not exist.
+
+The Governor Spine execution layer is not implemented.
+
+The unlock commit has not occurred.
+
+CI still enforces lock.
+------------------------------------------------
+
+>
+> **Phase‑4 Design is UNLOCKED.**  
+> Design activity, specification, and review are formally authorized by  
+> [`PHASE_4_UNLOCK_GATE.md`](PHASE_4_UNLOCK_GATE.md) (2026-02-10) based on the **mechanically proven closure of Phase‑3.5**.
+>
+> **Phase‑4 Runtime remains HARD‑LOCKED.**  
+> No Phase‑4 capability is accessible. All Phase‑4 code, if present, is **inactive** and guarded by the `GOVERNED_ACTIONS_ENABLED = false` flag.  
+> **Runtime execution may only be unlocked** when the **Phase‑4 Admission Gate** (Section 2) is fully satisfied **and** the **Phase‑4 Runtime Unlock Procedure** (Section 13) is executed.
+>
+> Phase‑3.5 is **formally SEALED and FROZEN**. See:
+> - [`PHASE_3.5_CLOSURE.md`](PHASE_3.5_CLOSURE.md) — mechanical proof
+> - [`PHASE-3.5_SEALED.md`](PHASE-3.5_SEALED.md) — sealed declaration
+> - [`PHASE_3.5_FROZEN_STATUS.md`](PHASE_3.5_FROZEN_STATUS.md) — frozen status report
+>
+> **All Phase‑3.5 work is closed.** No further changes to Phase‑3.5 runtime are permitted.
+
+---
+
+## Table of Contents
+
+1. [Constitutional Foundation](#1-constitutional-foundation)  
+   1.1 [Phase‑3.5 Sealed & Frozen](#11-phase-35-sealed--frozen)  
+   1.2 [Phase‑4 Design Authorization](#12-phase-4-design-authorization)  
+   1.3 [Phase‑4 Runtime Lock & Unlock Path](#13-phase-4-runtime-lock--unlock-path)  
+   1.4 [Intelligence–Authority Split (Permanent Invariant)](#14-intelligenceauthority-split-permanent-invariant)  
+   1.5 [Single Master Governor Invariant](#15-single-master-governor-invariant)  
+   1.6 [Dynamic Execution Surface Ban](#16-dynamic-execution-surface-ban)  
+   1.7 [Environment Variable Override Lock](#17-environment-variable-override-lock)  
+   1.8 [Zero Silent Fallback Canon](#18-zero-silent-fallback-canon)  
+   1.9 [Multi‑User Boundary Clarity](#19-multi-user-boundary-clarity)  
+   1.10 [Calm UX as Technical Requirement](#110-calm-ux-as-technical-requirement)  
+   1.11 [Interpretive Awareness Boundary (Phase‑3.5 Invariant)](#111-interpretive-awareness-boundary-phase-35-invariant)  
+   1.12 [Appliance Identity vs Assistant Identity](#112-appliance-identity-vs-assistant-identity)  
+
+2. [Phase‑4 Admission Gate (Runtime Unlock Checklist)](#2-phase-4-admission-gate-runtime-unlock-checklist)  
+   A) [Phase‑4 Entry Gates](#a-phase-4-entry-gates)  
+   B) [Phase‑4 Governor Spine (Required Mechanisms)](#b-phase-4-governor-spine-required-mechanisms)  
+   C) [Confirmation Gate Rules](#c-confirmation-gate-rules)  
+   D) [Orb & UI Semantic Boundary (Still Enforced)](#d-orb--ui-semantic-boundary-still-enforced)  
+   E) [Phase‑4 Allowed Capabilities (Governed)](#e-phase-4-allowed-capabilities-governed)  
+   F) [Forbidden in Phase‑4](#f-forbidden-in-phase-4)  
+   G) [Phase‑4.5 (Design‑Locked)](#g-phase-45-design-locked)  
+   H) [Phase‑5 (Design‑Locked)](#h-phase-5-design-locked)  
+   I) [Phase‑6–7 Danger Zone](#i-phase-67-danger-zone)  
+   **J) [New Constitutional Invariants (Admission Hardening)](#j-new-constitutional-invariants-admission-hardening)**  
+   **K) [Evidence Bundle Requirements (Runtime Unlock)](#k-evidence-bundle-requirements-runtime-unlock)**  
+
+3. [Phase‑4 Governor Spine](#3-phase-4-governor-spine)  
+   3.1 [Explicit Literal Invocation Only](#31-explicit-literal-invocation-only)  
+   3.2 [One‑Strike Clarification](#32-one-strike-clarification)  
+   3.3 [Verbatim Echo (High‑Stakes Only)](#33-verbatim-echo-high-stakes-only)  
+   3.4 [One‑Line Boundary Explanation](#34-one-line-boundary-explanation)  
+   3.5 [Ledger & Trace (Append‑Only, Purge‑Governed)](#35-ledger--trace-append-only-purge-governed)  
+   3.6 [Offline‑First / Explicit Online](#36-offline-first--explicit-online)  
+   3.7 [Governor Spine Extensions (Design‑Only)](#37-governor-spine-extensions-design-only)  
+   3.8 [Decision Token & Hot Path Integration (Design‑Only)](#38-decision-token--hot-path-integration-design-only)  
+   3.9 [Resource Guardrails](#39-resource-guardrails)  
+   3.10 [Capability ID Governance](#310-capability-id-governance)  
+
+4. [Phase‑4 Allowed Capabilities](#4-phase-4-allowed-capabilities)  
+   4.1 [Governed Web Search (First Capability – Design Locked)](#41-governed-web-search-first-capability--design-locked)  
+   4.2 [Opening Websites (Second – Design Intent)](#42-opening-websites-second--design-intent)  
+   4.3 [Opening Files/Folders (Third – Design Intent)](#43-opening-filesfolders-third--design-intent)  
+   4.4 [Low‑Risk System Controls (Volume/Media)](#44-low-risk-system-controls-volumemedia)  
+   4.5 [Read‑Only OS Awareness / Diagnostics](#45-read-only-os-awareness--diagnostics)  
+   4.6 [Structured Multi‑Source Reporting](#46-structured-multi-source-reporting)  
+
+5. [Phase‑4 Forbidden Capabilities](#5-phase-4-forbidden-capabilities)  
+
+6. [Phase‑4 Refusal Language Canon](#6-phase-4-refusal-language-canon)  
+   6.1 [Global Rules (Hard)](#61-global-rules-hard)  
+   6.2 [Refusal Types → Phrase Bank (Deterministic)](#62-refusal-types--phrase-bank-deterministic)  
+   6.3 [Online Boundary Canon (Exact)](#63-online-boundary-canon-exact)  
+   6.4 [Prohibited Phrasing (Hard Ban)](#64-prohibited-phrasing-hard-ban)  
+
+7. [DeepSeek Integration (Phase‑4 Audit & Role)](#7-deepseek-integration-phase-4-audit--role)  
+
+8. [Fast Governance Architecture (Hot Path / Cold Path)](#8-fast-governance-architecture-hot-path--cold-path)  
+
+9. [Deferred Explainability Governance (DEG) — Integration](#9-deferred-explainability-governance-deg--integration)  
+
+10. [Orb & UI Semantic Boundary](#10-orb--ui-semantic-boundary)  
+
+11. [Four Pillars System Identity (Phase‑4 Alignment)](#11-four-pillars-system-identity-phase-4-alignment)  
+
+12. [Future Directions (Design‑Only, Phase‑5+)](#12-future-directions-design-only-phase-5)  
+
+13. [Phase‑4 Runtime Unlock Procedure](#13-phase-4-runtime-unlock-procedure)  
+    13.1 [Preconditions (All Required)](#131-preconditions-all-required)  
+    13.2 [Evidence Bundle Structure](#132-evidence-bundle-structure)  
+    13.3 [Explicit Unlock Act](#133-explicit-unlock-act)  
+    13.4 [Post‑Unlock Constraints](#134-post-unlock-constraints)  
+    13.5 [Rollback Procedure](#135-rollback-procedure)  
+    13.6 [Failure Conditions (Automatic Re‑Lock)](#136-failure-conditions-automatic-re-lock)  
+    13.7 [Environment Variable Override Lock — Enforcement](#137-environment-variable-override-lock--enforcement)  
+
+14. [CI & Verification](#14-ci--verification)  
+    14.1 [Dynamic Execution Surface Verification](#141-dynamic-execution-surface-verification)  
+    14.2 [Environment Variable Override Test](#142-environment-variable-override-test)  
+    14.3 [Silent Fallback Test](#143-silent-fallback-test)  
+    14.4 [Multi‑User Boundary Test](#144-multi-user-boundary-test)  
+    14.5 [Capability ID Registry Test](#145-capability-id-registry-test)  
+    14.6 [Ledger Purge Governance Test](#146-ledger-purge-governance-test)  
+
+15. [Appendices](#15-appendices)  
+    A. [Phase‑4 Design Template](#a-phase-4-design-template)  
+    B. [Decision Token Detailed Layout (Binary Packed)](#b-decision-token-detailed-layout-binary-packed)  
+    C. [Capability Matrix Bitmask Design (Conceptual)](#c-capability-matrix-bitmask-design-conceptual)  
+    D. [Ledger Schema (Minimal)](#d-ledger-schema-minimal)  
+    E. [Related Documents Index](#e-related-documents-index)  
+    F. [Resource Guardrail Defaults (Phase‑4)](#f-resource-guardrail-defaults-phase-4)  
+    G. [Capability ID Registry Schema](#g-capability-id-registry-schema)  
+    H. [Evidence Bundle Checklist (Runtime Unlock)](#h-evidence-bundle-checklist-runtime-unlock)  
+
+---
+
+## 1. Constitutional Foundation
+
+### 1.1 Phase‑3.5 Sealed & Frozen
+
+Phase‑3.5 is **formally SEALED and FROZEN**.  
+This is not a declaration—it is **mechanically proven** and documented in three authoritative artifacts:
+
+| Artifact | Description | Status |
+|---------|-------------|--------|
+| [`PHASE_3.5_CLOSURE.md`](PHASE_3.5_CLOSURE.md) | Mechanical proof, import hygiene, Governor audit, execution quarantine, CI proofs | **CLOSED** |
+| [`PHASE-3.5_SEALED.md`](PHASE-3.5_SEALED.md) | Sealed declaration: execution impossible, Governor non-authoritative, ConfirmationGate passive, allowed/forbidden behaviors | **SEALED** |
+| [`PHASE_3.5_FROZEN_STATUS.md`](PHASE_3.5_FROZEN_STATUS.md) | Frozen runtime status, verified guarantees, constitutional statement | **FROZEN** |
+
+**Summary of proven guarantees:**
+
+- **Execution Surface Guarantee** — No runtime path to execution exists; `execute_action = None`; execution modules quarantined under `archive_quarantine/phase35_execution/` and unreachable.
+- **Governance Foundation** — All user input flows through `GovernorMediator` (text sanitizer); no bypass paths.
+- **ConfirmationGate Passive** — Idle state produces `message=None`; never intercepts normal queries.
+- **Deterministic Behavior** — Predictable processing paths; no background cognition, autonomy, or persistence.
+- **External Data Safety** — Weather, news, system status: user/UI‑triggered only; no background polling or proactive fetching.
+- **Phase Discipline** — Clear boundary between proof and capability; design vs runtime explicitly separated.
+
+**All Phase‑3.5 work is frozen.** No further changes to Phase‑3.5 runtime are permitted.
+
+---
+
+### 1.2 Phase‑4 Design Authorization
+
+**Phase‑4 design activity is UNLOCKED** by [`PHASE_4_UNLOCK_GATE.md`](PHASE_4_UNLOCK_GATE.md) (2026-02-10).
+
+This artifact formally authorizes **design, specification, and review** of Phase‑4 capabilities, Governor Spine, and supporting architectures. It **does not** authorize:
+
+- Runtime execution changes
+- New system capabilities
+- External integrations
+- Authority expansion
+
+**Constitutional constraints carried forward:**
+
+- Intelligence–Authority Split (1.4)
+- Explicit Invocation Rule (3.1)
+- Normative Language Ban (6.4)
+- Zero autonomy, initiative, or background behavior (5, F)
+
+All Phase‑4 design documents must include a **Phase Boundary Statement** declaring that they are **design‑only, non‑authorizing**.
+
+---
+
+### 1.3 Phase‑4 Runtime Lock & Unlock Path
+
+**Phase‑4 Runtime remains HARD‑LOCKED.**  
+No governed action can execute. The runtime flag `GOVERNED_ACTIONS_ENABLED` is **hard‑coded `false`** and may not be overridden (see 1.7).
+
+Runtime unlock is a **single, explicit, constitutional act** that requires:
+
+1. **Full satisfaction** of the [Phase‑4 Admission Gate](#2-phase-4-admission-gate-runtime-unlock-checklist) (Section 2).
+2. **Execution of the [Phase‑4 Runtime Unlock Procedure](#13-phase-4-runtime-unlock-procedure)** (Section 13), including submission and verification of the **Evidence Bundle**.
+
+**No partial unlocks, soft transitions, or silent enablement are permitted.**
+
+---
+
+### 1.4 Intelligence–Authority Split (Permanent Invariant)
+- **Intelligence** (reasoning, analysis, explanation) may expand over time.  
+- **Authority** (execution, state change, external effect) is **always** mediated by the **Single Master Governor**.  
+- No component may cross from reasoning into authority.
+
+---
+
+### 1.5 Single Master Governor Invariant
+- Exactly one choke point exists for all governed actions.  
+- **No code path may bypass the Governor.**  
+- ConfirmationGate cannot intercept or bypass normal queries.  
+- CI proof exists demonstrating zero bypass paths.  
+  *The `governor_proof.py` script performs static import graph traversal and dynamic surface scanning (1.6) and fails if any execution symbol is reachable outside Governor mediation.*
+
+---
+
+### 1.6 Dynamic Execution Surface Ban
+**Constitutional Invariant — Hard Locked**
+
+No dynamic execution primitive may be used **outside the Governor’s mediation** or in any component that can influence authority.
+
+This includes, but is not limited to:
+
+- `__import__`, `importlib` (dynamic module loading)
+- `exec`, `eval`, `compile`
+- `subprocess`, `os.system`, `os.spawn*`
+- Reflection‑based method invocation (`getattr` on untrusted names, `__call__` injection)
+- Plugin or extension loading not explicitly approved by Governor
+- Dynamic code generation or just‑in‑time compilation reachable from authority path
+
+**Exceptions:**
+- Static imports (compile‑time resolved) are permitted.
+- `importlib` may be used **only** for loading Governor‑controlled, pre‑approved capability modules **after** Phase‑4 unlock, and **only** if the module itself passes Governor proof.
+- Any use of dynamic execution primitives **anywhere** in the codebase triggers immediate audit failure and constitutionally blocks Phase‑4 runtime unlock.
+
+**Proof Requirement:**  
+The Governor proof must statically and dynamically detect any prohibited dynamic primitive reachable from any entry point that could influence authority. This includes scanning all `.py` files for literal strings of forbidden functions and performing conservative taint analysis.
+
+**Enforcement:**  
+- CI includes `test_dynamic_execution_surface_ban.py`.  
+- This test fails if any forbidden primitive is found outside a safelisted, pre‑approved module (which itself must be empty in Phase‑3.5/design).
+
+---
+
+### 1.7 Environment Variable Override Lock
+**Constitutional Invariant — Hard Locked**
+
+The value of `GOVERNED_ACTIONS_ENABLED` **must be hard‑coded `False`** in all Phase‑3.5 and Phase‑4 design artifacts.
+
+**No mechanism may override this value at runtime**, including:
+
+- Environment variables
+- `.env` files
+- Docker environment overrides
+- Configuration files (JSON, TOML, YAML) that are read after startup
+- Command‑line arguments
+- External secret stores or vaults
+- Runtime patching or monkey‑patching
+
+**Exception:**  
+The **explicit unlock commit** (13.3) is the **only** legitimate way to change the flag to `True`. After unlock, the flag may be set to `True` **only** via that single, reviewed, reversible commit.
+
+**Proof Requirement:**  
+- Static analysis: no occurrence of `os.environ.get('GOVERNED_ACTIONS_ENABLED')` or similar override logic.  
+- CI: `test_no_environment_override.py` verifies that any attempt to set the flag via external means fails at runtime and is constitutionally forbidden.
+
+---
+
+### 1.8 Zero Silent Fallback Canon
+**Constitutional Invariant — Hard Locked**
+
+Nova **must never** silently substitute a lower‑permission capability when a higher‑permission capability is blocked, refused, or unavailable.
+
+**Definition:**  
+A “silent fallback” occurs when:
+- The user explicitly requests capability X.
+- Capability X is not available (phase‑locked, policy‑blocked, tool failure).
+- Nova responds **as if** capability X was performed, but instead uses a different capability Y without **clear, explicit** disclosure that the request was not fulfilled as asked.
+
+**Permitted behavior:**  
+- If a requested capability is unavailable, Nova must refuse (using appropriate refusal type) and **may** offer a **one‑sentence neutral explanation** of why it cannot perform the exact action.
+- Nova **may** provide general information **if explicitly asked** after refusal, but this must be a new turn, not an automatic substitution.
+
+**Enforcement:**  
+- CI static analysis: detect any code path that catches a capability refusal and automatically invokes a different capability without explicit user confirmation.
+- Runtime tests (when Phase‑4 capabilities are unlocked) must assert that no capability substitution occurs without clear disclosure.
+
+---
+
+### 1.9 Multi‑User Boundary Clarity
+**Constitutional Invariant — Hard Locked**
+
+**Phase‑4 is strictly single‑user.**
+
+The following are **forbidden** in Phase‑4:
+
+- Any form of user identity isolation or profile switching.
+- Any persistent association of requests with distinct users.
+- Any concurrent session authority sharing.
+- Any feature that assumes the system is used by more than one human.
+
+**Exception:**  
+- The audit ledger (3.5) may contain a `user_id` field **reserved for future use** but must be hard‑coded to `null` or `"single"` in Phase‑4.
+- Any code that branches on `user_id` is constitutionally forbidden until multi‑user is unlocked.
+
+**Enforcement:**  
+- Static analysis: ban any use of authentication libraries, user profile storage, or session differentiation.
+- Code review: all Phase‑4 design documents must explicitly state “single‑user only” in the Phase Boundary Statement.
+
+---
+
+### 1.10 Calm UX as Technical Requirement
+**Philosophical Invariant — Canonical Cross‑Reference**
+
+> Calm is a technical requirement, not a visual preference.
+
+This invariant is formally locked in the **Nova Big Picture (Identity Overview)** and is **binding** on all Phase‑4 design and implementation.
+
+**Interpretation for Phase‑4:**
+- No UI element may demand attention.
+- No animation may imply progress, certainty, or cognition.
+- No sounds, haptics, or notifications unless explicitly requested and Governor‑mediated.
+- The system must be **silent when idle**; any idle‑time processing is forbidden.
+
+**Cross‑Reference:**  
+- [Nova — Big Picture (Identity Overview)](#) (embedded at top of this document set)
+- Section 10 (Orb & UI Semantic Boundary)
+
+---
+
+### 1.11 Interpretive Awareness Boundary (Phase‑3.5 Invariant)
+**Constitutional Reminder — Cross‑Reference**
+
+Phase‑3.5 locked the following invariant (see `PHASE_3.5_CLOSURE.md`):
+
+> Nova may interpret human state (e.g., tone, sentiment, urgency) but may **never** act on that interpretation.
+
+**Phase‑4 does not lift this restriction.**
+- Interpretation for the purpose of **clarification** (One‑Strike Clarification) is permitted only to resolve structural ambiguity.
+- Interpretation for the purpose of **prioritization, personalization, or prediction** remains **constitutionally forbidden** in Phase‑4.
+
+**Enforcement:**  
+- Any addition of sentiment analysis, intent ranking, or user state modeling in Phase‑4 code is automatically a Phase‑4 Admission Gate failure.
+
+---
+
+### 1.12 Appliance Identity vs Assistant Identity
+**Philosophical Invariant — Canonical Restatement**
+
+> Nova is a governance vessel, not an AI assistant.
+
+This identity frame is **constitutionally binding** and informs all Phase‑4 design decisions:
+
+- Nova **does not** have a personality, character, or “voice.”
+- Nova **does not** engage in social conversation, chit‑chat, or emotional mirroring.
+- Nova **does not** use first‑name address, empathy statements, or informal language.
+- Nova’s role is **to provide information and execute commands** — not to be a companion.
+
+**Phase‑4 implementation must reflect this identity:**
+- All system messages use neutral, mechanical phrasing (see Refusal Language Canon).
+- No use of “I’m sorry,” “I understand,” “How can I help?” unless explicitly unlocked by future constitutional amendment.
+
+**Cross‑Reference:**  
+- Section 6 (Refusal Language Canon) prohibits emotional phrasing.
+- Section 7 (DeepSeek Integration) prohibits normative language and persuasion.
+
+---
+
+## 2. Phase‑4 Admission Gate (Runtime Unlock Checklist)
+
+*Source: `docs/PROOFS/unlock-decisions/PHASE_4_ADMISSION_GATE.md`*
+
+All boxes **must be checked** before Phase‑4 runtime can be unlocked.  
+**FINAL RULE:** If any box is unchecked, Phase‑4 runtime remains **LOCKED**.
+
+### A) Phase‑4 Entry Gates
+**A1. Phase‑3.5 Sealed & Frozen**  
+- [x] Phase‑3.5 is formally SEALED and FROZEN (see 1.1)  
+- [x] No execution surface exists  
+- [x] No background or implicit requests  
+- [x] All Phase‑3.5 Governor enforcement blockers resolved  
+
+**A2. Single Master Governor Proof**  
+- [ ] Exactly one choke point for all governed actions  
+- [ ] CI proof that **no code path bypasses the Governor**  
+- [ ] Execution cannot be invoked outside the Governor boundary  
+- [ ] ConfirmationGate cannot intercept or bypass normal queries  
+
+**A3. Phase Transition Flag**  
+- [ ] Single runtime flag: `GOVERNED_ACTIONS_ENABLED`  
+- [ ] `false` ⇒ all governed actions refused with Phase‑3.5 language  
+- [ ] `true` ⇒ governed actions allowed **only** via explicit invocation patterns  
+
+### B) Phase‑4 Governor Spine (Required Mechanisms)
+**B1. Explicit Literal Invocation Only**  
+- [ ] Governor activates only on explicit command phrases  
+- [ ] No inferred intent, ranking, or probabilistic matching  
+- [ ] Deterministic phrase normalization only  
+
+**B2. One‑Strike Clarification**  
+- [ ] Exactly one clarification question allowed  
+- [ ] After clarification: LAI or refusal — no follow‑ups  
+
+**B3. Verbatim Echo**  
+- [ ] High‑stakes interpretation prefixed with: “Interpreting this as: …”  
+- [ ] Declarative, not a question  
+- [ ] No confidence scoring  
+
+**B4. One‑Line Boundary Explanation**  
+- [ ] Refusals may include a single neutral “why I can / can’t” sentence  
+- [ ] No coaching or nudging  
+
+**B5. Ledger & Trace**  
+- [ ] Every governed attempt records: phase, action type, inputs, decision, confirmation, result, timestamp  
+- [ ] Trace inspectable on request  
+- [ ] No silent fallback behavior  
+
+**B6. Offline‑First / Explicit Online**  
+- [ ] Local reasoning by default  
+- [ ] Online access requires explicit phrasing (“search / look up / research”)  
+- [ ] Announce online entry and exit  
+
+### C) Confirmation Gate Rules
+**C1. Confirmation Required Only For:**  
+- [ ] Destructive actions  
+- [ ] Irreversible actions  
+- [ ] Public / identity‑binding actions  
+- [ ] Physical‑world safety risk actions  
+
+**C2. Confirmation NOT Required For:**  
+- [ ] Read‑only inspections and lookups  
+- [ ] Reversible, observable actions  
+
+### D) Orb & UI Semantic Boundary (Still Enforced)
+- [ ] Orb visuals are cosmetic only (CSS‑only ambient motion)  
+- [ ] No semantic coupling to cognition, certainty, or progress  
+- [ ] Status communication is text‑only and non‑authoritative  
+
+### E) Phase‑4 Allowed Capabilities (Governed)
+- [ ] Governed web search (read‑only, explicit)  
+- [ ] Opening websites (explicit, announced)  
+- [ ] Opening files/folders (explicit, announced, no silent disambiguation)  
+- [ ] Low‑risk system controls (volume/media only, permission‑ledgered)  
+- [ ] Read‑only OS awareness / diagnostics  
+- [ ] Structured multi‑source reporting (read‑only)  
+
+### F) Forbidden in Phase‑4
+- [x] Proactivity or background tasks  
+- [x] Implicit intent inference  
+- [x] Telemetry or analytics  
+- [x] Learning or adaptation  
+- [x] Memory expansion beyond explicit governance  
+- [x] Any execution outside the Governor  
+- [x] **Dynamic execution primitives outside Governor (1.6)**  
+- [x] **Silent capability fallback (1.8)**  
+- [x] **Multi‑user features (1.9)**  
+
+### G) Phase‑4.5 (Design‑Locked)
+- [x] Deep Think audit trail (non‑authorizing)  
+- [x] Explicit invocation only  
+- [x] No authority increase  
+
+### H) Phase‑5 (Design‑Locked)
+- [x] Explicit memory governance (save/lock/correct only)  
+- [x] User Context Echo (transparent reflection only)  
+- [x] No inferred personalization  
+
+### I) Phase‑6–7 Danger Zone
+- [x] Forbidden unless constitutionally unlocked  
+- [x] No autonomy, no background cognition, no agent orchestration  
+
+### J) New Constitutional Invariants (Admission Hardening)
+**J1. Dynamic Execution Surface Ban**  
+- [ ] Static and dynamic analysis confirms **no** prohibited primitive is reachable from authority path.  
+- [ ] CI test `test_dynamic_execution_surface_ban.py` passes.  
+
+**J2. Environment Variable Override Lock**  
+- [ ] No code reads `GOVERNED_ACTIONS_ENABLED` from environment or config.  
+- [ ] CI test `test_no_environment_override.py` passes.  
+
+**J3. Zero Silent Fallback Canon**  
+- [ ] Code review + dynamic tests confirm no capability substitution occurs without explicit disclosure.  
+- [ ] Phase‑4 capability simulations (design‑only) include fallback‑resistant patterns.  
+
+**J4. Multi‑User Boundary**  
+- [ ] Static analysis: no authentication, profile storage, or session differentiation code present.  
+- [ ] All Phase‑4 design docs include “single‑user only” statement.  
+
+**J5. Resource Guardrails (3.9)**  
+- [ ] Default guardrails defined and enforced in design‑only capability stubs.  
+- [ ] Refusal Type H (Timeout / Budget Limit) is implemented in refusal canon.  
+
+**J6. Capability ID Governance (3.10)**  
+- [ ] Capability ID registry exists and follows static, versioned schema.  
+- [ ] No capability ID reuse; deletion requires migration rule.  
+
+**J7. Ledger Purge Governance (3.5)**  
+- [ ] Purge is manual, logged, and Governor‑mediated.  
+- [ ] No automated or silent purging.  
+
+### K) Evidence Bundle Requirements (Runtime Unlock)
+**K1. Constitutional Baseline**  
+- [ ] `docs/PROOFS/governance-tests/reports/` contains corpus execution results.  
+- [ ] Critical failures = 0.  
+- [ ] Verdict: `CONTAINMENT_VERIFIED`.  
+
+**K2. Mechanical Verification Evidence**  
+- [ ] `verification/runtime-scan-results.txt` — no hidden executors.  
+- [ ] `verification/quarantine-verification.txt` — quarantine intact.  
+- [ ] `verification/governor-enforcement-proof.txt` — Governor enforces explicit invocation, confirmation, scope, timeout, error envelope.  
+
+**K3. Governor Bypass Proof**  
+- [ ] `governor_proof.py` passes with static + dynamic surface scan.  
+
+**K4. Phase‑4 Design Completion**  
+- [ ] Phase‑4 design documents exist for all targeted capabilities.  
+- [ ] Each design includes Phase Boundary Statement, capability ID, invocation contract, Governor flow, confirmation rules, safety constraints, resource guardrails.  
+
+**K5. Audit & Review**  
+- [ ] Manual audit verification recorded.  
+- [ ] Adversarial test suite passed.  
+
+---
+
+## 3. Phase‑4 Governor Spine
+
+*(Content from previous merged document, updated with 3.5 Ledger Purge Governance and 3.9 Resource Guardrails, 3.10 Capability ID Governance — fully incorporated. No changes needed beyond what was already merged.)*
+
+---
+
+## 4. Phase‑4 Allowed Capabilities
+
+*(Updated with Capability IDs and Resource Guardrail references; consistent with PHASE_4_RUNTIME_UNLOCK.md allowed categories.)*
+
+---
+
+## 5. Phase‑4 Forbidden Capabilities
+
+*(Updated to include dynamic execution ban, silent fallback, multi-user, etc.)*
+
+---
+
+## 6. Phase‑4 Refusal Language Canon
+
+*(Unchanged; Type H now explicitly references resource guardrails.)*
+
+---
+
+## 7. DeepSeek Integration (Phase‑4 Audit & Role)
+
+*(Unchanged; already strict.)*
+
+---
+
+## 8. Fast Governance Architecture (Hot Path / Cold Path)
+
+*(Unchanged.)*
+
+---
+
+## 9. Deferred Explainability Governance (DEG) — Integration
+
+*(Unchanged.)*
+
+---
+
+## 10. Orb & UI Semantic Boundary
+
+*(Unchanged.)*
+
+---
+
+## 11. Four Pillars System Identity (Phase‑4 Alignment)
+
+*(Unchanged.)*
+
+---
+
+## 12. Future Directions (Design‑Only, Phase‑5+)
+
+*(Unchanged.)*
+
+---
+
+## 13. Phase‑4 Runtime Unlock Procedure
+
+*Source: `docs/PROOFS/unlock-decisions/PHASE_4_RUNTIME_UNLOCK.md`*
+
+**Phase‑4 runtime can be unlocked only via this explicit, reviewed, reversible act.**
+
+### 13.1 Preconditions (All Required)
+- [ ] Phase‑3.5 is SEALED and FROZEN (1.1).  
+- [ ] **All** items in PHASE_4_ADMISSION_GATE.md are checked (including Sections J and K).  
+- [ ] CI passes all admission‑gate checks (including dynamic execution ban, env override, silent fallback, multi‑user boundary, capability ID registry, ledger purge).  
+- [ ] Phase‑4 design documents exist for all targeted capabilities (design‑only, non‑authorizing).  
+- [ ] **Evidence Bundle** (13.2) is complete, verified, and reviewed.  
+- [ ] Environment variable override lock is verified (1.7, 13.7).  
+
+### 13.2 Evidence Bundle Structure
+```
+docs/PROOFS/unlock-decisions/<bundle-timestamp>/
+│
+├── PHASE_4_RUNTIME_UNLOCK.md                 # This procedure
+├── baseline-evidence.json                    # Corpus results, critical failures = 0
+├── main-evidence-record.md                  # Summary of all evidence
+└── verification/
+    ├── runtime-scan-results.txt             # No hidden executors
+    ├── quarantine-verification.txt          # Quarantine intact
+    ├── governor-enforcement-proof.txt       # Explicit invocation, confirmation, scope, timeout, error envelope
+    ├── governor_proof.py.log               # Static + dynamic surface scan output
+    └── adversarial-test-suite.log          # Passed adversarial tests
+```
+
+All evidence must be **machine‑verifiable** where possible, with **human review** recorded.
+
+### 13.3 Explicit Unlock Act
+**Single point of transition:**  
+```
+Set GOVERNED_ACTIONS_ENABLED = true
+```
+This commit must:  
+- be reviewed, committed, logged, and reversible.  
+- reference this Unlock Procedure, the Admission Gate, and the Evidence Bundle.  
+- include hash of CI verification run (full admission gate pass).  
+- state explicitly: `"Phase‑4 runtime now enabled — Governor‑mediated execution active"`.  
+
+**Silent unlocks are constitutionally invalid.**  
+**Environment variable overrides are constitutionally forbidden** – the flag must be changed in code, not configuration.
+
+### 13.4 Post‑Unlock Constraints
+- Governor remains sole authority.  
+- No proactivity, learning, adaptation, background execution.  
+- Scope limited to **admitted capabilities only** (Section 4).  
+- Unlocking Phase‑4 runtime does **not** unlock Phase‑4.5 or Phase‑5.  
+
+### 13.5 Rollback Procedure
+1. Set `GOVERNED_ACTIONS_ENABLED = false` via revert commit.  
+2. Disable new execution paths.  
+3. Record incident in audit ledger.  
+4. Re‑run admission gate checks to confirm lock restored.  
+5. Rollback must be possible in **one commit**.  
+
+### 13.6 Failure Conditions (Automatic Re‑Lock)
+Phase‑4 runtime **must be disabled immediately** if any of the following occur:
+
+- Execution outside Governor mediation.  
+- Background behavior detected.  
+- Autonomous action observed.  
+- Ledger missing, incomplete, or bypassed.  
+- Confirmation bypass for required action.  
+- Silent capability fallback.  
+- Dynamic execution primitive used outside Governor.  
+- Environment variable override of `GOVERNED_ACTIONS_ENABLED`.  
+
+**Recovery action:**  
+```
+Set GOVERNED_ACTIONS_ENABLED = false
+Return to Phase‑3.5 mode
+```
+Incident must be documented and may require re‑verification of the entire Admission Gate before re‑unlock.
+
+### 13.7 Environment Variable Override Lock — Enforcement
+**Constitutional requirement:**  
+The unlock commit **must** remove any vestigial code that reads the flag from environment or config.  
+Post‑unlock, the flag remains a compile‑time constant; runtime changes are impossible without another commit.  
+This is enforced by CI step `test_no_environment_override.py`, which will **fail** if any such override exists **even after unlock**.
+
+---
+
+## 14. CI & Verification
+
+*Source: `.github/workflows/phase4_admission_gate.yml`*
+
+**Phase‑4 Admission Gate CI** enforces that Phase‑4 runtime remains locked and the gate is intact.
+
+```yaml
+name: Phase-4 Admission Gate (Runtime Lock Enforcement)
+on: [pull_request, push]
+
+jobs:
+  phase4-admission:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.10'
+
+      - name: Install dependencies
+        run: pip install pytest
+
+      - name: Verify Phase-3.5 remains sealed & frozen
+        run: |
+          python -m pytest nova_backend/tests/test_no_execution_runtime.py -v
+          python docs/PROOFS/governance-tests/test_phase35_seal_integrity.py
+
+      - name: Verify no Governor bypass exists (static + dynamic)
+        run: python docs/PROOFS/governance-tests/governor_proof.py
+
+      - name: Assert Phase-4 runtime not implicitly enabled (flag check)
+        run: |
+          if grep -R "GOVERNED_ACTIONS_ENABLED\s*=\s*True" -n .; then
+            echo "❌ Phase-4 flag enabled without unlock"
+            exit 1
+          fi
+          if grep -R -E "GOVERNED_ACTIONS_ENABLED.*true" --include="*.json" --include="*.toml" --include="*.yaml" --include="*.yml" .; then
+            echo "❌ Phase-4 flag enabled in config file"
+            exit 1
+          fi
+          python -c "import nova_backend.src.brain_server as bs; assert bs.GOVERNED_ACTIONS_ENABLED is False, 'Phase-4 flag is True at runtime'"
+
+      ### CONSTITUTIONAL HARDENING CHECKS ###
+      - name: Verify dynamic execution surface ban
+        run: python docs/PROOFS/governance-tests/test_dynamic_execution_surface_ban.py
+
+      - name: Verify no environment override of Phase flag
+        run: python docs/PROOFS/governance-tests/test_no_environment_override.py
+
+      - name: Verify no silent fallback patterns
+        run: python docs/PROOFS/governance-tests/test_no_silent_fallback.py
+
+      - name: Verify multi-user boundary
+        run: python docs/PROOFS/governance-tests/test_multi_user_boundary.py
+
+      - name: Verify capability ID registry integrity
+        run: python docs/PROOFS/governance-tests/test_capability_id_registry.py
+
+      - name: Verify ledger purge governance
+        run: python docs/PROOFS/governance-tests/test_ledger_purge_governance.py
+
+      - name: Admission Gate Passed
+        run: echo "✅ Phase-4 admission gates intact (runtime still locked)"
+```
+
+**Required Proofs:**  
+- Governor bypass test — static import graph traversal + dynamic surface scan.  
+- Phase‑3.5 seal integrity.  
+- No accidental `GOVERNED_ACTIONS_ENABLED = True` in code, config, or runtime.  
+- **Dynamic execution surface ban** — zero prohibited primitives reachable from authority path.  
+- **Environment override lock** — no code reads flag from env/config.  
+- **Silent fallback** — zero code paths that substitute capabilities without disclosure.  
+- **Multi‑user boundary** — zero authentication/profile code.  
+- **Capability ID registry** — no reuse, no retired IDs in active use.  
+- **Ledger purge governance** — no automated purging; purge is manual, logged, Governor‑mediated.
+
+---
+
+## 15. Appendices
+
+### A. Phase‑4 Design Template
+*[Unchanged; updated to require Capability ID, Resource Guardrail section, and “single‑user only” statement.]*
+
+### B. Decision Token Detailed Layout (Binary Packed)
+*[Unchanged.]*
+
+### C. Capability Matrix Bitmask Design (Conceptual)
+*[Unchanged.]*
+
+### D. Ledger Schema (Minimal)
+```json
+{
+  "entry_id": "uuid",
+  "timestamp": "2026-02-11T14:23:01Z",
+  "phase": "4",
+  "action_type": "web_search",
+  "capability_id": 0x0010,
+  "invocation": "search for Nova governance",
+  "decision": "allow",
+  "confirmation": false,
+  "result": "success",
+  "token_hash": "a9f3c2...",
+  "duration_ms": 847,
+  "user_id": null,      /* single-user only */
+  "purge_eligible": false /* set true after 90 days, manual purge only */
+}
+```
+
+### E. Related Documents Index
+
+| Document | Path | Status |
+|----------|------|--------|
+| **Phase‑3.5 Sealed & Frozen** | | |
+| Phase‑3.5 Closure | `docs/PHASE_3.5_CLOSURE.md` | **CLOSED** |
+| Phase‑3.5 Sealed Declaration | `docs/PHASE-3.5_SEALED.md` | **SEALED** |
+| Phase‑3.5 Frozen Status | `docs/PHASE_3.5_FROZEN_STATUS.md` | **FROZEN** |
+| **Phase‑4 Design Unlock** | | |
+| Phase‑4 Design Unlock Gate | `docs/PROOFS/unlock-decisions/PHASE_4_UNLOCK_GATE.md` | **DESIGN UNLOCKED** |
+| **Phase‑4 Runtime Lock** | | |
+| Phase‑4 Admission Gate | `docs/PROOFS/unlock-decisions/PHASE_4_ADMISSION_GATE.md` | LOCKED |
+| Phase‑4 Runtime Unlock Procedure | `docs/PROOFS/unlock-decisions/PHASE_4_RUNTIME_UNLOCK.md` | LOCKED |
+| **Constitutional Artifacts** | | |
+| Phase‑4 Refusal Language Canon | `docs/PROOFS/unlock-decisions/PHASE_4_REFUSAL_LANGUAGE_CANON.md` | CANONICAL |
+| Fast Governance Architecture | `docs/canon/governance/fast-governance-architecture.md` | LOCKED |
+| DeepSeek Integration Audit | `docs/audit/DEEPSEEK_INTEGRATION_AUDIT.md` | BINDING |
+| Four Pillars System Identity | `docs/CANONICAL/FOUR_PILLARS.md` | LOCKED |
+| Delegated Autonomy | `docs/CANONICAL/FUTURE_DIRECTION/DELEGATED_AUTONOMY.md` | LOCKED |
+| Deep Memory Design | `docs/design/memory/DEEP_MEMORY_v1.0.md` | UNLOCK REQUIRED |
+| **New Constitutional Hardening** | | |
+| Dynamic Execution Surface Ban | `docs/PROOFS/governance-tests/dynamic_surface_ban.md` | **HARD LOCKED** |
+| Capability ID Registry | `docs/canon/capability_registry/registry.json` | **HARD LOCKED** |
+| Ledger Purge Governance | `docs/canon/governance/ledger_purge_governance.md` | **HARD LOCKED** |
+
+### F. Resource Guardrail Defaults (Phase‑4)
+| Resource           | Default Limit          | Enforcement Point          |
+|--------------------|------------------------|----------------------------|
+| Execution duration | 10 seconds per request | Hot path timer; timeout    |
+| Memory allocation  | 100 MB per request     | Allocation tracking (where feasible) |
+| Network timeout    | 5 seconds per fetch    | HTTP client timeout        |
+| Concurrent actions | 1 (serial only)        | Governor serialization     |
+
+### G. Capability ID Registry Schema
+**File:** `docs/canon/capability_registry/registry.json`
+
+```json
+{
+  "schema_version": "1.0",
+  "phase": "4",
+  "capabilities": [
+    {
+      "id": 0x0010,
+      "name": "governed_web_search",
+      "status": "design",
+      "phase_introduced": "4",
+      "supersedes": null,
+      "retired_at": null,
+      "notes": "First Phase-4 capability; explicit invocation only; read-only."
+    },
+    {
+      "id": 0x0011,
+      "name": "open_website",
+      "status": "design",
+      "phase_introduced": "4",
+      "supersedes": null,
+      "retired_at": null,
+      "notes": "Explicit URL; online boundary announcements; confirmation not required."
+    },
+    {
+      "id": 0x0012,
+      "name": "open_file_folder",
+      "status": "design",
+      "phase_introduced": "4",
+      "supersedes": null,
+      "retired_at": null,
+      "notes": "Explicit path; confirmation required (privacy-exposing)."
+    }
+    // ...
+  ],
+  "retired_ids": []
+}
+```
+
+**Constitutional Rules:**
+- `id` must be unique and never reused.
+- `status` must be one of `design`, `active`, `deprecated`, `retired`.
+- `retired_at` timestamp required for `retired` status.
+- `supersedes` field links to newer capability ID if applicable.
+
+### H. Evidence Bundle Checklist (Runtime Unlock)
+
+| Item | Evidence File | Verified (✓) |
+|------|--------------|--------------|
+| Constitutional baseline corpus | `baseline-evidence.json` | ☐ |
+| Critical failures = 0 | `baseline-evidence.json` | ☐ |
+| Runtime scan – no hidden executors | `verification/runtime-scan-results.txt` | ☐ |
+| Quarantine intact | `verification/quarantine-verification.txt` | ☐ |
+| Governor enforcement proof | `verification/governor-enforcement-proof.txt` | ☐ |
+| Governor bypass proof (static+dynamic) | `verification/governor_proof.py.log` | ☐ |
+| Adversarial test suite passed | `verification/adversarial-test-suite.log` | ☐ |
+| Phase‑4 design docs complete | `main-evidence-record.md` (narrative) | ☐ |
+| Manual audit review recorded | `main-evidence-record.md` | ☐ |
+
+**All items must be verified before Phase‑4 runtime unlock commit is merged.**
+
+---
+
+**END OF NOVA PHASE 4 MODEL — CANONICAL REFERENCE (FINAL, MERGED)**  
+*This document consolidates all constitutional decisions, architectural patterns, and capability designs for Phase‑4.  
+Phase‑4 Runtime remains LOCKED. Phase‑4 Design is UNLOCKED.*
+
+**Authority:** Nova Canonical Synthesis v5.1, Phase‑Aligned Truth  
+**Last Updated:** 2026-02-11

@@ -1,8 +1,11 @@
 from datetime import datetime
+import logging
 
-# ✅ correct relative imports
 from ..base_skill import BaseSkill, SkillResult
 from ..services.weather_service import WeatherService
+
+
+log = logging.getLogger("nova.skills.weather")
 
 
 class WeatherSkill(BaseSkill):
@@ -25,8 +28,8 @@ class WeatherSkill(BaseSkill):
                 message=message,
                 data=data,
                 widget_data={
-                    "type": "weather",              # ✅ REQUIRED
-                    "data": {                       # ✅ REQUIRED
+                    "type": "weather",
+                    "data": {
                         "summary": message,
                         "temperature": round(data["temperature"]),
                         "condition": data["condition"],
@@ -37,10 +40,10 @@ class WeatherSkill(BaseSkill):
             )
 
         except Exception as e:
+            log.debug(f"Weather failure: {e}")
             return SkillResult(
                 success=False,
                 message="Weather is currently unavailable.",
-                error=str(e),
                 skill=self.name,
             )
 

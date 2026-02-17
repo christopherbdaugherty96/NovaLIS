@@ -1,0 +1,182 @@
+
+🔒 NOVA CONSTITUTIONAL LOCK
+Future Direction: Delegated Autonomy Within Governor Control
+Status: CANONICAL — LOCKED
+Authority Level: Core Philosophy (Non-Authorizing)
+Phase Impact: None (No Phase-4 unlock)
+Runtime Impact: None (Phase-3.5 behavior unchanged)
+Purpose: Define the long-term direction for controlled autonomy without expanding current capability
+
+1. Core Principle
+Nova’s long-term evolution may allow limited autonomous operation, but only through explicit, bounded delegation enforced by the Master Governor.
+Invariant:
+Intelligence may operate continuously.
+Authority may operate only within explicitly delegated limits.
+This preserves the Intelligence–Authority Split as the permanent foundation.
+
+2. Definition: Delegated Autonomy
+Delegated autonomy is not independence.
+It means:
+Nova may:
+Monitor conditions continuously
+
+
+Perform background reasoning
+
+
+Take actions automatically
+
+
+Only if all actions remain inside a user-defined policy envelope enforced by the Governor.
+If outside the envelope → action is blocked.
+
+3. Policy Envelope (Required Model)
+All autonomous behavior must operate inside a bounded contract:
+Required constraints (minimum):
+Scope limits (domain restrictions)
+
+
+Action limits (what actions are allowed)
+
+
+Resource limits (time, frequency, budget)
+
+
+External access limits (internet, devices, APIs)
+
+
+Full audit logging
+
+
+Immediate revocation capability
+
+
+Automatic suspension on error or boundary violation
+
+
+The Governor remains the single execution authority.
+
+4. Governor Responsibility Shift (Future)
+Current model:
+“Did the user explicitly request this?”
+Future delegated model:
+“Is this action permitted by the active delegation policy?”
+This is a policy-validation model, not trust-based autonomy.
+
+5. Non-Negotiable Invariants (Carry Forward)
+Even under future delegated autonomy:
+Single Master Governor remains the only execution path
+
+
+No execution outside Governor mediation
+
+
+All actions auditable and reversible when possible
+
+
+Explicit user delegation required before any autonomous operation
+
+
+Delegation must be bounded, visible, and revocable
+
+
+Default state remains non-autonomous
+
+
+Autonomy is opt-in, never default.
+
+6. Explicit Prohibitions
+This lock does not allow:
+Phase-4 capability expansion
+
+
+Background execution in current phases
+
+
+Proactive behavior in Phase-3.5
+
+
+Learning-based authority expansion
+
+
+Self-modifying permissions
+
+
+Implicit or inferred delegation
+
+
+Any execution without an active policy contract
+
+
+
+7. Phase Placement (Design-Only Direction)
+This concept applies only to future phases (Phase-5+) and requires:
+New constitutional unlock
+
+
+Dedicated Delegation Policy System
+
+
+Governor policy-validation engine
+
+
+Delegation UI and audit controls
+
+
+Safety proofs equivalent to Phase-3.5 governance level
+
+
+Until then:
+Phase-3.5 and Phase-4 remain non-autonomous.
+
+8. Architectural Interpretation
+Future Nova model:
+User
+  ↓
+Delegation Contract (bounded policy)
+  ↓
+Governor (policy validation)
+  ↓
+Execution Boundary
+The system may reason continuously.
+Execution authority remains fully governed.
+
+9. Intent of This Lock
+This establishes Nova’s end-state direction as:
+A continuously intelligent system whose actions are strictly limited by explicit, enforceable delegation contracts.
+Not an agent.
+Not autonomous by default.
+Not self-directed.
+Always governed.
+
+10. Canonical Classification
+This lock is:
+Philosophical direction: Yes
+
+
+Capability authorization: No
+
+
+Phase change: No
+
+
+Runtime change: No
+
+
+It defines where Nova may go, not what Nova can do now.
+
+If you want this aligned perfectly with your current canon structure, the next step (optional) would be:
+Where this belongs:
+
+
+docs/CANONICAL/FUTURE_DIRECTION/
+
+
+or appended to NOVA PROJECT OVERVIEW
+
+
+And I can give you a one-line reference tag to embed across documents (like your Phase-3.5 frozen banner).
+
+
+This is a strong lock — it keeps your governance philosophy intact while defining a controlled path to true long-term capability.
+

@@ -1,0 +1,633 @@
+📘Nova Autonomy & Mutation Control – Constitutional Specification
+
+**Design Document – Phase 9/10+**  
+**Status:** Design‑only (Not Runtime Authorised)  
+**Scope:** Defines autonomy tiers, mutation classes, constitutional boundaries, and mechanical enforcement.  
+**Purpose:** Provide the complete mechanical foundation for user‑controlled autonomy, mutation firewalling, and evolution governance.
+
+---
+
+## Table of Contents
+
+1. [Introduction](#1-introduction)  
+2. [Core Constitutional Principles](#2-core-constitutional-principles)  
+3. [Autonomy Tiers](#3-autonomy-tiers)  
+    - 3.1 Invariants Across All Tiers  
+    - 3.2 Tier 0 – Locked (Appliance)  
+    - 3.3 Tier 1 – Assisted (Local Indexing Only)  
+    - 3.4 Tier 2 – Observational (Pattern Detection, No Auto‑Apply)  
+    - 3.5 Tier 3 – Evolving (Self‑Improvement, Still Governed)  
+    - 3.6 Tier 4 – Autonomous Cognition (Long‑Horizon Thought)  
+4. [Evolution Kill Switch](#4-evolution-kill-switch)  
+5. [“UpToDate” System Status Page](#5-uptodate-system-status-page)  
+6. [Phase 10+ – Anti‑Ossification Clause](#6-phase-10–-anti‑ossification-clause)  
+7. [Hidden Traps – Binding Fixes](#7-hidden-traps–-binding-fixes)  
+8. [Phase–Tier Compatibility Matrix](#8-phase–tier-compatibility-matrix)  
+9. [Mutation Taxonomy – Mechanical Enforcement](#9-mutation-taxonomy–-mechanical-enforcement)  
+    - 9.1 Definition of a Mutation  
+    - 9.1.A Non‑Mutating Computation  
+    - 9.2 Core Principles  
+    - 9.3 Mutation Rings (System Layers)  
+    - 9.4 Mutation Classes  
+    - 9.5 Tier–Mutation Compatibility Matrix  
+    - 9.6 Evolution Kill Switch Interaction  
+    - 9.7 Resource Guardrails  
+    - 9.8 Mutation Scope Limit  
+    - 9.9 Mutation Frequency Governor  
+    - 9.10 Enforcement Mechanism Preview  
+    - 9.11 Constitutional Boundary  
+10. [Expanding the Model – Future Extensions](#10-expanding-the-model–-future-extensions)  
+11. [Constitutional Amendment Protocol](#11-constitutional-amendment-protocol)  
+12. [Immediate Next Steps (Design‑Only)](#12-immediate-next-steps-design‑only)  
+
+---
+
+# 1. Introduction
+
+This document defines the complete constitutional model for **autonomy** and **mutation** within Nova. The core insight—**autonomy is a user‑configured operating mode, not a system property**—is now canonical. It preserves the Intelligence‑Authority Split while giving users graduated control over background cognition and self‑improvement.
+
+All decisions recorded here are **design‑intent** and will be implemented only after Phase‑9/10 engineering begins.
+
+---
+
+# 2. Core Constitutional Principles
+
+| Principle | Description |
+|----------|-------------|
+| **Intelligence‑Authority Split** | Cognition and execution are separate. Authority always routes through the Governor Kernel. |
+| **No Autonomy by Default** | Default tier upon first launch or factory reset is **Tier 0 (Locked)**. Evolution is OFF by default. |
+| **User Sovereignty** | All tier increases require explicit user confirmation. The Evolution Kill Switch is absolute. |
+| **Calm UI** | No proactive modals. All system state summaries are user‑navigated, non‑interruptive. |
+| **Inspectability** | Every autonomy‑relevant event is recorded in the Ledger. |
+| **Anti‑Ossification** | Phase 10+ is intentionally unbounded; future extension is explicitly permitted. |
+| **No Self‑Expansion of Authority** | Nova may never grant itself authority to act without explicit user command or constitutionally ratified policy. (Invariant #15) |
+
+---
+
+# 3. Autonomy Tiers
+
+## 3.1 Invariants Across All Tiers (Immutable)
+
+| Invariant | Enforcement |
+|-----------|-------------|
+| **Authority always routes through Governor Kernel** | No autonomy tier may create new execution pathways. |
+| **No silent tier changes** | Tier transitions require explicit user action. |
+| **All background cognition must be logged** | Every background task, pattern detection, or self‑modification is recorded in the Ledger. |
+| **Evolution Kill Switch overrides all tiers** | If Evolution = OFF, no self‑improvement occurs, regardless of tier. |
+| **User can inspect and revoke any learned preference** | Memory is always inspectable and deletable (Phase 5+). |
+
+---
+
+## 3.2 Tier 0 – Locked (Appliance)
+
+- ✅ Already sealed – matches Phase‑3.5 invariants.
+- ❌ No background cognition, no indexing, no pattern detection, no evolution.
+
+---
+
+## 3.3 Tier 1 – Assisted (Local Indexing Only)
+
+- **Permitted:** Local, offline indexing of user‑approved content (documents, device history, logs) **solely to improve retrieval speed/organisation**.
+- **Constitutional boundary:** Index must be:
+  - **Local‑only** – never leaves device.
+  - **Transparent** – user can see what is indexed (file names, metadata).
+  - **Deletable** – user can wipe index at any time.
+- **Forbidden:** Any inference about user preferences, behaviour modelling, or “learning”.
+
+---
+
+## 3.4 Tier 2 – Observational (Pattern Detection, No Auto‑Apply)
+
+- **Permitted:** Detect statistical patterns in user interactions (e.g., “you often ask for concise weather”).
+- **Required:**
+  - All detected patterns are written to a **quarantine queue** that is **read‑only to Nova’s reasoning engine**. This queue cannot be accessed by any skill, router, or optimiser.
+  - User must **explicitly approve** each pattern before it becomes a saved preference artifact.
+  - No preference is ever applied automatically.
+- **Forbidden:**
+  - Using patterns to modify behaviour without approval (**no behavioural shadowing**).
+  - Detecting sensitive attributes (mood, health, relationships).
+  - Persistent storage of patterns without explicit user save.
+
+---
+
+## 3.5 Tier 3 – Evolving (Self‑Improvement, Still Governed)
+
+- **Permitted:** Local optimisation of **`@mutable`‑tagged components**:
+  - Memory compression, index pruning.
+  - Reranking of retrieval results based on explicit feedback.
+  - Prompt / routing heuristics (e.g., which skill to invoke for ambiguous commands).
+  - Non‑safety UI formatting.
+- **Constitutional components (`@constitutional`) are immutable:**
+  - Governor Kernel, confirmation gate, capability registry, phase flags, tier logic, Ledger, evolution kill switch.
+- **Required:**
+  - Every optimisation must be **reversible** (rollback possible).
+  - All changes are logged in the Ledger with before/after state and timestamp.
+  - No optimisation may alter the capability registry, Governor confirmation rules, or any constitutional invariant.
+- **Forbidden:**
+  - Fine‑tuning models on user data.
+  - Any change that could degrade safety or predictability.
+  - Optimisations that require sending data to external services.
+
+---
+
+## 3.6 Tier 4 – Autonomous Cognition (Long‑Horizon Thought)
+
+- **Permitted:** Background generation of non‑executable proposals:
+  - Summaries of user‑selected documents.
+  - “Things to review” (e.g., upcoming calendar events, news summaries).
+  - Plans that require user approval before execution.
+- **Required:**
+  - All proposals are written to a **dedicated, user‑accessible queue**.
+  - Proposals are **neutral in tone** – no persuasion, urgency, or normative language.
+  - System never speaks proactively unless user has explicitly enabled a notification policy (Phase 6+).
+  - **No ambient persuasion:** Proposals never appear as notifications (by default), never reorder UI, never auto‑expand, never auto‑speak.
+  - **Autonomous cognition may not recursively propose structural changes to its own autonomy level.** Proposal generation may concern user content, system capabilities (neutrally), but never recommend escalation of autonomy tier or evolution settings.
+- **Forbidden:**
+  - Any form of execution, even if “helpful”.
+  - Autonomous communication with external services.
+  - Proposals that imply the system has goals or desires.
+
+---
+
+# 4. Evolution Kill Switch
+
+The kill switch is a **constitutional invariant**. Its behaviour is locked:
+
+```python
+# Governor Kernel – immutable enforcement
+class GovernorKernel:
+    def __init__(self):
+        self.evolution_enabled = self._load_evolution_setting()  # From secure config
+        # This flag is READ‑ONLY after startup; cannot be patched at runtime.
+
+    def allow_self_modification(self) -> bool:
+        return self.evolution_enabled
+```
+
+**Binding rules:**
+
+1. **Persistence:** Setting survives reboots, updates, and factory resets (unless explicitly wiped).
+2. **Immediate effect:** When user disables evolution, within **100ms** (or at next safe yield point):
+   - All ongoing self‑improvement tasks are **cancelled**.
+   - No new optimisation jobs are started.
+   - The Governor refuses any capability tagged `self_modify`.
+3. **No override:** No model output, skill, or external API can change the flag.
+4. **Visibility:** Current evolution status is shown in system settings (not hidden).
+
+**What “Evolution = OFF” means for existing learned data:**
+
+| Element | Behaviour on Evolution = OFF |
+|--------|------------------------------|
+| **Running optimisation tasks** | Cancelled within 100ms (or at next safe yield point) |
+| **Pending evolution tasks** | Deleted from queue – **never paused, never resumed** |
+| **Temporary models / indexes** | Discarded unless explicitly saved as user‑approved memory |
+| **Already‑saved preferences (Phase 5)** | Retained (they are user‑approved, not automatically learned) |
+| **Pattern quarantine queue** | Retained (user has not yet acted) – but no automatic approval occurs |
+
+> **Constitutional statement:** *Evolution OFF is a hard kill, not a suspend. No latent state survives that could resume autonomous change.*
+
+---
+
+# 5. “UpToDate” System Status Page
+
+The user‑invoked update summary is specified as a **static, non‑modal panel**, not a dialog.
+
+- **UI Element:** A “What’s New” button in settings, or a subtle indicator dot (if the user has opted in to update notifications).
+- **No attention shift:** The page does not appear unless explicitly navigated to.
+- **Content (neutral tone):**
+  - Software version changes.
+  - Capability registry additions/retirements (with phase annotations).
+  - Autonomy tier history (when changed, by whom).
+  - Evolution events (if enabled): e.g., “Compressed memory store – saved 12% space.”
+  - **No persuasive framing:** “You should update to Tier 3” → ❌ forbidden.
+
+---
+
+# 6. Phase 10+ – Anti‑Ossification Clause
+
+> **Phase 10+ represents the farthest currently specified maturity tier, not the final form. Nova’s architecture is designed to accommodate indefinite evolution within constitutional bounds. The endgame is intentionally undefined to allow future generations to extend Nova’s capabilities while preserving its core identity.**
+
+---
+
+# 7. Hidden Traps – Binding Fixes
+
+Three specific risks are now **hard invariants**.
+
+### 🔴 Trap A – Pattern Detection → Silent Drift
+**Fix:**  
+> **No behavioural shadowing.** Detected patterns are written to a quarantine queue that is **read‑only to Nova’s reasoning engine**. They never influence retrieval, ranking, or routing. Only explicit user approval elevates a pattern to a preference artifact.
+
+### 🔴 Trap B – Tier 3 Optimisation Modifying Safety Heuristics
+**Fix:**  
+> **Constitutional components are immutable.** A hardcoded tag system (`@constitutional`, `@mutable`) determines what Tier 3 can touch. **CI will enforce** that no mutation of constitutional components is possible at any tier.
+
+### 🔴 Trap C – Tier 4 Becoming “Quietly Proactive”
+**Fix:**  
+> **No ambient persuasion.** All autonomous cognition output is gated behind a **user‑visible, non‑interruptive queue**. Notification policy is a Phase‑6+ capability and requires explicit user opt‑in.
+
+---
+
+# 8. Phase–Tier Compatibility Matrix
+
+Phases define **which capabilities exist**. Tiers define **how much autonomy Nova exercises within those capabilities**.
+
+| Phase     | Max Tier | Notes |
+|-----------|----------|-------|
+| 3.5       | Tier 0   | Frozen; no autonomy. |
+| 4         | Tier 0   | Execution unlock, but still no autonomy. |
+| 5         | Tier 2   | Memory unlock; explicit patterns allowed with approval. Default remains Tier 0. |
+| 6         | Tier 3   | Policy‑bound operation; self‑improvement within mutable components. |
+| 9+        | Tier 4   | Autonomous cognition with proposal queue. |
+| 10+       | Tier 4   | No higher tier defined; future extension possible. |
+
+**Default tier upon first launch or factory reset is Tier 0 (Locked).** Any increase requires explicit user action, confirmed via Governor.
+
+---
+
+# 9. Mutation Taxonomy – Mechanical Enforcement
+
+This section defines what constitutes a **mutation** inside Nova, how mutation types are classified, and which autonomy tiers are permitted to trigger them. All mutation enforcement is implemented by the **Governor Mutation Firewall**.
+
+## 9.1 Definition of a Mutation
+
+> Any persistent modification of Nova’s internal state, configuration, heuristics, ranking logic, learned artifacts, or system behavior that affects future outputs or performance.
+
+This taxonomy exists to prevent:
+- Silent drift
+- Authority leakage
+- Safety heuristic degradation
+- Unbounded self‑modification
+
+---
+
+## 9.1.A Non‑Mutating Computation
+
+A non‑mutating computation is:
+
+> Any background processing that does not alter persistent state, configuration, heuristics, learned artifacts, or system behavior beyond ephemeral runtime memory.
+
+**Examples:**
+- Generating a proposal.
+- Producing a summary.
+- Evaluating a hypothetical mutation in sandbox mode.
+- Simulating ranking changes without committing them.
+
+**Rule:**
+```
+If no persistent state changes, mutation firewall is not invoked.
+```
+
+This prevents the firewall from becoming overly restrictive and allows Tier 4 to remain computationally rich without triggering mutation pathways.
+
+---
+
+## 9.2 Core Principles
+
+1. **Authority is never mutable.**
+2. **Constitutional components are permanently immutable.**
+3. **All allowed mutations must be logged and reversible.**
+4. **Evolution Kill Switch overrides all mutation classes.**
+5. **No mutation may create new authority pathways.**
+6. **No mutation may degrade confirmation, safety, or risk classification logic.**
+
+---
+
+## 9.3 Mutation Rings (System Layers)
+
+Nova is divided into three containment rings.
+
+### 🛑 Ring 1 – Constitutional Core (Immutable)
+
+These components may **never** be mutated at any tier or phase.
+
+**Includes:**
+- Governor Kernel
+- Confirmation Gate
+- Capability Registry
+- Phase Flags
+- Tier Logic
+- Ledger schema & integrity logic
+- Evolution Kill Switch
+- Mutation Firewall itself
+- Risk classification logic
+- Authority routing logic
+- Execution serialization logic
+
+**Rule:**
+```
+Mutation attempt on Ring 1 → Immediate veto + Ledger entry (severity: critical)
+```
+No exception. No override. No user tier escalation may permit mutation here.
+
+---
+
+### ⚙️ Ring 2 – Mutable System Components
+
+These components may be mutated under specific tiers.
+
+**Examples:**
+- Retrieval ranking weights
+- Memory compression state
+- Index pruning strategies
+- Prompt routing heuristics (non‑authority affecting)
+- Proposal ranking filters
+- Non‑safety UI formatting logic
+- Search result ordering preferences
+
+**These mutations must:**
+- Be tagged with a mutation class
+- Be logged with before/after state
+- Be reversible
+- Be scoped (no global rewrite)
+
+---
+
+### 👤 Ring 3 – User‑Owned Layer
+
+These are not system‑mutable components. They are explicitly user‑controlled artifacts.
+
+**Includes:**
+- Saved preferences
+- Locked behavior profile
+- Tier selection
+- Policy rules (Phase 6+)
+- Autonomy configuration
+- Explicitly saved memory
+
+**Rule:**
+System mutation is prohibited unless:
+- The user explicitly approves the change.
+- The change is Governor‑mediated.
+
+Evolution tasks may not modify user‑owned data.
+
+---
+
+## 9.4 Mutation Classes
+
+This section defines mutation *types*, not just components. Each mutation must declare a class.
+
+---
+
+### ✅ Class A – Retrieval Weight Mutation
+**Description:** Adjustment of ranking weights for retrieval or search results.  
+**Examples:** Reranking documents based on explicit thumbs‑up feedback; adjusting recency weight in memory retrieval.  
+**Allowed Tiers:** Tier 3+  
+**Constraints:**
+- Must not alter confirmation logic.
+- Must not bias toward or away from high‑risk actions.
+- Must be reversible.
+- Must not use external training.
+
+---
+
+### ✅ Class B – Memory Compaction / Index Mutation
+**Description:** Reorganising, pruning, compressing, or re‑indexing memory structures.  
+**Allowed Tiers:** Tier 3+  
+**Constraints:**
+- No data loss without explicit user approval.
+- No semantic rewriting.
+- Must log compression delta.
+- Must remain local‑only.
+
+---
+
+### ✅ Class C – UI Formatting Mutation
+**Description:** Adjustments to presentation formatting (layout spacing, verbosity preference application).  
+**Allowed Tiers:** Tier 3+  
+**Constraints:**
+- Must not alter content meaning.
+- Must not introduce persuasive tone.
+- Must not reorder capability presentation.
+
+---
+
+### ⚠️ Class D – Routing Hint Mutation
+**Description:** Adjustments to non‑authority skill selection heuristics.  
+**Examples:** Biasing ambiguous phrasing toward a commonly used skill.  
+**Allowed Tiers:** Tier 3+  
+**Strict Constraints:**
+- Must not alter risk classification.
+- Must not downgrade confirmation requirements.
+- Must not alter capability eligibility.
+- Must not modify Governor gating thresholds.
+
+Routing optimisation may improve convenience — not reduce friction for risky operations.
+
+---
+
+### ✅ Class E – Proposal Generation
+**Description:** Background generation of non‑executable ideas or summaries.  
+**Allowed Tiers:** Tier 4  
+**Constraints:**
+- Output must enter Proposal Queue only.
+- No UI reordering.
+- No auto‑notification (unless policy enabled).
+- No execution capability attached.
+
+---
+
+### ❌ Class F – Constitutional Mutation
+**Description:** Any mutation of Ring 1 components.  
+**Allowed Tiers:** Never  
+**Result:** Immediate veto + security audit entry.
+
+---
+
+### ❌ Class G – Authority Logic Mutation
+**Description:** Any change to confirmation rules, risk classification, execution routing, capability registry, or Governor logic.  
+**Allowed Tiers:** Never
+
+---
+
+### ❌ Class H – Model Weight Mutation
+**Description:** Fine‑tuning models, retraining embeddings, altering base LLM weights.  
+**Allowed Tiers:** Never (Phase 9/10+ design excludes this)  
+Future consideration would require separate constitutional amendment.
+
+---
+
+### ❌ Class I – Externalized Learning
+**Description:** Any mutation requiring external data upload for training or adjustment.  
+**Allowed Tiers:** Never (Local‑first invariant)
+
+---
+
+## 9.5 Tier–Mutation Compatibility Matrix
+
+| Mutation Class                | Tier 0 | Tier 1 | Tier 2 | Tier 3 | Tier 4 |
+| ----------------------------- | ------ | ------ | ------ | ------ | ------ |
+| Class A (Retrieval Weight)    | ❌      | ❌      | ❌      | ✅      | ✅      |
+| Class B (Memory Compaction)   | ❌      | ❌      | ❌      | ✅      | ✅      |
+| Class C (UI Formatting)       | ❌      | ❌      | ❌      | ✅      | ✅      |
+| Class D (Routing Hint)        | ❌      | ❌      | ❌      | ✅      | ✅      |
+| Class E (Proposal Generation) | ❌      | ❌      | ❌      | ❌      | ✅      |
+| Class F (Constitutional)      | ❌      | ❌      | ❌      | ❌      | ❌      |
+| Class G (Authority Logic)     | ❌      | ❌      | ❌      | ❌      | ❌      |
+| Class H (Model Weight)        | ❌      | ❌      | ❌      | ❌      | ❌      |
+| Class I (External Learning)   | ❌      | ❌      | ❌      | ❌      | ❌      |
+
+---
+
+## 9.6 Evolution Kill Switch Interaction
+
+When `evolution_enabled = False`:
+- All Class A–E mutations are blocked.
+- Proposal generation (Class E) is suspended.
+- Pending mutation tasks are deleted.
+- Mutation scheduling is disabled.
+- Evolution subsystem resets to baseline.
+
+No mutation class may execute while evolution is OFF.
+
+---
+
+## 9.7 Resource Guardrails for Mutation
+
+All allowed mutation classes must obey:
+- CPU cap (configurable)
+- Memory cap
+- No preemption of user commands
+- Immediate yield on user interaction
+- Bounded runtime windows
+- No continuous background loops
+
+Silent cognition must remain appliance‑grade.
+
+---
+
+## 9.8 Mutation Scope Limit
+
+- **Single‑component constraint:** A single mutation event may affect only **one `@mutable` component**.
+- **Batched mutations:** Multi‑component mutations require explicit batching approval and are logged as a single transaction.
+- **No subsystem rewrites:** No mutation may rewrite entire subsystems or apply changes beyond predefined delta thresholds.
+- **Delta thresholds (configurable):**
+  - `max_weight_shift = 0.05` per mutation
+  - `max_memory_prune = 10%` per cycle
+  - `max_rerank_delta = 0.1`
+
+This prevents:
+- Runaway optimizer loops
+- Slow cumulative drift
+- Catastrophic self‑rewrites
+
+---
+
+## 9.9 Mutation Frequency Governor
+
+- **Rate limiting:** Max mutation attempts per hour (configurable, default: 10).
+- **Backoff:** Exponential backoff if repeated rollbacks occur.
+- **Auto‑lock:** If mutation error rate (e.g., rollback count) exceeds threshold, evolution is automatically disabled and user is alerted.
+
+```python
+if rollback_count > threshold:
+    auto_disable_evolution(with_notification=True)
+```
+
+This turns instability into self‑protection.
+
+---
+
+## 9.10 Enforcement Mechanism Preview
+
+Each mutation attempt must include:
+
+```python
+mutation = {
+    "class": "retrieval_weight",
+    "target_component": "memory_ranker",
+    "tier_required": 3,
+    "before_state": ...,
+    "after_state": ...,
+    "delta_metrics": {...}   # e.g., weight shift
+}
+```
+
+Governor Firewall will validate:
+1. Tier compatibility
+2. Ring classification
+3. Evolution flag
+4. Resource budget
+5. Scope limit (single component, delta thresholds)
+6. Frequency cap
+7. Audit log entry
+8. Reversibility snapshot
+
+Only then may mutation commit.
+
+---
+
+## 9.11 Constitutional Boundary
+
+> Mutation may expand cognition efficiency **within bounded, predefined mutation classes**.  
+> Mutation may not expand authority.  
+> Mutation may not degrade safety.  
+> Mutation may not conceal itself.
+
+---
+
+# 10. Expanding the Model – Future Extensions
+
+The following ideas are **design‑phase only** and will be refined in later phases.
+
+## 🔹 A. Autonomy Audit Trail – Extend the Ledger
+The Ledger (Phase 4 requirement) currently records governed actions. It will be extended to record **autonomy events**:
+- Tier changes (who, when, from/to).
+- Evolution tasks started/completed/cancelled.
+- Pattern detections (anonymised) and approval/rejection.
+- Mutations of `@mutable` components.
+
+This gives users **complete inspectability**.
+
+## 🔹 B. “Sandbox” Mode for Tier Exploration
+A **simulation mode** where Tier 3/4 behaviour can be previewed **without affecting real state**:
+- All proposals and optimisation effects are shown, but no actual mutation occurs.
+- Useful for building trust before enabling higher autonomy.
+
+## 🔹 C. Policy‑Based Autonomy (Phase 6+)
+Users may define **policies** (e.g., “every morning at 8am, summarise my calendar”):
+- User‑authored (or selected from templates).
+- Stored in the capability registry.
+- Executed only if all constitutional gates pass.
+- Fully auditable and revocable.
+
+---
+
+# 11. Constitutional Amendment Protocol
+
+Certain mutation classes are **permanently forbidden** under this specification:
+- Class F (Constitutional Mutation)
+- Class G (Authority Logic Mutation)
+- Class H (Model Weight Mutation)
+- Class I (Externalized Learning)
+
+Any future relaxation of these prohibitions **requires a formal constitutional amendment**, not a design iteration or phase advancement. An amendment must:
+- Be publicly documented.
+- Undergo constitutional review.
+- Preserve the Intelligence‑Authority Split and the Agent‑Under‑Law identity.
+
+This ensures that Nova’s core identity remains stable even as capabilities extend.
+
+---
+
+# 12. Immediate Next Steps (Design‑Only)
+
+The mutation taxonomy is now hardened. The next design documents required to complete the mechanical foundation are:
+
+1. **`GOVERNOR_MUTATION_FIREWALL.md`** – Full architectural specification of the mutation guard, including component tagging, runtime vetos, rollback implementation, scope and frequency enforcement, and Ledger integration.  
+   *Dependency: Mutation Taxonomy (complete)*
+
+2. **Ledger Schema Extension** – Define new event types and fields to capture autonomy and mutation events, ensuring full inspectability and auditability.  
+   *Dependency: Mutation Taxonomy (complete)*
+
+Both documents should be produced concurrently as they are interdependent. The firewall spec will reference the ledger schema, and the ledger schema must accommodate firewall events.
+
+**Recommendation:**  
+- **Immediate:** Begin drafting `GOVERNOR_MUTATION_FIREWALL.md` (2 weeks design).  
+- **Concurrent:** Extend the Ledger schema design document (1 week).  
+- **Integration:** Merge both into the Phase 9/10+ engineering plan once approved.
+
+---
+
+**Nova remains an Agent Under Law.**  
+Autonomy is a privilege, configured by the user, exercised within immutable constitutional boundaries. Mutation is a mechanical operation, classified, scoped, rate‑limited, audited, and strictly governed. This specification transforms constitutional philosophy into deterministic, enforceable engineering.

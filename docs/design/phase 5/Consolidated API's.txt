@@ -1,0 +1,158 @@
+# 🌐 NovaLIS – Consolidated API & Integration Registry
+
+This document merges all APIs and programmatic integrations from both the *Strategic API Integration* plan and the *Locked API Roadmap*. Only APIs that respect Nova’s governor‑first architecture are listed. Each entry includes a brief description and, where applicable, the approved phase from the locked roadmap.
+
+---
+
+## ☁️ Weather & Environment
+
+- **Open‑Meteo** – Free global weather API, no key required. Current conditions & forecasts.  
+- **WeatherAPI** – Free tier: current weather, forecast, astronomy, air quality.  
+- **QWeather (HeWeather)** – Free global weather data with API key.  
+- **Storm Glass** – Marine and coastal weather data.  
+- **OpenUV** – Free UV index and related environmental data.  
+- **Pirate Weather** – Free, privacy‑focused Dark Sky alternative (from earlier notes).  
+
+---
+
+## 📰 News & Structured Content
+
+- **NewsData.io** – Global news headlines with filtering, ~200 requests/day free.  
+- **Currents API** – News headlines, ~600 free requests/day; can be used for multi‑source verification.  
+- **Guardian API** – Unlimited free access to The Guardian content.  
+- **New York Times API** – Unlimited free article access.  
+- **Wikipedia API** – Unlimited free, structured encyclopedia content.  
+- **OpenAlex** – Free scholarly metadata for research and academic content.  
+
+---
+
+## 💰 Finance & Market Data
+
+- **CoinGecko API** – Free cryptocurrency prices, market data; many endpoints no auth.  
+- **ExchangeRate‑API / AbstractAPI Currency** – Currency conversion, free tiers.  
+- **Finnhub.io** – Real‑time stock market data & indicators (free tier).  
+- **Alpha Vantage** – Stock, FX, and crypto data (5 calls/min free) – *legacy, still viable*.  
+
+---
+
+## 🔔 Notifications & Messaging
+
+- **Pushover** – Push notifications, free tier with monthly limit.  
+- **ntfy.sh** – Simple, free push notifications via HTTP webhooks.  
+
+---
+
+## 📅 Calendar & Email (Read‑Only)
+
+- **Google Calendar API** – Free, OAuth2, read‑only or write‑with‑approval (Phase 4.1+).  
+- **CalDAV** – Open calendar standard (e.g., Nextcloud), read/write with approval.  
+- **Microsoft Graph Calendar** – Outlook/Office365 scheduling, free tier.  
+- **Gmail API / IMAP** – Read‑only email summaries, user‑invoked.  
+
+---
+
+## ☁️ Cloud Storage & File Management
+
+- **Google Drive API** – 15 GB free, governed file ops (read/append, no delete without approval).  
+- **Dropbox API** – Basic free tier, cloud file operations with reversibility.  
+
+---
+
+## 🔎 Fact Checking & Quick Answers
+
+- **DuckDuckGo Instant Answer API** – Free, lightweight quick answers.  
+- **Wolfram Alpha** – Computational knowledge and structured answers (limited free tier).  
+
+---
+
+## 🧠 AI / NLP & Reasoning
+
+- **DeepSeek API** – Constitutional reasoning engine; multi‑perspective analysis, no autonomy.  
+- **Hugging Face Inference API** – Free inference on community models (rate‑limited).  
+- **OpenAI / Claude / AI grounding APIs** – Text, code, reasoning (limited free trial).  
+- **Jina AI** – Document/PDF processing (free tier) – *legacy, still useful*.  
+- **AssemblyAI** – Audio transcription/analysis (free tier) – *legacy*.  
+
+---
+
+## 🛠️ Utility & Enrichment APIs
+
+- **AbstractAPI Utilities** – Geolocation, email validation, phone, etc. (free tier).  
+- **REST Countries API** – Country info (population, codes, flags), no auth.  
+- **Free Public APIs Directory** – Meta‑resource to discover current free APIs.  
+
+---
+
+## 🏠 Home Automation (Local APIs)
+
+- **Home Assistant API** – Unified local control for smart devices.  
+- **MQTT Broker** – Local IoT messaging protocol.  
+- **Philips Hue (local API)** – Smart lighting control over LAN.  
+- **TP‑Link Kasa (local API)** – Smart plugs/switches.  
+- **Shelly (local API)** – IoT devices via LAN.  
+
+---
+
+## 🎵 Media & Entertainment
+
+- **TMDB (The Movie Database)** – Free movie/TV show metadata.  
+- **YouTube Data API** – Video metadata and search (free tier, quota limited).  
+- **Plex API** – Local media server control (from earlier notes).  
+- **Jellyfin API** – Open‑source media server.  
+- **Spotify Web API** – Music control (reduced capabilities for new apps, free tier).  
+
+---
+
+## 🛍️ Shopping & Product Data
+
+- **Walmart API** – Product and inventory data, free tier (developer access).  
+- **Amazon Product Advertising API** – Product lookup, free tier, requires approval.  
+
+---
+
+## 🗺️ Location & Transit
+
+- **OpenRouteService** – Free routing, directions, geocoding (non‑commercial).  
+- **GTFS / City Transit APIs** – Public transit schedule and route data, query‑only.  
+
+---
+
+## 🧩 Local Integrations (Phase‑2/‑3 Approved)
+
+These are not web APIs but local libraries / OS interfaces – all free and governor‑controlled.
+
+### Speech & Audio
+- **Local TTS** – Piper, Coqui TTS, OS TTS engines (e.g., Microsoft Speech, eSpeak).  
+- **Local STT** – Whisper (local), Vosk, Coqui STT – offline speech‑to‑text.  
+
+### System & File
+- **psutil** – System monitoring (CPU, memory, disk).  
+- **GPUtil** – GPU monitoring.  
+- **Speedtest CLI** – Network speed testing.  
+
+### OCR & Document Processing
+- **Tesseract OCR** – Local optical character recognition, user‑invoked.  
+
+### Bluetooth
+- **OS‑level Bluetooth API** – List paired devices, connect/disconnect on user confirmation.  
+
+---
+
+## 🚫 Permanently Excluded (Even If Free)
+
+The following are **never** allowed under Nova’s constitutional model, regardless of API availability:
+
+- Autonomous agents / desktop copilots  
+- Background observers or screen watchers  
+- Smart‑home automation loops  
+- Financial execution APIs (purchasing, trading)  
+- Any AI with execution authority  
+- Multi‑governor systems  
+
+---
+
+**Source Notes**  
+- *Strategic API Integration.txt* (original + updated free‑friendly list)  
+- *API Roadmap.txt* (locked Phases 2–4+ and permanent exclusions)  
+
+This registry is **locked** unless a future phase is explicitly unlocked. New APIs may be added only through the formal extension process and must pass constitutional review.

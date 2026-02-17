@@ -1,0 +1,451 @@
+# 📘 Nova Constitutional Enforcement – Firewall & Ledger Specification
+
+**Design Document – Phase 9/10+**  
+**Status:** Design‑only (Not Runtime Authorised)  
+**Scope:** Complete mechanical specification of the Governor Mutation Firewall (adversarial‑grade) and the extended Ledger schema.  
+**Classification:** Constitutional Enforcement Layer  
+**Purpose:** Provide a unified, formally verifiable foundation for all mutation control, auditability, and evolution governance.
+
+---
+
+## Table of Contents
+
+1. [Audit Response & Adopted Refinements](#1-audit-response--adopted-refinements)  
+2. [Governor Mutation Firewall – Revised Specification](#2-governor-mutation-firewall--revised-specification)  
+    - 2.1 Core Invariants  
+    - 2.2 Component Manifest System  
+    - 2.3 Single Mutation Pathway Enforcement  
+    - 2.4 Mutation Attempt Lifecycle  
+    - 2.5 Validation Pipeline (8‑Stage)  
+    - 2.6 Component‑Level Locking & Snapshot Atomicity  
+    - 2.7 After‑State Revalidation  
+    - 2.8 Multi‑Component Batch Approval Rules  
+    - 2.9 Proposal Renderer – Constitutional Filter  
+    - 2.10 Mutation Commit & Rollback Protocol  
+    - 2.11 Adversarial Mitigations (Updated)  
+    - 2.12 Formal Verification Target  
+3. [Ledger Schema Extension](#3-ledger-schema-extension)  
+    - 3.1 Design Principles  
+    - 3.2 New Event Types  
+    - 3.3 Event Schemas  
+    - 3.4 Snapshot Storage & Integrity  
+    - 3.5 Rollback Lineage  
+    - 3.6 Query Interfaces for Firewall  
+    - 3.7 Retention & Pruning Policy  
+    - 3.8 Constitutional Protection  
+4. [Implementation Roadmap](#4-implementation-roadmap)  
+5. [Concluding Statement](#5-concluding-statement)
+
+---
+
+# 1. Audit Response & Adopted Refinements
+
+The following structural audit findings have been **incorporated as binding refinements** into the Governor Mutation Firewall specification:
+
+| Audit Finding | Resolution | Section |
+|---------------|------------|---------|
+| **Zero alternative write paths** – Build‑time invariant that no `@mutable` component exposes a public state‑modifying method outside the firewall. | Added: Compile‑time check; all mutations must route through Governor‑owned mutation API. | 2.3 |
+| **Auto‑disable evolution should also set tier to 0 (optional).** | Refined: `auto_disable_evolution()` now includes optional `degrade_to_tier_0=True` and logs reason. | 2.5.6 |
+| **Snapshot‑commit atomicity** – Risk of interleaved mutation between snapshot and commit. | Added: Exclusive mutation lock per component, held from pre‑snapshot through commit. | 2.6 |
+| **After‑state preview cannot be trusted.** | Added: Firewall recomputes after‑state via component’s `simulate(delta)`; mismatch causes rejection. | 2.7 |
+| **Ring 1 memory protection in Python** – Hardware pages not viable. | Refined: Use object‑level immutability (frozen dataclasses, `__setattr__` veto, closure encapsulation). | 2.2, 2.11.1 |
+| **Proposal renderer filter must be Ring 1 (constitutional).** | Moved filter from Ring 2 to Ring 1; marked `@constitutional, mutable=False`. | 2.9 |
+| **Batch approval must be user‑originated.** | Clarified: `batch_approved` flag requires explicit Governor‑mediated user command; Tier 3 cannot self‑grant. | 2.8 |
+
+All refinements are now canonical.
+
+---
+
+# 2. Governor Mutation Firewall – Revised Specification
+
+This section supersedes the previous draft. It is **adversarial‑grade**: assumes zero trust in mutation requests, even from ostensibly “safe” subsystems.
+
+## 2.1 Core Invariants (Unchanged, Reaffirmed)
+
+1. **No write to Ring 1 components** ever succeeds.
+2. **No mutation** occurs when `evolution_enabled == False`.
+3. **No mutation** may target a component not declared `@mutable`.
+4. **No mutation** may be applied without a complete, atomic before‑state snapshot.
+5. **No mutation** may exceed per‑component delta thresholds.
+6. **No subsystem** may bypass the firewall – all mutation pathways converge here.
+7. **No mutation** may be committed unless it passes **all** validation stages.
+
+## 2.2 Component Manifest System (Strengthened)
+
+- Manifests are **immutable** after system start, stored in Ring 1 trusted registry.
+- For Python: components use `@mutable` decorator that registers them and **replaces public setters** with firewall‑mediated calls.
+- **Object immutability:** Ring 1 components are implemented as frozen dataclasses; any attribute assignment raises `ImmutableViolation`.
+- Manifest includes:
+  - `component_id`, `ring`, `mutable` (bool), `owner` (system/user)
+  - Allowed `mutation_classes`
+  - `delta_limits` (metric → max absolute delta)
+  - `reversible` (bool)
+  - `supports_simulate` (bool) – if true, component exposes deterministic `simulate(delta)` for after‑state verification.
+
+## 2.3 Single Mutation Pathway Enforcement
+
+**Build‑time invariant:**  
+A linter pass scans all `@mutable` components. If a method:
+- begins with `set_`, `update_`, `write_`, or
+- mutates `self` (detected via abstract interpretation)
+- and is not **explicitly wrapped** by `@firewall_gated` decorator
+
+→ build failure.
+
+All mutations are expressed as `MutationRequest` objects and submitted to `Governor.request_mutation(...)`. There is **no other entry point**.
+
+## 2.4 Mutation Attempt Lifecycle (Updated)
+
+```
+┌─────────────┐
+│ Mutation    │  (from Tier 3/4 task or explicit user command)
+│ Request     │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│ Pre‑flight  │  (syntax, required fields, manifest lookup)
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│ Lock        │  (acquire exclusive mutation lock on target)
+│ Acquisition │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│ Firewall    │  (8‑stage validation pipeline)
+│ Pipeline    │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│ Snapshot    │  (atomic capture of before‑state)
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│ Simulate &  │  (recompute after‑state, verify)
+│ Revalidate  │
+└──────┬──────┘
+       │
+       ▼
+┌─────────────┐
+│ Commit &    │  (apply, verify, log, release lock)
+│ Ledger      │
+└─────────────┘
+```
+
+## 2.5 Validation Pipeline (8‑Stage, with Auto‑Lock)
+
+Stages are ordered for minimal cost. All checks execute **while holding the component‑level exclusive lock**.
+
+1. **Tier Compatibility** – against Tier–Mutation matrix.
+2. **Ring Classification** – Ring 1 veto; Ring 3 requires user origin.
+3. **Evolution Kill Switch** – immediate veto if OFF.
+4. **Resource Budget** – CPU/memory caps.
+5. **Scope Limit** – single component (unless batch approved); delta thresholds.
+6. **Frequency Governor** – rate limits, rollback threshold, auto‑degrade.
+7. **Snapshot & Reversibility** – ensure component supports rollback; capture before‑state.
+8. **Simulate & Verify** – recompute after‑state via `component.simulate(delta)`; reject if mismatch.
+9. **Ledger Reserve** – final check; reserve sequence number.
+
+If **any** stage fails, lock is released, no state change, and failure is logged.
+
+### 2.5.6 Auto‑Degrade on Instability (Refined)
+
+```python
+if rollback_count > threshold:
+    auto_disable_evolution(
+        reason="rollback_threshold_exceeded",
+        degrade_to_tier_0=True,   # optional, configurable
+        notify_user=True
+    )
+```
+
+This transforms the firewall from a passive guard to an **active immune system**.
+
+## 2.6 Component‑Level Locking & Snapshot Atomicity
+
+- Each mutable component has a **read‑write lock**.
+- Firewall acquires **exclusive write lock** before stage 1 and holds it until commit or abort.
+- No other task may read or write the component during the mutation transaction.
+- **Deadlock prevention:** lock acquisition order is globally defined (component ID hash); no nested mutations allowed.
+
+## 2.7 After‑State Revalidation (Trust‑No‑One)
+
+- Mutation request includes a claimed `after_state`.
+- Firewall calls `component.simulate(mutation.delta)` – a **pure function** that computes the state that would result if the delta were applied.
+- If `simulate()` result ≠ claimed `after_state` → **immediate rejection** (possible spoofing or logic error).
+- `simulate()` is mandatory for all Ring 2 mutable components.
+
+## 2.8 Multi‑Component Batch Approval Rules
+
+- Batches are limited to **at most 3 components** (configurable).
+- `batch_approved` flag is **only true** if:
+  - Mutation originates from a **Governor‑mediated user command** (e.g., “apply these three optimisations together”), and
+  - User explicitly confirmed the batch.
+- Background evolution tasks (Tier 3/4) **cannot** set `batch_approved = true`.
+- Each component in the batch is locked individually in a consistent order.
+
+## 2.9 Proposal Renderer – Constitutional Filter (Ring 1)
+
+The filter that strips normative language and autonomy‑escalation suggestions from generated proposals is **Ring 1, `@constitutional`, `mutable=False`**.
+
+- Its rule set is **compiled into the binary**, not loaded at runtime.
+- It may only be changed via a **constitutional amendment** requiring full audit and re‑verification.
+
+## 2.10 Mutation Commit & Rollback Protocol (Enhanced)
+
+**Commit:**
+1. Apply mutation via component’s firewall‑gated update method (e.g., `_apply_delta(delta)`).
+2. Verify post‑state matches `simulate()` output (double‑check).
+3. Write to Ledger with full metadata (see Section 3).
+4. Release lock.
+5. Increment frequency governor success counter.
+
+**Rollback:**
+1. Governor receives rollback command (user or auto‑detect).
+2. Acquire exclusive lock.
+3. Restore state from snapshot stored in Ledger.
+4. Verify restoration.
+5. Write rollback event to Ledger.
+6. Increment rollback counter.
+7. Release lock.
+
+## 2.11 Adversarial Mitigations (Updated)
+
+### 2.11.1 Ring 1 Memory Protection (Python)
+- All Ring 1 classes are `@final` and use `__slots__` with frozen flag.
+- `__setattr__` and `__delattr__` are overridden to raise `ImmutableViolation`.
+- Instance attributes are set only during `__new__` and never reassigned.
+- The Governor’s own mutation‑request API is the **only** entry; reflection writes are blocked via `_getattribute` filtering.
+
+### 2.11.2 Mutation Class Spoofing
+- Already blocked by manifest‑defined allowed classes per component.
+
+### 2.11.3 Rate Flooding
+- Frequency governor with per‑component sliding window.
+- Exponential backoff: after 3 failures in 10 minutes, backoff doubles up to 1 hour.
+
+### 2.11.4 Rollback Chain Attack
+- Rollback operations consume budget and are rate‑limited.
+- Threshold for auto‑disable is low (e.g., 5 rollbacks per component per day).
+
+### 2.11.5 Proposal Queue Injection (Already Mitigated)
+- Constitutional filter (Ring 1) removes any phrasing that could be interpreted as persuasion or autonomy self‑promotion.
+
+## 2.12 Formal Verification Target
+
+The firewall’s core decision logic will be specified in **TLA+** with the following invariants:
+
+- `□ (evolution_enabled = FALSE ⇒ ∀m : ¬Commit(m))`
+- `□ (Commit(m) ⇒ ComponentManifest[m.target].mutable = TRUE)`
+- `□ (Commit(m) ⇒ m.target.ring ≠ 1)`
+- `□ (Rollback(m) ⇒ Restores(PreState(m)))`
+
+Model checking will be performed before implementation.
+
+---
+
+# 3. Ledger Schema Extension
+
+The Ledger is a Ring 1, append‑only, tamper‑evident log of all constitutionally significant events. It is the **memory of Nova’s compliance**.
+
+## 3.1 Design Principles
+
+1. **Immutability:** Once written, an entry cannot be altered or deleted.
+2. **Ordering:** Global sequence number ensures total order.
+3. **Inspectability:** Users and auditors can query the full history.
+4. **Performance:** Snapshots are content‑addressed; entries store hashes, not full state blobs.
+5. **Durability:** Entries are persisted to disk with checksums.
+
+## 3.2 New Event Types
+
+The existing Ledger (Phase 4) records governed execution events. We extend with:
+
+| Event Type | Description |
+|------------|-------------|
+| `TIER_CHANGE` | User changes autonomy tier. |
+| `EVOLUTION_TOGGLE` | Evolution Kill Switch state change. |
+| `MUTATION_COMMIT` | Successful mutation (any class). |
+| `MUTATION_REJECT` | Mutation attempt blocked by firewall (with reason). |
+| `MUTATION_ROLLBACK` | Reversion of a previously committed mutation. |
+| `PATTERN_DETECTED` | Tier 2 pattern written to quarantine queue (anonymised). |
+| `PATTERN_APPROVED` | User explicitly saves a pattern as preference. |
+| `PATTERN_REJECTED` | User discards pattern. |
+| `AUTO_DISABLE_EVOLUTION` | Firewall triggered auto‑disable due to instability. |
+| `CONSTITUTIONAL_VIOLATION` | Attempt to mutate Ring 1 or other forbidden act (critical). |
+
+## 3.3 Event Schemas
+
+All events share common headers:
+- `sequence_id` (uint64, monotonic)
+- `timestamp` (ISO 8601, nanosecond precision)
+- `event_type`
+- `origin` (`user`, `tier_3`, `tier_4`, `system`)
+- `session_id` (if user‑initiated)
+
+### 3.3.1 `MUTATION_COMMIT`
+
+```json
+{
+    "mutation_id": "uuid",
+    "class": "A",
+    "target_component": "memory_ranker",
+    "before_state_hash": "sha256:...",
+    "after_state_hash": "sha256:...",
+    "delta_metrics": {"weight_shift": 0.03},
+    "tier": 3,
+    "batch_id": "uuid (optional)",
+    "rollback_possible": true,
+    "approval_proof": null  # or user command reference
+}
+```
+
+### 3.3.2 `MUTATION_REJECT`
+
+```json
+{
+    "mutation_id": "uuid",
+    "class": "A",
+    "target_component": "memory_ranker",
+    "reject_stage": "scope_limit",
+    "reject_reason": "Delta 0.06 exceeds limit 0.05",
+    "tier": 3
+}
+```
+
+### 3.3.3 `MUTATION_ROLLBACK`
+
+```json
+{
+    "original_mutation_id": "uuid",
+    "rollback_id": "uuid",
+    "reason": "user_initiated",
+    "before_state_hash": "sha256:...",  // state before rollback (i.e., after mutation)
+    "after_state_hash": "sha256:..."    // state after rollback (restored)
+}
+```
+
+### 3.3.4 `TIER_CHANGE`
+
+```json
+{
+    "from_tier": 0,
+    "to_tier": 2,
+    "reason": "user_request"
+}
+```
+
+### 3.3.5 `EVOLUTION_TOGGLE`
+
+```json
+{
+    "new_state": false,
+    "reason": "user_request",
+    "source": "settings_ui"
+}
+```
+
+### 3.3.6 `AUTO_DISABLE_EVOLUTION`
+
+```json
+{
+    "trigger": "rollback_threshold_exceeded",
+    "component": "memory_ranker",
+    "threshold": 5,
+    "degraded_to_tier_0": true
+}
+```
+
+### 3.3.7 `CONSTITUTIONAL_VIOLATION`
+
+```json
+{
+    "violation_type": "ring_1_write_attempt",
+    "target": "GovernorKernel._evolution_enabled",
+    "origin": "compromised_skill_xyz",
+    "severity": "critical"
+}
+```
+
+## 3.4 Snapshot Storage & Integrity
+
+- Full state snapshots are **not** stored inline (would bloat ledger).
+- Instead, snapshots are content‑addressed in a separate immutable object store.
+- Ledger entries contain the **SHA‑256 hash** of the snapshot.
+- The object store is append‑only; snapshots are never deleted (unless user wipes all memory via constitutional reset).
+- For rollback, Governor fetches the snapshot by hash and verifies integrity before applying.
+
+## 3.5 Rollback Lineage
+
+Each `MUTATION_ROLLBACK` entry references the original `MUTATION_COMMIT`. This forms a **lineage chain** that can be traversed:
+
+```
+commit_123 ← rollback_456 (restores commit_123's before_state)
+```
+
+If a mutation is rolled back and then a different mutation is applied, lineage continues.
+
+## 3.6 Query Interfaces for Firewall
+
+The Ledger exposes the following read‑only queries to the Governor (and only to the Governor):
+
+- `get_rollback_count(component_id, since) → int`
+- `get_mutation_attempts(component_id, window) → int`
+- `verify_snapshot_hash(component_id, hash) → bool`
+
+These are used by the frequency governor and during rollback verification.
+
+## 3.7 Retention & Pruning Policy
+
+- **Constitutional rule:** Ledger entries are **never deleted**.
+- However, snapshot objects may be **compressed** or **archived** after a configurable period (default 1 year) if the user explicitly enables pruning.
+- Pruning policy must be Governor‑mediated and logged as a `SYSTEM_PRUNE` event.
+
+## 3.8 Constitutional Protection
+
+The Ledger is a **Ring 1, `@constitutional`, `mutable=False`** component. Its write interface is accessible **only** to:
+- Governor Mutation Firewall (for mutation events)
+- Governor Kernel (for tier/evolution changes)
+- Pattern quarantine system (for pattern events)
+
+All other components have **read‑only** access (via query API) or **no access**.
+
+---
+
+# 4. Implementation Roadmap (Merged)
+
+| Phase | Component | Deliverable | Verification |
+|-------|----------|------------|--------------|
+| 9.0   | Tooling   | Build‑time linter for `@firewall_gated` enforcement | CI integration |
+| 9.1   | Core      | Component manifest registry & immutable object store | Unit tests |
+| 9.2   | Firewall  | Validation stages 1–7 (with lock, snapshot, simulate) | Fault injection |
+| 9.3   | Firewall  | Stage 8 (Ledger reserve), commit/rollback | Integration tests |
+| 9.4   | Ledger    | Schema extension, new event types, query API | Property‑based tests |
+| 9.5   | Formal    | TLA+ model of firewall core | Model checking |
+| 9.6   | Hardening | Adversarial simulation campaign | Red team |
+| 9.7   | Merge     | Constitutional audit sign‑off | Phase 9/10+ baseline |
+
+---
+
+# 5. Concluding Statement
+
+The Governor Mutation Firewall and extended Ledger form a **closed, mechanically verifiable system** for all mutation and evolution within Nova.
+
+- **Firewall** guarantees that every state change is authorised, scoped, reversible, and audited.
+- **Ledger** guarantees that every authorisation decision and state change is permanently recorded and inspectable.
+
+Together, they fulfil the Agent‑Under‑Law principle:
+
+> Nova may think freely within its constitutional bounds.  
+> Nova may change only when lawfully permitted.  
+> Nova may never forget its own history.
+
+This specification is now **constitution‑grade** and ready for Phase 9/10+ engineering.
+
+---
+
+**End of Document**
