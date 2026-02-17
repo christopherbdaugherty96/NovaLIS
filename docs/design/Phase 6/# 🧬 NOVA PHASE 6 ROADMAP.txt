@@ -1,0 +1,277 @@
+# 🧬 NOVA PHASE 6 ROADMAP (Revised – Constitutionally Tightened)  
+## *Policy‑Bound Operation – Delegated Autonomy Within Law*  
+**Design‑Unlocked / Runtime‑Locked (until Phase 5 completion + experience foundation)**  
+
+**Document Status:** Design‑Unlocked (Constitutional Ratification Pending)  
+**Ratified by:** NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8 (Part III, Phase 6)  
+**Based on:**  
+- [Delegated Autonomy.txt](Delegated%20Autonomy.txt)  
+- [# Autonomy Tiers & Evolution.txt](%23%20Autonomy%20Tiers%20%26%20Evolution.txt)  
+- [# 📘 Nova Constitutional Enforcemen.txt](%23%20%F0%9F%93%98%20Nova%20Constitutional%20Enforcemen.txt)  
+- [Firewall & Ledger Specification.txt](Firewall%20%26%20Ledger%20Specification.txt)  
+- [NOVA COMPLETE CONSTITUTIONAL 1.7.txt](%23%20%F0%9F%A7%AC%20NOVA%20COMPLETE%20CONSTITUTIONAL%201.7.txt) (Phase 6 sections)  
+- **Audit Refinement:** 2026‑02‑16 – Added hard boundaries: trigger‑only background evaluation, atomic policy actions, emergency stop preempts external timers, policy‑self‑mutation forbidden, deterministic evaluation order, and explicit non‑orchestration clause.
+
+---
+
+## 🔹 Executive Summary  
+
+Phase 6 introduces **delegated autonomy** – the first time Nova can perform actions automatically on behalf of the user, **but only within explicit, user‑defined policy envelopes**. This is not general‑purpose autonomy; it is **bounded, policy‑driven execution** that remains fully governed by the Governor.  
+
+- **User‑Defined Policies:** Users can create rules like “Every morning at 8am, summarise my calendar” or “If motion detected after 10pm, turn on night light.”  
+- **Bounded Automation:** Nova monitors conditions and executes actions – **only if** the action is permitted by an active, user‑approved policy. Background monitoring is strictly limited to trigger evaluation; no speculative reasoning or pre‑planning occurs outside an active evaluation cycle.  
+- **Atomic Capability Enforcement:** Policies may reference only atomic capabilities from the Phase 4 registry. Dynamic chaining, orchestration, or composition of multiple capabilities within a single policy is **forbidden**.  
+- **Local Optimisation (Class A/B/D Mutations):** With evolution enabled (Tier 3), Nova may adjust retrieval weights, compact memory, and refine routing hints – all reversible, logged, and firewalled. Mutations may **never** modify policy definitions, envelopes, or the capability registry.  
+- **Governor as Policy Validator:** The Governor’s role shifts from *“Did the user explicitly request this?”* to *“Is this action permitted by the active delegation policy?”*  
+
+All autonomy remains **opt‑in**, **transparent**, and **fully revocable**. No autonomy without explicit user delegation. No silent background execution. The Governor remains the sole execution choke point, now enforcing policy boundaries.  
+
+Phase 6 is a **design‑only phase** – its components may be implemented in code but remain **runtime‑locked** until Phase 4.5 and Phase 5 are complete, and the Phase 6 admission gate is satisfied. Runtime unlock requires proven household value (≥3 months stable deployment) and explicit user opt‑in.  
+
+---
+
+## 🎯 Phase 6 Goals  
+
+1. **Enable user‑defined atomic policies** for bounded automation – users can define a trigger and a single atomic action.  
+2. **Implement policy validation in the Governor** – every autonomous action is checked against the active policy envelope.  
+3. **Ensure background monitoring is trigger‑only** – no speculative reasoning, pre‑planning, or decision‑tree expansion outside active evaluation.  
+4. **Introduce Class A/B/D mutations** (retrieval weight, memory compaction, routing hint) under Tier 3, with evolution ON and full firewall protection. Explicitly forbid mutation of policy definitions.  
+5. **Require deterministic evaluation order** when multiple policies trigger simultaneously – alphabetical by policy ID, no prioritisation.  
+6. **Design emergency stop that preempts all external timers and listeners** – not merely blocks execution.  
+7. **Maintain all Tier 1 invariants** – no self‑expansion of authority, no background cognition without policy, no predictive preloading, no silent fallback.  
+8. **Prove household value** – Phase 6 runtime unlock only after ≥3 months of stable deployment with documented daily usage and positive retention metrics.  
+
+---
+
+## 📋 Scope  
+
+### ✅ Included (Design Activities)  
+
+| Area | Description | Constitutional Constraints |
+|------|-------------|----------------------------|
+| **Policy Definition Language** | Simple syntax for users to define triggers (time, event, condition) and a **single atomic action** (capability from Phase 4). | Policies are stored in Ring 3 (user‑owned layer); Governor validates syntax and safety. No multi‑step chains. |
+| **Policy Envelope** | Each policy defines scope (allowed capability), resource limits (e.g., frequency, duration), and external access limits. | Envelope references only capabilities from Phase 4 registry; may not compose new capabilities. |
+| **Governor Policy Validator** | Governor evaluates each potential autonomous action against active policies; blocks any action outside envelope. | Governor remains sole execution authority; no bypass. |
+| **Background Monitoring (Trigger‑Only)** | Nova may monitor conditions (time, sensor data, calendar events) to trigger policies. Monitoring is **strictly limited to trigger evaluation** – no speculative reasoning, pre‑planning, or scenario modeling outside an active trigger cycle. | Background processing is allowed only for active policies; all monitoring is logged. |
+| **Deterministic Evaluation Order** | When multiple policies trigger simultaneously, evaluation order is alphabetical by policy ID. | No dynamic prioritisation, scoring, or arbitration. |
+| **Class A (Retrieval Weight)** | Adjust ranking weights based on user feedback or usage patterns – after quarantine approval (Tier 3). | Reversible, logged, delta‑limited; affects retrieval only, not authority. |
+| **Class B (Memory Compaction)** | Reorganise, prune, or compress memory structures to improve efficiency. | Reversible; before‑state snapshot stored; user can roll back. |
+| **Class D (Routing Hint)** | Update non‑authority skill selection heuristics to improve command routing. | No effect on capability registry or confirmation rules. |
+| **Ledger Extension** | New event types: `POLICY_CREATED`, `POLICY_ENABLED`, `POLICY_DISABLED`, `AUTONOMOUS_ACTION_ATTEMPT` (with allow/block), `MUTATION_APPLIED` (for Class A/B/D). | Append‑only; all policy events logged. |
+| **Policy UI** | Interface for users to create, view, enable/disable, and delete policies. | Neutral, non‑persuasive; must pass Four Gates. |
+| **Emergency Stop** | Immediate cessation of all autonomous actions: unregisters all external timers and event listeners, clears pending triggers, and disables all policies. | Governor must honour stop within 100ms; external timers are invalidated, not merely blocked. |
+
+### ❌ Excluded (Remain Runtime‑Locked or Future)  
+
+- Any form of autonomous cognition without explicit policy (Tier 4 remains Phase 9+).  
+- Multi‑step or orchestrated policies (e.g., “if X then A then B”).  
+- Mutation of policy definitions, envelopes, resource limits, or capability registry entries.  
+- Learning or adaptation that affects constitutional components (Ring 1 immutable).  
+- Multi‑user support (remains single‑user).  
+- Any capability beyond Phase 4 + Phase 5 memory + Phase 6 atomic policies.  
+- Predictive preloading, speculative execution.  
+- Emotional simulation or personality drift.  
+
+---
+
+## 🏛️ Architectural Overview  
+
+Phase 6 extends the Governor with a **Policy Validation Engine** and enables background monitoring for active policies. All mutations are mediated by the **Governor Mutation Firewall**.  
+
+```
+User-defined Atomic Policies (Ring 3)
+    ↓
+Governor Policy Validator
+    ↓
+Background Monitor (Trigger-Only)
+    ↓
+Governor (evaluate: is action allowed by policy? deterministic order)
+    ↓
+ExecuteBoundary → Atomic Action (if allowed) → Ledger
+```
+
+### Policy Validation Flow  
+
+1. **Policy Creation:** User defines policy via UI or text (e.g., “every weekday at 8am, run morning routine”). Governor validates that the action is a single atomic capability from Phase 4 registry, checks syntax, and stores policy in Ring 3.  
+2. **Policy Activation:** User enables policy (explicit toggle). Governor registers the trigger with the background monitor: for time‑based, uses external OS timers; for event‑based, subscribes to device agent events (e.g., motion sensor).  
+3. **Background Monitoring (Trigger‑Only):** When a trigger occurs, the monitor invokes Governor with the policy ID and current context. **No pre‑processing, no speculative reasoning** – only trigger detection.  
+4. **Action Evaluation:** Governor checks:  
+   - Is policy still enabled?  
+   - Is the action within envelope (atomic capability, resource limits)?  
+   - If multiple policies triggered, evaluate in deterministic order (alphabetical by ID).  
+5. **Execution:** If all checks pass, Governor invokes the capability via ExecuteBoundary, logging the autonomous action.  
+6. **Emergency Stop:** User hits stop → Governor immediately unregisters all timers/listeners, cancels pending triggers, disables all policies, and logs the event.  
+
+### Mutation Framework for Class A/B/D  
+
+- All mutations are expressed as `MutationRequest` and pass through the Governor Mutation Firewall (see [Firewall & Ledger Specification](Firewall%20%26%20Ledger%20Specification.txt)).  
+- Mutations are allowed only if:  
+  - Evolution Kill Switch = ON.  
+  - Autonomy Tier ≥ 3.  
+  - Target component is `@mutable` and in Ring 2.  
+  - Delta limits and frequency caps are satisfied.  
+  - After‑state simulation matches claimed state.  
+- **Mutations may never modify policy definitions, policy envelopes, or capability registry entries.**  
+- All mutations are logged; rollback is possible via stored snapshots.  
+
+---
+
+## 🔒 Phase 6 Admission Gate  
+
+Before any design or implementation work can begin, the following must be satisfied:  
+
+- [x] Phase 4.5 design completed and ratified.  
+- [x] Phase 5 design completed and ratified.  
+- [ ] Phase 4 runtime stable for ≥30 days (already satisfied for Phase 5).  
+- [ ] Phase 5 runtime stable for ≥30 days (once unlocked).  
+- [ ] Phase 4.5 and Phase 5 user research confirms daily‑use scenarios, calm perception, and positive retention metrics.  
+- [ ] At least **3 months of stable household deployment** with documented daily usage and users returning voluntarily.  
+- [ ] **Atomic policy language** specification ratified (no multi‑step chains).  
+- [ ] **Trigger‑only monitoring** design approved.  
+- [ ] **Governor Policy Validator** design approved.  
+- [ ] **Mutation Firewall** core implemented (Phase 9 components may be pulled forward).  
+- [ ] **Ledger extension** schema approved.  
+- [ ] **Constitutional audit** confirms no authority expansion, no silent background execution, no policy bypass, no policy self‑mutation.  
+
+**Design Unlock Act:** Constitutional Governance Board ratifies Phase 6 design work after all prerequisites met.  
+
+---
+
+## 🛠️ Implementation Roadmap  
+
+All code must be placed behind **compile‑time gates** and remain runtime‑locked until Phase 6 admission gate is satisfied and runtime unlock is explicitly voted.  
+
+### Workstream A: Atomic Policy Framework (Weeks 1–4)  
+
+| Task | Description | Deliverable |
+|------|-------------|-------------|
+| A1 | Design policy definition language – simple, human‑readable, **single atomic action only**. | `policy/language.py` |
+| A2 | Implement policy storage (Ring 3, encrypted local store). | `policy/store.py` |
+| A3 | Build policy validation engine – checks syntax, atomicity, capability existence, resource limits. | `governor/policy_validator.py` |
+| A4 | Create policy UI (list, create, edit, enable/disable, delete). | UI components, `ui/policy/` |
+| A5 | Implement “Emergency Stop” – unregisters all external timers/listeners, cancels pending, disables policies. | `governor/emergency_stop.py` |
+
+### Workstream B: Trigger‑Only Background Monitor (Weeks 3–6)  
+
+| Task | Description | Deliverable |
+|------|-------------|-------------|
+| B1 | Design trigger system: time‑based (external timers) and event‑based (device agent subscriptions). | `monitor/triggers.py` |
+| B2 | Implement event listener for device agents – no processing, just forward to Governor. | `monitor/events.py` |
+| B3 | Integrate with Governor: on trigger, pass policy ID and context for evaluation. | `governor/autonomous.py` |
+| B4 | Log every trigger evaluation (allowed/blocked) in Ledger. | `ledger/events.py` |
+| B5 | Enforce deterministic evaluation order (alphabetical by policy ID). | `governor/scheduler.py` |
+
+### Workstream C: Mutation Framework (Class A/B/D) (Weeks 4–8)  
+
+| Task | Description | Deliverable |
+|------|-------------|-------------|
+| C1 | Implement `@mutable` decorator and component manifest (Phase 9 components pulled forward). | `core/mutable.py` |
+| C2 | Build Mutation Firewall core (validation stages 1–7, lock, snapshot, simulate). | `governor/firewall.py` |
+| C3 | Add Class A (retrieval weight) mutations for ranker components. | `mutation/class_a.py` |
+| C4 | Add Class B (memory compaction) mutations for memory index. | `mutation/class_b.py` |
+| C5 | Add Class D (routing hint) mutations for skill router. | `mutation/class_d.py` |
+| C6 | Integrate with Evolution Kill Switch and Tier 3 checks. | `governor/mutation_api.py` |
+| C7 | Extend Ledger with mutation events (`MUTATION_APPLIED`, `MUTATION_REJECTED`, `MUTATION_ROLLED_BACK`). | `ledger/schema.py` |
+| C8 | **Explicitly forbid** mutation of policy definitions, envelopes, and capability registry. | Firewall rule. |
+
+### Workstream D: Policy UI & Transparency (Weeks 6–9)  
+
+| Task | Description | Deliverable |
+|------|-------------|-------------|
+| D1 | Design policy list view with status (enabled/disabled), last triggered, next trigger. | UI mockups, `ui/policy/list.vue` |
+| D2 | Create policy editor with syntax help and atomic‑action enforcement. | `ui/policy/editor.vue` |
+| D3 | Implement “Activity Log” showing autonomous actions (timestamp, policy, action, outcome). | `ui/audit/autonomous.vue` |
+| D4 | Ensure all UI passes Four Gates (no persuasion, no prioritisation). | Design review. |
+
+### Workstream E: Testing & Verification (Ongoing)  
+
+| Task | Description | Deliverable |
+|------|-------------|-------------|
+| E1 | Unit tests for policy validation (syntax, atomicity, safety). | `tests/policy/` |
+| E2 | Unit tests for mutation firewall (allow/block, rollback, policy‑mutation block). | `tests/firewall/` |
+| E3 | Integration tests: policy trigger → Governor evaluation → execution (simulated). | `tests/integration/` |
+| E4 | Adversarial tests: attempts to bypass policy, execute multi‑step chains, mutate policy, etc. | `tests/adversarial/` |
+| E5 | Load tests: many policies, frequent triggers – ensure Governor remains responsive. | `tests/performance/` |
+| E6 | Emergency stop test: verify timers/listeners are unregistered, not just blocked. | `tests/emergency.py` |
+| E7 | Constitutional audit: verify no authority expansion, no background loops, deterministic order, all actions logged. | Audit report. |
+
+### Workstream F: Documentation & Governance (Weeks 9–10)  
+
+| Task | Description | Deliverable |
+|------|-------------|-------------|
+| F1 | Update constitutional blueprint with Phase 6 details. | Amendment. |
+| F2 | Document policy creation for users (atomic action templates, examples). | User guide. |
+| F3 | Prepare Phase 7 proposal (conditional on Phase 6 experience). | `PHASE_7_PROPOSAL.md` |
+
+---
+
+## ⏱️ Timeline Estimate  
+
+| Week | Focus |
+|------|-------|
+| 1–4 | Atomic policy framework, storage, validation |
+| 3–6 | Trigger‑only background monitor, deterministic order |
+| 4–8 | Mutation framework (Class A/B/D) with policy‑mutation block |
+| 6–9 | Policy UI, activity log |
+| 9–10 | Testing, documentation, governance review |
+
+---
+
+## ⚠️ Risks and Mitigations  
+
+| Risk | Mitigation |
+|------|------------|
+| **Policy loopholes (unintended actions)** | Governor validates every action against atomic policy; only single capability allowed. |
+| **Background monitoring becomes speculative** | Strictly trigger‑only; no pre‑processing; all monitoring logged. |
+| **Mutation destabilises system** | All mutations reversible; delta limits; simulation before commit; rollback on threshold exceeded. |
+| **User creates dangerous atomic policies** | Policy UI includes warnings; Governor blocks actions outside envelope; emergency stop always available. |
+| **Multi‑policy race conditions** | Deterministic alphabetical order; no prioritisation. |
+| **Policy self‑mutation** | Mutation firewall explicitly forbids mutations to policy definitions. |
+| **Emergency stop fails to stop external timers** | Stop unregisters timers/listeners; verified in tests. |
+
+---
+
+## ✅ Success Criteria for Phase 6 Design Completion  
+
+- Atomic policy framework implemented and tested: users can define, enable, disable, delete policies with single atomic actions.  
+- Governor correctly evaluates actions against policies; blocks any outside envelope; enforces deterministic order.  
+- Background monitor triggers policies via external timers/events; no speculative reasoning.  
+- Mutation firewall implemented for Class A/B/D; mutations logged, reversible, and respecting limits; policy mutations blocked.  
+- Emergency stop unregisters all external triggers and disables policies within 100ms.  
+- UI for policy management and activity log passes Four Gates.  
+- Adversarial tests show no bypass; constitutional audit confirms no authority expansion, no orchestration.  
+- All components runtime‑locked (inactive until Phase 6 unlock).  
+
+---
+
+## 🔮 After Phase 6: Path to Phase 7  
+
+Phase 6 components will remain dormant until **Phase 7** (conditional on experience foundation). Phase 7 may introduce:  
+
+- Expanded policy templates (community‑shared, with governance).  
+- Deeper integration with device agents (more sensors/actuators).  
+- Optional “lab mode” for Tier 4 (autonomous cognition) under strict user control.  
+
+Phase 7 admission will require Phase 6 runtime stable for ≥6 months and explicit user opt‑in.  
+
+---
+
+## 📜 References  
+
+- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md) (Part III, Phase 6)  
+- [Delegated Autonomy.txt](Delegated%20Autonomy.txt)  
+- [# Autonomy Tiers & Evolution.txt](%23%20Autonomy%20Tiers%20%26%20Evolution.txt)  
+- [# 📘 Nova Constitutional Enforcemen.txt](%23%20%F0%9F%93%98%20Nova%20Constitutional%20Enforcemen.txt)  
+- [Firewall & Ledger Specification.txt](Firewall%20%26%20Ledger%20Specification.txt)  
+- [Phase 4.5 Roadmap](PHASE_4.5_ROADMAP.md)  
+- [Phase 5 Roadmap](PHASE_5_ROADMAP.md)  
+
+---
+
+**Prepared by:** Nova Constitutional Governance Board  
+**Date:** 2026‑02‑16 (Revised)  
+**Status:** Design‑Unlocked – Awaiting Phase 5 Completion + Experience Foundation  
+
+---  
+
+*End of Phase 6 Roadmap*
