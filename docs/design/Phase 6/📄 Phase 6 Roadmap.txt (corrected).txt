@@ -1,0 +1,130 @@
+📄 Phase 6 Roadmap.txt (corrected)
+text
+# 🧬 NOVA PHASE 6 ROADMAP (Proposed)  
+## *Policy‑Bound Operation – Delegated Autonomy Within Law*  
+**Proposed – Awaiting Constitutional Ratification**  
+
+**Document Status:** Proposed – Design Not Yet Authorized  
+**Based on:**  
+- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md) (Part III, Phase 6)  
+- [Delegated Autonomy.txt](Delegated%20Autonomy.txt)  
+- [# Autonomy Tiers & Evolution.txt](%23%20Autonomy%20Tiers%20%26%20Evolution.txt)  
+- [# 📘 Nova Constitutional Enforcemen.txt](%23%20%F0%9F%93%98%20Nova%20Constitutional%20Enforcemen.txt)  
+- [Firewall & Ledger Specification.txt](Firewall%20%26%20Ledger%20Specification.txt)  
+- **Audit Refinement:** 2026‑02‑16 – Added hard boundaries: trigger‑only background evaluation, atomic policy actions, emergency stop preempts external timers, policy‑self‑mutation forbidden, deterministic evaluation order, and explicit non‑orchestration clause.
+
+---
+
+## 🔹 Executive Summary  
+
+Phase 6 (proposed) introduces **delegated autonomy** – the first time Nova can perform actions automatically on behalf of the user, **but only within explicit, user‑defined policy envelopes**. This is not general‑purpose autonomy; it is **bounded, policy‑driven execution** that remains fully governed by the Governor.  
+
+- **User‑Defined Policies:** Users can create rules like “Every morning at 8am, summarise my calendar” or “If motion detected after 10pm, turn on night light.”  
+- **Bounded Automation:** Nova monitors conditions and executes actions – **only if** the action is permitted by an active, user‑approved policy. Background monitoring is strictly limited to trigger evaluation; no speculative reasoning or pre‑planning occurs outside an active evaluation cycle.  
+- **Atomic Capability Enforcement:** Policies may reference only atomic capabilities from the Phase 4 registry. Dynamic chaining, orchestration, or composition of multiple capabilities within a single policy is **forbidden**.  
+- **Local Optimisation (Class A/B/D Mutations):** With evolution enabled (Tier 3), Nova may adjust retrieval weights, compact memory, and refine routing hints – all reversible, logged, and firewalled. Mutations may **never** modify policy definitions, envelopes, or the capability registry.  
+- **Governor as Policy Validator:** The Governor’s role shifts from *“Did the user explicitly request this?”* to *“Is this action permitted by the active delegation policy?”*  
+
+All autonomy remains **opt‑in**, **transparent**, and **fully revocable**. No autonomy without explicit user delegation. No silent background execution. The Governor remains the sole execution choke point, now enforcing policy boundaries.  
+
+**This roadmap is a proposal.** Design work cannot begin until Phase 5 is complete and the Phase 6 admission gate is satisfied and ratified.
+
+---
+
+## 🎯 Phase 6 Goals  
+
+1. **Enable user‑defined atomic policies** for bounded automation – users can define a trigger and a single atomic action.  
+2. **Implement policy validation in the Governor** – every autonomous action is checked against the active policy envelope.  
+3. **Ensure background monitoring is trigger‑only** – no speculative reasoning, pre‑planning, or decision‑tree expansion outside active evaluation.  
+4. **Introduce Class A/B/D mutations** (retrieval weight, memory compaction, routing hint) under Tier 3, with evolution ON and full firewall protection. Explicitly forbid mutation of policy definitions.  
+5. **Require deterministic evaluation order** when multiple policies trigger simultaneously – alphabetical by policy ID, no prioritisation.  
+6. **Design emergency stop that preempts all external timers and listeners** – not merely blocks execution.  
+7. **Maintain all Tier 1 invariants** – no self‑expansion of authority, no background cognition without policy, no predictive preloading, no silent fallback.  
+8. **Prove household value** – Phase 6 runtime unlock only after ≥3 months of stable deployment with documented daily usage and positive retention metrics.  
+
+---
+
+## 📋 Scope  
+
+*(Scope sections unchanged.)*  
+
+---
+
+## 🏛️ Architectural Overview  
+
+*(Architecture unchanged.)*  
+
+---
+
+## 🔒 Phase 6 Admission Gate (Prerequisite for Design Unlock)  
+
+Before any Phase 6 design work can begin, the following must be satisfied:  
+
+- [x] Phase 4.5 design completed and ratified.  
+- [x] Phase 5 design completed and ratified.  
+- [ ] Phase 4 runtime stable for ≥30 days (already satisfied for Phase 5).  
+- [ ] Phase 5 runtime stable for ≥30 days (once unlocked).  
+- [ ] Phase 4.5 and Phase 5 user research confirms daily‑use scenarios, calm perception, and positive retention metrics.  
+- [ ] At least **3 months of stable household deployment** with documented daily usage and users returning voluntarily.  
+- [ ] **Atomic policy language** specification ratified (no multi‑step chains).  
+- [ ] **Trigger‑only monitoring** design approved.  
+- [ ] **Governor Policy Validator** design approved.  
+- [ ] **Mutation Firewall** core implemented (Phase 9 components may be pulled forward).  
+- [ ] **Ledger extension** schema approved.  
+- [ ] **Constitutional audit** confirms no authority expansion, no silent background execution, no policy bypass, no policy self‑mutation.  
+
+**Design Unlock Act:** If ratified, the Constitutional Governance Board may authorize design work after all prerequisites are met.  
+
+---
+
+## 🛠️ Implementation Roadmap  
+
+All code must be placed behind **compile‑time gates** and remain runtime‑locked until Phase 6 admission gate is satisfied and runtime unlock is explicitly voted.  
+
+*(Workstreams A–F unchanged.)*  
+
+---
+
+## ⏱️ Timeline Estimate  
+
+*(Timeline unchanged.)*  
+
+---
+
+## ⚠️ Risks and Mitigations  
+
+*(Risks unchanged.)*  
+
+---
+
+## ✅ Success Criteria for Phase 6 Design Completion  
+
+*(Criteria unchanged.)*  
+
+---
+
+## 🔮 After Phase 6: Path to Phase 7  
+
+Phase 6 components will remain dormant until **Phase 7** (conditional on experience foundation). Phase 7 admission will require Phase 6 runtime stable for ≥6 months and explicit user opt‑in.  
+
+---
+
+## 📜 References  
+
+- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md) (Part III, Phase 6)  
+- [Delegated Autonomy.txt](Delegated%20Autonomy.txt)  
+- [# Autonomy Tiers & Evolution.txt](%23%20Autonomy%20Tiers%20%26%20Evolution.txt)  
+- [# 📘 Nova Constitutional Enforcemen.txt](%23%20%F0%9F%93%98%20Nova%20Constitutional%20Enforcemen.txt)  
+- [Firewall & Ledger Specification.txt](Firewall%20%26%20Ledger%20Specification.txt)  
+- [Phase 4.5 Roadmap](PHASE_4.5_ROADMAP.md)  
+- [Phase 5 Roadmap](PHASE_5_ROADMAP.md)  
+
+---
+
+**Prepared by:** Nova Constitutional Governance Board  
+**Date:** 2026‑02‑16 (Revised)  
+**Status:** Proposed – Awaiting Ratification  
+
+---  
+
+*End of Phase 6 Roadmap*

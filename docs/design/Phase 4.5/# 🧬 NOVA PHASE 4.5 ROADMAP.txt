@@ -1,0 +1,262 @@
+# 🧬 NOVA PHASE 4.5 ROADMAP  
+## *Experience Elevation — Quietly Indispensable*  
+**Design‑Only / Runtime‑Locked (until Phase 4 completion)**  
+
+**Document Status:** Proposed — Awaiting Constitutional Ratification  
+**Ratified by:** NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8 (Part III, Phase 4.5)  
+**Based on:**  
+- [NOVA COMPLETE CONSTITUTIONAL 1.7](%23%20%F0%9F%A7%AC%20NOVA%20COMPLETE%20CONSTITUTIONAL%201.7.txt)  
+- [Nova UI Framework](%23%20Nova%20UI%20Framework.txt)  
+- [Nova Orb](%23%20Nova%20Orb.txt)  
+- [Presence Doctrine v5](PresenceDoctrine.md%20v5.txt)  
+**Last Updated:** 2026‑02‑16  
+
+---
+
+## 🔹 Executive Summary  
+
+Phase 4.5 is the **experience elevation** phase – the first time Nova’s design focus shifts from **architectural soundness** to **experiential value**. The goal is to make Nova **quietly indispensable** – a household appliance that removes uncertainty every day, without ever becoming proactive, persuasive, or assistant‑like.  
+
+All capabilities remain exactly those unlocked in Phase 4. **No new execution authority, no new APIs, no new agent behaviors.** Phase 4.5 is purely about **polish, clarity, and daily usefulness** within the existing constitutional envelope.  
+
+This phase introduces:  
+- **First‑win scenarios** – 3–5 concrete daily use cases that demonstrate Nova’s value.  
+- **Experience polish** – UI refinement, error messaging, onboarding flow.  
+- **Voice/tone calibration** – minor adjustments for clarity, within Presence Doctrine bounds.  
+- **Failure Mode Ladder** – predictable system behavior under degraded conditions.  
+- **Trust Panel** – persistent transparency about online/offline state, data egress, and last external calls.  
+- **Idle Value Guarantee** – the screen feels useful even when the user does nothing.  
+
+Phase 4.5 is **design‑only** – its output is specifications, user research, and UI prototypes. No runtime changes occur until Phase 4 has been stable for ≥30 days and the Phase 4.5 admission gate is satisfied.  
+
+---
+
+## 🎯 Phase 4.5 Goals  
+
+1. **Transform Nova from architecturally sound to experientially valuable.**  
+2. **Validate daily usefulness** through real‑world scenarios and user feedback.  
+3. **Establish a calm, reassuring presence** – core emotional outcome: *“Nothing is happening — and that’s good.”*  
+4. **Implement transparency mechanisms** (Trust Panel, failure mode ladder) that reinforce user sovereignty.  
+5. **Prove that Nova can remove uncertainty every day** – about environment, privacy, control, and safety.  
+6. **Remain fully constitutional** – no new capabilities, no autonomy, no background behavior, no predictive preloading.  
+
+---
+
+## 📋 Scope  
+
+### ✅ Included (Design Activities)  
+
+| Area | Description | Constraint |
+|------|-------------|------------|
+| **First‑Win Scenarios** | Design and test 3–5 concrete daily‑use cases (e.g., morning overview, quick lookup, system status). | Must be solvable with Phase 4 capabilities only. |
+| **Experience Polish** | UI/UX refinement, response clarity, error messaging. | Must pass the Four Gates; no semantic change to Orb. |
+| **Onboarding Flow** | First‑time setup experience that explains Nova’s value in <2 minutes. | Deterministic, explainable, privacy‑respecting. |
+| **Voice/Tone Calibration** | Minor adjustments to Personality Agent phrasing for clarity. | Must pass Calibration Test (Presence Doctrine §7.4). |
+| **Failure Recovery** | User‑facing messaging when things go wrong (API timeouts, network loss, etc.). | Calm, honest, never blaming; follows Failure Mode Ladder. |
+| **Failure Mode Ladder** | Define and implement system behavior under repeated or persistent failures. | See Section 3.5.1 of blueprint. |
+| **Trust Panel** | Persistent UI element showing online/offline mode, last external call, data egress. | Factual, calm, understandable to non‑technical users. |
+| **Idle Value Guarantee** | Ensure the dashboard provides useful information (system health, last updates) even when idle. | Screen must feel useful without user interaction. |
+| **User Research** | Conduct studies to validate clarity, calmness, and uncertainty reduction. | Document findings; iterate designs. |
+
+### ❌ Excluded (No New Capabilities)  
+
+- Any new execution authority beyond Phase 4 capabilities.  
+- Any form of autonomy, background cognition, or predictive behavior.  
+- New APIs or external integrations.  
+- Changes to Orb semantics or the Four Gates.  
+- Multi‑user support (remains single‑user).  
+- Any Tier 1 invariant modification.  
+
+---
+
+## 🏛️ Architectural Context  
+
+Phase 4.5 sits **on top** of Phase 4’s governed execution and Phase 4.2’s orthogonal cognition (if unlocked). It does **not** modify the Governor, the Agent Stack, or the Personality Agent’s core logic. It operates entirely within the **Product Layer** (as defined in Constitutional Scope Boundary, Part XIII).  
+
+```
+Phase 4 (Governed Execution) – capabilities
+Phase 4.2 (Orthogonal Cognition) – agents (design only)
+Phase 4.5 (Experience Elevation) – UI polish, scenarios, transparency
+```
+
+All runtime behavior remains governed by Phase 4’s unlock; Phase 4.5 activities are design‑time only until Phase 4 is stable.  
+
+---
+
+## 🔒 Phase 4.5 Admission Gate  
+
+Before any Phase 4.5 design work can begin, the following must be satisfied:  
+
+- [x] Phase 4 runtime unlocked and stable for **≥30 days** (no constitutional violations).  
+- [x] Phase 4 capabilities fully implemented and tested.  
+- [x] Capability registry complete and versioned.  
+- [x] Governor mediation verified under real usage.  
+- [ ] Phase 4.5 proposal ratified by Constitutional Governance Board.  
+
+**Design Unlock Act:** Ratification of this roadmap by the Governance Board.  
+
+---
+
+## ✅ Phase 4.5 Completion Criteria  
+
+The phase is considered complete when all of the following are met:  
+
+| Criteria | Evidence Required |
+|----------|-------------------|
+| **Three documented daily‑use scenarios** that users actually encounter | Usage logs, user interviews, task completion rates |
+| **Onboarding flow** that explains Nova's value in <2 minutes | Video recording, comprehension test (≥80% understand) |
+| **Error messages** tested for calmness and clarity | User perception study (≥80% find them "calm" or "neutral") |
+| **At least one "magic moment"** – a task that feels surprisingly easy | User testimonial, repeat usage data |
+| **Experience metrics baseline** established for future phases | Time‑to‑value, retention proxy, task success rate |
+| **Failure Mode Ladder** implemented and tested | Simulation of network/API failures, user observation |
+| **Trust Panel** implemented and validated | Users can correctly identify Nova's online/offline state |
+| **Idle Value Guarantee** satisfied | Dashboard provides useful info without interaction; user study confirms |
+| **All UI changes** pass the Four Gates | Design review, automated checks |
+
+---
+
+## 🛠️ Implementation Roadmap  
+
+Phase 4.5 is a **design and research phase** – it produces specifications, prototypes, and validated designs, not production code changes. All workstreams are parallel, but coordination is required.  
+
+### Workstream A: Scenario Design & Validation (Weeks 1–6)  
+
+| Task | Description | Deliverable |
+|------|-------------|-------------|
+| A1 | Identify 5–10 candidate daily‑use scenarios based on Phase 4 capabilities. | Candidate list. |
+| A2 | Select top 3–5 for deep design. | Prioritised scenarios. |
+| A3 | Design ideal user flows for each scenario, ensuring constitutional compliance. | Flow diagrams, wireframes. |
+| A4 | Conduct usability testing (low‑fidelity prototypes) to validate clarity and value. | Test report, iterations. |
+| A5 | Refine scenarios based on feedback. | Final scenario designs. |
+
+### Workstream B: Onboarding & First‑Time Experience (Weeks 2–5)  
+
+| Task | Description | Deliverable |
+|------|-------------|-------------|
+| B1 | Map out the first‑time user journey from installation to first value. | Journey map. |
+| B2 | Design onboarding screens and copy. | Wireframes, copy drafts. |
+| B3 | Test onboarding flow with naive users; measure comprehension time. | Test videos, timing data. |
+| B4 | Iterate until comprehension <2 minutes. | Final onboarding design. |
+
+### Workstream C: UI Polish & Error Messaging (Weeks 3–8)  
+
+| Task | Description | Deliverable |
+|------|-------------|-------------|
+| C1 | Review existing UI against the Four Gates; identify any borderline elements. | Audit report. |
+| C2 | Refine visual design for clarity and calmness (typography, spacing, color). | Style guide updates. |
+| C3 | Design error messages for common failure modes (network, API, timeout, etc.). | Message templates. |
+| C4 | Test error messages for calmness and clarity with users. | Perception study results. |
+| C5 | Update UI component library to incorporate improvements. | Component specs. |
+
+### Workstream D: Trust Panel (Weeks 4–7)  
+
+| Task | Description | Deliverable |
+|------|-------------|-------------|
+| D1 | Define Trust Panel content and placement (e.g., dashboard footer). | Specification. |
+| D2 | Design visual mockups for all states (Offline, Online, Local‑Only, Safe Mode). | Mockups. |
+| D3 | Prototype interactive version; test with users for comprehension. | Prototype, test report. |
+| D4 | Finalise design and integration points with Governor (data sources). | Final spec. |
+
+### Workstream E: Failure Mode Ladder (Weeks 4–6)  
+
+| Task | Description | Deliverable |
+|------|-------------|-------------|
+| E1 | Define precise thresholds for each failure level (timeouts, repeated failures, etc.). | Threshold document. |
+| E2 | Design system behaviour for each level (messages, mode changes, recovery). | Behaviour specifications. |
+| E3 | Simulate failures in test environment; observe user reactions. | Observation logs. |
+| E4 | Adjust thresholds and messaging based on feedback. | Final ladder spec. |
+
+### Workstream F: Idle Value Guarantee (Weeks 5–8)  
+
+| Task | Description | Deliverable |
+|------|-------------|-------------|
+| F1 | Audit current dashboard for idle value; identify gaps. | Audit. |
+| F2 | Design enhancements: system health, last updates, environment snapshot. | Mockups. |
+| F3 | Ensure all added information is cached or user‑approved (no background fetches). | Compliance review. |
+| F4 | Test idle screen with users – does it feel useful? | User feedback. |
+
+### Workstream G: Voice/Tone Calibration (Weeks 6–8)  
+
+| Task | Description | Deliverable |
+|------|-------------|-------------|
+| G1 | Review existing Personality Agent output against Calibration Test. | Review. |
+| G2 | Adjust phrasing for clarity while preserving emotional neutrality. | Updated phrase templates. |
+| G3 | Test adjusted outputs with users (perception of friendliness vs. emotional investment). | Perception study. |
+| G4 | Finalise tone guidelines. | Tone guide. |
+
+### Workstream H: Documentation & Governance (Weeks 8–10)  
+
+| Task | Description | Deliverable |
+|------|-------------|-------------|
+| H1 | Compile all designs, test results, and final specifications. | Phase 4.5 Design Package. |
+| H2 | Update constitutional documents to reflect any clarifications (no new invariants). | Amendments if needed. |
+| H3 | Prepare handoff to Phase 5 planning (Memory & Continuity). | Phase 5 readiness notes. |
+
+---
+
+## ⏱️ Timeline Estimate  
+
+| Week | Focus |
+|------|-------|
+| 1–2 | Scenario identification, onboarding initial concepts |
+| 3–4 | Scenario testing, UI polish, Trust Panel design |
+| 5–6 | Failure Mode Ladder, idle value, error messaging |
+| 7–8 | Tone calibration, final testing, documentation |
+| 9–10 | Governance review, phase sign‑off |
+
+---
+
+## ⚠️ Risks and Mitigations  
+
+| Risk | Mitigation |
+|------|------------|
+| **Scope creep into new capabilities** | Strictly enforce “no new capabilities” rule; all designs must reference Phase 4 capability IDs. |
+| **UI changes that imply agency** | All designs pass Four Gates review; automated checks for forbidden patterns (symbols, prioritisation). |
+| **Onboarding becomes persuasive** | Review copy against Presence Doctrine; test with users for “feeling of being guided” vs. “informed”. |
+| **Trust Panel becomes alarming** | Use factual, calm language; avoid red/yellow; test for anxiety response. |
+| **Failure Mode Ladder introduces background monitoring** | All ladder transitions are reactive, not proactive; no polling. |
+| **Idle Value additions cause background fetches** | Use cached data only; display timestamps; no automatic refresh without user request. |
+
+---
+
+## ✅ Success Criteria for Phase 4.5 Completion  
+
+- All completion criteria (see table above) met.  
+- No constitutional violations observed during design validation.  
+- All designs approved by Governance Board and aligned with Tier 1 invariants.  
+- User research demonstrates that Nova is perceived as calm, useful, and trustworthy.  
+- Phase 4 remains stable throughout the design period.  
+
+---
+
+## 🔮 After Phase 4.5: Path to Phase 5  
+
+Once Phase 4.5 is complete, Nova will have:  
+
+- A proven set of daily‑use scenarios.  
+- A polished, calm UI with transparent trust indicators.  
+- A reliable failure behaviour ladder.  
+- A baseline of experience metrics.  
+
+Phase 5 (Memory & Continuity) can then begin design, building on this foundation. Phase 5 will introduce **explicit memory** and **user‑approved continuity**, still with zero autonomy.  
+
+---
+
+## 📜 References  
+
+- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md) (Part III, Phase 4.5)  
+- [Nova UI Framework](%23%20Nova%20UI%20Framework.txt)  
+- [Nova Orb](%23%20Nova%20Orb.txt)  
+- [Presence Doctrine v5](PresenceDoctrine.md%20v5.txt)  
+- [Phase 4 Roadmap](PHASE_4_ROADMAP.md)  
+- [Phase 4.2 Roadmap](PHASE_4.2_ROADMAP.md)  
+
+---
+
+**Prepared by:** Nova Constitutional Governance Board  
+**Date:** 2026‑02‑16  
+**Status:** Proposed – Awaiting Ratification  
+
+---  
+
+*End of Phase 4.5 Roadmap*

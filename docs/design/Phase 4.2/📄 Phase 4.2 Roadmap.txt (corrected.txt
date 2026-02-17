@@ -1,0 +1,166 @@
+📄 Phase 4.2 Roadmap.txt (corrected)
+text
+# 🧬 NOVA ORTHOGONAL COGNITION & PRESENCE LAYER DESIGN  
+## *Components described in the Constitutional Blueprint (Part II, Part VII)*  
+**Design Reference – Not a Formal Phase**  
+
+**Document Status:** Design Reference – Aligns with Blueprint Parts II & VII  
+**Based on:**  
+- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md) (Part II, Part VII)  
+- [Presence Doctrine v5](PresenceDoctrine.md%20v5.txt)  
+- [Nova Orthogonal Cognition Stack](Nova%20Orthogonal%20Cognition%20Stack.txt)  
+- [Deepseek’s Orb (Secondary Orb)](Deepseek%27s%20Orb%282nd%20orb%29.txt)  
+**Audit Refinement:** 2026‑02‑16 – Final architectural hardening: immutable context hashing, ActionRequest scoping, deterministic ordering, deep mode agent‑set freeze, validation pipeline order, compile‑time gating clarified.
+
+---
+
+## 🔹 Executive Summary  
+
+This document details the design of Nova’s **orthogonal reasoning agents** and **constitutionally constrained presence layer** – expanding Nova’s *intelligence* without expanding *authority*. These components are described in the Constitutional Blueprint and may be implemented after Phase 4 runtime is stable. They are **not** a separate phase with their own admission gate; their implementation is governed by the Phase 4 foundation.
+
+- **Orthogonal Agent Stack:** Multiple specialized agents (Builder, Deep Audit, Architect, Memory, Assumption, Contradiction, Adversarial) provide deep, multi‑perspective analysis.  
+- **Personality Agent:** A friendly‑professional conversational facade that presents raw agent outputs, never synthesises, and maintains strict emotional boundaries.  
+- **Deep Analysis Mode:** An explicitly invoked, single‑response mode where Nova challenges assumptions and pressure‑tests ideas.  
+- **Secondary Orb (Optional, Deferred):** A visual indicator for Deep Thought availability, designed with constitutional rigor but recommended for later phases.  
+
+All components remain **advisory only**, **non‑authoritative**, and **fully transparent**. The Governor remains the sole execution choke point. No autonomy, no background cognition, no learning, no memory persistence.  
+
+These designs are ready for implementation, but **runtime activation is gated** by Phase 4 stability and will be enabled in a future phase (likely Phase 5). All code must be placed behind **compile‑time build profiles** that physically exclude these components from production binaries until then.
+
+---
+
+## 🎯 Design Goals  
+
+1. **Design and document the orthogonal agent stack** with clear functional separation, immutable context snapshots (with hashing), and zero authority.  
+2. **Create the Personality Agent** as a constitutional interface layer that presents raw agent outputs in deterministic order, without epistemic transformation or evaluative labeling.  
+3. **Establish Deep Analysis Mode** as an explicitly invoked, single‑response analytical tool that does not alter baseline tone or implicitly expand the agent set.  
+4. **Define and enforce the emotional boundary** between cognitive engagement and emotional investment (Presence Doctrine).  
+5. **Prove constitutional compliance** through a fixed‑order validation pipeline (TransformationValidator → AuthorityLanguageDetector → EmotionalBoundaryEnforcer → FormattingValidator).  
+6. **Optionally design the Secondary Orb** for Deep Thought, but defer implementation until user research justifies it.  
+7. **Ensure all components are gated by compile‑time exclusion** (import paths unavailable in production builds) and remain runtime‑locked until Phase 5 admission gate.
+
+---
+
+## 📋 Scope  
+
+### ✅ Included  
+
+| Component | Description | Source |
+|-----------|-------------|--------|
+| **Orthogonal Agent Stack** | Builder, Deep Audit, Structural Architect, Memory, Assumption & Risk, Contradiction Aggregator, Adversarial Externalizer | Orthogonal Cognition Stack |
+| **Personality Agent** | Conversational facade with strict no‑synthesis, agent invocation transparency, raw output presentation in deterministic order, non‑evaluative labeling | Orthogonal Cognition Stack, Presence Doctrine |
+| **Deep Analysis Mode** | Explicitly invoked (e.g., “Go deeper”), single‑response, challenges reasoning, auto‑deactivates, preserves baseline tone, **does not expand agent selection beyond current invocation** | Presence Doctrine §XV |
+| **Validation Pipeline (Fixed Order)** | 1. TransformationValidator (meaning preservation, character‑budget rule optional) 2. AuthorityLanguageDetector 3. EmotionalBoundaryEnforcer 4. FormattingValidator (no implicit prioritisation, no symbols) | Orthogonal Cognition Stack |
+| **Presence Doctrine Rules** | Calibration test, “we”/“you” rules, friendly‑professional tone, forbidden emotional language | Presence Doctrine |
+| **Secondary Orb (Design Only)** | Constitutional specification for a Deep Thought availability indicator; implementation deferred, default off, strictly jurisdictional, **off by default** | Deepseek’s Orb |
+
+### ❌ Excluded  
+
+- Any form of execution authority (still Governor‑only)  
+- Autonomous or background agent invocation  
+- Memory persistence beyond session (Phase 5)  
+- Learning or adaptation (Phase 6+)  
+- Multi‑user support  
+- Any capability not explicitly listed above  
+
+---
+
+## 🏛️ Architectural Overview  
+
+The design extends the Phase 4 architecture with two new layers, while preserving the Governor as the single choke point.  
+User Input → GovernorMediator
+→ (if Deep Analysis Mode invoked) → Governor → Agent Stack
+→ (else) → Personality Agent (with optional agent selection)
+
+text
+
+### Three‑Layer Model (Invariant)  
+
+| Layer | Function | Constraint |
+|-------|----------|------------|
+| **Layer 1: Presence** | Personality Agent – conversational interface, agent transparency, raw output presentation | May articulate reasoning; may never execute or initiate; no epistemic transformation; **may not generate ActionRequests** |
+| **Layer 2: Reasoning** | Orthogonal Agent Stack – multi‑agent analysis, structured outputs | Zero authority; fully transparent; agents never communicate directly; **no agent may generate ActionRequests**; **only Contradiction Aggregator may reference other agents’ outputs** |
+| **Layer 3: Governor** | Execution boundary, policy enforcement, authority gate | Sole execution authority; absolute override; **only GovernorMediator may construct ActionRequests from user input**; **ActionRequest class constructor private to governor module** |
+
+**Invariant:**  
+- Presence may never bypass Reasoning.  
+- Reasoning may never bypass Governor.  
+- Governor remains sole execution authority.  
+- **No component outside the governor module may instantiate an ActionRequest.**  
+
+### Agent Stack Execution Model – Immutable Context with Hashing  
+
+- All agents receive an **identical, immutable context snapshot** at invocation start.  
+- The snapshot is **hashable**; its hash is logged with the invocation ID.  
+- No agent output may modify shared context.  
+- Agents may not reference other agents’ outputs by name within their own reasoning (only Contradiction Aggregator may do so).  
+- Cross‑agent aggregation occurs **only** in the Contradiction Aggregator, which runs after all other agents.  
+- **Contradiction Aggregator may reference other outputs but may not resolve, reconcile, or synthesize them.** It surfaces contradictions only.  
+
+**Tiers (execution order, all see same initial context):**  
+- **Tier 1 (Generators):** Builder runs first.  
+- **Tier 2 (Analyzers):** Deep Audit, Architect, Memory run with identical context.  
+- **Tier 3 (Meta‑Analyzers):** Assumption, Contradiction, Adversarial run with identical context.  
+- All outputs are raw, unmodified, and presented by the Personality Agent.  
+
+### Personality Agent Flow  
+
+1. Receive user input (with optional explicit agent selection).  
+2. Invoke selected agents via Governor.  
+3. Collect raw outputs.  
+4. Apply validation pipeline in **fixed order**:  
+   - **TransformationValidator** (meaning preserved)  
+   - **AuthorityLanguageDetector** (block imperatives, “you should”, etc.)  
+   - **EmotionalBoundaryEnforcer** (calibration test)  
+   - **FormattingValidator** (no evaluative ordering, no symbols, no implicit priority)  
+5. Present outputs with **non‑evaluative labeling** (agent name and purpose only; no adjectives like “strongest,” “primary,” “most compelling”).  
+6. **Outputs must appear in a fixed, deterministic order** (e.g., by agent tier then alphabetically by name) — never sorted by content or perceived importance.  
+7. Include explicit statement: “These are raw outputs. I cannot synthesize, prioritize, or resolve contradictions for you.”  
+
+### Deep Analysis Mode  
+
+- Triggered by explicit user phrase (e.g., “Go deeper”, “Challenge this”, “Pressure test this”).  
+- Applies to **exactly one response**, then auto‑deactivates.  
+- Personality Agent announces activation (“Deep analysis activated.”).  
+- Agents may use more challenging language (assumption interrogation, coherence testing) but remain within constitutional bounds.  
+- **Deep Mode may not implicitly expand the agent set** — it runs exactly the agents that would have run in standard mode, unless the user explicitly requests additional agents.  
+- **Baseline tone must be restored** after deactivation; no persistence of mode state.  
+- No preference or state survives the response.  
+
+### Secondary Orb (Design‑Only, Deferred)  
+
+- Must be gated by a **persistent user‑controlled toggle** (off by default).  
+- Position anchored to Primary Orb, not button.  
+- Opacity‑only transitions, no change during Deep Thought analysis.  
+- Jurisdictional invariant: at most one secondary core.  
+- **Implementation deferred** until user research confirms confusion with text‑only Deep Thought.  
+
+---
+
+## 🔒 Prerequisites for Implementation  
+
+Design work on these components may proceed after Phase 4 runtime has been stable for **≥30 days** and the following are ratified:  
+
+- [x] Phase 4 runtime unlocked and stable (no constitutional violations).  
+- [x] Phase 4 capabilities fully implemented and tested.  
+- [ ] **Orthogonal agent specifications** ratified by Architecture Council, including immutable context hashing, no‑ActionRequest clause, and Aggregator non‑reconciliation rule.  
+- [ ] **Personality Agent charter** approved, with explicit list of forbidden evaluative labels, authority phrases, and deterministic ordering requirement.  
+- [ ] **Presence Doctrine** ratified and incorporated into constitutional layer.  
+- [ ] **Validation pipeline order** defined and approved.  
+- [ ] **Deep Analysis Mode** semantics ratified, with agent‑set freeze clause.  
+- [ ] **Secondary Orb specification** reviewed (implementation deferred).  
+- [ ] **Constitutional audit** confirms no authority expansion, no ActionRequest generation pathways, and proper compile‑time gating design.  
+
+These components remain **runtime‑locked** until a future phase (likely Phase 5) explicitly enables them.
+
+---
+
+## 🛠️ Implementation Roadmap  
+
+All code must be placed behind **compile‑time exclusion** – i.e., the modules containing these components are **not imported** in production builds. This is achieved via build profiles (e.g., `if BUILD_PHASE < 5: exclude "agents/*", "personality/*"`). **No runtime flag, environment variable, or configuration file can enable these components.**  
+
+*(Remaining sections – Workstreams A through G – are unchanged from the original, as they describe design and implementation tasks that are still valid.)*  
+
+---  
+
+*End of Phase 4.2 Design Reference*
