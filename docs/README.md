@@ -1,16 +1,16 @@
-> ## 🔒 PHASE-3.5 STATUS UPDATE — CLOSED
+> ## 🔒 PHASE-3.5 STATUS UPDATE — SEALED
 >
-> **Phase-3.5 is formally COMPLETE and CLOSED.**  
+> **Phase-3.5 is formally COMPLETE, SEALED, and NON-REOPENABLE without explicit constitutional unlock.**  
 > All Phase-3.5 acceptance criteria have been mechanically verified and CI-enforced, including execution quarantine, Governor containment, passive confirmation gating, and runtime refusal proofs.
 >
-> This document may reference Phase-3.5 as “active” for historical context only.  
-> **No Phase-3.5 work remains open.** Phase-4 remains hard-locked pending a separate unlock artifact.
+> This document may reference Phase-3.5 as "active" for historical context only.  
+> **No Phase-3.5 work remains open.** Phase-4 is design‑unlocked but runtime‑locked pending a formal unlock artifact.
 >
 > **Authoritative closure record:** `docs/PHASE_3.5_CLOSURE.md`
 ------------------------------------------------
 
 ![Phase 3 Complete](https://img.shields.io/badge/Phase--3-COMPLETE-brightgreen?style=flat-square)
-![Phase 3.5 Frozen](https://img.shields.io/badge/Phase--3.5-FROZEN-blue?style=flat-square)
+![Phase 3.5 Sealed](https://img.shields.io/badge/Phase--3.5-SEALED-blue?style=flat-square)
 ![Execution Disabled](https://img.shields.io/badge/Execution-DISABLED-red?style=flat-square)
 ![Local First](https://img.shields.io/badge/Local--First-YES-blue?style=flat-square)
 ![Governance Text-Sanitizer](https://img.shields.io/badge/Governance-TEXT_SANITIZER-gray?style=flat-square)
@@ -19,41 +19,55 @@
 
 **One-Line Truth**
 
-NovaLIS is a sealed governance vessel with proven execution surface safety. Current runtime has zero execution capability and minimal text mediation.
+Nova is a **governor over contained intelligence** — a sovereign household appliance that provides calm, trustworthy access to AI capabilities without surrendering authority.
 
-**Constitutional Invariants**
+**Constitutional Invariants (Part I of v1.8)**
 
-- No autonomy (user → Nova → GovernorMediator → response → user)
-- No execution capability (execute_action = None)
-- No background cognition or silent execution
-- Deterministic behavior (same input → same output)
-- Offline-first by default; online only by explicit request
-- Explicit invocation only (no inferred intent)
-- Full inspectability (logs, traces, ledgers, manifests)
+- Single Master Governor (no bypass)
+- Intelligence–Authority Split (advisory only, execution mediated)
+- No Autonomous Execution
+- No Background Cognition
+- No Predictive Preloading
+- No Silent Fallback
+- No Environment Override
+- No Dynamic Execution Surface
+- Orb Non‑Semantic (only message: "There is power here. It is stable.")
+- UI Reflective Only
+- Calm as Technical Requirement
+- No Speculative Execution
+- No Self‑Expansion of Authority
+- Evolution Kill Switch Absolute
+- … and others (see v1.8)
 
 If any code or proposal contradicts the above, it is **invalid by definition** unless an explicit governance unlock exists.
 
-## Phase Status (v5.1-Aligned)
+---
+
+## Phase Status (v1.8-Aligned)
 
 | Phase | Status | Notes |
 |-------|--------|-------|
 | Phase 0–2 | ✅ **Frozen** | Historical foundations, permanently locked |
 | Phase 3 | ✅ **Frozen** | Core functionality complete and locked |
-| Phase 3.5 | 🔒 **Frozen** | Execution Surface Guarantee Proven |
-| Phase 4 | 🚫 **Hard Blocked** | Design phase only; requires explicit unlock |
-| Phase 4.2+ | 🔒 **Locked** | Design documents only |
-| Phase 5+ | 🔒 **Locked** | Architecture specifications only |
-| Phase 10+ | 🔒 **Deep Locked** | Requires unanimous constitutional amendment |
+| Phase 3.5 | 🔒 **SEALED** | No execution authority, GovernorMediator only |
+| Phase 4 | 🚫 **Design‑Unlocked, Runtime‑Locked** | Design phase only; requires explicit unlock |
+| Phase 4.5 | 🔓 **Proposed** | Experience Elevation (awaiting ratification) |
+| Phase 5A | 🔒 **Design‑Locked** | Explicit Memory & Continuity (future) |
+| Phase 5B | 🔒 **Design‑Locked** | Experience Maturation (future) |
+| Phase 6 | 🔒 **Design‑Locked** | Policy‑Bound Operation (requires proven household value) |
+| Phase 7–10 | 🔒 **Design‑Locked** | Conditional on experience foundation |
 
 **Important:**
 
-Phase progression is enforced as a **hard safety barrier**, not a roadmap suggestion. Current Phase 3.5 is FROZEN with proven guarantees.
+Phase progression is enforced as a **hard safety barrier**, not a roadmap suggestion. Current Phase 3.5 is SEALED with proven guarantees.
+
+---
 
 ## What Exists in This Repository
 
 This repository contains:
 
-- A **FastAPI + WebSocket backend** implementing the NovaLIS brain
+- A **FastAPI + WebSocket backend** implementing the Nova brain
 - A **deterministic skill registry** (system / weather / news / general_chat)
 - A **text mediation layer** (GovernorMediator only, not enforcement engine)
 - A **static dashboard UI** (observer/control surface)
@@ -62,20 +76,26 @@ This repository contains:
 
 Large runtime artifacts (models, binaries) are intentionally excluded from version control.
 
+---
+
 ## What This Repository Does *Not* Do
 
-NovaLIS explicitly does **not**:
+Nova explicitly does **not**:
 
-- Execute actions (execute_action = None)
+- Execute actions (`execute_action = None`)
 - Act autonomously or proactively
 - Perform background reasoning or monitoring
 - Infer user intent
 - Adapt behavior based on history or habits
-- Enable governed agent execution (Phase 4 is design-only)
+- Enable governed agent execution (Phase 4 is design‑only)
 - Provide "helpful" escalation beyond defined contracts
-- Use DeepSeek, DEG, or agent architectures (Phase 4+ designs only)
+- Use DeepSeek, DEG, or agent architectures **in runtime** (Phase 4+ designs only)
+
+**Deep Thought (external analysis) is advisory only.** When invoked, Nova is completely dormant: it does not receive the message, does not respond, and performs no background processing. Deep Thought outputs are visible in chat history but carry no authority and do not influence Nova’s decision‑making unless explicitly referenced by the user in a subsequent Nova‑mode message.
 
 If a feature requires Nova to **decide, assume, or initiate**, it is **illegal** under the current canon.
+
+---
 
 ## Repository Navigation (Required for Review)
 
@@ -91,6 +111,8 @@ That document specifies:
 - Explicit review constraints
 
 Any review or change proposal that ignores REPO\_MAP.md is considered **unsafe**.
+
+---
 
 ## Contribution Rules (Binding)
 
@@ -109,41 +131,56 @@ Key rules include:
 
 If you are unsure whether a change is allowed: **do not implement it**.
 
+---
+
 ## Runtime Dependencies
 
 Runtime dependencies such as STT models or media tools are **installed locally** and excluded from Git.
 
 See:
 
-- nova\_backend/tools/README.md
-- .gitignore
+- `nova_backend/tools/README.md`
+- `.gitignore`
 
 This repository is intentionally **not self-contained** at runtime.
 
+---
+
 ## Status Disclaimer
 
-NovaLIS is **acceptance-gated** and **not production-complete**.
+Nova is **acceptance-gated** and **not production-complete**.
 
 Claims of capability are valid **only** where explicitly implemented and verified.
 
 Specification does not imply availability.
 
 **Current Runtime Truth:**
-- Phase 3.5: FROZEN (Execution Surface Guarantee Proven)
+- Phase 3.5: SEALED (no execution authority)
 - Governor: GovernorMediator (text sanitizer only)
-- Execution: Disabled (execute_action = None)
+- Execution: Disabled (`execute_action = None`, `GOVERNED_ACTIONS_ENABLED = false` hard‑coded)
 - Skills: Read-only weather, news, system, general chat
 - No DeepSeek, DEG, agents, or device control
 
+---
+
 ## Canonical References
 
-- **NOVA CANONICAL SYNTHESIS v5.1** — Phase-Aligned Truth ✅
-- **REPO_MAP.md** — Deterministic repository navigation
-- **CONTRIBUTING.md** — Governance-aligned contribution rules
-- **NovaLIS-Governance/PHASE_3.5_FROZEN_STATUS.md** — Current phase status
-- **docs/PHASE_3_COMPLETION.md** — Phase 3 completion certificate
+- **`NOVA COMPLETE CONSTITUTIONAL BLUEPRINT 1.8.md`** — Single source of truth ✅
+- **`docs/PHASE_3.5_CLOSURE.md`** — Formal closure record
+- **`REPO_MAP.md`** — Deterministic repository navigation
+- **`CONTRIBUTING.md`** — Governance-aligned contribution rules
 
-These documents together define the **single source of truth** for NovaLIS.
+These documents together define the **authoritative reference set**, governed by v1.8 as the supreme document.
+
+---
+
+## Core Philosophical Context
+
+The following documents are **non-authoritative context** and do not grant capability, permission, or roadmap intent. They provide background on Nova's governance-first mindset:
+
+- **`CorePhilosophy.md`** - Foundational philosophical framing
+- **`NOVA_AGENT_IDENTITY_v3.0.md`** - Non-autonomous coordination definition
+- **`NOVA_DEEP_MEMORY_SAVED_UNLOCK_REQUIRED_v1.0.md`** - Memory governance design
 
 ---
 
@@ -183,12 +220,12 @@ This guarantees that future capability expansion (Phase-4+) happens only through
 ### Status
 
 - **Phase-3:** ✅ Complete & Locked  
-- **Phase-3.5:** 🔒 Frozen (Execution Surface Guarantee Proven)  
+- **Phase-3.5:** 🔒 SEALED (no execution authority)  
 - **Speech-to-Text (STT):** ✅ Final  
-- **Execution Authority:** 🚫 Disabled (execute_action = None)  
-- **Phase-4:** ⛔ Hard-blocked (Design Only, no implementation)
+- **Execution Authority:** 🚫 Disabled (`execute_action = None`, `GOVERNED_ACTIONS_ENABLED = false`)  
+- **Phase-4:** ⛔ Design‑Unlocked, Runtime‑Locked
 
 For formal attestations, see:  
-`docs/PHASE_3_COMPLETION.md` and `NovaLIS-Governance/PHASE_3.5_FROZEN_STATUS.md`
+`docs/PHASE_3.5_CLOSURE.md`
 
-**Reference Authority:** Nova Canonical Synthesis v5.1 - Phase-Aligned Truth
+**Reference Authority:** Nova Complete Constitutional Blueprint v1.8

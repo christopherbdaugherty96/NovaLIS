@@ -3,7 +3,7 @@ NovaLIS ActionResult (Phase-2)
 
 Purpose:
 - Canonical result of an executed action
-- Returned from execute_action boundary
+- Returned from execution boundary
 - Sent to UI or speech layer as-is
 
 LOCKED RULES:

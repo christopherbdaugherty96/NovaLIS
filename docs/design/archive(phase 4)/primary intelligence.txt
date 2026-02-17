@@ -1,0 +1,262 @@
+primary intelligence 
+
+
+Single conversation
+
+
+Nova responses
+
+
+DeepSeek responses (when invoked)
+
+
+Nova can see DeepSeek’s output and continue reasoning with it
+
+
+That means:
+DeepSeek becomes part of the conversation context, but still not part of the authority chain.
+This is possible — but only under strict constraints, otherwise it breaks several of your core guarantees.
+
+The Key Architectural Question
+Does DeepSeek:
+A) Provide information that Nova can consider?
+or
+B) Influence Nova automatically as a decision authority?
+You want A.
+If it becomes B, you violate:
+Determinism
+
+
+Single reasoning control
+
+
+Trust appliance identity
+
+
+So the safe model is:
+DeepSeek output = user-visible context, not system authority.
+
+Safe Architecture Model
+Think of the conversation as:
+User
+Nova
+User
+DeepSeek (invoked)
+User
+Nova (sees DeepSeek text as conversation content)
+DeepSeek is treated like:
+A user-provided message
+
+
+A quoted external opinion
+
+
+Additional context
+
+
+Not:
+A system controller
+
+
+A hidden internal signal
+
+
+
+Required Safety Rules
+Rule 1 — Explicit Invocation Only
+DeepSeek is called only when the user:
+clicks a button
+
+
+or types a command
+
+
+No automatic calls.
+This preserves:
+Silence-first
+
+
+No background processing
+
+
+
+Rule 2 — Visible Separation
+DeepSeek responses must be clearly labeled:
+Example:
+Nova:
+…
+DeepSeek (Audit):
+…
+Then Nova can reference it:
+“Based on DeepSeek’s analysis…”
+This keeps transparency.
+
+Rule 3 — No Automatic Behavior Changes
+DeepSeek cannot:
+Trigger tools
+
+
+Modify system state
+
+
+Change permissions
+
+
+Execute actions
+
+
+Override Nova
+
+
+Nova may consider the content, but authority remains unchanged.
+
+Rule 4 — No Hidden Context Injection
+DeepSeek output should enter the conversation exactly as shown.
+No:
+hidden prompts
+
+
+system-only text
+
+
+internal signals
+
+
+Otherwise you break auditability.
+
+How This Fits Your Architecture
+Phase-3.5
+Allowed if:
+Explicit invocation only
+
+
+Text only
+
+
+No execution
+
+
+No background analysis
+
+
+Phase-4
+Still allowed:
+DeepSeek = analysis source
+
+
+Governor still controls execution
+
+
+Phase-4.5 (Best conceptual fit)
+This becomes:
+Multi-source reasoning layer
+Nova + external analysis = combined intelligence
+Authority unchanged.
+
+What This Gives You
+Benefits
+Second-opinion reasoning
+
+
+Error checking
+
+
+Contradiction detection
+
+
+Deeper analysis
+
+
+Higher confidence responses
+
+
+This strengthens your:
+Trust Appliance pillar
+
+
+Local Intelligence Hub pillar
+
+
+
+What Would Break the System
+Avoid these failure modes:
+1) Automatic DeepSeek Calls
+(background analysis)
+Violates:
+Silence-first
+
+
+No background processing
+
+
+
+2) DeepSeek → Tool Execution
+If Nova executes actions based solely on DeepSeek output.
+Must remain:
+User request → Governor → execution
+
+3) DeepSeek as Hidden Co-Brain
+If Nova silently routes reasoning through it.
+That would violate:
+Offline-first identity
+
+
+Determinism
+
+
+Audit transparency
+
+
+
+Recommended Interaction Flow
+Safe model:
+User asks Nova
+Nova responds
+
+User: "DeepSeek, review that"
+
+DeepSeek responds (visible)
+
+Nova: considers DeepSeek content if user continues conversation
+DeepSeek is treated like:
+An external expert whose opinion is part of the conversation.
+
+UI Pattern That Fits Best
+Single chat stream:
+Nova: …
+DeepSeek (Audit): …
+Nova: …
+Or:
+Main chat + small DeepSeek panel
+But when invoked, its text is inserted into the main conversation history.
+
+One Critical Principle
+If you implement this, keep this invariant:
+DeepSeek adds information to the conversation, but it never adds authority to the system.
+That keeps:
+Governor control intact
+
+
+Phase model intact
+
+
+Trust model intact
+
+
+
+Final Verdict
+Allowing Nova to see DeepSeek responses:
+Does not break your architecture
+
+
+Fits Phase-3.5 / Phase-4 if explicit and visible
+
+
+Strengthens reasoning depth
+
+
+Is safe if DeepSeek is treated as external context, not internal control
+
+
+If you keep the boundaries above, this becomes a multi-source intelligence conversation, not a multi-agent system.
+

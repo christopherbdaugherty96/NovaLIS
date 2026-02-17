@@ -1,0 +1,308 @@
+note:
+⚠️ Identified Gaps & Potential Risks
+1. Orb Unplug Test – Ambiguity in Software Context
+Document: Nova Orb.txt, Section 5.A
+Issue: The Unplug Test states that if a user can tell Nova was unplugged from the Orb alone, it is a violation. In a purely software UI, when Nova (the application) is terminated, the Orb disappears – the user can tell. This test is impossible to pass for a software‑resident Orb.
+
+Recommendation:
+
+Reframe the test to target causal coupling to Nova’s operational state, not power state.
+
+Example: “If Nova transitions from idle to processing, does the Orb’s appearance change in any way a user could reliably detect?” – this is already covered by the Semantic Leak Test.
+
+Remove or rephrase the Unplug Test to avoid impossible criteria.
+
+-----------------------------------------------
+
+
+# Nova Orb — Identity, Constitution & Implementation Standard
+
+**Document ID:** NOVA-ORB-FINAL-v3.0  
+**Status:** 🔒 Constitution Ratified · 📐 Implementation Standard Active  
+**Version Date:** 2026-02-12  
+**Supersedes:** NOVA-ORB-FINAL-v2.0  
+
+---
+
+## Preamble — Purpose & Structure
+
+This document defines the Nova Orb — its **ontological identity**, its **constitutional invariants**, and its **implementation specifications**.
+
+It is divided into **two independent layers**:
+
+1. **Layer 1 — The Orb Constitution**  
+   *Philosophical law. Immutable without formal constitutional amendment.*  
+   Defines what the Orb **is** and what it **must never mean**. No pixels, no frequencies — only principles and boundaries.
+
+2. **Layer 2 — The Orb Implementation Standard**  
+   *Technical specification. Evolves through design review.*  
+   Defines the current reference implementation: color, motion, testing, and code constraints. May be updated as display technologies, aesthetic sensibilities, or engineering capabilities advance — **provided all Layer‑1 invariants remain satisfied**.
+
+This separation ensures the Orb’s **meaning is locked** while its **execution remains adaptive**.
+
+---
+
+# LAYER 1 — ORB CONSTITUTION (IMMUTABLE)
+
+## 1. Identity — Contained Energy
+
+The Orb is not an indicator.  
+It is a **manifestation**.
+
+It does not communicate *state*.  
+It communicates *nature*.
+
+**The only message the Orb is permitted to transmit:**
+
+> *“There is power here. It is stable.”*
+
+No other semantic content may be intentionally or unintentionally encoded.
+
+---
+
+## 2. Core Principles (Non‑Negotiable)
+
+| Principle | Statement |
+|-----------|-----------|
+| **No Readable Coupling** | The Orb shall exhibit **no readable causal linkage** to Nova’s internal state, cognition, or activity. No user, under any conditions, should be able to infer Nova’s operational state (idle, processing, listening, responding, error, etc.) from the Orb alone. |
+| **No Event‑Driven Motion** | All Orb motion is **continuous, intrinsic, and causally independent** of user input, system events, computational load, or response generation. No animation starts, stops, accelerates, decelerates, or changes amplitude in response to any external or internal event. |
+| **Containment Signal** | A **faint containment rim** must always be present, suggesting engineered structure, jurisdictional boundary, and deliberate design. This rim may be extremely subtle, but it must be perceptible under nominal viewing conditions. |
+| **Non‑Biological Motion** | Motion must never mimic **biological life** — no heartbeat, breath, pulse, or any rhythm that suggests a living, reactive organism. Motion feels **technological, physical, or material** — never organic. |
+| **Silence as Default** | If sound is used, it must be infrequent, low‑frequency (sub‑70 Hz), brief (<0.5 s), and never attention‑seeking. The default state is silence. |
+
+*These five clauses are inviolable. No phase unlock, feature addition, platform port, or aesthetic revision may alter them.*
+
+---
+
+## 3. Psychological Contract
+
+When a user looks at the Orb, the subconscious read **must** be:
+
+> *“That is not waiting for me. That is not reacting to me. That is simply present.”*
+
+This creates:
+
+- **Trust** — No manipulation, no performance, no hidden persuasion.
+- **Authority** — The user is the actor; the Orb is the instrument.
+- **Calm** — No demand on attention, no anxiety about internal processes.
+- **Premium** — Restraint signals confidence and sovereignty.
+
+---
+
+## 4. Status Communication
+
+**The Orb does not communicate status.**  
+
+All system status must be communicated **textually, explicitly, and (where appropriate) user‑invoked**.
+
+Examples of acceptable status communication:
+
+```
+Status: Ready
+Status: Processing request...
+Status: Listening
+Status: Blocked — constitution violation prevented
+```
+
+**Rule:** Status is conveyed in words, not in light.  
+No motion, color, brightness, or animation may indicate or imply status.
+
+---
+
+## 5. Constitutional Amendment
+
+Proposed changes to **Layer 1** require:
+
+1. A formal amendment proposal document.
+2. Review and ratification by the Nova Governance Board.
+3. A permanent archival record of the previous constitution.
+4. A version bump and immutable identifier.
+
+*Layer 1 is law. It changes only when Nova itself redefines its identity.*
+
+---
+
+# LAYER 2 — ORB IMPLEMENTATION STANDARD (EVOLVING)
+
+*This section defines the current reference implementation. It is versioned, reviewed quarterly, and may be updated through design review without constitutional amendment — provided all Layer‑1 invariants remain strictly satisfied.*
+
+---
+
+## 1. Visual Architecture — Reference v3.0
+
+### A. Core
+- **Appearance:** Slightly brighter, denser nucleus within gradient body.
+- **Edge:** No hard boundary — density fades smoothly into surrounding volume.
+- **Brightness:** Perceptibly hotter than surrounding gradient, but not sharp or star‑like.
+- **Behavior:** Stationary relative to internal motion; no independent animation.
+
+### B. Gradient Body — Fluid Light
+- **Primary Palette:** Deep electric blue (`#0A1F44` → `#1E3A6F`).
+- **Secondary Drift:** Violet shift in lower hemisphere (`#2D1F3F` → `#3A2C4A`).
+- **Internal Motion:** Convection‑like drift; full cycle **120–180s**.
+- **Opacity:** Fully opaque; depth created by luminance variation, not transparency.
+- **Color Rule:** No hue jumps, no saturation spikes; color shifts like slow tide.
+
+### C. Containment Rim
+- **Visibility:** 5–10% opacity, barely perceptible at rest.
+- **Color:** Cool white with trace of blue (`#E0F0FF` at <10% opacity).
+- **Thickness:** Sub‑pixel hairline (0.5pt at 1x scale).
+- **Behavior:** Static — no animation, no highlight, no emphasis.
+
+### D. Ambient Bloom
+- **Radius:** 120% of Orb diameter.
+- **Opacity:** 4–6%, flat, Gaussian falloff.
+- **Behavior:** No change on activity; no glow‑on‑response.
+
+---
+
+## 2. Motion Grammar — Reference v3.0
+
+**All motion is continuous, aperiodic, and causally independent of Nova’s internal state.**
+
+### Allowed Intrinsic Motion
+
+| Motion | Frequency / Speed | Specification |
+|--------|-------------------|---------------|
+| Internal gradient drift | 0.05–0.1 Hz | `cubic-bezier(0.45, 0.05, 0.55, 0.95)` over 120–180s |
+| Micro highlight wander | 0.3–0.5 Hz | Perlin‑like noise within 2px radius |
+| Rotational illusion | ≤0.01 Hz | Full rotation >100s |
+| Luminance fluctuation (optional) | Period 8–20s, irregular | ±2–4% opacity; **non‑rhythmic, non‑correlated** |
+
+**Forbidden Motion (Always):**
+- Pulse, breathe, beat, flicker, ripple, shimmer, spark, flare.
+- Speed changes tied to any external event.
+- Color shifts tied to confidence, emotion, or “thinking”.
+- Ring animations, loading spinners, progress arcs, orbital trails.
+- Any motion a reasonable user could **reliably decode** to infer Nova’s state.
+
+---
+
+## 3. Color Palette — Reference v3.0
+
+```
+Allowed color range (perceptual, not absolute hex enforcement):
+- Deep electric blue: #0A1F44 → #1E3A6F (dark mode)
+- Violet drift: #2D1F3F → #3A2C4A
+- Core highlight: white, 10–30% opacity
+
+Prohibited semantic colors:
+- ❌ Red / orange (warning, error, alarm)
+- ❌ Green (success, completion)
+- ❌ Yellow (caution, attention)
+- ❌ Any color used to encode state or outcome
+```
+
+**Light mode adaptation:**  
+Reduce overall luminance 20%, preserve hue. Containment rim becomes faint gray (`#888888` at 5% opacity).  
+
+**Invariant:** The Orb never appears “bright” or dominant in light mode; it remains composed, not assertive.
+
+---
+
+## 4. Implementation Guarantees (Code‑Level)
+
+### CSS Constraints (Reference)
+```css
+.orb {
+  /* Continuous animations only — no state control */
+  animation: 
+    ambientDrift 180s infinite ease-in-out,
+    colorShift 240s infinite ease-in-out,
+    microBreath 12s infinite ease-in-out;
+  animation-play-state: running !important;
+  animation-delay: 0s !important;
+}
+
+/* No state‑based classes */
+/* Prohibit: .thinking, .processing, .listening, .success, .error */
+```
+
+### JavaScript Constraints
+```javascript
+// NO EVENT-DRIVEN ANIMATION CONTROL
+class OrbController {
+  // ❌ FORBIDDEN
+  startProcessingAnimation() {}
+  stopIdleAnimation() {}
+  pulseOnVoiceInput() {}
+  setConfidenceBrightness(level) {}
+  
+  // ✅ ALLOWED
+  updateStatusText(status) {}  // Text only, never touches Orb styles
+}
+```
+
+### Performance Requirement
+Orb animation must be **GPU‑accelerated** and **uncoupled from main thread activity**. Frame rate must remain stable (±2 fps) under all computational loads.
+
+---
+
+## 5. Testing & Verification
+
+All changes to the Implementation Standard **must pass** the following tests before deployment.
+
+### A. The Unplug Test (Refined)
+> Would a user who saw the Orb immediately before and after Nova was unplugged be able to tell that Nova was unplugged?
+
+- **Yes** → Violation (causal coupling exists)
+- **No** → Compliant
+
+### B. Semantic Leak Test
+Controlled user study: participants are shown video of the Orb under various conditions and asked to guess Nova’s state (idle, processing, listening, etc.).  
+
+**Pass criterion:** Accuracy not significantly above chance (p > 0.05).
+
+### C. Visual Regression Test
+Orb rendering is captured under 50+ random system states and display conditions. All images must be perceptually identical (SSIM ≥ 0.99, or equivalent perceptual metric).
+
+### D. The “Could a User Believe…” Test
+Before implementing any Orb motion or visual property, ask:
+
+> *“Could a reasonable user believe this change reflects Nova’s mind, effort, or internal state?”*
+
+- **Yes** → Redesign or discard
+- **No** → Safe to implement
+
+---
+
+## 6. Phase Alignment
+
+| Phase | Orb Behavior | Status Communication |
+|-------|--------------|----------------------|
+| **Phase 3.5** | Ambient motion only, no semantic coupling | Text‑only, user‑invoked |
+| **Phase 4+** | Same constitutional constraints apply; visual refinement allowed via design review | Same rule |
+| **All future phases** | **Layer 1 Constitution remains in full force** | No phase unlock changes Orb semantics |
+
+---
+
+## 7. Implementation Standard Update Process
+
+1. **Proposal** — Document proposed changes, including rationale and verification that all Layer‑1 invariants remain satisfied.
+2. **Design Review** — Reviewed by Nova design leads; must pass all tests in Section 5.
+3. **Version Bump** — Implementation Standard version incremented; changelog updated.
+4. **Deployment** — Changes may be released after approval.
+
+*No ratification required. Agility is preserved within constitutional bounds.*
+
+---
+
+# DOCUMENT HISTORY
+
+| Version | Date       | Layer      | Changes |
+|---------|------------|------------|---------|
+| 1.0     | 2026-02-12 | Constitution | Ratified (Orb Constitution v1 — “identical appearance”) |
+| 2.0     | 2026-02-12 | Implementation | Merged Orb Motion Canon Amendment; incorporated design critique; split layers |
+| **3.0** | **2026-02-12** | **Constitution + Implementation** | **Refined core invariant: “identical appearance” → “no readable coupling”. Added Unplug Test refinement, Semantic Leak Test, and formal amendment/update processes. Constitution now principle‑based, Implementation Standard reference‑only.** |
+
+---
+
+**This document is the single source of truth for Nova Orb identity, law, and execution.**
+
+**🔒 Constitution — Ratified and Immutable.**  
+**📐 Implementation Standard — Active and Evolvable.**
+
+---
+
+**Nova Core**  
+*2026-02-12*

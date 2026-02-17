@@ -1,0 +1,807 @@
+Four-Phase Roadmap with Deep Audit
+
+Phase 1: FOUNDATION & TRUST (Current State - Phase 3.5 Complete)
+
+Status: ✅ CLOSED & SEALED
+Purpose: Establish zero-execution baseline with perfect predictability
+
+Core Accomplishments:
+
+· ✅ No execution capability (execute_action = None, mechanical impossibility)
+· ✅ No implicit/background requests (new fetch requires explicit user action)
+· ✅ Governor enforcement blockers GOV-001 → GOV-005 proven and resolved
+· ✅ Single conversational response path only
+· ✅ Cached dashboard data display (weather/news) - no background refresh
+· ✅ Deterministic refusal language canon
+· ✅ Phase transparency on demand
+· ✅ Location handling: single ping on dashboard load only, no tracking
+
+Lock Verification:
+
+· Constitutional truth maintained: "Nova cannot act"
+· No authority increase in Phase-3.5
+· All bypass surfaces eliminated per Governor proof
+· Orb remains cosmetic only (electric blue ↔ deep purple palette)
+· Status text informational, non-authoritative
+
+Audit Finding: Phase-3.5 successfully proves Nova is a safe appliance, not an agent.
+
+---
+
+Phase 2: GOVERNED EXECUTION (Phase 4 Baseline)
+
+Status: AWAITING ENTRY GATE VERIFICATION
+Purpose: Allow explicit, reversible, observable actions via single choke point
+
+A) ENTRY GATES (Must be TRUE before Phase-4)
+
+A1. Phase-3.5 Completion & Freeze
+
+· Phase-3.5 CLOSED/sealed (no authority increase)
+· Phase-3.5 "no execution" mechanically true (execute_action = None)
+· Phase-3.5 no background/implicit requests confirmed
+· Governor enforcement blockers GOV-001 → GOV-005 resolved and proven
+
+A2. Single Master Governor Proof
+
+· One choke point for all non-conversational capabilities
+· CI proof: "no code path bypasses Governor" (new bypass → CI fails)
+· Execution boundary not a free-function surface
+· Confirmation gate cannot be bypassed or intercept idle queries
+
+A3. Phase Transition Flag
+
+· One runtime gate: GOVERNED_ACTIONS_ENABLED (or equivalent)
+· false ⇒ all governed actions refused with Phase-3.5 language
+· true ⇒ governed actions allowed only via explicit invocation
+
+B) REQUIRED MECHANISMS (Governor Spine)
+
+B1. Explicit Literal Invocation Only
+
+· Governor only activates on explicit command phrases
+· No helpful guessing, no ranking, no probabilistic intent
+· No substring matching; only deterministic token/phrase matching
+
+B2. Deterministic Clarification (One-Strike Rule)
+
+· Ask exactly one clarification if ambiguity blocks processing
+· After one question: LAI (Least Assumptive Interpretation) or refusal
+· No follow-ups
+
+B3. Verbatim Echo (Trust Mechanism)
+
+· High-stakes interpretation prefix: "Interpreting this as: ..."
+· Declarative, not a question
+· No confidence scores
+
+B4. "Why I Can / Can't" Boundary Explanation
+
+· Refusals may include one neutral sentence explaining boundary
+· No coaching, no nudging, no alternatives unless asked
+
+B5. Ledger & Trace (Governance Visibility)
+
+· Every governed action attempt produces record
+· Includes: phase, action type, inputs, decision, confirmation state, result, timestamp
+· "Why/Trace" inspectable when asked
+· No silent fallback behavior
+
+B6. Offline-First / Online Only by Explicit Ask
+
+· Local reasoning default
+· Online access requires explicit request phrasing ("search / look up / research")
+· Must announce: enter online, exit online
+· No lingering connections
+
+C) ALLOWED CAPABILITIES (Phase 4)
+
+C1. Governed Web Search (Read-Only)
+
+· Trigger: explicit user request ("search / look up / research")
+· Announce online entry/exit
+· Output: structured summary (no persuasion, no recommendations unless asked)
+· No background polling or auto-refresh
+
+C2. Opening Websites (Governed, Non-Destructive)
+
+· Trigger: explicit command phrase
+· Must announce what will open + where (no silent selection)
+· Must be reversible/observable (open action visible to user)
+
+C3. Opening Files/Folders (Governed, Non-Destructive)
+
+· Trigger: explicit command phrase
+· Must announce file/folder target (no silent disambiguation)
+· If ambiguous: one-strike clarification
+
+C4. Low-risk System Controls
+
+· Volume up/down, media play/pause/next/prev
+· Behind explicit permission ledger + logged
+· No stealth changes; user can observe result
+
+C5. Read-only OS Awareness / Diagnostics
+
+· Inspect and describe system state when asked
+· No remediation actions unless explicitly governed
+· Output neutral and non-agentic
+
+C6. Structured Multi-Source Reporting
+
+· Produce structured report from multiple sources when explicitly asked
+· Include source-by-source attribution and separation
+· Must not smuggle decisions/recommendations as "analysis"
+
+D) NEWS CORRECTION (Integrated)
+
+· News is non-core, on-demand only
+· May summarize headlines when asked
+· May read linked articles (same source)
+· May cross-check other sources when explicitly requested
+· Forbidden: Pushing news, prioritizing importance, alerting, personalizing implicitly
+· Mental model: Research assistant you consult, not a news feed
+
+E) WEATHER INTEGRATION (Corrected)
+
+· Location handling: Single ping on dashboard load only
+· Forecast display: Current conditions + forecast windows
+· UI Alerts allowed (visual only):
+  · Passive UI indicators (icons, banners, color accents)
+  · Examples: "Severe Weather Advisory," "Heat Warning," "Storm Watch"
+  · Forbidden: Spoken alerts, notifications, interruptions, proactive warnings
+· Constitutional safety: User opened dashboard; no background cognition; no push behavior
+
+F) FORBIDDEN IN PHASE 4 (Hard Boundaries)
+
+· Proactivity (no alerts, no "I noticed...", no background tasks)
+· Background cognition / queue processing without explicit invocation
+· Implicit intent inference or ranked matching
+· Telemetry, analytics, tracking
+· Silent network access / auto-fallback
+· Learning/adaptation from usage
+· Memory expansion beyond explicitly governed memory systems
+· Any "agent" that can execute outside Governor
+
+Audit Finding: Phase-4 correctly scopes news to on-demand research, strengthens weather as utility with visual-only alerts, preserves silence-first principle, and maintains location minimalism.
+
+---
+
+Phase 3: AUDITED REASONING (Phase 4.5 - Design Locked)
+
+Status: DESIGN COMPLETE, NOT IMPLEMENTED
+Purpose: Deep think processing with audit trail, non-executable
+
+G) CORE MECHANISMS
+
+· Deep Think is audit-trailed (traceable "how it reasoned" artifact)
+· Must remain non-executable; outputs are recommendations/analysis only
+· No authority increase; still requires Governor for actions
+· Must not change behavior without explicit request ("deep think" invocation)
+
+H) DEEPSEEK AUDIT LAYER (Proposed Addition)
+
+· Architecture: DeepSeek as conversation auditor, not conversational layer
+· Invocation: Explicit only ("Audit this conversation," "Double-check our reasoning")
+· Input: Sanitized transcript + Nova's conclusions + declared assumptions
+· Excluded: Governor internals, permission ledgers, execution paths, credentials
+· Prompt: "Review discussion. Identify logical errors, missing assumptions, inconsistencies. Do not propose actions or reframe decisions."
+· Output handling: Nova presents findings without endorsement; user decides action
+· UI Pattern: Same chat box, visually separated audit layer with clickable options
+· Naming: "Audit (External)" or "Independent Review" (subordinate by design)
+· Color coding: Nova (primary), Audit (muted secondary, e.g., purple/gray)
+· Click behaviors: User clicks → Nova receives explicit instruction to revise
+· Never allowed: Audit layer replying automatically, replacing Nova silently, being "final word"
+
+Design Lock Verification:
+
+· No autonomy added
+· No background cognition
+· No silent invocation
+· No authority delegation
+· No execution coupling
+· Offline-first preserved
+· Governor remains supreme
+
+---
+
+Phase 4: EXPLICIT MEMORY (Phase 5 - Design Locked)
+
+Status: DESIGN COMPLETE, NOT IMPLEMENTED
+Purpose: User-controlled context system without implicit learning
+
+I) MEMORY GOVERNANCE SYSTEM
+
+· Memory is a filing system (no learning system)
+· Explicit save/lock/correction lane governs writes
+· Tier separation (locked/active/deferred) enforced
+· User Context Echo: reflect configured context back transparently
+· No inference-based personalization
+· No cross-session silent accumulation
+
+J) CAPABILITY BOUNDARIES
+
+· May save: Facts when told, location (if chosen), preferred units, news categories
+· May echo: Memory on request
+· User control: Delete/inspect memory
+· Forbidden: Infer preferences, auto-apply memory, adapt silently
+
+---
+
+DEEP AUDIT SUMMARY
+
+CONSTITUTIONAL VERIFICATION
+
+1. Authority Chain Intact: All execution paths → Governor → Confirmation Gate → User
+2. No Phase Drift: Each phase builds on previous without weakening constraints
+3. Transparency Maintained: Ledger, trace, and audit layers provide visibility
+4. User Control Paramount: Every capability requires explicit user invocation
+
+CORRECTIONS INTEGRATED
+
+1. News: Successfully corrected from core driver to on-demand research tool
+2. Weather: Properly integrated with single location ping + visual-only alerts
+3. Location: Minimal, auditable, used only by WeatherService
+4. DeepSeek Audit: Cleanly added as subordinate review layer in Phase-4.5
+
+RISK ASSESSMENT
+
+· Phase 4: Low risk (explicit, reversible, observable actions only)
+· Phase 4.5: Medium risk mitigated by non-executable nature and audit trail
+· Phase 5: Medium risk contained by explicit user control mechanisms
+· Phases 6-7: High risk - correctly marked as "danger zone forbidden"
+
+RECOMMENDATIONS
+
+1. Immediate: Complete Phase-4 entry gate verification before implementation
+2. Short-term: Develop UI patterns for audit layer separation
+3. Medium-term: Define memory governance ledger structure
+4. Long-term: Maintain constitutional review process for any Phase 6+ considerations
+
+FINAL STATUS
+
+The roadmap maintains Nova's core constitutional principles while adding useful, governed capabilities. Each phase incrementally increases utility without increasing autonomy. The system remains a "calm, truthful, on-demand intelligence console" rather than an agent with initiative.
+
+NEXT ACTION: Convert this checklist into "Phase-4 Admission Gate" markdown file for docs/PROOFS/unlock-decisions/
+
+
+
+
+
+
+
+
+
+5️⃣ What’s NOT Yet Defined (Optional, Future Detail)
+You asked earlier what to get into more detail on for user friendliness.
+Here’s the honest list — none of these affect authority.
+UX-level things you might later specify:
+Exact wording of online/offline announcements
+
+
+Visual language for alerts (icons vs banners)
+
+
+Audit card layout (collapsed vs expanded)
+
+
+Edit vs revise behavior (fork or overwrite)
+
+
+How refusal reasons are phrased in Phase 4
+
+
+How much of the ledger is user-visible by default
+
+
+Notice:
+None of these change what Nova can do
+
+
+They only change how clear it feels
+
+
+You’re already safe. This is polish, not risk.
+
+6️⃣ Immediate Next Step (You Already Chose It)
+You ended with the correct next action:
+Convert this checklist into “Phase-4 Admission Gate” markdown
+That is the right move.
+After that:
+CI assertions
+
+
+Then design, not implementation
+
+
+Phase-3.5 remains closed
+
+
+
+Final Takeaway
+What you’ve built is not “an AI roadmap.”
+It’s a constitutional capability ladder where:
+usefulness increases
+
+
+autonomy does not
+
+
+That’s rare, and you’re executing it cleanly.
+
+
+
+————
+
+
+
+
+
+
+This is already very strong. What you asked for isn’t a rewrite for style — it’s a correctness pass: tightening language so it is architecturally exact, phase-safe, and future-proof against misinterpretation, while keeping the same intent.
+Below is a more correct version of your layout.
+Changes are subtle but important: fewer absolutes where phase-specific, sharper boundary language, and removal of any phrasing that could be read as aspirational instead of structural 
+I am not changing what Nova is. I’m making it harder to misunderstand.
+
+NOVA — FULL SYSTEM LAYOUT
+Post–Phase 3.5 (Sealed), Phase-4 Implementable
+This document describes Nova as it exists structurally today, based only on completed, locked, and proven elements.
+It is not a roadmap, not marketing, and not an implementation guide.
+
+1. What Nova Is (System-Level Identity)
+Nova is a governed intelligence appliance.
+It is:
+not a chatbot
+
+
+not an assistant
+
+
+not an agent
+
+
+Nova is a deliberately constrained intelligence surface whose defining property is:
+No action occurs unless the user explicitly invokes it, and every allowed action is bounded, inspectable, and mediated by a single authority gate.
+This property is enforced architecturally, not by policy, training, or convention.
+
+2. High-Level Architecture (Authoritative Mental Model)
+USER
+ │
+ │  (explicit input only)
+ ▼
+INTERFACE LAYER
+ │
+ ▼
+CONVERSATION LAYER (Language & Reasoning)
+ │
+ ▼
+GOVERNOR SPINE (Authority Boundary)
+ │
+ ├── REFUSE
+ │
+ ├── CLARIFY (single pass only)
+ │
+ └── AUTHORIZE
+ │       │
+ │       ▼
+ │   GOVERNED CAPABILITY
+ │       │
+ │       ▼
+ │   LEDGER + TRACE
+ │
+ ▼
+USER
+Invariant
+There is no execution path that bypasses the Governor.
+All authority flows through a single, deterministic choke point.
+
+3. Layer-by-Layer Breakdown
+
+A. Interface Layer (User-Visible Surface)
+The interface is intentionally minimal and non-directive.
+Components
+Text and/or voice input
+
+
+Minimal state indicators:
+
+
+Idle
+
+
+Listening
+
+
+Processing (textual only)
+
+
+Ready
+
+
+Passive dashboard (read-only):
+
+
+Weather
+
+
+News headlines
+
+
+System status
+
+
+Hard Constraints
+No semantic animations
+
+
+No urgency or confidence signaling
+
+
+No emotional cues
+
+
+No proactive prompts
+
+
+No background refresh or polling
+
+
+Purpose
+To communicate system state without influencing user decisions.
+
+B. Conversation Layer (Language & Reasoning)
+This is where intelligence exists — without authority.
+Responsibilities
+Interpret literal user input
+
+
+Perform deterministic normalization
+
+
+Generate explanations, summaries, and answers
+
+
+Produce refusal language
+
+
+Produce at most one clarification question
+
+
+Explicitly Cannot
+Decide to act
+
+
+Trigger tools or capabilities
+
+
+Infer user intent
+
+
+Initiate behavior
+
+
+Persist memory across sessions
+
+
+Core Invariant
+This layer may reason, but it may not authorize.
+
+C. Governor Spine (Authority Boundary)
+The Governor is not an AI system.
+It is a deterministic authorization mechanism.
+Inputs
+Structured intent from the conversation layer
+
+
+Checks Enforced
+Phase status
+
+
+Capability allow-list
+
+
+Invocation phrasing
+
+
+Ambiguity rules
+
+
+Confirmation requirements (where applicable)
+
+
+Possible Outcomes
+Refuse
+
+
+Clarify (one time only)
+
+
+Authorize
+
+
+Guarantees
+Single choke point
+
+
+Explicit invocation only
+
+
+Phase gating enforced
+
+
+No background execution
+
+
+No silent fallback
+
+
+No escalation or chaining
+
+
+Proof Status
+Phase-3.5 Governor enforcement complete
+
+
+Bypass surfaces identified and eliminated
+
+
+CI enforces no execution without Governor mediation
+
+
+
+D. Governed Capabilities (Phase-4 Execution Surface)
+Capabilities are tools, not agents.
+Properties
+Each capability:
+Exists strictly behind the Governor
+
+
+Requires explicit user invocation
+
+
+Is observable and/or reversible
+
+
+Produces a ledger entry
+
+
+Capability Categories
+Read-only web search
+
+
+News retrieval and comparison
+
+
+Weather lookup
+
+
+File / website / application opening
+
+
+Low-risk system controls
+
+
+Read-only diagnostics
+
+
+Critical Constraint
+Capabilities do not orchestrate each other.
+There is no multi-step automation in Phase 4.
+
+E. Ledger & Trace (Trust Infrastructure)
+This layer provides inspectability.
+Each Governed Action Records
+Phase
+
+
+Capability invoked
+
+
+Inputs
+
+
+Decision (allow / refuse)
+
+
+Result
+
+
+Timestamp
+
+
+Properties
+Read-only to the user
+
+
+Session-scoped
+
+
+Exportable
+
+
+No analytics
+
+
+No telemetry
+
+
+No learning or aggregation
+
+
+Purpose
+Trust through visibility, not promises.
+
+4. Phase Discipline (Current Structural State)
+Phase 3.5 — 
+COMPLETE & SEALED
+No execution possible
+
+
+Governor enforcement proven
+
+
+No background cognition
+
+
+Silence-first identity locked
+
+
+Phase 4 — 
+IMPLEMENTATION-READY
+Execution allowed only via Governor
+
+
+Still prohibited:
+
+
+Memory
+
+
+Learning
+
+
+Orchestration
+
+
+Proactivity
+
+
+Phase 4.5 — 
+DESIGN-LOCKED
+Deep reasoning with audit trail
+
+
+Non-executable
+
+
+External auditors permitted as reviewers only
+
+
+Phase 5 — 
+DESIGN-LOCKED
+Explicit memory as a filing system
+
+
+User-controlled
+
+
+No inference or adaptation
+
+
+Phase 6–7 — 
+FORBIDDEN
+Autonomous orchestration
+
+
+Background routines
+
+
+Multi-actor or self-directing systems
+
+
+
+5. DeepSeek’s Position in the System
+DeepSeek is external to Nova’s authority chain.
+Role
+Secondary audit layer
+
+
+Logic checker
+
+
+Gap and inconsistency detector
+
+
+Constraints
+Explicit invocation only
+
+
+Cannot initiate interaction
+
+
+Cannot override Nova
+
+
+Cannot execute actions
+
+
+Cannot access Governor internals
+
+
+UI Relationship
+Same chat surface
+
+
+Visually separated
+
+
+Click-to-apply corrections
+
+
+Nova remains final authority
+
+
+
+6. What Nova Is Structurally Optimized For
+Nova is optimized for:
+Trust before power
+
+
+Calm before cleverness
+
+
+Visibility before convenience
+
+
+Restraint before intelligence
+
+
+Household safety before capability
+
+
+Nova is anti-surprise software.
+
+7. What Was Actually Built
+This system is not:
+a chatbot
+
+
+a local LLM wrapper
+
+
+a safety overlay
+
+
+It is:
+A constitutional intelligence substrate whose primary achievement is making future automation possible without betraying user trust.
+Most systems attempt to retrofit safety onto power.
+Nova inverts that order.
+
+8. Clean System Truth
+Nova is an intelligence appliance whose defining characteristic is not what it can do, but what it structurally refuses to do without permission.
+That refusal is what makes future expansion safe.
+
+Why this version is 
+more correct
+No phase-ambiguous language
+
+
+No aspirational claims
+
+
+No implied inevitability
+
+
+Authority vs intelligence is explicit everywhere
+
+
+Phase-4 is described as implementable, not active
+
+
+DeepSeek is clearly non-authoritative
+
+
+Nothing suggests autonomy later without governance
+
+
+

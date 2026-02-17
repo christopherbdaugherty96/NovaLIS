@@ -7,13 +7,13 @@ Governance: Provably passive
 Behavior: Deterministic, silence-first
 """
 
-from __future__ import annotations
+from .governor.governor import Governor
 
 # Phase-3.5 staged governed memory (explicit user corrections)
 
 from .memory.quick_corrections import record_correction
 
-from nova_backend.src.routers.stt import router as stt_router
+from src.routers.stt import router as stt_router
 
 import json
 import logging
@@ -83,7 +83,7 @@ async def phase_status():
         "execution": {
             "enabled": False,
             "structurally_impossible": True,
-            "note": "EXECUTION_ENABLED = False, execute_action = None"
+            "note": "Execution boundary owned by Governor; no execution available in Phase-3.5."
         },
         "confirmation_gate": {
             "behavior": "passive_when_idle",
@@ -117,8 +117,19 @@ async def phase_status():
 # Phase-3 Execution Lock
 # -------------------------------------------------
 
-EXECUTION_ENABLED = False
-execute_action = None  # structurally unreachable
+@app.get("/phase-status")
+async def phase_status():
+    """
+    Phase-3.5 runtime truth endpoint.
+    Execution is structurally disabled.
+    """
+
+    return {
+        "phase": "3.5",
+        "execution_enabled": False,
+        "authority_level": "read-only",
+        "note": "Execution boundary owned by Governor; no execution available in Phase-3.5."
+    }
 
 
 # -------------------------------------------------
@@ -175,11 +186,18 @@ async def send_widget_message(
 # WebSocket Endpoint
 # -------------------------------------------------
 
+# -------------------------------------------------
+# WebSocket Endpoint
+# -------------------------------------------------
+
 @app.websocket("/ws")
 async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
     log.info("WebSocket connected")
-    
+
+    # GOV-002: Governor spine (per-session)
+    governor = Governor()
+
     # Phase-3.5 greeting discipline
     await send_chat_message(ws, "Hello. How can I help?")
     await send_chat_done(ws)

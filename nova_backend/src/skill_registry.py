@@ -14,17 +14,37 @@ from .skills.weather import WeatherSkill
 from .skills.system import SystemSkill
 from .skills.general_chat import GeneralChatSkill
 
+# Phase‑3.5 governed web search – conditional on config flag
+from .nova_config import ONLINE_ACCESS_ALLOWED
+
 log = logging.getLogger("nova")
 
 
 class SkillRegistry:
     def __init__(self) -> None:
-        self.skills: List[BaseSkill] = [
+        # Base skills – always present
+        skills: List[BaseSkill] = [
             SystemSkill(),
             WeatherSkill(),
             NewsSkill(),
-            GeneralChatSkill(),
         ]
+
+        # ----------------------------------------------------------------
+        # Constitutional web search – registered BEFORE GeneralChatSkill
+        # so that explicit online queries are not swallowed by fallback chat.
+        # Only added if explicitly enabled in config.
+        # ----------------------------------------------------------------
+        if ONLINE_ACCESS_ALLOWED:
+            try:
+                from .skills.web_search_skill import WebSearchSkill
+                skills.append(WebSearchSkill())
+            except ImportError:
+                log.debug("WebSearchSkill not available – skipping registration.")
+
+        # General chat is the final fallback – never steals explicit triggers.
+        skills.append(GeneralChatSkill())
+
+        self.skills = skills
 
     async def handle_query(self, query: str) -> Optional[SkillResult]:
         for skill in self.skills:

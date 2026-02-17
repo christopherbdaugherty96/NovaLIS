@@ -1,0 +1,198 @@
+# 🧭 Tonal Calibration Scope – Design Decision
+
+You’re asking the right question.  
+The scope of tonal calibration determines whether Nova feels **globally consistent** or **contextually intelligent**. Both are defensible. One is safer. The other is richer. Neither is constitutionally forbidden.
+
+Let’s evaluate each against your four anchors: **Presence**, **Law**, **Complexity**, **Long‑term Identity**.
+
+---
+
+## 1️⃣ Global Tone Profile
+
+**Definition:**  
+One set of formatting weights (`verbosity`, `formality`, `explanation depth`, etc.) applies to **all** interactions – search, memory summaries, proposals, system notifications, everything.
+
+**Constitutional alignment:**  
+✅ Simplest to enforce – one Ring 2 mutable component, one manifest, one delta limit.  
+✅ No risk of conflicting profiles.  
+✅ Full inspectability and rollback trivial.  
+
+**Presence feeling:**  
+Nova feels **singular**. Like one voice.  
+But that voice may feel **too rigid** if you speak to it differently when asking for weather vs. discussing architecture.
+
+**Verdict:**  
+Safe, minimal, but sacrifices context sensitivity.  
+Suitable for Phase 5–6. May feel **sterile** by Phase 9/10.
+
+---
+
+## 2️⃣ Per‑Domain Tone Profiles
+
+**Definition:**  
+Separate profiles for different **functional domains**, e.g.:
+
+- `domain.calendar` – concise, structured
+- `domain.email_drafting` – slightly more verbose, neutral
+- `domain.system_status` – terse, factual
+- `domain.technical_query` – precise, higher formality
+
+**Constitutional alignment:**  
+✅ Each domain profile is a separate Ring 2 mutable component.  
+✅ Each has its own manifest, delta limits, mutation frequency caps.  
+✅ Firewall treats them independently – drift in one does not infect others.  
+✅ User can explicitly set preferences per domain.  
+
+**Presence feeling:**  
+Nova feels **intelligent in context**.  
+It doesn’t talk about your calendar the same way it reports a disk error.  
+This matches human intuition: we adjust tone when switching contexts.  
+
+**Complexity:**  
+- Moderate. Requires domain detection/routing – but Nova already has skill routing.  
+- Domain can be inferred from the capability invoked (CalendarSkill vs. EmailSkill).  
+- Profiles are just entries in the component registry; no new infrastructure needed.  
+
+**Verdict:**  
+Strong candidate. Balances richness with constitutional control.
+
+---
+
+## 3️⃣ Per‑Surface Tone Profiles
+
+**Definition:**  
+Separate profiles for **output modality**:
+
+- `surface.voice` – short, simpler words, no tables
+- `surface.dashboard` – visual, scannable, can be denser
+- `surface.terminal` – minimal formatting, raw data
+
+**Constitutional alignment:**  
+✅ Each surface is a Ring 2 mutable component.  
+✅ Surface is detectable at render time.  
+
+**Presence feeling:**  
+Nova feels **native to the medium**.  
+Voice should never sound like a terminal.  
+This is not about personality – it’s about ergonomics.  
+
+**Complexity:**  
+- Moderate. Requires renderer to know which surface is active.  
+- Tone weights may interact with layout constraints (e.g., voice has strict length caps).  
+- Risk of profile explosion if not carefully bounded.  
+
+**Verdict:**  
+Ergonomically necessary for voice.  
+But should be **separate from domain adaptation** – they are orthogonal.
+
+---
+
+# 🔍 Constitutional Boundary Check
+
+All three models are **constitutionally permissible** because:
+
+- They operate on **formatting weights only** – no authority, no persuasion, no risk classification.  
+- All mutations are **Class C** (UI Formatting) – bounded, logged, reversible.  
+- Kill switch disables all adaptation globally.  
+- User can override any profile explicitly (Ring 3).  
+
+The only new constraint:  
+**Profiles must never interact with authority logic.**  
+Domain detection must happen **after** skill routing, not before.
+
+---
+
+# 🧠 Recommendation: Layered, Not Either/Or
+
+You don’t have to choose one.  
+You need a **layered model** that respects the constitutional spine while enabling richness.
+
+## ✅ Adopt a **Hierarchical Tone Resolution**:
+
+```
+Global Base Profile (Ring 2, mutable)
+  ↓
+Domain Overrides (Ring 2, mutable, optional)
+  ↓
+Surface Adaptations (Ring 2, mutable, applied at render time)
+  ↓
+User Explicit Preferences (Ring 3, immutable to system)
+```
+
+**How it works:**
+
+1. **Global base** – the default, calibrated over time from feedback.
+2. **Domain overrides** – if a user frequently asks for “more detail” in technical contexts, the `domain.technical` profile shifts. Other domains unaffected.
+3. **Surface adaptations** – voice renderer applies **additional compression** (e.g., shorten sentences, remove parentheticals) on top of the final domain‑tuned weights. This is a **stateless transformation**, not a learned profile (to avoid combinatorial explosion).
+4. **User explicit preferences** – pin any weight at any layer; pinned values cannot be mutated by the system.
+
+---
+
+## 🔧 Implementation Sketch
+
+- Each domain profile is a separate component:  
+  `tone_profile.domain.calendar`, `tone_profile.domain.email`, etc.
+- Each is registered in the manifest with `mutation_classes: ["C"]`, delta limits.
+- Surface adaptations are **not** mutation‑targets – they are **renderer parameters** derived from the profile + surface constraints. (If you need to learn surface preferences, that’s a separate Ring 2 component per surface, but start stateless.)
+- The Governor Mutation Firewall treats each domain profile independently. A mutation to `domain.calendar` does not affect `domain.technical`.
+
+---
+
+## 🛡️ Complexity Containment
+
+**Risk:** Profile explosion (dozens of domains, hundreds of surfaces).  
+**Mitigation:**
+
+- Limit domains to **constitutionally predefined categories** (calendar, email, search, system, technical, casual). No user‑defined domains (unless explicitly approved as Ring 3 policy).  
+- Surface adaptations are **hardcoded transforms** (e.g., voice: max words = 20, no bullets) – not learned.  
+- Any learned adaptation is **per‑domain only**, not per‑surface.
+
+This keeps the number of mutable components **≤ 10**, well within manageable scope.
+
+---
+
+# 🧭 Final Decision Guidance
+
+| Dimension | Global | Per‑Domain | Per‑Surface (learned) | Per‑Surface (fixed) |
+|----------|--------|-----------|----------------------|---------------------|
+| Constitutional safety | ✅✅ | ✅ | ✅ | ✅✅ |
+| Presence richness | ❌ | ✅ | ✅ | ✅ |
+| Implementation effort | Low | Medium | High | Low |
+| Long‑term drift risk | Low | Low | Medium | None |
+| User‑visible complexity | Low | Medium | High | Low |
+
+**Recommendation:**
+
+1. **Start with Global + Fixed Surface adaptations** (Phase 9.0).  
+   This gives immediate ergonomic gains (voice ≠ terminal) without learning complexity.
+
+2. **Add Per‑Domain learning in Phase 9.5** (Class C mutations, fully firewalled).  
+   This is where Nova begins to feel context‑aware – the “cadence alignment” you described.
+
+3. **Never learn per‑surface profiles.**  
+   The risk of fragmentation outweighs benefit. Use static rules for voice/dashboard/terminal.
+
+---
+
+# 🔮 The Feeling You’ll Achieve
+
+With this layered model:
+
+- Nova’s voice is always brief – because the renderer enforces it, not because it “learned” to be.  
+- Technical queries become gradually more precise over months – because you consistently upvoted depth.  
+- Calendar summaries stay crisp – because you never asked for elaboration there.  
+- System notifications remain neutral – because domain.system is pinned at default.  
+
+The system feels **intelligently tuned** without feeling **emotionally tailored**.  
+That is presence within law.
+
+---
+
+**Final answer:**  
+**Per‑Domain adaptive, with fixed per‑surface rendering rules.**  
+Implement in two phases.  
+Document domain taxonomy in the capability registry.  
+Firewall each domain profile as an independent mutable component.  
+User can always override.
+
+Now the architecture is complete.

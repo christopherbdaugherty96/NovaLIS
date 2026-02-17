@@ -1,0 +1,228 @@
+# Nova UI Framework: Final Adjustments & The Hidden Risk
+
+## Revised Core Principle (Corrected)
+**"Nova's UI may update itself to reflect state. It may never initiate attention, express priority, or appear to decide what matters."**
+
+This fixes the over-absolute "never change attention" while preserving the core boundary.
+
+---
+
+## The Four Gates of Safe UI Auto-Behavior (Updated)
+
+For any UI auto-behavior to be permitted, it must pass **all four**:
+
+### 1. **Reflective Gate** (Shows, doesn't interpret)
+- **Allowed:** Displaying current state, external data, system status
+- **Forbidden:** Analyzing, inferring, or interpreting meaning
+- **Test:** "Does this show what exists, or suggest what matters?"
+
+### 2. **Non-Directive Gate** (Informs, doesn't guide)
+- **Allowed:** Presenting information neutrally
+- **Forbidden:** Highlighting, suggesting, prioritizing, or recommending
+- **Test:** "Could this be perceived as the system having an opinion?"
+
+### 3. **Non-Initiative Gate** (Responds, doesn't start)
+- **Allowed:** Updates in response to user action or external changes
+- **Forbidden:** Attention shifts without user cause
+- **Test:** "Did the user or external world trigger this, or did the system?"
+
+### 4. **Non-Intent Gate** (Displays, doesn't decide)
+- **Allowed:** Showing all information equally
+- **Forbidden:** Expressing priority, importance, or relevance judgments
+- **Test:** "Does the UI appear to be deciding what matters?"
+
+---
+
+## The Background Refresh Clarification
+
+### **External Data Refresh = Allowed**
+```javascript
+// ✅ SAFE: Weather updates every 30 minutes
+setInterval(updateWeather, 30 * 60 * 1000);
+// Must show: "Last updated: 2:45 PM"
+```
+
+### **Internal System Refresh = Forbidden**
+```javascript
+// ❌ UNSAFE: "Checking for new features..."
+setInterval(checkForUpdates, 60 * 60 * 1000);
+// This implies background cognition
+```
+
+**Rule:** Background refresh is only allowed for **external data visibility** (weather, news, stock prices) that would exist independently of Nova. It must always display timestamps and be externally verifiable.
+
+---
+
+## The One UI Feature That Breaks Everything (The Hidden Risk)
+
+You're right — there's **one category** that seems harmless but destroys containment perception faster than anything:
+
+### **Predictive Preloading**
+
+It looks innocent: "Let's load data in the background so it's ready when the user asks."
+
+But it introduces:
+1. **Inferred Intent:** System predicts what user "might" want
+2. **Hidden Agency:** Decisions made without user knowledge
+3. **Perceived Mind-Reading:** "How did it know I was going to ask that?"
+4. **Background Optimization:** Prioritizing resources based on predictions
+
+### **Example: "Helpful" Predictive Loading**
+```javascript
+// ❌ DANGEROUS: Predictive pre-fetch
+userTypes: "What's the wea..."
+systemImmediately: fetchWeatherData()
+```
+
+Even though this seems like optimization, it:
+- **Assumes intent** (user might ask about weather)
+- **Takes initiative** (starts network request)
+- **Uses resources** based on prediction
+- **Creates expectation** of mind-reading
+
+### **The Slippery Slope**
+Once predictive preloading exists:
+1. Phase 1: Pre-fetch weather when user types "wea"
+2. Phase 2: Pre-load calendar when it's morning
+3. Phase 3: Pre-fetch news topics "you might care about"
+4. Phase 4: Background research on "probable questions"
+
+**Suddenly Nova is no longer reactive — it's anticipatory.**
+
+### **The Containment Violation**
+The moment Nova starts preparing for what you **might** ask:
+- It's no longer just responding
+- It's no longer just reflecting
+- It's **participating** in the conversation before it happens
+
+### **The Safe Alternative**
+```javascript
+// ✅ SAFE: Explicit request only
+userTypes: "What's the weather?" AND hits Enter
+systemThen: fetchWeatherData()
+```
+
+**No optimization allowed that requires guessing user intent.**
+
+---
+
+## The Complete Decision Matrix (Updated)
+
+```
+BEHAVIOR                    → SAFE?  → REASON
+────────────────────────────────────────────────────
+Panel updates on timer      → ✅     → External data refresh
+Orb ambient motion          → ✅     → Cosmetic, non-semantic
+Timestamp auto-update       → ✅     → Clock function
+Highlight "important" item  → ❌     → Expresses priority
+Reorder panels automatically→ ❌     → Decides what matters
+Predictive pre-fetch        → ❌     → Assumes intent
+Show "You might want to..." → ❌     → Initiative + suggestion
+User asks → panel updates   → ✅     → User-triggered
+Panel updates → user looks  → ❌     → System-initiated attention
+External API changes → UI   → ✅     → Reflection of world
+Internal state → UI change  → ⚠️     → Risk of perceived intent
+```
+
+---
+
+## The Identity Preservation Checklist (Final)
+
+Before implementing ANY UI auto-behavior, ask:
+
+1. **Reflective Test:** "Is this showing something that exists independently of Nova?" (Weather, time, external data = ✅)
+
+2. **Neutrality Test:** "Could a photograph of the real world show this same information?" (Photograph of thermometer = ✅, photograph with highlighted area = ❌)
+
+3. **Initiative Test:** "Who started this: the user, the external world, or the system?" (User or external world = ✅, system = ❌)
+
+4. **Intent Test:** "Does this make Nova look like it has an opinion about what matters?" (No opinion = ✅, any opinion = ❌)
+
+5. **Perception Test:** "Would someone think 'Nova is trying to help me'?" (No = ✅, Yes = ❌)
+
+---
+
+## The Big-Picture Positioning (Corrected)
+
+Nova is not just a **"Passive Intelligence Surface"** — that's still too agent-like.
+
+Nova is a **"Governed Information Interface"**:
+- **Governed:** Everything passes through constitutional gates
+- **Information:** Raw data, not interpretations
+- **Interface:** A surface for viewing, not a participant
+
+### **The Perfect Analogy**
+Nova's UI should feel like:
+- **A well-designed car dashboard** (shows speed, fuel, engine temp)
+- **Not a GPS navigation system** (suggests turns, optimizes routes)
+
+Both show information, but:
+- Dashboard: "Here are the facts about your current state"
+- GPS: "Here's what you should do based on where you're going"
+
+---
+
+## One-Line Policy (Final Version)
+
+**"Nova's UI may change what it shows, but never why, when, or how you should look at it."**
+
+This captures all four gates:
+- **What:** Reflective (shows state)
+- **Never why:** Non-intent (no opinions about importance)
+- **Never when:** Non-initiative (no attention shifts)
+- **Never how:** Non-directive (no guidance on viewing)
+
+---
+
+## The Critical Distinction (Keep This Visible)
+
+```
+SAFE: "The temperature is 72°"
+UNSAFE: "It's a nice 72° outside"
+
+SAFE: "Stock market is up 2%"
+UNSAFE: "Good news! Stocks are up"
+
+SAFE: "You have 3 meetings today"
+UNSAFE: "You're busy today with 3 meetings"
+
+SAFE: Panel shows data
+UNSAFE: Panel highlights "important" data
+
+SAFE: System responds when asked
+UNSAFE: System prepares for what you might ask
+```
+
+**The difference is one of agency.** Even subtle language shifts can move Nova from containment to participation.
+
+---
+
+## Final Warning: The Predictive Preloading Trap
+
+This is the **most dangerous** UI feature because:
+1. It seems like harmless optimization
+2. It's easy to justify as "better UX"
+3. It creates immediate perceived value
+4. Once added, it's nearly impossible to remove
+
+**If you add predictive preloading, you have fundamentally changed Nova's architecture from reactive to anticipatory.**
+
+That single change:
+- Violates "No background cognition"
+- Introduces hidden initiative
+- Creates expectation of mind-reading
+- Shifts perception from tool to assistant
+
+**The line is sharp:** Either Nova waits for explicit requests, or it doesn't. There's no middle ground that preserves containment.
+
+---
+
+## Implementation Rule of Thumb
+
+When in doubt, ask:
+**"Would this feature work exactly the same way if Nova were just displaying data from an API with zero intelligence?"**
+
+If yes → Safe (it's just visibility)
+If no → Dangerous (it requires intelligence)
+
+This keeps Nova's UI layer truly orthogonal to the intelligence layer — the core architectural principle that makes containment possible.

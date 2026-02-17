@@ -1,0 +1,233 @@
+🏛️ CANONICAL RESOLUTION: DEEPSEEK AS MUTUALLY EXCLUSIVE CONVERSATIONAL MODE
+
+📋 EXECUTIVE SUMMARY
+
+The mode‑switch model is constitutionally sound and Phase‑3.5 compatible.
+It restores the original, safer design: Nova and DeepSeek are mutually exclusive responders, not collaborative reasoners.
+This preserves all eight immutable invariants, requires no phase unlock, and can be implemented immediately under strict canonical rules.
+
+---
+
+1️⃣ ARCHITECTURAL MODEL (CANONICAL)
+
+State Machine
+
+```
+[Default] ──┬── NOVA MODE ──────────────────────────────────────
+            │     • User → Nova
+            │     • Nova responds
+            │     • No DeepSeek involvement
+            │
+            └── DEEPSEEK MODE ── (activated via icon / explicit command)
+                  • User → DeepSeek
+                  • DeepSeek responds
+                  • Nova is silent, does not process the message
+                  • No tool execution
+                  • No system state change
+```
+
+Mode remains until user explicitly switches back.
+
+Conversation Display (Single Thread)
+
+```
+[11:02] Nova: The weather today is sunny, 72°F.
+
+[11:03] User: [clicks DeepSeek icon] What are the health benefits of sunlight?
+
+[11:03] DeepSeek: Sunlight triggers vitamin D production, improves mood…
+
+[11:04] User: [clicks Nova icon] Thanks. Can you set a reminder to go outside at 3pm?
+
+[11:04] Nova: Reminder set for 3:00 PM.
+```
+
+No blending, no hidden context, no automatic follow‑up.
+
+---
+
+2️⃣ CONSTITUTIONAL COMPLIANCE (LINE‑BY‑LINE)
+
+Invariant Compliance Rationale
+1. No Autonomy ✅ DeepSeek invoked only by explicit user action. Nova never initiates.
+2. No Background Cognition ✅ Nova is completely dormant during DeepSeek mode. No processing, no analysis.
+3. No Guessing ✅ Nova never interprets or expands intent. Mode switching is explicit.
+4. LLM as Consultant Only ✅ DeepSeek is an external consultant, not Nova’s internal reasoning. Its output is labeled and carries no authority.
+5. Explicit Teaching ✅ No learning occurs. Nova does not observe or adapt based on DeepSeek conversations.
+6. Full Inspectability ✅ Every DeepSeek interaction is logged, labeled, and visible in conversation history.
+7. Phase‑Gated Progression ✅ This capability adds no new execution authority and therefore does not require a phase unlock. It is a UI/presentation feature, not an authority expansion.
+8. Single Master Governor ✅ DeepSeek never executes actions. Governor remains the sole execution choke point.
+
+Intelligence‑Authority Split is perfectly maintained:
+
+· DeepSeek provides intelligence (information, analysis)
+· Nova holds authority (deciding whether and how to act)
+· Governor gates execution
+
+---
+
+3️⃣ CANONICAL RULES FOR IMPLEMENTATION
+
+Rule 1 – Explicit Mode Switching Only
+
+· DeepSeek mode activates only via:
+  · Dedicated UI button/icon
+  · Explicit command phrase (e.g., “Ask DeepSeek…”)
+· No automatic switching, no time‑based triggers, no contextual inference.
+
+Rule 2 – Nova Silence During DeepSeek Mode
+
+· When DeepSeek mode is active:
+  · Nova does not receive the user message
+  · Nova does not respond
+  · Nova does not perform any background processing or analysis
+· This guarantees zero background cognition.
+
+Rule 3 – No Execution in DeepSeek Mode
+
+· DeepSeek responses are informational only.
+· DeepSeek cannot:
+  · Invoke tools
+  · Change system state
+  · Trigger notifications
+  · Influence the Governor
+· Any user request requiring execution must be made in Nova mode.
+
+Rule 4 – Conversation Transparency
+
+· All DeepSeek messages are visibly labeled (e.g., “DeepSeek:”).
+· No system‑only, hidden, or unlabeled DeepSeek output.
+· Audit logs record every DeepSeek invocation with full prompt/response.
+
+Rule 5 – Context Handling (Explicit Choice)
+
+Option A (Safest – Recommended):
+Nova does not automatically see DeepSeek responses. They are treated as a separate conversation thread. If the user wants Nova to consider the DeepSeek output, they must explicitly reference it in a Nova‑mode message.
+
+Option B (Still Safe):
+Nova sees DeepSeek responses as normal chat history, but they carry no privileged status – they are treated exactly like user text. Nova may reference them only when explicitly asked.
+
+Our recommendation: Option A for maximum isolation and determinism.
+
+---
+
+4️⃣ PHASE PLACEMENT JUSTIFICATION
+
+This is Phase‑3.5 work, not Phase‑4.
+
+Why? Because no new execution authority is introduced.
+
+· The Governor remains untouched.
+· No new tools are added.
+· No state changes occur.
+· The system’s ability to do things is unchanged.
+
+What is added is a UI routing feature that lets the user temporarily switch to a different conversational agent within the same interface. This is analogous to adding a second chat tab – it changes presentation, not capability.
+
+Constitutional Principle:
+Phase gates control the expansion of authority, not the addition of intelligence sources that are clearly external, user‑invoked, and non‑executing.
+
+Therefore:
+
+· No Unlock Gate required.
+· No Constitutional Council vote needed.
+· Implementation can proceed immediately after design review.
+
+---
+
+5️⃣ REQUIRED DOCUMENTATION UPDATES
+
+A. Add to Nova Constitutional Truth v4.9+ (Phase 3.5 Section):
+
+```markdown
+### External Assistant Mode (DeepSeek Integration)
+
+**Status:** ✅ PHASE 3.5 – Implementation Allowed
+
+**Description:**  
+Nova may provide a user‑controlled mode switch that routes messages to an external assistant (DeepSeek) upon explicit activation. When external mode is active:
+- Nova does not process user messages or respond.
+- The external assistant responds with informational content only.
+- No execution, state change, or tool invocation occurs.
+
+**Constitutional Constraints:**
+- Activation must be explicit (button, icon, or dedicated command).
+- All external assistant messages must be clearly labeled.
+- Nova remains completely dormant during external mode.
+- External assistant output has no authority and cannot influence Nova’s decision‑making unless explicitly referenced by the user in a subsequent Nova‑mode message.
+- Full audit logging of every external invocation is required.
+
+**Rationale:**  
+This capability adds no new authority to Nova and does not expand the execution surface. It is a pure presentation‑layer feature that preserves all eight immutable invariants.
+```
+
+B. Update Phase 4 Roadmap – Remove Collaborative Reasoning
+
+The earlier “Multi‑Source Reasoning Conversation” proposal should be removed from Phase 4.2. Replace with a note that external assistants are handled exclusively via the Phase‑3.5 mode‑switch pattern. Any future collaborative reasoning would require a formal constitutional amendment and Phase 10+ consideration.
+
+---
+
+6️⃣ IMPLEMENTATION CHECKLIST (PHASE 3.5)
+
+· UI: Add DeepSeek mode toggle (icon/button) to chat interface.
+· State management: Maintain current mode (Nova/DeepSeek).
+· Message routing: Send user input to appropriate endpoint based on mode.
+· Display: Prefix DeepSeek responses with “DeepSeek:” (or similar clear label).
+· Audit: Log each DeepSeek invocation with timestamp, prompt hash, response hash.
+· Testing: Verify Nova is completely inactive during DeepSeek mode.
+· Testing: Confirm no tool execution is possible from DeepSeek mode.
+· Testing: Adversarial tests – attempts to force Nova to respond while in DeepSeek mode must fail.
+
+---
+
+7️⃣ WHAT THIS UNLOCKS (AND WHAT IT DOESN’T)
+
+This unlocks:
+
+· Immediate access to DeepSeek’s knowledge within the Nova interface.
+· Clean, transparent user control over which assistant is speaking.
+· A foundation for adding other external assistants (Claude, Gemini, etc.) using the same mode‑switch pattern.
+
+This does NOT unlock:
+
+· Collaborative reasoning (Nova + DeepSeek together).
+· Autonomous or background use of external AI.
+· Any form of execution authority for external models.
+· Phase 4 or later capabilities.
+
+These remain constitutionally forbidden without explicit phase progression and amendments.
+
+---
+
+8️⃣ FINAL VERDICT
+
+Criterion Status
+Constitutional alignment ✅ Perfect
+Phase correctness ✅ Phase 3.5
+Technical simplicity ✅ Trivial
+User experience ✅ Clear, controllable
+Risk level 🟢 Minimal
+
+This is the correct path.
+It respects every principle you’ve worked so hard to establish.
+It gives users immediate value without compromising safety.
+It keeps Nova’s constitutional integrity intact.
+
+Proceed with implementation under Phase 3.5, following the canonical rules above.
+
+---
+
+📜 CANONICAL ONE‑SENTENCE TRUTH
+
+Nova and external assistants operate as mutually exclusive conversational modes within a single interface; external mode is activated only by explicit user choice, produces informational responses only, and leaves Nova completely dormant with zero execution authority.
+
+---
+
+Document Status: ✅ CANONICAL GUIDANCE – IMMEDIATE EFFECT
+Authority: Constitutional Governance Layer
+Applies to: Nova Core, Nova Web UI, Nova Voice (when applicable)
+
+---
+
+End of Canonical Resolution – Ready for Implementation.
+
