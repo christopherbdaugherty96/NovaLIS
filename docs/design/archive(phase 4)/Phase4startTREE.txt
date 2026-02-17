@@ -1,0 +1,430 @@
+PS C:\Users\NovaUser\OneDrive\Desktop\Nova-Project> tree /F
+Folder PATH listing
+Volume serial number is B660-63B5
+C:.
+│   .gitignore
+│
+├───docs
+│   │   CONTRIBUTING.md
+│   │   PHASE_3.5_CLOSURE.md
+│   │   PHASE_3.5_FROZEN_STATUS.md
+│   │   README.md
+│   │   README_verification.md
+│   │   REPO_MAP.md
+│   │
+│   ├───archive
+│   │   ├───LOCKED
+│   │   │       ENVIRONMENT_LOCK.md.txt
+│   │   │       PHASE_1_LOCK.md
+│   │   │       PHASE_2_LOCK.md
+│   │   │       PHASE_3_LOCK.md
+│   │   │
+│   │   ├───OLDcanonical_snapshots
+│   │   │       Nova-Canonical-Truth-v3.0.md
+│   │   │       NOVA_CANONICAL_TRUTH_v3.md
+│   │   │       NOVA_TRUTH_v3.0_CANONICAL.md
+│   │   │       Phase 2.1 and up final road map 12-25-25.txt
+│   │   │       RoadMap01-02-2026.txt
+│   │   │
+│   │   ├───OLD_VISION.md_files
+│   │   │       OLD_VISION.md.html
+│   │   │       VISION_CANONICAL.md.txt
+│   │   │       VISION_DIFF.md.txt
+│   │   │
+│   │   ├───phase 1
+│   │   │       dashboard-P1.js
+│   │   │       index-P1.html
+│   │   │       style.PHASE-1.0_FROZEN.css
+│   │   │
+│   │   ├───phase 2
+│   │   │       # 🎨 Nova Frontend Dashboard — Tech.txt
+│   │   │       # 🏗️ Nova System Architecture.txt
+│   │   │       # 📊 Nova AI — System Status.txt
+│   │   │       # 📚 Nova AI Read.md.txt
+│   │   │       # 🔄 Nova System Flow.txt
+│   │   │       # 🔧 Nova AI — Troubleshooting Guid.txt
+│   │   │       # 🗺️ Nova AI — Development Roadmap.txt
+│   │   │       # 🧠 Nova Backend — Technical Overv.txt
+│   │   │       ARCHITECT_CONTRACT.md
+│   │   │       Phase 2.1 and up final road map 12-25-25.txt
+│   │   │       Phase-2-TODO-marker-file.txt
+│   │   │       Phase2Locks.readme.md.txt
+│   │   │       PHASE_2_1_AUTHORITY_ENFORCEMENT.md
+│   │   │       PRE_COMMIT_CHECKLIST.md
+│   │   │       README.md.txt
+│   │   │       REPO_ANNOTATION_MAP.md
+│   │   │       SENIOR_REVIEW_DO_NOTS.md
+│   │   │       style.phase2.css
+│   │   │       VISION.md.txt
+│   │   │
+│   │   ├───phase 3
+│   │   │       brain_server_Phase3.py
+│   │   │       nova_tree_Phase3.txt
+│   │   │       Phase3_Tree.txt
+│   │   │       PHASE_3_LOCK.md
+│   │   │       readmeolder.txt
+│   │   │       Truth phase 3ish.txt
+│   │   │
+│   │   ├───phase 3.5
+│   │   │       # NOVA CONSTITUTIONAL TRUTH v4.7.txt
+│   │   │       # NovaTruth.v4.7txt.txt
+│   │   │       # 🧬 NOVA CANONICAL SYNTHESIS v4.7.txt
+│   │   │       # 🧬 NOVA CANONICAL SYNTHESIS v4.8.txt
+│   │   │       # 🧬 NOVA CANONICAL SYNTHESIS v4.9.txt
+│   │   │       # 🧬 phase4 NOVA CANONICAL SYNTHESIS v4.7.txt
+│   │   │       3.5TreeAudit.txt
+│   │   │       brain_server_Phase3.py
+│   │   │       Comprehensive Analysis of Provided.txt
+│   │   │       CURRENT LIVE(needs-update) CANONICAL TRUTH P3.5-NovaLIS.txt
+│   │   │       NOVA PHASE 4 ROADMAP - COMPLETE CAN.txt
+│   │   │       nova truth v 4.9.txt
+│   │   │       Nova-Canonical-Truth-v3.0.md
+│   │   │       NOVA_CANONICAL_TRUTH_P3_v3.md
+│   │   │       NOVA_TRUTH_v3.0_CANONICAL.md
+│   │   │       phase4convo.txt
+│   │   │       phasemapANDaudit.txt
+│   │   │       PHASE_3.5_STATUS.md
+│   │   │       PHASE_3_LOCK.md
+│   │   │       Treephase3.5.txt
+│   │   │       🔒 NOVA PHASE 4 ROADMAP - COMPLETE, H.txt
+│   │   │
+│   │   └───phase 4
+│   │           NOVA CANONICAL SYNTHESIS v5.0.txt
+│   │           phase4.txt
+│   │
+│   ├───CANONICAL
+│   │   │   (needs update)Deep_Think_SPEC.md
+│   │   │   (needs update)NOVA PHASE 3.5 → 4.0 BLUEPRINT.txt
+│   │   │   CANONICAL SYNTHESIS v5.1.md
+│   │   │   CorePhilosophy.md
+│   │   │   DEEPSEEK INTEGRATION AUDIT.md
+│   │   │   NOVA_AGENT_IDENTITY_v3.0.md
+│   │   │   NOVA_DEEP_MEMORY_SAVED_UNLOCK_REQUIRED_v1.0.md
+│   │   │   PHASE-4-CANONICAL.md
+│   │   │
+│   │   └───NovasMind(older docs)
+│   ├───design
+│   │   │   DEFERRED_EXPLAINABILITY_GOVERNANCE.md
+│   │   │   FAST_GOVERNANCE_ARCHITECTURE.md
+│   │   │   PHASE_3_5_TECHNICAL_SPEC_v6.md
+│   │   │
+│   │   ├───APIs(needs audit)
+│   │   │       API Roadmap.txt
+│   │   │       🤖 STRATEGIC API INTEGRATION.txt
+│   │   │
+│   │   ├───future
+│   │   │       NOVA MIND ARCHITECTURE WITH DEEPSEEK.txt
+│   │   │       Nova Orthogonal Cognition Stack.txt
+│   │   │       Nova Personal Intelligence Hub Arch.txt
+│   │   │
+│   │   ├───IDEAS
+│   │   │       ideas.txt
+│   │   │
+│   │   ├───IMPLEMENTATIONS TO-DO(needs audit)
+│   │   │   ├───Phase 10
+│   │   │   │       PHASE 10.txt
+│   │   │   │
+│   │   │   ├───Phase 3.5
+│   │   │   │       PHASE_3_5_SCOPE.md
+│   │   │   │
+│   │   │   └───Phase 4
+│   │   └───ORB
+│   │           nova orb v4.9.txt
+│   │
+│   ├───GOVERNANCE
+│   │   │   governor_mediation.py
+│   │   │   governor_mediator.py
+│   │   │
+│   │   ├───NovaLIS-Governance(older)
+│   │   │   │   README_GOVERNANCE.md
+│   │   │   │
+│   │   │   └───OLD_VISION.md_files
+│   │   │           root-c07b4afz.css
+│   │   │           silk-hq-lutwos9z.css
+│   │   │           table-components-gjyj5koo.css
+│   │   │
+│   │   └───PROOFS
+│   │       ├───COMPLETION
+│   │       │   └───PHASE_3.5_COMPLETION
+│   │       │           3.5 - Complete Mechanical Specification.txt
+│   │       │
+│   │       └───phase 3.5-4
+│   │               # INTENT_ROUTING_AUDIT.md
+│   │               CAPABILITY_SURFACE.md
+│   │               GOVERNOR_BYPASS_PROOF.md
+│   │               Phase 3.5 Governance Verification .md
+│   │               PHASE-3.5 COMPLETION CHECKLIST.md
+│   │               PHASE_3.5_CLOSURE.md
+│   │               PHASE_3_5_GOVERNOR_ENFORCEMENT_AUDIT_AND_EXECUTION_LOG.md
+│   │
+│   ├───reference
+│   │       TIME_TEST_GOVERNOR_REFERENCE.md
+│   │
+│   └───tools
+│           check_quarantine.ps1
+│
+├───Nova-Frontend-Dashboard
+│   │   dashboard.js
+│   │   index.html
+│   │   manifest.json
+│   │   orb.js
+│   │   style.phase1.css
+│   │
+│   ├───assets
+│   │       orb-canonical.png
+│   │
+│   └───visuals
+│           orb_canvas.js
+│
+├───Nova-Orb-Raspberry-Pi
+├───nova_backend
+│   │   input.m4a
+│   │   test.wav
+│   │
+│   ├───memory
+│   │       quick_corrections.jsonl
+│   │
+│   ├───src
+│   │   │   audio_manager.py
+│   │   │   base_skill.py
+│   │   │   brain_server.py
+│   │   │   nova_config.py
+│   │   │   nova_protocol.py
+│   │   │   requirements.txt
+│   │   │   skill_registry.py
+│   │   │   speech_state.py
+│   │   │   stt_manager.py
+│   │   │   __init__.py
+│   │   │
+│   │   ├───actions
+│   │   │   │   action_request.py
+│   │   │   │   action_result.py
+│   │   │   │   action_types.py
+│   │   │   │   __init__.py
+│   │   │   │
+│   │   │   └───__pycache__
+│   │   │           action_request.cpython-310.pyc
+│   │   │           action_result.cpython-310.pyc
+│   │   │           action_types.cpython-310.pyc
+│   │   │           __init__.cpython-310.pyc
+│   │   │
+│   │   ├───archive_phase4
+│   │   │       web_search.py
+│   │   │       web_search_skill.py
+│   │   │
+│   │   ├───archive_quarantine
+│   │   │   ├───phase2_execution
+│   │   │   │       brain_safeP1-2.5.py
+│   │   │   │       QUARANTINE_NOTICE.md
+│   │   │   │
+│   │   │   ├───phase2_governo
+│   │   │   │       governor_mediation.py
+│   │   │   │
+│   │   │   ├───phase2_tests
+│   │   │   │       phase2_governor_tests.py
+│   │   │   │       phase2_manual_tests.py
+│   │   │   │       QUARANTINE_NOTICE.md
+│   │   │   │
+│   │   │   └───phase35_execution
+│   │   │       │   QUARANTINE_NOTICE.md
+│   │   │       │
+│   │   │       ├───execution
+│   │   │       │   │   execute_action.py
+│   │   │       │   │   __init__.py
+│   │   │       │   │
+│   │   │       │   ├───handlers
+│   │   │       │   │   │   open_app.py
+│   │   │       │   │   │   open_folder.py
+│   │   │       │   │   │   open_view.py
+│   │   │       │   │   │   volume_control.py
+│   │   │       │   │   │
+│   │   │       │   │   └───__pycache__
+│   │   │       │   │           open_app.cpython-310.pyc
+│   │   │       │   │           open_folder.cpython-310.pyc
+│   │   │       │   │           open_view.cpython-310.pyc
+│   │   │       │   │           volume_control.cpython-310.pyc
+│   │   │       │   │
+│   │   │       │   └───__pycache__
+│   │   │       │           execute_action.cpython-310.pyc
+│   │   │       │           __init__.cpython-310.pyc
+│   │   │       │
+│   │   │       └───executors
+│   │   │               executor_registry.py
+│   │   │               executor_types.py
+│   │   │               __init__.py
+│   │   │
+│   │   ├───capabilities
+│   │   │   │   capabilities.py
+│   │   │   │   __init__.py
+│   │   │   │
+│   │   │   └───__pycache__
+│   │   │           __init__.cpython-310.pyc
+│   │   │
+│   │   ├───gates
+│   │   │   │   confirmation_gate.py
+│   │   │   │   confirmation_gate.py.backup
+│   │   │   │   __init__.py
+│   │   │   │
+│   │   │   └───__pycache__
+│   │   │           confirmation_gate.cpython-310.pyc
+│   │   │           governor_mediator.cpython-310.pyc
+│   │   │           __init__.cpython-310.pyc
+│   │   │
+│   │   ├───governor
+│   │   │   │   governor_mediator.py
+│   │   │   │   single_action_queue.py
+│   │   │   │
+│   │   │   └───__pycache__
+│   │   │           governor_mediator.cpython-310.pyc
+│   │   │           single_action_queue.cpython-310.pyc
+│   │   │
+│   │   ├───llm
+│   │   │   │   llm_manager.py
+│   │   │   │   system_prompt.py
+│   │   │   │
+│   │   │   └───__pycache__
+│   │   │           llm_manager.cpython-310.pyc
+│   │   │           system_prompt.cpython-310.pyc
+│   │   │
+│   │   ├───memory
+│   │   │   │   quick_corrections.py
+│   │   │   │
+│   │   │   └───__pycache__
+│   │   │           quick_corrections.cpython-310.pyc
+│   │   │
+│   │   ├───routers
+│   │   │   │   stt.py
+│   │   │   │
+│   │   │   └───__pycache__
+│   │   │           stt.cpython-310.pyc
+│   │   │
+│   │   ├───services
+│   │   │   │   stt_engine.py
+│   │   │   │   weather_service.py
+│   │   │   │
+│   │   │   └───__pycache__
+│   │   │           stt_engine.cpython-310.pyc
+│   │   │           weather_service.cpython-310.pyc
+│   │   │
+│   │   ├───skills
+│   │   │   │   general_chat.py
+│   │   │   │   news.py
+│   │   │   │   system.py
+│   │   │   │   weather.py
+│   │   │   │   __init__.py
+│   │   │   │
+│   │   │   └───__pycache__
+│   │   │           general_chat.cpython-310.pyc
+│   │   │           news.cpython-310.pyc
+│   │   │           news.cpython-314.pyc
+│   │   │           system.cpython-310.pyc
+│   │   │           system.cpython-314.pyc
+│   │   │           weather.cpython-310.pyc
+│   │   │           weather.cpython-314.pyc
+│   │   │           __init__.cpython-310.pyc
+│   │   │           __init__.cpython-314.pyc
+│   │   │
+│   │   ├───tasks
+│   │   │       reminder_task.py
+│   │   │       __init__.py
+│   │   │
+│   │   ├───tools
+│   │   │   │   news_fallback.py
+│   │   │   │   rss_fetch.py
+│   │   │   │   web_search.py
+│   │   │   │   __init__.py
+│   │   │   │
+│   │   │   └───__pycache__
+│   │   │           news_fallback.cpython-310.pyc
+│   │   │           rss_fetch.cpython-310.pyc
+│   │   │           web_search.cpython-310.pyc
+│   │   │           __init__.cpython-310.pyc
+│   │   │
+│   │   └───__pycache__
+│   │           audio_manager.cpython-310.pyc
+│   │           base_skill.cpython-310.pyc
+│   │           brain_server.cpython-310.pyc
+│   │           nova_config.cpython-310.pyc
+│   │           phase2_manual_tests.cpython-310.pyc
+│   │           skill_registry.cpython-310.pyc
+│   │           speech_state.cpython-310.pyc
+│   │           __init__.cpython-310.pyc
+│   │
+│   ├───static
+│   │       dashboard.js
+│   │       index.html
+│   │       orb.js
+│   │       style.phase1.css
+│   │
+│   ├───tests
+│   │   │   test_no_execution_runtime.py
+│   │   │   test_skill_registry.py
+│   │   │
+│   │   └───__pycache__
+│   │           test_no_execution_runtime.cpython-310-pytest-9.0.2.pyc
+│   │           test_skill_registry.cpython-310-pytest-9.0.2.pyc
+│   │
+│   └───tools
+│       │   README.md
+│       │   ws_manual.py
+│       │
+│       └───ffmpeg
+│           │   ffmpeg.exe
+│           │
+│           └───ffmpeg-8.0.1-essentials_build
+│               └───ffmpeg-8.0.1-essentials_build
+│                   │   LICENSE
+│                   │   README.txt
+│                   │
+│                   ├───bin
+│                   │       ffmpeg.exe
+│                   │       ffplay.exe
+│                   │       ffprobe.exe
+│                   │
+│                   ├───doc
+│                   │       bootstrap.min.css
+│                   │       community.html
+│                   │       default.css
+│                   │       developer.html
+│                   │       faq.html
+│                   │       fate.html
+│                   │       ffmpeg-all.html
+│                   │       ffmpeg-bitstream-filters.html
+│                   │       ffmpeg-codecs.html
+│                   │       ffmpeg-devices.html
+│                   │       ffmpeg-filters.html
+│                   │       ffmpeg-formats.html
+│                   │       ffmpeg-protocols.html
+│                   │       ffmpeg-resampler.html
+│                   │       ffmpeg-scaler.html
+│                   │       ffmpeg-utils.html
+│                   │       ffmpeg.html
+│                   │       ffplay-all.html
+│                   │       ffplay.html
+│                   │       ffprobe-all.html
+│                   │       ffprobe.html
+│                   │       general.html
+│                   │       git-howto.html
+│                   │       libavcodec.html
+│                   │       libavdevice.html
+│                   │       libavfilter.html
+│                   │       libavformat.html
+│                   │       libavutil.html
+│                   │       libswresample.html
+│                   │       libswscale.html
+│                   │       mailing-list-faq.html
+│                   │       nut.html
+│                   │       platform.html
+│                   │       style.min.css
+│                   │
+│                   └───presets
+│                           libvpx-1080p.ffpreset
+│                           libvpx-1080p50_60.ffpreset
+│                           libvpx-360p.ffpreset
+│                           libvpx-720p.ffpreset
+│                           libvpx-720p50_60.ffpreset
+│
+└───verification
+        check_quarantine_fixed.ps1
+        governor_proof.py
+        README_verification.md

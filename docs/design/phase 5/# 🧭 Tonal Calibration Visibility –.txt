@@ -1,0 +1,194 @@
+# 🧭 Tonal Calibration Visibility – Constitutional & Trust Audit
+
+You’re asking about the **user‑facing presence** of adaptation.  
+This is not a UI detail.  
+This is **how the system communicates its own change**.
+
+Get this wrong:
+
+- Invisible adaptation → feels like **silent drift**, erodes trust.
+- Over‑visible adaptation → feels like **navel‑gazing**, erodes calm.
+
+Get this right:
+
+- Adaptation feels **aligned** without feeling **opaque**.
+- User has **control without burden**.
+
+---
+
+## 🔍 Three Options – Audited
+
+| Option | Description | Trust Signal | Risk |
+|--------|-------------|-------------|------|
+| **A – Visible & manipulable** | Tone Profile panel shows current weights (sliders, per‑domain). User can see adaptation in near‑real time. | **Maximum transparency** | Can feel overwhelming; users may not care about formatting weights. |
+| **B – Invisible but inspectable** | No UI surface; all changes logged in Ledger. Advanced users can query via terminal or export logs. | **Reserved transparency** | Most users will never see it → may assume Nova never adapts, or worse, assume it adapts secretly. |
+| **C – Only in Ledger** | No user‑facing adaptation UI at all. Changes only visible via constitutional audit. | **Minimal transparency** | Violates the “inspectability” invariant. Users cannot know what has been tuned. |
+
+---
+
+# ⚖️ Constitutional Principles at Stake
+
+1. **Inspectability** (Core Invariant)  
+   > Every autonomy‑relevant event must be inspectable.  
+   Tone calibration is a Class C mutation → **must be inspectable**.  
+   But inspectable ≠ prominently displayed.
+
+2. **No Silent Drift** (Hidden Trap A)  
+   > Users must be able to discover what changed.  
+   If adaptation occurs and user never knows, that is **de facto silent drift** – even if benign.
+
+3. **Calm UI** (Non‑Initiative Gate)  
+   > No proactive modals, no attention shifting.  
+   Adaptation UI must never demand attention.
+
+4. **User Sovereignty**  
+   > User must be able to override or revert any system‑learned preference.  
+   If adaptation is invisible, how does the user know they *can* override?
+
+---
+
+# 🧠 Psychological Trade‑offs
+
+**If adaptation is invisible (B or C):**
+
+- User trusts Nova because it “just works.”
+- But when something feels off, there’s no way to understand why.
+- User may assume the system is broken or has developed a hidden agenda.
+- **Result:** Fragile trust, easily broken.
+
+**If adaptation is too visible (A with live sliders):**
+
+- User sees weights changing daily.
+- Feels like the system is “tweaking itself” constantly.
+- Erodes the sense of stability.
+- **Result:** System feels neurotic, not calm.
+
+---
+
+# ✅ Recommendation: Tiered Visibility Model
+
+Adopt a **layered visibility model** that mirrors your layered tone architecture:
+
+```
+┌─────────────────────────────────────┐
+│  Ledger (Full audit trail)          │ ← Always there, permanent
+├─────────────────────────────────────┤
+│  Advanced Settings Panel            │ ← Detailed view (per‑domain weights, mutation history)
+├─────────────────────────────────────┤
+│  Simple Summary (What’s New style)  │ ← Human‑readable adaptation summary
+├─────────────────────────────────────┤
+│  No proactive UI                    │ ← Default state
+└─────────────────────────────────────┘
+```
+
+---
+
+## 🧩 Layer 1 – Ledger (Constitutional)
+
+All tone mutations are recorded in the Ledger, with full before/after hashes, delta metrics, timestamps, origin (user, feedback, auto).  
+This satisfies **inspectability** at the constitutional level.
+
+---
+
+## 🧩 Layer 2 – Advanced Settings Panel (User‑invoked)
+
+A dedicated **Tone Profile** section in Settings, accessible via navigation (not modal).  
+Contains:
+
+- Per‑domain verbosity/explanation/formality weights (as relative indicators, not raw floats)
+- Option to reset a domain to global default
+- Option to reset all domains to factory baseline
+- Mutation history (last 10 shifts, with timestamps and “revert” button)
+- Clear indication: *“Nova adjusts response style based on your feedback and usage patterns. You can adjust manually here.”*
+
+**Design principle:**  
+> Show the effect, not the mechanism.  
+> Instead of `verbosity_weight = 0.63`, show: *“Responses: slightly more detailed than default.”*
+
+---
+
+## 🧩 Layer 3 – Simple Summary (What’s New style)
+
+When the user visits the **“What’s New” / System Status page**, include a section:
+
+> **Response style adjustments**  
+> • Calendar summaries: 15% more concise  
+> • Technical answers: slightly more detailed  
+> • Last update: 2 days ago
+
+This is **non‑modal, user‑invoked, neutral tone**.  
+It answers the unspoken question: *“Has Nova changed?”* without demanding attention.
+
+---
+
+## 🧩 Layer 4 – No Proactive UI (Default)
+
+Nova never announces:  
+> “I’ve adjusted my tone.” ❌  
+> “Your preferences have been updated.” ❌
+
+That would violate the Non‑Initiative Gate.
+
+---
+
+# 🔧 Implementation Sketch
+
+### 1. Tone Profile Component (Ring 2, `@mutable`)
+
+Each domain profile stores:
+- `verbosity_offset` (float, -0.5 to +0.5, default 0)
+- `explanatory_depth_offset` (float)
+- `formality_offset` (float)
+
+Global base stores absolute defaults.  
+Domain = base + offset.  
+Offsets are what mutations adjust.
+
+### 2. UI Rendering
+
+- Advanced panel reads offsets via Governor query API.
+- Simple summary queries Ledger for `TONE_ADAPTIVE_SHIFT` events in last N days, aggregates per domain, presents as natural language.
+
+### 3. No live slider movement
+
+Sliders show **current setting**, not real‑time adaptation.  
+User can move slider → commits a Ring 3 user override (pins that domain).  
+Pinned domains no longer accept adaptive mutations.
+
+---
+
+# 🛡️ Constitutional Boundary Check
+
+| Concern | Mitigation |
+|---------|------------|
+| **Adaptation feels secret** | Simple summary ensures discoverability. |
+| **User feels overwhelmed** | Advanced panel is hidden behind Settings; simple summary is brief, scannable. |
+| **User never inspects** | That’s acceptable – trust is implicit. The option exists. |
+| **Persuasive framing** | All UI text is neutral, factual. No “You should review your tone settings.” |
+| **Violation of Calm UI** | No proactive notifications. All panels are user‑navigated. |
+
+---
+
+# 🧭 Final Verdict
+
+**Do not show live adaptation.**  
+**Do not hide adaptation entirely.**
+
+**Implement:**
+
+- Ledger as the permanent, inspectable source of truth.
+- Simple, human‑readable summary in System Status (What’s New style).
+- Detailed Tone Profile panel in Settings for users who want control.
+- No proactive announcements.
+
+This is **transparent without interruption**.  
+It respects the user’s attention while honouring their sovereignty.
+
+---
+
+> *“The system changed, and I never knew.”* → ❌ preventable.  
+> *“The system keeps telling me it changed.”* → ❌ preventable.  
+> *“I can see how it adapted when I want to.”* → ✅ the sweet spot.
+
+**This is presence within law.**  
+Visible when sought, silent otherwise, always accountable.

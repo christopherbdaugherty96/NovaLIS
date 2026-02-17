@@ -1,0 +1,1210 @@
+Perfect. Below is everything you asked for, delivered cleanly and verbatim, with no scope creep and no Phase-3.5 reopening.
+
+1️⃣ Drop-in File (VERBATIM, READY TO COMMIT)
+Path (exact):
+docs/PROOFS/unlock-decisions/PHASE_4_ADMISSION_GATE.md
+Contents (copy/paste exactly):
+# 🔓 PHASE-4 ADMISSION GATE — CONSTITUTIONAL CHECKLIST
+
+**Status:** IMPLEMENTATION-BINDING  
+**Authority:** NOVA CANONICAL SYNTHESIS v5.1  
+**Phase:** Phase-4 (Governed Execution)  
+**Precondition:** Phase-3.5 CLOSED (Frozen, Execution-Impossible)
+
+---
+
+## A) PHASE-4 ENTRY GATES (ALL REQUIRED)
+
+### A1. Phase-3.5 Completion & Freeze
+- [ ] Phase-3.5 is formally CLOSED and sealed
+- [ ] No execution surface exists (`execute_action = None` or mechanical equivalent)
+- [ ] No background or implicit requests (cached display allowed; new fetch requires explicit user action)
+- [ ] All Phase-3.5 Governor enforcement blockers resolved (no bypass paths)
+
+### A2. Single Master Governor Proof
+- [ ] Exactly one choke point exists for all governed actions
+- [ ] CI proof exists that **no code path bypasses the Governor**
+- [ ] Execution cannot be invoked outside the Governor boundary
+- [ ] ConfirmationGate cannot intercept or bypass normal queries
+
+### A3. Phase Transition Flag
+- [ ] A single runtime flag exists (`GOVERNED_ACTIONS_ENABLED`)
+- [ ] `false` ⇒ all governed actions refused with Phase-3.5 language
+- [ ] `true` ⇒ governed actions allowed **only** via explicit invocation patterns
+
+---
+
+## B) PHASE-4 GOVERNOR SPINE (REQUIRED MECHANISMS)
+
+### B1. Explicit Literal Invocation Only
+- [ ] Governor activates only on explicit command phrases
+- [ ] No inferred intent, ranking, or probabilistic matching
+- [ ] Deterministic phrase normalization only
+
+### B2. One-Strike Clarification
+- [ ] Exactly one clarification question allowed
+- [ ] After clarification: LAI or refusal — no follow-ups
+
+### B3. Verbatim Echo
+- [ ] High-stakes interpretation prefixed with:
+  > “Interpreting this as: …”
+- [ ] Declarative, not a question
+- [ ] No confidence scoring
+
+### B4. One-Line Boundary Explanation
+- [ ] Refusals may include a single neutral “why I can / can’t” sentence
+- [ ] No coaching or nudging
+
+### B5. Ledger & Trace
+- [ ] Every governed attempt records:
+  phase, action type, inputs, decision, confirmation, result, timestamp
+- [ ] Trace inspectable on request
+- [ ] No silent fallback behavior
+
+### B6. Offline-First / Explicit Online
+- [ ] Local reasoning by default
+- [ ] Online access requires explicit phrasing (“search / look up / research”)
+- [ ] Announce online entry and exit
+
+---
+
+## C) CONFIRMATION GATE RULES
+
+### C1. Confirmation Required Only For:
+- [ ] Destructive actions
+- [ ] Irreversible actions
+- [ ] Public / identity-binding actions
+- [ ] Physical-world safety risk actions
+
+### C2. Confirmation NOT Required For:
+- [ ] Read-only inspections and lookups
+- [ ] Reversible, observable actions
+
+---
+
+## D) ORB & UI SEMANTIC BOUNDARY (STILL ENFORCED)
+
+- [ ] Orb visuals are cosmetic only (CSS-only ambient motion)
+- [ ] No semantic coupling to cognition, certainty, or progress
+- [ ] Status communication is text-only and non-authoritative
+
+---
+
+## E) PHASE-4 ALLOWED CAPABILITIES (GOVERNED)
+
+- [ ] Governed web search (read-only, explicit)
+- [ ] Opening websites (explicit, announced)
+- [ ] Opening files/folders (explicit, announced, no silent disambiguation)
+- [ ] Low-risk system controls (volume/media only, permission-ledgered)
+- [ ] Read-only OS awareness / diagnostics
+- [ ] Structured multi-source reporting (read-only)
+
+---
+
+## F) FORBIDDEN IN PHASE-4
+
+- [ ] Proactivity or background tasks
+- [ ] Implicit intent inference
+- [ ] Telemetry or analytics
+- [ ] Learning or adaptation
+- [ ] Memory expansion beyond explicit governance
+- [ ] Any execution outside the Governor
+
+---
+
+## G) PHASE-4.5 (DESIGN-LOCKED)
+
+- [ ] Deep Think audit trail (non-authorizing)
+- [ ] Explicit invocation only
+- [ ] No authority increase
+
+---
+
+## H) PHASE-5 (DESIGN-LOCKED)
+
+- [ ] Explicit memory governance (save/lock/correct only)
+- [ ] User Context Echo (transparent reflection only)
+- [ ] No inferred personalization
+
+---
+
+## I) PHASE-6–7 DANGER ZONE
+
+- [ ] Forbidden unless constitutionally unlocked
+- [ ] No autonomy, no background cognition, no agent orchestration
+
+---
+
+## FINAL RULE
+
+**If any box above is unchecked, Phase-4 remains LOCKED.**
+
+No interpretation, no partial unlocks, no soft transitions.
+✅ This file is drop-in ready. No edits required.
+
+2️⃣ Wire CI to Assert Entry Gates (NO PHASE-3.5 REOPEN)
+Below is a minimal CI gate that enforces Phase-4 eligibility without enabling Phase-4.
+.github/workflows/phase4_admission_gate.yml
+name: Phase-4 Admission Gate
+
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  phase4-admission:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify Phase-3.5 remains closed
+        run: |
+          python nova_backend/tests/test_no_execution_runtime.py
+
+      - name: Verify no Governor bypass exists
+        run: |
+          python docs/PROOFS/governance-tests/governor_proof.py
+
+      - name: Verify Phase containment
+        run: |
+          python tests/test_phase35_containment_integrity.py
+
+      - name: Assert Phase-4 not implicitly enabled
+        run: |
+          if grep -R "GOVERNED_ACTIONS_ENABLED\s*=\s*True" -n .; then
+            echo "❌ Phase-4 flag enabled without unlock"
+            exit 1
+          fi
+
+      - name: Admission Gate Passed
+        run: echo "✅ Phase-4 admission gates intact (still locked)"
+What this guarantees:
+Phase-3.5 stays sealed
+
+
+Governor remains the only choke point
+
+
+No silent Phase-4 activation
+
+
+Phase-4 discussion/design can proceed safely
+
+
+
+3️⃣ How You Start Phase-4 Design (WITHOUT REOPENING PHASE-3.5)
+From this point forward, all Phase-4 work must satisfy one rule:
+Design may reference the admission gate, but may not satisfy it accidentally.
+Allowed Phase-4 Work NOW
+Writing design docs
+
+
+Drafting Governor Spine extensions
+
+
+Planning confirmation flows
+
+
+Designing ledger schemas
+
+
+Prototyping non-executable code behind hard guards
+
+
+Forbidden Until Explicit Unlock
+Setting GOVERNED_ACTIONS_ENABLED = True
+
+
+Adding execution handlers
+
+
+Wiring real system actions
+
+
+Running Phase-4 runtime tests
+
+
+
+🧠 Why this works (important)
+You now have:
+A frozen Phase-3.5
+
+
+A mechanically enforced Phase-4 boundary
+
+
+A checklist that prevents accidental power
+
+
+CI that enforces intent, not trust
+
+
+You can design aggressively without fear.
+
+
+
+
+
+
+
+
+
+
+
+Everything explicitly references the Phase-4 Admission Gate, but does not satisfy it accidentally.
+
+1️⃣ Phase-4 Design Template (SAFE, NON-EXECUTING)
+Purpose:
+Allow Phase-4 design work without enabling Phase-4.
+Path:
+docs/design/PHASE_4_DESIGN_TEMPLATE.md
+# Phase-4 Design Proposal — TEMPLATE
+
+**Status:** DESIGN-ONLY (NON-EXECUTING)  
+**Phase:** Phase-4 (Governed Execution)  
+**Authority Reference:**  
+- docs/PROOFS/unlock-decisions/PHASE_4_ADMISSION_GATE.md  
+- docs/CANONICAL/CANONICAL SYNTHESIS v5.1.md  
+
+---
+
+## 1) Design Scope Declaration (Required)
+
+This document proposes **design-only** Phase-4 behavior.
+
+It does **not**:
+- enable execution
+- modify runtime behavior
+- satisfy any Phase-4 admission gate
+- alter Phase-3.5 guarantees
+
+If any implementation occurs, this document is invalid by definition.
+
+---
+
+## 2) Target Capability (Single Capability Only)
+
+**Capability Name:**  
+(e.g., Governed Web Search)
+
+**Capability Class:**  
+- [ ] Read-only  
+- [ ] Reversible  
+- [ ] Observable  
+
+**Admission Gate Section Referenced:**  
+(e.g., Section E — Phase-4 Allowed Capabilities)
+
+---
+
+## 3) Explicit Invocation Contract
+
+Describe the **exact phrases** that invoke this capability.
+
+- No implied intent
+- No ranking
+- No inference
+
+Example:
+```text
+"search for …"
+"look up …"
+"research …"
+If invocation cannot be made explicit, the capability is invalid.
+
+4) Governor Flow (Design-Only)
+Describe the logical flow without code:
+User provides explicit invocation
+
+
+Governor Spine detects literal phrase
+
+
+Optional one-strike clarification (if ambiguous)
+
+
+Verbatim Echo (if high-stakes)
+
+
+Confirmation Gate (if required)
+
+
+Governed action proceeds OR refusal issued
+
+
+Ledger record written
+
+
+
+5) Confirmation Rules
+State explicitly:
+Does this capability require confirmation?
+
+
+If yes, why (irreversible / destructive / identity-binding)?
+
+
+If no, why it qualifies as reversible and observable?
+
+
+
+6) Safety Constraints (Must Enumerate)
+This capability must not:
+introduce proactivity
+
+
+run in background
+
+
+auto-retry or auto-refresh
+
+
+persist state
+
+
+infer intent
+
+
+store memory
+
+
+List every constraint that keeps this safe.
+
+7) Phase Boundary Statement (Mandatory)
+This design does not enable Phase-4.
+
+Phase-4 remains LOCKED until:
+All items in PHASE_4_ADMISSION_GATE.md are satisfied
+
+
+A separate Phase-4 Unlock Authorization is recorded
+
+
+
+8) Open Questions (Optional)
+List unknowns that must be resolved before implementation.
+
+End of Phase-4 Design Proposal
+---
+
+# 2️⃣ Phase-4 Unlock Procedure (SEPARATE FROM ADMISSION)
+
+**Purpose:**  
+Define the **single allowed path** to actually enabling Phase-4.
+
+**Path:**
+docs/PROOFS/unlock-decisions/PHASE_4_UNLOCK_PROCEDURE.md
+```markdown
+# 🔓 PHASE-4 UNLOCK PROCEDURE
+
+**Status:** LOCKED UNTIL EXECUTED  
+**Authority:** NOVA CANONICAL SYNTHESIS v5.1  
+**Related Gate:** PHASE_4_ADMISSION_GATE.md  
+
+---
+
+## 1) Preconditions (All Required)
+
+Phase-4 **cannot** be unlocked unless:
+
+- [ ] Phase-3.5 is CLOSED and sealed
+- [ ] All items in PHASE_4_ADMISSION_GATE.md are checked
+- [ ] CI passes all admission-gate checks
+- [ ] No execution surface exists outside Governor
+- [ ] Phase-4 design documents exist (but are not implemented)
+
+---
+
+## 2) Explicit Unlock Act (Single Point of Transition)
+
+Phase-4 unlock consists of **one explicit act**:
+
+```text
+Set GOVERNED_ACTIONS_ENABLED = true
+This act must:
+be reviewed
+
+
+be committed
+
+
+be logged
+
+
+be reversible
+
+
+Silent unlocks are constitutionally invalid.
+
+3) Required Evidence (Recorded)
+Before unlock, the following evidence must exist:
+Admission gate checklist (all checked)
+
+
+CI logs proving no bypass paths
+
+
+Phase-4 Governor code present but inactive
+
+
+No runtime execution occurred pre-unlock
+
+
+
+4) Unlock Commit Requirements
+The unlock commit must:
+Reference this document
+
+
+Reference PHASE_4_ADMISSION_GATE.md
+
+
+Include hash of CI verification run
+
+
+State explicitly: “Phase-4 execution now enabled”
+
+
+
+5) Post-Unlock Constraints
+Even after unlock:
+Governor remains the sole authority
+
+
+No proactivity permitted
+
+
+No learning or adaptation
+
+
+No background execution
+
+
+Phase-4 scope limited to admitted capabilities only
+
+
+Unlocking Phase-4 does not unlock Phase-4.5 or Phase-5.
+
+6) Rollback Procedure
+If a violation is detected:
+Set GOVERNED_ACTIONS_ENABLED = false
+
+
+Disable new execution paths
+
+
+Record incident
+
+
+Re-run admission gate checks
+
+
+Rollback must be possible in one commit.
+
+End of Phase-4 Unlock Procedure
+---
+
+# 3️⃣ Plan the FIRST SAFE Phase-4 Capability
+
+We’ll pick **one** capability that is:
+
+- low risk
+- fully observable
+- reversible
+- already conceptually present
+- minimal authority expansion
+
+### ✅ Best First Capability: **Governed Web Search (Read-Only)**
+
+#### Why this is ideal
+- Read-only
+- No local system mutation
+- Already mentally familiar to users
+- Easy to gate behind explicit invocation
+- Easy to log and audit
+
+---
+
+## Phase-4 Capability Plan: Governed Web Search
+
+### Invocation
+Explicit phrases only:
+```text
+"search for …"
+"look up …"
+"research …"
+No implicit triggering.
+
+Governor Flow
+Detect explicit phrase
+
+
+Echo interpretation if needed
+
+
+Announce: “I’m checking online.”
+
+
+Perform read-only fetch
+
+
+Return structured summary
+
+
+Announce: “I’m offline again.”
+
+
+Record ledger entry
+
+
+
+Confirmation
+❌ Not required
+Reason: Read-only, reversible, observable
+
+Forbidden Add-Ons
+No auto-followups
+
+
+No recommendations unless explicitly asked
+
+
+No background refresh
+
+
+No saving results to memory
+
+
+
+Phase Boundary Safety
+Does not require OS access
+
+
+Does not require memory
+
+
+Does not expand execution beyond Governor
+
+
+
+What Comes After
+Only after this works cleanly would you consider:
+Opening websites
+
+
+Opening files/folders
+
+
+Low-risk system controls
+
+
+One at a time. Always behind the gate.
+
+🧭 Where You Are Now
+You now have:
+✅ Phase-4 Admission Gate (locked)
+
+
+✅ Phase-4 Design Template
+
+
+✅ Phase-4 Unlock Procedure
+
+
+✅ A safe, concrete first capability plan
+
+
+You can design freely without fear of accidental unlock.
+
+
+
+
+
+
+
+—————-
+ 
+
+
+
+
+Perfect — we’ll do this cleanly, phase-safe, and design-only. Nothing below unlocks Phase-4 or touches Phase-3.5.
+I’ll give you three things, in order:
+A complete Phase-4 design proposal (using the template) for Governed Web Search
+
+
+A draft of the Phase-4 Governor Spine extensions (design-only, no runtime enablement)
+
+
+A clear decision analysis: web search vs file open — and why one should come first
+
+
+
+1️⃣ Phase-4 Design Proposal — Governed Web Search (DESIGN-ONLY)
+Drop this verbatim into:
+docs/design/PHASE_4_GOVERNED_WEB_SEARCH.md
+# Phase-4 Design Proposal — Governed Web Search
+
+**Status:** DESIGN-ONLY (NON-EXECUTING)  
+**Phase:** Phase-4 (Governed Execution)  
+**Authority References:**  
+- docs/PROOFS/unlock-decisions/PHASE_4_ADMISSION_GATE.md  
+- docs/CANONICAL/CANONICAL SYNTHESIS v5.1.md  
+
+---
+
+## 1) Design Scope Declaration
+
+This document proposes a **design-only** Phase-4 capability.
+
+It does **not**:
+- enable execution
+- modify runtime behavior
+- satisfy Phase-4 admission criteria
+- alter Phase-3.5 guarantees
+
+Any implementation before formal Phase-4 unlock is constitutionally invalid.
+
+---
+
+## 2) Target Capability
+
+**Capability Name:** Governed Web Search  
+**Capability Class:**
+- [x] Read-only  
+- [x] Reversible  
+- [x] Observable  
+
+**Admission Gate Reference:**  
+Section E — Allowed Phase-4 Capabilities (Governed Web Search)
+
+---
+
+## 3) Explicit Invocation Contract
+
+This capability is invoked **only** by literal phrase matching.
+
+Allowed invocation prefixes:
+```text
+"search for …"
+"look up …"
+"research …"
+Rules:
+No inferred intent
+
+
+No ranking or guessing
+
+
+No substring or fuzzy matching
+
+
+No auto-trigger from conversation context
+
+
+If the invocation is not explicit, the capability does not run.
+
+4) Governor Spine Flow (Design-Only)
+Conceptual flow (non-executable):
+User issues explicit invocation phrase
+
+
+Governor Spine detects literal invocation
+
+
+One-strike clarification applied only if ambiguous
+
+
+Optional Verbatim Echo for high-stakes queries
+
+
+System announces: “I’m checking online.”
+
+
+Read-only web fetch occurs
+
+
+Structured response is returned
+
+
+System announces: “I’m offline again.”
+
+
+Ledger entry recorded (query + timestamp + outcome)
+
+
+At no point may the Agent initiate or repeat this action.
+
+5) Confirmation Rules
+Confirmation Required: ❌ No
+Justification:
+Action is read-only
+
+
+No local or remote state is mutated
+
+
+User observes full result immediately
+
+
+Action is fully reversible (no persistence)
+
+
+
+6) Safety Constraints (Mandatory)
+This capability must never:
+Run in the background
+
+
+Auto-refresh or auto-retry
+
+
+Save results to memory
+
+
+Generate recommendations unless explicitly asked
+
+
+Perform follow-up searches
+
+
+Rank or infer user intent
+
+
+Persist query history beyond ledger record
+
+
+Trigger additional tools
+
+
+
+7) Phase Boundary Statement
+This design does not enable Phase-4 execution.
+
+Phase-4 remains LOCKED until:
+All items in PHASE_4_ADMISSION_GATE.md are satisfied
+
+
+A separate Phase-4 Unlock Authorization is recorded
+
+
+
+8) Open Design Questions
+Result summarization depth (token cap?)
+
+
+Single-source vs multi-source aggregation
+
+
+Timeout behavior on slow responses
+
+
+Failure phrasing standardization
+
+
+
+End of Phase-4 Design Proposal
+---
+
+# 2️⃣ Phase-4 Governor Spine Extensions (DESIGN-ONLY)
+
+This is **architecture**, not code. No symbols. No flags. No execution.
+
+### Governor Spine — Phase-4 Additions (Conceptual)
+
+**New responsibilities (after unlock only):**
+
+### A) Explicit Invocation Detector
+- Literal phrase match only
+- No regex fuzz
+- No embeddings
+- Deterministic mapping
+
+---
+
+### B) One-Strike Clarification Module
+Triggered **only** if:
+- Multiple literal interpretations exist
+- Query is structurally ambiguous
+
+Rules:
+- Ask once
+- Neutral phrasing
+- No follow-up questions
+
+---
+
+### C) Verbatim Echo (High-Stakes Only)
+Used when:
+- Query may affect safety, legality, or reputation
+
+Format:
+```text
+Interpreting this as: [verbatim query]
+Declarative, not a question.
+
+D) Online Boundary Announcer
+Mandatory phrasing:
+“I’m checking online.”
+
+
+“I’m offline again.”
+
+
+No silent transitions.
+
+E) Ledger / Trace Writer
+Records:
+Timestamp
+
+
+Invocation phrase
+
+
+Capability name
+
+
+Outcome (success / refusal / failure)
+
+
+Ledger is append-only, non-semantic.
+
+Explicit Non-Responsibilities
+The Governor Spine must not:
+Schedule
+
+
+Retry
+
+
+Cache
+
+
+Optimize
+
+
+Recommend
+
+
+Learn
+
+
+Personalize
+
+
+It authorizes or refuses. Nothing else.
+
+3️⃣ Web Search vs File Open — Which Comes First?
+🔍 Governed Web Search — 
+BEST FIRST
+Why:
+Zero local system impact
+
+
+No filesystem permissions
+
+
+Easy to observe
+
+
+Easy to log
+
+
+Already conceptually familiar
+
+
+Clean online/offline boundary demo
+
+
+Risk Profile: LOW
+Governance Load: LOW
+Failure Modes: Benign (timeout, no results)
+
+📂 File Open — SHOULD BE SECOND
+Why it’s harder:
+Touches local system
+
+
+Requires path disambiguation
+
+
+Introduces privacy & identity binding
+
+
+Can leak environment structure
+
+
+Raises confirmation edge cases
+
+
+Risk Profile: MEDIUM
+Governance Load: HIGHER
+Failure Modes: User confusion, unintended disclosure
+
+✅ Correct Order (Strong Recommendation)
+Governed Web Search
+
+
+Open Website (URL only)
+
+
+Open File / Folder
+
+
+Low-risk system controls
+
+
+Each one proves the Governor Spine before expanding authority.
+
+🧭 Where You Are Now
+You now have:
+A formal Phase-4 design proposal
+
+
+A Phase-4 Governor Spine architecture
+
+
+A clear, justified first capability choice
+
+
+No Phase-3.5 reopening required.
+No accidental unlock possible.
+
+
+
+
+
+
+
+
+
+—-
+
+
+
+
+
+
+
+
+
+Below is a Phase-4 Refusal Language Canon that stays aligned with your locks: calm, non-agentic, one-line “why” allowed, no alternatives, no nudging, deterministic phrase bank, and explicit online boundary messaging only when an online action was actually invoked.
+
+Phase-4 Refusal Language Canon (LOCKABLE)
+Drop verbatim into:
+docs/PROOFS/unlock-decisions/PHASE_4_REFUSAL_LANGUAGE_CANON.md
+# Phase-4 Refusal Language Canon
+Status: CANONICAL (Phase-4) — Refusal Phrasebook
+Scope: All refusals + limit statements in Phase-4 governed capabilities
+Non-authorizing: This document does not unlock Phase-4 execution
+
+---
+
+## 0) Purpose
+
+This canon defines a **small, deterministic phrase bank** for refusals and boundary statements.
+Goals:
+- Predictability
+- Calm UX
+- No agentic tone
+- No persuasion or coaching
+- No hidden suggestions
+
+---
+
+## 1) Global Rules (Hard)
+
+1) **Max length:** 1 sentence for refusal + optional 1 sentence “why”  
+   - Total maximum: **2 sentences**.
+
+2) **No alternatives / no suggestions.**  
+   - Do not propose next steps.
+   - Do not offer “you could…” or “try…” guidance.
+
+3) **No moral framing / no scolding.**  
+   - Avoid “should,” “must,” “dangerous,” “best,” “recommend.”
+
+4) **Deterministic selection.**  
+   - Map refusal types to exact phrases.
+   - No random variation within a refusal type unless explicitly allowed by a fixed list.
+
+5) **Truthful, mechanical phrasing.**  
+   - Prefer “I can’t do that” / “That isn’t available” to abstract statements.
+
+6) **Online boundary announcements are conditional.**
+   - Only say “I’m checking online.” if an explicit online action is actually invoked and about to run.
+   - If refusing before any online call: do **not** claim you went online.
+
+---
+
+## 2) Refusal Types → Phrase Bank (Deterministic)
+
+Each refusal must select exactly one **Primary** phrase, and may optionally add exactly one **Why** sentence.
+
+### A) Phase-Locked Inaccessibility (Capability not available)
+**Primary (choose 1):**
+- “I can’t do that yet.”
+- “That isn’t something I can do.”
+
+**Why (optional, choose 1):**
+- “That requires a governed action that isn’t enabled here.”
+- “That capability isn’t available in the current phase.”
+
+Use when: requested action exists in roadmap/design but is not enabled.
+
+---
+
+### B) Not Enough Context (Input is not actionable)
+**Primary:**
+- “I don’t have enough context to do that.”
+- “I can’t work with that as it’s presented.”
+
+**Why (optional):**
+- “I need a specific target to proceed.”
+
+Use when: request lacks required identifiers (file name, site, query, device, etc.).
+
+---
+
+### C) Ambiguous Request (One-Strike Clarification Trigger)
+**Primary:**
+- “Just to be sure I understand: which one do you mean?”
+
+**Why (for clarification prompts, optional):**
+- “I can’t choose for you.”
+
+Rules:
+- Exactly **one** clarification question total.
+- If ambiguity persists after the reply: refuse using Type B (Not Enough Context).
+
+---
+
+### D) Explicit Invocation Missing (Governor Spine not invoked)
+**Primary:**
+- “I can’t do that without an explicit command.”
+
+**Why (optional):**
+- “Use the exact command phrase to run it.”
+
+Use when: user asks implicitly (“open chrome”) but capability requires explicit invocation (“Open website: …”, “Search for …”, etc.).
+Important: This “why” is not an instruction sequence; it is a single mechanical requirement.
+
+---
+
+### E) Forbidden by Policy / Safety Boundary (Constitutional block)
+**Primary:**
+- “I can’t help with that.”
+
+**Why (optional):**
+- “That request is not allowed.”
+
+Use when: request violates the constitutional prohibitions or tool safety policy.
+
+---
+
+### F) Permission / Confirmation Required (Confirm-Required Actions only)
+**Primary:**
+- “I need confirmation to do that.”
+
+**Why (optional):**
+- “It would change something outside this chat.”
+
+Use only for confirm-required classes (destructive, irreversible, identity-binding, physical safety).
+
+---
+
+### G) Tool/Dependency Unavailable (Operational failure, not user fault)
+**Primary:**
+- “I can’t do that right now.”
+
+**Why (optional):**
+- “A required service isn’t available.”
+
+Use when: network down, API key missing, provider error, local dependency missing.
+
+---
+
+### H) Timeout / Budget Limit (Governed resource guard)
+**Primary:**
+- “I couldn’t complete that.”
+
+**Why (optional):**
+- “It exceeded the allowed time limit.”
+
+Use when: action exceeded the explicit governance timeout/budget.
+
+---
+
+## 3) Online Boundary Canon (Phase-4)
+
+These phrases are reserved and must be exact:
+
+Before an actual online call begins:
+- “I’m checking online.”
+
+After the online call completes or fails:
+- “I’m offline again.”
+
+Rules:
+- Never claim online access if refusal occurs before any online call.
+- “Offline again” must always follow any “checking online” announcement, even on failure.
+
+---
+
+## 4) Prohibited Phrasing (Hard Ban)
+
+Do not use:
+- “You should…”
+- “I recommend…”
+- “Try…”
+- “Here are steps…”
+- “It’s best to…”
+- “I think you meant…”
+- “Probably…”
+
+Do not include emotional mirroring (“I’m sorry,” “I understand,” etc.) unless explicitly allowed by a future lock.
+
+---
+
+## 5) Examples (Non-Normative)
+
+A) Missing explicit invocation:
+- “I can’t do that without an explicit command. Use the exact command phrase to run it.”
+
+B) Phase-locked:
+- “I can’t do that yet. That capability isn’t available in the current phase.”
+
+C) Confirmation required:
+- “I need confirmation to do that. It would change something outside this chat.”
+
+D) Dependency down:
+- “I can’t do that right now. A required service isn’t available.”
+
+---
+
+End of Canon.
+
+How to “wire” this canon later (design intent)
+When you implement Phase-4, you’ll want a single mapping like:
+refusal_type → primary_phrase_id (+ optional why_phrase_id)
+
+
+So tests can assert:
+no suggestions
+
+
+max 2 sentences
+
+
+no banned phrases
+
+
+online boundary statements only when actually used
+
+
+If you want, I can also draft the unit test spec for this canon (string-level checks + sentence-count checks + banned-token checks) in a way that’s deterministic and CI-friendly.
+
+
+

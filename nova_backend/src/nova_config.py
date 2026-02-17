@@ -70,6 +70,28 @@ MODEL_PROVIDER: ModelProvider = parse_model_provider(
     os.getenv("MODEL_PROVIDER", "ollama")
 )
 
+# ==================== GOVERNANCE ====================
+
+#Execution authority must be structural, not config‑driven
+
+# ==================== WEB SEARCH GOVERNANCE ====================
+# Phase‑3.5: explicit, read‑only, user‑invoked online retrieval
+
+WEB_SEARCH_ENABLED = os.getenv("WEB_SEARCH_ENABLED", "true").lower() == "true"
+
+WEB_SEARCH_TRIGGERS = [
+    "search for",
+    "search the web for",
+    "look up",
+    "find online",
+    "check online for",
+]
+
+WEB_SEARCH_MAX_RESULTS = 3
+
+# Explicit online mode guard – future‑proofing for all online capabilities
+ONLINE_ACCESS_ALLOWED = WEB_SEARCH_ENABLED
+
 # ==================== OLLAMA ====================
 
 OLLAMA_URL = os.getenv("OLLAMA_URL", "http://localhost:11434")
@@ -261,6 +283,7 @@ def apply_tone_safeguard(text: str) -> str:
     text = re.sub(r"[^\x00-\x7F]+", "", text)
 
     return text.strip()
+
 # ==================== PHASE-2 ACTION ALLOWLISTS ====================
 
 ALLOWED_FOLDERS = {
@@ -272,4 +295,3 @@ ALLOWED_APPS = {
     "notepad": r"C:\Windows\System32\notepad.exe",
     "calculator": r"C:\Windows\System32\calc.exe",
 }
-

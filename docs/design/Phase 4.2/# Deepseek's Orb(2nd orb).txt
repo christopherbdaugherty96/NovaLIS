@@ -1,0 +1,234 @@
+NOTE: Section 2.2 Issue:
+ The persistent toggle is a prerequisite, but the default state is not specified. If the toggle defaults to on, the secondary orb would be visible on first launch without user action – arguably a form of system‑initiated attention. This would violate the Non‑Initiative Gate and the “silence by default” principle.
+
+Recommendation:
+
+Add a binding clause: “The persistent toggle MUST default to OFF. The user must explicitly enable the toggle to make the secondary orb visible.”
+
+This aligns with Nova’s identity as reactive, not proactive.
+---
+
+2.) The Primary Orb constitution states “The only message the Orb is permitted to transmit: ‘There is power here. It is stable.’”
+The Secondary Orb is explicitly intended to transmit availability of Deep Thought. This is a different message. While the Secondary Orb is visually distinct (green, offset), there is a risk of jurisdictional confusion – users may anthropomorphise both orbs as “Nova’s minds”. The current constraints (opacity‑only, no change during analysis) mitigate this, but the risk remains.
+
+Recommendation:
+
+Strengthen the semantic distinction in design guidelines.
+
+Consider a non‑orb visual pattern for tool availability (e.g., a badge, a lens icon) if user research shows persistent confusion.
+
+The existing advisory to defer implementation is wise – do not implement until user research demonstrates measurable, orb‑resolvable confusion with text‑only Deep Thought.
+----------------------------------------------
+----------------------------------------------
+
+
+# Deepseek's Orb
+
+## Constitutional Specification & Extension
+
+**Version:** 1.0 (Post-Audit)  
+**Status:** Ratified
+
+---
+
+### Preamble
+
+This document defines the constitutional constraints, visual language, and implementation requirements for the **Deepseek Orb system**. It incorporates the base Orb Constitution for Nova, the Deep Thought Orb Extension, and all subsequent amendments derived from architectural audit.
+
+**Governing principle:** *Every visual element must encode a persistent system state, and no element may imply behavior it does not possess.*
+
+---
+
+## Part I – Core Orb Constitution (Summary)
+
+**1.1 Primary Orb Invariants**  
+- Represents Nova’s core identity and attention.  
+- Fixed position, never duplicated.  
+- Chromatic identity: blue (`#0088FF`) core, white rim, bloom.  
+- Light mode adaptations: desaturated blue, reduced opacity.  
+- Motion: breath (3s period), micro‑wander (2px).  
+- Transitions: opacity, scale only for activation.
+
+**1.2 Semantic Invariants**  
+- No other element may mimic the orb’s chromatic, motion, or positional signature.  
+- Jurisdictional boundaries: the orb’s position encodes system‑level attention, not UI affordance.
+
+---
+
+## Part II – Deep Thought Orb Extension
+
+This extension introduces a **secondary visual core** to represent the Deep Thought auxiliary jurisdiction.
+
+### 2.1 Purpose & Jurisdiction
+
+The Secondary Orb indicates that the **Deep Thought toolset is available for use**.  
+It is a **persistent state indicator**, not a loading animation or a processing signal.
+
+### 2.2 Implementation Prerequisites
+
+> **8.0 – Persistent Toggle Prerequisite** (Binding)  
+> *The Secondary Orb may be implemented **only** if a persistent, user‑controlled “Deep Thought availability” toggle exists in the UI. If Deep Thought remains a per‑invocation button without a persistent mode, the Secondary Orb must not be implemented.*  
+>  
+> *Rationale: Persistent visual elements must represent persistent system states. A non‑persistent tool cannot claim permanent visual real estate without encoding false continuity.*
+
+### 2.3 Placement Anchor
+
+> **Placement Anchor** (Binding)  
+> *The Deep Thought Orb’s position shall be defined **relative to the Primary Orb’s bounding box**, not to the Deep Thought button or any input control. Its offset shall be expressed in units of Primary Orb diameter, not viewport or button coordinates.*
+>
+> **Reference implementation:**  
+> `transform: translate(calc(0.35 * var(--orb-primary-diameter)), calc(-0.25 * var(--orb-primary-diameter)));`
+>
+> *Rationale: The orb represents jurisdiction over Nova’s toolset, not adjacency to a click target. Spatial coupling to the button would create an implied causal chain: click → appear → think.*
+
+### 2.4 Visual Design
+
+**2.4.1 Core**  
+- Hue: `145°` (green)  
+- Luminance: `70%` (baseline, dark mode)  
+- Chroma: moderate, distinct from primary blue
+
+**2.4.2 Rim**  
+- Color: `#C0E0D0` at 6% opacity  
+- Width: 1px  
+- Style: solid
+
+**2.4.3 Bloom**  
+- Gaussian blur: 8px  
+- Color: same as core, `#70D090` at 20% opacity  
+- Spread: 0px
+
+**2.4.4 Light Mode Adaptation** (Binding)  
+> - Reduce core luminance by **25%** (relative to dark mode baseline)  
+> - Desaturate hue by **30%** (move toward neutral gray‑green)  
+> - Rim color: `#A0B8B0` at 4% opacity  
+> - Bloom opacity: 2.5%  
+>  
+> *Invariant: In light mode, the Secondary Orb must never appear brighter or more saturated than the Primary Orb in its own light mode adaptation.*
+
+### 2.5 Motion Grammar
+
+**2.5.1 Micro‑Wander (Ambient)** (Binding)  
+
+> **Proportional Scaling Rule**  
+> *All motion parameters that involve absolute pixel displacement (e.g., micro‑wander, core highlight jitter) must be scaled linearly with the orb’s diameter, such that the **relative displacement** (percentage of diameter) is equal between primary and secondary cores.*
+
+**Implementation:**
+```css
+.orb-primary {
+  --wander-amount: 2px;
+}
+.orb-secondary {
+  --wander-amount: calc(2px * (42 / 120)); /* ≈ 0.7px */
+}
+```
+*Alternative: Express wander in `em` or `%` relative to `font-size` tied to diameter.*
+
+**2.5.2 State Transition** (Binding)  
+
+> **Opacity Only**  
+> *The Secondary Orb shall transition using **opacity only**. No scale, no translation, no rotation, no filter changes. Its size and position are static properties set by the active/inactive state class, but they do not animate.*
+
+**Active state:** `opacity: 1;`  
+**Inactive state:** `opacity: 0;`  
+Transition: `opacity 200ms ease-in-out`
+
+### 2.6 State Mapping
+
+- **Deep Thought available (persistent toggle ON):** Secondary Orb visible (opacity 1).  
+- **Deep Thought unavailable (persistent toggle OFF):** Secondary Orb invisible (opacity 0).  
+- **During Deep Thought analysis invocation:** No change to Secondary Orb’s appearance, motion, or position. The orb remains static; any processing indication must be handled by other UI elements (e.g., button states, textual indicators).
+
+### 2.7 Limit on Secondary Cores
+
+> **8.8 – Constitutional Limit** (Binding)  
+> *At any given time, the Nova interface may display **at most one** secondary visual core. This core represents the **single active auxiliary jurisdiction** explicitly selected by the user. Additional tools or modes must be represented textually or through other non‑orb UI patterns.*  
+>  
+> *If multiple auxiliary jurisdictions are simultaneously available, the user must choose which one is visually represented by the secondary core, or the system must default to none.*
+>
+> *Rationale: Preserves the Orb’s unique semantic weight. Prevents “orb inflation.”*
+
+---
+
+## Part III – Implementation & Enforcement
+
+### 3.1 Implementation Checklist
+
+**Persistent Toggle Prerequisite** (cross‑reference 2.2)  
+- [ ] Persistent “Deep Thought availability” toggle exists in UI and persists across sessions.  
+- [ ] Toggle is user‑accessible and serves a genuine product purpose beyond orb display.
+
+**Placement Verification**  
+- [ ] Orb position is computed relative to Primary Orb bounding box, not button coordinates.  
+- [ ] Visual regression tests enforce fixed relative offset (deviation >1px fails).
+
+**Motion & Transition**  
+- [ ] Micro‑wander amplitude scaled proportionally to orb diameter.  
+- [ ] No scale/transform animation on state change; opacity only.  
+- [ ] CSS transition property includes only `opacity`.
+
+**Light Mode**  
+- [ ] Explicit overrides applied as specified in 2.4.4.  
+- [ ] Verified in both light and dark themes.
+
+**Limit on Secondary Cores**  
+- [ ] UI contains at most one secondary core.  
+- [ ] No design exploration includes multiple secondary orbs.
+
+### 3.2 Jurisdictional Invariant Test (Manual, Pre‑Release)
+
+> *A designated constitutional reviewer shall:*  
+> 1. Toggle Deep Thought availability 10 times, observing the Secondary Orb’s opacity transition.  
+> 2. Invoke Deep Thought analysis 10 times, verifying **no change** in the Secondary Orb’s appearance, motion, or position.  
+> 3. Confirm via browser devtools that no animation properties are altered during analysis.  
+>
+> **Fail condition:** Any observable correlation between analysis and orb state.
+
+### 3.3 Visual Regression
+
+Any change to the orb’s CSS or layout must be reviewed against these invariants. Automated screenshot testing shall include:
+- Dark and light modes  
+- Active and inactive states  
+- Multiple viewport widths  
+- Primary Orb diameter variations (if responsive)
+
+---
+
+## Part IV – Strategic Advisory
+
+> **Recommendation – Defer Implementation** (Advisory, Non‑Binding)  
+> *Do not implement the Deep Thought Orb in Phase 3.5. Keep Deep Thought purely textual, per the existing Framework.*  
+>
+> **Rationale:** Zero cost to wait. Premature visual encoding risks solving a problem that doesn’t exist while creating a new maintenance burden. The textual label is already constitutional and has not been proven insufficient.
+>
+> **Revisit after user research:**  
+> 1. Ship text‑only Deep Thought, gather qualitative feedback on jurisdictional confusion.  
+> 2. If users consistently misinterpret the textual label (“Is this Nova or a different tool?”), conduct a lightweight preference test (text‑only vs. text + orb).  
+> 3. **Only implement if:**  
+>    - Users demonstrate measurable confusion that the orb resolves, **and**  
+>    - The persistent “Deep Thought mode” toggle exists as a genuine user control.
+>
+> **If leadership insists on immediate implementation:**  
+> Make the toggle **real** — a user‑accessible “Always show Deep Thought analysis?” or “Deep Thought lens mode” that persists across sessions. The orb then becomes a true jurisdictional indicator, not a decorative accessory.
+
+---
+
+## Appendix A – Amendment Log
+
+| Date       | Change                                                  | Type     |
+|------------|---------------------------------------------------------|----------|
+| 2025‑02‑12 | Persistent toggle prerequisite added                    | Binding  |
+| 2025‑02‑12 | Proportional micro‑wander scaling added                 | Binding  |
+| 2025‑02‑12 | Scale transition removed; opacity only                  | Binding  |
+| 2025‑02‑12 | Light mode adaptation values defined                    | Binding  |
+| 2025‑02‑12 | Constitutional limit: one secondary core                | Binding  |
+| 2025‑02‑12 | Placement anchor relative to primary orb                | Binding  |
+| 2025‑02‑12 | Enforcement simplified (manual review)                  | Binding  |
+| 2025‑02‑12 | Strategic deferral recommendation added                 | Advisory |
+
+---
+
+*This specification supersedes all prior drafts of the Deep Thought Orb Extension. It is the single source of truth for the Deepseek Orb system.*
+
+**Ratified by:** Systems Architecture  
+**Date:** 2025‑02‑12

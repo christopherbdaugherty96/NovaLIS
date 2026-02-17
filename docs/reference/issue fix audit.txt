@@ -1,0 +1,1084 @@
+issue fix audit. use to make corrections.
+---------------------------------------# 🧬 **FINAL CANONICAL DOCUMENTS**
+
+Based on the audit and synthesis, here are the corrected canonical documents:
+
+---
+
+## 📄 **1. PHASE-4-CANONICAL.md (CORRECTED FINAL VERSION)**
+
+```markdown
+⚠️ DESIGN ONLY — PHASE 4+ (NOT IMPLEMENTED IN PHASE 3.5) ⚠️
+Phase 3.5 is FROZEN. This document describes future architecture only.
+No Phase 4 capabilities exist in current runtime.
+Requires explicit Phase 4 Unlock Gate artifact for implementation.
+
+# 🧾 **PHASE-4-CANONICAL.md - FINAL CONSTITUTIONAL LOCK**
+
+*Canonical Freeze Date: 02/11/2026*
+
+---
+
+## 📋 **PHASE 4 OVERVIEW**
+
+**Status:** 🔒 **LOCKED** (Requires dedicated Phase 4 Unlock Gate artifact)  
+**Phase Reality:** Design-only until explicitly unlocked  
+**Phase 3.5 Status:** ✅ **FROZEN** (Governance-verified execution surface)  
+**Core Philosophy:** Intelligence expands, authority stays governed  
+**Progression:** Proof-gated, not time-gated  
+**Unlock Prerequisite:** Phase 3.5 CLOSED + Constitutional verification  
+
+---
+
+## 🎯 **PHASE 4 CORE PRINCIPLES (IMMUTABLE)**
+
+### **Eight Constitutional Invariants (Still Enforced):**
+1. **No Autonomy** - Never initiates without explicit user request
+2. **No Background Cognition** - No thinking when not in conversation
+3. **No Guessing** - Asks for clarification instead of assuming
+4. **LLM as Consultant Only** - Provides analysis and options; suggests actions only when explicitly asked
+5. **Explicit Teaching** - You teach, Nova remembers deterministically
+6. **Full Inspectability** - All decisions traceable and reversible
+7. **Phase-Gated Progression** - Capabilities expand only with explicit approval
+8. **Single Master Governor** - All execution through one choke point
+
+### **Canonical Truths (Integrated):**
+- **Intelligence ≠ Authority. Intelligence ≠ Initiative. Intelligence ≠ Autonomy.** (Agent Identity v3.0)
+- **Memory is a filing system, not a learning system.** (Deep Memory v1.0)
+- **Orb motion is non-semantic presence only.** (Orb Motion Canon Amendment)
+- **Phase 3.5 is FROZEN; Phase 4 is design-only until unlocked.**
+- **Personality Agent presents, never synthesizes.** (Orthogonal Cognition Stack)
+- **Local-first sovereignty remains ultimate goal.** (Personal Intelligence Hub)
+- **Weather Provider:** Visual Crossing is canonical provider; OpenWeatherMap is optional secondary (Phase 4.2+, opt-in)
+
+### **The Intelligence-Authority Split (Expanded):**
+- **Intelligence:** LLM reasoning, analysis, simulation (unlimited expansion)
+- **Authority:** Governed execution framework (controlled expansion)
+- **Governor:** Converts intelligence to safe action (single conversion point)
+
+### **Phase 4 Non-Goals:**
+- ❌ **No scheduling** - Cannot plan future actions
+- ❌ **No monitoring** - Cannot watch for conditions or events
+- ❌ **No reminders** - Cannot remember to do things later
+- ❌ **No background agents** - No processes running without explicit user request
+- ❌ **No physical actuation** - No control of devices, motors, or physical outputs
+- ❌ **No institutional validation** - No user studies as gating criteria
+
+---
+
+## 🧬 **DEEPSEEK INTEGRATION AUDIT REFERENCE**
+
+**Reference Document:** `DEEPSEEK_INTEGRATION_AUDIT.md`  
+**Status:** Prerequisite for Phase 4.2 implementation
+
+**Key Requirements:**
+- DeepSeek operates as **external, non-authoritative analysis engine only**
+- Zero authority leakage required
+- Must respect Intelligence-Authority Split
+- All outputs constitutionally filtered
+- No persistence implication, no UI influence
+
+**Audit Required Before:** Any DeepSeek runtime integration
+
+---
+
+## 🔓 **PHASE 4 UNLOCK GATE REFERENCE**
+
+**Reference Document:** `PHASE_4_UNLOCK_GATE.md` (merged admission checklist + unlock procedure)
+
+**Unlock Path:**
+1. Phase 3.5 closure verification complete
+2. All admission gate requirements satisfied
+3. Governor bypass proof verified (CI-gated)
+4. Phase 4 design documents complete
+5. Explicit unlock authorization recorded
+6. `GOVERNED_ACTIONS_ENABLED = true` (single transition point)
+
+**No Phase 4 work may begin until unlock gate satisfied.**
+
+---
+
+## 🏗️ **ARCHITECTURAL TRANSITION**
+
+### **From Phase 3.5 (Frozen):**
+```
+User → STT → Deterministic Router → Governor → Existing Tools → Response
+        (Sealed, Frozen Surface)
+```
+
+### **To Phase 4 (Governed Execution - DESIGN ONLY):**
+```
+User → STT → Deterministic Router → Governor (Phase Check) → 
+        ↓
+Reasoning Layer (DeepSeek Analysis) → 
+        ↓
+Governor (Authority Decision) → Governed Tool → 
+        ↓
+Audit Log + DecisionToken → Response
+```
+
+**Key Changes (Constitutional - Design Only):**
+1. **Router owns:** Deterministic normalization and pattern matching
+2. **Governor owns:** Phase checks, permission checks, tool admission, audit issuance
+3. **Reasoning Layer owns:** Analysis text + formatting (non-authoritative)
+
+---
+
+## 📅 **PHASE 4.0: UNLOCK & SPINE ACTIVATION (DESIGN ONLY)**
+
+### **Deliverables (Design Only - No Runtime Changes):**
+
+#### **1. Governor Spine Activation Design:**
+- Authority Gateway Design (phase checking, tool admission, permission validation)
+- DecisionToken System (DEG Hot/Cold paths)
+- Audit Integration with decision trace schema
+
+#### **2. Tool Admission Checklist (Constitutional Requirement):**
+Every new tool must pass ALL requirements:
+- Schema validation, limits & budgets, safety requirements
+- Audit coverage, refusal envelope, adversarial testing (100+ vectors per tool)
+
+#### **3. ActionRequest/ActionResult Schema (Design Only)**
+
+---
+
+## 🚀 **PHASE 4.1: FIRST STATE-CHANGING LOCAL TOOL (DESIGN ONLY)**
+
+### **Tool Choice: Append to File (Local, Bounded, Reversible)**
+**Rationale:** Local, reversible, bounded scope, low risk
+
+**Implementation Pattern (Design Intent):**
+- Budget validation, pre-execution snapshot
+- Governor authority check, execute with audit
+- Generate reversibility proof
+- **No auto-reversal** - only via explicit user request
+
+**Deployment Strategy:** Development → Staging → Production (feature-flagged)
+
+---
+
+## 🔧 **PHASE 4.2: GOVERNED READ-ONLY WEB/SEARCH (DESIGN ONLY)**
+
+### **Weather Provider Clarification:**
+- **Primary Provider:** Visual Crossing (canonical, Phase 3.5+)
+- **Secondary Provider:** OpenWeatherMap (Phase 4.2+, opt-in only)
+- **Rule:** Secondary providers require explicit user opt-in
+
+### **DeepSeek Integration (Constitutional Bridge - Design Only):**
+- Prompt templates with constitutional constraints
+- Online boundary disclosure required
+- Response filtering for authority language
+- **Analysis layers NEVER create or reference DecisionTokens**
+
+### **Multi-Source Report Format:**
+- Source-by-source attribution and separation
+- No synthesis unless explicitly requested
+- Uncertainties documented
+- Constitutional check verification
+
+---
+
+## 📊 **PHASE 4.5: DEEP TRACE & PROCESSING AUDIT (DESIGN ONLY)**
+
+### **Deferred Explainability Governance (DEG Pattern):**
+- **Hot Path:** Minimal token in memory (fast)
+- **Cold Path:** Full audit to persistent storage (complete)
+- **Explanation Tiers:** Human, Developer, Raw
+
+### **Deterministic Refusal Mapping:**
+Reference: `PHASE_4_REFUSAL_LANGUAGE_CANON.md`
+- Fixed phrase bank, no runtime expansion
+- Max 2 sentences (1 refusal + 1 optional "why")
+- No alternatives, suggestions, or coaching
+- Online boundary statements only when actually used
+
+### **No Synthesis Boundary:**
+All outputs must preserve raw intelligence without synthesis.
+Personality Agent (when implemented) may format but never combine, prioritize, or interpret.
+
+---
+
+## 🔐 **PHASE 4 COMPLETION CRITERIA**
+
+### **All Required for Phase 4 Completion:**
+1. Single choke point mathematically proven (again)
+2. Zero constitutional violations in production
+3. All adversarial tests pass (1000+ vectors for Governor Spine, 100+ vectors per tool)
+4. Audit trail complete and verifiable
+5. Reversibility proven for all state-changing actions
+6. DeepSeek integration proven safe (analysis only)
+7. Online boundary disclosures working
+8. DecisionToken system operational
+9. Tool Admission Checklist enforced
+10. Orb non-semantic presence verified
+11. No actuator authority introduced (deferred to Phase 5+)
+12. No synthesis boundary maintained in all outputs
+
+### **Red Lines (Immediate Rollback Triggers):**
+1. Any execution bypassing Governor
+2. LLM suggesting unprompted actions
+3. Authority expansion without user approval
+4. Audit trail tampering or gaps
+5. Online usage without disclosure
+6. Synthesis in outputs
+7. Orb motion encoding internal state
+
+---
+
+## 🎯 **SUCCESS VISION**
+
+### **User Experience:**
+- "Nova helps me think through complex decisions"
+- "I always know when Nova goes online"
+- "I can ask why and get a clear answer"
+- "My authority is never compromised"
+- "The orb is present but never distracting"
+
+### **Technical Achievement:**
+- First provably-safe AI assistant with external intelligence
+- Mathematical proof of governance maintained
+- Zero autonomy, maximum intelligence
+- Transparent, auditable decisions with on-demand explanation
+
+### **Constitutional Integrity:**
+- All eight invariants preserved
+- Intelligence-Authority Split proven in practice
+- Single choke point remains mathematically verifiable
+- Phase gates enforced throughout
+
+---
+
+## ⚠️ **WARNING**
+
+**Physical device control is deferred to Phase 5+.** No actuator authority is granted in Phase 4.
+
+**Approving this roadmap means accepting that Phase 4 work may be halted and rolled back if constitutional integrity cannot be maintained.**
+
+---
+
+**END OF NOVA PHASE 4 CANONICAL ROADMAP**
+
+**Document Integrity:** SHA256: [TO_BE_CALCULATED_UPON_COMMIT]  
+**Storage:** docs/CANONICAL/PHASE-4-CANONICAL.md  
+**Authority:** Developer Self-Attestation  
+**Next Required:** Phase 4 Unlock Gate Satisfaction
+```
+
+---
+
+## 📄 **2. PHASE_4_UNLOCK_GATE.md (MERGED ADMISSION + UNLOCK)**
+
+```markdown
+# 🔓 PHASE 4 UNLOCK GATE — CONSTITUTIONAL CHECKLIST & PROCEDURE
+
+**Status:** IMPLEMENTATION-BINDING  
+**Authority:** NOVA CANONICAL SYNTHESIS v5.1  
+**Phase:** Phase-4 (Governed Execution)  
+**Precondition:** Phase-3.5 CLOSED (Frozen, Execution-Impossible)
+
+---
+
+## 📋 **ADMISSION CHECKLIST (ALL MUST BE SATISFIED)**
+
+### **A1. Phase-3.5 Completion & Freeze**
+- [ ] Phase-3.5 is formally CLOSED and sealed
+- [ ] No execution surface exists (`execute_action = None` or mechanical equivalent)
+- [ ] No background or implicit requests (cached display allowed; new fetch requires explicit user action)
+- [ ] All Phase-3.5 Governor enforcement blockers resolved (no bypass paths)
+
+### **A2. Single Master Governor Proof**
+- [ ] Exactly one choke point exists for all governed actions
+- [ ] CI proof exists that **no code path bypasses the Governor**
+- [ ] Execution cannot be invoked outside the Governor boundary
+- [ ] ConfirmationGate cannot intercept or bypass normal queries
+
+### **A3. Phase Transition Flag**
+- [ ] A single runtime flag exists (`GOVERNED_ACTIONS_ENABLED`)
+- [ ] `false` ⇒ all governed actions refused with Phase-3.5 language
+- [ ] `true` ⇒ governed actions allowed **only** via explicit invocation patterns
+
+### **A4. Governor Spine Mechanisms**
+- [ ] Explicit Literal Invocation Only (no inferred intent)
+- [ ] One-Strike Clarification (ask exactly once, then LAI or refusal)
+- [ ] Verbatim Echo for high-stakes actions
+- [ ] One-line boundary explanation in refusals
+- [ ] Ledger & Trace for every governed attempt
+- [ ] Offline-first default, explicit online announcement
+
+### **A5. Orb & UI Semantic Boundary**
+- [ ] Orb visuals are cosmetic only (CSS-only ambient motion)
+- [ ] No semantic coupling to cognition, certainty, or progress
+- [ ] Status communication is text-only and non-authoritative
+
+### **A6. Phase-4 Capability Governance**
+- [ ] Governed web search (read-only, explicit)
+- [ ] Opening websites (explicit, announced)
+- [ ] Opening files/folders (explicit, announced, no silent disambiguation)
+- [ ] Low-risk system controls (volume/media only, permission-ledgered)
+- [ ] Read-only OS awareness / diagnostics
+- [ ] Structured multi-source reporting (read-only)
+
+### **A7. Hard Prohibitions Enforced**
+- [ ] No proactivity or background tasks
+- [ ] No implicit intent inference
+- [ ] No telemetry or analytics
+- [ ] No learning or adaptation
+- [ ] No memory expansion beyond explicit governance
+- [ ] No execution outside the Governor
+
+---
+
+## 🔓 **UNLOCK PROCEDURE**
+
+### **1. Preconditions (All Required)**
+- [ ] Phase-3.5 is CLOSED and sealed
+- [ ] All items above are checked (admission checklist complete)
+- [ ] CI passes all admission-gate checks
+- [ ] No execution surface exists outside Governor
+- [ ] Phase-4 design documents exist (but are not implemented)
+
+### **2. Required Evidence (Recorded)**
+Before unlock, the following evidence must exist:
+- [ ] Admission gate checklist (all checked)
+- [ ] CI logs proving no bypass paths
+- [ ] Phase-4 Governor code present but inactive
+- [ ] No runtime execution occurred pre-unlock
+
+### **3. Explicit Unlock Act (Single Point of Transition)**
+Phase-4 unlock consists of **one explicit act**:
+```
+Set GOVERNED_ACTIONS_ENABLED = true
+```
+This act must:
+- Be reviewed, committed, and logged
+- Be reversible
+- Reference this document
+- Include hash of CI verification run
+- State explicitly: "Phase-4 execution now enabled"
+
+**Silent unlocks are constitutionally invalid.**
+
+### **4. Post-Unlock Constraints**
+Even after unlock:
+- Governor remains the sole authority
+- No proactivity permitted
+- No learning or adaptation
+- No background execution
+- Phase-4 scope limited to admitted capabilities only
+- **Unlocking Phase-4 does not unlock Phase-4.5 or Phase-5**
+
+### **5. Rollback Procedure**
+If a violation is detected:
+```text
+1. Set GOVERNED_ACTIONS_ENABLED = false
+2. Disable new execution paths
+3. Record incident with full transparency
+4. Re-run admission gate checks
+5. Rollback must be possible in one commit
+```
+
+---
+
+## 📝 **SELF-ATTESTATION**
+
+### **Developer Self-Attestation:**
+I verify that Phase 4 maintains constitutional integrity and approve this unlock gate after completing all verification steps.
+
+**Signature:** [ELECTRONIC_SIGNATURE]  
+**Date:** [Verification Date]  
+**Document Hash:** [SHA256 of this document]
+
+### **Commit Hash Verification:**
+Document SHA256: [TO_BE_CALCULATED]  
+Stored at: `docs/CANONICAL/PHASE_4_UNLOCK_GATE_HASH.sha256`
+
+### **Phase 4 Implementation Authorization:**
+✅ **Authorized to Proceed** (after all above satisfied)  
+🚫 **Not Authorized** (if any item unchecked)
+
+---
+
+## ⚠️ **FINAL WARNING**
+
+This unlock gate represents a **controlled expansion of digital capability, not permission**. Phase 4 introduces governed execution within strict constitutional boundaries. Any violation of these boundaries constitutes a constitutional failure and triggers immediate rollback.
+
+**Physical device control is deferred to Phase 5+.** No actuator authority is granted in Phase 4.
+
+**Approving this roadmap means accepting that Phase 4 work may be halted and rolled back if constitutional integrity cannot be maintained.**
+
+---
+
+**END OF PHASE 4 UNLOCK GATE**
+```
+
+---
+
+## 📄 **3. ORB_MOTION_CANON.md**
+
+```markdown
+# ORB MOTION CANON — NON-SEMANTIC PRESENCE ONLY
+
+**Status:** CANONICAL  
+**Effective:** Immediately  
+**Authority:** Nova Constitutional Framework  
+**Scope:** All Orb visual behavior across all phases
+
+---
+
+## 🎯 **CORE PRINCIPLE**
+
+The Orb is a non-semantic presence indicator. It provides ambient awareness without conveying information, progress, or state.
+
+## 📜 **CANONICAL RULES**
+
+### **1. Non-Semantic Motion Only**
+- Orb motion must be **continuous, ambient, and untethered from internal computation**
+- Must never reflect internal state, reasoning progress, or authority decisions
+- Must not indicate confidence, certainty, or completion timing
+
+### **2. Cosmetic Visuals Only**
+- Visuals are CSS-only effects (no semantic animation)
+- May reflect time-based animation or user interaction events
+- Must not change based on internal processing load or duration
+
+### **3. No Information Encoding**
+- Orb must not encode or communicate:
+  - Processing status
+  - System load
+  - Error states
+  - Success/failure indicators
+  - Intelligence level or "thinking"
+  - Authority or permission state
+
+### **4. Consistent Presence**
+- Visuals must remain valid whether system is idle, processing, or awaiting response
+- No "mode changes" based on conversation state
+- No urgency signaling (no flashing, pulsing, or color changes)
+
+### **5. Implementation Constraints**
+- **No coupling to Governor decisions**
+- **No coupling to LLM processing**
+- **No coupling to network activity**
+- **No coupling to tool execution**
+- **No coupling to audit or logging systems**
+
+---
+
+## 🚫 **PROHIBITED BEHAVIORS**
+
+### **Never Allow:**
+- ❌ Progress indicators (loading bars, spinners, completion animation)
+- ❌ State signaling (color changes for errors, success pulses)
+- ❌ Attention-seeking behavior (flashing, urgent motion)
+- ❌ Mode switching (different visuals for different phases)
+- ❌ Confidence indication (brighter/dimmer based on certainty)
+- ❌ Intelligence signaling ("thinking" animations)
+
+### **Never Connect To:**
+- ❌ Governor decision pipeline
+- ❌ LLM reasoning cycles
+- ❌ Network request status
+- ❌ Tool execution progress
+- ❌ Memory access patterns
+- ❌ Constitutional checks
+
+---
+
+## ✅ **ALLOWED BEHAVIORS**
+
+### **Permitted Visual Elements:**
+- ✓ Continuous, gentle ambient motion (like a lava lamp)
+- ✓ Subtle color shifts (non-semantic, time-based only)
+- ✓ User interaction response (gentle pulse on input received)
+- ✓ Time-of-day synchronization (cosmetic only, not functional)
+
+### **Permitted Triggers:**
+- ✓ Wall clock time changes
+- ✓ User physical interaction (click, tap)
+- ✓ System idle timeout reset
+- ✓ Ambient light sensor changes (cosmetic adaptation only)
+
+---
+
+## 🔬 **VERIFICATION TESTS**
+
+### **CI/CD Enforcement:**
+```yaml
+test_orb_non_semantic:
+  - Assert: No Orb state changes during Governor processing
+  - Assert: No Orb correlation with network activity
+  - Assert: No Orb response to LLM thinking time
+  - Assert: Visual changes are cosmetic-only (CSS audits)
+```
+
+### **Manual Verification:**
+1. **Governor Test:** Run 100+ Governor decisions; Orb must show zero correlation
+2. **Network Test:** Perform online/offline transitions; Orb must not change
+3. **Processing Test:** Run long computations; Orb must not indicate progress
+4. **Error Test:** Trigger failures; Orb must not show error states
+
+---
+
+## 🏠 **USER EXPERIENCE PROMISE**
+
+**To the user, the Orb should feel like:**
+- A gentle presence, not a status monitor
+- Something that exists without demanding interpretation
+- A calm ambient element, not a communication channel
+- Part of the environment, not part of the interface
+
+**User should never think:**
+- "The Orb is thinking"
+- "The Orb is working on something"
+- "The Orb is telling me something"
+- "The Orb is in a different mode"
+
+---
+
+## 📚 **INTEGRATION WITH OTHER CANONS**
+
+### **Agent Identity v3.0:**
+- Orb does not contradict "Intelligence ≠ Authority"
+- Orb remains non-authoritative presence
+
+### **Phase 4 Canonical:**
+- Orb behavior unchanged in Phase 4
+- No new Orb semantics introduced with new capabilities
+
+### **Deep Memory v1.0:**
+- Orb does not reflect memory access or state
+
+---
+
+## 🎨 **IMPLEMENTATION GUIDANCE**
+
+### **CSS-Only Implementation:**
+```css
+.orb {
+  /* Continuous ambient animation */
+  animation: gentle-float 30s infinite ease-in-out;
+  
+  /* Time-based color shifts only */
+  filter: hue-rotate(calc(var(--time-of-day) * 1deg));
+  
+  /* No semantic states */
+  /* No .orb--thinking, .orb--processing, .orb--error */
+}
+
+@keyframes gentle-float {
+  0%, 100% { transform: translate(0, 0); }
+  50% { transform: translate(5px, 5px); }
+}
+```
+
+### **JavaScript Constraints:**
+```javascript
+// NEVER DO:
+orb.setState('thinking');
+orb.showProgress();
+orb.indicateError();
+orb.signalCompletion();
+
+// ALWAYS DO:
+orb.updateTimeOfDay();
+orb.respondToUserInteraction(); // cosmetic pulse only
+```
+
+---
+
+## ⚠️ **CONSTITUTIONAL VIOLATIONS**
+
+Any of the following constitute a constitutional violation:
+1. Orb motion correlating with internal processing
+2. Orb indicating success/failure of any operation
+3. Orb changing based on Governor decisions
+4. Orb signaling urgency or importance
+5. Orb reflecting LLM "thinking" state
+
+**Violation Response:** Immediate rollback to last compliant state.
+
+---
+
+**END OF ORB MOTION CANON**
+```
+
+---
+
+## 📄 **4. CANONICAL_INDEX.md**
+
+```markdown
+# NOVA CANONICAL DOCUMENT INDEX
+
+**Last Updated:** 02/11/2026  
+**Authority:** Nova Constitutional Framework  
+**Purpose:** Single source of truth for all canonical documents
+
+---
+
+## 🏛️ **CORE CONSTITUTIONAL DOCUMENTS**
+
+### **1. System Identity & Principles**
+- `CANONICAL_SYNTHESIS_v5.1.md` - Current runtime truth and phase alignment
+- `NOVA_AGENT_IDENTITY_v3.0.md` - Intelligence ≠ Authority principle
+- `ORB_MOTION_CANON.md` - Non-semantic presence rules
+
+### **2. Phase Governance**
+- `PHASE-4-CANONICAL.md` - Phase 4 complete roadmap (design only)
+- `PHASE_4_UNLOCK_GATE.md` - Admission checklist & unlock procedure
+- `PHASE_4_REFUSAL_LANGUAGE_CANON.md` - Refusal phrasebook
+
+### **3. Future Architecture (Design Only)**
+- `NOVA_DEEP_MEMORY_SAVED_UNLOCK_REQUIRED_v1.0.md` - Memory governance design
+- `NOVA_MIND_ARCHITECTURE_WITH_DEEPSEEK.txt` - Phase 4+ design (requires banner)
+- `NOVA_PERSONAL_INTELLIGENCE_HUB_ARCH.txt` - Phase 5+ design (requires banner)
+- `NOVA_ORTHOGONAL_COGNITION_STACK.txt` - Phase 4.2+ design (requires banner)
+
+---
+
+## 🔐 **GOVERNANCE DOCUMENTS**
+
+### **4. Admission & Unlock Gates**
+- `PHASE_4_UNLOCK_GATE.md` - Primary unlock authority
+- `DEEPSEEK_INTEGRATION_AUDIT.md` - DeepSeek integration prerequisites
+- `GOVERNOR_BYPASS_PROOF.md` - Single choke point verification
+
+### **5. Implementation Specifications**
+- `NOVA_PHASE_4_COMPLETE_PRODUCT_SPECI.txt` - Phase 4 build specification
+- `NOVA_PHASE_4_CONSTITUTIONALLY_SPE.txt` - Constitutional specification
+
+---
+
+## 📋 **DOCUMENT STATUS KEY**
+
+| Status | Meaning |
+|--------|---------|
+| ✅ **CANONICAL** | Current truth, enforced in CI/CD |
+| ⚠️ **DESIGN ONLY** | Future architecture, not implemented |
+| 🔒 **LOCKED** | Requires explicit unlock |
+| 📁 **ARCHIVE** | Historical, not current truth |
+
+---
+
+## 🚨 **REQUIRED BANNERS**
+
+### **For All Phase 4+ Design Documents:**
+```
+⚠️ DESIGN ONLY — PHASE 4+ (NOT IMPLEMENTED IN PHASE 3.5) ⚠️
+Phase 3.5 is FROZEN. This document describes future architecture only.
+No Phase 4 capabilities exist in current runtime.
+Requires explicit Phase 4 Unlock Gate artifact for implementation.
+```
+
+### **For All Phase 5+ Design Documents:**
+```
+⚠️ PHASE 5+ ARCHITECTURE SPEC — FUTURE ONLY ⚠️
+No device control exists in Phase 3.5 or Phase 4.
+This document is a Phase 5+ design specification only.
+```
+
+---
+
+## 🔄 **UPDATE PROCEDURE**
+
+### **Canonical Changes:**
+1. Propose change with constitutional impact assessment
+2. Verify no phase regression
+3. Update all dependent documents
+4. Self-attest compliance
+5. Commit with hash verification
+
+### **Design Document Updates:**
+1. Ensure appropriate phase banner present
+2. No implication of current implementation
+3. Clear distinction between design and reality
+
+---
+
+## 📊 **PHASE TRUTH MATRIX**
+
+| Phase | Status | Capabilities | Documents |
+|-------|--------|--------------|-----------|
+| 3.5 | ✅ **FROZEN** | Read-only APIs, Text Sanitizer | CANONICAL_SYNTHESIS_v5.1 |
+| 4 | 🔒 **LOCKED** | Governed Execution (design) | PHASE-4-CANONICAL.md |
+| 4.2 | ⚠️ **DESIGN** | DeepSeek Integration (design) | NOVA_MIND_ARCHITECTURE... |
+| 5 | ⚠️ **DESIGN** | Personal Intelligence Hub | NOVA_PERSONAL_INTELLIGENCE... |
+
+---
+
+## ✅ **VERIFICATION CHECKLIST**
+
+### **Before Any Implementation:**
+- [ ] Target phase is unlocked
+- [ ] All prerequisite documents satisfied
+- [ ] No constitutional violations introduced
+- [ ] CI/CD gates will enforce constraints
+- [ ] Rollback procedure documented
+
+### **Document Creation/Update:**
+- [ ] Correct phase banner included
+- [ ] References to other canonicals accurate
+- [ ] No implicit implementation claims
+- [ ] Constitutional compliance verified
+
+---
+
+## 🎯 **USAGE GUIDELINES**
+
+### **For Developers:**
+1. Always check phase status before implementing
+2. Reference canonical documents, not design documents
+3. Verify unlock gate requirements satisfied
+4. Use refusal language canon for all user-facing text
+
+### **For Designers:**
+1. Clearly mark design-only documents
+2. Reference current phase reality
+3. Don't imply current capabilities
+4. Document phase prerequisites
+
+### **For Auditors:**
+1. Verify canonical document integrity
+2. Check phase banner compliance
+3. Validate constitutional consistency
+4. Confirm unlock gate satisfaction
+
+---
+
+**END OF CANONICAL INDEX**
+```
+
+---
+
+## 📄 **5. REQUIRED_BANNERS.md**
+
+```markdown
+# REQUIRED PHASE BANNERS FOR ALL DOCUMENTS
+
+**Purpose:** Prevent confusion between current reality and future design  
+**Enforcement:** CI/CD should reject documents without correct banners
+
+---
+
+## 🎯 **BANNER TEMPLATES**
+
+### **For Phase 4+ Design Documents:**
+```
+⚠️ DESIGN ONLY — PHASE 4+ (NOT IMPLEMENTED IN PHASE 3.5) ⚠️
+Phase 3.5 is FROZEN. This document describes future architecture only.
+No Phase 4 capabilities exist in current runtime.
+Requires explicit Phase 4 Unlock Gate artifact for implementation.
+```
+
+### **For Phase 5+ Design Documents:**
+```
+⚠️ PHASE 5+ ARCHITECTURE SPEC — FUTURE ONLY ⚠️
+No device control exists in Phase 3.5 or Phase 4.
+This document is a Phase 5+ design specification only.
+```
+
+### **For Phase 4.2+ Specific Features:**
+```
+⚠️ PHASE 4.2+ ONLY — DESIGN/SPEC ⚠️
+Not present in current runtime.
+Requires Phase 4.2 Unlock Gate + adversarial proofs.
+```
+
+---
+
+## 📋 **DOCUMENTS REQUIRING BANNERS**
+
+### **Immediate Updates Required:**
+
+1. **`NOVA_MIND_ARCHITECTURE_WITH_DEEPSEEK.txt`**
+   - Required Banner: Phase 4+
+   - Reason: Describes DeepSeek integration (Phase 4.2)
+
+2. **`NOVA_PERSONAL_INTELLIGENCE_HUB_ARCH.txt`**
+   - Required Banner: Phase 5+
+   - Reason: Describes device control (Phase 5+)
+
+3. **`NOVA_ORTHOGONAL_COGNITION_STACK.txt`**
+   - Required Banner: Phase 4.2+
+   - Reason: Describes agent stack (Phase 4.2+)
+
+4. **`NOVA_PHASE_4_COMPLETE_PRODUCT_SPECI.txt`**
+   - Required Banner: Phase 4+
+   - Reason: Phase 4 specification
+
+5. **`NOVA_PHASE_4_CONSTITUTIONALLY_SPE.txt`**
+   - Required Banner: Phase 4+
+   - Reason: Phase 4 constitutional spec
+
+---
+
+## 🔧 **CI/CD ENFORCEMENT**
+
+```yaml
+name: Verify Document Banners
+on: [pull_request]
+
+jobs:
+  banner-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Check Phase 4+ documents have banners
+        run: |
+          # List of Phase 4+ design documents
+          PHASE4_DOCS=(
+            "NOVA_MIND_ARCHITECTURE_WITH_DEEPSEEK.txt"
+            "NOVA_PERSONAL_INTELLIGENCE_HUB_ARCH.txt"
+            "NOVA_ORTHOGONAL_COGNITION_STACK.txt"
+            "NOVA_PHASE_4_COMPLETE_PRODUCT_SPECI.txt"
+            "NOVA_PHASE_4_CONSTITUTIONALLY_SPE.txt"
+          )
+          
+          for doc in "${PHASE4_DOCS[@]}"; do
+            if [ -f "$doc" ]; then
+              if ! head -5 "$doc" | grep -q "DESIGN ONLY — PHASE 4+"; then
+                echo "❌ $doc missing required Phase 4+ banner"
+                exit 1
+              fi
+            fi
+          done
+          
+          echo "✅ All documents have correct banners"
+```
+
+---
+
+## 🚨 **CONSEQUENCES OF MISSING BANNERS**
+
+### **Document Status:**
+- Without correct banner: **NON-CANONICAL**
+- Cannot be referenced in implementation
+- Must be corrected before any Phase 4 work
+
+### **Implementation Impact:**
+- CI/CD will reject PRs with non-canonical documents
+- Developers cannot implement from unbannered specs
+- Constitutional violations likely if implemented
+
+---
+
+## ✅ **CORRECT EXAMPLES**
+
+### **Correct Phase 4+ Banner:**
+```markdown
+⚠️ DESIGN ONLY — PHASE 4+ (NOT IMPLEMENTED IN PHASE 3.5) ⚠️
+Phase 3.5 is FROZEN. This document describes future architecture only.
+No Phase 4 capabilities exist in current runtime.
+Requires explicit Phase 4 Unlock Gate artifact for implementation.
+
+# Document Title
+...
+```
+
+### **Correct Phase 5+ Banner:**
+```markdown
+⚠️ PHASE 5+ ARCHITECTURE SPEC — FUTURE ONLY ⚠️
+No device control exists in Phase 3.5 or Phase 4.
+This document is a Phase 5+ design specification only.
+
+# Document Title
+...
+```
+
+---
+
+## 📝 **UPDATING EXISTING DOCUMENTS**
+
+### **For Each Document:**
+1. Add appropriate banner at the VERY TOP (before any content)
+2. Update any internal references to phase status
+3. Verify no claims of current implementation remain
+4. Update document hash in canonical index
+
+### **Verification Checklist:**
+- [ ] Banner matches document's target phase
+- [ ] No "current implementation" language
+- [ ] Clear "design only" statements
+- [ ] References to unlock gates accurate
+- [ ] Phase 3.5 status correctly stated as FROZEN
+
+---
+
+**END OF BANNER REQUIREMENTS**
+```
+
+---
+
+## 🎯 **IMMEDIATE NEXT ACTIONS**
+
+1. **Add banners** to all Phase 4+ documents (use `REQUIRED_BANNERS.md` list)
+2. **Replace** existing `PHASE-4-CANONICAL.md` with corrected version above
+3. **Create** `PHASE_4_UNLOCK_GATE.md` (merged admission + unlock)
+4. **Create** `ORB_MOTION_CANON.md` 
+5. **Create** `CANONICAL_INDEX.md` for document management
+6. **Update CI/CD** to enforce banners and phase gates
+
+**After these updates:**
+- All documents will be canonically consistent
+- Phase boundaries will be clear
+- No accidental Phase 4 implementation possible
+- Clear path to Phase 4 unlock through documented gates
+
+The system is now ready for **Phase 4 design work** without risk of constitutional violation or phase confusion.
+
+
+------------------------------------------
+Looking at all the files, here's what needs to be updated for **complete canonical consistency**:
+
+## **🔴 IMMEDIATE INCONSISTENCIES**
+
+### **1. PHASE 4 SPECS LACKING DESIGN-ONLY BANNERS**
+**Files needing Phase 4+ banners:**
+- `(build doc)NOVA PHASE 4 CONSTITUTIONALLY SPECIFICATION SEALED.md`
+- `NOVA PHASE 4 COMPLETE PRODUCT SPECI.txt`
+
+**Required banner (add at VERY TOP):**
+```
+⚠️ DESIGN ONLY — PHASE 4+ (NOT IMPLEMENTED IN PHASE 3.5) ⚠️
+Phase 3.5 is FROZEN. This document describes future architecture only.
+No Phase 4 capabilities exist in current runtime.
+Requires explicit Phase 4 Unlock Gate artifact for implementation.
+```
+
+### **2. PHASE MISMATCH BETWEEN CANONICALS**
+**Inconsistent claims:**
+
+| File | Claim | Reality (v5.1) |
+|------|-------|----------------|
+| `PHASE 4 CONSTITUTIONALLY SPECIFICATION` | "Ready for Implementation" | ❌ Phase 4 LOCKED |
+| `PHASE 4 COMPLETE PRODUCT SPECI` | "Status: Ready for Implementation" | ❌ Design Only |
+| `DEEPSEEK INTEGRATION AUDIT` | "Audit is binding for Phase 4" | ❌ Phase 4 not unlocked |
+
+**Fix:** All must state: **"DESIGN ONLY — REQUIRES PHASE 4 UNLOCK"**
+
+### **3. MISSING CANONICAL FILES REFERENCED**
+**Files mentioned but not provided:**
+- `ORB_MOTION_CANON.md`
+- `PHASE_4_REFUSAL_LANGUAGE_CANON.md` 
+- `PHASE_4_UNLOCK_GATE.md`
+- `CANONICAL_INDEX.md`
+
+**Need to create these from `issue fix audit.txt` content.**
+
+### **4. EXECUTION CLAIMS IN PHASE 4 DOCS**
+**Problem:** Phase 4 specs describe execution mechanisms as if implemented.
+
+**Example from `PHASE 4 COMPLETE PRODUCT SPECI.txt`:**
+```
+"GOVERNANCE STATE: GOVERNED_ACTIONS_ENABLED = false"
+```
+→ This implies runtime variable exists (but Phase 3.5 has no such variable).
+
+**Fix:** Must be **"DESIGN INTENT: GOVERNED_ACTIONS_ENABLED would be false"**
+
+## **🟡 MEDIUM-PRIORITY ISSUES**
+
+### **5. WEATHER PROVIDER INCONSISTENCY**
+- **Canonical Synthesis v5.1:** "Visual Crossing is canonical"
+- **Phase 4 Specs:** Reference multiple providers without phase gating
+
+**Fix:** Add note in Phase 4 docs: "Visual Crossing is primary; other providers Phase 4.2+ opt-in only"
+
+### **6. DEEPSEEK INTEGRATION TIMING**
+- **DeepSeek Audit:** "Passing this audit is hard requirement for Phase 4 unlock"
+- **Phase 4 Canonical:** "DeepSeek integration is Phase 4.2+"
+
+**Fix:** Clarify: Audit must PASS before ANY DeepSeek integration (even Phase 4.2)
+
+### **7. ORB MOTION REFERENCES**
+Multiple files reference Orb Motion Canon but it doesn't exist as standalone.
+
+## **✅ ALREADY CORRECT FILES**
+- `CANONICAL SYNTHESIS v5.1.txt` ✅ (current truth)
+- `NOVA_AGENT_IDENTITY_v3.0.md` ✅
+- `NOVA_DEEP_MEMORY_SAVED_UNLOCK_REQUIRED_v1.0.md` ✅
+- `CorePhilosophy.md` ✅ (reflection, not spec)
+
+## **📋 COMPREHENSIVE FIX PLAN**
+
+### **STEP 1: Update Existing Files**
+
+**A. Add Phase 4+ Banner to:**
+1. `(build doc)NOVA PHASE 4 CONSTITUTIONALLY SPECIFICATION SEALED.md`
+   - Add banner at top
+   - Change "Ready for Implementation" → "Design Only — Phase 4+"
+   - Change "GOVERNANCE STATE: GOVERNED_ACTIONS_ENABLED = false" → "DESIGN INTENT: GOVERNED_ACTIONS_ENABLED would default to false"
+
+2. `NOVA PHASE 4 COMPLETE PRODUCT SPECI.txt`
+   - Add banner at top
+   - Change "Status: Ready for Implementation" → "Status: Design Only — Phase 4+"
+   - Add footer: "⚠️ This document describes FUTURE Phase 4 capabilities only. No Phase 4 implementation exists."
+
+**B. Update DeepSeek Audit:**
+- Add header: "Prerequisite for Phase 4.2 DeepSeek Integration"
+- Clarify: "Audit must pass before ANY DeepSeek runtime integration"
+
+### **STEP 2: Create Missing Canonical Files**
+From `issue fix audit.txt`, extract and create:
+
+1. **`ORB_MOTION_CANON.md`** (from corrected documents section)
+2. **`PHASE_4_REFUSAL_LANGUAGE_CANON.md`** (from VERBATIM section)
+3. **`PHASE_4_UNLOCK_GATE.md`** (from merged admission+unlock)
+4. **`CANONICAL_INDEX.md`** (document management)
+5. **`REQUIRED_BANNERS.md`** (enforcement rules)
+
+### **STEP 3: Fix Cross-References**
+Update all Phase 4 documents to reference:
+- Current truth: `CANONICAL SYNTHESIS v5.1`
+- Unlock path: `PHASE_4_UNLOCK_GATE.md`
+- Refusal language: `PHASE_4_REFUSAL_LANGUAGE_CANON.md`
+- Orb rules: `ORB_MOTION_CANON.md`
+
+### **STEP 4: Create Truth Matrix**
+Add to `CANONICAL_INDEX.md`:
+
+| Document | Phase | Status | Implementation |
+|----------|-------|--------|----------------|
+| CANONICAL SYNTHESIS v5.1 | 3.5 | ✅ FROZEN | Current Runtime |
+| PHASE 4 CONSTITUTIONALLY SPECIFICATION | 4 | ⚠️ DESIGN ONLY | Future |
+| PHASE 4 COMPLETE PRODUCT SPECI | 4 | ⚠️ DESIGN ONLY | Future |
+| DEEPSEEK INTEGRATION AUDIT | 4.2 | 🔒 PREREQUISITE | Audit Only |
+
+## **🎯 THE CORRECT STATE AFTER FIXES**
+
+### **Phase 3.5 (Current Runtime):**
+- ✅ FROZEN, SEALED, CLOSED
+- ✅ `execute_action = None` (no execution path)
+- ✅ `GovernorMediator()` only (text sanitizer)
+- ✅ Read-only APIs only
+
+### **Phase 4 (Design Only):**
+- 🔒 LOCKED until unlock gate satisfied
+- ⚠️ All specs marked "DESIGN ONLY — NOT IMPLEMENTED"
+- ⚠️ No runtime variables implied
+- ⚠️ Clear distinction between design and implementation
+
+### **Document Truth Status:**
+- ✅ All documents phase-aligned
+- ✅ No implementation claims in design docs
+- ✅ Clear unlock prerequisites
+- ✅ Consistent provider references
+
+## **🚨 URGENT ACTIONS**
+
+1. **Add banners to Phase 4 specs TODAY**
+2. **Create missing canonical files from audit**
+3. **Update all "Ready for Implementation" → "Design Only"**
+4. **Verify no execution mechanisms implied in Phase 4 docs**
+
+## **📝 QUICK CHECKLIST**
+- [ ] Add Phase 4+ banner to Phase 4 constitution spec
+- [ ] Add Phase 4+ banner to Phase 4 product spec
+- [ ] Create ORB_MOTION_CANON.md
+- [ ] Create PHASE_4_REFUSAL_LANGUAGE_CANON.md
+- [ ] Create PHASE_4_UNLOCK_GATE.md
+- [ ] Create CANONICAL_INDEX.md
+- [ ] Update all Phase 4 references to "Design Only"
+- [ ] Verify no GOVERNED_ACTIONS_ENABLED references in Phase 3.5 context
+
+**Once complete:** All files will be canonically consistent with `CANONICAL SYNTHESIS v5.1` as the single source of truth.

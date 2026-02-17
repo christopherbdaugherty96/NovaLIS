@@ -1,0 +1,92 @@
+PHASE-3.5_SEALED.md
+
+# PHASE-3.5 SEALED DECLARATION (OFFICIAL)
+
+**System:** NovaLIS  
+**Phase:** 3.5  
+**Status:** 🔒 SEALED (Frozen Runtime)  
+**Execution Authority:** ZERO  
+**GOVERNED_ACTIONS_ENABLED:** false (required)  
+**Date Sealed:** 2026-02-11  
+**Seal Scope:** Runtime behavior + capability surface + authority boundary
+
+---
+
+## 0) Meaning of “SEALED”
+
+“SEALED” means:
+
+1) **Behavior is frozen**: the runtime may not gain new capabilities, new triggers, or new implicit behavior.  
+2) **Execution is impossible**: no user input can cause real-world actions.  
+3) **Online is read-only and explicit**: network access is permitted only when the user uses explicit online phrases; no background fetch.  
+4) **Memory is governed**: only explicit “Correction:” staging is allowed; no inferred memory; no behavioral personalization.  
+5) **UI is non-semantic**: visuals (orb) must not encode processing, confidence, or internal state.
+
+Any contradiction to these five statements is a Phase-3.5 seal violation.
+
+---
+
+## 1) Sealed Runtime Guarantees (Mechanical)
+
+### 1.1 Execution Disabled (Fail-Closed)
+- `EXECUTION_ENABLED = False` is the authoritative runtime posture.
+- Any action request reaching the execution boundary must be refused.
+
+### 1.2 Governor is Non-Authoritative
+- The Governor in Phase-3.5 may mediate text only.
+- It may not plan, chain, decide, or execute.
+
+### 1.3 Confirmation Gate is Passive
+- The confirmation gate may only speak when a pending confirmation exists.
+- When idle, it must remain silent and must not intercept normal requests.
+
+---
+
+## 2) Allowed Capabilities (Phase-3.5)
+
+### 2.1 Read-Only Local Skills
+- Weather (read-only; cached display permitted)
+- News headlines (read-only)
+- System status/time/date (read-only)
+
+### 2.2 Optional: Read-Only Web Search (Explicit Invocation Only)
+Permitted only when user uses explicit phrases such as:
+- “search for …”
+- “look up …”
+- “find online …”
+and the output must be links only (no summaries, no synthesis).
+
+---
+
+## 3) Forbidden Behaviors (Phase-3.5)
+
+- Any execution / actuation of the OS, files, apps, volume, browser, or devices  
+- Any background polling or auto-fetch  
+- Any implicit intent inference (substring triggers, fuzzy routing, “helpful guesses”)  
+- Any multi-step orchestration or autonomous chaining  
+- Any memory writes except explicit “Correction:” staging  
+- Any visual semantic signaling (orb pulsing “on processing”, etc.)
+
+---
+
+## 4) Seal Enforcement (How Violations are Detected)
+
+Phase-3.5 must ship with:
+- A runtime proof that execution is impossible (including attempted calls fail closed)
+- A capability surface scan proving no hidden executors are reachable
+- A bypass scan (“no code path can execute without Governor authorization”)
+
+If any proof fails: **the seal is broken**.
+
+---
+
+## 5) Unsealing Rules (Phase-4 Entry)
+
+Phase-4 may not begin until an explicit **PHASE-4 UNLOCK GATE** artifact exists and passes:
+- Governor choke-point proof
+- Confirmation gate audit proof
+- Execution boundary proof
+- Orb non-semantic proof
+- CI enforcement gates for regressions
+
+Until then, Phase-3.5 remains sealed by definition.

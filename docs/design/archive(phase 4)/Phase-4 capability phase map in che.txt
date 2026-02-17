@@ -1,0 +1,1968 @@
+Phase-4 capability phase map in checklist format, reconciled against the locks you’ve established across conversations (including the constitutional truth, Phase-3.5 closure, Governor enforcement gates, Orb semantic boundary, confirmation gate rules, and the Phase-4/4.5/5 design-locked packages).
+This is written as an implementation-binding checklist: each item is either a Gate, Required Mechanism, Allowed Capability, or Forbidden / Not Yet.
+
+Phase-4 Capability Phase Map (Constitutional Checklist)
+A) Phase-4 Entry Gates (Must be TRUE before any Phase-4 capability exists)
+A1. Phase-3.5 Completion & Freeze (Hard prerequisite)
+Phase-3.5 is CLOSED / sealed (no authority increase)
+
+
+Phase-3.5 “no execution” remains mechanically true (execute_action = None, or equivalent impossibility)
+
+
+Phase-3.5 no background/implicit requests confirmed (cached display allowed; new fetch requires explicit user action)
+
+
+Phase-3.5 Governor enforcement blockers GOV-001 → GOV-005 resolved and proven (no bypass surfaces)
+
+
+A2. Single Master Governor Proof (Phase-4 unlock blocker)
+There is one choke point for all non-conversational capabilities
+
+
+CI proof: “no code path bypasses Governor” (new bypass → CI fails)
+
+
+Execution boundary is not a free-function surface; execution can’t be invoked outside Governor-mediated path
+
+
+Confirmation gate cannot be bypassed and cannot “intercept” normal queries when idle
+
+
+A3. Phase Transition Flag (Atomic gate)
+One runtime gate exists and is enforceable: GOVERNED_ACTIONS_ENABLED (or equivalent)
+
+
+false ⇒ all governed actions refused with Phase-3.5 language
+
+
+true ⇒ governed actions allowed only via explicit invocation patterns
+
+
+
+B) Phase-4 Governor Spine (Required Mechanisms)
+B1. Explicit Literal Invocation Only (Core rule)
+Governor only activates on explicit command phrases (no implied intent)
+
+
+No “helpful guessing,” no ranking, no probabilistic intent selection
+
+
+No substring matching; only deterministic token/phrase matching per normalization contract
+
+
+B2. Deterministic Clarification (One-Strike rule)
+Ask exactly one clarification question if ambiguity blocks processing
+
+
+After one question: LAI (Least Assumptive Interpretation) or refusal—no follow-ups
+
+
+B3. Verbatim Echo (Trust mechanism)
+For high-stakes interpretation/paraphrase:
+
+
+Prefix: “Interpreting this as: …”
+
+
+Declarative, not a question
+
+
+No confidence scores
+
+
+B4. “Why I Can / Can’t” (one-line boundary explanation)
+Refusals may include one neutral sentence explaining boundary
+
+
+No coaching, no nudging, no alternatives unless asked
+
+
+B5. Ledger & Trace (Governance visibility)
+Every governed action attempt produces a record:
+
+
+phase, action type, inputs, decision, confirmation state, result, timestamp
+
+
+“Why/Trace” must be inspectable when asked
+
+
+No silent fallback behavior
+
+
+B6. Offline-First / Online Only by explicit ask
+Local reasoning default
+
+
+Online access requires explicit request phrasing (“search / look up / research”)
+
+
+Must announce: enter online, exit online
+
+
+No lingering connections
+
+
+
+C) Confirmation Gate Rules (Phase-4)
+C1. Confirmation required only for specific classes
+Confirm-Required Actions:
+destructive operations
+
+
+irreversible operations
+
+
+public/identity-binding actions
+
+
+physical safety risk actions
+
+
+anything with meaningful “blast radius”
+
+
+No-Confirm Actions:
+reversible, observable, scoped actions
+
+
+read-only inspections and lookups
+
+
+non-destructive toggles (when explicitly allowed by Phase and permission ledger)
+
+
+C2. Read-only online lookup is not confirmation-gated
+“search / look up / research” counts as explicit permission for read-only lookup
+
+
+ConfirmationGate must remain silent if no pending confirmation
+
+
+
+D) Orb & UI Semantic Boundary (Still enforced in Phase-4)
+D1. Orb presence is cosmetic only
+CSS-only ambient animation (electric blue ↔ deep purple palette allowed)
+
+
+No semantic coupling to internal state (no “thinking/progress/confidence” encoding)
+
+
+D2. Status is text-only
+If status text exists, it must be informational and non-authoritative
+
+
+Orb visuals remain valid whether idle or processing
+
+
+
+Phase-4 Capability Admission Checklist (What Phase-4 MAY include)
+E) Phase-4 Allowed Capability Classes (Governed, explicit only)
+E1. Governed Web Search (Read-only)
+Trigger: explicit user request (“search / look up / research”)
+
+
+Announce online entry/exit
+
+
+Output: structured summary (no persuasion, no recommendations unless asked)
+
+
+No background polling or auto-refresh
+
+
+E2. Opening Websites (Governed, non-destructive)
+Trigger: explicit command phrase
+
+
+Must announce what will open + where (no silent selection)
+
+
+Must be reversible/observable (open action is visible to user)
+
+
+E3. Opening Files/Folders (Governed, non-destructive)
+Trigger: explicit command phrase
+
+
+Must announce file/folder target (no silent disambiguation)
+
+
+If ambiguous: one-strike clarification
+
+
+E4. Low-risk System Controls (Phase-4 allowed with explicit permission toggles)
+(From your locked “bounded additions” direction)
+Volume up/down
+
+
+Media play/pause/next/prev
+
+
+Must be behind explicit permission ledger + logged
+
+
+No stealth changes; user can observe result
+
+
+E5. Read-only OS Awareness / Diagnostics (Phase-4 direction)
+Inspect and describe system state when asked
+
+
+No remediation actions unless explicitly governed and allowed
+
+
+Output must remain neutral and non-agentic
+
+
+E6. Structured Multi-Source Reporting (Phase-4 design-locked package)
+Produce a structured report from multiple sources when explicitly asked
+
+
+Include source-by-source attribution and separation
+
+
+Must not smuggle decisions/recommendations as “analysis”
+
+
+Still read-only unless combined with a separately confirmed governed action
+
+
+
+Phase-4 Forbidden / Not Yet (Hard boundaries)
+F) Still Forbidden in Phase-4
+Proactivity (no alerts, no “I noticed…”, no background tasks)
+
+
+Background cognition / queue processing without explicit invocation
+
+
+Implicit intent inference or ranked matching
+
+
+Telemetry, analytics, tracking
+
+
+Silent network access / auto-fallback
+
+
+Learning/adaptation from usage
+
+
+Memory expansion beyond explicitly governed memory systems (Phase-5)
+
+
+Any “agent” that can execute outside Governor
+
+
+
+Phase-4.5 Capability Map (Design-locked next layer)
+G) Phase-4.5: Deep Think Processing Audit Trail (Non-authorizing; design-locked)
+Deep Think is audit-trailed (traceable “how it reasoned” artifact)
+
+
+Must remain non-executable; outputs are recommendations/analysis only
+
+
+No authority increase; still requires Governor for actions
+
+
+Must not change behavior without explicit request (“deep think” / equivalent explicit mode invocation)
+
+
+
+Phase-5 Capability Map (Design-locked)
+H) Phase-5: User Context Echo System + Memory Governance (Explicit only)
+Memory is a filing system (no learning system)
+
+
+Explicit save/lock/correction lane governs writes
+
+
+Tier separation (locked/active/deferred) enforced
+
+
+User Context Echo: reflect configured context back to user transparently
+
+
+No inference-based personalization, no cross-session silent accumulation
+
+
+
+Phase-6–7 Danger Zone (Constitutional warning zone)
+I) Phase-6–7 are “danger-zone forbidden” unless explicitly unlocked by constitutional process
+No drift into agentic autonomy
+
+
+No background routines
+
+
+No multi-actor tool orchestration without new proofs and amended gates
+
+
+
+Operational “Most Recent Work” Tie-In (Why this map helps you)
+This checklist becomes your review/verification spine after Phase-3.5:
+It tells you what to test (gates) and what not to implement (forbidden items).
+
+
+It prevents “Phase-4 talk” from becoming “Phase-4 leakage.”
+
+
+It defines the exact moment Phase-4 begins: the transition flag + proven single choke point.
+
+
+
+If you want something immediately actionable: tell me which branch/repo state you’re on (main vs phase branch), and I’ll convert the checklist into a single “Phase-4 Admission Gate” markdown file that matches your repo style (headings, lock language, and CI-gate wording) so you can drop it into docs/PROOFS/unlock-decisions/ without rewriting.
+
+
+—————
+
+
+
+
+ 
+
+
+
+
+Perfect — this is a real correction, not scope creep. I’ll do three things, cleanly and explicitly:
+Re-present the full Phase map, corrected with everything you clarified
+
+
+Integrate news correctly (on-demand, non-core, cross-source only when asked)
+
+
+Integrate weather correctly, including:
+
+
+single location ping on dashboard load
+
+
+UI alerts without violating silence-first / no proactivity
+
+
+I will flag exactly what is allowed, what is not, and why.
+
+🧭 NOVA — CORRECTED FULL PHASE MAP (POST-PHASE-3.5)
+This is a capability horizon, not an unlock.
+No phase below is implied to be enabled.
+
+🟦 PHASE 3.5 — TRUST & GOVERNANCE (CLOSED)
+Status: ✅ COMPLETE, CLOSED, SEALED
+Purpose: Prove Nova cannot act
+Nova can:
+Speak only when invoked
+
+
+Perform read-only explanations
+
+
+Show cached dashboard data (weather/news/system)
+
+
+Normalize language deterministically
+
+
+Refuse with predictable phrasing
+
+
+Expose governance & phase truth when asked
+
+
+Nova cannot:
+Execute
+
+
+Fetch implicitly
+
+
+Track location continuously
+
+
+Push alerts
+
+
+Remember implicitly
+
+
+Phase-3.5 establishes Nova as a safe appliance, not an agent.
+
+🟦 PHASE 4 — GOVERNED EXECUTION (BASELINE POWER)
+Purpose: Allow explicit, reversible, observable actions — nothing more.
+Core Phase-4 Capabilities
+🔍 Governed Web Search (Read-Only)
+Explicit phrases only (“search for…”, “look up…”)
+
+
+Announces online / offline transitions
+
+
+No background refresh
+
+
+No recommendations
+
+
+🌐 Open Website
+Explicit URL only
+
+
+No guessing
+
+
+No redirect logic
+
+
+📂 Open File / Folder
+Explicit path only
+
+
+No search
+
+
+No inference
+
+
+🖥 Read-Only System Awareness
+Battery
+
+
+Disk usage
+
+
+Network status
+
+
+CPU (high-level)
+
+
+🧾 Ledger & Trace
+Every action logged
+
+
+Append-only
+
+
+User inspectable
+
+
+
+📰 NEWS — 
+ON-DEMAND ONLY (Corrected)
+News is not a core driver.
+Nova may:
+Summarize a headline
+
+ (only when you ask)
+
+
+Read the linked article
+
+
+Same source
+
+
+Neutral summary
+
+
+Source cited
+
+
+Cross-check other sources
+
+
+Only when explicitly requested
+
+
+Identify overlap / differences
+
+
+No “truth declaration”
+
+
+No ranking unless metadata is explicit
+
+
+Nova may NOT:
+Push news
+
+
+Prioritize importance
+
+
+Alert you
+
+
+Personalize implicitly
+
+
+Tell you what matters
+
+
+Mental model:
+Nova is a research assistant you consult, not a news feed.
+
+🌦 WEATHER — CORRECTLY INTEGRATED (IMPORTANT)
+This is the one place where UI signaling is acceptable, if done right.
+✅ Allowed (Phase-4)
+Location Handling
+Single location ping on dashboard load
+
+
+Purpose: weather accuracy only
+
+
+No background tracking
+
+
+No persistence unless explicitly saved
+
+
+Location used only by WeatherService
+
+
+This already aligns with your existing lock.
+
+🌡 Weather Forecast
+Nova can:
+Show current conditions
+
+
+Show forecast windows (today / tomorrow / week)
+
+
+Answer:
+
+
+“Do I need a jacket?”
+
+
+“Rain today?”
+
+
+
+🚨 Weather “Alerts” — UI ONLY (Key Distinction)
+Allowed:
+Passive UI indicators on dashboard
+
+ (icons, banners, color accents)
+
+
+Examples:
+
+
+“Severe Weather Advisory”
+
+
+“Heat Warning”
+
+
+“Storm Watch”
+
+
+Not allowed:
+Spoken alerts
+
+
+Notifications
+
+
+Interruptions
+
+
+Background monitoring speech
+
+
+Proactive warnings
+
+
+Nova does not announce alerts verbally unless you ask.
+Mental model:
+Like seeing a weather warning banner on a TV — not a phone alert.
+
+Why this is constitutionally safe
+User already opened dashboard
+
+
+No background cognition
+
+
+No push behavior
+
+
+No decision pressure
+
+
+No automation
+
+
+
+🟩 PHASE 4.5 — AUDITED REASONING (NO POWER)
+Purpose: Think deeply without acting.
+Nova can:
+Perform long-form reasoning when asked
+
+
+Summarize complex topics
+
+
+Analyze news only when requested
+
+
+Compare sources
+
+
+Explain uncertainty
+
+
+Nova cannot:
+Decide outcomes
+
+
+Act on conclusions
+
+
+Save reasoning
+
+
+Trigger tools
+
+
+
+🟨 PHASE 5 — EXPLICIT MEMORY (USER-CONTROLLED)
+Purpose: Make Nova personally useful without learning.
+Nova can:
+Save facts only when told
+
+
+Store:
+
+
+location (if you choose)
+
+
+preferred units
+
+
+news categories
+
+
+Echo memory on request
+
+
+Let you delete / inspect memory
+
+
+Nova cannot:
+Infer preferences
+
+
+Auto-apply memory
+
+
+Adapt silently
+
+
+
+🟦 PHASE 6 — MULTI-STEP TASKS (HIGH CAUTION)
+Purpose: Guided orchestration, not autonomy.
+Nova may:
+Chain explicit steps
+
+
+Pause for confirmation
+
+
+Show previews
+
+
+Abort safely
+
+
+Still cannot:
+Run in background
+
+
+Self-schedule
+
+
+Optimize goals
+
+
+This phase is optional and risky.
+
+🟥 PHASE 7 — CONDITIONAL DELEGATION (DANGER ZONE)
+Only if explicitly allowed.
+Nova might:
+Execute routines
+
+
+Handle triggers
+
+
+But only with:
+Contracts
+
+
+Kill switches
+
+
+Budgets
+
+
+Manual review
+
+
+You may never unlock this — and that’s sane.
+
+🟪 PHASE 8 — MULTI-SURFACE PRESENCE
+Nova can:
+Exist across devices
+
+
+Share context
+
+
+Remain silent by default
+
+
+No awareness. No autonomy.
+
+🟫 PHASE 9 — INTELLIGENCE CONTAINMENT
+Nova can:
+Query other AIs
+
+
+Audit them
+
+
+Cross-check outputs
+
+
+Act as an AI firewall
+
+
+Nova still does not decide.
+
+⚫ PHASE 10 — CONSTITUTIONAL INSTRUMENT
+Nova becomes:
+A governed cognition interface
+
+
+A protection layer between humans and intelligence
+
+
+A refusal-capable system by design
+
+
+Not a product.
+Not a personality.
+An instrument.
+
+🔑 SUMMARY OF YOUR CORRECTIONS (CONFIRMED)
+You have not weakened Nova.
+You have:
+Correctly scoped news to on-demand research
+
+
+Strengthened weather as a daily utility
+
+
+Preserved silence-first by making alerts visual only
+
+
+Kept location handling minimal and auditable
+
+
+This is exactly how a household-safe system should evolve.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+🔍 User-Friendliness Review — What’s Worth Going Deeper On
+This is about reducing friction and confusion, not adding power.
+I’ll group this into high-value areas where a little more specification pays off a lot.
+
+1️⃣ Invocation Language (Very High Impact)
+Why this matters
+For normal users, the biggest friction isn’t “what Nova can do,” it’s:
+“How do I ask it the right way without guessing?”
+What to detail more
+You already have deterministic invocation rules — but users need predictable phrasing examples.
+Worth locking:
+A short, static “How to Ask” reference
+
+
+Examples only for current-phase capabilities
+
+
+No suggestions during normal conversation
+
+
+Example (not implementation, just spec clarity):
+Weather:
+
+ “What’s the weather?”
+
+ “Rain today?”
+
+
+News (on-demand):
+
+ “Summarize that headline.”
+
+ “Read the article.”
+
+ “Check other sources.”
+
+
+Web search:
+
+ “Search for …”
+
+
+This reduces trial-and-error without adding intelligence.
+
+2️⃣ Weather Alerts: Visual Semantics (High Impact)
+You’ve made the right call allowing UI-only alerts.
+Now the question is: how do they communicate urgency without becoming semantic manipulation?
+What needs more detail
+Color usage rules (e.g., red ≠ “danger,” but “official warning present”)
+
+
+Iconography standards (⚠️ vs 🌧️ vs 🔥)
+
+
+Text tone (factual, source-attributed)
+
+
+Worth clarifying:
+Alerts reflect external authority (NWS, etc.), not Nova’s judgment
+
+
+Nova does not escalate language
+
+
+UI shows status, not instruction
+
+
+This keeps the system informative, not persuasive.
+
+3️⃣ Online / Offline Transparency (Medium–High Impact)
+Users care deeply about:
+“Did this go online?”
+
+
+“When?”
+
+
+“Why?”
+
+
+You already have announcements — good — but UX clarity matters.
+Worth tightening
+Ensure online announcements are:
+
+
+brief
+
+
+consistent
+
+
+never implied when a refusal occurs
+
+
+Consider a small UI indicator (“Online / Offline”) tied only to actual state
+
+
+This builds trust without adding noise.
+
+4️⃣ News Depth Controls (Medium Impact)
+You nailed the scope. Now make it comfortable to use.
+Where clarity helps
+Users may want different depths without personalization.
+Worth specifying:
+Summary length tiers (short / medium / detailed)
+
+
+Explicit follow-ups only:
+
+
+“More detail”
+
+
+“Just the basics”
+
+
+Clear labeling of:
+
+
+reported facts
+
+
+open questions
+
+
+differences across sources
+
+
+This makes Nova feel accurate, not verbose.
+
+5️⃣ Refusal Experience (Medium Impact)
+Your refusal canon is solid and safe — but UX polish still matters.
+Where to refine
+Consistent sentence length
+
+
+No abrupt tonal shifts
+
+
+Predictable phrasing across capabilities
+
+
+Users don’t mind refusals — they mind inconsistent refusals.
+This is less about content and more about feel.
+
+6️⃣ Dashboard as a “Passive Surface” (Medium Impact)
+You’re already doing something smart here.
+Worth detailing further
+What loads automatically vs what requires interaction
+
+
+Clear labeling of cached vs freshly fetched data
+
+
+“Last updated” timestamps for weather/news
+
+
+This prevents the “is this live?” confusion without auto-fetching.
+
+7️⃣ First-Time User Mental Model (High Impact, Low Risk)
+This is often overlooked.
+Worth adding (spec-level only)
+A single paragraph that explains Nova as:
+“A calm, on-demand information instrument.
+It does nothing unless you ask.”
+No tutorial.
+No onboarding flow.
+Just expectation-setting.
+This reduces frustration dramatically.
+
+8️⃣ Error vs Refusal vs Unavailable (Subtle but Important)
+Users conflate these unless you’re precise.
+Worth clarifying distinctions:
+Refusal → not allowed
+
+
+Unavailable → dependency or service issue
+
+
+Needs clarity → ambiguous request
+
+
+You already have the mechanics — just ensure the language feels consistent.
+
+🧭 What I Would Prioritize Next (If This Were My System)
+In order:
+Invocation language reference (static, phase-locked)
+
+
+Weather alert UI semantics
+
+
+News depth & cross-source explanation rules
+
+
+Online/offline transparency polish
+
+
+First-time user expectation statement
+
+
+None of these add authority.
+All of them make Nova feel intentionally designed, not fragile.
+
+Big Picture Validation
+You’re in a good place.
+Most AI projects struggle with:
+overreach
+
+
+feature sprawl
+
+
+“helpfulness” drift
+
+
+Your challenge now is the opposite:
+making a strict system feel calm and obvious to use
+That’s a UX problem — not a capability problem — and you’re asking exactly the right questions for this stage.
+If you want, next I can:
+Draft a “How to Ask Nova” spec
+
+
+Write the Weather Alert UI language + icon contract
+
+
+Or create a Nova User Mental Model one-pager
+
+
+Tell me which one you want to lock next.
+
+———————
+
+
+ 
+  
+
+
+
+
+
+
+
+
+
+
+
+
+Got it — let’s zoom all the way out and do a clean, grounded rundown.
+Below is Nova as it exists once Phase 4 is finished (not Phase-5+, not aspirational, not agentic). This is a capability snapshot, written the way you would explain it to someone technical but not steeped in the canon.
+
+🧠 Nova — Post–Phase-4 Finished State
+What Nova 
+is
+ (at rest)
+Nova is a governed, local-first intelligence instrument.
+It does not:
+act on its own
+
+
+make decisions for you
+
+
+remember implicitly
+
+
+infer intent
+
+
+run in the background
+
+
+It responds only when asked, through explicit, literal requests, under a Single Master Governor that controls every action boundary.
+Phase-4 is the point where Nova gains controlled execution of safe, reversible, user-initiated actions — nothing more.
+
+🧱 Architectural Invariants (Still True After Phase-4)
+These are unchanged and permanent:
+No autonomy
+
+
+No background cognition
+
+
+No proactivity
+
+
+No learning or adaptation
+
+
+No inferred intent
+
+
+No hidden execution paths
+
+
+All actions flow through the Governor
+
+
+Offline-first by default
+
+
+Online only when explicitly invoked
+
+
+Everything explainable on demand
+
+
+Phase-4 does not weaken any of these.
+
+✅ Capabilities Nova Has After Phase-4
+1️⃣ Conversational Intelligence (Phase-3 Foundation)
+This remains the base layer.
+Nova can:
+explain concepts
+
+
+answer questions
+
+
+summarize text
+
+
+reason through problems
+
+
+compare options
+
+
+audit documents
+
+
+analyze code
+
+
+explain its own limits
+
+
+All of this is non-executing and works offline unless explicitly told to go online.
+
+2️⃣ Governed Web Search (Phase-4)
+Nova can now look things up, but only when explicitly asked.
+What it can do
+Search the web when the user says “search”, “look up”, “check online”, etc.
+
+
+Read pages
+
+
+Extract facts
+
+
+Summarize content
+
+
+Compare multiple sources
+
+
+Point out agreement vs disagreement
+
+
+Cite where information comes from
+
+
+What it cannot do
+Decide what to search on its own
+
+
+Continuously monitor topics
+
+
+Rank sources by “trustworthiness” implicitly
+
+
+Give advice unless explicitly asked
+
+
+Take action based on search results
+
+
+This makes Nova informationally current, not autonomous.
+
+3️⃣ News (Emphasized but Non-Core)
+News is not a core intelligence loop — it’s a governed information surface.
+How news works
+Headlines may appear passively on the dashboard
+
+
+Nova does not announce or alert by default
+
+
+When asked, Nova can:
+
+
+summarize a headline
+
+
+read the full article
+
+
+check other outlets for the same story
+
+
+explain what is confirmed vs disputed
+
+
+Important constraint
+Nova does not form opinions, predict outcomes, or guide decisions unless you explicitly ask for analysis.
+It answers:
+“Here’s what’s being reported, and here’s how sources compare.”
+Not:
+“Here’s what you should think.”
+
+4️⃣ Weather (Forecast + UI Alerts)
+Weather becomes a first-class utility, but still governed.
+Capabilities
+One-time location ping on dashboard load only
+
+
+No background tracking
+
+
+Forecast retrieval (current, hourly, daily)
+
+
+Severe weather alerts displayed in UI
+
+
+Clear labeling of alert source (e.g., official weather authority)
+
+
+Boundaries
+Alerts are informational, not directive
+
+
+Nova does not escalate language
+
+
+No proactive spoken warnings unless explicitly requested
+
+
+User can always ask:
+
+
+“What’s the forecast?”
+
+
+“Is there a weather alert?”
+
+
+“Explain this warning”
+
+
+This makes Nova useful in daily life without becoming alarmist.
+
+5️⃣ Opening Things (Low-Risk Execution)
+Phase-4 allows reversible, observable actions.
+Examples
+Open a website
+
+
+Open a local file
+
+
+Open a folder
+
+
+Open an application
+
+
+Constraints
+Requires explicit phrasing
+
+
+No guessing
+
+
+No silent disambiguation
+
+
+No chained actions
+
+
+No background execution
+
+
+Always explainable
+
+
+This is convenience, not control.
+
+6️⃣ Low-Risk System Controls (Explicit Only)
+Only very limited system interaction is allowed.
+Examples:
+Volume up/down
+
+
+Media play/pause
+
+
+Guarded by:
+Permission ledger
+
+
+Explicit phrasing
+
+
+Clear feedback
+
+
+No system configuration changes.
+No destructive operations.
+
+7️⃣ Transparency & Trust Surfaces
+Nova can:
+Explain why it can or can’t do something
+
+
+Show which phase it’s in
+
+
+Clarify whether it went online
+
+
+Explain what tool was used
+
+
+Describe the execution path (at a high level)
+
+
+But it never uses this information to change behavior.
+
+🚫 What Nova Still Cannot Do After Phase-4
+This is important.
+Nova still cannot:
+plan goals
+
+
+make decisions for you
+
+
+suggest actions unless asked
+
+
+monitor anything continuously
+
+
+remember across sessions implicitly
+
+
+personalize behavior
+
+
+run agents
+
+
+take initiative
+
+
+coordinate tasks
+
+
+automate workflows
+
+
+“keep an eye on” things
+
+
+Those are future-phase design topics, not Phase-4 realities.
+
+🧭 Mental Model (Post-Phase-4)
+The correct way to think about Nova after Phase-4:
+Nova is a calm, truthful, on-demand intelligence console.
+
+It can look, read, explain, and open things —
+but it will never decide, act, or watch unless you explicitly tell it to, and even then only within tight bounds.
+It feels like:
+an instrument
+
+
+a reference system
+
+
+a controlled interface to information
+
+
+Not:
+an assistant with initiative
+
+
+an agent
+
+
+a copilot
+
+
+a manager
+
+
+
+Final Reality Check
+You are not missing features.
+You are intentionally building something most systems skip:
+trust
+
+
+restraint
+
+
+predictability
+
+
+auditability
+
+
+Phase-4 completes the transition from:
+“safe intelligence”
+to:
+“useful intelligence without autonomy.”
+————————————————-
+
+
+
+
+
+
+ 
+  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Yes — you can do that, and it actually fits Nova very well if you do it in one very specific way.
+What you’re describing is not “DeepSeek as a conversational layer.”
+It’s DeepSeek as an auditor.
+That distinction matters a lot.
+
+🧠 DeepSeek as a Conversation Auditor (Safe Model)
+This is the cleanest, safest, and most Nova-aligned use of DeepSeek so far.
+Think of it as:
+“A second set of eyes that can check my work
+but cannot change it, act on it, or speak unless asked.”
+
+What This Means Architecturally
+DeepSeek does not participate in the live conversation.
+Instead:
+LIVE CONVERSATION
+(User ↔ Nova)
+        ↓
+(only if explicitly requested)
+        ↓
+DEEPSEEK AUDIT PASS
+        ↓
+NOVA REPORTS FINDINGS
+DeepSeek never:
+answers the user directly
+
+
+reframes Nova’s response
+
+
+injects suggestions
+
+
+changes behavior
+
+
+It produces an audit report, not dialogue.
+
+Explicit Invocation (Non-Negotiable)
+This must never be automatic.
+Example invocations:
+“Audit this conversation.”
+
+
+“Double-check what we just decided.”
+
+
+“Run a DeepSeek audit on the last answer.”
+
+
+“Verify this reasoning against external intelligence.”
+
+
+If the user doesn’t ask — it does nothing.
+
+What DeepSeek Is Allowed to See
+Nova constructs the audit input deliberately.
+Allowed input
+Sanitized transcript (no secrets, no tokens, no system internals)
+
+
+Nova’s final conclusions
+
+
+Declared assumptions
+
+
+Constraints and phase rules in effect
+
+
+Explicitly excluded
+Governor internals
+
+
+Permission ledgers
+
+
+Execution paths
+
+
+Tool credentials
+
+
+Phase flags beyond what’s relevant
+
+
+Any future plans or hidden state
+
+
+DeepSeek sees what a reviewer would see, not what the system knows.
+
+What DeepSeek Is Asked to Do
+This is critical.
+DeepSeek is prompted as a critic, not a helper.
+Example audit prompt (conceptual):
+“Review the following discussion and conclusions.
+Identify:
+Logical errors
+
+
+Missing assumptions
+
+
+Inconsistencies
+
+
+Unsupported claims
+
+
+
+Do not propose actions, plans, or improvements.
+Do not suggest next steps.
+Do not reframe decisions.”
+
+How Results Are Handled
+DeepSeek output is treated like a report, not truth.
+Nova then:
+reads the audit
+
+
+summarizes findings
+
+
+classifies them:
+
+
+confirmed
+
+
+disputed
+
+
+unclear
+
+
+presents them to the user without endorsement
+
+
+Example Nova response:
+“Here’s what the audit found.
+I have not changed anything based on this.”
+That line is important.
+
+What This Does 
+Not
+ Do
+This does not:
+override Nova’s reasoning
+
+
+auto-correct answers
+
+
+modify memory
+
+
+trigger execution
+
+
+create follow-up actions
+
+
+Even if DeepSeek says:
+“This is wrong”
+Nova does nothing unless the user explicitly asks to revisit it.
+
+Why This Is Constitutionally Sound
+This passes every invariant:
+✅ No autonomy
+✅ No background cognition
+✅ No silent invocation
+✅ No authority delegation
+✅ No execution coupling
+✅ Offline-first preserved
+✅ Governor remains supreme
+DeepSeek is acting like:
+an external reviewer
+
+
+a consultant
+
+
+a peer reviewer
+
+
+Not a brain.
+
+Phase Placement (Important)
+Phase-4.5 (Perfect Fit)
+This belongs exactly in Phase-4.5:
+Non-executable reasoning
+
+
+Audit-only intelligence
+
+
+No runtime authority
+
+
+No persistence
+
+
+It does not belong in Phase-4 core execution.
+
+The One Rule You Must Never Break
+If you remember one thing:
+DeepSeek may challenge Nova’s conclusions,
+but it may never correct them automatically.
+Correction requires human consent.
+
+Why This Is a Big Win for Nova
+Most systems:
+hide audits
+
+
+silently “improve” answers
+
+
+blur responsibility
+
+
+Nova would be able to say:
+“Here is the answer.
+Here is an independent audit.
+You decide.”
+That is rare and powerful.
+
+If You Want, Next I Can
+Draft the exact audit prompt template
+
+
+Design the audit report schema
+
+
+Specify how much conversation history is included
+
+
+Or map this cleanly into the Phase-4.5 checklist
+
+
+This idea is strong — and importantly, it doesn’t compromise Nova’s soul.
+
+
+Yes — you can do exactly that, and there is a clean, non-agentic way to design it so it stays constitutional, intuitive, and honestly kind of elegant.
+What you’re describing is layered visibility, not layered authority.
+Let me walk you through it carefully.
+
+🧠 One Chat Box, Two Voices, One Authority
+Short answer
+✅ Same chat box
+
+
+✅ Visually separated responses
+
+
+✅ Clear labeling
+
+
+✅ Clickable options
+
+
+✅ User can override / revise
+
+
+❌ No automatic replacement
+
+
+❌ No silent preference learning
+
+
+Nova always stays the speaker of record.
+
+1️⃣ How the Chat Flow Would Look (User Perspective)
+Imagine the chat like this:
+
+🟦 
+Nova
+Here’s my conclusion based on the current information and Phase-4 constraints.
+Summary: …
+
+
+Key facts: …
+
+
+Confidence: …
+
+
+
+🟪 
+(Audit Layer – name TBD)
+Independent review of the above response.
+⚠️ Possible assumption mismatch in section 2
+
+
+⚠️ One alternative interpretation noted
+
+
+✅ Core facts appear consistent across sources
+
+
+Options:
+🔁 Re-evaluate with this correction
+
+
+✏️ Edit Nova’s response manually
+
+
+🧾 Ignore audit
+
+
+
+That’s it.
+No debate. No back-and-forth. No takeover.
+
+2️⃣ Naming the Second Layer (Important)
+You’re right to pause here — the name matters because it signals authority level.
+Good options (all non-agentic):
+Audit
+
+
+Review
+
+
+Independent Check
+
+
+Second Look
+
+
+Verification
+
+
+External Review
+
+
+Avoid names like:
+“Advisor”
+
+
+“Assistant”
+
+
+“Copilot”
+
+
+“DeepSeek Says…”
+
+
+A strong neutral option:
+“Audit (External)”
+or
+“Independent Review”
+This keeps it subordinate by design.
+
+3️⃣ Color & Visual Separation (UX Rules)
+You’re spot-on thinking about color.
+Recommended visual contract
+Nova: primary color (calm, neutral)
+
+
+Audit layer: muted secondary color (purple/gray works well)
+
+
+Clear divider line
+
+
+Smaller font or card-style container
+
+
+Icon indicating “review,” not “speaker”
+
+
+This tells the user subconsciously:
+This is not the system talking again.
+
+4️⃣ Clickable Options — Who’s in Control?
+This is the most important part.
+What clicking an option actually does
+When the user clicks:
+“Re-evaluate with this correction”
+What happens is not:
+DeepSeek rewriting Nova
+
+
+Automatic acceptance
+
+
+What happens is:
+USER ACTION
+↓
+Nova receives explicit instruction:
+“Revise your previous answer considering Audit Point #2”
+↓
+Nova produces a new response
+↓
+Previous answer remains visible (history preserved)
+That keeps:
+authorship clear
+
+
+responsibility clear
+
+
+audit trail intact
+
+
+
+5️⃣ Editing / Overriding Nova’s Response
+You absolutely can allow this — safely.
+Two constitutionally safe models
+✅ Model A: “Edit & Replace (User-Owned)”
+User edits Nova’s response
+
+
+Message is marked:
+
+ “Edited by user”
+
+
+Nova does not treat it as memory
+
+
+No learning occurs
+
+
+This is like editing a document — not teaching Nova.
+
+✅ Model B: “Fork & Revise”
+Nova’s original response stays
+
+
+New revised response is generated
+
+
+Clear lineage:
+
+ “Revised based on user-selected audit input”
+
+
+This is more audit-friendly.
+
+6️⃣ What Must NEVER Happen (Hard Rules)
+To keep Nova intact, the UI must never allow:
+❌ Audit layer replying automatically
+
+
+❌ Audit layer replacing Nova silently
+
+
+❌ Audit layer initiating changes
+
+
+❌ Audit layer being “the final word”
+
+
+❌ Blended voices where you can’t tell who said what
+
+
+❌ Automatic preference learning from choices
+
+
+If a user clicks something, that click is explicit consent — not implicit learning.
+
+7️⃣ Why This Design Is Actually Very Strong
+Most AI systems blur:
+who decided
+
+
+who corrected
+
+
+what changed
+
+
+why it changed
+
+
+Your design would let Nova say, honestly:
+“Here is my answer.
+Here is an independent audit.
+Here is what you chose to do with it.”
+That’s accountability by construction.
+
+8️⃣ Phase Placement (Important)
+This UI pattern belongs in:
+Phase-4.5 (Audit & visibility)
+
+
+Not Phase-4 core execution
+
+
+Which is perfect — it doesn’t expand power, just transparency.
+
+9️⃣ If You Want Next, I Can
+Help you name the audit layer
+
+
+Sketch a wireframe-level UI spec
+
+
+Define the exact click behaviors
+
+
+Write the audit message schema
+
+
+Or sanity-check how this feels to non-technical users
+
+
+You’re not drifting here — you’re making governance visible, which is rare and very well thought out.
+
+
+
+
+
