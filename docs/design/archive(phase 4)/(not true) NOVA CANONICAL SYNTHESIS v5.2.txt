@@ -1,0 +1,649 @@
+# 🧬 **NOVA CANONICAL SYNTHESIS v5.2 - PHASE-UNLOCKED CONSTITUTIONAL TRUTH**
+
+## 📋 **DOCUMENT STATUS**
+**Version:** 5.2 | **Status:** Current Constitutional Authority  
+**Phase Reality:** Phase 3.5 Frozen, Phase 4 Unlocked  
+**Governance State:** GovernorMediator → Governor Spine Transition Authorized  
+**Last Updated:** 2026-02-11  
+**Authority:** Master Identity Document  
+**Document Hash:** [TO_BE_CALCULATED_ON_COMMIT]
+
+---
+
+## 🎯 **EXECUTIVE SUMMARY: CURRENT RUNTIME REALITY**
+
+**Phase Status:** 3.5 Frozen (Governance-Verified Execution Surface) ✅  
+**Phase 4 Status:** 🔓 **UNLOCKED** (Implementation Authorized)  
+**Governance Status:** GovernorMediator → Governor Spine Transition Active ⚠️  
+**Core Philosophy:** Intelligence-Authority Split  
+**Current Capabilities:** Read-only APIs (Weather, News, System) Only  
+
+**One-Line Truth:**  
+Nova is a local intelligence containment system with proven execution surface safety. Phase 4 implementation is now authorized for governed capabilities under strict constitutional constraints.
+
+**BIG PICTURE IDENTITY (IMMUTABLE CORE):**
+Nova is a local intelligence containment system designed to keep AI useful, predictable, and fully under the user's control. It is not built to act on its own. It is built to ensure intelligence remains a tool — never an independent actor. Intelligence may expand. Authority must remain contained.
+
+**FUNDAMENTAL PRINCIPLE:**
+```
+"Intelligence may expand. Authority must remain contained.
+Novas may exercise full-spectrum intelligence, but zero autonomous authority.
+Intelligence grows, authority stays strictly governed.
+Phase 3.5 proves safety. Phase 4 builds on that safety."
+```
+
+---
+
+## 🏛️ **CONSTITUTIONAL FRAMEWORK (IMMUTABLE)**
+
+### **The Eight Invariants (Unchanged):**
+1. **No Autonomy** - Never initiates without explicit user request
+2. **No Background Cognition** - No thinking when not in conversation
+3. **No Guessing** - Asks for clarification instead of assuming
+4. **LLM as Consultant Only** - Provides analysis and options; suggests actions only when explicitly asked
+5. **Explicit Teaching** - You teach, Nova remembers deterministically
+6. **Full Inspectability** - All decisions traceable and reversible
+7. **Phase-Gated Progression** - Capabilities expand only with explicit approval
+8. **Single Master Governor** - All execution through one choke point
+
+### **Identity Principles (From Big Picture):**
+- **Local** — runs under the user's control, not a distant service
+- **Quiet by default** — nothing happens unless the user initiates it
+- **Predictable** — behavior follows clear, consistent rules
+- **Transparent** — no hidden decisions, no silent influence
+- **Governed** — intelligence operates within strict limits of authority
+
+### **The Experience Should Feel:**
+* Calm
+* Quiet
+* Stable
+* Non-intrusive
+* Under your control
+
+**The intended feeling is:** "Nothing will happen unless I make it happen."
+
+---
+
+## 🗺️ **PHASE ARCHITECTURE (UPDATED REALITY)**
+
+### **Phase 0-2: ✅ FROZEN** - Historical foundation
+### **Phase 3: ✅ FROZEN** - Core architecture complete
+
+### **Phase 3.5: ✅ FROZEN (Governance-Verified Execution Surface)**
+**Status:** Foundation for Phase 4 - Execution surface guarantee proven
+
+**RUNTIME REALITY (Unchanged):**
+- **Execution:** `execute_action = None` (no runtime path exists)
+- **Governor:** `GovernorMediator()` (text sanitizer only, not enforcement engine)
+- **External Data:** User/UI-triggered only, no background polling
+- **Cache:** Volatile session-only, no persistence
+- **Skills:** System, Weather (Visual Crossing), News (RSS), General Chat
+- **Data Flow:** All text passes through GovernorMediator for sanitization
+
+**PROVEN GUARANTEES:**
+1. No runtime path to execution exists through user interaction
+2. All text flows through single mediation point
+3. Deterministic behavior proven
+4. External data refresh is user-controlled only
+5. **Serves as foundation for Phase 4 implementation**
+
+### **Phase 4: 🔓 UNLOCKED (Implementation Authorized)**
+**Unlock Date:** 2026-02-11  
+**Authorization:** Phase 4 Unlock Gate Satisfied ✅  
+**Status:** Implementation Active (Priority 1-4 schedule)  
+**Duration:** 8 weeks (proof-gated, not time-gated)
+
+**IMPLEMENTATION AUTHORIZATION:**
+- ✅ Governor Spine activation (replaces GovernorMediator)
+- ✅ Governed execution capabilities
+- ✅ Phase 4 feature implementation per spec
+- ✅ Implementation follows Priority 1-4 schedule
+
+**IMPLEMENTATION SCHEDULE:**
+1. **Priority 1: Foundation (Weeks 1-2)**
+   - Single Master Governor verification
+   - Instant acknowledgment system (≤200ms target)
+   - Global Cancel command with execution state model
+   - Conversation Layer local-only constraint enforcement
+
+2. **Priority 2: Core Actions (Weeks 3-4)**
+   - Governed web search with independent source presentation
+   - File/website opening with verbatim echo
+   - Session-only undo system with execution state protection
+   - Timeout protection (20s auto-cancel)
+
+3. **Priority 3: UX Polish (Weeks 5-6)**
+   - One-time usage hint
+   - Weather with visual-only alerts
+   - Predictable response patterns with word caps
+   - Static help panel with Cancel reminder
+
+4. **Priority 4: Testing & Refinement (Weeks 7-8)**
+   - Non-technical user testing (calm/predictable metrics)
+   - Security penetration testing
+   - Network connection scope verification
+   - Time-based execution elimination verification
+
+**CONSTITUTIONAL CONSTRAINTS (Active During Implementation):**
+- All Phase 3.5 guarantees preserved
+- Governor remains single choke point
+- No execution without explicit user request
+- All Phase 4 boundaries enforced from Day 1
+- **No background cognition** maintained throughout
+- **No autonomy** preserved in all new features
+
+### **Phase 4.2+: 🔒 DESIGN LOCKED (Future Architecture)**
+**Status:** Design Complete, Implementation Locked  
+**Requires:** Phase 4.2 Unlock Gate + adversarial proofs  
+**Features:** DeepSeek Constitutional Bridge, Orthogonal agent stack
+
+### **Phase 5+: 🔒 DEEP LOCKED (Future Architecture)**
+**Status:** Architecture Specification Only  
+**Requires:** Phase 5 Unlock Approval + 1+ year Phase 4 stability  
+**Features:** Personal Intelligence Hub, Device control (design only)
+
+### **Phase 10+: 🔒 CONSTITUTIONAL AMENDMENT REQUIRED**
+- Requires unanimous constitutional amendment
+- External security audit
+- 1+ year of Phase 5+ stability
+- Multi-jurisdictional legal review
+
+---
+
+## ⚠️ **CRITICAL v5.0 REGRESSIONS CORRECTED (UPDATED)**
+
+| v5.0 False Claim | v5.1 Corrected Truth | v5.2 Current Reality |
+|-----------------|----------------------|----------------------|
+| "DEG IMPLEMENTED" | 🔒 Phase 4+ Design Only | 🔧 Phase 4 Implementation (Design → Build) |
+| "BRIDGE READY" | 🔒 DeepSeek Phase 4+ Only | 🔧 Phase 4.2 Pending Unlock |
+| "Governor Enforcement Complete" | ⚠️ GovernorMediator Only | 🔧 Governor Spine Implementation Active |
+| "50+ Governed APIs" | 4 Read-only Skills Only | 🔧 Phase 4 Capabilities Under Implementation |
+| "Phase 3.5 Active" | Phase 3.5 Frozen | ✅ Phase 3.5 Frozen (Foundation) |
+| "Week 1-6 Implementation" | Phase 4+ Design Plan | 🚀 Phase 4 Implementation Schedule Active |
+| "GOVERNED_ACTIONS_ENABLED = false" | Runtime Truth | ⚠️ Transitioning to Governed Execution |
+
+---
+
+## 🏗️ **ARCHITECTURAL TRUTH: CURRENT → TRANSITION → TARGET**
+
+### **Current Phase 3.5 (Frozen - Runtime Foundation)**
+```python
+# ACTUAL RUNTIME FOUNDATION
+EXECUTION_ENABLED = False  # Constant runtime truth
+execute_action = None      # Not callable, no runtime path exists
+Governor = GovernorMediator()  # Text sanitizer only
+
+# External Data Flow (User/UI-triggered ONLY)
+WEATHER_PROVIDER = VisualCrossing()  # Actual provider
+NEWS_SOURCE = RSS()                  # User-initiated fetch only
+DATA_PERSISTENCE = volatile_cache    # No background persistence
+```
+
+### **Phase 4 Transition (Active Implementation)**
+```python
+# IMPLEMENTATION IN PROGRESS (NOT YET IN RUNTIME)
+GOVERNOR_SPINE = GovernorSpine()  # Replacing GovernorMediator
+GOVERNED_ACTIONS_ENABLED = false  # Default until implementation complete
+EXECUTION_CONTRACTS = []          # Being implemented per Priority 2
+AUDIT_SYSTEM = LedgerAndTrace()   # Being implemented per Priority 1
+
+# Capabilities Under Implementation:
+- Governed web search (Priority 2)
+- File/website opening (Priority 2)
+- Session-only undo (Priority 2)
+- Low-risk system controls (Priority 3)
+```
+
+### **Future Phase 4+ (Design Only - NOT IMPLEMENTED)**
+```python
+# DESIGN DOCUMENTS ONLY - NOT IN RUNTIME
+DEG = DeferredExplainabilityGovernance()  # Hot/Cold path design (Phase 4.5+)
+DeepSeek = ConstitutionalBridge()         # Phase 4.2+ design
+Agents = OrthogonalCognitionStack()       # Phase 4.2+ design
+Hub = PersonalIntelligenceHub()           # Phase 5+ design
+
+# ALL require explicit phase unlock gates
+```
+
+---
+
+## 📚 **DOCUMENT PHASE WATERMARKING REQUIREMENTS (UPDATED)**
+
+### **Phase 4 Implementation Documents:**
+**Required Header:**
+```
+🚀 IMPLEMENTATION SPECIFICATION — PHASE 4 UNLOCKED
+Phase 3.5 is FROZEN. Phase 4 is UNLOCKED for implementation.
+This document is now an implementation specification.
+Follow Priority 1-4 schedule (proof-gated, 8 weeks).
+```
+
+**Documents Requiring This Header:**
+- `NOVA PHASE 4 CONSTITUTIONALLY SPECIFICATION SEALED.md`
+- `NOVA PHASE 4 COMPLETE PRODUCT SPECI.txt`
+
+### **Phase 4.2+ Design Documents:**
+**Required Header:**
+```
+⚠️ DESIGN ONLY — PHASE 4.2+ (NOT YET UNLOCKED)
+Phase 4 is UNLOCKED for core capabilities.
+This document describes future Phase 4.2+ architecture only.
+Requires Phase 4.2 Unlock Gate + adversarial proofs.
+```
+
+**Documents Requiring This Header:**
+- `NOVA MIND ARCHITECTURE WITH DEEPSEEK.txt`
+- `NOVA ORTHOGONAL COGNITION STACK.txt`
+
+### **Phase 5+ Design Documents:**
+**Required Header:**
+```
+⚠️ PHASE 5+ ARCHITECTURE SPEC — FUTURE ONLY
+No device control exists in Phase 3.5 or Phase 4.
+This document is a Phase 5+ design specification only.
+Requires 1+ year Phase 4 stability + constitutional amendment.
+```
+
+**Documents Requiring This Header:**
+- `NOVA PERSONAL INTELLIGENCE HUB ARCH.txt`
+
+### **Already Correctly Watermarked:**
+- `NOVA_DEEP_MEMORY_SAVED_UNLOCK_REQUIRED_v1.0.md` ✅
+- `NOVA_AGENT_IDENTITY_v3.0.md` ✅
+- `ORB_MOTION_CANON.md` ✅
+- `PHASE_4_REFUSAL_LANGUAGE_CANON.md` ✅
+
+---
+
+## 🌤️ **WEATHER API CLARIFICATION (UPDATED)**
+
+**Current Phase 3.5 Reality:**
+- **Primary Provider:** Visual Crossing (via WeatherService abstraction)
+- **Frequency:** User/UI-triggered only
+- **Cache:** Volatile, session-only
+- **Capability:** Read-only weather data display
+
+**Phase 4 Implementation:**
+- **No Change to Provider:** Visual Crossing remains canonical
+- **No Change to Frequency:** User/UI-triggered only
+- **Enhanced Display:** Visual-only alerts (no spoken alerts)
+- **Constitutional Safety:** User opened dashboard; no background cognition; no push behavior
+
+**Future Phase 4.2+ Possibility (Design Only):**
+- **Secondary Provider:** OpenWeatherMap (opt-in only, user must explicitly enable)
+- **Rule:** Secondary providers require explicit user opt-in + Phase 4.2 unlock
+
+**Not Supported (Now or Ever):**
+- OpenWeatherMap as default
+- Background polling
+- Persistent cache without user consent
+- Proactive weather alerts (spoken or push)
+
+---
+
+## 🔄 **EXTERNAL DATA POLICY (CANONICAL - UNCHANGED)**
+
+**Canonical Rules (Phase 3.5 → Phase 4):**
+1. **No Background Polling:** All data fetches require explicit user action or UI trigger
+2. **Volatile Cache Only:** No persistent storage of external data
+3. **User Control:** User can clear cache at any time
+4. **Transparency:** Data source and freshness must be displayed
+5. **Request-Scoped Connections:** All network connections closed after action completion
+
+**Implementation Truth (Applies to Phase 4):**
+```python
+if user_clicks_refresh or ui_auto_trigger:
+    fetch_external_data()
+    # Network connection opened
+    # Data retrieved
+    # Connection immediately closed
+else:
+    use_volatile_cache_or_empty()
+```
+
+**Strict Prohibitions:**
+- ❌ No persistent sessions
+- ❌ No connection pooling
+- ❌ No keep-alive behavior
+- ❌ No background retries
+- ❌ No scheduled refreshes
+
+---
+
+## 🎖️ **THE ACTUAL ACHIEVEMENT (PHASE 3.5 → FOUNDATION FOR PHASE 4)**
+
+**Phase 3.5 DID NOT deliver features.**
+**Phase 3.5 DID prove safety foundation.**
+
+**PROVEN SAFETY GUARANTEES:**
+1. **Execution Surface Guarantee:** Mathematically verifiable - no runtime path to execution exists
+2. **Governance Foundation:** All text flows through single mediator (GovernorMediator)
+3. **Deterministic Behavior:** Predictable processing paths
+4. **Phase Discipline:** Clear boundary between proof and capability
+5. **External Data Safety:** User-controlled refresh, no background activity
+6. **Identity Preservation:** Local intelligence containment proven possible
+
+**THIS IS THE WIN:**
+A sealed governance vessel proven safe for governed intelligence expansion.
+Phase 4 builds on this proven safety foundation.
+
+**THE NOVA DIFFERENCE:**
+- **Most systems:** Power → Then try to add safety (retrofit)
+- **Nova:** Safety → Predictability → Transparency → THEN power (proven foundation)
+
+---
+
+## 🚫 **WHAT REQUIRES PHASE UNLOCKS (UPDATED HIERARCHY)**
+
+### **Phase 4 (CURRENTLY UNLOCKED - Implementation Active):**
+**Authorized Implementation:**
+1. **Governor Redesign:** Text sanitizer → Enforcement engine (Priority 1)
+2. **Execution Contract:** Define ActionRequest patterns (Priority 2)
+3. **Audit System:** Immutable logging for actions (Priority 1)
+4. **Intent Parser:** Text → ActionRequest (explicit only) (Priority 1)
+
+**Note:** All above are in active implementation following Priority schedule.
+
+### **Phase 4.2 (DESIGN ONLY - Requires Future Unlock):**
+**Cannot Proceed Without:** Phase 4.2 Design Document + Unlock Gate + adversarial proofs
+
+**Design Intent Only (NOT IMPLEMENTED):**
+- DeepSeek Constitutional Bridge
+- Orthogonal agent stack
+- Parallel reasoning pool
+- OpenWeatherMap integration (opt-in)
+
+### **Phase 5+ (DESIGN ONLY - Requires Future Unlock):**
+**Cannot Proceed Without:** Phase 5 Unlock Approval + 1+ year Phase 4 stability
+
+**Design Intent Only (NOT IMPLEMENTED):**
+- Personal Intelligence Hub
+- Device control (design only)
+- Requires constitutional amendment process
+
+---
+
+## 📜 **THE CORRECTED NOVA PROMISE (PHASE-ALIGNED)**
+
+### **Current Promise (Phase 3.5 - Runtime Foundation):**
+"I am a sealed vessel. I cannot execute, only inform. All data refresh is user-controlled."
+
+### **Phase 4 Promise (Implementation Target):**
+"I will be a governed intelligence platform. I can help but never decide. Everything is explainable."
+
+### **Phase 4.2+ Promise (Design Intent):**
+"I could provide deeper analysis through external intelligence, but only when explicitly asked and never with authority."
+
+### **Universal Nova Identity (All Phases):**
+"I am a local intelligence containment system. Intelligence may expand, but authority remains contained. Nothing happens unless you make it happen."
+
+---
+
+## ✅ **VERIFIED TRUTH MATRIX (UPDATED)**
+
+| Component | Status | Phase | Implementation State |
+|-----------|--------|-------|----------------------|
+| Execution | ❌ Disabled | 3.5 | `execute_action = None` (no runtime path) |
+| Governor | ⚠️ Text Sanitizer | 3.5 | GovernorMediator only |
+| Weather | ✅ Read-only | 3.5 | Visual Crossing (via WeatherService) |
+| News | ✅ Read-only | 3.5 | RSS, user-initiated fetch |
+| System | ✅ Read-only | 3.5 | psutil monitoring |
+| **Governor Spine** | 🔧 **Implementation** | 4 | Priority 1 (Weeks 1-2) |
+| **Web Search** | 🔧 **Implementation** | 4 | Priority 2 (Weeks 3-4) |
+| **File Opening** | 🔧 **Implementation** | 4 | Priority 2 (Weeks 3-4) |
+| **Undo System** | 🔧 **Implementation** | 4 | Priority 2 (Weeks 3-4) |
+| DEG | 🔒 Design Only | 4.5+ | Not implemented |
+| DeepSeek | 🔒 Design Only | 4.2+ | Not implemented |
+| Agent Stack | 🔒 Design Only | 4.2+ | Not implemented |
+| Device Control | 🔒 Design Only | 5+ | Not implemented |
+
+---
+
+## 🎯 **IMMEDIATE NEXT ACTIONS (IMPLEMENTATION PHASE)**
+
+### **1. Implementation Work (Active):**
+- **Priority 1:** Begin Single Master Governor verification
+- **Priority 1:** Implement instant acknowledgment system (≤200ms target)
+- **Priority 1:** Build refusal + alternative pattern (bounded per spec)
+- **Priority 1:** Implement global Cancel command with execution state model
+- **Priority 1:** Add Conversation Layer local-only constraint enforcement
+- **Priority 1:** Implement request-scoped network connection enforcement
+
+### **2. Documentation Updates (Required):**
+- Update Phase 4 documents with "Implementation Specification" headers
+- Create `PHASE_4_UNLOCK_RECORD.md` with authorization proof
+- Update `CANONICAL_INDEX.md` to reflect v5.2 as current truth
+- Verify all document references point to v5.2
+
+### **3. Verification & Testing (Continuous):**
+- Maintain all Phase 3.5 safety guarantees during implementation
+- Verify Governor remains single choke point throughout
+- Ensure no execution without explicit user request
+- Validate all Phase 4 boundaries enforced from Day 1
+
+**IMPLEMENTATION RULE:** Phase 4 builds on Phase 3.5 safety. No regression allowed.
+
+---
+
+## 📚 **REFERENCE: DOCUMENT TRUTH STATUS (UPDATED)**
+
+### **Current Runtime Truth (Frozen Foundation):**
+- `CANONICAL SYNTHESIS v5.2` (this document) ✅ **CURRENT TRUTH**
+- `GOVERNOR_BYPASS_PROOF.md` ✅
+- `NOVA_AGENT_IDENTITY_v3.0.md` ✅
+- `ORB_MOTION_CANON.md` ✅
+
+### **Phase 4 Implementation Specifications (Active):**
+- `NOVA PHASE 4 CONSTITUTIONALLY SPECIFICATION SEALED.md` ⚠️ (Update header)
+- `NOVA PHASE 4 COMPLETE PRODUCT SPECI.txt` ⚠️ (Update header)
+- `PHASE_4_REFUSAL_LANGUAGE_CANON.md` ✅
+- `PHASE_4_UNLOCK_GATE.md` ✅
+
+### **Future Design Documents (Require Phase Banners):**
+- `NOVA MIND ARCHITECTURE WITH DEEPSEEK.txt` ⚠️ (Add Phase 4.2+ banner)
+- `NOVA PERSONAL INTELLIGENCE HUB ARCH.txt` ⚠️ (Add Phase 5+ banner)
+- `NOVA ORTHOGONAL COGNITION STACK.txt` ⚠️ (Add Phase 4.2+ banner)
+- `DEEPSEEK_INTEGRATION_AUDIT.md` ⚠️ (Update as Phase 4.2 prerequisite)
+
+### **Permanent Invariants (Correct):**
+- `NOVA_DEEP_MEMORY_SAVED_UNLOCK_REQUIRED_v1.0.md` ✅
+- `CorePhilosophy.md` ✅
+- `README.md` ⚠️ (Update to reference v5.2)
+
+---
+
+## 🎯 **EXECUTABLE ACTION PLAN (UPDATED)**
+
+### **Week 1-2 (Priority 1 Foundation):**
+1. **Replace v5.1 with v5.2** as canonical truth
+2. **Create Implementation Roadmap** with 8-week schedule
+3. **Begin Governor Spine implementation** (Single Master Governor verification)
+4. **Implement instant acknowledgment system** (≤200ms target)
+5. **Update all Phase 4 documents** with "Implementation Specification" headers
+6. **Create Phase 4 Unlock Record** with authorization proof
+
+### **Week 3-8 (Follow Priority Schedule):**
+- Weeks 3-4: Priority 2 Core Actions
+- Weeks 5-6: Priority 3 UX Polish
+- Weeks 7-8: Priority 4 Testing & Refinement
+
+### **Documentation Discipline:**
+- All implementation references v5.2 as truth source
+- All Phase 4 work follows constitutional constraints
+- All new capabilities pass through Governor Spine
+- No autonomy introduced at any stage
+
+---
+
+## 🔄 **THE CORRECTED NARRATIVE (v5.2 TRUTH)**
+
+### **From v5.0 (Aspirational):**
+"Nova has all these capabilities (but blocked by phase)"
+
+### **To v5.1 (Truthful but Static):**
+"Nova has proven it can safely contain intelligence. Future capabilities exist as designs only, awaiting phase gates."
+
+### **To v5.2 (Implementation-Active Truth):**
+**"Nova has proven safety foundation. Phase 4 implementation is now authorized, building governed capabilities on that proven safety. Intelligence expands under strict containment."**
+
+### **Phase Narrative Correction:**
+- **Phase 3.5:** "Frozen proof of safety foundation"
+- **Phase 4:** "Unlocked for governed capability implementation"
+- **Phase 4.2+:** "Design-only future expansion"
+- **All Phases:** "Intelligence may expand, authority remains contained"
+
+### **Governance Truth Evolution:**
+- **Phase 3.5:** "Governor is a text sanitizer"
+- **Phase 4:** "Governor Spine replaces sanitizer with enforcement engine"
+- **Constitutional Constant:** "Single choke point, no autonomy, user control"
+
+---
+
+## 🏁 **IMPLEMENTATION SUCCESS CRITERIA**
+
+### **Technical Success (Phase 4 Completion):**
+- ✅ Zero execution outside Governor Spine
+- ✅ 100% of governed actions logged and traceable
+- ✅ No Phase 3.5 regression
+- ✅ No network access without explicit announcement
+- ✅ All visual alerts remain visual-only
+- ✅ No background processing detected
+- ✅ Execution state model prevents ghost execution
+- ✅ Conversation Layer operates on local context only
+- ✅ Network connections are request-scoped and properly closed
+- ✅ No time-based execution mechanisms exist
+
+### **User Experience Success:**
+- ✅ Users describe Nova as "calm" and "predictable"
+- ✅ No user reports of "it didn't hear me" or missed invocations
+- ✅ Users successfully use undo/cancel without confusion
+- ✅ No complaints about "rigid" or "rejecting" behavior
+- ✅ Users naturally discover capabilities without training
+- ✅ **Users feel control, not assistance**
+
+### **Constitutional Integrity Success:**
+- ✅ All eight invariants preserved through implementation
+- ✅ Intelligence-Authority Split proven in practice
+- ✅ Single choke point remains mathematically verifiable
+- ✅ Phase gates enforced throughout implementation
+- ✅ **Identity preserved: "Local intelligence containment system"**
+- ✅ **Experience preserved: "Nothing happens unless I make it happen"**
+
+---
+
+## ⚠️ **FINAL WARNINGS & CONSTITUTIONAL RED LINES**
+
+### **Implementation Red Lines (Immediate Rollback Triggers):**
+1. Any execution bypassing Governor Spine
+2. LLM suggesting unprompted actions
+3. Authority expansion without user approval
+4. Audit trail tampering or gaps
+5. Online usage without disclosure
+6. Synthesis in outputs without explicit request
+7. Orb motion encoding internal state
+8. **Any regression of Phase 3.5 safety guarantees**
+
+### **Identity Preservation Requirements:**
+- **Nova must remain:** Local, quiet by default, predictable, transparent, governed
+- **Nova must never become:** Autonomous, proactive, adaptive, emotional, persuasive
+- **The experience must always feel:** "Nothing will happen unless I make it happen"
+
+### **The Unbreakable Rule:**
+**"Intelligence may expand. Authority must remain contained."**
+
+This is not a guideline. It is Nova's constitutional core.
+All Phase 4 implementation must respect this boundary.
+All future phases must build on this principle.
+
+---
+
+## 📜 **CONSTITUTIONAL SEAL STATUS**
+
+### **Authority Surface:**
+- ✓ Single choke point (Governor Spine implementation)
+- ✓ No bypass paths (proven in Phase 3.5)
+- ✓ Execution state model (Priority 1 implementation)
+- ✓ Cancel race protection (Priority 1 implementation)
+- ✓ Model cannot imply execution (constitutional constraint)
+
+### **Network Surface:**
+- ✓ Explicit invocation required (Phase 3.5 foundation)
+- ✓ Announcement required (Phase 4 implementation)
+- ✓ No implicit fetch (constitutional invariant)
+- ✓ No background refresh (constitutional invariant)
+- ✓ Request-scoped connections only (Priority 1 implementation)
+- ✓ No persistent sessions or keep-alive (constitutional prohibition)
+
+### **Cognitive Surface:**
+- ✓ No background reasoning (constitutional invariant)
+- ✓ No inference (constitutional invariant)
+- ✓ No learning (constitutional invariant)
+- ✓ Local-only conversation (Priority 1 implementation)
+- ✓ No time-based execution (constitutional prohibition)
+- ✓ No scheduled/queued actions (constitutional prohibition)
+
+### **UI / Presence Surface:**
+- ✓ Orb non-semantic (ORB_MOTION_CANON.md)
+- ✓ Cosmetic-only visuals (constitutional constraint)
+- ✓ No progress indication (constitutional prohibition)
+- ✓ No confidence signaling (constitutional prohibition)
+
+### **Capability Surface:**
+- ✓ No orchestration (Phase 4 boundary)
+- ✓ No chaining (Phase 4 boundary)
+- ✓ No multi-step automation (Phase 4 boundary)
+- ✓ Undo bounded (Priority 2 implementation)
+
+### **External Intelligence Surface:**
+- ✓ DeepSeek isolated (Phase 4.2+ design only)
+- ✓ Advisory only (constitutional constraint)
+- ✓ Full reprocessing required (constitutional constraint)
+- ✓ No direct state modification (constitutional prohibition)
+
+### **Phase Boundaries:**
+- ✓ Phase 3.5 sealed and frozen ✅
+- ✓ Phase 4 unlocked and implementation authorized 🔓
+- ✓ Phase 4.2+ locked (design only) 🔒
+- ✓ No drift to Phase 5 without constitutional amendment 🔒
+
+---
+
+## 🎯 **FINAL VERDICT & IMPLEMENTATION AUTHORIZATION**
+
+### **Phase 4 Status:**
+**✅ CONSTITUTIONALLY UNLOCKED FOR IMPLEMENTATION**
+
+### **Implementation Risk Assessment:**
+- **Operational Risk:** Low (Phase 3.5 safety foundation proven)
+- **Architectural Risk:** Low (clear boundaries, single choke point)
+- **Authority Leak Risk:** Low (all surfaces protected, constitutional constraints active)
+- **Identity Drift Risk:** Medium (requires vigilant implementation discipline)
+
+### **Implementation Authorization:**
+**You are authorized to implement Phase 4 per the Priority 1-4 schedule.**
+
+### **Constitutional Mandate:**
+**Build governed capabilities on proven safety foundation.**
+**Expand intelligence under strict containment.**
+**Preserve user control above all else.**
+
+### **The Nova Promise (Phase 4 Implementation):**
+"We will build a governed intelligence platform that helps but never decides.
+Everything will be explainable.
+Nothing will happen unless you make it happen.
+Intelligence will expand, but authority will remain contained."
+
+---
+
+**END OF NOVA CANONICAL SYNTHESIS v5.2 - PHASE-UNLOCKED CONSTITUTIONAL TRUTH**
+
+**Document Integrity:** SHA256: [TO_BE_CALCULATED_UPON_COMMIT]  
+**Storage:** `docs/CANONICAL/CANONICAL_SYNTHESIS_v5.2.md`  
+**Authority:** Master Identity Document  
+**Reference:** All Nova documents must reference v5.2 as current truth  
+**Next Required:** Begin Priority 1 Implementation (Single Master Governor verification)  
+
+**RUNTIME TRUTH:** Nova today is a sealed, frozen vessel with proven safety.  
+**IMPLEMENTATION TRUTH:** Nova Phase 4 builds governed capabilities on that safety.  
+**CONSTITUTIONAL TRUTH:** Intelligence may expand, authority remains contained.  
+**IDENTITY TRUTH:** Local intelligence containment system under user control.

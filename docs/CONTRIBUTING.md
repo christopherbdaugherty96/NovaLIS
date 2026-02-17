@@ -1,8 +1,8 @@
-# CONTRIBUTING — NovaLIS (Governance-First Rules)
+# CONTRIBUTING — Nova (Governance-First Rules)
 
 This repository does **not** follow conventional open-source contribution norms.
 
-NovaLIS is a **governed system** with phase-locked behavior, strict authority boundaries, and an offline-first safety model.
+Nova is a **governed system** with phase-locked behavior, strict authority boundaries, and an offline-first safety model. The single source of truth is the **Nova Complete Constitutional Blueprint v1.8**.
 
 Contributions are permitted **only** within the constraints defined here.
 
@@ -10,24 +10,23 @@ Contributions are permitted **only** within the constraints defined here.
 
 ## 1) Canonical Authority
 
-The following documents are binding and override all other guidance:
+The following document is binding and overrides all other guidance:
 
-- `NOVA CANONICAL SYNTHESIS v5.1` — Phase-Aligned Truth (primary authority)
-- `NovaLIS-Governance/PHASE_3.5_FROZEN_STATUS.md` — Current phase status
-- `NovaLIS-Governance/ARCHITECT_CONTRACT.md`
-- Any document explicitly marked **LOCKED** in `NovaLIS-Governance/`
+- **`NOVA COMPLETE CONSTITUTIONAL BLUEPRINT 1.8.md`** — The single source of truth (immutable)
 
-If a proposed change conflicts with a lock, the change is invalid unless an explicit unlock is recorded.
+All other documents (including phase locks, governance contracts, and design specs) are authoritative **only insofar as they do not conflict** with v1.8.
+
+If a proposed change conflicts with a constitutional invariant or phase lock, the change is invalid unless an explicit unlock is ratified.
 
 ---
 
 ## 2) Phase Discipline (Hard Rule)
 
-- Current operational state: **Phase 3.5 FROZEN** (Execution Surface Guarantee Proven)
-- **Phase 4 is hard blocked** and design-only
-- Governor is **GovernorMediator** (text sanitizer only)
-- Execution is **disabled** (`execute_action = None`)
-- Documentation must never imply capabilities that runtime cannot perform
+- Current operational state: **Phase 3.5 SEALED** (no execution authority, GovernorMediator only)
+- **Phase 4 is HARD‑LOCKED** at runtime; design activity is unlocked but no implementation.
+- Governor is **GovernorMediator** (text sanitizer only, non-authoritative)
+- Execution is **disabled** (`execute_action = None`, `GOVERNED_ACTIONS_ENABLED = false` hard‑coded)
+- Documentation must never imply capabilities that runtime cannot perform.
 
 Phase boundaries are safety barriers, not suggestions.
 
@@ -43,7 +42,7 @@ Allowed changes include:
 - Refactoring **only** when behavior is provably unchanged
 - Removal of dead code or unused artifacts
 - Tooling that improves verification without adding power
-- Phase alignment corrections (to match v5.1)
+- Phase alignment corrections (to match v1.8 and closure documentation)
 
 All changes must be:
 
@@ -51,7 +50,7 @@ All changes must be:
 - Explicit
 - Reviewable via diff
 - Reversible
-- Phase-compliant with v5.1
+- Phase-compliant with v1.8
 
 ---
 
@@ -61,15 +60,15 @@ The following are forbidden unless explicitly unlocked in governance:
 
 - Adding new skills or commands
 - Implicit intent inference or ranking
-- Substring or fuzzy matching
+- Substring or fuzzy matching (beyond defined skill triggers)
 - Background threads, daemons, or schedulers
 - Telemetry, analytics, or tracking
 - Silent network access or auto-fallbacks
 - Self-modifying or self-expanding behavior
 - "Helpful" automation that bypasses user intent
-- DeepSeek, DEG, or agent integration (Phase 4+ design only)
+- Any capability beyond Phase 3.5 sealed state (unless a phase unlock is ratified)
+- Interpreting "design documents" as implementation approval
 - Device control or execution capability
-- Any capability beyond Phase 3.5 frozen state
 
 If a change feels "smart" or "convenient," it is likely invalid.
 
@@ -81,19 +80,19 @@ AI may be used **only** as a constrained reviewer or editor.
 
 AI may:
 
-- Audit code against phase locks (v5.1)
+- Audit code against phase locks (v1.8)
 - Propose minimal diffs
 - Identify inconsistencies or unsafe assumptions
 - Generate tests that enforce existing rules
 - Verify phase alignment
 
-AI must NOT:
+AI must **NOT**:
 
 - Design new features
 - Reinterpret intent
 - "Improve UX" by adding autonomy
 - Optimize behavior in ways that affect authority or scope
-- Suggest capabilities beyond Phase 3.5 frozen state
+- Suggest capabilities beyond Phase 3.5 sealed state
 
 All AI-generated changes must be reviewed as if written by an untrusted junior contributor.
 
@@ -105,9 +104,9 @@ Every contribution must:
 
 - State the phase it affects
 - Declare whether behavior changes (expected: "no")
-- Reference the relevant governance lock(s)
+- Reference the relevant constitutional invariant(s) (Part I of v1.8)
 - Prefer smallest possible change
-- Align with v5.1 phase-aligned truth
+- Align with v1.8 phase‑aligned truth
 
 If uncertain, stop and ask for clarification rather than guessing.
 
@@ -115,7 +114,7 @@ If uncertain, stop and ask for clarification rather than guessing.
 
 ## 7) Non-Goals (Explicit)
 
-NovaLIS is **not**:
+Nova is **not**:
 
 - A chatbot platform
 - An autonomous agent
@@ -132,16 +131,28 @@ It is a **sealed governance vessel** with proven safety, awaiting explicit phase
 
 All contributions must respect:
 
-- Phase 3.5: FROZEN (Execution Surface Guarantee Proven)
-- Governor: GovernorMediator (text sanitizer only)
-- Execution: Disabled (execute_action = None)
-- External data: User/UI-triggered only
-- Design documents: Marked as Phase 4+ only
+- **Phase 3.5**: SEALED (no execution authority, GovernorMediator only)
+- **Governor**: GovernorMediator (text sanitizer only, non-authoritative)
+- **Execution**: Disabled (`execute_action = None`, no runtime path exists)
+- **External data**: User/UI-triggered only, no background polling
+- **Design documents**: Marked as Phase 4+ only, not interpretable as implementation approval
+- **Closure documentation**: Phase 3.5 closure recorded in `docs/PHASE_3.5_CLOSURE.md`
 
 Any contribution that implies capabilities beyond this reality is rejected.
 
 ---
 
+## 9) Reference Documents (Non-Negotiable Truths)
+
+All contributions must align with these canonical documents:
+
+- **`NOVA COMPLETE CONSTITUTIONAL BLUEPRINT 1.8.md`** - Primary phase-aligned truth
+- **`docs/PHASE_3.5_CLOSURE.md`** - Formal closure record
+
+Any contribution that contradicts these documents is invalid by definition.
+
+---
+
 **End of CONTRIBUTING rules.**
 
-**Reference Authority:** Nova Canonical Synthesis v5.1 - Phase-Aligned Truth
+**Reference Authority:** Nova Complete Constitutional Blueprint v1.8

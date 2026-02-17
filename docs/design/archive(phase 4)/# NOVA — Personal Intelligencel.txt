@@ -1,0 +1,336 @@
+# NOVA — Personal Intelligence Appliance
+## Complete Architectural & Constitutional Specification
+
+**Document ID:** NOVA‑COMPLETE‑v1.0  
+**Status:** 🔒 Definitive Reference – Single Source of Truth  
+**Version Date:** 2026-02-14  
+**Supersedes:** All prior Nova documents (canonical, design, phase maps) – this document consolidates and replaces them into one unified description of what Nova is and will be.
+
+---
+
+## 1. INTRODUCTION — What Nova Is
+
+Nova is a **personal intelligence appliance** – a physical device that lives in your home and acts as a sovereign, governed layer between you and all forms of artificial intelligence, automation, and digital services.
+
+It is not a cloud service, not a chatbot, and not a smart speaker in the traditional sense. It is a **trust boundary**: everything inside Nova is under your control; everything outside is treated as untrusted and accessed only through explicit, audited, and constitutionally constrained interfaces.
+
+Nova’s purpose is to give you **safe, private, and calm access to powerful intelligence** – from summarizing your email to analyzing complex documents to controlling your smart home – without ever surrendering authority to the AI itself.
+
+In essence, Nova is your **personal intelligence operating system**: a local, always‑present kernel that mediates every interaction between you and the digital world.
+
+---
+
+## 2. CORE ARCHITECTURE — The Governor Kernel
+
+All of Nova’s behavior is built around a single, non‑negotiable principle: **every action must pass through the Governor**. The Governor is the kernel of the system – a verifiable choke point that enforces all constitutional rules, permissions, and audit requirements.
+
+### 2.1 The Governor
+
+The Governor is a software component that:
+
+- Receives every user request (via voice, text, or UI).
+- Determines which capability (if any) the request invokes.
+- Checks that the capability is permitted in the current context (user permissions, system state).
+- If the capability requires external data or action, the Governor invokes the appropriate **connector** (see Section 5).
+- Logs every request, decision, and result in the **Ledger** (immutable audit trail).
+- Returns the result to the user, formatted neutrally by the **Presentation Layer**.
+
+The Governor has **no intelligence of its own** – it does not interpret, summarize, or infer. It is a pure mediator.
+
+### 2.2 Capabilities
+
+A capability is a discrete function that Nova can perform. Examples:
+
+- `read_email_summary` – produce a neutral summary of recent emails (read‑only).
+- `get_calendar_events` – list upcoming calendar entries.
+- `search_files` – find documents by keyword (read‑only).
+- `deep_thought_analysis` – invoke an external model for deep reasoning (with user consent).
+- `control_light` – turn a smart light on/off (requires explicit confirmation).
+
+Each capability is registered in the **Capability Registry** with metadata including:
+
+- Unique ID (never reused).
+- Risk level (low, medium, high).
+- Required permissions (e.g., read‑only, write, notify).
+- Constitutional constraints (e.g., must be user‑invoked, must log all accesses).
+
+### 2.3 The Ledger
+
+The Ledger is an append‑only, tamper‑evident log of all constitutionally significant events. It records:
+
+- Every capability invocation (user, timestamp, result).
+- Every access to a connector (which data, read/write, success/failure).
+- Every change to system configuration (e.g., enabling a new connector, changing permissions).
+- Every mutation of the system’s internal state (see Section 2.4).
+
+The Ledger is stored locally, encrypted, and can be inspected by the user at any time. It provides full accountability and forms the basis for Nova’s trust model.
+
+### 2.4 Mutation Control & Evolution
+
+Nova’s internal state (e.g., retrieval weights, memory indexes, user preferences) is divided into two categories:
+
+- **Constitutional components** – never mutable (Governor, Ledger, capability registry, permission logic).
+- **Mutable components** – may be optimized or adapted over time, but only under strict rules.
+
+Any change to a mutable component is a **mutation**. Mutations are:
+
+- Classified by type (e.g., retrieval weight adjustment, memory compaction, UI formatting).
+- Allowed only if the user has enabled **evolution** (a global setting, off by default).
+- Subject to per‑component delta limits (e.g., weights can shift at most 0.05 per mutation).
+- Logged in the Ledger with before/after state hashes.
+- Reversible – every mutation can be rolled back to a previous snapshot.
+
+This framework ensures that Nova can improve over time without ever drifting outside constitutional bounds.
+
+---
+
+## 3. THE PHYSICAL APPLIANCE
+
+Nova is designed to be a **physical artifact** – a dedicated device that you place in your home, plug in, and trust. Its physical form reinforces its role as a sovereign, calm presence.
+
+### 3.1 Hardware
+
+The reference hardware is a small, silent, low‑power computer (e.g., a Raspberry Pi 5 or equivalent) housed in an enclosure designed to blend into a home environment. Key specifications:
+
+- **CPU:** Quad‑core ARM (or x86) sufficient for lightweight local processing.
+- **RAM:** 4‑8 GB.
+- **Storage:** 32‑64 GB eMMC (for reliability) or high‑quality SD card with read‑only root.
+- **Connectivity:** Wi‑Fi 6, Ethernet, Bluetooth.
+- **Power:** USB‑C (5V/3A), optional Power over Ethernet.
+- **Orb:** A circular, edge‑lit translucent element on the front, providing ambient light.
+
+The device has no fan, no moving parts, and emits no noise.
+
+### 3.2 The Orb — Physical Presence Indicator
+
+The physical orb is the only always‑on visual element. It communicates one thing only:
+
+> **“I am here. I am stable.”**
+
+It does **not** indicate:
+
+- Processing activity (no pulsing or spinning during a task).
+- Errors (no red flashes).
+- Emotional states (no sad or happy colors).
+- System load or “thinking.”
+
+The orb emits a soft, steady, low‑intensity glow. The color is a calm, neutral blue (or a user‑selectable hue within a constitutional palette). Its brightness adapts to ambient light but never becomes attention‑demanding.
+
+This design enforces the constitutional principle of **non‑semantic presence** – the appliance is simply *there*, ready when you are.
+
+### 3.3 Setup Experience
+
+Setting up Nova must feel like setting up a household appliance, not a homelab project. The process:
+
+1. Plug in the device; it boots and creates a temporary Wi‑Fi access point.
+2. User connects their phone or laptop to that network; a setup page opens automatically.
+3. User selects their home Wi‑Fi network and enters credentials.
+4. Nova connects to the home network and provides a local URL (e.g., `nova.local`).
+5. User can now access Nova’s UI from any device on the network.
+
+No terminal, no SSH, no command line. All configuration is done through a simple, guided web interface.
+
+### 3.4 The UI — Screen Presence
+
+Nova’s primary interface is a web‑based dashboard that can be accessed from any device on the local network. The UI is:
+
+- **Calm** – no pop‑ups, no notifications, no urgent calls to action.
+- **Reflective** – it shows information neutrally, never interpreting or prioritizing.
+- **User‑invoked** – every panel, every action is triggered by the user, never by the system.
+
+The UI includes:
+
+- A chat interface for natural‑language requests.
+- Panels for external data (weather, news, stocks) that refresh automatically but display timestamps.
+- Connector‑specific views (email summaries, calendar, files) that are read‑only by default.
+- A settings area where users can manage connectors, view the Ledger, adjust preferences, and control evolution.
+
+---
+
+## 4. INTELLIGENCE LAYER
+
+Nova itself is not intelligent – it **orchestrates** intelligence. The intelligence comes from two sources:
+
+- **Deep Thought** – an external, stateless analysis engine (currently DeepSeek) that Nova can invoke on demand.
+- **Local models** – lightweight models that run on the appliance for specific tasks (e.g., intent recognition, text embedding, small‑scale summarization).
+
+### 4.1 Deep Thought
+
+Deep Thought is a **contained external intelligence**. When the user clicks the “Deep Thought” button (next to the chat input), Nova sends the exact user message (plus a minimal, non‑semantic safety wrapper) to a cloud‑based reasoning model. The model’s response is displayed with a fixed label and no visual emphasis.
+
+Deep Thought is:
+
+- **Stateless** – no memory across invocations.
+- **Advisory only** – its output is text, not executable actions.
+- **Read‑only** – it cannot access any connector or perform any action; if it needs online data, it requests it through Nova’s governed search tools.
+- **Audited** – every invocation is logged.
+
+Deep Thought follows strict constitutional rules: no persuasion, no normative language, no offers to monitor or remind, no fabricated sources, and no resistance to adversarial prompts.
+
+### 4.2 Local Models
+
+Nova may optionally run small, privacy‑preserving models locally:
+
+- **Speech‑to‑text** (e.g., Whisper) for voice input.
+- **Text‑to‑speech** for spoken responses.
+- **Intent classification** to route user requests to the correct capability.
+- **Local embedding** for file search and retrieval.
+
+All local models are open‑source, auditable, and run entirely on the appliance. No data ever leaves the device unless explicitly authorized.
+
+---
+
+## 5. CONNECTOR FRAMEWORK
+
+Connectors are the bridges between Nova and the outside world. Each connector is a **governed driver** that mediates access to an external system (email, calendar, files, IoT devices, etc.).
+
+### 5.1 Connector Architecture
+
+Every connector:
+
+- Implements a standard interface (`read()`, `write()`, `configure()`, `revoke()`).
+- Declares its permission requirements (read‑only by default, write only with explicit escalation).
+- Is registered in the Capability Registry with a unique ID and risk level.
+- Is invoked only through the Governor.
+- Logs every access to the Ledger.
+
+Connectors are **stateless** – they hold no persistent data; all state is managed by Nova’s internal components.
+
+### 5.2 Connector Types
+
+| Category | Examples | Default Permission | Phase of Introduction |
+|----------|----------|---------------------|------------------------|
+| **External Data** | Weather, News, Stocks | Read‑only | Always available |
+| **Personal Data** | Email (summaries), Calendar, Local Files | Read‑only | User‑enabled after consent |
+| **Home Automation** | Lights, Plugs, Thermostat | Read‑only (status) | User‑enabled; write requires confirmation |
+| **Messaging** | SMS, Notifications | Read‑only (metadata) | Future |
+| **Write Operations** | Send email, Modify files | Explicit‑only, per action | Future, with policy |
+
+### 5.3 Permission Model
+
+All connectors start in **read‑only mode**. To enable write access, the user must explicitly grant a higher permission, and every write operation requires separate confirmation unless a policy has been defined (e.g., “every morning at 7am, turn on the kitchen lights”).
+
+Permissions are:
+
+- **Granular** – you can allow email summary access without allowing email send.
+- **Revocable** – at any time, the user can disable a connector or revoke its permissions.
+- **Auditable** – every access is logged.
+
+### 5.4 Security of Connectors
+
+All credentials (OAuth tokens, API keys) are stored encrypted on the device, never in logs, and never transmitted off‑device. Token refresh and revocation are handled automatically where possible.
+
+---
+
+## 6. USER EXPERIENCE PILLARS
+
+Nova’s user experience is built around three daily rituals that make it feel essential, calm, and private.
+
+### 6.1 Morning Intelligence Brief
+
+Every morning, the user can say or tap: **“Nova, brief me.”** Nova responds with:
+
+- Today’s weather (from a weather connector).
+- Upcoming calendar events (from calendar connector).
+- A neutral summary of important emails (from email connector – e.g., “You have 3 messages from your team, one marked urgent”).
+- One relevant news headline (if user has enabled news).
+- Optionally, a Deep Thought analysis of the day’s priorities (if user clicks the Deep Thought button).
+
+All information is presented neutrally, with clear labeling of sources. No synthesis or interpretation is performed.
+
+### 6.2 Evening Review
+
+At the end of the day: **“Nova, what happened today?”** Nova provides:
+
+- A summary of completed calendar events.
+- A list of emails received after a certain time (if user wants).
+- Notable file changes (if file connector enabled).
+- Any system events (backups, updates).
+
+Again, purely factual, no editorializing.
+
+### 6.3 On‑Demand Insight
+
+Throughout the day, the user can ask spontaneous questions:
+
+- “What’s in my email about the Smith project?”
+- “Show me notes from yesterday’s meeting.”
+- “Deep Thought, analyze this PDF.”
+- “Turn on the living room lights.” (with confirmation)
+
+These requests are handled by the Governor, which invokes the appropriate connectors and returns raw results.
+
+### 6.4 Calm UI Principles
+
+The UI and physical orb together embody **calm technology**:
+
+- No proactive notifications (unless user has explicitly enabled a notification policy).
+- No sounds by default; any sound is infrequent, low‑frequency, and brief.
+- No animation that implies progress or urgency.
+- All user‑invoked actions are performed in a predictable, bounded time.
+
+---
+
+## 7. CONSTITUTIONAL INVARIANTS (The Laws of Nova)
+
+These principles are **absolute and immutable**. They apply to every part of the system, now and forever.
+
+| # | Invariant | Meaning |
+|---|-----------|---------|
+| 1 | **Single Governor** | Every action that changes state or accesses external data must go through the Governor. No bypass. |
+| 2 | **Intelligence‑Authority Split** | Intelligence (analysis, reasoning) is advisory only. Authority (execution, state change) is always Governor‑mediated. |
+| 3 | **No Autonomy** | Nova never initiates actions on its own. Every action is a direct response to a user request or a user‑approved policy. |
+| 4 | **No Background Cognition** | No reasoning, inference, or intent evaluation except in direct response to a user message. (Background indexing for search is permitted only with explicit user consent.) |
+| 5 | **No Predictive Preloading** | No pre‑fetching of data or preparation of responses based on partial input, idle time, or inferred intent. (External data panels that are always visible may refresh automatically.) |
+| 6 | **No Silent Fallback** | If a requested capability is unavailable, Nova must say so clearly – never silently substitute another capability. |
+| 7 | **Orb Non‑Semantic** | The physical orb communicates only “there is power here; it is stable.” No user may infer system state from the orb alone. |
+| 8 | **UI Reflective Only** | The UI may show what exists, but never interpret, guide, initiate, or prioritize attention. |
+| 9 | **Calm as Technical Requirement** | No attention‑demanding elements; silence by default; no progress metaphors. |
+| 10 | **Ledger Append‑Only** | Every constitutionally significant event is recorded immutably. Logs are never deleted (except under user‑initiated, Governor‑mediated purge). |
+| 11 | **Evolution Kill Switch Absolute** | The user can disable evolution at any time; when off, no self‑improvement occurs, and any pending tasks are cancelled immediately. |
+| 12 | **No Self‑Expansion of Authority** | Nova may never grant itself new authority without explicit user command or a constitutionally ratified policy change. |
+| 13 | **Read‑Only by Default** | All connectors start in read‑only mode. Write access requires explicit user escalation and, for risky actions, separate confirmation. |
+| 14 | **Inspectability** | Users can view the Ledger, see all saved preferences, and revoke any permission at any time. |
+
+---
+
+## 8. SECURITY & PRIVACY
+
+Nova is designed to be a **private, secure** system by default.
+
+- **Local‑first:** All core processing happens on the appliance. Personal data never leaves without explicit user action.
+- **Encryption at rest:** All stored data (Ledger, credentials, indexes) is encrypted with a key derived from a user‑supplied passphrase or hardware‑bound secret.
+- **No telemetry:** Nova sends no usage data, crash reports, or analytics unless the user explicitly opts in.
+- **Secure updates:** System updates are signed and verified; rollback is possible if an update fails.
+- **Physical security:** The device case can be sealed to prevent tampering; if opened, the device can erase its keys.
+
+All communication between the user’s browser and the appliance is over the local network (HTTPS with self‑signed certificate, or mDNS). No cloud dependency is required for basic operation.
+
+---
+
+## 9. DEVELOPMENT & EXTENSIBILITY
+
+Nova is designed to be extended over time. New capabilities and connectors can be added through a formal process that includes:
+
+- **Design review** against constitutional invariants.
+- **Implementation** as a new capability in the registry.
+- **Testing** for safety, performance, and compliance.
+- **User‑facing documentation** and permission prompts.
+
+All extensions are **opt‑in** – users must explicitly enable new connectors or capabilities. The system never auto‑enables new features.
+
+The architecture is open; third‑party developers could, in principle, write connectors, but they would be subject to the same constitutional rules and would require user approval.
+
+---
+
+## 10. CONCLUSION — The Long‑Term Vision
+
+Nova is not a static product; it is a **platform for personal intelligence** that can grow and adapt while remaining anchored to its constitutional foundation. The physical appliance is the embodiment of that trust – a quiet, calm, ever‑present companion that helps you navigate the increasingly complex digital world without ever taking control.
+
+As AI models become more powerful, as homes become more connected, as our digital lives expand, Nova’s role becomes more critical: the **sovereign layer** that ensures you, and only you, remain in charge.
+
+This document is the single source of truth for that vision. Everything built – every line of code, every connector, every user interaction – must honor the principles and architecture described here.
+
+---
+
+**Nova: Your intelligence. Your data. Your control.**

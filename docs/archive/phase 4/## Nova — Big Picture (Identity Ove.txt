@@ -1,0 +1,118 @@
+## Nova — Big Picture (Identity Overview)
+
+**Nova is a local intelligence containment system designed to keep AI useful, predictable, and fully under the user’s control.**
+
+It is not built to act on its own.
+It is built to ensure intelligence remains a tool — never an independent actor.
+
+---
+
+## Core Idea
+
+Most AI systems are designed to become more autonomous — anticipating needs, offering suggestions, and guiding decisions.
+
+Nova is built on a different principle:
+
+**Intelligence may expand.
+Authority must remain contained.**
+
+Nova’s role is to create a boundary around intelligence so it can be used safely, deliberately, and only when invited.
+
+---
+
+## What Nova Is
+
+Nova is:
+
+* **Local** — runs under the user’s control, not a distant service acting independently
+* **Quiet by default** — nothing happens unless the user initiates it
+* **Predictable** — behavior follows clear, consistent rules
+* **Transparent** — no hidden decisions, no silent influence
+* **Governed** — intelligence operates within strict limits of authority
+
+It responds when asked, then returns to silence.
+
+---
+
+## What Nova Is Not
+
+Nova is not:
+
+* An autonomous agent
+* A digital companion or personality
+* A system that tries to anticipate your needs
+* A platform that learns your behavior or adapts without permission
+* A product designed to capture attention or influence decisions
+
+It does not suggest, persuade, optimize, or guide.
+It provides information and actions only when explicitly requested.
+
+---
+
+## The Experience
+
+Nova should feel:
+
+* Calm
+* Quiet
+* Stable
+* Non-intrusive
+* Under your control
+
+The intended feeling is:
+
+> “Nothing will happen unless I make it happen.”
+
+It behaves like an instrument — present, available, and reliable — not like a participant in your life.
+
+---
+
+## The Role of the Interface
+
+Nova’s interface exists to **show state, not steer behavior**.
+
+It:
+
+* Displays information
+* Reflects the current world or system condition
+* Updates quietly without drawing attention
+* Never highlights, suggests, or decides what matters
+
+The system presents facts, not priorities.
+
+---
+
+## The Trust Model
+
+Nova earns trust through **limitation**, not capability.
+
+Trust comes from:
+
+* Restraint
+* Predictability
+* Silence when not needed
+* Clear boundaries on what it will and will not do
+
+Its design ensures:
+
+**No initiative.
+No hidden activity.
+No influence without invitation.**
+
+---
+
+## One-Sentence Identity
+
+**Nova is a local, governed intelligence system that keeps AI useful, contained, and fully under the user’s authority — quiet, predictable, and responsive only when asked.**
+
+---
+
+## The Philosophy
+
+Nova exists to prove a different future for AI:
+
+Intelligence does not need autonomy to be valuable.
+Power does not need initiative to be useful.
+Trust comes from control, not capability.
+
+Nova is intelligence — **contained, calm, and under your command.**

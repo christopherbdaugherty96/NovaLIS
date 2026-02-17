@@ -1,0 +1,236 @@
+Four Pillars document written to fit your current Nova structure.
+This version is:
+Phase-safe
+
+
+Non-authorizing
+
+
+Compatible with Phase-3.5 (frozen)
+
+
+Compatible with Phase-4 (design-only)
+
+
+Explicitly avoids autonomy, background behavior, or learning
+
+
+Aligned with Intelligence–Authority Split
+
+
+
+🔒 NOVA FOUR PILLARS — SYSTEM IDENTITY
+Status: CANONICAL — LOCKED
+Authority Level: Identity / Direction (Non-Authorizing)
+Runtime Impact: None
+Phase Impact: Clarification only
+Phase-3.5: Frozen (unchanged)
+Phase-4: Design-only, locked
+
+Purpose
+This document defines the core identity of Nova as a system.
+It describes what Nova is intended to become over time, without granting any new capabilities or altering phase-gated behavior.
+All operational behavior remains governed by existing phase constraints and the Master Governor architecture.
+
+Core Principle
+Intelligence may expand over time.
+Authority remains explicitly governed.
+Identity does not imply capability.
+All functionality must remain within phase-approved boundaries.
+
+The Four Pillars
+
+1) Environmental Control Interface
+Nova serves as a unified voice interface for the user’s physical and digital environment.
+The system provides visibility into system state and, in later phases, allows explicit user-requested control of connected devices and services.
+Phase Alignment
+Phase-3.5
+Read-only status and information
+
+
+Passive dashboard display
+
+
+No execution authority
+
+
+Phase-4
+Explicit, user-invoked actions only
+
+
+Governor-mediated execution
+
+
+No background or automatic control
+
+
+Phase-5+
+Optional policy-bounded delegated operation (design-only)
+
+
+Invariant
+All actions must pass through the Governor.
+Default state remains non-autonomous.
+
+2) Trust Appliance
+Nova is designed to behave as a predictable, bounded system that never acts outside defined authority.
+The system prioritizes:
+Silence by default
+
+
+No hidden behavior
+
+
+No background processing (until explicitly phase-approved)
+
+
+No capability expansion without explicit phase unlock
+
+
+Phase Alignment
+Phase-3.5
+No execution
+
+
+User-invoked only
+
+
+Phase-4
+Explicit execution only
+
+
+No proactivity
+
+
+Phase-5+
+Any automated behavior must operate strictly within explicit user-defined policy limits
+
+
+Core Rule
+If the user did not explicitly authorize it, Nova does not do it.
+
+3) Local Intelligence Hub
+Nova provides contextual awareness by combining local system information and external data when explicitly requested.
+The intelligence model emphasizes:
+Offline-first operation
+
+
+Local data awareness
+
+
+Multi-source reasoning on demand
+
+
+No background data retrieval
+
+
+Phase Alignment
+Phase-3.5
+Read-only responses
+
+
+Passive cached display only
+
+
+Phase-4
+Structured multi-source reporting
+
+
+Explicit online boundary announcements
+
+
+Phase-5+
+Expanded contextual awareness within governance limits
+
+
+Invariant
+No background polling or automatic data retrieval unless explicitly phase-approved.
+
+4) Personal Infrastructure Platform
+Nova functions as a long-term system that reflects the user’s environment configuration and connected systems.
+The platform organizes:
+Devices
+
+
+Services
+
+
+System structure
+
+
+User-defined preferences
+
+
+This pillar refers to configuration and visibility, not autonomous behavior.
+Phase Alignment
+Phase-3.5
+Session-only context
+
+
+No persistence or learning
+
+
+Phase-4
+No behavioral adaptation
+
+
+Phase-5
+Explicit user-approved preferences and memory only
+
+
+Critical Constraints
+No inferred learning
+
+
+No automatic behavior change
+
+
+No background routines or scheduling
+
+
+All persistence must be explicitly authorized
+
+
+
+Architectural Boundary
+Identity does not grant authority.
+No element of these pillars may introduce:
+Background processing
+
+
+Proactive behavior
+
+
+Automatic decision-making
+
+
+Implicit learning
+
+
+Capability outside phase-approved limits
+
+
+All execution authority remains phase-gated and Governor-controlled.
+
+Summary
+Nova is:
+A voice interface for environment control and awareness
+
+
+A predictable system designed for trust and transparency
+
+
+A local, offline-first intelligence layer
+
+
+A long-term platform for managing personal digital and physical infrastructure
+
+
+Permanent Principle
+Vision defines direction.
+Phases define permission.
+The Governor defines authority.
+
+If you want the honest architectural note:
+This document fits cleanly into your existing structure and strengthens identity without increasing risk, because every pillar is explicitly contained by phase boundaries.
+
