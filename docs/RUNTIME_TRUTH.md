@@ -1,7 +1,7 @@
-# (Phase 4)⚙️ RUNTIME_TRUTH.md
+# (Phase 4)# ⚙️ RUNTIME_TRUTH.md
 
 **Nova — Mechanical Runtime Specification**
-**Status:** CANONICAL (Phase-3.5 Sealed) — Aligned with v1.8
+**Status:** CANONICAL (Phase-3.5 Sealed — Spine Installed, Execution Inert)
 **Scope:** `nova_backend/src/` only
 **Nature:** Implementation-binding, non-aspirational
 
@@ -9,7 +9,7 @@ Grounded in:
 - `brain_server.py`
 - `skill_registry.py`
 - `confirmation_gate.py`
-- `governor_mediator.py`
+- `governor/` (Governor class, ExecuteBoundary)
 - Skills (`system.py`, `weather.py`, `news.py`, `web_search_skill.py`, `general_chat.py`)
 - `nova_config.py`
 - **Nova Complete Constitutional Blueprint v1.8** (authoritative)

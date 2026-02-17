@@ -1,7 +1,7 @@
-> ## 🔒 PHASE-3.5 STATUS UPDATE — SEALED
+> ## 🔒 PHASE-3.5 STATUS UPDATE — SEALED (Spine Installed, Execution Inert)
 >
 > **Phase-3.5 is formally COMPLETE and SEALED.**  
-> All Phase-3.5 acceptance criteria have been mechanically verified and CI-enforced, including execution quarantine, Governor containment, passive confirmation gating, and runtime refusal proofs.
+> All Phase-3.5 acceptance criteria have been mechanically verified and CI-enforced, including Governor spine installation, ExecuteBoundary inertness, execution quarantine, and runtime refusal proofs.
 >
 > This document may reference Phase-3.5 as "active" for historical context only.  
 > **No Phase-3.5 work remains open.** Phase-4 is design‑unlocked but runtime‑locked pending a separate unlock artifact.
@@ -28,10 +28,11 @@ All other documents (including phase locks, governance contracts, and design spe
 If any document conflicts with v1.8, it is **invalid by definition** unless explicitly unlocked.
 
 **Non-negotiables (high-level):**
-- Phase 3.5: **SEALED** (no execution authority, GovernorMediator only)
+- Phase 3.5: **SEALED** (no execution authority, Governor owns inert ExecuteBoundary)
 - Phase-3.5 closure is recorded in `docs/PHASE_3.5_CLOSURE.md` and is authoritative for execution status
-- Governor: GovernorMediator (text sanitizer only)
-- Execution: Disabled (`execute_action = None`, `GOVERNED_ACTIONS_ENABLED = false` hard‑coded)
+- Governor: owns `ExecuteBoundary` (installed but inert)
+- Execution: **No execution path exists** — all execution code is quarantined and unreachable
+- No global execution toggle or flag exists in active runtime
 - Phase 4: Design‑Unlocked, Runtime‑Locked (no implementation)
 - Agent Identity: Nova is non-autonomous coordinator (Intelligence–Authority Split)
 - Memory Governance: Memory is filing system, not learning system
@@ -53,8 +54,8 @@ Key subpaths:
   &nbsp; - `skills/` — skill implementations (system/weather/news/general_chat, etc.)
   &nbsp; - `services/` — service abstractions (e.g., WeatherService using Visual Crossing)
   &nbsp; - `routers/` — API routes (e.g., STT router)
-  &nbsp; - `governor/` — GovernorMediator (text sanitizer only, not enforcement engine)
-  &nbsp; - `execution/` — execution disabled (`execute_action = None`)
+  &nbsp; - `governor/` — Governor class with ExecuteBoundary (installed but inert)
+  &nbsp; - `execution/` — execution code is quarantined; not imported
 - `nova_backend/tests/` — tests (unit/contract tests)
 - `nova_backend/static/` — static dashboard assets served by backend (if used)
 
@@ -119,8 +120,8 @@ Use this deterministic review order:
    &nbsp;  - `nova_backend/src/routers/*`
    &nbsp;  - STT chain: `nova_backend/src/stt_manager.py`, `nova_backend/src/services/stt_engine.py`, `nova_backend/src/routers/stt.py`
 
-6) **Governance mediation layer**
-   &nbsp;  - `nova_backend/src/governor/` (GovernorMediator only)
+6) **Governance enforcement layer**
+   &nbsp;  - `nova_backend/src/governor/` — Governor class with ExecuteBoundary (inert)
 
 7) **Frontend parity + schema**
    &nbsp;  - `Nova-Frontend-Dashboard/dashboard.js`
@@ -168,7 +169,7 @@ Preferred output format for AI review:
 ## 5) Phase Documentation Reference
 
 **Current Operational Status:**
-- `docs/PHASE_3.5_CLOSURE.md` — Phase 3.5 is SEALED (no execution authority)
+- `docs/PHASE_3.5_CLOSURE.md` — Phase 3.5 is SEALED (Spine Installed, Execution Inert)
 
 **Historical Completion Certificates:**
 - `docs/PHASE_3_COMPLETION.md` — Phase 3 was COMPLETE & LOCKED
