@@ -1,0 +1,537 @@
+```markdown
+# 🔊 NOVA — GOVERNED TEXT-TO-SPEECH (TTS) COMPLETE SPECIFICATION
+
+**Document Status:** DESIGN-ONLY (Non-Authorizing)  
+**Phase Placement:** Phase-4.1 — Low-Risk Governed Actions  
+**Runtime Status:** NOT IMPLEMENTED (Phase-3.5 SEALED)  
+**Authority:** NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8  
+
+---
+
+## 1. PURPOSE
+
+Text-to-Speech (TTS) enables Nova to emit audible speech output.
+
+TTS is classified as a **Low-Risk Governed Action** because:
+
+- It produces a physical side effect (audio output)
+- It does not modify persistent system state
+- It is reversible
+- It is bounded in scope
+- It must require explicit invocation
+
+TTS is **not conversational autonomy**.  
+TTS is **not automatic response behavior**.  
+TTS is **not personality amplification**.
+
+TTS is an explicitly invoked governed action.
+
+---
+
+## 2. PHASE DISCIPLINE
+
+TTS is prohibited in Phase-3.5.
+
+Reasons:
+
+- Phase-3.5 has zero execution authority
+- Phase-3.5 is read-only
+- Phase-3.5 forbids system side effects
+
+TTS may only be implemented after:
+
+- Phase-4 Runtime Unlock Gate approval
+- ExecuteBoundary enforcement active
+- Permission Ledger operational
+
+Until then, this document is non-authorizing.
+
+---
+
+## 3. GOVERNANCE MODEL
+
+### Invocation Model
+
+TTS must require explicit invocation.
+
+Acceptable invocation examples:
+
+- "Say that out loud."
+- "Read that to me."
+- "Speak this response."
+- "Use voice output."
+
+Implicit speaking is forbidden.
+
+Nova must not automatically speak responses.
+
+### Execution Flow
+
+```
+User Input
+    ↓
+Governor (evaluate action request)
+    ↓
+ExecuteBoundary (allow / deny)   ← **sole authority for TTS actions**
+    ↓
+Permission Ledger (record action)
+    ↓
+AudioOutputAdapter (TTS engine call)
+```
+
+**No direct calls to AudioOutputAdapter are permitted outside ExecuteBoundary.**  
+ExecuteBoundary is the only component that can authorise TTS execution.
+
+### Fail‑Closed Default
+
+If ExecuteBoundary is not explicitly enabled (i.e., Phase‑4 not unlocked),  
+**all TTS requests must be denied**.
+
+Default behavior: **deny**.
+
+---
+
+## 4. ARCHITECTURE LAYERING
+
+TTS must exist under the **Execution Layer**, not under Skills directly.
+
+Correct structure:
+
+```
+nova_backend/src/
+│
+├── governor/
+│   ├── governor.py
+│   └── execute_boundary/
+│       ├── __init__.py
+│       ├── execute_boundary.py
+│       └── tts_policy.py
+│
+├── actions/
+│   └── tts_action.py
+│
+├── adapters/
+│   └── audio_output_adapter.py
+│
+├── services/
+│   └── tts_engine.py
+│
+└── skills/
+    └── (optional trigger mapping only)
+```
+
+### Skill Interaction
+
+Skills must **not** directly construct or dispatch TTS actions.  
+If a skill determines that TTS is appropriate, it must:
+
+1. Construct an `ActionRequest` of type `tts`
+2. Pass that request to the Governor
+3. The Governor then invokes ExecuteBoundary for evaluation
+
+This ensures the Governor remains the single choke point for all execution.
+
+---
+
+## 5. REQUIRED FILES
+
+### 5.1 `actions/tts_action.py`
+
+Defines the TTS action object.
+
+Responsibilities:
+
+- Accept sanitized text
+- Contain no logic
+- No execution inside
+- Serializable
+- Logged
+
+Must not:
+- Call system binaries directly
+- Execute subprocess
+- Access device
+
+---
+
+### 5.2 `governor/execute_boundary/tts_policy.py`
+
+Defines TTS policy constraints.
+
+Responsibilities:
+
+- Confirm explicit invocation
+- Confirm low-risk classification
+- Enforce length limits
+- Enforce rate limits
+- Enforce cancellation support
+
+Must not:
+- Auto-escalate
+- Perform inference
+
+---
+
+### 5.3 `adapters/audio_output_adapter.py`
+
+Single responsibility:
+
+- Perform the actual audio output
+
+Allowed:
+- Subprocess call to Piper/eSpeak
+- Local engine only
+
+Forbidden:
+- Network TTS by default
+- Background persistent process
+- Auto-start audio daemon
+
+Must be:
+- Interruptible
+- Synchronous
+- Fail-safe
+
+---
+
+### 5.4 `services/tts_engine.py`
+
+Encapsulates:
+
+- Engine selection
+- Voice config
+- Audio formatting
+
+No policy here.
+No governor logic.
+No intelligence.
+
+---
+
+### 5.5 `permission_ledger.py` (Phase-4 Required)
+
+TTS must log:
+
+- Timestamp
+- Text length
+- Invocation source
+- Outcome (success / denied)
+- Duration
+
+Ledger must not:
+- Store audio
+- Store transcripts beyond existing rules
+
+---
+
+## 6. SAFETY CONSTRAINTS
+
+### 6.1 Hard Limits
+
+- Max character count
+- Max duration
+- Explicit stop command required
+- Single concurrent TTS instance
+- No overlapping speech
+
+---
+
+### 6.2 No Autonomy Rule
+
+TTS must NOT:
+
+- Speak proactively
+- Speak alerts automatically
+- Speak background notifications
+- Speak system errors without explicit request
+- Read content automatically
+
+---
+
+## 7. UI REQUIREMENTS
+
+UI must:
+
+- Provide explicit TTS trigger
+- Provide Stop button
+- Reflect speaking state textually
+- Not use orb semantic encoding
+
+Orb must remain non-semantic.
+
+Speaking state may be reflected in text only.
+
+---
+
+## 8. TECHNICAL IMPLEMENTATION CONSTRAINTS
+
+### Local-Only Default
+
+Preferred engines:
+
+- Piper
+- eSpeak
+
+Cloud TTS is disallowed by default.
+
+If ever allowed:
+- Must require explicit internet invocation
+- Must disclose network usage
+- Must pass online boundary protocol
+
+---
+
+## 9. FAILURE MODES
+
+If TTS fails:
+
+- Return neutral message
+- Do not retry
+- Do not escalate
+- Do not auto-fallback to cloud
+
+Example failure message:
+
+> "I couldn't produce audio output."
+
+---
+
+## 10. TEST REQUIREMENTS
+
+Must include:
+
+- Explicit invocation test
+- Denial without invocation test
+- Rate limit test
+- Character limit test
+- Stop interruption test
+- Ledger entry verification test
+- No execution when Phase‑4 not unlocked
+- Verify that skills cannot bypass ExecuteBoundary
+- Verify that default deny is enforced when ExecuteBoundary inactive
+
+---
+
+## 11. PHASE-4 ADMISSION CHECKLIST ADDITION
+
+TTS cannot activate until:
+
+- ExecuteBoundary proven fail-closed
+- Governor bypass proof updated
+- Ledger proof documented
+- CI enforcement updated
+- Manual audit completed
+- Phase-4 Runtime Unlock ratified
+
+---
+
+## 12. CONSTITUTIONAL ALIGNMENT
+
+This design preserves:
+
+- Intelligence–Authority Split
+- No Autonomous Execution
+- Governor Supremacy
+- Phase Gating
+- Offline-First Identity
+- Calm UX
+
+TTS is treated as:
+
+> A bounded, explicit, reversible physical output.
+
+Not a personality feature.  
+Not a conversational upgrade.  
+Not an agentic behavior.
+
+---
+
+## 13. EXECUTEBOUNDARY.EVALUATE() — TTS CONTRACT
+
+### 13.1 Non‑Negotiable Rule
+
+**ExecuteBoundary is the only authority that may approve or deny TTS execution.**  
+No other module may invoke audio output directly.
+
+### 13.2 Function Signature
+
+```python
+def evaluate(self, request: ActionRequest) -> ActionResult:
+    ...
+```
+
+**Required Types:**
+
+- **ActionRequest**  
+  - `type: str` (must support `"tts"`)  
+  - `payload: dict` (for TTS: contains `text`, optional metadata)  
+  - `source: str` (e.g., `"ui_button"`, `"voice_command"`, `"api"`)  
+  - `invocation: dict` (proof of explicit invocation; see §13.3)
+
+- **ActionResult**  
+  - `allowed: bool`  
+  - `message: str` (neutral, non-persuasive)  
+  - `action_type: str`  
+  - `reason_code: str` (deterministic)  
+  - `ledger_event: dict | None` (record stub; see §13.8)
+
+**Note:** ExecuteBoundary must remain deterministic, side-effect free, and fail-closed when runtime is locked.
+
+### 13.3 Behavioral Overview
+
+ExecuteBoundary.evaluate() MUST:
+
+1. Validate request shape and type
+2. Enforce phase lock / runtime enablement
+3. Verify explicit invocation proof
+4. Enforce TTS safety bounds (length, rate, concurrency, cancellation)
+5. Return a deterministic allow/deny ActionResult
+6. Emit ledger event data (even on deny), without writing persistence itself
+
+ExecuteBoundary.evaluate() MUST NOT:
+
+- Perform audio output
+- Call subprocess
+- Perform network access
+- Infer intent
+- Rewrite content beyond required sanitization hooks (sanitization belongs in GovernorMediator)
+
+### 13.4 Explicit Invocation Proof (Required)
+
+ExecuteBoundary must require **explicit invocation evidence** for TTS.
+
+**Required field:**  
+`request.invocation["explicit"] == True`
+
+**Required subtype:**  
+`request.invocation["kind"] in {"ui_tts_button", "voice_tts_phrase", "api_tts_command"}`
+
+**Forbidden:**  
+- Missing `invocation`
+- `explicit` absent or false
+- Any implicit “speak automatically” mode
+
+If explicit proof is absent → **deny**.
+
+### 13.5 Phase / Runtime Gate (Fail‑Closed)
+
+If Phase‑4 runtime is not unlocked:
+
+- ExecuteBoundary is configured in inert mode (fail‑closed)
+- `GOVERNED_ACTIONS_ENABLED` is `false` (hard‑coded, not configurable)
+- Or the Permission Ledger is unavailable
+
+Then TTS must be denied.
+
+**Deny Result:**  
+- `allowed = False`
+- `reason_code = "EXECUTION_DISABLED"`
+- `message = "That requires a governed action, which isn't enabled."`
+
+### 13.6 TTS Request Validation
+
+For `request.type == "tts"`:
+
+**Required payload fields:**  
+- `payload["text"]` must exist and be a non-empty string after strip.
+
+**Validation denies:**  
+- Missing text → `INVALID_REQUEST`
+- Empty text → `EMPTY_TEXT`
+
+### 13.7 TTS Safety Bounds (Mandatory)
+
+These bounds must be enforced deterministically (constants in config/policy).
+
+- **Character limit:** If `len(text) > TTS_MAX_CHARS` → deny `TTS_TOO_LONG`
+- **Duration limit (approximate):** If policy estimates duration beyond `TTS_MAX_SECONDS` → deny `TTS_TOO_LONG` (Estimation can be simple, deterministic: `chars / chars_per_second`.)
+- **Rate limit:** If `TTS_RATE_WINDOW` exceeded → deny `TTS_RATE_LIMITED`
+- **Concurrency:** If TTS already in‑progress → deny `TTS_BUSY`
+- **Cancellation support required:** ExecuteBoundary must confirm a `stop` mechanism exists in the adapter layer. If not present → deny `TTS_STOP_UNAVAILABLE`
+
+### 13.8 Approval Result (Allow)
+
+If all checks pass:
+
+- `allowed = True`
+- `reason_code = "ALLOWED"`
+- `message = "Okay."` (neutral acknowledgment)
+- `action_type = "tts"`
+
+**Important:** Allow does not execute. It only authorizes.  
+Execution occurs only in the subsequent, explicit execution step owned by ExecuteBoundary (or Governor) in Phase‑4 runtime.
+
+### 13.9 Ledger Event Stub (Even on Deny)
+
+Evaluate must return `ledger_event` data for the permission ledger to record.
+
+**Required fields (minimum):**  
+- `event_type = "tts"`
+- `timestamp_utc`
+- `source`
+- `text_length`
+- `outcome` ("allowed" | "denied")
+- `reason_code`
+- `request_id` (deterministic UUID or monotonic counter; implementation-defined)
+
+**Forbidden ledger content:**  
+- Full text content (by default)
+- Audio data
+- Any user‑identifying metadata beyond what already exists in system policy
+
+(If later allowed, store a text hash only, not raw text.)
+
+### 13.10 Deterministic Reason Codes (Canonical)
+
+Must be one of:
+
+- `EXECUTION_DISABLED`
+- `INVALID_REQUEST`
+- `EMPTY_TEXT`
+- `TTS_TOO_LONG`
+- `TTS_RATE_LIMITED`
+- `TTS_BUSY`
+- `TTS_STOP_UNAVAILABLE`
+- `ALLOWED`
+
+No freeform reasons. No ML scoring. No probabilistic output.
+
+### 13.11 Required Tests (Phase‑4 Admission)
+
+1. Deny when execution disabled
+2. Deny when explicit invocation missing
+3. Deny when payload missing/empty
+4. Deny on too‑long text
+5. Deny on rate limit
+6. Deny when already speaking
+7. Allow when all constraints satisfied
+8. Ledger event returned on deny + allow
+9. Ensure no direct adapter/subprocess call occurs during evaluate()
+
+### 13.12 Implementation Notes (Non‑Binding)
+
+- Policies for TTS live in `tts_policy.py`
+- ExecuteBoundary imports policy only; policy must not import adapters
+- Adapters must not be importable from skills
+- Execution should be a separate method, e.g.:  
+  `ExecuteBoundary.execute(request)` (Phase‑4 runtime only)  
+  `evaluate()` remains non‑side‑effectful
+
+---
+
+## 14. STATUS
+
+This document is DESIGN-ONLY.
+
+TTS remains:
+
+❌ Not implemented  
+❌ Not active  
+❌ Not permitted in Phase-3.5  
+
+It may only exist in runtime after explicit Phase-4 unlock.
+
+---
+
+**Reference Authority:** NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8
+```

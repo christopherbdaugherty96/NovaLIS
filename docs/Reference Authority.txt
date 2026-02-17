@@ -1,0 +1,662 @@
+Reference Authority:
+
+# ✅ Corrected Repository Documents — Full Text (Phase-3.5 SEALED, Spine Installed, Execution Inert)
+
+Based on your actual runtime state, the following files have been updated to accurately reflect:
+
+- Governor owns `ExecuteBoundary`
+- `ExecuteBoundary` is installed but **inert**
+- No global execution flag (`GOVERNED_ACTIONS_ENABLED` does not exist)
+- No `execute_action` surface in active runtime
+- All execution code remains quarantined and unreachable
+
+These updates align with **NOVA‑CANONICAL‑FINAL‑v1.8** and the mechanical proof of Phase‑3.5 closure.
+
+---
+
+## 📄 `REPO_MAP.md`
+
+```markdown
+> ## 🔒 PHASE-3.5 STATUS UPDATE — SEALED (Spine Installed, Execution Inert)
+>
+> **Phase-3.5 is formally COMPLETE and SEALED.**  
+> All Phase-3.5 acceptance criteria have been mechanically verified and CI-enforced, including Governor spine installation, ExecuteBoundary inertness, execution quarantine, and runtime refusal proofs.
+>
+> This document may reference Phase-3.5 as "active" for historical context only.  
+> **No Phase-3.5 work remains open.** Phase-4 is design‑unlocked but runtime‑locked pending a separate unlock artifact.
+>
+> **Authoritative closure record:** `docs/PHASE_3.5_CLOSURE.md`
+------------------------------------------------
+
+# REPO_MAP — Nova (AI Navigation)
+
+Purpose: Give humans + AI a deterministic map of this repository and the safe "review order".
+
+Scope: Navigation + review guidance only. No behavior changes.
+
+---
+
+## 0) Canon / North Star (Read First)
+
+The **single authoritative source of truth** for this repository is:
+
+→ **`NOVA COMPLETE CONSTITUTIONAL BLUEPRINT 1.8.md`**
+
+All other documents (including phase locks, governance contracts, and design specs) are authoritative **only insofar as they do not conflict** with v1.8.
+
+If any document conflicts with v1.8, it is **invalid by definition** unless explicitly unlocked.
+
+**Non-negotiables (high-level):**
+- Phase 3.5: **SEALED** (no execution authority, Governor owns inert ExecuteBoundary)
+- Phase-3.5 closure is recorded in `docs/PHASE_3.5_CLOSURE.md` and is authoritative for execution status
+- Governor: owns `ExecuteBoundary` (installed but inert)
+- Execution: **No execution path exists** — all execution code is quarantined and unreachable
+- No global execution toggle or flag exists in active runtime
+- Phase 4: Design‑Unlocked, Runtime‑Locked (no implementation)
+- Agent Identity: Nova is non-autonomous coordinator (Intelligence–Authority Split)
+- Memory Governance: Memory is filing system, not learning system
+- Offline-first by default; online only by explicit user request
+- Deterministic behavior; no inferred intent; literal word‑boundary triggers
+- No background cognition / no proactive tasks outside explicit contracts
+
+---
+
+## 1) Repo Top-Level Layout (What Each Folder Is)
+
+### `nova_backend/`
+Primary runtime backend (FastAPI / WebSocket brain). This is the main execution surface.
+
+Key subpaths:
+- `nova_backend/src/` — main application source
+  &nbsp; - `brain_server.py` — server entry + routing/orchestration glue (high attention)
+  &nbsp; - `skill_registry.py` — skill registration + dispatch (high attention)
+  &nbsp; - `skills/` — skill implementations (system/weather/news/general_chat, etc.)
+  &nbsp; - `services/` — service abstractions (e.g., WeatherService using Visual Crossing)
+  &nbsp; - `routers/` — API routes (e.g., STT router)
+  &nbsp; - `governor/` — Governor class with ExecuteBoundary (installed but inert)
+  &nbsp; - `execution/` — execution code is quarantined; not imported
+- `nova_backend/tests/` — tests (unit/contract tests)
+- `nova_backend/static/` — static dashboard assets served by backend (if used)
+
+**Important:** Runtime artifacts and large binaries (models, ffmpeg) are NOT committed. See `.gitignore` and `nova_backend/tools/README.md`.
+
+---
+
+### `Nova-Frontend-Dashboard/`
+Standalone dashboard/UI (HTML/JS/CSS). Used as an observer/control surface.
+
+Key files:
+- `index.html`, `dashboard.js` — main UI
+- `style*.css` — styling (Phase constraints may apply)
+- `phase1/` — historical frozen phase assets (reference)
+- `assets/` / `visuals/` — UI visuals and helpers
+
+---
+
+### `NovaLIS-Governance/`
+Governance contracts, phase locks, acceptance gates, and "do not drift" rules.  
+*Note: This folder may contain legacy documents; the canonical truth is v1.8.*
+
+**Key documents:**
+- `PHASE_3.5_FROZEN_STATUS.md` — Current phase status (SEALED; should be updated to match v1.8)
+- Phase completion certificates (archival)
+
+---
+
+### `Documentation-Architecture-Docs/` and `docs/`
+Legacy and supporting documentation. Useful context, not always canonical.
+
+**Note:** For current phase status, refer to `docs/PHASE_3.5_CLOSURE.md` and v1.8.
+
+---
+
+## 2) "Start Here" Review Order (AI + Human)
+
+Use this deterministic review order:
+
+0) **Final Canonical Truth**
+   &nbsp;  - `NOVA COMPLETE CONSTITUTIONAL BLUEPRINT 1.8.md` — Required reading before any code, governance, or review activity
+
+1) **Current Phase Status**
+   &nbsp;  - `docs/PHASE_3.5_CLOSURE.md` — Current operational reality
+
+2) **Governance / locks**
+   &nbsp;  - `NovaLIS-Governance/PHASE_*.md` (verify against v1.8)
+   &nbsp;  - `NovaLIS-Governance/ARCHITECT_CONTRACT.md`
+
+3) **Backend orchestration**
+   &nbsp;  - `nova_backend/src/brain_server.py`
+   &nbsp;  - `nova_backend/src/skill_registry.py`
+
+4) **Core skills**
+   &nbsp;  - `nova_backend/src/skills/system.py`
+   &nbsp;  - `nova_backend/src/skills/weather.py` (Visual Crossing provider)
+   &nbsp;  - `nova_backend/src/skills/news.py` (RSS, user-initiated)
+   &nbsp;  - `nova_backend/src/skills/general_chat.py`
+
+5) **Services + IO**
+   &nbsp;  - `nova_backend/src/services/*`
+   &nbsp;  - `nova_backend/src/routers/*`
+   &nbsp;  - STT chain: `nova_backend/src/stt_manager.py`, `nova_backend/src/services/stt_engine.py`, `nova_backend/src/routers/stt.py`
+
+6) **Governance enforcement layer**
+   &nbsp;  - `nova_backend/src/governor/` — Governor class with ExecuteBoundary (inert)
+
+7) **Frontend parity + schema**
+   &nbsp;  - `Nova-Frontend-Dashboard/dashboard.js`
+   &nbsp;  - `Nova-Frontend-Dashboard/index.html`
+   &nbsp;  - `nova_backend/static/*` (only if backend-served UI is in use)
+
+8) **Tests**
+   &nbsp;  - `nova_backend/tests/*`
+
+---
+
+## 3) AI Review Rules (Hard Constraints)
+
+An AI reviewer may:
+- Identify mismatches vs governance docs (especially v1.8)
+- Propose minimal diffs
+- Add tests that enforce locked behavior
+- Add documentation that clarifies setup without adding capability
+- Verify phase alignment with v1.8
+
+An AI reviewer must NOT:
+- Add new capabilities, new skills, or broaden scope
+- "Refactor for style" if it risks behavior drift
+- Add background tasks, watchers, telemetry, analytics, or "helpful" auto-actions
+- Add silent online behavior or implicit web search
+- Introduce probabilistic/ranked intent selection
+- Suggest capabilities beyond Phase 3.5 sealed state
+- Reinterpret "design documents" as approval for implementation
+
+Preferred output format for AI review:
+- Findings grouped by (a) lock violations (b) correctness bugs (c) safety gaps (d) low-risk cleanup
+- Provide diff-only patches, smallest change wins
+- If uncertain: request a targeted file or log excerpt (no guessing)
+
+---
+
+## 4) Setup Notes (Local-Only by Default)
+
+- Large runtime dependencies (STT models, ffmpeg binaries) are installed locally and are intentionally excluded from Git.
+- See: `nova_backend/tools/README.md`
+- `.gitignore` defines excluded runtime artifacts.
+
+---
+
+## 5) Phase Documentation Reference
+
+**Current Operational Status:**
+- `docs/PHASE_3.5_CLOSURE.md` — Phase 3.5 is SEALED (Spine Installed, Execution Inert)
+
+**Historical Completion Certificates:**
+- `docs/PHASE_3_COMPLETION.md` — Phase 3 was COMPLETE & LOCKED
+
+**Canonical Truth:**
+- `NOVA COMPLETE CONSTITUTIONAL BLUEPRINT 1.8.md` — Single source of truth
+
+**Design Documents (Phase 4+ only - NOT IMPLEMENTED):**
+- Nova Orthogonal Cognition Stack.txt (Phase 4.2+)
+- Nova Personal Intelligence Hub Arch.txt (Phase 5+)
+- NOVA MIND ARCHITECTURE WITH DEEPSEEK.txt (Phase 4+)
+
+**Audit & Governance Frameworks (Phase 4+):**
+- `DEEPSEEK INTEGRATION AUDIT.md` - Constitutional audit requirements for DeepSeek integration
+
+**Philosophical Context (Reference Only):**
+- `CorePhilosophy.md` - Project philosophy and governance-first mindset
+
+**Note:** Phase-10+ documents describe speculative, non-binding end-state ideas. They do **not** imply roadmap intent, prioritization, or inevitability.
+
+**Important:** Design documents describe future architecture only. No implementation exists in current runtime.
+
+---
+
+**End of REPO_MAP.**
+```
+
+---
+
+## 📄 `RUNTIME_TRUTH.md`
+
+```markdown
+# ⚙️ RUNTIME_TRUTH.md
+
+**Nova — Mechanical Runtime Specification**
+**Status:** CANONICAL (Phase-3.5 Sealed — Spine Installed, Execution Inert)
+**Scope:** `nova_backend/src/` only
+**Nature:** Implementation-binding, non-aspirational
+
+Grounded in:
+- `brain_server.py`
+- `skill_registry.py`
+- `confirmation_gate.py`
+- `governor/` (Governor class, ExecuteBoundary)
+- Skills (`system.py`, `weather.py`, `news.py`, `web_search_skill.py`, `general_chat.py`)
+- `nova_config.py`
+- **Nova Complete Constitutional Blueprint v1.8** (authoritative)
+
+---
+
+## 1. Runtime Entry Surface
+
+### 1.1 Entrypoint
+
+Primary runtime module:
+
+```
+nova_backend/src/brain_server.py
+```
+
+FastAPI application:
+
+```python
+app = FastAPI()
+```
+
+Inbound surfaces:
+
+| Surface         | Type      | Purpose                           |
+| --------------- | --------- | --------------------------------- |
+| `/`             | HTTP GET  | Serve static dashboard            |
+| `/phase-status` | HTTP GET  | Publish sealed runtime guarantees |
+| `/ws`           | WebSocket | Primary interaction channel       |
+
+STT router mounted:
+
+```python
+app.include_router(stt_router)
+```
+
+No additional routers registered.
+
+---
+
+## 2. Execution Authority — Structural Reality
+
+### 2.1 Execution Architecture
+
+The Governor owns an `ExecuteBoundary` instance, which is **installed but inert**.  
+No execution requests are constructed; no execution code is reachable.
+
+- All execution‑related code resides in `archive_quarantine/phase35_execution/` and is **never imported** by active runtime modules.
+- `execute_action` does **not exist** in any active runtime module.
+- No global execution flag (`GOVERNED_ACTIONS_ENABLED`) is defined or used — execution containment is **structural**, not conditional.
+
+**Therefore:** Execution is **structurally unreachable**, not merely disabled.
+
+### 2.2 Execution Surface Proof
+
+Active runtime modules:
+
+- `brain_server.py`
+- `skill_registry.py`
+- `confirmation_gate.py`
+- `governor/governor.py`, `governor/execute_boundary/execute_boundary.py`
+- All registered skills
+
+None import from:
+
+- `archive_quarantine/phase35_execution/`
+- `execution/*`
+- `actions/*`
+
+No code path in active runtime constructs `ActionRequest` or calls execution handlers.
+
+---
+
+## 3. Governor Layer
+
+Source: `governor/governor.py`, `governor/execute_boundary/execute_boundary.py`
+
+The Governor class:
+
+- Owns an `ExecuteBoundary` instance
+- Mediates all requests through the Governor spine
+- The `ExecuteBoundary` is present but returns inert results (no execution occurs)
+
+The Governor does **not**:
+
+- Interpret intent
+- Enforce permissions (beyond spine pattern detection)
+- Trigger tools
+- Modify state
+
+It performs deterministic routing and spine‑pattern detection, but execution is blocked structurally.
+
+---
+
+## 4. Confirmation Gate
+
+Source: `confirmation_gate.py`
+
+### 4.1 Engagement
+
+Gate consulted only if:
+
+```python
+confirmation_gate.has_pending_confirmation()
+```
+
+If no pending context:
+
+```
+try_resolve() → GateResult(message=None)
+```
+
+Gate is silent when idle.
+
+### 4.2 Vocabulary
+
+Accepted:
+
+- `"yes"`
+- `"no"`
+
+All other input:
+
+- Silent (`message=None`)
+
+### 4.3 No Initiation Path
+
+There is **no code path** in Phase-3.5 that calls:
+
+```
+confirmation_gate.set_pending()
+```
+
+Therefore:
+
+> **Confirmation flows cannot begin in Phase-3.5 runtime. The gate is inert.**
+
+---
+
+## 5. Skill Dispatch — Deterministic Registry
+
+Source: `skill_registry.py`
+
+Registration order:
+
+1. SystemSkill
+2. WeatherSkill
+3. NewsSkill
+4. WebSearchSkill (if `ONLINE_ACCESS_ALLOWED`)
+5. GeneralChatSkill
+
+Single-pass selection:
+
+- First `can_handle()` True wins.
+- No chaining.
+- No orchestration.
+
+**All skill triggers are literal, word‑boundary enforced patterns.** No substring or fuzzy matching is used.
+
+Exception handling:
+
+- Any exception inside a skill is caught.
+- Logged.
+- Converted to:
+
+```python
+SkillResult(
+    success=False,
+    message="Something went wrong."
+)
+```
+
+Registry never crashes runtime.
+
+---
+
+## 6. Configuration Surface
+
+Source: `nova_config.py`
+
+Configuration values are read at import time.
+
+No configuration is reloaded at runtime.
+
+### 6.1 Web Search Governance
+
+```
+ONLINE_ACCESS_ALLOWED
+WEB_SEARCH_TRIGGERS
+WEB_SEARCH_MAX_RESULTS
+```
+
+Trigger phrases are defined in `nova_config.WEB_SEARCH_TRIGGERS` and are matched using **word‑boundary regex** to ensure literal invocation.
+
+Max results defined in `nova_config.WEB_SEARCH_MAX_RESULTS`.
+
+### 6.2 Weather Configuration
+
+```
+DEFAULT_LOCATION
+WEATHER_CACHE_SECONDS
+```
+
+WeatherSkill performs a single HTTP GET to a configured weather API via WeatherService. Trigger is a **literal phrase** (e.g., "weather", "forecast") matched with word boundaries.
+
+It is read-only and does not modify system state.
+
+---
+
+## 7. Skills — Mechanical Contracts
+
+### 7.1 SystemSkill
+
+Source: `skills/system.py`
+
+- Local time/date
+- Uses `datetime`, `platform`, `time`
+- No network
+- No state mutation
+
+### 7.2 WeatherSkill
+
+Source: `skills/weather.py`
+
+- Trigger: literal phrase `"weather"` or `"forecast"` (word‑boundary matched)
+- Calls `WeatherService.get_current_weather()`
+- Performs single HTTP GET
+- No write operations
+- Returns canonical widget:
+
+```
+{
+  "type": "weather",
+  "data": {...}
+}
+```
+
+### 7.3 NewsSkill
+
+Source: `skills/news.py`
+
+- Fixed RSS feeds
+- One headline per source
+- Uses RSS primary
+- Deterministic fallback (`fallback_headline`) when RSS fails
+- Always returns canonical widget shape:
+
+```
+{
+  "type": "news",
+  "items": [...]
+}
+```
+
+No summaries.
+No synthesis.
+No ranking.
+
+### 7.4 WebSearchSkill (Conditional)
+
+Source: `skills/web_search_skill.py`
+
+Requirements:
+
+- `ONLINE_ACCESS_ALLOWED == True`
+- Explicit trigger phrase (word‑boundary enforced)
+- Mandatory disclosure: `"I'm checking online."`
+
+Behavior:
+
+- Single fetch
+- No retries
+- No caching
+- No synthesis
+- Title + URL only
+
+Widget shape:
+
+```
+{
+  "type": "web_search_results",
+  "items": [...]
+}
+```
+
+### 7.5 GeneralChatSkill
+
+Source: `skills/general_chat.py`
+
+- Lazy import of `ollama`
+- No crash if unavailable
+- Blocks authoritative tokens: `{weather, forecast, news, headlines, time, date, system, status}`
+- Advisory only
+- No tools
+- No memory writes
+- No execution
+
+---
+
+## 8. Memory Surface
+
+Quick corrections only.
+
+Source: `memory_manager.py`
+
+Trigger:
+
+```
+Correction: ...
+```
+
+Effect:
+
+- Calls `record_correction()`
+- Responds: `"Okay. Correction noted."`
+
+Corrections are recorded but not applied to runtime behaviour in Phase-3.5.
+
+---
+
+## 9. Speech State
+
+`speech_state`:
+
+- Stores `last_spoken_text`
+- Provides `stop()` method
+- Used only for:
+
+  - `"repeat"`
+  - `"stop"`
+
+No background audio processing initiated here.
+
+---
+
+## 10. WebSocket Protocol Details
+
+Source: `brain_server.py`
+
+Greeting:
+
+```
+{"type":"chat","message":"Hello. How can I help?"}
+{"type":"chat_done"}
+```
+
+`chat_done` payload schema:
+
+```
+{"type":"chat_done"}
+```
+
+No streaming.
+No partial messages.
+
+---
+
+## 11. Background Activity Audit
+
+Absent:
+
+- `@app.on_event("startup")` loops
+- `asyncio.create_task` background loops
+- Schedulers
+- Timers
+- Periodic refresh
+- Autonomous threads
+
+All outbound calls occur only in response to inbound requests.
+
+---
+
+## 12. Mechanical Guarantees
+
+1. No execution surface exists — execution code is quarantined and not imported.
+2. Governor owns ExecuteBoundary, which is inert.
+3. ConfirmationGate cannot initiate.
+4. Skill dispatch is deterministic and single-pass.
+5. No background polling.
+6. **All skills are read-only.**
+   - No disk writes
+   - No OS command execution
+   - No file modification
+   - No system control
+7. No global execution flag or toggle exists.
+
+---
+
+## 13. Explicit Exclusions
+
+Not present:
+
+- DeepSeek
+- Multi-agent pools
+- ExecutionGate enforcement engine
+- Delegated autonomy
+- Device control
+- Reminder scheduling
+- Automation engine
+
+---
+
+## 14. Runtime Identity (Mechanical Summary)
+
+Phase-3.5 runtime is:
+
+- Deterministic
+- Single-pass routed
+- Read-only
+- Passive when idle
+- Execution-disabled (structurally, not by flag)
+- Authority-contained
+
+No roadmap.
+No expansion.
+No inference.
+
+Only current runtime fact.
+
+---
+
+**Reference Authority:** Nova Complete Constitutional Blueprint v1.8
+```
+
+---
+
+These two files now accurately describe your system’s state: **Phase-3.5 SEALED, Governor spine installed, ExecuteBoundary inert, execution structurally unreachable, and no runtime flags**. They align perfectly with the canonical blueprint and the mechanical proofs you have already generated.
