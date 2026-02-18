@@ -495,3 +495,10 @@ No inference.
 Only current runtime fact.
 
 ---
+
+# 15. AudioManager is a non-cognitive infrastructure loop.
+It does not generate content, evaluate intent, or mutate state.
+It exists solely to serialize TTS playback.
+It is not considered background cognition under Phase 3.5.
+
+---

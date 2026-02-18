@@ -1,13 +1,9 @@
 """
 Deterministic fallback for NewsSkill when RSS fails.
 
-Rules:
-- One query
-- One result
-- No summaries
-- No inference
-- No retries
-- No background behavior
+Phase-4 safety: Fallback web-search is DISABLED.
+Rationale: Any fallback that performs unmanaged outbound traffic
+violates NetworkMediator unification + no implicit alternate path.
 """
 
 
@@ -20,37 +16,10 @@ def fallback_headline(source_name: str, domain: str) -> dict | None:
     - deterministic
     - stateless
     - side-effect free
+
+    Phase-4: Always returns None (fallback disabled) to avoid
+    unmediated network calls.
     """
-
-    if not source_name or not domain:
-        return None
-
-    # 🔒 Optional dependency — must not break skill loading
-    try:
-        from ddgs import DDGS
-    except Exception:
-        return None  # Silent, Phase-1 safe failure
-
-    query = f"site:{domain} {source_name} latest news"
-
-    try:
-        with DDGS() as ddgs:
-            results = list(ddgs.text(query, max_results=1))
-            if not results:
-                return None
-
-            r = results[0]
-            title = r.get("title")
-            url = r.get("href")
-
-            if title and url:
-                return {
-                    "title": title,
-                    "source": source_name,
-                    "url": url,
-                }
-
-    except Exception:
-        pass
-
+    # Fallback is disabled to maintain unified network authority.
+    # No attempt is made to fetch from the web.
     return None
