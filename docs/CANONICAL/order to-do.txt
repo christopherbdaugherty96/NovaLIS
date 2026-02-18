@@ -1,0 +1,267 @@
+Good.
+You’re at the exact pivot point where Phase 4 stops being documentation and becomes sequencing.
+
+I’m going to give you the **correct order of operations**, grounded in your Phase 4 Roadmap  and the final integration set .
+
+This is not a feature list.
+
+This is the **mechanical dependency order**.
+
+---
+
+# 🧭 Phase 4 Execution Order (Correct Sequence)
+
+## 🔹 Stage 0 — Do Not Break Phase-3.5
+
+Before touching anything:
+
+* ✅ Confirm Phase-3.5 still boots clean.
+* ✅ Confirm inference works (current llm_manager).
+* ✅ Confirm no registry or ledger imports are active in runtime paths.
+* ❌ Do NOT flip `GOVERNED_ACTIONS_ENABLED`.
+
+You are still sealed.
+
+---
+
+# 🧱 Stage 1 — Install Infrastructure (No Behavior Change)
+
+These are safe to add because they are lazy-loaded and gated.
+
+### 1️⃣ Add `exceptions.py`
+
+No runtime effect.
+
+### 2️⃣ Add `ledger/writer.py`
+
+No runtime effect until called.
+
+### 3️⃣ Add `config/registry.json`
+
+All capabilities `"enabled": false`.
+
+### 4️⃣ Add `capability_registry.py`
+
+Do NOT reference it anywhere yet.
+
+### 5️⃣ Add `network_mediator.py`
+
+Do NOT import it anywhere yet.
+
+### 6️⃣ Add updated `single_action_queue.py`
+
+Safe replacement.
+
+### 7️⃣ Add updated `execute_boundary.py`
+
+Safe because:
+
+```
+GOVERNED_ACTIONS_ENABLED = False
+```
+
+Everything still fails closed.
+
+---
+
+At this point:
+
+* Nova still behaves Phase-3.5
+* No execution possible
+* No inference change
+* No behavior change
+
+This is safe.
+
+---
+
+# 🧠 Stage 2 — Integrate Governor Spine (Still No Execution)
+
+Now wire parsing and routing.
+
+### 8️⃣ Update `governor_mediator.py`
+
+Add:
+
+```
+parse_governed_invocation()
+```
+
+But do NOT call it from WebSocket yet.
+
+Safe.
+
+---
+
+### 9️⃣ Replace `governor.py` with lazy-loaded version
+
+This is safe because:
+
+* `allow_execution()` returns False
+* Registry loads only when accessed
+* No executor paths are reachable
+
+Nova still behaves like Phase-3.5.
+
+---
+
+# 🧪 Stage 3 — Wire Invocation Path (Execution Still Locked)
+
+Now update your WebSocket handler:
+
+Pseudo-flow:
+
+```
+invocation = GovernorMediator.parse_governed_invocation(text)
+
+if invocation:
+    return governor.handle_governed_invocation(...)
+else:
+    route to normal LLM flow
+```
+
+Because `GOVERNED_ACTIONS_ENABLED = False`, any invocation will return refusal.
+
+This proves:
+
+* Governor spine works
+* No bypass path
+* Execution still sealed
+
+This is the first real structural milestone.
+
+---
+
+# 🔐 Stage 4 — Install Model Version Lock (Careful Step)
+
+Now you introduce:
+
+* `inference_wrapper.py`
+* version-locked `llm_manager.py`
+
+⚠️ This WILL block inference on first run.
+
+Before replacing:
+
+* Ensure ledger works
+* Ensure models directory exists
+* Ensure you can call `confirm_model_update()`
+
+My recommendation:
+
+1. Stage it as `llm_manager_vlock.py`
+2. Test standalone
+3. Add confirmation flow
+4. Then swap import
+
+Do NOT surprise-break runtime.
+
+---
+
+# 🌐 Stage 5 — Implement First Real Executor
+
+Only after all above is stable:
+
+Implement capability `0x0010` (Governed Web Search).
+
+Inside `_execute()`:
+
+```
+self.network.request(...)
+```
+
+Still:
+
+```
+GOVERNED_ACTIONS_ENABLED = False
+```
+
+So it will not run yet.
+
+You test internal plumbing only.
+
+---
+
+# 🧪 Stage 6 — Write Tests Before Unlock
+
+Before flipping the gate, verify:
+
+* Registry missing → fail closed
+* Registry malformed → fail closed
+* Ledger write failure → deny execution
+* Direct `requests` import outside mediator → fail CI
+* Confirmation token invalidated on reset
+* Model update blocks inference
+* Session reset clears pending queue
+
+This is your real unlock proof.
+
+---
+
+# 🔓 Stage 7 — Admission Gate Review
+
+Cross-check against:
+
+Phase 4 Admission Checklist 
+
+Every checkbox must be mechanically verifiable.
+
+Not documented.
+Tested.
+
+---
+
+# 🚀 Stage 8 — The Single Flip
+
+One line:
+
+```python
+GOVERNED_ACTIONS_ENABLED = True
+```
+
+Single commit.
+Explicit.
+Referenced.
+Signed.
+
+That is the birth of Phase 4.
+
+---
+
+# 🔥 The Clean Visual Order
+
+```
+1. Add infrastructure files
+2. Replace queue + execute boundary
+3. Replace governor (lazy)
+4. Wire mediator path
+5. Install version lock (careful)
+6. Build first executor
+7. Write adversarial tests
+8. Flip gate
+```
+
+---
+
+# 🎯 What You Should Do Next (Immediate Step)
+
+Right now, based on where you are:
+
+👉 Install Stage 1 infrastructure only.
+Do NOT touch llm_manager yet.
+
+Then tell me:
+
+* Does Nova boot?
+* Does inference still work?
+* Are there any import errors?
+
+We move forward only after runtime stability is confirmed.
+
+---
+
+You are no longer theorizing.
+
+You are sequencing a constitutional unlock.
+
+Let’s do it clean.

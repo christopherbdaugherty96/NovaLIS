@@ -1,0 +1,186 @@
+# 🧬 NOVA MEMORY ARCHITECTURE: USER MEMORY & SYSTEM MEMORY
+## *Separate Stores for Personalization and Environmental Awareness*
+
+**Document ID:** `NOVA-MEMORY-ARCHITECTURE-v1.0`  
+**Status:** Proposed — Design Reference for Phase 7+  
+**Date:** 2026-02-17  
+**Based on:**  
+- NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8 (Part VI – Memory Governance)  
+- NOVA-PHASE7-ARCHITECTURE-v1.2  
+- NOVA-GOVERNED-AGENT-v1.0  
+
+---
+
+## 🔹 PREAMBLE
+
+Phase 7 introduces continuous awareness and background cognition. To support this, Nova must maintain memory of two fundamentally different kinds:
+
+1. **User Memory** – stores personal preferences, interactions, and user‑specific configurations. This enables Nova to align with the household’s needs and provide personalized responses.
+2. **System Memory** – stores historical environmental states, anomaly patterns, system health trends, and other non‑personal contextual data. This enables Nova’s background cognition to detect patterns, generate proposals, and maintain environmental awareness.
+
+These two memory stores must be **separate, distinctly governed, and accessible only through constitutional rules**. User Memory is subject to stricter privacy constraints, while System Memory is more operational. Both remain under the Governor’s mediation and the immutable Ledger.
+
+---
+
+## 1. Core Principle
+
+> **User Memory is for personalization. System Memory is for environmental awareness. Neither may be used to infer or model human behavior without explicit Phase 9 ratification.**
+
+This separation ensures that:
+
+- Personal data is not accidentally mixed with system telemetry.
+- Background cognition can operate on environmental history without accessing personal data.
+- Users retain clear visibility and control over what is remembered about them.
+
+---
+
+## 2. User Memory
+
+### 2.1 Definition
+User Memory stores information explicitly provided by the user or derived from interactions with explicit user consent. Examples:
+
+- Saved preferences (e.g., “I prefer Celsius”)
+- Named devices and rooms
+- Explicitly saved facts (“My work hours are 9–5”)
+- Interaction history (e.g., recent queries, if user enables this)
+
+### 2.2 Governance
+- **Access:** Readable only by the Personality Agent (for response formatting) and by the Governor (for policy evaluation). Background Cognition Engine **may not** read User Memory unless explicitly authorized by a user‑ratified envelope (Phase 9+).
+- **Modification:** Only through explicit user actions (SAVE, LOCK, DELETE) or user‑ratified proposals (Phase 9). No automatic inference or learning.
+- **Storage:** Ring 3 (user‑owned), encrypted at rest. All mutations logged in Ledger.
+- **Retention:** User‑controlled; default indefinite until deleted.
+
+### 2.3 Invariants
+| # | Invariant |
+|---|-----------|
+| UM1 | **No automatic inference** – User Memory may only be populated through explicit user action or ratified proposal. |
+| UM2 | **Cognition isolation** – Background cognition may not access User Memory without a specific envelope (Phase 9). |
+| UM3 | **Full auditability** – Every read and write to User Memory is logged in the Ledger. |
+
+---
+
+## 3. System Memory
+
+### 3.1 Definition
+System Memory stores environmental and operational data collected through continuous awareness. Examples:
+
+- Historical sensor readings (temperature, motion, light levels) – aggregated, not raw.
+- Device state changes over time (lights on/off, HVAC cycles).
+- System health metrics (CPU, disk, network) with timestamps.
+- Detected anomalies (e.g., “disk filled unusually fast on Feb 15”).
+- External data snapshots (weather, news) – cached for offline use.
+
+**Crucially:** System Memory must **never** contain data that could identify or model individual human behavior. It is about the *environment*, not the *inhabitant*.
+
+### 3.2 Governance
+- **Access:** Readable by the Background Cognition Engine (for pattern detection and proposal generation) and by the Governor (for policy evaluation). Personality Agent may read only for user‑requested reports.
+- **Modification:** Written automatically by the Continuous Awareness Daemon and Background Cognition Engine (anomaly records). Deletion and compaction are governed by retention policies (see 3.4).
+- **Storage:** Ring 2 (mutable system components) or Ring 3 (user‑owned) depending on sensitivity. Aggregated data may be stored in Ring 2; raw high‑frequency data is ephemeral.
+- **Retention:** Configurable rolling window (default 7 days for aggregated summaries, 24 hours for high‑frequency). Older data is automatically compacted or deleted; deletions are logged.
+
+### 3.3 Invariants
+| # | Invariant |
+|---|-----------|
+| SM1 | **No personal data** – System Memory must not contain information that could identify or model human behavior. |
+| SM2 | **Aggregation before storage** – Raw sensor events are aggregated into summaries (e.g., hourly averages) before long‑term storage. |
+| SM3 | **Automatic compaction** – Data older than retention period is automatically deleted; deletion is logged. |
+| SM4 | **Cognition may read** – Background Cognition Engine may read System Memory without per‑access authorization, but all reads are logged. |
+
+---
+
+## 4. Memory Access Control by Governor
+
+All memory access—whether read or write—must pass through the Governor, which enforces:
+
+- **Constitutional boundaries:** e.g., User Memory off‑limits to cognition unless envelope allows.
+- **Resource limits:** Rate limits on reads/writes to prevent DoS or privacy leaks.
+- **Audit logging:** Every access attempt (success or denial) is recorded in the Ledger with event types:
+  - `MEMORY_READ_USER`
+  - `MEMORY_WRITE_USER`
+  - `MEMORY_READ_SYSTEM`
+  - `MEMORY_WRITE_SYSTEM`
+  - `MEMORY_ACCESS_DENIED`
+
+The Governor also mediates any cross‑memory operations (e.g., a proposal that combines user preference with system data) – such operations require explicit envelope approval.
+
+---
+
+## 5. Integration with Existing Phases
+
+| Phase | Memory Capabilities |
+|-------|---------------------|
+| **5** | Basic memory governance established (SAVE, LOCK, DEFER, DELETE). User Memory only. |
+| **7** | System Memory introduced. Continuous awareness writes to System Memory. Cognition reads System Memory. User Memory remains isolated. |
+| **9** | Ratified learning may allow limited cross‑memory operations with explicit user approval (e.g., “learn that I prefer warmer temperatures when outside is cold”). |
+
+Phase 7’s Background Cognition Engine operates **only on System Memory** by default. Any use of User Memory requires a future phase unlock and explicit user ratification.
+
+---
+
+## 6. Example Flows
+
+### 6.1 Writing to System Memory
+```
+Temperature sensor reads 22°C at 08:00
+    → Continuous Awareness Daemon aggregates into hourly bucket
+    → Governor logs MEMORY_WRITE_SYSTEM
+    → System Memory stores: {hour: 8, avg_temp: 22.1, min: 21.8, max: 22.3}
+```
+
+### 6.2 Cognition Reading System Memory
+```
+Background Cognition Engine requests CPU slice
+    → Governor grants slice, logs MEMORY_READ_SYSTEM (implicitly for all reads in that cycle)
+    → Engine queries System Memory for temperature trends over past week
+    → Detects unusual rise, generates proposal: "Temperature has been rising each morning – check HVAC?"
+```
+
+### 6.3 User Memory Access (Personality Agent)
+```
+User: "What’s the weather like?"
+    → Personality Agent reads User Memory for preferred units (Celsius/Fahrenheit)
+    → Governor logs MEMORY_READ_USER
+    → Agent formats response using preference
+```
+
+### 6.4 Cross‑Memory Proposal (Phase 9+)
+```
+User ratifies envelope: "If outside temperature drops below 5°C and I'm usually home (from User Memory), suggest turning up heat."
+    → Governor validates envelope
+    → Cognition may now read both System Memory (outside temp) and User Memory (presence patterns) to generate proposals
+    → All cross‑memory reads logged
+```
+
+---
+
+## 7. Additional Tier‑1 Invariants for Memory
+
+| # | Invariant | Description |
+|---|-----------|-------------|
+| 31 | **Memory separation** | User Memory and System Memory are logically and physically separate stores. No component may access both without explicit envelope authorization. |
+| 32 | **No behavioral modeling in System Memory** | System Memory may not contain data that enables inference of human habits, preferences, or identity. |
+| 33 | **Memory access logging** | Every read or write to either memory store must be logged in the Ledger, including the requesting component and purpose (if available). |
+
+---
+
+## 8. Implementation Guidelines
+
+- **User Memory:** Use an encrypted SQLite database with row‑level access logging. Each record has an `owner` field (user ID) and a `purpose` tag.
+- **System Memory:** Use a time‑series database (e.g., InfluxDB) or a simple rolling file store with aggregation. Ensure raw data is ephemeral.
+- **Governor mediation:** All memory access goes through a Governor‑owned API (e.g., `governor.memory.read(store, query)`). The Governor checks permissions, logs, and forwards to the appropriate backend.
+- **Retention policies:** Implemented as cron jobs or background tasks that run under Governor supervision, logging each deletion.
+
+---
+
+## 🔒 FINAL ATTESTATION
+
+This document establishes the necessary memory architecture for Phase 7 and beyond. By separating User Memory (personal) from System Memory (environmental), Nova can maintain continuous awareness and background cognition without compromising user privacy or accidentally modeling human behavior. All memory operations remain under the Governor’s control, fully logged, and constitutionally constrained.
+
+**Ratified by:** (to be filled)  
+**Date:** (to be filled)  
+**Document ID:** `NOVA-MEMORY-ARCHITECTURE-v1.0`  
+**Status:** Proposed
+
+---
+
+*End of Memory Architecture Document*

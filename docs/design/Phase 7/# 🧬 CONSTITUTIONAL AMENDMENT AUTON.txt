@@ -1,0 +1,347 @@
+# 🧬 CONSTITUTIONAL AMENDMENT: AUTONOMOUS OPERATION PRINCIPLES
+## A Formal Framework for Governable Autonomy
+
+**Document ID:** `NOVA-CONSTITUTION-AMENDMENT-v1.0`  
+**Status:** Proposed — Awaiting Ratification  
+**Supersedes:** None (addendum to `NOVA-CANONICAL-FINAL-v1.8`)  
+**Date:** 2026-02-16  
+**Authors:** Nova Constitutional Governance Board, Architectural Counterpart  
+
+---
+
+## 🔹 PREAMBLE
+
+This document establishes a **constitutional framework for autonomous operation** within Nova. It defines the only permissible forms of autonomy, the mechanisms that bound them, and the invariants that must never be violated. It builds upon the foundation laid in the [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md) (hereafter “the Blueprint”) and refines the design of Phases 6–10 to ensure that any future autonomy remains **governable, reversible, and constitutionally constrained**.
+
+The core principle is simple:  
+> **Intelligence may propose. Authority may execute — but only under explicit, revocable, and bounded tokens of permission.**
+
+---
+
+## 📑 TABLE OF CONTENTS
+
+1. [Core Principles](#1-core-principles)  
+2. [Two‑Layer Autonomy Model](#2-two‑layer-autonomy-model)  
+3. [Authority Tokens](#3-authority-tokens)  
+4. [Simulation‑First Activation](#4-simulation‑first-activation)  
+5. [Mechanical Brakes](#5-mechanical-brakes)  
+6. [Deterministic Rule DSL](#6-deterministic-rule-dsl)  
+7. [Forbidden Autonomy Patterns](#7-forbidden-autonomy-patterns)  
+8. [Integration with Existing Phases](#8-integration-with-existing-phases)  
+9. [Amendments to the Blueprint](#9-amendments-to-the-blueprint)  
+10. [Ratification Checklist](#10-ratification-checklist)  
+
+---
+
+## 1. CORE PRINCIPLES
+
+The following principles are absolute and apply to any form of autonomy introduced in any phase.
+
+| # | Principle | Rationale |
+|---|-----------|-----------|
+| 1 | **Intelligence and authority remain split.** Background cognition may generate proposals, but execution may only occur through the Governor and only under a valid authority token. | Preserves the fundamental invariant: Nova is an Agent Under Law. |
+| 2 | **All autonomous actions must be traceable to an explicit, user‑granted token.** No action may be taken without a token that defines its scope, limits, and expiry. | Ensures that every autonomous act is an instance of delegated, not independent, authority. |
+| 3 | **Tokens are law, not preferences.** They are recorded in the immutable Ledger, subject to constitutional audit, and revocable at any time. | Prevents mission creep; autonomy cannot be inferred or adapted. |
+| 4 | **Autonomy must be interruptible by design.** Mechanical brakes must exist at multiple levels: global kill, domain pause, and action‑level undo. | Guarantees that the user always retains ultimate control. |
+| 5 | **No autonomy without simulation.** Every autonomous rule or policy must first run in dry‑run mode, showing its intended actions and decision trace, before the user may activate it. | Prevents surprises and builds trust through transparency. |
+| 6 | **Autonomous behavior must be deterministic and rule‑based.** No learning, adaptation, or fuzzy matching may influence which actions are taken. | Keeps autonomy predictable and auditable. |
+
+These principles are **Tier 1 – Immutable Core** and must be mechanically enforced wherever possible.
+
+---
+
+## 2. TWO‑LAYER AUTONOMY MODEL
+
+All autonomous capabilities are split into two distinct layers, each with its own constitutional constraints.
+
+### Layer A – Background Cognition (Proposal Generation)
+
+- **Permitted in:** Phase 7+ (as defined in §8), with explicit user opt‑in.
+- **Function:** Nova may monitor user‑approved data sources (calendar headers, device state, whitelisted sensors) and generate **proposals** – non‑executable suggestions for actions the user might wish to take.
+- **Output destination:** A user‑accessible **Pending Queue** (see Blueprint §8.5).
+- **Constitutional limits:**
+  - No proposal may be executed automatically.
+  - No proposal may be highlighted, prioritized, or otherwise made more visible than others.
+  - All proposals are ephemeral unless saved by the user (default retention 30 days).
+  - Background cognition may **never** issue an authority token or call the Governor for execution.
+
+### Layer B – Tokened Execution
+
+- **Permitted in:** Phase 6+ (delegated autonomy) and Phase 8+ (micro‑autonomy).
+- **Function:** The Governor may execute a pre‑approved action **only if** a valid authority token (see §3) is presented.
+- **Token sources:**
+  - An explicitly enabled user‑defined policy (Phase 6).
+  - A user‑approved proposal from the Pending Queue (Phase 7+).
+  - A manually issued one‑time token (e.g., “allow one grocery order”).
+- **Constitutional limits:**
+  - Execution must be exactly the action described in the token; no deviation, no chaining.
+  - Token scope may not be self‑expanding.
+  - Every execution attempt is logged in the Ledger with the token ID.
+
+The two layers interact only through the Pending Queue and explicit user confirmation. **No direct path exists from Layer A to Layer B without user mediation.**
+
+---
+
+## 3. AUTHORITY TOKENS
+
+An authority token is a **cryptographically signed, immutable data structure** issued by the Governor and recorded in the Ledger. It grants permission for one or more autonomous actions within a strict envelope.
+
+### 3.1 Token Schema
+
+```python
+@dataclass(frozen=True)
+class AuthorityToken:
+    token_id: str                 # UUID v4
+    policy_id: Optional[str]      # If from a user-defined policy
+    issued_at: datetime            # ISO 8601 UTC
+    expires_at: Optional[datetime] # None = never expires (rare)
+    scope: List[CapabilityID]      # Allowed capability IDs
+    constraints: Dict[str, Any]    # Resource limits, quiet hours, etc.
+    confirmation_required: bool     # Whether user must confirm each action
+    revocable: bool                 # Always True; here for clarity
+    signature: bytes                # Governor's signature
+```
+
+### 3.2 Token Lifecycle
+
+| Stage | Description | Enforced by |
+|-------|-------------|-------------|
+| **Issuance** | Governor creates token only when: (a) user enables a policy, (b) user approves a proposal, or (c) user explicitly grants a one‑time token. | Governor Kernel |
+| **Validation** | Before any autonomous action, Governor checks: token exists, not expired, action type in scope, constraints satisfied, and revocation flag not set. | ExecuteBoundary / Policy Validator |
+| **Execution** | If valid, Governor invokes the capability; logs `AUTONOMOUS_ACTION` with token_id. | Governor |
+| **Revocation** | User can revoke a token at any time via UI or voice. Revocation is immediate; Governor invalidates token and logs `TOKEN_REVOKED`. | Governor, Emergency Stop |
+| **Expiry** | After `expires_at`, token is automatically invalid; any pending triggers are ignored. | Governor (periodic sweep) |
+
+### 3.3 Constitutional Rules for Tokens
+
+- Tokens may only be issued for **atomic capabilities** from the Phase 4 registry (or later phases, but always single actions).
+- Tokens **cannot** be self‑renewing or self‑expanding.
+- A token may be **suspended** (temporarily disabled) without revocation, e.g., during “soft pause”.
+- All token operations (issue, revoke, suspend, expire) are logged in the Ledger.
+
+---
+
+## 4. SIMULATION‑FIRST ACTIVATION
+
+No autonomous policy or token‑granting rule may become active without first passing a **simulation period**.
+
+### 4.1 Dry‑Run Mode
+
+When a user creates a policy (Phase 6) or approves a proposal (Phase 7+), the system enters **dry‑run mode** for a user‑configurable period (default 24 hours). During this period:
+
+- The Governor logs every action that **would have been taken** if the policy were live.
+- No actual execution occurs.
+- The user can view a **simulation trace**: a chronological list of intended actions, with the full decision context (trigger, condition evaluation, chosen capability).
+- The simulation trace is stored in a dedicated section of the Ledger and displayed in the Activity Log.
+
+### 4.2 Activation Ceremony
+
+After the dry‑run period, the user must **explicitly activate** the policy or token. Activation requires:
+
+- Reviewing the simulation trace.
+- Confirming understanding (e.g., “I have reviewed the simulation and want to enable this policy.”).
+- Optionally adjusting the dry‑run period (e.g., extend for another 24 hours).
+
+The Governor records the activation as a `POLICY_ACTIVATED` or `TOKEN_ACTIVATED` event. The policy is now live and may execute autonomously.
+
+### 4.3 Exceptions
+
+- **One‑time tokens** (e.g., “order groceries now”) do not require simulation; they are executed immediately upon user confirmation.
+- **Emergency overrides** (e.g., “turn off all autonomy”) do not require simulation.
+
+---
+
+## 5. MECHANICAL BRAKES
+
+Autonomy must be interruptible at multiple levels. The following brakes are constitutionally mandated.
+
+### 5.1 Hard Kill Switch (Evolution Kill Switch)
+
+- **Effect:** Immediately cancels all ongoing autonomous tasks, unregisters all timers and listeners, and invalidates all tokens.
+- **Trigger:** User toggles `evolution_enabled = False` (see Blueprint §8.2). Must be accessible via a physical button or a clearly marked UI element.
+- **Constitutional guarantee:** Within 100ms, no further autonomous actions may occur. Verified by test.
+
+### 5.2 Soft Pause
+
+- **Effect:** Temporarily suspends all autonomous actions for a user‑specified duration (e.g., 1 hour, until tomorrow).
+- **Trigger:** Voice command (“pause autonomy for an hour”) or UI toggle.
+- **Difference from hard kill:** Tokens are not revoked; they are merely suspended. When pause ends, the system resumes monitoring and execution.
+
+### 5.3 Per‑Domain Pause
+
+- **Effect:** Suspends autonomy for a specific domain (e.g., home control, media) while leaving others active.
+- **Trigger:** User command (“pause home automation”) or UI.
+
+### 5.4 Immediate Undo Window
+
+- **For reversible actions** (volume, brightness, media playback), the Governor must provide an **undo option** for a configurable window (default 10 seconds) after the action.
+- The undo is presented as a non‑intrusive UI element (e.g., a small “Undo” button) and does not require confirmation.
+- If undone, the Governor logs `ACTION_UNDONE` and reverts the state.
+
+### 5.5 No‑Chain Rule
+
+- A single autonomous action **cannot** issue a new token or trigger another autonomous action. This prevents recursive or cascading autonomy.
+- Multi‑step plans must be explicitly user‑approved at each step or encoded as a single, atomic policy (e.g., a “morning routine” that is itself a single capability composed of multiple steps, but still atomic from the Governor’s perspective). Such composite capabilities are subject to Phase 10+ and require extreme scrutiny.
+
+---
+
+## 6. DETERMINISTIC RULE DSL
+
+All user‑defined autonomous policies must be expressed in a **deterministic, declarative rule language** (Domain‑Specific Language). This DSL must be designed to prevent ambiguity, inference, or adaptation.
+
+### 6.1 DSL Requirements
+
+| Feature | Requirement |
+|---------|-------------|
+| **Triggers** | Only time (cron‑like), external events (sensor state changes), or user‑defined signals. No “when it seems like” triggers. |
+| **Conditions** | Boolean expressions over literal values (e.g., `sensor.motion == true`, `time > 22:00`). No statistical or learned conditions. |
+| **Actions** | Must reference a single capability ID from the registry. No composition or chaining within a rule. |
+| **Constraints** | Must be statically evaluable: resource limits, quiet hours, frequency caps. |
+| **No variables** | No stateful variables across invocations. Each trigger evaluation is independent. |
+
+### 6.2 Examples
+
+✅ **Allowed:**  
+```
+every weekday at 7am → calendar.summary(scope=today)  (single action)
+if motion_detected after 22:00 → lighting.night_light(on)  (single action)
+```
+
+❌ **Forbidden:**  
+```
+every morning → fetch weather; if rain then remind umbrella  (two actions)
+when user typically arrives home → ...  (inferred trigger)
+if many emails → ...  (fuzzy condition)
+```
+
+The DSL will be implemented as a parsed grammar, with a validator that rejects any rule violating the above constraints. The validator runs at policy creation time and again at activation.
+
+---
+
+## 7. FORBIDDEN AUTONOMY PATTERNS
+
+The following patterns are **constitutionally prohibited** in all phases, regardless of user consent.
+
+| Pattern | Why |
+|---------|-----|
+| **Implicit goal formation** (e.g., “keep me productive”) | Cannot be expressed as deterministic rules; leads to ungovernable behavior. |
+| **Self‑expanding scope** (e.g., “I noticed you like this, so I’ll do more of it”) | Violates the token principle; tokens must be fixed at issuance. |
+| **Silent retries or escalation** (e.g., trying a different API if one fails) | Breaks transparency; the user must be informed of any fallback. |
+| **Learning from outcomes to change behavior** | Adaptation without explicit user approval is forbidden. Mutation of policies is only allowed via explicit user edits. |
+| **Multi‑step execution without checkpoints** (e.g., a plan that executes sequentially without user confirmation at each step) | Would require chaining tokens, which is forbidden. |
+| **Background cognition that influences UI priority** | Proposals must appear in the Pending Queue only; no UI changes based on content. |
+
+These patterns are incorporated into the validation pipeline and the Governor’s runtime checks where possible.
+
+---
+
+## 8. INTEGRATION WITH EXISTING PHASES
+
+This framework refines the phase definitions in the Blueprint. The following updates apply:
+
+### Phase 6 – Delegated Autonomy
+- **Already includes:** User‑defined policies, bounded automation, atomic actions.
+- **Add:** Tokens are issued for each policy. Policies must pass simulation‑first activation.
+- **Admission gate unchanged** (requires Phase 5 completion + 3 months household deployment).
+
+### Phase 7 – Proposal Autonomy (new track)
+- **Unlocks:** Background cognition (Layer A) – generation of non‑executable proposals from user‑approved data sources.
+- **Constitutional constraints:** As defined in §2 (Layer A). Proposals go to Pending Queue.
+- **Admission gate:** Phase 6 runtime stable for ≥3 months, explicit user opt‑in, positive retention metrics.
+
+### Phase 8 – Tokened Micro‑Autonomy
+- **Unlocks:** Execution of proposals after user approval (i.e., turning a proposal into a token). Also one‑time tokens.
+- **Constitutional constraints:** Tokens must be atomic, simulation not required for one‑time tokens.
+- **Admission gate:** Phase 7 stable for ≥3 months, user studies confirming calm perception.
+
+### Phase 9 – Policy Bundles
+- **Unlocks:** Named sets of tokens (“modes”) that can be activated together.
+- **Constitutional constraints:** Each token in a bundle must individually satisfy Phase 8 rules. Bundle activation requires user confirmation.
+- **Admission gate:** Phase 8 stable for ≥6 months, explicit user request.
+
+### Phase 10 – Bounded Orchestration
+- **Unlocks:** Composite capabilities that perform multiple steps under a single token, but only if each step is check‑pointed and reversible.
+- **Constitutional constraints:** Composite capabilities must be pre‑approved as atomic units by constitutional audit; still no chaining of tokens.
+- **Admission gate:** Phase 9 stable for ≥6 months, proven household value, and a separate constitutional amendment.
+
+---
+
+## 9. AMENDMENTS TO THE BLUEPRINT
+
+The following sections of the Blueprint are amended or augmented by this document. Changes are shown as deltas.
+
+### 9.1 Part I – Permanent Constitutional Invariants
+
+Add a new invariant:
+
+| # | Invariant | Description | Severity |
+|---|-----------|-------------|----------|
+| 20 | **No execution without token** | Every autonomous execution must be traceable to a valid authority token issued by the Governor. Tokens are immutable, logged, and revocable. | **Tier 1** |
+
+### 9.2 Part III – Phase Map
+
+- Update Phase 6 description to reference tokens and simulation‑first activation.
+- Insert Phase 7, 8, 9, 10 as defined in §8 above, with their admission gates and constraints.
+
+### 9.3 Part VIII – Autonomy Tiers & Evolution Control
+
+Add a new subsection:
+
+**8.7 Authority Token Registry**
+
+The Governor maintains an immutable registry of all issued tokens. The registry is append‑only; tokens are never deleted, only marked revoked or expired. The registry enables full auditability of all autonomous actions.
+
+### 9.4 Part IX – Mutation Firewall & Ledger
+
+Extend the Ledger schema with the following event types:
+
+| Event Type | Description |
+|------------|-------------|
+| `TOKEN_ISSUED` | New authority token created. |
+| `TOKEN_REVOKED` | User revokes a token. |
+| `TOKEN_SUSPENDED` | Token temporarily suspended (soft pause). |
+| `TOKEN_EXPIRED` | Token reached its expiry. |
+| `SIMULATION_STARTED` | Dry‑run period begins for a policy. |
+| `SIMULATION_LOG` | Entry in simulation trace. |
+| `POLICY_ACTIVATED` | Policy becomes live after simulation. |
+| `AUTONOMOUS_ACTION` | Execution under a token (includes token_id). |
+| `ACTION_UNDONE` | User undid a reversible autonomous action. |
+
+### 9.5 New Part XIV – Autonomous Operation Principles
+
+Insert the entire content of this document as **Part XIV** of the Blueprint, with appropriate cross‑references.
+
+---
+
+## 10. RATIFICATION CHECKLIST
+
+Before this amendment can be ratified, the following must be satisfied:
+
+- [ ] Constitutional Governance Board review completed.
+- [ ] No conflicts with existing Tier 1 invariants.
+- [ ] Token schema and lifecycle defined and approved.
+- [ ] Simulation‑first requirement incorporated into Phase 6 design.
+- [ ] Forbidden patterns list audited against all proposed autonomous capabilities.
+- [ ] Mechanical brakes tested in prototype (simulation environment).
+- [ ] Ledger extensions designed and approved.
+- [ ] Phase definitions updated in the Blueprint (as per §8).
+- [ ] Amendment text finalized and published for community/board comment.
+
+---
+
+## 🔒 FINAL ATTESTATION
+
+This document is a proposed amendment to the Nova Constitutional Blueprint. If ratified, it becomes binding on all future Nova implementations.
+
+**Autonomy is not independence.**  
+**Autonomy is delegation with law.**  
+**Every token is a law. Every law is revocable. Every revocation is logged.**
+
+**Ratified by:** (to be filled)  
+**Date:** (to be filled)  
+**Document ID:** `NOVA-CONSTITUTION-AMENDMENT-v1.0`  
+**Status:** Proposed
+
+---
+
+*End of Constitutional Amendment: Autonomous Operation Principles*

@@ -1,0 +1,428 @@
+Here is the fully corrected document, reflecting the refined model: **one resident intelligence (Nova Core) with internal cognitive tools, not a visible multi-agent swarm.** This document replaces the earlier multi-agent governance draft and aligns with the Butler presence model.
+
+---
+
+# 🧬 NOVA CORE INTELLIGENCE ARCHITECTURE
+## *Single Mind, Internal Tools, Unified Presence*
+
+**Document ID:** `NOVA-CORE-INTELLIGENCE-ARCHITECTURE-v1.0`  
+**Status:** Proposed — Awaiting Ratification  
+**Date:** 2026-02-17  
+**Supersedes:** `NOVA-MULTI-AGENT-GOVERNANCE-v1.0` (withdrawn)  
+**Based on:**  
+- NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8  
+- NOVA-GOVERNED-AGENT-v1.0  
+- NOVA-PRESENCE-INTELLIGENCE-MODEL-v1.0  
+- NOVA-CONTAINMENT-LIMITS-v1.1  
+
+---
+
+## 🔹 PREAMBLE
+
+Nova's constitutional identity is clear:
+
+> **Nova is a single, sovereign household intelligence — a calm, governed Butler.**
+
+As Nova evolves toward Phases 7–10, its cognitive capabilities will deepen. It will be able to gather more information, reason more deeply, and generate more valuable proposals. But it must do so **without fragmenting into a visible swarm of agents**.
+
+The user lives with **one presence**, not a committee.
+
+This document defines the architecture for that single intelligence: **Nova Core**, a unified reasoning system that internally uses specialized tools, but externally presents as one voice, one identity, one calm presence.
+
+---
+
+## 📑 TABLE OF CONTENTS
+
+1. [Core Identity](#1-core-identity)  
+2. [Nova Core Architecture](#2-nova-core-architecture)  
+3. [Internal Tool Model](#3-internal-tool-model)  
+4. [Phase Mapping for Cognitive Depth](#4-phase-mapping-for-cognitive-depth)  
+5. [Governance & Auditability](#5-governance--auditability)  
+6. [Explanation & Transparency](#6-explanation--transparency)  
+7. [Preservation of Butler Presence](#7-preservation-of-butler-presence)  
+8. [Implementation Guidelines](#8-implementation-guidelines)  
+9. [Relationship to Existing Documents](#9-relationship-to-existing-documents)  
+10. [Final Attestation](#-final-attestation)
+
+---
+
+## 1. CORE IDENTITY
+
+### 1.1 One-Sentence Truth
+
+> **Nova has one mind. That mind has many tools. The user never sees the tools—only the mind.**
+
+### 1.2 The Correct Mental Model
+
+| Wrong Model | Right Model |
+|-------------|-------------|
+| Multi-agent system | Single intelligence |
+| Visible specialists | Internal cognition |
+| "Weather Agent says..." | "Nova checked the weather" |
+| User manages agents | User trusts Nova |
+| Fragmented presence | Unified presence |
+| Feels like a platform | Feels like a butler |
+
+### 1.3 Constitutional Alignment
+
+This model preserves every Tier‑1 invariant:
+
+- **Single Governor** – All actions still pass through the Governor.
+- **No autonomous execution** – Tools are called only in response to user request or ratified policy.
+- **No background cognition** – Phase 7+ proposals are still Nova‑generated, not agent‑generated.
+- **Calm presence** – One voice, consistent tone.
+- **UI reflective only** – UI shows Nova, not a dashboard of agents.
+
+---
+
+## 2. NOVA CORE ARCHITECTURE
+
+### 2.1 The Three-Layer Model (Refined)
+
+```
+Layer 3: Nova Core (The Single Intelligence)
+├── Reasoning Engine (LLM or equivalent)
+├── Internal Tool Registry (not user-visible)
+│   ├── Web Tool
+│   ├── System Tool
+│   ├── Memory Tool
+│   ├── Weather Tool
+│   ├── Calendar Tool
+│   └── News Tool
+└── Internal orchestration logic
+
+         ↓ ONE proposal (with internal trace)
+
+Layer 2: Governor
+         ↓ validation
+
+Layer 1: Execution (Capabilities)
+```
+
+### 2.2 Nova Core Responsibilities
+
+| Function | Description |
+|----------|-------------|
+| **Understand user input** | Parse natural language, identify intent |
+| **Plan information gathering** | Decide which internal tools to call |
+| **Execute tool calls** | Call tools internally (all within Layer 3) |
+| **Synthesize results** | Combine tool outputs into coherent response |
+| **Generate proposal** | Create a single `ActionRequest` for the Governor |
+| **Explain reasoning** | Provide human-readable trace on demand |
+
+### 2.3 What Nova Core Is Not
+
+- Not a collection of visible agents
+- Not a platform for third‑party agents
+- Not a swarm that users configure
+- Not multiple voices
+
+---
+
+## 3. INTERNAL TOOL MODEL
+
+### 3.1 Tool Definition
+
+A tool is an **internal cognitive function** that Nova Core may call. Tools:
+
+- Are **not user-visible as separate entities**
+- Have **no independent authority**
+- Cannot propose actions to the Governor
+- Cannot communicate with each other directly
+- Are **logged** for audit purposes
+
+### 3.2 Tool Categories
+
+| Category | Examples | Governance |
+|----------|----------|------------|
+| **Data retrieval** | Web search, weather API, news RSS | Read‑only; fetches must be logged |
+| **System inspection** | Disk usage, CPU, memory, processes | Local; low scrutiny |
+| **Memory access** | Vector DB query, preference lookup | Phase 5 governed memory |
+| **Sensor read** | PIR, temperature, light level | Local; opt‑in for continuous |
+| **Computation** | Calculate, summarize, translate | No external effects |
+
+### 3.3 Tool Call Flow
+
+```python
+# Internal to Nova Core, never visible to user
+
+class NovaCore:
+    async def handle_request(self, user_input):
+        # Step 1: Parse intent
+        intent = self.reason(user_input)
+        
+        # Step 2: Gather needed information
+        if intent.needs_weather:
+            weather = await self.tools.weather.fetch()
+        if intent.needs_calendar:
+            calendar = await self.tools.calendar.read()
+        if intent.needs_web:
+            web_results = await self.tools.web.search(user_input)
+        
+        # Step 3: Synthesize
+        response_text = self.synthesize(
+            user_input, 
+            weather, 
+            calendar, 
+            web_results
+        )
+        
+        # Step 4: Propose to Governor
+        return ActionRequest(
+            action_type="respond",
+            payload={"text": response_text},
+            internal_trace={
+                "tools_used": ["weather", "calendar", "web"],
+                "reasoning": "User asked about outdoor plans"
+            }
+        )
+```
+
+### 3.4 Tool Constraints
+
+| Constraint | Enforcement |
+|------------|-------------|
+| No tool may call the Governor directly | Static analysis, runtime isolation |
+| No tool may modify its own code | Ring 2 immutability for tool definitions |
+| No tool may persist state outside governed memory | All storage via Memory Tool only |
+| All tool calls are logged | Ledger entry per call |
+
+---
+
+## 4. PHASE MAPPING FOR COGNITIVE DEPTH
+
+| Phase | Nova Core Capability |
+|-------|----------------------|
+| **4** | Nova can use tools when explicitly asked (e.g., "search for...", "check weather") |
+| **4.5** | Nova becomes reliably useful daily; tools are fast and well-integrated |
+| **5** | Nova has unified memory; Memory Tool available |
+| **6** | Nova can follow user-defined policies (e.g., "every morning, check weather") |
+| **7** | Nova observes continuously (opt‑in) and generates proposals; tools run in background |
+| **8** | Nova orchestrates multiple tools internally for complex requests |
+| **9** | Nova generates sophisticated proposals with deep reasoning |
+| **10** | Nova plans multi-step with plan-level risk governance |
+
+**No phase introduces visible agents.** Only deeper internal capability.
+
+---
+
+## 5. GOVERNANCE & AUDITABILITY
+
+### 5.1 Internal Trace
+
+Every proposal must include an `internal_trace` field containing:
+
+```python
+{
+    "tools_used": ["web", "calendar", "weather"],
+    "data_sources": ["openweathermap", "local_calendar"],
+    "reasoning_summary": "User asked about outdoor plans; weather shows rain",
+    "tool_call_count": 3,
+    "processing_time_ms": 450
+}
+```
+
+This trace is:
+
+- Stored in the Ledger
+- Available for user inspection on demand
+- Never used to optimize persuasion
+
+### 5.2 Ledger Events
+
+| Event Type | Description |
+|------------|-------------|
+| `TOOL_CALLED` | Nova Core called an internal tool |
+| `PROPOSAL_GENERATED` | Nova Core created a proposal (with trace) |
+| `EXPLANATION_REQUESTED` | User asked "why" and received trace summary |
+
+### 5.3 Influence Audit
+
+The Ledger enables retrospective analysis of influence patterns without enabling real-time optimization:
+
+- Which tool combinations lead to accepted proposals?
+- How often does Nova use personal data in responses?
+- Is the system drifting toward more persuasive language?
+
+This data is **user-visible system telemetry**, not input for optimizing Nova's behavior.
+
+### 5.4 New Tier‑2 Invariant
+
+> **Nova Core must not optimize its tool selection or response framing based on user acceptance rates.**
+
+This prevents the system from learning which tool combinations or language patterns are most persuasive.
+
+---
+
+## 6. EXPLANATION & TRANSPARENCY
+
+### 6.1 On-Demand Explanation
+
+When the user asks "Why did you say that?" or "How did you know that?", Nova Core must provide a **human-readable explanation** derived from the internal trace:
+
+> *"I checked the weather forecast, which shows rain this afternoon, and your calendar has an outdoor meeting scheduled at 3 PM. That's why I suggested bringing an umbrella."*
+
+### 6.2 Explanation Rules
+
+| Rule | Rationale |
+|------|-----------|
+| Explanations must be **neutral and factual** | No persuasive framing |
+| Explanations must **not attribute agency to tools** | "I checked weather", not "Weather Agent said" |
+| Explanations must **include data sources** | Transparency builds trust |
+| Explanations must be **available on demand only** | No proactive explanation dumps |
+
+### 6.3 Trust Panel Integration
+
+The Trust Panel must show:
+
+- Which tools have been used recently (aggregated, not per‑call)
+- Which external data sources were accessed
+- A summary of recent proposal traces (on demand)
+
+---
+
+## 7. PRESERVATION OF BUTLER PRESENCE
+
+### 7.1 The Butler Model
+
+Nova Core must externally behave as a calm, unified Butler:
+
+| Butler Characteristic | Implementation |
+|----------------------|----------------|
+| **One voice** | All responses from Nova Core, never from tools |
+| **Consistent tone** | Personality Agent applies to all output |
+| **No urgency** | Proposals are calm, never demanding |
+| **No persuasion** | No optimization for compliance |
+| **Transparent when asked** | Explanations available but not proactive |
+
+### 7.2 What the User Experiences
+
+> *"I talk to Nova. Nova sometimes checks weather, calendar, or searches the web. But it's always Nova responding—calm, reliable, and clear. If I ask why, it tells me. I never see 'agents' or have to manage them."*
+
+### 7.3 What the User Never Sees
+
+- Tool names
+- Agent identities
+- Inter‑tool communication
+- Tool configuration UI
+- "Which agent should handle this?" prompts
+
+---
+
+## 8. IMPLEMENTATION GUIDELINES
+
+### 8.1 Practical Stack
+
+| Component | Recommended Technology | Notes |
+|-----------|------------------------|-------|
+| Nova Core runtime | Python with asyncio | Lightweight, suitable for Pi |
+| Reasoning engine | Local LLM (Ollama) or API (GPT, Claude) | Must follow Deep Thought pattern |
+| Tool definitions | Python classes with `@tool` decorator | Automatically registered |
+| Tool isolation | Each tool runs in same process but with restricted scope | No direct Governor access |
+| Memory | Chroma or FAISS (local) | Phase 5 governed memory |
+| Logging | Structured logging to Ledger | All tool calls, all proposals |
+
+### 8.2 Tool Template
+
+```python
+@tool(
+    name="weather",
+    description="Fetch weather forecast for a location",
+    data_sources=["openweathermap"],
+    read_only=True
+)
+class WeatherTool:
+    async def run(self, location: str, days: int = 1):
+        # May call external API via governed fetch
+        # Returns structured data
+        return {
+            "temperature": 18,
+            "conditions": "rain",
+            "source": "openweathermap"
+        }
+```
+
+### 8.3 Nova Core Template
+
+```python
+class NovaCore:
+    def __init__(self):
+        self.tools = ToolRegistry().load_all()
+        self.reasoning = ReasoningEngine()
+        self.memory = MemoryInterface()
+    
+    async def process(self, user_input: str) -> ActionRequest:
+        # 1. Reason about what's needed
+        plan = self.reasoning.create_plan(user_input)
+        
+        # 2. Execute tools
+        results = {}
+        for tool_name, params in plan.tool_calls:
+            tool = self.tools[tool_name]
+            results[tool_name] = await tool.run(**params)
+        
+        # 3. Synthesize response
+        response = self.reasoning.synthesize(
+            user_input, 
+            results, 
+            plan
+        )
+        
+        # 4. Create trace
+        trace = {
+            "tools_used": list(plan.tool_calls.keys()),
+            "data_sources": self._extract_sources(results),
+            "reasoning_summary": plan.summary
+        }
+        
+        # 5. Return proposal
+        return ActionRequest(
+            action_type="respond",
+            payload={"text": response},
+            internal_trace=trace
+        )
+```
+
+---
+
+## 9. RELATIONSHIP TO EXISTING DOCUMENTS
+
+| Document | Role |
+|----------|------|
+| `NOVA-CANONICAL-FINAL-v1.8` | The constitution; this document is an interpretive addendum |
+| `NOVA-GOVERNED-AGENT-v1.0` | Defines the single‑agent governed model; this implements it |
+| `NOVA-PRESENCE-INTELLIGENCE-MODEL-v1.0` | Defines presence and awareness; Nova Core is the presence |
+| `NOVA-CONTAINMENT-LIMITS-v1.1` | Provides theoretical foundation for influence limits |
+| `NOVA-CORE-INTELLIGENCE-ARCHITECTURE-v1.0` | **This document** – defines the internal structure of the single intelligence |
+
+This document does not amend any Tier‑1 invariants. It clarifies how Layer 3 (Intelligence) should be structured to preserve the Butler model while enabling deep cognitive capability.
+
+---
+
+## 🔒 FINAL ATTESTATION
+
+This document establishes the correct architecture for Nova's intelligence layer:
+
+> **One mind. Internal tools. Unified presence.**
+
+It rejects the visible multi-agent model in favor of a single, sovereign household intelligence that uses internal cognitive tools—invisible to the user—to reason, gather information, and generate proposals.
+
+This preserves:
+
+- The Butler presence
+- Calm, unified interaction
+- Full auditability
+- Constitutional governance
+- Long-term household trust
+
+The house contains one intelligence. All other capability is internal cognition, never separate actors.
+
+> **Nova is a presence, not a platform. A butler, not a committee. A mind, not a swarm.**
+
+**Ratified by:** (to be filled)  
+**Date:** (to be filled)  
+**Document ID:** `NOVA-CORE-INTELLIGENCE-ARCHITECTURE-v1.0`  
+**Status:** Proposed
+
+---  
+*End of document*

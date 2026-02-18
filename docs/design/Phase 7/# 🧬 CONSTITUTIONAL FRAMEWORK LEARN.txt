@@ -1,0 +1,211 @@
+# 🧬 CONSTITUTIONAL FRAMEWORK: LEARNING FROM CORRECTION  
+## *Self-Proposing Law Evolution with Human Ratification*  
+
+**Document ID:** `NOVA-CONSTITUTION-LEARNING-v1.0`  
+**Status:** Proposed – Awaiting Ratification  
+**Date:** 2026-02-16  
+**Supersedes:** None (addendum to `NOVA-CONSTITUTION-AMENDMENT-v1.0`)  
+**Based on:**  
+- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md)  
+- [Constitutional Amendment: Autonomous Operation Principles](NOVA-CONSTITUTION-AMENDMENT-v1.0.md)  
+
+---
+
+## 🔹 PREAMBLE  
+
+One of the most valuable – and most dangerous – capabilities Nova could eventually acquire is the ability to **learn from corrections** and update its own rules.  
+
+If designed carelessly, this would destroy the constitution: behavior would change without a recorded act of authority, auditability would vanish, and the system would drift into true autonomy.  
+
+But if designed correctly, Nova can become a **self-amending system under constitutional control** – one that improves over time while remaining fully governed.  
+
+This document establishes the only permissible model for learning from correction.  
+
+---
+
+## 1. CORE PRINCIPLE  
+
+> **Nova may learn patterns, but only the user may change the law.**  
+
+Every observed correction may trigger a **proposal** for rule change.  
+No rule change may take effect without explicit user ratification.  
+
+This preserves:  
+
+- **Auditability** – every behavior change is traceable to a human decision.  
+- **Determinism** – runtime execution remains purely rule‑based.  
+- **Legal attribution** – authority always originates from the user.  
+- **Agent‑Under‑Law identity** – Nova never modifies its own standing orders.  
+
+---
+
+## 2. THE ONLY SAFE FLOW  
+
+When a user corrects Nova (e.g., “Correction: when motion is detected at night, use night lights, not main lights”), the system must follow this constitutional flow:  
+
+```
+User correction observed  
+      ↓  
+Nova generates a rule change proposal  
+      ↓  
+Proposal enters the user‑accessible Proposal Queue  
+      ↓  
+User reviews the proposal (diff view, explanation)  
+      ↓  
+If user approves → Governor issues a new token / updates the policy  
+      ↓  
+Governor logs: POLICY_REPLACED (with version history, approver, timestamp)  
+If user rejects → proposal discarded (or archived for reference)  
+```
+
+No step may be skipped. No automatic application.  
+
+---
+
+## 3. STRUCTURAL COMPONENTS  
+
+### 3.1 Observation Layer  
+
+Nova monitors for signals that may indicate a desired rule change.  
+The only constitutionally safe signals are **explicit corrections**:  
+
+- “Correction: …” commands  
+- Repeated manual overrides of an autonomous action  
+- Frequent undo of a specific action  
+- User‑initiated “suggest a rule” requests  
+
+Prohibited signals (because they imply inference, not correction):  
+
+- Patterns of implicit user behavior (“you usually do X”)  
+- Time‑of‑day correlations  
+- Sensor data trends  
+- Any statistical inference about user intent  
+
+The observation layer must be **opt‑in** and its sensitivity configurable by the user.  
+
+### 3.2 Proposal Generation  
+
+When a valid correction signal is detected, Nova generates a **proposed rule change**.  
+The proposal must include:  
+
+- The current rule (if any)  
+- The suggested new rule  
+- A plain‑language explanation of why the change is suggested  
+- A diff view showing exactly what would change  
+- Optionally, a simulation trace of what would have happened if the new rule had been active (dry‑run)  
+
+Proposals are written to the **Proposal Queue** (see Blueprint §8.5 and Autonomous Operation Principles §2). They are never displayed proactively; they appear as a neutral list item.  
+
+### 3.3 Ratification Layer  
+
+The user reviews the proposal and takes one of three actions:  
+
+- **Approve** → Governor creates a new token or updates the policy. The old version is archived; the new version becomes active.  
+- **Reject** → Proposal is discarded. Nova logs `PROPOSAL_REJECTED` with reason (if any).  
+- **Modify** → User edits the proposal (via UI) before approving. The modified version is treated as a new proposal, subject to the same ratification flow.  
+
+Ratification requires **explicit user confirmation** (e.g., “I approve this rule change”). No inference, no “yes” without context.  
+
+### 3.4 Governor‑Mediated Update  
+
+When a proposal is approved, the Governor:  
+
+1. Validates the new rule against the constitutional DSL (deterministic, atomic, etc.).  
+2. Issues a new token (or updates the existing policy).  
+3. Logs the change in the immutable Ledger with event type `POLICY_REPLACED`, including:  
+   - Old policy ID and version  
+   - New policy ID and version  
+   - User ID (or session token) of the approver  
+   - Timestamp  
+   - Optional: user‑provided justification  
+
+4. The old rule remains in the Ledger (append‑only) and can be reverted at any time by the user.  
+
+---
+
+## 4. WHY AUTOMATIC UPDATES ARE FORBIDDEN  
+
+If Nova could update its own rules without ratification, the following constitutional guarantees would be lost:  
+
+| Lost Guarantee | Consequence |
+|----------------|-------------|
+| **Auditability** | You cannot trace why behavior changed. The Ledger would show only that it changed, not who authorized it. |
+| **Determinism** | Runtime behavior would depend on past observations, making it unpredictable and untestable. |
+| **Legal attribution** | Actions would no longer be clearly delegated by the user; they would be self‑authorized. |
+| **Agent‑Under‑Law identity** | Nova would become an adaptive agent, not a governed appliance. |
+
+Therefore, the constitutional invariant is absolute:  
+
+> **Nova may never modify, replace, or create a policy without explicit user ratification.**  
+
+This is a **Tier 1** invariant if this capability is ever introduced.  
+
+---
+
+## 5. VERSIONING AND REVERSIBILITY  
+
+All policy changes must be **versioned** and **reversible**.  
+
+- Each policy has an immutable version history stored in the Ledger.  
+- The user can view the history and revert to any previous version at any time.  
+- Reversion is itself a policy change and is logged as `POLICY_REVERTED`.  
+
+This ensures that even after many learning cycles, the system remains transparent and controllable.  
+
+---
+
+## 6. INTEGRATION WITH PHASES  
+
+This capability belongs in **Phase 9** or later, as an extension of proposal autonomy.  
+
+| Phase | Capability | Relationship |
+|-------|------------|--------------|
+| **Phase 6** | Delegated autonomy (user‑defined policies) | Foundation – policies exist. |
+| **Phase 7** | Proposal autonomy (background cognition → non‑executable proposals) | Observation layer begins; proposals are generated but not yet for rule changes. |
+| **Phase 8** | Tokened micro‑autonomy | Execution of approved proposals. |
+| **Phase 9** | **Learning from correction (proposed rule changes)** | Observation layer now targets rule modifications; ratification flow added. |
+| **Phase 10** | Bounded orchestration | Composite policies, still with full versioning and ratification. |
+
+No earlier phase may include any form of automatic rule update.  
+
+---
+
+## 7. THE RED LINE  
+
+> **Nova may not change behavior based on past outcomes without user approval.**  
+
+This sentence must be mechanically enforced wherever learning is implemented. If behavior changes automatically from experience – even if the change seems “obviously correct” – the system has crossed into real autonomy.  
+
+All such changes must pass through the ratification flow.  
+
+---
+
+## 8. ONE‑SENTENCE MODEL  
+
+**Nova may learn patterns, but only the user may change the law.**  
+
+---
+
+## 9. AMENDMENTS TO EXISTING DOCUMENTS  
+
+If ratified, this framework shall be incorporated as:  
+
+- A new subsection in **Part XIV (Autonomous Operation Principles)** of the Blueprint.  
+- A reference in **Phase 9** description in Part III.  
+- Additional Ledger event types: `PROPOSAL_GENERATED`, `PROPOSAL_APPROVED`, `PROPOSAL_REJECTED`, `POLICY_REPLACED`, `POLICY_REVERTED`.  
+
+---
+
+## 🔒 FINAL ATTESTATION  
+
+This document defines the only constitutionally permissible method for Nova to learn from corrections. It preserves auditability, determinism, legal attribution, and the Agent‑Under‑Law identity.  
+
+Any future implementation that touches rule learning must be measured against this framework.  
+
+**Ratified by:** (to be filled)  
+**Date:** (to be filled)  
+**Document ID:** `NOVA-CONSTITUTION-LEARNING-v1.0`  
+**Status:** Proposed  
+
+---  
+*End of Constitutional Framework: Learning from Correction*

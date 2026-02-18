@@ -1,0 +1,79 @@
+{
+  "schema_version": "1.0",
+  "phase": "4",
+  "capabilities": [
+    {
+      "id": 16,
+      "name": "governed_web_search",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": true,
+      "enabled": false
+    },
+    {
+      "id": 17,
+      "name": "open_website",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": false
+    },
+    {
+      "id": 18,
+      "name": "open_file_folder",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "confirm",
+      "data_exfiltration": false,
+      "enabled": false
+    },
+    {
+      "id": 19,
+      "name": "volume_up_down",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": false
+    },
+    {
+      "id": 20,
+      "name": "media_play_pause",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": false
+    },
+    {
+      "id": 21,
+      "name": "brightness_control",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": false
+    },
+    {
+      "id": 32,
+      "name": "os_diagnostics",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": false
+    },
+    {
+      "id": 48,
+      "name": "multi_source_reporting",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": true,
+      "enabled": false
+    }
+  ],
+  "retired_ids": []
+}

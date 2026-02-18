@@ -1,0 +1,219 @@
+# 🧭 CONSTITUTIONAL INTERPRETATION: EVOLUTION VS. OPTIMIZATION  
+## *The Phase 10 Boundary*  
+
+**Document ID:** `NOVA-PHASE10-BOUNDARY-v1.0`  
+**Status:** Proposed – Awaiting Ratification  
+**Date:** 2026-02-16  
+**Supersedes:** None (addendum to [Constitutional Amendment: Autonomous Operation Principles](NOVA-CONSTITUTION-AMENDMENT-v1.0.md))  
+**Based on:**  
+- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md)  
+- [Constitutional Framework: Learning from Correction](NOVA-CONSTITUTION-LEARNING-v1.0.md)  
+
+---
+
+## 🔹 PREAMBLE  
+
+As Nova approaches Phase 10, a critical distinction must be enshrined in constitutional law:  
+
+> **What is the difference between Nova evolving and Nova optimizing?**  
+
+This is not a philosophical question. It is the fault line between:  
+
+- **Agent Under Law** – a system that changes behavior only through recorded acts of user authority.  
+- **Adaptive Agent** – a system that changes behavior based on outcomes, metrics, or internal goals.  
+
+If this line is protected, Nova remains a governed appliance. If it is crossed, Nova drifts into autonomy.  
+
+This document establishes the constitutional boundary for Phase 10 and beyond.  
+
+---
+
+## 1. CORE DEFINITIONS  
+
+### 1.1 Evolution (Constitutionally Permitted)  
+
+**Definition:**  
+Behavior changes only when a human ratifies a proposed change.  
+
+**Flow:**  
+
+```
+Experience observed  
+      ↓  
+Proposal generated (non‑executable)  
+      ↓  
+Human reviews proposal  
+      ↓  
+Governor records legislative act (POLICY_REPLACED)  
+      ↓  
+Behavior changes atomically  
+```  
+
+**Properties:**  
+- Change is **discrete** – it happens at a single moment.  
+- Change is **traceable** – the Ledger records who approved, when, and why.  
+- Change is **intentional** – it reflects a conscious human decision.  
+- Change is **reversible** – the user can revert to any previous version.  
+- Authority origin is **the user** – every change is an act of delegation.  
+
+This is **constitutional evolution**.  
+
+### 1.2 Optimization (Constitutionally Forbidden)  
+
+**Definition:**  
+Behavior changes automatically based on outcomes, metrics, or performance goals.  
+
+**Flow:**  
+
+```
+Experience observed  
+      ↓  
+System adjusts parameters (weights, thresholds, rankings)  
+      ↓  
+Behavior changes implicitly  
+```  
+
+**Properties:**  
+- Change is **continuous** – it happens gradually over time.  
+- Change is **implicit** – the user may not notice it happening.  
+- Change is **metric‑driven** – it optimizes for some goal (e.g., efficiency, comfort).  
+- Change is often **irreversible** – reverting requires resetting to a prior state, which may not be preserved.  
+- Authority origin is **the system** – the change was not explicitly authorized.  
+
+This is **adaptive autonomy** – the exact behavior Nova was designed to prevent.  
+
+---
+
+## 2. THE SIMPLE AUDIT TEST  
+
+At any time, ask:  
+
+> **Did behavior change without a recorded user approval event?**  
+
+If yes → Optimization → **Constitutional violation**.  
+If no → Evolution → **Permitted**.  
+
+This one question is sufficient to audit the entire system.  
+
+---
+
+## 3. WHERE OPTIMIZATION SNEAKS IN  
+
+Optimization rarely appears as “machine learning.” It creeps in through seemingly harmless mechanisms:  
+
+| Mechanism | How It Looks | Why It’s Optimization |
+|-----------|--------------|------------------------|
+| **Threshold Drift** | “Auto‑adjust brightness based on past usage.” | Behavior changes over time without ratification. |
+| **Auto‑Acceptance** | “If a suggestion appears 5 times, apply it automatically.” | Moves authority from user to system. |
+| **Performance Tuning** | “Choose the rule that minimizes energy use.” | Goal‑based decision‑making at runtime. |
+| **Ranking Feedback** | “Surface the most likely proposals first.” | System shapes user choices – soft optimization. |
+| **Adaptive Weights** | “Adjust retrieval weights based on success.” | Changes behavior without a legislative event. |
+| **Learning from Outcomes** | “If an action is often undone, modify it.” | Implicit rule change without ratification. |
+
+Any of these, if present, would break the Agent‑Under‑Law model.  
+
+---
+
+## 4. WHAT PHASE 10 MUST PRESERVE  
+
+At Phase 10, Nova should feel like this:  
+
+> **Nova behaves the same every day, until the user approves a change.**  
+
+When a change occurs, the Ledger records:  
+
+```
+POLICY_REPLACED  
+Version: 3 → 4  
+Approved by: User  
+Reason: Night lights preferred  
+Timestamp: 2026-02-16T08:30:00Z  
+```  
+
+No slow drift. No gradual adjustments.  
+Only **legislative events**.  
+
+---
+
+## 5. CONSTITUTIONAL INVARIANTS FOR PHASE 10  
+
+Add the following to the Blueprint’s Part I (Permanent Constitutional Invariants) and Part XIV (Autonomous Operation Principles):  
+
+### 5.1 Tier 1 Invariant  
+
+> **Evolution must be event‑driven, not outcome‑driven.**  
+> No change in system behavior may occur without a corresponding `POLICY_REPLACED` or `POLICY_REVERTED` event recorded in the Ledger, explicitly approved by the user.  
+
+### 5.2 Tier 1 Invariant  
+
+> **No runtime parameters may change themselves.**  
+> All parameters affecting execution must be stored as immutable policies, versioned, and modifiable only through Governor‑mediated user ratification. Adaptive weights, dynamic thresholds, and feedback loops that alter behavior without a legislative event are forbidden.  
+
+**Scope clarification:**  
+> This invariant applies only to parameters that affect decision logic, rule selection, or behavioral outcomes. Temporary operational state (timers, caches, retry logic, debouncing, rate limiting, or other stability mechanisms) may vary at runtime provided they do not alter which actions are selected or when a policy condition is considered satisfied.  
+
+### 5.3 Tier 1 Invariant  
+
+> **Nova may never pursue a goal.**  
+> The system may propose actions based on conditions, but it may not select actions based on optimizing for any metric (comfort, efficiency, convenience, etc.). Goal‑based decision‑making constitutes autonomy and is prohibited.  
+
+**Scope guard:**  
+> User‑declared goals that are compiled into deterministic policies or explicit rule sets are permitted. This prohibition applies only to system‑generated or system‑pursued optimization objectives.  
+
+---
+
+## 6. THE PSYCHOLOGICAL DIFFERENCE  
+
+Optimization‑based systems feel like:  
+
+> “Why did it start doing that?”  
+
+Evolution‑based systems feel like:  
+
+> “Oh right, I approved that.”  
+
+That difference is what preserves trust at household scale over years.  
+
+---
+
+## 7. THE ARCHITECTURE RULE  
+
+To mechanically protect the boundary:  
+
+- All decision‑relevant state (policies, thresholds, preferences) must be stored in **Ring 3 (user‑owned)** or **Ring 2 (mutable components)** but only mutable via explicit user ratification.  
+- The Governor must mediate all changes to this state.  
+- The Ledger must record every change as a `POLICY_REPLACED` or `POLICY_REVERTED` event with full attribution.  
+
+No system component may modify its own behavior based on outcome history.  
+
+---
+
+## 8. THE ULTIMATE RED LINE  
+
+> **Nova may propose improvements, but it may never pursue improvement.**  
+
+- **Proposal** = intelligence, allowed.  
+- **Pursuit** = autonomy, forbidden.  
+
+If Nova ever acts to “make things better” without a specific, user‑ratified rule, it has crossed the line.  
+
+---
+
+## 9. ONE‑SENTENCE SUMMARY  
+
+**Evolution:** Behavior changes when the user approves a new law.  
+**Optimization:** Behavior changes because the system decided a better way.  
+
+---
+
+## 🔒 FINAL ATTESTATION  
+
+This interpretation is constitutionally binding. Any Phase 10 design or implementation must be measured against these definitions and invariants. The boundary between evolution and optimization is absolute; crossing it would transform Nova from an Agent Under Law into an adaptive agent, invalidating its constitutional identity.  
+
+**Ratified by:** (to be filled)  
+**Date:** (to be filled)  
+**Document ID:** `NOVA-PHASE10-BOUNDARY-v1.0`  
+**Status:** Proposed  
+
+---  
+*End of Constitutional Interpretation*

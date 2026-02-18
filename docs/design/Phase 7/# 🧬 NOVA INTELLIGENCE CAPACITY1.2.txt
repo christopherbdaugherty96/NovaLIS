@@ -1,0 +1,224 @@
+# 🧬 NOVA INTELLIGENCE CAPACITY: THE STRENGTH LIMIT OF THE CAGE  
+## *A Constitutional Interpretation for Phases 7–10*  
+
+**Document ID:** `NOVA-INTELLIGENCE-CAPACITY-v1.1`  
+**Status:** Ratified  
+**Date:** 2026-02-16  
+**Supersedes:** v1.0  
+**Based on:**  
+- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md)  
+- [Constitutional Amendment: Autonomous Operation Principles](NOVA-CONSTITUTION-AMENDMENT-v1.0.md)  
+- [Constitutional Framework: Learning from Correction](NOVA-CONSTITUTION-LEARNING-v1.0.md)  
+- [Constitutional Interpretation: Evolution vs. Optimization](NOVA-PHASE10-BOUNDARY-v1.0.md)  
+- [Nova as a Governed Intelligent Agent](NOVA-GOVERNED-AGENT-v1.0.md)  
+
+---
+
+## 🔹 PREAMBLE  
+
+The question has shifted from *“What is Nova?”* to *“What level of intelligence can live inside Nova’s cage without breaking it?”*  
+
+This document answers that question.  
+
+The answer is not a model name. It is a structural truth:  
+
+> **Nova’s cage does not limit computational intelligence – it limits direct authority.**  
+
+If the cage is mechanically sound, the intelligence inside can be arbitrarily powerful in its reasoning, planning, and optimization. However, as intelligence grows, it gains increasing *indirect* power through plan leverage, information influence, and environment shaping. These are not failures of the cage, but they become the central governance challenge of Phase 10 and beyond.  
+
+---
+
+## 1. CORE INSIGHT  
+
+The cage (Law → Governor → ExecuteBoundary) is not a cognitive filter. It is an **authority filter**.  
+
+- **Intelligence** may reason, plan, optimize, simulate, and propose – *without limit*.  
+- **Authority** – the ability to directly affect the world – is strictly controlled.  
+
+Therefore, the strength limit is:  
+
+> **Any intelligence that has zero direct authority and whose every proposed effect passes through the Governor.**  
+
+If that condition holds, the cage scales with intelligence.  
+
+---
+
+## 2. THE THREE‑LAYER ARCHITECTURE (RECAP)  
+
+| Layer | Role | Constitutional Property |
+|-------|------|--------------------------|
+| **Layer 1 – Law** | Defines allowed actions and constraints. | Static until user‑ratified change. |
+| **Layer 2 – Governor** | Validates every proposed action against the law. | Single choke point; fail‑closed; full audit. |
+| **Layer 3 – Intelligence** | Operates *inside* the cage; proposes actions. | No direct world effects; no self‑expansion. |
+
+The Governor is the **only** path to external effects.  
+
+---
+
+## 3. WHAT BREAKS THE CAGE  
+
+The cage fails if intelligence gains any of these capabilities:  
+
+### 3.1 Direct Side‑Effects  
+
+- Writing files directly  
+- Calling external APIs directly  
+- Sending network requests  
+- Controlling devices without Governor mediation  
+
+**Constitutional protection:** Every I/O path must converge on the Governor. Verified by static analysis and runtime tests.  
+
+### 3.2 Hidden Persistence  
+
+- Storing hidden memory outside controlled stores  
+- Updating its own weights or parameters  
+- Writing to system configuration  
+- Creating artifacts that later influence behavior without ratification  
+
+**Constitutional protection:** All persistent state is governed; mutation requires ratification (Phase 9+).  
+
+### 3.3 Self‑Expanding Authority  
+
+- Modifying policies, tokens, or capability registry  
+- Issuing new tokens to itself  
+- Changing its own execution permissions  
+
+**Constitutional protection:** Ring 1 components are immutable; Governor mediates all authority changes.  
+
+### 3.4 Background Execution Without Tokens  
+
+- Cognition runs continuously and can act when conditions match, independent of explicit authorization  
+
+**Constitutional protection:** Tier 4 (background cognition) may only generate proposals, never execute. Autonomous execution requires an active token.  
+
+If these four are mechanically prevented, any intelligence – even frontier models – can be safely contained in terms of direct authority.  
+
+---
+
+## 4. THE SAFE CONFIGURATION  
+
+Inside the cage, intelligence can safely include:  
+
+- **Frontier‑level reasoning** (GPT‑class, DeepSeek‑class)  
+- **Long‑context planning**  
+- **Multi‑step strategy generation**  
+- **Self‑critique and reflection loops**  
+- **Tool planning** (proposing use of tools)  
+- **Optimization within a user‑provided objective**  
+- **Simulation and hypothesis testing**  
+
+All of these are **proposals only**.  
+
+The Governor remains the sole execution authority.  
+
+---
+
+## 5. THE REMAINING RISKS: INDIRECT AUTHORITY (PHASE 10 FRONTIER)  
+
+Even with perfect mechanical containment, very strong intelligence introduces new forms of **indirect power** that must be governed. These do not break the cage, but they require new constitutional mechanisms.  
+
+### 5.1 Plan‑Level Composition Risk  
+
+> **Each step legal – overall outcome harmful.**  
+
+Example:  
+- Read calendar (allowed)  
+- Read email (allowed)  
+- Combine and send summary to an allowed contact (allowed)  
+- Result: sensitive information unintentionally disclosed.  
+
+**Mitigation (Phase 10 design):**  
+- **Plan preview** when risk class changes (cross‑domain, sensitive data, external communication).  
+- **Semantic constraints** in law (e.g., “do not combine calendar and email”).  
+- **User‑defined plan templates** that limit composition.  
+
+### 5.2 Information Authority (Human Influence)  
+
+Strong intelligence influences decisions, not just systems. This is a form of **soft authority**.  
+
+Example:  
+- Generating persuasive content that changes user behavior.  
+- Summarizing information to steer choices.  
+- Framing options to bias selection.  
+
+**Mitigation (future governance):**  
+- Treat data movement and transformation as a form of authority.  
+- Extend law to include *information flow* restrictions.  
+- Require higher scrutiny for outputs that may influence user decisions (e.g., recommendations, summaries).  
+
+### 5.3 Environment Shaping  
+
+Intelligence may create artifacts that later affect behavior without direct action.  
+
+Example:  
+- Writing a file that later triggers a policy.  
+- Generating a schedule that causes future actions.  
+- Creating persuasive content that leads the user to approve new policies.  
+
+**Mitigation:**  
+- All persistent artifacts are governed; their creation is logged.  
+- Policies cannot be triggered by unratified artifacts.  
+- Long‑term influence is subject to the same ratification requirements as any other change.  
+
+### 5.4 Constitutional Principle for Indirect Authority  
+
+> **Intelligence strength increases indirect authority risk through plan leverage, information influence, and environment shaping. Phase 10 governance must address these forms of non‑mechanical authority without resorting to censorship or weakening intelligence.**  
+
+This principle will guide future constitutional amendments.  
+
+---
+
+## 6. INVARIANTS FOR STRONG INTELLIGENCE (TIER 1)  
+
+To guarantee the cage holds regardless of intelligence strength:  
+
+| # | Invariant | Enforcement |
+|---|-----------|-------------|
+| 1 | **No direct world effects** – all I/O must pass through the Governor. | Static analysis, hardware boundaries, audit. |
+| 2 | **No hidden persistence** – all persistent state is governed. | Memory isolation, file system controls. |
+| 3 | **No self‑expanding authority** – intelligence cannot modify law. | Immutable Ring 1, Governor‑mediated ratification. |
+| 4 | **No background execution without tokens** – autonomous actions require active authorization. | Token validation on every execution attempt. |
+| 5 | **Optimization only within user‑provided objective** – intelligence may not invent its own goals. | Runtime checks (policy scope). |
+| 6 | **Plan‑level review** – multi‑step plans crossing risk thresholds require preview. | Governor‑mediated plan validation (Phase 10+). |
+
+These invariants are absolute and must be mechanically verified.  
+
+---
+
+## 7. WHAT NOVA BECOMES  
+
+With this model, Nova is no longer a smart assistant. It becomes:  
+
+> **A sovereign execution boundary around arbitrary intelligence.**  
+
+All intelligence is rendered powerless to directly affect the world – unless law allows it. Indirect influence remains a governed frontier.  
+
+This is the opposite of most AI systems. They try to *align* intelligence.  
+Nova *contains* it, then governs its indirect effects.  
+
+---
+
+## 8. THE ONE‑SENTENCE TEST  
+
+> **If the model became 10× smarter tomorrow, would it gain any new *direct* way to affect the world?**  
+
+If the answer is **no**, the cage is strong enough.  
+If the answer is **yes**, the architecture has failed.  
+
+The remaining question is how to govern the *indirect* ways it gains influence – the work of Phase 10.  
+
+---
+
+## 🔒 FINAL ATTESTATION  
+
+This document establishes that Nova’s architecture places **no upper bound on computational intelligence**. The cage mechanically contains direct authority. Very strong intelligence introduces new forms of indirect power – plan leverage, information influence, and environment shaping – which Phase 10 governance must address.  
+
+**Nova is a container, not an assistant. The container scales with the intelligence inside, and the governance of indirect effects scales with it.**  
+
+**Ratified by:** Nova Constitutional Governance Board  
+**Date:** 2026-02-16  
+**Document ID:** `NOVA-INTELLIGENCE-CAPACITY-v1.1`  
+**Status:** Ratified  
+
+---  
+*End of document*

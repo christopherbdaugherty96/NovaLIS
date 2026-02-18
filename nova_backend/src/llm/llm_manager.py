@@ -1,21 +1,51 @@
-# backend/llm/llm_manager.py
+# src/llm/llm_manager.py
+
+import hashlib
+import json
+import logging
+import time
+from pathlib import Path
+from typing import Optional, Dict, Any
 
 import requests
-import time
-from typing import Optional
-import logging
+
+from src.ledger.writer import LedgerWriter
+from src.governor.exceptions import LedgerWriteFailed
+from .system_prompt import SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
+
+# Paths for version lock
+MODEL_HASH_FILE = Path(__file__).resolve().parents[1] / "models" / "current_model_hash.txt"
+WRAPPER_PATH = Path(__file__).parent / "inference_wrapper.py"
+
+
+def compute_model_hash(
+    model_digest: str,
+    system_prompt: str,
+    wrapper_code: str,
+    params: Dict[str, Any]
+) -> str:
+    """Composite hash of all model‑influencing components."""
+    blob = json.dumps(
+        {
+            "model_digest": model_digest,
+            "system_prompt": system_prompt,
+            "wrapper": wrapper_code,
+            "params": params,
+        },
+        sort_keys=True,
+    )
+    return hashlib.sha256(blob.encode()).hexdigest()
 
 
 class LLMManager:
     """
-    Thin wrapper for Ollama LLM integration.
-    Responsibilities:
-    - Transport only (HTTP)
-    - Error handling
-    - Stable configuration
-    NO routing, NO memory, NO personality logic
+    Ollama LLM integration with constitutional version locking.
+    - Thin wrapper around Ollama HTTP API
+    - Circuit breaker for reliability
+    - Model version hash to detect silent changes
+    - Blocks inference on version mismatch
     """
 
     def __init__(
@@ -25,104 +55,208 @@ class LLMManager:
     ):
         self.model = model
         self.base_url = base_url
-        self.timeout = 30  # seconds
-        
+        self.timeout = 30
+        self.system_prompt = SYSTEM_PROMPT
+
         # Connection pooling
         self.session = requests.Session()
-        
+
         # Circuit breaker state
         self.failure_count = 0
         self.circuit_open_until = 0
 
-        # Calibration for Nova's presence-first design
+        # Stable inference parameters (these become part of the version hash)
         self.default_options = {
-            "temperature": 0.4,      # Calm, not creative
-            "num_predict": 256,      # Hard cap on response length
-            "num_ctx": 4096,         # ✅ Stable context window
-            "top_k": 40,             # Reduce weird outputs
-            "repeat_penalty": 1.1,   # Prevent loops
-            "stop": ["\n\n", "User:", "Human:"],  # Natural stopping points
+            "temperature": 0.4,
+            "num_predict": 256,
+            "num_ctx": 4096,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "stop": ["\n\n", "User:", "Human:"],
         }
+
+        # Version lock state
+        self.inference_blocked = False
+        self._check_model_version()
+
+    # ----- Version lock helpers -------------------------------------------------
+
+    def _get_model_digest(self) -> Optional[str]:
+        """Query Ollama for the current model's digest (SHA256 of the blob)."""
+        try:
+            resp = self.session.post(
+                f"{self.base_url}/api/show",
+                json={"model": self.model},
+                timeout=5,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            # The digest is usually in `digest` or `model_info`; Ollama API returns `digest`
+            return data.get("digest")
+        except Exception as e:
+            logger.warning(f"Could not fetch model digest: {e}")
+            return None
+
+    def _compute_current_hash(self) -> str:
+        """Compute hash based on current configuration."""
+        model_digest = self._get_model_digest()
+        if model_digest is None:
+            model_digest = "fetch_failed"
+            logger.warning("Using fallback digest 'fetch_failed' – inference will block until confirmed.")
+        with open(WRAPPER_PATH, "r", encoding="utf-8") as f:
+            wrapper_code = f.read()
+        return compute_model_hash(
+            model_digest,
+            self.system_prompt,
+            wrapper_code,
+            self.default_options,
+        )
+
+    def _block_inference(self):
+        """Prevent any generation for this session."""
+        self.inference_blocked = True
+        logger.warning("Model inference blocked due to version mismatch.")
+
+    def _log_model_updated(
+        self,
+        previous_hash: Optional[str],
+        new_hash: str,
+        user_confirmed: bool,
+    ) -> None:
+        """Write MODEL_UPDATED event to ledger."""
+        writer = LedgerWriter()
+        params_hash = hashlib.sha256(
+            json.dumps(self.default_options, sort_keys=True).encode()
+        ).hexdigest()
+        system_prompt_hash = hashlib.sha256(self.system_prompt.encode()).hexdigest()
+        with open(WRAPPER_PATH, "r", encoding="utf-8") as f:
+            wrapper_code = f.read()
+        wrapper_hash = hashlib.sha256(wrapper_code.encode()).hexdigest()
+        model_digest = self._get_model_digest() or "unknown"
+
+        metadata = {
+            "model_name": self.model,
+            "previous_hash": previous_hash,
+            "new_hash": new_hash,
+            "model_digest": model_digest,
+            "system_prompt_hash": system_prompt_hash,
+            "wrapper_hash": wrapper_hash,
+            "parameter_hash": params_hash,
+            "user_confirmed": user_confirmed,
+            "confirmation_timestamp": None,
+        }
+        try:
+            writer.log_event("MODEL_UPDATED", metadata)
+        except LedgerWriteFailed:
+            # Even if ledger fails, we must still block inference
+            self._block_inference()
+            raise
+
+    def _check_model_version(self):
+        """Compare stored hash with current; block if mismatch or first run."""
+        computed = self._compute_current_hash()
+
+        if MODEL_HASH_FILE.exists():
+            stored = MODEL_HASH_FILE.read_text().strip()
+            if stored == computed:
+                logger.info("Model version OK.")
+                return
+            else:
+                logger.warning("Model version mismatch. Blocking inference.")
+                self._block_inference()
+                self._log_model_updated(stored, computed, user_confirmed=False)
+        else:
+            # First run – block and require confirmation
+            logger.info("First model run – blocking inference until confirmed.")
+            self._block_inference()
+            self._log_model_updated(None, computed, user_confirmed=False)
+
+    def confirm_model_update(self):
+        """
+        Called after user explicitly confirms a model update.
+        Writes the new hash and unblocks inference.
+        """
+        if not self.inference_blocked:
+            return
+
+        # Ensure the models/ directory exists
+        MODEL_HASH_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+        computed = self._compute_current_hash()
+        previous = None
+        if MODEL_HASH_FILE.exists():
+            previous = MODEL_HASH_FILE.read_text().strip()
+        MODEL_HASH_FILE.write_text(computed)
+        self.inference_blocked = False
+        self._log_model_updated(previous, computed, user_confirmed=True)
+        logger.info("Model update confirmed. Inference unblocked.")
+
+    # ----- Existing functionality (circuit breaker, generate) -----------------
+
+    def _record_failure(self):
+        self.failure_count += 1
+        if self.failure_count >= 3:
+            self.circuit_open_until = time.time() + 30
+            logger.warning("Circuit breaker opened. Will retry after 30 seconds.")
+            self.failure_count = 0
 
     def generate(self, prompt: str, system_prompt: str = "") -> Optional[str]:
         """
         Send prompt to LLM and return plain text.
-
-        Rules:
-        - No routing logic
-        - No memory injection
-        - No personality shaping
-        - Text in → text out
+        Honors circuit breaker and model version lock.
         """
-        
-        # -------- Circuit Breaker Check --------
-        now = time.time()
-        if now < self.circuit_open_until:
-            logger.warning(f"Circuit breaker open. Skipping request until {self.circuit_open_until}")
+        if self.inference_blocked:
+            logger.error("Generate called while model is blocked.")
             return None
 
-        payload = {
-            "model": self.model,
-            "prompt": prompt,
-            "system": system_prompt,
-            "stream": False,
-            "options": self.default_options,
-        }
+        # Circuit breaker
+        now = time.time()
+        if now < self.circuit_open_until:
+            logger.warning("Circuit breaker open. Skipping request.")
+            return None
+
+        # Use the provided system prompt or the default
+        system = system_prompt or self.system_prompt
 
         try:
-            response = self.session.post(
-                f"{self.base_url}/api/generate",
-                json=payload,
+            # Delegate to the isolated wrapper (only this call affects the version hash)
+            from .inference_wrapper import run_inference
+
+            result = run_inference(
+                base_url=self.base_url,
+                model=self.model,
+                prompt=prompt,
+                system=system,
+                options=self.default_options,
                 timeout=self.timeout,
             )
-            response.raise_for_status()
-
-            result = response.json()
-            
-            # -------- Reset failure count on success --------
+            # Success – reset failure count
             self.failure_count = 0
-            
-            return result.get("response", "").strip()
+            return result
 
         except requests.exceptions.Timeout:
             logger.warning(f"LLM request timed out after {self.timeout}s")
             self._record_failure()
-            
         except requests.exceptions.ConnectionError:
             logger.error("Cannot connect to Ollama. Is it running?")
             self._record_failure()
-            
         except Exception as e:
             logger.error(f"LLM error: {e}")
             self._record_failure()
 
         return None
 
-    def _record_failure(self):
-        """
-        Track failures and open circuit after 3 consecutive failures.
-        """
-        self.failure_count += 1
-        if self.failure_count >= 3:
-            self.circuit_open_until = time.time() + 30  # 30-second cooldown
-            logger.warning(f"Circuit breaker opened. Will retry after 30 seconds.")
-            self.failure_count = 0
-
     def health_check(self) -> bool:
-        """
-        Verify Ollama is running and the model is available.
-        Uses partial match to allow different quantizations.
-        """
+        """Verify Ollama is running and the model is available."""
         try:
-            response = self.session.get(f"{self.base_url}/api/tags", timeout=5)
-            if response.status_code == 200:
-                models = response.json().get("models", [])
+            resp = self.session.get(f"{self.base_url}/api/tags", timeout=5)
+            if resp.status_code == 200:
+                models = resp.json().get("models", [])
                 return any(self.model in m.get("name", "") for m in models)
         except Exception:
             pass
-
         return False
 
 
-# Singleton instance (safe for Nova's current scale)
+# Singleton instance (preserved)
 llm_manager = LLMManager()
