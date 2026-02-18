@@ -1,17 +1,25 @@
+# src/services/weather_service.py
+
 import os
-import httpx
+import asyncio
 from typing import Dict, Optional
+
+from src.governor.network_mediator import network_mediator
+from src.governor.exceptions import NetworkMediatorError
 
 
 class WeatherService:
     """
     WeatherService — Phase-3 Canonical (Visual Crossing)
 
-    - Provider: Visual Crossing
-    - Deterministic, request-on-demand only
-    - No background updates
-    - No execution side effects
-    - Stable normalized output for WeatherSkill
+    Provider: Visual Crossing
+    Deterministic, request-on-demand only
+    No background updates
+    No execution side effects
+    Stable normalized output for WeatherSkill
+
+    Phase-4 Admission change:
+    - All outbound HTTP routed through NetworkMediator (no direct httpx).
     """
 
     DEFAULT_LOCATION = "Ann Arbor, MI"
@@ -37,12 +45,24 @@ class WeatherService:
             "contentType": "json",
         }
 
-        async with httpx.AsyncClient(timeout=8.0) as client:
-            r = await client.get(url, params=params)
-            r.raise_for_status()
-            payload = r.json()
+        try:
+            # NetworkMediator is synchronous; run in a thread.
+            resp = await asyncio.to_thread(
+                network_mediator.request,
+                None,  # capability_id=None => skill/tool bucket
+                "GET",
+                url,
+                None,  # json_payload
+                params,
+                None,  # headers
+                as_json=True,
+                timeout=8.0,  # keep prior behavior close to httpx timeout
+            )
+        except NetworkMediatorError as e:
+            raise RuntimeError(f"Weather API failed: {e}") from e
 
-        current = payload.get("currentConditions", {})
+        payload = resp.get("data") or {}
+        current = payload.get("currentConditions", {}) or {}
         resolved = payload.get("resolvedAddress", "Unknown location")
 
         return {

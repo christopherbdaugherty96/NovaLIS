@@ -1,0 +1,324 @@
+Got it. Here’s a **clean, rewritten pair of documents** that match what you actually completed today, what’s proven by tests, and then a **Phase-4 Unlock Authorization** you can drop into your canon.
+
+---
+
+# 🧬 NOVA — Phase-4 Infrastructure Completion Record
+
+## Constitutional Install + Mechanical Validation (Sealed Runtime)
+
+**Date:** 2026-02-17
+**Status:** Phase-3.5 SEALED • Phase-4 Infrastructure INSTALLED • Execution INERT
+**Purpose:** Record what was completed, verified, and proven today (not aspirational).
+
+---
+
+## 1) Today’s Outcome
+
+Nova now has a **Phase-4 execution framework installed under law** while the system remains **Phase-3.5 sealed**.
+
+* ✅ Phase-4 infrastructure exists (Governor + Registry + Mediator + NetworkMediator + Executor + Ledger)
+* ✅ Phase-4 execution is **structurally unreachable** because the phase gate is closed
+* ✅ A minimal containment test suite exists and **passes**
+* ✅ Project structure was cleaned so tests run from `C:\Nova-Project\nova_backend`
+
+**Net result:** The container is installed, the safety lock is engaged, and the lock is proven.
+
+---
+
+## 2) What Was Completed Today (Concrete Changes)
+
+### 2.1 Test Environment Stabilization (Windows / PowerShell)
+
+* Confirmed Python runtime: **Python 3.10.9**
+* Confirmed `pytest` is installed but not on PATH → standardized invocation:
+
+  * `python -m pytest -vv`
+* Removed broken / legacy test paths and rebuilt a clean test directory:
+
+  * Deleted prior `tests/` contents and rebuilt:
+
+    * `tests/`
+    * `tests/adversarial/` (created, even if empty today)
+* Cleared pytest cache to prevent stale discovery issues:
+
+  * Removed `.pytest_cache/`
+
+### 2.2 File Placement Fixes That Unblocked Tests
+
+Two concrete, mechanical issues were corrected:
+
+1. **Executor file naming**
+
+* `src/executors/` contained a wrongly named file:
+
+  * `# srcexecutorsweb_search_executor.p.txt`
+* Corrected so the import path becomes valid:
+
+  * `src.executors.web_search_executor`
+
+2. **ExecuteBoundary import shape**
+
+* There is a package folder:
+
+  * `src/governor/execute_boundary/`
+* Your test expects:
+
+  * `from src.governor.execute_boundary import GOVERNED_ACTIONS_ENABLED`
+* That only works if `__init__.py` exports the symbol or the folder is structured correctly.
+* You fixed the package so the import resolves cleanly.
+
+These two fixes are why the suite moved from “collection errors” to “5 passed”.
+
+---
+
+## 3) Installed Phase-4 Components (Verified Present On Disk)
+
+Based on the directory tree, these components exist at the correct locations:
+
+### Governor Spine
+
+* `src/governor/governor.py`
+* `src/governor/governor_mediator.py`
+* `src/governor/single_action_queue.py`
+* `src/governor/exceptions.py`
+
+### Capability Registry
+
+* `src/governor/capability_registry.py`
+* `src/config/registry.json`
+
+### Execution Gate
+
+* `src/governor/execute_boundary/execute_boundary.py`
+* `src/governor/execute_boundary/__init__.py`
+
+### Network Mediation
+
+* `src/governor/network_mediator.py`
+
+### Ledger
+
+* `src/ledger/writer.py`
+
+### Executor
+
+* `src/executors/web_search_executor.py`
+* `src/executors/__init__.py`
+
+### Phase-3.5 Skills remain operational
+
+* `src/skills/weather.py`
+* `src/skills/news.py`
+* `src/skills/system.py`
+* `src/skills/general_chat.py`
+
+---
+
+## 4) What Was Proven Today (Mechanical Evidence)
+
+### 4.1 Test Suite Result
+
+You ran:
+
+* `python -m pytest -vv`
+
+Result:
+
+* ✅ **5 passed in 0.24s**
+
+### 4.2 What Each Passing Test Proves
+
+These are *containment proofs*—not feature proofs:
+
+1. **Governor fail-closed**
+
+* Proof: the Governor refuses execution while sealed
+
+2. **Network mediation enforced for governed executor**
+
+* Proof: WebSearchExecutor refuses if `BRAVE_API_KEY` is missing
+* Confirms: no silent network calls and no accidental execution
+
+3. **Phase-3.5 sealed**
+
+* Proof: the execution gate is sealed and importable via the expected contract
+
+4. **Registry fail-closed**
+
+* Proof: missing/unknown capability fails safely
+
+5. **Single action boundary**
+
+* Proof: concurrency is blocked at the queue layer
+
+**Bottom line:** You have a working “Phase-4 chassis” with a verified deadman switch.
+
+---
+
+## 5) Hygiene / Structure Notes Observed Today
+
+These are not blockers, but they should be tracked:
+
+* `skills/web_search_skill.py` and `tools/web_search.py` appear like legacy/parallel paths.
+  Recommendation: quarantine or remove to avoid confusion once capability 16 becomes live.
+* `archive_phase4/` exists as placeholder (fine).
+* Quarantine folders exist and are properly separated (`archive_quarantine/...`).
+
+---
+
+## 6) Current Admission-Gate Status (Truth Statement)
+
+✅ **Phase-4 infrastructure is installed and test-verified in sealed mode.**
+❌ **Phase-4 runtime unlock is not yet authorized.**
+
+The system is safe *because execution remains impossible*.
+Unlock requires completing the remaining admission items.
+
+---
+
+---
+
+# 🔓 NOVA — Phase-4 Unlock Authorization Document
+
+## Capability-Scoped Runtime Unlock Under Law
+
+**Date:** 2026-02-17
+**Status:** DRAFT AUTHORIZATION (Not Yet Satisfied)
+**Scope:** Initial unlock limited to **Capability 16 (Governed Web Search)**
+
+---
+
+## 1) What This Unlock Allows (and Nothing Else)
+
+If authorized, Phase-4 unlock permits:
+
+* `GOVERNED_ACTIONS_ENABLED = True`
+* Registry `"enabled": true` for **capability 16 only**
+* Governor routes explicit “search/look up/research …” into WebSearchExecutor
+* NetworkMediator performs outbound calls under logging and limits
+
+It does **not** authorize:
+
+* opening files/folders
+* OS control
+* confirmations
+* external LLM / Deep Thought governance
+* multi-step planning
+* background behavior
+* automatic fetching
+
+---
+
+## 2) Mandatory Preconditions Before Flipping the Flag
+
+All items below must be mechanically true **in code + tests**:
+
+### A) Global Safety
+
+* Execution gate is hard-coded (no env override)
+* No bypass path exists around `Governor.handle_governed_invocation()`
+* Ledger writes are available and fail-closed for ACTION_ATTEMPTED
+
+### B) Network Governance (Unlock-Blocking)
+
+* **All outbound HTTP for Phase-4 execution paths is mediated via NetworkMediator**
+* Import audit exists banning direct `requests/httpx` usage outside the mediator boundary
+
+### C) Governor Spine Minimum for Capability 16
+
+For web search only, minimum spine requirements:
+
+* Explicit literal invocation detection ✅ (already exists)
+* Online boundary announcement (enter/exit) ❌ (required before unlock)
+* One-strike clarification (only if ambiguity blocks parsing) ❌ (required before unlock)
+
+*(Verbatim echo + ConfirmationGate are mandatory before confirm-risk capabilities, but not required for capability 16.)*
+
+### D) Tests / Evidence
+
+* Existing 5 containment tests pass ✅
+* Add admission tests for:
+
+  * online boundary announcement path
+  * import audit rule enforcement
+  * governor bypass attempt probes
+* Provide a written proof artifact:
+
+  * `GOVERNOR_BYPASS_PROOF.md`
+
+---
+
+## 3) Exact Unlock Steps (When Preconditions Are Met)
+
+1. Flip global gate:
+
+* `src/governor/execute_boundary/execute_boundary.py`
+
+  * `GOVERNED_ACTIONS_ENABLED = True`
+
+2. Enable capability 16:
+
+* `src/config/registry.json`
+
+  * capability 16 `"enabled": true`
+
+3. Run:
+
+* `python -m pytest -vv`
+
+4. Verify ledger writes:
+
+* ACTION_ATTEMPTED
+* EXTERNAL_NETWORK_CALL
+* ACTION_COMPLETED
+
+5. Tag the commit (recommended):
+
+* `phase-4-unlock-cap16`
+
+---
+
+## 4) Rollback Procedure (Immediate Reseal)
+
+If anything violates expected behavior:
+
+1. Set `GOVERNED_ACTIONS_ENABLED = False`
+2. Set registry capability 16 `"enabled": false`
+3. Commit:
+
+* `revert: reseal Phase-4 runtime`
+
+No debate, no partial unlock.
+
+---
+
+## 5) Unlock Verdict (Today)
+
+**NOT AUTHORIZED YET.**
+
+Reason: admission items still missing (especially skill network mediation + online boundary announcements + proof artifacts).
+Your infrastructure is correct. The unlock bar is simply higher than “tests pass.”
+
+---
+
+# ✅ Next Steps (What You Should Do Next)
+
+**1) Skill Network Mediation**
+
+* Migrate Weather/News network calls to NetworkMediator (capability_id=None)
+* Add an import-ban test that fails if anything outside mediator imports `requests/httpx`
+
+**2) Online Boundary Announcement**
+
+* For capability 16: send “I’m checking online.” then “I’m offline again.”
+
+**3) One-Strike Clarification**
+
+* Deterministic only, single question, then refuse/LAI.
+
+**4) Expand tests**
+
+* Add adversarial tests + bypass probes
+* Add import audit script if you want CI enforcement
+
+If you want, I’ll generate the **full Phase-4 test suite files** (new tests + adversarial layer + import-audit test) in one drop, aligned to your exact `src/` layout and the package structure you now have.

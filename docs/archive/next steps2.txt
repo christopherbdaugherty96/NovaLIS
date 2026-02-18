@@ -1,0 +1,1513 @@
+Below are all the necessary code files for the Phase‑4 integration, following the safe, incremental plan. Each file is presented with its full content and filename. Place them in the appropriate directories as indicated.
+
+---
+
+## 📁 `src/config/registry.json`
+```json
+{
+  "schema_version": "1.0",
+  "phase": "4",
+  "capabilities": [
+    {
+      "id": 16,
+      "name": "governed_web_search",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": true,
+      "enabled": false
+    },
+    {
+      "id": 17,
+      "name": "open_website",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": false
+    },
+    {
+      "id": 18,
+      "name": "open_file_folder",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "confirm",
+      "data_exfiltration": false,
+      "enabled": false
+    },
+    {
+      "id": 19,
+      "name": "volume_up_down",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": false
+    },
+    {
+      "id": 20,
+      "name": "media_play_pause",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": false
+    },
+    {
+      "id": 21,
+      "name": "brightness_control",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": false
+    },
+    {
+      "id": 32,
+      "name": "os_diagnostics",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": false
+    },
+    {
+      "id": 48,
+      "name": "multi_source_reporting",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": true,
+      "enabled": false
+    }
+  ],
+  "retired_ids": []
+}
+```
+
+---
+
+## 📁 `src/governor/capability_registry.py`
+```python
+# src/governor/capability_registry.py
+
+import json
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Dict
+
+from src.governor.exceptions import CapabilityRegistryError
+
+REGISTRY_PATH = Path(__file__).resolve().parents[1] / "config" / "registry.json"
+EXPECTED_PHASE = "4"
+
+
+@dataclass(frozen=True)
+class Capability:
+    id: int
+    name: str
+    status: str                # "design", "active", "deprecated", "retired"
+    phase_introduced: str
+    risk_level: str             # "low", "confirm", "high"
+    data_exfiltration: bool
+    enabled: bool               # runtime gate, separate from status
+
+
+class CapabilityRegistry:
+    """Singleton loader for the capability registry. Fail‑closed if registry unusable."""
+
+    def __init__(self):
+        self._capabilities: Dict[int, Capability] = self._load_registry()
+
+    def _load_registry(self) -> Dict[int, Capability]:
+        if not REGISTRY_PATH.exists():
+            raise CapabilityRegistryError(
+                f"Registry missing at {REGISTRY_PATH}. Execution disabled."
+            )
+
+        try:
+            raw = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
+        except Exception as e:
+            raise CapabilityRegistryError(
+                f"Registry malformed (JSON error): {e}. Execution disabled."
+            ) from e
+
+        # Schema validation
+        if raw.get("schema_version") != "1.0":
+            raise CapabilityRegistryError("Unsupported registry schema version.")
+        if raw.get("phase") != EXPECTED_PHASE:
+            raise CapabilityRegistryError(f"Registry phase mismatch (expected Phase {EXPECTED_PHASE}).")
+
+        capabilities = {}
+        required_fields = {"id", "name", "status", "phase_introduced",
+                           "risk_level", "data_exfiltration", "enabled"}
+
+        for entry in raw.get("capabilities", []):
+            # Check required fields
+            if not required_fields.issubset(entry.keys()):
+                missing = required_fields - entry.keys()
+                raise CapabilityRegistryError(f"Capability missing fields: {missing}")
+
+            # Validate field values
+            if entry["risk_level"] not in {"low", "confirm", "high"}:
+                raise CapabilityRegistryError(f"Invalid risk_level: {entry['risk_level']}")
+            if entry["status"] not in {"design", "active", "deprecated", "retired"}:
+                raise CapabilityRegistryError(f"Invalid status: {entry['status']}")
+            if not isinstance(entry["enabled"], bool):
+                raise CapabilityRegistryError("enabled must be a boolean")
+
+            cid = entry["id"]
+            if cid in capabilities:
+                raise CapabilityRegistryError(f"Duplicate capability ID: {cid}")
+
+            capabilities[cid] = Capability(**entry)
+
+        return capabilities
+
+    def get(self, capability_id: int) -> Capability:
+        """Return capability; raises if unknown."""
+        cap = self._capabilities.get(capability_id)
+        if cap is None:
+            raise CapabilityRegistryError(f"Unknown capability ID: {capability_id}")
+        return cap
+
+    def is_enabled(self, capability_id: int) -> bool:
+        """Check if capability is both active and enabled at runtime."""
+        cap = self.get(capability_id)
+        return cap.status == "active" and cap.enabled
+```
+
+---
+
+## 📁 `src/governor/exceptions.py`
+```python
+# src/governor/exceptions.py
+
+class CapabilityRegistryError(Exception):
+    """Raised when registry is missing, malformed, or capability unknown."""
+    pass
+
+
+class NetworkMediatorError(Exception):
+    """Raised for network-related failures (protocol, SSRF, timeouts, etc.)"""
+    pass
+
+
+class LedgerWriteFailed(Exception):
+    """Raised when a ledger write operation fails."""
+    pass
+```
+
+---
+
+## 📁 `src/ledger/writer.py`
+```python
+# src/ledger/writer.py
+
+import json
+import os
+from datetime import datetime, timezone
+from pathlib import Path
+from typing import Dict, Any
+
+from src.governor.exceptions import LedgerWriteFailed
+
+LEDGER_PATH = Path(__file__).resolve().parents[1] / "data" / "ledger.jsonl"
+
+
+class LedgerWriter:
+    """Append‑only ledger with atomic write guarantees."""
+
+    def __init__(self, path: Path = LEDGER_PATH):
+        self.path = path
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+
+    def log_event(self, event_type: str, metadata: Dict[str, Any]) -> None:
+        """Append a single event. Raises LedgerWriteFailed if write fails."""
+        entry = {
+            "timestamp_utc": datetime.now(timezone.utc).isoformat(),
+            "event_type": event_type,
+            **metadata
+        }
+        try:
+            with open(self.path, "a", encoding="utf-8") as f:
+                f.write(json.dumps(entry) + "\n")
+                f.flush()
+                os.fsync(f.fileno())
+        except Exception as e:
+            raise LedgerWriteFailed(f"Ledger write failed: {e}") from e
+```
+
+---
+
+## 📁 `src/governor/single_action_queue.py`
+```python
+# src/governor/single_action_queue.py
+
+class SingleActionQueue:
+    """
+    Enforces a single pending action boundary.
+    Used by Governor to prevent concurrency.
+    """
+
+    def __init__(self):
+        self._pending = None
+
+    def has_pending(self) -> bool:
+        return self._pending is not None
+
+    def set_pending(self, action_id: str) -> None:
+        """Mark an action as pending. Raises if another action is already pending."""
+        if self._pending is not None:
+            raise RuntimeError("Another action is pending.")
+        self._pending = action_id
+
+    def clear(self) -> None:
+        self._pending = None
+```
+
+---
+
+## 📁 `src/governor/execute_boundary.py`
+```python
+# src/governor/execute_boundary.py
+
+"""
+ExecuteBoundary – Governor‑owned execution gate.
+Phase‑3.5 / Phase‑4 locked: checks global flag and enforces resource limits.
+"""
+
+from __future__ import annotations
+
+import time
+from typing import Optional
+
+from src.actions.action_request import ActionRequest
+from src.actions.action_result import ActionResult
+
+# This should match the global phase gate in nova_config.py
+# For now, we keep it False; it will be flipped to True after admission.
+GOVERNED_ACTIONS_ENABLED = False
+
+# Resource limits (Phase‑4 defaults)
+MAX_EXECUTION_TIME = 10      # seconds
+MAX_MEMORY_MB = 100          # not enforced here, but placeholder
+MAX_CONCURRENT = 1           # enforced via SingleActionQueue
+
+
+class ExecuteBoundary:
+    """
+    Gatekeeper for all execution. In Phase‑3.5 it always fails closed.
+    In Phase‑4 it enforces the global phase gate and resource limits.
+    """
+
+    def __init__(self):
+        self._start_time: Optional[float] = None
+
+    def allow_execution(self) -> bool:
+        """
+        Called before any action is attempted.
+        Returns True if execution is permitted in the current phase.
+        """
+        # Global phase gate
+        if not GOVERNED_ACTIONS_ENABLED:
+            return False
+        # Additional pre‑flight checks can be added here
+        return True
+
+    def evaluate(self, request: ActionRequest) -> ActionResult:
+        """
+        Legacy method for Phase‑3.5 – always refuses.
+        In Phase‑4 this will be replaced by a call to the executor.
+        """
+        if not GOVERNED_ACTIONS_ENABLED:
+            return ActionResult.refusal(
+                "That action requires execution, which is not available in the current phase.",
+                request_id=request.request_id
+            )
+        # Phase‑4 path will go here eventually
+        return ActionResult.refusal("Execution not yet implemented.", request_id=request.request_id)
+
+    def enter_execution(self) -> None:
+        """Call at the start of an executor to start the timeout timer."""
+        self._start_time = time.time()
+
+    def check_timeout(self) -> None:
+        """Raise an exception if execution time exceeds limit."""
+        if self._start_time and (time.time() - self._start_time) > MAX_EXECUTION_TIME:
+            raise TimeoutError("Execution timeout exceeded.")
+
+    def exit_execution(self) -> None:
+        """Clean up after execution."""
+        self._start_time = None
+```
+
+---
+
+## 📁 `src/governor/governor.py`
+```python
+"""
+Governor – constitutional authority spine.
+Phase‑4 integration: owns all execution‑related components, but they are lazily loaded
+to preserve Phase‑3.5 safety until the unlock.
+"""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Optional, Dict, Any
+
+from .execute_boundary import ExecuteBoundary
+from .single_action_queue import SingleActionQueue
+from src.ledger.writer import LedgerWriter
+from src.governor.exceptions import (
+    CapabilityRegistryError,
+    NetworkMediatorError,
+    LedgerWriteFailed,
+)
+from src.actions.action_request import ActionRequest
+from src.actions.action_result import ActionResult
+
+# Phase‑4 components are imported only when needed (lazy loading)
+# This avoids crashes if configuration files aren't ready during Phase‑3.5.
+
+
+class Governor:
+    """
+    Single authority choke point.
+    - Owns execute boundary and queue unconditionally.
+    - Lazily loads registry, network mediator, ledger on first use.
+    """
+
+    def __init__(self):
+        self._execute_boundary = ExecuteBoundary()
+        self._queue = SingleActionQueue()
+
+        # Lazy‑loaded Phase‑4 components (initially None)
+        self._registry = None
+        self._network = None
+        self._ledger = None
+
+    @property
+    def execute_boundary(self) -> ExecuteBoundary:
+        return self._execute_boundary
+
+    @property
+    def registry(self):
+        """Lazy load CapabilityRegistry."""
+        if self._registry is None:
+            # Import here to avoid circular imports and to keep Phase‑3.5 safe
+            from .capability_registry import CapabilityRegistry
+            self._registry = CapabilityRegistry()
+        return self._registry
+
+    @property
+    def network(self):
+        """Lazy load NetworkMediator."""
+        if self._network is None:
+            from .network_mediator import NetworkMediator
+            self._network = NetworkMediator()
+        return self._network
+
+    @property
+    def ledger(self):
+        """Lazy load LedgerWriter."""
+        if self._ledger is None:
+            self._ledger = LedgerWriter()
+        return self._ledger
+
+    # ---- Phase‑4 entrypoint (called by mediator) ----
+
+    def handle_governed_invocation(
+        self,
+        capability_id: int,
+        params: Dict[str, Any],
+    ) -> str:
+        """
+        Receives a parsed governed invocation from GovernorMediator.
+        This method is the ONLY place that can attempt to create an ActionRequest.
+        Returns a user‑facing message (success or refusal).
+        """
+        # 1) Capability identity + enable gate (per‑capability)
+        try:
+            cap = self.registry.get(capability_id)
+        except CapabilityRegistryError as e:
+            return f"I can’t do that. {e}"
+
+        if not self.registry.is_enabled(capability_id):
+            # Enabled flag is separate from phase gate.
+            return "I can’t do that yet."
+
+        # 2) Global phase gate (fail‑closed)
+        if not self._execute_boundary.allow_execution():
+            return "That requires a specific action, which I can’t perform right now."
+
+        # 3) Ledger must be writable BEFORE any effect
+        try:
+            self.ledger.log_event(
+                "ACTION_ATTEMPTED",
+                {"capability_id": capability_id, "capability_name": cap.name},
+            )
+        except LedgerWriteFailed:
+            # Fail closed: no ledger, no action
+            return "I can’t do that right now."
+
+        # 4) Single pending action boundary
+        if self._queue.has_pending():
+            return "I can’t do that right now."
+
+        # 5) ExecuteBoundary pre‑flight (resource checks)
+        if not self._execute_boundary.allow_execution():
+            return "I can’t do that right now."
+
+        # 6) Create ActionRequest
+        req = ActionRequest(capability_id=capability_id, params=params)
+
+        # 7) Execute (routed to appropriate executor)
+        try:
+            result = self._execute(req)
+            # Convert ActionResult to user message
+            if result.success:
+                return result.message
+            else:
+                # For failures, return the error message or a generic refusal
+                return result.message or "I can’t do that right now."
+        except (NetworkMediatorError, LedgerWriteFailed) as e:
+            # These are expected failures; log and return a calm refusal.
+            # (The ledger event was already logged by the callee.)
+            return "I can’t do that right now."
+        except Exception:
+            # Unexpected error – log and fail closed.
+            # In a real system you'd also write a CONSTITUTIONAL_VIOLATION event.
+            return "I can’t do that right now."
+
+    def _execute(self, req: ActionRequest) -> ActionResult:
+        """
+        Route to the appropriate executor.
+        Executors must use self.network for any outbound calls.
+        """
+        # Mark action as pending to enforce concurrency
+        self._queue.set_pending(f"cap_{req.capability_id}")
+
+        try:
+            # Start execution timer
+            self._execute_boundary.enter_execution()
+
+            # Example: governed web search (capability_id 16)
+            if req.capability_id == 16:
+                query = req.params.get("query", "")
+                # This executor would use self.network.request(...)
+                # For now, return a placeholder.
+                # In Phase‑4, implement actual search via self.network
+                return ActionResult.ok(
+                    data={"result": f"Simulated search for '{query}'"},
+                    request_id=req.request_id
+                )
+
+            # Add other capabilities here (17, 18, etc.)
+
+            return ActionResult.refusal(
+                "Execution path not implemented yet.",
+                request_id=req.request_id
+            )
+
+        finally:
+            # Always clean up
+            self._execute_boundary.exit_execution()
+            self._queue.clear()
+```
+
+---
+
+## 📁 `src/governor/governor_mediator.py`
+```python
+"""
+GovernorMediator – Phase‑4 ready parser shim.
+- Detect explicit governed invocations (deterministic).
+- Never creates ActionRequests.
+- Never executes actions.
+"""
+
+from __future__ import annotations
+
+import re
+from typing import Optional, Dict, Any, Tuple
+
+# Example deterministic phrase patterns (expand via static phrase bank)
+# "search for X" -> capability 16
+SEARCH_RE = re.compile(r"^\s*(search for|look up|research)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
+
+
+class GovernorMediator:
+    @staticmethod
+    def mediate(text: str) -> str:
+        # Phase‑3 behavior preserved: sanitize only.
+        if not text or not text.strip():
+            return "I'm not sure right now."
+        return text.strip()
+
+    @staticmethod
+    def parse_governed_invocation(text: str) -> Optional[Tuple[int, Dict[str, Any]]]:
+        """
+        Returns (capability_id, params) if explicit invocation detected.
+        Otherwise returns None.
+        """
+        t = (text or "").strip()
+
+        m = SEARCH_RE.match(t)
+        if m:
+            return (16, {"query": m.group("q")})
+
+        return None
+```
+
+---
+
+## 📁 `src/governor/network_mediator.py` (modified)
+```python
+# src/governor/network_mediator.py
+
+import ipaddress
+from collections import defaultdict
+from time import time
+from typing import Dict, Any, Optional, Union
+from urllib.parse import urlparse
+
+import requests
+
+from src.governor.capability_registry import CapabilityRegistry
+from src.governor.exceptions import NetworkMediatorError, CapabilityRegistryError
+from src.ledger.writer import LedgerWriter
+
+NETWORK_TIMEOUT = 5  # seconds
+ALLOWED_SCHEMES = {"http", "https"}
+DISALLOWED_HOSTS = {"localhost", "127.0.0.1", "::1"}
+RATE_LIMIT_PER_MINUTE = 10
+
+
+class NetworkMediator:
+    """
+    Sole gateway for all external HTTP(S) calls.
+    Enforces timeouts, logging, and rate limits.
+    If capability_id is None, the call is treated as a non‑governed (skill) request
+    and rate‑limited under a shared bucket.
+    """
+
+    def __init__(self):
+        self.registry = CapabilityRegistry()
+        self.ledger = LedgerWriter()
+        # Use Union[int, str] as key: int for capability IDs, "non_capability" for None
+        self._request_times: Dict[Union[int, str], list] = defaultdict(list)
+
+    def _check_rate_limit(self, key: Union[int, str]) -> None:
+        now = time()
+        # Keep only timestamps from last 60 seconds
+        times = self._request_times[key]
+        self._request_times[key] = [t for t in times if now - t < 60]
+        if len(self._request_times[key]) >= RATE_LIMIT_PER_MINUTE:
+            raise NetworkMediatorError("Rate limit exceeded.")
+        self._request_times[key].append(now)
+
+    def _validate_url(self, url: str) -> None:
+        """Prevent SSRF and non‑HTTP protocols."""
+        parsed = urlparse(url)
+
+        if parsed.scheme not in ALLOWED_SCHEMES:
+            raise NetworkMediatorError(f"Scheme '{parsed.scheme}' not allowed.")
+
+        host = parsed.hostname
+        if host in DISALLOWED_HOSTS:
+            raise NetworkMediatorError("Access to localhost is forbidden.")
+
+        # Block private IP ranges if host is an IP address
+        try:
+            ip = ipaddress.ip_address(host)
+            if ip.is_private or ip.is_loopback or ip.is_link_local:
+                raise NetworkMediatorError("Private network access forbidden.")
+        except ValueError:
+            # Host is a domain name – Phase 4 compromise: do not resolve to avoid DNS leakage.
+            # Future phases may add DNS resolution with explicit consent.
+            pass
+
+    def request(
+        self,
+        capability_id: Optional[int],   # None for non‑governed calls (skills)
+        method: str,
+        url: str,
+        json_payload: Optional[Dict[str, Any]] = None,
+    ) -> Dict[str, Any]:
+        """
+        Perform an HTTP request on behalf of a capability or a skill.
+        Returns response data. Raises NetworkMediatorError on failure.
+        """
+        # 1. Rate limit check
+        if capability_id is not None:
+            key = capability_id
+            # Validate capability
+            try:
+                cap = self.registry.get(capability_id)
+            except CapabilityRegistryError as e:
+                raise NetworkMediatorError(f"Capability check failed: {e}") from e
+
+            if not self.registry.is_enabled(capability_id):
+                raise NetworkMediatorError(f"Capability {capability_id} is disabled.")
+        else:
+            key = "non_capability"   # shared bucket for all skill calls
+
+        self._check_rate_limit(key)
+
+        # 2. URL validation (SSRF / protocol) – always enforced
+        self._validate_url(url)
+
+        # 3. (Future) consent check for data_exfiltration – not applicable for None
+
+        # 4. Perform request
+        try:
+            response = requests.request(
+                method=method.upper(),
+                url=url,
+                json=json_payload,
+                timeout=NETWORK_TIMEOUT,
+            )
+            response.raise_for_status()
+        except requests.RequestException as e:
+            # Log failure
+            self.ledger.log_event(
+                "NETWORK_CALL_FAILED",
+                {
+                    "capability_id": capability_id,
+                    "url": url,
+                    "error": str(e),
+                },
+            )
+            raise NetworkMediatorError(f"Network call failed: {e}") from e
+
+        # 5. Log success
+        self.ledger.log_event(
+            "EXTERNAL_NETWORK_CALL",
+            {
+                "capability_id": capability_id,
+                "url": url,
+                "method": method.upper(),
+                "status_code": response.status_code,
+            },
+        )
+
+        # 6. Return structured result
+        return {
+            "status_code": response.status_code,
+            "data": response.json() if response.content else None,
+        }
+```
+
+---
+
+## 📁 `brain_server.py` (modified)
+```python
+"""
+NovaLIS Brain Server — Phase 3.5 with Phase‑4 Governor Integration (Sealed)
+"""
+
+from .governor.governor import Governor
+from .memory.quick_corrections import record_correction
+from src.routers.stt import router as stt_router
+
+import json
+import logging
+from datetime import datetime
+from typing import Optional
+
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+
+from .skill_registry import SkillRegistry
+from .gates.confirmation_gate import confirmation_gate
+from .governor.governor_mediator import GovernorMediator
+from .speech_state import speech_state
+
+# -------------------------------------------------
+# New Phase‑4 imports
+# -------------------------------------------------
+from src.governor.network_mediator import NetworkMediator
+
+# -------------------------------------------------
+# App + Logging
+# -------------------------------------------------
+
+import logging
+from fastapi import FastAPI
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path
+
+log = logging.getLogger("nova")
+app = FastAPI()
+
+# -------------------------------------------------
+# Static Files (Phase-3.5 Safe)
+# -------------------------------------------------
+
+BASE_DIR = Path(__file__).resolve().parents[1]   # nova_backend/
+STATIC_DIR = BASE_DIR / "static"
+INDEX_HTML = STATIC_DIR / "index.html"
+
+if STATIC_DIR.exists():
+    app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+@app.get("/")
+async def root():
+    if INDEX_HTML.exists():
+        return FileResponse(INDEX_HTML)
+    return {"error": "static/index.html not found"}
+
+# -------------------------------------------------
+# Routers
+# -------------------------------------------------
+
+app.include_router(stt_router)
+
+# -------------------------------------------------
+# Phase‑4 Global Components
+# -------------------------------------------------
+global_network = NetworkMediator()          # shared network mediator for skills
+skill_registry = SkillRegistry(global_network)   # inject network into skills
+
+# -------------------------------------------------
+# Phase-3.5 Trust Verification Endpoint
+# -------------------------------------------------
+
+@app.get("/phase-status")
+async def phase_status():
+    """
+    Constitutional proof of Phase-3.5 compliance.
+    """
+    return {
+        "phase": "3.5",
+        "status": "frozen",
+        "execution": {
+            "enabled": False,
+            "structurally_impossible": True,
+            "note": "Execution boundary owned by Governor; no execution available in Phase-3.5."
+        },
+        "confirmation_gate": {
+            "behavior": "passive_when_idle",
+            "proof": "try_resolve returns message=None when no pending context",
+            "vocabulary": ["yes", "no"],
+            "cannot_initiate": True
+        },
+        "behavior": {
+            "greeting": {
+                "text": "Hello. How can I help?",
+                "frequency": "once_per_session",
+                "deterministic": True
+            },
+            "silence_first": True,
+            "correction": {
+                "method": "explicit_prefix",
+                "prefix": "Correction:",
+                "staged_only": True
+            },
+            "permission_model": {
+                "read_only": "search/look up = permission",
+                "no_confirmation": True
+            }
+        },
+        "verified_at": datetime.utcnow().isoformat(),
+        "constitutional_note": "Phase-3.5 behavioral goals are complete. Remaining work is governance visibility and Phase-4 authority boundaries."
+    }
+
+# -------------------------------------------------
+# WebSocket Utilities
+# -------------------------------------------------
+
+async def ws_send(ws: WebSocket, payload: dict) -> None:
+    await ws.send_text(json.dumps(payload))
+
+async def send_chat_message(ws: WebSocket, text: str) -> None:
+    await ws_send(ws, {"type": "chat", "message": text})
+
+async def send_chat_done(ws: WebSocket) -> None:
+    await ws_send(ws, {"type": "chat_done"})
+
+async def send_widget_message(
+    ws: WebSocket,
+    msg_type: str,
+    text: str,
+    data: Optional[dict] = None
+) -> None:
+    """
+    Phase-3 widget dispatch.
+    """
+    if msg_type == "news" and isinstance(data, dict) and "items" in data:
+        await ws_send(ws, {"type": "news", "items": data["items"]})
+        return
+
+    payload = {"type": msg_type, "message": text}
+    if msg_type == "weather" and isinstance(data, dict):
+        payload["data"] = data
+    await ws_send(ws, payload)
+
+# -------------------------------------------------
+# WebSocket Endpoint
+# -------------------------------------------------
+
+@app.websocket("/ws")
+async def websocket_endpoint(ws: WebSocket):
+    await ws.accept()
+    log.info("WebSocket connected")
+
+    # GOV-002: Governor spine (per-session)
+    governor = Governor()
+
+    # Phase-3.5 greeting discipline
+    await send_chat_message(ws, "Hello. How can I help?")
+    await send_chat_done(ws)
+
+    try:
+        while True:
+            raw = await ws.receive_text()
+            msg = json.loads(raw)
+            text = (msg.get("text") or "").strip()
+
+            if not text:
+                continue
+
+            lowered = text.lower()
+
+            # -------------------------------------------------
+            # STOP — immediate halt (Phase-2 lock)
+            # -------------------------------------------------
+            if lowered == "stop":
+                speech_state.stop()
+                await send_chat_message(ws, "Okay.")
+                await send_chat_done(ws)
+                continue
+
+            # -------------------------------------------------
+            # REPEAT — last spoken text only
+            # -------------------------------------------------
+            if lowered == "repeat":
+                last = speech_state.last_spoken_text
+                if last:
+                    await send_chat_message(ws, last)
+                await send_chat_done(ws)
+                continue
+
+            # -------------------------------------------------
+            # Governor mediation (LLM output control)
+            # -------------------------------------------------
+            mediated_text = GovernorMediator.mediate(text)
+
+            # -------------------------------------------------
+            # PHASE‑4: Check for governed invocation
+            # -------------------------------------------------
+            invocation = GovernorMediator.parse_governed_invocation(mediated_text)
+            if invocation:
+                capability_id, params = invocation
+                result_text = governor.handle_governed_invocation(capability_id, params)
+                await send_chat_message(ws, result_text)
+                await send_chat_done(ws)
+                continue
+
+            # -------------------------------------------------
+            # Quick Corrections — explicit, staged, Phase-3.5
+            # -------------------------------------------------
+            if mediated_text.startswith("Correction:"):
+                correction_text = mediated_text[len("Correction:"):].strip()
+                if correction_text:
+                    record_correction(correction_text)
+                await send_chat_message(ws, "Okay. Correction noted.")
+                await send_chat_done(ws)
+                continue
+
+            # -------------------------------------------------
+            # Confirmation gate (provably passive)
+            # -------------------------------------------------
+            if confirmation_gate.has_pending_confirmation():
+                gate_result = confirmation_gate.try_resolve(mediated_text)
+                if gate_result.message is not None:
+                    await send_chat_message(ws, gate_result.message)
+                    await send_chat_done(ws)
+                    continue
+
+            # -------------------------------------------------
+            # Skills (deterministic, Phase-3 aligned)
+            # -------------------------------------------------
+            skill_result = await skill_registry.handle_query(mediated_text)
+
+            # ----------------------------
+            # Widget / Chat dispatch (Phase-3 canonical)
+            # ----------------------------
+            if skill_result:
+                skill_name = getattr(skill_result, "skill", "") or ""
+                message = getattr(skill_result, "message", "") or ""
+                widget_data = getattr(skill_result, "widget_data", None)
+
+                # Track for repeat (no auto-speak)
+                speech_state.last_spoken_text = message
+
+                # If skill already returns canonical widget payload, pass through untouched
+                if isinstance(widget_data, dict) and "type" in widget_data:
+                    await ws_send(ws, widget_data)
+                    await send_chat_done(ws)
+                    continue
+
+                # Compatibility: if skill returns raw widget data (older dialect), wrap here
+                if skill_name == "news" and isinstance(widget_data, dict):
+                    items = widget_data.get("items", [])
+                    await send_widget_message(ws, "news", message, {"items": items})
+                    await send_chat_done(ws)
+                    continue
+
+                if skill_name == "weather" and isinstance(widget_data, dict):
+                    await send_widget_message(ws, "weather", message, widget_data)
+                    await send_chat_done(ws)
+                    continue
+
+                # Default: chat message response
+                await send_chat_message(ws, message)
+                await send_chat_done(ws)
+                continue
+
+            # -------------------------------------------------
+            # Fallback — governed chat only (no execution)
+            # -------------------------------------------------
+            await send_chat_message(ws, "I'm not sure how to help with that.")
+            await send_chat_done(ws)
+
+    except WebSocketDisconnect:
+        log.info("WebSocket disconnected")
+```
+
+---
+
+## 📁 `src/skill_registry.py` (modified)
+```python
+"""
+NovaLIS Skill Registry — Phase 3 Canonical, adapted for Phase‑4 network mediation
+"""
+
+from __future__ import annotations
+
+import inspect
+import logging
+from typing import List, Optional
+
+from .base_skill import BaseSkill, SkillResult
+from .skills.news import NewsSkill
+from .skills.weather import WeatherSkill
+from .skills.system import SystemSkill
+from .skills.general_chat import GeneralChatSkill
+
+# No WebSearchSkill – it's now a governed capability
+
+log = logging.getLogger("nova")
+
+
+class SkillRegistry:
+    def __init__(self, network) -> None:
+        """
+        network: an instance of NetworkMediator (or compatible) for skills that need HTTP.
+        """
+        self.network = network
+
+        # Base skills – always present
+        skills: List[BaseSkill] = [
+            SystemSkill(),
+            WeatherSkill(self.network),
+            NewsSkill(self.network),
+        ]
+
+        # General chat is the final fallback – never steals explicit triggers.
+        skills.append(GeneralChatSkill())
+
+        self.skills = skills
+
+    async def handle_query(self, query: str) -> Optional[SkillResult]:
+        for skill in self.skills:
+            try:
+                if not skill.can_handle(query):
+                    continue
+
+                result = skill.handle(query)
+                if inspect.iscoroutine(result):
+                    result = await result
+
+                if not isinstance(result, SkillResult):
+                    return None
+
+                return result
+
+            except Exception as e:
+                log.exception(f"[registry] skill error in {skill.name}: {e}")
+                return SkillResult(
+                    success=False,
+                    message="Something went wrong.",
+                    data={},
+                    widget_data=None,
+                    skill=skill.name,
+                )
+
+        return None
+
+
+# No singleton here – instantiate in brain_server.py
+```
+
+---
+
+## 📁 `src/skills/weather.py` (example modification)
+```python
+# src/skills/weather.py
+
+import logging
+from typing import Optional
+from src.base_skill import BaseSkill, SkillResult
+from src.governor.network_mediator import NetworkMediator
+
+log = logging.getLogger(__name__)
+
+# Example API endpoint (replace with real one)
+WEATHER_API_URL = "https://api.weather.com/v1/current"
+
+class WeatherSkill(BaseSkill):
+    name = "weather"
+    description = "Get current weather conditions"
+
+    def __init__(self, network: NetworkMediator):
+        self.network = network
+
+    async def can_handle(self, query: str) -> bool:
+        q = query.lower().strip()
+        # Simple keyword matching
+        return any(word in q for word in ["weather", "temperature", "forecast"])
+
+    async def handle(self, query: str) -> SkillResult:
+        try:
+            # Use network mediator (capability_id=None for non‑governed calls)
+            response = self.network.request(
+                capability_id=None,
+                method="GET",
+                url=WEATHER_API_URL,
+                json_payload={"q": query}  # example
+            )
+            # Process response...
+            data = response.get("data", {})
+            message = f"The weather is {data.get('condition', 'unknown')}."
+            return SkillResult(
+                success=True,
+                message=message,
+                data=data,
+                widget_data={"type": "weather", "data": data},
+                skill=self.name
+            )
+        except Exception as e:
+            log.error(f"WeatherSkill error: {e}")
+            return SkillResult(
+                success=False,
+                message="I couldn't fetch the weather right now.",
+                skill=self.name
+            )
+```
+
+---
+
+## 📁 `src/skills/news.py` (example modification)
+```python
+# src/skills/news.py
+
+import logging
+from typing import Optional
+from src.base_skill import BaseSkill, SkillResult
+from src.governor.network_mediator import NetworkMediator
+
+log = logging.getLogger(__name__)
+
+NEWS_API_URL = "https://api.news.org/headlines"
+
+class NewsSkill(BaseSkill):
+    name = "news"
+    description = "Get latest news headlines"
+
+    def __init__(self, network: NetworkMediator):
+        self.network = network
+
+    async def can_handle(self, query: str) -> bool:
+        q = query.lower().strip()
+        return any(word in q for word in ["news", "headlines", "latest"])
+
+    async def handle(self, query: str) -> SkillResult:
+        try:
+            response = self.network.request(
+                capability_id=None,
+                method="GET",
+                url=NEWS_API_URL,
+            )
+            data = response.get("data", {})
+            items = data.get("articles", [])
+            message = f"Here are the latest headlines."
+            return SkillResult(
+                success=True,
+                message=message,
+                data={"items": items},
+                widget_data={"type": "news", "items": items},
+                skill=self.name
+            )
+        except Exception as e:
+            log.error(f"NewsSkill error: {e}")
+            return SkillResult(
+                success=False,
+                message="I couldn't fetch the news right now.",
+                skill=self.name
+            )
+```
+
+---
+
+## 📁 `src/actions/action_request.py` (new)
+```python
+# src/actions/action_request.py
+
+from __future__ import annotations
+
+from dataclasses import dataclass, field
+from typing import Any, Dict
+from uuid import uuid4
+from datetime import datetime, timezone
+
+
+@dataclass(frozen=True)
+class ActionRequest:
+    """
+    Immutable description of a user‑requested governed action.
+    Created only in governor.py.
+    """
+    capability_id: int
+    params: Dict[str, Any] = field(default_factory=dict)
+
+    # System metadata
+    request_id: str = field(default_factory=lambda: str(uuid4()))
+    created_at: str = field(
+        default_factory=lambda: datetime.now(timezone.utc).isoformat()
+    )
+```
+
+---
+
+## 📁 `src/actions/action_result.py` (new)
+```python
+# src/actions/action_result.py
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+from typing import Any, Dict, Optional
+
+
+@dataclass
+class ActionResult:
+    """
+    Result of a single governed action execution.
+    """
+    success: bool
+    data: Optional[Dict[str, Any]] = None
+    error: Optional[str] = None
+    request_id: Optional[str] = None
+
+    @classmethod
+    def ok(cls, data: Dict[str, Any], request_id: Optional[str] = None) -> ActionResult:
+        return cls(success=True, data=data, request_id=request_id)
+
+    @classmethod
+    def failure(cls, error: str, request_id: Optional[str] = None) -> ActionResult:
+        return cls(success=False, error=error, request_id=request_id)
+
+    @classmethod
+    def refusal(cls, reason: str, request_id: Optional[str] = None) -> ActionResult:
+        return cls(success=False, error=reason, request_id=request_id)
+
+    @property
+    def message(self) -> str:
+        """User‑friendly message for display."""
+        if self.success:
+            # Could extract from data if needed
+            return "Done."
+        else:
+            return self.error or "I can’t do that right now."
+```
+
+---
+
+## 📁 `src/llm/llm_manager_vlock.py` (staged version-lock manager)
+```python
+# src/llm/llm_manager_vlock.py
+
+"""
+Ollama LLM integration with constitutional version locking.
+This is a staged replacement for the current llm_manager.py.
+Once confirmed, swap the import in general_chat.py to use this.
+"""
+
+import hashlib
+import json
+import logging
+import time
+from pathlib import Path
+from typing import Optional, Dict, Any
+
+import requests
+
+from src.ledger.writer import LedgerWriter
+from src.governor.exceptions import LedgerWriteFailed
+from .system_prompt import SYSTEM_PROMPT
+
+logger = logging.getLogger(__name__)
+
+# Paths for version lock
+MODEL_HASH_FILE = Path(__file__).resolve().parents[1] / "models" / "current_model_hash.txt"
+WRAPPER_PATH = Path(__file__).parent / "inference_wrapper.py"
+
+
+def compute_model_hash(
+    model_digest: str,
+    system_prompt: str,
+    wrapper_code: str,
+    params: Dict[str, Any]
+) -> str:
+    """Composite hash of all model‑influencing components."""
+    blob = json.dumps(
+        {
+            "model_digest": model_digest,
+            "system_prompt": system_prompt,
+            "wrapper": wrapper_code,
+            "params": params,
+        },
+        sort_keys=True,
+    )
+    return hashlib.sha256(blob.encode()).hexdigest()
+
+
+class LLMManager:
+    """
+    Ollama LLM integration with constitutional version locking.
+    - Thin wrapper around Ollama HTTP API
+    - Circuit breaker for reliability
+    - Model version hash to detect silent changes
+    - Blocks inference on version mismatch
+    """
+
+    def __init__(
+        self,
+        model: str = "phi3:mini",
+        base_url: str = "http://localhost:11434",
+    ):
+        self.model = model
+        self.base_url = base_url
+        self.timeout = 30
+        self.system_prompt = SYSTEM_PROMPT
+
+        # Connection pooling
+        self.session = requests.Session()
+
+        # Circuit breaker state
+        self.failure_count = 0
+        self.circuit_open_until = 0
+
+        # Stable inference parameters (these become part of the version hash)
+        self.default_options = {
+            "temperature": 0.4,
+            "num_predict": 256,
+            "num_ctx": 4096,
+            "top_k": 40,
+            "repeat_penalty": 1.1,
+            "stop": ["\n\n", "User:", "Human:"],
+        }
+
+        # Version lock state
+        self.inference_blocked = False
+        self._check_model_version()
+
+    # ----- Version lock helpers -------------------------------------------------
+
+    def _get_model_digest(self) -> Optional[str]:
+        """Query Ollama for the current model's digest (SHA256 of the blob)."""
+        try:
+            resp = self.session.post(
+                f"{self.base_url}/api/show",
+                json={"model": self.model},
+                timeout=5,
+            )
+            resp.raise_for_status()
+            data = resp.json()
+            return data.get("digest")
+        except Exception as e:
+            logger.warning(f"Could not fetch model digest: {e}")
+            return None
+
+    def _compute_current_hash(self) -> str:
+        """Compute hash based on current configuration."""
+        model_digest = self._get_model_digest()
+        if model_digest is None:
+            model_digest = "unknown"
+            logger.warning("Using fallback digest 'unknown' – inference will block until confirmed.")
+        with open(WRAPPER_PATH, "r", encoding="utf-8") as f:
+            wrapper_code = f.read()
+        return compute_model_hash(
+            model_digest,
+            self.system_prompt,
+            wrapper_code,
+            self.default_options,
+        )
+
+    def _block_inference(self):
+        """Prevent any generation for this session."""
+        self.inference_blocked = True
+        logger.warning("Model inference blocked due to version mismatch.")
+
+    def _log_model_updated(
+        self,
+        previous_hash: Optional[str],
+        new_hash: str,
+        user_confirmed: bool,
+    ) -> None:
+        """Write MODEL_UPDATED event to ledger."""
+        writer = LedgerWriter()
+        params_hash = hashlib.sha256(
+            json.dumps(self.default_options, sort_keys=True).encode()
+        ).hexdigest()
+        system_prompt_hash = hashlib.sha256(self.system_prompt.encode()).hexdigest()
+        with open(WRAPPER_PATH, "r", encoding="utf-8") as f:
+            wrapper_code = f.read()
+        wrapper_hash = hashlib.sha256(wrapper_code.encode()).hexdigest()
+        model_digest = self._get_model_digest() or "unknown"
+
+        metadata = {
+            "model_name": self.model,
+            "previous_hash": previous_hash,
+            "new_hash": new_hash,
+            "model_digest": model_digest,
+            "system_prompt_hash": system_prompt_hash,
+            "wrapper_hash": wrapper_hash,
+            "parameter_hash": params_hash,
+            "user_confirmed": user_confirmed,
+            "confirmation_timestamp": None,
+        }
+        try:
+            writer.log_event("MODEL_UPDATED", metadata)
+        except LedgerWriteFailed:
+            # Even if ledger fails, we must still block inference
+            self._block_inference()
+            raise
+
+    def _check_model_version(self):
+        """Compare stored hash with current; block if mismatch or first run."""
+        # Ensure models directory exists for hash file
+        MODEL_HASH_FILE.parent.mkdir(parents=True, exist_ok=True)
+
+        computed = self._compute_current_hash()
+
+        if MODEL_HASH_FILE.exists():
+            stored = MODEL_HASH_FILE.read_text().strip()
+            if stored == computed:
+                logger.info("Model version OK.")
+                return
+            else:
+                logger.warning("Model version mismatch. Blocking inference.")
+                self._block_inference()
+                self._log_model_updated(stored, computed, user_confirmed=False)
+        else:
+            # First run – block and require confirmation
+            logger.info("First model run – blocking inference until confirmed.")
+            self._block_inference()
+            self._log_model_updated(None, computed, user_confirmed=False)
+
+    def confirm_model_update(self):
+        """
+        Called after user explicitly confirms a model update.
+        Writes the new hash and unblocks inference.
+        """
+        if not self.inference_blocked:
+            return
+
+        computed = self._compute_current_hash()
+        previous = None
+        if MODEL_HASH_FILE.exists():
+            previous = MODEL_HASH_FILE.read_text().strip()
+        MODEL_HASH_FILE.write_text(computed)
+        self.inference_blocked = False
+        self._log_model_updated(previous, computed, user_confirmed=True)
+        logger.info("Model update confirmed. Inference unblocked.")
+
+    # ----- Existing functionality (circuit breaker, generate) -----------------
+
+    def _record_failure(self):
+        self.failure_count += 1
+        if self.failure_count >= 3:
+            self.circuit_open_until = time.time() + 30
+            logger.warning("Circuit breaker opened. Will retry after 30 seconds.")
+            self.failure_count = 0
+
+    def generate(self, prompt: str, system_prompt: str = "") -> Optional[str]:
+        """
+        Send prompt to LLM and return plain text.
+        Honors circuit breaker and model version lock.
+        """
+        if self.inference_blocked:
+            logger.error("Generate called while model is blocked.")
+            return None
+
+        # Circuit breaker
+        now = time.time()
+        if now < self.circuit_open_until:
+            logger.warning("Circuit breaker open. Skipping request.")
+            return None
+
+        # Use the provided system prompt or the default
+        system = system_prompt or self.system_prompt
+
+        try:
+            # Delegate to the isolated wrapper (only this call affects the version hash)
+            from .inference_wrapper import run_inference
+
+            result = run_inference(
+                base_url=self.base_url,
+                model=self.model,
+                prompt=prompt,
+                system=system,
+                options=self.default_options,
+                timeout=self.timeout,
+            )
+            # Success – reset failure count
+            self.failure_count = 0
+            return result
+
+        except requests.exceptions.Timeout:
+            logger.warning(f"LLM request timed out after {self.timeout}s")
+            self._record_failure()
+        except requests.exceptions.ConnectionError:
+            logger.error("Cannot connect to Ollama. Is it running?")
+            self._record_failure()
+        except Exception as e:
+            logger.error(f"LLM error: {e}")
+            self._record_failure()
+
+        return None
+
+    def health_check(self) -> bool:
+        """Verify Ollama is running and the model is available."""
+        try:
+            resp = self.session.get(f"{self.base_url}/api/tags", timeout=5)
+            if resp.status_code == 200:
+                models = resp.json().get("models", [])
+                return any(self.model in m.get("name", "") for m in models)
+        except Exception:
+            pass
+        return False
+```
+
+---
+
+## ✅ Summary
+
+All files are provided as described. Place them in your project structure as indicated. The modified `brain_server.py` now creates a global `NetworkMediator` and injects it into the skill registry. The skills (`weather.py`, `news.py`) have been updated to use the mediator with `capability_id=None`. The Governor and its components are in place but remain sealed (`GOVERNED_ACTIONS_ENABLED = False`). The model version lock is staged separately; once you have a confirmation flow, you can replace the existing `llm_manager.py` with the new version (or simply switch the import in `general_chat.py` to use `llm_manager_vlock`).
+
+If you need any adjustments or further clarifications, let me know.

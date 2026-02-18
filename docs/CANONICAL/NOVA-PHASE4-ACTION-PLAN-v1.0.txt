@@ -1,0 +1,97 @@
+NOVA-PHASE4-ACTION-PLAN-v1.0
+
+
+
+---
+
+# 🧬 PHASE 4 – EXECUTION UNLOCK: FINAL ACTION PLAN
+### *Constitutional Foundation + Buildable Reality*
+
+**Status:** Design‑Unlocked – Implementation Ready  
+**Authority:** Nova Complete Constitutional Blueprint v1.8  
+**Last Updated:** 2026‑02‑17  
+
+---
+
+## 🔹 Executive Summary
+
+Phase 4 introduces **governed execution** – explicit, user‑invoked actions with real‑world effects. The design is constitutionally sound; the runtime remains locked until a verified admission gate is passed.  
+
+The meta‑review identified a core tension: **constitutional perfection vs. buildable reality**. The resolution is to add four lightweight, high‑impact safeguards **now** – as implementation details, not constitutional amendments – and to defer all speculative future risks to later phases.  
+
+This plan updates the Phase 4 Roadmap with those safeguards, aligns them with existing workstreams, and provides a consolidated admission checklist. **The goal is to ship Phase 4 on a Raspberry Pi, not to write more laws.**
+
+---
+
+## ✅ Four Immediate Safeguards (Integrate into Phase 4)
+
+| # | Safeguard | Why Now | How | Roadmap Integration |
+|---|-----------|---------|-----|---------------------|
+| 1 | **Capability Registry & Lifecycle** | Track, version, and revoke capabilities. Essential as execution surface grows. | Static `registry.json` (or DB) with `id`, `risk_level`, `permissions`, `enabled`. Governor checks every action. Add capability installation as logged user event. | Workstream C (Capabilities) – extend registry task. |
+| 2 | **Model Version Lock** | Prevent silent behavior changes from model/API updates. | Each model (local or external) identified by version hash. Any update requires `MODEL_UPDATED` ledger event + user confirmation. | Workstream B (Execution Layer) – add version check to executor calls. |
+| 3 | **External LLM as Governed Capability** | Data leaving home must be transparent and user‑controlled. | Register external LLM calls as capabilities with `data_exfiltration` flag. Governor checks user consent for service. Log metadata (not content) in ledger. | Workstream C – wrap external APIs with governed wrapper. |
+| 4 | **Device Authority Scopes** | Granular permission levels per domain (observe, suggest, confirm, automatic). | Extend policy engine with `authority_level`. Design now, implement in Phase 4.5. Display in Trust Panel. | Phase 4.5 design task (add to roadmap). |
+
+**These four items are low‑effort, high‑impact, and fully aligned with the existing constitutional framework.** They do not require new Tier‑1 invariants – they are disciplined implementation.
+
+---
+
+## 🔒 Updated Phase 4 Admission Gate Checklist
+
+Add the following to the existing checklist (from the Phase 4 Roadmap and the readiness document):
+
+- [ ] **Capability Registry** implemented, versioned, and integrated with Governor.
+- [ ] **Model Version Lock** enforced for all local and external models.
+- [ ] **External LLM calls** registered as capabilities with `data_exfiltration` flag and user consent mechanism.
+- [ ] **Device Authority Scopes** designed (implementation deferred to Phase 4.5).
+- [ ] **Network I/O Governor mediation** – all outbound communication routes through `NetworkMediator` under Governor authority (from readiness doc).
+- [ ] **Ephemeral session boundary** mechanically enforced – session cleared on reset, timeout, restart (from readiness doc).
+- [ ] **Influence containment roadmap** documented (design for Phase 4.5).
+
+All existing items (Governor bypass proof, CI enforcement, etc.) remain.
+
+---
+
+## 🛠 Revised Implementation Roadmap (Weeks 1–8)
+
+The new safeguards fit naturally into the existing workstreams:
+
+| Workstream | Original Focus | New Tasks | Timeline |
+|------------|----------------|-----------|----------|
+| **A: Governor Foundation** | Spine, clarification, echo, resource guardrails | – | Weeks 1–3 |
+| **B: Execution Layer** | ActionRequest, ExecuteBoundary, ConfirmationGate, base Executor | Add model version hash checks to executors. | Weeks 2–5 |
+| **C: Capability Implementation** | Web search, open URL, file open, media, diagnostics, reporting | Build Capability Registry; wrap external LLM calls with registry & consent. | Weeks 3–6 |
+| **D: Ledger & Audit** | Append‑only ledger, pruning | Extend to log capability installations, model updates. | Weeks 2–4 |
+| **E: Testing** | Unit, integration, adversarial, performance | Add tests for registry, version lock, external LLM consent. | Ongoing, culminates Week 7 |
+| **F: Documentation & Governance** | Admission evidence, Phase 4.5 proposal | Document Device Authority Scopes design; update influence containment roadmap. | Weeks 6–7 |
+
+**Timeline estimate remains ~8 weeks.** The new tasks are parallelizable and do not extend the critical path.
+
+---
+
+## 📌 What We Are *Not* Doing (Now)
+
+- ❌ **Plan‑level review** – defer to Phase 9.
+- ❌ **Information flow restrictions** – defer.
+- ❌ **Influence auditing dashboards** – defer (and avoid misuse).
+- ❌ **Formal verification** – not needed; rely on testing.
+- ❌ **Heavy behavioral telemetry** – already prohibited.
+- ❌ **Over‑restriction on continuous awareness** – keep environmental pattern detection.
+- ❌ **Adding more Tier‑1 invariants** – current set is sufficient.
+
+---
+
+## 🏁 Final Word: Build, Then Refine
+
+The constitution is complete. The roadmap is clear. The only remaining act is **to build the container** – to get Nova running on real hardware, controlling real devices, with a calm and trustworthy presence.
+
+> *“Nova is a container, not an assistant. The container scales with the intelligence inside. But first, the container must exist.”*
+
+**Proceed with implementation. Unlock Phase 4 when the checklist is satisfied. Then let experience guide the next layers.**
+
+---
+
+**Ratified by:** Nova Constitutional Governance Board (via meta‑review integration)  
+**Date:** 2026‑02‑17  
+**Document ID:** `NOVA-PHASE4-ACTION-PLAN-v1.0`  
+**Status:** 🔓 **Implementation‑Ready**

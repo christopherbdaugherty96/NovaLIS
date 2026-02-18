@@ -1,9 +1,10 @@
+# src/skills/weather.py
+
 from datetime import datetime
 import logging
 
-from ..base_skill import BaseSkill, SkillResult
-from ..services.weather_service import WeatherService
-
+from src.base_skill import BaseSkill, SkillResult
+from src.services.weather_service import WeatherService
 
 log = logging.getLogger("nova.skills.weather")
 

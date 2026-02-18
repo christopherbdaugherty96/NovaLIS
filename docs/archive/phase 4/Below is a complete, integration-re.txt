@@ -1,0 +1,218 @@
+Below is a **complete, integration-ready canonical document** reflecting your Phase-4 readiness assessment, tightened for constitutional clarity and aligned with Nova’s current frozen Phase-3.5 state.
+
+This is written in the style of your existing canonical artifacts.
+
+---
+
+# 🔒 NOVA — PHASE 4 READINESS & FINALIZATION REQUIREMENTS
+
+### Governed Execution Admission Clarification Document
+
+**Document ID:** `NOVA-PHASE4-READINESS-v1.0`
+**Status:** 🔒 CONSTITUTIONAL CLARIFICATION — PRE-RUNTIME UNLOCK
+**Phase Alignment:** Phase-4 (Design Complete → Runtime Pending Unlock)
+**Authority Expansion:** None
+**Supersedes:** None (Additive Clarification)
+**Ratified:** 2026-02-17
+
+---
+
+## I. PURPOSE
+
+This document formalizes the final architectural clarifications required before Phase-4 runtime unlock.
+
+It affirms:
+
+* Phase-4 design is constitutionally sound.
+* No Tier-1 invariant is violated.
+* The Intelligence–Authority Split remains intact.
+* Governor supremacy remains absolute.
+
+It defines three additional constraints that must be resolved or documented before Phase-4 runtime activation.
+
+---
+
+## II. PHASE-4 STATUS SUMMARY
+
+| Area                | Status               | Constitutional Alignment           |
+| ------------------- | -------------------- | ---------------------------------- |
+| Governor Spine      | ✅ Designed           | Explicit invocation only           |
+| ExecuteBoundary     | ✅ Fail-Closed        | No hidden execution                |
+| ConfirmationGate    | ✅ Token-Based        | Governor-owned                     |
+| Capability Registry | ✅ Versioned & Unique | No ID reuse                        |
+| Admission Checklist | ✅ Comprehensive      | Mechanical proof required          |
+| Runtime Unlock      | ⛔ Locked             | `GOVERNED_ACTIONS_ENABLED = false` |
+
+**Conclusion:** Phase-4 design is structurally sound and implementation may proceed.
+
+Runtime remains locked until the clarifications in Section IV are satisfied.
+
+---
+
+## III. INVARIANT CONTINUITY
+
+The following Tier-1 invariants remain unchanged:
+
+1. **Governor Supremacy** — All execution authority flows through the Governor.
+2. **No Autonomy** — No self-initiation, no background cognition.
+3. **Intelligence–Authority Split** — Intelligence may reason; only Governor may execute.
+4. **No Optimization Without Ratification** — Evolution is legislative, not emergent.
+5. **Fail-Closed Default** — All new capabilities default to disabled.
+
+Phase-4 introduces governed execution but does not modify these invariants.
+
+---
+
+## IV. REQUIRED CLARIFICATIONS BEFORE PHASE-4 FINALIZATION
+
+The following must be satisfied before runtime unlock.
+
+---
+
+# 1️⃣ GOVERNOR MEDIATION OF ALL EXTERNAL NETWORK I/O
+
+### Problem
+
+Future subsystems (e.g., awareness daemons in Phase-7) may introduce background polling or independent network access unless explicitly constrained.
+
+### Constitutional Requirement
+
+> **All outbound network communication, regardless of origin (user invocation, daemon, subsystem, or agent), must route through the Governor and be subject to logging, rate limiting, and resource constraints.**
+
+No module may perform direct HTTP or socket communication outside Governor mediation.
+
+### Enforcement Strategy
+
+* Single `NetworkMediator` under Governor authority
+* Static import audit preventing raw HTTP usage outside mediator
+* Ledger entry for every external call
+* Rate limits enforced centrally
+
+### Phase Impact
+
+Phase-4 currently contains only user-invoked network calls.
+This clarification future-proofs the architecture.
+
+---
+
+# 2️⃣ EPHEMERAL SESSION BOUNDARY DEFINITION
+
+### Problem
+
+Undefined conversational context lifetime may allow gradual adaptation without ratified policy change.
+
+This risks violating:
+
+> **Evolution vs. Optimization Principle**
+
+### Constitutional Requirement
+
+> **Ephemeral conversational context exists only within a single active session. A session terminates upon explicit reset, timeout, or process restart. No cross-session behavioral adaptation is permitted without a ratified policy change.**
+
+### Operational Definition
+
+A session ends when:
+
+* User invokes reset
+* Inactivity timeout occurs
+* Application restarts
+* User closes connection
+
+Upon session termination:
+
+* All conversational state is cleared
+* No style, preference, or structural adaptation persists
+* Only explicitly saved memory artifacts remain
+
+### Prohibited
+
+* Cross-session tone drift
+* Behavioral compression
+* Implicit response shortening
+* Adaptive formatting
+
+### Required Before Unlock
+
+Session clearing must be mechanically implemented and verified.
+
+---
+
+# 3️⃣ PERSONALITY AGENT INFLUENCE CONTAINMENT (DESIGN-FORWARD REQUIREMENT)
+
+### Problem
+
+As Nova evolves toward structured reporting and proposal synthesis, influence risk increases.
+
+While Phase-4 capabilities are mostly factual, future phases will introduce:
+
+* Structured multi-source synthesis
+* Diagnostic interpretation
+* Recommendation framing
+
+### Constitutional Position
+
+Influence containment is not a Phase-4 runtime blocker, but must be designed before Phase-4.5.
+
+### Design Directive
+
+A future **Style Constraint Layer** must:
+
+* Flag prescriptive verbs ("should", "must", "recommend")
+* Flag emotional framing
+* Flag directive phrasing
+* Avoid persuasive narrative construction
+
+This layer may annotate but must not censor output unless policy violation occurs.
+
+### Status
+
+Design required before Phase-4.5.
+Not required to unlock Phase-4 runtime.
+
+---
+
+## V. ITEMS EXPLICITLY NOT REQUIRED FOR PHASE-4
+
+The following concerns are deferred to later phases:
+
+| Concern                       | Phase      |
+| ----------------------------- | ---------- |
+| Background cognition          | Phase-7    |
+| Plan-level orchestration      | Phase-10   |
+| Multi-memory envelopes        | Phase-9    |
+| Autonomous scheduling         | Prohibited |
+| Information authority scoring | Phase-9+   |
+
+Phase-4 remains strictly atomic, user-invoked, and reversible.
+
+---
+
+## VI. FINAL PHASE-4 READINESS VERDICT
+
+**Phase-4 design is constitutionally sound.**
+
+Implementation may begin immediately.
+
+Before runtime unlock, the following must be complete:
+
+1. Explicit Governor mediation rule for all external I/O.
+2. Mechanical enforcement of session-bound ephemeral context clearing.
+3. Documentation of influence containment roadmap (implementation may occur in Phase-4.5).
+
+Upon satisfaction of these items and completion of the Admission Gate checklist, runtime unlock may proceed via:
+
+```
+GOVERNED_ACTIONS_ENABLED = true
+```
+
+No other architectural modification is required.
+
+---
+
+## VII. ONE-SENTENCE LOCK
+
+> **Phase-4 is mechanically safe; clarify network mediation, enforce session boundaries, design influence containment, then unlock governed execution.**
+
+---
+
+**END OF DOCUMENT**

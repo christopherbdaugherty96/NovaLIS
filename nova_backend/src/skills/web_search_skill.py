@@ -57,7 +57,8 @@ class WebSearchSkill(BaseSkill):
         return False
 
     # ------------------------------------------------------------------
-    # Handle – single, synchronous, read‑only web fetch
+    # Handle – Phase‑4 compliant stub
+    # Web search is now governed and must pass through the Governor.
     # ------------------------------------------------------------------
     async def handle(self, query: str) -> Optional[SkillResult]:
         """
@@ -73,102 +74,22 @@ class WebSearchSkill(BaseSkill):
         if not self.can_handle(query):
             return None
 
-        # ----------------------------------------------------------------
-        # Lazy import – never crash startup if ddgs is missing
-        # ----------------------------------------------------------------
-        try:
-            from ..tools.web_search import run_web_search
-        except ImportError as e:
-            log.debug(f"Web search tool not available: {e}")
-            return SkillResult(
-                success=False,
-                message="Web search is not available right now.",
-                skill=self.name,
-            )
-
-        # Extract the actual search term by removing the matched trigger phrase.
-        search_term = self._extract_search_term(query)
-        if len(search_term) < 2:
-            return SkillResult(
-                success=False,
-                message="Please provide a more specific search term.",
-                skill=self.name,
-            )
-
-        # ------------------------------------------------------------------
-        # Single fetch – no retries, no follow‑up, no caching
-        # Results count governed by central configuration.
-        # ------------------------------------------------------------------
-        try:
-            raw_results = run_web_search(
-                query=search_term,
-                max_results=WEB_SEARCH_MAX_RESULTS
-            )
-
-            if not raw_results:
-                return SkillResult(
-                    success=False,
-                    message="I couldn't find any results for that.",
-                    skill=self.name,
-                )
-
-            # ------------------------------------------------------------------
-            # Strict Phase‑3.5: strip snippet, keep only title + url
-            # No synthesis, no ranking, no interpretation
-            # ------------------------------------------------------------------
-
-
-            structured = [
-                {"title": r["title"], "url": r["url"]}
-                for r in raw_results
-                if r.get("title") and r.get("url")
-            ]
-
-            if not structured:
-                return SkillResult(
-                    success=False,
-                    message="Found results, but they lacked usable titles or links.",
-                    skill=self.name,
-                )
-
-            # ------------------------------------------------------------------
-            # Online disclosure – mandatory
-            # ------------------------------------------------------------------
-            count = len(structured)
-            message = (
-                "I'm checking online. "
-                f"I found {count} result{'s' if count != 1 else ''}. "
-                "You can view the links below."
-            )
-
-            # ------------------------------------------------------------------
-            # Canonical widget payload – Phase‑3 UI contract
-            # ------------------------------------------------------------------
-            widget_data = {
-                "type": "web_search_results",
-                "items": structured,
-            }
-
-            return SkillResult(
-                success=True,
-                message=message,
-                skill=self.name,
-                widget_data=widget_data,
-                data={},  # unused in Phase‑3
-            )
-
-        except Exception as e:
-            log.debug(f"Web search failed: {e}")
-            return SkillResult(
-                success=False,
-                message="I'm unable to search right now.",
-                skill=self.name,
-            )
+        # Phase‑4: web search is now handled by the Governor via capability 16.
+        # The skill layer no longer performs the search directly.
+        return SkillResult(
+            success=False,
+            message=(
+                "Web search is handled through governed execution. "
+                "Please use: 'search for <query>'."
+            ),
+            skill=self.name,
+        )
 
     # ------------------------------------------------------------------
     # Pure function – deterministic, side‑effect free
     # Now uses the EXACT SAME word‑boundary matching as can_handle.
     # Extracts the substring immediately after the matched phrase.
+    # (Unused in Phase‑4 stub, but kept for compatibility.)
     # ------------------------------------------------------------------
     def _extract_search_term(self, query: str) -> str:
         """
