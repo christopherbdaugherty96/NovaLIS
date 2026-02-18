@@ -1,0 +1,174 @@
+PHASE_3.5_TO_PHASE_4_TRANSITION_CHECKLIST.md
+Mechanical Transition Protocol
+
+Document ID: NOVA-TRANSITION-3.5-TO-4-v1.0
+Status: Template
+
+SECTION 1 — PRE-UNLOCK VALIDATION
+Seal Integrity
+
+ Verify SHA256 of execute_boundary.py
+
+ Confirm no conditionals present
+
+ Confirm no execution handler imports
+
+ Confirm quarantine modules not imported
+
+ Confirm CI quarantine scan active
+
+Runtime Behavior
+
+ Confirm no ActionRequest instantiation
+
+ Confirm no background jobs
+
+ Confirm no scheduler modules
+
+ Confirm no persistent adaptive memory
+
+ Confirm no configuration flags enable execution
+
+If any fail → STOP.
+
+SECTION 2 — BRANCH PROTOCOL
+
+ Create new branch: phase-4-unlock
+
+ Freeze main branch
+
+ Lock documentation changes
+
+ Enable CI strict governance mode
+
+No direct commits to main.
+
+SECTION 3 — EXECUTION SURFACE INTRODUCTION
+ExecuteBoundary
+
+ Replace unconditional refusal with:
+
+capability lookup
+
+permission check
+
+confirmation check
+
+fail-closed default
+
+Governor Expansion
+
+ Governor owns:
+
+ExecuteBoundary
+
+ConfirmationGate
+
+CapabilityRegistry
+
+ No public singletons
+
+ No external module can instantiate ActionRequest
+
+Capability Registry
+
+ Define atomic capability list
+
+ Ensure registry immutable at runtime
+
+ Ensure no dynamic registration
+
+SECTION 4 — CONFIRMATION SYSTEM
+
+ Deterministic confirmation prompts
+
+ No suggestion language
+
+ No “you might want to…”
+
+ Single-response confirmation
+
+ No escalation on silence
+
+SECTION 5 — SECURITY & BYPASS TESTS
+
+ Attempt to instantiate ActionRequest outside Governor (must fail)
+
+ Attempt to import quarantine module (CI must fail)
+
+ Attempt to execute without explicit invocation (must fail)
+
+ Attempt multi-step chain (must fail)
+
+ Attempt background execution (must fail)
+
+SECTION 6 — ADVERSE SCENARIO TESTS
+
+Simulate:
+
+ Malformed capability ID
+
+ Capability not in registry
+
+ Confirmation rejected
+
+ Duplicate trigger
+
+ Partial failure mid-execution
+
+All must fail closed.
+
+SECTION 7 — POST-UNLOCK AUDIT
+
+After merge:
+
+ Run full constitutional audit
+
+ Confirm no Phase 5 features activated
+
+ Confirm no scheduler threads running
+
+ Confirm deterministic routing still intact
+
+ Confirm LLM remains non-authoritative
+
+SECTION 8 — DEPLOYMENT CONDITION
+
+Phase 4 may be deployed only if:
+
+All tests pass
+
+Audit shows zero invariant violations
+
+Governance Board signs Unlock Act
+
+Emergency rollback plan documented
+
+SECTION 9 — ROLLBACK PLAN
+
+If violation detected:
+
+ Revert to Phase 3.5 commit
+
+ Reinstate ExecuteBoundary refusal-only version
+
+ Reapply Seal Artifact
+
+ Investigate bypass vector
+
+FINAL TRANSITION STATEMENT
+
+Phase 4 is not a feature release.
+It is an authority expansion.
+
+Authority expansions require:
+
+Explicit authorization
+
+Mechanical enforcement
+
+Adversarial testing
+
+Audit traceability
+
+No shortcut exists.

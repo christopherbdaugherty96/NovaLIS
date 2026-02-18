@@ -1,0 +1,73 @@
+Excellent. You've cut through the noise and identified the core tension: **constitutional perfection vs. buildable reality**. The meta-review is spot on—the original review, while high-quality, leans too heavily into academic formalism and future risks, which could stall Nova before it ever runs on a Raspberry Pi.
+
+Let's translate this into a concrete, phase-aligned action plan.
+
+---
+
+## What You Should *Immediately* Lock & Implement (Phase 4–5)
+
+These are non-negotiable, low-effort, high-impact safeguards that align with your current trajectory.
+
+### 1. Capability Registry & Lifecycle (Phase 4)
+- **Why now:** You're about to integrate sensors, lights, and APIs. Without a registry, you can't track what Nova *can* do, who approved it, or revoke it.
+- **Minimal definition:** A simple JSON/YAML file (or DB table) listing every capability (e.g., `light.turn_on`, `weather.fetch`) with fields: `id`, `description`, `required_permissions`, `risk_level`, `enabled_by_default`. The Governor checks against this on every action.
+- **Governance:** Adding a new capability requires a user-initiated "install" event (logged). No automatic discovery.
+
+### 2. Model Version Lock (Phase 4.5)
+- **Why now:** Swapping a local model or updating an API endpoint changes Nova's behavior silently—a direct violation of your *Evolution vs. Optimization* principle.
+- **Minimal definition:** Each model (including external API endpoints) is identified by a version hash. Any update (even a minor prompt tweak) must be treated as a legislative event (`MODEL_UPDATED` in the Ledger) with user confirmation.
+
+### 3. External LLM = Governed Capability (Phase 4)
+- **Why now:** If Nova calls an external model (e.g., via API), that's data leaving your home. You must log it and give the user control.
+- **Minimal definition:** External model calls are registered as capabilities with a `data_exfiltration` flag. The Governor checks if the user has allowed this specific external service. Log each call (anonymized prompt length, tokens, etc.) but **not** the content (unless required for debugging and explicitly consented).
+
+### 4. Device Authority Scopes (Phase 4.5 – The Missing Piece)
+- **Why now:** Once Nova controls physical devices, you need granular permission levels per domain.
+- **Minimal definition:** For each capability, assign an `authority_level`:
+  - `observe` – can read state, no actions.
+  - `suggest` – can generate proposals (Phase 7).
+  - `confirm` – can execute, but requires user confirmation each time.
+  - `automatic` – can execute autonomously under a token (Phase 6+).
+- **UI:** The Trust Panel shows a simple table of domains and their current authority level.
+
+These four additions are **lightweight, enforceable, and directly address real risks** in your current build. They don't require constitutional amendments—just disciplined implementation.
+
+---
+
+## What You Should *Delay* (Keep as Design Notes for Phase 9–10)
+
+These are important concepts, but formalizing them now would derail you.
+
+- **Plan‑level review** – You don't have multi‑step orchestration yet. Wait until Phase 9.
+- **Information flow restrictions** – Without complex plans, the risk is minimal. Track the idea, but don't code it.
+- **Influence auditing** – You're not optimizing for persuasion; building dashboards to track it is premature and could tempt misuse.
+- **Formal verification** – Absolutely not now. Your Ring 1 (Governor) can be simple, well‑tested Python. Prove it through testing, not math.
+
+---
+
+## What You Should *Reject* (Not Constitutionalize)
+
+- **Heavy behavioral telemetry** – You already have a hard rule: *no optimization for compliance*. That's enough. Don't instrument user psychology.
+- **Over‑restriction on continuous awareness** – Your House Intelligence Model needs to detect patterns (e.g., "lights usually turn on at 7pm"). That's environmental, not behavioral. Keep it.
+- **More Tier‑1 invariants** – Your current set (from the Blueprint and amendments) is sufficient. Adding more now would create constitutional bloat. Stick to the *Anti-Over-Constitutionalization* amendment you already passed.
+
+---
+
+## Your Next Move: A Phase‑4 Focused Sprint
+
+1. **Capability Registry** – Build it this week. It's the foundation for everything.
+2. **Model Version Lock** – Implement a simple version hash check for any model call.
+3. **External LLM Capability** – Wrap external APIs with a governed wrapper.
+4. **Device Authority Scopes** – Extend the policy engine to include `authority_level` checks.
+5. **Ship Phase 4** – Get Nova running on a Pi, controlling real things, with a calm presence.
+
+After that, you can revisit the Phase 7–10 concepts with real data and user feedback.
+
+---
+
+## Final Thought
+
+You've built a constitution that's robust enough to handle any future intelligence. Now, the most constitutional act you can take is to **stop writing law and start building the house**. The system that runs is the one that will earn trust. The documents are just scaffolding.
+
+> **"Nova is a container, not an assistant. The container scales with the intelligence inside."**  
+> But first, the container must exist. Build it.

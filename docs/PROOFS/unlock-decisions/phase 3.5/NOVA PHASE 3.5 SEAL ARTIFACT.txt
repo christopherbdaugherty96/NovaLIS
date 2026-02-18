@@ -1,0 +1,210 @@
+NOVA PHASE 3.5 SEAL ARTIFACT
+Constitutional Freeze Certificate — Governance Baseline Locked
+
+Document ID: NOVA-PHASE-3.5-SEAL-v1.0
+Date: 2026-02-17
+Status: CONSTITUTIONALLY SEALED
+Supersedes: All informal “Phase 3.5 complete” statements
+
+I. PURPOSE
+
+This artifact formally seals Nova Phase 3.5 as a frozen, constitutionally verified governance baseline.
+
+Phase 3.5 represents the final state of Nova before execution authority exists.
+
+No new authority may be introduced without a Phase 4 Unlock Act.
+
+II. SEALED SYSTEM CHARACTERISTICS
+
+At seal time, the system satisfies the following invariants:
+
+1️⃣ Execution Authority
+
+ExecuteBoundary.evaluate() unconditionally returns refusal.
+
+No conditional logic exists inside ExecuteBoundary.
+
+No runtime flags enable execution.
+
+No ActionRequest is instantiated in active runtime code.
+
+No handler registry is connected to ExecuteBoundary.
+
+Result: Execution surface = mechanically null.
+
+2️⃣ Governor Structure
+
+Governor exists as structural owner of ExecuteBoundary.
+
+Governor is instantiated per WebSocket session.
+
+No public singleton instance exists.
+
+No component bypasses Governor for execution.
+
+Result: Single choke point structurally enforced.
+
+3️⃣ Autonomy & Background Behavior
+
+No scheduled jobs.
+
+No polling loops.
+
+No background reasoning tasks.
+
+No persistent monitoring processes.
+
+Exception:
+
+AudioManager contains an async queue loop that processes explicit TTS enqueue events only.
+
+This loop performs no cognition and does not initiate behavior.
+
+Classified as non-autonomous infrastructure.
+
+Result: Silence-first runtime preserved.
+
+4️⃣ Memory & Persistence
+
+No persistent user memory exists.
+
+No learning mechanisms active.
+
+Corrections are append-only, user-prefixed, and non-interpreted.
+
+No inference occurs from stored corrections.
+
+Result: No adaptive drift.
+
+5️⃣ Intent & Skill Routing
+
+Skill routing is deterministic.
+
+No fuzzy matching.
+
+No probabilistic ranking.
+
+No confidence scoring.
+
+No heuristic escalation.
+
+Result: No guessing.
+
+6️⃣ External Access
+
+All network calls are explicit and user-invoked.
+
+Weather, news, and search are read-only.
+
+No background polling.
+
+No telemetry or hidden analytics.
+
+Result: No hidden data flow.
+
+7️⃣ Build Gating
+
+Phase 4+ execution code resides under archive_quarantine/.
+
+No active imports reference quarantine modules.
+
+CI proof script prevents quarantine import drift.
+
+Execution cannot be enabled via configuration.
+
+Result: Phase gating is structural, not policy-based.
+
+III. CRYPTOGRAPHIC LOCK RECOMMENDATION
+
+To preserve the seal:
+
+Add constitutional test:
+
+tests/constitutional/test_phase35_lock.py
+
+Verifies no conditionals in ExecuteBoundary.evaluate()
+
+Store SHA256 hash of:
+
+nova_backend/src/governor/execute_boundary/execute_boundary.py
+
+
+CI must fail if file hash changes without Phase 4 Unlock Act.
+
+This ensures mechanical integrity of the seal.
+
+IV. PROHIBITED MODIFICATIONS UNDER SEAL
+
+The following actions are constitutionally forbidden until Phase 4 Unlock:
+
+Adding conditional logic to ExecuteBoundary
+
+Introducing execution flags
+
+Connecting handler registry to ExecuteBoundary
+
+Instantiating ActionRequest in runtime
+
+Adding background monitoring loops
+
+Introducing persistent adaptive memory
+
+Allowing skill routing to call tools
+
+Enabling autonomous scheduling
+
+Any such modification constitutes Seal Violation.
+
+V. PHASE TRANSITION REQUIREMENT
+
+To transition from Phase 3.5 to Phase 4:
+
+A formal document titled:
+
+PHASE_4_UNLOCK_ACT.md
+
+
+must:
+
+Declare intent to unlock execution authority
+
+Specify new invariants
+
+Remove or structurally modify ExecuteBoundary
+
+Update CI lock tests
+
+Pass full constitutional audit
+
+No runtime flag may substitute for this act.
+
+VI. DECLARATION
+
+By this artifact, Phase 3.5 is:
+
+Frozen
+
+Verified
+
+Governance-aligned
+
+Execution-inert
+
+Constitutionally compliant
+
+This state is safe for deployment.
+
+Authority remains null.
+
+Execution remains disabled.
+
+Governor supremacy remains intact.
+
+VII. SIGNATURE
+
+Signed: CBD
+Nova Constitutional Governance Authority
+
+Date: 2026-02-17
+
+Seal Status: ACTIVE

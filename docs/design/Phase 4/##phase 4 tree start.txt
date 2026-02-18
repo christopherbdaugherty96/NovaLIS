@@ -1,0 +1,211 @@
+Windows PowerShell
+Copyright (C) Microsoft Corporation. All rights reserved.
+
+Install the latest PowerShell for new features and improvements! https://aka.ms/PSWindows
+
+PS C:\Nova-Project\nova_backend\src> tree /F
+Folder PATH listing
+Volume serial number is B660-63B5
+C:.
+│   audio_manager.py
+│   base_skill.py
+│   brain_server.py
+│   nova_config.py
+│   nova_protocol.py
+│   requirements.txt
+│   skill_registry.py
+│   speech_state.py
+│   stt_manager.py
+│   __init__.py
+│
+├───actions
+│   │   action_request.py
+│   │   action_result.py
+│   │   action_types.py
+│   │   __init__.py
+│   │
+│   └───__pycache__
+│           action_request.cpython-310.pyc
+│           action_result.cpython-310.pyc
+│           action_types.cpython-310.pyc
+│           __init__.cpython-310.pyc
+│
+├───archive_phase4
+├───archive_quarantine
+│   ├───phase2_execution
+│   │       brain_safeP1-2.5.py
+│   │       QUARANTINE_NOTICE.md
+│   │
+│   ├───phase2_governo
+│   │       governor_mediation.py
+│   │
+│   ├───phase2_tests
+│   │       phase2_governor_tests.py
+│   │       phase2_manual_tests.py
+│   │       QUARANTINE_NOTICE.md
+│   │
+│   └───phase35_execution
+│       │   QUARANTINE_NOTICE.md
+│       │
+│       ├───execution
+│       │   │   execute_action.py
+│       │   │   __init__.py
+│       │   │
+│       │   ├───handlers
+│       │   │   │   open_app.py
+│       │   │   │   open_folder.py
+│       │   │   │   open_view.py
+│       │   │   │   volume_control.py
+│       │   │   │
+│       │   │   └───__pycache__
+│       │   │           open_app.cpython-310.pyc
+│       │   │           open_folder.cpython-310.pyc
+│       │   │           open_view.cpython-310.pyc
+│       │   │           volume_control.cpython-310.pyc
+│       │   │
+│       │   └───__pycache__
+│       │           execute_action.cpython-310.pyc
+│       │           __init__.cpython-310.pyc
+│       │
+│       └───executors
+│               executor_registry.py
+│               executor_types.py
+│               __init__.py
+│
+├───capabilities
+│   │   capabilities.py
+│   │   __init__.py
+│   │
+│   └───__pycache__
+│           __init__.cpython-310.pyc
+│
+├───config
+│       registry.json
+│
+├───data
+├───executors
+│       web_search_executor.py
+│       __init__.py
+│
+├───gates
+│   │   confirmation_gate.py
+│   │   confirmation_gate.py.backup
+│   │   __init__.py
+│   │
+│   └───__pycache__
+│           confirmation_gate.cpython-310.pyc
+│           governor_mediator.cpython-310.pyc
+│           __init__.cpython-310.pyc
+│
+├───governor
+│   │   capability_registry.py
+│   │   exceptions.py
+│   │   governor.py
+│   │   governor_mediator.py
+│   │   network_mediator.py
+│   │   single_action_queue.py
+│   │
+│   ├───execute_boundary
+│   │   │   execute_boundary.py
+│   │   │   __init__.py
+│   │   │
+│   │   └───__pycache__
+│   │           execute_boundary.cpython-310.pyc
+│   │           __init__.cpython-310.pyc
+│   │
+│   ├───__init__.py
+│   └───__pycache__
+│           capability_registry.cpython-310.pyc
+│           exceptions.cpython-310.pyc
+│           governor.cpython-310.pyc
+│           governor_mediator.cpython-310.pyc
+│           network_mediator.cpython-310.pyc
+│           single_action_queue.cpython-310.pyc
+│
+├───ledger
+│   │   writer.py
+│   │
+│   ├───__init__.py
+│   └───__pycache__
+│           writer.cpython-310.pyc
+│
+├───llm
+│   │   inference_wrapper.py
+│   │   llm_manager.py
+│   │   llm_manager_vlock.py
+│   │   system_prompt.py
+│   │
+│   └───__pycache__
+│           llm_manager.cpython-310.pyc
+│           system_prompt.cpython-310.pyc
+│
+├───logs
+├───memory
+│   │   quick_corrections.py
+│   │
+│   └───__pycache__
+│           quick_corrections.cpython-310.pyc
+│
+├───models
+├───routers
+│   │   stt.py
+│   │
+│   └───__pycache__
+│           stt.cpython-310.pyc
+│
+├───services
+│   │   stt_engine.py
+│   │   weather_service.py
+│   │
+│   └───__pycache__
+│           stt_engine.cpython-310.pyc
+│           weather_service.cpython-310.pyc
+│
+├───skills
+│   │   general_chat.py
+│   │   news.py
+│   │   system.py
+│   │   weather.py
+│   │   web_search.py
+│   │   web_search_skill.py
+│   │   __init__.py
+│   │
+│   └───__pycache__
+│           general_chat.cpython-310.pyc
+│           news.cpython-310.pyc
+│           news.cpython-314.pyc
+│           system.cpython-310.pyc
+│           system.cpython-314.pyc
+│           weather.cpython-310.pyc
+│           weather.cpython-314.pyc
+│           web_search_skill.cpython-310.pyc
+│           __init__.cpython-310.pyc
+│           __init__.cpython-314.pyc
+│
+├───tasks
+│       reminder_task.py
+│       __init__.py
+│
+├───tools
+│   │   news_fallback.py
+│   │   rss_fetch.py
+│   │   web_search.py
+│   │   __init__.py
+│   │
+│   └───__pycache__
+│           news_fallback.cpython-310.pyc
+│           rss_fetch.cpython-310.pyc
+│           web_search.cpython-310.pyc
+│           __init__.cpython-310.pyc
+│
+└───__pycache__
+        audio_manager.cpython-310.pyc
+        base_skill.cpython-310.pyc
+        brain_server.cpython-310.pyc
+        nova_config.cpython-310.pyc
+        phase2_manual_tests.cpython-310.pyc
+        skill_registry.cpython-310.pyc
+        speech_state.cpython-310.pyc
+        __init__.cpython-310.pyc
+
+PS C:\Nova-Project\nova_backend\src>

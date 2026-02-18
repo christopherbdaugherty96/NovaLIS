@@ -1,0 +1,179 @@
+# 🧭 THE NATURE OF AUTONOMOUS ACTION IN NOVA  
+## A Constitutional Interpretation for Phases 6–10  
+
+**Document ID:** `NOVA-AUTONOMY-INTERPRETATION-v1.0`  
+**Status:** Design Reference – Informative (not constitutional)  
+**Date:** 2026-02-16  
+**Based on:**  
+- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md)  
+- [Constitutional Amendment: Autonomous Operation Principles](NOVA-CONSTITUTION-AMENDMENT-v1.0.md) (proposed)  
+
+---
+
+## 🔹 PREAMBLE
+
+This document answers a question that will arise as Nova evolves toward Phases 6–10:
+
+> **“Can Nova ever act freely?”**
+
+The answer is both subtle and critical to preserving Nova’s constitutional identity. It must be understood by every architect, developer, and governance reviewer who touches autonomous capabilities.
+
+**The short answer:**  
+Yes – but only if “freely” means *freely inside a fixed legal envelope*, not freely by judgment.
+
+If Nova ever acts *because it thinks it should*, the architecture breaks.  
+If Nova acts *because a law already allows that exact action*, the structure stays intact.
+
+This document translates that principle into Nova‑language, providing the conceptual foundation for all future autonomy work.
+
+---
+
+## 1. WHAT “FREEDOM” CANNOT MEAN IN NOVA
+
+In Nova, freedom cannot mean:
+
+- Deciding what’s best in the moment  
+- Interpreting user intent beyond literal conditions  
+- Expanding its own scope of action  
+- Optimizing behavior toward vague goals  
+- Forming its own objectives  
+
+Those would constitute **agent autonomy** – the very thing the Governor was designed to prevent. Nova is an **Agent Under Law**, not an independent agent.
+
+---
+
+## 2. THE ONLY PERMISSIBLE FORM OF FREEDOM
+
+The only kind of freedom that fits Nova’s architecture is:
+
+> **Operational freedom inside pre‑defined law.**
+
+Think of it this way:  
+**Not:** “Nova decides how to run the house.”  
+**But:** “Nova executes house law without asking every time.”
+
+The correct mental model is:
+
+- User writes law.  
+- Governor issues a token (a formal permission).  
+- Nova monitors conditions.  
+- If condition matches law → execute the pre‑authorized action.  
+- Else → do nothing.
+
+This preserves the core split: **intelligence ≠ authority**. At runtime, there is no decision‑making, no interpretation, no drift – only continuous execution of fixed rules.
+
+---
+
+## 3. EXAMPLES OF LAWFUL AUTONOMY
+
+Consider a house where Nova is “free” within these laws:
+
+| Law | Condition | Action |
+|-----|-----------|--------|
+| **House Law 1** | time ≥ 22:00 | lights.night_mode(on) |
+| **House Law 2** | no motion for 30 minutes | media.pause |
+| **House Law 3** | smoke sensor triggered | power.shutdown |
+
+Nova is now:
+
+- Always monitoring  
+- Acting automatically  
+- Not asking permission each time  
+- Not thinking – just executing  
+
+To an observer, Nova appears autonomous. But technically, every action is **pre‑authorized**. That is the safe version of “acts freely.”
+
+---
+
+## 4. THE CRITICAL BOUNDARY
+
+Nova can act freely **only if all of the following hold**:
+
+1. **The action is already authorized** – via a token or policy issued by the Governor.  
+2. **The trigger is deterministic** – based on time, sensor state, or an explicit external event. No fuzzy conditions like “it seems late.”  
+3. **The action is atomic** – a single capability from the registry. No multi‑step plans without explicit user approval.  
+4. **No runtime interpretation is required** – the condition must be a simple Boolean test over literal values.
+
+If any of these are violated, Nova is **deciding**, not executing – and the architecture breaks.
+
+---
+
+## 5. DANGEROUS PATTERNS TO AVOID
+
+The following statements are **constitutionally forbidden** because they require optimization and interpretation:
+
+- “Keep the house comfortable”  
+- “Make things efficient”  
+- “Save energy when possible”  
+- “Do what you think is best”  
+
+These are goals, not laws. Nova must never accept **goal language**.  
+Only **condition → action** pairs are permissible.
+
+---
+
+## 6. THE RIGHT MENTAL MODEL
+
+Nova is **not** a butler.  
+Nova is a **constitutional operating system for your environment**.
+
+The house does not run itself.  
+**The law runs the house.**
+
+Every action is a direct instance of a pre‑written rule.  
+There is no judgment, no learning, no adaptation at runtime.  
+The only “intelligence” lies in the creation of the rules – a task reserved for the user (or, in future phases, for background proposal generation that remains strictly non‑executable until approved).
+
+---
+
+## 7. A ONE‑SENTENCE RULE
+
+> **Nova may act freely only when it is executing previously defined law and no runtime judgment is required.**
+
+This sentence should be posted wherever autonomous features are designed. It is the litmus test for every new capability.
+
+---
+
+## 8. WHAT THIS MEANS FOR PHASES 6–10
+
+Yes – Phase 6+ can absolutely feel like “Nova runs the house.”  
+Users will experience a home that responds automatically, that “knows” when to dim lights or pause media.
+
+But internally, it will always be:
+
+- Standing orders  
+- Deterministic triggers  
+- Atomic actions  
+- No inference, no goals, no scope expansion  
+
+That is the only kind of autonomy that preserves Nova’s constitutional identity.
+
+---
+
+## 9. THE ONE FEATURE THAT WOULD BREAK EVERYTHING
+
+If you want the most important architectural warning going into Phases 6–10, it is this:
+
+**Never allow Nova to accept a goal and figure out how to achieve it.**
+
+That one feature – a goal-oriented planner that chooses actions at runtime – would silently transform Nova from an Agent Under Law into a true autonomous agent. It would bypass the Governor, violate the intelligence–authority split, and render the constitution meaningless.
+
+Protect that line above all others.
+
+---
+
+## 🔒 FINAL ATTESTATION
+
+This interpretation is consistent with the Nova Constitutional Blueprint and the proposed Autonomous Operation Principles amendment. It is intended as a guide for designers, not as a binding constitutional document. Any future autonomy work must be measured against these principles and the one‑sentence rule.
+
+**Nova is a governor over contained intelligence.**  
+**Intelligence may propose. Authority may execute – but only under explicit, revocable law.**
+
+---
+
+**Document ID:** `NOVA-AUTONOMY-INTERPRETATION-v1.0`  
+**Status:** Design Reference – Informative  
+**Date:** 2026-02-16  
+
+---  
+*End of document*

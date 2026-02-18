@@ -1,0 +1,417 @@
+# 🧬 NOVA PHASE 7 ARCHITECTURE
+## Continuous Awareness & Envelope‑Based Autonomy
+
+**Document ID:** `NOVA-PHASE7-ARCHITECTURE-v1.2`  
+**Status:** Proposed — Design Reference for Phase 7 Implementation  
+**Date:** 2026-02-17  
+**Based on:**  
+- NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8  
+- Constitutional Amendment: Autonomous Operation Principles  
+- NOVA-GOVERNED-AGENT-v1.0  
+- NOVA-SELF-GOVERNED-CONSTRAINTS-v1.1  
+- NOVA-PRESENCE-AWARENESS-BOUNDARY-v1.1  
+- NOVA-CONTAINMENT-LIMITS-v1.1  
+
+---
+
+## 🔹 PREAMBLE
+
+Phase 7 is the first phase where Nova transitions from a **request‑response appliance** to a **continuous environmental presence**. The core shift is:
+
+- **Phase 4–6:** Nova acts only when explicitly invoked by the user (or by a user‑defined policy).
+- **Phase 7+:** Nova continuously observes the environment, maintains a state graph, and runs background cognition—**generating proposals** and **acting autonomously within user‑granted envelopes**.
+
+This document defines the **architecture** that enables this shift while preserving all constitutional invariants.
+
+**The key invariant remains:**
+
+> **Nova may think freely. Nova never executes directly. All execution passes through the Governor, and only if the action fits inside a valid user‑granted envelope.**
+
+---
+
+## 1. Architecture Principles
+
+| Principle | Description |
+|-----------|-------------|
+| **Continuous Intelligence** | Nova Core runs background cognition loops indefinitely (when user‑opted‑in). |
+| **Envelope‑Based Execution** | All autonomous actions must be covered by an active authority envelope (policy or token). |
+| **Governor as Sole Gate** | No code path allows direct execution; every external effect passes through the Governor. |
+| **Read‑Only Observation** | Continuous awareness is read‑only; it feeds the state graph but never directly triggers actions. |
+| **Proposal‑First** | Background cognition outputs are always proposals; execution requires an envelope check. |
+| **Transparency by Design** | Trust Panel shows current envelopes, observation domains, and last execution. |
+
+---
+
+## 2. High‑Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                      Environment                             │
+│  (Sensors, Devices, Network, System, External APIs)          │
+└───────────────────────────┬─────────────────────────────────┘
+                            │
+                            ▼
+┌─────────────────────────────────────────────────────────────┐
+│  Phase 7 Core Modules                                        │
+│  ┌───────────────────┐      ┌──────────────────┐           │
+│  │ State Graph       │◄────►│ Continuous       │           │
+│  │ (Unified Model)   │      │ Awareness Daemon │           │
+│  └─────────┬─────────┘      └────────┬─────────┘           │
+│            │                         │                      │
+│            │                         ▼                      │
+│            │              ┌──────────────────┐              │
+│            └─────────────►│ Background       │              │
+│                           │ Cognition Engine │              │
+│                           │ (Tier 4)         │              │
+│                           └────────┬─────────┘              │
+│                                    │                        │
+│                           Outputs: │ Two types              │
+│                  ┌─────────────────┼─────────────────┐      │
+│                  ▼                 ▼                 ▼      │
+│       ┌──────────────────┐ ┌──────────────────┐            │
+│       │ Proposal Queue   │ │ Internal Action  │            │
+│       │ (User‑visible)   │ │ Request (direct) │            │
+│       └────────┬─────────┘ └────────┬─────────┘            │
+│                │                    │                       │
+│                └────────┬───────────┘                       │
+│                         ▼                                   │
+│              ┌─────────────────────┐                        │
+│              │ Governor            │                        │
+│              │ (Validation)        │                        │
+│              └────────┬────────────┘                        │
+│                       │                                     │
+│                       ▼                                     │
+│         ┌─────────────────────────┐                         │
+│         │ Envelope Registry       │                         │
+│         │ (Policies/Tokens)       │                         │
+│         └────────┬────────────────┘                         │
+│                  │                                          │
+│                  ▼                                          │
+│         ┌─────────────────────────┐                         │
+│         │ ExecuteBoundary         │                         │
+│         │ (Resource Limits,       │                         │
+│         │  Fail‑Closed)           │                         │
+│         └────────┬────────────────┘                         │
+│                  │                                          │
+│                  ▼                                          │
+│         ┌─────────────────────────┐                         │
+│         │ Capability              │                         │
+│         │ Implementation          │                         │
+│         └────────┬────────────────┘                         │
+│                  │                                          │
+└──────────────────┼──────────────────────────────────────────┘
+                   │
+                   ▼
+          ┌──────────────────┐
+          │ External World   │
+          │ (Devices, Files, │
+          │  Network, UI)    │
+          └──────────────────┘
+
+          ┌──────────────────┐
+          │ Trust Panel      │
+          │ (User‑visible    │
+          │  transparency)   │
+          └──────────────────┘
+```
+
+---
+
+## 3. Module Descriptions
+
+### 3.1 Continuous Awareness Daemon
+- **Purpose:** Poll or subscribe to allowed data sources (sensors, system metrics, file metadata, external APIs) at user‑defined intervals.
+- **Constraints:**
+  - Must respect `observation_domains` set by user (opt‑in per domain).
+  - Read‑only; never modifies state.
+  - Observations are aggregated and summarized. Raw event retention is limited and configurable (default: 60s samples, hourly summaries, 7‑day rolling window).
+- **Output:** Stream of events → State Graph.
+
+### 3.2 State Graph
+- **Purpose:** Unified, in‑memory model of the household environment. Combines:
+  - Device states (lights, HVAC, media)
+  - Sensor readings (motion, temp, humidity)
+  - System health (CPU, disk, network)
+  - External context (weather, alerts)
+- **Allowed content:** Environmental and system state only.
+- **Forbidden content:** The State Graph must NOT derive, store, or model user habits, preferences, schedules, or behavioral patterns. This is a hard boundary: environmental trends only, no human modeling.
+- **Update:** Append‑only event log; current state is materialized view.
+- **Access:** Readable by Background Cognition Engine and Governor (for policy evaluation).
+
+### 3.3 Background Cognition Engine (Tier 4)
+- **Purpose:** Continuous reasoning loop that:
+  - Monitors state graph for patterns, anomalies, trends.
+  - Generates proposals (user‑visible insights or suggested actions).
+  - May emit **internal ActionRequests** for fully autonomous execution within envelopes.
+  - May run internal simulations, multi‑step planning.
+- **Constraints:**
+  - Must run with `evolution_enabled = True` (user must have opted into Tier 4).
+  - No direct access to capabilities.
+  - **[New] No direct OS/network/file access:** The Engine may not perform filesystem, network, or device operations except through Governor‑mediated capability interfaces. (Invariant 30)
+  - **Two output types allowed:**
+    1. **Proposal** – written to Proposal Queue (user‑visible).
+    2. **Internal ActionRequest** – sent directly to Governor (invisible to user unless logged).
+  - All proposals and ActionRequests are logged.
+  - Must not influence UI priority or display order.
+- **Scheduling:** Background cognition is subject to a **system resource envelope** enforced by the Governor. (See 3.6 Governor – Resource Admission Control.)
+- **Denial handling:** If an ActionRequest is denied by the Governor, the engine must:
+  - Record the denial (log).
+  - Avoid retry loops (exponential backoff with cap).
+  - Optionally generate a user‑visible proposal explaining the denial (if relevant).
+
+- **Proposal Schema:**
+  ```python
+  @dataclass
+  class Proposal:
+      id: str                     # UUID, registered in Proposal ID Registry
+      created_at: datetime
+      expires_at: Optional[datetime]
+      title: str
+      description: str
+      suggested_action: Optional[ActionRequest]  # May be None (pure insight)
+      confidence: float            # 0–1, internal only, never shown
+      source: str                  # e.g., "energy_agent", "anomaly_detector"
+  ```
+
+- **Confidence field usage:** The `confidence` field is for **diagnostic and audit use only**. It must not influence UI ordering, frequency, presentation, or any decision logic that affects user experience. This prevents accidental optimization for compliance.
+
+### 3.4 Proposal Queue
+- **Purpose:** Ephemeral, user‑accessible list of generated proposals.
+- **UI Rules:**
+  - Sorted by time only (newest first).
+  - No highlighting, badges, or “recommended” labels.
+  - Count increment is the only ambient signal.
+  - No notification on new proposal.
+  - User can save, discard, or act on a proposal.
+- **Retention:** Configurable (default 30 days); expired proposals are deleted and logged as `PROPOSAL_EXPIRED`.
+
+### 3.5 Envelope Registry
+- **Purpose:** Stores all active authority envelopes (policies and tokens). Each envelope is a data structure:
+  ```python
+  @dataclass
+  class AuthorityEnvelope:
+      envelope_id: str
+      type: "policy" | "token"
+      owner: str                    # user ID
+      issued_at: datetime
+      expires_at: Optional[datetime]
+      scope: List[CapabilityID]      # allowed capabilities
+      domain_restrictions: Dict      # e.g., device IDs, file paths
+      resource_limits: Dict          # rate, quota, duration
+      requires_confirmation: bool     # if True, each action needs explicit user yes/no
+      revocable: bool                 # always True
+  ```
+- **Lifecycle:** Issued by Governor upon user ratification (policy creation, token grant). Revoked/suspended by user. Expiry automatic.
+- **Access control:** Nova Core may read envelopes but may not modify them or cache them for decision‑making without revalidation. The Governor always performs a fresh lookup at validation time to prevent time‑of‑check/time‑of‑use issues.
+
+### 3.6 Governor (Phase 7 Enhanced)
+- **Responsibilities:**
+  1. Validate every proposed action (from user, Proposal Queue, or internal ActionRequest) against active envelopes.
+  2. Enforce constitutional boundaries (Tier 1 invariants).
+  3. Route action to ExecuteBoundary if valid.
+  4. **[New] Control background cognition runtime admission** – The Governor manages a CPU‑time budget for the Background Cognition Engine, ensuring it cannot destabilize the system.
+  5. Log every attempt (allowed/denied) to Ledger.
+- **Validation Flow:**
+  ```
+  Input: ActionRequest, context (optional)
+  → Check constitutional invariants (no self‑expansion, etc.)
+  → Find all active envelopes matching the action's capability and domain
+  → If none → DENY
+  → If confirmation required → suspend, issue ConfirmationToken, wait for user
+  → If resource limits exceeded → DENY
+  → ALLOW → ExecuteBoundary
+  ```
+- **Envelope Matching Priority:** When multiple envelopes apply, the Governor enforces the **strictest limits** according to this order:
+  1. Most specific domain match (e.g., device‑level over room‑level)
+  2. Shortest remaining duration
+  3. Lowest resource quota
+  4. Highest confirmation requirement (i.e., if any requires confirmation, treat as confirmation‑required)
+- **[New] Resource Admission Control for Cognition:**
+  - The Governor maintains a token bucket or similar mechanism for background cognition CPU time.
+  - Before each cognition cycle, the engine requests a slice from the Governor.
+  - If budget exhausted, the engine yields until next period.
+  - Default budget: 100ms every 10s, configurable per system load.
+
+### 3.7 ExecuteBoundary
+- **Purpose:** Final gate before capability invocation. Enforces:
+  - Resource guardrails (timeout, memory, network)
+  - Concurrency limits (always 1 for Phase 7)
+  - Fail‑closed: if any check fails, action is refused.
+- **After execution:** Logs `AUTONOMOUS_ACTION` with envelope ID, result, and metadata.
+
+### 3.8 Trust Panel (Phase 4.5+, Enhanced for Phase 7)
+- **Displays:**
+  - Current observation domains (e.g., “Monitoring: system, weather, lights”)
+  - Active envelopes (list with expiry)
+  - Last autonomous action (timestamp, capability, envelope) – must appear within ≤5 seconds of execution
+  - Option to pause/resume/revoke envelopes
+- **Design:** Always visible (e.g., footer), calm, factual.
+
+---
+
+## 4. Data Flows
+
+### 4.1 Continuous Observation → Proposal
+
+```
+Continuous Awareness Daemon polls sensor
+    → State Graph updated (aggregated)
+    → Background Cognition Engine requests CPU slice from Governor
+    → If granted, Engine queries State Graph
+    → Engine generates Proposal
+    → Proposal written to Queue
+    → UI shows queue count (increment only)
+```
+
+### 4.2 User Acts on Proposal
+
+```
+User clicks "Apply" on a proposal (or says "yes" to it)
+    → Governor receives ActionRequest from proposal
+    → Governor validates against active envelopes
+    → If valid → ExecuteBoundary → Capability runs
+    → Ledger logs AUTONOMOUS_ACTION with proposal ID and envelope ID
+    → UI updates
+    → Trust Panel shows action within ≤5s
+```
+
+### 4.3 Fully Autonomous Action (Internal ActionRequest)
+
+```
+Background Cognition Engine requests CPU slice
+    → If granted, Engine runs and emits Internal ActionRequest
+    → Governor validates (envelope check)
+    → If valid and no confirmation required → ExecuteBoundary → Capability runs
+    → Ledger logs AUTONOMOUS_ACTION (with source="background")
+    → Trust Panel shows action within ≤5s (calm indication)
+    → If denied, engine applies denial handling (backoff, optional proposal)
+```
+
+### 4.4 Envelope Creation (User‑Defined Policy)
+
+```
+User writes policy in DSL: "every day at 7am, get weather"
+    → Governor parses, validates DSL
+    → Simulation‑First Activation: dry‑run for 24h (logs would‑be actions)
+    → User reviews simulation, explicitly activates
+    → Governor issues AuthorityEnvelope (policy type), logs POLICY_ACTIVATED
+    → Envelope added to Registry
+    → Background Cognition Engine may now propose actions that fit this envelope
+    → At 7am, Governor checks envelope, executes if still active
+```
+
+### 4.5 Revocation
+
+```
+User: "Revoke morning weather policy"
+    → Governor marks envelope as revoked
+    → Ledger logs TOKEN_REVOKED
+    → Future actions matching that envelope are denied
+    → Trust Panel updates immediately
+```
+
+---
+
+## 5. Integration with Existing Phase 4 Components
+
+| Phase 4 Component | Phase 7 Role |
+|-------------------|--------------|
+| **Capability Registry** | Unchanged; still source of truth for allowed actions. |
+| **GovernorMediator** | Now receives internal ActionRequests from Background Cognition Engine as well as user commands. |
+| **ExecuteBoundary** | Enhanced with envelope validation; otherwise same. |
+| **ConfirmationGate** | Still used for actions that require per‑step confirmation. |
+| **Ledger** | Extended with new event types (`PROPOSAL_CREATED`, `ENVELOPE_ISSUED`, `AUTONOMOUS_ACTION_DENIED`, etc.). |
+| **Personality Agent** | Still formats user‑facing output; now also formats proposal descriptions. |
+| **Orb** | Unchanged – still non‑semantic. |
+
+---
+
+## 6. Phase 7 Admission Gate
+
+Before Phase 7 runtime can be unlocked, the following must be satisfied:
+
+- [ ] Phase 4 runtime stable for ≥30 days, Phase 4.5 complete.
+- [ ] Phase 5 memory governance (optional) stable if used.
+- [ ] Background Cognition Engine implemented and tested in simulation mode (no execution).
+- [ ] Envelope Registry implemented with full lifecycle (issue, validate, revoke, expire).
+- [ ] Governor enhanced to check envelopes for every autonomous action.
+- [ ] Governor resource admission control for cognition implemented.
+- [ ] All Phase 7 capabilities (proposals, envelopes) pass adversarial tests.
+- [ ] Trust Panel updated to show envelopes, observation domains, last autonomous action (with ≤5s latency).
+- [ ] User must explicitly **opt in** to continuous awareness (separate from Phase 7 unlock).
+- [ ] Tier 4 (background cognition) must be separately enabled via evolution toggle.
+- [ ] Process isolation – Governor runs in a separate process with minimal privileges; all inter‑process communication is via defined, auditable IPC.
+- [ ] Verified that cognition has no direct OS/network/file access (Invariant 30).
+
+**Unlock Act:** Single configuration change enabling background cognition and envelope‑based execution, after user opt‑in.
+
+---
+
+## 7. Invariants for Phase 7 (Tier 1)
+
+The following invariants are added or refined for Phase 7:
+
+| # | Invariant | Description |
+|---|-----------|-------------|
+| 21 | **No execution without envelope** | Every autonomous action must be covered by at least one active authority envelope. |
+| 22 | **Observation domains are user‑controlled** | Continuous awareness only operates on domains the user has explicitly enabled. |
+| 23 | **Proposals are never executable** | Proposals contain ActionRequests but the Governor will only execute them if a matching envelope exists. |
+| 24 | **Background cognition is opt‑in** | Tier 4 may only run if the user has enabled evolution and specifically opted into background cognition. |
+| 25 | **Envelopes are revocable** | All envelopes must support immediate revocation; revocation is logged and enforced. |
+| 26 | **No behavioral modeling** | The State Graph and Background Cognition Engine must not derive, store, or act upon user habits, preferences, or behavioral patterns without explicit Phase 9 ratification. |
+| 27 | **Confidence is diagnostic only** | Proposal confidence fields may not influence UI, prioritization, or any user‑facing behavior. |
+| 28 | **Governor process isolation** | The Governor must run in a separate process with its own memory space and minimal privileges. All execution requests must cross this process boundary. |
+| 29 | **Governor resource authority** | The Governor controls admission to background cognition cycles. Cognition execution must be scheduled through a Governor‑managed runtime quota system. |
+| 30 | **No direct OS access** | The Background Cognition Engine may not perform filesystem, network, or device operations except through Governor‑mediated capability interfaces. |
+
+These are additions to the existing Tier‑1 invariants; they do not modify earlier ones.
+
+---
+
+## 8. Implementation Guidelines (Raspberry Pi Reality)
+
+### 8.1 Minimal Viable Phase 7
+- **Continuous Awareness:** Start with system metrics (CPU, disk) and one sensor (e.g., temperature). Poll every 60s.
+- **State Graph:** Simple in‑memory dict, persisted to disk every hour. Aggregate raw data into hourly summaries.
+- **Background Cognition:** Single agent that detects anomalies (e.g., disk filling). Generates proposals and internal ActionRequests.
+- **Envelopes:** Only policy‑based (user‑defined) initially; tokens later.
+- **Proposal Queue:** Simple list in UI, stored in SQLite.
+
+### 8.2 Performance Considerations
+- **Governor CPU budget:** Background cognition limited to 100ms every 10s (configurable). Governor enforces via token bucket.
+- State graph size limited to 7 days of aggregated history; older data compacted.
+- External API calls limited to once per hour unless explicitly needed.
+
+### 8.3 Security
+- **Process isolation:** Governor runs in a separate process. All inter‑process communication via Unix domain sockets or equivalent, with strict message schema validation.
+- Capability implementations run with reduced privileges (e.g., drop root, seccomp where possible).
+- Envelope Registry stored in Ring 3 (user‑owned), signed by Governor. Nova Core reads but does not cache without revalidation.
+
+---
+
+## 9. Relationship to Future Phases
+
+| Phase | Capability |
+|-------|------------|
+| **8** | Token‑based envelopes (time‑limited, one‑time) |
+| **9** | Learning from correction (user‑ratified rule updates, including limited behavioral pattern learning with explicit consent) |
+| **10** | Multi‑envelope orchestration (plans spanning multiple envelopes) |
+
+Phase 7 lays the foundation for all later phases by establishing continuous cognition and envelope‑based authority.
+
+---
+
+## 🔒 FINAL ATTESTATION
+
+This document defines the architecture for Phase 7 of Nova. It preserves all constitutional invariants while enabling continuous awareness, background cognition, and autonomous action within user‑granted envelopes. The Governor remains the sole gate to execution; Nova never touches the world directly. Cognition is now fully contained by both envelope validation and resource admission control.
+
+**Think freely. Act only through the gate.**
+
+**Ratified by:** (to be filled)  
+**Date:** (to be filled)  
+**Document ID:** `NOVA-PHASE7-ARCHITECTURE-v1.2`  
+**Status:** Proposed
+
+---
+
+*End of Phase 7 Architecture*
