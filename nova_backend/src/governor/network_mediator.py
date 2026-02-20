@@ -15,7 +15,7 @@ from src.ledger.writer import LedgerWriter
 NETWORK_TIMEOUT = 5  # seconds (default)
 ALLOWED_SCHEMES = {"http", "https"}
 DISALLOWED_HOSTS = {"localhost", "127.0.0.1", "::1"}
-RATE_LIMIT_PER_MINUTE = 10
+RATE_LIMIT_PER_MINUTE = 50
 
 
 class NetworkMediator:
@@ -178,7 +178,5 @@ class NetworkMediator:
 
         return result
 
-
-# Global singleton for Phase-4 network authority.
-# Skills/tools should import and use this rather than creating their own mediators.
+# Phase-3 compatibility singleton
 network_mediator = NetworkMediator()

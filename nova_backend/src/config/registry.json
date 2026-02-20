@@ -9,7 +9,7 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": true,
-      "enabled": false
+      "enabled": true
     },
     {
       "id": 17,
@@ -18,7 +18,7 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": false
+      "enabled": true
     },
     {
       "id": 18,

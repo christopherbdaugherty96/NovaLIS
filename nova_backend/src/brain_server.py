@@ -1,7 +1,11 @@
 # src/brain_server.py
 
 """
-NovaLIS Brain Server — Phase 3.5 with Phase‑4 Governor Integration (Sealed)
+NovaLIS Brain Server — Phase 4 Staging
+- Session‑aware mediator
+- Dataclass‑based invocation handling
+- Governor mediation
+- Phase‑3.5 skill fallback preserved
 """
 
 from src.governor.governor import Governor
@@ -10,6 +14,7 @@ from src.routers.stt import router as stt_router
 
 import json
 import logging
+import uuid
 from datetime import datetime
 from typing import Optional
 
@@ -17,30 +22,21 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 
 from src.skill_registry import SkillRegistry
 from src.gates.confirmation_gate import confirmation_gate
-from src.governor.governor_mediator import GovernorMediator
+from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
 from src.speech_state import speech_state
-
-# -------------------------------------------------
-# New Phase‑4 imports
-# -------------------------------------------------
-from src.governor.network_mediator import NetworkMediator
 
 # -------------------------------------------------
 # App + Logging
 # -------------------------------------------------
-
-import logging
-from fastapi import FastAPI
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
-from pathlib import Path
-
 log = logging.getLogger("nova")
 app = FastAPI()
 
 # -------------------------------------------------
-# Static Files (Phase-3.5 Safe)
+# Static Files
 # -------------------------------------------------
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parents[1]   # nova_backend/
 STATIC_DIR = BASE_DIR / "static"
@@ -58,63 +54,30 @@ async def root():
 # -------------------------------------------------
 # Routers
 # -------------------------------------------------
-
 app.include_router(stt_router)
 
 # -------------------------------------------------
-# Phase‑4 Global Components
+# Phase‑4 Staging Components
 # -------------------------------------------------
-global_network = NetworkMediator()          # shared network mediator (for future use)
-skill_registry = SkillRegistry()            # no network injection; skills remain Phase-3.5
+# No global NetworkMediator – Governor creates its own lazily.
+skill_registry = SkillRegistry()            # Phase‑3.5 skills (unchanged)
 
 # -------------------------------------------------
-# Phase-3.5 Trust Verification Endpoint
+# Phase Status Endpoint (Updated for Phase‑4 Staging)
 # -------------------------------------------------
-
 @app.get("/phase-status")
 async def phase_status():
-    """
-    Constitutional proof of Phase-3.5 compliance.
-    """
+    from src.governor.execute_boundary import GOVERNED_ACTIONS_ENABLED
     return {
-        "phase": "3.5",
-        "status": "frozen",
-        "execution": {
-            "enabled": False,
-            "structurally_impossible": True,
-            "note": "Execution boundary owned by Governor; no execution available in Phase-3.5."
-        },
-        "confirmation_gate": {
-            "behavior": "passive_when_idle",
-            "proof": "try_resolve returns message=None when no pending context",
-            "vocabulary": ["yes", "no"],
-            "cannot_initiate": True
-        },
-        "behavior": {
-            "greeting": {
-                "text": "Hello. How can I help?",
-                "frequency": "once_per_session",
-                "deterministic": True
-            },
-            "silence_first": True,
-            "correction": {
-                "method": "explicit_prefix",
-                "prefix": "Correction:",
-                "staged_only": True
-            },
-            "permission_model": {
-                "read_only": "search/look up = permission",
-                "no_confirmation": True
-            }
-        },
-        "verified_at": datetime.utcnow().isoformat(),
-        "constitutional_note": "Phase-3.5 behavioral goals are complete. Remaining work is governance visibility and Phase-4 authority boundaries."
+        "phase": "4",
+        "status": "staging" if GOVERNED_ACTIONS_ENABLED else "sealed",
+        "execution_enabled": GOVERNED_ACTIONS_ENABLED,
+        "note": "Phase‑4 runtime active – all actions mediated by Governor."
     }
 
 # -------------------------------------------------
 # WebSocket Utilities
 # -------------------------------------------------
-
 async def ws_send(ws: WebSocket, payload: dict) -> None:
     await ws.send_text(json.dumps(payload))
 
@@ -130,13 +93,9 @@ async def send_widget_message(
     text: str,
     data: Optional[dict] = None
 ) -> None:
-    """
-    Phase-3 widget dispatch.
-    """
     if msg_type == "news" and isinstance(data, dict) and "items" in data:
         await ws_send(ws, {"type": "news", "items": data["items"]})
         return
-
     payload = {"type": msg_type, "message": text}
     if msg_type == "weather" and isinstance(data, dict):
         payload["data"] = data
@@ -145,16 +104,18 @@ async def send_widget_message(
 # -------------------------------------------------
 # WebSocket Endpoint
 # -------------------------------------------------
-
 @app.websocket("/ws")
 async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
     log.info("WebSocket connected")
 
-    # GOV-002: Governor spine (per-session)
+    # Unique session ID for clarification state
+    session_id = str(uuid.uuid4())
+
+    # Governor instance (per‑session)
     governor = Governor()
 
-    # Phase-3.5 greeting discipline
+    # Phase‑3.5 greeting
     await send_chat_message(ws, "Hello. How can I help?")
     await send_chat_done(ws)
 
@@ -169,18 +130,13 @@ async def websocket_endpoint(ws: WebSocket):
 
             lowered = text.lower()
 
-            # -------------------------------------------------
-            # STOP — immediate halt (Phase-2 lock)
-            # -------------------------------------------------
+            # --- Phase‑2 immediate commands ---
             if lowered == "stop":
                 speech_state.stop()
                 await send_chat_message(ws, "Okay.")
                 await send_chat_done(ws)
                 continue
 
-            # -------------------------------------------------
-            # REPEAT — last spoken text only
-            # -------------------------------------------------
             if lowered == "repeat":
                 last = speech_state.last_spoken_text
                 if last:
@@ -188,25 +144,43 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
-            # -------------------------------------------------
-            # Governor mediation (LLM output control)
-            # -------------------------------------------------
+            # --- Governor mediation (sanitization) ---
             mediated_text = GovernorMediator.mediate(text)
 
-            # -------------------------------------------------
-            # PHASE‑4: Check for governed invocation
-            # -------------------------------------------------
-            invocation = GovernorMediator.parse_governed_invocation(mediated_text)
-            if invocation:
-                capability_id, params = invocation
-                result_text = governor.handle_governed_invocation(capability_id, params)
-                await send_chat_message(ws, result_text)
+            # --- Phase‑4: governed invocation detection ---
+            inv_result = GovernorMediator.parse_governed_invocation(
+                mediated_text, session_id=session_id
+            )
+
+            if isinstance(inv_result, Invocation):
+                # ✅ FIXED: use .message, not .user_message; send widget separately
+                action_result = governor.handle_governed_invocation(
+                    inv_result.capability_id, inv_result.params
+                )
+
+                # Always send the chat message first
+                await send_chat_message(ws, action_result.message)
+
+                # If a widget payload exists, send it as a separate message
+                if (
+                    action_result.success
+                    and isinstance(action_result.data, dict)
+                    and "widget" in action_result.data
+                ):
+                    await ws_send(ws, action_result.data["widget"])
+
                 await send_chat_done(ws)
                 continue
 
-            # -------------------------------------------------
-            # Quick Corrections — explicit, staged, Phase-3.5
-            # -------------------------------------------------
+            elif isinstance(inv_result, Clarification):
+                # Need more info – send clarification question
+                await send_chat_message(ws, inv_result.message)
+                await send_chat_done(ws)
+                continue
+
+            # --- inv_result is None – proceed to Phase‑3.5 handling ---
+
+            # --- Quick Corrections ---
             if mediated_text.startswith("Correction:"):
                 correction_text = mediated_text[len("Correction:"):].strip()
                 if correction_text:
@@ -215,9 +189,7 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
-            # -------------------------------------------------
-            # Confirmation gate (provably passive)
-            # -------------------------------------------------
+            # --- Confirmation gate (Phase‑3.5 passive) ---
             if confirmation_gate.has_pending_confirmation():
                 gate_result = confirmation_gate.try_resolve(mediated_text)
                 if gate_result.message is not None:
@@ -225,50 +197,37 @@ async def websocket_endpoint(ws: WebSocket):
                     await send_chat_done(ws)
                     continue
 
-            # -------------------------------------------------
-            # Skills (deterministic, Phase-3 aligned)
-            # -------------------------------------------------
+            # --- Skills (Phase‑3.5 deterministic routing) ---
             skill_result = await skill_registry.handle_query(mediated_text)
 
-            # ----------------------------
-            # Widget / Chat dispatch (Phase-3 canonical)
-            # ----------------------------
             if skill_result:
                 skill_name = getattr(skill_result, "skill", "") or ""
                 message = getattr(skill_result, "message", "") or ""
                 widget_data = getattr(skill_result, "widget_data", None)
 
-                # Track for repeat (no auto-speak)
+                # Track for repeat
                 speech_state.last_spoken_text = message
 
-                # If skill already returns canonical widget payload, pass through untouched
+                # Canonical widget payload
                 if isinstance(widget_data, dict) and "type" in widget_data:
                     await ws_send(ws, widget_data)
-                    await send_chat_done(ws)
-                    continue
-
-                # Compatibility: if skill returns raw widget data (older dialect), wrap here
-                if skill_name == "news" and isinstance(widget_data, dict):
+                elif skill_name == "news" and isinstance(widget_data, dict):
                     items = widget_data.get("items", [])
                     await send_widget_message(ws, "news", message, {"items": items})
-                    await send_chat_done(ws)
-                    continue
-
-                if skill_name == "weather" and isinstance(widget_data, dict):
+                elif skill_name == "weather" and isinstance(widget_data, dict):
                     await send_widget_message(ws, "weather", message, widget_data)
-                    await send_chat_done(ws)
-                    continue
+                else:
+                    await send_chat_message(ws, message)
 
-                # Default: chat message response
-                await send_chat_message(ws, message)
                 await send_chat_done(ws)
                 continue
 
-            # -------------------------------------------------
-            # Fallback — governed chat only (no execution)
-            # -------------------------------------------------
+            # --- Fallback (should never happen if GeneralChatSkill catches everything) ---
             await send_chat_message(ws, "I'm not sure how to help with that.")
             await send_chat_done(ws)
 
     except WebSocketDisconnect:
         log.info("WebSocket disconnected")
+    finally:
+        # Clean up session‑specific clarification state
+        GovernorMediator.clear_session(session_id)
