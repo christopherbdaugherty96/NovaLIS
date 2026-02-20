@@ -1,76 +1,108 @@
 # src/executors/web_search_executor.py
 
-import os
-from typing import Dict, Any, List
+import logging
 
 from src.actions.action_request import ActionRequest
 from src.actions.action_result import ActionResult
 from src.governor.network_mediator import NetworkMediator
-from src.governor.execute_boundary import ExecuteBoundary
-from src.governor.exceptions import NetworkMediatorError
 
-
-BRAVE_ENDPOINT = "https://api.search.brave.com/res/v1/web/search"
-DEFAULT_COUNT = 5
+logger = logging.getLogger(__name__)
 
 
 class WebSearchExecutor:
     """
-    Read-only governed web search.
-    Deterministic. No ranking logic. No query mutation.
-    Returns structured results only.
+    Executes a governed web search using the DuckDuckGo Instant Answer API.
+    All outbound HTTP is routed through NetworkMediator.
     """
 
-    def __init__(self, network: NetworkMediator, boundary: ExecuteBoundary):
+    def __init__(self, network: NetworkMediator):
         self.network = network
-        self.boundary = boundary
 
     def execute(self, request: ActionRequest) -> ActionResult:
-        query = (request.params.get("query") or "").strip()
+        query = request.params.get("query", "").strip()
         if not query:
-            return ActionResult.refusal("Search query cannot be empty.", request_id=request.request_id)
+            return ActionResult.failure(
+                "No search query provided.",
+                request_id=request.request_id
+            )
 
-        api_key = os.getenv("BRAVE_API_KEY")
-        if not api_key:
-            return ActionResult.refusal("Search service is not configured.", request_id=request.request_id)
-
-        headers = {
-            "X-Subscription-Token": api_key,
-            "Accept": "application/json",
-        }
-
-        params = {
-            "q": query,
-            "count": DEFAULT_COUNT,
-        }
-
-        # Check timeout before network call (enter_execution must have been called by Governor)
-        self.boundary.check_timeout()
+        boundary_notice = "I'm checking online."
 
         try:
-            result = self.network.request(
-                capability_id=16,
+            # Perform the search via NetworkMediator
+            response = self.network.request(
+                capability_id=request.capability_id,
                 method="GET",
-                url=BRAVE_ENDPOINT,
-                params=params,
-                headers=headers,
+                url="https://api.duckduckgo.com/",
+                params={
+                    "q": query,
+                    "format": "json",
+                    "no_redirect": "1",
+                    "no_html": "1",
+                },
+                headers={"User-Agent": "Nova/1.0"},
+                as_json=True,
+                timeout=5,
             )
-        except NetworkMediatorError:
-            # Mediator already logged details; return a user-friendly refusal.
-            return ActionResult.refusal("Search failed due to a network issue.", request_id=request.request_id)
 
-        self.boundary.check_timeout()
+            data = response.get("data", {})
 
-        payload = result.get("data") or {}
-        web_results = (payload.get("web") or {}).get("results") or []
+        except Exception as e:
+            logger.debug(f"DuckDuckGo API request failed: {e}")
+            return ActionResult.failure(
+                f"{boundary_notice} I couldn't complete the search due to a network issue.",
+                request_id=request.request_id
+            )
 
-        structured: List[Dict[str, Any]] = [
-            {
-                "title": r.get("title"),
-                "url": r.get("url"),
-                "description": r.get("description"),
-            }
-            for r in web_results[:DEFAULT_COUNT]
-        ]
+        # ----- Parse DuckDuckGo response -----
+        results = []
 
-        return ActionResult.ok({"results": structured}, request_id=request.request_id)
+        abstract = data.get("Abstract", "")
+        abstract_url = data.get("AbstractURL", "")
+        if abstract and abstract_url:
+            results.append({
+                "title": abstract[:100] + ("…" if len(abstract) > 100 else ""),
+                "url": abstract_url,
+                "snippet": "",
+            })
+
+        related = data.get("RelatedTopics", [])
+        for item in related:
+            if isinstance(item, dict):
+                if "Topics" in item:
+                    for sub in item["Topics"]:
+                        if isinstance(sub, dict) and sub.get("FirstURL"):
+                            results.append({
+                                "title": sub.get("Text", "")[:100],
+                                "url": sub.get("FirstURL", ""),
+                                "snippet": "",
+                            })
+                elif item.get("FirstURL"):
+                    results.append({
+                        "title": item.get("Text", "")[:100],
+                        "url": item.get("FirstURL", ""),
+                        "snippet": "",
+                    })
+
+        results = results[:5]
+
+        if not results:
+            return ActionResult.ok(
+                message=f"{boundary_notice} No results found.",
+                data={"widget": {"type": "search", "data": {"results": []}}},
+                request_id=request.request_id
+            )
+
+        summary_lines = [f"- {r['title']}" for r in results[:3]]
+        user_message = f"{boundary_notice} I found {len(results)} results.\n" + "\n".join(summary_lines)
+
+        widget_payload = {
+            "type": "search",
+            "data": {"results": results},
+        }
+
+        return ActionResult.ok(
+            message=user_message,
+            data={"widget": widget_payload},
+            request_id=request.request_id
+        )

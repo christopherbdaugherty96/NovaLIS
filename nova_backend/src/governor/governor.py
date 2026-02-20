@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from typing import Optional, Dict, Any
 
+from src.actions.action_result import ActionResult
 from src.governor.execute_boundary import ExecuteBoundary
 from src.governor.single_action_queue import SingleActionQueue
 from src.ledger.writer import LedgerWriter
@@ -19,10 +20,6 @@ from src.governor.exceptions import (
     LedgerWriteFailed,
 )
 from src.actions.action_request import ActionRequest
-from src.actions.action_result import ActionResult
-
-# Phase‑4 components are imported only when needed (lazy loading)
-# This avoids crashes if configuration files aren't ready during Phase‑3.5.
 
 
 class Governor:
@@ -74,25 +71,28 @@ class Governor:
         self,
         capability_id: int,
         params: Dict[str, Any],
-    ) -> str:
+    ) -> ActionResult:
         """
         Receives a parsed governed invocation from GovernorMediator.
         This method is the ONLY place that can attempt to create an ActionRequest.
-        Returns a user‑facing message (success or refusal).
+        Returns an ActionResult (structured, may contain widget data).
         """
         # 1) Capability identity + enable gate (per‑capability)
         try:
             cap = self.registry.get(capability_id)
+            print(f"[DEBUG] Capability {capability_id} found: {cap.name}, enabled={self.registry.is_enabled(capability_id)}")
         except CapabilityRegistryError as e:
-            return f"I can’t do that. {e}"
+            print(f"[DEBUG] Capability {capability_id} not found: {e}")
+            return ActionResult.failure(f"I can’t do that. {e}")
 
         if not self.registry.is_enabled(capability_id):
-            # Enabled flag is separate from phase gate.
-            return "I can’t do that yet."
+            print(f"[DEBUG] Capability {capability_id} is disabled")
+            return ActionResult.failure("I can’t do that yet.")
 
-        # 2) Global phase gate (fail‑closed)
+        # 2) Global phase gate (fail‑closed) – single check
         if not self._execute_boundary.allow_execution():
-            return "That requires a specific action, which I can’t perform right now."
+            print("[DEBUG] Phase gate blocked execution")
+            return ActionResult.failure("That requires a specific action, which I can’t perform right now.")
 
         # 3) Ledger must be writable BEFORE any effect
         try:
@@ -100,58 +100,67 @@ class Governor:
                 "ACTION_ATTEMPTED",
                 {"capability_id": capability_id, "capability_name": cap.name},
             )
+            print("[DEBUG] ACTION_ATTEMPTED logged")
         except LedgerWriteFailed:
-            # Fail closed: no ledger, no action
-            return "I can’t do that right now."
+            print("[DEBUG] Ledger write FAILED")
+            return ActionResult.failure("I can’t do that right now.")
 
         # 4) Single pending action boundary
+        print(f"[DEBUG] Queue has pending: {self._queue.has_pending()}")
         if self._queue.has_pending():
-            return "I can’t do that right now."
+            return ActionResult.failure("I can’t do that right now.")
 
-        # 5) ExecuteBoundary pre‑flight (resource checks)
-        if not self._execute_boundary.allow_execution():
-            return "I can’t do that right now."
-
-        # 6) Create ActionRequest
+        # 5) Create ActionRequest
         req = ActionRequest(capability_id=capability_id, params=params)
+        print(f"[DEBUG] ActionRequest created: {req.request_id}")
 
-        # 7) Execute (routed to appropriate executor)
+        # 6) Execute (routed to appropriate executor)
         try:
             result = self._execute(req)
-            # Convert ActionResult to user message
-            if result.success:
-                return result.message
-            else:
-                # For failures, return the error message or a generic refusal
-                return result.message or "I can’t do that right now."
+            return result
         except (NetworkMediatorError, LedgerWriteFailed) as e:
-            # These are expected failures; log and return a calm refusal.
-            # (The ledger event was already logged by the callee.)
-            return "I can’t do that right now."
-        except Exception:
-            # Unexpected error – log and fail closed.
-            # In a real system you'd also write a CONSTITUTIONAL_VIOLATION event.
-            return "I can’t do that right now."
+            print(f"[DEBUG] Execution exception (Network/Ledger): {e}")
+            return ActionResult.failure("I can’t do that right now.", request_id=req.request_id)
+        except Exception as e:
+            print(f"[DEBUG] Unexpected exception: {e}")
+            return ActionResult.failure("I can’t do that right now.", request_id=req.request_id)
 
     def _execute(self, req: ActionRequest) -> ActionResult:
         """
-        Route to the appropriate executor.
-        Executors must use self.network for any outbound calls.
+        Internal execution router.
+        This is the ONLY place executors are instantiated.
+        The Governor manages the entire boundary lifecycle; executors receive only
+        the network client and the request, never the boundary object.
         """
-        # Mark action as pending to enforce concurrency
-        self._queue.set_pending(f"cap_{req.capability_id}")
+        print(f"[DEBUG] _execute called for capability {req.capability_id}")
+
+        # FIX: store request_id, not the whole request object
+        self._queue.set_pending(req.request_id)
+        self._execute_boundary.enter_execution()
 
         try:
-            # Start execution timer
-            self._execute_boundary.enter_execution()
+            # --- Log search query if this is a web search (capability 16) ---
+            if req.capability_id == 16:
+                query = req.params.get("query")
+                if query:
+                    try:
+                        self.ledger.log_event("SEARCH_QUERY", {"query": query})
+                    except LedgerWriteFailed:
+                        # Non‑blocking; failure is logged by ledger itself
+                        pass
 
             # ---- Route by capability_id ----
             if req.capability_id == 16:
                 from src.executors.web_search_executor import WebSearchExecutor
-                executor = WebSearchExecutor(self.network, self._execute_boundary)
+                # Executor receives network client and request only – no boundary injection
+                executor = WebSearchExecutor(self.network)
                 result = executor.execute(req)
 
-            # Add other capabilities here (17, 18, etc.)
+            elif req.capability_id == 17:
+                from src.executors.webpage_launch_executor import WebpageLaunchExecutor
+                # Executor receives ledger for logging and the request
+                executor = WebpageLaunchExecutor(self.ledger)
+                result = executor.execute(req)
 
             else:
                 result = ActionResult.refusal(
@@ -159,7 +168,7 @@ class Governor:
                     request_id=req.request_id
                 )
 
-            # Completion logging must never change outcome.
+            # Completion logging (best effort)
             try:
                 self.ledger.log_event(
                     "ACTION_COMPLETED",
@@ -170,8 +179,6 @@ class Governor:
                     },
                 )
             except LedgerWriteFailed:
-                # Fail closed for *effects* is already enforced by ACTION_ATTEMPTED pre-check.
-                # Completion logging is best-effort.
                 pass
 
             return result
@@ -181,13 +188,12 @@ class Governor:
                 "The request took too long and was cancelled.",
                 request_id=req.request_id
             )
-        except Exception:
-            # Unexpected error – log and fail closed.
+        except Exception as e:
+            print(f"[DEBUG] Exception inside _execute routing: {e}")
             return ActionResult.refusal(
                 "I can’t do that right now.",
                 request_id=req.request_id
             )
         finally:
-            # Always clean up
             self._execute_boundary.exit_execution()
             self._queue.clear()

@@ -108,7 +108,44 @@ function renderNewsWidget(items) {
 }
 
 /* =========================================================
-   5. CHAT (USER-INITIATED ONLY)
+   5. SEARCH WIDGET (PHASE‑4)
+   Expects: { type:"search", data:{ results:[{title,url}] } }
+   ========================================================= */
+
+function renderSearchWidget(data) {
+  // Optional dedicated container – if it exists, use it.
+  const container = $("search-widget");
+  if (container) {
+    clear(container);
+    if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+      container.textContent = "No results found.";
+      return;
+    }
+    data.results.forEach(item => {
+      const div = document.createElement("div");
+      div.className = "search-result";
+      const a = document.createElement("a");
+      a.href = item.url;
+      a.textContent = item.title;
+      a.target = "_blank";
+      a.rel = "noopener noreferrer";
+      div.appendChild(a);
+      container.appendChild(div);
+    });
+  } else {
+    // Fallback: show each result as a chat message
+    if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+      appendChatMessage("assistant", "No results found.");
+      return;
+    }
+    data.results.forEach(item => {
+      appendChatMessage("assistant", `${item.title}\n${item.url}`);
+    });
+  }
+}
+
+/* =========================================================
+   6. CHAT (USER-INITIATED ONLY)
    ========================================================= */
 
 function appendChatMessage(role, text) {
@@ -146,7 +183,7 @@ function injectUserText(text) {
 }
 
 /* =========================================================
-   6. STT (PUSH-TO-TALK, PHASE-3 SAFE)
+   7. STT (PUSH-TO-TALK, PHASE-3 SAFE)
    ========================================================= */
 
 async function startSTT() {
@@ -252,7 +289,7 @@ function stopSTT() {
 }
 
 /* =========================================================
-   7. WEBSOCKET HANDLING (PHASE-3 SAFE)
+   8. WEBSOCKET HANDLING (PHASE-3 SAFE)
    ========================================================= */
 
 function connectWebSocket() {
@@ -278,6 +315,9 @@ function connectWebSocket() {
       case "news":
         renderNewsWidget(msg.items);
         break;
+      case "search":
+        renderSearchWidget(msg.data);
+        break;
       case "chat":
         appendChatMessage("assistant", msg.message);
         break;
@@ -290,7 +330,7 @@ function connectWebSocket() {
 }
 
 /* =========================================================
-   8. USER INPUT (CHAT + STT)
+   9. USER INPUT (CHAT + STT)
    ========================================================= */
 
 function sendChat() {
@@ -302,7 +342,7 @@ function sendChat() {
 }
 
 /* =========================================================
-   9. BOOTSTRAP
+   10. BOOTSTRAP
    ========================================================= */
 
 window.addEventListener("DOMContentLoaded", () => {
