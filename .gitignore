@@ -1,44 +1,49 @@
-# ===============================
-# Python / environments
-# ===============================
-venv/
-.venv/
+# ==================================================
+# Python Bytecode / Cache
+# ==================================================
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
-# ===============================
-# Node
-# ===============================
-node_modules/
-
-# ===============================
-# Env / secrets
-# ===============================
+# ==================================================
+# Virtual Environments
+# ==================================================
+venv/
 .env
 .env.*
-*.key
+.env/
 
-# ===============================
-# Logs
-# ===============================
-*.log
+# ==================================================
+# Pytest
+# ==================================================
+.pytest_cache/
 
-# ===============================
-# OS / editor noise
-# ===============================
-.DS_Store
-Thumbs.db
-.vscode/
+# ==================================================
+# Nova Runtime State (DO NOT TRACK)
+# ==================================================
 
-# ===============================
-# Local runtime artifacts (DO NOT COMMIT)
-# ===============================
-nova_backend/models/
+# Core execution ledger
+src/data/ledger.jsonl
 
-# Ignore all tools EXCEPT documentation
-nova_backend/tools/*
-!nova_backend/tools/
-!nova_backend/tools/README.md
+# Correction memory ledger
+memory/quick_corrections.jsonl
+src/memory/quick_corrections.jsonl
 
+# Runtime logs
+src/logs/
+
+# Backup artifacts
+.nova_backups/
+
+# ==================================================
+# Temporary Audio / Dev Artifacts
+# ==================================================
 *.wav
 *.m4a
+
+# ==================================================
+# OS Junk
+# ==================================================
+.DS_Store
+Thumbs.db
