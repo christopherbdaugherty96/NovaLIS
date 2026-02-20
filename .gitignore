@@ -1,49 +1,36 @@
-# ==================================================
-# Python Bytecode / Cache
-# ==================================================
+# ----------------------------
+# Nova Runtime Exclusions
+# ----------------------------
+
+# Runtime ledgers
+src/data/*.jsonl
+memory/*.jsonl
+
+# Models
+models/
+nova_backend/models/
+vosk-model*
+
+# Tools / binaries
+tools/
+nova_backend/tools/
+*.exe
+*.dll
+
+# Python
 __pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# ==================================================
-# Virtual Environments
-# ==================================================
+# Virtual environments
 venv/
-.env
-.env.*
 .env/
 
-# ==================================================
-# Pytest
-# ==================================================
-.pytest_cache/
+# IDE
+.vscode/
+.idea/
 
-# ==================================================
-# Nova Runtime State (DO NOT TRACK)
-# ==================================================
-
-# Core execution ledger
-src/data/ledger.jsonl
-
-# Correction memory ledger
-memory/quick_corrections.jsonl
-src/memory/quick_corrections.jsonl
-
-# Runtime logs
-src/logs/
-
-# Backup artifacts
-.nova_backups/
-
-# ==================================================
-# Temporary Audio / Dev Artifacts
-# ==================================================
-*.wav
-*.m4a
-
-# ==================================================
-# OS Junk
-# ==================================================
+# OS
 .DS_Store
 Thumbs.db
