@@ -5,14 +5,9 @@ import subprocess
 import tempfile
 import os
 import json
+import shutil                      # ADDED for ffmpeg detection
 from pathlib import Path
 from vosk import Model, KaldiRecognizer
-
-# --------------------------------------------------
-# External binary (explicit, deterministic)
-# --------------------------------------------------
-
-FFMPEG_PATH = r"C:\Nova-Project\nova_backend\tools\ffmpeg\ffmpeg.exe"
 
 # --------------------------------------------------
 # Model loading (ONCE, deterministic, local)
@@ -81,9 +76,15 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
         with open(input_path, "wb") as f:
             f.write(audio_bytes)
 
+        # --- ffmpeg detection (runtime, not import time) ---
+        ffmpeg_path = shutil.which("ffmpeg")
+        if ffmpeg_path is None:
+            print("[STT] ffmpeg not found in PATH, transcription disabled")
+            return ""  # fail closed
+
         # Convert to WAV via ffmpeg
         ffmpeg_cmd = [
-            FFMPEG_PATH,
+            ffmpeg_path,            # now using detected path
             "-y",
             "-i", input_path,
             "-ar", "16000",
@@ -105,11 +106,11 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
             print("[STT] Audio conversion failed")
             return ""
 
-        # Transcribe WAV - CORRECTED: Use lazy-loaded model
+        # Transcribe WAV - use lazy-loaded model
         model = get_vosk_model()
         if model is None:
             print("[STT] Model unavailable, transcription disabled")
-            return ""  # Phase-3.5: STT disabled, fail closed
+            return ""
 
         print("[STT] Model available, starting transcription...")
         recognizer = KaldiRecognizer(model, 16000)
