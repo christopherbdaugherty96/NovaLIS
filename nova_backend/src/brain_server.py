@@ -63,6 +63,11 @@ app.include_router(stt_router)
 skill_registry = SkillRegistry()            # Phase‑3.5 skills (unchanged)
 
 # -------------------------------------------------
+# Security Constants
+# -------------------------------------------------
+WS_INPUT_MAX_BYTES = 4096  # BUG-S2: Guard against oversized WebSocket input (UTF-8 bytes)
+
+# -------------------------------------------------
 # Phase Status Endpoint (Updated for Phase‑4 Staging)
 # -------------------------------------------------
 @app.get("/phase-status")
@@ -122,7 +127,34 @@ async def websocket_endpoint(ws: WebSocket):
     try:
         while True:
             raw = await ws.receive_text()
-            msg = json.loads(raw)
+
+            # --- BUG-S2: WebSocket input length guard (bytes, UTF-8 safe) ---
+            raw_bytes = raw.encode("utf-8")
+            if len(raw_bytes) > WS_INPUT_MAX_BYTES:
+                log.warning(
+                    "WebSocket input rejected: %d bytes exceeds limit %d",
+                    len(raw_bytes),
+                    WS_INPUT_MAX_BYTES,
+                )
+                await ws_send(ws, {
+                    "type": "error",
+                    "code": "input_too_long",
+                    "message": "Input exceeds maximum allowed length.",
+                })
+                continue
+
+            # --- JSON safety guard ---
+            try:
+                msg = json.loads(raw)
+            except json.JSONDecodeError:
+                log.warning("WebSocket input rejected: malformed JSON")
+                await ws_send(ws, {
+                    "type": "error",
+                    "code": "invalid_json",
+                    "message": "Malformed request.",
+                })
+                continue
+
             text = (msg.get("text") or "").strip()
 
             if not text:
@@ -166,7 +198,7 @@ async def websocket_endpoint(ws: WebSocket):
                     action_result.success
                     and isinstance(action_result.data, dict)
                     and "widget" in action_result.data
-                ):
+                ): 
                     await ws_send(ws, action_result.data["widget"])
 
                 await send_chat_done(ws)
