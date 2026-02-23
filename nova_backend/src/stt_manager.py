@@ -16,7 +16,6 @@ STT_MODE = "hybrid"   # options: "local", "cloud", "hybrid"
 HYBRID_MAX_LOCAL_SECONDS = 8.0   # If audio > 8 sec → prefer cloud
 
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
-client = OpenAI(api_key=OPENAI_KEY) if OPENAI_KEY else None
 
 # ----------------------------
 # LOCAL WHISPER MODEL
@@ -27,6 +26,18 @@ local_model = WhisperModel(
     device="cpu",
     compute_type="int8"
 )
+
+
+# ------------------------------------------------------------
+# Lazy OpenAI client (created only when cloud STT is used)
+# ------------------------------------------------------------
+_openai_client = None
+
+def _get_openai_client():
+    global _openai_client
+    if _openai_client is None and OPENAI_KEY:
+        _openai_client = OpenAI(api_key=OPENAI_KEY)
+    return _openai_client
 
 
 def _duration_of_wav(path: str) -> float:
@@ -48,6 +59,7 @@ def _local_transcribe(path: str) -> str:
 
 
 def _cloud_transcribe(path: str) -> str:
+    client = _get_openai_client()
     if not client:
         print("No OPENAI_API_KEY set; cannot use cloud STT.")
         return ""
