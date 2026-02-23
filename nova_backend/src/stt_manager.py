@@ -71,32 +71,41 @@ def transcribe_audio_bytes(audio_bytes: bytes) -> str:
     """
     Main entry: takes raw audio bytes, writes to temp file,
     runs hybrid STT, returns text.
+    Temporary file is always deleted after processing.
     """
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
         tmp.write(audio_bytes)
         tmp_path = tmp.name
 
-    duration = _duration_of_wav(tmp_path)
-    print(f"[HybridSTT] Audio length = {duration:.2f}s")
+    try:
+        duration = _duration_of_wav(tmp_path)
+        print(f"[HybridSTT] Audio length = {duration:.2f}s")
 
-    # Forced modes
-    if STT_MODE == "local":
-        return _local_transcribe(tmp_path)
+        # Forced modes
+        if STT_MODE == "local":
+            return _local_transcribe(tmp_path)
 
-    if STT_MODE == "cloud":
-        return _cloud_transcribe(tmp_path)
+        if STT_MODE == "cloud":
+            return _cloud_transcribe(tmp_path)
 
-    # HYBRID decision
-    if duration > HYBRID_MAX_LOCAL_SECONDS:
-        print("→ Long audio → trying CLOUD STT")
-        text = _cloud_transcribe(tmp_path)
-        if text:
+        # HYBRID decision
+        if duration > HYBRID_MAX_LOCAL_SECONDS:
+            print("→ Long audio → trying CLOUD STT")
+            text = _cloud_transcribe(tmp_path)
+            if text:
+                return text
+
+        print("→ Trying LOCAL STT")
+        text = _local_transcribe(tmp_path)
+        if text and len(text.split()) >= 2:
             return text
 
-    print("→ Trying LOCAL STT")
-    text = _local_transcribe(tmp_path)
-    if text and len(text.split()) >= 2:
-        return text
+        print("→ Local uncertain → CLOUD fallback")
+        return _cloud_transcribe(tmp_path)
 
-    print("→ Local uncertain → CLOUD fallback")
-    return _cloud_transcribe(tmp_path)
+    finally:
+        # Always clean up temp file
+        try:
+            os.remove(tmp_path)
+        except Exception:
+            pass
