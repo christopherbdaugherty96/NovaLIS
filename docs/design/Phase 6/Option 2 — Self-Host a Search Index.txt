@@ -1,0 +1,111 @@
+Option 2 — Self-Host a Search Index (Advanced)
+
+Examples:
+
+SearXNG (self-hosted meta search)
+
+Meilisearch + crawler
+
+Local crawl + index
+
+Pros:
+
+100% sovereign
+
+No third party
+
+Infinite usage
+
+Cons:
+
+Infrastructure complexity
+
+Ongoing maintenance
+
+Requires hosting
+
+This fits your long-term “sovereign intelligence node” vision — but it’s Phase 6+ level work.
+
+🥉 Option 3 — Hybrid Model
+
+Use:
+
+ddgs for now
+
+Swap later if needed
+
+Your architecture supports this because:
+
+Executor → Tool → NetworkMediator
+
+
+You can swap tool implementation without touching Governor.
+
+That’s the beauty of your design.
+
+🔥 My Recommendation For You
+
+Use ddgs right now.
+
+Why?
+
+Because:
+
+You’re experimenting
+
+You want no friction
+
+You want zero billing
+
+You want to test the spine
+
+You care about architecture more than commercial SLAs right now
+
+Brave is production-grade.
+ddgs is sovereignty-grade.
+
+Given your philosophy?
+
+ddgs aligns more with Nova’s identity.
+
+🎯 What To Do Next
+
+We convert your current executor from Brave → ddgs.
+
+Minimal diff:
+
+Remove BRAVE_ENDPOINT
+
+Remove api_key block
+
+Remove headers
+
+Remove self.network.request()
+
+Import and call run_web_search(query)
+
+Return structured results
+
+We keep:
+
+ExecuteBoundary
+
+CapabilityRegistry
+
+Governor spine
+
+No synthesis
+
+No memory
+
+Structured output
+
+If you want, I’ll give you the exact surgical diff patch instead of full rewrite.
+
+That way you preserve 95% of your file and stay clean.
+
+Say:
+
+give me minimal diff patch
+
+And we’ll do it properly.

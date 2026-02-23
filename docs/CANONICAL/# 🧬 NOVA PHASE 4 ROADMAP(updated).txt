@@ -1,0 +1,302 @@
+# 🧬 NOVA PHASE 4 ROADMAP (Final – Staging Active)
+## *Governed Execution — Explicit, User‑Invoked Actions*
+
+**Document ID:** `NOVA-PHASE4-ROADMAP-v2.0`  
+**Status:** 🔓 **Staging Active – Capability 16 Live**  
+**Ratified by:** NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.9, Phase 4 Action Plan v1.0, and Adversarial Review 2026‑02‑17  
+**Staging Verification:** `NOVA-PHASE4-STAGING-TRUTH-v1.1` (2026‑02‑18)  
+**Last Updated:** 2026‑02‑18  
+**Audit Reference:** This roadmap has been stress‑tested as if blocking unlock. All identified risk zones have been addressed with mechanical enforcement; bypass proof is complete.
+
+---
+
+## 🔹 Executive Summary
+
+Phase 4 introduces **governed execution** – the ability for Nova to perform explicit, user‑invoked actions with real‑world effects. As of 2026‑02‑18, **Phase 4 staging is active** with Capability 16 (Governed Web Search) live under full constitutional governance. All execution remains:
+
+- **Explicitly invoked** – no autonomy, no background, no prediction
+- **Governor‑mediated** – every action passes through the single choke point
+- **Auditable** – every attempt recorded in the immutable ledger
+- **Constitutionally constrained** – all Tier‑1 invariants remain absolute
+
+This roadmap integrates **four lightweight safeguards** and **adversarial hardening** to ensure real‑world safety without constitutional bloat. It has been reviewed against real code risks and is now **mechanically verified and staging‑active**.
+
+**The four safeguards are fully implemented:**
+
+1. **Capability Registry & Lifecycle** – versioned, absolute path resolution, fail‑closed.
+2. **Model Version Lock** – composite hash blocks unapproved model changes.
+3. **External LLM as Governed Capability** – registered with `data_exfiltration` flag (design ready, not yet active).
+4. **Device Authority Scopes** – designed for Phase 4.5.
+
+**Three architectural clarifications are now enforced:**
+
+- All external network I/O routes through a Governor‑mediated `NetworkMediator`.
+- Ephemeral session boundaries mechanically enforced (state cleared on reset/timeout/restart).
+- Influence containment roadmap documented before Phase 4.5.
+
+**All admission gate items are satisfied.** The system is now in a 30‑day stability window before Phase 4.2 and Phase 4.5 work begins.
+
+---
+
+## 🎯 Phase 4 Goals
+
+1. **Enable safe, explicit execution** of a curated set of low‑risk actions.
+2. **Prove the Governor Spine** works as the single authority for all execution.
+3. **Establish the ConfirmationGate** for actions that require user consent.
+4. **Implement the ExecuteBoundary** as the fail‑closed gatekeeper.
+5. **Create the ActionRequest / ActionResult** data contracts and enforce them.
+6. **Integrate the Permission Ledger** for complete auditability.
+7. **Validate all Tier‑1 invariants** remain unbroken under execution load.
+8. **Build and integrate the four new safeguards** as part of the core implementation.
+
+**All goals are met for Capability 16; remaining capabilities are design‑approved and will be enabled in future phases.**
+
+---
+
+## 📋 Phase 4 Capabilities (Design‑Approved)
+
+| ID       | Capability                     | Constraints                                                                 | Status        |
+|----------|--------------------------------|-----------------------------------------------------------------------------|---------------|
+| `0x0010` | Governed Web Search            | Explicit phrases only; online boundary announcement; fail closed            | ✅ **ACTIVE** |
+| `0x0011` | Open Website                   | Explicit URL only; no inference                                             | ⏸ Design only |
+| `0x0012` | Open File / Folder             | Explicit path; confirmation if privacy‑exposing                             | ⏸ Design only |
+| `0x0013` | Volume Up/Down                 | Reversible, observable                                                      | ⏸ Design only |
+| `0x0014` | Media Play/Pause               | Same as above                                                               | ⏸ Design only |
+| `0x0015` | Brightness Control             | Same as above                                                               | ⏸ Design only |
+| `0x0020` | Read‑Only OS Diagnostics       | CPU, memory, disk, GPU, network                                             | ⏸ Design only |
+| `0x0030` | Structured Multi‑Source Reporting | User‑invoked aggregation; neutral presentation only – no synthesis, opinion, or prioritization beyond explicit user instruction | ⏸ Design only |
+
+**APIs eligible:** DuckDuckGo Instant Answer, NewsData.io, Guardian, NYT, Wikipedia, OpenAlex, CoinGecko, Finnhub.io (read‑only), OpenRouteService, Wolfram Alpha (read‑only).  
+*Calendar/Drive read‑only are design intent only, not for Phase 4 runtime.*
+
+**Permanently excluded:** Commercial marketplace APIs (Amazon PAAPI, Walmart), financial execution APIs.
+
+---
+
+## 🏛️ Phase 4 Architecture Overview
+
+All execution flows integrate with the Governor components. The **single choke point** is `governor.py` – it is the only file that creates `ActionRequest` and calls `ExecuteBoundary`. `governor_mediator.py` is purely for input parsing and invocation detection; it does **not** create action requests directly.
+
+```
+User Input → WebSocket → governor_mediator.mediate()
+    → (if execution requested) → governor.py (SOLE CHOKE POINT)
+        → CapabilityRegistry (pre‑action check with absolute path resolution)
+        → ExecuteBoundary (phase gate, resource limits)
+            → ConfirmationGate (if required; tokens invalidated on session end)
+                → Executor (dumb, bounded) → uses NetworkMediator for any I/O
+                    → ActionResult → Ledger → UI
+```
+
+All outbound network communication passes through **NetworkMediator** (under Governor authority). No other module may import `requests`, `httpx`, `urllib`, `socket`, or similar.
+
+### Key Components
+
+| Component            | Responsibility                                                                 |
+|----------------------|---------------------------------------------------------------------------------|
+| **governor_mediator.py** | Parse user input, detect explicit invocation, forward to governor.py. **No execution authority. No ActionRequest creation.** |
+| **governor.py**      | **Single authority choke point.** Creates ActionRequest, calls CapabilityRegistry, ExecuteBoundary, ConfirmationGate, Executor. |
+| **CapabilityRegistry** | Versioned, static registry of all capabilities with unique IDs. Governor consults **before** ActionRequest creation. Uses absolute path resolution. |
+| **ExecuteBoundary**  | Enforce phase lock, resource limits (10s timeout, 100MB memory, 5s network, concurrency 1). Fail‑closed. |
+| **ConfirmationGate** | Require user confirmation for destructive/irreversible actions. Returns token; tokens invalidated on session end. |
+| **ActionRequest**    | Immutable data structure describing the action. Created **only** in governor.py. |
+| **ActionResult**     | Standardised result object. |
+| **PermissionLedger** | Append‑only log of every action attempt (including denials). |
+| **NetworkMediator**  | Single choke point for all external network calls; enforces timeouts, logging, and consent. |
+
+All execution code resides in `executors/` and is reachable **only** via governor.py. Skills may construct ActionRequests but never execute them directly.
+
+---
+
+## 🔒 Phase 4 Admission Gate – COMPLETED
+
+All items below have been **mechanically verified** and are satisfied for Capability 16.
+
+### Original Items (from Phase 4 Roadmap)
+- ✅ Phase 3.5 sealed and frozen.
+- ✅ **Single Master Governor proof** – No code path bypasses governor.py. Verified by static analysis and adversarial tests. governor_mediator.py does **not** create ActionRequests.
+- ✅ CI enforces execution gating – In all runtime contexts, `GOVERNED_ACTIONS_ENABLED` is hard‑coded; environment variable override is impossible.
+- ✅ Governor Spine fully implemented (explicit invocation, one‑strike clarification, verbatim echo, offline‑first).
+- ✅ All Phase 4 capabilities registered in `registry.json` with unique IDs (Cap 16 `enabled: true`, others `false`).
+- ✅ ExecuteBoundary implemented with fail‑closed default and resource guardrails.
+- ✅ ConfirmationGate implemented for required action types; confirmation tokens expire on session end.
+- ✅ ActionRequest/ActionResult data structures finalised and used throughout; ActionRequest creation **only** in governor.py.
+- ✅ Permission Ledger operational, append‑only, with pruning policy defined and logged.
+- ✅ Adversarial test suite passes – includes attempts to bypass Governor, execute without invocation, exceed limits, etc.
+- ✅ Dynamic execution surface ban verified – no `exec`, `eval`, `subprocess` (except STT pipeline) in authority paths.
+- ✅ Environment variable override lock – `GOVERNED_ACTIONS_ENABLED` is hard‑coded; any attempt to read from env is absent.
+- ✅ Zero silent fallback patterns – any fallback must be user‑confirmed.
+- ✅ Multi‑user boundary – Phase 4 remains single‑user; any multi‑user logic is absent.
+- ✅ Ledger purge governance – manual purge requires Governor mediation and logs `CONSTITUTIONAL_PRUNE` event.
+- ✅ All tests pass in a clean environment.
+
+### New Safeguard Items (from Action Plan)
+- ✅ **Capability Registry** implemented at `src/governor/capability_registry.py` with absolute path resolution. Registry consulted **before** ActionRequest creation. If `registry.json` is missing, malformed, or unreadable, execution fails closed.
+- ✅ **Model Version Lock** enforced for all local models. Version hash includes weights, system prompt, wrapper code, and inference parameters. Updates require `MODEL_UPDATED` ledger event + user confirmation. Headless startup blocks inference until confirmed.
+- ✅ **External LLM calls** registered as capabilities with `data_exfiltration` flag (design ready; not yet active).
+- ✅ **Device Authority Scopes** designed (deferred to Phase 4.5) – see `design/device_authority_scopes.md`.
+- ✅ **Network I/O Governor mediation** – all outbound communication routes through `src/governor/network_mediator.py`. CI rule enforces no `requests`, `httpx`, `urllib`, `socket`, `subprocess curl` outside `network_mediator.py`.
+- ✅ **Ephemeral session boundary** mechanically enforced: session ID regenerated on reset, timeout, restart; all conversational state cleared; confirmation tokens invalidated.
+- ✅ **Influence containment roadmap** documented – `design/influence_containment_roadmap.md`.
+- ✅ **Ledger write failure behavior** – if ledger write fails, action execution is denied.
+
+**Unlock Act executed:** A single, reviewed, committed code change in `nova_config.py` set `GOVERNED_ACTIONS_ENABLED = True` (hard‑coded, no env override). This change references the admission gate and evidence bundle.
+
+---
+
+## 🛠️ Implementation Roadmap with Exact Code Locations
+
+*The following tasks are the original detailed plan. Tasks marked ✅ are complete for Capability 16; others are design‑approved and will be implemented in future phases.*
+
+### Workstream A: Governor Foundation
+| Task | Description | File Location(s) | Status |
+|------|-------------|------------------|--------|
+| A1 | Implement GovernorSpine explicit invocation detection in `governor_mediator.py`. | `src/governor/governor_mediator.py` | ✅ Complete |
+| A2 | Add one‑strike clarification logic. | `src/governor/governor_mediator.py` | ✅ Complete |
+| A3 | Implement verbatim echo. | `src/governor/governor_mediator.py` | ✅ Complete |
+| A4 | Build offline‑first / explicit online detection. | `src/governor/governor_mediator.py`, `src/nova_config.py` | ✅ Complete |
+| A5 | Integrate resource guardrails into `ExecuteBoundary`. | `src/governor/execute_boundary/execute_boundary.py` | ✅ Complete |
+| A6 | **Create NetworkMediator** – single network choke point. | `src/governor/network_mediator.py` | ✅ Complete |
+
+### Workstream B: Execution Layer
+| Task | Description | File Location(s) | Status |
+|------|-------------|------------------|--------|
+| B1 | Review/update ActionRequest/ActionResult classes. | `src/actions/action_request.py`, `src/actions/action_result.py` | ✅ Complete |
+| B2 | Implement ExecuteBoundary with fail‑closed logic. | `src/governor/execute_boundary/execute_boundary.py` | ✅ Complete |
+| B3 | Build ConfirmationGate with token management; tokens invalidated on session end. | `src/gates/confirmation_gate.py` | ✅ Complete |
+| B4 | Create base Executor interface and simple implementations (volume, media, etc.). | New executors in `src/actions/` | ✅ (for Cap 16) |
+| B5 | **Enforce governor.py as single authority**: Move all ActionRequest creation into governor.py; governor_mediator.py may only forward parsed intent. | `src/governor/governor.py`, `src/governor/governor_mediator.py` | ✅ Complete |
+| B6 | **Add model version hash checks** to `llm_manager.py`. | `src/llm/llm_manager.py` | ✅ Complete |
+
+### Workstream C: Capability Implementation
+| Task | Description | File Location(s) | Status |
+|------|-------------|------------------|--------|
+| C1 | Governed Web Search using NetworkMediator. | `src/executors/web_search_executor.py` | ✅ Complete |
+| C2 | Open Website (launch browser). | `src/actions/open_url.py` (new) | ⏸ Design only |
+| C3 | Open File/Folder (with confirmation). | `src/actions/file_open.py` (new) | ⏸ Design only |
+| C4 | Volume, Media, Brightness controls. | `src/actions/media.py`, `src/actions/volume.py` | ⏸ Design only |
+| C5 | OS Diagnostics via `psutil`. | `src/actions/diagnostics.py` (new) | ⏸ Design only |
+| C6 | Multi‑source reporting. | `src/actions/report.py` (new) | ⏸ Design only |
+| C7 | **Build Capability Registry** with absolute path resolution. | `src/governor/capability_registry.py`, `src/config/registry.json` | ✅ Complete |
+| C8 | **Wrap external LLM calls** as governed capabilities with `data_exfiltration` flag; integrate with NetworkMediator. | `src/llm/llm_manager.py`, `src/actions/external_llm.py` | ⏸ Design ready |
+| C9 | Register all capabilities in `registry.json`. | `src/config/registry.json` | ✅ Complete |
+
+### Workstream D: Ledger & Audit
+| Task | Description | File Location(s) | Status |
+|------|-------------|------------------|--------|
+| D1 | Design Ledger schema (append‑only JSONL). | `src/ledger/schema.md` | ✅ Complete |
+| D2 | Implement ledger write interface. | `src/ledger/writer.py` | ✅ Complete |
+| D3 | Add ledger read for audit UI. | `src/ledger/reader.py` | ⏸ Pending |
+| D4 | Define pruning policy and implement Governor‑mediated prune. | `src/ledger/prune.py` | ✅ Defined |
+| D5 | Integrate ledger logging into ExecuteBoundary, Governor, NetworkMediator. | Hooks in relevant modules | ✅ Complete |
+| D6 | Extend ledger events: `CAPABILITY_INSTALL`, `MODEL_UPDATED`, `EXTERNAL_LLM_CALL`. | `src/ledger/writer.py`, `src/llm/llm_manager.py` | ✅ Complete (for `MODEL_UPDATED`) |
+
+### Workstream E: Testing & Verification
+| Task | Description | File Location(s) | Status |
+|------|-------------|------------------|--------|
+| E1 | Unit tests for each capability (positive and negative). | `tests/actions/` | ✅ Pass (for Cap 16) |
+| E2 | Integration tests for full flow. | `tests/integration/` | ✅ Pass |
+| E3 | Adversarial test suite (bypass attempts, fuzzing). | `tests/adversarial/` | ✅ Pass |
+| E4 | Performance/load tests. | `tests/performance/` | ⏸ Pending |
+| E5 | Tests for Capability Registry. | `tests/unit/test_capability_registry.py` | ✅ Pass |
+| E6 | Tests for Model Version Lock. | `tests/unit/test_version_lock.py` | ✅ Pass |
+| E7 | Tests for NetworkMediator. | `tests/integration/test_network_mediator.py` | ✅ Pass |
+| E8 | Tests for session boundary. | `tests/integration/test_session.py` | ✅ Pass |
+| E9 | Static import audit CI rule. | `scripts/check_imports.py` | ✅ Enforced |
+| E10 | Update constitutional proofs. | `audit/` documents | ✅ `GOVERNOR_BYPASS_PROOF.md` updated |
+
+### Workstream F: Documentation & Governance
+| Task | Description | File Location(s) | Status |
+|------|-------------|------------------|--------|
+| F1 | Update Phase 3.5 closure documents. | `PHASE_3.5_CLOSURE.md` addendum | ✅ Done |
+| F2 | Compile admission gate evidence bundle. | `phase4_unlock_evidence/` | ✅ Complete |
+| F3 | Draft Phase 4 user documentation. | User manual | ⏸ In progress |
+| F4 | Document Device Authority Scopes design. | `design/device_authority_scopes.md` | ✅ Complete |
+| F5 | Document Influence Containment Roadmap. | `design/influence_containment_roadmap.md` | ✅ Complete |
+| F6 | Prepare Phase 4.5 proposal. | `PHASE_4.5_PROPOSAL.md` | ⏸ Planned |
+
+---
+
+## ✅ Implementation Status Summary by Workstream
+
+| Workstream | Status for Capability 16 |
+|------------|--------------------------|
+| **A: Governor Foundation** | All tasks complete |
+| **B: Execution Layer** | All tasks complete (B4 base executor done for Cap 16) |
+| **C: Capability Implementation** | C1 complete; C2–C6 design only; C7, C9 complete; C8 design ready |
+| **D: Ledger & Audit** | D1, D2, D5, D6 complete; D3 pending; D4 defined |
+| **E: Testing & Verification** | All tests pass for Cap 16; E4 pending |
+| **F: Documentation & Governance** | F1, F2, F4, F5 complete; F3 in progress; F6 planned |
+
+---
+
+## ⏱️ Timeline
+
+- **Weeks 1–2 (Feb 3–14):** Governor Spine, ExecuteBoundary, NetworkMediator foundation – **Complete**
+- **Weeks 3–4 (Feb 15–21):** Capability implementation (first batch), Ledger, Capability Registry, Model Version Lock – **Complete**
+- **Weeks 5–6 (Feb 22–Mar 6):** Remaining capabilities, external LLM wrapper, integration, testing – *Cap 16 only; others deferred*
+- **Week 7 (Mar 7–13):** Adversarial testing, evidence compilation, documentation, CI import audit – **Complete**
+- **Week 8 (Mar 14):** **Phase 4 Runtime Unlock** – **Executed on 2026-02-18**
+
+**Current phase:** Phase 4 staging active. 30‑day stability window until 2026-03-20.
+
+---
+
+## ⚠️ Risk Zones & Mitigations – Verified
+
+| Risk | Mitigation | Status |
+|------|------------|--------|
+| **Bypass of governor.py** | Static analysis ensures only governor.py creates ActionRequests; governor_mediator.py forwards only. | ✅ Verified |
+| **Registry path fragility** | Absolute path resolution relative to module; tested with different cwd. | ✅ Verified |
+| **Registry unavailability** | Explicit fail‑closed: if registry missing/malformed, no actions proceed. | ✅ Verified |
+| **Split authority** | governor.py is sole choke point; all execution flows converge there. | ✅ Verified |
+| **Direct network calls outside NetworkMediator** | CI import audit bans `requests`, etc., outside `network_mediator.py`. | ✅ Verified |
+| **Model version drift** | Version hash includes weights, prompt, wrapper, parameters; update requires confirmation; headless mode blocks inference. | ✅ Verified |
+| **Confirmation token reuse across sessions** | Tokens invalidated on session end; session ID regenerated on reset/timeout/restart. | ✅ Verified |
+| **Session persistence** | Session manager explicitly clears all conversational state, corrections, pending tokens. | ✅ Verified |
+| **Environment variable override** | `GOVERNED_ACTIONS_ENABLED` hard‑coded in `nova_config.py`; no env reads. | ✅ Verified |
+| **Silent fallback** | All fallback paths require user confirmation; code audit ensures none exist. | ✅ Verified |
+| **Ledger write failure** | If ledger write fails, action execution is denied; no action proceeds unlogged. | ✅ Verified |
+
+---
+
+## ✅ Success Criteria for Phase 4 Unlock – All Met
+
+- [x] All admission gate checklist items completed and verified.
+- [x] No constitutional violations observed during extended testing (30+ days simulated usage; actual staging started).
+- [x] All Phase 4 capabilities functional and correctly mediated (Cap 16).
+- [x] Governor bypass proof updated and confirmed.
+- [x] Ledger operational and tamper‑evident; ledger write failure blocks execution.
+- [x] ConfirmationGate behaves as specified; tokens expire on session end.
+- [x] ExecuteBoundary correctly denies actions when phase is locked or limits exceeded.
+- [x] Capability Registry enforces enable/disable and unique IDs; path resolution robust; missing registry fails closed.
+- [x] Model Version Lock blocks unapproved model updates; headless mode safe.
+- [x] NetworkMediator logs all external calls and respects rate limits; import audit passes.
+- [x] Session boundary clearing verified; no cross‑session state leakage.
+
+---
+
+## 🔮 After Phase 4: Phase 4.5 – Experience Elevation
+
+Once Phase 4 runtime has been stable for ≥30 days (target: 2026-03-20), Phase 4.5 will begin. It focuses on making capabilities feel valuable: first‑win scenarios, UI polish, onboarding, Trust Panel, and implementation of **Device Authority Scopes**. **No new capabilities** will be added. See blueprint for details.
+
+**Phase 4.2 – Orthogonal Cognition & Personality Layer** is a separate design track.
+
+---
+
+## 📜 References
+
+- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.9](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.9.md)
+- [NOVA PHASE 4 STAGING TRUTH & UNLOCK READINESS v1.1](NOVA_PHASE4_STAGING_TRUTH_v1.1.md)
+- [Phase 4 Action Plan v1.0](NOVA-PHASE4-ACTION-PLAN-v1.0.txt)
+- [Governor Bypass Proof](GOVERNOR_BYPASS_PROOF.md) (updated)
+- [Capability ID Registry Schema](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.9.md#appendix-a)
+
+---
+
+**Prepared by:** Nova Constitutional Governance Board  
+**Date:** 2026‑02‑18  
+**Status:** 🔓 **Staging Active – Implementation Complete for Capability 16**
+
+---
+
+*End of Phase 4 Roadmap (Final – Staging Active)*

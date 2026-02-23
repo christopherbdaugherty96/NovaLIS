@@ -1,0 +1,272 @@
+# ✅ Phase 4 Roadmap v2.0 — Audit Passed, Clarifications Added
+
+Your structural audit is **correct** and the document is now even stronger.  
+Two minor clarifications have been integrated:
+
+1. **Version hash validated on every inference call** – not only at startup.  
+2. **Confirmation tokens are cryptographically random** – UUIDv4 or equivalent.
+
+The roadmap below supersedes all previous Phase 4 design documents. It is now **constitutionally sound**, **mechanically enforceable**, and **ready for implementation**.
+
+---
+
+# 🧬 NOVA PHASE 4 ROADMAP v2.0
+## *Governed Execution — Explicit, User‑Invoked Actions*
+### *Integrating the Strategic Capability Ladder for Phases 4, 4.2, and 4.5*
+
+**Document Status:** 🔓 **Staging Active – Capability 16 Live**  
+**Phase 4 runtime unlock executed:** 2026‑02‑18  
+**Ratified by:** NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8, Phase 4 Action Plan v1.0, and Adversarial Review 2026‑02‑17  
+**Last Updated:** 2026‑02‑18  
+**Supersedes:** All prior Phase 4 design documents.
+
+---
+
+## 🔹 Executive Summary
+
+Phase 4 introduces **governed execution** – the ability for Nova to perform explicit, user‑invoked actions with real‑world effects. All execution remains:
+- **Explicitly invoked** – no autonomy, no background, no prediction
+- **Governor‑mediated** – every action passes through the single choke point
+- **Auditable** – every attempt recorded in the immutable ledger
+- **Constitutionally constrained** – all Tier 1 invariants remain absolute
+
+This extended roadmap defines a **three‑tier capability ladder** that progressively increases Nova’s perceived intelligence **without expanding authority**:
+
+| Phase | Focus | Key Capabilities | Authority Level |
+|-------|-------|------------------|-----------------|
+| **4** | Anchor Layer – Trusted Research | Governed Web Search, Structured Research Mode, Source Transparency | Read‑only, explicit invocation |
+| **4.2** | Cognitive Depth – Expert Analyst | Multi‑step tool chaining, Deep Analysis Mode, Report Formatting Engine | Read‑only, explicit invocation |
+| **4.5** | Household Intelligence – Advisor | System Diagnostics, Network Analysis, Device Status (read‑only) | Read‑only, explicit invocation |
+
+All capabilities remain **explicitly invoked**, **Governor‑mediated**, and **read‑only**. No autonomy, no background work, no predictive systems.
+
+---
+
+## 🎯 Phase 4 Goals (Unchanged)
+
+1. **Enable safe, explicit execution** of a curated set of low‑risk actions.
+2. **Prove the Governor Spine** works as the single authority for all execution.
+3. **Establish the ConfirmationGate** for actions that require user consent.
+4. **Implement the ExecuteBoundary** as the fail‑closed gatekeeper.
+5. **Create the ActionRequest / ActionResult** data contracts and enforce them.
+6. **Integrate the Permission Ledger** for complete auditability.
+7. **Validate all Tier 1 invariants** remain unbroken under execution load.
+8. **Build and integrate the four new safeguards** as part of the core implementation.
+
+---
+
+## 📋 Phase 4 – Anchor Layer (Trusted Research)
+
+*All capabilities are read‑only, explicitly invoked, and Governor‑mediated.*
+
+| ID       | Capability                     | Constraints                                                                 | Rationale |
+|----------|--------------------------------|-----------------------------------------------------------------------------|-----------|
+| `0x0010` | **Governed Web Search**        | Explicit phrases only; online boundary announcement; fail closed            | First real‑world action proof |
+| `0x0011` | Open Website                   | Explicit URL only; no inference                                             | Low‑risk navigation |
+| `0x0012` | Open File / Folder             | Explicit path; confirmation if privacy‑exposing                             | User control |
+| `0x0013` | Volume Up/Down                 | Reversible, observable                                                      | Immediate feedback |
+| `0x0014` | Media Play/Pause               | Same as above                                                               | Immediate feedback |
+| `0x0015` | Brightness Control             | Same as above                                                               | Immediate feedback |
+| `0x0030` | **Structured Research Mode**   | Multi‑search within a single request; combine sources; neutral summary      | Flagship Phase 4 experience |
+| `0x0031` | **Source Transparency**        | Every result includes source URL, timestamp, “Results from online search”   | Reinforces trust |
+
+**Structured Research Mode** is the most important Phase 4 addition. It feels significantly more intelligent while using the same infrastructure as basic search. Example:  
+User: *“Research best local AI hosting”*  
+Nova: (after multiple searches) returns a structured summary with sources.
+
+---
+
+## 🧠 Phase 4.2 – Cognitive Depth (Expert Analyst)
+
+*Goal: Increase intelligence without increasing power. Multi‑step thinking within a single user request. No background work, no persistence.*
+
+| ID       | Capability                     | Constraints                                                                 | Rationale |
+|----------|--------------------------------|-----------------------------------------------------------------------------|-----------|
+| `0x0040` | **Multi‑Step Tool Chaining**   | User‑scoped; combine searches, extract key info, compare, output decision support | Cognitive autonomy, not execution autonomy |
+| `0x0041` | **Deep Analysis Mode**         | Invoked by phrases like “deep research…”, “analyze…”, “compare…”. Output: summary, key findings, risks, sources | Nova begins to feel like a thinking system |
+| `0x0042` | **Report Formatting Engine**   | Standardised structure: Topic / Summary / Key Findings / Options / Risks / Sources | Supports Premium Presence Lock |
+
+All outputs remain **neutral, factual, and non‑directive**. No recommendations – only structured information.
+
+---
+
+## 🏡 Phase 4.5 – Household Intelligence Foundations (Advisor)
+
+*Goal: Begin shifting from “web intelligence” to personal environment intelligence. Still explicit invocation, read‑only, no background monitoring.*
+
+| ID       | Capability                     | Constraints                                                                 | Rationale |
+|----------|--------------------------------|-----------------------------------------------------------------------------|-----------|
+| `0x0050` | **System Diagnostics**         | CPU, memory, disk, network status, potential issues (read‑only)              | First step toward household intelligence |
+| `0x0051` | **Network Analysis**           | Latency, connectivity, DNS status, bottlenecks (read‑only)                   | Aligns with “audit of environment” vision |
+| `0x0052` | **Device Status (Read‑Only)**  | Running processes, startup load, storage usage                               | No control, only awareness |
+
+These capabilities ground Nova in the user’s environment, building trust for future phases where limited control may be added.
+
+---
+
+## 🏛️ Architecture Overview (Unchanged)
+
+All execution flows must integrate with the existing Governor components. The **single choke point** is `governor.py` – it is the only file that creates `ActionRequest` and calls `ExecuteBoundary`. `governor_mediator.py` is purely for input parsing and invocation detection; it may **not** create action requests directly.
+
+```
+User Input → WebSocket → governor_mediator.mediate()
+    → (if execution requested) → governor.py (SOLE CHOKE POINT)
+        → CapabilityRegistry (pre‑action check with absolute path resolution)
+        → ExecuteBoundary (phase gate, resource limits)
+            → ConfirmationGate (if required; tokens are cryptographically random UUIDv4, invalidated on session end)
+                → Executor (dumb, bounded) → uses NetworkMediator for any I/O
+                    → ActionResult → Ledger → UI
+```
+
+All outbound network communication must pass through **NetworkMediator** (under Governor authority). No other module may import `requests`, `httpx`, `urllib`, `socket`, or similar. **A CI import audit enforces this rule.**
+
+---
+
+## 🔒 Phase 4 Admission Gate (Pre‑Unlock Checklist) – Extended
+
+The original checklist remains, with the following additions to account for new capabilities:
+
+- [ ] **Structured Research Mode** executor implemented, tested, and integrated with Governor.
+- [ ] **Deep Analysis Mode** parser patterns added to `governor_mediator.py`.
+- [ ] **Report Formatting Engine** developed as a shared component, used by research and analysis capabilities.
+- [ ] **System Diagnostics** capability implemented using local read‑only data sources (e.g., `psutil`), with appropriate risk classification.
+- [ ] **Network Analysis** capability implemented using safe, non‑invasive methods (e.g., `ping` latency, local DNS checks) – must not create external traffic without explicit consent.
+- [ ] **Device Status** capability implemented, read‑only only.
+- [ ] **Source Transparency** enforced across all search‑based capabilities.
+
+All existing items (Governor bypass proof, CI enforcement, ledger purge governance, etc.) remain.
+
+---
+
+## 🔐 Model Version Lock – Per‑Inference Validation
+
+The model version lock system (introduced as a Phase‑4 safeguard) now includes **per‑invocation validation**:
+
+- The composite hash (model digest + system prompt + wrapper code + parameters) is recomputed and compared against the stored hash **before every inference call**.
+- If a mismatch is detected, inference is blocked and a `MODEL_UPDATED` event is logged (if not already confirmed).
+- Headless mode also blocks inference – no auto‑approval.
+
+This ensures that any runtime change to the model, prompt, wrapper, or parameters is detected immediately and cannot be used without explicit user confirmation.
+
+---
+
+## 🔐 Confirmation Tokens – Cryptographic Randomness
+
+All confirmation tokens generated by `ConfirmationGate` are:
+
+- Cryptographically random (UUIDv4 or `secrets.token_urlsafe(32)`)
+- Bound to a session ID
+- Expire at session end (or after a timeout)
+- Stored only in memory, never persisted
+
+This prevents token guessing, replay, or cross‑session reuse.
+
+---
+
+## 🛠️ Implementation Roadmap with Exact Code Locations (Updated)
+
+The following workstreams now include tasks for the new capabilities.
+
+### Workstream A: Governor Foundation (Weeks 1–3) – Unchanged
+
+### Workstream B: Execution Layer (Weeks 2–5) – Unchanged
+
+### Workstream C: Capability Implementation (Weeks 3–6)
+
+| Task | Description | File Location(s) |
+|------|-------------|------------------|
+| C1 | Governed Web Search using NetworkMediator. | `src/actions/web_search.py` |
+| C2 | Open Website (launch browser). | `src/actions/open_url.py` |
+| C3 | Open File/Folder (with confirmation). | `src/actions/file_open.py` |
+| C4 | Volume, Media, Brightness controls. | `src/actions/media.py`, `src/actions/volume.py` |
+| **C5** | **Structured Research Mode** – multi‑search executor. | `src/actions/research.py` |
+| **C6** | **Deep Analysis Mode** – analysis executor. | `src/actions/analysis.py` |
+| **C7** | **Report Formatting Engine** – shared formatting utility. | `src/utils/report_formatter.py` |
+| **C8** | **System Diagnostics** – executor using `psutil`. | `src/actions/system_diagnostics.py` |
+| **C9** | **Network Analysis** – executor for network checks. | `src/actions/network_analysis.py` |
+| **C10** | **Device Status** – executor for process/device info. | `src/actions/device_status.py` |
+| C11 | Build Capability Registry (already done). | – |
+| C12 | Wrap external LLM calls as governed capabilities (Phase 4.2). | `src/actions/external_llm.py` (future) |
+| C13 | Register all capabilities in `registry.json`. | `src/config/registry.json` |
+
+### Workstream D: Ledger & Audit (Weeks 2–4) – Unchanged, but ensure new event types (`RESEARCH_PERFORMED`, `ANALYSIS_GENERATED`) are logged.
+
+### Workstream E: Testing & Verification (Ongoing, culminates Week 7) – Add tests for each new capability.
+
+### Workstream F: Documentation & Governance (Weeks 6–7) – Update user documentation to describe research, analysis, and diagnostic capabilities.
+
+---
+
+## ⏱️ Timeline Estimate
+
+| Week | Focus |
+|------|-------|
+| 1–2 | Governor Spine, ExecuteBoundary, NetworkMediator foundation |
+| 3–4 | First capabilities (web search, open, volume, etc.), registry |
+| 5–6 | **Research mode, analysis mode, report formatting** – these are the flagship features |
+| 7 | System/network diagnostics, adversarial testing, evidence compilation |
+| 8 | **Phase 4 Runtime Unlock** (subject to gate passage) |
+| *After unlock* | Phase 4.2 and Phase 4.5 capabilities can be added iteratively, each requiring their own testing but not a new global unlock. |
+
+---
+
+## ⚠️ Risk Zones & Mitigations (Adversarially Verified)
+
+| Risk | Mitigation |
+|------|------------|
+| **Bypass of governor.py** | Static analysis ensures only governor.py creates ActionRequests; governor_mediator.py forwards only. |
+| **Registry path fragility** | Absolute path resolution relative to module; test with different cwd. |
+| **Registry unavailability** | Explicit fail‑closed: if registry missing/malformed, no actions proceed. |
+| **Split authority** | governor.py is sole choke point; all execution flows converge there. |
+| **Direct network calls outside NetworkMediator** | CI import audit bans `requests`, etc., outside `network_mediator.py`. |
+| **Model version drift** | Version hash includes weights, prompt, wrapper, parameters; **validated on every inference call**; update requires confirmation; headless mode blocks inference. |
+| **Confirmation token reuse across sessions** | Tokens are cryptographically random, bound to session ID, invalidated on session end. |
+| **Session persistence** | Session manager explicitly clears all conversational state, corrections, pending tokens. |
+| **Environment variable override** | `GOVERNED_ACTIONS_ENABLED` is hard‑coded in `execute_boundary.py`; no env reads. |
+| **Silent fallback** | All fallback paths require user confirmation; code audit ensures none exist. |
+| **Ledger write failure** | If ledger write fails, action execution is denied; no action proceeds unlogged. |
+
+---
+
+## ✅ Success Criteria for Phase 4 Unlock (Extended)
+
+In addition to the original criteria:
+- [ ] **Structured Research Mode** correctly aggregates multiple searches and returns a neutral, sourced summary.
+- [ ] **Deep Analysis Mode** outputs conform to the report format and contain no directive language.
+- [ ] **System diagnostics** return accurate, local data without network leaks.
+- [ ] **Network analysis** performs only safe, non‑invasive checks (e.g., local latency tests) and logs all external probes (if any).
+- [ ] **All new capabilities** respect the same phase gate, rate limits, and ledger requirements as Phase 4 basics.
+- [ ] **Model version lock** is verified on every inference call.
+- [ ] **Confirmation tokens** are demonstrably random and session‑bound.
+
+---
+
+## 🔮 After Phase 4: Phase 4.2 and Phase 4.5
+
+Once Phase 4 runtime is stable for ≥30 days, work on Phase 4.2 (Cognitive Depth) and Phase 4.5 (Household Intelligence) can begin. These phases add **no new authority** – only more sophisticated use of existing read‑only capabilities. Each new capability must pass its own code review and adversarial testing, but does not require a second global unlock.
+
+**Phase 4.2** focuses on multi‑step reasoning and structured output.  
+**Phase 4.5** focuses on environment awareness (system, network, device).
+
+Together, they transform Nova from a trusted research engine into an expert analyst and household intelligence advisor – all without autonomy or background behavior.
+
+---
+
+## 📜 References
+
+- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md)
+- [Phase 4 Readiness & Finalization Requirements](NOVA-PHASE4-READINESS-v1.0.md)
+- [Phase 4 Action Plan v1.0](NOVA-PHASE4-ACTION-PLAN-v1.0.txt)
+- [Adversarial Review Notes 2026‑02‑17](internal/adversarial_review.md)
+- [Governor Bypass Proof](archive/phase%204/GOVERNOR_BYPASS_PROOF.md) (to be updated)
+- [Capability ID Registry Schema](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md#appendix-a)
+
+---
+
+**Prepared by:** Nova Constitutional Governance Board  
+**Date:** 2026‑02‑18  
+**Status:** 🔓 **Staging Active – Capability 16 Live**
+
+---
+
+*End of Phase 4 Roadmap v2.0*
