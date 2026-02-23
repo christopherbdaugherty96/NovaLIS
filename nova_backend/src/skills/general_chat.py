@@ -17,6 +17,7 @@ Rules:
 
 from __future__ import annotations
 
+import asyncio
 import re
 from typing import Dict, Tuple
 
@@ -208,7 +209,9 @@ class GeneralChatSkill(BaseSkill):
         max_tokens = self.MAX_TOKENS.get(mode, self.MAX_TOKENS["concise"])
 
         try:
-            response = ollama.chat(
+            # Run the blocking ollama.chat() in a thread to avoid event loop freeze
+            response = await asyncio.to_thread(
+                ollama.chat,
                 model="phi3:mini",
                 messages=[
                     {"role": "system", "content": system_prompt},
