@@ -1,0 +1,421 @@
+🛠️ NOVA — PHASE 7 RASPBERRY PI BUILD GUIDE
+
+Sovereign House Intelligence — Offline, API‑Free, Presence‑Ready
+
+Document ID: NOVA-PI-BUILD-PHASE7-v3.0
+Status: Practical Execution Guide (Not Constitutional)
+Date: 2026-02-17
+Based on: NOVA FULL OFFLINE PHASE MAP (API‑FREE), Engineering Audit v2.0, and Community Feedback
+
+---
+
+🔹 PURPOSE
+
+This document provides a complete, minimal, realistic hardware and software build that brings Nova to Phase 7 (Continuous Awareness) on a Raspberry Pi. It uses only free, local, offline‑first components and respects all constitutional locks: Governor supremacy, no paid APIs, no cloud dependency, calm presence.
+
+By the end of this build, Nova will:
+
+· Run entirely on a Raspberry Pi 5 (or Pi 4) with SSD
+· Observe the home environment continuously (opt‑in)
+· Provide a calm dashboard and voice interface
+· Execute governed actions (lights, plugs, etc.)
+· Generate basic insights and proposals locally
+· Feel like a quiet, competent house intelligence
+
+This guide incorporates practical engineering constraints to ensure 24/7 stability and a true appliance feel.
+
+---
+
+1. HARDWARE REQUIREMENTS (Minimum Viable)
+
+Component Recommended Notes
+Single‑Board Computer Raspberry Pi 5 (8GB) with active cooler Pi 4 (4GB) works but slower for LLM
+Storage 64GB+ USB3 SSD (or high‑endurance microSD) SSD is strongly recommended for stability; avoid cheap SD cards
+Power Supply Official Pi 5 27W USB‑C PSU Stable power is critical for 24/7
+Zigbee Coordinator Sonoff Zigbee 3.0 USB Dongle Plus (or similar) For local device control (no cloud)
+Sensors (Start Small) - 1 PIR motion sensor (Zigbee) - 1 door/window contact - 1 temperature/humidity sensor - 1 smart plug (energy monitoring optional) Choose Aqara, Sonoff, or similar; all work with Zigbee2MQTT
+Microphone ReSpeaker 2‑Mic Array (USB) or cheap USB mic For voice capture
+Speaker USB or 3.5mm powered speaker For Piper TTS
+Optional Display Official Pi 7" touch display or HDMI monitor For dashboard; can run headless
+
+Total approx cost: ~$220 (with sensors) – see breakdown in Appendix.
+
+---
+
+2. SOFTWARE STACK (All Free, Local)
+
+Layer Software Role in Nova Notes
+OS Raspberry Pi OS Lite (64‑bit) Minimal base; no desktop needed Can add desktop if desired
+Container Runtime Docker All long‑running services run in containers for stability Essential for 24/7 operation
+Home Automation Home Assistant Container Device integration, sensor data, control Official container; easy updates
+Messaging Mosquitto (MQTT broker) Lightweight event bus Runs in container
+Zigbee Bridge Zigbee2MQTT Translates Zigbee devices to MQTT Runs in container
+Governor Core Python (FastAPI + WebSocket) in Docker Central authority, capability registry, mediation Keep thin; stateless where possible
+Database SQLite (volume‑mounted) Capability registry, ledger, trends Lightweight; use persistent volume
+Short‑Term State Redis (optional, in container) In‑memory state for recent events, anomaly detection Can use Python dicts for small scale
+Voice STT Vosk (offline) or Whisper.cpp Speech‑to‑text Vosk is lighter; Whisper more accurate but heavier; run in separate container
+Voice TTS Piper Text‑to‑speech, fast and natural Run in container
+Wake Word Porcupine (light) or Snowboy Wake word detection Keep CPU idle until needed
+Local LLM Ollama (in container) with small models Summaries, explanations, proposals Use 2B–3B models (e.g., Phi‑3 mini, Gemma 2B) for speed
+Dashboard Static HTML/CSS/JS served by Governor Calm, non‑directive UI WebSocket for live updates
+Orb CSS‑only animated element Non‑semantic presence indicator No JS needed
+Service Supervisor Custom health‑check + auto‑restart Monitors all containers, restarts on failure Implemented as a separate container or systemd service
+
+---
+
+3. ARCHITECTURE OVERVIEW
+
+```
+[Sensors/Devices] ↔ [Zigbee2MQTT] ↔ [Mosquitto MQTT]
+                                    ↙        ↓
+                        [Home Assistant]   [Governor Core]
+                                              ↓
+                                ┌─────────────┴─────────────┐
+                                ↓                           ↓
+                       [Interface Layer]             [Service Supervisor]
+                     Voice / Dashboard / LLM           (health checks)
+
+```
+
+· Core Layer (always running): Governor Core subscribes directly to zigbee2mqtt/# topics for device events. Home Assistant subscribes to the same topics for UI/automation but is not the source of truth for Nova.
+· Interface Layer (restartable): Voice service, dashboard, and LLM run in separate containers. If any crash, the Core continues unaffected.
+· Service Supervisor: A lightweight container that performs health checks on all services and restarts them if needed. Ensures appliance‑grade uptime.
+
+---
+
+4. PHASE 7 BUILD: STEP BY STEP
+
+Phase 0 – Base System & Docker
+
+1. Flash Raspberry Pi OS Lite (64‑bit) to SSD using Raspberry Pi Imager. Enable SSH, set hostname nova.local.
+2. Boot Pi, update: sudo apt update && sudo apt upgrade -y
+3. Install Docker and Docker Compose:
+   ```
+   curl -fsSL https://get.docker.com -o get-docker.sh
+   sudo sh get-docker.sh
+   sudo usermod -aG docker $USER
+   ```
+4. Log out and back in, then create a project directory: mkdir ~/nova && cd ~/nova
+
+Phase 1 – Home Automation Backend (All Containers)
+
+Create a docker-compose.yml with the following services:
+
+```yaml
+version: '3.8'
+
+services:
+  mosquitto:
+    image: eclipse-mosquitto
+    container_name: mosquitto
+    restart: unless-stopped
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+
+  zigbee2mqtt:
+    image: koenkk/zigbee2mqtt
+    container_name: zigbee2mqtt
+    restart: unless-stopped
+    devices:
+      - /dev/ttyACM0:/dev/ttyACM0
+    volumes:
+      - ./zigbee2mqtt/data:/app/data
+      - /run/udev:/run/udev:ro
+    environment:
+      - TZ=America/New_York
+
+  homeassistant:
+    image: ghcr.io/home-assistant/home-assistant:stable
+    container_name: homeassistant
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./homeassistant/config:/config
+      - /etc/localtime:/etc/localtime:ro
+```
+
+1. Start the services: docker-compose up -d
+2. Configure Zigbee2MQTT web interface (port 8080) to pair devices. They will appear in Home Assistant automatically.
+3. Add to Home Assistant configuration.yaml:
+   ```yaml
+   mqtt:
+     broker: localhost
+   ```
+
+Phase 2 – Governor Core (Container)
+
+Create a new service in docker-compose.yml:
+
+```yaml
+  governor:
+    build: ./governor
+    container_name: governor
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./governor/data:/data
+      - ./governor/ledger:/ledger
+    depends_on:
+      - mosquitto
+```
+
+Create ./governor/Dockerfile:
+
+```dockerfile
+FROM python:3.11-slim
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+CMD ["uvicorn", "governor:app", "--host", "0.0.0.0", "--port", "8000"]
+```
+
+requirements.txt:
+
+```
+fastapi
+uvicorn
+websockets
+paho-mqtt
+aiofiles
+redis
+```
+
+Implement governor.py with:
+
+· FastAPI app with WebSocket endpoint for dashboard
+· MQTT client subscribing to zigbee2mqtt/# (not homeassistant/#)
+· SQLite database for capability registry and ledger
+· Governor mediation: parse user input, match capability, check permissions, log to ledger
+· Health endpoint /health returning 200
+· In‑memory state graph for recent events (optional Redis for persistence)
+
+Phase 3 – Voice Interface (Container)
+
+Add voice service to docker-compose.yml:
+
+```yaml
+  voice:
+    build: ./voice
+    container_name: voice
+    restart: unless-stopped
+    devices:
+      - /dev/snd:/dev/snd
+    volumes:
+      - ./voice/models:/models
+    depends_on:
+      - governor
+```
+
+./voice/Dockerfile:
+
+```dockerfile
+FROM python:3.11-slim
+RUN apt-get update && apt-get install -y portaudio19-dev
+WORKDIR /app
+COPY requirements-voice.txt .
+RUN pip install --no-cache-dir -r requirements-voice.txt
+COPY . .
+CMD ["python", "voice_service.py"]
+```
+
+requirements-voice.txt:
+
+```
+pvporcupine
+vosk
+piper-tts
+pyaudio
+requests
+```
+
+Implement voice_service.py with:
+
+· Porcupine wake word detection
+· Record audio, send to Vosk
+· Send transcribed text to Governor endpoint /command
+· Receive response, speak with Piper
+· Health endpoint /health
+
+Phase 4 – Intelligence Layer (Optional Container)
+
+Add Ollama service (optional):
+
+```yaml
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    restart: unless-stopped
+    volumes:
+      - ./ollama/models:/root/.ollama
+    ports:
+      - "11434:11434"
+```
+
+Governor will call Ollama only when explicitly requested (e.g., "summarize today's events"). Wrap calls with timeout and fallback.
+
+Rule: If Ollama is down, Nova continues operating normally. All core functions (voice, device control, dashboard) must work without LLM.
+
+Phase 5 – Dashboard
+
+The dashboard is served by Governor as static files. Create ./governor/static/index.html with:
+
+· System health (via /api/system)
+· Latest sensor events (via WebSocket)
+· Proposal queue
+· Trust Panel (active monitoring domains, online/offline status)
+
+Governor will serve static files and push WebSocket updates.
+
+Phase 6 – Continuous Awareness (Opt‑In)
+
+In Governor, maintain an in‑memory state graph (e.g., Python dict with timestamped values). Subscribe to MQTT zigbee2mqtt/# for real‑time updates.
+
+Implement simple anomaly detection:
+
+· Temperature out of range
+· Motion at unusual hours
+· Disk filling faster than normal
+
+Add detected anomalies to a proposal queue (visible in dashboard). Do not speak or alert automatically.
+
+Add a Trust Panel toggle to enable/disable continuous awareness (default off). When enabled, show which domains are monitored (motion, temp, etc.).
+
+Ensure all observation data is stored only ephemerally (Redis or in‑memory) unless explicitly approved for trend storage.
+
+Phase 7 – Service Supervisor
+
+Create a separate container (or systemd service) that performs health checks:
+
+```yaml
+  supervisor:
+    image: alpine:latest
+    container_name: supervisor
+    restart: unless-stopped
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    command: >
+      sh -c "apk add curl && while true; do
+        for service in governor voice ollama; do
+          if ! curl -f http://$service:8000/health; then
+            docker restart $service
+          fi
+        done
+        sleep 30
+      done"
+```
+
+This checks each service's health endpoint every 30 seconds and restarts if unhealthy.
+
+Phase 8 – Log Rotation
+
+Prevent disk fill by adding Docker log limits in docker-compose.yml globally or per service:
+
+```yaml
+x-logging: &default-logging
+  options:
+    max-size: "10m"
+    max-file: "3"
+  driver: json-file
+
+services:
+  mosquitto:
+    logging: *default-logging
+  ...
+```
+
+Also configure system logrotate for any non‑container logs.
+
+---
+
+5. WHAT PHASE 7 ACTUALLY FEELS LIKE
+
+· Nova is always on – Pi consumes ~3‑5W, silent, no fan needed if properly cooled.
+· Dashboard at http://nova.local:8000 shows current home state, recent events, calm insights.
+· Voice: Say "Nova, what's the temperature?" → wake word → Vosk → Governor → (cached sensor) → Piper responds in 1‑2 seconds.
+· Continuous awareness (opt‑in) enables Nova to notice patterns: "Front door opened at 2am (unusual)". This appears in the proposal queue, not as an alert.
+· Actions require explicit confirmation: "Turn on kitchen light" → Governor checks capability → sends MQTT command to Zigbee2MQTT → light on. Dashboard updates instantly.
+· Trust Panel always visible: shows "Continuous Monitoring: Motion, Doors, Temp" when enabled.
+· LLM used sparingly – only for summaries or when asked "explain". It runs at 5‑10 tokens/sec on Pi 5 with 2‑3B models – usable but not chatty. If Ollama fails, Nova falls back gracefully: "I'm unable to generate a summary right now."
+
+---
+
+6. PERFORMANCE NOTES
+
+· LLM: For smooth experience, use 2‑3B quantized models. Avoid 7B+ unless you have a separate machine.
+· Voice: Porcupine + Vosk small model keeps CPU low (<10% when idle). Whisper is heavier; use only if you need higher accuracy.
+· Home Assistant + MQTT: Very lightweight (<100MB RAM).
+· Governor: Thin; should be fine with <50MB RAM.
+· Total RAM usage (with small LLM not constantly loaded): ~1‑1.5GB, leaving plenty for system.
+
+Recommendation: Run LLM on‑demand (load only when needed) to save RAM.
+
+---
+
+7. PHASE 7 COMPLETION CHECKLIST
+
+· All services run in Docker with restart policies.
+· Zigbee2MQTT publishes device events to zigbee2mqtt/#.
+· Governor subscribes to those topics and maintains state.
+· Home Assistant works alongside, but Nova does not depend on it.
+· Dashboard shows live data via WebSocket.
+· Voice wake word works, STT/TTS functional.
+· At least one capability (e.g., light toggle) works with confirmation.
+· Trust Panel shows current monitoring domains.
+· Continuous awareness can be toggled; anomalies appear in proposal queue.
+· Health endpoints exist for all services.
+· Supervisor checks health and restarts failed containers.
+· Log rotation configured (Docker log limits).
+· All services survive reboot.
+
+---
+
+8. BEYOND PHASE 7 (Optional Upgrades)
+
+· Phase 8 – Micro‑Autonomy: Add user‑defined policies via simple rule editor (e.g., "If no motion for 10 min, turn off lights"). Use Governor‑issued tokens.
+· Phase 9 – Legislative Learning: Allow user to approve pattern‑based proposals as permanent rules.
+· Phase 10+: Multi‑agent orchestration, plan‑level review, whole‑home state graph.
+
+---
+
+9. COST BREAKDOWN
+
+Item Approx Cost (USD)
+Raspberry Pi 5 (8GB) + PSU + case $100
+64GB USB3 SSD $20
+Zigbee dongle (Sonoff) $20
+2x PIR motion sensors (Zigbee) $15
+2x door/window sensors $15
+Temperature/humidity sensor $10
+Smart plug (Zigbee) $15
+ReSpeaker 2‑Mic $15
+USB speaker $10
+Total ~$220
+
+All software free.
+
+---
+
+🔒 FINAL NOTE
+
+This build is the minimum viable Nova that reaches Phase 7. It is:
+
+· Realistic – runs on affordable hardware, 24/7 stable.
+· Governed – every action passes through the Governor.
+· Calm – silent unless spoken to; dashboard non‑directive.
+· Offline‑first – no cloud, no subscriptions.
+· Resilient – service supervisor, health checks, log rotation, and container isolation ensure appliance‑grade uptime.
+· Extensible – you can add capabilities later without breaking core.
+
+Build it. Use it. Let it live in your house. Then decide what Phase 8 should be.
+
+---
+
+Document ID: NOVA-PI-BUILD-PHASE7-v3.0
+Status: Living Document – Update as you build

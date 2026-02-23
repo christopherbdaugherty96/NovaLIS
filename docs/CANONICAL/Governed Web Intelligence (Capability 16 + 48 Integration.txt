@@ -1,0 +1,130 @@
+To implement the capabilities described in the two specification documents, you will need to update or create several files in your codebase. Below is a detailed breakdown organized by the two main capability areas.
+
+---
+
+## 1. Governed Web Intelligence (Capability 16 + 48 Integration)
+
+This expands the existing web search into a multi‑source, structured reporting layer with deterministic phrase mapping, synthesis, confidence scoring, and source transparency.
+
+### Files to Update / Create
+
+#### `src/governor/governor_mediator.py`
+- **Extend trigger phrase tables** to cover all clusters: Lookup, Verification, Comparison, Deepen, Source.
+- Modify `parse_governed_invocation()` to return an `Invocation` with:
+  - `capability_id` (use 16 for web intelligence, or possibly a new ID for multi‑source if you want separate tracking; the spec says Cap 16+48 integration, so maybe keep 16 but add a parameter like `mode`).
+  - `params` including the query and the detected cluster (e.g., `{"query": q, "mode": "lookup"}`).
+- Add clarification logic for ambiguous inputs (e.g., if multiple clusters match, ask the clarifying question as defined in section 3.2).
+
+#### `src/config/registry.json`
+- If you decide to split multi‑source reporting into a separate capability (ID 48), ensure it is registered with appropriate fields (`enabled` initially `false`). If you keep it as part of Cap 16, no change needed.
+
+#### `src/governor/governor.py`
+- In `_execute()`, enhance routing for capability 16 to call a new or enhanced executor that can handle multi‑source fetching and synthesis. You may want to branch based on the `mode` parameter.
+
+#### `src/executors/` – New or Modified Executor
+- **Create** `web_intelligence_executor.py` (or extend existing `web_search_executor.py`) to implement:
+  - **Multi‑source fetch** from APIs like DuckDuckGo, Wikipedia, NewsData.io, Guardian, etc. (respecting rate limits and source diversity rules).
+  - **Synthesis** into the required modules (Executive Summary, Source Agreement, Notable Differences, etc.) based on the task mode.
+  - **Confidence scoring** using the deterministic criteria (source count, agreement, authority, recency).
+  - **Source transparency** (store which sources contributed to each part).
+- The executor should use `NetworkMediator` for all HTTP calls.
+- Return `ActionResult` with structured `data` containing the synthesis result and optional widget information.
+
+#### `src/ledger/writer.py` – New Event Types
+- Add ledger events for detailed tracking: `WEB_INTELLIGENCE_INVOCATION` (with mode, source count, confidence, etc.). This is optional but recommended for auditability.
+
+#### `src/governor/network_mediator.py`
+- If new APIs require different timeouts or rate limits, you may adjust them, but the mediator is already generic. Ensure rate limits are per capability (16 and 48 if separate).
+
+#### `tests/` – New Test Files
+- Create unit tests for the new executor, integration tests for the full flow, and adversarial tests to ensure no autonomous behavior.
+
+---
+
+## 2. Governed Webpage Launch (New Capability)
+
+This adds a new execution capability that opens a web page, either from a preset list or after a confirmation for unknown domains.
+
+### Files to Update / Create
+
+#### `src/governor/governor_mediator.py`
+- Add a new trigger cluster for “open” commands. For example, match phrases like `open <name>`, `launch <name>`, `go to <name>`.
+- In `parse_governed_invocation()`, when such a phrase is detected, return an `Invocation` with:
+  - `capability_id`: assign a new ID (e.g., 17 for “open_website” as per `registry.json`).
+  - `params`: include the requested name (e.g., `{"target": "google"}`) and a flag indicating whether it's a preset or needs lookup.
+- For non‑preset names, the initial detection should **not** trigger immediate execution; instead, it should return a `Clarification` asking for confirmation after a lookup. This can be handled by the Governor’s flow: you may return an `Invocation` with a special flag that causes the executor to perform the lookup and then ask for confirmation. Alternatively, you can use the existing one‑strike clarification mechanism: first detect the intent, then in the executor do the lookup and return a special `ActionResult` that triggers a UI prompt (this may require extending `ActionResult` to carry a confirmation request). The spec describes a two‑step flow: lookup, then confirmation, then execution. You need to decide how to model this within the Governor’s single‑turn constraint. One clean way is to make the executor return a “needs confirmation” result, and the Governor then issues a clarification token and waits for the user’s yes/no. This aligns with the existing `ConfirmationGate`.
+
+#### `src/config/registry.json`
+- Ensure capability 17 (open_website) is registered with appropriate fields (`enabled` initially `false`; set to `true` when ready). Also verify that `requires_confirmation` is set appropriately (maybe `true` for non‑preset, but the confirmation will be handled by the executor logic, not just the gate). You might set `risk_level` to `low`.
+
+#### `src/governor/governor.py`
+- In `_execute()`, add a branch for capability 17 to call a new `webpage_launch_executor`.
+- Handle the case where the executor returns a “needs confirmation” result. This might involve creating a confirmation token and storing the pending URL. The Governor already has `ConfirmationGate`; you can use `gate.set_pending(context)` and then return a special `ActionResult` that tells the UI to ask for confirmation. On the next user message, the Governor should check the pending confirmation and resolve it. The existing `governor_mediator.py` already checks `_pending_clarification`; you could reuse that mechanism or enhance `ConfirmationGate` to be integrated into the flow. Currently, `governor.py` does not use `ConfirmationGate`; it's just a placeholder. You'll need to wire it in.
+
+#### `src/executors/webpage_launch_executor.py` (new)
+- Implements:
+  - **Preset domain mapping**: a static dictionary of name → URL.
+  - **Dynamic lookup**: if target not in presets, use a governed web search (Cap 16) to find the official domain. This should be done via `NetworkMediator` (e.g., using a search API to get the top result).
+  - **URL validation**: enforce allowed protocols, strip query strings, block dangerous schemes.
+  - **Confirmation handling**: if the domain was looked up, return a special result indicating that confirmation is needed, including the candidate URL.
+  - **Execution**: if confirmed (or preset), open the URL in the default browser. Use platform‑specific calls (e.g., `webbrowser.open`) – but ensure this is done in a safe, contained manner (no command injection). Consider using `subprocess` with a fixed command? Safer: use `webbrowser` module which is designed for this.
+- The executor should log the action (via ledger) as specified.
+
+#### `src/gates/confirmation_gate.py`
+- You may need to extend `ConfirmationGate` to store not just a generic context but also the URL and the executor to call after confirmation. Alternatively, the Governor can store that state. The current `confirmation_gate.py` is a simple placeholder; you'll likely need to enhance it to support the full confirmation flow (with timeouts, session binding, etc.). But the spec for Phase 4 already includes confirmation gate; you need to implement its usage in `governor.py`.
+
+#### `src/ledger/writer.py`
+- Add a new event type `WEBPAGE_LAUNCH` with the fields specified in section 10.
+
+#### `tests/` – New Test Files
+- Unit tests for the executor, integration tests for preset and non‑preset flows, and tests for confirmation handling.
+
+---
+
+## 3. Supporting Infrastructure Updates
+
+#### `src/governor/single_action_queue.py`
+- Already enforces concurrency=1; no changes needed.
+
+#### `src/governor/execute_boundary.py`
+- The resource limits (timeout, memory) may need to be adjusted for webpage launch (browser opening is external, so timeouts don't apply). Ensure that the executor doesn't block.
+
+#### `src/governor/network_mediator.py`
+- Confirm that rate limits per capability are adequate for the new executor’s lookup step (it will call a search API, likely Cap 16). No changes needed.
+
+#### `src/actions/action_result.py`
+- Consider adding a new result type (e.g., `ActionResult.needs_confirmation`) to signal that the executor requires a user yes/no. This could be a factory method that sets a special flag in `data`. Then in `governor.py`, you can detect this and engage the confirmation gate.
+
+#### `src/governor/exceptions.py`
+- No new exceptions needed.
+
+---
+
+## Summary of Files to Touch
+
+| File | Changes for Web Intelligence | Changes for Webpage Launch |
+|------|------------------------------|----------------------------|
+| `governor_mediator.py` | Add phrase clusters, return mode parameter | Add open trigger, handle clarification for unknown domains |
+| `registry.json` | Possibly add Cap 48 if separate | Ensure Cap 17 is registered |
+| `governor.py` | Route to new executor | Route to new executor, integrate confirmation flow |
+| `executors/web_search_executor.py` | Enhance or create new multi‑source executor | – |
+| `executors/webpage_launch_executor.py` | – | Create new file |
+| `confirmation_gate.py` | – | Implement actual confirmation logic (store context, validate yes/no) |
+| `ledger/writer.py` | Add new event types | Add new event types |
+| `action_result.py` | – | Add `needs_confirmation` factory |
+| `tests/` | New tests for multi‑source | New tests for launch flows |
+
+---
+
+## Implementation Order Suggestion
+
+1. **Governor Mediator** – extend trigger detection.
+2. **Registry** – ensure capability IDs are present.
+3. **Confirmation Gate** – implement full functionality (needed for both capabilities if they require confirmation).
+4. **Webpage Launch Executor** – start with preset domains only (no lookup) to prove the flow, then add dynamic lookup.
+5. **Web Intelligence Executor** – incrementally add new APIs and synthesis logic, starting with DuckDuckGo as baseline.
+6. **Integration tests** – after each major step.
+
+The two capabilities are independent and can be developed in parallel.
+
+If you need more detailed guidance on any specific file, let me know!

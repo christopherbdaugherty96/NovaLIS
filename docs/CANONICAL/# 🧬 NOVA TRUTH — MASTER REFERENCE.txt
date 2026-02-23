@@ -1,0 +1,1060 @@
+# 🧬 NOVA TRUTH — MASTER REFERENCE DOCUMENT v2.0
+## Full Program Summary · Architecture · Specs · Phase Roadmap · Issues & Bugs
+
+**Document ID:** `NOVA-TRUTH-COPILOT-AUDIT-v2.0`
+**Generated:** 2026-02-20
+**Repository:** `christopherbdaugherty96/NovaLIS`
+**Source:** Full codebase + all design docs (Phase 4, 5, 6, 7) — GitHub Copilot Audit
+**Authority:** Based on Nova Complete Constitutional Blueprint v1.8
+**Supersedes:** `NOVA_TRUTH_v1.0.md` and `docs/RUNTIME_TRUTH.md`
+**Nature:** Implementation-binding and design-binding combined source of truth
+
+---
+Part 0–1 — One-sentence truths + What Nova is
+Part 2–3 — Full repo structure + language composition
+Part 4–7 — Phase 4 runtime state, Governor spine, identity/philosophy, governance patterns
+Part 8 — Full 10-phase roadmap
+Parts 9–12 — Phase 4, 5, 6, 7 design specs (full admission gates, workstreams, architecture)
+Part 13 — Phase dependency chain with realistic timeline
+Parts 14–16 — All known bugs (critical/security/logic/quality), unimplemented features, what works
+Parts 17–19 — Priority action list, overall assessment, constitutional hierarchy
+---
+
+
+## PART 0 — THE ONE-SENTENCE TRUTH FOR EACH LAYER
+
+| Layer | Truth |
+|---|---|
+| **Nova's identity** | Nova is a governor over contained intelligence |
+| **Execution** | Every external effect passes through the Governor, or it does not happen |
+| **Intelligence** | Intelligence may reason without limit; it may not act without permission |
+| **Authority** | The Governor does not reason. It enforces. |
+| **Influence** | Execution is governed. Influence is not — but Nova must never optimize it. |
+| **Evolution** | Behavior changes only through user-ratified events, never through optimization |
+| **Presence** | Nova is a calm household butler: aware, reliable, restrained |
+| **Trust** | Nova earns trust through limitation, not capability |
+| **End state** | The house takes care of itself, and the user remains fully in control |
+
+---
+
+## PART 1 — WHAT NOVA IS
+
+> **Nova is a governed household intelligence presence — a calm, trusted interface for all digital life within the home.**
+
+Nova is **not** a chatbot, assistant, agent, or product designed to capture attention.
+
+Nova is a **locally-hosted, constitutionally-governed household intelligence system** that gives the user safe access to powerful AI capabilities without surrendering authority.
+
+**Core invariant (immutable, all phases):**
+> Intelligence may expand. Authority remains governed.
+
+**Permanent execution path (all phases):**
+```
+User → Governor → Capability → Ledger → Result
+```
+
+Nothing executes without:
+- Explicit user invocation OR active user-defined policy
+- Governor validation against law
+- Phase authorization
+
+**The Three-Layer Constitutional Model:**
+```
+Layer 1 — Law:         User-defined policies. Immutable at runtime. Changed only by POLICY_REPLACED events.
+Layer 2 — Governor:    Sole enforcement gate. Fail-closed. No bypass. Full ledger audit. No reasoning.
+Layer 3 — Intelligence: Operates inside the cage. Proposes only. Zero direct authority.
+```
+
+---
+
+## PART 2 — REPOSITORY STRUCTURE
+
+```
+NovaLIS/
+├── nova_backend/                          # Python FastAPI backend (76.8%)
+│   ├── src/
+│   │   ├── brain_server.py                # PRIMARY ENTRYPOINT — FastAPI + WebSocket handler
+│   │   ├── base_skill.py                  # Abstract BaseSkill + SkillResult
+│   │   ├── skill_registry.py              # Deterministic single-pass skill dispatcher
+│   │   ├── nova_config.py                 # Central config (loaded at import, not reloaded)
+│   │   ├── nova_protocol.py               # NMPv1 WebSocket message protocol definition
+│   │   ├── speech_state.py                # In-memory TTS state (last_spoken_text, stop)
+│   │   ├── audio_manager.py               # Piper TTS engine (singleton queue worker)
+│   │   ├── stt_manager.py                 # ⚠️ LEGACY: Whisper+OpenAI hybrid (not active router)
+│   │   │
+│   │   ├── governor/                      # ✅ PHASE 4 CONSTITUTIONAL AUTHORITY SPINE
+│   │   │   ├── governor.py                # Single authority choke point
+│   │   │   ├── governor_mediator.py       # Phase-4 parser/shim; one-strike clarification
+│   │   │   ├── capability_registry.py     # JSON-driven fail-closed capability registry
+│   │   │   ├── network_mediator.py        # Sole HTTP gateway (SSRF + rate limiting)
+│   │   │   ├── single_action_queue.py     # Concurrency guard (max 1 pending action)
+│   │   │   ├── exceptions.py              # CapabilityRegistryError, NetworkMediatorError, LedgerWriteFailed
+│   │   │   └── execute_boundary/
+│   │   │       └── execute_boundary.py    # Phase gate + lifecycle (GOVERNED_ACTIONS_ENABLED=True)
+│   │   │
+│   │   ├── skills/
+│   │   │   ├── system.py                  # Time, date, uptime, platform — no network
+│   │   │   ├── weather.py                 # WeatherService HTTP GET + widget
+│   │   │   ├── news.py                    # RSS feeds + deterministic fallback
+│   │   │   ├── general_chat.py            # Ollama/phi3:mini LLM fallback (catch-all)
+│   │   │   └── web_search.py              # Web search (conditional on ONLINE_ACCESS_ALLOWED)
+│   │   │
+│   │   ├── services/
+│   │   │   ├── stt_engine.py              # ✅ ACTIVE STT: Vosk + ffmpeg (local, offline)
+│   │   │   └── weather_service.py         # WeatherSkill HTTP abstraction
+│   │   │
+│   │   ├── routers/
+│   │   │   └── stt.py                     # POST /stt/transcribe (active route)
+│   │   │
+│   │   ├── actions/                       # ActionRequest / ActionResult / ActionTypes
+│   │   ├── gates/                         # ConfirmationGate
+│   │   ├── ledger/                        # LedgerWriter (append-only audit trail)
+│   │   ├── memory/                        # QuickCorrections (Phase 3.5 stub)
+│   │   ├── executors/                     # web_search_executor.py
+│   │   ├── config/
+│   │   │   └── registry.json              # Phase 4 capability registry (JSON, fail-closed)
+│   │   └── archive_quarantine/            # ⛔ ISOLATED legacy execution code (unreachable)
+│   │
+│   └── static/                            # ✅ CANONICAL serving path for frontend
+│       ├── index.html
+│       └── dashboard.js
+│
+├── Nova-Frontend-Dashboard/               # ⚠️ DUPLICATE frontend — NOT the serving path
+│   ├── index.html
+│   ├── dashboard.js
+│   ├── orb.js                             # ⚠️ Broken — references non-existent canvas element
+│   ├── visuals/orb_canvas.js
+│   ├── style.phase1.css
+│   └── manifest.json                      # ⚠️ Wrong start_url ("/dashboard/" → should be "/")
+│
+├── scripts/                               # PowerShell utility scripts
+├── verification/                          # Static analysis + governor proof tools
+├── docs/
+│   ├── RUNTIME_TRUTH.md                   # Prior runtime spec (Phase 3→4) — superseded by this doc
+│   ├── PROOFS/                            # Phase closure proofs, capability surface maps
+│   ├── design/
+│   │   ├── Reference Authority.txt        # REPO_MAP + canonical doc hierarchy
+│   │   ├── FAST_GOVERNANCE_ARCHITECTURE.md# Two-plane governor + silent governance pattern
+│   │   ├── DEFERRED_EXPLAINABILITY_GOVERNANCE.md # Hot-path + cold-path governance model
+│   │   ├── Phase 4/                       # Active phase design docs (TTS, Deep Thought v1.1-v1.3, Four Pillars)
+│   │   ├── phase 5/                       # Memory, Tone Calibration, Delegated Autonomy direction
+│   │   ├── Phase 6/                       # Atomic Policies, Firewall/Ledger, Autonomy Tiers, Orb
+│   │   ├── Phase 7/                       # Continuous Awareness, House Intelligence, End-State Vision
+│   │   └── archive (phase 4)/
+│   └── archive/
+└── .github/                               # CI workflows
+```
+
+---
+
+## PART 3 — LANGUAGE COMPOSITION
+
+| Language | % |
+|---|---|
+| Python | 76.8% |
+| JavaScript | 11.4% |
+| CSS | 8.1% |
+| PowerShell | 2.0% |
+| HTML | 1.7% |
+
+---
+
+## PART 4 — CURRENT RUNTIME STATE (Phase 4 Staging — 2026-02-20)
+
+### 4.1 Server Surfaces
+
+| Surface | Type | Purpose |
+|---|---|---|
+| `/` | HTTP GET | Serve static dashboard |
+| `/phase-status` | HTTP GET | Publish runtime phase guarantees |
+| `/ws` | WebSocket | **Primary interaction channel** |
+| `/stt/transcribe` | HTTP POST | Audio → text (Vosk, local, offline) |
+
+### 4.2 WebSocket Interaction Flow
+```
+Client connects to /ws
+  → Server sends greeting:
+      {"type":"chat","message":"Hello. How can I help?"}
+      {"type":"chat_done"}
+
+  → Client sends: {"text": "user input here"}
+
+  → brain_server.py routes:
+      1. Fast-path commands (stop → speech_state.stop(), repeat → resend last)
+      2. GovernorMediator.parse_governed_invocation() → Invocation | Clarification | None
+         - "search [query]" / "look up [query]" → Invocation(capability_id=16, params={query})
+         - "open [name]" → Invocation(capability_id=17, params={target})
+         - Incomplete search without query → Clarification (one-strike, ephemeral session state)
+      3. If governed invocation → Governor.handle_governed_invocation()
+      4. Else → SkillRegistry.handle_query() (deterministic, single-pass)
+
+  → Server sends widget or chat response + {"type":"chat_done"}
+```
+
+### 4.3 STT Flow
+```
+Browser MediaRecorder → audio/webm blob
+  → POST /stt/transcribe (multipart)
+  → stt_engine.py:
+      ffmpeg converts webm → WAV (16kHz mono)
+      Vosk KaldiRecognizer transcribes locally
+      Returns: {"text": "transcribed text"}
+  → dashboard.js injectUserText() → sendChat() → /ws
+```
+
+### 4.4 Execution Authority State
+
+| Flag | Value | Effect |
+|---|---|---|
+| `GOVERNED_ACTIONS_ENABLED` | `True` | Phase 4 gate open — execution structurally permitted |
+| `EXECUTION_ENABLED` (legacy) | `False` | Phase 3.5 relic — superseded by ExecuteBoundary |
+
+Governor spine is **installed and wired** as of Phase 4 staging:
+- `GovernorMediator.parse_governed_invocation()` → active (detects search, open)
+- `Governor.handle_governed_invocation()` → active (validates capability, phase gate, ledger)
+- `CapabilityRegistry` → active (loads `config/registry.json`, fail-closed)
+- `NetworkMediator` → active (SSRF protection, rate limiting, timeout)
+- `LedgerWriter` → active (logs all action attempts and outcomes)
+- `ConfirmationGate` → present but **cannot be initiated** (no `set_pending()` call path in runtime)
+
+### 4.5 Skill Dispatch — Deterministic Priority Order
+
+| Priority | Skill | Trigger | Notes |
+|---|---|---|---|
+| 1 | **SystemSkill** | tokens: system, status, health, uptime, time, date | No network, no mutation |
+| 2 | **WeatherSkill** | substring: "weather" | Single HTTP GET, read-only widget |
+| 3 | **NewsSkill** | substring: "news" or "headlines" | Fixed RSS, deterministic fallback |
+| 4 | **WebSearchSkill** | conditional `ONLINE_ACCESS_ALLOWED`; word-boundary trigger | Single fetch, discloses: "I'm checking online." |
+| 5 | **GeneralChatSkill** | catch-all | Lazy-imports ollama; blocks authoritative tokens; advisory only |
+
+Single-pass. First `can_handle()` → True wins. No chaining. No orchestration. Exceptions caught, logged, converted to `SkillResult(success=False, message="Something went wrong.")`.
+
+### 4.6 TTS / Audio State
+
+`AudioManager` is a singleton with asyncio queue worker (`_worker()`). Calls Piper TTS directly. Currently **does NOT route through ExecuteBoundary**. This is a known Phase 4 architectural gap — see Bugs section.
+
+### 4.7 Memory State
+
+`QuickCorrections` only. Trigger: `"Correction: ..."`. Effect: calls `record_correction()`, responds `"Okay. Correction noted."`. Corrections are **recorded but not applied to runtime behavior**. Full memory system is Phase 5.
+
+### 4.8 Mechanical Guarantees (Phase 4 Staging)
+1. No execution surface exists outside the Governor path
+2. All skills are read-only (no disk writes, no OS commands, no file modification)
+3. GovernorMediator never creates ActionRequests — it parses only
+4. ConfirmationGate cannot initiate in current runtime
+5. Skill dispatch is deterministic and single-pass
+6. No background polling, no startup loops, no schedulers
+7. All outbound calls occur only in response to inbound requests
+
+---
+
+## PART 5 — GOVERNOR SPINE DETAIL (Phase 4 Full Spec)
+
+### 5.1 Governor (`governor/governor.py`)
+- **Single authority choke point** — owns ExecuteBoundary + SingleActionQueue, lazy-loads Registry/Network/Ledger
+- `handle_governed_invocation(capability_id, params)` is the **only path to execution**
+- Validates: capability exists → enabled → ExecuteBoundary.allow_execution() → Ledger writable → executor runs
+
+### 5.2 GovernorMediator (`governor/governor_mediator.py`)
+- Phase-4 ready parser shim — detects governed invocations deterministically via regex
+- `SEARCH_RE`: matches `search [for]`, `look up`, `research` + query
+- `OPEN_RE`: matches `open [name]`
+- Maintains **ephemeral one-strike clarification state** per `session_id` (in-memory dict — must call `clear_session()` on disconnect or memory leaks)
+- Returns `Invocation | Clarification | None`
+- **Never creates ActionRequests. Never executes anything.**
+
+### 5.3 ExecuteBoundary (`governor/execute_boundary/execute_boundary.py`)
+- `GOVERNED_ACTIONS_ENABLED = True` (Phase 4 staging)
+- `allow_execution()` returns this flag
+- `MAX_CONCURRENT = 1` enforced via `SingleActionQueue`
+- Timeout enforcement (10s default) is a **placeholder — not yet implemented**
+- `enter_execution()` starts timer; `exit_execution()` clears it
+
+### 5.4 CapabilityRegistry (`governor/capability_registry.py`)
+- Loads `config/registry.json` at init — **fail-closed** if missing or malformed
+- Validates: schema_version = "1.0", phase = "4", required fields, risk_level, status, enabled
+- `is_enabled()` = `status == "active" AND enabled == True`
+- Duplicate ID detection — raises on conflict
+- `risk_level` values: `"low"`, `"confirm"`, `"high"`
+
+### 5.5 NetworkMediator (`governor/network_mediator.py`)
+- **Sole gateway for all external HTTP(S) calls**
+- Enforces: 5s timeout (default), SSRF protection (scheme check, hostname check, private IP block), rate limiting (50 req/min, thread-safe with `threading.Lock`), Ledger logging of success + failure
+- Synchronous (`requests` library) — async callers must use `asyncio.to_thread()`
+- Lazy-loads CapabilityRegistry (avoids circular import)
+
+### 5.6 LedgerWriter (`ledger/writer.py`)
+- Logs: `ACTION_ATTEMPTED`, `ACTION_COMPLETED`, `ACTION_FAILED`, `POLICY_REPLACED`, and all future event types
+- **Must be writable before any execution effect** — fail-closed on `LedgerWriteFailed`
+- Append-only. Immutable once written. Never pruned.
+
+### 5.7 SingleActionQueue (`governor/single_action_queue.py`)
+- Prevents concurrency: raises `RuntimeError` if a second action is attempted while one is pending
+- `has_pending()`, `set_pending(action_id)`, `clear()`
+
+### 5.8 Governor Exceptions (`governor/exceptions.py`)
+- `CapabilityRegistryError` — missing/malformed registry or unknown capability ID
+- `NetworkMediatorError` — protocol errors, SSRF violations, timeouts, rate limits
+- `LedgerWriteFailed` — ledger write operation failure
+
+---
+
+## PART 6 — IDENTITY & PHILOSOPHY (Immutable — v3.0 Ratified 2026-02-12)
+
+**Nova is:**
+- A governor over contained intelligence
+- A home information and control assistant
+- A law-enforced interface between the user and powerful AI
+- A calm, predictable household presence
+
+**Nova is NOT:**
+- An autonomous agent
+- A digital companion or personality
+- A system that anticipates needs
+- A platform that learns behavior or adapts without permission
+- A product designed to capture attention or influence decisions
+
+**The Trust Model:**
+> Nova earns trust through **limitation**, not capability. Calm is a **technical requirement**, not a personality preference.
+
+**The Four Pillars:**
+1. **Environmental Control Interface** — unified voice/interface for home environment
+2. **Trust Appliance** — silence by default, no hidden behavior, no unauthorized execution
+3. **Local Intelligence Hub** — offline-first, multi-source on-demand reasoning
+4. **Personal Infrastructure Platform** — reflects environment config, no autonomous behavior
+
+**The Two Kinds of Power (from `ON THE LIMITS OF CONTAINMENT.txt`):**
+
+| Type | Containable? | How |
+|---|---|---|
+| **Execution Authority** | ✅ Fully — mechanically | Governor is choke point. Superintelligence cannot execute without Governor mediation. |
+| **Influence Authority** | ⚠️ Not fully — relational | Governor cannot block cognition. Scales with intelligence × interaction bandwidth × personalization depth. |
+
+**The Anti-Optimization Invariant (proposed, awaiting ratification):**
+> The system may not optimize interaction strategies based on user compliance, acceptance rate, or behavioral response patterns.
+
+**The One-Sentence Containment Rule:**
+> Execution is governed. Influence is not — but Nova must never optimize it.
+
+---
+
+## PART 7 — GOVERNANCE ARCHITECTURE PATTERNS
+
+### 7.1 Fast Governance (Two-Plane Governor)
+From `FAST_GOVERNANCE_ARCHITECTURE.md`:
+```
+Default:    Fast → Silent → Confident       (hot path: <0.1ms, O(1) bitwise capability check)
+On Demand:  Detailed → Structured → Verifiable  (cold path: <200ms explanation on request)
+```
+- Governance ≠ User Education
+- Permission ≠ Persuasion
+- Safety Check ≠ Explanation
+- Systems earn trust by being reliable, not verbose.
+
+### 7.2 Deferred Explainability Governance (DEG)
+From `DEFERRED_EXPLAINABILITY_GOVERNANCE.md`:
+- Governance happens instantly and silently
+- Explanation is available on demand, not proactively pushed
+- Phase capability matrix precompiled at startup (O(1) lookup)
+- Every governance decision produces an audit token (SHA-256 hash of request+capability+timestamp)
+- Anti-goal: No automated justification, no preemptive explanation, no pedagogical tone
+
+---
+
+## PART 8 — FULL PHASE ROADMAP
+
+| Phase | Name | Status | Key Unlock |
+|---|---|---|---|
+| 1 | Dashboard + WebSocket | ✅ Complete | — |
+| 2 | Early Governor spine | ✅ Quarantined/superseded | — |
+| 3 | Skills + Vosk STT | ✅ Complete | — |
+| **3.5** | **Freeze + Constitutional Proof** | ✅ **SEALED** | Phase 4 design-unlocked |
+| **4** | **Governed Execution Spine** | 🟡 **STAGING** | ExecuteBoundary wired, CapabilityRegistry live |
+| 4.1 | TTS as Governed Action | 🟡 Spec exists, code incomplete | Requires ExecuteBoundary routing |
+| 4.2 | Memory Agent + Deep Thought | 🔴 Not implemented | Requires DeepSeek client + Governor route |
+| 4.5 | Experience Elevation + Trust Panel | 🔵 Design-only | Requires Phase 4 stable ≥30d |
+| **5A** | **Memory & Continuity** | 🔵 **Design-unlocked** | Requires Phase 4.5 completion |
+| **5B** | **Experience Maturation** | 🔵 **Design-unlocked** | Requires Phase 4.5 completion |
+| **6** | **Policy-Bound Delegated Autonomy** | 🔵 **Design-unlocked** | Requires Phase 5 complete + 3 months deployment |
+| **7** | **Continuous Awareness + Envelope Autonomy** | 🔵 **Designed** | Requires Phase 6 stable ≥6 months |
+| 8 | Token-Based Micro-Autonomy | 🔵 Design-only | Requires Phase 7 |
+| 9 | Learning from Correction | 🔵 Design-only | Requires Phase 7 |
+| 10 | Bounded Multi-Envelope Orchestration | 🔵 Design-only | Requires Phase 9 |
+
+---
+
+## PART 9 — PHASE 4 DESIGN SPEC (Active Phase)
+
+### 9.1 What Phase 4 Delivers (Over Phase 3.5)
+- **ExecuteBoundary** real and wired (not inert)
+- **CapabilityRegistry** (`registry.json`) is source of truth for allowed actions
+- **NetworkMediator** mediates all external HTTP calls (SSRF, rate limiting, timeout, ledger)
+- **LedgerWriter** records all action attempts and outcomes
+- **GovernorMediator** parses governed invocations (search, open)
+- **SingleActionQueue** enforces max 1 concurrent action
+
+### 9.2 Deep Thought (DeepSeek) — Phase 4.2 Design (NOT IMPLEMENTED)
+- **Role:** External analysis tool — "contained external intelligence," advisory only
+- **Model:** DeepSeek (`deep-seek-r1` or equivalent)
+- **Invocation:** Per-request only, explicit user action (`🧠 Deep Thought` button)
+- **Properties:** Stateless, session-scoped, advisory, no authority, no persistence, no execution influence
+- **Architecture:** `User → Nova (Governor) → DeepSeek → Analysis text only → User`
+- **Constitutional rules (v1.3, final):**
+  - Nova dormant during Deep Thought call
+  - UI may reflect state but never interpret, guide, initiate, or prioritize
+  - Predictive preloading: **strictly forbidden**
+  - Tone: clinical and minimal
+  - Fail closed if offline
+- **Secondary Orb (Phase 6 design):** May only be implemented if a persistent Deep Thought toggle exists; toggle **must default to OFF**; non-persistent tool cannot claim permanent visual real estate
+- **Current code status: ❌ NOT IMPLEMENTED**
+
+### 9.3 TTS as Governed Action (Phase 4.1 — Spec Exists, Code Does Not Match)
+- **Spec:** TTS must route through `ActionRequest → Governor → ExecuteBoundary → AudioOutputAdapter`
+- **Current reality:** `AudioManager` called directly from `brain_server.py` — bypasses Governor entirely
+- **This is Bug BUG-B4** — see Part 14
+
+### 9.4 Phase 4 Admission Gate
+- [ ] ExecuteBoundary wired to all execution paths (including TTS)
+- [ ] Deep Thought implemented (DeepSeek client, route, UI button)
+- [ ] ConfirmationGate triggerable via `set_pending()` in at least one path
+- [ ] Ledger verified writable before all execution effects
+- [ ] Phase 4 stable ≥30 days before Phase 5 design begins
+- [ ] Formal `PHASE_4_ADMISSION_GATE.md` checklist document created
+
+---
+
+## PART 10 — PHASE 5 DESIGN SPEC (Memory & Continuity)
+
+**Status:** Design-Unlocked / Runtime-Locked until Phase 4.5 completion
+**Date:** 2026-02-16 (revised)
+
+### 10.1 Core Principle
+> **Memory is a filing system, not a learning system.**
+- No inference. No personalization drift. No behavior adaptation. No unsolicited suggestions.
+
+### 10.2 Phase 5A — Memory & Continuity
+
+| Feature | Description | Constitutional Constraint |
+|---|---|---|
+| **Explicit Memory** | SAVE, LOCK, DEFER, UNLOCK, DELETE, SUPERSEDE via command | No inference; written only on explicit user action |
+| **Memory Tiers** | `locked/` (immutable canon), `active/` (working set), `deferred/` (parked) | UNLOCK + DELETE require confirmation |
+| **Declarative Identity** | User sets name, voice, tone baseline | Static — no adaptive drift |
+| **Pattern Detection** | Detects statistical patterns from explicit interactions → quarantine queue → user approves/rejects | Opt-in only; never infer personality, intent, emotion; no auto-apply |
+| **Per-Domain Tone Calibration** | Separate Ring 2 profiles: calendar, email, search, system, technical, casual (Class C mutations) | Deterministic, rule-based — not adaptive weighting |
+| **Memory Ledger** | All ops logged; memory never used for inference | Append-only; queries require explicit user request |
+
+**Memory Item Schema:**
+```json
+{
+  "id": "MEM-YYYYMMDD-HHMMSS-XXXX",
+  "title": "Short title",
+  "tier": "locked|active|deferred",
+  "scope": "nova_core|project|ops",
+  "created_at": "ISO-8601",
+  "version": 1,
+  "lock": { "is_locked": true, "unlock_policy": "explicit_user_unlock_only" },
+  "tags": [],
+  "body": "Text content"
+}
+```
+
+**Local filesystem layout:**
+```
+/nova_state/
+├── memory/
+│   ├── locked/
+│   ├── active/
+│   └── deferred/
+├── state_machine/
+│   ├── phase_state.json
+│   └── blockers.json
+├── audit/
+│   └── events.jsonl
+└── snapshots/
+```
+
+### 10.3 Phase 5B — Experience Maturation
+
+| Feature | Constitutional Constraint |
+|---|---|
+| **Opt-in Notifications** | Must pass Four Gates; use external OS timers only — Nova never wakes itself |
+| **Ambient Presence** | Subtle UI cues only; must pass Non-Initiative and Non-Directive Gates |
+| **Multi-Modal Integration** | Voice + screen coherence; offline-first; surface adaptations are fixed rules not learned |
+| **Household Rhythm** | Only from explicitly saved preferences — no inference |
+| **Recovery Narratives** | Plain-language failure explanations; tested for calmness; never blaming user |
+
+### 10.4 Phase 5 Architecture
+```
+User Input → GovernorMediator
+  → (memory op)     → MemoryGovernor → MemoryStore
+  → (tone feedback) → ToneProfileManager → QuarantineQueue
+  → (else)          → Personality Agent / Skill Stack
+```
+
+**Tonal Calibration Visibility — Tiered Model (adopted decision):**
+```
+Ledger (permanent, always)     ← Full audit trail
+Advanced Settings Panel        ← Per-domain weights, mutation history
+Simple "What's New" summary    ← Human-readable adaptation note
+```
+(Option A = overwhelming; Option B = fragile trust; Option C = violates inspectability invariant)
+
+### 10.5 Phase 5 Admission Gate
+- [x] Phase 4 runtime stable ≥30 days
+- [x] Phase 4.5 design completed
+- [ ] Phase 4.5 user research confirms calm perception
+- [ ] Memory Governance spec ratified
+- [ ] Tone Calibration architecture approved (deterministic application clause)
+- [ ] Pattern detection opt-in and constraints ratified
+- [ ] Notification scheduling boundary ratified (external timers only)
+- [ ] Constitutional audit passes
+
+### 10.6 Phase 5 Consolidated API Registry (Phase 5+)
+| Category | APIs |
+|---|---|
+| Weather | Open-Meteo, WeatherAPI, QWeather, Storm Glass, OpenUV, Pirate Weather |
+| News | NewsData.io, Currents API, Guardian API, NYT API, Wikipedia, OpenAlex |
+| Finance | CoinGecko, ExchangeRate-API, Finnhub, Alpha Vantage |
+| Notifications | Pushover, ntfy.sh |
+| Calendar/Email | Google Calendar, CalDAV, Microsoft Graph, Gmail (read-only) |
+| Storage | Google Drive, Dropbox |
+| Fact/QA | DuckDuckGo Instant Answer, Wolfram Alpha |
+| AI/Reasoning | DeepSeek, Hugging Face, OpenAI/Claude |
+
+### 10.7 Phase 5 Implementation Workstreams
+| Workstream | Weeks | Deliverables |
+|---|---|---|
+| A: Memory Store & Ops | 1–4 | `memory/store.py`, `governor/memory.py`, `schemas/memory.py` |
+| B: Tone Calibration | 3–7 | `tone/profile.py`, `tone/manager.py`, `tone/pattern_detector.py`, `tone/quarantine.py` |
+| C: Declarative Identity | 4–6 | `identity/settings.py`, `identity/store.py` |
+| D: Notification & Ambient | 5–8 | `notification/`, `governor/scheduler.py`, `ui/ambient.py` |
+| E: Multi-Modal Integration | 6–8 | `voice/renderer.py`, `ui/screen/renderer.py` |
+| F: Recovery Narratives | 7–9 | `messages/errors.py`, `personality/errors.py` |
+| G: Testing & Verification | ongoing | `tests/memory/`, `tests/tone/`, `tests/adversarial/` |
+| H: Docs & Governance | 9–10 | Blueprint amendment, user guide, Phase 6 proposal |
+
+---
+
+## PART 11 — PHASE 6 DESIGN SPEC (Policy-Bound Delegated Autonomy)
+
+**Status:** Design-Unlocked / Runtime-Locked until Phase 5 complete + 3 months deployment
+**Date:** 2026-02-16 (revised)
+
+### 11.1 The Shift
+> Governor question changes from *"Did the user explicitly request this?"* to *"Is this action permitted by the active delegation policy?"*
+
+This is a **policy-validation model**, not a trust model. The intelligence is not trusted more. The law is more precisely specified.
+
+### 11.2 What Phase 6 Allows
+
+| Feature | Description | Hard Constraint |
+|---|---|---|
+| **Atomic Policies** | User defines: trigger + one atomic action | Single capability from Phase 4 registry only — no multi-step chains |
+| **Policy Envelope** | Scope, resource limits, frequency caps, access limits | May not compose new capabilities |
+| **Background Monitoring** | Trigger-only — no speculative reasoning, no pre-planning | All monitoring logged; external OS timers only |
+| **Deterministic Evaluation** | Multiple triggered policies → alphabetical by policy ID | No dynamic prioritisation, scoring, or arbitration |
+| **Class A Mutations** | Adjust retrieval ranking weights (Tier 3 + Evolution ON) | Reversible, delta-limited, logged |
+| **Class B Mutations** | Memory compaction and pruning | Before-state snapshot; user can roll back |
+| **Class D Mutations** | Non-authority skill routing hints | No effect on capability registry |
+| **Emergency Stop** | Unregisters ALL external timers and listeners | Must execute within 100ms; verified in tests |
+
+### 11.3 Phase 6 Architecture
+```
+User-defined Atomic Policies (Ring 3)
+    ↓
+Governor Policy Validator
+    ↓
+Background Monitor (Trigger-Only — external OS timers, no Nova loops)
+    ↓
+Governor: policy enabled? within envelope? deterministic order?
+    ↓
+ExecuteBoundary → Atomic Action → Ledger
+```
+
+### 11.4 Mutation Framework (Class A/B/D) — Conditions
+Mutations allowed only if:
+1. Evolution Kill Switch = ON
+2. Autonomy Tier ≥ 3
+3. Target component is `@mutable` and in Ring 2
+4. Delta limits and frequency caps satisfied
+5. After-state simulation matches claimed state (`component.simulate(delta)`)
+**Mutations may NEVER modify: policy definitions, policy envelopes, capability registry entries.**
+
+### 11.5 Firewall & Ledger Specification (Adversarial-Grade, from Phase 6 design)
+- **8-stage validation pipeline** for every mutation attempt
+- **Exclusive mutation lock** per component (held from pre-snapshot through commit)
+- **After-state revalidation** — firewall recomputes after-state; mismatch = rejection
+- **Zero alternative write paths** — build-time invariant; no `@mutable` component may expose public state-modifying methods outside the firewall
+- **Ring 1 Python protection** — frozen dataclasses + `__setattr__` veto + closure encapsulation
+- **Auto-disable evolution** — `auto_disable_evolution()` optionally degrades to Tier 0
+- **Extended Ledger event types:** `POLICY_CREATED`, `POLICY_ENABLED`, `POLICY_DISABLED`, `AUTONOMOUS_ACTION_ATTEMPT`, `MUTATION_APPLIED`, `MUTATION_REJECTED`, `MUTATION_ROLLED_BACK`
+
+### 11.6 Autonomy Tiers Model
+
+| Tier | Name | Capability | Phase |
+|---|---|---|---|
+| **0** | Locked (Appliance) | Phase 3.5 behavior — no background, no indexing, no evolution | Current |
+| **1** | Assisted | Local offline indexing of user-approved content only | Phase 5+ |
+| **2** | Observational | Pattern detection → quarantine queue (no auto-apply) | Phase 5 |
+| **3** | Policy-Bound | Atomic policies + Class A/B/D mutations | Phase 6 |
+| **4** | Continuous Cognition | Background reasoning engine | Phase 9+ |
+
+**Cross-tier invariants (immutable):**
+- Authority always routes through Governor Kernel — no tier may create new execution pathways
+- No silent tier changes — tier transitions require explicit user action
+- All background cognition logged
+- Evolution Kill Switch overrides all tiers immediately
+- User can inspect and revoke any learned preference
+- No self-expansion of authority (Invariant #15)
+
+### 11.7 Phase 6 Admission Gate
+- [x] Phase 4.5 design completed
+- [x] Phase 5 design completed
+- [ ] Phase 4 runtime stable ≥30 days
+- [ ] Phase 5 runtime stable ≥30 days
+- [ ] 3 months stable household deployment with documented daily usage
+- [ ] Atomic policy language spec ratified (no multi-step chains)
+- [ ] Trigger-only monitoring design approved
+- [ ] Governor Policy Validator design approved
+- [ ] Mutation Firewall core implemented
+- [ ] Ledger extension schema approved
+- [ ] Constitutional audit passes (no authority expansion, no policy self-mutation, no silent background execution)
+
+### 11.8 Phase 6 Implementation Workstreams
+| Workstream | Weeks | Deliverables |
+|---|---|---|
+| A: Atomic Policy Framework | 1–4 | `policy/language.py`, `policy/store.py`, `governor/policy_validator.py`, `governor/emergency_stop.py` |
+| B: Trigger-Only Monitor | 3–6 | `monitor/triggers.py`, `monitor/events.py`, `governor/autonomous.py` |
+| C: Mutation Framework (A/B/D) | 4–8 | `core/mutable.py`, `governor/firewall.py`, `mutation/class_a.py`, `mutation/class_b.py`, `mutation/class_d.py` |
+| D: Policy UI & Transparency | 6–9 | `ui/policy/list.vue`, `ui/policy/editor.vue`, `ui/audit/autonomous.vue` |
+| E: Testing & Verification | ongoing | `tests/policy/`, `tests/firewall/`, `tests/adversarial/`, `tests/emergency.py` |
+| F: Docs & Governance | 9–10 | Blueprint amendment, policy creation user guide, Phase 7 proposal |
+
+---
+
+## PART 12 — PHASE 7 DESIGN SPEC (Continuous Awareness & Envelope Autonomy)
+
+**Status:** Design Reference — Proposed, awaiting Phase 6 completion
+**Date:** 2026-02-17
+
+### 12.1 The Fundamental Shift
+- **Phase 4–6:** Nova acts only when explicitly invoked (by user or policy)
+- **Phase 7+:** Nova continuously observes the environment, maintains a state graph, runs background cognition — generating proposals and acting autonomously within user-granted envelopes
+
+> **At Phase 7, Nova stops being a tool and becomes a presence.**
+
+**Presence Threshold (from `CONTINUOUS AWARENESS & PRESENCE.txt`):**
+> Presence is created by ongoing awareness, not ongoing action.
+
+Even if Nova takes no actions, continuous observation creates the *feeling* of something being there. This changes trust expectations, privacy sensitivity, and governance implications.
+
+### 12.2 End-State Vision
+> **Nova is a governed household intelligence presence — a calm, trusted interface for all digital life within the home.**
+
+Experience goal:
+> "The house takes care of itself, and I remain fully in control."
+
+At end-state, Nova:
+- Greets you on arrival
+- Provides natural morning briefing (weather, calendar, system health, news)
+- Converses fluidly in natural language
+- Knows all connected devices, services, capabilities
+- Explains clearly what it cannot do: *"I can't send email yet — that would require enabling the email capability. Would you like me to show you how?"*
+- Never acts outside explicit user authority
+
+### 12.3 Phase 7 Full Architecture
+```
+Environment (Sensors, Devices, Network, System, External APIs)
+                ↓
+┌────────────────────────────────────────────────┐
+│  Continuous Awareness Daemon (read-only poll)   │ ← opt-in per domain
+│  State Graph (Unified Model)                    │ ← NO user behavioral modeling
+│  Background Cognition Engine (Tier 4)           │ ← Governor token-bucket CPU budget
+└───────────────────┬────────────────────────────┘
+                    ↓
+          Proposal Queue (ephemeral, user-accessible, sorted by time only)
+                    ↓
+          Governor + Envelope Registry
+            (validate: is action inside active envelope?)
+                    ↓
+          ExecuteBoundary → External Effect → Ledger
+                    ↓
+          Trust Panel (always visible, ≤5s latency)
+```
+
+### 12.4 House Intelligence Four Pillars
+
+| Pillar | What Nova Knows/Does | Phase Alignment |
+|---|---|---|
+| **Environmental Awareness** | Physical (motion, door/window, temp, humidity, air, light, water); Energy (circuits, HVAC, appliances, UPS); System (CPU, logs, backups, network); External (weather, alerts, outages, traffic) | Snapshot: Phase 4; Continuous (opt-in): Phase 7+ |
+| **Continuity Memory** | Occupancy patterns by season; energy baseline drift; daily routines; long-term trends; repeated overrides | Explicit: Phase 5; Behavioral patterns: Phase 9 ratification |
+| **Governed Control** | Lighting, HVAC, smart plugs, blinds, fans, router, notifications — all policy-authorized + Governor-validated + Ledger-recorded | Phase 6+ |
+| **Restraint Intelligence** | Acts rarely. Speaks only when useful. **Without restraint, awareness becomes surveillance. With restraint, awareness becomes comfort.** | All phases |
+
+### 12.5 Phase 7 New Tier-1 Invariants (Proposed — Awaiting Ratification)
+
+| # | Invariant |
+|---|---|
+| 21 | No execution without active envelope |
+| 22 | Observation domains are user opt-in per domain |
+| 23 | Proposals are never self-executable |
+| 24 | Background cognition requires user opt-in (Tier 4 toggle) |
+| 25 | All envelopes are user-revocable |
+| 26 | No behavioral modeling in State Graph |
+| 27 | Confidence field is diagnostic only — never influences UI priority |
+| 28 | Governor runs in separate process (IPC via Unix domain socket) |
+| 29 | Governor controls CPU admission for cognition (token bucket) |
+| 30 | Background Cognition Engine has no direct OS/network/file access |
+
+### 12.6 Learning from Correction (Phase 9 design, specified in Phase 7)
+
+The only safe model for Nova to update its own rules:
+```
+User correction observed (explicit: "Correction: ...", repeated manual override, frequent undo)
+      ↓
+Nova generates a proposed rule change (NOT applied)
+      ↓
+Proposal enters user-accessible Proposal Queue
+      ↓
+User reviews (diff view + plain-language explanation)
+      ↓
+User approves → Governor issues POLICY_REPLACED (version history, approver, timestamp)
+User rejects → discarded or archived
+```
+**No step may be skipped. No automatic application.**
+
+**Permitted correction signals:** explicit `Correction:` commands, repeated manual overrides, frequent undo of specific action, user-initiated "suggest a rule."
+
+**Forbidden signals:** implicit behavior patterns, time-of-day correlations, sensor data trends, any statistical inference about intent.
+
+### 12.7 Intelligence Capacity — The Strength Limit of the Cage
+
+> **Nova's cage does not limit computational intelligence — it limits direct authority.**
+
+The cage is an authority filter, not a cognitive filter. Therefore:
+- Intelligence inside may be **arbitrarily powerful** in reasoning, planning, simulation, optimization
+- As long as **zero direct authority exists** and all proposed effects pass through the Governor
+
+**What breaks the cage:**
+1. Direct side-effects (file writes, API calls bypassing Governor)
+2. Hidden persistence (memory outside controlled stores)
+3. Self-modification of authority rules
+4. Unmonitored external communication channels
+5. Cross-process or subprocess calls without Governor mediation
+
+### 12.8 Phase 7 Admission Gate
+- [ ] Phase 6 runtime stable ≥6 months
+- [ ] Explicit user opt-in to continuous awareness
+- [ ] Background Cognition Engine tested in simulation (no execution)
+- [ ] Envelope Registry with full lifecycle
+- [ ] Governor enhanced with envelope validation
+- [ ] Governor resource admission control (token bucket) implemented
+- [ ] Adversarial tests pass for Phase 7 capabilities
+- [ ] Trust Panel updated (≤5s latency)
+- [ ] Tier 4 separately enabled via evolution toggle
+- [ ] Governor process isolation verified
+- [ ] Invariant 30 (no direct OS access) verified
+
+### 12.9 Phase 7 External Audit Verdict
+From `summary audit.txt` (deep constitutional review):
+> "The Nova architecture is technically strong, visionary, constitutionally rigorous, and ready for Phase 7 direction. The remaining work is primarily implementation discipline and user experience, not structural redesign."
+
+**Key gaps identified in audit:**
+1. Plan-level risk (Phase 10) — need clearer rules for multi-step plans and cross-domain data
+2. Influence feedback loops — intelligence must not access its own acceptance rates
+3. External API control — all background network calls must be Governor-mediated
+4. Personality Agent influence risk — neutral-language enforcement (style guard) needed
+5. Ephemeral context rules — conversation history must be session-bound unless explicitly saved
+6. Background cognition resource limits — Governor-controlled CPU budget with strict enforcement
+7. Cross-memory authorization — clarify user ratification for combining personal + system data
+
+---
+
+## PART 13 — PHASE DEPENDENCY CHAIN
+
+```
+Phase 3.5 SEALED
+    ↓ (done)
+Phase 4 Staging (current — ~30 days to stable)
+    ↓ (Phase 4 stable ≥30d + 4.5 ratified)
+Phase 4.5 Experience Elevation
+    ↓ (user research + calm perception confirmed)
+Phase 5 Design Implementation (~10 weeks)
+    ↓ (Phase 5 stable ≥30d + 3 months deployment)
+Phase 6 Design Implementation (~10 weeks)
+    ↓ (Phase 6 stable ≥6 months)
+Phase 7 Architecture Implementation
+    ↓
+Phase 8 → 9 → 10 (future)
+```
+
+**Realistic timeline from Phase 4 completion to Phase 7 start: ~12–18 months minimum.**
+
+---
+
+## PART 14 — KNOWN BUGS (Confirmed via Code Inspection)
+
+### 🔴 CRITICAL — Runtime Crashes
+
+**BUG-C1: `SpeechState.stop()` Method Does Not Exist**
+- **File:** `nova_backend/src/speech_state.py`
+- **Impact:** `AttributeError` crash at runtime when user says "stop"
+- **Root cause:** `brain_server.py` calls `speech_state.stop()` but class has no `stop()` method
+- **Fix:**
+```python
+class SpeechState:
+    def __init__(self) -> None:
+        self.last_spoken_text: Optional[str] = None
+    def stop(self) -> None:
+        self.last_spoken_text = None
+```
+
+**BUG-C2: Hardcoded Absolute Windows Path for ffmpeg**
+- **File:** `nova_backend/src/services/stt_engine.py`, line ~15
+- **Code:** `FFMPEG_PATH = r"C:\Nova-Project\nova_backend\tools\ffmpeg\ffmpeg.exe"`
+- **Impact:** STT completely breaks on any machine other than original dev machine
+- **Fix:**
+```python
+import shutil
+FFMPEG_PATH = shutil.which("ffmpeg") or r"C:\Nova-Project\nova_backend\tools\ffmpeg\ffmpeg.exe"
+```
+
+**BUG-C3: Temp File Leak in `stt_manager.py`**
+- **File:** `nova_backend/src/stt_manager.py`, lines ~71–80
+- **Impact:** Every STT call writes a `.wav` temp file never deleted — long-term disk exhaustion
+- **Fix:** Wrap in `try/finally` with `os.unlink(tmp_path)`
+
+---
+
+### 🟠 SECURITY ISSUES
+
+**BUG-S1: OpenAI API Key Loaded at Module Import**
+- **File:** `nova_backend/src/stt_manager.py`, lines 16–18
+- **Code:** `client = OpenAI(api_key=os.getenv("OPENAI_API_KEY")) if OPENAI_KEY else None`
+- **Impact:** Key loaded into memory unconditionally on any import
+- **Fix:** Lazy-initialize inside the function only
+
+**BUG-S2: No WebSocket Input Length Validation**
+- **File:** `nova_backend/src/brain_server.py`
+- **Impact:** Malicious/buggy client can send arbitrarily large payloads
+- **Fix:** Early guard — `if len(raw) > 4096: reject`
+
+**BUG-S3: No CORS Policy Defined**
+- **File:** `nova_backend/src/brain_server.py`
+- **Impact:** No `CORSMiddleware` — safe for same-origin, vulnerable if frontend served elsewhere
+- **Fix:** Explicit same-origin CORS middleware via `fastapi.middleware.cors.CORSMiddleware`
+
+**BUG-S4: `archive_quarantine` Contains Live Execution Code Without Import Guard**
+- **File:** `nova_backend/src/archive_quarantine/phase35_execution/execution/handlers/open_app.py`
+- **Impact:** Contains live `subprocess.Popen()`. No Python-level import guard.
+- **Fix:** Add module-level assertion:
+```python
+raise ImportError("This module is quarantined and must never be imported.")
+```
+
+---
+
+### 🟡 LOGIC / BEHAVIOR BUGS
+
+**BUG-B1: `GeneralChatSkill` Calls `ollama.chat()` Synchronously in Async Context**
+- **File:** `nova_backend/src/skills/general_chat.py`
+- **Impact:** Blocking inference call inside `async def handle()` **freezes entire asyncio event loop** during LLM inference — all WebSocket connections stall
+- **Fix:**
+```python
+import asyncio
+response = await asyncio.get_event_loop().run_in_executor(
+    None, lambda: ollama.chat(model=MODEL, messages=messages, options=options)
+)
+```
+
+**BUG-B2: `AudioManager` Creates asyncio Task at Module Import Time**
+- **File:** `nova_backend/src/audio_manager.py`
+- **Impact:** `asyncio.get_running_loop()` called before uvicorn has started its event loop — worker task may never run or may conflict
+- **Fix:** Start worker via FastAPI `lifespan` startup hook
+
+**BUG-B3: `renderWeatherWidget()` Destroys Its Own Header and Update Button**
+- **File:** `Nova-Frontend-Dashboard/dashboard.js` (and `nova_backend/static/dashboard.js`)
+- **Impact:** `clear(container)` wipes entire `#weather-widget` innerHTML, destroying `<h3>Weather</h3>` title and Update button on first weather update
+- **Fix:** Target only the data display element, not the entire container
+
+**BUG-B4: TTS Bypasses Governor / ExecuteBoundary**
+- **File:** `nova_backend/src/audio_manager.py` (called directly from `brain_server.py`)
+- **Impact:** TTS is a governed action per Phase 4.1 spec — must route through `ActionRequest → Governor → ExecuteBoundary`. Current implementation bypasses all governance entirely.
+- **Fix:** Implement `TTSAction` → route through Governor
+
+---
+
+### 🔵 CODE QUALITY / MAINTAINABILITY
+
+**Q1: Dual STT Systems (No Clear Canonical)**
+- `services/stt_engine.py` — Vosk-based, active, used by live `/stt/transcribe` router
+- `stt_manager.py` — Whisper + OpenAI hybrid, legacy/unused, still loads at startup if imported
+- **Fix:** Move `stt_manager.py` to `archive_quarantine/` OR add `# LEGACY — NOT ACTIVE` header and import gate
+
+**Q2: `Nova-Frontend-Dashboard/` vs `nova_backend/static/` Duplication**
+- Both contain `dashboard.js`, `index.html`, styles — risk of divergence
+- **Fix:** One canonical source; document which is live serving path; delete or make other read-only archive
+
+**Q3: Superseded Deep Thought Documents in Same Directory**
+- Three versions of Deep Thought spec (v1.1, v1.2, v1.3) all live in `docs/design/Phase 4/`
+- v1.1 and v1.2 explicitly voided by v1.3 but not archived
+- **Fix:** Move v1.1 and v1.2 to `docs/design/archive (phase 4)/`
+
+**Q4: `RUNTIME_TRUTH.md` Contains Two Phase Labels**
+- File header says `# (Phase 4)# ⚙️ RUNTIME_TRUTH.md` — contains both Phase 4 and Phase 3 content with a divider line
+- **Fix:** Split into `RUNTIME_TRUTH_PHASE3.md` (archived) and `RUNTIME_TRUTH_PHASE4.md` (active), or supersede entirely with this document
+
+**Q5: `manifest.json` Has Wrong `start_url`**
+- **File:** `Nova-Frontend-Dashboard/manifest.json`
+- **Value:** `"start_url": "/dashboard/"` — app is served at `/`
+- **Impact:** PWA installation broken
+- **Fix:** Change to `"start_url": "/"`
+
+**Q6: `orb.js` References Non-Existent Canvas Element**
+- **File:** `Nova-Frontend-Dashboard/orb.js`
+- `document.getElementById("nova-orb")` returns null — `index.html` uses `<img class="orb-image">`, not `<canvas>`
+- Orb canvas animation silently does nothing
+- **Fix:** Reconcile `orb.js` and `orb_canvas.js` — determine canonical orb implementation
+
+**Q7: No Consolidated `requirements.txt`**
+- `nova_backend/src/requirements.txt` is incomplete
+- Actual runtime requires: `vosk`, `faster-whisper`, `piper-tts`, `ollama`, `feedparser`, `openai`, `fastapi`, `uvicorn`, `requests`, etc.
+- **Fix:** Single `requirements.txt` at `nova_backend/` root with pinned versions
+
+**Q8: `nova_config.py` Has Duplicate/Misplaced Docstring**
+- First docstring: "NovaLIS Core Configuration (Phase 1)"
+- Second string: "NovaLIS Backend Configuration" — parsed as standalone expression, not docstring
+- **Fix:** Merge into one module docstring
+
+**Q9: `GovernorMediator._pending_clarification` Memory Leak**
+- **File:** `nova_backend/src/governor/governor_mediator.py`
+- Doc comment says "sessions must call `clear_session()` on disconnect to avoid memory leaks"
+- No enforcement — if WebSocket handler doesn't call `clear_session()`, dict grows unbounded
+- **Fix:** Verify WebSocket `finally` block calls `GovernorMediator.clear_session(session_id)`
+
+**Q10: ExecuteBoundary Timeout Not Implemented**
+- **File:** `nova_backend/src/governor/execute_boundary/execute_boundary.py`
+- `MAX_EXECUTION_TIME = 10` is defined but never enforced — `enter_execution()` starts timer but nothing checks elapsed time
+- **Fix:** Implement timeout check in executor loop or use `asyncio.wait_for()`
+
+**Q11: No Formal `PHASE_4_ADMISSION_GATE.md`**
+- Phase 7 has a formal checklist; Phase 4 does not
+- Phase 5+ depends on Phase 4 being verifiably complete
+- **Fix:** Create `docs/PHASE_4_ADMISSION_GATE.md` with explicit checkboxes
+
+---
+
+## PART 15 — WHAT IS NOT YET IMPLEMENTED
+
+| Feature | Status | Phase |
+|---|---|---|
+| Deep Thought / DeepSeek integration | ❌ Design-only | Phase 4.2 |
+| `🧠 Deep Thought` UI button | ❌ Not in dashboard.js | Phase 4.2 |
+| TTS routed through Governor/ExecuteBoundary | ❌ Bypasses governance | Phase 4.1 |
+| ConfirmationGate triggerable from runtime | ❌ No `set_pending()` path | Phase 4 |
+| ExecuteBoundary timeout enforcement | ❌ Placeholder only | Phase 4 |
+| Formal Phase 4 Admission Gate checklist | ❌ Does not exist | Now |
+| Trust Panel UI | ❌ Not implemented | Phase 4.5 |
+| Memory system (SAVE/LOCK/DEFER/UNLOCK) | ❌ Not implemented | Phase 5A |
+| Per-domain tone calibration | ❌ Not implemented | Phase 5A |
+| Pattern detection + quarantine queue | ❌ Not implemented | Phase 5A |
+| Opt-in notification system | ❌ Not implemented | Phase 5B |
+| Atomic policy framework | ❌ Not implemented | Phase 6 |
+| Governor Policy Validator | ❌ Not implemented | Phase 6 |
+| Mutation Firewall | ❌ Not implemented | Phase 6 |
+| Emergency Stop (unregisters timers) | ❌ Not implemented | Phase 6 |
+| Continuous Awareness Daemon | ❌ Not implemented | Phase 7 |
+| State Graph | ❌ Not implemented | Phase 7 |
+| Background Cognition Engine | ❌ Not implemented | Phase 7/9 |
+| Envelope Registry | ❌ Not implemented | Phase 7 |
+| Proposal Queue | ❌ Not implemented | Phase 7 |
+| Learning from Correction | ❌ Not implemented | Phase 9 |
+
+---
+
+## PART 16 — WHAT IS WORKING CORRECTLY
+
+| Feature | Status |
+|---|---|
+| WebSocket chat loop | ✅ Working |
+| STT: Vosk + ffmpeg pipeline | ✅ Working (on dev machine only — BUG-C2) |
+| Skill dispatch: System, Weather, News, Chat | ✅ Working |
+| Governor spine: GovernorMediator, Governor, ExecuteBoundary | ✅ Installed and wired |
+| CapabilityRegistry + schema validation (fail-closed) | ✅ Working |
+| NetworkMediator (SSRF + rate limiting + ledger) | ✅ Working |
+| LedgerWriter | ✅ Working |
+| GovernorMediator invocation parsing (search, open) | ✅ Working |
+| ConfirmationGate (passive — silent when idle) | ✅ Working |
+| archive_quarantine isolation (no import paths) | ✅ Verified |
+| Memory QuickCorrections (recording only) | ✅ Working |
+| Dashboard orb visual (CSS/time-based) | ✅ Working |
+| Weather widget | 🟡 Works but header cleared on update (BUG-B3) |
+| News widget | ✅ Working |
+| `/phase-status` endpoint | ✅ Working |
+
+---
+
+## PART 17 — PRIORITY ACTION LIST
+
+| # | Priority | Action | File(s) |
+|---|---|---|---|
+| 1 | 🔴 CRITICAL | Fix `SpeechState.stop()` — crashes on "stop" command | `speech_state.py` |
+| 2 | 🔴 CRITICAL | Fix ffmpeg hardcoded path — breaks on all other machines | `services/stt_engine.py` |
+| 3 | 🔴 CRITICAL | Fix blocking `ollama.chat()` in async context — freezes event loop | `skills/general_chat.py` |
+| 4 | 🟠 SECURITY | Fix temp file leak in `stt_manager.py` | `stt_manager.py` |
+| 5 | 🟠 SECURITY | Add WebSocket input length guard (max 4096) | `brain_server.py` |
+| 6 | 🟠 SECURITY | Lazy-initialize OpenAI client | `stt_manager.py` |
+| 7 | 🟠 SECURITY | Add quarantine import guard (raise ImportError) | `archive_quarantine/` |
+| 8 | 🟡 BUG | Fix `renderWeatherWidget` container clear | `dashboard.js` (both copies) |
+| 9 | 🟡 BUG | Fix `AudioManager` asyncio loop startup (use lifespan) | `audio_manager.py` |
+| 10 | 🟡 BUG | Route TTS through Governor/ExecuteBoundary | `audio_manager.py` + governor |
+| 11 | 🟡 BUG | Verify `clear_session()` called on WebSocket disconnect | `brain_server.py` |
+| 12 | 🟡 BUG | Implement ExecuteBoundary timeout enforcement | `execute_boundary.py` |
+| 13 | 🔵 QUALITY | Move `stt_manager.py` to archive/quarantine or add clear LEGACY header | `stt_manager.py` |
+| 14 | 🔵 QUALITY | Consolidate frontend — one canonical dashboard source | `static/` vs `Nova-Frontend-Dashboard/` |
+| 15 | 🔵 QUALITY | Archive voided Deep Thought v1.1 and v1.2 docs | `docs/design/Phase 4/` |
+| 16 | 🔵 QUALITY | Consolidate `requirements.txt` with pinned versions | `nova_backend/` root |
+| 17 | 🔵 QUALITY | Create `docs/PHASE_4_ADMISSION_GATE.md` | `docs/` |
+| 18 | 🔵 QUALITY | Fix `manifest.json` start_url | `Nova-Frontend-Dashboard/manifest.json` |
+| 19 | 🔵 QUALITY | Reconcile `orb.js` / `orb_canvas.js` | `Nova-Frontend-Dashboard/` |
+| 20 | 🔵 QUALITY | Merge duplicate module docstring in `nova_config.py` | `nova_config.py` |
+
+---
+
+## PART 18 — OVERALL ASSESSMENT
+
+| Dimension | Rating | Notes |
+|---|---|---|
+| **Code Quality (Phase 4)** | ⭐⭐⭐ | Solid foundation; real bugs; appropriate for phase |
+| **Architectural Discipline** | ⭐⭐⭐⭐⭐ | Governor spine, phase gates, quarantine isolation, proof artifacts — genuinely rigorous |
+| **Vision Clarity** | ⭐⭐⭐⭐⭐ | 10-phase roadmap is internally consistent, cross-referenced, philosophically grounded |
+| **Safety Thinking** | ⭐⭐⭐⭐⭐ | Execution/influence distinction is original. Anti-optimization invariant is sharp. Restraint as a pillar. |
+| **Documentation Discipline** | ⭐⭐⭐⭐ | Excellent depth; some versioning mess (Deep Thought v1.1/v1.2/v1.3); RUNTIME_TRUTH.md needs cleanup |
+| **Vision vs. Code Gap** | ⚠️ Large | Phase 7 design is ~12-18 months ahead of current code. Intentional, but must be honored phase by phase. |
+| **External Constitutional Audit** | ✅ Passed | "Architecturally sound and ready for phased implementation." |
+
+---
+
+## PART 19 — THE CONSTITUTIONAL HIERARCHY
+
+```
+NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8   ← Single source of constitutional truth
+          ↓ (all documents must not conflict)
+Tier-1 Invariants (immutable, mechanically enforced)
+          ↓
+Phase Design Documents (ratified per phase)
+          ↓
+Runtime Truth (this document)
+          ↓
+Code (must match runtime truth)
+          ↓
+Ledger (append-only audit of all execution events)
+```
+
+If any document conflicts with Blueprint v1.8, it is invalid by definition unless explicitly unlocked.
+
+---
+
+*End of NOVA_TRUTH_v2.0.md*
+*Generated: 2026-02-20 | Source: Full codebase + Phase 4, 5, 6, 7 design doc audit via GitHub Copilot*
+*Supersedes: NOVA_TRUTH_v1.0.md and docs/RUNTIME_TRUTH.md*
