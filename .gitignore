@@ -34,3 +34,15 @@ venv/
 # OS
 .DS_Store
 Thumbs.db
+
+# Runtime audio / temp
+nova_backend/input.m4a
+nova_backend/test.wav
+
+# Runtime state
+nova_backend/memory/
+nova_backend/src/data/
+
+# Temporary audio
+*.wav
+*.m4a
