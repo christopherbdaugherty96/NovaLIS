@@ -153,13 +153,14 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
             print("[STT] Converting audio to WAV format...")
             process = await asyncio.create_subprocess_exec(
                 *ffmpeg_cmd,
-                stdout=asyncio.subprocess.DEVNULL,
-                stderr=asyncio.subprocess.DEVNULL
+                stdout=asyncio.subprocess.PIPE,
+                stderr=asyncio.subprocess.PIPE
             )
-            returncode = await process.wait()
+            stdout, stderr = await process.communicate()
 
-            if returncode != 0:
-                print("[STT] Audio conversion failed (ffmpeg error)")
+            if process.returncode != 0:
+                print("[STT] Audio conversion failed")
+                print("[STT] ffmpeg stderr:", stderr.decode(errors="ignore"))
                 return ""
             print("[STT] Audio conversion successful")
 
