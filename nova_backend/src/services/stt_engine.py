@@ -7,6 +7,7 @@ import os
 import shutil
 import subprocess
 import tempfile
+import traceback
 import wave
 from pathlib import Path
 
@@ -126,6 +127,11 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
 
     # Resolve ffmpeg path (runtime check)
     ffmpeg_path = _resolve_ffmpeg()
+
+    # DIAGNOSTIC: print the resolved path and whether it exists
+    print("[STT] Using ffmpeg path:", ffmpeg_path)
+    print("[STT] ffmpeg exists:", os.path.exists(ffmpeg_path) if ffmpeg_path else None)
+
     if ffmpeg_path is None:
         print("[STT] ffmpeg not found (PATH or bundled) — transcription disabled")
         return ""  # fail closed
@@ -138,7 +144,7 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
         with open(input_path, "wb") as f:
             f.write(audio_bytes)
 
-        # Convert to WAV via ffmpeg asynchronously
+        # Prepare ffmpeg command
         ffmpeg_cmd = [
             ffmpeg_path,
             "-y",
@@ -149,23 +155,29 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
             wav_path,
         ]
 
-        try:
-            print("[STT] Converting audio to WAV format...")
-            process = await asyncio.create_subprocess_exec(
-                *ffmpeg_cmd,
-                stdout=asyncio.subprocess.PIPE,
-                stderr=asyncio.subprocess.PIPE
-            )
-            stdout, stderr = await process.communicate()
+        # Run ffmpeg in a thread to avoid blocking the event loop
+        print("[STT] Converting audio to WAV format...")
 
-            if process.returncode != 0:
+        def run_ffmpeg():
+            return subprocess.run(
+                ffmpeg_cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                check=False
+            )
+
+        try:
+            result = await asyncio.to_thread(run_ffmpeg)
+
+            if result.returncode != 0:
                 print("[STT] Audio conversion failed")
-                print("[STT] ffmpeg stderr:", stderr.decode(errors="ignore"))
+                print("[STT] ffmpeg stderr:", result.stderr.decode(errors="ignore"))
                 return ""
             print("[STT] Audio conversion successful")
 
         except Exception as e:
-            print(f"[STT] Audio conversion exception: {e}")
+            print(f"[STT] Audio conversion exception: {type(e).__name__}: {e}")
+            traceback.print_exc()
             return ""
 
         # Transcribe WAV - run Vosk in a thread to avoid blocking
