@@ -27,6 +27,14 @@ class SpeechState:
     def __init__(self) -> None:
         self.last_spoken_text: Optional[str] = None
 
+    def stop(self) -> None:
+        """
+        Clear the last spoken text.
+
+        Internal state reset only.
+        """
+        self.last_spoken_text = None
+
 
 # ------------------------------------------------------------
 # Singleton instance (imported by brain_server)
