@@ -1,6 +1,7 @@
 # src/services/stt_engine.py
 # Phase-3 STT Engine (LOCAL, INPUT-ONLY, FREEZE-READY)
 
+import asyncio
 import subprocess
 import tempfile
 import os
@@ -104,7 +105,7 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
         with open(input_path, "wb") as f:
             f.write(audio_bytes)
 
-        # Convert to WAV via ffmpeg
+        # Convert to WAV via ffmpeg asynchronously
         ffmpeg_cmd = [
             ffmpeg_path,
             "-y",
@@ -117,15 +118,21 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
 
         try:
             print("[STT] Converting audio to WAV format...")
-            subprocess.run(
-                ffmpeg_cmd,
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                check=True,
+            # Run ffmpeg without blocking the event loop
+            process = await asyncio.create_subprocess_exec(
+                *ffmpeg_cmd,
+                stdout=asyncio.subprocess.DEVNULL,
+                stderr=asyncio.subprocess.DEVNULL
             )
+            returncode = await process.wait()
+
+            if returncode != 0:
+                print("[STT] Audio conversion failed (ffmpeg error)")
+                return ""
             print("[STT] Audio conversion successful")
-        except subprocess.CalledProcessError:
-            print("[STT] Audio conversion failed")
+
+        except Exception as e:
+            print(f"[STT] Audio conversion exception: {e}")
             return ""
 
         # Transcribe WAV - use lazy-loaded model
