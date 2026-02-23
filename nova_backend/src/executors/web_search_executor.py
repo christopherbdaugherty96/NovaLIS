@@ -87,6 +87,15 @@ class WebSearchExecutor:
         results = results[:5]
 
         if not results:
+            answer = data.get("Answer") or data.get("Abstract")
+            if answer:
+                results.append({
+                    "title": answer,
+                    "url": f"https://duckduckgo.com/?q={query.replace(' ', '+')}",
+                    "snippet": "Instant Answer"
+                })
+
+        if not results:
             return ActionResult.ok(
                 message=f"{boundary_notice} No results found.",
                 data={"widget": {"type": "search", "data": {"results": []}}},
