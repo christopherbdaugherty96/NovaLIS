@@ -5,7 +5,7 @@ import subprocess
 import tempfile
 import os
 import json
-import shutil                      # ADDED for ffmpeg detection
+import shutil
 from pathlib import Path
 from vosk import Model, KaldiRecognizer
 
@@ -21,28 +21,50 @@ _vosk_model = None
 
 
 def get_vosk_model():
-    """
-    Lazily load the Vosk model.
-    Phase-3.5 rule:
-    - STT must NEVER crash server at import time
-    - If model is missing, STT fails closed (returns empty text)
-    """
+    """Lazily load the Vosk model."""
     global _vosk_model
-
     if _vosk_model is not None:
         return _vosk_model
 
     if not VOSK_MODEL_PATH.exists():
-        # Phase-3.5 compliant: fail closed, do not raise
-        print(
-            "[STT] Vosk model not found at "
-            "models/vosk-model-small-en-us-0.15 — STT disabled."
-        )
+        print("[STT] Vosk model not found — STT disabled.")
         return None
 
     _vosk_model = Model(str(VOSK_MODEL_PATH))
     print("[STT] Vosk model loaded successfully")
     return _vosk_model
+
+
+# --------------------------------------------------
+# ffmpeg detection (PATH first, then bundled fallback)
+# --------------------------------------------------
+
+def _resolve_ffmpeg():
+    """
+    Locate ffmpeg executable.
+    Priority:
+    1. System PATH (shutil.which)
+    2. Bundled binary (relative to project)
+    Returns None if not found.
+    """
+    # 1) Check PATH
+    path = shutil.which("ffmpeg")
+    if path:
+        return path
+
+    # 2) Fallback to bundled binary (Windows)
+    bundled_path = (
+        Path(__file__).resolve().parents[2]
+        / "tools"
+        / "ffmpeg"
+        / "ffmpeg-8.0.1-essentials_build"
+        / "bin"
+        / "ffmpeg.exe"
+    )
+    if bundled_path.exists():
+        return str(bundled_path)
+
+    return None
 
 
 # --------------------------------------------------
@@ -68,6 +90,12 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
     safe_name = filename or "audio.webm"
     print(f"[STT] Processing file: {safe_name}")
 
+    # Resolve ffmpeg path (runtime check)
+    ffmpeg_path = _resolve_ffmpeg()
+    if ffmpeg_path is None:
+        print("[STT] ffmpeg not found (PATH or bundled) — transcription disabled")
+        return ""  # fail closed
+
     with tempfile.TemporaryDirectory() as tmpdir:
         input_path = os.path.join(tmpdir, safe_name)
         wav_path = os.path.join(tmpdir, "audio.wav")
@@ -76,15 +104,9 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
         with open(input_path, "wb") as f:
             f.write(audio_bytes)
 
-        # --- ffmpeg detection (runtime, not import time) ---
-        ffmpeg_path = shutil.which("ffmpeg")
-        if ffmpeg_path is None:
-            print("[STT] ffmpeg not found in PATH, transcription disabled")
-            return ""  # fail closed
-
         # Convert to WAV via ffmpeg
         ffmpeg_cmd = [
-            ffmpeg_path,            # now using detected path
+            ffmpeg_path,
             "-y",
             "-i", input_path,
             "-ar", "16000",
