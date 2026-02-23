@@ -2,12 +2,14 @@
 # Phase-3 STT Engine (LOCAL, INPUT-ONLY, FREEZE-READY)
 
 import asyncio
+import json
+import os
+import shutil
 import subprocess
 import tempfile
-import os
-import json
-import shutil
+import wave
 from pathlib import Path
+
 from vosk import Model, KaldiRecognizer
 
 # --------------------------------------------------
@@ -69,6 +71,37 @@ def _resolve_ffmpeg():
 
 
 # --------------------------------------------------
+# Synchronous Vosk transcription (to be run in thread)
+# --------------------------------------------------
+
+def _vosk_transcribe_wav_sync(wav_path: str) -> str:
+    """
+    Synchronous Vosk transcription for a .wav file.
+    Runs in a worker thread via asyncio.to_thread to avoid blocking the event loop.
+    Must fail-closed and return "" on any error.
+    """
+    try:
+        model = get_vosk_model()
+        if model is None:
+            return ""
+
+        recognizer = KaldiRecognizer(model, 16000)
+
+        with wave.open(wav_path, "rb") as wf:
+            while True:
+                data = wf.readframes(4000)
+                if len(data) == 0:
+                    break
+                recognizer.AcceptWaveform(data)
+
+        result = json.loads(recognizer.FinalResult() or "{}")
+        text = (result.get("text") or "").strip()
+        return text
+    except Exception:
+        return ""
+
+
+# --------------------------------------------------
 # Core transcription function
 # --------------------------------------------------
 
@@ -118,7 +151,6 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
 
         try:
             print("[STT] Converting audio to WAV format...")
-            # Run ffmpeg without blocking the event loop
             process = await asyncio.create_subprocess_exec(
                 *ffmpeg_cmd,
                 stdout=asyncio.subprocess.DEVNULL,
@@ -135,29 +167,7 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
             print(f"[STT] Audio conversion exception: {e}")
             return ""
 
-        # Transcribe WAV - use lazy-loaded model
-        model = get_vosk_model()
-        if model is None:
-            print("[STT] Model unavailable, transcription disabled")
-            return ""
-
-        print("[STT] Model available, starting transcription...")
-        recognizer = KaldiRecognizer(model, 16000)
-
-        with open(wav_path, "rb") as wf:
-            while True:
-                data = wf.read(4000)
-                if not data:
-                    break
-                recognizer.AcceptWaveform(data)
-
-        result = recognizer.FinalResult()
-
-        try:
-            parsed = json.loads(result)
-            text = parsed.get("text", "").strip()
-            print(f"[STT] Transcription completed: '{text}' ({len(text)} chars)")
-            return text
-        except json.JSONDecodeError:
-            print("[STT] JSON parse error in transcription result")
-            return ""
+        # Transcribe WAV - run Vosk in a thread to avoid blocking
+        text = await asyncio.to_thread(_vosk_transcribe_wav_sync, str(wav_path))
+        print(f"[STT] Transcription completed: '{text}' ({len(text)} chars)")
+        return text
