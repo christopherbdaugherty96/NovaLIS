@@ -36,7 +36,7 @@ def get_vosk_model():
 
 
 # --------------------------------------------------
-# ffmpeg detection (PATH first, then bundled fallback)
+# ffmpeg detection (PATH first, then bundled search)
 # --------------------------------------------------
 
 def _resolve_ffmpeg():
@@ -44,25 +44,25 @@ def _resolve_ffmpeg():
     Locate ffmpeg executable.
     Priority:
     1. System PATH (shutil.which)
-    2. Bundled binary (relative to project)
+    2. Search recursively inside tools/ffmpeg/ for ffmpeg.exe
     Returns None if not found.
     """
-    # 1) Check PATH
+    # 1) Check system PATH
     path = shutil.which("ffmpeg")
     if path:
         return path
 
-    # 2) Fallback to bundled binary (Windows)
-    bundled_path = (
+    # 2) Search bundled directory dynamically (version‑independent)
+    tools_dir = (
         Path(__file__).resolve().parents[2]
         / "tools"
         / "ffmpeg"
-        / "ffmpeg-8.0.1-essentials_build"
-        / "bin"
-        / "ffmpeg.exe"
     )
-    if bundled_path.exists():
-        return str(bundled_path)
+    if tools_dir.exists():
+        matches = list(tools_dir.rglob("ffmpeg.exe"))
+        if matches:
+            # Return the first found executable
+            return str(matches[0])
 
     return None
 
