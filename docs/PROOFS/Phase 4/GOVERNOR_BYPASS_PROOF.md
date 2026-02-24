@@ -1,4 +1,5 @@
-# GOVERNOR_BYPASS_PROOF.md
+# 
+
 ## Nova Phase-4 — Governor Bypass Proof (Capability 16 Scope)
 
 **Document ID:** `NOVA-GOV-BYPASS-PROOF-v1.0`  
