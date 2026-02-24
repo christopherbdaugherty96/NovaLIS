@@ -31,6 +31,9 @@ class NetworkMediator:
     Notes:
     - This mediator is synchronous (requests). Async callers should use asyncio.to_thread().
     - Skills may call with capability_id=None (shared bucket).
+    - The Governor owns its own NetworkMediator instance (Governor.network).
+      Do NOT add a second module-level instantiation; use the singleton below for
+      skill/tool callers only.
     """
 
     def __init__(self):
@@ -58,7 +61,13 @@ class NetworkMediator:
             self._request_times[key] = times
 
     def _validate_url(self, url: str) -> None:
-        """Prevent SSRF and non-HTTP protocols."""
+        """
+        Prevent SSRF and non-HTTP protocols.
+
+        Known gap: DNS rebinding is not defended here because we do not resolve
+        hostnames at validation time. Private-IP literals are blocked; domain names
+        that resolve to private IPs are not. Acceptable for Phase-4 threat model.
+        """
         parsed = urlparse(url)
 
         if parsed.scheme not in ALLOWED_SCHEMES:
@@ -76,7 +85,7 @@ class NetworkMediator:
             if ip.is_private or ip.is_loopback or ip.is_link_local:
                 raise NetworkMediatorError("Private network access forbidden.")
         except (ValueError, TypeError):
-            # Host is a domain name; we do not resolve DNS here.
+            # Host is a domain name — DNS rebinding not defended here (see docstring).
             pass
 
     def request(
@@ -178,5 +187,20 @@ class NetworkMediator:
 
         return result
 
-# Phase-3 compatibility singleton
+# ---------------------------------------------------------------------------
+# Phase-3.5 skill-layer singleton — LOAD-BEARING, DO NOT REMOVE YET
+#
+# Required by:
+#   - nova_backend/src/tools/rss_fetch.py
+#   - nova_backend/src/services/weather_service.py
+#
+# These skill/tool callers use capability_id=None (shared rate-limit bucket).
+# They are NOT governed capabilities; they bypass Governor routing intentionally.
+#
+# To remove this singleton, ALL callers above must first be migrated to
+# constructor-injected NetworkMediator, and Governor.network must be wired
+# through SkillRegistry to every skill at instantiation time.
+#
+# Tracked under: network-unification milestone.
+# ---------------------------------------------------------------------------
 network_mediator = NetworkMediator()
