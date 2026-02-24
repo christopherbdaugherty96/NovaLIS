@@ -94,7 +94,12 @@ class Governor:
             print("[DEBUG] Phase gate blocked execution")
             return ActionResult.failure("That requires a specific action, which I can’t perform right now.")
 
-        # 3) Ledger must be writable BEFORE any effect
+        # 3) Single pending action boundary (MUST be checked before any ledger write)
+        print(f"[DEBUG] Queue has pending: {self._queue.has_pending()}")
+        if self._queue.has_pending():
+            return ActionResult.failure("I can’t do that right now.")
+
+        # 4) Ledger must be writable BEFORE any effect (but after queue check)
         try:
             self.ledger.log_event(
                 "ACTION_ATTEMPTED",
@@ -103,11 +108,6 @@ class Governor:
             print("[DEBUG] ACTION_ATTEMPTED logged")
         except LedgerWriteFailed:
             print("[DEBUG] Ledger write FAILED")
-            return ActionResult.failure("I can’t do that right now.")
-
-        # 4) Single pending action boundary
-        print(f"[DEBUG] Queue has pending: {self._queue.has_pending()}")
-        if self._queue.has_pending():
             return ActionResult.failure("I can’t do that right now.")
 
         # 5) Create ActionRequest
