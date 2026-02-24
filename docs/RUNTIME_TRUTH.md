@@ -1,49 +1,50 @@
-# (Phase 4)# ⚙️ RUNTIME_TRUTH.md
-
-**Nova — Mechanical Runtime Specification**
-**Status:** CANONICAL (Phase-3.5 Sealed — Spine Installed, Execution Inert)
-**Scope:** `nova_backend/src/` only
-**Nature:** Implementation-binding, non-aspirational
-
-Grounded in:
-- `brain_server.py`
-- `skill_registry.py`
-- `confirmation_gate.py`
-- `governor/` (Governor class, ExecuteBoundary)
-- Skills (`system.py`, `weather.py`, `news.py`, `web_search_skill.py`, `general_chat.py`)
-- `nova_config.py`
-- **Nova Complete Constitutional Blueprint v1.8** (authoritative)
-
----
-
-## 1. Runtime Entry Surface
-
-### 1.1 Entrypoint
-
-Primary runtime module:
-
-
-
-------------------------------------------------
-(phase 3)RUNTIME_TRUTH.md
-
----
-
 # ⚙️ RUNTIME_TRUTH.md
 
-**NovaLIS — Mechanical Runtime Specification**
-**Status:** CANONICAL (Phase-3.5 Frozen)
-**Scope:** `nova_backend/src/` only
+**NovaLIS — Mechanical Runtime Specification**  
+**Document ID:** `NOVA-RUNTIME-TRUTH-v2.1`  
+**Status:** CANONICAL — Phase-4 Staging (Active)  
+**Supersedes:** NOVA-RUNTIME-TRUTH-v2.0  
+**Last Updated:** 2026-02-24  
+**Scope:** `nova_backend/src/` only  
 **Nature:** Implementation-binding, non-aspirational
 
-Grounded in:
+---
 
-* `brain_server.py` 
-* `skill_registry.py` 
-* `confirmation_gate.py` 
-* `governor_mediator.py` 
-* Skills (`system.py`, `weather.py`, `news.py`, `web_search_skill.py`, `general_chat.py`)
-* `nova_config.py` 
+## Grounded In (Source Files Read)
+
+| File | Role |
+|---|---|
+| `nova_backend/src/brain_server.py` | Runtime entrypoint |
+| `nova_backend/src/governor/governor.py` | Authority choke point |
+| `nova_backend/src/governor/governor_mediator.py` | Parser + invocation detection |
+| `nova_backend/src/governor/execute_boundary/execute_boundary.py` | Phase gate |
+| `nova_backend/src/governor/capability_registry.py` | Capability identity + enable gate |
+| `nova_backend/src/governor/single_action_queue.py` | Concurrency control |
+| `nova_backend/src/governor/network_mediator.py` | Sole outbound HTTP gate |
+| `nova_backend/src/ledger/writer.py` | Append-only durable ledger |
+| `nova_backend/src/actions/action_request.py` | Immutable request contract |
+| `nova_backend/src/actions/action_result.py` | Structured result contract |
+| `nova_backend/src/executors/web_search_executor.py` | Capability 16 executor |
+| `nova_backend/src/executors/webpage_launch_executor.py` | Capability 17 executor |
+| `nova_backend/src/config/registry.json` | Capability registry data |
+| **Nova Complete Constitutional Blueprint v1.9** | Supreme law |
+| **NOVA-PHASE4-STAGING-CAP16-v1.1** (`docs/STATUS.md`) | Execution proof |
+
+---
+
+## Constitutional Preamble
+
+This document describes only what is mechanically true of the running code at Phase-4 Staging.  
+It makes no aspirational claims. It describes no future design.  
+It is wrong if it disagrees with the source files listed above.
+
+The supreme authority order is:
+
+```
+Constitution v1.9 → NOVA TRUTH v3.0 → This document → Source code
+```
+
+If this document and source code ever disagree, source code wins and this document must be corrected.
 
 ---
 
@@ -57,448 +58,297 @@ Primary runtime module:
 nova_backend/src/brain_server.py
 ```
 
-Source: 
-
 FastAPI application:
 
 ```python
 app = FastAPI()
 ```
 
-Inbound surfaces:
+## 1.2 Inbound Surfaces
 
-| Surface         | Type      | Purpose                           |
-| --------------- | --------- | --------------------------------- |
-| `/`             | HTTP GET  | Serve static dashboard            |
-| `/phase-status` | HTTP GET  | Publish frozen runtime guarantees |
-| `/ws`           | WebSocket | Primary interaction channel       |
+| Surface | Type | Purpose |
+|---|---|---|
+| `/` | HTTP GET | Serve static dashboard (`static/index.html`) |
+| `/phase-status` | HTTP GET | Reflect current phase and execution state |
+| `/ws` | WebSocket | Primary interaction channel |
+| `/stt/*` | HTTP (router) | Speech-to-text router (via `stt_router`) |
 
-STT router mounted:
+Static files mounted at `/static` if `nova_backend/static/` exists.
 
-```python
-app.include_router(stt_router)
+## 1.3 Phase-Status Reflection
+
+`/phase-status` returns:
+
+```json
+{
+  "phase": "4",
+  "status": "staging",
+  "execution_enabled": true,
+  "note": "Phase-4 runtime active – all actions mediated by Governor."
+}
 ```
 
-No additional routers registered.
+`status` is `"staging"` when `GOVERNED_ACTIONS_ENABLED = True`, `"sealed"` otherwise. Reflective only. Not authoritative.
+
+## 1.4 Input Security
+
+WebSocket input is bounded before any parsing:
+
+```python
+WS_INPUT_MAX_BYTES = 4096
+```
+
+Inputs exceeding 4096 UTF-8 bytes are rejected before any processing.  
+Malformed JSON is rejected before any processing.  
+Neither error crashes the session.
 
 ---
 
-# 2. Execution Authority — Structural Reality
+# 2. Execution Authority
 
-## 2.1 Execution Flag
-
-From configuration:
+## 2.1 Phase Gate
 
 ```
-EXECUTION_ENABLED = False
+nova_backend/src/governor/execute_boundary/execute_boundary.py
 ```
 
-Source: 
+```python
+GOVERNED_ACTIONS_ENABLED = True
+```
 
-This is constant in Phase-3.5.
+This flag is a module-level constant. It is **not** read from environment variables. It is **not** overridable at runtime. Its current value is `True` — Phase-4 staging is active.
 
-## 2.2 Import Surface Proof
+`ExecuteBoundary.allow_execution()` returns the value of this constant. No logic wraps it.
 
-Active runtime modules:
+## 2.2 What Execution Means in Phase-4
 
-* `brain_server.py` 
-* `skill_registry.py` 
-* `confirmation_gate.py` 
-* `governor_mediator.py` 
-* All registered skills
+Execution authority exists. It is:
 
-None import:
+- Explicit only — triggered by literal deterministic invocation
+- Capability-scoped — routed by `capability_id`
+- Logged — every attempt recorded in ledger before any effect
+- Non-autonomous — Nova never initiates
+- Non-background — all execution is synchronous and request-driven
+- Fail-closed — any gate failure returns refusal; no fallback execution
 
-* `archive_quarantine`
-* `execution/*`
-* `actions/*`
-* `ActionRequest`
-* `execute_action`
+## 2.3 Import Surface
 
-Therefore:
+The following symbols exist and are active in the Phase-4 runtime import graph:
 
-> No import path from any active runtime module leads to quarantine or execution code.
+- `Governor` — authority choke point
+- `GovernorMediator` — parser, no authority
+- `ExecuteBoundary` — phase gate
+- `CapabilityRegistry` — capability identity + enable gate
+- `SingleActionQueue` — concurrency lock
+- `NetworkMediator` — sole HTTP gate
+- `LedgerWriter` — append-only event log
+- `ActionRequest` — immutable request descriptor
+- `ActionResult` — structured result
 
-Execution code exists physically but is unreachable.
+All executors are **lazy-loaded inside `Governor._execute()`** — they are never imported at module level. They are unreachable outside the `_execute()` code path.
 
 ---
 
 # 3. Governor Layer
 
-Source: 
+## 3.1 Governor Class
 
-Properties:
+```
+nova_backend/src/governor/governor.py
+```
 
-* Stateless
-* Pure function
-* No imports
-* No side effects
-* No semantic analysis
-* No routing
-* No policy enforcement
-* No execution hooks
+The Governor is the **single authority choke point**. It is instantiated once per WebSocket session.
 
-Behavior:
+At construction time, only two components are initialized:
 
 ```python
-if not text or not text.strip():
-    return "I'm not sure right now."
-return text.strip()
+self._execute_boundary = ExecuteBoundary()   # Phase gate
+self._queue = SingleActionQueue()            # Concurrency lock
 ```
 
-GovernorMediator does not:
+`CapabilityRegistry`, `NetworkMediator`, and `LedgerWriter` are **lazy-loaded on first access** via `@property`. They are not initialized until an invocation actually reaches the Governor's execution logic.
 
-* Interpret intent
-* Enforce permissions
-* Trigger tools
-* Modify state
-
-It only strips whitespace or returns a fallback string.
-
----
-
-# 4. Confirmation Gate
-
-Source: 
-
-## 4.1 Engagement
-
-Gate consulted only if:
+## 3.2 Governor Invocation Entrypoint
 
 ```python
-confirmation_gate.has_pending_confirmation()
+Governor.handle_governed_invocation(capability_id: int, params: dict) -> ActionResult
 ```
 
-Source: 
+This is the **only method that can produce an executed action**. It is called only by `brain_server.py` when `GovernorMediator.parse_governed_invocation()` returns an `Invocation`.
 
-If no pending context:
-
-```
-try_resolve() → GateResult(message=None)
-```
-
-Gate is silent when idle.
-
-## 4.2 Vocabulary
-
-Accepted:
-
-* `"yes"`
-* `"no"`
-
-All other input:
-
-* Silent (`message=None`)
-
-## 4.3 No Initiation Path
-
-There is **no code path** in Phase-3.5 that calls:
+**Execution gate sequence — in this exact order:**
 
 ```
-confirmation_gate.set_pending()
+1. CapabilityRegistry.get(capability_id)        → unknown capability → failure
+2. CapabilityRegistry.is_enabled(capability_id) → disabled → failure
+3. ExecuteBoundary.allow_execution()             → phase locked → failure
+4. LedgerWriter.log_event("ACTION_ATTEMPTED")   → ledger fail → failure (fail-closed)
+5. SingleActionQueue.has_pending()              → already running → failure
+6. ActionRequest created (frozen, immutable)
+7. Governor._execute(req)
 ```
 
-Therefore:
+If any step returns failure, execution halts. No step is skipped. No alternate path exists.
 
-> Confirmation flows cannot begin in Phase-3.5 runtime.
+**Note on debug output:** `governor.py` currently contains `print(f"[DEBUG] ...")` statements throughout `handle_governed_invocation` and `_execute`. These write to stdout. They are not ledger events and are not part of the governance record.
 
----
-
-# 5. Skill Dispatch — Deterministic Registry
-
-Source: 
-
-Registration order:
-
-1. SystemSkill
-2. WeatherSkill
-3. NewsSkill
-4. WebSearchSkill (if `ONLINE_ACCESS_ALLOWED`)
-5. GeneralChatSkill
-
-Single-pass selection:
-
-* First `can_handle()` True wins.
-* No chaining.
-* No orchestration.
-
-Exception handling:
-
-* Any exception inside a skill is caught.
-* Logged.
-* Converted to:
+## 3.3 Governor Internal Execution Router (`_execute`)
 
 ```python
-SkillResult(
-    success=False,
-    message="Something went wrong."
-)
+Governor._execute(req: ActionRequest) -> ActionResult
 ```
 
-Registry never crashes runtime.
+This is the **only place executors are instantiated**.
+
+At entry:
+```python
+self._queue.set_pending(req.request_id)
+self._execute_boundary.enter_execution()
+```
+
+Routing logic:
+```python
+if req.capability_id == 16:
+    from src.executors.web_search_executor import WebSearchExecutor
+    executor = WebSearchExecutor(self.network)
+    result = executor.execute(req)
+
+elif req.capability_id == 17:
+    from src.executors.webpage_launch_executor import WebpageLaunchExecutor
+    executor = WebpageLaunchExecutor(self.ledger)
+    result = executor.execute(req)
+
+else:
+    result = ActionResult.refusal("Execution path not implemented yet.")
+```
+
+At exit (always, via `finally`):
+```python
+self._execute_boundary.exit_execution()
+self._queue.clear()
+```
+
+For Capability 16, the search query is additionally logged as `SEARCH_QUERY` before routing. This is best-effort — failure does not block execution.
+
+After executor returns, completion is logged as `ACTION_COMPLETED`. This is also best-effort (wrapped in `try/except LedgerWriteFailed: pass`).
+
+Executors receive **only** the network client (or ledger) and the request. They never receive the `ExecuteBoundary` object.
+
+A `TimeoutError` handler exists in `_execute`. It returns `ActionResult.refusal("The request took too long and was cancelled.")`. However, no code in the current runtime raises `TimeoutError` proactively — no cancellation signal is sent to the executor. This handler is passive dead code unless the OS or Python runtime raises `TimeoutError` independently.
 
 ---
 
-# 6. Configuration Surface
-
-Source: 
-
-Configuration values are read at import time.
-
-No configuration is reloaded at runtime.
-
-## 6.1 Web Search Governance
+# 4. GovernorMediator — Parser Layer
 
 ```
-ONLINE_ACCESS_ALLOWED
-WEB_SEARCH_TRIGGERS
-WEB_SEARCH_MAX_RESULTS
+nova_backend/src/governor/governor_mediator.py
 ```
 
-Trigger phrases are defined in `nova_config.WEB_SEARCH_TRIGGERS`.
+## 4.1 Responsibilities
 
-Max results defined in `nova_config.WEB_SEARCH_MAX_RESULTS`.
+GovernorMediator is a **pure parser**. It has no execution authority. It does not create `ActionRequest` objects. It does not call the Governor.
 
-WebSearchSkill enforces word-boundary regex matching. 
+It provides two static methods:
 
-## 6.2 Weather Configuration
+1. `GovernorMediator.mediate(text)` — sanitizes input (strips whitespace, returns fallback on empty). Preserved from Phase-3.5.
+2. `GovernorMediator.parse_governed_invocation(text, session_id)` — detects governed invocations.
+
+## 4.2 Invocation Detection — Return Types
+
+`parse_governed_invocation` returns one of three values:
+
+| Return | Meaning |
+|---|---|
+| `Invocation(capability_id, params)` | Full, valid invocation detected. Governor called. |
+| `Clarification(capability_id, message)` | Incomplete invocation detected. One clarifying question sent. No execution. |
+| `None` | No governed invocation detected. Falls through to Phase-3.5 skill path. |
+
+## 4.3 Recognized Invocation Patterns
+
+**Capability 16 — Web Search (full invocation):**
 
 ```
-DEFAULT_LOCATION
-WEATHER_CACHE_SECONDS
+SEARCH_RE = r"^\s*(search(?: for)?|look up|research)\s+(?P<q>.+?)\s*$"
 ```
 
-WeatherSkill performs a single HTTP GET to a configured weather API via WeatherService. 
+Examples that match:
+- `search for climate change`
+- `search climate change`
+- `look up climate change`
+- `research climate change`
 
-It is read-only and does not modify system state.
+**Capability 17 — Open Preset Website (full invocation):**
+
+```
+OPEN_RE = r"^\s*open\s+(?P<name>\w+)\s*$"
+```
+
+Example: `open google`
+
+**Incomplete Capability 16 (triggers clarification):**
+
+```
+r"\b(search(?: for)?|look up|research)\b"
+```
+
+Examples: `search`, `search for`, `look up`
+
+## 4.4 One-Strike Clarification
+
+- When an incomplete invocation is detected, `_pending_clarification[session_id] = 16` is set.
+- On the next message from that session, the entire input is treated as the query and an `Invocation` is returned.
+- State is cleared from `_pending_clarification` upon resolution.
+- Clarification state is ephemeral (in-process dict). It is cleared on session disconnect via `GovernorMediator.clear_session(session_id)`.
+- No second clarification is ever issued for the same pending state.
 
 ---
 
-# 7. Skills — Mechanical Contracts
-
-## 7.1 SystemSkill
-
-Source: 
-
-* Local time/date
-* Uses `datetime`, `platform`, `time`
-* No network
-* No state mutation
-
----
-
-## 7.2 WeatherSkill
-
-Source: 
-
-* Trigger: substring `"weather"`
-* Calls `WeatherService.get_current_weather()`
-* Performs single HTTP GET
-* No write operations
-* Returns canonical widget:
+# 5. ExecuteBoundary
 
 ```
-{
-  "type": "weather",
-  "data": {...}
-}
+nova_backend/src/governor/execute_boundary/execute_boundary.py
 ```
 
----
+```python
+GOVERNED_ACTIONS_ENABLED = True   # Phase-4 staging: True
 
-## 7.3 NewsSkill
+MAX_EXECUTION_TIME = 10      # seconds — defined, not enforced
+MAX_MEMORY_MB = 100          # placeholder — defined, not enforced
+MAX_CONCURRENT = 1           # enforced via SingleActionQueue
 
-Source: 
+class ExecuteBoundary:
+    def allow_execution(self) -> bool:
+        return GOVERNED_ACTIONS_ENABLED
 
-* Fixed RSS feeds
-* One headline per source
-* Uses RSS primary
-* Deterministic fallback (`fallback_headline`) when RSS fails
-* Always returns canonical widget shape:
+    def enter_execution(self) -> None:
+        self._start_time = time.time()   # Records wall-clock start; not used for enforcement
 
-```
-{
-  "type": "news",
-  "items": [...]
-}
-```
-
-No summaries.
-No synthesis.
-No ranking.
-
----
-
-## 7.4 WebSearchSkill (Conditional)
-
-Source: 
-
-Requirements:
-
-* `ONLINE_ACCESS_ALLOWED == True`
-* Explicit trigger phrase
-* Word-boundary enforced
-
-Behavior:
-
-* Single fetch
-* No retries
-* No caching
-* No synthesis
-* Title + URL only
-* Mandatory disclosure: `"I'm checking online."`
-
-Widget shape:
-
-```
-{
-  "type": "web_search_results",
-  "items": [...]
-}
+    def exit_execution(self) -> None:
+        self._start_time = None
 ```
 
----
-
-## 7.5 GeneralChatSkill
-
-Source: 
-
-* Lazy import of `ollama`
-* No crash if unavailable
-* Blocks authoritative tokens:
-  `{weather, forecast, news, headlines, time, date, system, status}`
-* Advisory only
-* No tools
-* No memory writes
-* No execution
+- `allow_execution()` is a direct constant read. No logic, no state.
+- `enter_execution()` records `self._start_time = time.time()`. This value is never read after being set. No comparison against `MAX_EXECUTION_TIME` exists anywhere in the codebase. No cancellation is triggered.
+- `exit_execution()` sets `self._start_time = None`. It is called in the `finally` block of `_execute()` — always runs.
+- `MAX_EXECUTION_TIME = 10` is a defined constant. It is referenced in no conditional logic. It does not constrain execution duration.
+- `MAX_MEMORY_MB = 100` is a defined constant. It is referenced in no conditional logic. Memory is not sampled or bounded.
 
 ---
 
-# 8. Memory Surface
-
-Quick corrections only.
-
-Source: 
-
-Trigger:
+# 6. CapabilityRegistry
 
 ```
-Correction: ...
+nova_backend/src/governor/capability_registry.py
 ```
 
-Effect:
-
-* Calls `record_correction()`
-* Responds: `"Okay. Correction noted."`
-
-Corrections are recorded but not applied to runtime behaviour in Phase-3.5.
-
----
-
-# 9. Speech State
-
-`speech_state`:
-
-* Stores `last_spoken_text`
-* Provides `stop()` method
-* Used only for:
-
-  * `"repeat"`
-  * `"stop"`
-
-No background audio processing initiated here.
-
----
-
-# 10. WebSocket Protocol Details
-
-Source: 
-
-Greeting:
+Loaded from:
 
 ```
-{"type":"chat","message":"Hello. How can I help?"}
-{"type":"chat_done"}
+nova_backend/src/config/registry.json
 ```
 
-`chat_done` payload schema:
-
-```
-{"type":"chat_done"}
-```
-
-No streaming.
-No partial messages.
-
----
-
-# 11. Background Activity Audit
-
-Absent:
-
-* `@app.on_event("startup")` loops
-* `asyncio.create_task` background loops
-* Schedulers
-* Timers
-* Periodic refresh
-* Autonomous threads
-
-All outbound calls occur only in response to inbound requests.
-
----
-
-# 12. Mechanical Guarantees
-
-1. No execution surface exists.
-2. GovernorMediator cannot execute.
-3. ConfirmationGate cannot initiate.
-4. Skill dispatch is deterministic and single-pass.
-5. No background polling.
-6. **All skills are read-only.**
-
-   * No disk writes
-   * No OS command execution
-   * No file modification
-   * No system control
-
----
-
-# 13. Explicit Exclusions
-
-Not present:
-
-* DeepSeek
-* Multi-agent pools
-* ExecutionGate enforcement engine
-* Delegated autonomy
-* Device control
-* Reminder scheduling
-* Automation engine
-
----
-
-# 14. Runtime Identity (Mechanical Summary)
-
-Phase-3.5 runtime is:
-
-* Deterministic
-* Single-pass routed
-* Read-only
-* Passive when idle
-* Execution-disabled
-* Authority-contained
-
-No roadmap.
-No expansion.
-No inference.
-
-Only current runtime fact.
-
----
-
-# 15. AudioManager is a non-cognitive infrastructure loop.
-It does not generate content, evaluate intent, or mutate state.
-It exists solely to serialize TTS playback.
-It is not considered background cognition under Phase 3.5.
-
----
+Schema requirements enforced at load time:
+- `schema_version == "1.0"`
+- `phase == "4"`
+- Each entry must include: `id`, `name`, `status`, `phase_introduced`, `risk_level`, `data_exfiltration`, `enabled`
+- `risk_level` must be one of: `
