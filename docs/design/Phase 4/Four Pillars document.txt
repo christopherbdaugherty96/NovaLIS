@@ -1,6 +1,4 @@
-Four Pillars document written to fit your current Nova structure.
-This version is:
-Phase-safe
+Four Pillars document 
 
 
 Non-authorizing

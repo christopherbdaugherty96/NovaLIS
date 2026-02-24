@@ -1,0 +1,58 @@
+**Governor Bypass Proof Document**
+
+**Date:** 2026-02-17  
+**Project:** Nova Backend  
+**Author:** (system audit)  
+
+---
+
+## 1. Purpose
+
+This document enumerates all inbound execution paths in the Nova system and proves that every path that could lead to a governed action converges into `src/governor/governor.py` before any execution occurs. It confirms that no direct call to executors or bypass of the governor spine exists.
+
+---
+
+## 2. Inbound Execution Paths
+
+### 2.1 WebSocket User Input (Primary Path)
+
+- **Entry Point:** `src/brain_server.py` – WebSocket endpoint `/ws`
+- **Flow:**
+  1. Client sends a JSON message with a `"text"` field.
+  2. Message is parsed and passed to `GovernorMediator.mediate()` for sanitization.
+  3. `GovernorMediator.parse_governed_invocation()` is called to detect explicit capability invocations (e.g., “search for X”).
+  4. If an invocation is detected, it returns a `(capability_id, params)` tuple.
+  5. The WebSocket handler calls `governor.handle_governed_invocation(capability_id, params)`.
+  6. This method is the **sole entry point** to `governor.py` for governed execution.
+
+### 2.2 Other Potential Paths (Nonexistent)
+
+- **Skill Registry Path:** `skill_registry.handle_query()` is invoked for non‑governed skills (weather, news). This path does **not** call any executor or create `ActionRequest` objects. It is purely Phase‑3.5 and returns `SkillResult` objects, which are dispatched as chat messages or widgets. No governed execution occurs here.
+- **Direct Executor Calls:** A search of the codebase shows no direct imports or calls to executor classes (e.g., `WebSearchExecutor`) outside of `governor._execute()`. The only reference to an executor is inside `governor._execute()` where it is conditionally imported and instantiated.
+- **LLM or Other Services:** The LLM manager is not part of governed execution; it runs independently and does not trigger capabilities.
+
+---
+
+## 3. Convergence Proof
+
+All code paths that could result in a governed action (i.e., an action that uses network, modifies state, or requires permission) converge at `governor.handle_governed_invocation()`. This method:
+
+- Performs registry lookup and enable check.
+- Verifies execution boundary (sealed flag, resource limits).
+- Logs the attempt via ledger.
+- Checks for pending actions.
+- Creates an `ActionRequest`.
+- Delegates to `_execute()` which routes to the appropriate executor.
+
+There is **no other function** in the system that instantiates an `ActionRequest` or calls an executor. All executors are **only** instantiated inside `governor._execute()`.
+
+---
+
+## 4. Conclusion
+
+The governor spine is the **unique authority** for governed execution. No bypass exists. Any future addition of capabilities must route through `governor.handle_governed_invocation()` to maintain constitutional integrity.
+
+---
+1/17/26
+**CBD**  
+*Nova Architecture Audit*
