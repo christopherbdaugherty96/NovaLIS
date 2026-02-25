@@ -138,6 +138,9 @@ class Governor:
         self._queue.set_pending(req.request_id)
         self._execute_boundary.enter_execution()
 
+        result = None
+        error_type = None
+
         try:
             # --- Log search query if this is a web search (capability 16) ---
             if req.capability_id == 16:
@@ -168,32 +171,35 @@ class Governor:
                     request_id=req.request_id
                 )
 
-            # Completion logging (best effort)
-            try:
-                self.ledger.log_event(
-                    "ACTION_COMPLETED",
-                    {
-                        "capability_id": req.capability_id,
-                        "request_id": req.request_id,
-                        "success": result.success,
-                    },
-                )
-            except LedgerWriteFailed:
-                pass
-
-            return result
-
         except TimeoutError:
-            return ActionResult.refusal(
+            error_type = "timeout"
+            result = ActionResult.refusal(
                 "The request took too long and was cancelled.",
                 request_id=req.request_id
             )
         except Exception as e:
             print(f"[DEBUG] Exception inside _execute routing: {e}")
-            return ActionResult.refusal(
+            error_type = "exception"
+            result = ActionResult.refusal(
                 "I can’t do that right now.",
                 request_id=req.request_id
             )
         finally:
+            # Completion logging (best effort) – MUST run for all paths
+            if result is not None:
+                try:
+                    payload = {
+                        "capability_id": req.capability_id,
+                        "request_id": req.request_id,
+                        "success": bool(result.success),
+                    }
+                    if error_type:
+                        payload["error_type"] = error_type
+                    self.ledger.log_event("ACTION_COMPLETED", payload)
+                except LedgerWriteFailed:
+                    pass
+
             self._execute_boundary.exit_execution()
             self._queue.clear()
+
+        return result
