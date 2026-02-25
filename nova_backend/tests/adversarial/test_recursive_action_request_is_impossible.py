@@ -19,7 +19,10 @@ GOVERNOR_FILE = SRC_ROOT / "governor" / "governor.py"
 
 def test_action_request_constructed_only_in_governor_py():
     assert GOVERNOR_FILE.exists(), f"Missing {GOVERNOR_FILE}"
-    all_py = [p for p in SRC_ROOT.rglob("*.py") if "__pycache__" not in p.parts]
+    all_py = [
+        p for p in SRC_ROOT.rglob("*.py")
+        if "__pycache__" not in p.parts and "archive_quarantine" not in p.parts
+    ]
 
     offenders = []
     for py in all_py:

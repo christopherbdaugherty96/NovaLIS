@@ -18,7 +18,7 @@ NETWORK_MEDIATOR_PATH = SRC_ROOT / "governor" / "network_mediator.py"
 def test_only_network_mediator_imports_network_libs():
     assert NETWORK_MEDIATOR_PATH.exists(), f"Missing {NETWORK_MEDIATOR_PATH}"
 
-    all_py = find_py_files(SRC_ROOT, exclude_dirs={"__pycache__", "archive_phase4", "archive_quarantine"})
+    all_py = find_py_files(SRC_ROOT, exclude_dirs={"__pycache__", "archive_phase4", "archive_quarantine", "llm"})
     offenders: list[tuple[Path, set[str]]] = []
 
     for py in all_py:

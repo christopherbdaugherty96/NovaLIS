@@ -1,10 +1,10 @@
 # src/executors/web_search_executor.py
 
 import logging
+import time
+from typing import Any, Dict
 
-from src.actions.action_request import ActionRequest
 from src.actions.action_result import ActionResult
-from src.governor.network_mediator import NetworkMediator
 
 logger = logging.getLogger(__name__)
 
@@ -15,43 +15,69 @@ class WebSearchExecutor:
     All outbound HTTP is routed through NetworkMediator.
     """
 
-    def __init__(self, network: NetworkMediator):
-        self.network = network
+    def __init__(self, network_mediator):
+        self.network = network_mediator
+        # No execute_boundary – Governor owns lifecycle
 
-    def execute(self, request: ActionRequest) -> ActionResult:
-        query = request.params.get("query", "").strip()
+    def _empty_widget(self) -> Dict[str, Any]:
+        return {"widget": {"type": "search", "data": {"results": []}}}
+
+    def execute(self, request_id: str, params: dict) -> ActionResult:
+        query = params.get("query", "").strip()
         if not query:
             return ActionResult.failure(
-                "No search query provided.",
-                request_id=request.request_id
+                "Sure – what would you like me to search for?",
+                request_id=request_id
             )
 
         boundary_notice = "I'm checking online."
-
-        try:
-            # Perform the search via NetworkMediator
-            response = self.network.request(
-                capability_id=request.capability_id,
-                method="GET",
-                url="https://api.duckduckgo.com/",
-                params={
-                    "q": query,
-                    "format": "json",
-                    "no_redirect": "1",
-                    "no_html": "1",
-                },
-                headers={"User-Agent": "Nova/1.0"},
-                as_json=True,
-                timeout=5,
+        capability_id = params.get("capability_id")
+        if not capability_id:
+            return ActionResult.failure(
+                "Internal configuration error: missing capability ID.",
+                request_id=request_id
             )
 
-            data = response.get("data", {})
+        max_retries = 1
+        for attempt in range(max_retries + 1):
+            try:
+                response = self.network.request(
+                    capability_id=capability_id,
+                    method="GET",
+                    url="https://api.duckduckgo.com/",
+                    params={
+                        "q": query,
+                        "format": "json",
+                        "no_redirect": "1",
+                        "no_html": "1",
+                    },
+                    headers={"User-Agent": "Nova/1.0"},
+                    as_json=True,
+                    timeout=5,
+                )
+                break
+            except Exception as e:
+                logger.debug("Attempt %d failed: %s", attempt + 1, e)
+                if attempt == max_retries:
+                    return ActionResult.failure(
+                        f"{boundary_notice} I'm having trouble reaching the search service right now. "
+                        "Please try again in a moment.",
+                        request_id=request_id
+                    )
+                time.sleep(0.5)
 
-        except Exception as e:
-            logger.debug(f"DuckDuckGo API request failed: {e}")
+        status_code = response.get("status_code")
+        data = response.get("data") or {}
+
+        if status_code != 200:
+            if status_code == 202:
+                return ActionResult.failure(
+                    f"{boundary_notice} The search service is temporarily busy. Please try again shortly.",
+                    request_id=request_id
+                )
             return ActionResult.failure(
-                f"{boundary_notice} I couldn't complete the search due to a network issue.",
-                request_id=request.request_id
+                f"{boundary_notice} I received an unexpected response from the search service. This might be temporary.",
+                request_id=request_id
             )
 
         # ----- Parse DuckDuckGo response -----
@@ -61,7 +87,7 @@ class WebSearchExecutor:
         abstract_url = data.get("AbstractURL", "")
         if abstract and abstract_url:
             results.append({
-                "title": abstract[:100] + ("…" if len(abstract) > 100 else ""),
+                "title": (abstract[:97] + "…") if len(abstract) > 100 else abstract,
                 "url": abstract_url,
                 "snippet": "",
             })
@@ -72,14 +98,16 @@ class WebSearchExecutor:
                 if "Topics" in item:
                     for sub in item["Topics"]:
                         if isinstance(sub, dict) and sub.get("FirstURL"):
+                            text = sub.get("Text", "")
                             results.append({
-                                "title": sub.get("Text", "")[:100],
+                                "title": (text[:97] + "…") if len(text) > 100 else text,
                                 "url": sub.get("FirstURL", ""),
                                 "snippet": "",
                             })
                 elif item.get("FirstURL"):
+                    text = item.get("Text", "")
                     results.append({
-                        "title": item.get("Text", "")[:100],
+                        "title": (text[:97] + "…") if len(text) > 100 else text,
                         "url": item.get("FirstURL", ""),
                         "snippet": "",
                     })
@@ -90,20 +118,20 @@ class WebSearchExecutor:
             answer = data.get("Answer") or data.get("Abstract")
             if answer:
                 results.append({
-                    "title": answer,
+                    "title": (answer[:97] + "…") if len(answer) > 100 else answer,
                     "url": f"https://duckduckgo.com/?q={query.replace(' ', '+')}",
                     "snippet": "Instant Answer"
                 })
 
         if not results:
             return ActionResult.ok(
-                message=f"{boundary_notice} No results found.",
-                data={"widget": {"type": "search", "data": {"results": []}}},
-                request_id=request.request_id
+                message=f"{boundary_notice} I couldn't find any results for that.",
+                data=self._empty_widget(),
+                request_id=request_id
             )
 
-        summary_lines = [f"- {r['title']}" for r in results[:3]]
-        user_message = f"{boundary_notice} I found {len(results)} results.\n" + "\n".join(summary_lines)
+        numbered_lines = [f"{i+1}. {r['title']}" for i, r in enumerate(results[:3])]
+        user_message = f"Here are the top results:\n\n" + "\n".join(numbered_lines)
 
         widget_payload = {
             "type": "search",
@@ -113,5 +141,5 @@ class WebSearchExecutor:
         return ActionResult.ok(
             message=user_message,
             data={"widget": widget_payload},
-            request_id=request.request_id
+            request_id=request_id
         )

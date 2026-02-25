@@ -22,7 +22,7 @@ class DummyLedger:
 def _install_dummy_executor(behavior: str):
     """
     Install a fake module at src.executors.web_search_executor with a WebSearchExecutor
-    that either raises TimeoutError or Exception when execute() is called.
+    that simulates timeout, exception, or success when execute() is called.
     """
     mod = types.ModuleType("src.executors.web_search_executor")
 
@@ -30,14 +30,14 @@ def _install_dummy_executor(behavior: str):
         def __init__(self, network):
             self.network = network
 
-        def execute(self, req):
+        def execute(self, request_id, params):
             if behavior == "timeout":
                 raise TimeoutError()
             elif behavior == "exception":
                 raise RuntimeError("simulated executor failure")
             else:
                 # Success path – return a dummy success result
-                return ActionResult.ok("success", data={}, request_id=req.request_id)
+                return ActionResult.ok("success", data={}, request_id=request_id)
 
     mod.WebSearchExecutor = WebSearchExecutor
     sys.modules["src.executors.web_search_executor"] = mod

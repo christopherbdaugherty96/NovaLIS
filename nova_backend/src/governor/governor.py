@@ -13,7 +13,6 @@ from typing import Optional, Dict, Any
 from src.actions.action_result import ActionResult
 from src.governor.execute_boundary import ExecuteBoundary
 from src.governor.single_action_queue import SingleActionQueue
-from src.ledger.writer import LedgerWriter
 from src.governor.exceptions import (
     CapabilityRegistryError,
     NetworkMediatorError,
@@ -60,9 +59,14 @@ class Governor:
 
     @property
     def ledger(self):
-        """Lazy load LedgerWriter."""
+        """
+        Lazy load LedgerWriter.
+        Dynamically imported to allow test monkeypatching and to avoid binding
+        authority surfaces at module load time.
+        """
         if self._ledger is None:
-            self._ledger = LedgerWriter()
+            import src.ledger.writer as ledger_mod
+            self._ledger = ledger_mod.LedgerWriter()
         return self._ledger
 
     # ---- Phase‑4 entrypoint (called by mediator) ----
@@ -87,17 +91,20 @@ class Governor:
 
         if not self.registry.is_enabled(capability_id):
             print(f"[DEBUG] Capability {capability_id} is disabled")
-            return ActionResult.failure("I can’t do that yet.")
+            # Policy denial → refusal
+            return ActionResult.refusal("I can’t do that yet.")
 
         # 2) Global phase gate (fail‑closed) – single check
         if not self._execute_boundary.allow_execution():
             print("[DEBUG] Phase gate blocked execution")
-            return ActionResult.failure("That requires a specific action, which I can’t perform right now.")
+            # Policy denial → refusal
+            return ActionResult.refusal("That requires a specific action, which I can’t perform right now.")
 
         # 3) Single pending action boundary (MUST be checked before any ledger write)
         print(f"[DEBUG] Queue has pending: {self._queue.has_pending()}")
         if self._queue.has_pending():
-            return ActionResult.failure("I can’t do that right now.")
+            # Policy denial → refusal (queue busy)
+            return ActionResult.refusal("I can’t do that right now.")
 
         # 4) Ledger must be writable BEFORE any effect (but after queue check)
         try:
@@ -106,7 +113,8 @@ class Governor:
                 {"capability_id": capability_id, "capability_name": cap.name},
             )
             print("[DEBUG] ACTION_ATTEMPTED logged")
-        except LedgerWriteFailed:
+        except Exception:
+            # Any failure to write to the ledger denies the action
             print("[DEBUG] Ledger write FAILED")
             return ActionResult.failure("I can’t do that right now.")
 
@@ -134,7 +142,6 @@ class Governor:
         """
         print(f"[DEBUG] _execute called for capability {req.capability_id}")
 
-        # FIX: store request_id, not the whole request object
         self._queue.set_pending(req.request_id)
         self._execute_boundary.enter_execution()
 
@@ -152,18 +159,22 @@ class Governor:
                         # Non‑blocking; failure is logged by ledger itself
                         pass
 
+            # ---- Prepare params with capability_id injected (executors need it) ----
+            params = {
+                **req.params,
+                "capability_id": req.capability_id,
+            }
+
             # ---- Route by capability_id ----
             if req.capability_id == 16:
                 from src.executors.web_search_executor import WebSearchExecutor
-                # Executor receives network client and request only – no boundary injection
-                executor = WebSearchExecutor(self.network)
-                result = executor.execute(req)
+                executor = WebSearchExecutor(self.network)  # No boundary injected
+                result = executor.execute(req.request_id, params)
 
             elif req.capability_id == 17:
                 from src.executors.webpage_launch_executor import WebpageLaunchExecutor
-                # Executor receives ledger for logging and the request
-                executor = WebpageLaunchExecutor(self.ledger)
-                result = executor.execute(req)
+                executor = WebpageLaunchExecutor()  # no dependencies
+                result = executor.execute(req.request_id, params)
 
             else:
                 result = ActionResult.refusal(
