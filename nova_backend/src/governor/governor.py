@@ -153,7 +153,7 @@ class Governor:
             if req.capability_id == 16:
                 from src.executors.web_search_executor import WebSearchExecutor
                 # Executor receives network client and request only – no boundary injection
-                executor = WebSearchExecutor(self.network)
+                executor = WebSearchExecutor(self.network, self._execute_boundary)
                 result = executor.execute(req)
 
             elif req.capability_id == 17:
