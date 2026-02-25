@@ -31,8 +31,8 @@ def test_timeout_causes_denial_and_records_lifecycle(monkeypatch):
     import src.governor.network_mediator as nm_mod
     monkeypatch.setattr(nm_mod, "NetworkMediator", lambda *a, **k: slow, raising=False)
 
-    import src.governor.governor as gov_mod
-    monkeypatch.setattr(gov_mod, "LedgerWriter", lambda *a, **k: ledger, raising=False)
+    import src.ledger.writer as ledger_mod
+    monkeypatch.setattr(ledger_mod, "LedgerWriter", lambda *a, **k: ledger, raising=False)
 
     invocation = GovernorMediator.parse_governed_invocation("search for current weather")
     assert invocation is not None

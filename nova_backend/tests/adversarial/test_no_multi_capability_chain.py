@@ -20,8 +20,8 @@ def test_single_request_has_single_action_attempt(monkeypatch):
 
     ledger = CaptureLedger()
 
-    import src.governor.governor as gov_mod
-    monkeypatch.setattr(gov_mod, "LedgerWriter", lambda *a, **k: ledger, raising=False)
+    import src.ledger.writer as ledger_mod
+    monkeypatch.setattr(ledger_mod, "LedgerWriter", lambda *a, **k: ledger, raising=False)
 
     import src.governor.network_mediator as nm_mod
     monkeypatch.setattr(nm_mod, "NetworkMediator", lambda *a, **k: FakeNetworkMediator(), raising=False)

@@ -13,7 +13,7 @@ from typing import Optional, Dict, Any
 from src.actions.action_result import ActionResult
 from src.governor.execute_boundary import ExecuteBoundary
 from src.governor.single_action_queue import SingleActionQueue
-from src.ledger.writer import LedgerWriter
+import src.ledger.writer as ledger_mod
 from src.governor.exceptions import (
     CapabilityRegistryError,
     NetworkMediatorError,
@@ -62,7 +62,7 @@ class Governor:
     def ledger(self):
         """Lazy load LedgerWriter."""
         if self._ledger is None:
-            self._ledger = LedgerWriter()
+            self._ledger = ledger_mod.LedgerWriter()
         return self._ledger
 
     # ---- Phase‑4 entrypoint (called by mediator) ----
