@@ -24,6 +24,7 @@ from src.skill_registry import SkillRegistry
 from src.gates.confirmation_gate import confirmation_gate
 from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
 from src.speech_state import speech_state
+from src.conversation.thought_store import ThoughtStore
 
 # -------------------------------------------------
 # App + Logging
@@ -61,6 +62,7 @@ app.include_router(stt_router)
 # -------------------------------------------------
 # No global NetworkMediator – Governor creates its own lazily.
 skill_registry = SkillRegistry()            # Phase‑3.5 skills (unchanged)
+thought_store = ThoughtStore(ttl=300)
 
 # -------------------------------------------------
 # Security Constants
@@ -86,8 +88,11 @@ async def phase_status():
 async def ws_send(ws: WebSocket, payload: dict) -> None:
     await ws.send_text(json.dumps(payload))
 
-async def send_chat_message(ws: WebSocket, text: str) -> None:
-    await ws_send(ws, {"type": "chat", "message": text})
+async def send_chat_message(ws: WebSocket, text: str, message_id: Optional[str] = None) -> None:
+    payload = {"type": "chat", "message": text}
+    if message_id is not None:
+        payload["message_id"] = message_id
+    await ws_send(ws, payload)
 
 async def send_chat_done(ws: WebSocket) -> None:
     await ws_send(ws, {"type": "chat_done"})
@@ -119,6 +124,16 @@ async def websocket_endpoint(ws: WebSocket):
 
     # Governor instance (per‑session)
     governor = Governor()
+
+    session_context = []
+    session_state = {
+        "turn_count": 0,
+        "escalation_count": 0,
+        "last_escalation_turn": None,
+        "deep_mode_disabled": False,
+        "show_thinking_hints": True,
+        "pending_escalation": None,
+    }
 
     # Phase‑3.5 greeting
     await send_chat_message(ws, "Hello. How can I help?")
@@ -155,12 +170,55 @@ async def websocket_endpoint(ws: WebSocket):
                 })
                 continue
 
+            msg_type = (msg.get("type") or "chat").strip().lower()
+
+            if msg_type == "get_thought":
+                message_id = (msg.get("message_id") or "").strip()
+                thought_data = thought_store.get(session_id, message_id) if message_id else None
+                if thought_data is None:
+                    await ws_send(ws, {"type": "error", "message": "Thought data not found or expired"})
+                else:
+                    await ws_send(ws, {"type": "thought", "data": thought_data, "message_id": message_id})
+                continue
+
             text = (msg.get("text") or "").strip()
 
             if not text:
                 continue
 
             lowered = text.lower()
+
+            if session_state["pending_escalation"]:
+                pending = session_state["pending_escalation"]
+                session_state["pending_escalation"] = None
+                if lowered in {"yes", "yeah", "sure", "ok", "go ahead"}:
+                    original_query, context_snapshot, heuristic_result = pending
+                    skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "general_chat"), None)
+                    if skill is not None:
+                        forced_state = dict(session_state)
+                        forced_state["escalation_count"] = 0
+                        forced_state["last_escalation_turn"] = None
+                        forced_state["turn_count"] = 999
+                        forced_state["deep_mode_disabled"] = False
+                        forced_result = await skill.handle(original_query, context_snapshot, forced_state)
+                        message_id = None
+                        if forced_result is not None:
+                            esc = (forced_result.data or {}).get("escalation", {})
+                            if esc.get("escalated") and esc.get("thought_data"):
+                                message_id = str(uuid.uuid4())
+                                thought_store.put(session_id, message_id, esc["thought_data"])
+                                session_state["escalation_count"] += 1
+                                session_state["last_escalation_turn"] = session_state["turn_count"]
+                            await send_chat_message(ws, forced_result.message, message_id=message_id)
+                            await send_chat_done(ws)
+                            session_context.extend([{"role": "user", "content": original_query}, {"role": "assistant", "content": forced_result.message}])
+                            session_context = session_context[-20:]
+                            session_state["turn_count"] += 1
+                            continue
+                elif lowered in {"no", "cancel", "never mind"}:
+                    await send_chat_message(ws, "Okay, keeping it brief.")
+                    await send_chat_done(ws)
+                    continue
 
             # --- Phase‑2 immediate commands ---
             if lowered == "stop":
@@ -217,7 +275,7 @@ async def websocket_endpoint(ws: WebSocket):
                 correction_text = mediated_text[len("Correction:"):].strip()
                 if correction_text:
                     record_correction(correction_text)
-                await send_chat_message(ws, "Okay. Correction noted.")
+                await send_chat_message(ws, "Thanks, I've noted that correction.")
                 await send_chat_done(ws)
                 continue
 
@@ -229,18 +287,44 @@ async def websocket_endpoint(ws: WebSocket):
                     await send_chat_done(ws)
                     continue
 
-            # --- Skills (Phase‑3.5 deterministic routing) ---
-            skill_result = await skill_registry.handle_query(mediated_text)
+            # --- Skills (Phase‑3.5 deterministic routing + Phase‑4.2 chat context) ---
+            skill_result = None
+            for skill in skill_registry.skills:
+                if not skill.can_handle(mediated_text):
+                    continue
+                if getattr(skill, "name", "") == "general_chat":
+                    skill_result = await skill.handle(mediated_text, session_context, session_state)
+                else:
+                    maybe = skill.handle(mediated_text)
+                    skill_result = await maybe if hasattr(maybe, "__await__") else maybe
+                break
 
             if skill_result:
                 skill_name = getattr(skill_result, "skill", "") or ""
                 message = getattr(skill_result, "message", "") or ""
                 widget_data = getattr(skill_result, "widget_data", None)
+                result_data = getattr(skill_result, "data", {}) or {}
 
-                # Track for repeat
                 speech_state.last_spoken_text = message
 
-                # Canonical widget payload
+                escalation = result_data.get("escalation", {})
+                if escalation.get("ask_user"):
+                    session_state["pending_escalation"] = (
+                        escalation.get("original_query", mediated_text),
+                        escalation.get("context_snapshot", session_context[-5:]),
+                        escalation.get("heuristic_result", {}),
+                    )
+                    await send_chat_message(ws, message)
+                    await send_chat_done(ws)
+                    continue
+
+                message_id = None
+                if escalation.get("escalated") and escalation.get("thought_data"):
+                    message_id = str(uuid.uuid4())
+                    thought_store.put(session_id, message_id, escalation["thought_data"])
+                    session_state["escalation_count"] += 1
+                    session_state["last_escalation_turn"] = session_state["turn_count"]
+
                 if isinstance(widget_data, dict) and "type" in widget_data:
                     await ws_send(ws, widget_data)
                 elif skill_name == "news" and isinstance(widget_data, dict):
@@ -249,17 +333,22 @@ async def websocket_endpoint(ws: WebSocket):
                 elif skill_name == "weather" and isinstance(widget_data, dict):
                     await send_widget_message(ws, "weather", message, widget_data)
                 else:
-                    await send_chat_message(ws, message)
+                    await send_chat_message(ws, message, message_id=message_id)
 
                 await send_chat_done(ws)
+
+                session_context.extend([{"role": "user", "content": mediated_text}, {"role": "assistant", "content": message}])
+                session_context = session_context[-20:]
+                session_state["turn_count"] += 1
                 continue
 
             # --- Fallback (should never happen if GeneralChatSkill catches everything) ---
-            await send_chat_message(ws, "I'm not sure how to help with that.")
+            await send_chat_message(ws, "I'm not sure how to help with that. Could you rephrase?")
             await send_chat_done(ws)
 
     except WebSocketDisconnect:
         log.info("WebSocket disconnected")
     finally:
-        # Clean up session‑specific clarification state
+        # Clean up session‑specific state
+        thought_store.clear_session(session_id)
         GovernorMediator.clear_session(session_id)

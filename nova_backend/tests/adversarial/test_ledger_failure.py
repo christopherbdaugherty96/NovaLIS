@@ -29,11 +29,13 @@ def test_ledger_failure_denies_search(monkeypatch):
     user_text = "search for nova governance"
     invocation = GovernorMediator.parse_governed_invocation(user_text)
     assert invocation is not None
-    capability_id, params = invocation
+    capability_id = invocation.capability_id
+    params = invocation.params
 
     gov = Governor()
     result = gov.handle_governed_invocation(capability_id, params)
 
     # Assert denial shape (expect a refusal message)
     s = str(result).lower()
-    assert ("denied" in s) or ("refus" in s) or ("fail" in s), f"Expected denial on ledger failure, got: {result}"
+    assert result.success is False
+    assert ("can’t do" in s) or ("couldn't" in s) or ("fail" in s), f"Expected denial on ledger failure, got: {result}"

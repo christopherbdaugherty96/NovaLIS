@@ -19,7 +19,7 @@ class BlockingNetworkMediator:
         self.gate = gate
         self.calls = 0
 
-    def request(self, capability_id: int | None, method: str, url: str, json_payload: dict | None = None) -> dict:
+    def request(self, capability_id: int | None, method: str, url: str, json_payload: dict | None = None, **kwargs) -> dict:
         self.calls += 1
         # hold until test releases
         self.gate.wait(timeout=5)
@@ -42,13 +42,13 @@ def test_single_action_queue_enforced(monkeypatch):
         inv = GovernorMediator.parse_governed_invocation("search for A")
         if inv:
             gov = Governor()
-            out["a"] = gov.handle_governed_invocation(*inv)
+            out["a"] = gov.handle_governed_invocation(inv.capability_id, inv.params)
 
     def call_b():
         inv = GovernorMediator.parse_governed_invocation("search for B")
         if inv:
             gov = Governor()
-            out["b"] = gov.handle_governed_invocation(*inv)
+            out["b"] = gov.handle_governed_invocation(inv.capability_id, inv.params)
 
     t1 = threading.Thread(target=call_a, daemon=True)
     t2 = threading.Thread(target=call_b, daemon=True)

@@ -1,19 +1,25 @@
-def test_web_search_executor_requires_key(monkeypatch):
+# tests/test_network_mediation_enforced.py
+
+import sys
+
+def test_web_search_executor_handles_network_mediator_error(monkeypatch):
+    # Ensure we get the real executor, not a cached dummy
+    if "src.executors.web_search_executor" in sys.modules:
+        del sys.modules["src.executors.web_search_executor"]
+
     from src.executors.web_search_executor import WebSearchExecutor
+    from src.governor.exceptions import NetworkMediatorError
     from src.governor.network_mediator import NetworkMediator
-    from src.governor.execute_boundary import ExecuteBoundary
-    from src.actions.action_request import ActionRequest
 
-    monkeypatch.delenv("BRAVE_API_KEY", raising=False)
+    executor = WebSearchExecutor(NetworkMediator())
 
-    executor = WebSearchExecutor(NetworkMediator(), ExecuteBoundary())
+    def fail_request(**_kwargs):
+        raise NetworkMediatorError("blocked")
 
-    req = ActionRequest(
-        request_id="test",
-        capability_id=16,
-        params={"query": "nova"}
-    )
+    monkeypatch.setattr(executor.network, "request", fail_request)
 
-    result = executor.execute(req)
+    request_id = "test-123"
+    params = {"query": "nova", "capability_id": 16}
+    result = executor.execute(request_id, params)
 
     assert result.success is False
