@@ -7,6 +7,9 @@
    ========================================================= */
 
 let ws = null;
+let pendingThoughtMessageId = null;
+let messageMeta = new Map();
+let waitingForAssistant = false;
 
 // PHASE-3 STT STATE (UI-ONLY, DESCRIPTIVE)
 let sttState = "READY"; // READY | LISTENING | PAUSED | PROCESSING
@@ -44,6 +47,42 @@ function safeWSSend(message) {
   if (!ws || ws.readyState !== WebSocket.OPEN) return false;
   ws.send(JSON.stringify(message));
   return true;
+}
+
+
+function setThinkingBar(visible) {
+  const bar = $("thinking-bar");
+  if (!bar) return;
+  bar.style.display = visible ? "block" : "none";
+}
+
+function showThoughtOverlay(anchor, thoughtData) {
+  let overlay = document.getElementById("thought-overlay");
+  if (!overlay) {
+    overlay = document.createElement("div");
+    overlay.id = "thought-overlay";
+    overlay.className = "thought-overlay";
+    document.body.appendChild(overlay);
+  }
+
+  const reasons = (thoughtData.reason_codes || []).map((code) => `<li>${code.replace(/_/g, " ")}</li>`).join("");
+  overlay.innerHTML = `
+    <div class="thought-title">Escalation reasoning</div>
+    <ul>${reasons || "<li>No reason codes available</li>"}</ul>
+  `;
+
+  const rect = anchor.getBoundingClientRect();
+  overlay.style.left = `${Math.min(window.innerWidth - 300, rect.left)}px`;
+  overlay.style.top = `${rect.bottom + 8}px`;
+  overlay.style.display = "block";
+}
+
+function bindThoughtIndicator(button, messageId) {
+  button.addEventListener("click", () => {
+    if (!messageId) return;
+    if (!safeWSSend({ type: "get_thought", message_id: messageId })) return;
+    pendingThoughtMessageId = messageId;
+  });
 }
 
 /* =========================================================
@@ -148,13 +187,27 @@ function renderSearchWidget(data) {
    6. CHAT (USER-INITIATED ONLY)
    ========================================================= */
 
-function appendChatMessage(role, text) {
+function appendChatMessage(role, text, messageId = null) {
   const chat = $("chat-log");
   if (!chat) return;
 
   const div = document.createElement("div");
   div.className = `chat-${role}`;
-  div.textContent = text;
+
+  const textNode = document.createElement("span");
+  textNode.textContent = text;
+  div.appendChild(textNode);
+
+  if (role === "assistant" && messageId) {
+    messageMeta.set(messageId, div);
+    const thoughtBtn = document.createElement("button");
+    thoughtBtn.className = "thought-indicator";
+    thoughtBtn.type = "button";
+    thoughtBtn.textContent = "ⓘ";
+    thoughtBtn.title = "Show reasoning";
+    div.appendChild(thoughtBtn);
+    bindThoughtIndicator(thoughtBtn, messageId);
+  }
 
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
@@ -175,6 +228,8 @@ function injectUserText(text) {
   
   // Single canonical path for ALL user input (typed + STT)
   appendChatMessage("user", clean);
+  waitingForAssistant = true;
+  setThinkingBar(true);
   
   // Phase-3 calm: if WS fails, just log, don't spam chat
   if (!safeWSSend({ text: clean })) {
@@ -319,12 +374,25 @@ function connectWebSocket() {
         renderSearchWidget(msg.data);
         break;
       case "chat":
-        appendChatMessage("assistant", msg.message);
+        appendChatMessage("assistant", msg.message, msg.message_id || null);
+        break;
+      case "chat_done":
+        waitingForAssistant = false;
+        setThinkingBar(false);
+        break;
+      case "thought":
+        if (pendingThoughtMessageId && msg.message_id === pendingThoughtMessageId) {
+          const anchor = messageMeta.get(msg.message_id);
+          if (anchor) showThoughtOverlay(anchor, msg.data || {});
+          pendingThoughtMessageId = null;
+        }
         break;
     }
   };
 
   ws.onclose = () => {
+    waitingForAssistant = false;
+    setThinkingBar(false);
     setTimeout(connectWebSocket, 2000);
   };
 }

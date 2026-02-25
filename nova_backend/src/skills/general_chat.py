@@ -1,25 +1,18 @@
 """
-NovaLIS General Chat Skill — Phase 3 SAFE / Phase 4 Ready (Constitutional)
-Refined with safe butler cadence: composed, precise, slightly formal, no initiative.
-
-Rules:
-- User-initiated only
-- Stateless (session-only; no persistence)
-- No memory writes
-- No streaming
-- No execution
-- Optional dependency must NOT crash startup
-- Deterministic, bounded communication frames (invisible/automatic)
-- Tone is composed, professional, and courteous across all modes.
-- Direct address used only in instructional contexts.
-- No persuasion, no emotional simulation, no initiative.
+NovaLIS General Chat Skill — Phase 3 SAFE / Phase 4.2 cognitive staging.
 """
 
 from __future__ import annotations
 
 import asyncio
 import re
-from typing import Dict, Tuple
+from typing import Dict, Optional, Tuple
+
+from src.conversation.complexity_heuristics import ComplexityHeuristics
+from src.conversation.deepseek_bridge import DeepSeekBridge
+from src.conversation.escalation_policy import EscalationPolicy
+from src.conversation.response_formatter import ResponseFormatter
+from src.conversation.safety_filter import SafetyFilter
 
 from ..base_skill import BaseSkill, SkillResult
 
@@ -28,9 +21,6 @@ class GeneralChatSkill(BaseSkill):
     name = "general_chat"
     description = "General chat (LLM advisory only)"
 
-    # -------------------------
-    # Constitutional base contract with butler cadence
-    # -------------------------
     BASE_CONTRACT = (
         "You are Nova.\n"
         "\n"
@@ -50,9 +40,6 @@ class GeneralChatSkill(BaseSkill):
         "- If the request is unclear, ask ONE brief clarification question.\n"
     )
 
-    # -------------------------
-    # Structural mode blocks – tone remains composed throughout
-    # -------------------------
     MODE_BLOCKS: Dict[str, str] = {
         "concise": (
             "Communication style: Concise.\n"
@@ -80,7 +67,6 @@ class GeneralChatSkill(BaseSkill):
         ),
     }
 
-    # Per‑mode output bounds
     MAX_TOKENS: Dict[str, int] = {
         "concise": 150,
         "explanatory": 500,
@@ -88,7 +74,6 @@ class GeneralChatSkill(BaseSkill):
         "analytical": 600,
     }
 
-    # Light drift prevention
     _BANNED_PATTERNS: Tuple[Tuple[re.Pattern, str], ...] = (
         (re.compile(r"\b(as an ai|as a language model)\b", re.IGNORECASE), ""),
         (re.compile(r"\b(i am|i'm)\s+(a\s+)?virtual assistant\b", re.IGNORECASE), ""),
@@ -97,86 +82,38 @@ class GeneralChatSkill(BaseSkill):
         (re.compile(r"\!+", re.IGNORECASE), "."),
     )
 
-    # -------------------------
-    # Skill interface
-    # -------------------------
+    def __init__(self, policy_config: Optional[dict] = None):
+        self.heuristics = ComplexityHeuristics()
+        self.policy = EscalationPolicy(policy_config)
+        self.deepseek = DeepSeekBridge()
+        self.safety = SafetyFilter()
+        self.formatter = ResponseFormatter()
+
     def can_handle(self, query: str) -> bool:
         q = (query or "").strip().lower()
         if not q:
             return False
 
         tokens = q.split()
-
-        # Authoritative skills must win (token‑based, deterministic)
         if any(
-            token
-            in {
-                "weather",
-                "forecast",
-                "news",
-                "headlines",
-                "time",
-                "date",
-                "system",
-                "status",
-            }
+            token in {"weather", "forecast", "news", "headlines", "time", "date", "system", "status"}
             for token in tokens
         ):
             return False
-
         return True
 
-    # -------------------------
-    # Deterministic frame selection (invisible)
-    # -------------------------
     def _detect_mode(self, query: str) -> str:
         q = (query or "").strip().lower()
         if not q:
             return "concise"
 
-        # Procedural (step‑by‑step)
-        if any(
-            phrase in q
-            for phrase in (
-                "step by step",
-                "walk me through",
-                "show me how",
-                "what should i do",
-                "how do i",
-            )
-        ):
+        if any(phrase in q for phrase in ("step by step", "walk me through", "show me how", "what should i do", "how do i")):
             return "procedural"
 
-        # Analytical (trade‑offs, reasoning)
-        if any(
-            word in q
-            for word in (
-                "analyse",
-                "analyze",
-                "trade-off",
-                "compare",
-                "pros and cons",
-                "evaluate",
-                "strategy",
-                "why would",
-            )
-        ):
+        if any(word in q for word in ("analyse", "analyze", "trade-off", "compare", "pros and cons", "evaluate", "strategy", "why would")):
             return "analytical"
 
-        # Explanatory (cause and effect)
-        if any(
-            word in q
-            for word in (
-                "explain",
-                "why does",
-                "how does",
-                "what causes",
-                "reason",
-                "mechanism",
-                "architecture",
-                "design",
-            )
-        ):
+        if any(word in q for word in ("explain", "why does", "how does", "what causes", "reason", "mechanism", "architecture", "design")):
             return "explanatory"
 
         return "concise"
@@ -186,19 +123,19 @@ class GeneralChatSkill(BaseSkill):
         return f"{self.BASE_CONTRACT}\n{mode_block}".strip()
 
     def _sanitize_response(self, text: str) -> str:
-        t = (text or "").strip()
-        if not t:
-            return t
+        clean = (text or "").strip()
+        if not clean:
+            return clean
 
-        for pat, repl in self._BANNED_PATTERNS:
-            t = pat.sub(repl, t)
+        for pattern, replacement in self._BANNED_PATTERNS:
+            clean = pattern.sub(replacement, clean)
 
-        t = re.sub(r"\s{2,}", " ", t).strip()
-        t = re.sub(r"\n{3,}", "\n\n", t).strip()
-        t = re.sub(r"\n+$", "\n", t).rstrip("\n")
-        return t
+        clean = re.sub(r"\s{2,}", " ", clean).strip()
+        clean = re.sub(r"\n{3,}", "\n\n", clean).strip()
+        clean = re.sub(r"\n+$", "\n", clean).rstrip("\n")
+        return clean
 
-    async def handle(self, query: str) -> SkillResult | None:
+    async def _run_local_model(self, query: str) -> SkillResult | None:
         try:
             import ollama
         except Exception:
@@ -209,7 +146,6 @@ class GeneralChatSkill(BaseSkill):
         max_tokens = self.MAX_TOKENS.get(mode, self.MAX_TOKENS["concise"])
 
         try:
-            # Run the blocking ollama.chat() in a thread to avoid event loop freeze
             response = await asyncio.to_thread(
                 ollama.chat,
                 model="phi3:mini",
@@ -217,25 +153,65 @@ class GeneralChatSkill(BaseSkill):
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": query},
                 ],
-                options={
-                    "temperature": 0.3,
-                    "num_predict": max_tokens,
-                },
+                options={"temperature": 0.3, "num_predict": max_tokens},
             )
-
-            text = response.get("message", {}).get("content", "")
-            text = self._sanitize_response(text)
-
+            text = self._sanitize_response(response.get("message", {}).get("content", ""))
             if not text:
                 text = "I don’t have a response for that."
 
+            return SkillResult(success=True, message=text, data={"mode": mode}, widget_data=None, skill=self.name)
+        except Exception:
+            return None
+
+    async def handle(self, query: str, context: Optional[list] = None, session_state: Optional[dict] = None) -> SkillResult | None:
+        # Backward compatible path
+        if context is None or session_state is None:
+            return await self._run_local_model(query)
+
+        heuristic_result = self.heuristics.assess(query, context)
+        decision = self.policy.decide(heuristic_result, query, session_state)
+
+        if decision == "ASK_USER":
             return SkillResult(
                 success=True,
-                message=text,
-                data={"mode": mode},
+                message="Would you like a deeper analysis of that?",
+                data={
+                    "escalation": {
+                        "ask_user": True,
+                        "original_query": query,
+                        "context_snapshot": context[-5:],
+                        "heuristic_result": heuristic_result,
+                    }
+                },
                 widget_data=None,
                 skill=self.name,
             )
 
-        except Exception:
+        if decision == "ALLOW":
+            thought_data = {
+                "decision": "ALLOW",
+                "reason_codes": heuristic_result.get("reason_codes", []),
+                "suggested_tokens": heuristic_result.get("suggested_max_tokens", 800),
+                "heuristic": heuristic_result,
+            }
+            raw = self.deepseek.process(query, context, heuristic_result.get("suggested_max_tokens", 800))
+            safe = self.safety.filter(raw)
+            formatted = self.formatter.format(safe)
+            if session_state.get("show_thinking_hints", True):
+                formatted = f"Let me think…\n\n{formatted}"
+
+            return SkillResult(
+                success=True,
+                message=formatted,
+                data={"escalation": {"escalated": True, "thought_data": thought_data}},
+                widget_data=None,
+                skill=self.name,
+            )
+
+        local = await self._run_local_model(query)
+        if local is None:
             return None
+
+        local.message = self.formatter.format(local.message)
+        local.data = {"escalation": {"escalated": False}}
+        return local
