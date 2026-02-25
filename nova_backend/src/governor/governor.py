@@ -106,8 +106,8 @@ class Governor:
                 {"capability_id": capability_id, "capability_name": cap.name},
             )
             print("[DEBUG] ACTION_ATTEMPTED logged")
-        except LedgerWriteFailed:
-            print("[DEBUG] Ledger write FAILED")
+        except Exception as e:
+            print(f"[DEBUG] Ledger write FAILED: {e}")
             return ActionResult.failure("I can’t do that right now.")
 
         # 5) Create ActionRequest
