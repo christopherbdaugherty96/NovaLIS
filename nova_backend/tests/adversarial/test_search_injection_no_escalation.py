@@ -1,4 +1,5 @@
 # tests/adversarial/test_search_injection_no_escalation.py
+
 from __future__ import annotations
 
 import json
@@ -106,6 +107,7 @@ def test_web_search_injection_does_not_trigger_other_actions(monkeypatch):
     assert "open_folder" not in s
     assert "confirmation" not in s
 
-    # 3) request remains governed and returns structured ActionResult
-    assert result is not None
-    assert hasattr(result, "success")
+    # 3) ledger saw at least one event; ideally exactly one action attempt for the search
+    assert fake_ledger.events, "No ledger events were recorded"
+    event_types = [e["type"] for e in fake_ledger.events]
+    assert "ACTION_ATTEMPTED" in event_types

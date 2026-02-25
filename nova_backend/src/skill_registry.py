@@ -1,7 +1,7 @@
 # src/skill_registry.py
 
 """
-NovaLIS Skill Registry â€” Phase 3 Canonical
+NovaLIS Skill Registry — Phase 3 Canonical
 """
 
 from __future__ import annotations
@@ -22,11 +22,11 @@ log = logging.getLogger("nova")
 class SkillRegistry:
     def __init__(self, network=None) -> None:
         """
-        network is accepted for future Phaseâ€‘4 expansion but not used for skills yet.
+        network is accepted for future Phase‑4 expansion but not used for skills yet.
         """
         self.network = network
 
-        # Base skills â€“ always present (original Phaseâ€‘3 implementations)
+        # Base skills – always present (original Phase‑3 implementations)
         skills: List[BaseSkill] = [
             SystemSkill(),
             WeatherSkill(),
