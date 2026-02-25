@@ -194,7 +194,12 @@ class GeneralChatSkill(BaseSkill):
                 "suggested_tokens": heuristic_result.get("suggested_max_tokens", 800),
                 "heuristic": heuristic_result,
             }
-            raw = self.deepseek.process(query, context, heuristic_result.get("suggested_max_tokens", 800))
+            raw = await asyncio.to_thread(
+                self.deepseek.process,
+                query,
+                context,
+                heuristic_result.get("suggested_max_tokens", 800),
+            )
             safe = self.safety.filter(raw)
             formatted = self.formatter.format(safe)
             if session_state.get("show_thinking_hints", True):

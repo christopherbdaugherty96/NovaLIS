@@ -190,8 +190,8 @@ async def websocket_endpoint(ws: WebSocket):
 
             if session_state["pending_escalation"]:
                 pending = session_state["pending_escalation"]
-                session_state["pending_escalation"] = None
-                if lowered in {"yes", "yeah", "sure", "ok", "go ahead"}:
+                if lowered in {"yes"}:
+                    session_state["pending_escalation"] = None
                     original_query, context_snapshot, heuristic_result = pending
                     skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "general_chat"), None)
                     if skill is not None:
@@ -215,8 +215,13 @@ async def websocket_endpoint(ws: WebSocket):
                             session_context = session_context[-20:]
                             session_state["turn_count"] += 1
                             continue
-                elif lowered in {"no", "cancel", "never mind"}:
+                elif lowered in {"no", "cancel"}:
+                    session_state["pending_escalation"] = None
                     await send_chat_message(ws, "Okay, keeping it brief.")
+                    await send_chat_done(ws)
+                    continue
+                else:
+                    await send_chat_message(ws, "Please answer 'yes', 'no', or 'cancel'.")
                     await send_chat_done(ws)
                     continue
 

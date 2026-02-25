@@ -128,3 +128,27 @@ cd /workspace/NovaLIS/nova_backend && pytest -q
 ### Constitutional Statement
 
 This amendment is enforcement tightening only. It does not alter enabled capabilities, governor authority boundaries, or execution phase state.
+
+
+---
+
+## 8) Amendment — Phase-4.2 Staging Verification Update
+
+**Date:** 2026-02-25  
+**Commit:** See latest Phase-4.2 staging commit in git history.  
+**Scope:** Validation/status update for staged escalation path and governance checks.
+
+### Verification
+
+- Full suite command:
+
+```bash
+cd /workspace/NovaLIS/nova_backend && pytest -q
+```
+
+- Result at amendment time: `35 passed`.
+
+### Notes
+
+- Runtime remains governed by existing authority spine.
+- This amendment records verification status and does not reclassify capability authority.
