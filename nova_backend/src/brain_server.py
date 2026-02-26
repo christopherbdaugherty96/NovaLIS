@@ -197,7 +197,6 @@ async def websocket_endpoint(ws: WebSocket):
             if session_state["pending_escalation"]:
                 pending = session_state["pending_escalation"]
                 if lowered in {"yes"}:
-                    session_state["pending_escalation"] = None
                     original_query, context_snapshot, heuristic_result = pending
                     skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "general_chat"), None)
                     if skill is not None:
@@ -209,6 +208,7 @@ async def websocket_endpoint(ws: WebSocket):
                         forced_result = await skill.handle(original_query, context_snapshot, forced_state)
                         message_id = None
                         if forced_result is not None:
+                            session_state["pending_escalation"] = None
                             esc = (forced_result.data or {}).get("escalation", {})
                             if esc.get("escalated") and esc.get("thought_data"):
                                 message_id = str(uuid.uuid4())
@@ -221,6 +221,10 @@ async def websocket_endpoint(ws: WebSocket):
                             session_context = session_context[-20:]
                             session_state["turn_count"] += 1
                             continue
+
+                    await send_chat_message(ws, "Deep analysis is unavailable right now. Please answer 'yes', 'no', or 'cancel'.")
+                    await send_chat_done(ws)
+                    continue
                 elif lowered in {"no", "cancel"}:
                     session_state["pending_escalation"] = None
                     await send_chat_message(ws, "Okay, keeping it brief.")
