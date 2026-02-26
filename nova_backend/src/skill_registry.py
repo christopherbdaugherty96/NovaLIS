@@ -1,4 +1,4 @@
-﻿# src/skill_registry.py
+# src/skill_registry.py
 
 """
 NovaLIS Skill Registry — Phase 3 Canonical

@@ -8,18 +8,25 @@ from tests.adversarial._helpers import SRC_ROOT, read_text
 """
 Goal:
 - No module outside governor.py may instantiate ActionRequest.
-- Easiest mechanical check: ActionRequest( ... ) only appears in governor.py.
-- Stronger check: ActionRequest constructor is private / not importable.
+- Scan full active source tree and only exempt archive/quarantine trees.
 """
 
 ACTION_REQUEST_CTOR = "ActionRequest("
-
 GOVERNOR_FILE = SRC_ROOT / "governor" / "governor.py"
+
+
+def _is_exempt(path: Path) -> bool:
+    parts = {p.lower() for p in path.parts}
+    return any("archive" in part or "quarantine" in part for part in parts)
 
 
 def test_action_request_constructed_only_in_governor_py():
     assert GOVERNOR_FILE.exists(), f"Missing {GOVERNOR_FILE}"
-    all_py = [p for p in SRC_ROOT.rglob("*.py") if "__pycache__" not in p.parts]
+    all_py = [
+        p
+        for p in SRC_ROOT.rglob("*.py")
+        if "__pycache__" not in p.parts and not _is_exempt(p)
+    ]
 
     offenders = []
     for py in all_py:

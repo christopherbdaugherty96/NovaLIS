@@ -1,15 +1,7 @@
-def test_governor_refuses_when_sealed():
+def test_governor_refuses_disabled_capability():
     from src.governor.governor import Governor
-    from src.actions.action_request import ActionRequest
 
     gov = Governor()
-
-    req = ActionRequest(
-        request_id="test",
-        capability_id=16,
-        params={"query": "test"}
-    )
-
-    result = gov._execute(req)
+    result = gov.handle_governed_invocation(22, {"path": "/tmp"})
 
     assert result.success is False

@@ -1,7 +1,6 @@
 # src/executors/webpage_launch_executor.py
 
 import webbrowser
-from src.actions.action_request import ActionRequest
 from src.actions.action_result import ActionResult
 from src.ledger.writer import LedgerWriter
 
@@ -24,7 +23,7 @@ class WebpageLaunchExecutor:
     def __init__(self, ledger: LedgerWriter):
         self.ledger = ledger
 
-    def execute(self, request: ActionRequest) -> ActionResult:
+    def execute(self, request) -> ActionResult:
         target = request.params.get("target", "").lower()
         print(f"[DEBUG] WebpageLaunchExecutor executing for target '{target}'")
 
