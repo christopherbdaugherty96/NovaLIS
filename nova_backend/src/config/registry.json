@@ -22,6 +22,15 @@
     },
     {
       "id": 18,
+      "name": "speak_text",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": true
+    },
+    {
+      "id": 22,
       "name": "open_file_folder",
       "status": "active",
       "phase_introduced": "4",

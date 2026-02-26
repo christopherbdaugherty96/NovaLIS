@@ -60,17 +60,16 @@ app.include_router(stt_router)
 # -------------------------------------------------
 # Phase‑4 Staging Components
 # -------------------------------------------------
-# No global NetworkMediator – Governor creates its own lazily.
-skill_registry = SkillRegistry()            # Phase‑3.5 skills (unchanged)
+skill_registry = SkillRegistry()
 thought_store = ThoughtStore(ttl=300)
 
 # -------------------------------------------------
 # Security Constants
 # -------------------------------------------------
-WS_INPUT_MAX_BYTES = 4096  # BUG-S2: Guard against oversized WebSocket input (UTF-8 bytes)
+WS_INPUT_MAX_BYTES = 4096
 
 # -------------------------------------------------
-# Phase Status Endpoint (Updated for Phase‑4 Staging)
+# Phase Status Endpoint
 # -------------------------------------------------
 @app.get("/phase-status")
 async def phase_status():
@@ -119,12 +118,8 @@ async def websocket_endpoint(ws: WebSocket):
     await ws.accept()
     log.info("WebSocket connected")
 
-    # Unique session ID for clarification state
     session_id = str(uuid.uuid4())
-
-    # Governor instance (per‑session)
     governor = Governor()
-
     session_context = []
     session_state = {
         "turn_count": 0,
@@ -133,44 +128,34 @@ async def websocket_endpoint(ws: WebSocket):
         "deep_mode_disabled": False,
         "show_thinking_hints": True,
         "pending_escalation": None,
+        "last_input_channel": "text",
+        "last_response": "",
     }
 
-    # Phase‑3.5 greeting
     await send_chat_message(ws, "Hello. How can I help?")
     await send_chat_done(ws)
 
     try:
         while True:
             raw = await ws.receive_text()
-
-            # --- BUG-S2: WebSocket input length guard (bytes, UTF-8 safe) ---
             raw_bytes = raw.encode("utf-8")
             if len(raw_bytes) > WS_INPUT_MAX_BYTES:
-                log.warning(
-                    "WebSocket input rejected: %d bytes exceeds limit %d",
-                    len(raw_bytes),
-                    WS_INPUT_MAX_BYTES,
-                )
-                await ws_send(ws, {
-                    "type": "error",
-                    "code": "input_too_long",
-                    "message": "Input exceeds maximum allowed length.",
-                })
+                log.warning("WebSocket input rejected: %d bytes exceeds limit %d", len(raw_bytes), WS_INPUT_MAX_BYTES)
+                await ws_send(ws, {"type": "error", "code": "input_too_long", "message": "Input exceeds maximum allowed length."})
                 continue
 
-            # --- JSON safety guard ---
             try:
                 msg = json.loads(raw)
             except json.JSONDecodeError:
                 log.warning("WebSocket input rejected: malformed JSON")
-                await ws_send(ws, {
-                    "type": "error",
-                    "code": "invalid_json",
-                    "message": "Malformed request.",
-                })
+                await ws_send(ws, {"type": "error", "code": "invalid_json", "message": "Malformed request."})
                 continue
 
             msg_type = (msg.get("type") or "chat").strip().lower()
+            channel = (msg.get("channel") or "text").strip().lower()
+            if channel not in {"voice", "text"}:
+                channel = "text"
+            session_state["last_input_channel"] = channel
 
             if msg_type == "get_thought":
                 message_id = (msg.get("message_id") or "").strip()
@@ -182,16 +167,15 @@ async def websocket_endpoint(ws: WebSocket):
                 continue
 
             text = (msg.get("text") or "").strip()
-
             if not text:
                 continue
 
             lowered = text.lower()
 
+            # --- Escalation handling (fixed: clear pending on all outcomes) ---
             if session_state["pending_escalation"]:
                 pending = session_state["pending_escalation"]
                 if lowered in {"yes"}:
-                    session_state["pending_escalation"] = None
                     original_query, context_snapshot, heuristic_result = pending
                     skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "general_chat"), None)
                     if skill is not None:
@@ -214,7 +198,13 @@ async def websocket_endpoint(ws: WebSocket):
                             session_context.extend([{"role": "user", "content": original_query}, {"role": "assistant", "content": forced_result.message}])
                             session_context = session_context[-20:]
                             session_state["turn_count"] += 1
+                            session_state["pending_escalation"] = None
                             continue
+                    # skill is None or forced_result is None
+                    await send_chat_message(ws, "Deep analysis is unavailable right now. Please answer 'yes', 'no', or 'cancel'.")
+                    await send_chat_done(ws)
+                    session_state["pending_escalation"] = None
+                    continue
                 elif lowered in {"no", "cancel"}:
                     session_state["pending_escalation"] = None
                     await send_chat_message(ws, "Okay, keeping it brief.")
@@ -239,36 +229,39 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
-            # --- Governor mediation (sanitization) ---
+            # --- Governor mediation ---
             mediated_text = GovernorMediator.mediate(text)
 
-            # --- Phase‑4: governed invocation detection ---
-            inv_result = GovernorMediator.parse_governed_invocation(
-                mediated_text, session_id=session_id
-            )
+            # --- Phase‑4 governed invocation detection ---
+            inv_result = GovernorMediator.parse_governed_invocation(mediated_text, session_id=session_id)
 
             if isinstance(inv_result, Invocation):
-                # ✅ FIXED: use .message, not .user_message; send widget separately
-                action_result = governor.handle_governed_invocation(
-                    inv_result.capability_id, inv_result.params
-                )
+                capability_id = inv_result.capability_id
+                params = dict(inv_result.params)
+                if capability_id == 18 and not params.get("text"):
+                    params["text"] = session_state.get("last_response", "")
 
-                # Always send the chat message first
+                action_result = governor.handle_governed_invocation(capability_id, params)
+
+                if capability_id != 18 and action_result.message:
+                    session_state["last_response"] = action_result.message
+
                 await send_chat_message(ws, action_result.message)
 
-                # If a widget payload exists, send it as a separate message
-                if (
-                    action_result.success
-                    and isinstance(action_result.data, dict)
-                    and "widget" in action_result.data
-                ): 
+                if action_result.success and isinstance(action_result.data, dict) and "widget" in action_result.data:
                     await ws_send(ws, action_result.data["widget"])
 
                 await send_chat_done(ws)
+
+                # Auto‑speak for voice input (only if not a TTS invocation)
+                if (session_state.get("last_input_channel") == "voice"
+                        and action_result.success
+                        and action_result.message
+                        and capability_id != 18):
+                    governor.handle_governed_invocation(18, {"text": action_result.message})
                 continue
 
             elif isinstance(inv_result, Clarification):
-                # Need more info – send clarification question
                 await send_chat_message(ws, inv_result.message)
                 await send_chat_done(ws)
                 continue
@@ -284,7 +277,7 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
-            # --- Confirmation gate (Phase‑3.5 passive) ---
+            # --- Confirmation gate ---
             if confirmation_gate.has_pending_confirmation():
                 gate_result = confirmation_gate.try_resolve(mediated_text)
                 if gate_result.message is not None:
@@ -292,7 +285,7 @@ async def websocket_endpoint(ws: WebSocket):
                     await send_chat_done(ws)
                     continue
 
-            # --- Skills (Phase‑3.5 deterministic routing + Phase‑4.2 chat context) ---
+            # --- Skills ---
             skill_result = None
             for skill in skill_registry.skills:
                 if not skill.can_handle(mediated_text):
@@ -311,6 +304,7 @@ async def websocket_endpoint(ws: WebSocket):
                 result_data = getattr(skill_result, "data", {}) or {}
 
                 speech_state.last_spoken_text = message
+                session_state["last_response"] = message
 
                 escalation = result_data.get("escalation", {})
                 if escalation.get("ask_user"):
@@ -342,18 +336,27 @@ async def websocket_endpoint(ws: WebSocket):
 
                 await send_chat_done(ws)
 
+                # Auto‑speak for voice input (only if the skill result indicates success)
+                if (session_state.get("last_input_channel") == "voice"
+                        and getattr(skill_result, "success", True)
+                        and message):
+                    governor.handle_governed_invocation(18, {"text": message})
+
                 session_context.extend([{"role": "user", "content": mediated_text}, {"role": "assistant", "content": message}])
                 session_context = session_context[-20:]
                 session_state["turn_count"] += 1
                 continue
 
-            # --- Fallback (should never happen if GeneralChatSkill catches everything) ---
-            await send_chat_message(ws, "I'm not sure how to help with that.")
+            # --- Fallback ---
+            fallback_message = "I'm not sure how to help with that."
+            session_state["last_response"] = fallback_message
+            await send_chat_message(ws, fallback_message)
             await send_chat_done(ws)
+            if session_state.get("last_input_channel") == "voice":
+                governor.handle_governed_invocation(18, {"text": fallback_message})
 
     except WebSocketDisconnect:
         log.info("WebSocket disconnected")
     finally:
-        # Clean up session‑specific state
         thought_store.clear_session(session_id)
         GovernorMediator.clear_session(session_id)

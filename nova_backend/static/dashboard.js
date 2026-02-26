@@ -217,7 +217,7 @@ function appendChatMessage(role, text, messageId = null) {
    SINGLE INGESTION PATH (Phase-3 Canonical)
    ========================================================= */
 
-function injectUserText(text) {
+function injectUserText(text, channel = "text") {
   const clean = (text || "").trim();
   if (!clean) {
     console.log("[INGEST] Empty input - ignored");
@@ -232,7 +232,7 @@ function injectUserText(text) {
   setThinkingBar(true);
   
   // Phase-3 calm: if WS fails, just log, don't spam chat
-  if (!safeWSSend({ text: clean })) {
+  if (!safeWSSend({ text: clean, channel })) {
     console.warn("[INGEST] WebSocket not ready - message dropped");
   }
 }
@@ -316,7 +316,7 @@ console.log("[STT] response:", data);
 console.log("[STT RESULT]", JSON.stringify(data.text));
 
         if (data.text && data.text.trim()) {
-  injectUserText(data.text);  // ✅ Single canonical path
+  injectUserText(data.text, "voice");  // ✅ Single canonical path
 } else {
   // Phase-3 calm: silence → do nothing (no chat spam)
   console.log("[STT] Empty transcript - no action");
@@ -405,7 +405,7 @@ function sendChat() {
   const input = $("chat-input");
   if (!input) return;
 
-  injectUserText(input.value);
+  injectUserText(input.value, "text");
   input.value = "";
 }
 

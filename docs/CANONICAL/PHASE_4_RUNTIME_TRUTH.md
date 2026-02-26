@@ -1,7 +1,7 @@
 # PHASE-4 RUNTIME TRUTH SNAPSHOT
 
 **Last updated:** 2026-02-26  
-**This document is the single, authoritative record of the current governed runtime state for NovaLIS. All architectural, policy, and capability documents must defer to this file.**
+**This document is the single, authoritative record of the current governed runtime state for NovaLIS.**
 
 ---
 
@@ -15,27 +15,35 @@
 - **Ledger:** ACTIVE (all governed actions logged pre- and post-execution)
 - **STT (Speech-to-Text):** ACTIVE (local, offline-first pipeline)
 
-### Capabilities Enabled
+### Live Governed Capabilities
 
-- `16` — Governed Web Search (explicit, user-invoked)
-- `17` — Open Preset Website (explicit, user-invoked)
+| ID | Name | Status | Risk Level | Data Exfiltration |
+|----|------|--------|------------|-------------------|
+| 16 | `governed_web_search` | enabled | low | true |
+| 17 | `open_website` | enabled | low | false |
+| 18 | `speak_text` | enabled | low | false |
 
-No additional execution capabilities are enabled.
+All other capability IDs (19–22, 32, 48) are **disabled** and cannot be invoked at runtime.
 
 ---
 
-## 🟡 DESIGN-ONLY — NOT ADMITTED TO RUNTIME
+## 🧠 Conversation & Cognitive Modules
 
-The following features exist only as architectural specifications and are not active in the current runtime:
+Modules under `src/conversation/` (heuristics, escalation, thought store, future Deep Thought bridge) are:
 
-- TTS (Text-to-Speech as governed action)
-- Deep Thought / Orthogonal Agent Stack
-- Trust Panel (Transparency Dashboard)
-- Device/Experience Scopes
-- Personality Layer / Multi-agent Cognition
-- Persistent Memory / Identity Continuity
+- **Non-authorizing** – they cannot construct `ActionRequest` or invoke capabilities directly.
+- **Advisory only** – their output is treated as user‑facing text or internal hints, never as execution authority.
+- **Execution‑isolated** – they operate strictly in the read‑only phase of the request lifecycle.
 
-These require explicit admission artifacts before implementation.
+---
+
+## 🔒 Runtime Invariants
+
+- Single authority spine: all actions execute only through `Governor.handle_governed_invocation()`.
+- No autonomous or background execution loops.
+- No persistent cognition memory across sessions (beyond ephemeral thought store).
+- ExecuteBoundary and SingleActionQueue remain active for all governed calls.
+- Ledger failure → execution denial (fail‑closed).
 
 ---
 
@@ -46,7 +54,7 @@ These require explicit admission artifacts before implementation.
 - No proactive inference
 - No persistent memory or cross-session identity state
 - No Phase-5+ capabilities
-- No non-governor execution surface
+- No non‑governor execution surface
 
 ---
 

@@ -162,6 +162,10 @@ class Governor:
                 executor = WebpageLaunchExecutor(self.ledger)
                 result = executor.execute(req)
 
+            elif req.capability_id == 18:
+                from src.executors.tts_executor import execute_tts
+                result = execute_tts(req, ActionResult)
+
             else:
                 result = ActionResult.refusal(
                     "Execution path not implemented yet.",
