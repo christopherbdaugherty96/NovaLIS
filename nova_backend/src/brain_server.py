@@ -267,7 +267,8 @@ async def websocket_endpoint(ws: WebSocket):
                     capability_id, params
                 )
 
-                session_state["last_response"] = action_result.message
+                if capability_id != 18 and action_result.message:
+                    session_state["last_response"] = action_result.message
 
                 await send_chat_message(ws, action_result.message)
 
