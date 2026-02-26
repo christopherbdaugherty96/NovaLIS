@@ -13,7 +13,7 @@ from typing import Optional, Dict, Any
 from src.actions.action_result import ActionResult
 from src.governor.execute_boundary import ExecuteBoundary
 from src.governor.single_action_queue import SingleActionQueue
-from src.ledger.writer import LedgerWriter
+import src.ledger.writer as ledger_mod
 from src.governor.exceptions import (
     CapabilityRegistryError,
     NetworkMediatorError,
@@ -62,7 +62,7 @@ class Governor:
     def ledger(self):
         """Lazy load LedgerWriter."""
         if self._ledger is None:
-            self._ledger = LedgerWriter()
+            self._ledger = ledger_mod.LedgerWriter()
         return self._ledger
 
     # ---- Phase‑4 entrypoint (called by mediator) ----
@@ -106,8 +106,8 @@ class Governor:
                 {"capability_id": capability_id, "capability_name": cap.name},
             )
             print("[DEBUG] ACTION_ATTEMPTED logged")
-        except LedgerWriteFailed:
-            print("[DEBUG] Ledger write FAILED")
+        except Exception as e:
+            print(f"[DEBUG] Ledger write FAILED: {e}")
             return ActionResult.failure("I can’t do that right now.")
 
         # 5) Create ActionRequest
@@ -153,7 +153,7 @@ class Governor:
             if req.capability_id == 16:
                 from src.executors.web_search_executor import WebSearchExecutor
                 # Executor receives network client and request only – no boundary injection
-                executor = WebSearchExecutor(self.network)
+                executor = WebSearchExecutor(self.network, self._execute_boundary)
                 result = executor.execute(req)
 
             elif req.capability_id == 17:
@@ -161,6 +161,10 @@ class Governor:
                 # Executor receives ledger for logging and the request
                 executor = WebpageLaunchExecutor(self.ledger)
                 result = executor.execute(req)
+
+            elif req.capability_id == 18:
+                from src.executors.tts_executor import execute_tts
+                result = execute_tts(req, ActionResult)
 
             else:
                 result = ActionResult.refusal(

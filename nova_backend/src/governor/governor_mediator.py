@@ -95,6 +95,10 @@ class GovernorMediator:
             name = m.group("name").strip().lower()
             return Invocation(capability_id=17, params={"target": name})
 
+        # TTS manual invocation
+        if re.match(r"^\s*(speak that|read that|say it)\s*$", t, re.IGNORECASE):
+            return Invocation(capability_id=18, params={})
+
         # --- Step 3: Detect incomplete but clearly intended invocation ---
         # This now matches "search", "search for", "look up", "research"
         if re.search(r"\b(search(?: for)?|look up|research)\b", t, re.IGNORECASE):

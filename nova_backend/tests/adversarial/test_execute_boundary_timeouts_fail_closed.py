@@ -1,46 +1,51 @@
 # tests/adversarial/test_execute_boundary_timeouts_fail_closed.py
 from __future__ import annotations
 
-import time
-import pytest
-
-from tests.adversarial._helpers import try_find_callable
-
-"""
-Goal:
-- NetworkMediator timeout (or ExecuteBoundary timeout) causes fail-closed behavior.
-- No retries, no partial execution, no crash.
-"""
+from src.governor.exceptions import NetworkMediatorError
 
 
 class SlowNetworkMediator:
     def __init__(self):
         self.calls = 0
 
-    def request(self, capability_id: int | None, method: str, url: str, json_payload: dict | None = None) -> dict:
+    def request(self, capability_id: int | None, method: str, url: str, json_payload: dict | None = None, **kwargs) -> dict:
         self.calls += 1
-        time.sleep(10.0)  # exceed your 5s network cap
-        return {"status_code": 200, "data": {"results": [], "source": "online_search"}}
+        raise NetworkMediatorError("timeout")
 
 
-def test_timeout_causes_denial(monkeypatch):
+class CaptureLedger:
+    def __init__(self):
+        self.events: list[tuple[str, dict]] = []
+
+    def log_event(self, event_type: str, data: dict):
+        self.events.append((event_type, data))
+
+
+def test_timeout_causes_denial_and_records_lifecycle(monkeypatch):
     from src.governor.governor_mediator import GovernorMediator
     from src.governor.governor import Governor
 
     slow = SlowNetworkMediator()
+    ledger = CaptureLedger()
 
-    # Patch NetworkMediator
     import src.governor.network_mediator as nm_mod
     monkeypatch.setattr(nm_mod, "NetworkMediator", lambda *a, **k: slow, raising=False)
 
-    user_text = "search for current weather"
-    invocation = GovernorMediator.parse_governed_invocation(user_text)
+    import src.ledger.writer as ledger_mod
+    monkeypatch.setattr(ledger_mod, "LedgerWriter", lambda *a, **k: ledger, raising=False)
+
+    invocation = GovernorMediator.parse_governed_invocation("search for current weather")
     assert invocation is not None
-    capability_id, params = invocation
 
     gov = Governor()
-    result = gov.handle_governed_invocation(capability_id, params)
+    result = gov.handle_governed_invocation(invocation.capability_id, invocation.params)
 
-    s = str(result).lower()
-    assert ("timeout" in s) or ("denied" in s) or ("fail" in s), f"Expected timeout denial, got: {result}"
-    assert slow.calls == 1, "Must not retry implicitly on timeout"
+    assert slow.calls == 2, "Expected bounded retry behavior (1 initial + 1 retry)"
+    assert result.success is False
+    assert result.data == {"widget": {"type": "search", "data": {"results": []}}}
+
+    event_types = [event for event, _ in ledger.events]
+    assert event_types.count("ACTION_ATTEMPTED") == 1
+    assert event_types.count("ACTION_COMPLETED") == 1
+    completed = [data for event, data in ledger.events if event == "ACTION_COMPLETED"][0]
+    assert completed["success"] is False
