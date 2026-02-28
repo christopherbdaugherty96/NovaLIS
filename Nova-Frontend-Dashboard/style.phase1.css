@@ -675,3 +675,44 @@ html, body {
   padding-left: 18px;
   font-size: 0.8rem;
 }
+
+.citation-index {
+  display: inline-block;
+  margin-right: 8px;
+  color: rgba(230, 233, 240, 0.65);
+  font-size: 0.82rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.domain-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  border: 1px solid rgba(123, 109, 255, 0.32);
+  background: rgba(123, 109, 255, 0.12);
+  font-size: 0.75rem;
+  color: rgba(230, 233, 240, 0.88);
+}
+
+.search-widget {
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 12px;
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.search-result {
+  line-height: 1.35;
+}
+
+.search-result a {
+  color: #7ba1ff;
+  text-decoration: none;
+}
+
+.search-result a:hover {
+  text-decoration: underline;
+}

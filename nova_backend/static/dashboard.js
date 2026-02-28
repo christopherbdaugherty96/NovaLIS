@@ -44,6 +44,16 @@ function clear(el) {
   if (el) el.innerHTML = "";
 }
 
+function extractDomain(url) {
+  return (url || "").replace(/^https?:\/\//, "").split("/")[0].trim().toLowerCase();
+}
+
+function setLoadingHint(text = "") {
+  const bar = $("thinking-bar");
+  if (!bar) return;
+  bar.textContent = text || "Processing";
+}
+
 // Guarded WebSocket send (calm failure)
 function safeWSSend(message) {
   if (!ws || ws.readyState !== WebSocket.OPEN) return false;
@@ -140,8 +150,13 @@ function renderNewsWidget(items, summaryText = "") {
   updateNewsSummary(summaryText);
 
   const visibleItems = newsExpanded ? latestNewsItems : latestNewsItems.slice(0, 3);
-  visibleItems.forEach(item => {
+  visibleItems.forEach((item, index) => {
     const li = document.createElement("li");
+
+    const badge = document.createElement("span");
+    badge.className = "citation-index";
+    badge.textContent = `[${index + 1}]`;
+    li.appendChild(badge);
 
     const a = document.createElement("a");
     a.href = item.url;
@@ -150,10 +165,18 @@ function renderNewsWidget(items, summaryText = "") {
     a.rel = "noopener noreferrer";
     li.appendChild(a);
 
+    const domain = extractDomain(item.url);
+    if (domain) {
+      const domainBadge = document.createElement("span");
+      domainBadge.className = "domain-badge";
+      domainBadge.textContent = domain;
+      li.appendChild(domainBadge);
+    }
+
     if (item.source) {
       const src = document.createElement("span");
       src.className = "news-source";
-      src.textContent = ` (${item.source})`;
+      src.textContent = ` ${item.source}`;
       li.appendChild(src);
     }
 
@@ -179,7 +202,6 @@ function setNewsExpandButton() {
    ========================================================= */
 
 function renderSearchWidget(data) {
-  // Optional dedicated container – if it exists, use it.
   const container = $("search-widget");
   if (container) {
     clear(container);
@@ -187,27 +209,45 @@ function renderSearchWidget(data) {
       container.textContent = "No results found.";
       return;
     }
-    data.results.forEach(item => {
+
+    data.results.forEach((item, index) => {
       const div = document.createElement("div");
       div.className = "search-result";
+
+      const idx = document.createElement("span");
+      idx.className = "citation-index";
+      idx.textContent = `[${index + 1}]`;
+      div.appendChild(idx);
+
       const a = document.createElement("a");
       a.href = item.url;
       a.textContent = item.title;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
       div.appendChild(a);
+
+      const domain = extractDomain(item.url);
+      if (domain) {
+        const domainBadge = document.createElement("span");
+        domainBadge.className = "domain-badge";
+        domainBadge.textContent = domain;
+        div.appendChild(domainBadge);
+      }
+
       container.appendChild(div);
     });
-  } else {
-    // Fallback: show each result as a chat message
-    if (!data || !Array.isArray(data.results) || data.results.length === 0) {
-      appendChatMessage("assistant", "No results found.");
-      return;
-    }
-    data.results.forEach(item => {
-      appendChatMessage("assistant", `${item.title}\n${item.url}`);
-    });
+    return;
   }
+
+  if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+    appendChatMessage("assistant", "No results found.");
+    return;
+  }
+
+  data.results.forEach((item, index) => {
+    const domain = extractDomain(item.url);
+    appendChatMessage("assistant", `[${index + 1}] ${item.title} (${domain || "source"})\n${item.url}`);
+  });
 }
 
 /* =========================================================
@@ -256,6 +296,7 @@ function injectUserText(text, channel = "text") {
   // Single canonical path for ALL user input (typed + STT)
   appendChatMessage("user", clean);
   waitingForAssistant = true;
+  setLoadingHint(clean.toLowerCase().includes("search") ? "Checking latest sources" : "Processing");
   setThinkingBar(true);
   
   // Phase-3 calm: if WS fails, just log, don't spam chat
@@ -405,6 +446,7 @@ function connectWebSocket() {
         break;
       case "chat_done":
         waitingForAssistant = false;
+        setLoadingHint("");
         setThinkingBar(false);
         break;
       case "thought":
