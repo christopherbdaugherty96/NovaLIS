@@ -4,6 +4,7 @@ import importlib
 import logging
 
 from src.actions.action_result import ActionResult
+from src.rendering.speech_formatter import SpeechFormatter
 
 log = logging.getLogger("nova")
 
@@ -38,8 +39,15 @@ def execute_tts(req, action_result_cls=ActionResult) -> ActionResult:
         )
 
     try:
-        log.info("Speaking text (length %d chars)", len(text))
-        TTSEngine.speak(text)
+        speak_text = SpeechFormatter().format_for_tts(text)
+        if not speak_text:
+            return action_result_cls.failure(
+                "I don’t have anything to speak.",
+                request_id=req.request_id,
+            )
+
+        log.info("Speaking text (length %d chars)", len(speak_text))
+        TTSEngine.speak(speak_text)
         return action_result_cls(
             success=True,
             message="",
