@@ -37,3 +37,34 @@ class ResponseStyleRouter:
             return ResponseStyle.DEEP
 
         return ResponseStyle.DIRECT
+
+
+class ResponseTemplates:
+    """Deterministic phrasing templates for calm, premium output style."""
+
+    @staticmethod
+    def bounded_research_intro(query: str = "") -> str:
+        context = (query or "").strip()
+        if context:
+            return f"I checked the latest sources for \"{context}\". Here are the top findings:"
+        return "I checked the latest sources. Here are the top findings:"
+
+    @staticmethod
+    def top_findings_block(lines: list[str]) -> str:
+        if not lines:
+            return "Top Findings\n- No reliable findings were available."
+        findings = "\n".join(f"- {line}" for line in lines)
+        return f"Top Findings\n{findings}"
+
+    @staticmethod
+    def sources_block(domains: list[str]) -> str:
+        if not domains:
+            return "Sources\n1. multiple online sources"
+
+        numbered = "\n".join(f"{idx}. {domain}" for idx, domain in enumerate(domains, start=1))
+        return f"Sources\n{numbered}"
+
+    @staticmethod
+    def concise_acknowledgement(text: str) -> str:
+        clean = (text or "").strip()
+        return clean or "You're welcome."

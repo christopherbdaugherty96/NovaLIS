@@ -5,6 +5,7 @@ import time
 import os
 
 from src.actions.action_result import ActionResult
+from src.conversation.response_style_router import ResponseTemplates
 
 logger = logging.getLogger(__name__)
 
@@ -140,8 +141,28 @@ class WebSearchExecutor:
                 request_id=request.request_id,
             )
 
-        summary_lines = [f"- {result['title']}" for result in results[:3]]
-        user_message = f"{boundary_notice} I found {len(results)} results.\n" + "\n".join(summary_lines)
+        top_domains = []
+        for result in results[:3]:
+            url = result.get("url", "")
+            domain = url.split("//")[-1].split("/")[0] if url else ""
+            if domain:
+                top_domains.append(domain)
+
+        brief_query = query[:80]
+        intro = ResponseTemplates.bounded_research_intro(brief_query)
+        findings_block = ResponseTemplates.top_findings_block([result["title"] for result in results[:3]])
+        sources_block = ResponseTemplates.sources_block(top_domains)
+
+        report_sections = [
+            f"{boundary_notice} {intro}",
+            "",
+            findings_block,
+            "",
+            sources_block,
+            "",
+            "Open any dashboard result for full article detail.",
+        ]
+        user_message = "\n".join(report_sections)
 
         widget_payload = {
             "type": "search",
