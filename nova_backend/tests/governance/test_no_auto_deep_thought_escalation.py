@@ -38,7 +38,7 @@ def test_escalation_policy_remains_non_authorizing():
     decision = policy.decide(heuristic_result, "analyze this deeply", session_state)
 
     # Escalation can ALLOW, but must not perform authority actions
-    assert decision in {"ALLOW", "DENY"}
+    assert decision in {"ALLOW", "ALLOW_ANALYSIS_ONLY", "DENY"}
 
     # Ensure no execution surfaces referenced inside policy module
     source = inspect.getsource(EscalationPolicy)
