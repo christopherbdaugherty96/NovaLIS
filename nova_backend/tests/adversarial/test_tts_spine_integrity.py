@@ -19,17 +19,30 @@ def test_tts_engine_speak_only_called_in_tts_executor():
         if "TTSEngine.speak(" in text and py != TTS_EXECUTOR:
             offenders.append(py)
 
-    assert not offenders, "TTSEngine.speak() used outside tts_executor:\n" + "\n".join(str(p) for p in offenders)
+    assert not offenders, (
+        "TTSEngine.speak() used outside tts_executor:\n"
+        + "\n".join(str(p) for p in offenders)
+    )
 
 
-def test_brain_server_triggers_tts_via_governor_only():
+def test_brain_server_does_not_invoke_capability_18_directly():
+    """
+    Brain server must NOT auto-invoke capability 18.
+    Rendering is allowed via nova_speak(),
+    but authority surface must remain sealed.
+    """
     text = read_text(BRAIN_SERVER)
-    assert "governor.handle_governed_invocation(18" in text
+
+    assert "handle_governed_invocation(18" not in text
     assert "execute_tts(" not in text
     assert "TTSEngine.speak(" not in text
 
 
 def test_governor_routes_capability_18_to_tts_executor():
+    """
+    Governor must still own the capability 18 routing surface.
+    """
     text = read_text(GOVERNOR_FILE)
+
     assert "elif req.capability_id == 18" in text
     assert "from src.executors.tts_executor import execute_tts" in text

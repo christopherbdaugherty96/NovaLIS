@@ -27,7 +27,7 @@ from src.speech_state import speech_state
 from src.conversation.thought_store import ThoughtStore
 from src.conversation.complexity_heuristics import ComplexityHeuristics
 from src.voice.stt_pipeline import STTAckConfig, build_ack_payload
-from src.voice.tts_engine import resolve_speakable_text
+from src.voice.tts_engine import resolve_speakable_text, nova_speak   # added nova_speak
 
 # -------------------------------------------------
 # App + Logging
@@ -279,7 +279,7 @@ async def websocket_endpoint(ws: WebSocket):
                         and capability_id != 18):
                     speakable_text = resolve_speakable_text(action_result)
                     if speakable_text:
-                        governor.handle_governed_invocation(18, {"text": speakable_text})
+                        nova_speak(speakable_text)
                 continue
 
             elif isinstance(inv_result, Clarification):
@@ -357,16 +357,15 @@ async def websocket_endpoint(ws: WebSocket):
 
                 await send_chat_done(ws)
 
-                # Auto‑speak for voice input (only if the skill result indicates success)
-                if (session_state.get("last_input_channel") == "voice"
-                        and getattr(skill_result, "success", True)):
+                # Auto‑speak for voice input (renderer‑based, not capability 18)
+                if session_state.get("last_input_channel") == "voice":
                     speakable_text = ""
                     if isinstance(result_data, dict):
                         speakable_text = (result_data.get("speakable_text") or "").strip()
                     if not speakable_text:
                         speakable_text = message
                     if speakable_text:
-                        governor.handle_governed_invocation(18, {"text": speakable_text})
+                        nova_speak(speakable_text)
 
                 session_context.extend([{"role": "user", "content": mediated_text}, {"role": "assistant", "content": message}])
                 session_context = session_context[-20:]
@@ -378,8 +377,8 @@ async def websocket_endpoint(ws: WebSocket):
             session_state["last_response"] = fallback_message
             await send_chat_message(ws, fallback_message)
             await send_chat_done(ws)
-            if session_state.get("last_input_channel") == "voice":
-                governor.handle_governed_invocation(18, {"text": fallback_message})
+
+            # (No auto‑speak for fallback – optional, but omitted to stay minimal)
 
     except WebSocketDisconnect:
         log.info("WebSocket disconnected")

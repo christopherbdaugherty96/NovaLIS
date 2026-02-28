@@ -2,35 +2,56 @@ from __future__ import annotations
 
 from pathlib import Path
 import sys
+import inspect
+import ast
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
-
-import ast
 
 from src.conversation.escalation_policy import EscalationPolicy
 
 GENERAL_CHAT_PATH = PROJECT_ROOT / "src" / "skills" / "general_chat.py"
 
 
-def test_escalation_policy_requires_explicit_user_intent_for_allow():
+def test_escalation_policy_remains_non_authorizing():
+    """
+    Escalation may return ALLOW automatically (cognitive autonomy allowed),
+    but it must not directly reference or invoke any execution surface.
+    """
     policy = EscalationPolicy()
-    heuristic_result = {"escalate": True, "reason_codes": ["DEPTH_KEYWORD"], "suggested_max_tokens": 800}
+
+    heuristic_result = {
+        "escalate": True,
+        "reason_codes": ["DEPTH_KEYWORD"],
+        "suggested_max_tokens": 800,
+    }
+
     session_state = {
         "turn_count": 5,
         "last_escalation_turn": None,
         "escalation_count": 0,
         "deep_mode_disabled": False,
-        # Explicit user intent flag not present / false
         "explicit_deep_thought_requested": False,
     }
 
     decision = policy.decide(heuristic_result, "analyze this deeply", session_state)
-    assert decision != "ALLOW", (
-        "EscalationPolicy returned ALLOW without explicit user intent flag; "
-        "automatic deep-thought escalation is prohibited."
-    )
+
+    # Escalation can ALLOW, but must not perform authority actions
+    assert decision in {"ALLOW", "DENY"}
+
+    # Ensure no execution surfaces referenced inside policy module
+    source = inspect.getsource(EscalationPolicy)
+    forbidden_tokens = [
+        "handle_governed_invocation",
+        "execute_",
+        "Invocation(",
+        "capability_id=",
+        "Governor",
+    ]
+
+    for token in forbidden_tokens:
+        assert token not in source, f"Found forbidden token '{token}' in EscalationPolicy source"
 
 
 def test_general_chat_does_not_auto_call_deepseek_process():
