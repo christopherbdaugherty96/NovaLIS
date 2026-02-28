@@ -1,0 +1,180 @@
+PHASE_4_UNLOCK_ACT.md
+Constitutional Authorization to Introduce Governed Execution
+
+Document ID: NOVA-PHASE-4-UNLOCK-ACT-v1.0
+Status: TEMPLATE — Not Yet Ratified
+Supersedes: None
+Requires: Active Phase 3.5 Seal Artifact
+
+I. PURPOSE
+
+This document authorizes the controlled transition from:
+
+Phase 3.5 — Execution-Inert Governance Baseline
+to
+Phase 4 — Governed Execution (Explicit Invocation Only)
+
+This act removes the mechanical refusal-only lock from ExecuteBoundary and introduces limited, constitutionally governed execution authority.
+
+No execution authority may exist without this act being ratified.
+
+II. PRECONDITIONS (MUST BE TRUE)
+
+Before ratification, the following must be verified:
+
+ Phase 3.5 Seal Artifact is active and unviolated.
+
+ ExecuteBoundary file hash matches sealed baseline.
+
+ No quarantine imports exist in active runtime.
+
+ AudioManager issue (AUD-001) resolved or formally classified.
+
+ CI enforcement for quarantine import checks active.
+
+ All Phase 3.5 invariants confirmed via audit.
+
+If any item fails, this Act is void.
+
+III. SCOPE OF UNLOCK
+
+Phase 4 unlock introduces:
+
+1️⃣ Governed Execution
+
+ExecuteBoundary may conditionally allow execution.
+
+Execution allowed only for:
+
+Explicit user-invoked commands.
+
+Capabilities listed in Phase 4 Capability Registry.
+
+All execution must route through Governor.
+
+2️⃣ Confirmation Gate
+
+High-risk actions require explicit user confirmation.
+
+Confirmation flow must be deterministic.
+
+No inferred consent.
+
+3️⃣ Capability Registry
+
+Atomic capabilities only.
+
+No dynamic chaining.
+
+No orchestration.
+
+No multi-step automation.
+
+4️⃣ Online Access Rules
+
+Online access requires explicit invocation.
+
+“Search”, “look up”, etc. grant read-only lookup authority.
+
+No silent fallback to internet.
+
+IV. WHAT REMAINS LOCKED
+
+Even after Phase 4 unlock:
+
+No background autonomy.
+
+No scheduled jobs.
+
+No persistent memory adaptation.
+
+No multi-user support.
+
+No policy-based delegation.
+
+No mutation firewall activation.
+
+No evolution tiers beyond Tier 0.
+
+Phase 4 adds execution — not autonomy.
+
+V. REQUIRED CODE CHANGES
+
+The following must occur in the same commit as ratification:
+
+Modify ExecuteBoundary.evaluate():
+
+Replace unconditional refusal with capability-based allow logic.
+
+Must fail closed by default.
+
+Introduce:
+
+CapabilityRegistry
+
+ConfirmationGate
+
+Explicit handler map
+
+Remove:
+
+Hard-coded refusal-only comment block in ExecuteBoundary
+
+Any Phase 3.5 hash-lock tests (replace with Phase 4 governance tests)
+
+Add:
+
+tests/governance/test_execute_boundary_phase4.py
+
+Adversarial bypass tests
+
+Confirmation flow tests
+
+VI. GOVERNANCE INVARIANTS (PHASE 4)
+
+The following invariants must hold:
+
+All execution passes through Governor.
+
+ExecuteBoundary cannot be bypassed.
+
+No component constructs ActionRequest except Governor.
+
+Capability registry is immutable at runtime.
+
+Deterministic evaluation order.
+
+No probabilistic intent selection.
+
+Violation of any invariant voids Phase 4.
+
+VII. RATIFICATION
+
+Phase 4 is unlocked only when:
+
+This document is committed.
+
+Code modifications described in Section V are committed.
+
+CI passes all governance tests.
+
+Constitutional Audit reports no violations.
+
+VIII. DECLARATION
+
+Upon ratification:
+
+Phase 3.5 Seal remains archived but superseded.
+Phase 4 Governance becomes active baseline.
+
+Execution authority becomes:
+
+Limited
+Explicit
+Audited
+Reversible
+
+Never autonomous.
+
+Signed: _____________CBD_________
+Date: __________2/16/26____________
