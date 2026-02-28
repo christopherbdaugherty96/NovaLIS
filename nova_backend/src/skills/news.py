@@ -28,6 +28,9 @@ class NewsSkill(BaseSkill):
         {"name": "CNN", "feed": "http://rss.cnn.com/rss/cnn_topstories.rss", "domain": "cnn.com"},
     ]
 
+    def __init__(self, network):
+        self.network = network
+
     def can_handle(self, query: str) -> bool:
         q = (query or "").lower()
         return any(term in q for term in ("news", "headlines", "latest news", "current news"))
@@ -60,7 +63,7 @@ class NewsSkill(BaseSkill):
 
         if feed_url:
             try:
-                items = await fetch_rss_headlines(feed_url)
+                items = await fetch_rss_headlines(feed_url, self.network)
                 if items:
                     first = items[0]
                     title = first.get("title")

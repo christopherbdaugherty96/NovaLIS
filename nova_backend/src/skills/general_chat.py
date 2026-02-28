@@ -82,10 +82,10 @@ class GeneralChatSkill(BaseSkill):
         (re.compile(r"\!+", re.IGNORECASE), "."),
     )
 
-    def __init__(self, policy_config: Optional[dict] = None):
+    def __init__(self, network, policy_config: Optional[dict] = None):
         self.heuristics = ComplexityHeuristics()
         self.policy = EscalationPolicy(policy_config)
-        self.deepseek = DeepSeekBridge()
+        self.deepseek = DeepSeekBridge(network=network)
         self.safety = SafetyFilter()
         self.formatter = ResponseFormatter()
 

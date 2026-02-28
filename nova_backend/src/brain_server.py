@@ -24,6 +24,7 @@ from src.skill_registry import SkillRegistry
 from src.gates.confirmation_gate import confirmation_gate
 from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
 from src.speech_state import speech_state
+from src.audio_manager import nova_speak
 from src.conversation.thought_store import ThoughtStore
 
 # -------------------------------------------------
@@ -60,7 +61,6 @@ app.include_router(stt_router)
 # -------------------------------------------------
 # Phase‑4 Staging Components
 # -------------------------------------------------
-skill_registry = SkillRegistry()
 thought_store = ThoughtStore(ttl=300)
 
 # -------------------------------------------------
@@ -120,6 +120,7 @@ async def websocket_endpoint(ws: WebSocket):
 
     session_id = str(uuid.uuid4())
     governor = Governor()
+    skill_registry = SkillRegistry(network=governor.network)
     session_context = []
     session_state = {
         "turn_count": 0,
@@ -258,7 +259,7 @@ async def websocket_endpoint(ws: WebSocket):
                         and action_result.success
                         and action_result.message
                         and capability_id != 18):
-                    governor.handle_governed_invocation(18, {"text": action_result.message})
+                    nova_speak(action_result.message)
                 continue
 
             elif isinstance(inv_result, Clarification):
@@ -340,7 +341,7 @@ async def websocket_endpoint(ws: WebSocket):
                 if (session_state.get("last_input_channel") == "voice"
                         and getattr(skill_result, "success", True)
                         and message):
-                    governor.handle_governed_invocation(18, {"text": message})
+                    nova_speak(message)
 
                 session_context.extend([{"role": "user", "content": mediated_text}, {"role": "assistant", "content": message}])
                 session_context = session_context[-20:]
@@ -353,7 +354,7 @@ async def websocket_endpoint(ws: WebSocket):
             await send_chat_message(ws, fallback_message)
             await send_chat_done(ws)
             if session_state.get("last_input_channel") == "voice":
-                governor.handle_governed_invocation(18, {"text": fallback_message})
+                nova_speak(fallback_message)
 
     except WebSocketDisconnect:
         log.info("WebSocket disconnected")

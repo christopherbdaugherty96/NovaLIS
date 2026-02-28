@@ -4,30 +4,26 @@ import asyncio
 import xml.etree.ElementTree as ET
 from typing import Dict, Any, List
 
-from src.governor.network_mediator import network_mediator
 from src.governor.exceptions import NetworkMediatorError
+
+SKILL_NETWORK_CAPABILITY_ID = 48
 
 
 async def fetch_rss_headlines(
     feed_url: str,
+    network,
     timeout: float = 8.0,
 ) -> List[Dict[str, Any]]:
     """
     Fetch and parse an RSS or Atom feed.
 
     Phase-4 Admission change:
-    - All outbound HTTP routed through NetworkMediator (no direct httpx).
-
-    Returns:
-        [
-            {"title": str, "url": str},
-            ...
-        ]
+    - All outbound HTTP routed through NetworkMediator.
     """
     try:
         resp = await asyncio.to_thread(
-            network_mediator.request,
-            None,  # capability_id=None => skill/tool bucket
+            network.request,
+            SKILL_NETWORK_CAPABILITY_ID,
             "GET",
             feed_url,
             None,   # json_payload
@@ -47,9 +43,6 @@ async def fetch_rss_headlines(
     except ET.ParseError:
         return []
 
-    # ----------------------------
-    # RSS (<channel><item>)
-    # ----------------------------
     items = root.findall(".//item")
     results: List[Dict[str, Any]] = []
 
@@ -59,9 +52,6 @@ async def fetch_rss_headlines(
         if title and link:
             results.append({"title": title.strip(), "url": link.strip()})
 
-    # ----------------------------
-    # Atom (<entry>)
-    # ----------------------------
     if not results:
         ns = {"atom": "http://www.w3.org/2005/Atom"}
         entries = root.findall(".//atom:entry", ns)
@@ -79,7 +69,4 @@ async def fetch_rss_headlines(
     return results
 
 
-# ------------------------------------------------------------
-# Stable public alias (do not remove)
-# ------------------------------------------------------------
 fetch_rss = fetch_rss_headlines

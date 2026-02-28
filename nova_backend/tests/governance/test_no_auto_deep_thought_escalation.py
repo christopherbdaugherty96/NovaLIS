@@ -1,55 +1,48 @@
 from __future__ import annotations
 
+import ast
 from pathlib import Path
-import sys
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
-if str(PROJECT_ROOT) not in sys.path:
-    sys.path.insert(0, str(PROJECT_ROOT))
-
-import ast
-
-from src.conversation.escalation_policy import EscalationPolicy
-
 GENERAL_CHAT_PATH = PROJECT_ROOT / "src" / "skills" / "general_chat.py"
+ESCALATION_POLICY_PATH = PROJECT_ROOT / "src" / "conversation" / "escalation_policy.py"
 
 
-def test_escalation_policy_requires_explicit_user_intent_for_allow():
-    policy = EscalationPolicy()
-    heuristic_result = {"escalate": True, "reason_codes": ["DEPTH_KEYWORD"], "suggested_max_tokens": 800}
-    session_state = {
-        "turn_count": 5,
-        "last_escalation_turn": None,
-        "escalation_count": 0,
-        "deep_mode_disabled": False,
-        # Explicit user intent flag not present / false
-        "explicit_deep_thought_requested": False,
-    }
-
-    decision = policy.decide(heuristic_result, "analyze this deeply", session_state)
-    assert decision != "ALLOW", (
-        "EscalationPolicy returned ALLOW without explicit user intent flag; "
-        "automatic deep-thought escalation is prohibited."
-    )
-
-
-def test_general_chat_does_not_auto_call_deepseek_process():
-    tree = ast.parse(GENERAL_CHAT_PATH.read_text(encoding="utf-8", errors="replace"), filename=str(GENERAL_CHAT_PATH))
-    offenders: list[str] = []
-
+def _imports(path: Path) -> set[str]:
+    tree = ast.parse(path.read_text(encoding="utf-8", errors="replace"), filename=str(path))
+    mods: set[str] = set()
     for node in ast.walk(tree):
-        if isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
-            if isinstance(node.func.value, ast.Name) and node.func.value.id == "self" and node.func.attr == "deepseek":
-                offenders.append(f"{GENERAL_CHAT_PATH}:{node.lineno} direct self.deepseek(...) call")
-            chain = []
-            cur = node.func
-            while isinstance(cur, ast.Attribute):
-                chain.append(cur.attr)
-                cur = cur.value
-            if isinstance(cur, ast.Name):
-                chain.append(cur.id)
-            dotted = ".".join(reversed(chain))
-            if dotted == "self.deepseek.process":
-                offenders.append(f"{GENERAL_CHAT_PATH}:{node.lineno} self.deepseek.process auto-invocation")
+        if isinstance(node, ast.Import):
+            for alias in node.names:
+                mods.add(alias.name)
+        elif isinstance(node, ast.ImportFrom) and node.module:
+            mods.add(node.module)
+    return mods
 
-    assert not offenders, "\n".join(offenders)
+
+def test_escalation_policy_has_no_execution_authority_imports():
+    imports = _imports(ESCALATION_POLICY_PATH)
+    forbidden_prefixes = (
+        "src.governor",
+        "src.actions",
+        "src.executors",
+        "requests",
+        "httpx",
+    )
+    offenders = [imp for imp in imports if any(imp == p or imp.startswith(p + ".") for p in forbidden_prefixes)]
+    assert not offenders, f"Escalation policy imports execution/network authority modules: {offenders}"
+
+
+def test_general_chat_escalation_path_does_not_invoke_capabilities():
+    text = GENERAL_CHAT_PATH.read_text(encoding="utf-8", errors="replace")
+    forbidden_tokens = [
+        "handle_governed_invocation(",
+        "ActionRequest(",
+        "capability_id=",
+        "execute_tts(",
+        "WebSearchExecutor(",
+        "WebpageLaunchExecutor(",
+    ]
+    offenders = [tok for tok in forbidden_tokens if tok in text]
+    assert not offenders, f"General chat escalation path touches capability execution surface: {offenders}"

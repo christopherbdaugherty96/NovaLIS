@@ -22,9 +22,10 @@ def test_tts_engine_speak_only_called_in_tts_executor():
     assert not offenders, "TTSEngine.speak() used outside tts_executor:\n" + "\n".join(str(p) for p in offenders)
 
 
-def test_brain_server_triggers_tts_via_governor_only():
+def test_brain_server_uses_renderer_for_voice_auto_tts():
     text = read_text(BRAIN_SERVER)
-    assert "governor.handle_governed_invocation(18" in text
+    assert "nova_speak(" in text
+    assert "governor.handle_governed_invocation(18" not in text
     assert "execute_tts(" not in text
     assert "TTSEngine.speak(" not in text
 

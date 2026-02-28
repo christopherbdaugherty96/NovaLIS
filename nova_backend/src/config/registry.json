@@ -81,7 +81,7 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": true,
-      "enabled": false
+      "enabled": true
     }
   ],
   "retired_ids": []

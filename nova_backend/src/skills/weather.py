@@ -13,8 +13,8 @@ class WeatherSkill(BaseSkill):
     name = "weather"
     description = "Provides the current weather conditions."
 
-    def __init__(self):
-        self.service = WeatherService()
+    def __init__(self, network):
+        self.service = WeatherService(network=network)
 
     def can_handle(self, text: str) -> bool:
         return "weather" in text.lower()

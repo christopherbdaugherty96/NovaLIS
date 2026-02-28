@@ -40,11 +40,12 @@ def test_skill_network_calls_are_mediator_intercepted(monkeypatch):
     monkeypatch.setenv("WEATHER_API_KEY", "test-key")
 
     with patch.object(NetworkMediator, "request", new=fake_mediator_request), patch("requests.request", new=fail_direct_requests):
-        weather = WeatherSkill()
+        network = NetworkMediator()
+        weather = WeatherSkill(network=network)
         weather_result = asyncio.run(weather.handle("weather"))
         assert weather_result is not None
 
-        news = NewsSkill()
+        news = NewsSkill(network=network)
         news_result = asyncio.run(news.handle("news"))
         assert news_result is not None
 

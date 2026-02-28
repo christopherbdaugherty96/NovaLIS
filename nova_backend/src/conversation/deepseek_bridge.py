@@ -2,8 +2,6 @@ import logging
 import os
 from typing import List
 
-from src.governor.network_mediator import network_mediator
-
 from . import prompts
 
 logger = logging.getLogger(__name__)
@@ -11,9 +9,13 @@ logger = logging.getLogger(__name__)
 DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 MAX_TOKENS = 1000
 TIMEOUT = 15
+DEEP_THOUGHT_CAPABILITY_ID = 48
 
 
 class DeepSeekBridge:
+    def __init__(self, network):
+        self.network = network
+
     def process(self, user_message: str, context: List[dict], suggested_max_tokens: int = 800) -> str:
         api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
         if not api_key:
@@ -29,8 +31,8 @@ class DeepSeekBridge:
         headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
         try:
-            response = network_mediator.request(
-                capability_id=None,
+            response = self.network.request(
+                capability_id=DEEP_THOUGHT_CAPABILITY_ID,
                 method="POST",
                 url=DEEPSEEK_API_URL,
                 json_payload=payload,

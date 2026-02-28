@@ -20,21 +20,16 @@ log = logging.getLogger("nova")
 
 
 class SkillRegistry:
-    def __init__(self, network=None) -> None:
-        """
-        network is accepted for future Phase‑4 expansion but not used for skills yet.
-        """
+    def __init__(self, network) -> None:
         self.network = network
 
-        # Base skills – always present (original Phase‑3 implementations)
         skills: List[BaseSkill] = [
             SystemSkill(),
-            WeatherSkill(),
-            NewsSkill(),
+            WeatherSkill(network=self.network),
+            NewsSkill(network=self.network),
         ]
 
-        # General chat is the final fallback
-        skills.append(GeneralChatSkill())
+        skills.append(GeneralChatSkill(network=self.network))
 
         self.skills = skills
 

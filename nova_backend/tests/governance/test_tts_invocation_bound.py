@@ -8,16 +8,15 @@ BRAIN_SERVER_PATH = PROJECT_ROOT / "src" / "brain_server.py"
 TTS_EXECUTOR_PATH = PROJECT_ROOT / "src" / "executors" / "tts_executor.py"
 
 
-def test_brain_server_does_not_auto_invoke_capability_18():
+def test_voice_auto_response_does_not_call_governor_tts_capability():
     text = BRAIN_SERVER_PATH.read_text(encoding="utf-8", errors="replace")
 
-    forbidden_snippets = [
-        'last_input_channel") == "voice"',
-        "handle_governed_invocation(18",
-    ]
+    voice_guard = 'last_input_channel") == "voice"'
+    assert voice_guard in text, "Voice auto-response branch missing"
 
-    for snippet in forbidden_snippets:
-        assert snippet not in text, f"Auto-TTS trigger snippet found in brain_server: {snippet}"
+    assert 'governor.handle_governed_invocation(18, {"text": action_result.message})' not in text
+    assert 'governor.handle_governed_invocation(18, {"text": message})' not in text
+    assert 'governor.handle_governed_invocation(18, {"text": fallback_message})' not in text
 
 
 def test_no_tts_execution_outside_governor_surface():
@@ -33,7 +32,6 @@ def test_no_tts_execution_outside_governor_surface():
         if "execute_tts(" in body:
             offenders.append(str(py))
 
-    # only governor should invoke execute_tts
     allowed = {str(src_root / "governor" / "governor.py")}
     extra = [p for p in offenders if p not in allowed]
     assert not extra, f"execute_tts invoked outside Governor: {extra}"

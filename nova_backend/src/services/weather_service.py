@@ -4,7 +4,6 @@ import os
 import asyncio
 from typing import Dict, Optional
 
-from src.governor.network_mediator import network_mediator
 from src.governor.exceptions import NetworkMediatorError
 
 
@@ -19,12 +18,14 @@ class WeatherService:
     Stable normalized output for WeatherSkill
 
     Phase-4 Admission change:
-    - All outbound HTTP routed through NetworkMediator (no direct httpx).
+    - All outbound HTTP routed through NetworkMediator.
     """
 
     DEFAULT_LOCATION = "Ann Arbor, MI"
+    SKILL_NETWORK_CAPABILITY_ID = 48
 
-    def __init__(self, location: Optional[str] = None):
+    def __init__(self, network, location: Optional[str] = None):
+        self.network = network
         self.location = location or self.DEFAULT_LOCATION
 
     async def get_current_weather(self) -> Dict[str, str]:
@@ -48,15 +49,15 @@ class WeatherService:
         try:
             # NetworkMediator is synchronous; run in a thread.
             resp = await asyncio.to_thread(
-                network_mediator.request,
-                None,  # capability_id=None => skill/tool bucket
+                self.network.request,
+                self.SKILL_NETWORK_CAPABILITY_ID,
                 "GET",
                 url,
                 None,  # json_payload
                 params,
                 None,  # headers
                 as_json=True,
-                timeout=8.0,  # keep prior behavior close to httpx timeout
+                timeout=8.0,
             )
         except NetworkMediatorError as e:
             raise RuntimeError(f"Weather API failed: {e}") from e
