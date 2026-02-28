@@ -2,6 +2,7 @@
 
 import logging
 import time
+import os
 
 from src.actions.action_result import ActionResult
 
@@ -10,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 class WebSearchExecutor:
     """
-    Executes a governed web search using the DuckDuckGo Instant Answer API.
+    Executes a governed web search using the Brave Search API.
     All outbound HTTP is routed through NetworkMediator.
     """
 
@@ -32,23 +33,34 @@ class WebSearchExecutor:
                 data=self._empty_widget(),
             )
 
+        # Early check for API key to avoid silent misconfiguration
+        brave_key = os.getenv("BRAVE_API_KEY")
+        if not brave_key:
+            return ActionResult(
+                success=False,
+                message="Search service is not configured.",
+                request_id=request.request_id,
+                data=self._empty_widget(),
+            )
+
         boundary_notice = "I'm checking online."
 
         max_retries = 1
         for attempt in range(max_retries + 1):
             try:
-                # Perform the search via NetworkMediator
+                # Perform the search via NetworkMediator using Brave API
                 response = self.network.request(
                     capability_id=request.capability_id,
                     method="GET",
-                    url="https://api.duckduckgo.com/",
+                    url="https://api.search.brave.com/res/v1/web/search",
                     params={
                         "q": query,
-                        "format": "json",
-                        "no_redirect": "1",
-                        "no_html": "1",
+                        "count": 5,
                     },
-                    headers={"User-Agent": "Nova/1.0"},
+                    headers={
+                        "Accept": "application/json",
+                        "X-Subscription-Token": brave_key,
+                    },
                     as_json=True,
                     timeout=5,
                 )
@@ -72,6 +84,23 @@ class WebSearchExecutor:
         # Defensive: ensure data is a dict even if mediator returns None
         data = response.get("data") or {}
 
+        # Handle specific HTTP error codes deterministically
+        if status_code == 401:
+            return ActionResult(
+                success=False,
+                message=f"{boundary_notice} Search authentication failed.",
+                request_id=request.request_id,
+                data=self._empty_widget(),
+            )
+
+        if status_code == 429:
+            return ActionResult(
+                success=False,
+                message=f"{boundary_notice} Search rate limit reached. Please try again later.",
+                request_id=request.request_id,
+                data=self._empty_widget(),
+            )
+
         if status_code != 200:
             if status_code == 202:
                 return ActionResult(
@@ -87,60 +116,26 @@ class WebSearchExecutor:
                 data=self._empty_widget(),
             )
 
-        # ----- Parse DuckDuckGo response (only when status_code == 200) -----
+        # ----- Parse Brave response -----
         results = []
 
-        abstract = data.get("Abstract", "")
-        abstract_url = data.get("AbstractURL", "")
-        if abstract and abstract_url:
+        web_data = data.get("web", {})
+        brave_results = web_data.get("results", [])
+
+        for item in brave_results:
             results.append(
                 {
-                    "title": (abstract[:97] + "…") if len(abstract) > 100 else abstract,
-                    "url": abstract_url,
-                    "snippet": "",
+                    "title": item.get("title", "")[:100],
+                    "url": item.get("url", ""),
+                    "snippet": item.get("description", "")[:200],
                 }
             )
-
-        related = data.get("RelatedTopics", [])
-        for item in related:
-            if isinstance(item, dict):
-                if "Topics" in item:
-                    for sub in item["Topics"]:
-                        if isinstance(sub, dict) and sub.get("FirstURL"):
-                            text = sub.get("Text", "")
-                            results.append(
-                                {
-                                    "title": (text[:97] + "…") if len(text) > 100 else text,
-                                    "url": sub.get("FirstURL", ""),
-                                    "snippet": "",
-                                }
-                            )
-                elif item.get("FirstURL"):
-                    text = item.get("Text", "")
-                    results.append(
-                        {
-                            "title": (text[:97] + "…") if len(text) > 100 else text,
-                            "url": item.get("FirstURL", ""),
-                            "snippet": "",
-                        }
-                    )
 
         results = results[:5]
 
         if not results:
-            answer = data.get("Answer") or data.get("Abstract")
-            if answer:
-                results.append(
-                    {
-                        "title": (answer[:97] + "…") if len(answer) > 100 else answer,
-                        "url": f"https://duckduckgo.com/?q={query.replace(' ', '+')}",
-                        "snippet": "Instant Answer",
-                    }
-                )
-
-        if not results:
             return ActionResult.ok(
-                message=f"{boundary_notice} No results found.",
+                message=f"{boundary_notice} No reliable results were found.",
                 data=self._empty_widget(),
                 request_id=request.request_id,
             )
