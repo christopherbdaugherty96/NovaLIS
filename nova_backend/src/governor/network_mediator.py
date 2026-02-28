@@ -4,7 +4,7 @@ import ipaddress
 import threading
 from collections import defaultdict
 from time import time
-from typing import Dict, Any, Optional, Union
+from typing import Dict, Any, Optional
 from urllib.parse import urlparse
 
 import requests
@@ -30,16 +30,13 @@ class NetworkMediator:
 
     Notes:
     - This mediator is synchronous (requests). Async callers should use asyncio.to_thread().
-    - Skills may call with capability_id=None (shared bucket).
-    - The Governor owns its own NetworkMediator instance (Governor.network).
-      Do NOT add a second module-level instantiation; use the singleton below for
-      skill/tool callers only.
+    - All calls must be capability-bound.
     """
 
     def __init__(self):
         self._registry = None  # lazy-loaded
         self.ledger = LedgerWriter()
-        self._request_times: Dict[Union[int, str], list] = defaultdict(list)
+        self._request_times: Dict[int, list] = defaultdict(list)
         self._lock = threading.Lock()
 
     @property
@@ -49,7 +46,7 @@ class NetworkMediator:
             self._registry = CapabilityRegistry()
         return self._registry
 
-    def _check_rate_limit(self, key: Union[int, str]) -> None:
+    def _check_rate_limit(self, key: int) -> None:
         now = time()
         with self._lock:
             times = self._request_times[key]
@@ -90,7 +87,7 @@ class NetworkMediator:
 
     def request(
         self,
-        capability_id: Optional[int],
+        capability_id: int,
         method: str,
         url: str,
         json_payload: Optional[Dict[str, Any]] = None,
@@ -117,19 +114,15 @@ class NetworkMediator:
         Raises NetworkMediatorError on failure.
         """
         # 1) Rate limit + capability check
-        if capability_id is not None:
-            key: Union[int, str] = capability_id
-            try:
-                _ = self.registry.get(capability_id)
-            except CapabilityRegistryError as e:
-                raise NetworkMediatorError(f"Capability check failed: {e}") from e
+        try:
+            _ = self.registry.get(capability_id)
+        except CapabilityRegistryError as e:
+            raise NetworkMediatorError(f"Capability check failed: {e}") from e
 
-            if not self.registry.is_enabled(capability_id):
-                raise NetworkMediatorError(f"Capability {capability_id} is disabled.")
-        else:
-            key = "non_capability"  # shared bucket for skills/tools
+        if not self.registry.is_enabled(capability_id):
+            raise NetworkMediatorError(f"Capability {capability_id} is disabled.")
 
-        self._check_rate_limit(key)
+        self._check_rate_limit(capability_id)
 
         # 2) URL validation
         self._validate_url(url)
@@ -186,21 +179,3 @@ class NetworkMediator:
         )
 
         return result
-
-# ---------------------------------------------------------------------------
-# Phase-3.5 skill-layer singleton — LOAD-BEARING, DO NOT REMOVE YET
-#
-# Required by:
-#   - nova_backend/src/tools/rss_fetch.py
-#   - nova_backend/src/services/weather_service.py
-#
-# These skill/tool callers use capability_id=None (shared rate-limit bucket).
-# They are NOT governed capabilities; they bypass Governor routing intentionally.
-#
-# To remove this singleton, ALL callers above must first be migrated to
-# constructor-injected NetworkMediator, and Governor.network must be wired
-# through SkillRegistry to every skill at instantiation time.
-#
-# Tracked under: network-unification milestone.
-# ---------------------------------------------------------------------------
-network_mediator = NetworkMediator()

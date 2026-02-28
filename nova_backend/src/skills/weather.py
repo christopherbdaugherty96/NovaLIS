@@ -5,6 +5,7 @@ import logging
 
 from src.base_skill import BaseSkill, SkillResult
 from src.services.weather_service import WeatherService
+from src.governor.network_mediator import NetworkMediator
 
 log = logging.getLogger("nova.skills.weather")
 
@@ -13,8 +14,8 @@ class WeatherSkill(BaseSkill):
     name = "weather"
     description = "Provides the current weather conditions."
 
-    def __init__(self):
-        self.service = WeatherService()
+    def __init__(self, network: NetworkMediator | None = None):
+        self.service = WeatherService(network=network)
 
     def can_handle(self, text: str) -> bool:
         return "weather" in text.lower()

@@ -60,7 +60,6 @@ app.include_router(stt_router)
 # -------------------------------------------------
 # Phase‑4 Staging Components
 # -------------------------------------------------
-skill_registry = SkillRegistry()
 thought_store = ThoughtStore(ttl=300)
 
 # -------------------------------------------------
@@ -120,6 +119,7 @@ async def websocket_endpoint(ws: WebSocket):
 
     session_id = str(uuid.uuid4())
     governor = Governor()
+    skill_registry = SkillRegistry(network=governor.network)
     session_context = []
     session_state = {
         "turn_count": 0,
