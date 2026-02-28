@@ -1,28 +1,53 @@
 # src/llm/inference_wrapper.py
 
 """
-This file contains the actual low‑level inference call.
-It is kept separate so that changes to surrounding logic (logging, metrics, etc.)
-do not affect the model version hash.
+Low-level Ollama inference call.
+Kept isolated so wrapper changes are hash-tracked by LLM version lock.
 """
 
-from typing import List, Dict, Any
+from __future__ import annotations
+
+from typing import Dict, Any
+
+import requests
+
+from .ilic import validate_and_lock_base_url
 
 
 def run_inference(
-    model,
-    messages: List[Dict[str, str]],
-    temperature: float,
-    max_tokens: int,
+    *,
+    base_url: str,
+    model: str,
+    prompt: str,
+    system: str,
+    options: Dict[str, Any],
+    timeout,
+    allow_redirects: bool,
+    trust_env: bool,
 ) -> str:
-    """
-    Execute the model and return the generated text.
-    This function should contain only the direct call to the model.
-    """
-    # Example for a HuggingFace model:
-    # inputs = tokenizer.apply_chat_template(messages, return_tensors="pt")
-    # outputs = model.generate(inputs, temperature=temperature, max_new_tokens=max_tokens)
-    # return tokenizer.decode(outputs[0], skip_special_tokens=True)
+    """Execute a single local Ollama generate call and return text."""
+    locked = validate_and_lock_base_url(base_url)
 
-    # Placeholder implementation (replace with actual model call):
-    return "Simulated inference output."
+    session = requests.Session()
+    session.trust_env = trust_env
+    if not trust_env:
+        session.proxies = {}
+
+    payload = {
+        "model": model,
+        "prompt": prompt,
+        "system": system,
+        "stream": False,
+        "options": options,
+    }
+
+    response = session.post(
+        f"{locked.base_url}/api/generate",
+        json=payload,
+        timeout=timeout,
+        allow_redirects=allow_redirects,
+    )
+    response.raise_for_status()
+
+    body = response.json()
+    return (body.get("response") or "").strip()

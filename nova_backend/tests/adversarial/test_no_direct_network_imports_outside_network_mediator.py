@@ -18,6 +18,8 @@ ALLOWED_NETWORK_IMPORT_FILES = {
     NETWORK_MEDIATOR_PATH,
     SRC_ROOT / "llm" / "llm_manager.py",
     SRC_ROOT / "llm" / "llm_manager_vlock.py",
+    SRC_ROOT / "llm" / "inference_wrapper.py",
+    SRC_ROOT / "llm" / "ilic.py",
 }
 
 
