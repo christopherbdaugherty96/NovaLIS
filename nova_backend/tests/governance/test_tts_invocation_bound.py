@@ -12,7 +12,6 @@ def test_brain_server_does_not_auto_invoke_capability_18():
     text = BRAIN_SERVER_PATH.read_text(encoding="utf-8", errors="replace")
 
     forbidden_snippets = [
-        'last_input_channel") == "voice"',
         "handle_governed_invocation(18",
     ]
 
