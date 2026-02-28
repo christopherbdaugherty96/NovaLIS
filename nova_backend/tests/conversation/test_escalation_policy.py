@@ -6,7 +6,7 @@ def test_policy_allow_for_escalation_when_limits_not_hit():
 
     decision = policy.decide({"escalate": True}, "analyze this", {"turn_count": 3, "escalation_count": 0})
 
-    assert decision == "ALLOW"
+    assert decision == "ALLOW_ANALYSIS_ONLY"
 
 
 def test_policy_denies_during_cooldown():

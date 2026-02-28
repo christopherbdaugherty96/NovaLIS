@@ -1,6 +1,6 @@
 from typing import Any, Dict, Literal
 
-PolicyDecision = Literal["ALLOW", "DENY", "ASK_USER"]
+PolicyDecision = Literal["ALLOW_ANALYSIS_ONLY", "DENY", "ASK_USER"]
 
 
 class EscalationPolicy:
@@ -9,6 +9,7 @@ class EscalationPolicy:
             "max_tokens_cap": 900,
             "max_escalations_per_session": 5,
             "cooldown_turns": 2,
+            "ask_user_threshold": 3,
         }
 
     def decide(
@@ -27,10 +28,14 @@ class EscalationPolicy:
             if turns_since < self.config["cooldown_turns"]:
                 return "DENY"
 
-        if session_state.get("escalation_count", 0) >= self.config["max_escalations_per_session"]:
+        escalation_count = session_state.get("escalation_count", 0)
+        if escalation_count >= self.config["max_escalations_per_session"]:
             return "ASK_USER"
 
         if session_state.get("deep_mode_disabled"):
             return "DENY"
 
-        return "ALLOW"
+        if escalation_count >= self.config.get("ask_user_threshold", 3):
+            return "ASK_USER"
+
+        return "ALLOW_ANALYSIS_ONLY"

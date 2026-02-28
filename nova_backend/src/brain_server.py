@@ -127,6 +127,7 @@ async def websocket_endpoint(ws: WebSocket):
         "last_escalation_turn": None,
         "deep_mode_disabled": False,
         "show_thinking_hints": True,
+        "presence_mode": False,
         "pending_escalation": None,
         "last_input_channel": "text",
         "last_response": "",
@@ -196,7 +197,8 @@ async def websocket_endpoint(ws: WebSocket):
                             await send_chat_message(ws, forced_result.message, message_id=message_id)
                             await send_chat_done(ws)
                             session_context.extend([{"role": "user", "content": original_query}, {"role": "assistant", "content": forced_result.message}])
-                            session_context = session_context[-20:]
+                            context_limit = 40 if session_state.get("presence_mode") else 20
+                            session_context = session_context[-context_limit:]
                             session_state["turn_count"] += 1
                             session_state["pending_escalation"] = None
                             continue
@@ -226,6 +228,18 @@ async def websocket_endpoint(ws: WebSocket):
                 last = speech_state.last_spoken_text
                 if last:
                     await send_chat_message(ws, last)
+                await send_chat_done(ws)
+                continue
+
+            if lowered in {"stay in conversation mode", "conversation mode on", "enable conversation mode"}:
+                session_state["presence_mode"] = True
+                await send_chat_message(ws, "Conversation mode enabled for this session.")
+                await send_chat_done(ws)
+                continue
+
+            if lowered in {"conversation mode off", "disable conversation mode", "exit conversation mode"}:
+                session_state["presence_mode"] = False
+                await send_chat_message(ws, "Conversation mode disabled for this session.")
                 await send_chat_done(ws)
                 continue
 
@@ -343,7 +357,8 @@ async def websocket_endpoint(ws: WebSocket):
                     governor.handle_governed_invocation(18, {"text": message})
 
                 session_context.extend([{"role": "user", "content": mediated_text}, {"role": "assistant", "content": message}])
-                session_context = session_context[-20:]
+                context_limit = 40 if session_state.get("presence_mode") else 20
+                session_context = session_context[-context_limit:]
                 session_state["turn_count"] += 1
                 continue
 
