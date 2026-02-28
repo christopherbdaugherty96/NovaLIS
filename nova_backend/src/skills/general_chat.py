@@ -12,7 +12,9 @@ from src.conversation.complexity_heuristics import ComplexityHeuristics
 from src.conversation.deepseek_bridge import DeepSeekBridge
 from src.conversation.escalation_policy import EscalationPolicy
 from src.conversation.response_formatter import ResponseFormatter
+from src.conversation.response_style_router import ResponseStyle, ResponseStyleRouter
 from src.conversation.safety_filter import SafetyFilter
+from src.conversation.deepseek_safety_wrapper import DeepSeekSafetyWrapper
 from src.governor.network_mediator import NetworkMediator
 
 from ..base_skill import BaseSkill, SkillResult
@@ -86,8 +88,10 @@ class GeneralChatSkill(BaseSkill):
     def __init__(self, policy_config: Optional[dict] = None, network: NetworkMediator | None = None):
         self.heuristics = ComplexityHeuristics()
         self.policy = EscalationPolicy(policy_config)
-        self.deepseek = DeepSeekBridge(network=network)
+        self.deepseek = DeepSeekBridge()
         self.safety = SafetyFilter()
+        self.analysis_safety = DeepSeekSafetyWrapper()
+        self.style_router = ResponseStyleRouter()
         self.formatter = ResponseFormatter()
 
     def can_handle(self, query: str) -> bool:
@@ -119,9 +123,16 @@ class GeneralChatSkill(BaseSkill):
 
         return "concise"
 
-    def _build_system_prompt(self, mode: str) -> str:
+    def _build_system_prompt(self, mode: str, style: ResponseStyle = ResponseStyle.DIRECT) -> str:
         mode_block = self.MODE_BLOCKS.get(mode, self.MODE_BLOCKS["concise"])
-        return f"{self.BASE_CONTRACT}\n{mode_block}".strip()
+        style_blocks = {
+            ResponseStyle.DIRECT: "Style: Direct and concise. Prioritize factual precision.",
+            ResponseStyle.BRAINSTORM: "Style: Brainstorm mode. Provide structured ideas as bullet points.",
+            ResponseStyle.DEEP: "Style: Deep mode. Provide layered reasoning with concise section headers.",
+            ResponseStyle.CASUAL: "Style: Casual mode. Keep response short and naturally conversational.",
+        }
+        style_block = style_blocks.get(style, style_blocks[ResponseStyle.DIRECT])
+        return f"{self.BASE_CONTRACT}\n{mode_block}\n{style_block}".strip()
 
     def _sanitize_response(self, text: str) -> str:
         clean = (text or "").strip()
@@ -143,7 +154,8 @@ class GeneralChatSkill(BaseSkill):
             return None
 
         mode = self._detect_mode(query)
-        system_prompt = self._build_system_prompt(mode)
+        style = self.style_router.route(query)
+        system_prompt = self._build_system_prompt(mode, style)
         max_tokens = self.MAX_TOKENS.get(mode, self.MAX_TOKENS["concise"])
 
         try:
@@ -160,7 +172,7 @@ class GeneralChatSkill(BaseSkill):
             if not text:
                 text = "I don’t have a response for that."
 
-            return SkillResult(success=True, message=text, data={"mode": mode}, widget_data=None, skill=self.name)
+            return SkillResult(success=True, message=text, data={"mode": mode, "style": style.value}, widget_data=None, skill=self.name)
         except Exception:
             return None
 
@@ -188,20 +200,21 @@ class GeneralChatSkill(BaseSkill):
                 skill=self.name,
             )
 
-        if decision == "ALLOW":
+        if decision == "ALLOW_ANALYSIS_ONLY":
             thought_data = {
-                "decision": "ALLOW",
+                "decision": "ALLOW_ANALYSIS_ONLY",
                 "reason_codes": heuristic_result.get("reason_codes", []),
                 "suggested_tokens": heuristic_result.get("suggested_max_tokens", 800),
                 "heuristic": heuristic_result,
             }
             raw = await asyncio.to_thread(
-                self.deepseek.process,
+                self.deepseek.analyze,
                 query,
                 context,
                 heuristic_result.get("suggested_max_tokens", 800),
             )
             safe = self.safety.filter(raw)
+            safe = self.analysis_safety.sanitize(safe)
             formatted = self.formatter.format(safe)
             if session_state.get("show_thinking_hints", True):
                 formatted = f"Let me think…\n\n{formatted}"
