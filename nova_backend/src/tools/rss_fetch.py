@@ -4,13 +4,16 @@ import asyncio
 import xml.etree.ElementTree as ET
 from typing import Dict, Any, List
 
-from src.governor.network_mediator import network_mediator
+from src.governor.network_mediator import NetworkMediator
 from src.governor.exceptions import NetworkMediatorError
+
+NETWORK_CAPABILITY_ID = 16
 
 
 async def fetch_rss_headlines(
     feed_url: str,
     timeout: float = 8.0,
+    network: NetworkMediator | None = None,
 ) -> List[Dict[str, Any]]:
     """
     Fetch and parse an RSS or Atom feed.
@@ -24,10 +27,12 @@ async def fetch_rss_headlines(
             ...
         ]
     """
+    mediator = network or NetworkMediator()
+
     try:
         resp = await asyncio.to_thread(
-            network_mediator.request,
-            None,  # capability_id=None => skill/tool bucket
+            mediator.request,
+            NETWORK_CAPABILITY_ID,
             "GET",
             feed_url,
             None,   # json_payload
