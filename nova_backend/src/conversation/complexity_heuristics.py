@@ -41,6 +41,17 @@ class ComplexityHeuristics:
     ]
 
     SIMPLE_GREETINGS = {"hi", "hello", "hey", "good morning", "good afternoon"}
+    AMBIGUITY_PATTERNS = {
+        "this",
+        "that",
+        "it",
+        "something",
+        "stuff",
+        "help me",
+        "do it",
+    }
+    EXPLORATORY_CUES = {"ideas", "what if", "explore", "brainstorm", "options", "approach"}
+    TRANSACTIONAL_CUES = {"thanks", "thank you", "ok", "okay", "done", "yes", "no", "cancel"}
 
     @classmethod
     def assess(cls, user_message: str, context: List[Dict[str, str]]) -> Dict[str, Any]:
@@ -67,9 +78,54 @@ class ComplexityHeuristics:
         else:
             escalate = len(reasons) > 0
 
+        ambiguity_score = cls._ambiguity_score(text, word_count)
+        depth_score = cls._depth_opportunity_score(text, word_count, reasons)
+        exploratory = any(cue in text for cue in cls.EXPLORATORY_CUES)
+        transactional = text.strip() in cls.TRANSACTIONAL_CUES
+
         return {
             "escalate": escalate,
             "reason_codes": reasons,
             "confidence": 0.8 if escalate else 0.0,
             "suggested_max_tokens": 800 if escalate else 0,
+            "ambiguity_score": ambiguity_score,
+            "depth_opportunity_score": depth_score,
+            "expansion_candidate": depth_score >= 0.45,
+            "exploratory_intent": exploratory,
+            "transactional_query": transactional,
+            "mode": cls._mode_hint(text),
         }
+
+    @classmethod
+    def _ambiguity_score(cls, text: str, word_count: int) -> float:
+        score = 0.0
+        if word_count <= 4:
+            score += 0.25
+        if "?" not in text and word_count <= 6:
+            score += 0.15
+        if any(token in text.split() for token in cls.AMBIGUITY_PATTERNS):
+            score += 0.35
+        if text.strip() in {"help", "explain", "details"}:
+            score += 0.35
+        return min(score, 1.0)
+
+    @classmethod
+    def _depth_opportunity_score(cls, text: str, word_count: int, reasons: List[str]) -> float:
+        score = 0.15 if word_count > 15 else 0.0
+        if "DEPTH_KEYWORD" in reasons:
+            score += 0.45
+        if "DEEP_CONTEXT" in reasons:
+            score += 0.25
+        if any(cue in text for cue in cls.EXPLORATORY_CUES):
+            score += 0.25
+        return min(score, 1.0)
+
+    @classmethod
+    def _mode_hint(cls, text: str) -> str:
+        if any(cue in text for cue in ("ideas", "what if", "explore", "brainstorm")):
+            return "brainstorming"
+        if any(cue in text for cue in ("analyze", "analyse", "compare", "deep dive", "evaluate")):
+            return "analytical"
+        if any(cue in text for cue in ("implement", "write code", "modify", "file", "patch")):
+            return "implementation"
+        return "casual"

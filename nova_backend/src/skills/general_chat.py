@@ -41,18 +41,18 @@ class GeneralChatSkill(BaseSkill):
     )
 
     MODE_BLOCKS: Dict[str, str] = {
-        "concise": (
+        "casual": (
             "Communication style: Concise.\n"
             "- Answer in one or two short, complete sentences.\n"
             "- No additional commentary.\n"
         ),
-        "explanatory": (
+        "brainstorming": (
             "Communication style: Explanatory.\n"
             "- Explain clearly using cause and effect.\n"
             "- Use precise, straightforward language.\n"
             "- Avoid persuasive or motivational tone.\n"
         ),
-        "procedural": (
+        "implementation": (
             "Communication style: Procedural.\n"
             "- Provide ordered steps using direct address ('you').\n"
             "- Use composed, precise language.\n"
@@ -68,9 +68,9 @@ class GeneralChatSkill(BaseSkill):
     }
 
     MAX_TOKENS: Dict[str, int] = {
-        "concise": 150,
-        "explanatory": 500,
-        "procedural": 400,
+        "casual": 150,
+        "brainstorming": 500,
+        "implementation": 400,
         "analytical": 600,
     }
 
@@ -105,21 +105,21 @@ class GeneralChatSkill(BaseSkill):
     def _detect_mode(self, query: str) -> str:
         q = (query or "").strip().lower()
         if not q:
-            return "concise"
+            return "casual"
 
-        if any(phrase in q for phrase in ("step by step", "walk me through", "show me how", "what should i do", "how do i")):
-            return "procedural"
+        if any(word in q for word in ("ideas", "what if", "explore", "brainstorm", "directions")):
+            return "brainstorming"
 
-        if any(word in q for word in ("analyse", "analyze", "trade-off", "compare", "pros and cons", "evaluate", "strategy", "why would")):
+        if any(word in q for word in ("analyse", "analyze", "trade-off", "compare", "pros and cons", "evaluate", "strategy", "deep dive")):
             return "analytical"
 
-        if any(word in q for word in ("explain", "why does", "how does", "what causes", "reason", "mechanism", "architecture", "design")):
-            return "explanatory"
+        if any(phrase in q for phrase in ("step by step", "walk me through", "show me how", "how do i", "modify", "write code", "implement")):
+            return "implementation"
 
-        return "concise"
+        return "casual"
 
     def _build_system_prompt(self, mode: str) -> str:
-        mode_block = self.MODE_BLOCKS.get(mode, self.MODE_BLOCKS["concise"])
+        mode_block = self.MODE_BLOCKS.get(mode, self.MODE_BLOCKS["casual"])
         return f"{self.BASE_CONTRACT}\n{mode_block}".strip()
 
     def _sanitize_response(self, text: str) -> str:
@@ -143,7 +143,7 @@ class GeneralChatSkill(BaseSkill):
 
         mode = self._detect_mode(query)
         system_prompt = self._build_system_prompt(mode)
-        max_tokens = self.MAX_TOKENS.get(mode, self.MAX_TOKENS["concise"])
+        max_tokens = self.MAX_TOKENS.get(mode, self.MAX_TOKENS["casual"])
 
         try:
             response = await asyncio.to_thread(
@@ -170,6 +170,8 @@ class GeneralChatSkill(BaseSkill):
 
         heuristic_result = self.heuristics.assess(query, context)
         decision = self.policy.decide(heuristic_result, query, session_state)
+        mode = heuristic_result.get("mode") or self._detect_mode(query)
+        initiative = self.policy.conversational_flags(heuristic_result, query, session_state)
 
         if decision == "ASK_USER":
             return SkillResult(
@@ -201,7 +203,13 @@ class GeneralChatSkill(BaseSkill):
                 heuristic_result.get("suggested_max_tokens", 800),
             )
             safe = self.safety.filter(raw)
-            formatted = self.formatter.format(safe)
+            formatted = self.formatter.with_conversational_initiative(
+                safe,
+                mode=mode,
+                allow_clarification=initiative.get("allow_clarification", False),
+                allow_branch_suggestion=initiative.get("allow_branch_suggestion", False),
+                allow_depth_prompt=initiative.get("allow_depth_prompt", False),
+            )
             if session_state.get("show_thinking_hints", True):
                 formatted = f"Let me think…\n\n{formatted}"
 
@@ -217,6 +225,14 @@ class GeneralChatSkill(BaseSkill):
         if local is None:
             return None
 
-        local.message = self.formatter.format(local.message)
+        local.message = self.formatter.with_conversational_initiative(
+            local.message,
+            mode=mode,
+            allow_clarification=initiative.get("allow_clarification", False),
+            allow_branch_suggestion=initiative.get("allow_branch_suggestion", False),
+            allow_depth_prompt=initiative.get("allow_depth_prompt", False),
+        )
+        if initiative.get("allow_clarification"):
+            session_state["last_clarification_turn"] = session_state.get("turn_count", 0)
         local.data = {"escalation": {"escalated": False}}
         return local

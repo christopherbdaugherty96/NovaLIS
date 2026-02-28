@@ -25,6 +25,9 @@ from src.gates.confirmation_gate import confirmation_gate
 from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
 from src.speech_state import speech_state
 from src.conversation.thought_store import ThoughtStore
+from src.conversation.complexity_heuristics import ComplexityHeuristics
+from src.voice.stt_pipeline import STTAckConfig, build_ack_payload
+from src.voice.tts_engine import resolve_speakable_text
 
 # -------------------------------------------------
 # App + Logging
@@ -62,11 +65,16 @@ app.include_router(stt_router)
 # -------------------------------------------------
 skill_registry = SkillRegistry()
 thought_store = ThoughtStore(ttl=300)
+conversation_heuristics = ComplexityHeuristics()
 
 # -------------------------------------------------
 # Security Constants
 # -------------------------------------------------
 WS_INPUT_MAX_BYTES = 4096
+CONVERSATIONAL_INITIATIVE_ENABLED = True
+VOICE_ACK_ENABLED = True
+VOICE_ACK_TEXT = "Got it."
+VOICE_ACK_CONFIG = STTAckConfig(enabled=VOICE_ACK_ENABLED, text=VOICE_ACK_TEXT)
 
 # -------------------------------------------------
 # Phase Status Endpoint
@@ -130,6 +138,7 @@ async def websocket_endpoint(ws: WebSocket):
         "pending_escalation": None,
         "last_input_channel": "text",
         "last_response": "",
+        "last_clarification_turn": None,
     }
 
     await send_chat_message(ws, "Hello. How can I help?")
@@ -171,6 +180,11 @@ async def websocket_endpoint(ws: WebSocket):
                 continue
 
             lowered = text.lower()
+
+            if channel == "voice" and msg_type == "chat":
+                ack_payload = build_ack_payload(VOICE_ACK_CONFIG)
+                if ack_payload is not None:
+                    await ws_send(ws, ack_payload)
 
             # --- Escalation handling (fixed: clear pending on all outcomes) ---
             if session_state["pending_escalation"]:
@@ -229,6 +243,12 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
+            # --- Conversation layer (Tier-B, non-authorizing) ---
+            if CONVERSATIONAL_INITIATIVE_ENABLED:
+                conversation_snapshot = session_context[-6:]
+                conversational_signal = conversation_heuristics.assess(text, conversation_snapshot)
+                session_state["conversation_mode"] = conversational_signal.get("mode", "casual")
+
             # --- Governor mediation ---
             mediated_text = GovernorMediator.mediate(text)
 
@@ -256,9 +276,10 @@ async def websocket_endpoint(ws: WebSocket):
                 # Auto‑speak for voice input (only if not a TTS invocation)
                 if (session_state.get("last_input_channel") == "voice"
                         and action_result.success
-                        and action_result.message
                         and capability_id != 18):
-                    governor.handle_governed_invocation(18, {"text": action_result.message})
+                    speakable_text = resolve_speakable_text(action_result)
+                    if speakable_text:
+                        governor.handle_governed_invocation(18, {"text": speakable_text})
                 continue
 
             elif isinstance(inv_result, Clarification):
@@ -338,9 +359,14 @@ async def websocket_endpoint(ws: WebSocket):
 
                 # Auto‑speak for voice input (only if the skill result indicates success)
                 if (session_state.get("last_input_channel") == "voice"
-                        and getattr(skill_result, "success", True)
-                        and message):
-                    governor.handle_governed_invocation(18, {"text": message})
+                        and getattr(skill_result, "success", True)):
+                    speakable_text = ""
+                    if isinstance(result_data, dict):
+                        speakable_text = (result_data.get("speakable_text") or "").strip()
+                    if not speakable_text:
+                        speakable_text = message
+                    if speakable_text:
+                        governor.handle_governed_invocation(18, {"text": speakable_text})
 
                 session_context.extend([{"role": "user", "content": mediated_text}, {"role": "assistant", "content": message}])
                 session_context = session_context[-20:]
