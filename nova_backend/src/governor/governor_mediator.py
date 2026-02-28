@@ -6,6 +6,7 @@ GovernorMediator – Phase‑4 ready parser shim with one‑strike clarification
 - Maintains ephemeral clarification state per session.
 - Returns structured dataclass instances to disambiguate invocation, clarification, or none.
 - Never creates ActionRequests. Never executes actions.
+- Conversation-layer initiative may shape language only; authority stays with Governor routing.
 """
 
 from __future__ import annotations
