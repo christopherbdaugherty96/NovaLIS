@@ -13,6 +13,7 @@ from src.conversation.deepseek_bridge import DeepSeekBridge
 from src.conversation.escalation_policy import EscalationPolicy
 from src.conversation.response_formatter import ResponseFormatter
 from src.conversation.safety_filter import SafetyFilter
+from src.governor.network_mediator import NetworkMediator
 
 from ..base_skill import BaseSkill, SkillResult
 
@@ -82,10 +83,10 @@ class GeneralChatSkill(BaseSkill):
         (re.compile(r"\!+", re.IGNORECASE), "."),
     )
 
-    def __init__(self, policy_config: Optional[dict] = None):
+    def __init__(self, policy_config: Optional[dict] = None, network: NetworkMediator | None = None):
         self.heuristics = ComplexityHeuristics()
         self.policy = EscalationPolicy(policy_config)
-        self.deepseek = DeepSeekBridge()
+        self.deepseek = DeepSeekBridge(network=network)
         self.safety = SafetyFilter()
         self.formatter = ResponseFormatter()
 

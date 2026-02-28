@@ -4,8 +4,11 @@ import os
 import asyncio
 from typing import Dict, Optional
 
-from src.governor.network_mediator import network_mediator
+from src.governor.network_mediator import NetworkMediator
 from src.governor.exceptions import NetworkMediatorError
+
+
+NETWORK_CAPABILITY_ID = 16
 
 
 class WeatherService:
@@ -24,8 +27,9 @@ class WeatherService:
 
     DEFAULT_LOCATION = "Ann Arbor, MI"
 
-    def __init__(self, location: Optional[str] = None):
+    def __init__(self, location: Optional[str] = None, network: Optional[NetworkMediator] = None):
         self.location = location or self.DEFAULT_LOCATION
+        self.network = network or NetworkMediator()
 
     async def get_current_weather(self) -> Dict[str, str]:
         api_key = os.getenv("WEATHER_API_KEY")
@@ -48,8 +52,8 @@ class WeatherService:
         try:
             # NetworkMediator is synchronous; run in a thread.
             resp = await asyncio.to_thread(
-                network_mediator.request,
-                None,  # capability_id=None => skill/tool bucket
+                self.network.request,
+                NETWORK_CAPABILITY_ID,
                 "GET",
                 url,
                 None,  # json_payload

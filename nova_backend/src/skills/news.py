@@ -11,6 +11,7 @@ from typing import Optional, List, Dict
 from src.base_skill import BaseSkill, SkillResult
 from src.tools.rss_fetch import fetch_rss_headlines
 from src.tools.news_fallback import fallback_headline
+from src.governor.network_mediator import NetworkMediator
 
 
 class NewsSkill(BaseSkill):
@@ -27,6 +28,9 @@ class NewsSkill(BaseSkill):
         {"name": "FOX News", "feed": "https://feeds.foxnews.com/foxnews/latest", "domain": "foxnews.com"},
         {"name": "CNN", "feed": "http://rss.cnn.com/rss/cnn_topstories.rss", "domain": "cnn.com"},
     ]
+
+    def __init__(self, network: NetworkMediator | None = None):
+        self.network = network
 
     def can_handle(self, query: str) -> bool:
         q = (query or "").lower()
@@ -60,7 +64,7 @@ class NewsSkill(BaseSkill):
 
         if feed_url:
             try:
-                items = await fetch_rss_headlines(feed_url)
+                items = await fetch_rss_headlines(feed_url, network=self.network)
                 if items:
                     first = items[0]
                     title = first.get("title")
