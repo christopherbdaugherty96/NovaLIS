@@ -1,51 +1,33 @@
 import logging
-import os
 from typing import List
-
-from src.governor.network_mediator import NetworkMediator
 
 from . import prompts
 
 logger = logging.getLogger(__name__)
 
-DEEPSEEK_API_URL = "https://api.deepseek.com/v1/chat/completions"
 MAX_TOKENS = 1000
-TIMEOUT = 15
-NETWORK_CAPABILITY_ID = 16
 
 
 class DeepSeekBridge:
-    def __init__(self, network: NetworkMediator | None = None):
-        self.network = network or NetworkMediator()
+    """Analysis-only cognitive bridge. No network, no capabilities, no execution."""
 
-    def process(self, user_message: str, context: List[dict], suggested_max_tokens: int = 800) -> str:
-        api_key = os.getenv("DEEPSEEK_API_KEY", "").strip()
-        if not api_key:
-            return "I'm sorry, the deep analysis service is temporarily unavailable."
-
+    def analyze(self, user_message: str, context: List[dict], suggested_max_tokens: int = 800) -> str:
+        del suggested_max_tokens
         prompt = prompts.build_analysis_prompt(user_message, context)
-        payload = {
-            "model": "deepseek-chat",
-            "messages": [{"role": "user", "content": prompt}],
-            "max_tokens": min(suggested_max_tokens, MAX_TOKENS),
-            "temperature": 0.3,
-        }
-        headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
         try:
-            response = self.network.request(
-                capability_id=NETWORK_CAPABILITY_ID,
-                method="POST",
-                url=DEEPSEEK_API_URL,
-                json_payload=payload,
-                headers=headers,
-                as_json=True,
-                timeout=TIMEOUT,
+            import ollama
+        except Exception:
+            return "I can provide a structured analysis, but the analysis model is currently unavailable."
+
+        try:
+            response = ollama.chat(
+                model="phi3:mini",
+                messages=[{"role": "user", "content": prompt}],
+                options={"temperature": 0.2, "num_predict": MAX_TOKENS},
             )
-            data = response.get("data") or {}
-            return data.get("choices", [{}])[0].get("message", {}).get(
-                "content", "I'm sorry, the deep analysis service is temporarily unavailable."
-            )
+            content = response.get("message", {}).get("content", "")
+            return (content or "").strip() or "I can provide a structured analysis, but no analysis output was generated."
         except Exception as error:
-            logger.error("DeepSeek API call failed: %s", error)
-            return "I'm sorry, the deep analysis service is temporarily unavailable."
+            logger.error("Analysis call failed: %s", error)
+            return "I can provide a structured analysis, but the analysis model is currently unavailable."
