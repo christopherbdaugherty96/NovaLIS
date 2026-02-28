@@ -10,6 +10,8 @@ let ws = null;
 let pendingThoughtMessageId = null;
 let messageMeta = new Map();
 let waitingForAssistant = false;
+let latestNewsItems = [];
+let newsExpanded = false;
 
 // PHASE-3 STT STATE (UI-ONLY, DESCRIPTIVE)
 let sttState = "READY"; // READY | LISTENING | PAUSED | PROCESSING
@@ -112,20 +114,33 @@ function renderWeatherWidget(data) {
    Expects: { type:"news", items:[...] }
    ========================================================= */
 
-function renderNewsWidget(items) {
+function updateNewsSummary(summaryText) {
+  const summary = $("news-summary");
+  if (!summary) return;
+  summary.textContent = (summaryText || "").trim() || "Headlines loaded. Press 'Summarize headlines' for a briefing.";
+}
+
+function renderNewsWidget(items, summaryText = "") {
   const list = $("news-list");
   if (!list) return;
 
   clear(list);
 
   if (!Array.isArray(items) || items.length === 0) {
+    latestNewsItems = [];
     const li = document.createElement("li");
     li.textContent = "No headlines available.";
     list.appendChild(li);
+    updateNewsSummary("No headlines are available to summarize right now.");
+    setNewsExpandButton();
     return;
   }
 
-  items.forEach(item => {
+  latestNewsItems = items.slice();
+  updateNewsSummary(summaryText);
+
+  const visibleItems = newsExpanded ? latestNewsItems : latestNewsItems.slice(0, 3);
+  visibleItems.forEach(item => {
     const li = document.createElement("li");
 
     const a = document.createElement("a");
@@ -144,6 +159,18 @@ function renderNewsWidget(items) {
 
     list.appendChild(li);
   });
+
+  setNewsExpandButton();
+}
+
+function setNewsExpandButton() {
+  const btn = $("btn-news-expand");
+  if (!btn) return;
+
+  const hasExtra = latestNewsItems.length > 3;
+  btn.style.display = hasExtra ? "inline-block" : "none";
+  btn.textContent = newsExpanded ? "Show brief" : "Expand details";
+  btn.setAttribute("aria-pressed", newsExpanded ? "true" : "false");
 }
 
 /* =========================================================
@@ -368,7 +395,7 @@ function connectWebSocket() {
         renderWeatherWidget(msg.data);
         break;
       case "news":
-        renderNewsWidget(msg.items);
+        renderNewsWidget(msg.items, msg.summary || "");
         break;
       case "search":
         renderSearchWidget(msg.data);
@@ -423,6 +450,28 @@ window.addEventListener("DOMContentLoaded", () => {
   if (input) {
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") sendChat();
+    });
+  }
+
+  const newsBtn = $("btn-news");
+  if (newsBtn) {
+    newsBtn.addEventListener("click", () => {
+      safeWSSend({ text: "news" });
+    });
+  }
+
+  const newsSummaryBtn = $("btn-news-summary");
+  if (newsSummaryBtn) {
+    newsSummaryBtn.addEventListener("click", () => {
+      injectUserText("Summarize the news headlines on the dashboard.", "text");
+    });
+  }
+
+  const newsExpandBtn = $("btn-news-expand");
+  if (newsExpandBtn) {
+    newsExpandBtn.addEventListener("click", () => {
+      newsExpanded = !newsExpanded;
+      renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "");
     });
   }
 

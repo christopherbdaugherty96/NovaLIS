@@ -110,7 +110,7 @@ async def send_widget_message(
     data: Optional[dict] = None
 ) -> None:
     if msg_type == "news" and isinstance(data, dict) and "items" in data:
-        await ws_send(ws, {"type": "news", "items": data["items"]})
+        await ws_send(ws, {"type": "news", "items": data["items"], "summary": data.get("summary", "")})
         return
     payload = {"type": msg_type, "message": text}
     if msg_type == "weather" and isinstance(data, dict):
@@ -242,6 +242,11 @@ async def websocket_endpoint(ws: WebSocket):
                 last = speech_state.last_spoken_text
                 if last:
                     await send_chat_message(ws, last)
+                await send_chat_done(ws)
+                continue
+
+            if lowered in {"thanks", "thank you", "thank you nova", "thank you, nova"}:
+                await send_chat_message(ws, "You're welcome.")
                 await send_chat_done(ws)
                 continue
 

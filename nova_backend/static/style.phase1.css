@@ -363,6 +363,17 @@ html, body {
   opacity: 0.9;
 }
 
+.news-summary {
+  margin: 0 0 12px 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  color: rgba(230, 233, 240, 0.9);
+  font-size: 0.86rem;
+  line-height: 1.4;
+}
+
 /* FIX: Make the list scroll (matches your HTML) */
 #news-list {
   flex: 1;
@@ -454,6 +465,52 @@ html, body {
 #btn-news.updating::after {
   content: "…";
   margin-left: 4px;
+}
+
+.news-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+#btn-news-summary {
+  margin-top: 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(123, 109, 255, 0.35);
+  background: rgba(123, 109, 255, 0.12);
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 120ms ease;
+}
+
+#btn-news-summary:hover:not(:disabled) {
+  background: rgba(123, 109, 255, 0.18);
+}
+
+#btn-news-summary:active:not(:disabled) {
+  background: rgba(123, 109, 255, 0.24);
+}
+
+#btn-news-expand {
+  margin-top: 14px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: all 120ms ease;
+}
+
+#btn-news-expand:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+#btn-news-expand:active:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 /* -----------------------
