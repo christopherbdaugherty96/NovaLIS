@@ -11,7 +11,7 @@ GOVERNOR_ROOT = SRC_ROOT / "governor"
 # Files that are explicitly allowed to create background threads/tasks.
 ALLOWED_CREATE_TASK_FILES = {
     SRC_ROOT / "audio_manager.py",
-    SRC_ROOT / "audio" / "audio_worker.py",
+    SRC_ROOT / "audio" / "audio_task_runner.py",  # updated from audio_worker.py
 }
 
 

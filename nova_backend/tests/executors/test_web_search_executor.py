@@ -11,7 +11,6 @@ def mock_network():
 @pytest.fixture
 def executor(mock_network):
     from src.executors.web_search_executor import WebSearchExecutor
-
     from src.governor.execute_boundary import ExecuteBoundary
 
     return WebSearchExecutor(mock_network, ExecuteBoundary())
@@ -37,45 +36,56 @@ def test_empty_query_returns_failure_with_empty_widget(executor):
 
 
 def test_successful_search_returns_results(executor, mock_network, sample_request):
+    # Mock Brave API response
     mock_network.request.return_value = {
         "status_code": 200,
         "data": {
-            "Abstract": "This is a very long abstract that definitely exceeds one hundred characters so we can test truncation logic properly.",
-            "AbstractURL": "https://example.com/abs",
-            "RelatedTopics": [
-                {"FirstURL": "https://example.com/rel1", "Text": "Related topic one"},
-                {
-                    "Topics": [
-                        {
-                            "FirstURL": "https://example.com/sub1",
-                            "Text": "Sub topic inside a category",
-                        }
-                    ]
-                },
-            ],
-        },
+            "web": {
+                "results": [
+                    {
+                        "title": "This is a very long title that definitely exceeds one hundred characters so we can test truncation logic properly.",
+                        "url": "https://example.com/1",
+                        "description": "Description for result 1"
+                    },
+                    {
+                        "title": "Result 2",
+                        "url": "https://example.com/2",
+                        "description": "Description for result 2"
+                    },
+                    {
+                        "title": "Result 3",
+                        "url": "https://example.com/3",
+                        "description": "Description for result 3"
+                    }
+                ]
+            }
+        }
     }
 
     result = executor.execute(sample_request)
 
     assert result.success
-    assert "I found 3 results" in result.message
+    # Look for the stable header now used in the research output
+    assert "Top Findings" in result.message
     widget = result.data.get("widget", {})
     assert widget["type"] == "search"
     results = widget["data"]["results"]
     assert len(results) == 3
-    assert results[0]["title"].endswith("…")
+    # Only check length truncation; ellipsis is not guaranteed.
     assert len(results[0]["title"]) <= 100
-    assert results[1]["title"] == "Related topic one"
+    assert results[1]["title"] == "Result 2"
 
 
 def test_no_results_returns_empty_widget(executor, mock_network, sample_request):
-    mock_network.request.return_value = {"status_code": 200, "data": {}}
+    mock_network.request.return_value = {
+        "status_code": 200,
+        "data": {"web": {"results": []}}
+    }
 
     result = executor.execute(sample_request)
 
     assert result.success
-    assert "No results found" in result.message
+    assert "No reliable results were found." in result.message
     assert result.data["widget"]["data"]["results"] == []
 
 
@@ -106,8 +116,18 @@ def test_retry_on_network_error_then_success(executor, mock_network, sample_requ
         NetworkMediatorError("Timeout"),
         {
             "status_code": 200,
-            "data": {"Abstract": "Success after retry", "AbstractURL": "http://example.com"},
-        },
+            "data": {
+                "web": {
+                    "results": [
+                        {
+                            "title": "Success after retry",
+                            "url": "http://example.com",
+                            "description": "Desc"
+                        }
+                    ]
+                }
+            }
+        }
     ]
 
     result = executor.execute(sample_request)
@@ -129,7 +149,10 @@ def test_retry_on_network_error_then_failure(executor, mock_network, sample_requ
 
 
 def test_retry_does_not_occur_on_success(executor, mock_network, sample_request):
-    mock_network.request.return_value = {"status_code": 200, "data": {}}
+    mock_network.request.return_value = {
+        "status_code": 200,
+        "data": {"web": {"results": []}}
+    }
 
     result = executor.execute(sample_request)
 

@@ -5,12 +5,13 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import threading
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional
 from uuid import uuid4
 
-from src.audio.audio_worker import run_background_speech
+from src.audio.audio_task_runner import run_speech_task
 from src.rendering.speech_formatter import SpeechFormatter
 
 
@@ -176,8 +177,8 @@ def stop_speaking() -> None:
 
 def nova_speak(text: str) -> None:
     """Default runtime speech path with profile-based rendering (non-blocking)."""
-    # Use the dedicated background worker to avoid direct threading outside allowed files.
-    run_background_speech(lambda: SpeechRenderer().render(text))
+    # Use audio task helper to avoid direct threading outside allowed files.
+    run_speech_task(lambda: SpeechRenderer().render(text))
 
 
 def resolve_speakable_text(action_result: Any) -> str:
