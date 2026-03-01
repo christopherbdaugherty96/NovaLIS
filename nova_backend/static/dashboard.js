@@ -10,6 +10,8 @@ let ws = null;
 let pendingThoughtMessageId = null;
 let messageMeta = new Map();
 let waitingForAssistant = false;
+let latestNewsItems = [];
+let newsExpanded = false;
 
 // PHASE-3 STT STATE (UI-ONLY, DESCRIPTIVE)
 let sttState = "READY"; // READY | LISTENING | PAUSED | PROCESSING
@@ -40,6 +42,16 @@ function $(id) {
 
 function clear(el) {
   if (el) el.innerHTML = "";
+}
+
+function extractDomain(url) {
+  return (url || "").replace(/^https?:\/\//, "").split("/")[0].trim().toLowerCase();
+}
+
+function setLoadingHint(text = "") {
+  const bar = $("thinking-bar");
+  if (!bar) return;
+  bar.textContent = text || "Processing";
 }
 
 // Guarded WebSocket send (calm failure)
@@ -112,21 +124,39 @@ function renderWeatherWidget(data) {
    Expects: { type:"news", items:[...] }
    ========================================================= */
 
-function renderNewsWidget(items) {
+function updateNewsSummary(summaryText) {
+  const summary = $("news-summary");
+  if (!summary) return;
+  summary.textContent = (summaryText || "").trim() || "Headlines loaded. Press 'Summarize headlines' for a briefing.";
+}
+
+function renderNewsWidget(items, summaryText = "") {
   const list = $("news-list");
   if (!list) return;
 
   clear(list);
 
   if (!Array.isArray(items) || items.length === 0) {
+    latestNewsItems = [];
     const li = document.createElement("li");
     li.textContent = "No headlines available.";
     list.appendChild(li);
+    updateNewsSummary("No headlines are available to summarize right now.");
+    setNewsExpandButton();
     return;
   }
 
-  items.forEach(item => {
+  latestNewsItems = items.slice();
+  updateNewsSummary(summaryText);
+
+  const visibleItems = newsExpanded ? latestNewsItems : latestNewsItems.slice(0, 3);
+  visibleItems.forEach((item, index) => {
     const li = document.createElement("li");
+
+    const badge = document.createElement("span");
+    badge.className = "citation-index";
+    badge.textContent = `[${index + 1}]`;
+    li.appendChild(badge);
 
     const a = document.createElement("a");
     a.href = item.url;
@@ -135,15 +165,35 @@ function renderNewsWidget(items) {
     a.rel = "noopener noreferrer";
     li.appendChild(a);
 
+    const domain = extractDomain(item.url);
+    if (domain) {
+      const domainBadge = document.createElement("span");
+      domainBadge.className = "domain-badge";
+      domainBadge.textContent = domain;
+      li.appendChild(domainBadge);
+    }
+
     if (item.source) {
       const src = document.createElement("span");
       src.className = "news-source";
-      src.textContent = ` (${item.source})`;
+      src.textContent = ` ${item.source}`;
       li.appendChild(src);
     }
 
     list.appendChild(li);
   });
+
+  setNewsExpandButton();
+}
+
+function setNewsExpandButton() {
+  const btn = $("btn-news-expand");
+  if (!btn) return;
+
+  const hasExtra = latestNewsItems.length > 3;
+  btn.style.display = hasExtra ? "inline-block" : "none";
+  btn.textContent = newsExpanded ? "Show brief" : "Expand details";
+  btn.setAttribute("aria-pressed", newsExpanded ? "true" : "false");
 }
 
 /* =========================================================
@@ -152,7 +202,6 @@ function renderNewsWidget(items) {
    ========================================================= */
 
 function renderSearchWidget(data) {
-  // Optional dedicated container – if it exists, use it.
   const container = $("search-widget");
   if (container) {
     clear(container);
@@ -160,27 +209,45 @@ function renderSearchWidget(data) {
       container.textContent = "No results found.";
       return;
     }
-    data.results.forEach(item => {
+
+    data.results.forEach((item, index) => {
       const div = document.createElement("div");
       div.className = "search-result";
+
+      const idx = document.createElement("span");
+      idx.className = "citation-index";
+      idx.textContent = `[${index + 1}]`;
+      div.appendChild(idx);
+
       const a = document.createElement("a");
       a.href = item.url;
       a.textContent = item.title;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
       div.appendChild(a);
+
+      const domain = extractDomain(item.url);
+      if (domain) {
+        const domainBadge = document.createElement("span");
+        domainBadge.className = "domain-badge";
+        domainBadge.textContent = domain;
+        div.appendChild(domainBadge);
+      }
+
       container.appendChild(div);
     });
-  } else {
-    // Fallback: show each result as a chat message
-    if (!data || !Array.isArray(data.results) || data.results.length === 0) {
-      appendChatMessage("assistant", "No results found.");
-      return;
-    }
-    data.results.forEach(item => {
-      appendChatMessage("assistant", `${item.title}\n${item.url}`);
-    });
+    return;
   }
+
+  if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+    appendChatMessage("assistant", "No results found.");
+    return;
+  }
+
+  data.results.forEach((item, index) => {
+    const domain = extractDomain(item.url);
+    appendChatMessage("assistant", `[${index + 1}] ${item.title} (${domain || "source"})\n${item.url}`);
+  });
 }
 
 /* =========================================================
@@ -229,6 +296,7 @@ function injectUserText(text, channel = "text") {
   // Single canonical path for ALL user input (typed + STT)
   appendChatMessage("user", clean);
   waitingForAssistant = true;
+  setLoadingHint(clean.toLowerCase().includes("search") ? "Checking latest sources" : "Processing");
   setThinkingBar(true);
   
   // Phase-3 calm: if WS fails, just log, don't spam chat
@@ -368,7 +436,7 @@ function connectWebSocket() {
         renderWeatherWidget(msg.data);
         break;
       case "news":
-        renderNewsWidget(msg.items);
+        renderNewsWidget(msg.items, msg.summary || "");
         break;
       case "search":
         renderSearchWidget(msg.data);
@@ -378,6 +446,7 @@ function connectWebSocket() {
         break;
       case "chat_done":
         waitingForAssistant = false;
+        setLoadingHint("");
         setThinkingBar(false);
         break;
       case "thought":
@@ -423,6 +492,28 @@ window.addEventListener("DOMContentLoaded", () => {
   if (input) {
     input.addEventListener("keydown", (e) => {
       if (e.key === "Enter") sendChat();
+    });
+  }
+
+  const newsBtn = $("btn-news");
+  if (newsBtn) {
+    newsBtn.addEventListener("click", () => {
+      safeWSSend({ text: "news" });
+    });
+  }
+
+  const newsSummaryBtn = $("btn-news-summary");
+  if (newsSummaryBtn) {
+    newsSummaryBtn.addEventListener("click", () => {
+      injectUserText("Summarize the news headlines on the dashboard.", "text");
+    });
+  }
+
+  const newsExpandBtn = $("btn-news-expand");
+  if (newsExpandBtn) {
+    newsExpandBtn.addEventListener("click", () => {
+      newsExpanded = !newsExpanded;
+      renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "");
     });
   }
 

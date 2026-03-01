@@ -5,11 +5,16 @@ import time
 import os
 
 from src.actions.action_result import ActionResult
+from src.conversation.response_style_router import ResponseTemplates
 
 logger = logging.getLogger(__name__)
 
+SEARCH_HARD_TIMEOUT_SECONDS = 7.0
+
 
 class WebSearchExecutor:
+    _avg_latency_seconds = 0.0
+    _latency_samples = 0
     """
     Executes a governed web search using the Brave Search API.
     All outbound HTTP is routed through NetworkMediator.
@@ -22,6 +27,20 @@ class WebSearchExecutor:
     def _empty_widget(self) -> dict:
         """Return a stable empty search widget."""
         return {"widget": {"type": "search", "data": {"results": []}}}
+
+    @classmethod
+    def _record_latency(cls, elapsed_seconds: float) -> float:
+        cls._latency_samples += 1
+        if cls._latency_samples == 1:
+            cls._avg_latency_seconds = elapsed_seconds
+        else:
+            cls._avg_latency_seconds = ((cls._avg_latency_seconds * (cls._latency_samples - 1)) + elapsed_seconds) / cls._latency_samples
+        return cls._avg_latency_seconds
+
+    @staticmethod
+    def _extract_domain(url: str) -> str:
+        clean = (url or "").split("//")[-1].split("/")[0].strip().lower()
+        return clean
 
     def execute(self, request) -> ActionResult:
         query = request.params.get("query", "").strip()
@@ -44,9 +63,17 @@ class WebSearchExecutor:
             )
 
         boundary_notice = "I'm checking online."
+        started_at = time.monotonic()
 
         max_retries = 1
         for attempt in range(max_retries + 1):
+            if time.monotonic() - started_at > SEARCH_HARD_TIMEOUT_SECONDS:
+                return ActionResult(
+                    success=False,
+                    message=f"{boundary_notice} Search timed out. Please try again.",
+                    request_id=request.request_id,
+                    data=self._empty_widget(),
+                )
             try:
                 # Perform the search via NetworkMediator using Brave API
                 response = self.network.request(
@@ -140,8 +167,32 @@ class WebSearchExecutor:
                 request_id=request.request_id,
             )
 
-        summary_lines = [f"- {result['title']}" for result in results[:3]]
-        user_message = f"{boundary_notice} I found {len(results)} results.\n" + "\n".join(summary_lines)
+        top_domains = []
+        for result in results[:3]:
+            domain = self._extract_domain(result.get("url", ""))
+            if domain and domain not in top_domains:
+                top_domains.append(domain)
+
+        elapsed_seconds = time.monotonic() - started_at
+        avg_latency = self._record_latency(elapsed_seconds)
+        logger.info("web_search latency=%.2fs avg=%.2fs query=%s", elapsed_seconds, avg_latency, query[:80])
+
+        brief_query = query[:80]
+        intro = ResponseTemplates.bounded_research_intro(brief_query)
+        findings_block = ResponseTemplates.top_findings_block([result["title"] for result in results[:3]])
+        sources_block = ResponseTemplates.sources_block(top_domains)
+
+        report_sections = [
+            f"{boundary_notice} {intro}",
+            "",
+            findings_block,
+            "",
+            sources_block,
+            "",
+            f"Search latency: {elapsed_seconds:.1f}s (avg {avg_latency:.1f}s).",
+            "Open any dashboard result for full article detail.",
+        ]
+        user_message = "\n".join(report_sections)
 
         widget_payload = {
             "type": "search",
