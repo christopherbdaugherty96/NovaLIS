@@ -26,8 +26,10 @@ from src.governor.governor_mediator import GovernorMediator, Invocation, Clarifi
 from src.speech_state import speech_state
 from src.conversation.thought_store import ThoughtStore
 from src.conversation.complexity_heuristics import ComplexityHeuristics
+from src.conversation.response_style_router import InputNormalizer
 from src.voice.stt_pipeline import STTAckConfig, build_ack_payload
 from src.voice.tts_engine import resolve_speakable_text, nova_speak
+from src.conversation.clarify_prompts import CLARIFY_PROMPTS
 
 # -------------------------------------------------
 # App + Logging
@@ -176,11 +178,14 @@ async def websocket_endpoint(ws: WebSocket):
                     await ws_send(ws, {"type": "thought", "data": thought_data, "message_id": message_id})
                 continue
 
-            text = (msg.get("text") or "").strip()
-            if not text:
+            raw_text = (msg.get("text") or "").strip()
+            if not raw_text:
+                await send_chat_message(ws, CLARIFY_PROMPTS["ready_prompt"])
+                await send_chat_done(ws)
                 continue
 
-            lowered = text.lower()
+            text = InputNormalizer.normalize(raw_text).strip()
+            lowered = text.lower().rstrip(".?!")
 
             if channel == "voice" and msg_type == "chat":
                 ack_payload = build_ack_payload(VOICE_ACK_CONFIG)

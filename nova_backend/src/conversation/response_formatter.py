@@ -1,12 +1,14 @@
 import re
 
+from src.conversation.clarify_prompts import CLARIFY_PROMPTS
+
 
 class ResponseFormatter:
     CLARIFICATION_TEMPLATES = {
-        "casual": "Would you like a brief answer or a deeper breakdown?",
-        "analytical": "Do you want a high-level comparison or implementation detail?",
-        "implementation": "Should I stay conceptual, or break this into concrete steps?",
-        "brainstorming": "Do you want broad ideas or a narrower direction?",
+        "casual": CLARIFY_PROMPTS["brief_or_deep"],
+        "analytical": CLARIFY_PROMPTS["high_level_or_detail"],
+        "implementation": CLARIFY_PROMPTS["concept_or_steps"],
+        "brainstorming": CLARIFY_PROMPTS["broad_or_narrow"],
     }
 
     DEPTH_PROMPTS = {
