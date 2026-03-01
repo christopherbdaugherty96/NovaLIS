@@ -28,7 +28,7 @@ from src.conversation.thought_store import ThoughtStore
 from src.conversation.complexity_heuristics import ComplexityHeuristics
 from src.conversation.response_style_router import InputNormalizer
 from src.voice.stt_pipeline import STTAckConfig, build_ack_payload
-from src.voice.tts_engine import resolve_speakable_text, nova_speak
+from src.voice.tts_engine import resolve_speakable_text, nova_speak, stop_speaking
 from src.conversation.clarify_prompts import CLARIFY_PROMPTS
 
 # -------------------------------------------------
@@ -239,6 +239,7 @@ async def websocket_endpoint(ws: WebSocket):
             # --- Phase‑2 immediate commands ---
             if lowered == "stop":
                 speech_state.stop()
+                stop_speaking()
                 await send_chat_message(ws, "Okay.")
                 await send_chat_done(ws)
                 continue
