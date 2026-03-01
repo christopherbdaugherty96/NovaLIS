@@ -1,5 +1,4 @@
 import re
-from typing import Dict, Optional
 
 
 class ResponseFormatter:
@@ -11,20 +10,20 @@ class ResponseFormatter:
     }
 
     DEPTH_PROMPTS = {
-        "casual": "If useful, I can break that into a few clear steps.",
+        "casual": "If useful, I can break that into clear steps.",
         "analytical": "If useful, I can go deeper on tradeoffs and assumptions.",
         "implementation": "If useful, I can map this into an implementation sequence.",
-        "brainstorming": "If useful, I can branch this into a few neutral options.",
+        "brainstorming": "If useful, I can branch this into neutral options.",
     }
 
     @staticmethod
     def format(text: str, mode: str = "casual") -> str:
         clean = (text or "").strip()
-        clean = re.sub(r"  +", " ", clean)
+        clean = re.sub(r"\s+", " ", clean)
         clean = re.sub(r"!+", ".", clean)
         clean = re.sub(r"([.!?])([A-Z])", r"\1 \2", clean)
 
-        for filler in [r"\bwell\b", r"\bso\b", r"\byou see\b"]:
+        for filler in [r"\bwell\b", r"\bso\b", r"\byou see\b", r"\blet me think\b"]:
             clean = re.sub(filler, "", clean, flags=re.IGNORECASE)
 
         clean = ResponseFormatter._tone_shape(clean, mode)
@@ -44,14 +43,14 @@ class ResponseFormatter:
         if allow_clarification:
             add_ons.append(ResponseFormatter.CLARIFICATION_TEMPLATES.get(mode, ResponseFormatter.CLARIFICATION_TEMPLATES["casual"]))
 
-        if allow_branch_suggestion:
-            add_ons.append("We could approach this in a few ways: direct answer, stepwise plan, or side-by-side comparison.")
-
         if allow_depth_prompt:
             add_ons.append(ResponseFormatter.DEPTH_PROMPTS.get(mode, ResponseFormatter.DEPTH_PROMPTS["casual"]))
 
+        if allow_branch_suggestion and mode in {"brainstorming", "analytical"}:
+            add_ons.append("I can present this as options or a direct recommendation.")
+
         if add_ons:
-            text = f"{text}\n\n" + "\n".join(add_ons[:2])
+            text = f"{text}\n\n" + "\n".join(add_ons[:1])
 
         return text.strip()
 
