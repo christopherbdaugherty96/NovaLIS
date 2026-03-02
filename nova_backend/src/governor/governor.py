@@ -8,10 +8,13 @@ to preserve Phase‑3.5 safety until the unlock.
 
 from __future__ import annotations
 
+import resource
+import sys
+import time
 from typing import Optional, Dict, Any
 
 from src.actions.action_result import ActionResult
-from src.governor.execute_boundary import ExecuteBoundary
+from src.governor.execute_boundary.execute_boundary import ExecuteBoundary, MAX_EXECUTION_TIME, MAX_MEMORY_MB
 from src.governor.single_action_queue import SingleActionQueue
 import src.ledger.writer as ledger_mod
 from src.governor.exceptions import (
@@ -65,100 +68,74 @@ class Governor:
             self._ledger = ledger_mod.LedgerWriter()
         return self._ledger
 
-    # ---- Phase‑4 entrypoint (called by mediator) ----
-
     def handle_governed_invocation(
         self,
         capability_id: int,
         params: Dict[str, Any],
     ) -> ActionResult:
-        """
-        Receives a parsed governed invocation from GovernorMediator.
-        This method is the ONLY place that can attempt to create an ActionRequest.
-        Returns an ActionResult (structured, may contain widget data).
-        """
-        # 1) Capability identity + enable gate (per‑capability)
         try:
             cap = self.registry.get(capability_id)
-            print(f"[DEBUG] Capability {capability_id} found: {cap.name}, enabled={self.registry.is_enabled(capability_id)}")
         except CapabilityRegistryError as e:
-            print(f"[DEBUG] Capability {capability_id} not found: {e}")
             return ActionResult.failure(f"I can’t do that. {e}")
 
         if not self.registry.is_enabled(capability_id):
-            print(f"[DEBUG] Capability {capability_id} is disabled")
             return ActionResult.failure("I can’t do that yet.")
 
-        # 2) Global phase gate (fail‑closed) – single check
         if not self._execute_boundary.allow_execution():
-            print("[DEBUG] Phase gate blocked execution")
             return ActionResult.failure("That requires a specific action, which I can’t perform right now.")
 
-        # 3) Single pending action boundary (MUST be checked before any ledger write)
-        print(f"[DEBUG] Queue has pending: {self._queue.has_pending()}")
         if self._queue.has_pending():
             return ActionResult.failure("I can’t do that right now.")
 
-        # 4) Ledger must be writable BEFORE any effect (but after queue check)
         try:
             self.ledger.log_event(
                 "ACTION_ATTEMPTED",
                 {"capability_id": capability_id, "capability_name": cap.name},
             )
-            print("[DEBUG] ACTION_ATTEMPTED logged")
-        except Exception as e:
-            print(f"[DEBUG] Ledger write FAILED: {e}")
+        except Exception:
             return ActionResult.failure("I can’t do that right now.")
 
-        # 5) Create ActionRequest
         req = ActionRequest(capability_id=capability_id, params=params)
-        print(f"[DEBUG] ActionRequest created: {req.request_id}")
 
-        # 6) Execute (routed to appropriate executor)
         try:
-            result = self._execute(req)
-            return result
-        except (NetworkMediatorError, LedgerWriteFailed) as e:
-            print(f"[DEBUG] Execution exception (Network/Ledger): {e}")
+            return self._execute(req)
+        except (NetworkMediatorError, LedgerWriteFailed):
             return ActionResult.failure("I can’t do that right now.", request_id=req.request_id)
-        except Exception as e:
-            print(f"[DEBUG] Unexpected exception: {e}")
+        except Exception:
             return ActionResult.failure("I can’t do that right now.", request_id=req.request_id)
+
+    @staticmethod
+    def _rss_mb() -> Optional[float]:
+        try:
+            usage = resource.getrusage(resource.RUSAGE_SELF).ru_maxrss
+            if sys.platform == "darwin":
+                return usage / (1024 * 1024)
+            return usage / 1024
+        except Exception:
+            return None
 
     def _execute(self, req: ActionRequest) -> ActionResult:
-        """
-        Internal execution router.
-        This is the ONLY place executors are instantiated.
-        The Governor manages the entire boundary lifecycle; executors receive only
-        the network client and the request, never the boundary object.
-        """
-        print(f"[DEBUG] _execute called for capability {req.capability_id}")
-
-        # FIX: store request_id, not the whole request object
         self._queue.set_pending(req.request_id)
         self._execute_boundary.enter_execution()
+        start_time = time.monotonic()
+        before_rss = self._rss_mb()
 
         try:
-            # --- Log search query if this is a web search (capability 16) ---
             if req.capability_id == 16:
                 query = req.params.get("query")
                 if query:
                     try:
                         self.ledger.log_event("SEARCH_QUERY", {"query": query})
                     except LedgerWriteFailed:
-                        # Non‑blocking; failure is logged by ledger itself
                         pass
 
-            # ---- Route by capability_id ----
             if req.capability_id == 16:
                 from src.executors.web_search_executor import WebSearchExecutor
-                # Executor receives network client and request only – no boundary injection
                 executor = WebSearchExecutor(self.network, self._execute_boundary)
                 result = executor.execute(req)
 
             elif req.capability_id == 17:
                 from src.executors.webpage_launch_executor import WebpageLaunchExecutor
-                # Executor receives ledger for logging and the request
                 executor = WebpageLaunchExecutor(self.ledger)
                 result = executor.execute(req)
 
@@ -166,13 +143,62 @@ class Governor:
                 from src.executors.tts_executor import execute_tts
                 result = execute_tts(req, ActionResult)
 
+            elif req.capability_id == 19:
+                from src.executors.volume_executor import VolumeExecutor
+                result = VolumeExecutor().execute(req)
+
+            elif req.capability_id == 20:
+                from src.executors.media_executor import MediaExecutor
+                result = MediaExecutor().execute(req)
+
+            elif req.capability_id == 21:
+                from src.executors.brightness_executor import BrightnessExecutor
+                result = BrightnessExecutor().execute(req)
+
+            elif req.capability_id == 22:
+                from src.executors.open_folder_executor import OpenFolderExecutor
+                result = OpenFolderExecutor().execute(req)
+
+            elif req.capability_id == 32:
+                from src.executors.os_diagnostics_executor import OSDiagnosticsExecutor
+                result = OSDiagnosticsExecutor().execute(req)
+
+            elif req.capability_id == 48:
+                from src.executors.multi_source_reporting_executor import MultiSourceReportingExecutor
+                result = MultiSourceReportingExecutor(self.network).execute(req)
+
             else:
                 result = ActionResult.refusal(
                     "Execution path not implemented yet.",
-                    request_id=req.request_id
+                    request_id=req.request_id,
                 )
 
-            # Completion logging (best effort)
+            elapsed = time.monotonic() - start_time
+            if elapsed > MAX_EXECUTION_TIME:
+                try:
+                    self.ledger.log_event(
+                        "EXECUTION_TIMEOUT",
+                        {"capability_id": req.capability_id, "request_id": req.request_id, "elapsed_seconds": round(elapsed, 3)},
+                    )
+                except LedgerWriteFailed:
+                    pass
+                return ActionResult.refusal("Execution exceeded allowed time.", request_id=req.request_id)
+
+            after_rss = self._rss_mb()
+            if before_rss is not None and after_rss is not None and (after_rss - before_rss) > MAX_MEMORY_MB:
+                try:
+                    self.ledger.log_event(
+                        "EXECUTION_MEMORY_EXCEEDED",
+                        {
+                            "capability_id": req.capability_id,
+                            "request_id": req.request_id,
+                            "rss_delta_mb": round(after_rss - before_rss, 3),
+                        },
+                    )
+                except LedgerWriteFailed:
+                    pass
+                return ActionResult.refusal("Execution exceeded allowed memory.", request_id=req.request_id)
+
             try:
                 self.ledger.log_event(
                     "ACTION_COMPLETED",
@@ -190,13 +216,12 @@ class Governor:
         except TimeoutError:
             return ActionResult.refusal(
                 "The request took too long and was cancelled.",
-                request_id=req.request_id
+                request_id=req.request_id,
             )
-        except Exception as e:
-            print(f"[DEBUG] Exception inside _execute routing: {e}")
+        except Exception:
             return ActionResult.refusal(
                 "I can’t do that right now.",
-                request_id=req.request_id
+                request_id=req.request_id,
             )
         finally:
             self._execute_boundary.exit_execution()

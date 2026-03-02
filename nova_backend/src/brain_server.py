@@ -26,8 +26,10 @@ from src.governor.governor_mediator import GovernorMediator, Invocation, Clarifi
 from src.speech_state import speech_state
 from src.conversation.thought_store import ThoughtStore
 from src.conversation.complexity_heuristics import ComplexityHeuristics
+from src.conversation.response_style_router import InputNormalizer
 from src.voice.stt_pipeline import STTAckConfig, build_ack_payload
-from src.voice.tts_engine import resolve_speakable_text, nova_speak
+from src.voice.tts_engine import resolve_speakable_text, nova_speak, stop_speaking
+from src.conversation.clarify_prompts import CLARIFY_PROMPTS
 
 # -------------------------------------------------
 # App + Logging
@@ -110,7 +112,7 @@ async def send_widget_message(
     data: Optional[dict] = None
 ) -> None:
     if msg_type == "news" and isinstance(data, dict) and "items" in data:
-        await ws_send(ws, {"type": "news", "items": data["items"]})
+        await ws_send(ws, {"type": "news", "items": data["items"], "summary": data.get("summary", "")})
         return
     payload = {"type": msg_type, "message": text}
     if msg_type == "weather" and isinstance(data, dict):
@@ -176,11 +178,14 @@ async def websocket_endpoint(ws: WebSocket):
                     await ws_send(ws, {"type": "thought", "data": thought_data, "message_id": message_id})
                 continue
 
-            text = (msg.get("text") or "").strip()
-            if not text:
+            raw_text = (msg.get("text") or "").strip()
+            if not raw_text:
+                await send_chat_message(ws, CLARIFY_PROMPTS["ready_prompt"])
+                await send_chat_done(ws)
                 continue
 
-            lowered = text.lower()
+            text = InputNormalizer.normalize(raw_text).strip()
+            lowered = text.lower().rstrip(".?!")
 
             if channel == "voice" and msg_type == "chat":
                 ack_payload = build_ack_payload(VOICE_ACK_CONFIG)
@@ -234,6 +239,7 @@ async def websocket_endpoint(ws: WebSocket):
             # --- Phase‑2 immediate commands ---
             if lowered == "stop":
                 speech_state.stop()
+                stop_speaking()
                 await send_chat_message(ws, "Okay.")
                 await send_chat_done(ws)
                 continue
@@ -242,6 +248,49 @@ async def websocket_endpoint(ws: WebSocket):
                 last = speech_state.last_spoken_text
                 if last:
                     await send_chat_message(ws, last)
+                await send_chat_done(ws)
+                continue
+
+            if lowered in {"thanks", "thank you", "thank you nova", "thank you, nova"}:
+                await send_chat_message(ws, "You're welcome.")
+                await send_chat_done(ws)
+                continue
+
+            if lowered in {"morning", "morning brief", "brief"}:
+                weather_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "weather"), None)
+                news_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "news"), None)
+                system_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "system"), None)
+
+                weather_summary = "Weather unavailable."
+                news_summary = "No headline summary available right now."
+                system_line = "System status unavailable."
+
+                if weather_skill is not None:
+                    weather_result = await weather_skill.handle("weather")
+                    if weather_result and weather_result.success:
+                        weather_summary = weather_result.message
+                        if isinstance(weather_result.widget_data, dict):
+                            await ws_send(ws, weather_result.widget_data)
+
+                if news_skill is not None:
+                    news_result = await news_skill.handle("news")
+                    if news_result and news_result.success:
+                        if isinstance(news_result.widget_data, dict):
+                            news_summary = (news_result.widget_data.get("summary") or news_summary)
+                            await ws_send(ws, news_result.widget_data)
+
+                if system_skill is not None:
+                    system_result = await system_skill.handle("system status")
+                    if system_result and system_result.success:
+                        system_line = system_result.message
+
+                morning_brief = (
+                    "Executive Brief\n"
+                    f"- Weather: {weather_summary}\n"
+                    f"- System: {system_line}\n"
+                    f"- News: {news_summary}"
+                )
+                await send_chat_message(ws, morning_brief)
                 await send_chat_done(ws)
                 continue
 

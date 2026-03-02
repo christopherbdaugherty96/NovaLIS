@@ -40,33 +40,26 @@ def test_successful_search_returns_results(executor, mock_network, sample_reques
     mock_network.request.return_value = {
         "status_code": 200,
         "data": {
-            "Abstract": "This is a very long abstract that definitely exceeds one hundred characters so we can test truncation logic properly.",
-            "AbstractURL": "https://example.com/abs",
-            "RelatedTopics": [
-                {"FirstURL": "https://example.com/rel1", "Text": "Related topic one"},
-                {
-                    "Topics": [
-                        {
-                            "FirstURL": "https://example.com/sub1",
-                            "Text": "Sub topic inside a category",
-                        }
-                    ]
-                },
-            ],
+            "web": {
+                "results": [
+                    {"title": "Result one title", "url": "https://example.com/one", "description": "One"},
+                    {"title": "Result two title", "url": "https://example.com/two", "description": "Two"},
+                    {"title": "Result three title", "url": "https://example.com/three", "description": "Three"},
+                ]
+            }
         },
     }
 
     result = executor.execute(sample_request)
 
     assert result.success
-    assert "I found 3 results" in result.message
+    assert "Top Findings" in result.message
     widget = result.data.get("widget", {})
     assert widget["type"] == "search"
     results = widget["data"]["results"]
     assert len(results) == 3
-    assert results[0]["title"].endswith("…")
-    assert len(results[0]["title"]) <= 100
-    assert results[1]["title"] == "Related topic one"
+    assert results[0]["title"] == "Result one title"
+    assert results[1]["title"] == "Result two title"
 
 
 def test_no_results_returns_empty_widget(executor, mock_network, sample_request):
@@ -106,7 +99,7 @@ def test_retry_on_network_error_then_success(executor, mock_network, sample_requ
         NetworkMediatorError("Timeout"),
         {
             "status_code": 200,
-            "data": {"Abstract": "Success after retry", "AbstractURL": "http://example.com"},
+            "data": {"web": {"results": [{"title": "Success after retry", "url": "http://example.com", "description": "ok"}] }},
         },
     ]
 

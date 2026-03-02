@@ -1,6 +1,7 @@
 # src/governor/network_mediator.py
 
 import ipaddress
+import socket
 import threading
 from collections import defaultdict
 from time import time
@@ -82,7 +83,20 @@ class NetworkMediator:
             if ip.is_private or ip.is_loopback or ip.is_link_local:
                 raise NetworkMediatorError("Private network access forbidden.")
         except (ValueError, TypeError):
-            # Host is a domain name — DNS rebinding not defended here (see docstring).
+            # Host is a domain name.
+            pass
+
+        # DNS rebinding hardening: block domains resolving to private/loopback ranges.
+        try:
+            for info in socket.getaddrinfo(host, None):
+                addr = info[4][0]
+                resolved = ipaddress.ip_address(addr)
+                if resolved.is_private or resolved.is_loopback or resolved.is_link_local:
+                    raise NetworkMediatorError("Resolved private network address forbidden.")
+        except NetworkMediatorError:
+            raise
+        except Exception:
+            # If DNS resolution fails, requests layer will raise a deterministic network error.
             pass
 
     def request(
