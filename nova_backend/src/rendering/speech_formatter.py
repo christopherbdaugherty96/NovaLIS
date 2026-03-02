@@ -12,11 +12,19 @@ class SpeechFormatter:
         return [p.strip() for p in parts if p.strip()]
 
     def format_for_tts(self, text: str) -> str:
-        sentences = self.split_sentences(text)
+        clean = (text or "").strip()
+        if not clean:
+            return ""
+
+        # Gentle cadence shaping: pause after labels and list markers.
+        clean = re.sub(r":\s+", ": … ", clean)
+        clean = re.sub(r"\n\s*[-•]\s+", " … ", clean)
+        clean = re.sub(r"\n\s*\d+[.)]\s+", " … ", clean)
+
+        sentences = self.split_sentences(clean)
         if not sentences:
             return ""
 
-        # Insert short pause marker between sentences.
         paced = " … ".join(sentences)
         paced = re.sub(r"\s{2,}", " ", paced).strip()
         return paced

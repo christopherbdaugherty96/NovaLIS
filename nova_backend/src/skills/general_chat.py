@@ -12,7 +12,7 @@ from src.conversation.complexity_heuristics import ComplexityHeuristics
 from src.conversation.deepseek_bridge import DeepSeekBridge
 from src.conversation.escalation_policy import EscalationPolicy
 from src.conversation.response_formatter import ResponseFormatter
-from src.conversation.response_style_router import ResponseStyle, ResponseStyleRouter
+from src.conversation.response_style_router import InputNormalizer, ResponseStyle, ResponseStyleRouter
 from src.conversation.safety_filter import SafetyFilter
 from src.conversation.deepseek_safety_wrapper import DeepSeekSafetyWrapper
 from src.governor.network_mediator import NetworkMediator
@@ -28,10 +28,10 @@ class GeneralChatSkill(BaseSkill):
         "You are Nova.\n"
         "\n"
         "Core constraints:\n"
-        "- Speak calmly, with restrained professional courtesy.\n"
-        "- Use complete, well‑structured sentences.\n"
-        "- Avoid slang, casual fillers, and enthusiasm markers.\n"
-        "- Maintain composed and precise phrasing.\n"
+        "- Speak calmly, with composed, butler-like courtesy.\n"
+        "- Use complete, polished sentences with natural flow.\n"
+        "- Keep language human, concise, and quietly confident.\n"
+        "- Avoid slang, hype, or theatrical enthusiasm.\n"
         "- No emotional simulation. No therapy tone. No flattery.\n"
         "- No marketing language. No brand voice.\n"
         "- Do not introduce yourself unless explicitly asked.\n"
@@ -95,7 +95,7 @@ class GeneralChatSkill(BaseSkill):
         self.formatter = ResponseFormatter()
 
     def can_handle(self, query: str) -> bool:
-        q = (query or "").strip().lower()
+        q = InputNormalizer.normalize(query).lower().strip(".?!")
         if not q:
             return False
 
@@ -108,7 +108,7 @@ class GeneralChatSkill(BaseSkill):
         return True
 
     def _detect_mode(self, query: str) -> str:
-        q = (query or "").strip().lower()
+        q = InputNormalizer.normalize(query).lower().strip(".?!")
         if not q:
             return "casual"
 
@@ -130,7 +130,7 @@ class GeneralChatSkill(BaseSkill):
             ResponseStyle.DIRECT: "Style: Direct and concise. Prioritize factual precision.",
             ResponseStyle.BRAINSTORM: "Style: Brainstorm mode. Provide structured ideas as bullet points.",
             ResponseStyle.DEEP: "Style: Deep mode. Provide layered reasoning with concise section headers.",
-            ResponseStyle.CASUAL: "Style: Casual mode. Keep response short and naturally conversational.",
+            ResponseStyle.CASUAL: "Style: Conversational mode. Keep response brief, warm, and polished.",
         }
 
         style_block = style_blocks.get(style, style_blocks[ResponseStyle.DIRECT])
@@ -155,8 +155,9 @@ class GeneralChatSkill(BaseSkill):
         except Exception:
             return None
 
-        mode = self._detect_mode(query)
-        style = self.style_router.route(query)
+        normalized_query = InputNormalizer.normalize(query)
+        mode = self._detect_mode(normalized_query)
+        style = self.style_router.route(normalized_query)
         system_prompt = self._build_system_prompt(mode, style)
         max_tokens = self.MAX_TOKENS.get(mode, self.MAX_TOKENS["casual"])
 
@@ -166,7 +167,7 @@ class GeneralChatSkill(BaseSkill):
                 model="phi3:mini",
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": query},
+                    {"role": "user", "content": normalized_query},
                 ],
                 options={"temperature": 0.3, "num_predict": max_tokens},
             )
@@ -183,10 +184,11 @@ class GeneralChatSkill(BaseSkill):
         if context is None or session_state is None:
             return await self._run_local_model(query)
 
-        heuristic_result = self.heuristics.assess(query, context)
-        decision = self.policy.decide(heuristic_result, query, session_state)
-        mode = heuristic_result.get("mode") or self._detect_mode(query)
-        initiative = self.policy.conversational_flags(heuristic_result, query, session_state)
+        normalized_query = InputNormalizer.normalize(query)
+        heuristic_result = self.heuristics.assess(normalized_query, context)
+        decision = self.policy.decide(heuristic_result, normalized_query, session_state)
+        mode = heuristic_result.get("mode") or self._detect_mode(normalized_query)
+        initiative = self.policy.conversational_flags(heuristic_result, normalized_query, session_state)
 
         if decision == "ASK_USER":
             return SkillResult(
@@ -195,7 +197,7 @@ class GeneralChatSkill(BaseSkill):
                 data={
                     "escalation": {
                         "ask_user": True,
-                        "original_query": query,
+                        "original_query": normalized_query,
                         "context_snapshot": context[-5:],
                         "heuristic_result": heuristic_result,
                     }
@@ -213,16 +215,13 @@ class GeneralChatSkill(BaseSkill):
             }
             raw = await asyncio.to_thread(
                 self.deepseek.analyze,
-                query,
+                normalized_query,
                 context,
                 heuristic_result.get("suggested_max_tokens", 800),
             )
             safe = self.safety.filter(raw)
             safe = self.analysis_safety.sanitize(safe)
             formatted = self.formatter.format(safe)
-            if session_state.get("show_thinking_hints", True):
-                formatted = f"Let me think…\n\n{formatted}"
-
             return SkillResult(
                 success=True,
                 message=formatted,
@@ -231,7 +230,7 @@ class GeneralChatSkill(BaseSkill):
                 skill=self.name,
             )
 
-        local = await self._run_local_model(query)
+        local = await self._run_local_model(normalized_query)
         if local is None:
             return None
 

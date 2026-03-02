@@ -46,7 +46,8 @@ class NewsSkill(BaseSkill):
 
         widget = {
             "type": "news",
-            "items": items
+            "items": items,
+            "summary": self._summarize_headlines(items),
         }
 
         return SkillResult(
@@ -55,6 +56,25 @@ class NewsSkill(BaseSkill):
             data={},
             widget_data=widget,
             skill=self.name,
+        )
+
+    def _summarize_headlines(self, items: List[Dict[str, str]]) -> str:
+        """Create a deterministic 1-2 sentence summary from fetched headlines."""
+        if not items:
+            return "No headlines are available to summarize right now."
+
+        top_titles = [item.get("title", "").strip() for item in items[:3] if item.get("title")]
+        if not top_titles:
+            return "I pulled headlines, but there was not enough detail to summarize them."
+
+        if len(top_titles) == 1:
+            return f"Top story right now: {top_titles[0]}."
+
+        if len(top_titles) == 2:
+            return f"Current news focus: {top_titles[0]}; alongside {top_titles[1]}."
+
+        return (
+            f"Current news focus: {top_titles[0]}; {top_titles[1]}; and {top_titles[2]}."
         )
 
     async def _fetch_one(self, source: dict) -> Optional[dict]:
