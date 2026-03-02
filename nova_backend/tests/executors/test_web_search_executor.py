@@ -3,6 +3,11 @@ from unittest.mock import Mock
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def configured_brave_key(monkeypatch):
+    monkeypatch.setenv("BRAVE_API_KEY", "test-key")
+
+
 @pytest.fixture
 def mock_network():
     return Mock()
@@ -138,3 +143,13 @@ def test_non_200_does_not_trigger_retry(executor, mock_network, sample_request):
     assert not result.success
     assert "unexpected response" in result.message.lower()
     assert mock_network.request.call_count == 1
+
+
+def test_missing_brave_api_key_fails_fast(executor, mock_network, sample_request, monkeypatch):
+    monkeypatch.delenv("BRAVE_API_KEY", raising=False)
+
+    result = executor.execute(sample_request)
+
+    assert not result.success
+    assert result.message == "Web search is not configured."
+    assert mock_network.request.call_count == 0
