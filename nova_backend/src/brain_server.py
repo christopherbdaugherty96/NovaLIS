@@ -338,6 +338,7 @@ async def websocket_endpoint(ws: WebSocket):
                     speakable_text = resolve_speakable_text(action_result)
                     if speakable_text:
                         nova_speak(speakable_text)
+                        session_state["last_input_channel"] = None   # prevent re-trigger
                 continue
 
             elif isinstance(inv_result, Clarification):
@@ -415,8 +416,9 @@ async def websocket_endpoint(ws: WebSocket):
 
                 await send_chat_done(ws)
 
-                # Auto‑speak for voice input (renderer‑based, not capability 18)
-                if session_state.get("last_input_channel") == "voice":
+                # Auto‑speak for voice input
+                if (session_state.get("last_input_channel") == "voice"
+                        and getattr(skill_result, "success", True)):   # assume success if not present
                     speakable_text = ""
                     if isinstance(result_data, dict):
                         speakable_text = (result_data.get("speakable_text") or "").strip()
@@ -424,6 +426,7 @@ async def websocket_endpoint(ws: WebSocket):
                         speakable_text = message
                     if speakable_text:
                         nova_speak(speakable_text)
+                        session_state["last_input_channel"] = None   # prevent re-trigger
 
                 session_context.extend([{"role": "user", "content": mediated_text}, {"role": "assistant", "content": message}])
                 context_limit = 40 if session_state.get("presence_mode") else 20
