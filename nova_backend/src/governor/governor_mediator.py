@@ -70,8 +70,9 @@ class GovernorMediator:
           - None if no invocation is detected.
         """
         t = (text or "").strip()
+        t = re.sub(r"[.?!]+$", "", t)
         if not t:
-            return None
+               return None
 
         # --- Step 1: Check if this session has a pending clarification ---
         if session_id and session_id in _pending_clarification:
