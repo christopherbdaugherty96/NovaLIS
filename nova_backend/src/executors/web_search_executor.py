@@ -75,7 +75,9 @@ class WebSearchExecutor:
 
         boundary_notice = "I'm checking online."
         started_at = time.monotonic()
-        brave_key = os.getenv("BRAVE_API_KEY", "")
+        brave_key = os.getenv("BRAVE_API_KEY", "").strip()
+        if not brave_key:
+            return ActionResult.failure("Web search is not configured.", data=self._empty_widget(), request_id=request.request_id)
 
         max_retries = 1
         for attempt in range(max_retries + 1):

@@ -23,7 +23,7 @@ class MultiSourceReportingExecutor:
 
         try:
             response = self.network.request(
-                capability_id=16,
+                capability_id=48,
                 method="GET",
                 url="https://api.search.brave.com/res/v1/web/search",
                 params={"q": query, "count": 5},
