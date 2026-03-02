@@ -93,7 +93,7 @@ function runQuickAction(action) {
       break;
   }
 }
- inspect/codex-phase4
+ 
 // Guarded WebSocket send (calm failure)
 function safeWSSend(message) {
   if (!ws || ws.readyState !== WebSocket.OPEN) return false;
@@ -284,7 +284,6 @@ function renderSearchWidget(data) {
     appendChatMessage("assistant", "No results found.");
 
     appendChatMessage("assistant", "I couldn't find reliable results for that.");
- inspect/codex-phase4
     return;
   }
 
@@ -568,7 +567,6 @@ window.addEventListener("DOMContentLoaded", () => {
     btn.addEventListener("click", () => runQuickAction(btn.dataset.action || ""));
   });
 
- inspect/codex-phase4
   const micBtn = $("ptt-btn");
   if (micBtn) {
     micBtn.addEventListener("click", () => {
