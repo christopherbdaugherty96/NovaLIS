@@ -341,10 +341,7 @@ function injectUserText(text, channel = "text") {
   appendChatMessage("user", clean);
   waitingForAssistant = true;
  
-  setLoadingHint(clean.toLowerCase().includes("search") ? "Checking latest sources" : "Processing");
-=======
   setLoadingHint(loadingHintForInput(clean));
- inspect/codex-phase4
   setThinkingBar(true);
   
   // Phase-3 calm: if WS fails, just log, don't spam chat
