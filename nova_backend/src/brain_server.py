@@ -256,6 +256,44 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
+            if lowered in {"morning", "morning brief", "brief"}:
+                weather_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "weather"), None)
+                news_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "news"), None)
+                system_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "system"), None)
+
+                weather_summary = "Weather unavailable."
+                news_summary = "No headline summary available right now."
+                system_line = "System status unavailable."
+
+                if weather_skill is not None:
+                    weather_result = await weather_skill.handle("weather")
+                    if weather_result and weather_result.success:
+                        weather_summary = weather_result.message
+                        if isinstance(weather_result.widget_data, dict):
+                            await ws_send(ws, weather_result.widget_data)
+
+                if news_skill is not None:
+                    news_result = await news_skill.handle("news")
+                    if news_result and news_result.success:
+                        if isinstance(news_result.widget_data, dict):
+                            news_summary = (news_result.widget_data.get("summary") or news_summary)
+                            await ws_send(ws, news_result.widget_data)
+
+                if system_skill is not None:
+                    system_result = await system_skill.handle("system status")
+                    if system_result and system_result.success:
+                        system_line = system_result.message
+
+                morning_brief = (
+                    "Executive Brief\n"
+                    f"- Weather: {weather_summary}\n"
+                    f"- System: {system_line}\n"
+                    f"- News: {news_summary}"
+                )
+                await send_chat_message(ws, morning_brief)
+                await send_chat_done(ws)
+                continue
+
             # --- Manual Session Presence Mode Controls (Tier-B explicit only) ---
             if lowered in {"stay in conversation mode", "conversation mode on", "enable conversation mode"}:
                 session_state["presence_mode"] = True

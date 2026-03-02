@@ -716,3 +716,33 @@ html, body {
 .search-result a:hover {
   text-decoration: underline;
 }
+ 
+
+.quick-actions {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: -6px;
+}
+
+.quick-action-btn {
+  padding: 7px 11px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(230, 233, 240, 0.92);
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 120ms ease;
+}
+
+.quick-action-btn:hover {
+  background: rgba(123, 109, 255, 0.16);
+  border-color: rgba(123, 109, 255, 0.38);
+}
+
+.quick-action-btn:active {
+  background: rgba(123, 109, 255, 0.24);
+}
+ inspect/codex-phase4

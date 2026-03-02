@@ -54,6 +54,47 @@ function setLoadingHint(text = "") {
   bar.textContent = text || "Processing";
 }
 
+ 
+
+function loadingHintForInput(text) {
+  const q = (text || "").toLowerCase();
+  if (q.includes("deep mode") || q.includes("deep analysis")) return "Analyzing";
+  if (q.includes("search") || q.includes("look up") || q.includes("research")) return "Checking latest sources";
+  if (q.includes("morning")) return "Preparing brief";
+  return "Processing";
+}
+
+function runQuickAction(action) {
+  const input = $("chat-input");
+  switch (action) {
+    case "brief":
+      injectUserText("Morning.", "text");
+      break;
+    case "weather":
+      safeWSSend({ text: "weather" });
+      break;
+    case "news":
+      safeWSSend({ text: "news" });
+      break;
+    case "system":
+      injectUserText("System status.", "text");
+      break;
+    case "search":
+      if (input) {
+        input.focus();
+        input.value = "search for ";
+      }
+      break;
+    case "open":
+      if (input) {
+        input.focus();
+        input.value = "open ";
+      }
+      break;
+  }
+}
+
+ inspect/codex-phase4
 // Guarded WebSocket send (calm failure)
 function safeWSSend(message) {
   if (!ws || ws.readyState !== WebSocket.OPEN) return false;
@@ -206,7 +247,11 @@ function renderSearchWidget(data) {
   if (container) {
     clear(container);
     if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+ 
       container.textContent = "No results found.";
+
+      container.textContent = "I couldn't find reliable results for that.";
+ inspect/codex-phase4
       return;
     }
 
@@ -239,8 +284,11 @@ function renderSearchWidget(data) {
     return;
   }
 
-  if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+  if (!data || !Array.isArray(data.results) || data.results.length
     appendChatMessage("assistant", "No results found.");
+
+    appendChatMessage("assistant", "I couldn't find reliable results for that.");
+ inspect/codex-phase4
     return;
   }
 
@@ -296,7 +344,11 @@ function injectUserText(text, channel = "text") {
   // Single canonical path for ALL user input (typed + STT)
   appendChatMessage("user", clean);
   waitingForAssistant = true;
+ 
   setLoadingHint(clean.toLowerCase().includes("search") ? "Checking latest sources" : "Processing");
+
+  setLoadingHint(loadingHintForInput(clean));
+ inspect/codex-phase4
   setThinkingBar(true);
   
   // Phase-3 calm: if WS fails, just log, don't spam chat
@@ -517,6 +569,13 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+ 
+
+  document.querySelectorAll(".quick-action-btn").forEach((btn) => {
+    btn.addEventListener("click", () => runQuickAction(btn.dataset.action || ""));
+  });
+
+ inspect/codex-phase4
   const micBtn = $("ptt-btn");
   if (micBtn) {
     micBtn.addEventListener("click", () => {
