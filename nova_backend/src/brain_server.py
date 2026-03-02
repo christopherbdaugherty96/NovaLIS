@@ -167,7 +167,6 @@ async def websocket_endpoint(ws: WebSocket):
             channel = (msg.get("channel") or "text").strip().lower()
             if channel not in {"voice", "text"}:
                 channel = "text"
-            session_state["last_input_channel"] = channel
 
             if msg_type == "get_thought":
                 message_id = (msg.get("message_id") or "").strip()
@@ -183,6 +182,8 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_message(ws, CLARIFY_PROMPTS["ready_prompt"])
                 await send_chat_done(ws)
                 continue
+
+            session_state["last_input_channel"] = channel
 
             text = InputNormalizer.normalize(raw_text).strip()
             lowered = text.lower().rstrip(".?!")
