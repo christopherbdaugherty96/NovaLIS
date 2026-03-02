@@ -22,6 +22,7 @@ class CaptureLedger:
 
 
 def test_timeout_causes_denial_and_records_lifecycle(monkeypatch):
+    monkeypatch.setenv("BRAVE_API_KEY", "test-key")
     from src.governor.governor_mediator import GovernorMediator
     from src.governor.governor import Governor
 

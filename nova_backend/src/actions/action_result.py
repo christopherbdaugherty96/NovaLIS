@@ -65,6 +65,7 @@ class ActionResult:
     def failure(
         cls,
         message: str,
+        data: Optional[Dict[str, Any]] = None,
         request_id: Optional[str] = None,
         risk_level: str = "low",
         authority_class: str = "read_only",
@@ -75,6 +76,7 @@ class ActionResult:
         return cls(
             success=False,
             message=message,
+            data=data,
             request_id=request_id,
             risk_level=risk_level,
             authority_class=authority_class,
@@ -86,6 +88,7 @@ class ActionResult:
     def refusal(
         cls,
         message: str,
+        data: Optional[Dict[str, Any]] = None,
         request_id: Optional[str] = None,
         risk_level: str = "low",
         authority_class: str = "read_only",
@@ -99,6 +102,7 @@ class ActionResult:
         return cls(
             success=False,
             message=message,
+            data=data,
             request_id=request_id,
             risk_level=risk_level,
             authority_class=authority_class,

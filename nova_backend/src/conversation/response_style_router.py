@@ -12,7 +12,10 @@ class ResponseStyle(str, Enum):
 
 
 class InputNormalizer:
+
     """Deterministic input cleanup for spelling, punctuation, and STT fragments."""
+
+    """Deterministic input cleanup for invocation-safe normalization."""
 
     TYPO_REPLACEMENTS = (
         (r"\bwether\b", "weather"),
@@ -30,6 +33,7 @@ class InputNormalizer:
             return ""
 
         clean = re.sub(r"\s+", " ", clean)
+
         clean = clean.replace(" ,", ",").replace(" .", ".")
 
         # deterministic phrase-level normalization for common STT artifact
@@ -50,6 +54,10 @@ class InputNormalizer:
             clean += "."
 
         return clean
+
+        # Invocation-parsing input must remain structurally stable.
+        # Only normalize case and whitespace; do not inject punctuation.
+        return clean.lower()
 
 
 class ResponseStyleRouter:

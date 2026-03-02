@@ -32,7 +32,7 @@ class WebpageLaunchExecutor:
         if not url:
             print(f"[DEBUG] Target '{target}' not in presets")
             return ActionResult.failure(
-                f"I don't have a preset for '{target}'.",
+                f"No preset available for {target}.",
                 request_id=request.request_id
             )
 
@@ -48,7 +48,7 @@ class WebpageLaunchExecutor:
             })
             print(f"[DEBUG] Browser opened for {url}")
             return ActionResult.ok(
-                f"Opening {url}.",
+                f"Opened {target.title()}.",
                 request_id=request.request_id
             )
         except Exception as e:
