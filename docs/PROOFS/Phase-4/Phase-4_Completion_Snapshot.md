@@ -1,6 +1,6 @@
 # Phase-4 Completion Snapshot
-**Date:** 2026-03-02
-**Commit:** `6574a355f2db7fb00d7e0fb9451f60f9f16eac21`
+**Date:** 2026-03-03
+**Commit:** `454a11ec`
 **Scope:** Comprehensive status of all Phase-4 components with proof cross-references.
 
 ---
@@ -12,6 +12,10 @@
 | 16 | `governed_web_search` | ✅ enabled | ✅ `search ...` | ✅ `WebSearchExecutor` | ✅ | ✅ 5 events | ✅ | `CAPABILITY_16_WEB_SEARCH_PROOF.md` |
 | 17 | `open_website` | ✅ enabled | ✅ `open <name>` | ✅ `WebpageLaunchExecutor` | ✅ | ✅ 3 events | ✅ | `CAPABILITY_17_OPEN_WEBSITE_PROOF.md` |
 | 18 | `speak_text` | ✅ enabled | ✅ `speak that` / `read that` / `say it` | ✅ `execute_tts` | ✅ | ✅ 2 events | ✅ 8 tests | `TTS_SPINE_AUTHORITY_PROOF.md` |
+| 19 | `volume_up_down` | ✅ enabled | ✅ `volume up/down`, `set volume <level>` | ✅ `VolumeExecutor` | ✅ | ✅ | ✅ | — |
+| 20 | `media_play_pause` | ✅ enabled | ✅ `play`, `pause`, `resume` | ✅ `MediaExecutor` | ✅ | ✅ | ✅ | — |
+| 21 | `brightness_control` | ✅ enabled | ✅ `brightness up/down`, `set brightness <level>` | ✅ `BrightnessExecutor` | ✅ | ✅ | ✅ | — |
+| 32 | `os_diagnostics` | ✅ enabled | ✅ `system check`, `system status` | ✅ `OSDiagnosticsExecutor` | ✅ | ✅ | ✅ | — |
 
 ---
 
@@ -19,12 +23,8 @@
 
 | ID | Name | Why Blocked |
 |---:|---|---|
-| 19 | `volume_up_down` | `enabled: false`, no parser, no executor route |
-| 20 | `media_play_pause` | `enabled: false`, no parser, no executor route |
-| 21 | `brightness_control` | `enabled: false`, no parser, no executor route |
-| 22 | `open_file_folder` | `enabled: false`, no parser, no executor route |
-| 32 | `os_diagnostics` | `enabled: false`, no parser, no executor route |
-| 48 | `multi_source_reporting` | `enabled: false`, no parser, no executor route |
+| 22 | `open_file_folder` | `enabled: false`; executor exists but disabled in registry |
+| 48 | `multi_source_reporting` | `enabled: false`; executor exists but disabled in registry |
 
 ---
 
@@ -61,12 +61,12 @@ Tests span:
 
 | Gap | Severity | Description |
 |---|---|---|
-| Ledger event type allowlist | Major | `event_type` is unconstrained string; no canonical taxonomy enforced at write boundary |
-| `MAX_EXECUTION_TIME` unenforced | Minor | Declared as 10s, recorded via `_start_time`, but never compared or used to cancel |
-| `MAX_MEMORY_MB` unenforced | Minor | Placeholder constant, no measurement or enforcement |
+| ~~Ledger event type allowlist~~ | ~~Major~~ | **RESOLVED** — `event_type` allowlist enforced at write boundary via `EVENT_TYPES` frozenset in `src/ledger/event_types.py`. Test `test_ledger_event_allowlist.py` verifies rejection of unknown events. |
+| ~~`MAX_EXECUTION_TIME` unenforced~~ | ~~Minor~~ | **RESOLVED** — Checked post-execution in `governor.py` lines 183–192; logs `EXECUTION_TIMEOUT` and returns refusal. |
+| ~~`MAX_MEMORY_MB` unenforced~~ | ~~Minor~~ | **RESOLVED** — Checked post-execution in `governor.py` lines 194–207; logs `EXECUTION_MEMORY_EXCEEDED` and returns refusal. |
 | Executor factory method inconsistency | Minor | `WebSearchExecutor` and `tts_executor` sometimes use `ActionResult(...)` directly instead of `.ok()` / `.failure()` |
 | No `LedgerAnalyzer` / reader | Moderate | Write-only ledger; no structured read or "what just happened" surface |
-| DNS rebinding in SSRF | Accepted | Domain names resolving to private IPs not blocked; accepted for Phase-4 threat model |
+| ~~DNS rebinding in SSRF~~ | ~~Accepted~~ | **RESOLVED** — `network_mediator.py` lines 89–99 resolve hostnames via `socket.getaddrinfo` and block private/loopback/link-local addresses. |
 
 ---
 
@@ -89,7 +89,7 @@ These are Phase-7+ concerns and are not part of the Phase-4 contract.
 
 > **Phase-4 is governed capability completeness with hardened execution surfaces.**
 
-The Governor spine is the sole authority. Capabilities are registry-gated, parser-routed, executor-bounded, ledger-tracked, and concurrency-locked. Three capabilities (16, 17, 18) are active and fully governed. Six capabilities are registered but intentionally blocked. No background execution exists.
+The Governor spine is the sole authority. Capabilities are registry-gated, parser-routed, executor-bounded, ledger-tracked, and concurrency-locked. Seven capabilities (16, 17, 18, 19, 20, 21, 32) are active and fully governed. Two capabilities (22, 48) are registered but intentionally blocked. No background execution exists.
 
 ---
 
