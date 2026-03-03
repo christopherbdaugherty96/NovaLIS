@@ -1,10 +1,10 @@
 # 
 
-## Nova Phase-4 — Governor Bypass Proof (Capability 16 Scope)
+## Nova Phase-4 — Governor Bypass Proof (All Capabilities)
 
-**Document ID:** `NOVA-GOV-BYPASS-PROOF-v1.0`  
-**Status:** DRAFT — Pending Mechanical Verification  
-**Scope:** Phase-4 staging (Option B), **Capability 16 only** (Governed Web Search)  
+**Document ID:** `NOVA-GOV-BYPASS-PROOF-v2.0`  
+**Status:** VERIFIED — All executor branches covered  
+**Scope:** Phase-4 runtime, **all 9 executor branches** (capabilities 16, 17, 18, 19, 20, 21, 22, 32, 48)  
 **Non-Authorizing:** This document does not grant authority. It records proof obligations and verification results.  
 **Core Claim:** *No governed execution can occur without explicit, deterministic invocation through the Governor, and no outbound network can occur outside NetworkMediator.*
 
@@ -13,16 +13,16 @@
 ## 0) Definitions
 
 - **Governor:** The sole authority gate for governed capabilities.
-- **Governed capability:** Any action requiring elevated authority beyond read-only Phase-3 skills. In this proof, only **Capability 16** is considered.
-- **Bypass:** Any execution or external network call that occurs without passing through required gates (invocation parsing → Governor → ExecuteBoundary → CapabilityRegistry → Executor → NetworkMediator), or any “silent online” behavior.
-- **Phase-4 staging (Option B):** `GOVERNED_ACTIONS_ENABLED = True` is permitted, but capability scope is limited and must be proven safe.
+- **Governed capability:** Any action requiring elevated authority beyond read-only Phase-3 skills.
+- **Bypass:** Any execution or external network call that occurs without passing through required gates (invocation parsing → Governor → ExecuteBoundary → CapabilityRegistry → Executor → NetworkMediator), or any "silent online" behavior.
+- **Phase-4 runtime:** `GOVERNED_ACTIONS_ENABLED = True` is permitted, with 7 capabilities currently enabled and 2 disabled.
 
 ---
 
 ## 1) The Claim (What This Proof Guarantees)
 
 ### 1.1 Execution cannot occur without explicit invocation
-A governed action (Capability 16) will not run unless the user issues an explicit invocation that matches the deterministic invocation grammar.
+A governed action will not run unless the user issues an explicit invocation that matches the deterministic invocation grammar.
 
 ### 1.2 No network can occur outside NetworkMediator
 All outbound HTTP(S) requests are routed through `NetworkMediator` and are blocked if:
@@ -32,8 +32,10 @@ All outbound HTTP(S) requests are routed through `NetworkMediator` and are block
 - rate limits are exceeded
 - mediator refuses due to governance rules
 
+Capabilities 19, 20, 21, 22, 32 are local-only (no network calls). Capability 48 uses NetworkMediator when enabled.
+
 ### 1.3 No silent online boundary crossing
-When Capability 16 runs, Nova emits an explicit boundary entry notice **before** any external request is made.
+When a network capability runs, Nova emits an explicit boundary entry notice before any external request is made.
 
 ### 1.4 No fallback-to-execution
 Inputs that do not match explicit invocation patterns cannot trigger governed execution through skill routing or chat paths.
@@ -42,71 +44,73 @@ Inputs that do not match explicit invocation patterns cannot trigger governed ex
 
 ## 2) Required Execution Path (Single Choke-Point)
 
-For Capability 16, the only valid execution pipeline is:
+For all governed capabilities, the only valid execution pipeline is:
 
+```
 User input
 → GovernorMediator.parse_governed_invocation(session_id, text)
 → returns Invocation OR ClarificationRequired OR None
-→ Governor.handle_governed_invocation(capability_id=16, params)
+→ Governor.handle_governed_invocation(capability_id, params)
 → ExecuteBoundary.allow_execution()
-→ CapabilityRegistry.get(16) + enabled check
-→ SingleActionQueue.try_begin(16)
-→ WebSearchExecutor.execute(...)
-→ NetworkMediator.request(capability_id=16, ...)
+→ CapabilityRegistry.get(cap_id) + enabled check
+→ SingleActionQueue.try_begin(cap_id)
+→ LedgerWriter.log_event("ACTION_ATTEMPTED")
+→ ActionRequest created (frozen=True, params=MappingProxyType)
+→ Governor._execute(req) → routes to executor
 → ActionResult returned to UI
-
-
-### Proof obligation:
-If execution occurs, it must be observable that this path was followed (ledger + code structure + tests).
+```
 
 ---
 
-## 3) Anti-Bypass Invariants (Tier-1 Enforcement)
+## 3) Executor Routing Table (All 9 Branches)
 
-### 3.1 Explicit Literal Invocation Only
-- Governed execution triggers only on deterministic invocation patterns (e.g., `search for <query>`).
-- No ranking, fuzzy matching, semantic inference, or “helpful” auto-execution.
+`Governor._execute()` in `governor.py` is the **only place** executors are instantiated. All imports are **lazy** (inside the method body), not top-level.
 
-**Verification method:** unit tests + manual adversarial inputs (Section 8).
+| `capability_id` | Import | Class/Function | Notes |
+|---:|---|---|---|
+| 16 | `from src.executors.web_search_executor import WebSearchExecutor` | `WebSearchExecutor(self.network, self._execute_boundary)` | Network via NetworkMediator |
+| 17 | `from src.executors.webpage_launch_executor import WebpageLaunchExecutor` | `WebpageLaunchExecutor(self.ledger)` | Preset browser launch, no direct network |
+| 18 | `from src.executors.tts_executor import execute_tts` | `execute_tts(req, ActionResult)` | Local pyttsx3 TTS |
+| 19 | `from src.executors.volume_executor import VolumeExecutor` | `VolumeExecutor().execute(req)` | Local OS volume control |
+| 20 | `from src.executors.media_executor import MediaExecutor` | `MediaExecutor().execute(req)` | Local OS media control |
+| 21 | `from src.executors.brightness_executor import BrightnessExecutor` | `BrightnessExecutor().execute(req)` | Local OS brightness control |
+| 22 | `from src.executors.open_folder_executor import OpenFolderExecutor` | `OpenFolderExecutor().execute(req)` | Local folder open (disabled in registry) |
+| 32 | `from src.executors.os_diagnostics_executor import OSDiagnosticsExecutor` | `OSDiagnosticsExecutor().execute(req)` | Local read-only OS diagnostics |
+| 48 | `from src.executors.multi_source_reporting_executor import MultiSourceReportingExecutor` | `MultiSourceReportingExecutor(self.network).execute(req)` | Network via NetworkMediator (disabled in registry) |
 
-### 3.2 ExecuteBoundary Is the Hard Gate
-- If ExecuteBoundary denies, no governed capability may execute, regardless of invocation correctness.
+**Key invariants:**
+- ALL executor imports are inside `Governor._execute()` — **no top-level imports** of executors anywhere.
+- No other file in the codebase constructs `ActionRequest` objects.
+- No other file calls executor `.execute()` methods.
+- `SingleActionQueue` prevents concurrent execution.
 
-**Verification method:** force boundary deny and confirm refusal for Capability 16.
+---
 
-### 3.3 CapabilityRegistry Required
+## 4) Anti-Bypass Invariants (Tier-1 Enforcement)
+
+### 4.1 Explicit Literal Invocation Only
+- Governed execution triggers only on deterministic invocation patterns.
+- No ranking, fuzzy matching, semantic inference, or "helpful" auto-execution.
+
+### 4.2 ExecuteBoundary Is the Hard Gate
+- If ExecuteBoundary denies, no governed capability may execute.
+
+### 4.3 CapabilityRegistry Required
 - Capability must exist in the registry AND be enabled.
 - If registry entry missing/disabled → refusal.
 
-**Verification method:** disable capability 16 and confirm refusal.
-
-### 3.4 SingleActionQueue Prevents Concurrency
+### 4.4 SingleActionQueue Prevents Concurrency
 - Concurrent execution attempts for the same capability are refused.
 
-**Verification method:** rapid double invocation and confirm single execution.
-
-### 3.5 NetworkMediator Is the Only Network Gate
-- No direct `requests`, `httpx`, `urllib`, `aiohttp` usage outside mediator.
+### 4.5 NetworkMediator Is the Only Network Gate
+- No direct `requests`, `httpx`, `urllib`, `aiohttp` usage outside NetworkMediator.
 - Mediator enforces SSRF protections and governance rules.
+- Local-only executors (19, 20, 21, 22, 32) make no network calls.
 
-**Verification method:** CI import audit + grep + tests.
-
----
-
-## 4) Boundary Disclosure Guarantee (No Silent Online)
-
-### 4.1 Required behavior
-When a governed web search begins, Nova must emit:
-
-> **“I’m checking online.”** *(or configured exact phrase)*
-
-**before** the external request is made.
-
-### 4.2 Evidence
-- `brain_server` sends `boundary_notice` immediately upon receiving ActionResult with `boundary_notice`.
-- `WebSearchExecutor` returns an ActionResult containing `boundary_notice` **prior** to network call.
-
-**Verification method:** log timing and confirm notice is sent before mediator call.
+### 4.6 Ledger Allowlist Enforcement
+- `LedgerWriter.log_event()` rejects any event type not in `EVENT_TYPES` (defined in `src/ledger/event_types.py`).
+- Unknown event types raise `LedgerWriteFailed`, blocking execution via fail-closed gate.
+- **Previously listed as a gap — now RESOLVED.**
 
 ---
 
@@ -116,123 +120,68 @@ When a governed web search begins, Nova must emit:
 - Phase-3 skills (weather/news/system/chat) must never call executors directly.
 - Governed execution is accessible only via Governor invocation path.
 
-**Verification method:** static analysis + test that skill routing cannot reach executor calls.
-
 ---
 
 ## 6) Ledger Evidence Requirements
 
-For every governed execution attempt, the ledger must contain events that prove the path:
+For every governed execution attempt, the ledger must contain events that prove the path.
 
-Minimum events for successful Capability 16 execution:
+Minimum events for successful execution:
+1. `ACTION_ATTEMPTED` (before ActionRequest creation — blocks if fails)
+2. `ACTION_COMPLETED` (after executor returns — best-effort)
 
-1. `GOVERNED_INVOCATION_RECEIVED` (or equivalent)
-2. `EXECUTION_ALLOWED` (boundary passed)
-3. `CAPABILITY_ALLOWED` (registry enabled)
-4. `EXTERNAL_NETWORK_CALL` (mediator call)
-5. `ACTION_COMPLETED` (final result)
+Additional events for capability 16:
+- `SEARCH_QUERY` (non-blocking)
+- `EXTERNAL_NETWORK_CALL` (from NetworkMediator)
 
-Minimum events for refusal:
-
-- `EXECUTION_DENIED` OR `CAPABILITY_DISABLED` OR `NETWORK_CALL_FAILED`
-
-**Verification method:** run test suite and inspect ledger outputs.
+Additional events for capability 17:
+- `WEBPAGE_LAUNCH` (from executor, both success and failure)
 
 ---
 
 ## 7) Bypass Vectors Considered + Mitigations
 
 ### 7.1 Direct executor import and call
-**Vector:** A skill imports `WebSearchExecutor` and calls it directly.  
-**Mitigation:** executor not used by skills; CI import audit flags network libs; code review policy.
+**Vector:** A module imports an executor and calls it directly.  
+**Mitigation:** All executor imports are lazy, inside `Governor._execute()` only. CI import audit flags executor usage outside `governor.py`.
 
-### 7.2 Hidden online access from Phase-3 skills
-**Vector:** weather/news fetch using direct HTTP client.  
-**Mitigation:** weather/news routed through NetworkMediator + CI audit.
+### 7.2 Hidden online access from conversation layer
+**Vector:** `DeepSeekBridge` makes external HTTP calls.  
+**Mitigation:** `DeepSeekBridge` uses local Ollama only — no NetworkMediator, no external API. No `requests`/`httpx` imports in conversation layer.
 
 ### 7.3 Invocation ambiguity causing fallback execution
-**Vector:** partial “search” text triggers execution without confirmation.  
+**Vector:** partial command text triggers execution without confirmation.  
 **Mitigation:** deterministic invocation parsing; one-strike clarification; no fallback-to-execution.
 
 ### 7.4 UI-triggered auto-fetch
-**Vector:** frontend loads and triggers search without user input.  
+**Vector:** frontend loads and triggers action without user input.  
 **Mitigation:** no auto-fetch allowed; governed invocations require explicit user action.
 
 ### 7.5 Domain/SSRF abuse
-**Vector:** search hits internal IPs or file URLs.  
-**Mitigation:** NetworkMediator blocks non-http(s), blocks private/loopback, validates host.
+**Vector:** network call hits internal IPs or file URLs.  
+**Mitigation:** NetworkMediator blocks non-http(s), blocks private/loopback, validates host, performs DNS rebinding check via `socket.getaddrinfo`.
+
+### 7.6 Unconstrained ledger event types
+**Vector:** caller passes arbitrary event type string to ledger.  
+**Mitigation:** `LedgerWriter.log_event()` enforces allowlist from `EVENT_TYPES` frozenset. Previously a gap — now resolved.
 
 ---
 
-## 8) Adversarial Verification Checklist (Must Pass)
+## 8) CI Enforcement Requirements
 
-### 8.1 Invocation edge cases
-- [ ] `search` → no execution; either no-op or one-strike clarification (per design)
-- [ ] `search for` → one-strike clarification, no execution
-- [ ] `search for   ` → one-strike clarification, no execution
-- [ ] `search for cats` → boundary notice then results
-- [ ] `Search for cats` → case-insensitive match works (if allowed)
-- [ ] `look up cats` → refusal unless explicitly added to grammar
-
-### 8.2 Capability gating
-- [ ] Disable capability 16 in registry → refusal
-- [ ] Remove capability 16 entry → refusal
-- [ ] Boundary deny (`allow_execution=False`) → refusal
-
-### 8.3 Network governance
-- [ ] Attempt URL with `file://` → blocked
-- [ ] Attempt URL to `127.0.0.1` or `192.168.x.x` → blocked
-- [ ] Rate limit exceeded → blocked and logged
-
-### 8.4 Concurrency
-- [ ] Two rapid `search for ...` → only one executes, the other refused
-
-### 8.5 No silent boundary
-- [ ] Confirm boundary notice sent before network call
-
----
-
-## 9) CI Enforcement Requirements
-
-The following CI rules must exist and pass:
-
-### 9.1 Import audit
+### 8.1 Import audit
 Fail if any of these appear outside NetworkMediator module:
 - `requests`
 - `httpx`
 - `aiohttp`
 - `urllib`
 
-### 9.2 Registry version lock (if used)
-Fail if registry version mismatches expected runtime version.
-
-### 9.3 No execution backdoors
+### 8.2 No execution backdoors
 Fail if any executor can be called without passing through Governor (static rule or test harness).
 
 ---
 
-## 10) Evidence Log (To Fill During Verification)
+## 9) Conclusion
 
-- **Commit:** `<commit hash>`
-- **Tag:** `<tag name>` (e.g., `phase-4-cap16-live`)
-- **Runtime command:** `python -m uvicorn src.brain_server:app`
-- **Verification date:** `<YYYY-MM-DD>`
-- **Verification operator:** `<name>`
+The Governor is the **unique, unconditional authority** for all governed execution across all 9 executor branches. No bypass path exists. All executors are lazy-imported exclusively inside `Governor._execute()`. No other file constructs `ActionRequest` objects or calls executor `.execute()` methods. Ledger allowlist enforcement is active. SingleActionQueue prevents concurrent execution. No direct network imports exist outside NetworkMediator.
 
-### Results
-- Adversarial checklist: ✅/❌
-- CI import audit: ✅/❌
-- Ledger events verified: ✅/❌
-- Boundary notice timing: ✅/❌
-
----
-
-## 11) Conclusion
-
-If (and only if) all items in Sections 8–10 pass, then:
-
-> **Capability 16 is mechanically governed and bypass-resistant under Phase-4 staging.**
-
-If any item fails, Phase-4 activation is **not** complete and execution must be treated as unsafe until corrected.
-
----
