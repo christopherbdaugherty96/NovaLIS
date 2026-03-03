@@ -1,12 +1,12 @@
 # NovaLIS Phase-4 / Phase-7 Design-to-Code Comparison
-**Date:** 2026-02-25  
+**Date:** 2026-03-03  
 **Scope:** Compare design intent in `docs/design/Phase 4*` and `docs/design/Phase 7` against mechanically reachable runtime code in `nova_backend/src/`.
 
 ---
 
 ## 1) Outcome in One Paragraph
 
-The codebase currently implements a **Phase-4 staging core** with a real Governor path, but only two governed execution capabilities are live (`16` search, `17` open preset website). Most Phase-4.2/4.5 and nearly all Phase-7 design surfaces (continuous awareness, autonomous operation tiers, multi-agent cognition, durable user memory architecture, house intelligence mode, end-state presence model) are **not implemented in active runtime** and remain design/planning artifacts.
+The codebase currently implements a **Phase-4 staging core** with a real Governor path. Three governed execution capabilities are fully functional (`16` search, `17` open preset website, `18` TTS with a known param wiring issue), four are wired but their executors are stubs or partial (`19` volume, `20` media, `21` brightness — all response stubs; `32` OS diagnostics — partial), and two remain disabled (`22`, `48`). Most Phase-4.2/4.5 and nearly all Phase-7 design surfaces (continuous awareness, autonomous operation tiers, multi-agent cognition, durable user memory architecture, house intelligence mode, end-state presence model) are **not implemented in active runtime** and remain design/planning artifacts.
 
 ---
 
@@ -68,8 +68,9 @@ The codebase currently implements a **Phase-4 staging core** with a real Governo
 Code comparison baseline:
 - Runtime entrypoints: FastAPI + WebSocket + STT router.
 - Governed path: `GovernorMediator` → `Governor` → `ExecuteBoundary` / `SingleActionQueue` / executors.
-- Active governed capabilities: 16 (search), 17 (open preset website).
-- Registry-listed but disabled capabilities: 18, 19, 20, 21, 32, 48.
+- Active governed capabilities (fully functional): 16 (search), 17 (open preset website), 18 (TTS — wired with known param issue).
+- Active governed capabilities (wired stub/partial): 19 (volume — stub), 20 (media — stub), 21 (brightness — stub), 32 (OS diagnostics — partial).
+- Registry-listed but disabled capabilities: 22, 48.
 - Skill layer still active for weather/news/system/general chat.
 
 ---
@@ -79,9 +80,9 @@ Code comparison baseline:
 | Theme from Phase 4 / 7 Docs | Design Intent (condensed) | Current Code Reality | Match Level |
 |---|---|---|---|
 | Governor as authority choke point | All executable effects routed through governance spine | Governor exists and gates governed actions with queue, phase gate, and ledger steps | **Implemented (Core)** |
-| Explicit invocation for actions | Deterministic user-triggered execution only | Parser recognizes literal `search/look up/research` and `open <name>` | **Implemented (Narrow)** |
-| Broader capability surface (Phase 4+) | Additional capabilities beyond search/open (device/media/files/etc.) | IDs exist in registry but are disabled and have no parser or executor branch | **Declared, Not Implemented** |
-| Governed TTS / speech governance | Rich governed speech output protocol | Runtime has chat + widget responses and STT ingestion, but no governed TTS execution layer matching spec documents | **Partially Implemented / Divergent** |
+| Explicit invocation for actions | Deterministic user-triggered execution only | Parser recognizes literal `search/look up/research`, `open <name>`, `speak that/read that/say it`, `volume up/down/set volume`, `play/pause/resume`, `brightness up/down/set brightness`, `system check/system status` | **Implemented (Broader surface)** |
+| Broader capability surface (Phase 4+) | Additional capabilities beyond search/open (device/media/files/etc.) | IDs 19/20/21/32 are registry-enabled with parser and executor wired, but executors are stubs or partial — no real OS effect. IDs 22/48 disabled with no parser | **Wired (Stub/Partial) for 19/20/21/32; Declared for 22/48** |
+| Governed TTS / speech governance | Rich governed speech output protocol | Cap 18 TTS executor exists using `pyttsx3`; full governor pipeline wired; known issue: `GovernorMediator` sends empty params so text must be injected by `brain_server` before OS-level speech is produced | **Implemented (with known defect)** |
 | Orb/presence framework (Phase 4.2/4.5) | Presence-aware UI/behavior layer and stronger orb semantics | Frontend orb status exists as descriptive STT state text only; no deeper presence cognition runtime | **UI Stub Only** |
 | Continuous awareness / background cognition (Phase 7) | Ongoing awareness, long-running house intelligence behaviors | No background cognition engine or autonomous loop in active code paths | **Not Implemented** |
 | Autonomous operation principles (Phase 7) | Governed autonomy tiers and self-directed action policies | Runtime remains request-driven with no autonomous task initiation path | **Not Implemented** |
@@ -96,8 +97,8 @@ Code comparison baseline:
 
 ### G-01 — Phase-4 docs imply wider live execution than code currently provides
 - **Observed:** Many design docs discuss expanded execution capability families.
-- **Code reality:** Only cap 16 and cap 17 are executable today.
-- **Impact:** Risk of operator confusion about what can run now.
+- **Code reality:** Caps 16 and 17 are fully functional; cap 18 is functional with a known param wiring issue; caps 19/20/21 are wired but executors are stubs with no real OS effect; cap 32 is wired with partial data.
+- **Impact:** Risk of operator confusion about what can run now vs what has real OS effect.
 
 ### G-02 — Phase-7 autonomy language exceeds current deterministic request/response runtime
 - **Observed:** Phase-7 corpus emphasizes autonomous/continuous behavior models.
@@ -113,6 +114,11 @@ Code comparison baseline:
 - **Observed:** Presence doctrine and orb architecture docs describe richer state and agency semantics.
 - **Code reality:** orb status in dashboard reflects STT/UI states (`READY`, `LISTENING`, etc.) and does not drive deep governance behavior.
 - **Impact:** Prevents accidental overclaiming of runtime presence capabilities.
+
+### G-05 — Stub executors present a false success to the user
+- **Observed:** Capabilities 19 (volume), 20 (media), 21 (brightness) return `ActionResult.ok(...)` with a success message.
+- **Code reality:** The executors perform no OS operation. The user receives a "Volume up." or "Playback started." confirmation but nothing changes on the system.
+- **Impact:** Users may believe the system acted when it did not. This is a functional correctness gap that should be resolved before these capabilities are advertised as working.
 
 ---
 
@@ -135,6 +141,6 @@ Code comparison baseline:
 
 ## 8) Summary Verdict
 
-- **Implemented now:** limited Phase-4 governed core + existing deterministic utility skill stack.
+- **Implemented now:** limited Phase-4 governed core (caps 16/17 fully functional; cap 18 functional with known param issue; caps 19/20/21 wired stub; cap 32 wired partial) + existing deterministic utility skill stack.
 - **Planned later:** most Phase-4.2/4.5 and almost all Phase-7 architecture themes.
-- **Action for operators:** use canonical runtime docs + code path verification for present-tense capability claims.
+- **Action for operators:** use canonical runtime docs + code path verification for present-tense capability claims. Treat "Wired (Stub)" capabilities as pipeline scaffolding, not functional features — they produce no real OS effect despite returning success responses.
