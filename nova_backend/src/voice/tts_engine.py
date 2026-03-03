@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import os
 import shutil
 import subprocess
@@ -13,6 +14,8 @@ from uuid import uuid4
 
 from src.audio.audio_task_runner import run_speech_task
 from src.rendering.speech_formatter import SpeechFormatter
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass(frozen=True)
@@ -46,15 +49,29 @@ class SpeechRenderer:
             if not speak_text:
                 return
 
-            piper_bin = shutil.which("piper")
+            # ----- Locate Piper executable (prefer bundled, fallback to PATH) -----
+            project_root = Path(__file__).resolve().parents[2]   # up to nova_backend/
+            bundled_piper = project_root / "tools" / "piper" / "piper.exe"
+            if bundled_piper.exists():
+                piper_bin = str(bundled_piper)
+            else:
+                piper_bin = shutil.which("piper")
+                if not piper_bin:
+                    self._warn_once_missing_piper()
+                    logger.error("Piper CLI not found – TTS unavailable")
+                    return
+
+            # ----- Model path from environment -----
             model_path = os.getenv("NOVA_PIPER_MODEL_PATH", "").strip()
-            if not piper_bin or not model_path:
+            if not model_path:
                 self._warn_once_missing_piper()
+                logger.error("NOVA_PIPER_MODEL_PATH not set – TTS unavailable")
                 return
 
             model_file = Path(model_path)
             if not model_file.exists():
                 self._warn_once_missing_piper()
+                logger.error("Model file not found: %s", model_path)
                 return
 
             temp_dir = Path(os.getenv("TEMP") or tempfile.gettempdir() or "/tmp")
@@ -81,7 +98,8 @@ class SpeechRenderer:
                 timeout=10,
             )
             self._play_wave(output_path)
-        except Exception:
+        except Exception as e:
+            logger.debug("TTS render exception: %s", e)
             return
         finally:
             if output_path:
@@ -168,6 +186,7 @@ class SpeechRenderer:
         if cls._warned_missing_piper:
             return
         cls._warned_missing_piper = True
+        logger.warning("Piper TTS is not available – speech will be disabled.")
 
 
 def stop_speaking() -> None:
