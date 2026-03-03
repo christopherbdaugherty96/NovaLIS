@@ -78,9 +78,44 @@ Events currently emitted in Phase-4 runtime:
 
 ---
 
-## 5. Known Gap
+## 5. Known Gap — RESOLVED
 
-`event_type` is accepted as an unconstrained `str` argument. No allowlist is enforced at the write boundary. Any caller can pass any event type string. This is documented in `PHASE4_CONSTITUTIONAL_MISMATCH_AUDIT.md` as Major severity.
+~~`event_type` is accepted as an unconstrained `str` argument. No allowlist is enforced at the write boundary.~~ **This gap is RESOLVED.**
+
+### Resolution Evidence
+
+`src/ledger/event_types.py` defines the canonical event taxonomy as a `frozenset`:
+
+```python
+EVENT_TYPES = frozenset(
+    {
+        "ACTION_ATTEMPTED",
+        "ACTION_COMPLETED",
+        "SEARCH_QUERY",
+        "WEBPAGE_LAUNCH",
+        "EXTERNAL_NETWORK_CALL",
+        "NETWORK_CALL_FAILED",
+        "MODEL_UPDATED",
+        "EXECUTION_TIMEOUT",
+        "EXECUTION_MEMORY_EXCEEDED",
+    }
+)
+```
+
+`writer.py` imports this allowlist and enforces it at the write boundary:
+
+```python
+from src.ledger.event_types import EVENT_TYPES
+
+def log_event(self, event_type: str, metadata: Dict[str, Any]) -> None:
+    if event_type not in EVENT_TYPES:
+        raise LedgerWriteFailed(f"Unknown ledger event type: {event_type}")
+    # ... write proceeds only if event_type is in the allowlist
+```
+
+Any caller attempting to log an unknown event type receives a `LedgerWriteFailed` exception. Because ledger write failure is fail-closed at the Governor boundary (gate 5), an unknown event type also blocks execution.
+
+**Test reference:** `nova_backend/tests/test_ledger_event_allowlist.py` verifies that unknown event types are rejected and that all canonical event types are accepted.
 
 ---
 
