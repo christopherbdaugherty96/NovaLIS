@@ -4,6 +4,8 @@
 **Head Commit:** `7e9ccc5` — `fix(stt): correct async ffmpeg subprocess with communicate() and error capture`
 **Canonical Authority:** Nova Constitutional Blueprint v1.9 / Nova Truth v3.0
 
+> ⚠️ **This document was written on 2026-02-24 when only Cap 16 was live.** As of 2026-03-03, capabilities 17, 18, 19, 20, 21, and 32 have been wired into the governor pipeline. See `docs/CANONICAL/Master Capability Matrix.md` for current truth. The content below reflects the state as of 2026-02-24 and is preserved for historical reference.
+
 ---
 
 > **Executive Summary:**
@@ -265,6 +267,7 @@ At `18:05:02`, two weather calls fire ~600ms apart. Likely two concurrent WebSoc
 |---|---|---|
 | `docs/RUNTIME_TRUTH.md` | Body still describes Phase-3.5 (`EXECUTION_ENABLED = False`, GovernorMediator as stateless/no-op) | Rewrite body to reflect Phase-4 reality |
 | `docs/STATUS.md` | Stale preamble sentence at top (leftover chat text) | Remove first paragraph |
+| `docs/canonical/NOVA_PHASE4_MASTER_STATUS.md` (this document) | Written 2026-02-24 when only Cap 16 was live; does not reflect caps 17–21 and 32 wired as of 2026-03-03 | This document is now annotated as historical; see `docs/CANONICAL/Master Capability Matrix.md` for current truth |
 
 ---
 
@@ -429,7 +432,13 @@ Not yet designed to implementation level. Locked until Phase 4.2 is complete.
 | SingleActionQueue | ✅ Active | Terminal `[DEBUG] Queue has pending: False` |
 | NetworkMediator | ✅ Active | All outbound calls ledger-logged |
 | Durable ledger | ✅ Active | Append-only, monotonic timestamps |
-| Capability 16 (Web Search) | ✅ Active | 5 confirmed `success: true` executions |
+| Capability 16 (Web Search) | ✅ Active | 5 confirmed `success: true` executions; real HTTP to DuckDuckGo via NetworkMediator |
+| Capability 17 (Open Preset Website) | ✅ Active | Real browser launch via `webbrowser.open`; wired as of 2026-02-26 |
+| Capability 18 (Speak Text / TTS) | ⚠️ Wired with issue | `pyttsx3` engine real; mediator sends empty params — text must be injected by `brain_server` before TTS produces audible output |
+| Capability 19 (Volume Up/Down) | 🔶 Wired (Stub) | Full pipeline wired and registry-enabled; executor returns success message but calls no OS audio API |
+| Capability 20 (Media Play/Pause) | 🔶 Wired (Stub) | Full pipeline wired and registry-enabled; executor returns success message but sends no keypress or OS command |
+| Capability 21 (Brightness Control) | 🔶 Wired (Stub) | Full pipeline wired and registry-enabled; executor returns success message but calls no screen brightness API |
+| Capability 32 (OS Diagnostics) | ⚠️ Wired (Partial) | Real disk stats via `shutil.disk_usage()`; network_status hardcoded; CPU/RAM/process/OS version absent |
 | STT Pipeline | ✅ Stable | Full ffmpeg+Vosk trace in terminal |
 | Weather skill | ✅ Active | HTTP 200 on every poll |
 | News skill | ✅ Active (6/8 sources) | Reuters/AP failing gracefully |

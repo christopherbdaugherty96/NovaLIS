@@ -21,13 +21,33 @@
 |----|------|--------|------------|-------------------|-------|
 | 16 | `governed_web_search` | enabled | low | true | Active; search via NetworkMediator |
 | 17 | `open_website` | enabled | low | false | Active; preset browser launch |
-| 18 | `speak_text` | enabled | low | false | Active; pyttsx3 local TTS |
-| 19 | `volume_up_down` | enabled | low | false | Active; executor + GovernorMediator parser |
-| 20 | `media_play_pause` | enabled | low | false | Active; executor + GovernorMediator parser |
-| 21 | `brightness_control` | enabled | low | false | Active; executor + GovernorMediator parser |
+| 18 | `speak_text` | enabled | low | false | Active; pyttsx3 local TTS engine present; mediator sends empty params — text must be injected by brain_server |
+| 19 | `volume_up_down` | enabled | low | false | Wired (registry + mediator + governor + executor), but executor is RESPONSE STUB — returns success message without calling any OS audio API |
+| 20 | `media_play_pause` | enabled | low | false | Wired (registry + mediator + governor + executor), but executor is RESPONSE STUB — returns success message without sending any keypress or OS command |
+| 21 | `brightness_control` | enabled | low | false | Wired (registry + mediator + governor + executor), but executor is RESPONSE STUB — returns success message without calling any screen brightness API |
 | 22 | `open_file_folder` | disabled | confirm | false | Declared; disabled |
-| 32 | `os_diagnostics` | enabled | low | false | Active; executor present |
+| 32 | `os_diagnostics` | enabled | low | false | Wired; executor uses real shutil.disk_usage() for disk stats but hardcodes network_status — partial implementation |
 | 48 | `multi_source_reporting` | disabled | low | true | Declared; disabled |
+
+---
+
+## ⚠️ Implementation Quality Notes
+
+Not all "enabled" capabilities in the registry are equal. The following three-tier classification applies:
+
+| Tier | Symbol | Meaning | Capabilities |
+|------|--------|---------|-------------|
+| **Fully Implemented** | ✅ | Pipeline wired AND executor performs a real external effect on the OS or network | 16, 17 |
+| **Wired with Issues** | ⚠️ | Pipeline wired, executor has real code but with a known defect or partial implementation | 18 (empty params), 32 (partial data) |
+| **Wired (Stub)** | 🔶 | Full pipeline wired and registry-enabled, but executor returns a success message without performing any real OS operation | 19, 20, 21 |
+| **Disabled** | 🔒 | Registry `enabled: false`; pipeline may or may not exist | 22, 48 |
+
+**Details:**
+- **Cap 18 (speak_text):** The `pyttsx3` TTS engine is real and functional. However, `GovernorMediator` parses the trigger phrases (`speak that`, `read that`, `say it`) and emits `Invocation(capability_id=18, params={})` — an empty params dict. The executor reads `req.params.get("text", "")`, so if `brain_server.py` does not inject a `text` key into params before calling the Governor, TTS will always speak an empty string.
+- **Cap 19 (volume_up_down):** `volume_executor.py` returns `ActionResult.ok(message=f"Volume {action}.")` but never calls any OS audio API (no `pycaw`, no `subprocess`, no `ctypes`). The full pipeline is wired but the executor performs no real OS operation.
+- **Cap 20 (media_play_pause):** `media_executor.py` returns `ActionResult.ok(message="Playback started.")` etc. but never sends any keypress or OS command. Same stub pattern as cap 19.
+- **Cap 21 (brightness_control):** `brightness_executor.py` returns `ActionResult.ok(message=f"Brightness {action}.")` but never calls any screen brightness API. Same stub pattern as caps 19 and 20.
+- **Cap 32 (os_diagnostics):** `os_diagnostics_executor.py` uses `shutil.disk_usage("/")` for real disk stats (total/used/free GB), but `"network_status": "available"` is hardcoded — no actual network probe. CPU usage, RAM usage, process count, and OS version are absent.
 
 ---
 
