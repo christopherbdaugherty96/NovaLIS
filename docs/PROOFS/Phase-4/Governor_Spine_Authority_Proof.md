@@ -37,16 +37,22 @@ Gate 7: Governor._execute(req) → routes to executor
 
 ## 3. Executor Routing Table
 
-`Governor._execute()` (lines 128–203) is the **only place** executors are instantiated. All are lazy-imported inside the method:
+`Governor._execute()` (lines 128–215) is the **only place** executors are instantiated. All are lazy-imported inside the method body (not at module top-level):
 
 | `capability_id` | Import | Executor | Instantiation |
 |---:|---|---|---|
 | 16 | `from src.executors.web_search_executor import WebSearchExecutor` | `WebSearchExecutor(self.network, self._execute_boundary)` | `executor.execute(req)` |
 | 17 | `from src.executors.webpage_launch_executor import WebpageLaunchExecutor` | `WebpageLaunchExecutor(self.ledger)` | `executor.execute(req)` |
 | 18 | `from src.executors.tts_executor import execute_tts` | Function call | `execute_tts(req, ActionResult)` |
+| 19 | `from src.executors.volume_executor import VolumeExecutor` | `VolumeExecutor()` | `executor.execute(req)` |
+| 20 | `from src.executors.media_executor import MediaExecutor` | `MediaExecutor()` | `executor.execute(req)` |
+| 21 | `from src.executors.brightness_executor import BrightnessExecutor` | `BrightnessExecutor()` | `executor.execute(req)` |
+| 22 | `from src.executors.open_folder_executor import OpenFolderExecutor` | `OpenFolderExecutor()` | `executor.execute(req)` |
+| 32 | `from src.executors.os_diagnostics_executor import OSDiagnosticsExecutor` | `OSDiagnosticsExecutor()` | `executor.execute(req)` |
+| 48 | `from src.executors.multi_source_reporting_executor import MultiSourceReportingExecutor` | `MultiSourceReportingExecutor(self.network)` | `executor.execute(req)` |
 | Any other | — | — | `ActionResult.refusal("Execution path not implemented yet.")` |
 
-**Source:** `governor.py` lines 152–173
+**Source:** `governor.py` lines 139–181
 
 ---
 
@@ -72,15 +78,21 @@ The queue is **always** cleared, even on exception. No orphaned pending state is
 
 ## 5. Ledger Lifecycle
 
-Every governed action produces a minimum of two ledger events:
+Every governed action — across **all 9 executor branches** — produces a minimum of two ledger events through the same Governor spine:
 
 | Event | When | Blocking? |
 |---|---|---|
 | `ACTION_ATTEMPTED` | Before `ActionRequest` creation (gate 5) | **Yes** — failure blocks execution |
-| `ACTION_COMPLETED` | After executor returns (line 177–186) | No — best-effort, `LedgerWriteFailed` caught silently |
+| `ACTION_COMPLETED` | After executor returns (line 209–218) | No — best-effort, `LedgerWriteFailed` caught silently |
+
+The `ACTION_ATTEMPTED` → execute → `ACTION_COMPLETED` lifecycle applies identically to capabilities 16, 17, 18, 19, 20, 21, 22, 32, and 48. No capability branch bypasses this lifecycle.
 
 Capability 16 additionally logs `SEARCH_QUERY` (non-blocking, lines 143–150).
 Capability 17 additionally logs `WEBPAGE_LAUNCH` inside its executor (both success and failure paths).
+
+Post-execution guards (lines 183–207) may additionally log `EXECUTION_TIMEOUT` or `EXECUTION_MEMORY_EXCEEDED` if resource limits are breached.
+
+**Ledger event type enforcement:** All event types are validated against the `EVENT_TYPES` frozenset in `src/ledger/event_types.py` before writing. Unknown event types raise `LedgerWriteFailed`, which is fail-closed at the Governor boundary.
 
 ---
 

@@ -25,15 +25,19 @@ Allowed during freeze:
 
 ---
 
-## 2) Frozen Runtime State (as of 2026-02-26)
+## 2) Frozen Runtime State (as of 2026-02-26, amended 2026-03-03)
 
 ### Enabled capabilities (registry‑authoritative)
 - `16` — `governed_web_search` (`enabled: true`)
 - `17` — `open_website` (`enabled: true`)
 - `18` — `speak_text` (`enabled: true`)
+- `19` — `volume_up_down` (`enabled: true`) *(see Section 10)*
+- `20` — `media_play_pause` (`enabled: true`) *(see Section 10)*
+- `21` — `brightness_control` (`enabled: true`) *(see Section 10)*
+- `32` — `os_diagnostics` (`enabled: true`) *(see Section 10)*
 
 ### Declared but disabled
-- `19`, `20`, `21`, `22`, `32`, `48` (`enabled: false`)
+- `22` (`open_file_folder`), `48` (`multi_source_reporting`) (`enabled: false`)
 
 ### Execution gate
 - `GOVERNED_ACTIONS_ENABLED = True` (Phase‑4 runtime unlocked but frozen at current scope).
@@ -117,3 +121,31 @@ Any proposed change that modifies frozen authority behavior must:
 4. Include targeted tests proving no unintended authority expansion.
 
 Without this, modifications are out‑of‑constitution for Phase 4 freeze.
+
+---
+
+## 10) Amendment — Device Control Capabilities Enablement (2026-03-03)
+
+**Scope:** Documentation correction — capabilities 19, 20, 21, 32 were enabled in `registry.json` prior to this amendment. This section documents that enablement.
+
+**Capabilities enabled:**
+
+| ID | Name | Executor | Parser |
+|----|------|----------|--------|
+| 19 | `volume_up_down` | `src/executors/volume_executor.py` (`VolumeExecutor`) | `governor_mediator.py` — `volume up/down`, `set volume <level>` |
+| 20 | `media_play_pause` | `src/executors/media_executor.py` (`MediaExecutor`) | `governor_mediator.py` — `play`, `pause`, `resume` |
+| 21 | `brightness_control` | `src/executors/brightness_executor.py` (`BrightnessExecutor`) | `governor_mediator.py` — `brightness up/down`, `set brightness <level>` |
+| 32 | `os_diagnostics` | `src/executors/os_diagnostics_executor.py` (`OSDiagnosticsExecutor`) | `governor_mediator.py` — `system check`, `system status` |
+
+**Constitutional Statement:**
+
+- All four capabilities execute through the same Governor spine (`Governor._execute()`) as capabilities 16, 17, 18.
+- Same authority chain: GovernorMediator → Governor → ExecuteBoundary → CapabilityRegistry → SingleActionQueue → LedgerWriter → Executor.
+- Same ledger audit: `ACTION_ATTEMPTED` before execution, `ACTION_COMPLETED` after.
+- Same execute boundary: SingleActionQueue prevents concurrent execution.
+- No new authority surface: these are low-risk, local-only, non-networked capabilities. No outbound network calls.
+- No new autonomy, no hidden execution paths, no bypass of authority spine.
+
+**Capabilities remaining disabled:**
+- `22` (`open_file_folder`) — `enabled: false`
+- `48` (`multi_source_reporting`) — `enabled: false`
