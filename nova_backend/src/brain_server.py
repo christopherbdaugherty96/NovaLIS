@@ -31,13 +31,26 @@ from src.conversation.response_style_router import InputNormalizer
 from src.voice.stt_pipeline import STTAckConfig, build_ack_payload
 from src.voice.tts_engine import resolve_speakable_text, nova_speak, stop_speaking
 from src.conversation.clarify_prompts import CLARIFY_PROMPTS
-from src.audit.runtime_auditor import run_runtime_truth_audit, render_runtime_truth_markdown
+from src.audit.runtime_auditor import (
+    run_runtime_truth_audit,
+    render_runtime_truth_markdown,
+    write_current_runtime_state_snapshot,
+)
 
 # -------------------------------------------------
 # App + Logging
 # -------------------------------------------------
 log = logging.getLogger("nova")
 app = FastAPI()
+
+
+@app.on_event("startup")
+async def refresh_runtime_snapshot_on_startup():
+    try:
+        output_path = write_current_runtime_state_snapshot()
+        log.info("Runtime snapshot refreshed at startup: %s", output_path)
+    except Exception:
+        log.exception("Failed to refresh runtime.md snapshot on startup")
 
 # -------------------------------------------------
 # Static Files
