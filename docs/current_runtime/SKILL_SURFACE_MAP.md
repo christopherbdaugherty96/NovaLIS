@@ -4,17 +4,15 @@ Deterministic surface map for skills, conversation modules, and governor capabil
 
 | skill_or_surface | module | surface_type | network_usage | model_usage | capability_id |
 | --- | --- | --- | --- | --- | --- |
-| deepseek_bridge | src/conversation/deepseek_bridge.py | conversation | unknown | ollama_direct |  |
+| deepseek_bridge | src/conversation/deepseek_bridge.py | conversation | unknown | llm_gateway |  |
 | brightness | src/governor/governor_mediator.py | governor_capability | unknown | none | 21 |
 | diagnostics | src/governor/governor_mediator.py | governor_capability | unknown | none | 32 |
 | media | src/governor/governor_mediator.py | governor_capability | unknown | none | 20 |
-| open_folder | src/governor/governor_mediator.py | governor_capability | unknown | none | 22 |
 | open_website | src/governor/governor_mediator.py | governor_capability | unknown | none | 17 |
-| report | src/governor/governor_mediator.py | governor_capability | unknown | none | 48 |
 | search | src/governor/governor_mediator.py | governor_capability | unknown | none | 16 |
 | speak | src/governor/governor_mediator.py | governor_capability | unknown | none | 18 |
 | volume | src/governor/governor_mediator.py | governor_capability | unknown | none | 19 |
-| general_chat | src/skills/general_chat.py | skill | yes | ollama_direct |  |
+| general_chat | src/skills/general_chat.py | skill | yes | llm_gateway |  |
 | news | src/skills/news.py | skill | yes | none |  |
 | news | src/skills/web_search.py | skill | no | none |  |
 | system | src/skills/system.py | skill | no | none |  |

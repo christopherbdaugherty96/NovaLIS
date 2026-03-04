@@ -2,10 +2,9 @@
 
 Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 
-## Direct ollama.chat outside llm_manager
+## Direct ollama.chat outside llm gateway
 
-- nova_backend/src/conversation/deepseek_bridge.py
-- nova_backend/src/skills/general_chat.py
+- None detected.
 
 ## requests/network usage outside NetworkMediator
 
