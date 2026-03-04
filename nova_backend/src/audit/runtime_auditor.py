@@ -1,7 +1,11 @@
 from __future__ import annotations
 
+import hashlib
 import json
+import platform
 import re
+import subprocess
+import sys
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -12,20 +16,52 @@ from src.governor.governor_mediator import GovernorMediator, Invocation
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
+RUNTIME_DOC_DIR = PROJECT_ROOT / "docs" / "current_runtime"
 REGISTRY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "config" / "registry.json"
-RUNTIME_DOC_PATH = PROJECT_ROOT / "docs" / "current_runtime" / "CURRENT_RUNTIME_STATE.md"
+RUNTIME_DOC_PATH = RUNTIME_DOC_DIR / "CURRENT_RUNTIME_STATE.md"
 CANONICAL_RUNTIME_DOC_PATH = PROJECT_ROOT / "docs" / "CANONICAL" / "PHASE_4_RUNTIME_TRUTH.md"
 DEEPSEEK_BRIDGE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "conversation" / "deepseek_bridge.py"
 LLM_MANAGER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "llm" / "llm_manager.py"
+GOVERNOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "governor.py"
+GOVERNOR_MEDIATOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "governor_mediator.py"
+NETWORK_MEDIATOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "network_mediator.py"
+SKILL_REGISTRY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "skill_registry.py"
+LEDGER_WRITER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "ledger" / "writer.py"
+LEDGER_EVENT_TYPES_PATH = PROJECT_ROOT / "nova_backend" / "src" / "ledger" / "event_types.py"
+ESCALATION_POLICY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "conversation" / "escalation_policy.py"
 
-# Read-only allowlist for v1 auditor scope.
-ALLOWED_READ_PATHS = (
-    REGISTRY_PATH,
-    RUNTIME_DOC_PATH,
-    CANONICAL_RUNTIME_DOC_PATH,
-    DEEPSEEK_BRIDGE_PATH,
-    LLM_MANAGER_PATH,
-)
+GOVERNANCE_MATRIX_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX.md"
+SKILL_SURFACE_MAP_PATH = RUNTIME_DOC_DIR / "SKILL_SURFACE_MAP.md"
+BYPASS_SURFACES_PATH = RUNTIME_DOC_DIR / "BYPASS_SURFACES.md"
+RUNTIME_FINGERPRINT_PATH = RUNTIME_DOC_DIR / "RUNTIME_FINGERPRINT.md"
+
+SKILLS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "skills"
+EXECUTORS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "executors"
+CONVERSATION_DIR = PROJECT_ROOT / "nova_backend" / "src" / "conversation"
+
+
+def _build_allowlisted_paths() -> frozenset[Path]:
+    paths = {
+        REGISTRY_PATH,
+        RUNTIME_DOC_PATH,
+        CANONICAL_RUNTIME_DOC_PATH,
+        DEEPSEEK_BRIDGE_PATH,
+        LLM_MANAGER_PATH,
+        GOVERNOR_PATH,
+        GOVERNOR_MEDIATOR_PATH,
+        NETWORK_MEDIATOR_PATH,
+        SKILL_REGISTRY_PATH,
+        LEDGER_WRITER_PATH,
+        LEDGER_EVENT_TYPES_PATH,
+        ESCALATION_POLICY_PATH,
+    }
+    paths.update(SKILLS_DIR.glob("*.py"))
+    paths.update(EXECUTORS_DIR.glob("*.py"))
+    paths.update(CONVERSATION_DIR.glob("*.py"))
+    return frozenset(paths)
+
+
+ALLOWED_READ_PATHS = _build_allowlisted_paths()
 
 # Minimal explicit phrase probes used to map mediator surfaces.
 MEDIATOR_TRIGGER_PROBES: dict[str, str] = {
@@ -133,7 +169,7 @@ def _detect_direct_model_call_bypass() -> dict[str, Any]:
     llm_manager_src = _safe_read(LLM_MANAGER_PATH)
 
     return {
-        "deepseek_uses_ollama_chat_directly": "ollama.chat(" in deepseek_src,
+        "deepseek_uses_ollama_chat_directly": "ollama.chat" in deepseek_src,
         "llm_manager_generate_present": "def generate(" in llm_manager_src,
     }
 
@@ -144,6 +180,229 @@ def _derive_status(hard_fail_count: int, warning_count: int) -> str:
     if warning_count > 0:
         return "warn"
     return "pass"
+
+
+def _governor_enforcement_summary() -> dict[str, bool]:
+    governor_src = _safe_read(GOVERNOR_PATH)
+    network_src = _safe_read(NETWORK_MEDIATOR_PATH)
+    ledger_src = _safe_read(LEDGER_WRITER_PATH)
+
+    return {
+        "single_action_queue_enforced": "SingleActionQueue" in governor_src and "has_pending" in governor_src,
+        "execution_timeout_guard_active": "MAX_EXECUTION_TIME" in governor_src,
+        "dns_rebinding_protection_active": "socket.getaddrinfo" in network_src,
+        "ledger_logging_active": "log_event(" in governor_src or "log_event(" in network_src,
+        "execution_gate_enabled": bool(GOVERNED_ACTIONS_ENABLED),
+    }
+
+
+def _network_mediated_capability_ids(governor_source: str) -> list[int]:
+    mediated: set[int] = set()
+    current_cap: int | None = None
+    for line in governor_source.splitlines():
+        cap_match = re.search(r"req\.capability_id\s*==\s*(\d+)", line)
+        if cap_match:
+            current_cap = int(cap_match.group(1))
+            continue
+        if current_cap is not None and "self.network" in line:
+            mediated.add(current_cap)
+    return sorted(mediated)
+
+
+def _derive_capability_governance_rows(registry: dict[str, Any]) -> list[dict[str, Any]]:
+    governor_src = _safe_read(GOVERNOR_PATH)
+    mediated_ids = set(_network_mediated_capability_ids(governor_src))
+    enforce = _governor_enforcement_summary()
+
+    rows: list[dict[str, Any]] = []
+    for capability in registry.get("capabilities", []):
+        cid = int(capability.get("id", -1))
+        risk_level = str(capability.get("risk_level", ""))
+        confirmation_required = risk_level == "confirm"
+        network_access = cid in mediated_ids
+
+        if cid == 18:
+            authority_class = "speech_output"
+            execution_surface = "Governor → Speech"
+        elif confirmation_required:
+            authority_class = "confirm_required"
+            execution_surface = "Governor → Executor"
+        elif network_access:
+            authority_class = "read_only"
+            execution_surface = "Governor → NetworkMediator"
+        elif capability.get("data_exfiltration") is True:
+            authority_class = "read_only"
+            execution_surface = "Governor → Executor"
+        else:
+            authority_class = "system_action"
+            execution_surface = "Governor → Executor"
+
+        rows.append(
+            {
+                "id": cid,
+                "name": capability.get("name", ""),
+                "enabled": bool(capability.get("enabled", False)),
+                "status": capability.get("status", ""),
+                "phase_introduced": capability.get("phase_introduced", ""),
+                "risk_level": risk_level,
+                "data_exfiltration": bool(capability.get("data_exfiltration", False)),
+                "authority_class": authority_class,
+                "confirmation_required": confirmation_required,
+                "network_access": network_access,
+                "execution_surface": execution_surface,
+                "execution_gate": enforce["execution_gate_enabled"],
+                "single_action_queue": enforce["single_action_queue_enforced"],
+                "ledger_allowlist": "event_type not in EVENT_TYPES" in _safe_read(LEDGER_WRITER_PATH),
+                "dns_rebinding_guard": enforce["dns_rebinding_protection_active"],
+                "timeout_guard": enforce["execution_timeout_guard_active"],
+            }
+        )
+
+    return sorted(rows, key=lambda r: r["id"])
+
+
+def _skill_surface_rows() -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+
+    for path in sorted(SKILLS_DIR.glob("*.py")):
+        src = _safe_read(path)
+        if not src.strip() or path.name == "__init__.py":
+            continue
+        name_match = re.search(r'^\s*name\s*=\s*"([^"]+)"', src, re.MULTILINE)
+        skill_name = name_match.group(1) if name_match else path.stem
+        network_usage = "yes" if ("NetworkMediator" in src or "self.network" in src) else "no"
+        if "ollama.chat" in src:
+            model_usage = "ollama_direct"
+        elif "LLMManager" in src or "llm_manager" in src:
+            model_usage = "manager"
+        else:
+            model_usage = "none"
+        rows.append(
+            {
+                "name": skill_name,
+                "module": f"src/skills/{path.name}",
+                "surface_type": "skill",
+                "network_usage": network_usage,
+                "model_usage": model_usage,
+            }
+        )
+
+    deepseek_src = _safe_read(DEEPSEEK_BRIDGE_PATH)
+    rows.append(
+        {
+            "name": "deepseek_bridge",
+            "module": "src/conversation/deepseek_bridge.py",
+            "surface_type": "conversation",
+            "network_usage": "unknown",
+            "model_usage": "ollama_direct" if "ollama.chat" in deepseek_src else "none",
+        }
+    )
+
+    mediator_map = _mediator_surface_map()
+    for probe in mediator_map["probes"]:
+        if probe["capability_id"] is None:
+            continue
+        rows.append(
+            {
+                "name": probe["group"],
+                "module": "src/governor/governor_mediator.py",
+                "surface_type": "governor_capability",
+                "network_usage": "unknown",
+                "model_usage": "none",
+                "capability_id": str(probe["capability_id"]),
+            }
+        )
+
+    dedup = {(r.get("name"), r.get("module"), r.get("surface_type")): r for r in rows}
+    return sorted(dedup.values(), key=lambda r: (r.get("surface_type", ""), r.get("name", "")))
+
+
+def _find_direct_ollama_calls_outside_manager() -> list[str]:
+    offenders: list[str] = []
+    for path in sorted(ALLOWED_READ_PATHS):
+        if path.suffix != ".py":
+            continue
+        rel = path.relative_to(PROJECT_ROOT)
+        if rel.as_posix() in {"nova_backend/src/llm/llm_manager.py", "nova_backend/src/llm/llm_manager_vlock.py"}:
+            continue
+        src = _safe_read(path)
+        if "ollama.chat" in src:
+            offenders.append(rel.as_posix())
+    return offenders
+
+
+def _find_requests_usage_outside_network_mediator() -> list[str]:
+    offenders: list[str] = []
+    allowed_requests_users = {
+        "nova_backend/src/governor/network_mediator.py",
+        "nova_backend/src/llm/llm_manager.py",
+        "nova_backend/src/llm/llm_manager_vlock.py",
+    }
+    for path in sorted(ALLOWED_READ_PATHS):
+        if path.suffix != ".py":
+            continue
+        rel = path.relative_to(PROJECT_ROOT).as_posix()
+        src = _safe_read(path)
+        if "import requests" in src or "requests." in src:
+            if rel not in allowed_requests_users:
+                offenders.append(rel)
+    return offenders
+
+
+def _executor_paths_outside_governor() -> list[str]:
+    paths: list[str] = []
+    for path in sorted(EXECUTORS_DIR.glob("*.py")):
+        if path.name == "__init__.py":
+            continue
+        paths.append(path.relative_to(PROJECT_ROOT).as_posix())
+    return paths
+
+
+def _runtime_fingerprint(registry_enabled_ids: list[int]) -> dict[str, str]:
+    commit_hash = "unknown"
+    dirty = "unknown"
+    try:
+        result = subprocess.run(
+            ["git", "rev-parse", "HEAD"],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        commit_hash = result.stdout.strip() or "unknown"
+    except Exception:
+        commit_hash = "unknown"
+
+    try:
+        status = subprocess.run(
+            ["git", "status", "--porcelain"],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        dirty = "true" if status.stdout.strip() else "false"
+    except Exception:
+        dirty = "unknown"
+
+    enabled_hash = hashlib.sha256(json.dumps(registry_enabled_ids, sort_keys=True).encode("utf-8")).hexdigest()
+
+    return {
+        "git_commit_hash": commit_hash,
+        "git_dirty": dirty,
+        "python_version": sys.version.split()[0],
+        "platform": platform.platform(),
+        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "enabled_capability_ids_hash": enabled_hash,
+        "phase_marker": "Phase-4 runtime active",
+    }
+
+
+def _path_for_report(path: Path) -> str:
+    try:
+        return str(path.relative_to(PROJECT_ROOT))
+    except Exception:
+        return str(path)
 
 
 def _build_discrepancies(
@@ -212,7 +471,7 @@ def _build_discrepancies(
                 severity="warning",
                 code="RUNTIME_DOC_MISSING",
                 message="docs/current_runtime/CURRENT_RUNTIME_STATE.md is missing.",
-                details={"path": str(RUNTIME_DOC_PATH.relative_to(PROJECT_ROOT))},
+                details={"path": _path_for_report(RUNTIME_DOC_PATH)},
             )
         )
 
@@ -222,7 +481,7 @@ def _build_discrepancies(
                 severity="warning",
                 code="DIRECT_MODEL_CALL_BYPASS",
                 message="DeepSeekBridge appears to call ollama.chat directly instead of a centralized LLM gateway.",
-                details={"path": str(DEEPSEEK_BRIDGE_PATH.relative_to(PROJECT_ROOT))},
+                details={"path": _path_for_report(DEEPSEEK_BRIDGE_PATH)},
             )
         )
 
@@ -267,10 +526,10 @@ def run_runtime_truth_audit() -> dict[str, Any]:
             "execution_gate_enabled": execution_gate_enabled,
         },
         "inputs": {
-            "allowlisted_paths": [str(path.relative_to(PROJECT_ROOT)) for path in ALLOWED_READ_PATHS],
-            "registry_path": str(REGISTRY_PATH.relative_to(PROJECT_ROOT)),
-            "runtime_doc_path": str(RUNTIME_DOC_PATH.relative_to(PROJECT_ROOT)),
-            "canonical_runtime_doc_path": str(CANONICAL_RUNTIME_DOC_PATH.relative_to(PROJECT_ROOT)),
+            "allowlisted_paths": [_path_for_report(path) for path in sorted(ALLOWED_READ_PATHS)],
+            "registry_path": _path_for_report(REGISTRY_PATH),
+            "runtime_doc_path": _path_for_report(RUNTIME_DOC_PATH),
+            "canonical_runtime_doc_path": _path_for_report(CANONICAL_RUNTIME_DOC_PATH),
         },
         "checks": {
             "model_path_signals": model_signals,
@@ -316,6 +575,115 @@ def render_runtime_truth_markdown(report: dict[str, Any]) -> str:
     return "\n".join(lines).strip() + "\n"
 
 
+def render_governance_matrix_markdown(registry: dict[str, Any]) -> str:
+    rows = _derive_capability_governance_rows(registry)
+    lines = [
+        "# GOVERNANCE_MATRIX",
+        "",
+        "Deterministic capability governance matrix derived from allowlisted runtime sources.",
+        "",
+        "| id | name | enabled | status | phase_introduced | risk_level | data_exfiltration | authority_class | confirmation_required | network_access | execution_surface | execution_gate | single_action_queue | ledger_allowlist | dns_rebinding_guard | timeout_guard |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+    ]
+    for row in rows:
+        lines.append(
+            "| {id} | {name} | {enabled} | {status} | {phase_introduced} | {risk_level} | {data_exfiltration} | {authority_class} | {confirmation_required} | {network_access} | {execution_surface} | {execution_gate} | {single_action_queue} | {ledger_allowlist} | {dns_rebinding_guard} | {timeout_guard} |".format(
+                **row
+            )
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Derivation notes",
+            "",
+            "- authority_class derivation: `speech_output` for capability 18, `confirm_required` when risk_level is `confirm`, `read_only` for network-mediated/data-exfil surfaces, else `system_action`.",
+            "- network_access is derived from Governor execution branches that pass `self.network` to an executor.",
+            "- execution_gate/single_action_queue/dns_rebinding_guard/timeout_guard/ledger_allowlist are code-presence checks from allowlisted modules.",
+            "- If a field cannot be proven from allowlisted runtime sources, value must be `unknown` (none currently unresolved under present code).",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def render_skill_surface_map_markdown() -> str:
+    rows = _skill_surface_rows()
+    lines = [
+        "# SKILL_SURFACE_MAP",
+        "",
+        "Deterministic surface map for skills, conversation modules, and governor capability routes.",
+        "",
+        "| skill_or_surface | module | surface_type | network_usage | model_usage | capability_id |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+    for row in rows:
+        lines.append(
+            f"| {row.get('name', '')} | {row.get('module', '')} | {row.get('surface_type', '')} | {row.get('network_usage', 'unknown')} | {row.get('model_usage', 'unknown')} | {row.get('capability_id', '')} |"
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Escalation vs governed execution",
+            "",
+            "- `ALLOW_ANALYSIS_ONLY` is represented in `src/conversation/escalation_policy.py` and used by `GeneralChatSkill` as analysis-only output path.",
+            "- Governed capabilities are routed by `GovernorMediator.parse_governed_invocation(...)` and executed via `Governor.handle_governed_invocation(...)`.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def render_bypass_surfaces_markdown() -> str:
+    ollama_offenders = _find_direct_ollama_calls_outside_manager()
+    requests_offenders = _find_requests_usage_outside_network_mediator()
+    executor_surfaces = _executor_paths_outside_governor()
+
+    lines = [
+        "# BYPASS_SURFACES",
+        "",
+        "Read-only truth report of detectable bypass indicators from allowlisted runtime sources.",
+        "",
+        "## Direct ollama.chat outside llm_manager",
+        "",
+    ]
+
+    if ollama_offenders:
+        lines.extend(f"- {path}" for path in ollama_offenders)
+    else:
+        lines.append("- None detected.")
+
+    lines.extend(["", "## requests/network usage outside NetworkMediator", ""])
+    if requests_offenders:
+        lines.extend(f"- {path}" for path in requests_offenders)
+    else:
+        lines.append("- None detected.")
+
+    lines.extend(["", "## Executor callable paths outside governor", ""])
+    lines.append("- Architectural constraint: executors exist as importable callables, but governed runtime routes execution through Governor branches.")
+    lines.extend(f"- {path}" for path in executor_surfaces)
+    lines.append("")
+    return "\n".join(lines)
+
+
+def render_runtime_fingerprint_markdown(registry_enabled_ids: list[int]) -> str:
+    fp = _runtime_fingerprint(registry_enabled_ids)
+    lines = [
+        "# RUNTIME_FINGERPRINT",
+        "",
+        f"- git_commit_hash: {fp['git_commit_hash']}",
+        f"- git_dirty: {fp['git_dirty']}",
+        f"- python_version: {fp['python_version']}",
+        f"- platform: {fp['platform']}",
+        f"- generated_at_utc: {fp['generated_at_utc']}",
+        f"- enabled_capability_ids_hash: {fp['enabled_capability_ids_hash']}",
+        f"- phase_marker: {fp['phase_marker']}",
+        "",
+    ]
+    return "\n".join(lines)
+
+
 def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict[str, Any]) -> str:
     summary = report.get("summary", {})
     generated_at = report.get("generated_at_utc", "")
@@ -323,6 +691,13 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     capabilities = registry.get("capabilities", [])
     enabled_ids = [int(item["id"]) for item in capabilities if item.get("enabled") is True]
     disabled_ids = [int(item["id"]) for item in capabilities if item.get("enabled") is not True]
+
+    governance_rows = _derive_capability_governance_rows(registry)
+    enforcement = _governor_enforcement_summary()
+    model_signals = report.get("checks", {}).get("model_path_signals", {})
+    network_caps = sorted({row["id"] for row in governance_rows if row["network_access"] is True})
+    skill_rows = [r for r in _skill_surface_rows() if r.get("surface_type") == "governor_capability" and r.get("capability_id")]
+    fingerprint = _runtime_fingerprint(sorted(enabled_ids))
 
     lines = [
         "# CURRENT_RUNTIME_STATE.md",
@@ -362,6 +737,51 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     lines.extend(
         [
             "",
+            "## Capability Governance Matrix",
+            "",
+            "| id | name | enabled | authority_class | confirmation_required | network_access | execution_layer |",
+            "| --- | --- | --- | --- | --- | --- | --- |",
+        ]
+    )
+    for row in governance_rows:
+        lines.append(
+            f"| {row['id']} | {row['name']} | {row['enabled']} | {row['authority_class']} | {row['confirmation_required']} | {row['network_access']} | {row['execution_surface']} |"
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Governor Enforcement Summary",
+            "",
+            f"- single_action_queue_enforced: {enforcement['single_action_queue_enforced']}",
+            f"- execution_timeout_guard_active: {enforcement['execution_timeout_guard_active']}",
+            f"- dns_rebinding_protection_active: {enforcement['dns_rebinding_protection_active']}",
+            f"- ledger_logging_active: {enforcement['ledger_logging_active']}",
+            f"- execution_gate_enabled: {enforcement['execution_gate_enabled']}",
+            "",
+            "## Network Surface Summary",
+            "",
+            f"- Capabilities using NetworkMediator: {network_caps}",
+            f"- Direct LLM calls detected: deepseek_uses_ollama_chat_directly={model_signals.get('deepseek_uses_ollama_chat_directly', False)}",
+            f"- Allowed_analysis_only surfaces: escalation_policy.ALLOW_ANALYSIS_ONLY={('ALLOW_ANALYSIS_ONLY' in _safe_read(ESCALATION_POLICY_PATH))}",
+            "",
+            "## Skill → Capability Routing Map",
+            "",
+        ]
+    )
+
+    for row in skill_rows:
+        lines.append(f"- {row['name']} -> capability_id={row['capability_id']}")
+
+    lines.extend(
+        [
+            "",
+            "## Runtime Fingerprint",
+            "",
+            f"- git_commit_hash: {fingerprint['git_commit_hash']}",
+            f"- generated_at_utc: {fingerprint['generated_at_utc']}",
+            f"- phase_marker: {fingerprint['phase_marker']}",
+            "",
             "## Mediator mapped capability IDs",
             "",
             f"- {summary.get('mediator_mapped_capability_ids', [])}",
@@ -383,6 +803,25 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     return "\n".join(lines).strip() + "\n"
 
 
+def write_runtime_governance_docs() -> dict[str, Path]:
+    registry = _load_registry()
+    enabled_ids = _enabled_registry_ids(registry)
+
+    RUNTIME_DOC_DIR.mkdir(parents=True, exist_ok=True)
+
+    GOVERNANCE_MATRIX_PATH.write_text(render_governance_matrix_markdown(registry), encoding="utf-8")
+    SKILL_SURFACE_MAP_PATH.write_text(render_skill_surface_map_markdown(), encoding="utf-8")
+    BYPASS_SURFACES_PATH.write_text(render_bypass_surfaces_markdown(), encoding="utf-8")
+    RUNTIME_FINGERPRINT_PATH.write_text(render_runtime_fingerprint_markdown(enabled_ids), encoding="utf-8")
+
+    return {
+        "governance_matrix": GOVERNANCE_MATRIX_PATH.resolve(),
+        "skill_surface_map": SKILL_SURFACE_MAP_PATH.resolve(),
+        "bypass_surfaces": BYPASS_SURFACES_PATH.resolve(),
+        "runtime_fingerprint": RUNTIME_FINGERPRINT_PATH.resolve(),
+    }
+
+
 def write_current_runtime_state_snapshot(path: Path = RUNTIME_DOC_PATH) -> Path:
     report = run_runtime_truth_audit()
     registry = _load_registry()
@@ -390,4 +829,8 @@ def write_current_runtime_state_snapshot(path: Path = RUNTIME_DOC_PATH) -> Path:
 
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(markdown, encoding="utf-8")
+
+    # Companion governance docs for read-only introspection.
+    write_runtime_governance_docs()
+
     return path.resolve()
