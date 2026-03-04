@@ -13,6 +13,7 @@ from typing import Any, Dict, Optional
 from uuid import uuid4
 
 from src.audio.audio_task_runner import run_speech_task
+from src.conversation.response_formatter import ResponseFormatter
 from src.rendering.speech_formatter import SpeechFormatter
 
 logger = logging.getLogger(__name__)
@@ -208,7 +209,7 @@ def resolve_speakable_text(action_result: Any) -> str:
     data: Dict[str, Any] = getattr(action_result, "data", {}) or {}
     speakable = (data.get("speakable_text") or "").strip()
     if speakable:
-        return speakable
+        return ResponseFormatter.to_speakable_text(speakable)
 
     message = getattr(action_result, "user_message", "") or getattr(action_result, "message", "")
-    return (message or "").strip()
+    return ResponseFormatter.to_speakable_text((message or "").strip())
