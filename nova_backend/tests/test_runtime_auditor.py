@@ -23,6 +23,20 @@ def test_mediator_vs_enabled_mismatch_detection_and_execution_gate_warning():
     assert "EXECUTION_GATE_DISABLED" in codes
 
 
+def test_enabled_id_extraction_ignores_non_enabled_truthy_columns():
+    markdown = """
+## Capability table
+| id | name | enabled | status | risk_level | data_exfiltration |
+| --- | --- | --- | --- | --- | --- |
+| 16 | a | True | active | low | True |
+| 48 | b | False | active | low | True |
+## Runtime truth discrepancies
+"""
+    from src.audit.runtime_auditor import _extract_enabled_ids_from_markdown
+
+    assert _extract_enabled_ids_from_markdown(markdown) == [16]
+
+
 def test_missing_enabled_mediator_route_is_hard_fail():
     discrepancies = _build_discrepancies(
         runtime_doc_enabled_ids=[16, 17],

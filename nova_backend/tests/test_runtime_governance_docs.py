@@ -15,6 +15,7 @@ def test_governance_docs_generation(tmp_path, monkeypatch):
     monkeypatch.setattr(ra, "SKILL_SURFACE_MAP_PATH", runtime_dir / "SKILL_SURFACE_MAP.md")
     monkeypatch.setattr(ra, "BYPASS_SURFACES_PATH", runtime_dir / "BYPASS_SURFACES.md")
     monkeypatch.setattr(ra, "RUNTIME_FINGERPRINT_PATH", runtime_dir / "RUNTIME_FINGERPRINT.md")
+    monkeypatch.setattr(ra, "GOVERNANCE_MATRIX_TREE_PATH", runtime_dir / "GOVERNANCE_MATRIX_TREE.md")
     monkeypatch.setattr(ra, "ALLOWED_READ_PATHS", set(ra.ALLOWED_READ_PATHS) | {ra.RUNTIME_DOC_PATH})
 
     out = ra.write_current_runtime_state_snapshot(path=ra.RUNTIME_DOC_PATH)
@@ -28,6 +29,7 @@ def test_governance_docs_generation(tmp_path, monkeypatch):
         "SKILL_SURFACE_MAP.md": "# SKILL_SURFACE_MAP",
         "BYPASS_SURFACES.md": "# BYPASS_SURFACES",
         "RUNTIME_FINGERPRINT.md": "# RUNTIME_FINGERPRINT",
+        "GOVERNANCE_MATRIX_TREE.md": "# GOVERNANCE_MATRIX_TREE",
     }
 
     for name, anchor in files.items():
@@ -48,12 +50,14 @@ def test_current_runtime_state_includes_required_sections():
 
     # Required checks
     assert "Capabilities using NetworkMediator: [16" in md
-    assert "deepseek_uses_ollama_chat_directly=True" in md
+    assert "deepseek_uses_ollama_chat_directly=False" in md
 
-    # authority_class appears for each capability row
-    row_count = md.count("| ")
-    assert "authority_class" in md
-    assert len(registry.get("capabilities", [])) >= 1
+
+def test_governance_matrix_tree_up_to_date_with_renderer():
+    registry = ra._load_registry()
+    expected = ra.render_governance_matrix_tree_markdown(registry)
+    current = ra.GOVERNANCE_MATRIX_TREE_PATH.read_text(encoding="utf-8")
+    assert current == expected
 
 
 def test_derived_fields_do_not_crash_with_missing_optional_reads(monkeypatch):

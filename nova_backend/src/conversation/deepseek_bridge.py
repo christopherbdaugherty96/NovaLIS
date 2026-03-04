@@ -2,6 +2,7 @@ import logging
 from typing import List
 
 from . import prompts
+from src.llm.llm_gateway import generate_chat
 
 logger = logging.getLogger(__name__)
 
@@ -12,22 +13,16 @@ class DeepSeekBridge:
     """Analysis-only cognitive bridge. No network, no capabilities, no execution."""
 
     def analyze(self, user_message: str, context: List[dict], suggested_max_tokens: int = 800) -> str:
-        del suggested_max_tokens
         prompt = prompts.build_analysis_prompt(user_message, context)
-
-        try:
-            import ollama
-        except Exception:
-            return "I can provide a structured analysis, but the analysis model is currently unavailable."
-
-        try:
-            response = ollama.chat(
-                model="phi3:mini",
-                messages=[{"role": "user", "content": prompt}],
-                options={"temperature": 0.2, "num_predict": MAX_TOKENS},
-            )
-            content = response.get("message", {}).get("content", "")
-            return (content or "").strip() or "I can provide a structured analysis, but no analysis output was generated."
-        except Exception as error:
-            logger.error("Analysis call failed: %s", error)
-            return "I can provide a structured analysis, but the analysis model is currently unavailable."
+        response = generate_chat(
+            prompt,
+            mode="analysis_only",
+            safety_profile="analysis",
+            request_id="deepseek_bridge",
+            max_tokens=min(MAX_TOKENS, suggested_max_tokens),
+            temperature=0.2,
+        )
+        if response:
+            return response
+        logger.error("Analysis call failed via centralized gateway.")
+        return "I can provide a structured analysis, but the analysis model is currently unavailable."
