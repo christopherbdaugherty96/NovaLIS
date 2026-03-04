@@ -16,10 +16,14 @@ class SpeechFormatter:
         if not clean:
             return ""
 
+        clean = re.sub(r"https?://\S+", "the link", clean, flags=re.IGNORECASE)
+        clean = re.sub(r"(?:\b[A-Za-z]:\\[^\s]+|/(?:[^\s/]+/)+[^\s]*)", "the file", clean)
+
         # Gentle cadence shaping: pause after labels and list markers.
         clean = re.sub(r":\s+", ": … ", clean)
         clean = re.sub(r"\n\s*[-•]\s+", " … ", clean)
         clean = re.sub(r"\n\s*\d+[.)]\s+", " … ", clean)
+        clean = re.sub(r"\b(Weather|System|News|Summary)\b", r"… \1", clean)
 
         sentences = self.split_sentences(clean)
         if not sentences:

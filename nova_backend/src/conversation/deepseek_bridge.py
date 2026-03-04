@@ -25,4 +25,4 @@ class DeepSeekBridge:
         if response:
             return response
         logger.error("Analysis call failed via centralized gateway.")
-        return "I can provide a structured analysis, but the analysis model is currently unavailable."
+        return "I can provide structured analysis, but it is currently unavailable."

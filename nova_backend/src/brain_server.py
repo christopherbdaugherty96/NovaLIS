@@ -31,6 +31,7 @@ from src.conversation.response_style_router import InputNormalizer
 from src.voice.stt_pipeline import STTAckConfig, build_ack_payload
 from src.voice.tts_engine import resolve_speakable_text, nova_speak, stop_speaking
 from src.conversation.clarify_prompts import CLARIFY_PROMPTS
+from src.conversation.response_formatter import ResponseFormatter
 from src.audit.runtime_auditor import (
     run_runtime_truth_audit,
     render_runtime_truth_markdown,
@@ -82,6 +83,7 @@ app.include_router(stt_router)
 # -------------------------------------------------
 thought_store = ThoughtStore(ttl=300)
 conversation_heuristics = ComplexityHeuristics()
+response_formatter = ResponseFormatter()
 
 # -------------------------------------------------
 # Security Constants
@@ -411,6 +413,15 @@ async def websocket_endpoint(ws: WebSocket):
                 message = getattr(skill_result, "message", "") or ""
                 widget_data = getattr(skill_result, "widget_data", None)
                 result_data = getattr(skill_result, "data", {}) or {}
+
+                payload = response_formatter.format_payload(
+                    message,
+                    speakable_text=(result_data.get("speakable_text") or ""),
+                    structured_data=(result_data.get("structured_data") or {}),
+                )
+                message = payload["user_message"]
+                result_data["speakable_text"] = payload["speakable_text"]
+                result_data["structured_data"] = payload["structured_data"]
 
                 speech_state.last_spoken_text = message
                 session_state["last_response"] = message
