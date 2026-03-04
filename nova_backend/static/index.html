@@ -13,13 +13,12 @@
   <!-- ===============================
        ORB BACKGROUND (NON-INTERACTIVE)
        =============================== -->
- <div class="orb-container">
-  <img
-    class="orb-image"
-    src="/static/orb.png"
-    alt=""
-    aria-hidden="true"
-  />
+ <div class="orb-container" aria-hidden="true">
+  <div class="orb-shell">
+    <canvas id="nova-orb" class="orb-canvas"></canvas>
+    <div class="orb-rim"></div>
+    <div class="orb-bloom"></div>
+  </div>
   <div id="orb-status" class="orb-status">READY</div>
 </div>
 
@@ -121,6 +120,7 @@
   <!-- ===============================
        PHASE-3 DASHBOARD LOGIC
        =============================== -->
+  <script src="/static/orb.js"></script>
   <script src="/static/dashboard.js"></script>
 </body>
 </html>
