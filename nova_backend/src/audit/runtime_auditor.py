@@ -96,7 +96,11 @@ def _extract_enabled_ids_from_markdown(markdown_text: str) -> list[int]:
             found.add(int(bullet_match.group(1)))
             continue
 
+ 
         table_match = re.search(r"^\|\s*(\d+)\s*\|\s*[^|]+\|\s*(enabled|true)\s*\|", lower)
+
+        table_match = re.search(r"\|\s*(\d+)\s*\|.*\|\s*(true|enabled)\s*\|", lower)
+        origin/main
         if table_match:
             found.add(int(table_match.group(1)))
             continue
