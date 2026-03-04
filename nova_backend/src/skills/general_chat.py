@@ -188,10 +188,15 @@ class GeneralChatSkill(BaseSkill):
         initiative = self.policy.conversational_flags(heuristic_result, normalized_query, session_state)
 
         if decision == "ASK_USER":
+            payload = self.formatter.format_payload(
+                "Would you like a deeper analysis?",
+                mode=mode,
+            )
             return SkillResult(
                 success=True,
-                message="Would you like a deeper analysis of that?",
+                message=payload["user_message"],
                 data={
+                    "speakable_text": payload["speakable_text"],
                     "escalation": {
                         "ask_user": True,
                         "original_query": normalized_query,
@@ -218,11 +223,15 @@ class GeneralChatSkill(BaseSkill):
             )
             safe = self.safety.filter(raw)
             safe = self.analysis_safety.sanitize(safe)
-            formatted = self.formatter.format(safe)
+            payload = self.formatter.format_payload(safe, mode=mode)
             return SkillResult(
                 success=True,
-                message=formatted,
-                data={"escalation": {"escalated": True, "thought_data": thought_data}},
+                message=payload["user_message"],
+                data={
+                    "speakable_text": payload["speakable_text"],
+                    "structured_data": payload["structured_data"],
+                    "escalation": {"escalated": True, "thought_data": thought_data},
+                },
                 widget_data=None,
                 skill=self.name,
             )
@@ -231,14 +240,20 @@ class GeneralChatSkill(BaseSkill):
         if local is None:
             return None
 
-        local.message = self.formatter.with_conversational_initiative(
+        local_message = self.formatter.with_conversational_initiative(
             local.message,
             mode=mode,
             allow_clarification=initiative.get("allow_clarification", False),
             allow_branch_suggestion=initiative.get("allow_branch_suggestion", False),
             allow_depth_prompt=initiative.get("allow_depth_prompt", False),
         )
+        payload = self.formatter.format_payload(local_message, mode=mode)
+        local.message = payload["user_message"]
         if initiative.get("allow_clarification"):
             session_state["last_clarification_turn"] = session_state.get("turn_count", 0)
-        local.data = {"escalation": {"escalated": False}}
+        local.data = {
+            "speakable_text": payload["speakable_text"],
+            "structured_data": payload["structured_data"],
+            "escalation": {"escalated": False},
+        }
         return local
