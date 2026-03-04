@@ -14,6 +14,7 @@ from src.governor.governor_mediator import GovernorMediator, Invocation
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 REGISTRY_PATH = PROJECT_ROOT / "src" / "config" / "registry.json"
 RUNTIME_DOC_PATH = PROJECT_ROOT.parent / "docs" / "runtime" / "CURRENT_RUNTIME_STATE.md"
+RUNTIME_SNAPSHOT_PATH = PROJECT_ROOT.parent / "runtime.md"
 CANONICAL_RUNTIME_DOC_PATH = PROJECT_ROOT.parent / "docs" / "CANONICAL" / "PHASE_4_RUNTIME_TRUTH.md"
 DEEPSEEK_BRIDGE_PATH = PROJECT_ROOT / "src" / "conversation" / "deepseek_bridge.py"
 LLM_MANAGER_PATH = PROJECT_ROOT / "src" / "llm" / "llm_manager.py"
@@ -314,3 +315,80 @@ def render_runtime_truth_markdown(report: dict[str, Any]) -> str:
             )
 
     return "\n".join(lines).strip() + "\n"
+
+
+def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict[str, Any]) -> str:
+    summary = report.get("summary", {})
+    generated_at = report.get("generated_at_utc", "")
+
+    capabilities = registry.get("capabilities", [])
+    enabled_ids = [int(item["id"]) for item in capabilities if item.get("enabled") is True]
+    disabled_ids = [int(item["id"]) for item in capabilities if item.get("enabled") is not True]
+
+    lines = [
+        "# runtime.md",
+        "",
+        "Auto-generated runtime snapshot. Do not edit manually.",
+        "",
+        f"- Generated (UTC): {generated_at}",
+        f"- Audit status: **{report.get('status', 'unknown').upper()}**",
+        f"- Execution gate enabled: {summary.get('execution_gate_enabled', False)}",
+        "",
+        "## Enabled capability IDs",
+        "",
+        f"- {sorted(enabled_ids)}",
+        "",
+        "## Disabled capability IDs",
+        "",
+        f"- {sorted(disabled_ids)}",
+        "",
+        "## Capability table",
+        "",
+        "| id | name | enabled | status | risk_level | data_exfiltration |",
+        "| --- | --- | --- | --- | --- | --- |",
+    ]
+
+    for capability in capabilities:
+        lines.append(
+            "| {id} | {name} | {enabled} | {status} | {risk_level} | {data_exfiltration} |".format(
+                id=capability.get("id", ""),
+                name=capability.get("name", ""),
+                enabled=bool(capability.get("enabled", False)),
+                status=capability.get("status", ""),
+                risk_level=capability.get("risk_level", ""),
+                data_exfiltration=bool(capability.get("data_exfiltration", False)),
+            )
+        )
+
+    lines.extend(
+        [
+            "",
+            "## Mediator mapped capability IDs",
+            "",
+            f"- {summary.get('mediator_mapped_capability_ids', [])}",
+            "",
+            "## Runtime truth discrepancies",
+            "",
+        ]
+    )
+
+    discrepancies = report.get("discrepancies", [])
+    if not discrepancies:
+        lines.append("- None")
+    else:
+        for item in discrepancies:
+            lines.append(
+                f"- [{item.get('severity', 'unknown')}] {item.get('code', 'UNKNOWN')}: {item.get('message', '')}"
+            )
+
+    return "\n".join(lines).strip() + "\n"
+
+
+def write_current_runtime_state_snapshot() -> Path:
+    report = run_runtime_truth_audit()
+    registry = _load_registry()
+    markdown = render_current_runtime_state_markdown(report, registry)
+
+    RUNTIME_SNAPSHOT_PATH.parent.mkdir(parents=True, exist_ok=True)
+    RUNTIME_SNAPSHOT_PATH.write_text(markdown, encoding="utf-8")
+    return RUNTIME_SNAPSHOT_PATH
