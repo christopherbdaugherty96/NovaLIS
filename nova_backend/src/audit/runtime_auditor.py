@@ -14,7 +14,7 @@ from src.governor.governor_mediator import GovernorMediator, Invocation
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 REGISTRY_PATH = PROJECT_ROOT / "src" / "config" / "registry.json"
 RUNTIME_DOC_PATH = PROJECT_ROOT.parent / "docs" / "runtime" / "CURRENT_RUNTIME_STATE.md"
-RUNTIME_SNAPSHOT_PATH = PROJECT_ROOT.parent / "runtime.md"
+RUNTIME_SNAPSHOT_PATH = PROJECT_ROOT.parent / "docs" / "current_runtime" / "runtime.md"
 CANONICAL_RUNTIME_DOC_PATH = PROJECT_ROOT.parent / "docs" / "CANONICAL" / "PHASE_4_RUNTIME_TRUTH.md"
 DEEPSEEK_BRIDGE_PATH = PROJECT_ROOT / "src" / "conversation" / "deepseek_bridge.py"
 LLM_MANAGER_PATH = PROJECT_ROOT / "src" / "llm" / "llm_manager.py"
