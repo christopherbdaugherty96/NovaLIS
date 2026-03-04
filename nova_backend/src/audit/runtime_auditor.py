@@ -11,13 +11,12 @@ from src.governor.execute_boundary.execute_boundary import GOVERNED_ACTIONS_ENAB
 from src.governor.governor_mediator import GovernorMediator, Invocation
 
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-REGISTRY_PATH = PROJECT_ROOT / "src" / "config" / "registry.json"
-RUNTIME_DOC_PATH = PROJECT_ROOT.parent / "docs" / "runtime" / "CURRENT_RUNTIME_STATE.md"
-RUNTIME_SNAPSHOT_PATH = PROJECT_ROOT.parent / "docs" / "current_runtime" / "runtime.md"
-CANONICAL_RUNTIME_DOC_PATH = PROJECT_ROOT.parent / "docs" / "CANONICAL" / "PHASE_4_RUNTIME_TRUTH.md"
-DEEPSEEK_BRIDGE_PATH = PROJECT_ROOT / "src" / "conversation" / "deepseek_bridge.py"
-LLM_MANAGER_PATH = PROJECT_ROOT / "src" / "llm" / "llm_manager.py"
+PROJECT_ROOT = Path(__file__).resolve().parents[3]
+REGISTRY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "config" / "registry.json"
+RUNTIME_DOC_PATH = PROJECT_ROOT / "docs" / "current_runtime" / "CURRENT_RUNTIME_STATE.md"
+CANONICAL_RUNTIME_DOC_PATH = PROJECT_ROOT / "docs" / "CANONICAL" / "PHASE_4_RUNTIME_TRUTH.md"
+DEEPSEEK_BRIDGE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "conversation" / "deepseek_bridge.py"
+LLM_MANAGER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "llm" / "llm_manager.py"
 
 # Read-only allowlist for v1 auditor scope.
 ALLOWED_READ_PATHS = (
@@ -165,7 +164,7 @@ def _build_discrepancies(
             Discrepancy(
                 severity="hard_fail",
                 code="ENABLED_ID_SET_MISMATCH",
-                message="Enabled capability ID set differs between docs/runtime/CURRENT_RUNTIME_STATE.md and registry.json.",
+                message="Enabled capability ID set differs between docs/current_runtime/CURRENT_RUNTIME_STATE.md and registry.json.",
                 details={
                     "registry_enabled_ids": sorted(registry_enabled_set),
                     "doc_enabled_ids": sorted(runtime_doc_set),
@@ -212,8 +211,8 @@ def _build_discrepancies(
             Discrepancy(
                 severity="warning",
                 code="RUNTIME_DOC_MISSING",
-                message="docs/runtime/CURRENT_RUNTIME_STATE.md is missing.",
-                details={"path": str(RUNTIME_DOC_PATH.relative_to(PROJECT_ROOT.parent))},
+                message="docs/current_runtime/CURRENT_RUNTIME_STATE.md is missing.",
+                details={"path": str(RUNTIME_DOC_PATH.relative_to(PROJECT_ROOT))},
             )
         )
 
@@ -268,10 +267,10 @@ def run_runtime_truth_audit() -> dict[str, Any]:
             "execution_gate_enabled": execution_gate_enabled,
         },
         "inputs": {
-            "allowlisted_paths": [str(path.relative_to(PROJECT_ROOT.parent)) for path in ALLOWED_READ_PATHS],
-            "registry_path": str(REGISTRY_PATH.relative_to(PROJECT_ROOT.parent)),
-            "runtime_doc_path": str(RUNTIME_DOC_PATH.relative_to(PROJECT_ROOT.parent)),
-            "canonical_runtime_doc_path": str(CANONICAL_RUNTIME_DOC_PATH.relative_to(PROJECT_ROOT.parent)),
+            "allowlisted_paths": [str(path.relative_to(PROJECT_ROOT)) for path in ALLOWED_READ_PATHS],
+            "registry_path": str(REGISTRY_PATH.relative_to(PROJECT_ROOT)),
+            "runtime_doc_path": str(RUNTIME_DOC_PATH.relative_to(PROJECT_ROOT)),
+            "canonical_runtime_doc_path": str(CANONICAL_RUNTIME_DOC_PATH.relative_to(PROJECT_ROOT)),
         },
         "checks": {
             "model_path_signals": model_signals,
@@ -326,7 +325,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     disabled_ids = [int(item["id"]) for item in capabilities if item.get("enabled") is not True]
 
     lines = [
-        "# runtime.md",
+        "# CURRENT_RUNTIME_STATE.md",
         "",
         "Auto-generated runtime snapshot. Do not edit manually.",
         "",
@@ -384,11 +383,11 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     return "\n".join(lines).strip() + "\n"
 
 
-def write_current_runtime_state_snapshot() -> Path:
+def write_current_runtime_state_snapshot(path: Path = RUNTIME_DOC_PATH) -> Path:
     report = run_runtime_truth_audit()
     registry = _load_registry()
     markdown = render_current_runtime_state_markdown(report, registry)
 
-    RUNTIME_SNAPSHOT_PATH.parent.mkdir(parents=True, exist_ok=True)
-    RUNTIME_SNAPSHOT_PATH.write_text(markdown, encoding="utf-8")
-    return RUNTIME_SNAPSHOT_PATH
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(markdown, encoding="utf-8")
+    return path.resolve()
