@@ -19,6 +19,7 @@ from datetime import datetime
 from typing import Optional
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi.responses import PlainTextResponse
 
 from src.skill_registry import SkillRegistry
 from src.gates.confirmation_gate import confirmation_gate
@@ -30,6 +31,7 @@ from src.conversation.response_style_router import InputNormalizer
 from src.voice.stt_pipeline import STTAckConfig, build_ack_payload
 from src.voice.tts_engine import resolve_speakable_text, nova_speak, stop_speaking
 from src.conversation.clarify_prompts import CLARIFY_PROMPTS
+from src.audit.runtime_auditor import run_runtime_truth_audit, render_runtime_truth_markdown
 
 # -------------------------------------------------
 # App + Logging
@@ -89,6 +91,19 @@ async def phase_status():
         "execution_enabled": GOVERNED_ACTIONS_ENABLED,
         "note": "Phase‑4 runtime active – all actions mediated by Governor."
     }
+
+
+@app.get("/system/audit/runtime-truth")
+async def audit_runtime_truth():
+    """Read-only runtime-truth audit report (JSON)."""
+    return run_runtime_truth_audit()
+
+
+@app.get("/system/audit/runtime-truth.md", response_class=PlainTextResponse)
+async def audit_runtime_truth_markdown():
+    """Read-only runtime-truth audit report (Markdown)."""
+    report = run_runtime_truth_audit()
+    return render_runtime_truth_markdown(report)
 
 # -------------------------------------------------
 # WebSocket Utilities
