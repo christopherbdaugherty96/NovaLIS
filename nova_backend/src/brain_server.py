@@ -50,7 +50,7 @@ async def refresh_runtime_snapshot_on_startup():
         output_path = write_current_runtime_state_snapshot()
         log.info("Runtime snapshot refreshed at startup: %s", output_path)
     except Exception:
-        log.exception("Failed to refresh runtime.md snapshot on startup")
+        log.exception("Failed to refresh runtime snapshot on startup")
 
 # -------------------------------------------------
 # Static Files
