@@ -16,6 +16,7 @@ from src.conversation.response_style_router import InputNormalizer, ResponseStyl
 from src.conversation.safety_filter import SafetyFilter
 from src.conversation.deepseek_safety_wrapper import DeepSeekSafetyWrapper
 from src.governor.network_mediator import NetworkMediator
+from src.llm.llm_gateway import generate_chat
 
 from ..base_skill import BaseSkill, SkillResult
 
@@ -150,11 +151,6 @@ class GeneralChatSkill(BaseSkill):
         return clean
 
     async def _run_local_model(self, query: str) -> SkillResult | None:
-        try:
-            import ollama
-        except Exception:
-            return None
-
         normalized_query = InputNormalizer.normalize(query)
         mode = self._detect_mode(normalized_query)
         style = self.style_router.route(normalized_query)
@@ -162,16 +158,17 @@ class GeneralChatSkill(BaseSkill):
         max_tokens = self.MAX_TOKENS.get(mode, self.MAX_TOKENS["casual"])
 
         try:
-            response = await asyncio.to_thread(
-                ollama.chat,
-                model="phi3:mini",
-                messages=[
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": normalized_query},
-                ],
-                options={"temperature": 0.3, "num_predict": max_tokens},
+            text = await asyncio.to_thread(
+                generate_chat,
+                normalized_query,
+                mode=mode,
+                safety_profile="general_chat",
+                request_id=f"general_chat:{mode}",
+                system_prompt=system_prompt,
+                max_tokens=max_tokens,
+                temperature=0.3,
             )
-            text = self._sanitize_response(response.get("message", {}).get("content", ""))
+            text = self._sanitize_response(text or "")
             if not text:
                 text = "I don’t have a response for that."
 

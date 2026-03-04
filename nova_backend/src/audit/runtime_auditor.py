@@ -22,6 +22,7 @@ RUNTIME_DOC_PATH = RUNTIME_DOC_DIR / "CURRENT_RUNTIME_STATE.md"
 CANONICAL_RUNTIME_DOC_PATH = PROJECT_ROOT / "docs" / "CANONICAL" / "PHASE_4_RUNTIME_TRUTH.md"
 DEEPSEEK_BRIDGE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "conversation" / "deepseek_bridge.py"
 LLM_MANAGER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "llm" / "llm_manager.py"
+LLM_GATEWAY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "llm" / "llm_gateway.py"
 GOVERNOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "governor.py"
 GOVERNOR_MEDIATOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "governor_mediator.py"
 NETWORK_MEDIATOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "network_mediator.py"
@@ -29,11 +30,13 @@ SKILL_REGISTRY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "skill_registry.py
 LEDGER_WRITER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "ledger" / "writer.py"
 LEDGER_EVENT_TYPES_PATH = PROJECT_ROOT / "nova_backend" / "src" / "ledger" / "event_types.py"
 ESCALATION_POLICY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "conversation" / "escalation_policy.py"
+GENERAL_CHAT_PATH = PROJECT_ROOT / "nova_backend" / "src" / "skills" / "general_chat.py"
 
 GOVERNANCE_MATRIX_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX.md"
 SKILL_SURFACE_MAP_PATH = RUNTIME_DOC_DIR / "SKILL_SURFACE_MAP.md"
 BYPASS_SURFACES_PATH = RUNTIME_DOC_DIR / "BYPASS_SURFACES.md"
 RUNTIME_FINGERPRINT_PATH = RUNTIME_DOC_DIR / "RUNTIME_FINGERPRINT.md"
+GOVERNANCE_MATRIX_TREE_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX_TREE.md"
 
 SKILLS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "skills"
 EXECUTORS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "executors"
@@ -47,6 +50,7 @@ def _build_allowlisted_paths() -> frozenset[Path]:
         CANONICAL_RUNTIME_DOC_PATH,
         DEEPSEEK_BRIDGE_PATH,
         LLM_MANAGER_PATH,
+        LLM_GATEWAY_PATH,
         GOVERNOR_PATH,
         GOVERNOR_MEDIATOR_PATH,
         NETWORK_MEDIATOR_PATH,
@@ -118,23 +122,31 @@ def _enabled_registry_ids(registry: dict[str, Any]) -> list[int]:
 
 
 def _extract_enabled_ids_from_markdown(markdown_text: str) -> list[int]:
-    """Best-effort extraction for lines like: `- 16: enabled` or table rows containing enabled=true."""
+    """Extract enabled capability IDs from generated snapshot sections."""
     if not markdown_text:
         return []
 
     found: set[int] = set()
+    in_capability_table = False
 
     for line in markdown_text.splitlines():
         lower = line.lower()
 
+        if line.strip() == "## Capability table":
+            in_capability_table = True
+            continue
+        if in_capability_table and line.startswith("## "):
+            in_capability_table = False
+
+        if in_capability_table and line.strip().startswith("|"):
+            parts = [part.strip() for part in line.strip().strip("|").split("|")]
+            if len(parts) >= 3 and parts[0].isdigit() and parts[2].lower() in {"true", "enabled"}:
+                found.add(int(parts[0]))
+            continue
+
         bullet_match = re.search(r"\b(\d+)\b\s*[:\-|]\s*.*\benabled\b", lower)
         if bullet_match:
             found.add(int(bullet_match.group(1)))
-            continue
-
-        table_match = re.search(r"\|\s*(\d+)\s*\|.*\|\s*(true|enabled)\s*\|", lower)
-        if table_match:
-            found.add(int(table_match.group(1)))
             continue
 
     return sorted(found)
@@ -158,18 +170,25 @@ def _mediator_surface_map() -> dict[str, Any]:
             }
         )
 
+    enabled_ids = set(_enabled_registry_ids(_load_registry()))
+    filtered_capability_ids = sorted(cap_id for cap_id in capability_ids if cap_id in enabled_ids)
+
     return {
         "probes": entries,
-        "mapped_capability_ids": sorted(capability_ids),
+        "mapped_capability_ids": filtered_capability_ids,
     }
 
 
 def _detect_direct_model_call_bypass() -> dict[str, Any]:
     deepseek_src = _safe_read(DEEPSEEK_BRIDGE_PATH)
+    general_chat_src = _safe_read(GENERAL_CHAT_PATH)
+    llm_gateway_src = _safe_read(LLM_GATEWAY_PATH)
     llm_manager_src = _safe_read(LLM_MANAGER_PATH)
 
     return {
         "deepseek_uses_ollama_chat_directly": "ollama.chat" in deepseek_src,
+        "general_chat_uses_ollama_chat_directly": "ollama.chat" in general_chat_src,
+        "llm_gateway_generate_chat_present": "def generate_chat(" in llm_gateway_src,
         "llm_manager_generate_present": "def generate(" in llm_manager_src,
     }
 
@@ -273,6 +292,8 @@ def _skill_surface_rows() -> list[dict[str, str]]:
         network_usage = "yes" if ("NetworkMediator" in src or "self.network" in src) else "no"
         if "ollama.chat" in src:
             model_usage = "ollama_direct"
+        elif "generate_chat" in src:
+            model_usage = "llm_gateway"
         elif "LLMManager" in src or "llm_manager" in src:
             model_usage = "manager"
         else:
@@ -294,7 +315,7 @@ def _skill_surface_rows() -> list[dict[str, str]]:
             "module": "src/conversation/deepseek_bridge.py",
             "surface_type": "conversation",
             "network_usage": "unknown",
-            "model_usage": "ollama_direct" if "ollama.chat" in deepseek_src else "none",
+            "model_usage": "llm_gateway" if "generate_chat" in deepseek_src else ("ollama_direct" if "ollama.chat" in deepseek_src else "none"),
         }
     )
 
@@ -323,7 +344,11 @@ def _find_direct_ollama_calls_outside_manager() -> list[str]:
         if path.suffix != ".py":
             continue
         rel = path.relative_to(PROJECT_ROOT)
-        if rel.as_posix() in {"nova_backend/src/llm/llm_manager.py", "nova_backend/src/llm/llm_manager_vlock.py"}:
+        if rel.as_posix() in {
+            "nova_backend/src/llm/llm_manager.py",
+            "nova_backend/src/llm/llm_manager_vlock.py",
+            "nova_backend/src/llm/llm_gateway.py",
+        }:
             continue
         src = _safe_read(path)
         if "ollama.chat" in src:
@@ -475,13 +500,16 @@ def _build_discrepancies(
             )
         )
 
-    if model_path_signals.get("deepseek_uses_ollama_chat_directly"):
+    if model_path_signals.get("deepseek_uses_ollama_chat_directly") or model_path_signals.get("general_chat_uses_ollama_chat_directly"):
         discrepancies.append(
             Discrepancy(
                 severity="warning",
                 code="DIRECT_MODEL_CALL_BYPASS",
-                message="DeepSeekBridge appears to call ollama.chat directly instead of a centralized LLM gateway.",
-                details={"path": _path_for_report(DEEPSEEK_BRIDGE_PATH)},
+                message="Conversation or skill modules appear to call ollama.chat directly instead of the centralized LLM gateway.",
+                details={
+                    "deepseek_bridge_path": _path_for_report(DEEPSEEK_BRIDGE_PATH),
+                    "general_chat_path": "nova_backend/src/skills/general_chat.py",
+                },
             )
         )
 
@@ -645,7 +673,7 @@ def render_bypass_surfaces_markdown() -> str:
         "",
         "Read-only truth report of detectable bypass indicators from allowlisted runtime sources.",
         "",
-        "## Direct ollama.chat outside llm_manager",
+        "## Direct ollama.chat outside llm gateway",
         "",
     ]
 
@@ -681,6 +709,75 @@ def render_runtime_fingerprint_markdown(registry_enabled_ids: list[int]) -> str:
         f"- phase_marker: {fp['phase_marker']}",
         "",
     ]
+    return "\n".join(lines)
+
+
+def render_governance_matrix_tree_markdown(registry: dict[str, Any]) -> str:
+    rows = _derive_capability_governance_rows(registry)
+    enabled = [row["id"] for row in rows if row["enabled"]]
+    disabled = [row["id"] for row in rows if not row["enabled"]]
+    enforcement = _governor_enforcement_summary()
+    skill_routes = [r for r in _skill_surface_rows() if r.get("surface_type") == "governor_capability" and r.get("capability_id")]
+    llm_gateway_users = []
+    for rel_path in ("src/conversation/deepseek_bridge.py", "src/skills/general_chat.py"):
+        src = _safe_read(PROJECT_ROOT / "nova_backend" / rel_path)
+        if "generate_chat" in src:
+            llm_gateway_users.append(rel_path)
+
+    lines = [
+        "# GOVERNANCE_MATRIX_TREE",
+        "",
+        "Deterministic generated tree diagram derived from allowlisted runtime sources.",
+        "",
+        "```mermaid",
+        "graph TD",
+        "  Runtime[Phase-4 Runtime]",
+        f"  Runtime --> Enabled[Enabled IDs: {enabled}]",
+        f"  Runtime --> Disabled[Disabled IDs: {disabled}]",
+        "  Runtime --> Gov[Governor Guards]",
+        f"  Gov --> EG[execution_gate: {enforcement['execution_gate_enabled']}]",
+        f"  Gov --> SAQ[single_action_queue: {enforcement['single_action_queue_enforced']}]",
+        "  Gov --> LA[ledger_allowlist: True]",
+        f"  Gov --> DNS[dns_rebinding_guard: {enforcement['dns_rebinding_protection_active']}]",
+        f"  Gov --> TO[timeout_guard: {enforcement['execution_timeout_guard_active']}]",
+        "  Runtime --> Caps[Capabilities]",
+    ]
+    for row in rows:
+        label = f"{row['id']}:{row['name']}"
+        lines.append(f"  Caps --> C{row['id']}[{label}]")
+        lines.append(
+            f"  C{row['id']} --> C{row['id']}A[authority={row['authority_class']}, risk={row['risk_level']}, network={row['network_access']}, exfil={row['data_exfiltration']}, confirm={row['confirmation_required']}, surface={row['execution_surface']}]"
+        )
+    lines.append("  Runtime --> Routes[Skill Routes]")
+    for route in skill_routes:
+        lines.append(f"  Routes --> R{route['capability_id']}_{route['name']}[{route['name']} -> capability {route['capability_id']}]")
+    lines.append("  Runtime --> LLM[Conversation/Model Surfaces]")
+    for module in llm_gateway_users:
+        key = module.replace("/", "_").replace(".", "_")
+        lines.append(f"  LLM --> {key}[{module} uses llm_gateway.generate_chat]")
+    lines.extend(["```", "", "```text", "Runtime", f"├─ Enabled IDs: {enabled}", f"├─ Disabled IDs: {disabled}", "├─ Governor Guards"])
+    lines.extend(
+        [
+            f"│  ├─ execution_gate: {enforcement['execution_gate_enabled']}",
+            f"│  ├─ single_action_queue: {enforcement['single_action_queue_enforced']}",
+            "│  ├─ ledger_allowlist: True",
+            f"│  ├─ dns_rebinding_guard: {enforcement['dns_rebinding_protection_active']}",
+            f"│  └─ timeout_guard: {enforcement['execution_timeout_guard_active']}",
+            "├─ Capabilities",
+        ]
+    )
+    for row in rows:
+        lines.append(
+            f"│  ├─ {row['id']} {row['name']} (authority={row['authority_class']}, risk={row['risk_level']}, network={row['network_access']}, exfil={row['data_exfiltration']}, confirm={row['confirmation_required']}, surface={row['execution_surface']})"
+        )
+    lines.append("├─ Skill → capability routes")
+    for route in skill_routes:
+        lines.append(f"│  ├─ {route['name']} -> {route['capability_id']}")
+    lines.append("└─ Conversation/model surfaces")
+    for module in llm_gateway_users:
+        lines.append(f"   ├─ {module} -> llm_gateway.generate_chat")
+    lines.append("```")
+    lines.append("")
     return "\n".join(lines)
 
 
@@ -803,22 +900,30 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     return "\n".join(lines).strip() + "\n"
 
 
-def write_runtime_governance_docs() -> dict[str, Path]:
-    registry = _load_registry()
+def write_runtime_governance_docs(output_dir: Path | None = None, registry: dict[str, Any] | None = None) -> dict[str, Path]:
+    registry = registry or _load_registry()
+    output_dir = output_dir or RUNTIME_DOC_DIR
     enabled_ids = _enabled_registry_ids(registry)
 
-    RUNTIME_DOC_DIR.mkdir(parents=True, exist_ok=True)
+    output_dir.mkdir(parents=True, exist_ok=True)
+    governance_matrix_path = output_dir / "GOVERNANCE_MATRIX.md"
+    skill_surface_map_path = output_dir / "SKILL_SURFACE_MAP.md"
+    bypass_surfaces_path = output_dir / "BYPASS_SURFACES.md"
+    runtime_fingerprint_path = output_dir / "RUNTIME_FINGERPRINT.md"
+    governance_matrix_tree_path = output_dir / "GOVERNANCE_MATRIX_TREE.md"
 
-    GOVERNANCE_MATRIX_PATH.write_text(render_governance_matrix_markdown(registry), encoding="utf-8")
-    SKILL_SURFACE_MAP_PATH.write_text(render_skill_surface_map_markdown(), encoding="utf-8")
-    BYPASS_SURFACES_PATH.write_text(render_bypass_surfaces_markdown(), encoding="utf-8")
-    RUNTIME_FINGERPRINT_PATH.write_text(render_runtime_fingerprint_markdown(enabled_ids), encoding="utf-8")
+    governance_matrix_path.write_text(render_governance_matrix_markdown(registry), encoding="utf-8")
+    skill_surface_map_path.write_text(render_skill_surface_map_markdown(), encoding="utf-8")
+    bypass_surfaces_path.write_text(render_bypass_surfaces_markdown(), encoding="utf-8")
+    runtime_fingerprint_path.write_text(render_runtime_fingerprint_markdown(enabled_ids), encoding="utf-8")
+    governance_matrix_tree_path.write_text(render_governance_matrix_tree_markdown(registry), encoding="utf-8")
 
     return {
-        "governance_matrix": GOVERNANCE_MATRIX_PATH.resolve(),
-        "skill_surface_map": SKILL_SURFACE_MAP_PATH.resolve(),
-        "bypass_surfaces": BYPASS_SURFACES_PATH.resolve(),
-        "runtime_fingerprint": RUNTIME_FINGERPRINT_PATH.resolve(),
+        "governance_matrix": governance_matrix_path.resolve(),
+        "skill_surface_map": skill_surface_map_path.resolve(),
+        "bypass_surfaces": bypass_surfaces_path.resolve(),
+        "runtime_fingerprint": runtime_fingerprint_path.resolve(),
+        "governance_matrix_tree": governance_matrix_tree_path.resolve(),
     }
 
 
@@ -831,6 +936,6 @@ def write_current_runtime_state_snapshot(path: Path = RUNTIME_DOC_PATH) -> Path:
     path.write_text(markdown, encoding="utf-8")
 
     # Companion governance docs for read-only introspection.
-    write_runtime_governance_docs()
+    write_runtime_governance_docs(output_dir=path.parent, registry=registry)
 
     return path.resolve()
