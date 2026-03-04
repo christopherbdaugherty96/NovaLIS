@@ -1,6 +1,6 @@
 # PHASE-4 RUNTIME TRUTH SNAPSHOT
 
-**Last updated:** 2026-03-03  
+**Last updated:** 2026-03-04  
 **This document is the single, authoritative record of the current governed runtime state for NovaLIS.**
 
 ---
@@ -28,6 +28,15 @@
 | 22 | `open_file_folder` | disabled | confirm | false | Declared; disabled |
 | 32 | `os_diagnostics` | enabled | low | false | Wired; executor uses real shutil.disk_usage() for disk stats but hardcodes network_status — partial implementation |
 | 48 | `multi_source_reporting` | disabled | low | true | Declared; disabled |
+
+### Disabled-but-routable mediator surfaces
+
+`GovernorMediator` currently parses user phrases into invocations for capability IDs `22` and `48`:
+
+- `open documents|downloads|desktop|pictures` → ID `22`
+- `report <query>` / `summarize <query>` → ID `48`
+
+Both still fail closed at Governor admission because registry `enabled` is `false`.
 
 ---
 
@@ -78,6 +87,7 @@ Modules under `src/conversation/` (heuristics, escalation, thought store, Deep T
 - **Advisory only** – their output is treated as user‑facing text or internal hints, never as execution authority.
 - **Execution‑isolated** – they operate strictly in the read‑only phase of the request lifecycle.
 - **Local model only** – `DeepSeekBridge` uses local Ollama/phi3:mini. Full DeepSeek cloud API integration is design-only; no external network calls are made from the conversation layer.
+- **Model-path note** – `DeepSeekBridge` currently calls `ollama.chat(...)` directly rather than routing through `src/llm/llm_manager.py`. This is a known architecture-drift item tracked by runtime auditor warnings.
 
 ---
 
