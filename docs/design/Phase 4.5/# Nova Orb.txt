@@ -1,26 +1,9 @@
-note:
-⚠️ Identified Gaps & Potential Risks
-1. Orb Unplug Test – Ambiguity in Software Context
-Document: Nova Orb.txt, Section 5.A
-Issue: The Unplug Test states that if a user can tell Nova was unplugged from the Orb alone, it is a violation. In a purely software UI, when Nova (the application) is terminated, the Orb disappears – the user can tell. This test is impossible to pass for a software‑resident Orb.
-
-Recommendation:
-
-Reframe the test to target causal coupling to Nova’s operational state, not power state.
-
-Example: “If Nova transitions from idle to processing, does the Orb’s appearance change in any way a user could reliably detect?” – this is already covered by the Semantic Leak Test.
-
-Remove or rephrase the Unplug Test to avoid impossible criteria.
-
------------------------------------------------
-
-
 # Nova Orb — Identity, Constitution & Implementation Standard
 
-**Document ID:** NOVA-ORB-FINAL-v3.0  
+**Document ID:** NOVA-ORB-FINAL-v3.1  
 **Status:** 🔒 Constitution Ratified · 📐 Implementation Standard Active  
-**Version Date:** 2026-02-12  
-**Supersedes:** NOVA-ORB-FINAL-v2.0  
+**Version Date:** 2026-03-04  
+**Supersedes:** NOVA-ORB-FINAL-v3.0  
 
 ---
 
@@ -128,7 +111,7 @@ Proposed changes to **Layer 1** require:
 
 ---
 
-## 1. Visual Architecture — Reference v3.0
+## 1. Visual Architecture — Reference v3.1
 
 ### A. Core
 - **Appearance:** Slightly brighter, denser nucleus within gradient body.
@@ -156,7 +139,7 @@ Proposed changes to **Layer 1** require:
 
 ---
 
-## 2. Motion Grammar — Reference v3.0
+## 2. Motion Grammar — Reference v3.1
 
 **All motion is continuous, aperiodic, and causally independent of Nova’s internal state.**
 
@@ -178,7 +161,7 @@ Proposed changes to **Layer 1** require:
 
 ---
 
-## 3. Color Palette — Reference v3.0
+## 3. Color Palette — Reference v3.1
 
 ```
 Allowed color range (perceptual, not absolute hex enforcement):
@@ -206,7 +189,7 @@ Reduce overall luminance 20%, preserve hue. Containment rim becomes faint gray (
 ```css
 .orb {
   /* Continuous animations only — no state control */
-  animation: 
+  animation:
     ambientDrift 180s infinite ease-in-out,
     colorShift 240s infinite ease-in-out,
     microBreath 12s infinite ease-in-out;
@@ -227,11 +210,15 @@ class OrbController {
   stopIdleAnimation() {}
   pulseOnVoiceInput() {}
   setConfidenceBrightness(level) {}
-  
+
   // ✅ ALLOWED
   updateStatusText(status) {}  // Text only, never touches Orb styles
 }
 ```
+
+### Runtime Boundary Clarification
+- Orb visibility lifecycle (mount/unmount when app starts/stops) is **not** a semantic signal and is excluded from coupling tests.
+- Compliance applies while the Orb is visible: appearance and motion must remain non-semantic across Nova operational states.
 
 ### Performance Requirement
 Orb animation must be **GPU‑accelerated** and **uncoupled from main thread activity**. Frame rate must remain stable (±2 fps) under all computational loads.
@@ -242,14 +229,16 @@ Orb animation must be **GPU‑accelerated** and **uncoupled from main thread act
 
 All changes to the Implementation Standard **must pass** the following tests before deployment.
 
-### A. The Unplug Test (Refined)
-> Would a user who saw the Orb immediately before and after Nova was unplugged be able to tell that Nova was unplugged?
+### A. Operational Decoupling Test (Replaces Unplug Test)
+> Across runtime states where the Orb remains visible (idle, listening, processing, responding, error handling), can a user reliably infer Nova’s state from Orb visuals alone?
 
-- **Yes** → Violation (causal coupling exists)
+- **Yes** → Violation (readable coupling exists)
 - **No** → Compliant
 
+**Scope note:** Application termination, page unload, or process death are out of scope for this test.
+
 ### B. Semantic Leak Test
-Controlled user study: participants are shown video of the Orb under various conditions and asked to guess Nova’s state (idle, processing, listening, etc.).  
+Controlled user study: participants are shown video of the Orb under various conditions and asked to guess Nova’s state (idle, processing, listening, etc.).
 
 **Pass criterion:** Accuracy not significantly above chance (p > 0.05).
 
@@ -293,7 +282,8 @@ Before implementing any Orb motion or visual property, ask:
 |---------|------------|------------|---------|
 | 1.0     | 2026-02-12 | Constitution | Ratified (Orb Constitution v1 — “identical appearance”) |
 | 2.0     | 2026-02-12 | Implementation | Merged Orb Motion Canon Amendment; incorporated design critique; split layers |
-| **3.0** | **2026-02-12** | **Constitution + Implementation** | **Refined core invariant: “identical appearance” → “no readable coupling”. Added Unplug Test refinement, Semantic Leak Test, and formal amendment/update processes. Constitution now principle‑based, Implementation Standard reference‑only.** |
+| 3.0     | 2026-02-12 | Constitution + Implementation | Refined core invariant: “identical appearance” → “no readable coupling”. Added initial test framework and formal amendment/update processes. |
+| **3.1** | **2026-03-04** | **Implementation** | **Removed software-impossible unplug criterion. Replaced Section 5.A with Operational Decoupling Test scoped to visible runtime states; added lifecycle scope clarification to prevent false violations while preserving all Layer‑1 invariants.** |
 
 ---
 
@@ -305,4 +295,4 @@ Before implementing any Orb motion or visual property, ask:
 ---
 
 **Nova Core**  
-*2026-02-12*
+*2026-03-04*
