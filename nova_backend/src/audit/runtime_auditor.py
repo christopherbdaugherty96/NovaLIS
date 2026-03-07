@@ -19,7 +19,7 @@ PROJECT_ROOT = Path(__file__).resolve().parents[3]
 RUNTIME_DOC_DIR = PROJECT_ROOT / "docs" / "current_runtime"
 REGISTRY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "config" / "registry.json"
 RUNTIME_DOC_PATH = RUNTIME_DOC_DIR / "CURRENT_RUNTIME_STATE.md"
-CANONICAL_RUNTIME_DOC_PATH = PROJECT_ROOT / "docs" / "CANONICAL" / "PHASE_4_RUNTIME_TRUTH.md"
+CANONICAL_RUNTIME_DOC_PATH = PROJECT_ROOT / "docs" / "PHASE_4_RUNTIME_TRUTH.md"
 DEEPSEEK_BRIDGE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "conversation" / "deepseek_bridge.py"
 LLM_MANAGER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "llm" / "llm_manager.py"
 LLM_GATEWAY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "llm" / "llm_gateway.py"
@@ -242,19 +242,19 @@ def _derive_capability_governance_rows(registry: dict[str, Any]) -> list[dict[st
 
         if cid == 18:
             authority_class = "speech_output"
-            execution_surface = "Governor → Speech"
+            execution_surface = "Governor â†’ Speech"
         elif confirmation_required:
             authority_class = "confirm_required"
-            execution_surface = "Governor → Executor"
+            execution_surface = "Governor â†’ Executor"
         elif network_access:
             authority_class = "read_only"
-            execution_surface = "Governor → NetworkMediator"
+            execution_surface = "Governor â†’ NetworkMediator"
         elif capability.get("data_exfiltration") is True:
             authority_class = "read_only"
-            execution_surface = "Governor → Executor"
+            execution_surface = "Governor â†’ Executor"
         else:
             authority_class = "system_action"
-            execution_surface = "Governor → Executor"
+            execution_surface = "Governor â†’ Executor"
 
         rows.append(
             {
@@ -755,27 +755,27 @@ def render_governance_matrix_tree_markdown(registry: dict[str, Any]) -> str:
     for module in llm_gateway_users:
         key = module.replace("/", "_").replace(".", "_")
         lines.append(f"  LLM --> {key}[{module} uses llm_gateway.generate_chat]")
-    lines.extend(["```", "", "```text", "Runtime", f"├─ Enabled IDs: {enabled}", f"├─ Disabled IDs: {disabled}", "├─ Governor Guards"])
+    lines.extend(["```", "", "```text", "Runtime", f"â”œâ”€ Enabled IDs: {enabled}", f"â”œâ”€ Disabled IDs: {disabled}", "â”œâ”€ Governor Guards"])
     lines.extend(
         [
-            f"│  ├─ execution_gate: {enforcement['execution_gate_enabled']}",
-            f"│  ├─ single_action_queue: {enforcement['single_action_queue_enforced']}",
-            "│  ├─ ledger_allowlist: True",
-            f"│  ├─ dns_rebinding_guard: {enforcement['dns_rebinding_protection_active']}",
-            f"│  └─ timeout_guard: {enforcement['execution_timeout_guard_active']}",
-            "├─ Capabilities",
+            f"â”‚  â”œâ”€ execution_gate: {enforcement['execution_gate_enabled']}",
+            f"â”‚  â”œâ”€ single_action_queue: {enforcement['single_action_queue_enforced']}",
+            "â”‚  â”œâ”€ ledger_allowlist: True",
+            f"â”‚  â”œâ”€ dns_rebinding_guard: {enforcement['dns_rebinding_protection_active']}",
+            f"â”‚  â””â”€ timeout_guard: {enforcement['execution_timeout_guard_active']}",
+            "â”œâ”€ Capabilities",
         ]
     )
     for row in rows:
         lines.append(
-            f"│  ├─ {row['id']} {row['name']} (authority={row['authority_class']}, risk={row['risk_level']}, network={row['network_access']}, exfil={row['data_exfiltration']}, confirm={row['confirmation_required']}, surface={row['execution_surface']})"
+            f"â”‚  â”œâ”€ {row['id']} {row['name']} (authority={row['authority_class']}, risk={row['risk_level']}, network={row['network_access']}, exfil={row['data_exfiltration']}, confirm={row['confirmation_required']}, surface={row['execution_surface']})"
         )
-    lines.append("├─ Skill → capability routes")
+    lines.append("â”œâ”€ Skill â†’ capability routes")
     for route in skill_routes:
-        lines.append(f"│  ├─ {route['name']} -> {route['capability_id']}")
-    lines.append("└─ Conversation/model surfaces")
+        lines.append(f"â”‚  â”œâ”€ {route['name']} -> {route['capability_id']}")
+    lines.append("â””â”€ Conversation/model surfaces")
     for module in llm_gateway_users:
-        lines.append(f"   ├─ {module} -> llm_gateway.generate_chat")
+        lines.append(f"   â”œâ”€ {module} -> llm_gateway.generate_chat")
     lines.append("```")
     lines.append("")
     return "\n".join(lines)
@@ -786,69 +786,104 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     generated_at = report.get("generated_at_utc", "")
 
     capabilities = registry.get("capabilities", [])
-    enabled_ids = [int(item["id"]) for item in capabilities if item.get("enabled") is True]
-    disabled_ids = [int(item["id"]) for item in capabilities if item.get("enabled") is not True]
+    enabled_ids = sorted(int(item["id"]) for item in capabilities if item.get("enabled") is True)
+    disabled_ids = sorted(int(item["id"]) for item in capabilities if item.get("enabled") is not True)
 
     governance_rows = _derive_capability_governance_rows(registry)
     enforcement = _governor_enforcement_summary()
     model_signals = report.get("checks", {}).get("model_path_signals", {})
     network_caps = sorted({row["id"] for row in governance_rows if row["network_access"] is True})
-    skill_rows = [r for r in _skill_surface_rows() if r.get("surface_type") == "governor_capability" and r.get("capability_id")]
-    fingerprint = _runtime_fingerprint(sorted(enabled_ids))
+    fingerprint = _runtime_fingerprint(enabled_ids)
 
     lines = [
-        "# CURRENT_RUNTIME_STATE.md",
+        "# NOVA - CURRENT RUNTIME STATE",
         "",
-        "Auto-generated runtime snapshot. Do not edit manually.",
+        "Status: AUTHORITATIVE RUNTIME TRUTH",
+        "Authority Level: Runtime",
+        "Update Method: Auto-generated snapshot",
+        "Applies To: Nova Core Runtime",
+        "",
+        "This document defines the exact operational state of Nova at the current commit.",
+        "All other documentation must defer to this file for runtime capability truth.",
+        "If any document conflicts with this file, this file is correct.",
         "",
         f"- Generated (UTC): {generated_at}",
         f"- Audit status: **{report.get('status', 'unknown').upper()}**",
         f"- Execution gate enabled: {summary.get('execution_gate_enabled', False)}",
         "",
-        "## Enabled capability IDs",
+        "## System Identity",
         "",
-        f"- {sorted(enabled_ids)}",
+        "Nova is a governed intelligence platform.",
+        "Execution authority exists only through the Governor Spine.",
+        "Nova is not autonomous and performs no background actions.",
         "",
-        "## Disabled capability IDs",
+        "## Phase Status",
         "",
-        f"- {sorted(disabled_ids)}",
+        "- Current phase marker: Phase-4 runtime active",
+        "- Phase-3.5 baseline: sealed",
+        "- Future phases: design-only and not implemented in runtime",
         "",
-        "## Capability table",
+        "## Execution Authority Model",
         "",
-        "| id | name | enabled | status | risk_level | data_exfiltration |",
-        "| --- | --- | --- | --- | --- | --- |",
+        "User -> Input Normalization -> Skill Router -> GovernorMediator -> ExecuteBoundary -> Capability Executor -> ActionResult -> Ledger",
+        "",
+        "All execution authority passes through the Governor.",
+        "Conversation subsystems are text-only and non-authorizing.",
+        "",
+        "## Active Capabilities",
+        "",
+        "| Capability ID | Name | Description | Authority Level |",
+        "| --- | --- | --- | --- |",
     ]
 
-    for capability in capabilities:
-        lines.append(
-            "| {id} | {name} | {enabled} | {status} | {risk_level} | {data_exfiltration} |".format(
-                id=capability.get("id", ""),
-                name=capability.get("name", ""),
-                enabled=bool(capability.get("enabled", False)),
-                status=capability.get("status", ""),
-                risk_level=capability.get("risk_level", ""),
-                data_exfiltration=bool(capability.get("data_exfiltration", False)),
-            )
-        )
-
-    lines.extend(
-        [
-            "",
-            "## Capability Governance Matrix",
-            "",
-            "| id | name | enabled | authority_class | confirmation_required | network_access | execution_layer |",
-            "| --- | --- | --- | --- | --- | --- | --- |",
-        ]
-    )
     for row in governance_rows:
-        lines.append(
-            f"| {row['id']} | {row['name']} | {row['enabled']} | {row['authority_class']} | {row['confirmation_required']} | {row['network_access']} | {row['execution_surface']} |"
-        )
+        if not row["enabled"]:
+            continue
+        lines.append(f"| {row['id']} | {row['name']} | Governed runtime capability | {row['authority_class']} |")
 
     lines.extend(
         [
             "",
-            "## Governor Enforcement Summary",
+            "## Capability Restrictions",
+            "",
+            "- No background execution",
+            "- No autonomous actions",
+            "- No persistent learning",
+            "- No scheduled task orchestration",
+            "- No multi-capability chaining inside one invocation",
+            "",
+            "## Network Authority",
+            "",
+            "- Outbound network access is permitted only through `NetworkMediator`.",
+            "- Skills and conversation modules may not bypass network mediation.",
+            f"- Capabilities using NetworkMediator: {network_caps}",
+            "",
+            "## Conversation Subsystem",
+            "",
+            "- Provides formatting, clarification, escalation, and analysis.",
+            "- Cannot invoke executors directly.",
+            "- Cannot create ActionRequest objects.",
+            f"- Direct LLM calls detected: deepseek_uses_ollama_chat_directly={model_signals.get('deepseek_uses_ollama_chat_directly', False)}",
+            "",
+            "## User Interface Behavior",
+            "",
+            "- Orb visuals are non-semantic.",
+            "- UI may display system state but does not confer execution authority.",
+            "",
+            "## Voice System",
+            "",
+            "- Speech input: local STT pipeline (Vosk).",
+            "- Speech output: local invocation-bound TTS.",
+            "- No background listening.",
+            "- No unsolicited speech.",
+            "",
+            "## Ledger & Audit",
+            "",
+            "- Governed actions emit append-only ledger events.",
+            "- Ledger includes timestamps, capability ID, and execution result.",
+            "- Unknown ledger event types are rejected fail-closed.",
+            "",
+            "## Runtime Safety Guarantees",
             "",
             f"- single_action_queue_enforced: {enforcement['single_action_queue_enforced']}",
             f"- execution_timeout_guard_active: {enforcement['execution_timeout_guard_active']}",
@@ -856,34 +891,20 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
             f"- ledger_logging_active: {enforcement['ledger_logging_active']}",
             f"- execution_gate_enabled: {enforcement['execution_gate_enabled']}",
             "",
-            "## Network Surface Summary",
+            "## Verification Status",
             "",
-            f"- Capabilities using NetworkMediator: {network_caps}",
-            f"- Direct LLM calls detected: deepseek_uses_ollama_chat_directly={model_signals.get('deepseek_uses_ollama_chat_directly', False)}",
-            f"- Allowed_analysis_only surfaces: escalation_policy.ALLOW_ANALYSIS_ONLY={('ALLOW_ANALYSIS_ONLY' in _safe_read(ESCALATION_POLICY_PATH))}",
-            "",
-            "## Skill → Capability Routing Map",
-            "",
-        ]
-    )
-
-    for row in skill_rows:
-        lines.append(f"- {row['name']} -> capability_id={row['capability_id']}")
-
-    lines.extend(
-        [
+            "- Backend test suite must pass in CI (`python -m pytest -q`).",
+            "- Governance tests cover routing, mediation boundaries, and fail-closed behavior.",
             "",
             "## Runtime Fingerprint",
             "",
-            f"- git_commit_hash: {fingerprint['git_commit_hash']}",
-            f"- generated_at_utc: {fingerprint['generated_at_utc']}",
-            f"- phase_marker: {fingerprint['phase_marker']}",
+            f"- Commit: {fingerprint['git_commit_hash']}",
+            f"- Generated (UTC): {fingerprint['generated_at_utc']}",
+            f"- Capabilities enabled: {enabled_ids}",
+            f"- Capabilities disabled: {disabled_ids}",
+            f"- Execution gate: {summary.get('execution_gate_enabled', False)}",
             "",
-            "## Mediator mapped capability IDs",
-            "",
-            f"- {summary.get('mediator_mapped_capability_ids', [])}",
-            "",
-            "## Runtime truth discrepancies",
+            "## Runtime Truth Discrepancies",
             "",
         ]
     )
@@ -893,11 +914,20 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         lines.append("- None")
     else:
         for item in discrepancies:
-            lines.append(
-                f"- [{item.get('severity', 'unknown')}] {item.get('code', 'UNKNOWN')}: {item.get('message', '')}"
-            )
+            lines.append(f"- [{item.get('severity', 'unknown')}] {item.get('code', 'UNKNOWN')}: {item.get('message', '')}")
 
-    return "\n".join(lines).strip() + "\n"
+    lines.extend(
+        [
+            "",
+            "## Change Control",
+            "",
+            "Update this document only when runtime capabilities, execution authority, or phase state changes.",
+            "Other documents must reference this file instead of redefining runtime behavior.",
+            "",
+        ]
+    )
+
+    return "\n".join(lines)
 
 
 def write_runtime_governance_docs(output_dir: Path | None = None, registry: dict[str, Any] | None = None) -> dict[str, Path]:
@@ -939,3 +969,4 @@ def write_current_runtime_state_snapshot(path: Path = RUNTIME_DOC_PATH) -> Path:
     write_runtime_governance_docs(output_dir=path.parent, registry=registry)
 
     return path.resolve()
+

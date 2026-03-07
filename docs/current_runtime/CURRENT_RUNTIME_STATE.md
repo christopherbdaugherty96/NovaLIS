@@ -1,48 +1,89 @@
-# CURRENT_RUNTIME_STATE.md
+# NOVA - CURRENT RUNTIME STATE
 
-Auto-generated runtime snapshot. Do not edit manually.
+Status: AUTHORITATIVE RUNTIME TRUTH
+Authority Level: Runtime
+Update Method: Auto-generated snapshot
+Applies To: Nova Core Runtime
 
-- Generated (UTC): 2026-03-04T06:26:02.390570+00:00
-- Audit status: **PASS**
+This document defines the exact operational state of Nova at the current commit.
+All other documentation must defer to this file for runtime capability truth.
+If any document conflicts with this file, this file is correct.
+
+- Generated (UTC): 2026-03-07T04:03:27.621993+00:00
+- Audit status: **FAIL**
 - Execution gate enabled: True
 
-## Enabled capability IDs
+## System Identity
 
-- [16, 17, 18, 19, 20, 21, 32]
+Nova is a governed intelligence platform.
+Execution authority exists only through the Governor Spine.
+Nova is not autonomous and performs no background actions.
 
-## Disabled capability IDs
+## Phase Status
 
-- [22, 48]
+- Current phase marker: Phase-4 runtime active
+- Phase-3.5 baseline: sealed
+- Future phases: design-only and not implemented in runtime
 
-## Capability table
+## Execution Authority Model
 
-| id | name | enabled | status | risk_level | data_exfiltration |
-| --- | --- | --- | --- | --- | --- |
-| 16 | governed_web_search | True | active | low | True |
-| 17 | open_website | True | active | low | False |
-| 18 | speak_text | True | active | low | False |
-| 22 | open_file_folder | False | active | confirm | False |
-| 19 | volume_up_down | True | active | low | False |
-| 20 | media_play_pause | True | active | low | False |
-| 21 | brightness_control | True | active | low | False |
-| 32 | os_diagnostics | True | active | low | False |
-| 48 | multi_source_reporting | False | active | low | True |
+User -> Input Normalization -> Skill Router -> GovernorMediator -> ExecuteBoundary -> Capability Executor -> ActionResult -> Ledger
 
-## Capability Governance Matrix
+All execution authority passes through the Governor.
+Conversation subsystems are text-only and non-authorizing.
 
-| id | name | enabled | authority_class | confirmation_required | network_access | execution_layer |
-| --- | --- | --- | --- | --- | --- | --- |
-| 16 | governed_web_search | True | read_only | False | True | Governor → NetworkMediator |
-| 17 | open_website | True | system_action | False | False | Governor → Executor |
-| 18 | speak_text | True | speech_output | False | False | Governor → Speech |
-| 19 | volume_up_down | True | system_action | False | False | Governor → Executor |
-| 20 | media_play_pause | True | system_action | False | False | Governor → Executor |
-| 21 | brightness_control | True | system_action | False | False | Governor → Executor |
-| 22 | open_file_folder | False | confirm_required | True | False | Governor → Executor |
-| 32 | os_diagnostics | True | system_action | False | False | Governor → Executor |
-| 48 | multi_source_reporting | False | read_only | False | True | Governor → NetworkMediator |
+## Active Capabilities
 
-## Governor Enforcement Summary
+| Capability ID | Name | Description | Authority Level |
+| --- | --- | --- | --- |
+| 16 | governed_web_search | Governed runtime capability | read_only |
+| 17 | open_website | Governed runtime capability | system_action |
+| 18 | speak_text | Governed runtime capability | speech_output |
+| 19 | volume_up_down | Governed runtime capability | system_action |
+| 20 | media_play_pause | Governed runtime capability | system_action |
+| 21 | brightness_control | Governed runtime capability | system_action |
+| 32 | os_diagnostics | Governed runtime capability | system_action |
+
+## Capability Restrictions
+
+- No background execution
+- No autonomous actions
+- No persistent learning
+- No scheduled task orchestration
+- No multi-capability chaining inside one invocation
+
+## Network Authority
+
+- Outbound network access is permitted only through `NetworkMediator`.
+- Skills and conversation modules may not bypass network mediation.
+- Capabilities using NetworkMediator: [16, 48]
+
+## Conversation Subsystem
+
+- Provides formatting, clarification, escalation, and analysis.
+- Cannot invoke executors directly.
+- Cannot create ActionRequest objects.
+- Direct LLM calls detected: deepseek_uses_ollama_chat_directly=False
+
+## User Interface Behavior
+
+- Orb visuals are non-semantic.
+- UI may display system state but does not confer execution authority.
+
+## Voice System
+
+- Speech input: local STT pipeline (Vosk).
+- Speech output: local invocation-bound TTS.
+- No background listening.
+- No unsolicited speech.
+
+## Ledger & Audit
+
+- Governed actions emit append-only ledger events.
+- Ledger includes timestamps, capability ID, and execution result.
+- Unknown ledger event types are rejected fail-closed.
+
+## Runtime Safety Guarantees
 
 - single_action_queue_enforced: True
 - execution_timeout_guard_active: True
@@ -50,32 +91,24 @@ Auto-generated runtime snapshot. Do not edit manually.
 - ledger_logging_active: True
 - execution_gate_enabled: True
 
-## Network Surface Summary
+## Verification Status
 
-- Capabilities using NetworkMediator: [16, 48]
-- Direct LLM calls detected: deepseek_uses_ollama_chat_directly=False
-- Allowed_analysis_only surfaces: escalation_policy.ALLOW_ANALYSIS_ONLY=True
-
-## Skill → Capability Routing Map
-
-- brightness -> capability_id=21
-- diagnostics -> capability_id=32
-- media -> capability_id=20
-- open_website -> capability_id=17
-- search -> capability_id=16
-- speak -> capability_id=18
-- volume -> capability_id=19
+- Backend test suite must pass in CI (`python -m pytest -q`).
+- Governance tests cover routing, mediation boundaries, and fail-closed behavior.
 
 ## Runtime Fingerprint
 
-- git_commit_hash: a51184c82dd8847fc21d46017f45059bcd4295c9
-- generated_at_utc: 2026-03-04T06:26:02.544989+00:00
-- phase_marker: Phase-4 runtime active
+- Commit: e85bb68527cdcdd9b6151e128c045ab7219bacef
+- Generated (UTC): 2026-03-07T04:03:27.746997+00:00
+- Capabilities enabled: [16, 17, 18, 19, 20, 21, 32]
+- Capabilities disabled: [22, 48]
+- Execution gate: True
 
-## Mediator mapped capability IDs
+## Runtime Truth Discrepancies
 
-- [16, 17, 18, 19, 20, 21, 32]
+- [hard_fail] ENABLED_ID_SET_MISMATCH: Enabled capability ID set differs between docs/current_runtime/CURRENT_RUNTIME_STATE.md and registry.json.
 
-## Runtime truth discrepancies
+## Change Control
 
-- None
+Update this document only when runtime capabilities, execution authority, or phase state changes.
+Other documents must reference this file instead of redefining runtime behavior.

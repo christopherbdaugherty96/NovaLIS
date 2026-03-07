@@ -24,7 +24,7 @@ def test_governance_docs_generation(tmp_path, monkeypatch):
     assert runtime_dir.exists()
 
     files = {
-        "CURRENT_RUNTIME_STATE.md": "# CURRENT_RUNTIME_STATE.md",
+        "CURRENT_RUNTIME_STATE.md": "# NOVA - CURRENT RUNTIME STATE",
         "GOVERNANCE_MATRIX.md": "# GOVERNANCE_MATRIX",
         "SKILL_SURFACE_MAP.md": "# SKILL_SURFACE_MAP",
         "BYPASS_SURFACES.md": "# BYPASS_SURFACES",
@@ -42,11 +42,12 @@ def test_current_runtime_state_includes_required_sections():
     registry = ra._load_registry()
     md = ra.render_current_runtime_state_markdown(report, registry)
 
-    assert "## Capability Governance Matrix" in md
-    assert "## Governor Enforcement Summary" in md
-    assert "## Network Surface Summary" in md
-    assert "## Skill → Capability Routing Map" in md
+    assert "## Execution Authority Model" in md
+    assert "## Active Capabilities" in md
+    assert "## Network Authority" in md
+    assert "## Runtime Safety Guarantees" in md
     assert "## Runtime Fingerprint" in md
+    assert "## Change Control" in md
 
     # Required checks
     assert "Capabilities using NetworkMediator: [16" in md
@@ -75,4 +76,5 @@ def test_derived_fields_do_not_crash_with_missing_optional_reads(monkeypatch):
 
     assert len(rows) == 1
     assert "authority_class" in rows[0]
-    assert rows[0]["execution_surface"] in {"Governor → Executor", "Governor → Speech", "Governor → NetworkMediator"}
+    assert rows[0]["execution_surface"] in {"Governor â†’ Executor", "Governor â†’ Speech", "Governor â†’ NetworkMediator"}
+

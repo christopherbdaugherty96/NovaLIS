@@ -39,10 +39,6 @@ class WebSearchExecutor:
 
     @staticmethod
     def _extract_domain(url: str) -> str:
-
-        clean = (url or "").split("//")[-1].split("/")[0].strip().lower()
-        return clean
-
         return (url or "").split("//")[-1].split("/")[0].strip().lower()
 
     def _parse_results(self, data: dict) -> list[dict]:
@@ -92,14 +88,6 @@ class WebSearchExecutor:
         max_retries = 1
         for attempt in range(max_retries + 1):
             if time.monotonic() - started_at > SEARCH_HARD_TIMEOUT_SECONDS:
-
-                return ActionResult(
-                    success=False,
-                    message=f"{boundary_notice} Search timed out. Please try again.",
-                    request_id=request.request_id,
-                    data=self._empty_widget(),
-                )
-
                 return ActionResult.failure(f"{boundary_notice} Search timed out. Please try again.", data=self._empty_widget(), request_id=request.request_id)
             try:
                 response = self.network.request(
@@ -166,26 +154,6 @@ class WebSearchExecutor:
             "Open any dashboard result for full article detail.",
         ]
         user_message = "\n".join(report_sections)
-
-        elapsed_seconds = time.monotonic() - started_at
-        avg_latency = self._record_latency(elapsed_seconds)
-        logger.info("web_search latency=%.2fs avg=%.2fs query=%s", elapsed_seconds, avg_latency, query[:80])
-
-        intro = ResponseTemplates.bounded_research_intro(query[:80])
-        findings_block = ResponseTemplates.top_findings_block([result["title"] for result in results[:3]])
-        sources_block = ResponseTemplates.sources_block(top_domains)
-        user_message = "\n".join(
-            [
-                f"{boundary_notice} I found {len(results)} results.",
-                intro,
-                "",
-                findings_block,
-                "",
-                sources_block,
-                "",
-                f"Search latency: {elapsed_seconds:.1f}s (avg {avg_latency:.1f}s).",
-            ]
-        )
 
         return ActionResult.ok(
             message=user_message,

@@ -359,6 +359,8 @@ async def websocket_endpoint(ws: WebSocket):
 
                 if action_result.success and isinstance(action_result.data, dict) and "widget" in action_result.data:
                     await ws_send(ws, action_result.data["widget"])
+                elif capability_id == 32 and action_result.success and isinstance(action_result.data, dict):
+                    await ws_send(ws, {"type": "system", "data": action_result.data, "summary": action_result.message})
 
                 await send_chat_done(ws)
 

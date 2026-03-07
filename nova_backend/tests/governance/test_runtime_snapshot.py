@@ -28,12 +28,12 @@ def test_render_current_runtime_state_markdown_contains_core_sections():
 
     markdown = runtime_auditor.render_current_runtime_state_markdown(report, registry)
 
-    assert "# CURRENT_RUNTIME_STATE.md" in markdown
-    assert "## Enabled capability IDs" in markdown
-    assert "- [16, 32]" in markdown
-    assert "## Disabled capability IDs" in markdown
-    assert "- [22]" in markdown
-    assert "| 16 | governed_web_search | True |" in markdown
+    assert "# NOVA - CURRENT RUNTIME STATE" in markdown
+    assert "## Active Capabilities" in markdown
+    assert "| 16 | governed_web_search | Governed runtime capability |" in markdown
+    assert "## Runtime Fingerprint" in markdown
+    assert "- Capabilities enabled: [16, 32]" in markdown
+    assert "- Capabilities disabled: [22]" in markdown
 
 
 def test_write_current_runtime_state_snapshot_writes_current_runtime_state_and_creates_dir(monkeypatch, tmp_path: Path):
@@ -79,6 +79,6 @@ def test_write_current_runtime_state_snapshot_writes_current_runtime_state_and_c
     assert returned_path == output_path.resolve()
     assert output_path.exists()
     content = output_path.read_text(encoding="utf-8")
-    assert "# CURRENT_RUNTIME_STATE.md" in content
-    assert "- [16, 32]" in content
+    assert "# NOVA - CURRENT RUNTIME STATE" in content
+    assert "- Capabilities enabled: [16, 32]" in content
     assert "TEST" in content
