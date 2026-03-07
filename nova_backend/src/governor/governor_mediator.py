@@ -35,6 +35,87 @@ OPEN_FOLDER_RE = re.compile(r"^\s*open\s+(?P<folder>documents|downloads|desktop|
 SET_VOLUME_RE = re.compile(r"^\s*set\s+volume\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 SET_BRIGHTNESS_RE = re.compile(r"^\s*set\s+brightness\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 SET_REPORT_RE = re.compile(r"^\s*(report|summarize)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
+HEADLINE_SUMMARY_RE = re.compile(
+    r"^\s*summarize\s+(?:(?:headline|headlines)\s+)?(?P<sel>all|[\w\s,;&]+)\s*$",
+    re.IGNORECASE,
+)
+INTEL_BRIEF_RE = re.compile(
+    r"^\s*(?:daily|intelligence|news)\s+brief\s*$|^\s*give me (?:the )?(?:daily|intelligence)\s+brief\s*$",
+    re.IGNORECASE,
+)
+TOPIC_MAP_RE = re.compile(
+    r"^\s*(?:show|open|view)?\s*(?:the\s+)?topic(?:\s+memory)?\s+map\s*$",
+    re.IGNORECASE,
+)
+TRACK_STORY_RE = re.compile(r"^\s*track\s+story\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
+UPDATE_STORY_RE = re.compile(r"^\s*update\s+story\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
+SHOW_STORY_RE = re.compile(r"^\s*show\s+story\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
+COMPARE_STORY_RE = re.compile(
+    r"^\s*compare\s+story\s+(?P<topic>.+?)\s+last\s+(?P<days>\d{1,3})\s+days\s*$",
+    re.IGNORECASE,
+)
+COMPARE_STORIES_RE = re.compile(
+    r"^\s*compare\s+stories\s+(?P<left>.+?)\s+and\s+(?P<right>.+?)\s*$",
+    re.IGNORECASE,
+)
+STOP_TRACKING_RE = re.compile(r"^\s*stop\s+tracking\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
+UPDATE_TRACKED_STORIES_RE = re.compile(r"^\s*update\s+tracked\s+stories\s*$", re.IGNORECASE)
+BRIEF_WITH_TRACKING_RE = re.compile(r"^\s*brief\s+with\s+story\s+tracking\s*$", re.IGNORECASE)
+LINK_STORY_RE = re.compile(
+    r"^\s*link\s+story\s+(?P<left>.+?)\s+to\s+(?P<right>.+?)\s*$",
+    re.IGNORECASE,
+)
+SHOW_REL_GRAPH_RE = re.compile(
+    r"^\s*show\s+(?:story\s+)?relationship\s+graph\s*$",
+    re.IGNORECASE,
+)
+
+_NUMBER_WORDS = {
+    "one": "1",
+    "two": "2",
+    "three": "3",
+    "four": "4",
+    "five": "5",
+    "six": "6",
+    "seven": "7",
+    "eight": "8",
+    "nine": "9",
+    "ten": "10",
+}
+
+
+def _normalize_number_words(text: str) -> str:
+    out = text
+    for word, digit in _NUMBER_WORDS.items():
+        out = re.sub(rf"\b{word}\b", digit, out, flags=re.IGNORECASE)
+    return out
+
+
+def _parse_headline_selection(selection_text: str) -> dict[str, Any] | None:
+    raw = _normalize_number_words(selection_text or "")
+    if not raw:
+        return None
+    cleaned = re.sub(r"\band\b|&|;", ",", raw, flags=re.IGNORECASE)
+    tokens = [token.strip() for token in cleaned.split(",") if token.strip()]
+
+    if len(tokens) == 1 and tokens[0].isdigit():
+        return {"selection": "indices", "indices": [int(tokens[0])]}
+
+    indices: list[int] = []
+    for token in tokens:
+        if not token:
+            continue
+        match = re.search(r"\b(\d{1,2})\b", token)
+        if not match:
+            continue
+        value = int(match.group(1))
+        if value not in indices:
+            indices.append(value)
+
+    if not indices:
+        return None
+
+    return {"selection": "indices", "indices": indices}
 
 
 @dataclass(frozen=True)
@@ -107,6 +188,70 @@ class GovernorMediator:
 
         if re.match(r"^\s*(system check|system status)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(32, {})
+
+        if INTEL_BRIEF_RE.match(t):
+            return _invocation_if_enabled(50, {})
+
+        if TOPIC_MAP_RE.match(t):
+            return _invocation_if_enabled(51, {})
+
+        m = TRACK_STORY_RE.match(t)
+        if m:
+            return _invocation_if_enabled(52, {"action": "track", "topic": m.group("topic").strip()})
+
+        m = UPDATE_STORY_RE.match(t)
+        if m:
+            return _invocation_if_enabled(52, {"action": "update", "topic": m.group("topic").strip()})
+
+        if UPDATE_TRACKED_STORIES_RE.match(t):
+            return _invocation_if_enabled(52, {"action": "update_all"})
+
+        if BRIEF_WITH_TRACKING_RE.match(t):
+            return _invocation_if_enabled(52, {"action": "brief_with_tracking"})
+
+        m = LINK_STORY_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                52,
+                {"action": "link", "topics": [m.group("left").strip(), m.group("right").strip()]},
+            )
+
+        m = STOP_TRACKING_RE.match(t)
+        if m:
+            return _invocation_if_enabled(52, {"action": "stop", "topic": m.group("topic").strip()})
+
+        if SHOW_REL_GRAPH_RE.match(t):
+            return _invocation_if_enabled(53, {"action": "show_graph"})
+
+        m = COMPARE_STORY_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                53,
+                {"action": "compare", "topic": m.group("topic").strip(), "days": int(m.group("days"))},
+            )
+
+        m = COMPARE_STORIES_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                53,
+                {
+                    "action": "compare_stories",
+                    "topics": [m.group("left").strip(), m.group("right").strip()],
+                },
+            )
+
+        m = SHOW_STORY_RE.match(t)
+        if m:
+            return _invocation_if_enabled(53, {"action": "show", "topic": m.group("topic").strip()})
+
+        hm = HEADLINE_SUMMARY_RE.match(t)
+        if hm:
+            selection = (hm.group("sel") or "").strip().lower()
+            if selection in {"all", "all headlines"}:
+                return _invocation_if_enabled(49, {"selection": "all"})
+            parsed = _parse_headline_selection(selection)
+            if parsed:
+                return _invocation_if_enabled(49, parsed)
 
         m = SET_REPORT_RE.match(t)
         if m:

@@ -82,6 +82,51 @@
       "risk_level": "low",
       "data_exfiltration": true,
       "enabled": false
+    },
+    {
+      "id": 49,
+      "name": "headline_summary",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": true
+    },
+    {
+      "id": 50,
+      "name": "intelligence_brief",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": true
+    },
+    {
+      "id": 51,
+      "name": "topic_memory_map",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": true
+    },
+    {
+      "id": 52,
+      "name": "story_tracker_update",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": true
+    },
+    {
+      "id": 53,
+      "name": "story_tracker_view",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": true
     }
   ],
   "retired_ids": []

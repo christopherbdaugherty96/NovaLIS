@@ -96,6 +96,12 @@ MEDIATOR_TRIGGER_PROBES: dict[str, str] = {
     "system status": "diagnostics",
     "report market update": "report",
     "summarize ai safety": "report",
+    "summarize headline 2": "headline_summary",
+    "summarize headlines 1 and 3": "headline_summary",
+    "daily brief": "intelligence_brief",
+    "show topic memory map": "topic_memory_map",
+    "update story ai regulation": "story_tracker_update",
+    "show story ai regulation": "story_tracker_view",
 }
 
 
@@ -150,15 +156,14 @@ def _extract_enabled_ids_from_markdown(markdown_text: str) -> list[int]:
             if not parts or not parts[0].isdigit():
                 continue
 
-            # New canonical table: | ID | Capability | Registry Status | Runtime Enabled | Runtime State |
-            if len(parts) >= 4:
-                if parts[3].lower() in {"true", "enabled"}:
+            # Legacy table: | id | name | enabled | status | ... |
+            if len(parts) >= 3 and parts[2].lower() in {"true", "false", "enabled", "disabled"}:
+                if parts[2].lower() in {"true", "enabled"}:
                     found.add(int(parts[0]))
                 continue
 
-            # Legacy table fallback: treat explicit enabled/active marker in row as enabled.
-            row_tokens = {token.lower() for token in parts}
-            if {"true", "enabled", "active"} & row_tokens:
+            # New canonical table: | ID | Capability | Registry Status | Runtime Enabled | Runtime State |
+            if len(parts) >= 4 and parts[3].lower() in {"true", "enabled"}:
                 found.add(int(parts[0]))
             continue
 
@@ -850,6 +855,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     generated_at = report.get("generated_at_utc", "")
     capabilities = registry.get("capabilities", [])
     enabled_ids = sorted(int(item["id"]) for item in capabilities if item.get("enabled") is True)
+    disabled_ids = sorted(int(item["id"]) for item in capabilities if item.get("enabled") is not True)
     governance_rows = _derive_capability_governance_rows(registry)
     enforcement = _governor_enforcement_summary()
     fingerprint = _runtime_fingerprint(enabled_ids)
@@ -879,7 +885,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     ).hexdigest()
 
     lines = [
-        "# NOVA CURRENT RUNTIME STATE",
+        "# NOVA - CURRENT RUNTIME STATE",
         "",
         f"Generated: {generated_at}",
         f"Commit: {fingerprint['git_commit_hash']}",
@@ -930,9 +936,21 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         "",
         "## Active Capabilities",
         "",
+        "| ID | Name | Description |",
+        "| --- | --- | --- |",
+    ]
+
+    for row in governance_rows:
+        if row["enabled"]:
+            lines.append(f"| {row['id']} | {row['name']} | Governed runtime capability |")
+
+    lines.extend(
+        [
+            "",
         "| ID | Capability | Registry Status | Runtime Enabled | Runtime State |",
         "| --- | --- | --- | --- | --- |",
-    ]
+        ]
+    )
 
     for row in governance_rows:
         runtime_state = "ACTIVE" if row["enabled"] and row["status"] == "active" else "INACTIVE"
@@ -990,6 +1008,8 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
             "",
             "## Runtime Fingerprint",
             "",
+            f"- Capabilities enabled: {enabled_ids}",
+            f"- Capabilities disabled: {disabled_ids}",
             f"- Capability Count: {len(enabled_ids)}",
             f"- Governor Modules: {len(governor_modules)}",
             f"- Executors: {executor_count}",
@@ -997,9 +1017,21 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
             "",
             f"- Hash: {runtime_hash}",
             "",
+            "## Runtime Truth Discrepancies",
+            "",
         ]
     )
 
+    discrepancies = report.get("discrepancies", [])
+    if discrepancies:
+        for item in discrepancies:
+            lines.append(
+                f"- [{item.get('severity', 'unknown')}] {item.get('code', 'UNKNOWN')}: {item.get('message', '')}"
+            )
+    else:
+        lines.append("- None")
+
+    lines.append("")
     return "\n".join(lines)
 
 

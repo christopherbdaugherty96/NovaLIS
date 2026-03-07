@@ -174,6 +174,26 @@ class Governor:
                 from src.executors.multi_source_reporting_executor import MultiSourceReportingExecutor
                 result = MultiSourceReportingExecutor(self.network).execute(req)
 
+            elif req.capability_id == 49:
+                from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
+                result = NewsIntelligenceExecutor().execute_summary(req)
+
+            elif req.capability_id == 50:
+                from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
+                result = NewsIntelligenceExecutor().execute_brief(req)
+
+            elif req.capability_id == 51:
+                from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
+                result = NewsIntelligenceExecutor().execute_topic_map(req)
+
+            elif req.capability_id == 52:
+                from src.executors.story_tracker_executor import StoryTrackerExecutor
+                result = StoryTrackerExecutor().execute_update(req)
+
+            elif req.capability_id == 53:
+                from src.executors.story_tracker_executor import StoryTrackerExecutor
+                result = StoryTrackerExecutor().execute_view(req)
+
             else:
                 result = ActionResult.refusal(
                     "Execution path not implemented yet.",
