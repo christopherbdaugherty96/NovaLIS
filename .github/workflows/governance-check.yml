@@ -47,3 +47,7 @@ jobs:
         run: |
           echo "Governance check passed."
           echo "No build, no execution, no behavior changes performed."
+
+      - name: Enforce runtime truth doc delegation
+        run: |
+          python3 scripts/check_runtime_doc_drift.py
