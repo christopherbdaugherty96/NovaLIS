@@ -57,7 +57,7 @@
       "phase_introduced": "4",
       "risk_level": "confirm",
       "data_exfiltration": false,
-      "enabled": false
+      "enabled": true
     },
     {
       "id": 19,

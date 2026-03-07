@@ -5,8 +5,8 @@ Deterministic generated tree diagram derived from allowlisted runtime sources.
 ```mermaid
 graph TD
   Runtime[Phase-4 Runtime]
-  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 31, 32, 49, 50, 51, 52, 53, 54]]
-  Runtime --> Disabled[Disabled IDs: [22, 48]]
+  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 49, 50, 51, 52, 53, 54]]
+  Runtime --> Disabled[Disabled IDs: [48]]
   Runtime --> Gov[Governor Guards]
   Gov --> EG[execution_gate: True]
   Gov --> SAQ[single_action_queue: True]
@@ -53,6 +53,7 @@ graph TD
   Routes --> R49_headline_summary[headline_summary -> capability 49]
   Routes --> R50_intelligence_brief[intelligence_brief -> capability 50]
   Routes --> R20_media[media -> capability 20]
+  Routes --> R22_open_folder[open_folder -> capability 22]
   Routes --> R17_open_website[open_website -> capability 17]
   Routes --> R31_response_verification[response_verification -> capability 31]
   Routes --> R16_search[search -> capability 16]
@@ -68,8 +69,8 @@ graph TD
 
 ```text
 Runtime
-â”œâ”€ Enabled IDs: [16, 17, 18, 19, 20, 21, 31, 32, 49, 50, 51, 52, 53, 54]
-â”œâ”€ Disabled IDs: [22, 48]
+â”œâ”€ Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 49, 50, 51, 52, 53, 54]
+â”œâ”€ Disabled IDs: [48]
 â”œâ”€ Governor Guards
 â”‚  â”œâ”€ execution_gate: True
 â”‚  â”œâ”€ single_action_queue: True
@@ -100,6 +101,7 @@ Runtime
 â”‚  â”œâ”€ headline_summary -> 49
 â”‚  â”œâ”€ intelligence_brief -> 50
 â”‚  â”œâ”€ media -> 20
+â”‚  â”œâ”€ open_folder -> 22
 â”‚  â”œâ”€ open_website -> 17
 â”‚  â”œâ”€ response_verification -> 31
 â”‚  â”œâ”€ search -> 16
