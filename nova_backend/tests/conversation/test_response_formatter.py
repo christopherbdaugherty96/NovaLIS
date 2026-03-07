@@ -27,3 +27,11 @@ def test_speakable_text_strips_urls_and_paths():
 
     assert "http" not in out.lower()
     assert "/tmp" not in out
+
+
+def test_friendly_fallback_guides_user():
+    from src.conversation.response_formatter import ResponseFormatter
+
+    out = ResponseFormatter.friendly_fallback()
+    assert "open files" in out.lower()
+    assert "search the web" in out.lower()

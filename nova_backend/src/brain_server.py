@@ -28,6 +28,7 @@ from src.speech_state import speech_state
 from src.conversation.thought_store import ThoughtStore
 from src.conversation.complexity_heuristics import ComplexityHeuristics
 from src.conversation.response_style_router import InputNormalizer
+from src.conversation.conversation_router import ConversationRouter
 from src.voice.stt_pipeline import STTAckConfig, build_ack_payload
 from src.voice.tts_engine import resolve_speakable_text, nova_speak, stop_speaking
 from src.conversation.clarify_prompts import CLARIFY_PROMPTS
@@ -126,10 +127,20 @@ async def audit_runtime_truth_markdown():
 async def ws_send(ws: WebSocket, payload: dict) -> None:
     await ws.send_text(json.dumps(payload))
 
-async def send_chat_message(ws: WebSocket, text: str, message_id: Optional[str] = None) -> None:
+async def send_chat_message(
+    ws: WebSocket,
+    text: str,
+    message_id: Optional[str] = None,
+    confidence: Optional[str] = None,
+    suggested_actions: Optional[list[dict[str, str]]] = None,
+) -> None:
     payload = {"type": "chat", "message": text}
     if message_id is not None:
         payload["message_id"] = message_id
+    if confidence:
+        payload["confidence"] = confidence
+    if suggested_actions:
+        payload["suggested_actions"] = suggested_actions
     await ws_send(ws, payload)
 
 async def send_chat_done(ws: WebSocket) -> None:
@@ -172,8 +183,11 @@ async def websocket_endpoint(ws: WebSocket):
         "last_input_channel": "text",
         "last_response": "",
         "last_clarification_turn": None,
+        "last_object": "",
         "news_cache": [],
         "topic_memory_map": {},
+        "analysis_documents": [],
+        "last_analysis_doc_id": None,
     }
 
     await send_chat_message(ws, "Hello. How can I help?")
@@ -218,12 +232,33 @@ async def websocket_endpoint(ws: WebSocket):
             session_state["last_input_channel"] = channel
 
             text = InputNormalizer.normalize(raw_text).strip()
+            route_info = ConversationRouter.route(text, session_state)
+            if route_info.get("needs_clarification"):
+                clarification_turn = session_state.get("last_clarification_turn")
+                if clarification_turn == session_state["turn_count"]:
+                    await send_chat_message(ws, "I still need a file or folder name to continue.")
+                else:
+                    await send_chat_message(ws, str(route_info.get("clarification") or "Could you clarify that?"))
+                    session_state["last_clarification_turn"] = session_state["turn_count"]
+                await send_chat_done(ws)
+                continue
+
+            resolved_text = str(route_info.get("resolved_text") or text).strip()
+            if resolved_text:
+                text = resolved_text
             lowered = text.lower().rstrip(".?!")
 
             if channel == "voice" and msg_type == "chat":
                 ack_payload = build_ack_payload(VOICE_ACK_CONFIG)
                 if ack_payload is not None:
                     await ws_send(ws, ack_payload)
+
+            micro_ack = str(route_info.get("micro_ack") or "").strip()
+            if micro_ack:
+                await send_chat_message(ws, micro_ack)
+
+            if lowered in {"open downloads", "open documents"}:
+                session_state["last_object"] = lowered.replace("open ", "")
 
             # --- Escalation handling (fixed: clear pending on all outcomes) ---
             if session_state["pending_escalation"]:
@@ -352,20 +387,49 @@ async def websocket_endpoint(ws: WebSocket):
                 params = dict(inv_result.params)
                 if capability_id == 18 and not params.get("text"):
                     params["text"] = session_state.get("last_response", "")
+                if capability_id == 31 and not params.get("text"):
+                    params["text"] = session_state.get("last_response", "")
                 if capability_id in {49, 50, 51, 52, 53}:
                     params.setdefault("headlines", list(session_state.get("news_cache") or []))
                     params.setdefault("topic_history", dict(session_state.get("topic_memory_map") or {}))
+                if capability_id == 54:
+                    params.setdefault("analysis_documents", list(session_state.get("analysis_documents") or []))
+                    if params.get("doc_id") in {None, ""} and session_state.get("last_analysis_doc_id") is not None:
+                        params["doc_id"] = session_state.get("last_analysis_doc_id")
 
                 action_result = governor.handle_governed_invocation(capability_id, params)
                 if isinstance(action_result.data, dict):
                     topic_map = action_result.data.get("topic_map")
                     if isinstance(topic_map, dict):
                         session_state["topic_memory_map"] = topic_map
+                    analysis_docs = action_result.data.get("analysis_documents")
+                    if isinstance(analysis_docs, list):
+                        session_state["analysis_documents"] = analysis_docs
+                    if "document_id" in action_result.data:
+                        session_state["last_analysis_doc_id"] = action_result.data.get("document_id")
 
                 if capability_id != 18 and action_result.message:
                     session_state["last_response"] = action_result.message
 
-                await send_chat_message(ws, action_result.message)
+                message_confidence: Optional[str] = None
+                message_suggestions: list[dict[str, str]] | None = None
+                if capability_id == 31 and isinstance(action_result.data, dict):
+                    confidence_label = str(action_result.data.get("verification_confidence_label") or "").strip()
+                    if confidence_label:
+                        message_confidence = f"Verification {confidence_label}"
+                    if action_result.data.get("verification_recommended") is True:
+                        message_suggestions = [
+                            {"label": "Re-check with sources", "command": "show sources for your last response"},
+                            {"label": "Summarize risk", "command": "summarize verification risks in 3 bullets"},
+                            {"label": "Revise answer", "command": "revise your last answer using this verification report"},
+                        ]
+
+                await send_chat_message(
+                    ws,
+                    action_result.message,
+                    confidence=message_confidence,
+                    suggested_actions=message_suggestions,
+                )
 
                 if action_result.success and isinstance(action_result.data, dict) and "widget" in action_result.data:
                     await ws_send(ws, action_result.data["widget"])
@@ -490,7 +554,7 @@ async def websocket_endpoint(ws: WebSocket):
                 continue
 
             # --- Fallback ---
-            fallback_message = "I'm not sure how to help with that."
+            fallback_message = response_formatter.friendly_fallback()
             session_state["last_response"] = fallback_message
             await send_chat_message(ws, fallback_message)
             await send_chat_done(ws)

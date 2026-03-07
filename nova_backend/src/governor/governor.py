@@ -194,6 +194,14 @@ class Governor:
                 from src.executors.story_tracker_executor import StoryTrackerExecutor
                 result = StoryTrackerExecutor().execute_view(req)
 
+            elif req.capability_id == 54:
+                from src.executors.analysis_document_executor import AnalysisDocumentExecutor
+                result = AnalysisDocumentExecutor().execute(req)
+
+            elif req.capability_id == 31:
+                from src.executors.response_verification_executor import ResponseVerificationExecutor
+                result = ResponseVerificationExecutor().execute(req)
+
             else:
                 result = ActionResult.refusal(
                     "Execution path not implemented yet.",

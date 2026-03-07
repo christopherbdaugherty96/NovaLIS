@@ -11,6 +11,7 @@ Deterministic capability governance matrix derived from allowlisted runtime sour
 | 20 | media_play_pause | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 | 21 | brightness_control | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 | 22 | open_file_folder | False | active | 4 | confirm | False | confirm_required | True | False | Governor â†’ Executor | True | True | True | True | True |
+| 31 | response_verification | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 | 32 | os_diagnostics | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 | 48 | multi_source_reporting | False | active | 4 | low | True | read_only | False | True | Governor â†’ NetworkMediator | True | True | True | True | True |
 | 49 | headline_summary | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
@@ -18,6 +19,7 @@ Deterministic capability governance matrix derived from allowlisted runtime sour
 | 51 | topic_memory_map | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 | 52 | story_tracker_update | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 | 53 | story_tracker_view | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
+| 54 | analysis_document | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 
 ## Derivation notes
 

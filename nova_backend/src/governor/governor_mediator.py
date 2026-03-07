@@ -32,6 +32,7 @@ def _invocation_if_enabled(capability_id: int, params: Dict[str, Any]) -> Invoca
 SEARCH_RE = re.compile(r"^\s*(search(?: for)?|look up|research)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
 OPEN_RE = re.compile(r"^\s*open\s+(?P<name>\w+)\s*$", re.IGNORECASE)
 OPEN_FOLDER_RE = re.compile(r"^\s*open\s+(?P<folder>documents|downloads|desktop|pictures)\s*$", re.IGNORECASE)
+OPEN_FILE_RE = re.compile(r"^\s*open\s+(?:file|document)\s+(?P<path>.+?)\s*$", re.IGNORECASE)
 SET_VOLUME_RE = re.compile(r"^\s*set\s+volume\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 SET_BRIGHTNESS_RE = re.compile(r"^\s*set\s+brightness\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 SET_REPORT_RE = re.compile(r"^\s*(report|summarize)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
@@ -67,6 +68,27 @@ LINK_STORY_RE = re.compile(
 )
 SHOW_REL_GRAPH_RE = re.compile(
     r"^\s*show\s+(?:story\s+)?relationship\s+graph\s*$",
+    re.IGNORECASE,
+)
+VERIFY_RE = re.compile(
+    r"^\s*(?:verify|double\s+check|fact\s*check|validate(?:\s+sources?)?)"
+    r"(?:\s+(?P<text>.+?))?\s*$",
+    re.IGNORECASE,
+)
+DOC_CREATE_RE = re.compile(
+    r"^\s*(?:write|create|generate)\s+(?:a\s+)?(?:detailed\s+)?(?:analysis(?:\s+report)?|report|document)\s+(?:on|about)\s+(?P<topic>.+?)\s*$",
+    re.IGNORECASE,
+)
+DOC_SUMMARIZE_RE = re.compile(
+    r"^\s*summarize\s+doc(?:ument)?\s+(?P<doc_id>\d+)\s*$",
+    re.IGNORECASE,
+)
+DOC_EXPLAIN_SECTION_RE = re.compile(
+    r"^\s*explain\s+section\s+(?P<section>\d+)(?:\s+of\s+doc(?:ument)?\s+(?P<doc_id>\d+))?\s*$",
+    re.IGNORECASE,
+)
+DOC_LIST_RE = re.compile(
+    r"^\s*(?:list|show)\s+(?:analysis\s+)?docs?(?:uments)?\s*$",
     re.IGNORECASE,
 )
 
@@ -158,6 +180,10 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(22, {"target": m.group("folder").strip().lower()})
 
+        m = OPEN_FILE_RE.match(t)
+        if m:
+            return _invocation_if_enabled(22, {"path": m.group("path").strip()})
+
         m = OPEN_RE.match(t)
         if m:
             return _invocation_if_enabled(17, {"target": m.group("name").strip().lower()})
@@ -222,6 +248,31 @@ class GovernorMediator:
 
         if SHOW_REL_GRAPH_RE.match(t):
             return _invocation_if_enabled(53, {"action": "show_graph"})
+
+        vm = VERIFY_RE.match(t)
+        if vm:
+            candidate = (vm.group("text") or "").strip()
+            if candidate.lower() in {"this", "that", "it"}:
+                candidate = ""
+            return _invocation_if_enabled(31, {"text": candidate})
+
+        m = DOC_CREATE_RE.match(t)
+        if m:
+            return _invocation_if_enabled(54, {"action": "create", "topic": m.group("topic").strip()})
+
+        m = DOC_SUMMARIZE_RE.match(t)
+        if m:
+            return _invocation_if_enabled(54, {"action": "summarize_doc", "doc_id": int(m.group("doc_id"))})
+
+        m = DOC_EXPLAIN_SECTION_RE.match(t)
+        if m:
+            params: Dict[str, Any] = {"action": "explain_section", "section_number": int(m.group("section"))}
+            if m.group("doc_id"):
+                params["doc_id"] = int(m.group("doc_id"))
+            return _invocation_if_enabled(54, params)
+
+        if DOC_LIST_RE.match(t):
+            return _invocation_if_enabled(54, {"action": "list"})
 
         m = COMPARE_STORY_RE.match(t)
         if m:

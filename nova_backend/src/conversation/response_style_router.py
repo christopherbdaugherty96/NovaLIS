@@ -26,6 +26,21 @@ class InputNormalizer:
         (r"\bu\b", "you"),
     )
 
+    PHRASE_NORMALIZATION = (
+        (r"\bmake it louder\b", "volume up"),
+        (r"\bturn (?:my )?sound up\b", "volume up"),
+        (r"\bturn (?:the )?volume up\b", "volume up"),
+        (r"\bincrease volume\b", "volume up"),
+        (r"\bturn (?:my )?sound down\b", "volume down"),
+        (r"\blower the volume\b", "volume down"),
+        (r"\bturn (?:the )?volume down\b", "volume down"),
+        (r"\bopen my downloads\b", "open downloads"),
+        (r"\bopen my documents\b", "open documents"),
+        (r"\bopen downloads folder\b", "open downloads"),
+        (r"\bopen documents folder\b", "open documents"),
+        (r"\bwhat(?:'s| is) going on in tech today\b", "daily brief tech"),
+    )
+
     @classmethod
     def normalize(cls, text: str) -> str:
         clean = (text or "").strip()
@@ -47,6 +62,9 @@ class InputNormalizer:
         for pattern, replacement in cls.TYPO_REPLACEMENTS:
             clean = re.sub(pattern, replacement, clean, flags=re.IGNORECASE)
 
+        for pattern, replacement in cls.PHRASE_NORMALIZATION:
+            clean = re.sub(pattern, replacement, clean, flags=re.IGNORECASE)
+
         if clean and clean[0].islower():
             clean = clean[0].upper() + clean[1:]
 
@@ -54,10 +72,6 @@ class InputNormalizer:
             clean += "."
 
         return clean
-
-        # Invocation-parsing input must remain structurally stable.
-        # Only normalize case and whitespace; do not inject punctuation.
-        return clean.lower()
 
 
 class ResponseStyleRouter:

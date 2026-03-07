@@ -1,11 +1,14 @@
 from __future__ import annotations
 
+import json
 import re
 from collections import Counter
+from pathlib import Path
 from typing import Any
 
 from src.actions.action_result import ActionResult
 from src.llm.llm_gateway import generate_chat
+from src.rendering.intelligence_brief_renderer import IntelligenceBriefRenderer
 
 MAX_HEADLINES_PER_SUMMARY = 3
 
@@ -40,6 +43,8 @@ STOPWORDS = {
 
 class NewsIntelligenceExecutor:
     """Governed analysis over user-selected news headlines (invocation-bound)."""
+    def __init__(self) -> None:
+        self.renderer = IntelligenceBriefRenderer()
 
     def _sanitize_headlines(self, raw: Any) -> list[dict[str, str]]:
         if not isinstance(raw, list):
@@ -60,6 +65,45 @@ class NewsIntelligenceExecutor:
                 }
             )
         return out
+
+    def _load_developing_stories(self) -> list[dict[str, Any]]:
+        root = Path(__file__).resolve().parents[3] / "nova_workspace" / "story_tracker"
+        tracked_path = root / "tracked_topics.json"
+        try:
+            tracked = json.loads(tracked_path.read_text(encoding="utf-8"))
+            topics = tracked.get("topics", []) if isinstance(tracked, dict) else []
+        except Exception:
+            topics = []
+
+        out: list[dict[str, Any]] = []
+        for topic in topics:
+            t = str(topic).strip()
+            if not t:
+                continue
+            slug = re.sub(r"[^a-z0-9]+", "_", t.lower()).strip("_") or "untitled"
+            story_path = root / f"story_{slug}.json"
+            try:
+                story = json.loads(story_path.read_text(encoding="utf-8"))
+            except Exception:
+                continue
+            snapshots = story.get("snapshots", []) if isinstance(story, dict) else []
+            out.append({"topic": t, "updates": len(snapshots)})
+        return out
+
+    def _apply_story_evolution(self, headlines: list[dict[str, str]], developing_stories: list[dict[str, Any]]) -> list[dict[str, Any]]:
+        enhanced: list[dict[str, Any]] = []
+        for item in headlines:
+            cloned = dict(item)
+            title_text = (item.get("title") or "").lower()
+            for story in developing_stories:
+                topic = str(story.get("topic") or "")
+                updates = int(story.get("updates") or 0)
+                topic_terms = [term for term in re.findall(r"[a-zA-Z0-9]+", topic.lower()) if len(term) >= 4]
+                if topic_terms and any(term in title_text for term in topic_terms):
+                    cloned["evolution_cycles"] = updates
+                    break
+            enhanced.append(cloned)
+        return enhanced
 
     def _select_headlines(self, headlines: list[dict[str, str]], params: dict[str, Any]) -> tuple[list[dict[str, str]], list[int]]:
         selection = (params or {}).get("selection")
@@ -165,7 +209,7 @@ class NewsIntelligenceExecutor:
                 fallback,
                 request_id=f"{request.request_id}:headline:{idx}",
             )
-            blocks.append(f"Headline {idx}: {item['title']}\n{analysis.strip()}")
+            blocks.append(self.renderer.render_single(item, analysis_text=analysis.strip()))
 
         return ActionResult.ok(
             message="\n\n".join(blocks),
@@ -190,6 +234,8 @@ class NewsIntelligenceExecutor:
             )
 
         source = headlines[:6]
+        developing_stories = self._load_developing_stories()
+        source = self._apply_story_evolution(source, developing_stories)
         fallback_headlines = "\n".join(f"{idx}. {item['title']}" for idx, item in enumerate(source[:4], start=1))
         fallback = (
             "Top Headlines\n"
@@ -197,10 +243,15 @@ class NewsIntelligenceExecutor:
             "Key Developments\n- Multiple notable stories are active right now.\n\n"
             "Signals to Watch\n- Monitor follow-up reporting from primary sources."
         )
-        brief = self._llm_or_fallback(
+        analysis = self._llm_or_fallback(
             self._brief_prompt(source),
             fallback,
             request_id=f"{request.request_id}:brief",
+        )
+        brief = self.renderer.render_brief(
+            source,
+            analysis_text=analysis,
+            developing_stories=developing_stories,
         )
 
         prior = (request.params or {}).get("topic_history")
@@ -208,7 +259,7 @@ class NewsIntelligenceExecutor:
         topic_map = self._build_topic_map(source, prior_map)
 
         return ActionResult.ok(
-            message=f"DAILY INTELLIGENCE BRIEF\n\n{brief.strip()}",
+            message=brief.strip(),
             data={
                 "widget": {"type": "intelligence_brief", "data": {"headline_count": len(source)}},
                 "topic_map": topic_map,

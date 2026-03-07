@@ -74,6 +74,13 @@ class ResponseFormatter:
         return clean
 
     @staticmethod
+    def friendly_fallback() -> str:
+        return (
+            "I'm not sure what you'd like me to do with that. "
+            "You can ask me to open files, search the web, or show today's brief."
+        )
+
+    @staticmethod
     def with_conversational_initiative(
         base_text: str,
         mode: str,
