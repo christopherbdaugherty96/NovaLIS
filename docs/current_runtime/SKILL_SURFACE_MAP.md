@@ -7,10 +7,15 @@ Deterministic surface map for skills, conversation modules, and governor capabil
 | deepseek_bridge | src/conversation/deepseek_bridge.py | conversation | unknown | llm_gateway |  |
 | brightness | src/governor/governor_mediator.py | governor_capability | unknown | none | 21 |
 | diagnostics | src/governor/governor_mediator.py | governor_capability | unknown | none | 32 |
+| headline_summary | src/governor/governor_mediator.py | governor_capability | unknown | none | 49 |
+| intelligence_brief | src/governor/governor_mediator.py | governor_capability | unknown | none | 50 |
 | media | src/governor/governor_mediator.py | governor_capability | unknown | none | 20 |
 | open_website | src/governor/governor_mediator.py | governor_capability | unknown | none | 17 |
 | search | src/governor/governor_mediator.py | governor_capability | unknown | none | 16 |
 | speak | src/governor/governor_mediator.py | governor_capability | unknown | none | 18 |
+| story_tracker_update | src/governor/governor_mediator.py | governor_capability | unknown | none | 52 |
+| story_tracker_view | src/governor/governor_mediator.py | governor_capability | unknown | none | 53 |
+| topic_memory_map | src/governor/governor_mediator.py | governor_capability | unknown | none | 51 |
 | volume | src/governor/governor_mediator.py | governor_capability | unknown | none | 19 |
 | general_chat | src/skills/general_chat.py | skill | yes | llm_gateway |  |
 | news | src/skills/news.py | skill | yes | none |  |

@@ -5,7 +5,7 @@ Deterministic generated tree diagram derived from allowlisted runtime sources.
 ```mermaid
 graph TD
   Runtime[Phase-4 Runtime]
-  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 32]]
+  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 32, 49, 50, 51, 52, 53]]
   Runtime --> Disabled[Disabled IDs: [22, 48]]
   Runtime --> Gov[Governor Guards]
   Gov --> EG[execution_gate: True]
@@ -32,13 +32,28 @@ graph TD
   C32 --> C32A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
   Caps --> C48[48:multi_source_reporting]
   C48 --> C48A[authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor â†’ NetworkMediator]
+  Caps --> C49[49:headline_summary]
+  C49 --> C49A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  Caps --> C50[50:intelligence_brief]
+  C50 --> C50A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  Caps --> C51[51:topic_memory_map]
+  C51 --> C51A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  Caps --> C52[52:story_tracker_update]
+  C52 --> C52A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  Caps --> C53[53:story_tracker_view]
+  C53 --> C53A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
   Runtime --> Routes[Skill Routes]
   Routes --> R21_brightness[brightness -> capability 21]
   Routes --> R32_diagnostics[diagnostics -> capability 32]
+  Routes --> R49_headline_summary[headline_summary -> capability 49]
+  Routes --> R50_intelligence_brief[intelligence_brief -> capability 50]
   Routes --> R20_media[media -> capability 20]
   Routes --> R17_open_website[open_website -> capability 17]
   Routes --> R16_search[search -> capability 16]
   Routes --> R18_speak[speak -> capability 18]
+  Routes --> R52_story_tracker_update[story_tracker_update -> capability 52]
+  Routes --> R53_story_tracker_view[story_tracker_view -> capability 53]
+  Routes --> R51_topic_memory_map[topic_memory_map -> capability 51]
   Routes --> R19_volume[volume -> capability 19]
   Runtime --> LLM[Conversation/Model Surfaces]
   LLM --> src_conversation_deepseek_bridge_py[src/conversation/deepseek_bridge.py uses llm_gateway.generate_chat]
@@ -47,7 +62,7 @@ graph TD
 
 ```text
 Runtime
-â”œâ”€ Enabled IDs: [16, 17, 18, 19, 20, 21, 32]
+â”œâ”€ Enabled IDs: [16, 17, 18, 19, 20, 21, 32, 49, 50, 51, 52, 53]
 â”œâ”€ Disabled IDs: [22, 48]
 â”œâ”€ Governor Guards
 â”‚  â”œâ”€ execution_gate: True
@@ -65,13 +80,23 @@ Runtime
 â”‚  â”œâ”€ 22 open_file_folder (authority=confirm_required, risk=confirm, network=False, exfil=False, confirm=True, surface=Governor â†’ Executor)
 â”‚  â”œâ”€ 32 os_diagnostics (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
 â”‚  â”œâ”€ 48 multi_source_reporting (authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor â†’ NetworkMediator)
+â”‚  â”œâ”€ 49 headline_summary (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
+â”‚  â”œâ”€ 50 intelligence_brief (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
+â”‚  â”œâ”€ 51 topic_memory_map (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
+â”‚  â”œâ”€ 52 story_tracker_update (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
+â”‚  â”œâ”€ 53 story_tracker_view (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
 â”œâ”€ Skill â†’ capability routes
 â”‚  â”œâ”€ brightness -> 21
 â”‚  â”œâ”€ diagnostics -> 32
+â”‚  â”œâ”€ headline_summary -> 49
+â”‚  â”œâ”€ intelligence_brief -> 50
 â”‚  â”œâ”€ media -> 20
 â”‚  â”œâ”€ open_website -> 17
 â”‚  â”œâ”€ search -> 16
 â”‚  â”œâ”€ speak -> 18
+â”‚  â”œâ”€ story_tracker_update -> 52
+â”‚  â”œâ”€ story_tracker_view -> 53
+â”‚  â”œâ”€ topic_memory_map -> 51
 â”‚  â”œâ”€ volume -> 19
 â””â”€ Conversation/model surfaces
    â”œâ”€ src/conversation/deepseek_bridge.py -> llm_gateway.generate_chat

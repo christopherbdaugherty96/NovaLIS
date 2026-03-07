@@ -42,16 +42,16 @@ def test_current_runtime_state_includes_required_sections():
     registry = ra._load_registry()
     md = ra.render_current_runtime_state_markdown(report, registry)
 
-    assert "## Execution Authority Model" in md
+    assert "## Phase Activation Matrix" in md
+    assert "## Runtime Governance Spine" in md
     assert "## Active Capabilities" in md
-    assert "## Network Authority" in md
-    assert "## Runtime Safety Guarantees" in md
+    assert "## Runtime Systems" in md
+    assert "## Known Runtime Gaps" in md
+    assert "## Runtime Invariants" in md
     assert "## Runtime Fingerprint" in md
-    assert "## Change Control" in md
 
-    # Required checks
-    assert "Capabilities using NetworkMediator: [16" in md
-    assert "deepseek_uses_ollama_chat_directly=False" in md
+    assert "Manual edits: NOT PERMITTED" in md
+    assert "| 49 | headline_summary |" in md
 
 
 def test_governance_matrix_tree_up_to_date_with_renderer():

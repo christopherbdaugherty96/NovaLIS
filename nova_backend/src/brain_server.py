@@ -172,6 +172,8 @@ async def websocket_endpoint(ws: WebSocket):
         "last_input_channel": "text",
         "last_response": "",
         "last_clarification_turn": None,
+        "news_cache": [],
+        "topic_memory_map": {},
     }
 
     await send_chat_message(ws, "Hello. How can I help?")
@@ -308,6 +310,7 @@ async def websocket_endpoint(ws: WebSocket):
                     if news_result and news_result.success:
                         if isinstance(news_result.widget_data, dict):
                             news_summary = (news_result.widget_data.get("summary") or news_summary)
+                            session_state["news_cache"] = list(news_result.widget_data.get("items") or [])
                             await ws_send(ws, news_result.widget_data)
 
                 if system_skill is not None:
@@ -349,8 +352,15 @@ async def websocket_endpoint(ws: WebSocket):
                 params = dict(inv_result.params)
                 if capability_id == 18 and not params.get("text"):
                     params["text"] = session_state.get("last_response", "")
+                if capability_id in {49, 50, 51, 52, 53}:
+                    params.setdefault("headlines", list(session_state.get("news_cache") or []))
+                    params.setdefault("topic_history", dict(session_state.get("topic_memory_map") or {}))
 
                 action_result = governor.handle_governed_invocation(capability_id, params)
+                if isinstance(action_result.data, dict):
+                    topic_map = action_result.data.get("topic_map")
+                    if isinstance(topic_map, dict):
+                        session_state["topic_memory_map"] = topic_map
 
                 if capability_id != 18 and action_result.message:
                     session_state["last_response"] = action_result.message
@@ -447,9 +457,12 @@ async def websocket_endpoint(ws: WebSocket):
                     session_state["last_escalation_turn"] = session_state["turn_count"]
 
                 if isinstance(widget_data, dict) and "type" in widget_data:
+                    if widget_data.get("type") == "news":
+                        session_state["news_cache"] = list(widget_data.get("items") or [])
                     await ws_send(ws, widget_data)
                 elif skill_name == "news" and isinstance(widget_data, dict):
                     items = widget_data.get("items", [])
+                    session_state["news_cache"] = list(items)
                     await send_widget_message(ws, "news", message, {"items": items})
                 elif skill_name == "weather" and isinstance(widget_data, dict):
                     await send_widget_message(ws, "weather", message, widget_data)
