@@ -45,6 +45,11 @@ class EscalationPolicy:
         """Execution escalation decision only (non-conversational)."""
         del user_message
 
+        # Phase-4 runtime rule: deep analysis is invocation-bound.
+        # No heuristic-only auto escalation.
+        if not bool(session_state.get("deep_mode_armed", False)):
+            return "DENY"
+
         if not heuristic_result.get("escalate"):
             return "DENY"
 

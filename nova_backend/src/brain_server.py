@@ -14,6 +14,7 @@ from src.routers.stt import router as stt_router
 
 import json
 import logging
+import re
 import uuid
 from datetime import datetime
 from typing import Optional
@@ -94,6 +95,38 @@ CONVERSATIONAL_INITIATIVE_ENABLED = True
 VOICE_ACK_ENABLED = True
 VOICE_ACK_TEXT = "Got it."
 VOICE_ACK_CONFIG = STTAckConfig(enabled=VOICE_ACK_ENABLED, text=VOICE_ACK_TEXT)
+
+
+def _extract_sources_from_results(results: list[dict]) -> list[str]:
+    sources: list[str] = []
+    for item in results:
+        if not isinstance(item, dict):
+            continue
+        url = str(item.get("url") or "").strip()
+        if not url:
+            continue
+        domain = url.split("//")[-1].split("/")[0].strip().lower()
+        if domain and domain not in sources:
+            sources.append(domain)
+    return sources[:5]
+
+
+def _structure_long_message(text: str) -> str:
+    raw = (text or "").strip()
+    if not raw:
+        return raw
+    if "\n" in raw or len(raw) < 360:
+        return raw
+
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", raw) if s.strip()]
+    if len(sentences) <= 3:
+        return raw
+
+    summary = sentences[0]
+    points = sentences[1:4]
+    lines = ["Summary", summary, "", "Key Points"]
+    lines.extend(f"- {pt}" for pt in points)
+    return "\n".join(lines)
 
 # -------------------------------------------------
 # Phase Status Endpoint
@@ -180,11 +213,14 @@ async def websocket_endpoint(ws: WebSocket):
         "show_thinking_hints": True,
         "presence_mode": False,
         "pending_escalation": None,
+        "deep_mode_armed": False,
+        "deep_mode_last_armed_turn": None,
         "last_input_channel": "text",
         "last_response": "",
         "last_clarification_turn": None,
         "last_object": "",
         "news_cache": [],
+        "last_sources": [],
         "topic_memory_map": {},
         "analysis_documents": [],
         "last_analysis_doc_id": None,
@@ -248,6 +284,23 @@ async def websocket_endpoint(ws: WebSocket):
                 text = resolved_text
             lowered = text.lower().rstrip(".?!")
 
+            if lowered in {"deep mode", "deep analysis", "go deeper", "challenge this", "pressure test this"}:
+                session_state["deep_mode_armed"] = True
+                session_state["deep_mode_last_armed_turn"] = session_state.get("turn_count", 0)
+                await send_chat_message(
+                    ws,
+                    "Deep analysis is armed for your next request. Ask your question when ready.",
+                )
+                await send_chat_done(ws)
+                continue
+
+            if lowered in {"stop deep mode", "cancel deep mode", "reset deep mode"}:
+                session_state["deep_mode_armed"] = False
+                session_state["pending_escalation"] = None
+                await send_chat_message(ws, "Deep analysis canceled.")
+                await send_chat_done(ws)
+                continue
+
             if channel == "voice" and msg_type == "chat":
                 ack_payload = build_ack_payload(VOICE_ACK_CONFIG)
                 if ack_payload is not None:
@@ -272,6 +325,7 @@ async def websocket_endpoint(ws: WebSocket):
                         forced_state["last_escalation_turn"] = None
                         forced_state["turn_count"] = 999
                         forced_state["deep_mode_disabled"] = False
+                        forced_state["deep_mode_armed"] = True
                         forced_result = await skill.handle(original_query, context_snapshot, forced_state)
                         message_id = None
                         if forced_result is not None:
@@ -288,14 +342,17 @@ async def websocket_endpoint(ws: WebSocket):
                             session_context = session_context[-context_limit:]
                             session_state["turn_count"] += 1
                             session_state["pending_escalation"] = None
+                            session_state["deep_mode_armed"] = False
                             continue
                     # skill is None or forced_result is None
                     await send_chat_message(ws, "Deep analysis is unavailable right now. Please answer 'yes', 'no', or 'cancel'.")
                     await send_chat_done(ws)
                     session_state["pending_escalation"] = None
+                    session_state["deep_mode_armed"] = False
                     continue
                 elif lowered in {"no", "cancel"}:
                     session_state["pending_escalation"] = None
+                    session_state["deep_mode_armed"] = False
                     await send_chat_message(ws, "Okay, keeping it brief.")
                     await send_chat_done(ws)
                     continue
@@ -321,6 +378,21 @@ async def websocket_endpoint(ws: WebSocket):
 
             if lowered in {"thanks", "thank you", "thank you nova", "thank you, nova"}:
                 await send_chat_message(ws, "You're welcome.")
+                await send_chat_done(ws)
+                continue
+
+            if lowered in {"show sources", "show sources for your last response", "sources"}:
+                last_sources = list(session_state.get("last_sources") or [])
+                if not last_sources:
+                    await send_chat_message(
+                        ws,
+                        "I don't have citation sources for the last response. "
+                        "Use a governed web search or news request, then ask for sources.",
+                    )
+                else:
+                    lines = ["Sources for last response:"]
+                    lines.extend(f"{i + 1}. {src}" for i, src in enumerate(last_sources))
+                    await send_chat_message(ws, "\n".join(lines))
                 await send_chat_done(ws)
                 continue
 
@@ -402,6 +474,12 @@ async def websocket_endpoint(ws: WebSocket):
                     topic_map = action_result.data.get("topic_map")
                     if isinstance(topic_map, dict):
                         session_state["topic_memory_map"] = topic_map
+                    widget = action_result.data.get("widget")
+                    if isinstance(widget, dict) and widget.get("type") == "search":
+                        search_data = widget.get("data") if isinstance(widget.get("data"), dict) else {}
+                        results = search_data.get("results") if isinstance(search_data, dict) else []
+                        if isinstance(results, list):
+                            session_state["last_sources"] = _extract_sources_from_results(results)
                     analysis_docs = action_result.data.get("analysis_documents")
                     if isinstance(analysis_docs, list):
                         session_state["analysis_documents"] = analysis_docs
@@ -424,9 +502,10 @@ async def websocket_endpoint(ws: WebSocket):
                             {"label": "Revise answer", "command": "revise your last answer using this verification report"},
                         ]
 
+                outgoing_message = _structure_long_message(action_result.message)
                 await send_chat_message(
                     ws,
-                    action_result.message,
+                    outgoing_message,
                     confidence=message_confidence,
                     suggested_actions=message_suggestions,
                 )
@@ -495,7 +574,7 @@ async def websocket_endpoint(ws: WebSocket):
                     speakable_text=(result_data.get("speakable_text") or ""),
                     structured_data=(result_data.get("structured_data") or {}),
                 )
-                message = payload["user_message"]
+                message = _structure_long_message(payload["user_message"])
                 result_data["speakable_text"] = payload["speakable_text"]
                 result_data["structured_data"] = payload["structured_data"]
 
@@ -519,14 +598,18 @@ async def websocket_endpoint(ws: WebSocket):
                     thought_store.put(session_id, message_id, escalation["thought_data"])
                     session_state["escalation_count"] += 1
                     session_state["last_escalation_turn"] = session_state["turn_count"]
+                    session_state["deep_mode_armed"] = False
 
                 if isinstance(widget_data, dict) and "type" in widget_data:
                     if widget_data.get("type") == "news":
-                        session_state["news_cache"] = list(widget_data.get("items") or [])
+                        items = list(widget_data.get("items") or [])
+                        session_state["news_cache"] = items
+                        session_state["last_sources"] = _extract_sources_from_results(items)
                     await ws_send(ws, widget_data)
                 elif skill_name == "news" and isinstance(widget_data, dict):
                     items = widget_data.get("items", [])
                     session_state["news_cache"] = list(items)
+                    session_state["last_sources"] = _extract_sources_from_results(list(items))
                     await send_widget_message(ws, "news", message, {"items": items})
                 elif skill_name == "weather" and isinstance(widget_data, dict):
                     await send_widget_message(ws, "weather", message, widget_data)

@@ -23,7 +23,7 @@ def test_registry_profile_default_keeps_capability_22_disabled(monkeypatch):
 
     monkeypatch.delenv("NOVA_RUNTIME_PROFILE", raising=False)
     registry = CapabilityRegistry()
-    assert registry.is_enabled(22) is False
+    assert registry.is_enabled(22) is True
 
 
 def test_registry_profile_analyst_keeps_capability_22_disabled(monkeypatch):
@@ -32,7 +32,7 @@ def test_registry_profile_analyst_keeps_capability_22_disabled(monkeypatch):
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "analyst")
     registry = CapabilityRegistry()
     assert registry.is_enabled(49) is True
-    assert registry.is_enabled(22) is False
+    assert registry.is_enabled(22) is True
 
 
 def test_registry_unknown_profile_fails_closed(monkeypatch):

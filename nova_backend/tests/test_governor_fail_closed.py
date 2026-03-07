@@ -1,9 +1,9 @@
-def test_governor_refuses_disabled_capability():
+﻿def test_governor_refuses_disabled_capability():
     from src.governor.governor import Governor
 
     gov = Governor()
-    # Capability 22 is disabled in registry
-    result = gov.handle_governed_invocation(22, {"path": "/tmp"})
+    # Capability 48 remains disabled in registry
+    result = gov.handle_governed_invocation(48, {"query": "market update"})
 
     assert result.success is False
-    assert "I can’t do that" in result.message or "refusal" in result.message.lower()
+    assert "do that yet" in result.message.lower()

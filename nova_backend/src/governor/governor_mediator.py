@@ -31,13 +31,23 @@ def _invocation_if_enabled(capability_id: int, params: Dict[str, Any]) -> Invoca
 
 SEARCH_RE = re.compile(r"^\s*(search(?: for)?|look up|research)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
 OPEN_RE = re.compile(r"^\s*open\s+(?P<name>\w+)\s*$", re.IGNORECASE)
+OPEN_NAME_RE = re.compile(r"^\s*open\s+(?P<target>[A-Za-z0-9_.\- ]+)\s*$", re.IGNORECASE)
 OPEN_FOLDER_RE = re.compile(r"^\s*open\s+(?P<folder>documents|downloads|desktop|pictures)\s*$", re.IGNORECASE)
 OPEN_FILE_RE = re.compile(r"^\s*open\s+(?:file|document)\s+(?P<path>.+?)\s*$", re.IGNORECASE)
 SET_VOLUME_RE = re.compile(r"^\s*set\s+volume\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
+VOLUME_VALUE_RE = re.compile(r"^\s*volume\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 SET_BRIGHTNESS_RE = re.compile(r"^\s*set\s+brightness\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 SET_REPORT_RE = re.compile(r"^\s*(report|summarize)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
 HEADLINE_SUMMARY_RE = re.compile(
     r"^\s*summarize\s+(?:(?:headline|headlines)\s+)?(?P<sel>all|[\w\s,;&]+)\s*$",
+    re.IGNORECASE,
+)
+SOURCE_NEWS_SUMMARY_RE = re.compile(
+    r"^\s*(?:summarize|summary(?:\s+of)?|details?|give me details)\s+(?P<source>.+?)\s+news\s*$",
+    re.IGNORECASE,
+)
+TOPIC_UPDATES_RE = re.compile(
+    r"^\s*(?:search(?:\s+for)?\s+)?(?:most\s+recent\s+updates?|recent\s+updates?|updates?)\s+(?:with|on|about)\s+(?P<topic>.+?)\s*$",
     re.IGNORECASE,
 )
 INTEL_BRIEF_RE = re.compile(
@@ -172,6 +182,12 @@ class GovernorMediator:
                 return _invocation_if_enabled(16, {"query": t})
             return None
 
+        tm = TOPIC_UPDATES_RE.match(t)
+        if tm:
+            topic_query = (tm.group("topic") or "").strip()
+            if topic_query:
+                return _invocation_if_enabled(49, {"selection": "topic", "topic_query": topic_query, "recent": True})
+
         m = SEARCH_RE.match(t)
         if m:
             return _invocation_if_enabled(16, {"query": m.group("q").strip()})
@@ -188,6 +204,15 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(17, {"target": m.group("name").strip().lower()})
 
+        m = OPEN_NAME_RE.match(t)
+        if m:
+            target = m.group("target").strip()
+            # Keep single-token website shorthand behavior (e.g., "open github").
+            if re.fullmatch(r"[A-Za-z0-9_]+", target):
+                return _invocation_if_enabled(17, {"target": target.lower()})
+            # Route multi-token/hyphenated targets as local paths.
+            return _invocation_if_enabled(22, {"path": target})
+
         if re.match(r"^\s*(speak that|read that|say it)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(18, {})
 
@@ -197,6 +222,9 @@ class GovernorMediator:
             return _invocation_if_enabled(19, {"action": "down"})
 
         m = SET_VOLUME_RE.match(t)
+        if m:
+            return _invocation_if_enabled(19, {"action": "set", "level": int(m.group("level"))})
+        m = VOLUME_VALUE_RE.match(t)
         if m:
             return _invocation_if_enabled(19, {"action": "set", "level": int(m.group("level"))})
 
@@ -212,7 +240,7 @@ class GovernorMediator:
         if re.match(r"^\s*(play|pause|resume)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(20, {"action": t.lower()})
 
-        if re.match(r"^\s*(system check|system status)\s*$", t, re.IGNORECASE):
+        if re.match(r"^\s*(system|system check|system status)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(32, {})
 
         if INTEL_BRIEF_RE.match(t):
@@ -300,9 +328,17 @@ class GovernorMediator:
             selection = (hm.group("sel") or "").strip().lower()
             if selection in {"all", "all headlines"}:
                 return _invocation_if_enabled(49, {"selection": "all"})
+            if "news headlines" in selection or "headlines on the dashboard" in selection:
+                return _invocation_if_enabled(49, {"selection": "all"})
             parsed = _parse_headline_selection(selection)
             if parsed:
                 return _invocation_if_enabled(49, parsed)
+
+        sm = SOURCE_NEWS_SUMMARY_RE.match(t)
+        if sm:
+            source_query = (sm.group("source") or "").strip()
+            if source_query:
+                return _invocation_if_enabled(49, {"selection": "source", "source_query": source_query})
 
         m = SET_REPORT_RE.match(t)
         if m:

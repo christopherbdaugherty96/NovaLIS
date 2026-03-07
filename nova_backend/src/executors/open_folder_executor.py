@@ -28,7 +28,7 @@ class OpenFolderExecutor:
             if not self.system_control.open_path(candidate):
                 return ActionResult.failure("I couldn't open that path on this system.", request_id=request.request_id)
             return ActionResult.ok(
-                message=f"Opened {candidate}.",
+                message=f"Opened path: {candidate}",
                 data={"path": str(candidate)},
                 request_id=request.request_id,
                 authority_class="local_effect",
@@ -40,11 +40,13 @@ class OpenFolderExecutor:
         folder = PRESET_FOLDERS.get(target)
         if folder is None:
             return ActionResult.failure("Preset folder not available.", request_id=request.request_id)
+        if not folder.exists():
+            return ActionResult.failure(f"The {target} folder was not found on this system.", request_id=request.request_id)
         if not self.system_control.open_path(folder):
             return ActionResult.failure("I couldn't open that folder on this system.", request_id=request.request_id)
 
         return ActionResult.ok(
-            message=f"Opened {target}.",
+            message=f"Opened {target}: {folder}",
             data={"path": str(folder)},
             request_id=request.request_id,
             authority_class="local_effect",

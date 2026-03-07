@@ -3,11 +3,27 @@ from __future__ import annotations
 import os
 import platform
 import subprocess
+import ctypes
 from pathlib import Path
 
 
 class SystemControlExecutor:
     """Single OS-action boundary for local system control operations."""
+
+    VK_VOLUME_DOWN = 0xAE
+    VK_VOLUME_UP = 0xAF
+    KEYEVENTF_KEYUP = 0x0002
+
+    @classmethod
+    def _send_windows_volume_key(cls, vk_code: int, presses: int = 1) -> bool:
+        try:
+            user32 = ctypes.windll.user32  # type: ignore[attr-defined]
+            for _ in range(max(1, presses)):
+                user32.keybd_event(vk_code, 0, 0, 0)
+                user32.keybd_event(vk_code, 0, cls.KEYEVENTF_KEYUP, 0)
+            return True
+        except Exception:
+            return False
 
     def set_volume(self, action: str, level: int | None = None) -> bool:
         system = platform.system()
@@ -37,8 +53,17 @@ class SystemControlExecutor:
                 return True
 
             if system == "Windows":
-                # No built-in zero-dependency volume setter is guaranteed.
-                # Keep fail-closed and return unsupported for now.
+                if action == "up":
+                    return self._send_windows_volume_key(self.VK_VOLUME_UP, presses=2)
+                if action == "down":
+                    return self._send_windows_volume_key(self.VK_VOLUME_DOWN, presses=2)
+                if action == "set" and level is not None:
+                    bounded = max(0, min(int(level), 100))
+                    # Coarse deterministic set: drive down to floor, then step up.
+                    if not self._send_windows_volume_key(self.VK_VOLUME_DOWN, presses=60):
+                        return False
+                    up_presses = max(0, round(bounded / 2))
+                    return self._send_windows_volume_key(self.VK_VOLUME_UP, presses=up_presses)
                 return False
 
             return False

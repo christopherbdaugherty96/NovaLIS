@@ -3,7 +3,9 @@ from src.governor.governor_mediator import GovernorMediator
 
 
 def test_mediator_does_not_route_disabled_capabilities():
-    assert GovernorMediator.parse_governed_invocation("open documents") is None
+    routed = GovernorMediator.parse_governed_invocation("open documents")
+    assert routed is not None
+    assert routed.capability_id == 22
     assert GovernorMediator.parse_governed_invocation("report market update") is None
 
 

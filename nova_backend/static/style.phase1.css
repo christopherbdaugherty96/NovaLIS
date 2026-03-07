@@ -370,6 +370,7 @@ html, body {
 
   display: flex;
   flex-direction: column;
+  gap: 12px;
   min-height: 0;
   max-height: 100%;
 }
@@ -403,8 +404,36 @@ html, body {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: rgba(230, 233, 240, 0.9);
-  font-size: 0.86rem;
-  line-height: 1.4;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+#trust-panel.widget {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.01);
+}
+
+#trust-panel h3 {
+  margin: 0 0 10px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0.92;
+}
+
+.trust-row {
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: rgba(230, 233, 240, 0.92);
+  margin-bottom: 6px;
+}
+
+.trust-row:last-child {
+  margin-bottom: 0;
 }
 
 /* FIX: Make the list scroll (matches your HTML) */
@@ -423,7 +452,8 @@ html, body {
 }
 
 #news-list li {
-  line-height: 1.4;
+  line-height: 1.55;
+  font-size: 0.95rem;
   margin-bottom: 14px;
   padding-bottom: 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -817,7 +847,7 @@ html, body {
   color: inherit;
   border-radius: 8px;
   padding: 6px 10px;
-  font-size: 0.78rem;
+  font-size: 0.84rem;
   cursor: pointer;
 }
 
@@ -832,8 +862,17 @@ html, body {
 .chat-assistant {
   margin-bottom: 12px;
   padding: 10px 12px;
+  font-size: 1rem;
+  line-height: 1.55;
   border-radius: 10px;
   max-width: 96%;
+}
+
+.chat-user span,
+.chat-assistant span {
+  display: block;
+  max-width: 110ch;
+  white-space: pre-wrap;
 }
 
 .chat-user {
@@ -864,6 +903,19 @@ html, body {
   gap: 6px;
   flex-wrap: wrap;
   margin-top: 8px;
+}
+
+.message-expand-btn {
+  display: inline-block;
+  margin-top: 8px;
+  margin-left: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  cursor: pointer;
 }
 
 .modal-overlay {

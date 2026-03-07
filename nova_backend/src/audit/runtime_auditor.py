@@ -497,15 +497,61 @@ def _phase_45_status() -> str:
 
 
 def _known_runtime_gaps() -> list[str]:
+    trust_panel_present = (
+        "trust panel" in _safe_read(STATIC_DASHBOARD_PATH).lower()
+        or "trust-panel" in _safe_read(STATIC_INDEX_PATH).lower()
+    )
+    failure_ladder_present = (
+        "failure_ladder" in _safe_read(BRAIN_SERVER_PATH).lower()
+        or "failurestate" in _safe_read(STATIC_DASHBOARD_PATH).lower()
+        or "offline-safe mode" in _safe_read(STATIC_DASHBOARD_PATH).lower()
+    )
     checks: list[tuple[str, bool]] = [
         ("Orthogonal Agent Stack (Phase 4.2)", (PROJECT_ROOT / "nova_backend" / "src" / "agents").exists()),
         ("Personality Validator Pipeline", (PROJECT_ROOT / "nova_backend" / "src" / "validation").exists()),
         ("Compile-time phase gating for 4.2 modules", "BUILD_PHASE" in _safe_read(BRAIN_SERVER_PATH)),
-        ("Trust Panel system", "trust panel" in _safe_read(STATIC_DASHBOARD_PATH).lower()),
-        ("Failure Mode Ladder", "failure_ladder" in _safe_read(BRAIN_SERVER_PATH).lower()),
+        ("Trust Panel system", trust_panel_present),
+        ("Failure Mode Ladder", failure_ladder_present),
         ("Calendar integration", "calendar" in _safe_read(REGISTRY_PATH).lower() and "coming soon" not in _safe_read(STATIC_INDEX_PATH).lower()),
     ]
     return [label for label, implemented in checks if not implemented]
+
+
+def _design_runtime_divergences(registry: dict[str, Any]) -> list[str]:
+    divergences: list[str] = []
+    capabilities = registry.get("capabilities", [])
+    enabled_ids = sorted(
+        int(item.get("id"))
+        for item in capabilities
+        if item.get("enabled") is True and item.get("id") is not None
+    )
+
+    if any(cid >= 49 for cid in enabled_ids):
+        divergences.append(
+            "Phase 4.5 roadmap states 'no new capabilities' for that design stage, "
+            f"but runtime currently enables extended governed capabilities: {enabled_ids}."
+        )
+
+    if not (PROJECT_ROOT / "nova_backend" / "src" / "agents").exists():
+        divergences.append(
+            "Phase 4.2 orthogonal agent stack and validator pipeline remain design-only in runtime."
+        )
+
+    if "BUILD_PHASE" not in _safe_read(BRAIN_SERVER_PATH):
+        divergences.append(
+            "Phase 4.2 compile-time gating contract is documented, but explicit BUILD_PHASE exclusion is not present."
+        )
+
+    trust_panel_present = (
+        "trust panel" in _safe_read(STATIC_DASHBOARD_PATH).lower()
+        or "trust-panel" in _safe_read(STATIC_INDEX_PATH).lower()
+    )
+    if not trust_panel_present:
+        divergences.append(
+            "Phase 4.5 Trust Panel requirement is not explicitly represented in dashboard runtime text."
+        )
+
+    return divergences
 
 
 def _path_for_report(path: Path) -> str:
@@ -877,6 +923,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     enforcement = _governor_enforcement_summary()
     fingerprint = _runtime_fingerprint(enabled_ids)
     known_gaps = _known_runtime_gaps()
+    design_divergences = _design_runtime_divergences(registry)
     profile_context = _runtime_profile_context(registry)
 
     governor_modules = [
@@ -1044,6 +1091,18 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
             "",
         ]
     )
+
+    lines.extend(
+        [
+            "",
+            "## Design Runtime Divergences",
+            "",
+        ]
+    )
+    if design_divergences:
+        lines.extend(f"- {item}" for item in design_divergences)
+    else:
+        lines.append("- None")
 
     discrepancies = report.get("discrepancies", [])
     if discrepancies:

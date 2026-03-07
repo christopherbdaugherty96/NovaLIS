@@ -85,6 +85,13 @@ class GeneralChatSkill(BaseSkill):
         (re.compile(r"\bhow can i assist\??\b", re.IGNORECASE), ""),
         (re.compile(r"\!+", re.IGNORECASE), "."),
     )
+    _GEO_KEYWORDS = ("war", "ukraine", "russia", "gaza", "israel", "conflict", "ceasefire")
+    _REFUSAL_HINTS = (
+        "i'm sorry",
+        "cannot assist with that topic",
+        "not appropriate for discussion",
+        "i can't assist with that topic",
+    )
 
     def __init__(self, policy_config: Optional[dict] = None, network: NetworkMediator | None = None):
         self.heuristics = ComplexityHeuristics()
@@ -150,6 +157,25 @@ class GeneralChatSkill(BaseSkill):
         clean = re.sub(r"\n+$", "\n", clean).rstrip("\n")
         return clean
 
+    @classmethod
+    def _is_geopolitical_query(cls, query: str) -> bool:
+        q = (query or "").lower()
+        return any(k in q for k in cls._GEO_KEYWORDS)
+
+    @classmethod
+    def _is_blanket_refusal(cls, text: str) -> bool:
+        t = (text or "").lower()
+        return any(h in t for h in cls._REFUSAL_HINTS)
+
+    @staticmethod
+    def _safe_geopolitical_fallback(query: str) -> str:
+        topic = (query or "that topic").strip(".?! ")
+        return (
+            f"Here is a neutral overview of {topic}: "
+            "current reporting indicates active developments and differing claims across sources. "
+            "For accuracy, rely on primary outlets and compare multiple reports before drawing conclusions."
+        )
+
     async def _run_local_model(self, query: str) -> SkillResult | None:
         normalized_query = InputNormalizer.normalize(query)
         mode = self._detect_mode(normalized_query)
@@ -171,6 +197,8 @@ class GeneralChatSkill(BaseSkill):
             text = self._sanitize_response(text or "")
             if not text:
                 text = "I don’t have a response for that."
+            if self._is_geopolitical_query(normalized_query) and self._is_blanket_refusal(text):
+                text = self._safe_geopolitical_fallback(normalized_query)
 
             return SkillResult(success=True, message=text, data={"mode": mode, "style": style.value}, widget_data=None, skill=self.name)
         except Exception:

@@ -10,7 +10,7 @@ Deterministic capability governance matrix derived from allowlisted runtime sour
 | 19 | volume_up_down | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 | 20 | media_play_pause | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 | 21 | brightness_control | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
-| 22 | open_file_folder | False | active | 4 | confirm | False | confirm_required | True | False | Governor â†’ Executor | True | True | True | True | True |
+| 22 | open_file_folder | True | active | 4 | confirm | False | confirm_required | True | False | Governor â†’ Executor | True | True | True | True | True |
 | 31 | response_verification | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 | 32 | os_diagnostics | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 | 48 | multi_source_reporting | False | active | 4 | low | True | read_only | False | True | Governor â†’ NetworkMediator | True | True | True | True | True |

@@ -14,6 +14,21 @@ def test_volume_media_brightness_parsing():
     assert inv.capability_id == 21
     assert inv.params["level"] == 70
 
+    inv = GovernorMediator.parse_governed_invocation("volume 50")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 19
+    assert inv.params["action"] == "set"
+    assert inv.params["level"] == 50
+
+    inv = GovernorMediator.parse_governed_invocation("open Nova-Project")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 22
+    assert inv.params["path"] == "Nova-Project"
+
+    inv = GovernorMediator.parse_governed_invocation("system")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 32
+
 
 
 def test_news_intelligence_parsing():
@@ -33,6 +48,33 @@ def test_news_intelligence_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 49
     assert inv.params["selection"] == "all"
+
+    inv = GovernorMediator.parse_governed_invocation("summarize the news headlines on the dashboard")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 49
+    assert inv.params["selection"] == "all"
+
+    inv = GovernorMediator.parse_governed_invocation("summarize ABC News")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 49
+    assert inv.params["selection"] == "source"
+    assert inv.params["source_query"] == "ABC"
+
+    inv = GovernorMediator.parse_governed_invocation("give me details Fox News")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 49
+    assert inv.params["selection"] == "source"
+
+    inv = GovernorMediator.parse_governed_invocation("most recent updates with the war")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 49
+    assert inv.params["selection"] == "topic"
+    assert inv.params["topic_query"] == "the war"
+
+    inv = GovernorMediator.parse_governed_invocation("search for most recent updates with the war")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 49
+    assert inv.params["selection"] == "topic"
 
     inv = GovernorMediator.parse_governed_invocation("daily brief")
     assert isinstance(inv, Invocation)

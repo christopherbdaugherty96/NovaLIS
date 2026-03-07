@@ -15,6 +15,13 @@ let morningState = {
   system: "Loading...",
   calendar: "Coming soon",
 };
+let trustState = {
+  mode: "Local-only",
+  lastExternalCall: "None",
+  dataEgress: "Read-only requests only",
+  failureState: "Normal",
+  consecutiveFailures: 0,
+};
 
 const API_BASE = "http://127.0.0.1:8000";
 const STORAGE_KEYS = {
@@ -37,8 +44,12 @@ const COMMAND_SUGGESTIONS = [
   "weather",
   "news",
   "morning brief",
+  "summarize all headlines",
+  "update tracked stories",
+  "show relationship graph",
   "search for local weather alerts",
   "open github",
+  "open documents",
   "system status",
   "speak that",
   "volume up",
@@ -51,8 +62,12 @@ const HELP_EXAMPLES = [
   "weather",
   "news",
   "morning brief",
+  "summarize all headlines",
+  "track story AI regulation",
+  "update tracked stories",
   "search for eclipse dates",
   "open youtube",
+  "open documents",
   "system check",
   "speak that",
   "set volume 40",
@@ -103,6 +118,76 @@ function renderMorningPanel() {
   if (news) news.textContent = morningState.news;
   if (system) system.textContent = morningState.system;
   if (calendar) calendar.textContent = morningState.calendar;
+}
+
+function renderTrustPanel() {
+  const mode = $("trust-mode");
+  const lastCall = $("trust-last-call");
+  const egress = $("trust-egress");
+  const failure = $("trust-failure");
+  if (mode) mode.textContent = trustState.mode;
+  if (lastCall) lastCall.textContent = trustState.lastExternalCall;
+  if (egress) egress.textContent = trustState.dataEgress;
+  if (failure) failure.textContent = trustState.failureState;
+}
+
+function markExternalCall(label) {
+  const now = new Date();
+  const ts = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  trustState.mode = "Online";
+  trustState.lastExternalCall = `${label} at ${ts}`;
+  trustState.dataEgress = "Read-only external request";
+  trustState.consecutiveFailures = 0;
+  trustState.failureState = "Normal";
+  renderTrustPanel();
+}
+
+function markLocalMode() {
+  if (trustState.mode !== "Online") {
+    trustState.mode = "Local-only";
+    trustState.dataEgress = "No external call in this step";
+    renderTrustPanel();
+  }
+}
+
+function markFailure(reason = "Temporary issue") {
+  trustState.consecutiveFailures += 1;
+  if (trustState.consecutiveFailures >= 3) {
+    trustState.failureState = "Offline-safe mode";
+    trustState.mode = "Local-only";
+    trustState.dataEgress = "External calls paused after repeated failures";
+  } else if (trustState.consecutiveFailures >= 2) {
+    trustState.failureState = "Degraded";
+  } else {
+    trustState.failureState = reason;
+  }
+  renderTrustPanel();
+}
+
+function markRecovered() {
+  if (trustState.consecutiveFailures > 0) {
+    trustState.consecutiveFailures = 0;
+    trustState.failureState = "Recovered";
+    renderTrustPanel();
+    setTimeout(() => {
+      trustState.failureState = "Normal";
+      renderTrustPanel();
+    }, 1500);
+  }
+}
+
+function maybeMarkReactiveFailureFromText(text) {
+  const msg = (text || "").toLowerCase();
+  const failed = (
+    msg.includes("timed out") ||
+    msg.includes("temporarily unavailable") ||
+    msg.includes("network issue") ||
+    msg.includes("couldn't complete") ||
+    msg.includes("can't do that right now")
+  );
+  if (failed) {
+    markFailure("Temporary issue");
+  }
 }
 
 function getSelectedQuickActions() {
@@ -165,10 +250,22 @@ function appendConfidenceBadge(container, label) {
   container.appendChild(badge);
 }
 
+function isOperationalMessage(text) {
+  const msg = (text || "").toLowerCase();
+  return (
+    msg.includes("opened ") ||
+    msg.includes("opened path:") ||
+    msg.includes("system diagnostics") ||
+    msg.includes("system status") ||
+    msg.includes("volume ")
+  );
+}
+
 function deriveSuggestedActions(text) {
   const msg = (text || "").toLowerCase();
 
   if (!msg.trim()) return [];
+  if (isOperationalMessage(text)) return [];
 
   if (msg.includes("intelligence brief") || msg.includes("daily situation overview") || msg.includes("executive brief")) {
     return [
@@ -231,20 +328,33 @@ function renderSuggestedActions(parent, suggestions) {
 }
 
 function appendAssistantActions(parent, text, suggestedActions = null) {
+  const operational = isOperationalMessage(text);
   const suggestions = Array.isArray(suggestedActions) && suggestedActions.length
     ? suggestedActions
     : deriveSuggestedActions(text);
   renderSuggestedActions(parent, suggestions);
+
+  if (operational) {
+    const row = document.createElement("div");
+    row.className = "assistant-actions";
+    const repeatBtn = document.createElement("button");
+    repeatBtn.type = "button";
+    repeatBtn.className = "assistant-action-btn";
+    repeatBtn.textContent = "Repeat";
+    repeatBtn.addEventListener("click", () => injectUserText("Please repeat that.", "text"));
+    row.appendChild(repeatBtn);
+    parent.appendChild(row);
+    return;
+  }
 
   const row = document.createElement("div");
   row.className = "assistant-actions";
 
   const actions = [
     { label: "Repeat", fn: () => injectUserText("Please repeat that.", "text") },
-    { label: "Shorter", fn: () => injectUserText("Please give a shorter version of your last response.", "text") },
     { label: "Show sources", fn: () => injectUserText("Show sources for your last response.", "text") },
-    { label: "Do next step", fn: () => injectUserText(`What is the next step for: ${text.slice(0, 120)}`, "text") },
   ];
+  actions.splice(1, 0, { label: "Shorter", fn: () => injectUserText("Please give a shorter version of your last response.", "text") });
 
   actions.forEach((item) => {
     const b = document.createElement("button");
@@ -266,8 +376,31 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
   div.className = `chat-${role}`;
 
   const textNode = document.createElement("span");
-  textNode.textContent = text;
-  div.appendChild(textNode);
+  const msgText = String(text || "");
+  const LONG_TEXT_THRESHOLD = 420;
+  if (role === "assistant" && msgText.length > LONG_TEXT_THRESHOLD) {
+    const preview = msgText.slice(0, LONG_TEXT_THRESHOLD).trimEnd() + "...";
+    textNode.textContent = preview;
+    textNode.dataset.fullText = msgText;
+    textNode.dataset.previewText = preview;
+    textNode.dataset.expanded = "false";
+    div.appendChild(textNode);
+
+    const expandBtn = document.createElement("button");
+    expandBtn.type = "button";
+    expandBtn.className = "message-expand-btn";
+    expandBtn.textContent = "Show more";
+    expandBtn.addEventListener("click", () => {
+      const expanded = textNode.dataset.expanded === "true";
+      textNode.textContent = expanded ? textNode.dataset.previewText : textNode.dataset.fullText;
+      textNode.dataset.expanded = expanded ? "false" : "true";
+      expandBtn.textContent = expanded ? "Show more" : "Show less";
+    });
+    div.appendChild(expandBtn);
+  } else {
+    textNode.textContent = msgText;
+    div.appendChild(textNode);
+  }
 
   if (confidence && role === "assistant") {
     appendConfidenceBadge(div, confidence);
@@ -391,7 +524,8 @@ function renderNewsWidget(items, summaryText = "") {
 
     const a = document.createElement("a");
     a.href = item.url;
-    a.textContent = item.title;
+    const sourceLabel = (item.source || "").trim();
+    a.textContent = sourceLabel ? `[${sourceLabel}] ${item.title}` : item.title;
     a.target = "_blank";
     a.rel = "noopener noreferrer";
     li.appendChild(a);
@@ -402,13 +536,6 @@ function renderNewsWidget(items, summaryText = "") {
       domainBadge.className = "domain-badge";
       domainBadge.textContent = domain;
       li.appendChild(domainBadge);
-    }
-
-    if (item.source) {
-      const src = document.createElement("span");
-      src.className = "news-source";
-      src.textContent = ` ${item.source}`;
-      li.appendChild(src);
     }
 
     const conf = document.createElement("span");
@@ -565,6 +692,10 @@ function connectWebSocket() {
   ws = new WebSocket("ws://127.0.0.1:8000/ws");
 
   ws.onopen = () => {
+    trustState.mode = "Local-only";
+    trustState.failureState = "Normal";
+    trustState.consecutiveFailures = 0;
+    renderTrustPanel();
     safeWSSend({ text: "weather" });
     safeWSSend({ text: "news" });
     safeWSSend({ text: "system status" });
@@ -579,25 +710,33 @@ function connectWebSocket() {
     switch (msg.type) {
       case "weather":
         renderWeatherWidget(msg.data);
+        markExternalCall("Weather");
+        markRecovered();
         break;
       case "news":
         renderNewsWidget(msg.items, msg.summary || "");
+        markExternalCall("News");
+        markRecovered();
         break;
       case "search":
         renderSearchWidget(msg.data);
+        markExternalCall("Web search");
+        markRecovered();
         break;
       case "system":
         morningState.system = msg.summary || "System status ready.";
         renderMorningPanel();
+        markLocalMode();
         break;
       case "chat":
         appendChatMessage(
           "assistant",
           msg.message,
           msg.message_id || null,
-          msg.confidence || "Advisory",
+          msg.confidence || "",
           msg.suggested_actions || null
         );
+        maybeMarkReactiveFailureFromText(msg.message || "");
         break;
       case "chat_done":
         waitingForAssistant = false;
@@ -614,6 +753,7 @@ function connectWebSocket() {
       case "error":
         waitingForAssistant = false;
         setThinkingBar(false);
+        markFailure("Temporary issue");
         appendChatMessage("assistant", translateError(msg.code, msg.message), null, "System status");
         break;
     }
@@ -622,6 +762,7 @@ function connectWebSocket() {
   ws.onclose = () => {
     waitingForAssistant = false;
     setThinkingBar(false);
+    markFailure("Disconnected");
     setTimeout(connectWebSocket, 2000);
   };
 }
@@ -927,6 +1068,7 @@ window.addEventListener("DOMContentLoaded", () => {
   injectUtilityButtons();
   ensureDatalist();
   renderMorningPanel();
+  renderTrustPanel();
   renderQuickActions();
   connectWebSocket();
   showFirstRunGuideIfNeeded();

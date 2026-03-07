@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import json
 import re
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -11,6 +12,7 @@ from src.llm.llm_gateway import generate_chat
 from src.rendering.intelligence_brief_renderer import IntelligenceBriefRenderer
 
 MAX_HEADLINES_PER_SUMMARY = 3
+LLM_TIMEOUT_SECONDS = 2.0
 
 STOPWORDS = {
     "the",
@@ -112,6 +114,38 @@ class NewsIntelligenceExecutor:
             indices = list(range(1, len(selected) + 1))
             return selected, indices
 
+        if selection == "source":
+            source_query = str((params or {}).get("source_query") or "").strip().lower()
+            if source_query:
+                selected: list[dict[str, str]] = []
+                indices: list[int] = []
+                for i, item in enumerate(headlines, start=1):
+                    source = str(item.get("source") or "").strip().lower()
+                    if source and (source_query in source or source in source_query):
+                        selected.append(item)
+                        indices.append(i)
+                    if len(selected) >= MAX_HEADLINES_PER_SUMMARY:
+                        break
+                return selected, indices
+
+        if selection == "topic":
+            topic_query = str((params or {}).get("topic_query") or "").strip().lower()
+            if topic_query:
+                topic_terms = [term for term in re.findall(r"[a-zA-Z0-9]+", topic_query) if len(term) >= 3]
+                selected: list[dict[str, str]] = []
+                indices: list[int] = []
+                for i, item in enumerate(headlines, start=1):
+                    merged = f"{item.get('title', '')} {item.get('summary', '')}".lower()
+                    if topic_terms and all(term in merged for term in topic_terms):
+                        selected.append(item)
+                        indices.append(i)
+                    elif topic_query in merged:
+                        selected.append(item)
+                        indices.append(i)
+                    if len(selected) >= MAX_HEADLINES_PER_SUMMARY:
+                        break
+                return selected, indices
+
         raw_indices = (params or {}).get("indices") or []
         indices: list[int] = []
         for value in raw_indices:
@@ -152,7 +186,9 @@ class NewsIntelligenceExecutor:
         )
 
     def _llm_or_fallback(self, prompt: str, fallback: str, request_id: str) -> str:
-        text = generate_chat(
+        pool = ThreadPoolExecutor(max_workers=1)
+        future = pool.submit(
+            generate_chat,
             prompt,
             mode="analysis_only",
             safety_profile="analysis",
@@ -160,7 +196,16 @@ class NewsIntelligenceExecutor:
             max_tokens=550,
             temperature=0.2,
         )
-        return text or fallback
+        try:
+            text = future.result(timeout=LLM_TIMEOUT_SECONDS)
+            return text or fallback
+        except FuturesTimeoutError:
+            future.cancel()
+            return fallback
+        except Exception:
+            return fallback
+        finally:
+            pool.shutdown(wait=False, cancel_futures=True)
 
     def _build_topic_map(self, headlines: list[dict[str, str]], prior: dict[str, int] | None = None) -> dict[str, int]:
         counts = Counter(prior or {})
@@ -183,6 +228,27 @@ class NewsIntelligenceExecutor:
 
         selected, indices = self._select_headlines(headlines, request.params or {})
         if not selected:
+            selection = str((request.params or {}).get("selection") or "")
+            if selection == "source":
+                wanted_source = str((request.params or {}).get("source_query") or "").strip()
+                available_sources = sorted(
+                    {
+                        str(item.get("source") or "").strip()
+                        for item in headlines
+                        if str(item.get("source") or "").strip()
+                    }
+                )
+                source_list = ", ".join(available_sources[:8]) or "no sources available"
+                return ActionResult.failure(
+                    f"I couldn't find recent headlines for {wanted_source}. Available sources: {source_list}.",
+                    request_id=request.request_id,
+                )
+            if selection == "topic":
+                wanted_topic = str((request.params or {}).get("topic_query") or "").strip()
+                return ActionResult.failure(
+                    f"I couldn't find recent headlines for topic '{wanted_topic}'. Try a broader term.",
+                    request_id=request.request_id,
+                )
             return ActionResult.failure(
                 "I couldn't match those headline numbers. Try: summarize headline 1.",
                 request_id=request.request_id,
