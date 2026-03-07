@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import platform
 import re
 import subprocess
@@ -100,6 +101,8 @@ MEDIATOR_TRIGGER_PROBES: dict[str, str] = {
     "summarize headlines 1 and 3": "headline_summary",
     "daily brief": "intelligence_brief",
     "show topic memory map": "topic_memory_map",
+    "verify this": "response_verification",
+    "summarize doc 2": "analysis_document",
     "update story ai regulation": "story_tracker_update",
     "show story ai regulation": "story_tracker_view",
 }
@@ -468,6 +471,20 @@ def _runtime_fingerprint(registry_enabled_ids: list[int]) -> dict[str, str]:
         "runtime_fingerprint_hash": runtime_fingerprint_hash,
         "phase_marker": "Phase-4 runtime active",
     }
+
+
+def _runtime_profile_context(registry: dict[str, Any]) -> dict[str, Any]:
+    selected = os.getenv("NOVA_RUNTIME_PROFILE", "default").strip() or "default"
+    profiles = registry.get("profiles") or {}
+    if not isinstance(profiles, dict):
+        return {"profile": selected, "groups": [], "known": False}
+    profile = profiles.get(selected)
+    if not isinstance(profile, dict):
+        return {"profile": selected, "groups": [], "known": False}
+    groups = profile.get("groups") or []
+    if not isinstance(groups, list):
+        groups = []
+    return {"profile": selected, "groups": [str(g) for g in groups], "known": True}
 
 
 def _phase_45_status() -> str:
@@ -860,6 +877,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     enforcement = _governor_enforcement_summary()
     fingerprint = _runtime_fingerprint(enabled_ids)
     known_gaps = _known_runtime_gaps()
+    profile_context = _runtime_profile_context(registry)
 
     governor_modules = [
         "src/governor/governor.py",
@@ -933,6 +951,11 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         "LedgerWriter",
         "Role: Append-only audit logging",
         "Location: src/ledger/writer.py",
+        "",
+        "## Runtime Profile",
+        "",
+        f"- Active profile: {profile_context['profile']}",
+        f"- Enabled groups: {profile_context['groups']}",
         "",
         "## Active Capabilities",
         "",

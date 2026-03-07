@@ -48,7 +48,7 @@ def test_intelligence_brief_updates_topic_map(monkeypatch):
     executor = mod.NewsIntelligenceExecutor()
     result = executor.execute_brief(_request(50, {"headlines": headlines, "topic_history": {"ai": 1}}))
     assert result.success is True
-    assert "DAILY INTELLIGENCE BRIEF" in result.message
+    assert "NOVA INTELLIGENCE BRIEF" in result.message
     assert isinstance(result.data, dict)
     assert isinstance(result.data.get("topic_map"), dict)
     assert "ai" in result.data["topic_map"]

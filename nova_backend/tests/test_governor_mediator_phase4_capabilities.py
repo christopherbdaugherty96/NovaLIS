@@ -15,6 +15,7 @@ def test_volume_media_brightness_parsing():
     assert inv.params["level"] == 70
 
 
+
 def test_news_intelligence_parsing():
     from src.governor.governor_mediator import GovernorMediator, Invocation
 
@@ -82,3 +83,31 @@ def test_news_intelligence_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 53
     assert inv.params["action"] == "show_graph"
+
+    inv = GovernorMediator.parse_governed_invocation("verify this")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 31
+    assert inv.params["text"] == ""
+
+    inv = GovernorMediator.parse_governed_invocation("fact check The moon has an atmosphere")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 31
+    assert "moon has an atmosphere" in inv.params["text"].lower()
+
+    inv = GovernorMediator.parse_governed_invocation("create analysis report on AI geopolitics")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 54
+    assert inv.params["action"] == "create"
+
+    inv = GovernorMediator.parse_governed_invocation("summarize doc 2")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 54
+    assert inv.params["action"] == "summarize_doc"
+    assert inv.params["doc_id"] == 2
+
+    inv = GovernorMediator.parse_governed_invocation("explain section 3 of doc 2")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 54
+    assert inv.params["action"] == "explain_section"
+    assert inv.params["section_number"] == 3
+    assert inv.params["doc_id"] == 2

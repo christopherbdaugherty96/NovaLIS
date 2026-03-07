@@ -165,7 +165,77 @@ function appendConfidenceBadge(container, label) {
   container.appendChild(badge);
 }
 
-function appendAssistantActions(parent, text) {
+function deriveSuggestedActions(text) {
+  const msg = (text || "").toLowerCase();
+
+  if (!msg.trim()) return [];
+
+  if (msg.includes("intelligence brief") || msg.includes("daily situation overview") || msg.includes("executive brief")) {
+    return [
+      { label: "Deeper analysis", command: "Analyze the top story in more depth." },
+      { label: "Related stories", command: "Show related stories for the top headline." },
+      { label: "Short summary", command: "Summarize this brief in 3 bullets." },
+    ];
+  }
+
+  if (msg.includes("weather")) {
+    return [
+      { label: "Forecast", command: "Show weather forecast." },
+      { label: "Morning brief", command: "Morning brief." },
+      { label: "News", command: "news" },
+    ];
+  }
+
+  if (msg.includes("not sure what you'd like me to do")) {
+    return [
+      { label: "Show brief", command: "brief" },
+      { label: "Search web", command: "search for " },
+      { label: "System status", command: "system status" },
+    ];
+  }
+
+  if (msg.includes("news") || msg.includes("headline")) {
+    return [
+      { label: "Summarize all", command: "summarize all headlines" },
+      { label: "Story tracker", command: "update tracked stories" },
+      { label: "Compare stories", command: "compare stories ai regulation and semiconductor export controls" },
+    ];
+  }
+
+  return [
+    { label: "Brief", command: "brief" },
+    { label: "Weather", command: "weather" },
+    { label: "News", command: "news" },
+  ];
+}
+
+function renderSuggestedActions(parent, suggestions) {
+  if (!Array.isArray(suggestions) || suggestions.length === 0) return;
+
+  const row = document.createElement("div");
+  row.className = "assistant-actions";
+
+  suggestions.slice(0, 3).forEach((item) => {
+    if (!item || !item.command || !item.label) return;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "assistant-action-btn";
+    b.textContent = item.label;
+    b.addEventListener("click", () => injectUserText(item.command, "text"));
+    row.appendChild(b);
+  });
+
+  if (row.childElementCount > 0) {
+    parent.appendChild(row);
+  }
+}
+
+function appendAssistantActions(parent, text, suggestedActions = null) {
+  const suggestions = Array.isArray(suggestedActions) && suggestedActions.length
+    ? suggestedActions
+    : deriveSuggestedActions(text);
+  renderSuggestedActions(parent, suggestions);
+
   const row = document.createElement("div");
   row.className = "assistant-actions";
 
@@ -188,7 +258,7 @@ function appendAssistantActions(parent, text) {
   parent.appendChild(row);
 }
 
-function appendChatMessage(role, text, messageId = null, confidence = "") {
+function appendChatMessage(role, text, messageId = null, confidence = "", suggestedActions = null) {
   const chat = $("chat-log");
   if (!chat) return;
 
@@ -219,7 +289,7 @@ function appendChatMessage(role, text, messageId = null, confidence = "") {
   }
 
   if (role === "assistant") {
-    appendAssistantActions(div, text || "");
+    appendAssistantActions(div, text || "", suggestedActions);
   }
 
   chat.appendChild(div);
@@ -521,7 +591,13 @@ function connectWebSocket() {
         renderMorningPanel();
         break;
       case "chat":
-        appendChatMessage("assistant", msg.message, msg.message_id || null, "Advisory");
+        appendChatMessage(
+          "assistant",
+          msg.message,
+          msg.message_id || null,
+          msg.confidence || "Advisory",
+          msg.suggested_actions || null
+        );
         break;
       case "chat_done":
         waitingForAssistant = false;
