@@ -31,6 +31,9 @@ LEDGER_WRITER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "ledger" / "writer.
 LEDGER_EVENT_TYPES_PATH = PROJECT_ROOT / "nova_backend" / "src" / "ledger" / "event_types.py"
 ESCALATION_POLICY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "conversation" / "escalation_policy.py"
 GENERAL_CHAT_PATH = PROJECT_ROOT / "nova_backend" / "src" / "skills" / "general_chat.py"
+BRAIN_SERVER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "brain_server.py"
+STATIC_DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
+STATIC_INDEX_PATH = PROJECT_ROOT / "nova_backend" / "static" / "index.html"
 
 GOVERNANCE_MATRIX_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX.md"
 SKILL_SURFACE_MAP_PATH = RUNTIME_DOC_DIR / "SKILL_SURFACE_MAP.md"
@@ -58,6 +61,9 @@ def _build_allowlisted_paths() -> frozenset[Path]:
         LEDGER_WRITER_PATH,
         LEDGER_EVENT_TYPES_PATH,
         ESCALATION_POLICY_PATH,
+        BRAIN_SERVER_PATH,
+        STATIC_DASHBOARD_PATH,
+        STATIC_INDEX_PATH,
     }
     paths.update(SKILLS_DIR.glob("*.py"))
     paths.update(EXECUTORS_DIR.glob("*.py"))
@@ -130,17 +136,29 @@ def _extract_enabled_ids_from_markdown(markdown_text: str) -> list[int]:
     in_capability_table = False
 
     for line in markdown_text.splitlines():
-        lower = line.lower()
+        stripped = line.strip()
+        lower = stripped.lower()
 
-        if line.strip() == "## Capability table":
+        if lower in {"## capability table", "## active capabilities"}:
             in_capability_table = True
             continue
         if in_capability_table and line.startswith("## "):
             in_capability_table = False
 
-        if in_capability_table and line.strip().startswith("|"):
-            parts = [part.strip() for part in line.strip().strip("|").split("|")]
-            if len(parts) >= 3 and parts[0].isdigit() and parts[2].lower() in {"true", "enabled"}:
+        if in_capability_table and stripped.startswith("|"):
+            parts = [part.strip() for part in stripped.strip("|").split("|")]
+            if not parts or not parts[0].isdigit():
+                continue
+
+            # New canonical table: | ID | Capability | Registry Status | Runtime Enabled | Runtime State |
+            if len(parts) >= 4:
+                if parts[3].lower() in {"true", "enabled"}:
+                    found.add(int(parts[0]))
+                continue
+
+            # Legacy table fallback: treat explicit enabled/active marker in row as enabled.
+            row_tokens = {token.lower() for token in parts}
+            if {"true", "enabled", "active"} & row_tokens:
                 found.add(int(parts[0]))
             continue
 
@@ -385,6 +403,7 @@ def _executor_paths_outside_governor() -> list[str]:
 
 def _runtime_fingerprint(registry_enabled_ids: list[int]) -> dict[str, str]:
     commit_hash = "unknown"
+    branch_name = "unknown"
     dirty = "unknown"
     try:
         result = subprocess.run(
@@ -399,6 +418,18 @@ def _runtime_fingerprint(registry_enabled_ids: list[int]) -> dict[str, str]:
         commit_hash = "unknown"
 
     try:
+        branch = subprocess.run(
+            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
+            cwd=PROJECT_ROOT,
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        branch_name = branch.stdout.strip() or "unknown"
+    except Exception:
+        branch_name = "unknown"
+
+    try:
         status = subprocess.run(
             ["git", "status", "--porcelain"],
             cwd=PROJECT_ROOT,
@@ -411,16 +442,48 @@ def _runtime_fingerprint(registry_enabled_ids: list[int]) -> dict[str, str]:
         dirty = "unknown"
 
     enabled_hash = hashlib.sha256(json.dumps(registry_enabled_ids, sort_keys=True).encode("utf-8")).hexdigest()
+    payload = {
+        "commit": commit_hash,
+        "branch": branch_name,
+        "enabled_capability_ids": registry_enabled_ids,
+        "phase_marker": "Phase-4 runtime active",
+    }
+    runtime_fingerprint_hash = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
     return {
         "git_commit_hash": commit_hash,
+        "git_branch": branch_name,
         "git_dirty": dirty,
         "python_version": sys.version.split()[0],
         "platform": platform.platform(),
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "enabled_capability_ids_hash": enabled_hash,
+        "runtime_fingerprint_hash": runtime_fingerprint_hash,
         "phase_marker": "Phase-4 runtime active",
     }
+
+
+def _phase_45_status() -> str:
+    """Derive coarse runtime status for Phase 4.5 UX surface."""
+    dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
+    index_src = _safe_read(STATIC_INDEX_PATH)
+    has_morning_panel = "Morning Dashboard" in index_src or "morning-widget" in index_src
+    has_morning_state = "morningState" in dashboard_src
+    return "PARTIAL" if (has_morning_panel and has_morning_state) else "DESIGN ONLY"
+
+
+def _known_runtime_gaps() -> list[str]:
+    checks: list[tuple[str, bool]] = [
+        ("Orthogonal Agent Stack (Phase 4.2)", (PROJECT_ROOT / "nova_backend" / "src" / "agents").exists()),
+        ("Personality Validator Pipeline", (PROJECT_ROOT / "nova_backend" / "src" / "validation").exists()),
+        ("Compile-time phase gating for 4.2 modules", "BUILD_PHASE" in _safe_read(BRAIN_SERVER_PATH)),
+        ("Trust Panel system", "trust panel" in _safe_read(STATIC_DASHBOARD_PATH).lower()),
+        ("Failure Mode Ladder", "failure_ladder" in _safe_read(BRAIN_SERVER_PATH).lower()),
+        ("Calendar integration", "calendar" in _safe_read(REGISTRY_PATH).lower() and "coming soon" not in _safe_read(STATIC_INDEX_PATH).lower()),
+    ]
+    return [label for label, implemented in checks if not implemented]
 
 
 def _path_for_report(path: Path) -> str:
@@ -701,11 +764,13 @@ def render_runtime_fingerprint_markdown(registry_enabled_ids: list[int]) -> str:
         "# RUNTIME_FINGERPRINT",
         "",
         f"- git_commit_hash: {fp['git_commit_hash']}",
+        f"- git_branch: {fp['git_branch']}",
         f"- git_dirty: {fp['git_dirty']}",
         f"- python_version: {fp['python_version']}",
         f"- platform: {fp['platform']}",
         f"- generated_at_utc: {fp['generated_at_utc']}",
         f"- enabled_capability_ids_hash: {fp['enabled_capability_ids_hash']}",
+        f"- runtime_fingerprint_hash: {fp['runtime_fingerprint_hash']}",
         f"- phase_marker: {fp['phase_marker']}",
         "",
     ]
@@ -782,147 +847,155 @@ def render_governance_matrix_tree_markdown(registry: dict[str, Any]) -> str:
 
 
 def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict[str, Any]) -> str:
-    summary = report.get("summary", {})
     generated_at = report.get("generated_at_utc", "")
-
     capabilities = registry.get("capabilities", [])
     enabled_ids = sorted(int(item["id"]) for item in capabilities if item.get("enabled") is True)
-    disabled_ids = sorted(int(item["id"]) for item in capabilities if item.get("enabled") is not True)
-
     governance_rows = _derive_capability_governance_rows(registry)
     enforcement = _governor_enforcement_summary()
-    model_signals = report.get("checks", {}).get("model_path_signals", {})
-    network_caps = sorted({row["id"] for row in governance_rows if row["network_access"] is True})
     fingerprint = _runtime_fingerprint(enabled_ids)
+    known_gaps = _known_runtime_gaps()
+
+    governor_modules = [
+        "src/governor/governor.py",
+        "src/governor/governor_mediator.py",
+        "src/governor/capability_registry.py",
+        "src/governor/execute_boundary/execute_boundary.py",
+        "src/governor/network_mediator.py",
+        "src/ledger/writer.py",
+    ]
+
+    executor_count = len([p for p in EXECUTORS_DIR.glob("*.py") if p.name != "__init__.py"])
+    skill_count = len([p for p in SKILLS_DIR.glob("*.py") if p.name != "__init__.py"])
+    fingerprint_payload = {
+        "commit": fingerprint["git_commit_hash"],
+        "branch": fingerprint["git_branch"],
+        "enabled_capability_ids": enabled_ids,
+        "governor_modules": governor_modules,
+        "executor_count": executor_count,
+        "skill_count": skill_count,
+    }
+    runtime_hash = hashlib.sha256(
+        json.dumps(fingerprint_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
+    ).hexdigest()
 
     lines = [
-        "# NOVA - CURRENT RUNTIME STATE",
+        "# NOVA CURRENT RUNTIME STATE",
         "",
-        "Status: AUTHORITATIVE RUNTIME TRUTH",
-        "Authority Level: Runtime",
-        "Update Method: Auto-generated snapshot",
-        "Applies To: Nova Core Runtime",
+        f"Generated: {generated_at}",
+        f"Commit: {fingerprint['git_commit_hash']}",
+        f"Branch: {fingerprint['git_branch']}",
         "",
-        "This document defines the exact operational state of Nova at the current commit.",
-        "All other documentation must defer to this file for runtime capability truth.",
-        "If any document conflicts with this file, this file is correct.",
+        f"Runtime Fingerprint: {runtime_hash}",
+        "Generated By: scripts/generate_runtime_docs.py",
         "",
-        f"- Generated (UTC): {generated_at}",
-        f"- Audit status: **{report.get('status', 'unknown').upper()}**",
-        f"- Execution gate enabled: {summary.get('execution_gate_enabled', False)}",
+        "Authoritative Source: Runtime codebase",
+        "Manual edits: NOT PERMITTED",
         "",
-        "## System Identity",
+        "## Phase Activation Matrix",
         "",
-        "Nova is a governed intelligence platform.",
-        "Execution authority exists only through the Governor Spine.",
-        "Nova is not autonomous and performs no background actions.",
+        "| Phase | Status | Notes |",
+        "| --- | --- | --- |",
+        "| Phase 3.5 | COMPLETE | Governance baseline sealed |",
+        "| Phase 4 | ACTIVE | Governed execution runtime |",
+        "| Phase 4.2 | DESIGN ONLY | Orthogonal cognition stack not implemented |",
+        f"| Phase 4.5 | {_phase_45_status()} | UX elements present but incomplete |",
+        "| Phase 5 | DESIGN | Memory continuity planned |",
         "",
-        "## Phase Status",
+        "## Runtime Governance Spine",
         "",
-        "- Current phase marker: Phase-4 runtime active",
-        "- Phase-3.5 baseline: sealed",
-        "- Future phases: design-only and not implemented in runtime",
+        "Execution Authority Model:",
+        "User -> Governor -> Capability Registry -> ExecuteBoundary -> Executor",
         "",
-        "## Execution Authority Model",
+        "Components:",
         "",
-        "User -> Input Normalization -> Skill Router -> GovernorMediator -> ExecuteBoundary -> Capability Executor -> ActionResult -> Ledger",
+        "GovernorMediator",
+        "Role: Invocation router and policy enforcement",
+        "Location: src/governor/governor_mediator.py",
         "",
-        "All execution authority passes through the Governor.",
-        "Conversation subsystems are text-only and non-authorizing.",
+        "CapabilityRegistry",
+        "Role: Capability enablement control",
+        "Location: src/governor/capability_registry.py",
+        "",
+        "ExecuteBoundary",
+        "Role: Final execution permission gate",
+        "Location: src/governor/execute_boundary/execute_boundary.py",
+        "",
+        "NetworkMediator",
+        "Role: Enforced outbound HTTP control",
+        "Location: src/governor/network_mediator.py",
+        "",
+        "LedgerWriter",
+        "Role: Append-only audit logging",
+        "Location: src/ledger/writer.py",
         "",
         "## Active Capabilities",
         "",
-        "| Capability ID | Name | Description | Authority Level |",
-        "| --- | --- | --- | --- |",
+        "| ID | Capability | Registry Status | Runtime Enabled | Runtime State |",
+        "| --- | --- | --- | --- | --- |",
     ]
 
     for row in governance_rows:
-        if not row["enabled"]:
-            continue
-        lines.append(f"| {row['id']} | {row['name']} | Governed runtime capability | {row['authority_class']} |")
+        runtime_state = "ACTIVE" if row["enabled"] and row["status"] == "active" else "INACTIVE"
+        lines.append(
+            f"| {row['id']} | {row['name']} | {row['status'].upper()} | {str(row['enabled'])} | {runtime_state} |"
+        )
 
     lines.extend(
         [
             "",
-            "## Capability Restrictions",
+            "## Runtime Systems",
             "",
-            "- No background execution",
-            "- No autonomous actions",
-            "- No persistent learning",
-            "- No scheduled task orchestration",
-            "- No multi-capability chaining inside one invocation",
+            "Conversation Router",
+            "Location: src/conversation",
+            "Status: Active",
             "",
-            "## Network Authority",
+            "Deep Analysis Bridge",
+            "Location: src/conversation/deepseek_bridge.py",
+            "Status: Contained analysis-only",
             "",
-            "- Outbound network access is permitted only through `NetworkMediator`.",
-            "- Skills and conversation modules may not bypass network mediation.",
-            f"- Capabilities using NetworkMediator: {network_caps}",
+            "Voice System",
+            "Location: src/voice",
+            "Status: Active",
             "",
-            "## Conversation Subsystem",
+            "WebSocket Interface",
+            "Location: src/brain_server.py",
+            "Status: Active",
             "",
-            "- Provides formatting, clarification, escalation, and analysis.",
-            "- Cannot invoke executors directly.",
-            "- Cannot create ActionRequest objects.",
-            f"- Direct LLM calls detected: deepseek_uses_ollama_chat_directly={model_signals.get('deepseek_uses_ollama_chat_directly', False)}",
+            "Dashboard UI",
+            "Location: static/",
+            "Status: Active",
             "",
-            "## User Interface Behavior",
+            "## Known Runtime Gaps",
             "",
-            "- Orb visuals are non-semantic.",
-            "- UI may display system state but does not confer execution authority.",
-            "",
-            "## Voice System",
-            "",
-            "- Speech input: local STT pipeline (Vosk).",
-            "- Speech output: local invocation-bound TTS.",
-            "- No background listening.",
-            "- No unsolicited speech.",
-            "",
-            "## Ledger & Audit",
-            "",
-            "- Governed actions emit append-only ledger events.",
-            "- Ledger includes timestamps, capability ID, and execution result.",
-            "- Unknown ledger event types are rejected fail-closed.",
-            "",
-            "## Runtime Safety Guarantees",
-            "",
-            f"- single_action_queue_enforced: {enforcement['single_action_queue_enforced']}",
-            f"- execution_timeout_guard_active: {enforcement['execution_timeout_guard_active']}",
-            f"- dns_rebinding_protection_active: {enforcement['dns_rebinding_protection_active']}",
-            f"- ledger_logging_active: {enforcement['ledger_logging_active']}",
-            f"- execution_gate_enabled: {enforcement['execution_gate_enabled']}",
-            "",
-            "## Verification Status",
-            "",
-            "- Backend test suite must pass in CI (`python -m pytest -q`).",
-            "- Governance tests cover routing, mediation boundaries, and fail-closed behavior.",
-            "",
-            "## Runtime Fingerprint",
-            "",
-            f"- Commit: {fingerprint['git_commit_hash']}",
-            f"- Generated (UTC): {fingerprint['generated_at_utc']}",
-            f"- Capabilities enabled: {enabled_ids}",
-            f"- Capabilities disabled: {disabled_ids}",
-            f"- Execution gate: {summary.get('execution_gate_enabled', False)}",
-            "",
-            "## Runtime Truth Discrepancies",
+            "Not Implemented Yet",
             "",
         ]
     )
 
-    discrepancies = report.get("discrepancies", [])
-    if not discrepancies:
-        lines.append("- None")
+    if known_gaps:
+        lines.extend(f"- {gap}" for gap in known_gaps)
     else:
-        for item in discrepancies:
-            lines.append(f"- [{item.get('severity', 'unknown')}] {item.get('code', 'UNKNOWN')}: {item.get('message', '')}")
+        lines.append("- None")
 
     lines.extend(
         [
             "",
-            "## Change Control",
+            "## Runtime Invariants",
             "",
-            "Update this document only when runtime capabilities, execution authority, or phase state changes.",
-            "Other documents must reference this file instead of redefining runtime behavior.",
+            "- No autonomy",
+            "- No background execution",
+            "- All actions must pass GovernorMediator",
+            "- All outbound HTTP must pass NetworkMediator",
+            "- All execution logged to ledger",
+            "",
+            "## Runtime Fingerprint",
+            "",
+            f"- Capability Count: {len(enabled_ids)}",
+            f"- Governor Modules: {len(governor_modules)}",
+            f"- Executors: {executor_count}",
+            f"- Skills: {skill_count}",
+            "",
+            f"- Hash: {runtime_hash}",
             "",
         ]
     )

@@ -30,6 +30,18 @@ jobs:
           cd nova_backend
           python -m pytest -q
 
+      - name: Enforce generated runtime docs
+        run: |
+          $env:PYTHONPATH = "nova_backend"
+          python scripts/generate_runtime_docs.py
+          git diff --exit-code -- `
+            docs/current_runtime/CURRENT_RUNTIME_STATE.md `
+            docs/current_runtime/GOVERNANCE_MATRIX.md `
+            docs/current_runtime/GOVERNANCE_MATRIX_TREE.md `
+            docs/current_runtime/SKILL_SURFACE_MAP.md `
+            docs/current_runtime/BYPASS_SURFACES.md `
+            docs/current_runtime/RUNTIME_FINGERPRINT.md
+
       - name: Validate dashboard JavaScript syntax
         run: |
           node --check nova_backend/static/dashboard.js
