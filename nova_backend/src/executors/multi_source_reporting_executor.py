@@ -3,6 +3,8 @@ from __future__ import annotations
 import os
 
 from src.actions.action_result import ActionResult
+from src.cognition.cognitive_layer_contract import CognitiveMode, CognitiveRequest
+from src.cognition.modules import ReportingModule, ResearchModule, VerificationModule
 from src.llm.llm_gateway import generate_chat
 from src.rendering.intelligence_brief_renderer import IntelligenceBriefRenderer
 
@@ -13,6 +15,9 @@ class MultiSourceReportingExecutor:
     def __init__(self, network):
         self.network = network
         self.renderer = IntelligenceBriefRenderer()
+        self.research_module = ResearchModule()
+        self.verification_module = VerificationModule()
+        self.reporting_module = ReportingModule()
 
     def execute(self, request) -> ActionResult:
         query = (request.params or {}).get("query", "").strip()
@@ -40,9 +45,10 @@ class MultiSourceReportingExecutor:
             return ActionResult.failure("I couldn't build the report right now.", request_id=request.request_id)
 
         results = ((response.get("data") or {}).get("web") or {}).get("results") or []
-        titles = [item.get("title", "").strip() for item in results[:3] if item.get("title")]
+        top_results = list(results[:6])
+        titles = [item.get("title", "").strip() for item in top_results if item.get("title")]
         domains = []
-        for item in results[:3]:
+        for item in top_results:
             url = item.get("url", "")
             dom = url.split("//")[-1].split("/")[0].strip().lower()
             if dom and dom not in domains:
@@ -61,17 +67,65 @@ class MultiSourceReportingExecutor:
             max_tokens=220,
             temperature=0.2,
         )
-        message = self.renderer.render_multi_source_report(
-            query=query[:120],
-            findings=titles,
-            sources=domains,
-            analysis_text=(analysis_text or ""),
+        research_result = self.research_module.analyze(
+            CognitiveRequest(
+                user_query=query,
+                mode=CognitiveMode.ANALYSIS,
+                request_id=request.request_id,
+                source_data={"web_results": top_results},
+            )
+        )
+
+        verification_result = self.verification_module.analyze(
+            CognitiveRequest(
+                user_query=query,
+                mode=CognitiveMode.VERIFICATION,
+                request_id=request.request_id,
+                source_data={
+                    "findings": list(research_result.key_points),
+                    "sources": list(research_result.supporting_sources),
+                },
+            )
+        )
+
+        reporting_result = self.reporting_module.analyze(
+            CognitiveRequest(
+                user_query=query,
+                mode=CognitiveMode.REPORTING,
+                request_id=request.request_id,
+                source_data={
+                    "summary": (analysis_text or "").strip() or research_result.summary,
+                    "findings": list(research_result.key_points),
+                    "sources": list(research_result.supporting_sources),
+                    "contradictions": list(verification_result.diagnostics.get("contradictions", [])),
+                    "confidence": verification_result.confidence,
+                },
+            )
+        )
+
+        message = self.renderer.render_structured_intelligence_brief(
+            topic=query[:140],
+            summary=reporting_result.summary,
+            key_findings=list(reporting_result.key_points),
+            supporting_sources=list(reporting_result.supporting_sources),
+            contradictions=list(reporting_result.diagnostics.get("contradictions", [])),
+            confidence=reporting_result.confidence,
         )
 
         widget_results = [{"title": i.get("title", "")[:100], "url": i.get("url", "")} for i in results[:5]]
         return ActionResult.ok(
             message=message,
-            data={"widget": {"type": "search", "data": {"results": widget_results}}},
+            data={
+                "widget": {"type": "search", "data": {"results": widget_results}},
+                "structured_brief": {
+                    "topic": query,
+                    "summary": reporting_result.summary,
+                    "key_findings": list(reporting_result.key_points),
+                    "supporting_sources": list(reporting_result.supporting_sources),
+                    "contradictions": list(reporting_result.diagnostics.get("contradictions", [])),
+                    "confidence": reporting_result.confidence,
+                },
+            },
             request_id=request.request_id,
             authority_class="read_only",
             external_effect=False,

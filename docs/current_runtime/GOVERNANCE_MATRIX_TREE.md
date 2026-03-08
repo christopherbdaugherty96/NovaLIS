@@ -5,8 +5,8 @@ Deterministic generated tree diagram derived from allowlisted runtime sources.
 ```mermaid
 graph TD
   Runtime[Phase-4 Runtime]
-  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 49, 50, 51, 52, 53, 54]]
-  Runtime --> Disabled[Disabled IDs: [48]]
+  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54]]
+  Runtime --> Disabled[Disabled IDs: []]
   Runtime --> Gov[Governor Guards]
   Gov --> EG[execution_gate: True]
   Gov --> SAQ[single_action_queue: True]
@@ -55,8 +55,9 @@ graph TD
   Routes --> R20_media[media -> capability 20]
   Routes --> R22_open_folder[open_folder -> capability 22]
   Routes --> R17_open_website[open_website -> capability 17]
+  Routes --> R48_report[report -> capability 48]
   Routes --> R31_response_verification[response_verification -> capability 31]
-  Routes --> R16_search[search -> capability 16]
+  Routes --> R48_search[search -> capability 48]
   Routes --> R18_speak[speak -> capability 18]
   Routes --> R52_story_tracker_update[story_tracker_update -> capability 52]
   Routes --> R53_story_tracker_view[story_tracker_view -> capability 53]
@@ -69,8 +70,8 @@ graph TD
 
 ```text
 Runtime
-â”œâ”€ Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 49, 50, 51, 52, 53, 54]
-â”œâ”€ Disabled IDs: [48]
+â”œâ”€ Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54]
+â”œâ”€ Disabled IDs: []
 â”œâ”€ Governor Guards
 â”‚  â”œâ”€ execution_gate: True
 â”‚  â”œâ”€ single_action_queue: True
@@ -103,8 +104,9 @@ Runtime
 â”‚  â”œâ”€ media -> 20
 â”‚  â”œâ”€ open_folder -> 22
 â”‚  â”œâ”€ open_website -> 17
+â”‚  â”œâ”€ report -> 48
 â”‚  â”œâ”€ response_verification -> 31
-â”‚  â”œâ”€ search -> 16
+â”‚  â”œâ”€ search -> 48
 â”‚  â”œâ”€ speak -> 18
 â”‚  â”œâ”€ story_tracker_update -> 52
 â”‚  â”œâ”€ story_tracker_view -> 53

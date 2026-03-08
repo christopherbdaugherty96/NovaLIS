@@ -2,11 +2,13 @@ from src.audit.runtime_auditor import _enabled_registry_ids, _load_registry, _me
 from src.governor.governor_mediator import GovernorMediator
 
 
-def test_mediator_does_not_route_disabled_capabilities():
+def test_mediator_routes_only_enabled_capabilities():
     routed = GovernorMediator.parse_governed_invocation("open documents")
     assert routed is not None
     assert routed.capability_id == 22
-    assert GovernorMediator.parse_governed_invocation("report market update") is None
+    routed = GovernorMediator.parse_governed_invocation("report market update")
+    assert routed is not None
+    assert routed.capability_id == 48
 
 
 def test_mediator_mapped_ids_subset_of_registry_enabled_ids():

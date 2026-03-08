@@ -126,6 +126,15 @@ def test_news_intelligence_parsing():
     assert inv.capability_id == 53
     assert inv.params["action"] == "show_graph"
 
+    inv = GovernorMediator.parse_governed_invocation("research AI regulation trends")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 48
+    assert "AI regulation trends" in inv.params["query"]
+
+    inv = GovernorMediator.parse_governed_invocation("create an intelligence brief on lithium supply chains")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 48
+
     inv = GovernorMediator.parse_governed_invocation("verify this")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 31

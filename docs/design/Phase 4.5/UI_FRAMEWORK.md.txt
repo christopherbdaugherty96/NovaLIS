@@ -1,1 +1,6 @@
-UI_FRAMEWORK.md
+﻿# DEPRECATED PLACEHOLDER
+
+This file was a placeholder and is not a canonical design document.
+
+Use:
+- `docs/design/Phase 4.5/# Nova UI Framework.txt`

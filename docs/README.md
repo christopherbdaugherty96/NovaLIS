@@ -1,0 +1,18 @@
+﻿# Nova Documentation Layout
+
+Runtime truth (operational authority):
+- `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+- `docs/current_runtime/RUNTIME_FINGERPRINT.md`
+- Verified proofs in `docs/PROOFS/`
+
+Design intent (non-authorizing):
+- `docs/design/`
+- See `docs/design/DESIGN_AUTHORITY.md`
+
+Canonical governance contracts:
+- `docs/canonical/`
+
+Stability aliases:
+- `docs/runtime/` -> pointer to `docs/current_runtime/`
+- `docs/canon/` -> pointer to `docs/canonical/`
+- `docs/proofs/` -> pointer to `docs/PROOFS/`

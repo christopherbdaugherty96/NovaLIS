@@ -31,12 +31,14 @@ def test_multi_source_report_structured_output(monkeypatch):
     result = executor.execute(_request({"query": "ai regulation updates"}))
 
     assert result.success is True
-    assert "NOVA MULTI-SOURCE REPORT" in result.message
-    assert "Top Findings" in result.message
-    assert "Sources" in result.message
+    assert "INTELLIGENCE BRIEF" in result.message
+    assert "Key Findings" in result.message
+    assert "Supporting Sources" in result.message
+    assert "Confidence" in result.message
     assert "abcnews.go.com" in result.message
     assert isinstance(result.data, dict)
     assert result.data.get("widget", {}).get("type") == "search"
+    assert isinstance(result.data.get("structured_brief"), dict)
 
 
 def test_multi_source_report_handles_missing_query():

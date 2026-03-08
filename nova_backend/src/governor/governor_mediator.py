@@ -29,7 +29,11 @@ def _invocation_if_enabled(capability_id: int, params: Dict[str, Any]) -> Invoca
         return Invocation(capability_id=capability_id, params=params)
     return None
 
-SEARCH_RE = re.compile(r"^\s*(search(?: for)?|look up|research)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
+SEARCH_RE = re.compile(r"^\s*(search(?: for)?|look up)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
+INTEL_RESEARCH_RE = re.compile(
+    r"^\s*(?:research|analy[sz]e|create\s+(?:an?\s+)?intelligence\s+brief(?:\s+(?:on|about))?|intelligence\s+brief\s+(?:on|about)|report)\s+(?P<q>.+?)\s*$",
+    re.IGNORECASE,
+)
 OPEN_RE = re.compile(r"^\s*open\s+(?P<name>\w+)\s*$", re.IGNORECASE)
 OPEN_NAME_RE = re.compile(r"^\s*open\s+(?P<target>[A-Za-z0-9_.\- ]+)\s*$", re.IGNORECASE)
 OPEN_FOLDER_RE = re.compile(r"^\s*open\s+(?P<folder>documents|downloads|desktop|pictures)\s*$", re.IGNORECASE)
@@ -187,6 +191,10 @@ class GovernorMediator:
             topic_query = (tm.group("topic") or "").strip()
             if topic_query:
                 return _invocation_if_enabled(49, {"selection": "topic", "topic_query": topic_query, "recent": True})
+
+        m = INTEL_RESEARCH_RE.match(t)
+        if m:
+            return _invocation_if_enabled(48, {"query": m.group("q").strip()})
 
         m = SEARCH_RE.match(t)
         if m:
