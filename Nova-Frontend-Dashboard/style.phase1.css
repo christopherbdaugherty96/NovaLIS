@@ -1,5 +1,5 @@
 /* =========================================================
-   NovaLIS — Phase-3 Dashboard Styles (FINAL)
+   NovaLIS - Phase-3 Dashboard Styles (FINAL)
    UI Contract: Presentation Only, No Cognitive Signaling
    ========================================================= */
 
@@ -352,7 +352,7 @@ html, body {
 }
 
 #btn-weather-update.updating::after {
-  content: "…";
+  content: "...";
   margin-left: 4px;
 }
 
@@ -370,6 +370,7 @@ html, body {
 
   display: flex;
   flex-direction: column;
+  gap: 12px;
   min-height: 0;
   max-height: 100%;
 }
@@ -403,8 +404,36 @@ html, body {
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.08);
   color: rgba(230, 233, 240, 0.9);
-  font-size: 0.86rem;
-  line-height: 1.4;
+  font-size: 0.95rem;
+  line-height: 1.55;
+}
+
+#trust-panel.widget {
+  background: rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.02);
+  box-shadow:
+    0 1px 1px rgba(0, 0, 0, 0.05),
+    inset 0 1px 0 rgba(255, 255, 255, 0.01);
+}
+
+#trust-panel h3 {
+  margin: 0 0 10px 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+  opacity: 0.92;
+}
+
+.trust-row {
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: rgba(230, 233, 240, 0.92);
+  margin-bottom: 6px;
+}
+
+.trust-row:last-child {
+  margin-bottom: 0;
 }
 
 /* FIX: Make the list scroll (matches your HTML) */
@@ -423,7 +452,8 @@ html, body {
 }
 
 #news-list li {
-  line-height: 1.4;
+  line-height: 1.55;
+  font-size: 0.95rem;
   margin-bottom: 14px;
   padding-bottom: 14px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
@@ -496,7 +526,7 @@ html, body {
 }
 
 #btn-news.updating::after {
-  content: "…";
+  content: "...";
   margin-left: 4px;
 }
 
@@ -587,7 +617,7 @@ html, body {
 
 /* ================================
    MIC BUTTON VISUAL STATES (PTT)
-   Phase-3 STT – UI ONLY (DORMANT)
+   Phase-3 STT - UI ONLY (DORMANT)
    ================================ */
 
 #ptt-btn.mic-idle { 
@@ -817,7 +847,7 @@ html, body {
   color: inherit;
   border-radius: 8px;
   padding: 6px 10px;
-  font-size: 0.78rem;
+  font-size: 0.84rem;
   cursor: pointer;
 }
 
@@ -832,8 +862,17 @@ html, body {
 .chat-assistant {
   margin-bottom: 12px;
   padding: 10px 12px;
+  font-size: 1rem;
+  line-height: 1.55;
   border-radius: 10px;
   max-width: 96%;
+}
+
+.chat-user span,
+.chat-assistant span {
+  display: block;
+  max-width: 110ch;
+  white-space: pre-wrap;
 }
 
 .chat-user {
@@ -864,6 +903,63 @@ html, body {
   gap: 6px;
   flex-wrap: wrap;
   margin-top: 8px;
+}
+
+.message-utilities {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.message-utility-btn {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+
+.message-utility-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.pinned-messages {
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px dashed rgba(130, 220, 190, 0.28);
+  border-radius: 10px;
+  background: rgba(130, 220, 190, 0.06);
+}
+
+.pinned-messages::before {
+  content: "Pinned";
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(220, 245, 236, 0.9);
+  margin-bottom: 6px;
+}
+
+.chat-pinned {
+  border-color: rgba(130, 220, 190, 0.38) !important;
+  background: rgba(130, 220, 190, 0.08) !important;
+}
+
+.message-expand-btn {
+  display: inline-block;
+  margin-top: 8px;
+  margin-left: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 0.78rem;
+  cursor: pointer;
 }
 
 .modal-overlay {
@@ -960,6 +1056,48 @@ html, body {
   border-color: #fff !important;
 }
 
+.structured-report {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 110ch;
+}
+
+.structured-report-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: rgba(230, 233, 240, 0.96);
+}
+
+.structured-section {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 8px 10px;
+}
+
+.structured-section-heading {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(200, 212, 236, 0.88);
+  margin-bottom: 6px;
+}
+
+.structured-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.structured-row {
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: rgba(230, 233, 240, 0.94);
+}
+
 @media (max-width: 768px) {
   .assistant-actions .assistant-action-btn {
     flex: 1 1 calc(50% - 6px);
@@ -973,3 +1111,4 @@ html, body {
     flex: 1 1 calc(33% - 8px);
   }
 }
+

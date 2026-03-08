@@ -21,9 +21,11 @@ Each transcript turn includes:
 - `user_message`
 - `nova_response`
 - `capability_triggered` (when the mediator routed to a capability)
+- `capability_executor` (expected executor path for routed capability)
 - `governor_decision` (routing path label)
 - `execution_time_ms` (turn latency)
 - `errors` (when invocation returned a failed action result)
+- `trace_id` / `trace_steps` (only when simulation trace mode is enabled)
 
 ## Running Simulation Tests
 
@@ -59,6 +61,18 @@ python -m pytest -q
 - `run_scenario_library(directory)` to execute all scenarios
 - `print_transcript(transcript)`
 - `export_transcript_json(transcript, path)`
+
+## Cognitive Trace Mode (Debug/Test Only)
+
+The simulator supports an explicit trace mode:
+
+```python
+run_simulation(script, include_trace=True)
+```
+
+When enabled, each turn records routing-stage trace steps (normalization, mediator parse, governor invocation/dispatch, fallback path).
+
+This is post-run debug data only and does not alter runtime authority.
 
 ## Scenario Simulation Library
 

@@ -13,3 +13,9 @@ def test_capability_routing_simulation():
     transcript = run_simulation(script)
     sequence = transcript.capability_sequence()
     assert sequence == [16, 48, 48]
+    executors = [turn.capability_executor for turn in transcript.turns if turn.capability_triggered is not None]
+    assert executors == [
+        "web_search_executor",
+        "multi_source_reporting_executor",
+        "multi_source_reporting_executor",
+    ]

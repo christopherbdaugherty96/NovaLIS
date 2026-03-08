@@ -7,6 +7,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from src.conversation.response_style_router import InputNormalizer
+from src.debug.cognitive_trace import CognitiveTrace
 from src.governor.governor import Governor
 from src.governor.governor_mediator import Clarification, GovernorMediator, Invocation
 from src.skill_registry import SkillRegistry
@@ -28,9 +29,12 @@ class TranscriptTurn:
     user_message: str
     nova_response: str
     capability_triggered: int | None = None
+    capability_executor: str = ""
     governor_decision: str = ""
     execution_time_ms: float = 0.0
     errors: list[str] = field(default_factory=list)
+    trace_id: str = ""
+    trace_steps: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -56,10 +60,33 @@ def _shorten_text(text: str, max_sentences: int = 2, max_chars: int = 260) -> st
 class ConversationSimulator:
     """Runs scripted user conversations through Nova's real routing pipeline."""
 
-    def __init__(self) -> None:
+    def __init__(self, *, include_trace: bool = False) -> None:
         self.governor = Governor()
         self.skill_registry = SkillRegistry(network=self.governor.network)
         self._last_response = ""
+        self._include_trace = bool(include_trace)
+
+    @staticmethod
+    def _executor_for_capability(capability_id: int) -> str:
+        mapping = {
+            16: "web_search_executor",
+            17: "webpage_launch_executor",
+            18: "tts_executor",
+            19: "volume_executor",
+            20: "media_executor",
+            21: "brightness_executor",
+            22: "open_folder_executor",
+            31: "response_verification_executor",
+            32: "os_diagnostics_executor",
+            48: "multi_source_reporting_executor",
+            49: "news_intelligence_executor.execute_summary",
+            50: "news_intelligence_executor.execute_brief",
+            51: "news_intelligence_executor.execute_topic_map",
+            52: "story_tracker_executor.execute_update",
+            53: "story_tracker_executor.execute_view",
+            54: "analysis_document_executor",
+        }
+        return mapping.get(int(capability_id), "")
 
     async def run_simulation_async(self, script: list[str]) -> ConversationTranscript:
         transcript = ConversationTranscript()
@@ -73,35 +100,66 @@ class ConversationSimulator:
 
     async def _process_turn(self, raw_text: str) -> TranscriptTurn:
         started = time.perf_counter()
+        trace = CognitiveTrace() if self._include_trace else None
+        if trace is not None:
+            trace.record("input_received", {"raw_input": str(raw_text or "")})
         text = InputNormalizer.normalize(raw_text).strip()
         lowered = text.lower().rstrip(".?!")
+        if trace is not None:
+            trace.record("input_normalizer", {"normalized_input": text, "lowered": lowered})
 
         if lowered in SHORTEN_ALIASES:
             shortened = _shorten_text(self._last_response)
             response = shortened or "I don't have a previous response to shorten yet."
             self._last_response = response
             elapsed = (time.perf_counter() - started) * 1000
+            if trace is not None:
+                trace.record("conversation_followup", {"type": "shorten_last_response"})
             return TranscriptTurn(
                 user_message=raw_text,
                 nova_response=response,
                 governor_decision="conversation_followup",
                 execution_time_ms=round(elapsed, 3),
+                trace_id=trace.trace_id if trace is not None else "",
+                trace_steps=list(trace.steps) if trace is not None else [],
             )
 
         mediated_text = GovernorMediator.mediate(text)
+        if trace is not None:
+            trace.record("governor_mediator.mediate", {"mediated_text": mediated_text})
         parsed = GovernorMediator.parse_governed_invocation(mediated_text)
+        if trace is not None:
+            trace.record(
+                "governor_mediator.parse",
+                {
+                    "invocation_detected": isinstance(parsed, Invocation),
+                    "clarification": isinstance(parsed, Clarification),
+                },
+            )
 
         if isinstance(parsed, Clarification):
             self._last_response = parsed.message
             elapsed = (time.perf_counter() - started) * 1000
+            if trace is not None:
+                trace.record("clarification_returned", {"message": parsed.message})
             return TranscriptTurn(
                 user_message=raw_text,
                 nova_response=parsed.message,
                 governor_decision="clarification",
                 execution_time_ms=round(elapsed, 3),
+                trace_id=trace.trace_id if trace is not None else "",
+                trace_steps=list(trace.steps) if trace is not None else [],
             )
 
         if isinstance(parsed, Invocation):
+            if trace is not None:
+                trace.record(
+                    "governor_invocation",
+                    {
+                        "capability_id": parsed.capability_id,
+                        "params": dict(parsed.params),
+                    },
+                )
             action_result = self.governor.handle_governed_invocation(parsed.capability_id, dict(parsed.params))
             response = str(action_result.message or "").strip()
             self._last_response = response
@@ -109,13 +167,27 @@ class ConversationSimulator:
             if not action_result.success:
                 errors.append(response or "governed invocation failed")
             elapsed = (time.perf_counter() - started) * 1000
+            executor_name = self._executor_for_capability(parsed.capability_id)
+            if trace is not None:
+                trace.record(
+                    "executor_dispatch",
+                    {
+                        "capability_id": parsed.capability_id,
+                        "executor": executor_name,
+                        "success": bool(action_result.success),
+                        "latency_ms": round(elapsed, 3),
+                    },
+                )
             return TranscriptTurn(
                 user_message=raw_text,
                 nova_response=response,
                 capability_triggered=parsed.capability_id,
+                capability_executor=executor_name,
                 governor_decision="governed_invocation",
                 execution_time_ms=round(elapsed, 3),
                 errors=errors,
+                trace_id=trace.trace_id if trace is not None else "",
+                trace_steps=list(trace.steps) if trace is not None else [],
             )
 
         # Phase-3.5 fallback path through real skills registry.
@@ -129,23 +201,38 @@ class ConversationSimulator:
             response = str(getattr(result, "message", "") or "").strip()
             self._last_response = response
             elapsed = (time.perf_counter() - started) * 1000
+            if trace is not None:
+                trace.record(
+                    "skill_fallback",
+                    {
+                        "skill": str(getattr(skill, "name", "")),
+                        "success": True,
+                        "latency_ms": round(elapsed, 3),
+                    },
+                )
             return TranscriptTurn(
                 user_message=raw_text,
                 nova_response=response,
                 governor_decision="skill_fallback",
                 execution_time_ms=round(elapsed, 3),
+                trace_id=trace.trace_id if trace is not None else "",
+                trace_steps=list(trace.steps) if trace is not None else [],
             )
 
         fallback = "I'm not sure what you'd like me to do with that."
         self._last_response = fallback
         elapsed = (time.perf_counter() - started) * 1000
+        if trace is not None:
+            trace.record("no_route_fallback", {"latency_ms": round(elapsed, 3)})
         return TranscriptTurn(
             user_message=raw_text,
             nova_response=fallback,
             governor_decision="no_route_fallback",
             execution_time_ms=round(elapsed, 3),
+            trace_id=trace.trace_id if trace is not None else "",
+            trace_steps=list(trace.steps) if trace is not None else [],
         )
 
 
-def run_simulation(script: list[str]) -> ConversationTranscript:
-    return ConversationSimulator().run_simulation(script)
+def run_simulation(script: list[str], *, include_trace: bool = False) -> ConversationTranscript:
+    return ConversationSimulator(include_trace=include_trace).run_simulation(script)
