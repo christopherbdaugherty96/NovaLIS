@@ -57,30 +57,6 @@
         <div class="morning-row"><strong>System:</strong> <span id="morning-system">Loading...</span></div>
         <div class="morning-row"><strong>Calendar:</strong> <span id="morning-calendar">Coming soon</span></div>
       </div>
-      <div id="command-discovery" class="widget command-discovery" aria-live="polite">
-        <h3>What You Can Ask</h3>
-        <p class="discovery-subtitle">Tap any example to run it.</p>
-        <div id="command-groups" class="command-groups"></div>
-      </div>
-      <div id="about-nova" class="widget about-nova" aria-live="polite">
-        <h3>About Nova</h3>
-        <p>
-          Nova is a local-first assistant that helps you find information, understand topics,
-          and control simple things on your system when you ask.
-        </p>
-        <p>
-          It can search the web, summarize news or research topics, open websites or files,
-          and provide structured explanations with sources and confidence indicators.
-          Nova also offers a daily brief with weather, headlines, and system information
-          so you can quickly see what is happening.
-        </p>
-        <p>
-          Nova is designed to stay predictable and under your control.
-          It does not act on its own, does not run tasks in the background without being asked,
-          and shows when information comes from the internet or when something is uncertain.
-        </p>
-        <p class="about-tip"><strong>Tip:</strong> Try asking "show today's brief" or "search for today's tech news."</p>
-      </div>
       <div class="panel conversation">
         <div id="chat-log" class="chat-log"></div>
       </div>
@@ -89,6 +65,11 @@
 
     <!-- ---------- NEWS PANEL ---------- -->
     <aside class="news-panel">
+      <div class="sidebar-tabs" aria-label="Sidebar panels">
+        <button type="button" class="sidebar-tab active" data-panel="news-widget">News</button>
+        <button type="button" class="sidebar-tab" data-panel="trust-panel">Trust</button>
+        <button type="button" class="sidebar-tab" data-panel="help-modal">Help</button>
+      </div>
       <div id="news-widget" class="widget">
         <h3>Top News</h3>
 
@@ -109,7 +90,7 @@
           </button>
         </div>
       </div>
-      <div id="trust-panel" class="widget trust-panel" aria-live="polite">
+      <div id="trust-panel" class="widget trust-panel" aria-live="polite" hidden>
         <h3>Trust Panel</h3>
         <div class="trust-row"><strong>Mode:</strong> <span id="trust-mode">Local-only</span></div>
         <div class="trust-row"><strong>Last external call:</strong> <span id="trust-last-call">None</span></div>

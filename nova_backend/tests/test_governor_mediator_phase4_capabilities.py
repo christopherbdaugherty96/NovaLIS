@@ -62,8 +62,13 @@ def test_news_intelligence_parsing():
 
     inv = GovernorMediator.parse_governed_invocation("summarize today's news")
     assert isinstance(inv, Invocation)
-    assert inv.capability_id == 49
-    assert inv.params["selection"] == "all"
+    assert inv.capability_id == 50
+    assert inv.params["read_sources"] is True
+
+    inv = GovernorMediator.parse_governed_invocation("today's news")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 50
+    assert inv.params["read_sources"] is True
 
     inv = GovernorMediator.parse_governed_invocation("summarize latest news about war")
     assert isinstance(inv, Invocation)

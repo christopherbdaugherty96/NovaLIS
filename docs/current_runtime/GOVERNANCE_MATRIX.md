@@ -14,9 +14,9 @@ Deterministic capability governance matrix derived from allowlisted runtime sour
 | 31 | response_verification | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 | 32 | os_diagnostics | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 | 48 | multi_source_reporting | True | active | 4 | low | True | read_only | False | True | Governor â†’ NetworkMediator | True | True | True | True | True |
-| 49 | headline_summary | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
-| 50 | intelligence_brief | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
-| 51 | topic_memory_map | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
+| 49 | headline_summary | True | active | 4 | low | False | read_only | False | True | Governor â†’ NetworkMediator | True | True | True | True | True |
+| 50 | intelligence_brief | True | active | 4 | low | False | read_only | False | True | Governor â†’ NetworkMediator | True | True | True | True | True |
+| 51 | topic_memory_map | True | active | 4 | low | False | read_only | False | True | Governor â†’ NetworkMediator | True | True | True | True | True |
 | 52 | story_tracker_update | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 | 53 | story_tracker_view | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |
 | 54 | analysis_document | True | active | 4 | low | False | system_action | False | False | Governor â†’ Executor | True | True | True | True | True |

@@ -64,6 +64,10 @@ INTEL_BRIEF_RE = re.compile(
     r"^\s*(?:daily|intelligence|news)\s+brief\s*$|^\s*give me (?:the )?(?:daily|intelligence)\s+brief\s*$",
     re.IGNORECASE,
 )
+TODAY_NEWS_RE = re.compile(
+    r"^\s*(?:today'?s|todays|latest|recent|current)\s+news\s*$|^\s*news\s+(?:today|updates)\s*$",
+    re.IGNORECASE,
+)
 TOPIC_MAP_RE = re.compile(
     r"^\s*(?:show|open|view)?\s*(?:the\s+)?topic(?:\s+memory)?\s+map\s*$",
     re.IGNORECASE,
@@ -268,6 +272,9 @@ class GovernorMediator:
         if INTEL_BRIEF_RE.match(t):
             return _invocation_if_enabled(50, {})
 
+        if TODAY_NEWS_RE.match(t):
+            return _invocation_if_enabled(50, {"read_sources": True})
+
         if TOPIC_MAP_RE.match(t):
             return _invocation_if_enabled(51, {})
 
@@ -361,6 +368,8 @@ class GovernorMediator:
             topic_query = (gm.group("topic") or "").strip()
             if topic_query:
                 return _invocation_if_enabled(49, {"selection": "topic", "topic_query": topic_query, "recent": True})
+            if re.search(r"\b(today'?s|todays|latest|recent|current)\b", t, re.IGNORECASE):
+                return _invocation_if_enabled(50, {"read_sources": True})
             return _invocation_if_enabled(49, {"selection": "all"})
 
         sm = SOURCE_NEWS_SUMMARY_RE.match(t)
