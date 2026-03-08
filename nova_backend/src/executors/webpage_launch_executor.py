@@ -25,23 +25,6 @@ PRESETS = {
     "npr": "https://www.npr.org",
 }
 
-SAFE_DIRECT_DOMAINS = {
-    "google.com",
-    "github.com",
-    "youtube.com",
-    "facebook.com",
-    "twitter.com",
-    "x.com",
-    "cnn.com",
-    "bbc.com",
-    "reuters.com",
-    "apnews.com",
-    "npr.org",
-    "foxnews.com",
-    "abcnews.go.com",
-}
-
-
 class WebpageLaunchExecutor:
     """Executes governed webpage launch with normalization, preview, and guarded confirmation."""
 
@@ -94,13 +77,12 @@ class WebpageLaunchExecutor:
         resolved_url = cls._normalize_url(str(params.get("resolved_url") or ""))
         if resolved_url:
             domain = cls._domain_from_url(resolved_url)
-            known = any(domain == safe or domain.endswith(f".{safe}") for safe in SAFE_DIRECT_DOMAINS)
             return {
                 "ok": True,
                 "url": resolved_url,
                 "domain": domain or "unknown-domain",
                 "display": domain or resolved_url,
-                "requires_confirmation": not known,
+                "requires_confirmation": True,
                 "preview": preview,
                 "confirmed": confirmed,
                 "reason": "resolved_from_source",
@@ -126,13 +108,12 @@ class WebpageLaunchExecutor:
         guessed_url = cls._normalize_url(target)
         if guessed_url:
             domain = cls._domain_from_url(guessed_url)
-            known = any(domain == safe or domain.endswith(f".{safe}") for safe in SAFE_DIRECT_DOMAINS)
             return {
                 "ok": True,
                 "url": guessed_url,
                 "domain": domain or "unknown-domain",
                 "display": target,
-                "requires_confirmation": not known,
+                "requires_confirmation": True,
                 "preview": preview,
                 "confirmed": confirmed,
                 "reason": "normalized_domain",

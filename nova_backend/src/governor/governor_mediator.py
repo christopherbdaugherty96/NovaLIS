@@ -4,11 +4,36 @@ from __future__ import annotations
 
 import re
 import json
+from time import monotonic
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Dict, Any, Union
 
-_pending_clarification: Dict[str, int] = {}
+PENDING_CLARIFICATION_TTL_SECONDS = 600.0
+MAX_PENDING_CLARIFICATIONS = 10_000
+MIN_CLARIFICATION_QUERY_CHARS = 2
+MAX_CLARIFICATION_QUERY_CHARS = 500
+
+_pending_clarification: Dict[str, tuple[int, float]] = {}
+
+
+def _evict_expired_pending_clarifications(now: float | None = None) -> None:
+    t = monotonic() if now is None else now
+    stale = [
+        session_id
+        for session_id, (_, created_at) in _pending_clarification.items()
+        if t - created_at > PENDING_CLARIFICATION_TTL_SECONDS
+    ]
+    for session_id in stale:
+        _pending_clarification.pop(session_id, None)
+
+    if len(_pending_clarification) <= MAX_PENDING_CLARIFICATIONS:
+        return
+
+    overflow = len(_pending_clarification) - MAX_PENDING_CLARIFICATIONS
+    oldest = sorted(_pending_clarification.items(), key=lambda item: item[1][1])[:overflow]
+    for session_id, _ in oldest:
+        _pending_clarification.pop(session_id, None)
 
 
 def _load_enabled_capability_ids() -> set[int]:
@@ -259,9 +284,23 @@ class GovernorMediator:
         if not t:
                return None
 
+        _evict_expired_pending_clarifications()
+
         if session_id and session_id in _pending_clarification:
-            cap_id = _pending_clarification.pop(session_id)
+            cap_id, _created_at = _pending_clarification.pop(session_id)
             if cap_id == 16:
+                alt = GovernorMediator.parse_governed_invocation(t, session_id=None)
+                if isinstance(alt, Invocation) and alt.capability_id != 16:
+                    return alt
+                if isinstance(alt, Clarification):
+                    return alt
+                if "\n" in t or len(t) < MIN_CLARIFICATION_QUERY_CHARS or len(t) > MAX_CLARIFICATION_QUERY_CHARS:
+                    return Clarification(
+                        capability_id=16,
+                        message=(
+                            "Please provide a short search query (2-500 characters) on a single line."
+                        ),
+                    )
                 return _invocation_if_enabled(16, {"query": t})
             return None
 
@@ -486,7 +525,8 @@ class GovernorMediator:
 
         if re.search(r"\b(search(?: for)?|look up|research)\b", t, re.IGNORECASE):
             if session_id:
-                _pending_clarification[session_id] = 16
+                _pending_clarification[session_id] = (16, monotonic())
+                _evict_expired_pending_clarifications()
                 return Clarification(capability_id=16, message="What would you like to search for?")
             return None
 

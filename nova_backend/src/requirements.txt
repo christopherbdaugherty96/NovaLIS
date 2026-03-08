@@ -9,3 +9,7 @@ aiofiles
 openwakeword
 sounddevice
 numpy
+vosk
+feedparser
+pyttsx3
+beautifulsoup4
