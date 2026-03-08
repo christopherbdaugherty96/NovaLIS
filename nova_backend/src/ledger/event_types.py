@@ -15,5 +15,6 @@ EVENT_TYPES = frozenset(
         "MODEL_UPDATED",
         "EXECUTION_TIMEOUT",
         "EXECUTION_MEMORY_EXCEEDED",
+        "EXECUTION_CPU_EXCEEDED",
     }
 )

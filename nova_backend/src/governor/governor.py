@@ -12,7 +12,11 @@ import time
 from typing import Dict, Any
 
 from src.actions.action_result import ActionResult
-from src.governor.execute_boundary.execute_boundary import ExecuteBoundary, MAX_EXECUTION_TIME
+from src.governor.execute_boundary.execute_boundary import (
+    ExecuteBoundary,
+    MAX_EXECUTION_TIME,
+    ExecutionCPUExceededError,
+)
 from src.governor.single_action_queue import SingleActionQueue
 import src.ledger.writer as ledger_mod
 from src.governor.exceptions import (
@@ -121,6 +125,7 @@ class Governor:
                 timeout_seconds=MAX_EXECUTION_TIME,
             )
             self._execute_boundary.enforce_memory_limits()
+            self._execute_boundary.enforce_cpu_limits()
 
             elapsed = time.monotonic() - start_time
             if elapsed > MAX_EXECUTION_TIME:
@@ -162,6 +167,18 @@ class Governor:
                 pass
             return ActionResult.refusal(
                 "Execution exceeded allowed memory.",
+                request_id=req.request_id,
+            )
+        except ExecutionCPUExceededError:
+            try:
+                self.ledger.log_event(
+                    "EXECUTION_CPU_EXCEEDED",
+                    {"capability_id": req.capability_id, "request_id": req.request_id},
+                )
+            except LedgerWriteFailed:
+                pass
+            return ActionResult.refusal(
+                "Execution exceeded allowed CPU budget.",
                 request_id=req.request_id,
             )
         except Exception:

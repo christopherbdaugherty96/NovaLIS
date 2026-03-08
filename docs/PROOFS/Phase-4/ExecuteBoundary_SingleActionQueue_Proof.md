@@ -1,116 +1,56 @@
-# ExecuteBoundary & SingleActionQueue Proof
-**Date:** 2026-03-02
-**Commit:** `6574a355f2db7fb00d7e0fb9451f60f9f16eac21`
-**Scope:** Proof that the phase gate and concurrency boundary enforce governed execution limits.
+﻿# ExecuteBoundary and SingleActionQueue Proof
+Date: 2026-03-08
+Commit: 9f5aba0
+Scope: Proof that execution is resource-bounded and fail-closed at the boundary layer.
 
----
+## 1. Boundary Controls Implemented
+File: `nova_backend/src/governor/execute_boundary/execute_boundary.py`
 
-## 1. ExecuteBoundary
+Active controls:
+- Phase gate: `GOVERNED_ACTIONS_ENABLED`
+- Concurrency cap: `MAX_CONCURRENT_EXECUTIONS`
+- Wall-clock timeout: `run_with_timeout(...)`
+- Memory caps:
+  - `MAX_PROCESS_RSS_MB`
+  - `MAX_MEMORY_MB` delta
+- CPU cap:
+  - `MAX_CPU_SECONDS`
+  - `ExecutionCPUExceededError`
 
-**File:** `nova_backend/src/governor/execute_boundary/execute_boundary.py`
+Execution lifecycle:
+1. `allow_execution()` checks phase and concurrency availability.
+2. `enter_execution()` increments active count and captures start baselines.
+3. Governor runs executor through `run_with_timeout(...)`.
+4. Governor enforces `enforce_memory_limits()` and `enforce_cpu_limits()`.
+5. On any boundary breach, Governor refuses and logs event.
+6. `exit_execution()` decrements active count in `finally`.
 
-```python
-GOVERNED_ACTIONS_ENABLED = True
+## 2. Queue Controls
+File: `nova_backend/src/governor/single_action_queue.py`
 
-class ExecuteBoundary:
-    def __init__(self):
-        self._start_time: Optional[float] = None
+`SingleActionQueue` enforces one pending governed action at a time.
+Governor checks `has_pending()` pre-execution and always clears state in `finally`.
 
-    def allow_execution(self) -> bool:
-        return GOVERNED_ACTIONS_ENABLED
+## 3. Fail-Closed Outcomes
+Governor refusal outcomes tied to boundary events:
+- Timeout: `EXECUTION_TIMEOUT`
+- Memory cap: `EXECUTION_MEMORY_EXCEEDED`
+- CPU cap: `EXECUTION_CPU_EXCEEDED`
+- Concurrency cap reached: execution denied (pre-dispatch)
 
-    def enter_execution(self) -> None:
-        self._start_time = time.time()
+No partial success payload is returned when boundary enforcement fails.
 
-    def exit_execution(self) -> None:
-        self._start_time = None
-```
+## 4. Test Evidence
+- `tests/test_execute_boundary_concurrency.py`
+- `tests/test_governor_execution_timeout.py`
+- `tests/adversarial/test_execute_boundary_timeouts_fail_closed.py`
+- `tests/adversarial/test_concurrency_one_enforced.py`
 
-### Properties:
-
-| Property | Status |
-|---|---|
-| **Phase gate** | `GOVERNED_ACTIONS_ENABLED = True` — execution permitted in Phase-4 |
-| **Fail-closed design** | If constant were `False`, all `allow_execution()` calls return `False`, blocking all governed actions |
-| **Lifecycle tracking** | `enter_execution()` / `exit_execution()` bracket every executor run |
-| **Governor-owned** | Instantiated only in `Governor.__init__()` (governor.py line 33) |
-
-### Declared but unenforced:
-
-| Constant | Value | Enforced? |
-|---|---|---|
-| `MAX_EXECUTION_TIME` | 10 seconds | ❌ `_start_time` recorded but never compared |
-| `MAX_MEMORY_MB` | 100 | ❌ Placeholder only |
-| `MAX_CONCURRENT` | 1 | ✅ Enforced via `SingleActionQueue` (not by ExecuteBoundary) |
-
----
-
-## 2. SingleActionQueue
-
-**File:** `nova_backend/src/governor/single_action_queue.py`
-
-```python
-class SingleActionQueue:
-    def __init__(self):
-        self._pending = None
-
-    def has_pending(self) -> bool:
-        return self._pending is not None
-
-    def set_pending(self, action_id: str) -> None:
-        if self._pending is not None:
-            raise RuntimeError("Another action is pending.")
-        self._pending = action_id
-
-    def clear(self) -> None:
-        self._pending = None
-```
-
-### Concurrency guarantee:
-
-1. Governor checks `has_pending()` **before** ledger write (governor.py line 99)
-2. If pending → `ActionResult.failure("I can't do that right now.")`
-3. Inside `_execute()`, `set_pending(req.request_id)` is called (line 138)
-4. `clear()` is called in `finally` block (line 203) — **always** runs
-
-### Double-lock:
-
-`set_pending()` itself raises `RuntimeError` if called while another action is pending, providing a secondary safety net beyond the `has_pending()` pre-check.
-
----
-
-## 3. Integration in Governor
-
-```python
-# Gate check (governor.py line 93)
-if not self._execute_boundary.allow_execution():
-    return ActionResult.failure(...)
-
-# Queue check (governor.py line 99)
-if self._queue.has_pending():
-    return ActionResult.failure(...)
-
-# Execution bracket (governor.py lines 138–139, 201–203)
-self._queue.set_pending(req.request_id)
-self._execute_boundary.enter_execution()
-try:
-    ...
-finally:
-    self._execute_boundary.exit_execution()
-    self._queue.clear()
-```
-
----
-
-## 4. Test Verification
-
-| Test | File | What It Proves |
-|---|---|---|
-| `test_phase4_runtime_enabled` | `tests/test_phase4_runtime_active.py` | `GOVERNED_ACTIONS_ENABLED is True` |
-| `test_single_action_queue_blocks_concurrent` | `tests/test_single_action_queue.py` | Second `set_pending()` → `RuntimeError` |
-
----
+These tests verify:
+- boundary-level concurrency blocking
+- timeout refusal behavior
+- memory refusal + ledger event + no leak
+- CPU refusal + ledger event + no leak
 
 ## 5. Conclusion
-
-The phase gate (`ExecuteBoundary`) is a single boolean constant check that controls all governed execution globally. The concurrency lock (`SingleActionQueue`) prevents parallel governed actions with a double-lock mechanism and guaranteed cleanup via `finally`.
+ExecuteBoundary plus SingleActionQueue now provide intrinsic, test-backed runtime containment for Phase-4 governed execution.
