@@ -147,11 +147,15 @@ class WebSearchExecutor:
         sources_block = ResponseTemplates.sources_block(top_domains)
 
         report_sections = [
+            "Answer",
             f"{boundary_notice} {intro}",
             "",
-            findings_block,
+            findings_block.replace("Top Findings", "Key Points"),
             "",
             sources_block,
+            "",
+            "Confidence",
+            "Medium",
             "",
             f"Search latency: {elapsed_seconds:.1f}s (avg {avg_latency:.1f}s).",
             "Open any dashboard result for full article detail.",

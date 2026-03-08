@@ -77,6 +77,14 @@ INTEL_RESEARCH_RE = re.compile(
     r"^\s*(?:research|analy[sz]e|create\s+(?:an?\s+)?intelligence\s+brief(?:\s+(?:on|about))?|intelligence\s+brief\s+(?:on|about)|report)\s+(?P<q>.+?)\s*$",
     re.IGNORECASE,
 )
+NATURAL_RESEARCH_RE = re.compile(
+    r"^\s*(?:what(?:'s| is)\s+going on with|tell me about|help me understand|explain\s+(?!section\b))\s+(?P<q>.+?)\s*$",
+    re.IGNORECASE,
+)
+WHY_RESEARCH_RE = re.compile(
+    r"^\s*why\s+(?:is|are)\s+(?P<q>.+?)\s+(?:down|dropping|falling|up|rising)\s*$",
+    re.IGNORECASE,
+)
 OPEN_RE = re.compile(r"^\s*open\s+(?P<name>\w+)\s*$", re.IGNORECASE)
 OPEN_NAME_RE = re.compile(r"^\s*open\s+(?P<target>[A-Za-z0-9_.\- ]+)\s*$", re.IGNORECASE)
 OPEN_SOURCE_INDEX_RE = re.compile(r"^\s*open\s+(?:source|result)\s+(?P<idx>\d{1,2})\s*$", re.IGNORECASE)
@@ -171,6 +179,10 @@ DOC_EXPLAIN_SECTION_RE = re.compile(
 )
 DOC_LIST_RE = re.compile(
     r"^\s*(?:list|show)\s+(?:analysis\s+)?docs?(?:uments)?\s*$",
+    re.IGNORECASE,
+)
+COMMAND_ONLY_RE = re.compile(
+    r"^\s*(?P<verb>open|search|research|summarize|compare|track)\s*$",
     re.IGNORECASE,
 )
 
@@ -332,6 +344,14 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(48, {"query": m.group("q").strip()})
 
+        m = NATURAL_RESEARCH_RE.match(t)
+        if m:
+            return _invocation_if_enabled(48, {"query": m.group("q").strip()})
+
+        m = WHY_RESEARCH_RE.match(t)
+        if m:
+            return _invocation_if_enabled(48, {"query": f"why {m.group('q').strip()} is changing"})
+
         m = SEARCH_RE.match(t)
         if m:
             return _invocation_if_enabled(16, {"query": m.group("q").strip()})
@@ -366,6 +386,14 @@ class GovernorMediator:
         if m:
             raw_target = m.group("target")
             target = _normalize_web_target(raw_target)
+            if len(target.split()) == 1 and len(target) <= 2:
+                return Clarification(
+                    capability_id=17,
+                    message=(
+                        f"I might have misheard '{target}'. "
+                        "Please say the full website or file name."
+                    ),
+                )
             # Keep single-token website shorthand behavior (e.g., "open github").
             if re.fullmatch(r"[A-Za-z0-9_]+", target):
                 return _invocation_if_enabled(17, {"target": target.lower()})
@@ -547,6 +575,19 @@ class GovernorMediator:
                 _evict_expired_pending_clarifications()
                 return Clarification(capability_id=16, message="What would you like to search for?")
             return None
+
+        m = COMMAND_ONLY_RE.match(t)
+        if m:
+            verb = (m.group("verb") or "").strip().lower()
+            prompts = {
+                "open": "What should I open? You can say 'open website github' or 'open documents'.",
+                "search": "What should I search for?",
+                "research": "What topic should I research?",
+                "summarize": "What should I summarize?",
+                "compare": "What should I compare?",
+                "track": "What topic should I track?",
+            }
+            return Clarification(capability_id=16, message=prompts.get(verb, "Could you clarify that request?"))
 
         return None
 

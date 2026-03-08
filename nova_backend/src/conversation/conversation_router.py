@@ -57,6 +57,10 @@ class ConversationRouter:
         "it",
         "them",
         "those",
+        "what about",
+        "and what about",
+        "compare with",
+        "the other one",
         "the result",
         "the article",
         "the report",
@@ -134,6 +138,14 @@ class ConversationRouter:
         if continuation_detected and not state.get("last_response"):
             needs_clarification = True
             clarification = "What should I continue from?"
+        if mode == ConversationMode.UNKNOWN and not needs_clarification:
+            tokens = [tok for tok in lowered.split() if tok]
+            if len(tokens) <= 3:
+                needs_clarification = True
+                clarification = (
+                    "I might have misheard that. "
+                    "Did you want me to search the web, open something, or show today's brief?"
+                )
 
         never_escalate = any(p.search(text) for p in cls.NEVER_ESCALATE_PATTERNS)
         should_escalate = cls._determine_escalation(mode, text, needs_clarification, blocked_by_policy, never_escalate)
