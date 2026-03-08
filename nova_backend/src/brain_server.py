@@ -16,6 +16,7 @@ import json
 import logging
 import re
 import uuid
+import asyncio
 from datetime import datetime
 from typing import Optional
 
@@ -393,7 +394,11 @@ async def websocket_endpoint(ws: WebSocket):
             if pending_web_open:
                 web_decision = SessionRouter.route_pending_web_confirmation(lowered)
                 if web_decision.action == "confirm":
-                    action_result = governor.handle_governed_invocation(17, {**pending_web_open, "confirmed": True})
+                    action_result = await asyncio.to_thread(
+                        governor.handle_governed_invocation,
+                        17,
+                        {**pending_web_open, "confirmed": True},
+                    )
                     session_state["pending_web_open"] = None
                     outgoing_message = _structure_long_message(action_result.message)
                     if action_result.success and isinstance(action_result.data, dict):
@@ -744,13 +749,18 @@ async def websocket_endpoint(ws: WebSocket):
                         await send_chat_done(ws)
                         continue
 
-                action_result = governor.handle_governed_invocation(capability_id, params)
+                action_result = await asyncio.to_thread(
+                    governor.handle_governed_invocation,
+                    capability_id,
+                    params,
+                )
                 if capability_id == 50 and params.get("action") == "track_cluster":
                     track_topic = ""
                     if isinstance(action_result.data, dict):
                         track_topic = str(action_result.data.get("track_topic") or "").strip()
                     if track_topic:
-                        action_result = governor.handle_governed_invocation(
+                        action_result = await asyncio.to_thread(
+                            governor.handle_governed_invocation,
                             52,
                             {"action": "track", "topic": track_topic, "headlines": list(session_state.get("news_cache") or [])},
                         )
