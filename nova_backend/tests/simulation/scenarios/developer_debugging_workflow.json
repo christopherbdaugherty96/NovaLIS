@@ -1,0 +1,13 @@
+{
+  "name": "developer_debugging_workflow",
+  "script": [
+    "system status",
+    "search for python traceback FileNotFoundError fix",
+    "research python traceback FileNotFoundError fix",
+    "shorter version"
+  ],
+  "expect": {
+    "capability_sequence": [32, 16, 48]
+  }
+}
+

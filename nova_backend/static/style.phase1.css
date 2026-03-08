@@ -905,6 +905,50 @@ html, body {
   margin-top: 8px;
 }
 
+.message-utilities {
+  display: flex;
+  gap: 6px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+.message-utility-btn {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.08);
+  color: inherit;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+
+.message-utility-btn:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.pinned-messages {
+  margin-bottom: 10px;
+  padding: 8px;
+  border: 1px dashed rgba(130, 220, 190, 0.28);
+  border-radius: 10px;
+  background: rgba(130, 220, 190, 0.06);
+}
+
+.pinned-messages::before {
+  content: "Pinned";
+  display: block;
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(220, 245, 236, 0.9);
+  margin-bottom: 6px;
+}
+
+.chat-pinned {
+  border-color: rgba(130, 220, 190, 0.38) !important;
+  background: rgba(130, 220, 190, 0.08) !important;
+}
+
 .message-expand-btn {
   display: inline-block;
   margin-top: 8px;

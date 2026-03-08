@@ -133,6 +133,35 @@ def _structure_long_message(text: str) -> str:
     lines.extend(f"- {pt}" for pt in points)
     return "\n".join(lines)
 
+
+def _make_shorter_followup(text: str) -> str:
+    raw = (text or "").strip()
+    if not raw:
+        return ""
+    compact = re.sub(r"\s+", " ", raw).strip()
+    if len(compact) <= 220:
+        return compact
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", compact) if s.strip()]
+    if sentences:
+        short = " ".join(sentences[:2]).strip()
+        if len(short) > 240:
+            short = short[:237].rstrip() + "..."
+        return short
+    return compact[:217].rstrip() + "..."
+
+
+def _conversation_suggestions(session_state: dict) -> list[dict[str, str]]:
+    suggestions: list[dict[str, str]] = [
+        {"label": "Weather", "command": "weather"},
+        {"label": "News", "command": "news"},
+        {"label": "Daily brief", "command": "brief"},
+    ]
+    if session_state.get("last_response"):
+        suggestions.append({"label": "Shorter version", "command": "shorter version"})
+    if session_state.get("news_cache"):
+        suggestions.append({"label": "Summarize headlines", "command": "summarize all headlines"})
+    return suggestions[:4]
+
 # -------------------------------------------------
 # Phase Status Endpoint
 # -------------------------------------------------
@@ -409,6 +438,96 @@ async def websocket_endpoint(ws: WebSocket):
                     lines = ["Sources for last response:"]
                     lines.extend(f"{i + 1}. {src}" for i, src in enumerate(last_sources))
                     await send_chat_message(ws, "\n".join(lines))
+                await send_chat_done(ws)
+                continue
+
+            if lowered in {
+                "shorter",
+                "shorter version",
+                "make that shorter",
+                "simplify that",
+                "summarize your last response",
+                "shorter version of your last response",
+                "tldr",
+                "tl;dr",
+            }:
+                prior = str(session_state.get("last_response") or "").strip()
+                if not prior:
+                    await send_chat_message(ws, "I don't have a previous response to shorten yet.")
+                else:
+                    short = _make_shorter_followup(prior)
+                    session_state["last_response"] = short
+                    await send_chat_message(ws, short)
+                await send_chat_done(ws)
+                continue
+
+            if lowered in {"weather", "weather update", "current weather"}:
+                weather_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "weather"), None)
+                if weather_skill is None:
+                    await send_chat_message(ws, "Weather is unavailable right now.")
+                    await send_chat_done(ws)
+                    continue
+                weather_result = await weather_skill.handle("weather")
+                if weather_result and weather_result.success:
+                    message = _structure_long_message(weather_result.message)
+                    session_state["last_response"] = message
+                    await send_chat_message(ws, message)
+                    if isinstance(weather_result.widget_data, dict):
+                        await ws_send(ws, weather_result.widget_data)
+                    session_state["trust_status"] = {
+                        "mode": "Online",
+                        "last_external_call": "Weather update",
+                        "data_egress": "Read-only external request",
+                        "failure_state": "Normal",
+                    }
+                    await send_trust_status(ws, session_state["trust_status"])
+                else:
+                    await send_chat_message(ws, "Weather is currently unavailable.")
+                await send_chat_done(ws)
+                continue
+
+            if lowered in {"news", "headlines", "latest news", "top news"}:
+                news_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "news"), None)
+                if news_skill is None:
+                    await send_chat_message(ws, "News is unavailable right now.")
+                    await send_chat_done(ws)
+                    continue
+                news_result = await news_skill.handle("news")
+                if news_result and news_result.success:
+                    session_state["last_response"] = news_result.message
+                    await send_chat_message(ws, news_result.message)
+                    if isinstance(news_result.widget_data, dict):
+                        items = list(news_result.widget_data.get("items") or [])
+                        session_state["news_cache"] = items
+                        session_state["last_sources"] = _extract_sources_from_results(items)
+                        await ws_send(ws, news_result.widget_data)
+                    session_state["trust_status"] = {
+                        "mode": "Online",
+                        "last_external_call": "News update",
+                        "data_egress": "Read-only external request",
+                        "failure_state": "Normal",
+                    }
+                    await send_trust_status(ws, session_state["trust_status"])
+                else:
+                    await send_chat_message(ws, "News is currently unavailable.")
+                await send_chat_done(ws)
+                continue
+
+            if lowered in {"system", "system status", "system check"}:
+                system_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "system"), None)
+                if system_skill is None:
+                    await send_chat_message(ws, "System diagnostics are unavailable right now.")
+                    await send_chat_done(ws)
+                    continue
+                system_result = await system_skill.handle("system status")
+                if system_result and system_result.success:
+                    message = _structure_long_message(system_result.message)
+                    session_state["last_response"] = message
+                    await send_chat_message(ws, message)
+                    if isinstance(system_result.widget_data, dict):
+                        await ws_send(ws, system_result.widget_data)
+                else:
+                    await send_chat_message(ws, "System diagnostics are currently unavailable.")
                 await send_chat_done(ws)
                 continue
 
@@ -701,7 +820,11 @@ async def websocket_endpoint(ws: WebSocket):
             # --- Fallback ---
             fallback_message = response_formatter.friendly_fallback()
             session_state["last_response"] = fallback_message
-            await send_chat_message(ws, fallback_message)
+            await send_chat_message(
+                ws,
+                fallback_message,
+                suggested_actions=_conversation_suggestions(session_state),
+            )
             await send_chat_done(ws)
 
             # (No auto‑speak for fallback – optional, but omitted to stay minimal)

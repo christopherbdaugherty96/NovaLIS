@@ -60,6 +60,17 @@ def test_news_intelligence_parsing():
     assert inv.params["selection"] == "source"
     assert inv.params["source_query"] == "ABC"
 
+    inv = GovernorMediator.parse_governed_invocation("summarize today's news")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 49
+    assert inv.params["selection"] == "all"
+
+    inv = GovernorMediator.parse_governed_invocation("summarize latest news about war")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 49
+    assert inv.params["selection"] == "topic"
+    assert inv.params["topic_query"] == "war"
+
     inv = GovernorMediator.parse_governed_invocation("give me details Fox News")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 49
