@@ -1,0 +1,151 @@
+from __future__ import annotations
+
+import asyncio
+import re
+import time
+from dataclasses import dataclass, field
+from typing import Any
+
+from src.conversation.response_style_router import InputNormalizer
+from src.governor.governor import Governor
+from src.governor.governor_mediator import Clarification, GovernorMediator, Invocation
+from src.skill_registry import SkillRegistry
+
+
+SHORTEN_ALIASES = {
+    "shorter",
+    "shorter version",
+    "make that shorter",
+    "summarize your last response",
+    "summarize that",
+    "tldr",
+    "tl;dr",
+}
+
+
+@dataclass
+class TranscriptTurn:
+    user_message: str
+    nova_response: str
+    capability_triggered: int | None = None
+    governor_decision: str = ""
+    execution_time_ms: float = 0.0
+    errors: list[str] = field(default_factory=list)
+
+
+@dataclass
+class ConversationTranscript:
+    turns: list[TranscriptTurn] = field(default_factory=list)
+
+    def capability_sequence(self) -> list[int]:
+        return [t.capability_triggered for t in self.turns if t.capability_triggered is not None]
+
+
+def _shorten_text(text: str, max_sentences: int = 2, max_chars: int = 260) -> str:
+    raw = (text or "").strip()
+    if not raw:
+        return ""
+    normalized = re.sub(r"\s+", " ", raw).strip()
+    sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", normalized) if s.strip()]
+    short = " ".join(sentences[:max_sentences]).strip() if sentences else normalized
+    if len(short) > max_chars:
+        short = short[: max_chars - 3].rstrip() + "..."
+    return short
+
+
+class ConversationSimulator:
+    """Runs scripted user conversations through Nova's real routing pipeline."""
+
+    def __init__(self) -> None:
+        self.governor = Governor()
+        self.skill_registry = SkillRegistry(network=self.governor.network)
+        self._last_response = ""
+
+    async def run_simulation_async(self, script: list[str]) -> ConversationTranscript:
+        transcript = ConversationTranscript()
+        for raw in script:
+            turn = await self._process_turn(raw or "")
+            transcript.turns.append(turn)
+        return transcript
+
+    def run_simulation(self, script: list[str]) -> ConversationTranscript:
+        return asyncio.run(self.run_simulation_async(script))
+
+    async def _process_turn(self, raw_text: str) -> TranscriptTurn:
+        started = time.perf_counter()
+        text = InputNormalizer.normalize(raw_text).strip()
+        lowered = text.lower().rstrip(".?!")
+
+        if lowered in SHORTEN_ALIASES:
+            shortened = _shorten_text(self._last_response)
+            response = shortened or "I don't have a previous response to shorten yet."
+            self._last_response = response
+            elapsed = (time.perf_counter() - started) * 1000
+            return TranscriptTurn(
+                user_message=raw_text,
+                nova_response=response,
+                governor_decision="conversation_followup",
+                execution_time_ms=round(elapsed, 3),
+            )
+
+        mediated_text = GovernorMediator.mediate(text)
+        parsed = GovernorMediator.parse_governed_invocation(mediated_text)
+
+        if isinstance(parsed, Clarification):
+            self._last_response = parsed.message
+            elapsed = (time.perf_counter() - started) * 1000
+            return TranscriptTurn(
+                user_message=raw_text,
+                nova_response=parsed.message,
+                governor_decision="clarification",
+                execution_time_ms=round(elapsed, 3),
+            )
+
+        if isinstance(parsed, Invocation):
+            action_result = self.governor.handle_governed_invocation(parsed.capability_id, dict(parsed.params))
+            response = str(action_result.message or "").strip()
+            self._last_response = response
+            errors: list[str] = []
+            if not action_result.success:
+                errors.append(response or "governed invocation failed")
+            elapsed = (time.perf_counter() - started) * 1000
+            return TranscriptTurn(
+                user_message=raw_text,
+                nova_response=response,
+                capability_triggered=parsed.capability_id,
+                governor_decision="governed_invocation",
+                execution_time_ms=round(elapsed, 3),
+                errors=errors,
+            )
+
+        # Phase-3.5 fallback path through real skills registry.
+        for skill in self.skill_registry.skills:
+            if not skill.can_handle(mediated_text):
+                continue
+            maybe = skill.handle(mediated_text)
+            result = await maybe if hasattr(maybe, "__await__") else maybe
+            if result is None:
+                continue
+            response = str(getattr(result, "message", "") or "").strip()
+            self._last_response = response
+            elapsed = (time.perf_counter() - started) * 1000
+            return TranscriptTurn(
+                user_message=raw_text,
+                nova_response=response,
+                governor_decision="skill_fallback",
+                execution_time_ms=round(elapsed, 3),
+            )
+
+        fallback = "I'm not sure what you'd like me to do with that."
+        self._last_response = fallback
+        elapsed = (time.perf_counter() - started) * 1000
+        return TranscriptTurn(
+            user_message=raw_text,
+            nova_response=fallback,
+            governor_decision="no_route_fallback",
+            execution_time_ms=round(elapsed, 3),
+        )
+
+
+def run_simulation(script: list[str]) -> ConversationTranscript:
+    return ConversationSimulator().run_simulation(script)

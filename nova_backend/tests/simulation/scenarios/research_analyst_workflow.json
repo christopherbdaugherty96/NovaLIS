@@ -1,0 +1,14 @@
+{
+  "name": "research_analyst_workflow",
+  "script": [
+    "hello nova",
+    "research AI regulation trends",
+    "summarize that",
+    "shorter version",
+    "show sources for your last response"
+  ],
+  "expect": {
+    "capability_sequence": [48]
+  }
+}
+

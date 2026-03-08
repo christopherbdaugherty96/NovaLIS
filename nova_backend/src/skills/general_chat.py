@@ -92,6 +92,17 @@ class GeneralChatSkill(BaseSkill):
         "not appropriate for discussion",
         "i can't assist with that topic",
     )
+    _DEPTH_HINTS = (
+        "in detail",
+        "go deeper",
+        "deep dive",
+        "step by step",
+        "full analysis",
+        "long version",
+        "expand this",
+        "break this down",
+        "explain deeply",
+    )
 
     def __init__(self, policy_config: Optional[dict] = None, network: NetworkMediator | None = None):
         self.heuristics = ComplexityHeuristics()
@@ -176,12 +187,33 @@ class GeneralChatSkill(BaseSkill):
             "For accuracy, rely on primary outlets and compare multiple reports before drawing conclusions."
         )
 
+    @classmethod
+    def _user_requested_depth(cls, query: str) -> bool:
+        q = (query or "").lower()
+        return any(hint in q for hint in cls._DEPTH_HINTS)
+
+    @staticmethod
+    def _enforce_concise_response(text: str, max_sentences: int = 2, max_chars: int = 320) -> str:
+        raw = (text or "").strip()
+        if not raw:
+            return raw
+        normalized = re.sub(r"\s+", " ", raw).strip()
+        sentences = [s.strip() for s in re.split(r"(?<=[.!?])\s+", normalized) if s.strip()]
+        concise = " ".join(sentences[:max_sentences]).strip() if sentences else normalized
+        concise = re.sub(r"(Summary:\s*){2,}", "Summary: ", concise, flags=re.IGNORECASE).strip()
+        if len(concise) > max_chars:
+            concise = concise[: max_chars - 3].rstrip() + "..."
+        return concise
+
     async def _run_local_model(self, query: str) -> SkillResult | None:
         normalized_query = InputNormalizer.normalize(query)
         mode = self._detect_mode(normalized_query)
         style = self.style_router.route(normalized_query)
         system_prompt = self._build_system_prompt(mode, style)
+        explicit_depth = self._user_requested_depth(normalized_query)
         max_tokens = self.MAX_TOKENS.get(mode, self.MAX_TOKENS["casual"])
+        if not explicit_depth and mode == "casual":
+            max_tokens = min(max_tokens, 90)
 
         try:
             text = await asyncio.to_thread(
@@ -196,9 +228,14 @@ class GeneralChatSkill(BaseSkill):
             )
             text = self._sanitize_response(text or "")
             if not text:
-                text = "I don’t have a response for that."
+                text = ResponseFormatter.friendly_fallback()
             if self._is_geopolitical_query(normalized_query) and self._is_blanket_refusal(text):
                 text = self._safe_geopolitical_fallback(normalized_query)
+            if not explicit_depth:
+                if mode == "casual":
+                    text = self._enforce_concise_response(text, max_sentences=2, max_chars=260)
+                elif mode in {"analytical", "implementation"}:
+                    text = self._enforce_concise_response(text, max_sentences=4, max_chars=520)
 
             return SkillResult(success=True, message=text, data={"mode": mode, "style": style.value}, widget_data=None, skill=self.name)
         except Exception:
@@ -285,3 +322,7 @@ class GeneralChatSkill(BaseSkill):
             "escalation": {"escalated": False},
         }
         return local
+
+
+
+

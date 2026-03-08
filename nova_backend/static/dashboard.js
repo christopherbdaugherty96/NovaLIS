@@ -73,6 +73,9 @@ const HELP_EXAMPLES = [
   "set volume 40",
   "set brightness 50",
 ];
+const LONG_MESSAGE_CHAR_LIMIT = 280;
+const LONG_MESSAGE_LINE_LIMIT = 4;
+const LONG_MESSAGE_SENTENCE_LIMIT = 2;
 
 function $(id) { return document.getElementById(id); }
 function clear(el) { if (el) el.innerHTML = ""; }
@@ -250,6 +253,39 @@ function appendConfidenceBadge(container, label) {
   container.appendChild(badge);
 }
 
+function shouldCollapseMessage(text) {
+  const raw = String(text || "");
+  if (!raw.trim()) return false;
+  const lines = raw.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  return raw.length > LONG_MESSAGE_CHAR_LIMIT || lines.length > LONG_MESSAGE_LINE_LIMIT;
+}
+
+function buildMessagePreview(text) {
+  const raw = String(text || "").trim();
+  if (!raw) return "";
+
+  const paragraphLines = raw.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  if (paragraphLines.length > 1) {
+    const previewLines = paragraphLines.slice(0, 2).join("\n");
+    if (previewLines.length > LONG_MESSAGE_CHAR_LIMIT) {
+      return `${previewLines.slice(0, LONG_MESSAGE_CHAR_LIMIT - 3).trimEnd()}...`;
+    }
+    return `${previewLines.trimEnd()}...`;
+  }
+
+  const normalized = raw.replace(/\s+/g, " ").trim();
+  const sentences = normalized.split(/(?<=[.!?])\s+/).filter(Boolean);
+  const shortBySentence = sentences.slice(0, LONG_MESSAGE_SENTENCE_LIMIT).join(" ").trim();
+  if (shortBySentence && shortBySentence.length >= 60) {
+    if (shortBySentence.length > LONG_MESSAGE_CHAR_LIMIT) {
+      return `${shortBySentence.slice(0, LONG_MESSAGE_CHAR_LIMIT - 3).trimEnd()}...`;
+    }
+    return shortBySentence.endsWith("...") ? shortBySentence : `${shortBySentence}...`;
+  }
+
+  return `${normalized.slice(0, LONG_MESSAGE_CHAR_LIMIT - 3).trimEnd()}...`;
+}
+
 function parseStructuredReport(text) {
   const raw = String(text || "").trim();
   if (!raw) return null;
@@ -404,6 +440,76 @@ function renderSuggestedActions(parent, suggestions) {
   }
 }
 
+function ensurePinnedSection(chat) {
+  let section = $("pinned-messages");
+  if (section) return section;
+  section = document.createElement("div");
+  section.id = "pinned-messages";
+  section.className = "pinned-messages";
+  section.style.display = "none";
+  chat.insertBefore(section, chat.firstChild);
+  return section;
+}
+
+function refreshPinnedVisibility() {
+  const section = $("pinned-messages");
+  if (!section) return;
+  section.style.display = section.childElementCount > 0 ? "block" : "none";
+}
+
+function addMessageUtilities(messageEl, text) {
+  const row = document.createElement("div");
+  row.className = "message-utilities";
+
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.className = "message-utility-btn";
+  copyBtn.textContent = "Copy";
+  copyBtn.addEventListener("click", async () => {
+    const payload = String(text || "").trim();
+    if (!payload) return;
+    try {
+      await navigator.clipboard.writeText(payload);
+      copyBtn.textContent = "Copied";
+      setTimeout(() => { copyBtn.textContent = "Copy"; }, 1200);
+    } catch (_) {
+      copyBtn.textContent = "Copy failed";
+      setTimeout(() => { copyBtn.textContent = "Copy"; }, 1200);
+    }
+  });
+  row.appendChild(copyBtn);
+
+  const pinBtn = document.createElement("button");
+  pinBtn.type = "button";
+  pinBtn.className = "message-utility-btn";
+  pinBtn.textContent = "Pin";
+  pinBtn.setAttribute("aria-pressed", "false");
+  pinBtn.addEventListener("click", () => {
+    const chat = $("chat-log");
+    if (!chat) return;
+    const pinnedSection = ensurePinnedSection(chat);
+    const pinned = messageEl.dataset.pinned === "true";
+    if (pinned) {
+      messageEl.dataset.pinned = "false";
+      messageEl.classList.remove("chat-pinned");
+      pinBtn.textContent = "Pin";
+      pinBtn.setAttribute("aria-pressed", "false");
+      chat.appendChild(messageEl);
+    } else {
+      messageEl.dataset.pinned = "true";
+      messageEl.classList.add("chat-pinned");
+      pinBtn.textContent = "Unpin";
+      pinBtn.setAttribute("aria-pressed", "true");
+      pinnedSection.appendChild(messageEl);
+    }
+    refreshPinnedVisibility();
+    chat.scrollTop = chat.scrollHeight;
+  });
+  row.appendChild(pinBtn);
+
+  messageEl.appendChild(row);
+}
+
 function appendAssistantActions(parent, text, suggestedActions = null) {
   const operational = isOperationalMessage(text);
   const suggestions = Array.isArray(suggestedActions) && suggestedActions.length
@@ -458,9 +564,8 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
     renderStructuredReport(div, structured);
   } else {
     const textNode = document.createElement("span");
-  const LONG_TEXT_THRESHOLD = 420;
-    if (role === "assistant" && msgText.length > LONG_TEXT_THRESHOLD) {
-      const preview = msgText.slice(0, LONG_TEXT_THRESHOLD).trimEnd() + "...";
+    if (role === "assistant" && shouldCollapseMessage(msgText)) {
+      const preview = buildMessagePreview(msgText);
       textNode.textContent = preview;
       textNode.dataset.fullText = msgText;
       textNode.dataset.previewText = preview;
@@ -471,11 +576,13 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
       expandBtn.type = "button";
       expandBtn.className = "message-expand-btn";
       expandBtn.textContent = "Show more";
+      expandBtn.setAttribute("aria-expanded", "false");
       expandBtn.addEventListener("click", () => {
         const expanded = textNode.dataset.expanded === "true";
         textNode.textContent = expanded ? textNode.dataset.previewText : textNode.dataset.fullText;
         textNode.dataset.expanded = expanded ? "false" : "true";
         expandBtn.textContent = expanded ? "Show more" : "Show less";
+        expandBtn.setAttribute("aria-expanded", expanded ? "false" : "true");
       });
       div.appendChild(expandBtn);
     } else {
@@ -504,6 +611,7 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
   }
 
   if (role === "assistant") {
+    addMessageUtilities(div, msgText);
     appendAssistantActions(div, text || "", suggestedActions);
   }
 

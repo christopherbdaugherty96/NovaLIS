@@ -1,0 +1,13 @@
+{
+  "name": "system_diagnostic_workflow",
+  "script": [
+    "system check",
+    "open documents",
+    "set volume 40",
+    "show sources"
+  ],
+  "expect": {
+    "capability_sequence": [32, 22, 19]
+  }
+}
+

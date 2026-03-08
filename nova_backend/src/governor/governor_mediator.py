@@ -50,6 +50,12 @@ SOURCE_NEWS_SUMMARY_RE = re.compile(
     r"^\s*(?:summarize|summary(?:\s+of)?|details?|give me details)\s+(?P<source>.+?)\s+news\s*$",
     re.IGNORECASE,
 )
+GENERIC_NEWS_SUMMARY_RE = re.compile(
+    r"^\s*(?:summarize|summary(?:\s+of)?|details?|give me details)\s+"
+    r"(?:(?:the|latest|recent|today'?s|current)\s+)*news"
+    r"(?:\s+(?:about|on)\s+(?P<topic>.+?))?\s*$",
+    re.IGNORECASE,
+)
 TOPIC_UPDATES_RE = re.compile(
     r"^\s*(?:search(?:\s+for)?\s+)?(?:most\s+recent\s+updates?|recent\s+updates?|updates?)\s+(?:with|on|about)\s+(?P<topic>.+?)\s*$",
     re.IGNORECASE,
@@ -152,6 +158,14 @@ def _parse_headline_selection(selection_text: str) -> dict[str, Any] | None:
         return None
 
     return {"selection": "indices", "indices": indices}
+
+
+def _normalize_source_query(source_query: str) -> str:
+    normalized = re.sub(r"\s+", " ", (source_query or "").strip())
+    # Convert spaced acronyms such as "A B C" -> "ABC".
+    if re.fullmatch(r"(?:[A-Za-z]\s+){1,}[A-Za-z]", normalized):
+        normalized = normalized.replace(" ", "")
+    return normalized
 
 
 @dataclass(frozen=True)
@@ -342,10 +356,19 @@ class GovernorMediator:
             if parsed:
                 return _invocation_if_enabled(49, parsed)
 
+        gm = GENERIC_NEWS_SUMMARY_RE.match(t)
+        if gm:
+            topic_query = (gm.group("topic") or "").strip()
+            if topic_query:
+                return _invocation_if_enabled(49, {"selection": "topic", "topic_query": topic_query, "recent": True})
+            return _invocation_if_enabled(49, {"selection": "all"})
+
         sm = SOURCE_NEWS_SUMMARY_RE.match(t)
         if sm:
-            source_query = (sm.group("source") or "").strip()
+            source_query = _normalize_source_query(sm.group("source") or "")
             if source_query:
+                if source_query.lower() in {"today", "todays", "today's", "latest", "recent", "current", "the"}:
+                    return _invocation_if_enabled(49, {"selection": "all"})
                 return _invocation_if_enabled(49, {"selection": "source", "source_query": source_query})
 
         m = SET_REPORT_RE.match(t)
