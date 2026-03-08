@@ -27,6 +27,7 @@ class MultiSourceReportingExecutor:
 
     def execute(self, request) -> ActionResult:
         query = (request.params or {}).get("query", "").strip()
+        session_id = str((request.params or {}).get("session_id") or "").strip() or None
         if not query:
             return ActionResult.failure("No report query provided.", request_id=request.request_id)
 
@@ -43,6 +44,8 @@ class MultiSourceReportingExecutor:
                 headers={"Accept": "application/json", "X-Subscription-Token": brave_key},
                 as_json=True,
                 timeout=5,
+                request_id=request.request_id,
+                session_id=session_id,
             )
         except Exception:
             return ActionResult.failure("I couldn't build the report due to a network issue.", request_id=request.request_id)
@@ -70,6 +73,7 @@ class MultiSourceReportingExecutor:
             mode="analysis_only",
             safety_profile="analysis",
             request_id=f"{request.request_id}:multi_source",
+            session_id=session_id,
             max_tokens=220,
             temperature=0.2,
         )

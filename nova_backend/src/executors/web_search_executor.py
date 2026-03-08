@@ -75,6 +75,7 @@ class WebSearchExecutor:
 
     def execute(self, request) -> ActionResult:
         query = request.params.get("query", "").strip()
+        session_id = str(request.params.get("session_id") or "").strip() or None
         if not query:
             return ActionResult.failure("No search query provided.", data=self._empty_widget(), request_id=request.request_id)
 
@@ -98,6 +99,8 @@ class WebSearchExecutor:
                     headers={"Accept": "application/json", "X-Subscription-Token": brave_key},
                     as_json=True,
                     timeout=5,
+                    request_id=request.request_id,
+                    session_id=session_id,
                 )
                 break
             except Exception as error:

@@ -204,6 +204,8 @@ class LLMManager:
         *,
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
+        request_id: Optional[str] = None,
+        session_id: Optional[str] = None,
     ) -> Optional[str]:
         """
         Send prompt to LLM and return plain text.
@@ -244,6 +246,8 @@ class LLMManager:
                     "options": options,
                 },
                 timeout=self.timeout,
+                request_id=request_id,
+                session_id=session_id,
             )
             result = ((response.data.get("message") or {}).get("content") or "").strip() or None
             # Success – reset failure count

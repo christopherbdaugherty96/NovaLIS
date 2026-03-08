@@ -4,6 +4,8 @@ import importlib
 import logging
 
 from src.actions.action_result import ActionResult
+from src.audio.audio_task_runner import run_speech_task
+from src.ledger.writer import LedgerWriter
 from src.rendering.speech_formatter import SpeechFormatter
 
 log = logging.getLogger("nova")
@@ -39,6 +41,7 @@ class TTSEngine:
 def execute_tts(req, action_result_cls=ActionResult) -> ActionResult:
     text = (req.params or {}).get("text", "")
     text = (text or "").strip()
+    session_id = str((req.params or {}).get("session_id") or "").strip() or None
 
     if not text:
         log.warning("TTS called with empty text")
@@ -56,10 +59,30 @@ def execute_tts(req, action_result_cls=ActionResult) -> ActionResult:
             )
 
         log.info("Speaking text (length %d chars)", len(speak_text))
-        TTSEngine.speak(speak_text)
+        def _speak_task() -> None:
+            try:
+                TTSEngine.speak(speak_text)
+            except Exception as error:
+                log.error("TTS async render failed: %s", error)
+
+        run_speech_task(_speak_task)
+        try:
+            metadata = {
+                "request_id": req.request_id,
+                "character_count": len(speak_text),
+                "source": "capability_18",
+            }
+            if session_id:
+                metadata["session_id"] = session_id
+            LedgerWriter().log_event(
+                "SPEECH_RENDERED",
+                metadata,
+            )
+        except Exception:
+            log.debug("Unexpected speech ledger error in capability_18 path", exc_info=True)
         return action_result_cls(
             success=True,
-            message="",
+            message="Speaking now.",
             data=None,
             request_id=req.request_id,
         )
