@@ -68,6 +68,12 @@ def transcript_to_dict(transcript: ConversationTranscript) -> dict[str, Any]:
             {
                 "user_message": turn.user_message,
                 "nova_response": turn.nova_response,
+                "decision_mode": turn.decision_mode,
+                "intent_family": turn.intent_family,
+                "continuation_detected": turn.continuation_detected,
+                "should_escalate": turn.should_escalate,
+                "policy_blocked": turn.policy_blocked,
+                "clarification_triggered": turn.clarification_triggered,
                 "capability_triggered": turn.capability_triggered,
                 "capability_executor": turn.capability_executor,
                 "governor_decision": turn.governor_decision,
@@ -130,6 +136,9 @@ def print_transcript(transcript: ConversationTranscript) -> None:
         print(f"[{idx}] USER: {turn.user_message}")
         print(f"    NOVA: {turn.nova_response}")
         print(
-            f"    META: {cap} executor={turn.capability_executor or 'n/a'} decision={turn.governor_decision} "
+            f"    META: mode={turn.decision_mode or 'n/a'} intent={turn.intent_family or 'n/a'} "
+            f"continuation={turn.continuation_detected} escalate={turn.should_escalate} "
+            f"policy_blocked={turn.policy_blocked} clarification={turn.clarification_triggered} "
+            f"{cap} executor={turn.capability_executor or 'n/a'} decision={turn.governor_decision} "
             f"latency_ms={turn.execution_time_ms:.3f} errors={turn.errors}"
         )
