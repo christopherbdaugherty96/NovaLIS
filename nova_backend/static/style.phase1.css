@@ -1012,6 +1012,48 @@ html, body {
   border-color: #fff !important;
 }
 
+.structured-report {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+  max-width: 110ch;
+}
+
+.structured-report-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: rgba(230, 233, 240, 0.96);
+}
+
+.structured-section {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 8px 10px;
+}
+
+.structured-section-heading {
+  font-size: 0.82rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: rgba(200, 212, 236, 0.88);
+  margin-bottom: 6px;
+}
+
+.structured-section-body {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.structured-row {
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: rgba(230, 233, 240, 0.94);
+}
+
 @media (max-width: 768px) {
   .assistant-actions .assistant-action-btn {
     flex: 1 1 calc(50% - 6px);

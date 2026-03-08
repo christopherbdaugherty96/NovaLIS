@@ -3,7 +3,8 @@ from __future__ import annotations
 import os
 
 from src.actions.action_result import ActionResult
-from src.conversation.response_style_router import ResponseTemplates
+from src.llm.llm_gateway import generate_chat
+from src.rendering.intelligence_brief_renderer import IntelligenceBriefRenderer
 
 
 class MultiSourceReportingExecutor:
@@ -11,6 +12,7 @@ class MultiSourceReportingExecutor:
 
     def __init__(self, network):
         self.network = network
+        self.renderer = IntelligenceBriefRenderer()
 
     def execute(self, request) -> ActionResult:
         query = (request.params or {}).get("query", "").strip()
@@ -46,12 +48,24 @@ class MultiSourceReportingExecutor:
             if dom and dom not in domains:
                 domains.append(dom)
 
-        message = "\n\n".join(
-            [
-                ResponseTemplates.bounded_research_intro(query[:80]),
-                ResponseTemplates.top_findings_block(titles),
-                ResponseTemplates.sources_block(domains),
-            ]
+        analysis_text = generate_chat(
+            "Create a short factual analyst note for this query using the findings.\n"
+            f"Query: {query}\n"
+            "Findings:\n"
+            + "\n".join(f"- {item}" for item in titles)
+            + "\n"
+            "Avoid directives. Keep to 2-4 lines.",
+            mode="analysis_only",
+            safety_profile="analysis",
+            request_id=f"{request.request_id}:multi_source",
+            max_tokens=220,
+            temperature=0.2,
+        )
+        message = self.renderer.render_multi_source_report(
+            query=query[:120],
+            findings=titles,
+            sources=domains,
+            analysis_text=(analysis_text or ""),
         )
 
         widget_results = [{"title": i.get("title", "")[:100], "url": i.get("url", "")} for i in results[:5]]

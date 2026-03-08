@@ -7,10 +7,9 @@ import time
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-import requests
-
 from src.ledger.writer import LedgerWriter
 from src.governor.exceptions import LedgerWriteFailed
+from src.llm.model_network_mediator import ModelNetworkMediator, ModelNetworkMediatorError
 from .system_prompt import SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
@@ -57,9 +56,7 @@ class LLMManager:
         self.base_url = base_url
         self.timeout = 30
         self.system_prompt = SYSTEM_PROMPT
-
-        # Connection pooling
-        self.session = requests.Session()
+        self._network = ModelNetworkMediator()
 
         # Circuit breaker state
         self.failure_count = 0
@@ -84,13 +81,13 @@ class LLMManager:
     def _get_model_digest(self) -> Optional[str]:
         """Query Ollama for the current model's digest (SHA256 of the blob)."""
         try:
-            resp = self.session.post(
-                f"{self.base_url}/api/show",
-                json={"model": self.model},
+            response = self._network.request_json(
+                method="POST",
+                url=f"{self.base_url.rstrip('/')}/api/show",
+                json_payload={"model": self.model},
                 timeout=5,
             )
-            resp.raise_for_status()
-            data = resp.json()
+            data = response.data
             # The digest is usually in `digest` or `model_info`; Ollama API returns `digest`
             return data.get("digest")
         except Exception as e:
@@ -200,7 +197,14 @@ class LLMManager:
             logger.warning("Circuit breaker opened. Will retry after 30 seconds.")
             self.failure_count = 0
 
-    def generate(self, prompt: str, system_prompt: str = "") -> Optional[str]:
+    def generate(
+        self,
+        prompt: str,
+        system_prompt: str = "",
+        *,
+        temperature: Optional[float] = None,
+        max_tokens: Optional[int] = None,
+    ) -> Optional[str]:
         """
         Send prompt to LLM and return plain text.
         Honors circuit breaker and model version lock.
@@ -218,27 +222,36 @@ class LLMManager:
         # Use the provided system prompt or the default
         system = system_prompt or self.system_prompt
 
-        try:
-            # Delegate to the isolated wrapper (only this call affects the version hash)
-            from .inference_wrapper import run_inference
+        options = dict(self.default_options)
+        if temperature is not None:
+            options["temperature"] = float(temperature)
+        if max_tokens is not None:
+            options["num_predict"] = int(max_tokens)
 
-            result = run_inference(
-                base_url=self.base_url,
-                model=self.model,
-                prompt=prompt,
-                system=system,
-                options=self.default_options,
+        messages: list[dict[str, str]] = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        try:
+            response = self._network.request_json(
+                method="POST",
+                url=f"{self.base_url.rstrip('/')}/api/chat",
+                json_payload={
+                    "model": self.model,
+                    "messages": messages,
+                    "stream": False,
+                    "options": options,
+                },
                 timeout=self.timeout,
             )
+            result = ((response.data.get("message") or {}).get("content") or "").strip() or None
             # Success – reset failure count
             self.failure_count = 0
             return result
 
-        except requests.exceptions.Timeout:
-            logger.warning(f"LLM request timed out after {self.timeout}s")
-            self._record_failure()
-        except requests.exceptions.ConnectionError:
-            logger.error("Cannot connect to Ollama. Is it running?")
+        except ModelNetworkMediatorError as error:
+            logger.error("Model network call failed: %s", error)
             self._record_failure()
         except Exception as e:
             logger.error(f"LLM error: {e}")
@@ -249,9 +262,13 @@ class LLMManager:
     def health_check(self) -> bool:
         """Verify Ollama is running and the model is available."""
         try:
-            resp = self.session.get(f"{self.base_url}/api/tags", timeout=5)
-            if resp.status_code == 200:
-                models = resp.json().get("models", [])
+            response = self._network.request_json(
+                method="GET",
+                url=f"{self.base_url.rstrip('/')}/api/tags",
+                timeout=5,
+            )
+            if response.status_code == 200:
+                models = response.data.get("models", [])
                 return any(self.model in m.get("name", "") for m in models)
         except Exception:
             pass

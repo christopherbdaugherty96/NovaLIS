@@ -28,3 +28,18 @@ def test_render_single_has_signal_line():
     assert "Signal" in out
     assert "Implication" in out
     assert "Watch" in out
+
+
+def test_render_multi_source_report_sections():
+    renderer = IntelligenceBriefRenderer()
+    out = renderer.render_multi_source_report(
+        query="ai regulation updates",
+        findings=["AI regulation bill advances", "Senate hearing on AI policy"],
+        sources=["abcnews.go.com", "reuters.com"],
+        analysis_text="Regulatory cadence is increasing.",
+    )
+    assert "NOVA MULTI-SOURCE REPORT" in out
+    assert "Strategic Snapshot" in out
+    assert "Top Findings" in out
+    assert "Cross-Story Insight" in out
+    assert "Sources" in out
