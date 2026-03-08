@@ -28,10 +28,9 @@ from src.governor.governor_mediator import GovernorMediator, Invocation, Clarifi
 from src.speech_state import speech_state
 from src.conversation.thought_store import ThoughtStore
 from src.conversation.complexity_heuristics import ComplexityHeuristics
-from src.conversation.response_style_router import InputNormalizer
-from src.conversation.conversation_router import ConversationRouter
+from src.conversation.session_router import SessionRouter
 from src.voice.stt_pipeline import STTAckConfig, build_ack_payload
-from src.voice.tts_engine import resolve_speakable_text, nova_speak, stop_speaking
+from src.voice.tts_engine import stop_speaking
 from src.conversation.clarify_prompts import CLARIFY_PROMPTS
 from src.conversation.response_formatter import ResponseFormatter
 from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
@@ -103,8 +102,6 @@ CONVERSATIONAL_INITIATIVE_ENABLED = True
 VOICE_ACK_ENABLED = True
 VOICE_ACK_TEXT = "Got it."
 VOICE_ACK_CONFIG = STTAckConfig(enabled=VOICE_ACK_ENABLED, text=VOICE_ACK_TEXT)
-
-
 def _extract_sources_from_results(results: list[dict]) -> list[str]:
     sources: list[str] = []
     for item in results:
@@ -350,37 +347,27 @@ async def websocket_endpoint(ws: WebSocket):
 
             session_state["last_input_channel"] = channel
 
-            text = InputNormalizer.normalize(raw_text).strip()
-            decision = ConversationRouter.route(text, session_state)
-            if decision.override_applied:
-                session_state["session_mode_override"] = str(decision.override_mode or "")
-                await send_chat_message(ws, str(decision.override_confirmation or "Okay."))
-                await send_chat_done(ws)
-                continue
-            if decision.override_cleared:
-                session_state["session_mode_override"] = ""
-                await send_chat_message(ws, str(decision.override_confirmation or "Okay. Back to default."))
-                await send_chat_done(ws)
-                continue
-            if decision.blocked_by_policy:
-                await send_chat_message(ws, "I can't help with that request.")
+            route_context = SessionRouter.normalize_and_route(raw_text, session_state)
+            if route_context.is_empty:
+                await send_chat_message(ws, SessionRouter.ready_prompt())
                 await send_chat_done(ws)
                 continue
 
-            if decision.needs_clarification:
-                clarification_turn = session_state.get("last_clarification_turn")
-                if clarification_turn == session_state["turn_count"]:
-                    await send_chat_message(ws, "I still need a file or folder name to continue.")
-                else:
-                    await send_chat_message(ws, str(decision.clarification_prompt or "Could you clarify that?"))
+            text = route_context.text
+            lowered = route_context.lowered
+            decision = route_context.decision
+
+            gate = SessionRouter.evaluate_gate(decision, session_state, session_state["turn_count"])
+            if gate.handled:
+                if gate.apply_override:
+                    session_state["session_mode_override"] = gate.apply_override
+                if gate.clear_override:
+                    session_state["session_mode_override"] = ""
+                if gate.set_clarification_turn:
                     session_state["last_clarification_turn"] = session_state["turn_count"]
+                await send_chat_message(ws, gate.message)
                 await send_chat_done(ws)
                 continue
-
-            resolved_text = str(decision.resolved_text or text).strip()
-            if resolved_text:
-                text = resolved_text
-            lowered = text.lower().rstrip(".?!")
             if not decision.blocked_by_policy and not decision.needs_clarification:
                 session_state["last_intent_family"] = decision.intent_family
                 session_state["last_mode"] = decision.mode.value
@@ -404,7 +391,8 @@ async def websocket_endpoint(ws: WebSocket):
 
             pending_web_open = session_state.get("pending_web_open")
             if pending_web_open:
-                if lowered in {"yes", "open it", "proceed"}:
+                web_decision = SessionRouter.route_pending_web_confirmation(lowered)
+                if web_decision.action == "confirm":
                     action_result = governor.handle_governed_invocation(17, {**pending_web_open, "confirmed": True})
                     session_state["pending_web_open"] = None
                     outgoing_message = _structure_long_message(action_result.message)
@@ -415,12 +403,15 @@ async def websocket_endpoint(ws: WebSocket):
                     await send_chat_message(ws, outgoing_message)
                     await send_chat_done(ws)
                     continue
-                if lowered in {"no", "cancel"}:
+                if web_decision.action == "cancel":
                     session_state["pending_web_open"] = None
                     await send_chat_message(ws, "Cancelled website open request.")
                     await send_chat_done(ws)
                     continue
-                await send_chat_message(ws, "Please reply 'yes' to open or 'no' to cancel.")
+                await send_chat_message(
+                    ws,
+                    "I still have your website open request pending. Reply 'yes' to open or 'no' to cancel.",
+                )
                 await send_chat_done(ws)
                 continue
 
@@ -868,10 +859,7 @@ async def websocket_endpoint(ws: WebSocket):
                 if (session_state.get("last_input_channel") == "voice"
                         and action_result.success
                         and capability_id != 18):
-                    speakable_text = resolve_speakable_text(action_result)
-                    if speakable_text:
-                        nova_speak(speakable_text)
-                        session_state["last_input_channel"] = None   # prevent re-trigger
+                    session_state["last_input_channel"] = None   # prevent re-trigger
                 continue
 
             elif isinstance(inv_result, Clarification):
@@ -1000,14 +988,7 @@ async def websocket_endpoint(ws: WebSocket):
                 # Auto‑speak for voice input
                 if (session_state.get("last_input_channel") == "voice"
                         and getattr(skill_result, "success", True)):   # assume success if not present
-                    speakable_text = ""
-                    if isinstance(result_data, dict):
-                        speakable_text = (result_data.get("speakable_text") or "").strip()
-                    if not speakable_text:
-                        speakable_text = message
-                    if speakable_text:
-                        nova_speak(speakable_text)
-                        session_state["last_input_channel"] = None   # prevent re-trigger
+                    session_state["last_input_channel"] = None   # prevent re-trigger
 
                 session_context.extend([{"role": "user", "content": mediated_text}, {"role": "assistant", "content": message}])
                 context_limit = 40 if session_state.get("presence_mode") else 20

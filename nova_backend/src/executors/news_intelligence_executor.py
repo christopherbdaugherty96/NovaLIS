@@ -13,8 +13,8 @@ from src.rendering.intelligence_brief_renderer import IntelligenceBriefRenderer
 from src.utils.content_extractor import extract_text_from_html
 
 MAX_HEADLINES_PER_SUMMARY = 3
-LLM_TIMEOUT_SECONDS = 2.0
-SOURCE_READ_TIMEOUT_SECONDS = 4.0
+LLM_TIMEOUT_SECONDS = 8.0
+SOURCE_READ_TIMEOUT_SECONDS = 8.0
 MAX_SOURCE_PAGES_PER_BRIEF = 6
 MAX_SOURCE_TEXT_CHARS = 3500
 MAX_CLUSTER_STORIES = 4
@@ -371,10 +371,18 @@ class NewsIntelligenceExecutor:
             "This development may affect near-term planning and risk posture.",
         )
 
-    def _parse_summary_and_implication(self, text: str, cluster: dict[str, Any]) -> tuple[str, str]:
+    def _parse_summary_and_implication(
+        self,
+        text: str,
+        cluster: dict[str, Any],
+        *,
+        use_fallback: bool = True,
+    ) -> tuple[str, str]:
         raw = str(text or "").strip()
         if not raw:
-            return self._cluster_fallback(cluster)
+            if use_fallback:
+                return self._cluster_fallback(cluster)
+            return "", ""
 
         summary_match = re.search(r"Summary\s*(.+?)(?:\n\s*Implication|\Z)", raw, flags=re.IGNORECASE | re.DOTALL)
         implication_match = re.search(r"Implication\s*(.+)$", raw, flags=re.IGNORECASE | re.DOTALL)
@@ -383,6 +391,8 @@ class NewsIntelligenceExecutor:
         implication = (implication_match.group(1).strip() if implication_match else "").strip(" -:\n")
 
         if not summary or not implication:
+            if not use_fallback:
+                return "", ""
             fb_summary, fb_implication = self._cluster_fallback(cluster)
             summary = summary or fb_summary
             implication = implication or fb_implication
@@ -595,17 +605,23 @@ class NewsIntelligenceExecutor:
             if packets:
                 clusters = self._cluster_packets(packets)
                 rendered_clusters: list[dict[str, Any]] = []
+                synthesis_failures = 0
                 for cluster in clusters:
-                    fallback_summary, fallback_implication = self._cluster_fallback(cluster)
-                    fallback = f"Summary\n{fallback_summary}\n\nImplication\n{fallback_implication}"
                     analysis = self._llm_or_fallback(
                         self._cluster_prompt(cluster),
-                        fallback,
+                        "",
                         request_id=f"{request.request_id}:cluster:{cluster.get('title','general')}",
                         timeout_seconds=SOURCE_READ_TIMEOUT_SECONDS,
                         max_tokens=380,
                     )
-                    summary, implication = self._parse_summary_and_implication(analysis, cluster)
+                    summary, implication = self._parse_summary_and_implication(
+                        analysis,
+                        cluster,
+                        use_fallback=False,
+                    )
+                    if not summary or not implication:
+                        synthesis_failures += 1
+                        continue
                     rendered_clusters.append(
                         {
                             "id": len(rendered_clusters) + 1,
@@ -617,7 +633,17 @@ class NewsIntelligenceExecutor:
                         }
                     )
 
+                if not rendered_clusters:
+                    return ActionResult.failure(
+                        "I couldn't generate a source-grounded brief right now. Please try again in a moment.",
+                        request_id=request.request_id,
+                    )
+
                 report, all_sources = self._render_daily_brief_v2(rendered_clusters)
+                if synthesis_failures:
+                    report = (
+                        f"{report}\n\nNote: {synthesis_failures} topic cluster(s) were omitted due to incomplete source-grounded synthesis."
+                    )
                 return ActionResult.ok(
                     message=report.strip(),
                     data={

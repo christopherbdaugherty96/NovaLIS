@@ -1,10 +1,10 @@
-> ## 🔒 PHASE-3.5 STATUS UPDATE — SEALED
+﻿> ## ðŸ”’ PHASE-3.5 STATUS UPDATE â€” SEALED
 >
 > **Phase-3.5 is formally COMPLETE, SEALED, and NON-REOPENABLE without explicit constitutional unlock.**  
 > All Phase-3.5 acceptance criteria have been mechanically verified and CI-enforced, including execution quarantine, Governor containment, passive confirmation gating, and runtime refusal proofs.
 >
 > This document may reference Phase-3.5 as "active" for historical context only.  
-> **No Phase-3.5 work remains open.** Phase-4 is design‑unlocked but runtime‑locked pending a formal unlock artifact.
+> **No Phase-3.5 work remains open.** Phase-4 is designâ€‘unlocked but runtimeâ€‘locked pending a formal unlock artifact.
 >
 > **Authoritative closure record:** `docs/PHASE_3.5_CLOSURE.md`
 ------------------------------------------------
@@ -19,25 +19,25 @@
 
 **One-Line Truth**
 
-Nova is a **governor over contained intelligence** — a sovereign household appliance that provides calm, trustworthy access to AI capabilities without surrendering authority.
+Nova is a **governor over contained intelligence** â€” a sovereign household appliance that provides calm, trustworthy access to AI capabilities without surrendering authority.
 
 **Constitutional Invariants (Part I of v1.8)**
 
 - Single Master Governor (no bypass)
-- Intelligence–Authority Split (advisory only, execution mediated)
+- Intelligenceâ€“Authority Split (advisory only, execution mediated)
 - No Autonomous Execution
 - No Background Cognition
 - No Predictive Preloading
 - No Silent Fallback
 - No Environment Override
 - No Dynamic Execution Surface
-- Orb Non‑Semantic (only message: "There is power here. It is stable.")
+- Orb Nonâ€‘Semantic (only message: "There is power here. It is stable.")
 - UI Reflective Only
 - Calm as Technical Requirement
 - No Speculative Execution
-- No Self‑Expansion of Authority
+- No Selfâ€‘Expansion of Authority
 - Evolution Kill Switch Absolute
-- … and others (see v1.8)
+- â€¦ and others (see v1.8)
 
 If any code or proposal contradicts the above, it is **invalid by definition** unless an explicit governance unlock exists.
 
@@ -47,19 +47,19 @@ If any code or proposal contradicts the above, it is **invalid by definition** u
 
 | Phase | Status | Notes |
 |-------|--------|-------|
-| Phase 0–2 | ✅ **Frozen** | Historical foundations, permanently locked |
-| Phase 3 | ✅ **Frozen** | Core functionality complete and locked |
-| Phase 3.5 | 🔒 **SEALED** | No execution authority, GovernorMediator only |
-| Phase 4 | 🚫 **Design‑Unlocked, Runtime‑Locked** | Design phase only; requires explicit unlock |
-| Phase 4.5 | 🔓 **Proposed** | Experience Elevation (awaiting ratification) |
-| Phase 5A | 🔒 **Design‑Locked** | Explicit Memory & Continuity (future) |
-| Phase 5B | 🔒 **Design‑Locked** | Experience Maturation (future) |
-| Phase 6 | 🔒 **Design‑Locked** | Policy‑Bound Operation (requires proven household value) |
-| Phase 7–10 | 🔒 **Design‑Locked** | Conditional on experience foundation |
+| Phase 0â€“2 | âœ… **Frozen** | Historical foundations, permanently locked |
+| Phase 3 | âœ… **Frozen** | Core functionality complete and locked |
+| Phase 3.5 | 🔒 **SEALED** | Historical closure baseline |
+| Phase 4 | ✅ **ACTIVE — Staging** | Governed capability execution enabled through Governor |
+| Phase 4.5 | ðŸ”“ **Proposed** | Experience Elevation (awaiting ratification) |
+| Phase 5A | ðŸ”’ **Designâ€‘Locked** | Explicit Memory & Continuity (future) |
+| Phase 5B | ðŸ”’ **Designâ€‘Locked** | Experience Maturation (future) |
+| Phase 6 | ðŸ”’ **Designâ€‘Locked** | Policyâ€‘Bound Operation (requires proven household value) |
+| Phase 7â€“10 | ðŸ”’ **Designâ€‘Locked** | Conditional on experience foundation |
 
 **Important:**
 
-Phase progression is enforced as a **hard safety barrier**, not a roadmap suggestion. Current Phase 3.5 is SEALED with proven guarantees.
+Phase progression is enforced as a **hard safety barrier**, not a roadmap suggestion. Current runtime operates in **Phase 4 staging** with fail-closed governance.
 
 ---
 
@@ -82,16 +82,16 @@ Large runtime artifacts (models, binaries) are intentionally excluded from versi
 
 Nova explicitly does **not**:
 
-- Execute actions (`execute_action = None`)
+- Execute actions outside the governed capability path
 - Act autonomously or proactively
 - Perform background reasoning or monitoring
 - Infer user intent
 - Adapt behavior based on history or habits
-- Enable governed agent execution (Phase 4 is design‑only)
+- Enable autonomous or ungoverned agent execution
 - Provide "helpful" escalation beyond defined contracts
-- Use DeepSeek, DEG, or agent architectures **in runtime** (Phase 4+ designs only)
+- Use external model calls outside mediated, audited runtime pathways
 
-**Deep Thought (external analysis) is advisory only.** When invoked, Nova is completely dormant: it does not receive the message, does not respond, and performs no background processing. Deep Thought outputs are visible in chat history but carry no authority and do not influence Nova’s decision‑making unless explicitly referenced by the user in a subsequent Nova‑mode message.
+**Deep Thought (external analysis) is advisory only.** When invoked, Nova is completely dormant: it does not receive the message, does not respond, and performs no background processing. Deep Thought outputs are visible in chat history but carry no authority and do not influence Novaâ€™s decisionâ€‘making unless explicitly referenced by the user in a subsequent Novaâ€‘mode message.
 
 If a feature requires Nova to **decide, assume, or initiate**, it is **illegal** under the current canon.
 
@@ -101,7 +101,7 @@ If a feature requires Nova to **decide, assume, or initiate**, it is **illegal**
 
 This repository must be reviewed using the deterministic order defined in:
 
-➡ **REPO_MAP.md**
+âž¡ **REPO_MAP.md**
 
 That document specifies:
 
@@ -118,7 +118,7 @@ Any review or change proposal that ignores REPO\_MAP.md is considered **unsafe**
 
 All contributions are governed by:
 
-➡ **CONTRIBUTING.md**
+âž¡ **CONTRIBUTING.md**
 
 Key rules include:
 
@@ -154,21 +154,14 @@ Claims of capability are valid **only** where explicitly implemented and verifie
 
 Specification does not imply availability.
 
-**Current Runtime Truth:**
-- Phase 3.5: SEALED (no execution authority)
-- Governor: GovernorMediator (text sanitizer only)
-- Execution: Disabled (`execute_action = None`, `GOVERNED_ACTIONS_ENABLED = false` hard‑coded)
-- Skills: Read-only weather, news, system, general chat
-- No DeepSeek, DEG, agents, or device control
-
----
+**Current Runtime Truth:**`r`n- Phase 4: ACTIVE (staging)`r`n- Governor: authoritative execution gate for all governed capabilities`r`n- Execution: enabled through `ExecuteBoundary` and capability registry checks`r`n- Skills + governed capabilities: invocation-bound, fail-closed, ledger-audited`r`n- No autonomous execution, no background cognition, no silent boundary crossing`r`n`r`n---
 
 ## Canonical References
 
-- **`NOVA COMPLETE CONSTITUTIONAL BLUEPRINT 1.8.md`** — Single source of truth ✅
-- **`docs/PHASE_3.5_CLOSURE.md`** — Formal closure record
-- **`REPO_MAP.md`** — Deterministic repository navigation
-- **`CONTRIBUTING.md`** — Governance-aligned contribution rules
+- **`NOVA COMPLETE CONSTITUTIONAL BLUEPRINT 1.8.md`** â€” Single source of truth âœ…
+- **`docs/PHASE_3.5_CLOSURE.md`** â€” Formal closure record
+- **`REPO_MAP.md`** â€” Deterministic repository navigation
+- **`CONTRIBUTING.md`** â€” Governance-aligned contribution rules
 
 These documents together define the **authoritative reference set**, governed by v1.8 as the supreme document.
 
@@ -219,11 +212,11 @@ This guarantees that future capability expansion (Phase-4+) happens only through
 
 ### Status
 
-- **Phase-3:** ✅ Complete & Locked  
-- **Phase-3.5:** 🔒 SEALED (no execution authority)  
-- **Speech-to-Text (STT):** ✅ Final  
-- **Execution Authority:** 🚫 Disabled (`execute_action = None`, `GOVERNED_ACTIONS_ENABLED = false`)  
-- **Phase-4:** ⛔ Design‑Unlocked, Runtime‑Locked
+- **Phase-3:** âœ… Complete & Locked  
+- **Phase-3.5:** 🔒 SEALED (historical closure)  
+- **Speech-to-Text (STT):** âœ… Final  
+- **Execution Authority:** ✅ Enabled via Governor + ExecuteBoundary  
+- **Phase-4:** ✅ ACTIVE — Staging
 
 For formal attestations, see:  
 `docs/PHASE_3.5_CLOSURE.md`
