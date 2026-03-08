@@ -21,3 +21,8 @@ def test_response_style_detects_casual_opener():
 def test_input_normalizer_aliases_non_technical_phrase():
     normalized = InputNormalizer.normalize("turn the volume up")
     assert normalized.lower() == "volume up."
+
+
+def test_input_normalizer_collapses_spaced_acronyms():
+    normalized = InputNormalizer.normalize("open A B C news")
+    assert normalized.lower() == "open abc news."

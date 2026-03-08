@@ -119,6 +119,24 @@ def _extract_sources_from_results(results: list[dict]) -> list[str]:
     return sources[:5]
 
 
+def _extract_source_links(results: list[dict]) -> list[dict[str, str]]:
+    links: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for item in results:
+        if not isinstance(item, dict):
+            continue
+        url = str(item.get("url") or "").strip()
+        if not url or url in seen:
+            continue
+        seen.add(url)
+        source = str(item.get("source") or "").strip()
+        if not source:
+            source = url.split("//")[-1].split("/")[0].strip().lower()
+        title = str(item.get("title") or "").strip()
+        links.append({"url": url, "source": source, "title": title})
+    return links[:10]
+
+
 def _structure_long_message(text: str) -> str:
     raw = (text or "").strip()
     if not raw:
@@ -151,6 +169,22 @@ def _make_shorter_followup(text: str) -> str:
             short = short[:237].rstrip() + "..."
         return short
     return compact[:217].rstrip() + "..."
+
+
+def _clarification_suggestions(message: str) -> list[dict[str, str]]:
+    text = str(message or "").strip()
+    if not text:
+        return []
+
+    m = re.search(r"open website (.+?)' or 'open file (.+?)'", text, flags=re.IGNORECASE)
+    if m:
+        website_target = m.group(1).strip()
+        file_target = m.group(2).strip()
+        return [
+            {"label": "Open website", "command": f"open website {website_target}"},
+            {"label": "Open file", "command": f"open file {file_target}"},
+        ]
+    return []
 
 
 def _conversation_suggestions(session_state: dict) -> list[dict[str, str]]:
@@ -262,7 +296,10 @@ async def websocket_endpoint(ws: WebSocket):
         "last_object": "",
         "news_cache": [],
         "last_sources": [],
+        "last_source_links": [],
         "topic_memory_map": {},
+        "last_brief_clusters": [],
+        "pending_web_open": None,
         "analysis_documents": [],
         "last_analysis_doc_id": None,
         "last_intent_family": "",
@@ -362,6 +399,28 @@ async def websocket_endpoint(ws: WebSocket):
                 session_state["deep_mode_armed"] = False
                 session_state["pending_escalation"] = None
                 await send_chat_message(ws, "Deep analysis canceled.")
+                await send_chat_done(ws)
+                continue
+
+            pending_web_open = session_state.get("pending_web_open")
+            if pending_web_open:
+                if lowered in {"yes", "open it", "proceed"}:
+                    action_result = governor.handle_governed_invocation(17, {**pending_web_open, "confirmed": True})
+                    session_state["pending_web_open"] = None
+                    outgoing_message = _structure_long_message(action_result.message)
+                    if action_result.success and isinstance(action_result.data, dict):
+                        opened_domain = str(action_result.data.get("opened_domain") or "").strip()
+                        if opened_domain:
+                            session_state["last_sources"] = [opened_domain]
+                    await send_chat_message(ws, outgoing_message)
+                    await send_chat_done(ws)
+                    continue
+                if lowered in {"no", "cancel"}:
+                    session_state["pending_web_open"] = None
+                    await send_chat_message(ws, "Cancelled website open request.")
+                    await send_chat_done(ws)
+                    continue
+                await send_chat_message(ws, "Please reply 'yes' to open or 'no' to cancel.")
                 await send_chat_done(ws)
                 continue
 
@@ -644,15 +703,66 @@ async def websocket_endpoint(ws: WebSocket):
                                 items = list(news_result.widget_data.get("items") or [])
                                 session_state["news_cache"] = items
                                 session_state["last_sources"] = _extract_sources_from_results(items)
+                                session_state["last_source_links"] = _extract_source_links(items)
                                 await ws_send(ws, news_result.widget_data)
                     params.setdefault("headlines", list(session_state.get("news_cache") or []))
                     params.setdefault("topic_history", dict(session_state.get("topic_memory_map") or {}))
+                    if capability_id == 50:
+                        params.setdefault("brief_clusters", list(session_state.get("last_brief_clusters") or []))
+                if capability_id == 17:
+                    source_index = params.get("source_index")
+                    if source_index is not None:
+                        try:
+                            source_idx = int(source_index) - 1
+                        except Exception:
+                            source_idx = -1
+                        source_links = session_state.get("last_source_links") or []
+                        if 0 <= source_idx < len(source_links):
+                            params["resolved_url"] = str(source_links[source_idx].get("url") or "")
+                            params["source_label"] = str(source_links[source_idx].get("source") or "")
+                        else:
+                            await send_chat_message(ws, "I couldn't find that source index. Ask for sources first.")
+                            await send_chat_done(ws)
+                            continue
                 if capability_id == 54:
                     params.setdefault("analysis_documents", list(session_state.get("analysis_documents") or []))
                     if params.get("doc_id") in {None, ""} and session_state.get("last_analysis_doc_id") is not None:
                         params["doc_id"] = session_state.get("last_analysis_doc_id")
 
+                if capability_id == 17:
+                    from src.executors.webpage_launch_executor import WebpageLaunchExecutor
+                    plan = WebpageLaunchExecutor.plan_open(params)
+                    if not plan.get("ok"):
+                        await send_chat_message(ws, str(plan.get("message") or "I couldn't resolve that website."))
+                        await send_chat_done(ws)
+                        continue
+                    if plan.get("requires_confirmation") and not params.get("confirmed"):
+                        session_state["pending_web_open"] = {
+                            "target": params.get("target", ""),
+                            "resolved_url": plan.get("url", ""),
+                            "preview": bool(params.get("preview")),
+                        }
+                        await send_chat_message(
+                            ws,
+                            (
+                                f"Open {plan.get('domain', plan.get('url', 'this website'))}?\n"
+                                f"URL: {plan.get('url', '')}\n"
+                                "Reply 'yes' to open or 'no' to cancel."
+                            ),
+                        )
+                        await send_chat_done(ws)
+                        continue
+
                 action_result = governor.handle_governed_invocation(capability_id, params)
+                if capability_id == 50 and params.get("action") == "track_cluster":
+                    track_topic = ""
+                    if isinstance(action_result.data, dict):
+                        track_topic = str(action_result.data.get("track_topic") or "").strip()
+                    if track_topic:
+                        action_result = governor.handle_governed_invocation(
+                            52,
+                            {"action": "track", "topic": track_topic, "headlines": list(session_state.get("news_cache") or [])},
+                        )
                 if isinstance(action_result.data, dict):
                     topic_map = action_result.data.get("topic_map")
                     if isinstance(topic_map, dict):
@@ -663,12 +773,37 @@ async def websocket_endpoint(ws: WebSocket):
                         results = search_data.get("results") if isinstance(search_data, dict) else []
                         if isinstance(results, list):
                             session_state["last_sources"] = _extract_sources_from_results(results)
+                            session_state["last_source_links"] = _extract_source_links(results)
                     analysis_docs = action_result.data.get("analysis_documents")
                     if isinstance(analysis_docs, list):
                         session_state["analysis_documents"] = analysis_docs
                     sources = action_result.data.get("sources")
                     if isinstance(sources, list) and sources:
                         session_state["last_sources"] = [str(src) for src in sources[:10]]
+                    if capability_id == 17 and isinstance(action_result.data.get("opened_domain"), str):
+                        session_state["last_sources"] = [action_result.data.get("opened_domain")]
+                    brief_clusters = action_result.data.get("brief_clusters")
+                    if isinstance(brief_clusters, list):
+                        session_state["last_brief_clusters"] = brief_clusters
+                        flattened_links: list[dict[str, str]] = []
+                        for cluster in brief_clusters:
+                            if not isinstance(cluster, dict):
+                                continue
+                            for item in (cluster.get("items") or []):
+                                if not isinstance(item, dict):
+                                    continue
+                                url = str(item.get("url") or "").strip()
+                                if not url:
+                                    continue
+                                flattened_links.append(
+                                    {
+                                        "url": url,
+                                        "source": str(item.get("source") or "").strip(),
+                                        "title": str(item.get("title") or "").strip(),
+                                    }
+                                )
+                        if flattened_links:
+                            session_state["last_source_links"] = _extract_source_links(flattened_links)
                     if "document_id" in action_result.data:
                         session_state["last_analysis_doc_id"] = action_result.data.get("document_id")
 
@@ -740,7 +875,11 @@ async def websocket_endpoint(ws: WebSocket):
                 continue
 
             elif isinstance(inv_result, Clarification):
-                await send_chat_message(ws, inv_result.message)
+                await send_chat_message(
+                    ws,
+                    inv_result.message,
+                    suggested_actions=_clarification_suggestions(inv_result.message),
+                )
                 await send_chat_done(ws)
                 continue
 
@@ -812,16 +951,18 @@ async def websocket_endpoint(ws: WebSocket):
                     session_state["last_escalation_turn"] = session_state["turn_count"]
                     session_state["deep_mode_armed"] = False
 
-                if isinstance(widget_data, dict) and "type" in widget_data:
-                    if widget_data.get("type") == "news":
-                        items = list(widget_data.get("items") or [])
-                        session_state["news_cache"] = items
-                        session_state["last_sources"] = _extract_sources_from_results(items)
-                    await ws_send(ws, widget_data)
+                    if isinstance(widget_data, dict) and "type" in widget_data:
+                        if widget_data.get("type") == "news":
+                            items = list(widget_data.get("items") or [])
+                            session_state["news_cache"] = items
+                            session_state["last_sources"] = _extract_sources_from_results(items)
+                            session_state["last_source_links"] = _extract_source_links(items)
+                        await ws_send(ws, widget_data)
                 elif skill_name == "news" and isinstance(widget_data, dict):
                     items = widget_data.get("items", [])
                     session_state["news_cache"] = list(items)
                     session_state["last_sources"] = _extract_sources_from_results(list(items))
+                    session_state["last_source_links"] = _extract_source_links(list(items))
                     await send_widget_message(ws, "news", message, {"items": items})
                 elif skill_name == "weather" and isinstance(widget_data, dict):
                     await send_widget_message(ws, "weather", message, widget_data)

@@ -110,7 +110,7 @@ def test_brief_reads_source_pages_when_enabled(monkeypatch):
     monkeypatch.setattr(
         mod,
         "generate_chat",
-        lambda *args, **kwargs: "Executive Summary\nMerged from source pages.\n\nWhat Happened\n- Item\n\nCross-Source Signals\n- Signal\n\nSource Coverage\n- Source",
+        lambda *args, **kwargs: "Summary\nMerged from source pages.\n\nImplication\nCross-source alignment indicates elevated monitoring needs.",
     )
 
     class _FakeNetwork:
@@ -127,8 +127,49 @@ def test_brief_reads_source_pages_when_enabled(monkeypatch):
     executor = mod.NewsIntelligenceExecutor(network=_FakeNetwork())
     result = executor.execute_brief(_request(50, {"headlines": headlines, "read_sources": True}))
     assert result.success is True
-    assert "NOVA MULTI-SOURCE REPORT" in result.message
-    assert "Source Coverage" in result.message
+    assert "NOVA DAILY INTELLIGENCE BRIEF" in result.message
+    assert "Major Themes Today" in result.message
+    assert "Story 1:" in result.message
     assert isinstance(result.data, dict)
     assert isinstance(result.data.get("sources"), list)
     assert len(result.data.get("sources")) == 2
+    assert isinstance(result.data.get("brief_clusters"), list)
+    assert len(result.data.get("brief_clusters")) >= 1
+
+
+def test_brief_followup_actions_expand_compare_track():
+    from src.executors import news_intelligence_executor as mod
+
+    executor = mod.NewsIntelligenceExecutor()
+    clusters = [
+        {
+            "id": 1,
+            "title": "Technology",
+            "summary": "AI infrastructure competition is intensifying.",
+            "implication": "Capacity planning may shift.",
+            "sources": ["ABC News", "BBC News"],
+            "items": [{"title": "AI chip roadmap", "source": "ABC News"}],
+        },
+        {
+            "id": 2,
+            "title": "Global Security",
+            "summary": "Regional tensions remain elevated.",
+            "implication": "Risk posture may tighten.",
+            "sources": ["Reuters"],
+            "items": [{"title": "Regional escalation warning", "source": "Reuters"}],
+        },
+    ]
+
+    expanded = executor.execute_brief(_request(50, {"action": "expand_cluster", "story_id": 1, "brief_clusters": clusters}))
+    assert expanded.success is True
+    assert "Story 1: Technology" in expanded.message
+
+    compared = executor.execute_brief(
+        _request(50, {"action": "compare_clusters", "left_story_id": 1, "right_story_id": 2, "brief_clusters": clusters})
+    )
+    assert compared.success is True
+    assert "Comparison: Story 1 vs Story 2" in compared.message
+
+    tracked = executor.execute_brief(_request(50, {"action": "track_cluster", "story_id": 2, "brief_clusters": clusters}))
+    assert tracked.success is True
+    assert tracked.data["track_topic"] == "Global Security"

@@ -1,5 +1,5 @@
 def test_volume_media_brightness_parsing():
-    from src.governor.governor_mediator import GovernorMediator, Invocation
+    from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
 
     inv = GovernorMediator.parse_governed_invocation("volume up")
     assert isinstance(inv, Invocation)
@@ -24,6 +24,36 @@ def test_volume_media_brightness_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 22
     assert inv.params["path"] == "Nova-Project"
+
+    inv = GovernorMediator.parse_governed_invocation("open abc news site")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 17
+    assert inv.params["target"] == "abc news"
+
+    inv = GovernorMediator.parse_governed_invocation("open a b c news")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 17
+    assert inv.params["target"] == "abc news"
+
+    inv = GovernorMediator.parse_governed_invocation("open abc new")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 17
+    assert inv.params["target"] == "abc news"
+
+    inv = GovernorMediator.parse_governed_invocation("open project notes")
+    assert isinstance(inv, Clarification)
+    assert "confirm" in inv.message.lower()
+
+    inv = GovernorMediator.parse_governed_invocation("open result 2")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 17
+    assert inv.params["source_index"] == 2
+
+    inv = GovernorMediator.parse_governed_invocation("preview source 1")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 17
+    assert inv.params["source_index"] == 1
+    assert inv.params["preview"] is True
 
     inv = GovernorMediator.parse_governed_invocation("system")
     assert isinstance(inv, Invocation)
@@ -69,6 +99,25 @@ def test_news_intelligence_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 50
     assert inv.params["read_sources"] is True
+
+    inv = GovernorMediator.parse_governed_invocation("expand story 2")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 50
+    assert inv.params["action"] == "expand_cluster"
+    assert inv.params["story_id"] == 2
+
+    inv = GovernorMediator.parse_governed_invocation("compare 1 and 3")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 50
+    assert inv.params["action"] == "compare_clusters"
+    assert inv.params["left_story_id"] == 1
+    assert inv.params["right_story_id"] == 3
+
+    inv = GovernorMediator.parse_governed_invocation("track story 2")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 50
+    assert inv.params["action"] == "track_cluster"
+    assert inv.params["story_id"] == 2
 
     inv = GovernorMediator.parse_governed_invocation("summarize latest news about war")
     assert isinstance(inv, Invocation)

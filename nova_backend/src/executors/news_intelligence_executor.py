@@ -3,7 +3,7 @@ from __future__ import annotations
 import json
 import re
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
-from collections import Counter
+from collections import Counter, defaultdict
 from pathlib import Path
 from typing import Any
 
@@ -17,6 +17,7 @@ LLM_TIMEOUT_SECONDS = 2.0
 SOURCE_READ_TIMEOUT_SECONDS = 4.0
 MAX_SOURCE_PAGES_PER_BRIEF = 6
 MAX_SOURCE_TEXT_CHARS = 3500
+MAX_CLUSTER_STORIES = 4
 
 STOPWORDS = {
     "the",
@@ -304,6 +305,179 @@ class NewsIntelligenceExecutor:
             lines.append(f"- [{idx}] {packet['source']} - {packet['url']}")
         return "\n".join(lines)
 
+    def _cluster_label(self, title: str, text: str) -> str:
+        merged = f"{title} {text}".lower()
+        if any(k in merged for k in ("war", "conflict", "ceasefire", "strike", "military", "gaza", "ukraine", "iran", "israel")):
+            return "Global Security"
+        if any(k in merged for k in ("inflation", "economy", "federal reserve", "rates", "jobs", "market", "gdp")):
+            return "Economy & Markets"
+        if any(k in merged for k in ("ai", "technology", "chip", "semiconductor", "model", "software")):
+            return "Technology"
+        if any(k in merged for k in ("election", "congress", "senate", "policy", "regulation", "law")):
+            return "Policy & Government"
+        return "General Developments"
+
+    def _cluster_packets(self, packets: list[dict[str, str]]) -> list[dict[str, Any]]:
+        grouped: dict[str, list[dict[str, str]]] = defaultdict(list)
+        for packet in packets:
+            label = self._cluster_label(packet.get("title", ""), packet.get("text", ""))
+            grouped[label].append(packet)
+
+        clusters: list[dict[str, Any]] = []
+        for label, items in grouped.items():
+            if not items:
+                continue
+            cluster_sources = []
+            for item in items:
+                src = (item.get("source") or "Unknown").strip()
+                if src not in cluster_sources:
+                    cluster_sources.append(src)
+            clusters.append(
+                {
+                    "title": label,
+                    "items": items[:MAX_CLUSTER_STORIES],
+                    "sources": cluster_sources[:6],
+                }
+            )
+        clusters.sort(key=lambda c: len(c.get("items", [])), reverse=True)
+        return clusters[:4]
+
+    def _cluster_prompt(self, cluster: dict[str, Any]) -> str:
+        items = cluster.get("items", [])
+        blocks = []
+        for item in items:
+            blocks.append(
+                f"Title: {item.get('title','')}\n"
+                f"Source: {item.get('source','Unknown')}\n"
+                f"URL: {item.get('url','')}\n"
+                f"Excerpt: {str(item.get('text',''))[:1200]}"
+            )
+        joined = "\n\n".join(blocks)
+        return (
+            f"Topic: {cluster.get('title','General Developments')}\n"
+            "Write a concise neutral synthesis using these sections exactly:\n"
+            "Summary\nImplication\n\n"
+            "Use only provided excerpts.\n\n"
+            f"{joined}"
+        )
+
+    def _cluster_fallback(self, cluster: dict[str, Any]) -> tuple[str, str]:
+        items = cluster.get("items", [])
+        if not items:
+            return ("No reliable detail available from the current sources.", "Monitor primary-source updates.")
+        top_title = str(items[0].get("title") or "Top development")
+        return (
+            f"{top_title}. Related outlets describe similar developments within this topic.",
+            "This development may affect near-term planning and risk posture.",
+        )
+
+    def _parse_summary_and_implication(self, text: str, cluster: dict[str, Any]) -> tuple[str, str]:
+        raw = str(text or "").strip()
+        if not raw:
+            return self._cluster_fallback(cluster)
+
+        summary_match = re.search(r"Summary\s*(.+?)(?:\n\s*Implication|\Z)", raw, flags=re.IGNORECASE | re.DOTALL)
+        implication_match = re.search(r"Implication\s*(.+)$", raw, flags=re.IGNORECASE | re.DOTALL)
+
+        summary = (summary_match.group(1).strip() if summary_match else "").strip(" -:\n")
+        implication = (implication_match.group(1).strip() if implication_match else "").strip(" -:\n")
+
+        if not summary or not implication:
+            fb_summary, fb_implication = self._cluster_fallback(cluster)
+            summary = summary or fb_summary
+            implication = implication or fb_implication
+        return summary, implication
+
+    def _render_daily_brief_v2(self, clusters: list[dict[str, Any]]) -> tuple[str, list[str]]:
+        lines = [
+            "NOVA DAILY INTELLIGENCE BRIEF",
+            "Major Themes Today",
+            "------------------",
+        ]
+        all_sources: list[str] = []
+        for idx, cluster in enumerate(clusters, start=1):
+            summary = str(cluster.get("summary") or "").strip()
+            implication = str(cluster.get("implication") or "").strip()
+            sources = [s for s in (cluster.get("sources") or []) if str(s).strip()]
+            for src in sources:
+                if src not in all_sources:
+                    all_sources.append(src)
+
+            lines.extend(
+                [
+                    "",
+                    f"Story {idx}: {cluster.get('title', 'General Developments')}",
+                    f"Summary: {summary}",
+                    f"Implication: {implication}",
+                    f"Sources: {', '.join(sources) if sources else 'Unknown'}",
+                ]
+            )
+
+        coverage = []
+        for cluster in clusters:
+            title = str(cluster.get("title") or "").strip()
+            if title and title not in coverage:
+                coverage.append(title)
+
+        lines.extend(
+            [
+                "",
+                f"Confidence: {'Medium-High' if len(all_sources) >= 4 else 'Medium'}",
+                f"Sources used: {len(all_sources)}",
+                f"Coverage: {', '.join(coverage) if coverage else 'General'}",
+            ]
+        )
+        return "\n".join(lines), all_sources
+
+    def _expand_cluster(self, clusters: list[dict[str, Any]], story_id: int) -> ActionResult:
+        idx = int(story_id) - 1
+        if idx < 0 or idx >= len(clusters):
+            return ActionResult.failure("I couldn't find that story number in the latest brief.")
+        cluster = clusters[idx]
+        title = str(cluster.get("title") or "General Developments")
+        summary = str(cluster.get("summary") or "")
+        implication = str(cluster.get("implication") or "")
+        items = cluster.get("items") or []
+        sources = cluster.get("sources") or []
+        lines = [
+            f"Story {story_id}: {title}",
+            "",
+            f"Summary: {summary}",
+            f"Implication: {implication}",
+            "",
+            "Supporting headlines:",
+        ]
+        for item in items[:4]:
+            lines.append(f"- {item.get('title','Unknown')} ({item.get('source','Unknown')})")
+        lines.append("")
+        lines.append(f"Sources: {', '.join(sources) if sources else 'Unknown'}")
+        return ActionResult.ok(message="\n".join(lines), data={"sources": sources})
+
+    def _compare_clusters(self, clusters: list[dict[str, Any]], left_story_id: int, right_story_id: int) -> ActionResult:
+        left_idx = int(left_story_id) - 1
+        right_idx = int(right_story_id) - 1
+        if left_idx < 0 or right_idx < 0 or left_idx >= len(clusters) or right_idx >= len(clusters):
+            return ActionResult.failure("I couldn't compare those story numbers from the latest brief.")
+        left = clusters[left_idx]
+        right = clusters[right_idx]
+        lines = [
+            f"Comparison: Story {left_story_id} vs Story {right_story_id}",
+            "",
+            f"Story {left_story_id} ({left.get('title','')}): {left.get('summary','')}",
+            f"Story {right_story_id} ({right.get('title','')}): {right.get('summary','')}",
+            "",
+            "Implication contrast:",
+            f"- Story {left_story_id}: {left.get('implication','')}",
+            f"- Story {right_story_id}: {right.get('implication','')}",
+            "",
+            f"Sources: {', '.join((left.get('sources') or []) + (right.get('sources') or []))}",
+        ]
+        merged_sources = []
+        for src in (left.get("sources") or []) + (right.get("sources") or []):
+            if src not in merged_sources:
+                merged_sources.append(src)
+        return ActionResult.ok(message="\n".join(lines), data={"sources": merged_sources[:10]})
+
     def _build_topic_map(self, headlines: list[dict[str, str]], prior: dict[str, int] | None = None) -> dict[str, int]:
         counts = Counter(prior or {})
         for item in headlines:
@@ -389,6 +563,24 @@ class NewsIntelligenceExecutor:
         )
 
     def execute_brief(self, request) -> ActionResult:
+        action = str((request.params or {}).get("action") or "").strip().lower()
+        brief_clusters = (request.params or {}).get("brief_clusters")
+        cluster_state = brief_clusters if isinstance(brief_clusters, list) else []
+        if action == "expand_cluster":
+            story_id = int((request.params or {}).get("story_id") or 0)
+            return self._expand_cluster(cluster_state, story_id)
+        if action == "compare_clusters":
+            left_story_id = int((request.params or {}).get("left_story_id") or 0)
+            right_story_id = int((request.params or {}).get("right_story_id") or 0)
+            return self._compare_clusters(cluster_state, left_story_id, right_story_id)
+        if action == "track_cluster":
+            story_id = int((request.params or {}).get("story_id") or 0)
+            idx = story_id - 1
+            if idx < 0 or idx >= len(cluster_state):
+                return ActionResult.failure("I couldn't find that story number in the latest brief.")
+            topic = str(cluster_state[idx].get("title") or "").strip()
+            return ActionResult.ok(message=f"Track request ready for story {story_id}: {topic}", data={"track_topic": topic})
+
         headlines = self._sanitize_headlines((request.params or {}).get("headlines"))
         if not headlines:
             return ActionResult.failure(
@@ -401,30 +593,44 @@ class NewsIntelligenceExecutor:
         if read_sources:
             packets = self._collect_source_packets(source, capability_id=request.capability_id)
             if packets:
-                fallback = self._source_brief_fallback(packets)
-                analysis = self._llm_or_fallback(
-                    self._source_brief_prompt(packets),
-                    fallback,
-                    request_id=f"{request.request_id}:source-brief",
-                    timeout_seconds=SOURCE_READ_TIMEOUT_SECONDS,
-                    max_tokens=900,
-                )
-                findings = [f"[{idx}] {packet['title']}" for idx, packet in enumerate(packets[:5], start=1)]
-                source_labels = [f"[{idx}] {packet['source']} - {packet['url']}" for idx, packet in enumerate(packets[:6], start=1)]
-                report = self.renderer.render_multi_source_report(
-                    query="Today's news (source pages)",
-                    findings=findings,
-                    sources=source_labels,
-                    analysis_text=analysis.strip(),
-                )
+                clusters = self._cluster_packets(packets)
+                rendered_clusters: list[dict[str, Any]] = []
+                for cluster in clusters:
+                    fallback_summary, fallback_implication = self._cluster_fallback(cluster)
+                    fallback = f"Summary\n{fallback_summary}\n\nImplication\n{fallback_implication}"
+                    analysis = self._llm_or_fallback(
+                        self._cluster_prompt(cluster),
+                        fallback,
+                        request_id=f"{request.request_id}:cluster:{cluster.get('title','general')}",
+                        timeout_seconds=SOURCE_READ_TIMEOUT_SECONDS,
+                        max_tokens=380,
+                    )
+                    summary, implication = self._parse_summary_and_implication(analysis, cluster)
+                    rendered_clusters.append(
+                        {
+                            "id": len(rendered_clusters) + 1,
+                            "title": cluster.get("title", "General Developments"),
+                            "summary": summary,
+                            "implication": implication,
+                            "sources": cluster.get("sources", []),
+                            "items": cluster.get("items", []),
+                        }
+                    )
+
+                report, all_sources = self._render_daily_brief_v2(rendered_clusters)
                 return ActionResult.ok(
                     message=report.strip(),
                     data={
                         "widget": {
                             "type": "intelligence_brief",
-                            "data": {"headline_count": len(source), "source_pages_read": len(packets)},
+                            "data": {
+                                "headline_count": len(source),
+                                "source_pages_read": len(packets),
+                                "cluster_count": len(rendered_clusters),
+                            },
                         },
-                        "sources": source_labels,
+                        "brief_clusters": rendered_clusters,
+                        "sources": all_sources,
                     },
                     request_id=request.request_id,
                     authority_class="read_only",
