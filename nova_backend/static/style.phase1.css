@@ -858,6 +858,32 @@ html, body {
   background: rgba(123, 109, 255, 0.2);
 }
 
+.about-nova {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.about-nova h3 {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.about-nova p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: rgba(230, 233, 240, 0.9);
+}
+
+.about-nova .about-tip {
+  margin-top: 4px;
+  color: rgba(230, 233, 240, 0.95);
+}
+
 .quick-actions {
   grid-column: 1 / -1;
   display: flex;
