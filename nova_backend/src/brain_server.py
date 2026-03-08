@@ -35,6 +35,8 @@ from src.voice.tts_engine import resolve_speakable_text, nova_speak, stop_speaki
 from src.conversation.clarify_prompts import CLARIFY_PROMPTS
 from src.conversation.response_formatter import ResponseFormatter
 from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
+from src.trust.failure_ladder import FailureLadder
+from src.trust.trust_contract import normalize_trust_status
 from src.audit.runtime_auditor import (
     run_runtime_truth_audit,
     render_runtime_truth_markdown,
@@ -91,6 +93,7 @@ app.include_router(stt_router)
 thought_store = ThoughtStore(ttl=300)
 conversation_heuristics = ComplexityHeuristics()
 response_formatter = ResponseFormatter()
+failure_ladder = FailureLadder()
 
 # -------------------------------------------------
 # Security Constants
@@ -229,7 +232,7 @@ async def send_widget_message(
 
 
 async def send_trust_status(ws: WebSocket, trust_status: dict) -> None:
-    await ws_send(ws, {"type": "trust_status", "data": dict(trust_status or {})})
+    await ws_send(ws, {"type": "trust_status", "data": normalize_trust_status(trust_status)})
 
 # -------------------------------------------------
 # WebSocket Endpoint
@@ -264,12 +267,8 @@ async def websocket_endpoint(ws: WebSocket):
         "last_analysis_doc_id": None,
         "last_intent_family": "",
         "last_mode": "",
-        "trust_status": {
-            "mode": "Local-only",
-            "last_external_call": "None",
-            "data_egress": "No external call in this step",
-            "failure_state": "Normal",
-        },
+        "session_mode_override": "",
+        "trust_status": failure_ladder.initial_status(),
     }
 
     await send_chat_message(ws, "Hello. How can I help?")
@@ -316,6 +315,16 @@ async def websocket_endpoint(ws: WebSocket):
 
             text = InputNormalizer.normalize(raw_text).strip()
             decision = ConversationRouter.route(text, session_state)
+            if decision.override_applied:
+                session_state["session_mode_override"] = str(decision.override_mode or "")
+                await send_chat_message(ws, str(decision.override_confirmation or "Okay."))
+                await send_chat_done(ws)
+                continue
+            if decision.override_cleared:
+                session_state["session_mode_override"] = ""
+                await send_chat_message(ws, str(decision.override_confirmation or "Okay. Back to default."))
+                await send_chat_done(ws)
+                continue
             if decision.blocked_by_policy:
                 await send_chat_message(ws, "I can't help with that request.")
                 await send_chat_done(ws)
@@ -484,15 +493,20 @@ async def websocket_endpoint(ws: WebSocket):
                     await send_chat_message(ws, message)
                     if isinstance(weather_result.widget_data, dict):
                         await ws_send(ws, weather_result.widget_data)
-                    session_state["trust_status"] = {
-                        "mode": "Online",
-                        "last_external_call": "Weather update",
-                        "data_egress": "Read-only external request",
-                        "failure_state": "Normal",
-                    }
+                    session_state["trust_status"] = failure_ladder.record_external_success(
+                        session_state.get("trust_status", {}),
+                        "Weather update",
+                    )
                     await send_trust_status(ws, session_state["trust_status"])
                 else:
                     await send_chat_message(ws, "Weather is currently unavailable.")
+                    session_state["trust_status"] = failure_ladder.record_failure(
+                        session_state.get("trust_status", {}),
+                        reason="Temporary issue",
+                        external=True,
+                        last_external_call="Weather update",
+                    )
+                    await send_trust_status(ws, session_state["trust_status"])
                 await send_chat_done(ws)
                 continue
 
@@ -511,15 +525,20 @@ async def websocket_endpoint(ws: WebSocket):
                         session_state["news_cache"] = items
                         session_state["last_sources"] = _extract_sources_from_results(items)
                         await ws_send(ws, news_result.widget_data)
-                    session_state["trust_status"] = {
-                        "mode": "Online",
-                        "last_external_call": "News update",
-                        "data_egress": "Read-only external request",
-                        "failure_state": "Normal",
-                    }
+                    session_state["trust_status"] = failure_ladder.record_external_success(
+                        session_state.get("trust_status", {}),
+                        "News update",
+                    )
                     await send_trust_status(ws, session_state["trust_status"])
                 else:
                     await send_chat_message(ws, "News is currently unavailable.")
+                    session_state["trust_status"] = failure_ladder.record_failure(
+                        session_state.get("trust_status", {}),
+                        reason="Temporary issue",
+                        external=True,
+                        last_external_call="News update",
+                    )
+                    await send_trust_status(ws, session_state["trust_status"])
                 await send_chat_done(ws)
                 continue
 
@@ -556,12 +575,10 @@ async def websocket_endpoint(ws: WebSocket):
                         weather_summary = weather_result.message
                         if isinstance(weather_result.widget_data, dict):
                             await ws_send(ws, weather_result.widget_data)
-                        session_state["trust_status"] = {
-                            "mode": "Online",
-                            "last_external_call": "Weather update",
-                            "data_egress": "Read-only external request",
-                            "failure_state": "Normal",
-                        }
+                        session_state["trust_status"] = failure_ladder.record_external_success(
+                            session_state.get("trust_status", {}),
+                            "Weather update",
+                        )
                         await send_trust_status(ws, session_state["trust_status"])
 
                 if news_skill is not None:
@@ -571,12 +588,10 @@ async def websocket_endpoint(ws: WebSocket):
                             news_summary = (news_result.widget_data.get("summary") or news_summary)
                             session_state["news_cache"] = list(news_result.widget_data.get("items") or [])
                             await ws_send(ws, news_result.widget_data)
-                        session_state["trust_status"] = {
-                            "mode": "Online",
-                            "last_external_call": "News update",
-                            "data_egress": "Read-only external request",
-                            "failure_state": "Normal",
-                        }
+                        session_state["trust_status"] = failure_ladder.record_external_success(
+                            session_state.get("trust_status", {}),
+                            "News update",
+                        )
                         await send_trust_status(ws, session_state["trust_status"])
 
                 if system_skill is not None:
@@ -649,19 +664,29 @@ async def websocket_endpoint(ws: WebSocket):
                     session_state["last_response"] = action_result.message
 
                 if capability_id in {16, 48}:
-                    session_state["trust_status"] = {
-                        "mode": "Online" if action_result.success else "Local-only",
-                        "last_external_call": "Governed web search",
-                        "data_egress": "Read-only external request" if action_result.success else "External request failed",
-                        "failure_state": "Normal" if action_result.success else "Degraded",
-                    }
+                    if action_result.success:
+                        session_state["trust_status"] = failure_ladder.record_external_success(
+                            session_state.get("trust_status", {}),
+                            "Governed web search",
+                        )
+                    else:
+                        session_state["trust_status"] = failure_ladder.record_failure(
+                            session_state.get("trust_status", {}),
+                            reason="Temporary issue",
+                            external=True,
+                            last_external_call="Governed web search",
+                        )
                 else:
-                    session_state["trust_status"] = {
-                        "mode": "Local-only",
-                        "last_external_call": session_state.get("trust_status", {}).get("last_external_call", "None"),
-                        "data_egress": "No external call in this step",
-                        "failure_state": "Normal" if action_result.success else "Temporary issue",
-                    }
+                    if action_result.success:
+                        session_state["trust_status"] = failure_ladder.record_local_success(
+                            session_state.get("trust_status", {})
+                        )
+                    else:
+                        session_state["trust_status"] = failure_ladder.record_failure(
+                            session_state.get("trust_status", {}),
+                            reason="Temporary issue",
+                            external=False,
+                        )
                 await send_trust_status(ws, session_state["trust_status"])
 
                 message_confidence: Optional[str] = None
@@ -792,19 +817,29 @@ async def websocket_endpoint(ws: WebSocket):
                     await send_chat_message(ws, message, message_id=message_id)
 
                 if skill_name in {"weather", "news", "web_search", "web_search_skill"}:
-                    session_state["trust_status"] = {
-                        "mode": "Online" if getattr(skill_result, "success", False) else "Local-only",
-                        "last_external_call": f"{skill_name} request",
-                        "data_egress": "Read-only external request" if getattr(skill_result, "success", False) else "External request failed",
-                        "failure_state": "Normal" if getattr(skill_result, "success", False) else "Degraded",
-                    }
+                    if getattr(skill_result, "success", False):
+                        session_state["trust_status"] = failure_ladder.record_external_success(
+                            session_state.get("trust_status", {}),
+                            f"{skill_name} request",
+                        )
+                    else:
+                        session_state["trust_status"] = failure_ladder.record_failure(
+                            session_state.get("trust_status", {}),
+                            reason="Temporary issue",
+                            external=True,
+                            last_external_call=f"{skill_name} request",
+                        )
                 elif skill_name:
-                    session_state["trust_status"] = {
-                        "mode": "Local-only",
-                        "last_external_call": session_state.get("trust_status", {}).get("last_external_call", "None"),
-                        "data_egress": "No external call in this step",
-                        "failure_state": "Normal" if getattr(skill_result, "success", False) else "Temporary issue",
-                    }
+                    if getattr(skill_result, "success", False):
+                        session_state["trust_status"] = failure_ladder.record_local_success(
+                            session_state.get("trust_status", {})
+                        )
+                    else:
+                        session_state["trust_status"] = failure_ladder.record_failure(
+                            session_state.get("trust_status", {}),
+                            reason="Temporary issue",
+                            external=False,
+                        )
                 await send_trust_status(ws, session_state["trust_status"])
 
                 await send_chat_done(ws)

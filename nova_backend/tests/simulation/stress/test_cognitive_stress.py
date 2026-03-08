@@ -34,6 +34,9 @@ def _assert_thresholds(profile: StressProfile, analytics: dict) -> None:
     assert turn_latency.get("p95_turn_latency_ms", float("inf")) <= profile.p95_turn_latency_ms_max
     assert integrity.get("capability_executor_mismatch_count", -1) == 0
     assert integrity.get("unknown_capability_count", -1) == 0
+    compliance_rate = integrity.get("structured_report_schema_compliance_rate", -1.0)
+    assert 0.0 <= compliance_rate <= 1.0
+    assert compliance_rate >= profile.structured_report_schema_rate_min
 
 
 def test_cognitive_stress_light_profile():
@@ -44,4 +47,3 @@ def test_cognitive_stress_light_profile():
 def test_cognitive_stress_adversarial_profile():
     analytics = _run_profile(ADVERSARIAL_PROFILE, seed=77)
     _assert_thresholds(ADVERSARIAL_PROFILE, analytics)
-

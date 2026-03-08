@@ -74,6 +74,11 @@ const HELP_EXAMPLES = [
   "set volume 40",
   "set brightness 50",
 ];
+const COMMAND_DISCOVERY_GROUPS = [
+  { label: "Daily", commands: ["weather", "news", "brief"] },
+  { label: "Research", commands: ["research AI regulation", "summarize all headlines", "show sources"] },
+  { label: "System", commands: ["system status", "open documents", "volume up"] },
+];
 const LONG_MESSAGE_CHAR_LIMIT = 280;
 const LONG_MESSAGE_LINE_LIMIT = 4;
 const LONG_MESSAGE_SENTENCE_LIMIT = 2;
@@ -793,8 +798,8 @@ function renderSearchWidget(data) {
 
 function translateError(code, message) {
   const map = {
-    input_too_long: "That message is a bit too long. Try a shorter sentence.",
-    invalid_json: "I could not read that request. Please try again.",
+    input_too_long: "That message is a bit long. Try one short sentence first.",
+    invalid_json: "I couldn't read that request. Please try again.",
   };
   return map[code] || message || "Something went wrong. Please try again.";
 }
@@ -1015,8 +1020,17 @@ function showFirstRunGuideIfNeeded() {
 
   const { overlay, card } = createModalShell("first-run-modal", "Welcome to Nova");
   const p = document.createElement("p");
-  p.textContent = "Start with one of these:";
+  p.textContent = "Quick start (about 60 seconds):";
   card.appendChild(p);
+
+  const steps = document.createElement("ol");
+  steps.className = "help-list";
+  ["Check weather", "Get top news", "Ask for your daily brief"].forEach((label) => {
+    const li = document.createElement("li");
+    li.textContent = label;
+    steps.appendChild(li);
+  });
+  card.appendChild(steps);
 
   const row = document.createElement("div");
   row.className = "modal-actions";
@@ -1048,6 +1062,36 @@ function showFirstRunGuideIfNeeded() {
 
   card.appendChild(row);
   overlay.style.display = "flex";
+}
+
+function renderCommandDiscovery() {
+  const host = $("command-groups");
+  if (!host) return;
+  clear(host);
+
+  COMMAND_DISCOVERY_GROUPS.forEach((group) => {
+    const groupEl = document.createElement("div");
+    groupEl.className = "command-group";
+
+    const label = document.createElement("div");
+    label.className = "command-group-label";
+    label.textContent = group.label;
+    groupEl.appendChild(label);
+
+    const row = document.createElement("div");
+    row.className = "command-chip-row";
+    (group.commands || []).forEach((cmd) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "command-chip";
+      chip.textContent = cmd;
+      chip.addEventListener("click", () => injectUserText(cmd, "text"));
+      row.appendChild(chip);
+    });
+
+    groupEl.appendChild(row);
+    host.appendChild(groupEl);
+  });
 }
 
 function showHelpModal() {
@@ -1256,6 +1300,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderMorningPanel();
   renderTrustPanel();
   renderQuickActions();
+  renderCommandDiscovery();
   connectWebSocket();
   showFirstRunGuideIfNeeded();
 

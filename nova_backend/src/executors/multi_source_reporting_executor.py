@@ -4,9 +4,14 @@ import os
 
 from src.actions.action_result import ActionResult
 from src.cognition.cognitive_layer_contract import CognitiveMode, CognitiveRequest
+from src.cognition.intelligence_report_contract import (
+    validate_rendered_report_text,
+    validate_structured_report_payload,
+)
 from src.cognition.modules import ReportingModule, ResearchModule, VerificationModule
 from src.llm.llm_gateway import generate_chat
 from src.rendering.intelligence_brief_renderer import IntelligenceBriefRenderer
+from src.validation.pipeline import ValidationPipeline
 
 
 class MultiSourceReportingExecutor:
@@ -15,6 +20,7 @@ class MultiSourceReportingExecutor:
     def __init__(self, network):
         self.network = network
         self.renderer = IntelligenceBriefRenderer()
+        self.validation_pipeline = ValidationPipeline()
         self.research_module = ResearchModule()
         self.verification_module = VerificationModule()
         self.reporting_module = ReportingModule()
@@ -103,14 +109,57 @@ class MultiSourceReportingExecutor:
             )
         )
 
-        message = self.renderer.render_structured_intelligence_brief(
-            topic=query[:140],
-            summary=reporting_result.summary,
-            key_findings=list(reporting_result.key_points),
-            supporting_sources=list(reporting_result.supporting_sources),
-            contradictions=list(reporting_result.diagnostics.get("contradictions", [])),
-            confidence=reporting_result.confidence,
-        )
+        structured_brief = {
+            "topic": query,
+            "summary": reporting_result.summary,
+            "key_findings": list(reporting_result.key_points),
+            "supporting_sources": list(reporting_result.supporting_sources),
+            "contradictions": list(reporting_result.diagnostics.get("contradictions", [])),
+            "confidence": reporting_result.confidence,
+        }
+
+        contract_status = "pass"
+        validation_status = "pass"
+        fallback_reason = ""
+        try:
+            validate_structured_report_payload(structured_brief)
+            message = self.renderer.render_structured_intelligence_brief(
+                topic=structured_brief["topic"][:140],
+                summary=structured_brief["summary"],
+                key_findings=structured_brief["key_findings"],
+                supporting_sources=structured_brief["supporting_sources"],
+                contradictions=structured_brief["contradictions"],
+                confidence=structured_brief["confidence"],
+            )
+            validate_rendered_report_text(message)
+            validation = self.validation_pipeline.validate(reporting_result.summary, message)
+            if not validation.ok:
+                validation_status = "fail"
+                raise ValueError(f"validation_pipeline_failed:{validation.stage}:{validation.reason}")
+        except Exception as exc:
+            contract_status = "fail"
+            fallback_reason = str(exc)
+            fallback_structured = {
+                "topic": query,
+                "summary": "Report generated with fallback due to contract validation safeguards.",
+                "key_findings": [
+                    "Primary report output did not satisfy structured contract checks.",
+                    "Fallback sections are rendered to preserve deterministic report shape.",
+                ],
+                "supporting_sources": domains[:5] or ["unattributed-source"],
+                "contradictions": ["Contract validation fallback was applied for this response."],
+                "confidence": 0.40,
+            }
+            structured_brief = fallback_structured
+            message = self.renderer.render_structured_intelligence_brief(
+                topic=fallback_structured["topic"][:140],
+                summary=fallback_structured["summary"],
+                key_findings=fallback_structured["key_findings"],
+                supporting_sources=fallback_structured["supporting_sources"],
+                contradictions=fallback_structured["contradictions"],
+                confidence=fallback_structured["confidence"],
+            )
+            validate_rendered_report_text(message)
 
         widget_results = [{"title": i.get("title", "")[:100], "url": i.get("url", "")} for i in results[:5]]
         return ActionResult.ok(
@@ -118,12 +167,10 @@ class MultiSourceReportingExecutor:
             data={
                 "widget": {"type": "search", "data": {"results": widget_results}},
                 "structured_brief": {
-                    "topic": query,
-                    "summary": reporting_result.summary,
-                    "key_findings": list(reporting_result.key_points),
-                    "supporting_sources": list(reporting_result.supporting_sources),
-                    "contradictions": list(reporting_result.diagnostics.get("contradictions", [])),
-                    "confidence": reporting_result.confidence,
+                    **structured_brief,
+                    "contract_status": contract_status,
+                    "validation_status": validation_status,
+                    "fallback_reason": fallback_reason,
                 },
             },
             request_id=request.request_id,

@@ -75,20 +75,46 @@ class ConversationRouter:
     RESEARCH_HINTS = ("research", "look into", "look up", "investigate", "analyze", "analysis")
     TASK_HINTS = ("open", "run", "check", "show", "set", "play", "pause", "search")
     WORK_HINTS = ("debug", "fix", "implement", "step by step", "plan", "design", "refactor")
+    OVERRIDE_MODE_MAP = {
+        "brainstorm mode": ConversationMode.BRAINSTORM,
+        "work mode": ConversationMode.WORK,
+        "analysis mode": ConversationMode.ANALYSIS,
+        "casual mode": ConversationMode.CASUAL,
+        "social mode": ConversationMode.CASUAL,
+    }
+    OVERRIDE_RESET_COMMANDS = {"reset mode", "default mode", "stop mode"}
 
     @classmethod
     def route(cls, user_text: str, session_state: dict[str, Any] | None = None) -> ConversationDecision:
         text = (user_text or "").strip()
         lowered = text.lower().rstrip(".?!")
         state = session_state or {}
+        session_override = cls._coerce_mode(str(state.get("session_mode_override") or "").strip().lower())
 
         # Policy check first so blocked prompts never participate in escalation logic.
         blocked_by_policy = any(p.search(text) for p in cls.POLICY_BLOCK_PATTERNS)
         policy_reason = "policy_blocked_phrase" if blocked_by_policy else None
 
+        override_applied = False
+        override_cleared = False
+        override_mode: str | None = None
+        override_confirmation: str | None = None
+        if lowered in cls.OVERRIDE_MODE_MAP:
+            override_applied = True
+            selected_mode = cls.OVERRIDE_MODE_MAP[lowered]
+            override_mode = selected_mode.value
+            mode_label = "Brainstorming" if selected_mode == ConversationMode.BRAINSTORM else selected_mode.value.title()
+            override_confirmation = f"Okay. {mode_label} mode."
+        elif lowered in cls.OVERRIDE_RESET_COMMANDS:
+            override_cleared = True
+            override_mode = "default"
+            override_confirmation = "Okay. Back to default."
+
         continuation_detected = cls._is_followup(lowered, state) if not blocked_by_policy else False
         intent_family = cls._classify_intent_family(text, lowered, continuation_detected) if not blocked_by_policy else "unknown"
         mode = cls._map_intent_to_mode(intent_family, lowered, state) if not blocked_by_policy else ConversationMode.UNKNOWN
+        if session_override is not None and not override_applied and not override_cleared and not blocked_by_policy:
+            mode = session_override
 
         needs_clarification = False
         clarification = ""
@@ -123,6 +149,10 @@ class ConversationRouter:
             mode=mode,
             intent_family=intent_family,
             continuation_detected=continuation_detected,
+            override_applied=override_applied,
+            override_cleared=override_cleared,
+            override_mode=override_mode,
+            override_confirmation=override_confirmation,
             should_escalate=should_escalate,
             escalation_reason=escalation_reason,
             response_template=response_template,
@@ -133,6 +163,15 @@ class ConversationRouter:
             micro_ack=cls.MICRO_ACK.get(mode, "") if should_ack else "",
             resolved_text=resolved_text,
         )
+
+    @staticmethod
+    def _coerce_mode(mode_value: str) -> ConversationMode | None:
+        if not mode_value:
+            return None
+        for mode in ConversationMode:
+            if mode.value == mode_value:
+                return mode
+        return None
 
     @classmethod
     def _classify_intent_family(cls, text: str, lowered: str, continuation_detected: bool) -> str:

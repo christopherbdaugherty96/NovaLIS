@@ -27,6 +27,7 @@ def test_multi_source_report_structured_output(monkeypatch):
             }
 
     monkeypatch.setattr(mod, "generate_chat", lambda *args, **kwargs: "Regulatory movement remains active.")
+    monkeypatch.setenv("BRAVE_API_KEY", "test-key")
     executor = mod.MultiSourceReportingExecutor(FakeNetwork())
     result = executor.execute(_request({"query": "ai regulation updates"}))
 
@@ -39,6 +40,8 @@ def test_multi_source_report_structured_output(monkeypatch):
     assert isinstance(result.data, dict)
     assert result.data.get("widget", {}).get("type") == "search"
     assert isinstance(result.data.get("structured_brief"), dict)
+    assert result.data["structured_brief"].get("contract_status") == "pass"
+    assert result.data["structured_brief"].get("validation_status") == "pass"
 
 
 def test_multi_source_report_handles_missing_query():
@@ -53,3 +56,38 @@ def test_multi_source_report_handles_missing_query():
     result = executor.execute(_request({"query": ""}))
     assert result.success is False
     assert "No report query provided." in result.message
+
+
+def test_multi_source_report_falls_back_on_validation_failure(monkeypatch):
+    from src.executors import multi_source_reporting_executor as mod
+
+    class FakeNetwork:
+        def request(self, **kwargs):
+            del kwargs
+            return {
+                "status_code": 200,
+                "data": {
+                    "web": {
+                        "results": [
+                            {"title": "AI regulation bill advances", "url": "https://reuters.com/a"},
+                        ]
+                    }
+                },
+            }
+
+    class BadValidationPipeline:
+        def validate(self, raw_text: str, presented_text: str):
+            del raw_text, presented_text
+            return SimpleNamespace(ok=False, stage="AuthorityLanguageDetector", reason="blocked")
+
+    monkeypatch.setenv("BRAVE_API_KEY", "test-key")
+    monkeypatch.setattr(mod, "generate_chat", lambda *args, **kwargs: "Short analysis text.")
+    executor = mod.MultiSourceReportingExecutor(FakeNetwork())
+    executor.validation_pipeline = BadValidationPipeline()
+
+    result = executor.execute(_request({"query": "ai regulation updates"}))
+    assert result.success is True
+    assert "INTELLIGENCE BRIEF" in result.message
+    brief = result.data.get("structured_brief", {})
+    assert brief.get("contract_status") == "fail"
+    assert brief.get("fallback_reason")
