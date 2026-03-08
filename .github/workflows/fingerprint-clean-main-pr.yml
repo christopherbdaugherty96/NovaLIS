@@ -1,0 +1,29 @@
+name: Fingerprint Clean (Main PR)
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  fingerprint-clean:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Enforce clean runtime fingerprint for main-targeted PRs
+        run: |
+          FILE="docs/current_runtime/RUNTIME_FINGERPRINT.md"
+          if [ ! -f "$FILE" ]; then
+            echo "ERROR: Missing $FILE"
+            exit 1
+          fi
+
+          if grep -Eiq '^\s*-\s*git_dirty:\s*true\s*$' "$FILE"; then
+            echo "ERROR: $FILE reports git_dirty: true. Regenerate runtime docs from a clean working tree."
+            exit 1
+          fi
+
+          echo "Fingerprint cleanliness check passed."
