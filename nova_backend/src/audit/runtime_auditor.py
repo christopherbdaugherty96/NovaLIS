@@ -975,7 +975,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         "## Runtime Governance Spine",
         "",
         "Execution Authority Model:",
-        "User -> Governor -> Capability Registry -> ExecuteBoundary -> Executor",
+        "User -> GovernorMediator -> Governor -> CapabilityRegistry -> ExecuteBoundary -> Executor",
         "",
         "Components:",
         "",
