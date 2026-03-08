@@ -6,11 +6,9 @@ Deterministic surface map for skills, conversation modules, and governor capabil
 | --- | --- | --- | --- | --- | --- |
 | deepseek_bridge | src/conversation/deepseek_bridge.py | conversation | unknown | llm_gateway |  |
 | analysis_document | src/governor/governor_mediator.py | governor_capability | unknown | none | 54 |
-| brightness | src/governor/governor_mediator.py | governor_capability | unknown | none | 21 |
 | diagnostics | src/governor/governor_mediator.py | governor_capability | unknown | none | 32 |
 | headline_summary | src/governor/governor_mediator.py | governor_capability | unknown | none | 49 |
 | intelligence_brief | src/governor/governor_mediator.py | governor_capability | unknown | none | 50 |
-| media | src/governor/governor_mediator.py | governor_capability | unknown | none | 20 |
 | open_folder | src/governor/governor_mediator.py | governor_capability | unknown | none | 22 |
 | open_website | src/governor/governor_mediator.py | governor_capability | unknown | none | 17 |
 | report | src/governor/governor_mediator.py | governor_capability | unknown | none | 48 |

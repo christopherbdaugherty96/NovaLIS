@@ -3,7 +3,7 @@
   "phase": "4",
   "capability_groups": {
     "speech_output": [18],
-    "local_control": [20, 21, 22],
+    "local_control": [22],
     "intelligence": [16, 31, 48, 49, 50, 51, 52, 53, 54],
     "diagnostics": [17, 32]
   },
@@ -75,7 +75,7 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": false
     },
     {
       "id": 21,
@@ -84,7 +84,7 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": false
     },
     {
       "id": 31,

@@ -6,13 +6,10 @@ def test_volume_media_brightness_parsing():
     assert inv.capability_id == 19
 
     inv = GovernorMediator.parse_governed_invocation("pause")
-    assert isinstance(inv, Invocation)
-    assert inv.capability_id == 20
+    assert inv is None
 
     inv = GovernorMediator.parse_governed_invocation("set brightness 70")
-    assert isinstance(inv, Invocation)
-    assert inv.capability_id == 21
-    assert inv.params["level"] == 70
+    assert inv is None
 
     inv = GovernorMediator.parse_governed_invocation("volume 50")
     assert isinstance(inv, Invocation)
