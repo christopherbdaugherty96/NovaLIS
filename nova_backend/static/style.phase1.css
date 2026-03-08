@@ -801,6 +801,63 @@ html, body {
   color: rgba(230, 233, 240, 0.94);
 }
 
+.command-discovery {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 12px;
+  display: grid;
+  gap: 8px;
+}
+
+.command-discovery h3 {
+  margin: 0;
+  font-size: 0.92rem;
+}
+
+.discovery-subtitle {
+  margin: 0;
+  font-size: 0.8rem;
+  color: rgba(230, 233, 240, 0.72);
+}
+
+.command-groups {
+  display: grid;
+  gap: 10px;
+}
+
+.command-group {
+  display: grid;
+  gap: 6px;
+}
+
+.command-group-label {
+  font-size: 0.76rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(230, 233, 240, 0.7);
+}
+
+.command-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.command-chip {
+  border: 1px solid rgba(123, 109, 255, 0.28);
+  background: rgba(123, 109, 255, 0.12);
+  color: rgba(230, 233, 240, 0.95);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.command-chip:hover {
+  background: rgba(123, 109, 255, 0.2);
+}
+
 .quick-actions {
   grid-column: 1 / -1;
   display: flex;

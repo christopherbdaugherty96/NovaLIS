@@ -89,6 +89,9 @@ def test_simulation_analytics_is_deterministic_and_complete(tmp_path):
     assert analytics["executors"]["os_diagnostics_executor"]["count"] == 1
     assert analytics["integrity"]["capability_executor_mismatch_count"] >= 1
     assert analytics["integrity"]["unknown_capability_count"] >= 1
+    assert analytics["integrity"]["structured_report_schema_total"] >= 1
+    assert analytics["integrity"]["structured_report_schema_compliant"] >= 0
+    assert 0.0 <= analytics["integrity"]["structured_report_schema_compliance_rate"] <= 1.0
     assert analytics["governor_decisions"]["governed_invocation"] >= 1
     assert analytics["scenarios"]["scenario_a"]["transcript_count"] == 1
     assert analytics["scenarios"]["scenario_b"]["transcript_count"] == 1

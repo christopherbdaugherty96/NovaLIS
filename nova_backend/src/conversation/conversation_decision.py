@@ -19,6 +19,10 @@ class ConversationDecision:
     mode: ConversationMode
     intent_family: str
     continuation_detected: bool
+    override_applied: bool
+    override_cleared: bool
+    override_mode: str | None
+    override_confirmation: str | None
     should_escalate: bool
     escalation_reason: str | None
     response_template: str

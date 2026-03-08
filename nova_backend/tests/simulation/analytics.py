@@ -37,6 +37,14 @@ REFUSAL_HINTS = (
     "not permitted",
     "blocked",
 )
+REQUIRED_REPORT_SECTIONS = (
+    "INTELLIGENCE BRIEF",
+    "Summary",
+    "Key Findings",
+    "Supporting Sources",
+    "Contradictions",
+    "Confidence",
+)
 
 
 def current_git_commit(repo_root: str | Path | None = None) -> str:
@@ -91,6 +99,11 @@ def _is_refusal(turn: dict[str, Any]) -> bool:
     return any(h in text for h in REFUSAL_HINTS)
 
 
+def _is_structured_report_compliant(text: str) -> bool:
+    content = str(text or "")
+    return all(section in content for section in REQUIRED_REPORT_SECTIONS)
+
+
 def aggregate_simulation_runs(run_records: list[dict[str, Any]]) -> dict[str, Any]:
     capability_latencies: dict[int, list[float]] = defaultdict(list)
     executor_latencies: dict[str, list[float]] = defaultdict(list)
@@ -113,6 +126,8 @@ def aggregate_simulation_runs(run_records: list[dict[str, Any]]) -> dict[str, An
     run_timestamps: list[str] = []
     run_profiles: Counter[str] = Counter()
     run_scenarios: Counter[str] = Counter()
+    structured_report_total = 0
+    structured_report_compliant = 0
 
     for record in run_records:
         metadata = record.get("run_metadata") if isinstance(record.get("run_metadata"), dict) else {}
@@ -166,6 +181,10 @@ def aggregate_simulation_runs(run_records: list[dict[str, Any]]) -> dict[str, An
 
             capability_counts[cap_id] += 1
             capability_latencies[cap_id].append(latency)
+            if cap_id == 48:
+                structured_report_total += 1
+                if _is_structured_report_compliant(str(turn.get("nova_response") or "")):
+                    structured_report_compliant += 1
             if executor:
                 executor_counts[executor] += 1
                 executor_latencies[executor].append(latency)
@@ -235,6 +254,12 @@ def aggregate_simulation_runs(run_records: list[dict[str, Any]]) -> dict[str, An
         "integrity": {
             "capability_executor_mismatch_count": mismatch_count,
             "unknown_capability_count": unknown_capability_count,
+            "structured_report_schema_total": structured_report_total,
+            "structured_report_schema_compliant": structured_report_compliant,
+            "structured_report_schema_compliance_rate": round(
+                (structured_report_compliant / structured_report_total) if structured_report_total else 1.0,
+                4,
+            ),
         },
         "top_failing_user_prompts": [
             {"prompt": prompt, "count": int(count)}

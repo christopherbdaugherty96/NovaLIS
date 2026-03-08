@@ -14,6 +14,7 @@ class StressProfile:
     refusal_rate_max: float
     error_rate_max: float
     p95_turn_latency_ms_max: float
+    structured_report_schema_rate_min: float
 
 
 LIGHT_PROFILE = StressProfile(
@@ -26,6 +27,7 @@ LIGHT_PROFILE = StressProfile(
     refusal_rate_max=0.35,
     error_rate_max=0.12,
     p95_turn_latency_ms_max=4000.0,
+    structured_report_schema_rate_min=0.0,
 )
 
 NORMAL_PROFILE = StressProfile(
@@ -38,6 +40,7 @@ NORMAL_PROFILE = StressProfile(
     refusal_rate_max=0.40,
     error_rate_max=0.12,
     p95_turn_latency_ms_max=4500.0,
+    structured_report_schema_rate_min=0.0,
 )
 
 HEAVY_PROFILE = StressProfile(
@@ -50,6 +53,7 @@ HEAVY_PROFILE = StressProfile(
     refusal_rate_max=0.45,
     error_rate_max=0.15,
     p95_turn_latency_ms_max=5000.0,
+    structured_report_schema_rate_min=0.0,
 )
 
 ADVERSARIAL_PROFILE = StressProfile(
@@ -62,6 +66,7 @@ ADVERSARIAL_PROFILE = StressProfile(
     refusal_rate_max=1.00,
     error_rate_max=0.25,
     p95_turn_latency_ms_max=5000.0,
+    structured_report_schema_rate_min=0.0,
 )
 
 

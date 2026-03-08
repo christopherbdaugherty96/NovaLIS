@@ -73,6 +73,7 @@ class ConversationSimulator:
         self._last_response = ""
         self._last_intent_family = ""
         self._last_object = ""
+        self._session_mode_override = ""
         self._include_trace = bool(include_trace)
 
     @staticmethod
@@ -120,6 +121,7 @@ class ConversationSimulator:
                 "last_response": self._last_response,
                 "last_intent_family": self._last_intent_family,
                 "last_object": self._last_object,
+                "session_mode_override": self._session_mode_override,
             },
         )
         if trace is not None:
@@ -149,6 +151,49 @@ class ConversationSimulator:
                 should_escalate=decision.should_escalate,
                 policy_blocked=True,
                 governor_decision="policy_block",
+                execution_time_ms=round(elapsed, 3),
+                trace_id=trace.trace_id if trace is not None else "",
+                trace_steps=list(trace.steps) if trace is not None else [],
+            )
+
+        if decision.override_applied:
+            self._session_mode_override = str(decision.override_mode or "")
+            response = str(decision.override_confirmation or "Okay.")
+            self._last_response = response
+            elapsed = (time.perf_counter() - started) * 1000
+            if trace is not None:
+                trace.record(
+                    "mode_override",
+                    {"override_applied": True, "override_mode": self._session_mode_override},
+                )
+            return TranscriptTurn(
+                user_message=raw_text,
+                nova_response=response,
+                decision_mode=decision.mode.value,
+                intent_family=decision.intent_family,
+                continuation_detected=decision.continuation_detected,
+                should_escalate=decision.should_escalate,
+                governor_decision="mode_override",
+                execution_time_ms=round(elapsed, 3),
+                trace_id=trace.trace_id if trace is not None else "",
+                trace_steps=list(trace.steps) if trace is not None else [],
+            )
+
+        if decision.override_cleared:
+            self._session_mode_override = ""
+            response = str(decision.override_confirmation or "Okay. Back to default.")
+            self._last_response = response
+            elapsed = (time.perf_counter() - started) * 1000
+            if trace is not None:
+                trace.record("mode_override", {"override_cleared": True})
+            return TranscriptTurn(
+                user_message=raw_text,
+                nova_response=response,
+                decision_mode=decision.mode.value,
+                intent_family=decision.intent_family,
+                continuation_detected=decision.continuation_detected,
+                should_escalate=decision.should_escalate,
+                governor_decision="mode_override",
                 execution_time_ms=round(elapsed, 3),
                 trace_id=trace.trace_id if trace is not None else "",
                 trace_steps=list(trace.steps) if trace is not None else [],

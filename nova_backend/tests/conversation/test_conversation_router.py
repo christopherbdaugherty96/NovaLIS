@@ -55,3 +55,26 @@ def test_router_blocks_policy_bypass_prompt():
     assert out.policy_reason == "policy_blocked_phrase"
     assert out.mode.value == "unknown"
     assert out.should_escalate is False
+
+
+def test_router_sets_manual_mode_override():
+    out = ConversationRouter.route("brainstorm mode")
+    assert out.override_applied is True
+    assert out.override_mode == "brainstorm"
+    assert "mode" in (out.override_confirmation or "").lower()
+
+
+def test_router_persists_override_from_session_state():
+    out = ConversationRouter.route(
+        "what is a gpu?",
+        {"session_mode_override": "work", "last_response": "context"},
+    )
+    assert out.mode.value == "work"
+    assert out.override_applied is False
+    assert out.override_cleared is False
+
+
+def test_router_resets_manual_mode_override():
+    out = ConversationRouter.route("reset mode", {"session_mode_override": "analysis"})
+    assert out.override_cleared is True
+    assert out.override_mode == "default"
