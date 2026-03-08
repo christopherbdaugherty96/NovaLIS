@@ -379,3 +379,64 @@ class IntelligenceBriefRenderer:
         if analysis_text.strip():
             lines.extend(["", "Analyst Note", analysis_text.strip()])
         return "\n".join(lines)
+
+    def render_structured_intelligence_brief(
+        self,
+        *,
+        topic: str,
+        summary: str,
+        key_findings: list[str],
+        supporting_sources: list[str],
+        contradictions: list[str],
+        confidence: float,
+    ) -> str:
+        clean_topic = (topic or "").strip() or "General Topic"
+        clean_summary = (summary or "").strip() or "No summary available."
+        clean_findings = [str(item).strip() for item in (key_findings or []) if str(item).strip()] or [
+            "No high-confidence findings available."
+        ]
+        clean_sources = [str(item).strip() for item in (supporting_sources or []) if str(item).strip()] or [
+            "No source attribution available."
+        ]
+        clean_contradictions = [str(item).strip() for item in (contradictions or []) if str(item).strip()] or [
+            "No major contradiction markers detected."
+        ]
+        bounded_confidence = max(0.0, min(1.0, float(confidence)))
+
+        lines = [
+            "INTELLIGENCE BRIEF",
+            f"Topic: {clean_topic}",
+            "",
+            "Summary",
+            "-------",
+            clean_summary,
+            "",
+            "Key Findings",
+            "------------",
+        ]
+        lines.extend(f"- {item}" for item in clean_findings[:5])
+        lines.extend(
+            [
+                "",
+                "Supporting Sources",
+                "------------------",
+            ]
+        )
+        lines.extend(f"{idx}. {item}" for idx, item in enumerate(clean_sources[:5], start=1))
+        lines.extend(
+            [
+                "",
+                "Contradictions",
+                "--------------",
+            ]
+        )
+        lines.extend(f"- {item}" for item in clean_contradictions[:4])
+        lines.extend(
+            [
+                "",
+                "Confidence",
+                "----------",
+                f"{bounded_confidence:.2f}",
+            ]
+        )
+        return "\n".join(lines)

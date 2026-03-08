@@ -34,6 +34,7 @@ from src.voice.stt_pipeline import STTAckConfig, build_ack_payload
 from src.voice.tts_engine import resolve_speakable_text, nova_speak, stop_speaking
 from src.conversation.clarify_prompts import CLARIFY_PROMPTS
 from src.conversation.response_formatter import ResponseFormatter
+from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
 from src.audit.runtime_auditor import (
     run_runtime_truth_audit,
     render_runtime_truth_markdown,
@@ -45,6 +46,10 @@ from src.audit.runtime_auditor import (
 # -------------------------------------------------
 log = logging.getLogger("nova")
 app = FastAPI()
+
+# Phase-build lock marker for runtime auditor and governance checks.
+# Phase 4 keeps 4.2 modules runtime-locked unless a build promotes phase.
+_ = (BUILD_PHASE, PHASE_4_2_ENABLED)
 
 
 @app.on_event("startup")
