@@ -41,6 +41,15 @@ class InputNormalizer:
         (r"\bwhat(?:'s| is) going on in tech today\b", "daily brief tech"),
     )
 
+    @staticmethod
+    def _collapse_spaced_acronyms(text: str) -> str:
+        # Example: "A B C news" -> "ABC news"
+        def _join(match: re.Match) -> str:
+            token = match.group(0)
+            return re.sub(r"\s+", "", token)
+
+        return re.sub(r"\b(?:[A-Za-z]\s+){1,}[A-Za-z]\b", _join, text)
+
     @classmethod
     def normalize(cls, text: str) -> str:
         clean = (text or "").strip()
@@ -48,6 +57,7 @@ class InputNormalizer:
             return ""
 
         clean = re.sub(r"\s+", " ", clean)
+        clean = cls._collapse_spaced_acronyms(clean)
 
         clean = clean.replace(" ,", ",").replace(" .", ".")
 

@@ -36,6 +36,9 @@ INTEL_RESEARCH_RE = re.compile(
 )
 OPEN_RE = re.compile(r"^\s*open\s+(?P<name>\w+)\s*$", re.IGNORECASE)
 OPEN_NAME_RE = re.compile(r"^\s*open\s+(?P<target>[A-Za-z0-9_.\- ]+)\s*$", re.IGNORECASE)
+OPEN_SOURCE_INDEX_RE = re.compile(r"^\s*open\s+(?:source|result)\s+(?P<idx>\d{1,2})\s*$", re.IGNORECASE)
+PREVIEW_SOURCE_INDEX_RE = re.compile(r"^\s*preview\s+(?:source|result)\s+(?P<idx>\d{1,2})\s*$", re.IGNORECASE)
+PREVIEW_WEBSITE_RE = re.compile(r"^\s*preview\s+(?P<target>[A-Za-z0-9_.\- ]+)\s*$", re.IGNORECASE)
 OPEN_FOLDER_RE = re.compile(r"^\s*open\s+(?P<folder>documents|downloads|desktop|pictures)\s*$", re.IGNORECASE)
 OPEN_FILE_RE = re.compile(r"^\s*open\s+(?:file|document)\s+(?P<path>.+?)\s*$", re.IGNORECASE)
 SET_VOLUME_RE = re.compile(r"^\s*set\s+volume\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
@@ -92,6 +95,18 @@ LINK_STORY_RE = re.compile(
 )
 SHOW_REL_GRAPH_RE = re.compile(
     r"^\s*show\s+(?:story\s+)?relationship\s+graph\s*$",
+    re.IGNORECASE,
+)
+EXPAND_STORY_INDEX_RE = re.compile(
+    r"^\s*(?:expand|explain|details?)(?:\s+story)?\s+(?P<idx>\d{1,2})\s*$",
+    re.IGNORECASE,
+)
+COMPARE_STORY_INDEX_RE = re.compile(
+    r"^\s*compare(?:\s+story)?\s+(?P<left>\d{1,2})\s+(?:and|vs)\s+(?P<right>\d{1,2})\s*$",
+    re.IGNORECASE,
+)
+TRACK_STORY_INDEX_RE = re.compile(
+    r"^\s*track\s+story\s+(?P<idx>\d{1,2})\s*$",
     re.IGNORECASE,
 )
 VERIFY_RE = re.compile(
@@ -172,6 +187,52 @@ def _normalize_source_query(source_query: str) -> str:
     return normalized
 
 
+def _normalize_web_target(target_text: str) -> str:
+    target = re.sub(r"\b(?:website|site|webpage|homepage)\b", "", (target_text or ""), flags=re.IGNORECASE)
+    target = re.sub(r"\s+", " ", target).strip()
+    target = re.sub(
+        r"\b(?:[A-Za-z]\s+){1,}[A-Za-z]\b",
+        lambda m: re.sub(r"\s+", "", m.group(0)),
+        target,
+    )
+    target = re.sub(r"\b(abc|fox)\s+new\b", r"\1 news", target, flags=re.IGNORECASE)
+    return target
+
+
+def _looks_like_local_path(target: str) -> bool:
+    t = (target or "").strip()
+    return bool(
+        re.search(r"[\\/]", t)
+        or re.match(r"^[A-Za-z]:", t)
+        or re.search(r"[-_]", t)
+    )
+
+
+def _looks_like_web_target(raw_target: str, normalized_target: str) -> bool:
+    source = (raw_target or "").strip()
+    target = (normalized_target or "").strip().lower()
+    if "." in target:
+        return True
+    if re.search(r"\b(?:news|website|site|webpage)\b", source, re.IGNORECASE):
+        return True
+    web_aliases = {
+        "google",
+        "github",
+        "youtube",
+        "facebook",
+        "twitter",
+        "cnn",
+        "bbc",
+        "reuters",
+        "npr",
+        "ap",
+        "abc",
+        "fox",
+        "pandora",
+    }
+    return any(token in web_aliases for token in target.split())
+
+
 @dataclass(frozen=True)
 class Invocation:
     capability_id: int
@@ -226,18 +287,42 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(22, {"path": m.group("path").strip()})
 
+        m = OPEN_SOURCE_INDEX_RE.match(t)
+        if m:
+            return _invocation_if_enabled(17, {"source_index": int(m.group("idx"))})
+
+        m = PREVIEW_SOURCE_INDEX_RE.match(t)
+        if m:
+            return _invocation_if_enabled(17, {"source_index": int(m.group("idx")), "preview": True})
+
         m = OPEN_RE.match(t)
         if m:
             return _invocation_if_enabled(17, {"target": m.group("name").strip().lower()})
 
+        m = PREVIEW_WEBSITE_RE.match(t)
+        if m:
+            target = _normalize_web_target(m.group("target"))
+            if target:
+                return _invocation_if_enabled(17, {"target": target.lower(), "preview": True})
+
         m = OPEN_NAME_RE.match(t)
         if m:
-            target = m.group("target").strip()
+            raw_target = m.group("target")
+            target = _normalize_web_target(raw_target)
             # Keep single-token website shorthand behavior (e.g., "open github").
             if re.fullmatch(r"[A-Za-z0-9_]+", target):
                 return _invocation_if_enabled(17, {"target": target.lower()})
-            # Route multi-token/hyphenated targets as local paths.
-            return _invocation_if_enabled(22, {"path": target})
+            if _looks_like_web_target(raw_target, target):
+                return _invocation_if_enabled(17, {"target": target.lower()})
+            if _looks_like_local_path(target):
+                return _invocation_if_enabled(22, {"path": target})
+            return Clarification(
+                capability_id=17,
+                message=(
+                    f"I want to confirm: did you mean a website or a local file for '{target}'? "
+                    f"Say 'open website {target}' or 'open file {target}'."
+                ),
+            )
 
         if re.match(r"^\s*(speak that|read that|say it)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(18, {})
@@ -274,6 +359,21 @@ class GovernorMediator:
 
         if TODAY_NEWS_RE.match(t):
             return _invocation_if_enabled(50, {"read_sources": True})
+
+        m = EXPAND_STORY_INDEX_RE.match(t)
+        if m:
+            return _invocation_if_enabled(50, {"action": "expand_cluster", "story_id": int(m.group("idx"))})
+
+        m = COMPARE_STORY_INDEX_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                50,
+                {"action": "compare_clusters", "left_story_id": int(m.group("left")), "right_story_id": int(m.group("right"))},
+            )
+
+        m = TRACK_STORY_INDEX_RE.match(t)
+        if m:
+            return _invocation_if_enabled(50, {"action": "track_cluster", "story_id": int(m.group("idx"))})
 
         if TOPIC_MAP_RE.match(t):
             return _invocation_if_enabled(51, {})

@@ -336,6 +336,157 @@ function parseStructuredReport(text) {
   return { title, sections };
 }
 
+function parseDailyBriefV2(text) {
+  const raw = String(text || "").trim();
+  if (!raw.startsWith("NOVA DAILY INTELLIGENCE BRIEF")) return null;
+
+  const lines = raw.split(/\r?\n/).map((line) => line.trim());
+  const stories = [];
+  let current = null;
+  let confidence = "";
+  let sourcesUsed = "";
+  let coverage = "";
+
+  lines.forEach((line) => {
+    if (!line) return;
+    const storyMatch = /^Story\s+(\d+):\s+(.+)$/i.exec(line);
+    if (storyMatch) {
+      if (current) stories.push(current);
+      current = {
+        id: Number(storyMatch[1]),
+        title: storyMatch[2].trim(),
+        summary: "",
+        implication: "",
+        sources: "",
+      };
+      return;
+    }
+
+    if (current && line.startsWith("Summary:")) {
+      current.summary = line.replace(/^Summary:\s*/i, "").trim();
+      return;
+    }
+    if (current && line.startsWith("Implication:")) {
+      current.implication = line.replace(/^Implication:\s*/i, "").trim();
+      return;
+    }
+    if (current && line.startsWith("Sources:")) {
+      current.sources = line.replace(/^Sources:\s*/i, "").trim();
+      return;
+    }
+
+    if (line.startsWith("Confidence:")) {
+      confidence = line.replace(/^Confidence:\s*/i, "").trim();
+      return;
+    }
+    if (line.startsWith("Sources used:")) {
+      sourcesUsed = line.replace(/^Sources used:\s*/i, "").trim();
+      return;
+    }
+    if (line.startsWith("Coverage:")) {
+      coverage = line.replace(/^Coverage:\s*/i, "").trim();
+    }
+  });
+  if (current) stories.push(current);
+  if (!stories.length) return null;
+
+  return { title: "Today's Intelligence Brief", stories, confidence, sourcesUsed, coverage };
+}
+
+function createBriefCardElement(story, compact = false) {
+  const card = document.createElement("div");
+  card.className = "brief-card";
+
+  const heading = document.createElement("div");
+  heading.className = "brief-card-heading";
+  heading.textContent = `Story ${story.id} - ${story.title}`;
+  card.appendChild(heading);
+
+  const summary = document.createElement("div");
+  summary.className = "brief-card-row";
+  summary.textContent = `Summary: ${story.summary || "No summary available."}`;
+  card.appendChild(summary);
+
+  const implication = document.createElement("div");
+  implication.className = "brief-card-row";
+  implication.textContent = `Implication: ${story.implication || "No implication provided."}`;
+  card.appendChild(implication);
+
+  const sources = document.createElement("div");
+  sources.className = "brief-card-row brief-card-sources";
+  sources.textContent = `Sources: ${story.sources || "Unknown"}`;
+  card.appendChild(sources);
+
+  const actions = document.createElement("div");
+  actions.className = "brief-card-actions";
+  const expand = document.createElement("button");
+  expand.type = "button";
+  expand.className = "assistant-action-btn";
+  expand.textContent = "Expand";
+  expand.addEventListener("click", () => injectUserText(`expand story ${story.id}`, "text"));
+  actions.appendChild(expand);
+
+  const track = document.createElement("button");
+  track.type = "button";
+  track.className = "assistant-action-btn";
+  track.textContent = "Track";
+  track.addEventListener("click", () => injectUserText(`track story ${story.id}`, "text"));
+  actions.appendChild(track);
+
+  const compare = document.createElement("button");
+  compare.type = "button";
+  compare.className = "assistant-action-btn";
+  compare.textContent = "Compare";
+  const compareTarget = story.id === 1 ? 2 : 1;
+  compare.addEventListener("click", () => injectUserText(`compare ${story.id} and ${compareTarget}`, "text"));
+  actions.appendChild(compare);
+
+  card.appendChild(actions);
+  if (compact) {
+    card.classList.add("brief-card-compact");
+  }
+  return card;
+}
+
+function renderSidebarBrief(brief) {
+  const empty = $("brief-sidebar-empty");
+  const cards = $("brief-sidebar-cards");
+  if (!cards) return;
+  clear(cards);
+
+  if (!brief || !Array.isArray(brief.stories) || brief.stories.length === 0) {
+    if (empty) empty.style.display = "block";
+    return;
+  }
+
+  if (empty) empty.style.display = "none";
+  brief.stories.slice(0, 4).forEach((story) => {
+    cards.appendChild(createBriefCardElement(story, true));
+  });
+}
+
+function renderDailyBriefV2(container, brief) {
+  const wrap = document.createElement("div");
+  wrap.className = "daily-brief";
+
+  const title = document.createElement("div");
+  title.className = "daily-brief-title";
+  title.textContent = brief.title;
+  wrap.appendChild(title);
+
+  brief.stories.forEach((story) => {
+    wrap.appendChild(createBriefCardElement(story, false));
+  });
+
+  const meta = document.createElement("div");
+  meta.className = "daily-brief-meta";
+  meta.textContent = `Confidence: ${brief.confidence || "Medium"} | Sources used: ${brief.sourcesUsed || "N/A"} | Coverage: ${brief.coverage || "General"}`;
+  wrap.appendChild(meta);
+
+  container.appendChild(wrap);
+  renderSidebarBrief(brief);
+}
+
 function renderStructuredReport(container, report) {
   const wrap = document.createElement("div");
   wrap.className = "structured-report";
@@ -565,8 +716,11 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
   div.className = `chat-${role}`;
 
   const msgText = String(text || "");
+  const dailyBrief = role === "assistant" ? parseDailyBriefV2(msgText) : null;
   const structured = role === "assistant" ? parseStructuredReport(msgText) : null;
-  if (structured) {
+  if (dailyBrief) {
+    renderDailyBriefV2(div, dailyBrief);
+  } else if (structured) {
     renderStructuredReport(div, structured);
   } else {
     const textNode = document.createElement("span");
@@ -991,9 +1145,11 @@ function setupSidebarTabs() {
 
       const news = $("news-widget");
       const trust = $("trust-panel");
-      if (!news || !trust) return;
+      const brief = $("brief-widget");
+      const panels = [news, trust, brief].filter(Boolean);
+      if (panels.length === 0) return;
 
-      [news, trust].forEach((p) => { p.hidden = true; });
+      panels.forEach((p) => { p.hidden = true; });
       const target = $(panelId);
       if (target) target.hidden = false;
 

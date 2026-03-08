@@ -67,6 +67,7 @@
     <aside class="news-panel">
       <div class="sidebar-tabs" aria-label="Sidebar panels">
         <button type="button" class="sidebar-tab active" data-panel="news-widget">News</button>
+        <button type="button" class="sidebar-tab" data-panel="brief-widget">Brief</button>
         <button type="button" class="sidebar-tab" data-panel="trust-panel">Trust</button>
         <button type="button" class="sidebar-tab" data-panel="help-modal">Help</button>
       </div>
@@ -89,6 +90,11 @@
             Expand details
           </button>
         </div>
+      </div>
+      <div id="brief-widget" class="widget brief-widget" hidden>
+        <h3>Today's Brief</h3>
+        <div id="brief-sidebar-empty" class="brief-sidebar-empty">Ask for "today's news" to build a merged brief.</div>
+        <div id="brief-sidebar-cards" class="brief-sidebar-cards"></div>
       </div>
       <div id="trust-panel" class="widget trust-panel" aria-live="polite" hidden>
         <h3>Trust Panel</h3>
