@@ -17,6 +17,7 @@ import logging
 import re
 import uuid
 import asyncio
+from contextlib import asynccontextmanager
 from datetime import datetime
 from typing import Optional
 
@@ -47,20 +48,23 @@ from src.audit.runtime_auditor import (
 # App + Logging
 # -------------------------------------------------
 log = logging.getLogger("nova")
-app = FastAPI()
-
-# Phase-build lock marker for runtime auditor and governance checks.
-# Phase 4 keeps 4.2 modules runtime-locked unless a build promotes phase.
-_ = (BUILD_PHASE, PHASE_4_2_ENABLED)
 
 
-@app.on_event("startup")
-async def refresh_runtime_snapshot_on_startup():
+@asynccontextmanager
+async def _lifespan(_app: FastAPI):
     try:
         output_path = write_current_runtime_state_snapshot()
         log.info("Runtime snapshot refreshed at startup: %s", output_path)
     except Exception:
         log.exception("Failed to refresh runtime snapshot on startup")
+    yield
+
+
+app = FastAPI(lifespan=_lifespan)
+
+# Phase-build lock marker for runtime auditor and governance checks.
+# Phase 4 keeps 4.2 modules runtime-locked unless a build promotes phase.
+_ = (BUILD_PHASE, PHASE_4_2_ENABLED)
 
 # -------------------------------------------------
 # Static Files
