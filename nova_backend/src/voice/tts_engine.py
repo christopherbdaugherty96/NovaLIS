@@ -14,6 +14,8 @@ from uuid import uuid4
 
 from src.audio.audio_task_runner import run_speech_task
 from src.conversation.response_formatter import ResponseFormatter
+from src.governor.exceptions import LedgerWriteFailed
+from src.ledger.writer import LedgerWriter
 from src.rendering.speech_formatter import SpeechFormatter
 
 logger = logging.getLogger(__name__)
@@ -197,8 +199,24 @@ def stop_speaking() -> None:
 
 def nova_speak(text: str) -> None:
     """Default runtime speech path with profile-based rendering (non-blocking)."""
+    speak_text = (text or "").strip()
+    if not speak_text:
+        return
+    try:
+        LedgerWriter().log_event(
+            "SPEECH_RENDERED",
+            {
+                "character_count": len(speak_text),
+                "source": "nova_speak",
+            },
+        )
+    except LedgerWriteFailed:
+        # Speech rendering is best-effort and should not raise to callers.
+        logger.debug("SPEECH_RENDERED ledger write failed")
+    except Exception:
+        logger.debug("Unexpected speech ledger error", exc_info=True)
     # Use audio task helper to avoid direct threading outside allowed files.
-    run_speech_task(lambda: SpeechRenderer().render(text))
+    run_speech_task(lambda: SpeechRenderer().render(speak_text))
 
 
 def resolve_speakable_text(action_result: Any) -> str:

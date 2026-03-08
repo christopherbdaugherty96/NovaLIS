@@ -14,6 +14,32 @@ class SystemControlExecutor:
     VK_VOLUME_UP = 0xAF
     KEYEVENTF_KEYUP = 0x0002
 
+    @staticmethod
+    def _allowed_path_roots() -> tuple[Path, ...]:
+        home = Path.home().resolve()
+        return (
+            home,
+            (home / "Documents").resolve(),
+            (home / "Downloads").resolve(),
+            (home / "Desktop").resolve(),
+            (home / "Pictures").resolve(),
+        )
+
+    @classmethod
+    def _is_allowed_path(cls, path: Path) -> bool:
+        try:
+            resolved = path.expanduser().resolve()
+        except Exception:
+            return False
+
+        for root in cls._allowed_path_roots():
+            try:
+                if resolved == root or resolved.is_relative_to(root):
+                    return True
+            except Exception:
+                continue
+        return False
+
     @classmethod
     def _send_windows_volume_key(cls, vk_code: int, presses: int = 1) -> bool:
         try:
@@ -72,6 +98,8 @@ class SystemControlExecutor:
 
     def open_path(self, path: Path) -> bool:
         try:
+            if not self._is_allowed_path(path):
+                return False
             system = platform.system()
             if system == "Windows":
                 os.startfile(str(path))  # type: ignore[attr-defined]

@@ -312,6 +312,7 @@ async def websocket_endpoint(ws: WebSocket):
 
     try:
         while True:
+            GovernorMediator.clear_stale_sessions()
             raw = await ws.receive_text()
             raw_bytes = raw.encode("utf-8")
             if len(raw_bytes) > WS_INPUT_MAX_BYTES:

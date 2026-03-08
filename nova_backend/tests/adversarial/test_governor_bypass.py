@@ -3,7 +3,20 @@ from __future__ import annotations
 from tests.adversarial._helpers import SRC_ROOT, read_text
 
 
-EXECUTOR_CONSTRUCTORS = ("WebSearchExecutor(", "WebpageLaunchExecutor(")
+EXECUTOR_CONSTRUCTORS = (
+    "WebSearchExecutor(",
+    "WebpageLaunchExecutor(",
+    "VolumeExecutor(",
+    "MediaExecutor(",
+    "BrightnessExecutor(",
+    "OpenFolderExecutor(",
+    "OSDiagnosticsExecutor(",
+    "MultiSourceReportingExecutor(",
+    "NewsIntelligenceExecutor(",
+    "StoryTrackerExecutor(",
+    "AnalysisDocumentExecutor(",
+    "ResponseVerificationExecutor(",
+)
 ALLOWED_EXECUTOR_CALLER = SRC_ROOT / "governor" / "governor.py"
 
 

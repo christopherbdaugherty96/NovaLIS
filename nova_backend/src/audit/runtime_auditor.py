@@ -308,6 +308,14 @@ def _derive_capability_governance_rows(registry: dict[str, Any]) -> list[dict[st
 
 def _skill_surface_rows() -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
+    registry = _load_registry()
+    governor_src = _safe_read(GOVERNOR_PATH)
+    network_mediated_ids = set(_network_mediated_capability_ids(governor_src))
+    capability_network_map = {
+        int(item.get("id")): ("yes" if int(item.get("id")) in network_mediated_ids else "no")
+        for item in registry.get("capabilities", [])
+        if item.get("id") is not None
+    }
 
     for path in sorted(SKILLS_DIR.glob("*.py")):
         src = _safe_read(path)
@@ -340,7 +348,7 @@ def _skill_surface_rows() -> list[dict[str, str]]:
             "name": "deepseek_bridge",
             "module": "src/conversation/deepseek_bridge.py",
             "surface_type": "conversation",
-            "network_usage": "unknown",
+            "network_usage": "no",
             "model_usage": "llm_gateway" if "generate_chat" in deepseek_src else ("ollama_direct" if "ollama.chat" in deepseek_src else "none"),
         }
     )
@@ -354,7 +362,7 @@ def _skill_surface_rows() -> list[dict[str, str]]:
                 "name": probe["group"],
                 "module": "src/governor/governor_mediator.py",
                 "surface_type": "governor_capability",
-                "network_usage": "unknown",
+                "network_usage": capability_network_map.get(int(probe["capability_id"]), "no"),
                 "model_usage": "none",
                 "capability_id": str(probe["capability_id"]),
             }
