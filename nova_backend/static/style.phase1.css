@@ -1,5 +1,5 @@
 /* =========================================================
-   NovaLIS — Phase-3 Dashboard Styles (FINAL)
+   NovaLIS - Phase-3 Dashboard Styles (FINAL)
    UI Contract: Presentation Only, No Cognitive Signaling
    ========================================================= */
 
@@ -352,7 +352,7 @@ html, body {
 }
 
 #btn-weather-update.updating::after {
-  content: "…";
+  content: "...";
   margin-left: 4px;
 }
 
@@ -526,7 +526,7 @@ html, body {
 }
 
 #btn-news.updating::after {
-  content: "…";
+  content: "...";
   margin-left: 4px;
 }
 
@@ -617,7 +617,7 @@ html, body {
 
 /* ================================
    MIC BUTTON VISUAL STATES (PTT)
-   Phase-3 STT – UI ONLY (DORMANT)
+   Phase-3 STT - UI ONLY (DORMANT)
    ================================ */
 
 #ptt-btn.mic-idle { 
@@ -1111,3 +1111,4 @@ html, body {
     flex: 1 1 calc(33% - 8px);
   }
 }
+

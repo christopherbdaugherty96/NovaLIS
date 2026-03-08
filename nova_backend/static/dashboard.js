@@ -23,7 +23,8 @@ let trustState = {
   consecutiveFailures: 0,
 };
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = `${window.location.protocol}//${window.location.host}`;
+const WS_BASE = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`;
 const STORAGE_KEYS = {
   firstRunDone: "nova_first_run_done",
   quickActions: "nova_quick_actions",
@@ -879,7 +880,7 @@ function stopSTT() {
 }
 
 function connectWebSocket() {
-  ws = new WebSocket("ws://127.0.0.1:8000/ws");
+  ws = new WebSocket(`${WS_BASE}/ws`);
 
   ws.onopen = () => {
     safeWSSend({ text: "weather" });

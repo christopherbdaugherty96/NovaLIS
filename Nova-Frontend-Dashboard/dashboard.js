@@ -15,8 +15,16 @@ let morningState = {
   system: "Loading...",
   calendar: "Coming soon",
 };
+let trustState = {
+  mode: "Local-only",
+  lastExternalCall: "None",
+  dataEgress: "Read-only requests only",
+  failureState: "Normal",
+  consecutiveFailures: 0,
+};
 
-const API_BASE = "http://127.0.0.1:8000";
+const API_BASE = `${window.location.protocol}//${window.location.host}`;
+const WS_BASE = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`;
 const STORAGE_KEYS = {
   firstRunDone: "nova_first_run_done",
   quickActions: "nova_quick_actions",
@@ -37,8 +45,12 @@ const COMMAND_SUGGESTIONS = [
   "weather",
   "news",
   "morning brief",
+  "summarize all headlines",
+  "update tracked stories",
+  "show relationship graph",
   "search for local weather alerts",
   "open github",
+  "open documents",
   "system status",
   "speak that",
   "volume up",
@@ -51,13 +63,20 @@ const HELP_EXAMPLES = [
   "weather",
   "news",
   "morning brief",
+  "summarize all headlines",
+  "track story AI regulation",
+  "update tracked stories",
   "search for eclipse dates",
   "open youtube",
+  "open documents",
   "system check",
   "speak that",
   "set volume 40",
   "set brightness 50",
 ];
+const LONG_MESSAGE_CHAR_LIMIT = 280;
+const LONG_MESSAGE_LINE_LIMIT = 4;
+const LONG_MESSAGE_SENTENCE_LIMIT = 2;
 
 function $(id) { return document.getElementById(id); }
 function clear(el) { if (el) el.innerHTML = ""; }
@@ -103,6 +122,76 @@ function renderMorningPanel() {
   if (news) news.textContent = morningState.news;
   if (system) system.textContent = morningState.system;
   if (calendar) calendar.textContent = morningState.calendar;
+}
+
+function renderTrustPanel() {
+  const mode = $("trust-mode");
+  const lastCall = $("trust-last-call");
+  const egress = $("trust-egress");
+  const failure = $("trust-failure");
+  if (mode) mode.textContent = trustState.mode;
+  if (lastCall) lastCall.textContent = trustState.lastExternalCall;
+  if (egress) egress.textContent = trustState.dataEgress;
+  if (failure) failure.textContent = trustState.failureState;
+}
+
+function markExternalCall(label) {
+  const now = new Date();
+  const ts = now.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+  trustState.mode = "Online";
+  trustState.lastExternalCall = `${label} at ${ts}`;
+  trustState.dataEgress = "Read-only external request";
+  trustState.consecutiveFailures = 0;
+  trustState.failureState = "Normal";
+  renderTrustPanel();
+}
+
+function markLocalMode() {
+  if (trustState.mode !== "Online") {
+    trustState.mode = "Local-only";
+    trustState.dataEgress = "No external call in this step";
+    renderTrustPanel();
+  }
+}
+
+function markFailure(reason = "Temporary issue") {
+  trustState.consecutiveFailures += 1;
+  if (trustState.consecutiveFailures >= 3) {
+    trustState.failureState = "Offline-safe mode";
+    trustState.mode = "Local-only";
+    trustState.dataEgress = "External calls paused after repeated failures";
+  } else if (trustState.consecutiveFailures >= 2) {
+    trustState.failureState = "Degraded";
+  } else {
+    trustState.failureState = reason;
+  }
+  renderTrustPanel();
+}
+
+function markRecovered() {
+  if (trustState.consecutiveFailures > 0) {
+    trustState.consecutiveFailures = 0;
+    trustState.failureState = "Recovered";
+    renderTrustPanel();
+    setTimeout(() => {
+      trustState.failureState = "Normal";
+      renderTrustPanel();
+    }, 1500);
+  }
+}
+
+function maybeMarkReactiveFailureFromText(text) {
+  const msg = (text || "").toLowerCase();
+  const failed = (
+    msg.includes("timed out") ||
+    msg.includes("temporarily unavailable") ||
+    msg.includes("network issue") ||
+    msg.includes("couldn't complete") ||
+    msg.includes("can't do that right now")
+  );
+  if (failed) {
+    markFailure("Temporary issue");
+  }
 }
 
 function getSelectedQuickActions() {
@@ -165,16 +254,291 @@ function appendConfidenceBadge(container, label) {
   container.appendChild(badge);
 }
 
-function appendAssistantActions(parent, text) {
+function shouldCollapseMessage(text) {
+  const raw = String(text || "");
+  if (!raw.trim()) return false;
+  const lines = raw.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  return raw.length > LONG_MESSAGE_CHAR_LIMIT || lines.length > LONG_MESSAGE_LINE_LIMIT;
+}
+
+function buildMessagePreview(text) {
+  const raw = String(text || "").trim();
+  if (!raw) return "";
+
+  const paragraphLines = raw.split(/\r?\n/).filter((line) => line.trim().length > 0);
+  if (paragraphLines.length > 1) {
+    const previewLines = paragraphLines.slice(0, 2).join("\n");
+    if (previewLines.length > LONG_MESSAGE_CHAR_LIMIT) {
+      return `${previewLines.slice(0, LONG_MESSAGE_CHAR_LIMIT - 3).trimEnd()}...`;
+    }
+    return `${previewLines.trimEnd()}...`;
+  }
+
+  const normalized = raw.replace(/\s+/g, " ").trim();
+  const sentences = normalized.split(/(?<=[.!?])\s+/).filter(Boolean);
+  const shortBySentence = sentences.slice(0, LONG_MESSAGE_SENTENCE_LIMIT).join(" ").trim();
+  if (shortBySentence && shortBySentence.length >= 60) {
+    if (shortBySentence.length > LONG_MESSAGE_CHAR_LIMIT) {
+      return `${shortBySentence.slice(0, LONG_MESSAGE_CHAR_LIMIT - 3).trimEnd()}...`;
+    }
+    return shortBySentence.endsWith("...") ? shortBySentence : `${shortBySentence}...`;
+  }
+
+  return `${normalized.slice(0, LONG_MESSAGE_CHAR_LIMIT - 3).trimEnd()}...`;
+}
+
+function parseStructuredReport(text) {
+  const raw = String(text || "").trim();
+  if (!raw) return null;
+
+  const isReport =
+    raw.startsWith("NOVA MULTI-SOURCE REPORT") ||
+    raw.startsWith("NOVA INTELLIGENCE BRIEF");
+  if (!isReport) return null;
+
+  const lines = raw.split(/\r?\n/);
+  const title = lines[0].trim();
+  const sections = [];
+  let current = null;
+
+  const sectionHeaders = new Set([
+    "Strategic Snapshot",
+    "Top Findings",
+    "Cross-Story Insight",
+    "Cross-Story Insights",
+    "Sources",
+    "Confidence",
+    "Narrative Threads",
+    "Topic Clusters",
+    "Detailed Story Briefs",
+    "Analyst Note",
+  ]);
+
+  for (let i = 1; i < lines.length; i += 1) {
+    const line = lines[i].trim();
+    if (!line || /^-+$/.test(line)) continue;
+    if (sectionHeaders.has(line)) {
+      if (current) sections.push(current);
+      current = { heading: line, rows: [] };
+      continue;
+    }
+    if (!current) {
+      current = { heading: "Overview", rows: [] };
+    }
+    current.rows.push(line);
+  }
+  if (current) sections.push(current);
+  return { title, sections };
+}
+
+function renderStructuredReport(container, report) {
+  const wrap = document.createElement("div");
+  wrap.className = "structured-report";
+
+  const title = document.createElement("div");
+  title.className = "structured-report-title";
+  title.textContent = report.title;
+  wrap.appendChild(title);
+
+  report.sections.forEach((section) => {
+    const card = document.createElement("div");
+    card.className = "structured-section";
+
+    const h = document.createElement("div");
+    h.className = "structured-section-heading";
+    h.textContent = section.heading;
+    card.appendChild(h);
+
+    const list = document.createElement("div");
+    list.className = "structured-section-body";
+    section.rows.forEach((row) => {
+      const p = document.createElement("div");
+      p.className = "structured-row";
+      p.textContent = row;
+      list.appendChild(p);
+    });
+    card.appendChild(list);
+    wrap.appendChild(card);
+  });
+
+  container.appendChild(wrap);
+}
+
+function isOperationalMessage(text) {
+  const msg = (text || "").toLowerCase();
+  return (
+    msg.includes("opened ") ||
+    msg.includes("opened path:") ||
+    msg.includes("system diagnostics") ||
+    msg.includes("system status") ||
+    msg.includes("volume ")
+  );
+}
+
+function deriveSuggestedActions(text) {
+  const msg = (text || "").toLowerCase();
+
+  if (!msg.trim()) return [];
+  if (isOperationalMessage(text)) return [];
+
+  if (msg.includes("intelligence brief") || msg.includes("daily situation overview") || msg.includes("executive brief")) {
+    return [
+      { label: "Deeper analysis", command: "Analyze the top story in more depth." },
+      { label: "Related stories", command: "Show related stories for the top headline." },
+      { label: "Short summary", command: "Summarize this brief in 3 bullets." },
+    ];
+  }
+
+  if (msg.includes("weather")) {
+    return [
+      { label: "Forecast", command: "Show weather forecast." },
+      { label: "Morning brief", command: "Morning brief." },
+      { label: "News", command: "news" },
+    ];
+  }
+
+  if (msg.includes("not sure what you'd like me to do")) {
+    return [
+      { label: "Show brief", command: "brief" },
+      { label: "Search web", command: "search for " },
+      { label: "System status", command: "system status" },
+    ];
+  }
+
+  if (msg.includes("news") || msg.includes("headline")) {
+    return [
+      { label: "Summarize all", command: "summarize all headlines" },
+      { label: "Story tracker", command: "update tracked stories" },
+      { label: "Compare stories", command: "compare stories ai regulation and semiconductor export controls" },
+    ];
+  }
+
+  return [
+    { label: "Brief", command: "brief" },
+    { label: "Weather", command: "weather" },
+    { label: "News", command: "news" },
+  ];
+}
+
+function renderSuggestedActions(parent, suggestions) {
+  if (!Array.isArray(suggestions) || suggestions.length === 0) return;
+
+  const row = document.createElement("div");
+  row.className = "assistant-actions";
+
+  suggestions.slice(0, 3).forEach((item) => {
+    if (!item || !item.command || !item.label) return;
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "assistant-action-btn";
+    b.textContent = item.label;
+    b.addEventListener("click", () => injectUserText(item.command, "text"));
+    row.appendChild(b);
+  });
+
+  if (row.childElementCount > 0) {
+    parent.appendChild(row);
+  }
+}
+
+function ensurePinnedSection(chat) {
+  let section = $("pinned-messages");
+  if (section) return section;
+  section = document.createElement("div");
+  section.id = "pinned-messages";
+  section.className = "pinned-messages";
+  section.style.display = "none";
+  chat.insertBefore(section, chat.firstChild);
+  return section;
+}
+
+function refreshPinnedVisibility() {
+  const section = $("pinned-messages");
+  if (!section) return;
+  section.style.display = section.childElementCount > 0 ? "block" : "none";
+}
+
+function addMessageUtilities(messageEl, text) {
+  const row = document.createElement("div");
+  row.className = "message-utilities";
+
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.className = "message-utility-btn";
+  copyBtn.textContent = "Copy";
+  copyBtn.addEventListener("click", async () => {
+    const payload = String(text || "").trim();
+    if (!payload) return;
+    try {
+      await navigator.clipboard.writeText(payload);
+      copyBtn.textContent = "Copied";
+      setTimeout(() => { copyBtn.textContent = "Copy"; }, 1200);
+    } catch (_) {
+      copyBtn.textContent = "Copy failed";
+      setTimeout(() => { copyBtn.textContent = "Copy"; }, 1200);
+    }
+  });
+  row.appendChild(copyBtn);
+
+  const pinBtn = document.createElement("button");
+  pinBtn.type = "button";
+  pinBtn.className = "message-utility-btn";
+  pinBtn.textContent = "Pin";
+  pinBtn.setAttribute("aria-pressed", "false");
+  pinBtn.addEventListener("click", () => {
+    const chat = $("chat-log");
+    if (!chat) return;
+    const pinnedSection = ensurePinnedSection(chat);
+    const pinned = messageEl.dataset.pinned === "true";
+    if (pinned) {
+      messageEl.dataset.pinned = "false";
+      messageEl.classList.remove("chat-pinned");
+      pinBtn.textContent = "Pin";
+      pinBtn.setAttribute("aria-pressed", "false");
+      chat.appendChild(messageEl);
+    } else {
+      messageEl.dataset.pinned = "true";
+      messageEl.classList.add("chat-pinned");
+      pinBtn.textContent = "Unpin";
+      pinBtn.setAttribute("aria-pressed", "true");
+      pinnedSection.appendChild(messageEl);
+    }
+    refreshPinnedVisibility();
+    chat.scrollTop = chat.scrollHeight;
+  });
+  row.appendChild(pinBtn);
+
+  messageEl.appendChild(row);
+}
+
+function appendAssistantActions(parent, text, suggestedActions = null) {
+  const operational = isOperationalMessage(text);
+  const suggestions = Array.isArray(suggestedActions) && suggestedActions.length
+    ? suggestedActions
+    : deriveSuggestedActions(text);
+  renderSuggestedActions(parent, suggestions);
+
+  if (operational) {
+    const row = document.createElement("div");
+    row.className = "assistant-actions";
+    const repeatBtn = document.createElement("button");
+    repeatBtn.type = "button";
+    repeatBtn.className = "assistant-action-btn";
+    repeatBtn.textContent = "Repeat";
+    repeatBtn.addEventListener("click", () => injectUserText("Please repeat that.", "text"));
+    row.appendChild(repeatBtn);
+    parent.appendChild(row);
+    return;
+  }
+
   const row = document.createElement("div");
   row.className = "assistant-actions";
 
   const actions = [
     { label: "Repeat", fn: () => injectUserText("Please repeat that.", "text") },
-    { label: "Shorter", fn: () => injectUserText("Please give a shorter version of your last response.", "text") },
     { label: "Show sources", fn: () => injectUserText("Show sources for your last response.", "text") },
-    { label: "Do next step", fn: () => injectUserText(`What is the next step for: ${text.slice(0, 120)}`, "text") },
   ];
+  actions.splice(1, 0, { label: "Shorter", fn: () => injectUserText("Please give a shorter version of your last response.", "text") });
 
   actions.forEach((item) => {
     const b = document.createElement("button");
@@ -188,16 +552,45 @@ function appendAssistantActions(parent, text) {
   parent.appendChild(row);
 }
 
-function appendChatMessage(role, text, messageId = null, confidence = "") {
+function appendChatMessage(role, text, messageId = null, confidence = "", suggestedActions = null) {
   const chat = $("chat-log");
   if (!chat) return;
 
   const div = document.createElement("div");
   div.className = `chat-${role}`;
 
-  const textNode = document.createElement("span");
-  textNode.textContent = text;
-  div.appendChild(textNode);
+  const msgText = String(text || "");
+  const structured = role === "assistant" ? parseStructuredReport(msgText) : null;
+  if (structured) {
+    renderStructuredReport(div, structured);
+  } else {
+    const textNode = document.createElement("span");
+    if (role === "assistant" && shouldCollapseMessage(msgText)) {
+      const preview = buildMessagePreview(msgText);
+      textNode.textContent = preview;
+      textNode.dataset.fullText = msgText;
+      textNode.dataset.previewText = preview;
+      textNode.dataset.expanded = "false";
+      div.appendChild(textNode);
+
+      const expandBtn = document.createElement("button");
+      expandBtn.type = "button";
+      expandBtn.className = "message-expand-btn";
+      expandBtn.textContent = "Show more";
+      expandBtn.setAttribute("aria-expanded", "false");
+      expandBtn.addEventListener("click", () => {
+        const expanded = textNode.dataset.expanded === "true";
+        textNode.textContent = expanded ? textNode.dataset.previewText : textNode.dataset.fullText;
+        textNode.dataset.expanded = expanded ? "false" : "true";
+        expandBtn.textContent = expanded ? "Show more" : "Show less";
+        expandBtn.setAttribute("aria-expanded", expanded ? "false" : "true");
+      });
+      div.appendChild(expandBtn);
+    } else {
+      textNode.textContent = msgText;
+      div.appendChild(textNode);
+    }
+  }
 
   if (confidence && role === "assistant") {
     appendConfidenceBadge(div, confidence);
@@ -219,7 +612,8 @@ function appendChatMessage(role, text, messageId = null, confidence = "") {
   }
 
   if (role === "assistant") {
-    appendAssistantActions(div, text || "");
+    addMessageUtilities(div, msgText);
+    appendAssistantActions(div, text || "", suggestedActions);
   }
 
   chat.appendChild(div);
@@ -321,7 +715,8 @@ function renderNewsWidget(items, summaryText = "") {
 
     const a = document.createElement("a");
     a.href = item.url;
-    a.textContent = item.title;
+    const sourceLabel = (item.source || "").trim();
+    a.textContent = sourceLabel ? `[${sourceLabel}] ${item.title}` : item.title;
     a.target = "_blank";
     a.rel = "noopener noreferrer";
     li.appendChild(a);
@@ -332,13 +727,6 @@ function renderNewsWidget(items, summaryText = "") {
       domainBadge.className = "domain-badge";
       domainBadge.textContent = domain;
       li.appendChild(domainBadge);
-    }
-
-    if (item.source) {
-      const src = document.createElement("span");
-      src.className = "news-source";
-      src.textContent = ` ${item.source}`;
-      li.appendChild(src);
     }
 
     const conf = document.createElement("span");
@@ -492,7 +880,7 @@ function stopSTT() {
 }
 
 function connectWebSocket() {
-  ws = new WebSocket("ws://127.0.0.1:8000/ws");
+  ws = new WebSocket(`${WS_BASE}/ws`);
 
   ws.onopen = () => {
     safeWSSend({ text: "weather" });
@@ -521,7 +909,22 @@ function connectWebSocket() {
         renderMorningPanel();
         break;
       case "chat":
-        appendChatMessage("assistant", msg.message, msg.message_id || null, "Advisory");
+        appendChatMessage(
+          "assistant",
+          msg.message,
+          msg.message_id || null,
+          msg.confidence || "",
+          msg.suggested_actions || null
+        );
+        break;
+      case "trust_status":
+        if (msg.data && typeof msg.data === "object") {
+          trustState.mode = msg.data.mode || trustState.mode;
+          trustState.lastExternalCall = msg.data.last_external_call || trustState.lastExternalCall;
+          trustState.dataEgress = msg.data.data_egress || trustState.dataEgress;
+          trustState.failureState = msg.data.failure_state || trustState.failureState;
+          renderTrustPanel();
+        }
         break;
       case "chat_done":
         waitingForAssistant = false;
@@ -851,6 +1254,7 @@ window.addEventListener("DOMContentLoaded", () => {
   injectUtilityButtons();
   ensureDatalist();
   renderMorningPanel();
+  renderTrustPanel();
   renderQuickActions();
   connectWebSocket();
   showFirstRunGuideIfNeeded();

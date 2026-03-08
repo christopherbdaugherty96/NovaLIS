@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from .conversation_simulator import ConversationTranscript, run_simulation
+from .analytics import build_run_metadata
 
 
 def load_script(path: str | Path) -> list[str]:
@@ -24,8 +25,8 @@ def load_script(path: str | Path) -> list[str]:
     return [line for line in lines if line and not line.startswith("#")]
 
 
-def run_script(script: list[str]) -> ConversationTranscript:
-    return run_simulation(script)
+def run_script(script: list[str], *, include_trace: bool = False) -> ConversationTranscript:
+    return run_simulation(script, include_trace=include_trace)
 
 
 def load_scenario_library(directory: str | Path) -> list[dict[str, Any]]:
@@ -68,18 +69,58 @@ def transcript_to_dict(transcript: ConversationTranscript) -> dict[str, Any]:
                 "user_message": turn.user_message,
                 "nova_response": turn.nova_response,
                 "capability_triggered": turn.capability_triggered,
+                "capability_executor": turn.capability_executor,
                 "governor_decision": turn.governor_decision,
                 "execution_time_ms": turn.execution_time_ms,
                 "errors": list(turn.errors),
+                "trace_id": turn.trace_id,
+                "trace_steps": list(turn.trace_steps),
             }
             for turn in transcript.turns
         ]
     }
 
 
-def export_transcript_json(transcript: ConversationTranscript, path: str | Path) -> Path:
+def build_run_record(
+    transcript: ConversationTranscript,
+    *,
+    scenario: str = "",
+    profile: str = "simulation",
+    passed: bool = True,
+    repo_root: str | Path | None = None,
+) -> dict[str, Any]:
+    transcript_payload = transcript_to_dict(transcript)
+    turns = transcript_payload.get("turns", [])
+    return {
+        "run_metadata": build_run_metadata(
+            scenario=scenario,
+            profile=profile,
+            passed=passed,
+            total_turns=len(turns),
+            repo_root=repo_root,
+        ),
+        "transcript": transcript_payload,
+    }
+
+
+def export_transcript_json(
+    transcript: ConversationTranscript,
+    path: str | Path,
+    *,
+    scenario: str = "",
+    profile: str = "simulation",
+    passed: bool = True,
+    repo_root: str | Path | None = None,
+) -> Path:
     out_path = Path(path)
-    out_path.write_text(json.dumps(transcript_to_dict(transcript), indent=2), encoding="utf-8")
+    run_record = build_run_record(
+        transcript,
+        scenario=scenario,
+        profile=profile,
+        passed=passed,
+        repo_root=repo_root,
+    )
+    out_path.write_text(json.dumps(run_record, indent=2), encoding="utf-8")
     return out_path
 
 
@@ -89,6 +130,6 @@ def print_transcript(transcript: ConversationTranscript) -> None:
         print(f"[{idx}] USER: {turn.user_message}")
         print(f"    NOVA: {turn.nova_response}")
         print(
-            f"    META: {cap} decision={turn.governor_decision} "
+            f"    META: {cap} executor={turn.capability_executor or 'n/a'} decision={turn.governor_decision} "
             f"latency_ms={turn.execution_time_ms:.3f} errors={turn.errors}"
         )
