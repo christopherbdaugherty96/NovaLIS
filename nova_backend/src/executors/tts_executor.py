@@ -26,6 +26,15 @@ class TTSEngine:
         cls._engine.say(text)
         cls._engine.runAndWait()
 
+    @classmethod
+    def stop(cls) -> None:
+        if cls._engine is None:
+            return
+        try:
+            cls._engine.stop()
+        except Exception:
+            return
+
 
 def execute_tts(req, action_result_cls=ActionResult) -> ActionResult:
     text = (req.params or {}).get("text", "")
@@ -34,7 +43,7 @@ def execute_tts(req, action_result_cls=ActionResult) -> ActionResult:
     if not text:
         log.warning("TTS called with empty text")
         return action_result_cls.failure(
-            "I don’t have anything to speak.",
+            "I don't have anything to speak.",
             request_id=req.request_id,
         )
 
@@ -42,7 +51,7 @@ def execute_tts(req, action_result_cls=ActionResult) -> ActionResult:
         speak_text = SpeechFormatter().format_for_tts(text)
         if not speak_text:
             return action_result_cls.failure(
-                "I don’t have anything to speak.",
+                "I don't have anything to speak.",
                 request_id=req.request_id,
             )
 

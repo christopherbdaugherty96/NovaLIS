@@ -268,19 +268,19 @@ def _derive_capability_governance_rows(registry: dict[str, Any]) -> list[dict[st
 
         if cid == 18:
             authority_class = "speech_output"
-            execution_surface = "Governor â†’ Speech"
+            execution_surface = "Governor -> Speech"
         elif confirmation_required:
             authority_class = "confirm_required"
-            execution_surface = "Governor â†’ Executor"
+            execution_surface = "Governor -> Executor"
         elif network_access:
             authority_class = "read_only"
-            execution_surface = "Governor â†’ NetworkMediator"
+            execution_surface = "Governor -> NetworkMediator"
         elif capability.get("data_exfiltration") is True:
             authority_class = "read_only"
-            execution_surface = "Governor â†’ Executor"
+            execution_surface = "Governor -> Executor"
         else:
             authority_class = "system_action"
-            execution_surface = "Governor â†’ Executor"
+            execution_surface = "Governor -> Executor"
 
         rows.append(
             {
@@ -896,27 +896,27 @@ def render_governance_matrix_tree_markdown(registry: dict[str, Any]) -> str:
     for module in llm_gateway_users:
         key = module.replace("/", "_").replace(".", "_")
         lines.append(f"  LLM --> {key}[{module} uses llm_gateway.generate_chat]")
-    lines.extend(["```", "", "```text", "Runtime", f"â”œâ”€ Enabled IDs: {enabled}", f"â”œâ”€ Disabled IDs: {disabled}", "â”œâ”€ Governor Guards"])
+    lines.extend(["```", "", "```text", "Runtime", f"|- Enabled IDs: {enabled}", f"|- Disabled IDs: {disabled}", "|- Governor Guards"])
     lines.extend(
         [
-            f"â”‚  â”œâ”€ execution_gate: {enforcement['execution_gate_enabled']}",
-            f"â”‚  â”œâ”€ single_action_queue: {enforcement['single_action_queue_enforced']}",
-            "â”‚  â”œâ”€ ledger_allowlist: True",
-            f"â”‚  â”œâ”€ dns_rebinding_guard: {enforcement['dns_rebinding_protection_active']}",
-            f"â”‚  â””â”€ timeout_guard: {enforcement['execution_timeout_guard_active']}",
-            "â”œâ”€ Capabilities",
+            f"|  |- execution_gate: {enforcement['execution_gate_enabled']}",
+            f"|  |- single_action_queue: {enforcement['single_action_queue_enforced']}",
+            "|  |- ledger_allowlist: True",
+            f"|  |- dns_rebinding_guard: {enforcement['dns_rebinding_protection_active']}",
+            f"|  |- timeout_guard: {enforcement['execution_timeout_guard_active']}",
+            "|- Capabilities",
         ]
     )
     for row in rows:
         lines.append(
-            f"â”‚  â”œâ”€ {row['id']} {row['name']} (authority={row['authority_class']}, risk={row['risk_level']}, network={row['network_access']}, exfil={row['data_exfiltration']}, confirm={row['confirmation_required']}, surface={row['execution_surface']})"
+            f"|  |- {row['id']} {row['name']} (authority={row['authority_class']}, risk={row['risk_level']}, network={row['network_access']}, exfil={row['data_exfiltration']}, confirm={row['confirmation_required']}, surface={row['execution_surface']})"
         )
-    lines.append("â”œâ”€ Skill â†’ capability routes")
+    lines.append("|- Skill -> capability routes")
     for route in skill_routes:
-        lines.append(f"â”‚  â”œâ”€ {route['name']} -> {route['capability_id']}")
-    lines.append("â””â”€ Conversation/model surfaces")
+        lines.append(f"|  |- {route['name']} -> {route['capability_id']}")
+    lines.append("|- Conversation/model surfaces")
     for module in llm_gateway_users:
-        lines.append(f"   â”œâ”€ {module} -> llm_gateway.generate_chat")
+        lines.append(f"   |- {module} -> llm_gateway.generate_chat")
     lines.append("```")
     lines.append("")
     return "\n".join(lines)
@@ -983,7 +983,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         "## Runtime Governance Spine",
         "",
         "Execution Authority Model:",
-        "User -> GovernorMediator -> Governor -> CapabilityRegistry -> ExecuteBoundary -> Executor",
+        "User -> GovernorMediator -> Governor -> CapabilityRegistry -> SingleActionQueue -> LedgerWriter -> ExecuteBoundary -> Executor",
         "",
         "Components:",
         "",

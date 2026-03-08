@@ -15,37 +15,37 @@ graph TD
   Gov --> TO[timeout_guard: True]
   Runtime --> Caps[Capabilities]
   Caps --> C16[16:governed_web_search]
-  C16 --> C16A[authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor â†’ NetworkMediator]
+  C16 --> C16A[authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator]
   Caps --> C17[17:open_website]
-  C17 --> C17A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  C17 --> C17A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Caps --> C18[18:speak_text]
-  C18 --> C18A[authority=speech_output, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Speech]
+  C18 --> C18A[authority=speech_output, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Speech]
   Caps --> C19[19:volume_up_down]
-  C19 --> C19A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  C19 --> C19A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Caps --> C20[20:media_play_pause]
-  C20 --> C20A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  C20 --> C20A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Caps --> C21[21:brightness_control]
-  C21 --> C21A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  C21 --> C21A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Caps --> C22[22:open_file_folder]
-  C22 --> C22A[authority=confirm_required, risk=confirm, network=False, exfil=False, confirm=True, surface=Governor â†’ Executor]
+  C22 --> C22A[authority=confirm_required, risk=confirm, network=False, exfil=False, confirm=True, surface=Governor -> Executor]
   Caps --> C31[31:response_verification]
-  C31 --> C31A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  C31 --> C31A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Caps --> C32[32:os_diagnostics]
-  C32 --> C32A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  C32 --> C32A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Caps --> C48[48:multi_source_reporting]
-  C48 --> C48A[authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor â†’ NetworkMediator]
+  C48 --> C48A[authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator]
   Caps --> C49[49:headline_summary]
-  C49 --> C49A[authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor â†’ NetworkMediator]
+  C49 --> C49A[authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator]
   Caps --> C50[50:intelligence_brief]
-  C50 --> C50A[authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor â†’ NetworkMediator]
+  C50 --> C50A[authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator]
   Caps --> C51[51:topic_memory_map]
-  C51 --> C51A[authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor â†’ NetworkMediator]
+  C51 --> C51A[authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator]
   Caps --> C52[52:story_tracker_update]
-  C52 --> C52A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  C52 --> C52A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Caps --> C53[53:story_tracker_view]
-  C53 --> C53A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  C53 --> C53A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Caps --> C54[54:analysis_document]
-  C54 --> C54A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  C54 --> C54A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Runtime --> Routes[Skill Routes]
   Routes --> R54_analysis_document[analysis_document -> capability 54]
   Routes --> R32_diagnostics[diagnostics -> capability 32]
@@ -68,47 +68,47 @@ graph TD
 
 ```text
 Runtime
-â”œâ”€ Enabled IDs: [16, 17, 18, 19, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54]
-â”œâ”€ Disabled IDs: [20, 21]
-â”œâ”€ Governor Guards
-â”‚  â”œâ”€ execution_gate: True
-â”‚  â”œâ”€ single_action_queue: True
-â”‚  â”œâ”€ ledger_allowlist: True
-â”‚  â”œâ”€ dns_rebinding_guard: True
-â”‚  â””â”€ timeout_guard: True
-â”œâ”€ Capabilities
-â”‚  â”œâ”€ 16 governed_web_search (authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor â†’ NetworkMediator)
-â”‚  â”œâ”€ 17 open_website (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
-â”‚  â”œâ”€ 18 speak_text (authority=speech_output, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Speech)
-â”‚  â”œâ”€ 19 volume_up_down (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
-â”‚  â”œâ”€ 20 media_play_pause (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
-â”‚  â”œâ”€ 21 brightness_control (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
-â”‚  â”œâ”€ 22 open_file_folder (authority=confirm_required, risk=confirm, network=False, exfil=False, confirm=True, surface=Governor â†’ Executor)
-â”‚  â”œâ”€ 31 response_verification (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
-â”‚  â”œâ”€ 32 os_diagnostics (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
-â”‚  â”œâ”€ 48 multi_source_reporting (authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor â†’ NetworkMediator)
-â”‚  â”œâ”€ 49 headline_summary (authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor â†’ NetworkMediator)
-â”‚  â”œâ”€ 50 intelligence_brief (authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor â†’ NetworkMediator)
-â”‚  â”œâ”€ 51 topic_memory_map (authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor â†’ NetworkMediator)
-â”‚  â”œâ”€ 52 story_tracker_update (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
-â”‚  â”œâ”€ 53 story_tracker_view (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
-â”‚  â”œâ”€ 54 analysis_document (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
-â”œâ”€ Skill â†’ capability routes
-â”‚  â”œâ”€ analysis_document -> 54
-â”‚  â”œâ”€ diagnostics -> 32
-â”‚  â”œâ”€ headline_summary -> 49
-â”‚  â”œâ”€ intelligence_brief -> 50
-â”‚  â”œâ”€ open_folder -> 22
-â”‚  â”œâ”€ open_website -> 17
-â”‚  â”œâ”€ report -> 48
-â”‚  â”œâ”€ response_verification -> 31
-â”‚  â”œâ”€ search -> 48
-â”‚  â”œâ”€ speak -> 18
-â”‚  â”œâ”€ story_tracker_update -> 52
-â”‚  â”œâ”€ story_tracker_view -> 53
-â”‚  â”œâ”€ topic_memory_map -> 51
-â”‚  â”œâ”€ volume -> 19
-â””â”€ Conversation/model surfaces
-   â”œâ”€ src/conversation/deepseek_bridge.py -> llm_gateway.generate_chat
-   â”œâ”€ src/skills/general_chat.py -> llm_gateway.generate_chat
+|- Enabled IDs: [16, 17, 18, 19, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54]
+|- Disabled IDs: [20, 21]
+|- Governor Guards
+|  |- execution_gate: True
+|  |- single_action_queue: True
+|  |- ledger_allowlist: True
+|  |- dns_rebinding_guard: True
+|  |- timeout_guard: True
+|- Capabilities
+|  |- 16 governed_web_search (authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 17 open_website (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 18 speak_text (authority=speech_output, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Speech)
+|  |- 19 volume_up_down (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 20 media_play_pause (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 21 brightness_control (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 22 open_file_folder (authority=confirm_required, risk=confirm, network=False, exfil=False, confirm=True, surface=Governor -> Executor)
+|  |- 31 response_verification (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 32 os_diagnostics (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 48 multi_source_reporting (authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 49 headline_summary (authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 50 intelligence_brief (authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 51 topic_memory_map (authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 52 story_tracker_update (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 53 story_tracker_view (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 54 analysis_document (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|- Skill -> capability routes
+|  |- analysis_document -> 54
+|  |- diagnostics -> 32
+|  |- headline_summary -> 49
+|  |- intelligence_brief -> 50
+|  |- open_folder -> 22
+|  |- open_website -> 17
+|  |- report -> 48
+|  |- response_verification -> 31
+|  |- search -> 48
+|  |- speak -> 18
+|  |- story_tracker_update -> 52
+|  |- story_tracker_view -> 53
+|  |- topic_memory_map -> 51
+|  |- volume -> 19
+|- Conversation/model surfaces
+   |- src/conversation/deepseek_bridge.py -> llm_gateway.generate_chat
+   |- src/skills/general_chat.py -> llm_gateway.generate_chat
 ```

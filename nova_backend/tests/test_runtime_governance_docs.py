@@ -76,5 +76,5 @@ def test_derived_fields_do_not_crash_with_missing_optional_reads(monkeypatch):
 
     assert len(rows) == 1
     assert "authority_class" in rows[0]
-    assert rows[0]["execution_surface"] in {"Governor â†’ Executor", "Governor â†’ Speech", "Governor â†’ NetworkMediator"}
+    assert rows[0]["execution_surface"] in {"Governor -> Executor", "Governor -> Speech", "Governor -> NetworkMediator"}
 

@@ -6,7 +6,7 @@ import threading
 from collections import defaultdict
 from time import time
 from typing import Dict, Any, Optional
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urljoin
 
 import requests
 
@@ -17,6 +17,7 @@ NETWORK_TIMEOUT = 5  # seconds (default)
 ALLOWED_SCHEMES = {"http", "https"}
 DISALLOWED_HOSTS = {"localhost", "127.0.0.1", "::1"}
 RATE_LIMIT_PER_MINUTE = 50
+MAX_REDIRECT_HOPS = 5
 
 
 class NetworkMediator:
@@ -143,16 +144,32 @@ class NetworkMediator:
 
         # 3) Request execution
         req_timeout = float(timeout) if timeout is not None else NETWORK_TIMEOUT
+        current_url = url
         try:
-            response = requests.request(
-                method=method.upper(),
-                url=url,
-                params=params,
-                json=json_payload,
-                headers=headers,
-                timeout=req_timeout,
-            )
-            response.raise_for_status()
+            response = None
+            for _ in range(MAX_REDIRECT_HOPS + 1):
+                self._validate_url(current_url)
+                response = requests.request(
+                    method=method.upper(),
+                    url=current_url,
+                    params=params,
+                    json=json_payload,
+                    headers=headers,
+                    timeout=req_timeout,
+                    allow_redirects=False,
+                )
+
+                if response.is_redirect or response.is_permanent_redirect:
+                    location = response.headers.get("Location")
+                    if not location:
+                        raise NetworkMediatorError("Redirect response missing Location header.")
+                    current_url = urljoin(current_url, location)
+                    continue
+
+                response.raise_for_status()
+                break
+            else:
+                raise NetworkMediatorError("Too many redirects.")
         except requests.RequestException as e:
             self.ledger.log_event(
                 "NETWORK_CALL_FAILED",
@@ -186,7 +203,8 @@ class NetworkMediator:
             "EXTERNAL_NETWORK_CALL",
             {
                 "capability_id": capability_id,
-                "url": url,
+                "url": current_url,
+                "original_url": url,
                 "method": method.upper(),
                 "status_code": response.status_code,
             },
