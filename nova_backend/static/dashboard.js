@@ -625,6 +625,25 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
   chat.scrollTop = chat.scrollHeight;
 }
 
+function appendPlainAssistantMessage(text) {
+  const chat = $("chat-log");
+  if (!chat) return;
+
+  const div = document.createElement("div");
+  div.className = "chat-assistant";
+  const span = document.createElement("span");
+  span.textContent = String(text || "");
+  div.appendChild(span);
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function ensureSingleWelcomeMessage() {
+  const chat = $("chat-log");
+  if (!chat || chat.children.length > 0) return;
+  appendPlainAssistantMessage("Hello. How can I help?");
+}
+
 function showThoughtOverlay(anchor, thoughtData) {
   let overlay = document.getElementById("thought-overlay");
   if (!overlay) {
@@ -749,12 +768,13 @@ function renderSearchWidget(data) {
   const container = $("search-widget");
   if (container) {
     clear(container);
+    container.classList.remove("active");
 
     if (!data || !Array.isArray(data.results) || data.results.length === 0) {
-      container.textContent = "I could not find reliable results for that.";
       return;
     }
 
+    container.classList.add("active");
     data.results.forEach((item, index) => {
       const div = document.createElement("div");
       div.className = "search-result";
@@ -888,9 +908,6 @@ function connectWebSocket() {
   ws = new WebSocket(`${WS_BASE}/ws`);
 
   ws.onopen = () => {
-    safeWSSend({ text: "weather" });
-    safeWSSend({ text: "news" });
-    safeWSSend({ text: "system status" });
     refreshPrivacyPanel();
   };
 
@@ -956,6 +973,34 @@ function connectWebSocket() {
     setThinkingBar(false);
     setTimeout(connectWebSocket, 2000);
   };
+}
+
+function setupSidebarTabs() {
+  const tabs = document.querySelectorAll(".sidebar-tab");
+  if (!tabs || tabs.length === 0) return;
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const panelId = tab.dataset.panel;
+      if (!panelId) return;
+
+      if (panelId === "help-modal") {
+        showHelpModal();
+        return;
+      }
+
+      const news = $("news-widget");
+      const trust = $("trust-panel");
+      if (!news || !trust) return;
+
+      [news, trust].forEach((p) => { p.hidden = true; });
+      const target = $(panelId);
+      if (target) target.hidden = false;
+
+      tabs.forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+    });
+  });
 }
 
 function sendChat() {
@@ -1100,6 +1145,40 @@ function showHelpModal() {
     const shell = createModalShell("help-modal", "How to ask Nova");
     overlay = shell.overlay;
     const card = shell.card;
+
+    const about = document.createElement("p");
+    about.textContent = "Nova helps with weather, news, research summaries, and simple system requests when you ask.";
+    card.appendChild(about);
+
+    const groupsWrap = document.createElement("div");
+    groupsWrap.className = "command-groups";
+    COMMAND_DISCOVERY_GROUPS.forEach((group) => {
+      const groupEl = document.createElement("div");
+      groupEl.className = "command-group";
+
+      const label = document.createElement("div");
+      label.className = "command-group-label";
+      label.textContent = group.label;
+      groupEl.appendChild(label);
+
+      const row = document.createElement("div");
+      row.className = "command-chip-row";
+      (group.commands || []).forEach((cmd) => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "command-chip";
+        chip.textContent = cmd;
+        chip.addEventListener("click", () => {
+          injectUserText(cmd, "text");
+          overlay.style.display = "none";
+        });
+        row.appendChild(chip);
+      });
+
+      groupEl.appendChild(row);
+      groupsWrap.appendChild(groupEl);
+    });
+    card.appendChild(groupsWrap);
 
     const input = document.createElement("input");
     input.type = "text";
@@ -1300,7 +1379,8 @@ window.addEventListener("DOMContentLoaded", () => {
   renderMorningPanel();
   renderTrustPanel();
   renderQuickActions();
-  renderCommandDiscovery();
+  setupSidebarTabs();
+  ensureSingleWelcomeMessage();
   connectWebSocket();
   showFirstRunGuideIfNeeded();
 

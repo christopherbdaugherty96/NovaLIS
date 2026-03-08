@@ -231,15 +231,15 @@ class Governor:
 
         elif req.capability_id == 49:
             from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
-            return NewsIntelligenceExecutor().execute_summary(req)
+            return NewsIntelligenceExecutor(self.network).execute_summary(req)
 
         elif req.capability_id == 50:
             from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
-            return NewsIntelligenceExecutor().execute_brief(req)
+            return NewsIntelligenceExecutor(self.network).execute_brief(req)
 
         elif req.capability_id == 51:
             from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
-            return NewsIntelligenceExecutor().execute_topic_map(req)
+            return NewsIntelligenceExecutor(self.network).execute_topic_map(req)
 
         elif req.capability_id == 52:
             from src.executors.story_tracker_executor import StoryTrackerExecutor

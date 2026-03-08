@@ -10,9 +10,13 @@ from typing import Any
 from src.actions.action_result import ActionResult
 from src.llm.llm_gateway import generate_chat
 from src.rendering.intelligence_brief_renderer import IntelligenceBriefRenderer
+from src.utils.content_extractor import extract_text_from_html
 
 MAX_HEADLINES_PER_SUMMARY = 3
 LLM_TIMEOUT_SECONDS = 2.0
+SOURCE_READ_TIMEOUT_SECONDS = 4.0
+MAX_SOURCE_PAGES_PER_BRIEF = 6
+MAX_SOURCE_TEXT_CHARS = 3500
 
 STOPWORDS = {
     "the",
@@ -45,8 +49,9 @@ STOPWORDS = {
 
 class NewsIntelligenceExecutor:
     """Governed analysis over user-selected news headlines (invocation-bound)."""
-    def __init__(self) -> None:
+    def __init__(self, network: Any | None = None) -> None:
         self.renderer = IntelligenceBriefRenderer()
+        self.network = network
 
     def _sanitize_headlines(self, raw: Any) -> list[dict[str, str]]:
         if not isinstance(raw, list):
@@ -185,7 +190,16 @@ class NewsIntelligenceExecutor:
             f"{numbered}"
         )
 
-    def _llm_or_fallback(self, prompt: str, fallback: str, request_id: str) -> str:
+    def _llm_or_fallback(
+        self,
+        prompt: str,
+        fallback: str,
+        request_id: str,
+        *,
+        timeout_seconds: float | None = None,
+        max_tokens: int = 550,
+    ) -> str:
+        effective_timeout = LLM_TIMEOUT_SECONDS if timeout_seconds is None else timeout_seconds
         pool = ThreadPoolExecutor(max_workers=1)
         future = pool.submit(
             generate_chat,
@@ -193,11 +207,11 @@ class NewsIntelligenceExecutor:
             mode="analysis_only",
             safety_profile="analysis",
             request_id=request_id,
-            max_tokens=550,
+            max_tokens=max_tokens,
             temperature=0.2,
         )
         try:
-            text = future.result(timeout=LLM_TIMEOUT_SECONDS)
+            text = future.result(timeout=effective_timeout)
             return text or fallback
         except FuturesTimeoutError:
             future.cancel()
@@ -206,6 +220,89 @@ class NewsIntelligenceExecutor:
             return fallback
         finally:
             pool.shutdown(wait=False, cancel_futures=True)
+
+    def _fetch_source_text(self, url: str, capability_id: int) -> str:
+        cleaned_url = (url or "").strip()
+        if not cleaned_url or self.network is None:
+            return ""
+        try:
+            response = self.network.request(
+                capability_id=capability_id,
+                method="GET",
+                url=cleaned_url,
+                as_json=False,
+                timeout=6,
+            )
+            html = str(response.get("text") or "")
+            if not html:
+                return ""
+            return extract_text_from_html(html, max_chars=MAX_SOURCE_TEXT_CHARS).strip()
+        except Exception:
+            return ""
+
+    def _collect_source_packets(self, headlines: list[dict[str, str]], capability_id: int) -> list[dict[str, str]]:
+        packets: list[dict[str, str]] = []
+        seen_urls: set[str] = set()
+        for item in headlines:
+            url = (item.get("url") or "").strip()
+            if not url or url in seen_urls:
+                continue
+            seen_urls.add(url)
+            text = self._fetch_source_text(url, capability_id=capability_id)
+            if not text:
+                continue
+            packets.append(
+                {
+                    "title": (item.get("title") or "").strip(),
+                    "source": (item.get("source") or "").strip() or "Unknown",
+                    "url": url,
+                    "text": text,
+                }
+            )
+            if len(packets) >= MAX_SOURCE_PAGES_PER_BRIEF:
+                break
+        return packets
+
+    def _source_brief_prompt(self, packets: list[dict[str, str]]) -> str:
+        blocks: list[str] = []
+        for idx, packet in enumerate(packets, start=1):
+            blocks.append(
+                f"[{idx}] {packet['title']}\n"
+                f"Source: {packet['source']}\n"
+                f"URL: {packet['url']}\n"
+                f"Excerpt: {packet['text'][:1800]}"
+            )
+        joined = "\n\n".join(blocks)
+        return (
+            "You are preparing a merged summary of today's news using provided source-page excerpts only.\n"
+            "Do not invent facts not present in excerpts.\n"
+            "Use exactly these sections:\n"
+            "Executive Summary\nWhat Happened\nCross-Source Signals\nSource Coverage\n\n"
+            "Include source names inline when making key claims.\n\n"
+            f"{joined}"
+        )
+
+    def _source_brief_fallback(self, packets: list[dict[str, str]]) -> str:
+        lines = [
+            "Executive Summary",
+            "Today's major developments were merged from source-page reads across top outlets.",
+            "",
+            "What Happened",
+        ]
+        for idx, packet in enumerate(packets[:5], start=1):
+            lines.append(f"- [{idx}] {packet['title']} ({packet['source']})")
+        lines.extend(
+            [
+                "",
+                "Cross-Source Signals",
+                "- Multiple sources report overlapping developments from different angles.",
+                "",
+                "Source Coverage",
+            ]
+        )
+        for idx, packet in enumerate(packets[:6], start=1):
+            lines.append(f"- [{idx}] {packet['source']} - {packet['url']}")
+        return "\n".join(lines)
 
     def _build_topic_map(self, headlines: list[dict[str, str]], prior: dict[str, int] | None = None) -> dict[str, int]:
         counts = Counter(prior or {})
@@ -300,6 +397,41 @@ class NewsIntelligenceExecutor:
             )
 
         source = headlines[:6]
+        read_sources = bool((request.params or {}).get("read_sources"))
+        if read_sources:
+            packets = self._collect_source_packets(source, capability_id=request.capability_id)
+            if packets:
+                fallback = self._source_brief_fallback(packets)
+                analysis = self._llm_or_fallback(
+                    self._source_brief_prompt(packets),
+                    fallback,
+                    request_id=f"{request.request_id}:source-brief",
+                    timeout_seconds=SOURCE_READ_TIMEOUT_SECONDS,
+                    max_tokens=900,
+                )
+                findings = [f"[{idx}] {packet['title']}" for idx, packet in enumerate(packets[:5], start=1)]
+                source_labels = [f"[{idx}] {packet['source']} - {packet['url']}" for idx, packet in enumerate(packets[:6], start=1)]
+                report = self.renderer.render_multi_source_report(
+                    query="Today's news (source pages)",
+                    findings=findings,
+                    sources=source_labels,
+                    analysis_text=analysis.strip(),
+                )
+                return ActionResult.ok(
+                    message=report.strip(),
+                    data={
+                        "widget": {
+                            "type": "intelligence_brief",
+                            "data": {"headline_count": len(source), "source_pages_read": len(packets)},
+                        },
+                        "sources": source_labels,
+                    },
+                    request_id=request.request_id,
+                    authority_class="read_only",
+                    external_effect=False,
+                    reversible=True,
+                )
+
         developing_stories = self._load_developing_stories()
         source = self._apply_story_evolution(source, developing_stories)
         fallback_headlines = "\n".join(f"{idx}. {item['title']}" for idx, item in enumerate(source[:4], start=1))

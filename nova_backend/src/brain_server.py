@@ -636,6 +636,15 @@ async def websocket_endpoint(ws: WebSocket):
                 if capability_id == 31 and not params.get("text"):
                     params["text"] = session_state.get("last_response", "")
                 if capability_id in {49, 50, 51, 52, 53}:
+                    if not session_state.get("news_cache"):
+                        news_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "news"), None)
+                        if news_skill is not None:
+                            news_result = await news_skill.handle("news")
+                            if news_result and news_result.success and isinstance(news_result.widget_data, dict):
+                                items = list(news_result.widget_data.get("items") or [])
+                                session_state["news_cache"] = items
+                                session_state["last_sources"] = _extract_sources_from_results(items)
+                                await ws_send(ws, news_result.widget_data)
                     params.setdefault("headlines", list(session_state.get("news_cache") or []))
                     params.setdefault("topic_history", dict(session_state.get("topic_memory_map") or {}))
                 if capability_id == 54:
@@ -657,6 +666,9 @@ async def websocket_endpoint(ws: WebSocket):
                     analysis_docs = action_result.data.get("analysis_documents")
                     if isinstance(analysis_docs, list):
                         session_state["analysis_documents"] = analysis_docs
+                    sources = action_result.data.get("sources")
+                    if isinstance(sources, list) and sources:
+                        session_state["last_sources"] = [str(src) for src in sources[:10]]
                     if "document_id" in action_result.data:
                         session_state["last_analysis_doc_id"] = action_result.data.get("document_id")
 

@@ -28,12 +28,12 @@ html, body {
   z-index: 2;
 
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
   grid-template-rows: auto 1fr auto;
-  gap: 28px;
+  gap: 14px;
 
   height: 100vh;
-  padding: 24px 28px;
+  padding: 14px 16px;
   box-sizing: border-box;
 
   overflow: hidden;
@@ -153,11 +153,11 @@ html, body {
   z-index: 3;
   grid-row: 2;
 
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr) auto;
+  gap: 6px;
 
-  overflow-y: auto;
+  overflow: hidden;
   min-height: 0;
 }
 
@@ -165,7 +165,7 @@ html, body {
 .panel.conversation {
   background: rgba(255, 255, 255, 0.04);
   border-radius: 12px;
-  padding: 18px;
+  padding: 12px;
   border: 1px solid rgba(255, 255, 255, 0.02);
   box-shadow:
     0 1px 1px rgba(0, 0, 0, 0.05),
@@ -174,13 +174,14 @@ html, body {
   display: flex;
   flex-direction: column;
   min-height: 0;
-  max-height: 60vh;
+  max-height: none;
+  height: 100%;
 }
 
 #chat-log {
   flex: 1;
   overflow-y: auto;
-  padding-right: 8px;
+  padding-right: 4px;
   word-wrap: break-word;
   overflow-wrap: anywhere;
   hyphens: auto;
@@ -366,13 +367,38 @@ html, body {
   grid-row: 2;
   grid-column: 2;
 
-  max-width: 420px;
+  max-width: 340px;
 
   display: flex;
   flex-direction: column;
   gap: 12px;
   min-height: 0;
   max-height: 100%;
+}
+
+.sidebar-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.sidebar-tab {
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  background: rgba(255, 255, 255, 0.07);
+  color: rgba(230, 233, 240, 0.92);
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.sidebar-tab:hover {
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.sidebar-tab.active {
+  background: rgba(123, 109, 255, 0.2);
+  border-color: rgba(123, 109, 255, 0.4);
 }
 
 #news-widget.widget {
@@ -763,8 +789,14 @@ html, body {
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 12px;
   padding: 12px;
-  display: grid;
+  display: none;
   gap: 8px;
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.search-widget.active {
+  display: grid;
 }
 
 .search-result {
@@ -785,19 +817,19 @@ html, body {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
-  padding: 12px;
+  padding: 10px;
   display: grid;
   gap: 8px;
 }
 
 .morning-widget h3 {
   margin: 0 0 4px 0;
-  font-size: 0.95rem;
+  font-size: 0.88rem;
 }
 
 .morning-row {
-  font-size: 0.86rem;
-  line-height: 1.35;
+  font-size: 0.8rem;
+  line-height: 1.25;
   color: rgba(230, 233, 240, 0.94);
 }
 
@@ -889,7 +921,7 @@ html, body {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
-  margin-top: -6px;
+  margin-top: 0;
 }
 
 .quick-action-btn {
@@ -943,10 +975,10 @@ html, body {
 
 .chat-user,
 .chat-assistant {
-  margin-bottom: 12px;
-  padding: 10px 12px;
-  font-size: 1rem;
-  line-height: 1.55;
+  margin-bottom: 8px;
+  padding: 8px 10px;
+  font-size: 0.92rem;
+  line-height: 1.45;
   border-radius: 10px;
   max-width: 96%;
 }
@@ -986,6 +1018,11 @@ html, body {
   gap: 6px;
   flex-wrap: wrap;
   margin-top: 8px;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: opacity 140ms ease;
 }
 
 .message-utilities {
@@ -993,6 +1030,20 @@ html, body {
   gap: 6px;
   justify-content: flex-end;
   margin-top: 8px;
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+  pointer-events: none;
+  transition: opacity 140ms ease;
+}
+
+.chat-assistant:hover .assistant-actions,
+.chat-assistant:focus-within .assistant-actions,
+.chat-assistant:hover .message-utilities,
+.chat-assistant:focus-within .message-utilities {
+  opacity: 1;
+  max-height: 80px;
+  pointer-events: auto;
 }
 
 .message-utility-btn {

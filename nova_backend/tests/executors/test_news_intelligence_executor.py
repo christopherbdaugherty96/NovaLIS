@@ -102,3 +102,33 @@ def test_summary_filters_by_topic(monkeypatch):
     )
     assert result.success is True
     assert "war in the region" in result.message.lower()
+
+
+def test_brief_reads_source_pages_when_enabled(monkeypatch):
+    from src.executors import news_intelligence_executor as mod
+
+    monkeypatch.setattr(
+        mod,
+        "generate_chat",
+        lambda *args, **kwargs: "Executive Summary\nMerged from source pages.\n\nWhat Happened\n- Item\n\nCross-Source Signals\n- Signal\n\nSource Coverage\n- Source",
+    )
+
+    class _FakeNetwork:
+        def request(self, capability_id, method, url, **kwargs):
+            return {
+                "status_code": 200,
+                "text": f"<html><body><h1>{url}</h1><p>Detail from source page for {url}.</p></body></html>",
+            }
+
+    headlines = [
+        {"title": "A", "source": "ABC News", "url": "https://abc.example/a"},
+        {"title": "B", "source": "BBC News", "url": "https://bbc.example/b"},
+    ]
+    executor = mod.NewsIntelligenceExecutor(network=_FakeNetwork())
+    result = executor.execute_brief(_request(50, {"headlines": headlines, "read_sources": True}))
+    assert result.success is True
+    assert "NOVA MULTI-SOURCE REPORT" in result.message
+    assert "Source Coverage" in result.message
+    assert isinstance(result.data, dict)
+    assert isinstance(result.data.get("sources"), list)
+    assert len(result.data.get("sources")) == 2

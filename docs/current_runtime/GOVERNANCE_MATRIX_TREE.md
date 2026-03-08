@@ -35,11 +35,11 @@ graph TD
   Caps --> C48[48:multi_source_reporting]
   C48 --> C48A[authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor â†’ NetworkMediator]
   Caps --> C49[49:headline_summary]
-  C49 --> C49A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  C49 --> C49A[authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor â†’ NetworkMediator]
   Caps --> C50[50:intelligence_brief]
-  C50 --> C50A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  C50 --> C50A[authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor â†’ NetworkMediator]
   Caps --> C51[51:topic_memory_map]
-  C51 --> C51A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
+  C51 --> C51A[authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor â†’ NetworkMediator]
   Caps --> C52[52:story_tracker_update]
   C52 --> C52A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor]
   Caps --> C53[53:story_tracker_view]
@@ -89,9 +89,9 @@ Runtime
 â”‚  â”œâ”€ 31 response_verification (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
 â”‚  â”œâ”€ 32 os_diagnostics (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
 â”‚  â”œâ”€ 48 multi_source_reporting (authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor â†’ NetworkMediator)
-â”‚  â”œâ”€ 49 headline_summary (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
-â”‚  â”œâ”€ 50 intelligence_brief (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
-â”‚  â”œâ”€ 51 topic_memory_map (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
+â”‚  â”œâ”€ 49 headline_summary (authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor â†’ NetworkMediator)
+â”‚  â”œâ”€ 50 intelligence_brief (authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor â†’ NetworkMediator)
+â”‚  â”œâ”€ 51 topic_memory_map (authority=read_only, risk=low, network=True, exfil=False, confirm=False, surface=Governor â†’ NetworkMediator)
 â”‚  â”œâ”€ 52 story_tracker_update (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
 â”‚  â”œâ”€ 53 story_tracker_view (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
 â”‚  â”œâ”€ 54 analysis_document (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor â†’ Executor)
