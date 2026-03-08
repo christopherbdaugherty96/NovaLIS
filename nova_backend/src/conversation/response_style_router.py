@@ -39,6 +39,10 @@ class InputNormalizer:
         (r"\bopen downloads folder\b", "open downloads"),
         (r"\bopen documents folder\b", "open documents"),
         (r"\bwhat(?:'s| is) going on in tech today\b", "daily brief tech"),
+        (r"^\s*what(?:'s| is)\s+going on with\s+(.+?)\s+today\s*$", r"research \1 latest updates"),
+        (r"^\s*tell me about\s+(.+?)\s*$", r"research \1"),
+        (r"^\s*why is\s+(.+?)\s+(?:down|dropping|falling)\s*$", r"research why \1 is down"),
+        (r"\babc\s+new\b", "abc news"),
     )
 
     @staticmethod

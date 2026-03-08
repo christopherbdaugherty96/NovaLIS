@@ -66,7 +66,9 @@ def test_successful_search_returns_results(executor, mock_network, sample_reques
     result = executor.execute(sample_request)
 
     assert result.success
-    assert "Top Findings" in result.message
+    assert "Key Points" in result.message
+    assert "Sources" in result.message
+    assert "Confidence" in result.message
 
     widget = result.data.get("widget", {})
     assert widget["type"] == "search"

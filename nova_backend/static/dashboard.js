@@ -30,6 +30,7 @@ const STORAGE_KEYS = {
   quickActions: "nova_quick_actions",
   uiLargeText: "nova_ui_large_text",
   uiHighContrast: "nova_ui_high_contrast",
+  morningExpanded: "nova_morning_expanded",
 };
 
 const QUICK_ACTIONS = [
@@ -127,6 +128,27 @@ function renderMorningPanel() {
   if (news) news.textContent = morningState.news;
   if (system) system.textContent = morningState.system;
   if (calendar) calendar.textContent = morningState.calendar;
+}
+
+function setMorningPanelExpanded(expanded) {
+  const details = $("morning-details");
+  const btn = $("btn-morning-toggle");
+  if (!details || !btn) return;
+  details.hidden = !expanded;
+  btn.textContent = expanded ? "Hide details" : "Show details";
+  btn.setAttribute("aria-expanded", expanded ? "true" : "false");
+  localStorage.setItem(STORAGE_KEYS.morningExpanded, expanded ? "1" : "0");
+}
+
+function setupMorningWidgetToggle() {
+  const btn = $("btn-morning-toggle");
+  if (!btn) return;
+  const expanded = localStorage.getItem(STORAGE_KEYS.morningExpanded) === "1";
+  setMorningPanelExpanded(expanded);
+  btn.addEventListener("click", () => {
+    const isExpanded = btn.getAttribute("aria-expanded") === "true";
+    setMorningPanelExpanded(!isExpanded);
+  });
 }
 
 function renderTrustPanel() {
@@ -257,6 +279,32 @@ function appendConfidenceBadge(container, label) {
   badge.className = "confidence-badge";
   badge.textContent = label;
   container.appendChild(badge);
+}
+
+function deriveSourceCount(text) {
+  const raw = String(text || "");
+  const explicit = /Sources used:\s*(\d+)/i.exec(raw);
+  if (explicit) return Number(explicit[1]) || 0;
+
+  const lines = raw.split(/\r?\n/);
+  const sourceLines = lines.filter((line) => /^\s*\d+\.\s+/.test(line) || /^\s*-\s+[a-z0-9.-]+\.[a-z]{2,}/i.test(line));
+  return sourceLines.length;
+}
+
+function appendTrustStrip(container, text, confidenceLabel = "") {
+  const strip = document.createElement("div");
+  strip.className = "message-trust-strip";
+
+  const mode = trustState.mode || "Local-only";
+  const sourceCount = deriveSourceCount(text);
+  const confidence = String(confidenceLabel || "").trim() || "Standard";
+  const parts = [
+    `Mode: ${mode}`,
+    `Sources: ${sourceCount > 0 ? sourceCount : "n/a"}`,
+    `Confidence: ${confidence}`,
+  ];
+  strip.textContent = parts.join(" | ");
+  container.appendChild(strip);
 }
 
 function shouldCollapseMessage(text) {
@@ -712,10 +760,17 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
   const chat = $("chat-log");
   if (!chat) return;
 
+  const msgText = String(text || "");
+  if (role === "assistant" && msgText.trim() === "Hello. How can I help?") {
+    const firstAssistant = chat.querySelector(".chat-assistant span");
+    if (firstAssistant && firstAssistant.textContent.trim() === "Hello. How can I help?") {
+      return;
+    }
+  }
+
   const div = document.createElement("div");
   div.className = `chat-${role}`;
 
-  const msgText = String(text || "");
   const dailyBrief = role === "assistant" ? parseDailyBriefV2(msgText) : null;
   const structured = role === "assistant" ? parseStructuredReport(msgText) : null;
   if (dailyBrief) {
@@ -753,6 +808,9 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
 
   if (confidence && role === "assistant") {
     appendConfidenceBadge(div, confidence);
+  }
+  if (role === "assistant") {
+    appendTrustStrip(div, msgText, confidence);
   }
 
   if (role === "assistant" && messageId) {
@@ -1146,7 +1204,8 @@ function setupSidebarTabs() {
       const news = $("news-widget");
       const trust = $("trust-panel");
       const brief = $("brief-widget");
-      const panels = [news, trust, brief].filter(Boolean);
+      const guide = $("guide-widget");
+      const panels = [news, trust, brief, guide].filter(Boolean);
       if (panels.length === 0) return;
 
       panels.forEach((p) => { p.hidden = true; });
@@ -1535,10 +1594,10 @@ window.addEventListener("DOMContentLoaded", () => {
   renderMorningPanel();
   renderTrustPanel();
   renderQuickActions();
+  renderCommandDiscovery();
+  setupMorningWidgetToggle();
   setupSidebarTabs();
-  ensureSingleWelcomeMessage();
   connectWebSocket();
-  showFirstRunGuideIfNeeded();
 
   const sendBtn = $("send-btn");
   if (sendBtn) sendBtn.addEventListener("click", sendChat);
