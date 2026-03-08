@@ -79,9 +79,16 @@ class ModelNetworkMediator:
         url: str,
         json_payload: dict | None = None,
         timeout: float = 30.0,
+        request_id: str | None = None,
+        session_id: str | None = None,
     ) -> ModelResponse:
         self._check_rate_limit()
         self._validate_url(url)
+        correlation: dict[str, str] = {}
+        if request_id:
+            correlation["request_id"] = request_id
+        if session_id:
+            correlation["session_id"] = session_id
 
         try:
             response = self._session.request(
@@ -99,6 +106,7 @@ class ModelNetworkMediator:
                     "url": url,
                     "method": method.upper(),
                     "error": str(error),
+                    **correlation,
                 },
             )
             raise ModelNetworkMediatorError(str(error)) from error
@@ -109,6 +117,7 @@ class ModelNetworkMediator:
                 "url": url,
                 "method": method.upper(),
                 "status_code": response.status_code,
+                **correlation,
             },
         )
         return ModelResponse(status_code=response.status_code, data=payload if isinstance(payload, dict) else {})

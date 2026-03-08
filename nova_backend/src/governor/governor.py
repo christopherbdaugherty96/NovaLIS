@@ -83,6 +83,9 @@ class Governor:
         if not self.registry.is_enabled(capability_id):
             return ActionResult.failure("I can’t do that yet.")
 
+        if getattr(cap, "risk_level", "low") == "confirm" and not bool((params or {}).get("confirmed")):
+            return ActionResult.refusal("This action requires confirmation before I can proceed.")
+
         if not self._execute_boundary.allow_execution():
             return ActionResult.failure("That requires a specific action, which I can’t perform right now.")
 

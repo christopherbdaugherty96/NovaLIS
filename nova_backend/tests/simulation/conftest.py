@@ -7,7 +7,20 @@ import pytest
 def deterministic_simulation_env(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("BRAVE_API_KEY", "test-key")
 
-    def fake_network_request(self, *, capability_id=None, method=None, url=None, params=None, headers=None, as_json=True, timeout=5):
+    def fake_network_request(
+        self,
+        *,
+        capability_id=None,
+        method=None,
+        url=None,
+        params=None,
+        headers=None,
+        as_json=True,
+        timeout=5,
+        request_id=None,
+        session_id=None,
+    ):
+        del request_id, session_id
         query = str((params or {}).get("q") or "").strip() or "test query"
         return {
             "status_code": 200,

@@ -111,6 +111,8 @@ class NetworkMediator:
         *,
         as_json: bool = True,
         timeout: Optional[float] = None,
+        request_id: Optional[str] = None,
+        session_id: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
         Perform an HTTP request on behalf of a capability or skill.
@@ -145,6 +147,11 @@ class NetworkMediator:
         # 3) Request execution
         req_timeout = float(timeout) if timeout is not None else NETWORK_TIMEOUT
         current_url = url
+        correlation: Dict[str, Any] = {}
+        if request_id:
+            correlation["request_id"] = request_id
+        if session_id:
+            correlation["session_id"] = session_id
         try:
             response = None
             for _ in range(MAX_REDIRECT_HOPS + 1):
@@ -173,7 +180,12 @@ class NetworkMediator:
         except requests.RequestException as e:
             self.ledger.log_event(
                 "NETWORK_CALL_FAILED",
-                {"capability_id": capability_id, "url": url, "error": str(e)},
+                {
+                    "capability_id": capability_id,
+                    "url": url,
+                    "error": str(e),
+                    **correlation,
+                },
             )
             raise NetworkMediatorError(f"Network call failed: {e}") from e
 
@@ -191,6 +203,7 @@ class NetworkMediator:
                             "capability_id": capability_id,
                             "url": url,
                             "error": f"JSON parse failed: {e}",
+                            **correlation,
                         },
                     )
                     raise NetworkMediatorError("Response was not valid JSON.") from e
@@ -207,6 +220,7 @@ class NetworkMediator:
                 "original_url": url,
                 "method": method.upper(),
                 "status_code": response.status_code,
+                **correlation,
             },
         )
 

@@ -72,6 +72,24 @@ def test_summary_falls_back_when_llm_is_slow(monkeypatch):
     assert "Limited detail is available from the headline alone." in result.message
 
 
+def test_llm_timeout_waits_for_worker_completion(monkeypatch):
+    from src.executors import news_intelligence_executor as mod
+
+    state = {"done": False}
+
+    def _slow_generate(*args, **kwargs):
+        time.sleep(0.05)
+        state["done"] = True
+        return "slow output"
+
+    monkeypatch.setattr(mod, "generate_chat", _slow_generate)
+
+    executor = mod.NewsIntelligenceExecutor()
+    _ = executor._llm_or_fallback("prompt", "fallback", "req-timeout-test", timeout_seconds=0.01)
+
+    assert state["done"] is True
+
+
 def test_summary_filters_by_source(monkeypatch):
     from src.executors import news_intelligence_executor as mod
 

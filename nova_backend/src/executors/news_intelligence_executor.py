@@ -197,6 +197,7 @@ class NewsIntelligenceExecutor:
         fallback: str,
         request_id: str,
         *,
+        session_id: str | None = None,
         timeout_seconds: float | None = None,
         max_tokens: int = 550,
     ) -> str:
@@ -208,6 +209,7 @@ class NewsIntelligenceExecutor:
             mode="analysis_only",
             safety_profile="analysis",
             request_id=request_id,
+            session_id=session_id,
             max_tokens=max_tokens,
             temperature=0.2,
         )
@@ -220,9 +222,17 @@ class NewsIntelligenceExecutor:
         except Exception:
             return fallback
         finally:
-            pool.shutdown(wait=False, cancel_futures=True)
+            # wait=True ensures timed-out work cannot continue after return.
+            pool.shutdown(wait=True, cancel_futures=True)
 
-    def _fetch_source_text(self, url: str, capability_id: int) -> str:
+    def _fetch_source_text(
+        self,
+        url: str,
+        capability_id: int,
+        *,
+        request_id: str | None = None,
+        session_id: str | None = None,
+    ) -> str:
         cleaned_url = (url or "").strip()
         if not cleaned_url or self.network is None:
             return ""
@@ -233,6 +243,8 @@ class NewsIntelligenceExecutor:
                 url=cleaned_url,
                 as_json=False,
                 timeout=6,
+                request_id=request_id,
+                session_id=session_id,
             )
             html = str(response.get("text") or "")
             if not html:
@@ -241,7 +253,14 @@ class NewsIntelligenceExecutor:
         except Exception:
             return ""
 
-    def _collect_source_packets(self, headlines: list[dict[str, str]], capability_id: int) -> list[dict[str, str]]:
+    def _collect_source_packets(
+        self,
+        headlines: list[dict[str, str]],
+        capability_id: int,
+        *,
+        request_id: str | None = None,
+        session_id: str | None = None,
+    ) -> list[dict[str, str]]:
         packets: list[dict[str, str]] = []
         seen_urls: set[str] = set()
         for item in headlines:
@@ -249,7 +268,12 @@ class NewsIntelligenceExecutor:
             if not url or url in seen_urls:
                 continue
             seen_urls.add(url)
-            text = self._fetch_source_text(url, capability_id=capability_id)
+            text = self._fetch_source_text(
+                url,
+                capability_id=capability_id,
+                request_id=request_id,
+                session_id=session_id,
+            )
             if not text:
                 continue
             packets.append(
@@ -501,6 +525,7 @@ class NewsIntelligenceExecutor:
 
     def execute_summary(self, request) -> ActionResult:
         headlines = self._sanitize_headlines((request.params or {}).get("headlines"))
+        session_id = str((request.params or {}).get("session_id") or "").strip() or None
         if not headlines:
             return ActionResult.failure(
                 "No cached headlines found. Say 'news' first, then choose headline numbers.",
@@ -555,6 +580,7 @@ class NewsIntelligenceExecutor:
                 self._headline_prompt(item, idx),
                 fallback,
                 request_id=f"{request.request_id}:headline:{idx}",
+                session_id=session_id,
             )
             blocks.append(self.renderer.render_single(item, analysis_text=analysis.strip()))
 
@@ -573,6 +599,7 @@ class NewsIntelligenceExecutor:
         )
 
     def execute_brief(self, request) -> ActionResult:
+        session_id = str((request.params or {}).get("session_id") or "").strip() or None
         action = str((request.params or {}).get("action") or "").strip().lower()
         brief_clusters = (request.params or {}).get("brief_clusters")
         cluster_state = brief_clusters if isinstance(brief_clusters, list) else []
@@ -601,7 +628,12 @@ class NewsIntelligenceExecutor:
         source = headlines[:6]
         read_sources = bool((request.params or {}).get("read_sources"))
         if read_sources:
-            packets = self._collect_source_packets(source, capability_id=request.capability_id)
+            packets = self._collect_source_packets(
+                source,
+                capability_id=request.capability_id,
+                request_id=request.request_id,
+                session_id=session_id,
+            )
             if packets:
                 clusters = self._cluster_packets(packets)
                 rendered_clusters: list[dict[str, Any]] = []
@@ -611,6 +643,7 @@ class NewsIntelligenceExecutor:
                         self._cluster_prompt(cluster),
                         "",
                         request_id=f"{request.request_id}:cluster:{cluster.get('title','general')}",
+                        session_id=session_id,
                         timeout_seconds=SOURCE_READ_TIMEOUT_SECONDS,
                         max_tokens=380,
                     )
@@ -677,6 +710,7 @@ class NewsIntelligenceExecutor:
             self._brief_prompt(source),
             fallback,
             request_id=f"{request.request_id}:brief",
+            session_id=session_id,
         )
         brief = self.renderer.render_brief(
             source,

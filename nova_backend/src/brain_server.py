@@ -405,6 +405,7 @@ async def websocket_endpoint(ws: WebSocket):
                     capability_id = int(pending_governed_confirm.get("capability_id") or 0)
                     params = dict(pending_governed_confirm.get("params") or {})
                     params["confirmed"] = True
+                    params.setdefault("session_id", session_id)
                     action_result = await asyncio.to_thread(
                         governor.handle_governed_invocation,
                         capability_id,
@@ -433,7 +434,7 @@ async def websocket_endpoint(ws: WebSocket):
                     action_result = await asyncio.to_thread(
                         governor.handle_governed_invocation,
                         17,
-                        {**pending_web_open, "confirmed": True},
+                        {**pending_web_open, "confirmed": True, "session_id": session_id},
                     )
                     session_state["pending_web_open"] = None
                     outgoing_message = _structure_long_message(action_result.message)
@@ -722,6 +723,7 @@ async def websocket_endpoint(ws: WebSocket):
             if isinstance(inv_result, Invocation):
                 capability_id = inv_result.capability_id
                 params = dict(inv_result.params)
+                params.setdefault("session_id", session_id)
                 if capability_id == 18 and not params.get("text"):
                     params["text"] = session_state.get("last_response", "")
                 if capability_id == 31 and not params.get("text"):
@@ -817,7 +819,12 @@ async def websocket_endpoint(ws: WebSocket):
                         action_result = await asyncio.to_thread(
                             governor.handle_governed_invocation,
                             52,
-                            {"action": "track", "topic": track_topic, "headlines": list(session_state.get("news_cache") or [])},
+                            {
+                                "action": "track",
+                                "topic": track_topic,
+                                "headlines": list(session_state.get("news_cache") or []),
+                                "session_id": session_id,
+                            },
                         )
                 if isinstance(action_result.data, dict):
                     topic_map = action_result.data.get("topic_map")
@@ -906,6 +913,8 @@ async def websocket_endpoint(ws: WebSocket):
                         ]
 
                 outgoing_message = _structure_long_message(action_result.message)
+                if not outgoing_message.strip() and capability_id == 18 and action_result.success:
+                    outgoing_message = "Speaking now."
                 await send_chat_message(
                     ws,
                     outgoing_message,
