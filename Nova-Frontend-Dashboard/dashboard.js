@@ -74,6 +74,11 @@ const HELP_EXAMPLES = [
   "set volume 40",
   "set brightness 50",
 ];
+const COMMAND_DISCOVERY_GROUPS = [
+  { label: "Daily", commands: ["weather", "news", "brief"] },
+  { label: "Research", commands: ["research AI regulation", "summarize all headlines", "show sources"] },
+  { label: "System", commands: ["system status", "open documents", "volume up"] },
+];
 const LONG_MESSAGE_CHAR_LIMIT = 280;
 const LONG_MESSAGE_LINE_LIMIT = 4;
 const LONG_MESSAGE_SENTENCE_LIMIT = 2;
@@ -331,6 +336,157 @@ function parseStructuredReport(text) {
   return { title, sections };
 }
 
+function parseDailyBriefV2(text) {
+  const raw = String(text || "").trim();
+  if (!raw.startsWith("NOVA DAILY INTELLIGENCE BRIEF")) return null;
+
+  const lines = raw.split(/\r?\n/).map((line) => line.trim());
+  const stories = [];
+  let current = null;
+  let confidence = "";
+  let sourcesUsed = "";
+  let coverage = "";
+
+  lines.forEach((line) => {
+    if (!line) return;
+    const storyMatch = /^Story\s+(\d+):\s+(.+)$/i.exec(line);
+    if (storyMatch) {
+      if (current) stories.push(current);
+      current = {
+        id: Number(storyMatch[1]),
+        title: storyMatch[2].trim(),
+        summary: "",
+        implication: "",
+        sources: "",
+      };
+      return;
+    }
+
+    if (current && line.startsWith("Summary:")) {
+      current.summary = line.replace(/^Summary:\s*/i, "").trim();
+      return;
+    }
+    if (current && line.startsWith("Implication:")) {
+      current.implication = line.replace(/^Implication:\s*/i, "").trim();
+      return;
+    }
+    if (current && line.startsWith("Sources:")) {
+      current.sources = line.replace(/^Sources:\s*/i, "").trim();
+      return;
+    }
+
+    if (line.startsWith("Confidence:")) {
+      confidence = line.replace(/^Confidence:\s*/i, "").trim();
+      return;
+    }
+    if (line.startsWith("Sources used:")) {
+      sourcesUsed = line.replace(/^Sources used:\s*/i, "").trim();
+      return;
+    }
+    if (line.startsWith("Coverage:")) {
+      coverage = line.replace(/^Coverage:\s*/i, "").trim();
+    }
+  });
+  if (current) stories.push(current);
+  if (!stories.length) return null;
+
+  return { title: "Today's Intelligence Brief", stories, confidence, sourcesUsed, coverage };
+}
+
+function createBriefCardElement(story, compact = false) {
+  const card = document.createElement("div");
+  card.className = "brief-card";
+
+  const heading = document.createElement("div");
+  heading.className = "brief-card-heading";
+  heading.textContent = `Story ${story.id} - ${story.title}`;
+  card.appendChild(heading);
+
+  const summary = document.createElement("div");
+  summary.className = "brief-card-row";
+  summary.textContent = `Summary: ${story.summary || "No summary available."}`;
+  card.appendChild(summary);
+
+  const implication = document.createElement("div");
+  implication.className = "brief-card-row";
+  implication.textContent = `Implication: ${story.implication || "No implication provided."}`;
+  card.appendChild(implication);
+
+  const sources = document.createElement("div");
+  sources.className = "brief-card-row brief-card-sources";
+  sources.textContent = `Sources: ${story.sources || "Unknown"}`;
+  card.appendChild(sources);
+
+  const actions = document.createElement("div");
+  actions.className = "brief-card-actions";
+  const expand = document.createElement("button");
+  expand.type = "button";
+  expand.className = "assistant-action-btn";
+  expand.textContent = "Expand";
+  expand.addEventListener("click", () => injectUserText(`expand story ${story.id}`, "text"));
+  actions.appendChild(expand);
+
+  const track = document.createElement("button");
+  track.type = "button";
+  track.className = "assistant-action-btn";
+  track.textContent = "Track";
+  track.addEventListener("click", () => injectUserText(`track story ${story.id}`, "text"));
+  actions.appendChild(track);
+
+  const compare = document.createElement("button");
+  compare.type = "button";
+  compare.className = "assistant-action-btn";
+  compare.textContent = "Compare";
+  const compareTarget = story.id === 1 ? 2 : 1;
+  compare.addEventListener("click", () => injectUserText(`compare ${story.id} and ${compareTarget}`, "text"));
+  actions.appendChild(compare);
+
+  card.appendChild(actions);
+  if (compact) {
+    card.classList.add("brief-card-compact");
+  }
+  return card;
+}
+
+function renderSidebarBrief(brief) {
+  const empty = $("brief-sidebar-empty");
+  const cards = $("brief-sidebar-cards");
+  if (!cards) return;
+  clear(cards);
+
+  if (!brief || !Array.isArray(brief.stories) || brief.stories.length === 0) {
+    if (empty) empty.style.display = "block";
+    return;
+  }
+
+  if (empty) empty.style.display = "none";
+  brief.stories.slice(0, 4).forEach((story) => {
+    cards.appendChild(createBriefCardElement(story, true));
+  });
+}
+
+function renderDailyBriefV2(container, brief) {
+  const wrap = document.createElement("div");
+  wrap.className = "daily-brief";
+
+  const title = document.createElement("div");
+  title.className = "daily-brief-title";
+  title.textContent = brief.title;
+  wrap.appendChild(title);
+
+  brief.stories.forEach((story) => {
+    wrap.appendChild(createBriefCardElement(story, false));
+  });
+
+  const meta = document.createElement("div");
+  meta.className = "daily-brief-meta";
+  meta.textContent = `Confidence: ${brief.confidence || "Medium"} | Sources used: ${brief.sourcesUsed || "N/A"} | Coverage: ${brief.coverage || "General"}`;
+  wrap.appendChild(meta);
+
+  container.appendChild(wrap);
+  renderSidebarBrief(brief);
+}
+
 function renderStructuredReport(container, report) {
   const wrap = document.createElement("div");
   wrap.className = "structured-report";
@@ -560,8 +716,11 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
   div.className = `chat-${role}`;
 
   const msgText = String(text || "");
+  const dailyBrief = role === "assistant" ? parseDailyBriefV2(msgText) : null;
   const structured = role === "assistant" ? parseStructuredReport(msgText) : null;
-  if (structured) {
+  if (dailyBrief) {
+    renderDailyBriefV2(div, dailyBrief);
+  } else if (structured) {
     renderStructuredReport(div, structured);
   } else {
     const textNode = document.createElement("span");
@@ -618,6 +777,25 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
 
   chat.appendChild(div);
   chat.scrollTop = chat.scrollHeight;
+}
+
+function appendPlainAssistantMessage(text) {
+  const chat = $("chat-log");
+  if (!chat) return;
+
+  const div = document.createElement("div");
+  div.className = "chat-assistant";
+  const span = document.createElement("span");
+  span.textContent = String(text || "");
+  div.appendChild(span);
+  chat.appendChild(div);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function ensureSingleWelcomeMessage() {
+  const chat = $("chat-log");
+  if (!chat || chat.children.length > 0) return;
+  appendPlainAssistantMessage("Hello. How can I help?");
 }
 
 function showThoughtOverlay(anchor, thoughtData) {
@@ -744,12 +922,13 @@ function renderSearchWidget(data) {
   const container = $("search-widget");
   if (container) {
     clear(container);
+    container.classList.remove("active");
 
     if (!data || !Array.isArray(data.results) || data.results.length === 0) {
-      container.textContent = "I could not find reliable results for that.";
       return;
     }
 
+    container.classList.add("active");
     data.results.forEach((item, index) => {
       const div = document.createElement("div");
       div.className = "search-result";
@@ -793,8 +972,8 @@ function renderSearchWidget(data) {
 
 function translateError(code, message) {
   const map = {
-    input_too_long: "That message is a bit too long. Try a shorter sentence.",
-    invalid_json: "I could not read that request. Please try again.",
+    input_too_long: "That message is a bit long. Try one short sentence first.",
+    invalid_json: "I couldn't read that request. Please try again.",
   };
   return map[code] || message || "Something went wrong. Please try again.";
 }
@@ -883,9 +1062,6 @@ function connectWebSocket() {
   ws = new WebSocket(`${WS_BASE}/ws`);
 
   ws.onopen = () => {
-    safeWSSend({ text: "weather" });
-    safeWSSend({ text: "news" });
-    safeWSSend({ text: "system status" });
     refreshPrivacyPanel();
   };
 
@@ -953,6 +1129,36 @@ function connectWebSocket() {
   };
 }
 
+function setupSidebarTabs() {
+  const tabs = document.querySelectorAll(".sidebar-tab");
+  if (!tabs || tabs.length === 0) return;
+
+  tabs.forEach((tab) => {
+    tab.addEventListener("click", () => {
+      const panelId = tab.dataset.panel;
+      if (!panelId) return;
+
+      if (panelId === "help-modal") {
+        showHelpModal();
+        return;
+      }
+
+      const news = $("news-widget");
+      const trust = $("trust-panel");
+      const brief = $("brief-widget");
+      const panels = [news, trust, brief].filter(Boolean);
+      if (panels.length === 0) return;
+
+      panels.forEach((p) => { p.hidden = true; });
+      const target = $(panelId);
+      if (target) target.hidden = false;
+
+      tabs.forEach((t) => t.classList.remove("active"));
+      tab.classList.add("active");
+    });
+  });
+}
+
 function sendChat() {
   const input = $("chat-input");
   if (!input) return;
@@ -1015,8 +1221,17 @@ function showFirstRunGuideIfNeeded() {
 
   const { overlay, card } = createModalShell("first-run-modal", "Welcome to Nova");
   const p = document.createElement("p");
-  p.textContent = "Start with one of these:";
+  p.textContent = "Quick start (about 60 seconds):";
   card.appendChild(p);
+
+  const steps = document.createElement("ol");
+  steps.className = "help-list";
+  ["Check weather", "Get top news", "Ask for your daily brief"].forEach((label) => {
+    const li = document.createElement("li");
+    li.textContent = label;
+    steps.appendChild(li);
+  });
+  card.appendChild(steps);
 
   const row = document.createElement("div");
   row.className = "modal-actions";
@@ -1050,12 +1265,76 @@ function showFirstRunGuideIfNeeded() {
   overlay.style.display = "flex";
 }
 
+function renderCommandDiscovery() {
+  const host = $("command-groups");
+  if (!host) return;
+  clear(host);
+
+  COMMAND_DISCOVERY_GROUPS.forEach((group) => {
+    const groupEl = document.createElement("div");
+    groupEl.className = "command-group";
+
+    const label = document.createElement("div");
+    label.className = "command-group-label";
+    label.textContent = group.label;
+    groupEl.appendChild(label);
+
+    const row = document.createElement("div");
+    row.className = "command-chip-row";
+    (group.commands || []).forEach((cmd) => {
+      const chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "command-chip";
+      chip.textContent = cmd;
+      chip.addEventListener("click", () => injectUserText(cmd, "text"));
+      row.appendChild(chip);
+    });
+
+    groupEl.appendChild(row);
+    host.appendChild(groupEl);
+  });
+}
+
 function showHelpModal() {
   let overlay = $("help-modal");
   if (!overlay) {
     const shell = createModalShell("help-modal", "How to ask Nova");
     overlay = shell.overlay;
     const card = shell.card;
+
+    const about = document.createElement("p");
+    about.textContent = "Nova helps with weather, news, research summaries, and simple system requests when you ask.";
+    card.appendChild(about);
+
+    const groupsWrap = document.createElement("div");
+    groupsWrap.className = "command-groups";
+    COMMAND_DISCOVERY_GROUPS.forEach((group) => {
+      const groupEl = document.createElement("div");
+      groupEl.className = "command-group";
+
+      const label = document.createElement("div");
+      label.className = "command-group-label";
+      label.textContent = group.label;
+      groupEl.appendChild(label);
+
+      const row = document.createElement("div");
+      row.className = "command-chip-row";
+      (group.commands || []).forEach((cmd) => {
+        const chip = document.createElement("button");
+        chip.type = "button";
+        chip.className = "command-chip";
+        chip.textContent = cmd;
+        chip.addEventListener("click", () => {
+          injectUserText(cmd, "text");
+          overlay.style.display = "none";
+        });
+        row.appendChild(chip);
+      });
+
+      groupEl.appendChild(row);
+      groupsWrap.appendChild(groupEl);
+    });
+    card.appendChild(groupsWrap);
 
     const input = document.createElement("input");
     input.type = "text";
@@ -1256,6 +1535,8 @@ window.addEventListener("DOMContentLoaded", () => {
   renderMorningPanel();
   renderTrustPanel();
   renderQuickActions();
+  setupSidebarTabs();
+  ensureSingleWelcomeMessage();
   connectWebSocket();
   showFirstRunGuideIfNeeded();
 

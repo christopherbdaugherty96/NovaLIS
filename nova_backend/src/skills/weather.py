@@ -53,5 +53,5 @@ class WeatherSkill(BaseSkill):
         timestamp = datetime.now().strftime("%I:%M %p").lstrip("0")
         return (
             f"From the last update at {timestamp}: "
-            f"{round(data['temperature'])}°F and {data['condition']} in {data['location']}."
+            f"{round(data['temperature'])} degrees F and {data['condition']} in {data['location']}."
         )

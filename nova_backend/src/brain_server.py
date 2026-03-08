@@ -94,6 +94,7 @@ thought_store = ThoughtStore(ttl=300)
 conversation_heuristics = ComplexityHeuristics()
 response_formatter = ResponseFormatter()
 failure_ladder = FailureLadder()
+RUNTIME_GOVERNOR = Governor()
 
 # -------------------------------------------------
 # Security Constants
@@ -275,7 +276,7 @@ async def websocket_endpoint(ws: WebSocket):
     log.info("WebSocket connected")
 
     session_id = str(uuid.uuid4())
-    governor = Governor()
+    governor = RUNTIME_GOVERNOR
     skill_registry = SkillRegistry(network=governor.network)
     session_context = []
     session_state = {
@@ -298,6 +299,7 @@ async def websocket_endpoint(ws: WebSocket):
         "topic_memory_map": {},
         "last_brief_clusters": [],
         "pending_web_open": None,
+        "pending_governed_confirm": None,
         "analysis_documents": [],
         "last_analysis_doc_id": None,
         "last_intent_family": "",
@@ -392,6 +394,35 @@ async def websocket_endpoint(ws: WebSocket):
                 continue
 
             pending_web_open = session_state.get("pending_web_open")
+            pending_governed_confirm = session_state.get("pending_governed_confirm")
+            if pending_governed_confirm:
+                confirm_decision = SessionRouter.route_pending_web_confirmation(lowered)
+                if confirm_decision.action == "confirm":
+                    capability_id = int(pending_governed_confirm.get("capability_id") or 0)
+                    params = dict(pending_governed_confirm.get("params") or {})
+                    params["confirmed"] = True
+                    action_result = await asyncio.to_thread(
+                        governor.handle_governed_invocation,
+                        capability_id,
+                        params,
+                    )
+                    session_state["pending_governed_confirm"] = None
+                    outgoing_message = _structure_long_message(action_result.message)
+                    await send_chat_message(ws, outgoing_message)
+                    await send_chat_done(ws)
+                    continue
+                if confirm_decision.action == "cancel":
+                    session_state["pending_governed_confirm"] = None
+                    await send_chat_message(ws, "Cancelled pending action.")
+                    await send_chat_done(ws)
+                    continue
+                await send_chat_message(
+                    ws,
+                    "I still have a confirmation pending. Reply 'yes' to proceed or 'no' to cancel.",
+                )
+                await send_chat_done(ws)
+                continue
+
             if pending_web_open:
                 web_decision = SessionRouter.route_pending_web_confirmation(lowered)
                 if web_decision.action == "confirm":
@@ -725,6 +756,25 @@ async def websocket_endpoint(ws: WebSocket):
                     params.setdefault("analysis_documents", list(session_state.get("analysis_documents") or []))
                     if params.get("doc_id") in {None, ""} and session_state.get("last_analysis_doc_id") is not None:
                         params["doc_id"] = session_state.get("last_analysis_doc_id")
+
+                if capability_id == 22 and not params.get("confirmed"):
+                    target = str(params.get("target") or "").strip()
+                    path = str(params.get("path") or "").strip()
+                    resource = path or target or "that location"
+                    session_state["pending_governed_confirm"] = {
+                        "capability_id": capability_id,
+                        "params": dict(params),
+                    }
+                    await send_chat_message(
+                        ws,
+                        (
+                            f"Open {resource}?\n"
+                            "This action needs confirmation.\n"
+                            "Reply 'yes' to proceed or 'no' to cancel."
+                        ),
+                    )
+                    await send_chat_done(ws)
+                    continue
 
                 if capability_id == 17:
                     from src.executors.webpage_launch_executor import WebpageLaunchExecutor

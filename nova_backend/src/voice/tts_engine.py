@@ -195,6 +195,11 @@ class SpeechRenderer:
 def stop_speaking() -> None:
     """Best-effort stop of currently playing speech."""
     SpeechRenderer.stop()
+    try:
+        from src.executors.tts_executor import TTSEngine
+        TTSEngine.stop()
+    except Exception:
+        return
 
 
 def nova_speak(text: str) -> None:

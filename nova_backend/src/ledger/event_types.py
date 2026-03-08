@@ -8,6 +8,7 @@ EVENT_TYPES = frozenset(
         f"{_ACTION}_COMPLETED",
         "SEARCH_QUERY",
         "WEBPAGE_LAUNCH",
+        "WEBPAGE_PREVIEW",
         "EXTERNAL_NETWORK_CALL",
         "NETWORK_CALL_FAILED",
         "MODEL_NETWORK_CALL",

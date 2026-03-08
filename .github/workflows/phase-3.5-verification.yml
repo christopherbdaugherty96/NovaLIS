@@ -46,3 +46,7 @@ jobs:
         run: |
           node --check nova_backend/static/dashboard.js
           node --check Nova-Frontend-Dashboard/dashboard.js
+
+      - name: Enforce frontend mirror sync
+        run: |
+          python scripts/check_frontend_mirror_sync.py
