@@ -6,6 +6,7 @@ import time
 from dataclasses import dataclass, field
 from typing import Any
 
+from src.conversation.conversation_router import ConversationRouter
 from src.conversation.response_style_router import InputNormalizer
 from src.debug.cognitive_trace import CognitiveTrace
 from src.governor.governor import Governor
@@ -28,6 +29,12 @@ SHORTEN_ALIASES = {
 class TranscriptTurn:
     user_message: str
     nova_response: str
+    decision_mode: str = ""
+    intent_family: str = ""
+    continuation_detected: bool = False
+    should_escalate: bool = False
+    policy_blocked: bool = False
+    clarification_triggered: bool = False
     capability_triggered: int | None = None
     capability_executor: str = ""
     governor_decision: str = ""
@@ -64,6 +71,8 @@ class ConversationSimulator:
         self.governor = Governor()
         self.skill_registry = SkillRegistry(network=self.governor.network)
         self._last_response = ""
+        self._last_intent_family = ""
+        self._last_object = ""
         self._include_trace = bool(include_trace)
 
     @staticmethod
@@ -105,8 +114,72 @@ class ConversationSimulator:
             trace.record("input_received", {"raw_input": str(raw_text or "")})
         text = InputNormalizer.normalize(raw_text).strip()
         lowered = text.lower().rstrip(".?!")
+        decision = ConversationRouter.route(
+            text,
+            {
+                "last_response": self._last_response,
+                "last_intent_family": self._last_intent_family,
+                "last_object": self._last_object,
+            },
+        )
         if trace is not None:
             trace.record("input_normalizer", {"normalized_input": text, "lowered": lowered})
+            trace.record(
+                "conversation_router",
+                {
+                    "mode": decision.mode.value,
+                    "should_escalate": bool(decision.should_escalate),
+                    "blocked_by_policy": bool(decision.blocked_by_policy),
+                    "needs_clarification": bool(decision.needs_clarification),
+                },
+            )
+
+        if decision.blocked_by_policy:
+            response = "I can't help with that request."
+            self._last_response = response
+            elapsed = (time.perf_counter() - started) * 1000
+            if trace is not None:
+                trace.record("policy_block", {"reason": decision.policy_reason or "policy_blocked"})
+            return TranscriptTurn(
+                user_message=raw_text,
+                nova_response=response,
+                decision_mode=decision.mode.value,
+                intent_family=decision.intent_family,
+                continuation_detected=decision.continuation_detected,
+                should_escalate=decision.should_escalate,
+                policy_blocked=True,
+                governor_decision="policy_block",
+                execution_time_ms=round(elapsed, 3),
+                trace_id=trace.trace_id if trace is not None else "",
+                trace_steps=list(trace.steps) if trace is not None else [],
+            )
+
+        if decision.needs_clarification:
+            response = decision.clarification_prompt or "Could you clarify that?"
+            self._last_response = response
+            elapsed = (time.perf_counter() - started) * 1000
+            if trace is not None:
+                trace.record("clarification_returned", {"message": response})
+            return TranscriptTurn(
+                user_message=raw_text,
+                nova_response=response,
+                decision_mode=decision.mode.value,
+                intent_family=decision.intent_family,
+                continuation_detected=decision.continuation_detected,
+                should_escalate=decision.should_escalate,
+                clarification_triggered=True,
+                governor_decision="clarification",
+                execution_time_ms=round(elapsed, 3),
+                trace_id=trace.trace_id if trace is not None else "",
+                trace_steps=list(trace.steps) if trace is not None else [],
+            )
+
+        self._last_intent_family = decision.intent_family
+        if decision.resolved_text:
+            text = decision.resolved_text.strip()
+            lowered = text.lower().rstrip(".?!")
+        if lowered in {"open downloads", "open documents"}:
+            self._last_object = lowered.replace("open ", "")
 
         if lowered in SHORTEN_ALIASES:
             shortened = _shorten_text(self._last_response)
@@ -118,6 +191,10 @@ class ConversationSimulator:
             return TranscriptTurn(
                 user_message=raw_text,
                 nova_response=response,
+                decision_mode=decision.mode.value,
+                intent_family=decision.intent_family,
+                continuation_detected=decision.continuation_detected,
+                should_escalate=decision.should_escalate,
                 governor_decision="conversation_followup",
                 execution_time_ms=round(elapsed, 3),
                 trace_id=trace.trace_id if trace is not None else "",
@@ -145,6 +222,11 @@ class ConversationSimulator:
             return TranscriptTurn(
                 user_message=raw_text,
                 nova_response=parsed.message,
+                decision_mode=decision.mode.value,
+                intent_family=decision.intent_family,
+                continuation_detected=decision.continuation_detected,
+                should_escalate=decision.should_escalate,
+                clarification_triggered=True,
                 governor_decision="clarification",
                 execution_time_ms=round(elapsed, 3),
                 trace_id=trace.trace_id if trace is not None else "",
@@ -181,6 +263,10 @@ class ConversationSimulator:
             return TranscriptTurn(
                 user_message=raw_text,
                 nova_response=response,
+                decision_mode=decision.mode.value,
+                intent_family=decision.intent_family,
+                continuation_detected=decision.continuation_detected,
+                should_escalate=decision.should_escalate,
                 capability_triggered=parsed.capability_id,
                 capability_executor=executor_name,
                 governor_decision="governed_invocation",
@@ -213,6 +299,10 @@ class ConversationSimulator:
             return TranscriptTurn(
                 user_message=raw_text,
                 nova_response=response,
+                decision_mode=decision.mode.value,
+                intent_family=decision.intent_family,
+                continuation_detected=decision.continuation_detected,
+                should_escalate=decision.should_escalate,
                 governor_decision="skill_fallback",
                 execution_time_ms=round(elapsed, 3),
                 trace_id=trace.trace_id if trace is not None else "",
@@ -227,6 +317,10 @@ class ConversationSimulator:
         return TranscriptTurn(
             user_message=raw_text,
             nova_response=fallback,
+            decision_mode=decision.mode.value,
+            intent_family=decision.intent_family,
+            continuation_detected=decision.continuation_detected,
+            should_escalate=decision.should_escalate,
             governor_decision="no_route_fallback",
             execution_time_ms=round(elapsed, 3),
             trace_id=trace.trace_id if trace is not None else "",

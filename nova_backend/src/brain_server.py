@@ -262,6 +262,8 @@ async def websocket_endpoint(ws: WebSocket):
         "topic_memory_map": {},
         "analysis_documents": [],
         "last_analysis_doc_id": None,
+        "last_intent_family": "",
+        "last_mode": "",
         "trust_status": {
             "mode": "Local-only",
             "last_external_call": "None",
@@ -313,21 +315,29 @@ async def websocket_endpoint(ws: WebSocket):
             session_state["last_input_channel"] = channel
 
             text = InputNormalizer.normalize(raw_text).strip()
-            route_info = ConversationRouter.route(text, session_state)
-            if route_info.get("needs_clarification"):
+            decision = ConversationRouter.route(text, session_state)
+            if decision.blocked_by_policy:
+                await send_chat_message(ws, "I can't help with that request.")
+                await send_chat_done(ws)
+                continue
+
+            if decision.needs_clarification:
                 clarification_turn = session_state.get("last_clarification_turn")
                 if clarification_turn == session_state["turn_count"]:
                     await send_chat_message(ws, "I still need a file or folder name to continue.")
                 else:
-                    await send_chat_message(ws, str(route_info.get("clarification") or "Could you clarify that?"))
+                    await send_chat_message(ws, str(decision.clarification_prompt or "Could you clarify that?"))
                     session_state["last_clarification_turn"] = session_state["turn_count"]
                 await send_chat_done(ws)
                 continue
 
-            resolved_text = str(route_info.get("resolved_text") or text).strip()
+            resolved_text = str(decision.resolved_text or text).strip()
             if resolved_text:
                 text = resolved_text
             lowered = text.lower().rstrip(".?!")
+            if not decision.blocked_by_policy and not decision.needs_clarification:
+                session_state["last_intent_family"] = decision.intent_family
+                session_state["last_mode"] = decision.mode.value
 
             if lowered in {"deep mode", "deep analysis", "go deeper", "challenge this", "pressure test this"}:
                 session_state["deep_mode_armed"] = True
@@ -351,7 +361,7 @@ async def websocket_endpoint(ws: WebSocket):
                 if ack_payload is not None:
                     await ws_send(ws, ack_payload)
 
-            micro_ack = str(route_info.get("micro_ack") or "").strip()
+            micro_ack = str(decision.micro_ack or "").strip()
             if micro_ack:
                 await send_chat_message(ws, micro_ack)
 

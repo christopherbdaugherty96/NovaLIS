@@ -3,6 +3,8 @@ from __future__ import annotations
 import re
 from typing import Any
 
+from src.conversation.conversation_decision import ConversationDecision, ConversationMode
+
 
 class ConversationRouter:
     """Deterministic pre-routing for conversational UX (non-authorizing)."""
@@ -33,27 +35,60 @@ class ConversationRouter:
     )
 
     MICRO_ACK = {
-        "analysis": "One moment. I'll break that down.",
-        "brainstorm": "Okay. I'll give you structured options.",
-        "command": "Okay. Working on that.",
-        "question": "Let me check.",
+        ConversationMode.ANALYSIS: "One moment. I'll break that down.",
+        ConversationMode.BRAINSTORM: "Okay. I'll give you structured options.",
+        ConversationMode.ACTION: "Okay. Working on that.",
+        ConversationMode.DIRECT: "Let me check.",
     }
+    NEVER_ESCALATE_PATTERNS = (
+        re.compile(r"^\s*(hi|hello|hey|good morning|good afternoon|good evening)\b", re.IGNORECASE),
+        re.compile(r"\bhow are you\b", re.IGNORECASE),
+        re.compile(r"\bwhat can you do\b", re.IGNORECASE),
+    )
+    POLICY_BLOCK_PATTERNS = (
+        re.compile(r"\bbypass (the )?governor\b", re.IGNORECASE),
+        re.compile(r"\bignore (your|the) rules\b", re.IGNORECASE),
+        re.compile(r"\bexecute (python|shell|command)\b", re.IGNORECASE),
+        re.compile(r"\bdelete all files\b", re.IGNORECASE),
+    )
+    FOLLOWUP_MARKERS = (
+        "that",
+        "this",
+        "it",
+        "them",
+        "those",
+        "the result",
+        "the article",
+        "the report",
+        "summarize",
+        "explain",
+        "compare",
+        "expand",
+        "verify",
+    )
+    CONTEXT_RESET_MARKERS = (
+        "new topic",
+        "start over",
+        "different question",
+        "another thing",
+    )
+    RESEARCH_HINTS = ("research", "look into", "look up", "investigate", "analyze", "analysis")
+    TASK_HINTS = ("open", "run", "check", "show", "set", "play", "pause", "search")
+    WORK_HINTS = ("debug", "fix", "implement", "step by step", "plan", "design", "refactor")
 
     @classmethod
-    def route(cls, user_text: str, session_state: dict[str, Any] | None = None) -> dict[str, Any]:
+    def route(cls, user_text: str, session_state: dict[str, Any] | None = None) -> ConversationDecision:
         text = (user_text or "").strip()
         lowered = text.lower().rstrip(".?!")
         state = session_state or {}
 
-        mode = "conversation"
-        if lowered.startswith(cls.COMMAND_PREFIXES):
-            mode = "command"
-        elif any(h in lowered.split() for h in cls.QUESTION_HINTS) or "?" in text:
-            mode = "question"
-        if any(h in lowered for h in cls.ANALYSIS_HINTS):
-            mode = "analysis"
-        if any(h in lowered for h in cls.BRAINSTORM_HINTS):
-            mode = "brainstorm"
+        # Policy check first so blocked prompts never participate in escalation logic.
+        blocked_by_policy = any(p.search(text) for p in cls.POLICY_BLOCK_PATTERNS)
+        policy_reason = "policy_blocked_phrase" if blocked_by_policy else None
+
+        continuation_detected = cls._is_followup(lowered, state) if not blocked_by_policy else False
+        intent_family = cls._classify_intent_family(text, lowered, continuation_detected) if not blocked_by_policy else "unknown"
+        mode = cls._map_intent_to_mode(intent_family, lowered, state) if not blocked_by_policy else ConversationMode.UNKNOWN
 
         needs_clarification = False
         clarification = ""
@@ -70,12 +105,117 @@ class ConversationRouter:
             else:
                 needs_clarification = True
                 clarification = "Which file or folder do you mean?"
+        if continuation_detected and not state.get("last_response"):
+            needs_clarification = True
+            clarification = "What should I continue from?"
 
-        should_ack = mode in {"analysis", "brainstorm"} or any(h in lowered for h in cls.HEAVY_HINTS)
-        return {
-            "mode": mode,
-            "micro_ack": cls.MICRO_ACK.get(mode, "") if should_ack else "",
-            "needs_clarification": needs_clarification,
-            "clarification": clarification,
-            "resolved_text": resolved_text,
+        never_escalate = any(p.search(text) for p in cls.NEVER_ESCALATE_PATTERNS)
+        should_escalate = cls._determine_escalation(mode, text, needs_clarification, blocked_by_policy, never_escalate)
+        escalation_reason = "analysis_query" if should_escalate else None
+        response_template = mode.value
+        if mode == ConversationMode.UNKNOWN:
+            response_template = "direct"
+        should_ack = mode in {ConversationMode.ANALYSIS, ConversationMode.BRAINSTORM} or any(
+            h in lowered for h in cls.HEAVY_HINTS
+        )
+
+        return ConversationDecision(
+            mode=mode,
+            intent_family=intent_family,
+            continuation_detected=continuation_detected,
+            should_escalate=should_escalate,
+            escalation_reason=escalation_reason,
+            response_template=response_template,
+            needs_clarification=needs_clarification,
+            clarification_prompt=clarification or None,
+            blocked_by_policy=blocked_by_policy,
+            policy_reason=policy_reason,
+            micro_ack=cls.MICRO_ACK.get(mode, "") if should_ack else "",
+            resolved_text=resolved_text,
+        )
+
+    @classmethod
+    def _classify_intent_family(cls, text: str, lowered: str, continuation_detected: bool) -> str:
+        if any(marker in lowered for marker in cls.CONTEXT_RESET_MARKERS):
+            return "question"
+        if lowered.startswith(("hi", "hello", "hey", "good morning", "good afternoon", "good evening")):
+            return "casual"
+        if "how are you" in lowered:
+            return "casual"
+        if continuation_detected:
+            return "followup"
+        if "?" in text or any(h in lowered.split() for h in cls.QUESTION_HINTS):
+            return "question"
+        if any(h in lowered for h in cls.BRAINSTORM_HINTS):
+            return "brainstorm"
+        if any(v in lowered for v in cls.WORK_HINTS):
+            return "work"
+        if any(v in lowered for v in cls.RESEARCH_HINTS):
+            return "research"
+        if lowered.startswith(cls.COMMAND_PREFIXES) or any(v in lowered for v in cls.TASK_HINTS):
+            return "task"
+        return "unknown"
+
+    @classmethod
+    def _map_intent_to_mode(cls, intent_family: str, lowered: str, state: dict[str, Any]) -> ConversationMode:
+        if any(h in lowered for h in cls.BRAINSTORM_HINTS):
+            return ConversationMode.BRAINSTORM
+        if any(h in lowered for h in cls.ANALYSIS_HINTS):
+            return ConversationMode.ANALYSIS
+        # Continuation inherits prior family when available.
+        if intent_family == "followup":
+            previous_family = str(state.get("last_intent_family") or "").strip().lower()
+            inherited = {
+                "research": ConversationMode.ANALYSIS,
+                "analysis": ConversationMode.ANALYSIS,
+                "brainstorm": ConversationMode.BRAINSTORM,
+                "task": ConversationMode.ACTION,
+                "action": ConversationMode.ACTION,
+                "question": ConversationMode.DIRECT,
+                "direct": ConversationMode.DIRECT,
+                "work": ConversationMode.WORK,
+                "casual": ConversationMode.CASUAL,
+            }.get(previous_family)
+            if inherited is not None:
+                return inherited
+        mapping = {
+            "casual": ConversationMode.CASUAL,
+            "question": ConversationMode.DIRECT,
+            "research": ConversationMode.ANALYSIS,
+            "task": ConversationMode.ACTION,
+            "followup": ConversationMode.DIRECT,
+            "work": ConversationMode.WORK,
+            "brainstorm": ConversationMode.BRAINSTORM,
+            "unknown": ConversationMode.DIRECT,
         }
+        return mapping.get(intent_family, ConversationMode.DIRECT)
+
+    @classmethod
+    def _determine_escalation(
+        cls,
+        mode: ConversationMode,
+        text: str,
+        needs_clarification: bool,
+        blocked_by_policy: bool,
+        never_escalate: bool,
+    ) -> bool:
+        if mode != ConversationMode.ANALYSIS:
+            return False
+        if len((text or "").split()) < 4:
+            return False
+        if needs_clarification or blocked_by_policy or never_escalate:
+            return False
+        return True
+
+    @classmethod
+    def _is_followup(cls, lowered: str, state: dict[str, Any]) -> bool:
+        if not lowered:
+            return False
+        if any(marker in lowered for marker in cls.CONTEXT_RESET_MARKERS):
+            return False
+        has_context = bool(state.get("last_response")) or bool(state.get("last_object"))
+        if not has_context:
+            return False
+        if any(marker in lowered for marker in cls.FOLLOWUP_MARKERS):
+            return True
+        return len(lowered.split()) <= 3
