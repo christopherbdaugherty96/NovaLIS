@@ -9,12 +9,15 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Optional, Dict, Any, Union
 
-PENDING_CLARIFICATION_TTL_SECONDS = 600.0
+PENDING_CLARIFICATION_TTL_SECONDS = 60.0
 MAX_PENDING_CLARIFICATIONS = 10_000
 MIN_CLARIFICATION_QUERY_CHARS = 2
 MAX_CLARIFICATION_QUERY_CHARS = 500
+ENABLED_CAP_CACHE_TTL_SECONDS = 5.0
 
 _pending_clarification: Dict[str, tuple[int, float]] = {}
+_enabled_capability_ids_cache: frozenset[int] | None = None
+_enabled_capability_ids_cache_at = 0.0
 
 
 def _evict_expired_pending_clarifications(now: float | None = None) -> None:
@@ -36,17 +39,32 @@ def _evict_expired_pending_clarifications(now: float | None = None) -> None:
         _pending_clarification.pop(session_id, None)
 
 
-def _load_enabled_capability_ids() -> set[int]:
+def _load_enabled_capability_ids() -> frozenset[int]:
+    global _enabled_capability_ids_cache
+    global _enabled_capability_ids_cache_at
+    now = monotonic()
+    if (
+        _enabled_capability_ids_cache is not None
+        and (now - _enabled_capability_ids_cache_at) <= ENABLED_CAP_CACHE_TTL_SECONDS
+    ):
+        return _enabled_capability_ids_cache
+
     registry_path = Path(__file__).resolve().parents[1] / "config" / "registry.json"
     try:
         payload = json.loads(registry_path.read_text(encoding="utf-8"))
     except Exception:
-        return set()
-    return {
+        _enabled_capability_ids_cache = frozenset()
+        _enabled_capability_ids_cache_at = now
+        return _enabled_capability_ids_cache
+
+    enabled_ids = frozenset(
         int(item.get("id"))
         for item in payload.get("capabilities", [])
         if item.get("enabled") is True and item.get("id") is not None
-    }
+    )
+    _enabled_capability_ids_cache = enabled_ids
+    _enabled_capability_ids_cache_at = now
+    return enabled_ids
 
 
 def _invocation_if_enabled(capability_id: int, params: Dict[str, Any]) -> Invocation | None:
@@ -535,3 +553,7 @@ class GovernorMediator:
     @staticmethod
     def clear_session(session_id: str) -> None:
         _pending_clarification.pop(session_id, None)
+
+    @staticmethod
+    def clear_stale_sessions() -> None:
+        _evict_expired_pending_clarifications()

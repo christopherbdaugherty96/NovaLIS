@@ -37,3 +37,10 @@ jobs:
       - name: Validate runtime doc delegation rules
         run: |
           python scripts/check_runtime_doc_drift.py
+
+      - name: Enforce clean runtime fingerprint in generated docs
+        run: |
+          if grep -Eiq '^\s*-\s*git_dirty:\s*true\s*$' docs/current_runtime/RUNTIME_FINGERPRINT.md; then
+            echo "ERROR: Generated runtime fingerprint is dirty. Commit from a clean working tree."
+            exit 1
+          fi
