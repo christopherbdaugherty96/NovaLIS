@@ -29,8 +29,13 @@ GOVERNED_ACTIONS_ENABLED = True
 MAX_EXECUTION_TIME = 10
 MAX_MEMORY_MB = 100                 # max per-invocation RSS delta
 MAX_PROCESS_RSS_MB = 1536           # fail-closed if process is already over this
+MAX_CPU_SECONDS = 8.0               # max per-invocation process CPU budget
 MAX_CONCURRENT_EXECUTIONS = 1       # boundary-level concurrency cap
 MAX_CONCURRENT = MAX_CONCURRENT_EXECUTIONS  # backward-compatible export
+
+
+class ExecutionCPUExceededError(RuntimeError):
+    """Raised when boundary CPU budget is exceeded."""
 
 
 class ExecuteBoundary:
@@ -42,6 +47,7 @@ class ExecuteBoundary:
     def __init__(self):
         self._start_time: Optional[float] = None
         self._start_rss_mb: Optional[float] = None
+        self._start_cpu_seconds: Optional[float] = None
         self._active_executions = 0
         self._lock = threading.Lock()
 
@@ -63,6 +69,7 @@ class ExecuteBoundary:
             self._active_executions += 1
         self._start_time = time.time()
         self._start_rss_mb = self._rss_mb()
+        self._start_cpu_seconds = self._cpu_seconds()
         current_rss = self._start_rss_mb
         if current_rss is not None and current_rss > MAX_PROCESS_RSS_MB:
             raise MemoryError("Process memory exceeds boundary cap before execution.")
@@ -71,6 +78,7 @@ class ExecuteBoundary:
         """Clean up after execution."""
         self._start_time = None
         self._start_rss_mb = None
+        self._start_cpu_seconds = None
         with self._lock:
             if self._active_executions > 0:
                 self._active_executions -= 1
@@ -86,6 +94,11 @@ class ExecuteBoundary:
             return usage / 1024
         except Exception:
             return None
+
+    @staticmethod
+    def _cpu_seconds() -> float:
+        # Process CPU time (user + system), cross-platform.
+        return float(time.process_time())
 
     def run_with_timeout(self, operation, timeout_seconds: Optional[float] = None):
         """
@@ -112,3 +125,11 @@ class ExecuteBoundary:
             raise MemoryError("Process memory exceeded boundary cap.")
         if self._start_rss_mb is not None and (current - self._start_rss_mb) > MAX_MEMORY_MB:
             raise MemoryError("Execution memory delta exceeded boundary cap.")
+
+    def enforce_cpu_limits(self) -> None:
+        """Check post-execution CPU budget."""
+        if self._start_cpu_seconds is None:
+            return
+        cpu_delta = self._cpu_seconds() - self._start_cpu_seconds
+        if cpu_delta > MAX_CPU_SECONDS:
+            raise ExecutionCPUExceededError("Execution CPU budget exceeded.")
