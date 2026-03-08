@@ -335,3 +335,47 @@ class IntelligenceBriefRenderer:
             lines.append(f"Evolution: This story has developed across {evolution_cycles} reporting cycles.")
 
         return "\n".join(lines)
+
+    def render_multi_source_report(
+        self,
+        query: str,
+        findings: list[str],
+        sources: list[str],
+        analysis_text: str = "",
+    ) -> str:
+        query_text = (query or "").strip() or "report query"
+        selected_findings = [f.strip() for f in findings if str(f).strip()][:5]
+        selected_sources = [s.strip() for s in sources if str(s).strip()][:5]
+
+        if not selected_findings:
+            selected_findings = ["No reliable findings were returned for this query."]
+        if not selected_sources:
+            selected_sources = ["multiple sources"]
+
+        seed = " ".join(selected_findings)
+        lines = [
+            "NOVA MULTI-SOURCE REPORT",
+            "------------------------",
+            f"Query: {query_text}",
+            "",
+            "Strategic Snapshot",
+            self._strategic_snapshot([{"title": item, "summary": item} for item in selected_findings]),
+            "",
+            "Top Findings",
+        ]
+        lines.extend(f"- {item}" for item in selected_findings)
+        lines.extend(
+            [
+                "",
+                "Cross-Story Insight",
+                f"Signal: {self._derive_signal(seed)}",
+                f"Implication: {self._derive_implication(seed)}",
+                f"Watch: {self._derive_watch(seed)}",
+                "",
+                "Sources",
+            ]
+        )
+        lines.extend(f"- {src}" for src in selected_sources)
+        if analysis_text.strip():
+            lines.extend(["", "Analyst Note", analysis_text.strip()])
+        return "\n".join(lines)

@@ -193,6 +193,10 @@ async def send_widget_message(
         payload["data"] = data
     await ws_send(ws, payload)
 
+
+async def send_trust_status(ws: WebSocket, trust_status: dict) -> None:
+    await ws_send(ws, {"type": "trust_status", "data": dict(trust_status or {})})
+
 # -------------------------------------------------
 # WebSocket Endpoint
 # -------------------------------------------------
@@ -224,9 +228,16 @@ async def websocket_endpoint(ws: WebSocket):
         "topic_memory_map": {},
         "analysis_documents": [],
         "last_analysis_doc_id": None,
+        "trust_status": {
+            "mode": "Local-only",
+            "last_external_call": "None",
+            "data_egress": "No external call in this step",
+            "failure_state": "Normal",
+        },
     }
 
     await send_chat_message(ws, "Hello. How can I help?")
+    await send_trust_status(ws, session_state["trust_status"])
     await send_chat_done(ws)
 
     try:
@@ -411,6 +422,13 @@ async def websocket_endpoint(ws: WebSocket):
                         weather_summary = weather_result.message
                         if isinstance(weather_result.widget_data, dict):
                             await ws_send(ws, weather_result.widget_data)
+                        session_state["trust_status"] = {
+                            "mode": "Online",
+                            "last_external_call": "Weather update",
+                            "data_egress": "Read-only external request",
+                            "failure_state": "Normal",
+                        }
+                        await send_trust_status(ws, session_state["trust_status"])
 
                 if news_skill is not None:
                     news_result = await news_skill.handle("news")
@@ -419,6 +437,13 @@ async def websocket_endpoint(ws: WebSocket):
                             news_summary = (news_result.widget_data.get("summary") or news_summary)
                             session_state["news_cache"] = list(news_result.widget_data.get("items") or [])
                             await ws_send(ws, news_result.widget_data)
+                        session_state["trust_status"] = {
+                            "mode": "Online",
+                            "last_external_call": "News update",
+                            "data_egress": "Read-only external request",
+                            "failure_state": "Normal",
+                        }
+                        await send_trust_status(ws, session_state["trust_status"])
 
                 if system_skill is not None:
                     system_result = await system_skill.handle("system status")
@@ -488,6 +513,22 @@ async def websocket_endpoint(ws: WebSocket):
 
                 if capability_id != 18 and action_result.message:
                     session_state["last_response"] = action_result.message
+
+                if capability_id in {16, 48}:
+                    session_state["trust_status"] = {
+                        "mode": "Online" if action_result.success else "Local-only",
+                        "last_external_call": "Governed web search",
+                        "data_egress": "Read-only external request" if action_result.success else "External request failed",
+                        "failure_state": "Normal" if action_result.success else "Degraded",
+                    }
+                else:
+                    session_state["trust_status"] = {
+                        "mode": "Local-only",
+                        "last_external_call": session_state.get("trust_status", {}).get("last_external_call", "None"),
+                        "data_egress": "No external call in this step",
+                        "failure_state": "Normal" if action_result.success else "Temporary issue",
+                    }
+                await send_trust_status(ws, session_state["trust_status"])
 
                 message_confidence: Optional[str] = None
                 message_suggestions: list[dict[str, str]] | None = None
@@ -615,6 +656,22 @@ async def websocket_endpoint(ws: WebSocket):
                     await send_widget_message(ws, "weather", message, widget_data)
                 else:
                     await send_chat_message(ws, message, message_id=message_id)
+
+                if skill_name in {"weather", "news", "web_search", "web_search_skill"}:
+                    session_state["trust_status"] = {
+                        "mode": "Online" if getattr(skill_result, "success", False) else "Local-only",
+                        "last_external_call": f"{skill_name} request",
+                        "data_egress": "Read-only external request" if getattr(skill_result, "success", False) else "External request failed",
+                        "failure_state": "Normal" if getattr(skill_result, "success", False) else "Degraded",
+                    }
+                elif skill_name:
+                    session_state["trust_status"] = {
+                        "mode": "Local-only",
+                        "last_external_call": session_state.get("trust_status", {}).get("last_external_call", "None"),
+                        "data_egress": "No external call in this step",
+                        "failure_state": "Normal" if getattr(skill_result, "success", False) else "Temporary issue",
+                    }
+                await send_trust_status(ws, session_state["trust_status"])
 
                 await send_chat_done(ws)
 

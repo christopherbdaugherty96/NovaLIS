@@ -250,6 +250,83 @@ function appendConfidenceBadge(container, label) {
   container.appendChild(badge);
 }
 
+function parseStructuredReport(text) {
+  const raw = String(text || "").trim();
+  if (!raw) return null;
+
+  const isReport =
+    raw.startsWith("NOVA MULTI-SOURCE REPORT") ||
+    raw.startsWith("NOVA INTELLIGENCE BRIEF");
+  if (!isReport) return null;
+
+  const lines = raw.split(/\r?\n/);
+  const title = lines[0].trim();
+  const sections = [];
+  let current = null;
+
+  const sectionHeaders = new Set([
+    "Strategic Snapshot",
+    "Top Findings",
+    "Cross-Story Insight",
+    "Cross-Story Insights",
+    "Sources",
+    "Confidence",
+    "Narrative Threads",
+    "Topic Clusters",
+    "Detailed Story Briefs",
+    "Analyst Note",
+  ]);
+
+  for (let i = 1; i < lines.length; i += 1) {
+    const line = lines[i].trim();
+    if (!line || /^-+$/.test(line)) continue;
+    if (sectionHeaders.has(line)) {
+      if (current) sections.push(current);
+      current = { heading: line, rows: [] };
+      continue;
+    }
+    if (!current) {
+      current = { heading: "Overview", rows: [] };
+    }
+    current.rows.push(line);
+  }
+  if (current) sections.push(current);
+  return { title, sections };
+}
+
+function renderStructuredReport(container, report) {
+  const wrap = document.createElement("div");
+  wrap.className = "structured-report";
+
+  const title = document.createElement("div");
+  title.className = "structured-report-title";
+  title.textContent = report.title;
+  wrap.appendChild(title);
+
+  report.sections.forEach((section) => {
+    const card = document.createElement("div");
+    card.className = "structured-section";
+
+    const h = document.createElement("div");
+    h.className = "structured-section-heading";
+    h.textContent = section.heading;
+    card.appendChild(h);
+
+    const list = document.createElement("div");
+    list.className = "structured-section-body";
+    section.rows.forEach((row) => {
+      const p = document.createElement("div");
+      p.className = "structured-row";
+      p.textContent = row;
+      list.appendChild(p);
+    });
+    card.appendChild(list);
+    wrap.appendChild(card);
+  });
+
+  container.appendChild(wrap);
+}
+
 function isOperationalMessage(text) {
   const msg = (text || "").toLowerCase();
   return (
@@ -375,31 +452,36 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
   const div = document.createElement("div");
   div.className = `chat-${role}`;
 
-  const textNode = document.createElement("span");
   const msgText = String(text || "");
-  const LONG_TEXT_THRESHOLD = 420;
-  if (role === "assistant" && msgText.length > LONG_TEXT_THRESHOLD) {
-    const preview = msgText.slice(0, LONG_TEXT_THRESHOLD).trimEnd() + "...";
-    textNode.textContent = preview;
-    textNode.dataset.fullText = msgText;
-    textNode.dataset.previewText = preview;
-    textNode.dataset.expanded = "false";
-    div.appendChild(textNode);
-
-    const expandBtn = document.createElement("button");
-    expandBtn.type = "button";
-    expandBtn.className = "message-expand-btn";
-    expandBtn.textContent = "Show more";
-    expandBtn.addEventListener("click", () => {
-      const expanded = textNode.dataset.expanded === "true";
-      textNode.textContent = expanded ? textNode.dataset.previewText : textNode.dataset.fullText;
-      textNode.dataset.expanded = expanded ? "false" : "true";
-      expandBtn.textContent = expanded ? "Show more" : "Show less";
-    });
-    div.appendChild(expandBtn);
+  const structured = role === "assistant" ? parseStructuredReport(msgText) : null;
+  if (structured) {
+    renderStructuredReport(div, structured);
   } else {
-    textNode.textContent = msgText;
-    div.appendChild(textNode);
+    const textNode = document.createElement("span");
+  const LONG_TEXT_THRESHOLD = 420;
+    if (role === "assistant" && msgText.length > LONG_TEXT_THRESHOLD) {
+      const preview = msgText.slice(0, LONG_TEXT_THRESHOLD).trimEnd() + "...";
+      textNode.textContent = preview;
+      textNode.dataset.fullText = msgText;
+      textNode.dataset.previewText = preview;
+      textNode.dataset.expanded = "false";
+      div.appendChild(textNode);
+
+      const expandBtn = document.createElement("button");
+      expandBtn.type = "button";
+      expandBtn.className = "message-expand-btn";
+      expandBtn.textContent = "Show more";
+      expandBtn.addEventListener("click", () => {
+        const expanded = textNode.dataset.expanded === "true";
+        textNode.textContent = expanded ? textNode.dataset.previewText : textNode.dataset.fullText;
+        textNode.dataset.expanded = expanded ? "false" : "true";
+        expandBtn.textContent = expanded ? "Show more" : "Show less";
+      });
+      div.appendChild(expandBtn);
+    } else {
+      textNode.textContent = msgText;
+      div.appendChild(textNode);
+    }
   }
 
   if (confidence && role === "assistant") {
@@ -692,10 +774,6 @@ function connectWebSocket() {
   ws = new WebSocket("ws://127.0.0.1:8000/ws");
 
   ws.onopen = () => {
-    trustState.mode = "Local-only";
-    trustState.failureState = "Normal";
-    trustState.consecutiveFailures = 0;
-    renderTrustPanel();
     safeWSSend({ text: "weather" });
     safeWSSend({ text: "news" });
     safeWSSend({ text: "system status" });
@@ -710,23 +788,16 @@ function connectWebSocket() {
     switch (msg.type) {
       case "weather":
         renderWeatherWidget(msg.data);
-        markExternalCall("Weather");
-        markRecovered();
         break;
       case "news":
         renderNewsWidget(msg.items, msg.summary || "");
-        markExternalCall("News");
-        markRecovered();
         break;
       case "search":
         renderSearchWidget(msg.data);
-        markExternalCall("Web search");
-        markRecovered();
         break;
       case "system":
         morningState.system = msg.summary || "System status ready.";
         renderMorningPanel();
-        markLocalMode();
         break;
       case "chat":
         appendChatMessage(
@@ -736,7 +807,15 @@ function connectWebSocket() {
           msg.confidence || "",
           msg.suggested_actions || null
         );
-        maybeMarkReactiveFailureFromText(msg.message || "");
+        break;
+      case "trust_status":
+        if (msg.data && typeof msg.data === "object") {
+          trustState.mode = msg.data.mode || trustState.mode;
+          trustState.lastExternalCall = msg.data.last_external_call || trustState.lastExternalCall;
+          trustState.dataEgress = msg.data.data_egress || trustState.dataEgress;
+          trustState.failureState = msg.data.failure_state || trustState.failureState;
+          renderTrustPanel();
+        }
         break;
       case "chat_done":
         waitingForAssistant = false;
@@ -753,7 +832,6 @@ function connectWebSocket() {
       case "error":
         waitingForAssistant = false;
         setThinkingBar(false);
-        markFailure("Temporary issue");
         appendChatMessage("assistant", translateError(msg.code, msg.message), null, "System status");
         break;
     }
@@ -762,7 +840,6 @@ function connectWebSocket() {
   ws.onclose = () => {
     waitingForAssistant = false;
     setThinkingBar(false);
-    markFailure("Disconnected");
     setTimeout(connectWebSocket, 2000);
   };
 }

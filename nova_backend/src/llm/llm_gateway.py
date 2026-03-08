@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 import logging
-from typing import Any
 
+from src.llm.llm_manager import llm_manager
 
 logger = logging.getLogger(__name__)
 
@@ -21,24 +21,14 @@ def generate_chat(
     del mode, safety_profile, request_id
 
     try:
-        import ollama
-    except Exception:
-        return None
-
-    messages: list[dict[str, Any]] = []
-    if system_prompt:
-        messages.append({"role": "system", "content": system_prompt})
-    messages.append({"role": "user", "content": prompt})
-
-    try:
-        response = ollama.chat(
-            model="phi3:mini",
-            messages=messages,
-            options={"temperature": temperature, "num_predict": max_tokens},
+        response_text = llm_manager.generate(
+            prompt,
+            system_prompt=system_prompt or "",
+            temperature=temperature,
+            max_tokens=max_tokens,
         )
     except Exception as error:
         logger.error("LLM gateway call failed: %s", error)
         return None
 
-    text = response.get("message", {}).get("content", "")
-    return (text or "").strip() or None
+    return (response_text or "").strip() or None

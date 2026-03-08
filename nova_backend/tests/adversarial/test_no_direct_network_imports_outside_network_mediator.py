@@ -18,6 +18,7 @@ ALLOWED_NETWORK_IMPORT_FILES = {
     NETWORK_MEDIATOR_PATH,
     SRC_ROOT / "llm" / "llm_manager.py",
     SRC_ROOT / "llm" / "llm_manager_vlock.py",
+    SRC_ROOT / "llm" / "model_network_mediator.py",
 }
 
 
