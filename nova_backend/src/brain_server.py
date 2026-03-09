@@ -1138,6 +1138,7 @@ async def websocket_endpoint(ws: WebSocket):
                         and action_result.success
                         and capability_id != 18):
                     session_state["last_input_channel"] = None   # prevent re-trigger
+                session_state["turn_count"] += 1
                 continue
 
             elif isinstance(inv_result, Clarification):
@@ -1147,6 +1148,7 @@ async def websocket_endpoint(ws: WebSocket):
                     suggested_actions=_clarification_suggestions(inv_result.message),
                 )
                 await send_chat_done(ws)
+                session_state["turn_count"] += 1
                 continue
 
             # --- inv_result is None – proceed to Phase‑3.5 handling ---
@@ -1287,6 +1289,7 @@ async def websocket_endpoint(ws: WebSocket):
                 suggested_actions=_conversation_suggestions(session_state),
             )
             await send_chat_done(ws)
+            session_state["turn_count"] += 1
 
             # (No auto‑speak for fallback – optional, but omitted to stay minimal)
 

@@ -3,10 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import platform
 import re
-import subprocess
-import sys
 from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -420,51 +417,33 @@ def _executor_paths_outside_governor() -> list[str]:
     return paths
 
 
+def _runtime_surface_hash() -> str:
+    """Deterministic hash over allowlisted runtime sources for cross-environment parity."""
+    digest = hashlib.sha256()
+    runtime_doc_root = RUNTIME_DOC_DIR.resolve()
+    for path in sorted(ALLOWED_READ_PATHS):
+        resolved = path.resolve()
+        if resolved.is_relative_to(runtime_doc_root):
+            # Exclude generated runtime docs to avoid self-referential hash drift.
+            continue
+        try:
+            rel = resolved.relative_to(PROJECT_ROOT).as_posix()
+        except ValueError:
+            rel = resolved.as_posix()
+        digest.update(rel.encode("utf-8"))
+        digest.update(b"\n")
+        if resolved.exists():
+            digest.update(resolved.read_bytes())
+        digest.update(b"\n")
+    return digest.hexdigest()
+
+
 def _runtime_fingerprint(registry_enabled_ids: list[int]) -> dict[str, str]:
-    commit_hash = "unknown"
-    branch_name = "unknown"
-    dirty = "unknown"
-    try:
-        result = subprocess.run(
-            ["git", "rev-parse", "HEAD"],
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        commit_hash = result.stdout.strip() or "unknown"
-    except Exception:
-        commit_hash = "unknown"
-
-    try:
-        branch = subprocess.run(
-            ["git", "rev-parse", "--abbrev-ref", "HEAD"],
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        branch_name = branch.stdout.strip() or "unknown"
-    except Exception:
-        branch_name = "unknown"
-
-    try:
-        status = subprocess.run(
-            ["git", "status", "--porcelain"],
-            cwd=PROJECT_ROOT,
-            capture_output=True,
-            text=True,
-            check=True,
-        )
-        dirty = "true" if status.stdout.strip() else "false"
-    except Exception:
-        dirty = "unknown"
-
+    runtime_surface_hash = _runtime_surface_hash()
     enabled_hash = hashlib.sha256(json.dumps(registry_enabled_ids, sort_keys=True).encode("utf-8")).hexdigest()
     payload = {
-        "commit": commit_hash,
-        "branch": branch_name,
         "enabled_capability_ids": registry_enabled_ids,
+        "runtime_surface_hash": runtime_surface_hash,
         "phase_marker": f"Build phase {BUILD_PHASE}",
     }
     runtime_fingerprint_hash = hashlib.sha256(
@@ -472,12 +451,7 @@ def _runtime_fingerprint(registry_enabled_ids: list[int]) -> dict[str, str]:
     ).hexdigest()
 
     return {
-        "git_commit_hash": commit_hash,
-        "git_branch": branch_name,
-        "git_dirty": dirty,
-        "python_version": sys.version.split()[0],
-        "platform": platform.platform(),
-        "generated_at_utc": datetime.now(timezone.utc).isoformat(),
+        "runtime_surface_hash": runtime_surface_hash,
         "enabled_capability_ids_hash": enabled_hash,
         "runtime_fingerprint_hash": runtime_fingerprint_hash,
         "phase_marker": f"Build phase {BUILD_PHASE}",
@@ -885,12 +859,7 @@ def render_runtime_fingerprint_markdown(registry_enabled_ids: list[int]) -> str:
     lines = [
         "# RUNTIME_FINGERPRINT",
         "",
-        f"- git_commit_hash: {fp['git_commit_hash']}",
-        f"- git_branch: {fp['git_branch']}",
-        f"- git_dirty: {fp['git_dirty']}",
-        f"- python_version: {fp['python_version']}",
-        f"- platform: {fp['platform']}",
-        f"- generated_at_utc: {fp['generated_at_utc']}",
+        f"- runtime_surface_hash: {fp['runtime_surface_hash']}",
         f"- enabled_capability_ids_hash: {fp['enabled_capability_ids_hash']}",
         f"- runtime_fingerprint_hash: {fp['runtime_fingerprint_hash']}",
         f"- phase_marker: {fp['phase_marker']}",
@@ -969,7 +938,6 @@ def render_governance_matrix_tree_markdown(registry: dict[str, Any]) -> str:
 
 
 def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict[str, Any]) -> str:
-    generated_at = report.get("generated_at_utc", "")
     capabilities = registry.get("capabilities", [])
     enabled_ids = sorted(int(item["id"]) for item in capabilities if item.get("enabled") is True)
     disabled_ids = sorted(int(item["id"]) for item in capabilities if item.get("enabled") is not True)
@@ -1006,12 +974,12 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     executor_count = len([p for p in EXECUTORS_DIR.glob("*.py") if p.name != "__init__.py"])
     skill_count = len([p for p in SKILLS_DIR.glob("*.py") if p.name != "__init__.py"])
     fingerprint_payload = {
-        "commit": fingerprint["git_commit_hash"],
-        "branch": fingerprint["git_branch"],
         "enabled_capability_ids": enabled_ids,
         "governor_modules": governor_modules,
         "executor_count": executor_count,
         "skill_count": skill_count,
+        "runtime_surface_hash": fingerprint["runtime_surface_hash"],
+        "phase_marker": fingerprint["phase_marker"],
     }
     runtime_hash = hashlib.sha256(
         json.dumps(fingerprint_payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -1019,10 +987,6 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
 
     lines = [
         "# NOVA - CURRENT RUNTIME STATE",
-        "",
-        f"Generated: {generated_at}",
-        f"Commit: {fingerprint['git_commit_hash']}",
-        f"Branch: {fingerprint['git_branch']}",
         "",
         f"Runtime Fingerprint: {runtime_hash}",
         "Generated By: scripts/generate_runtime_docs.py",
@@ -1152,6 +1116,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
             f"- Governor Modules: {len(governor_modules)}",
             f"- Executors: {executor_count}",
             f"- Skills: {skill_count}",
+            f"- Runtime Surface Hash: {fingerprint['runtime_surface_hash']}",
             "",
             f"- Hash: {runtime_hash}",
             "",

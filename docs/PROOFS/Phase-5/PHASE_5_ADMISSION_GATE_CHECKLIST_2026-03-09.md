@@ -1,6 +1,6 @@
 # Phase-5 Admission Gate Checklist
 Date: 2026-03-09
-Commit: 6932b42
+Commit Base: 23e2af5
 Status: Design-gated (not authorized)
 Scope: Mechanical checklist for Phase-5 admission gate tracking under constitutional locks.
 

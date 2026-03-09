@@ -1,6 +1,7 @@
 # src/governor/network_mediator.py
 
 import ipaddress
+import os
 import socket
 import threading
 from collections import defaultdict
@@ -18,6 +19,13 @@ ALLOWED_SCHEMES = {"http", "https"}
 DISALLOWED_HOSTS = {"localhost", "127.0.0.1", "::1"}
 RATE_LIMIT_PER_MINUTE = 50
 MAX_REDIRECT_HOPS = 5
+HTTP_EXCEPTION_ENV = "NOVA_HTTP_EXCEPTION_HOSTS"
+
+
+def _http_exception_hosts() -> set[str]:
+    """Comma-delimited HTTP host allowlist for explicit legacy exceptions."""
+    raw = os.getenv(HTTP_EXCEPTION_ENV, "")
+    return {host.strip().lower() for host in raw.split(",") if host.strip()}
 
 
 class NetworkMediator:
@@ -77,6 +85,10 @@ class NetworkMediator:
             raise NetworkMediatorError("URL must have a hostname.")
         if host in DISALLOWED_HOSTS:
             raise NetworkMediatorError("Access to localhost is forbidden.")
+        if parsed.scheme == "http" and host.lower() not in _http_exception_hosts():
+            raise NetworkMediatorError(
+                "Plain HTTP is blocked by policy. Use HTTPS or add an explicit HTTP exception host."
+            )
 
         # Block private IP ranges if host is an IP literal
         try:

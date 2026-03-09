@@ -26,7 +26,7 @@ class NewsSkill(BaseSkill):
         {"name": "PBS NewsHour", "feed": "https://www.pbs.org/newshour/feeds/rss/headlines", "domain": "pbs.org"},
         {"name": "ABC News", "feed": "https://abcnews.go.com/abcnews/topstories", "domain": "abcnews.go.com"},
         {"name": "FOX News", "feed": "https://feeds.foxnews.com/foxnews/latest", "domain": "foxnews.com"},
-        {"name": "CNN", "feed": "http://rss.cnn.com/rss/cnn_topstories.rss", "domain": "cnn.com"},
+        {"name": "CNN", "feed": "https://rss.cnn.com/rss/cnn_topstories.rss", "domain": "cnn.com"},
     ]
 
     def __init__(self, network: NetworkMediator | None = None):

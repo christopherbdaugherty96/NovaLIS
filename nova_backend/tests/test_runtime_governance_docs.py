@@ -1,4 +1,5 @@
 from pathlib import Path
+import re
 
 from src.audit import runtime_auditor as ra
 
@@ -52,6 +53,31 @@ def test_current_runtime_state_includes_required_sections():
 
     assert "Manual edits: NOT PERMITTED" in md
     assert "| 49 | headline_summary |" in md
+
+
+def test_runtime_fingerprint_markdown_omits_volatile_fields():
+    md = ra.render_runtime_fingerprint_markdown([16, 48, 54])
+    assert "runtime_surface_hash" in md
+    assert "runtime_fingerprint_hash" in md
+    assert "git_commit_hash" not in md
+    assert "git_dirty" not in md
+    assert "generated_at_utc" not in md
+    assert "python_version" not in md
+    assert "platform" not in md
+
+
+def test_runtime_surface_hash_consistent_between_runtime_docs():
+    report = ra.run_runtime_truth_audit()
+    registry = ra._load_registry()
+    state_md = ra.render_current_runtime_state_markdown(report, registry)
+    fp_md = ra.render_runtime_fingerprint_markdown(ra._enabled_registry_ids(registry))
+
+    state_match = re.search(r"^- Runtime Surface Hash: ([a-f0-9]{64})$", state_md, flags=re.MULTILINE)
+    fp_match = re.search(r"^- runtime_surface_hash: ([a-f0-9]{64})$", fp_md, flags=re.MULTILINE)
+
+    assert state_match is not None
+    assert fp_match is not None
+    assert state_match.group(1) == fp_match.group(1)
 
 
 def test_governance_matrix_tree_up_to_date_with_renderer():
