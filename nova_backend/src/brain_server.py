@@ -238,7 +238,7 @@ def _clarification_suggestions(message: str) -> list[dict[str, str]]:
         ]
     if "what should i search" in lower:
         return [
-            {"label": "Search weather", "command": "search weather in Ann Arbor"},
+            {"label": "Search weather", "command": "search local weather forecast"},
             {"label": "Search tech news", "command": "search latest tech news"},
             {"label": "Today's brief", "command": "today's news"},
         ]
