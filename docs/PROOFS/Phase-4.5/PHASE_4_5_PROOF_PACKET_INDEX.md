@@ -1,6 +1,6 @@
 ﻿# Phase 4.5 Proof Packet Index
 Date: 2026-03-09
-Commit: 6932b42
+Commit Base: 23e2af5
 Purpose: Canonical proof packet for Phase 4.5 closure with active runtime and Phase 5 readiness evidence.
 
 ## Core Runtime Proofs
@@ -24,9 +24,12 @@ Purpose: Canonical proof packet for Phase 4.5 closure with active runtime and Ph
 ## Verification Commands
 - `python -m pytest nova_backend/tests/phase45 -q` (with `PYTHONPATH=nova_backend`)
 - `python -m pytest nova_backend/tests -q` (with `PYTHONPATH=nova_backend`)
-- `python scripts/check_runtime_doc_drift.py` (with `PYTHONPATH=nova_backend`)
+- `python scripts/generate_runtime_docs.py`
+- `python scripts/check_runtime_doc_drift.py`
+- `python scripts/check_frontend_mirror_sync.py`
 
 ## Last Verified Result
 - `nova_backend/tests/phase45`: `9 passed`
-- Full backend suite: `211 passed`
+- Full backend suite: `228 passed`
 - Runtime documentation drift check passed
+- Frontend mirror sync check passed

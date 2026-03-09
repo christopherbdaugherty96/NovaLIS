@@ -34,9 +34,9 @@ Scope: Final file-level implementation map for Cognitive Depth and Structured In
 | Phase-4.2 proof packet | Implemented | `docs/PROOFS/Phase-4.2/*` | Packet index + closure docs |
 
 ## Closure Verification Snapshot
-- `python -m pytest nova_backend/tests/phase42 -q` -> `11 passed`
+- `python -m pytest nova_backend/tests/phase42 -q` -> `13 passed`
 - Targeted closure tests (executors/rendering/contract/dashboard) -> `13 passed`
-- `python -m pytest nova_backend/tests -q` -> `222 passed`
+- `python -m pytest nova_backend/tests -q` -> `228 passed`
 - `python scripts/generate_runtime_docs.py` -> completed
 - `python scripts/check_runtime_doc_drift.py` -> passed
 

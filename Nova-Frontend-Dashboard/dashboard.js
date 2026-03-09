@@ -13,7 +13,7 @@ let morningState = {
   weather: "Loading...",
   news: "Loading...",
   system: "Loading...",
-  calendar: "Coming soon",
+  calendar: "Loading...",
 };
 let trustState = {
   mode: "Local-only",
@@ -355,12 +355,19 @@ function parseStructuredReport(text) {
   let current = null;
 
   const sectionHeaders = new Set([
+    "Summary",
+    "Key Findings",
+    "Supporting Sources",
+    "Contradictions",
     "Strategic Snapshot",
     "Top Findings",
     "Cross-Story Insight",
     "Cross-Story Insights",
     "Sources",
     "Confidence",
+    "Source Credibility",
+    "Confidence Factors",
+    "Counter Analysis",
     "Narrative Threads",
     "Topic Clusters",
     "Detailed Story Briefs",
@@ -382,6 +389,20 @@ function parseStructuredReport(text) {
   }
   if (current) sections.push(current);
   return { title, sections };
+}
+
+function collectReportSources(report) {
+  const sourceHeadings = new Set(["Sources", "Supporting Sources", "Source Credibility"]);
+  const rows = [];
+  (report.sections || []).forEach((section) => {
+    if (!section || !sourceHeadings.has(section.heading)) return;
+    (section.rows || []).forEach((row) => {
+      const clean = String(row || "").trim();
+      if (!clean) return;
+      rows.push(clean.replace(/^\d+\.\s+/, "").replace(/^-\s+/, ""));
+    });
+  });
+  return Array.from(new Set(rows)).slice(0, 12);
 }
 
 function parseDailyBriefV2(text) {
@@ -544,14 +565,59 @@ function renderStructuredReport(container, report) {
   title.textContent = report.title;
   wrap.appendChild(title);
 
+  const actions = document.createElement("div");
+  actions.className = "structured-report-actions";
+
+  const copyBtn = document.createElement("button");
+  copyBtn.type = "button";
+  copyBtn.className = "assistant-action-btn";
+  copyBtn.textContent = "Copy sources";
+  copyBtn.addEventListener("click", async () => {
+    const sources = collectReportSources(report);
+    if (!sources.length) {
+      copyBtn.textContent = "No sources";
+      setTimeout(() => { copyBtn.textContent = "Copy sources"; }, 1200);
+      return;
+    }
+    try {
+      await navigator.clipboard.writeText(sources.join("\n"));
+      copyBtn.textContent = "Copied";
+    } catch (_) {
+      copyBtn.textContent = "Copy failed";
+    }
+    setTimeout(() => { copyBtn.textContent = "Copy sources"; }, 1200);
+  });
+  actions.appendChild(copyBtn);
+
+  const followupBtn = document.createElement("button");
+  followupBtn.type = "button";
+  followupBtn.className = "assistant-action-btn";
+  followupBtn.textContent = "Follow-up analysis";
+  followupBtn.addEventListener("click", () => {
+    injectUserText("phase42: follow up on this report with deeper analysis", "text");
+  });
+  actions.appendChild(followupBtn);
+  wrap.appendChild(actions);
+
   report.sections.forEach((section) => {
     const card = document.createElement("div");
     card.className = "structured-section";
 
+    const header = document.createElement("div");
+    header.className = "structured-section-header";
+
     const h = document.createElement("div");
     h.className = "structured-section-heading";
     h.textContent = section.heading;
-    card.appendChild(h);
+    header.appendChild(h);
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "structured-section-toggle";
+    toggle.textContent = "Collapse";
+    toggle.setAttribute("aria-expanded", "true");
+    header.appendChild(toggle);
+    card.appendChild(header);
 
     const list = document.createElement("div");
     list.className = "structured-section-body";
@@ -560,6 +626,12 @@ function renderStructuredReport(container, report) {
       p.className = "structured-row";
       p.textContent = row;
       list.appendChild(p);
+    });
+    toggle.addEventListener("click", () => {
+      const expanded = toggle.getAttribute("aria-expanded") === "true";
+      list.hidden = expanded;
+      toggle.setAttribute("aria-expanded", expanded ? "false" : "true");
+      toggle.textContent = expanded ? "Expand" : "Collapse";
     });
     card.appendChild(list);
     wrap.appendChild(card);
@@ -1140,6 +1212,10 @@ function connectWebSocket() {
         break;
       case "system":
         morningState.system = msg.summary || "System status ready.";
+        renderMorningPanel();
+        break;
+      case "calendar":
+        morningState.calendar = msg.summary || msg.message || "No events scheduled today.";
         renderMorningPanel();
         break;
       case "chat":

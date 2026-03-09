@@ -1,6 +1,6 @@
 # Phase-5 Gate Prep Proof Packet Index
 Date: 2026-03-09
-Commit: 6932b42
+Commit Base: 23e2af5
 Status: DESIGN-GATED
 Purpose: Canonical gate-preparation packet for Phase 5 (Memory and Continuity) under existing constitutional locks.
 
@@ -30,9 +30,14 @@ Purpose: Canonical gate-preparation packet for Phase 5 (Memory and Continuity) u
 ## Verification Commands
 - `python -m pytest nova_backend/tests/phase5 -q`
 - `python -m pytest nova_backend/tests -q` (with `PYTHONPATH=nova_backend`)
+- `python scripts/generate_runtime_docs.py`
+- `python scripts/check_runtime_doc_drift.py`
+- `python scripts/check_frontend_mirror_sync.py`
 
 ## Last Verified Result
-- `nova_backend/tests/phase5`: pass
-- Full backend suite baseline: `219 passed`
+- `nova_backend/tests/phase5`: `8 passed`
+- Full backend suite baseline: `228 passed`
+- Runtime documentation drift check passed
+- Frontend mirror sync check passed
 - Runtime states preserved: `Phase 5 | DESIGN`
 - Admission gate state: `OPEN (pending ratifications and final audit)`

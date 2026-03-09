@@ -1,6 +1,6 @@
 ﻿# Phase-4 Proof Packet Index
 Date: 2026-03-09
-Commit: 3bd772e
+Commit Base: 23e2af5
 Purpose: Canonical proof packet for Phase-4 closure with current runtime state.
 
 ## Core Governance Proofs
@@ -24,6 +24,7 @@ Purpose: Canonical proof packet for Phase-4 closure with current runtime state.
 5. `../Phase-4.2/PHASE_4_2_RUNTIME_CERTIFICATION_2026-03-09.md`
 6. `../Phase-4.2/PHASE_4_2_COMPLETION_EVIDENCE_MATRIX_2026-03-09.md`
 7. `../Phase-4.2/PHASE_4_2_CLOSED_ACT_2026-03-09.md`
+8. `../Phase-4.2/PHASE_4_2_RUNTIME_STATUS_ALIGNMENT_AND_HARDENING_2026-03-09.md`
 
 ## Runtime Cross-References
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
@@ -33,13 +34,15 @@ Purpose: Canonical proof packet for Phase-4 closure with current runtime state.
 - `docs/current_runtime/SKILL_SURFACE_MAP.md`
 
 ## Verification Commands
-- `python -m pytest tests`
-- `python scripts/generate_runtime_docs.py` (with `PYTHONPATH` set to `nova_backend`)
-- `python scripts/check_runtime_doc_drift.py` (with `PYTHONPATH` set to `nova_backend`)
+- `python -m pytest nova_backend/tests -q` (with `PYTHONPATH=nova_backend`)
+- `python scripts/generate_runtime_docs.py`
+- `python scripts/check_runtime_doc_drift.py`
+- `python scripts/check_frontend_mirror_sync.py`
 
 ## Last Verified Result
-- 222 passed
+- 228 passed
 - Runtime documentation drift check passed
+- Frontend mirror sync check passed
 
 ## Superseded Historical Snapshots
 - `PHASE_4_RUNTIME_CERTIFICATION_2026-03-08.md` (superseded by 2026-03-09 certification)
