@@ -34,10 +34,18 @@ def test_empty_query_returns_failure_with_empty_widget(executor):
 
     assert not result.success
     assert "No search query provided" in result.message
-    assert result.data["widget"]["data"]["results"] == []
+    widget_data = result.data["widget"]["data"]
+    assert widget_data["results"] == []
+    assert widget_data["query"] == ""
+    assert widget_data["result_count"] == 0
+    assert isinstance(widget_data["suggested_actions"], list)
 
 
-def test_successful_search_returns_results(executor, mock_network, sample_request):
+def test_successful_search_returns_results(executor, mock_network, sample_request, monkeypatch):
+    monkeypatch.setattr(
+        "src.executors.web_search_executor.generate_chat",
+        lambda *args, **kwargs: "Sourced synthesis: outlet reporting aligns on the primary development.",
+    )
     mock_network.request.return_value = {
         "status_code": 200,
         "data": {
@@ -73,10 +81,19 @@ def test_successful_search_returns_results(executor, mock_network, sample_reques
     widget = result.data.get("widget", {})
     assert widget["type"] == "search"
 
-    results = widget["data"]["results"]
+    widget_data = widget["data"]
+    results = widget_data["results"]
     assert len(results) == 3
     assert results[0]["title"] == "Result one title"
     assert results[1]["title"] == "Result two title"
+    assert widget_data["query"] == "test query"
+    assert widget_data["provider"] == "Brave Search"
+    assert widget_data["result_count"] == 3
+    assert widget_data["summary"]
+    assert widget_data["source_pages_read"] >= 0
+    assert "researched_summary" in widget_data
+    assert isinstance(widget_data["suggested_actions"], list)
+    assert widget_data["suggested_actions"]
 
 
 def test_no_results_returns_empty_widget(executor, mock_network, sample_request):
@@ -89,7 +106,11 @@ def test_no_results_returns_empty_widget(executor, mock_network, sample_request)
 
     assert result.success
     assert "No results" in result.message
-    assert result.data["widget"]["data"]["results"] == []
+    widget_data = result.data["widget"]["data"]
+    assert widget_data["results"] == []
+    assert widget_data["query"] == "test query"
+    assert widget_data["provider"] == "Brave Search"
+    assert widget_data["result_count"] == 0
 
 
 def test_non_200_status_returns_failure_with_empty_widget(
@@ -100,8 +121,10 @@ def test_non_200_status_returns_failure_with_empty_widget(
     result = executor.execute(sample_request)
 
     assert not result.success
-    assert "unexpected response" in result.message.lower()
-    assert result.data["widget"]["data"]["results"] == []
+    assert "network issue" in result.message.lower()
+    widget_data = result.data["widget"]["data"]
+    assert widget_data["results"] == []
+    assert widget_data["query"] == "test query"
 
 
 def test_retry_on_network_error_then_success(executor, mock_network, sample_request):
@@ -128,7 +151,7 @@ def test_retry_on_network_error_then_success(executor, mock_network, sample_requ
     result = executor.execute(sample_request)
 
     assert result.success
-    assert mock_network.request.call_count == 2
+    assert mock_network.request.call_count >= 2
 
 
 def test_retry_on_network_error_then_failure(executor, mock_network, sample_request):
@@ -143,13 +166,65 @@ def test_retry_on_network_error_then_failure(executor, mock_network, sample_requ
     assert mock_network.request.call_count == 2
 
 
-def test_missing_brave_api_key_fails_fast(
+def test_missing_brave_api_key_uses_duck_fallback(
     executor, mock_network, sample_request, monkeypatch
 ):
     monkeypatch.delenv("BRAVE_API_KEY", raising=False)
+    monkeypatch.setattr(
+        "src.executors.web_search_executor.generate_chat",
+        lambda *args, **kwargs: "Duck-backed synthesis summary.",
+    )
+    mock_network.request.return_value = {
+        "status_code": 200,
+        "data": {
+            "Abstract": "Duck fallback summary",
+            "AbstractURL": "https://duck.example/story",
+            "RelatedTopics": [],
+        },
+    }
 
     result = executor.execute(sample_request)
 
-    assert not result.success
-    assert result.message == "Web search is not configured."
-    assert mock_network.request.call_count == 0
+    assert result.success is True
+    assert "duckduckgo" in result.message.lower()
+    assert mock_network.request.call_count >= 1
+    widget_data = result.data["widget"]["data"]
+    assert widget_data["provider"] == "DuckDuckGo Instant Answer"
+    assert widget_data["result_count"] == 1
+
+
+def test_search_reads_source_pages_and_uses_researched_summary(executor, mock_network, sample_request, monkeypatch):
+    monkeypatch.setattr(
+        "src.executors.web_search_executor.generate_chat",
+        lambda *args, **kwargs: "Sourced answer based on reviewed pages from example.com and sample.org.",
+    )
+    mock_network.request.side_effect = [
+        {
+            "status_code": 200,
+            "data": {
+                "web": {
+                    "results": [
+                        {
+                            "title": "Result one title",
+                            "url": "https://example.com/one",
+                            "description": "One",
+                        },
+                        {
+                            "title": "Result two title",
+                            "url": "https://sample.org/two",
+                            "description": "Two",
+                        },
+                    ]
+                }
+            },
+        },
+        {"status_code": 200, "text": "<html><body><article>First source details.</article></body></html>"},
+        {"status_code": 200, "text": "<html><body><article>Second source details.</article></body></html>"},
+    ]
+
+    result = executor.execute(sample_request)
+
+    assert result.success
+    widget_data = result.data["widget"]["data"]
+    assert widget_data["source_pages_read"] == 2
+    assert "Sourced answer based on reviewed pages" in widget_data["researched_summary"]

@@ -214,6 +214,39 @@ def test_news_intelligence_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 48
 
+    inv = GovernorMediator.parse_governed_invocation("what are the latest updates on ai regulation")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 48
+    assert "latest updates" in inv.params["query"].lower()
+
+    inv = GovernorMediator.parse_governed_invocation("show me current updates about semiconductor exports")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 48
+    assert "semiconductor exports" in inv.params["query"].lower()
+
+    inv = GovernorMediator.parse_governed_invocation("what is the price of bitcoin right now")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 48
+    assert "bitcoin" in inv.params["query"].lower()
+
+    inv = GovernorMediator.parse_governed_invocation("how is tesla stock doing today")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 48
+    assert "tesla" in inv.params["query"].lower()
+
+    inv = GovernorMediator.parse_governed_invocation("is sports betting legal in california")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 48
+    assert "legal in california" in inv.params["query"].lower()
+
+    inv = GovernorMediator.parse_governed_invocation("what are the latest SEC crypto regulation updates")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 48
+    assert "regulation updates" in inv.params["query"].lower()
+
+    inv = GovernorMediator.parse_governed_invocation("is the sky blue")
+    assert inv is None
+
     inv = GovernorMediator.parse_governed_invocation("open")
     assert isinstance(inv, Clarification)
     assert "what should i open" in inv.message.lower()

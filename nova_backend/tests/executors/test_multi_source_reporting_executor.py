@@ -103,3 +103,31 @@ def test_multi_source_report_falls_back_on_validation_failure(monkeypatch):
     assert brief.get("fallback_reason")
     assert isinstance(brief.get("source_credibility"), list)
     assert isinstance(brief.get("confidence_factors"), dict)
+
+
+def test_multi_source_report_uses_duck_fallback_when_brave_missing(monkeypatch):
+    from src.executors import multi_source_reporting_executor as mod
+
+    class FakeNetwork:
+        def request(self, **kwargs):
+            del kwargs
+            return {
+                "status_code": 200,
+                "data": {
+                    "Abstract": "AI regulation outlook",
+                    "AbstractURL": "https://duck.example/ai-regulation",
+                    "RelatedTopics": [
+                        {"Text": "Policy hearing summary", "FirstURL": "https://duck.example/hearing"}
+                    ],
+                },
+            }
+
+    monkeypatch.delenv("BRAVE_API_KEY", raising=False)
+    monkeypatch.setattr(mod, "generate_chat", lambda *args, **kwargs: "Analyst note.")
+
+    executor = mod.MultiSourceReportingExecutor(FakeNetwork())
+    result = executor.execute(_request({"query": "ai regulation updates"}))
+    assert result.success is True
+    brief = result.data.get("structured_brief", {})
+    assert brief.get("search_provider") == "duckduckgo"
+    assert "INTELLIGENCE BRIEF" in result.message

@@ -17,6 +17,8 @@ def test_fetch_rss_headlines_parses_summary_and_published(monkeypatch):
     )
 
     def _fake_request(self, capability_id, method, url, json_payload=None, params=None, headers=None, **kwargs):
+        assert headers is not None
+        assert "User-Agent" in headers
         return {"status_code": 200, "text": xml}
 
     monkeypatch.setattr(NetworkMediator, "request", _fake_request)
@@ -27,3 +29,26 @@ def test_fetch_rss_headlines_parses_summary_and_published(monkeypatch):
     assert items[0]["summary"] == "Stocks slipped after policy remarks."
     assert items[0]["published"] == "Mon, 09 Mar 2026 05:30:00 GMT"
 
+
+def test_fetch_rss_headlines_atom_prefers_alternate_link(monkeypatch):
+    atom = (
+        '<feed xmlns="http://www.w3.org/2005/Atom">'
+        "<entry>"
+        "<title>Policy update</title>"
+        '<link rel="self" href="https://example.com/self"/>'
+        '<link rel="alternate" href="https://example.com/story"/>'
+        "<summary>Short summary text.</summary>"
+        "<updated>2026-03-09T06:00:00Z</updated>"
+        "</entry>"
+        "</feed>"
+    )
+
+    def _fake_request(self, capability_id, method, url, json_payload=None, params=None, headers=None, **kwargs):
+        del capability_id, method, url, json_payload, params, headers, kwargs
+        return {"status_code": 200, "text": atom}
+
+    monkeypatch.setattr(NetworkMediator, "request", _fake_request)
+    items = asyncio.run(fetch_rss_headlines("https://example.com/atom.xml"))
+    assert len(items) == 1
+    assert items[0]["title"] == "Policy update"
+    assert items[0]["url"] == "https://example.com/story"

@@ -6,7 +6,8 @@ NovaLIS News Skill — Phase 3 Canonical
 
 from __future__ import annotations
 
-from typing import Optional, List, Dict
+import asyncio
+from typing import Optional, List, Dict, Any
 
 from src.base_skill import BaseSkill, SkillResult
 from src.tools.rss_fetch import fetch_rss_headlines
@@ -18,16 +19,79 @@ class NewsSkill(BaseSkill):
     name = "news"
     description = "Current news headlines"
     SUMMARY_CHAR_LIMIT = 210
+    MAX_CONCURRENT_FEEDS = 4
 
     SOURCES = [
-        {"name": "Reuters", "feed": "https://www.reuters.com/rssFeed/topNews", "domain": "reuters.com"},
-        {"name": "Associated Press", "feed": "https://apnews.com/rss", "domain": "apnews.com"},
-        {"name": "NPR", "feed": "https://feeds.npr.org/1001/rss.xml", "domain": "npr.org"},
-        {"name": "BBC News", "feed": "https://feeds.bbci.co.uk/news/rss.xml", "domain": "bbc.com"},
-        {"name": "PBS NewsHour", "feed": "https://www.pbs.org/newshour/feeds/rss/headlines", "domain": "pbs.org"},
-        {"name": "ABC News", "feed": "https://abcnews.go.com/abcnews/topstories", "domain": "abcnews.go.com"},
-        {"name": "FOX News", "feed": "https://feeds.foxnews.com/foxnews/latest", "domain": "foxnews.com"},
-        {"name": "CNN", "feed": "https://rss.cnn.com/rss/cnn_topstories.rss", "domain": "cnn.com"},
+        {
+            "name": "Reuters",
+            "feeds": [
+                "https://www.reuters.com/rssFeed/topNews",
+                "https://www.reuters.com/world/rss",
+            ],
+            "domain": "reuters.com",
+        },
+        {
+            "name": "Associated Press",
+            "feeds": [
+                "https://apnews.com/rss",
+                "https://feeds.apnews.com/apnews/topnews",
+            ],
+            "domain": "apnews.com",
+        },
+        {"name": "NPR", "feeds": ["https://feeds.npr.org/1001/rss.xml"], "domain": "npr.org"},
+        {"name": "BBC News", "feeds": ["https://feeds.bbci.co.uk/news/rss.xml"], "domain": "bbc.com"},
+        {"name": "PBS NewsHour", "feeds": ["https://www.pbs.org/newshour/feeds/rss/headlines"], "domain": "pbs.org"},
+        {"name": "ABC News", "feeds": ["https://abcnews.go.com/abcnews/topstories"], "domain": "abcnews.go.com"},
+        {"name": "FOX News", "feeds": ["https://feeds.foxnews.com/foxnews/latest"], "domain": "foxnews.com"},
+        {"name": "CNN", "feeds": ["https://rss.cnn.com/rss/cnn_topstories.rss"], "domain": "cnn.com"},
+    ]
+
+    CATEGORY_GROUPS = [
+        {
+            "key": "global",
+            "title": "Global News",
+            "sources": [
+                {"name": "Reuters World", "feeds": ["https://www.reuters.com/world/rss"], "domain": "reuters.com"},
+                {"name": "BBC World", "feeds": ["https://feeds.bbci.co.uk/news/world/rss.xml"], "domain": "bbc.com"},
+                {"name": "Al Jazeera", "feeds": ["https://www.aljazeera.com/xml/rss/all.xml"], "domain": "aljazeera.com"},
+            ],
+        },
+        {
+            "key": "political",
+            "title": "Political News",
+            "sources": [
+                {"name": "NPR Politics", "feeds": ["https://feeds.npr.org/1014/rss.xml"], "domain": "npr.org"},
+                {"name": "BBC Politics", "feeds": ["https://feeds.bbci.co.uk/news/politics/rss.xml"], "domain": "bbc.com"},
+                {"name": "POLITICO", "feeds": ["https://www.politico.com/rss/politicopicks.xml"], "domain": "politico.com"},
+            ],
+        },
+        {
+            "key": "breaking",
+            "title": "Breaking News",
+            "sources": [
+                {"name": "Reuters", "feeds": ["https://www.reuters.com/rssFeed/topNews"], "domain": "reuters.com"},
+                {"name": "Associated Press", "feeds": ["https://apnews.com/rss"], "domain": "apnews.com"},
+                {"name": "CNN", "feeds": ["https://rss.cnn.com/rss/cnn_topstories.rss"], "domain": "cnn.com"},
+            ],
+        },
+        {
+            "key": "tech",
+            "title": "Tech News",
+            "sources": [
+                {"name": "The Verge", "feeds": ["https://www.theverge.com/rss/index.xml"], "domain": "theverge.com"},
+                {"name": "Ars Technica", "feeds": ["https://feeds.arstechnica.com/arstechnica/index"], "domain": "arstechnica.com"},
+                {"name": "TechCrunch", "feeds": ["https://techcrunch.com/feed/"], "domain": "techcrunch.com"},
+            ],
+        },
+        {
+            "key": "markets",
+            "title": "Crypto & Stocks",
+            "sources": [
+                {"name": "CoinDesk", "feeds": ["https://www.coindesk.com/arc/outboundfeeds/rss/"], "domain": "coindesk.com"},
+                {"name": "CNBC Markets", "feeds": ["https://www.cnbc.com/id/100003114/device/rss/rss.html"], "domain": "cnbc.com"},
+                {"name": "MarketWatch", "feeds": ["https://feeds.content.dowjones.io/public/rss/mw_topstories"], "domain": "marketwatch.com"},
+            ],
+        },
     ]
 
     def __init__(self, network: NetworkMediator | None = None):
@@ -37,18 +101,52 @@ class NewsSkill(BaseSkill):
         q = (query or "").lower()
         return any(term in q for term in ("news", "headlines", "latest news", "current news"))
 
-    async def handle(self, query: str) -> SkillResult:
-        items: List[Dict[str, str]] = []
+    async def _fetch_many(
+        self,
+        sources: list[dict[str, Any]],
+        *,
+        semaphore: asyncio.Semaphore,
+    ) -> list[dict[str, str]]:
+        async def _fetch_bounded(source: dict[str, Any]) -> Optional[dict[str, str]]:
+            async with semaphore:
+                return await self._fetch_one(source)
 
-        for source in self.SOURCES:
-            item = await self._fetch_one(source)
-            if item:
-                items.append(item)
+        fetched = await asyncio.gather(
+            *(_fetch_bounded(source) for source in sources),
+            return_exceptions=True,
+        )
+        return [item for item in fetched if isinstance(item, dict)]
+
+    async def _fetch_category_groups(
+        self,
+        *,
+        semaphore: asyncio.Semaphore,
+    ) -> dict[str, dict[str, Any]]:
+        categories: dict[str, dict[str, Any]] = {}
+        for group in self.CATEGORY_GROUPS:
+            key = str(group.get("key") or "").strip().lower()
+            title = str(group.get("title") or "").strip() or key.title()
+            sources = list(group.get("sources") or [])
+            if not key or not sources:
+                continue
+            items = await self._fetch_many(sources, semaphore=semaphore)
+            categories[key] = {
+                "title": title,
+                "items": items[:3],
+                "summary": self._summarize_headlines(items[:3]),
+            }
+        return categories
+
+    async def handle(self, query: str) -> SkillResult:
+        semaphore = asyncio.Semaphore(self.MAX_CONCURRENT_FEEDS)
+        items = await self._fetch_many(self.SOURCES, semaphore=semaphore)
+        categories = await self._fetch_category_groups(semaphore=semaphore)
 
         widget = {
             "type": "news",
             "items": items,
             "summary": self._summarize_headlines(items),
+            "categories": categories,
         }
 
         return SkillResult(
@@ -98,29 +196,45 @@ class NewsSkill(BaseSkill):
             fallback = fallback[: self.SUMMARY_CHAR_LIMIT - 3].rstrip() + "..."
         return fallback
 
+    @staticmethod
+    def _source_feed_urls(source: dict) -> list[str]:
+        urls: list[str] = []
+        feeds = source.get("feeds")
+        if isinstance(feeds, list):
+            urls.extend(str(url).strip() for url in feeds if str(url).strip())
+        fallback_feed = str(source.get("feed") or "").strip()
+        if fallback_feed:
+            urls.append(fallback_feed)
+
+        ordered: list[str] = []
+        for url in urls:
+            if url not in ordered:
+                ordered.append(url)
+        return ordered
+
     async def _fetch_one(self, source: dict) -> Optional[dict]:
-        feed_url = source.get("feed")
         name = source.get("name")
         domain = source.get("domain", "")
 
-        if feed_url:
+        for feed_url in self._source_feed_urls(source):
             try:
                 items = await fetch_rss_headlines(feed_url, network=self.network)
-                if items:
-                    first = items[0]
-                    title = first.get("title")
-                    url = first.get("url")
-                    if title and url:
-                        summary = self._build_item_summary(title, str(first.get("summary") or ""))
-                        return {
-                            "title": title,
-                            "url": url,
-                            "source": name,
-                            "summary": summary,
-                            "published": str(first.get("published") or "").strip(),
-                        }
+                if not items:
+                    continue
+                first = items[0]
+                title = first.get("title")
+                url = first.get("url")
+                if title and url:
+                    summary = self._build_item_summary(title, str(first.get("summary") or ""))
+                    return {
+                        "title": title,
+                        "url": url,
+                        "source": name,
+                        "summary": summary,
+                        "published": str(first.get("published") or "").strip(),
+                    }
             except Exception:
-                pass
+                continue
 
         if domain:
             return fallback_headline(name, domain)

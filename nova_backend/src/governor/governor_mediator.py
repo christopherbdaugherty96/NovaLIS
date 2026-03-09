@@ -85,6 +85,18 @@ WHY_RESEARCH_RE = re.compile(
     r"^\s*why\s+(?:is|are)\s+(?P<q>.+?)\s+(?:down|dropping|falling|up|rising)\s*$",
     re.IGNORECASE,
 )
+CURRENT_INFO_QUESTION_RE = re.compile(
+    r"^\s*(?:what|who|when|where|why|how)\b.+\b(?:latest|current|recent|today|news|update|updates|happening|happened|price|forecast|status)\b.*\s*$",
+    re.IGNORECASE,
+)
+LATEST_ON_RE = re.compile(
+    r"^\s*(?:give me|show me|tell me)\s+(?:the\s+)?(?:latest|current|recent)(?:\s+updates?)?\s+(?:on|about)\s+(?P<q>.+?)\s*$",
+    re.IGNORECASE,
+)
+QUESTION_PREFIX_RE = re.compile(
+    r"^\s*(?:what|who|when|where|why|how|is|are|can|do|does|did|will|would|should|could)\b",
+    re.IGNORECASE,
+)
 OPEN_RE = re.compile(r"^\s*open\s+(?P<name>\w+)\s*$", re.IGNORECASE)
 OPEN_NAME_RE = re.compile(r"^\s*open\s+(?P<target>[A-Za-z0-9_.\- ]+)\s*$", re.IGNORECASE)
 OPEN_SOURCE_INDEX_RE = re.compile(r"^\s*open\s+(?:source|result)\s+(?P<idx>\d{1,2})\s*$", re.IGNORECASE)
@@ -203,12 +215,101 @@ _NUMBER_WORDS = {
     "ten": "10",
 }
 
+TIME_SENSITIVITY_TERMS = (
+    "latest",
+    "current",
+    "recent",
+    "today",
+    "now",
+    "update",
+    "updates",
+    "as of",
+    "this week",
+    "this month",
+    "this year",
+)
+
+FINANCE_TERMS = (
+    "stock",
+    "stocks",
+    "share",
+    "shares",
+    "price",
+    "quote",
+    "market",
+    "markets",
+    "crypto",
+    "bitcoin",
+    "ethereum",
+    "dogecoin",
+    "solana",
+    "nasdaq",
+    "dow",
+    "s&p",
+    "earnings",
+    "inflation",
+    "cpi",
+    "fed",
+    "interest rate",
+    "rate cut",
+    "bond yield",
+    "oil price",
+    "gold price",
+)
+
+LEGAL_POLICY_TERMS = (
+    "legal",
+    "illegal",
+    "law",
+    "laws",
+    "regulation",
+    "regulations",
+    "regulated",
+    "policy",
+    "bill",
+    "act",
+    "compliance",
+    "court",
+    "ruling",
+    "supreme court",
+    "statute",
+    "tax rule",
+    "license",
+    "permit",
+    "ban",
+    "banned",
+    "allowed",
+)
+
+LOCATION_HINT_RE = re.compile(r"\b(?:in|for|under)\s+[a-z][a-z\s]{2,}\b", re.IGNORECASE)
+
 
 def _normalize_number_words(text: str) -> str:
     out = text
     for word, digit in _NUMBER_WORDS.items():
         out = re.sub(rf"\b{word}\b", digit, out, flags=re.IGNORECASE)
     return out
+
+
+def _looks_like_time_sensitive_finance_or_policy_query(text: str) -> bool:
+    raw = (text or "").strip()
+    if not raw:
+        return False
+    lowered = raw.lower()
+    if not QUESTION_PREFIX_RE.match(lowered):
+        return False
+
+    has_time_marker = any(term in lowered for term in TIME_SENSITIVITY_TERMS) or bool(
+        re.search(r"\b20\d{2}\b", lowered)
+    )
+    has_finance_term = any(term in lowered for term in FINANCE_TERMS)
+    has_policy_term = any(term in lowered for term in LEGAL_POLICY_TERMS)
+
+    if has_finance_term and (has_time_marker or "price" in lowered or "stock" in lowered):
+        return True
+    if has_policy_term and (has_time_marker or bool(LOCATION_HINT_RE.search(lowered))):
+        return True
+    return False
 
 
 def _parse_headline_selection(selection_text: str) -> dict[str, Any] | None:
@@ -355,6 +456,15 @@ class GovernorMediator:
         m = WHY_RESEARCH_RE.match(t)
         if m:
             return _invocation_if_enabled(48, {"query": f"why {m.group('q').strip()} is changing"})
+
+        m = LATEST_ON_RE.match(t)
+        if m:
+            return _invocation_if_enabled(48, {"query": m.group("q").strip()})
+
+        if CURRENT_INFO_QUESTION_RE.match(t):
+            return _invocation_if_enabled(48, {"query": t.strip()})
+        if _looks_like_time_sensitive_finance_or_policy_query(t):
+            return _invocation_if_enabled(48, {"query": t.strip()})
 
         m = SEARCH_RE.match(t)
         if m:
