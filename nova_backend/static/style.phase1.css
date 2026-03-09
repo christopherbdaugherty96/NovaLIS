@@ -16,8 +16,15 @@
   --radius-sm: 10px;
   --radius: 14px;
   --radius-lg: 18px;
+  --app-max-width: 1760px;
+  --app-padding: clamp(12px, 0.9vw, 20px);
+  --dashboard-gap: clamp(10px, 0.75vw, 16px);
   --shadow-soft: 0 10px 40px rgba(3, 9, 20, 0.35);
   --shadow-panel: 0 16px 40px rgba(3, 9, 20, 0.42), inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+html {
+  font-size: clamp(14px, 0.15vw + 13px, 17px);
 }
 
 html,
@@ -31,6 +38,12 @@ body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
   overflow: hidden;
+}
+
+body {
+  display: flex;
+  justify-content: center;
+  align-items: stretch;
 }
 
 * {
@@ -58,12 +71,13 @@ body {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 330px;
+  grid-template-columns: minmax(0, 1fr) clamp(300px, 24vw, 360px);
   grid-template-rows: auto minmax(0, 1fr) auto auto;
-  gap: 12px;
-  width: 100%;
+  gap: var(--dashboard-gap);
+  width: min(100%, var(--app-max-width));
   height: 100vh;
-  padding: 14px;
+  margin: 0 auto;
+  padding: var(--app-padding);
 }
 
 .header {
@@ -95,7 +109,7 @@ body {
 }
 
 .header-right {
-  width: min(320px, 34vw);
+  width: min(360px, 100%);
 }
 
 .widget {
@@ -433,6 +447,7 @@ body {
   display: grid;
   grid-template-rows: auto minmax(0, 1fr);
   gap: 10px;
+  overflow: hidden;
 }
 
 .sidebar-tabs {
@@ -862,6 +877,10 @@ body {
   color: #cfe3ff;
 }
 
+[hidden] {
+  display: none !important;
+}
+
 @keyframes orbDrift {
   0% { transform: translate3d(0, 0, 0); }
   35% { transform: translate3d(5px, -4px, 0); }
@@ -900,6 +919,40 @@ body {
   border-color: #fff !important;
 }
 
+.density-compact {
+  --app-padding: 10px;
+  --dashboard-gap: 8px;
+}
+
+.density-compact .widget,
+.density-compact .panel.conversation {
+  border-radius: 12px;
+}
+
+.density-compact .weather-widget,
+.density-compact .morning-widget,
+.density-compact .rail-widget {
+  padding: 9px 10px;
+  gap: 7px;
+}
+
+.density-compact .chat-user,
+.density-compact .chat-assistant,
+.density-compact #chat-log .msg,
+.density-compact #chat-log .message {
+  margin-bottom: 8px;
+  padding: 8px 10px;
+}
+
+.density-compact #chat-input {
+  padding: 10px 12px;
+}
+
+.density-compact #send-btn,
+.density-compact #ptt-btn {
+  padding: 10px 12px;
+}
+
 .sr-only {
   position: absolute;
   width: 1px;
@@ -916,7 +969,13 @@ body {
   outline-offset: 2px;
 }
 
-@media (max-width: 1200px) {
+@media (max-width: 1520px) {
+  .dashboard {
+    --app-max-width: 1500px;
+  }
+}
+
+@media (max-width: 1280px) {
   .dashboard {
     grid-template-columns: minmax(0, 1fr) 300px;
   }
@@ -926,7 +985,7 @@ body {
   }
 }
 
-@media (max-width: 980px) {
+@media (max-width: 1120px) {
   body {
     overflow: auto;
   }
