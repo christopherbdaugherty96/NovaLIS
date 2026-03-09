@@ -10,6 +10,9 @@ from src.governor.exceptions import NetworkMediatorError
 
 
 NETWORK_CAPABILITY_ID = 16
+WEATHER_TIMEOUT_SECONDS = 8.0
+WEATHER_MAX_RETRIES = 1
+WEATHER_RETRY_BACKOFF_SECONDS = 0.35
 
 
 class WeatherService:
@@ -93,16 +96,56 @@ class WeatherService:
         self.location = location or self.DEFAULT_LOCATION
         self.network = network or NetworkMediator()
 
+    def _build_request_url(self) -> str:
+        normalized_location = self._clean_text(self.location, limit=120) or self.DEFAULT_LOCATION
+        encoded_location = normalized_location.replace("%", "").replace(" ", "%20")
+        return (
+            "https://weather.visualcrossing.com/"
+            "VisualCrossingWebServices/rest/services/timeline/"
+            f"{encoded_location}/today"
+        )
+
+    async def _request_weather_payload(self, url: str, params: dict) -> dict:
+        last_error: Exception | None = None
+
+        for attempt in range(WEATHER_MAX_RETRIES + 1):
+            try:
+                resp = await asyncio.to_thread(
+                    self.network.request,
+                    NETWORK_CAPABILITY_ID,
+                    "GET",
+                    url,
+                    None,  # json_payload
+                    params,
+                    None,  # headers
+                    as_json=True,
+                    timeout=WEATHER_TIMEOUT_SECONDS,
+                )
+
+                status_code = int(resp.get("status_code") or 0)
+                if status_code and status_code != 200:
+                    raise RuntimeError(f"Unexpected weather status: {status_code}")
+
+                payload = resp.get("data") or {}
+                if not isinstance(payload, dict):
+                    raise RuntimeError("Weather response payload was not a JSON object.")
+                return payload
+
+            except (NetworkMediatorError, RuntimeError) as error:
+                last_error = error
+                if attempt < WEATHER_MAX_RETRIES:
+                    await asyncio.sleep(WEATHER_RETRY_BACKOFF_SECONDS * (attempt + 1))
+                    continue
+                break
+
+        raise RuntimeError("Weather API failed.") from last_error
+
     async def get_current_weather(self) -> Dict[str, str]:
         api_key = os.getenv("WEATHER_API_KEY")
         if not api_key:
             raise RuntimeError("Missing WEATHER_API_KEY")
 
-        url = (
-            "https://weather.visualcrossing.com/"
-            "VisualCrossingWebServices/rest/services/timeline/"
-            f"{self.location}/today"
-        )
+        url = self._build_request_url()
 
         params = {
             "key": api_key,
@@ -111,32 +154,25 @@ class WeatherService:
             "contentType": "json",
         }
 
-        try:
-            # NetworkMediator is synchronous; run in a thread.
-            resp = await asyncio.to_thread(
-                self.network.request,
-                NETWORK_CAPABILITY_ID,
-                "GET",
-                url,
-                None,  # json_payload
-                params,
-                None,  # headers
-                as_json=True,
-                timeout=8.0,  # keep prior behavior close to httpx timeout
-            )
-        except NetworkMediatorError as e:
-            raise RuntimeError(f"Weather API failed: {e}") from e
-
-        payload = resp.get("data") or {}
+        payload = await self._request_weather_payload(url, params)
         current = payload.get("currentConditions", {}) or {}
-        resolved = payload.get("resolvedAddress", "Unknown location")
+        resolved = self._clean_text(payload.get("resolvedAddress", "Unknown location"), limit=80)
         forecast = self._build_forecast(payload)
         alerts = self._extract_alerts(payload)
 
+        raw_temp = current.get("temp", 0)
+        try:
+            temperature = float(raw_temp)
+        except Exception:
+            temperature = 0.0
+
+        condition = self._clean_text(current.get("conditions", "Unknown"), limit=80) or "Unknown"
+        location = self._clean_text((resolved.split(",")[0] if resolved else ""), limit=48) or "Unknown"
+
         return {
-            "temperature": current.get("temp", 0),
-            "condition": current.get("conditions", "Unknown"),
-            "location": resolved.split(",")[0] if resolved else "Unknown",
+            "temperature": temperature,
+            "condition": condition,
+            "location": location,
             "forecast": forecast,
             "alerts": alerts,
         }

@@ -13,6 +13,10 @@ NETWORK_CAPABILITY_ID = 16
 SUMMARY_CHAR_LIMIT = 260
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
+_RSS_HEADERS = {
+    "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
+    "User-Agent": "Nova/1.0 (+https://local.nova)",
+}
 
 
 def _clean_text(value: str) -> str:
@@ -26,6 +30,33 @@ def _clean_text(value: str) -> str:
     if len(raw) > SUMMARY_CHAR_LIMIT:
         raw = raw[: SUMMARY_CHAR_LIMIT - 3].rstrip() + "..."
     return raw
+
+
+def _clean_url(value: str) -> str:
+    raw = html.unescape(str(value or "")).strip()
+    raw = _WS_RE.sub("", raw)
+    if raw.startswith("//"):
+        raw = f"https:{raw}"
+    return raw
+
+
+def _append_unique_result(results: list[dict], seen: set[str], payload: dict) -> None:
+    title = str(payload.get("title") or "").strip()
+    url = _clean_url(payload.get("url") or "")
+    if not title or not url:
+        return
+    key = url.lower()
+    if key in seen:
+        return
+    seen.add(key)
+    results.append(
+        {
+            "title": title,
+            "url": url,
+            "summary": _clean_text(payload.get("summary") or ""),
+            "published": str(payload.get("published") or "").strip(),
+        }
+    )
 
 
 async def fetch_rss_headlines(
@@ -55,7 +86,7 @@ async def fetch_rss_headlines(
             feed_url,
             None,   # json_payload
             None,   # params
-            None,   # headers
+            dict(_RSS_HEADERS),
             as_json=False,  # RSS is XML/text
             timeout=timeout,
         )
@@ -75,29 +106,31 @@ async def fetch_rss_headlines(
     # ----------------------------
     items = root.findall(".//item")
     results: List[Dict[str, Any]] = []
+    seen_urls: set[str] = set()
 
     for item in items:
         title = item.findtext("title")
-        link = item.findtext("link")
-        if title and link:
-            description = (
-                item.findtext("description")
-                or item.findtext("{http://purl.org/rss/1.0/modules/content/}encoded")
-                or ""
-            )
-            published = (
-                item.findtext("pubDate")
-                or item.findtext("{http://purl.org/dc/elements/1.1/}date")
-                or ""
-            )
-            results.append(
-                {
-                    "title": title.strip(),
-                    "url": link.strip(),
-                    "summary": _clean_text(description),
-                    "published": published.strip(),
-                }
-            )
+        link = item.findtext("link") or item.findtext("guid")
+        description = (
+            item.findtext("description")
+            or item.findtext("{http://purl.org/rss/1.0/modules/content/}encoded")
+            or ""
+        )
+        published = (
+            item.findtext("pubDate")
+            or item.findtext("{http://purl.org/dc/elements/1.1/}date")
+            or ""
+        )
+        _append_unique_result(
+            results,
+            seen_urls,
+            {
+                "title": str(title or "").strip(),
+                "url": str(link or "").strip(),
+                "summary": description,
+                "published": published,
+            },
+        )
 
     # ----------------------------
     # Atom (<entry>)
@@ -107,12 +140,17 @@ async def fetch_rss_headlines(
         entries = root.findall(".//atom:entry", ns)
         for entry in entries:
             title = entry.findtext("atom:title", default="", namespaces=ns).strip()
-            link_el = entry.find("atom:link", ns)
-            href = (
-                link_el.get("href").strip()
-                if link_el is not None and link_el.get("href")
-                else ""
-            )
+            href = ""
+            for link_el in entry.findall("atom:link", ns):
+                candidate = _clean_url(link_el.get("href") or "")
+                if not candidate:
+                    continue
+                rel = str(link_el.get("rel") or "").strip().lower()
+                if rel in {"", "alternate"}:
+                    href = candidate
+                    break
+                if not href:
+                    href = candidate
             if title and href:
                 summary = entry.findtext("atom:summary", default="", namespaces=ns)
                 if not summary:
@@ -121,13 +159,15 @@ async def fetch_rss_headlines(
                     entry.findtext("atom:updated", default="", namespaces=ns)
                     or entry.findtext("atom:published", default="", namespaces=ns)
                 )
-                results.append(
+                _append_unique_result(
+                    results,
+                    seen_urls,
                     {
                         "title": title,
                         "url": href,
-                        "summary": _clean_text(summary),
-                        "published": str(published or "").strip(),
-                    }
+                        "summary": summary,
+                        "published": published,
+                    },
                 )
 
     return results

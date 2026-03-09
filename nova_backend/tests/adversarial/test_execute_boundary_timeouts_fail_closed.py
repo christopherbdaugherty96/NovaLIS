@@ -43,7 +43,11 @@ def test_timeout_causes_denial_and_records_lifecycle(monkeypatch):
 
     assert slow.calls == 2, "Expected bounded retry behavior (1 initial + 1 retry)"
     assert result.success is False
-    assert result.data == {"widget": {"type": "search", "data": {"results": []}}}
+    assert result.data["widget"]["type"] == "search"
+    widget_data = result.data["widget"]["data"]
+    assert widget_data["results"] == []
+    assert widget_data["query"] == "current weather"
+    assert widget_data["result_count"] == 0
 
     event_types = [event for event, _ in ledger.events]
     assert event_types.count("ACTION_ATTEMPTED") == 1

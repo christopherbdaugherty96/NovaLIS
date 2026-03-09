@@ -16,6 +16,9 @@ from src.llm.llm_gateway import generate_chat
 from src.rendering.intelligence_brief_renderer import IntelligenceBriefRenderer
 from src.validation.pipeline import ValidationPipeline
 
+BRAVE_SEARCH_URL = "https://api.search.brave.com/res/v1/web/search"
+DUCK_SEARCH_URL = "https://api.duckduckgo.com/"
+
 
 class MultiSourceReportingExecutor:
     """Single-invocation multi-source reporting built on governed search endpoint."""
@@ -198,35 +201,104 @@ class MultiSourceReportingExecutor:
             pass
         return "Counter-view: available sources may be incomplete, so conclusions should remain provisional."
 
+    @staticmethod
+    def _parse_duck_results(data: dict[str, Any]) -> list[dict[str, Any]]:
+        if not isinstance(data, dict):
+            return []
+        rows: list[dict[str, Any]] = []
+        abstract = str(data.get("Abstract") or "").strip()
+        abstract_url = str(data.get("AbstractURL") or "").strip()
+        if abstract and abstract_url:
+            rows.append({"title": abstract[:100], "url": abstract_url, "description": abstract[:200]})
+
+        for topic in data.get("RelatedTopics") or []:
+            if isinstance(topic, dict) and topic.get("FirstURL") and topic.get("Text"):
+                rows.append(
+                    {
+                        "title": str(topic.get("Text") or "")[:100],
+                        "url": str(topic.get("FirstURL") or "").strip(),
+                        "description": str(topic.get("Text") or "")[:200],
+                    }
+                )
+            if isinstance(topic, dict):
+                for nested in topic.get("Topics") or []:
+                    if isinstance(nested, dict) and nested.get("FirstURL") and nested.get("Text"):
+                        rows.append(
+                            {
+                                "title": str(nested.get("Text") or "")[:100],
+                                "url": str(nested.get("FirstURL") or "").strip(),
+                                "description": str(nested.get("Text") or "")[:200],
+                            }
+                        )
+        return rows
+
+    def _fetch_governed_results(
+        self,
+        *,
+        capability_id: int,
+        query: str,
+        request_id: str,
+        session_id: str | None,
+    ) -> tuple[list[dict[str, Any]], str]:
+        brave_key = os.getenv("BRAVE_API_KEY")
+        if brave_key:
+            try:
+                response = self.network.request(
+                    capability_id=capability_id,
+                    method="GET",
+                    url=BRAVE_SEARCH_URL,
+                    params={"q": query, "count": 5},
+                    headers={"Accept": "application/json", "X-Subscription-Token": brave_key},
+                    as_json=True,
+                    timeout=5,
+                    request_id=request_id,
+                    session_id=session_id,
+                )
+                if int(response.get("status_code") or 0) == 200:
+                    results = ((response.get("data") or {}).get("web") or {}).get("results") or []
+                    if isinstance(results, list) and results:
+                        return list(results), "brave"
+            except Exception:
+                pass
+
+        try:
+            response = self.network.request(
+                capability_id=capability_id,
+                method="GET",
+                url=DUCK_SEARCH_URL,
+                params={
+                    "q": query,
+                    "format": "json",
+                    "no_html": "1",
+                    "no_redirect": "1",
+                    "skip_disambig": "1",
+                },
+                headers={"Accept": "application/json"},
+                as_json=True,
+                timeout=4,
+                request_id=request_id,
+                session_id=session_id,
+            )
+            if int(response.get("status_code") or 0) != 200:
+                return [], "none"
+            return self._parse_duck_results(response.get("data") or {}), "duckduckgo"
+        except Exception:
+            return [], "none"
+
     def execute(self, request) -> ActionResult:
         query = (request.params or {}).get("query", "").strip()
         session_id = str((request.params or {}).get("session_id") or "").strip() or None
         if not query:
             return ActionResult.failure("No report query provided.", request_id=request.request_id)
 
-        brave_key = os.getenv("BRAVE_API_KEY")
-        if not brave_key:
-            return ActionResult.failure("Search service is not configured.", request_id=request.request_id)
-
-        try:
-            response = self.network.request(
-                capability_id=48,
-                method="GET",
-                url="https://api.search.brave.com/res/v1/web/search",
-                params={"q": query, "count": 5},
-                headers={"Accept": "application/json", "X-Subscription-Token": brave_key},
-                as_json=True,
-                timeout=5,
-                request_id=request.request_id,
-                session_id=session_id,
-            )
-        except Exception:
+        results, provider = self._fetch_governed_results(
+            capability_id=48,
+            query=query,
+            request_id=request.request_id,
+            session_id=session_id,
+        )
+        if not results:
             return ActionResult.failure("I couldn't build the report due to a network issue.", request_id=request.request_id)
-
-        if response.get("status_code") != 200:
-            return ActionResult.failure("I couldn't build the report right now.", request_id=request.request_id)
-
-        results = ((response.get("data") or {}).get("web") or {}).get("results") or []
         top_results = list(results[:6])
         titles = [item.get("title", "").strip() for item in top_results if item.get("title")]
         domains = []
@@ -377,6 +449,7 @@ class MultiSourceReportingExecutor:
                 "widget": {"type": "search", "data": {"results": widget_results}},
                 "structured_brief": {
                     **structured_brief,
+                    "search_provider": provider,
                     "contract_status": contract_status,
                     "validation_status": validation_status,
                     "fallback_reason": fallback_reason,

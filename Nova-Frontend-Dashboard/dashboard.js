@@ -5,6 +5,7 @@ let pendingThoughtMessageId = null;
 let messageMeta = new Map();
 let waitingForAssistant = false;
 let latestNewsItems = [];
+let latestNewsCategories = {};
 let newsExpanded = false;
 let sttState = "READY";
 let mediaRecorder = null;
@@ -1041,6 +1042,100 @@ function updateNewsSummary(summaryText) {
   summary.textContent = (summaryText || "").trim() || "Headlines loaded. Press 'Summarize headlines' for a briefing.";
 }
 
+function renderNewsCategoryGrid(categories) {
+  const grid = $("news-category-grid");
+  if (!grid) return;
+  clear(grid);
+
+  const safeCategories = (categories && typeof categories === "object") ? categories : {};
+  const ordered = ["global", "political", "breaking", "tech", "markets"];
+  const keys = Object.keys(safeCategories);
+  const displayKeys = [
+    ...ordered.filter((key) => keys.includes(key)),
+    ...keys.filter((key) => !ordered.includes(key)),
+  ];
+
+  if (displayKeys.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "news-category-empty";
+    empty.textContent = "Category feeds will appear after headlines load.";
+    grid.appendChild(empty);
+    return;
+  }
+
+  displayKeys.forEach((key) => {
+    const bucket = safeCategories[key];
+    const items = Array.isArray(bucket && bucket.items) ? bucket.items : [];
+    const titleText = String((bucket && bucket.title) || key || "").trim() || "News";
+    if (items.length === 0) return;
+
+    const card = document.createElement("article");
+    card.className = "news-category-card";
+
+    const header = document.createElement("div");
+    header.className = "news-category-header";
+
+    const title = document.createElement("h4");
+    title.className = "news-category-title";
+    title.textContent = titleText;
+    header.appendChild(title);
+
+    const count = document.createElement("span");
+    count.className = "confidence-badge";
+    count.textContent = `${items.length} source${items.length === 1 ? "" : "s"}`;
+    header.appendChild(count);
+    card.appendChild(header);
+
+    const summary = String((bucket && bucket.summary) || "").trim();
+    if (summary) {
+      const summaryEl = document.createElement("p");
+      summaryEl.className = "news-category-summary";
+      summaryEl.textContent = summary;
+      card.appendChild(summaryEl);
+    }
+
+    const list = document.createElement("ul");
+    list.className = "news-category-list";
+    items.slice(0, 3).forEach((item) => {
+      const row = document.createElement("li");
+      row.className = "news-category-item";
+
+      const link = document.createElement("a");
+      link.className = "news-category-link";
+      link.href = item.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = String(item.title || "Untitled headline");
+      row.appendChild(link);
+
+      const itemSummary = document.createElement("p");
+      itemSummary.className = "news-category-item-summary";
+      const snippet = buildNewsItemSnippet(item);
+      itemSummary.textContent = snippet.length > 180 ? `${snippet.slice(0, 177)}...` : snippet;
+      row.appendChild(itemSummary);
+
+      const meta = document.createElement("div");
+      meta.className = "news-category-meta";
+      const source = document.createElement("span");
+      source.className = "domain-badge";
+      source.textContent = String((item.source || "").trim() || "Source");
+      meta.appendChild(source);
+      const freshness = formatNewsFreshness(item.published);
+      if (freshness) {
+        const freshnessBadge = document.createElement("span");
+        freshnessBadge.className = "confidence-badge";
+        freshnessBadge.textContent = freshness;
+        meta.appendChild(freshnessBadge);
+      }
+      row.appendChild(meta);
+      list.appendChild(row);
+    });
+
+    card.appendChild(list);
+    grid.appendChild(card);
+  });
+}
+
 function setNewsExpandButton() {
   const btn = $("btn-news-expand");
   if (!btn) return;
@@ -1050,10 +1145,13 @@ function setNewsExpandButton() {
   btn.setAttribute("aria-pressed", newsExpanded ? "true" : "false");
 }
 
-function renderNewsWidget(items, summaryText = "") {
+function renderNewsWidget(items, summaryText = "", categories = null) {
   const list = $("news-list");
   if (!list) return;
   clear(list);
+  if (categories && typeof categories === "object") {
+    latestNewsCategories = categories;
+  }
 
   if (!Array.isArray(items) || items.length === 0) {
     latestNewsItems = [];
@@ -1063,6 +1161,7 @@ function renderNewsWidget(items, summaryText = "") {
     updateNewsSummary("No headlines are available to summarize right now.");
     morningState.news = "No headlines available.";
     renderMorningPanel();
+    renderNewsCategoryGrid(latestNewsCategories);
     setNewsExpandButton();
     return;
   }
@@ -1142,58 +1241,146 @@ function renderNewsWidget(items, summaryText = "") {
     list.appendChild(li);
   });
 
+  renderNewsCategoryGrid(latestNewsCategories);
   setNewsExpandButton();
 }
 
 function renderSearchWidget(data) {
   const container = $("search-widget");
+  const results = Array.isArray(data && data.results) ? data.results : [];
   if (container) {
     clear(container);
     container.classList.remove("active");
 
-    if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+    if (!results.length) {
       return;
     }
 
     container.classList.add("active");
-    data.results.forEach((item, index) => {
+    const header = document.createElement("div");
+    header.className = "search-widget-header";
+
+    const queryLabel = document.createElement("p");
+    queryLabel.className = "search-widget-query";
+    const queryText = String((data && data.query) || "").trim();
+    queryLabel.textContent = queryText ? `Results for "${queryText}"` : "Web search results";
+    header.appendChild(queryLabel);
+
+    const meta = document.createElement("div");
+    meta.className = "search-widget-meta";
+    appendConfidenceBadge(meta, `${results.length} result${results.length === 1 ? "" : "s"}`);
+    if (data && Number(data.source_pages_read || 0) > 0) {
+      appendConfidenceBadge(meta, `${Number(data.source_pages_read)} page${Number(data.source_pages_read) === 1 ? "" : "s"} read`);
+    }
+    if (data && data.provider) appendConfidenceBadge(meta, String(data.provider));
+    if (data && typeof data.latency_seconds === "number" && data.latency_seconds > 0) {
+      appendConfidenceBadge(meta, `${Number(data.latency_seconds).toFixed(1)}s`);
+    }
+    header.appendChild(meta);
+
+    if (data && data.summary) {
+      const summary = document.createElement("p");
+      summary.className = "search-widget-summary";
+      summary.textContent = String(data.summary);
+      header.appendChild(summary);
+    }
+    container.appendChild(header);
+
+    results.forEach((item, index) => {
       const div = document.createElement("div");
       div.className = "search-result";
+
+      const titleRow = document.createElement("div");
+      titleRow.className = "search-result-title";
 
       const idx = document.createElement("span");
       idx.className = "citation-index";
       idx.textContent = `[${index + 1}]`;
-      div.appendChild(idx);
+      titleRow.appendChild(idx);
 
       const a = document.createElement("a");
       a.href = item.url;
       a.textContent = item.title;
       a.target = "_blank";
       a.rel = "noopener noreferrer";
-      div.appendChild(a);
+      titleRow.appendChild(a);
 
       const domain = extractDomain(item.url);
       if (domain) {
         const domainBadge = document.createElement("span");
         domainBadge.className = "domain-badge";
         domainBadge.textContent = domain;
-        div.appendChild(domainBadge);
+        titleRow.appendChild(domainBadge);
       }
 
-      appendConfidenceBadge(div, "Web result");
+      appendConfidenceBadge(titleRow, "Web result");
+      div.appendChild(titleRow);
+
+      const snippet = String(item.snippet || "").trim();
+      if (snippet) {
+        const snippetEl = document.createElement("p");
+        snippetEl.className = "search-result-snippet";
+        snippetEl.textContent = snippet;
+        div.appendChild(snippetEl);
+      }
+
+      const actions = document.createElement("div");
+      actions.className = "search-result-actions";
+
+      const summarizeBtn = document.createElement("button");
+      summarizeBtn.type = "button";
+      summarizeBtn.className = "assistant-action-btn";
+      summarizeBtn.textContent = "Summarize this";
+      summarizeBtn.addEventListener("click", () => injectUserText(`summarize this result: ${item.title}`, "text"));
+      actions.appendChild(summarizeBtn);
+
+      if (index === 0 && results.length > 1) {
+        const compareBtn = document.createElement("button");
+        compareBtn.type = "button";
+        compareBtn.className = "assistant-action-btn";
+        compareBtn.textContent = "Compare top results";
+        compareBtn.addEventListener("click", () => injectUserText("compare the top 3 search results", "text"));
+        actions.appendChild(compareBtn);
+      }
+      div.appendChild(actions);
+
       container.appendChild(div);
     });
+
+    const suggested = Array.isArray(data && data.suggested_actions) ? data.suggested_actions : [];
+    if (suggested.length) {
+      const actionRow = document.createElement("div");
+      actionRow.className = "search-widget-actions";
+      suggested.slice(0, 3).forEach((item) => {
+        const label = String((item && item.label) || "").trim();
+        const prompt = String((item && item.prompt) || "").trim();
+        if (!label || !prompt) return;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "assistant-action-btn";
+        btn.textContent = label;
+        btn.addEventListener("click", () => injectUserText(prompt, "text"));
+        actionRow.appendChild(btn);
+      });
+      if (actionRow.childElementCount) container.appendChild(actionRow);
+    }
     return;
   }
 
-  if (!data || !Array.isArray(data.results) || data.results.length === 0) {
+  if (!results.length) {
     appendChatMessage("assistant", "I could not find reliable results for that.", null, "Web result");
     return;
   }
 
-  data.results.forEach((item, index) => {
+  results.forEach((item, index) => {
     const domain = extractDomain(item.url);
-    appendChatMessage("assistant", `[${index + 1}] ${item.title} (${domain || "source"})\n${item.url}`, null, "Web result");
+    const snippet = String(item.snippet || "").trim();
+    appendChatMessage(
+      "assistant",
+      `[${index + 1}] ${item.title} (${domain || "source"})\n${item.url}${snippet ? `\n${snippet}` : ""}`,
+      null,
+      "Web result",
+    );
   });
 }
 
@@ -1312,7 +1499,7 @@ function connectWebSocket() {
         renderWeatherWidget(msg.data);
         break;
       case "news":
-        renderNewsWidget(msg.items, msg.summary || "");
+        renderNewsWidget(msg.items, msg.summary || "", msg.categories || {});
         break;
       case "search":
         renderSearchWidget(msg.data);
@@ -1423,11 +1610,11 @@ function setActivePage(page) {
 
   localStorage.setItem(STORAGE_KEYS.activePage, target);
 
-  if (latestNewsItems.length > 0) {
-    renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "");
-  } else {
-    setNewsExpandButton();
-  }
+    if (latestNewsItems.length > 0) {
+      renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "", latestNewsCategories);
+    } else {
+      setNewsExpandButton();
+    }
 }
 
 function setupPageNavigation() {
@@ -1855,7 +2042,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (newsExpandBtn) {
     newsExpandBtn.addEventListener("click", () => {
       newsExpanded = !newsExpanded;
-      renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "");
+      renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "", latestNewsCategories);
     });
   }
 
