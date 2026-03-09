@@ -12,6 +12,7 @@ from typing import List, Optional
 
 from src.base_skill import BaseSkill, SkillResult
 from src.skills.system import SystemSkill
+from src.skills.calendar import CalendarSkill
 from src.skills.weather import WeatherSkill
 from src.skills.news import NewsSkill
 from src.skills.general_chat import GeneralChatSkill
@@ -30,6 +31,7 @@ class SkillRegistry:
         # Base skills – always present (original Phase‑3 implementations)
         skills: List[BaseSkill] = [
             SystemSkill(),
+            CalendarSkill(),
             WeatherSkill(network=self.network),
             NewsSkill(network=self.network),
         ]

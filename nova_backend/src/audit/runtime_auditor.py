@@ -14,6 +14,7 @@ from typing import Any
 
 from src.governor.execute_boundary.execute_boundary import GOVERNED_ACTIONS_ENABLED
 from src.governor.governor_mediator import GovernorMediator, Invocation
+from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
 
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
@@ -35,6 +36,7 @@ GENERAL_CHAT_PATH = PROJECT_ROOT / "nova_backend" / "src" / "skills" / "general_
 BRAIN_SERVER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "brain_server.py"
 STATIC_DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
 STATIC_INDEX_PATH = PROJECT_ROOT / "nova_backend" / "static" / "index.html"
+BUILD_PHASE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "build_phase.py"
 
 GOVERNANCE_MATRIX_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX.md"
 SKILL_SURFACE_MAP_PATH = RUNTIME_DOC_DIR / "SKILL_SURFACE_MAP.md"
@@ -65,6 +67,7 @@ def _build_allowlisted_paths() -> frozenset[Path]:
         BRAIN_SERVER_PATH,
         STATIC_DASHBOARD_PATH,
         STATIC_INDEX_PATH,
+        BUILD_PHASE_PATH,
     }
     paths.update(SKILLS_DIR.glob("*.py"))
     paths.update(EXECUTORS_DIR.glob("*.py"))
@@ -170,7 +173,7 @@ def _extract_enabled_ids_from_markdown(markdown_text: str) -> list[int]:
                 found.add(int(parts[0]))
             continue
 
-        bullet_match = re.search(r"\b(\d+)\b\s*[:\-|]\s*.*\benabled\b", lower)
+        bullet_match = re.search(r"^\s*-\s*(\d+)\b\s*[:\-|]\s*.*\benabled\b", lower)
         if bullet_match:
             found.add(int(bullet_match.group(1)))
             continue
@@ -462,7 +465,7 @@ def _runtime_fingerprint(registry_enabled_ids: list[int]) -> dict[str, str]:
         "commit": commit_hash,
         "branch": branch_name,
         "enabled_capability_ids": registry_enabled_ids,
-        "phase_marker": "Phase-4 runtime active",
+        "phase_marker": f"Build phase {BUILD_PHASE}",
     }
     runtime_fingerprint_hash = hashlib.sha256(
         json.dumps(payload, sort_keys=True, separators=(",", ":")).encode("utf-8")
@@ -477,7 +480,7 @@ def _runtime_fingerprint(registry_enabled_ids: list[int]) -> dict[str, str]:
         "generated_at_utc": datetime.now(timezone.utc).isoformat(),
         "enabled_capability_ids_hash": enabled_hash,
         "runtime_fingerprint_hash": runtime_fingerprint_hash,
-        "phase_marker": "Phase-4 runtime active",
+        "phase_marker": f"Build phase {BUILD_PHASE}",
     }
 
 
@@ -495,13 +498,60 @@ def _runtime_profile_context(registry: dict[str, Any]) -> dict[str, Any]:
     return {"profile": selected, "groups": [str(g) for g in groups], "known": True}
 
 
+def _phase_42_status() -> str:
+    agents_present = (PROJECT_ROOT / "nova_backend" / "src" / "agents").exists()
+    personality_present = (PROJECT_ROOT / "nova_backend" / "src" / "personality").exists()
+    validation_present = (PROJECT_ROOT / "nova_backend" / "src" / "validation").exists()
+    brain_src = _safe_read(BRAIN_SERVER_PATH)
+    build_src = _safe_read(BUILD_PHASE_PATH)
+    compile_gate_present = "PHASE_4_2_ENABLED" in build_src
+    runtime_wired = "PersonalityAgent" in brain_src and "_extract_phase42_query" in brain_src
+
+    if (
+        agents_present
+        and personality_present
+        and validation_present
+        and compile_gate_present
+        and runtime_wired
+        and PHASE_4_2_ENABLED
+    ):
+        return "ACTIVE"
+    return "DESIGN ONLY"
+
+
+def _calendar_integration_present() -> bool:
+    skill_registry_src = _safe_read(SKILL_REGISTRY_PATH).lower()
+    brain_src = _safe_read(BRAIN_SERVER_PATH).lower()
+    dashboard_src = _safe_read(STATIC_DASHBOARD_PATH).lower()
+    index_src = _safe_read(STATIC_INDEX_PATH).lower()
+
+    return (
+        "calendarskill" in skill_registry_src
+        and "calendar_skill" in brain_src
+        and 'case "calendar"' in dashboard_src
+        and "coming soon" not in index_src
+    )
+
+
 def _phase_45_status() -> str:
     """Derive coarse runtime status for Phase 4.5 UX surface."""
     dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
     index_src = _safe_read(STATIC_INDEX_PATH)
     has_morning_panel = "Morning Dashboard" in index_src or "morning-widget" in index_src
     has_morning_state = "morningState" in dashboard_src
-    return "PARTIAL" if (has_morning_panel and has_morning_state) else "DESIGN ONLY"
+    trust_panel_present = "trust panel" in dashboard_src.lower() or "trust-panel" in index_src.lower()
+    failure_ladder_present = (
+        "failure_ladder" in _safe_read(BRAIN_SERVER_PATH).lower()
+        or "failurestate" in dashboard_src.lower()
+        or "offline-safe mode" in dashboard_src.lower()
+    )
+    calendar_present = _calendar_integration_present()
+
+    if has_morning_panel and has_morning_state and trust_panel_present and failure_ladder_present and calendar_present:
+        return "ACTIVE"
+    if has_morning_panel and has_morning_state:
+        return "PARTIAL"
+    return "DESIGN ONLY"
 
 
 def _known_runtime_gaps() -> list[str]:
@@ -515,12 +565,16 @@ def _known_runtime_gaps() -> list[str]:
         or "offline-safe mode" in _safe_read(STATIC_DASHBOARD_PATH).lower()
     )
     checks: list[tuple[str, bool]] = [
-        ("Orthogonal Agent Stack (Phase 4.2)", (PROJECT_ROOT / "nova_backend" / "src" / "agents").exists()),
+        (
+            "Orthogonal Agent Stack (Phase 4.2)",
+            (PROJECT_ROOT / "nova_backend" / "src" / "agents").exists()
+            and (PROJECT_ROOT / "nova_backend" / "src" / "personality").exists(),
+        ),
         ("Personality Validator Pipeline", (PROJECT_ROOT / "nova_backend" / "src" / "validation").exists()),
-        ("Compile-time phase gating for 4.2 modules", "BUILD_PHASE" in _safe_read(BRAIN_SERVER_PATH)),
+        ("Compile-time phase gating for 4.2 modules", "PHASE_4_2_ENABLED" in _safe_read(BUILD_PHASE_PATH)),
         ("Trust Panel system", trust_panel_present),
         ("Failure Mode Ladder", failure_ladder_present),
-        ("Calendar integration", "calendar" in _safe_read(REGISTRY_PATH).lower() and "coming soon" not in _safe_read(STATIC_INDEX_PATH).lower()),
+        ("Calendar integration", _calendar_integration_present()),
     ]
     return [label for label, implemented in checks if not implemented]
 
@@ -528,12 +582,12 @@ def _known_runtime_gaps() -> list[str]:
 def _design_runtime_divergences(registry: dict[str, Any]) -> list[str]:
     divergences: list[str] = []
 
-    if not (PROJECT_ROOT / "nova_backend" / "src" / "agents").exists():
+    if _phase_42_status() != "ACTIVE":
         divergences.append(
-            "Phase 4.2 orthogonal agent stack and validator pipeline remain design-only in runtime."
+            "Phase 4.2 orthogonal cognition stack is still design-only or not fully wired at runtime."
         )
 
-    if "BUILD_PHASE" not in _safe_read(BRAIN_SERVER_PATH):
+    if "PHASE_4_2_ENABLED" not in _safe_read(BUILD_PHASE_PATH):
         divergences.append(
             "Phase 4.2 compile-time gating contract is documented, but explicit BUILD_PHASE exclusion is not present."
         )
@@ -545,6 +599,10 @@ def _design_runtime_divergences(registry: dict[str, Any]) -> list[str]:
     if not trust_panel_present:
         divergences.append(
             "Phase 4.5 Trust Panel requirement is not explicitly represented in dashboard runtime text."
+        )
+    if not _calendar_integration_present():
+        divergences.append(
+            "Phase 4.5 calendar integration requirement is not represented in runtime UI + skill surfaces."
         )
 
     return divergences
@@ -921,6 +979,20 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     known_gaps = _known_runtime_gaps()
     design_divergences = _design_runtime_divergences(registry)
     profile_context = _runtime_profile_context(registry)
+    phase_42_status = _phase_42_status()
+    phase_45_status = _phase_45_status()
+
+    phase_42_note = (
+        "Orthogonal cognition stack enabled via explicit invocation path"
+        if phase_42_status == "ACTIVE"
+        else "Orthogonal cognition stack not enabled in runtime"
+    )
+    if phase_45_status == "ACTIVE":
+        phase_45_note = "UX trust, failure ladder, and calendar surfaces implemented"
+    elif phase_45_status == "PARTIAL":
+        phase_45_note = "UX elements present but incomplete"
+    else:
+        phase_45_note = "Experience layer remains design-only"
 
     governor_modules = [
         "src/governor/governor.py",
@@ -964,8 +1036,8 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         "| --- | --- | --- |",
         "| Phase 3.5 | COMPLETE | Governance baseline sealed |",
         "| Phase 4 | ACTIVE | Governed execution runtime |",
-        "| Phase 4.2 | DESIGN ONLY | Orthogonal cognition stack not implemented |",
-        f"| Phase 4.5 | {_phase_45_status()} | UX elements present but incomplete |",
+        f"| Phase 4.2 | {phase_42_status} | {phase_42_note} |",
+        f"| Phase 4.5 | {phase_45_status} | {phase_45_note} |",
         "| Phase 5 | DESIGN | Memory continuity planned |",
         "",
         "## Runtime Governance Spine",

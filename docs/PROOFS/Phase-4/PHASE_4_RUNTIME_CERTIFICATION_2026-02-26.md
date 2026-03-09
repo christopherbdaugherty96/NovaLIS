@@ -1,8 +1,15 @@
 # PHASE 4 RUNTIME CERTIFICATION
+> SUPERSEDED by `PHASE_4_RUNTIME_CERTIFICATION_2026-03-09.md`
+
 Date: 2026-02-26  
-Status: Certified Stable  
+Status: Superseded historical snapshot  
 Branch: main  
 Scope: Governed Execution (Phase-4)  
+
+## Supersession Notice
+- Superseded on: 2026-03-09
+- Superseding certification: `PHASE_4_RUNTIME_CERTIFICATION_2026-03-09.md`
+- Canonical packet index: `PHASE_4_PROOF_PACKET_INDEX.md`
 
 ---
 

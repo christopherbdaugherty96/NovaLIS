@@ -1,18 +1,18 @@
-# Phase 4.5 Runtime Alignment Note (2026-03-07)
+# Phase 4.5 Runtime Alignment Note (2026-03-09)
 
-Status: Informational addendum for design/runtime reconciliation.
+Status: Runtime implementation addendum.
 
-This roadmap is a design-stage document. Runtime truth is defined by:
+Runtime alignment update:
+
+- Trust Panel and failure-ladder runtime signals remain active.
+- Morning dashboard now includes concrete calendar integration (`CalendarSkill` + websocket/UI updates).
+- Media (`id: 20`) and brightness (`id: 21`) capabilities are enabled in registry and routed through system-control execution paths.
+
+Runtime truth source:
 
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 
-Alignment notes:
-
-1. Phase 4.5 design language says "no new capabilities" for that stage.
-2. Current runtime already includes expanded governed capabilities (news intelligence, story tracking, verification, analysis documents).
-3. This is not a governance bypass. It is runtime growth that must be reflected in runtime-truth artifacts and future design revisions.
-
 Required interpretation rule:
 
-- If this roadmap conflicts with runtime behavior, runtime truth wins.
-- Design docs remain directional until ratified into runtime.
+- If roadmap language conflicts with runtime behavior, runtime truth wins.
+- Design docs remain directional until ratified and reflected in runtime truth artifacts.

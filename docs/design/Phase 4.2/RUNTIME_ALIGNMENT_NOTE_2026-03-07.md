@@ -1,13 +1,14 @@
-# Phase 4.2 Runtime Alignment Note (2026-03-07)
+# Phase 4.2 Runtime Alignment Note (2026-03-09)
 
-Status: Informational addendum for design/runtime reconciliation.
+Status: Runtime activation addendum.
 
-Runtime remains Phase 4 active with Phase 4.2 design-only.
+Runtime alignment update:
 
-Current runtime behavior:
-
-- Deep analysis is invocation-bound and must be explicitly armed by the user.
-- Orthogonal agent stack, personality validator pipeline, and compile-time 4.2 exclusions are not implemented as production modules yet.
+- Build profile now enables Phase 4.2 gating (`BUILD_PHASE = 5`, `PHASE_4_2_ENABLED = True`).
+- `PersonalityAgent` is wired in websocket runtime through explicit invocation commands:
+  - `phase42: <query>`
+  - `orthogonal analysis: <query>`
+- Orthogonal agent execution remains non-authorizing and invocation-bound.
 
 Authoritative runtime source:
 
@@ -15,5 +16,5 @@ Authoritative runtime source:
 
 Interpretation rule:
 
-- Design intent in this folder is directional until represented in runtime truth.
 - Runtime truth controls operational claims.
+- Design text remains directional where not yet represented in runtime truth artifacts.

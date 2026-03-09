@@ -1,21 +1,25 @@
 from __future__ import annotations
 
 from src.actions.action_result import ActionResult
+from src.system_control.system_control_executor import SystemControlExecutor
 
 
 class MediaExecutor:
+    def __init__(self) -> None:
+        self.system_control = SystemControlExecutor()
+
     def execute(self, request) -> ActionResult:
         action = (request.params or {}).get("action", "").strip().lower()
         if action not in {"play", "pause", "resume"}:
             return ActionResult.failure("Invalid media command.", request_id=request.request_id)
 
-        label = "resumed" if action == "resume" else f"{action}ed" if action.endswith("e") else f"{action}"
+        applied = self.system_control.control_media(action)
         if action == "play":
-            msg = "Playback started."
+            msg = "Playback started." if applied else "Playback start requested."
         elif action == "pause":
-            msg = "Playback paused."
+            msg = "Playback paused." if applied else "Playback pause requested."
         else:
-            msg = "Playback resumed."
+            msg = "Playback resumed." if applied else "Playback resume requested."
 
         return ActionResult.ok(
             message=msg,

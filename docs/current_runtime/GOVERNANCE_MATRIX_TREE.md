@@ -5,8 +5,8 @@ Deterministic generated tree diagram derived from allowlisted runtime sources.
 ```mermaid
 graph TD
   Runtime[Phase-4 Runtime]
-  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54]]
-  Runtime --> Disabled[Disabled IDs: [20, 21]]
+  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54]]
+  Runtime --> Disabled[Disabled IDs: []]
   Runtime --> Gov[Governor Guards]
   Gov --> EG[execution_gate: True]
   Gov --> SAQ[single_action_queue: True]
@@ -48,9 +48,11 @@ graph TD
   C54 --> C54A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Runtime --> Routes[Skill Routes]
   Routes --> R54_analysis_document[analysis_document -> capability 54]
+  Routes --> R21_brightness[brightness -> capability 21]
   Routes --> R32_diagnostics[diagnostics -> capability 32]
   Routes --> R49_headline_summary[headline_summary -> capability 49]
   Routes --> R50_intelligence_brief[intelligence_brief -> capability 50]
+  Routes --> R20_media[media -> capability 20]
   Routes --> R22_open_folder[open_folder -> capability 22]
   Routes --> R17_open_website[open_website -> capability 17]
   Routes --> R48_report[report -> capability 48]
@@ -68,8 +70,8 @@ graph TD
 
 ```text
 Runtime
-|- Enabled IDs: [16, 17, 18, 19, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54]
-|- Disabled IDs: [20, 21]
+|- Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54]
+|- Disabled IDs: []
 |- Governor Guards
 |  |- execution_gate: True
 |  |- single_action_queue: True
@@ -95,9 +97,11 @@ Runtime
 |  |- 54 analysis_document (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |- Skill -> capability routes
 |  |- analysis_document -> 54
+|  |- brightness -> 21
 |  |- diagnostics -> 32
 |  |- headline_summary -> 49
 |  |- intelligence_brief -> 50
+|  |- media -> 20
 |  |- open_folder -> 22
 |  |- open_website -> 17
 |  |- report -> 48
