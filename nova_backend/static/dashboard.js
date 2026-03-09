@@ -9,6 +9,7 @@ let newsExpanded = false;
 let sttState = "READY";
 let mediaRecorder = null;
 let silenceTimer = null;
+let lastWidgetHydrationAt = 0;
 let morningState = {
   weather: "Loading...",
   news: "Loading...",
@@ -30,6 +31,7 @@ const STORAGE_KEYS = {
   quickActions: "nova_quick_actions",
   uiLargeText: "nova_ui_large_text",
   uiHighContrast: "nova_ui_high_contrast",
+  uiCompactDensity: "nova_ui_compact_density",
   morningExpanded: "nova_morning_expanded",
 };
 
@@ -1188,11 +1190,21 @@ function stopSTT() {
   if (mediaRecorder && mediaRecorder.state === "recording") mediaRecorder.stop();
 }
 
+function hydrateDashboardWidgets() {
+  const now = Date.now();
+  if (now - lastWidgetHydrationAt < 15000) return;
+  lastWidgetHydrationAt = now;
+
+  safeWSSend({ text: "weather" });
+  safeWSSend({ text: "news" });
+}
+
 function connectWebSocket() {
   ws = new WebSocket(`${WS_BASE}/ws`);
 
   ws.onopen = () => {
     refreshPrivacyPanel();
+    hydrateDashboardWidgets();
   };
 
   ws.onmessage = (e) => {
@@ -1553,8 +1565,10 @@ function applyAccessibilityFromStorage() {
 
   const largeText = localStorage.getItem(STORAGE_KEYS.uiLargeText) === "1";
   const highContrast = localStorage.getItem(STORAGE_KEYS.uiHighContrast) === "1";
+  const compactDensity = localStorage.getItem(STORAGE_KEYS.uiCompactDensity) === "1";
   body.classList.toggle("a11y-large-text", largeText);
   body.classList.toggle("a11y-high-contrast", highContrast);
+  body.classList.toggle("density-compact", compactDensity);
 }
 
 function showAccessibilityModal() {
@@ -1586,6 +1600,7 @@ function showAccessibilityModal() {
 
     row.appendChild(mkToggle("Large text", STORAGE_KEYS.uiLargeText));
     row.appendChild(mkToggle("High contrast", STORAGE_KEYS.uiHighContrast));
+    row.appendChild(mkToggle("Compact density", STORAGE_KEYS.uiCompactDensity));
     card.appendChild(row);
   }
 
