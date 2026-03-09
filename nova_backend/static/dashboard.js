@@ -32,6 +32,7 @@ const STORAGE_KEYS = {
   uiLargeText: "nova_ui_large_text",
   uiHighContrast: "nova_ui_high_contrast",
   uiCompactDensity: "nova_ui_compact_density",
+  activePage: "nova_active_page",
   morningExpanded: "nova_morning_expanded",
 };
 
@@ -219,9 +220,13 @@ function maybeMarkReactiveFailureFromText(text) {
 }
 
 function getSelectedQuickActions() {
+  const validIds = new Set(QUICK_ACTIONS.map((action) => action.id));
   try {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEYS.quickActions) || "[]");
-    if (Array.isArray(stored) && stored.length) return stored;
+    if (Array.isArray(stored) && stored.length) {
+      const filtered = stored.filter((id) => validIds.has(id));
+      if (filtered.length) return filtered;
+    }
   } catch (_) {}
   return QUICK_ACTIONS.map((a) => a.id);
 }
@@ -1301,6 +1306,42 @@ function setupSidebarTabs() {
   });
 }
 
+function setActivePage(page) {
+  const pages = {
+    chat: $("page-chat"),
+    news: $("page-news"),
+    ops: $("page-ops"),
+  };
+  const target = pages[page] ? page : "chat";
+
+  Object.entries(pages).forEach(([name, el]) => {
+    if (!el) return;
+    el.hidden = name !== target;
+  });
+
+  document.querySelectorAll(".page-btn").forEach((btn) => {
+    const active = btn.dataset.page === target;
+    btn.classList.toggle("active", active);
+    btn.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+
+  localStorage.setItem(STORAGE_KEYS.activePage, target);
+}
+
+function setupPageNavigation() {
+  const buttons = document.querySelectorAll(".page-btn");
+  if (!buttons || buttons.length === 0) return;
+
+  buttons.forEach((btn) => {
+    btn.addEventListener("click", () => {
+      setActivePage(btn.dataset.page || "chat");
+    });
+  });
+
+  const stored = localStorage.getItem(STORAGE_KEYS.activePage) || "chat";
+  setActivePage(stored);
+}
+
 function sendChat() {
   const input = $("chat-input");
   if (!input) return;
@@ -1683,7 +1724,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderQuickActions();
   renderCommandDiscovery();
   setupMorningWidgetToggle();
-  setupSidebarTabs();
+  setupPageNavigation();
   connectWebSocket();
   ensureSingleWelcomeMessage();
   showFirstRunGuideIfNeeded();

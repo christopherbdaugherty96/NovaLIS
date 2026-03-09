@@ -122,6 +122,45 @@ def test_summary_filters_by_topic(monkeypatch):
     assert "war in the region" in result.message.lower()
 
 
+def test_summary_all_includes_related_story_comparison(monkeypatch):
+    from src.executors import news_intelligence_executor as mod
+
+    monkeypatch.setattr(
+        mod,
+        "generate_chat",
+        lambda *args, **kwargs: "The headline describes a major geopolitical development with limited confirmed detail.",
+    )
+    headlines = [
+        {"title": "Oil prices surge over Iran war fears", "source": "BBC News", "url": "u1"},
+        {"title": "U.S. strike video in Iran triggers global response", "source": "NPR", "url": "u2"},
+        {"title": "Local sports roundup", "source": "AP", "url": "u3"},
+    ]
+    executor = mod.NewsIntelligenceExecutor()
+    result = executor.execute_summary(_request(49, {"selection": "all", "headlines": headlines}))
+    assert result.success is True
+    assert "HEADLINE-BY-HEADLINE SUMMARY" in result.message
+    assert "Story 1" in result.message
+    assert "RELATED STORY COMPARISON" in result.message
+    assert isinstance(result.data, dict)
+    assert isinstance(result.data.get("related_pairs"), list)
+
+
+def test_summary_compare_indices_action():
+    from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
+
+    headlines = [
+        {"title": "Oil prices surge over Iran war fears", "source": "BBC News", "url": "u1"},
+        {"title": "U.S. strike video in Iran triggers global response", "source": "NPR", "url": "u2"},
+    ]
+    executor = NewsIntelligenceExecutor()
+    result = executor.execute_summary(
+        _request(49, {"action": "compare_indices", "left_index": 1, "right_index": 2, "headlines": headlines})
+    )
+    assert result.success is True
+    assert "HEADLINE COMPARISON - Story 1 vs Story 2" in result.message
+    assert "Shared terms" in result.message
+
+
 def test_brief_reads_source_pages_when_enabled(monkeypatch):
     from src.executors import news_intelligence_executor as mod
 

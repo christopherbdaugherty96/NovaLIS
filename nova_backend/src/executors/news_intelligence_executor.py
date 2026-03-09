@@ -4,6 +4,7 @@ import json
 import re
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from collections import Counter, defaultdict
+from itertools import combinations
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +19,7 @@ SOURCE_READ_TIMEOUT_SECONDS = 8.0
 MAX_SOURCE_PAGES_PER_BRIEF = 6
 MAX_SOURCE_TEXT_CHARS = 3500
 MAX_CLUSTER_STORIES = 4
+MAX_RELATED_PAIRS = 3
 
 STOPWORDS = {
     "the",
@@ -45,6 +47,31 @@ STOPWORDS = {
     "into",
     "new",
     "its",
+}
+
+HEADLINE_STOPWORDS = STOPWORDS | {
+    "video",
+    "shows",
+    "story",
+    "today",
+    "latest",
+    "update",
+    "updates",
+    "still",
+    "just",
+    "more",
+    "amid",
+    "while",
+}
+
+HEADLINE_TERM_NORMALIZATION = {
+    "iranian": "iran",
+    "israeli": "israel",
+    "american": "usa",
+    "british": "uk",
+    "chinese": "china",
+    "russian": "russia",
+    "ukrainian": "ukraine",
 }
 
 
@@ -172,13 +199,13 @@ class NewsIntelligenceExecutor:
 
     def _headline_prompt(self, item: dict[str, str], index: int) -> str:
         return (
-            "Summarize this headline in a structured, factual format.\n"
-            "Use exactly these sections:\n"
-            "Summary\nKey Points\nContext\nImplications\n\n"
+            "Summarize this news headline in 2-3 factual sentences.\n"
+            "Do not use section headers, bullets, or speculation.\n"
+            "If detail is limited, explicitly note that it is headline-level only.\n\n"
             f"Headline #{index}: {item['title']}\n"
             f"Source: {item.get('source', 'Unknown')}\n"
             f"URL: {item.get('url', 'N/A')}\n"
-            "If details are uncertain from the headline alone, explicitly say that."
+            "Return plain text only."
         )
 
     def _brief_prompt(self, headlines: list[dict[str, str]]) -> str:
@@ -523,12 +550,217 @@ class NewsIntelligenceExecutor:
         top = counts.most_common(12)
         return {topic: int(weight) for topic, weight in top}
 
+    def _headline_summary_fallback(self, item: dict[str, str]) -> str:
+        title = str(item.get("title") or "").strip()
+        source = str(item.get("source") or "").strip() or "Unknown source"
+        if not title:
+            return "Limited detail is available from the headline alone."
+        return (
+            f"The headline reports: {title}. "
+            "Limited detail is available from the headline alone. "
+            f"Confirm in the full {source} report."
+        )
+
+    def _normalize_headline_summary(self, text: str, item: dict[str, str]) -> str:
+        raw = str(text or "").strip()
+        if not raw:
+            return self._headline_summary_fallback(item)
+
+        cleaned_lines: list[str] = []
+        for line in raw.splitlines():
+            candidate = str(line or "").strip()
+            if not candidate:
+                continue
+            if re.fullmatch(
+                r"(summary|key points?|context|implications?|signal|watch|headline|detailed story analysis|reference)",
+                candidate,
+                flags=re.IGNORECASE,
+            ):
+                continue
+            candidate = re.sub(r"^\s*[-*]\s*", "", candidate)
+            candidate = re.sub(r"^\s*headline\s*#?\d+\s*:\s*", "", candidate, flags=re.IGNORECASE)
+            cleaned_lines.append(candidate)
+
+        if not cleaned_lines:
+            return self._headline_summary_fallback(item)
+
+        merged = " ".join(cleaned_lines)
+        merged = re.sub(r"\s+", " ", merged).strip()
+        if not merged:
+            return self._headline_summary_fallback(item)
+        if len(merged) > 320:
+            merged = merged[:317].rstrip() + "..."
+        return merged
+
+    def _headline_terms(self, item: dict[str, str]) -> set[str]:
+        text = f"{item.get('title', '')} {item.get('summary', '')}".lower()
+        terms: set[str] = set()
+        for token in re.findall(r"[a-zA-Z]{4,}", text):
+            normalized = HEADLINE_TERM_NORMALIZATION.get(token, token)
+            if normalized in HEADLINE_STOPWORDS:
+                continue
+            terms.add(normalized)
+        return terms
+
+    def _related_headline_pairs(self, headlines: list[dict[str, str]]) -> list[dict[str, Any]]:
+        scored_pairs: list[dict[str, Any]] = []
+        indexed = list(enumerate(headlines, start=1))
+        for (left_idx, left_item), (right_idx, right_item) in combinations(indexed, 2):
+            shared = sorted(self._headline_terms(left_item) & self._headline_terms(right_item))
+            if not shared:
+                continue
+            score = len(shared)
+            if score <= 0:
+                continue
+            scored_pairs.append(
+                {
+                    "left_index": left_idx,
+                    "right_index": right_idx,
+                    "shared_terms": shared[:6],
+                    "score": score,
+                }
+            )
+
+        scored_pairs.sort(key=lambda item: item["score"], reverse=True)
+        return scored_pairs[:MAX_RELATED_PAIRS]
+
+    def _render_related_comparison_section(self, headlines: list[dict[str, str]], pairs: list[dict[str, Any]]) -> str:
+        if not pairs:
+            return ""
+
+        lines = [
+            "",
+            "RELATED STORY COMPARISON",
+            "------------------------",
+        ]
+        for pair in pairs:
+            left_idx = int(pair.get("left_index") or 0)
+            right_idx = int(pair.get("right_index") or 0)
+            if left_idx <= 0 or right_idx <= 0 or left_idx > len(headlines) or right_idx > len(headlines):
+                continue
+            shared_terms = [str(term) for term in (pair.get("shared_terms") or []) if str(term).strip()]
+            shared_text = ", ".join(shared_terms[:4]) if shared_terms else "overlapping topic language"
+            left_title = str(headlines[left_idx - 1].get("title") or "").strip()
+            right_title = str(headlines[right_idx - 1].get("title") or "").strip()
+            lines.extend(
+                [
+                    f"- Story {left_idx} and Story {right_idx} overlap on: {shared_text}.",
+                    f"  Story {left_idx}: {left_title}",
+                    f"  Story {right_idx}: {right_title}",
+                    f"  Compare command: compare headlines {left_idx} and {right_idx}",
+                ]
+            )
+        return "\n".join(lines)
+
+    def _render_headline_report(
+        self,
+        selected: list[dict[str, str]],
+        summaries: list[str],
+        *,
+        selected_indices: list[int] | None = None,
+    ) -> tuple[str, list[dict[str, Any]]]:
+        lines = [
+            "HEADLINE-BY-HEADLINE SUMMARY",
+            "----------------------------",
+        ]
+        for offset, (item, summary) in enumerate(zip(selected, summaries), start=1):
+            display_index = (
+                selected_indices[offset - 1]
+                if isinstance(selected_indices, list) and (offset - 1) < len(selected_indices)
+                else offset
+            )
+            title = str(item.get("title") or "Unknown headline").strip()
+            source = str(item.get("source") or "Unknown").strip()
+            url = str(item.get("url") or "").strip()
+            lines.extend(
+                [
+                    "",
+                    f"Story {display_index}",
+                    f"Source: {source}",
+                    f"Headline: {title}",
+                    f"Summary: {summary}",
+                ]
+            )
+            if url:
+                lines.append(f"Reference: {url}")
+
+        related_pairs = self._related_headline_pairs(selected)
+        related_text = self._render_related_comparison_section(selected, related_pairs)
+        if related_text:
+            lines.append(related_text)
+        return "\n".join(lines), related_pairs
+
+    def _compare_headline_indices(
+        self,
+        headlines: list[dict[str, str]],
+        left_index: int,
+        right_index: int,
+        *,
+        request_id: str | None = None,
+    ) -> ActionResult:
+        if left_index == right_index:
+            return ActionResult.failure("Choose two different headline numbers to compare.")
+        if left_index < 1 or right_index < 1 or left_index > len(headlines) or right_index > len(headlines):
+            return ActionResult.failure("I couldn't compare those headline numbers from the current list.")
+
+        left = headlines[left_index - 1]
+        right = headlines[right_index - 1]
+        shared = sorted(self._headline_terms(left) & self._headline_terms(right))
+        shared_terms = ", ".join(shared[:8]) if shared else "No strong overlap terms were detected."
+
+        lines = [
+            f"HEADLINE COMPARISON - Story {left_index} vs Story {right_index}",
+            "",
+            f"Story {left_index}: {left.get('title', 'Unknown')}",
+            f"Source: {left.get('source', 'Unknown')}",
+            "",
+            f"Story {right_index}: {right.get('title', 'Unknown')}",
+            f"Source: {right.get('source', 'Unknown')}",
+            "",
+            f"Shared terms: {shared_terms}",
+        ]
+        if shared:
+            lines.append("These stories appear related and should be reviewed together for context alignment.")
+        else:
+            lines.append("These stories appear distinct based on headline-level text.")
+        return ActionResult.ok(
+            message="\n".join(lines),
+            data={
+                "widget": {
+                    "type": "news_summary",
+                    "data": {
+                        "comparison": {"left": left_index, "right": right_index, "shared_terms": shared[:8]},
+                    },
+                },
+                "related_pairs": [{"left_index": left_index, "right_index": right_index, "shared_terms": shared[:8]}],
+            },
+            request_id=request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+        )
+
     def execute_summary(self, request) -> ActionResult:
         headlines = self._sanitize_headlines((request.params or {}).get("headlines"))
         session_id = str((request.params or {}).get("session_id") or "").strip() or None
         if not headlines:
             return ActionResult.failure(
                 "No cached headlines found. Say 'news' first, then choose headline numbers.",
+                request_id=request.request_id,
+            )
+
+        action = str((request.params or {}).get("action") or "").strip().lower()
+        if action == "compare_indices":
+            try:
+                left_index = int((request.params or {}).get("left_index") or 0)
+                right_index = int((request.params or {}).get("right_index") or 0)
+            except Exception:
+                left_index = 0
+                right_index = 0
+            return self._compare_headline_indices(
+                headlines,
+                left_index,
+                right_index,
                 request_id=request.request_id,
             )
 
@@ -566,31 +798,31 @@ class NewsIntelligenceExecutor:
                 request_id=request.request_id,
             )
 
-        blocks: list[str] = []
+        normalized_summaries: list[str] = []
         for item, idx in zip(selected, indices):
-            fallback = (
-                f"Headline\n{item['title']}\n\n"
-                "Summary\nLimited detail is available from the headline alone.\n\n"
-                "Key Points\n- Review the source article for full facts.\n"
-                f"- Source: {item.get('source') or 'Unknown'}\n\n"
-                "Context\nThis summary is based on title-level information only.\n\n"
-                "Implications\nPotential impact depends on details not present in the headline."
-            )
+            fallback = self._headline_summary_fallback(item)
             analysis = self._llm_or_fallback(
                 self._headline_prompt(item, idx),
                 fallback,
                 request_id=f"{request.request_id}:headline:{idx}",
                 session_id=session_id,
             )
-            blocks.append(self.renderer.render_single(item, analysis_text=analysis.strip()))
+            normalized_summaries.append(self._normalize_headline_summary(analysis, item))
+
+        report, related_pairs = self._render_headline_report(
+            selected,
+            normalized_summaries,
+            selected_indices=indices,
+        )
 
         return ActionResult.ok(
-            message="\n\n".join(blocks),
+            message=report,
             data={
                 "widget": {
                     "type": "news_summary",
                     "data": {"indices": indices, "count": len(selected)},
-                }
+                },
+                "related_pairs": related_pairs,
             },
             request_id=request.request_id,
             authority_class="read_only",

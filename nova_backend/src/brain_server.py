@@ -1115,6 +1115,18 @@ async def websocket_endpoint(ws: WebSocket):
                             {"label": "Summarize risk", "command": "summarize verification risks in 3 bullets"},
                             {"label": "Revise answer", "command": "revise your last answer using this verification report"},
                         ]
+                if capability_id == 49 and isinstance(action_result.data, dict):
+                    related_pairs = action_result.data.get("related_pairs")
+                    if isinstance(related_pairs, list) and related_pairs:
+                        pair = next((p for p in related_pairs if isinstance(p, dict)), {})
+                        left = int(pair.get("left_index") or 0)
+                        right = int(pair.get("right_index") or 0)
+                        if left > 0 and right > 0:
+                            message_suggestions = [
+                                {"label": f"Compare {left} vs {right}", "command": f"compare headlines {left} and {right}"},
+                                {"label": "Summarize all", "command": "summarize all headlines"},
+                                {"label": "Today's brief", "command": "today's news"},
+                            ]
 
                 outgoing_message = _structure_long_message(action_result.message)
                 if not outgoing_message.strip() and capability_id == 18 and action_result.success:
