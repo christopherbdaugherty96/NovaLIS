@@ -71,8 +71,8 @@ body {
   position: relative;
   z-index: 2;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) clamp(300px, 24vw, 360px);
-  grid-template-rows: auto minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr);
   gap: var(--dashboard-gap);
   width: min(100%, var(--app-max-width));
   height: 100vh;
@@ -108,8 +108,28 @@ body {
   text-transform: uppercase;
 }
 
-.header-right {
-  width: min(360px, 100%);
+.page-nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.page-btn {
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  background: linear-gradient(180deg, rgba(106, 177, 255, 0.14) 0%, rgba(106, 177, 255, 0.06) 100%);
+  color: var(--text);
+  padding: 8px 14px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  cursor: pointer;
+}
+
+.page-btn.active {
+  border-color: rgba(143, 218, 255, 0.58);
+  background: linear-gradient(180deg, rgba(82, 176, 255, 0.32) 0%, rgba(82, 176, 255, 0.14) 100%);
 }
 
 .widget {
@@ -220,12 +240,35 @@ body {
 }
 
 .main {
-  grid-column: 1;
-  grid-row: 2;
   min-height: 0;
+}
+
+.page-view {
+  min-height: 0;
+  height: 100%;
+}
+
+.page-chat {
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto minmax(0, 1fr) auto auto;
   gap: 10px;
+}
+
+.page-news {
+  display: grid;
+  grid-template-columns: minmax(0, 1.55fr) minmax(280px, 1fr);
+  gap: 10px;
+}
+
+.page-ops {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  align-content: start;
+}
+
+.page-ops #guide-widget {
+  grid-column: 1 / -1;
 }
 
 .morning-widget {
@@ -481,6 +524,14 @@ body {
   gap: 10px;
 }
 
+.page-card {
+  min-height: 0;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .news-summary {
   margin: 0;
   padding: 9px 10px;
@@ -634,8 +685,6 @@ body {
 }
 
 .quick-actions {
-  grid-column: 1 / -1;
-  grid-row: 3;
   align-items: center;
 }
 
@@ -654,8 +703,6 @@ body {
 }
 
 .chat-input {
-  grid-column: 1 / -1;
-  grid-row: 4;
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto auto;
   gap: 8px;
@@ -931,7 +978,8 @@ body {
 
 .density-compact .weather-widget,
 .density-compact .morning-widget,
-.density-compact .rail-widget {
+.density-compact .rail-widget,
+.density-compact .page-card {
   padding: 9px 10px;
   gap: 7px;
 }
@@ -976,8 +1024,9 @@ body {
 }
 
 @media (max-width: 1280px) {
-  .dashboard {
-    grid-template-columns: minmax(0, 1fr) 300px;
+  .page-news,
+  .page-ops {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .orb-shell {
@@ -993,35 +1042,24 @@ body {
   .dashboard {
     min-height: 100vh;
     height: auto;
-    grid-template-columns: 1fr;
-    grid-template-rows: auto auto auto auto auto;
     overflow: visible;
   }
 
   .header {
     flex-direction: column;
+    align-items: flex-start;
   }
 
-  .header-right {
+  .page-nav {
     width: 100%;
   }
 
-  .news-panel {
-    grid-column: 1;
-    grid-row: 3;
-    min-height: 320px;
+  .page-chat {
+    grid-template-rows: auto minmax(300px, 1fr) auto auto;
   }
 
-  .main {
-    grid-row: 2;
-  }
-
-  .quick-actions {
-    grid-row: 4;
-  }
-
-  .chat-input {
-    grid-row: 5;
+  .page-view {
+    height: auto;
   }
 
   .orb-shell {

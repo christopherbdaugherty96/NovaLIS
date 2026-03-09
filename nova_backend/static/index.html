@@ -24,7 +24,65 @@
           <p class="brand-subtitle">Governed intelligence workspace</p>
         </div>
       </div>
-      <div class="header-right">
+      <nav class="page-nav" aria-label="Workspace views">
+        <button type="button" class="page-btn active" data-page="chat">Chat</button>
+        <button type="button" class="page-btn" data-page="news">News</button>
+        <button type="button" class="page-btn" data-page="ops">Control</button>
+      </nav>
+    </header>
+
+    <main class="main">
+      <section id="page-chat" class="page-view page-chat" aria-live="polite">
+        <div id="morning-widget" class="widget morning-widget">
+          <div class="morning-header">
+            <h3>Dashboard Snapshot</h3>
+            <button id="btn-morning-toggle" type="button" class="morning-toggle" aria-expanded="false">Show details</button>
+          </div>
+          <div id="morning-details" class="morning-details" hidden>
+            <div class="morning-row"><strong>Weather:</strong> <span id="morning-weather">Loading...</span></div>
+            <div class="morning-row"><strong>News:</strong> <span id="morning-news">Loading...</span></div>
+            <div class="morning-row"><strong>System:</strong> <span id="morning-system">Loading...</span></div>
+            <div class="morning-row"><strong>Calendar:</strong> <span id="morning-calendar">Loading...</span></div>
+          </div>
+        </div>
+
+        <section class="chat-stage">
+          <div class="panel conversation">
+            <div id="chat-log" class="chat-log" aria-live="polite"></div>
+          </div>
+          <div id="search-widget" class="widget search-widget" aria-live="polite"></div>
+        </section>
+
+        <div id="quick-actions" class="quick-actions" aria-label="Quick actions"></div>
+
+        <div class="chat-input">
+          <div id="thinking-bar" class="thinking-bar" style="display:none"></div>
+          <input id="chat-input" type="text" placeholder="Ask Nova anything..." autocomplete="off" spellcheck="false" />
+          <button id="send-btn" type="button">Send</button>
+          <button id="ptt-btn" type="button" aria-label="Push to talk" title="Push to talk">Mic</button>
+        </div>
+      </section>
+
+      <section id="page-news" class="page-view page-news" hidden>
+        <div id="news-widget" class="widget page-card">
+          <h3>Top News</h3>
+          <p id="news-summary" class="news-summary">Press "Summarize headlines" for a dashboard briefing.</p>
+          <ul id="news-list"></ul>
+          <div class="news-actions">
+            <button id="btn-news" type="button">Get headlines</button>
+            <button id="btn-news-summary" type="button">Summarize headlines</button>
+            <button id="btn-news-expand" type="button" aria-pressed="false" style="display:none">Expand details</button>
+          </div>
+        </div>
+
+        <div id="brief-widget" class="widget page-card brief-widget">
+          <h3>Today's Brief</h3>
+          <div id="brief-sidebar-empty" class="brief-sidebar-empty">Ask for "today's news" to build a merged brief.</div>
+          <div id="brief-sidebar-cards" class="brief-sidebar-cards"></div>
+        </div>
+      </section>
+
+      <section id="page-ops" class="page-view page-ops" hidden>
         <div id="weather-widget" class="widget weather-widget" aria-live="polite">
           <h3>Weather</h3>
           <div id="weather-line">Loading weather...</div>
@@ -33,80 +91,22 @@
           </div>
           <button id="btn-weather-update" type="button">Update</button>
         </div>
-      </div>
-    </header>
 
-    <main class="main">
-      <div id="morning-widget" class="widget morning-widget" aria-live="polite">
-        <div class="morning-header">
-          <h3>Dashboard Snapshot</h3>
-          <button id="btn-morning-toggle" type="button" class="morning-toggle" aria-expanded="false">Show details</button>
+        <div id="trust-panel" class="widget page-card trust-panel" aria-live="polite">
+          <h3>Trust Panel</h3>
+          <div class="trust-row"><strong>Mode:</strong> <span id="trust-mode">Local-only</span></div>
+          <div class="trust-row"><strong>Last external call:</strong> <span id="trust-last-call">None</span></div>
+          <div class="trust-row"><strong>Data egress:</strong> <span id="trust-egress">Read-only requests only</span></div>
+          <div class="trust-row"><strong>Failure state:</strong> <span id="trust-failure">Normal</span></div>
         </div>
-        <div id="morning-details" class="morning-details" hidden>
-          <div class="morning-row"><strong>Weather:</strong> <span id="morning-weather">Loading...</span></div>
-          <div class="morning-row"><strong>News:</strong> <span id="morning-news">Loading...</span></div>
-          <div class="morning-row"><strong>System:</strong> <span id="morning-system">Loading...</span></div>
-          <div class="morning-row"><strong>Calendar:</strong> <span id="morning-calendar">Loading...</span></div>
-        </div>
-      </div>
 
-      <section class="chat-stage">
-        <div class="panel conversation">
-          <div id="chat-log" class="chat-log" aria-live="polite"></div>
+        <div id="guide-widget" class="widget page-card command-discovery">
+          <h3>What You Can Ask</h3>
+          <p class="discovery-subtitle">Open this panel when you want examples or quick command ideas.</p>
+          <div id="command-groups" class="command-groups"></div>
         </div>
-        <div id="search-widget" class="widget search-widget" aria-live="polite"></div>
       </section>
     </main>
-
-    <aside class="news-panel">
-      <div class="sidebar-tabs" aria-label="Sidebar panels">
-        <button type="button" class="rail-tab active" data-panel="news-widget">News</button>
-        <button type="button" class="rail-tab" data-panel="brief-widget">Brief</button>
-        <button type="button" class="rail-tab" data-panel="trust-panel">Trust</button>
-        <button type="button" class="rail-tab" data-panel="guide-widget">Guide</button>
-        <button type="button" class="rail-tab" data-panel="help-modal">Help</button>
-      </div>
-
-      <div id="news-widget" class="widget rail-widget">
-        <h3>Top News</h3>
-        <p id="news-summary" class="news-summary">Press "Summarize headlines" for a dashboard briefing.</p>
-        <ul id="news-list"></ul>
-        <div class="news-actions">
-          <button id="btn-news" type="button">Get headlines</button>
-          <button id="btn-news-summary" type="button">Summarize headlines</button>
-          <button id="btn-news-expand" type="button" aria-pressed="false" style="display:none">Expand details</button>
-        </div>
-      </div>
-
-      <div id="brief-widget" class="widget rail-widget brief-widget" hidden>
-        <h3>Today's Brief</h3>
-        <div id="brief-sidebar-empty" class="brief-sidebar-empty">Ask for "today's news" to build a merged brief.</div>
-        <div id="brief-sidebar-cards" class="brief-sidebar-cards"></div>
-      </div>
-
-      <div id="trust-panel" class="widget rail-widget trust-panel" aria-live="polite" hidden>
-        <h3>Trust Panel</h3>
-        <div class="trust-row"><strong>Mode:</strong> <span id="trust-mode">Local-only</span></div>
-        <div class="trust-row"><strong>Last external call:</strong> <span id="trust-last-call">None</span></div>
-        <div class="trust-row"><strong>Data egress:</strong> <span id="trust-egress">Read-only requests only</span></div>
-        <div class="trust-row"><strong>Failure state:</strong> <span id="trust-failure">Normal</span></div>
-      </div>
-
-      <div id="guide-widget" class="widget rail-widget command-discovery" hidden>
-        <h3>What You Can Ask</h3>
-        <p class="discovery-subtitle">Open this panel when you want examples or quick command ideas.</p>
-        <div id="command-groups" class="command-groups"></div>
-      </div>
-    </aside>
-
-    <div id="quick-actions" class="quick-actions" aria-label="Quick actions"></div>
-
-    <div class="chat-input">
-      <div id="thinking-bar" class="thinking-bar" style="display:none"></div>
-      <input id="chat-input" type="text" placeholder="Ask Nova anything..." autocomplete="off" spellcheck="false" />
-      <button id="send-btn" type="button">Send</button>
-      <button id="ptt-btn" type="button" aria-label="Push to talk" title="Push to talk">Mic</button>
-    </div>
   </div>
 
   <script src="/static/orb.js"></script>

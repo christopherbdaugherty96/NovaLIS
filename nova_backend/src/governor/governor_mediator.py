@@ -156,6 +156,10 @@ COMPARE_STORY_INDEX_RE = re.compile(
     r"^\s*compare(?:\s+story)?\s+(?P<left>\d{1,2})\s+(?:and|vs)\s+(?P<right>\d{1,2})\s*$",
     re.IGNORECASE,
 )
+COMPARE_HEADLINE_INDEX_RE = re.compile(
+    r"^\s*compare\s+headlines?\s+(?P<left>\d{1,2})\s+(?:and|vs)\s+(?P<right>\d{1,2})\s*$",
+    re.IGNORECASE,
+)
 TRACK_STORY_INDEX_RE = re.compile(
     r"^\s*track\s+story\s+(?P<idx>\d{1,2})\s*$",
     re.IGNORECASE,
@@ -448,6 +452,17 @@ class GovernorMediator:
         m = EXPAND_STORY_INDEX_RE.match(t)
         if m:
             return _invocation_if_enabled(50, {"action": "expand_cluster", "story_id": int(m.group("idx"))})
+
+        m = COMPARE_HEADLINE_INDEX_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                49,
+                {
+                    "action": "compare_indices",
+                    "left_index": int(m.group("left")),
+                    "right_index": int(m.group("right")),
+                },
+            )
 
         m = COMPARE_STORY_INDEX_RE.match(t)
         if m:
