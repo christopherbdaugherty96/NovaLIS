@@ -86,6 +86,34 @@ function $(id) { return document.getElementById(id); }
 function clear(el) { if (el) el.innerHTML = ""; }
 function extractDomain(url) { return (url || "").replace(/^https?:\/\//, "").split("/")[0].trim().toLowerCase(); }
 
+function getNewsPreviewLimit() {
+  const newsPage = $("page-news");
+  const onNewsPage = !!(newsPage && !newsPage.hidden);
+  return onNewsPage ? 6 : 3;
+}
+
+function formatNewsFreshness(published) {
+  const raw = String(published || "").trim();
+  if (!raw) return "";
+
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return "";
+
+  const diffMs = Date.now() - date.getTime();
+  if (diffMs < 0 || diffMs < 60 * 1000) return "Updated just now";
+  if (diffMs < 60 * 60 * 1000) return `Updated ${Math.round(diffMs / (60 * 1000))}m ago`;
+  if (diffMs < 24 * 60 * 60 * 1000) return `Updated ${Math.round(diffMs / (60 * 60 * 1000))}h ago`;
+  return `Updated ${date.toLocaleDateString([], { month: "short", day: "numeric" })}`;
+}
+
+function buildNewsItemSnippet(item) {
+  const summary = String(item?.summary || "").trim();
+  if (summary) return summary;
+  const title = String(item?.title || "").trim();
+  if (!title) return "No synopsis available for this headline.";
+  return `Headline indicates: ${title}`;
+}
+
 function setOrbStatus(state) {
   sttState = state;
   const el = $("orb-status");
@@ -964,17 +992,47 @@ function renderWeatherWidget(data) {
   morningState.weather = line.textContent;
   renderMorningPanel();
 
+  const forecast = String((data && data.forecast) || "").trim();
+  if (forecast) {
+    const forecastLine = document.createElement("div");
+    forecastLine.className = "weather-forecast";
+    forecastLine.textContent = forecast;
+    container.appendChild(forecastLine);
+  }
+
+  const alerts = Array.isArray(data?.alerts) ? data.alerts.filter((item) => String(item || "").trim()) : [];
+  if (alerts.length > 0) {
+    const alertWrap = document.createElement("div");
+    alertWrap.className = "weather-alerts";
+
+    const alertTitle = document.createElement("div");
+    alertTitle.className = "weather-alert-title";
+    alertTitle.textContent = "Forecast Alerts";
+    alertWrap.appendChild(alertTitle);
+
+    alerts.slice(0, 2).forEach((alert) => {
+      const row = document.createElement("div");
+      row.className = "weather-alert-item";
+      row.textContent = String(alert);
+      alertWrap.appendChild(row);
+    });
+
+    container.appendChild(alertWrap);
+  }
+
   const meta = document.createElement("div");
   meta.className = "weather-meta";
   appendConfidenceBadge(meta, "Local read-only");
+  if (alerts.length === 0) {
+    appendConfidenceBadge(meta, "No active alerts");
+  }
+  const updated = String((data && data.updated_at) || "").trim();
+  if (updated) {
+    const stamp = document.createElement("span");
+    stamp.textContent = `Updated ${updated}`;
+    meta.appendChild(stamp);
+  }
   container.appendChild(meta);
-
-  const btn = document.createElement("button");
-  btn.id = "btn-weather-update";
-  btn.type = "button";
-  btn.textContent = "Update";
-  btn.addEventListener("click", () => safeWSSend({ text: "weather" }));
-  container.appendChild(btn);
 }
 
 function updateNewsSummary(summaryText) {
@@ -986,7 +1044,7 @@ function updateNewsSummary(summaryText) {
 function setNewsExpandButton() {
   const btn = $("btn-news-expand");
   if (!btn) return;
-  const hasExtra = latestNewsItems.length > 3;
+  const hasExtra = latestNewsItems.length > getNewsPreviewLimit();
   btn.style.display = hasExtra ? "inline-block" : "none";
   btn.textContent = newsExpanded ? "Show brief" : "Expand details";
   btn.setAttribute("aria-pressed", newsExpanded ? "true" : "false");
@@ -1014,35 +1072,72 @@ function renderNewsWidget(items, summaryText = "") {
   morningState.news = (summaryText || items[0]?.title || "Headlines available.").trim();
   renderMorningPanel();
 
-  const visibleItems = newsExpanded ? latestNewsItems : latestNewsItems.slice(0, 3);
+  const previewLimit = getNewsPreviewLimit();
+  const visibleItems = newsExpanded ? latestNewsItems : latestNewsItems.slice(0, previewLimit);
   visibleItems.forEach((item, index) => {
+    const storyIndex = index + 1;
     const li = document.createElement("li");
 
     const badge = document.createElement("span");
     badge.className = "citation-index";
-    badge.textContent = `[${index + 1}]`;
+    badge.textContent = `[${storyIndex}]`;
     li.appendChild(badge);
 
     const a = document.createElement("a");
     a.href = item.url;
-    const sourceLabel = (item.source || "").trim();
-    a.textContent = sourceLabel ? `[${sourceLabel}] ${item.title}` : item.title;
+    a.className = "news-item-title";
+    a.textContent = item.title || "Untitled story";
     a.target = "_blank";
     a.rel = "noopener noreferrer";
     li.appendChild(a);
+
+    const summary = document.createElement("p");
+    summary.className = "news-item-summary";
+    summary.textContent = buildNewsItemSnippet(item);
+    li.appendChild(summary);
+
+    const meta = document.createElement("div");
+    meta.className = "news-item-meta";
+
+    const sourceBadge = document.createElement("span");
+    sourceBadge.className = "domain-badge";
+    sourceBadge.textContent = (item.source || "").trim() || "Unknown source";
+    meta.appendChild(sourceBadge);
 
     const domain = extractDomain(item.url);
     if (domain) {
       const domainBadge = document.createElement("span");
       domainBadge.className = "domain-badge";
       domainBadge.textContent = domain;
-      li.appendChild(domainBadge);
+      meta.appendChild(domainBadge);
+    }
+
+    const freshness = formatNewsFreshness(item.published);
+    if (freshness) {
+      const freshnessBadge = document.createElement("span");
+      freshnessBadge.className = "confidence-badge";
+      freshnessBadge.textContent = freshness;
+      meta.appendChild(freshnessBadge);
     }
 
     const conf = document.createElement("span");
     conf.className = "confidence-badge";
     conf.textContent = "Web result";
-    li.appendChild(conf);
+    meta.appendChild(conf);
+
+    li.appendChild(meta);
+
+    const row = document.createElement("div");
+    row.className = "news-item-actions";
+
+    const summarizeBtn = document.createElement("button");
+    summarizeBtn.type = "button";
+    summarizeBtn.className = "assistant-action-btn";
+    summarizeBtn.textContent = "Summarize this";
+    summarizeBtn.addEventListener("click", () => injectUserText(`summarize headline ${storyIndex}`, "text"));
+    row.appendChild(summarizeBtn);
+
+    li.appendChild(row);
 
     list.appendChild(li);
   });
@@ -1195,8 +1290,8 @@ function hydrateDashboardWidgets() {
   if (now - lastWidgetHydrationAt < 15000) return;
   lastWidgetHydrationAt = now;
 
-  safeWSSend({ text: "weather" });
-  safeWSSend({ text: "news" });
+  safeWSSend({ text: "weather", silent_widget_refresh: true });
+  safeWSSend({ text: "news", silent_widget_refresh: true });
 }
 
 function connectWebSocket() {
@@ -1307,12 +1402,13 @@ function setupSidebarTabs() {
 }
 
 function setActivePage(page) {
+  const normalized = page === "ops" ? "home" : page;
   const pages = {
     chat: $("page-chat"),
     news: $("page-news"),
-    ops: $("page-ops"),
+    home: $("page-home"),
   };
-  const target = pages[page] ? page : "chat";
+  const target = pages[normalized] ? normalized : "chat";
 
   Object.entries(pages).forEach(([name, el]) => {
     if (!el) return;
@@ -1326,6 +1422,12 @@ function setActivePage(page) {
   });
 
   localStorage.setItem(STORAGE_KEYS.activePage, target);
+
+  if (latestNewsItems.length > 0) {
+    renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "");
+  } else {
+    setNewsExpandButton();
+  }
 }
 
 function setupPageNavigation() {
@@ -1756,9 +1858,6 @@ window.addEventListener("DOMContentLoaded", () => {
       renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "");
     });
   }
-
-  const weatherBtn = $("btn-weather-update");
-  if (weatherBtn) weatherBtn.addEventListener("click", () => safeWSSend({ text: "weather" }));
 
   const micBtn = $("ptt-btn");
   if (micBtn) {

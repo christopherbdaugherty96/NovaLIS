@@ -2,12 +2,30 @@
 
 import asyncio
 import xml.etree.ElementTree as ET
+import html
+import re
 from typing import Dict, Any, List
 
 from src.governor.network_mediator import NetworkMediator
 from src.governor.exceptions import NetworkMediatorError
 
 NETWORK_CAPABILITY_ID = 16
+SUMMARY_CHAR_LIMIT = 260
+_HTML_TAG_RE = re.compile(r"<[^>]+>")
+_WS_RE = re.compile(r"\s+")
+
+
+def _clean_text(value: str) -> str:
+    raw = str(value or "")
+    if not raw:
+        return ""
+    raw = raw.replace("<![CDATA[", "").replace("]]>", "")
+    raw = html.unescape(raw)
+    raw = _HTML_TAG_RE.sub(" ", raw)
+    raw = _WS_RE.sub(" ", raw).strip()
+    if len(raw) > SUMMARY_CHAR_LIMIT:
+        raw = raw[: SUMMARY_CHAR_LIMIT - 3].rstrip() + "..."
+    return raw
 
 
 async def fetch_rss_headlines(
@@ -62,7 +80,24 @@ async def fetch_rss_headlines(
         title = item.findtext("title")
         link = item.findtext("link")
         if title and link:
-            results.append({"title": title.strip(), "url": link.strip()})
+            description = (
+                item.findtext("description")
+                or item.findtext("{http://purl.org/rss/1.0/modules/content/}encoded")
+                or ""
+            )
+            published = (
+                item.findtext("pubDate")
+                or item.findtext("{http://purl.org/dc/elements/1.1/}date")
+                or ""
+            )
+            results.append(
+                {
+                    "title": title.strip(),
+                    "url": link.strip(),
+                    "summary": _clean_text(description),
+                    "published": published.strip(),
+                }
+            )
 
     # ----------------------------
     # Atom (<entry>)
@@ -79,7 +114,21 @@ async def fetch_rss_headlines(
                 else ""
             )
             if title and href:
-                results.append({"title": title, "url": href})
+                summary = entry.findtext("atom:summary", default="", namespaces=ns)
+                if not summary:
+                    summary = entry.findtext("atom:content", default="", namespaces=ns)
+                published = (
+                    entry.findtext("atom:updated", default="", namespaces=ns)
+                    or entry.findtext("atom:published", default="", namespaces=ns)
+                )
+                results.append(
+                    {
+                        "title": title,
+                        "url": href,
+                        "summary": _clean_text(summary),
+                        "published": str(published or "").strip(),
+                    }
+                )
 
     return results
 

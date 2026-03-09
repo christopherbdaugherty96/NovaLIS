@@ -415,6 +415,7 @@ async def websocket_endpoint(ws: WebSocket):
 
             msg_type = (msg.get("type") or "chat").strip().lower()
             channel = (msg.get("channel") or "text").strip().lower()
+            silent_widget_refresh = bool(msg.get("silent_widget_refresh"))
             if channel not in {"voice", "text"}:
                 channel = "text"
 
@@ -547,7 +548,7 @@ async def websocket_endpoint(ws: WebSocket):
                     await ws_send(ws, ack_payload)
 
             micro_ack = str(decision.micro_ack or "").strip()
-            if micro_ack:
+            if micro_ack and not silent_widget_refresh:
                 await send_chat_message(ws, micro_ack)
 
             if lowered in {"open downloads", "open documents"}:
@@ -721,14 +722,16 @@ async def websocket_endpoint(ws: WebSocket):
             if lowered in {"weather", "weather update", "current weather"}:
                 weather_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "weather"), None)
                 if weather_skill is None:
-                    await send_chat_message(ws, "Weather is unavailable right now.")
+                    if not silent_widget_refresh:
+                        await send_chat_message(ws, "Weather is unavailable right now.")
                     await send_chat_done(ws)
                     continue
                 weather_result = await weather_skill.handle("weather")
                 if weather_result and weather_result.success:
                     message = _structure_long_message(weather_result.message)
-                    session_state["last_response"] = message
-                    await send_chat_message(ws, message)
+                    if not silent_widget_refresh:
+                        session_state["last_response"] = message
+                        await send_chat_message(ws, message)
                     if isinstance(weather_result.widget_data, dict):
                         await ws_send(ws, weather_result.widget_data)
                     session_state["trust_status"] = failure_ladder.record_external_success(
@@ -737,7 +740,8 @@ async def websocket_endpoint(ws: WebSocket):
                     )
                     await send_trust_status(ws, session_state["trust_status"])
                 else:
-                    await send_chat_message(ws, "Weather is currently unavailable.")
+                    if not silent_widget_refresh:
+                        await send_chat_message(ws, "Weather is currently unavailable.")
                     session_state["trust_status"] = failure_ladder.record_failure(
                         session_state.get("trust_status", {}),
                         reason="Temporary issue",
@@ -751,13 +755,15 @@ async def websocket_endpoint(ws: WebSocket):
             if lowered in {"news", "headlines", "latest news", "top news"}:
                 news_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "news"), None)
                 if news_skill is None:
-                    await send_chat_message(ws, "News is unavailable right now.")
+                    if not silent_widget_refresh:
+                        await send_chat_message(ws, "News is unavailable right now.")
                     await send_chat_done(ws)
                     continue
                 news_result = await news_skill.handle("news")
                 if news_result and news_result.success:
-                    session_state["last_response"] = news_result.message
-                    await send_chat_message(ws, news_result.message)
+                    if not silent_widget_refresh:
+                        session_state["last_response"] = news_result.message
+                        await send_chat_message(ws, news_result.message)
                     if isinstance(news_result.widget_data, dict):
                         items = list(news_result.widget_data.get("items") or [])
                         session_state["news_cache"] = items
@@ -769,7 +775,8 @@ async def websocket_endpoint(ws: WebSocket):
                     )
                     await send_trust_status(ws, session_state["trust_status"])
                 else:
-                    await send_chat_message(ws, "News is currently unavailable.")
+                    if not silent_widget_refresh:
+                        await send_chat_message(ws, "News is currently unavailable.")
                     session_state["trust_status"] = failure_ladder.record_failure(
                         session_state.get("trust_status", {}),
                         reason="Temporary issue",

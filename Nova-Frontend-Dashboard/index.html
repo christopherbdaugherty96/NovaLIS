@@ -13,7 +13,6 @@
       <div class="orb-rim"></div>
       <div class="orb-bloom"></div>
     </div>
-    <div id="orb-status" class="orb-status">READY</div>
   </div>
 
   <div class="dashboard">
@@ -21,14 +20,23 @@
       <div class="header-left">
         <div class="brand-block">
           <h1>Nova</h1>
-          <p class="brand-subtitle">Governed intelligence workspace</p>
         </div>
       </div>
-      <nav class="page-nav" aria-label="Workspace views">
-        <button type="button" class="page-btn active" data-page="chat">Chat</button>
-        <button type="button" class="page-btn" data-page="news">News</button>
-        <button type="button" class="page-btn" data-page="ops">Control</button>
-      </nav>
+      <div class="header-right">
+        <nav class="page-nav" aria-label="Workspace views">
+          <button type="button" class="page-btn active" data-page="chat">Chat</button>
+          <button type="button" class="page-btn" data-page="news">News</button>
+          <button type="button" class="page-btn" data-page="home">Home</button>
+        </nav>
+
+        <div id="weather-widget" class="widget weather-widget header-weather" aria-live="polite">
+          <h3>Weather</h3>
+          <div id="weather-line">Loading weather...</div>
+          <div class="weather-meta">
+            <span id="weather-updated"></span>
+          </div>
+        </div>
+      </div>
     </header>
 
     <main class="main">
@@ -82,28 +90,13 @@
         </div>
       </section>
 
-      <section id="page-ops" class="page-view page-ops" hidden>
-        <div id="weather-widget" class="widget weather-widget" aria-live="polite">
-          <h3>Weather</h3>
-          <div id="weather-line">Loading weather...</div>
-          <div class="weather-meta">
-            <span id="weather-updated"></span>
-          </div>
-          <button id="btn-weather-update" type="button">Update</button>
-        </div>
-
+      <section id="page-home" class="page-view page-home" hidden>
         <div id="trust-panel" class="widget page-card trust-panel" aria-live="polite">
           <h3>Trust Panel</h3>
           <div class="trust-row"><strong>Mode:</strong> <span id="trust-mode">Local-only</span></div>
           <div class="trust-row"><strong>Last external call:</strong> <span id="trust-last-call">None</span></div>
           <div class="trust-row"><strong>Data egress:</strong> <span id="trust-egress">Read-only requests only</span></div>
           <div class="trust-row"><strong>Failure state:</strong> <span id="trust-failure">Normal</span></div>
-        </div>
-
-        <div id="guide-widget" class="widget page-card command-discovery">
-          <h3>What You Can Ask</h3>
-          <p class="discovery-subtitle">Open this panel when you want examples or quick command ideas.</p>
-          <div id="command-groups" class="command-groups"></div>
         </div>
       </section>
     </main>
