@@ -4,56 +4,43 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nova</title>
-
-  <!-- Phase-3 LIVE CSS -->
   <link rel="stylesheet" href="/static/style.phase1.css" />
 </head>
-
 <body>
-  <!-- ===============================
-       ORB BACKGROUND (NON-INTERACTIVE)
-       =============================== -->
- <div class="orb-container" aria-hidden="true">
-  <div class="orb-shell">
-    <canvas id="nova-orb" class="orb-canvas"></canvas>
-    <div class="orb-rim"></div>
-    <div class="orb-bloom"></div>
+  <div class="orb-container" id="orb-container" aria-hidden="true">
+    <div class="orb-shell">
+      <canvas id="nova-orb" class="orb-canvas"></canvas>
+      <div class="orb-rim"></div>
+      <div class="orb-bloom"></div>
+    </div>
+    <div id="orb-status" class="orb-status">READY</div>
   </div>
-  <div id="orb-status" class="orb-status">READY</div>
-</div>
 
-  <!-- ===============================
-       DASHBOARD GRID
-       =============================== -->
   <div class="dashboard">
-
-    <!-- ---------- HEADER ---------- -->
     <header class="header">
       <div class="header-left">
-        <h1>Nova</h1>
-      </div>
-
-      <!-- Weather widget lives in header by design -->
-      <div id="weather-widget" class="widget">
-        <h3>Weather</h3>
-        <div id="weather-line">-</div>
-
-        <div class="weather-meta">
-          <span id="weather-updated"></span>
+        <div class="brand-block">
+          <h1>Nova</h1>
+          <p class="brand-subtitle">Governed intelligence workspace</p>
         </div>
-
-        <button id="btn-weather-update" type="button">
-          Update
-        </button>
+      </div>
+      <div class="header-right">
+        <div id="weather-widget" class="widget weather-widget" aria-live="polite">
+          <h3>Weather</h3>
+          <div id="weather-line">Loading weather...</div>
+          <div class="weather-meta">
+            <span id="weather-updated"></span>
+          </div>
+          <button id="btn-weather-update" type="button">Update</button>
+        </div>
       </div>
     </header>
 
-    <!-- ---------- MAIN COLUMN ---------- -->
     <main class="main">
       <div id="morning-widget" class="widget morning-widget" aria-live="polite">
         <div class="morning-header">
-          <h3>Dashboard</h3>
-          <button id="btn-morning-toggle" type="button" class="sidebar-tab" aria-expanded="false">Show details</button>
+          <h3>Dashboard Snapshot</h3>
+          <button id="btn-morning-toggle" type="button" class="morning-toggle" aria-expanded="false">Show details</button>
         </div>
         <div id="morning-details" class="morning-details" hidden>
           <div class="morning-row"><strong>Weather:</strong> <span id="morning-weather">Loading...</span></div>
@@ -62,102 +49,67 @@
           <div class="morning-row"><strong>Calendar:</strong> <span id="morning-calendar">Coming soon</span></div>
         </div>
       </div>
-      <div class="panel conversation">
-        <div id="chat-log" class="chat-log"></div>
-      </div>
-      <div id="search-widget" class="widget search-widget" aria-live="polite"></div>
+
+      <section class="chat-stage">
+        <div class="panel conversation">
+          <div id="chat-log" class="chat-log" aria-live="polite"></div>
+        </div>
+        <div id="search-widget" class="widget search-widget" aria-live="polite"></div>
+      </section>
     </main>
 
-    <!-- ---------- NEWS PANEL ---------- -->
     <aside class="news-panel">
       <div class="sidebar-tabs" aria-label="Sidebar panels">
-        <button type="button" class="sidebar-tab active" data-panel="news-widget">News</button>
-        <button type="button" class="sidebar-tab" data-panel="brief-widget">Brief</button>
-        <button type="button" class="sidebar-tab" data-panel="trust-panel">Trust</button>
-        <button type="button" class="sidebar-tab" data-panel="guide-widget">Guide</button>
-        <button type="button" class="sidebar-tab" data-panel="help-modal">Help</button>
+        <button type="button" class="rail-tab active" data-panel="news-widget">News</button>
+        <button type="button" class="rail-tab" data-panel="brief-widget">Brief</button>
+        <button type="button" class="rail-tab" data-panel="trust-panel">Trust</button>
+        <button type="button" class="rail-tab" data-panel="guide-widget">Guide</button>
+        <button type="button" class="rail-tab" data-panel="help-modal">Help</button>
       </div>
-      <div id="news-widget" class="widget">
+
+      <div id="news-widget" class="widget rail-widget">
         <h3>Top News</h3>
-
-        <!-- SCROLL CONTAINER (CSS targets this) -->
         <p id="news-summary" class="news-summary">Press "Summarize headlines" for a dashboard briefing.</p>
-
         <ul id="news-list"></ul>
-
         <div class="news-actions">
-          <button id="btn-news" type="button">
-            Get headlines
-          </button>
-          <button id="btn-news-summary" type="button">
-            Summarize headlines
-          </button>
-          <button id="btn-news-expand" type="button" aria-pressed="false" style="display:none">
-            Expand details
-          </button>
+          <button id="btn-news" type="button">Get headlines</button>
+          <button id="btn-news-summary" type="button">Summarize headlines</button>
+          <button id="btn-news-expand" type="button" aria-pressed="false" style="display:none">Expand details</button>
         </div>
       </div>
-      <div id="brief-widget" class="widget brief-widget" hidden>
+
+      <div id="brief-widget" class="widget rail-widget brief-widget" hidden>
         <h3>Today's Brief</h3>
         <div id="brief-sidebar-empty" class="brief-sidebar-empty">Ask for "today's news" to build a merged brief.</div>
         <div id="brief-sidebar-cards" class="brief-sidebar-cards"></div>
       </div>
-      <div id="trust-panel" class="widget trust-panel" aria-live="polite" hidden>
+
+      <div id="trust-panel" class="widget rail-widget trust-panel" aria-live="polite" hidden>
         <h3>Trust Panel</h3>
         <div class="trust-row"><strong>Mode:</strong> <span id="trust-mode">Local-only</span></div>
         <div class="trust-row"><strong>Last external call:</strong> <span id="trust-last-call">None</span></div>
         <div class="trust-row"><strong>Data egress:</strong> <span id="trust-egress">Read-only requests only</span></div>
         <div class="trust-row"><strong>Failure state:</strong> <span id="trust-failure">Normal</span></div>
       </div>
-      <div id="guide-widget" class="widget command-discovery" hidden>
+
+      <div id="guide-widget" class="widget rail-widget command-discovery" hidden>
         <h3>What You Can Ask</h3>
         <p class="discovery-subtitle">Open this panel when you want examples or quick command ideas.</p>
         <div id="command-groups" class="command-groups"></div>
       </div>
     </aside>
 
-    <!-- ---------- QUICK ACTIONS ---------- -->
-    <div class="quick-actions" aria-label="Quick actions">
-      <button class="quick-action-btn" data-action="brief" type="button">Brief</button>
-      <button class="quick-action-btn" data-action="weather" type="button">Weather</button>
-      <button class="quick-action-btn" data-action="news" type="button">News</button>
-      <button class="quick-action-btn" data-action="system" type="button">System</button>
-      <button class="quick-action-btn" data-action="search" type="button">Search</button>
-      <button class="quick-action-btn" data-action="open" type="button">Open</button>
-    </div>
+    <div id="quick-actions" class="quick-actions" aria-label="Quick actions"></div>
 
-    <!-- ---------- CHAT INPUT ---------- -->
     <div class="chat-input">
       <div id="thinking-bar" class="thinking-bar" style="display:none"></div>
-      <input
-        id="chat-input"
-        type="text"
-        placeholder="Type a message..."
-        autocomplete="off"
-        spellcheck="false"
-      />
-
-      <button id="send-btn" type="button">
-        Send
-      </button>
-
-      <button
-        id="ptt-btn"
-        type="button"
-        aria-label="Push to talk"
-        title="Push to talk"
-      >
-        Mic
-      </button>
+      <input id="chat-input" type="text" placeholder="Ask Nova anything..." autocomplete="off" spellcheck="false" />
+      <button id="send-btn" type="button">Send</button>
+      <button id="ptt-btn" type="button" aria-label="Push to talk" title="Push to talk">Mic</button>
     </div>
-
   </div>
 
-  <!-- ===============================
-       PHASE-3 DASHBOARD LOGIC
-       =============================== -->
   <script src="/static/orb.js"></script>
   <script src="/static/dashboard.js"></script>
 </body>
 </html>
-

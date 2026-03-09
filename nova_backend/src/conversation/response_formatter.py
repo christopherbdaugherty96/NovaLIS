@@ -76,8 +76,8 @@ class ResponseFormatter:
     @staticmethod
     def friendly_fallback() -> str:
         return (
-            "I'm not sure what you'd like me to do with that yet. "
-            "Try one of these: open files, search the web, or show today's brief."
+            "I might have misunderstood that. "
+            "Try one of these: weather, today's news, search for a topic, or open documents."
         )
 
     @staticmethod

@@ -33,5 +33,5 @@ def test_friendly_fallback_guides_user():
     from src.conversation.response_formatter import ResponseFormatter
 
     out = ResponseFormatter.friendly_fallback()
-    assert "open files" in out.lower()
-    assert "search the web" in out.lower()
+    assert "weather" in out.lower()
+    assert "today's news" in out.lower()

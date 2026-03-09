@@ -60,6 +60,7 @@ def test_volume_media_brightness_parsing():
 
 def test_news_intelligence_parsing():
     from src.governor.governor_mediator import GovernorMediator, Invocation
+    from src.governor.governor_mediator import Clarification
 
     inv = GovernorMediator.parse_governed_invocation("summarize headline 2")
     assert isinstance(inv, Invocation)
@@ -196,6 +197,14 @@ def test_news_intelligence_parsing():
     inv = GovernorMediator.parse_governed_invocation("create an intelligence brief on lithium supply chains")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 48
+
+    inv = GovernorMediator.parse_governed_invocation("tell me about ai regulation")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 48
+
+    inv = GovernorMediator.parse_governed_invocation("open")
+    assert isinstance(inv, Clarification)
+    assert "what should i open" in inv.message.lower()
 
     inv = GovernorMediator.parse_governed_invocation("verify this")
     assert isinstance(inv, Invocation)

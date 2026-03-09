@@ -579,15 +579,16 @@ class GovernorMediator:
         m = COMMAND_ONLY_RE.match(t)
         if m:
             verb = (m.group("verb") or "").strip().lower()
-            prompts = {
-                "open": "What should I open? You can say 'open website github' or 'open documents'.",
-                "search": "What should I search for?",
-                "research": "What topic should I research?",
-                "summarize": "What should I summarize?",
-                "compare": "What should I compare?",
-                "track": "What topic should I track?",
+            prompts: dict[str, tuple[int, str]] = {
+                "open": (17, "What should I open? You can say 'open website github' or 'open documents'."),
+                "search": (16, "What should I search for?"),
+                "research": (48, "What topic should I research?"),
+                "summarize": (49, "What should I summarize?"),
+                "compare": (53, "What should I compare?"),
+                "track": (52, "What topic should I track?"),
             }
-            return Clarification(capability_id=16, message=prompts.get(verb, "Could you clarify that request?"))
+            cap_id, message = prompts.get(verb, (16, "Could you clarify that request?"))
+            return Clarification(capability_id=cap_id, message=message)
 
         return None
 

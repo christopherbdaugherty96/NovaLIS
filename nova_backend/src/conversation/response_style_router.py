@@ -19,10 +19,17 @@ class InputNormalizer:
 
     TYPO_REPLACEMENTS = (
         (r"\bwether\b", "weather"),
+        (r"\bwaether\b", "weather"),
         (r"\bhedlines\b", "headlines"),
+        (r"\bheadines\b", "headlines"),
         (r"\bserch\b", "search"),
         (r"\bseach\b", "search"),
+        (r"\breseach\b", "research"),
+        (r"\bsumarize\b", "summarize"),
+        (r"\bsummarise\b", "summarize"),
+        (r"\bcomparision\b", "comparison"),
         (r"\bplz\b", "please"),
+        (r"\bpls\b", "please"),
         (r"\bu\b", "you"),
     )
 
@@ -40,10 +47,20 @@ class InputNormalizer:
         (r"\bopen documents folder\b", "open documents"),
         (r"\bwhat(?:'s| is) going on in tech today\b", "daily brief tech"),
         (r"^\s*what(?:'s| is)\s+going on with\s+(.+?)\s+today\s*$", r"research \1 latest updates"),
+        (r"^\s*what(?:'s| is)\s+going on with\s+(.+?)\s*$", r"research \1"),
         (r"^\s*tell me about\s+(.+?)\s*$", r"research \1"),
+        (r"^\s*i want to know about\s+(.+?)\s*$", r"research \1"),
+        (r"^\s*i need info(?:rmation)? on\s+(.+?)\s*$", r"research \1"),
         (r"^\s*why is\s+(.+?)\s+(?:down|dropping|falling)\s*$", r"research why \1 is down"),
         (r"\babc\s+new\b", "abc news"),
     )
+    POLITE_PREFIX_RE = re.compile(
+        r"^\s*(?:hey\s+nova[, ]*|ok(?:ay)?\s+nova[, ]*|nova[, ]*|please[, ]*|"
+        r"can you\s+|could you\s+|would you\s+|can u\s+|could u\s+|would u\s+|"
+        r"i need to\s+)",
+        re.IGNORECASE,
+    )
+    POLITE_SUFFIX_RE = re.compile(r"(?:,\s*please|\s+please)\s*$", re.IGNORECASE)
 
     @staticmethod
     def _collapse_spaced_acronyms(text: str) -> str:
@@ -61,6 +78,12 @@ class InputNormalizer:
             return ""
 
         clean = re.sub(r"\s+", " ", clean)
+        for _ in range(3):
+            updated = re.sub(cls.POLITE_PREFIX_RE, "", clean).strip()
+            if updated == clean:
+                break
+            clean = updated
+        clean = re.sub(cls.POLITE_SUFFIX_RE, "", clean).strip()
         clean = cls._collapse_spaced_acronyms(clean)
 
         clean = clean.replace(" ,", ",").replace(" .", ".")

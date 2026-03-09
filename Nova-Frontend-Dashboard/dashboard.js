@@ -1188,7 +1188,7 @@ function connectWebSocket() {
 }
 
 function setupSidebarTabs() {
-  const tabs = document.querySelectorAll(".sidebar-tab");
+  const tabs = document.querySelectorAll(".rail-tab");
   if (!tabs || tabs.length === 0) return;
 
   tabs.forEach((tab) => {
@@ -1590,6 +1590,7 @@ function injectUtilityButtons() {
 window.addEventListener("DOMContentLoaded", () => {
   applyAccessibilityFromStorage();
   injectUtilityButtons();
+  setOrbStatus("READY");
   ensureDatalist();
   renderMorningPanel();
   renderTrustPanel();
@@ -1598,6 +1599,8 @@ window.addEventListener("DOMContentLoaded", () => {
   setupMorningWidgetToggle();
   setupSidebarTabs();
   connectWebSocket();
+  ensureSingleWelcomeMessage();
+  showFirstRunGuideIfNeeded();
 
   const sendBtn = $("send-btn");
   if (sendBtn) sendBtn.addEventListener("click", sendChat);

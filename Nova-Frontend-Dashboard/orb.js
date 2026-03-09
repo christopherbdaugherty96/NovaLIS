@@ -1,188 +1,143 @@
-// ============================================
-// NOVA ORB - Stabilized ambient presence
-// Contained energy / core visual with no state coupling
-// ============================================
-
 (function () {
   const canvas = document.getElementById("nova-orb");
-  if (!canvas) return;
+  const container = document.getElementById("orb-container");
+  if (!canvas || !container) return;
 
   const ctx = canvas.getContext("2d", { alpha: true, desynchronized: true });
   if (!ctx) return;
 
-  const field = {
+  const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const state = {
     t: 0,
-    lastTs: 0,
+    last: 0,
     dpr: 1,
     width: 0,
     height: 0,
-    reduceMotion: window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches
   };
 
-  function noise(t, a, b, c) {
-    return Math.sin(t * a) * 0.5 + Math.sin(t * b) * 0.3 + Math.sin(t * c) * 0.2;
-  }
-
-  function resizeCanvas() {
+  function resize() {
     const rect = canvas.getBoundingClientRect();
-    field.dpr = Math.min(window.devicePixelRatio || 1, 2);
-    field.width = rect.width;
-    field.height = rect.height;
-    canvas.width = Math.max(1, Math.floor(rect.width * field.dpr));
-    canvas.height = Math.max(1, Math.floor(rect.height * field.dpr));
-    ctx.setTransform(field.dpr, 0, 0, field.dpr, 0, 0);
+    state.dpr = Math.min(window.devicePixelRatio || 1, 2);
+    state.width = Math.max(1, rect.width);
+    state.height = Math.max(1, rect.height);
+    canvas.width = Math.floor(state.width * state.dpr);
+    canvas.height = Math.floor(state.height * state.dpr);
+    ctx.setTransform(state.dpr, 0, 0, state.dpr, 0, 0);
   }
 
-  function drawOrb(t) {
-    const w = field.width;
-    const h = field.height;
+  function mix(a, b, t) {
+    return a + (b - a) * t;
+  }
+
+  function oscillate(t, a, b, c) {
+    return Math.sin(t * a) * 0.52 + Math.sin(t * b) * 0.31 + Math.sin(t * c) * 0.17;
+  }
+
+  function getStateProfile() {
+    return {
+      glow: "rgba(104, 177, 255, 0.2)",
+      rim: "rgba(163, 210, 255, 0.28)",
+      coreA: "rgba(150, 210, 255, 0.86)",
+      coreB: "rgba(44, 96, 156, 0.95)",
+      drift: 0.72,
+      pulse: 1.0,
+    };
+  }
+
+  function drawFrame(t) {
+    const profile = getStateProfile();
+    const w = state.width;
+    const h = state.height;
     const cx = w * 0.5;
     const cy = h * 0.5;
-    const baseR = Math.min(w, h) * 0.36;
+    const base = Math.min(w, h) * 0.34;
 
-    // very low-amplitude, slow drift (stabilized presence)
-    const driftX = noise(t * 0.035, 0.07, 0.11, 0.18) * baseR * 0.01;
-    const driftY = noise(t * 0.031, 0.06, 0.10, 0.16) * baseR * 0.01;
-    const radius = baseR * (1 + noise(t * 0.021, 0.05, 0.08, 0.13) * 0.006);
-
-    const x = cx + driftX;
-    const y = cy + driftY;
+    const driftScale = reduceMotion ? 0 : profile.drift;
+    const dx = oscillate(t * 0.34, 0.08, 0.13, 0.19) * base * 0.03 * driftScale;
+    const dy = oscillate(t * 0.29, 0.07, 0.11, 0.17) * base * 0.026 * driftScale;
+    const pulse = reduceMotion ? 1 : mix(0.992, 1.018 * profile.pulse, (Math.sin(t * 0.8) + 1) * 0.5);
+    const radius = base * pulse;
+    const x = cx + dx;
+    const y = cy + dy;
 
     ctx.clearRect(0, 0, w, h);
 
-    // ambient containment bloom
-    const halo = ctx.createRadialGradient(x, y, radius * 0.32, x, y, radius * 1.8);
-    halo.addColorStop(0, "rgba(40, 84, 156, 0.18)");
-    halo.addColorStop(0.5, "rgba(30, 60, 118, 0.10)");
-    halo.addColorStop(0.8, "rgba(58, 44, 74, 0.07)");
-    halo.addColorStop(1, "rgba(5, 6, 10, 0)");
+    const halo = ctx.createRadialGradient(x, y, radius * 0.34, x, y, radius * 1.95);
+    halo.addColorStop(0, profile.glow);
+    halo.addColorStop(0.56, "rgba(66, 118, 190, 0.08)");
+    halo.addColorStop(1, "rgba(3, 8, 18, 0)");
     ctx.fillStyle = halo;
     ctx.beginPath();
-    ctx.arc(x, y, radius * 1.8, 0, Math.PI * 2);
+    ctx.arc(x, y, radius * 1.95, 0, Math.PI * 2);
     ctx.fill();
 
-    // stable primary body (deep electric blue → violet base)
     const body = ctx.createRadialGradient(
-      x - radius * 0.18,
-      y - radius * 0.24,
-      radius * 0.02,
+      x - radius * 0.24,
+      y - radius * 0.26,
+      radius * 0.03,
       x,
       y,
       radius
     );
-    body.addColorStop(0, "rgba(72, 120, 194, 0.85)");
-    body.addColorStop(0.34, "rgba(28, 66, 132, 0.92)");
-    body.addColorStop(0.72, "rgba(14, 36, 84, 0.95)");
-    body.addColorStop(1, "rgba(45, 31, 63, 0.92)");
+    body.addColorStop(0, profile.coreA);
+    body.addColorStop(0.35, "rgba(66, 144, 222, 0.82)");
+    body.addColorStop(0.72, profile.coreB);
+    body.addColorStop(1, "rgba(24, 47, 90, 0.94)");
 
     ctx.fillStyle = body;
     ctx.beginPath();
     ctx.arc(x, y, radius, 0, Math.PI * 2);
     ctx.fill();
 
-    // subtle internal density layers (convection-like, non-readable)
     ctx.save();
     ctx.beginPath();
     ctx.arc(x, y, radius * 0.985, 0, Math.PI * 2);
     ctx.clip();
 
-    const layerAOffset = noise(t * 0.028, 0.04, 0.07, 0.11) * radius * 0.025;
-    const layerAGrad = ctx.createLinearGradient(x - radius, y - radius + layerAOffset, x + radius, y + radius + layerAOffset);
-    layerAGrad.addColorStop(0, "rgba(130, 182, 255, 0)");
-    layerAGrad.addColorStop(0.48, "rgba(118, 170, 246, 0.11)");
-    layerAGrad.addColorStop(0.52, "rgba(118, 170, 246, 0.15)");
-    layerAGrad.addColorStop(1, "rgba(130, 182, 255, 0)");
-    ctx.fillStyle = layerAGrad;
-    ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+    const waveA = ctx.createLinearGradient(x - radius, y - radius, x + radius, y + radius);
+    waveA.addColorStop(0, "rgba(190, 231, 255, 0)");
+    waveA.addColorStop(0.5, "rgba(181, 226, 255, 0.14)");
+    waveA.addColorStop(1, "rgba(190, 231, 255, 0)");
+    ctx.fillStyle = waveA;
+    const yShiftA = oscillate(t * 0.22, 0.05, 0.09, 0.12) * radius * 0.08;
+    ctx.fillRect(x - radius, y - radius + yShiftA, radius * 2, radius * 2);
 
-    const layerBOffset = noise(t * 0.024, 0.03, 0.06, 0.09) * radius * 0.02;
-    const layerBGrad = ctx.createLinearGradient(x - radius, y + radius + layerBOffset, x + radius, y - radius + layerBOffset);
-    layerBGrad.addColorStop(0, "rgba(112, 96, 154, 0)");
-    layerBGrad.addColorStop(0.48, "rgba(112, 96, 154, 0.08)");
-    layerBGrad.addColorStop(0.52, "rgba(126, 108, 168, 0.12)");
-    layerBGrad.addColorStop(1, "rgba(112, 96, 154, 0)");
-    ctx.fillStyle = layerBGrad;
-    ctx.fillRect(x - radius, y - radius, radius * 2, radius * 2);
+    const waveB = ctx.createLinearGradient(x - radius, y + radius, x + radius, y - radius);
+    waveB.addColorStop(0, "rgba(124, 163, 228, 0)");
+    waveB.addColorStop(0.5, "rgba(124, 163, 228, 0.12)");
+    waveB.addColorStop(1, "rgba(124, 163, 228, 0)");
+    ctx.fillStyle = waveB;
+    const yShiftB = oscillate(t * 0.19, 0.04, 0.08, 0.11) * radius * 0.06;
+    ctx.fillRect(x - radius, y - radius + yShiftB, radius * 2, radius * 2);
 
     ctx.restore();
 
-    // contained core nucleus (denser center, no pulse)
-    const coreR = radius * 0.52;
-    const core = ctx.createRadialGradient(
-      x,
-      y,
-      0,
-      x,
-      y,
-      coreR
-    );
-    core.addColorStop(0, "rgba(244, 249, 255, 0.30)");
-    core.addColorStop(0.42, "rgba(178, 205, 246, 0.16)");
-    core.addColorStop(1, "rgba(74, 124, 200, 0)");
+    const core = ctx.createRadialGradient(x, y, 0, x, y, radius * 0.58);
+    core.addColorStop(0, "rgba(246, 251, 255, 0.34)");
+    core.addColorStop(0.45, "rgba(193, 222, 255, 0.17)");
+    core.addColorStop(1, "rgba(90, 152, 226, 0)");
     ctx.fillStyle = core;
     ctx.beginPath();
-    ctx.arc(x, y, coreR, 0, Math.PI * 2);
+    ctx.arc(x, y, radius * 0.58, 0, Math.PI * 2);
     ctx.fill();
 
-    // faint containment edge
-    ctx.strokeStyle = "rgba(224, 240, 255, 0.085)";
-    ctx.lineWidth = 0.65;
+    ctx.strokeStyle = profile.rim;
+    ctx.lineWidth = 0.8;
     ctx.beginPath();
-    ctx.arc(x, y, radius * 0.997, 0, Math.PI * 2);
+    ctx.arc(x, y, radius * 0.996, 0, Math.PI * 2);
     ctx.stroke();
   }
 
-  function drawReduced() {
-    const w = field.width;
-    const h = field.height;
-    const x = w * 0.5;
-    const y = h * 0.5;
-    const r = Math.min(w, h) * 0.36;
-
-    ctx.clearRect(0, 0, w, h);
-    const g = ctx.createRadialGradient(x, y, r * 0.05, x, y, r);
-    g.addColorStop(0, "rgba(92, 144, 220, 0.62)");
-    g.addColorStop(0.72, "rgba(18, 48, 102, 0.86)");
-    g.addColorStop(1, "rgba(58, 44, 74, 0.9)");
-
-    ctx.fillStyle = g;
-    ctx.beginPath();
-    ctx.arc(x, y, r, 0, Math.PI * 2);
-    ctx.fill();
-
-    ctx.strokeStyle = "rgba(224, 240, 255, 0.08)";
-    ctx.lineWidth = 0.65;
-    ctx.beginPath();
-    ctx.arc(x, y, r * 0.997, 0, Math.PI * 2);
-    ctx.stroke();
+  function frame(ts) {
+    if (!state.last) state.last = ts;
+    const dt = Math.min((ts - state.last) / 1000, 0.05);
+    state.last = ts;
+    state.t += dt;
+    drawFrame(state.t);
+    requestAnimationFrame(frame);
   }
 
-  function loop(ts) {
-    if (!field.lastTs) field.lastTs = ts;
-    const dt = Math.min((ts - field.lastTs) / 1000, 0.05);
-    field.lastTs = ts;
-    field.t += dt;
-
-    if (field.reduceMotion) {
-      drawReduced();
-      return;
-    }
-
-    drawOrb(field.t);
-    requestAnimationFrame(loop);
-  }
-
-  function init() {
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas, { passive: true });
-
-    if (field.reduceMotion) {
-      drawReduced();
-      return;
-    }
-
-    requestAnimationFrame(loop);
-  }
-
-  init();
+  resize();
+  window.addEventListener("resize", resize, { passive: true });
+  requestAnimationFrame(frame);
 })();

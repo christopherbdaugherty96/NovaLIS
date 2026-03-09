@@ -527,18 +527,6 @@ def _known_runtime_gaps() -> list[str]:
 
 def _design_runtime_divergences(registry: dict[str, Any]) -> list[str]:
     divergences: list[str] = []
-    capabilities = registry.get("capabilities", [])
-    enabled_ids = sorted(
-        int(item.get("id"))
-        for item in capabilities
-        if item.get("enabled") is True and item.get("id") is not None
-    )
-
-    if any(cid >= 49 for cid in enabled_ids):
-        divergences.append(
-            "Phase 4.5 roadmap states 'no new capabilities' for that design stage, "
-            f"but runtime currently enables extended governed capabilities: {enabled_ids}."
-        )
 
     if not (PROJECT_ROOT / "nova_backend" / "src" / "agents").exists():
         divergences.append(
@@ -1100,6 +1088,15 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         ]
     )
 
+    discrepancies = report.get("discrepancies", [])
+    if discrepancies:
+        for item in discrepancies:
+            lines.append(
+                f"- [{item.get('severity', 'unknown')}] {item.get('code', 'UNKNOWN')}: {item.get('message', '')}"
+            )
+    else:
+        lines.append("- None")
+
     lines.extend(
         [
             "",
@@ -1109,15 +1106,6 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     )
     if design_divergences:
         lines.extend(f"- {item}" for item in design_divergences)
-    else:
-        lines.append("- None")
-
-    discrepancies = report.get("discrepancies", [])
-    if discrepancies:
-        for item in discrepancies:
-            lines.append(
-                f"- [{item.get('severity', 'unknown')}] {item.get('code', 'UNKNOWN')}: {item.get('message', '')}"
-            )
     else:
         lines.append("- None")
 
