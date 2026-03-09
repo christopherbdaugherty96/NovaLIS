@@ -36,12 +36,22 @@ def test_multi_source_report_structured_output(monkeypatch):
     assert "Key Findings" in result.message
     assert "Supporting Sources" in result.message
     assert "Confidence" in result.message
+    assert "Source Credibility" in result.message
+    assert "Confidence Factors" in result.message
+    assert "Counter Analysis" in result.message
     assert "abcnews.go.com" in result.message
     assert isinstance(result.data, dict)
     assert result.data.get("widget", {}).get("type") == "search"
     assert isinstance(result.data.get("structured_brief"), dict)
     assert result.data["structured_brief"].get("contract_status") == "pass"
     assert result.data["structured_brief"].get("validation_status") == "pass"
+    brief = result.data["structured_brief"]
+    assert isinstance(brief.get("source_credibility"), list)
+    assert isinstance(brief.get("confidence_factors"), dict)
+    assert 0.0 <= float(brief.get("confidence", 0.0)) <= 1.0
+    assert brief.get("counter_analysis")
+    classes = {str(row.get("classification")) for row in brief.get("source_credibility", [])}
+    assert "primary" in classes
 
 
 def test_multi_source_report_handles_missing_query():
@@ -91,3 +101,5 @@ def test_multi_source_report_falls_back_on_validation_failure(monkeypatch):
     brief = result.data.get("structured_brief", {})
     assert brief.get("contract_status") == "fail"
     assert brief.get("fallback_reason")
+    assert isinstance(brief.get("source_credibility"), list)
+    assert isinstance(brief.get("confidence_factors"), dict)

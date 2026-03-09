@@ -12,6 +12,9 @@ def test_structured_report_contract_accepts_valid_payload():
         "supporting_sources": ["reuters.com", "bbc.com"],
         "contradictions": ["No major contradiction markers detected."],
         "confidence": 0.82,
+        "source_credibility": [{"source": "reuters.com", "classification": "primary", "score": 0.95}],
+        "confidence_factors": {"source_agreement": 0.7, "source_credibility": 0.8, "data_freshness": 0.6},
+        "counter_analysis": "Counter-view remains uncertain due to limited enforcement data.",
     }
     validate_structured_report_payload(payload)
 

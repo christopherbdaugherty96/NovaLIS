@@ -37,3 +37,6 @@ From `docs/current_runtime/CURRENT_RUNTIME_STATE.md`:
 
 ## Conclusion
 Phase 4.2 is active in runtime under explicit, user-invoked pathways and remains non-authorizing.
+Closure ratification references:
+- `docs/PROOFS/Phase-4.2/PHASE_4_2_RUNTIME_CERTIFICATION_2026-03-09.md`
+- `docs/PROOFS/Phase-4.2/PHASE_4_2_CLOSED_ACT_2026-03-09.md`

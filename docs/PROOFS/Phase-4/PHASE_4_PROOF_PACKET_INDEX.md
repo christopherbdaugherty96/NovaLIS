@@ -21,6 +21,9 @@ Purpose: Canonical proof packet for Phase-4 closure with current runtime state.
 2. `PHASE_4_CLOSED_ACT_2026-03-09.md`
 3. `CAPABILITY_20_21_REAL_EXECUTION_PROOF_2026-03-09.md`
 4. `PHASE_4_2_ACTIVE_RUNTIME_PROOF_2026-03-09.md`
+5. `../Phase-4.2/PHASE_4_2_RUNTIME_CERTIFICATION_2026-03-09.md`
+6. `../Phase-4.2/PHASE_4_2_COMPLETION_EVIDENCE_MATRIX_2026-03-09.md`
+7. `../Phase-4.2/PHASE_4_2_CLOSED_ACT_2026-03-09.md`
 
 ## Runtime Cross-References
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
@@ -35,7 +38,7 @@ Purpose: Canonical proof packet for Phase-4 closure with current runtime state.
 - `python scripts/check_runtime_doc_drift.py` (with `PYTHONPATH` set to `nova_backend`)
 
 ## Last Verified Result
-- 211 passed
+- 222 passed
 - Runtime documentation drift check passed
 
 ## Superseded Historical Snapshots

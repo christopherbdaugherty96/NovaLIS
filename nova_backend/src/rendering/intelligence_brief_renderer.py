@@ -389,6 +389,9 @@ class IntelligenceBriefRenderer:
         supporting_sources: list[str],
         contradictions: list[str],
         confidence: float,
+        source_credibility: list[dict[str, Any]] | None = None,
+        confidence_factors: dict[str, float] | None = None,
+        counter_analysis: str = "",
     ) -> str:
         clean_topic = (topic or "").strip() or "General Topic"
         clean_summary = (summary or "").strip() or "No summary available."
@@ -401,6 +404,11 @@ class IntelligenceBriefRenderer:
         clean_contradictions = [str(item).strip() for item in (contradictions or []) if str(item).strip()] or [
             "No major contradiction markers detected."
         ]
+        credibility_rows = list(source_credibility or [])
+        factors = dict(confidence_factors or {})
+        clean_counter = str(counter_analysis or "").strip() or (
+            "Counter-view: available evidence may still contain unresolved uncertainty."
+        )
         bounded_confidence = max(0.0, min(1.0, float(confidence)))
 
         lines = [
@@ -437,6 +445,58 @@ class IntelligenceBriefRenderer:
                 "Confidence",
                 "----------",
                 f"{bounded_confidence:.2f}",
+            ]
+        )
+        lines.extend(
+            [
+                "",
+                "Source Credibility",
+                "------------------",
+            ]
+        )
+        if credibility_rows:
+            for idx, row in enumerate(credibility_rows[:6], start=1):
+                source = str(row.get("source") or "unknown-source").strip()
+                classification = str(row.get("classification") or "unknown").strip().lower()
+                score = max(0.0, min(1.0, float(row.get("score", 0.50))))
+                lines.append(f"{idx}. {source} | {classification} | {score:.2f}")
+        else:
+            lines.append("1. unattributed-source | unknown | 0.50")
+
+        lines.extend(
+            [
+                "",
+                "Confidence Factors",
+                "------------------",
+            ]
+        )
+        if factors:
+            ordered = (
+                "source_agreement",
+                "source_credibility",
+                "data_freshness",
+                "verification_alignment",
+                "factor_model",
+            )
+            for key in ordered:
+                if key in factors:
+                    val = max(0.0, min(1.0, float(factors[key])))
+                    lines.append(f"- {key}: {val:.2f}")
+        else:
+            lines.extend(
+                [
+                    "- source_agreement: 0.50",
+                    "- source_credibility: 0.50",
+                    "- data_freshness: 0.50",
+                ]
+            )
+
+        lines.extend(
+            [
+                "",
+                "Counter Analysis",
+                "----------------",
+                clean_counter,
             ]
         )
         return "\n".join(lines)
