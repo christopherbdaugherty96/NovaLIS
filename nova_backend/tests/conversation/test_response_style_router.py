@@ -26,3 +26,13 @@ def test_input_normalizer_aliases_non_technical_phrase():
 def test_input_normalizer_collapses_spaced_acronyms():
     normalized = InputNormalizer.normalize("open A B C news")
     assert normalized.lower() == "open abc news."
+
+
+def test_input_normalizer_strips_polite_prefixes():
+    normalized = InputNormalizer.normalize("Hey Nova, can you open my documents please")
+    assert normalized.lower() == "open documents."
+
+
+def test_input_normalizer_maps_natural_research_phrase():
+    normalized = InputNormalizer.normalize("I want to know about AI chip competition")
+    assert normalized.lower() == "research ai chip competition."

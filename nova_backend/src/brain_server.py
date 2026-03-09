@@ -187,6 +187,32 @@ def _clarification_suggestions(message: str) -> list[dict[str, str]]:
             {"label": "Open website", "command": f"open website {website_target}"},
             {"label": "Open file", "command": f"open file {file_target}"},
         ]
+
+    lower = text.lower()
+    if "what should i open" in lower:
+        return [
+            {"label": "Open website", "command": "open website github"},
+            {"label": "Open documents", "command": "open documents"},
+            {"label": "Open downloads", "command": "open downloads"},
+        ]
+    if "what should i search" in lower:
+        return [
+            {"label": "Search weather", "command": "search weather in Ann Arbor"},
+            {"label": "Search tech news", "command": "search latest tech news"},
+            {"label": "Today's brief", "command": "today's news"},
+        ]
+    if "what topic should i research" in lower:
+        return [
+            {"label": "Research AI policy", "command": "research AI policy updates"},
+            {"label": "Research market trend", "command": "research Nvidia stock movement"},
+            {"label": "Daily brief", "command": "daily brief"},
+        ]
+    if "could you clarify" in lower or "misheard" in lower:
+        return [
+            {"label": "Weather", "command": "weather"},
+            {"label": "Today's news", "command": "today's news"},
+            {"label": "Open documents", "command": "open documents"},
+        ]
     return []
 
 
@@ -373,7 +399,11 @@ async def websocket_endpoint(ws: WebSocket):
                     session_state["session_mode_override"] = ""
                 if gate.set_clarification_turn:
                     session_state["last_clarification_turn"] = session_state["turn_count"]
-                await send_chat_message(ws, gate.message)
+                await send_chat_message(
+                    ws,
+                    gate.message,
+                    suggested_actions=_clarification_suggestions(gate.message),
+                )
                 await send_chat_done(ws)
                 continue
             if not decision.blocked_by_policy and not decision.needs_clarification:
