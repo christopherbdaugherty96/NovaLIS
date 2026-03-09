@@ -17,6 +17,7 @@ from src.governor.network_mediator import NetworkMediator
 class NewsSkill(BaseSkill):
     name = "news"
     description = "Current news headlines"
+    SUMMARY_CHAR_LIMIT = 210
 
     SOURCES = [
         {"name": "Reuters", "feed": "https://www.reuters.com/rssFeed/topNews", "domain": "reuters.com"},
@@ -67,15 +68,35 @@ class NewsSkill(BaseSkill):
         if not top_titles:
             return "I pulled headlines, but there was not enough detail to summarize them."
 
+        source_count = len([item for item in items if item.get("title")])
         if len(top_titles) == 1:
-            return f"Top story right now: {top_titles[0]}."
+            return f"Loaded {source_count} source. Top story: {top_titles[0]}."
 
         if len(top_titles) == 2:
-            return f"Current news focus: {top_titles[0]}; alongside {top_titles[1]}."
+            return f"Loaded {source_count} sources. Top focus: {top_titles[0]}; alongside {top_titles[1]}."
 
         return (
-            f"Current news focus: {top_titles[0]}; {top_titles[1]}; and {top_titles[2]}."
+            f"Loaded {source_count} sources. Top focus: {top_titles[0]}; {top_titles[1]}; and {top_titles[2]}."
         )
+
+    def _build_item_summary(self, title: str, raw_summary: str) -> str:
+        clean_title = (title or "").strip()
+        summary = " ".join((raw_summary or "").split()).strip()
+        if summary:
+            lowered_title = clean_title.lower()
+            lowered_summary = summary.lower()
+            if lowered_title and lowered_summary.startswith(lowered_title):
+                summary = summary[len(clean_title):].lstrip(" .:-")
+            if summary:
+                if len(summary) > self.SUMMARY_CHAR_LIMIT:
+                    summary = summary[: self.SUMMARY_CHAR_LIMIT - 3].rstrip() + "..."
+                return summary
+        if not clean_title:
+            return "Headline detail unavailable."
+        fallback = f"Headline indicates: {clean_title}."
+        if len(fallback) > self.SUMMARY_CHAR_LIMIT:
+            fallback = fallback[: self.SUMMARY_CHAR_LIMIT - 3].rstrip() + "..."
+        return fallback
 
     async def _fetch_one(self, source: dict) -> Optional[dict]:
         feed_url = source.get("feed")
@@ -90,10 +111,13 @@ class NewsSkill(BaseSkill):
                     title = first.get("title")
                     url = first.get("url")
                     if title and url:
+                        summary = self._build_item_summary(title, str(first.get("summary") or ""))
                         return {
                             "title": title,
                             "url": url,
                             "source": name,
+                            "summary": summary,
+                            "published": str(first.get("published") or "").strip(),
                         }
             except Exception:
                 pass

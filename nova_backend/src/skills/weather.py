@@ -24,6 +24,9 @@ class WeatherSkill(BaseSkill):
         try:
             data = await self.service.get_current_weather()
             message = self._format(data)
+            timestamp = datetime.now().strftime("%I:%M %p").lstrip("0")
+            alerts = list(data.get("alerts") or [])
+            forecast = str(data.get("forecast") or "").strip()
 
             return SkillResult(
                 success=True,
@@ -36,6 +39,9 @@ class WeatherSkill(BaseSkill):
                         "temperature": round(data["temperature"]),
                         "condition": data["condition"],
                         "location": data["location"],
+                        "forecast": forecast,
+                        "alerts": alerts,
+                        "updated_at": timestamp,
                     },
                 },
                 skill=self.name,
@@ -51,7 +57,11 @@ class WeatherSkill(BaseSkill):
 
     def _format(self, data: dict) -> str:
         timestamp = datetime.now().strftime("%I:%M %p").lstrip("0")
-        return (
+        base = (
             f"From the last update at {timestamp}: "
             f"{round(data['temperature'])} degrees F and {data['condition']} in {data['location']}."
         )
+        alerts = list(data.get("alerts") or [])
+        if alerts:
+            return f"{base} Alert active: {alerts[0]}"
+        return base
