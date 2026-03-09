@@ -61,3 +61,32 @@ def test_render_structured_intelligence_brief_sections():
     assert "Supporting Sources" in out
     assert "Contradictions" in out
     assert "0.82" in out
+
+
+def test_render_structured_intelligence_brief_extended_sections():
+    renderer = IntelligenceBriefRenderer()
+    out = renderer.render_structured_intelligence_brief(
+        topic="AI Safety Rules",
+        summary="Safety regulation and enforcement are diverging by region.",
+        key_findings=["US and EU timelines are no longer aligned."],
+        supporting_sources=["reuters.com", "whitehouse.gov"],
+        contradictions=["Enforcement priorities remain fragmented."],
+        confidence=0.76,
+        source_credibility=[
+            {"source": "reuters.com", "classification": "primary", "score": 0.95},
+            {"source": "exampleblog.com", "classification": "opinion", "score": 0.35},
+        ],
+        confidence_factors={
+            "source_agreement": 0.71,
+            "source_credibility": 0.65,
+            "data_freshness": 0.72,
+            "verification_alignment": 0.64,
+            "factor_model": 0.69,
+        },
+        counter_analysis="Counter-view: policy signaling may outpace enforceable implementation.",
+    )
+    assert "Source Credibility" in out
+    assert "Confidence Factors" in out
+    assert "Counter Analysis" in out
+    assert "reuters.com | primary | 0.95" in out
+    assert "source_agreement: 0.71" in out

@@ -63,7 +63,7 @@ Before any Phase 5 design work can begin, the following must be satisfied:
 
 - [x] Phase 4 runtime unlocked and stable for ≥30 days.  
 - [x] Phase 4.5 design completed and ratified.  
-- [ ] Phase 4.5 user research confirms daily‑use scenarios and calm perception.  
+- [x] Phase 4.5 user research confirms daily-use scenarios and calm perception.  
 - [ ] **Memory Governance specification** ratified (tiers, operations, schemas, Governor signature enforcement).  
 - [ ] **Tone Calibration architecture** approved (domain taxonomy, quarantine flow, mutation limits, deterministic application).  
 - [ ] **Pattern detection opt‑in and constraint** ratified.  
@@ -128,3 +128,4 @@ Phase 5 components will remain dormant until **Phase 6 (Policy‑Bound Opera
 ---  
 
 *End of Phase 5 Roadmap*
+

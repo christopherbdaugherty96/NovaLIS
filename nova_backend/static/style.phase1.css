@@ -569,12 +569,41 @@ body {
   padding: 8px 9px;
 }
 
-.structured-section-heading {
+.structured-report-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.structured-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   margin-bottom: 6px;
+}
+
+.structured-section-heading {
+  margin-bottom: 0;
   font-size: 0.8rem;
   text-transform: uppercase;
   letter-spacing: 0.05em;
   color: #c4daf8;
+}
+
+.structured-section-toggle {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  color: #d5e6ff;
+  border-radius: 8px;
+  padding: 4px 8px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.structured-section-toggle:hover {
+  border-color: rgba(145, 194, 255, 0.45);
 }
 
 .structured-row,
