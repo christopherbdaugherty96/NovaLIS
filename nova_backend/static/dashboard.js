@@ -37,16 +37,13 @@ const STORAGE_KEYS = {
 
 const QUICK_ACTIONS = [
   { id: "brief", label: "Brief", command: "Morning." },
-  { id: "weather", label: "Weather", command: "weather" },
-  { id: "news", label: "News", command: "news" },
+  { id: "headlines", label: "Headlines", command: "Summarize the news headlines on the dashboard." },
   { id: "system", label: "System", command: "System status." },
   { id: "search", label: "Search", command: "search for " },
   { id: "open", label: "Open", command: "open " },
 ];
 
 const COMMAND_SUGGESTIONS = [
-  "weather",
-  "news",
   "morning brief",
   "summarize all headlines",
   "update tracked stories",
@@ -63,11 +60,9 @@ const COMMAND_SUGGESTIONS = [
 ];
 
 const HELP_EXAMPLES = [
-  "weather",
-  "news",
   "morning brief",
   "summarize all headlines",
-  "track story AI regulation",
+  "research a topic",
   "update tracked stories",
   "search for eclipse dates",
   "open youtube",
@@ -78,8 +73,8 @@ const HELP_EXAMPLES = [
   "set brightness 50",
 ];
 const COMMAND_DISCOVERY_GROUPS = [
-  { label: "Daily", commands: ["weather", "news", "brief"] },
-  { label: "Research", commands: ["research AI regulation", "summarize all headlines", "show sources"] },
+  { label: "Daily", commands: ["brief", "summarize all headlines", "show snapshot details"] },
+  { label: "Research", commands: ["research a topic", "summarize all headlines", "show sources"] },
   { label: "System", commands: ["system status", "open documents", "volume up"] },
 ];
 const LONG_MESSAGE_CHAR_LIMIT = 280;
@@ -1373,7 +1368,7 @@ function showFirstRunGuideIfNeeded() {
 
   const steps = document.createElement("ol");
   steps.className = "help-list";
-  ["Check weather", "Get top news", "Ask for your daily brief"].forEach((label) => {
+  ["Review dashboard snapshot", "Summarize top headlines", "Ask for your daily brief"].forEach((label) => {
     const li = document.createElement("li");
     li.textContent = label;
     steps.appendChild(li);
@@ -1384,7 +1379,7 @@ function showFirstRunGuideIfNeeded() {
   row.className = "modal-actions";
 
   [
-    { label: "Get weather", cmd: "weather" },
+    { label: "Summarize headlines", cmd: "summarize all headlines" },
     { label: "Search something", cmd: "search for local events" },
     { label: "Read last reply", cmd: "speak that" },
   ].forEach((item) => {
