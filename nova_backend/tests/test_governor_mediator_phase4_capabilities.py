@@ -278,3 +278,19 @@ def test_news_intelligence_parsing():
     assert inv.params["action"] == "explain_section"
     assert inv.params["section_number"] == 3
     assert inv.params["doc_id"] == 2
+
+
+def test_search_clarification_roundtrip_by_session():
+    from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
+
+    session_id = "unit-session-search-clarification"
+    GovernorMediator.clear_session(session_id)
+
+    first = GovernorMediator.parse_governed_invocation("search", session_id=session_id)
+    assert isinstance(first, Clarification)
+    assert "what would you like to search for" in first.message.lower()
+
+    second = GovernorMediator.parse_governed_invocation("latest weather in Detroit", session_id=session_id)
+    assert isinstance(second, Invocation)
+    assert second.capability_id == 16
+    assert second.params["query"] == "latest weather in Detroit"

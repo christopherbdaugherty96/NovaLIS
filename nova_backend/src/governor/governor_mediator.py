@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import re
 import json
+import threading
 from time import monotonic
 from dataclasses import dataclass
 from pathlib import Path
@@ -18,53 +19,72 @@ ENABLED_CAP_CACHE_TTL_SECONDS = 5.0
 _pending_clarification: Dict[str, tuple[int, float]] = {}
 _enabled_capability_ids_cache: frozenset[int] | None = None
 _enabled_capability_ids_cache_at = 0.0
+_state_lock = threading.RLock()
 
 
 def _evict_expired_pending_clarifications(now: float | None = None) -> None:
     t = monotonic() if now is None else now
-    stale = [
-        session_id
-        for session_id, (_, created_at) in _pending_clarification.items()
-        if t - created_at > PENDING_CLARIFICATION_TTL_SECONDS
-    ]
-    for session_id in stale:
-        _pending_clarification.pop(session_id, None)
+    with _state_lock:
+        stale = [
+            session_id
+            for session_id, (_, created_at) in _pending_clarification.items()
+            if t - created_at > PENDING_CLARIFICATION_TTL_SECONDS
+        ]
+        for session_id in stale:
+            _pending_clarification.pop(session_id, None)
 
-    if len(_pending_clarification) <= MAX_PENDING_CLARIFICATIONS:
+        if len(_pending_clarification) <= MAX_PENDING_CLARIFICATIONS:
+            return
+
+        overflow = len(_pending_clarification) - MAX_PENDING_CLARIFICATIONS
+        oldest = sorted(_pending_clarification.items(), key=lambda item: item[1][1])[:overflow]
+        for session_id, _ in oldest:
+            _pending_clarification.pop(session_id, None)
+
+
+def _pop_pending_clarification(session_id: str | None) -> tuple[int, float] | None:
+    if not session_id:
+        return None
+    with _state_lock:
+        return _pending_clarification.pop(session_id, None)
+
+
+def _set_pending_clarification(session_id: str | None, capability_id: int) -> None:
+    if not session_id:
         return
-
-    overflow = len(_pending_clarification) - MAX_PENDING_CLARIFICATIONS
-    oldest = sorted(_pending_clarification.items(), key=lambda item: item[1][1])[:overflow]
-    for session_id, _ in oldest:
-        _pending_clarification.pop(session_id, None)
+    with _state_lock:
+        _pending_clarification[session_id] = (capability_id, monotonic())
 
 
 def _load_enabled_capability_ids() -> frozenset[int]:
     global _enabled_capability_ids_cache
     global _enabled_capability_ids_cache_at
     now = monotonic()
-    if (
-        _enabled_capability_ids_cache is not None
-        and (now - _enabled_capability_ids_cache_at) <= ENABLED_CAP_CACHE_TTL_SECONDS
-    ):
-        return _enabled_capability_ids_cache
+    with _state_lock:
+        if (
+            _enabled_capability_ids_cache is not None
+            and (now - _enabled_capability_ids_cache_at) <= ENABLED_CAP_CACHE_TTL_SECONDS
+        ):
+            return _enabled_capability_ids_cache
 
     registry_path = Path(__file__).resolve().parents[1] / "config" / "registry.json"
     try:
         payload = json.loads(registry_path.read_text(encoding="utf-8"))
     except Exception:
-        _enabled_capability_ids_cache = frozenset()
-        _enabled_capability_ids_cache_at = now
-        return _enabled_capability_ids_cache
+        with _state_lock:
+            _enabled_capability_ids_cache = frozenset()
+            _enabled_capability_ids_cache_at = now
+            return _enabled_capability_ids_cache
 
     enabled_ids = frozenset(
         int(item.get("id"))
         for item in payload.get("capabilities", [])
         if item.get("enabled") is True and item.get("id") is not None
     )
-    _enabled_capability_ids_cache = enabled_ids
-    _enabled_capability_ids_cache_at = now
-    return enabled_ids
+    with _state_lock:
+        _enabled_capability_ids_cache = enabled_ids
+        _enabled_capability_ids_cache_at = now
+        return enabled_ids
 
 
 def _invocation_if_enabled(capability_id: int, params: Dict[str, Any]) -> Invocation | None:
@@ -421,8 +441,9 @@ class GovernorMediator:
 
         _evict_expired_pending_clarifications()
 
-        if session_id and session_id in _pending_clarification:
-            cap_id, _created_at = _pending_clarification.pop(session_id)
+        pending = _pop_pending_clarification(session_id)
+        if pending is not None:
+            cap_id, _created_at = pending
             if cap_id == 16:
                 alt = GovernorMediator.parse_governed_invocation(t, session_id=None)
                 if isinstance(alt, Invocation) and alt.capability_id != 16:
@@ -696,7 +717,7 @@ class GovernorMediator:
 
         if re.search(r"\b(search(?: for)?|look up|research)\b", t, re.IGNORECASE):
             if session_id:
-                _pending_clarification[session_id] = (16, monotonic())
+                _set_pending_clarification(session_id, 16)
                 _evict_expired_pending_clarifications()
                 return Clarification(capability_id=16, message="What would you like to search for?")
             return None
@@ -719,7 +740,7 @@ class GovernorMediator:
 
     @staticmethod
     def clear_session(session_id: str) -> None:
-        _pending_clarification.pop(session_id, None)
+        _pop_pending_clarification(session_id)
 
     @staticmethod
     def clear_stale_sessions() -> None:
