@@ -38,6 +38,14 @@ from src.conversation.response_formatter import ResponseFormatter
 from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
 from src.trust.failure_ladder import FailureLadder
 from src.trust.trust_contract import normalize_trust_status
+from src.personality.core import PersonalityAgent
+from src.agents.builder import BuilderAgent
+from src.agents.deep_audit import DeepAuditAgent
+from src.agents.architect import StructuralArchitectAgent
+from src.agents.memory import MemoryAgent
+from src.agents.assumption import AssumptionRiskAgent
+from src.agents.contradiction import ContradictionAggregatorAgent
+from src.agents.adversarial import AdversarialExternalizerAgent
 from src.audit.runtime_auditor import (
     run_runtime_truth_audit,
     render_runtime_truth_markdown,
@@ -108,6 +116,39 @@ CONVERSATIONAL_INITIATIVE_ENABLED = True
 VOICE_ACK_ENABLED = True
 VOICE_ACK_TEXT = "Got it."
 VOICE_ACK_CONFIG = STTAckConfig(enabled=VOICE_ACK_ENABLED, text=VOICE_ACK_TEXT)
+PHASE42_QUERY_RE = re.compile(
+    r"^\s*(?:phase\s*4\.?2|phase42|orthogonal(?:\s+analysis)?)\s*(?:[:\-]\s*|\s+)(?P<query>.+)\s*$",
+    re.IGNORECASE,
+)
+PHASE42_HELP_COMMANDS = {
+    "phase42",
+    "phase 4.2",
+    "orthogonal analysis",
+    "phase42 help",
+    "orthogonal help",
+}
+
+
+def _build_phase42_agents() -> list:
+    return [
+        BuilderAgent(),
+        DeepAuditAgent(),
+        StructuralArchitectAgent(),
+        MemoryAgent(),
+        AssumptionRiskAgent(),
+        ContradictionAggregatorAgent(),
+        AdversarialExternalizerAgent(),
+    ]
+
+
+def _extract_phase42_query(text: str) -> str | None:
+    match = PHASE42_QUERY_RE.match((text or "").strip())
+    if not match:
+        return None
+    query = (match.group("query") or "").strip()
+    return query or None
+
+
 def _extract_sources_from_results(results: list[dict]) -> list[str]:
     sources: list[str] = []
     for item in results:
@@ -288,6 +329,16 @@ async def send_widget_message(
     if msg_type == "news" and isinstance(data, dict) and "items" in data:
         await ws_send(ws, {"type": "news", "items": data["items"], "summary": data.get("summary", "")})
         return
+    if msg_type == "calendar" and isinstance(data, dict):
+        await ws_send(
+            ws,
+            {
+                "type": "calendar",
+                "summary": data.get("summary", ""),
+                "events": data.get("events", []),
+            },
+        )
+        return
     payload = {"type": msg_type, "message": text}
     if msg_type == "weather" and isinstance(data, dict):
         payload["data"] = data
@@ -308,6 +359,7 @@ async def websocket_endpoint(ws: WebSocket):
     session_id = str(uuid.uuid4())
     governor = RUNTIME_GOVERNOR
     skill_registry = SkillRegistry(network=governor.network)
+    personality_agent = PersonalityAgent()
     session_context = []
     session_state = {
         "turn_count": 0,
@@ -336,6 +388,8 @@ async def websocket_endpoint(ws: WebSocket):
         "last_mode": "",
         "session_mode_override": "",
         "trust_status": failure_ladder.initial_status(),
+        "last_calendar_summary": "",
+        "last_calendar_events": [],
     }
 
     await send_chat_message(ws, "Hello. How can I help?")
@@ -602,6 +656,68 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
+            if lowered in PHASE42_HELP_COMMANDS:
+                await send_chat_message(
+                    ws,
+                    (
+                        "Use 'phase42: <question>' or 'orthogonal analysis: <question>' "
+                        "to run the orthogonal agent stack."
+                    ),
+                )
+                await send_chat_done(ws)
+                continue
+
+            phase42_query = _extract_phase42_query(text)
+            if phase42_query is not None:
+                if not PHASE_4_2_ENABLED:
+                    await send_chat_message(
+                        ws,
+                        "Phase 4.2 runtime is locked in this build profile.",
+                    )
+                    await send_chat_done(ws)
+                    continue
+
+                context_payload = {
+                    "session_id": session_id,
+                    "turn_count": session_state.get("turn_count", 0),
+                    "last_response": session_state.get("last_response", ""),
+                    "last_sources": list(session_state.get("last_sources") or []),
+                    "last_mode": session_state.get("last_mode", ""),
+                    "last_intent_family": session_state.get("last_intent_family", ""),
+                }
+
+                try:
+                    phase42_message = await asyncio.to_thread(
+                        personality_agent.run,
+                        phase42_query,
+                        _build_phase42_agents(),
+                        context_payload,
+                    )
+                except RuntimeError:
+                    phase42_message = "Phase 4.2 runtime is locked in this build profile."
+                except Exception:
+                    phase42_message = "Phase 4.2 analysis is currently unavailable."
+
+                session_state["last_response"] = phase42_message
+                speech_state.last_spoken_text = phase42_message
+                session_state["trust_status"] = failure_ladder.record_local_success(
+                    session_state.get("trust_status", {})
+                )
+                await send_chat_message(ws, phase42_message)
+                await send_trust_status(ws, session_state["trust_status"])
+                await send_chat_done(ws)
+
+                session_context.extend(
+                    [
+                        {"role": "user", "content": text},
+                        {"role": "assistant", "content": phase42_message},
+                    ]
+                )
+                context_limit = 40 if session_state.get("presence_mode") else 20
+                session_context = session_context[-context_limit:]
+                session_state["turn_count"] += 1
+                continue
+
             if lowered in {"weather", "weather update", "current weather"}:
                 weather_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "weather"), None)
                 if weather_skill is None:
@@ -664,6 +780,39 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
+            if lowered in {
+                "calendar",
+                "calendar update",
+                "agenda",
+                "schedule",
+                "todays schedule",
+                "today's schedule",
+                "todays calendar",
+                "today's calendar",
+            }:
+                calendar_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "calendar"), None)
+                if calendar_skill is None:
+                    await send_chat_message(ws, "Calendar is unavailable right now.")
+                    await send_chat_done(ws)
+                    continue
+                calendar_result = await calendar_skill.handle("calendar")
+                if calendar_result and calendar_result.success:
+                    message = _structure_long_message(calendar_result.message)
+                    session_state["last_response"] = message
+                    await send_chat_message(ws, message)
+                    if isinstance(calendar_result.widget_data, dict):
+                        await send_widget_message(ws, "calendar", message, calendar_result.widget_data)
+                        session_state["last_calendar_summary"] = str(
+                            calendar_result.widget_data.get("summary") or ""
+                        )
+                        session_state["last_calendar_events"] = list(
+                            calendar_result.widget_data.get("events") or []
+                        )
+                else:
+                    await send_chat_message(ws, "Calendar is currently unavailable.")
+                await send_chat_done(ws)
+                continue
+
             if lowered in {"system", "system status", "system check"}:
                 system_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "system"), None)
                 if system_skill is None:
@@ -686,10 +835,12 @@ async def websocket_endpoint(ws: WebSocket):
                 weather_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "weather"), None)
                 news_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "news"), None)
                 system_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "system"), None)
+                calendar_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "calendar"), None)
 
                 weather_summary = "Weather unavailable."
                 news_summary = "No headline summary available right now."
                 system_line = "System status unavailable."
+                calendar_line = "Calendar unavailable."
 
                 if weather_skill is not None:
                     weather_result = await weather_skill.handle("weather")
@@ -721,11 +872,34 @@ async def websocket_endpoint(ws: WebSocket):
                     if system_result and system_result.success:
                         system_line = system_result.message
 
+                if calendar_skill is not None:
+                    calendar_result = await calendar_skill.handle("calendar")
+                    if calendar_result and calendar_result.success:
+                        if isinstance(calendar_result.widget_data, dict):
+                            calendar_line = str(
+                                calendar_result.widget_data.get("summary")
+                                or calendar_result.message
+                                or calendar_line
+                            )
+                            session_state["last_calendar_summary"] = calendar_line
+                            session_state["last_calendar_events"] = list(
+                                calendar_result.widget_data.get("events") or []
+                            )
+                            await send_widget_message(
+                                ws,
+                                "calendar",
+                                calendar_result.message,
+                                calendar_result.widget_data,
+                            )
+                        else:
+                            calendar_line = calendar_result.message
+
                 morning_brief = (
                     "Executive Brief\n"
                     f"- Weather: {weather_summary}\n"
                     f"- System: {system_line}\n"
-                    f"- News: {news_summary}"
+                    f"- News: {news_summary}\n"
+                    f"- Calendar: {calendar_line}"
                 )
                 await send_chat_message(ws, morning_brief)
                 await send_chat_done(ws)
@@ -1058,6 +1232,10 @@ async def websocket_endpoint(ws: WebSocket):
                     await send_widget_message(ws, "news", message, {"items": items})
                 elif skill_name == "weather" and isinstance(widget_data, dict):
                     await send_widget_message(ws, "weather", message, widget_data)
+                elif skill_name == "calendar" and isinstance(widget_data, dict):
+                    session_state["last_calendar_summary"] = str(widget_data.get("summary") or "")
+                    session_state["last_calendar_events"] = list(widget_data.get("events") or [])
+                    await send_widget_message(ws, "calendar", message, widget_data)
                 else:
                     await send_chat_message(ws, message, message_id=message_id)
 

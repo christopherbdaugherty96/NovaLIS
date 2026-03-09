@@ -3,4 +3,8 @@
 Verified runtime proofs currently live in:
 - `docs/PROOFS/`
 
+Current canonical packet entry points:
+- `docs/PROOFS/Phase-4/PHASE_4_PROOF_PACKET_INDEX.md`
+- `docs/PROOFS/Phase-4.5/PHASE_4_5_PROOF_PACKET_INDEX.md`
+
 This folder exists as a stable naming alias for future migration.

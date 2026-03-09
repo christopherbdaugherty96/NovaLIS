@@ -13,7 +13,7 @@ let morningState = {
   weather: "Loading...",
   news: "Loading...",
   system: "Loading...",
-  calendar: "Coming soon",
+  calendar: "Loading...",
 };
 let trustState = {
   mode: "Local-only",
@@ -1140,6 +1140,10 @@ function connectWebSocket() {
         break;
       case "system":
         morningState.system = msg.summary || "System status ready.";
+        renderMorningPanel();
+        break;
+      case "calendar":
+        morningState.calendar = msg.summary || msg.message || "No events scheduled today.";
         renderMorningPanel();
         break;
       case "chat":

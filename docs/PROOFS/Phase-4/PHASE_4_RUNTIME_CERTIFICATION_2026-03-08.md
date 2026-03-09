@@ -1,8 +1,15 @@
 ﻿# PHASE 4 RUNTIME CERTIFICATION
+> SUPERSEDED by `PHASE_4_RUNTIME_CERTIFICATION_2026-03-09.md`
+
 Date: 2026-03-08
-Status: Certified for Phase-4.2 admission
+Status: Superseded historical snapshot
 Commit: 9f5aba0
 Scope: Governed execution runtime hardening closure
+
+## Supersession Notice
+- Superseded on: 2026-03-09
+- Superseding certification: `PHASE_4_RUNTIME_CERTIFICATION_2026-03-09.md`
+- Canonical packet index: `PHASE_4_PROOF_PACKET_INDEX.md`
 
 ## Certification Conditions (Satisfied)
 - All governed actions route through Governor
