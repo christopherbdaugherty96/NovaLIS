@@ -1,17 +1,19 @@
 # src/services/stt_engine.py
 # Phase-3 STT Engine (LOCAL, INPUT-ONLY, FREEZE-READY)
 
+from __future__ import annotations
+
 import asyncio
 import json
-import os
+import logging
+import re
 import shutil
 import subprocess
 import tempfile
-import traceback
 import wave
 from pathlib import Path
 
-from vosk import Model, KaldiRecognizer
+from vosk import KaldiRecognizer, Model
 
 # --------------------------------------------------
 # Model loading (ONCE, deterministic, local)
@@ -21,7 +23,11 @@ from vosk import Model, KaldiRecognizer
 BASE_DIR = Path(__file__).resolve().parents[2]
 VOSK_MODEL_PATH = BASE_DIR / "models" / "vosk-model-small-en-us-0.15"
 
+FFMPEG_TIMEOUT_SECONDS = 15
+MAX_UPLOAD_FILENAME_CHARS = 120
+
 _vosk_model = None
+log = logging.getLogger("nova.stt")
 
 
 def get_vosk_model():
@@ -31,11 +37,11 @@ def get_vosk_model():
         return _vosk_model
 
     if not VOSK_MODEL_PATH.exists():
-        print("[STT] Vosk model not found — STT disabled.")
+        log.warning("Vosk model not found; STT disabled.")
         return None
 
     _vosk_model = Model(str(VOSK_MODEL_PATH))
-    print("[STT] Vosk model loaded successfully")
+    log.info("Vosk model loaded successfully")
     return _vosk_model
 
 
@@ -43,7 +49,7 @@ def get_vosk_model():
 # ffmpeg detection (PATH first, then bundled search)
 # --------------------------------------------------
 
-def _resolve_ffmpeg():
+def _resolve_ffmpeg() -> str | None:
     """
     Locate ffmpeg executable.
     Priority:
@@ -51,24 +57,28 @@ def _resolve_ffmpeg():
     2. Search recursively inside tools/ffmpeg/ for ffmpeg.exe
     Returns None if not found.
     """
-    # 1) Check system PATH
     path = shutil.which("ffmpeg")
     if path:
         return path
 
-    # 2) Search bundled directory dynamically (version‑independent)
-    tools_dir = (
-        Path(__file__).resolve().parents[2]
-        / "tools"
-        / "ffmpeg"
-    )
+    tools_dir = Path(__file__).resolve().parents[2] / "tools" / "ffmpeg"
     if tools_dir.exists():
         matches = list(tools_dir.rglob("ffmpeg.exe"))
         if matches:
-            # Return the first found executable
             return str(matches[0])
 
     return None
+
+
+def _safe_upload_filename(filename: str | None) -> str:
+    raw = (filename or "audio.webm").strip()
+    basename = Path(raw).name.strip() or "audio.webm"
+    safe = re.sub(r"[^A-Za-z0-9._-]", "_", basename)
+    if not safe:
+        safe = "audio.webm"
+    if "." not in safe:
+        safe = f"{safe}.webm"
+    return safe[:MAX_UPLOAD_FILENAME_CHARS]
 
 
 # --------------------------------------------------
@@ -108,79 +118,69 @@ def _vosk_transcribe_wav_sync(wav_path: str) -> str:
 
 async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
     """
-    Convert incoming audio bytes to WAV (mono, 16k),
-    then transcribe using Vosk.
+    Convert incoming audio bytes to WAV (mono, 16k), then transcribe using Vosk.
 
     Returns:
         str: transcribed text (may be empty)
     """
-
-    print(f"[STT] Starting transcription - Received {len(audio_bytes)} bytes")
-    
     if not audio_bytes:
-        print("[STT] No audio bytes received, returning empty")
         return ""
 
-    # Ensure filename is always valid
-    safe_name = filename or "audio.webm"
-    print(f"[STT] Processing file: {safe_name}")
-
-    # Resolve ffmpeg path (runtime check)
+    safe_name = _safe_upload_filename(filename)
     ffmpeg_path = _resolve_ffmpeg()
 
-    # DIAGNOSTIC: print the resolved path and whether it exists
-    print("[STT] Using ffmpeg path:", ffmpeg_path)
-    print("[STT] ffmpeg exists:", os.path.exists(ffmpeg_path) if ffmpeg_path else None)
-
     if ffmpeg_path is None:
-        print("[STT] ffmpeg not found (PATH or bundled) — transcription disabled")
-        return ""  # fail closed
+        log.warning("ffmpeg not found (PATH or bundled); STT disabled for this request.")
+        return ""
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        input_path = os.path.join(tmpdir, safe_name)
-        wav_path = os.path.join(tmpdir, "audio.wav")
+        tmp_root = Path(tmpdir).resolve()
+        input_path = (tmp_root / safe_name).resolve()
+        wav_path = (tmp_root / "audio.wav").resolve()
 
-        # Write raw audio file
+        # Fail closed if a crafted name attempts to escape temp directory.
+        if tmp_root not in input_path.parents:
+            return ""
+
         with open(input_path, "wb") as f:
             f.write(audio_bytes)
 
-        # Prepare ffmpeg command
         ffmpeg_cmd = [
             ffmpeg_path,
             "-y",
-            "-i", input_path,
-            "-ar", "16000",
-            "-ac", "1",
-            "-f", "wav",
-            wav_path,
+            "-i",
+            str(input_path),
+            "-ar",
+            "16000",
+            "-ac",
+            "1",
+            "-f",
+            "wav",
+            str(wav_path),
         ]
-
-        # Run ffmpeg in a thread to avoid blocking the event loop
-        print("[STT] Converting audio to WAV format...")
 
         def run_ffmpeg():
             return subprocess.run(
                 ffmpeg_cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                check=False
+                check=False,
+                timeout=FFMPEG_TIMEOUT_SECONDS,
             )
 
         try:
             result = await asyncio.to_thread(run_ffmpeg)
-
             if result.returncode != 0:
-                print("[STT] Audio conversion failed")
-                print("[STT] ffmpeg stderr:", result.stderr.decode(errors="ignore"))
+                log.warning("STT audio conversion failed with return code %s", result.returncode)
+                log.debug("ffmpeg stderr: %s", result.stderr.decode(errors="ignore"))
                 return ""
-            print("[STT] Audio conversion successful")
-
-        except Exception as e:
-            print(f"[STT] Audio conversion exception: {type(e).__name__}: {e}")
-            traceback.print_exc()
+        except subprocess.TimeoutExpired:
+            log.warning("STT audio conversion timed out after %ss", FFMPEG_TIMEOUT_SECONDS)
+            return ""
+        except Exception:
+            log.exception("STT audio conversion exception")
             return ""
 
-        # Transcribe WAV - run Vosk in a thread to avoid blocking
         text = await asyncio.to_thread(_vosk_transcribe_wav_sync, str(wav_path))
-        print(f"[STT] Transcription completed: '{text}' ({len(text)} chars)")
+        log.debug("STT transcription completed (%d chars)", len(text))
         return text

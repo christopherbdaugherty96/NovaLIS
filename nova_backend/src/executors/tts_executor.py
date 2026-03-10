@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import importlib
 import logging
+import threading
 
 from src.actions.action_result import ActionResult
-from src.audio.audio_task_runner import run_speech_task
 from src.ledger.writer import LedgerWriter
 from src.rendering.speech_formatter import SpeechFormatter
 
@@ -15,27 +15,30 @@ class TTSEngine:
     """Singleton offline TTS engine using pyttsx3."""
 
     _engine = None
+    _lock = threading.RLock()
 
     @classmethod
     def speak(cls, text: str) -> None:
-        if cls._engine is None:
-            pyttsx3 = importlib.import_module("pyttsx3")
-            cls._engine = pyttsx3.init()
+        with cls._lock:
+            if cls._engine is None:
+                pyttsx3 = importlib.import_module("pyttsx3")
+                cls._engine = pyttsx3.init()
 
-        if cls._engine.isBusy():
-            cls._engine.stop()
+            if cls._engine.isBusy():
+                cls._engine.stop()
 
-        cls._engine.say(text)
-        cls._engine.runAndWait()
+            cls._engine.say(text)
+            cls._engine.runAndWait()
 
     @classmethod
     def stop(cls) -> None:
-        if cls._engine is None:
-            return
-        try:
-            cls._engine.stop()
-        except Exception:
-            return
+        with cls._lock:
+            if cls._engine is None:
+                return
+            try:
+                cls._engine.stop()
+            except Exception:
+                return
 
 
 def execute_tts(req, action_result_cls=ActionResult) -> ActionResult:
@@ -59,13 +62,7 @@ def execute_tts(req, action_result_cls=ActionResult) -> ActionResult:
             )
 
         log.info("Speaking text (length %d chars)", len(speak_text))
-        def _speak_task() -> None:
-            try:
-                TTSEngine.speak(speak_text)
-            except Exception as error:
-                log.error("TTS async render failed: %s", error)
-
-        run_speech_task(_speak_task)
+        TTSEngine.speak(speak_text)
         try:
             metadata = {
                 "request_id": req.request_id,
@@ -82,13 +79,13 @@ def execute_tts(req, action_result_cls=ActionResult) -> ActionResult:
             log.debug("Unexpected speech ledger error in capability_18 path", exc_info=True)
         return action_result_cls(
             success=True,
-            message="Speaking now.",
+            message="I read that aloud.",
             data=None,
             request_id=req.request_id,
         )
     except Exception as error:
         log.error("TTS failed: %s", error)
         return action_result_cls.failure(
-            "Speech failed.",
+            "I couldn't speak that. Please try again.",
             request_id=req.request_id,
         )

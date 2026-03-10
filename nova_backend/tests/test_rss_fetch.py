@@ -28,6 +28,7 @@ def test_fetch_rss_headlines_parses_summary_and_published(monkeypatch):
     assert items[0]["url"] == "https://example.com/market"
     assert items[0]["summary"] == "Stocks slipped after policy remarks."
     assert items[0]["published"] == "Mon, 09 Mar 2026 05:30:00 GMT"
+    assert items[0]["video_url"] == ""
 
 
 def test_fetch_rss_headlines_atom_prefers_alternate_link(monkeypatch):
@@ -52,3 +53,25 @@ def test_fetch_rss_headlines_atom_prefers_alternate_link(monkeypatch):
     assert len(items) == 1
     assert items[0]["title"] == "Policy update"
     assert items[0]["url"] == "https://example.com/story"
+
+
+def test_fetch_rss_headlines_extracts_video_url_from_enclosure(monkeypatch):
+    xml = (
+        "<rss><channel>"
+        "<item>"
+        "<title>Briefing with video</title>"
+        "<link>https://example.com/briefing</link>"
+        '<enclosure url="https://cdn.example.com/briefing.mp4" type="video/mp4" />'
+        "<description>Video available.</description>"
+        "</item>"
+        "</channel></rss>"
+    )
+
+    def _fake_request(self, capability_id, method, url, json_payload=None, params=None, headers=None, **kwargs):
+        del capability_id, method, url, json_payload, params, headers, kwargs
+        return {"status_code": 200, "text": xml}
+
+    monkeypatch.setattr(NetworkMediator, "request", _fake_request)
+    items = asyncio.run(fetch_rss_headlines("https://example.com/rss"))
+    assert len(items) == 1
+    assert items[0]["video_url"] == "https://cdn.example.com/briefing.mp4"

@@ -10,6 +10,7 @@ let newsExpanded = false;
 let sttState = "READY";
 let mediaRecorder = null;
 let silenceTimer = null;
+let ackResetTimer = null;
 let lastWidgetHydrationAt = 0;
 let morningState = {
   weather: "Loading...",
@@ -82,6 +83,7 @@ const COMMAND_DISCOVERY_GROUPS = [
 const LONG_MESSAGE_CHAR_LIMIT = 280;
 const LONG_MESSAGE_LINE_LIMIT = 4;
 const LONG_MESSAGE_SENTENCE_LIMIT = 2;
+const URL_PATTERN = /(https?:\/\/[^\s<]+)/gi;
 
 function $(id) { return document.getElementById(id); }
 function clear(el) { if (el) el.innerHTML = ""; }
@@ -119,6 +121,18 @@ function setOrbStatus(state) {
   sttState = state;
   const el = $("orb-status");
   if (el) el.textContent = state;
+}
+
+function handleVoiceAck(message) {
+  const spokenAck = String(message || "Got it.").trim() || "Got it.";
+  setOrbStatus("HEARD");
+  setLoadingHint(`${spokenAck} Thinking...`);
+  setThinkingBar(true);
+  if (ackResetTimer) clearTimeout(ackResetTimer);
+  ackResetTimer = setTimeout(() => {
+    if (sttState === "HEARD") setOrbStatus("PROCESSING");
+    ackResetTimer = null;
+  }, 1200);
 }
 
 function setLoadingHint(text = "") {
@@ -341,6 +355,7 @@ function appendTrustStrip(container, text, confidenceLabel = "") {
 function shouldCollapseMessage(text) {
   const raw = String(text || "");
   if (!raw.trim()) return false;
+  if (/https?:\/\/\S+/i.test(raw)) return false;
   const lines = raw.split(/\r?\n/).filter((line) => line.trim().length > 0);
   return raw.length > LONG_MESSAGE_CHAR_LIMIT || lines.length > LONG_MESSAGE_LINE_LIMIT;
 }
@@ -369,6 +384,45 @@ function buildMessagePreview(text) {
   }
 
   return `${normalized.slice(0, LONG_MESSAGE_CHAR_LIMIT - 3).trimEnd()}...`;
+}
+
+function appendLinkedText(container, text) {
+  const raw = String(text || "");
+  const lines = raw.split(/\r?\n/);
+
+  lines.forEach((line, lineIndex) => {
+    URL_PATTERN.lastIndex = 0;
+    let cursor = 0;
+    let match = URL_PATTERN.exec(line);
+
+    if (!match) {
+      container.appendChild(document.createTextNode(line));
+    } else {
+      while (match) {
+        const url = match[0];
+        const start = match.index;
+        if (start > cursor) {
+          container.appendChild(document.createTextNode(line.slice(cursor, start)));
+        }
+        const link = document.createElement("a");
+        link.href = url;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.textContent = url;
+        link.className = "chat-inline-link";
+        container.appendChild(link);
+        cursor = start + url.length;
+        match = URL_PATTERN.exec(line);
+      }
+      if (cursor < line.length) {
+        container.appendChild(document.createTextNode(line.slice(cursor)));
+      }
+    }
+
+    if (lineIndex < lines.length - 1) {
+      container.appendChild(document.createElement("br"));
+    }
+  });
 }
 
 function parseStructuredReport(text) {
@@ -904,7 +958,7 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
       });
       div.appendChild(expandBtn);
     } else {
-      textNode.textContent = msgText;
+      appendLinkedText(textNode, msgText);
       div.appendChild(textNode);
     }
   }
@@ -968,8 +1022,26 @@ function showThoughtOverlay(anchor, thoughtData) {
     document.body.appendChild(overlay);
   }
 
-  const reasons = (thoughtData.reason_codes || []).map((code) => `<li>${code.replace(/_/g, " ")}</li>`).join("");
-  overlay.innerHTML = `<div class="thought-title">Escalation reasoning</div><ul>${reasons || "<li>No reason codes available</li>"}</ul>`;
+  const reasonSummary = String(thoughtData.reason_summary || "").trim();
+  const reasons = (thoughtData.reason_codes || []).map((code) => `<li>${String(code).replace(/_/g, " ")}</li>`).join("");
+  const mode = String(thoughtData.mode || "").trim();
+  const tokens = Number(thoughtData.suggested_tokens || 0);
+  const heuristic = thoughtData.heuristic || {};
+  const complexity = Number(heuristic.complexity_score || 0);
+  const depth = Number(heuristic.depth_opportunity_score || 0);
+  const ambiguity = Number(heuristic.ambiguity_score || 0);
+  const rows = [];
+
+  if (mode) rows.push(`<li>Mode: ${mode}</li>`);
+  if (tokens > 0) rows.push(`<li>Token budget: ${tokens}</li>`);
+  if (complexity > 0) rows.push(`<li>Complexity score: ${complexity.toFixed(2)}</li>`);
+  if (depth > 0) rows.push(`<li>Depth score: ${depth.toFixed(2)}</li>`);
+  if (ambiguity > 0) rows.push(`<li>Ambiguity score: ${ambiguity.toFixed(2)}</li>`);
+
+  const summaryHtml = reasonSummary ? `<div class="thought-summary">${reasonSummary}</div>` : "";
+  const detailsHtml = rows.length ? `<ul>${rows.join("")}</ul>` : "";
+  const reasonsHtml = `<ul>${reasons || "<li>No reason codes available</li>"}</ul>`;
+  overlay.innerHTML = `<div class="thought-title">Escalation reasoning</div>${summaryHtml}${detailsHtml}${reasonsHtml}`;
 
   const rect = anchor.getBoundingClientRect();
   overlay.style.left = `${Math.min(window.innerWidth - 300, rect.left)}px`;
@@ -1094,6 +1166,16 @@ function renderNewsCategoryGrid(categories) {
       card.appendChild(summaryEl);
     }
 
+    const categoryActions = document.createElement("div");
+    categoryActions.className = "news-item-actions";
+    const summarizeCategoryBtn = document.createElement("button");
+    summarizeCategoryBtn.type = "button";
+    summarizeCategoryBtn.className = "assistant-action-btn";
+    summarizeCategoryBtn.textContent = "Summarize category";
+    summarizeCategoryBtn.addEventListener("click", () => injectUserText(`summarize ${key} news`, "text"));
+    categoryActions.appendChild(summarizeCategoryBtn);
+    card.appendChild(categoryActions);
+
     const list = document.createElement("ul");
     list.className = "news-category-list";
     items.slice(0, 3).forEach((item) => {
@@ -1113,6 +1195,22 @@ function renderNewsCategoryGrid(categories) {
       const snippet = buildNewsItemSnippet(item);
       itemSummary.textContent = snippet.length > 180 ? `${snippet.slice(0, 177)}...` : snippet;
       row.appendChild(itemSummary);
+
+      const actions = document.createElement("div");
+      actions.className = "news-item-actions";
+      const videoUrl = String(item.video_url || "").trim();
+      if (videoUrl) {
+        const watchLink = document.createElement("a");
+        watchLink.className = "assistant-action-btn";
+        watchLink.href = videoUrl;
+        watchLink.target = "_blank";
+        watchLink.rel = "noopener noreferrer";
+        watchLink.textContent = "Watch video";
+        actions.appendChild(watchLink);
+      }
+      if (actions.childNodes.length > 0) {
+        row.appendChild(actions);
+      }
 
       const meta = document.createElement("div");
       meta.className = "news-category-meta";
@@ -1235,6 +1333,17 @@ function renderNewsWidget(items, summaryText = "", categories = null) {
     summarizeBtn.textContent = "Summarize this";
     summarizeBtn.addEventListener("click", () => injectUserText(`summarize headline ${storyIndex}`, "text"));
     row.appendChild(summarizeBtn);
+
+    const videoUrl = String(item.video_url || "").trim();
+    if (videoUrl) {
+      const watchLink = document.createElement("a");
+      watchLink.className = "assistant-action-btn";
+      watchLink.href = videoUrl;
+      watchLink.target = "_blank";
+      watchLink.rel = "noopener noreferrer";
+      watchLink.textContent = "Watch video";
+      row.appendChild(watchLink);
+    }
 
     li.appendChild(row);
 
@@ -1451,9 +1560,38 @@ async function startSTT() {
       form.append("audio", blob, "speech.webm");
 
       const res = await fetch(`${API_BASE}/stt/transcribe`, { method: "POST", body: form });
-      if (res.ok) {
-        const data = await res.json();
-        if (data.text && data.text.trim()) injectUserText(data.text, "voice");
+      let data = {};
+      try {
+        data = await res.json();
+      } catch (_) {
+        data = {};
+      }
+
+      if (!res.ok) {
+        appendChatMessage(
+          "assistant",
+          "I couldn't process that recording. Please try again.",
+          null,
+          "Voice input",
+        );
+        return;
+      }
+
+      if (data.error) {
+        appendChatMessage("assistant", String(data.error), null, "Voice input");
+        return;
+      }
+
+      const transcript = String(data.text || "").trim();
+      if (transcript) {
+        injectUserText(transcript, "voice");
+      } else {
+        appendChatMessage(
+          "assistant",
+          "I didn't catch that. Try speaking a bit slower or closer to the mic.",
+          null,
+          "Voice input",
+        );
       }
     } finally {
       if (stream) stream.getTracks().forEach((t) => t.stop());
@@ -1469,6 +1607,10 @@ async function startSTT() {
 function stopSTT() {
   clearTimeout(silenceTimer);
   silenceTimer = null;
+  if (ackResetTimer) {
+    clearTimeout(ackResetTimer);
+    ackResetTimer = null;
+  }
   if (mediaRecorder && mediaRecorder.state === "recording") mediaRecorder.stop();
 }
 
@@ -1521,6 +1663,9 @@ function connectWebSocket() {
           msg.suggested_actions || null
         );
         break;
+      case "ack":
+        handleVoiceAck(msg.message || "");
+        break;
       case "trust_status":
         if (msg.data && typeof msg.data === "object") {
           trustState.mode = msg.data.mode || trustState.mode;
@@ -1553,6 +1698,10 @@ function connectWebSocket() {
   ws.onclose = () => {
     waitingForAssistant = false;
     setThinkingBar(false);
+    if (ackResetTimer) {
+      clearTimeout(ackResetTimer);
+      ackResetTimer = null;
+    }
     setTimeout(connectWebSocket, 2000);
   };
 }

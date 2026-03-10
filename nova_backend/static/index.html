@@ -75,16 +75,21 @@
         <div id="news-widget" class="widget page-card">
           <h3>Top News</h3>
           <p id="news-summary" class="news-summary">Press "Summarize headlines" for a dashboard briefing.</p>
-          <ul id="news-list"></ul>
           <div class="news-actions">
             <button id="btn-news" type="button">Get headlines</button>
             <button id="btn-news-summary" type="button">Summarize headlines</button>
             <button id="btn-news-expand" type="button" aria-pressed="false" style="display:none">Expand details</button>
           </div>
-          <section class="news-categories" aria-label="News categories">
-            <h4 class="news-categories-title">News Channels</h4>
-            <div id="news-category-grid" class="news-category-grid"></div>
-          </section>
+          <div class="news-layout">
+            <section class="news-stream" aria-label="Top headlines">
+              <h4 class="news-section-title">Headlines</h4>
+              <ul id="news-list"></ul>
+            </section>
+            <section class="news-categories" aria-label="News categories">
+              <h4 class="news-categories-title">News Channels</h4>
+              <div id="news-category-grid" class="news-category-grid"></div>
+            </section>
+          </div>
         </div>
 
         <div id="brief-widget" class="widget page-card brief-widget">

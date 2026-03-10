@@ -232,6 +232,7 @@ class NewsSkill(BaseSkill):
                         "source": name,
                         "summary": summary,
                         "published": str(first.get("published") or "").strip(),
+                        "video_url": str(first.get("video_url") or "").strip(),
                     }
             except Exception:
                 continue

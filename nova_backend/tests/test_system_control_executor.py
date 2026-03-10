@@ -20,4 +20,5 @@ def test_media_and_brightness_fail_closed_on_unknown_platform(monkeypatch):
     monkeypatch.setattr("platform.system", lambda: "UnknownOS")
 
     assert executor.control_media("play") is False
+    assert executor.set_volume("mute") is False
     assert executor.set_brightness("up") is False

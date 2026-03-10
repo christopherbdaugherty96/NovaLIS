@@ -124,9 +124,10 @@ PREVIEW_SOURCE_INDEX_RE = re.compile(r"^\s*preview\s+(?:source|result)\s+(?P<idx
 PREVIEW_WEBSITE_RE = re.compile(r"^\s*preview\s+(?P<target>[A-Za-z0-9_.\- ]+)\s*$", re.IGNORECASE)
 OPEN_FOLDER_RE = re.compile(r"^\s*open\s+(?P<folder>documents|downloads|desktop|pictures)\s*$", re.IGNORECASE)
 OPEN_FILE_RE = re.compile(r"^\s*open\s+(?:file|document)\s+(?P<path>.+?)\s*$", re.IGNORECASE)
-SET_VOLUME_RE = re.compile(r"^\s*set\s+volume\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
+SET_VOLUME_RE = re.compile(r"^\s*set\s+volume(?:\s+to)?\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 VOLUME_VALUE_RE = re.compile(r"^\s*volume\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
-SET_BRIGHTNESS_RE = re.compile(r"^\s*set\s+brightness\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
+SET_BRIGHTNESS_RE = re.compile(r"^\s*set\s+brightness(?:\s+to)?\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
+BRIGHTNESS_VALUE_RE = re.compile(r"^\s*brightness\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 SET_REPORT_RE = re.compile(r"^\s*(report|summarize)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
 HEADLINE_SUMMARY_RE = re.compile(
     r"^\s*summarize\s+(?:(?:headline|headlines)\s+)?(?P<sel>all|[\w\s,;&]+)\s*$",
@@ -303,6 +304,14 @@ LEGAL_POLICY_TERMS = (
 
 LOCATION_HINT_RE = re.compile(r"\b(?:in|for|under)\s+[a-z][a-z\s]{2,}\b", re.IGNORECASE)
 
+NEWS_CATEGORY_ALIASES: dict[str, set[str]] = {
+    "global": {"global", "world", "international"},
+    "political": {"political", "politics", "policy", "government"},
+    "breaking": {"breaking"},
+    "tech": {"tech", "technology", "ai"},
+    "markets": {"markets", "market", "stocks", "stock", "crypto", "business", "finance"},
+}
+
 
 def _normalize_number_words(text: str) -> str:
     out = text
@@ -365,6 +374,29 @@ def _normalize_source_query(source_query: str) -> str:
     if re.fullmatch(r"(?:[A-Za-z]\s+){1,}[A-Za-z]", normalized):
         normalized = normalized.replace(" ", "")
     return normalized
+
+
+def _strip_news_summary_fillers(text: str) -> str:
+    cleaned = (text or "").strip().lower()
+    cleaned = re.sub(r"\b(?:category|categories|news|headlines?)\b", " ", cleaned)
+    cleaned = re.sub(r"\s+", " ", cleaned).strip()
+    return cleaned
+
+
+def _match_news_category(text: str) -> str | None:
+    cleaned = _strip_news_summary_fillers(text)
+    if not cleaned:
+        return None
+
+    for key, aliases in NEWS_CATEGORY_ALIASES.items():
+        if cleaned == key or cleaned in aliases:
+            return key
+
+    for key, aliases in NEWS_CATEGORY_ALIASES.items():
+        for alias in aliases:
+            if re.search(rf"\b{re.escape(alias)}\b", cleaned):
+                return key
+    return None
 
 
 def _normalize_web_target(target_text: str) -> str:
@@ -551,6 +583,10 @@ class GovernorMediator:
             return _invocation_if_enabled(19, {"action": "up"})
         if re.match(r"^\s*volume\s+down\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(19, {"action": "down"})
+        if re.match(r"^\s*(?:mute|mute volume|volume mute)\s*$", t, re.IGNORECASE):
+            return _invocation_if_enabled(19, {"action": "mute"})
+        if re.match(r"^\s*(?:unmute|unmute volume|volume unmute)\s*$", t, re.IGNORECASE):
+            return _invocation_if_enabled(19, {"action": "unmute"})
 
         m = SET_VOLUME_RE.match(t)
         if m:
@@ -563,8 +599,15 @@ class GovernorMediator:
             return _invocation_if_enabled(21, {"action": "up"})
         if re.match(r"^\s*brightness\s+down\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(21, {"action": "down"})
+        if re.match(r"^\s*(?:increase|raise)\s+brightness\s*$", t, re.IGNORECASE):
+            return _invocation_if_enabled(21, {"action": "up"})
+        if re.match(r"^\s*(?:decrease|lower|dim)\s+brightness\s*$", t, re.IGNORECASE):
+            return _invocation_if_enabled(21, {"action": "down"})
 
         m = SET_BRIGHTNESS_RE.match(t)
+        if m:
+            return _invocation_if_enabled(21, {"action": "set", "level": int(m.group("level"))})
+        m = BRIGHTNESS_VALUE_RE.match(t)
         if m:
             return _invocation_if_enabled(21, {"action": "set", "level": int(m.group("level"))})
 
@@ -690,6 +733,9 @@ class GovernorMediator:
                 return _invocation_if_enabled(49, {"selection": "all"})
             if "news headlines" in selection or "headlines on the dashboard" in selection:
                 return _invocation_if_enabled(49, {"selection": "all"})
+            category_key = _match_news_category(selection)
+            if category_key:
+                return _invocation_if_enabled(49, {"selection": "category", "category_key": category_key})
             parsed = _parse_headline_selection(selection)
             if parsed:
                 return _invocation_if_enabled(49, parsed)
@@ -698,6 +744,9 @@ class GovernorMediator:
         if gm:
             topic_query = (gm.group("topic") or "").strip()
             if topic_query:
+                category_key = _match_news_category(topic_query)
+                if category_key:
+                    return _invocation_if_enabled(49, {"selection": "category", "category_key": category_key})
                 return _invocation_if_enabled(49, {"selection": "topic", "topic_query": topic_query, "recent": True})
             if re.search(r"\b(today'?s|todays|latest|recent|current)\b", t, re.IGNORECASE):
                 return _invocation_if_enabled(50, {"read_sources": True})
@@ -709,6 +758,9 @@ class GovernorMediator:
             if source_query:
                 if source_query.lower() in {"today", "todays", "today's", "latest", "recent", "current", "the"}:
                     return _invocation_if_enabled(49, {"selection": "all"})
+                category_key = _match_news_category(source_query)
+                if category_key:
+                    return _invocation_if_enabled(49, {"selection": "category", "category_key": category_key})
                 return _invocation_if_enabled(49, {"selection": "source", "source_query": source_query})
 
         m = SET_REPORT_RE.match(t)

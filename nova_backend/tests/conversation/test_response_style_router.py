@@ -23,6 +23,16 @@ def test_input_normalizer_aliases_non_technical_phrase():
     assert normalized.lower() == "volume up."
 
 
+def test_input_normalizer_maps_mute_phrase():
+    normalized = InputNormalizer.normalize("mute the sound")
+    assert normalized.lower() == "mute."
+
+
+def test_input_normalizer_maps_brightness_phrase():
+    normalized = InputNormalizer.normalize("make the screen brighter")
+    assert normalized.lower() == "brightness up."
+
+
 def test_input_normalizer_collapses_spaced_acronyms():
     normalized = InputNormalizer.normalize("open A B C news")
     assert normalized.lower() == "open abc news."

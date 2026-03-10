@@ -140,3 +140,76 @@ def test_registry_override_can_enable_without_group(monkeypatch, tmp_path):
 
     registry = cr.CapabilityRegistry()
     assert registry.is_enabled(22) is True
+
+
+def test_registry_defaults_authority_scope_from_risk(monkeypatch, tmp_path):
+    import json
+    import src.governor.capability_registry as cr
+
+    registry_data = {
+        "schema_version": "1.0",
+        "phase": "4",
+        "capability_groups": {},
+        "profiles": {"default": {"groups": [], "enabled_overrides": {}}},
+        "capabilities": [
+            {
+                "id": 16,
+                "name": "governed_web_search",
+                "status": "active",
+                "phase_introduced": "4",
+                "risk_level": "low",
+                "data_exfiltration": True,
+                "enabled": True,
+            },
+            {
+                "id": 22,
+                "name": "open_file_folder",
+                "status": "active",
+                "phase_introduced": "4",
+                "risk_level": "confirm",
+                "data_exfiltration": False,
+                "enabled": True,
+            },
+        ],
+    }
+    path = tmp_path / "registry.json"
+    path.write_text(json.dumps(registry_data), encoding="utf-8")
+    monkeypatch.setattr(cr, "REGISTRY_PATH", path)
+    monkeypatch.delenv("NOVA_RUNTIME_PROFILE", raising=False)
+
+    registry = cr.CapabilityRegistry()
+    assert registry.authority_scope(16) == "suggest"
+    assert registry.authority_scope(22) == "confirm"
+
+
+def test_registry_invalid_authority_scope_fails_closed(monkeypatch, tmp_path):
+    import json
+    import pytest
+    import src.governor.capability_registry as cr
+    from src.governor.exceptions import CapabilityRegistryError
+
+    bad_registry = {
+        "schema_version": "1.0",
+        "phase": "4",
+        "capability_groups": {},
+        "profiles": {"default": {"groups": [], "enabled_overrides": {}}},
+        "capabilities": [
+            {
+                "id": 16,
+                "name": "governed_web_search",
+                "status": "active",
+                "phase_introduced": "4",
+                "risk_level": "low",
+                "data_exfiltration": True,
+                "enabled": True,
+                "authority_scope": "dangerous",
+            }
+        ],
+    }
+    path = tmp_path / "registry.json"
+    path.write_text(json.dumps(bad_registry), encoding="utf-8")
+    monkeypatch.setattr(cr, "REGISTRY_PATH", path)
+    monkeypatch.delenv("NOVA_RUNTIME_PROFILE", raising=False)
+
+    with pytest.raises(CapabilityRegistryError):
+        cr.CapabilityRegistry()

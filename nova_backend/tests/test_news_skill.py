@@ -11,6 +11,7 @@ def test_news_skill_uses_feed_summary_and_published(monkeypatch):
                 "url": "https://example.com/story-1",
                 "summary": "Energy markets moved higher after overnight escalation and supply concerns.",
                 "published": "Mon, 09 Mar 2026 01:00:00 GMT",
+                "video_url": "https://video.example.com/story-1.mp4",
             }
         ]
 
@@ -30,6 +31,7 @@ def test_news_skill_uses_feed_summary_and_published(monkeypatch):
     assert items[0]["source"] == "Example Source"
     assert "Energy markets moved higher" in items[0]["summary"]
     assert items[0]["published"] == "Mon, 09 Mar 2026 01:00:00 GMT"
+    assert items[0]["video_url"] == "https://video.example.com/story-1.mp4"
 
 
 def test_news_skill_falls_back_to_title_based_summary(monkeypatch):
@@ -57,6 +59,7 @@ def test_news_skill_falls_back_to_title_based_summary(monkeypatch):
     items = widget.get("items") or []
     assert len(items) == 1
     assert items[0]["summary"].startswith("Headline indicates:")
+    assert items[0]["video_url"] == ""
 
 
 def test_news_skill_tries_multiple_feeds_per_source(monkeypatch):

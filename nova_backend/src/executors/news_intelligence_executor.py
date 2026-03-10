@@ -97,8 +97,28 @@ class NewsIntelligenceExecutor:
                     "source": (item.get("source") or "").strip(),
                     "url": (item.get("url") or "").strip(),
                     "summary": (item.get("summary") or "").strip(),
+                    "published": (item.get("published") or "").strip(),
+                    "video_url": (item.get("video_url") or "").strip(),
                 }
             )
+        return out
+
+    def _sanitize_categories(self, raw: Any) -> dict[str, dict[str, Any]]:
+        if not isinstance(raw, dict):
+            return {}
+        out: dict[str, dict[str, Any]] = {}
+        for key, bucket in raw.items():
+            normalized_key = str(key or "").strip().lower()
+            if not normalized_key or not isinstance(bucket, dict):
+                continue
+            items = self._sanitize_headlines(bucket.get("items"))
+            if not items:
+                continue
+            out[normalized_key] = {
+                "title": str(bucket.get("title") or normalized_key.title()).strip() or normalized_key.title(),
+                "summary": str(bucket.get("summary") or "").strip(),
+                "items": items,
+            }
         return out
 
     def _load_developing_stories(self) -> list[dict[str, Any]]:
@@ -197,14 +217,39 @@ class NewsIntelligenceExecutor:
                 picked_indices.append(idx)
         return selected, picked_indices
 
-    def _headline_prompt(self, item: dict[str, str], index: int) -> str:
+    def _select_category_headlines(
+        self,
+        categories: dict[str, dict[str, Any]],
+        category_key: str,
+    ) -> tuple[list[dict[str, str]], list[int], str]:
+        normalized = str(category_key or "").strip().lower()
+        if not normalized:
+            return [], [], ""
+        bucket = categories.get(normalized)
+        if not isinstance(bucket, dict):
+            return [], [], ""
+        items = self._sanitize_headlines(bucket.get("items"))
+        selected = items[:MAX_HEADLINES_PER_SUMMARY]
+        indices = list(range(1, len(selected) + 1))
+        title = str(bucket.get("title") or normalized.title()).strip() or normalized.title()
+        return selected, indices, title
+
+    def _headline_prompt(self, item: dict[str, str], index: int, article_excerpt: str = "") -> str:
+        summary = str(item.get("summary") or "").strip()
+        excerpt_block = ""
+        if article_excerpt:
+            excerpt_block = f"\nArticle excerpt (source-page read):\n{article_excerpt[:1800]}\n"
+        elif summary:
+            excerpt_block = f"\nFeed synopsis:\n{summary}\n"
         return (
             "Summarize this news headline in 2-3 factual sentences.\n"
             "Do not use section headers, bullets, or speculation.\n"
-            "If detail is limited, explicitly note that it is headline-level only.\n\n"
+            "If detail is limited, explicitly note that it is headline-level only.\n"
+            "If an article excerpt is provided, prioritize excerpt facts over headline text.\n\n"
             f"Headline #{index}: {item['title']}\n"
             f"Source: {item.get('source', 'Unknown')}\n"
             f"URL: {item.get('url', 'N/A')}\n"
+            f"{excerpt_block}"
             "Return plain text only."
         )
 
@@ -658,9 +703,10 @@ class NewsIntelligenceExecutor:
         summaries: list[str],
         *,
         selected_indices: list[int] | None = None,
+        report_title: str = "HEADLINE-BY-HEADLINE SUMMARY",
     ) -> tuple[str, list[dict[str, Any]]]:
         lines = [
-            "HEADLINE-BY-HEADLINE SUMMARY",
+            report_title,
             "----------------------------",
         ]
         for offset, (item, summary) in enumerate(zip(selected, summaries), start=1):
@@ -683,6 +729,9 @@ class NewsIntelligenceExecutor:
             )
             if url:
                 lines.append(f"Reference: {url}")
+            video_url = str(item.get("video_url") or "").strip()
+            if video_url:
+                lines.append(f"Video: {video_url}")
 
         related_pairs = self._related_headline_pairs(selected)
         related_text = self._render_related_comparison_section(selected, related_pairs)
@@ -742,6 +791,7 @@ class NewsIntelligenceExecutor:
 
     def execute_summary(self, request) -> ActionResult:
         headlines = self._sanitize_headlines((request.params or {}).get("headlines"))
+        categories = self._sanitize_categories((request.params or {}).get("categories"))
         session_id = str((request.params or {}).get("session_id") or "").strip() or None
         if not headlines:
             return ActionResult.failure(
@@ -764,9 +814,20 @@ class NewsIntelligenceExecutor:
                 request_id=request.request_id,
             )
 
-        selected, indices = self._select_headlines(headlines, request.params or {})
+        selection = str((request.params or {}).get("selection") or "").strip().lower()
+        report_title = "HEADLINE-BY-HEADLINE SUMMARY"
+        selected: list[dict[str, str]]
+        indices: list[int]
+
+        if selection == "category":
+            requested_category = str((request.params or {}).get("category_key") or "").strip().lower()
+            selected, indices, category_title = self._select_category_headlines(categories, requested_category)
+            if category_title:
+                report_title = f"CATEGORY SUMMARY - {category_title}"
+        else:
+            selected, indices = self._select_headlines(headlines, request.params or {})
+
         if not selected:
-            selection = str((request.params or {}).get("selection") or "")
             if selection == "source":
                 wanted_source = str((request.params or {}).get("source_query") or "").strip()
                 available_sources = sorted(
@@ -787,6 +848,13 @@ class NewsIntelligenceExecutor:
                     f"I couldn't find recent headlines for topic '{wanted_topic}'. Try a broader term.",
                     request_id=request.request_id,
                 )
+            if selection == "category":
+                requested_category = str((request.params or {}).get("category_key") or "").strip().lower()
+                available_categories = ", ".join(sorted(categories.keys())) if categories else "none"
+                return ActionResult.failure(
+                    f"I couldn't find category '{requested_category}'. Available categories: {available_categories}.",
+                    request_id=request.request_id,
+                )
             return ActionResult.failure(
                 "I couldn't match those headline numbers. Try: summarize headline 1.",
                 request_id=request.request_id,
@@ -801,8 +869,14 @@ class NewsIntelligenceExecutor:
         normalized_summaries: list[str] = []
         for item, idx in zip(selected, indices):
             fallback = self._headline_summary_fallback(item)
+            article_excerpt = self._fetch_source_text(
+                str(item.get("url") or ""),
+                capability_id=request.capability_id,
+                request_id=f"{request.request_id}:article:{idx}",
+                session_id=session_id,
+            )
             analysis = self._llm_or_fallback(
-                self._headline_prompt(item, idx),
+                self._headline_prompt(item, idx, article_excerpt=article_excerpt),
                 fallback,
                 request_id=f"{request.request_id}:headline:{idx}",
                 session_id=session_id,
@@ -813,6 +887,7 @@ class NewsIntelligenceExecutor:
             selected,
             normalized_summaries,
             selected_indices=indices,
+            report_title=report_title,
         )
 
         return ActionResult.ok(
@@ -820,7 +895,12 @@ class NewsIntelligenceExecutor:
             data={
                 "widget": {
                     "type": "news_summary",
-                    "data": {"indices": indices, "count": len(selected)},
+                    "data": {
+                        "indices": indices,
+                        "count": len(selected),
+                        "selection": selection or "indices",
+                        "category_key": (request.params or {}).get("category_key"),
+                    },
                 },
                 "related_pairs": related_pairs,
             },
