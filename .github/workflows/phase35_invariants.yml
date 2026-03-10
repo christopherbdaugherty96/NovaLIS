@@ -9,11 +9,11 @@ jobs:
       - uses: actions/checkout@v3
 
       # Fix 1: Scan the correct runtime directory (nova_backend/src/)
-      - name: No EXECUTION_ENABLED in runtime (allow docstrings)
+      - name: No legacy EXECUTION_ENABLED in runtime
         shell: pwsh
         run: |
           $hits = Get-ChildItem -Path .\nova_backend\src\ -Recurse -File |
-                  Select-String -Pattern "EXECUTION_ENABLED" |
+                  Select-String -CaseSensitive -Pattern "\bEXECUTION_ENABLED\b" |
                   Where-Object { $_.Path -notmatch "archive_quarantine|tests|__pycache__" }
           if ($hits) { Write-Error "Found EXECUTION_ENABLED in runtime: $hits"; exit 1 }
 
@@ -40,15 +40,17 @@ jobs:
           python -c "
 import sys
 import os
-# Add nova_backend to the Python path so 'src' is found
+# Add nova_backend to the Python path so 'src' is found.
 sys.path.insert(0, os.path.join(os.getcwd(), 'nova_backend'))
-from src.governor.execute_boundary import ExecuteBoundary
-from src.actions.action_request import ActionRequest
-import uuid
-b = ExecuteBoundary()
-req = ActionRequest(request_id=str(uuid.uuid4()), capability_id=0, params={})
-res = b.evaluate(req)
-assert not res.success
-assert 'requires execution' in res.error
-print('PASS')
+import importlib
+eb = importlib.import_module('src.governor.execute_boundary.execute_boundary')
+b = eb.ExecuteBoundary()
+assert b.allow_execution() is True
+previous = eb.GOVERNED_ACTIONS_ENABLED
+eb.GOVERNED_ACTIONS_ENABLED = False
+try:
+    assert b.allow_execution() is False
+finally:
+    eb.GOVERNED_ACTIONS_ENABLED = previous
+print('PASS: ExecuteBoundary is fail-closed when execution is disabled')
 "

@@ -9,7 +9,7 @@ from src.governor.network_mediator import NetworkMediator
 from src.governor.exceptions import NetworkMediatorError
 
 
-NETWORK_CAPABILITY_ID = 16
+NETWORK_CAPABILITY_ID = 55
 WEATHER_TIMEOUT_SECONDS = 8.0
 WEATHER_MAX_RETRIES = 1
 WEATHER_RETRY_BACKOFF_SECONDS = 0.35
@@ -112,12 +112,12 @@ class WeatherService:
             try:
                 resp = await asyncio.to_thread(
                     self.network.request,
-                    NETWORK_CAPABILITY_ID,
-                    "GET",
-                    url,
-                    None,  # json_payload
-                    params,
-                    None,  # headers
+                    capability_id=NETWORK_CAPABILITY_ID,
+                    method="GET",
+                    url=url,
+                    json_payload=None,
+                    params=params,
+                    headers=None,
                     as_json=True,
                     timeout=WEATHER_TIMEOUT_SECONDS,
                 )

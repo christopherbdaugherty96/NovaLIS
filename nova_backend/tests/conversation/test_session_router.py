@@ -6,6 +6,7 @@ def test_normalize_and_route_empty_input_flags_empty():
     assert out.is_empty is True
     assert out.text == ""
     assert out.lowered == ""
+    assert out.raw_text == ""
 
 
 def test_evaluate_gate_handles_mode_override_apply():
@@ -47,3 +48,9 @@ def test_pending_web_confirmation_yes_no_reprompt():
     assert SessionRouter.route_pending_web_confirmation("go ahead").action == "confirm"
     assert SessionRouter.route_pending_web_confirmation("never mind").action == "cancel"
     assert SessionRouter.route_pending_web_confirmation("maybe").action == "reprompt"
+
+
+def test_normalization_change_flag_for_stt_phrase():
+    out = SessionRouter.normalize_and_route("open A B C new", {})
+    assert out.normalization_changed is True
+    assert out.text.lower().startswith("open abc news")

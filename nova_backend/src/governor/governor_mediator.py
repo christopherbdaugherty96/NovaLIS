@@ -128,6 +128,22 @@ SET_VOLUME_RE = re.compile(r"^\s*set\s+volume(?:\s+to)?\s+(?P<level>\d{1,3})\s*$
 VOLUME_VALUE_RE = re.compile(r"^\s*volume\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 SET_BRIGHTNESS_RE = re.compile(r"^\s*set\s+brightness(?:\s+to)?\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 BRIGHTNESS_VALUE_RE = re.compile(r"^\s*brightness\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
+WEATHER_RE = re.compile(
+    r"^\s*(?:weather|weather update|current weather|weather forecast|what(?:'s| is) (?:the )?weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|forecast(?: today| tomorrow)?)\s*$",
+    re.IGNORECASE,
+)
+NEWS_RE = re.compile(
+    r"^\s*(?:news|headlines|latest news|top news|news update|what(?:'s| is) (?:the )?news(?: today| now)?)\s*$",
+    re.IGNORECASE,
+)
+CALENDAR_RE = re.compile(
+    r"^\s*(?:calendar|calendar update|agenda|schedule|todays schedule|today's schedule|todays calendar|today's calendar|what(?:'s| is) on (?:my )?calendar(?: today)?)\s*$",
+    re.IGNORECASE,
+)
+SYSTEM_RE = re.compile(
+    r"^\s*(?:system|system check|system status|what(?:'s| is) (?:the )?system status)\s*$",
+    re.IGNORECASE,
+)
 SET_REPORT_RE = re.compile(r"^\s*(report|summarize)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
 HEADLINE_SUMMARY_RE = re.compile(
     r"^\s*summarize\s+(?:(?:headline|headlines)\s+)?(?P<sel>all|[\w\s,;&]+)\s*$",
@@ -492,6 +508,18 @@ class GovernorMediator:
                 return _invocation_if_enabled(16, {"query": t})
             return None
 
+        if WEATHER_RE.match(t):
+            return _invocation_if_enabled(55, {})
+
+        if NEWS_RE.match(t):
+            return _invocation_if_enabled(56, {})
+
+        if CALENDAR_RE.match(t):
+            return _invocation_if_enabled(57, {})
+
+        if SYSTEM_RE.match(t):
+            return _invocation_if_enabled(32, {})
+
         tm = TOPIC_UPDATES_RE.match(t)
         if tm:
             topic_query = (tm.group("topic") or "").strip()
@@ -613,9 +641,6 @@ class GovernorMediator:
 
         if re.match(r"^\s*(play|pause|resume)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(20, {"action": t.lower()})
-
-        if re.match(r"^\s*(system|system check|system status)\s*$", t, re.IGNORECASE):
-            return _invocation_if_enabled(32, {})
 
         if INTEL_BRIEF_RE.match(t):
             return _invocation_if_enabled(50, {})

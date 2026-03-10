@@ -15,6 +15,7 @@ Read-only truth report of detectable bypass indicators from allowlisted runtime 
 - Architectural constraint: executors exist as importable callables, but governed runtime routes execution through Governor branches.
 - nova_backend/src/executors/analysis_document_executor.py
 - nova_backend/src/executors/brightness_executor.py
+- nova_backend/src/executors/info_snapshot_executor.py
 - nova_backend/src/executors/media_executor.py
 - nova_backend/src/executors/multi_source_reporting_executor.py
 - nova_backend/src/executors/news_intelligence_executor.py

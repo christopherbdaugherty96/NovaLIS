@@ -256,6 +256,18 @@ class Governor:
             from src.executors.analysis_document_executor import AnalysisDocumentExecutor
             return AnalysisDocumentExecutor().execute(req)
 
+        elif req.capability_id == 55:
+            from src.executors.info_snapshot_executor import WeatherSnapshotExecutor
+            return WeatherSnapshotExecutor(self.network).execute(req)
+
+        elif req.capability_id == 56:
+            from src.executors.info_snapshot_executor import NewsSnapshotExecutor
+            return NewsSnapshotExecutor(self.network).execute(req)
+
+        elif req.capability_id == 57:
+            from src.executors.info_snapshot_executor import CalendarSnapshotExecutor
+            return CalendarSnapshotExecutor().execute(req)
+
         elif req.capability_id == 31:
             from src.executors.response_verification_executor import ResponseVerificationExecutor
             return ResponseVerificationExecutor().execute(req)

@@ -3,7 +3,7 @@ from typing import List
 
 from . import prompts
 from src.cognition.cognitive_operation_logger import CognitiveOperationLogger
-from src.llm.llm_gateway import generate_chat
+from src.llm import llm_gateway
 
 logger = logging.getLogger(__name__)
 
@@ -25,7 +25,7 @@ class DeepSeekBridge:
         prompt = prompts.build_analysis_prompt(user_message, context)
         response = ""
         try:
-            response = generate_chat(
+            response = llm_gateway.generate_chat(
                 prompt,
                 mode="analysis_only",
                 safety_profile="analysis",

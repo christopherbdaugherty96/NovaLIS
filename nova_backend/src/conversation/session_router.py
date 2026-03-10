@@ -36,9 +36,11 @@ WEB_OPEN_CONFIRM_NO = {
 
 @dataclass(frozen=True)
 class RouteContext:
+    raw_text: str
     text: str
     lowered: str
     decision: ConversationDecision
+    normalization_changed: bool = False
     is_empty: bool = False
 
 
@@ -60,15 +62,37 @@ class SessionRouter:
     """Session-level routing helpers extracted from brain server orchestration."""
 
     @staticmethod
+    def _canonical_text(value: str) -> str:
+        clean = (value or "").strip().lower()
+        clean = clean.rstrip(".?!")
+        return " ".join(clean.split())
+
+    @staticmethod
     def normalize_and_route(raw_text: str, session_state: dict[str, Any]) -> RouteContext:
-        text = InputNormalizer.normalize(raw_text).strip()
+        raw = (raw_text or "").strip()
+        text = InputNormalizer.normalize(raw).strip()
+        normalization_changed = SessionRouter._canonical_text(raw) != SessionRouter._canonical_text(text)
         if not text:
-            return RouteContext(text="", lowered="", decision=ConversationRouter.route("", session_state), is_empty=True)
+            return RouteContext(
+                raw_text=raw,
+                text="",
+                lowered="",
+                decision=ConversationRouter.route("", session_state),
+                normalization_changed=normalization_changed,
+                is_empty=True,
+            )
 
         decision = ConversationRouter.route(text, session_state)
         resolved_text = str(decision.resolved_text or text).strip()
         lowered = resolved_text.lower().rstrip(".?!")
-        return RouteContext(text=resolved_text, lowered=lowered, decision=decision, is_empty=False)
+        return RouteContext(
+            raw_text=raw,
+            text=resolved_text,
+            lowered=lowered,
+            decision=decision,
+            normalization_changed=normalization_changed,
+            is_empty=False,
+        )
 
     @staticmethod
     def evaluate_gate(

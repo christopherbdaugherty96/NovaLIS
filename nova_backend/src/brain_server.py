@@ -269,13 +269,128 @@ def _conversation_suggestions(session_state: dict) -> list[dict[str, str]]:
     suggestions: list[dict[str, str]] = [
         {"label": "Weather", "command": "weather"},
         {"label": "News", "command": "news"},
-        {"label": "Daily brief", "command": "brief"},
+        {"label": "Today's brief", "command": "today's news"},
     ]
     if session_state.get("last_response"):
         suggestions.append({"label": "Shorter version", "command": "shorter version"})
-    if session_state.get("news_cache"):
-        suggestions.append({"label": "Summarize headlines", "command": "summarize all headlines"})
-    return suggestions[:4]
+    return suggestions[:3]
+
+
+TOPIC_STACK_TTL_TURNS = 8
+TOPIC_STACK_MAX_ITEMS = 6
+HARD_ACTION_PREFIXES = (
+    "open ",
+    "volume ",
+    "set volume ",
+    "brightness ",
+    "set brightness ",
+    "mute",
+    "unmute",
+    "play",
+    "pause",
+    "stop playback",
+)
+TOPIC_NOISE_TERMS = {
+    "please",
+    "nova",
+    "today",
+    "now",
+    "quickly",
+    "brief",
+}
+
+
+def _is_hard_action_command(text: str) -> bool:
+    lowered = (text or "").strip().lower().rstrip(".?!")
+    if not lowered:
+        return False
+    return any(lowered.startswith(prefix) for prefix in HARD_ACTION_PREFIXES)
+
+
+def _extract_topic_candidate(text: str) -> str:
+    lowered = (text or "").strip().lower().rstrip(".?!")
+    if not lowered:
+        return ""
+
+    for prefix in ("research ", "search ", "summarize ", "compare ", "track ", "open "):
+        if lowered.startswith(prefix):
+            lowered = lowered[len(prefix):].strip()
+            break
+
+    lowered = re.sub(r"\b(the|a|an|about|for)\b", " ", lowered)
+    lowered = re.sub(r"\s+", " ", lowered).strip()
+    if not lowered:
+        return ""
+
+    terms = [term for term in re.findall(r"[a-z0-9']+", lowered) if term and term not in TOPIC_NOISE_TERMS]
+    if len(terms) < 2:
+        return ""
+
+    candidate = " ".join(terms[:8]).strip()
+    return candidate[:80]
+
+
+def _prune_topic_stack(session_state: dict, turn_count: int) -> None:
+    stack = session_state.get("topic_stack") or []
+    if not isinstance(stack, list):
+        session_state["topic_stack"] = []
+        session_state["active_topic"] = ""
+        return
+
+    fresh = []
+    for item in stack:
+        if not isinstance(item, dict):
+            continue
+        topic = str(item.get("topic") or "").strip()
+        seen_turn = int(item.get("turn") or 0)
+        if not topic:
+            continue
+        if turn_count - seen_turn <= TOPIC_STACK_TTL_TURNS:
+            fresh.append({"topic": topic, "turn": seen_turn})
+    fresh = fresh[-TOPIC_STACK_MAX_ITEMS:]
+    session_state["topic_stack"] = fresh
+    session_state["active_topic"] = fresh[-1]["topic"] if fresh else ""
+
+
+def _push_topic(session_state: dict, topic: str, turn_count: int) -> None:
+    clean_topic = str(topic or "").strip()
+    if not clean_topic:
+        return
+    stack = list(session_state.get("topic_stack") or [])
+    deduped = [item for item in stack if str(item.get("topic") or "").strip().lower() != clean_topic.lower()]
+    deduped.append({"topic": clean_topic, "turn": turn_count})
+    session_state["topic_stack"] = deduped[-TOPIC_STACK_MAX_ITEMS:]
+    session_state["active_topic"] = clean_topic
+    _prune_topic_stack(session_state, turn_count)
+
+
+def _remember_topic(session_state: dict, text: str, intent_family: str, turn_count: int) -> None:
+    _prune_topic_stack(session_state, turn_count)
+    if intent_family == "followup":
+        active = str(session_state.get("active_topic") or "").strip()
+        if active:
+            _push_topic(session_state, active, turn_count)
+        return
+
+    if intent_family not in {"research", "question", "task", "work", "analysis"}:
+        return
+    candidate = _extract_topic_candidate(text)
+    if candidate:
+        _push_topic(session_state, candidate, turn_count)
+
+
+def _topic_stack_message(session_state: dict, turn_count: int) -> str:
+    _prune_topic_stack(session_state, turn_count)
+    stack = list(session_state.get("topic_stack") or [])
+    if not stack:
+        return "We are not locked to a topic right now."
+
+    lines = [f"Current topic: {stack[-1]['topic']}"]
+    if len(stack) > 1:
+        lines.append("Recent topics:")
+        for entry in reversed(stack[:-1][-3:]):
+            lines.append(f"- {entry['topic']}")
+    return "\n".join(lines)
 
 # -------------------------------------------------
 # Phase Status Endpoint
@@ -399,11 +514,14 @@ async def websocket_endpoint(ws: WebSocket):
         "last_brief_clusters": [],
         "pending_web_open": None,
         "pending_governed_confirm": None,
+        "pending_interpret_confirm": None,
         "analysis_documents": [],
         "last_analysis_doc_id": None,
         "last_intent_family": "",
         "last_mode": "",
         "session_mode_override": "",
+        "topic_stack": [],
+        "active_topic": "",
         "trust_status": failure_ladder.initial_status(),
         "last_calendar_summary": "",
         "last_calendar_events": [],
@@ -452,6 +570,37 @@ async def websocket_endpoint(ws: WebSocket):
                 continue
 
             session_state["last_input_channel"] = channel
+            interpreted_confirmation_consumed = False
+
+            pending_interpret_confirm = session_state.get("pending_interpret_confirm")
+            if pending_interpret_confirm:
+                interpret_decision = SessionRouter.route_pending_web_confirmation(raw_text)
+                if interpret_decision.action == "confirm":
+                    raw_text = str(pending_interpret_confirm.get("interpreted_text") or "").strip()
+                    session_state["pending_interpret_confirm"] = None
+                    interpreted_confirmation_consumed = True
+                    if not raw_text:
+                        await send_chat_message(
+                            ws,
+                            "Thanks. I lost the interpreted command. Please say it again.",
+                        )
+                        await send_chat_done(ws)
+                        continue
+                elif interpret_decision.action == "cancel":
+                    session_state["pending_interpret_confirm"] = None
+                    await send_chat_message(
+                        ws,
+                        "No problem. I canceled that action. Please say it again in your own words.",
+                    )
+                    await send_chat_done(ws)
+                    continue
+                else:
+                    await send_chat_message(
+                        ws,
+                        "I want to make sure I heard you right. Reply 'yes' to continue or 'no' to cancel.",
+                    )
+                    await send_chat_done(ws)
+                    continue
 
             route_context = SessionRouter.normalize_and_route(raw_text, session_state)
             if route_context.is_empty:
@@ -462,6 +611,7 @@ async def websocket_endpoint(ws: WebSocket):
             text = route_context.text
             lowered = route_context.lowered
             decision = route_context.decision
+            _prune_topic_stack(session_state, session_state["turn_count"])
 
             gate = SessionRouter.evaluate_gate(decision, session_state, session_state["turn_count"])
             if gate.handled:
@@ -481,6 +631,46 @@ async def websocket_endpoint(ws: WebSocket):
             if not decision.blocked_by_policy and not decision.needs_clarification:
                 session_state["last_intent_family"] = decision.intent_family
                 session_state["last_mode"] = decision.mode.value
+
+            if (
+                channel == "voice"
+                and not interpreted_confirmation_consumed
+                and route_context.normalization_changed
+                and _is_hard_action_command(text)
+            ):
+                interpreted_text = text.rstrip(".").strip()
+                session_state["pending_interpret_confirm"] = {"interpreted_text": interpreted_text}
+                await send_chat_message(
+                    ws,
+                    (
+                        f'I heard: "{interpreted_text}".\n'
+                        "Should I run that action?\n"
+                        "Reply 'yes' to continue or 'no' to cancel."
+                    ),
+                )
+                await send_chat_done(ws)
+                continue
+
+            if lowered in {
+                "topic stack",
+                "current topic",
+                "what are we discussing",
+                "what topic are we on",
+            }:
+                await send_chat_message(
+                    ws,
+                    _topic_stack_message(session_state, session_state["turn_count"]),
+                )
+                await send_chat_done(ws)
+                continue
+
+            if not decision.blocked_by_policy and not decision.needs_clarification:
+                _remember_topic(
+                    session_state,
+                    text,
+                    decision.intent_family,
+                    session_state["turn_count"],
+                )
 
             if lowered in {
                 "deep mode",
@@ -785,72 +975,130 @@ async def websocket_endpoint(ws: WebSocket):
                 continue
 
             if lowered in {"weather", "weather update", "current weather"}:
-                weather_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "weather"), None)
-                if weather_skill is None:
-                    if not silent_widget_refresh:
-                        await send_chat_message(ws, "Weather is unavailable right now.")
-                    await send_chat_done(ws)
-                    continue
-                weather_result = await weather_skill.handle("weather")
-                if weather_result and weather_result.success:
+                weather_result = await asyncio.to_thread(
+                    governor.handle_governed_invocation,
+                    55,
+                    {"session_id": session_id},
+                )
+                weather_widget = {}
+                if isinstance(weather_result.data, dict):
+                    weather_widget = dict(weather_result.data.get("widget") or {})
+
+                if weather_result.success:
                     message = _structure_long_message(weather_result.message)
                     if not silent_widget_refresh:
                         session_state["last_response"] = message
                         await send_chat_message(ws, message)
-                    if isinstance(weather_result.widget_data, dict):
-                        await ws_send(ws, weather_result.widget_data)
+                    if isinstance(weather_widget, dict) and weather_widget.get("type") == "weather":
+                        await ws_send(ws, weather_widget)
+                    else:
+                        await ws_send(
+                            ws,
+                            {
+                                "type": "weather",
+                                "data": {
+                                    "summary": message,
+                                    "temperature": None,
+                                    "condition": "",
+                                    "location": "Local",
+                                    "forecast": "",
+                                    "alerts": [],
+                                },
+                            },
+                        )
                     session_state["trust_status"] = failure_ladder.record_external_success(
                         session_state.get("trust_status", {}),
                         "Weather update",
                     )
-                    await send_trust_status(ws, session_state["trust_status"])
                 else:
                     if not silent_widget_refresh:
                         await send_chat_message(ws, "Weather is currently unavailable.")
+                    if isinstance(weather_widget, dict) and weather_widget.get("type") == "weather":
+                        await ws_send(ws, weather_widget)
+                    else:
+                        await ws_send(
+                            ws,
+                            {
+                                "type": "weather",
+                                "data": {
+                                    "summary": "Weather is currently unavailable.",
+                                    "temperature": None,
+                                    "condition": "Unavailable",
+                                    "location": "Local",
+                                    "forecast": "",
+                                    "alerts": [],
+                                },
+                            },
+                        )
                     session_state["trust_status"] = failure_ladder.record_failure(
                         session_state.get("trust_status", {}),
                         reason="Temporary issue",
                         external=True,
                         last_external_call="Weather update",
                     )
-                    await send_trust_status(ws, session_state["trust_status"])
+                await send_trust_status(ws, session_state["trust_status"])
                 await send_chat_done(ws)
                 continue
 
             if lowered in {"news", "headlines", "latest news", "top news"}:
-                news_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "news"), None)
-                if news_skill is None:
+                news_result = await asyncio.to_thread(
+                    governor.handle_governed_invocation,
+                    56,
+                    {"session_id": session_id},
+                )
+                news_widget = {}
+                if isinstance(news_result.data, dict):
+                    news_widget = dict(news_result.data.get("widget") or {})
+
+                if news_result.success:
+                    message = _structure_long_message(news_result.message)
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, "News is unavailable right now.")
-                    await send_chat_done(ws)
-                    continue
-                news_result = await news_skill.handle("news")
-                if news_result and news_result.success:
-                    if not silent_widget_refresh:
-                        session_state["last_response"] = news_result.message
-                        await send_chat_message(ws, news_result.message)
-                    if isinstance(news_result.widget_data, dict):
-                        items = list(news_result.widget_data.get("items") or [])
-                        categories = dict(news_result.widget_data.get("categories") or {})
+                        session_state["last_response"] = message
+                        await send_chat_message(ws, message)
+                    if isinstance(news_widget, dict) and news_widget.get("type") == "news":
+                        items = list(news_widget.get("items") or [])
+                        categories = dict(news_widget.get("categories") or {})
                         session_state["news_cache"] = items
                         session_state["news_categories"] = categories
                         session_state["last_sources"] = _extract_sources_from_results(items)
-                        await ws_send(ws, news_result.widget_data)
+                        session_state["last_source_links"] = _extract_source_links(items)
+                        await ws_send(ws, news_widget)
+                    else:
+                        await ws_send(
+                            ws,
+                            {
+                                "type": "news",
+                                "items": [],
+                                "summary": "News is currently unavailable.",
+                                "categories": {},
+                            },
+                        )
                     session_state["trust_status"] = failure_ladder.record_external_success(
                         session_state.get("trust_status", {}),
                         "News update",
                     )
-                    await send_trust_status(ws, session_state["trust_status"])
                 else:
                     if not silent_widget_refresh:
                         await send_chat_message(ws, "News is currently unavailable.")
+                    if isinstance(news_widget, dict) and news_widget.get("type") == "news":
+                        await ws_send(ws, news_widget)
+                    else:
+                        await ws_send(
+                            ws,
+                            {
+                                "type": "news",
+                                "items": [],
+                                "summary": "News is currently unavailable.",
+                                "categories": {},
+                            },
+                        )
                     session_state["trust_status"] = failure_ladder.record_failure(
                         session_state.get("trust_status", {}),
                         reason="Temporary issue",
                         external=True,
                         last_external_call="News update",
                     )
-                    await send_trust_status(ws, session_state["trust_status"])
+                await send_trust_status(ws, session_state["trust_status"])
                 await send_chat_done(ws)
                 continue
 
@@ -864,110 +1112,188 @@ async def websocket_endpoint(ws: WebSocket):
                 "todays calendar",
                 "today's calendar",
             }:
-                calendar_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "calendar"), None)
-                if calendar_skill is None:
-                    await send_chat_message(ws, "Calendar is unavailable right now.")
-                    await send_chat_done(ws)
-                    continue
-                calendar_result = await calendar_skill.handle("calendar")
-                if calendar_result and calendar_result.success:
+                calendar_result = await asyncio.to_thread(
+                    governor.handle_governed_invocation,
+                    57,
+                    {"session_id": session_id},
+                )
+                calendar_widget = {}
+                if isinstance(calendar_result.data, dict):
+                    calendar_widget = dict(calendar_result.data.get("widget") or {})
+                if calendar_result.success:
                     message = _structure_long_message(calendar_result.message)
-                    session_state["last_response"] = message
-                    await send_chat_message(ws, message)
-                    if isinstance(calendar_result.widget_data, dict):
-                        await send_widget_message(ws, "calendar", message, calendar_result.widget_data)
-                        session_state["last_calendar_summary"] = str(
-                            calendar_result.widget_data.get("summary") or ""
-                        )
-                        session_state["last_calendar_events"] = list(
-                            calendar_result.widget_data.get("events") or []
+                    if not silent_widget_refresh:
+                        session_state["last_response"] = message
+                        await send_chat_message(ws, message)
+                    if isinstance(calendar_widget, dict) and calendar_widget.get("type") == "calendar":
+                        await send_widget_message(ws, "calendar", message, calendar_widget)
+                        session_state["last_calendar_summary"] = str(calendar_widget.get("summary") or "")
+                        session_state["last_calendar_events"] = list(calendar_widget.get("events") or [])
+                    else:
+                        await send_widget_message(
+                            ws,
+                            "calendar",
+                            message,
+                            {"type": "calendar", "summary": message, "events": []},
                         )
                 else:
-                    await send_chat_message(ws, "Calendar is currently unavailable.")
+                    if not silent_widget_refresh:
+                        await send_chat_message(ws, "Calendar is currently unavailable.")
+                    if isinstance(calendar_widget, dict) and calendar_widget.get("type") == "calendar":
+                        await send_widget_message(
+                            ws,
+                            "calendar",
+                            "Calendar is currently unavailable.",
+                            calendar_widget,
+                        )
+                    else:
+                        await send_widget_message(
+                            ws,
+                            "calendar",
+                            "Calendar is currently unavailable.",
+                            {"type": "calendar", "summary": "Unavailable.", "events": []},
+                        )
                 await send_chat_done(ws)
                 continue
 
             if lowered in {"system", "system status", "system check"}:
-                system_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "system"), None)
-                if system_skill is None:
-                    await send_chat_message(ws, "System diagnostics are unavailable right now.")
-                    await send_chat_done(ws)
-                    continue
-                system_result = await system_skill.handle("system status")
-                if system_result and system_result.success:
-                    message = _structure_long_message(system_result.message)
-                    session_state["last_response"] = message
-                    await send_chat_message(ws, message)
-                    if isinstance(system_result.widget_data, dict):
-                        await ws_send(ws, system_result.widget_data)
+                action_result = await asyncio.to_thread(
+                    governor.handle_governed_invocation,
+                    32,
+                    {"session_id": session_id},
+                )
+                if action_result.success:
+                    message = _structure_long_message(action_result.message)
+                    if not silent_widget_refresh:
+                        session_state["last_response"] = message
+                        await send_chat_message(ws, message)
+                    await ws_send(
+                        ws,
+                        {
+                            "type": "system",
+                            "summary": message,
+                            "data": dict(action_result.data or {}),
+                        },
+                    )
+                    session_state["trust_status"] = failure_ladder.record_local_success(
+                        session_state.get("trust_status", {})
+                    )
                 else:
-                    await send_chat_message(ws, "System diagnostics are currently unavailable.")
+                    failure_message = "System diagnostics are currently unavailable."
+                    if not silent_widget_refresh:
+                        await send_chat_message(ws, failure_message)
+                    await ws_send(
+                        ws,
+                        {
+                            "type": "system",
+                            "summary": failure_message,
+                            "data": {"status": "unavailable"},
+                        },
+                    )
+                    session_state["trust_status"] = failure_ladder.record_failure(
+                        session_state.get("trust_status", {}),
+                        reason="Temporary issue",
+                        external=False,
+                    )
+                await send_trust_status(ws, session_state["trust_status"])
                 await send_chat_done(ws)
                 continue
 
             if lowered in {"morning", "morning brief", "brief"}:
-                weather_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "weather"), None)
-                news_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "news"), None)
-                system_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "system"), None)
-                calendar_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "calendar"), None)
-
                 weather_summary = "Weather unavailable."
                 news_summary = "No headline summary available right now."
                 system_line = "System status unavailable."
                 calendar_line = "Calendar unavailable."
 
-                if weather_skill is not None:
-                    weather_result = await weather_skill.handle("weather")
-                    if weather_result and weather_result.success:
-                        weather_summary = weather_result.message
-                        if isinstance(weather_result.widget_data, dict):
-                            await ws_send(ws, weather_result.widget_data)
-                        session_state["trust_status"] = failure_ladder.record_external_success(
-                            session_state.get("trust_status", {}),
-                            "Weather update",
+                weather_result = await asyncio.to_thread(
+                    governor.handle_governed_invocation,
+                    55,
+                    {"session_id": session_id},
+                )
+                if weather_result.success:
+                    weather_summary = weather_result.message
+                    if isinstance(weather_result.data, dict):
+                        widget = weather_result.data.get("widget")
+                        if isinstance(widget, dict):
+                            await ws_send(ws, widget)
+                    session_state["trust_status"] = failure_ladder.record_external_success(
+                        session_state.get("trust_status", {}),
+                        "Weather update",
+                    )
+                    await send_trust_status(ws, session_state["trust_status"])
+
+                news_result = await asyncio.to_thread(
+                    governor.handle_governed_invocation,
+                    56,
+                    {"session_id": session_id},
+                )
+                if news_result.success and isinstance(news_result.data, dict):
+                    news_widget = news_result.data.get("widget")
+                    if isinstance(news_widget, dict):
+                        news_summary = str(news_widget.get("summary") or news_summary)
+                        items = list(news_widget.get("items") or [])
+                        session_state["news_cache"] = items
+                        session_state["news_categories"] = dict(news_widget.get("categories") or {})
+                        session_state["last_sources"] = _extract_sources_from_results(items)
+                        session_state["last_source_links"] = _extract_source_links(items)
+                        await ws_send(ws, news_widget)
+                    session_state["trust_status"] = failure_ladder.record_external_success(
+                        session_state.get("trust_status", {}),
+                        "News update",
+                    )
+                    await send_trust_status(ws, session_state["trust_status"])
+
+                system_result = await asyncio.to_thread(
+                    governor.handle_governed_invocation,
+                    32,
+                    {"session_id": session_id},
+                )
+                if system_result.success:
+                    system_line = system_result.message
+                    if isinstance(system_result.data, dict):
+                        await ws_send(
+                            ws,
+                            {
+                                "type": "system",
+                                "summary": system_line,
+                                "data": dict(system_result.data),
+                            },
                         )
-                        await send_trust_status(ws, session_state["trust_status"])
+                    session_state["trust_status"] = failure_ladder.record_local_success(
+                        session_state.get("trust_status", {})
+                    )
+                    await send_trust_status(ws, session_state["trust_status"])
+                else:
+                    session_state["trust_status"] = failure_ladder.record_failure(
+                        session_state.get("trust_status", {}),
+                        reason="Temporary issue",
+                        external=False,
+                    )
+                    await send_trust_status(ws, session_state["trust_status"])
 
-                if news_skill is not None:
-                    news_result = await news_skill.handle("news")
-                    if news_result and news_result.success:
-                        if isinstance(news_result.widget_data, dict):
-                            news_summary = (news_result.widget_data.get("summary") or news_summary)
-                            session_state["news_cache"] = list(news_result.widget_data.get("items") or [])
-                            session_state["news_categories"] = dict(news_result.widget_data.get("categories") or {})
-                            await ws_send(ws, news_result.widget_data)
-                        session_state["trust_status"] = failure_ladder.record_external_success(
-                            session_state.get("trust_status", {}),
-                            "News update",
+                calendar_result = await asyncio.to_thread(
+                    governor.handle_governed_invocation,
+                    57,
+                    {"session_id": session_id},
+                )
+                if calendar_result.success and isinstance(calendar_result.data, dict):
+                    calendar_widget = calendar_result.data.get("widget")
+                    if isinstance(calendar_widget, dict):
+                        calendar_line = str(
+                            calendar_widget.get("summary")
+                            or calendar_result.message
+                            or calendar_line
                         )
-                        await send_trust_status(ws, session_state["trust_status"])
-
-                if system_skill is not None:
-                    system_result = await system_skill.handle("system status")
-                    if system_result and system_result.success:
-                        system_line = system_result.message
-
-                if calendar_skill is not None:
-                    calendar_result = await calendar_skill.handle("calendar")
-                    if calendar_result and calendar_result.success:
-                        if isinstance(calendar_result.widget_data, dict):
-                            calendar_line = str(
-                                calendar_result.widget_data.get("summary")
-                                or calendar_result.message
-                                or calendar_line
-                            )
-                            session_state["last_calendar_summary"] = calendar_line
-                            session_state["last_calendar_events"] = list(
-                                calendar_result.widget_data.get("events") or []
-                            )
-                            await send_widget_message(
-                                ws,
-                                "calendar",
-                                calendar_result.message,
-                                calendar_result.widget_data,
-                            )
-                        else:
-                            calendar_line = calendar_result.message
+                        session_state["last_calendar_summary"] = calendar_line
+                        session_state["last_calendar_events"] = list(calendar_widget.get("events") or [])
+                        await send_widget_message(
+                            ws,
+                            "calendar",
+                            calendar_result.message,
+                            calendar_widget,
+                        )
+                    else:
+                        calendar_line = calendar_result.message
 
                 morning_brief = (
                     "Executive Brief\n"
@@ -1009,17 +1335,21 @@ async def websocket_endpoint(ws: WebSocket):
                     params["text"] = session_state.get("last_response", "")
                 if capability_id in {49, 50, 51, 52, 53}:
                     if not session_state.get("news_cache"):
-                        news_skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "news"), None)
-                        if news_skill is not None:
-                            news_result = await news_skill.handle("news")
-                            if news_result and news_result.success and isinstance(news_result.widget_data, dict):
-                                items = list(news_result.widget_data.get("items") or [])
-                                categories = dict(news_result.widget_data.get("categories") or {})
+                        snapshot_result = await asyncio.to_thread(
+                            governor.handle_governed_invocation,
+                            56,
+                            {"session_id": session_id},
+                        )
+                        if snapshot_result.success and isinstance(snapshot_result.data, dict):
+                            snapshot_widget = snapshot_result.data.get("widget")
+                            if isinstance(snapshot_widget, dict):
+                                items = list(snapshot_widget.get("items") or [])
+                                categories = dict(snapshot_widget.get("categories") or {})
                                 session_state["news_cache"] = items
                                 session_state["news_categories"] = categories
                                 session_state["last_sources"] = _extract_sources_from_results(items)
                                 session_state["last_source_links"] = _extract_source_links(items)
-                                await ws_send(ws, news_result.widget_data)
+                                await ws_send(ws, snapshot_widget)
                     params.setdefault("headlines", list(session_state.get("news_cache") or []))
                     params.setdefault("categories", dict(session_state.get("news_categories") or {}))
                     params.setdefault("topic_history", dict(session_state.get("topic_memory_map") or {}))
@@ -1119,6 +1449,15 @@ async def websocket_endpoint(ws: WebSocket):
                         if isinstance(results, list):
                             session_state["last_sources"] = _extract_sources_from_results(results)
                             session_state["last_source_links"] = _extract_source_links(results)
+                    if isinstance(widget, dict) and widget.get("type") == "news":
+                        items = list(widget.get("items") or [])
+                        session_state["news_cache"] = items
+                        session_state["news_categories"] = dict(widget.get("categories") or {})
+                        session_state["last_sources"] = _extract_sources_from_results(items)
+                        session_state["last_source_links"] = _extract_source_links(items)
+                    if isinstance(widget, dict) and widget.get("type") == "calendar":
+                        session_state["last_calendar_summary"] = str(widget.get("summary") or "")
+                        session_state["last_calendar_events"] = list(widget.get("events") or [])
                     analysis_docs = action_result.data.get("analysis_documents")
                     if isinstance(analysis_docs, list):
                         session_state["analysis_documents"] = analysis_docs
@@ -1155,7 +1494,7 @@ async def websocket_endpoint(ws: WebSocket):
                 if capability_id != 18 and action_result.message:
                     session_state["last_response"] = action_result.message
 
-                if capability_id in {16, 48}:
+                if capability_id in {16, 48, 55, 56}:
                     if action_result.success:
                         session_state["trust_status"] = failure_ladder.record_external_success(
                             session_state.get("trust_status", {}),
@@ -1216,7 +1555,11 @@ async def websocket_endpoint(ws: WebSocket):
                     suggested_actions=message_suggestions,
                 )
 
-                if action_result.success and isinstance(action_result.data, dict) and "widget" in action_result.data:
+                if (
+                    isinstance(action_result.data, dict)
+                    and "widget" in action_result.data
+                    and (action_result.success or capability_id in {55, 56, 57})
+                ):
                     await ws_send(ws, action_result.data["widget"])
                 elif capability_id == 32 and action_result.success and isinstance(action_result.data, dict):
                     await ws_send(ws, {"type": "system", "data": action_result.data, "summary": action_result.message})
@@ -1263,6 +1606,10 @@ async def websocket_endpoint(ws: WebSocket):
             # --- Skills ---
             skill_result = None
             for skill in skill_registry.skills:
+                skill_name = str(getattr(skill, "name", "") or "").strip().lower()
+                if skill_name in {"weather", "news", "calendar", "system"}:
+                    # These flows are capability-routed and must remain governed.
+                    continue
                 if not skill.can_handle(mediated_text):
                     continue
                 if getattr(skill, "name", "") == "general_chat":

@@ -46,3 +46,13 @@ def test_input_normalizer_strips_polite_prefixes():
 def test_input_normalizer_maps_natural_research_phrase():
     normalized = InputNormalizer.normalize("I want to know about AI chip competition")
     assert normalized.lower() == "research ai chip competition."
+
+
+def test_input_normalizer_maps_todays_news_phrase():
+    normalized = InputNormalizer.normalize("what is today's news")
+    assert normalized.lower() == "today's news."
+
+
+def test_input_normalizer_maps_weather_phrase():
+    normalized = InputNormalizer.normalize("what is the weather tomorrow")
+    assert normalized.lower() == "weather forecast."

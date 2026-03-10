@@ -31,6 +31,7 @@ const WS_BASE = `${window.location.protocol === "https:" ? "wss" : "ws"}://${win
 const STORAGE_KEYS = {
   firstRunDone: "nova_first_run_done",
   quickActions: "nova_quick_actions",
+  hintsExpanded: "nova_hints_expanded",
   uiLargeText: "nova_ui_large_text",
   uiHighContrast: "nova_ui_high_contrast",
   uiCompactDensity: "nova_ui_compact_density",
@@ -38,13 +39,25 @@ const STORAGE_KEYS = {
   morningExpanded: "nova_morning_expanded",
 };
 
-const QUICK_ACTIONS = [
-  { id: "brief", label: "Brief", command: "Morning." },
-  { id: "headlines", label: "Headlines", command: "Summarize the news headlines on the dashboard." },
-  { id: "system", label: "System", command: "System status." },
-  { id: "search", label: "Search", command: "search for " },
-  { id: "open", label: "Open", command: "open " },
-];
+const QUICK_ACTIONS_BY_PAGE = {
+  chat: [
+    { id: "chat_brief", label: "Today's brief", command: "today's news" },
+    { id: "chat_weather", label: "Weather", command: "weather" },
+    { id: "chat_search", label: "Search web", command: "search latest technology news" },
+    { id: "chat_system", label: "System status", command: "system status" },
+  ],
+  news: [
+    { id: "news_get", label: "Get headlines", command: "news", stayOnPage: true },
+    { id: "news_sum", label: "Summarize all", command: "summarize all headlines", stayOnPage: true },
+    { id: "news_brief", label: "Daily brief", command: "today's news", stayOnPage: true },
+    { id: "news_compare", label: "Compare stories", command: "compare headlines 1 and 2", stayOnPage: true },
+  ],
+  home: [
+    { id: "home_system", label: "System status", command: "system status", switchToPage: "chat" },
+    { id: "home_calendar", label: "Calendar", command: "calendar", switchToPage: "chat" },
+    { id: "home_weather", label: "Weather", command: "weather", switchToPage: "chat" },
+  ],
+};
 
 const COMMAND_SUGGESTIONS = [
   "morning brief",
@@ -92,7 +105,7 @@ function extractDomain(url) { return (url || "").replace(/^https?:\/\//, "").spl
 function getNewsPreviewLimit() {
   const newsPage = $("page-news");
   const onNewsPage = !!(newsPage && !newsPage.hidden);
-  return onNewsPage ? 6 : 3;
+  return onNewsPage ? 4 : 3;
 }
 
 function formatNewsFreshness(published) {
@@ -169,6 +182,26 @@ function renderMorningPanel() {
   if (news) news.textContent = morningState.news;
   if (system) system.textContent = morningState.system;
   if (calendar) calendar.textContent = morningState.calendar;
+}
+
+function formatSystemSummary(data, summary = "") {
+  const fallback = String(summary || "System status ready.").trim() || "System status ready.";
+  if (!data || typeof data !== "object") return fallback;
+
+  const health = String(data.health_state || "").trim();
+  const cpu = Number(data.cpu_percent);
+  const memory = Number(data.memory_percent);
+  const disk = Number(data.disk_percent);
+  const network = String(data.network_status || "").trim();
+
+  const parts = [];
+  if (health) parts.push(`Health ${health}`);
+  if (Number.isFinite(cpu)) parts.push(`CPU ${Math.round(cpu)}%`);
+  if (Number.isFinite(memory)) parts.push(`Memory ${Math.round(memory)}%`);
+  if (Number.isFinite(disk)) parts.push(`Disk ${Math.round(disk)}%`);
+  if (network) parts.push(`Network ${network}`);
+
+  return parts.length ? parts.join(" · ") : fallback;
 }
 
 function setMorningPanelExpanded(expanded) {
@@ -262,28 +295,82 @@ function maybeMarkReactiveFailureFromText(text) {
   }
 }
 
-function getSelectedQuickActions() {
-  const validIds = new Set(QUICK_ACTIONS.map((action) => action.id));
+function getActivePage() {
+  const stored = localStorage.getItem(STORAGE_KEYS.activePage) || "chat";
+  return QUICK_ACTIONS_BY_PAGE[stored] ? stored : "chat";
+}
+
+function getQuickActionsForPage(page = getActivePage()) {
+  return QUICK_ACTIONS_BY_PAGE[page] || QUICK_ACTIONS_BY_PAGE.chat;
+}
+
+function quickActionsStorageKey(page) {
+  return `${STORAGE_KEYS.quickActions}_${page}`;
+}
+
+function getSelectedQuickActions(page = getActivePage(), actions = getQuickActionsForPage(page)) {
+  const validIds = new Set((actions || []).map((action) => action.id));
   try {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEYS.quickActions) || "[]");
+    const stored = JSON.parse(localStorage.getItem(quickActionsStorageKey(page)) || "[]");
     if (Array.isArray(stored) && stored.length) {
       const filtered = stored.filter((id) => validIds.has(id));
       if (filtered.length) return filtered;
     }
   } catch (_) {}
-  return QUICK_ACTIONS.map((a) => a.id);
+  return (actions || []).map((a) => a.id);
 }
 
-function saveSelectedQuickActions(ids) {
-  localStorage.setItem(STORAGE_KEYS.quickActions, JSON.stringify(ids));
+function saveSelectedQuickActions(page, ids) {
+  localStorage.setItem(quickActionsStorageKey(page), JSON.stringify(ids));
 }
 
-function runQuickAction(action) {
+function isHintsExpanded() {
+  return localStorage.getItem(STORAGE_KEYS.hintsExpanded) === "1";
+}
+
+function setHintsExpanded(expanded) {
+  localStorage.setItem(STORAGE_KEYS.hintsExpanded, expanded ? "1" : "0");
+}
+
+function applyHintsPanelState() {
+  const host = $("quick-actions");
+  const toggle = $("btn-hints-toggle");
+  const expanded = isHintsExpanded();
+  if (host) host.hidden = !expanded;
+  if (toggle) {
+    toggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+    toggle.textContent = expanded ? "Hide ideas" : "Need ideas?";
+  }
+}
+
+function setupHintsPanelToggle() {
+  const toggle = $("btn-hints-toggle");
+  if (!toggle || toggle.dataset.bound === "1") {
+    applyHintsPanelState();
+    return;
+  }
+
+  toggle.dataset.bound = "1";
+  toggle.addEventListener("click", () => {
+    const next = !isHintsExpanded();
+    setHintsExpanded(next);
+    applyHintsPanelState();
+  });
+  applyHintsPanelState();
+}
+
+function runQuickAction(action, page = getActivePage()) {
   const input = $("chat-input");
-  const found = QUICK_ACTIONS.find((a) => a.id === action);
+  const found = getQuickActionsForPage(page).find((a) => a.id === action);
   if (!found) return;
 
-  if (action === "search" || action === "open") {
+  if (found.switchToPage) {
+    setActivePage(found.switchToPage);
+  } else if (!found.stayOnPage && page !== "chat") {
+    setActivePage("chat");
+  }
+
+  if (found.prefill) {
     if (input) {
       input.focus();
       input.value = found.command;
@@ -299,24 +386,37 @@ function renderQuickActions() {
   if (!host) return;
   clear(host);
 
-  const selected = new Set(getSelectedQuickActions());
-  QUICK_ACTIONS.filter((a) => selected.has(a.id)).forEach((action) => {
+  const page = getActivePage();
+  const actions = getQuickActionsForPage(page);
+  const selected = new Set(getSelectedQuickActions(page, actions));
+  actions.filter((a) => selected.has(a.id)).forEach((action) => {
     const btn = document.createElement("button");
     btn.className = "quick-action-btn";
     btn.type = "button";
     btn.dataset.action = action.id;
     btn.textContent = action.label;
-    btn.addEventListener("click", () => runQuickAction(action.id));
+    btn.addEventListener("click", () => runQuickAction(action.id, page));
     host.appendChild(btn);
   });
+
+  const copy = document.querySelector(".hints-copy");
+  if (copy) {
+    const hintText = {
+      chat: "Starter prompts for everyday chat.",
+      news: "News actions for summaries and comparisons.",
+      home: "Status and trust checks for your system.",
+    };
+    copy.textContent = hintText[page] || hintText.chat;
+  }
 
   const customize = document.createElement("button");
   customize.className = "quick-action-btn ghost";
   customize.type = "button";
   customize.id = "btn-quick-customize";
-  customize.textContent = "Customize";
+  customize.textContent = "Choose";
   customize.addEventListener("click", showQuickCustomizeModal);
   host.appendChild(customize);
+  applyHintsPanelState();
 }
 
 function appendConfidenceBadge(container, label) {
@@ -742,43 +842,36 @@ function deriveSuggestedActions(text) {
   if (!msg.trim()) return [];
   if (isOperationalMessage(text)) return [];
 
+  if (msg.includes("not sure what you'd like me to do") || msg.includes("could you clarify")) {
+    return [
+      { label: "Today's brief", command: "today's news" },
+      { label: "Weather", command: "weather" },
+      { label: "Open documents", command: "open documents" },
+    ];
+  }
+
   if (msg.includes("intelligence brief") || msg.includes("daily situation overview") || msg.includes("executive brief")) {
     return [
-      { label: "Deeper analysis", command: "Analyze the top story in more depth." },
-      { label: "Related stories", command: "Show related stories for the top headline." },
-      { label: "Short summary", command: "Summarize this brief in 3 bullets." },
+      { label: "Summarize in bullets", command: "summarize this brief in 3 bullets" },
+      { label: "Expand story 1", command: "expand story 1" },
     ];
   }
 
   if (msg.includes("weather")) {
     return [
-      { label: "Forecast", command: "Show weather forecast." },
-      { label: "Morning brief", command: "Morning brief." },
-      { label: "News", command: "news" },
-    ];
-  }
-
-  if (msg.includes("not sure what you'd like me to do")) {
-    return [
-      { label: "Show brief", command: "brief" },
-      { label: "Search web", command: "search for " },
-      { label: "System status", command: "system status" },
+      { label: "Forecast", command: "show weather forecast" },
+      { label: "Today's brief", command: "today's news" },
     ];
   }
 
   if (msg.includes("news") || msg.includes("headline")) {
     return [
       { label: "Summarize all", command: "summarize all headlines" },
-      { label: "Story tracker", command: "update tracked stories" },
-      { label: "Compare stories", command: "compare stories ai regulation and semiconductor export controls" },
+      { label: "Today's brief", command: "today's news" },
     ];
   }
 
-  return [
-    { label: "Brief", command: "brief" },
-    { label: "Weather", command: "weather" },
-    { label: "News", command: "news" },
-  ];
+  return [];
 }
 
 function renderSuggestedActions(parent, suggestions) {
@@ -878,39 +971,38 @@ function appendAssistantActions(parent, text, suggestedActions = null) {
     ? suggestedActions
     : deriveSuggestedActions(text);
   renderSuggestedActions(parent, suggestions);
+  if (Array.isArray(suggestions) && suggestions.length) return;
 
-  if (operational) {
-    const row = document.createElement("div");
-    row.className = "assistant-actions";
-    const repeatBtn = document.createElement("button");
-    repeatBtn.type = "button";
-    repeatBtn.className = "assistant-action-btn";
-    repeatBtn.textContent = "Repeat";
-    repeatBtn.addEventListener("click", () => injectUserText("Please repeat that.", "text"));
-    row.appendChild(repeatBtn);
-    parent.appendChild(row);
-    return;
-  }
+  const message = String(text || "").trim();
+  if (!message || operational) return;
 
   const row = document.createElement("div");
   row.className = "assistant-actions";
+  let added = 0;
 
-  const actions = [
-    { label: "Repeat", fn: () => injectUserText("Please repeat that.", "text") },
-    { label: "Show sources", fn: () => injectUserText("Show sources for your last response.", "text") },
-  ];
-  actions.splice(1, 0, { label: "Shorter", fn: () => injectUserText("Please give a shorter version of your last response.", "text") });
+  if (message.length > 320) {
+    const shortBtn = document.createElement("button");
+    shortBtn.type = "button";
+    shortBtn.className = "assistant-action-btn";
+    shortBtn.textContent = "Shorter";
+    shortBtn.addEventListener("click", () => injectUserText("Please give a shorter version of your last response.", "text"));
+    row.appendChild(shortBtn);
+    added += 1;
+  }
 
-  actions.forEach((item) => {
-    const b = document.createElement("button");
-    b.type = "button";
-    b.className = "assistant-action-btn";
-    b.textContent = item.label;
-    b.addEventListener("click", item.fn);
-    row.appendChild(b);
-  });
+  if (/source|reuters|bbc|ap|link|reference/i.test(message)) {
+    const sourcesBtn = document.createElement("button");
+    sourcesBtn.type = "button";
+    sourcesBtn.className = "assistant-action-btn";
+    sourcesBtn.textContent = "Show sources";
+    sourcesBtn.addEventListener("click", () => injectUserText("Show sources for your last response.", "text"));
+    row.appendChild(sourcesBtn);
+    added += 1;
+  }
 
-  parent.appendChild(row);
+  if (added > 0) {
+    parent.appendChild(row);
+  }
 }
 
 function appendChatMessage(role, text, messageId = null, confidence = "", suggestedActions = null) {
@@ -1178,7 +1270,7 @@ function renderNewsCategoryGrid(categories) {
 
     const list = document.createElement("ul");
     list.className = "news-category-list";
-    items.slice(0, 3).forEach((item) => {
+    items.slice(0, 2).forEach((item) => {
       const row = document.createElement("li");
       row.className = "news-category-item";
 
@@ -1193,7 +1285,7 @@ function renderNewsCategoryGrid(categories) {
       const itemSummary = document.createElement("p");
       itemSummary.className = "news-category-item-summary";
       const snippet = buildNewsItemSnippet(item);
-      itemSummary.textContent = snippet.length > 180 ? `${snippet.slice(0, 177)}...` : snippet;
+      itemSummary.textContent = snippet.length > 110 ? `${snippet.slice(0, 107)}...` : snippet;
       row.appendChild(itemSummary);
 
       const actions = document.createElement("div");
@@ -1290,7 +1382,8 @@ function renderNewsWidget(items, summaryText = "", categories = null) {
 
     const summary = document.createElement("p");
     summary.className = "news-item-summary";
-    summary.textContent = buildNewsItemSnippet(item);
+    const itemSnippet = buildNewsItemSnippet(item);
+    summary.textContent = itemSnippet.length > 180 ? `${itemSnippet.slice(0, 177)}...` : itemSnippet;
     li.appendChild(summary);
 
     const meta = document.createElement("div");
@@ -1301,14 +1394,6 @@ function renderNewsWidget(items, summaryText = "", categories = null) {
     sourceBadge.textContent = (item.source || "").trim() || "Unknown source";
     meta.appendChild(sourceBadge);
 
-    const domain = extractDomain(item.url);
-    if (domain) {
-      const domainBadge = document.createElement("span");
-      domainBadge.className = "domain-badge";
-      domainBadge.textContent = domain;
-      meta.appendChild(domainBadge);
-    }
-
     const freshness = formatNewsFreshness(item.published);
     if (freshness) {
       const freshnessBadge = document.createElement("span");
@@ -1316,11 +1401,6 @@ function renderNewsWidget(items, summaryText = "", categories = null) {
       freshnessBadge.textContent = freshness;
       meta.appendChild(freshnessBadge);
     }
-
-    const conf = document.createElement("span");
-    conf.className = "confidence-badge";
-    conf.textContent = "Web result";
-    meta.appendChild(conf);
 
     li.appendChild(meta);
 
@@ -1621,6 +1701,8 @@ function hydrateDashboardWidgets() {
 
   safeWSSend({ text: "weather", silent_widget_refresh: true });
   safeWSSend({ text: "news", silent_widget_refresh: true });
+  safeWSSend({ text: "system status", silent_widget_refresh: true });
+  safeWSSend({ text: "calendar", silent_widget_refresh: true });
 }
 
 function connectWebSocket() {
@@ -1647,7 +1729,7 @@ function connectWebSocket() {
         renderSearchWidget(msg.data);
         break;
       case "system":
-        morningState.system = msg.summary || "System status ready.";
+        morningState.system = formatSystemSummary(msg.data || {}, msg.summary || "System status ready.");
         renderMorningPanel();
         break;
       case "calendar":
@@ -1758,6 +1840,7 @@ function setActivePage(page) {
   });
 
   localStorage.setItem(STORAGE_KEYS.activePage, target);
+  renderQuickActions();
 
     if (latestNewsItems.length > 0) {
       renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "", latestNewsCategories);
@@ -2083,46 +2166,49 @@ function showAccessibilityModal() {
 
 function showQuickCustomizeModal() {
   let overlay = $("quick-customize-modal");
-  if (!overlay) {
-    const shell = createModalShell("quick-customize-modal", "Customize quick actions");
-    overlay = shell.overlay;
-    const card = shell.card;
+  if (overlay) overlay.remove();
 
-    const selected = new Set(getSelectedQuickActions());
-    const row = document.createElement("div");
-    row.className = "toggle-grid";
+  const page = getActivePage();
+  const actions = getQuickActionsForPage(page);
 
-    QUICK_ACTIONS.forEach((a) => {
-      const wrap = document.createElement("label");
-      wrap.className = "toggle-item";
-      const cb = document.createElement("input");
-      cb.type = "checkbox";
-      cb.checked = selected.has(a.id);
-      cb.addEventListener("change", () => {
-        if (cb.checked) selected.add(a.id);
-        else selected.delete(a.id);
-      });
+  const shell = createModalShell("quick-customize-modal", "Customize quick actions");
+  overlay = shell.overlay;
+  const card = shell.card;
 
-      const span = document.createElement("span");
-      span.textContent = a.label;
-      wrap.appendChild(cb);
-      wrap.appendChild(span);
-      row.appendChild(wrap);
+  const selected = new Set(getSelectedQuickActions(page, actions));
+  const row = document.createElement("div");
+  row.className = "toggle-grid";
+
+  actions.forEach((a) => {
+    const wrap = document.createElement("label");
+    wrap.className = "toggle-item";
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = selected.has(a.id);
+    cb.addEventListener("change", () => {
+      if (cb.checked) selected.add(a.id);
+      else selected.delete(a.id);
     });
 
-    const save = document.createElement("button");
-    save.type = "button";
-    save.textContent = "Save";
-    save.addEventListener("click", () => {
-      const ids = QUICK_ACTIONS.map((a) => a.id).filter((id) => selected.has(id));
-      saveSelectedQuickActions(ids.length ? ids : QUICK_ACTIONS.map((a) => a.id));
-      renderQuickActions();
-      overlay.style.display = "none";
-    });
+    const span = document.createElement("span");
+    span.textContent = a.label;
+    wrap.appendChild(cb);
+    wrap.appendChild(span);
+    row.appendChild(wrap);
+  });
 
-    card.appendChild(row);
-    card.appendChild(save);
-  }
+  const save = document.createElement("button");
+  save.type = "button";
+  save.textContent = "Save";
+  save.addEventListener("click", () => {
+    const ids = actions.map((a) => a.id).filter((id) => selected.has(id));
+    saveSelectedQuickActions(page, ids.length ? ids : actions.map((a) => a.id));
+    renderQuickActions();
+    overlay.style.display = "none";
+  });
+
+  card.appendChild(row);
+  card.appendChild(save);
 
   overlay.style.display = "flex";
 }
@@ -2160,12 +2246,12 @@ window.addEventListener("DOMContentLoaded", () => {
   renderMorningPanel();
   renderTrustPanel();
   renderQuickActions();
+  setupHintsPanelToggle();
   renderCommandDiscovery();
   setupMorningWidgetToggle();
   setupPageNavigation();
   connectWebSocket();
   ensureSingleWelcomeMessage();
-  showFirstRunGuideIfNeeded();
 
   const sendBtn = $("send-btn");
   if (sendBtn) sendBtn.addEventListener("click", sendChat);

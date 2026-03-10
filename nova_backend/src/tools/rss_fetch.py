@@ -9,7 +9,7 @@ from typing import Dict, Any, List
 from src.governor.network_mediator import NetworkMediator
 from src.governor.exceptions import NetworkMediatorError
 
-NETWORK_CAPABILITY_ID = 16
+NETWORK_CAPABILITY_ID = 56
 SUMMARY_CHAR_LIMIT = 260
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
@@ -145,12 +145,12 @@ async def fetch_rss_headlines(
     try:
         resp = await asyncio.to_thread(
             mediator.request,
-            NETWORK_CAPABILITY_ID,
-            "GET",
-            feed_url,
-            None,   # json_payload
-            None,   # params
-            dict(_RSS_HEADERS),
+            capability_id=NETWORK_CAPABILITY_ID,
+            method="GET",
+            url=feed_url,
+            json_payload=None,
+            params=None,
+            headers=dict(_RSS_HEADERS),
             as_json=False,  # RSS is XML/text
             timeout=timeout,
         )

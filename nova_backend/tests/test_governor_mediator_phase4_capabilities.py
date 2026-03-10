@@ -89,6 +89,30 @@ def test_volume_media_brightness_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 32
 
+    inv = GovernorMediator.parse_governed_invocation("what is the system status")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 32
+
+    inv = GovernorMediator.parse_governed_invocation("weather")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 55
+
+    inv = GovernorMediator.parse_governed_invocation("what is the weather in ann arbor today")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 55
+
+    inv = GovernorMediator.parse_governed_invocation("news")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 56
+
+    inv = GovernorMediator.parse_governed_invocation("what's the news today")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 56
+
+    inv = GovernorMediator.parse_governed_invocation("calendar")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 57
+
 
 
 def test_news_intelligence_parsing():
