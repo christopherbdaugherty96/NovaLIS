@@ -7,6 +7,7 @@ let waitingForAssistant = false;
 let latestNewsItems = [];
 let latestNewsCategories = {};
 let newsExpanded = false;
+let selectedNewsCategoryKey = "";
 let sttState = "READY";
 let mediaRecorder = null;
 let silenceTimer = null;
@@ -1206,25 +1207,153 @@ function updateNewsSummary(summaryText) {
   summary.textContent = (summaryText || "").trim() || "Headlines loaded. Press 'Summarize headlines' for a briefing.";
 }
 
+function getOrderedNewsCategoryKeys(categories) {
+  const safeCategories = (categories && typeof categories === "object") ? categories : {};
+  const preferred = ["global", "political", "breaking", "tech", "markets"];
+  const keys = Object.keys(safeCategories).filter((key) => {
+    const bucket = safeCategories[key];
+    return Array.isArray(bucket && bucket.items) && bucket.items.length > 0;
+  });
+  return [
+    ...preferred.filter((key) => keys.includes(key)),
+    ...keys.filter((key) => !preferred.includes(key)),
+  ];
+}
+
+function renderNewsCategoryPage(categoryKey, bucket) {
+  const page = $("news-category-page");
+  const empty = $("news-category-page-empty");
+  if (!page || !empty) return;
+  clear(page);
+
+  const items = Array.isArray(bucket && bucket.items) ? bucket.items : [];
+  if (!categoryKey || items.length === 0) {
+    empty.hidden = false;
+    page.hidden = true;
+    return;
+  }
+
+  empty.hidden = true;
+  page.hidden = false;
+
+  const titleText = String((bucket && bucket.title) || categoryKey || "").trim() || "News";
+  const summaryText = String((bucket && bucket.summary) || "").trim();
+
+  const header = document.createElement("div");
+  header.className = "news-category-page-header";
+
+  const titleWrap = document.createElement("div");
+  const title = document.createElement("h5");
+  title.className = "news-category-page-title";
+  title.textContent = titleText;
+  titleWrap.appendChild(title);
+  if (summaryText) {
+    const summary = document.createElement("p");
+    summary.className = "news-category-page-summary";
+    summary.textContent = summaryText;
+    titleWrap.appendChild(summary);
+  }
+  header.appendChild(titleWrap);
+
+  const count = document.createElement("span");
+  count.className = "confidence-badge";
+  count.textContent = `${items.length} source${items.length === 1 ? "" : "s"}`;
+  header.appendChild(count);
+
+  page.appendChild(header);
+
+  const categoryActions = document.createElement("div");
+  categoryActions.className = "news-item-actions";
+  const summarizeCategoryBtn = document.createElement("button");
+  summarizeCategoryBtn.type = "button";
+  summarizeCategoryBtn.className = "assistant-action-btn";
+  summarizeCategoryBtn.textContent = "Summarize category";
+  summarizeCategoryBtn.addEventListener("click", () => injectUserText(`summarize ${categoryKey} news`, "text"));
+  categoryActions.appendChild(summarizeCategoryBtn);
+  page.appendChild(categoryActions);
+
+  const list = document.createElement("ul");
+  list.className = "news-category-page-list";
+
+  items.forEach((item) => {
+    const row = document.createElement("li");
+    row.className = "news-category-page-item";
+
+    const link = document.createElement("a");
+    link.className = "news-category-link";
+    link.href = item.url;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
+    link.textContent = String(item.title || "Untitled headline");
+    row.appendChild(link);
+
+    const itemSummary = document.createElement("p");
+    itemSummary.className = "news-category-item-summary";
+    const snippet = buildNewsItemSnippet(item);
+    itemSummary.textContent = snippet.length > 140 ? `${snippet.slice(0, 137)}...` : snippet;
+    row.appendChild(itemSummary);
+
+    const actions = document.createElement("div");
+    actions.className = "news-item-actions";
+    const openSource = document.createElement("a");
+    openSource.className = "assistant-action-btn";
+    openSource.href = item.url;
+    openSource.target = "_blank";
+    openSource.rel = "noopener noreferrer";
+    openSource.textContent = "Open source";
+    actions.appendChild(openSource);
+    const videoUrl = String(item.video_url || "").trim();
+    if (videoUrl) {
+      const watchLink = document.createElement("a");
+      watchLink.className = "assistant-action-btn";
+      watchLink.href = videoUrl;
+      watchLink.target = "_blank";
+      watchLink.rel = "noopener noreferrer";
+      watchLink.textContent = "Watch video";
+      actions.appendChild(watchLink);
+    }
+    row.appendChild(actions);
+
+    const meta = document.createElement("div");
+    meta.className = "news-category-meta";
+    const source = document.createElement("span");
+    source.className = "domain-badge";
+    source.textContent = String((item.source || "").trim() || "Source");
+    meta.appendChild(source);
+    const freshness = formatNewsFreshness(item.published);
+    if (freshness) {
+      const freshnessBadge = document.createElement("span");
+      freshnessBadge.className = "confidence-badge";
+      freshnessBadge.textContent = freshness;
+      meta.appendChild(freshnessBadge);
+    }
+    row.appendChild(meta);
+    list.appendChild(row);
+  });
+
+  page.appendChild(list);
+}
+
 function renderNewsCategoryGrid(categories) {
-  const grid = $("news-category-grid");
-  if (!grid) return;
-  clear(grid);
+  const nav = $("news-category-nav");
+  const countLabel = $("news-category-count");
+  if (!nav) return;
+  clear(nav);
 
   const safeCategories = (categories && typeof categories === "object") ? categories : {};
-  const ordered = ["global", "political", "breaking", "tech", "markets"];
-  const keys = Object.keys(safeCategories);
-  const displayKeys = [
-    ...ordered.filter((key) => keys.includes(key)),
-    ...keys.filter((key) => !ordered.includes(key)),
-  ];
+  const displayKeys = getOrderedNewsCategoryKeys(safeCategories);
+  if (countLabel) {
+    countLabel.textContent = `${displayKeys.length} categor${displayKeys.length === 1 ? "y" : "ies"}`;
+  }
 
   if (displayKeys.length === 0) {
-    const empty = document.createElement("p");
-    empty.className = "news-category-empty";
-    empty.textContent = "Category feeds will appear after headlines load.";
-    grid.appendChild(empty);
+    selectedNewsCategoryKey = "";
+    renderNewsCategoryPage("", null);
     return;
+  }
+
+  if (!selectedNewsCategoryKey || !displayKeys.includes(selectedNewsCategoryKey)) {
+    selectedNewsCategoryKey = displayKeys[0];
   }
 
   displayKeys.forEach((key) => {
@@ -1233,97 +1362,30 @@ function renderNewsCategoryGrid(categories) {
     const titleText = String((bucket && bucket.title) || key || "").trim() || "News";
     if (items.length === 0) return;
 
-    const card = document.createElement("article");
-    card.className = "news-category-card";
+    const tab = document.createElement("button");
+    tab.type = "button";
+    tab.className = "news-category-tab";
+    if (key === selectedNewsCategoryKey) tab.classList.add("active");
 
-    const header = document.createElement("div");
-    header.className = "news-category-header";
-
-    const title = document.createElement("h4");
-    title.className = "news-category-title";
-    title.textContent = titleText;
-    header.appendChild(title);
+    const label = document.createElement("span");
+    label.className = "news-category-title";
+    label.textContent = titleText;
+    tab.appendChild(label);
 
     const count = document.createElement("span");
     count.className = "confidence-badge";
-    count.textContent = `${items.length} source${items.length === 1 ? "" : "s"}`;
-    header.appendChild(count);
-    card.appendChild(header);
+    count.textContent = String(items.length);
+    tab.appendChild(count);
 
-    const summary = String((bucket && bucket.summary) || "").trim();
-    if (summary) {
-      const summaryEl = document.createElement("p");
-      summaryEl.className = "news-category-summary";
-      summaryEl.textContent = summary;
-      card.appendChild(summaryEl);
-    }
-
-    const categoryActions = document.createElement("div");
-    categoryActions.className = "news-item-actions";
-    const summarizeCategoryBtn = document.createElement("button");
-    summarizeCategoryBtn.type = "button";
-    summarizeCategoryBtn.className = "assistant-action-btn";
-    summarizeCategoryBtn.textContent = "Summarize category";
-    summarizeCategoryBtn.addEventListener("click", () => injectUserText(`summarize ${key} news`, "text"));
-    categoryActions.appendChild(summarizeCategoryBtn);
-    card.appendChild(categoryActions);
-
-    const list = document.createElement("ul");
-    list.className = "news-category-list";
-    items.slice(0, 2).forEach((item) => {
-      const row = document.createElement("li");
-      row.className = "news-category-item";
-
-      const link = document.createElement("a");
-      link.className = "news-category-link";
-      link.href = item.url;
-      link.target = "_blank";
-      link.rel = "noopener noreferrer";
-      link.textContent = String(item.title || "Untitled headline");
-      row.appendChild(link);
-
-      const itemSummary = document.createElement("p");
-      itemSummary.className = "news-category-item-summary";
-      const snippet = buildNewsItemSnippet(item);
-      itemSummary.textContent = snippet.length > 110 ? `${snippet.slice(0, 107)}...` : snippet;
-      row.appendChild(itemSummary);
-
-      const actions = document.createElement("div");
-      actions.className = "news-item-actions";
-      const videoUrl = String(item.video_url || "").trim();
-      if (videoUrl) {
-        const watchLink = document.createElement("a");
-        watchLink.className = "assistant-action-btn";
-        watchLink.href = videoUrl;
-        watchLink.target = "_blank";
-        watchLink.rel = "noopener noreferrer";
-        watchLink.textContent = "Watch video";
-        actions.appendChild(watchLink);
-      }
-      if (actions.childNodes.length > 0) {
-        row.appendChild(actions);
-      }
-
-      const meta = document.createElement("div");
-      meta.className = "news-category-meta";
-      const source = document.createElement("span");
-      source.className = "domain-badge";
-      source.textContent = String((item.source || "").trim() || "Source");
-      meta.appendChild(source);
-      const freshness = formatNewsFreshness(item.published);
-      if (freshness) {
-        const freshnessBadge = document.createElement("span");
-        freshnessBadge.className = "confidence-badge";
-        freshnessBadge.textContent = freshness;
-        meta.appendChild(freshnessBadge);
-      }
-      row.appendChild(meta);
-      list.appendChild(row);
+    tab.addEventListener("click", () => {
+      selectedNewsCategoryKey = key;
+      renderNewsCategoryGrid(latestNewsCategories);
     });
 
-    card.appendChild(list);
-    grid.appendChild(card);
+    nav.appendChild(tab);
   });
+
+  renderNewsCategoryPage(selectedNewsCategoryKey, safeCategories[selectedNewsCategoryKey]);
 }
 
 function setNewsExpandButton() {

@@ -100,8 +100,19 @@
               <ul id="news-list"></ul>
             </section>
             <section class="news-categories" aria-label="News categories">
-              <h4 class="news-categories-title">News Channels</h4>
-              <div id="news-category-grid" class="news-category-grid"></div>
+              <div class="news-categories-header">
+                <h4 class="news-categories-title">News Channels</h4>
+                <span id="news-category-count" class="confidence-badge">0 categories</span>
+              </div>
+              <div class="news-categories-shell">
+                <aside class="news-category-sidebar" aria-label="Category list">
+                  <div id="news-category-nav" class="news-category-nav"></div>
+                </aside>
+                <section class="news-category-page" aria-live="polite">
+                  <p id="news-category-page-empty" class="news-category-empty">Category feeds will appear after headlines load.</p>
+                  <div id="news-category-page" class="news-category-page-card" hidden></div>
+                </section>
+              </div>
             </section>
           </div>
         </div>
