@@ -228,7 +228,8 @@ body {
 .message-utility-btn,
 .command-chip,
 .modal-card button,
-.message-expand-btn {
+.message-expand-btn,
+.hints-toggle {
   border-radius: 10px;
   border: 1px solid var(--line);
   background: linear-gradient(180deg, rgba(106, 177, 255, 0.14) 0%, rgba(106, 177, 255, 0.06) 100%);
@@ -299,9 +300,10 @@ body {
 
 .page-news {
   display: grid;
-  grid-template-columns: minmax(0, 1.7fr) minmax(320px, 1fr);
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 0.88fr);
   gap: 10px;
-  align-items: stretch;
+  align-items: start;
+  min-height: 0;
 }
 
 .page-home {
@@ -737,7 +739,7 @@ body {
 .news-layout {
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 1fr);
   gap: 10px;
 }
 
@@ -862,7 +864,7 @@ body {
 
 .brief-widget {
   height: 100%;
-  overflow: hidden;
+  overflow: auto;
 }
 
 .brief-sidebar-empty,
@@ -979,6 +981,31 @@ body {
 
 .quick-actions {
   align-items: center;
+}
+
+.hints-panel {
+  padding: 9px 11px;
+  display: grid;
+  gap: 8px;
+}
+
+.hints-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.hints-toggle {
+  padding: 7px 11px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.hints-copy {
+  font-size: 0.76rem;
+  color: #bfd3f3;
 }
 
 .quick-action-btn {
@@ -1178,9 +1205,9 @@ body {
 
 .orb-shell {
   position: relative;
-  width: min(44vmin, 360px);
+  width: min(36vmin, 280px);
   aspect-ratio: 1;
-  opacity: 0.72;
+  opacity: 0.56;
   transform: translateZ(0);
   animation: orbDrift 34s ease-in-out infinite;
 }
@@ -1317,9 +1344,13 @@ body {
   outline-offset: 2px;
 }
 
-@media (max-width: 1520px) {
+@media (max-width: 1640px) {
   .dashboard {
-    --app-max-width: 1500px;
+    --app-max-width: 1560px;
+  }
+
+  .page-news {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .news-layout {
@@ -1398,5 +1429,10 @@ body {
 
   .quick-action-btn {
     flex: 1 1 calc(33.33% - 6px);
+  }
+
+  .hints-header {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

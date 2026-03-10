@@ -13,8 +13,6 @@ class ResponseStyle(str, Enum):
 
 class InputNormalizer:
 
-    """Deterministic input cleanup for spelling, punctuation, and STT fragments."""
-
     """Deterministic input cleanup for invocation-safe normalization."""
 
     TYPO_REPLACEMENTS = (
@@ -28,6 +26,9 @@ class InputNormalizer:
         (r"\bsumarize\b", "summarize"),
         (r"\bsummarise\b", "summarize"),
         (r"\bcomparision\b", "comparison"),
+        (r"\bartical\b", "article"),
+        (r"\barticals\b", "articles"),
+        (r"\bconfrim\b", "confirm"),
         (r"\bplz\b", "please"),
         (r"\bpls\b", "please"),
         (r"\bu\b", "you"),
@@ -53,6 +54,12 @@ class InputNormalizer:
         (r"\bopen my documents\b", "open documents"),
         (r"\bopen downloads folder\b", "open downloads"),
         (r"\bopen documents folder\b", "open documents"),
+        (r"^\s*(?:what(?:'s| is)\s+)?the weather(?:\s+today)?\s*$", "weather"),
+        (r"^\s*what(?:'s| is)\s+the weather tomorrow\s*$", "weather forecast"),
+        (r"^\s*(?:what(?:'s| is)\s+)?today(?:'s)? news\s*$", "today's news"),
+        (r"^\s*(?:give me|show me)\s+(?:today(?:'s)?\s+)?news\s*$", "today's news"),
+        (r"^\s*read\s+(?:me\s+)?(?:today(?:'s)?\s+)?news\s*$", "today's news"),
+        (r"^\s*summarize\s+(?:all\s+)?(?:today(?:'s)?\s+)?news\s*$", "summarize all headlines"),
         (r"\bwhat(?:'s| is) going on in tech today\b", "daily brief tech"),
         (r"^\s*what(?:'s| is)\s+going on with\s+(.+?)\s+today\s*$", r"research \1 latest updates"),
         (r"^\s*what(?:'s| is)\s+going on with\s+(.+?)\s*$", r"research \1"),
@@ -61,6 +68,7 @@ class InputNormalizer:
         (r"^\s*i need info(?:rmation)? on\s+(.+?)\s*$", r"research \1"),
         (r"^\s*why is\s+(.+?)\s+(?:down|dropping|falling)\s*$", r"research why \1 is down"),
         (r"\babc\s+new\b", "abc news"),
+        (r"\babc\s+news\b", "abc news"),
     )
     POLITE_PREFIX_RE = re.compile(
         r"^\s*(?:hey\s+nova[, ]*|ok(?:ay)?\s+nova[, ]*|nova[, ]*|please[, ]*|"

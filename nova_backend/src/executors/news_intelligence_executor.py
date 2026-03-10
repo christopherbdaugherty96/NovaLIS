@@ -382,23 +382,20 @@ class NewsIntelligenceExecutor:
     def _source_brief_fallback(self, packets: list[dict[str, str]]) -> str:
         lines = [
             "Executive Summary",
-            "Today's major developments were merged from source-page reads across top outlets.",
+            "[Fallback] Source-grounded synthesis is unavailable right now.",
             "",
             "What Happened",
+            "- I could not safely merge source-page evidence for this request.",
+            "",
+            "Cross-Source Signals",
+            "- Not enough verified source excerpts were available.",
+            "",
+            "Source Coverage",
         ]
-        for idx, packet in enumerate(packets[:5], start=1):
-            lines.append(f"- [{idx}] {packet['title']} ({packet['source']})")
-        lines.extend(
-            [
-                "",
-                "Cross-Source Signals",
-                "- Multiple sources report overlapping developments from different angles.",
-                "",
-                "Source Coverage",
-            ]
-        )
         for idx, packet in enumerate(packets[:6], start=1):
             lines.append(f"- [{idx}] {packet['source']} - {packet['url']}")
+        if not packets:
+            lines.append("- No source pages were available in this run.")
         return "\n".join(lines)
 
     def _cluster_label(self, title: str, text: str) -> str:
@@ -460,11 +457,14 @@ class NewsIntelligenceExecutor:
     def _cluster_fallback(self, cluster: dict[str, Any]) -> tuple[str, str]:
         items = cluster.get("items", [])
         if not items:
-            return ("No reliable detail available from the current sources.", "Monitor primary-source updates.")
-        top_title = str(items[0].get("title") or "Top development")
+            return (
+                "[Fallback] I couldn't derive a verified summary from source excerpts.",
+                "Check back after more source details are available.",
+            )
+        top_title = str(items[0].get("title") or "Top development").strip()
         return (
-            f"{top_title}. Related outlets describe similar developments within this topic.",
-            "This development may affect near-term planning and risk posture.",
+            f"[Fallback] {top_title}. I could not complete a source-grounded synthesis for this topic.",
+            "Treat this as a placeholder and review the linked source pages directly.",
         )
 
     def _parse_summary_and_implication(

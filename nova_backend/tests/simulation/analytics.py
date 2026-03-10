@@ -26,6 +26,9 @@ EXPECTED_CAPABILITY_EXECUTOR_MAP: dict[int, str] = {
     52: "story_tracker_executor.execute_update",
     53: "story_tracker_executor.execute_view",
     54: "analysis_document_executor",
+    55: "weather_snapshot_executor",
+    56: "news_snapshot_executor",
+    57: "calendar_snapshot_executor",
 }
 
 REFUSAL_HINTS = (

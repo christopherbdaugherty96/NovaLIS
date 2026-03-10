@@ -5,7 +5,7 @@ Deterministic generated tree diagram derived from allowlisted runtime sources.
 ```mermaid
 graph TD
   Runtime[Phase-4 Runtime]
-  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54]]
+  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57]]
   Runtime --> Disabled[Disabled IDs: []]
   Runtime --> Gov[Governor Guards]
   Gov --> EG[execution_gate: True]
@@ -46,13 +46,21 @@ graph TD
   C53 --> C53A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Caps --> C54[54:analysis_document]
   C54 --> C54A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
+  Caps --> C55[55:weather_snapshot]
+  C55 --> C55A[authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator]
+  Caps --> C56[56:news_snapshot]
+  C56 --> C56A[authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator]
+  Caps --> C57[57:calendar_snapshot]
+  C57 --> C57A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Runtime --> Routes[Skill Routes]
   Routes --> R54_analysis_document[analysis_document -> capability 54]
   Routes --> R21_brightness[brightness -> capability 21]
+  Routes --> R57_calendar_snapshot[calendar_snapshot -> capability 57]
   Routes --> R32_diagnostics[diagnostics -> capability 32]
   Routes --> R49_headline_summary[headline_summary -> capability 49]
   Routes --> R50_intelligence_brief[intelligence_brief -> capability 50]
   Routes --> R20_media[media -> capability 20]
+  Routes --> R56_news_snapshot[news_snapshot -> capability 56]
   Routes --> R22_open_folder[open_folder -> capability 22]
   Routes --> R17_open_website[open_website -> capability 17]
   Routes --> R49_report[report -> capability 49]
@@ -63,6 +71,7 @@ graph TD
   Routes --> R53_story_tracker_view[story_tracker_view -> capability 53]
   Routes --> R51_topic_memory_map[topic_memory_map -> capability 51]
   Routes --> R19_volume[volume -> capability 19]
+  Routes --> R55_weather_snapshot[weather_snapshot -> capability 55]
   Runtime --> LLM[Conversation/Model Surfaces]
   LLM --> src_conversation_deepseek_bridge_py[src/conversation/deepseek_bridge.py uses llm_gateway.generate_chat]
   LLM --> src_skills_general_chat_py[src/skills/general_chat.py uses llm_gateway.generate_chat]
@@ -70,7 +79,7 @@ graph TD
 
 ```text
 Runtime
-|- Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54]
+|- Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57]
 |- Disabled IDs: []
 |- Governor Guards
 |  |- execution_gate: True
@@ -95,13 +104,18 @@ Runtime
 |  |- 52 story_tracker_update (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |  |- 53 story_tracker_view (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |  |- 54 analysis_document (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 55 weather_snapshot (authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 56 news_snapshot (authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 57 calendar_snapshot (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |- Skill -> capability routes
 |  |- analysis_document -> 54
 |  |- brightness -> 21
+|  |- calendar_snapshot -> 57
 |  |- diagnostics -> 32
 |  |- headline_summary -> 49
 |  |- intelligence_brief -> 50
 |  |- media -> 20
+|  |- news_snapshot -> 56
 |  |- open_folder -> 22
 |  |- open_website -> 17
 |  |- report -> 49
@@ -112,6 +126,7 @@ Runtime
 |  |- story_tracker_view -> 53
 |  |- topic_memory_map -> 51
 |  |- volume -> 19
+|  |- weather_snapshot -> 55
 |- Conversation/model surfaces
    |- src/conversation/deepseek_bridge.py -> llm_gateway.generate_chat
    |- src/skills/general_chat.py -> llm_gateway.generate_chat

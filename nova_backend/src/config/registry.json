@@ -4,7 +4,7 @@
   "capability_groups": {
     "speech_output": [18],
     "local_control": [22],
-    "intelligence": [16, 31, 48, 49, 50, 51, 52, 53, 54],
+    "intelligence": [16, 31, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57],
     "diagnostics": [17, 32]
   },
   "profiles": {
@@ -161,6 +161,33 @@
     {
       "id": 54,
       "name": "analysis_document",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": true
+    },
+    {
+      "id": 55,
+      "name": "weather_snapshot",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": true,
+      "enabled": true
+    },
+    {
+      "id": 56,
+      "name": "news_snapshot",
+      "status": "active",
+      "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": true,
+      "enabled": true
+    },
+    {
+      "id": 57,
+      "name": "calendar_snapshot",
       "status": "active",
       "phase_introduced": "4",
       "risk_level": "low",

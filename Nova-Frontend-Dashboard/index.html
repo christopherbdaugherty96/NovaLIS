@@ -61,7 +61,21 @@
           <div id="search-widget" class="widget search-widget" aria-live="polite"></div>
         </section>
 
-        <div id="quick-actions" class="quick-actions" aria-label="Quick actions"></div>
+        <section id="hints-panel" class="widget hints-panel" aria-label="Quick help">
+          <div class="hints-header">
+            <button
+              id="btn-hints-toggle"
+              type="button"
+              class="hints-toggle"
+              aria-expanded="false"
+              aria-controls="quick-actions"
+            >
+              Need ideas?
+            </button>
+            <span class="hints-copy">Open examples only when you want them.</span>
+          </div>
+          <div id="quick-actions" class="quick-actions" aria-label="Quick actions" hidden></div>
+        </section>
 
         <div class="chat-input">
           <div id="thinking-bar" class="thinking-bar" style="display:none"></div>

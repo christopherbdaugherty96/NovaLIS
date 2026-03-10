@@ -7,7 +7,6 @@
     "show topic memory map"
   ],
   "expect": {
-    "capability_sequence": [49, 50, 51]
+    "capability_sequence": [56, 49, 50, 51]
   }
 }
-
