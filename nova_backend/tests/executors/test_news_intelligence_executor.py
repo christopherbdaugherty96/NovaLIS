@@ -122,6 +122,80 @@ def test_summary_filters_by_topic(monkeypatch):
     assert "war in the region" in result.message.lower()
 
 
+def test_summary_filters_by_category(monkeypatch):
+    from src.executors import news_intelligence_executor as mod
+
+    monkeypatch.setattr(
+        mod,
+        "generate_chat",
+        lambda *args, **kwargs: "The article explains a policy update and why it matters right now.",
+    )
+    headlines = [{"title": "General headline", "source": "Reuters", "url": "u1"}]
+    categories = {
+        "tech": {
+            "title": "Tech News",
+            "items": [
+                {
+                    "title": "Chip roadmap expands",
+                    "source": "The Verge",
+                    "url": "https://example.com/tech-1",
+                    "summary": "Vendors expanded long-term AI chip roadmaps.",
+                    "video_url": "https://video.example.com/tech-1.mp4",
+                }
+            ],
+        }
+    }
+    executor = mod.NewsIntelligenceExecutor()
+    result = executor.execute_summary(
+        _request(
+            49,
+            {
+                "selection": "category",
+                "category_key": "tech",
+                "headlines": headlines,
+                "categories": categories,
+            },
+        )
+    )
+    assert result.success is True
+    assert "CATEGORY SUMMARY - Tech News" in result.message
+    assert "Video: https://video.example.com/tech-1.mp4" in result.message
+
+
+def test_summary_uses_source_page_excerpt_when_network_available(monkeypatch):
+    from src.executors import news_intelligence_executor as mod
+
+    prompts: list[str] = []
+
+    def _fake_generate(prompt, **kwargs):
+        prompts.append(prompt)
+        return "The article says exports tightened after new policy guidance."
+
+    monkeypatch.setattr(mod, "generate_chat", _fake_generate)
+
+    class _FakeNetwork:
+        def request(self, capability_id, method, url, **kwargs):
+            del capability_id, method, url, kwargs
+            return {
+                "status_code": 200,
+                "text": "<html><body><p>Exports tightened after policy guidance from regulators.</p></body></html>",
+            }
+
+    headlines = [
+        {
+            "title": "Export policy shifts",
+            "source": "Reuters",
+            "url": "https://example.com/policy",
+            "summary": "Initial headline synopsis.",
+        }
+    ]
+    executor = mod.NewsIntelligenceExecutor(network=_FakeNetwork())
+    result = executor.execute_summary(_request(49, {"indices": [1], "headlines": headlines}))
+    assert result.success is True
+    assert prompts
+    assert "Article excerpt (source-page read):" in prompts[0]
+
+
 def test_summary_all_includes_related_story_comparison(monkeypatch):
     from src.executors import news_intelligence_executor as mod
 

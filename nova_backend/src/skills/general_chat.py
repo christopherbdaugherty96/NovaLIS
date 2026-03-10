@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import asyncio
 import re
-from typing import Dict, Optional, Tuple
+from typing import Any, Dict, Optional, Tuple
 
 from src.conversation.complexity_heuristics import ComplexityHeuristics
 from src.conversation.deepseek_bridge import DeepSeekBridge
@@ -155,6 +155,48 @@ class GeneralChatSkill(BaseSkill):
         style_block = style_blocks.get(style, style_blocks[ResponseStyle.DIRECT])
         return f"{self.BASE_CONTRACT}\n{mode_block}\n{style_block}".strip()
 
+    def _build_ask_user_message(self, mode: str, heuristic_result: Dict[str, Any]) -> str:
+        reason = self.policy.summarize_reason(heuristic_result)
+        if mode == "implementation":
+            return (
+                "I can run a deeper implementation analysis with edge cases and ordered steps. "
+                f"{reason} Continue?"
+            )
+        if mode == "brainstorming":
+            return (
+                "I can run a deeper option analysis with trade-offs and constraints. "
+                f"{reason} Continue?"
+            )
+        return (
+            "I can run a deeper analysis with key drivers, risks, and uncertainties. "
+            f"{reason} Continue?"
+        )
+
+    def _build_thought_data(
+        self,
+        *,
+        query: str,
+        mode: str,
+        context: list[dict],
+        heuristic_result: Dict[str, Any],
+    ) -> Dict[str, Any]:
+        reason_codes = list(heuristic_result.get("reason_codes") or [])
+        return {
+            "decision": "ALLOW_ANALYSIS_ONLY",
+            "reason_codes": reason_codes,
+            "reason_summary": self.policy.summarize_reason(heuristic_result),
+            "suggested_tokens": int(heuristic_result.get("suggested_max_tokens", 800)),
+            "mode": mode,
+            "query_word_count": len((query or "").split()),
+            "context_turns_used": min(len(context or []), 6),
+            "heuristic": {
+                "complexity_score": float(heuristic_result.get("complexity_score", 0.0)),
+                "depth_opportunity_score": float(heuristic_result.get("depth_opportunity_score", 0.0)),
+                "ambiguity_score": float(heuristic_result.get("ambiguity_score", 0.0)),
+                "exploratory_intent": bool(heuristic_result.get("exploratory_intent", False)),
+            },
+        }
+
     def _sanitize_response(self, text: str) -> str:
         clean = (text or "").strip()
         if not clean:
@@ -254,7 +296,7 @@ class GeneralChatSkill(BaseSkill):
 
         if decision == "ASK_USER":
             payload = self.formatter.format_payload(
-                "Would you like a deeper analysis?",
+                self._build_ask_user_message(mode, heuristic_result),
                 mode=mode,
             )
             return SkillResult(
@@ -274,12 +316,12 @@ class GeneralChatSkill(BaseSkill):
             )
 
         if decision == "ALLOW_ANALYSIS_ONLY":
-            thought_data = {
-                "decision": "ALLOW_ANALYSIS_ONLY",
-                "reason_codes": heuristic_result.get("reason_codes", []),
-                "suggested_tokens": heuristic_result.get("suggested_max_tokens", 800),
-                "heuristic": heuristic_result,
-            }
+            thought_data = self._build_thought_data(
+                query=normalized_query,
+                mode=mode,
+                context=context,
+                heuristic_result=heuristic_result,
+            )
             raw = await asyncio.to_thread(
                 self.deepseek.analyze,
                 normalized_query,
@@ -288,6 +330,8 @@ class GeneralChatSkill(BaseSkill):
             )
             safe = self.safety.filter(raw)
             safe = self.analysis_safety.sanitize(safe)
+            if not safe:
+                safe = "I could not produce a stable deep analysis right now. Please retry with a narrower question."
             payload = self.formatter.format_payload(safe, mode=mode)
             return SkillResult(
                 success=True,
@@ -319,7 +363,10 @@ class GeneralChatSkill(BaseSkill):
         local.data = {
             "speakable_text": payload["speakable_text"],
             "structured_data": payload["structured_data"],
-            "escalation": {"escalated": False},
+            "escalation": {
+                "escalated": False,
+                "reason_codes": list(heuristic_result.get("reason_codes") or []),
+            },
         }
         return local
 

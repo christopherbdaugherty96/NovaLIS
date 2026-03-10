@@ -97,7 +97,6 @@ def test_tts_capability_logs_request_and_session_ids(monkeypatch):
     from src.executors import tts_executor as mod
 
     events: list[tuple[str, dict]] = []
-    monkeypatch.setattr(mod, "run_speech_task", lambda task: task())
     monkeypatch.setattr(mod.TTSEngine, "speak", lambda text: None)
     monkeypatch.setattr(
         mod,

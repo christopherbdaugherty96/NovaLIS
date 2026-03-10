@@ -55,7 +55,7 @@ graph TD
   Routes --> R20_media[media -> capability 20]
   Routes --> R22_open_folder[open_folder -> capability 22]
   Routes --> R17_open_website[open_website -> capability 17]
-  Routes --> R48_report[report -> capability 48]
+  Routes --> R49_report[report -> capability 49]
   Routes --> R31_response_verification[response_verification -> capability 31]
   Routes --> R48_search[search -> capability 48]
   Routes --> R18_speak[speak -> capability 18]
@@ -104,7 +104,7 @@ Runtime
 |  |- media -> 20
 |  |- open_folder -> 22
 |  |- open_website -> 17
-|  |- report -> 48
+|  |- report -> 49
 |  |- response_verification -> 31
 |  |- search -> 48
 |  |- speak -> 18

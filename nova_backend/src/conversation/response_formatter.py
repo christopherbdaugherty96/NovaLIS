@@ -18,6 +18,8 @@ class ResponseFormatter:
         "execution successful": "Completed.",
         "volume increased": "Volume up.",
         "volume decreased": "Volume down.",
+        "audio muted": "Muted.",
+        "audio unmuted": "Unmuted.",
         "media paused successfully": "Paused.",
         "the brightness has been adjusted": "Brightness adjusted.",
         "current weather retrieved": "Here's the current weather.",

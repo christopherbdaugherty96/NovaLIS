@@ -4,6 +4,22 @@ PolicyDecision = Literal["ALLOW_ANALYSIS_ONLY", "DENY", "ASK_USER"]
 
 
 class EscalationPolicy:
+    EXPLICIT_DEPTH_HINTS = (
+        "deep",
+        "deeper",
+        "deep dive",
+        "in detail",
+        "detailed",
+        "thorough",
+        "break this down",
+        "explain fully",
+        "full analysis",
+        "compare",
+        "trade-off",
+        "tradeoff",
+        "implication",
+    )
+
     def __init__(self, config: dict | None = None):
         self.config = config or {
             "max_tokens_cap": 900,
@@ -43,14 +59,18 @@ class EscalationPolicy:
         session_state: dict,
     ) -> PolicyDecision:
         """Execution escalation decision only (non-conversational)."""
-        del user_message
+        text = (user_message or "").strip().lower()
 
         # Phase-4 runtime rule: deep analysis is invocation-bound.
         # No heuristic-only auto escalation.
         if not bool(session_state.get("deep_mode_armed", False)):
             return "DENY"
 
-        if not heuristic_result.get("escalate"):
+        explicit_depth_request = any(hint in text for hint in self.EXPLICIT_DEPTH_HINTS)
+        depth_score = float(heuristic_result.get("depth_opportunity_score", 0.0))
+        should_escalate = bool(heuristic_result.get("escalate")) or explicit_depth_request or depth_score >= 0.55
+
+        if not should_escalate:
             return "DENY"
 
         if session_state.get("last_escalation_turn") is not None:
@@ -69,3 +89,16 @@ class EscalationPolicy:
             return "ASK_USER"
 
         return "ALLOW_ANALYSIS_ONLY"
+
+    @staticmethod
+    def summarize_reason(heuristic_result: Dict[str, Any]) -> str:
+        reasons = list(heuristic_result.get("reason_codes") or [])
+        if not reasons:
+            return "Deep mode was explicitly requested."
+
+        readable = [str(code).replace("_", " ").lower() for code in reasons]
+        if len(readable) == 1:
+            return f"Triggered by {readable[0]}."
+        if len(readable) == 2:
+            return f"Triggered by {readable[0]} and {readable[1]}."
+        return f"Triggered by {', '.join(readable[:-1])}, and {readable[-1]}."

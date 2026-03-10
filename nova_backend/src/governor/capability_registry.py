@@ -12,6 +12,13 @@ REGISTRY_PATH = Path(__file__).resolve().parents[1] / "config" / "registry.json"
 EXPECTED_PHASE = "4"
 RUNTIME_PROFILE_ENV = "NOVA_RUNTIME_PROFILE"
 DEFAULT_RUNTIME_PROFILE = "default"
+ALLOWED_AUTHORITY_SCOPES = {"observe", "suggest", "confirm", "automatic"}
+
+
+def _default_authority_scope_for_risk(risk_level: str) -> str:
+    if risk_level in {"confirm", "high"}:
+        return "confirm"
+    return "suggest"
 
 
 @dataclass(frozen=True)
@@ -23,13 +30,17 @@ class Capability:
     risk_level: str             # "low", "confirm", "high"
     data_exfiltration: bool
     enabled: bool               # runtime gate, separate from status
+    authority_scope: str = "suggest"
 
 
 class CapabilityRegistry:
-    """Singleton loader for the capability registry. Fail‑closed if registry unusable."""
+    """Singleton loader for the capability registry. Fail-closed if registry unusable."""
 
     def __init__(self):
+        self._selected_profile: str = DEFAULT_RUNTIME_PROFILE
+        self._selected_groups: tuple[str, ...] = tuple()
         self._capabilities: Dict[int, Capability] = self._load_registry()
+        self._emit_profile_lifecycle_events()
 
     def _load_registry(self) -> Dict[int, Capability]:
         if not REGISTRY_PATH.exists():
@@ -39,10 +50,10 @@ class CapabilityRegistry:
 
         try:
             raw = json.loads(REGISTRY_PATH.read_text(encoding="utf-8"))
-        except Exception as e:
+        except Exception as error:
             raise CapabilityRegistryError(
-                f"Registry malformed (JSON error): {e}. Execution disabled."
-            ) from e
+                f"Registry malformed (JSON error): {error}. Execution disabled."
+            ) from error
 
         # Schema validation
         if raw.get("schema_version") != "1.0":
@@ -51,6 +62,8 @@ class CapabilityRegistry:
             raise CapabilityRegistryError(f"Registry phase mismatch (expected Phase {EXPECTED_PHASE}).")
 
         selected_profile = (os.getenv(RUNTIME_PROFILE_ENV) or DEFAULT_RUNTIME_PROFILE).strip() or DEFAULT_RUNTIME_PROFILE
+        self._selected_profile = selected_profile
+
         profiles = raw.get("profiles") or {}
         if not isinstance(profiles, dict):
             raise CapabilityRegistryError("profiles must be an object when provided.")
@@ -62,16 +75,21 @@ class CapabilityRegistry:
             raise CapabilityRegistryError(f"Invalid profile definition for: {selected_profile}")
 
         capabilities: dict[int, dict] = {}
-        required_fields = {"id", "name", "status", "phase_introduced",
-                           "risk_level", "data_exfiltration", "enabled"}
+        required_fields = {
+            "id",
+            "name",
+            "status",
+            "phase_introduced",
+            "risk_level",
+            "data_exfiltration",
+            "enabled",
+        }
 
         for entry in raw.get("capabilities", []):
-            # Check required fields
             if not required_fields.issubset(entry.keys()):
                 missing = required_fields - entry.keys()
                 raise CapabilityRegistryError(f"Capability missing fields: {missing}")
 
-            # Validate field values
             if entry["risk_level"] not in {"low", "confirm", "high"}:
                 raise CapabilityRegistryError(f"Invalid risk_level: {entry['risk_level']}")
             if entry["status"] not in {"design", "active", "deprecated", "retired"}:
@@ -79,11 +97,19 @@ class CapabilityRegistry:
             if not isinstance(entry["enabled"], bool):
                 raise CapabilityRegistryError("enabled must be a boolean")
 
-            cid = entry["id"]
+            normalized = dict(entry)
+            authority_scope = normalized.get("authority_scope")
+            if authority_scope is None:
+                authority_scope = _default_authority_scope_for_risk(normalized["risk_level"])
+            authority_scope = str(authority_scope).strip().lower()
+            if authority_scope not in ALLOWED_AUTHORITY_SCOPES:
+                raise CapabilityRegistryError(f"Invalid authority_scope: {authority_scope}")
+            normalized["authority_scope"] = authority_scope
+
+            cid = normalized["id"]
             if cid in capabilities:
                 raise CapabilityRegistryError(f"Duplicate capability ID: {cid}")
-
-            capabilities[cid] = dict(entry)
+            capabilities[cid] = normalized
 
         known_ids = set(capabilities.keys())
         capability_groups = raw.get("capability_groups") or {}
@@ -93,6 +119,7 @@ class CapabilityRegistry:
         groups = profile.get("groups") or []
         if not isinstance(groups, list):
             raise CapabilityRegistryError(f"Invalid groups for profile: {selected_profile}")
+        self._selected_groups = tuple(str(group) for group in groups)
 
         for group_name in groups:
             if group_name not in capability_groups:
@@ -103,10 +130,10 @@ class CapabilityRegistry:
             for raw_id in group_ids:
                 try:
                     cid = int(raw_id)
-                except Exception as e:
+                except Exception as error:
                     raise CapabilityRegistryError(
                         f"Invalid capability ID in group {group_name}: {raw_id}"
-                    ) from e
+                    ) from error
                 if cid not in known_ids:
                     raise CapabilityRegistryError(
                         f"Capability group '{group_name}' references unknown ID: {cid}"
@@ -120,8 +147,10 @@ class CapabilityRegistry:
         for cid_raw, enabled_value in enabled_overrides.items():
             try:
                 cid = int(cid_raw)
-            except Exception as e:
-                raise CapabilityRegistryError(f"Invalid capability ID override in profile {selected_profile}: {cid_raw}") from e
+            except Exception as error:
+                raise CapabilityRegistryError(
+                    f"Invalid capability ID override in profile {selected_profile}: {cid_raw}"
+                ) from error
             if cid not in capabilities:
                 raise CapabilityRegistryError(f"Profile {selected_profile} references unknown capability ID: {cid}")
             if not isinstance(enabled_value, bool):
@@ -129,7 +158,40 @@ class CapabilityRegistry:
                     f"Profile {selected_profile} enabled override for capability {cid} must be boolean."
                 )
             capabilities[cid]["enabled"] = enabled_value
+
         return {cid: Capability(**entry) for cid, entry in capabilities.items()}
+
+    def _emit_profile_lifecycle_events(self) -> None:
+        try:
+            from src.ledger.writer import LedgerWriter
+
+            writer = LedgerWriter()
+            enabled_caps = [
+                cap
+                for _, cap in sorted(self._capabilities.items(), key=lambda item: item[0])
+                if cap.enabled and cap.status == "active"
+            ]
+            writer.log_event(
+                "CAPABILITY_PROFILE_APPLIED",
+                {
+                    "runtime_profile": self._selected_profile,
+                    "groups": list(self._selected_groups),
+                    "enabled_capability_ids": [cap.id for cap in enabled_caps],
+                },
+            )
+            for cap in enabled_caps:
+                writer.log_event(
+                    "CAPABILITY_INSTALLED",
+                    {
+                        "capability_id": cap.id,
+                        "capability_name": cap.name,
+                        "risk_level": cap.risk_level,
+                        "authority_scope": cap.authority_scope,
+                    },
+                )
+        except Exception:
+            # Lifecycle telemetry must never block capability loading.
+            return
 
     def get(self, capability_id: int) -> Capability:
         """Return capability; raises if unknown."""
@@ -142,3 +204,7 @@ class CapabilityRegistry:
         """Check if capability is both active and enabled at runtime."""
         cap = self.get(capability_id)
         return cap.status == "active" and cap.enabled
+
+    def authority_scope(self, capability_id: int) -> str:
+        """Return capability authority scope (observe/suggest/confirm/automatic)."""
+        return self.get(capability_id).authority_scope

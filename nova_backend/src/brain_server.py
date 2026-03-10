@@ -38,19 +38,16 @@ from src.conversation.response_formatter import ResponseFormatter
 from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
 from src.trust.failure_ladder import FailureLadder
 from src.trust.trust_contract import normalize_trust_status
-from src.personality.core import PersonalityAgent
-from src.agents.builder import BuilderAgent
-from src.agents.deep_audit import DeepAuditAgent
-from src.agents.architect import StructuralArchitectAgent
-from src.agents.memory import MemoryAgent
-from src.agents.assumption import AssumptionRiskAgent
-from src.agents.contradiction import ContradictionAggregatorAgent
-from src.agents.adversarial import AdversarialExternalizerAgent
 from src.audit.runtime_auditor import (
     run_runtime_truth_audit,
     render_runtime_truth_markdown,
     write_current_runtime_state_snapshot,
 )
+
+if PHASE_4_2_ENABLED:
+    from src.personality.core import PersonalityAgent as _Phase42PersonalityAgent
+else:
+    _Phase42PersonalityAgent = None
 
 # -------------------------------------------------
 # App + Logging
@@ -130,6 +127,17 @@ PHASE42_HELP_COMMANDS = {
 
 
 def _build_phase42_agents() -> list:
+    if not PHASE_4_2_ENABLED:
+        return []
+
+    from src.agents.builder import BuilderAgent
+    from src.agents.deep_audit import DeepAuditAgent
+    from src.agents.architect import StructuralArchitectAgent
+    from src.agents.memory import MemoryAgent
+    from src.agents.assumption import AssumptionRiskAgent
+    from src.agents.contradiction import ContradictionAggregatorAgent
+    from src.agents.adversarial import AdversarialExternalizerAgent
+
     return [
         BuilderAgent(),
         DeepAuditAgent(),
@@ -327,7 +335,15 @@ async def send_widget_message(
     data: Optional[dict] = None
 ) -> None:
     if msg_type == "news" and isinstance(data, dict) and "items" in data:
-        await ws_send(ws, {"type": "news", "items": data["items"], "summary": data.get("summary", "")})
+        await ws_send(
+            ws,
+            {
+                "type": "news",
+                "items": data.get("items", []),
+                "summary": data.get("summary", ""),
+                "categories": data.get("categories", {}),
+            },
+        )
         return
     if msg_type == "calendar" and isinstance(data, dict):
         await ws_send(
@@ -359,7 +375,7 @@ async def websocket_endpoint(ws: WebSocket):
     session_id = str(uuid.uuid4())
     governor = RUNTIME_GOVERNOR
     skill_registry = SkillRegistry(network=governor.network)
-    personality_agent = PersonalityAgent()
+    personality_agent = _Phase42PersonalityAgent() if _Phase42PersonalityAgent is not None else None
     session_context = []
     session_state = {
         "turn_count": 0,
@@ -376,6 +392,7 @@ async def websocket_endpoint(ws: WebSocket):
         "last_clarification_turn": None,
         "last_object": "",
         "news_cache": [],
+        "news_categories": {},
         "last_sources": [],
         "last_source_links": [],
         "topic_memory_map": {},
@@ -465,7 +482,16 @@ async def websocket_endpoint(ws: WebSocket):
                 session_state["last_intent_family"] = decision.intent_family
                 session_state["last_mode"] = decision.mode.value
 
-            if lowered in {"deep mode", "deep analysis", "go deeper", "challenge this", "pressure test this"}:
+            if lowered in {
+                "deep mode",
+                "deep analysis",
+                "deep thought",
+                "deep think",
+                "go deeper",
+                "think deeper",
+                "challenge this",
+                "pressure test this",
+            }:
                 session_state["deep_mode_armed"] = True
                 session_state["deep_mode_last_armed_turn"] = session_state.get("turn_count", 0)
                 await send_chat_message(
@@ -557,7 +583,8 @@ async def websocket_endpoint(ws: WebSocket):
             # --- Escalation handling (fixed: clear pending on all outcomes) ---
             if session_state["pending_escalation"]:
                 pending = session_state["pending_escalation"]
-                if lowered in {"yes"}:
+                escalate_decision = SessionRouter.route_pending_web_confirmation(lowered)
+                if escalate_decision.action == "confirm":
                     original_query, context_snapshot, heuristic_result = pending
                     skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "general_chat"), None)
                     if skill is not None:
@@ -591,7 +618,7 @@ async def websocket_endpoint(ws: WebSocket):
                     session_state["pending_escalation"] = None
                     session_state["deep_mode_armed"] = False
                     continue
-                elif lowered in {"no", "cancel"}:
+                elif escalate_decision.action == "cancel":
                     session_state["pending_escalation"] = None
                     session_state["deep_mode_armed"] = False
                     await send_chat_message(ws, "Okay, keeping it brief.")
@@ -657,6 +684,39 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
+            if lowered in {
+                "confirm model update",
+                "confirm model",
+                "approve model update",
+                "unlock model",
+            }:
+                try:
+                    from src.llm.llm_gateway import (
+                        confirm_model_update as confirm_llm_model_update,
+                        is_model_update_pending as llm_model_update_pending,
+                    )
+
+                    was_pending_update = llm_model_update_pending()
+                    did_confirm_update = confirm_llm_model_update()
+                except Exception:
+                    was_pending_update = False
+                    did_confirm_update = False
+
+                if did_confirm_update:
+                    await send_chat_message(
+                        ws,
+                        "Model update confirmed. Local model responses are now unblocked.",
+                    )
+                elif was_pending_update:
+                    await send_chat_message(
+                        ws,
+                        "Model update confirmation is still pending. Please try again.",
+                    )
+                else:
+                    await send_chat_message(ws, "No model update confirmation is pending.")
+                await send_chat_done(ws)
+                continue
+
             if lowered in PHASE42_HELP_COMMANDS:
                 await send_chat_message(
                     ws,
@@ -670,13 +730,18 @@ async def websocket_endpoint(ws: WebSocket):
 
             phase42_query = _extract_phase42_query(text)
             if phase42_query is not None:
-                if not PHASE_4_2_ENABLED:
+                if not PHASE_4_2_ENABLED or personality_agent is None:
                     await send_chat_message(
                         ws,
                         "Phase 4.2 runtime is locked in this build profile.",
                     )
                     await send_chat_done(ws)
                     continue
+
+                if session_state.get("deep_mode_armed"):
+                    personality_agent.arm_deep_mode()
+                    session_state["deep_mode_armed"] = False
+                    session_state["deep_mode_last_armed_turn"] = session_state.get("turn_count", 0)
 
                 context_payload = {
                     "session_id": session_id,
@@ -766,7 +831,9 @@ async def websocket_endpoint(ws: WebSocket):
                         await send_chat_message(ws, news_result.message)
                     if isinstance(news_result.widget_data, dict):
                         items = list(news_result.widget_data.get("items") or [])
+                        categories = dict(news_result.widget_data.get("categories") or {})
                         session_state["news_cache"] = items
+                        session_state["news_categories"] = categories
                         session_state["last_sources"] = _extract_sources_from_results(items)
                         await ws_send(ws, news_result.widget_data)
                     session_state["trust_status"] = failure_ladder.record_external_success(
@@ -867,6 +934,7 @@ async def websocket_endpoint(ws: WebSocket):
                         if isinstance(news_result.widget_data, dict):
                             news_summary = (news_result.widget_data.get("summary") or news_summary)
                             session_state["news_cache"] = list(news_result.widget_data.get("items") or [])
+                            session_state["news_categories"] = dict(news_result.widget_data.get("categories") or {})
                             await ws_send(ws, news_result.widget_data)
                         session_state["trust_status"] = failure_ladder.record_external_success(
                             session_state.get("trust_status", {}),
@@ -946,11 +1014,14 @@ async def websocket_endpoint(ws: WebSocket):
                             news_result = await news_skill.handle("news")
                             if news_result and news_result.success and isinstance(news_result.widget_data, dict):
                                 items = list(news_result.widget_data.get("items") or [])
+                                categories = dict(news_result.widget_data.get("categories") or {})
                                 session_state["news_cache"] = items
+                                session_state["news_categories"] = categories
                                 session_state["last_sources"] = _extract_sources_from_results(items)
                                 session_state["last_source_links"] = _extract_source_links(items)
                                 await ws_send(ws, news_result.widget_data)
                     params.setdefault("headlines", list(session_state.get("news_cache") or []))
+                    params.setdefault("categories", dict(session_state.get("news_categories") or {}))
                     params.setdefault("topic_history", dict(session_state.get("topic_memory_map") or {}))
                     if capability_id == 50:
                         params.setdefault("brief_clusters", list(session_state.get("last_brief_clusters") or []))
@@ -1241,16 +1312,19 @@ async def websocket_endpoint(ws: WebSocket):
                     if isinstance(widget_data, dict) and "type" in widget_data:
                         if widget_data.get("type") == "news":
                             items = list(widget_data.get("items") or [])
+                            categories = dict(widget_data.get("categories") or {})
                             session_state["news_cache"] = items
+                            session_state["news_categories"] = categories
                             session_state["last_sources"] = _extract_sources_from_results(items)
                             session_state["last_source_links"] = _extract_source_links(items)
                         await ws_send(ws, widget_data)
                 elif skill_name == "news" and isinstance(widget_data, dict):
                     items = widget_data.get("items", [])
                     session_state["news_cache"] = list(items)
+                    session_state["news_categories"] = dict(widget_data.get("categories") or {})
                     session_state["last_sources"] = _extract_sources_from_results(list(items))
                     session_state["last_source_links"] = _extract_source_links(list(items))
-                    await send_widget_message(ws, "news", message, {"items": items})
+                    await send_widget_message(ws, "news", message, widget_data)
                 elif skill_name == "weather" and isinstance(widget_data, dict):
                     await send_widget_message(ws, "weather", message, widget_data)
                 elif skill_name == "calendar" and isinstance(widget_data, dict):

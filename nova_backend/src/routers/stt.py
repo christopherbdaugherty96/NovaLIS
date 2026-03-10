@@ -10,6 +10,8 @@ from src.services.stt_engine import transcribe_bytes
 # No prefix here. Full path is defined explicitly.
 router = APIRouter(tags=["stt"])
 
+STT_MAX_UPLOAD_BYTES = 8 * 1024 * 1024
+
 
 @router.post("/stt/transcribe")
 async def stt_transcribe(audio: UploadFile = File(...)):
@@ -30,13 +32,21 @@ async def stt_transcribe(audio: UploadFile = File(...)):
         # Silence-safe failure
         return JSONResponse({"text": ""})
 
+    if len(audio_bytes) > STT_MAX_UPLOAD_BYTES:
+        return JSONResponse(
+            {
+                "text": "",
+                "error": "That audio clip is too long. Please try a shorter recording.",
+            }
+        )
+
     # Transcribe (stateless, local)
     try:
         text = await transcribe_bytes(audio_bytes, audio.filename)
     except Exception as e:
         # Fail closed, never crash Nova
         print("STT error:", e)
-        return JSONResponse({"text": ""})
+        return JSONResponse({"text": "", "error": "I couldn't process that recording."})
 
     # Return text only
     return JSONResponse({"text": (text or "").strip()})

@@ -13,6 +13,8 @@ NETWORK_CAPABILITY_ID = 16
 SUMMARY_CHAR_LIMIT = 260
 _HTML_TAG_RE = re.compile(r"<[^>]+>")
 _WS_RE = re.compile(r"\s+")
+_VIDEO_HOST_RE = re.compile(r"(youtube\.com|youtu\.be|vimeo\.com|dailymotion\.com)", re.IGNORECASE)
+_VIDEO_EXT_RE = re.compile(r"\.(mp4|m3u8|mov|webm)(?:$|[?#])", re.IGNORECASE)
 _RSS_HEADERS = {
     "Accept": "application/rss+xml, application/atom+xml, application/xml, text/xml;q=0.9, */*;q=0.8",
     "User-Agent": "Nova/1.0 (+https://local.nova)",
@@ -55,8 +57,70 @@ def _append_unique_result(results: list[dict], seen: set[str], payload: dict) ->
             "url": url,
             "summary": _clean_text(payload.get("summary") or ""),
             "published": str(payload.get("published") or "").strip(),
+            "video_url": _clean_url(payload.get("video_url") or ""),
         }
     )
+
+
+def _looks_like_video_url(url: str, mime_type: str = "") -> bool:
+    cleaned = _clean_url(url)
+    if not cleaned:
+        return False
+    lowered_mime = str(mime_type or "").strip().lower()
+    if "video" in lowered_mime:
+        return True
+    if _VIDEO_HOST_RE.search(cleaned):
+        return True
+    if _VIDEO_EXT_RE.search(cleaned):
+        return True
+    return False
+
+
+def _extract_rss_video_url(item: ET.Element) -> str:
+    for enclosure in item.findall("enclosure"):
+        url = _clean_url(enclosure.attrib.get("url") or "")
+        mime_type = str(enclosure.attrib.get("type") or "")
+        if _looks_like_video_url(url, mime_type):
+            return url
+
+    media_ns = "{http://search.yahoo.com/mrss/}"
+    for content in item.findall(f".//{media_ns}content"):
+        url = _clean_url(content.attrib.get("url") or "")
+        medium = str(content.attrib.get("medium") or "")
+        mime_type = str(content.attrib.get("type") or "")
+        if medium.strip().lower() == "video" or _looks_like_video_url(url, mime_type):
+            return url
+
+    for player in item.findall(f".//{media_ns}player"):
+        url = _clean_url(player.attrib.get("url") or "")
+        if _looks_like_video_url(url):
+            return url
+
+    return ""
+
+
+def _extract_atom_video_url(entry: ET.Element, ns: dict[str, str]) -> str:
+    for link_el in entry.findall("atom:link", ns):
+        rel = str(link_el.get("rel") or "").strip().lower()
+        href = _clean_url(link_el.get("href") or "")
+        mime_type = str(link_el.get("type") or "")
+        if rel == "enclosure" and _looks_like_video_url(href, mime_type):
+            return href
+
+    media_ns = "{http://search.yahoo.com/mrss/}"
+    for content in entry.findall(f".//{media_ns}content"):
+        url = _clean_url(content.attrib.get("url") or "")
+        medium = str(content.attrib.get("medium") or "")
+        mime_type = str(content.attrib.get("type") or "")
+        if medium.strip().lower() == "video" or _looks_like_video_url(url, mime_type):
+            return url
+
+    for player in entry.findall(f".//{media_ns}player"):
+        url = _clean_url(player.attrib.get("url") or "")
+        if _looks_like_video_url(url):
+            return url
+
+    return ""
 
 
 async def fetch_rss_headlines(
@@ -111,6 +175,7 @@ async def fetch_rss_headlines(
     for item in items:
         title = item.findtext("title")
         link = item.findtext("link") or item.findtext("guid")
+        video_url = _extract_rss_video_url(item)
         description = (
             item.findtext("description")
             or item.findtext("{http://purl.org/rss/1.0/modules/content/}encoded")
@@ -129,6 +194,7 @@ async def fetch_rss_headlines(
                 "url": str(link or "").strip(),
                 "summary": description,
                 "published": published,
+                "video_url": video_url,
             },
         )
 
@@ -159,6 +225,7 @@ async def fetch_rss_headlines(
                     entry.findtext("atom:updated", default="", namespaces=ns)
                     or entry.findtext("atom:published", default="", namespaces=ns)
                 )
+                video_url = _extract_atom_video_url(entry, ns)
                 _append_unique_result(
                     results,
                     seen_urls,
@@ -167,6 +234,7 @@ async def fetch_rss_headlines(
                         "url": href,
                         "summary": summary,
                         "published": published,
+                        "video_url": video_url,
                     },
                 )
 

@@ -8,6 +8,9 @@ class ComplexityHeuristics:
     DEPTH_KEYWORDS = {
         "analyze",
         "analyse",
+        "explain",
+        "explanation",
+        "why",
         "comparison",
         "compare",
         "contrast",
@@ -20,6 +23,12 @@ class ComplexityHeuristics:
         "scenario",
         "what if",
         "implications",
+        "implication",
+        "root cause",
+        "drivers",
+        "risks",
+        "benefits",
+        "assumptions",
         "detailed",
         "in depth",
         "comprehensive",
@@ -52,6 +61,7 @@ class ComplexityHeuristics:
     }
     EXPLORATORY_CUES = {"ideas", "what if", "explore", "brainstorm", "options", "approach"}
     TRANSACTIONAL_CUES = {"thanks", "thank you", "ok", "okay", "done", "yes", "no", "cancel"}
+    MULTI_PART_CUES = {" and ", " versus ", " vs ", " compared to ", " implications ", " tradeoff ", " trade-off "}
 
     @classmethod
     def assess(cls, user_message: str, context: List[Dict[str, str]]) -> Dict[str, Any]:
@@ -72,6 +82,9 @@ class ComplexityHeuristics:
         if len(context or []) >= 6:
             reasons.append("DEEP_CONTEXT")
 
+        if cls._is_multi_part_query(text, word_count):
+            reasons.append("MULTI_PART_QUERY")
+
         if (user_message or "").strip().lower() in cls.SIMPLE_GREETINGS:
             reasons = []
             escalate = False
@@ -82,17 +95,20 @@ class ComplexityHeuristics:
         depth_score = cls._depth_opportunity_score(text, word_count, reasons)
         exploratory = any(cue in text for cue in cls.EXPLORATORY_CUES)
         transactional = text.strip() in cls.TRANSACTIONAL_CUES
+        complexity_score = cls._complexity_score(word_count, reasons, text)
+        suggested_tokens = cls._suggested_tokens(escalate, reasons, complexity_score)
 
         return {
             "escalate": escalate,
             "reason_codes": reasons,
-            "confidence": 0.8 if escalate else 0.0,
-            "suggested_max_tokens": 800 if escalate else 0,
+            "confidence": min(0.95, 0.65 + (0.08 * len(reasons))) if escalate else 0.0,
+            "suggested_max_tokens": suggested_tokens,
             "ambiguity_score": ambiguity_score,
             "depth_opportunity_score": depth_score,
             "expansion_candidate": depth_score >= 0.45,
             "exploratory_intent": exploratory,
             "transactional_query": transactional,
+            "complexity_score": complexity_score,
             "mode": cls._mode_hint(text),
         }
 
@@ -129,3 +145,38 @@ class ComplexityHeuristics:
         if any(cue in text for cue in ("implement", "write code", "modify", "file", "patch")):
             return "implementation"
         return "casual"
+
+    @classmethod
+    def _is_multi_part_query(cls, text: str, word_count: int) -> bool:
+        if word_count < 10:
+            return False
+        if ";" in text or ":" in text:
+            return True
+        return any(cue in text for cue in cls.MULTI_PART_CUES)
+
+    @classmethod
+    def _complexity_score(cls, word_count: int, reasons: List[str], text: str) -> float:
+        score = 0.1 if word_count > 14 else 0.0
+        score += 0.2 if "LONG_QUERY" in reasons else 0.0
+        score += 0.28 if "DEPTH_KEYWORD" in reasons else 0.0
+        score += 0.25 if "CODE_BLOCK" in reasons else 0.0
+        score += 0.15 if "DEEP_CONTEXT" in reasons else 0.0
+        score += 0.18 if "MULTI_PART_QUERY" in reasons else 0.0
+        if text.count("?") >= 2:
+            score += 0.12
+        return min(score, 1.0)
+
+    @staticmethod
+    def _suggested_tokens(escalate: bool, reasons: List[str], complexity_score: float) -> int:
+        if not escalate:
+            return 0
+        budget = 640
+        if "CODE_BLOCK" in reasons:
+            budget += 140
+        if "DEEP_CONTEXT" in reasons:
+            budget += 90
+        if "LONG_QUERY" in reasons or "MULTI_PART_QUERY" in reasons:
+            budget += 80
+        if complexity_score >= 0.75:
+            budget += 60
+        return min(budget, 980)
