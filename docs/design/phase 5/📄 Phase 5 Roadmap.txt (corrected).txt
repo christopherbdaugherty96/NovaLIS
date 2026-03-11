@@ -129,3 +129,9 @@ Phase 5 components will remain dormant until **Phase 6 (Policy‑Bound Opera
 
 *End of Phase 5 Roadmap*
 
+
+## 2026-03-11 Addendum - Working Context Engine
+
+Reference design for session-scoped task coherence (non-persistent, non-authoritative):
+
+- [NOVA Working Context Engine](NOVA_WORKING_CONTEXT_ENGINE.md)

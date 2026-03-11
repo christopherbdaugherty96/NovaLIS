@@ -113,6 +113,24 @@ def test_volume_media_brightness_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 57
 
+    inv = GovernorMediator.parse_governed_invocation("take a screenshot")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 58
+    assert inv.params["invocation_source"] == "text"
+
+    inv = GovernorMediator.parse_governed_invocation("analyze screen")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 59
+    assert inv.params["invocation_source"] == "text"
+
+    inv = GovernorMediator.parse_governed_invocation("explain this")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 60
+
+    inv = GovernorMediator.parse_governed_invocation("what is this")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 60
+
 
 
 def test_news_intelligence_parsing():

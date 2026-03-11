@@ -9,6 +9,7 @@ Deterministic surface map for skills, conversation modules, and governor capabil
 | brightness | src/governor/governor_mediator.py | governor_capability | no | none | 21 |
 | calendar_snapshot | src/governor/governor_mediator.py | governor_capability | no | none | 57 |
 | diagnostics | src/governor/governor_mediator.py | governor_capability | no | none | 32 |
+| explain_anything | src/governor/governor_mediator.py | governor_capability | no | none | 60 |
 | headline_summary | src/governor/governor_mediator.py | governor_capability | yes | none | 49 |
 | intelligence_brief | src/governor/governor_mediator.py | governor_capability | yes | none | 50 |
 | media | src/governor/governor_mediator.py | governor_capability | no | none | 20 |
@@ -17,6 +18,8 @@ Deterministic surface map for skills, conversation modules, and governor capabil
 | open_website | src/governor/governor_mediator.py | governor_capability | no | none | 17 |
 | report | src/governor/governor_mediator.py | governor_capability | yes | none | 49 |
 | response_verification | src/governor/governor_mediator.py | governor_capability | no | none | 31 |
+| screen_analysis | src/governor/governor_mediator.py | governor_capability | no | none | 59 |
+| screen_capture | src/governor/governor_mediator.py | governor_capability | no | none | 58 |
 | search | src/governor/governor_mediator.py | governor_capability | yes | none | 48 |
 | speak | src/governor/governor_mediator.py | governor_capability | no | none | 18 |
 | story_tracker_update | src/governor/governor_mediator.py | governor_capability | no | none | 52 |

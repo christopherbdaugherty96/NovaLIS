@@ -39,6 +39,7 @@ from src.conversation.response_formatter import ResponseFormatter
 from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
 from src.trust.failure_ladder import FailureLadder
 from src.trust.trust_contract import normalize_trust_status
+from src.working_context.context_store import WorkingContextStore
 from src.audit.runtime_auditor import (
     run_runtime_truth_audit,
     render_runtime_truth_markdown,
@@ -530,6 +531,7 @@ async def websocket_endpoint(ws: WebSocket):
     governor = RUNTIME_GOVERNOR
     skill_registry = SkillRegistry(network=governor.network)
     personality_agent = _Phase42PersonalityAgent() if _Phase42PersonalityAgent is not None else None
+    working_context = WorkingContextStore(session_id=session_id, ledger=governor.ledger)
     session_context = []
     session_state = {
         "turn_count": 0,
@@ -564,6 +566,7 @@ async def websocket_endpoint(ws: WebSocket):
         "trust_status": failure_ladder.initial_status(),
         "last_calendar_summary": "",
         "last_calendar_events": [],
+        "working_context": working_context.to_dict(),
     }
 
     await send_chat_message(ws, "Hello. How can I help?")
@@ -589,9 +592,12 @@ async def websocket_endpoint(ws: WebSocket):
 
             msg_type = (msg.get("type") or "chat").strip().lower()
             channel = (msg.get("channel") or "text").strip().lower()
+            invocation_source = (msg.get("invocation_source") or "").strip().lower()
             silent_widget_refresh = bool(msg.get("silent_widget_refresh"))
             if channel not in {"voice", "text"}:
                 channel = "text"
+            if invocation_source not in {"voice", "text", "ui"}:
+                invocation_source = "voice" if channel == "voice" else "text"
 
             if msg_type == "get_thought":
                 message_id = (msg.get("message_id") or "").strip()
@@ -670,6 +676,12 @@ async def websocket_endpoint(ws: WebSocket):
             if not decision.blocked_by_policy and not decision.needs_clarification:
                 session_state["last_intent_family"] = decision.intent_family
                 session_state["last_mode"] = decision.mode.value
+            working_context.apply_user_turn(
+                text=text,
+                channel=invocation_source,
+                intent_family=decision.intent_family,
+            )
+            session_state["working_context"] = working_context.to_dict()
 
             if (
                 channel == "voice"
@@ -1524,6 +1536,12 @@ async def websocket_endpoint(ws: WebSocket):
                     params.setdefault("analysis_documents", list(session_state.get("analysis_documents") or []))
                     if params.get("doc_id") in {None, ""} and session_state.get("last_analysis_doc_id") is not None:
                         params["doc_id"] = session_state.get("last_analysis_doc_id")
+                if capability_id in {58, 59, 60}:
+                    params["invocation_source"] = invocation_source
+                    if capability_id == 60:
+                        params.setdefault("working_context", working_context.for_explain())
+                    else:
+                        params.setdefault("working_context", working_context.to_dict())
 
                 if capability_id == 22 and not params.get("confirmed"):
                     target = str(params.get("target") or "").strip()
@@ -1573,6 +1591,15 @@ async def websocket_endpoint(ws: WebSocket):
                     if isinstance(action_result.data, dict):
                         track_topic_hint = str(action_result.data.get("track_topic") or "").strip()
                 if isinstance(action_result.data, dict):
+                    context_snapshot = action_result.data.get("context_snapshot")
+                    if isinstance(context_snapshot, dict):
+                        working_context.apply_snapshot(context_snapshot)
+                    working_context_delta = action_result.data.get("working_context_delta")
+                    if isinstance(working_context_delta, dict):
+                        working_context.apply_patch(
+                            working_context_delta,
+                            source=f"capability_{capability_id}",
+                        )
                     topic_map = action_result.data.get("topic_map")
                     if isinstance(topic_map, dict):
                         session_state["topic_memory_map"] = topic_map
@@ -1624,6 +1651,14 @@ async def websocket_endpoint(ws: WebSocket):
                             session_state["last_source_links"] = _extract_source_links(flattened_links)
                     if "document_id" in action_result.data:
                         session_state["last_analysis_doc_id"] = action_result.data.get("document_id")
+                        working_context.set_open_report_id(action_result.data.get("document_id"))
+
+                if capability_id == 22 and action_result.success:
+                    opened_path = str(params.get("path") or "").strip()
+                    if opened_path:
+                        working_context.set_selected_file(opened_path)
+
+                session_state["working_context"] = working_context.to_dict()
 
                 if capability_id != 18 and action_result.message:
                     session_state["last_response"] = action_result.message

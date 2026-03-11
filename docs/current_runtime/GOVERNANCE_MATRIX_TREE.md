@@ -5,7 +5,7 @@ Deterministic generated tree diagram derived from allowlisted runtime sources.
 ```mermaid
 graph TD
   Runtime[Phase-4 Runtime]
-  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57]]
+  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60]]
   Runtime --> Disabled[Disabled IDs: []]
   Runtime --> Gov[Governor Guards]
   Gov --> EG[execution_gate: True]
@@ -52,11 +52,18 @@ graph TD
   C56 --> C56A[authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator]
   Caps --> C57[57:calendar_snapshot]
   C57 --> C57A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
+  Caps --> C58[58:screen_capture]
+  C58 --> C58A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
+  Caps --> C59[59:screen_analysis]
+  C59 --> C59A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
+  Caps --> C60[60:explain_anything]
+  C60 --> C60A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Runtime --> Routes[Skill Routes]
   Routes --> R54_analysis_document[analysis_document -> capability 54]
   Routes --> R21_brightness[brightness -> capability 21]
   Routes --> R57_calendar_snapshot[calendar_snapshot -> capability 57]
   Routes --> R32_diagnostics[diagnostics -> capability 32]
+  Routes --> R60_explain_anything[explain_anything -> capability 60]
   Routes --> R49_headline_summary[headline_summary -> capability 49]
   Routes --> R50_intelligence_brief[intelligence_brief -> capability 50]
   Routes --> R20_media[media -> capability 20]
@@ -65,6 +72,8 @@ graph TD
   Routes --> R17_open_website[open_website -> capability 17]
   Routes --> R49_report[report -> capability 49]
   Routes --> R31_response_verification[response_verification -> capability 31]
+  Routes --> R59_screen_analysis[screen_analysis -> capability 59]
+  Routes --> R58_screen_capture[screen_capture -> capability 58]
   Routes --> R48_search[search -> capability 48]
   Routes --> R18_speak[speak -> capability 18]
   Routes --> R52_story_tracker_update[story_tracker_update -> capability 52]
@@ -79,7 +88,7 @@ graph TD
 
 ```text
 Runtime
-|- Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57]
+|- Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60]
 |- Disabled IDs: []
 |- Governor Guards
 |  |- execution_gate: True
@@ -107,11 +116,15 @@ Runtime
 |  |- 55 weather_snapshot (authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
 |  |- 56 news_snapshot (authority=read_only, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
 |  |- 57 calendar_snapshot (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 58 screen_capture (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 59 screen_analysis (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 60 explain_anything (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |- Skill -> capability routes
 |  |- analysis_document -> 54
 |  |- brightness -> 21
 |  |- calendar_snapshot -> 57
 |  |- diagnostics -> 32
+|  |- explain_anything -> 60
 |  |- headline_summary -> 49
 |  |- intelligence_brief -> 50
 |  |- media -> 20
@@ -120,6 +133,8 @@ Runtime
 |  |- open_website -> 17
 |  |- report -> 49
 |  |- response_verification -> 31
+|  |- screen_analysis -> 59
+|  |- screen_capture -> 58
 |  |- search -> 48
 |  |- speak -> 18
 |  |- story_tracker_update -> 52

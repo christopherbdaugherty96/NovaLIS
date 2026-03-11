@@ -23,6 +23,9 @@ Deterministic capability governance matrix derived from allowlisted runtime sour
 | 55 | weather_snapshot | True | active | 4 | low | True | read_only | False | True | Governor -> NetworkMediator | True | True | True | True | True |
 | 56 | news_snapshot | True | active | 4 | low | True | read_only | False | True | Governor -> NetworkMediator | True | True | True | True | True |
 | 57 | calendar_snapshot | True | active | 4 | low | False | system_action | False | False | Governor -> Executor | True | True | True | True | True |
+| 58 | screen_capture | True | active | 4 | low | False | system_action | False | False | Governor -> Executor | True | True | True | True | True |
+| 59 | screen_analysis | True | active | 4 | low | False | system_action | False | False | Governor -> Executor | True | True | True | True | True |
+| 60 | explain_anything | True | active | 4 | low | False | system_action | False | False | Governor -> Executor | True | True | True | True | True |
 
 ## Derivation notes
 

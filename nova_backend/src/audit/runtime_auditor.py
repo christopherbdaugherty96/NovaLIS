@@ -44,6 +44,7 @@ GOVERNANCE_MATRIX_TREE_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX_TREE.md"
 SKILLS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "skills"
 EXECUTORS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "executors"
 CONVERSATION_DIR = PROJECT_ROOT / "nova_backend" / "src" / "conversation"
+WORKING_CONTEXT_DIR = PROJECT_ROOT / "nova_backend" / "src" / "working_context"
 
 
 def _build_allowlisted_paths() -> frozenset[Path]:
@@ -69,6 +70,7 @@ def _build_allowlisted_paths() -> frozenset[Path]:
     paths.update(SKILLS_DIR.glob("*.py"))
     paths.update(EXECUTORS_DIR.glob("*.py"))
     paths.update(CONVERSATION_DIR.glob("*.py"))
+    paths.update(WORKING_CONTEXT_DIR.glob("*.py"))
     return frozenset(paths)
 
 
@@ -87,6 +89,10 @@ MEDIATOR_TRIGGER_PROBES: dict[str, str] = {
     "weather": "weather_snapshot",
     "news": "news_snapshot",
     "calendar": "calendar_snapshot",
+    "take a screenshot": "screen_capture",
+    "analyze screen": "screen_analysis",
+    "explain this": "explain_anything",
+    "what is this": "explain_anything",
     "volume up": "volume",
     "volume down": "volume",
     "set volume 45": "volume",
