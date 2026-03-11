@@ -48,7 +48,20 @@ class WebpageLaunchExecutor:
             )
 
         try:
-            webbrowser.open(url)
+            opened = bool(webbrowser.open(url))
+            if not opened:
+                self.ledger.log_event(
+                    "WEBPAGE_LAUNCH",
+                    {
+                        "resolved_url": url,
+                        "domain": domain,
+                        "success": False,
+                        "error": "webbrowser.open returned False",
+                        "request_id": request.request_id,
+                        "reason": plan.get("reason"),
+                    },
+                )
+                return ActionResult.failure("Could not open the browser.", request_id=request.request_id)
             self.ledger.log_event(
                 "WEBPAGE_LAUNCH",
                 {

@@ -384,11 +384,11 @@ class SystemControlExecutor:
                 os.startfile(str(path))  # type: ignore[attr-defined]
                 return True
             if system == "Darwin":
-                subprocess.run(["open", str(path)], check=False, timeout=3)
-                return True
+                completed = subprocess.run(["open", str(path)], check=False, timeout=3)
+                return completed.returncode == 0
             if system == "Linux":
-                subprocess.run(["xdg-open", str(path)], check=False, timeout=3)
-                return True
+                completed = subprocess.run(["xdg-open", str(path)], check=False, timeout=3)
+                return completed.returncode == 0
             return False
         except Exception:
             return False
