@@ -13,10 +13,9 @@ import time
 from pathlib import Path
 from typing import Optional, Dict, Any
 
-import requests
-
 from src.ledger.writer import LedgerWriter
 from src.governor.exceptions import LedgerWriteFailed
+from src.llm.model_network_mediator import ModelNetworkMediator, ModelNetworkMediatorError
 from .system_prompt import SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
@@ -32,7 +31,7 @@ def compute_model_hash(
     wrapper_code: str,
     params: Dict[str, Any]
 ) -> str:
-    """Composite hash of all model‑influencing components."""
+    """Composite hash of all model-influencing components."""
     blob = json.dumps(
         {
             "model_digest": model_digest,
@@ -63,9 +62,7 @@ class LLMManager:
         self.base_url = base_url
         self.timeout = 30
         self.system_prompt = SYSTEM_PROMPT
-
-        # Connection pooling
-        self.session = requests.Session()
+        self._network = ModelNetworkMediator()
 
         # Circuit breaker state
         self.failure_count = 0
@@ -90,26 +87,26 @@ class LLMManager:
     def _get_model_digest(self) -> Optional[str]:
         """Query Ollama for the current model's digest (SHA256 of the blob)."""
         try:
-            resp = self.session.post(
-                f"{self.base_url}/api/show",
-                json={"model": self.model},
+            response = self._network.request_json(
+                method="POST",
+                url=f"{self.base_url.rstrip('/')}/api/show",
+                json_payload={"model": self.model},
                 timeout=5,
             )
-            resp.raise_for_status()
-            data = resp.json()
+            data = response.data
             return data.get("digest")
-        except Exception as e:
-            logger.warning(f"Could not fetch model digest: {e}")
+        except Exception as error:
+            logger.warning("Could not fetch model digest: %s", error)
             return None
 
     def _compute_current_hash(self) -> str:
         """Compute hash based on current configuration."""
         model_digest = self._get_model_digest()
         if model_digest is None:
-            model_digest = "unknown"
-            logger.warning("Using fallback digest 'unknown' – inference will block until confirmed.")
-        with open(WRAPPER_PATH, "r", encoding="utf-8") as f:
-            wrapper_code = f.read()
+            model_digest = "fetch_failed"
+            logger.warning("Using fallback digest 'fetch_failed' - inference will block until confirmed.")
+        with open(WRAPPER_PATH, "r", encoding="utf-8") as handle:
+            wrapper_code = handle.read()
         return compute_model_hash(
             model_digest,
             self.system_prompt,
@@ -134,8 +131,8 @@ class LLMManager:
             json.dumps(self.default_options, sort_keys=True).encode()
         ).hexdigest()
         system_prompt_hash = hashlib.sha256(self.system_prompt.encode()).hexdigest()
-        with open(WRAPPER_PATH, "r", encoding="utf-8") as f:
-            wrapper_code = f.read()
+        with open(WRAPPER_PATH, "r", encoding="utf-8") as handle:
+            wrapper_code = handle.read()
         wrapper_hash = hashlib.sha256(wrapper_code.encode()).hexdigest()
         model_digest = self._get_model_digest() or "unknown"
 
@@ -153,15 +150,12 @@ class LLMManager:
         try:
             writer.log_event("MODEL_UPDATED", metadata)
         except LedgerWriteFailed:
-            # Even if ledger fails, we must still block inference
+            # Even if ledger fails, we must still block inference.
             self._block_inference()
             raise
 
     def _check_model_version(self):
         """Compare stored hash with current; block if mismatch or first run."""
-        # Ensure models directory exists for hash file
-        MODEL_HASH_FILE.parent.mkdir(parents=True, exist_ok=True)
-
         computed = self._compute_current_hash()
 
         if MODEL_HASH_FILE.exists():
@@ -169,15 +163,16 @@ class LLMManager:
             if stored == computed:
                 logger.info("Model version OK.")
                 return
-            else:
-                logger.warning("Model version mismatch. Blocking inference.")
-                self._block_inference()
-                self._log_model_updated(stored, computed, user_confirmed=False)
-        else:
-            # First run – block and require confirmation
-            logger.info("First model run – blocking inference until confirmed.")
+
+            logger.warning("Model version mismatch. Blocking inference.")
             self._block_inference()
-            self._log_model_updated(None, computed, user_confirmed=False)
+            self._log_model_updated(stored, computed, user_confirmed=False)
+            return
+
+        # First run - block and require confirmation.
+        logger.info("First model run - blocking inference until confirmed.")
+        self._block_inference()
+        self._log_model_updated(None, computed, user_confirmed=False)
 
     def confirm_model_update(self):
         """
@@ -186,6 +181,8 @@ class LLMManager:
         """
         if not self.inference_blocked:
             return
+
+        MODEL_HASH_FILE.parent.mkdir(parents=True, exist_ok=True)
 
         computed = self._compute_current_hash()
         previous = None
@@ -223,30 +220,33 @@ class LLMManager:
         # Use the provided system prompt or the default
         system = system_prompt or self.system_prompt
 
-        try:
-            # Delegate to the isolated wrapper (only this call affects the version hash)
-            from .inference_wrapper import run_inference
+        messages: list[dict[str, str]] = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
 
-            result = run_inference(
-                base_url=self.base_url,
-                model=self.model,
-                prompt=prompt,
-                system=system,
-                options=self.default_options,
+        try:
+            response = self._network.request_json(
+                method="POST",
+                url=f"{self.base_url.rstrip('/')}/api/chat",
+                json_payload={
+                    "model": self.model,
+                    "messages": messages,
+                    "stream": False,
+                    "options": self.default_options,
+                },
                 timeout=self.timeout,
             )
-            # Success – reset failure count
+            result = ((response.data.get("message") or {}).get("content") or "").strip() or None
+            # Success - reset failure count
             self.failure_count = 0
             return result
 
-        except requests.exceptions.Timeout:
-            logger.warning(f"LLM request timed out after {self.timeout}s")
+        except ModelNetworkMediatorError as error:
+            logger.error("Model network call failed: %s", error)
             self._record_failure()
-        except requests.exceptions.ConnectionError:
-            logger.error("Cannot connect to Ollama. Is it running?")
-            self._record_failure()
-        except Exception as e:
-            logger.error(f"LLM error: {e}")
+        except Exception as error:
+            logger.error("LLM error: %s", error)
             self._record_failure()
 
         return None
@@ -254,10 +254,14 @@ class LLMManager:
     def health_check(self) -> bool:
         """Verify Ollama is running and the model is available."""
         try:
-            resp = self.session.get(f"{self.base_url}/api/tags", timeout=5)
-            if resp.status_code == 200:
-                models = resp.json().get("models", [])
-                return any(self.model in m.get("name", "") for m in models)
+            response = self._network.request_json(
+                method="GET",
+                url=f"{self.base_url.rstrip('/')}/api/tags",
+                timeout=5,
+            )
+            if response.status_code == 200:
+                models = response.data.get("models", [])
+                return any(self.model in model.get("name", "") for model in models)
         except Exception:
             pass
         return False

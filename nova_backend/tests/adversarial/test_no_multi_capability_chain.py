@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from tests.adversarial._helpers import SRC_ROOT, read_text
+
 
 class CaptureLedger:
     def __init__(self):
@@ -38,3 +40,15 @@ def test_single_request_has_single_action_attempt(monkeypatch):
     assert len(attempts) == 1
     assert len(completed) == 1
     assert attempts[0]["capability_id"] == completed[0]["capability_id"]
+
+
+def test_brain_server_does_not_chain_track_cluster_to_track_capability():
+    source = read_text(SRC_ROOT / "brain_server.py")
+    assert "if capability_id == 50 and params.get(\"action\") == \"track_cluster\":" in source
+    assert "governor.handle_governed_invocation,\n                            52" not in source
+
+
+def test_brain_server_uses_shared_web_planner_not_executor_reference():
+    source = read_text(SRC_ROOT / "brain_server.py")
+    assert "plan_web_open(" in source
+    assert "WebpageLaunchExecutor" not in source

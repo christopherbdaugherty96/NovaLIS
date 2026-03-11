@@ -1,6 +1,6 @@
 ﻿# Phase-4 Proof Packet Index
-Date: 2026-03-09
-Commit Base: 23e2af5
+Date: 2026-03-11
+Commit Base: e5a5cfa
 Purpose: Canonical proof packet for Phase-4 closure with current runtime state.
 
 ## Core Governance Proofs
@@ -21,10 +21,11 @@ Purpose: Canonical proof packet for Phase-4 closure with current runtime state.
 2. `PHASE_4_CLOSED_ACT_2026-03-09.md`
 3. `CAPABILITY_20_21_REAL_EXECUTION_PROOF_2026-03-09.md`
 4. `PHASE_4_2_ACTIVE_RUNTIME_PROOF_2026-03-09.md`
-5. `../Phase-4.2/PHASE_4_2_RUNTIME_CERTIFICATION_2026-03-09.md`
-6. `../Phase-4.2/PHASE_4_2_COMPLETION_EVIDENCE_MATRIX_2026-03-09.md`
-7. `../Phase-4.2/PHASE_4_2_CLOSED_ACT_2026-03-09.md`
-8. `../Phase-4.2/PHASE_4_2_RUNTIME_STATUS_ALIGNMENT_AND_HARDENING_2026-03-09.md`
+5. `../Phase-4.2/PHASE_4_2_RUNTIME_CERTIFICATION_2026-03-11.md`
+6. `../Phase-4.2/PHASE_4_2_COMPLETION_EVIDENCE_MATRIX_2026-03-11.md`
+7. `../Phase-4.2/PHASE_4_2_AUTHORITY_REMEDIATION_2026-03-11.md`
+8. `../Phase-4.2/PHASE_4_2_CLOSED_ACT_2026-03-11.md`
+9. `../Phase-4.2/PHASE_4_2_RUNTIME_STATUS_ALIGNMENT_AND_HARDENING_2026-03-09.md`
 
 ## Runtime Cross-References
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
@@ -40,7 +41,7 @@ Purpose: Canonical proof packet for Phase-4 closure with current runtime state.
 - `python scripts/check_frontend_mirror_sync.py`
 
 ## Last Verified Result
-- 228 passed
+- 285 passed
 - Runtime documentation drift check passed
 - Frontend mirror sync check passed
 
