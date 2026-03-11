@@ -1,0 +1,27 @@
+from __future__ import annotations
+
+from pathlib import Path
+
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+SRC_ROOT = PROJECT_ROOT / "src"
+
+
+def _read(path: Path) -> str:
+    return path.read_text(encoding="utf-8", errors="replace")
+
+
+def test_llm_manager_vlock_has_no_direct_requests_usage():
+    source = _read(SRC_ROOT / "llm" / "llm_manager_vlock.py")
+    assert "import requests" not in source
+    assert "requests.Session" not in source
+    assert "ModelNetworkMediator" in source
+    assert "request_json(" in source
+
+
+def test_legacy_web_search_tool_is_sealed_non_network_shim():
+    source = _read(SRC_ROOT / "tools" / "web_search.py")
+    assert "from ddgs import DDGS" not in source
+    assert "import requests" not in source
+    assert "NetworkMediator" not in source
+    assert "return None" in source

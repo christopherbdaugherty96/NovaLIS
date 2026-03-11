@@ -27,6 +27,7 @@ from fastapi.responses import PlainTextResponse
 from src.skill_registry import SkillRegistry
 from src.gates.confirmation_gate import confirmation_gate
 from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
+from src.utils.web_target_planner import plan_web_open
 from src.speech_state import speech_state
 from src.conversation.thought_store import ThoughtStore
 from src.conversation.complexity_heuristics import ComplexityHeuristics
@@ -479,6 +480,44 @@ async def send_widget_message(
 async def send_trust_status(ws: WebSocket, trust_status: dict) -> None:
     await ws_send(ws, {"type": "trust_status", "data": normalize_trust_status(trust_status)})
 
+
+async def invoke_governed_capability(
+    governor: Governor,
+    capability_id: int,
+    params: dict,
+) -> object:
+    return await asyncio.to_thread(
+        governor.handle_governed_invocation,
+        capability_id,
+        params,
+    )
+
+
+async def invoke_governed_text_command(
+    governor: Governor,
+    command_text: str,
+    session_id: str,
+    *,
+    extra_params: Optional[dict] = None,
+) -> tuple[Optional[int], Optional[object]]:
+    """
+    Parse a governed command via GovernorMediator and execute the mapped capability.
+
+    This keeps invocation routing explicit and deterministic while allowing
+    orchestration code to request known governed commands safely.
+    """
+    parsed = GovernorMediator.parse_governed_invocation(command_text, session_id=None)
+    if not isinstance(parsed, Invocation):
+        return None, None
+
+    params = dict(parsed.params)
+    if extra_params:
+        params.update(extra_params)
+    params.setdefault("session_id", session_id)
+
+    action_result = await invoke_governed_capability(governor, parsed.capability_id, params)
+    return parsed.capability_id, action_result
+
 # -------------------------------------------------
 # WebSocket Endpoint
 # -------------------------------------------------
@@ -664,6 +703,39 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
+            if lowered in {
+                "what can you do",
+                "nova what can you do",
+                "show capabilities",
+                "capabilities",
+                "help capabilities",
+            }:
+                capability_message = (
+                    "Nova Capabilities\n"
+                    "Research\n"
+                    "- search for <topic>\n"
+                    "- research <topic>\n"
+                    "- summarize all headlines\n\n"
+                    "Document Analysis\n"
+                    "- create analysis report on <topic>\n"
+                    "- list analysis docs\n"
+                    "- summarize doc <id>\n"
+                    "- explain section <n> of doc <id>\n\n"
+                    "System Diagnostics\n"
+                    "- system status\n"
+                    "- morning brief\n\n"
+                    "Web Search\n"
+                    "- search for <query>\n"
+                    "- open source <n>\n\n"
+                    "Reports\n"
+                    "- daily brief\n"
+                    "- today's news\n"
+                    "- phase42: <analysis request>"
+                )
+                await send_chat_message(ws, capability_message)
+                await send_chat_done(ws)
+                continue
+
             if not decision.blocked_by_policy and not decision.needs_clarification:
                 _remember_topic(
                     session_state,
@@ -707,11 +779,7 @@ async def websocket_endpoint(ws: WebSocket):
                     params = dict(pending_governed_confirm.get("params") or {})
                     params["confirmed"] = True
                     params.setdefault("session_id", session_id)
-                    action_result = await asyncio.to_thread(
-                        governor.handle_governed_invocation,
-                        capability_id,
-                        params,
-                    )
+                    action_result = await invoke_governed_capability(governor, capability_id, params)
                     session_state["pending_governed_confirm"] = None
                     outgoing_message = _structure_long_message(action_result.message)
                     await send_chat_message(ws, outgoing_message)
@@ -732,8 +800,8 @@ async def websocket_endpoint(ws: WebSocket):
             if pending_web_open:
                 web_decision = SessionRouter.route_pending_web_confirmation(lowered)
                 if web_decision.action == "confirm":
-                    action_result = await asyncio.to_thread(
-                        governor.handle_governed_invocation,
+                    action_result = await invoke_governed_capability(
+                        governor,
                         17,
                         {**pending_web_open, "confirmed": True, "session_id": session_id},
                     )
@@ -975,11 +1043,37 @@ async def websocket_endpoint(ws: WebSocket):
                 continue
 
             if lowered in {"weather", "weather update", "current weather"}:
-                weather_result = await asyncio.to_thread(
-                    governor.handle_governed_invocation,
-                    55,
-                    {"session_id": session_id},
+                _, weather_result = await invoke_governed_text_command(
+                    governor,
+                    "weather",
+                    session_id,
                 )
+                if weather_result is None:
+                    if not silent_widget_refresh:
+                        await send_chat_message(ws, "Weather is currently unavailable.")
+                    await ws_send(
+                        ws,
+                        {
+                            "type": "weather",
+                            "data": {
+                                "summary": "Weather is currently unavailable.",
+                                "temperature": None,
+                                "condition": "Unavailable",
+                                "location": "Local",
+                                "forecast": "",
+                                "alerts": [],
+                            },
+                        },
+                    )
+                    session_state["trust_status"] = failure_ladder.record_failure(
+                        session_state.get("trust_status", {}),
+                        reason="Temporary issue",
+                        external=True,
+                        last_external_call="Weather update",
+                    )
+                    await send_trust_status(ws, session_state["trust_status"])
+                    await send_chat_done(ws)
+                    continue
                 weather_widget = {}
                 if isinstance(weather_result.data, dict):
                     weather_widget = dict(weather_result.data.get("widget") or {})
@@ -1041,11 +1135,32 @@ async def websocket_endpoint(ws: WebSocket):
                 continue
 
             if lowered in {"news", "headlines", "latest news", "top news"}:
-                news_result = await asyncio.to_thread(
-                    governor.handle_governed_invocation,
-                    56,
-                    {"session_id": session_id},
+                _, news_result = await invoke_governed_text_command(
+                    governor,
+                    "news",
+                    session_id,
                 )
+                if news_result is None:
+                    if not silent_widget_refresh:
+                        await send_chat_message(ws, "News is currently unavailable.")
+                    await ws_send(
+                        ws,
+                        {
+                            "type": "news",
+                            "items": [],
+                            "summary": "News is currently unavailable.",
+                            "categories": {},
+                        },
+                    )
+                    session_state["trust_status"] = failure_ladder.record_failure(
+                        session_state.get("trust_status", {}),
+                        reason="Temporary issue",
+                        external=True,
+                        last_external_call="News update",
+                    )
+                    await send_trust_status(ws, session_state["trust_status"])
+                    await send_chat_done(ws)
+                    continue
                 news_widget = {}
                 if isinstance(news_result.data, dict):
                     news_widget = dict(news_result.data.get("widget") or {})
@@ -1112,11 +1227,22 @@ async def websocket_endpoint(ws: WebSocket):
                 "todays calendar",
                 "today's calendar",
             }:
-                calendar_result = await asyncio.to_thread(
-                    governor.handle_governed_invocation,
-                    57,
-                    {"session_id": session_id},
+                _, calendar_result = await invoke_governed_text_command(
+                    governor,
+                    "calendar",
+                    session_id,
                 )
+                if calendar_result is None:
+                    if not silent_widget_refresh:
+                        await send_chat_message(ws, "Calendar is currently unavailable.")
+                    await send_widget_message(
+                        ws,
+                        "calendar",
+                        "Calendar is currently unavailable.",
+                        {"type": "calendar", "summary": "Unavailable.", "events": []},
+                    )
+                    await send_chat_done(ws)
+                    continue
                 calendar_widget = {}
                 if isinstance(calendar_result.data, dict):
                     calendar_widget = dict(calendar_result.data.get("widget") or {})
@@ -1157,11 +1283,31 @@ async def websocket_endpoint(ws: WebSocket):
                 continue
 
             if lowered in {"system", "system status", "system check"}:
-                action_result = await asyncio.to_thread(
-                    governor.handle_governed_invocation,
-                    32,
-                    {"session_id": session_id},
+                _, action_result = await invoke_governed_text_command(
+                    governor,
+                    "system status",
+                    session_id,
                 )
+                if action_result is None:
+                    failure_message = "System diagnostics are currently unavailable."
+                    if not silent_widget_refresh:
+                        await send_chat_message(ws, failure_message)
+                    await ws_send(
+                        ws,
+                        {
+                            "type": "system",
+                            "summary": failure_message,
+                            "data": {"status": "unavailable"},
+                        },
+                    )
+                    session_state["trust_status"] = failure_ladder.record_failure(
+                        session_state.get("trust_status", {}),
+                        reason="Temporary issue",
+                        external=False,
+                    )
+                    await send_trust_status(ws, session_state["trust_status"])
+                    await send_chat_done(ws)
+                    continue
                 if action_result.success:
                     message = _structure_long_message(action_result.message)
                     if not silent_widget_refresh:
@@ -1205,12 +1351,12 @@ async def websocket_endpoint(ws: WebSocket):
                 system_line = "System status unavailable."
                 calendar_line = "Calendar unavailable."
 
-                weather_result = await asyncio.to_thread(
-                    governor.handle_governed_invocation,
-                    55,
-                    {"session_id": session_id},
+                _, weather_result = await invoke_governed_text_command(
+                    governor,
+                    "weather",
+                    session_id,
                 )
-                if weather_result.success:
+                if weather_result is not None and weather_result.success:
                     weather_summary = weather_result.message
                     if isinstance(weather_result.data, dict):
                         widget = weather_result.data.get("widget")
@@ -1222,12 +1368,12 @@ async def websocket_endpoint(ws: WebSocket):
                     )
                     await send_trust_status(ws, session_state["trust_status"])
 
-                news_result = await asyncio.to_thread(
-                    governor.handle_governed_invocation,
-                    56,
-                    {"session_id": session_id},
+                _, news_result = await invoke_governed_text_command(
+                    governor,
+                    "news",
+                    session_id,
                 )
-                if news_result.success and isinstance(news_result.data, dict):
+                if news_result is not None and news_result.success and isinstance(news_result.data, dict):
                     news_widget = news_result.data.get("widget")
                     if isinstance(news_widget, dict):
                         news_summary = str(news_widget.get("summary") or news_summary)
@@ -1243,12 +1389,12 @@ async def websocket_endpoint(ws: WebSocket):
                     )
                     await send_trust_status(ws, session_state["trust_status"])
 
-                system_result = await asyncio.to_thread(
-                    governor.handle_governed_invocation,
-                    32,
-                    {"session_id": session_id},
+                _, system_result = await invoke_governed_text_command(
+                    governor,
+                    "system status",
+                    session_id,
                 )
-                if system_result.success:
+                if system_result is not None and system_result.success:
                     system_line = system_result.message
                     if isinstance(system_result.data, dict):
                         await ws_send(
@@ -1271,12 +1417,12 @@ async def websocket_endpoint(ws: WebSocket):
                     )
                     await send_trust_status(ws, session_state["trust_status"])
 
-                calendar_result = await asyncio.to_thread(
-                    governor.handle_governed_invocation,
-                    57,
-                    {"session_id": session_id},
+                _, calendar_result = await invoke_governed_text_command(
+                    governor,
+                    "calendar",
+                    session_id,
                 )
-                if calendar_result.success and isinstance(calendar_result.data, dict):
+                if calendar_result is not None and calendar_result.success and isinstance(calendar_result.data, dict):
                     calendar_widget = calendar_result.data.get("widget")
                     if isinstance(calendar_widget, dict):
                         calendar_line = str(
@@ -1335,12 +1481,16 @@ async def websocket_endpoint(ws: WebSocket):
                     params["text"] = session_state.get("last_response", "")
                 if capability_id in {49, 50, 51, 52, 53}:
                     if not session_state.get("news_cache"):
-                        snapshot_result = await asyncio.to_thread(
-                            governor.handle_governed_invocation,
-                            56,
-                            {"session_id": session_id},
+                        _, snapshot_result = await invoke_governed_text_command(
+                            governor,
+                            "news",
+                            session_id,
                         )
-                        if snapshot_result.success and isinstance(snapshot_result.data, dict):
+                        if (
+                            snapshot_result is not None
+                            and snapshot_result.success
+                            and isinstance(snapshot_result.data, dict)
+                        ):
                             snapshot_widget = snapshot_result.data.get("widget")
                             if isinstance(snapshot_widget, dict):
                                 items = list(snapshot_widget.get("items") or [])
@@ -1395,8 +1545,7 @@ async def websocket_endpoint(ws: WebSocket):
                     continue
 
                 if capability_id == 17:
-                    from src.executors.webpage_launch_executor import WebpageLaunchExecutor
-                    plan = WebpageLaunchExecutor.plan_open(params)
+                    plan = plan_web_open(params)
                     if not plan.get("ok"):
                         await send_chat_message(ws, str(plan.get("message") or "I couldn't resolve that website."))
                         await send_chat_done(ws)
@@ -1418,26 +1567,11 @@ async def websocket_endpoint(ws: WebSocket):
                         await send_chat_done(ws)
                         continue
 
-                action_result = await asyncio.to_thread(
-                    governor.handle_governed_invocation,
-                    capability_id,
-                    params,
-                )
+                action_result = await invoke_governed_capability(governor, capability_id, params)
+                track_topic_hint = ""
                 if capability_id == 50 and params.get("action") == "track_cluster":
-                    track_topic = ""
                     if isinstance(action_result.data, dict):
-                        track_topic = str(action_result.data.get("track_topic") or "").strip()
-                    if track_topic:
-                        action_result = await asyncio.to_thread(
-                            governor.handle_governed_invocation,
-                            52,
-                            {
-                                "action": "track",
-                                "topic": track_topic,
-                                "headlines": list(session_state.get("news_cache") or []),
-                                "session_id": session_id,
-                            },
-                        )
+                        track_topic_hint = str(action_result.data.get("track_topic") or "").strip()
                 if isinstance(action_result.data, dict):
                     topic_map = action_result.data.get("topic_map")
                     if isinstance(topic_map, dict):
@@ -1544,6 +1678,12 @@ async def websocket_endpoint(ws: WebSocket):
                                 {"label": "Summarize all", "command": "summarize all headlines"},
                                 {"label": "Today's brief", "command": "today's news"},
                             ]
+                if capability_id == 50 and track_topic_hint and not message_suggestions:
+                    message_suggestions = [
+                        {"label": "Track this story", "command": f"track story {track_topic_hint}"},
+                        {"label": "Show topic map", "command": "show topic map"},
+                        {"label": "Today's brief", "command": "today's news"},
+                    ]
 
                 outgoing_message = _structure_long_message(action_result.message)
                 if not outgoing_message.strip() and capability_id == 18 and action_result.success:

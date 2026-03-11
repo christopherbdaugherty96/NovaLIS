@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import platform
 import shutil
 import time
@@ -11,6 +12,31 @@ from src.actions.action_result import ActionResult
 
 
 class OSDiagnosticsExecutor:
+    @staticmethod
+    def _enabled_capabilities() -> list[int]:
+        registry_path = Path(__file__).resolve().parents[1] / "config" / "registry.json"
+        try:
+            payload = json.loads(registry_path.read_text(encoding="utf-8"))
+        except Exception:
+            return []
+
+        enabled: list[int] = []
+        for item in payload.get("capabilities", []):
+            if item.get("enabled") is True and item.get("id") is not None:
+                try:
+                    enabled.append(int(item.get("id")))
+                except Exception:
+                    continue
+        return sorted(set(enabled))
+
+    @staticmethod
+    def _model_availability() -> str:
+        try:
+            from src.llm.llm_manager import llm_manager
+            return "available" if bool(llm_manager.health_check()) else "unavailable"
+        except Exception:
+            return "unknown"
+
     @staticmethod
     def _network_status() -> tuple[str, int, str]:
         try:
@@ -62,6 +88,8 @@ class OSDiagnosticsExecutor:
         swap_used_gb = round(swap.used / (1024 ** 3), 2)
         swap_percent = round(float(swap.percent), 1)
         health_state = self._health_state(cpu_percent, memory_percent, disk_percent)
+        enabled_capability_ids = self._enabled_capabilities()
+        model_availability = self._model_availability()
 
         data = {
             "timestamp": int(time.time()),
@@ -86,12 +114,16 @@ class OSDiagnosticsExecutor:
             "network_status": network_status,
             "network_interfaces_up": active_interfaces,
             "network_note": network_note,
+            "active_capabilities_count": len(enabled_capability_ids),
+            "active_capability_ids": enabled_capability_ids,
+            "model_availability": model_availability,
             "health_state": health_state,
         }
         message = (
             f"System checks complete: {health_state}. "
             f"CPU {cpu_percent:.0f}%, memory {memory_percent:.0f}%, "
-            f"disk {disk_percent:.0f}%, network {network_status}."
+            f"disk {disk_percent:.0f}%, network {network_status}, "
+            f"model {model_availability}, capabilities {len(enabled_capability_ids)}."
         )
         return ActionResult.ok(
             message=message,

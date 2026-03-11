@@ -46,6 +46,8 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "chat_weather", label: "Weather", command: "weather" },
     { id: "chat_search", label: "Search web", command: "search latest technology news" },
     { id: "chat_system", label: "System status", command: "system status" },
+    { id: "chat_doc_create", label: "New analysis doc", command: "create analysis report on global technology policy updates" },
+    { id: "chat_doc_list", label: "List analysis docs", command: "list analysis docs" },
   ],
   news: [
     { id: "news_get", label: "Get headlines", command: "news", stayOnPage: true },
@@ -80,6 +82,10 @@ const HELP_EXAMPLES = [
   "morning brief",
   "summarize all headlines",
   "research a topic",
+  "create analysis report on AI regulation",
+  "list analysis docs",
+  "summarize doc 1",
+  "explain section 2 of doc 1",
   "update tracked stories",
   "search for eclipse dates",
   "open youtube",
@@ -1772,7 +1778,6 @@ function connectWebSocket() {
 
   ws.onopen = () => {
     refreshPrivacyPanel();
-    hydrateDashboardWidgets();
   };
 
   ws.onmessage = (e) => {

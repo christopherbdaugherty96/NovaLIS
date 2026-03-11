@@ -1,35 +1,42 @@
 ﻿# Phase 4.5 Proof Packet Index
-Date: 2026-03-09
-Commit Base: 23e2af5
-Purpose: Canonical proof packet for Phase 4.5 closure with active runtime and Phase 5 readiness evidence.
+Date: 2026-03-11
+Commit Base: e5a5cfa
+Status: Closed (Revalidated)
+Purpose: Canonical proof packet for Phase 4.5 closure refresh with current runtime verification.
 
-## Core Runtime Proofs
+## Active Closure Packet (2026-03-11)
+1. `PHASE_4_5_IMPLEMENTATION_MAP_2026-03-11.md`
+2. `PHASE_4_5_RUNTIME_CERTIFICATION_2026-03-11.md`
+3. `PHASE_4_5_COMPLETION_EVIDENCE_MATRIX_2026-03-11.md`
+4. `PHASE_4_5_CLOSED_ACT_2026-03-11.md`
+
+## Historical Closure Snapshots (Audit Trail)
 1. `PHASE_4_5_ACTIVE_RUNTIME_CERTIFICATION_2026-03-09.md`
-2. `CALENDAR_INTEGRATION_PROOF_2026-03-09.md`
-3. `ORB_NON_SEMANTIC_RUNTIME_PROOF_2026-03-09.md`
-
-## Ratification and Closure Addenda
-1. `PHASE_4_5_RATIFICATION_ACT_2026-03-09.md`
-2. `PHASE_4_5_USER_RESEARCH_SUMMARY_2026-03-09.md`
-3. `PHASE_4_5_COMPLETION_EVIDENCE_MATRIX_2026-03-09.md`
-4. `PHASE_4_5_CLOSED_ACT_2026-03-09.md`
-5. `PHASE_4_5_TO_PHASE_5_READINESS_NOTES_2026-03-09.md`
+2. `PHASE_4_5_COMPLETION_EVIDENCE_MATRIX_2026-03-09.md`
+3. `PHASE_4_5_CLOSED_ACT_2026-03-09.md`
+4. `PHASE_4_5_RATIFICATION_ACT_2026-03-09.md`
+5. `PHASE_4_5_USER_RESEARCH_SUMMARY_2026-03-09.md`
+6. `PHASE_4_5_TO_PHASE_5_READINESS_NOTES_2026-03-09.md`
+7. `CALENDAR_INTEGRATION_PROOF_2026-03-09.md`
+8. `ORB_NON_SEMANTIC_RUNTIME_PROOF_2026-03-09.md`
 
 ## Runtime Cross-References
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 - `docs/current_runtime/GOVERNANCE_MATRIX.md`
 - `docs/current_runtime/GOVERNANCE_MATRIX_TREE.md`
-- `docs/design/Phase 4.5/RUNTIME_ALIGNMENT_NOTE_2026-03-07.md`
+- `docs/current_runtime/RUNTIME_FINGERPRINT.md`
+- `docs/PROOFS/Phase-4.2/PHASE_4_2_PROOF_PACKET_INDEX.md`
 
 ## Verification Commands
-- `python -m pytest nova_backend/tests/phase45 -q` (with `PYTHONPATH=nova_backend`)
-- `python -m pytest nova_backend/tests -q` (with `PYTHONPATH=nova_backend`)
+- `python -m pytest -q` (from `nova_backend`)
+- `python -m pytest -q tests/phase45` (from `nova_backend`)
 - `python scripts/generate_runtime_docs.py`
 - `python scripts/check_runtime_doc_drift.py`
 - `python scripts/check_frontend_mirror_sync.py`
 
 ## Last Verified Result
-- `nova_backend/tests/phase45`: `9 passed`
-- Full backend suite: `228 passed`
+- `nova_backend/tests/phase45`: `12 passed`
+- Targeted Phase 4.5 safety bundle: `26 passed`
+- Full backend suite: `285 passed`
 - Runtime documentation drift check passed
 - Frontend mirror sync check passed
