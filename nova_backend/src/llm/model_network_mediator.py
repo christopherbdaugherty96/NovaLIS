@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import ipaddress
 import socket
+import threading
 from dataclasses import dataclass
 from time import time
 from urllib.parse import urlparse
@@ -37,6 +38,8 @@ class ModelNetworkMediator:
         self._ledger = LedgerWriter()
         self._request_times: list[float] = []
         self._session = requests.Session()
+        self._rate_lock = threading.Lock()
+        self._session_lock = threading.Lock()
 
     def _validate_url(self, url: str) -> None:
         parsed = urlparse(url)
@@ -67,10 +70,11 @@ class ModelNetworkMediator:
 
     def _check_rate_limit(self) -> None:
         now = time()
-        self._request_times = [t for t in self._request_times if now - t < 60]
-        if len(self._request_times) >= RATE_LIMIT_PER_MINUTE:
-            raise ModelNetworkMediatorError("Model network rate limit exceeded.")
-        self._request_times.append(now)
+        with self._rate_lock:
+            self._request_times = [t for t in self._request_times if now - t < 60]
+            if len(self._request_times) >= RATE_LIMIT_PER_MINUTE:
+                raise ModelNetworkMediatorError("Model network rate limit exceeded.")
+            self._request_times.append(now)
 
     def request_json(
         self,
@@ -91,12 +95,13 @@ class ModelNetworkMediator:
             correlation["session_id"] = session_id
 
         try:
-            response = self._session.request(
-                method=method.upper(),
-                url=url,
-                json=json_payload,
-                timeout=timeout,
-            )
+            with self._session_lock:
+                response = self._session.request(
+                    method=method.upper(),
+                    url=url,
+                    json=json_payload,
+                    timeout=timeout,
+                )
             response.raise_for_status()
             payload = response.json() if response.content else {}
         except Exception as error:
