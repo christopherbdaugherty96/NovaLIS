@@ -226,3 +226,21 @@ If yes → Safe (it's just visibility)
 If no → Dangerous (it requires intelligence)
 
 This keeps Nova's UI layer truly orthogonal to the intelligence layer — the core architectural principle that makes containment possible.
+---
+
+## 2026-03-11 Alignment Addendum - Session-Visible UI Hydration
+
+To preserve both constitutional containment and daily usability, this clarification is now normative for Phase 4.5 runtime-aligned UX.
+
+Client-side interface hydration is permitted only when all of the following are true:
+
+1. It occurs only during a visible user session.
+2. It is initiated by the UI layer for panel hydration, not by cognitive intent inference.
+3. It routes through Governor-mediated capabilities.
+4. It is ledger-visible through governed action logging.
+5. It does not persist as background monitoring, scheduling, or autonomous execution outside the active session surface.
+
+Interpretation:
+
+- Allowed: session-visible widget hydration for factual external data (for example weather, headlines, system status, calendar snapshot), with timestamps and inspectable traces.
+- Forbidden: predictive preloading based on inferred intent, hidden background loops outside active session visibility, or any auto-behavior that implies cognitive initiative.

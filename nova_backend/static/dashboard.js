@@ -13,6 +13,7 @@ let mediaRecorder = null;
 let silenceTimer = null;
 let ackResetTimer = null;
 let lastWidgetHydrationAt = 0;
+let widgetRefreshTimer = null;
 let morningState = {
   weather: "Loading...",
   news: "Loading...",
@@ -104,6 +105,8 @@ const LONG_MESSAGE_CHAR_LIMIT = 280;
 const LONG_MESSAGE_LINE_LIMIT = 4;
 const LONG_MESSAGE_SENTENCE_LIMIT = 2;
 const URL_PATTERN = /(https?:\/\/[^\s<]+)/gi;
+const WIDGET_HYDRATE_MIN_INTERVAL_MS = 15000;
+const WIDGET_AUTO_REFRESH_INTERVAL_MS = 5 * 60 * 1000;
 
 function $(id) { return document.getElementById(id); }
 function clear(el) { if (el) el.innerHTML = ""; }
@@ -1764,7 +1767,7 @@ function stopSTT() {
 
 function hydrateDashboardWidgets() {
   const now = Date.now();
-  if (now - lastWidgetHydrationAt < 15000) return;
+  if (now - lastWidgetHydrationAt < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
   lastWidgetHydrationAt = now;
 
   safeWSSend({ text: "weather", silent_widget_refresh: true });
@@ -1773,11 +1776,26 @@ function hydrateDashboardWidgets() {
   safeWSSend({ text: "calendar", silent_widget_refresh: true });
 }
 
+function startWidgetAutoRefresh() {
+  if (widgetRefreshTimer) clearInterval(widgetRefreshTimer);
+  widgetRefreshTimer = setInterval(() => {
+    if (!document.hidden) hydrateDashboardWidgets();
+  }, WIDGET_AUTO_REFRESH_INTERVAL_MS);
+}
+
+function stopWidgetAutoRefresh() {
+  if (!widgetRefreshTimer) return;
+  clearInterval(widgetRefreshTimer);
+  widgetRefreshTimer = null;
+}
+
 function connectWebSocket() {
   ws = new WebSocket(`${WS_BASE}/ws`);
 
   ws.onopen = () => {
     refreshPrivacyPanel();
+    hydrateDashboardWidgets();
+    startWidgetAutoRefresh();
   };
 
   ws.onmessage = (e) => {
@@ -1847,6 +1865,7 @@ function connectWebSocket() {
   ws.onclose = () => {
     waitingForAssistant = false;
     setThinkingBar(false);
+    stopWidgetAutoRefresh();
     if (ackResetTimer) {
       clearTimeout(ackResetTimer);
       ackResetTimer = null;
@@ -2318,6 +2337,10 @@ window.addEventListener("DOMContentLoaded", () => {
   setupMorningWidgetToggle();
   setupPageNavigation();
   connectWebSocket();
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) hydrateDashboardWidgets();
+  });
+  window.addEventListener("focus", hydrateDashboardWidgets);
   ensureSingleWelcomeMessage();
 
   const sendBtn = $("send-btn");
