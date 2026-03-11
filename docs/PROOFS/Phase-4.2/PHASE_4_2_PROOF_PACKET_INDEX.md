@@ -1,6 +1,6 @@
 # Phase-4.2 Proof Packet Index
 Date: 2026-03-11
-Commit Base: e5a5cfa
+Commit Base: 591296c
 Status: Closed (Revalidated)
 Purpose: Canonical proof packet entry for Phase-4.2 closure after final authority hardening and runtime re-certification.
 
@@ -9,6 +9,11 @@ Purpose: Canonical proof packet entry for Phase-4.2 closure after final authorit
 2. `PHASE_4_2_COMPLETION_EVIDENCE_MATRIX_2026-03-11.md`
 3. `PHASE_4_2_AUTHORITY_REMEDIATION_2026-03-11.md`
 4. `PHASE_4_2_CLOSED_ACT_2026-03-11.md`
+
+## Canonical Consolidated Packet (Undated Aliases)
+1. `PHASE_4_2_RUNTIME_CERTIFICATION.md`
+2. `PHASE_4_2_EVIDENCE_MATRIX.md`
+3. `PHASE_4_2_CLOSURE_ACT.md`
 
 ## Historical Closure Snapshots (Retained for Audit Trail)
 1. `PHASE_4_2_CODE_IMPLEMENTATION_MAP_2026-03-09.md`

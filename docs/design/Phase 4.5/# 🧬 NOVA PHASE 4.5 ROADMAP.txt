@@ -259,3 +259,22 @@ Phase 5 (Memory & Continuity) can then begin design, building on this foundati
 
 *End of Phase 4.5 Roadmap*
 
+
+---
+
+## 2026-03-11 Runtime Clarification - Session-Visible Hydration
+
+Phase 4.5 runtime alignment permits session-visible UI hydration when constitutional gates are preserved.
+
+Permitted hydration profile:
+
+- Triggered by active UI surface events (session open, visible focus, explicit widget panel refresh).
+- Routed through Governor-mediated, ledgered capabilities.
+- Limited to factual external-state panels.
+- Non-persistent and non-autonomous (no hidden scheduling outside active session visibility).
+
+Constitutional boundary remains unchanged:
+
+- No predictive preloading from inferred intent.
+- No background cognition.
+- No authority expansion.

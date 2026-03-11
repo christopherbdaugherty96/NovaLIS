@@ -5,47 +5,36 @@ Scope: Current Phase-4 runtime (with Phase-4.2 development surfaces present)
 
 ```mermaid
 flowchart TD
-    U["User (Text / Voice)"] --> UI["Dashboard UI (WebSocket Client)"]
-    UI --> BS["Brain Server (`src/brain_server.py`)"]
+    U["User (explicit invocation)"] --> UI["Dashboard/UI Layer (Phase 4.5)\nOrb + Formatter + Widgets (non-authoritative)"]
+    UI --> BS["brain_server.py\nOrchestration Layer"]
 
-    BS --> CR["Conversation Layer (`src/conversation/*`)"]
-    CR --> GM["GovernorMediator (intent parse + routing)"]
+    BS --> GM["GovernorMediator"]
+    GM --> GOV["Governor + CapabilityRegistry"]
+    GOV --> EB["ExecuteBoundary"]
+    EB --> EX["Executors (Phase 4)\nsearch / open / system / tts / report"]
+    EX --> LED["Ledger (attempt + result events)"]
+    LED --> BS
 
-    GM --> GOV["Governor (single authority choke point)"]
-    GOV --> REG["CapabilityRegistry (fail-closed enablement)"]
-    GOV --> EB["ExecuteBoundary (timeout/memory/CPU/concurrency caps)"]
-    GOV --> SAQ["SingleActionQueue (one governed action at a time)"]
+    BS --> OUT["Structured response / dashboard payload"]
+    OUT --> UI
 
-    REG --> GOV
-    EB --> GOV
-    SAQ --> GOV
+    BS --> CR["Conversation Router"]
+    CR --> CP["Cognitive Pipeline (Phase 4.2)\nrole-based analysis\nbuilder / audit / architect / memory / assumption / contradiction / adversarial"]
+    CP --> RND["Intelligence Brief Renderer"]
+    RND --> OUT
 
-    GOV --> EX["Executors (`src/executors/*`)"]
-    EX --> NM["NetworkMediator (governed external HTTP)"]
-    EX --> LMM["LLM Gateway/Manager"]
-    LMM --> MNM["ModelNetworkMediator (local model HTTP boundary)"]
-
-    EX --> TTS["Voice Output (TTS)"]
-    EX --> OS["Local OS Actions (capability/profile-gated)"]
-
-    GOV --> LED["LedgerWriter (append-only audit log)"]
-    NM --> LED
-    MNM --> LED
-    EX --> LED
-
-    BS --> TS["Trust Status Telemetry Events"]
-    TS --> UI
-
-    BS --> RR["Runtime Auditor + Docs Generator"]
-    RR --> CRT["`docs/current_runtime/CURRENT_RUNTIME_STATE.md`"]
+    UI -.->|"Session-visible hydration allowed\nno background autonomy"| BS
+    P5["Phase 5 Memory Substrate (gated / future)"] -.->|"Explicit user action\nGovernor mediation required"| GM
 ```
 
 ## Core Rules
 - Intelligence does not equal authority.
+- Only `brain_server` invokes `GovernorMediator`.
 - Only Governor can authorize execution.
+- Cognitive pipeline is analysis-only and non-authoritative.
 - All network paths are mediated (`NetworkMediator` / `ModelNetworkMediator`).
 - Boundary violations fail closed and are ledger-logged.
-- Conversation layer is non-authorizing.
+- UI hydration is session-visible only and non-background.
 
 ## Runtime Truth
 - Canonical runtime file: `docs/current_runtime/CURRENT_RUNTIME_STATE.md`

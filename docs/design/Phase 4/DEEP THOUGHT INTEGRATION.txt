@@ -672,3 +672,17 @@ This framework is **constitutionally binding** for:
 ---
 
 **Bottom line:** v1.3 is the **first complete, identity‑aligned, UI‑governed constitutional framework** for Deep Thought. It closes the last major gap — the hidden risk of predictive preloading — and elevates Nova’s UI from “passive surface” to **constitutionally constrained display layer**, fully orthogonal to intelligence and authority.
+---
+
+## 2026-03-11 Alignment Addendum - Session-Local Context, Non-Persistent State
+
+For runtime interpretation, "stateless" is defined as non-persistent across invocations and across sessions.
+
+Normative clarification:
+
+- Deep Thought may receive a bounded recent-turn context window from the current active session for disambiguation and response quality.
+- This context window is ephemeral and invocation-scoped input, not long-term memory.
+- No conversation ID persistence, no cross-session continuity, and no durable storage of Deep Thought state are permitted.
+- Deep Thought remains analysis-only and non-authoritative, with no capability invocation, no execution influence, and no autonomous follow-up.
+
+This addendum supersedes older wording that could be interpreted as requiring zero session context input.
