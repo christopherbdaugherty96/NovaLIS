@@ -144,6 +144,23 @@ SYSTEM_RE = re.compile(
     r"^\s*(?:system|system check|system status|what(?:'s| is) (?:the )?system status)\s*$",
     re.IGNORECASE,
 )
+SCREEN_CAPTURE_RE = re.compile(
+    r"^\s*(?:take\s+(?:a\s+)?screenshot|capture\s+(?:the\s+)?screen|capture\s+this\s+screen)\s*$",
+    re.IGNORECASE,
+)
+SCREEN_ANALYSIS_RE = re.compile(
+    r"^\s*(?:analy[sz]e\s+(?:the\s+)?screen|analy[sz]e\s+this\s+screen|explain\s+this\s+screen)\s*$",
+    re.IGNORECASE,
+)
+EXPLAIN_ANYTHING_RE = re.compile(
+    r"^\s*(?:"
+    r"what(?:'s| is)\s+(?:this|this\s+error|this\s+page|this\s+chart)"
+    r"|explain\s+(?:this|what\s+i\s+am\s+looking\s+at|what\s+i'm\s+looking\s+at|this\s+error|this\s+chart|this\s+page)"
+    r"|analy[sz]e\s+this"
+    r"|which\s+one\s+should\s+i\s+download"
+    r")\s*$",
+    re.IGNORECASE,
+)
 SET_REPORT_RE = re.compile(r"^\s*(report|summarize)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
 HEADLINE_SUMMARY_RE = re.compile(
     r"^\s*summarize\s+(?:(?:headline|headlines)\s+)?(?P<sel>all|[\w\s,;&]+)\s*$",
@@ -519,6 +536,27 @@ class GovernorMediator:
 
         if SYSTEM_RE.match(t):
             return _invocation_if_enabled(32, {})
+
+        if SCREEN_CAPTURE_RE.match(t):
+            return _invocation_if_enabled(58, {"invocation_source": "text"})
+
+        if SCREEN_ANALYSIS_RE.match(t):
+            return _invocation_if_enabled(
+                59,
+                {
+                    "invocation_source": "text",
+                    "query": t.strip(),
+                },
+            )
+
+        if EXPLAIN_ANYTHING_RE.match(t):
+            return _invocation_if_enabled(
+                60,
+                {
+                    "invocation_source": "text",
+                    "query": t.strip(),
+                },
+            )
 
         tm = TOPIC_UPDATES_RE.match(t)
         if tm:

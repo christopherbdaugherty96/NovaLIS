@@ -278,3 +278,9 @@ Constitutional boundary remains unchanged:
 - No predictive preloading from inferred intent.
 - No background cognition.
 - No authority expansion.
+
+## 2026-03-11 Addendum - Perception Expansion Spec
+
+Reference implementation guide for invocation-bound wake word, screen capture, and context snapshots:
+
+- [NOVA Wake Word and Screen Context System](NOVA_WAKE_WORD_SCREEN_CONTEXT_IMPLEMENTATION.md)
