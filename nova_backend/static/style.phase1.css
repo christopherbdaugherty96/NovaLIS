@@ -309,13 +309,26 @@ body {
 }
 
 .page-home {
-  display: flex;
+  display: grid;
+  gap: 10px;
   justify-content: flex-end;
-  align-items: flex-start;
+  align-content: start;
 }
 
 .page-home .trust-panel {
   width: min(420px, 100%);
+}
+
+.page-home .context-insight-widget {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 8px;
+}
+
+.page-home .thread-map-widget {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 8px;
 }
 
 .morning-widget {
@@ -956,6 +969,101 @@ body {
   font-size: 0.82rem;
   line-height: 1.4;
   color: #d7e5fa;
+}
+
+.context-insight-steps {
+  list-style: disc;
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  font-size: 0.8rem;
+  color: #cfe2ff;
+}
+
+.context-insight-steps:empty {
+  display: none;
+}
+
+.context-insight-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.context-insight-actions button {
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(170, 203, 248, 0.35);
+  background: rgba(14, 33, 59, 0.75);
+  color: #d9e9ff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.context-insight-actions button:hover {
+  border-color: rgba(132, 188, 255, 0.62);
+  background: rgba(16, 39, 69, 0.9);
+}
+
+.thread-map-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+
+.thread-map-list:empty {
+  display: none;
+}
+
+.thread-map-item {
+  border: 1px solid rgba(168, 201, 242, 0.2);
+  border-radius: 10px;
+  padding: 7px 9px;
+  display: grid;
+  gap: 4px;
+  background: rgba(14, 31, 56, 0.5);
+}
+
+.thread-map-item.active {
+  border-color: rgba(113, 191, 255, 0.56);
+  box-shadow: 0 0 0 1px rgba(83, 164, 236, 0.22) inset;
+}
+
+.thread-map-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #deecff;
+}
+
+.thread-map-meta {
+  font-size: 0.75rem;
+  color: #b9d1f4;
+}
+
+.thread-map-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.thread-map-actions button {
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(170, 203, 248, 0.35);
+  background: rgba(14, 33, 59, 0.75);
+  color: #d9e9ff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.thread-map-actions button:hover {
+  border-color: rgba(132, 188, 255, 0.62);
+  background: rgba(16, 39, 69, 0.9);
 }
 
 .brief-sidebar-cards,

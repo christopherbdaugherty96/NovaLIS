@@ -30,3 +30,8 @@ def test_dashboard_stops_auto_refresh_on_socket_close():
     assert match is not None
     body = match.group("body")
     assert "stopWidgetAutoRefresh()" in body
+
+
+def test_dashboard_hydration_dispatch_includes_ui_invocation_source():
+    source = DASHBOARD_PATH.read_text(encoding="utf-8")
+    assert 'invocation_source = payload.channel === "voice" ? "voice" : "ui"' in source

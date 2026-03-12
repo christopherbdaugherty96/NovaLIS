@@ -40,6 +40,7 @@ from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
 from src.trust.failure_ladder import FailureLadder
 from src.trust.trust_contract import normalize_trust_status
 from src.working_context.context_store import WorkingContextStore
+from src.working_context.project_threads import ProjectThreadStore
 from src.audit.runtime_auditor import (
     run_runtime_truth_audit,
     render_runtime_truth_markdown,
@@ -126,6 +127,47 @@ PHASE42_HELP_COMMANDS = {
     "phase42 help",
     "orthogonal help",
 }
+
+CREATE_THREAD_RE = re.compile(
+    r"^\s*(?:create|start)\s+(?:project\s+)?thread\s+(?P<name>.+?)\s*$",
+    re.IGNORECASE,
+)
+CONTINUE_THREAD_RE = re.compile(
+    r"^\s*continue(?:\s+my)?\s+(?P<name>.+?)\s*$",
+    re.IGNORECASE,
+)
+SHOW_THREADS_RE = re.compile(
+    r"^\s*(?:show|list)\s+(?:my\s+)?(?:project\s+)?threads?\s*$",
+    re.IGNORECASE,
+)
+ATTACH_THREAD_RE = re.compile(
+    r"^\s*(?:save|attach)\s+this(?:\s+(?:as\s+part\s+of|to|for))\s+(?P<name>.+?)\s*$",
+    re.IGNORECASE,
+)
+ATTACH_ACTIVE_THREAD_RE = re.compile(
+    r"^\s*(?:save|attach)\s+this\s*$",
+    re.IGNORECASE,
+)
+DECISION_THREAD_RE = re.compile(
+    r"^\s*(?:remember|record)\s+decision\s+(?P<decision>.+?)\s+for\s+(?P<name>.+?)\s*$",
+    re.IGNORECASE,
+)
+PROJECT_STATUS_RE = re.compile(
+    r"^\s*(?:project\s+status|status\s+for|status\s+of)\s+(?P<name>.+?)\s*$",
+    re.IGNORECASE,
+)
+BIGGEST_BLOCKER_RE = re.compile(
+    r"^\s*(?:what(?:'s| is)\s+(?:the\s+)?)?(?:biggest|main|current)\s+blocker(?:\s+in|\s+for)?\s*(?P<name>.*)\s*$",
+    re.IGNORECASE,
+)
+MOST_BLOCKED_PROJECT_RE = re.compile(
+    r"^\s*(?:which(?:\s+of\s+my)?\s+projects?\s+is\s+most\s+blocked(?:\s+right\s+now)?|most\s+blocked\s+project)\s*$",
+    re.IGNORECASE,
+)
+WHY_RECOMMENDATION_RE = re.compile(
+    r"^\s*why\s+(?:this|that)\s+recommendation\s*\??\s*$",
+    re.IGNORECASE,
+)
 
 
 def _build_phase42_agents() -> list:
@@ -394,6 +436,87 @@ def _topic_stack_message(session_state: dict, turn_count: int) -> str:
             lines.append(f"- {entry['topic']}")
     return "\n".join(lines)
 
+
+def _build_thread_attachment_summary(
+    *,
+    session_state: dict,
+    working_context: WorkingContextStore,
+    action_result: Optional[object] = None,
+) -> tuple[str, list[str], str]:
+    context = working_context.to_dict()
+    task_goal = str(context.get("task_goal") or "").strip()
+    last_obj = str(context.get("last_relevant_object") or "").strip()
+    summary = ""
+    next_steps: list[str] = []
+    default_category = "artifact"
+
+    if action_result is not None:
+        message = str(getattr(action_result, "message", "") or "").strip()
+        summary = _make_shorter_followup(message)
+        data = getattr(action_result, "data", None)
+        if isinstance(data, dict):
+            analysis = data.get("analysis")
+            if isinstance(analysis, dict):
+                next_steps = [
+                    str(item).strip()
+                    for item in list(analysis.get("next_steps") or [])
+                    if str(item).strip()
+                ][:4]
+                diagnostic = str(dict(analysis.get("signals") or {}).get("diagnostic") or "").strip().lower()
+                if diagnostic in {"module_not_found", "key_error"}:
+                    default_category = "blocker"
+            if str(data.get("document_id") or "").strip():
+                default_category = "decision"
+
+    if not summary:
+        summary = _make_shorter_followup(str(session_state.get("last_response") or ""))
+    if not summary:
+        summary = task_goal or last_obj or "Captured update from current session context."
+
+    if not next_steps:
+        followup_target = working_context.followup_target()
+        if followup_target:
+            next_steps = [f"Continue with focus: {followup_target}."]
+
+    return summary, next_steps, default_category
+
+
+def _derive_recommendation_reason(
+    *,
+    capability_id: int,
+    action_result: object,
+    working_context: WorkingContextStore,
+) -> str:
+    reasons: list[str] = []
+    context = working_context.to_dict()
+    task_goal = str(context.get("task_goal") or "").strip()
+    if task_goal:
+        reasons.append(f"your active goal is '{task_goal}'")
+
+    followup_target = working_context.followup_target()
+    if followup_target:
+        reasons.append(f"the current context target is '{followup_target}'")
+
+    if isinstance(getattr(action_result, "data", None), dict):
+        data = dict(getattr(action_result, "data") or {})
+        analysis = data.get("analysis")
+        if isinstance(analysis, dict):
+            signals = dict(analysis.get("signals") or {})
+            diagnostic = str(signals.get("diagnostic") or "").strip()
+            if diagnostic:
+                reasons.append(f"analysis detected '{diagnostic}'")
+        if capability_id == 54 and str(data.get("document_id") or "").strip():
+            reasons.append("an analysis document is active in this session")
+
+    if capability_id in {59, 60} and not reasons:
+        reasons.append("screen/context analysis was the latest action")
+
+    if not reasons:
+        return ""
+    if len(reasons) == 1:
+        return f"I suggested that based on {reasons[0]}."
+    return "I suggested that based on " + "; ".join(reasons[:3]) + "."
+
 # -------------------------------------------------
 # Phase Status Endpoint
 # -------------------------------------------------
@@ -532,6 +655,7 @@ async def websocket_endpoint(ws: WebSocket):
     skill_registry = SkillRegistry(network=governor.network)
     personality_agent = _Phase42PersonalityAgent() if _Phase42PersonalityAgent is not None else None
     working_context = WorkingContextStore(session_id=session_id, ledger=governor.ledger)
+    project_threads = ProjectThreadStore(session_id=session_id, ledger=governor.ledger)
     session_context = []
     session_state = {
         "turn_count": 0,
@@ -567,6 +691,8 @@ async def websocket_endpoint(ws: WebSocket):
         "last_calendar_summary": "",
         "last_calendar_events": [],
         "working_context": working_context.to_dict(),
+        "project_thread_active": "",
+        "last_recommendation_reason": "",
     }
 
     await send_chat_message(ws, "Hello. How can I help?")
@@ -728,6 +854,11 @@ async def websocket_endpoint(ws: WebSocket):
                     "- search for <topic>\n"
                     "- research <topic>\n"
                     "- summarize all headlines\n\n"
+                    "Explain Anything\n"
+                    "- explain this\n"
+                    "- what is this\n"
+                    "- help me do this\n"
+                    "- take a screenshot\n\n"
                     "Document Analysis\n"
                     "- create analysis report on <topic>\n"
                     "- list analysis docs\n"
@@ -742,9 +873,227 @@ async def websocket_endpoint(ws: WebSocket):
                     "Reports\n"
                     "- daily brief\n"
                     "- today's news\n"
-                    "- phase42: <analysis request>"
+                    "- phase42: <analysis request>\n\n"
+                    "Project Continuity\n"
+                    "- create thread <name>\n"
+                    "- save this as part of <name>\n"
+                    "- continue my <name>\n"
+                    "- show threads\n"
+                    "- project status <name>\n"
+                    "- biggest blocker in <name>\n"
+                    "- which project is most blocked right now\n"
+                    "- why this recommendation"
                 )
                 await send_chat_message(ws, capability_message)
+                await send_chat_done(ws)
+                continue
+
+            if SHOW_THREADS_RE.match(text):
+                await ws_send(ws, project_threads.render_map_widget())
+                await send_chat_message(ws, project_threads.render_map_message())
+                await send_chat_done(ws)
+                continue
+
+            if MOST_BLOCKED_PROJECT_RE.match(text):
+                found, blocked_message = project_threads.render_most_blocked()
+                if found:
+                    await ws_send(ws, project_threads.render_map_widget())
+                    top_name = project_threads.most_blocked_thread_name()
+                    suggested: list[dict[str, str]] = [{"label": "Show threads", "command": "show threads"}]
+                    if top_name:
+                        suggested = [
+                            {"label": f"Continue {top_name}", "command": f"continue my {top_name}"},
+                            {"label": f"Project status", "command": f"project status {top_name}"},
+                            {"label": "Show threads", "command": "show threads"},
+                        ]
+                    await send_chat_message(ws, blocked_message, suggested_actions=suggested)
+                else:
+                    await send_chat_message(ws, blocked_message)
+                await send_chat_done(ws)
+                continue
+
+            if WHY_RECOMMENDATION_RE.match(text):
+                reason = str(session_state.get("last_recommendation_reason") or "").strip()
+                if reason:
+                    await send_chat_message(ws, f"Why this recommendation\n\n{reason}")
+                else:
+                    await send_chat_message(
+                        ws,
+                        "I do not have a recent recommendation context yet. Ask for analysis first (for example, 'explain this').",
+                    )
+                await send_chat_done(ws)
+                continue
+
+            create_thread_match = CREATE_THREAD_RE.match(text)
+            if create_thread_match:
+                thread_name = str(create_thread_match.group("name") or "").strip()
+                created = project_threads.ensure_thread(
+                    thread_name,
+                    goal=str(working_context.to_dict().get("task_goal") or "").strip(),
+                )
+                session_state["project_thread_active"] = created.name
+                await ws_send(ws, project_threads.render_map_widget())
+                await send_chat_message(
+                    ws,
+                    (
+                        f"Thread ready: {created.name}.\n"
+                        "You can now say 'save this as part of "
+                        f"{created.name}' to attach progress updates."
+                    ),
+                )
+                await send_chat_done(ws)
+                continue
+
+            continue_thread_match = CONTINUE_THREAD_RE.match(text)
+            if continue_thread_match:
+                thread_name = str(continue_thread_match.group("name") or "").strip()
+                if thread_name.lower() in {"this", "it", "thread"}:
+                    thread_name = project_threads.active_thread_name() or session_state.get("project_thread_active") or ""
+                found, brief = project_threads.render_brief(thread_name)
+                if found:
+                    session_state["project_thread_active"] = project_threads.active_thread_name()
+                    await ws_send(ws, project_threads.render_map_widget())
+                    await send_chat_message(
+                        ws,
+                        brief,
+                        suggested_actions=[
+                            {"label": "Save this update", "command": f"save this as part of {project_threads.active_thread_name()}"},
+                            {"label": "Show threads", "command": "show threads"},
+                        ],
+                    )
+                else:
+                    if not project_threads.has_threads() and decision.intent_family == "followup":
+                        pass
+                    else:
+                        await send_chat_message(ws, brief)
+                        await send_chat_done(ws)
+                        continue
+                if found:
+                    await send_chat_done(ws)
+                    continue
+
+            status_thread_match = PROJECT_STATUS_RE.match(text)
+            if status_thread_match:
+                thread_name = str(status_thread_match.group("name") or "").strip()
+                if thread_name.lower() in {"this", "it", "thread", "project"}:
+                    thread_name = project_threads.active_thread_name() or str(session_state.get("project_thread_active") or "").strip()
+                found, status_text = project_threads.render_status(thread_name)
+                if found:
+                    session_state["project_thread_active"] = project_threads.active_thread_name()
+                    await ws_send(ws, project_threads.render_map_widget())
+                    active = project_threads.active_thread_name()
+                    await send_chat_message(
+                        ws,
+                        status_text,
+                        suggested_actions=[
+                            {"label": "Biggest blocker", "command": f"biggest blocker in {active}"},
+                            {"label": "Continue thread", "command": f"continue my {active}"},
+                            {"label": "Show threads", "command": "show threads"},
+                        ],
+                    )
+                    await send_chat_done(ws)
+                    continue
+                if not project_threads.has_threads() and decision.intent_family == "followup":
+                    pass
+                else:
+                    await send_chat_message(ws, status_text)
+                    await send_chat_done(ws)
+                    continue
+
+            blocker_thread_match = BIGGEST_BLOCKER_RE.match(text)
+            if blocker_thread_match:
+                thread_name = str(blocker_thread_match.group("name") or "").strip()
+                if not thread_name or thread_name.lower() in {"this", "it", "thread", "project"}:
+                    thread_name = project_threads.active_thread_name() or str(session_state.get("project_thread_active") or "").strip()
+                found, blocker_text = project_threads.render_biggest_blocker(thread_name)
+                if found:
+                    session_state["project_thread_active"] = project_threads.active_thread_name()
+                    await ws_send(ws, project_threads.render_map_widget())
+                    active = project_threads.active_thread_name()
+                    await send_chat_message(
+                        ws,
+                        blocker_text,
+                        suggested_actions=[
+                            {"label": "Project status", "command": f"project status {active}"},
+                            {"label": "Save this update", "command": f"save this as part of {active}"},
+                            {"label": "Show threads", "command": "show threads"},
+                        ],
+                    )
+                    await send_chat_done(ws)
+                    continue
+                if not project_threads.has_threads() and decision.intent_family == "followup":
+                    pass
+                else:
+                    await send_chat_message(ws, blocker_text)
+                    await send_chat_done(ws)
+                    continue
+
+            attach_thread_match = ATTACH_THREAD_RE.match(text)
+            if ATTACH_ACTIVE_THREAD_RE.match(text):
+                active_thread = project_threads.active_thread_name() or str(session_state.get("project_thread_active") or "").strip()
+                if not active_thread:
+                    await send_chat_message(
+                        ws,
+                        "I do not have an active thread yet. Say 'create thread <name>' first.",
+                    )
+                    await send_chat_done(ws)
+                    continue
+                summary, next_steps, default_category = _build_thread_attachment_summary(
+                    session_state=session_state,
+                    working_context=working_context,
+                )
+                attached = project_threads.attach_update(
+                    thread_name=active_thread,
+                    summary=summary,
+                    category=default_category,
+                    goal_hint=str(working_context.to_dict().get("task_goal") or "").strip(),
+                    next_steps=next_steps,
+                )
+                session_state["project_thread_active"] = attached.name
+                await ws_send(ws, project_threads.render_map_widget())
+                await send_chat_message(
+                    ws,
+                    f"Saved to active thread {attached.name}: {summary}",
+                )
+                await send_chat_done(ws)
+                continue
+
+            if attach_thread_match:
+                thread_name = str(attach_thread_match.group("name") or "").strip()
+                summary, next_steps, default_category = _build_thread_attachment_summary(
+                    session_state=session_state,
+                    working_context=working_context,
+                )
+                attached = project_threads.attach_update(
+                    thread_name=thread_name,
+                    summary=summary,
+                    category=default_category,
+                    goal_hint=str(working_context.to_dict().get("task_goal") or "").strip(),
+                    next_steps=next_steps,
+                )
+                session_state["project_thread_active"] = attached.name
+                await ws_send(ws, project_threads.render_map_widget())
+                await send_chat_message(
+                    ws,
+                    (
+                        f"Saved to thread: {attached.name}.\n"
+                        f"Update: {summary}"
+                    ),
+                )
+                await send_chat_done(ws)
+                continue
+
+            decision_thread_match = DECISION_THREAD_RE.match(text)
+            if decision_thread_match:
+                decision_text = str(decision_thread_match.group("decision") or "").strip()
+                thread_name = str(decision_thread_match.group("name") or "").strip()
+                attached = project_threads.add_decision(thread_name=thread_name, decision=decision_text)
+                session_state["project_thread_active"] = attached.name
+                await ws_send(ws, project_threads.render_map_widget())
+                await send_chat_message(
+                    ws,
+                    f"Decision recorded in {attached.name}: {decision_text}",
+                )
                 await send_chat_done(ws)
                 continue
 
@@ -1720,9 +2069,68 @@ async def websocket_endpoint(ws: WebSocket):
                         {"label": "Today's brief", "command": "today's news"},
                     ]
 
+                recommendation_reason = ""
+                if action_result.success and capability_id in {54, 59, 60}:
+                    suggested_thread = project_threads.suggest_thread_name(
+                        preferred_name=str(session_state.get("project_thread_active") or ""),
+                        context_hint=working_context.followup_target(),
+                    )
+                    extra_actions: list[dict[str, str]] = []
+                    if suggested_thread:
+                        extra_actions.append(
+                            {
+                                "label": f"Save to {suggested_thread}",
+                                "command": f"save this as part of {suggested_thread}",
+                            }
+                        )
+                        extra_actions.append(
+                            {
+                                "label": f"Continue {suggested_thread}",
+                                "command": f"continue my {suggested_thread}",
+                            }
+                        )
+                    else:
+                        thread_hint = _extract_topic_candidate(str(working_context.followup_target() or text)) or "current project"
+                        extra_actions.append(
+                            {
+                                "label": "Create project thread",
+                                "command": f"create thread {thread_hint}",
+                            }
+                        )
+                    recommendation_reason = _derive_recommendation_reason(
+                        capability_id=capability_id,
+                        action_result=action_result,
+                        working_context=working_context,
+                    )
+                    if recommendation_reason:
+                        session_state["last_recommendation_reason"] = recommendation_reason
+                        extra_actions.append(
+                            {"label": "Why this recommendation", "command": "why this recommendation"}
+                        )
+                    extra_actions.append({"label": "Show threads", "command": "show threads"})
+                    if message_suggestions:
+                        merged = list(message_suggestions) + extra_actions
+                    else:
+                        merged = extra_actions
+                    deduped: list[dict[str, str]] = []
+                    seen_commands: set[str] = set()
+                    for item in merged:
+                        cmd = str(item.get("command") or "").strip().lower()
+                        if not cmd or cmd in seen_commands:
+                            continue
+                        seen_commands.add(cmd)
+                        deduped.append(item)
+                    message_suggestions = deduped[:4]
+
                 outgoing_message = _structure_long_message(action_result.message)
                 if not outgoing_message.strip() and capability_id == 18 and action_result.success:
                     outgoing_message = "Speaking now."
+                if recommendation_reason:
+                    outgoing_message = (
+                        f"{outgoing_message}\n\n"
+                        "Why this recommendation\n"
+                        f"- {recommendation_reason}"
+                    )
                 await send_chat_message(
                     ws,
                     outgoing_message,

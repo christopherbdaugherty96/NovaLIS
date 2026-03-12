@@ -161,6 +161,16 @@ EXPLAIN_ANYTHING_RE = re.compile(
     r")\s*$",
     re.IGNORECASE,
 )
+EXPLAIN_FOLLOWUP_RE = re.compile(
+    r"^\s*(?:"
+    r"help\s+me\s+do\s+(?:this|it)"
+    r"|walk\s+me\s+through\s+(?:this|it)"
+    r"|guide\s+me\s+through\s+(?:this|it)"
+    r"|what\s+should\s+i\s+(?:do\s+next|click\s+next)"
+    r"|how\s+do\s+i\s+do\s+(?:this|it)"
+    r")\s*$",
+    re.IGNORECASE,
+)
 SET_REPORT_RE = re.compile(r"^\s*(report|summarize)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
 HEADLINE_SUMMARY_RE = re.compile(
     r"^\s*summarize\s+(?:(?:headline|headlines)\s+)?(?P<sel>all|[\w\s,;&]+)\s*$",
@@ -555,6 +565,16 @@ class GovernorMediator:
                 {
                     "invocation_source": "text",
                     "query": t.strip(),
+                },
+            )
+
+        if EXPLAIN_FOLLOWUP_RE.match(t):
+            return _invocation_if_enabled(
+                60,
+                {
+                    "invocation_source": "text",
+                    "query": t.strip(),
+                    "followup": True,
                 },
             )
 
