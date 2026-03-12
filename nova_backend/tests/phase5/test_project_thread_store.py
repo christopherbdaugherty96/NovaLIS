@@ -85,6 +85,11 @@ def test_project_thread_store_resolves_partial_names():
     assert found is True
     assert "AI Governance Research" in brief
 
+    found_id, resolved_name, resolved_key = store.resolve_thread_identity("governance")
+    assert found_id is True
+    assert resolved_name == "AI Governance Research"
+    assert resolved_key == "ai governance research"
+
 
 def test_project_thread_store_most_blocked_project_summary():
     store = ProjectThreadStore(session_id="sess-5", ledger=None)
@@ -96,3 +101,24 @@ def test_project_thread_store_most_blocked_project_summary():
     assert found is True
     assert "Most Blocked Project" in message
     assert "Deployment Issue" in message
+
+
+def test_project_thread_store_detail_snapshot():
+    store = ProjectThreadStore(session_id="sess-6", ledger=None)
+    store.ensure_thread("Deployment Issue", goal="Ship stable deployment.")
+    store.attach_update(thread_name="Deployment Issue", summary="Captured stack trace in CI.")
+    store.attach_update(
+        thread_name="Deployment Issue",
+        summary="Container cannot resolve module path.",
+        category="blocker",
+        next_steps=["Verify PYTHONPATH in container"],
+    )
+    store.add_decision(thread_name="Deployment Issue", decision="Inspect PYTHONPATH before rebuild.")
+
+    found, detail = store.get_thread_detail("deployment issue")
+    assert found is True
+    assert detail["name"] == "Deployment Issue"
+    assert detail["goal"] == "Ship stable deployment."
+    assert "Container cannot resolve module path." in detail["latest_blocker"]
+    assert "Inspect PYTHONPATH before rebuild." in detail["latest_decision"]
+    assert detail["recent_next_actions"]

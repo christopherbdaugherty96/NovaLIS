@@ -265,6 +265,18 @@ MEMORY_SAVE_RE = re.compile(
     r"^\s*memory\s+save\s+(?P<title>[^:]{1,120})\s*:\s*(?P<body>.+?)\s*$",
     re.IGNORECASE,
 )
+MEMORY_SAVE_THREAD_SNAPSHOT_RE = re.compile(
+    r"^\s*memory\s+save\s+thread\s+(?P<thread_name>.+?)\s*$",
+    re.IGNORECASE,
+)
+MEMORY_SAVE_THREAD_DECISION_RE = re.compile(
+    r"^\s*memory\s+save\s+decision\s+for\s+(?P<thread_name>[^:]{1,120})\s*:\s*(?P<decision>.+?)\s*$",
+    re.IGNORECASE,
+)
+MEMORY_LIST_THREAD_RE = re.compile(
+    r"^\s*memory\s+list\s+thread\s+(?P<thread_name>.+?)\s*$",
+    re.IGNORECASE,
+)
 MEMORY_LIST_RE = re.compile(
     r"^\s*memory\s+list(?:\s+(?P<tier>locked|active|deferred))?\s*$",
     re.IGNORECASE,
@@ -821,6 +833,37 @@ class GovernorMediator:
         if DOC_LIST_RE.match(t):
             return _invocation_if_enabled(54, {"action": "list"})
 
+        m = MEMORY_SAVE_THREAD_DECISION_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "save_thread_decision",
+                    "thread_name": m.group("thread_name").strip(),
+                    "decision": m.group("decision").strip(),
+                },
+            )
+
+        m = MEMORY_SAVE_THREAD_SNAPSHOT_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "save_thread_snapshot",
+                    "thread_name": m.group("thread_name").strip(),
+                },
+            )
+
+        m = MEMORY_LIST_THREAD_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "list",
+                    "thread_name": m.group("thread_name").strip(),
+                },
+            )
+
         m = MEMORY_SAVE_RE.match(t)
         if m:
             return _invocation_if_enabled(
@@ -968,7 +1011,7 @@ class GovernorMediator:
                 "track": (52, "What topic should I track?"),
                 "memory": (
                     61,
-                    "Try 'memory save <title>: <content>' or 'memory list'.",
+                    "Try 'memory save <title>: <content>', 'memory save thread <name>', or 'memory save decision for <thread>: <text>'.",
                 ),
             }
             cap_id, message = prompts.get(verb, (16, "Could you clarify that request?"))

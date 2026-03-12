@@ -52,6 +52,7 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "chat_threads", label: "Show threads", command: "show threads" },
     { id: "chat_thread_status", label: "Project status", command: "project status this" },
     { id: "chat_most_blocked", label: "Most blocked", command: "which project is most blocked right now" },
+    { id: "chat_thread_memory", label: "Thread memory", command: "memory list thread this" },
     { id: "chat_doc_create", label: "New analysis doc", command: "create analysis report on global technology policy updates" },
     { id: "chat_doc_list", label: "List analysis docs", command: "list analysis docs" },
   ],
@@ -83,7 +84,11 @@ const COMMAND_SUGGESTIONS = [
   "continue my deployment issue",
   "project status deployment issue",
   "biggest blocker in deployment issue",
+  "thread detail deployment issue",
   "which project is most blocked right now",
+  "memory save thread deployment issue",
+  "memory list thread deployment issue",
+  "memory save decision for deployment issue: verify PYTHONPATH in container",
   "why this recommendation",
   "which one should I download",
   "update tracked stories",
@@ -109,7 +114,11 @@ const HELP_EXAMPLES = [
   "continue my deployment issue",
   "project status deployment issue",
   "biggest blocker in deployment issue",
+  "thread detail deployment issue",
   "which project is most blocked right now",
+  "memory save thread deployment issue",
+  "memory list thread deployment issue",
+  "memory save decision for deployment issue: verify PYTHONPATH in container",
   "why this recommendation",
   "which one should I download",
   "research a topic",
@@ -131,7 +140,8 @@ const COMMAND_DISCOVERY_GROUPS = [
   { label: "Research", commands: ["research a topic", "summarize all headlines", "show sources"] },
   { label: "Context", commands: ["explain this", "help me do this", "which one should i download"] },
   { label: "Continuity", commands: ["show threads", "save this as part of deployment issue", "continue my deployment issue"] },
-  { label: "Thread insight", commands: ["project status deployment issue", "biggest blocker in deployment issue", "which project is most blocked right now"] },
+  { label: "Thread insight", commands: ["project status deployment issue", "biggest blocker in deployment issue", "thread detail deployment issue"] },
+  { label: "Thread memory", commands: ["memory save thread deployment issue", "memory list thread deployment issue", "memory save decision for deployment issue: verify PYTHONPATH"] },
   { label: "System", commands: ["system status", "open documents", "volume up"] },
 ];
 const LONG_MESSAGE_CHAR_LIMIT = 280;
@@ -163,6 +173,19 @@ function formatNewsFreshness(published) {
   if (diffMs < 60 * 60 * 1000) return `Updated ${Math.round(diffMs / (60 * 1000))}m ago`;
   if (diffMs < 24 * 60 * 60 * 1000) return `Updated ${Math.round(diffMs / (60 * 60 * 1000))}h ago`;
   return `Updated ${date.toLocaleDateString([], { month: "short", day: "numeric" })}`;
+}
+
+function formatThreadTimestamp(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  const date = new Date(raw);
+  if (Number.isNaN(date.getTime())) return raw;
+  return date.toLocaleString([], {
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
 }
 
 function buildNewsItemSnippet(item) {
@@ -296,6 +319,10 @@ function renderThreadMapWidget(data = {}) {
   }
   if (!listHost) return;
   clear(listHost);
+  const detailPanel = $("thread-detail-panel");
+  if (detailPanel && threads.length === 0) {
+    detailPanel.hidden = true;
+  }
 
   threads.slice(0, 8).forEach((thread) => {
     const name = String((thread && thread.name) || "").trim();
@@ -304,15 +331,32 @@ function renderThreadMapWidget(data = {}) {
     li.className = "thread-map-item";
     if (active && name === active) li.classList.add("active");
 
+    const heading = document.createElement("div");
+    heading.className = "thread-map-heading";
+
     const title = document.createElement("div");
     title.className = "thread-map-title";
     title.textContent = name;
-    li.appendChild(title);
+    heading.appendChild(title);
+
+    const memoryCountRaw = Number((thread && thread.memory_count) || 0);
+    const memoryCount = Number.isFinite(memoryCountRaw) ? Math.max(0, Math.round(memoryCountRaw)) : 0;
+    const memoryBadge = document.createElement("button");
+    memoryBadge.type = "button";
+    memoryBadge.className = "thread-memory-badge";
+    memoryBadge.textContent = `Memory: ${memoryCount}`;
+    memoryBadge.addEventListener("click", () => injectUserText(`memory list thread ${name}`, "text"));
+    heading.appendChild(memoryBadge);
+
+    li.appendChild(heading);
 
     const goal = String((thread && thread.goal) || "").trim();
     const artifactCount = Number((thread && thread.artifact_count) || 0);
     const blockerCount = Number((thread && thread.blocker_count) || 0);
     const latestBlocker = String((thread && thread.latest_blocker) || "").trim();
+    const latestDecision = String((thread && thread.latest_decision) || "").trim();
+    const lastMemoryUpdated = String((thread && thread.last_memory_updated_at) || "").trim();
+    const changeSummary = String((thread && thread.change_summary) || "").trim();
     const healthState = String((thread && thread.health_state) || "").trim().toUpperCase();
     const healthReason = String((thread && thread.health_reason) || "").trim();
     const meta = document.createElement("div");
@@ -335,6 +379,71 @@ function renderThreadMapWidget(data = {}) {
       blocker.textContent = `Latest blocker: ${latestBlocker}`;
       li.appendChild(blocker);
     }
+    if (latestDecision) {
+      const decision = document.createElement("div");
+      decision.className = "thread-map-meta thread-map-insight";
+      decision.textContent = `Latest decision: ${latestDecision}`;
+      li.appendChild(decision);
+    }
+    if (lastMemoryUpdated) {
+      const memoryUpdate = document.createElement("div");
+      memoryUpdate.className = "thread-map-meta";
+      memoryUpdate.textContent = `Last memory update: ${formatThreadTimestamp(lastMemoryUpdated)}`;
+      li.appendChild(memoryUpdate);
+    }
+    if (changeSummary) {
+      const changed = document.createElement("div");
+      changed.className = "thread-map-meta thread-map-change";
+      changed.textContent = changeSummary;
+      li.appendChild(changed);
+    }
+
+    const decisionRow = document.createElement("div");
+    decisionRow.className = "thread-decision-row";
+    decisionRow.hidden = true;
+
+    const decisionInput = document.createElement("input");
+    decisionInput.type = "text";
+    decisionInput.className = "thread-decision-input";
+    decisionInput.placeholder = "Save a decision for this thread...";
+    decisionInput.maxLength = 320;
+    decisionRow.appendChild(decisionInput);
+
+    const decisionSaveBtn = document.createElement("button");
+    decisionSaveBtn.type = "button";
+    decisionSaveBtn.textContent = "Save decision";
+    decisionSaveBtn.addEventListener("click", () => {
+      const decisionText = String(decisionInput.value || "").replace(/\s+/g, " ").trim();
+      if (!decisionText) {
+        decisionInput.focus();
+        return;
+      }
+      injectUserText(`memory save decision for ${name}: ${decisionText}`, "text");
+      decisionInput.value = "";
+      decisionRow.hidden = true;
+    });
+    decisionRow.appendChild(decisionSaveBtn);
+
+    const decisionCancelBtn = document.createElement("button");
+    decisionCancelBtn.type = "button";
+    decisionCancelBtn.textContent = "Cancel";
+    decisionCancelBtn.addEventListener("click", () => {
+      decisionInput.value = "";
+      decisionRow.hidden = true;
+    });
+    decisionRow.appendChild(decisionCancelBtn);
+
+    decisionInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        decisionSaveBtn.click();
+      } else if (event.key === "Escape") {
+        event.preventDefault();
+        decisionCancelBtn.click();
+      }
+    });
+
+    li.appendChild(decisionRow);
 
     const actions = document.createElement("div");
     actions.className = "thread-map-actions";
@@ -357,9 +466,125 @@ function renderThreadMapWidget(data = {}) {
     statusBtn.addEventListener("click", () => injectUserText(`project status ${name}`, "text"));
     actions.appendChild(statusBtn);
 
+    const saveMemoryBtn = document.createElement("button");
+    saveMemoryBtn.type = "button";
+    saveMemoryBtn.textContent = "Save memory";
+    saveMemoryBtn.addEventListener("click", () => injectUserText(`memory save thread ${name}`, "text"));
+    actions.appendChild(saveMemoryBtn);
+
+    const listMemoryBtn = document.createElement("button");
+    listMemoryBtn.type = "button";
+    listMemoryBtn.textContent = `List memory (${memoryCount})`;
+    listMemoryBtn.addEventListener("click", () => injectUserText(`memory list thread ${name}`, "text"));
+    actions.appendChild(listMemoryBtn);
+
+    const decisionBtn = document.createElement("button");
+    decisionBtn.type = "button";
+    decisionBtn.textContent = "Save decision";
+    decisionBtn.addEventListener("click", () => {
+      decisionRow.hidden = !decisionRow.hidden;
+      if (!decisionRow.hidden) {
+        decisionInput.focus();
+      }
+    });
+    actions.appendChild(decisionBtn);
+
+    const detailBtn = document.createElement("button");
+    detailBtn.type = "button";
+    detailBtn.textContent = "Details";
+    detailBtn.addEventListener("click", () => injectUserText(`thread detail ${name}`, "text"));
+    actions.appendChild(detailBtn);
+
     li.appendChild(actions);
     listHost.appendChild(li);
   });
+}
+
+function renderThreadDetailWidget(data = {}) {
+  const panel = $("thread-detail-panel");
+  const title = $("thread-detail-title");
+  const summary = $("thread-detail-summary");
+  const blocked = $("thread-detail-blocked");
+  const next = $("thread-detail-next");
+  const why = $("thread-detail-why");
+  const decisionsHost = $("thread-detail-decisions");
+  const memoryHost = $("thread-detail-memory");
+  if (!panel || !title || !summary || !blocked || !next || !why || !decisionsHost || !memoryHost) return;
+
+  const thread = (data && typeof data.thread === "object") ? data.thread : {};
+  const memoryItems = Array.isArray(data && data.memory_items) ? data.memory_items : [];
+  const recentDecisions = Array.isArray(data && data.recent_decisions) ? data.recent_decisions : [];
+  const whyBlocked = String((data && data.why_blocked) || "").trim();
+  const nextStep = String((data && data.next_step) || "").trim();
+  const whyNext = String((data && data.why_next_step) || "").trim();
+
+  const name = String(thread.name || "").trim() || "Thread Detail";
+  const health = String(thread.health_state || "").trim().toUpperCase() || "AT-RISK";
+  const goal = String(thread.goal || "").trim() || "Goal not set.";
+  const blockerText = String(thread.latest_blocker || "").trim() || "No blocker recorded.";
+  const decisionText = String(thread.latest_decision || "").trim() || "No decision recorded.";
+  const latestMemoryUpdate = formatThreadTimestamp(thread.last_memory_updated_at || "");
+
+  title.textContent = `${name} - Detail`;
+  summary.textContent = `Goal: ${goal} | Health: ${health} | Latest decision: ${decisionText}`;
+  blocked.textContent = whyBlocked || `Blocked context: ${blockerText}`;
+  next.textContent = `Next step: ${nextStep || "No next step recorded."}`;
+  why.textContent = whyNext ? `Why this next step: ${whyNext}` : "Why this next step: not available yet.";
+
+  clear(decisionsHost);
+  const decisionsLabel = document.createElement("div");
+  decisionsLabel.textContent = "Recent decisions:";
+  decisionsHost.appendChild(decisionsLabel);
+  if (!recentDecisions.length) {
+    const empty = document.createElement("div");
+    empty.textContent = "No recent decisions recorded.";
+    decisionsHost.appendChild(empty);
+  } else {
+    const list = document.createElement("ul");
+    recentDecisions.slice(-4).reverse().forEach((entry) => {
+      const item = document.createElement("li");
+      item.textContent = String(entry || "").trim();
+      list.appendChild(item);
+    });
+    decisionsHost.appendChild(list);
+  }
+
+  clear(memoryHost);
+  if (!memoryItems.length) {
+    memoryHost.textContent = "Recent memory: none linked yet.";
+  } else {
+    const label = document.createElement("div");
+    label.textContent = latestMemoryUpdate
+      ? `Recent memory items (last update ${latestMemoryUpdate}):`
+      : "Recent memory items:";
+    memoryHost.appendChild(label);
+
+    const list = document.createElement("div");
+    list.className = "thread-detail-memory-list";
+    memoryItems.slice(0, 5).forEach((item) => {
+      const id = String((item && item.id) || "").trim();
+      const itemTitle = String((item && item.title) || "").trim() || id;
+      const updated = formatThreadTimestamp(item && item.updated_at);
+      if (!id) return;
+      const row = document.createElement("div");
+      row.className = "thread-detail-memory-row";
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = itemTitle;
+      btn.addEventListener("click", () => injectUserText(`memory show ${id}`, "text"));
+      row.appendChild(btn);
+      if (updated) {
+        const ts = document.createElement("span");
+        ts.className = "thread-detail-memory-time";
+        ts.textContent = updated;
+        row.appendChild(ts);
+      }
+      list.appendChild(row);
+    });
+    memoryHost.appendChild(list);
+  }
+
+  panel.hidden = false;
 }
 
 function formatSystemSummary(data, summary = "") {
@@ -2000,6 +2225,9 @@ function connectWebSocket() {
         break;
       case "thread_map":
         renderThreadMapWidget(msg);
+        break;
+      case "thread_detail":
+        renderThreadDetailWidget(msg);
         break;
       case "chat":
         appendChatMessage(

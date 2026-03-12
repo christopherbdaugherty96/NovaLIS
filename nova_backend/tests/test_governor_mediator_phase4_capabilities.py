@@ -152,6 +152,27 @@ def test_volume_media_brightness_parsing():
     assert inv.params["action"] == "save"
     assert "deployment note" in inv.params["title"].lower()
 
+    inv = GovernorMediator.parse_governed_invocation("memory save thread Deployment Issue")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 61
+    assert inv.params["action"] == "save_thread_snapshot"
+    assert inv.params["thread_name"] == "Deployment Issue"
+
+    inv = GovernorMediator.parse_governed_invocation(
+        "memory save decision for Deployment Issue: verify PYTHONPATH in container"
+    )
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 61
+    assert inv.params["action"] == "save_thread_decision"
+    assert inv.params["thread_name"] == "Deployment Issue"
+    assert "PYTHONPATH" in inv.params["decision"]
+
+    inv = GovernorMediator.parse_governed_invocation("memory list thread deployment issue")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 61
+    assert inv.params["action"] == "list"
+    assert inv.params["thread_name"] == "deployment issue"
+
     inv = GovernorMediator.parse_governed_invocation("memory lock MEM-ABC123")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 61

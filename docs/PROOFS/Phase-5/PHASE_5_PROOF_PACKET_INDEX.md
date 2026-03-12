@@ -22,6 +22,7 @@ Purpose: Canonical gate-preparation packet for Phase 5 (Memory and Continuity) u
 - `docs/PROOFS/Phase-5/PHASE_5_PROJECT_CONTINUITY_RUNTIME_NOTE_2026-03-12.md`
 - `docs/PROOFS/Phase-5/PHASE_5_CAPABILITY_SUMMARY_AND_SELLABILITY_2026-03-12.md`
 - `docs/PROOFS/Phase-5/PHASE_5_EVERYDAY_USER_JOURNEYS_2026-03-12.md`
+- `docs/PROOFS/Phase-5/PHASE_5_THREAD_MEMORY_BRIDGE_RUNTIME_SLICE_2026-03-12.md`
 
 ## Design Inputs
 - `docs/design/phase 5/MEMORY GOVERNANCE.md`
@@ -60,3 +61,20 @@ Purpose: Canonical gate-preparation packet for Phase 5 (Memory and Continuity) u
 - New tests:
   - `nova_backend/tests/phase5/test_memory_governance_executor.py`
 - Full backend suite after integration: `334 passed`
+
+## Thread-Memory Bridge Snapshot (2026-03-12)
+- Artifact: `PHASE_5_THREAD_MEMORY_BRIDGE_RUNTIME_SLICE_2026-03-12.md`
+- New explicit bridge commands:
+  - `memory save thread <name>`
+  - `memory save decision for <thread>: <text>`
+  - `memory list thread <name>`
+- Runtime behavior:
+  - Thread snapshot -> explicit memory save payload -> Governor capability `61`
+  - Memory item linkage fields (`project_thread_name`, `project_thread_key`)
+  - Thread map widget memory count badge (`Memory: N`) with thread-filtered list action
+  - Thread map read-only change summary line (`Changed: ...`) derived from in-session snapshot diff
+  - Thread detail panel (`thread detail <name>`) with blocker/decision/memory context
+  - Thread detail polish: recent decisions, timestamped memory, clearer blocked/next-step wording
+- Verification:
+  - `nova_backend/tests/phase5`: `16 passed`
+  - Full backend suite: `335 passed`

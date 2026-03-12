@@ -32,6 +32,35 @@ def _clean_tags(values: list[Any] | None) -> list[str]:
     return tags[:20]
 
 
+def _normalize_thread_key(value: Any) -> str:
+    lowered = str(value or "").strip().lower()
+    compact = "".join(ch if ch.isalnum() or ch in {" ", "_", "-"} else " " for ch in lowered)
+    compact = " ".join(compact.split())
+    return compact[:80]
+
+
+def _normalize_thread_name(value: Any) -> str:
+    text = _clean_text(value, limit=120).strip()
+    return text.lower()
+
+
+def _extract_decision_snippet(value: Any) -> str:
+    body = _clean_text(value, limit=320)
+    if not body:
+        return ""
+    lines = [line.strip() for line in body.splitlines() if line.strip()]
+    if not lines:
+        return ""
+
+    for idx, line in enumerate(lines):
+        if line.lower() == "decision" and idx + 1 < len(lines):
+            return _clean_text(lines[idx + 1], limit=180)
+
+    if lines[0].lower().startswith("project thread:") and len(lines) > 1:
+        return _clean_text(lines[1], limit=180)
+    return _clean_text(lines[0], limit=180)
+
+
 class GovernedMemoryStore:
     """Persistent, explicit memory filing store for Phase-5 operations."""
 
@@ -58,6 +87,8 @@ class GovernedMemoryStore:
         body: str,
         scope: str = "project",
         tags: list[Any] | None = None,
+        thread_name: str = "",
+        thread_key: str = "",
     ) -> dict[str, Any]:
         scope_value = str(scope or "project").strip().lower()
         if scope_value not in self.ALLOWED_SCOPES:
@@ -71,6 +102,13 @@ class GovernedMemoryStore:
             title_value = _clean_text(body_value, limit=60)
 
         created_at = _utc_now()
+        links: dict[str, Any] = {}
+        clean_thread_name = _clean_text(thread_name, limit=120).strip()
+        normalized_thread_key = _normalize_thread_key(thread_key or clean_thread_name)
+        if clean_thread_name or normalized_thread_key:
+            links["project_thread_name"] = clean_thread_name
+            links["project_thread_key"] = normalized_thread_key
+
         item = {
             "id": self._new_id(),
             "title": title_value,
@@ -88,6 +126,8 @@ class GovernedMemoryStore:
             "body": body_value,
             "deleted": False,
         }
+        if links:
+            item["links"] = links
 
         with self._lock:
             state = self._read_state()
@@ -102,10 +142,14 @@ class GovernedMemoryStore:
         *,
         tier: str = "",
         scope: str = "",
+        thread_name: str = "",
+        thread_key: str = "",
         limit: int = 25,
     ) -> list[dict[str, Any]]:
         tier_filter = str(tier or "").strip().lower()
         scope_filter = str(scope or "").strip().lower()
+        thread_name_filter = _normalize_thread_name(thread_name)
+        thread_key_filter = _normalize_thread_key(thread_key or thread_name)
         with self._lock:
             state = self._read_state()
             items = [item for item in list(state.get("items") or []) if not bool(item.get("deleted"))]
@@ -114,10 +158,94 @@ class GovernedMemoryStore:
             items = [item for item in items if str(item.get("tier") or "").strip().lower() == tier_filter]
         if scope_filter:
             items = [item for item in items if str(item.get("scope") or "").strip().lower() == scope_filter]
+        if thread_name_filter or thread_key_filter:
+            items = [
+                item
+                for item in items
+                if self._matches_thread_link(
+                    item,
+                    thread_name_filter=thread_name_filter,
+                    thread_key_filter=thread_key_filter,
+                )
+            ]
 
         items = sorted(items, key=lambda row: str(row.get("updated_at") or ""), reverse=True)
         safe_limit = max(1, min(int(limit or 25), 100))
         return [dict(item) for item in items[:safe_limit]]
+
+    def summarize_thread_counts(self) -> dict[str, int]:
+        with self._lock:
+            state = self._read_state()
+            items = [item for item in list(state.get("items") or []) if not bool(item.get("deleted"))]
+
+        counts: dict[str, int] = {}
+        for item in items:
+            links = dict(item.get("links") or {})
+            thread_key = _normalize_thread_key(links.get("project_thread_key"))
+            if not thread_key:
+                continue
+            counts[thread_key] = int(counts.get(thread_key) or 0) + 1
+        return counts
+
+    def summarize_thread_insights(self) -> dict[str, dict[str, Any]]:
+        with self._lock:
+            state = self._read_state()
+            items = [item for item in list(state.get("items") or []) if not bool(item.get("deleted"))]
+
+        insights: dict[str, dict[str, Any]] = {}
+        decision_timestamps: dict[str, str] = {}
+
+        for item in items:
+            links = dict(item.get("links") or {})
+            thread_key = _normalize_thread_key(links.get("project_thread_key"))
+            if not thread_key:
+                continue
+
+            if thread_key not in insights:
+                insights[thread_key] = {
+                    "memory_count": 0,
+                    "last_memory_updated_at": "",
+                    "latest_decision": "",
+                }
+                decision_timestamps[thread_key] = ""
+
+            insight = insights[thread_key]
+            insight["memory_count"] = int(insight.get("memory_count") or 0) + 1
+
+            updated_at = str(item.get("updated_at") or "")
+            if updated_at > str(insight.get("last_memory_updated_at") or ""):
+                insight["last_memory_updated_at"] = updated_at
+
+            tags = [str(tag).strip().lower() for tag in list(item.get("tags") or [])]
+            title = str(item.get("title") or "").strip().lower()
+            is_decision = "decision" in tags or title.startswith("decision:")
+            if not is_decision:
+                continue
+
+            current_ts = decision_timestamps.get(thread_key) or ""
+            if updated_at < current_ts:
+                continue
+            decision_timestamps[thread_key] = updated_at
+            insight["latest_decision"] = _extract_decision_snippet(item.get("body"))
+
+        return insights
+
+    def _matches_thread_link(
+        self,
+        item: dict[str, Any],
+        *,
+        thread_name_filter: str,
+        thread_key_filter: str,
+    ) -> bool:
+        links = dict(item.get("links") or {})
+        item_thread_key = _normalize_thread_key(links.get("project_thread_key"))
+        item_thread_name = _normalize_thread_name(links.get("project_thread_name"))
+
+        if thread_key_filter and item_thread_key == thread_key_filter:
+            return True
+        if thread_name_filter and item_thread_name == thread_name_filter:
+            return True
+        return False
 
     def get_item(self, item_id: str) -> dict[str, Any] | None:
         with self._lock:
