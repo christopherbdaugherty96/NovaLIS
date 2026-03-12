@@ -46,6 +46,22 @@ class ExplainAnythingRouter:
                 return value
         return ""
 
+    @staticmethod
+    def _query_prefers_file(query_text: str) -> bool:
+        lowered = str(query_text or "").strip().lower()
+        if not lowered:
+            return False
+        file_markers = (
+            "this file",
+            "this document",
+            "this doc",
+            "this code",
+            "this error log",
+            "in the file",
+            "from the file",
+        )
+        return any(marker in lowered for marker in file_markers)
+
     def decide(self, *, params: Mapping[str, Any] | None, context_snapshot: Mapping[str, Any] | None) -> ExplainRoute:
         file_path = self._extract_file_path(params)
         if file_path:
@@ -54,6 +70,16 @@ class ExplainAnythingRouter:
         snapshot = dict(context_snapshot or {})
         payload = dict(params or {})
         working_context = dict(payload.get("working_context") or {})
+        query_text = str(payload.get("query") or "").strip()
+        task_type = str(working_context.get("task_type") or "").strip().lower()
+        selected_file = str(working_context.get("selected_file") or "").strip()
+        followup = bool(payload.get("followup"))
+
+        if selected_file and (self._query_prefers_file(query_text) or task_type in {"document_review", "code_analysis", "error_debugging"}):
+            return ExplainRoute(kind="file", reason="working_context_file", file_path=selected_file)
+        if selected_file and followup and not str(working_context.get("active_url") or "").strip():
+            return ExplainRoute(kind="file", reason="followup_file", file_path=selected_file)
+
         browser = dict(snapshot.get("browser") or {})
         if bool(browser.get("is_browser")) or str(working_context.get("active_url") or "").strip():
             return ExplainRoute(kind="webpage", reason="browser_active")
@@ -64,6 +90,9 @@ class ExplainAnythingRouter:
             and int(cursor.get("screen_height") or 0) > 0
         ) or str(working_context.get("active_window") or "").strip():
             return ExplainRoute(kind="screen", reason="cursor_region_available")
+
+        if selected_file:
+            return ExplainRoute(kind="file", reason="fallback_file_context", file_path=selected_file)
 
         return ExplainRoute(kind="clarify", reason="insufficient_context")
 

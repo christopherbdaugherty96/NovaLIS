@@ -28,7 +28,11 @@ class _FakeContextService:
 
 
 class _FakeScreenAnalysisExecutor:
+    def __init__(self) -> None:
+        self.last_params = {}
+
     def execute(self, request) -> ActionResult:
+        self.last_params = dict(request.params or {})
         return ActionResult.ok(
             message="Delegated screen explanation.",
             data={
@@ -139,3 +143,28 @@ def test_explain_anything_uses_working_context_selected_file_when_direct_path_mi
     assert result.success is True
     assert "File explanation" in result.message
     assert result.data.get("analysis", {}).get("file_path") == str(target)
+
+
+def test_explain_anything_uses_working_context_goal_when_query_missing():
+    snapshot = {
+        "cursor": {"x": 140, "y": 120, "screen_width": 1920, "screen_height": 1080},
+        "browser": {"is_browser": True, "page_title": "Python Downloads"},
+        "active_window": {"title": "Python Downloads", "app": "Chrome"},
+        "system": {"os": "Windows"},
+    }
+    screen = _FakeScreenAnalysisExecutor()
+    executor = ExplainAnythingExecutor(
+        ledger=_FakeLedger(),
+        context_service=_FakeContextService(snapshot),
+        screen_analysis_executor=screen,
+    )
+    result = executor.execute(
+        _request(
+            {
+                "invocation_source": "ui",
+                "working_context": {"task_goal": "which one should i download"},
+            }
+        )
+    )
+    assert result.success is True
+    assert screen.last_params.get("query") == "which one should i download"

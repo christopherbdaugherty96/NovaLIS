@@ -47,6 +47,11 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "chat_weather", label: "Weather", command: "weather" },
     { id: "chat_search", label: "Search web", command: "search latest technology news" },
     { id: "chat_system", label: "System status", command: "system status" },
+    { id: "chat_explain", label: "Explain this", command: "explain this" },
+    { id: "chat_help_this", label: "Help me do this", command: "help me do this" },
+    { id: "chat_threads", label: "Show threads", command: "show threads" },
+    { id: "chat_thread_status", label: "Project status", command: "project status this" },
+    { id: "chat_most_blocked", label: "Most blocked", command: "which project is most blocked right now" },
     { id: "chat_doc_create", label: "New analysis doc", command: "create analysis report on global technology policy updates" },
     { id: "chat_doc_list", label: "List analysis docs", command: "list analysis docs" },
   ],
@@ -55,17 +60,32 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "news_sum", label: "Summarize all", command: "summarize all headlines", stayOnPage: true },
     { id: "news_brief", label: "Daily brief", command: "today's news", stayOnPage: true },
     { id: "news_compare", label: "Compare stories", command: "compare headlines 1 and 2", stayOnPage: true },
+    { id: "news_explain_page", label: "Explain this page", command: "what is this page" },
   ],
   home: [
     { id: "home_system", label: "System status", command: "system status", switchToPage: "chat" },
     { id: "home_calendar", label: "Calendar", command: "calendar", switchToPage: "chat" },
     { id: "home_weather", label: "Weather", command: "weather", switchToPage: "chat" },
+    { id: "home_explain", label: "Explain this", command: "explain this", switchToPage: "chat" },
+    { id: "home_capture", label: "Analyze screen", command: "analyze this screen", switchToPage: "chat" },
+    { id: "home_threads", label: "Show threads", command: "show threads", switchToPage: "chat" },
+    { id: "home_thread_status", label: "Project status", command: "project status this", switchToPage: "chat" },
+    { id: "home_most_blocked", label: "Most blocked", command: "which project is most blocked right now", switchToPage: "chat" },
   ],
 };
 
 const COMMAND_SUGGESTIONS = [
   "morning brief",
   "summarize all headlines",
+  "explain this",
+  "help me do this",
+  "show threads",
+  "continue my deployment issue",
+  "project status deployment issue",
+  "biggest blocker in deployment issue",
+  "which project is most blocked right now",
+  "why this recommendation",
+  "which one should I download",
   "update tracked stories",
   "show relationship graph",
   "search for local weather alerts",
@@ -82,6 +102,16 @@ const COMMAND_SUGGESTIONS = [
 const HELP_EXAMPLES = [
   "morning brief",
   "summarize all headlines",
+  "explain this",
+  "help me do this",
+  "show threads",
+  "save this as part of deployment issue",
+  "continue my deployment issue",
+  "project status deployment issue",
+  "biggest blocker in deployment issue",
+  "which project is most blocked right now",
+  "why this recommendation",
+  "which one should I download",
   "research a topic",
   "create analysis report on AI regulation",
   "list analysis docs",
@@ -99,6 +129,9 @@ const HELP_EXAMPLES = [
 const COMMAND_DISCOVERY_GROUPS = [
   { label: "Daily", commands: ["brief", "summarize all headlines", "show snapshot details"] },
   { label: "Research", commands: ["research a topic", "summarize all headlines", "show sources"] },
+  { label: "Context", commands: ["explain this", "help me do this", "which one should i download"] },
+  { label: "Continuity", commands: ["show threads", "save this as part of deployment issue", "continue my deployment issue"] },
+  { label: "Thread insight", commands: ["project status deployment issue", "biggest blocker in deployment issue", "which project is most blocked right now"] },
   { label: "System", commands: ["system status", "open documents", "volume up"] },
 ];
 const LONG_MESSAGE_CHAR_LIMIT = 280;
@@ -174,12 +207,21 @@ function loadingHintForInput(text) {
   const q = (text || "").toLowerCase();
   if (q.includes("search") || q.includes("look up") || q.includes("research")) return "Checking online sources";
   if (q.includes("morning") || q.includes("brief")) return "Preparing your brief";
+  if (q.includes("explain this") || q.includes("what is this") || q.includes("analyze this") || q.includes("screenshot")) return "Analyzing visible context";
   return "Processing";
 }
 
 function safeWSSend(message) {
   if (!ws || ws.readyState !== WebSocket.OPEN) return false;
-  ws.send(JSON.stringify(message));
+  const payload = (message && typeof message === "object" && !Array.isArray(message)) ? { ...message } : message;
+  if (payload && typeof payload === "object" && !Array.isArray(payload) && typeof payload.text === "string") {
+    const channel = String(payload.channel || "text").toLowerCase();
+    payload.channel = channel === "voice" ? "voice" : "text";
+    if (!payload.invocation_source) {
+      payload.invocation_source = payload.channel === "voice" ? "voice" : "ui";
+    }
+  }
+  ws.send(JSON.stringify(payload));
   return true;
 }
 
@@ -192,6 +234,132 @@ function renderMorningPanel() {
   if (news) news.textContent = morningState.news;
   if (system) system.textContent = morningState.system;
   if (calendar) calendar.textContent = morningState.calendar;
+}
+
+function renderContextInsight(summaryText, steps = []) {
+  const summary = $("context-insight-summary");
+  const stepsHost = $("context-insight-steps");
+  if (summary) {
+    const text = String(summaryText || "").trim();
+    summary.textContent = text || "Use \"explain this\" and Nova will summarize what it sees.";
+  }
+  if (!stepsHost) return;
+  clear(stepsHost);
+  const items = Array.isArray(steps) ? steps : [];
+  items.slice(0, 4).forEach((step) => {
+    const clean = String(step || "").trim();
+    if (!clean) return;
+    const li = document.createElement("li");
+    li.textContent = clean;
+    stepsHost.appendChild(li);
+  });
+}
+
+function renderScreenCaptureInsight(data) {
+  const bounds = (data && data.bounds) || {};
+  const width = Number(bounds.width);
+  const height = Number(bounds.height);
+  const sizeText = Number.isFinite(width) && Number.isFinite(height) ? `${Math.round(width)}x${Math.round(height)}` : "requested size";
+  renderContextInsight(`Captured the screen region around your cursor (${sizeText}).`, [
+    "Say \"explain this\" to get an interpretation.",
+  ]);
+}
+
+function renderScreenAnalysisInsight(data) {
+  const summary = String((data && data.summary) || "").trim() || "Screen analysis completed.";
+  const steps = Array.isArray(data && data.next_steps) ? data.next_steps : [];
+  renderContextInsight(summary, steps);
+}
+
+function renderFileExplanationInsight(data) {
+  const filePath = String((data && data.file_path) || "").trim();
+  const summary = String((data && data.summary) || "").trim();
+  const name = filePath ? filePath.split(/[\\/]/).pop() : "file";
+  const title = summary || `File explanation ready for ${name}.`;
+  renderContextInsight(title, filePath ? [`Source file: ${filePath}`] : []);
+}
+
+function renderThreadMapWidget(data = {}) {
+  const summary = $("thread-map-summary");
+  const listHost = $("thread-map-list");
+  const active = String((data && data.active_thread) || "").trim();
+  const threads = Array.isArray(data && data.threads) ? data.threads : [];
+
+  if (summary) {
+    if (!threads.length) {
+      summary.textContent = "No project threads yet. Save work updates to start continuity.";
+    } else if (active) {
+      summary.textContent = `Active thread: ${active}`;
+    } else {
+      summary.textContent = `${threads.length} project thread${threads.length === 1 ? "" : "s"} available.`;
+    }
+  }
+  if (!listHost) return;
+  clear(listHost);
+
+  threads.slice(0, 8).forEach((thread) => {
+    const name = String((thread && thread.name) || "").trim();
+    if (!name) return;
+    const li = document.createElement("li");
+    li.className = "thread-map-item";
+    if (active && name === active) li.classList.add("active");
+
+    const title = document.createElement("div");
+    title.className = "thread-map-title";
+    title.textContent = name;
+    li.appendChild(title);
+
+    const goal = String((thread && thread.goal) || "").trim();
+    const artifactCount = Number((thread && thread.artifact_count) || 0);
+    const blockerCount = Number((thread && thread.blocker_count) || 0);
+    const latestBlocker = String((thread && thread.latest_blocker) || "").trim();
+    const healthState = String((thread && thread.health_state) || "").trim().toUpperCase();
+    const healthReason = String((thread && thread.health_reason) || "").trim();
+    const meta = document.createElement("div");
+    meta.className = "thread-map-meta";
+    if (goal) {
+      meta.textContent = `${goal} | health ${healthState || "AT-RISK"} | artifacts ${artifactCount} | blockers ${blockerCount}`;
+    } else {
+      meta.textContent = `health ${healthState || "AT-RISK"} | artifacts ${artifactCount} | blockers ${blockerCount}`;
+    }
+    li.appendChild(meta);
+    if (healthReason) {
+      const reason = document.createElement("div");
+      reason.className = "thread-map-meta";
+      reason.textContent = `Why: ${healthReason}`;
+      li.appendChild(reason);
+    }
+    if (latestBlocker) {
+      const blocker = document.createElement("div");
+      blocker.className = "thread-map-meta";
+      blocker.textContent = `Latest blocker: ${latestBlocker}`;
+      li.appendChild(blocker);
+    }
+
+    const actions = document.createElement("div");
+    actions.className = "thread-map-actions";
+
+    const continueBtn = document.createElement("button");
+    continueBtn.type = "button";
+    continueBtn.textContent = "Continue";
+    continueBtn.addEventListener("click", () => injectUserText(`continue my ${name}`, "text"));
+    actions.appendChild(continueBtn);
+
+    const attachBtn = document.createElement("button");
+    attachBtn.type = "button";
+    attachBtn.textContent = "Attach latest";
+    attachBtn.addEventListener("click", () => injectUserText(`save this as part of ${name}`, "text"));
+    actions.appendChild(attachBtn);
+
+    const statusBtn = document.createElement("button");
+    statusBtn.type = "button";
+    statusBtn.textContent = "Status";
+    statusBtn.addEventListener("click", () => injectUserText(`project status ${name}`, "text"));
+    actions.appendChild(statusBtn);
+
+    li.appendChild(actions);
+    listHost.appendChild(li);
+  });
 }
 
 function formatSystemSummary(data, summary = "") {
@@ -412,9 +580,9 @@ function renderQuickActions() {
   const copy = document.querySelector(".hints-copy");
   if (copy) {
     const hintText = {
-      chat: "Starter prompts for everyday chat.",
-      news: "News actions for summaries and comparisons.",
-      home: "Status and trust checks for your system.",
+      chat: "Starter prompts for everyday chat and explain mode.",
+      news: "News actions for summaries, comparisons, and context checks.",
+      home: "Status checks, explain actions, and project continuity threads.",
     };
     copy.textContent = hintText[page] || hintText.chat;
   }
@@ -1821,6 +1989,18 @@ function connectWebSocket() {
         morningState.calendar = msg.summary || msg.message || "No events scheduled today.";
         renderMorningPanel();
         break;
+      case "screen_capture":
+        renderScreenCaptureInsight(msg.data || {});
+        break;
+      case "screen_analysis":
+        renderScreenAnalysisInsight(msg.data || {});
+        break;
+      case "file_explanation":
+        renderFileExplanationInsight(msg.data || {});
+        break;
+      case "thread_map":
+        renderThreadMapWidget(msg);
+        break;
       case "chat":
         appendChatMessage(
           "assistant",
@@ -2330,6 +2510,8 @@ window.addEventListener("DOMContentLoaded", () => {
   setOrbStatus("READY");
   ensureDatalist();
   renderMorningPanel();
+  renderContextInsight("");
+  renderThreadMapWidget({});
   renderTrustPanel();
   renderQuickActions();
   setupHintsPanelToggle();
@@ -2370,6 +2552,15 @@ window.addEventListener("DOMContentLoaded", () => {
       renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "", latestNewsCategories);
     });
   }
+
+  const homeExplainBtn = $("btn-home-explain");
+  if (homeExplainBtn) homeExplainBtn.addEventListener("click", () => injectUserText("explain this", "text"));
+
+  const homeHelpBtn = $("btn-home-help");
+  if (homeHelpBtn) homeHelpBtn.addEventListener("click", () => injectUserText("help me do this", "text"));
+
+  const homeThreadsBtn = $("btn-home-threads");
+  if (homeThreadsBtn) homeThreadsBtn.addEventListener("click", () => injectUserText("show threads", "text"));
 
   const micBtn = $("ptt-btn");
   if (micBtn) {

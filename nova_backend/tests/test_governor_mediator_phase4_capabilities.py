@@ -131,6 +131,16 @@ def test_volume_media_brightness_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 60
 
+    inv = GovernorMediator.parse_governed_invocation("help me do this")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 60
+    assert inv.params.get("followup") is True
+
+    inv = GovernorMediator.parse_governed_invocation("what should I click next")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 60
+    assert inv.params.get("followup") is True
+
 
 
 def test_news_intelligence_parsing():

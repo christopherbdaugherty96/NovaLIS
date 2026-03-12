@@ -1,137 +1,139 @@
-📄 Phase 5 Roadmap.txt (corrected)
-text
-# 🧬 NOVA PHASE 5 ROADMAP (Proposed)  
-## *Memory & Continuity – User‑Sovereign Persistence*  
-**Proposed – Awaiting Constitutional Ratification**  
+# NOVA PHASE 5 ROADMAP (Corrected)
+## Memory and Continuity - User-Sovereign Persistence
 
-**Document Status:** Proposed – Design Not Yet Authorized  
-**Based on:**  
-- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md) (Part III, Phase 5)  
-- [MEMORY GOVERNANCE.md](MEMORY%20GOVERNANCE.md)  
-- [Presence Doctrine v5](PresenceDoctrine.md%20v5.txt)  
-- [Nova Orthogonal Cognition Stack](Nova%20Orthogonal%20Cognition%20Stack.txt)  
-- [Tonal Calibration Scope – Design Decision](%23%20%F0%9F%A7%AD%20Tonal%20Calibration%20Scope%20%E2%80%93%20Desi.txt)  
-- [Delegated Autonomy.txt](Delegated%20Autonomy.txt) (future direction)  
-- [Consolidated API's.txt](Consolidated%20API%27s.txt) (Phase 5+ APIs)  
-- **Audit Refinement:** 2026‑02‑16 – Added pattern detection constraints, notification scheduling boundary, deterministic tone application clause.
+Document Status: Proposed - Design Not Yet Authorized
+Prepared by: Nova Constitutional Governance Board
+Revised: 2026-03-11
 
----
+## Executive Summary
 
-## 🔹 Executive Summary  
+Phase 5 introduces user-sovereign persistence and continuity under strict governance. It adds explicit memory operations, inspectable adaptation controls, and continuity tooling while preserving constitutional invariants:
 
-Phase 5 (proposed) introduces **user‑sovereign memory and continuity** – the first time Nova can retain information across sessions, adapt its tone per domain, and offer structured continuity, **all under explicit user control**.  
+- no authority expansion
+- no hidden persistence
+- no background autonomy
+- no execution outside Governor mediation
 
-This phase is split into two parallel tracks to ensure experience maturity keeps pace with memory capability:  
+This roadmap remains proposed. No Phase-5 persistent capability is runtime-authorized until the admission gate is ratified.
 
-- **Phase 5A – Memory & Continuity:** Explicit memory (save/lock/delete), declarative identity, pattern detection (quarantine → explicit approval), per‑domain tone calibration.  
-- **Phase 5B – Experience Maturation:** Notification design, ambient presence, multi‑modal integration, household rhythm, recovery narratives.  
+## Track Structure
 
-All memory and adaptation remain **explicitly user‑approved** – no inference, no behavioral learning, no background routines. Nova’s autonomy remains at **Tier 2 (Observational)** at most, with mutations limited to **Class C (UI Formatting)** and manual approval. The Governor remains the sole authority for all memory operations and tone mutations.  
+Phase 5 is split into two tracks:
 
-**This roadmap is a proposal.** Design work cannot begin until the Phase 5 admission gate is satisfied and the Constitutional Governance Board ratifies the phase.
+- Phase 5A - Memory and Continuity:
+  - explicit save/lock/defer/delete
+  - memory governance tiers and schemas
+  - user-inspectable continuity controls
+  - declarative identity preferences
+- Phase 5B - Experience Maturation:
+  - calm notification design (opt-in and user-scheduled)
+  - multi-surface coherence
+  - trust-facing explainability and recovery narratives
 
----
+## Phase Boundary Clarification
 
-## 🎯 Phase 5 Goals  
+Working Context Engine is Phase-4.5-compatible runtime behavior and is session-scoped only.
 
-1. **Establish explicit, inspectable, revocable memory** – users can save, lock, defer, and delete information.  
-2. **Enable per‑domain tone calibration** – Nova’s response style adapts to context (calendar, technical, casual) through explicit user feedback and quarantine‑then‑approve.  
-3. **Provide declarative identity configuration** – users can set preferred name, voice, and communication style.  
-4. **Introduce pattern detection without auto‑apply** – Nova may detect statistical patterns from explicit interactions and present them in a quarantine queue for user review.  
-5. **Design calm, opt‑in notification and ambient presence** – users can choose to receive gentle alerts (never proactive).  
-6. **Develop multi‑modal coherence** – voice, screen, and ambient display work together, with offline‑first preservation.  
-7. **Build recovery narratives** – explain failures in plain language, maintaining trust.  
-8. **Maintain all Tier 1 invariants** – no autonomy, no background cognition, no predictive preloading, no silent fallback, no authority expansion.  
+- Working Context Engine: non-persistent, session-local task coherence
+- Phase 5 Memory: cross-session persistence with explicit user governance
 
----
+This distinction is non-negotiable: Phase-4.5 context coherence must not silently become Phase-5 persistent memory.
 
-## 📋 Scope  
+## Goals
 
-*(Scope sections unchanged – they describe the intended capabilities.)*  
+1. Establish explicit, inspectable, revocable memory.
+2. Keep memory as filing, not learning.
+3. Enable bounded tone calibration with transparent controls.
+4. Support continuity across user-approved project threads.
+5. Preserve all constitutional Tier-1 invariants.
 
----
+## In Scope (Proposed)
 
-## 🏛️ Architectural Overview  
+- Memory tiers: locked, active, deferred
+- Memory operations with confirmation rules
+- Continuity views and project thread status surfaces
+- Tone profile controls with inspectable mutation logs
+- Notification scheduling model that is user-invoked or user-scheduled only
 
-*(Architectural details unchanged.)*  
+## Out of Scope (Proposed)
 
----
+- autonomous/background execution
+- predictive preloading without invocation
+- implicit delegation
+- learning-based authority expansion
+- hidden or non-revocable adaptation
 
-## 🔒 Phase 5 Admission Gate (Prerequisite for Design Unlock)  
+## Architectural Overview
 
-Before any Phase 5 design work can begin, the following must be satisfied:  
+Authority plane remains unchanged:
 
-- [x] Phase 4 runtime unlocked and stable for ≥30 days.  
-- [x] Phase 4.5 design completed and ratified.  
-- [x] Phase 4.5 user research confirms daily-use scenarios and calm perception.  
-- [ ] **Memory Governance specification** ratified (tiers, operations, schemas, Governor signature enforcement).  
-- [ ] **Tone Calibration architecture** approved (domain taxonomy, quarantine flow, mutation limits, deterministic application).  
-- [ ] **Pattern detection opt‑in and constraint** ratified.  
-- [ ] **Notification scheduling boundary** ratified.  
-- [ ] **Constitutional audit** confirms no authority expansion, no inference, no background autonomy.  
+`User -> brain_server -> GovernorMediator -> Governor -> ExecuteBoundary -> Executor -> Ledger`
 
-**Design Unlock Act:** If ratified, the Constitutional Governance Board may authorize design work after all prerequisites are met.
+Phase-5 additions are governance-constrained data layers:
 
----
+- Memory plane (persistent, explicit, inspectable)
+- Continuity plane (thread/project state reasoning)
+- Tone calibration plane (Class C formatting mutations only)
 
-## 🛠️ Implementation Roadmap  
+All mutations remain reversible and ledger-visible.
 
-All code must be placed behind **compile‑time gates** (build profiles) and remain runtime‑locked until a future phase (Phase 6 or later) unlocks them.  
+## Data Boundary Rules
 
-*(Workstreams A–H unchanged.)*  
+Memory and tone adaptation must remain isolated by contract:
 
----
+- Persistent memory contents must not directly drive tone shifts.
+- Tone calibration inputs are limited to explicit feedback and approved calibration signals.
+- Tone adaptation must not change authority, policy, or capability routing.
 
-## ⏱️ Timeline Estimate  
+## Admission Gate (Required Before Design Unlock)
 
-*(Timeline unchanged.)*  
+- [x] Phase 4 runtime unlocked and stable for >=30 days.
+- [x] Phase 4.5 design completed and ratified.
+- [x] Phase 4.5 user research confirms daily-use scenarios and calm perception.
+- [ ] Memory Governance specification ratified.
+- [ ] Tone Calibration architecture approved.
+- [ ] Pattern detection opt-in and constraints ratified.
+- [ ] Notification scheduling boundary ratified.
+- [ ] Constitutional audit confirms no authority expansion and no hidden autonomy.
 
----
+Design Unlock Act: Phase-5 implementation design can begin only after all gate checks are complete and board ratification is issued.
 
-## ⚠️ Risks and Mitigations  
+## Implementation Policy
 
-*(Risks unchanged.)*  
+- Phase-5 code paths must be behind compile-time or runtime phase gates.
+- Persistent memory and adaptive tone mutations remain runtime-locked until explicit unlock.
+- Exception: Working Context Engine remains an existing Phase-4.5 session-scoped runtime component and does not constitute Phase-5 persistence.
 
----
+## Risks and Mitigations
 
-## ✅ Success Criteria for Phase 5 Design Completion  
+- Risk: scope creep from context into persistence.
+  - Mitigation: explicit boundary tests for session-only context modules.
+- Risk: silent adaptation drift.
+  - Mitigation: ledger events + inspectable settings + user override.
+- Risk: notification behavior interpreted as proactive autonomy.
+  - Mitigation: user-invoked/user-scheduled delivery only; no autonomous push loops.
 
-*(Criteria unchanged.)*  
+## Success Criteria for Phase-5 Design Completion
 
----
+- Memory governance contract finalized and testable.
+- Tone calibration boundaries and visibility model finalized.
+- Continuity model remains user-sovereign and revocable.
+- No constitutional invariant regressions.
+- Proof packet prepared for unlock decision.
 
-## 🔮 After Phase 5: Path to Phase 6  
+## Path to Phase 6
 
-Phase 5 components will remain dormant until **Phase 6 (Policy‑Bound Operation)** unlocks runtime for memory, tone calibration, and notifications. Phase 6 admission will require Phase 4.5 and Phase 5 completion, plus ≥3 months of stable household deployment.  
+Phase-5 design outputs remain governed and phase-gated. Runtime unlock for persistent memory/adaptation is deferred to a later policy-bound phase after additional safety proofs.
 
----
+## References (Repository Paths)
 
-## 📜 References  
+- `docs/canonical/NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.9.txt`
+- `docs/design/phase 5/MEMORY GOVERNANCE.md`
+- `docs/design/Phase 4.2/PresenceDoctrine.md v5.txt`
+- `docs/design/Phase 4.2/Nova Orthogonal Cognition Stack.txt`
+- Tonal Calibration Scope design document (in `docs/design/phase 5`, file starts with `#` and includes `Tonal Calibration Scope`).
+- Tonal Calibration Visibility design document (in `docs/design/phase 5`, file starts with `#` and includes `Tonal Calibration Visibility`).
+- `docs/design/phase 5/Delegated Autonomy.txt`
+- `docs/design/phase 5/Consolidated API's.txt`
+- `docs/design/phase 5/NOVA_WORKING_CONTEXT_ENGINE.md`
 
-- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md) (Part III, Phase 5)  
-- [MEMORY GOVERNANCE.md](MEMORY%20GOVERNANCE.md)  
-- [Presence Doctrine v5](PresenceDoctrine.md%20v5.txt)  
-- [Nova Orthogonal Cognition Stack](Nova%20Orthogonal%20Cognition%20Stack.txt)  
-- [Tonal Calibration Scope – Design Decision](%23%20%F0%9F%A7%AD%20Tonal%20Calibration%20Scope%20%E2%80%93%20Desi.txt)  
-- [Delegated Autonomy.txt](Delegated%20Autonomy.txt)  
-- [Consolidated API's.txt](Consolidated%20API%27s.txt)  
-- [Phase 4 Roadmap](PHASE_4_ROADMAP.md)  
-- [Phase 4.2 Roadmap](PHASE_4.2_ROADMAP.md)  
-- [Phase 4.5 Roadmap](PHASE_4.5_ROADMAP.md)  
-
----
-
-**Prepared by:** Nova Constitutional Governance Board  
-**Date:** 2026‑02‑16 (Revised)  
-**Status:** Proposed – Awaiting Ratification  
-
----  
-
-*End of Phase 5 Roadmap*
-
-
-## 2026-03-11 Addendum - Working Context Engine
-
-Reference design for session-scoped task coherence (non-persistent, non-authoritative):
-
-- [NOVA Working Context Engine](NOVA_WORKING_CONTEXT_ENGINE.md)

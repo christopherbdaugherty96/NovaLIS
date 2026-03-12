@@ -27,6 +27,8 @@ class ScreenAnalysisExecutor:
 
     def execute(self, request) -> ActionResult:
         try:
+            request_params = dict(request.params or {})
+            working_context = request_params.get("working_context")
             capture_result = self.capture_executor.execute(request)
             if not capture_result.success:
                 self._safe_log(
@@ -43,9 +45,20 @@ class ScreenAnalysisExecutor:
                 image_path=image_path,
                 ocr_text=ocr_text,
                 context_snapshot=payload.get("context_snapshot"),
-                user_query=str((request.params or {}).get("query") or ""),
+                working_context=working_context if isinstance(working_context, dict) else None,
+                user_query=str(request_params.get("query") or ""),
             )
             summary = str(analysis.get("summary") or "Screen analysis completed.").strip()
+            next_steps = [str(item).strip() for item in list(analysis.get("next_steps") or []) if str(item).strip()]
+            if next_steps:
+                summary = "\n".join(
+                    [
+                        summary,
+                        "",
+                        "Suggested next steps:",
+                        *[f"- {item}" for item in next_steps[:4]],
+                    ]
+                )
             self._safe_log(
                 "SCREEN_ANALYSIS_COMPLETED",
                 {"request_id": request.request_id, "success": True, "image_path": image_path},
@@ -57,7 +70,7 @@ class ScreenAnalysisExecutor:
             merged_data["working_context_delta"] = self._build_working_context_delta(
                 context_snapshot=payload.get("context_snapshot"),
                 analysis=analysis,
-                user_query=str((request.params or {}).get("query") or ""),
+                user_query=str(request_params.get("query") or ""),
             )
             merged_data["widget"] = {
                 "type": "screen_analysis",
@@ -65,6 +78,7 @@ class ScreenAnalysisExecutor:
                     "summary": summary,
                     "ocr_text": ocr_text,
                     "capture": capture,
+                    "next_steps": next_steps,
                 },
             }
 
@@ -106,16 +120,26 @@ class ScreenAnalysisExecutor:
         active_window = dict(snapshot.get("active_window") or {})
         browser = dict(snapshot.get("browser") or {})
         signals = dict(analysis.get("signals") or {})
+        diagnostic = str(signals.get("diagnostic") or "").strip().lower()
         browser_active = bool(browser.get("is_browser"))
+        inferred_task = "research" if browser_active else "analysis"
+        if diagnostic == "python_download_guidance":
+            inferred_task = "software_install"
+        elif diagnostic in {"module_not_found", "key_error"}:
+            inferred_task = "error_debugging"
         delta: dict[str, Any] = {
-            "task_type": "research" if browser_active else "analysis",
+            "task_type": inferred_task,
             "active_app": str(active_window.get("app") or "").strip(),
             "active_window": str(active_window.get("title") or "").strip(),
-            "active_url": str(browser.get("url") or "").strip(),
+            "active_url": str(signals.get("active_url") or browser.get("url") or "").strip(),
             "cursor_target": str(signals.get("page_title") or signals.get("ocr_snippet") or "").strip(),
             "last_relevant_object": str(signals.get("page_title") or "screen_region").strip(),
             "current_step": "analysis",
         }
+        recommended_download = str(signals.get("recommended_download") or "").strip()
+        if recommended_download:
+            delta["last_relevant_object"] = recommended_download
+            delta["current_step"] = "selection"
         query = str(user_query or "").strip()
         if query:
             delta["task_goal"] = query

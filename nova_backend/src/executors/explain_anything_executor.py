@@ -42,6 +42,9 @@ class ExplainAnythingExecutor:
         params = dict(request.params or {})
         invocation_source = str(params.get("invocation_source") or "").strip().lower()
         query_text = str(params.get("query") or "").strip()
+        working_context = dict(params.get("working_context") or {})
+        if not query_text:
+            query_text = str(working_context.get("task_goal") or working_context.get("last_relevant_object") or "").strip()
         self._safe_log(
             "EXPLAIN_ANYTHING_REQUESTED",
             {
@@ -92,6 +95,8 @@ class ExplainAnythingExecutor:
         if route.kind in {"screen", "webpage"}:
             downstream_params = dict(params)
             downstream_params.setdefault("invocation_source", invocation_source)
+            if query_text:
+                downstream_params["query"] = query_text
             downstream_params["context_snapshot"] = context_snapshot
             if isinstance(params.get("working_context"), dict):
                 downstream_params["working_context"] = dict(params.get("working_context") or {})

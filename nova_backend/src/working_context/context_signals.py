@@ -8,6 +8,8 @@ def infer_task_type(text: str, *, intent_family: str = "") -> str:
     lowered = str(text or "").strip().lower()
     family = str(intent_family or "").strip().lower()
 
+    if any(token in lowered for token in ("help me do this", "help me do it", "walk me through", "guide me through", "what should i click")):
+        return "workflow_guidance"
     if any(token in lowered for token in ("download", "installer", "install", "setup")):
         return "software_install"
     if any(token in lowered for token in ("error", "traceback", "exception", "keyerror", "modulenotfounderror")):
@@ -27,6 +29,8 @@ def infer_task_type(text: str, *, intent_family: str = "") -> str:
 
 def infer_step(text: str) -> str:
     lowered = str(text or "").strip().lower()
+    if any(token in lowered for token in ("help me do this", "help me do it", "walk me through", "guide me through", "what should i do next", "what should i click")):
+        return "execution_guidance"
     if any(token in lowered for token in ("download", "choose", "which one")):
         return "selection"
     if any(token in lowered for token in ("explain", "what is this", "analyze")):
