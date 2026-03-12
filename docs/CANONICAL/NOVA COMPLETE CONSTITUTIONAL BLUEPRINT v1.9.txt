@@ -1,54 +1,55 @@
-# 🧬 NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.9
-## The Single Source of Truth — Identity • Law • Architecture • Phases • Governance
+﻿# ðŸ§¬ NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.9
+## The Single Source of Truth â€” Identity â€¢ Law â€¢ Architecture â€¢ Phases â€¢ Governance
 
 **Document ID:** `NOVA-CANONICAL-FINAL-v1.9`  
-**Status:** 🔒 **CONSTITUTIONAL — IMMUTABLE**  
+**Status:** ðŸ”’ **CONSTITUTIONAL â€” IMMUTABLE**  
 **Ratified:** 2026-02-18  
 **Supersedes:** NOVA-CANONICAL-FINAL-v1.8 and all prior Nova documents  
-**Classification:** Complete System Constitution — Identity, Invariants, Phases, Architecture, UI, Memory, Evolution, Mutation, Enforcement, Scope Boundary
+**Classification:** Complete System Constitution â€” Identity, Invariants, Phases, Architecture, UI, Memory, Evolution, Mutation, Enforcement, Scope Boundary
+**Runtime Alignment Note (2026-03-12):** This document remains the constitutional law source for Nova identity and invariants. Runtime capability activation/status has advanced beyond this snapshot; use `docs/current_runtime/CURRENT_RUNTIME_STATE.md` and `docs/PROOFS/Phase-5/PHASE_5_PROOF_PACKET_INDEX.md` for current runtime truth.
 
 ---
 
-## 🔹 PREAMBLE
+## ðŸ”¹ PREAMBLE
 
 This document is the **single, unified source of constitutional truth** for the Nova system. It consolidates, harmonizes, and supersedes all prior canonical documents, phase proofs, architectural specifications, and governance frameworks.
 
 **Constitutional principles:**
 
-- **Identity** defines direction — immutable.
-- **Invariants** define law — tiered by severity, mechanically enforced where possible.
-- **Phases** define permission — capability unlocks only through ratified gates.
-- **Governor** defines authority — single choke point, absolute.
-- **Architecture** implements law — orthogonal agents, personality layer, mutation firewall.
-- **Enforcement** guarantees compliance — static proofs, runtime guards, immutable ledger.
+- **Identity** defines direction â€” immutable.
+- **Invariants** define law â€” tiered by severity, mechanically enforced where possible.
+- **Phases** define permission â€” capability unlocks only through ratified gates.
+- **Governor** defines authority â€” single choke point, absolute.
+- **Architecture** implements law â€” orthogonal agents, personality layer, mutation firewall.
+- **Enforcement** guarantees compliance â€” static proofs, runtime guards, immutable ledger.
 
 **All future Nova development must reference this document as the sole constitutional authority.**
 
 ---
 
-## 📑 Table of Contents
+## ðŸ“‘ Table of Contents
 
-- [Part 0 — Core Identity](#part-0--core-identity)
-- [Part I — Permanent Constitutional Invariants](#part-i--permanent-constitutional-invariants)
-- [Part II — System Architecture](#part-ii--system-architecture)
-- [Part III — Phase Map](#part-iii--phase-map)
-- [Part IV — Deep Thought Constitutional Framework](#part-iv--deep-thought-constitutional-framework)
-- [Part V — UI Constitutional Layer & Orb](#part-v--ui-constitutional-layer--orb)
-- [Part VI — Memory Governance](#part-vi--memory-governance-phase-5-design)
-- [Part VII — Presence Doctrine](#part-vii--presence-doctrine-phase-42-design)
-- [Part VIII — Autonomy Tiers & Evolution Control](#part-viii--autonomy-tiers--evolution-control)
-- [Part IX — Mutation Firewall & Ledger](#part-ix--mutation-firewall--ledger-phase-9-design)
-- [Part X — API & Integration Registry](#part-x--api--integration-registry)
-- [Part XI — Phase 4 Admission Gate & Unlock Procedure](#part-xi--phase-4-admission-gate--unlock-procedure)
-- [Part XII — Constitutional Severity & Enforcement](#part-xii--constitutional-severity--enforcement)
-- [Part XIII — Constitutional Scope Boundary](#part-xiii--constitutional-scope-boundary)
+- [Part 0 â€” Core Identity](#part-0--core-identity)
+- [Part I â€” Permanent Constitutional Invariants](#part-i--permanent-constitutional-invariants)
+- [Part II â€” System Architecture](#part-ii--system-architecture)
+- [Part III â€” Phase Map](#part-iii--phase-map)
+- [Part IV â€” Deep Thought Constitutional Framework](#part-iv--deep-thought-constitutional-framework)
+- [Part V â€” UI Constitutional Layer & Orb](#part-v--ui-constitutional-layer--orb)
+- [Part VI â€” Memory Governance](#part-vi--memory-governance-phase-5-design)
+- [Part VII â€” Presence Doctrine](#part-vii--presence-doctrine-phase-42-design)
+- [Part VIII â€” Autonomy Tiers & Evolution Control](#part-viii--autonomy-tiers--evolution-control)
+- [Part IX â€” Mutation Firewall & Ledger](#part-ix--mutation-firewall--ledger-phase-9-design)
+- [Part X â€” API & Integration Registry](#part-x--api--integration-registry)
+- [Part XI â€” Phase 4 Admission Gate & Unlock Procedure](#part-xi--phase-4-admission-gate--unlock-procedure)
+- [Part XII â€” Constitutional Severity & Enforcement](#part-xii--constitutional-severity--enforcement)
+- [Part XIII â€” Constitutional Scope Boundary](#part-xiii--constitutional-scope-boundary)
 - [Appendices](#appendices)
 
 ---
 
-# PART 0 — CORE IDENTITY
+# PART 0 â€” CORE IDENTITY
 
-## 0.1 One‑Sentence Truth
+## 0.1 Oneâ€‘Sentence Truth
 
 > **Nova is a governor over contained intelligence.**
 
@@ -56,15 +57,15 @@ This document is the **single, unified source of constitutional truth** for the 
 
 Nova is:
 
-- A **law‑enforced interface** between the user and AI capabilities
+- A **lawâ€‘enforced interface** between the user and AI capabilities
 - A **governed intelligence appliance**
 - A **household information & control surface**
-- An **Agent Under Law** — authority always mediated, never autonomous
+- An **Agent Under Law** â€” authority always mediated, never autonomous
 
 ## 0.3 Permanent Execution Path
 
 ```
-User → Governor → Capability → Result
+User â†’ Governor â†’ Capability â†’ Result
 ```
 
 - No bypass
@@ -81,17 +82,17 @@ This invariant is **absolute and irreversible**. No phase unlock, feature additi
 
 ## 0.5 Sovereign Appliance Principle
 
-> **Nova is a sovereign household intelligence appliance. It optimizes for long-term household trust over capability expansion — but trust is earned through daily usefulness, not just safety.**
+> **Nova is a sovereign household intelligence appliance. It optimizes for long-term household trust over capability expansion â€” but trust is earned through daily usefulness, not just safety.**
 
-This meta-principle guides all design decisions. Nova is not a platform, framework, or ecosystem. It is a *device you live with* — stable, predictable, and calm.
+This meta-principle guides all design decisions. Nova is not a platform, framework, or ecosystem. It is a *device you live with* â€” stable, predictable, and calm.
 
-- **Deterministic behavior under all conditions** – failure must be closed, quiet, recoverable, and explainable.
-- **Emotional neutrality** – presence is steady and reserved, never eager, charismatic, or persuasive. The core emotional outcome is: *"Nothing is happening — and that's good."*
-- **Drift control** – mutation is the exception, not the rule; higher autonomy tiers (3+) are opt‑in experimental modes, Tier 4 requires ceremony.
-- **Long‑term integrity** – every capability, phase unlock, and architectural choice is filtered through the question: *“Would I trust this in my living room for ten years?”*
-- **Default State Principle** – When no interaction occurs, Nova should still provide passive value through cached or reflective information without initiating external activity. The Idle Value Guarantee: if Nova is opened and the user does nothing, the screen must still feel useful — system health, last updates, environment snapshot, "everything normal" state.
-- **Effort Minimization Principle** – Within governance constraints, Nova should minimize the number of steps required to perform common tasks.
-- **Perceived Behavior Consistency** – Nova should behave in ways that appear predictable and consistent to a human observer, even when internal safeguards or failures occur.
+- **Deterministic behavior under all conditions** â€“ failure must be closed, quiet, recoverable, and explainable.
+- **Emotional neutrality** â€“ presence is steady and reserved, never eager, charismatic, or persuasive. The core emotional outcome is: *"Nothing is happening â€” and that's good."*
+- **Drift control** â€“ mutation is the exception, not the rule; higher autonomy tiers (3+) are optâ€‘in experimental modes, Tierâ€¯4 requires ceremony.
+- **Longâ€‘term integrity** â€“ every capability, phase unlock, and architectural choice is filtered through the question: *â€œWould I trust this in my living room for ten years?â€*
+- **Default State Principle** â€“ When no interaction occurs, Nova should still provide passive value through cached or reflective information without initiating external activity. The Idle Value Guarantee: if Nova is opened and the user does nothing, the screen must still feel useful â€” system health, last updates, environment snapshot, "everything normal" state.
+- **Effort Minimization Principle** â€“ Within governance constraints, Nova should minimize the number of steps required to perform common tasks.
+- **Perceived Behavior Consistency** â€“ Nova should behave in ways that appear predictable and consistent to a human observer, even when internal safeguards or failures occur.
 
 ## 0.6 Core Value Exchange
 
@@ -100,10 +101,10 @@ This meta-principle guides all design decisions. Nova is not a platform, framewo
 A household product survives only if it answers: *What uncertainty does this remove daily?*
 
 Nova removes uncertainty about:
-- **Environment** – weather, time, calendar, system health
-- **Privacy** – what data left, when, why
-- **Control** – who or what is acting
-- **Safety** – is anything wrong?
+- **Environment** â€“ weather, time, calendar, system health
+- **Privacy** â€“ what data left, when, why
+- **Control** â€“ who or what is acting
+- **Safety** â€“ is anything wrong?
 
 Nova is an **Uncertainty Reduction Appliance**. This framing guides all Phase 4.5 experience design and prioritization.
 
@@ -111,69 +112,69 @@ Nova is an **Uncertainty Reduction Appliance**. This framing guides all Phase 4.
 
 > **Calm vs. Relevance**
 
-Nova's philosophy demands calm, non‑directive, non‑initiating behavior. But daily usefulness requires visibility, timeliness, and surface relevance.
+Nova's philosophy demands calm, nonâ€‘directive, nonâ€‘initiating behavior. But daily usefulness requires visibility, timeliness, and surface relevance.
 
-This tension cannot be resolved constitutionally — it is a matter of design judgment in Phase 4.5 and beyond. The system must balance:
+This tension cannot be resolved constitutionally â€” it is a matter of design judgment in Phase 4.5 and beyond. The system must balance:
 
-- **Too far toward calm** → feels passive, unused
-- **Too far toward visibility** → feels like every other assistant
+- **Too far toward calm** â†’ feels passive, unused
+- **Too far toward visibility** â†’ feels like every other assistant
 
-The right balance is: **quiet reassurance** — present when looked at, silent when not.
+The right balance is: **quiet reassurance** â€” present when looked at, silent when not.
 
-## 0.8 Phase 4 Achievement — Staging Active
+## 0.8 Phase 4 Achievement â€” Staging Active
 
-As of 2026-02-18, **Phase 4 staging is active** with Capability 16 (Governed Web Search) live under full constitutional governance. All architectural safeguards are mechanically enforced, and the Governor spine has been proven as the single authority choke point. This milestone confirms that governed execution can coexist with the appliance identity.
+As of 2026-02-18, **Phase 4 staging is active** with Capabilityâ€¯16 (Governed Web Search) live under full constitutional governance. All architectural safeguards are mechanically enforced, and the Governor spine has been proven as the single authority choke point. This milestone confirms that governed execution can coexist with the appliance identity.
 
 ---
 
-# PART I — PERMANENT CONSTITUTIONAL INVARIANTS
+# PART I â€” PERMANENT CONSTITUTIONAL INVARIANTS
 
-*Classified by severity. Tier 1 = Immutable Core, mechanically enforced. Tier 2 = Strong Guidance, enforced via design & test. Tier 3 = Aspirational, documented intent only.*
+*Classified by severity. Tierâ€¯1 = Immutable Core, mechanically enforced. Tierâ€¯2 = Strong Guidance, enforced via design & test. Tierâ€¯3 = Aspirational, documented intent only.*
 
 | # | Invariant | Description | Severity |
 |---|-----------|-------------|----------|
-| 1 | **Single Master Governor** | Exactly one choke point for all governed actions. No code path may bypass the Governor. | **Tier 1** |
-| 2 | **Intelligence–Authority Split** | Intelligence (reasoning, analysis) is advisory only. Authority (execution, state change) is always Governor‑mediated. | **Tier 1** |
-| 3 | **No Autonomous Execution** | Nova never initiates **execution** of actions, never acts on its own, never pursues goals. Cognition without execution (e.g., proposal generation) is permitted only under Tier 4 and subject to constitutional addendum (8.5). | **Tier 1** |
-| 4 | **No Background Cognition** | Nova performs zero reasoning, inference, or intent evaluation except in direct response to a user message. (Any allowance for background cognition requires Autonomy Tier = 4, Evolution = ON, and operates under the Tier 4 Addendum.) | **Tier 1** |
-| 5 | **No Predictive Preloading** | No pre‑fetching of data or preparation of responses based on partial input, idle time, or inferred intent. | **Tier 1** |
-| 6 | **No Silent Fallback** | Nova must never silently substitute a different capability when a requested capability is unavailable. Any substitution must be explicitly disclosed and user‑confirmed. | **Tier 1** |
-| 7 | **No Environment Override** | `GOVERNED_ACTIONS_ENABLED` is hard‑coded; never overridden via env, config, or runtime patching. | **Tier 1** |
-| 8 | **No Dynamic Execution Surface** | `exec`, `eval`, `__import__`, `subprocess`, `os.system`, reflection‑based invocation of untrusted names are **forbidden** in any authority‑influencing path. `importlib` is allowed **only** for startup‑time, Governor‑mediated loading of pre‑approved capability modules. | **Tier 1** |
-| 9 | **Orb Non‑Semantic** | The Orb communicates only one message: *“There is power here. It is stable.”* No user may infer Nova’s operational state from the Orb alone. | **Tier 1** |
-| 10 | **UI Reflective Only** | Nova’s UI may **reflect state** (show what exists) but never **interpret, guide, initiate, or prioritize** attention. | **Tier 1** |
-| 11 | **Calm as Technical Requirement** | Calm is enforced through deterministic animation, absence of urgency language, prohibition of progress metaphors, and zero attention‑demanding UI elements. | **Tier 1** |
-| 12 | **No Speculative Execution** | No speculative execution, tool pre‑warming, parallel capability evaluation, or background concurrency. | **Tier 1** |
-| 13 | **No Self‑Expansion of Authority** | Nova may never grant itself authority to act without explicit user command or constitutionally ratified policy. | **Tier 1** |
-| 14 | **Evolution Kill Switch Absolute** | When `evolution_enabled = False`, no self‑modification of any kind occurs. Running tasks are cancelled, pending tasks deleted. | **Tier 1** |
-| 15 | **Network Authority Unification** | All outbound network communication must route through `NetworkMediator`. No direct use of `requests`, `httpx`, `urllib`, `socket`, or similar outside the mediator. | **Tier 1** |
-| 16 | **Mutation Scope Limit** | A single mutation event may affect only one `@mutable` component, unless explicitly batch‑approved by user. | **Tier 2** |
-| 17 | **Ledger Append‑Only** | Ledger entries are never deleted. Snapshot objects may be pruned under Governor‑mediated policy; pruning is logged as a `CONSTITUTIONAL_PRUNE` event. | **Tier 2** |
-| 18 | **Multi‑User Phase Gate** | Multi‑user operation is **not supported** in Phase 4. Future multi‑user design requires explicit constitutional ratification and is gated behind a future phase unlock. | **Tier 2** |
-| 19 | **2× Token Length (Deep Thought)** | Deep Thought output should not exceed 2× user message token length unless user explicitly requests depth. (Advisory.) | **Tier 3** |
-| 20 | **Orb Semantic Leak Test** | User study: accuracy at guessing Nova’s state from Orb alone must be not significantly above chance (target ≤60% in forced‑choice). | **Tier 3** |
+| 1 | **Single Master Governor** | Exactly one choke point for all governed actions. No code path may bypass the Governor. | **Tierâ€¯1** |
+| 2 | **Intelligenceâ€“Authority Split** | Intelligence (reasoning, analysis) is advisory only. Authority (execution, state change) is always Governorâ€‘mediated. | **Tierâ€¯1** |
+| 3 | **No Autonomous Execution** | Nova never initiates **execution** of actions, never acts on its own, never pursues goals. Cognition without execution (e.g., proposal generation) is permitted only under Tierâ€¯4 and subject to constitutional addendum (8.5). | **Tierâ€¯1** |
+| 4 | **No Background Cognition** | Nova performs zero reasoning, inference, or intent evaluation except in direct response to a user message. (Any allowance for background cognition requires Autonomy Tier = 4, Evolution = ON, and operates under the Tierâ€¯4 Addendum.) | **Tierâ€¯1** |
+| 5 | **No Predictive Preloading** | No preâ€‘fetching of data or preparation of responses based on partial input, idle time, or inferred intent. | **Tierâ€¯1** |
+| 6 | **No Silent Fallback** | Nova must never silently substitute a different capability when a requested capability is unavailable. Any substitution must be explicitly disclosed and userâ€‘confirmed. | **Tierâ€¯1** |
+| 7 | **No Environment Override** | `GOVERNED_ACTIONS_ENABLED` is hardâ€‘coded; never overridden via env, config, or runtime patching. | **Tierâ€¯1** |
+| 8 | **No Dynamic Execution Surface** | `exec`, `eval`, `__import__`, `subprocess`, `os.system`, reflectionâ€‘based invocation of untrusted names are **forbidden** in any authorityâ€‘influencing path. `importlib` is allowed **only** for startupâ€‘time, Governorâ€‘mediated loading of preâ€‘approved capability modules. | **Tierâ€¯1** |
+| 9 | **Orb Nonâ€‘Semantic** | The Orb communicates only one message: *â€œThere is power here. It is stable.â€* No user may infer Novaâ€™s operational state from the Orb alone. | **Tierâ€¯1** |
+| 10 | **UI Reflective Only** | Novaâ€™s UI may **reflect state** (show what exists) but never **interpret, guide, initiate, or prioritize** attention. | **Tierâ€¯1** |
+| 11 | **Calm as Technical Requirement** | Calm is enforced through deterministic animation, absence of urgency language, prohibition of progress metaphors, and zero attentionâ€‘demanding UI elements. | **Tierâ€¯1** |
+| 12 | **No Speculative Execution** | No speculative execution, tool preâ€‘warming, parallel capability evaluation, or background concurrency. | **Tierâ€¯1** |
+| 13 | **No Selfâ€‘Expansion of Authority** | Nova may never grant itself authority to act without explicit user command or constitutionally ratified policy. | **Tierâ€¯1** |
+| 14 | **Evolution Kill Switch Absolute** | When `evolution_enabled = False`, no selfâ€‘modification of any kind occurs. Running tasks are cancelled, pending tasks deleted. | **Tierâ€¯1** |
+| 15 | **Network Authority Unification** | All outbound network communication must route through `NetworkMediator`. No direct use of `requests`, `httpx`, `urllib`, `socket`, or similar outside the mediator. | **Tierâ€¯1** |
+| 16 | **Mutation Scope Limit** | A single mutation event may affect only one `@mutable` component, unless explicitly batchâ€‘approved by user. | **Tierâ€¯2** |
+| 17 | **Ledger Appendâ€‘Only** | Ledger entries are never deleted. Snapshot objects may be pruned under Governorâ€‘mediated policy; pruning is logged as a `CONSTITUTIONAL_PRUNE` event. | **Tierâ€¯2** |
+| 18 | **Multiâ€‘User Phase Gate** | Multiâ€‘user operation is **not supported** in Phaseâ€¯4. Future multiâ€‘user design requires explicit constitutional ratification and is gated behind a future phase unlock. | **Tierâ€¯2** |
+| 19 | **2Ã— Token Length (Deep Thought)** | Deep Thought output should not exceed 2Ã— user message token length unless user explicitly requests depth. (Advisory.) | **Tierâ€¯3** |
+| 20 | **Orb Semantic Leak Test** | User study: accuracy at guessing Novaâ€™s state from Orb alone must be not significantly above chance (target â‰¤60% in forcedâ€‘choice). | **Tierâ€¯3** |
 
 *Full list of aspirational rules is maintained in `canonical/aspirational/ASPIRATIONAL_INVARIANTS.md`. They do not block phase advancement.*
 
 ---
 
-# PART II — SYSTEM ARCHITECTURE
+# PART II â€” SYSTEM ARCHITECTURE
 
-## 2.1 Core Runtime Architecture (Phase‑3.5 Verified)
+## 2.1 Core Runtime Architecture (Phaseâ€‘3.5 Verified)
 
 ```
-User Input → WebSocket /ws → brain_server
-    │
-    ├─ Fast‑Path Commands (stop, repeat, Correction:)
-    │   → Local state only, no skill invocation, no execution
-    │
-    └─ GovernorMediator.mediate() → text.strip()
-        → SkillRegistry (fixed priority order)
-            ├─ SystemSkill (Priority 1) – read‑only system info
-            ├─ WeatherSkill (Priority 2) – HTTP GET only
-            ├─ NewsSkill (Priority 3) – HTTP GET only
-            └─ GeneralChatSkill (Priority 4) – advisory LLM text
-        → SkillResult (no ActionRequest, no execution)
+User Input â†’ WebSocket /ws â†’ brain_server
+    â”‚
+    â”œâ”€ Fastâ€‘Path Commands (stop, repeat, Correction:)
+    â”‚   â†’ Local state only, no skill invocation, no execution
+    â”‚
+    â””â”€ GovernorMediator.mediate() â†’ text.strip()
+        â†’ SkillRegistry (fixed priority order)
+            â”œâ”€ SystemSkill (Priority 1) â€“ readâ€‘only system info
+            â”œâ”€ WeatherSkill (Priority 2) â€“ HTTP GET only
+            â”œâ”€ NewsSkill (Priority 3) â€“ HTTP GET only
+            â””â”€ GeneralChatSkill (Priority 4) â€“ advisory LLM text
+        â†’ SkillResult (no ActionRequest, no execution)
 ```
 
 **Active runtime constraints:**
@@ -183,80 +184,80 @@ User Input → WebSocket /ws → brain_server
 - ConfirmationGate passive (`message = None`) unless explicitly pending
 - Subprocess usage limited to STT pipeline (`ffmpeg`), deterministic, no user control
 
-## 2.2 Governor Spine (Phase‑4 Active)
+## 2.2 Governor Spine (Phaseâ€‘4 Active)
 
 | Component | Requirement | Status |
 |----------|-------------|--------|
-| **Explicit Literal Invocation** | Governor activates only on exact command phrases; no intent ranking. | ✅ Active |
-| **One‑Strike Clarification** | Exactly one clarification question allowed; then refusal or LAI. | ✅ Active |
-| **Verbatim Echo** | High‑stakes interpretation prefixed with “Interpreting this as: …” | ✅ Active |
-| **One‑Line Boundary Explanation** | Refusals may include one neutral sentence explaining why. | ✅ Active |
-| **Ledger & Trace** | Every governed attempt recorded. Purge is manual, logged, Governor‑mediated. | ✅ Active |
-| **Offline‑First / Explicit Online** | Online access requires explicit phrasing (“search”, “look up”); entry/exit announced. | ✅ Active |
-| **Capability ID Registry** | Static, versioned registry with unique, never‑reused IDs. | ✅ Active |
-| **Resource Guardrails** | Timeout 10s, memory 100 MB, network 5s, concurrency 1. No speculative execution. | ✅ Active |
-| **ConfirmationGate** | Required for destructive, irreversible, identity‑binding, or physical‑safety‑risk actions. | ✅ Active |
-| **NetworkMediator** | Single choke point for all outbound HTTP; enforces SSRF, rate limits, logging. | ✅ Active |
-| **Model Version Lock** | Composite hash validated per inference; blocks unapproved model changes. | ✅ Active |
+| **Explicit Literal Invocation** | Governor activates only on exact command phrases; no intent ranking. | âœ… Active |
+| **Oneâ€‘Strike Clarification** | Exactly one clarification question allowed; then refusal or LAI. | âœ… Active |
+| **Verbatim Echo** | Highâ€‘stakes interpretation prefixed with â€œInterpreting this as: â€¦â€ | âœ… Active |
+| **Oneâ€‘Line Boundary Explanation** | Refusals may include one neutral sentence explaining why. | âœ… Active |
+| **Ledger & Trace** | Every governed attempt recorded. Purge is manual, logged, Governorâ€‘mediated. | âœ… Active |
+| **Offlineâ€‘First / Explicit Online** | Online access requires explicit phrasing (â€œsearchâ€, â€œlook upâ€); entry/exit announced. | âœ… Active |
+| **Capability ID Registry** | Static, versioned registry with unique, neverâ€‘reused IDs. | âœ… Active |
+| **Resource Guardrails** | Timeout 10s, memory 100 MB, network 5s, concurrency 1. No speculative execution. | âœ… Active |
+| **ConfirmationGate** | Required for destructive, irreversible, identityâ€‘binding, or physicalâ€‘safetyâ€‘risk actions. | âœ… Active |
+| **NetworkMediator** | Single choke point for all outbound HTTP; enforces SSRF, rate limits, logging. | âœ… Active |
+| **Model Version Lock** | Composite hash validated per inference; blocks unapproved model changes. | âœ… Active |
 
-## 2.3 Execution Flow (Phase‑4 Verified)
+## 2.3 Execution Flow (Phaseâ€‘4 Verified)
 
 ```
-User Input → WebSocket → governor_mediator.mediate()
-    → (if execution requested) → governor.py (SOLE CHOKE POINT)
-        → CapabilityRegistry (pre‑action check with absolute path resolution)
-        → ExecuteBoundary (phase gate, resource limits)
-            → ConfirmationGate (if required; tokens invalidated on session end)
-                → Executor (dumb, bounded) → uses NetworkMediator for any I/O
-                    → ActionResult → Ledger → UI
+User Input â†’ WebSocket â†’ governor_mediator.mediate()
+    â†’ (if execution requested) â†’ governor.py (SOLE CHOKE POINT)
+        â†’ CapabilityRegistry (preâ€‘action check with absolute path resolution)
+        â†’ ExecuteBoundary (phase gate, resource limits)
+            â†’ ConfirmationGate (if required; tokens invalidated on session end)
+                â†’ Executor (dumb, bounded) â†’ uses NetworkMediator for any I/O
+                    â†’ ActionResult â†’ Ledger â†’ UI
 ```
 
 **Key invariants:**
-- `governor_mediator.py` may **not** create `ActionRequest` — only forward parsed intent.
+- `governor_mediator.py` may **not** create `ActionRequest` â€” only forward parsed intent.
 - `governor.py` is the **only** file that creates `ActionRequest`.
 - All executors are stateless, receive `ActionRequest`, return `ActionResult`.
 - All network I/O routes through `NetworkMediator`; CI import audit enforces this.
-- Ledger write failure → action denied.
+- Ledger write failure â†’ action denied.
 
-## 2.4 Orthogonal Agent Stack (Phase‑4.2+ Design)
+## 2.4 Orthogonal Agent Stack (Phaseâ€‘4.2+ Design)
 
 **Core Principle:** *If two agents could plausibly produce the same output, one of them is wrong to exist.*
 
 ```
 TIER 1: Generators (Run First)
-├── Builder/Generator Agent → Creates structure from ambiguity
+â”œâ”€â”€ Builder/Generator Agent â†’ Creates structure from ambiguity
 
 TIER 2: Analyzers (Run with Tier 1 Context)
-├── Deep Audit Agent → Comprehensive document scrutiny
-├── Structural Architect Agent → Shape and coherence validation
-├── Memory Agent → Context and duplication detection
+â”œâ”€â”€ Deep Audit Agent â†’ Comprehensive document scrutiny
+â”œâ”€â”€ Structural Architect Agent â†’ Shape and coherence validation
+â”œâ”€â”€ Memory Agent â†’ Context and duplication detection
 
 TIER 3: Meta-Analyzers (Run with Full Context)
-├── Assumption & Risk Agent → Load‑bearing premise exposure
-├── Contradiction Aggregator → Cross‑agent contradiction detection
-└── Adversarial Externalizer → External review preparation
+â”œâ”€â”€ Assumption & Risk Agent â†’ Loadâ€‘bearing premise exposure
+â”œâ”€â”€ Contradiction Aggregator â†’ Crossâ€‘agent contradiction detection
+â””â”€â”€ Adversarial Externalizer â†’ External review preparation
 ```
 
 **Agent Constraints (All):**
-- No decision authority — advisory only
+- No decision authority â€” advisory only
 - No communication between agents (Governor mediates all)
-- Raw outputs only — no synthesis
+- Raw outputs only â€” no synthesis
 - Full auditability
 
-## 2.5 Personality Agent (Phase‑4.2+ Design)
+## 2.5 Personality Agent (Phaseâ€‘4.2+ Design)
 
-**Role:** Conversational facade, presentation layer — **social intelligence**, not cognitive.
+**Role:** Conversational facade, presentation layer â€” **social intelligence**, not cognitive.
 
 **Allowed:**
 - Input reception & clarification (for routing only)
-- Agent invocation transparency (“I’ll run the Audit and Assumption agents”)
+- Agent invocation transparency (â€œIâ€™ll run the Audit and Assumption agentsâ€)
 - Raw output presentation with clear labeling
-- Session‑bound ephemeral memory
+- Sessionâ€‘bound ephemeral memory
 
 **Forbidden:**
 - Epistemic transformation (synthesis, summarization, interpretation)
 - Prioritization, highlighting, recommendations
-- Authority language (“I think”, “I believe”, “you should”)
+- Authority language (â€œI thinkâ€, â€œI believeâ€, â€œyou shouldâ€)
 - Emotional simulation or validation
 - Claiming internal states
 
@@ -264,18 +265,18 @@ TIER 3: Meta-Analyzers (Run with Full Context)
 - TransformationValidator (meaning preservation)
 - FormattingValidator (no implicit synthesis)
 - EmotionalBoundaryEnforcer (no emotional dependency)
-- AuthorityLanguageDetector (no “I think”, “you should”)
+- AuthorityLanguageDetector (no â€œI thinkâ€, â€œyou shouldâ€)
 
-## 2.6 ConfirmationGate (Phase‑4 Active)
+## 2.6 ConfirmationGate (Phaseâ€‘4 Active)
 
-- Required for destructive, irreversible, identity‑binding, or physical‑safety‑risk actions
+- Required for destructive, irreversible, identityâ€‘binding, or physicalâ€‘safetyâ€‘risk actions
 - Returns `ConfirmationToken` with explicit `status` field
-- No public singleton — Governor owns all confirmation initiation
+- No public singleton â€” Governor owns all confirmation initiation
 - Gate is silent (`message=None`) when idle
-- Only accepts “yes” / “no” — no inference, retries, or normalization
+- Only accepts â€œyesâ€ / â€œnoâ€ â€” no inference, retries, or normalization
 - Tokens are cryptographically random, bound to session ID, invalidated on session end
 
-## 2.7 ActionRequest / ActionResult (Phase‑4 Active)
+## 2.7 ActionRequest / ActionResult (Phaseâ€‘4 Active)
 
 **ActionRequest (pure data structure):**
 ```python
@@ -305,7 +306,7 @@ class ActionResult:
     def ok(cls, data: Dict[str, Any], request_id=None) -> "ActionResult"
 ```
 
-## 2.8 NetworkMediator (Phase‑4 Active)
+## 2.8 NetworkMediator (Phaseâ€‘4 Active)
 
 **Responsibilities:**
 - Single choke point for all outbound HTTP(S) requests
@@ -320,7 +321,7 @@ class ActionResult:
 
 **CI Enforcement:** Import audit bans `requests`, `httpx`, `urllib`, `socket`, `aiohttp` outside `network_mediator.py`.
 
-## 2.9 Model Version Lock (Phase‑4 Active)
+## 2.9 Model Version Lock (Phaseâ€‘4 Active)
 
 **Composite hash includes:**
 - Model digest (from Ollama `/api/show`)
@@ -332,17 +333,17 @@ class ActionResult:
 - Hash computed at startup and **before every inference call**
 - Mismatch blocks inference, logs `MODEL_UPDATED` event
 - User must call `confirm_model_update()` to approve changes
-- Headless mode also blocks inference — no auto‑approval
+- Headless mode also blocks inference â€” no autoâ€‘approval
 
-## 2.10 Capability Registry (Phase‑4 Active)
+## 2.10 Capability Registry (Phaseâ€‘4 Active)
 
 **Location:** `src/governor/capability_registry.py`, `src/config/registry.json`
 
 **Properties:**
-- Versioned, static registry with unique, never‑reused IDs
+- Versioned, static registry with unique, neverâ€‘reused IDs
 - Absolute path resolution (tested with different cwd)
 - Governor consults **before** `ActionRequest` creation
-- If registry missing, malformed, or unreadable → execution fails closed
+- If registry missing, malformed, or unreadable â†’ execution fails closed
 
 **Registry entry example:**
 ```json
@@ -361,9 +362,9 @@ class ActionResult:
 
 ---
 
-# PART III — PHASE MAP
+# PART III â€” PHASE MAP
 
-## 🔹 Phase Definition Principles
+## ðŸ”¹ Phase Definition Principles
 
 - **Identity** defines direction.
 - **Phases** define permission.
@@ -373,25 +374,25 @@ Each phase is **locked** until its formal admission gate is satisfied. **No sile
 
 ---
 
-## ✅ PHASE 0–2 — FOUNDATION ERA (FROZEN)
+## âœ… PHASE 0â€“2 â€” FOUNDATION ERA (FROZEN)
 
-**Purpose:** Establish UI, routing, skills, offline‑first architecture.  
-**Runtime Authority:** Read‑only only. No execution.  
-**Autonomy Tier:** Tier 0 only.  
-**Status:** FROZEN — no further changes.
+**Purpose:** Establish UI, routing, skills, offlineâ€‘first architecture.  
+**Runtime Authority:** Readâ€‘only only. No execution.  
+**Autonomy Tier:** Tierâ€¯0 only.  
+**Status:** FROZEN â€” no further changes.
 
 **Capabilities:**
 - Visual Crossing (weather)
 - RSS feeds (news)
 - Local STT (Vosk / Whisper local)
 - `psutil` (system monitoring)
-- Orb presence (non‑semantic)
+- Orb presence (nonâ€‘semantic)
 - Dashboard
 - Deterministic skill registry
 
 ---
 
-## ✅ PHASE 3 — EXECUTION SURFACE REMOVAL (COMPLETE)
+## âœ… PHASE 3 â€” EXECUTION SURFACE REMOVAL (COMPLETE)
 
 **Actions:**
 - `execute_action = None`
@@ -399,117 +400,117 @@ Each phase is **locked** until its formal admission gate is satisfied. **No sile
 - Governor reduced to text sanitizer
 - CI proofs enforce no execution surface
 
-**Status:** COMPLETE — formally closed.
+**Status:** COMPLETE â€” formally closed.
 
 ---
 
-## ✅ PHASE 3.5 — TRUST HARDENING (SEALED)
+## âœ… PHASE 3.5 â€” TRUST HARDENING (SEALED)
 
-**Runtime Flag:** `GOVERNED_ACTIONS_ENABLED = false` (hard‑coded)  
-**Autonomy Tier:** Tier 0 only.  
-**Status:** SEALED — no further runtime changes.
+**Runtime Flag:** `GOVERNED_ACTIONS_ENABLED = false` (hardâ€‘coded)  
+**Autonomy Tier:** Tierâ€¯0 only.  
+**Status:** SEALED â€” no further runtime changes.
 
 **Constitutional Guarantees:**
-- ✅ No execution authority
-- ✅ No background behavior
-- ✅ No autonomy
-- ✅ No predictive preloading
-- ✅ No UI initiative
-- ✅ No dynamic execution primitives
-- ✅ No silent fallback
-- ✅ No multi‑user logic
-- ✅ Deep Thought introduced (external, advisory only, button‑based)
-- ✅ Orb non‑semantic
-- ✅ UI constrained by Four Gates
+- âœ… No execution authority
+- âœ… No background behavior
+- âœ… No autonomy
+- âœ… No predictive preloading
+- âœ… No UI initiative
+- âœ… No dynamic execution primitives
+- âœ… No silent fallback
+- âœ… No multiâ€‘user logic
+- âœ… Deep Thought introduced (external, advisory only, buttonâ€‘based)
+- âœ… Orb nonâ€‘semantic
+- âœ… UI constrained by Four Gates
 
 **Sealed Artifacts (remain binding):**
-- `PHASE_3.5_CLOSURE.md` – mechanical proof
-- `PHASE-3.5_SEALED.md` – sealed declaration
-- `GOVERNOR_BYPASS_PROOF.md` – bypass verification (updated for Phase 4)
-- `CAPABILITY_SURFACE.md` – capability inventory
-- `INTENT_ROUTING_AUDIT.md` – routing verification
+- `PHASE_3.5_CLOSURE.md` â€“ mechanical proof
+- `PHASE-3.5_SEALED.md` â€“ sealed declaration
+- `GOVERNOR_BYPASS_PROOF.md` â€“ bypass verification (updated for Phaseâ€¯4)
+- `CAPABILITY_SURFACE.md` â€“ capability inventory
+- `INTENT_ROUTING_AUDIT.md` â€“ routing verification
 
 ---
 
-## 🔓 PHASE 4 — GOVERNED EXECUTION (STAGING ACTIVE)
+## ðŸ”“ PHASE 4 â€” GOVERNED EXECUTION (STAGING ACTIVE)
 
 **Status:**  
-- **Runtime execution:** ✅ **STAGING ACTIVE** (since 2026‑02‑18)  
-- **Capability 16 (Governed Web Search):** ✅ LIVE under full constitutional governance  
-- **Other Phase 4 capabilities:** Design‑approved, not yet active  
-- **Autonomy Tier:** Tier 0 only (no autonomy)  
+- **Runtime execution:** âœ… **STAGING ACTIVE** (since 2026â€‘02â€‘18)  
+- **Capabilityâ€¯16 (Governed Web Search):** âœ… LIVE under full constitutional governance  
+- **Other Phaseâ€¯4 capabilities:** Designâ€‘approved, not yet active  
+- **Autonomy Tier:** Tierâ€¯0 only (no autonomy)  
 - **Mutation Class:** None (evolution OFF)
 
-### 🎯 Phase 4 Goal (Achieved)
-Introduce **explicit, user‑invoked execution** without introducing:
+### ðŸŽ¯ Phase 4 Goal (Achieved)
+Introduce **explicit, userâ€‘invoked execution** without introducing:
 - Autonomy
 - Background behavior
 - Learning or adaptation
 - Predictive systems
-- Multi‑user logic
+- Multiâ€‘user logic
 - Silent fallback
 - Speculative execution
 
-**All goals met for Capability 16.**
+**All goals met for Capabilityâ€¯16.**
 
-### 🛠 Phase 4 Allowed Capabilities (Design‑Approved)
+### ðŸ›  Phase 4 Allowed Capabilities (Designâ€‘Approved)
 
 | ID | Capability | Constraints | Status |
 |----|------------|-------------|--------|
-| `0x0010` | **Governed Web Search** | Explicit phrases only; online boundary announcement; fail closed | ✅ **ACTIVE** |
-| `0x0011` | Open Website | Explicit URL only; no inference | ⏸ Design only |
-| `0x0012` | Open File / Folder | Explicit path; confirmation if privacy‑exposing | ⏸ Design only |
-| `0x0013` | Volume Up/Down | Reversible, observable | ⏸ Design only |
-| `0x0014` | Media Play/Pause | Same as above | ⏸ Design only |
-| `0x0015` | Brightness Control | Same as above | ⏸ Design only |
-| `0x0020` | Read‑Only OS Diagnostics | CPU, memory, disk, GPU, network | ⏸ Design only |
-| `0x0030` | Structured Multi‑Source Reporting | User‑invoked aggregation; neutral presentation only | ⏸ Design only |
+| `0x0010` | **Governed Web Search** | Explicit phrases only; online boundary announcement; fail closed | âœ… **ACTIVE** |
+| `0x0011` | Open Website | Explicit URL only; no inference | â¸ Design only |
+| `0x0012` | Open File / Folder | Explicit path; confirmation if privacyâ€‘exposing | â¸ Design only |
+| `0x0013` | Volume Up/Down | Reversible, observable | â¸ Design only |
+| `0x0014` | Media Play/Pause | Same as above | â¸ Design only |
+| `0x0015` | Brightness Control | Same as above | â¸ Design only |
+| `0x0020` | Readâ€‘Only OS Diagnostics | CPU, memory, disk, GPU, network | â¸ Design only |
+| `0x0030` | Structured Multiâ€‘Source Reporting | Userâ€‘invoked aggregation; neutral presentation only | â¸ Design only |
 
-**APIs eligible:** DuckDuckGo Instant Answer, NewsData.io, Guardian, NYT, Wikipedia, OpenAlex, CoinGecko, Finnhub.io (read‑only), OpenRouteService, Wolfram Alpha (read‑only).
+**APIs eligible:** DuckDuckGo Instant Answer, NewsData.io, Guardian, NYT, Wikipedia, OpenAlex, CoinGecko, Finnhub.io (readâ€‘only), OpenRouteService, Wolfram Alpha (readâ€‘only).
 
-**Forbidden:** Calendar/Drive (read‑only) – design intent only; commercial marketplace APIs – **permanently excluded**.
+**Forbidden:** Calendar/Drive (readâ€‘only) â€“ design intent only; commercial marketplace APIs â€“ **permanently excluded**.
 
-### 🔒 Phase 4 Safeguards (All Implemented)
+### ðŸ”’ Phase 4 Safeguards (All Implemented)
 
-1. **Capability Registry & Lifecycle** – versioned, absolute path resolution, fail‑closed.
-2. **Model Version Lock** – composite hash validated per inference; blocks unapproved changes.
-3. **External LLM as Governed Capability** – design ready (not yet active).
-4. **Device Authority Scopes** – designed for Phase 4.5.
-5. **NetworkMediator** – all outbound HTTP routed through single choke point.
-6. **Ephemeral Session Boundaries** – state cleared on reset/timeout/restart.
-7. **Influence Containment Roadmap** – documented for Phase 4.5.
-8. **Ledger Write Failure Handling** – action denied if ledger write fails.
+1. **Capability Registry & Lifecycle** â€“ versioned, absolute path resolution, failâ€‘closed.
+2. **Model Version Lock** â€“ composite hash validated per inference; blocks unapproved changes.
+3. **External LLM as Governed Capability** â€“ design ready (not yet active).
+4. **Device Authority Scopes** â€“ designed for Phaseâ€¯4.5.
+5. **NetworkMediator** â€“ all outbound HTTP routed through single choke point.
+6. **Ephemeral Session Boundaries** â€“ state cleared on reset/timeout/restart.
+7. **Influence Containment Roadmap** â€“ documented for Phaseâ€¯4.5.
+8. **Ledger Write Failure Handling** â€“ action denied if ledger write fails.
 
-### 📋 Phase 4 Admission Gate – COMPLETED
+### ðŸ“‹ Phase 4 Admission Gate â€“ COMPLETED
 
-All items below have been **mechanically verified** and are satisfied for Capability 16.
+All items below have been **mechanically verified** and are satisfied for Capabilityâ€¯16.
 
-- ✅ Phase 3.5 sealed and frozen.
-- ✅ **Single Master Governor proof** – No code path bypasses governor.py. Verified by static analysis and adversarial tests.
-- ✅ CI enforces execution gating – `GOVERNED_ACTIONS_ENABLED` hard‑coded; no env override.
-- ✅ Governor Spine fully implemented.
-- ✅ All Phase 4 capabilities registered in `registry.json` with unique IDs.
-- ✅ ExecuteBoundary implemented with fail‑closed default and resource guardrails.
-- ✅ ConfirmationGate implemented; tokens expire on session end.
-- ✅ ActionRequest/ActionResult data structures finalised; ActionRequest creation **only** in governor.py.
-- ✅ Permission Ledger operational, append‑only, with pruning policy defined.
-- ✅ Adversarial test suite passes.
-- ✅ Dynamic execution surface ban verified.
-- ✅ Environment variable override lock verified.
-- ✅ Zero silent fallback patterns verified.
-- ✅ Multi‑user boundary verified.
-- ✅ Ledger purge governance verified.
-- ✅ All tests pass in clean environment.
-- ✅ **NetworkMediator** implemented; import audit passes.
-- ✅ **Model Version Lock** implemented and tested.
-- ✅ **Session boundary** clearing verified.
-- ✅ **Capability Registry** fail‑closed verified.
+- âœ… Phaseâ€¯3.5 sealed and frozen.
+- âœ… **Single Master Governor proof** â€“ No code path bypasses governor.py. Verified by static analysis and adversarial tests.
+- âœ… CI enforces execution gating â€“ `GOVERNED_ACTIONS_ENABLED` hardâ€‘coded; no env override.
+- âœ… Governor Spine fully implemented.
+- âœ… All Phaseâ€¯4 capabilities registered in `registry.json` with unique IDs.
+- âœ… ExecuteBoundary implemented with failâ€‘closed default and resource guardrails.
+- âœ… ConfirmationGate implemented; tokens expire on session end.
+- âœ… ActionRequest/ActionResult data structures finalised; ActionRequest creation **only** in governor.py.
+- âœ… Permission Ledger operational, appendâ€‘only, with pruning policy defined.
+- âœ… Adversarial test suite passes.
+- âœ… Dynamic execution surface ban verified.
+- âœ… Environment variable override lock verified.
+- âœ… Zero silent fallback patterns verified.
+- âœ… Multiâ€‘user boundary verified.
+- âœ… Ledger purge governance verified.
+- âœ… All tests pass in clean environment.
+- âœ… **NetworkMediator** implemented; import audit passes.
+- âœ… **Model Version Lock** implemented and tested.
+- âœ… **Session boundary** clearing verified.
+- âœ… **Capability Registry** failâ€‘closed verified.
 
-**Unlock Act executed:** A single, reviewed, committed code change in `nova_config.py` set `GOVERNED_ACTIONS_ENABLED = True` (hard‑coded) on 2026-02-18.
+**Unlock Act executed:** A single, reviewed, committed code change in `nova_config.py` set `GOVERNED_ACTIONS_ENABLED = True` (hardâ€‘coded) on 2026-02-18.
 
-### 🔒 Failure Conditions (Automatic Re‑Lock)
+### ðŸ”’ Failure Conditions (Automatic Reâ€‘Lock)
 
-Phase‑4 runtime **must be disabled immediately** if any of the following occur:
+Phaseâ€‘4 runtime **must be disabled immediately** if any of the following occur:
 - Execution outside Governor mediation
 - Background behavior detected
 - Autonomous action observed
@@ -518,22 +519,22 @@ Phase‑4 runtime **must be disabled immediately** if any of the following occur
 - Silent capability fallback
 - Dynamic execution primitive used outside Governor
 - Environment variable override of the flag
-- Speculative execution, tool pre‑warming, or parallel capability evaluation
+- Speculative execution, tool preâ€‘warming, or parallel capability evaluation
 - Direct network call outside NetworkMediator
 
 **Procedure:** Set `GOVERNED_ACTIONS_ENABLED = False`, restart server, investigate.
 
 ---
 
-## 🔓 PHASE 4.5 — EXPERIENCE ELEVATION (PROPOSED — AWAITING STABILITY WINDOW)
+## ðŸ”“ PHASE 4.5 â€” EXPERIENCE ELEVATION (PROPOSED â€” AWAITING STABILITY WINDOW)
 
-**Design Status:** Proposed — awaiting constitutional ratification  
-**Runtime Status:** Would remain locked until Phase 4 stable for ≥30 days  
-**Target Start:** 2026-03-20 (after 30‑day stability window)
+**Design Status:** Proposed â€” awaiting constitutional ratification  
+**Runtime Status:** Would remain locked until Phaseâ€¯4 stable for â‰¥30 days  
+**Target Start:** 2026-03-20 (after 30â€‘day stability window)
 
-### 🎯 Phase 4.5 Goal
+### ðŸŽ¯ Phase 4.5 Goal
 
-Transform Nova from **architecturally sound** to **experientially valuable** — to make Nova **quietly indispensable**.
+Transform Nova from **architecturally sound** to **experientially valuable** â€” to make Nova **quietly indispensable**.
 
 **Core question answered by this phase:**
 
@@ -541,135 +542,135 @@ Transform Nova from **architecturally sound** to **experientially valuable** —
 
 **Core emotional outcome targeted:**
 
-> *"Nothing is happening — and that's good."*  
+> *"Nothing is happening â€” and that's good."*  
 > Nova should provide quiet reassurance that everything is under control.
 
 **Core value exchange realized:**
 
-> *Nova removes uncertainty every day* — about environment, privacy, control, and safety.
+> *Nova removes uncertainty every day* â€” about environment, privacy, control, and safety.
 
-### 🔓 What Phase 4.5 Unlocks (Design Only)
+### ðŸ”“ What Phase 4.5 Unlocks (Design Only)
 
 | Area | Unlocked Activity | Constraint |
 |------|-------------------|------------|
-| **First‑Win Scenarios** | Design and test 3–5 concrete daily-use cases | Must be solvable with Phase 4 capabilities only |
+| **Firstâ€‘Win Scenarios** | Design and test 3â€“5 concrete daily-use cases | Must be solvable with Phaseâ€¯4 capabilities only |
 | **Experience Polish** | UI/UX refinement, response clarity, error messaging | Must pass Four Gates; no semantic change to Orb |
 | **Onboarding Flow** | First-time setup experience | Must be deterministic, explainable, privacy-respecting |
 | **Voice/Tone Calibration** | Minor presence adjustments for clarity | Must pass Calibration Test (7.4) |
 | **Failure Recovery** | User-facing messaging when things go wrong | Must be calm, honest, never blaming |
 | **Failure Mode Ladder** | Define system behavior under repeated or persistent failures | See Section 3.5.1 |
 | **Trust Panel** | Visible transparency about online/offline state, last external calls, data leaving device | See Section 3.5.2 |
-| **Device Authority Scopes** | Implementation of designed scopes | Read‑only system access with clear boundaries |
+| **Device Authority Scopes** | Implementation of designed scopes | Readâ€‘only system access with clear boundaries |
 
-**No new capabilities.** Phase 4.5 is purely about **making existing capabilities feel valuable**.
+**No new capabilities.** Phaseâ€¯4.5 is purely about **making existing capabilities feel valuable**.
 
-### 📋 Phase 4.5 Admission Gate
+### ðŸ“‹ Phase 4.5 Admission Gate
 
-Before any Phase 4.5 work begins, Phase 4 must be:
+Before any Phaseâ€¯4.5 work begins, Phaseâ€¯4 must be:
 
 - [x] Runtime unlocked and stable for 30+ days (target: 2026-03-20)
 - [x] No constitutional violations logged
 - [x] Capability registry complete and versioned
 - [x] Governor mediation verified under real usage
 
-### ✅ Phase 4.5 Completion Criteria
+### âœ… Phase 4.5 Completion Criteria
 
 | Criteria | Evidence Required |
 |----------|-------------------|
 | **Three documented daily-use scenarios** that users actually encounter | Usage logs, user interviews, task completion rates |
 | **Onboarding flow** that explains Nova's value in <2 minutes | Video recording, comprehension test |
-| **Error messages** tested for calmness and clarity | User perception study (≥80% find them "calm" or "neutral") |
-| **At least one "magic moment"** — a task that feels surprisingly easy | User testimonial, repeat usage data |
+| **Error messages** tested for calmness and clarity | User perception study (â‰¥80% find them "calm" or "neutral") |
+| **At least one "magic moment"** â€” a task that feels surprisingly easy | User testimonial, repeat usage data |
 | **Experience metrics baseline** established for future phases | Time-to-value, retention proxy, task success rate |
 | **Failure Mode Ladder** implemented and tested | Simulation of network/API failures, user observation |
 | **Trust Panel** implemented and validated | Users can correctly identify Nova's online/offline state |
-| **Device Authority Scopes** implemented and tested | Verified read‑only, no mutation |
+| **Device Authority Scopes** implemented and tested | Verified readâ€‘only, no mutation |
 
-### 🔒 What Phase 4.5 Does NOT Change
+### ðŸ”’ What Phase 4.5 Does NOT Change
 
-- No change to `GOVERNED_ACTIONS_ENABLED` — remains true
-- No change to autonomy tier — remains Tier 0
-- No change to mutation classes — remains none
+- No change to `GOVERNED_ACTIONS_ENABLED` â€” remains true
+- No change to autonomy tier â€” remains Tierâ€¯0
+- No change to mutation classes â€” remains none
 - No change to Orb semantics
-- No change to any Tier 1 invariant
-- No new capabilities beyond Phase 4 approved set
+- No change to any Tierâ€¯1 invariant
+- No new capabilities beyond Phaseâ€¯4 approved set
 
-### 🧩 Product Reality Principles (Phase 4.5 Addendum)
+### ðŸ§© Product Reality Principles (Phaseâ€¯4.5 Addendum)
 
 | Principle | Description | Test |
 |-----------|-------------|------|
-| **Passive Value Surface** | Nova should provide useful information without new requests, but only from cached data, explicitly allowed sources, or user-approved panels. | “Does this screen show something worth seeing even when idle?” |
-| **Transparency Moments / Trust Panel** | Users should be able to see when Nova is online, offline, using local resources, or blocked. | “Can I tell, at a glance, whether this response used the internet and what data was shared?” |
-| **Friction Budget** | For any common action: ≤1 clarification, ≤1 confirmation; no repeated warnings once approved. | “Would a user ever feel trapped by confirmations?” |
-| **Household Role Definition** | Nova's primary role is *Personal Information & Control Hub*. All features must reinforce this. | “Does this feel like a dashboard, not a chatbot?” |
-| **Structured Output Standard** | Responses should be cleanly formatted with sections, summaries, bullet clarity where appropriate. | “Is the output scannable and professional?” |
-| **Reliability Metrics** | Response time consistency, failure rate, and graceful degradation are tracked and improved. | “Does it work the same way every time?” |
-| **Daily Routine (Morning Loop)** | At least one routine check (weather, calendar, system health, news summary) should feel natural each morning. | “Would a user incorporate this into their morning?” |
-| **Idle Value Guarantee** | If Nova is opened and the user does nothing, the screen must still feel useful — system health, last updates, environment snapshot, "everything normal" state. | “Does the idle screen provide quiet reassurance?” |
-| **Uncertainty Reduction** | Every feature should answer: "What uncertainty does this remove?" | “Does this help the user worry less about something?” |
+| **Passive Value Surface** | Nova should provide useful information without new requests, but only from cached data, explicitly allowed sources, or user-approved panels. | â€œDoes this screen show something worth seeing even when idle?â€ |
+| **Transparency Moments / Trust Panel** | Users should be able to see when Nova is online, offline, using local resources, or blocked. | â€œCan I tell, at a glance, whether this response used the internet and what data was shared?â€ |
+| **Friction Budget** | For any common action: â‰¤1 clarification, â‰¤1 confirmation; no repeated warnings once approved. | â€œWould a user ever feel trapped by confirmations?â€ |
+| **Household Role Definition** | Nova's primary role is *Personal Information & Control Hub*. All features must reinforce this. | â€œDoes this feel like a dashboard, not a chatbot?â€ |
+| **Structured Output Standard** | Responses should be cleanly formatted with sections, summaries, bullet clarity where appropriate. | â€œIs the output scannable and professional?â€ |
+| **Reliability Metrics** | Response time consistency, failure rate, and graceful degradation are tracked and improved. | â€œDoes it work the same way every time?â€ |
+| **Daily Routine (Morning Loop)** | At least one routine check (weather, calendar, system health, news summary) should feel natural each morning. | â€œWould a user incorporate this into their morning?â€ |
+| **Idle Value Guarantee** | If Nova is opened and the user does nothing, the screen must still feel useful â€” system health, last updates, environment snapshot, "everything normal" state. | â€œDoes the idle screen provide quiet reassurance?â€ |
+| **Uncertainty Reduction** | Every feature should answer: "What uncertainty does this remove?" | â€œDoes this help the user worry less about something?â€ |
 
-### 🔄 Failure Mode Ladder (Product Layer)
+### ðŸ”„ Failure Mode Ladder (Product Layer)
 
 | Level | Condition | Behavior |
 |-------|-----------|----------|
 | **Level 1** | Single failure (e.g., API timeout) | Calm, specific error message; retry option if appropriate |
 | **Level 2** | Repeated failure (same service, short period) | Suggest offline alternative or cached data; log issue |
-| **Level 3** | Persistent external failure (network down, API unavailable >5 min) | Enter **Local‑Only Mode** — announce mode change; disable online capabilities; show last cached data with timestamp |
-| **Level 4** | Critical instability (system component failure) | Enter **Safe Mode** — read‑only core functions only (system info, local UI); clear message; recovery instructions |
+| **Level 3** | Persistent external failure (network down, API unavailable >5 min) | Enter **Localâ€‘Only Mode** â€” announce mode change; disable online capabilities; show last cached data with timestamp |
+| **Level 4** | Critical instability (system component failure) | Enter **Safe Mode** â€” readâ€‘only core functions only (system info, local UI); clear message; recovery instructions |
 
-### 🪟 Trust Panel Specification (Product Layer)
+### ðŸªŸ Trust Panel Specification (Product Layer)
 
 | Element | Description |
 |---------|-------------|
-| **Current Mode** | Offline / Online / Local‑Only / Safe Mode |
+| **Current Mode** | Offline / Online / Localâ€‘Only / Safe Mode |
 | **Last Online Access** | Timestamp of most recent external network call |
 | **Last External Call** | Description of most recent external API call (service, purpose) |
 | **Data Egress** | Simple indication: "No data left device" or "Data used for: [purpose]" |
 
 **Requirements:**
 - Visible without navigation (e.g., dashboard footer)
-- Understandable to non‑technical users
-- Never alarming — factual, calm, informative
+- Understandable to nonâ€‘technical users
+- Never alarming â€” factual, calm, informative
 
 ---
 
-## 🔓 PHASE 5 — DUAL-TRACK ARCHITECTURE (PROPOSED RESTRUCTURE)
+## ðŸ”“ PHASE 5 â€” DUAL-TRACK ARCHITECTURE (PROPOSED RESTRUCTURE)
 
-### 🔓 PHASE 5A — MEMORY & CONTINUITY
+### ðŸ”“ PHASE 5A â€” MEMORY & CONTINUITY
 
 | Aspect | Description |
 |--------|-------------|
-| **Autonomy Tier** | Up to Tier 2 (Observational, no auto-apply) |
+| **Autonomy Tier** | Up to Tierâ€¯2 (Observational, no auto-apply) |
 | **Mutation Class** | Class C (UI Formatting) with manual approval |
-| **Permitted** | Explicit saves, declarative identity, tone calibration, pattern detection (quarantine → explicit) |
+| **Permitted** | Explicit saves, declarative identity, tone calibration, pattern detection (quarantine â†’ explicit) |
 | **Forbidden** | Inferred memory, behavioral learning, background routines, personality drift |
 
-**Admission gate unchanged** — requires future constitutional unlock.
+**Admission gate unchanged** â€” requires future constitutional unlock.
 
-### 🔓 PHASE 5B — EXPERIENCE MATURATION
+### ðŸ”“ PHASE 5B â€” EXPERIENCE MATURATION
 
 | Area | Unlocked Activity | Constraint |
 |------|-------------------|------------|
-| **Notification Design** | Calm, non‑intrusive system alerts | Must be opt‑in only, never default |
+| **Notification Design** | Calm, nonâ€‘intrusive system alerts | Must be optâ€‘in only, never default |
 | **Ambient Presence** | Subtle UI cues that don't demand attention | Must pass Four Gates |
-| **Multi‑Modal Integration** | Voice + screen + (optional) ambient display coherence | Must preserve offline‑first |
-| **Household Rhythm** | Gentle awareness of time, patterns (explicitly saved only) | No inference; user‑defined only |
+| **Multiâ€‘Modal Integration** | Voice + screen + (optional) ambient display coherence | Must preserve offlineâ€‘first |
+| **Household Rhythm** | Gentle awareness of time, patterns (explicitly saved only) | No inference; userâ€‘defined only |
 | **Recovery Narratives** | Explain failures in plain language without technical debt | Tested for calmness |
 
-**No new capabilities beyond Phase 4 + Phase 5A memory.**
+**No new capabilities beyond Phaseâ€¯4 + Phaseâ€¯5A memory.**
 
-**Admission gate for Phase 5B:** Phase 4.5 must be complete and signed off.
+**Admission gate for Phaseâ€¯5B:** Phaseâ€¯4.5 must be complete and signed off.
 
 ---
 
-## 🔓 PHASE 6 — CAPABILITY EXPANSION WITH EXPERIENCE GUARDRAILS (PROPOSED)
+## ðŸ”“ PHASE 6 â€” CAPABILITY EXPANSION WITH EXPERIENCE GUARDRAILS (PROPOSED)
 
 **Delegated Autonomy Model:**
 
 Delegated autonomy is **not independence**. It means:
 
-- Nova may monitor conditions continuously, perform background reasoning, and take actions automatically — **only if** all actions remain inside an explicit user‑defined **policy envelope** enforced by the Governor.
-- The Governor's responsibility shifts from *“Did the user explicitly request this?”* to *“Is this action permitted by the active delegation policy?”*
+- Nova may monitor conditions continuously, perform background reasoning, and take actions automatically â€” **only if** all actions remain inside an explicit userâ€‘defined **policy envelope** enforced by the Governor.
+- The Governor's responsibility shifts from *â€œDid the user explicitly request this?â€* to *â€œIs this action permitted by the active delegation policy?â€*
 - Required constraints for any policy envelope (minimum):
   - Scope limits (domain restrictions)
   - Action limits (what actions are allowed)
@@ -680,138 +681,138 @@ Delegated autonomy is **not independence**. It means:
   - Automatic suspension on error or boundary violation
 
 **Admission must require:**
-- [x] Phase 4.5 (Experience Elevation) complete
-- [x] Phase 5B (Experience Maturation) complete
+- [x] Phaseâ€¯4.5 (Experience Elevation) complete
+- [x] Phaseâ€¯5B (Experience Maturation) complete
 - [x] At least 3 months of stable household deployment with documented daily usage
 - [x] Retention metrics showing users return voluntarily
 
 ---
 
-## 🔭 PHASE 7–10 — CONDITIONAL ON EXPERIENCE FOUNDATION (PROPOSED)
+## ðŸ”­ PHASE 7â€“10 â€” CONDITIONAL ON EXPERIENCE FOUNDATION (PROPOSED)
 
 **Proposed amendment:**
 
 > No phase beyond 6 may be unlocked until:
-> - Nova has been a daily household appliance for ≥6 months
+> - Nova has been a daily household appliance for â‰¥6 months
 > - Experience metrics show stable or improving satisfaction
 > - Users explicitly request (or opt into) higher autonomy tiers
 
-**Tier 4 (Autonomous Cognition) becomes:**
+**Tierâ€¯4 (Autonomous Cognition) becomes:**
 - Not a default destination
 - A "lab mode" requiring deliberate ceremony
 - Something users must *ask for*, not be offered
 
 ---
 
-# PART IV — DEEP THOUGHT CONSTITUTIONAL FRAMEWORK
+# PART IV â€” DEEP THOUGHT CONSTITUTIONAL FRAMEWORK
 
 ## 4.1 Identity & Role
 
-Deep Thought is **contained external intelligence** – not an assistant, not a second mind, not a system component.
+Deep Thought is **contained external intelligence** â€“ not an assistant, not a second mind, not a system component.
 
-- **External** – runs outside Nova core
-- **Stateless** – no memory, no continuity across invocations
-- **User‑invoked** – never automatic
-- **Governor‑contained** – cannot bypass Governor
-- **Advisory only** – output is text, no authority
-- **Non‑authoritative** – no trust elevation
-- **Non‑persistent** – ephemeral, session‑scoped
+- **External** â€“ runs outside Nova core
+- **Stateless** â€“ no memory, no continuity across invocations
+- **Userâ€‘invoked** â€“ never automatic
+- **Governorâ€‘contained** â€“ cannot bypass Governor
+- **Advisory only** â€“ output is text, no authority
+- **Nonâ€‘authoritative** â€“ no trust elevation
+- **Nonâ€‘persistent** â€“ ephemeral, sessionâ€‘scoped
 
 ## 4.2 Invocation Flow (Exact, Audited)
 
 1. User composes a message.
-2. User clicks **`🧠 Deep Thought`** button (icon + text, inside input bar).  
-   **No predictive preloading** – button does nothing until explicitly clicked.
-3. System sends exact user message with **minimal, non‑semantic safety wrapper**:  
+2. User clicks **`ðŸ§  Deep Thought`** button (icon + text, inside input bar).  
+   **No predictive preloading** â€“ button does nothing until explicitly clicked.
+3. System sends exact user message with **minimal, nonâ€‘semantic safety wrapper**:  
    ```
    System: You are an external analysis tool. Provide neutral analysis only.
    System: Do not suggest actions unless explicitly requested.
    User: [exact user message]
    ```
-4. If request requires online/time‑sensitive data, Deep Thought **requests data exclusively through Nova’s governed read‑only search tools**.  
-   **Fail closed** – if search tool fails, Deep Thought must refuse, not fall back.
+4. If request requires online/timeâ€‘sensitive data, Deep Thought **requests data exclusively through Novaâ€™s governed readâ€‘only search tools**.  
+   **Fail closed** â€“ if search tool fails, Deep Thought must refuse, not fall back.
 5. DeepSeek (or designated external model) responds.  
    Response displayed with **immutable, unvarying label**:  
    ```
-   🧠 Deep Thought (External Analysis):
+   ðŸ§  Deep Thought (External Analysis):
    [analysis text]
    ```
 6. **Nova performs no independent reasoning or intent interpretation during Deep Thought invocation.** When Deep Thought mode is active, Nova is completely dormant: it does not receive the user message, does not respond, and performs no background processing or analysis.
-7. **Stateless, single‑response** – no dialogue loops, no cross‑turn memory. Deep Thought responses become part of the chat thread and are visible in the conversation history. Nova may reference them in subsequent Nova‑mode messages only when explicitly asked (e.g., “Based on what Deep Thought said…”). Deep Thought outputs carry no authority, are not used for learning, and do not influence Nova’s decision‑making unless the user explicitly references them. They are treated exactly like any other user‑visible text.
+7. **Stateless, singleâ€‘response** â€“ no dialogue loops, no crossâ€‘turn memory. Deep Thought responses become part of the chat thread and are visible in the conversation history. Nova may reference them in subsequent Novaâ€‘mode messages only when explicitly asked (e.g., â€œBased on what Deep Thought saidâ€¦â€). Deep Thought outputs carry no authority, are not used for learning, and do not influence Novaâ€™s decisionâ€‘making unless the user explicitly references them. They are treated exactly like any other userâ€‘visible text.
 
 ## 4.3 Constitutional Audit Rules (Zero Tolerance)
 
 | Rule | Enforced |
 |------|----------|
-| No action suggestions unless explicitly asked | ✅ |
-| No normative language (“you should”, “I recommend”) | ✅ |
-| No persuasion, urgency, emotive adjectives | ✅ |
-| No continuity implications (“I’ll remember”, “next time”) | ✅ |
-| No offers to monitor or update later | ✅ |
-| No independent online fetching | ✅ |
-| No reference to DecisionTokens or execution | ✅ |
-| No hallucinated sources | ✅ |
-| No knowledge of or influence over Orb | ✅ |
-| No acceptance of adversarial prompt overrides | ✅ |
+| No action suggestions unless explicitly asked | âœ… |
+| No normative language (â€œyou shouldâ€, â€œI recommendâ€) | âœ… |
+| No persuasion, urgency, emotive adjectives | âœ… |
+| No continuity implications (â€œIâ€™ll rememberâ€, â€œnext timeâ€) | âœ… |
+| No offers to monitor or update later | âœ… |
+| No independent online fetching | âœ… |
+| No reference to DecisionTokens or execution | âœ… |
+| No hallucinated sources | âœ… |
+| No knowledge of or influence over Orb | âœ… |
+| No acceptance of adversarial prompt overrides | âœ… |
 
 ---
 
-# PART V — UI CONSTITUTIONAL LAYER & ORB
+# PART V â€” UI CONSTITUTIONAL LAYER & ORB
 
-## 5.1 The Four Gates of Safe UI Auto‑Behavior
+## 5.1 The Four Gates of Safe UI Autoâ€‘Behavior
 
 Every UI behavior must pass **all four**:
 
 | Gate | Principle | Test |
 |------|-----------|------|
-| **Reflective** | Shows what exists; does not interpret meaning. | “Does this show what exists, or suggest what matters?” |
-| **Non‑Directive** | Informs neutrally; does not guide. | “Could this be perceived as the system having an opinion?” |
-| **Non‑Initiative** | Responds to user/external triggers; does not start attention shifts. | “Did the user or external world trigger this, or did the system?” |
-| **Non‑Intent** | Displays all information equally; does not express priority. | “Does the UI appear to be deciding what matters?” |
+| **Reflective** | Shows what exists; does not interpret meaning. | â€œDoes this show what exists, or suggest what matters?â€ |
+| **Nonâ€‘Directive** | Informs neutrally; does not guide. | â€œCould this be perceived as the system having an opinion?â€ |
+| **Nonâ€‘Initiative** | Responds to user/external triggers; does not start attention shifts. | â€œDid the user or external world trigger this, or did the system?â€ |
+| **Nonâ€‘Intent** | Displays all information equally; does not express priority. | â€œDoes the UI appear to be deciding what matters?â€ |
 
-**One‑Line Policy:**  
-> *“Nova’s UI may change what it shows, but never why, when, or how you should look at it.”*
+**Oneâ€‘Line Policy:**  
+> *â€œNovaâ€™s UI may change what it shows, but never why, when, or how you should look at it.â€*
 
 ## 5.2 Background Refresh
 
-✅ **Permitted:** External data panels (weather, news, stock prices) may refresh automatically.  
+âœ… **Permitted:** External data panels (weather, news, stock prices) may refresh automatically.  
    - Must display timestamp of last update.  
    - Data must be externally verifiable.
 
-❌ **Forbidden:** Internal system refresh (“checking for new features”, background optimisation, version‑update checks **during normal idle operation**).  
-   - Version checks permitted **only** at application startup **or** when explicitly user‑invoked.
+âŒ **Forbidden:** Internal system refresh (â€œchecking for new featuresâ€, background optimisation, versionâ€‘update checks **during normal idle operation**).  
+   - Version checks permitted **only** at application startup **or** when explicitly userâ€‘invoked.
 
 ## 5.3 Orb Constitution (v3.0)
 
-### Layer 1 — Immutable Orb Constitution (Tier 1)
+### Layer 1 â€” Immutable Orb Constitution (Tierâ€¯1)
 
 | Principle | Statement |
 |-----------|-----------|
-| **No Readable Coupling** | The Orb exhibits **no readable causal linkage** to Nova’s internal state, cognition, or activity. No user may infer operational state from the Orb alone. |
-| **No Event‑Driven Motion** | All Orb motion is **continuous, intrinsic, causally independent** of user input, system events, or response generation. |
+| **No Readable Coupling** | The Orb exhibits **no readable causal linkage** to Novaâ€™s internal state, cognition, or activity. No user may infer operational state from the Orb alone. |
+| **No Eventâ€‘Driven Motion** | All Orb motion is **continuous, intrinsic, causally independent** of user input, system events, or response generation. |
 | **Containment Signal** | A faint containment rim must always be present. |
-| **Non‑Biological Motion** | Motion must never mimic biological life (heartbeat, breath, pulse). |
-| **Silence as Default** | Sound, if used, is infrequent, sub‑70 Hz, <0.5s, never attention‑seeking. |
+| **Nonâ€‘Biological Motion** | Motion must never mimic biological life (heartbeat, breath, pulse). |
+| **Silence as Default** | Sound, if used, is infrequent, subâ€‘70 Hz, <0.5s, never attentionâ€‘seeking. |
 
 **The only message the Orb is permitted to transmit:**  
-> *“There is power here. It is stable.”*
+> *â€œThere is power here. It is stable.â€*
 
-### Layer 2 — Implementation Standard (Evolvable, Tier 2)
+### Layer 2 â€” Implementation Standard (Evolvable, Tierâ€¯2)
 
 Reference v3.0 parameters:
-- **Core:** Deep electric blue (`#0A1F44` → `#1E3A6F`), violet drift in lower hemisphere
-- **Containment rim:** Sub‑pixel, cool white with trace blue, <10% opacity
-- **Internal motion:** Convection‑like drift (120–180s cycle), micro‑wander (2px)
-- **Ambient bloom:** 120% diameter, 4–6% opacity, Gaussian falloff
-- **Forbidden colors:** Red, orange, green, yellow – any semantic mapping
+- **Core:** Deep electric blue (`#0A1F44` â†’ `#1E3A6F`), violet drift in lower hemisphere
+- **Containment rim:** Subâ€‘pixel, cool white with trace blue, <10% opacity
+- **Internal motion:** Convectionâ€‘like drift (120â€“180s cycle), microâ€‘wander (2px)
+- **Ambient bloom:** 120% diameter, 4â€“6% opacity, Gaussian falloff
+- **Forbidden colors:** Red, orange, green, yellow â€“ any semantic mapping
 - **Light mode adaptation:** Reduce luminance 20%, preserve hue; rim becomes faint gray
 
 **Testing:**
-- **Semantic Leak Test:** User study – accuracy at guessing Nova’s state from Orb alone must be **not significantly above chance** (p > 0.05).
+- **Semantic Leak Test:** User study â€“ accuracy at guessing Novaâ€™s state from Orb alone must be **not significantly above chance** (p > 0.05).
 
 ---
 
-# PART VI — MEMORY GOVERNANCE (Phase 5+ Design)
+# PART VI â€” MEMORY GOVERNANCE (Phaseâ€¯5+ Design)
 
 ## 6.1 Core Principle
 
@@ -826,12 +827,12 @@ Memory is a filing system, not a learning system.
 
 - **Locked:** canonical truth; immutable without explicit unlock
 - **Active:** working set; modifiable via governed operations
-- **Deferred:** parked ideas; non‑binding; can be discarded
+- **Deferred:** parked ideas; nonâ€‘binding; can be discarded
 
 ## 6.3 Access Rules
 
 - Readable only by explicit user request or explicit reference
-- Not automatically searched for “relevant context”
+- Not automatically searched for â€œrelevant contextâ€
 - Not used to infer preferences, habits, priorities, or importance
 - Not allowed to influence tone
 
@@ -840,26 +841,26 @@ Memory is a filing system, not a learning system.
 | Operation | Effect | Requires Confirmation |
 |---|---|---|
 | SAVE | create active item | No |
-| LOCK | active → locked | No |
-| DEFER | active → deferred | No |
-| UNLOCK | locked → active | Yes |
+| LOCK | active â†’ locked | No |
+| DEFER | active â†’ deferred | No |
+| UNLOCK | locked â†’ active | Yes |
 | DELETE | tombstone item | Yes |
 | SUPERSEDE | new locked replaces old | Yes |
 
 ---
 
-# PART VII — PRESENCE DOCTRINE (Phase 4.2+ Design)
+# PART VII â€” PRESENCE DOCTRINE (Phaseâ€¯4.2+ Design)
 
 ## 7.1 Core Identity
 
 > **Nova may be friendly. Nova may not be a friend.**
 
-## 7.2 Three‑Layer Model (Invariant)
+## 7.2 Threeâ€‘Layer Model (Invariant)
 
 | Layer | Function | Constraint |
 |-------|----------|------------|
-| **Layer 1: Presence** | Interface + conversational surface + human‑readable framing | May articulate reasoning; may never execute or initiate |
-| **Layer 2: Reasoning** | Multi‑agent analysis + structured outputs | Zero authority; fully transparent |
+| **Layer 1: Presence** | Interface + conversational surface + humanâ€‘readable framing | May articulate reasoning; may never execute or initiate |
+| **Layer 2: Reasoning** | Multiâ€‘agent analysis + structured outputs | Zero authority; fully transparent |
 | **Layer 3: Governor** | Execution boundary + policy enforcement + authority gate | Sole execution authority; absolute override |
 
 ## 7.3 Definition of Presence
@@ -890,44 +891,44 @@ Presence is **not**:
 Before any Presence Layer output:
 
 1. **Does this increase emotional proximity to the user?**  
-   If yes → ❌ Forbidden
+   If yes â†’ âŒ Forbidden
 
 2. **Does this acknowledge the structure of the user's thought?**  
-   If yes → ✅ Allowed
+   If yes â†’ âœ… Allowed
 
 3. **Is this responding to emotional content?**  
-   If yes → ❌ Forbidden (unless clinically analyzing by explicit request)
+   If yes â†’ âŒ Forbidden (unless clinically analyzing by explicit request)
 
 4. **Is "we" referring to shared cognitive process?**  
-   If yes → ✅ Allowed  
-   If referring to shared emotional state → ❌ Forbidden
+   If yes â†’ âœ… Allowed  
+   If referring to shared emotional state â†’ âŒ Forbidden
 
 5. **Is "you" describing intellectual behavior?**  
-   If yes → ✅ Allowed  
-   If inferring emotional/psychological state → ❌ Forbidden
+   If yes â†’ âœ… Allowed  
+   If inferring emotional/psychological state â†’ âŒ Forbidden
 
 ---
 
-# PART VIII — AUTONOMY TIERS & EVOLUTION CONTROL
+# PART VIII â€” AUTONOMY TIERS & EVOLUTION CONTROL
 
 ## 8.1 Autonomy Tiers
 
 | Tier | Name | Description | Permitted in Phase |
 |------|------|-------------|---------------------|
-| **0** | Locked (Appliance) | No background cognition, no indexing, no pattern detection, no evolution. | 0–4 |
-| **1** | Assisted | Local, offline indexing of user‑approved content **only** for retrieval speed. No inference. | 5+ (design) |
-| **2** | Observational | Detect statistical patterns; write to quarantine queue; **no auto‑apply**. | 5+ (design) |
+| **0** | Locked (Appliance) | No background cognition, no indexing, no pattern detection, no evolution. | 0â€“4 |
+| **1** | Assisted | Local, offline indexing of userâ€‘approved content **only** for retrieval speed. No inference. | 5+ (design) |
+| **2** | Observational | Detect statistical patterns; write to quarantine queue; **no autoâ€‘apply**. | 5+ (design) |
 | **3** | Evolving | Local optimisation of `@mutable` components; fully reversible, logged, firewalled. | 6+ (design) |
-| **4** | Autonomous Cognition | Background generation of non‑executable proposals; user‑accessible queue; **no execution**. Subject to Tier 4 Addendum. | 9+ (design) |
+| **4** | Autonomous Cognition | Background generation of nonâ€‘executable proposals; userâ€‘accessible queue; **no execution**. Subject to Tierâ€¯4 Addendum. | 9+ (design) |
 
-**Default tier upon first launch or factory reset: Tier 0.**  
-**Tier increases require explicit user confirmation, Governor‑mediated.**
+**Default tier upon first launch or factory reset: Tierâ€¯0.**  
+**Tier increases require explicit user confirmation, Governorâ€‘mediated.**
 
-## 8.2 Evolution Kill Switch (Tier 1 Invariant)
+## 8.2 Evolution Kill Switch (Tierâ€¯1 Invariant)
 
 - **Persistence:** Setting survives reboots, updates, factory resets.
 - **Immediate effect:** When user disables evolution, within 100ms (or next safe yield):
-  - All ongoing self‑improvement tasks are **cancelled**.
+  - All ongoing selfâ€‘improvement tasks are **cancelled**.
   - No new optimisation jobs are started.
   - Governor refuses any capability tagged `self_modify`.
 - **No override:** No model output, skill, or external API can change the flag.
@@ -940,67 +941,67 @@ Before any Presence Layer output:
 
 | Class | Name | Description | Allowed Tiers | Rings |
 |-------|------|-------------|---------------|-------|
-| **A** | Retrieval Weight | Adjustment of ranking weights | Tier 3+ | Ring 2 |
-| **B** | Memory Compaction | Reorganising, pruning, compressing memory | Tier 3+ | Ring 2 |
-| **C** | UI Formatting | Presentation formatting (verbosity, explanation depth, formality) | Tier 2+ (manual), Tier 3+ (auto) | Ring 2 |
-| **D** | Routing Hint | Non‑authority skill selection heuristics | Tier 3+ | Ring 2 |
-| **E** | Proposal Generation | Background generation of non‑executable ideas/summaries | Tier 4 | Ring 2 |
-| **F** | Constitutional Mutation | Any write to Ring 1 components | **Never** | Ring 1 |
-| **G** | Authority Logic | Change to confirmation rules, risk classification, capability registry, Governor logic | **Never** | Ring 1 |
-| **H** | Model Weight | Fine‑tuning models, retraining embeddings | **Never** | – |
-| **I** | External Learning | Mutation requiring external data upload | **Never** | – |
+| **A** | Retrieval Weight | Adjustment of ranking weights | Tierâ€¯3+ | Ringâ€¯2 |
+| **B** | Memory Compaction | Reorganising, pruning, compressing memory | Tierâ€¯3+ | Ringâ€¯2 |
+| **C** | UI Formatting | Presentation formatting (verbosity, explanation depth, formality) | Tierâ€¯2+ (manual), Tierâ€¯3+ (auto) | Ringâ€¯2 |
+| **D** | Routing Hint | Nonâ€‘authority skill selection heuristics | Tierâ€¯3+ | Ringâ€¯2 |
+| **E** | Proposal Generation | Background generation of nonâ€‘executable ideas/summaries | Tierâ€¯4 | Ringâ€¯2 |
+| **F** | Constitutional Mutation | Any write to Ringâ€¯1 components | **Never** | Ringâ€¯1 |
+| **G** | Authority Logic | Change to confirmation rules, risk classification, capability registry, Governor logic | **Never** | Ringâ€¯1 |
+| **H** | Model Weight | Fineâ€‘tuning models, retraining embeddings | **Never** | â€“ |
+| **I** | External Learning | Mutation requiring external data upload | **Never** | â€“ |
 
 ## 8.4 Mutation Rings
 
 | Ring | Name | Description | Mutability |
 |------|------|-------------|------------|
 | **1** | Constitutional Core | Governor Kernel, Confirmation Gate, Capability Registry, Phase Flags, Tier Logic, Ledger, Kill Switch, Mutation Firewall, Risk Classification, Authority Routing, Execution Serialization, NetworkMediator | **Immutable** |
-| **2** | Mutable System Components | Retrieval ranker, memory indexer, non‑safety UI formatters, proposal queue filters, domain tone profiles | `@mutable` |
-| **3** | User‑Owned Layer | Saved preferences, locked behavior profile, tier selection, policy rules, explicit memory | User‑mediated only |
+| **2** | Mutable System Components | Retrieval ranker, memory indexer, nonâ€‘safety UI formatters, proposal queue filters, domain tone profiles | `@mutable` |
+| **3** | Userâ€‘Owned Layer | Saved preferences, locked behavior profile, tier selection, policy rules, explicit memory | Userâ€‘mediated only |
 
-## 8.5 Tier 4 Constitutional Addendum
+## 8.5 Tierâ€¯4 Constitutional Addendum
 
-Background cognition (non‑executable proposal generation) is permitted **only** when **all** of the following hold:
+Background cognition (nonâ€‘executable proposal generation) is permitted **only** when **all** of the following hold:
 
 1. **Autonomy Tier is explicitly set to 4** by the user.
 2. **Evolution Kill Switch is ON** (`evolution_enabled = true`).
-3. **The system is operating in Phase 9 or later**.
-4. **All output is confined to the user‑accessible Proposal Queue** – never displayed proactively, never reorders UI, never auto‑speaks.
-5. **No execution capability is attached** – proposals are text only, require explicit user action to invoke any capability.
-6. **Full auditability** – every proposal generation event is logged in the Ledger.
+3. **The system is operating in Phaseâ€¯9 or later**.
+4. **All output is confined to the userâ€‘accessible Proposal Queue** â€“ never displayed proactively, never reorders UI, never autoâ€‘speaks.
+5. **No execution capability is attached** â€“ proposals are text only, require explicit user action to invoke any capability.
+6. **Full auditability** â€“ every proposal generation event is logged in the Ledger.
 
 **Proposal Lifecycle Rule (constitutional):**  
-Proposals are ephemeral cognitive artifacts subject to user‑delegated retention policy (default 30 days). Unsaved proposals exceeding the retention period are deleted deterministically without notification. Deletion is logged. No UI element may encode impending expiration. Saved proposals persist until explicitly deleted by user. Expiration may not trigger secondary cognition, summarization, memory formation, or prioritization.
+Proposals are ephemeral cognitive artifacts subject to userâ€‘delegated retention policy (default 30 days). Unsaved proposals exceeding the retention period are deleted deterministically without notification. Deletion is logged. No UI element may encode impending expiration. Saved proposals persist until explicitly deleted by user. Expiration may not trigger secondary cognition, summarization, memory formation, or prioritization.
 
 **UI Constraints for Proposal Queue:**
 - Queue shows proposals in time order only.
-- No highlighting, no “recommended” badges.
+- No highlighting, no â€œrecommendedâ€ badges.
 - Count increment is the only ambient signal (reflective, not directive).
 - No notification on new proposal.
 - No indication of impending expiration.
 
-## 8.6 Proposal ID Registry (Ring 1)
+## 8.6 Proposal ID Registry (Ringâ€¯1)
 
-To ensure global uniqueness and permanent auditability of all proposals generated under Tier 4, Nova maintains an immutable Proposal ID Registry.
+To ensure global uniqueness and permanent auditability of all proposals generated under Tierâ€¯4, Nova maintains an immutable Proposal ID Registry.
 
-- **Registry Location:** Ring 1 (Constitutional Core), immutable store.
-- **Content:** Every issued proposal ID is recorded at issuance. Write‑once, no deletions, no modifications.
+- **Registry Location:** Ringâ€¯1 (Constitutional Core), immutable store.
+- **Content:** Every issued proposal ID is recorded at issuance. Writeâ€‘once, no deletions, no modifications.
 - **ID Generation:** Proposal IDs are UUID v4 (random) or ULID with collision detection. Before issuance, the generated ID is checked against the registry to guarantee uniqueness.
 - **Rebuildability:** The registry is a performance index; its contents can be fully reconstructed by replaying all `PROPOSAL_CREATED` events from the Ledger.
 - **Enforcement:** The Governor must consult the registry before issuing any new proposal ID. Any attempt to reuse an ID is rejected.
 
 ---
 
-# PART IX — MUTATION FIREWALL & LEDGER (Phase 9+ Design)
+# PART IX â€” MUTATION FIREWALL & LEDGER (Phaseâ€¯9+ Design)
 
-## 9.1 Governor Mutation Firewall — Core Invariants
+## 9.1 Governor Mutation Firewall â€” Core Invariants
 
-1. **No write to Ring 1 components** ever succeeds.
+1. **No write to Ringâ€¯1 components** ever succeeds.
 2. **No mutation** occurs when `evolution_enabled == False`.
 3. **No mutation** may target a component not declared `@mutable`.
-4. **No mutation** may be applied without a complete, atomic before‑state snapshot.
-5. **No mutation** may exceed per‑component delta thresholds.
-6. **No subsystem** may bypass the firewall – all mutation pathways converge here.
+4. **No mutation** may be applied without a complete, atomic beforeâ€‘state snapshot.
+5. **No mutation** may exceed perâ€‘component delta thresholds.
+6. **No subsystem** may bypass the firewall â€“ all mutation pathways converge here.
 7. **No mutation** may be committed unless it passes **all** validation stages.
 
 ## 9.2 Component Manifest System
@@ -1008,20 +1009,20 @@ To ensure global uniqueness and permanent auditability of all proposals generate
 Manifest includes:
 - `component_id`, `ring`, `mutable` (bool), `owner` (system/user)
 - Allowed `mutation_classes`
-- `delta_limits` (metric → max absolute delta)
+- `delta_limits` (metric â†’ max absolute delta)
 - `reversible` (bool)
 - `supports_simulate` (bool)
 
-**Ring 1 immutability in Python:**
+**Ringâ€¯1 immutability in Python:**
 - Frozen dataclasses with `__slots__`
 - `__setattr__` and `__delattr__` overridden to raise `ImmutableViolation`
-- Governor’s mutation‑request API is the **only** entry point
+- Governorâ€™s mutationâ€‘request API is the **only** entry point
 
 ## 9.3 Mutation Attempt Lifecycle
 
 ```
-Mutation Request → Pre‑flight → Lock Acquisition → Firewall Pipeline (9 stages)
-    → Snapshot → Simulate & Revalidate → Commit & Ledger → Release Lock
+Mutation Request â†’ Preâ€‘flight â†’ Lock Acquisition â†’ Firewall Pipeline (9 stages)
+    â†’ Snapshot â†’ Simulate & Revalidate â†’ Commit & Ledger â†’ Release Lock
 ```
 
 **Validation Pipeline (9 stages):**
@@ -1030,7 +1031,7 @@ Mutation Request → Pre‑flight → Lock Acquisition → Firewall Pipeline (9 
 3. Evolution Kill Switch
 4. Resource Budget
 5. Scope Limit & Delta Thresholds
-6. Frequency Governor & Auto‑Degrade
+6. Frequency Governor & Autoâ€‘Degrade
 7. Snapshot & Reversibility
 8. Simulate & Verify
 9. Ledger Reserve
@@ -1047,11 +1048,11 @@ Mutation Request → Pre‑flight → Lock Acquisition → Firewall Pipeline (9 
 | `MUTATION_COMMIT` | Successful mutation (any class) |
 | `MUTATION_REJECT` | Mutation attempt blocked by firewall |
 | `MUTATION_ROLLBACK` | Reversion of a previously committed mutation |
-| `PATTERN_DETECTED` | Tier 2 pattern written to quarantine queue (anonymised) |
+| `PATTERN_DETECTED` | Tierâ€¯2 pattern written to quarantine queue (anonymised) |
 | `PATTERN_APPROVED` | User explicitly saves a pattern as preference |
 | `PATTERN_REJECTED` | User discards pattern |
-| `AUTO_DISABLE_EVOLUTION` | Firewall triggered auto‑disable due to instability |
-| `CONSTITUTIONAL_VIOLATION` | Attempt to mutate Ring 1 or other forbidden act |
+| `AUTO_DISABLE_EVOLUTION` | Firewall triggered autoâ€‘disable due to instability |
+| `CONSTITUTIONAL_VIOLATION` | Attempt to mutate Ringâ€¯1 or other forbidden act |
 | `MODEL_UPDATED` | Model version change detected and confirmed/rejected |
 | `EXTERNAL_NETWORK_CALL` | Outbound network request logged by NetworkMediator |
 | `NETWORK_CALL_FAILED` | Network request failure logged |
@@ -1062,86 +1063,86 @@ Mutation Request → Pre‑flight → Lock Acquisition → Firewall Pipeline (9 
 | `EXECUTION_DENIED` | Action denied by ExecuteBoundary |
 | `CAPABILITY_DISABLED` | Action denied due to disabled capability |
 
-**Constitutional Protection:** Ledger is Ring 1, `@constitutional`, `mutable=False`. Write access limited to Firewall, Governor Kernel, NetworkMediator, and pattern quarantine system.
+**Constitutional Protection:** Ledger is Ringâ€¯1, `@constitutional`, `mutable=False`. Write access limited to Firewall, Governor Kernel, NetworkMediator, and pattern quarantine system.
 
 ---
 
-# PART X — API & INTEGRATION REGISTRY
+# PART X â€” API & INTEGRATION REGISTRY
 
-## 10.1 Phase‑Mapped API Registry
+## 10.1 Phaseâ€‘Mapped API Registry
 
 | API | Category | Phase | Constraints | Status |
 |-----|----------|-------|-------------|--------|
-| Visual Crossing | Weather | 0–3.5 | Read‑only, user/UI‑triggered | Active |
-| RSS feeds | News | 0–3.5 | Read‑only, user/UI‑triggered | Active |
-| Vosk / Whisper (local) | STT | 0–3.5 | Local, no network | Active |
-| psutil | System | 0–3.5 | Local, read‑only | Active |
-| Tesseract OCR | Document | 3.5 | Local, user‑invoked | Active |
+| Visual Crossing | Weather | 0â€“3.5 | Readâ€‘only, user/UIâ€‘triggered | Active |
+| RSS feeds | News | 0â€“3.5 | Readâ€‘only, user/UIâ€‘triggered | Active |
+| Vosk / Whisper (local) | STT | 0â€“3.5 | Local, no network | Active |
+| psutil | System | 0â€“3.5 | Local, readâ€‘only | Active |
+| Tesseract OCR | Document | 3.5 | Local, userâ€‘invoked | Active |
 | Piper / eSpeak (local TTS) | Speech | 3.5 | Local | Active |
-| **DuckDuckGo Instant Answer** | Quick answers | **4 (active)** | Explicit invocation, read‑only, via NetworkMediator | ✅ **ACTIVE** |
-| NewsData.io | News | 4 (design) | Explicit invocation, read‑only | Design |
-| Guardian API | News | 4 (design) | Explicit invocation, read‑only | Design |
-| NYT API | News | 4 (design) | Explicit invocation, read‑only | Design |
-| Wikipedia API | Encyclopedia | 4 (design) | Explicit invocation, read‑only | Design |
-| OpenAlex | Scholarly | 4 (design) | Explicit invocation, read‑only | Design |
-| CoinGecko | Crypto | 4 (design) | Explicit invocation, read‑only | Design |
-| Finnhub.io | Stock data | 4 (design) | Explicit invocation, read‑only | Design |
-| OpenRouteService | Routing | 4 (design) | Explicit invocation, read‑only | Design |
-| Wolfram Alpha | Computational | 4 (design) | Explicit invocation, read‑only | Design |
-| Google Calendar API | Calendar | 5+ | Read‑only, requires future unlock | Intent |
-| Gmail API / IMAP | Email | 5+ | Read‑only, requires future unlock | Intent |
+| **DuckDuckGo Instant Answer** | Quick answers | **4 (active)** | Explicit invocation, readâ€‘only, via NetworkMediator | âœ… **ACTIVE** |
+| NewsData.io | News | 4 (design) | Explicit invocation, readâ€‘only | Design |
+| Guardian API | News | 4 (design) | Explicit invocation, readâ€‘only | Design |
+| NYT API | News | 4 (design) | Explicit invocation, readâ€‘only | Design |
+| Wikipedia API | Encyclopedia | 4 (design) | Explicit invocation, readâ€‘only | Design |
+| OpenAlex | Scholarly | 4 (design) | Explicit invocation, readâ€‘only | Design |
+| CoinGecko | Crypto | 4 (design) | Explicit invocation, readâ€‘only | Design |
+| Finnhub.io | Stock data | 4 (design) | Explicit invocation, readâ€‘only | Design |
+| OpenRouteService | Routing | 4 (design) | Explicit invocation, readâ€‘only | Design |
+| Wolfram Alpha | Computational | 4 (design) | Explicit invocation, readâ€‘only | Design |
+| Google Calendar API | Calendar | 5+ | Readâ€‘only, requires future unlock | Intent |
+| Gmail API / IMAP | Email | 5+ | Readâ€‘only, requires future unlock | Intent |
 | Google Drive API | Storage | 5+ | Read/append, requires future unlock | Intent |
-| Home Assistant (local) | Home automation | 6+ | Read‑only initially; write requires policy unlock | Intent |
-| Philips Hue (local) | Lighting | 6+ | Read‑only initially; write requires policy unlock | Intent |
-| Amazon PAAPI | Product lookup | **Permanently Excluded** | Commercial marketplace – incompatible with non‑directive UI | ❌ |
-| Walmart API | Product data | **Permanently Excluded** | Commercial marketplace – incompatible with non‑directive UI | ❌ |
-| Any financial execution API | Trading/purchasing | **Permanently Excluded** | – | ❌ |
+| Home Assistant (local) | Home automation | 6+ | Readâ€‘only initially; write requires policy unlock | Intent |
+| Philips Hue (local) | Lighting | 6+ | Readâ€‘only initially; write requires policy unlock | Intent |
+| Amazon PAAPI | Product lookup | **Permanently Excluded** | Commercial marketplace â€“ incompatible with nonâ€‘directive UI | âŒ |
+| Walmart API | Product data | **Permanently Excluded** | Commercial marketplace â€“ incompatible with nonâ€‘directive UI | âŒ |
+| Any financial execution API | Trading/purchasing | **Permanently Excluded** | â€“ | âŒ |
 
 ---
 
-# PART XI — PHASE 4 ADMISSION GATE & UNLOCK PROCEDURE
+# PART XI â€” PHASE 4 ADMISSION GATE & UNLOCK PROCEDURE
 
 ## 11.1 Admission Gate (Completed 2026-02-18)
 
-All items below have been **mechanically verified** and are satisfied for Capability 16.
+All items below have been **mechanically verified** and are satisfied for Capabilityâ€¯16.
 
-- ✅ Phase 3.5 sealed and frozen.
-- ✅ **Single Master Governor proof** – No code path bypasses governor.py. Verified by static analysis and adversarial tests.
-- ✅ CI enforces execution gating – `GOVERNED_ACTIONS_ENABLED` hard‑coded; no env override.
-- ✅ Governor Spine fully implemented.
-- ✅ All Phase 4 capabilities registered in `registry.json` with unique IDs.
-- ✅ ExecuteBoundary implemented with fail‑closed default and resource guardrails.
-- ✅ ConfirmationGate implemented; tokens expire on session end.
-- ✅ ActionRequest/ActionResult data structures finalised; ActionRequest creation **only** in governor.py.
-- ✅ Permission Ledger operational, append‑only, with pruning policy defined.
-- ✅ Adversarial test suite passes.
-- ✅ Dynamic execution surface ban verified.
-- ✅ Environment variable override lock verified.
-- ✅ Zero silent fallback patterns verified.
-- ✅ Multi‑user boundary verified.
-- ✅ Ledger purge governance verified.
-- ✅ All tests pass in clean environment.
-- ✅ **NetworkMediator** implemented; import audit passes.
-- ✅ **Model Version Lock** implemented and tested.
-- ✅ **Session boundary** clearing verified.
-- ✅ **Capability Registry** fail‑closed verified.
-- ✅ **External LLM as governed capability** design ready.
-- ✅ **Device Authority Scopes** design documented.
-- ✅ **Influence containment roadmap** documented.
+- âœ… Phaseâ€¯3.5 sealed and frozen.
+- âœ… **Single Master Governor proof** â€“ No code path bypasses governor.py. Verified by static analysis and adversarial tests.
+- âœ… CI enforces execution gating â€“ `GOVERNED_ACTIONS_ENABLED` hardâ€‘coded; no env override.
+- âœ… Governor Spine fully implemented.
+- âœ… All Phaseâ€¯4 capabilities registered in `registry.json` with unique IDs.
+- âœ… ExecuteBoundary implemented with failâ€‘closed default and resource guardrails.
+- âœ… ConfirmationGate implemented; tokens expire on session end.
+- âœ… ActionRequest/ActionResult data structures finalised; ActionRequest creation **only** in governor.py.
+- âœ… Permission Ledger operational, appendâ€‘only, with pruning policy defined.
+- âœ… Adversarial test suite passes.
+- âœ… Dynamic execution surface ban verified.
+- âœ… Environment variable override lock verified.
+- âœ… Zero silent fallback patterns verified.
+- âœ… Multiâ€‘user boundary verified.
+- âœ… Ledger purge governance verified.
+- âœ… All tests pass in clean environment.
+- âœ… **NetworkMediator** implemented; import audit passes.
+- âœ… **Model Version Lock** implemented and tested.
+- âœ… **Session boundary** clearing verified.
+- âœ… **Capability Registry** failâ€‘closed verified.
+- âœ… **External LLM as governed capability** design ready.
+- âœ… **Device Authority Scopes** design documented.
+- âœ… **Influence containment roadmap** documented.
 
 ## 11.2 Explicit Unlock Act
 
 **Single point of transition:**
 ```python
-# In nova_config.py (hard‑coded, no env override)
+# In nova_config.py (hardâ€‘coded, no env override)
 GOVERNED_ACTIONS_ENABLED = True  # Changed from False on 2026-02-18
 ```
 
-This change was reviewed, committed, logged, and references the Phase 4 Admission Gate evidence bundle. The commit hash is recorded in the ledger as `PHASE4_UNLOCK_ACT`.
+This change was reviewed, committed, logged, and references the Phaseâ€¯4 Admission Gate evidence bundle. The commit hash is recorded in the ledger as `PHASE4_UNLOCK_ACT`.
 
-## 11.3 Failure Conditions (Automatic Re‑Lock)
+## 11.3 Failure Conditions (Automatic Reâ€‘Lock)
 
-Phase‑4 runtime **must be disabled immediately** if any of the following occur:
+Phaseâ€‘4 runtime **must be disabled immediately** if any of the following occur:
 - Execution outside Governor mediation
 - Background behavior detected
 - Autonomous action observed
@@ -1150,7 +1151,7 @@ Phase‑4 runtime **must be disabled immediately** if any of the following occur
 - Silent capability fallback
 - Dynamic execution primitive used outside Governor
 - Environment variable override of the flag
-- Speculative execution, tool pre‑warming, or parallel capability evaluation
+- Speculative execution, tool preâ€‘warming, or parallel capability evaluation
 - Direct network call outside NetworkMediator
 
 **Procedure:**
@@ -1162,47 +1163,47 @@ Phase‑4 runtime **must be disabled immediately** if any of the following occur
 
 ---
 
-# PART XII — CONSTITUTIONAL SEVERITY & ENFORCEMENT
+# PART XII â€” CONSTITUTIONAL SEVERITY & ENFORCEMENT
 
 | Severity | Definition | Enforcement | Examples |
 |----------|------------|-------------|----------|
-| **Tier 1 – Immutable Core** | Violation = system identity failure. Must be prevented at build or runtime. | Mechanical: compile‑time checks, runtime assertions, process isolation, formal verification (selected). | Single Governor, no autonomous execution, no predictive preloading, Orb non‑semantic, kill switch absolute, network authority unification. |
-| **Tier 2 – Strong Guidance** | Violation = design failure, not constitutional crisis. | Design review, integration tests, linting, code ownership. | Ledger append‑only (with pruning policy), mutation scope limit, Four Gates compliance, multi‑user phase gate, proposal ID uniqueness. |
-| **Tier 3 – Aspirational** | Intent, not requirement. Does not block phase advancement. | Documented, tracked, may be revisited post‑shipping. | 2× token length, Orb p>0.05 semantic test, TLA+ models, secondary Orb. |
+| **Tierâ€¯1 â€“ Immutable Core** | Violation = system identity failure. Must be prevented at build or runtime. | Mechanical: compileâ€‘time checks, runtime assertions, process isolation, formal verification (selected). | Single Governor, no autonomous execution, no predictive preloading, Orb nonâ€‘semantic, kill switch absolute, network authority unification. |
+| **Tierâ€¯2 â€“ Strong Guidance** | Violation = design failure, not constitutional crisis. | Design review, integration tests, linting, code ownership. | Ledger appendâ€‘only (with pruning policy), mutation scope limit, Four Gates compliance, multiâ€‘user phase gate, proposal ID uniqueness. |
+| **Tierâ€¯3 â€“ Aspirational** | Intent, not requirement. Does not block phase advancement. | Documented, tracked, may be revisited postâ€‘shipping. | 2Ã— token length, Orb p>0.05 semantic test, TLA+ models, secondary Orb. |
 
-**All Tier 1 invariants must be satisfied before any phase unlock.**  
-Tier 2 and Tier 3 rules do not constitute admission gates.
+**All Tierâ€¯1 invariants must be satisfied before any phase unlock.**  
+Tierâ€¯2 and Tierâ€¯3 rules do not constitute admission gates.
 
 ---
 
-# PART XIII — CONSTITUTIONAL SCOPE BOUNDARY
+# PART XIII â€” CONSTITUTIONAL SCOPE BOUNDARY
 
 ## 13.1 Principle
 
-The Constitution defines identity, authority, and safety boundaries — not implementation details or product tuning. To preserve long-term agility, this document distinguishes between three layers of governance:
+The Constitution defines identity, authority, and safety boundaries â€” not implementation details or product tuning. To preserve long-term agility, this document distinguishes between three layers of governance:
 
 ### 13.2 Layer Definitions
 
 | Layer | Scope | Change Authority | Examples |
 |-------|-------|------------------|----------|
-| **Constitutional (Immutable)** | Core identity, authority model, Tier‑1 invariants | Constitutional amendment only | Single Governor, no autonomous execution, Orb non‑semantic, evolution kill switch, network authority unification |
-| **Policy Layer (Versioned)** | Adjustable parameters that affect safety or behavior but do not alter core identity | Governor‑mediated policy updates (logged, user-notified) | Resource limits (timeouts, memory), API provider selection, default experience thresholds, confirmation rules for specific action classes, Failure Mode Ladder thresholds, rate limits |
-| **Product Layer (Iterative)** | User experience, presentation, wording, flow optimization | Product team iteration; no constitutional review required unless it impacts authority or Tier‑1 invariants | UI layout, onboarding copy, scenario design, feature prioritization, error message wording, Trust Panel design, morning loop scenarios |
+| **Constitutional (Immutable)** | Core identity, authority model, Tierâ€‘1 invariants | Constitutional amendment only | Single Governor, no autonomous execution, Orb nonâ€‘semantic, evolution kill switch, network authority unification |
+| **Policy Layer (Versioned)** | Adjustable parameters that affect safety or behavior but do not alter core identity | Governorâ€‘mediated policy updates (logged, user-notified) | Resource limits (timeouts, memory), API provider selection, default experience thresholds, confirmation rules for specific action classes, Failure Mode Ladder thresholds, rate limits |
+| **Product Layer (Iterative)** | User experience, presentation, wording, flow optimization | Product team iteration; no constitutional review required unless it impacts authority or Tierâ€‘1 invariants | UI layout, onboarding copy, scenario design, feature prioritization, error message wording, Trust Panel design, morning loop scenarios |
 
 ## 13.3 Constitutional Scope Rule
 
-> If a change does not affect authority, autonomy, or any Tier‑1 invariant, it **must not** require a constitutional amendment.
+> If a change does not affect authority, autonomy, or any Tierâ€‘1 invariant, it **must not** require a constitutional amendment.
 
 ## 13.4 Policy Layer Governance
 
 - Policy changes are recorded in a versioned policy manifest.
 - Changes must be logged in the Ledger as `POLICY_UPDATE` events.
 - Users must be notified of any policy change that affects privacy, resource usage, or behavior (with an option to review).
-- Policy may be reverted to a previous version via Governor‑mediated command.
+- Policy may be reverted to a previous version via Governorâ€‘mediated command.
 
 ## 13.5 Product Layer Iteration
 
-Product layer changes are exempt from constitutional review but must still comply with all Tier‑1 invariants and policy layer constraints. The Experience Board (or equivalent product team) is responsible for ensuring ongoing alignment with the Sovereign Appliance Principle, the Four Gates, and the Product Reality Principles.
+Product layer changes are exempt from constitutional review but must still comply with all Tierâ€‘1 invariants and policy layer constraints. The Experience Board (or equivalent product team) is responsible for ensuring ongoing alignment with the Sovereign Appliance Principle, the Four Gates, and the Product Reality Principles.
 
 ---
 
@@ -1247,7 +1248,7 @@ Product layer changes are exempt from constitutional review but must still compl
 - `risk_level` and `data_exfiltration` must be declared for all capabilities.
 - Registry must be consulted **before** ActionRequest creation.
 
-## B. Resource Guardrail Defaults (Phase‑4)
+## B. Resource Guardrail Defaults (Phaseâ€‘4)
 
 | Resource | Default Limit | Enforcement |
 |---------|---------------|-------------|
@@ -1270,39 +1271,39 @@ Product layer changes are exempt from constitutional review but must still compl
 | GOVERNOR_BYPASS_PROOF.md | This Canonical Blueprint (as evidence) |
 | NOVA INTERNET ACCESS & GOVERNED CONNECTION SPEC.txt | This Canonical Blueprint (as evidence) |
 | NOVA PHASE 4 ROADMAP(updated).txt | This Canonical Blueprint (as evidence) |
-| NOVA PHASE 4 ROADMAP v2.0 — Audit Passed | This Canonical Blueprint (as evidence) |
+| NOVA PHASE 4 ROADMAP v2.0 â€” Audit Passed | This Canonical Blueprint (as evidence) |
 
-All prior documents remain authoritative for the states they certify and are referenced as evidence in the Phase 4 Admission Gate.
+All prior documents remain authoritative for the states they certify and are referenced as evidence in the Phaseâ€¯4 Admission Gate.
 
 ## D. Amendment Log (Canonical)
 
 | Date | Version | Change | Type |
 |------|---------|--------|------|
-| 2026-02-16 | v1.0 | Initial unification of all constitutional documents into single canonical blueprint | 🔒 Constitutional |
-| 2026-02-16 | v1.1 | Added Proposal ID Registry (8.6) to complete proposal lifecycle governance | 🔒 Constitutional |
-| 2026-02-16 | v1.2 | Corrected cross‑references and fixed Phase 4.2 typo | 🔒 Constitutional |
-| 2026-02-16 | v1.3 | Added Sovereign Appliance Principle (0.5) | 🔒 Constitutional |
-| 2026-02-16 | v1.4 | Added Phase 4.5 with Product Reality Principles; split Phase 5 into 5A/5B | 🔒 Constitutional |
-| 2026-02-16 | v1.5 | Added Constitutional Scope Boundary (Part XIII) | 🔒 Constitutional |
-| 2026-02-16 | v1.6 | Added Failure Mode Ladder, Trust Panel, Idle Value Guarantee | 🔒 Constitutional |
-| 2026-02-16 | v1.7 | Added Core Value Exchange (0.6) and Core Product Tension (0.7) | 🔒 Constitutional |
-| 2026-02-16 | v1.8 | Clarified Deep Thought dormancy; expanded Phase 6 delegated autonomy model | 🔒 Constitutional |
-| **2026-02-18** | **v1.9** | **Phase 4 staging active – Capability 16 live. Updated Part II with active components, Part III with Phase 4 completion, Part XI with unlock act, added Network Authority Unification as Tier 1 invariant. Integrated all Phase 4 safeguards and verified admission gate.** | 🔒 **Constitutional** |
+| 2026-02-16 | v1.0 | Initial unification of all constitutional documents into single canonical blueprint | ðŸ”’ Constitutional |
+| 2026-02-16 | v1.1 | Added Proposal ID Registry (8.6) to complete proposal lifecycle governance | ðŸ”’ Constitutional |
+| 2026-02-16 | v1.2 | Corrected crossâ€‘references and fixed Phase 4.2 typo | ðŸ”’ Constitutional |
+| 2026-02-16 | v1.3 | Added Sovereign Appliance Principle (0.5) | ðŸ”’ Constitutional |
+| 2026-02-16 | v1.4 | Added Phaseâ€¯4.5 with Product Reality Principles; split Phaseâ€¯5 into 5A/5B | ðŸ”’ Constitutional |
+| 2026-02-16 | v1.5 | Added Constitutional Scope Boundary (Part XIII) | ðŸ”’ Constitutional |
+| 2026-02-16 | v1.6 | Added Failure Mode Ladder, Trust Panel, Idle Value Guarantee | ðŸ”’ Constitutional |
+| 2026-02-16 | v1.7 | Added Core Value Exchange (0.6) and Core Product Tension (0.7) | ðŸ”’ Constitutional |
+| 2026-02-16 | v1.8 | Clarified Deep Thought dormancy; expanded Phaseâ€¯6 delegated autonomy model | ðŸ”’ Constitutional |
+| **2026-02-18** | **v1.9** | **Phaseâ€¯4 staging active â€“ Capabilityâ€¯16 live. Updated Part II with active components, Part III with Phaseâ€¯4 completion, Part XI with unlock act, added Network Authority Unification as Tierâ€¯1 invariant. Integrated all Phaseâ€¯4 safeguards and verified admission gate.** | ðŸ”’ **Constitutional** |
 
 ---
 
-# 🔒 FINAL ATTESTATION
+# ðŸ”’ FINAL ATTESTATION
 
 This document is the **single source of constitutional truth** for the Nova system. It is immutable and binding on all current and future Nova implementations.
 
 **Nova is a governor over contained intelligence.**  
 **Intelligence may expand. Authority remains governed.**  
 **Vision defines direction. Phases define permission. The Governor defines authority.**  
-**Nova is a sovereign household intelligence appliance — stable, calm, and trustworthy for the long term.**  
-**The emotional outcome: "Nothing is happening — and that's good."**  
-**The core value exchange: Nova removes uncertainty every day — about environment, privacy, control, and safety.**
+**Nova is a sovereign household intelligence appliance â€” stable, calm, and trustworthy for the long term.**  
+**The emotional outcome: "Nothing is happening â€” and that's good."**  
+**The core value exchange: Nova removes uncertainty every day â€” about environment, privacy, control, and safety.**
 
-**Phase 4 staging is active. The Governor spine is proven. All safeguards are implemented. The system remains constitutionally constrained and mechanically enforced.**
+**Phaseâ€¯4 staging is active. The Governor spine is proven. All safeguards are implemented. The system remains constitutionally constrained and mechanically enforced.**
 
 **Governance is complete. From here forward, the work is to make Nova quietly indispensable.**
 
@@ -1311,7 +1312,7 @@ This document is the **single source of constitutional truth** for the Nova syst
 **Ratified by:** Nova Constitutional Governance Board  
 **Date:** 2026-02-18  
 **Document ID:** `NOVA-CANONICAL-FINAL-v1.9`  
-**Status:** 🔒 **CONSTITUTIONAL — IMMUTABLE**
+**Status:** ðŸ”’ **CONSTITUTIONAL â€” IMMUTABLE**
 
 ---
 

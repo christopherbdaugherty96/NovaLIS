@@ -1,7 +1,13 @@
+﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
+> This file is retained for traceability and historical audit context.
+> For current canonical runtime truth, use:
+> - docs/current_runtime/CURRENT_RUNTIME_STATE.md
+> - docs/PROOFS/Phase-5/PHASE_5_PROOF_PACKET_INDEX.md
+> - docs/canonical/CANONICAL_DOCUMENT_MAP.md
 # Phase 4 Review Packet
 
 ## Purpose
-This packet is a concise handoff artifact for reviewing the latest Phase‑4 staging and governance-hardening updates.
+This packet is a concise handoff artifact for reviewing the latest Phaseâ€‘4 staging and governance-hardening updates.
 
 ## Included surfaces (high level)
 - Canonical freeze + capability/docs updates.
@@ -21,7 +27,7 @@ This packet is a concise handoff artifact for reviewing the latest Phase‑4 sta
 5. Conversation escalation remains non-authoritative (text-only path, no action authority).
 
 ## Suggested reviewer entry points
-- `docs/CANONICAL/PHASE_4_FREEZE.md`
+- `docs/canonical/archive-phase4/PHASE_4_FREEZE.md`
 - `docs/canonical/NOVA_CAPABILITY_MASTER.md`
 - `nova_backend/src/governor/governor.py`
 - `nova_backend/src/executors/web_search_executor.py`
@@ -30,3 +36,4 @@ This packet is a concise handoff artifact for reviewing the latest Phase‑4 sta
 
 ## Notes
 This packet is documentation-only and intended to speed review; it introduces no runtime behavior changes.
+
