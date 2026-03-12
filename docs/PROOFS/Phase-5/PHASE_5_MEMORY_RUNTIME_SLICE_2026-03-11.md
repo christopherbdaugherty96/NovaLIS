@@ -33,4 +33,12 @@ Scope: Explicit memory filing operations via Governor path
 
 - Added memory executor test coverage in `tests/phase5/test_memory_governance_executor.py`.
 - Extended mediator contract tests for capability `61` parsing.
-- Full suite result after integration: `334 passed`.
+- Full suite result at initial slice integration: `334 passed`.
+
+## Revalidation Snapshot (2026-03-12)
+
+- `nova_backend/tests/phase5`: `25 passed`
+- `nova_backend/tests/phase45`: `33 passed`
+- Full backend suite: `344 passed`
+- Runtime docs drift check: passed
+- Frontend mirror sync check: passed

@@ -58,10 +58,16 @@ This slice preserves Phase-5 invariants:
   - `nova_backend/tests/phase5/test_memory_governance_executor.py`
   - `nova_backend/tests/phase5/test_project_thread_store.py`
   - `nova_backend/tests/test_governor_mediator_phase4_capabilities.py`
+  - `nova_backend/tests/phase5/test_thread_change_summary.py`
 - Phase-5 suite:
-  - `16 passed`
+  - `25 passed`
+- Phase-4.5 suite:
+  - `33 passed`
 - Full backend suite:
-  - `335 passed`
+  - `344 passed`
+- Documentation/runtime consistency checks:
+  - `python scripts/check_runtime_doc_drift.py` passed
+  - `python scripts/check_frontend_mirror_sync.py` passed
 
 ## Classification
-Phase-5 runtime progression: `INITIAL GOVERNED PERSISTENCE` -> `THREAD-MEMORY BRIDGE (EXPLICIT)`
+Phase-5 runtime progression: `INITIAL GOVERNED PERSISTENCE` -> `THREAD-MEMORY BRIDGE (EXPLICIT)` -> `THREAD DETAIL + CHANGE VISIBILITY POLISH`

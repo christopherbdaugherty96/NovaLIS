@@ -126,6 +126,32 @@
           <div class="trust-row"><strong>Data egress:</strong> <span id="trust-egress">Read-only requests only</span></div>
           <div class="trust-row"><strong>Failure state:</strong> <span id="trust-failure">Normal</span></div>
         </div>
+        <div id="context-insight-widget" class="widget page-card context-insight-widget" aria-live="polite">
+          <h3>Context Insight</h3>
+          <p id="context-insight-summary">Use “explain this” and Nova will summarize what it sees.</p>
+          <ul id="context-insight-steps" class="context-insight-steps"></ul>
+          <div class="context-insight-actions">
+            <button id="btn-home-explain" type="button">Explain this</button>
+            <button id="btn-home-help" type="button">Help me do this</button>
+          </div>
+        </div>
+        <div id="thread-map-widget" class="widget page-card thread-map-widget" aria-live="polite">
+          <h3>Project Threads</h3>
+          <p id="thread-map-summary">No project threads yet. Save work updates to start continuity.</p>
+          <ul id="thread-map-list" class="thread-map-list"></ul>
+          <div id="thread-detail-panel" class="thread-detail-panel" hidden>
+            <h4 id="thread-detail-title" class="thread-detail-title">Thread Detail</h4>
+            <p id="thread-detail-summary" class="thread-detail-summary"></p>
+            <p id="thread-detail-blocked" class="thread-detail-blocked"></p>
+            <p id="thread-detail-next" class="thread-detail-next"></p>
+            <div id="thread-detail-why" class="thread-detail-why"></div>
+            <div id="thread-detail-decisions" class="thread-detail-decisions"></div>
+            <div id="thread-detail-memory" class="thread-detail-memory"></div>
+          </div>
+          <div class="thread-map-actions">
+            <button id="btn-home-threads" type="button">Show threads</button>
+          </div>
+        </div>
       </section>
     </main>
   </div>
