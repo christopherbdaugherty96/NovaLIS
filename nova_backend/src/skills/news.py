@@ -7,6 +7,8 @@ NovaLIS News Skill — Phase 3 Canonical
 from __future__ import annotations
 
 import asyncio
+import re
+from collections import Counter
 from typing import Optional, List, Dict, Any
 
 from src.base_skill import BaseSkill, SkillResult
@@ -20,6 +22,33 @@ class NewsSkill(BaseSkill):
     description = "Current news headlines"
     SUMMARY_CHAR_LIMIT = 210
     MAX_CONCURRENT_FEEDS = 4
+    SUMMARY_MAX_LENGTH = 360
+
+    THEME_KEYWORDS = {
+        "global security": {"war", "conflict", "ceasefire", "strike", "missile", "military", "gaza", "ukraine", "iran", "israel"},
+        "policy and government": {"election", "congress", "senate", "policy", "regulation", "law", "court", "bill"},
+        "economy and markets": {"inflation", "economy", "market", "stocks", "bond", "rates", "jobs", "gdp"},
+        "technology": {"ai", "chip", "semiconductor", "software", "platform", "cyber", "tech"},
+        "energy and climate": {"oil", "gas", "energy", "climate", "carbon", "emissions"},
+    }
+    THEME_STOPWORDS = {
+        "the",
+        "and",
+        "for",
+        "with",
+        "from",
+        "that",
+        "this",
+        "after",
+        "over",
+        "under",
+        "amid",
+        "into",
+        "latest",
+        "update",
+        "news",
+        "today",
+    }
 
     SOURCES = [
         {
@@ -162,20 +191,85 @@ class NewsSkill(BaseSkill):
         if not items:
             return "No headlines are available to summarize right now."
 
-        top_titles = [item.get("title", "").strip() for item in items[:3] if item.get("title")]
+        unique_items = self._unique_headline_items(items)
+        top_titles = [item.get("title", "").strip() for item in unique_items[:3] if item.get("title")]
         if not top_titles:
             return "I pulled headlines, but there was not enough detail to summarize them."
 
-        source_count = len([item for item in items if item.get("title")])
+        source_count = len(
+            {
+                str(item.get("source") or "").strip()
+                for item in unique_items
+                if str(item.get("source") or "").strip()
+            }
+        )
+        source_count = source_count or len(top_titles)
+        theme_clause = self._theme_clause(unique_items)
+
         if len(top_titles) == 1:
-            return f"Loaded {source_count} source. Top story: {top_titles[0]}."
+            summary = f"Loaded {source_count} source. {theme_clause} Top story: {top_titles[0]}."
+            return self._truncate_summary(summary)
 
         if len(top_titles) == 2:
-            return f"Loaded {source_count} sources. Top focus: {top_titles[0]}; alongside {top_titles[1]}."
+            summary = (
+                f"Loaded {source_count} sources. {theme_clause} "
+                f"Top focus: {top_titles[0]}; alongside {top_titles[1]}."
+            )
+            return self._truncate_summary(summary)
 
-        return (
-            f"Loaded {source_count} sources. Top focus: {top_titles[0]}; {top_titles[1]}; and {top_titles[2]}."
+        summary = (
+            f"Loaded {source_count} sources. {theme_clause} "
+            f"Top focus: {top_titles[0]}; {top_titles[1]}; and {top_titles[2]}."
         )
+        return self._truncate_summary(summary)
+
+    def _theme_clause(self, items: List[Dict[str, str]]) -> str:
+        if not items:
+            return "Theme mix is broad."
+        text = " ".join(
+            f"{str(item.get('title') or '').lower()} {str(item.get('summary') or '').lower()}"
+            for item in items[:6]
+        )
+        tokens = [
+            token
+            for token in re.findall(r"[a-zA-Z]{3,}", text)
+            if token not in self.THEME_STOPWORDS
+        ]
+        counts = Counter(tokens)
+
+        scored: list[tuple[int, str]] = []
+        for theme, keywords in self.THEME_KEYWORDS.items():
+            score = sum(int(counts.get(keyword, 0)) for keyword in keywords)
+            if score > 0:
+                scored.append((score, theme))
+        if not scored:
+            return "Theme mix is broad."
+        scored.sort(key=lambda item: item[0], reverse=True)
+        top_labels = [label for _, label in scored[:2]]
+        if len(top_labels) == 1:
+            return f"Theme: {top_labels[0]}."
+        return f"Themes: {top_labels[0]} and {top_labels[1]}."
+
+    def _unique_headline_items(self, items: List[Dict[str, str]]) -> List[Dict[str, str]]:
+        unique: List[Dict[str, str]] = []
+        seen: set[str] = set()
+        for item in items:
+            title = str(item.get("title") or "").strip()
+            if not title:
+                continue
+            key = re.sub(r"[^a-z0-9]+", " ", title.lower()).strip()
+            if not key or key in seen:
+                continue
+            seen.add(key)
+            unique.append(item)
+        return unique
+
+    def _truncate_summary(self, summary: str) -> str:
+        text = " ".join(str(summary or "").split()).strip()
+        if len(text) <= self.SUMMARY_MAX_LENGTH:
+            return text
+        trimmed = text[: self.SUMMARY_MAX_LENGTH - 3].rstrip()
+        return trimmed + "..."
 
     def _build_item_summary(self, title: str, raw_summary: str) -> str:
         clean_title = (title or "").strip()

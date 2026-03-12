@@ -236,6 +236,16 @@ COMPARE_HEADLINE_INDEX_RE = re.compile(
     r"^\s*compare\s+headlines?\s+(?P<left>\d{1,2})\s+(?:and|vs)\s+(?P<right>\d{1,2})\s*$",
     re.IGNORECASE,
 )
+STORY_PAGE_SUMMARY_RE = re.compile(
+    r"^\s*(?:summary(?:\s+of)?|summarize|details?|more(?:\s+on)?)\s+"
+    r"(?:story|article)\s*#?\s*(?P<idx>\d{1,2})(?:\s+please)?\s*$",
+    re.IGNORECASE,
+)
+STORY_PAGE_SUMMARY_ALT_RE = re.compile(
+    r"^\s*(?:story|article)\s*#?\s*(?P<idx>\d{1,2})\s+"
+    r"(?:summary|details?|more)(?:\s+please)?\s*$",
+    re.IGNORECASE,
+)
 TRACK_STORY_INDEX_RE = re.compile(
     r"^\s*track\s+story\s+(?P<idx>\d{1,2})\s*$",
     re.IGNORECASE,
@@ -763,6 +773,16 @@ class GovernorMediator:
                     "action": "compare_indices",
                     "left_index": int(m.group("left")),
                     "right_index": int(m.group("right")),
+                },
+            )
+
+        m = STORY_PAGE_SUMMARY_RE.match(t) or STORY_PAGE_SUMMARY_ALT_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                49,
+                {
+                    "action": "story_page_summary",
+                    "story_index": int(m.group("idx")),
                 },
             )
 

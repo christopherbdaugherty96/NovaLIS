@@ -235,6 +235,91 @@ def test_summary_compare_indices_action():
     assert "Shared terms" in result.message
 
 
+def test_story_page_summary_reads_article_page(monkeypatch):
+    from src.executors import news_intelligence_executor as mod
+
+    monkeypatch.setattr(
+        mod,
+        "generate_chat",
+        lambda *args, **kwargs: (
+            "Article Summary\nExports tightened after policy guidance.\n\n"
+            "Key Facts\n- Regulators expanded controls.\n\n"
+            "Why It Matters\nSupply risk increased."
+        ),
+    )
+
+    class _FakeNetwork:
+        def request(self, capability_id, method, url, **kwargs):
+            del capability_id, method, kwargs
+            return {
+                "status_code": 200,
+                "text": f"<html><body><h1>{url}</h1><p>Regulators expanded export controls overnight.</p></body></html>",
+            }
+
+    headlines = [
+        {"title": "Export controls tightened", "source": "Reuters", "url": "https://example.com/a"},
+        {"title": "Secondary story", "source": "BBC", "url": "https://example.com/b"},
+    ]
+    executor = mod.NewsIntelligenceExecutor(network=_FakeNetwork())
+    result = executor.execute_summary(
+        _request(49, {"action": "story_page_summary", "story_index": 1, "headlines": headlines})
+    )
+    assert result.success is True
+    assert "STORY PAGE SUMMARY - Story 1" in result.message
+    assert "Reference: https://example.com/a" in result.message
+    assert isinstance(result.data, dict)
+    assert int(result.data.get("story_index") or 0) == 1
+
+
+def test_story_page_summary_fails_when_source_page_unavailable():
+    from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
+
+    headlines = [
+        {"title": "Export controls tightened", "source": "Reuters", "url": "https://example.com/a"},
+    ]
+    executor = NewsIntelligenceExecutor(network=None)
+    result = executor.execute_summary(
+        _request(49, {"action": "story_page_summary", "story_index": 1, "headlines": headlines})
+    )
+    assert result.success is False
+    assert "couldn't read the article page" in result.message.lower()
+
+
+def test_summary_includes_published_timestamp(monkeypatch):
+    from src.executors import news_intelligence_executor as mod
+
+    monkeypatch.setattr(
+        mod,
+        "generate_chat",
+        lambda *args, **kwargs: "The report says exports tightened after a policy update.",
+    )
+    headlines = [
+        {
+            "title": "Export policy shifts",
+            "source": "Reuters",
+            "url": "https://example.com/policy",
+            "published": "Mon, 09 Mar 2026 01:00:00 GMT",
+        }
+    ]
+    executor = mod.NewsIntelligenceExecutor()
+    result = executor.execute_summary(_request(49, {"indices": [1], "headlines": headlines}))
+    assert result.success is True
+    assert "Published: 2026-03-09 01:00 UTC" in result.message
+
+
+def test_headline_normalization_dedupes_sentences():
+    from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
+
+    executor = NewsIntelligenceExecutor()
+    item = {"title": "Policy update", "source": "Reuters", "published": ""}
+    normalized = executor._normalize_headline_summary(
+        "Summary\nPolicy shifted overnight. Policy shifted overnight. Limited detail is available from the headline alone.",
+        item,
+    )
+    assert normalized.count("Policy shifted overnight") == 1
+    assert "Limited detail is available from the headline alone." in normalized
+
+
 def test_brief_reads_source_pages_when_enabled(monkeypatch):
     from src.executors import news_intelligence_executor as mod
 
