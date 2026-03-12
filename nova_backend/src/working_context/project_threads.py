@@ -140,6 +140,12 @@ class ProjectThreadStore:
     def active_thread_key(self) -> str:
         return self._active_key if self._active_key in self._threads else ""
 
+    def resolve_thread_identity(self, name: str) -> tuple[bool, str, str]:
+        thread = self._resolve_thread(name)
+        if thread is None:
+            return False, "", ""
+        return True, thread.name, thread.key
+
     def list_summaries(self) -> list[dict[str, Any]]:
         items = sorted(self._threads.values(), key=lambda thread: thread.updated_at, reverse=True)
         return [item.to_summary() for item in items]
@@ -358,6 +364,29 @@ class ProjectThreadStore:
         if followup:
             message += f"\n\nNext action linked to blocker:\n- {followup}"
         return True, message
+
+    def get_thread_detail(self, name: str) -> tuple[bool, dict[str, Any]]:
+        thread = self._resolve_thread(name)
+        if thread is None:
+            return False, {}
+        self._active_key = thread.key
+        health = thread.health()
+        return True, {
+            "name": thread.name,
+            "key": thread.key,
+            "goal": thread.goal,
+            "health_state": str(health.get("state") or "at-risk"),
+            "health_score": float(health.get("score") or 0.5),
+            "health_reason": str(health.get("reason") or "").strip(),
+            "latest_blocker": thread.blockers[-1] if thread.blockers else "",
+            "latest_next_action": thread.next_actions[-1] if thread.next_actions else "",
+            "latest_decision": thread.decisions[-1] if thread.decisions else "",
+            "recent_artifacts": list(thread.artifacts[-3:]),
+            "recent_decisions": list(thread.decisions[-3:]),
+            "recent_blockers": list(thread.blockers[-3:]),
+            "recent_next_actions": list(thread.next_actions[-4:]),
+            "updated_at": thread.updated_at,
+        }
 
     def render_map_widget(self) -> dict[str, Any]:
         summaries = self.list_summaries()

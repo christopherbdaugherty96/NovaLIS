@@ -1039,9 +1039,126 @@ body {
   color: #deecff;
 }
 
+.thread-map-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.thread-memory-badge {
+  border: 1px solid rgba(133, 193, 255, 0.45);
+  background: rgba(26, 62, 102, 0.5);
+  color: #d5e8ff;
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.thread-memory-badge:hover {
+  border-color: rgba(156, 205, 255, 0.68);
+  background: rgba(31, 75, 121, 0.62);
+}
+
 .thread-map-meta {
   font-size: 0.75rem;
   color: #b9d1f4;
+}
+
+.thread-map-insight {
+  color: #d4e6ff;
+}
+
+.thread-map-change {
+  color: #a9d8ff;
+  font-style: italic;
+}
+
+.thread-detail-panel {
+  border: 1px solid rgba(149, 200, 255, 0.24);
+  border-radius: 10px;
+  padding: 8px 10px;
+  background: rgba(10, 27, 48, 0.5);
+  display: grid;
+  gap: 6px;
+}
+
+.thread-detail-title {
+  margin: 0;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #d9ebff;
+}
+
+.thread-detail-summary,
+.thread-detail-blocked,
+.thread-detail-next,
+.thread-detail-why,
+.thread-detail-memory {
+  margin: 0;
+  font-size: 0.74rem;
+  color: #c6dcfb;
+  line-height: 1.35;
+}
+
+.thread-detail-blocked {
+  color: #ffd7aa;
+}
+
+.thread-detail-next {
+  color: #c8e8ff;
+}
+
+.thread-detail-decisions {
+  display: grid;
+  gap: 4px;
+  font-size: 0.73rem;
+  color: #d3e7ff;
+}
+
+.thread-detail-decisions ul {
+  margin: 0;
+  padding-left: 16px;
+}
+
+.thread-detail-decisions li {
+  line-height: 1.35;
+}
+
+.thread-detail-memory-list {
+  display: grid;
+  gap: 6px;
+}
+
+.thread-detail-memory-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.thread-detail-memory-list button {
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(170, 203, 248, 0.35);
+  background: rgba(14, 33, 59, 0.75);
+  color: #d9e9ff;
+  font-size: 0.69rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-align: left;
+}
+
+.thread-detail-memory-list button:hover {
+  border-color: rgba(132, 188, 255, 0.62);
+  background: rgba(16, 39, 69, 0.9);
+}
+
+.thread-detail-memory-time {
+  color: #a9c7ea;
+  font-size: 0.68rem;
+  margin-left: 6px;
 }
 
 .thread-map-actions {
@@ -1062,6 +1179,49 @@ body {
 }
 
 .thread-map-actions button:hover {
+  border-color: rgba(132, 188, 255, 0.62);
+  background: rgba(16, 39, 69, 0.9);
+}
+
+.thread-decision-row {
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  gap: 7px;
+  align-items: center;
+}
+
+.thread-decision-row[hidden] {
+  display: none !important;
+}
+
+.thread-decision-input {
+  min-width: 0;
+  border: 1px solid rgba(170, 203, 248, 0.35);
+  border-radius: 9px;
+  background: rgba(9, 24, 44, 0.75);
+  color: #e0eeff;
+  padding: 7px 9px;
+  font-size: 0.75rem;
+}
+
+.thread-decision-input:focus {
+  outline: none;
+  border-color: rgba(130, 193, 255, 0.72);
+  box-shadow: 0 0 0 2px rgba(72, 153, 236, 0.2);
+}
+
+.thread-decision-row button {
+  padding: 7px 9px;
+  border-radius: 9px;
+  border: 1px solid rgba(170, 203, 248, 0.35);
+  background: rgba(14, 33, 59, 0.75);
+  color: #d9e9ff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.thread-decision-row button:hover {
   border-color: rgba(132, 188, 255, 0.62);
   background: rgba(16, 39, 69, 0.9);
 }

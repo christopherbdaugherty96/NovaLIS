@@ -21,6 +21,22 @@ class MemoryGovernanceExecutor:
         try:
             if action == "save":
                 return self._save(request, params, store)
+            if action == "save_thread_snapshot":
+                return ActionResult.failure(
+                    "Thread snapshot save requires orchestration context.",
+                    request_id=request.request_id,
+                    authority_class="persistent_change",
+                    external_effect=False,
+                    reversible=True,
+                )
+            if action == "save_thread_decision":
+                return ActionResult.failure(
+                    "Thread decision save requires orchestration context.",
+                    request_id=request.request_id,
+                    authority_class="persistent_change",
+                    external_effect=False,
+                    reversible=True,
+                )
             if action == "list":
                 return self._list(request, params, store)
             if action == "show":
@@ -96,17 +112,33 @@ class MemoryGovernanceExecutor:
             tags = [token.strip() for token in tags_raw.split(",") if token.strip()]
         else:
             tags = []
+        thread_name = str(params.get("thread_name") or "").strip()
+        thread_key = str(params.get("thread_key") or "").strip()
+        if thread_key and thread_key not in tags:
+            tags.append(thread_key)
 
-        item = store.save_item(title=title, body=body, scope=scope, tags=tags)
+        item = store.save_item(
+            title=title,
+            body=body,
+            scope=scope,
+            tags=tags,
+            thread_name=thread_name,
+            thread_key=thread_key,
+        )
+        links = dict(item.get("links") or {})
         self._log(
             "MEMORY_ITEM_SAVED",
             {
                 "item_id": item["id"],
                 "tier": item["tier"],
                 "scope": item["scope"],
+                "thread_key": str(links.get("project_thread_key") or ""),
             },
         )
-        message = f"Memory saved: {item['id']} ({item['title']})"
+        thread_note = ""
+        if str(links.get("project_thread_name") or "").strip():
+            thread_note = f" [thread: {str(links.get('project_thread_name'))}]"
+        message = f"Memory saved: {item['id']} ({item['title']}){thread_note}"
         return ActionResult.ok(
             message=message,
             data={"memory_item": item},
@@ -119,10 +151,23 @@ class MemoryGovernanceExecutor:
     def _list(self, request, params: dict[str, Any], store: GovernedMemoryStore) -> ActionResult:
         tier = str(params.get("tier") or "").strip().lower()
         scope = str(params.get("scope") or "").strip().lower()
-        items = store.list_items(tier=tier, scope=scope, limit=30)
+        thread_name = str(params.get("thread_name") or "").strip()
+        thread_key = str(params.get("thread_key") or "").strip()
+        items = store.list_items(
+            tier=tier,
+            scope=scope,
+            thread_name=thread_name,
+            thread_key=thread_key,
+            limit=30,
+        )
         self._log(
             "MEMORY_ITEM_LISTED",
-            {"tier_filter": tier, "scope_filter": scope, "count": len(items)},
+            {
+                "tier_filter": tier,
+                "scope_filter": scope,
+                "thread_key_filter": thread_key,
+                "count": len(items),
+            },
         )
         if not items:
             return ActionResult.ok(
@@ -135,8 +180,13 @@ class MemoryGovernanceExecutor:
             )
         lines = ["Memory Items"]
         for item in items:
+            links = dict(item.get("links") or {})
+            thread_segment = ""
+            thread_name_value = str(links.get("project_thread_name") or "").strip()
+            if thread_name_value:
+                thread_segment = f" | thread:{thread_name_value}"
             lines.append(
-                f"- {item.get('id')} | {item.get('tier')} | {item.get('title')}"
+                f"- {item.get('id')} | {item.get('tier')} | {item.get('title')}{thread_segment}"
             )
         return ActionResult.ok(
             message="\n".join(lines),
@@ -155,10 +205,14 @@ class MemoryGovernanceExecutor:
         if item is None:
             raise KeyError(item_id)
         self._log("MEMORY_ITEM_VIEWED", {"item_id": item["id"], "tier": item["tier"]})
+        links = dict(item.get("links") or {})
+        thread_name = str(links.get("project_thread_name") or "").strip()
+        thread_line = f"Thread: {thread_name}\n" if thread_name else ""
         message = (
             f"{item['id']} ({item['tier']})\n"
             f"Title: {item['title']}\n"
             f"Scope: {item['scope']}\n\n"
+            f"{thread_line}"
             f"{item['body']}"
         )
         return ActionResult.ok(

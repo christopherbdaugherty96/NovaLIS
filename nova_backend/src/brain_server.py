@@ -160,6 +160,10 @@ BIGGEST_BLOCKER_RE = re.compile(
     r"^\s*(?:what(?:'s| is)\s+(?:the\s+)?)?(?:biggest|main|current)\s+blocker(?:\s+in|\s+for)?\s*(?P<name>.*)\s*$",
     re.IGNORECASE,
 )
+THREAD_DETAIL_RE = re.compile(
+    r"^\s*(?:thread\s+detail|show\s+thread\s+detail|show\s+thread|thread\s+snapshot|details?\s+for)\s+(?P<name>.+?)\s*$",
+    re.IGNORECASE,
+)
 MOST_BLOCKED_PROJECT_RE = re.compile(
     r"^\s*(?:which(?:\s+of\s+my)?\s+projects?\s+is\s+most\s+blocked(?:\s+right\s+now)?|most\s+blocked\s+project)\s*$",
     re.IGNORECASE,
@@ -517,6 +521,213 @@ def _derive_recommendation_reason(
         return f"I suggested that based on {reasons[0]}."
     return "I suggested that based on " + "; ".join(reasons[:3]) + "."
 
+
+def _prepare_memory_bridge_params(
+    *,
+    params: dict,
+    project_threads: ProjectThreadStore,
+) -> tuple[bool, dict, str]:
+    action = str(params.get("action") or "").strip().lower()
+    if action == "save_thread_snapshot":
+        requested = str(params.get("thread_name") or "").strip()
+        if requested.lower() in {"this", "it", "thread", "project"}:
+            requested = project_threads.active_thread_name()
+        found, brief = project_threads.render_brief(requested)
+        if not found:
+            return False, params, brief
+
+        resolved_name = project_threads.active_thread_name()
+        resolved_key = project_threads.active_thread_key()
+        tags_raw = params.get("tags")
+        tags: list[str]
+        if isinstance(tags_raw, list):
+            tags = [str(item).strip() for item in tags_raw if str(item).strip()]
+        elif isinstance(tags_raw, str):
+            tags = [token.strip() for token in tags_raw.split(",") if token.strip()]
+        else:
+            tags = []
+        if "project_thread" not in tags:
+            tags.append("project_thread")
+        if resolved_key and resolved_key not in tags:
+            tags.append(resolved_key)
+
+        prepared = dict(params)
+        prepared["action"] = "save"
+        prepared["title"] = f"Thread Snapshot: {resolved_name}"
+        prepared["body"] = brief
+        prepared["scope"] = "project"
+        prepared["thread_name"] = resolved_name
+        prepared["thread_key"] = resolved_key
+        prepared["tags"] = tags
+        return True, prepared, ""
+
+    if action == "save_thread_decision":
+        requested = str(params.get("thread_name") or "").strip()
+        if requested.lower() in {"this", "it", "thread", "project"}:
+            requested = project_threads.active_thread_name()
+        found, resolved_name, resolved_key = project_threads.resolve_thread_identity(requested)
+        if not found:
+            return False, params, "I could not find that project thread yet."
+
+        decision_text = str(params.get("decision") or "").strip()
+        if not decision_text:
+            return False, params, "Please include the decision text after ':'."
+        project_threads.add_decision(thread_name=resolved_name, decision=decision_text)
+
+        tags_raw = params.get("tags")
+        tags: list[str]
+        if isinstance(tags_raw, list):
+            tags = [str(item).strip() for item in tags_raw if str(item).strip()]
+        elif isinstance(tags_raw, str):
+            tags = [token.strip() for token in tags_raw.split(",") if token.strip()]
+        else:
+            tags = []
+        for value in ("project_thread", "decision", resolved_key):
+            if value and value not in tags:
+                tags.append(value)
+
+        prepared = dict(params)
+        prepared["action"] = "save"
+        prepared["title"] = f"Decision: {resolved_name}"
+        prepared["body"] = f"Project thread: {resolved_name}\n\nDecision\n{decision_text}"
+        prepared["scope"] = "project"
+        prepared["thread_name"] = resolved_name
+        prepared["thread_key"] = resolved_key
+        prepared["tags"] = tags
+        return True, prepared, ""
+
+    if action == "list" and str(params.get("thread_name") or "").strip():
+        requested = str(params.get("thread_name") or "").strip()
+        if requested.lower() in {"this", "it", "thread", "project"}:
+            requested = project_threads.active_thread_name()
+        prepared = dict(params)
+        found, resolved_name, resolved_key = project_threads.resolve_thread_identity(requested)
+        if found:
+            prepared["thread_name"] = resolved_name
+            prepared["thread_key"] = resolved_key
+        else:
+            prepared["thread_name"] = requested
+        return True, prepared, ""
+
+    return True, params, ""
+
+
+def _enrich_thread_map_widget_memory(widget: dict) -> dict:
+    if not isinstance(widget, dict):
+        return widget
+    if str(widget.get("type") or "").strip() != "thread_map":
+        return widget
+
+    threads = list(widget.get("threads") or [])
+    if not threads:
+        return widget
+
+    insights: dict[str, dict] = {}
+    try:
+        from src.memory.governed_memory_store import GovernedMemoryStore
+
+        insights = GovernedMemoryStore().summarize_thread_insights()
+    except Exception:
+        insights = {}
+
+    enriched_threads: list[dict] = []
+    for item in threads:
+        row = dict(item or {})
+        key = str(row.get("key") or "").strip().lower()
+        insight = dict(insights.get(key) or {})
+        row["memory_count"] = int(insight.get("memory_count") or 0)
+        row["last_memory_updated_at"] = str(insight.get("last_memory_updated_at") or "")
+        row["latest_decision"] = str(insight.get("latest_decision") or "")
+        enriched_threads.append(row)
+
+    enriched = dict(widget)
+    enriched["threads"] = enriched_threads
+    return enriched
+
+
+def _compute_thread_change_summary(current: dict, previous: dict | None) -> str:
+    if previous is None:
+        return "Changed: new thread activity recorded."
+
+    current_decision = str(current.get("latest_decision") or "").strip()
+    previous_decision = str(previous.get("latest_decision") or "").strip()
+    current_memory_count = int(current.get("memory_count") or 0)
+    previous_memory_count = int(previous.get("memory_count") or 0)
+    current_blocker = str(current.get("latest_blocker") or "").strip()
+    previous_blocker = str(previous.get("latest_blocker") or "").strip()
+    current_memory_updated = str(current.get("last_memory_updated_at") or "")
+    previous_memory_updated = str(previous.get("last_memory_updated_at") or "")
+    current_thread_updated = str(current.get("updated_at") or "")
+    previous_thread_updated = str(previous.get("updated_at") or "")
+
+    if current_decision and current_decision != previous_decision:
+        return "Changed: decision updated."
+    if current_blocker and current_blocker != previous_blocker:
+        return "Changed: blocker updated."
+    if current_memory_count > previous_memory_count:
+        return "Changed: memory entry added."
+    if current_memory_updated > previous_memory_updated:
+        return "Changed: memory updated."
+    if current_thread_updated > previous_thread_updated:
+        return "Changed: thread status updated."
+    return "Changed: no major updates."
+
+
+def _build_thread_detail_widget(
+    *,
+    detail: dict,
+    memory_items: list[dict],
+) -> dict:
+    detail_payload = dict(detail or {})
+    latest_next = str(detail.get("latest_next_action") or "").strip()
+    health_reason = str(detail.get("health_reason") or "").strip()
+    blocker = str(detail.get("latest_blocker") or "").strip()
+    why_blocked = ""
+    if blocker:
+        if health_reason:
+            why_blocked = f"Blocked because {blocker} (health signal: {health_reason})."
+        else:
+            why_blocked = f"Blocked because {blocker}."
+    else:
+        why_blocked = "No blocker is currently recorded."
+
+    next_step = latest_next or "No next step recorded."
+    why_next = ""
+    if latest_next and blocker:
+        why_next = f"This next step is recommended to address the current blocker: {blocker}."
+    elif latest_next:
+        why_next = f"This next step is recommended from current thread context ({health_reason or 'at-risk'})."
+    else:
+        why_next = "No recommendation yet because no next step is recorded."
+
+    trimmed_memory = []
+    latest_memory_updated = ""
+    for item in memory_items[:5]:
+        row = dict(item or {})
+        updated_at = str(row.get("updated_at") or "")
+        if updated_at > latest_memory_updated:
+            latest_memory_updated = updated_at
+        trimmed_memory.append(
+            {
+                "id": str(row.get("id") or ""),
+                "title": str(row.get("title") or ""),
+                "tier": str(row.get("tier") or ""),
+                "updated_at": updated_at,
+            }
+        )
+    if latest_memory_updated:
+        detail_payload["last_memory_updated_at"] = latest_memory_updated
+
+    return {
+        "type": "thread_detail",
+        "thread": detail_payload,
+        "why_blocked": why_blocked,
+        "next_step": next_step,
+        "memory_items": trimmed_memory,
+        "recent_decisions": list(detail.get("recent_decisions") or [])[-5:],
+        "why_next_step": why_next,
+    }
+
 # -------------------------------------------------
 # Phase Status Endpoint
 # -------------------------------------------------
@@ -548,6 +759,35 @@ async def audit_runtime_truth_markdown():
 # -------------------------------------------------
 async def ws_send(ws: WebSocket, payload: dict) -> None:
     await ws.send_text(json.dumps(payload))
+
+
+async def send_thread_map_widget(
+    ws: WebSocket,
+    project_threads: ProjectThreadStore,
+    session_state: dict,
+) -> None:
+    widget = _enrich_thread_map_widget_memory(project_threads.render_map_widget())
+    threads = list(widget.get("threads") or [])
+    previous_map = dict(session_state.get("thread_map_last") or {})
+    snapshot: dict[str, dict] = {}
+    enriched_threads: list[dict] = []
+    for item in threads:
+        row = dict(item or {})
+        key = str(row.get("key") or "").strip().lower()
+        previous = previous_map.get(key) if key else None
+        row["change_summary"] = _compute_thread_change_summary(row, previous if isinstance(previous, dict) else None)
+        if key:
+            snapshot[key] = {
+                "latest_decision": str(row.get("latest_decision") or ""),
+                "latest_blocker": str(row.get("latest_blocker") or ""),
+                "memory_count": int(row.get("memory_count") or 0),
+                "last_memory_updated_at": str(row.get("last_memory_updated_at") or ""),
+                "updated_at": str(row.get("updated_at") or ""),
+            }
+        enriched_threads.append(row)
+    widget["threads"] = enriched_threads
+    session_state["thread_map_last"] = snapshot
+    await ws_send(ws, widget)
 
 async def send_chat_message(
     ws: WebSocket,
@@ -693,6 +933,7 @@ async def websocket_endpoint(ws: WebSocket):
         "working_context": working_context.to_dict(),
         "project_thread_active": "",
         "last_recommendation_reason": "",
+        "thread_map_last": {},
     }
 
     await send_chat_message(ws, "Hello. How can I help?")
@@ -879,13 +1120,17 @@ async def websocket_endpoint(ws: WebSocket):
                     "- save this as part of <name>\n"
                     "- continue my <name>\n"
                     "- show threads\n"
+                    "- thread detail <name>\n"
                     "- project status <name>\n"
                     "- biggest blocker in <name>\n"
                     "- which project is most blocked right now\n"
                     "- why this recommendation\n\n"
                     "Governed Memory\n"
                     "- memory save <title>: <content>\n"
+                    "- memory save thread <name>\n"
+                    "- memory save decision for <thread>: <text>\n"
                     "- memory list [active|locked|deferred]\n"
+                    "- memory list thread <name>\n"
                     "- memory show <id>\n"
                     "- memory lock <id>\n"
                     "- memory defer <id>\n"
@@ -897,7 +1142,7 @@ async def websocket_endpoint(ws: WebSocket):
                 continue
 
             if SHOW_THREADS_RE.match(text):
-                await ws_send(ws, project_threads.render_map_widget())
+                await send_thread_map_widget(ws, project_threads, session_state)
                 await send_chat_message(ws, project_threads.render_map_message())
                 await send_chat_done(ws)
                 continue
@@ -905,13 +1150,14 @@ async def websocket_endpoint(ws: WebSocket):
             if MOST_BLOCKED_PROJECT_RE.match(text):
                 found, blocked_message = project_threads.render_most_blocked()
                 if found:
-                    await ws_send(ws, project_threads.render_map_widget())
+                    await send_thread_map_widget(ws, project_threads, session_state)
                     top_name = project_threads.most_blocked_thread_name()
                     suggested: list[dict[str, str]] = [{"label": "Show threads", "command": "show threads"}]
                     if top_name:
                         suggested = [
                             {"label": f"Continue {top_name}", "command": f"continue my {top_name}"},
                             {"label": f"Project status", "command": f"project status {top_name}"},
+                            {"label": "Save thread memory", "command": f"memory save thread {top_name}"},
                             {"label": "Show threads", "command": "show threads"},
                         ]
                     await send_chat_message(ws, blocked_message, suggested_actions=suggested)
@@ -940,7 +1186,7 @@ async def websocket_endpoint(ws: WebSocket):
                     goal=str(working_context.to_dict().get("task_goal") or "").strip(),
                 )
                 session_state["project_thread_active"] = created.name
-                await ws_send(ws, project_threads.render_map_widget())
+                await send_thread_map_widget(ws, project_threads, session_state)
                 await send_chat_message(
                     ws,
                     (
@@ -960,12 +1206,14 @@ async def websocket_endpoint(ws: WebSocket):
                 found, brief = project_threads.render_brief(thread_name)
                 if found:
                     session_state["project_thread_active"] = project_threads.active_thread_name()
-                    await ws_send(ws, project_threads.render_map_widget())
+                    await send_thread_map_widget(ws, project_threads, session_state)
                     await send_chat_message(
                         ws,
                         brief,
                         suggested_actions=[
                             {"label": "Save this update", "command": f"save this as part of {project_threads.active_thread_name()}"},
+                            {"label": "Save thread memory", "command": f"memory save thread {project_threads.active_thread_name()}"},
+                            {"label": "List thread memory", "command": f"memory list thread {project_threads.active_thread_name()}"},
                             {"label": "Show threads", "command": "show threads"},
                         ],
                     )
@@ -988,13 +1236,16 @@ async def websocket_endpoint(ws: WebSocket):
                 found, status_text = project_threads.render_status(thread_name)
                 if found:
                     session_state["project_thread_active"] = project_threads.active_thread_name()
-                    await ws_send(ws, project_threads.render_map_widget())
+                    await send_thread_map_widget(ws, project_threads, session_state)
                     active = project_threads.active_thread_name()
                     await send_chat_message(
                         ws,
                         status_text,
                         suggested_actions=[
+                            {"label": "Thread detail", "command": f"thread detail {active}"},
                             {"label": "Biggest blocker", "command": f"biggest blocker in {active}"},
+                            {"label": "Save thread memory", "command": f"memory save thread {active}"},
+                            {"label": "List thread memory", "command": f"memory list thread {active}"},
                             {"label": "Continue thread", "command": f"continue my {active}"},
                             {"label": "Show threads", "command": "show threads"},
                         ],
@@ -1016,14 +1267,17 @@ async def websocket_endpoint(ws: WebSocket):
                 found, blocker_text = project_threads.render_biggest_blocker(thread_name)
                 if found:
                     session_state["project_thread_active"] = project_threads.active_thread_name()
-                    await ws_send(ws, project_threads.render_map_widget())
+                    await send_thread_map_widget(ws, project_threads, session_state)
                     active = project_threads.active_thread_name()
                     await send_chat_message(
                         ws,
                         blocker_text,
                         suggested_actions=[
+                            {"label": "Thread detail", "command": f"thread detail {active}"},
                             {"label": "Project status", "command": f"project status {active}"},
                             {"label": "Save this update", "command": f"save this as part of {active}"},
+                            {"label": "Save decision memory", "command": f"memory save decision for {active}: "},
+                            {"label": "Save thread memory", "command": f"memory save thread {active}"},
                             {"label": "Show threads", "command": "show threads"},
                         ],
                     )
@@ -1033,6 +1287,58 @@ async def websocket_endpoint(ws: WebSocket):
                     pass
                 else:
                     await send_chat_message(ws, blocker_text)
+                    await send_chat_done(ws)
+                    continue
+
+            detail_thread_match = THREAD_DETAIL_RE.match(text)
+            if detail_thread_match:
+                thread_name = str(detail_thread_match.group("name") or "").strip()
+                if thread_name.lower() in {"this", "it", "thread", "project"}:
+                    thread_name = project_threads.active_thread_name() or str(session_state.get("project_thread_active") or "").strip()
+                found, detail = project_threads.get_thread_detail(thread_name)
+                if found:
+                    session_state["project_thread_active"] = str(detail.get("name") or "")
+                    await send_thread_map_widget(ws, project_threads, session_state)
+                    memory_items: list[dict] = []
+                    try:
+                        from src.memory.governed_memory_store import GovernedMemoryStore
+
+                        memory_items = GovernedMemoryStore().list_items(
+                            thread_name=str(detail.get("name") or ""),
+                            thread_key=str(detail.get("key") or ""),
+                            limit=5,
+                        )
+                    except Exception:
+                        memory_items = []
+                    await ws_send(
+                        ws,
+                        _build_thread_detail_widget(
+                            detail=detail,
+                            memory_items=memory_items,
+                        ),
+                    )
+                    latest_decision = str(detail.get("latest_decision") or "").strip() or "No decision recorded yet."
+                    latest_blocker = str(detail.get("latest_blocker") or "").strip() or "No blocker recorded."
+                    await send_chat_message(
+                        ws,
+                        (
+                            f"{str(detail.get('name') or 'Thread')} - Detail Snapshot\n\n"
+                            f"Latest decision: {latest_decision}\n"
+                            f"Latest blocker: {latest_blocker}"
+                        ),
+                        suggested_actions=[
+                            {"label": "Project status", "command": f"project status {str(detail.get('name') or '').strip()}"},
+                            {"label": "Biggest blocker", "command": f"biggest blocker in {str(detail.get('name') or '').strip()}"},
+                            {"label": "List memory", "command": f"memory list thread {str(detail.get('name') or '').strip()}"},
+                            {"label": "Save decision", "command": f"memory save decision for {str(detail.get('name') or '').strip()}: "},
+                        ],
+                    )
+                    await send_chat_done(ws)
+                    continue
+                if not project_threads.has_threads() and decision.intent_family == "followup":
+                    pass
+                else:
+                    await send_chat_message(ws, "I could not find that project thread yet.")
                     await send_chat_done(ws)
                     continue
 
@@ -1058,7 +1364,7 @@ async def websocket_endpoint(ws: WebSocket):
                     next_steps=next_steps,
                 )
                 session_state["project_thread_active"] = attached.name
-                await ws_send(ws, project_threads.render_map_widget())
+                await send_thread_map_widget(ws, project_threads, session_state)
                 await send_chat_message(
                     ws,
                     f"Saved to active thread {attached.name}: {summary}",
@@ -1080,7 +1386,7 @@ async def websocket_endpoint(ws: WebSocket):
                     next_steps=next_steps,
                 )
                 session_state["project_thread_active"] = attached.name
-                await ws_send(ws, project_threads.render_map_widget())
+                await send_thread_map_widget(ws, project_threads, session_state)
                 await send_chat_message(
                     ws,
                     (
@@ -1097,7 +1403,7 @@ async def websocket_endpoint(ws: WebSocket):
                 thread_name = str(decision_thread_match.group("name") or "").strip()
                 attached = project_threads.add_decision(thread_name=thread_name, decision=decision_text)
                 session_state["project_thread_active"] = attached.name
-                await ws_send(ws, project_threads.render_map_widget())
+                await send_thread_map_widget(ws, project_threads, session_state)
                 await send_chat_message(
                     ws,
                     f"Decision recorded in {attached.name}: {decision_text}",
@@ -1899,6 +2205,16 @@ async def websocket_endpoint(ws: WebSocket):
                         params.setdefault("working_context", working_context.for_explain())
                     else:
                         params.setdefault("working_context", working_context.to_dict())
+                if capability_id == 61:
+                    prepared_ok, prepared_params, prepared_message = _prepare_memory_bridge_params(
+                        params=params,
+                        project_threads=project_threads,
+                    )
+                    if not prepared_ok:
+                        await send_chat_message(ws, prepared_message)
+                        await send_chat_done(ws)
+                        continue
+                    params = prepared_params
 
                 if capability_id == 22 and not params.get("confirmed"):
                     target = str(params.get("target") or "").strip()
@@ -1979,6 +2295,16 @@ async def websocket_endpoint(ws: WebSocket):
                     analysis_docs = action_result.data.get("analysis_documents")
                     if isinstance(analysis_docs, list):
                         session_state["analysis_documents"] = analysis_docs
+                    if capability_id == 61:
+                        memory_item = action_result.data.get("memory_item")
+                        if isinstance(memory_item, dict):
+                            item_id = str(memory_item.get("id") or "").strip()
+                            if item_id:
+                                session_state["last_memory_item_id"] = item_id
+                            links = dict(memory_item.get("links") or {})
+                            linked_thread = str(links.get("project_thread_name") or "").strip()
+                            if linked_thread:
+                                session_state["project_thread_active"] = linked_thread
                     sources = action_result.data.get("sources")
                     if isinstance(sources, list) and sources:
                         session_state["last_sources"] = [str(src) for src in sources[:10]]
@@ -2076,6 +2402,24 @@ async def websocket_endpoint(ws: WebSocket):
                         {"label": "Show topic map", "command": "show topic map"},
                         {"label": "Today's brief", "command": "today's news"},
                     ]
+                if capability_id == 61 and action_result.success and isinstance(action_result.data, dict):
+                    memory_item = action_result.data.get("memory_item")
+                    if isinstance(memory_item, dict):
+                        item_id = str(memory_item.get("id") or "").strip()
+                        links = dict(memory_item.get("links") or {})
+                        linked_thread = str(links.get("project_thread_name") or "").strip()
+                        suggestion_items: list[dict[str, str]] = []
+                        if item_id:
+                            suggestion_items.append({"label": "Show memory item", "command": f"memory show {item_id}"})
+                        if linked_thread:
+                            suggestion_items.append(
+                                {"label": f"Continue {linked_thread}", "command": f"continue my {linked_thread}"}
+                            )
+                            suggestion_items.append(
+                                {"label": f"Memory for {linked_thread}", "command": f"memory list thread {linked_thread}"}
+                            )
+                        if suggestion_items:
+                            message_suggestions = suggestion_items
 
                 recommendation_reason = ""
                 if action_result.success and capability_id in {54, 59, 60}:
