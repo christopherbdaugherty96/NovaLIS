@@ -76,4 +76,15 @@ Added event types:
 ## Verification Snapshot
 
 - Targeted continuity/UI tests: passed.
-- Full backend suite after latest improvements: `332 passed`.
+- Full backend suite at continuity slice landing: `332 passed`.
+
+## Follow-On Runtime Progress (2026-03-12)
+
+This continuity slice has been extended by:
+- `PHASE_5_MEMORY_RUNTIME_SLICE_2026-03-11.md`
+- `PHASE_5_THREAD_MEMORY_BRIDGE_RUNTIME_SLICE_2026-03-12.md`
+
+Current regression baseline:
+- `nova_backend/tests/phase5`: `25 passed`
+- `nova_backend/tests/phase45`: `33 passed`
+- Full backend suite: `344 passed`
