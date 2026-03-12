@@ -41,6 +41,7 @@ from src.trust.failure_ladder import FailureLadder
 from src.trust.trust_contract import normalize_trust_status
 from src.working_context.context_store import WorkingContextStore
 from src.working_context.project_threads import ProjectThreadStore
+from src.personality.interface_agent import PersonalityInterfaceAgent
 from src.audit.runtime_auditor import (
     run_runtime_truth_audit,
     render_runtime_truth_markdown,
@@ -106,6 +107,7 @@ thought_store = ThoughtStore(ttl=300)
 conversation_heuristics = ComplexityHeuristics()
 response_formatter = ResponseFormatter()
 failure_ladder = FailureLadder()
+interface_personality_agent = PersonalityInterfaceAgent()
 RUNTIME_GOVERNOR = Governor()
 
 # -------------------------------------------------
@@ -795,8 +797,14 @@ async def send_chat_message(
     message_id: Optional[str] = None,
     confidence: Optional[str] = None,
     suggested_actions: Optional[list[dict[str, str]]] = None,
+    apply_personality: bool = True,
 ) -> None:
-    payload = {"type": "chat", "message": text}
+    presented = str(text or "").strip()
+    if apply_personality:
+        presented = interface_personality_agent.present(presented)
+    if not presented and text:
+        presented = str(text).strip()
+    payload = {"type": "chat", "message": presented}
     if message_id is not None:
         payload["message_id"] = message_id
     if confidence:
@@ -1703,7 +1711,7 @@ async def websocket_endpoint(ws: WebSocket):
                 session_state["trust_status"] = failure_ladder.record_local_success(
                     session_state.get("trust_status", {})
                 )
-                await send_chat_message(ws, phase42_message)
+                await send_chat_message(ws, phase42_message, apply_personality=False)
                 await send_trust_status(ws, session_state["trust_status"])
                 await send_chat_done(ws)
 

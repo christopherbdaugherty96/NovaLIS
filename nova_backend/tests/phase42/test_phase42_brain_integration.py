@@ -17,6 +17,11 @@ def test_brain_server_arms_deep_mode_for_phase42_path():
     assert "personality_agent.arm_deep_mode()" in source
 
 
+def test_phase42_path_preserves_raw_personality_outputs():
+    source = BRAIN_SERVER_PATH.read_text(encoding="utf-8")
+    assert "phase42_message, apply_personality=False" in source
+
+
 def test_brain_server_defers_phase42_agent_imports_when_locked():
     source = BRAIN_SERVER_PATH.read_text(encoding="utf-8")
     top_block = "\n".join(source.splitlines()[:80])
