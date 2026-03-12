@@ -5,7 +5,7 @@ Deterministic generated tree diagram derived from allowlisted runtime sources.
 ```mermaid
 graph TD
   Runtime[Phase-4 Runtime]
-  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60]]
+  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61]]
   Runtime --> Disabled[Disabled IDs: []]
   Runtime --> Gov[Governor Guards]
   Gov --> EG[execution_gate: True]
@@ -58,6 +58,8 @@ graph TD
   C59 --> C59A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Caps --> C60[60:explain_anything]
   C60 --> C60A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
+  Caps --> C61[61:memory_governance]
+  C61 --> C61A[authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor]
   Runtime --> Routes[Skill Routes]
   Routes --> R54_analysis_document[analysis_document -> capability 54]
   Routes --> R21_brightness[brightness -> capability 21]
@@ -67,6 +69,7 @@ graph TD
   Routes --> R49_headline_summary[headline_summary -> capability 49]
   Routes --> R50_intelligence_brief[intelligence_brief -> capability 50]
   Routes --> R20_media[media -> capability 20]
+  Routes --> R61_memory_governance[memory_governance -> capability 61]
   Routes --> R56_news_snapshot[news_snapshot -> capability 56]
   Routes --> R22_open_folder[open_folder -> capability 22]
   Routes --> R17_open_website[open_website -> capability 17]
@@ -88,7 +91,7 @@ graph TD
 
 ```text
 Runtime
-|- Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60]
+|- Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61]
 |- Disabled IDs: []
 |- Governor Guards
 |  |- execution_gate: True
@@ -119,6 +122,7 @@ Runtime
 |  |- 58 screen_capture (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |  |- 59 screen_analysis (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |  |- 60 explain_anything (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 61 memory_governance (authority=system_action, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |- Skill -> capability routes
 |  |- analysis_document -> 54
 |  |- brightness -> 21
@@ -128,6 +132,7 @@ Runtime
 |  |- headline_summary -> 49
 |  |- intelligence_brief -> 50
 |  |- media -> 20
+|  |- memory_governance -> 61
 |  |- news_snapshot -> 56
 |  |- open_folder -> 22
 |  |- open_website -> 17

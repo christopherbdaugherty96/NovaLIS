@@ -261,8 +261,41 @@ DOC_LIST_RE = re.compile(
     r"^\s*(?:list|show)\s+(?:analysis\s+)?docs?(?:uments)?\s*$",
     re.IGNORECASE,
 )
+MEMORY_SAVE_RE = re.compile(
+    r"^\s*memory\s+save\s+(?P<title>[^:]{1,120})\s*:\s*(?P<body>.+?)\s*$",
+    re.IGNORECASE,
+)
+MEMORY_LIST_RE = re.compile(
+    r"^\s*memory\s+list(?:\s+(?P<tier>locked|active|deferred))?\s*$",
+    re.IGNORECASE,
+)
+MEMORY_SHOW_RE = re.compile(
+    r"^\s*memory\s+show\s+(?P<item_id>[A-Za-z0-9\-_]+)\s*$",
+    re.IGNORECASE,
+)
+MEMORY_LOCK_RE = re.compile(
+    r"^\s*memory\s+lock\s+(?P<item_id>[A-Za-z0-9\-_]+)\s*$",
+    re.IGNORECASE,
+)
+MEMORY_DEFER_RE = re.compile(
+    r"^\s*memory\s+defer\s+(?P<item_id>[A-Za-z0-9\-_]+)\s*$",
+    re.IGNORECASE,
+)
+MEMORY_UNLOCK_RE = re.compile(
+    r"^\s*memory\s+unlock\s+(?P<item_id>[A-Za-z0-9\-_]+)(?:\s+(?P<confirm>confirm(?:ed)?))?\s*$",
+    re.IGNORECASE,
+)
+MEMORY_DELETE_RE = re.compile(
+    r"^\s*memory\s+delete\s+(?P<item_id>[A-Za-z0-9\-_]+)(?:\s+(?P<confirm>confirm(?:ed)?))?\s*$",
+    re.IGNORECASE,
+)
+MEMORY_SUPERSEDE_RE = re.compile(
+    r"^\s*memory\s+supersede\s+(?P<item_id>[A-Za-z0-9\-_]+)\s+with\s+(?P<title>[^:]{1,120})\s*:\s*(?P<body>.+?)"
+    r"(?:\s+(?P<confirm>confirm(?:ed)?))?\s*$",
+    re.IGNORECASE,
+)
 COMMAND_ONLY_RE = re.compile(
-    r"^\s*(?P<verb>open|search|research|summarize|compare|track)\s*$",
+    r"^\s*(?P<verb>open|search|research|summarize|compare|track|memory)\s*$",
     re.IGNORECASE,
 )
 
@@ -788,6 +821,72 @@ class GovernorMediator:
         if DOC_LIST_RE.match(t):
             return _invocation_if_enabled(54, {"action": "list"})
 
+        m = MEMORY_SAVE_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "save",
+                    "title": m.group("title").strip(),
+                    "body": m.group("body").strip(),
+                },
+            )
+
+        m = MEMORY_LIST_RE.match(t)
+        if m:
+            params: Dict[str, Any] = {"action": "list"}
+            tier = (m.group("tier") or "").strip().lower()
+            if tier:
+                params["tier"] = tier
+            return _invocation_if_enabled(61, params)
+
+        m = MEMORY_SHOW_RE.match(t)
+        if m:
+            return _invocation_if_enabled(61, {"action": "show", "item_id": m.group("item_id").strip()})
+
+        m = MEMORY_LOCK_RE.match(t)
+        if m:
+            return _invocation_if_enabled(61, {"action": "lock", "item_id": m.group("item_id").strip()})
+
+        m = MEMORY_DEFER_RE.match(t)
+        if m:
+            return _invocation_if_enabled(61, {"action": "defer", "item_id": m.group("item_id").strip()})
+
+        m = MEMORY_UNLOCK_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "unlock",
+                    "item_id": m.group("item_id").strip(),
+                    "confirmed": bool((m.group("confirm") or "").strip()),
+                },
+            )
+
+        m = MEMORY_DELETE_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "delete",
+                    "item_id": m.group("item_id").strip(),
+                    "confirmed": bool((m.group("confirm") or "").strip()),
+                },
+            )
+
+        m = MEMORY_SUPERSEDE_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "supersede",
+                    "item_id": m.group("item_id").strip(),
+                    "new_title": m.group("title").strip(),
+                    "new_body": m.group("body").strip(),
+                    "confirmed": bool((m.group("confirm") or "").strip()),
+                },
+            )
+
         m = COMPARE_STORY_RE.match(t)
         if m:
             return _invocation_if_enabled(
@@ -867,6 +966,10 @@ class GovernorMediator:
                 "summarize": (49, "What should I summarize?"),
                 "compare": (53, "What should I compare?"),
                 "track": (52, "What topic should I track?"),
+                "memory": (
+                    61,
+                    "Try 'memory save <title>: <content>' or 'memory list'.",
+                ),
             }
             cap_id, message = prompts.get(verb, (16, "Could you clarify that request?"))
             return Clarification(capability_id=cap_id, message=message)
