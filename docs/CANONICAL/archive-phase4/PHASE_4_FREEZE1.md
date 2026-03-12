@@ -1,3 +1,9 @@
+﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
+> This file is retained for traceability and historical audit context.
+> For current canonical runtime truth, use:
+> - docs/current_runtime/CURRENT_RUNTIME_STATE.md
+> - docs/PROOFS/Phase-5/PHASE_5_PROOF_PACKET_INDEX.md
+> - docs/canonical/CANONICAL_DOCUMENT_MAP.md
 
  **Phase-4 Freeze Document** that reflects:
 
@@ -11,17 +17,17 @@
 * No authority expansion
 * Cognitive staging (if present) explicitly marked non-authorizing
 
-You can drop this into:
+Archived source path:
 
 ```
-docs/CANONICAL/PHASE_4_FREEZE.md
+docs/canonical/archive-phase4/PHASE_4_FREEZE.md
 ```
 
 ---
 
-# 🧊 NOVA PHASE-4 FREEZE
+# ðŸ§Š NOVA PHASE-4 FREEZE
 
-**Governed Execution Activation — Constitutional Lock**
+**Governed Execution Activation â€” Constitutional Lock**
 
 **Document ID:** NOVA-PHASE-4-FREEZE-v1.0
 **Status:** LOCKED
@@ -32,11 +38,11 @@ docs/CANONICAL/PHASE_4_FREEZE.md
 
 ---
 
-# 1️⃣ Preamble
+# 1ï¸âƒ£ Preamble
 
 This document formally declares **Phase-4 Runtime Active** under the Nova constitutional model.
 
-Phase-4 introduces governed execution — the ability for Nova to perform explicit, user-invoked actions with real-world effect, under strict Governor mediation.
+Phase-4 introduces governed execution â€” the ability for Nova to perform explicit, user-invoked actions with real-world effect, under strict Governor mediation.
 
 This freeze locks:
 
@@ -52,7 +58,7 @@ No authority expansion is granted beyond explicit invocation.
 
 ---
 
-# 2️⃣ Phase-4 Runtime Identity
+# 2ï¸âƒ£ Phase-4 Runtime Identity
 
 Nova in Phase-4 is:
 
@@ -73,11 +79,11 @@ Authority remains Governor-controlled.
 
 ---
 
-# 3️⃣ Activated Capabilities
+# 3ï¸âƒ£ Activated Capabilities
 
-### ✅ Capability 16 — Governed Web Search
+### âœ… Capability 16 â€” Governed Web Search
 
-* Explicit invocation only (“search for…”)
+* Explicit invocation only (â€œsearch forâ€¦â€)
 * Routed through GovernorMediator
 * Capability registry validated
 * ExecutionBoundary enforced
@@ -85,7 +91,7 @@ Authority remains Governor-controlled.
 * Ledger events recorded
 * Fail-closed on error
 
-### (Optional) Capability 17 — Webpage Launch (if enabled)
+### (Optional) Capability 17 â€” Webpage Launch (if enabled)
 
 * Explicit invocation only
 * No dynamic resolution
@@ -95,7 +101,7 @@ No other execution capabilities are active unless explicitly registered and enab
 
 ---
 
-# 4️⃣ Execution Spine Guarantees
+# 4ï¸âƒ£ Execution Spine Guarantees
 
 All executable actions must:
 
@@ -112,7 +118,7 @@ There is no bypass path.
 
 ---
 
-# 5️⃣ Ledger Enforcement (Fail-Closed)
+# 5ï¸âƒ£ Ledger Enforcement (Fail-Closed)
 
 If ledger write for `ACTION_ATTEMPTED` fails:
 
@@ -132,7 +138,7 @@ Ledger failure = execution denial.
 
 ---
 
-# 6️⃣ Network Authority Rules
+# 6ï¸âƒ£ Network Authority Rules
 
 All outbound HTTP:
 
@@ -145,11 +151,11 @@ No network call may bypass mediation.
 
 ---
 
-# 7️⃣ Concurrency & Action Isolation
+# 7ï¸âƒ£ Concurrency & Action Isolation
 
 Phase-4 guarantees:
 
-* One invocation → one capability execution
+* One invocation â†’ one capability execution
 * No multi-capability chaining
 * No recursive `ActionRequest`
 * No implicit second action
@@ -159,7 +165,7 @@ Concurrency enforcement tests active.
 
 ---
 
-# 8️⃣ Cognitive Layer Status (If Present)
+# 8ï¸âƒ£ Cognitive Layer Status (If Present)
 
 If conversation modules exist (heuristics, escalation, DeepSeek bridge):
 
@@ -176,7 +182,7 @@ Cognitive expansion does not grant authority.
 
 ---
 
-# 9️⃣ Hard Prohibitions (Reaffirmed)
+# 9ï¸âƒ£ Hard Prohibitions (Reaffirmed)
 
 The following remain constitutionally forbidden in Phase-4:
 
@@ -194,7 +200,7 @@ The following remain constitutionally forbidden in Phase-4:
 
 ---
 
-# 🔟 Test Suite Snapshot (At Freeze)
+# ðŸ”Ÿ Test Suite Snapshot (At Freeze)
 
 Full backend suite passing at freeze time.
 
@@ -213,7 +219,7 @@ Freeze assumes green test suite.
 
 ---
 
-# 1️⃣1️⃣ Phase Boundaries
+# 1ï¸âƒ£1ï¸âƒ£ Phase Boundaries
 
 ### Phase-3.5
 
@@ -238,7 +244,7 @@ Requires new constitutional artifact.
 
 ---
 
-# 1️⃣2️⃣ Authority Model (Unchanged)
+# 1ï¸âƒ£2ï¸âƒ£ Authority Model (Unchanged)
 
 Nova remains:
 
@@ -264,11 +270,11 @@ Intelligence and authority remain structurally separated.
 
 ---
 
-# 1️⃣3️⃣ Constitutional Invariants Reaffirmed
+# 1ï¸âƒ£3ï¸âƒ£ Constitutional Invariants Reaffirmed
 
 The following remain absolute:
 
-* Intelligence–Authority separation
+* Intelligenceâ€“Authority separation
 * Governor as single choke-point
 * No execution without ledger
 * No execution without registry validation
@@ -280,7 +286,7 @@ Any violation invalidates Phase-4 freeze.
 
 ---
 
-# 1️⃣4️⃣ Freeze Declaration
+# 1ï¸âƒ£4ï¸âƒ£ Freeze Declaration
 
 As of this document:
 
@@ -303,8 +309,9 @@ Further changes require:
 
 ---
 
-# 🔒 END OF FREEZE
+# ðŸ”’ END OF FREEZE
 
 ---
 
 2/25/26
+

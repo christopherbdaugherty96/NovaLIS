@@ -1,6 +1,12 @@
+﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
+> This file is retained for traceability and historical audit context.
+> For current canonical runtime truth, use:
+> - docs/current_runtime/CURRENT_RUNTIME_STATE.md
+> - docs/PROOFS/Phase-5/PHASE_5_PROOF_PACKET_INDEX.md
+> - docs/canonical/CANONICAL_DOCUMENT_MAP.md
 # Nova Phase-4 Constitutional Mismatch Audit + Unified Runtime Spec v1.0
 
-## SECTION 1 — MISMATCH REPORT
+## SECTION 1 â€” MISMATCH REPORT
 
 ### [A. Governor Layer]
 File: `nova_backend/src/brain_server.py`  
@@ -13,7 +19,7 @@ Severity: Critical
 File: `nova_backend/src/skill_registry.py`  
 Line: 25-35, 38-62  
 Violation: Skills are instantiated and invoked directly by the registry path without capability registry checks, phase gate checks, or `ActionRequest` creation.  
-Invariant Broken: (1) Intelligence–Authority Split is absolute; (2) single Governor choke point; (3) no direct execution path outside Governor.  
+Invariant Broken: (1) Intelligenceâ€“Authority Split is absolute; (2) single Governor choke point; (3) no direct execution path outside Governor.  
 Severity: Critical
 
 ### [B. Ledger Layer]
@@ -34,7 +40,7 @@ Severity: Major
 File: `nova_backend/src/llm/llm_manager.py`  
 Line: 10, 62, 87-91, 257-260  
 Violation: Direct `requests` session/network calls exist outside `NetworkMediator`.  
-Invariant Broken: (5) Network calls must route through NetworkMediator; network-layer rule “No direct HTTP usage outside NetworkMediator.”  
+Invariant Broken: (5) Network calls must route through NetworkMediator; network-layer rule â€œNo direct HTTP usage outside NetworkMediator.â€  
 Severity: Critical
 
 ### [C. Network Layer]
@@ -47,7 +53,7 @@ Severity: Critical
 ### [C. Network Layer]
 File: `nova_backend/src/governor/network_mediator.py`  
 Line: 195-206  
-Violation: Module-level singleton explicitly documents and enables non-governed callers (“bypass Governor routing intentionally”) via `capability_id=None`.  
+Violation: Module-level singleton explicitly documents and enables non-governed callers (â€œbypass Governor routing intentionallyâ€) via `capability_id=None`.  
 Invariant Broken: (2) single Governor choke point; no bypass path.  
 Severity: Critical
 
@@ -83,7 +89,7 @@ Severity: Critical
 File: `nova_backend/src/conversation/prompts.py`  
 Line: 1-13  
 Violation: Deep Thought request path injects internal system prompt and recent context into composed prompt; this is hidden augmentation rather than minimal pass-through wrapper.  
-Invariant Broken: Deep Thought verification requirement “No prompt augmentation / no hidden system context injection.”  
+Invariant Broken: Deep Thought verification requirement â€œNo prompt augmentation / no hidden system context injection.â€  
 Severity: Major
 
 ### [F. TTS (Capability 18)]
@@ -114,7 +120,7 @@ Severity: Critical
 
 ---
 
-## SECTION 2 — Unified Nova Runtime Spec v1.0 (As-Implemented)
+## SECTION 2 â€” Unified Nova Runtime Spec v1.0 (As-Implemented)
 
 ### 1) Governor Spine
 - Runtime has a Governor class that owns execution boundary, single-action queue, capability registry, network mediator, and ledger (lazy-loaded). (`governor.py`)
@@ -134,7 +140,7 @@ Severity: Critical
 - Skill routing is deterministic iteration order; no dynamic plugin loader detected.
 
 ### 4) Execution Flow
-- WebSocket input → mediator parse.
+- WebSocket input â†’ mediator parse.
 - If explicit governed invocation found (`search`, `open`, `speak` patterns), runtime routes through Governor.
 - Else runtime executes skill path directly in WebSocket handler.
 - Result is sent to UI; voice channel can auto-trigger TTS governed invocation.
@@ -168,14 +174,14 @@ Severity: Critical
 
 ### 9) STT Contract
 - STT endpoint `/stt/transcribe` accepts uploaded audio bytes.
-- Pipeline: ffmpeg conversion (local subprocess) → Vosk local transcription.
+- Pipeline: ffmpeg conversion (local subprocess) â†’ Vosk local transcription.
 - Returns text only, no direct action execution.
 - No wake-word activation path detected in router/engine.
 
 ### 10) UI Constitutional Rules (Runtime Reality)
 - UI uses websocket event stream; chat append behavior preserves chronology by append order.
 - No explicit predictive prefetch logic detected.
-- Deep-thought visibility is user-initiated via “ⓘ Show reasoning” fetch (`get_thought`).
+- Deep-thought visibility is user-initiated via â€œâ“˜ Show reasoningâ€ fetch (`get_thought`).
 
 ### 11) Orb Rule
 - Active UI orb in static frontend is image + CSS status text; no reasoning-state coupling logic found in JS for orb semantics.
@@ -206,7 +212,7 @@ Severity: Critical
 - STT returns empty string on failure instead of crashing endpoint.
 - **As-implemented limitation:** some `ACTION_COMPLETED` logs are best-effort swallow on ledger failure.
 
-### 16) Intelligence–Authority Split
+### 16) Intelligenceâ€“Authority Split
 - Governed capabilities enforce request/result boundary.
 - Conversational/skill logic remains separate from ActionRequest model.
 - **As-implemented gap:** skill path still has live network behavior and Deep Thought invocation, weakening strict split.
@@ -217,7 +223,7 @@ Severity: Critical
 - **As-implemented caveat:** background audio worker task exists in `audio_manager.py`.
 
 ### 18) Online Boundary Model
-- Governed online path: capability 16 → web search executor → network mediator.
+- Governed online path: capability 16 â†’ web search executor â†’ network mediator.
 - Non-governed online paths also exist (weather/news/deepseek via mediator singleton, and direct requests in LLM managers).
 - Network logs are produced at mediator boundary for mediator-routed calls.
 
@@ -239,3 +245,4 @@ Nova is **not constitutionally clean** against the provided Phase-4 invariants. 
 2. Network-capable skill operations outside Governor mediation.
 3. Automatic Deep Thought escalation and prompt/context augmentation.
 4. Automatic TTS invocation for voice responses.
+

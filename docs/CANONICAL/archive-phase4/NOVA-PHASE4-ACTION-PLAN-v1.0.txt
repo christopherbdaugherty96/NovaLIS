@@ -1,0 +1,103 @@
+﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
+> This file is retained for traceability and historical audit context.
+> For current canonical runtime truth, use:
+> - docs/current_runtime/CURRENT_RUNTIME_STATE.md
+> - docs/PROOFS/Phase-5/PHASE_5_PROOF_PACKET_INDEX.md
+> - docs/canonical/CANONICAL_DOCUMENT_MAP.md
+NOVA-PHASE4-ACTION-PLAN-v1.0
+
+
+
+---
+
+# ðŸ§¬ PHASE 4 â€“ EXECUTION UNLOCK: FINAL ACTION PLAN
+### *Constitutional Foundation + Buildable Reality*
+
+**Status:** Designâ€‘Unlocked â€“ Implementation Ready  
+**Authority:** Nova Complete Constitutional Blueprint v1.8  
+**Last Updated:** 2026â€‘02â€‘17  
+
+---
+
+## ðŸ”¹ Executive Summary
+
+Phaseâ€¯4 introduces **governed execution** â€“ explicit, userâ€‘invoked actions with realâ€‘world effects. The design is constitutionally sound; the runtime remains locked until a verified admission gate is passed.  
+
+The metaâ€‘review identified a core tension: **constitutional perfection vs. buildable reality**. The resolution is to add four lightweight, highâ€‘impact safeguards **now** â€“ as implementation details, not constitutional amendments â€“ and to defer all speculative future risks to later phases.  
+
+This plan updates the Phaseâ€¯4 Roadmap with those safeguards, aligns them with existing workstreams, and provides a consolidated admission checklist. **The goal is to ship Phaseâ€¯4 on a Raspberry Pi, not to write more laws.**
+
+---
+
+## âœ… Four Immediate Safeguards (Integrate into Phaseâ€¯4)
+
+| # | Safeguard | Why Now | How | Roadmap Integration |
+|---|-----------|---------|-----|---------------------|
+| 1 | **Capability Registry & Lifecycle** | Track, version, and revoke capabilities. Essential as execution surface grows. | Static `registry.json` (or DB) with `id`, `risk_level`, `permissions`, `enabled`. Governor checks every action. Add capability installation as logged user event. | Workstream C (Capabilities) â€“ extend registry task. |
+| 2 | **Model Version Lock** | Prevent silent behavior changes from model/API updates. | Each model (local or external) identified by version hash. Any update requires `MODEL_UPDATED` ledger event + user confirmation. | Workstream B (Execution Layer) â€“ add version check to executor calls. |
+| 3 | **External LLM as Governed Capability** | Data leaving home must be transparent and userâ€‘controlled. | Register external LLM calls as capabilities with `data_exfiltration` flag. Governor checks user consent for service. Log metadata (not content) in ledger. | Workstream C â€“ wrap external APIs with governed wrapper. |
+| 4 | **Device Authority Scopes** | Granular permission levels per domain (observe, suggest, confirm, automatic). | Extend policy engine with `authority_level`. Design now, implement in Phaseâ€¯4.5. Display in Trust Panel. | Phaseâ€¯4.5 design task (add to roadmap). |
+
+**These four items are lowâ€‘effort, highâ€‘impact, and fully aligned with the existing constitutional framework.** They do not require new Tierâ€‘1 invariants â€“ they are disciplined implementation.
+
+---
+
+## ðŸ”’ Updated Phaseâ€¯4 Admission Gate Checklist
+
+Add the following to the existing checklist (from the Phaseâ€¯4 Roadmap and the readiness document):
+
+- [ ] **Capability Registry** implemented, versioned, and integrated with Governor.
+- [ ] **Model Version Lock** enforced for all local and external models.
+- [ ] **External LLM calls** registered as capabilities with `data_exfiltration` flag and user consent mechanism.
+- [ ] **Device Authority Scopes** designed (implementation deferred to Phaseâ€¯4.5).
+- [ ] **Network I/O Governor mediation** â€“ all outbound communication routes through `NetworkMediator` under Governor authority (from readiness doc).
+- [ ] **Ephemeral session boundary** mechanically enforced â€“ session cleared on reset, timeout, restart (from readiness doc).
+- [ ] **Influence containment roadmap** documented (design for Phaseâ€¯4.5).
+
+All existing items (Governor bypass proof, CI enforcement, etc.) remain.
+
+---
+
+## ðŸ›  Revised Implementation Roadmap (Weeks 1â€“8)
+
+The new safeguards fit naturally into the existing workstreams:
+
+| Workstream | Original Focus | New Tasks | Timeline |
+|------------|----------------|-----------|----------|
+| **A: Governor Foundation** | Spine, clarification, echo, resource guardrails | â€“ | Weeks 1â€“3 |
+| **B: Execution Layer** | ActionRequest, ExecuteBoundary, ConfirmationGate, base Executor | Add model version hash checks to executors. | Weeks 2â€“5 |
+| **C: Capability Implementation** | Web search, open URL, file open, media, diagnostics, reporting | Build Capability Registry; wrap external LLM calls with registry & consent. | Weeks 3â€“6 |
+| **D: Ledger & Audit** | Appendâ€‘only ledger, pruning | Extend to log capability installations, model updates. | Weeks 2â€“4 |
+| **E: Testing** | Unit, integration, adversarial, performance | Add tests for registry, version lock, external LLM consent. | Ongoing, culminates Week 7 |
+| **F: Documentation & Governance** | Admission evidence, Phaseâ€¯4.5 proposal | Document Device Authority Scopes design; update influence containment roadmap. | Weeks 6â€“7 |
+
+**Timeline estimate remains ~8 weeks.** The new tasks are parallelizable and do not extend the critical path.
+
+---
+
+## ðŸ“Œ What We Are *Not* Doing (Now)
+
+- âŒ **Planâ€‘level review** â€“ defer to Phaseâ€¯9.
+- âŒ **Information flow restrictions** â€“ defer.
+- âŒ **Influence auditing dashboards** â€“ defer (and avoid misuse).
+- âŒ **Formal verification** â€“ not needed; rely on testing.
+- âŒ **Heavy behavioral telemetry** â€“ already prohibited.
+- âŒ **Overâ€‘restriction on continuous awareness** â€“ keep environmental pattern detection.
+- âŒ **Adding more Tierâ€‘1 invariants** â€“ current set is sufficient.
+
+---
+
+## ðŸ Final Word: Build, Then Refine
+
+The constitution is complete. The roadmap is clear. The only remaining act is **to build the container** â€“ to get Nova running on real hardware, controlling real devices, with a calm and trustworthy presence.
+
+> *â€œNova is a container, not an assistant. The container scales with the intelligence inside. But first, the container must exist.â€*
+
+**Proceed with implementation. Unlock Phaseâ€¯4 when the checklist is satisfied. Then let experience guide the next layers.**
+
+---
+
+**Ratified by:** Nova Constitutional Governance Board (via metaâ€‘review integration)  
+**Date:** 2026â€‘02â€‘17  
+**Document ID:** `NOVA-PHASE4-ACTION-PLAN-v1.0`  
+**Status:** ðŸ”“ **Implementationâ€‘Ready**

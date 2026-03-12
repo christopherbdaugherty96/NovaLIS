@@ -1,78 +1,84 @@
+﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
+> This file is retained for traceability and historical audit context.
+> For current canonical runtime truth, use:
+> - docs/current_runtime/CURRENT_RUNTIME_STATE.md
+> - docs/PROOFS/Phase-5/PHASE_5_PROOF_PACKET_INDEX.md
+> - docs/canonical/CANONICAL_DOCUMENT_MAP.md
 Now I have a thorough picture of the entire codebase. Let me compile the full deep audit.
 
 ---
 
-# 🔍 Deep Audit & Review — `christopherbdaugherty96/NovaLIS`
+# ðŸ” Deep Audit & Review â€” `christopherbdaugherty96/NovaLIS`
 
 **NovaLIS** (Local Intelligence System) is a **local-first, governed home AI assistant** built on FastAPI (Python backend) + a minimal vanilla JS dashboard. It features a phased architecture (currently Phase 4 Staging) with speech-to-text, LLM chat, weather/news widgets, and a constitutional "Governor" authority spine.
 
 ---
 
-## 📁 Repository Structure Overview
+## ðŸ“ Repository Structure Overview
 
 ```
 NovaLIS/
-├── nova_backend/                  # Python FastAPI backend (76.8%)
-│   └── src/
-│       ├── brain_server.py        # Main entrypoint / WebSocket server
-│       ├── skill_registry.py      # Skill dispatcher
-│       ├── base_skill.py          # Abstract skill base class
-│       ├── nova_config.py         # Central configuration
-│       ├── nova_protocol.py       # NMPv1 WebSocket message protocol
-│       ├── speech_state.py        # In-memory TTS state
-│       ├── audio_manager.py       # Piper TTS engine
-│       ├── stt_manager.py         # Hybrid Whisper+OpenAI STT (legacy)
-│       ├── governor/              # Constitutional authority layer
-│       ├── skills/                # weather, news, system, general_chat
-│       ├── services/              # stt_engine (Vosk), weather_service
-│       ├── routers/stt.py         # STT HTTP endpoint
-│       ├── memory/                # Quick corrections store
-│       ├── gates/                 # ConfirmationGate
-│       ├── actions/               # ActionRequest / ActionResult
-│       ├── ledger/                # Audit ledger writer
-│       └── archive_quarantine/    # Isolated legacy code
-├── Nova-Frontend-Dashboard/       # Vanilla JS/HTML/CSS dashboard (11.4% JS, 8.1% CSS)
-│   ├── index.html
-│   ├── dashboard.js
-│   ├── orb.js / visuals/orb_canvas.js
-│   └── style.phase1.css
-├── scripts/                       # PowerShell scripts
-├── verification/                  # Static analysis / governor proof tools
-├── docs/                          # Extensive design docs, proofs, archives
-└── .github/                       # CI workflows
+â”œâ”€â”€ nova_backend/                  # Python FastAPI backend (76.8%)
+â”‚   â””â”€â”€ src/
+â”‚       â”œâ”€â”€ brain_server.py        # Main entrypoint / WebSocket server
+â”‚       â”œâ”€â”€ skill_registry.py      # Skill dispatcher
+â”‚       â”œâ”€â”€ base_skill.py          # Abstract skill base class
+â”‚       â”œâ”€â”€ nova_config.py         # Central configuration
+â”‚       â”œâ”€â”€ nova_protocol.py       # NMPv1 WebSocket message protocol
+â”‚       â”œâ”€â”€ speech_state.py        # In-memory TTS state
+â”‚       â”œâ”€â”€ audio_manager.py       # Piper TTS engine
+â”‚       â”œâ”€â”€ stt_manager.py         # Hybrid Whisper+OpenAI STT (legacy)
+â”‚       â”œâ”€â”€ governor/              # Constitutional authority layer
+â”‚       â”œâ”€â”€ skills/                # weather, news, system, general_chat
+â”‚       â”œâ”€â”€ services/              # stt_engine (Vosk), weather_service
+â”‚       â”œâ”€â”€ routers/stt.py         # STT HTTP endpoint
+â”‚       â”œâ”€â”€ memory/                # Quick corrections store
+â”‚       â”œâ”€â”€ gates/                 # ConfirmationGate
+â”‚       â”œâ”€â”€ actions/               # ActionRequest / ActionResult
+â”‚       â”œâ”€â”€ ledger/                # Audit ledger writer
+â”‚       â””â”€â”€ archive_quarantine/    # Isolated legacy code
+â”œâ”€â”€ Nova-Frontend-Dashboard/       # Vanilla JS/HTML/CSS dashboard (11.4% JS, 8.1% CSS)
+â”‚   â”œâ”€â”€ index.html
+â”‚   â”œâ”€â”€ dashboard.js
+â”‚   â”œâ”€â”€ orb.js / visuals/orb_canvas.js
+â”‚   â””â”€â”€ style.phase1.css
+â”œâ”€â”€ scripts/                       # PowerShell scripts
+â”œâ”€â”€ verification/                  # Static analysis / governor proof tools
+â”œâ”€â”€ docs/                          # Extensive design docs, proofs, archives
+â””â”€â”€ .github/                       # CI workflows
 ```
 
 ---
 
-## ✅ Strengths
+## âœ… Strengths
 
-### 1. 🏛️ Exceptional Architectural Discipline
-The phased governance model is genuinely impressive. You've documented and enforced a constitutional "Governor spine" — a single choke point for all action execution. The documentation trail (proof files, closure docs, audit logs) is more thorough than most production systems.
+### 1. ðŸ›ï¸ Exceptional Architectural Discipline
+The phased governance model is genuinely impressive. You've documented and enforced a constitutional "Governor spine" â€” a single choke point for all action execution. The documentation trail (proof files, closure docs, audit logs) is more thorough than most production systems.
 
-### 2. 🔒 Strong Structural Safety Guarantees
-- **Single WebSocket entry point** (`/ws`) — verified and enforced
-- **No execution without Governor mediation** — `ExecuteBoundary` is inert by default
-- **No background autonomy** — no polling loops, no scheduled jobs (AudioManager TTS queue is correctly classified as non-autonomous infrastructure)
-- **Silence-first behavior** — calm fallbacks throughout
+### 2. ðŸ”’ Strong Structural Safety Guarantees
+- **Single WebSocket entry point** (`/ws`) â€” verified and enforced
+- **No execution without Governor mediation** â€” `ExecuteBoundary` is inert by default
+- **No background autonomy** â€” no polling loops, no scheduled jobs (AudioManager TTS queue is correctly classified as non-autonomous infrastructure)
+- **Silence-first behavior** â€” calm fallbacks throughout
 
-### 3. 🧼 Clean Skill Abstraction
+### 3. ðŸ§¼ Clean Skill Abstraction
 The `BaseSkill` ABC + `SkillResult` dataclass contract is clean and consistent. All skills (`System`, `Weather`, `News`, `GeneralChat`) follow the same `can_handle()` / `handle()` pattern. The skill registry dispatches deterministically with `GeneralChat` as the correct catch-all fallback.
 
-### 4. 🎨 Well-Designed Frontend
+### 4. ðŸŽ¨ Well-Designed Frontend
 The dashboard is architecturally minimal and intentional:
 - Single ingestion path (`injectUserText`)
 - Canonical WebSocket message handling
 - Orb visual is time-based only (no semantic state coupling)
 - `prefers-reduced-motion` media query respected
 
-### 5. 📋 Excellent Documentation Culture
-The `docs/` directory is unusually comprehensive — phase closure proofs, runtime truth docs, capability surface maps, and governance baselines all exist and are maintained.
+### 5. ðŸ“‹ Excellent Documentation Culture
+The `docs/` directory is unusually comprehensive â€” phase closure proofs, runtime truth docs, capability surface maps, and governance baselines all exist and are maintained.
 
 ---
 
-## 🔴 Critical Issues
+## ðŸ”´ Critical Issues
 
-### C-1 — Hardcoded Absolute Windows Path in `stt_engine.py`
+### C-1 â€” Hardcoded Absolute Windows Path in `stt_engine.py`
 ```python name=nova_backend/src/services/stt_engine.py url=https://github.com/christopherbdaugherty96/NovaLIS/blob/e63b47d12f363fc9a9a99a29b66a6926dde35cc9/nova_backend/src/services/stt_engine.py#L15
 FFMPEG_PATH = r"C:\Nova-Project\nova_backend\tools\ffmpeg\ffmpeg.exe"
 ```
@@ -88,7 +94,7 @@ if not FFMPEG_PATH:
 
 ---
 
-### C-2 — Leaked Temporary File in `stt_manager.py`
+### C-2 â€” Leaked Temporary File in `stt_manager.py`
 ```python name=nova_backend/src/stt_manager.py url=https://github.com/christopherbdaugherty96/NovaLIS/blob/e63b47d12f363fc9a9a99a29b66a6926dde35cc9/nova_backend/src/stt_manager.py#L71-L80
 def transcribe_audio_bytes(audio_bytes: bytes) -> str:
     with tempfile.NamedTemporaryFile(suffix=".wav", delete=False) as tmp:
@@ -117,20 +123,20 @@ def transcribe_audio_bytes(audio_bytes: bytes) -> str:
 
 ---
 
-### C-3 — Dual STT Systems Creating Confusion
+### C-3 â€” Dual STT Systems Creating Confusion
 There are **two separate STT implementations** that are not cleanly separated:
-- `nova_backend/src/services/stt_engine.py` — **Vosk-based**, used by the live router
-- `nova_backend/src/stt_manager.py` — **Whisper+OpenAI hybrid**, appears to be legacy/unused
+- `nova_backend/src/services/stt_engine.py` â€” **Vosk-based**, used by the live router
+- `nova_backend/src/stt_manager.py` â€” **Whisper+OpenAI hybrid**, appears to be legacy/unused
 
-**Problem:** `stt_manager.py` imports `faster_whisper` and `openai` at module level (not inside the router), meaning if either package is present, they are loaded at startup — potentially including the OpenAI client initialization with an API key. This increases startup time and creates a confusing dual-path. It's unclear which is canonical.
+**Problem:** `stt_manager.py` imports `faster_whisper` and `openai` at module level (not inside the router), meaning if either package is present, they are loaded at startup â€” potentially including the OpenAI client initialization with an API key. This increases startup time and creates a confusing dual-path. It's unclear which is canonical.
 
 **Recommendation:** If `stt_manager.py` is legacy, move it to `archive_quarantine/`. If it's intended for future use, gate its imports inside functions and add a clear `# FUTURE USE - NOT ACTIVE` header.
 
 ---
 
-## 🟠 Security Issues
+## ðŸŸ  Security Issues
 
-### S-1 — `OPENAI_API_KEY` Loaded Unconditionally at Module Import
+### S-1 â€” `OPENAI_API_KEY` Loaded Unconditionally at Module Import
 ```python name=nova_backend/src/stt_manager.py url=https://github.com/christopherbdaugherty96/NovaLIS/blob/e63b47d12f363fc9a9a99a29b66a6926dde35cc9/nova_backend/src/stt_manager.py#L16-L18
 OPENAI_KEY = os.getenv("OPENAI_API_KEY")
 client = OpenAI(api_key=OPENAI_KEY) if OPENAI_KEY else None
@@ -149,7 +155,7 @@ def _get_openai_client():
 
 ---
 
-### S-2 — WebSocket Input Not Validated Against Maximum Length
+### S-2 â€” WebSocket Input Not Validated Against Maximum Length
 ```python name=nova_backend/src/brain_server.py url=https://github.com/christopherbdaugherty96/NovaLIS/blob/e63b47d12f363fc9a9a99a29b66a6926dde35cc9/nova_backend/src/brain_server.py#L128-L135
 raw = await ws.receive_text()
 msg = json.loads(raw)
@@ -169,8 +175,8 @@ if len(raw) > MAX_INPUT_BYTES:
 
 ---
 
-### S-3 — No CORS Policy Defined
-The FastAPI app has no CORS middleware configured. Since the frontend and backend share the same origin in deployment (via static file mounting), this is acceptable — but if the dashboard is ever served from a different origin (e.g., `Nova-Frontend-Dashboard/` served separately during development), cross-origin requests would either fail silently or be allowed by browser default.
+### S-3 â€” No CORS Policy Defined
+The FastAPI app has no CORS middleware configured. Since the frontend and backend share the same origin in deployment (via static file mounting), this is acceptable â€” but if the dashboard is ever served from a different origin (e.g., `Nova-Frontend-Dashboard/` served separately during development), cross-origin requests would either fail silently or be allowed by browser default.
 
 **Fix (Explicitly Lock It Down):**
 ```python name=cors_fix.py
@@ -185,7 +191,7 @@ app.add_middleware(
 
 ---
 
-### S-4 — `archive_quarantine` Contains Live Execution Code
+### S-4 â€” `archive_quarantine` Contains Live Execution Code
 The `archive_quarantine/` directory contains `open_app.py` with a live `subprocess.Popen()` call. While it's isolated by directory convention, there is no Python-level `__init__.py` guard that prevents accidental import in a future refactor.
 
 **Recommendation:** Add a `# DO NOT IMPORT - QUARANTINED` module-level assertion:
@@ -197,18 +203,18 @@ if "nova_backend.src.archive_quarantine" not in __name__:
 
 ---
 
-## 🟡 Bugs & Logic Issues
+## ðŸŸ¡ Bugs & Logic Issues
 
-### B-1 — `SpeechState` Missing `stop()` Method Used in `brain_server.py`
+### B-1 â€” `SpeechState` Missing `stop()` Method Used in `brain_server.py`
 ```python name=nova_backend/src/brain_server.py url=https://github.com/christopherbdaugherty96/NovaLIS/blob/e63b47d12f363fc9a9a99a29b66a6926dde35cc9/nova_backend/src/brain_server.py#L143-L146
 if lowered == "stop":
-    speech_state.stop()   # ← AttributeError at runtime!
+    speech_state.stop()   # â† AttributeError at runtime!
 ```
 ```python name=nova_backend/src/speech_state.py url=https://github.com/christopherbdaugherty96/NovaLIS/blob/e63b47d12f363fc9a9a99a29b66a6926dde35cc9/nova_backend/src/speech_state.py#L1-L35
 class SpeechState:
     def __init__(self) -> None:
         self.last_spoken_text: Optional[str] = None
-    # ← No stop() method defined!
+    # â† No stop() method defined!
 ```
 **Problem:** `brain_server.py` calls `speech_state.stop()` but `SpeechState` has no `stop()` method. This will cause an `AttributeError` at runtime the first time a user says "stop".
 
@@ -225,7 +231,7 @@ class SpeechState:
 
 ---
 
-### B-2 — `AudioManager` Creates asyncio Task in `__init__` at Import Time
+### B-2 â€” `AudioManager` Creates asyncio Task in `__init__` at Import Time
 ```python name=nova_backend/src/audio_manager.py url=https://github.com/christopherbdaugherty96/NovaLIS/blob/e63b47d12f363fc9a9a99a29b66a6926dde35cc9/nova_backend/src/audio_manager.py#L40-L49
 try:
     loop = asyncio.get_running_loop()
@@ -235,7 +241,7 @@ except RuntimeError:
 
 loop.create_task(self._worker())
 ```
-**Problem:** This is called at module import time (`audio_manager = AudioManager()`). If no event loop is running at import time, a new one is created and set as current — this can conflict with FastAPI/uvicorn's own event loop, causing subtle async bugs or the worker task never actually running.
+**Problem:** This is called at module import time (`audio_manager = AudioManager()`). If no event loop is running at import time, a new one is created and set as current â€” this can conflict with FastAPI/uvicorn's own event loop, causing subtle async bugs or the worker task never actually running.
 
 **Fix:** Use `asyncio.ensure_future()` lazily, or start the worker via a FastAPI `lifespan` startup event:
 ```python name=audio_manager_lifespan_fix.py
@@ -251,12 +257,12 @@ app = FastAPI(lifespan=lifespan)
 
 ---
 
-### B-3 — `renderWeatherWidget` Clears Its Own Container Including `<h3>` Title
+### B-3 â€” `renderWeatherWidget` Clears Its Own Container Including `<h3>` Title
 ```javascript name=Nova-Frontend-Dashboard/dashboard.js url=https://github.com/christopherbdaugherty96/NovaLIS/blob/e63b47d12f363fc9a9a99a29b66a6926dde35cc9/Nova-Frontend-Dashboard/dashboard.js#L55-L70
 function renderWeatherWidget(data) {
   const container = $("weather-widget");
   if (!container) return;
-  clear(container);   // ← This wipes <h3>Weather</h3> too!
+  clear(container);   // â† This wipes <h3>Weather</h3> too!
 ```
 **Problem:** `clear(container)` uses `innerHTML = ""`, which destroys the `<h3>Weather</h3>` heading and the `Update` button that are defined inside `#weather-widget` in HTML. After the first weather update, the widget loses its title and button.
 
@@ -264,11 +270,11 @@ function renderWeatherWidget(data) {
 
 ---
 
-### B-4 — `GeneralChatSkill` Uses Synchronous `ollama.chat()` in an `async` Function
+### B-4 â€” `GeneralChatSkill` Uses Synchronous `ollama.chat()` in an `async` Function
 ```python name=nova_backend/src/skills/general_chat.py url=https://github.com/christopherbdaugherty96/NovaLIS/blob/e63b47d12f363fc9a9a99a29b66a6926dde35cc9/nova_backend/src/skills/general_chat.py#L201-L220
 async def handle(self, query: str) -> SkillResult | None:
     ...
-    response = ollama.chat(...)   # ← Synchronous blocking call in async context!
+    response = ollama.chat(...)   # â† Synchronous blocking call in async context!
 ```
 **Problem:** `ollama.chat()` is a blocking network call. Calling it directly in an `async` function **blocks the entire asyncio event loop**, freezing all WebSocket connections during inference. This is a classic async antipattern.
 
@@ -285,18 +291,18 @@ response = await loop.run_in_executor(None, lambda: ollama.chat(
 
 ---
 
-## 🔵 Code Quality & Maintainability
+## ðŸ”µ Code Quality & Maintainability
 
-### Q-1 — Duplicate `requirements.txt`
+### Q-1 â€” Duplicate `requirements.txt`
 There are at minimum two requirements files:
-- `nova_backend/src/requirements.txt` (11 packages — likely outdated/incomplete)
+- `nova_backend/src/requirements.txt` (11 packages â€” likely outdated/incomplete)
 - The actual runtime needs more (e.g., `vosk`, `faster-whisper`, `piper`, `ollama`, `feedparser`)
 
 **Recommendation:** Consolidate to one `requirements.txt` at the repo root (or `nova_backend/requirements.txt`) and include all dependencies with pinned versions.
 
 ---
 
-### Q-2 — `nova_config.py` Has Duplicate Module Docstring
+### Q-2 â€” `nova_config.py` Has Duplicate Module Docstring
 ```python name=nova_backend/src/nova_config.py url=https://github.com/christopherbdaugherty96/NovaLIS/blob/e63b47d12f363fc9a9a99a29b66a6926dde35cc9/nova_backend/src/nova_config.py#L1-L22
 """
 NovaLIS Core Configuration (Phase 1)
@@ -308,18 +314,18 @@ NovaLIS Backend Configuration
 ...
 """
 ```
-The second docstring is not treated as a module docstring — it's a standalone string expression. This creates a maintenance confusion. Merge them into one.
+The second docstring is not treated as a module docstring â€” it's a standalone string expression. This creates a maintenance confusion. Merge them into one.
 
 ---
 
-### Q-3 — `Nova-Frontend-Dashboard/` vs `nova_backend/static/` Duplication
+### Q-3 â€” `Nova-Frontend-Dashboard/` vs `nova_backend/static/` Duplication
 `dashboard.js`, `index.html`, and styles appear duplicated between `Nova-Frontend-Dashboard/` and `nova_backend/static/`. Both directories seem to contain live frontend code. This creates a risk of divergence where a bug is fixed in one but not the other.
 
 **Recommendation:** Establish a single authoritative source and either symlink or use a build step to copy. Document clearly which is the live serving path.
 
 ---
 
-### Q-4 — `manifest.json` References Wrong `start_url`
+### Q-4 â€” `manifest.json` References Wrong `start_url`
 ```json name=Nova-Frontend-Dashboard/manifest.json url=https://github.com/christopherbdaugherty96/NovaLIS/blob/e63b47d12f363fc9a9a99a29b66a6926dde35cc9/Nova-Frontend-Dashboard/manifest.json#L1-L9
 {
   "start_url": "/dashboard/",
@@ -328,33 +334,33 @@ The app is served at `/` (not `/dashboard/`). This will break PWA installation.
 
 ---
 
-### Q-5 — `orb.js` References `#nova-orb` Canvas ID That Doesn't Exist in `index.html`
+### Q-5 â€” `orb.js` References `#nova-orb` Canvas ID That Doesn't Exist in `index.html`
 ```javascript name=Nova-Frontend-Dashboard/orb.js url=https://github.com/christopherbdaugherty96/NovaLIS/blob/e63b47d12f363fc9a9a99a29b66a6926dde35cc9/Nova-Frontend-Dashboard/orb.js#L9-L11
 const canvas = document.getElementById("nova-orb");
-if (!canvas) return;  // ← Silently exits — canvas orb never renders
+if (!canvas) return;  // â† Silently exits â€” canvas orb never renders
 ```
 `index.html` uses an `<img>` tag with class `orb-image`, not a `<canvas id="nova-orb">`. So `orb.js` silently does nothing. The `orb_canvas.js` and `orb.js` appear to be two competing orb implementations where one has been superseded but both still exist.
 
 ---
 
-## 📊 Audit Summary
+## ðŸ“Š Audit Summary
 
 | Category | Count | Severity |
 |---|---|---|
-| 🔴 Critical Issues | 3 | App crash / data loss risk |
-| 🟠 Security Issues | 4 | Secrets, input validation, isolation |
-| 🟡 Bugs | 4 | Runtime `AttributeError`, blocking async, UI breakage |
-| 🔵 Code Quality | 5 | Duplication, config hygiene, dead code |
+| ðŸ”´ Critical Issues | 3 | App crash / data loss risk |
+| ðŸŸ  Security Issues | 4 | Secrets, input validation, isolation |
+| ðŸŸ¡ Bugs | 4 | Runtime `AttributeError`, blocking async, UI breakage |
+| ðŸ”µ Code Quality | 5 | Duplication, config hygiene, dead code |
 
 ---
 
-## 🎯 Priority Action List
+## ðŸŽ¯ Priority Action List
 
 | # | Action | File |
 |---|---|---|
-| 1 | Fix `speech_state.stop()` missing method — will crash on "stop" | `speech_state.py` |
+| 1 | Fix `speech_state.stop()` missing method â€” will crash on "stop" | `speech_state.py` |
 | 2 | Fix `ollama.chat()` blocking the event loop | `skills/general_chat.py` |
-| 3 | Fix `ffmpeg` hardcoded path — breaks on any other machine | `services/stt_engine.py` |
+| 3 | Fix `ffmpeg` hardcoded path â€” breaks on any other machine | `services/stt_engine.py` |
 | 4 | Fix temp file leak in `stt_manager.py` | `stt_manager.py` |
 | 5 | Fix `renderWeatherWidget` clearing the widget header/button | `dashboard.js` |
 | 6 | Clarify canonical STT system (Vosk vs. Whisper) | `stt_manager.py` |
@@ -365,4 +371,4 @@ if (!canvas) return;  // ← Silently exits — canvas orb never renders
 
 ---
 
-Overall, **NovaLIS is a remarkably well-designed system** with strong architectural principles and exceptional self-documentation. The governance model and phase discipline are genuinely sophisticated. The issues found are mostly **implementation gaps** between the design intent and the actual code, rather than design flaws — particularly the `stop()` method bug and the blocking LLM call. Would you like me to open issues or a PR for any of these findings?
+Overall, **NovaLIS is a remarkably well-designed system** with strong architectural principles and exceptional self-documentation. The governance model and phase discipline are genuinely sophisticated. The issues found are mostly **implementation gaps** between the design intent and the actual code, rather than design flaws â€” particularly the `stop()` method bug and the blocking LLM call. Would you like me to open issues or a PR for any of these findings?
