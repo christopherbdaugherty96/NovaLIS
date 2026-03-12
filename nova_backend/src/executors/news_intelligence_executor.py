@@ -4,6 +4,7 @@ import json
 import re
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 from collections import Counter, defaultdict
+from datetime import datetime, timezone
 from itertools import combinations
 from pathlib import Path
 from typing import Any
@@ -20,6 +21,7 @@ MAX_SOURCE_PAGES_PER_BRIEF = 6
 MAX_SOURCE_TEXT_CHARS = 3500
 MAX_CLUSTER_STORIES = 4
 MAX_RELATED_PAIRS = 3
+MAX_HEADLINE_SUMMARY_CHARS = 320
 
 STOPWORDS = {
     "the",
@@ -598,13 +600,13 @@ class NewsIntelligenceExecutor:
     def _headline_summary_fallback(self, item: dict[str, str]) -> str:
         title = str(item.get("title") or "").strip()
         source = str(item.get("source") or "").strip() or "Unknown source"
+        published = self._format_published_value(str(item.get("published") or "").strip())
         if not title:
             return "Limited detail is available from the headline alone."
-        return (
-            f"The headline reports: {title}. "
-            "Limited detail is available from the headline alone. "
-            f"Confirm in the full {source} report."
-        )
+        details_note = "Limited detail is available from the headline alone. Confirm in the full source report."
+        if published:
+            details_note = f"{details_note} Published: {published}."
+        return f"{source} reports: {title}. {details_note}"
 
     def _normalize_headline_summary(self, text: str, item: dict[str, str]) -> str:
         raw = str(text or "").strip()
@@ -633,9 +635,50 @@ class NewsIntelligenceExecutor:
         merged = re.sub(r"\s+", " ", merged).strip()
         if not merged:
             return self._headline_summary_fallback(item)
-        if len(merged) > 320:
-            merged = merged[:317].rstrip() + "..."
+        merged = self._dedupe_sentences(merged)
+        if len(merged) > MAX_HEADLINE_SUMMARY_CHARS:
+            merged = merged[: MAX_HEADLINE_SUMMARY_CHARS - 3].rstrip() + "..."
+        if len(merged) < 24:
+            return self._headline_summary_fallback(item)
         return merged
+
+    def _dedupe_sentences(self, text: str) -> str:
+        raw_sentences = [segment.strip() for segment in re.split(r"(?<=[.!?])\s+", text) if segment.strip()]
+        if not raw_sentences:
+            return text.strip()
+        deduped: list[str] = []
+        seen_keys: set[str] = set()
+        for sentence in raw_sentences:
+            key = re.sub(r"[^a-z0-9]+", " ", sentence.lower()).strip()
+            if not key or key in seen_keys:
+                continue
+            seen_keys.add(key)
+            deduped.append(sentence)
+            if len(deduped) >= 3:
+                break
+        merged = " ".join(deduped).strip()
+        if merged and merged[-1] not in ".!?":
+            merged += "."
+        return merged or text.strip()
+
+    def _format_published_value(self, published: str) -> str:
+        value = str(published or "").strip()
+        if not value:
+            return ""
+        for fmt in (
+            "%a, %d %b %Y %H:%M:%S %Z",
+            "%Y-%m-%dT%H:%M:%S%z",
+            "%Y-%m-%dT%H:%M:%SZ",
+            "%Y-%m-%d %H:%M:%S",
+        ):
+            try:
+                parsed = datetime.strptime(value, fmt)
+                if parsed.tzinfo is None:
+                    parsed = parsed.replace(tzinfo=timezone.utc)
+                return parsed.astimezone(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+            except ValueError:
+                continue
+        return value
 
     def _headline_terms(self, item: dict[str, str]) -> set[str]:
         text = f"{item.get('title', '')} {item.get('summary', '')}".lower()
@@ -727,6 +770,9 @@ class NewsIntelligenceExecutor:
                     f"Summary: {summary}",
                 ]
             )
+            published = self._format_published_value(str(item.get("published") or "").strip())
+            if published:
+                lines.append(f"Published: {published}")
             if url:
                 lines.append(f"Reference: {url}")
             video_url = str(item.get("video_url") or "").strip()
@@ -789,6 +835,141 @@ class NewsIntelligenceExecutor:
             reversible=True,
         )
 
+    def _story_page_prompt(self, item: dict[str, str], story_index: int, source_text: str) -> str:
+        return (
+            "Summarize the source-page article for this story using only the provided excerpt.\n"
+            "Use exactly these sections:\n"
+            "Article Summary\nKey Facts\nWhy It Matters\n\n"
+            "Keep the summary factual and concise. Do not speculate.\n\n"
+            f"Story #{story_index}: {str(item.get('title') or '').strip()}\n"
+            f"Source: {str(item.get('source') or 'Unknown').strip()}\n"
+            f"URL: {str(item.get('url') or '').strip()}\n\n"
+            f"Excerpt:\n{source_text[:2600]}"
+        )
+
+    def _story_page_fallback_from_text(self, source_text: str) -> str:
+        normalized = re.sub(r"\s+", " ", str(source_text or "").strip())
+        if not normalized:
+            return (
+                "Article Summary\n"
+                "I could not extract enough readable article text.\n\n"
+                "Key Facts\n"
+                "- Source page text extraction returned limited detail.\n\n"
+                "Why It Matters\n"
+                "Use the source link directly and try this request again."
+            )
+
+        sentences = [segment.strip() for segment in re.split(r"(?<=[.!?])\s+", normalized) if segment.strip()]
+        summary_sentences = sentences[:3] if sentences else [normalized[:260]]
+        summary = " ".join(summary_sentences).strip()
+        if len(summary) > 420:
+            summary = summary[:417].rstrip() + "..."
+        return (
+            "Article Summary\n"
+            f"{summary}\n\n"
+            "Key Facts\n"
+            "- This fallback was generated directly from source-page text extraction.\n"
+            "- Ask again to regenerate with a richer model response.\n\n"
+            "Why It Matters\n"
+            "This reflects source-page content, not headline-only interpretation."
+        )
+
+    def _normalize_story_page_summary(self, text: str, fallback: str) -> str:
+        raw = str(text or "").strip()
+        if not raw:
+            return fallback
+        cleaned = re.sub(r"\r\n?", "\n", raw).strip()
+        if len(cleaned) > 1600:
+            cleaned = cleaned[:1597].rstrip() + "..."
+        if "Article Summary" not in cleaned:
+            cleaned = f"Article Summary\n{cleaned}"
+        if "Key Facts" not in cleaned:
+            cleaned = f"{cleaned}\n\nKey Facts\n- Additional source details are available in the reference link."
+        if "Why It Matters" not in cleaned:
+            cleaned = (
+                f"{cleaned}\n\nWhy It Matters\n"
+                "This summary is based on source-page article text gathered at request time."
+            )
+        return cleaned
+
+    def _summarize_story_page(self, request, headlines: list[dict[str, str]], story_index: int, session_id: str | None) -> ActionResult:
+        if story_index < 1 or story_index > len(headlines):
+            return ActionResult.failure(
+                "I couldn't find that story number in the current headlines.",
+                request_id=request.request_id,
+            )
+
+        item = headlines[story_index - 1]
+        url = str(item.get("url") or "").strip()
+        if not url:
+            return ActionResult.failure(
+                f"Story {story_index} does not have a source URL to read.",
+                request_id=request.request_id,
+            )
+
+        source_text = self._fetch_source_text(
+            url,
+            capability_id=request.capability_id,
+            request_id=f"{request.request_id}:story-page:{story_index}",
+            session_id=session_id,
+        )
+        if not source_text:
+            return ActionResult.failure(
+                (
+                    f"I couldn't read the article page for story {story_index} right now. "
+                    "Try again, or open the source link and ask once the page is accessible."
+                ),
+                request_id=request.request_id,
+            )
+
+        fallback = self._story_page_fallback_from_text(source_text)
+        analysis = self._llm_or_fallback(
+            self._story_page_prompt(item, story_index, source_text),
+            fallback,
+            request_id=f"{request.request_id}:story-page-analysis:{story_index}",
+            session_id=session_id,
+            timeout_seconds=SOURCE_READ_TIMEOUT_SECONDS,
+            max_tokens=520,
+        )
+        normalized = self._normalize_story_page_summary(analysis, fallback)
+
+        lines = [
+            f"STORY PAGE SUMMARY - Story {story_index}",
+            "",
+            f"Source: {str(item.get('source') or 'Unknown').strip()}",
+            f"Headline: {str(item.get('title') or 'Unknown headline').strip()}",
+        ]
+        published = self._format_published_value(str(item.get("published") or "").strip())
+        if published:
+            lines.append(f"Published: {published}")
+        lines.extend(
+            [
+                "",
+                normalized,
+                "",
+                f"Reference: {url}",
+            ]
+        )
+
+        return ActionResult.ok(
+            message="\n".join(lines).strip(),
+            data={
+                "widget": {
+                    "type": "news_summary",
+                    "data": {
+                        "selection": "story_page",
+                        "story_index": story_index,
+                        "source_read": True,
+                    },
+                },
+                "story_index": story_index,
+            },
+            request_id=request.request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+        )
+
     def execute_summary(self, request) -> ActionResult:
         headlines = self._sanitize_headlines((request.params or {}).get("headlines"))
         categories = self._sanitize_categories((request.params or {}).get("categories"))
@@ -800,6 +981,18 @@ class NewsIntelligenceExecutor:
             )
 
         action = str((request.params or {}).get("action") or "").strip().lower()
+        if action == "story_page_summary":
+            try:
+                story_index = int((request.params or {}).get("story_index") or 0)
+            except Exception:
+                story_index = 0
+            return self._summarize_story_page(
+                request,
+                headlines,
+                story_index,
+                session_id,
+            )
+
         if action == "compare_indices":
             try:
                 left_index = int((request.params or {}).get("left_index") or 0)

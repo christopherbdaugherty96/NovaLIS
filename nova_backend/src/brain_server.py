@@ -915,6 +915,7 @@ async def websocket_endpoint(ws: WebSocket):
         "news_categories": {},
         "last_sources": [],
         "last_source_links": [],
+        "last_news_story_index": None,
         "topic_memory_map": {},
         "last_brief_clusters": [],
         "pending_web_open": None,
@@ -2145,6 +2146,16 @@ async def websocket_endpoint(ws: WebSocket):
 
             # --- Phase‑4 governed invocation detection ---
             inv_result = GovernorMediator.parse_governed_invocation(mediated_text, session_id=session_id)
+            if inv_result is None and lowered in {"more", "tell me more", "more please"}:
+                try:
+                    last_story_index = int(session_state.get("last_news_story_index") or 0)
+                except Exception:
+                    last_story_index = 0
+                if last_story_index > 0:
+                    inv_result = Invocation(
+                        capability_id=49,
+                        params={"action": "story_page_summary", "story_index": last_story_index},
+                    )
 
             if isinstance(inv_result, Invocation):
                 capability_id = inv_result.capability_id
@@ -2178,6 +2189,24 @@ async def websocket_endpoint(ws: WebSocket):
                     params.setdefault("headlines", list(session_state.get("news_cache") or []))
                     params.setdefault("categories", dict(session_state.get("news_categories") or {}))
                     params.setdefault("topic_history", dict(session_state.get("topic_memory_map") or {}))
+                    if capability_id == 49 and str(params.get("action") or "").strip().lower() == "story_page_summary":
+                        try:
+                            resolved_story_index = int(params.get("story_index") or 0)
+                        except Exception:
+                            resolved_story_index = 0
+                        if resolved_story_index <= 0:
+                            try:
+                                resolved_story_index = int(session_state.get("last_news_story_index") or 0)
+                            except Exception:
+                                resolved_story_index = 0
+                        if resolved_story_index <= 0:
+                            await send_chat_message(
+                                ws,
+                                "I need a story number first. Try 'summary of story 1' after loading news headlines.",
+                            )
+                            await send_chat_done(ws)
+                            continue
+                        params["story_index"] = resolved_story_index
                     if capability_id == 50:
                         params.setdefault("brief_clusters", list(session_state.get("last_brief_clusters") or []))
                 if capability_id == 17:
@@ -2385,6 +2414,26 @@ async def websocket_endpoint(ws: WebSocket):
                             {"label": "Revise answer", "command": "revise your last answer using this verification report"},
                         ]
                 if capability_id == 49 and isinstance(action_result.data, dict):
+                    story_index = int(action_result.data.get("story_index") or 0)
+                    if story_index > 0:
+                        session_state["last_news_story_index"] = story_index
+                        if not message_suggestions:
+                            message_suggestions = [
+                                {"label": "More", "command": "more"},
+                                {"label": "Summarize all", "command": "summarize all headlines"},
+                                {"label": "Today's brief", "command": "today's news"},
+                            ]
+                    elif action_result.success:
+                        widget = action_result.data.get("widget")
+                        if isinstance(widget, dict):
+                            widget_data = widget.get("data")
+                            if isinstance(widget_data, dict):
+                                indices = widget_data.get("indices")
+                                if isinstance(indices, list) and indices:
+                                    try:
+                                        session_state["last_news_story_index"] = int(indices[0])
+                                    except Exception:
+                                        pass
                     related_pairs = action_result.data.get("related_pairs")
                     if isinstance(related_pairs, list) and related_pairs:
                         pair = next((p for p in related_pairs if isinstance(p, dict)), {})

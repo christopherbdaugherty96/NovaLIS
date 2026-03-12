@@ -148,3 +148,29 @@ def test_news_skill_returns_category_groups(monkeypatch):
     assert categories["global"]["title"] == "Global News"
     assert isinstance(categories["global"]["items"], list)
     assert categories["global"]["items"][0]["source"] == "Global One"
+
+
+def test_news_skill_summary_dedupes_duplicate_titles_and_adds_theme():
+    skill = NewsSkill()
+    items = [
+        {
+            "title": "AI chip exports tighten after policy shift",
+            "source": "Source A",
+            "summary": "Semiconductor controls were expanded overnight.",
+        },
+        {
+            "title": "AI chip exports tighten after policy shift",
+            "source": "Source B",
+            "summary": "Duplicate title from another feed.",
+        },
+        {
+            "title": "Senate advances AI policy bill",
+            "source": "Source C",
+            "summary": "Legislation moved out of committee.",
+        },
+    ]
+
+    summary = skill._summarize_headlines(items)
+    assert "Loaded 2 sources." in summary
+    assert "Theme:" in summary or "Themes:" in summary
+    assert summary.count("AI chip exports tighten after policy shift") == 1
