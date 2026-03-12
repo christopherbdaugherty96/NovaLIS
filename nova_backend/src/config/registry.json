@@ -4,7 +4,7 @@
   "capability_groups": {
     "speech_output": [18],
     "local_control": [22],
-    "intelligence": [16, 31, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60],
+    "intelligence": [16, 31, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61],
     "diagnostics": [17, 32]
   },
   "profiles": {
@@ -217,6 +217,15 @@
       "name": "explain_anything",
       "status": "active",
       "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": true
+    },
+    {
+      "id": 61,
+      "name": "memory_governance",
+      "status": "active",
+      "phase_introduced": "5",
       "risk_level": "low",
       "data_exfiltration": false,
       "enabled": true

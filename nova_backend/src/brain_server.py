@@ -882,7 +882,15 @@ async def websocket_endpoint(ws: WebSocket):
                     "- project status <name>\n"
                     "- biggest blocker in <name>\n"
                     "- which project is most blocked right now\n"
-                    "- why this recommendation"
+                    "- why this recommendation\n\n"
+                    "Governed Memory\n"
+                    "- memory save <title>: <content>\n"
+                    "- memory list [active|locked|deferred]\n"
+                    "- memory show <id>\n"
+                    "- memory lock <id>\n"
+                    "- memory defer <id>\n"
+                    "- memory unlock <id> confirm\n"
+                    "- memory delete <id> confirm"
                 )
                 await send_chat_message(ws, capability_message)
                 await send_chat_done(ws)

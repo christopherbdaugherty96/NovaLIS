@@ -280,6 +280,10 @@ class Governor:
             from src.executors.explain_anything_executor import ExplainAnythingExecutor
             return ExplainAnythingExecutor(ledger=self.ledger).execute(req)
 
+        elif req.capability_id == 61:
+            from src.executors.memory_governance_executor import MemoryGovernanceExecutor
+            return MemoryGovernanceExecutor(ledger=self.ledger).execute(req)
+
         elif req.capability_id == 31:
             from src.executors.response_verification_executor import ResponseVerificationExecutor
             return ResponseVerificationExecutor().execute(req)

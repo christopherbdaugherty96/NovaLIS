@@ -114,6 +114,7 @@ MEDIATOR_TRIGGER_PROBES: dict[str, str] = {
     "summarize doc 2": "analysis_document",
     "update story ai regulation": "story_tracker_update",
     "show story ai regulation": "story_tracker_view",
+    "memory list": "memory_governance",
 }
 
 

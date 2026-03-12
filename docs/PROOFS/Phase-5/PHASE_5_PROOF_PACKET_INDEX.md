@@ -53,3 +53,10 @@ Purpose: Canonical gate-preparation packet for Phase 5 (Memory and Continuity) u
   - Thread health scoring and blocker reasoning
   - Cross-thread "most blocked project" query
   - Recommendation transparency (`why this recommendation`)
+
+## Memory Runtime Slice Snapshot (2026-03-11)
+- Artifact: `PHASE_5_MEMORY_RUNTIME_SLICE_2026-03-11.md`
+- New governed capability: `memory_governance` (`id=61`)
+- New tests:
+  - `nova_backend/tests/phase5/test_memory_governance_executor.py`
+- Full backend suite after integration: `334 passed`

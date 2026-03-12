@@ -141,6 +141,33 @@ def test_volume_media_brightness_parsing():
     assert inv.capability_id == 60
     assert inv.params.get("followup") is True
 
+    inv = GovernorMediator.parse_governed_invocation("memory list")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 61
+    assert inv.params["action"] == "list"
+
+    inv = GovernorMediator.parse_governed_invocation("memory save deployment note: verify PYTHONPATH in container")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 61
+    assert inv.params["action"] == "save"
+    assert "deployment note" in inv.params["title"].lower()
+
+    inv = GovernorMediator.parse_governed_invocation("memory lock MEM-ABC123")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 61
+    assert inv.params["action"] == "lock"
+    assert inv.params["item_id"] == "MEM-ABC123"
+
+    inv = GovernorMediator.parse_governed_invocation("memory unlock MEM-ABC123 confirm")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 61
+    assert inv.params["action"] == "unlock"
+    assert inv.params["confirmed"] is True
+
+    inv = GovernorMediator.parse_governed_invocation("memory")
+    assert isinstance(inv, Clarification)
+    assert inv.capability_id == 61
+
 
 
 def test_news_intelligence_parsing():
