@@ -3,6 +3,8 @@
 Runtime truth (operational authority):
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
+- `docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12.md`
+- `docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12.md`
 - Verified proofs in `docs/PROOFS/`
 
 Design intent (non-authorizing):

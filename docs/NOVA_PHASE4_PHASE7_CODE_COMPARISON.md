@@ -1,65 +1,25 @@
-# NovaLIS Phase-4 / Phase-7 Design-to-Code Comparison
+﻿# NovaLIS Phase-4 / Phase-7 Design-to-Code Comparison
 **Date:** 2026-03-03  
-**Scope:** Compare design intent in `docs/design/Phase 4*` and `docs/design/Phase 7` against mechanically reachable runtime code in `nova_backend/src/`.
+**Scope:** Compare design intent in `docs/design/Phase 4/`, `docs/design/Phase 4.2/`, `docs/design/Phase 4.5/`, and `docs/design/Phase 7/` against mechanically reachable runtime code in `nova_backend/src/`.
 
 ---
 
 ## 1) Outcome in One Paragraph
 
-The codebase currently implements a **Phase-4 staging core** with a real Governor path. Three governed execution capabilities are fully functional (`16` search, `17` open preset website, `18` TTS with a known param wiring issue), four are wired but their executors are stubs or partial (`19` volume, `20` media, `21` brightness — all response stubs; `32` OS diagnostics — partial), and two remain disabled (`22`, `48`). Most Phase-4.2/4.5 and nearly all Phase-7 design surfaces (continuous awareness, autonomous operation tiers, multi-agent cognition, durable user memory architecture, house intelligence mode, end-state presence model) are **not implemented in active runtime** and remain design/planning artifacts.
+The codebase currently implements a **Phase-4 staging core** with a real Governor path. Three governed execution capabilities are fully functional (`16` search, `17` open preset website, `18` TTS with a known param wiring issue), four are wired but their executors are stubs or partial (`19` volume, `20` media, `21` brightness -- all response stubs; `32` OS diagnostics -- partial), and two remain disabled (`22`, `48`). Most Phase-4.2/4.5 and nearly all Phase-7 design surfaces (continuous awareness, autonomous operation tiers, multi-agent cognition, durable user memory architecture, house intelligence mode, end-state presence model) are **not implemented in active runtime** and remain design/planning artifacts.
 
 ---
 
 ## 2) Files Reviewed (All Requested Design Sets)
 
-### Phase 4
-- `docs/design/Phase 4/# 🧬 NOVA COMPLETE CONSTITUTIONAL AUDIT.txt`
-- `docs/design/Phase 4/# 🧬 NOVA DEEPSEEK FRAMEWORK.txt`
-- `docs/design/Phase 4/##phase 4 tree start.txt`
-- `docs/design/Phase 4/CONVERSATIONAL MODE.txt`
-- `docs/design/Phase 4/DEEP THOUGHT INTEGRATION.txt`
-- `docs/design/Phase 4/DEEPSEEK FRAMEWORK.txt`
-- `docs/design/Phase 4/DEEPSEEK INTEGRATION.md`
-- `docs/design/Phase 4/Four Pillars document.txt`
-- `docs/design/Phase 4/GOVERNED_TTS_SPEC.md.txt`
-- `docs/design/Phase 4/NOVA MIND ARCHITECTURE WITH DEEPSEEK.txt`
-- `docs/design/Phase 4/🧬 NOVA — IDENTITY & PHILOSOPHY.md`
+Review scope was executed at directory level to avoid filename-encoding drift across legacy artifacts.
 
-### Phase 4.2
-- `docs/design/Phase 4.2/# 🧬 NOVA PHASE 4.2 ROADMAP (Final).txt`
-- `docs/design/Phase 4.2/# 🧬 NOVA PHASE 4.2 ROADMAP.txt`
-- `docs/design/Phase 4.2/Nova Orthogonal Cognition Stack.txt`
-- `docs/design/Phase 4.2/PresenceDoctrine.md v5.txt`
-- `docs/design/Phase 4.2/📄 Phase 4.2 Roadmap.txt (corrected.txt`
+- `docs/design/Phase 4/`
+- `docs/design/Phase 4.2/`
+- `docs/design/Phase 4.5/`
+- `docs/design/Phase 7/`
 
-### Phase 4.5
-- `docs/design/Phase 4.5/# Nova Orb.txt`
-- `docs/design/Phase 4.5/# Nova UI Framework.txt`
-- `docs/design/Phase 4.5/# 🧬 NOVA COMPLETE CONSTITUTIONAL 1.7.txt`
-- `docs/design/Phase 4.5/# 🧬 NOVA PHASE 4.5 ROADMAP.txt`
-- `docs/design/Phase 4.5/Nova Personal Intelligence Hub Arch.txt`
-- `docs/design/Phase 4.5/UI_FRAMEWORK.md.txt`
-
-### Phase 7
-- `docs/design/Phase 7/# Deep Review of the Nova Constitut.txt`
-- `docs/design/Phase 7/# 🧬 CONSTITUTIONAL AMENDMENT AUTON.txt`
-- `docs/design/Phase 7/# 🧬 CONSTITUTIONAL FRAMEWORK LEARN.txt`
-- `docs/design/Phase 7/# 🧬 NOVA INTELLIGENCE CAPACITY THE.txt`
-- `docs/design/Phase 7/# 🧬 NOVA INTELLIGENCE CAPACITY1.2.txt`
-- `docs/design/Phase 7/# 🧬 NOVA MEMORY ARCHITECTURE USER.txt`
-- `docs/design/Phase 7/# 🧬 NOVA PHASE 7 ARCHITECTURE.txt`
-- `docs/design/Phase 7/# 🧬 NOVA — HOUSE INTELLIGENCE MODE.txt`
-- `docs/design/Phase 7/# 🧭 CONSTITUTIONAL INTERPRETATION.txt`
-- `docs/design/Phase 7/# 🧭 NOVA AS A GOVERNED INTELLIGENT.txt`
-- `docs/design/Phase 7/# 🧭 NOVA END‑STATE VISION.txt`
-- `docs/design/Phase 7/# 🧭 THE NATURE OF AUTONOMOUS ACTIO.txt`
-- `docs/design/Phase 7/CONTINUOUS AWARENESS & PRESENCE.txt`
-- `docs/design/Phase 7/GOVERNED AGENT WITH BUTLER PRESENCE.txt`
-- `docs/design/Phase 7/NOVA MULTI-AGENT GOVERNANCE FRAMEWORK.txt`
-- `docs/design/Phase 7/NOVA-PI-BUILD-PHASE7.txt`
-- `docs/design/Phase 7/ON THE LIMITS OF CONTAINMENT.txt`
-- `docs/design/Phase 7/summary audit.txt`
-- `docs/design/Phase 7/🧬 NOVA TRUTH — MASTER REFERENCE DO.txt`
+Specific files were sampled from each directory and compared against active runtime code paths under `nova_backend/src/`.
 
 ---
 
@@ -67,9 +27,9 @@ The codebase currently implements a **Phase-4 staging core** with a real Governo
 
 Code comparison baseline:
 - Runtime entrypoints: FastAPI + WebSocket + STT router.
-- Governed path: `GovernorMediator` → `Governor` → `ExecuteBoundary` / `SingleActionQueue` / executors.
-- Active governed capabilities (fully functional): 16 (search), 17 (open preset website), 18 (TTS — wired with known param issue).
-- Active governed capabilities (wired stub/partial): 19 (volume — stub), 20 (media — stub), 21 (brightness — stub), 32 (OS diagnostics — partial).
+- Governed path: `GovernorMediator` -> `Governor` -> `ExecuteBoundary` / `SingleActionQueue` / executors.
+- Active governed capabilities (fully functional): 16 (search), 17 (open preset website), 18 (TTS -- wired with known param issue).
+- Active governed capabilities (wired stub/partial): 19 (volume -- stub), 20 (media -- stub), 21 (brightness -- stub), 32 (OS diagnostics -- partial).
 - Registry-listed but disabled capabilities: 22, 48.
 - Skill layer still active for weather/news/system/general chat.
 
@@ -81,7 +41,7 @@ Code comparison baseline:
 |---|---|---|---|
 | Governor as authority choke point | All executable effects routed through governance spine | Governor exists and gates governed actions with queue, phase gate, and ledger steps | **Implemented (Core)** |
 | Explicit invocation for actions | Deterministic user-triggered execution only | Parser recognizes literal `search/look up/research`, `open <name>`, `speak that/read that/say it`, `volume up/down/set volume`, `play/pause/resume`, `brightness up/down/set brightness`, `system check/system status` | **Implemented (Broader surface)** |
-| Broader capability surface (Phase 4+) | Additional capabilities beyond search/open (device/media/files/etc.) | IDs 19/20/21/32 are registry-enabled with parser and executor wired, but executors are stubs or partial — no real OS effect. IDs 22/48 disabled with no parser | **Wired (Stub/Partial) for 19/20/21/32; Declared for 22/48** |
+| Broader capability surface (Phase 4+) | Additional capabilities beyond search/open (device/media/files/etc.) | IDs 19/20/21/32 are registry-enabled with parser and executor wired, but executors are stubs or partial -- no real OS effect. IDs 22/48 disabled with no parser | **Wired (Stub/Partial) for 19/20/21/32; Declared for 22/48** |
 | Governed TTS / speech governance | Rich governed speech output protocol | Cap 18 TTS executor exists using `pyttsx3`; full governor pipeline wired; known issue: `GovernorMediator` sends empty params so text must be injected by `brain_server` before OS-level speech is produced | **Implemented (with known defect)** |
 | Orb/presence framework (Phase 4.2/4.5) | Presence-aware UI/behavior layer and stronger orb semantics | Frontend orb status exists as descriptive STT state text only; no deeper presence cognition runtime | **UI Stub Only** |
 | Continuous awareness / background cognition (Phase 7) | Ongoing awareness, long-running house intelligence behaviors | No background cognition engine or autonomous loop in active code paths | **Not Implemented** |
@@ -95,27 +55,27 @@ Code comparison baseline:
 
 ## 5) Concrete Gap Register
 
-### G-01 — Phase-4 docs imply wider live execution than code currently provides
+### G-01 -- Phase-4 docs imply wider live execution than code currently provides
 - **Observed:** Many design docs discuss expanded execution capability families.
 - **Code reality:** Caps 16 and 17 are fully functional; cap 18 is functional with a known param wiring issue; caps 19/20/21 are wired but executors are stubs with no real OS effect; cap 32 is wired with partial data.
 - **Impact:** Risk of operator confusion about what can run now vs what has real OS effect.
 
-### G-02 — Phase-7 autonomy language exceeds current deterministic request/response runtime
+### G-02 -- Phase-7 autonomy language exceeds current deterministic request/response runtime
 - **Observed:** Phase-7 corpus emphasizes autonomous/continuous behavior models.
 - **Code reality:** Current runtime executes only on explicit inbound requests.
 - **Impact:** Important to treat Phase-7 docs as roadmap/vision, not active behavior contract.
 
-### G-03 — Memory architecture mismatch
+### G-03 -- Memory architecture mismatch
 - **Observed:** Phase-7 memory docs describe substantial memory layering.
 - **Code reality:** Active memory-related behavior is limited (quick correction staging, speech last text, ledger events).
 - **Impact:** Memory expectations should be explicitly marked as future-phase in canonical references.
 
-### G-04 — Presence/orb semantics are mostly conceptual beyond frontend status text
+### G-04 -- Presence/orb semantics are mostly conceptual beyond frontend status text
 - **Observed:** Presence doctrine and orb architecture docs describe richer state and agency semantics.
 - **Code reality:** orb status in dashboard reflects STT/UI states (`READY`, `LISTENING`, etc.) and does not drive deep governance behavior.
 - **Impact:** Prevents accidental overclaiming of runtime presence capabilities.
 
-### G-05 — Stub executors present a false success to the user
+### G-05 -- Stub executors present a false success to the user
 - **Observed:** Capabilities 19 (volume), 20 (media), 21 (brightness) return `ActionResult.ok(...)` with a success message.
 - **Code reality:** The executors perform no OS operation. The user receives a "Volume up." or "Playback started." confirmation but nothing changes on the system.
 - **Impact:** Users may believe the system acted when it did not. This is a functional correctness gap that should be resolved before these capabilities are advertised as working.
@@ -125,7 +85,7 @@ Code comparison baseline:
 ## 6) Recommended Canonical Positioning
 
 1. Treat this comparison as the operational truth bridge between design corpus and code reality.
-2. Keep `docs/canonical/NOVA_CAPABILITY_MASTER.md` as the runtime capability inventory.
+2. Keep `docs/NOVA_CAPABILITY_MASTER.md` as the runtime capability inventory.
 3. Mark Phase-7 design files as **non-binding roadmap** unless/until specific code artifacts, tests, and registry states are promoted.
 4. For each newly activated capability, require parser mapping + governor route + tests + ledger event coverage before advertising as active.
 
@@ -133,9 +93,9 @@ Code comparison baseline:
 
 ## 7) Suggested Follow-up Work Items
 
-- Add a short “Binding vs Roadmap” banner at the top of major Phase-7 docs.
-- Add a compact `docs/canonical/RUNTIME_FEATURE_FLAGS.md` mapping capability IDs to activation state and proof tests.
-- Add CI documentation check to ensure future docs referencing “active” capabilities are consistent with `registry.json` and governor routes.
+- Add a short "Binding vs Roadmap" banner at the top of major Phase-7 docs.
+- Add a compact `docs/current_runtime/RUNTIME_FINGERPRINT.md` mapping capability IDs to activation state and proof tests.
+- Add CI documentation check to ensure future docs referencing "active" capabilities are consistent with `registry.json` and governor routes.
 
 ---
 
@@ -143,4 +103,5 @@ Code comparison baseline:
 
 - **Implemented now:** limited Phase-4 governed core (caps 16/17 fully functional; cap 18 functional with known param issue; caps 19/20/21 wired stub; cap 32 wired partial) + existing deterministic utility skill stack.
 - **Planned later:** most Phase-4.2/4.5 and almost all Phase-7 architecture themes.
-- **Action for operators:** use canonical runtime docs + code path verification for present-tense capability claims. Treat "Wired (Stub)" capabilities as pipeline scaffolding, not functional features — they produce no real OS effect despite returning success responses.
+- **Action for operators:** use canonical runtime docs + code path verification for present-tense capability claims. Treat "Wired (Stub)" capabilities as pipeline scaffolding, not functional features -- they produce no real OS effect despite returning success responses.
+

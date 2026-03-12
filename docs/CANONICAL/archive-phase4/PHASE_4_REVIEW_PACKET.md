@@ -28,7 +28,7 @@ This packet is a concise handoff artifact for reviewing the latest Phaseâ€‘
 
 ## Suggested reviewer entry points
 - `docs/canonical/archive-phase4/PHASE_4_FREEZE.md`
-- `docs/canonical/NOVA_CAPABILITY_MASTER.md`
+- `docs/NOVA_CAPABILITY_MASTER.md`
 - `nova_backend/src/governor/governor.py`
 - `nova_backend/src/executors/web_search_executor.py`
 - `nova_backend/src/brain_server.py`

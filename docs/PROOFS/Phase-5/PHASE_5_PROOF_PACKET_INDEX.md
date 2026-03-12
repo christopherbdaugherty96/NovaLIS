@@ -20,9 +20,12 @@ Purpose: Canonical index of Phase-5 design-gate artifacts plus implemented runti
 4. `PHASE_5_CAPABILITY_SUMMARY_AND_SELLABILITY_2026-03-12.md`
 5. `PHASE_5_EVERYDAY_USER_JOURNEYS_2026-03-12.md`
 6. `PHASE_5_CUMULATIVE_IMPLEMENTATION_STATE_2026-03-12.md`
+7. `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
 
 ## Cross-Phase Runtime References
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+- `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
+- `docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12.md`
 - `docs/PROOFS/Phase-4/PHASE_4_CLOSED_ACT_2026-03-09.md`
 - `docs/PROOFS/Phase-4.5/PHASE_4_5_CLOSED_ACT_2026-03-09.md`
 - `docs/PROOFS/Phase-4.5/PHASE_4_5_TO_PHASE_5_READINESS_NOTES_2026-03-09.md`
@@ -31,9 +34,9 @@ Purpose: Canonical index of Phase-5 design-gate artifacts plus implemented runti
 - `docs/design/phase 5/MEMORY GOVERNANCE.md`
 - `docs/design/phase 5/NOVA_WORKING_CONTEXT_ENGINE.md`
 - `docs/design/phase 5/PHASE_5_DOCUMENT_MAP.md`
-- `docs/design/phase 5/*Tonal Calibration Scope*.txt`
-- `docs/design/phase 5/*Tonal Calibration Visibility*.txt`
-- `docs/design/phase 5/*Phase*5*Roadmap*.txt`
+- `docs/design/phase 5/# 🧭 Tonal Calibration Scope – Desi.txt`
+- `docs/design/phase 5/# 🧭 Tonal Calibration Visibility –.txt`
+- `docs/design/phase 5/# 🧬 NOVA PHASE 5 ROADMAP.txt`
 - `docs/design/phase 5/Delegated Autonomy.txt`
 - `docs/design/phase 5/Consolidated API's.txt`
 
