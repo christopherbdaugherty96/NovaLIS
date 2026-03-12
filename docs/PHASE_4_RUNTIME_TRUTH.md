@@ -1,7 +1,16 @@
-# PHASE-4 RUNTIME TRUTH SNAPSHOT
+# PHASE-4 RUNTIME TRUTH SNAPSHOT (HISTORICAL)
 
-**Last updated:** 2026-03-03  
-**This document is the single, authoritative record of the current governed runtime state for NovaLIS.**
+> STATUS (2026-03-12): HISTORICAL SNAPSHOT ONLY
+> This file is retained for traceability and historical review context.
+> It is not the runtime authority source.
+>
+> Runtime authority sources:
+> - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+> - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
+> - `docs/PROOFS/Phase-5/PHASE_5_PROOF_PACKET_INDEX.md`
+> - `docs/PROOFS/Phase-5/PHASE_5_CUMULATIVE_IMPLEMENTATION_STATE_2026-03-12.md`
+
+**Snapshot date:** 2026-03-03
 
 ---
 
@@ -104,4 +113,4 @@ Modules under `src/conversation/` (heuristics, escalation, thought store, Deep T
 
 ---
 
-*All governance verification and phase compliance checks must begin by referencing this file.*
+This file must not be used as sole authority for current governance or runtime decisions.

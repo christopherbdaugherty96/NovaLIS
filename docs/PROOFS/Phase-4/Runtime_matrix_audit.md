@@ -1,8 +1,8 @@
-Implemented: audit-only review (no file modifications).
+﻿Implemented: audit-only review (no file modifications).
 
 I ran a code-level extraction of the NovaLIS runtime surfaces you listed and built the matrices below from current source, then compared those findings against canonical docs.
 
-Table 1 — Capability Surface Matrix
+Table 1 -- Capability Surface Matrix
 ID	Name	Enabled	Mediator Trigger(s)	Governor Route	Executor	Real Side Effect?	Risk Level
 16	governed_web_search	true	search ..., search for ..., look up ..., research ...; clarification flow (What would you like to search for?)	_execute if req.capability_id == 16	WebSearchExecutor	Yes (network call through NetworkMediator)	low
 17	open_website	true	open <name>	elif req.capability_id == 17	WebpageLaunchExecutor	Yes (webbrowser.open)	low
@@ -16,7 +16,7 @@ ID	Name	Enabled	Mediator Trigger(s)	Governor Route	Executor	Real Side Effect?	Ri
 Capability metadata and enabled/risk values come from registry.json, mediator triggers from GovernorMediator, and routes from Governor._execute.
 Executor side-effect reality comes from executor implementations themselves (real call vs message-only).
 
-Table 2 — User-Facing Command Strings
+Table 2 -- User-Facing Command Strings
 Raw Trigger Phrase	Normalized Form	Capability ID	Source File	Regex?
 search ... / search for ... / look up ... / research ...	trailing punctuation stripped before parse	16	governor_mediator.py	Yes (SEARCH_RE)
 open <name>	<name> lowercased into target	17	governor_mediator.py	Yes (OPEN_RE)
@@ -29,10 +29,10 @@ set brightness <0-999>	level parsed as int	21	governor_mediator.py	Yes (SET_BRIG
 play / pause / resume	lowercased action	20	governor_mediator.py	Yes (re.match)
 system check / system status	exact phrase class	32	governor_mediator.py	Yes (re.match)
 report <q> / summarize <q>	query trimmed	48	governor_mediator.py	Yes (SET_REPORT_RE)
-Search-intent without query	clarification prompt: “What would you like to search for?”	16	governor_mediator.py	Yes (re.search)
+Search-intent without query	clarification prompt: "What would you like to search for?"	16	governor_mediator.py	Yes (re.search)
 Source extraction from mediator parser and regex definitions.
 
-Table 3 — Ledger Event Types
+Table 3 -- Ledger Event Types
 Event Type	Source File	Fail-Closed?	Used By
 ACTION_ATTEMPTED	ledger/event_types.py	Yes (writer allowlist)	Governor pre-exec log
 ACTION_COMPLETED	ledger/event_types.py	Yes	Governor post-exec log
@@ -46,7 +46,7 @@ EXECUTION_MEMORY_EXCEEDED	ledger/event_types.py	Yes	Governor memory limit path
 All event names are centrally allowlisted; unknown event names raise LedgerWriteFailed, i.e., fail-closed write behavior at the writer boundary.
 Runtime emit points are in governor, network mediator, webpage executor, and llm manager files.
 
-Table 4 — Network Constraints
+Table 4 -- Network Constraints
 Restriction Type	Enforcement Location	Blocking Behavior
 Scheme allowlist (http, https)	NetworkMediator._validate_url	Raises NetworkMediatorError for disallowed schemes
 Disallowed localhost hosts (localhost, 127.0.0.1, ::1)	NetworkMediator._validate_url	Raises NetworkMediatorError
@@ -57,7 +57,7 @@ Capability-bound + enabled check	NetworkMediator.request	Raises NetworkMediatorE
 Request timeout default (5s)	NetworkMediator.request	Request exception path logs NETWORK_CALL_FAILED then raises
 All enforced in governor/network_mediator.py.
 
-Table 5 — Conversation Normalization Map
+Table 5 -- Conversation Normalization Map
 User Input Variant	Canonical Interpretation	Handler
 wether	weather	InputNormalizer.TYPO_REPLACEMENTS
 hedlines	headlines	InputNormalizer.TYPO_REPLACEMENTS
@@ -73,7 +73,7 @@ Normalization and routing are in response_style_router.py and brain_server.py.
 
 Additional Findings
 1) Duplication of strings across files
-"I can’t do that right now." appears repeatedly in Governor failure paths (same file, multiple branches).
+"I can't do that right now." appears repeatedly in Governor failure paths (same file, multiple branches).
 
 "You're welcome." appears in both response templates and explicit brain_server fast-path handling. 
 
@@ -102,19 +102,19 @@ No explicit URL filtering exists in SpeechFormatter (only punctuation/list pacin
 Invocation-bound TTS trigger phrases are in governor mediator (speak that|read that|say it), while brain_server injects last response text into cap 18 params when missing. 
 
 Docs Cross-Reference (runtime vs doc claims)
-docs/canonical/NOVA_CAPABILITY_MASTER.md states IDs 22 and 48 have “No live parser mapping,” but runtime mediator currently does map both (open-folder and report/summarize patterns).
+docs/NOVA_CAPABILITY_MASTER.md states IDs 22 and 48 have "No live parser mapping," but runtime mediator currently does map both (open-folder and report/summarize patterns).
 
-The same doc’s “wired stub” characterization for 19/20/21 matches current executor implementations (message-only behavior).
+The same doc's "wired stub" characterization for 19/20/21 matches current executor implementations (message-only behavior).
 
 Checks Run
-✅ rg --files nova_backend/src
+[OK] rg --files nova_backend/src
 
-✅ rg -n "log_event\\(\\s*\\\"[A-Z_]+\\\"" nova_backend/src
+[OK] rg -n "log_event\\(\\s*\\\"[A-Z_]+\\\"" nova_backend/src
 
-✅ rg -n "I can’t do that right now\\.|Here are the latest headlines\\.|You're welcome\\." nova_backend/src
+[OK] rg -n "I can't do that right now\\.|Here are the latest headlines\\.|You're welcome\\." nova_backend/src
 
-✅ git status --short
+[OK] git status --short
 
-✅ Multiple targeted source inspections via sed -n / nl -ba on governor, mediator, registry, executors, conversation, ledger, voice, and docs files.
+[OK] Multiple targeted source inspections via sed -n / nl -ba on governor, mediator, registry, executors, conversation, ledger, voice, and docs files.
 
 No files were modified (audit-only), so no commit and no PR were created.

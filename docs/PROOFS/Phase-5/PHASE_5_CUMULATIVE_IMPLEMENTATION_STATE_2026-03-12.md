@@ -131,6 +131,8 @@ Results:
 
 ## Runtime Truth Alignment Notes
 - Runtime fingerprint/docs were regenerated in this pass.
+- Runtime-doc generation/update proof is recorded in:
+  - `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
 - Frontend mirror drift was resolved by syncing:
   - `nova_backend/static/index.html` -> `Nova-Frontend-Dashboard/index.html`
   - `nova_backend/static/dashboard.js` -> `Nova-Frontend-Dashboard/dashboard.js`
@@ -143,3 +145,4 @@ Phase-5 runtime slices are active, but full Phase-5 closure remains gated until 
 - Index: `PHASE_5_PROOF_PACKET_INDEX.md`
 - Design map: `docs/design/phase 5/PHASE_5_DOCUMENT_MAP.md`
 - Runtime state: `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+- Runtime-doc proof: `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
