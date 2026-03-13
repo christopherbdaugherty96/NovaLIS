@@ -27,7 +27,7 @@ Execution authority path:
 - Phase 4: CLOSED (governed execution active and certified).
 - Phase 4.2: ACTIVE (cognitive depth, invocation-bound).
 - Phase 4.5: CLOSED (experience layer closure packet recorded).
-- Phase 5: DESIGN-GATED (gate-prep packet complete; runtime not unlocked).
+- Phase 5: ACTIVE / RATIFIED (trust-facing runtime package active; full phase closure still separate).
 
 ## Current Capability Envelope
 Runtime-enabled governed capabilities include conversational analysis, reporting, web retrieval, system controls, and trust-state visibility.
@@ -40,12 +40,14 @@ All remain governor-mediated and non-autonomous.
 - Execute governed local/system actions (for example open website/folder, media, brightness, volume, TTS).
 - Produce session-scoped analysis artifacts.
 - Surface trust and mode visibility in the UX layer.
+- Maintain explicit governed memory, inspectable tone controls, explicit schedules, and opt-in pattern review.
 
 ## Explicit Prohibitions (Current Runtime)
 - No autonomous task initiation.
 - No silent background monitoring.
 - No hidden high-risk execution.
 - No profile-based authority expansion.
+- No autonomous pattern or schedule execution.
 
 ### What Nova Cannot Do
 - No self-started tasks, schedules, or goals.
@@ -54,9 +56,9 @@ All remain governor-mediated and non-autonomous.
 - No self-training, user profiling, or implicit behavioral adaptation.
 
 ## Directional Continuity
-Future phases may add memory continuity and policy-bound delegation only under explicit constitutional unlocks with reversibility, visibility, and auditability.
+Future phases may add broader delegation only under explicit constitutional unlocks with reversibility, visibility, and auditability.
 
 ### Long-Term Direction Under Lock
-- Phase 5: explicit memory governance and continuity design.
+- Phase 5: explicit memory governance, continuity, tone visibility, scheduling, and opt-in pattern review.
 - Phase 6: policy-bound environment integration.
 - Phase 7+: scoped autonomy envelopes only if visible, reversible, interruptible, and time-limited.

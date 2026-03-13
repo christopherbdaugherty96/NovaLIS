@@ -8,36 +8,36 @@ Scope: Technical operator checklist to prevent premature autonomy and keep Phase
 - [ ] No background cognition loop in runtime.
 - [ ] No autonomous action initiation.
 - [ ] No authority bypass outside Governor mediation.
-- [ ] Phase-5 remains `DESIGN` in runtime truth.
+- [x] Phase-5 trust-facing runtime package remains non-autonomous and explicitly bounded.
 
 ## Gate Track A: Memory Governance
-- [ ] Finalize memory schema and tier rules (`locked`, `active`, `deferred`).
-- [ ] Define governed operations (`SAVE`, `LOCK`, `DEFER`, `UNLOCK`, `DELETE`, `SUPERSEDE`).
-- [ ] Add governor-gated memory operation tests.
-- [ ] Ratify memory governance spec.
+- [x] Finalize memory schema and tier rules (`locked`, `active`, `deferred`).
+- [x] Define governed operations (`SAVE`, `LOCK`, `DEFER`, `UNLOCK`, `DELETE`, `SUPERSEDE`).
+- [x] Add governor-gated memory operation tests.
+- [x] Ratify memory governance spec.
 
 ## Gate Track B: Pattern Detection Constraints
-- [ ] Implement explicit opt-in state machine (default `off`).
-- [ ] Route pattern outputs to proposal/quarantine queue only.
-- [ ] Block auto-apply behavior by test.
-- [ ] Ratify pattern detection constraints.
+- [x] Implement explicit opt-in state machine (default `off`).
+- [x] Route pattern outputs to proposal/quarantine queue only.
+- [x] Block auto-apply behavior by test.
+- [x] Ratify pattern detection constraints.
 
 ## Gate Track C: Tone Calibration
-- [ ] Lock domain taxonomy and override precedence.
-- [ ] Enforce formatting-only mutation boundary (`Class C`).
-- [ ] Add inspectability and revert controls.
-- [ ] Ratify tone calibration architecture.
+- [x] Lock domain taxonomy and override precedence.
+- [x] Enforce formatting-only mutation boundary (`Class C`).
+- [x] Add inspectability and revert controls.
+- [x] Ratify tone calibration architecture.
 
 ## Gate Track D: Notification Boundary
-- [ ] Enforce explicit user-created schedules only.
-- [ ] Ensure all schedules are inspectable and revocable.
-- [ ] Add tests for "no inferred reminders".
-- [ ] Ratify notification boundary.
+- [x] Enforce explicit user-created schedules only.
+- [x] Ensure all schedules are inspectable and revocable.
+- [x] Add tests for "no inferred reminders".
+- [x] Ratify notification boundary.
 
 ## Gate Track E: Constitutional Audit
-- [ ] Run final admission audit for authority expansion risk.
-- [ ] Verify no implicit delegation and no proactive execution.
-- [ ] Record signed admission decision artifact.
+- [x] Run final admission audit for authority expansion risk.
+- [x] Verify no implicit delegation and no proactive execution.
+- [x] Record signed admission decision artifact.
 
 ## Before Any Autonomy
 - [ ] Delegation policy system defined (scope/action/resource/revocation/expiry).
@@ -45,4 +45,4 @@ Scope: Technical operator checklist to prevent premature autonomy and keep Phase
 - [ ] Policy envelope UI defined and testable.
 
 ## Decision Rule
-If any checklist item above is unchecked, Phase-5 remains design-gated and autonomy remains disallowed.
+If any checklist item above is unchecked, Phase-5 gate closure is incomplete and autonomy remains disallowed.
