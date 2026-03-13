@@ -1,8 +1,15 @@
 # Pattern Detection Opt-In Guardrails Spec
 Date: 2026-03-09
 Commit: 6932b42
-Status: Draft candidate (pending ratification)
-Scope: Defines constraints for pattern detection in Phase-5 design.
+Status: Historical draft input (superseded for the closed Phase-5 package)
+Scope: Original pattern-review guardrail input. Retained for traceability only.
+
+## Historical Note
+This document is not the current authority for the closed Phase-5 package.
+
+Use instead:
+- `PHASE_5_PATTERN_DETECTION_RATIFICATION_ACT_2026-03-13.md`
+- `PHASE_5_PROOF_PACKET_INDEX.md`
 
 ## Core Rule
 Pattern detection is opt-in only and cannot produce autonomous execution.
@@ -25,6 +32,6 @@ Pattern detection is opt-in only and cannot produce autonomous execution.
 - Opt-in state transitions are logged.
 - Approval and rejection decisions are logged.
 
-## Non-Authorization Note
-This spec does not unlock autonomous behavior and does not expand authority.
-Phase-5 admission gate credit remains pending formal ratification.
+## Historical Decision
+This document records the pre-ratification guardrail input only.
+It does not satisfy the current Phase-5 authority chain by itself.

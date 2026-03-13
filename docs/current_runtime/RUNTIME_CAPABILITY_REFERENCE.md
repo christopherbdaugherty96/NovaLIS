@@ -79,7 +79,7 @@ Interpretation rule:
 | Interface personality agent | Active | Cleans presentation tone, strips unsafe authority-style phrasing, and keeps output readable without changing execution authority. | Presentation-only layer |
 | Tone controls | Active | Stores a global response style, per-domain overrides, recent tone-change history, and reset controls through the dashboard and chat commands. | Manual, inspectable, and non-authorizing |
 | Working Context Engine | Active | Maintains session-scoped task context such as active app, active URL, last relevant object, and recent relevant turns. | Non-persistent by default |
-| Project continuity threads | Active | Tracks ongoing work by thread with blocker, health, latest decision, memory count, and detail panel support. | Workspace continuity surface |
+| Project continuity threads | Active | Tracks ongoing work by thread with blocker, health, latest decision, memory count, and detail panel support. | Session-scoped workspace continuity surface; durable cross-session continuity comes from governed memory |
 | Thread-memory bridge | Active | Lets users explicitly save thread snapshots and decisions into governed memory and list memory by thread. | Built on capability `61` |
 | Notification scheduling | Active | Manages explicit schedules, quiet hours, rate limits, due-item delivery checks, and dismiss/cancel/reschedule flows. | User-directed, policy-bound, and inspectable |
 | Pattern review | Active | Maintains an opt-in advisory review queue for recurring blockers, decision gaps, and related continuity patterns. | No auto-apply and no background review loop |
@@ -119,3 +119,4 @@ When a capability or surface changes:
 1. Update runtime code and tests first.
 2. Regenerate runtime truth artifacts as needed.
 3. Update this reference in the same change set so the descriptions stay aligned with the live system.
+

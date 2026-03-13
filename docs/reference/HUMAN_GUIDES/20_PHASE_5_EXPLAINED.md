@@ -6,7 +6,7 @@ Phase 5 is the part of Nova that turns short-lived help into durable, governed c
 
 It is the layer that lets Nova:
 - remember explicit things you ask it to preserve
-- keep track of project threads over time
+- keep track of project threads during the current workspace session
 - show what is blocked and what changed
 - let you control response style without changing authority
 - surface your own reminders and scheduled updates
@@ -23,6 +23,7 @@ Phase 5 is not:
 ## The Everyday Meaning
 Before Phase 5, Nova could help in a moment.
 With Phase 5, Nova can help across a longer stretch of work.
+It does that through a combination of session-scoped thread continuity and durable governed memory.
 
 That means a user can do things like:
 - continue a project thread
@@ -40,8 +41,10 @@ Memory is explicit, inspectable, and revocable.
 Nova does not silently decide what should become durable memory.
 
 ### 2. Project continuity
-Threads let Nova keep a stable picture of ongoing work.
+Threads let Nova keep a stable picture of ongoing work in the current workspace session.
 That includes blockers, decisions, health, and linked memory.
+
+Durable cross-session continuity comes from governed memory, not from a hidden persistent thread store.
 
 ### 3. Response style control
 Users can choose a global response style and domain-specific overrides.
@@ -69,6 +72,9 @@ That closed package includes:
 Some ideas are still intentionally outside the closed package.
 The clearest current example is declarative identity/preferences.
 That remains deferred until it gets its own separate design and approval path.
+
+Other not-added tracks are deferred in:
+- `docs/PROOFS/Phase-6/PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
 
 ## If You Want The Technical Version
 Use:

@@ -7,7 +7,7 @@ Scope: Maps current Phase-5 goals and gate tracks to implemented runtime evidenc
 | Completion Criterion | Evidence Artifact(s) | Status |
 | --- | --- | --- |
 | Explicit governed memory is active | `PHASE_5_MEMORY_RUNTIME_SLICE_2026-03-11.md`, `PHASE_5_MEMORY_INSPECTABILITY_RUNTIME_SLICE_2026-03-13.md` | PASS |
-| Thread continuity and durable thread memory are active | `PHASE_5_PROJECT_CONTINUITY_RUNTIME_NOTE_2026-03-12.md`, `PHASE_5_THREAD_MEMORY_BRIDGE_RUNTIME_SLICE_2026-03-12.md` | PASS |
+| Session-scoped thread continuity and durable thread-linked memory are active | `PHASE_5_PROJECT_CONTINUITY_RUNTIME_NOTE_2026-03-12.md`, `PHASE_5_THREAD_MEMORY_BRIDGE_RUNTIME_SLICE_2026-03-12.md` | PASS |
 | Memory is inspectable and revocable | `PHASE_5_MEMORY_INSPECTABILITY_RUNTIME_SLICE_2026-03-13.md`, `PHASE_5_MEMORY_GOVERNANCE_RATIFICATION_ACT_2026-03-13.md` | PASS |
 | Tone calibration is explicit, inspectable, and reversible | `PHASE_5_TONE_CONTROLS_RUNTIME_SLICE_2026-03-13.md`, `PHASE_5_TONE_CALIBRATION_APPROVAL_ACT_2026-03-13.md` | PASS |
 | Scheduling is explicit, inspectable, policy-bound, and non-autonomous | `PHASE_5_NOTIFICATION_SCHEDULING_RUNTIME_SLICE_2026-03-13.md`, `PHASE_5_NOTIFICATION_SCHEDULING_RATIFICATION_ACT_2026-03-13.md` | PASS |
@@ -17,11 +17,12 @@ Scope: Maps current Phase-5 goals and gate tracks to implemented runtime evidenc
 
 ## Scope Note
 Declarative identity/preferences are not part of the current ratified runtime package and remain deferred pending a separate canonical design and approval path.
+Persistent cross-session project-thread storage is also not part of the current package. The live thread surface is session-scoped, while durable continuity is provided through governed memory.
 
 ## Mechanical Verification Snapshot
-- `python -m pytest nova_backend/tests/phase5 -q` (with `PYTHONPATH=nova_backend`): `40 passed`
-- `python -m pytest nova_backend/tests/phase45 -q` (with `PYTHONPATH=nova_backend`): `43 passed`
-- `python -m pytest nova_backend/tests -q` (with `PYTHONPATH=nova_backend`): `387 passed`
+- `python -m pytest nova_backend/tests/phase5 -q` (with `PYTHONPATH=nova_backend`): `41 passed`
+- `python -m pytest nova_backend/tests/phase45 -q` (with `PYTHONPATH=nova_backend`): `49 passed`
+- `python -m pytest nova_backend/tests -q` (with `PYTHONPATH=nova_backend`): `395 passed`
 - `python scripts/check_runtime_doc_drift.py`: passed
 - `python scripts/check_frontend_mirror_sync.py`: passed
 

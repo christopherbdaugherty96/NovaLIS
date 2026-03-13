@@ -1,6 +1,6 @@
-﻿# Phase 5 Document Map
+# Phase 5 Document Map
 
-Updated: 2026-03-12
+Updated: 2026-03-13
 
 This map classifies Phase-5 documents by authority and use so runtime audits and product work reference the right source.
 
@@ -44,4 +44,5 @@ This map classifies Phase-5 documents by authority and use so runtime audits and
 - Design docs are intent/spec artifacts and must be updated when runtime-approved behavior evolves.
 - Working Context Engine is session-scoped and Phase-4.5-compatible; it is not persistent memory by itself.
 - Phase-5 trust-facing runtime package is now implemented and formally closed for the current repository state.
-- Declarative identity/preferences, delegated autonomy, and consolidated API direction remain outside the closed package unless separately specified.
+- Declarative identity/preferences, persistent cross-session thread substrate work, delegated autonomy, and consolidated API direction remain outside the closed package unless separately specified.
+- Deferred candidate tracks not added to the closed Phase-5 package are indexed in `docs/PROOFS/Phase-6/PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`.

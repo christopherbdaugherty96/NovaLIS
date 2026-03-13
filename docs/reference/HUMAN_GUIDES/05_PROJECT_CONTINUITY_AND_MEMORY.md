@@ -1,4 +1,4 @@
-﻿# Project Continuity and Memory
+# Project Continuity and Memory
 Updated: 2026-03-13
 
 ## Why This Part Matters
@@ -38,7 +38,7 @@ Working context is not the same as long-term memory.
 It is session-scoped and task-oriented.
 
 ## 2. Project Continuity Threads
-Threads let Nova help with ongoing work over time.
+Threads let Nova help with ongoing work inside the current workspace session.
 
 A thread can carry things like:
 - project name
@@ -48,6 +48,10 @@ A thread can carry things like:
 - latest decision
 - recent changes
 - linked memory
+
+Important boundary:
+- the live thread surface is session-scoped
+- durable continuity across sessions comes from governed memory and the thread-memory bridge
 
 This means Nova can answer questions like:
 - `continue my deployment issue`
@@ -110,6 +114,7 @@ A realistic Nova continuity flow now looks like this:
 - you ask for `memory overview`
 - Nova shows the current durable memory state and linked threads
 - later you come back and Nova can show the durable context again
+- if you start a new session, Nova can recover durable context through governed memory even though the live thread surface itself is session-scoped
 
 That is the beginning of a real personal continuity system.
 
@@ -120,7 +125,7 @@ Working context:
 - what is happening right now
 
 Thread continuity:
-- what is happening in this project over time
+- what is happening in this project in the current workspace session
 
 Governed memory:
 - what the user explicitly chose to preserve across time

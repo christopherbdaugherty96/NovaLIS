@@ -1,4 +1,4 @@
-﻿# Current State
+# Current State
 Updated: 2026-03-13
 
 ## Where Nova Is Today
@@ -16,7 +16,7 @@ That means Nova already has:
 - bounded local actions
 - research and reporting
 - screen explanation
-- thread continuity
+- session-scoped thread continuity
 - governed memory
 - governed memory overview and inspectability surface
 - manual response-style controls with inspectable tone settings
@@ -30,7 +30,7 @@ These parts are already meaningfully real:
 - story summaries and intelligence briefs
 - system status and local computer help
 - screenshot capture and screen explanation
-- project thread continuity
+- session-scoped project thread continuity
 - thread health, blocker, and decision surfaces
 - governed memory and thread-linked memory
 - durable memory review through `memory overview`
@@ -68,7 +68,7 @@ Nova already combines things that usually live in separate products:
 - governed local action
 - research and multi-source reporting
 - screen explanation
-- thread continuity
+- session-scoped thread continuity plus durable governed memory
 - explicit memory
 - calm user-directed scheduling
 - opt-in pattern review
@@ -78,7 +78,7 @@ That combination is unusual.
 ## The Best Honest Description Right Now
 If someone asked what Nova is today, a strong honest answer would be:
 
-Nova is a governed personal intelligence workspace that can research, explain, help with your computer, follow ongoing project threads, preserve explicit memory, schedule calm user-directed updates, and surface opt-in review patterns without giving up user control.
+Nova is a governed personal intelligence workspace that can research, explain, help with your computer, follow ongoing project threads in the current session, preserve explicit memory across sessions, schedule calm user-directed updates, and surface opt-in review patterns without giving up user control.
 
 ## If You Need The Official Runtime Truth
 Use:
