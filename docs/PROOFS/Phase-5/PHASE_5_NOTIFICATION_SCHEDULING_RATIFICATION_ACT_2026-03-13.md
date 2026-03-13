@@ -14,7 +14,10 @@ Scope: Formal ratification of explicit notification scheduling and quiet deliver
 3. No inferred reminders are permitted.
 4. No autonomous recurrence growth is permitted.
 5. Scheduled items surface quietly and remain user-visible.
-6. Scheduled items do not automatically execute actions on the user's behalf.
+6. Quiet-hours and rate-limit policies are explicit and user-configurable.
+7. Delivery attempts and delivery outcomes are ledger-visible.
+8. Scheduled delivery is checked against governor policy before surfacing.
+9. Scheduled items do not automatically execute actions on the user's behalf.
 
 ## Ratification Decision
 - The current scheduling runtime slice satisfies the Phase-5 notification boundary.

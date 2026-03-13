@@ -193,6 +193,49 @@ def test_os_diagnostics_executor_includes_tone_summary(monkeypatch):
     assert "tone formal" in result.message.lower()
 
 
+def test_os_diagnostics_executor_includes_notification_policy_summary(monkeypatch):
+    import src.executors.os_diagnostics_executor as mod
+
+    class _Disk:
+        total = 200 * (1024 ** 3)
+        used = 50 * (1024 ** 3)
+        free = 150 * (1024 ** 3)
+
+    class _Mem:
+        total = 16 * (1024 ** 3)
+        used = 5 * (1024 ** 3)
+        available = 11 * (1024 ** 3)
+        percent = 31.0
+
+    class _Swap:
+        total = 4 * (1024 ** 3)
+        used = 0
+        percent = 0.0
+
+    class _Iface:
+        isup = True
+
+    monkeypatch.setattr(mod.shutil, "disk_usage", lambda _path: _Disk())
+    monkeypatch.setattr(mod.psutil, "virtual_memory", lambda: _Mem())
+    monkeypatch.setattr(mod.psutil, "swap_memory", lambda: _Swap())
+    monkeypatch.setattr(mod.psutil, "cpu_percent", lambda interval=0.0: 18.0)
+    monkeypatch.setattr(mod.psutil, "boot_time", lambda: mod.time.time() - 3600.0)
+    monkeypatch.setattr(mod.psutil, "pids", lambda: [1, 2, 3])
+    monkeypatch.setattr(mod.psutil, "net_if_stats", lambda: {"Ethernet": _Iface()})
+    monkeypatch.setattr(
+        mod.OSDiagnosticsExecutor,
+        "_notification_schedule_details",
+        staticmethod(lambda: ("Quiet hours: 10:00 PM to 7:00 AM. Rate limit: 2 per hour. Delivered last hour: 1.", True, "10:00 PM to 7:00 AM", 2, 3, 1)),
+    )
+
+    result = OSDiagnosticsExecutor().execute(ActionRequest(capability_id=32, params={}))
+
+    assert result.success is True
+    assert "quiet hours: 10:00 pm to 7:00 am" in str(result.data.get("notification_policy_summary") or "").lower()
+    assert result.data.get("notification_rate_limit_per_hour") == 2
+    assert "notifications 10:00 pm to 7:00 am" in result.message.lower()
+
+
 def test_os_diagnostics_executor_reports_blocked_model_as_not_ready(monkeypatch):
     import src.executors.os_diagnostics_executor as mod
     import src.llm.llm_manager as llm_mod

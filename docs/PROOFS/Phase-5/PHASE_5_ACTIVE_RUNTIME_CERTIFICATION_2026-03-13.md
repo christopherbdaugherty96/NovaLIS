@@ -7,9 +7,10 @@ Scope: Runtime-level certification for the currently implemented Phase-5 package
 - Governed memory is active and inspectable.
 - Thread continuity and thread-memory bridge are active.
 - Manual tone controls are active and inspectable.
-- User-directed scheduling is active and inspectable.
+- User-directed scheduling is active, inspectable, and policy-bound.
 - Opt-in pattern review is active and advisory-only.
 - Full backend verification passes.
+- Declarative identity/preferences remain deferred pending a separate canonical design.
 
 ## Runtime Truth Evidence
 Phase-5 active runtime slices are evidenced by:
@@ -18,9 +19,9 @@ Phase-5 active runtime slices are evidenced by:
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 
 ## Test Evidence
-- `nova_backend/tests/phase5`: `36 passed`
+- `nova_backend/tests/phase5`: `40 passed`
 - `nova_backend/tests/phase45`: `43 passed`
-- `nova_backend/tests`: `382 passed`
+- `nova_backend/tests`: `387 passed`
 - `python scripts/check_runtime_doc_drift.py`: passed
 - `python scripts/check_frontend_mirror_sync.py`: passed
 

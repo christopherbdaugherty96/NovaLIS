@@ -42,9 +42,9 @@ Runtime and proof inputs used:
 - `PHASE_5_PATTERN_REVIEW_RUNTIME_SLICE_2026-03-13.md`
 
 Verification snapshot:
-- `nova_backend/tests/phase5`: `36 passed`
+- `nova_backend/tests/phase5`: `40 passed`
 - `nova_backend/tests/phase45`: `43 passed`
-- full backend suite: `382 passed`
+- full backend suite: `387 passed`
 - runtime documentation drift check: passed
 - frontend mirror sync check: passed
 

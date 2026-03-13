@@ -18,7 +18,7 @@ import re
 import uuid
 import asyncio
 from contextlib import asynccontextmanager
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Optional
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
@@ -195,6 +195,13 @@ SHOW_SCHEDULES_COMMANDS = {
     "scheduled updates",
     "reminders",
 }
+NOTIFICATION_SETTINGS_COMMANDS = {
+    "notification settings",
+    "show notification settings",
+    "show schedule settings",
+    "schedule settings",
+    "notification policy",
+}
 SCHEDULE_BRIEF_RE = re.compile(
     r"^\s*schedule\s+(?:a\s+)?(?:(?:daily|morning)\s+brief)\s+at\s+(?P<time>.+?)\s*$",
     re.IGNORECASE,
@@ -209,6 +216,22 @@ CANCEL_SCHEDULE_RE = re.compile(
 )
 DISMISS_SCHEDULE_RE = re.compile(
     r"^\s*(?:dismiss|clear)\s+schedule\s+(?P<schedule_id>SCH-[A-Z0-9\-]+)\s*$",
+    re.IGNORECASE,
+)
+RESCHEDULE_SCHEDULE_RE = re.compile(
+    r"^\s*reschedule\s+schedule\s+(?P<schedule_id>SCH-[A-Z0-9\-]+)\s+to\s+(?P<time>.+?)\s*$",
+    re.IGNORECASE,
+)
+SET_QUIET_HOURS_RE = re.compile(
+    r"^\s*(?:set\s+)?(?:notification\s+)?quiet\s+hours\s+(?:from\s+)?(?P<start>.+?)\s+(?:to|-)\s+(?P<end>.+?)\s*$",
+    re.IGNORECASE,
+)
+CLEAR_QUIET_HOURS_RE = re.compile(
+    r"^\s*(?:clear|disable|turn\s+off)\s+(?:notification\s+)?quiet\s+hours\s*$",
+    re.IGNORECASE,
+)
+SET_NOTIFICATION_RATE_LIMIT_RE = re.compile(
+    r"^\s*(?:set\s+)?(?:notification\s+)?rate\s+limit\s+(?P<count>\d{1,2})\s+per\s+hour\s*$",
     re.IGNORECASE,
 )
 PATTERN_STATUS_COMMANDS = {
@@ -1044,6 +1067,37 @@ def _parse_schedule_datetime(raw: str, *, recurrence: str) -> datetime:
     return target
 
 
+def _format_policy_clock_value(raw: str) -> str:
+    value = str(raw or "").strip()
+    if not value:
+        return ""
+    try:
+        hour, minute = _parse_clock_time(value)
+    except ValueError:
+        return value
+    rendered = _local_now().replace(hour=hour, minute=minute, second=0, microsecond=0).strftime("%I:%M %p")
+    return rendered.lstrip("0")
+
+
+def _build_notification_note(snapshot: dict | None) -> str:
+    payload = dict(snapshot or {})
+    parts = [
+        str(payload.get("inspectability_note") or "").strip(),
+        str(payload.get("policy_summary") or "").strip(),
+        str(payload.get("delivery_note") or "").strip(),
+    ]
+    return " ".join(part for part in parts if part)
+
+
+def _notification_governor_reason_note(reason: str) -> str:
+    lowered = str(reason or "").strip().lower()
+    if lowered == "action_pending":
+        return "Held while another governed action is still running."
+    if lowered == "execution_boundary_closed":
+        return "Held because the execution boundary is not accepting new work right now."
+    return "Held by governor policy checks."
+
+
 def _build_notification_schedule_widget(snapshot: dict | None) -> dict:
     payload = dict(snapshot or {})
     due_items: list[dict] = []
@@ -1064,9 +1118,12 @@ def _build_notification_schedule_widget(snapshot: dict | None) -> dict:
         "active_count": int(payload.get("active_count") or 0),
         "due_count": int(payload.get("due_count") or 0),
         "upcoming_count": int(payload.get("upcoming_count") or 0),
+        "suppressed_due_count": int(payload.get("suppressed_due_count") or 0),
         "due_items": due_items,
         "upcoming_items": upcoming_items,
-        "inspectability_note": "Schedules are explicit, inspectable, and cancellable.",
+        "policy_summary": str(payload.get("policy_summary") or "").strip(),
+        "delivery_note": str(payload.get("delivery_note") or "").strip(),
+        "inspectability_note": _build_notification_note(payload),
     }
 
 
@@ -1093,32 +1150,166 @@ def _render_notification_schedule_message(snapshot: dict | None) -> str:
             title = str(item.get("title") or "").strip()
             lines.append(f"- {title} ({next_run})")
 
+    policy_summary = str(payload.get("policy_summary") or "").strip()
+    if policy_summary:
+        lines.append("")
+        lines.append("Policy")
+        lines.append(policy_summary)
+
+    delivery_note = str(payload.get("delivery_note") or "").strip()
+    if delivery_note:
+        lines.append("")
+        lines.append("Delivery")
+        lines.append(delivery_note)
+
     lines.extend(
         [
             "",
             "Try next:",
             "- schedule daily brief at 8:00 am",
             "- remind me at 2:00 pm to review deployment issue",
+            "- notification settings",
+            "- set quiet hours from 10:00 pm to 7:00 am",
+            "- set notification rate limit 2 per hour",
             "- show schedules",
         ]
     )
     return "\n".join(lines)
 
 
-def _surface_due_notification_events(
+def _render_notification_settings_message(snapshot: dict | None) -> str:
+    payload = dict(snapshot or {})
+    policy = dict(payload.get("policy") or {})
+    quiet_label = str(policy.get("quiet_hours_label") or "Off").strip() or "Off"
+    rate_limit = int(policy.get("max_deliveries_per_hour") or 0)
+    delivered_last_hour = int(policy.get("deliveries_last_hour") or 0)
+
+    lines = ["Notification Settings", ""]
+    lines.append(f"Quiet hours: {quiet_label}")
+    lines.append(f"Rate limit: {rate_limit} per hour")
+    lines.append(f"Delivered last hour: {delivered_last_hour}")
+
+    lines.extend(
+        [
+            "",
+            "Try next:",
+            "- set quiet hours from 10:00 pm to 7:00 am",
+            "- clear quiet hours",
+            "- set notification rate limit 2 per hour",
+            "- show schedules",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _process_due_notification_delivery(
     governor: Governor,
     store: NotificationScheduleStore,
     snapshot: dict | None,
-) -> None:
+) -> dict:
     payload = dict(snapshot or {})
+    current = _local_now()
+    visible_due_items: list[dict] = []
+    suppressed_counts: dict[str, int] = {}
+
     for item in list(payload.get("due_items") or []):
         schedule_id = str(item.get("id") or "").strip()
         next_run_at = str(item.get("next_run_at") or "").strip()
         last_surface_at = str(item.get("last_surface_at") or "").strip()
-        if not schedule_id or (last_surface_at and last_surface_at >= next_run_at):
+        if not schedule_id:
             continue
+
+        if last_surface_at and next_run_at and last_surface_at >= next_run_at:
+            visible_due_items.append(dict(item))
+            continue
+
         try:
-            store.mark_due_surface(schedule_id)
+            policy_result = store.evaluate_delivery_policy(schedule_id, now=current)
+        except KeyError:
+            continue
+
+        if str(policy_result.get("reason") or "") == "already_surfaced":
+            visible_due_items.append(dict(item))
+            continue
+
+        _log_ledger_event(
+            governor,
+            "NOTIFICATION_DELIVERY_ATTEMPTED",
+            {
+                "schedule_id": schedule_id,
+                "kind": str(item.get("kind") or ""),
+                "recurrence": str(item.get("recurrence") or ""),
+            },
+        )
+        try:
+            store.record_delivery_attempt(schedule_id, now=current)
+        except Exception:
+            continue
+
+        governor_allowed, governor_reason = governor.allow_notification_delivery(
+            {
+                "schedule_id": schedule_id,
+                "kind": str(item.get("kind") or ""),
+                "title": str(item.get("title") or ""),
+            }
+        )
+
+        if not governor_allowed:
+            note = _notification_governor_reason_note(governor_reason)
+            try:
+                store.record_delivery_outcome(
+                    schedule_id,
+                    outcome="suppressed_governor_policy",
+                    note=note,
+                    now=current,
+                )
+            except Exception:
+                pass
+            suppressed_counts["governor_policy"] = suppressed_counts.get("governor_policy", 0) + 1
+            _log_ledger_event(
+                governor,
+                "NOTIFICATION_DELIVERY_SUPPRESSED",
+                {
+                    "schedule_id": schedule_id,
+                    "kind": str(item.get("kind") or ""),
+                    "reason": "governor_policy",
+                    "detail": governor_reason,
+                },
+            )
+            continue
+
+        if not bool(policy_result.get("allowed")):
+            reason = str(policy_result.get("reason") or "suppressed").strip() or "suppressed"
+            note = str(policy_result.get("note") or "").strip()
+            try:
+                store.record_delivery_outcome(
+                    schedule_id,
+                    outcome=f"suppressed_{reason}",
+                    note=note,
+                    now=current,
+                )
+            except Exception:
+                pass
+            suppressed_counts[reason] = suppressed_counts.get(reason, 0) + 1
+            _log_ledger_event(
+                governor,
+                "NOTIFICATION_DELIVERY_SUPPRESSED",
+                {
+                    "schedule_id": schedule_id,
+                    "kind": str(item.get("kind") or ""),
+                    "reason": reason,
+                },
+            )
+            continue
+
+        try:
+            store.record_delivery_outcome(
+                schedule_id,
+                outcome="delivered",
+                note="Notification surfaced in the scheduled-updates widget.",
+                now=current,
+                surfaced=True,
+            )
         except Exception:
             continue
         _log_ledger_event(
@@ -1127,9 +1318,53 @@ def _surface_due_notification_events(
             {
                 "schedule_id": schedule_id,
                 "kind": str(item.get("kind") or ""),
+                    "recurrence": str(item.get("recurrence") or ""),
+            },
+        )
+        _log_ledger_event(
+            governor,
+            "NOTIFICATION_DELIVERY_COMPLETED",
+            {
+                "schedule_id": schedule_id,
+                "kind": str(item.get("kind") or ""),
                 "recurrence": str(item.get("recurrence") or ""),
             },
         )
+        delivered_item = dict(item)
+        delivered_item["last_surface_at"] = current.isoformat()
+        delivered_item["last_delivery_outcome"] = "delivered"
+        visible_due_items.append(delivered_item)
+
+    refreshed = store.summarize(now=current)
+    refreshed["due_items"] = visible_due_items[:5]
+    refreshed["due_count"] = len(visible_due_items)
+    refreshed["suppressed_due_count"] = sum(suppressed_counts.values())
+    policy_summary = str(refreshed.get("policy_summary") or "").strip()
+    delivery_parts: list[str] = []
+    if suppressed_counts.get("quiet_hours"):
+        delivery_parts.append(
+            f"{suppressed_counts['quiet_hours']} due update{'s are' if suppressed_counts['quiet_hours'] != 1 else ' is'} held by quiet hours."
+        )
+    if suppressed_counts.get("rate_limit"):
+        delivery_parts.append(
+            f"{suppressed_counts['rate_limit']} due update{'s are' if suppressed_counts['rate_limit'] != 1 else ' is'} held by the rate limit."
+        )
+    if suppressed_counts.get("governor_policy"):
+        delivery_parts.append(
+            f"{suppressed_counts['governor_policy']} due update{'s are' if suppressed_counts['governor_policy'] != 1 else ' is'} waiting for governor policy clearance."
+        )
+    refreshed["delivery_note"] = " ".join(part for part in delivery_parts if part)
+    if refreshed.get("active_count"):
+        refreshed["summary"] = (
+            f"{len(visible_due_items)} surfaced due | "
+            f"{int(refreshed.get('suppressed_due_count') or 0)} held | "
+            f"{int(refreshed.get('upcoming_count') or 0)} upcoming"
+        )
+    else:
+        refreshed["summary"] = "No schedules yet. Create one explicitly when you want Nova to remind you."
+    refreshed["policy_summary"] = policy_summary
+    refreshed["inspectability_note"] = "Schedules are explicit, inspectable, cancellable, and policy-bound."
+    return refreshed
 
 
 async def send_notification_schedule_widget(
@@ -2645,8 +2880,8 @@ async def websocket_endpoint(ws: WebSocket):
 
             if lowered in SHOW_SCHEDULES_COMMANDS:
                 snapshot = notification_schedules.summarize()
-                _surface_due_notification_events(governor, notification_schedules, snapshot)
-                snapshot = notification_schedules.summarize()
+                if silent_widget_refresh:
+                    snapshot = _process_due_notification_delivery(governor, notification_schedules, snapshot)
                 _log_ledger_event(
                     governor,
                     "NOTIFICATION_SCHEDULE_VIEWED",
@@ -2661,6 +2896,110 @@ async def websocket_endpoint(ws: WebSocket):
                         _render_notification_schedule_message(snapshot),
                         tone_domain="system",
                     )
+                await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            if lowered in NOTIFICATION_SETTINGS_COMMANDS:
+                snapshot = notification_schedules.summarize()
+                _log_ledger_event(
+                    governor,
+                    "NOTIFICATION_SCHEDULE_VIEWED",
+                    {
+                        "active_count": int(snapshot.get("active_count") or 0),
+                        "due_count": int(snapshot.get("due_count") or 0),
+                    },
+                )
+                await send_chat_message(
+                    ws,
+                    _render_notification_settings_message(snapshot),
+                    tone_domain="system",
+                )
+                await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            set_quiet_hours_match = SET_QUIET_HOURS_RE.match(text)
+            if set_quiet_hours_match:
+                try:
+                    start_hour, start_minute = _parse_clock_time(set_quiet_hours_match.group("start"))
+                    end_hour, end_minute = _parse_clock_time(set_quiet_hours_match.group("end"))
+                except ValueError as exc:
+                    await send_chat_message(ws, str(exc), tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+                policy = notification_schedules.update_policy(
+                    quiet_hours_enabled=True,
+                    quiet_hours_start=f"{start_hour:02d}:{start_minute:02d}",
+                    quiet_hours_end=f"{end_hour:02d}:{end_minute:02d}",
+                )
+                snapshot = notification_schedules.summarize()
+                _log_ledger_event(
+                    governor,
+                    "NOTIFICATION_POLICY_UPDATED",
+                    {
+                        "quiet_hours_enabled": True,
+                        "quiet_hours_start": str(policy.get("quiet_hours_start") or ""),
+                        "quiet_hours_end": str(policy.get("quiet_hours_end") or ""),
+                        "max_deliveries_per_hour": int(policy.get("max_deliveries_per_hour") or 0),
+                    },
+                )
+                await send_chat_message(
+                    ws,
+                    (
+                        "Quiet hours updated.\n"
+                        f"Window: {_format_policy_clock_value(str(policy.get('quiet_hours_start') or ''))} to "
+                        f"{_format_policy_clock_value(str(policy.get('quiet_hours_end') or ''))}\n\n"
+                        f"{_render_notification_settings_message(snapshot)}"
+                    ),
+                    tone_domain="system",
+                )
+                await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            if CLEAR_QUIET_HOURS_RE.match(text):
+                policy = notification_schedules.update_policy(quiet_hours_enabled=False)
+                snapshot = notification_schedules.summarize()
+                _log_ledger_event(
+                    governor,
+                    "NOTIFICATION_POLICY_UPDATED",
+                    {
+                        "quiet_hours_enabled": False,
+                        "quiet_hours_start": str(policy.get("quiet_hours_start") or ""),
+                        "quiet_hours_end": str(policy.get("quiet_hours_end") or ""),
+                        "max_deliveries_per_hour": int(policy.get("max_deliveries_per_hour") or 0),
+                    },
+                )
+                await send_chat_message(
+                    ws,
+                    f"Quiet hours cleared.\n\n{_render_notification_settings_message(snapshot)}",
+                    tone_domain="system",
+                )
+                await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            set_rate_limit_match = SET_NOTIFICATION_RATE_LIMIT_RE.match(text)
+            if set_rate_limit_match:
+                rate_limit = max(1, min(int(set_rate_limit_match.group("count") or 1), 12))
+                policy = notification_schedules.update_policy(max_deliveries_per_hour=rate_limit)
+                snapshot = notification_schedules.summarize()
+                _log_ledger_event(
+                    governor,
+                    "NOTIFICATION_POLICY_UPDATED",
+                    {
+                        "quiet_hours_enabled": bool(policy.get("quiet_hours_enabled")),
+                        "quiet_hours_start": str(policy.get("quiet_hours_start") or ""),
+                        "quiet_hours_end": str(policy.get("quiet_hours_end") or ""),
+                        "max_deliveries_per_hour": int(policy.get("max_deliveries_per_hour") or 0),
+                    },
+                )
+                await send_chat_message(
+                    ws,
+                    f"Notification rate limit updated to {rate_limit} per hour.\n\n{_render_notification_settings_message(snapshot)}",
+                    tone_domain="system",
+                )
                 await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
                 await send_chat_done(ws)
                 continue
@@ -2751,6 +3090,48 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
+            reschedule_schedule_match = RESCHEDULE_SCHEDULE_RE.match(text)
+            if reschedule_schedule_match:
+                schedule_id = str(reschedule_schedule_match.group("schedule_id") or "").strip().upper()
+                existing = notification_schedules.get_schedule(schedule_id)
+                if existing is None:
+                    await send_chat_message(ws, "I could not find that schedule ID yet.", tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+                recurrence = str(existing.get("recurrence") or "once").strip().lower() or "once"
+                try:
+                    scheduled_for = _parse_schedule_datetime(
+                        reschedule_schedule_match.group("time"),
+                        recurrence=recurrence,
+                    )
+                except ValueError as exc:
+                    await send_chat_message(ws, str(exc), tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+                item = notification_schedules.reschedule_schedule(schedule_id, next_run_at=scheduled_for)
+                snapshot = notification_schedules.summarize()
+                _log_ledger_event(
+                    governor,
+                    "NOTIFICATION_SCHEDULE_UPDATED",
+                    {
+                        "schedule_id": schedule_id,
+                        "kind": str(item.get("kind") or ""),
+                        "recurrence": str(item.get("recurrence") or ""),
+                    },
+                )
+                await send_chat_message(
+                    ws,
+                    (
+                        f"Schedule updated: {schedule_id}\n"
+                        f"Next run: {_format_local_schedule_time(scheduled_for)}\n\n"
+                        f"{str(snapshot.get('summary') or '').strip()}"
+                    ),
+                    tone_domain="system",
+                )
+                await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
             cancel_schedule_match = CANCEL_SCHEDULE_RE.match(text)
             if cancel_schedule_match:
                 schedule_id = str(cancel_schedule_match.group("schedule_id") or "").strip().upper()
@@ -2790,6 +3171,16 @@ async def websocket_endpoint(ws: WebSocket):
                     "NOTIFICATION_SCHEDULE_DISMISSED",
                     {"schedule_id": schedule_id, "kind": str(item.get("kind") or "")},
                 )
+                if bool(item.get("active")):
+                    _log_ledger_event(
+                        governor,
+                        "NOTIFICATION_SCHEDULE_UPDATED",
+                        {
+                            "schedule_id": schedule_id,
+                            "kind": str(item.get("kind") or ""),
+                            "recurrence": str(item.get("recurrence") or ""),
+                        },
+                    )
                 await send_chat_message(
                     ws,
                     f"Schedule dismissed: {schedule_id}\n\n{str(snapshot.get('summary') or '').strip()}",

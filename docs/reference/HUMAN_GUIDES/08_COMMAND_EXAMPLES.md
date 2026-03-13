@@ -233,10 +233,15 @@ Use these when you want Nova to keep a calm, explicit daily rhythm.
 Examples:
 - `show schedules`
 - `notification status`
+- `notification settings`
 - `schedule daily brief at 8:00 am`
 - `schedule daily brief at 7:30 am`
 - `remind me at 2:00 pm to review deployment issue`
 - `remind me daily at 9:00 am to review project threads`
+- `reschedule schedule SCH-123 to 3:00 pm`
+- `set quiet hours from 10:00 pm to 7:00 am`
+- `clear quiet hours`
+- `set notification rate limit 2 per hour`
 - `cancel schedule SCH-123`
 - `dismiss schedule SCH-123`
 
@@ -244,6 +249,7 @@ Important note:
 - schedules are created only when you ask
 - scheduled items surface quietly
 - scheduled items do not auto-run actions for you
+- quiet hours and rate limits are explicit settings you control
 
 ## 13. Pattern Review
 
@@ -296,6 +302,8 @@ If you want the smoothest experience:
 - `show schedules`
 - `schedule daily brief at 8:00 am`
 - `remind me daily at 9:00 am to review project threads`
+- `set quiet hours from 10:00 pm to 7:00 am`
+- `set notification rate limit 2 per hour`
 - `notification status`
 
 ### Pattern review flow

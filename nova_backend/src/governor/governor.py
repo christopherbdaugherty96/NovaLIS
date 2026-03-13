@@ -193,6 +193,19 @@ class Governor:
             self._execute_boundary.exit_execution()
             self._queue.clear()
 
+    def allow_notification_delivery(self, metadata: Dict[str, Any]) -> tuple[bool, str]:
+        schedule_id = str((metadata or {}).get("schedule_id") or "").strip()
+        kind = str((metadata or {}).get("kind") or "").strip()
+        title = str((metadata or {}).get("title") or "").strip()
+
+        if not schedule_id or not kind or not title:
+            return False, "invalid_notification_metadata"
+        if self._queue.has_pending():
+            return False, "action_pending"
+        if not self._execute_boundary.allow_execution():
+            return False, "execution_boundary_closed"
+        return True, "allowed"
+
     def _dispatch_capability(self, req: ActionRequest) -> ActionResult:
         if req.capability_id == 16:
             from src.executors.web_search_executor import WebSearchExecutor
