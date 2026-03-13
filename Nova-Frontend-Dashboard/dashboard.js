@@ -53,6 +53,7 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "chat_thread_status", label: "Project status", command: "project status this" },
     { id: "chat_most_blocked", label: "Most blocked", command: "which project is most blocked right now" },
     { id: "chat_thread_memory", label: "Thread memory", command: "memory list thread this" },
+    { id: "chat_memory_overview", label: "Memory overview", command: "memory overview" },
     { id: "chat_doc_create", label: "New analysis doc", command: "create analysis report on global technology policy updates" },
     { id: "chat_doc_list", label: "List analysis docs", command: "list analysis docs" },
   ],
@@ -72,6 +73,7 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "home_threads", label: "Show threads", command: "show threads", switchToPage: "chat" },
     { id: "home_thread_status", label: "Project status", command: "project status this", switchToPage: "chat" },
     { id: "home_most_blocked", label: "Most blocked", command: "which project is most blocked right now", switchToPage: "chat" },
+    { id: "home_memory_overview", label: "Memory overview", command: "memory overview", switchToPage: "chat" },
   ],
 };
 
@@ -88,6 +90,7 @@ const COMMAND_SUGGESTIONS = [
   "which project is most blocked right now",
   "memory save thread deployment issue",
   "memory list thread deployment issue",
+  "memory overview",
   "memory save decision for deployment issue: verify PYTHONPATH in container",
   "why this recommendation",
   "which one should I download",
@@ -118,6 +121,7 @@ const HELP_EXAMPLES = [
   "which project is most blocked right now",
   "memory save thread deployment issue",
   "memory list thread deployment issue",
+  "memory overview",
   "memory save decision for deployment issue: verify PYTHONPATH in container",
   "why this recommendation",
   "which one should I download",
@@ -141,7 +145,7 @@ const COMMAND_DISCOVERY_GROUPS = [
   { label: "Context", commands: ["explain this", "help me do this", "which one should i download"] },
   { label: "Continuity", commands: ["show threads", "save this as part of deployment issue", "continue my deployment issue"] },
   { label: "Thread insight", commands: ["project status deployment issue", "biggest blocker in deployment issue", "thread detail deployment issue"] },
-  { label: "Thread memory", commands: ["memory save thread deployment issue", "memory list thread deployment issue", "memory save decision for deployment issue: verify PYTHONPATH"] },
+  { label: "Thread memory", commands: ["memory overview", "memory save thread deployment issue", "memory list thread deployment issue"] },
   { label: "System", commands: ["system status", "open documents", "volume up"] },
 ];
 const LONG_MESSAGE_CHAR_LIMIT = 280;
@@ -585,6 +589,123 @@ function renderThreadDetailWidget(data = {}) {
   }
 
   panel.hidden = false;
+}
+
+function renderMemoryOverviewWidget(data = {}) {
+  const summary = $("memory-overview-summary");
+  const tierRow = $("memory-overview-tier-row");
+  const linkedHost = $("memory-overview-linked");
+  const recentHost = $("memory-overview-recent");
+  const note = $("memory-overview-note");
+  if (!summary || !tierRow || !linkedHost || !recentHost || !note) return;
+
+  const total = Number((data && data.total_count) || 0);
+  const tiers = (data && typeof data.tier_counts === "object" && data.tier_counts) ? data.tier_counts : {};
+  const linkedThreads = Array.isArray(data && data.linked_threads) ? data.linked_threads : [];
+  const recentItems = Array.isArray(data && data.recent_items) ? data.recent_items : [];
+  const summaryText = String((data && data.summary) || "").trim();
+  const inspectabilityNote = String((data && data.inspectability_note) || "").trim();
+
+  summary.textContent = summaryText || "No durable memory saved yet. Ask Nova for \"memory overview\" to inspect it.";
+  note.textContent = inspectabilityNote || "Memory is explicit, inspectable, and revocable.";
+
+  clear(tierRow);
+  const tierEntries = [
+    { label: "Active", value: Number(tiers.active || 0) },
+    { label: "Locked", value: Number(tiers.locked || 0) },
+    { label: "Deferred", value: Number(tiers.deferred || 0) },
+  ];
+  tierEntries.forEach((entry) => {
+    const chip = document.createElement("div");
+    chip.className = "memory-overview-tier";
+    chip.textContent = `${entry.label}: ${Number.isFinite(entry.value) ? entry.value : 0}`;
+    tierRow.appendChild(chip);
+  });
+
+  clear(linkedHost);
+  const linkedLabel = document.createElement("div");
+  linkedLabel.className = "memory-overview-label";
+  linkedLabel.textContent = "Linked threads";
+  linkedHost.appendChild(linkedLabel);
+  if (!linkedThreads.length) {
+    const empty = document.createElement("div");
+    empty.className = "memory-overview-empty";
+    empty.textContent = total > 0
+      ? "No thread-linked memory items yet."
+      : "Thread-linked memory will appear here after you save project memory.";
+    linkedHost.appendChild(empty);
+  } else {
+    const list = document.createElement("div");
+    list.className = "memory-overview-list";
+    linkedThreads.slice(0, 4).forEach((thread) => {
+      const name = String((thread && thread.thread_name) || "").trim();
+      const count = Number((thread && thread.memory_count) || 0);
+      const latestTitle = String((thread && thread.latest_title) || "").trim();
+      const updatedAt = formatThreadTimestamp(thread && thread.last_memory_updated_at);
+      if (!name) return;
+      const row = document.createElement("div");
+      row.className = "memory-overview-row";
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = `${name} (${count})`;
+      btn.addEventListener("click", () => injectUserText(`memory list thread ${name}`, "text"));
+      row.appendChild(btn);
+
+      const meta = document.createElement("span");
+      meta.className = "memory-overview-meta";
+      let metaText = latestTitle ? `Latest: ${latestTitle}` : "No recent title available.";
+      if (updatedAt) metaText += ` · ${updatedAt}`;
+      meta.textContent = metaText;
+      row.appendChild(meta);
+
+      list.appendChild(row);
+    });
+    linkedHost.appendChild(list);
+  }
+
+  clear(recentHost);
+  const recentLabel = document.createElement("div");
+  recentLabel.className = "memory-overview-label";
+  recentLabel.textContent = "Recent memory";
+  recentHost.appendChild(recentLabel);
+  if (!recentItems.length) {
+    const empty = document.createElement("div");
+    empty.className = "memory-overview-empty";
+    empty.textContent = "No recent memory items yet.";
+    recentHost.appendChild(empty);
+  } else {
+    const list = document.createElement("div");
+    list.className = "memory-overview-list";
+    recentItems.slice(0, 5).forEach((item) => {
+      const id = String((item && item.id) || "").trim();
+      const title = String((item && item.title) || "").trim() || id;
+      const tier = String((item && item.tier) || "").trim().toLowerCase() || "active";
+      const threadName = String((item && item.thread_name) || "").trim();
+      const updatedAt = formatThreadTimestamp(item && item.updated_at);
+      if (!id) return;
+
+      const row = document.createElement("div");
+      row.className = "memory-overview-row";
+
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.textContent = title;
+      btn.addEventListener("click", () => injectUserText(`memory show ${id}`, "text"));
+      row.appendChild(btn);
+
+      const meta = document.createElement("span");
+      meta.className = "memory-overview-meta";
+      let metaText = `${tier}`;
+      if (threadName) metaText += ` · ${threadName}`;
+      if (updatedAt) metaText += ` · ${updatedAt}`;
+      meta.textContent = metaText;
+      row.appendChild(meta);
+
+      list.appendChild(row);
+    });
+    recentHost.appendChild(list);
+  }
 }
 
 function formatSystemSummary(data, summary = "") {
@@ -2182,6 +2303,7 @@ function hydrateDashboardWidgets() {
   safeWSSend({ text: "news", silent_widget_refresh: true });
   safeWSSend({ text: "system status", silent_widget_refresh: true });
   safeWSSend({ text: "calendar", silent_widget_refresh: true });
+  safeWSSend({ text: "memory overview", silent_widget_refresh: true });
 }
 
 function startWidgetAutoRefresh() {
@@ -2243,6 +2365,9 @@ function connectWebSocket() {
         break;
       case "thread_detail":
         renderThreadDetailWidget(msg);
+        break;
+      case "memory_overview":
+        renderMemoryOverviewWidget(msg);
         break;
       case "chat":
         appendChatMessage(
@@ -2755,6 +2880,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderMorningPanel();
   renderContextInsight("");
   renderThreadMapWidget({});
+  renderMemoryOverviewWidget({});
   renderTrustPanel();
   renderQuickActions();
   setupHintsPanelToggle();
@@ -2804,6 +2930,16 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const homeThreadsBtn = $("btn-home-threads");
   if (homeThreadsBtn) homeThreadsBtn.addEventListener("click", () => injectUserText("show threads", "text"));
+
+  const homeMemoryOverviewBtn = $("btn-home-memory-overview");
+  if (homeMemoryOverviewBtn) {
+    homeMemoryOverviewBtn.addEventListener("click", () => injectUserText("memory overview", "text"));
+  }
+
+  const homeMemoryListBtn = $("btn-home-memory-list");
+  if (homeMemoryListBtn) {
+    homeMemoryListBtn.addEventListener("click", () => injectUserText("memory list", "text"));
+  }
 
   const micBtn = $("ptt-btn");
   if (micBtn) {

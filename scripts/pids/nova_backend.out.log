@@ -1,0 +1,22 @@
+INFO:     127.0.0.1:64122 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60383 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54648 - "GET /static/dashboard.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53947 - "GET /static/style.phase1.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60383 - "GET /static/orb.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64770 - "GET /favicon.ico HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:49375 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49690 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53773 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53777 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59409 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51556 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60445 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60446 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52149 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52152 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64626 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64634 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60082 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60086 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64135 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64163 - "GET /phase-status HTTP/1.1" 200 OK

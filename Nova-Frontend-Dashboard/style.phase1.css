@@ -331,6 +331,12 @@ body {
   gap: 8px;
 }
 
+.page-home .memory-overview-widget {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 8px;
+}
+
 .morning-widget {
   padding: 10px 12px;
   display: grid;
@@ -1179,6 +1185,104 @@ body {
 }
 
 .thread-map-actions button:hover {
+  border-color: rgba(132, 188, 255, 0.62);
+  background: rgba(16, 39, 69, 0.9);
+}
+
+.memory-overview-tier-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.memory-overview-tier {
+  border: 1px solid rgba(133, 193, 255, 0.28);
+  background: rgba(18, 42, 71, 0.55);
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 0.69rem;
+  font-weight: 700;
+  color: #d5e8ff;
+}
+
+.memory-overview-section {
+  display: grid;
+  gap: 6px;
+}
+
+.memory-overview-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #d7e9ff;
+}
+
+.memory-overview-list {
+  display: grid;
+  gap: 6px;
+}
+
+.memory-overview-row {
+  display: grid;
+  gap: 5px;
+  padding: 7px 8px;
+  border: 1px solid rgba(168, 201, 242, 0.18);
+  border-radius: 10px;
+  background: rgba(14, 31, 56, 0.42);
+}
+
+.memory-overview-row button {
+  justify-self: start;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(170, 203, 248, 0.35);
+  background: rgba(14, 33, 59, 0.75);
+  color: #d9e9ff;
+  font-size: 0.69rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.memory-overview-row button:hover {
+  border-color: rgba(132, 188, 255, 0.62);
+  background: rgba(16, 39, 69, 0.9);
+}
+
+.memory-overview-meta,
+.memory-overview-empty,
+.memory-overview-note {
+  font-size: 0.73rem;
+  line-height: 1.35;
+  color: #c6dcfb;
+}
+
+.memory-overview-empty {
+  color: #aecdff;
+}
+
+.memory-overview-note {
+  margin: 0;
+  color: #a9c7ea;
+}
+
+.memory-overview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.memory-overview-actions button {
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(170, 203, 248, 0.35);
+  background: rgba(14, 33, 59, 0.75);
+  color: #d9e9ff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.memory-overview-actions button:hover {
   border-color: rgba(132, 188, 255, 0.62);
   background: rgba(16, 39, 69, 0.9);
 }

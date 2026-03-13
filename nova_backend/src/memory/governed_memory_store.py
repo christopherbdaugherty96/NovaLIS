@@ -230,6 +230,81 @@ class GovernedMemoryStore:
 
         return insights
 
+    def summarize_overview(self, *, recent_limit: int = 5, thread_limit: int = 5) -> dict[str, Any]:
+        with self._lock:
+            state = self._read_state()
+            items = [item for item in list(state.get("items") or []) if not bool(item.get("deleted"))]
+
+        ordered = sorted(items, key=lambda row: str(row.get("updated_at") or ""), reverse=True)
+        tier_counts = {"active": 0, "locked": 0, "deferred": 0}
+        scope_counts = {"project": 0, "ops": 0, "nova_core": 0}
+        linked_threads: dict[str, dict[str, Any]] = {}
+
+        for item in ordered:
+            tier = str(item.get("tier") or "").strip().lower()
+            if tier in tier_counts:
+                tier_counts[tier] += 1
+
+            scope = str(item.get("scope") or "").strip().lower()
+            if scope in scope_counts:
+                scope_counts[scope] += 1
+
+            links = dict(item.get("links") or {})
+            thread_key = _normalize_thread_key(links.get("project_thread_key"))
+            if not thread_key:
+                continue
+
+            entry = linked_threads.setdefault(
+                thread_key,
+                {
+                    "thread_key": thread_key,
+                    "thread_name": _clean_text(links.get("project_thread_name"), limit=120).strip(),
+                    "memory_count": 0,
+                    "last_memory_updated_at": "",
+                    "latest_title": "",
+                    "latest_tier": "",
+                },
+            )
+            entry["memory_count"] = int(entry.get("memory_count") or 0) + 1
+
+            updated_at = str(item.get("updated_at") or "")
+            if updated_at > str(entry.get("last_memory_updated_at") or ""):
+                entry["last_memory_updated_at"] = updated_at
+                entry["latest_title"] = str(item.get("title") or "").strip()
+                entry["latest_tier"] = str(item.get("tier") or "").strip().lower()
+
+        safe_recent_limit = max(1, min(int(recent_limit or 5), 10))
+        safe_thread_limit = max(1, min(int(thread_limit or 5), 10))
+
+        recent_items = [
+            {
+                "id": str(item.get("id") or ""),
+                "title": str(item.get("title") or ""),
+                "tier": str(item.get("tier") or ""),
+                "scope": str(item.get("scope") or ""),
+                "updated_at": str(item.get("updated_at") or ""),
+                "thread_name": str(dict(item.get("links") or {}).get("project_thread_name") or ""),
+            }
+            for item in ordered[:safe_recent_limit]
+        ]
+
+        top_threads = sorted(
+            linked_threads.values(),
+            key=lambda row: (
+                int(row.get("memory_count") or 0),
+                str(row.get("last_memory_updated_at") or ""),
+            ),
+            reverse=True,
+        )[:safe_thread_limit]
+
+        return {
+            "total_count": len(ordered),
+            "tier_counts": tier_counts,
+            "scope_counts": scope_counts,
+            "recent_items": recent_items,
+            "linked_threads": top_threads,
+        }
+
     def _matches_thread_link(
         self,
         item: dict[str, Any],

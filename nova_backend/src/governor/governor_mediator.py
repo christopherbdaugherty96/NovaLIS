@@ -287,6 +287,10 @@ MEMORY_LIST_THREAD_RE = re.compile(
     r"^\s*memory\s+list\s+thread\s+(?P<thread_name>.+?)\s*$",
     re.IGNORECASE,
 )
+MEMORY_OVERVIEW_RE = re.compile(
+    r"^\s*memory\s+(?:overview|status|review)\s*$",
+    re.IGNORECASE,
+)
 MEMORY_LIST_RE = re.compile(
     r"^\s*memory\s+list(?:\s+(?P<tier>locked|active|deferred))?\s*$",
     re.IGNORECASE,
@@ -884,6 +888,9 @@ class GovernorMediator:
                 },
             )
 
+        if MEMORY_OVERVIEW_RE.match(t):
+            return _invocation_if_enabled(61, {"action": "overview"})
+
         m = MEMORY_SAVE_RE.match(t)
         if m:
             return _invocation_if_enabled(
@@ -1031,7 +1038,7 @@ class GovernorMediator:
                 "track": (52, "What topic should I track?"),
                 "memory": (
                     61,
-                    "Try 'memory save <title>: <content>', 'memory save thread <name>', or 'memory save decision for <thread>: <text>'.",
+                    "Try 'memory overview', 'memory save <title>: <content>', 'memory save thread <name>', or 'memory save decision for <thread>: <text>'.",
                 ),
             }
             cap_id, message = prompts.get(verb, (16, "Could you clarify that request?"))
