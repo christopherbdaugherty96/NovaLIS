@@ -56,6 +56,7 @@ def test_explain_anything_requires_invocation_source():
     result = executor.execute(_request({}))
     assert result.success is False
     assert "invocation source" in result.message.lower()
+    assert "explain this" in result.message.lower()
     event_names = [name for name, _ in ledger.events]
     assert "EXPLAIN_ANYTHING_REQUESTED" in event_names
     assert "EXPLAIN_ANYTHING_COMPLETED" in event_names
@@ -103,6 +104,7 @@ def test_explain_anything_file_route_summarizes_module_not_found(tmp_path):
     assert result.success is True
     assert "pip install requests" in result.message
     assert result.data["widget"]["type"] == "file_explanation"
+    assert result.data["widget"]["data"]["follow_up_prompts"]
     completion = [payload for name, payload in ledger.events if name == "EXPLAIN_ANYTHING_COMPLETED"][-1]
     assert completion.get("success") is True
     assert completion.get("route") == "file"

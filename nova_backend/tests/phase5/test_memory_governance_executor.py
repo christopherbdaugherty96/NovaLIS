@@ -36,6 +36,8 @@ def test_memory_save_list_show_lock_defer_roundtrip(tmp_path: Path):
     item = dict(save_result.data or {}).get("memory_item") or {}
     item_id = str(item.get("id") or "")
     assert item_id.startswith("MEM-")
+    assert "memory show" in save_result.message.lower()
+    assert dict(save_result.data or {}).get("follow_up_prompts")
 
     list_result = executor.execute(
         ActionRequest(capability_id=61, params={"action": "list", "tier": "active"})
@@ -161,6 +163,7 @@ def test_memory_items_support_thread_link_and_filter(tmp_path: Path):
     )
     assert show_result.success is True
     assert "Thread: Deployment Issue" in show_result.message
+    assert "Tags:" in show_result.message
 
 
 def test_thread_bridge_actions_require_orchestration_context(tmp_path: Path):

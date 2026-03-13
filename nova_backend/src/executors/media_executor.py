@@ -11,18 +11,32 @@ class MediaExecutor:
     def execute(self, request) -> ActionResult:
         action = (request.params or {}).get("action", "").strip().lower()
         if action not in {"play", "pause", "resume"}:
-            return ActionResult.failure("Invalid media command.", request_id=request.request_id)
+            return ActionResult.failure(
+                "Invalid media command. Try: play, pause, or resume.",
+                request_id=request.request_id,
+            )
 
         applied = self.system_control.control_media(action)
+        if not applied:
+            return ActionResult.failure(
+                f"I couldn't {action} media playback on this device right now.",
+                data={"action": action},
+                request_id=request.request_id,
+                authority_class="local_effect",
+                external_effect=True,
+                reversible=True,
+            )
+
         if action == "play":
-            msg = "Playback started." if applied else "Playback start requested."
+            msg = "Playback started."
         elif action == "pause":
-            msg = "Playback paused." if applied else "Playback pause requested."
+            msg = "Playback paused."
         else:
-            msg = "Playback resumed." if applied else "Playback resume requested."
+            msg = "Playback resumed."
 
         return ActionResult.ok(
             message=msg,
+            data={"action": action},
             request_id=request.request_id,
             authority_class="local_effect",
             external_effect=True,

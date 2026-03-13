@@ -22,6 +22,8 @@ def test_execute_tts_success_with_mocked_engine(monkeypatch):
     assert result.success is True
     assert calls == ["Hello"]
     assert result.message == "I read that aloud."
+    assert result.data["spoken_text"] == "Hello"
+    assert result.data["character_count"] == 5
 
 
 def test_execute_tts_returns_failure_when_engine_raises(monkeypatch):

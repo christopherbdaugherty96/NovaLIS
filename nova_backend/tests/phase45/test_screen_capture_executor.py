@@ -63,6 +63,8 @@ def test_screen_capture_executor_logs_requested_and_completed_on_success():
     assert result.success is True
     assert isinstance(result.data, dict)
     assert result.data.get("capture", {}).get("image_path") == "C:/tmp/capture.png"
+    assert "Active context: Python Downloads." in result.message
+    assert result.data["widget"]["data"]["follow_up_prompts"]
 
     event_names = [name for name, _ in ledger.events]
     assert "SCREEN_CAPTURE_REQUESTED" in event_names

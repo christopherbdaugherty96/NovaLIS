@@ -55,7 +55,7 @@ class ExplainAnythingExecutor:
         )
         if invocation_source not in self.ALLOWED_INVOCATION_SOURCES:
             result = ActionResult.failure(
-                "Explain mode requires explicit invocation source (voice, ui, or text).",
+                "Explain mode requires explicit invocation source (voice, ui, or text). Try: explain this, what is this, or summarize this page.",
                 request_id=request.request_id,
                 authority_class="read_only",
                 external_effect=False,
@@ -113,7 +113,7 @@ class ExplainAnythingExecutor:
             return result
 
         result = ActionResult.failure(
-            self.router.clarification_message(),
+            f"{self.router.clarification_message()}\nTry selecting a file, pointing at the screen region, or opening the page you want explained.",
             data={"context_snapshot": context_snapshot},
             request_id=request.request_id,
             authority_class="read_only",
@@ -144,7 +144,7 @@ class ExplainAnythingExecutor:
 
         if not self.router.is_supported_file(str(path)):
             return ActionResult.failure(
-                "That file type is not supported yet. Try a text-based file.",
+                "That file type is not supported yet. Try a text-based file, or use screen analysis if the file is already open on screen.",
                 data={"context_snapshot": context_snapshot, "file_path": str(path)},
                 request_id=request.request_id,
                 authority_class="read_only",
@@ -171,7 +171,14 @@ class ExplainAnythingExecutor:
         summary = self._summarize_file_content(content)
         if was_truncated:
             summary = f"{summary} (I summarized the first {self.MAX_FILE_CHARS} characters.)"
-        message = f"File explanation for {path.name}\n\n{summary}"
+        message = (
+            f"File explanation for {path.name}\n\n"
+            f"{summary}\n\n"
+            "Try next:\n"
+            f"- summarize {path.name}\n"
+            "- explain this file in more detail\n"
+            "- analyze this screen"
+        )
         working_context_delta = {
             "task_type": "document_review" if path.suffix.lower() in {".txt", ".md", ".pdf", ".log"} else "code_analysis",
             "selected_file": str(path),
@@ -189,7 +196,15 @@ class ExplainAnythingExecutor:
                 },
                 "widget": {
                     "type": "file_explanation",
-                    "data": {"file_path": str(path), "summary": summary},
+                    "data": {
+                        "file_path": str(path),
+                        "summary": summary,
+                        "follow_up_prompts": [
+                            f"summarize {path.name}",
+                            "explain this file in more detail",
+                            "analyze this screen",
+                        ],
+                    },
                 },
                 "working_context_delta": working_context_delta,
             },

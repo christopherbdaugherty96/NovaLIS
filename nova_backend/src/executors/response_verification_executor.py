@@ -45,6 +45,8 @@ class ResponseVerificationExecutor:
 
         confidence_label, confidence_score = self._derive_confidence(clean)
         verification_recommended = confidence_score < 0.75
+        issue_count = self._count_bullets(clean, "Potential Issues")
+        correction_count = self._count_bullets(clean, "Suggested Corrections")
         recommendation_line = (
             "Recommendation: Verification is recommended before relying on this claim."
             if verification_recommended
@@ -53,8 +55,14 @@ class ResponseVerificationExecutor:
         message = (
             "Verification Report\n"
             f"Verification Confidence: {confidence_label} ({confidence_score:.2f})\n"
+            f"Potential issues found: {issue_count}\n"
+            f"Suggested corrections: {correction_count}\n"
             f"{recommendation_line}\n\n"
-            f"{clean}"
+            f"{clean}\n\n"
+            "Try next:\n"
+            "- verify a revised version\n"
+            "- summarize the issues only\n"
+            "- show me the safest corrected version"
         )
         return ActionResult.ok(
             message=message,
@@ -63,6 +71,13 @@ class ResponseVerificationExecutor:
                 "verification_confidence_label": confidence_label,
                 "verification_confidence_score": confidence_score,
                 "verification_recommended": verification_recommended,
+                "issue_count": issue_count,
+                "correction_count": correction_count,
+                "follow_up_prompts": [
+                    "verify a revised version",
+                    "summarize the issues only",
+                    "show me the safest corrected version",
+                ],
             },
             request_id=request.request_id,
             authority_class="read_only",
@@ -84,3 +99,16 @@ class ResponseVerificationExecutor:
         if normalized == "low":
             return "Low", 0.4
         return "Medium", 0.65
+
+    @staticmethod
+    def _count_bullets(report_text: str, section_name: str) -> int:
+        text = str(report_text or "")
+        match = re.search(
+            rf"{re.escape(section_name)}\s*:\s*(.+?)(?:\n[A-Z][A-Za-z ]+:\s*|\Z)",
+            text,
+            flags=re.IGNORECASE | re.DOTALL,
+        )
+        if not match:
+            return 0
+        block = match.group(1)
+        return len([line for line in block.splitlines() if line.strip().startswith("-")])

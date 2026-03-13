@@ -138,10 +138,24 @@ class MemoryGovernanceExecutor:
         thread_note = ""
         if str(links.get("project_thread_name") or "").strip():
             thread_note = f" [thread: {str(links.get('project_thread_name'))}]"
-        message = f"Memory saved: {item['id']} ({item['title']}){thread_note}"
+        message = (
+            f"Memory saved: {item['id']} ({item['title']}){thread_note}\n"
+            f"Tier: {item['tier']} | Scope: {item['scope']}\n\n"
+            f"Try next:\n"
+            f"- memory show {item['id']}\n"
+            f"- memory list\n"
+            f"- memory lock {item['id']}"
+        )
         return ActionResult.ok(
             message=message,
-            data={"memory_item": item},
+            data={
+                "memory_item": item,
+                "follow_up_prompts": [
+                    f"memory show {item['id']}",
+                    "memory list",
+                    f"memory lock {item['id']}",
+                ],
+            },
             request_id=request.request_id,
             authority_class="persistent_change",
             external_effect=False,
@@ -178,19 +192,25 @@ class MemoryGovernanceExecutor:
                 external_effect=False,
                 reversible=True,
             )
-        lines = ["Memory Items"]
+        lines = [f"Memory Items ({len(items)})"]
         for item in items:
             links = dict(item.get("links") or {})
             thread_segment = ""
             thread_name_value = str(links.get("project_thread_name") or "").strip()
             if thread_name_value:
                 thread_segment = f" | thread:{thread_name_value}"
-            lines.append(
-                f"- {item.get('id')} | {item.get('tier')} | {item.get('title')}{thread_segment}"
-            )
+            lines.append(f"- {item.get('id')} | {item.get('tier')} | {item.get('title')}{thread_segment}")
+        lines.extend(["", "Try next: memory show <id>, memory lock <id>, or memory defer <id>."])
         return ActionResult.ok(
             message="\n".join(lines),
-            data={"memory_items": items},
+            data={
+                "memory_items": items,
+                "follow_up_prompts": [
+                    "memory show <id>",
+                    "memory lock <id>",
+                    "memory defer <id>",
+                ],
+            },
             request_id=request.request_id,
             authority_class="read_only",
             external_effect=False,
@@ -208,11 +228,14 @@ class MemoryGovernanceExecutor:
         links = dict(item.get("links") or {})
         thread_name = str(links.get("project_thread_name") or "").strip()
         thread_line = f"Thread: {thread_name}\n" if thread_name else ""
+        tags = ", ".join(str(tag).strip() for tag in list(item.get("tags") or []) if str(tag).strip())
+        tags_line = f"Tags: {tags}\n" if tags else ""
         message = (
             f"{item['id']} ({item['tier']})\n"
             f"Title: {item['title']}\n"
             f"Scope: {item['scope']}\n\n"
             f"{thread_line}"
+            f"{tags_line}"
             f"{item['body']}"
         )
         return ActionResult.ok(
@@ -231,7 +254,7 @@ class MemoryGovernanceExecutor:
         item = store.lock_item(item_id)
         self._log("MEMORY_ITEM_LOCKED", {"item_id": item["id"]})
         return ActionResult.ok(
-            message=f"Memory locked: {item['id']}",
+            message=f"Memory locked: {item['id']}\nTry next: memory show {item['id']} or memory list.",
             data={"memory_item": item},
             request_id=request.request_id,
             authority_class="persistent_change",
@@ -246,7 +269,7 @@ class MemoryGovernanceExecutor:
         item = store.defer_item(item_id)
         self._log("MEMORY_ITEM_DEFERRED", {"item_id": item["id"]})
         return ActionResult.ok(
-            message=f"Memory deferred: {item['id']}",
+            message=f"Memory deferred: {item['id']}\nTry next: memory show {item['id']} or memory unlock {item['id']} confirm.",
             data={"memory_item": item},
             request_id=request.request_id,
             authority_class="persistent_change",
@@ -262,7 +285,7 @@ class MemoryGovernanceExecutor:
         item = store.unlock_item(item_id, confirmed=confirmed)
         self._log("MEMORY_ITEM_UNLOCKED", {"item_id": item["id"]})
         return ActionResult.ok(
-            message=f"Memory unlocked: {item['id']}",
+            message=f"Memory unlocked: {item['id']}\nTry next: memory show {item['id']} or memory lock {item['id']}.",
             data={"memory_item": item},
             request_id=request.request_id,
             authority_class="persistent_change",
@@ -278,7 +301,7 @@ class MemoryGovernanceExecutor:
         item = store.delete_item(item_id, confirmed=confirmed)
         self._log("MEMORY_ITEM_DELETED", {"item_id": item["id"]})
         return ActionResult.ok(
-            message=f"Memory deleted: {item['id']}",
+            message=f"Memory deleted: {item['id']}\nTry next: memory list",
             data={"memory_item": item},
             request_id=request.request_id,
             authority_class="persistent_change",
@@ -304,7 +327,10 @@ class MemoryGovernanceExecutor:
             {"item_id": replacement["id"], "supersedes": replacement.get("lock", {}).get("supersedes", [])},
         )
         return ActionResult.ok(
-            message=f"Memory superseded with new locked item: {replacement['id']}",
+            message=(
+                f"Memory superseded with new locked item: {replacement['id']}\n"
+                f"Try next:\n- memory show {replacement['id']}\n- memory list"
+            ),
             data={"memory_item": replacement},
             request_id=request.request_id,
             authority_class="persistent_change",

@@ -48,17 +48,17 @@ class ScreenAnalysisExecutor:
                 working_context=working_context if isinstance(working_context, dict) else None,
                 user_query=str(request_params.get("query") or ""),
             )
-            summary = str(analysis.get("summary") or "Screen analysis completed.").strip()
+            base_summary = str(analysis.get("summary") or "Screen analysis completed.").strip()
+            summary_lines = ["What I found", base_summary]
             next_steps = [str(item).strip() for item in list(analysis.get("next_steps") or []) if str(item).strip()]
+            if ocr_text.strip():
+                summary_lines.extend(["", "Readable text detected", self._preview_text(ocr_text)])
+            else:
+                summary_lines.extend(["", "Readable text detected", "No substantial OCR text was extracted from this capture."])
             if next_steps:
-                summary = "\n".join(
-                    [
-                        summary,
-                        "",
-                        "Suggested next steps:",
-                        *[f"- {item}" for item in next_steps[:4]],
-                    ]
-                )
+                summary_lines.extend(["", "Suggested next steps:"])
+                summary_lines.extend([f"- {item}" for item in next_steps[:4]])
+            summary = "\n".join(summary_lines)
             self._safe_log(
                 "SCREEN_ANALYSIS_COMPLETED",
                 {"request_id": request.request_id, "success": True, "image_path": image_path},
@@ -79,6 +79,7 @@ class ScreenAnalysisExecutor:
                     "ocr_text": ocr_text,
                     "capture": capture,
                     "next_steps": next_steps,
+                    "follow_up_prompts": next_steps[:4] or ["explain this", "what does this mean"],
                 },
             }
 
@@ -145,3 +146,10 @@ class ScreenAnalysisExecutor:
             delta["task_goal"] = query
             delta["recent_relevant_turns"] = [query]
         return delta
+
+    @staticmethod
+    def _preview_text(text: str, limit: int = 240) -> str:
+        compact = " ".join(str(text or "").split()).strip()
+        if len(compact) <= limit:
+            return compact
+        return compact[: limit - 3].rstrip() + "..."

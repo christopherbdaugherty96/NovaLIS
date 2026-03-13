@@ -34,7 +34,7 @@ def test_brightness_executor_uses_system_control_for_set(monkeypatch):
 
     assert result.success is True
     assert seen["level"] == 65
-    assert result.message == "Brightness set to 65."
+    assert result.message == "Set brightness to 65%."
 
 
 def test_volume_executor_supports_mute(monkeypatch):
@@ -52,6 +52,16 @@ def test_volume_executor_supports_mute(monkeypatch):
     assert result.success is True
     assert seen["action"] == "mute"
     assert result.message == "Audio muted."
+
+
+def test_media_executor_fails_when_system_control_cannot_apply(monkeypatch):
+    executor = MediaExecutor()
+    monkeypatch.setattr(executor.system_control, "control_media", lambda *_args, **_kwargs: False)
+
+    result = executor.execute(ActionRequest(capability_id=20, params={"action": "pause"}))
+
+    assert result.success is False
+    assert "couldn't pause" in result.message.lower()
 
 
 def test_volume_executor_fails_when_system_control_cannot_apply(monkeypatch):

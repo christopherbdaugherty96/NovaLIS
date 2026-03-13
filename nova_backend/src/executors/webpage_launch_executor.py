@@ -39,7 +39,7 @@ class WebpageLaunchExecutor:
                 f"Preview ready: {domain or url}\n"
                 f"URL: {url}\n"
                 "Risk: low\n"
-                "Use 'yes' to open now or 'no' to cancel."
+                "Reply 'yes' to open it now or 'no' to cancel."
             )
             return ActionResult.ok(
                 message=preview_text,
@@ -61,7 +61,11 @@ class WebpageLaunchExecutor:
                         "reason": plan.get("reason"),
                     },
                 )
-                return ActionResult.failure("Could not open the browser.", request_id=request.request_id)
+                return ActionResult.failure(
+                    "I couldn't open your default browser for that website.",
+                    data={"url": url, "domain": domain},
+                    request_id=request.request_id,
+                )
             self.ledger.log_event(
                 "WEBPAGE_LAUNCH",
                 {
@@ -74,12 +78,13 @@ class WebpageLaunchExecutor:
             )
             return ActionResult.ok(
                 message=(
-                    f"Opened {domain or url}.\n"
+                    f"Opened {domain or url} in your default browser.\n"
                     "Reason: user-invoked.\n"
-                    "Risk: low."
+                    "Risk: low.\n"
+                    f"URL: {url}"
                 ),
                 request_id=request.request_id,
-                data={"opened_domain": domain or url},
+                data={"opened_domain": domain or url, "url": url},
             )
         except Exception as error:
             self.ledger.log_event(
@@ -93,4 +98,8 @@ class WebpageLaunchExecutor:
                     "reason": plan.get("reason"),
                 },
             )
-            return ActionResult.failure("Could not open the browser.", request_id=request.request_id)
+            return ActionResult.failure(
+                "I couldn't open your default browser for that website.",
+                data={"url": url, "domain": domain},
+                request_id=request.request_id,
+            )

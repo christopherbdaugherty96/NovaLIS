@@ -4,7 +4,7 @@
 **Head Commit:** `7e9ccc5` -- `fix(stt): correct async ffmpeg subprocess with communicate() and error capture`
 **Canonical Authority:** Nova Constitutional Blueprint v1.9 / Nova Truth v3.0
 
-> [WARN] **This document was written on 2026-02-24 when only Cap 16 was live.** As of 2026-03-03, capabilities 17, 18, 19, 20, 21, and 32 were later wired into the governor pipeline. For current runtime truth, see `docs/current_runtime/CURRENT_RUNTIME_STATE.md`, `docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12.md`, and `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`. The content below reflects the state as of 2026-02-24 and is preserved for historical reference.
+> [WARN] **This document was written on 2026-02-24 when only Cap 16 was live.** The runtime has expanded substantially since then. For current runtime truth, use `docs/current_runtime/CURRENT_RUNTIME_STATE.md`, `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`, `docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12.md`, and `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`. The content below reflects the state as of 2026-02-24 and is preserved for historical reference.
 
 ---
 

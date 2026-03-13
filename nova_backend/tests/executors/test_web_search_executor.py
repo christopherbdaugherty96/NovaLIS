@@ -33,7 +33,7 @@ def test_empty_query_returns_failure_with_empty_widget(executor):
     result = executor.execute(request)
 
     assert not result.success
-    assert "No search query provided" in result.message
+    assert "what you want me to search for" in result.message
     widget_data = result.data["widget"]["data"]
     assert widget_data["results"] == []
     assert widget_data["query"] == ""
@@ -77,6 +77,7 @@ def test_successful_search_returns_results(executor, mock_network, sample_reques
     assert "Key Points" in result.message
     assert "Sources" in result.message
     assert "Confidence" in result.message
+    assert "Try next" in result.message
 
     widget = result.data.get("widget", {})
     assert widget["type"] == "search"
@@ -94,6 +95,7 @@ def test_successful_search_returns_results(executor, mock_network, sample_reques
     assert "researched_summary" in widget_data
     assert isinstance(widget_data["suggested_actions"], list)
     assert widget_data["suggested_actions"]
+    assert isinstance(widget_data["follow_up_prompts"], list)
 
 
 def test_no_results_returns_empty_widget(executor, mock_network, sample_request):
@@ -105,7 +107,7 @@ def test_no_results_returns_empty_widget(executor, mock_network, sample_request)
     result = executor.execute(sample_request)
 
     assert result.success
-    assert "No results" in result.message
+    assert "couldn't find solid results" in result.message.lower()
     widget_data = result.data["widget"]["data"]
     assert widget_data["results"] == []
     assert widget_data["query"] == "test query"
@@ -191,6 +193,7 @@ def test_missing_brave_api_key_uses_duck_fallback(
     widget_data = result.data["widget"]["data"]
     assert widget_data["provider"] == "DuckDuckGo Instant Answer"
     assert widget_data["result_count"] == 1
+    assert widget_data["follow_up_prompts"]
 
 
 def test_search_reads_source_pages_and_uses_researched_summary(executor, mock_network, sample_request, monkeypatch):
