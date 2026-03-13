@@ -9,6 +9,8 @@ Nova's active capability surface now covers five big areas:
 - continuity across ongoing work
 - governed memory and persistence
 - manual response-style control
+- user-directed scheduled updates and reminders
+- opt-in pattern review for ongoing work
 
 ## 1. Research and Information Work
 Nova can:
@@ -157,6 +159,56 @@ Examples:
 - `tone set research detailed`
 - `tone reset all`
 
+## 9. Scheduled Updates and Reminders
+Nova can now support calm, user-directed scheduling without turning into a background actor.
+
+It can:
+- create a daily brief schedule
+- create one-time reminders
+- create recurring daily reminders
+- show due and upcoming schedules
+- let the user cancel or dismiss schedule items
+- surface scheduled items quietly in the dashboard
+
+Examples:
+- `show schedules`
+- `notification status`
+- `schedule daily brief at 8:00 am`
+- `remind me at 2:00 pm to review deployment issue`
+- `remind me daily at 9:00 am to review project threads`
+- `cancel schedule sch_...`
+- `dismiss schedule sch_...`
+
+Important boundary:
+- schedules are created only when the user asks
+- scheduled items do not auto-run actions
+- delivery is meant to stay calm, visible, and cancellable
+
+## 10. Pattern Review
+Nova can now help you review repeated patterns across threads and durable memory, but only if you explicitly opt in first.
+
+It can:
+- let you opt in or opt out of pattern review
+- generate an advisory review queue on request
+- show repeated blocker themes
+- highlight blocked work that has no next step recorded
+- highlight durable context that may still need a saved decision
+- let you accept or dismiss proposals explicitly
+
+Examples:
+- `pattern opt in`
+- `pattern status`
+- `review patterns`
+- `review patterns for deployment issue`
+- `accept pattern PAT-...`
+- `dismiss pattern PAT-...`
+
+Important boundary:
+- pattern review is opt-in only
+- proposals are advisory only
+- no proposal is auto-applied
+- review does not run in the background
+
 ## Short Summary
 Today Nova can already:
 - research
@@ -167,6 +219,8 @@ Today Nova can already:
 - continue project work
 - preserve governed memory
 - expose manual response-style controls
+- support explicit scheduled updates and reminders
+- support opt-in pattern review for ongoing work
 - help with the current screen
 - help with the local computer in bounded ways
 

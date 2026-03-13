@@ -24,6 +24,14 @@ let toneState = {
   summary: "Global tone: balanced. No domain overrides.",
   snapshot: {},
 };
+let notificationState = {
+  summary: "No schedules yet. Create one explicitly when you want Nova to remind you.",
+  snapshot: {},
+};
+let patternReviewState = {
+  summary: "Pattern review is off. Opt in if you want Nova to look for repeated thread and memory patterns.",
+  snapshot: {},
+};
 let trustState = {
   mode: "Local-only",
   lastExternalCall: "None",
@@ -59,6 +67,8 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "chat_thread_memory", label: "Thread memory", command: "memory list thread this" },
     { id: "chat_memory_overview", label: "Memory overview", command: "memory overview" },
     { id: "chat_tone", label: "Tone settings", command: "tone status" },
+    { id: "chat_schedules", label: "Schedules", command: "show schedules" },
+    { id: "chat_patterns", label: "Pattern review", command: "pattern status" },
     { id: "chat_doc_create", label: "New analysis doc", command: "create analysis report on global technology policy updates" },
     { id: "chat_doc_list", label: "List analysis docs", command: "list analysis docs" },
   ],
@@ -80,6 +90,8 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "home_most_blocked", label: "Most blocked", command: "which project is most blocked right now", switchToPage: "chat" },
     { id: "home_memory_overview", label: "Memory overview", command: "memory overview", switchToPage: "chat" },
     { id: "home_tone", label: "Tone settings", command: "tone status", switchToPage: "chat" },
+    { id: "home_schedules", label: "Schedules", command: "show schedules", switchToPage: "chat" },
+    { id: "home_patterns", label: "Pattern review", command: "pattern status", switchToPage: "chat" },
   ],
 };
 
@@ -101,6 +113,14 @@ const COMMAND_SUGGESTIONS = [
   "tone set concise",
   "tone set research detailed",
   "tone reset all",
+  "show schedules",
+  "schedule daily brief at 8:00 am",
+  "remind me at 2:00 pm to review deployment issue",
+  "dismiss schedule SCH-0000-0000",
+  "pattern opt in",
+  "pattern status",
+  "review patterns",
+  "dismiss pattern PAT-0000-0000",
   "memory save decision for deployment issue: verify PYTHONPATH in container",
   "why this recommendation",
   "which one should I download",
@@ -136,6 +156,14 @@ const HELP_EXAMPLES = [
   "tone set concise",
   "tone set research detailed",
   "tone reset all",
+  "show schedules",
+  "schedule daily brief at 8:00 am",
+  "remind me daily at 9:00 am to review project threads",
+  "cancel schedule SCH-0000-0000",
+  "pattern opt in",
+  "pattern status",
+  "review patterns",
+  "dismiss pattern PAT-0000-0000",
   "memory save decision for deployment issue: verify PYTHONPATH in container",
   "why this recommendation",
   "which one should I download",
@@ -161,6 +189,8 @@ const COMMAND_DISCOVERY_GROUPS = [
   { label: "Thread insight", commands: ["project status deployment issue", "biggest blocker in deployment issue", "thread detail deployment issue"] },
   { label: "Thread memory", commands: ["memory overview", "memory save thread deployment issue", "memory list thread deployment issue"] },
   { label: "Response style", commands: ["tone status", "tone set concise", "tone set research detailed"] },
+  { label: "Schedules", commands: ["show schedules", "schedule daily brief at 8:00 am", "remind me at 2:00 pm to review deployment issue"] },
+  { label: "Pattern review", commands: ["pattern opt in", "pattern status", "review patterns"] },
   { label: "System", commands: ["system status", "open documents", "volume up"] },
 ];
 const LONG_MESSAGE_CHAR_LIMIT = 280;
@@ -976,6 +1006,345 @@ function showToneModal() {
     safeWSSend({ text: "tone status", silent_widget_refresh: true });
   }
   refreshToneModal();
+  overlay.style.display = "flex";
+}
+
+function renderNotificationOverviewWidget(data = {}) {
+  notificationState.snapshot = (data && typeof data === "object") ? { ...data } : {};
+  notificationState.summary = String((data && data.summary) || "No schedules yet. Create one explicitly when you want Nova to remind you.").trim();
+
+  const summary = $("notification-overview-summary");
+  const dueHost = $("notification-overview-due");
+  const upcomingHost = $("notification-overview-upcoming");
+  const note = $("notification-overview-note");
+
+  if (summary) summary.textContent = notificationState.summary;
+  if (note) note.textContent = String((data && data.inspectability_note) || "Schedules are explicit, inspectable, and cancellable.");
+
+  if (dueHost) {
+    clear(dueHost);
+    const label = document.createElement("div");
+    label.className = "notification-overview-label";
+    label.textContent = "Due now";
+    dueHost.appendChild(label);
+    const dueItems = Array.isArray(data && data.due_items) ? data.due_items : [];
+    if (!dueItems.length) {
+      const empty = document.createElement("div");
+      empty.className = "notification-overview-empty";
+      empty.textContent = "No schedules are due right now.";
+      dueHost.appendChild(empty);
+    } else {
+      const list = document.createElement("div");
+      list.className = "notification-overview-list";
+      dueItems.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "notification-overview-row";
+
+        const title = document.createElement("div");
+        title.className = "notification-overview-meta";
+        const when = String(item.next_run_label || "").trim();
+        title.textContent = when ? `${String(item.title || "")} (${when})` : String(item.title || "");
+        row.appendChild(title);
+
+        const actions = document.createElement("div");
+        actions.className = "notification-row-actions";
+        const command = String(item.command || "").trim();
+        if (command) {
+          const runBtn = document.createElement("button");
+          runBtn.type = "button";
+          runBtn.textContent = "Run";
+          runBtn.addEventListener("click", () => injectUserText(command, "text"));
+          actions.appendChild(runBtn);
+        }
+        const dismissBtn = document.createElement("button");
+        dismissBtn.type = "button";
+        dismissBtn.textContent = "Dismiss";
+        dismissBtn.addEventListener("click", () => injectUserText(`dismiss schedule ${String(item.id || "")}`, "text"));
+        actions.appendChild(dismissBtn);
+
+        row.appendChild(actions);
+        list.appendChild(row);
+      });
+      dueHost.appendChild(list);
+    }
+  }
+
+  if (upcomingHost) {
+    clear(upcomingHost);
+    const label = document.createElement("div");
+    label.className = "notification-overview-label";
+    label.textContent = "Upcoming";
+    upcomingHost.appendChild(label);
+    const upcomingItems = Array.isArray(data && data.upcoming_items) ? data.upcoming_items : [];
+    if (!upcomingItems.length) {
+      const empty = document.createElement("div");
+      empty.className = "notification-overview-empty";
+      empty.textContent = "No upcoming schedules yet.";
+      upcomingHost.appendChild(empty);
+    } else {
+      const list = document.createElement("div");
+      list.className = "notification-overview-list";
+      upcomingItems.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "notification-overview-row";
+
+        const title = document.createElement("div");
+        title.className = "notification-overview-meta";
+        const when = String(item.next_run_label || "").trim();
+        const recurrence = String(item.recurrence || "").trim();
+        title.textContent = `${String(item.title || "")}${when ? ` (${when})` : ""}${recurrence ? ` · ${recurrence}` : ""}`;
+        row.appendChild(title);
+
+        const actions = document.createElement("div");
+        actions.className = "notification-row-actions";
+        const cancelBtn = document.createElement("button");
+        cancelBtn.type = "button";
+        cancelBtn.textContent = "Cancel";
+        cancelBtn.addEventListener("click", () => injectUserText(`cancel schedule ${String(item.id || "")}`, "text"));
+        actions.appendChild(cancelBtn);
+        row.appendChild(actions);
+
+        list.appendChild(row);
+      });
+      upcomingHost.appendChild(list);
+    }
+  }
+}
+
+function renderPatternReviewWidget(data = {}) {
+  patternReviewState.snapshot = (data && typeof data === "object") ? { ...data } : {};
+  patternReviewState.summary = String((data && data.summary) || "Pattern review is off. Opt in if you want Nova to look for repeated thread and memory patterns.").trim();
+
+  const summary = $("pattern-review-summary");
+  const queueHost = $("pattern-review-queue");
+  const historyHost = $("pattern-review-history");
+  const note = $("pattern-review-note");
+  const optBtn = $("btn-home-pattern-opt");
+  const reviewBtn = $("btn-home-pattern-review");
+
+  if (summary) summary.textContent = patternReviewState.summary;
+  if (note) note.textContent = String((data && data.inspectability_note) || "Pattern review is opt-in, advisory, and discardable.").trim();
+
+  const optInEnabled = Boolean(data && data.opt_in_enabled);
+  if (optBtn) {
+    optBtn.textContent = optInEnabled ? "Opt out" : "Opt in";
+  }
+  if (reviewBtn) {
+    reviewBtn.disabled = !optInEnabled;
+  }
+
+  if (queueHost) {
+    clear(queueHost);
+    const label = document.createElement("div");
+    label.className = "pattern-review-label";
+    label.textContent = "Review queue";
+    queueHost.appendChild(label);
+
+    const proposals = Array.isArray(data && data.proposals) ? data.proposals : [];
+    if (!proposals.length) {
+      const empty = document.createElement("div");
+      empty.className = "pattern-review-empty";
+      empty.textContent = optInEnabled
+        ? "No active proposals are waiting for review."
+        : "Opt in first when you want Nova to generate pattern proposals.";
+      queueHost.appendChild(empty);
+    } else {
+      const list = document.createElement("div");
+      list.className = "pattern-review-list";
+      proposals.slice(0, 4).forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "pattern-review-row";
+
+        const title = document.createElement("div");
+        title.className = "pattern-review-title";
+        title.textContent = String(item.title || "Pattern proposal").trim();
+        row.appendChild(title);
+
+        const body = document.createElement("div");
+        body.className = "pattern-review-meta";
+        body.textContent = String(item.summary || "").trim();
+        row.appendChild(body);
+
+        const evidence = Array.isArray(item.evidence) ? item.evidence : [];
+        if (evidence.length) {
+          const evidenceLine = document.createElement("div");
+          evidenceLine.className = "pattern-review-evidence";
+          evidenceLine.textContent = `Evidence: ${String(evidence[0] || "").trim()}`;
+          row.appendChild(evidenceLine);
+        }
+
+        const linkedThreads = Array.isArray(item.linked_threads) ? item.linked_threads.filter(Boolean) : [];
+        if (linkedThreads.length) {
+          const links = document.createElement("div");
+          links.className = "pattern-review-threads";
+          links.textContent = `Threads: ${linkedThreads.join(", ")}`;
+          row.appendChild(links);
+        }
+
+        const actions = document.createElement("div");
+        actions.className = "pattern-review-actions";
+
+        const suggestedCommands = Array.isArray(item.suggested_commands) ? item.suggested_commands.filter(Boolean) : [];
+        if (suggestedCommands.length) {
+          const reviewAction = document.createElement("button");
+          reviewAction.type = "button";
+          reviewAction.textContent = "Open context";
+          reviewAction.addEventListener("click", () => injectUserText(String(suggestedCommands[0]), "text"));
+          actions.appendChild(reviewAction);
+        }
+
+        const acceptBtn = document.createElement("button");
+        acceptBtn.type = "button";
+        acceptBtn.textContent = "Accept";
+        acceptBtn.addEventListener("click", () => injectUserText(`accept pattern ${String(item.id || "").trim()}`, "text"));
+        actions.appendChild(acceptBtn);
+
+        const dismissBtn = document.createElement("button");
+        dismissBtn.type = "button";
+        dismissBtn.textContent = "Dismiss";
+        dismissBtn.addEventListener("click", () => injectUserText(`dismiss pattern ${String(item.id || "").trim()}`, "text"));
+        actions.appendChild(dismissBtn);
+
+        row.appendChild(actions);
+        list.appendChild(row);
+      });
+      queueHost.appendChild(list);
+    }
+  }
+
+  if (historyHost) {
+    clear(historyHost);
+    const label = document.createElement("div");
+    label.className = "pattern-review-label";
+    label.textContent = "Recent decisions";
+    historyHost.appendChild(label);
+
+    const history = Array.isArray(data && data.recent_decisions) ? data.recent_decisions : [];
+    if (!history.length) {
+      const empty = document.createElement("div");
+      empty.className = "pattern-review-empty";
+      empty.textContent = "No pattern review decisions recorded yet.";
+      historyHost.appendChild(empty);
+    } else {
+      const list = document.createElement("ul");
+      list.className = "pattern-review-history-list";
+      history.slice(0, 4).forEach((item) => {
+        const li = document.createElement("li");
+        const stamp = formatThreadTimestamp(item.timestamp || "");
+        const text = String(item.summary || "").trim();
+        li.textContent = stamp ? `${text} (${stamp})` : text;
+        list.appendChild(li);
+      });
+      historyHost.appendChild(list);
+    }
+  }
+}
+
+function showScheduleModal() {
+  let overlay = $("schedule-modal");
+  if (!overlay) {
+    const shell = createModalShell("schedule-modal", "Schedule an Update");
+    overlay = shell.overlay;
+    const card = shell.card;
+
+    const intro = document.createElement("p");
+    intro.textContent = "Create explicit reminder and brief schedules. Nova will surface them quietly without running actions automatically.";
+    card.appendChild(intro);
+
+    const typeLabel = document.createElement("label");
+    typeLabel.className = "tone-modal-section-title";
+    typeLabel.textContent = "Type";
+    card.appendChild(typeLabel);
+
+    const typeSelect = document.createElement("select");
+    typeSelect.id = "schedule-modal-type";
+    typeSelect.className = "modal-search";
+    typeSelect.innerHTML = [
+      '<option value="daily_brief">Daily brief</option>',
+      '<option value="reminder">Reminder</option>',
+    ].join("");
+    card.appendChild(typeSelect);
+
+    const timeLabel = document.createElement("label");
+    timeLabel.className = "tone-modal-section-title";
+    timeLabel.textContent = "Time";
+    card.appendChild(timeLabel);
+
+    const timeInput = document.createElement("input");
+    timeInput.id = "schedule-modal-time";
+    timeInput.type = "time";
+    timeInput.className = "modal-search";
+    timeInput.value = "08:00";
+    card.appendChild(timeInput);
+
+    const recurrenceLabel = document.createElement("label");
+    recurrenceLabel.className = "tone-modal-section-title";
+    recurrenceLabel.textContent = "Reminder frequency";
+    card.appendChild(recurrenceLabel);
+
+    const recurrenceSelect = document.createElement("select");
+    recurrenceSelect.id = "schedule-modal-recurrence";
+    recurrenceSelect.className = "modal-search";
+    recurrenceSelect.innerHTML = [
+      '<option value="once">Once</option>',
+      '<option value="daily">Daily</option>',
+    ].join("");
+    card.appendChild(recurrenceSelect);
+
+    const bodyLabel = document.createElement("label");
+    bodyLabel.className = "tone-modal-section-title";
+    bodyLabel.textContent = "Reminder text";
+    card.appendChild(bodyLabel);
+
+    const bodyInput = document.createElement("input");
+    bodyInput.id = "schedule-modal-body";
+    bodyInput.type = "text";
+    bodyInput.className = "modal-search";
+    bodyInput.placeholder = "Review deployment issue";
+    card.appendChild(bodyInput);
+
+    const syncFields = () => {
+      const isReminder = typeSelect.value === "reminder";
+      recurrenceSelect.disabled = !isReminder;
+      bodyInput.disabled = !isReminder;
+      bodyInput.placeholder = isReminder ? "Review deployment issue" : "Daily brief will run when you choose.";
+    };
+    typeSelect.addEventListener("change", syncFields);
+    syncFields();
+
+    const actions = document.createElement("div");
+    actions.className = "modal-actions";
+
+    const saveBtn = document.createElement("button");
+    saveBtn.type = "button";
+    saveBtn.textContent = "Create schedule";
+    saveBtn.addEventListener("click", () => {
+      const timeValue = String(timeInput.value || "").trim();
+      if (!timeValue) return;
+      if (typeSelect.value === "daily_brief") {
+        injectUserText(`schedule daily brief at ${timeValue}`, "text");
+      } else {
+        const reminderText = String(bodyInput.value || "").trim();
+        if (!reminderText) return;
+        const recurrence = recurrenceSelect.value === "daily" ? "daily " : "";
+        injectUserText(`remind me ${recurrence}at ${timeValue} to ${reminderText}`, "text");
+      }
+      overlay.style.display = "none";
+    });
+    actions.appendChild(saveBtn);
+
+    const showBtn = document.createElement("button");
+    showBtn.type = "button";
+    showBtn.textContent = "Show schedules";
+    showBtn.addEventListener("click", () => {
+      injectUserText("show schedules", "text");
+      overlay.style.display = "none";
+    });
+    actions.appendChild(showBtn);
+
+    card.appendChild(actions);
+  }
+
   overlay.style.display = "flex";
 }
 
@@ -2586,6 +2955,8 @@ function hydrateDashboardWidgets() {
   safeWSSend({ text: "calendar", silent_widget_refresh: true });
   safeWSSend({ text: "memory overview", silent_widget_refresh: true });
   safeWSSend({ text: "tone status", silent_widget_refresh: true });
+  safeWSSend({ text: "notification status", silent_widget_refresh: true });
+  safeWSSend({ text: "pattern status", silent_widget_refresh: true });
 }
 
 function startWidgetAutoRefresh() {
@@ -2653,6 +3024,12 @@ function connectWebSocket() {
         break;
       case "tone_profile":
         renderToneOverviewWidget(msg);
+        break;
+      case "notification_schedule":
+        renderNotificationOverviewWidget(msg);
+        break;
+      case "pattern_review":
+        renderPatternReviewWidget(msg);
         break;
       case "chat":
         appendChatMessage(
@@ -3143,6 +3520,7 @@ function injectUtilityButtons() {
   [
     { id: "btn-help", label: "Help", fn: showHelpModal },
     { id: "btn-tone", label: "Tone", fn: showToneModal },
+    { id: "btn-schedule", label: "Schedule", fn: showScheduleModal },
     { id: "btn-privacy", label: "Privacy", fn: showPrivacyModal },
     { id: "btn-accessibility", label: "Accessibility", fn: showAccessibilityModal },
   ].forEach((item) => {
@@ -3168,6 +3546,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderThreadMapWidget({});
   renderMemoryOverviewWidget({});
   renderToneOverviewWidget({});
+  renderNotificationOverviewWidget({});
   renderTrustPanel();
   renderQuickActions();
   setupHintsPanelToggle();
@@ -3236,6 +3615,39 @@ window.addEventListener("DOMContentLoaded", () => {
   const homeToneResetBtn = $("btn-home-tone-reset");
   if (homeToneResetBtn) {
     homeToneResetBtn.addEventListener("click", () => injectUserText("tone reset all", "text"));
+  }
+
+  const homeSchedulesBtn = $("btn-home-schedules");
+  if (homeSchedulesBtn) {
+    homeSchedulesBtn.addEventListener("click", () => injectUserText("show schedules", "text"));
+  }
+
+  const homeScheduleBriefBtn = $("btn-home-schedule-brief");
+  if (homeScheduleBriefBtn) {
+    homeScheduleBriefBtn.addEventListener("click", () => showScheduleModal());
+  }
+
+  const homeScheduleReminderBtn = $("btn-home-schedule-reminder");
+  if (homeScheduleReminderBtn) {
+    homeScheduleReminderBtn.addEventListener("click", () => showScheduleModal());
+  }
+
+  const homePatternStatusBtn = $("btn-home-pattern-status");
+  if (homePatternStatusBtn) {
+    homePatternStatusBtn.addEventListener("click", () => injectUserText("pattern status", "text"));
+  }
+
+  const homePatternReviewBtn = $("btn-home-pattern-review");
+  if (homePatternReviewBtn) {
+    homePatternReviewBtn.addEventListener("click", () => injectUserText("review patterns", "text"));
+  }
+
+  const homePatternOptBtn = $("btn-home-pattern-opt");
+  if (homePatternOptBtn) {
+    homePatternOptBtn.addEventListener("click", () => {
+      const optInEnabled = Boolean(patternReviewState.snapshot && patternReviewState.snapshot.opt_in_enabled);
+      injectUserText(optInEnabled ? "pattern opt out" : "pattern opt in", "text");
+    });
   }
 
   const micBtn = $("ptt-btn");

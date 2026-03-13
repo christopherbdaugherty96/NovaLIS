@@ -12,6 +12,8 @@ Nova now supports three related ideas:
 - project continuity threads
 - governed memory
 - manual response-style controls
+- user-directed notification scheduling
+- opt-in pattern review
 
 They are connected, but they are not the same thing.
 
@@ -152,3 +154,54 @@ Examples:
 - `tone set research detailed`
 - `tone reset research`
 - `tone reset all`
+
+## 8. Calm Scheduling
+Phase 5 now also includes explicit scheduling for daily briefs and reminders.
+
+This is not meant to make Nova proactive in a hidden way.
+It is meant to make Nova easier to live with day to day while keeping the same governance model.
+
+What the user can do:
+- schedule a daily brief
+- create a one-time reminder
+- create a daily reminder
+- inspect current schedules
+- dismiss due items
+- cancel schedules they no longer want
+
+Examples:
+- `show schedules`
+- `notification status`
+- `schedule daily brief at 8:00 am`
+- `remind me at 2:00 pm to review deployment issue`
+- `remind me daily at 9:00 am to review project threads`
+
+Important boundary:
+- schedules are explicit
+- schedules are inspectable
+- schedules are cancellable
+- scheduled items do not auto-run actions on the user's behalf
+
+## 9. Pattern Review
+Phase 5 now also includes an explicit pattern-review layer for ongoing work.
+
+This is not hidden behavior.
+Nova only generates pattern proposals after the user opts in and explicitly asks for a review.
+
+What Nova can propose:
+- a blocked thread without a next step
+- a repeated blocker theme across threads
+- durable context that may still need a clearer saved decision
+
+Examples:
+- `pattern opt in`
+- `pattern status`
+- `review patterns`
+- `review patterns for deployment issue`
+- `dismiss pattern PAT-...`
+
+Important boundary:
+- pattern review is opt-in
+- proposals are advisory
+- proposals are discardable
+- no proposal executes anything automatically
