@@ -19,6 +19,7 @@ That means Nova already has:
 - thread continuity
 - governed memory
 - governed memory overview and inspectability surface
+- manual response-style controls with inspectable tone settings
 - dashboard support for all of the above
 
 ## What Feels Mature Already
@@ -31,6 +32,7 @@ These parts are already meaningfully real:
 - thread health, blocker, and decision surfaces
 - governed memory and thread-linked memory
 - durable memory review through `memory overview`
+- manual tone settings through the response-style surface
 
 ## What Is Still Maturing
 These parts are active but still evolving:
@@ -39,6 +41,7 @@ These parts are active but still evolving:
 - more premium dashboard interactions
 - stronger everyday workflows around thread and memory use
 - clearer natural-language capability discovery
+- broader tone-calibration evolution beyond manual controls
 
 ## What Is Planned But Not Fully Live Yet
 Some highly important ideas are still planned or partially scaffolded rather than fully live.

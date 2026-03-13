@@ -11,6 +11,7 @@ Nova now supports three related ideas:
 - working context
 - project continuity threads
 - governed memory
+- manual response-style controls
 
 They are connected, but they are not the same thing.
 
@@ -121,3 +122,33 @@ Governed memory:
 - what the user explicitly chose to preserve across time
 
 Together, these three layers let Nova feel more coherent without becoming hidden or uncontrolled.
+
+## 7. Response Style Controls
+Phase 5 now also includes a manual response-style layer built on Nova's presentation personality.
+
+This means the user can explicitly inspect and change how Nova presents information without changing what Nova is allowed to do.
+
+Current supported tone profiles:
+- balanced
+- concise
+- detailed
+- formal
+
+Current supported domains:
+- general chat
+- system and diagnostics
+- research and analysis
+- weather/news/calendar
+- projects, threads, and memory
+
+Important boundary:
+- these are explicit user-controlled settings
+- they are inspectable and resettable
+- they are not hidden adaptive behavior
+
+Examples:
+- `tone status`
+- `tone set concise`
+- `tone set research detailed`
+- `tone reset research`
+- `tone reset all`

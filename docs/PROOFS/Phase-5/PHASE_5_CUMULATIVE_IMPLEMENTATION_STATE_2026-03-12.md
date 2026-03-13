@@ -17,6 +17,7 @@ Current practical state:
 - explicit thread-memory bridge is live
 - dashboard continuity/memory UX is live
 - dashboard memory inspectability is live
+- manual tone settings and tone visibility are live
 - governance invariants remain preserved
 
 ## Implemented Slice Timeline
@@ -82,6 +83,21 @@ Implemented:
 Primary artifact:
 - `PHASE_5_MEMORY_INSPECTABILITY_RUNTIME_SLICE_2026-03-13.md`
 
+### Slice F: Manual Tone Controls and Visibility (2026-03-13)
+Implemented:
+- persistent tone-profile store for the presentation layer
+- explicit tone commands:
+  - `tone status`
+  - `tone set ...`
+  - `tone reset ...`
+- dashboard response-style widget
+- user-invoked Tone modal with global and per-domain controls
+- recent tone-change history
+- system-status tone summary
+
+Primary artifact:
+- `PHASE_5_TONE_CONTROLS_RUNTIME_SLICE_2026-03-13.md`
+
 ## Current Command Surface (Implemented)
 
 ### Continuity Commands
@@ -111,6 +127,16 @@ Primary artifact:
 - `memory save decision for <thread>: <text>`
 - `memory list thread <name>`
 
+### Tone Commands
+- `tone`
+- `tone status`
+- `tone settings`
+- `tone set concise`
+- `tone set research detailed`
+- `tone set system formal`
+- `tone reset research`
+- `tone reset all`
+
 ## Current UX Surface (Implemented)
 - dashboard thread map
 - active thread indicator
@@ -119,6 +145,10 @@ Primary artifact:
 - governed memory overview widget
 - tier-count visibility for durable memory
 - recent durable memory review surface
+- response-style widget
+- Tone modal with global + per-domain controls
+- recent tone-change history
+- system-status tone summary
 - inline decision save entry
 - session-relative change summary (`Changed: ...`)
 - thread detail panel with continuity + linked-memory context
@@ -130,6 +160,9 @@ Primary artifact:
 - no Governor bypass for memory writes
 - explicit user action required for persistence
 - ledger-visible governed memory lifecycle
+- no hidden tone adaptation loop
+- no proactive tone-change announcements
+- explicit user action required for tone mutation
 
 ## Verification Evidence (Latest)
 Run date: 2026-03-13
@@ -143,9 +176,9 @@ Commands:
 - `python scripts/check_frontend_mirror_sync.py`
 
 Results:
-- `nova_backend/tests/phase5`: `26 passed`
-- `nova_backend/tests/phase45`: `37 passed`
-- full backend suite (`nova_backend/tests`): `363 passed`
+- `nova_backend/tests/phase5`: `29 passed`
+- `nova_backend/tests/phase45`: `39 passed`
+- full backend suite (`nova_backend/tests`): `371 passed`
 - runtime doc drift: passed
 - frontend mirror sync: passed
 

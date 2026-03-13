@@ -18,10 +18,11 @@ Purpose: Canonical index of Phase-5 design-gate artifacts plus implemented runti
 2. `PHASE_5_PROJECT_CONTINUITY_RUNTIME_NOTE_2026-03-12.md`
 3. `PHASE_5_THREAD_MEMORY_BRIDGE_RUNTIME_SLICE_2026-03-12.md`
 4. `PHASE_5_MEMORY_INSPECTABILITY_RUNTIME_SLICE_2026-03-13.md`
-5. `PHASE_5_CAPABILITY_SUMMARY_AND_SELLABILITY_2026-03-12.md`
-6. `PHASE_5_EVERYDAY_USER_JOURNEYS_2026-03-12.md`
-7. `PHASE_5_CUMULATIVE_IMPLEMENTATION_STATE_2026-03-12.md`
-8. `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
+5. `PHASE_5_TONE_CONTROLS_RUNTIME_SLICE_2026-03-13.md`
+6. `PHASE_5_CAPABILITY_SUMMARY_AND_SELLABILITY_2026-03-12.md`
+7. `PHASE_5_EVERYDAY_USER_JOURNEYS_2026-03-12.md`
+8. `PHASE_5_CUMULATIVE_IMPLEMENTATION_STATE_2026-03-12.md`
+9. `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
 
 ## Cross-Phase Runtime References
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
@@ -50,9 +51,9 @@ Purpose: Canonical index of Phase-5 design-gate artifacts plus implemented runti
 - `python scripts/check_frontend_mirror_sync.py`
 
 ## Latest Verification Snapshot (2026-03-13)
-- `nova_backend/tests/phase5`: `26 passed`
-- `nova_backend/tests/phase45`: `37 passed`
-- Full backend suite (`nova_backend/tests`): `363 passed`
+- `nova_backend/tests/phase5`: `29 passed`
+- `nova_backend/tests/phase45`: `39 passed`
+- Full backend suite (`nova_backend/tests`): `371 passed`
 - Runtime documentation drift check: passed
 - Frontend mirror sync check: passed
 
@@ -74,9 +75,15 @@ Purpose: Canonical index of Phase-5 design-gate artifacts plus implemented runti
    - Dashboard governed-memory overview widget
    - Tier counts, linked-thread counts, and recent memory review surface
    - Memory widget refresh after governed-memory operations
+6. Manual tone settings / tone visibility landed:
+   - Persistent tone-profile store in the presentation layer
+   - `tone status` / `tone set ...` / `tone reset ...`
+   - Dashboard response-style widget and Tone modal
+   - Recent tone-change history + system-status tone summary
 
 ## Governance State
 - Runtime remains invocation-bound.
 - No autonomous/background execution introduced.
 - Memory writes remain explicit and Governor-mediated.
+- Tone changes remain explicit, inspectable, and user-invoked only.
 - Admission gate state remains open for full Phase-5 closure.

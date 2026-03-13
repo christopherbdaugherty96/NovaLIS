@@ -61,3 +61,15 @@ INFO:     127.0.0.1:59635 - "WebSocket /ws" [accepted]
 INFO:     connection open
 INFO:     127.0.0.1:64162 - "WebSocket /ws" [accepted]
 INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:51817 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51818 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:53203 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:62958 - "WebSocket /ws" [accepted]
+INFO:     connection open

@@ -150,6 +150,49 @@ def test_os_diagnostics_executor_handles_network_stat_errors(monkeypatch):
     assert result.data.get("health_state") == "critical"
 
 
+def test_os_diagnostics_executor_includes_tone_summary(monkeypatch):
+    import src.executors.os_diagnostics_executor as mod
+
+    class _Disk:
+        total = 200 * (1024 ** 3)
+        used = 50 * (1024 ** 3)
+        free = 150 * (1024 ** 3)
+
+    class _Mem:
+        total = 16 * (1024 ** 3)
+        used = 5 * (1024 ** 3)
+        available = 11 * (1024 ** 3)
+        percent = 31.0
+
+    class _Swap:
+        total = 4 * (1024 ** 3)
+        used = 0
+        percent = 0.0
+
+    class _Iface:
+        isup = True
+
+    monkeypatch.setattr(mod.shutil, "disk_usage", lambda _path: _Disk())
+    monkeypatch.setattr(mod.psutil, "virtual_memory", lambda: _Mem())
+    monkeypatch.setattr(mod.psutil, "swap_memory", lambda: _Swap())
+    monkeypatch.setattr(mod.psutil, "cpu_percent", lambda interval=0.0: 18.0)
+    monkeypatch.setattr(mod.psutil, "boot_time", lambda: mod.time.time() - 3600.0)
+    monkeypatch.setattr(mod.psutil, "pids", lambda: [1, 2, 3])
+    monkeypatch.setattr(mod.psutil, "net_if_stats", lambda: {"Ethernet": _Iface()})
+    monkeypatch.setattr(
+        mod.OSDiagnosticsExecutor,
+        "_tone_status_details",
+        staticmethod(lambda: ("formal", "Global tone: formal. Overrides: Research and analysis: detailed.", "2026-03-13T12:00:00+00:00", 1)),
+    )
+
+    result = OSDiagnosticsExecutor().execute(ActionRequest(capability_id=32, params={}))
+
+    assert result.success is True
+    assert result.data.get("tone_global_profile") == "formal"
+    assert "Global tone: formal." in str(result.data.get("tone_summary") or "")
+    assert "tone formal" in result.message.lower()
+
+
 def test_os_diagnostics_executor_reports_blocked_model_as_not_ready(monkeypatch):
     import src.executors.os_diagnostics_executor as mod
     import src.llm.llm_manager as llm_mod

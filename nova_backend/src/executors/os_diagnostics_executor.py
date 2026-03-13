@@ -85,6 +85,19 @@ class OSDiagnosticsExecutor:
             )
 
     @staticmethod
+    def _tone_status_details() -> tuple[str, str, str, int]:
+        try:
+            from src.personality.tone_profile_store import ToneProfileStore
+
+            snapshot = ToneProfileStore().snapshot()
+            global_profile = str(snapshot.get("global_profile") or "balanced").strip().lower()
+            summary = str(snapshot.get("summary") or "").strip()
+            override_count = int(snapshot.get("override_count") or 0)
+            return global_profile, summary, str(snapshot.get("updated_at") or ""), override_count
+        except Exception:
+            return "balanced", "Tone settings unavailable.", "", 0
+
+    @staticmethod
     def _network_status() -> tuple[str, int, str]:
         try:
             stats = psutil.net_if_stats()
@@ -137,6 +150,7 @@ class OSDiagnosticsExecutor:
         health_state = self._health_state(cpu_percent, memory_percent, disk_percent)
         enabled_capability_ids = self._enabled_capabilities()
         model_availability, model_note, model_remediation, model_ready = self._model_status_details()
+        tone_global_profile, tone_summary, tone_updated_at, tone_override_count = self._tone_status_details()
 
         data = {
             "timestamp": int(time.time()),
@@ -167,13 +181,18 @@ class OSDiagnosticsExecutor:
             "model_ready": model_ready,
             "model_note": model_note,
             "model_remediation": model_remediation,
+            "tone_global_profile": tone_global_profile,
+            "tone_summary": tone_summary,
+            "tone_updated_at": tone_updated_at,
+            "tone_override_count": tone_override_count,
             "health_state": health_state,
         }
         message = (
             f"System checks complete: {health_state}. "
             f"CPU {cpu_percent:.0f}%, memory {memory_percent:.0f}%, "
             f"disk {disk_percent:.0f}%, network {network_status}, "
-            f"model {model_availability}, capabilities {len(enabled_capability_ids)}."
+            f"model {model_availability}, tone {tone_global_profile}, "
+            f"capabilities {len(enabled_capability_ids)}."
         )
         if model_note:
             message = f"{message} {model_note}"

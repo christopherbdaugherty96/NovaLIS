@@ -1287,6 +1287,160 @@ body {
   background: rgba(16, 39, 69, 0.9);
 }
 
+.tone-overview-global {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tone-global-chip {
+  border: 1px solid rgba(133, 193, 255, 0.28);
+  background: rgba(18, 42, 71, 0.55);
+  border-radius: 999px;
+  padding: 4px 9px;
+  font-size: 0.69rem;
+  font-weight: 700;
+  color: #d5e8ff;
+}
+
+.tone-overview-section {
+  display: grid;
+  gap: 6px;
+}
+
+.tone-overview-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #d7e9ff;
+}
+
+.tone-overview-list {
+  display: grid;
+  gap: 6px;
+}
+
+.tone-overview-row {
+  display: grid;
+  gap: 5px;
+  padding: 7px 8px;
+  border: 1px solid rgba(168, 201, 242, 0.18);
+  border-radius: 10px;
+  background: rgba(14, 31, 56, 0.42);
+}
+
+.tone-overview-row button,
+.tone-reset-btn,
+.tone-choice-btn {
+  justify-self: start;
+  padding: 5px 8px;
+  border-radius: 8px;
+  border: 1px solid rgba(170, 203, 248, 0.35);
+  background: rgba(14, 33, 59, 0.75);
+  color: #d9e9ff;
+  font-size: 0.69rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tone-overview-row button:hover,
+.tone-reset-btn:hover,
+.tone-choice-btn:hover {
+  border-color: rgba(132, 188, 255, 0.62);
+  background: rgba(16, 39, 69, 0.9);
+}
+
+.tone-choice-btn.active {
+  border-color: rgba(115, 197, 255, 0.76);
+  background: rgba(28, 78, 125, 0.88);
+}
+
+.tone-choice-btn:disabled,
+.tone-reset-btn:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.tone-overview-meta,
+.tone-overview-empty,
+.tone-overview-note,
+.tone-modal-summary {
+  font-size: 0.73rem;
+  line-height: 1.35;
+  color: #c6dcfb;
+}
+
+.tone-overview-note {
+  margin: 0;
+  color: #a9c7ea;
+}
+
+.tone-history-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+  color: #d3e7ff;
+  font-size: 0.72rem;
+}
+
+.tone-overview-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tone-overview-actions button {
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(170, 203, 248, 0.35);
+  background: rgba(14, 33, 59, 0.75);
+  color: #d9e9ff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.tone-overview-actions button:hover {
+  border-color: rgba(132, 188, 255, 0.62);
+  background: rgba(16, 39, 69, 0.9);
+}
+
+.tone-modal-section,
+.tone-modal-domains,
+.tone-modal-history {
+  display: grid;
+  gap: 8px;
+}
+
+.tone-modal-section-title {
+  font-size: 0.77rem;
+  font-weight: 700;
+  color: #deecff;
+  margin-top: 4px;
+}
+
+.tone-domain-row {
+  display: grid;
+  gap: 6px;
+  padding: 8px 9px;
+  border: 1px solid rgba(168, 201, 242, 0.18);
+  border-radius: 10px;
+  background: rgba(14, 31, 56, 0.42);
+}
+
+.tone-domain-title {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #d9ebff;
+}
+
+.tone-choice-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
 .thread-decision-row {
   display: grid;
   grid-template-columns: 1fr auto auto;
