@@ -87,8 +87,21 @@
 
       <section id="page-news" class="page-view page-news" hidden>
         <div id="news-widget" class="widget page-card">
-          <h3>Top News</h3>
-          <p id="news-summary" class="news-summary">Press "Summarize headlines" for a dashboard briefing.</p>
+          <div class="news-page-header">
+            <div class="news-page-intro">
+              <div class="news-page-kicker">Daily Desk</div>
+              <div class="news-page-title-row">
+                <h3>Top News</h3>
+                <span class="news-page-subtle">Live briefing</span>
+              </div>
+              <p id="news-summary" class="news-summary news-summary-header">Press "Summarize headlines" for a dashboard briefing.</p>
+            </div>
+            <aside id="news-weather-widget" class="news-weather-widget weather-widget weather-widget-compact" aria-live="polite">
+              <h4>Weather</h4>
+              <div class="weather-line">Loading weather...</div>
+              <div class="weather-meta"></div>
+            </aside>
+          </div>
           <div class="news-actions">
             <button id="btn-news" type="button">Get headlines</button>
             <button id="btn-news-summary" type="button">Summarize headlines</button>
