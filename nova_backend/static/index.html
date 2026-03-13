@@ -23,17 +23,19 @@
         </div>
       </div>
       <div class="header-right">
-        <nav class="page-nav" aria-label="Workspace views">
-          <button type="button" class="page-btn active" data-page="chat">Chat</button>
-          <button type="button" class="page-btn" data-page="news">News</button>
-          <button type="button" class="page-btn" data-page="home">Home</button>
-        </nav>
+        <div class="header-utility-strip">
+          <nav class="page-nav" aria-label="Workspace views">
+            <button type="button" class="page-btn active" data-page="chat">Chat</button>
+            <button type="button" class="page-btn" data-page="news">News</button>
+            <button type="button" class="page-btn" data-page="home">Home</button>
+          </nav>
 
-        <div id="weather-widget" class="widget weather-widget header-weather" aria-live="polite">
-          <h3>Weather</h3>
-          <div id="weather-line">Loading weather...</div>
-          <div class="weather-meta">
-            <span id="weather-updated"></span>
+          <div id="weather-widget" class="widget weather-widget header-weather" aria-live="polite">
+            <h4>Weather</h4>
+            <div id="weather-line">Loading weather...</div>
+            <div class="weather-meta">
+              <span id="weather-updated"></span>
+            </div>
           </div>
         </div>
       </div>
@@ -96,11 +98,6 @@
               </div>
               <p id="news-summary" class="news-summary news-summary-header">Press "Summarize headlines" for a dashboard briefing.</p>
             </div>
-            <aside id="news-weather-widget" class="news-weather-widget weather-widget weather-widget-compact" aria-live="polite">
-              <h4>Weather</h4>
-              <div class="weather-line">Loading weather...</div>
-              <div class="weather-meta"></div>
-            </aside>
           </div>
           <div class="news-actions">
             <button id="btn-news" type="button">Get headlines</button>

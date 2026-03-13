@@ -1675,6 +1675,17 @@ function buildMessagePreview(text) {
   return `${normalized.slice(0, LONG_MESSAGE_CHAR_LIMIT - 3).trimEnd()}...`;
 }
 
+function summarizeSentence(text, maxLength = 140) {
+  const normalized = String(text || "").replace(/\s+/g, " ").trim();
+  if (!normalized) return "";
+
+  const firstSentence = normalized.split(/(?<=[.!?])\s+/).filter(Boolean)[0] || normalized;
+  if (firstSentence.length <= maxLength) {
+    return firstSentence;
+  }
+  return `${firstSentence.slice(0, maxLength - 3).trimEnd()}...`;
+}
+
 function appendLinkedText(container, text) {
   const raw = String(text || "");
   const lines = raw.split(/\r?\n/);
@@ -2335,9 +2346,11 @@ function renderWeatherCard(container, data, options = {}) {
   clear(container);
 
   const compact = Boolean(options.compact);
+  const inline = options.layout === "header";
   container.classList.toggle("weather-widget-compact", compact);
+  container.classList.toggle("weather-widget-inline", inline);
 
-  const headingTag = compact ? "h4" : "h3";
+  const headingTag = compact || inline ? "h4" : "h3";
   const heading = document.createElement(headingTag);
   heading.textContent = String(options.heading || "Weather").trim() || "Weather";
   container.appendChild(heading);
@@ -2351,7 +2364,7 @@ function renderWeatherCard(container, data, options = {}) {
   if (forecast && options.showForecast !== false) {
     const forecastLine = document.createElement("div");
     forecastLine.className = "weather-forecast";
-    forecastLine.textContent = forecast;
+    forecastLine.textContent = inline ? summarizeSentence(forecast, 140) : forecast;
     container.appendChild(forecastLine);
   }
 
@@ -2377,7 +2390,7 @@ function renderWeatherCard(container, data, options = {}) {
 
   const meta = document.createElement("div");
   meta.className = "weather-meta";
-  if (!compact) {
+  if (!compact && !inline) {
     appendConfidenceBadge(meta, "Local read-only");
     if (alerts.length === 0) {
       appendConfidenceBadge(meta, "No active alerts");
@@ -2399,15 +2412,14 @@ function renderWeatherCard(container, data, options = {}) {
 
 function renderWeatherWidget(data) {
   const container = $("weather-widget");
-  const newsContainer = $("news-weather-widget");
-  if (!container && !newsContainer) return;
+  if (!container) return;
 
-  if (container) {
-    renderWeatherCard(container, data, { compact: false, showForecast: true, showAlerts: true });
-  }
-  if (newsContainer) {
-    renderWeatherCard(newsContainer, data, { compact: true, showForecast: true, showAlerts: false });
-  }
+  renderWeatherCard(container, data, {
+    compact: true,
+    showForecast: true,
+    showAlerts: false,
+    layout: "header",
+  });
 
   morningState.weather = String((data && data.summary) || "Weather unavailable.").trim();
   renderMorningPanel();

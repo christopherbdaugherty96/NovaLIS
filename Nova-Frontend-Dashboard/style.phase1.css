@@ -31,19 +31,18 @@ html,
 body {
   margin: 0;
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   background: radial-gradient(120% 120% at 20% 0%, #102644 0%, var(--bg-1) 42%, var(--bg-0) 100%);
   color: var(--text);
   font-family: "IBM Plex Sans", "Segoe UI", "Trebuchet MS", sans-serif;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body {
-  display: flex;
-  justify-content: center;
-  align-items: stretch;
+  display: block;
 }
 
 * {
@@ -72,10 +71,11 @@ body {
   z-index: 2;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
   gap: var(--dashboard-gap);
   width: min(100%, var(--app-max-width));
-  height: 100vh;
+  min-height: 100vh;
+  height: auto;
   margin: 0 auto;
   padding: var(--app-padding);
 }
@@ -96,10 +96,18 @@ body {
 
 .header-right {
   margin-left: auto;
-  width: min(440px, 100%);
+  width: min(860px, 100%);
   display: grid;
-  gap: 8px;
-  justify-items: end;
+  gap: 10px;
+  justify-items: stretch;
+}
+
+.header-utility-strip {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto minmax(360px, 1fr);
+  gap: 10px;
+  align-items: start;
 }
 
 .brand-block h1 {
@@ -163,10 +171,55 @@ body {
   padding: 10px 12px;
   display: grid;
   gap: 8px;
+  min-width: 0;
 }
 
 .header-weather {
   width: 100%;
+  min-width: 0;
+}
+
+.weather-widget-inline {
+  grid-template-columns: auto minmax(0, 1.35fr) minmax(180px, 1fr);
+  gap: 6px 14px;
+  align-items: center;
+  padding: 9px 12px;
+}
+
+.weather-widget-inline h3,
+.weather-widget-inline h4 {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9ed4ff;
+}
+
+.weather-widget-inline .weather-line {
+  min-width: 0;
+  font-size: 0.76rem;
+  line-height: 1.32;
+}
+
+.weather-widget-inline .weather-forecast {
+  padding: 0;
+  border: none;
+  background: transparent;
+  font-size: 0.72rem;
+  line-height: 1.3;
+  color: #cfe2ff;
+  text-align: right;
+}
+
+.weather-widget-inline .weather-meta {
+  grid-column: 2 / -1;
+  grid-row: 2;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+  font-size: 0.68rem;
 }
 
 #weather-line,
@@ -285,15 +338,14 @@ body {
 
 .main {
   min-height: 0;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .page-view {
   min-height: 0;
-  height: 100%;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding-right: 4px;
+  height: auto;
+  overflow: visible;
+  padding-right: 0;
 }
 
 .page-chat {
@@ -305,10 +357,10 @@ body {
 .page-news {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: auto;
   gap: 10px;
   align-items: stretch;
-  min-height: 0;
+  min-height: auto;
 }
 
 .page-home {
@@ -668,16 +720,16 @@ body {
 }
 
 #news-widget {
-  height: 100%;
-  overflow: hidden;
+  height: auto;
+  overflow: visible;
   display: grid;
-  grid-template-rows: auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto auto;
 }
 
 .news-page-header {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(210px, 250px);
-  gap: 12px;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 10px;
   align-items: start;
 }
 
@@ -716,15 +768,6 @@ body {
 
 .news-summary-header {
   margin: 0;
-}
-
-.news-weather-widget {
-  justify-self: end;
-  width: min(250px, 100%);
-  padding: 9px 10px;
-  border: 1px solid rgba(143, 218, 255, 0.24);
-  border-radius: 12px;
-  background: linear-gradient(180deg, rgba(22, 43, 76, 0.9) 0%, rgba(12, 24, 45, 0.92) 100%);
 }
 
 .weather-widget-compact {
@@ -774,9 +817,9 @@ body {
 }
 
 #news-list {
-  min-height: 0;
-  height: 100%;
-  overflow-y: auto;
+  min-height: auto;
+  height: auto;
+  overflow: visible;
   list-style: none;
   margin: 0;
   padding: 0;
@@ -830,15 +873,15 @@ body {
 }
 
 .news-categories {
-  min-height: 0;
+  min-height: auto;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
   gap: 8px;
   padding: 10px;
   border: 1px solid rgba(175, 198, 230, 0.18);
   border-radius: 12px;
   background: rgba(104, 177, 255, 0.05);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .news-categories-header {
@@ -857,23 +900,23 @@ body {
 }
 
 .news-layout {
-  min-height: 0;
+  min-height: auto;
   display: grid;
   grid-template-columns: minmax(0, 1fr);
-  grid-template-rows: minmax(220px, 0.9fr) minmax(280px, 1.1fr);
+  grid-template-rows: auto auto;
   gap: 10px;
 }
 
 .news-stream {
-  min-height: 0;
+  min-height: auto;
   display: grid;
-  grid-template-rows: auto minmax(0, 1fr);
+  grid-template-rows: auto auto;
   gap: 8px;
   padding: 10px;
   border: 1px solid rgba(175, 198, 230, 0.18);
   border-radius: 12px;
   background: rgba(104, 177, 255, 0.05);
-  overflow: hidden;
+  overflow: visible;
 }
 
 .news-section-title {
@@ -885,14 +928,14 @@ body {
 }
 
 .news-categories-shell {
-  min-height: 0;
+  min-height: auto;
   display: grid;
   grid-template-columns: minmax(145px, 0.34fr) minmax(0, 1fr);
   gap: 8px;
 }
 
 .news-category-sidebar {
-  min-height: 0;
+  min-height: auto;
   border: 1px solid rgba(104, 177, 255, 0.24);
   border-radius: 10px;
   background: rgba(104, 177, 255, 0.08);
@@ -903,10 +946,10 @@ body {
   display: grid;
   gap: 8px;
   grid-template-columns: 1fr;
-  min-height: 0;
-  height: 100%;
-  overflow-y: auto;
-  padding-right: 2px;
+  min-height: auto;
+  height: auto;
+  overflow: visible;
+  padding-right: 0;
 }
 
 .news-category-tab {
@@ -935,21 +978,21 @@ body {
 }
 
 .news-category-page {
-  min-height: 0;
+  min-height: auto;
   border: 1px solid rgba(104, 177, 255, 0.24);
   border-radius: 10px;
   background: rgba(104, 177, 255, 0.08);
   padding: 8px;
   display: grid;
-  grid-template-rows: minmax(0, 1fr);
+  grid-template-rows: auto;
 }
 
 .news-category-page-card {
-  min-height: 0;
-  overflow-y: auto;
+  min-height: auto;
+  overflow: visible;
   display: grid;
   gap: 8px;
-  padding-right: 2px;
+  padding-right: 0;
 }
 
 .news-category-header {
@@ -2200,15 +2243,18 @@ body {
     --app-max-width: 1560px;
   }
 
+  .header-right {
+    width: min(760px, 100%);
+  }
+
   .page-news {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(0, 1fr);
-    overflow: auto;
+    grid-template-rows: auto;
   }
 
   .news-layout {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: minmax(220px, 0.85fr) minmax(280px, 1.15fr);
+    grid-template-rows: auto auto;
   }
 
   #news-widget {
@@ -2218,19 +2264,22 @@ body {
 }
 
 @media (max-width: 1280px) {
+  .header-utility-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .page-news {
     grid-template-columns: minmax(0, 1fr);
     grid-template-rows: auto;
-    overflow: auto;
   }
 
   .news-categories-shell {
     grid-template-columns: minmax(0, 1fr);
-    grid-template-rows: auto minmax(0, 1fr);
+    grid-template-rows: auto auto;
   }
 
   .news-category-sidebar {
-    max-height: 180px;
+    max-height: none;
   }
 
   .news-category-nav {
@@ -2239,16 +2288,11 @@ body {
   }
 
   .news-layout {
-    grid-template-rows: minmax(200px, 0.8fr) minmax(260px, 1.2fr);
+    grid-template-rows: auto auto;
   }
 
   .news-page-header {
     grid-template-columns: minmax(0, 1fr);
-  }
-
-  .news-weather-widget {
-    justify-self: stretch;
-    width: 100%;
   }
 
   .orb-shell {
@@ -2257,10 +2301,6 @@ body {
 }
 
 @media (max-width: 1120px) {
-  body {
-    overflow: auto;
-  }
-
   .dashboard {
     min-height: 100vh;
     height: auto;
@@ -2277,9 +2317,26 @@ body {
     justify-items: stretch;
   }
 
+  .header-utility-strip {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .page-nav {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .weather-widget-inline {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .weather-widget-inline .weather-forecast {
+    text-align: left;
+  }
+
+  .weather-widget-inline .weather-meta {
+    grid-column: 1;
+    grid-row: auto;
   }
 
   .page-chat {
@@ -2288,6 +2345,7 @@ body {
 
   .page-view {
     height: auto;
+    overflow: visible;
   }
 
   .orb-shell {
