@@ -34,6 +34,8 @@ def test_weather_snapshot_executor_success(monkeypatch):
     assert result.success is True
     assert isinstance(result.data, dict)
     assert result.data["widget"]["type"] == "weather"
+    assert "Location: Ann Arbor" in result.message
+    assert result.data["follow_up_prompts"]
 
 
 def test_weather_snapshot_executor_failure_includes_fallback_widget(monkeypatch):
@@ -73,6 +75,8 @@ def test_news_snapshot_executor_success(monkeypatch):
     assert isinstance(result.data, dict)
     assert result.data["widget"]["type"] == "news"
     assert len(result.data["widget"]["items"]) == 1
+    assert "summarize headline 1" in result.message.lower()
+    assert result.data["follow_up_prompts"]
 
 
 def test_calendar_snapshot_executor_success(monkeypatch):
@@ -97,4 +101,5 @@ def test_calendar_snapshot_executor_success(monkeypatch):
     assert isinstance(result.data, dict)
     assert result.data["widget"]["type"] == "calendar"
     assert result.data["widget"]["events"][0]["title"] == "Standup"
-
+    assert "Upcoming events loaded: 1" in result.message
+    assert result.data["follow_up_prompts"]

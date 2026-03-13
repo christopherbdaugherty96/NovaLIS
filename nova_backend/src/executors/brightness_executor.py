@@ -26,7 +26,8 @@ class BrightnessExecutor:
                     message="I couldn't adjust brightness on this device right now.",
                     **common_meta,
                 )
-            return ActionResult.ok(message=f"Brightness {action}.", **common_meta)
+            message = "Turned the brightness up." if action == "up" else "Turned the brightness down."
+            return ActionResult.ok(message=message, data={"action": action}, **common_meta)
 
         if action == "set":
             try:
@@ -41,6 +42,9 @@ class BrightnessExecutor:
                     message="I couldn't set brightness on this device right now.",
                     **common_meta,
                 )
-            return ActionResult.ok(message=f"Brightness set to {value}.", **common_meta)
+            return ActionResult.ok(message=f"Set brightness to {value}%.", data={"action": "set", "level": value}, **common_meta)
 
-        return ActionResult.failure("Invalid brightness command.", request_id=request.request_id)
+        return ActionResult.failure(
+            "Invalid brightness command. Try: brightness up, brightness down, or set brightness to 65.",
+            request_id=request.request_id,
+        )

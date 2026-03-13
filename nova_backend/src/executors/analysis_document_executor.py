@@ -73,18 +73,28 @@ class AnalysisDocumentExecutor:
             "created_at": datetime.now(timezone.utc).isoformat(),
         }
         documents.append(doc)
+        section_count = len(sections)
 
         message = (
             f"Analysis document created: Doc {next_id}\n"
             f"Title: {title}\n\n"
             f"Summary:\n{summary}\n\n"
-            f"You can say: summarize doc {next_id} or explain section 1 of doc {next_id}."
+            f"Sections detected: {section_count}\n\n"
+            f"Try next:\n"
+            f"- summarize doc {next_id}\n"
+            f"- explain section 1 of doc {next_id}\n"
+            f"- list analysis docs"
         )
         return ActionResult.ok(
             message=message,
             data={
                 "analysis_documents": documents,
                 "document_id": next_id,
+                "follow_up_prompts": [
+                    f"summarize doc {next_id}",
+                    f"explain section 1 of doc {next_id}",
+                    "list analysis docs",
+                ],
             },
             request_id=request.request_id,
             authority_class="read_only",
@@ -104,11 +114,23 @@ class AnalysisDocumentExecutor:
             f"Title: {doc.get('title', 'Untitled')}\n"
             f"Topic: {doc.get('topic', 'Unknown')}\n\n"
             f"{doc.get('summary', '')}\n\n"
-            f"Sections: {section_titles or 'No structured sections found.'}"
+            f"Sections: {section_titles or 'No structured sections found.'}\n\n"
+            f"Try next:\n"
+            f"- explain section 1 of doc {doc['id']}\n"
+            f"- explain section 2 of doc {doc['id']}\n"
+            f"- list analysis docs"
         )
         return ActionResult.ok(
             message=message,
-            data={"analysis_documents": documents, "document_id": int(doc["id"])},
+            data={
+                "analysis_documents": documents,
+                "document_id": int(doc["id"]),
+                "follow_up_prompts": [
+                    f"explain section 1 of doc {doc['id']}",
+                    f"explain section 2 of doc {doc['id']}",
+                    "list analysis docs",
+                ],
+            },
             request_id=request.request_id,
             authority_class="read_only",
             external_effect=False,
@@ -153,11 +175,23 @@ class AnalysisDocumentExecutor:
         message = (
             f"Section Explanation - Doc {doc['id']} Section {section_number}\n"
             f"Title: {section.get('title', f'Section {section_number}')}\n\n"
-            f"{explained}"
+            f"{explained}\n\n"
+            f"Try next:\n"
+            f"- summarize doc {doc['id']}\n"
+            f"- explain section {section_number + 1} of doc {doc['id']}\n"
+            f"- list analysis docs"
         )
         return ActionResult.ok(
             message=message,
-            data={"analysis_documents": documents, "document_id": int(doc["id"])},
+            data={
+                "analysis_documents": documents,
+                "document_id": int(doc["id"]),
+                "follow_up_prompts": [
+                    f"summarize doc {doc['id']}",
+                    f"explain section {section_number + 1} of doc {doc['id']}",
+                    "list analysis docs",
+                ],
+            },
             request_id=request.request_id,
             authority_class="read_only",
             external_effect=False,
@@ -168,12 +202,23 @@ class AnalysisDocumentExecutor:
         if not documents:
             return ActionResult.failure("No analysis documents are available in this session.", request_id=request.request_id)
 
-        lines = ["Analysis Documents"]
+        lines = [f"Analysis Documents ({len(documents)})"]
         for item in sorted(documents, key=lambda d: int(d.get("id", 0))):
-            lines.append(f"- Doc {item.get('id')}: {item.get('title', 'Untitled')}")
+            summary = self._first_text_snippet(str(item.get("summary") or ""), limit=80)
+            topic = str(item.get("topic") or "").strip()
+            meta_parts = [part for part in [topic, summary] if part]
+            suffix = f" | {' | '.join(meta_parts)}" if meta_parts else ""
+            lines.append(f"- Doc {item.get('id')}: {item.get('title', 'Untitled')}{suffix}")
+        lines.extend(["", "Try next: summarize doc 1, explain section 1 of doc 1."])
         return ActionResult.ok(
             message="\n".join(lines),
-            data={"analysis_documents": documents},
+            data={
+                "analysis_documents": documents,
+                "follow_up_prompts": [
+                    "summarize doc 1",
+                    "explain section 1 of doc 1",
+                ],
+            },
             request_id=request.request_id,
             authority_class="read_only",
             external_effect=False,

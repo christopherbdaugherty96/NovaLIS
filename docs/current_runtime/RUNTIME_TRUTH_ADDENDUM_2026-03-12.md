@@ -8,6 +8,7 @@ This addendum records only active mismatches where generated runtime docs may st
 
 Use with:
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+- `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
 - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
 
 ## Resolved on 2026-03-13
@@ -30,6 +31,7 @@ When conflicts appear between generated status text and runtime code/proofs:
 ## Related References
 - `docs/README.md`
 - `docs/canonical/CANONICAL_DOCUMENT_MAP.md`
+- `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
 - `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
 - `docs/PROOFS/Phase-5/PHASE_5_PROOF_PACKET_INDEX.md`
 - `docs/PROOFS/Phase-5/PHASE_5_CUMULATIVE_IMPLEMENTATION_STATE_2026-03-12.md`

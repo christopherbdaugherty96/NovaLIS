@@ -13,6 +13,7 @@ Applied:
 
 Authoritative runtime references now:
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+- `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
 - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
 - `docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12.md`
 - `docs/PROOFS/Phase-5/PHASE_5_PROOF_PACKET_INDEX.md`

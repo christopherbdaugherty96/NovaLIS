@@ -29,7 +29,8 @@ class VolumeExecutor:
                     message="I couldn't adjust volume on this device right now.",
                     **common_meta,
                 )
-            return ActionResult.ok(message=f"Volume {action}.", **common_meta)
+            message = "Turned the volume up." if action == "up" else "Turned the volume down."
+            return ActionResult.ok(message=message, data={"action": action}, **common_meta)
 
         if action in {"mute", "unmute"}:
             applied = self._apply_volume(action, None)
@@ -38,7 +39,8 @@ class VolumeExecutor:
                     message=f"I couldn't {action} audio on this device right now.",
                     **common_meta,
                 )
-            return ActionResult.ok(message=f"Audio {action}d." if action == "mute" else "Audio unmuted.", **common_meta)
+            message = "Audio muted." if action == "mute" else "Audio unmuted."
+            return ActionResult.ok(message=message, data={"action": action}, **common_meta)
 
         if action == "set":
             try:
@@ -53,6 +55,9 @@ class VolumeExecutor:
                     message="I couldn't set volume on this device right now.",
                     **common_meta,
                 )
-            return ActionResult.ok(message=f"Volume set to {value}.", **common_meta)
+            return ActionResult.ok(message=f"Set volume to {value}%.", data={"action": "set", "level": value}, **common_meta)
 
-        return ActionResult.failure("Invalid volume command.", request_id=request.request_id)
+        return ActionResult.failure(
+            "Invalid volume command. Try: volume up, volume down, mute, unmute, or set volume to 40.",
+            request_id=request.request_id,
+        )

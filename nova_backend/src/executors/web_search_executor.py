@@ -61,6 +61,10 @@ class WebSearchExecutor:
             {"label": "Most reliable source", "prompt": "which result is the most reliable source and why"},
         ]
 
+    @classmethod
+    def _follow_up_prompts(cls) -> list[str]:
+        return [item["prompt"] for item in cls._build_suggested_actions()]
+
     def _empty_widget(
         self,
         query: str = "",
@@ -81,6 +85,7 @@ class WebSearchExecutor:
                     "summary": researched_summary,
                     "researched_summary": researched_summary,
                     "source_pages_read": source_pages_read,
+                    "follow_up_prompts": self._follow_up_prompts(),
                     "suggested_actions": self._build_suggested_actions(),
                     "results": [],
                 },
@@ -109,6 +114,7 @@ class WebSearchExecutor:
                     "summary": widget_summary,
                     "researched_summary": widget_summary,
                     "source_pages_read": source_pages_read,
+                    "follow_up_prompts": self._follow_up_prompts(),
                     "suggested_actions": self._build_suggested_actions(),
                     "results": results,
                 },
@@ -363,7 +369,7 @@ class WebSearchExecutor:
         session_id = str(request.params.get("session_id") or "").strip() or None
         if not query:
             return ActionResult.failure(
-                "No search query provided.",
+                "Please tell me what you want me to search for.",
                 data=self._empty_widget(query=query),
                 request_id=request.request_id,
             )
@@ -417,7 +423,7 @@ class WebSearchExecutor:
         if response is None:
             if brave_network_failed:
                 return ActionResult.failure(
-                    f"{boundary_notice} I couldn't complete the search due to a network issue.",
+                    f"{boundary_notice} I couldn't complete the search due to a network issue. Try again shortly or use a narrower query.",
                     data=self._empty_widget(query=query),
                     request_id=request.request_id,
                 )
@@ -433,13 +439,13 @@ class WebSearchExecutor:
             else:
                 if brave_status_code == 401:
                     return ActionResult.failure(
-                        f"{boundary_notice} Search authentication failed.",
+                        f"{boundary_notice} Search authentication failed. Check the configured search provider credentials.",
                         data=self._empty_widget(query=query),
                         request_id=request.request_id,
                     )
                 if brave_status_code == 429:
                     return ActionResult.failure(
-                        f"{boundary_notice} Search rate limit reached. Please try again later.",
+                        f"{boundary_notice} Search rate limit reached. Please try again in a moment.",
                         data=self._empty_widget(query=query),
                         request_id=request.request_id,
                     )
@@ -450,7 +456,7 @@ class WebSearchExecutor:
                         request_id=request.request_id,
                     )
                 return ActionResult.failure(
-                    f"{boundary_notice} I couldn't complete the search due to a network issue.",
+                    f"{boundary_notice} I couldn't complete the search due to a network issue. Try again shortly or use a narrower query.",
                     data=self._empty_widget(query=query),
                     request_id=request.request_id,
                 )
@@ -467,7 +473,10 @@ class WebSearchExecutor:
         results = self._parse_results(data)[:5]
         if not results:
             return ActionResult.ok(
-                message=f"{boundary_notice} No results found.",
+                message=(
+                    f"{boundary_notice} I couldn't find solid results for \"{query}\".\n"
+                    "Try a more specific query, a company/site name, or a shorter topic phrase."
+                ),
                 data=self._empty_widget(query=query, provider=used_provider),
                 request_id=request.request_id,
             )
@@ -516,6 +525,11 @@ class WebSearchExecutor:
             "",
             f"Search latency: {elapsed_seconds:.1f}s (avg {avg_latency:.1f}s).",
             "Open any dashboard result for full article detail.",
+            "",
+            "Try next",
+            "- summarize these search results",
+            "- compare the top 3 search results",
+            "- which result is the most reliable source and why",
         ]
         user_message = "\n".join(report_sections)
 

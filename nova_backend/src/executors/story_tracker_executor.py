@@ -172,6 +172,9 @@ class StoryTrackerExecutor:
             )
 
         lines = [f"STORY TRACKER - {topic}", ""]
+        lines.append(f"Snapshots stored: {len(story.get('snapshots', []))}")
+        lines.append(f"Latest update: {snapshot.get('timestamp_utc', 'unknown')}")
+        lines.append("")
         lines.append("Timeline")
         for event in snapshot.get("events", []):
             lines.append(f"- {event.get('date', '')}: {event.get('headline', '')} ({event.get('source', 'Unknown')})")
@@ -185,6 +188,10 @@ class StoryTrackerExecutor:
             lines.append(f"- {s}")
         lines.append("")
         lines.append(f"Snapshot Hash: {snapshot.get('version_hash', 'unknown')}")
+        lines.append("Try next:")
+        lines.append(f"- update story {topic}")
+        lines.append(f"- compare story {topic}")
+        lines.append(f"- stop tracking story {topic}")
         return "\n".join(lines)
 
     def execute_update(self, request) -> ActionResult:
@@ -207,7 +214,7 @@ class StoryTrackerExecutor:
                 updated.append({"topic": topic, "hash": snap["version_hash"]})
             msg = "Updated tracked stories:\n" + "\n".join(f"- {u['topic']} ({u['hash']})" for u in updated)
             return ActionResult.ok(
-                message=msg,
+                message=f"{msg}\n\nTry next: show story <topic> or compare two stories.",
                 data={"widget": {"type": "story_tracker_update", "data": {"updated": updated}}},
                 request_id=request.request_id,
                 authority_class="read_only",
@@ -240,7 +247,12 @@ class StoryTrackerExecutor:
             self._save_graph(graph)
 
             return ActionResult.ok(
-                message=f"Linked story '{left}' to '{right}'.",
+                message=(
+                    f"Linked story '{left}' to '{right}'.\n\n"
+                    "Try next:\n"
+                    "- show relationship graph\n"
+                    f"- compare stories {left} and {right}"
+                ),
                 data={"widget": {"type": "story_tracker_update", "data": {"action": "link", "topics": [left, right]}}},
                 request_id=request.request_id,
                 authority_class="read_only",
@@ -263,7 +275,12 @@ class StoryTrackerExecutor:
                 story["snapshots"].append(snap)
                 self._save_story(story)
                 return ActionResult.ok(
-                    message=f"Started tracking story '{topic}'. Snapshot hash: {snap['version_hash']}.",
+                    message=(
+                        f"Started tracking story '{topic}'.\n"
+                        f"Snapshot hash: {snap['version_hash']}.\n"
+                        f"Events captured: {len(events)}.\n\n"
+                        f"Try next:\n- update story {topic}\n- show story {topic}"
+                    ),
                     data={"widget": {"type": "story_tracker_update", "data": {"topic": topic, "hash": snap["version_hash"]}}},
                     request_id=request.request_id,
                     authority_class="read_only",
@@ -273,7 +290,11 @@ class StoryTrackerExecutor:
             self._save_story(story)
             latest = story["snapshots"][-1]
             return ActionResult.ok(
-                message=f"Story '{topic}' is already tracked. Latest snapshot hash: {latest.get('version_hash', 'unknown')}.",
+                message=(
+                    f"Story '{topic}' is already tracked.\n"
+                    f"Latest snapshot hash: {latest.get('version_hash', 'unknown')}.\n\n"
+                    f"Try next:\n- update story {topic}\n- show story {topic}"
+                ),
                 data={"widget": {"type": "story_tracker_update", "data": {"topic": topic}}},
                 request_id=request.request_id,
                 authority_class="read_only",
@@ -285,7 +306,7 @@ class StoryTrackerExecutor:
             kept = [t for t in topics if t.lower() != topic.lower()]
             self._save_tracked_topics(kept)
             return ActionResult.ok(
-                message=f"Stopped tracking story '{topic}'.",
+                message=f"Stopped tracking story '{topic}'. You can track it again later with: track story {topic}",
                 data={"widget": {"type": "story_tracker_update", "data": {"topic": topic, "stopped": True}}},
                 request_id=request.request_id,
                 authority_class="read_only",
@@ -303,7 +324,12 @@ class StoryTrackerExecutor:
             self._save_tracked_topics(topics)
 
         return ActionResult.ok(
-            message=f"Updated story '{topic}'. Snapshot hash: {snapshot['version_hash']}.",
+            message=(
+                f"Updated story '{topic}'.\n"
+                f"Snapshot hash: {snapshot['version_hash']}.\n"
+                f"Events captured: {len(events)}.\n\n"
+                f"Try next:\n- show story {topic}\n- compare story {topic}"
+            ),
             data={"widget": {"type": "story_tracker_update", "data": {"topic": topic, "hash": snapshot["version_hash"]}}},
             request_id=request.request_id,
             authority_class="read_only",
@@ -337,7 +363,7 @@ class StoryTrackerExecutor:
                 lines.append(f"{left}")
                 lines.append(f"  -> linked to {right}")
             return ActionResult.ok(
-                message="\n".join(lines),
+                message="\n".join(lines + ["", "Try next: compare two linked stories or update a story."]),
                 data={"widget": {"type": "story_tracker_view", "data": {"action": "show_graph", "links": links}}},
                 request_id=request.request_id,
                 authority_class="read_only",
@@ -393,6 +419,8 @@ class StoryTrackerExecutor:
                 [
                     "",
                     "Note: This is an invocation-bound comparison of stored snapshots, not predictive analysis.",
+                    "",
+                    f"Try next: show story {left_topic} or show story {right_topic}.",
                 ]
             )
 
@@ -454,7 +482,8 @@ class StoryTrackerExecutor:
                 f"Snapshots considered: {len(subset)}\n"
                 f"Earliest hash: {earlier.get('version_hash', 'unknown')}\n"
                 f"Latest hash: {latest.get('version_hash', 'unknown')}\n"
-                f"Latest event count: {len(latest.get('events', []))}"
+                f"Latest event count: {len(latest.get('events', []))}\n\n"
+                f"Try next:\n- show story {topic}\n- update story {topic}"
             )
             return ActionResult.ok(
                 message=msg,

@@ -37,6 +37,9 @@ def test_response_verification_returns_report(monkeypatch):
     assert result.data["verification_confidence_label"] == "Medium"
     assert result.data["verification_confidence_score"] == 0.65
     assert result.data["verification_recommended"] is True
+    assert result.data["issue_count"] == 1
+    assert result.data["correction_count"] == 1
+    assert result.data["follow_up_prompts"]
 
 
 def test_response_verification_high_confidence_not_flagged(monkeypatch):

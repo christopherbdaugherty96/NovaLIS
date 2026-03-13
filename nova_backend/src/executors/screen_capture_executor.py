@@ -96,6 +96,10 @@ class ScreenCaptureExecutor:
             )
 
         image_path = str(capture.get("image_path") or "")
+        active_window = dict(snapshot.get("active_window") or {})
+        window_title = str(active_window.get("title") or "").strip()
+        window_app = str(active_window.get("app") or "").strip()
+        context_line = window_title or window_app
         self._safe_log(
             "SCREEN_CAPTURE_COMPLETED",
             {
@@ -106,7 +110,11 @@ class ScreenCaptureExecutor:
             },
         )
         return ActionResult.ok(
-            message="Captured the screen region around your cursor.",
+            message=(
+                "Captured the screen region around your cursor."
+                + (f" Active context: {context_line}." if context_line else "")
+                + "\nTry next: analyze this screen or explain this."
+            ),
             data={
                 "context_snapshot": snapshot,
                 "working_context_delta": self._build_working_context_delta(snapshot),
@@ -119,6 +127,7 @@ class ScreenCaptureExecutor:
                     "data": {
                         "image_path": image_path,
                         "bounds": dict(capture.get("bounds") or bounds),
+                        "follow_up_prompts": ["analyze this screen", "explain this"],
                     },
                 },
             },

@@ -18,6 +18,7 @@ This map classifies documents under `docs/canonical` so reviewers can quickly id
 
 ## Current Runtime Canon References
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+- `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
 - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
 - `docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12.md`
 - `docs/PROOFS/Phase-4/`
