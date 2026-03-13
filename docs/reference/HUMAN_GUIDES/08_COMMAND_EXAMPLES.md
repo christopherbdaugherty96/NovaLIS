@@ -204,7 +204,29 @@ Examples:
 - `save this`
 - `save this as part of deployment issue`
 
-## 11. Best Practices
+## 11. Response Style and Tone
+
+Use these when you want to explicitly control how Nova presents information.
+
+Examples:
+- `tone`
+- `tone status`
+- `tone settings`
+- `tone set concise`
+- `tone set detailed`
+- `tone set formal`
+- `tone set research detailed`
+- `tone set system formal`
+- `tone reset research`
+- `tone reset all`
+
+Use cases:
+- make system answers tighter
+- make research answers fuller
+- inspect whether any domain overrides are active
+- reset Nova back to the default presentation profile
+
+## 12. Best Practices
 
 If you want the smoothest experience:
 - be direct
@@ -212,7 +234,7 @@ If you want the smoothest experience:
 - use thread names consistently for long-running work
 - use explicit memory commands when something matters enough to preserve
 
-## 12. Examples of Good Everyday Flows
+## 13. Examples of Good Everyday Flows
 
 ### News flow
 - `news`
@@ -227,6 +249,12 @@ If you want the smoothest experience:
 - `continue my deployment issue`
 - `biggest blocker in deployment issue`
 - `memory save decision for deployment issue: inspect path before rebuild`
+
+### Response style flow
+- `tone status`
+- `tone set concise`
+- `tone set research detailed`
+- `tone reset all`
 
 ### System help flow
 - `system status`

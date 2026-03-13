@@ -8,6 +8,7 @@ Nova's active capability surface now covers five big areas:
 - voice and screen understanding
 - continuity across ongoing work
 - governed memory and persistence
+- manual response-style control
 
 ## 1. Research and Information Work
 Nova can:
@@ -140,6 +141,22 @@ Wake word is planned as a natural entrypoint like:
 
 But in the current runtime, Nova supports voice transcription and speech output without a live always-listening wake-word module.
 
+## 8. Response Style Control
+Nova can now expose and adjust its manual presentation tone without changing what it is allowed to do.
+
+It can:
+- show the current global tone profile
+- show active per-domain overrides
+- let the user set manual tone profiles
+- let the user reset one domain or all tone settings
+- show recent tone changes in an inspectable way
+
+Examples:
+- `tone status`
+- `tone set concise`
+- `tone set research detailed`
+- `tone reset all`
+
 ## Short Summary
 Today Nova can already:
 - research
@@ -149,6 +166,7 @@ Today Nova can already:
 - guide
 - continue project work
 - preserve governed memory
+- expose manual response-style controls
 - help with the current screen
 - help with the local computer in bounded ways
 

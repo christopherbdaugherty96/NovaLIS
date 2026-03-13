@@ -42,6 +42,7 @@ from src.trust.trust_contract import normalize_trust_status
 from src.working_context.context_store import WorkingContextStore
 from src.working_context.project_threads import ProjectThreadStore
 from src.personality.interface_agent import PersonalityInterfaceAgent
+from src.personality.tone_profile_store import ToneProfileStore
 from src.audit.runtime_auditor import (
     run_runtime_truth_audit,
     render_runtime_truth_markdown,
@@ -174,6 +175,16 @@ WHY_RECOMMENDATION_RE = re.compile(
     r"^\s*why\s+(?:this|that)\s+recommendation\s*\??\s*$",
     re.IGNORECASE,
 )
+TONE_STATUS_COMMANDS = {
+    "tone",
+    "tone status",
+    "tone settings",
+    "tone profile",
+    "response style",
+    "response style settings",
+}
+TONE_SET_RE = re.compile(r"^\s*tone\s+set\s+(?P<body>.+?)\s*$", re.IGNORECASE)
+TONE_RESET_RE = re.compile(r"^\s*tone\s+reset(?:\s+(?P<body>.+?))?\s*$", re.IGNORECASE)
 
 
 def _build_phase42_agents() -> list:
@@ -790,6 +801,130 @@ def _build_memory_overview_widget(overview: dict | None) -> dict:
         "inspectability_note": "Memory is explicit, inspectable, and revocable.",
     }
 
+
+def _build_tone_profile_widget(snapshot: dict | None) -> dict:
+    payload = dict(snapshot or {})
+    return {
+        "type": "tone_profile",
+        "summary": str(payload.get("summary") or "Global tone: balanced.").strip(),
+        "global_profile": str(payload.get("global_profile") or "balanced").strip().lower(),
+        "global_profile_label": str(payload.get("global_profile_label") or "Balanced").strip(),
+        "override_count": int(payload.get("override_count") or 0),
+        "updated_at": str(payload.get("updated_at") or ""),
+        "domain_overrides": [dict(item or {}) for item in list(payload.get("domain_overrides") or [])[:8]],
+        "history": [dict(item or {}) for item in list(payload.get("history") or [])[:6]],
+        "profile_options": [dict(item or {}) for item in list(payload.get("profile_options") or [])],
+        "domain_options": [dict(item or {}) for item in list(payload.get("domain_options") or [])],
+        "inspectability_note": "Tone changes are explicit, inspectable, and resettable.",
+    }
+
+
+def _render_tone_profile_message(snapshot: dict | None) -> str:
+    payload = dict(snapshot or {})
+    global_label = str(payload.get("global_profile_label") or "Balanced").strip()
+    overrides = list(payload.get("domain_overrides") or [])
+    history = list(payload.get("history") or [])
+
+    lines = ["Response Style Settings", ""]
+    lines.append(f"Global tone: {global_label}")
+    if overrides:
+        lines.append("Domain overrides:")
+        for item in overrides[:5]:
+            label = str(item.get("label") or item.get("domain") or "Domain").strip()
+            profile_label = str(item.get("profile_label") or item.get("profile") or "Balanced").strip()
+            lines.append(f"- {label}: {profile_label}")
+    else:
+        lines.append("Domain overrides: none")
+
+    if history:
+        lines.append("")
+        lines.append("Recent changes")
+        for item in history[:4]:
+            summary = str(item.get("summary") or "").strip()
+            if summary:
+                lines.append(f"- {summary}")
+
+    lines.extend(
+        [
+            "",
+            "Try next:",
+            "- tone set concise",
+            "- tone set research detailed",
+            "- tone reset research",
+            "- tone reset all",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _log_tone_event(governor: Governor, event_type: str, metadata: dict) -> None:
+    try:
+        governor.ledger.log_event(event_type, metadata)
+    except Exception:
+        return
+
+
+def _tone_domain_for_capability(capability_id: int) -> str:
+    if capability_id in {32}:
+        return "system"
+    if capability_id in {55, 56, 57}:
+        return "daily"
+    if capability_id in {31, 49, 50, 51, 54}:
+        return "research"
+    if capability_id in {58, 59, 60, 61}:
+        return "continuity"
+    return "general"
+
+
+def _tone_domain_for_skill(skill_name: str) -> str:
+    lowered = str(skill_name or "").strip().lower()
+    if lowered in {"system"}:
+        return "system"
+    if lowered in {"weather", "news", "calendar"}:
+        return "daily"
+    if lowered in {"web_search", "web_search_skill"}:
+        return "research"
+    return "general"
+
+
+def _parse_tone_set_body(raw_body: str) -> tuple[str, str, bool]:
+    body = str(raw_body or "").strip().lower()
+    if not body:
+        return "", "", False
+
+    if " to " in body:
+        left, right = body.rsplit(" to ", 1)
+        body = f"{left.strip()} {right.strip()}".strip()
+
+    parts = [part for part in body.split() if part]
+    if not parts:
+        return "", "", False
+
+    valid_profiles = set(ToneProfileStore.PROFILE_DEFINITIONS.keys())
+    valid_domains = set(ToneProfileStore.DOMAIN_DEFINITIONS.keys()) | {"global"}
+
+    if len(parts) == 1 and parts[0] in valid_profiles:
+        return "global", parts[0], True
+
+    profile = parts[-1]
+    domain = " ".join(parts[:-1]).strip().lower()
+    if profile not in valid_profiles:
+        return "", "", False
+    if domain not in valid_domains:
+        return "", "", False
+    return domain, profile, True
+
+
+async def send_tone_profile_widget(
+    ws: WebSocket,
+    session_state: dict,
+    *,
+    snapshot: dict | None = None,
+) -> None:
+    payload = dict(snapshot or interface_personality_agent.tone_snapshot() or {})
+    session_state["last_tone_snapshot"] = payload
+    await ws_send(ws, _build_tone_profile_widget(payload))
+
 # -------------------------------------------------
 # Phase Status Endpoint
 # -------------------------------------------------
@@ -876,10 +1011,11 @@ async def send_chat_message(
     confidence: Optional[str] = None,
     suggested_actions: Optional[list[dict[str, str]]] = None,
     apply_personality: bool = True,
+    tone_domain: str = "general",
 ) -> None:
     presented = str(text or "").strip()
     if apply_personality:
-        presented = interface_personality_agent.present(presented)
+        presented = interface_personality_agent.present(presented, domain=tone_domain)
     if not presented and text:
         presented = str(text).strip()
     payload = {"type": "chat", "message": presented}
@@ -1022,6 +1158,7 @@ async def websocket_endpoint(ws: WebSocket):
         "last_recommendation_reason": "",
         "thread_map_last": {},
         "last_memory_overview": {},
+        "last_tone_snapshot": {},
     }
 
     await send_chat_message(ws, "Hello. How can I help?")
@@ -1814,7 +1951,7 @@ async def websocket_endpoint(ws: WebSocket):
                 )
                 if weather_result is None:
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, "Weather is currently unavailable.")
+                        await send_chat_message(ws, "Weather is currently unavailable.", tone_domain="daily")
                     await ws_send(
                         ws,
                         {
@@ -1846,7 +1983,7 @@ async def websocket_endpoint(ws: WebSocket):
                     message = _structure_long_message(weather_result.message)
                     if not silent_widget_refresh:
                         session_state["last_response"] = message
-                        await send_chat_message(ws, message)
+                        await send_chat_message(ws, message, tone_domain="daily")
                     if isinstance(weather_widget, dict) and weather_widget.get("type") == "weather":
                         await ws_send(ws, weather_widget)
                     else:
@@ -1870,7 +2007,7 @@ async def websocket_endpoint(ws: WebSocket):
                     )
                 else:
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, "Weather is currently unavailable.")
+                        await send_chat_message(ws, "Weather is currently unavailable.", tone_domain="daily")
                     if isinstance(weather_widget, dict) and weather_widget.get("type") == "weather":
                         await ws_send(ws, weather_widget)
                     else:
@@ -1906,7 +2043,7 @@ async def websocket_endpoint(ws: WebSocket):
                 )
                 if news_result is None:
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, "News is currently unavailable.")
+                        await send_chat_message(ws, "News is currently unavailable.", tone_domain="daily")
                     await ws_send(
                         ws,
                         {
@@ -1933,7 +2070,7 @@ async def websocket_endpoint(ws: WebSocket):
                     message = _structure_long_message(news_result.message)
                     if not silent_widget_refresh:
                         session_state["last_response"] = message
-                        await send_chat_message(ws, message)
+                        await send_chat_message(ws, message, tone_domain="daily")
                     if isinstance(news_widget, dict) and news_widget.get("type") == "news":
                         items = list(news_widget.get("items") or [])
                         categories = dict(news_widget.get("categories") or {})
@@ -1958,7 +2095,7 @@ async def websocket_endpoint(ws: WebSocket):
                     )
                 else:
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, "News is currently unavailable.")
+                        await send_chat_message(ws, "News is currently unavailable.", tone_domain="daily")
                     if isinstance(news_widget, dict) and news_widget.get("type") == "news":
                         await ws_send(ws, news_widget)
                     else:
@@ -1998,7 +2135,7 @@ async def websocket_endpoint(ws: WebSocket):
                 )
                 if calendar_result is None:
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, "Calendar is currently unavailable.")
+                        await send_chat_message(ws, "Calendar is currently unavailable.", tone_domain="daily")
                     await send_widget_message(
                         ws,
                         "calendar",
@@ -2014,7 +2151,7 @@ async def websocket_endpoint(ws: WebSocket):
                     message = _structure_long_message(calendar_result.message)
                     if not silent_widget_refresh:
                         session_state["last_response"] = message
-                        await send_chat_message(ws, message)
+                        await send_chat_message(ws, message, tone_domain="daily")
                     if isinstance(calendar_widget, dict) and calendar_widget.get("type") == "calendar":
                         await send_widget_message(ws, "calendar", message, calendar_widget)
                         session_state["last_calendar_summary"] = str(calendar_widget.get("summary") or "")
@@ -2028,7 +2165,7 @@ async def websocket_endpoint(ws: WebSocket):
                         )
                 else:
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, "Calendar is currently unavailable.")
+                        await send_chat_message(ws, "Calendar is currently unavailable.", tone_domain="daily")
                     if isinstance(calendar_widget, dict) and calendar_widget.get("type") == "calendar":
                         await send_widget_message(
                             ws,
@@ -2055,7 +2192,7 @@ async def websocket_endpoint(ws: WebSocket):
                 if action_result is None:
                     failure_message = "System diagnostics are currently unavailable."
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, failure_message)
+                        await send_chat_message(ws, failure_message, tone_domain="system")
                     await ws_send(
                         ws,
                         {
@@ -2076,7 +2213,7 @@ async def websocket_endpoint(ws: WebSocket):
                     message = _structure_long_message(action_result.message)
                     if not silent_widget_refresh:
                         session_state["last_response"] = message
-                        await send_chat_message(ws, message)
+                        await send_chat_message(ws, message, tone_domain="system")
                     await ws_send(
                         ws,
                         {
@@ -2091,7 +2228,7 @@ async def websocket_endpoint(ws: WebSocket):
                 else:
                     failure_message = "System diagnostics are currently unavailable."
                     if not silent_widget_refresh:
-                        await send_chat_message(ws, failure_message)
+                        await send_chat_message(ws, failure_message, tone_domain="system")
                     await ws_send(
                         ws,
                         {
@@ -2106,6 +2243,105 @@ async def websocket_endpoint(ws: WebSocket):
                         external=False,
                     )
                 await send_trust_status(ws, session_state["trust_status"])
+                await send_chat_done(ws)
+                continue
+
+            if lowered in TONE_STATUS_COMMANDS:
+                snapshot = interface_personality_agent.tone_snapshot()
+                _log_tone_event(
+                    governor,
+                    "TONE_PROFILE_VIEWED",
+                    {
+                        "global_profile": str(snapshot.get("global_profile") or "balanced"),
+                        "override_count": int(snapshot.get("override_count") or 0),
+                    },
+                )
+                if not silent_widget_refresh:
+                    await send_chat_message(
+                        ws,
+                        _render_tone_profile_message(snapshot),
+                        tone_domain="system",
+                    )
+                await send_tone_profile_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            tone_set_match = TONE_SET_RE.match(text)
+            if tone_set_match:
+                domain, profile, ok = _parse_tone_set_body(tone_set_match.group("body"))
+                if not ok:
+                    await send_chat_message(
+                        ws,
+                        "I couldn't parse that tone setting yet.\n\nTry next:\n- tone set concise\n- tone set research detailed\n- tone set system formal",
+                        tone_domain="system",
+                    )
+                    await send_chat_done(ws)
+                    continue
+
+                if domain == "global":
+                    snapshot = interface_personality_agent.set_global_tone(profile)
+                    message = f"Global tone set to {profile}."
+                else:
+                    snapshot = interface_personality_agent.set_domain_tone(domain, profile)
+                    label = ToneProfileStore.DOMAIN_DEFINITIONS.get(domain, domain.title())
+                    message = f"{label} tone set to {profile}."
+
+                _log_tone_event(
+                    governor,
+                    "TONE_PROFILE_UPDATED",
+                    {
+                        "domain": domain,
+                        "profile": profile,
+                        "global_profile": str(snapshot.get("global_profile") or "balanced"),
+                        "override_count": int(snapshot.get("override_count") or 0),
+                    },
+                )
+                await send_chat_message(
+                    ws,
+                    f"{message}\n\n{str(snapshot.get('summary') or '').strip()}",
+                    tone_domain="system",
+                )
+                await send_tone_profile_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            tone_reset_match = TONE_RESET_RE.match(text)
+            if tone_reset_match:
+                body = str(tone_reset_match.group("body") or "").strip().lower()
+                body = re.sub(r"^(?:domain|for)\s+", "", body).strip()
+                if not body or body == "all":
+                    snapshot = interface_personality_agent.reset_all_tone()
+                    message = "Tone settings reset to the default profile."
+                    reset_domain = "all"
+                else:
+                    if body not in ToneProfileStore.DOMAIN_DEFINITIONS:
+                        await send_chat_message(
+                            ws,
+                            "I couldn't find that tone domain yet.\n\nTry next:\n- tone reset research\n- tone reset system\n- tone reset all",
+                            tone_domain="system",
+                        )
+                        await send_chat_done(ws)
+                        continue
+                    snapshot = interface_personality_agent.reset_domain_tone(body)
+                    label = ToneProfileStore.DOMAIN_DEFINITIONS.get(body, body.title())
+                    message = f"{label} tone reset to the global profile."
+                    reset_domain = body
+
+                _log_tone_event(
+                    governor,
+                    "TONE_PROFILE_RESET",
+                    {
+                        "domain": reset_domain,
+                        "global_profile": str(snapshot.get("global_profile") or "balanced"),
+                        "override_count": int(snapshot.get("override_count") or 0),
+                    },
+                )
+                await send_chat_message(
+                    ws,
+                    f"{message}\n\n{str(snapshot.get('summary') or '').strip()}",
+                    tone_domain="system",
+                )
+                await send_tone_profile_widget(ws, session_state, snapshot=snapshot)
                 await send_chat_done(ws)
                 continue
 
@@ -2212,7 +2448,7 @@ async def websocket_endpoint(ws: WebSocket):
                     f"- News: {news_summary}\n"
                     f"- Calendar: {calendar_line}"
                 )
-                await send_chat_message(ws, morning_brief)
+                await send_chat_message(ws, morning_brief, tone_domain="daily")
                 await send_chat_done(ws)
                 continue
 
@@ -2635,6 +2871,7 @@ async def websocket_endpoint(ws: WebSocket):
                     outgoing_message,
                     confidence=message_confidence,
                     suggested_actions=message_suggestions,
+                    tone_domain=_tone_domain_for_capability(capability_id),
                 )
 
                 if (
@@ -2703,6 +2940,7 @@ async def websocket_endpoint(ws: WebSocket):
 
             if skill_result:
                 skill_name = getattr(skill_result, "skill", "") or ""
+                skill_tone_domain = _tone_domain_for_skill(skill_name)
                 message = getattr(skill_result, "message", "") or ""
                 widget_data = getattr(skill_result, "widget_data", None)
                 result_data = getattr(skill_result, "data", {}) or {}
@@ -2726,7 +2964,7 @@ async def websocket_endpoint(ws: WebSocket):
                         escalation.get("context_snapshot", session_context[-5:]),
                         escalation.get("heuristic_result", {}),
                     )
-                    await send_chat_message(ws, message)
+                    await send_chat_message(ws, message, tone_domain=skill_tone_domain)
                     await send_chat_done(ws)
                     continue
 
@@ -2761,7 +2999,12 @@ async def websocket_endpoint(ws: WebSocket):
                     session_state["last_calendar_events"] = list(widget_data.get("events") or [])
                     await send_widget_message(ws, "calendar", message, widget_data)
                 else:
-                    await send_chat_message(ws, message, message_id=message_id)
+                    await send_chat_message(
+                        ws,
+                        message,
+                        message_id=message_id,
+                        tone_domain=skill_tone_domain,
+                    )
 
                 if skill_name in {"weather", "news", "web_search", "web_search_skill"}:
                     if getattr(skill_result, "success", False):

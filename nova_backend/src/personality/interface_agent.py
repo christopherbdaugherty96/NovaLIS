@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import re
 
+from src.personality.tone_profile_store import ToneProfileStore
+
 
 class PersonalityInterfaceAgent:
     """Presentation-only personality layer for outbound chat messages."""
@@ -28,7 +30,18 @@ class PersonalityInterfaceAgent:
         (re.compile(r"\bi understand how you feel\b", re.IGNORECASE), "I can help clarify the situation"),
     )
 
-    def present(self, text: str) -> str:
+    _FORMAL_REPLACEMENTS = (
+        (re.compile(r"\bcan't\b", re.IGNORECASE), "cannot"),
+        (re.compile(r"\bdon't\b", re.IGNORECASE), "do not"),
+        (re.compile(r"\bwon't\b", re.IGNORECASE), "will not"),
+        (re.compile(r"\bit's\b", re.IGNORECASE), "it is"),
+        (re.compile(r"\blet's\b", re.IGNORECASE), "let us"),
+    )
+
+    def __init__(self, *, tone_store: ToneProfileStore | None = None) -> None:
+        self._tone_store = tone_store or ToneProfileStore()
+
+    def present(self, text: str, *, domain: str = "general") -> str:
         clean = (text or "").replace("\r\n", "\n").strip()
         if not clean:
             return ""
@@ -49,4 +62,75 @@ class PersonalityInterfaceAgent:
         clean = re.sub(r"\n{3,}", "\n\n", clean)
         clean = re.sub(r"!+", ".", clean)
         clean = re.sub(r"\s{2,}", " ", clean)
+        clean = self._apply_tone_profile(clean.strip(), domain=domain)
         return clean.strip()
+
+    def current_tone_profile(self, domain: str = "general") -> str:
+        try:
+            return self._tone_store.effective_profile(domain)
+        except Exception:
+            return "balanced"
+
+    def tone_snapshot(self) -> dict:
+        try:
+            return self._tone_store.snapshot()
+        except Exception:
+            return {}
+
+    def set_global_tone(self, profile: str) -> dict:
+        return self._tone_store.set_global_profile(profile)
+
+    def set_domain_tone(self, domain: str, profile: str) -> dict:
+        return self._tone_store.set_domain_profile(domain, profile)
+
+    def reset_domain_tone(self, domain: str) -> dict:
+        return self._tone_store.reset_domain(domain)
+
+    def reset_all_tone(self) -> dict:
+        return self._tone_store.reset_all()
+
+    def _apply_tone_profile(self, text: str, *, domain: str) -> str:
+        profile = self.current_tone_profile(domain)
+        if profile == "formal":
+            for pattern, replacement in self._FORMAL_REPLACEMENTS:
+                text = pattern.sub(replacement, text)
+            return text
+        if profile == "concise":
+            return self._apply_concise_profile(text)
+        return text
+
+    def _apply_concise_profile(self, text: str) -> str:
+        lines = text.splitlines()
+        compacted: list[str] = []
+        in_try_next = False
+        suggestion_lines: list[str] = []
+
+        for line in lines:
+            stripped = line.strip()
+            if stripped.lower() == "try next:":
+                in_try_next = True
+                compacted.append(line)
+                continue
+
+            if in_try_next and stripped.startswith("-"):
+                suggestion_lines.append(line)
+                continue
+
+            if in_try_next:
+                compacted.extend(self._trim_suggestions(suggestion_lines))
+                suggestion_lines = []
+                in_try_next = False
+
+            compacted.append(line)
+
+        if in_try_next:
+            compacted.extend(self._trim_suggestions(suggestion_lines))
+
+        return "\n".join(compacted).strip()
+
+    def _trim_suggestions(self, lines: list[str]) -> list[str]:
+        if len(lines) <= 2:
+            return lines
+        trimmed = list(lines[:2])
+        trimmed.append("- Ask for more options if you want a longer list.")
+        return trimmed

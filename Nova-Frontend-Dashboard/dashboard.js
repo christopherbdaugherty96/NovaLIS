@@ -20,6 +20,10 @@ let morningState = {
   system: "Loading...",
   calendar: "Loading...",
 };
+let toneState = {
+  summary: "Global tone: balanced. No domain overrides.",
+  snapshot: {},
+};
 let trustState = {
   mode: "Local-only",
   lastExternalCall: "None",
@@ -54,6 +58,7 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "chat_most_blocked", label: "Most blocked", command: "which project is most blocked right now" },
     { id: "chat_thread_memory", label: "Thread memory", command: "memory list thread this" },
     { id: "chat_memory_overview", label: "Memory overview", command: "memory overview" },
+    { id: "chat_tone", label: "Tone settings", command: "tone status" },
     { id: "chat_doc_create", label: "New analysis doc", command: "create analysis report on global technology policy updates" },
     { id: "chat_doc_list", label: "List analysis docs", command: "list analysis docs" },
   ],
@@ -74,6 +79,7 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "home_thread_status", label: "Project status", command: "project status this", switchToPage: "chat" },
     { id: "home_most_blocked", label: "Most blocked", command: "which project is most blocked right now", switchToPage: "chat" },
     { id: "home_memory_overview", label: "Memory overview", command: "memory overview", switchToPage: "chat" },
+    { id: "home_tone", label: "Tone settings", command: "tone status", switchToPage: "chat" },
   ],
 };
 
@@ -91,6 +97,10 @@ const COMMAND_SUGGESTIONS = [
   "memory save thread deployment issue",
   "memory list thread deployment issue",
   "memory overview",
+  "tone status",
+  "tone set concise",
+  "tone set research detailed",
+  "tone reset all",
   "memory save decision for deployment issue: verify PYTHONPATH in container",
   "why this recommendation",
   "which one should I download",
@@ -122,6 +132,10 @@ const HELP_EXAMPLES = [
   "memory save thread deployment issue",
   "memory list thread deployment issue",
   "memory overview",
+  "tone status",
+  "tone set concise",
+  "tone set research detailed",
+  "tone reset all",
   "memory save decision for deployment issue: verify PYTHONPATH in container",
   "why this recommendation",
   "which one should I download",
@@ -146,6 +160,7 @@ const COMMAND_DISCOVERY_GROUPS = [
   { label: "Continuity", commands: ["show threads", "save this as part of deployment issue", "continue my deployment issue"] },
   { label: "Thread insight", commands: ["project status deployment issue", "biggest blocker in deployment issue", "thread detail deployment issue"] },
   { label: "Thread memory", commands: ["memory overview", "memory save thread deployment issue", "memory list thread deployment issue"] },
+  { label: "Response style", commands: ["tone status", "tone set concise", "tone set research detailed"] },
   { label: "System", commands: ["system status", "open documents", "volume up"] },
 ];
 const LONG_MESSAGE_CHAR_LIMIT = 280;
@@ -708,6 +723,262 @@ function renderMemoryOverviewWidget(data = {}) {
   }
 }
 
+function buildToneProfileButtons(currentProfile, onSelect) {
+  const row = document.createElement("div");
+  row.className = "tone-choice-row";
+  const profiles = Array.isArray(toneState.snapshot.profile_options) ? toneState.snapshot.profile_options : [];
+  profiles.forEach((item) => {
+    const profileId = String(item.id || "").trim().toLowerCase();
+    if (!profileId) return;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "tone-choice-btn";
+    if (profileId === String(currentProfile || "").trim().toLowerCase()) {
+      btn.classList.add("active");
+    }
+    btn.textContent = String(item.label || profileId);
+    btn.title = String(item.description || "");
+    btn.addEventListener("click", () => onSelect(profileId));
+    row.appendChild(btn);
+  });
+  return row;
+}
+
+function renderToneOverviewWidget(data = {}) {
+  toneState.snapshot = (data && typeof data === "object") ? { ...data } : {};
+  toneState.summary = String((data && data.summary) || "Global tone: balanced. No domain overrides.").trim();
+
+  const summary = $("tone-overview-summary");
+  const globalHost = $("tone-overview-global");
+  const overridesHost = $("tone-overview-overrides");
+  const historyHost = $("tone-overview-history");
+  const note = $("tone-overview-note");
+  if (summary) summary.textContent = toneState.summary;
+  if (note) note.textContent = String((data && data.inspectability_note) || "Tone changes are explicit, inspectable, and resettable.");
+
+  if (globalHost) {
+    clear(globalHost);
+    const chip = document.createElement("div");
+    chip.className = "tone-global-chip";
+    const label = String((data && data.global_profile_label) || (data && data.global_profile) || "Balanced").trim();
+    const overrideCount = Number((data && data.override_count) || 0);
+    chip.textContent = overrideCount > 0 ? `Global ${label} · ${overrideCount} override${overrideCount === 1 ? "" : "s"}` : `Global ${label}`;
+    globalHost.appendChild(chip);
+  }
+
+  if (overridesHost) {
+    clear(overridesHost);
+    const label = document.createElement("div");
+    label.className = "tone-overview-label";
+    label.textContent = "Domain overrides";
+    overridesHost.appendChild(label);
+    const overrides = Array.isArray(data && data.domain_overrides) ? data.domain_overrides : [];
+    if (!overrides.length) {
+      const empty = document.createElement("div");
+      empty.className = "tone-overview-empty";
+      empty.textContent = "No domain overrides yet.";
+      overridesHost.appendChild(empty);
+    } else {
+      const list = document.createElement("div");
+      list.className = "tone-overview-list";
+      overrides.slice(0, 5).forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "tone-overview-row";
+        const title = document.createElement("div");
+        title.className = "tone-overview-meta";
+        title.textContent = `${String(item.label || item.domain || "Domain")}: ${String(item.profile_label || item.profile || "Balanced")}`;
+        row.appendChild(title);
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.textContent = "Reset";
+        btn.addEventListener("click", () => injectUserText(`tone reset ${String(item.domain || "").trim()}`, "text"));
+        row.appendChild(btn);
+        list.appendChild(row);
+      });
+      overridesHost.appendChild(list);
+    }
+  }
+
+  if (historyHost) {
+    clear(historyHost);
+    const label = document.createElement("div");
+    label.className = "tone-overview-label";
+    label.textContent = "Recent changes";
+    historyHost.appendChild(label);
+    const history = Array.isArray(data && data.history) ? data.history : [];
+    if (!history.length) {
+      const empty = document.createElement("div");
+      empty.className = "tone-overview-empty";
+      empty.textContent = "No tone changes recorded yet.";
+      historyHost.appendChild(empty);
+    } else {
+      const list = document.createElement("ul");
+      list.className = "tone-history-list";
+      history.slice(0, 4).forEach((item) => {
+        const li = document.createElement("li");
+        const summaryText = String(item.summary || "").trim();
+        const timestamp = formatThreadTimestamp(item.timestamp || "");
+        li.textContent = timestamp ? `${summaryText} (${timestamp})` : summaryText;
+        list.appendChild(li);
+      });
+      historyHost.appendChild(list);
+    }
+  }
+
+  refreshToneModal();
+}
+
+function refreshToneModal() {
+  const overlay = $("tone-modal");
+  if (!overlay) return;
+
+  const snapshot = toneState.snapshot || {};
+  const summary = $("tone-modal-summary");
+  const globalHost = $("tone-modal-global");
+  const domainHost = $("tone-modal-domains");
+  const historyHost = $("tone-modal-history");
+
+  if (summary) {
+    summary.textContent = String(snapshot.summary || "Global tone: balanced. No domain overrides.").trim();
+  }
+
+  if (globalHost) {
+    clear(globalHost);
+    const heading = document.createElement("div");
+    heading.className = "tone-modal-section-title";
+    heading.textContent = "Global tone";
+    globalHost.appendChild(heading);
+    globalHost.appendChild(
+      buildToneProfileButtons(snapshot.global_profile || "balanced", (profile) => {
+        injectUserText(`tone set ${profile}`, "text");
+      })
+    );
+  }
+
+  if (domainHost) {
+    clear(domainHost);
+    const domains = Array.isArray(snapshot.domain_options) ? snapshot.domain_options : [];
+    const overrides = Array.isArray(snapshot.domain_overrides) ? snapshot.domain_overrides : [];
+    const overrideMap = new Map();
+    overrides.forEach((item) => {
+      overrideMap.set(String(item.domain || "").trim().toLowerCase(), String(item.profile || "").trim().toLowerCase());
+    });
+    domains.forEach((item) => {
+      const domainId = String(item.id || "").trim().toLowerCase();
+      if (!domainId) return;
+      const row = document.createElement("div");
+      row.className = "tone-domain-row";
+
+      const title = document.createElement("div");
+      title.className = "tone-domain-title";
+      title.textContent = String(item.label || domainId);
+      row.appendChild(title);
+
+      const current = overrideMap.get(domainId) || snapshot.global_profile || "balanced";
+      row.appendChild(
+        buildToneProfileButtons(current, (profile) => {
+          injectUserText(`tone set ${domainId} ${profile}`, "text");
+        })
+      );
+
+      const resetBtn = document.createElement("button");
+      resetBtn.type = "button";
+      resetBtn.className = "tone-reset-btn";
+      resetBtn.textContent = "Reset";
+      resetBtn.disabled = !overrideMap.has(domainId);
+      resetBtn.addEventListener("click", () => injectUserText(`tone reset ${domainId}`, "text"));
+      row.appendChild(resetBtn);
+
+      domainHost.appendChild(row);
+    });
+  }
+
+  if (historyHost) {
+    clear(historyHost);
+    const history = Array.isArray(snapshot.history) ? snapshot.history : [];
+    if (!history.length) {
+      historyHost.textContent = "No tone changes recorded yet.";
+    } else {
+      const list = document.createElement("ul");
+      list.className = "tone-history-list";
+      history.slice(0, 6).forEach((item) => {
+        const li = document.createElement("li");
+        const summaryText = String(item.summary || "").trim();
+        const timestamp = formatThreadTimestamp(item.timestamp || "");
+        li.textContent = timestamp ? `${summaryText} (${timestamp})` : summaryText;
+        list.appendChild(li);
+      });
+      historyHost.appendChild(list);
+    }
+  }
+}
+
+function showToneModal() {
+  let overlay = $("tone-modal");
+  if (!overlay) {
+    const shell = createModalShell("tone-modal", "Response Style");
+    overlay = shell.overlay;
+    const card = shell.card;
+
+    const summary = document.createElement("p");
+    summary.id = "tone-modal-summary";
+    summary.className = "tone-modal-summary";
+    card.appendChild(summary);
+
+    const globalHost = document.createElement("div");
+    globalHost.id = "tone-modal-global";
+    globalHost.className = "tone-modal-section";
+    card.appendChild(globalHost);
+
+    const domainTitle = document.createElement("div");
+    domainTitle.className = "tone-modal-section-title";
+    domainTitle.textContent = "Domain overrides";
+    card.appendChild(domainTitle);
+
+    const domains = document.createElement("div");
+    domains.id = "tone-modal-domains";
+    domains.className = "tone-modal-domains";
+    card.appendChild(domains);
+
+    const historyTitle = document.createElement("div");
+    historyTitle.className = "tone-modal-section-title";
+    historyTitle.textContent = "Recent changes";
+    card.appendChild(historyTitle);
+
+    const history = document.createElement("div");
+    history.id = "tone-modal-history";
+    history.className = "tone-modal-history";
+    card.appendChild(history);
+
+    const actions = document.createElement("div");
+    actions.className = "modal-actions";
+
+    const refreshBtn = document.createElement("button");
+    refreshBtn.type = "button";
+    refreshBtn.textContent = "Refresh";
+    refreshBtn.addEventListener("click", () => {
+      safeWSSend({ text: "tone status", silent_widget_refresh: true });
+    });
+    actions.appendChild(refreshBtn);
+
+    const resetBtn = document.createElement("button");
+    resetBtn.type = "button";
+    resetBtn.textContent = "Reset all";
+    resetBtn.addEventListener("click", () => {
+      injectUserText("tone reset all", "text");
+    });
+    actions.appendChild(resetBtn);
+
+    card.appendChild(actions);
+  }
+
+  if (!toneState.snapshot || !toneState.snapshot.global_profile) {
+    safeWSSend({ text: "tone status", silent_widget_refresh: true });
+  }
+  refreshToneModal();
+  overlay.style.display = "flex";
+}
+
 function formatSystemSummary(data, summary = "") {
   const fallback = String(summary || "System status ready.").trim() || "System status ready.";
   if (!data || typeof data !== "object") return fallback;
@@ -721,6 +992,8 @@ function formatSystemSummary(data, summary = "") {
   const modelReady = data.model_ready;
   const modelNote = String(data.model_note || "").trim();
   const modelRemediation = String(data.model_remediation || "").trim();
+  const toneProfile = String(data.tone_global_profile || "").trim();
+  const toneOverrideCount = Number(data.tone_override_count);
 
   const parts = [];
   if (health) parts.push(`Health ${health}`);
@@ -728,6 +1001,14 @@ function formatSystemSummary(data, summary = "") {
   if (Number.isFinite(memory)) parts.push(`Memory ${Math.round(memory)}%`);
   if (Number.isFinite(disk)) parts.push(`Disk ${Math.round(disk)}%`);
   if (network) parts.push(`Network ${network}`);
+  if (toneProfile) {
+    const toneLabel = toneProfile.charAt(0).toUpperCase() + toneProfile.slice(1);
+    if (Number.isFinite(toneOverrideCount) && toneOverrideCount > 0) {
+      parts.push(`Tone ${toneLabel} +${Math.round(toneOverrideCount)} override${toneOverrideCount === 1 ? "" : "s"}`);
+    } else {
+      parts.push(`Tone ${toneLabel}`);
+    }
+  }
   if (modelAvailability && modelAvailability !== "available") {
     parts.push(`Model ${modelAvailability}`);
   } else if (modelReady === false) {
@@ -2304,6 +2585,7 @@ function hydrateDashboardWidgets() {
   safeWSSend({ text: "system status", silent_widget_refresh: true });
   safeWSSend({ text: "calendar", silent_widget_refresh: true });
   safeWSSend({ text: "memory overview", silent_widget_refresh: true });
+  safeWSSend({ text: "tone status", silent_widget_refresh: true });
 }
 
 function startWidgetAutoRefresh() {
@@ -2368,6 +2650,9 @@ function connectWebSocket() {
         break;
       case "memory_overview":
         renderMemoryOverviewWidget(msg);
+        break;
+      case "tone_profile":
+        renderToneOverviewWidget(msg);
         break;
       case "chat":
         appendChatMessage(
@@ -2857,6 +3142,7 @@ function injectUtilityButtons() {
 
   [
     { id: "btn-help", label: "Help", fn: showHelpModal },
+    { id: "btn-tone", label: "Tone", fn: showToneModal },
     { id: "btn-privacy", label: "Privacy", fn: showPrivacyModal },
     { id: "btn-accessibility", label: "Accessibility", fn: showAccessibilityModal },
   ].forEach((item) => {
@@ -2881,6 +3167,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderContextInsight("");
   renderThreadMapWidget({});
   renderMemoryOverviewWidget({});
+  renderToneOverviewWidget({});
   renderTrustPanel();
   renderQuickActions();
   setupHintsPanelToggle();
@@ -2939,6 +3226,16 @@ window.addEventListener("DOMContentLoaded", () => {
   const homeMemoryListBtn = $("btn-home-memory-list");
   if (homeMemoryListBtn) {
     homeMemoryListBtn.addEventListener("click", () => injectUserText("memory list", "text"));
+  }
+
+  const homeToneStatusBtn = $("btn-home-tone-status");
+  if (homeToneStatusBtn) {
+    homeToneStatusBtn.addEventListener("click", () => showToneModal());
+  }
+
+  const homeToneResetBtn = $("btn-home-tone-reset");
+  if (homeToneResetBtn) {
+    homeToneResetBtn.addEventListener("click", () => injectUserText("tone reset all", "text"));
   }
 
   const micBtn = $("ptt-btn");

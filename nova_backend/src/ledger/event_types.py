@@ -45,5 +45,8 @@ EVENT_TYPES = frozenset(
         "MEMORY_ITEM_DEFERRED",
         "MEMORY_ITEM_DELETED",
         "MEMORY_ITEM_SUPERSEDED",
+        "TONE_PROFILE_VIEWED",
+        "TONE_PROFILE_UPDATED",
+        "TONE_PROFILE_RESET",
     }
 )

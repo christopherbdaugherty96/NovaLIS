@@ -20,3 +20,7 @@ INFO:     127.0.0.1:60082 - "GET /phase-status HTTP/1.1" 200 OK
 INFO:     127.0.0.1:60086 - "GET /phase-status HTTP/1.1" 200 OK
 INFO:     127.0.0.1:64135 - "GET /phase-status HTTP/1.1" 200 OK
 INFO:     127.0.0.1:64163 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58355 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58356 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53618 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53619 - "GET /phase-status HTTP/1.1" 200 OK
