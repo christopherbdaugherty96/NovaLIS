@@ -78,6 +78,15 @@ This is where screen capture, OCR, cursor-region logic, and explain-anything sup
 ### `personality/`
 This is Nova's presentation discipline layer.
 It helps keep outputs readable and non-authoritarian.
+It also now carries the manual Phase-5 tone profile store and response-style logic.
+
+### `patterns/`
+This is where the opt-in pattern-review queue lives.
+It is advisory only and does not create a new authority path.
+
+### `tasks/`
+This is where calm scheduled updates and reminders live.
+It includes explicit policy controls such as quiet hours and notification rate limits.
 
 ### `ledger/`
 This is the append-only event logging surface.
@@ -97,3 +106,8 @@ The backend is deliberately split so that:
 - perception remains bounded and request-time
 
 That structure is one of Nova's biggest architectural strengths.
+
+## Phase-5 In Code
+If you want the Phase-5-specific code map, use:
+- `docs/current_runtime/PHASE_5_RUNTIME_SURFACE.md`
+- `docs/PROOFS/Phase-5/PHASE_5_IMPLEMENTATION_MAP_2026-03-13.md`

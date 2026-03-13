@@ -24,7 +24,7 @@ There are now two different truths that both matter:
    - the memory, tone, scheduling, and pattern-review slices are real and verified
 2. Gate truth:
    - admission is now satisfied and ratified for the current runtime package
-   - formal closed-act language remains a separate closure document if desired
+   - closed-act language is now recorded in `PHASE_5_CLOSED_ACT_2026-03-13.md`
 
 This means Nova is no longer waiting on purely hypothetical design work.
 The original gate-prep tracks have now been matched to implemented runtime evidence and ratified for the active package.
@@ -39,3 +39,5 @@ The major previously pending design tracks have moved from:
 to:
 
 - ratified / approved runtime-backed gate credit
+
+The current trust-facing Phase-5 package is therefore closure-ready and now formally closed for the repository state represented by this packet.

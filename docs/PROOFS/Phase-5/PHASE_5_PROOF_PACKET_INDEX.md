@@ -1,6 +1,6 @@
 ﻿# Phase-5 Proof Packet Index
 Updated: 2026-03-13
-Status: Admission gate satisfied; active runtime package ratified
+Status: CLOSED for the current trust-facing Phase-5 package
 Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, and implemented runtime slices.
 
 ## Gate-Preparation Artifacts (Design Authority)
@@ -21,6 +21,8 @@ Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, and i
 15. `PHASE_5_ACTIVE_RUNTIME_CERTIFICATION_2026-03-13.md`
 16. `PHASE_5_COMPLETION_EVIDENCE_MATRIX_2026-03-13.md`
 17. `PHASE_5_RATIFICATION_ACT_2026-03-13.md`
+18. `PHASE_5_IMPLEMENTATION_MAP_2026-03-13.md`
+19. `PHASE_5_CLOSED_ACT_2026-03-13.md`
 
 ## Runtime Slice Artifacts (Implemented to Date)
 1. `PHASE_5_MEMORY_RUNTIME_SLICE_2026-03-11.md`
@@ -112,5 +114,7 @@ Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, and i
 - Tone changes remain explicit, inspectable, and user-invoked only.
 - Schedules remain explicit, inspectable, cancellable, and policy-bound.
 - Pattern review remains opt-in, advisory, and discardable.
-- Admission gate is satisfied for the current repository state; formal phase closure remains a separate decision artifact.
+- Admission gate is satisfied for the current repository state.
+- The trust-facing Phase-5 package is now formally closed by `PHASE_5_CLOSED_ACT_2026-03-13.md`.
+- Declarative identity/preferences remain deferred and are not part of the closed package.
 
