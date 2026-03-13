@@ -271,3 +271,47 @@ def test_summarize_thread_insights_includes_latest_decision_and_timestamp(tmp_pa
     assert int(dep.get("memory_count") or 0) == 2
     assert str(dep.get("last_memory_updated_at") or "").strip()
     assert "Verify PYTHONPATH before rebuilding" in str(dep.get("latest_decision") or "")
+
+
+def test_memory_overview_reports_counts_recent_items_and_linked_threads(tmp_path: Path):
+    store = GovernedMemoryStore(tmp_path / "memory_items.json")
+    executor = MemoryGovernanceExecutor(store=store)
+
+    executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={
+                "action": "save",
+                "title": "Decision: Deployment Issue",
+                "body": "Project thread: Deployment Issue\n\nDecision\nVerify PYTHONPATH before rebuild",
+                "thread_name": "Deployment Issue",
+                "thread_key": "deployment issue",
+                "tags": ["decision"],
+            },
+        )
+    )
+    executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={
+                "action": "save",
+                "title": "Governance note",
+                "body": "Preserve explicit revocation flows.",
+                "scope": "nova_core",
+            },
+        )
+    )
+
+    result = executor.execute(ActionRequest(capability_id=61, params={"action": "overview"}))
+    assert result.success is True
+    assert "Governed Memory Overview" in result.message
+
+    overview = dict(result.data or {}).get("memory_overview") or {}
+    assert int(overview.get("total_count") or 0) == 2
+    assert int(dict(overview.get("tier_counts") or {}).get("active") or 0) == 2
+    linked_threads = list(overview.get("linked_threads") or [])
+    assert linked_threads
+    assert linked_threads[0]["thread_name"] == "Deployment Issue"
+    recent_items = list(overview.get("recent_items") or [])
+    assert recent_items
+    assert dict(result.data or {}).get("follow_up_prompts")

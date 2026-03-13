@@ -69,6 +69,12 @@ Nova's memory model is closer to:
 - durable project context
 - explicit preservation of decisions and artifacts
 
+Nova can also show a governed memory overview so the user can inspect:
+- how many durable items exist
+- how many are active, locked, or deferred
+- which threads have linked memory
+- what was saved most recently
+
 ## 4. The Thread-Memory Bridge
 One of the most important recent changes is the bridge between threads and governed memory.
 
@@ -78,6 +84,7 @@ This means Nova can now preserve:
 - durable thread-linked memory history
 
 Examples:
+- `memory overview`
 - `memory save thread deployment issue`
 - `memory save decision for deployment issue: inspect PYTHONPATH first`
 - `memory list thread deployment issue`
@@ -95,6 +102,8 @@ A realistic Nova continuity flow now looks like this:
 - Nova shows the current blocker and latest decision
 - you save a new decision
 - the thread's memory count increases
+- you ask for `memory overview`
+- Nova shows the current durable memory state and linked threads
 - later you come back and Nova can show the durable context again
 
 That is the beginning of a real personal continuity system.

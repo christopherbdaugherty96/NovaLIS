@@ -1,5 +1,5 @@
 # Phase-5 Proof Packet Index
-Updated: 2026-03-12
+Updated: 2026-03-13
 Status: Runtime Slices Active (Gate Not Closed)
 Purpose: Canonical index of Phase-5 design-gate artifacts plus implemented runtime slices.
 
@@ -17,10 +17,11 @@ Purpose: Canonical index of Phase-5 design-gate artifacts plus implemented runti
 1. `PHASE_5_MEMORY_RUNTIME_SLICE_2026-03-11.md`
 2. `PHASE_5_PROJECT_CONTINUITY_RUNTIME_NOTE_2026-03-12.md`
 3. `PHASE_5_THREAD_MEMORY_BRIDGE_RUNTIME_SLICE_2026-03-12.md`
-4. `PHASE_5_CAPABILITY_SUMMARY_AND_SELLABILITY_2026-03-12.md`
-5. `PHASE_5_EVERYDAY_USER_JOURNEYS_2026-03-12.md`
-6. `PHASE_5_CUMULATIVE_IMPLEMENTATION_STATE_2026-03-12.md`
-7. `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
+4. `PHASE_5_MEMORY_INSPECTABILITY_RUNTIME_SLICE_2026-03-13.md`
+5. `PHASE_5_CAPABILITY_SUMMARY_AND_SELLABILITY_2026-03-12.md`
+6. `PHASE_5_EVERYDAY_USER_JOURNEYS_2026-03-12.md`
+7. `PHASE_5_CUMULATIVE_IMPLEMENTATION_STATE_2026-03-12.md`
+8. `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
 
 ## Cross-Phase Runtime References
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
@@ -48,10 +49,10 @@ Purpose: Canonical index of Phase-5 design-gate artifacts plus implemented runti
 - `python scripts/check_runtime_doc_drift.py`
 - `python scripts/check_frontend_mirror_sync.py`
 
-## Latest Verification Snapshot (2026-03-12)
-- `nova_backend/tests/phase5`: `25 passed`
-- `nova_backend/tests/phase45`: `33 passed`
-- Full backend suite (`nova_backend/tests`): `344 passed`
+## Latest Verification Snapshot (2026-03-13)
+- `nova_backend/tests/phase5`: `26 passed`
+- `nova_backend/tests/phase45`: `37 passed`
+- Full backend suite (`nova_backend/tests`): `363 passed`
 - Runtime documentation drift check: passed
 - Frontend mirror sync check: passed
 
@@ -68,6 +69,11 @@ Purpose: Canonical index of Phase-5 design-gate artifacts plus implemented runti
    - Session-relative `Changed: ...` mini-diff line
    - Thread detail panel with decision/memory context
    - Recent decisions + timestamped linked memory in detail view
+5. Memory inspectability surface landed:
+   - `memory overview` / `memory status` / `memory review`
+   - Dashboard governed-memory overview widget
+   - Tier counts, linked-thread counts, and recent memory review surface
+   - Memory widget refresh after governed-memory operations
 
 ## Governance State
 - Runtime remains invocation-bound.

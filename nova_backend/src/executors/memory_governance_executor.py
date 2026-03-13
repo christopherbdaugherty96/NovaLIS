@@ -19,6 +19,8 @@ class MemoryGovernanceExecutor:
         store = self._resolve_store(params)
 
         try:
+            if action in {"overview", "status", "review"}:
+                return self._overview(request, store)
             if action == "save":
                 return self._save(request, params, store)
             if action == "save_thread_snapshot":
@@ -88,6 +90,91 @@ class MemoryGovernanceExecutor:
             "Unsupported memory action.",
             request_id=request.request_id,
             authority_class="persistent_change",
+            external_effect=False,
+            reversible=True,
+        )
+
+    def _overview(self, request, store: GovernedMemoryStore) -> ActionResult:
+        overview = store.summarize_overview()
+        tier_counts = dict(overview.get("tier_counts") or {})
+        active_count = int(tier_counts.get("active") or 0)
+        locked_count = int(tier_counts.get("locked") or 0)
+        deferred_count = int(tier_counts.get("deferred") or 0)
+        total_count = int(overview.get("total_count") or 0)
+        linked_threads = list(overview.get("linked_threads") or [])
+        recent_items = list(overview.get("recent_items") or [])
+
+        self._log(
+            "MEMORY_OVERVIEW_VIEWED",
+            {
+                "total_count": total_count,
+                "active_count": active_count,
+                "locked_count": locked_count,
+                "deferred_count": deferred_count,
+            },
+        )
+
+        lines = ["Governed Memory Overview", ""]
+        lines.append(f"Total items: {total_count}")
+        lines.append(f"Active: {active_count} | Locked: {locked_count} | Deferred: {deferred_count}")
+        lines.append("")
+
+        if linked_threads:
+            lines.append("Linked project threads")
+            for thread in linked_threads[:4]:
+                thread_name = str(thread.get("thread_name") or thread.get("thread_key") or "Unnamed thread").strip()
+                thread_count = int(thread.get("memory_count") or 0)
+                latest_title = str(thread.get("latest_title") or "").strip()
+                if latest_title:
+                    lines.append(f"- {thread_name}: {thread_count} items | latest '{latest_title}'")
+                else:
+                    lines.append(f"- {thread_name}: {thread_count} items")
+            lines.append("")
+
+        if recent_items:
+            lines.append("Recent memory")
+            for item in recent_items[:5]:
+                item_id = str(item.get("id") or "").strip()
+                title = str(item.get("title") or "").strip() or item_id
+                tier = str(item.get("tier") or "").strip().lower() or "active"
+                thread_name = str(item.get("thread_name") or "").strip()
+                thread_suffix = f" | thread:{thread_name}" if thread_name else ""
+                lines.append(f"- {item_id} | {tier} | {title}{thread_suffix}")
+        else:
+            lines.append("No memory items are stored yet.")
+
+        lines.extend(
+            [
+                "",
+                "Try next:",
+                "- memory list",
+                "- memory show <id>",
+                "- memory save <title>: <content>",
+            ]
+        )
+        if linked_threads:
+            first_thread = str(linked_threads[0].get("thread_name") or "").strip()
+            if first_thread:
+                lines.append(f"- memory list thread {first_thread}")
+
+        follow_up_prompts = [
+            "memory list",
+            "memory show <id>",
+            "memory save <title>: <content>",
+        ]
+        if linked_threads:
+            first_thread = str(linked_threads[0].get("thread_name") or "").strip()
+            if first_thread:
+                follow_up_prompts.append(f"memory list thread {first_thread}")
+
+        return ActionResult.ok(
+            message="\n".join(lines),
+            data={
+                "memory_overview": overview,
+                "follow_up_prompts": follow_up_prompts,
+            },
+            request_id=request.request_id,
+            authority_class="read_only",
             external_effect=False,
             reversible=True,
         )

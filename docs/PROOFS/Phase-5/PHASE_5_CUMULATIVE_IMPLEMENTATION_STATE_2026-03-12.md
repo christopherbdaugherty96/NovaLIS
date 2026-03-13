@@ -16,6 +16,7 @@ Current practical state:
 - governed memory is live
 - explicit thread-memory bridge is live
 - dashboard continuity/memory UX is live
+- dashboard memory inspectability is live
 - governance invariants remain preserved
 
 ## Implemented Slice Timeline
@@ -66,6 +67,21 @@ Coverage references:
 - `PHASE_5_CAPABILITY_SUMMARY_AND_SELLABILITY_2026-03-12.md`
 - `PHASE_5_EVERYDAY_USER_JOURNEYS_2026-03-12.md`
 
+### Slice E: Memory Inspectability Surface (2026-03-13)
+Implemented:
+- read-only governed-memory review command:
+  - `memory overview`
+  - `memory status`
+  - `memory review`
+- memory tier counts
+- linked-thread memory counts
+- recent durable memory listing
+- dashboard memory overview widget
+- memory widget hydration and post-write refresh
+
+Primary artifact:
+- `PHASE_5_MEMORY_INSPECTABILITY_RUNTIME_SLICE_2026-03-13.md`
+
 ## Current Command Surface (Implemented)
 
 ### Continuity Commands
@@ -82,6 +98,7 @@ Coverage references:
 - `thread detail <name>`
 
 ### Governed Memory Commands
+- `memory overview`
 - `memory save <title>: <content>`
 - `memory list [active|locked|deferred]`
 - `memory show <id>`
@@ -99,6 +116,9 @@ Coverage references:
 - active thread indicator
 - blocker/status/health context
 - memory badge (`Memory: N`)
+- governed memory overview widget
+- tier-count visibility for durable memory
+- recent durable memory review surface
 - inline decision save entry
 - session-relative change summary (`Changed: ...`)
 - thread detail panel with continuity + linked-memory context
@@ -112,7 +132,7 @@ Coverage references:
 - ledger-visible governed memory lifecycle
 
 ## Verification Evidence (Latest)
-Run date: 2026-03-12
+Run date: 2026-03-13
 
 Commands:
 - `$env:PYTHONPATH='nova_backend'; python -m pytest -q nova_backend/tests/phase5`
@@ -123,9 +143,9 @@ Commands:
 - `python scripts/check_frontend_mirror_sync.py`
 
 Results:
-- `nova_backend/tests/phase5`: `25 passed`
-- `nova_backend/tests/phase45`: `33 passed`
-- full backend suite (`nova_backend/tests`): `344 passed`
+- `nova_backend/tests/phase5`: `26 passed`
+- `nova_backend/tests/phase45`: `37 passed`
+- full backend suite (`nova_backend/tests`): `363 passed`
 - runtime doc drift: passed
 - frontend mirror sync: passed
 

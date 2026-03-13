@@ -146,6 +146,16 @@ def test_volume_media_brightness_parsing():
     assert inv.capability_id == 61
     assert inv.params["action"] == "list"
 
+    inv = GovernorMediator.parse_governed_invocation("memory overview")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 61
+    assert inv.params["action"] == "overview"
+
+    inv = GovernorMediator.parse_governed_invocation("memory status")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 61
+    assert inv.params["action"] == "overview"
+
     inv = GovernorMediator.parse_governed_invocation("memory save deployment note: verify PYTHONPATH in container")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 61
@@ -188,6 +198,7 @@ def test_volume_media_brightness_parsing():
     inv = GovernorMediator.parse_governed_invocation("memory")
     assert isinstance(inv, Clarification)
     assert inv.capability_id == 61
+    assert "memory overview" in inv.message
 
 
 

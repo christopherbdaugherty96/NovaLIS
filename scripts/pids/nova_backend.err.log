@@ -1,0 +1,63 @@
+Using fallback digest 'fetch_failed' – inference will block until confirmed.
+Model version mismatch. Blocking inference.
+Model inference blocked due to version mismatch.
+INFO:     Started server process [31584]
+INFO:     Waiting for application startup.
+INFO:     Application startup complete.
+INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
+INFO:     127.0.0.1:61471 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:49685 - "WebSocket /ws" [accepted]
+INFO:     connection open
+Generate called while model is blocked.
+Generate called while model is blocked.
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:49322 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53775 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:53381 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:53382 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:54353 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:54354 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:51972 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:51973 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:60147 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64633 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+INFO:     connection closed
+INFO:     127.0.0.1:54784 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:60085 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     connection closed
+Exception in callback _ProactorBasePipeTransport._call_connection_lost(None)
+handle: <Handle _ProactorBasePipeTransport._call_connection_lost(None)>
+Traceback (most recent call last):
+  File "C:\Program Files\Python310\lib\asyncio\events.py", line 80, in _run
+    self._context.run(self._callback, *self._args)
+  File "C:\Program Files\Python310\lib\asyncio\proactor_events.py", line 165, in _call_connection_lost
+    self._sock.shutdown(socket.SHUT_RDWR)
+ConnectionResetError: [WinError 10054] An existing connection was forcibly closed by the remote host
+INFO:     connection closed
+INFO:     127.0.0.1:59635 - "WebSocket /ws" [accepted]
+INFO:     connection open
+INFO:     127.0.0.1:64162 - "WebSocket /ws" [accepted]
+INFO:     connection open

@@ -730,6 +730,66 @@ def _build_thread_detail_widget(
         "why_next_step": why_next,
     }
 
+
+def _build_memory_overview_widget(overview: dict | None) -> dict:
+    payload = dict(overview or {})
+    tier_counts = dict(payload.get("tier_counts") or {})
+    total_count = int(payload.get("total_count") or 0)
+    active_count = int(tier_counts.get("active") or 0)
+    locked_count = int(tier_counts.get("locked") or 0)
+    deferred_count = int(tier_counts.get("deferred") or 0)
+
+    recent_items: list[dict] = []
+    for item in list(payload.get("recent_items") or [])[:5]:
+        row = dict(item or {})
+        recent_items.append(
+            {
+                "id": str(row.get("id") or ""),
+                "title": str(row.get("title") or ""),
+                "tier": str(row.get("tier") or ""),
+                "scope": str(row.get("scope") or ""),
+                "updated_at": str(row.get("updated_at") or ""),
+                "thread_name": str(row.get("thread_name") or ""),
+            }
+        )
+
+    linked_threads: list[dict] = []
+    for thread in list(payload.get("linked_threads") or [])[:5]:
+        row = dict(thread or {})
+        linked_threads.append(
+            {
+                "thread_key": str(row.get("thread_key") or ""),
+                "thread_name": str(row.get("thread_name") or row.get("thread_key") or ""),
+                "memory_count": int(row.get("memory_count") or 0),
+                "last_memory_updated_at": str(row.get("last_memory_updated_at") or ""),
+                "latest_title": str(row.get("latest_title") or ""),
+                "latest_tier": str(row.get("latest_tier") or ""),
+            }
+        )
+
+    if total_count <= 0:
+        summary = "No durable memory saved yet. Memory becomes persistent only when you explicitly save it."
+    else:
+        summary = (
+            f"Total {total_count} durable item"
+            f"{'' if total_count == 1 else 's'} | "
+            f"Active {active_count} | Locked {locked_count} | Deferred {deferred_count}"
+        )
+
+    return {
+        "type": "memory_overview",
+        "summary": summary,
+        "total_count": total_count,
+        "tier_counts": {
+            "active": active_count,
+            "locked": locked_count,
+            "deferred": deferred_count,
+        },
+        "recent_items": recent_items,
+        "linked_threads": linked_threads,
+        "inspectability_note": "Memory is explicit, inspectable, and revocable.",
+    }
+
 # -------------------------------------------------
 # Phase Status Endpoint
 # -------------------------------------------------
@@ -790,6 +850,24 @@ async def send_thread_map_widget(
     widget["threads"] = enriched_threads
     session_state["thread_map_last"] = snapshot
     await ws_send(ws, widget)
+
+
+async def send_memory_overview_widget(
+    ws: WebSocket,
+    session_state: dict,
+    *,
+    overview: dict | None = None,
+) -> None:
+    payload = dict(overview or {})
+    if not payload:
+        try:
+            from src.memory.governed_memory_store import GovernedMemoryStore
+
+            payload = GovernedMemoryStore().summarize_overview()
+        except Exception:
+            payload = {}
+    session_state["last_memory_overview"] = payload
+    await ws_send(ws, _build_memory_overview_widget(payload))
 
 async def send_chat_message(
     ws: WebSocket,
@@ -943,6 +1021,7 @@ async def websocket_endpoint(ws: WebSocket):
         "project_thread_active": "",
         "last_recommendation_reason": "",
         "thread_map_last": {},
+        "last_memory_overview": {},
     }
 
     await send_chat_message(ws, "Hello. How can I help?")
@@ -1135,6 +1214,7 @@ async def websocket_endpoint(ws: WebSocket):
                     "- which project is most blocked right now\n"
                     "- why this recommendation\n\n"
                     "Governed Memory\n"
+                    "- memory overview\n"
                     "- memory save <title>: <content>\n"
                     "- memory save thread <name>\n"
                     "- memory save decision for <thread>: <text>\n"
@@ -2342,6 +2422,15 @@ async def websocket_endpoint(ws: WebSocket):
                             linked_thread = str(links.get("project_thread_name") or "").strip()
                             if linked_thread:
                                 session_state["project_thread_active"] = linked_thread
+                        overview_data = action_result.data.get("memory_overview")
+                        if isinstance(overview_data, dict):
+                            await send_memory_overview_widget(
+                                ws,
+                                session_state,
+                                overview=overview_data,
+                            )
+                        elif action_result.success:
+                            await send_memory_overview_widget(ws, session_state)
                     sources = action_result.data.get("sources")
                     if isinstance(sources, list) and sources:
                         session_state["last_sources"] = [str(src) for src in sources[:10]]
@@ -2475,6 +2564,7 @@ async def websocket_endpoint(ws: WebSocket):
                             suggestion_items.append(
                                 {"label": f"Memory for {linked_thread}", "command": f"memory list thread {linked_thread}"}
                             )
+                        suggestion_items.append({"label": "Memory overview", "command": "memory overview"})
                         if suggestion_items:
                             message_suggestions = suggestion_items
 

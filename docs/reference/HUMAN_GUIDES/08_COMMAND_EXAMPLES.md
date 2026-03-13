@@ -174,6 +174,8 @@ These are especially useful for:
 Use these when you want to preserve something across time on purpose.
 
 Examples:
+- `memory overview`
+- `memory status`
 - `memory save deployment fix: confirm PYTHONPATH in container`
 - `memory list`
 - `memory show mem_123`

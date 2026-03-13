@@ -18,6 +18,7 @@ That means Nova already has:
 - screen explanation
 - thread continuity
 - governed memory
+- governed memory overview and inspectability surface
 - dashboard support for all of the above
 
 ## What Feels Mature Already
@@ -29,6 +30,7 @@ These parts are already meaningfully real:
 - project thread continuity
 - thread health, blocker, and decision surfaces
 - governed memory and thread-linked memory
+- durable memory review through `memory overview`
 
 ## What Is Still Maturing
 These parts are active but still evolving:
@@ -48,6 +50,9 @@ A careful plain-language description of the current system is:
 - voice input exists
 - voice output exists
 - wake word is planned
+
+The next planned wake-word step is documented here:
+- `docs/PROOFS/Phase-6/PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
 
 ## What Makes The Current State Special
 Even before full Phase-5 closure, Nova already combines things that usually live in separate products:
