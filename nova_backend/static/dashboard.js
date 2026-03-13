@@ -2330,24 +2330,25 @@ function showThoughtOverlay(anchor, thoughtData) {
   overlay.style.display = "block";
 }
 
-function renderWeatherWidget(data) {
-  const container = $("weather-widget");
+function renderWeatherCard(container, data, options = {}) {
   if (!container) return;
   clear(container);
 
-  const h = document.createElement("h3");
-  h.textContent = "Weather";
-  container.appendChild(h);
+  const compact = Boolean(options.compact);
+  container.classList.toggle("weather-widget-compact", compact);
+
+  const headingTag = compact ? "h4" : "h3";
+  const heading = document.createElement(headingTag);
+  heading.textContent = String(options.heading || "Weather").trim() || "Weather";
+  container.appendChild(heading);
 
   const line = document.createElement("div");
   line.className = "weather-line";
   line.textContent = (data && data.summary) || "Weather unavailable.";
   container.appendChild(line);
-  morningState.weather = line.textContent;
-  renderMorningPanel();
 
   const forecast = String((data && data.forecast) || "").trim();
-  if (forecast) {
+  if (forecast && options.showForecast !== false) {
     const forecastLine = document.createElement("div");
     forecastLine.className = "weather-forecast";
     forecastLine.textContent = forecast;
@@ -2355,7 +2356,7 @@ function renderWeatherWidget(data) {
   }
 
   const alerts = Array.isArray(data?.alerts) ? data.alerts.filter((item) => String(item || "").trim()) : [];
-  if (alerts.length > 0) {
+  if (alerts.length > 0 && options.showAlerts !== false) {
     const alertWrap = document.createElement("div");
     alertWrap.className = "weather-alerts";
 
@@ -2376,9 +2377,16 @@ function renderWeatherWidget(data) {
 
   const meta = document.createElement("div");
   meta.className = "weather-meta";
-  appendConfidenceBadge(meta, "Local read-only");
-  if (alerts.length === 0) {
-    appendConfidenceBadge(meta, "No active alerts");
+  if (!compact) {
+    appendConfidenceBadge(meta, "Local read-only");
+    if (alerts.length === 0) {
+      appendConfidenceBadge(meta, "No active alerts");
+    }
+  } else if (alerts.length > 0) {
+    const alertChip = document.createElement("span");
+    alertChip.className = "confidence-badge";
+    alertChip.textContent = `${alerts.length} alert${alerts.length === 1 ? "" : "s"}`;
+    meta.appendChild(alertChip);
   }
   const updated = String((data && data.updated_at) || "").trim();
   if (updated) {
@@ -2387,6 +2395,22 @@ function renderWeatherWidget(data) {
     meta.appendChild(stamp);
   }
   container.appendChild(meta);
+}
+
+function renderWeatherWidget(data) {
+  const container = $("weather-widget");
+  const newsContainer = $("news-weather-widget");
+  if (!container && !newsContainer) return;
+
+  if (container) {
+    renderWeatherCard(container, data, { compact: false, showForecast: true, showAlerts: true });
+  }
+  if (newsContainer) {
+    renderWeatherCard(newsContainer, data, { compact: true, showForecast: true, showAlerts: false });
+  }
+
+  morningState.weather = String((data && data.summary) || "Weather unavailable.").trim();
+  renderMorningPanel();
 }
 
 function updateNewsSummary(summaryText) {

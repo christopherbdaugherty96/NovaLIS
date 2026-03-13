@@ -285,11 +285,15 @@ body {
 
 .main {
   min-height: 0;
+  overflow: hidden;
 }
 
 .page-view {
   min-height: 0;
   height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-right: 4px;
 }
 
 .page-chat {
@@ -305,13 +309,12 @@ body {
   gap: 10px;
   align-items: stretch;
   min-height: 0;
-  overflow: hidden;
 }
 
 .page-home {
   display: grid;
   gap: 10px;
-  justify-content: flex-end;
+  justify-items: end;
   align-content: start;
 }
 
@@ -668,7 +671,95 @@ body {
   height: 100%;
   overflow: hidden;
   display: grid;
-  grid-template-rows: auto auto auto minmax(0, 1fr);
+  grid-template-rows: auto auto minmax(0, 1fr);
+}
+
+.news-page-header {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(210px, 250px);
+  gap: 12px;
+  align-items: start;
+}
+
+.news-page-intro {
+  display: grid;
+  gap: 8px;
+  min-width: 0;
+}
+
+.news-page-kicker {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #8fc8ff;
+}
+
+.news-page-title-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.news-page-title-row h3 {
+  margin: 0;
+}
+
+.news-page-subtle {
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.news-summary-header {
+  margin: 0;
+}
+
+.news-weather-widget {
+  justify-self: end;
+  width: min(250px, 100%);
+  padding: 9px 10px;
+  border: 1px solid rgba(143, 218, 255, 0.24);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(22, 43, 76, 0.9) 0%, rgba(12, 24, 45, 0.92) 100%);
+}
+
+.weather-widget-compact {
+  gap: 5px;
+}
+
+.weather-widget-compact h4 {
+  margin: 0;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #9ed4ff;
+}
+
+.weather-widget-compact .weather-line {
+  font-size: 0.76rem;
+  line-height: 1.32;
+}
+
+.weather-widget-compact .weather-forecast {
+  font-size: 0.71rem;
+  line-height: 1.28;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: #cfe2ff;
+}
+
+.weather-widget-compact .weather-meta {
+  font-size: 0.68rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
 }
 
 .news-summary {
@@ -2149,6 +2240,15 @@ body {
 
   .news-layout {
     grid-template-rows: minmax(200px, 0.8fr) minmax(260px, 1.2fr);
+  }
+
+  .news-page-header {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .news-weather-widget {
+    justify-self: stretch;
+    width: 100%;
   }
 
   .orb-shell {
