@@ -24,3 +24,7 @@ def test_system_status_includes_model_and_capability_fields():
     assert "model_ready" in data
     assert "model_note" in data
     assert "model_remediation" in data
+    assert "notification_policy_summary" in data
+    assert "notification_quiet_hours_enabled" in data
+    assert "notification_quiet_hours_label" in data
+    assert "notification_rate_limit_per_hour" in data

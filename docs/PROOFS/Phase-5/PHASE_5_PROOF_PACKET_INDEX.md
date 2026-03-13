@@ -1,7 +1,7 @@
-# Phase-5 Proof Packet Index
+﻿# Phase-5 Proof Packet Index
 Updated: 2026-03-13
-Status: Runtime Slices Active (Gate Not Closed)
-Purpose: Canonical index of Phase-5 design-gate artifacts plus implemented runtime slices.
+Status: Admission gate satisfied; active runtime package ratified
+Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, and implemented runtime slices.
 
 ## Gate-Preparation Artifacts (Design Authority)
 1. `PHASE_5_ADMISSION_GATE_CHECKLIST_2026-03-09.md`
@@ -44,14 +44,14 @@ Purpose: Canonical index of Phase-5 design-gate artifacts plus implemented runti
 - `docs/PROOFS/Phase-4.5/PHASE_4_5_TO_PHASE_5_READINESS_NOTES_2026-03-09.md`
 
 ## Design Inputs
-- `docs/design/phase 5/MEMORY GOVERNANCE.md`
-- `docs/design/phase 5/NOVA_WORKING_CONTEXT_ENGINE.md`
-- `docs/design/phase 5/PHASE_5_DOCUMENT_MAP.md`
-- `docs/design/phase 5/# 🧭 Tonal Calibration Scope – Desi.txt`
-- `docs/design/phase 5/# 🧭 Tonal Calibration Visibility –.txt`
-- `docs/design/phase 5/# 🧬 NOVA PHASE 5 ROADMAP.txt`
-- `docs/design/phase 5/Delegated Autonomy.txt`
-- `docs/design/phase 5/Consolidated API's.txt`
+- `docs/design/Phase 5/MEMORY GOVERNANCE.md`
+- `docs/design/Phase 5/NOVA_WORKING_CONTEXT_ENGINE.md`
+- `docs/design/Phase 5/PHASE_5_DOCUMENT_MAP.md`
+- `docs/design/Phase 5/# 🧭 Tonal Calibration Scope – Desi.txt`
+- `docs/design/Phase 5/# 🧭 Tonal Calibration Visibility –.txt`
+- `docs/design/Phase 5/📄 Phase 5 Roadmap.txt (corrected).txt`
+- `docs/design/Phase 5/Delegated Autonomy.txt`
+- `docs/design/Phase 5/Consolidated API's.txt`
 
 ## Verification Commands (Current)
 - `$env:PYTHONPATH='nova_backend'; python -m pytest -q nova_backend/tests/phase5`
@@ -62,9 +62,9 @@ Purpose: Canonical index of Phase-5 design-gate artifacts plus implemented runti
 - `python scripts/check_frontend_mirror_sync.py`
 
 ## Latest Verification Snapshot (2026-03-13)
-- `nova_backend/tests/phase5`: `36 passed`
+- `nova_backend/tests/phase5`: `40 passed`
 - `nova_backend/tests/phase45`: `43 passed`
-- Full backend suite (`nova_backend/tests`): `382 passed`
+- Full backend suite (`nova_backend/tests`): `387 passed`
 - Runtime documentation drift check: passed
 - Frontend mirror sync check: passed
 
@@ -95,7 +95,9 @@ Purpose: Canonical index of Phase-5 design-gate artifacts plus implemented runti
    - Explicit daily brief + reminder schedules
    - Quiet scheduled-updates widget on the Home page
    - Schedule creation modal + cancel/dismiss controls
-   - No automatic scheduled action execution
+   - Explicit quiet-hours + rate-limit controls
+   - Delivery attempts and outcomes logged
+   - Governor-checked quiet delivery with no automatic scheduled action execution
 8. Opt-in pattern review landed:
    - Explicit `pattern opt in` / `pattern opt out`
    - User-triggered `review patterns` queue generation
@@ -108,6 +110,7 @@ Purpose: Canonical index of Phase-5 design-gate artifacts plus implemented runti
 - No autonomous/background execution introduced.
 - Memory writes remain explicit and Governor-mediated.
 - Tone changes remain explicit, inspectable, and user-invoked only.
-- Schedules remain explicit, inspectable, and cancellable.
+- Schedules remain explicit, inspectable, cancellable, and policy-bound.
 - Pattern review remains opt-in, advisory, and discardable.
-- Admission gate state remains open for full Phase-5 closure.
+- Admission gate is satisfied for the current repository state; formal phase closure remains a separate decision artifact.
+

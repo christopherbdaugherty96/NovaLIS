@@ -98,6 +98,25 @@ class OSDiagnosticsExecutor:
             return "balanced", "Tone settings unavailable.", "", 0
 
     @staticmethod
+    def _notification_schedule_details() -> tuple[str, bool, str, int, int, int]:
+        try:
+            from src.tasks.notification_schedule_store import NotificationScheduleStore
+
+            snapshot = NotificationScheduleStore().summarize()
+            policy = dict(snapshot.get("policy") or {})
+            policy_summary = str(snapshot.get("policy_summary") or "").strip()
+            return (
+                policy_summary or "Notification policy unavailable.",
+                bool(policy.get("quiet_hours_enabled")),
+                str(policy.get("quiet_hours_label") or "Off"),
+                int(policy.get("max_deliveries_per_hour") or 0),
+                int(snapshot.get("active_count") or 0),
+                int(snapshot.get("due_count") or 0),
+            )
+        except Exception:
+            return ("Notification policy unavailable.", False, "Off", 0, 0, 0)
+
+    @staticmethod
     def _network_status() -> tuple[str, int, str]:
         try:
             stats = psutil.net_if_stats()
@@ -151,6 +170,14 @@ class OSDiagnosticsExecutor:
         enabled_capability_ids = self._enabled_capabilities()
         model_availability, model_note, model_remediation, model_ready = self._model_status_details()
         tone_global_profile, tone_summary, tone_updated_at, tone_override_count = self._tone_status_details()
+        (
+            notification_policy_summary,
+            notification_quiet_hours_enabled,
+            notification_quiet_hours_label,
+            notification_rate_limit_per_hour,
+            notification_active_count,
+            notification_due_count,
+        ) = self._notification_schedule_details()
 
         data = {
             "timestamp": int(time.time()),
@@ -185,6 +212,12 @@ class OSDiagnosticsExecutor:
             "tone_summary": tone_summary,
             "tone_updated_at": tone_updated_at,
             "tone_override_count": tone_override_count,
+            "notification_policy_summary": notification_policy_summary,
+            "notification_quiet_hours_enabled": notification_quiet_hours_enabled,
+            "notification_quiet_hours_label": notification_quiet_hours_label,
+            "notification_rate_limit_per_hour": notification_rate_limit_per_hour,
+            "notification_active_count": notification_active_count,
+            "notification_due_count": notification_due_count,
             "health_state": health_state,
         }
         message = (
@@ -192,6 +225,7 @@ class OSDiagnosticsExecutor:
             f"CPU {cpu_percent:.0f}%, memory {memory_percent:.0f}%, "
             f"disk {disk_percent:.0f}%, network {network_status}, "
             f"model {model_availability}, tone {tone_global_profile}, "
+            f"notifications {notification_quiet_hours_label}, "
             f"capabilities {len(enabled_capability_ids)}."
         )
         if model_note:

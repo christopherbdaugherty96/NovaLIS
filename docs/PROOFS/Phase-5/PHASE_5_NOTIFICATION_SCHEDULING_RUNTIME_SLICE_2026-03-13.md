@@ -8,6 +8,7 @@ This slice begins the Phase-5 notification-scheduling work in the safest allowed
 
 - explicit user-created schedules only
 - inspectable and cancellable schedule state
+- explicit quiet-hours and rate-limit policy controls
 - quiet dashboard delivery surface
 - no automatic action execution
 
@@ -22,22 +23,29 @@ Implemented:
 - supported commands:
   - `show schedules`
   - `notification status`
+  - `notification settings`
   - `schedule daily brief at 8:00 am`
   - `remind me at 2:00 pm to review deployment issue`
   - `remind me daily at 9:00 am to review project threads`
+  - `reschedule schedule <id> to ...`
+  - `set quiet hours from ... to ...`
+  - `clear quiet hours`
+  - `set notification rate limit <n> per hour`
   - `cancel schedule <id>`
   - `dismiss schedule <id>`
 - dashboard scheduled-updates widget
 - user-invoked schedule-creation modal
 - due and upcoming schedule visibility
 - explicit cancel and dismiss flows
-- ledger-visible schedule lifecycle and due-surface events
+- ledger-visible schedule lifecycle, policy updates, and delivery attempt/outcome events
 
 ## Runtime Shape
 This runtime slice adds:
 - persistent schedule storage
 - due/upcoming schedule summaries
+- explicit schedule-policy storage
 - quiet delivery through the Home-page widget
+- governor-checked delivery gating before due items surface
 - action buttons for:
   - run scheduled brief
   - dismiss due item
@@ -73,6 +81,9 @@ Still preserved:
 - no autonomous recurrence growth
 - no automatic execution of scheduled actions
 - no proactive modal interruption
+- quiet-hours and rate-limit policies are explicit and user-controlled
+- delivery attempts and outcomes are ledger-visible
+- governor policy checks run before quiet due-surface delivery
 
 Delivery is intentionally quiet:
 - due items surface in the dashboard/widget layer
@@ -82,6 +93,10 @@ Delivery is intentionally quiet:
 Users can now:
 - create daily brief schedules
 - create reminders
+- inspect notification policy settings
+- set quiet hours
+- set a delivery rate limit
+- reschedule an existing item
 - inspect due and upcoming schedules
 - cancel schedules
 - dismiss due schedule items
@@ -99,9 +114,9 @@ Commands:
 - `python scripts/check_runtime_doc_drift.py`
 
 Results:
-- `nova_backend/tests/phase5`: `32 passed`
-- `nova_backend/tests/phase45`: `41 passed`
-- full backend suite (`nova_backend/tests`): `376 passed`
+- `nova_backend/tests/phase5`: `40 passed`
+- `nova_backend/tests/phase45`: `43 passed`
+- full backend suite (`nova_backend/tests`): `387 passed`
 - frontend mirror sync check: passed
 - runtime documentation drift check: passed
 

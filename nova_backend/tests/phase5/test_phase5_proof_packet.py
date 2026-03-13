@@ -21,13 +21,13 @@ def test_phase5_proof_packet_files_exist():
     assert missing == []
 
 
-def test_phase5_checklist_reports_design_gate_open():
+def test_phase5_checklist_reports_current_gate_status():
     checklist = (PHASE5_DIR / "PHASE_5_ADMISSION_GATE_CHECKLIST_2026-03-09.md").read_text(
         encoding="utf-8"
     )
-    assert "Status: Design-gated (not authorized)" in checklist
-    assert "PENDING" in checklist
-    assert "Phase-5 remains runtime-locked" in checklist
+    assert "Status: Admission gate satisfied for current repository state" in checklist
+    assert "PASS" in checklist
+    assert "Phase-5 admission gate is SATISFIED for the current repository state." in checklist
 
 
 def test_consolidated_state_doc_captures_can_and_cannot_boundaries():

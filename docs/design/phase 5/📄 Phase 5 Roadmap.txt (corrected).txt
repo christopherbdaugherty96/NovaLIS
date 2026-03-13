@@ -1,7 +1,7 @@
 # NOVA PHASE 5 ROADMAP (Corrected)
 ## Memory and Continuity - User-Sovereign Persistence
 
-Document Status: Proposed - Design Not Yet Authorized
+Document Status: Historical design input with ratified Phase-5 outcome note
 Prepared by: Nova Constitutional Governance Board
 Revised: 2026-03-11
 
@@ -14,7 +14,7 @@ Phase 5 introduces user-sovereign persistence and continuity under strict govern
 - no background autonomy
 - no execution outside Governor mediation
 
-This roadmap remains proposed. No Phase-5 persistent capability is runtime-authorized until the admission gate is ratified.
+This roadmap captured the pre-ratification Phase-5 design posture. For the current repository state, the admission gate is satisfied and a ratified trust-facing Phase-5 runtime package is active; use the Phase-5 proof packet and runtime certification documents for current authority.
 
 ## Track Structure
 
@@ -24,7 +24,7 @@ Phase 5 is split into two tracks:
   - explicit save/lock/defer/delete
   - memory governance tiers and schemas
   - user-inspectable continuity controls
-  - declarative identity preferences
+  - declarative identity preferences (deferred from the current ratified runtime package)
 - Phase 5B - Experience Maturation:
   - calm notification design (opt-in and user-scheduled)
   - multi-surface coherence
@@ -90,18 +90,19 @@ Memory and tone adaptation must remain isolated by contract:
 - [x] Phase 4 runtime unlocked and stable for >=30 days.
 - [x] Phase 4.5 design completed and ratified.
 - [x] Phase 4.5 user research confirms daily-use scenarios and calm perception.
-- [ ] Memory Governance specification ratified.
-- [ ] Tone Calibration architecture approved.
-- [ ] Pattern detection opt-in and constraints ratified.
-- [ ] Notification scheduling boundary ratified.
-- [ ] Constitutional audit confirms no authority expansion and no hidden autonomy.
+- [x] Memory Governance specification ratified.
+- [x] Tone Calibration architecture approved.
+- [x] Pattern detection opt-in and constraints ratified.
+- [x] Notification scheduling boundary ratified.
+- [x] Constitutional audit confirms no authority expansion and no hidden autonomy.
 
-Design Unlock Act: Phase-5 implementation design can begin only after all gate checks are complete and board ratification is issued.
+Design Unlock Act: satisfied for the current repository state. The initial trust-facing Phase-5 runtime package is active and ratified; declarative identity/preferences remain deferred pending a separate canonical design.
 
 ## Implementation Policy
 
-- Phase-5 code paths must be behind compile-time or runtime phase gates.
-- Persistent memory and adaptive tone mutations remain runtime-locked until explicit unlock.
+- Phase-5 trust-facing code paths are active in the current repository state.
+- Governed memory, manual tone controls, user-directed scheduling, and opt-in pattern review are active and inspectable.
+- Declarative identity/preferences remain out of the current ratified runtime package until separately specified and approved.
 - Exception: Working Context Engine remains an existing Phase-4.5 session-scoped runtime component and does not constitute Phase-5 persistence.
 
 ## Risks and Mitigations
@@ -123,7 +124,7 @@ Design Unlock Act: Phase-5 implementation design can begin only after all gate c
 
 ## Path to Phase 6
 
-Phase-5 design outputs remain governed and phase-gated. Runtime unlock for persistent memory/adaptation is deferred to a later policy-bound phase after additional safety proofs.
+Phase-5 runtime is active as a governed personal-intelligence layer for the current repository state. Later phases may extend this package, but declarative identity/preferences and delegated-autonomy concepts remain separately gated.
 
 ## References (Repository Paths)
 

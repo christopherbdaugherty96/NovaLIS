@@ -167,22 +167,31 @@ It can:
 - create one-time reminders
 - create recurring daily reminders
 - show due and upcoming schedules
+- show notification policy settings
+- let the user set quiet hours
+- let the user set a delivery rate limit
+- let the user reschedule an existing item
 - let the user cancel or dismiss schedule items
 - surface scheduled items quietly in the dashboard
 
 Examples:
 - `show schedules`
 - `notification status`
+- `notification settings`
 - `schedule daily brief at 8:00 am`
 - `remind me at 2:00 pm to review deployment issue`
 - `remind me daily at 9:00 am to review project threads`
-- `cancel schedule sch_...`
-- `dismiss schedule sch_...`
+- `reschedule schedule SCH-123 to 3:00 pm`
+- `set quiet hours from 10:00 pm to 7:00 am`
+- `clear quiet hours`
+- `set notification rate limit 2 per hour`
+- `cancel schedule SCH-123`
+- `dismiss schedule SCH-123`
 
 Important boundary:
 - schedules are created only when the user asks
 - scheduled items do not auto-run actions
-- delivery is meant to stay calm, visible, and cancellable
+- delivery is meant to stay calm, visible, cancellable, and policy-bound
 
 ## 10. Pattern Review
 Nova can now help you review repeated patterns across threads and durable memory, but only if you explicitly opt in first.

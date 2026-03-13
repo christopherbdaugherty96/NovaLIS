@@ -20,7 +20,7 @@ That means Nova already has:
 - governed memory
 - governed memory overview and inspectability surface
 - manual response-style controls with inspectable tone settings
-- user-directed scheduling for daily briefs and reminders
+- user-directed scheduling for daily briefs and reminders, with quiet-hours and rate-limit controls
 - opt-in pattern review for continuity work
 - dashboard support for all of the above
 
@@ -46,7 +46,7 @@ These parts are active but still evolving:
 - stronger everyday workflows around thread and memory use
 - clearer natural-language capability discovery
 - broader tone-calibration evolution beyond manual controls
-- richer scheduling polish and longer-range daily workflow surfaces
+- richer scheduling polish and longer-range daily workflow surfaces beyond the current explicit policy controls
 - deeper pattern heuristics and better proposal explanations
 
 ## What Is Planned But Not Fully Live Yet

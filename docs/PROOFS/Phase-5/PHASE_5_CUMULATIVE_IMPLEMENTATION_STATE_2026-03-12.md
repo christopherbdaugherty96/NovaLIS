@@ -106,14 +106,22 @@ Implemented:
 - explicit schedule commands:
   - `show schedules`
   - `notification status`
+  - `notification settings`
   - `schedule daily brief at ...`
   - `remind me at ... to ...`
+  - `reschedule schedule <id> to ...`
+  - `set quiet hours from ... to ...`
+  - `clear quiet hours`
+  - `set notification rate limit <n> per hour`
   - `cancel schedule <id>`
   - `dismiss schedule <id>`
 - dashboard scheduled-updates widget
 - user-invoked schedule-creation modal
 - due/upcoming schedule visibility
 - quiet delivery without automatic action execution
+- explicit quiet-hours and rate-limit policy settings
+- delivery attempts/outcomes + schedule updates in the ledger
+- governor-checked delivery gating before due items surface
 
 Primary artifact:
 - `PHASE_5_NOTIFICATION_SCHEDULING_RUNTIME_SLICE_2026-03-13.md`
@@ -181,9 +189,14 @@ Primary artifact:
 ### Scheduling Commands
 - `show schedules`
 - `notification status`
+- `notification settings`
 - `schedule daily brief at 8:00 am`
 - `remind me at 2:00 pm to review deployment issue`
 - `remind me daily at 9:00 am to review project threads`
+- `reschedule schedule <id> to 3:00 pm`
+- `set quiet hours from 10:00 pm to 7:00 am`
+- `clear quiet hours`
+- `set notification rate limit 2 per hour`
 - `cancel schedule <id>`
 - `dismiss schedule <id>`
 
@@ -211,6 +224,7 @@ Primary artifact:
 - scheduled-updates widget
 - schedule-creation modal
 - due / upcoming schedule visibility
+- notification policy summary (quiet hours + rate limit)
 - cancel and dismiss controls
 - pattern-review widget
 - queued proposal visibility
@@ -232,6 +246,9 @@ Primary artifact:
 - explicit user action required for tone mutation
 - no inferred schedules
 - no automatic scheduled action execution
+- quiet-hours and rate-limit policy remain explicit and user-controlled
+- delivery attempts and outcomes are ledger-visible
+- due notification delivery is checked against governor policy before surfacing
 - schedule delivery remains quiet and user-visible
 - explicit opt-in required before pattern generation
 - no background pattern-review loop
@@ -250,9 +267,9 @@ Commands:
 - `python scripts/check_frontend_mirror_sync.py`
 
 Results:
-- `nova_backend/tests/phase5`: `36 passed`
+- `nova_backend/tests/phase5`: `40 passed`
 - `nova_backend/tests/phase45`: `43 passed`
-- full backend suite (`nova_backend/tests`): `382 passed`
+- full backend suite (`nova_backend/tests`): `387 passed`
 - runtime doc drift: passed
 - frontend mirror sync: passed
 
