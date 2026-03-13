@@ -28,9 +28,24 @@ if exist "%PID_FILE%" (
   if defined NOVA_PID (
     powershell -NoProfile -Command "if (Get-Process -Id %NOVA_PID% -ErrorAction SilentlyContinue) { exit 0 } else { exit 1 }"
     if not errorlevel 1 (
-      echo [Nova] Backend already running ^(PID %NOVA_PID%^).
-      start "" "%DASHBOARD_URL%"
-      exit /b 0
+      powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+        "$ready = $false; " ^
+        "for ($i = 0; $i -lt 6; $i++) { " ^
+        "  if (-not (Get-Process -Id %NOVA_PID% -ErrorAction SilentlyContinue)) { exit 4 }; " ^
+        "  try { $resp = Invoke-WebRequest -UseBasicParsing '%DASHBOARD_URL%/phase-status' -TimeoutSec 2; if ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 300) { $ready = $true; break } } catch { }; " ^
+        "  Start-Sleep -Milliseconds 500; " ^
+        "} " ^
+        "if ($ready) { exit 0 } else { exit 5 }"
+      if not errorlevel 1 (
+        echo [Nova] Backend already running ^(PID %NOVA_PID%^).
+        start "" "%DASHBOARD_URL%"
+        exit /b 0
+      )
+      echo [Nova] Existing backend process ^(PID %NOVA_PID%^) is running but not ready at %DASHBOARD_URL%/phase-status.
+      echo [Nova] Check logs:
+      echo [Nova]   stdout: %OUT_LOG%
+      echo [Nova]   stderr: %ERR_LOG%
+      exit /b 1
     )
   )
 )
@@ -44,7 +59,30 @@ if errorlevel 1 (
   exit /b 1
 )
 
-timeout /t 2 >nul
+powershell -NoProfile -ExecutionPolicy Bypass -Command ^
+  "$pid = (Get-Content -Path '%PID_FILE%' -ErrorAction SilentlyContinue | Select-Object -First 1); " ^
+  "if (-not $pid) { exit 3 }; " ^
+  "$ready = $false; " ^
+  "for ($i = 0; $i -lt 20; $i++) { " ^
+  "  if (-not (Get-Process -Id $pid -ErrorAction SilentlyContinue)) { exit 4 }; " ^
+  "  try { $resp = Invoke-WebRequest -UseBasicParsing '%DASHBOARD_URL%/phase-status' -TimeoutSec 2; if ($resp.StatusCode -ge 200 -and $resp.StatusCode -lt 300) { $ready = $true; break } } catch { }; " ^
+  "  Start-Sleep -Milliseconds 500; " ^
+  "} " ^
+  "if ($ready) { exit 0 } else { exit 5 }"
+
+set "START_STATUS=%ERRORLEVEL%"
+if not "%START_STATUS%"=="0" (
+  if "%START_STATUS%"=="4" (
+    echo [Nova] Backend process exited before readiness completed.
+  ) else (
+    echo [Nova] Backend did not become ready at %DASHBOARD_URL%/phase-status.
+  )
+  echo [Nova] Check logs:
+  echo [Nova]   stdout: %OUT_LOG%
+  echo [Nova]   stderr: %ERR_LOG%
+  exit /b 1
+)
+
 echo [Nova] Backend started.
 echo [Nova] Dashboard: %DASHBOARD_URL%
 start "" "%DASHBOARD_URL%"

@@ -33,9 +33,56 @@ class OSDiagnosticsExecutor:
     def _model_availability() -> str:
         try:
             from src.llm.llm_manager import llm_manager
+            if bool(getattr(llm_manager, "inference_blocked", False)):
+                return "blocked"
             return "available" if bool(llm_manager.health_check()) else "unavailable"
         except Exception:
             return "unknown"
+
+    @staticmethod
+    def _model_status_details() -> tuple[str, str, str, bool]:
+        try:
+            from src.llm.llm_manager import llm_manager
+
+            endpoint_available = bool(llm_manager.health_check())
+            inference_blocked = bool(getattr(llm_manager, "inference_blocked", False))
+
+            if inference_blocked:
+                if endpoint_available:
+                    return (
+                        "blocked",
+                        "Local model is reachable, but inference is locked pending explicit confirmation.",
+                        "Run 'confirm model update' to re-enable local inference.",
+                        False,
+                    )
+                return (
+                    "blocked",
+                    "Local inference is locked pending explicit confirmation, and the model endpoint is not currently reachable.",
+                    "Start the local model service, then run 'confirm model update'.",
+                    False,
+                )
+
+            if endpoint_available:
+                return (
+                    "available",
+                    "Local model endpoint is reachable and inference is enabled.",
+                    "",
+                    True,
+                )
+
+            return (
+                "unavailable",
+                "Local model endpoint did not respond or the configured model is missing.",
+                "Start the local model service and verify the configured model is installed.",
+                False,
+            )
+        except Exception:
+            return (
+                "unknown",
+                "Model readiness could not be determined.",
+                "",
+                False,
+            )
 
     @staticmethod
     def _network_status() -> tuple[str, int, str]:
@@ -89,7 +136,7 @@ class OSDiagnosticsExecutor:
         swap_percent = round(float(swap.percent), 1)
         health_state = self._health_state(cpu_percent, memory_percent, disk_percent)
         enabled_capability_ids = self._enabled_capabilities()
-        model_availability = self._model_availability()
+        model_availability, model_note, model_remediation, model_ready = self._model_status_details()
 
         data = {
             "timestamp": int(time.time()),
@@ -117,6 +164,9 @@ class OSDiagnosticsExecutor:
             "active_capabilities_count": len(enabled_capability_ids),
             "active_capability_ids": enabled_capability_ids,
             "model_availability": model_availability,
+            "model_ready": model_ready,
+            "model_note": model_note,
+            "model_remediation": model_remediation,
             "health_state": health_state,
         }
         message = (
@@ -125,6 +175,8 @@ class OSDiagnosticsExecutor:
             f"disk {disk_percent:.0f}%, network {network_status}, "
             f"model {model_availability}, capabilities {len(enabled_capability_ids)}."
         )
+        if model_note:
+            message = f"{message} {model_note}"
         return ActionResult.ok(
             message=message,
             data=data,

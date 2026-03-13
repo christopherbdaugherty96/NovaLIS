@@ -21,3 +21,6 @@ def test_system_status_includes_model_and_capability_fields():
     assert "active_capabilities_count" in data
     assert "active_capability_ids" in data
     assert "model_availability" in data
+    assert "model_ready" in data
+    assert "model_note" in data
+    assert "model_remediation" in data

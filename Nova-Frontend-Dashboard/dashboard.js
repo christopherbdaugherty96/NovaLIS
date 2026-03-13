@@ -596,6 +596,10 @@ function formatSystemSummary(data, summary = "") {
   const memory = Number(data.memory_percent);
   const disk = Number(data.disk_percent);
   const network = String(data.network_status || "").trim();
+  const modelAvailability = String(data.model_availability || "").trim().toLowerCase();
+  const modelReady = data.model_ready;
+  const modelNote = String(data.model_note || "").trim();
+  const modelRemediation = String(data.model_remediation || "").trim();
 
   const parts = [];
   if (health) parts.push(`Health ${health}`);
@@ -603,8 +607,19 @@ function formatSystemSummary(data, summary = "") {
   if (Number.isFinite(memory)) parts.push(`Memory ${Math.round(memory)}%`);
   if (Number.isFinite(disk)) parts.push(`Disk ${Math.round(disk)}%`);
   if (network) parts.push(`Network ${network}`);
+  if (modelAvailability && modelAvailability !== "available") {
+    parts.push(`Model ${modelAvailability}`);
+  } else if (modelReady === false) {
+    parts.push("Model not ready");
+  }
 
-  return parts.length ? parts.join(" · ") : fallback;
+  let rendered = parts.length ? parts.join(" · ") : fallback;
+  if ((modelAvailability && modelAvailability !== "available") || modelReady === false) {
+    const detail = modelRemediation || modelNote;
+    if (detail) rendered = `${rendered}. ${detail}`;
+  }
+
+  return rendered;
 }
 
 function setMorningPanelExpanded(expanded) {
