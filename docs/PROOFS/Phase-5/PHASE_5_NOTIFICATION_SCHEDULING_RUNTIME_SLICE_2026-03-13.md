@@ -114,9 +114,9 @@ Commands:
 - `python scripts/check_runtime_doc_drift.py`
 
 Results:
-- `nova_backend/tests/phase5`: `40 passed`
-- `nova_backend/tests/phase45`: `43 passed`
-- full backend suite (`nova_backend/tests`): `387 passed`
+- `nova_backend/tests/phase5`: `41 passed`
+- `nova_backend/tests/phase45`: `49 passed`
+- full backend suite (`nova_backend/tests`): `395 passed`
 - frontend mirror sync check: passed
 - runtime documentation drift check: passed
 
@@ -129,3 +129,4 @@ It moves Nova further toward:
 - calm, inspectable product behavior
 
 without adding hidden initiative.
+

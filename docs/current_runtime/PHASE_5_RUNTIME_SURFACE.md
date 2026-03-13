@@ -8,8 +8,8 @@ Phase 5 is the layer that lets Nova stay useful across time without becoming aut
 
 In the current runtime, that means Nova can:
 - preserve explicit durable memory
-- track ongoing work through project threads
-- bridge thread continuity into governed memory
+- track ongoing work through session-scoped project threads
+- bridge session continuity into governed memory for durable cross-session preservation
 - let the user inspect and control response style
 - surface user-created schedules through calm policy-bound delivery
 - generate advisory pattern proposals only when the user opts in
@@ -33,6 +33,11 @@ Phase 5 does not mean:
 - `nova_backend/src/working_context/project_threads.py`
 - `nova_backend/src/working_context/context_store.py`
 - `nova_backend/src/brain_server.py`
+
+Current interpretation:
+- the live thread surface is session-scoped
+- durable continuity across sessions is provided by explicit governed memory
+- there is no hidden persistent thread substrate in the closed Phase-5 package
 
 ### Tone controls
 - `nova_backend/src/personality/tone_profile_store.py`

@@ -1,4 +1,4 @@
-﻿# Backend Runtime Guide
+# Backend Runtime Guide
 Updated: 2026-03-13
 
 ## Purpose
@@ -65,8 +65,9 @@ This is where conversation routing, style handling, deep analysis bridges, and h
 This is the structured analysis layer used for reports and deeper intelligence outputs.
 
 ### `working_context/`
-This is where session-scoped task context and project continuity logic live.
+This is where session-scoped task context and session-scoped project continuity logic live.
 It helps Nova understand ongoing work rather than treating every message like an isolated event.
+Durable cross-session continuity is handled separately through governed memory.
 
 ### `memory/`
 This is where governed memory storage and persistence logic live.

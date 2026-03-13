@@ -1,28 +1,21 @@
-﻿# Phase-5 Proof Packet Index
+# Phase-5 Proof Packet Index
 Updated: 2026-03-13
 Status: CLOSED for the current trust-facing Phase-5 package
-Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, and implemented runtime slices.
+Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, implemented runtime slices, and deferred follow-on tracks.
 
-## Gate-Preparation Artifacts (Design Authority)
+## Current Authority Chain
 1. `PHASE_5_ADMISSION_GATE_CHECKLIST_2026-03-09.md`
-2. `MEMORY_GOVERNANCE_RATIFICATION_ACT_2026-03-09.md`
-3. `TONE_CALIBRATION_ARCHITECTURE_SPEC_2026-03-09.md`
-4. `PATTERN_DETECTION_OPT_IN_GUARDRAILS_SPEC_2026-03-09.md`
-5. `NOTIFICATION_SCHEDULING_BOUNDARY_SPEC_2026-03-09.md`
-6. `PHASE_5_CONSTITUTIONAL_AUDIT_PRECHECK_2026-03-09.md`
-7. `NOVA_CONSOLIDATED_CANONICAL_STATE_2026-03-09.md`
-8. `PHASE_5_ADMISSION_GATE_OPERATOR_CHECKLIST_2026-03-09.md`
-9. `PHASE_5_GATE_PROGRESS_ALIGNMENT_2026-03-13.md`
-10. `PHASE_5_CONSTITUTIONAL_RUNTIME_AUDIT_2026-03-13.md`
-11. `PHASE_5_MEMORY_GOVERNANCE_RATIFICATION_ACT_2026-03-13.md`
-12. `PHASE_5_TONE_CALIBRATION_APPROVAL_ACT_2026-03-13.md`
-13. `PHASE_5_PATTERN_DETECTION_RATIFICATION_ACT_2026-03-13.md`
-14. `PHASE_5_NOTIFICATION_SCHEDULING_RATIFICATION_ACT_2026-03-13.md`
-15. `PHASE_5_ACTIVE_RUNTIME_CERTIFICATION_2026-03-13.md`
-16. `PHASE_5_COMPLETION_EVIDENCE_MATRIX_2026-03-13.md`
-17. `PHASE_5_RATIFICATION_ACT_2026-03-13.md`
-18. `PHASE_5_IMPLEMENTATION_MAP_2026-03-13.md`
-19. `PHASE_5_CLOSED_ACT_2026-03-13.md`
+2. `PHASE_5_GATE_PROGRESS_ALIGNMENT_2026-03-13.md`
+3. `PHASE_5_CONSTITUTIONAL_RUNTIME_AUDIT_2026-03-13.md`
+4. `PHASE_5_MEMORY_GOVERNANCE_RATIFICATION_ACT_2026-03-13.md`
+5. `PHASE_5_TONE_CALIBRATION_APPROVAL_ACT_2026-03-13.md`
+6. `PHASE_5_PATTERN_DETECTION_RATIFICATION_ACT_2026-03-13.md`
+7. `PHASE_5_NOTIFICATION_SCHEDULING_RATIFICATION_ACT_2026-03-13.md`
+8. `PHASE_5_ACTIVE_RUNTIME_CERTIFICATION_2026-03-13.md`
+9. `PHASE_5_COMPLETION_EVIDENCE_MATRIX_2026-03-13.md`
+10. `PHASE_5_RATIFICATION_ACT_2026-03-13.md`
+11. `PHASE_5_IMPLEMENTATION_MAP_2026-03-13.md`
+12. `PHASE_5_CLOSED_ACT_2026-03-13.md`
 
 ## Runtime Slice Artifacts (Implemented to Date)
 1. `PHASE_5_MEMORY_RUNTIME_SLICE_2026-03-11.md`
@@ -36,6 +29,17 @@ Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, and i
 9. `PHASE_5_EVERYDAY_USER_JOURNEYS_2026-03-12.md`
 10. `PHASE_5_CUMULATIVE_IMPLEMENTATION_STATE_2026-03-12.md`
 11. `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
+
+## Historical Gate-Preparation Inputs (Retained for Traceability Only)
+These documents remain useful as design history, but they are not the current authority chain for the closed Phase-5 package.
+
+1. `MEMORY_GOVERNANCE_RATIFICATION_ACT_2026-03-09.md`
+2. `TONE_CALIBRATION_ARCHITECTURE_SPEC_2026-03-09.md`
+3. `PATTERN_DETECTION_OPT_IN_GUARDRAILS_SPEC_2026-03-09.md`
+4. `NOTIFICATION_SCHEDULING_BOUNDARY_SPEC_2026-03-09.md`
+5. `PHASE_5_CONSTITUTIONAL_AUDIT_PRECHECK_2026-03-09.md`
+6. `NOVA_CONSOLIDATED_CANONICAL_STATE_2026-03-09.md`
+7. `PHASE_5_ADMISSION_GATE_OPERATOR_CHECKLIST_2026-03-09.md`
 
 ## Cross-Phase Runtime References
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
@@ -55,6 +59,10 @@ Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, and i
 - `docs/design/Phase 5/Delegated Autonomy.txt`
 - `docs/design/Phase 5/Consolidated API's.txt`
 
+## Deferred-to-Phase-6 Note
+Tracks intentionally not added to the closed Phase-5 package are indexed here:
+- `docs/PROOFS/Phase-6/PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
+
 ## Verification Commands (Current)
 - `$env:PYTHONPATH='nova_backend'; python -m pytest -q nova_backend/tests/phase5`
 - `$env:PYTHONPATH='nova_backend'; python -m pytest -q nova_backend/tests/phase45`
@@ -64,14 +72,14 @@ Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, and i
 - `python scripts/check_frontend_mirror_sync.py`
 
 ## Latest Verification Snapshot (2026-03-13)
-- `nova_backend/tests/phase5`: `40 passed`
-- `nova_backend/tests/phase45`: `43 passed`
-- Full backend suite (`nova_backend/tests`): `387 passed`
+- `nova_backend/tests/phase5`: `41 passed`
+- `nova_backend/tests/phase45`: `49 passed`
+- Full backend suite (`nova_backend/tests`): `395 passed`
 - Runtime documentation drift check: passed
 - Frontend mirror sync check: passed
 
 ## Runtime Progression Summary
-1. Project continuity layer landed (thread store + thread map + status/blocker reasoning).
+1. Session-scoped project continuity layer landed (thread store + thread map + status/blocker reasoning).
 2. Governed memory capability landed (`memory_governance`, id `61`).
 3. Thread-memory bridge landed with explicit commands:
    - `memory save thread <name>`
@@ -110,11 +118,11 @@ Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, and i
 ## Governance State
 - Runtime remains invocation-bound.
 - No autonomous/background execution introduced.
+- Project threads remain session-scoped; durable cross-session continuity is provided by explicit governed memory.
 - Memory writes remain explicit and Governor-mediated.
 - Tone changes remain explicit, inspectable, and user-invoked only.
 - Schedules remain explicit, inspectable, cancellable, and policy-bound.
 - Pattern review remains opt-in, advisory, and discardable.
 - Admission gate is satisfied for the current repository state.
 - The trust-facing Phase-5 package is now formally closed by `PHASE_5_CLOSED_ACT_2026-03-13.md`.
-- Declarative identity/preferences remain deferred and are not part of the closed package.
-
+- Tracks not added to the closed package are deferred to the Phase-6 planning packet, not left as implied Phase-5 promises.

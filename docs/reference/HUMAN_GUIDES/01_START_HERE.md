@@ -1,4 +1,4 @@
-﻿# Start Here
+# Start Here
 Updated: 2026-03-13
 
 ## What Nova Is
@@ -9,8 +9,9 @@ It is designed to help with:
 - explanation
 - computer guidance
 - ongoing projects
-- continuity across sessions
+- continuity within the current workspace session
 - explicit governed memory
+- durable context across sessions when you choose to save it
 
 Nova is not just a chatbot.
 It is also not meant to be an unconstrained AI agent.

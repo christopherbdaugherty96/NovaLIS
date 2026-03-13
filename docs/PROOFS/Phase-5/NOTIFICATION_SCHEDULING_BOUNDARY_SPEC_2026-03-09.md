@@ -1,8 +1,15 @@
 # Notification Scheduling Boundary Spec
 Date: 2026-03-09
 Commit: 6932b42
-Status: Draft candidate (pending ratification)
-Scope: Boundaries for reminders and scheduled notifications.
+Status: Historical draft input (superseded for the closed Phase-5 package)
+Scope: Original scheduling-boundary input. Retained for traceability only.
+
+## Historical Note
+This document is not the current authority for the closed Phase-5 package.
+
+Use instead:
+- `PHASE_5_NOTIFICATION_SCHEDULING_RATIFICATION_ACT_2026-03-13.md`
+- `PHASE_5_PROOF_PACKET_INDEX.md`
 
 ## Core Rule
 Notification scheduling is user-directed, explicit, and revocable.
@@ -25,6 +32,6 @@ Notification scheduling is user-directed, explicit, and revocable.
 - Delivery attempts and outcomes are logged.
 - User override actions are logged.
 
-## Non-Authorization Note
-This boundary spec does not grant background autonomy and does not change current runtime phase state.
-Phase-5 admission gate credit remains pending formal ratification.
+## Historical Decision
+This document records the pre-ratification boundary input only.
+It does not satisfy the current Phase-5 authority chain by itself.

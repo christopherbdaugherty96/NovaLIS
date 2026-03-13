@@ -1,4 +1,4 @@
-﻿# Phase-6 Next-Step Index
+# Phase-6 Next-Step Index
 Updated: 2026-03-13
 Status: Planned next-step packet only
 Purpose: Index of Phase-6 planning artifacts that describe the next implementation slice without claiming live runtime status.
@@ -16,6 +16,10 @@ Current runtime truth still lives in:
    - Governance-safe plan for adding a local Porcupine wake-word gate
    - Explicitly non-authorizing
    - Intended as the next implementation step, not current runtime truth
+2. `PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
+   - Records tracks intentionally not added to the closed Phase-5 package
+   - Clarifies that those tracks are planning inputs, not active runtime truth
+   - Keeps the Phase-5 closure boundary clean
 
 ## Related Design References
 - `docs/design/Phase 6/📄 Phase 6 Roadmap.txt (corrected).txt`

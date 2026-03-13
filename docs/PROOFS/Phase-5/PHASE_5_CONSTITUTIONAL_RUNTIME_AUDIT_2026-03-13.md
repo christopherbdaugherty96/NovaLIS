@@ -42,9 +42,9 @@ Runtime and proof inputs used:
 - `PHASE_5_PATTERN_REVIEW_RUNTIME_SLICE_2026-03-13.md`
 
 Verification snapshot:
-- `nova_backend/tests/phase5`: `40 passed`
-- `nova_backend/tests/phase45`: `43 passed`
-- full backend suite: `387 passed`
+- `nova_backend/tests/phase5`: `41 passed`
+- `nova_backend/tests/phase45`: `49 passed`
+- full backend suite: `395 passed`
 - runtime documentation drift check: passed
 - frontend mirror sync check: passed
 
@@ -54,5 +54,6 @@ Current Phase-5 runtime slices pass constitutional runtime audit.
 This confirms:
 - no authority expansion was introduced by the implemented slices
 - no autonomous behavior was introduced by the implemented slices
+- session-scoped thread continuity did not silently become hidden persistent memory; durable continuity remains explicit and memory-mediated
 
 Formal Phase-5 closure still requires gate-level ratification and closure artifacts, but the runtime itself is now aligned with constitutional constraints.

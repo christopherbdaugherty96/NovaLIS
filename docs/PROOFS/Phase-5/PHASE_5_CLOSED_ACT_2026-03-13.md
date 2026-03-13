@@ -8,7 +8,7 @@ Phase-5 is formally closed for the current repository state as a trust-facing pe
 
 This closure covers the implemented and ratified Phase-5 package:
 - governed memory
-- project continuity and thread-memory bridge
+- session-scoped project continuity and thread-memory bridge
 - memory inspectability
 - manual tone controls with inspectable history
 - user-directed notification scheduling with explicit policy controls
@@ -27,6 +27,7 @@ This closure does not include every future-direction idea ever mentioned in Phas
 
 The following remain explicitly out of the closed package unless separately specified and unlocked:
 - declarative identity/preferences
+- persistent cross-session thread substrate / restoration layer
 - delegated autonomy
 - future consolidated API direction beyond the current runtime package
 
@@ -39,7 +40,7 @@ For the current repository state:
 ## Runtime Result
 Nova now has a closed Phase-5 trust-facing layer that gives users:
 - explicit durable memory
-- ongoing project continuity
+- ongoing session continuity plus durable governed memory
 - inspectable presentation control
 - calm user-directed scheduling
 - advisory-only pattern review
@@ -56,3 +57,6 @@ Future work should now be treated as:
 - or Phase-6 planning / implementation
 
 depending on whether it changes the closed Phase-5 package or starts the next phase.
+
+Deferred candidate tracks for the next phase are indexed in:
+- `docs/PROOFS/Phase-6/PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`

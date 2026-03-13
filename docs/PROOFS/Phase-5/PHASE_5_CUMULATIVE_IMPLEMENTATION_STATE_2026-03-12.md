@@ -1,4 +1,4 @@
-﻿# Phase-5 Cumulative Implementation State
+# Phase-5 Cumulative Implementation State
 Date: 2026-03-12
 Status: Runtime cumulative snapshot (implemented slices)
 Classification: Proof artifact for "everything done to date"
@@ -267,9 +267,9 @@ Commands:
 - `python scripts/check_frontend_mirror_sync.py`
 
 Results:
-- `nova_backend/tests/phase5`: `40 passed`
-- `nova_backend/tests/phase45`: `43 passed`
-- full backend suite (`nova_backend/tests`): `387 passed`
+- `nova_backend/tests/phase5`: `41 passed`
+- `nova_backend/tests/phase45`: `49 passed`
+- full backend suite (`nova_backend/tests`): `395 passed`
 - runtime doc drift: passed
 - frontend mirror sync: passed
 
@@ -290,3 +290,4 @@ Phase-5 runtime slices are active, but full Phase-5 closure remains gated until 
 - Design map: `docs/design/phase 5/PHASE_5_DOCUMENT_MAP.md`
 - Runtime state: `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 - Runtime-doc proof: `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
+
