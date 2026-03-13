@@ -43,4 +43,5 @@ This map classifies Phase-5 documents by authority and use so runtime audits and
 - Runtime truth is defined by code + tests + generated runtime docs.
 - Design docs are intent/spec artifacts and must be updated when runtime-approved behavior evolves.
 - Working Context Engine is session-scoped and Phase-4.5-compatible; it is not persistent memory by itself.
-- Phase-5 currently has active runtime slices while full phase closure remains gate-controlled.
+- Phase-5 trust-facing runtime package is now implemented and formally closed for the current repository state.
+- Declarative identity/preferences, delegated autonomy, and consolidated API direction remain outside the closed package unless separately specified.

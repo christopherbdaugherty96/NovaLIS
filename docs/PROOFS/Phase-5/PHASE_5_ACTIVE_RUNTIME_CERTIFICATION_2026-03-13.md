@@ -27,4 +27,5 @@ Phase-5 active runtime slices are evidenced by:
 
 ## Conclusion
 Phase-5 is active in runtime as a trust-facing personal-intelligence layer for the current evidence cycle.
-This certification does not, by itself, declare full phase closure.
+Formal package closure is recorded separately in:
+- `docs/PROOFS/Phase-5/PHASE_5_CLOSED_ACT_2026-03-13.md`

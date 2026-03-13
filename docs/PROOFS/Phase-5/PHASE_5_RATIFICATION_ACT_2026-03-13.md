@@ -31,3 +31,7 @@ Ratification does not authorize:
 ## Effective Status
 Effective date: 2026-03-13
 Supersedes prior "draft candidate only" statements where conflicting for the currently implemented trust-facing Phase-5 runtime package.
+
+## Closure Link
+Formal phase closure for the current package is recorded separately in:
+- `docs/PROOFS/Phase-5/PHASE_5_CLOSED_ACT_2026-03-13.md`

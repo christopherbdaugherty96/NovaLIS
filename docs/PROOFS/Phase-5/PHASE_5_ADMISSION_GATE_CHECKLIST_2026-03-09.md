@@ -1,7 +1,7 @@
 # Phase-5 Admission Gate Checklist
 Date: 2026-03-09
 Commit Base: 23e2af5
-Status: Admission gate satisfied for current repository state
+Status: Admission gate satisfied for current repository state; closed package recorded separately
 Scope: Mechanical checklist for Phase-5 admission gate tracking under constitutional locks.
 
 ## Admission Gate Items
@@ -18,4 +18,4 @@ Scope: Mechanical checklist for Phase-5 admission gate tracking under constituti
 
 ## Gate Decision
 Phase-5 admission gate is SATISFIED for the current repository state.
-Formal phase closure remains a separate decision artifact.
+Formal phase closure is recorded in `PHASE_5_CLOSED_ACT_2026-03-13.md`.

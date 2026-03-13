@@ -9,7 +9,7 @@ At a high level, the current state is:
 - Phase 4 governance spine is active
 - Phase 4.2 cognitive/reporting layer is active
 - Phase 4.5 perception and UX surfaces are active
-- Phase 5 has started in real runtime form, especially around continuity and governed memory
+- Phase 5 trust-facing runtime package is active and formally closed for the current repository state
 
 That means Nova already has:
 - governed execution
@@ -45,7 +45,7 @@ These parts are active but still evolving:
 - more premium dashboard interactions
 - stronger everyday workflows around thread and memory use
 - clearer natural-language capability discovery
-- broader tone-calibration evolution beyond manual controls
+- broader tone-calibration evolution beyond the current manual, inspectable controls
 - richer scheduling polish and longer-range daily workflow surfaces beyond the current explicit policy controls
 - deeper pattern heuristics and better proposal explanations
 
@@ -64,7 +64,7 @@ The next planned wake-word step is documented here:
 - `docs/PROOFS/Phase-6/PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
 
 ## What Makes The Current State Special
-Even before full Phase-5 closure, Nova already combines things that usually live in separate products:
+Nova already combines things that usually live in separate products:
 - governed local action
 - research and multi-source reporting
 - screen explanation
@@ -78,7 +78,7 @@ That combination is unusual.
 ## The Best Honest Description Right Now
 If someone asked what Nova is today, a strong honest answer would be:
 
-Nova is a governed personal intelligence workspace that can research, explain, help with your computer, follow ongoing project threads, preserve explicit memory, and surface opt-in review patterns without giving up user control.
+Nova is a governed personal intelligence workspace that can research, explain, help with your computer, follow ongoing project threads, preserve explicit memory, schedule calm user-directed updates, and surface opt-in review patterns without giving up user control.
 
 ## If You Need The Official Runtime Truth
 Use:

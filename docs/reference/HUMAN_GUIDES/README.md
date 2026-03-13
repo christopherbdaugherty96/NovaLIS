@@ -46,6 +46,7 @@ Runtime truth lives in:
 17. `17_DOCUMENTATION_AND_PHASE_SYSTEM.md`
 18. `18_SOURCE_DIRECTORY_GUIDE.md`
 19. `19_TEST_SUITE_DIRECTORY_GUIDE.md`
+20. `20_PHASE_5_EXPLAINED.md`
 
 ## Quick Summary
 Nova is a governed personal intelligence system.

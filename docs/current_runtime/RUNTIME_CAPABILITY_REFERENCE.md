@@ -77,9 +77,12 @@ Interpretation rule:
 | --- | --- | --- | --- |
 | STT transcription | Active | Converts push-to-talk audio into text through local ffmpeg + Vosk and routes the transcript into the normal chat path. | Voice input surface, not a governed capability ID |
 | Interface personality agent | Active | Cleans presentation tone, strips unsafe authority-style phrasing, and keeps output readable without changing execution authority. | Presentation-only layer |
+| Tone controls | Active | Stores a global response style, per-domain overrides, recent tone-change history, and reset controls through the dashboard and chat commands. | Manual, inspectable, and non-authorizing |
 | Working Context Engine | Active | Maintains session-scoped task context such as active app, active URL, last relevant object, and recent relevant turns. | Non-persistent by default |
 | Project continuity threads | Active | Tracks ongoing work by thread with blocker, health, latest decision, memory count, and detail panel support. | Workspace continuity surface |
 | Thread-memory bridge | Active | Lets users explicitly save thread snapshots and decisions into governed memory and list memory by thread. | Built on capability `61` |
+| Notification scheduling | Active | Manages explicit schedules, quiet hours, rate limits, due-item delivery checks, and dismiss/cancel/reschedule flows. | User-directed, policy-bound, and inspectable |
+| Pattern review | Active | Maintains an opt-in advisory review queue for recurring blockers, decision gaps, and related continuity patterns. | No auto-apply and no background review loop |
 | Dashboard widgets and detail panels | Active | Displays weather, news, calendar, system status, thread map, thread detail, and follow-up actions in the UI. | UI surface only |
 | Orb presence layer | Active | Provides calm visual presence only. It does not signal hidden state, reasoning depth, or execution readiness. | Non-authoritative |
 | Context snapshot service | Active | Captures active-window, browser, cursor, and system signals at request time for perception flows. | Internal read-only surface |

@@ -17,6 +17,8 @@ Nova now supports three related ideas:
 
 They are connected, but they are not the same thing.
 
+For the current repository state, this trust-facing Phase-5 package is closed as a real runtime layer.
+
 ## 1. Working Context
 Working context is the short-term picture of what is happening right now.
 
@@ -166,15 +168,23 @@ What the user can do:
 - create a one-time reminder
 - create a daily reminder
 - inspect current schedules
+- inspect notification policy settings
+- set quiet hours
+- set a notification rate limit
+- reschedule schedules
 - dismiss due items
 - cancel schedules they no longer want
 
 Examples:
 - `show schedules`
 - `notification status`
+- `notification settings`
 - `schedule daily brief at 8:00 am`
 - `remind me at 2:00 pm to review deployment issue`
 - `remind me daily at 9:00 am to review project threads`
+- `set quiet hours from 10:00 pm to 7:00 am`
+- `set notification rate limit 2 per hour`
+- `reschedule schedule SCH-123 to 3:00 pm`
 
 Important boundary:
 - schedules are explicit

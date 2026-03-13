@@ -41,7 +41,7 @@ Examples:
 - Phase 4: governed execution foundation
 - Phase 4.2: cognitive/reporting depth
 - Phase 4.5: perception and UX refinement
-- Phase 5: continuity and governed memory
+- Phase 5: continuity, governed memory, tone controls, scheduling, and opt-in pattern review
 
 ## What A Phase Means In Practice
 A phase is not just a label.
@@ -57,6 +57,11 @@ That is normal in a system that evolves.
 
 When you need to know what is true now, runtime truth wins.
 That is why the current runtime docs and proof packets matter so much.
+
+For the current repository state, Phase 5 is a good example of this layering:
+- the design docs define intent and boundaries
+- the proof packet shows what was implemented and ratified
+- the runtime docs explain what is live now
 
 ## The Best Reading Order For Most People
 1. human guides

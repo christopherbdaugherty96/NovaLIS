@@ -995,7 +995,10 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     else:
         phase_45_note = "Experience layer remains design-only"
     if phase_5_status == "ACTIVE":
-        phase_5_note = "Governed memory and continuity runtime slices active; full closure remains gated"
+        phase_5_note = (
+            "Governed memory, continuity, tone, scheduling, and pattern-review "
+            "surfaces active; closure state tracked in Phase-5 proof packet"
+        )
     elif phase_5_status == "PARTIAL":
         phase_5_note = "Build phase promoted with partial memory/continuity runtime activation"
     else:

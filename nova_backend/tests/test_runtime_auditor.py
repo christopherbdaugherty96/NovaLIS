@@ -83,3 +83,18 @@ def test_phase5_status_tracks_active_runtime_slice():
     }
 
     assert ra._phase_5_status(registry) == "ACTIVE"
+
+
+def test_render_current_runtime_state_uses_phase5_package_note():
+    import src.audit.runtime_auditor as ra
+
+    registry = {
+        "capabilities": [
+            {"id": 61, "name": "memory_governance", "enabled": True, "status": "active"},
+        ]
+    }
+
+    rendered = ra.render_current_runtime_state_markdown({"discrepancies": []}, registry)
+
+    assert "Governed memory, continuity, tone, scheduling, and pattern-review surfaces active" in rendered
+    assert "full closure remains gated" not in rendered
