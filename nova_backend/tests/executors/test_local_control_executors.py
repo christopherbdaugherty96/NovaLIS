@@ -138,3 +138,45 @@ def test_os_diagnostics_executor_handles_network_stat_errors(monkeypatch):
     assert result.success is True
     assert result.data.get("network_status") == "unknown"
     assert result.data.get("health_state") == "critical"
+
+
+def test_os_diagnostics_executor_reports_blocked_model_as_not_ready(monkeypatch):
+    import src.executors.os_diagnostics_executor as mod
+    import src.llm.llm_manager as llm_mod
+
+    class _Disk:
+        total = 200 * (1024 ** 3)
+        used = 80 * (1024 ** 3)
+        free = 120 * (1024 ** 3)
+
+    class _Mem:
+        total = 16 * (1024 ** 3)
+        used = 4 * (1024 ** 3)
+        available = 12 * (1024 ** 3)
+        percent = 25.0
+
+    class _Swap:
+        total = 4 * (1024 ** 3)
+        used = 0
+        percent = 0.0
+
+    class _Iface:
+        isup = True
+
+    monkeypatch.setattr(mod.shutil, "disk_usage", lambda _path: _Disk())
+    monkeypatch.setattr(mod.psutil, "virtual_memory", lambda: _Mem())
+    monkeypatch.setattr(mod.psutil, "swap_memory", lambda: _Swap())
+    monkeypatch.setattr(mod.psutil, "cpu_percent", lambda interval=0.0: 12.0)
+    monkeypatch.setattr(mod.psutil, "boot_time", lambda: mod.time.time() - 600.0)
+    monkeypatch.setattr(mod.psutil, "pids", lambda: [1, 2, 3])
+    monkeypatch.setattr(mod.psutil, "net_if_stats", lambda: {"Ethernet": _Iface()})
+    monkeypatch.setattr(llm_mod.llm_manager, "health_check", lambda: True)
+    monkeypatch.setattr(llm_mod.llm_manager, "inference_blocked", True)
+
+    result = OSDiagnosticsExecutor().execute(ActionRequest(capability_id=32, params={}))
+
+    assert result.success is True
+    assert result.data.get("model_availability") == "blocked"
+    assert result.data.get("model_ready") is False
+    assert "confirm model update" in result.data.get("model_remediation", "").lower()
+    assert "locked pending explicit confirmation" in result.data.get("model_note", "").lower()

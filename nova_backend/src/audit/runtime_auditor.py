@@ -505,16 +505,38 @@ def _phase_42_status() -> str:
 
 def _calendar_integration_present() -> bool:
     skill_registry_src = _safe_read(SKILL_REGISTRY_PATH).lower()
+    governor_src = _safe_read(GOVERNOR_PATH).lower()
     brain_src = _safe_read(BRAIN_SERVER_PATH).lower()
     dashboard_src = _safe_read(STATIC_DASHBOARD_PATH).lower()
     index_src = _safe_read(STATIC_INDEX_PATH).lower()
+    parsed = GovernorMediator.parse_governed_invocation("calendar", session_id="audit-runtime")
+    mediated_calendar = isinstance(parsed, Invocation) and parsed.capability_id == 57
+    brain_calendar_wired = 'send_widget_message(ws, "calendar"' in brain_src and "last_calendar_summary" in brain_src
 
     return (
         "calendarskill" in skill_registry_src
-        and "calendar_skill" in brain_src
+        and mediated_calendar
+        and "req.capability_id == 57" in governor_src
+        and brain_calendar_wired
         and 'case "calendar"' in dashboard_src
+        and "morningstate.calendar" in dashboard_src
         and "coming soon" not in index_src
     )
+
+
+def _phase_5_status(registry: dict[str, Any]) -> str:
+    enabled_ids = set(_enabled_registry_ids(registry))
+    memory_runtime_present = (
+        (PROJECT_ROOT / "nova_backend" / "src" / "memory" / "governed_memory_store.py").exists()
+        and (PROJECT_ROOT / "nova_backend" / "src" / "working_context" / "project_threads.py").exists()
+    )
+    memory_capability_enabled = 61 in enabled_ids
+
+    if BUILD_PHASE >= 5 and memory_runtime_present and memory_capability_enabled:
+        return "ACTIVE"
+    if BUILD_PHASE >= 5 or memory_capability_enabled:
+        return "PARTIAL"
+    return "DESIGN"
 
 
 def _phase_45_status() -> str:
@@ -959,6 +981,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     profile_context = _runtime_profile_context(registry)
     phase_42_status = _phase_42_status()
     phase_45_status = _phase_45_status()
+    phase_5_status = _phase_5_status(registry)
 
     phase_42_note = (
         "Orthogonal cognition stack enabled via explicit invocation path"
@@ -971,6 +994,12 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         phase_45_note = "UX elements present but incomplete"
     else:
         phase_45_note = "Experience layer remains design-only"
+    if phase_5_status == "ACTIVE":
+        phase_5_note = "Governed memory and continuity runtime slices active; full closure remains gated"
+    elif phase_5_status == "PARTIAL":
+        phase_5_note = "Build phase promoted with partial memory/continuity runtime activation"
+    else:
+        phase_5_note = "Memory continuity planned"
 
     governor_modules = [
         "src/governor/governor.py",
@@ -1012,7 +1041,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         "| Phase 4 | ACTIVE | Governed execution runtime |",
         f"| Phase 4.2 | {phase_42_status} | {phase_42_note} |",
         f"| Phase 4.5 | {phase_45_status} | {phase_45_note} |",
-        "| Phase 5 | DESIGN | Memory continuity planned |",
+        f"| Phase 5 | {phase_5_status} | {phase_5_note} |",
         "",
         "## Runtime Governance Spine",
         "",

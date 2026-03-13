@@ -1,5 +1,5 @@
 # Runtime Documentation Update Proof
-Date: 2026-03-12
+Date: 2026-03-13
 Status: Active
 Scope: Proof that Nova still generates and updates runtime documentation artifacts.
 
@@ -40,7 +40,7 @@ Runtime docs are enforced in CI and cannot drift silently:
 3. `.github/workflows/governance-check.yml`
    - runs `python3 scripts/check_runtime_doc_drift.py`
 
-## Local Verification Snapshot (2026-03-12)
+## Local Verification Snapshot (2026-03-13)
 Executed commands:
 - `python scripts/generate_runtime_docs.py`
 - `python scripts/check_runtime_doc_drift.py`
@@ -51,9 +51,9 @@ Observed outputs:
 - `Runtime documentation drift check passed.`
 - `Frontend mirror check passed.`
 
-Observed write times after generation:
-- `docs/current_runtime/CURRENT_RUNTIME_STATE.md` -> `2026-03-12 00:49:15` (America/New_York)
-- `docs/current_runtime/RUNTIME_FINGERPRINT.md` -> `2026-03-12 00:49:15` (America/New_York)
+Observed write result after generation:
+- `docs/current_runtime/CURRENT_RUNTIME_STATE.md` regenerated successfully.
+- `docs/current_runtime/RUNTIME_FINGERPRINT.md` regenerated successfully.
 
 ## Authority and Interpretation
 Runtime documentation authority remains:
@@ -64,6 +64,5 @@ Runtime documentation authority remains:
 This proof artifact confirms update mechanics and enforcement, but does not replace the authority hierarchy above.
 
 ## Relationship to Known Auditor Blind Spots
-Generated runtime docs can still contain wording-level mismatches when auditor logic is incomplete (for example, calendar detection and phase-row wording). Those interpretation rules are tracked in:
+The previously known calendar-detection and Phase-5 status-row mismatches were corrected on 2026-03-13. Any remaining documented blind spots are tracked in:
 - `docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12.md`
-

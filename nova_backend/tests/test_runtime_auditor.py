@@ -49,3 +49,37 @@ def test_missing_enabled_mediator_route_is_hard_fail():
     missing = [d for d in discrepancies if d.code == "ENABLED_CAPABILITY_MISSING_MEDIATOR_ROUTE"]
     assert missing
     assert missing[0].severity == "hard_fail"
+
+
+def test_calendar_detector_matches_live_runtime_path(monkeypatch):
+    import src.audit.runtime_auditor as ra
+    from src.governor.governor_mediator import Invocation
+
+    contents = {
+        ra.SKILL_REGISTRY_PATH: "from src.skills.calendar import CalendarSkill\nskills = [CalendarSkill()]",
+        ra.GOVERNOR_PATH: "elif req.capability_id == 57:\n    return self._handle_calendar(req)",
+        ra.BRAIN_SERVER_PATH: 'session_state["last_calendar_summary"] = ""\nawait send_widget_message(ws, "calendar", message, widget)',
+        ra.STATIC_DASHBOARD_PATH: 'case "calendar":\nmorningState.calendar = payload;',
+        ra.STATIC_INDEX_PATH: '<section id="morning-calendar"></section>',
+    }
+
+    monkeypatch.setattr(ra, "_safe_read", lambda path: contents.get(path, ""))
+    monkeypatch.setattr(
+        ra.GovernorMediator,
+        "parse_governed_invocation",
+        lambda text, session_id=None: Invocation(capability_id=57, params={}) if text == "calendar" else None,
+    )
+
+    assert ra._calendar_integration_present() is True
+
+
+def test_phase5_status_tracks_active_runtime_slice():
+    import src.audit.runtime_auditor as ra
+
+    registry = {
+        "capabilities": [
+            {"id": 61, "name": "memory_governance", "enabled": True, "status": "active"},
+        ]
+    }
+
+    assert ra._phase_5_status(registry) == "ACTIVE"
