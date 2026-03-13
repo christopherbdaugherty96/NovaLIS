@@ -18,6 +18,8 @@ Current practical state:
 - dashboard continuity/memory UX is live
 - dashboard memory inspectability is live
 - manual tone settings and tone visibility are live
+- user-directed notification scheduling is live
+- opt-in pattern review is live
 - governance invariants remain preserved
 
 ## Implemented Slice Timeline
@@ -98,6 +100,45 @@ Implemented:
 Primary artifact:
 - `PHASE_5_TONE_CONTROLS_RUNTIME_SLICE_2026-03-13.md`
 
+### Slice G: User-Directed Notification Scheduling (2026-03-13)
+Implemented:
+- persistent notification-schedule store
+- explicit schedule commands:
+  - `show schedules`
+  - `notification status`
+  - `schedule daily brief at ...`
+  - `remind me at ... to ...`
+  - `cancel schedule <id>`
+  - `dismiss schedule <id>`
+- dashboard scheduled-updates widget
+- user-invoked schedule-creation modal
+- due/upcoming schedule visibility
+- quiet delivery without automatic action execution
+
+Primary artifact:
+- `PHASE_5_NOTIFICATION_SCHEDULING_RUNTIME_SLICE_2026-03-13.md`
+
+### Slice H: Opt-In Pattern Review (2026-03-13)
+Implemented:
+- persistent pattern-review store outside the authority path
+- explicit opt-in controls:
+  - `pattern opt in`
+  - `pattern opt out`
+- explicit review controls:
+  - `pattern status`
+  - `review patterns`
+  - `review patterns for <thread>`
+  - `accept pattern <id>`
+  - `dismiss pattern <id>`
+- quiet pattern-review widget on the Home page
+- advisory proposals based on:
+  - blocked threads without next steps
+  - repeated blocker themes
+  - durable context without recent saved decisions
+
+Primary artifact:
+- `PHASE_5_PATTERN_REVIEW_RUNTIME_SLICE_2026-03-13.md`
+
 ## Current Command Surface (Implemented)
 
 ### Continuity Commands
@@ -137,6 +178,24 @@ Primary artifact:
 - `tone reset research`
 - `tone reset all`
 
+### Scheduling Commands
+- `show schedules`
+- `notification status`
+- `schedule daily brief at 8:00 am`
+- `remind me at 2:00 pm to review deployment issue`
+- `remind me daily at 9:00 am to review project threads`
+- `cancel schedule <id>`
+- `dismiss schedule <id>`
+
+### Pattern Review Commands
+- `pattern opt in`
+- `pattern opt out`
+- `pattern status`
+- `review patterns`
+- `review patterns for <thread>`
+- `accept pattern <id>`
+- `dismiss pattern <id>`
+
 ## Current UX Surface (Implemented)
 - dashboard thread map
 - active thread indicator
@@ -149,6 +208,14 @@ Primary artifact:
 - Tone modal with global + per-domain controls
 - recent tone-change history
 - system-status tone summary
+- scheduled-updates widget
+- schedule-creation modal
+- due / upcoming schedule visibility
+- cancel and dismiss controls
+- pattern-review widget
+- queued proposal visibility
+- recent pattern-decision history
+- accept and dismiss proposal controls
 - inline decision save entry
 - session-relative change summary (`Changed: ...`)
 - thread detail panel with continuity + linked-memory context
@@ -163,6 +230,13 @@ Primary artifact:
 - no hidden tone adaptation loop
 - no proactive tone-change announcements
 - explicit user action required for tone mutation
+- no inferred schedules
+- no automatic scheduled action execution
+- schedule delivery remains quiet and user-visible
+- explicit opt-in required before pattern generation
+- no background pattern-review loop
+- pattern proposals are advisory only
+- no auto-apply from accepted proposals
 
 ## Verification Evidence (Latest)
 Run date: 2026-03-13
@@ -176,9 +250,9 @@ Commands:
 - `python scripts/check_frontend_mirror_sync.py`
 
 Results:
-- `nova_backend/tests/phase5`: `29 passed`
-- `nova_backend/tests/phase45`: `39 passed`
-- full backend suite (`nova_backend/tests`): `371 passed`
+- `nova_backend/tests/phase5`: `36 passed`
+- `nova_backend/tests/phase45`: `43 passed`
+- full backend suite (`nova_backend/tests`): `382 passed`
 - runtime doc drift: passed
 - frontend mirror sync: passed
 

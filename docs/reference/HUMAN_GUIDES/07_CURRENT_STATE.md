@@ -20,6 +20,8 @@ That means Nova already has:
 - governed memory
 - governed memory overview and inspectability surface
 - manual response-style controls with inspectable tone settings
+- user-directed scheduling for daily briefs and reminders
+- opt-in pattern review for continuity work
 - dashboard support for all of the above
 
 ## What Feels Mature Already
@@ -33,6 +35,8 @@ These parts are already meaningfully real:
 - governed memory and thread-linked memory
 - durable memory review through `memory overview`
 - manual tone settings through the response-style surface
+- explicit scheduled updates through the Home-page schedule surface
+- explicit pattern review through the Home-page pattern queue
 
 ## What Is Still Maturing
 These parts are active but still evolving:
@@ -42,6 +46,8 @@ These parts are active but still evolving:
 - stronger everyday workflows around thread and memory use
 - clearer natural-language capability discovery
 - broader tone-calibration evolution beyond manual controls
+- richer scheduling polish and longer-range daily workflow surfaces
+- deeper pattern heuristics and better proposal explanations
 
 ## What Is Planned But Not Fully Live Yet
 Some highly important ideas are still planned or partially scaffolded rather than fully live.
@@ -64,13 +70,15 @@ Even before full Phase-5 closure, Nova already combines things that usually live
 - screen explanation
 - thread continuity
 - explicit memory
+- calm user-directed scheduling
+- opt-in pattern review
 
 That combination is unusual.
 
 ## The Best Honest Description Right Now
 If someone asked what Nova is today, a strong honest answer would be:
 
-Nova is a governed personal intelligence workspace that can research, explain, help with your computer, follow ongoing project threads, and preserve explicit memory without giving up user control.
+Nova is a governed personal intelligence workspace that can research, explain, help with your computer, follow ongoing project threads, preserve explicit memory, and surface opt-in review patterns without giving up user control.
 
 ## If You Need The Official Runtime Truth
 Use:

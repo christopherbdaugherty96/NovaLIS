@@ -173,7 +173,71 @@ That means it often behaves like:
 
 That is intentional, not a bug in the design philosophy.
 
-## 14. What should I try if I am not sure how to ask?
+## 14. Why didn't Nova create a reminder or schedule on its own?
+Because scheduling in Nova is meant to be explicit.
+
+Nova should not infer reminders from behavior or quietly create recurring tasks in the background.
+
+If you want a schedule, ask directly with something like:
+- `schedule daily brief at 8:00 am`
+- `remind me at 2:00 pm to review deployment issue`
+- `remind me daily at 9:00 am to review project threads`
+
+## 15. Do scheduled items run actions automatically?
+No, not in the intended current model.
+
+Scheduled items are supposed to surface quietly and remain user-visible.
+They can remind you or offer the next step, but they should not silently execute actions on your behalf.
+
+## 16. How do I view or cancel schedules?
+Use:
+- `show schedules`
+- `notification status`
+
+If you want to stop one:
+- `cancel schedule <id>`
+
+If a due item has already surfaced and you just want to clear it:
+- `dismiss schedule <id>`
+
+## 17. Why are Nova's schedule surfaces so quiet?
+Because Phase 5 is aiming for calm utility, not interruption-heavy behavior.
+
+The scheduling surface is meant to feel:
+- visible
+- useful
+- inspectable
+
+not:
+- pushy
+- persuasive
+- constantly interruptive
+
+## 18. Why didn't Nova review patterns on its own?
+Because pattern review in Nova is meant to be opt-in and explicit.
+
+Nova should not quietly scan your work history in the background and start proposing patterns unless you chose that mode on purpose.
+
+If you want it, use:
+- `pattern opt in`
+- `review patterns`
+
+## 19. Does accepting a pattern make Nova act on it?
+No.
+
+Accepting a pattern just means you kept that proposal in the review process.
+It does not trigger execution, reprioritize your work, or silently change Nova's behavior.
+
+If you want to act on the idea, use an explicit follow-up command.
+
+## 20. How do I clear pattern proposals I do not want?
+Use:
+- `dismiss pattern <id>`
+
+If you want to stop the entire review mode:
+- `pattern opt out`
+
+## 21. What should I try if I am not sure how to ask?
 Start with one of these:
 - `news`
 - `weather`
@@ -182,19 +246,22 @@ Start with one of these:
 - `explain this`
 - `continue my <project>`
 - `memory list`
+- `pattern status`
 
 Then use follow-ups from there.
 
-## 15. What are Nova's strongest use cases right now?
+## 22. What are Nova's strongest use cases right now?
 Today Nova is strongest at:
 - research and summary work
 - story and article follow-up
 - screen explanation
 - project continuity
 - explicit governed memory
+- calm scheduled updates and reminders
+- opt-in review of repeated work patterns
 - bounded local computer help
 
-## 16. What is the best way to preserve something important?
+## 23. What is the best way to preserve something important?
 Use an explicit memory command.
 
 Examples:
@@ -202,7 +269,7 @@ Examples:
 - `memory save thread deployment issue`
 - `memory save decision for deployment issue: inspect path before rebuild`
 
-## 17. What if I just want the simplest possible way to use Nova?
+## 24. What if I just want the simplest possible way to use Nova?
 Use this pattern:
 
 1. ask directly
@@ -223,3 +290,5 @@ If Nova seems confusing, remember these three things:
 - Nova usually waits for explicit instruction
 - Nova separates explanation from action
 - Nova treats memory as something you save on purpose
+- Nova treats schedules as something you create on purpose
+- Nova treats pattern review as something you enable on purpose

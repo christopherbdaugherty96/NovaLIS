@@ -39,8 +39,10 @@ from src.conversation.response_formatter import ResponseFormatter
 from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
 from src.trust.failure_ladder import FailureLadder
 from src.trust.trust_contract import normalize_trust_status
+from src.patterns.pattern_review_store import PatternReviewStore
 from src.working_context.context_store import WorkingContextStore
 from src.working_context.project_threads import ProjectThreadStore
+from src.tasks.notification_schedule_store import NotificationScheduleStore
 from src.personality.interface_agent import PersonalityInterfaceAgent
 from src.personality.tone_profile_store import ToneProfileStore
 from src.audit.runtime_auditor import (
@@ -185,6 +187,56 @@ TONE_STATUS_COMMANDS = {
 }
 TONE_SET_RE = re.compile(r"^\s*tone\s+set\s+(?P<body>.+?)\s*$", re.IGNORECASE)
 TONE_RESET_RE = re.compile(r"^\s*tone\s+reset(?:\s+(?P<body>.+?))?\s*$", re.IGNORECASE)
+SHOW_SCHEDULES_COMMANDS = {
+    "show schedules",
+    "list schedules",
+    "notification status",
+    "notification schedules",
+    "scheduled updates",
+    "reminders",
+}
+SCHEDULE_BRIEF_RE = re.compile(
+    r"^\s*schedule\s+(?:a\s+)?(?:(?:daily|morning)\s+brief)\s+at\s+(?P<time>.+?)\s*$",
+    re.IGNORECASE,
+)
+REMIND_ME_RE = re.compile(
+    r"^\s*remind\s+me(?:\s+(?P<daily>daily))?\s+at\s+(?P<time>.+?)\s+to\s+(?P<body>.+?)\s*$",
+    re.IGNORECASE,
+)
+CANCEL_SCHEDULE_RE = re.compile(
+    r"^\s*(?:cancel|delete|remove)\s+schedule\s+(?P<schedule_id>SCH-[A-Z0-9\-]+)\s*$",
+    re.IGNORECASE,
+)
+DISMISS_SCHEDULE_RE = re.compile(
+    r"^\s*(?:dismiss|clear)\s+schedule\s+(?P<schedule_id>SCH-[A-Z0-9\-]+)\s*$",
+    re.IGNORECASE,
+)
+PATTERN_STATUS_COMMANDS = {
+    "pattern status",
+    "patterns status",
+    "pattern review status",
+    "pattern queue",
+}
+PATTERN_OPT_IN_RE = re.compile(
+    r"^\s*(?:pattern|patterns)\s+opt\s+in\s*$|^\s*enable\s+pattern\s+review\s*$",
+    re.IGNORECASE,
+)
+PATTERN_OPT_OUT_RE = re.compile(
+    r"^\s*(?:pattern|patterns)\s+opt\s+out\s*$|^\s*disable\s+pattern\s+review\s*$",
+    re.IGNORECASE,
+)
+PATTERN_REVIEW_RE = re.compile(
+    r"^\s*(?:review|show)\s+(?:patterns?|pattern\s+review)(?:\s+for\s+(?P<name>.+?))?\s*$",
+    re.IGNORECASE,
+)
+ACCEPT_PATTERN_RE = re.compile(
+    r"^\s*(?:accept|approve|keep)\s+pattern\s+(?P<pattern_id>PAT-[A-Z0-9\-]+)\s*$",
+    re.IGNORECASE,
+)
+DISMISS_PATTERN_RE = re.compile(
+    r"^\s*(?:dismiss|discard|reject)\s+pattern\s+(?P<pattern_id>PAT-[A-Z0-9\-]+)\s*$",
+    re.IGNORECASE,
+)
 
 
 def _build_phase42_agents() -> list:
@@ -857,7 +909,7 @@ def _render_tone_profile_message(snapshot: dict | None) -> str:
     return "\n".join(lines)
 
 
-def _log_tone_event(governor: Governor, event_type: str, metadata: dict) -> None:
+def _log_ledger_event(governor: Governor, event_type: str, metadata: dict) -> None:
     try:
         governor.ledger.log_event(event_type, metadata)
     except Exception:
@@ -924,6 +976,241 @@ async def send_tone_profile_widget(
     payload = dict(snapshot or interface_personality_agent.tone_snapshot() or {})
     session_state["last_tone_snapshot"] = payload
     await ws_send(ws, _build_tone_profile_widget(payload))
+
+
+def _local_now() -> datetime:
+    return datetime.now().astimezone()
+
+
+def _format_local_schedule_time(value: datetime | None) -> str:
+    if value is None:
+        return ""
+    local = value.astimezone()
+    rendered = local.strftime("%b %d, %I:%M %p")
+    return re.sub(r"(?<=\s)0(\d:)", r"\1", rendered)
+
+
+def _parse_iso_datetime(raw: str) -> datetime | None:
+    value = str(raw or "").strip()
+    if not value:
+        return None
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.astimezone()
+    return parsed
+
+
+def _parse_clock_time(raw: str) -> tuple[int, int]:
+    value = str(raw or "").strip().lower().replace(".", "")
+    value = re.sub(r"(?<=\d)(am|pm)$", r" \1", value)
+    for fmt in ("%I:%M %p", "%I %p", "%H:%M", "%H"):
+        try:
+            parsed = datetime.strptime(value, fmt)
+            return parsed.hour, parsed.minute
+        except ValueError:
+            continue
+    raise ValueError("I couldn't parse that time yet. Try forms like 8:00 am, 14:30, or 9 pm.")
+
+
+def _parse_schedule_datetime(raw: str, *, recurrence: str) -> datetime:
+    value = str(raw or "").strip().lower()
+    explicit_today = value.startswith("today ")
+    explicit_tomorrow = value.startswith("tomorrow ")
+    if explicit_today:
+        value = value[len("today "):].strip()
+    elif explicit_tomorrow:
+        value = value[len("tomorrow "):].strip()
+
+    hour, minute = _parse_clock_time(value)
+    now = _local_now()
+    target = now.replace(hour=hour, minute=minute, second=0, microsecond=0)
+
+    if recurrence == "daily":
+        if target <= now:
+            target = target + timedelta(days=1)
+        return target
+
+    if explicit_tomorrow:
+        return target + timedelta(days=1)
+    if explicit_today:
+        if target <= now:
+            raise ValueError("That time has already passed for today. Try 'tomorrow <time>' or a later time.")
+        return target
+    if target <= now:
+        target = target + timedelta(days=1)
+    return target
+
+
+def _build_notification_schedule_widget(snapshot: dict | None) -> dict:
+    payload = dict(snapshot or {})
+    due_items: list[dict] = []
+    for item in list(payload.get("due_items") or [])[:5]:
+        row = dict(item or {})
+        row["next_run_label"] = _format_local_schedule_time(_parse_iso_datetime(str(row.get("next_run_at") or "")))
+        due_items.append(row)
+
+    upcoming_items: list[dict] = []
+    for item in list(payload.get("upcoming_items") or [])[:5]:
+        row = dict(item or {})
+        row["next_run_label"] = _format_local_schedule_time(_parse_iso_datetime(str(row.get("next_run_at") or "")))
+        upcoming_items.append(row)
+
+    return {
+        "type": "notification_schedule",
+        "summary": str(payload.get("summary") or "No schedules yet.").strip(),
+        "active_count": int(payload.get("active_count") or 0),
+        "due_count": int(payload.get("due_count") or 0),
+        "upcoming_count": int(payload.get("upcoming_count") or 0),
+        "due_items": due_items,
+        "upcoming_items": upcoming_items,
+        "inspectability_note": "Schedules are explicit, inspectable, and cancellable.",
+    }
+
+
+def _render_notification_schedule_message(snapshot: dict | None) -> str:
+    payload = dict(snapshot or {})
+    due_items = list(payload.get("due_items") or [])
+    upcoming_items = list(payload.get("upcoming_items") or [])
+    lines = ["Scheduled Updates", ""]
+    lines.append(str(payload.get("summary") or "No schedules yet.").strip())
+
+    if due_items:
+        lines.append("")
+        lines.append("Due now")
+        for item in due_items[:4]:
+            next_run = _format_local_schedule_time(_parse_iso_datetime(str(item.get("next_run_at") or "")))
+            title = str(item.get("title") or "").strip()
+            lines.append(f"- {title} ({next_run or 'due'})")
+
+    if upcoming_items:
+        lines.append("")
+        lines.append("Upcoming")
+        for item in upcoming_items[:4]:
+            next_run = _format_local_schedule_time(_parse_iso_datetime(str(item.get("next_run_at") or "")))
+            title = str(item.get("title") or "").strip()
+            lines.append(f"- {title} ({next_run})")
+
+    lines.extend(
+        [
+            "",
+            "Try next:",
+            "- schedule daily brief at 8:00 am",
+            "- remind me at 2:00 pm to review deployment issue",
+            "- show schedules",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _surface_due_notification_events(
+    governor: Governor,
+    store: NotificationScheduleStore,
+    snapshot: dict | None,
+) -> None:
+    payload = dict(snapshot or {})
+    for item in list(payload.get("due_items") or []):
+        schedule_id = str(item.get("id") or "").strip()
+        next_run_at = str(item.get("next_run_at") or "").strip()
+        last_surface_at = str(item.get("last_surface_at") or "").strip()
+        if not schedule_id or (last_surface_at and last_surface_at >= next_run_at):
+            continue
+        try:
+            store.mark_due_surface(schedule_id)
+        except Exception:
+            continue
+        _log_ledger_event(
+            governor,
+            "NOTIFICATION_DELIVERY_DUE",
+            {
+                "schedule_id": schedule_id,
+                "kind": str(item.get("kind") or ""),
+                "recurrence": str(item.get("recurrence") or ""),
+            },
+        )
+
+
+async def send_notification_schedule_widget(
+    ws: WebSocket,
+    session_state: dict,
+    *,
+    snapshot: dict | None = None,
+) -> None:
+    payload = dict(snapshot or {})
+    if not payload:
+        payload = NotificationScheduleStore().summarize()
+    session_state["last_schedule_overview"] = payload
+    await ws_send(ws, _build_notification_schedule_widget(payload))
+
+
+def _build_pattern_review_widget(snapshot: dict | None) -> dict:
+    payload = dict(snapshot or {})
+    return {
+        "type": "pattern_review",
+        "summary": str(payload.get("summary") or "").strip(),
+        "opt_in_enabled": bool(payload.get("opt_in_enabled")),
+        "active_count": int(payload.get("active_count") or 0),
+        "last_generated_at": str(payload.get("last_generated_at") or ""),
+        "proposals": [dict(item or {}) for item in list(payload.get("proposals") or [])[:6]],
+        "recent_decisions": [dict(item or {}) for item in list(payload.get("recent_decisions") or [])[:6]],
+        "inspectability_note": (
+            str(payload.get("inspectability_note") or "").strip()
+            or "Pattern review is opt-in, advisory, and discardable."
+        ),
+    }
+
+
+def _render_pattern_review_message(snapshot: dict | None) -> str:
+    payload = dict(snapshot or {})
+    lines = ["Pattern Review", ""]
+    lines.append(str(payload.get("summary") or "Pattern review is off.").strip())
+
+    proposals = list(payload.get("proposals") or [])
+    if proposals:
+        lines.append("")
+        lines.append("Review queue")
+        for item in proposals[:4]:
+            title = str(item.get("title") or "").strip()
+            summary = str(item.get("summary") or "").strip()
+            linked = [str(name).strip() for name in list(item.get("linked_threads") or []) if str(name).strip()]
+            evidence = [str(row).strip() for row in list(item.get("evidence") or []) if str(row).strip()]
+            if title:
+                lines.append(f"- {title}")
+            if summary:
+                lines.append(f"  {summary}")
+            if linked:
+                lines.append(f"  Threads: {', '.join(linked[:3])}")
+            if evidence:
+                lines.append(f"  Evidence: {evidence[0]}")
+    else:
+        lines.append("")
+        lines.append("No active pattern proposals are waiting for review.")
+
+    lines.extend(
+        [
+            "",
+            "Try next:",
+            "- pattern opt in",
+            "- review patterns",
+            "- pattern status",
+        ]
+    )
+    return "\n".join(lines)
+
+
+async def send_pattern_review_widget(
+    ws: WebSocket,
+    session_state: dict,
+    *,
+    snapshot: dict | None = None,
+) -> None:
+    payload = dict(snapshot or {})
+    if not payload:
+        payload = PatternReviewStore().snapshot()
+    session_state["last_pattern_review"] = payload
+    await ws_send(ws, _build_pattern_review_widget(payload))
 
 # -------------------------------------------------
 # Phase Status Endpoint
@@ -1118,6 +1405,8 @@ async def websocket_endpoint(ws: WebSocket):
     personality_agent = _Phase42PersonalityAgent() if _Phase42PersonalityAgent is not None else None
     working_context = WorkingContextStore(session_id=session_id, ledger=governor.ledger)
     project_threads = ProjectThreadStore(session_id=session_id, ledger=governor.ledger)
+    notification_schedules = NotificationScheduleStore()
+    pattern_reviews = PatternReviewStore()
     session_context = []
     session_state = {
         "turn_count": 0,
@@ -1159,6 +1448,8 @@ async def websocket_endpoint(ws: WebSocket):
         "thread_map_last": {},
         "last_memory_overview": {},
         "last_tone_snapshot": {},
+        "last_schedule_overview": {},
+        "last_pattern_review": {},
     }
 
     await send_chat_message(ws, "Hello. How can I help?")
@@ -1361,7 +1652,14 @@ async def websocket_endpoint(ws: WebSocket):
                     "- memory lock <id>\n"
                     "- memory defer <id>\n"
                     "- memory unlock <id> confirm\n"
-                    "- memory delete <id> confirm"
+                    "- memory delete <id> confirm\n\n"
+                    "Pattern Review\n"
+                    "- pattern opt in\n"
+                    "- pattern status\n"
+                    "- review patterns\n"
+                    "- review patterns for <thread>\n"
+                    "- accept pattern <id>\n"
+                    "- dismiss pattern <id>"
                 )
                 await send_chat_message(ws, capability_message)
                 await send_chat_done(ws)
@@ -2248,7 +2546,7 @@ async def websocket_endpoint(ws: WebSocket):
 
             if lowered in TONE_STATUS_COMMANDS:
                 snapshot = interface_personality_agent.tone_snapshot()
-                _log_tone_event(
+                _log_ledger_event(
                     governor,
                     "TONE_PROFILE_VIEWED",
                     {
@@ -2286,7 +2584,7 @@ async def websocket_endpoint(ws: WebSocket):
                     label = ToneProfileStore.DOMAIN_DEFINITIONS.get(domain, domain.title())
                     message = f"{label} tone set to {profile}."
 
-                _log_tone_event(
+                _log_ledger_event(
                     governor,
                     "TONE_PROFILE_UPDATED",
                     {
@@ -2327,7 +2625,7 @@ async def websocket_endpoint(ws: WebSocket):
                     message = f"{label} tone reset to the global profile."
                     reset_domain = body
 
-                _log_tone_event(
+                _log_ledger_event(
                     governor,
                     "TONE_PROFILE_RESET",
                     {
@@ -2342,6 +2640,320 @@ async def websocket_endpoint(ws: WebSocket):
                     tone_domain="system",
                 )
                 await send_tone_profile_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            if lowered in SHOW_SCHEDULES_COMMANDS:
+                snapshot = notification_schedules.summarize()
+                _surface_due_notification_events(governor, notification_schedules, snapshot)
+                snapshot = notification_schedules.summarize()
+                _log_ledger_event(
+                    governor,
+                    "NOTIFICATION_SCHEDULE_VIEWED",
+                    {
+                        "active_count": int(snapshot.get("active_count") or 0),
+                        "due_count": int(snapshot.get("due_count") or 0),
+                    },
+                )
+                if not silent_widget_refresh:
+                    await send_chat_message(
+                        ws,
+                        _render_notification_schedule_message(snapshot),
+                        tone_domain="system",
+                    )
+                await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            schedule_brief_match = SCHEDULE_BRIEF_RE.match(text)
+            if schedule_brief_match:
+                try:
+                    scheduled_for = _parse_schedule_datetime(
+                        schedule_brief_match.group("time"),
+                        recurrence="daily",
+                    )
+                except ValueError as exc:
+                    await send_chat_message(ws, str(exc), tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+                item = notification_schedules.create_schedule(
+                    kind="daily_brief",
+                    title="Daily brief",
+                    body="Run your scheduled daily brief.",
+                    recurrence="daily",
+                    next_run_at=scheduled_for,
+                    command="morning brief",
+                )
+                snapshot = notification_schedules.summarize()
+                _log_ledger_event(
+                    governor,
+                    "NOTIFICATION_SCHEDULE_CREATED",
+                    {
+                        "schedule_id": item["id"],
+                        "kind": item["kind"],
+                        "recurrence": item["recurrence"],
+                    },
+                )
+                await send_chat_message(
+                    ws,
+                    (
+                        f"Daily brief scheduled: {item['id']}\n"
+                        f"Next run: {_format_local_schedule_time(scheduled_for)}\n\n"
+                        f"{str(snapshot.get('summary') or '').strip()}"
+                    ),
+                    tone_domain="system",
+                )
+                await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            remind_me_match = REMIND_ME_RE.match(text)
+            if remind_me_match:
+                recurrence = "daily" if remind_me_match.group("daily") else "once"
+                try:
+                    scheduled_for = _parse_schedule_datetime(
+                        remind_me_match.group("time"),
+                        recurrence=recurrence,
+                    )
+                except ValueError as exc:
+                    await send_chat_message(ws, str(exc), tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+                reminder_body = str(remind_me_match.group("body") or "").strip()
+                item = notification_schedules.create_schedule(
+                    kind="reminder",
+                    title=f"Reminder: {reminder_body[:80]}",
+                    body=reminder_body,
+                    recurrence=recurrence,
+                    next_run_at=scheduled_for,
+                )
+                snapshot = notification_schedules.summarize()
+                _log_ledger_event(
+                    governor,
+                    "NOTIFICATION_SCHEDULE_CREATED",
+                    {
+                        "schedule_id": item["id"],
+                        "kind": item["kind"],
+                        "recurrence": item["recurrence"],
+                    },
+                )
+                await send_chat_message(
+                    ws,
+                    (
+                        f"Reminder scheduled: {item['id']}\n"
+                        f"Text: {reminder_body}\n"
+                        f"Next run: {_format_local_schedule_time(scheduled_for)}\n\n"
+                        f"{str(snapshot.get('summary') or '').strip()}"
+                    ),
+                    tone_domain="system",
+                )
+                await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            cancel_schedule_match = CANCEL_SCHEDULE_RE.match(text)
+            if cancel_schedule_match:
+                schedule_id = str(cancel_schedule_match.group("schedule_id") or "").strip().upper()
+                try:
+                    item = notification_schedules.cancel_schedule(schedule_id)
+                except KeyError:
+                    await send_chat_message(ws, "I could not find that schedule ID yet.", tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+                snapshot = notification_schedules.summarize()
+                _log_ledger_event(
+                    governor,
+                    "NOTIFICATION_SCHEDULE_CANCELLED",
+                    {"schedule_id": schedule_id, "kind": str(item.get("kind") or "")},
+                )
+                await send_chat_message(
+                    ws,
+                    f"Schedule cancelled: {schedule_id}\n\n{str(snapshot.get('summary') or '').strip()}",
+                    tone_domain="system",
+                )
+                await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            dismiss_schedule_match = DISMISS_SCHEDULE_RE.match(text)
+            if dismiss_schedule_match:
+                schedule_id = str(dismiss_schedule_match.group("schedule_id") or "").strip().upper()
+                try:
+                    item = notification_schedules.dismiss_schedule(schedule_id)
+                except KeyError:
+                    await send_chat_message(ws, "I could not find that schedule ID yet.", tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+                snapshot = notification_schedules.summarize()
+                _log_ledger_event(
+                    governor,
+                    "NOTIFICATION_SCHEDULE_DISMISSED",
+                    {"schedule_id": schedule_id, "kind": str(item.get("kind") or "")},
+                )
+                await send_chat_message(
+                    ws,
+                    f"Schedule dismissed: {schedule_id}\n\n{str(snapshot.get('summary') or '').strip()}",
+                    tone_domain="system",
+                )
+                await send_notification_schedule_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            if PATTERN_OPT_IN_RE.match(text):
+                snapshot = pattern_reviews.set_opt_in(True)
+                _log_ledger_event(
+                    governor,
+                    "PATTERN_DETECTION_OPTED_IN",
+                    {"active_count": int(snapshot.get("active_count") or 0)},
+                )
+                await send_chat_message(
+                    ws,
+                    (
+                        "Pattern review enabled.\n\n"
+                        "Nova will only generate pattern proposals when you explicitly ask for them.\n"
+                        "Try next:\n"
+                        "- review patterns\n"
+                        "- review patterns for deployment issue\n"
+                        "- pattern status"
+                    ),
+                    tone_domain="system",
+                )
+                await send_pattern_review_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            if PATTERN_OPT_OUT_RE.match(text):
+                snapshot = pattern_reviews.set_opt_in(False)
+                _log_ledger_event(
+                    governor,
+                    "PATTERN_DETECTION_OPTED_OUT",
+                    {"active_count": int(snapshot.get("active_count") or 0)},
+                )
+                await send_chat_message(
+                    ws,
+                    "Pattern review disabled. Existing queued proposals have been cleared.",
+                    tone_domain="system",
+                )
+                await send_pattern_review_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            if lowered in PATTERN_STATUS_COMMANDS:
+                snapshot = pattern_reviews.snapshot()
+                _log_ledger_event(
+                    governor,
+                    "PATTERN_REVIEW_VIEWED",
+                    {
+                        "opt_in_enabled": bool(snapshot.get("opt_in_enabled")),
+                        "active_count": int(snapshot.get("active_count") or 0),
+                    },
+                )
+                if not silent_widget_refresh:
+                    await send_chat_message(
+                        ws,
+                        _render_pattern_review_message(snapshot),
+                        tone_domain="system",
+                    )
+                await send_pattern_review_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            pattern_review_match = PATTERN_REVIEW_RE.match(text)
+            if pattern_review_match:
+                snapshot = pattern_reviews.snapshot()
+                if not bool(snapshot.get("opt_in_enabled")):
+                    await send_chat_message(
+                        ws,
+                        "Pattern review is off right now. Say 'pattern opt in' first if you want Nova to generate advisory pattern proposals.",
+                        tone_domain="system",
+                    )
+                    await send_pattern_review_widget(ws, session_state, snapshot=snapshot)
+                    await send_chat_done(ws)
+                    continue
+
+                requested_thread = str(pattern_review_match.group("name") or "").strip()
+                resolved_thread_name = ""
+                if requested_thread:
+                    found, resolved_name, _ = project_threads.resolve_thread_identity(requested_thread)
+                    resolved_thread_name = resolved_name if found else requested_thread
+
+                from src.memory.governed_memory_store import GovernedMemoryStore
+
+                thread_summaries = project_threads.list_summaries()
+                memory_insights = GovernedMemoryStore().summarize_thread_insights()
+                snapshot = pattern_reviews.generate_review(
+                    thread_summaries=thread_summaries,
+                    memory_insights=memory_insights,
+                    thread_name=resolved_thread_name,
+                )
+                _log_ledger_event(
+                    governor,
+                    "PATTERN_REVIEW_GENERATED",
+                    {
+                        "active_count": int(snapshot.get("active_count") or 0),
+                        "thread_name": resolved_thread_name,
+                    },
+                )
+                await send_chat_message(
+                    ws,
+                    _render_pattern_review_message(snapshot),
+                    tone_domain="continuity",
+                )
+                await send_pattern_review_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            accept_pattern_match = ACCEPT_PATTERN_RE.match(text)
+            if accept_pattern_match:
+                pattern_id = str(accept_pattern_match.group("pattern_id") or "").strip().upper()
+                try:
+                    snapshot, proposal = pattern_reviews.accept_proposal(pattern_id)
+                except KeyError:
+                    await send_chat_message(ws, "I could not find that pattern ID in the current review queue.", tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+                _log_ledger_event(
+                    governor,
+                    "PATTERN_PROPOSAL_ACCEPTED",
+                    {"pattern_id": pattern_id, "kind": str(proposal.get("kind") or "")},
+                )
+                suggested_commands = [
+                    {"label": command.title(), "command": command}
+                    for command in list(proposal.get("suggested_commands") or [])[:3]
+                ]
+                await send_chat_message(
+                    ws,
+                    (
+                        f"Pattern accepted for review: {str(proposal.get('title') or '').strip()}\n\n"
+                        "No action has been taken automatically. Use an explicit command if you want to act on this proposal."
+                    ),
+                    tone_domain="continuity",
+                    suggested_actions=suggested_commands or None,
+                )
+                await send_pattern_review_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            dismiss_pattern_match = DISMISS_PATTERN_RE.match(text)
+            if dismiss_pattern_match:
+                pattern_id = str(dismiss_pattern_match.group("pattern_id") or "").strip().upper()
+                try:
+                    snapshot, proposal = pattern_reviews.dismiss_proposal(pattern_id)
+                except KeyError:
+                    await send_chat_message(ws, "I could not find that pattern ID in the current review queue.", tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+                _log_ledger_event(
+                    governor,
+                    "PATTERN_PROPOSAL_DISMISSED",
+                    {"pattern_id": pattern_id, "kind": str(proposal.get("kind") or "")},
+                )
+                await send_chat_message(
+                    ws,
+                    f"Pattern dismissed: {str(proposal.get('title') or '').strip()}",
+                    tone_domain="continuity",
+                )
+                await send_pattern_review_widget(ws, session_state, snapshot=snapshot)
                 await send_chat_done(ws)
                 continue
 

@@ -226,7 +226,43 @@ Use cases:
 - inspect whether any domain overrides are active
 - reset Nova back to the default presentation profile
 
-## 12. Best Practices
+## 12. Scheduled Updates and Reminders
+
+Use these when you want Nova to keep a calm, explicit daily rhythm.
+
+Examples:
+- `show schedules`
+- `notification status`
+- `schedule daily brief at 8:00 am`
+- `schedule daily brief at 7:30 am`
+- `remind me at 2:00 pm to review deployment issue`
+- `remind me daily at 9:00 am to review project threads`
+- `cancel schedule SCH-123`
+- `dismiss schedule SCH-123`
+
+Important note:
+- schedules are created only when you ask
+- scheduled items surface quietly
+- scheduled items do not auto-run actions for you
+
+## 13. Pattern Review
+
+Use these when you want Nova to inspect ongoing work for repeated themes without letting it act on those themes automatically.
+
+Examples:
+- `pattern opt in`
+- `pattern status`
+- `review patterns`
+- `review patterns for deployment issue`
+- `accept pattern PAT-123`
+- `dismiss pattern PAT-123`
+
+Important note:
+- you must opt in first
+- reviewing patterns is explicit
+- accepting a pattern does not execute anything
+
+## 14. Best Practices
 
 If you want the smoothest experience:
 - be direct
@@ -234,7 +270,7 @@ If you want the smoothest experience:
 - use thread names consistently for long-running work
 - use explicit memory commands when something matters enough to preserve
 
-## 13. Examples of Good Everyday Flows
+## 15. Examples of Good Everyday Flows
 
 ### News flow
 - `news`
@@ -255,6 +291,18 @@ If you want the smoothest experience:
 - `tone set concise`
 - `tone set research detailed`
 - `tone reset all`
+
+### Scheduling flow
+- `show schedules`
+- `schedule daily brief at 8:00 am`
+- `remind me daily at 9:00 am to review project threads`
+- `notification status`
+
+### Pattern review flow
+- `pattern opt in`
+- `review patterns`
+- `accept pattern PAT-123`
+- `dismiss pattern PAT-123`
 
 ### System help flow
 - `system status`

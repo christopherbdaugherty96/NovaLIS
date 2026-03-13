@@ -200,18 +200,72 @@ Use Nova for bounded everyday computer actions.
 ### What this feels like
 Nova acts like a governed computer helper rather than a broad uncontrolled agent.
 
-## 10. Best Ways To Use Nova Right Now
+## 10. Scheduled Updates Workflow
+
+### Goal
+Let Nova support a daily rhythm without turning into a background actor.
+
+### A simple flow
+1. Create a recurring daily check-in:
+   - `schedule daily brief at 8:00 am`
+2. Create a work reminder:
+   - `remind me at 2:00 pm to review deployment issue`
+   - `remind me daily at 9:00 am to review project threads`
+3. Inspect the current schedule surface:
+   - `show schedules`
+   - `notification status`
+4. Clean up when needed:
+   - `dismiss schedule SCH-123`
+   - `cancel schedule SCH-123`
+
+### What this feels like
+Nova becomes easier to live with daily, but still stays calm.
+
+The important difference is:
+- schedules are explicit
+- schedule items surface quietly
+- scheduled actions do not automatically execute for you
+
+## 11. Pattern Review Workflow
+
+### Goal
+Review repeated work themes deliberately without letting Nova turn those themes into autonomous behavior.
+
+### A simple flow
+1. Turn the review layer on:
+   - `pattern opt in`
+2. Ask Nova to generate a review queue:
+   - `review patterns`
+   - `review patterns for deployment issue`
+3. Inspect the proposals:
+   - `pattern status`
+4. Resolve the queue:
+   - `accept pattern PAT-123`
+   - `dismiss pattern PAT-123`
+
+### What this feels like
+Nova becomes more reflective about your work, but still stays under your control.
+
+The important difference is:
+- review is opt-in
+- proposals are advisory
+- nothing runs automatically just because a pattern was found
+
+## 12. Best Ways To Use Nova Right Now
 
 Nova is strongest today when you use it for:
 - explanation
 - research
 - ongoing work continuity
 - explicit memory preservation
+- explicit scheduled support for daily routines
+- explicit review of repeated work patterns
 - bounded local assistance
 
 Nova is less about magic hidden automation and more about:
 - clarity
 - continuity
+- calm rhythm
 - governed help
 
 ## Short Version
@@ -221,5 +275,6 @@ Nova helps you:
 - understand what is happening
 - continue what you were doing
 - preserve what matters
+- surface what you chose to be reminded about
 
 while keeping authority under explicit user control.
