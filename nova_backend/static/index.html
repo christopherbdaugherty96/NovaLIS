@@ -149,14 +149,18 @@
         </div>
         <div id="trust-panel" class="widget page-card trust-panel" aria-live="polite">
           <h3>Trust Panel</h3>
+          <p id="trust-summary">Live review of recent actions and network activity will appear here.</p>
           <div class="trust-row"><strong>Mode:</strong> <span id="trust-mode">Local-only</span></div>
           <div class="trust-row"><strong>Last external call:</strong> <span id="trust-last-call">None</span></div>
           <div class="trust-row"><strong>Data egress:</strong> <span id="trust-egress">Read-only requests only</span></div>
           <div class="trust-row"><strong>Failure state:</strong> <span id="trust-failure">Normal</span></div>
+          <div id="trust-recent-activity" class="trust-section"></div>
+          <div id="trust-blocked" class="trust-section"></div>
+          <p id="trust-note" class="trust-note">Recent items come from ledger-backed runtime events.</p>
         </div>
         <div id="context-insight-widget" class="widget page-card context-insight-widget" aria-live="polite">
           <h3>Context Insight</h3>
-          <p id="context-insight-summary">Use “explain this” and Nova will summarize what it sees.</p>
+          <p id="context-insight-summary">Use "explain this" and Nova will summarize what it sees.</p>
           <ul id="context-insight-steps" class="context-insight-steps"></ul>
           <div class="context-insight-actions">
             <button id="btn-home-explain" type="button">Explain this</button>

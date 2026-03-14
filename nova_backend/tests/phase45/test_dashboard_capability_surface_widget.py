@@ -13,9 +13,12 @@ def test_dashboard_renders_capability_surface_widget_from_system_status():
 
     assert "let capabilityDiscoveryState" in source
     assert "function renderCapabilitySurfaceWidget(data = {})" in source
+    assert "function runCapabilityPrompt(prompt)" in source
     assert 'case "system":' in source
     assert "renderCapabilitySurfaceWidget(msg.data || {});" in source
     assert '"available_capability_surface"' in source or "data.available_capability_surface" in source
+    assert "group.items" in source or 'items' in source
+    assert 'setActivePage("chat");' in source
     assert '"What Nova Can Do Right Now"' in source or "capability-surface-summary" in source
 
 

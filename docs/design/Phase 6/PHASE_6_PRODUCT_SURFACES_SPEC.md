@@ -109,6 +109,7 @@ This should be:
 - driven from the currently enabled capability registry state
 - filtered by what the Governor currently exposes
 - practical rather than theoretical
+- usable as a launch surface for good example prompts, not only as passive text
 
 This panel is not a docs page.
 It is a live discoverability surface for the current runtime.
@@ -129,6 +130,7 @@ Recommended contents:
 - policy simulations
 - blocked-action reasons
 - confirmation-required items
+- ledger-backed recent activity items that can be explained in plain language
 
 Example:
 
