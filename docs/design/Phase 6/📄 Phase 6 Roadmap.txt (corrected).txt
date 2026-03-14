@@ -1,130 +1,240 @@
-📄 Phase 6 Roadmap.txt (corrected)
-text
-# 🧬 NOVA PHASE 6 ROADMAP (Proposed)  
-## *Policy‑Bound Operation – Delegated Autonomy Within Law*  
-**Proposed – Awaiting Constitutional Ratification**  
+# Phase 6 Roadmap (Corrected)
+Date: 2026-03-13
+Status: Planning packet only; runtime not authorized
+Scope: Ordered roadmap for the Phase-6 core package after Phase-5 closure
 
-**Document Status:** Proposed – Design Not Yet Authorized  
-**Based on:**  
-- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md) (Part III, Phase 6)  
-- [Delegated Autonomy.txt](Delegated%20Autonomy.txt)  
-- [# Autonomy Tiers & Evolution.txt](%23%20Autonomy%20Tiers%20%26%20Evolution.txt)  
-- [# 📘 Nova Constitutional Enforcemen.txt](%23%20%F0%9F%93%98%20Nova%20Constitutional%20Enforcemen.txt)  
-- [Firewall & Ledger Specification.txt](Firewall%20%26%20Ledger%20Specification.txt)  
-- **Audit Refinement:** 2026‑02‑16 – Added hard boundaries: trigger‑only background evaluation, atomic policy actions, emergency stop preempts external timers, policy‑self‑mutation forbidden, deterministic evaluation order, and explicit non‑orchestration clause.
+## Current Starting Point
+Phase 5 is now closed for the current trust-facing package.
 
----
+That means Nova already has:
+- governed memory
+- session-scoped project continuity plus durable memory bridge
+- memory inspectability
+- manual tone controls
+- user-directed scheduling
+- opt-in pattern review
 
-## 🔹 Executive Summary  
+Phase 6 begins only where Nova may perform bounded automatic action inside explicit policy envelopes.
 
-Phase 6 (proposed) introduces **delegated autonomy** – the first time Nova can perform actions automatically on behalf of the user, **but only within explicit, user‑defined policy envelopes**. This is not general‑purpose autonomy; it is **bounded, policy‑driven execution** that remains fully governed by the Governor.  
+## Core Interpretation Rule
+Phase 6 is not "more helpful automation" in the abstract.
+It is the first phase where Nova may move from:
+- user invocation only
 
-- **User‑Defined Policies:** Users can create rules like “Every morning at 8am, summarise my calendar” or “If motion detected after 10pm, turn on night light.”  
-- **Bounded Automation:** Nova monitors conditions and executes actions – **only if** the action is permitted by an active, user‑approved policy. Background monitoring is strictly limited to trigger evaluation; no speculative reasoning or pre‑planning occurs outside an active evaluation cycle.  
-- **Atomic Capability Enforcement:** Policies may reference only atomic capabilities from the Phase 4 registry. Dynamic chaining, orchestration, or composition of multiple capabilities within a single policy is **forbidden**.  
-- **Local Optimisation (Class A/B/D Mutations):** With evolution enabled (Tier 3), Nova may adjust retrieval weights, compact memory, and refine routing hints – all reversible, logged, and firewalled. Mutations may **never** modify policy definitions, envelopes, or the capability registry.  
-- **Governor as Policy Validator:** The Governor’s role shifts from *“Did the user explicitly request this?”* to *“Is this action permitted by the active delegation policy?”*  
+to:
+- policy-bound delegated action
 
-All autonomy remains **opt‑in**, **transparent**, and **fully revocable**. No autonomy without explicit user delegation. No silent background execution. The Governor remains the sole execution choke point, now enforcing policy boundaries.  
+But only if every action remains:
+- explicitly delegated
+- atomic
+- Governor-validated
+- logged
+- revocable
+- emergency-stoppable
 
-**This roadmap is a proposal.** Design work cannot begin until Phase 5 is complete and the Phase 6 admission gate is satisfied and ratified.
+## What Phase 6 Is
+Phase 6 is the design and future implementation path for:
+- atomic policy language
+- policy envelopes
+- Governor policy validation
+- trigger-only monitoring
+- deterministic policy evaluation order
+- emergency stop
+- transparency and activity logging for policy-driven execution
 
----
+## What Phase 6 Is Not
+Phase 6 is not:
+- general autonomy
+- multi-step orchestration
+- autonomous cognition without policy
+- hidden reminders or inferred delegation
+- silent authority expansion
+- a reopen of deferred Phase-5 tracks by default
 
-## 🎯 Phase 6 Goals  
+## Correct Phase-5 -> Phase-6 Handoff
+Phase 5 hands Phase 6 three important things:
+1. explicit persistence without hidden memory drift
+2. explicit user-directed scheduling without autonomous execution
+3. a closed trust model that must remain intact
 
-1. **Enable user‑defined atomic policies** for bounded automation – users can define a trigger and a single atomic action.  
-2. **Implement policy validation in the Governor** – every autonomous action is checked against the active policy envelope.  
-3. **Ensure background monitoring is trigger‑only** – no speculative reasoning, pre‑planning, or decision‑tree expansion outside active evaluation.  
-4. **Introduce Class A/B/D mutations** (retrieval weight, memory compaction, routing hint) under Tier 3, with evolution ON and full firewall protection. Explicitly forbid mutation of policy definitions.  
-5. **Require deterministic evaluation order** when multiple policies trigger simultaneously – alphabetical by policy ID, no prioritisation.  
-6. **Design emergency stop that preempts all external timers and listeners** – not merely blocks execution.  
-7. **Maintain all Tier 1 invariants** – no self‑expansion of authority, no background cognition without policy, no predictive preloading, no silent fallback.  
-8. **Prove household value** – Phase 6 runtime unlock only after ≥3 months of stable deployment with documented daily usage and positive retention metrics.  
+That means the Phase-6 core must build on top of:
+- explicit user settings
+- Governor mediation
+- policy inspectability
+- quiet, non-persuasive UX
 
----
+It must not collapse Phase 5's trust-facing surfaces into hidden automation.
 
-## 📋 Scope  
+## Ordered Phase-6 Roadmap
 
-*(Scope sections unchanged.)*  
+### Milestone 0 - Phase-5 Alignment Freeze
+Purpose:
+- lock the Phase-5 boundary before any delegated-autonomy work begins
 
----
+Required outcome:
+- Phase-5 closure remains the authority for the current runtime
+- deferred Phase-5 tracks stay deferred unless separately approved
+- current runtime remains non-autonomous
 
-## 🏛️ Architectural Overview  
+Inputs:
+- `docs/PROOFS/Phase-5/PHASE_5_CLOSED_ACT_2026-03-13.md`
+- `docs/PROOFS/Phase-6/PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
 
-*(Architecture unchanged.)*  
+### Milestone 1 - Atomic Policy Foundation
+Purpose:
+- define the smallest lawful unit of delegated action
 
----
+Required work:
+- policy language for one trigger -> one atomic action
+- policy envelope schema
+- policy storage model
+- explicit enable/disable model
 
-## 🔒 Phase 6 Admission Gate (Prerequisite for Design Unlock)  
+Why first:
+- nothing else in Phase 6 is safe until "what a policy is" is fixed
 
-Before any Phase 6 design work can begin, the following must be satisfied:  
+### Milestone 2 - Governor Policy Validator
+Purpose:
+- make the Governor the sole authority for delegated execution
 
-- [x] Phase 4.5 design completed and ratified.  
-- [x] Phase 5 design completed and ratified.  
-- [ ] Phase 4 runtime stable for ≥30 days (already satisfied for Phase 5).  
-- [ ] Phase 5 runtime stable for ≥30 days (once unlocked).  
-- [ ] Phase 4.5 and Phase 5 user research confirms daily‑use scenarios, calm perception, and positive retention metrics.  
-- [ ] At least **3 months of stable household deployment** with documented daily usage and users returning voluntarily.  
-- [ ] **Atomic policy language** specification ratified (no multi‑step chains).  
-- [ ] **Trigger‑only monitoring** design approved.  
-- [ ] **Governor Policy Validator** design approved.  
-- [ ] **Mutation Firewall** core implemented (Phase 9 components may be pulled forward).  
-- [ ] **Ledger extension** schema approved.  
-- [ ] **Constitutional audit** confirms no authority expansion, no silent background execution, no policy bypass, no policy self‑mutation.  
+Required work:
+- Governor policy validation path
+- atomic-capability allowlist checks
+- envelope/resource checks
+- explicit block reasons
+- emergency stop semantics
 
-**Design Unlock Act:** If ratified, the Constitutional Governance Board may authorize design work after all prerequisites are met.  
+Why second:
+- trigger monitoring cannot be allowed to execute anything until the Governor can validate every policy action
 
----
+### Milestone 3 - Trigger-Only Monitoring
+Purpose:
+- allow bounded background evaluation without background cognition drift
 
-## 🛠️ Implementation Roadmap  
+Required work:
+- time/event trigger system
+- strict trigger-only monitoring rules
+- deterministic evaluation order
+- no speculative planning
+- no multi-policy orchestration
 
-All code must be placed behind **compile‑time gates** and remain runtime‑locked until Phase 6 admission gate is satisfied and runtime unlock is explicitly voted.  
+Why third:
+- after the policy model and Governor validator exist, monitoring can remain a thin trigger surface instead of becoming a second brain
 
-*(Workstreams A–F unchanged.)*  
+### Milestone 4 - Transparency, Ledger, and User Control
+Purpose:
+- make delegated behavior inspectable enough to trust
 
----
+Required work:
+- activity log for policy evaluations and outcomes
+- policy creation/edit/delete history
+- explicit enable/disable visibility
+- last-triggered / next-triggered surfaces
+- emergency-stop visibility
 
-## ⏱️ Timeline Estimate  
+Why fourth:
+- delegated operation without strong inspection would violate Nova's existing trust model
 
-*(Timeline unchanged.)*  
+### Milestone 5 - Policy UI and Everyday Use Surfaces
+Purpose:
+- give users a clear way to author and manage policies without persuasion or dark patterns
 
----
+Required work:
+- policy list view
+- policy editor
+- policy status surfaces
+- neutral explanations of why a policy was allowed or blocked
 
-## ⚠️ Risks and Mitigations  
+Why fifth:
+- by this point the underlying rules are fixed, so the UI can reflect them honestly instead of inventing behavior
 
-*(Risks unchanged.)*  
+### Milestone 6 - Constitutional Verification and Runtime Gate Review
+Purpose:
+- verify that the delegated model still preserves Agent Under Law
 
----
+Required work:
+- constitutional audit
+- adversarial tests
+- emergency-stop tests
+- policy-bypass tests
+- final unlock decision packet
 
-## ✅ Success Criteria for Phase 6 Design Completion  
+Why last:
+- closure has to evaluate the real assembled system, not isolated parts
 
-*(Criteria unchanged.)*  
+## Optional / Adjacent Phase-6 Tracks
+These may be useful in the Phase-6 era, but they are not the core delegated-autonomy path and should not be allowed to blur the roadmap.
 
----
+### A. Wake word
+- see `docs/PROOFS/Phase-6/PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
+- local, non-authorizing input convenience
+- not part of delegated autonomy core
 
-## 🔮 After Phase 6: Path to Phase 7  
+### B. Self-hosted search index
+- infrastructure/sovereignty direction
+- not required for policy-bound delegated action
 
-Phase 6 components will remain dormant until **Phase 7** (conditional on experience foundation). Phase 7 admission will require Phase 6 runtime stable for ≥6 months and explicit user opt‑in.  
+### C. Deep Thought secondary orb / second-orb exploration
+- UX exploration only
+- not part of delegated autonomy core
+- should remain deferred unless user research proves a real need
 
----
+## Future / Not-Core Inputs
+These are important design references, but they are not the minimum Phase-6 core package.
 
-## 📜 References  
+### Autonomy tiers and evolution
+- the autonomy-tiers and evolution document in this folder
+- classification: future-phase autonomy model, mostly Phase 9/10+
+- use as a constitutional reference, not as the first implementation order for Phase 6
 
-- [NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.8](NOVA_COMPLETE_CONSTITUTIONAL_BLUEPRINT_1.8.md) (Part III, Phase 6)  
-- [Delegated Autonomy.txt](Delegated%20Autonomy.txt)  
-- [# Autonomy Tiers & Evolution.txt](%23%20Autonomy%20Tiers%20%26%20Evolution.txt)  
-- [# 📘 Nova Constitutional Enforcemen.txt](%23%20%F0%9F%93%98%20Nova%20Constitutional%20Enforcemen.txt)  
-- [Firewall & Ledger Specification.txt](Firewall%20%26%20Ledger%20Specification.txt)  
-- [Phase 4.5 Roadmap](PHASE_4.5_ROADMAP.md)  
-- [Phase 5 Roadmap](PHASE_5_ROADMAP.md)  
+### Constitutional enforcement / mutation firewall / ledger extension
+- the constitutional-enforcement/firewall document in this folder
+- `Firewall & Ledger Specification.txt`
+- classification: future-phase or pull-forward safety dependency
+- if mutation/evolution work is pursued in Phase 6, these become required supporting specs
+- if Phase 6 stays focused on delegated atomic policies only, they remain adjacent rather than core
 
----
+## Correct Ordering Rule
+If there is any conflict between delegated policy execution and future mutation/evolution theory, the delegated policy core comes first.
 
-**Prepared by:** Nova Constitutional Governance Board  
-**Date:** 2026‑02‑16 (Revised)  
-**Status:** Proposed – Awaiting Ratification  
+In other words:
+1. define policy
+2. validate policy in Governor
+3. monitor triggers safely
+4. expose inspection and emergency stop
+5. verify constitutionality
+6. only then consider whether mutation/evolution work should be pulled forward
 
----  
+## What Is Deferred, Not Automatically Added
+The following do not automatically become Phase-6 core just because they were deferred from Phase 5:
+- declarative identity/preferences
+- persistent cross-session thread substrate / restoration layer
+- broader tone-calibration evolution beyond manual controls
 
-*End of Phase 6 Roadmap*
+They remain candidate tracks and require their own explicit specification path.
+
+## Admission Reality
+Phase 6 should still be treated as runtime-locked until its own admission conditions are satisfied.
+
+Current practical interpretation:
+- planning may continue
+- implementation ordering may be documented
+- runtime unlock is not implied by this roadmap
+
+## Recommended Reading Order
+1. `docs/PROOFS/Phase-5/PHASE_5_CLOSED_ACT_2026-03-13.md`
+2. `docs/PROOFS/Phase-6/PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
+3. the corrected Phase-6 roadmap document in this folder
+4. `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`
+5. `docs/PROOFS/Phase-6/PHASE_6_NEXT_STEP_INDEX.md`
+
+## Bottom Line
+The correct Phase-6 order is:
+- Phase-5 boundary first
+- atomic policy model second
+- Governor policy validator third
+- trigger-only monitoring fourth
+- transparency and control fifth
+- constitutional verification last
+
+Everything else is either optional, adjacent, or future-phase unless separately pulled forward and ratified.
