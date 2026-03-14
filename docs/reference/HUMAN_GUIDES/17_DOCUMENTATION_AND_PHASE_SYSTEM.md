@@ -42,7 +42,7 @@ Examples:
 - Phase 4.2: cognitive/reporting depth
 - Phase 4.5: perception and UX refinement
 - Phase 5: continuity, governed memory, tone controls, scheduling, and opt-in pattern review
-- Phase 6: delegated-policy planning, beginning with atomic policy language and bounded policy envelopes
+- Phase 6: delegated-policy planning, beginning with atomic policy language, Governor-side policy validation, a policy executor gate, and capability topology before any broad trigger runtime
 
 ## What A Phase Means In Practice
 A phase is not just a label.
@@ -65,8 +65,8 @@ For the current repository state, Phase 5 is a good example of this layering:
 - the runtime docs explain what is live now
 
 Phase 6 currently shows the opposite pattern:
-- the design docs have started to define the first lawful policy model
-- the proof packet records next-step planning and Phase-5 deferrals
+- the design docs now define the first lawful policy model plus the next core execution layers
+- the proof packet records next-step planning, implemented validator/store foundation, and Phase-5 deferrals
 - the runtime docs still do not claim live Phase-6 delegated behavior
 
 ## The Best Reading Order For Most People

@@ -6,8 +6,18 @@ Purpose: Classify the Phase-6 document set by authority and implementation order
 ## Canonical Phase-6 Design Core
 - the corrected Phase-6 roadmap document in this folder
 - `docs/design/Phase 6/ATOMIC_POLICY_LANGUAGE_AND_POLICY_ENVELOPE_SPEC.md`
+- `docs/design/Phase 6/PHASE_6_POLICY_EXECUTOR_GATE_SPEC.md`
+- `docs/design/Phase 6/PHASE_6_CAPABILITY_TOPOLOGY_SYSTEM_SPEC.md`
 
-These documents define the current ordered roadmap and the first core Phase-6 policy substrate spec.
+These documents define the current ordered roadmap and the core Phase-6 policy substrate:
+- what a lawful delegated policy is
+- how it must execute through the Governor
+- how capabilities must be classified before broad trigger expansion
+
+## Core Supporting Surface Specs
+- `docs/design/Phase 6/PHASE_6_POLICY_SIMULATION_SURFACE_SPEC.md`
+
+This supporting spec defines the first trust-facing delegated-policy inspection surface without changing the core lawful order.
 
 ## Core Cross-Phase Inputs
 - `docs/PROOFS/Phase-5/PHASE_5_CLOSED_ACT_2026-03-13.md`
@@ -17,6 +27,7 @@ These documents define the current ordered roadmap and the first core Phase-6 po
 These define the handoff boundary and the philosophical model for delegated autonomy.
 
 ## Adjacent / Optional Phase-6-Era Planning Inputs
+- `docs/design/Phase 6/PHASE_6_PRODUCT_SURFACES_SPEC.md`
 - `docs/design/Phase 6/PHASE_6_PROGRESSIVE_SCREEN_INTELLIGENCE_PRODUCT_SPEC.md`
 - `docs/design/Phase 6/PHASE_6_LOCAL_AI_APPLIANCE_AND_PRODUCT_DIRECTION.md`
 - `docs/PROOFS/Phase-6/PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
@@ -42,7 +53,8 @@ Use the corrected roadmap for current ordering.
 ## Interpretation Rule
 When reading the Phase-6 folder:
 - use the corrected roadmap for order
-- use the atomic-policy spec for the first core implementation shape
+- use the atomic-policy, executor-gate, and capability-topology specs as the core Phase-6 ladder
+- use the policy-simulation spec as the first trust-facing delegated-policy surface
 - use the Phase-5 closed act and Phase-6 deferral note for boundary clarity
 - treat optional UX/infrastructure experiments as non-core
 - treat mutation/evolution documents as future-phase or explicitly pull-forward only

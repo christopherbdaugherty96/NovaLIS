@@ -37,6 +37,9 @@ Phase 6 is the design and future implementation path for:
 - atomic policy language
 - policy envelopes
 - Governor policy validation
+- Governor policy executor gate
+- capability topology for delegated authority classes
+- policy simulation and review before broad enablement
 - trigger-only monitoring
 - deterministic policy evaluation order
 - emergency stop
@@ -110,7 +113,46 @@ Required work:
 Why second:
 - trigger monitoring cannot be allowed to execute anything until the Governor can validate every policy action
 
-### Milestone 3 - Trigger-Only Monitoring
+Current implementation note:
+- an initial runtime foundation slice now exists for validation plus disabled draft storage
+- see `docs/PROOFS/Phase-6/PHASE_6_POLICY_VALIDATOR_FOUNDATION_RUNTIME_SLICE_2026-03-13.md`
+
+### Milestone 3 - Policy Executor Gate
+Purpose:
+- create the only lawful path from delegated policy into runtime execution
+
+Required work:
+- Governor-side executor gate for policy-driven actions
+- one-policy, one-action execution path
+- explicit block reasons at execution time
+- emergency-stop enforcement at execution time
+- execution-attempt and execution-outcome logging
+- simulation / dry-run support for policy inspection before broad enablement
+
+Current core design artifact:
+- `docs/design/Phase 6/PHASE_6_POLICY_EXECUTOR_GATE_SPEC.md`
+
+Why third:
+- a trigger system without an executor gate would create background behavior before Nova has a complete lawful execution path
+
+### Milestone 4 - Capability Topology System
+Purpose:
+- classify capabilities by authority class, risk, delegation eligibility, and execution constraints
+
+Required work:
+- topology metadata model
+- authority class hierarchy
+- policy-delegatable classification
+- confirmation and external-effect annotations
+- Governor-readable topology queries
+
+Current core design artifact:
+- `docs/design/Phase 6/PHASE_6_CAPABILITY_TOPOLOGY_SYSTEM_SPEC.md`
+
+Why fourth:
+- delegated execution should rely on a governed capability map instead of scattered hardcoded rules
+
+### Milestone 5 - Trigger-Only Monitoring
 Purpose:
 - allow bounded background evaluation without background cognition drift
 
@@ -121,10 +163,10 @@ Required work:
 - no speculative planning
 - no multi-policy orchestration
 
-Why third:
-- after the policy model and Governor validator exist, monitoring can remain a thin trigger surface instead of becoming a second brain
+Why fifth:
+- after the validator, executor gate, and topology model exist, monitoring can remain a thin trigger surface instead of becoming a second brain
 
-### Milestone 4 - Transparency, Ledger, and User Control
+### Milestone 6 - Transparency, Ledger, and User Control
 Purpose:
 - make delegated behavior inspectable enough to trust
 
@@ -135,10 +177,10 @@ Required work:
 - last-triggered / next-triggered surfaces
 - emergency-stop visibility
 
-Why fourth:
+Why sixth:
 - delegated operation without strong inspection would violate Nova's existing trust model
 
-### Milestone 5 - Policy UI and Everyday Use Surfaces
+### Milestone 7 - Policy UI and Everyday Use Surfaces
 Purpose:
 - give users a clear way to author and manage policies without persuasion or dark patterns
 
@@ -147,11 +189,21 @@ Required work:
 - policy editor
 - policy status surfaces
 - neutral explanations of why a policy was allowed or blocked
+- delegated policies panel
+- enable / disable controls
+- audit-log visibility
 
-Why fifth:
+Why seventh:
 - by this point the underlying rules are fixed, so the UI can reflect them honestly instead of inventing behavior
 
-### Milestone 6 - Constitutional Verification and Runtime Gate Review
+Recommended early supporting surface:
+- `policy simulate <id>` or an equivalent dry-run inspection surface
+- explain why a policy would be allowed or blocked before real delegated execution is widened
+
+Current supporting design artifact:
+- `docs/design/Phase 6/PHASE_6_POLICY_SIMULATION_SURFACE_SPEC.md`
+
+### Milestone 8 - Constitutional Verification and Runtime Gate Review
 Purpose:
 - verify that the delegated model still preserves Agent Under Law
 
@@ -185,11 +237,17 @@ These may be useful in the Phase-6 era, but they are not the core delegated-auto
 - depends on strong installability and polished explain/document surfaces
 - not part of delegated autonomy core by itself
 
-### D. Self-hosted search index
+### D. Product surfaces
+- see `docs/design/Phase 6/PHASE_6_PRODUCT_SURFACES_SPEC.md`
+- operator health, daily utility, and trust/review packaging layer
+- critical to making Nova feel like a real product
+- not part of delegated autonomy core by itself
+
+### E. Self-hosted search index
 - infrastructure/sovereignty direction
 - not required for policy-bound delegated action
 
-### E. Deep Thought secondary orb / second-orb exploration
+### F. Deep Thought secondary orb / second-orb exploration
 - UX exploration only
 - not part of delegated autonomy core
 - should remain deferred unless user research proves a real need
@@ -215,10 +273,12 @@ If there is any conflict between delegated policy execution and future mutation/
 In other words:
 1. define policy
 2. validate policy in Governor
-3. monitor triggers safely
-4. expose inspection and emergency stop
-5. verify constitutionality
-6. only then consider whether mutation/evolution work should be pulled forward
+3. build the executor gate
+4. classify capabilities through topology
+5. monitor triggers safely
+6. expose inspection and emergency stop
+7. verify constitutionality
+8. only then consider whether mutation/evolution work should be pulled forward
 
 ## What Is Deferred, Not Automatically Added
 The following do not automatically become Phase-6 core just because they were deferred from Phase 5:
@@ -241,16 +301,21 @@ Current practical interpretation:
 2. `docs/PROOFS/Phase-6/PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
 3. the corrected Phase-6 roadmap document in this folder
 4. `docs/design/Phase 6/ATOMIC_POLICY_LANGUAGE_AND_POLICY_ENVELOPE_SPEC.md`
-5. `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`
-6. `docs/PROOFS/Phase-6/PHASE_6_NEXT_STEP_INDEX.md`
+5. `docs/design/Phase 6/PHASE_6_POLICY_EXECUTOR_GATE_SPEC.md`
+6. `docs/design/Phase 6/PHASE_6_CAPABILITY_TOPOLOGY_SYSTEM_SPEC.md`
+7. `docs/design/Phase 6/PHASE_6_POLICY_SIMULATION_SURFACE_SPEC.md`
+8. `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`
+9. `docs/PROOFS/Phase-6/PHASE_6_NEXT_STEP_INDEX.md`
 
 ## Bottom Line
 The correct Phase-6 order is:
 - Phase-5 boundary first
 - atomic policy model second
 - Governor policy validator third
-- trigger-only monitoring fourth
-- transparency and control fifth
+- policy executor gate fourth
+- capability topology fifth
+- trigger-only monitoring sixth
+- transparency and control seventh
 - constitutional verification last
 
 Everything else is either optional, adjacent, or future-phase unless separately pulled forward and ratified.
