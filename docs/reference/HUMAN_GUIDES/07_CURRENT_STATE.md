@@ -95,6 +95,12 @@ That roadmap keeps the smartest order clear:
 - prove one small delegated-policy slice
 - improve installability and operator health before widening the system further
 
+The signature product-direction screen-help spec is documented here:
+- `docs/design/Phase 6/PHASE_6_PROGRESSIVE_SCREEN_INTELLIGENCE_PRODUCT_SPEC.md`
+
+The longer-range local appliance / Nova Hub direction is documented here:
+- `docs/design/Phase 6/PHASE_6_LOCAL_AI_APPLIANCE_AND_PRODUCT_DIRECTION.md`
+
 ## What Makes The Current State Special
 Nova already combines things that usually live in separate products:
 - governed local action

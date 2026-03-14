@@ -17,6 +17,8 @@ These documents define the current ordered roadmap and the first core Phase-6 po
 These define the handoff boundary and the philosophical model for delegated autonomy.
 
 ## Adjacent / Optional Phase-6-Era Planning Inputs
+- `docs/design/Phase 6/PHASE_6_PROGRESSIVE_SCREEN_INTELLIGENCE_PRODUCT_SPEC.md`
+- `docs/design/Phase 6/PHASE_6_LOCAL_AI_APPLIANCE_AND_PRODUCT_DIRECTION.md`
 - `docs/PROOFS/Phase-6/PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
 - the self-hosted search-index option document in this folder
 - `docs/design/Phase 6/# Deepseek's Orb(2nd orb).txt`

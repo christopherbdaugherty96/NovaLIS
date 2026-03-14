@@ -89,6 +89,7 @@ Examples:
 Important note:
 - screenshot and screen analysis are live
 - wake word is still planned, not live runtime
+- the next product-quality evolution is a cursor-first `what is this?` flow that expands to section or full page only when needed
 
 ## 5. Continuity and Ongoing Work
 Nova can now help with ongoing work rather than only one-off prompts.

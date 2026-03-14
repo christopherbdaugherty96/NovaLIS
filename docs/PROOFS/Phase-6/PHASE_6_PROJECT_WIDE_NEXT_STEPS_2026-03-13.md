@@ -36,6 +36,8 @@ Purpose:
 - treat the closed Phase-5 package as a stable product layer
 
 Priority work:
+- make `Nova what is this?` the strongest explain-anything interaction
+- prefer cursor-first screen understanding, with section/page expansion only when needed
 - tighten scheduling UI
 - improve pattern-review explanations
 - unify memory/thread/tone/schedule status into a calmer settings or health surface
@@ -44,6 +46,7 @@ Priority work:
 Why first:
 - Nova already has a believable daily-use layer
 - trust and polish now matter more than another burst of new surfaces
+- the point-and-explain loop is the highest-value product hardening target inside the current explain stack
 
 ### 2. Governor Policy Validator
 Purpose:
@@ -88,6 +91,7 @@ Priority work:
 - first-run environment validation
 - startup readiness checks
 - explicit status for model, network, microphone, and runtime locks
+- packaging assumptions that could later support a local AI appliance or hub
 
 Why fourth:
 - install friction is now one of the biggest blockers to Nova feeling real outside the current workspace
@@ -123,7 +127,19 @@ Why sixth:
 - wake word helps delight and flow
 - but it should not outrank the policy validator, installability, or operator health work
 
-### 7. Broader Phase-6 Policy UI and Trigger Expansion
+### 7. Local AI Appliance / Nova Hub Productization Direction
+Purpose:
+- keep the hardware/product direction coherent without letting it distort the core software roadmap
+
+Priority work:
+- define the simplest local-AI node story
+- keep the message centered on local + governed AI
+- package screen explanation, research, and computer help as the core value loop
+
+Why seventh:
+- the appliance direction becomes believable only after the software experience, installability, and health surfaces are strong enough
+
+### 8. Broader Phase-6 Policy UI and Trigger Expansion
 Purpose:
 - expand delegated-policy usability after the lawful core is proven
 
@@ -133,7 +149,7 @@ Priority work:
 - richer policy inspection surfaces
 - stronger blocked/allowed explanations
 
-Why seventh:
+Why eighth:
 - expansion should happen after the first policy slice proves the model and after the product is easier to run
 
 ## Explicit Non-Priorities Right Now
@@ -160,6 +176,7 @@ This project-wide roadmap adds a product and platform lens on top of that order.
 In practice, it means:
 - Phase-6 core should begin with the Governor validator path
 - while Nova as a whole should also invest in polish, installability, and health visibility
+- and keep progressive screen intelligence as the signature product-surface track
 
 ## Best Single Summary
 The smartest next move for Nova as a whole is:

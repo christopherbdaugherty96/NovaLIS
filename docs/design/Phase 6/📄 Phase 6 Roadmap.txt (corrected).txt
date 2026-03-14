@@ -173,11 +173,23 @@ These may be useful in the Phase-6 era, but they are not the core delegated-auto
 - local, non-authorizing input convenience
 - not part of delegated autonomy core
 
-### B. Self-hosted search index
+### B. Progressive screen intelligence / point-and-explain core
+- see `docs/design/Phase 6/PHASE_6_PROGRESSIVE_SCREEN_INTELLIGENCE_PRODUCT_SPEC.md`
+- product-signature screen-help surface
+- high-value sellability track for the Phase-6 era
+- not part of delegated autonomy core by itself
+
+### C. Local AI appliance / Nova Hub direction
+- see `docs/design/Phase 6/PHASE_6_LOCAL_AI_APPLIANCE_AND_PRODUCT_DIRECTION.md`
+- productization and packaging direction
+- depends on strong installability and polished explain/document surfaces
+- not part of delegated autonomy core by itself
+
+### D. Self-hosted search index
 - infrastructure/sovereignty direction
 - not required for policy-bound delegated action
 
-### C. Deep Thought secondary orb / second-orb exploration
+### E. Deep Thought secondary orb / second-orb exploration
 - UX exploration only
 - not part of delegated autonomy core
 - should remain deferred unless user research proves a real need
