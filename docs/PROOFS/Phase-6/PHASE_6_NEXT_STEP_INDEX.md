@@ -24,20 +24,34 @@ Current runtime truth still lives in:
 2. `PHASE_6_POLICY_VALIDATOR_FOUNDATION_RUNTIME_SLICE_2026-03-13.md`
    - First real Phase-6 runtime foundation slice
    - Adds Governor-side policy validation and disabled draft storage without enabling trigger execution
-3. `PHASE_6_PROJECT_WIDE_NEXT_STEPS_2026-03-13.md`
+3. `docs/design/Phase 6/PHASE_6_POLICY_EXECUTOR_GATE_SPEC.md`
+   - Defines the required Governor-side execution gate between delegated policy and actual capability execution
+   - Clarifies why trigger runtime must not arrive before a lawful execution path exists
+   - Includes dry-run / simulation guidance for safe policy debugging before broad enablement
+4. `docs/design/Phase 6/PHASE_6_CAPABILITY_TOPOLOGY_SYSTEM_SPEC.md`
+   - Defines the authority-class and delegation-classification model for Nova's growing capability surface
+   - Keeps delegated policy rules legible, scalable, and audit-friendly
+   - Adds the authority-class hierarchy needed for safe delegated-policy boundaries
+5. `docs/design/Phase 6/PHASE_6_POLICY_SIMULATION_SURFACE_SPEC.md`
+   - Defines Nova's first delegated-policy trust surface through dry-run inspection
+   - Standardizes simulation result format, safety indicators, and review flow before broad enablement
+6. `PHASE_6_PROJECT_WIDE_NEXT_STEPS_2026-03-13.md`
    - Recommended whole-project priority order after Phase-5 closure
-   - Keeps Phase-6 core work, product hardening, installability, and operator health in the right sequence
-4. `PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
+   - Keeps Phase-6 core work, product hardening, installability, operator health, and productization in the right sequence
+7. `PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
    - Records tracks intentionally not added to the closed Phase-5 package
    - Clarifies that those tracks are planning inputs, not active runtime truth
    - Keeps the Phase-5 closure boundary clean while Phase-6 core is defined
-5. `docs/design/Phase 6/PHASE_6_PROGRESSIVE_SCREEN_INTELLIGENCE_PRODUCT_SPEC.md`
+8. `docs/design/Phase 6/PHASE_6_PRODUCT_SURFACES_SPEC.md`
+   - Defines the three surfaces that make Nova feel like a real product:
+   - operator health, daily utility, and trust / review
+9. `docs/design/Phase 6/PHASE_6_PROGRESSIVE_SCREEN_INTELLIGENCE_PRODUCT_SPEC.md`
    - Signature product-direction spec for Nova's `what is this?` interaction
    - Defines cursor-first, section-next, page-last expansion as the preferred model
-6. `docs/design/Phase 6/PHASE_6_LOCAL_AI_APPLIANCE_AND_PRODUCT_DIRECTION.md`
+10. `docs/design/Phase 6/PHASE_6_LOCAL_AI_APPLIANCE_AND_PRODUCT_DIRECTION.md`
    - Local AI appliance / Nova Hub direction for the Phase-6 era
    - Frames installability, sellability, and product packaging around Nova's architecture
-7. `PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
+11. `PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
    - Governance-safe plan for adding a local Porcupine wake-word gate
    - Explicitly non-authorizing
    - Adjacent convenience/input track, not the delegated-autonomy core

@@ -82,6 +82,8 @@ What exists now:
 - explicit draft inspection commands
 
 What does not exist yet:
+- delegated policy executor gate
+- capability topology model
 - trigger monitoring
 - delegated policy execution
 - background autonomous action
@@ -91,15 +93,26 @@ The broader project-wide next-step order is documented here:
 
 That roadmap keeps the smartest order clear:
 - harden the Phase-5 product layer
-- build the Governor policy validator
+- build the Governor policy executor gate
+- add the capability-topology system
 - prove one small delegated-policy slice
-- improve installability and operator health before widening the system further
+- improve operator health and installability before widening the system further
+
+The next two core Phase-6 architecture specs now exist here:
+- `docs/design/Phase 6/PHASE_6_POLICY_EXECUTOR_GATE_SPEC.md`
+- `docs/design/Phase 6/PHASE_6_CAPABILITY_TOPOLOGY_SYSTEM_SPEC.md`
+
+The first trust-facing delegated-policy review surface is now documented here:
+- `docs/design/Phase 6/PHASE_6_POLICY_SIMULATION_SURFACE_SPEC.md`
 
 The signature product-direction screen-help spec is documented here:
 - `docs/design/Phase 6/PHASE_6_PROGRESSIVE_SCREEN_INTELLIGENCE_PRODUCT_SPEC.md`
 
 The longer-range local appliance / Nova Hub direction is documented here:
 - `docs/design/Phase 6/PHASE_6_LOCAL_AI_APPLIANCE_AND_PRODUCT_DIRECTION.md`
+
+The three product surfaces that would make Nova feel much more like a real daily-use system are documented here:
+- `docs/design/Phase 6/PHASE_6_PRODUCT_SURFACES_SPEC.md`
 
 ## What Makes The Current State Special
 Nova already combines things that usually live in separate products:
