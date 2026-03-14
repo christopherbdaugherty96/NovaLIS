@@ -129,6 +129,24 @@
       </section>
 
       <section id="page-home" class="page-view page-home" hidden>
+        <div id="operator-health-widget" class="widget page-card operator-health-widget" aria-live="polite">
+          <h3>Nova Health</h3>
+          <p id="operator-health-summary">Loading runtime health...</p>
+          <div id="operator-health-grid" class="operator-health-grid"></div>
+          <div id="operator-health-locks" class="operator-health-section"></div>
+          <div id="operator-health-reasons" class="operator-health-section"></div>
+          <div class="operator-health-actions">
+            <button id="btn-home-system-status" type="button">System status</button>
+          </div>
+        </div>
+        <div id="capability-surface-widget" class="widget page-card capability-surface-widget" aria-live="polite">
+          <h3>What Nova Can Do Right Now</h3>
+          <p id="capability-surface-summary">Loading live capabilities...</p>
+          <div id="capability-surface-groups" class="capability-surface-groups"></div>
+          <p id="capability-surface-note" class="capability-surface-note">
+            Only currently enabled, Governor-approved capabilities appear here.
+          </p>
+        </div>
         <div id="trust-panel" class="widget page-card trust-panel" aria-live="polite">
           <h3>Trust Panel</h3>
           <div class="trust-row"><strong>Mode:</strong> <span id="trust-mode">Local-only</span></div>

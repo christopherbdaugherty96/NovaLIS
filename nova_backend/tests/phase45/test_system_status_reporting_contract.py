@@ -20,6 +20,11 @@ def test_system_status_includes_model_and_capability_fields():
     assert "disk_percent" in data
     assert "active_capabilities_count" in data
     assert "active_capability_ids" in data
+    assert "available_capability_surface" in data
+    assert "available_capability_surface_count" in data
+    assert "available_capability_action_count" in data
+    assert "capability_surface_summary" in data
+    assert "capability_surface_source" in data
     assert "model_availability" in data
     assert "model_ready" in data
     assert "model_note" in data
@@ -28,3 +33,26 @@ def test_system_status_includes_model_and_capability_fields():
     assert "notification_quiet_hours_enabled" in data
     assert "notification_quiet_hours_label" in data
     assert "notification_rate_limit_per_hour" in data
+    assert "phase_display" in data
+    assert "governor_status" in data
+    assert "execution_boundary_status" in data
+    assert "memory_summary" in data
+    assert "policy_draft_count" in data
+    assert "ledger_entries_today" in data
+    assert "blocked_conditions" in data
+    assert "system_reasons" in data
+    assert "operator_health_summary" in data
+
+
+def test_system_status_exposes_live_capability_groups():
+    executor = OSDiagnosticsExecutor()
+    result = executor.execute(_Request())
+
+    assert result.success is True
+    groups = result.data.get("available_capability_surface") or []
+
+    assert isinstance(groups, list)
+    assert groups
+    assert any(group.get("category") == "Research" for group in groups)
+    assert any(group.get("category") == "Screen" for group in groups)
+    assert any(group.get("category") == "Computer" for group in groups)

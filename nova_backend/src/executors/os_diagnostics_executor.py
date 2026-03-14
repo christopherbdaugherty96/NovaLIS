@@ -4,30 +4,133 @@ import json
 import platform
 import shutil
 import time
+from datetime import datetime, timezone
 from pathlib import Path
 
 import psutil
 
 from src.actions.action_result import ActionResult
+from src.build_phase import BUILD_PHASE
 
 
 class OSDiagnosticsExecutor:
     @staticmethod
-    def _enabled_capabilities() -> list[int]:
+    def _enabled_capability_entries() -> list[dict[str, object]]:
         registry_path = Path(__file__).resolve().parents[1] / "config" / "registry.json"
         try:
             payload = json.loads(registry_path.read_text(encoding="utf-8"))
         except Exception:
             return []
 
-        enabled: list[int] = []
+        enabled: list[dict[str, object]] = []
         for item in payload.get("capabilities", []):
             if item.get("enabled") is True and item.get("id") is not None:
                 try:
-                    enabled.append(int(item.get("id")))
+                    enabled.append(
+                        {
+                            "id": int(item.get("id")),
+                            "name": str(item.get("name") or "").strip(),
+                            "risk_level": str(item.get("risk_level") or "").strip().lower(),
+                            "status": str(item.get("status") or "").strip().lower(),
+                        }
+                    )
                 except Exception:
                     continue
-        return sorted(set(enabled))
+        return sorted(enabled, key=lambda item: int(item.get("id") or 0))
+
+    @staticmethod
+    def _enabled_capabilities() -> list[int]:
+        return sorted(
+            {
+                int(item.get("id"))
+                for item in OSDiagnosticsExecutor._enabled_capability_entries()
+                if item.get("id") is not None
+            }
+        )
+
+    @staticmethod
+    def _capability_surface(
+        enabled_entries: list[dict[str, object]],
+    ) -> tuple[list[dict[str, object]], str, int]:
+        capability_map = {
+            "governed_web_search": ("Research", "Search the web"),
+            "response_verification": ("Research", "Verify or pressure-check an answer"),
+            "multi_source_reporting": ("Research", "Create a research brief"),
+            "topic_memory_map": ("Research", "Map a topic and its relationships"),
+            "headline_summary": ("News and Briefing", "Summarize headlines"),
+            "intelligence_brief": ("News and Briefing", "Create a daily brief"),
+            "story_tracker_update": ("News and Briefing", "Update tracked stories"),
+            "story_tracker_view": ("News and Briefing", "Review tracked stories"),
+            "weather_snapshot": ("News and Briefing", "Check the weather"),
+            "news_snapshot": ("News and Briefing", "Get the latest news"),
+            "calendar_snapshot": ("News and Briefing", "Review today's calendar"),
+            "analysis_document": ("Documents", "Create an analysis document"),
+            "explain_anything": ("Documents", "Explain a file, page, or document"),
+            "screen_capture": ("Screen", "Capture the current screen region"),
+            "screen_analysis": ("Screen", "Analyze visible screen content"),
+            "open_website": ("Computer", "Open a website"),
+            "open_file_folder": ("Computer", "Open a file or folder"),
+            "volume_up_down": ("Computer", "Adjust volume"),
+            "media_play_pause": ("Computer", "Control media playback"),
+            "brightness_control": ("Computer", "Adjust screen brightness"),
+            "os_diagnostics": ("System", "Show system status and diagnostics"),
+            "speak_text": ("Voice", "Speak responses aloud"),
+            "memory_governance": ("Memory", "Save and review governed memory"),
+        }
+        category_order = [
+            "Research",
+            "News and Briefing",
+            "Documents",
+            "Screen",
+            "Computer",
+            "System",
+            "Voice",
+            "Memory",
+        ]
+
+        grouped: dict[str, dict[str, object]] = {}
+        for item in enabled_entries:
+            name = str(item.get("name") or "").strip()
+            mapping = capability_map.get(name)
+            if not mapping:
+                continue
+            category, action = mapping
+            bucket = grouped.setdefault(
+                category,
+                {
+                    "category": category,
+                    "actions": [],
+                    "capability_ids": [],
+                    "capability_names": [],
+                },
+            )
+            actions = bucket["actions"]
+            if action not in actions:
+                actions.append(action)
+            capability_ids = bucket["capability_ids"]
+            capability_names = bucket["capability_names"]
+            capability_id = int(item.get("id") or 0)
+            if capability_id and capability_id not in capability_ids:
+                capability_ids.append(capability_id)
+            if name not in capability_names:
+                capability_names.append(name)
+
+        surface: list[dict[str, object]] = []
+        for category in category_order:
+            bucket = grouped.get(category)
+            if bucket:
+                surface.append(bucket)
+
+        total_actions = sum(len(list(group.get("actions") or [])) for group in surface)
+        if surface:
+            summary = (
+                f"{total_actions} live actions across {len(surface)} areas are currently "
+                "available through the Governor."
+            )
+        else:
+            summary = "No governed capabilities are currently exposed in the active runtime."
+
+        return surface, summary, total_actions
 
     @staticmethod
     def _model_availability() -> str:
@@ -98,6 +201,26 @@ class OSDiagnosticsExecutor:
             return "balanced", "Tone settings unavailable.", "", 0
 
     @staticmethod
+    def _memory_status_details() -> tuple[str, int, str, str]:
+        try:
+            from src.memory.governed_memory_store import GovernedMemoryStore
+
+            overview = GovernedMemoryStore().summarize_overview()
+            total_count = int(overview.get("total_count") or 0)
+            recent_items = list(overview.get("recent_items") or [])
+            last_write = ""
+            if recent_items:
+                last_write = str(dict(recent_items[0]).get("updated_at") or "")
+            summary = (
+                f"Persistent memory enabled with {total_count} item(s)."
+                if total_count
+                else "Persistent memory enabled with no saved items yet."
+            )
+            return "enabled", total_count, last_write, summary
+        except Exception:
+            return "unknown", 0, "", "Persistent memory status unavailable."
+
+    @staticmethod
     def _notification_schedule_details() -> tuple[str, bool, str, int, int, int]:
         try:
             from src.tasks.notification_schedule_store import NotificationScheduleStore
@@ -115,6 +238,56 @@ class OSDiagnosticsExecutor:
             )
         except Exception:
             return ("Notification policy unavailable.", False, "Off", 0, 0, 0)
+
+    @staticmethod
+    def _policy_status_details() -> tuple[str, str, int, int, int]:
+        try:
+            from src.policies.atomic_policy_store import AtomicPolicyStore
+
+            overview = AtomicPolicyStore().overview()
+            active_count = int(overview.get("active_count") or 0)
+            draft_count = int(overview.get("draft_count") or 0)
+            disabled_count = int(overview.get("disabled_count") or 0)
+            summary = str(overview.get("summary") or "").strip()
+            return "draft_only", summary, active_count, draft_count, disabled_count
+        except Exception:
+            return "unknown", "Policy draft status unavailable.", 0, 0, 0
+
+    @staticmethod
+    def _ledger_status_details() -> tuple[str, int, str]:
+        try:
+            from src.ledger.writer import LEDGER_PATH
+
+            path = Path(LEDGER_PATH)
+            if not path.exists():
+                return "ok", 0, "None"
+
+            today = datetime.now(timezone.utc).date()
+            entries_today = 0
+            last_event = "None"
+
+            with path.open("r", encoding="utf-8") as handle:
+                for raw_line in handle:
+                    line = raw_line.strip()
+                    if not line:
+                        continue
+                    try:
+                        entry = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    event_type = str(entry.get("event_type") or "").strip() or "UNKNOWN"
+                    last_event = event_type
+                    raw_ts = str(entry.get("timestamp_utc") or "").strip()
+                    try:
+                        timestamp = datetime.fromisoformat(raw_ts.replace("Z", "+00:00"))
+                    except ValueError:
+                        continue
+                    if timestamp.astimezone(timezone.utc).date() == today:
+                        entries_today += 1
+
+            return "ok", entries_today, last_event
+        except Exception:
+            return "unavailable", 0, "Unknown"
 
     @staticmethod
     def _network_status() -> tuple[str, int, str]:
@@ -147,6 +320,118 @@ class OSDiagnosticsExecutor:
             return "watch"
         return "healthy"
 
+    @staticmethod
+    def _phase_display() -> str:
+        if BUILD_PHASE >= 5:
+            return "5 closed / 6 foundation"
+        return f"{BUILD_PHASE}"
+
+    @staticmethod
+    def _blocked_conditions(*, model_availability: str) -> list[dict[str, str]]:
+        items = [
+            {
+                "area": "autonomy",
+                "label": "Autonomy",
+                "status": "disabled",
+                "reason": "Nova remains invocation-bound. Delegated runtime is not active.",
+            },
+            {
+                "area": "delegated_execution",
+                "label": "Delegated execution",
+                "status": "disabled",
+                "reason": "Policy executor gate is not live yet.",
+            },
+            {
+                "area": "background_monitoring",
+                "label": "Background monitoring",
+                "status": "disabled",
+                "reason": "Trigger runtime is not active.",
+            },
+            {
+                "area": "wake_word",
+                "label": "Wake word",
+                "status": "disabled",
+                "reason": "Wake-word runtime remains planned, not active.",
+            },
+            {
+                "area": "external_effect_policies",
+                "label": "External-effect delegation",
+                "status": "disabled",
+                "reason": "Only low-risk delegated classes are candidates for future enablement.",
+            },
+        ]
+        if model_availability == "blocked":
+            items.append(
+                {
+                    "area": "model_inference",
+                    "label": "Model inference",
+                    "status": "blocked",
+                    "reason": "Local inference is locked pending explicit confirmation.",
+                }
+            )
+        return items
+
+    @staticmethod
+    def _system_reasons(
+        *,
+        model_availability: str,
+        model_note: str,
+        model_remediation: str,
+    ) -> list[dict[str, str]]:
+        reasons = [
+            {
+                "area": "execution_authority",
+                "status": "restricted",
+                "reason": "Phase-5 trust layer is active and delegated runtime remains locked.",
+            },
+            {
+                "area": "policy_execution",
+                "status": "disabled",
+                "reason": "Policy drafts can be validated and stored, but executor-gate enforcement is not live.",
+            },
+            {
+                "area": "background_monitoring",
+                "status": "disabled",
+                "reason": "Trigger-only monitoring is not active, so no background policy runtime exists.",
+            },
+            {
+                "area": "network_access",
+                "status": "mediated",
+                "reason": "External requests route through the NetworkMediator rather than direct executor access.",
+            },
+            {
+                "area": "wake_word",
+                "status": "disabled",
+                "reason": "Wake-word input remains planned and is not part of active runtime truth.",
+            },
+        ]
+        if model_availability != "available":
+            reasons.append(
+                {
+                    "area": "model",
+                    "status": model_availability or "unknown",
+                    "reason": model_remediation or model_note or "Model readiness is limited.",
+                }
+            )
+        return reasons
+
+    @staticmethod
+    def _operator_health_summary(
+        *,
+        health_state: str,
+        model_availability: str,
+        policy_draft_count: int,
+        blocked_count: int,
+    ) -> str:
+        model_label = model_availability or "unknown"
+        return (
+            f"Phase {OSDiagnosticsExecutor._phase_display()} · "
+            f"Health {health_state} · "
+            f"Model {model_label} · "
+            f"Policy drafts {policy_draft_count} · "
+            f"Locks {blocked_count}."
+        )
+
     def execute(self, request) -> ActionResult:
         disk = shutil.disk_usage(self._disk_root())
         memory = psutil.virtual_memory()
@@ -167,9 +452,20 @@ class OSDiagnosticsExecutor:
         swap_used_gb = round(swap.used / (1024 ** 3), 2)
         swap_percent = round(float(swap.percent), 1)
         health_state = self._health_state(cpu_percent, memory_percent, disk_percent)
-        enabled_capability_ids = self._enabled_capabilities()
+        enabled_capability_entries = self._enabled_capability_entries()
+        enabled_capability_ids = [
+            int(item.get("id"))
+            for item in enabled_capability_entries
+            if item.get("id") is not None
+        ]
+        (
+            available_capability_surface,
+            capability_surface_summary,
+            available_capability_action_count,
+        ) = self._capability_surface(enabled_capability_entries)
         model_availability, model_note, model_remediation, model_ready = self._model_status_details()
         tone_global_profile, tone_summary, tone_updated_at, tone_override_count = self._tone_status_details()
+        memory_status, memory_total_count, memory_last_write, memory_summary = self._memory_status_details()
         (
             notification_policy_summary,
             notification_quiet_hours_enabled,
@@ -178,10 +474,32 @@ class OSDiagnosticsExecutor:
             notification_active_count,
             notification_due_count,
         ) = self._notification_schedule_details()
+        (
+            policy_foundation_status,
+            policy_summary,
+            policy_active_count,
+            policy_draft_count,
+            policy_disabled_count,
+        ) = self._policy_status_details()
+        ledger_integrity, ledger_entries_today, ledger_last_event = self._ledger_status_details()
+        blocked_conditions = self._blocked_conditions(model_availability=model_availability)
+        system_reasons = self._system_reasons(
+            model_availability=model_availability,
+            model_note=model_note,
+            model_remediation=model_remediation,
+        )
+        operator_health_summary = self._operator_health_summary(
+            health_state=health_state,
+            model_availability=model_availability,
+            policy_draft_count=policy_draft_count,
+            blocked_count=len(blocked_conditions),
+        )
 
         data = {
             "timestamp": int(time.time()),
             "checked_at": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "build_phase": BUILD_PHASE,
+            "phase_display": self._phase_display(),
             "platform": platform.system(),
             "platform_release": platform.release(),
             "hostname": platform.node(),
@@ -202,12 +520,29 @@ class OSDiagnosticsExecutor:
             "network_status": network_status,
             "network_interfaces_up": active_interfaces,
             "network_note": network_note,
+            "network_mediator_status": "active",
             "active_capabilities_count": len(enabled_capability_ids),
             "active_capability_ids": enabled_capability_ids,
+            "capability_registry_status": "loaded" if enabled_capability_ids else "unavailable",
+            "available_capability_surface": available_capability_surface,
+            "available_capability_surface_count": len(available_capability_surface),
+            "available_capability_action_count": available_capability_action_count,
+            "capability_surface_summary": capability_surface_summary,
+            "capability_surface_source": "registry_enabled_capabilities",
+            "governor_status": "active",
+            "execution_boundary_status": "enforced",
+            "delegated_runtime_status": "disabled",
             "model_availability": model_availability,
             "model_ready": model_ready,
             "model_note": model_note,
             "model_remediation": model_remediation,
+            "voice_status": "ready",
+            "voice_note": "Push-to-talk and TTS are available. Wake word remains disabled.",
+            "wake_word_status": "disabled",
+            "memory_status": memory_status,
+            "memory_total_count": memory_total_count,
+            "memory_last_write": memory_last_write,
+            "memory_summary": memory_summary,
             "tone_global_profile": tone_global_profile,
             "tone_summary": tone_summary,
             "tone_updated_at": tone_updated_at,
@@ -218,6 +553,21 @@ class OSDiagnosticsExecutor:
             "notification_rate_limit_per_hour": notification_rate_limit_per_hour,
             "notification_active_count": notification_active_count,
             "notification_due_count": notification_due_count,
+            "schedule_configured_count": notification_active_count,
+            "policy_foundation_status": policy_foundation_status,
+            "policy_summary": policy_summary,
+            "policy_active_count": policy_active_count,
+            "policy_draft_count": policy_draft_count,
+            "policy_disabled_count": policy_disabled_count,
+            "policy_enabled_count": 0,
+            "policy_simulation_count": 0,
+            "ledger_integrity": ledger_integrity,
+            "ledger_entries_today": ledger_entries_today,
+            "ledger_last_event": ledger_last_event,
+            "blocked_conditions": blocked_conditions,
+            "locks_active_count": len(blocked_conditions),
+            "system_reasons": system_reasons,
+            "operator_health_summary": operator_health_summary,
             "health_state": health_state,
         }
         message = (

@@ -32,6 +32,14 @@ let patternReviewState = {
   summary: "Pattern review is off. Opt in if you want Nova to look for repeated thread and memory patterns.",
   snapshot: {},
 };
+let operatorHealthState = {
+  summary: "Loading runtime health...",
+  snapshot: {},
+};
+let capabilityDiscoveryState = {
+  summary: "Loading live capabilities...",
+  snapshot: {},
+};
 let trustState = {
   mode: "Local-only",
   lastExternalCall: "None",
@@ -1352,6 +1360,7 @@ function formatSystemSummary(data, summary = "") {
   const fallback = String(summary || "System status ready.").trim() || "System status ready.";
   if (!data || typeof data !== "object") return fallback;
 
+  const phase = String(data.phase_display || "").trim();
   const health = String(data.health_state || "").trim();
   const cpu = Number(data.cpu_percent);
   const memory = Number(data.memory_percent);
@@ -1363,8 +1372,10 @@ function formatSystemSummary(data, summary = "") {
   const modelRemediation = String(data.model_remediation || "").trim();
   const toneProfile = String(data.tone_global_profile || "").trim();
   const toneOverrideCount = Number(data.tone_override_count);
+  const locks = Number(data.locks_active_count);
 
   const parts = [];
+  if (phase) parts.push(`Phase ${phase}`);
   if (health) parts.push(`Health ${health}`);
   if (Number.isFinite(cpu)) parts.push(`CPU ${Math.round(cpu)}%`);
   if (Number.isFinite(memory)) parts.push(`Memory ${Math.round(memory)}%`);
@@ -1382,6 +1393,9 @@ function formatSystemSummary(data, summary = "") {
     parts.push(`Model ${modelAvailability}`);
   } else if (modelReady === false) {
     parts.push("Model not ready");
+  }
+  if (Number.isFinite(locks) && locks > 0) {
+    parts.push(`Locks ${Math.round(locks)}`);
   }
 
   let rendered = parts.length ? parts.join(" · ") : fallback;
@@ -1411,6 +1425,180 @@ function setupMorningWidgetToggle() {
   btn.addEventListener("click", () => {
     const isExpanded = btn.getAttribute("aria-expanded") === "true";
     setMorningPanelExpanded(!isExpanded);
+  });
+}
+
+function renderOperatorHealthWidget(data = {}) {
+  operatorHealthState.snapshot = (data && typeof data === "object") ? { ...data } : {};
+  operatorHealthState.summary = String((data && data.operator_health_summary) || "Loading runtime health...").trim();
+
+  const summary = $("operator-health-summary");
+  const gridHost = $("operator-health-grid");
+  const locksHost = $("operator-health-locks");
+  const reasonsHost = $("operator-health-reasons");
+  if (summary) summary.textContent = operatorHealthState.summary;
+
+  if (gridHost) {
+    clear(gridHost);
+    const rows = [
+      ["Phase", String(data.phase_display || `Phase ${data.build_phase || "unknown"}`).trim() || "Unknown"],
+      ["Governor", String(data.governor_status || "Unknown").trim() || "Unknown"],
+      ["Execution Boundary", String(data.execution_boundary_status || "Unknown").trim() || "Unknown"],
+      ["Model", String(data.model_availability || "Unknown").trim() || "Unknown"],
+      ["Network Mediator", String(data.network_mediator_status || "Unknown").trim() || "Unknown"],
+      ["Voice", String(data.voice_status || "Unknown").trim() || "Unknown"],
+      ["Memory", String(data.memory_summary || data.memory_status || "Unknown").trim() || "Unknown"],
+      ["Policies", `Drafts ${Math.max(0, Number(data.policy_draft_count) || 0)} · Enabled ${Math.max(0, Number(data.policy_enabled_count) || 0)}`],
+      ["Ledger", `${String(data.ledger_integrity || "Unknown").trim() || "Unknown"} · ${Math.max(0, Number(data.ledger_entries_today) || 0)} today`],
+      ["Locks", `${Math.max(0, Number(data.locks_active_count) || 0)} active`],
+    ];
+
+    rows.forEach(([labelText, valueText]) => {
+      const row = document.createElement("div");
+      row.className = "operator-health-row";
+
+      const label = document.createElement("div");
+      label.className = "operator-health-label";
+      label.textContent = labelText;
+      row.appendChild(label);
+
+      const value = document.createElement("div");
+      value.className = "operator-health-value";
+      value.textContent = valueText;
+      row.appendChild(value);
+
+      gridHost.appendChild(row);
+    });
+  }
+
+  if (locksHost) {
+    clear(locksHost);
+    const label = document.createElement("div");
+    label.className = "operator-health-section-label";
+    label.textContent = "Blocked Conditions";
+    locksHost.appendChild(label);
+
+    const items = Array.isArray(data.blocked_conditions) ? data.blocked_conditions : [];
+    if (!items.length) {
+      const empty = document.createElement("div");
+      empty.className = "operator-health-empty";
+      empty.textContent = "No blocked conditions reported.";
+      locksHost.appendChild(empty);
+    } else {
+      const list = document.createElement("div");
+      list.className = "operator-health-list";
+      items.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "operator-health-item";
+
+        const title = document.createElement("div");
+        title.className = "operator-health-item-title";
+        title.textContent = `${String(item.label || item.area || "Condition").trim()}: ${String(item.status || "unknown").trim()}`;
+        row.appendChild(title);
+
+        const reason = document.createElement("div");
+        reason.className = "operator-health-item-meta";
+        reason.textContent = String(item.reason || "").trim() || "No reason available.";
+        row.appendChild(reason);
+
+        list.appendChild(row);
+      });
+      locksHost.appendChild(list);
+    }
+  }
+
+  if (reasonsHost) {
+    clear(reasonsHost);
+    const label = document.createElement("div");
+    label.className = "operator-health-section-label";
+    label.textContent = "System Reason";
+    reasonsHost.appendChild(label);
+
+    const items = Array.isArray(data.system_reasons) ? data.system_reasons : [];
+    if (!items.length) {
+      const empty = document.createElement("div");
+      empty.className = "operator-health-empty";
+      empty.textContent = "No system reasons available.";
+      reasonsHost.appendChild(empty);
+    } else {
+      const list = document.createElement("div");
+      list.className = "operator-health-list";
+      items.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "operator-health-item";
+
+        const title = document.createElement("div");
+        title.className = "operator-health-item-title";
+        title.textContent = `${String(item.area || "system").replace(/_/g, " ")}: ${String(item.status || "unknown").trim()}`;
+        row.appendChild(title);
+
+        const reason = document.createElement("div");
+        reason.className = "operator-health-item-meta";
+        reason.textContent = String(item.reason || "").trim() || "No reason available.";
+        row.appendChild(reason);
+
+        list.appendChild(row);
+      });
+      reasonsHost.appendChild(list);
+    }
+  }
+}
+
+function renderCapabilitySurfaceWidget(data = {}) {
+  capabilityDiscoveryState.snapshot = (data && typeof data === "object") ? { ...data } : {};
+  capabilityDiscoveryState.summary = String((data && data.capability_surface_summary) || "Loading live capabilities...").trim();
+
+  const summary = $("capability-surface-summary");
+  const groupsHost = $("capability-surface-groups");
+  if (summary) summary.textContent = capabilityDiscoveryState.summary;
+  if (!groupsHost) return;
+
+  clear(groupsHost);
+  const groups = Array.isArray(data.available_capability_surface) ? data.available_capability_surface : [];
+  if (!groups.length) {
+    const empty = document.createElement("div");
+    empty.className = "capability-surface-empty";
+    empty.textContent = "No live capability groups are available right now.";
+    groupsHost.appendChild(empty);
+    return;
+  }
+
+  groups.forEach((group) => {
+    const card = document.createElement("section");
+    card.className = "capability-surface-group";
+
+    const header = document.createElement("div");
+    header.className = "capability-surface-group-header";
+
+    const title = document.createElement("h4");
+    title.className = "capability-surface-category";
+    title.textContent = String(group.category || "Capabilities").trim() || "Capabilities";
+    header.appendChild(title);
+
+    const count = document.createElement("span");
+    count.className = "confidence-badge";
+    const actionCount = Array.isArray(group.actions) ? group.actions.length : 0;
+    count.textContent = `${actionCount} live`;
+    header.appendChild(count);
+    card.appendChild(header);
+
+    const list = document.createElement("ul");
+    list.className = "capability-surface-list";
+    const actions = Array.isArray(group.actions) ? group.actions : [];
+    actions.forEach((action) => {
+      const item = document.createElement("li");
+      item.textContent = String(action || "").trim();
+      if (item.textContent) list.appendChild(item);
+    });
+
+    if (!list.childNodes.length) {
+      const item = document.createElement("li");
+      item.textContent = "No live actions listed.";
+      list.appendChild(item);
+    }
+
+    card.appendChild(list);
+    groupsHost.appendChild(card);
   });
 }
 
@@ -3035,6 +3223,8 @@ function connectWebSocket() {
       case "system":
         morningState.system = formatSystemSummary(msg.data || {}, msg.summary || "System status ready.");
         renderMorningPanel();
+        renderOperatorHealthWidget(msg.data || {});
+        renderCapabilitySurfaceWidget(msg.data || {});
         break;
       case "calendar":
         morningState.calendar = msg.summary || msg.message || "No events scheduled today.";
@@ -3583,6 +3773,8 @@ window.addEventListener("DOMContentLoaded", () => {
   renderMemoryOverviewWidget({});
   renderToneOverviewWidget({});
   renderNotificationOverviewWidget({});
+  renderOperatorHealthWidget({});
+  renderCapabilitySurfaceWidget({});
   renderTrustPanel();
   renderQuickActions();
   setupHintsPanelToggle();
@@ -3684,6 +3876,11 @@ window.addEventListener("DOMContentLoaded", () => {
       const optInEnabled = Boolean(patternReviewState.snapshot && patternReviewState.snapshot.opt_in_enabled);
       injectUserText(optInEnabled ? "pattern opt out" : "pattern opt in", "text");
     });
+  }
+
+  const homeSystemStatusBtn = $("btn-home-system-status");
+  if (homeSystemStatusBtn) {
+    homeSystemStatusBtn.addEventListener("click", () => injectUserText("system status", "text"));
   }
 
   const micBtn = $("ptt-btn");
