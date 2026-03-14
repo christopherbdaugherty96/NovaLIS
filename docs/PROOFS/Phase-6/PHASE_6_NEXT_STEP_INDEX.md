@@ -31,7 +31,13 @@ Current runtime truth still lives in:
    - Records tracks intentionally not added to the closed Phase-5 package
    - Clarifies that those tracks are planning inputs, not active runtime truth
    - Keeps the Phase-5 closure boundary clean while Phase-6 core is defined
-5. `PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
+5. `docs/design/Phase 6/PHASE_6_PROGRESSIVE_SCREEN_INTELLIGENCE_PRODUCT_SPEC.md`
+   - Signature product-direction spec for Nova's `what is this?` interaction
+   - Defines cursor-first, section-next, page-last expansion as the preferred model
+6. `docs/design/Phase 6/PHASE_6_LOCAL_AI_APPLIANCE_AND_PRODUCT_DIRECTION.md`
+   - Local AI appliance / Nova Hub direction for the Phase-6 era
+   - Frames installability, sellability, and product packaging around Nova's architecture
+7. `PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
    - Governance-safe plan for adding a local Porcupine wake-word gate
    - Explicitly non-authorizing
    - Adjacent convenience/input track, not the delegated-autonomy core
