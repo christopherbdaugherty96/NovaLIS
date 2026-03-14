@@ -63,7 +63,7 @@ A careful plain-language description of the current system is:
 The next planned wake-word step is documented here:
 - `docs/PROOFS/Phase-6/PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
 
-Phase-6 planning itself has also started at the design level, but not at the runtime level yet.
+Phase-6 planning has started at the design level, and the first foundation code now exists too.
 
 The first core Phase-6 design artifact now exists here:
 - `docs/design/Phase 6/ATOMIC_POLICY_LANGUAGE_AND_POLICY_ENVELOPE_SPEC.md`
@@ -73,7 +73,27 @@ That document defines the smallest lawful delegated-policy model:
 - one atomic action
 - one bounded envelope
 
-It does not mean delegated autonomy is live yet.
+The first implemented runtime foundation slice is documented here:
+- `docs/PROOFS/Phase-6/PHASE_6_POLICY_VALIDATOR_FOUNDATION_RUNTIME_SLICE_2026-03-13.md`
+
+What exists now:
+- Governor-side policy validation
+- disabled-by-default policy drafts
+- explicit draft inspection commands
+
+What does not exist yet:
+- trigger monitoring
+- delegated policy execution
+- background autonomous action
+
+The broader project-wide next-step order is documented here:
+- `docs/PROOFS/Phase-6/PHASE_6_PROJECT_WIDE_NEXT_STEPS_2026-03-13.md`
+
+That roadmap keeps the smartest order clear:
+- harden the Phase-5 product layer
+- build the Governor policy validator
+- prove one small delegated-policy slice
+- improve installability and operator health before widening the system further
 
 ## What Makes The Current State Special
 Nova already combines things that usually live in separate products:

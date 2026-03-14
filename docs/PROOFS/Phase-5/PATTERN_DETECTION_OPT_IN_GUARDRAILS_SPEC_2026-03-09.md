@@ -26,6 +26,7 @@ Pattern detection is opt-in only and cannot produce autonomous execution.
 - Pattern outputs are informational proposals.
 - Proposals are visible, reversible, and discardable.
 - Proposals cannot reorder UI priorities automatically.
+- Pattern review does not unlock autonomous behavior.
 
 ## Audit Requirements
 - Pattern generation events are logged.

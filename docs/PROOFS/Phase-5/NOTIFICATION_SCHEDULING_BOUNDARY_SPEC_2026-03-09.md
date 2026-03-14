@@ -26,6 +26,7 @@ Notification scheduling is user-directed, explicit, and revocable.
 - Default state is no schedule.
 - Failed delivery must not trigger autonomous retries that violate policy envelopes.
 - Rate limits and quiet-window policies are explicit and user-configurable.
+- Explicit scheduling does not grant background autonomy.
 
 ## Audit Requirements
 - Create/update/delete schedule events are logged.

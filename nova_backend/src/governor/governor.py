@@ -1,30 +1,30 @@
 # src/governor/governor.py
 
 """
-Governor – constitutional authority spine.
-Phase‑4 integration: owns all execution‑related components, but they are lazily loaded
-to preserve Phase‑3.5 safety until the unlock.
+Governor - constitutional authority spine.
+Phase-4 integration: owns all execution-related components, but they are lazily loaded
+to preserve Phase-3.5 safety until the unlock.
 """
 
 from __future__ import annotations
 
 import time
-from typing import Dict, Any
+from typing import Any, Dict
 
+import src.ledger.writer as ledger_mod
+from src.actions.action_request import ActionRequest
 from src.actions.action_result import ActionResult
+from src.governor.exceptions import (
+    CapabilityRegistryError,
+    LedgerWriteFailed,
+    NetworkMediatorError,
+)
 from src.governor.execute_boundary.execute_boundary import (
-    ExecuteBoundary,
     MAX_EXECUTION_TIME,
+    ExecuteBoundary,
     ExecutionCPUExceededError,
 )
 from src.governor.single_action_queue import SingleActionQueue
-import src.ledger.writer as ledger_mod
-from src.governor.exceptions import (
-    CapabilityRegistryError,
-    NetworkMediatorError,
-    LedgerWriteFailed,
-)
-from src.actions.action_request import ActionRequest
 
 
 class Governor:
@@ -38,10 +38,11 @@ class Governor:
         self._execute_boundary = ExecuteBoundary()
         self._queue = SingleActionQueue()
 
-        # Lazy‑loaded Phase‑4 components (initially None)
+        # Lazy-loaded runtime components.
         self._registry = None
         self._network = None
         self._ledger = None
+        self._policy_validator = None
 
     @property
     def execute_boundary(self) -> ExecuteBoundary:
@@ -52,6 +53,7 @@ class Governor:
         """Lazy load CapabilityRegistry."""
         if self._registry is None:
             from src.governor.capability_registry import CapabilityRegistry
+
             self._registry = CapabilityRegistry()
         return self._registry
 
@@ -60,6 +62,7 @@ class Governor:
         """Lazy load NetworkMediator."""
         if self._network is None:
             from src.governor.network_mediator import NetworkMediator
+
             self._network = NetworkMediator()
         return self._network
 
@@ -70,6 +73,19 @@ class Governor:
             self._ledger = ledger_mod.LedgerWriter()
         return self._ledger
 
+    @property
+    def policy_validator(self):
+        """Lazy load the Phase-6 atomic policy validator."""
+        if self._policy_validator is None:
+            from src.policies.policy_validator import PolicyValidator
+
+            self._policy_validator = PolicyValidator(self.registry)
+        return self._policy_validator
+
+    def validate_atomic_policy(self, policy: Dict[str, Any]) -> Any:
+        """Validate a disabled-by-default atomic delegated policy draft."""
+        return self.policy_validator.validate(policy)
+
     def handle_governed_invocation(
         self,
         capability_id: int,
@@ -77,20 +93,20 @@ class Governor:
     ) -> ActionResult:
         try:
             cap = self.registry.get(capability_id)
-        except CapabilityRegistryError as e:
-            return ActionResult.failure(f"I can’t do that. {e}")
+        except CapabilityRegistryError as exc:
+            return ActionResult.failure(f"I can't do that. {exc}")
 
         if not self.registry.is_enabled(capability_id):
-            return ActionResult.failure("I can’t do that yet.")
+            return ActionResult.failure("I can't do that yet.")
 
         if getattr(cap, "risk_level", "low") == "confirm" and not bool((params or {}).get("confirmed")):
             return ActionResult.refusal("This action requires confirmation before I can proceed.")
 
         if not self._execute_boundary.allow_execution():
-            return ActionResult.failure("That requires a specific action, which I can’t perform right now.")
+            return ActionResult.failure("That requires a specific action, which I can't perform right now.")
 
         if self._queue.has_pending():
-            return ActionResult.failure("I can’t do that right now.")
+            return ActionResult.failure("I couldn't do that right now.")
 
         try:
             self.ledger.log_event(
@@ -98,16 +114,16 @@ class Governor:
                 {"capability_id": capability_id, "capability_name": cap.name},
             )
         except Exception:
-            return ActionResult.failure("I can’t do that right now.")
+            return ActionResult.failure("I couldn't do that right now.")
 
         req = ActionRequest(capability_id=capability_id, params=params)
 
         try:
             return self._execute(req)
         except (NetworkMediatorError, LedgerWriteFailed):
-            return ActionResult.failure("I can’t do that right now.", request_id=req.request_id)
+            return ActionResult.failure("I couldn't do that right now.", request_id=req.request_id)
         except Exception:
-            return ActionResult.failure("I can’t do that right now.", request_id=req.request_id)
+            return ActionResult.failure("I couldn't do that right now.", request_id=req.request_id)
 
     def _execute(self, req: ActionRequest) -> ActionResult:
         self._queue.set_pending(req.request_id)
@@ -135,7 +151,11 @@ class Governor:
                 try:
                     self.ledger.log_event(
                         "EXECUTION_TIMEOUT",
-                        {"capability_id": req.capability_id, "request_id": req.request_id, "elapsed_seconds": round(elapsed, 3)},
+                        {
+                            "capability_id": req.capability_id,
+                            "request_id": req.request_id,
+                            "elapsed_seconds": round(elapsed, 3),
+                        },
                     )
                 except LedgerWriteFailed:
                     pass
@@ -186,7 +206,7 @@ class Governor:
             )
         except Exception:
             return ActionResult.refusal(
-                "I can’t do that right now.",
+                "I couldn't do that right now.",
                 request_id=req.request_id,
             )
         finally:
@@ -209,96 +229,119 @@ class Governor:
     def _dispatch_capability(self, req: ActionRequest) -> ActionResult:
         if req.capability_id == 16:
             from src.executors.web_search_executor import WebSearchExecutor
+
             executor = WebSearchExecutor(self.network, self._execute_boundary)
             return executor.execute(req)
 
         elif req.capability_id == 17:
             from src.executors.webpage_launch_executor import WebpageLaunchExecutor
+
             executor = WebpageLaunchExecutor(self.ledger)
             return executor.execute(req)
 
         elif req.capability_id == 18:
             from src.executors.tts_executor import execute_tts
+
             return execute_tts(req, ActionResult)
 
         elif req.capability_id == 19:
             from src.executors.volume_executor import VolumeExecutor
+
             return VolumeExecutor().execute(req)
 
         elif req.capability_id == 20:
             from src.executors.media_executor import MediaExecutor
+
             return MediaExecutor().execute(req)
 
         elif req.capability_id == 21:
             from src.executors.brightness_executor import BrightnessExecutor
+
             return BrightnessExecutor().execute(req)
 
         elif req.capability_id == 22:
             from src.executors.open_folder_executor import OpenFolderExecutor
+
             return OpenFolderExecutor().execute(req)
 
         elif req.capability_id == 32:
             from src.executors.os_diagnostics_executor import OSDiagnosticsExecutor
+
             return OSDiagnosticsExecutor().execute(req)
 
         elif req.capability_id == 48:
             from src.executors.multi_source_reporting_executor import MultiSourceReportingExecutor
+
             return MultiSourceReportingExecutor(self.network).execute(req)
 
         elif req.capability_id == 49:
             from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
+
             return NewsIntelligenceExecutor(self.network).execute_summary(req)
 
         elif req.capability_id == 50:
             from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
+
             return NewsIntelligenceExecutor(self.network).execute_brief(req)
 
         elif req.capability_id == 51:
             from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
+
             return NewsIntelligenceExecutor(self.network).execute_topic_map(req)
 
         elif req.capability_id == 52:
             from src.executors.story_tracker_executor import StoryTrackerExecutor
+
             return StoryTrackerExecutor().execute_update(req)
 
         elif req.capability_id == 53:
             from src.executors.story_tracker_executor import StoryTrackerExecutor
+
             return StoryTrackerExecutor().execute_view(req)
 
         elif req.capability_id == 54:
             from src.executors.analysis_document_executor import AnalysisDocumentExecutor
+
             return AnalysisDocumentExecutor().execute(req)
 
         elif req.capability_id == 55:
             from src.executors.info_snapshot_executor import WeatherSnapshotExecutor
+
             return WeatherSnapshotExecutor(self.network).execute(req)
 
         elif req.capability_id == 56:
             from src.executors.info_snapshot_executor import NewsSnapshotExecutor
+
             return NewsSnapshotExecutor(self.network).execute(req)
 
         elif req.capability_id == 57:
             from src.executors.info_snapshot_executor import CalendarSnapshotExecutor
+
             return CalendarSnapshotExecutor().execute(req)
 
         elif req.capability_id == 58:
             from src.executors.screen_capture_executor import ScreenCaptureExecutor
+
             return ScreenCaptureExecutor(ledger=self.ledger).execute(req)
 
         elif req.capability_id == 59:
             from src.executors.screen_analysis_executor import ScreenAnalysisExecutor
+
             return ScreenAnalysisExecutor(ledger=self.ledger).execute(req)
 
         elif req.capability_id == 60:
             from src.executors.explain_anything_executor import ExplainAnythingExecutor
+
             return ExplainAnythingExecutor(ledger=self.ledger).execute(req)
 
         elif req.capability_id == 61:
             from src.executors.memory_governance_executor import MemoryGovernanceExecutor
+
             return MemoryGovernanceExecutor(ledger=self.ledger).execute(req)
 
         elif req.capability_id == 31:
             from src.executors.response_verification_executor import ResponseVerificationExecutor
+
             return ResponseVerificationExecutor().execute(req)
 
         return ActionResult.refusal(

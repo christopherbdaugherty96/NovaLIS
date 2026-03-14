@@ -40,6 +40,7 @@ from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
 from src.trust.failure_ladder import FailureLadder
 from src.trust.trust_contract import normalize_trust_status
 from src.patterns.pattern_review_store import PatternReviewStore
+from src.policies.atomic_policy_store import AtomicPolicyStore
 from src.working_context.context_store import WorkingContextStore
 from src.working_context.project_threads import ProjectThreadStore
 from src.tasks.notification_schedule_store import NotificationScheduleStore
@@ -258,6 +259,26 @@ ACCEPT_PATTERN_RE = re.compile(
 )
 DISMISS_PATTERN_RE = re.compile(
     r"^\s*(?:dismiss|discard|reject)\s+pattern\s+(?P<pattern_id>PAT-[A-Z0-9\-]+)\s*$",
+    re.IGNORECASE,
+)
+POLICY_STATUS_COMMANDS = {
+    "policy overview",
+    "policy status",
+    "policy list",
+    "policies",
+    "policy drafts",
+}
+POLICY_CREATE_RE = re.compile(
+    r"^\s*policy\s+(?:create|draft)\s+(?P<schedule>daily|weekday)\s+"
+    r"(?P<action>calendar\s+snapshot|weather\s+snapshot|news\s+snapshot|system\s+status)\s+at\s+(?P<time>.+?)\s*$",
+    re.IGNORECASE,
+)
+POLICY_SHOW_RE = re.compile(
+    r"^\s*policy\s+show\s+(?P<policy_id>POL-[A-Z0-9\-]+)\s*$",
+    re.IGNORECASE,
+)
+POLICY_DELETE_RE = re.compile(
+    r"^\s*policy\s+delete\s+(?P<policy_id>POL-[A-Z0-9\-]+)(?:\s+(?P<confirm>confirm(?:ed)?))?\s*$",
     re.IGNORECASE,
 )
 
@@ -1079,6 +1100,184 @@ def _format_policy_clock_value(raw: str) -> str:
     return rendered.lstrip("0")
 
 
+def _compile_atomic_policy_template(schedule_kind: str, action_label: str, time_text: str) -> dict:
+    normalized_schedule = str(schedule_kind or "").strip().lower()
+    normalized_action = re.sub(r"\s+", " ", str(action_label or "").strip().lower())
+    formatted_time = _format_policy_clock_value(time_text)
+    if not formatted_time:
+        raise ValueError("I couldn't parse that policy time yet. Try forms like 8:00 am, 14:30, or 9 pm.")
+
+    hour, minute = _parse_clock_time(time_text)
+    time_24h = f"{hour:02d}:{minute:02d}"
+
+    action_map = {
+        "calendar snapshot": {
+            "capability_id": 57,
+            "input": {"mode": "today"},
+            "network_allowed": False,
+            "title": "calendar snapshot",
+        },
+        "weather snapshot": {
+            "capability_id": 55,
+            "input": {},
+            "network_allowed": True,
+            "title": "weather snapshot",
+        },
+        "news snapshot": {
+            "capability_id": 56,
+            "input": {},
+            "network_allowed": True,
+            "title": "news snapshot",
+        },
+        "system status": {
+            "capability_id": 32,
+            "input": {},
+            "network_allowed": False,
+            "title": "system status",
+        },
+    }
+    action_config = action_map.get(normalized_action)
+    if action_config is None:
+        raise ValueError("That policy action is not available in the Phase-6 foundation yet.")
+
+    if normalized_schedule == "weekday":
+        trigger = {
+            "type": "time_weekly",
+            "days": ["MO", "TU", "WE", "TH", "FR"],
+            "time": time_24h,
+        }
+        label_prefix = "Weekday"
+    else:
+        trigger = {
+            "type": "time_daily",
+            "time": time_24h,
+        }
+        label_prefix = "Daily"
+
+    envelope = {
+        "max_runs_per_hour": 1,
+        "max_runs_per_day": 1,
+        "timeout_seconds": 30,
+        "retry_budget": 0,
+        "suspend_after_failures": 3,
+        "network_allowed": bool(action_config["network_allowed"]),
+    }
+
+    return {
+        "name": f"{label_prefix} {action_config['title']} at {formatted_time}",
+        "created_by": "user",
+        "enabled": False,
+        "state": "draft",
+        "trigger": trigger,
+        "action": {
+            "capability_id": int(action_config["capability_id"]),
+            "input": dict(action_config["input"]),
+        },
+        "envelope": envelope,
+    }
+
+
+def _describe_policy_trigger(trigger: dict | None) -> str:
+    payload = dict(trigger or {})
+    trigger_type = str(payload.get("type") or "").strip().lower()
+    if trigger_type == "time_weekly":
+        return f"Weekdays at {_format_policy_clock_value(str(payload.get('time') or '')) or str(payload.get('time') or '').strip()}"
+    if trigger_type == "time_daily":
+        return f"Daily at {_format_policy_clock_value(str(payload.get('time') or '')) or str(payload.get('time') or '').strip()}"
+    if trigger_type == "time_once":
+        return str(payload.get("at") or "").strip()
+    if trigger_type == "calendar_event":
+        return f"Calendar event offset {int(payload.get('offset_minutes') or 0)} minute(s)"
+    if trigger_type == "device_event":
+        return f"Device event {str(payload.get('event_key') or '').strip()}"
+    return "Unknown trigger"
+
+
+def _describe_policy_action(action: dict | None) -> str:
+    payload = dict(action or {})
+    capability_id = int(payload.get("capability_id") or 0)
+    if capability_id == 57:
+        return "Calendar snapshot"
+    if capability_id == 55:
+        return "Weather snapshot"
+    if capability_id == 56:
+        return "News snapshot"
+    if capability_id == 32:
+        return "System status"
+    return f"Capability {capability_id}"
+
+
+def _render_policy_overview_message(snapshot: dict | None) -> str:
+    payload = dict(snapshot or {})
+    items = list(payload.get("items") or [])
+    lines = ["Policy Drafts", ""]
+    lines.append(str(payload.get("summary") or "No policy drafts yet.").strip())
+
+    if items:
+        lines.append("")
+        lines.append("Current drafts")
+        for item in items[:5]:
+            policy_id = str(item.get("policy_id") or "").strip()
+            title = str(item.get("name") or "").strip()
+            trigger = _describe_policy_trigger(item.get("trigger"))
+            lines.append(f"- {policy_id}: {title} ({trigger})")
+
+    note = str(payload.get("inspectability_note") or "").strip()
+    if note:
+        lines.append("")
+        lines.append(note)
+
+    lines.extend(
+        [
+            "",
+            "Try next:",
+            "- policy create weekday calendar snapshot at 8:00 am",
+            "- policy create daily weather snapshot at 7:30 am",
+            "- policy show <id>",
+            "- policy delete <id> confirm",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_policy_detail_message(item: dict | None) -> str:
+    payload = dict(item or {})
+    validation = dict(payload.get("last_validation") or {})
+    warnings = list(validation.get("warnings") or [])
+    lines = [
+        "Policy Draft",
+        "",
+        f"ID: {str(payload.get('policy_id') or '').strip()}",
+        f"Name: {str(payload.get('name') or '').strip()}",
+        f"State: {str(payload.get('state') or 'draft').strip()}",
+        f"Trigger: {_describe_policy_trigger(payload.get('trigger'))}",
+        f"Action: {_describe_policy_action(payload.get('action'))}",
+        f"Created by: {str(payload.get('created_by') or 'user').strip()}",
+        "",
+        "Envelope",
+        (
+            f"- max {int(dict(payload.get('envelope') or {}).get('max_runs_per_hour') or 0)} per hour | "
+            f"{int(dict(payload.get('envelope') or {}).get('max_runs_per_day') or 0)} per day"
+        ),
+        (
+            f"- timeout {int(dict(payload.get('envelope') or {}).get('timeout_seconds') or 0)}s | "
+            f"retries {int(dict(payload.get('envelope') or {}).get('retry_budget') or 0)} | "
+            f"suspend after {int(dict(payload.get('envelope') or {}).get('suspend_after_failures') or 0)} failures"
+        ),
+        f"- network allowed: {'yes' if bool(dict(payload.get('envelope') or {}).get('network_allowed')) else 'no'}",
+        "",
+        "Foundation note",
+        "This policy is stored as a disabled draft. Trigger execution is not active in this slice yet.",
+    ]
+
+    if warnings:
+        lines.extend(["", "Warnings"])
+        lines.extend(f"- {str(warning).strip()}" for warning in warnings if str(warning).strip())
+
+    lines.extend(["", "Try next:", "- policy overview", f"- policy delete {str(payload.get('policy_id') or '').strip()} confirm"])
+    return "\n".join(lines)
+
+
 def _build_notification_note(snapshot: dict | None) -> str:
     payload = dict(snapshot or {})
     parts = [
@@ -1642,6 +1841,7 @@ async def websocket_endpoint(ws: WebSocket):
     project_threads = ProjectThreadStore(session_id=session_id, ledger=governor.ledger)
     notification_schedules = NotificationScheduleStore()
     pattern_reviews = PatternReviewStore()
+    policy_drafts = AtomicPolicyStore()
     session_context = []
     session_state = {
         "turn_count": 0,
@@ -1894,7 +2094,13 @@ async def websocket_endpoint(ws: WebSocket):
                     "- review patterns\n"
                     "- review patterns for <thread>\n"
                     "- accept pattern <id>\n"
-                    "- dismiss pattern <id>"
+                    "- dismiss pattern <id>\n\n"
+                    "Policy Drafts (Phase-6 foundation)\n"
+                    "- policy overview\n"
+                    "- policy create weekday calendar snapshot at 8:00 am\n"
+                    "- policy create daily weather snapshot at 7:30 am\n"
+                    "- policy show <id>\n"
+                    "- policy delete <id> confirm"
                 )
                 await send_chat_message(ws, capability_message)
                 await send_chat_done(ws)
@@ -3345,6 +3551,144 @@ async def websocket_endpoint(ws: WebSocket):
                     tone_domain="continuity",
                 )
                 await send_pattern_review_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            if lowered in POLICY_STATUS_COMMANDS:
+                snapshot = policy_drafts.overview()
+                _log_ledger_event(
+                    governor,
+                    "POLICY_DRAFT_VIEWED",
+                    {"active_count": int(snapshot.get("active_count") or 0)},
+                )
+                await send_chat_message(
+                    ws,
+                    _render_policy_overview_message(snapshot),
+                    tone_domain="system",
+                )
+                await send_chat_done(ws)
+                continue
+
+            policy_create_match = POLICY_CREATE_RE.match(text)
+            if policy_create_match:
+                try:
+                    compiled_policy = _compile_atomic_policy_template(
+                        policy_create_match.group("schedule"),
+                        policy_create_match.group("action"),
+                        policy_create_match.group("time"),
+                    )
+                except ValueError as exc:
+                    await send_chat_message(ws, str(exc), tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+
+                validation = governor.validate_atomic_policy(compiled_policy)
+                _log_ledger_event(
+                    governor,
+                    "POLICY_VALIDATED",
+                    {
+                        "valid": bool(validation.valid),
+                        "capability_id": int(dict(compiled_policy.get("action") or {}).get("capability_id") or 0),
+                        "trigger_type": str(dict(compiled_policy.get("trigger") or {}).get("type") or ""),
+                    },
+                )
+                if not validation.valid:
+                    _log_ledger_event(
+                        governor,
+                        "POLICY_VALIDATION_REJECTED",
+                        {
+                            "reason_count": len(list(validation.reasons or [])),
+                            "capability_id": int(dict(compiled_policy.get("action") or {}).get("capability_id") or 0),
+                        },
+                    )
+                    rejection_lines = ["Policy draft rejected", ""]
+                    rejection_lines.extend(f"- {str(reason).strip()}" for reason in list(validation.reasons or []) if str(reason).strip())
+                    rejection_lines.extend(
+                        [
+                            "",
+                            "Try next:",
+                            "- policy create weekday calendar snapshot at 8:00 am",
+                            "- policy create daily weather snapshot at 7:30 am",
+                        ]
+                    )
+                    await send_chat_message(ws, "\n".join(rejection_lines), tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+
+                item = policy_drafts.create_draft(policy=compiled_policy, validation_result=validation)
+                _log_ledger_event(
+                    governor,
+                    "POLICY_DRAFT_CREATED",
+                    {
+                        "policy_id": str(item.get("policy_id") or ""),
+                        "capability_id": int(dict(item.get("action") or {}).get("capability_id") or 0),
+                        "trigger_type": str(dict(item.get("trigger") or {}).get("type") or ""),
+                    },
+                )
+                await send_chat_message(
+                    ws,
+                    (
+                        f"Policy draft created: {str(item.get('policy_id') or '').strip()}\n"
+                        f"Trigger: {_describe_policy_trigger(item.get('trigger'))}\n"
+                        f"Action: {_describe_policy_action(item.get('action'))}\n"
+                        "State: draft (disabled)\n\n"
+                        "This slice stores and validates draft policies, but trigger execution is not active yet.\n\n"
+                        f"{str(policy_drafts.overview().get('summary') or '').strip()}"
+                    ),
+                    tone_domain="system",
+                )
+                await send_chat_done(ws)
+                continue
+
+            policy_show_match = POLICY_SHOW_RE.match(text)
+            if policy_show_match:
+                policy_id = str(policy_show_match.group("policy_id") or "").strip().upper()
+                item = policy_drafts.get_policy(policy_id)
+                if item is None or str(item.get("state") or "") == "deleted":
+                    await send_chat_message(ws, "I could not find that policy draft ID yet.", tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+                _log_ledger_event(
+                    governor,
+                    "POLICY_DRAFT_VIEWED",
+                    {"policy_id": policy_id, "state": str(item.get("state") or "draft")},
+                )
+                await send_chat_message(
+                    ws,
+                    _render_policy_detail_message(item),
+                    tone_domain="system",
+                )
+                await send_chat_done(ws)
+                continue
+
+            policy_delete_match = POLICY_DELETE_RE.match(text)
+            if policy_delete_match:
+                policy_id = str(policy_delete_match.group("policy_id") or "").strip().upper()
+                confirmed = bool(str(policy_delete_match.group("confirm") or "").strip())
+                if not confirmed:
+                    await send_chat_message(
+                        ws,
+                        f"Deleting a policy draft needs confirmation.\n\nTry next:\n- policy delete {policy_id} confirm",
+                        tone_domain="system",
+                    )
+                    await send_chat_done(ws)
+                    continue
+                try:
+                    item = policy_drafts.delete_policy(policy_id)
+                except KeyError:
+                    await send_chat_message(ws, "I could not find that policy draft ID yet.", tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+                _log_ledger_event(
+                    governor,
+                    "POLICY_DRAFT_DELETED",
+                    {"policy_id": policy_id, "state": str(item.get("state") or "deleted")},
+                )
+                await send_chat_message(
+                    ws,
+                    f"Policy draft deleted: {policy_id}\n\n{str(policy_drafts.overview().get('summary') or '').strip()}",
+                    tone_domain="system",
+                )
                 await send_chat_done(ws)
                 continue
 

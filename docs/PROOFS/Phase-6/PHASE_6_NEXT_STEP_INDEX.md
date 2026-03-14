@@ -21,11 +21,17 @@ Current runtime truth still lives in:
 1. `docs/design/Phase 6/ATOMIC_POLICY_LANGUAGE_AND_POLICY_ENVELOPE_SPEC.md`
    - First core Phase-6 design spec for one-trigger, one-action delegated policies
    - Defines the minimum lawful policy model before validator or trigger-monitor work begins
-2. `PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
+2. `PHASE_6_POLICY_VALIDATOR_FOUNDATION_RUNTIME_SLICE_2026-03-13.md`
+   - First real Phase-6 runtime foundation slice
+   - Adds Governor-side policy validation and disabled draft storage without enabling trigger execution
+3. `PHASE_6_PROJECT_WIDE_NEXT_STEPS_2026-03-13.md`
+   - Recommended whole-project priority order after Phase-5 closure
+   - Keeps Phase-6 core work, product hardening, installability, and operator health in the right sequence
+4. `PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
    - Records tracks intentionally not added to the closed Phase-5 package
    - Clarifies that those tracks are planning inputs, not active runtime truth
    - Keeps the Phase-5 closure boundary clean while Phase-6 core is defined
-3. `PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
+5. `PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
    - Governance-safe plan for adding a local Porcupine wake-word gate
    - Explicitly non-authorizing
    - Adjacent convenience/input track, not the delegated-autonomy core
