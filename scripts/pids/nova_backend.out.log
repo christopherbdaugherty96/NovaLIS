@@ -1,14 +1,7 @@
-INFO:     127.0.0.1:55608 - "GET /phase-status HTTP/1.1" 200 OK
-INFO:     127.0.0.1:55610 - "GET /phase-status HTTP/1.1" 200 OK
-INFO:     127.0.0.1:54161 - "GET /phase-status HTTP/1.1" 200 OK
-INFO:     127.0.0.1:54161 - "GET / HTTP/1.1" 200 OK
-INFO:     127.0.0.1:64139 - "GET /static/dashboard.js HTTP/1.1" 200 OK
-INFO:     127.0.0.1:54161 - "GET /static/style.phase1.css HTTP/1.1" 200 OK
-INFO:     127.0.0.1:53873 - "GET /static/orb.js HTTP/1.1" 304 Not Modified
-INFO:     127.0.0.1:64139 - "GET /phase-status HTTP/1.1" 200 OK
-INFO:     127.0.0.1:58149 - "GET / HTTP/1.1" 200 OK
-INFO:     127.0.0.1:58149 - "GET /static/style.phase1.css HTTP/1.1" 200 OK
-INFO:     127.0.0.1:54261 - "GET /static/dashboard.js HTTP/1.1" 200 OK
-INFO:     127.0.0.1:54261 - "GET /phase-status HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50173 - "GET / HTTP/1.1" 200 OK
-INFO:     127.0.0.1:50173 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63917 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63920 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65087 - "GET / HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65087 - "GET /static/style.phase1.css HTTP/1.1" 200 OK
+INFO:     127.0.0.1:65445 - "GET /static/dashboard.js HTTP/1.1" 200 OK
+INFO:     127.0.0.1:53300 - "GET /phase-status HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55625 - "GET /favicon.ico HTTP/1.1" 404 Not Found

@@ -24,6 +24,7 @@ That means Nova already has:
 - opt-in pattern review for continuity work
 - Operator Health Surface with a System Reason panel
 - a live "What Nova Can Do Right Now" panel driven from the currently enabled capability surface
+- a Home-page Trust Panel that now shows recent ledger-backed activity and current blocked conditions
 - dashboard support for all of the above
 
 ## What Feels Mature Already
@@ -33,6 +34,7 @@ These parts are already meaningfully real:
 - system status and local computer help
 - Home-page operator health and reason visibility
 - Home-page live capability discovery based on the active governed capability set
+- Home-page trust review backed by recent ledger activity
 - screenshot capture and screen explanation
 - session-scoped project thread continuity
 - thread health, blocker, and decision surfaces

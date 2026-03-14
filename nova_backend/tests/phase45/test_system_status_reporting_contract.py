@@ -25,6 +25,9 @@ def test_system_status_includes_model_and_capability_fields():
     assert "available_capability_action_count" in data
     assert "capability_surface_summary" in data
     assert "capability_surface_source" in data
+    assert "recent_runtime_activity" in data
+    assert "recent_runtime_activity_count" in data
+    assert "trust_review_summary" in data
     assert "model_availability" in data
     assert "model_ready" in data
     assert "model_note" in data
@@ -56,3 +59,4 @@ def test_system_status_exposes_live_capability_groups():
     assert any(group.get("category") == "Research" for group in groups)
     assert any(group.get("category") == "Screen" for group in groups)
     assert any(group.get("category") == "Computer" for group in groups)
+    assert any(group.get("items") for group in groups)

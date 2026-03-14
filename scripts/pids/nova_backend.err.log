@@ -1,21 +1,12 @@
 Using fallback digest 'fetch_failed' – inference will block until confirmed.
 Model version mismatch. Blocking inference.
 Model inference blocked due to version mismatch.
-INFO:     Started server process [23340]
+INFO:     Started server process [34292]
 INFO:     Waiting for application startup.
 INFO:     Application startup complete.
 INFO:     Uvicorn running on http://127.0.0.1:8000 (Press CTRL+C to quit)
-INFO:     127.0.0.1:53597 - "WebSocket /ws" [accepted]
+INFO:     127.0.0.1:63919 - "WebSocket /ws" [accepted]
 INFO:     connection open
-INFO:     127.0.0.1:55607 - "WebSocket /ws" [accepted]
+INFO:     127.0.0.1:60101 - "WebSocket /ws" [accepted]
 INFO:     connection open
-INFO:     127.0.0.1:56843 - "WebSocket /ws" [accepted]
-INFO:     connection open
-INFO:     connection closed
-INFO:     127.0.0.1:63972 - "WebSocket /ws" [accepted]
-INFO:     connection open
-INFO:     connection closed
-INFO:     127.0.0.1:50701 - "WebSocket /ws" [accepted]
-INFO:     connection open
-INFO:     connection closed
 INFO:     connection closed

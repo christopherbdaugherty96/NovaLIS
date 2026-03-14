@@ -15,6 +15,7 @@ Implemented Phase-6-era runtime slices already include:
 - `PHASE_6_POLICY_VALIDATOR_FOUNDATION_RUNTIME_SLICE_2026-03-13.md`
 - `PHASE_6_OPERATOR_HEALTH_SURFACE_RUNTIME_SLICE_2026-03-13.md`
 - `PHASE_6_LIVE_CAPABILITY_DISCOVERY_SURFACE_RUNTIME_SLICE_2026-03-13.md`
+- `PHASE_6_TRUST_REVIEW_SURFACE_RUNTIME_SLICE_2026-03-13.md`
 
 ## Core Planning References
 - the corrected Phase-6 roadmap document in `docs/design/Phase 6/`

@@ -9,6 +9,7 @@ Add a truthful "What Nova Can Do Right Now" surface so Nova shows live available
 ## What Landed
 - system-status payload now includes a live capability surface derived from enabled registry entries
 - Home page now renders a "What Nova Can Do Right Now" panel
+- capability items now include example prompts that launch directly into chat
 - the panel groups current capabilities into practical areas such as:
   - Research
   - News and Briefing

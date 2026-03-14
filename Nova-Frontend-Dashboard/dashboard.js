@@ -47,6 +47,11 @@ let trustState = {
   failureState: "Normal",
   consecutiveFailures: 0,
 };
+let trustReviewState = {
+  summary: "Live review of recent actions and network activity will appear here.",
+  activity: [],
+  blocked: [],
+};
 
 const API_BASE = `${window.location.protocol}//${window.location.host}`;
 const WS_BASE = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`;
@@ -1582,35 +1587,151 @@ function renderCapabilitySurfaceWidget(data = {}) {
     header.appendChild(count);
     card.appendChild(header);
 
-    const list = document.createElement("ul");
-    list.className = "capability-surface-list";
-    const actions = Array.isArray(group.actions) ? group.actions : [];
-    actions.forEach((action) => {
-      const item = document.createElement("li");
-      item.textContent = String(action || "").trim();
-      if (item.textContent) list.appendChild(item);
-    });
+    const items = Array.isArray(group.items) ? group.items : [];
+    if (items.length) {
+      const actionsHost = document.createElement("div");
+      actionsHost.className = "capability-surface-actions";
 
-    if (!list.childNodes.length) {
-      const item = document.createElement("li");
-      item.textContent = "No live actions listed.";
-      list.appendChild(item);
+      items.forEach((item) => {
+        const labelText = String(item.action || "").trim();
+        const promptText = String(item.prompt || "").trim();
+        if (!labelText) return;
+
+        const button = document.createElement("button");
+        button.type = "button";
+        button.className = "capability-surface-action";
+        button.textContent = labelText;
+        if (promptText) {
+          button.title = promptText;
+          button.addEventListener("click", () => runCapabilityPrompt(promptText));
+        } else {
+          button.disabled = true;
+        }
+        actionsHost.appendChild(button);
+      });
+
+      card.appendChild(actionsHost);
+    } else {
+      const list = document.createElement("ul");
+      list.className = "capability-surface-list";
+      const actions = Array.isArray(group.actions) ? group.actions : [];
+      actions.forEach((action) => {
+        const item = document.createElement("li");
+        item.textContent = String(action || "").trim();
+        if (item.textContent) list.appendChild(item);
+      });
+
+      if (!list.childNodes.length) {
+        const item = document.createElement("li");
+        item.textContent = "No live actions listed.";
+        list.appendChild(item);
+      }
+
+      card.appendChild(list);
     }
-
-    card.appendChild(list);
     groupsHost.appendChild(card);
   });
 }
 
-function renderTrustPanel() {
+function runCapabilityPrompt(prompt) {
+  const clean = String(prompt || "").trim();
+  if (!clean) return;
+  setActivePage("chat");
+  injectUserText(clean, "text");
+}
+
+function renderTrustPanel(data = {}) {
+  if (data && typeof data === "object") {
+    trustReviewState.summary = String(data.trust_review_summary || trustReviewState.summary).trim() || trustReviewState.summary;
+    trustReviewState.activity = Array.isArray(data.recent_runtime_activity) ? data.recent_runtime_activity.slice(0, 6) : trustReviewState.activity;
+    trustReviewState.blocked = Array.isArray(data.blocked_conditions) ? data.blocked_conditions.slice(0, 3) : trustReviewState.blocked;
+  }
+
   const mode = $("trust-mode");
   const lastCall = $("trust-last-call");
   const egress = $("trust-egress");
   const failure = $("trust-failure");
+  const summary = $("trust-summary");
+  const activityHost = $("trust-recent-activity");
+  const blockedHost = $("trust-blocked");
   if (mode) mode.textContent = trustState.mode;
   if (lastCall) lastCall.textContent = trustState.lastExternalCall;
   if (egress) egress.textContent = trustState.dataEgress;
   if (failure) failure.textContent = trustState.failureState;
+  if (summary) summary.textContent = trustReviewState.summary;
+
+  if (activityHost) {
+    clear(activityHost);
+    const label = document.createElement("div");
+    label.className = "trust-section-label";
+    label.textContent = "Recent Activity";
+    activityHost.appendChild(label);
+
+    if (!trustReviewState.activity.length) {
+      const empty = document.createElement("div");
+      empty.className = "trust-empty";
+      empty.textContent = "No recent ledger-backed activity yet.";
+      activityHost.appendChild(empty);
+    } else {
+      const list = document.createElement("div");
+      list.className = "trust-activity-list";
+      trustReviewState.activity.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "trust-activity-item";
+
+        const title = document.createElement("div");
+        title.className = "trust-activity-title";
+        title.textContent = String(item.title || "Runtime event").trim() || "Runtime event";
+        row.appendChild(title);
+
+        const meta = document.createElement("div");
+        meta.className = "trust-activity-meta";
+        const kind = String(item.kind || "system").trim() || "system";
+        const detail = String(item.detail || "").trim();
+        const timestamp = String(item.timestamp || "").trim();
+        meta.textContent = [kind, detail, timestamp].filter(Boolean).join(" - ");
+        row.appendChild(meta);
+
+        list.appendChild(row);
+      });
+      activityHost.appendChild(list);
+    }
+  }
+
+  if (blockedHost) {
+    clear(blockedHost);
+    const label = document.createElement("div");
+    label.className = "trust-section-label";
+    label.textContent = "Currently Blocked";
+    blockedHost.appendChild(label);
+
+    if (!trustReviewState.blocked.length) {
+      const empty = document.createElement("div");
+      empty.className = "trust-empty";
+      empty.textContent = "No blocked conditions reported.";
+      blockedHost.appendChild(empty);
+    } else {
+      const list = document.createElement("div");
+      list.className = "trust-activity-list";
+      trustReviewState.blocked.forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "trust-activity-item";
+
+        const title = document.createElement("div");
+        title.className = "trust-activity-title";
+        title.textContent = `${String(item.label || item.area || "Condition").trim()}: ${String(item.status || "unknown").trim()}`;
+        row.appendChild(title);
+
+        const reason = document.createElement("div");
+        reason.className = "trust-activity-meta";
+        reason.textContent = String(item.reason || "").trim() || "No reason available.";
+        row.appendChild(reason);
+
+        list.appendChild(row);
+      });
+      blockedHost.appendChild(list);
+    }
+  }
 }
 
 function markExternalCall(label) {
@@ -3225,6 +3346,7 @@ function connectWebSocket() {
         renderMorningPanel();
         renderOperatorHealthWidget(msg.data || {});
         renderCapabilitySurfaceWidget(msg.data || {});
+        renderTrustPanel(msg.data || {});
         break;
       case "calendar":
         morningState.calendar = msg.summary || msg.message || "No events scheduled today.";
