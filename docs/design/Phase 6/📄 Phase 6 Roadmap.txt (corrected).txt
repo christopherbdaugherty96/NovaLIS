@@ -1,4 +1,4 @@
-# Phase 6 Roadmap (Corrected)
+﻿# Phase 6 Roadmap (Corrected)
 Date: 2026-03-13
 Status: Planning packet only; runtime not authorized
 Scope: Ordered roadmap for the Phase-6 core package after Phase-5 closure
@@ -89,6 +89,9 @@ Required work:
 - policy envelope schema
 - policy storage model
 - explicit enable/disable model
+
+Current core design artifact:
+- `docs/design/Phase 6/ATOMIC_POLICY_LANGUAGE_AND_POLICY_ENVELOPE_SPEC.md`
 
 Why first:
 - nothing else in Phase 6 is safe until "what a policy is" is fixed
@@ -225,8 +228,9 @@ Current practical interpretation:
 1. `docs/PROOFS/Phase-5/PHASE_5_CLOSED_ACT_2026-03-13.md`
 2. `docs/PROOFS/Phase-6/PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
 3. the corrected Phase-6 roadmap document in this folder
-4. `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`
-5. `docs/PROOFS/Phase-6/PHASE_6_NEXT_STEP_INDEX.md`
+4. `docs/design/Phase 6/ATOMIC_POLICY_LANGUAGE_AND_POLICY_ENVELOPE_SPEC.md`
+5. `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`
+6. `docs/PROOFS/Phase-6/PHASE_6_NEXT_STEP_INDEX.md`
 
 ## Bottom Line
 The correct Phase-6 order is:
