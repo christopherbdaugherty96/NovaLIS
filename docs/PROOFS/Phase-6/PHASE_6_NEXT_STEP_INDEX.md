@@ -11,6 +11,11 @@ Current runtime truth still lives in:
 - `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
 - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
 
+Implemented Phase-6-era runtime slices already include:
+- `PHASE_6_POLICY_VALIDATOR_FOUNDATION_RUNTIME_SLICE_2026-03-13.md`
+- `PHASE_6_OPERATOR_HEALTH_SURFACE_RUNTIME_SLICE_2026-03-13.md`
+- `PHASE_6_LIVE_CAPABILITY_DISCOVERY_SURFACE_RUNTIME_SLICE_2026-03-13.md`
+
 ## Core Planning References
 - the corrected Phase-6 roadmap document in `docs/design/Phase 6/`
 - `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`

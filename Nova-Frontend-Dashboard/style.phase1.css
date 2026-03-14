@@ -374,6 +374,18 @@ body {
   width: min(420px, 100%);
 }
 
+.page-home .operator-health-widget {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 8px;
+}
+
+.page-home .capability-surface-widget {
+  width: min(420px, 100%);
+  display: grid;
+  gap: 8px;
+}
+
 .page-home .context-insight-widget {
   width: min(420px, 100%);
   display: grid;
@@ -1403,6 +1415,157 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.operator-health-grid,
+.operator-health-section {
+  display: grid;
+  gap: 6px;
+}
+
+.operator-health-grid {
+  padding: 8px 9px;
+  border: 1px solid rgba(168, 201, 242, 0.18);
+  border-radius: 10px;
+  background: rgba(14, 31, 56, 0.42);
+}
+
+.operator-health-row {
+  display: grid;
+  grid-template-columns: minmax(110px, 0.7fr) minmax(0, 1fr);
+  gap: 8px;
+  align-items: start;
+}
+
+.operator-health-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #d7e9ff;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.operator-health-value,
+.operator-health-empty,
+.operator-health-item-meta,
+#operator-health-summary {
+  font-size: 0.73rem;
+  line-height: 1.35;
+  color: #c6dcfb;
+}
+
+#operator-health-summary {
+  margin: 0;
+  color: #dcecff;
+}
+
+.operator-health-section {
+  padding: 8px 9px;
+  border: 1px solid rgba(168, 201, 242, 0.18);
+  border-radius: 10px;
+  background: rgba(14, 31, 56, 0.42);
+}
+
+.operator-health-section-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #d7e9ff;
+  text-transform: uppercase;
+}
+
+.operator-health-list {
+  display: grid;
+  gap: 6px;
+}
+
+.operator-health-item {
+  display: grid;
+  gap: 4px;
+  padding: 7px 8px;
+  border: 1px solid rgba(168, 201, 242, 0.16);
+  border-radius: 9px;
+  background: rgba(10, 25, 46, 0.46);
+}
+
+.operator-health-item-title {
+  font-size: 0.74rem;
+  font-weight: 700;
+  color: #dcedff;
+  text-transform: capitalize;
+}
+
+.operator-health-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.operator-health-actions button {
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(170, 203, 248, 0.35);
+  background: rgba(14, 33, 59, 0.75);
+  color: #d9e9ff;
+  font-size: 0.76rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.operator-health-actions button:hover {
+  border-color: rgba(132, 188, 255, 0.62);
+  background: rgba(16, 39, 69, 0.9);
+}
+
+.capability-surface-groups {
+  display: grid;
+  gap: 8px;
+}
+
+#capability-surface-summary,
+.capability-surface-note,
+.capability-surface-empty,
+.capability-surface-list {
+  font-size: 0.73rem;
+  line-height: 1.38;
+  color: #c6dcfb;
+}
+
+.capability-surface-group {
+  display: grid;
+  gap: 7px;
+  padding: 8px 9px;
+  border: 1px solid rgba(168, 201, 242, 0.18);
+  border-radius: 10px;
+  background: rgba(14, 31, 56, 0.42);
+}
+
+.capability-surface-group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.capability-surface-category {
+  margin: 0;
+  font-size: 0.76rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #dcedff;
+  text-transform: uppercase;
+}
+
+.capability-surface-list {
+  margin: 0;
+  padding-left: 18px;
+  display: grid;
+  gap: 4px;
+}
+
+.capability-surface-note {
+  margin: 0;
+  color: #a9c7ea;
 }
 
 .memory-overview-actions button {

@@ -1,11 +1,11 @@
 # src/brain_server.py
 
 """
-NovaLIS Brain Server — Phase 4 Staging
-- Session‑aware mediator
-- Dataclass‑based invocation handling
+NovaLIS Brain Server â€” Phase 4 Staging
+- Sessionâ€‘aware mediator
+- Dataclassâ€‘based invocation handling
 - Governor mediation
-- Phase‑3.5 skill fallback preserved
+- Phaseâ€‘3.5 skill fallback preserved
 """
 
 from src.governor.governor import Governor
@@ -105,7 +105,7 @@ async def root():
 app.include_router(stt_router)
 
 # -------------------------------------------------
-# Phase‑4 Staging Components
+# Phaseâ€‘4 Staging Components
 # -------------------------------------------------
 thought_store = ThoughtStore(ttl=300)
 conversation_heuristics = ComplexityHeuristics()
@@ -1653,13 +1653,16 @@ async def send_pattern_review_widget(
 async def phase_status():
     from src.governor.execute_boundary import GOVERNED_ACTIONS_ENABLED
     return {
-        "phase": "4",
-        "status": "staging" if GOVERNED_ACTIONS_ENABLED else "sealed",
+        "phase": str(BUILD_PHASE),
+        "phase_display": "5 closed / 6 foundation" if BUILD_PHASE >= 5 else f"{BUILD_PHASE}",
+        "status": "active" if GOVERNED_ACTIONS_ENABLED else "sealed",
         "execution_enabled": GOVERNED_ACTIONS_ENABLED,
-        "note": "Phase‑4 runtime active – all actions mediated by Governor."
+        "delegated_runtime_enabled": False,
+        "note": (
+            "Phase-5 trust layer is active. "
+            "Phase-6 policy foundation exists, but delegated execution remains disabled."
+        ),
     }
-
-
 @app.get("/system/audit/runtime-truth")
 async def audit_runtime_truth():
     """Read-only runtime-truth audit report (JSON)."""
@@ -2527,7 +2530,7 @@ async def websocket_endpoint(ws: WebSocket):
                     await send_chat_done(ws)
                     continue
 
-            # --- Phase‑2 immediate commands ---
+            # --- Phaseâ€‘2 immediate commands ---
             if lowered == "stop":
                 speech_state.stop()
                 stop_speaking()
@@ -3815,7 +3818,7 @@ async def websocket_endpoint(ws: WebSocket):
             # --- Governor mediation ---
             mediated_text = GovernorMediator.mediate(text)
 
-            # --- Phase‑4 governed invocation detection ---
+            # --- Phaseâ€‘4 governed invocation detection ---
             inv_result = GovernorMediator.parse_governed_invocation(mediated_text, session_id=session_id)
             if inv_result is None and lowered in {"more", "tell me more", "more please"}:
                 try:
@@ -4232,7 +4235,7 @@ async def websocket_endpoint(ws: WebSocket):
 
                 await send_chat_done(ws)
 
-                # Auto‑speak for voice input (only if not a TTS invocation)
+                # Autoâ€‘speak for voice input (only if not a TTS invocation)
                 if (session_state.get("last_input_channel") == "voice"
                         and action_result.success
                         and capability_id != 18):
@@ -4250,7 +4253,7 @@ async def websocket_endpoint(ws: WebSocket):
                 session_state["turn_count"] += 1
                 continue
 
-            # --- inv_result is None – proceed to Phase‑3.5 handling ---
+            # --- inv_result is None â€“ proceed to Phaseâ€‘3.5 handling ---
 
             # --- Quick Corrections ---
             if mediated_text.startswith("Correction:"):
@@ -4381,7 +4384,7 @@ async def websocket_endpoint(ws: WebSocket):
 
                 await send_chat_done(ws)
 
-                # Auto‑speak for voice input
+                # Autoâ€‘speak for voice input
                 if (session_state.get("last_input_channel") == "voice"
                         and getattr(skill_result, "success", True)):   # assume success if not present
                     session_state["last_input_channel"] = None   # prevent re-trigger
@@ -4403,10 +4406,11 @@ async def websocket_endpoint(ws: WebSocket):
             await send_chat_done(ws)
             session_state["turn_count"] += 1
 
-            # (No auto‑speak for fallback – optional, but omitted to stay minimal)
+            # (No autoâ€‘speak for fallback â€“ optional, but omitted to stay minimal)
 
     except WebSocketDisconnect:
         log.info("WebSocket disconnected")
     finally:
         thought_store.clear_session(session_id)
         GovernorMediator.clear_session(session_id)
+

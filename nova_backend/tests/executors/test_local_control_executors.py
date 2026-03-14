@@ -103,6 +103,21 @@ def test_os_diagnostics_executor_returns_extended_metrics(monkeypatch):
     monkeypatch.setattr(mod.psutil, "boot_time", lambda: mod.time.time() - 7200.0)
     monkeypatch.setattr(mod.psutil, "pids", lambda: [1, 2, 3, 4])
     monkeypatch.setattr(mod.psutil, "net_if_stats", lambda: {"Ethernet": _Iface()})
+    monkeypatch.setattr(
+        mod.OSDiagnosticsExecutor,
+        "_memory_status_details",
+        staticmethod(lambda: ("enabled", 3, "2026-03-13T12:00:00+00:00", "Persistent memory enabled with 3 item(s).")),
+    )
+    monkeypatch.setattr(
+        mod.OSDiagnosticsExecutor,
+        "_policy_status_details",
+        staticmethod(lambda: ("draft_only", "2 draft policy item(s)", 2, 2, 0)),
+    )
+    monkeypatch.setattr(
+        mod.OSDiagnosticsExecutor,
+        "_ledger_status_details",
+        staticmethod(lambda: ("ok", 24, "SEARCH_EXECUTED")),
+    )
 
     result = OSDiagnosticsExecutor().execute(ActionRequest(capability_id=32, params={}))
 
@@ -114,6 +129,15 @@ def test_os_diagnostics_executor_returns_extended_metrics(monkeypatch):
     assert result.data.get("disk_percent") == 50.0
     assert result.data.get("network_status") == "available"
     assert result.data.get("health_state") == "healthy"
+    assert result.data.get("phase_display") == "5 closed / 6 foundation"
+    assert result.data.get("governor_status") == "active"
+    assert result.data.get("execution_boundary_status") == "enforced"
+    assert result.data.get("memory_total_count") == 3
+    assert result.data.get("policy_draft_count") == 2
+    assert result.data.get("ledger_entries_today") == 24
+    assert isinstance(result.data.get("blocked_conditions"), list)
+    assert isinstance(result.data.get("system_reasons"), list)
+    assert "Locks" in str(result.data.get("operator_health_summary") or "")
 
 
 def test_os_diagnostics_executor_handles_network_stat_errors(monkeypatch):

@@ -71,6 +71,7 @@ Recommended contents:
 - weather
 - top news
 - today's schedule
+- a live "What Nova Can Do Right Now" panel driven from the active capability surface
 - quick explain-anything entry point
 - research entry point
 - summarize this document entry point
@@ -79,6 +80,7 @@ Recommended contents:
 
 Best Nova loop:
 - briefing
+- live capability discovery
 - explain-anything
 - research
 - project continuity
@@ -98,6 +100,18 @@ Why it matters:
 - makes product value legible in seconds
 - gives Nova an obvious daily-use reason
 - prevents the "what do I do with this?" problem
+
+### Daily Utility Discoverability Note
+One especially strong daily-utility companion surface is:
+- "What Nova Can Do Right Now"
+
+This should be:
+- driven from the currently enabled capability registry state
+- filtered by what the Governor currently exposes
+- practical rather than theoretical
+
+This panel is not a docs page.
+It is a live discoverability surface for the current runtime.
 
 ## Surface 3 - Trust / Review Surface
 Question answered:
