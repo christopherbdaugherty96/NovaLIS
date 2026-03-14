@@ -1,4 +1,7 @@
-Option 2 — Self-Host a Search Index (Advanced)
+# Status Note
+This is an optional infrastructure direction for the Phase-6 era, not part of the delegated-autonomy core roadmap.
+
+Option 2 â€” Self-Host a Search Index (Advanced)
 
 Examples:
 
@@ -24,9 +27,9 @@ Ongoing maintenance
 
 Requires hosting
 
-This fits your long-term “sovereign intelligence node” vision — but it’s Phase 6+ level work.
+This fits your long-term â€œsovereign intelligence nodeâ€ vision â€” but itâ€™s Phase 6+ level work.
 
-🥉 Option 3 — Hybrid Model
+ðŸ¥‰ Option 3 â€” Hybrid Model
 
 Use:
 
@@ -36,14 +39,14 @@ Swap later if needed
 
 Your architecture supports this because:
 
-Executor → Tool → NetworkMediator
+Executor â†’ Tool â†’ NetworkMediator
 
 
 You can swap tool implementation without touching Governor.
 
-That’s the beauty of your design.
+Thatâ€™s the beauty of your design.
 
-🔥 My Recommendation For You
+ðŸ”¥ My Recommendation For You
 
 Use ddgs right now.
 
@@ -51,7 +54,7 @@ Why?
 
 Because:
 
-You’re experimenting
+Youâ€™re experimenting
 
 You want no friction
 
@@ -66,11 +69,11 @@ ddgs is sovereignty-grade.
 
 Given your philosophy?
 
-ddgs aligns more with Nova’s identity.
+ddgs aligns more with Novaâ€™s identity.
 
-🎯 What To Do Next
+ðŸŽ¯ What To Do Next
 
-We convert your current executor from Brave → ddgs.
+We convert your current executor from Brave â†’ ddgs.
 
 Minimal diff:
 
@@ -100,7 +103,7 @@ No memory
 
 Structured output
 
-If you want, I’ll give you the exact surgical diff patch instead of full rewrite.
+If you want, Iâ€™ll give you the exact surgical diff patch instead of full rewrite.
 
 That way you preserve 95% of your file and stay clean.
 
@@ -108,4 +111,4 @@ Say:
 
 give me minimal diff patch
 
-And we’ll do it properly.
+And weâ€™ll do it properly.
