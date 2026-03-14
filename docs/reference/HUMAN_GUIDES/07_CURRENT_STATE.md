@@ -1,4 +1,4 @@
-# Current State
+﻿# Current State
 Updated: 2026-03-13
 
 ## Where Nova Is Today
@@ -62,6 +62,18 @@ A careful plain-language description of the current system is:
 
 The next planned wake-word step is documented here:
 - `docs/PROOFS/Phase-6/PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
+
+Phase-6 planning itself has also started at the design level, but not at the runtime level yet.
+
+The first core Phase-6 design artifact now exists here:
+- `docs/design/Phase 6/ATOMIC_POLICY_LANGUAGE_AND_POLICY_ENVELOPE_SPEC.md`
+
+That document defines the smallest lawful delegated-policy model:
+- one trigger
+- one atomic action
+- one bounded envelope
+
+It does not mean delegated autonomy is live yet.
 
 ## What Makes The Current State Special
 Nova already combines things that usually live in separate products:
