@@ -34,6 +34,7 @@ Hierarchical tone resolution:
 - Changes are logged in ledger or equivalent immutable audit stream.
 - Each mutation is reversible.
 - Kill switch semantics must disable adaptive mutation paths.
+- No new execution capability is granted.
 
 ## Historical Decision
 This document records the pre-approval design state only.
