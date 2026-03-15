@@ -18,13 +18,10 @@ def test_dashboard_handles_tone_profile_widget_and_hydration():
     assert 'injectUserText("tone reset all", "text")' in source
 
 
-def test_home_page_includes_tone_overview_widget():
+def test_home_page_includes_tone_controls_in_personal_layer():
     source = INDEX_PATH.read_text(encoding="utf-8")
 
-    assert 'id="tone-overview-widget"' in source
-    assert 'id="tone-overview-summary"' in source
-    assert 'id="tone-overview-global"' in source
-    assert 'id="tone-overview-overrides"' in source
-    assert 'id="tone-overview-history"' in source
+    assert 'id="personal-layer-widget"' in source
+    assert 'id="personal-layer-summary"' in source
+    assert 'id="personal-layer-grid"' in source
     assert 'id="btn-home-tone-status"' in source
-    assert 'id="btn-home-tone-reset"' in source

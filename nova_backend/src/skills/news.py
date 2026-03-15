@@ -92,6 +92,31 @@ class NewsSkill(BaseSkill):
                 {"name": "NPR Politics", "feeds": ["https://feeds.npr.org/1014/rss.xml"], "domain": "npr.org"},
                 {"name": "BBC Politics", "feeds": ["https://feeds.bbci.co.uk/news/politics/rss.xml"], "domain": "bbc.com"},
                 {"name": "POLITICO", "feeds": ["https://www.politico.com/rss/politicopicks.xml"], "domain": "politico.com"},
+                {"name": "FOX Politics", "feeds": ["https://moxie.foxnews.com/google-publisher/politics.xml"], "domain": "foxnews.com"},
+            ],
+        },
+        {
+            "key": "politics_left",
+            "title": "Politics - Left / Progressive",
+            "sources": [
+                {"name": "NPR Politics", "feeds": ["https://feeds.npr.org/1014/rss.xml"], "domain": "npr.org"},
+                {"name": "PBS Politics", "feeds": ["https://www.pbs.org/newshour/feeds/rss/politics"], "domain": "pbs.org"},
+            ],
+        },
+        {
+            "key": "politics_center",
+            "title": "Politics - Center / Institutional",
+            "sources": [
+                {"name": "BBC Politics", "feeds": ["https://feeds.bbci.co.uk/news/politics/rss.xml"], "domain": "bbc.com"},
+                {"name": "POLITICO", "feeds": ["https://www.politico.com/rss/politicopicks.xml"], "domain": "politico.com"},
+            ],
+        },
+        {
+            "key": "politics_right",
+            "title": "Politics - Right / Conservative",
+            "sources": [
+                {"name": "FOX Politics", "feeds": ["https://moxie.foxnews.com/google-publisher/politics.xml"], "domain": "foxnews.com"},
+                {"name": "FOX Latest", "feeds": ["https://moxie.foxnews.com/google-publisher/latest.xml"], "domain": "foxnews.com"},
             ],
         },
         {

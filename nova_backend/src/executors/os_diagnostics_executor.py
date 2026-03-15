@@ -504,7 +504,7 @@ class OSDiagnosticsExecutor:
             return ("Notification policy unavailable.", False, "Off", 0, 0, 0)
 
     @staticmethod
-    def _policy_status_details() -> tuple[str, str, int, int, int]:
+    def _policy_status_details() -> tuple[str, str, int, int, int, int, int]:
         try:
             from src.policies.atomic_policy_store import AtomicPolicyStore
 
@@ -512,10 +512,12 @@ class OSDiagnosticsExecutor:
             active_count = int(overview.get("active_count") or 0)
             draft_count = int(overview.get("draft_count") or 0)
             disabled_count = int(overview.get("disabled_count") or 0)
+            simulation_count = int(overview.get("simulation_count") or 0)
+            manual_run_count = int(overview.get("manual_run_count") or 0)
             summary = str(overview.get("summary") or "").strip()
-            return "draft_only", summary, active_count, draft_count, disabled_count
+            return "manual_review_ready", summary, active_count, draft_count, disabled_count, simulation_count, manual_run_count
         except Exception:
-            return "unknown", "Policy draft status unavailable.", 0, 0, 0
+            return "unknown", "Policy draft status unavailable.", 0, 0, 0, 0, 0
 
     @staticmethod
     def _ledger_status_details() -> tuple[str, int, str]:
@@ -600,10 +602,10 @@ class OSDiagnosticsExecutor:
                 "reason": "Nova remains invocation-bound. Delegated runtime is not active.",
             },
             {
-                "area": "delegated_execution",
-                "label": "Delegated execution",
+                "area": "delegated_trigger_runtime",
+                "label": "Delegated trigger runtime",
                 "status": "disabled",
-                "reason": "Policy executor gate is not live yet.",
+                "reason": "Background delegated policy execution is still disabled. Manual review runs are allowed separately.",
             },
             {
                 "area": "background_monitoring",
@@ -650,8 +652,8 @@ class OSDiagnosticsExecutor:
             },
             {
                 "area": "policy_execution",
-                "status": "disabled",
-                "reason": "Policy drafts can be validated and stored, but executor-gate enforcement is not live.",
+                "status": "manual_review_only",
+                "reason": "Policy drafts can be validated, simulated, and manually review-run once through the executor gate.",
             },
             {
                 "area": "background_monitoring",
@@ -685,6 +687,7 @@ class OSDiagnosticsExecutor:
         health_state: str,
         model_availability: str,
         policy_draft_count: int,
+        policy_simulation_count: int,
         blocked_count: int,
     ) -> str:
         model_label = model_availability or "unknown"
@@ -693,6 +696,7 @@ class OSDiagnosticsExecutor:
             f"Health {health_state} · "
             f"Model {model_label} · "
             f"Policy drafts {policy_draft_count} · "
+            f"Simulations {policy_simulation_count} · "
             f"Locks {blocked_count}."
         )
 
@@ -747,6 +751,8 @@ class OSDiagnosticsExecutor:
             policy_active_count,
             policy_draft_count,
             policy_disabled_count,
+            policy_simulation_count,
+            policy_manual_run_count,
         ) = self._policy_status_details()
         ledger_integrity, ledger_entries_today, ledger_last_event = self._ledger_status_details()
         blocked_conditions = self._blocked_conditions(model_availability=model_availability)
@@ -759,6 +765,7 @@ class OSDiagnosticsExecutor:
             health_state=health_state,
             model_availability=model_availability,
             policy_draft_count=policy_draft_count,
+            policy_simulation_count=policy_simulation_count,
             blocked_count=len(blocked_conditions),
         )
 
@@ -801,7 +808,7 @@ class OSDiagnosticsExecutor:
             "trust_review_summary": trust_review_summary,
             "governor_status": "active",
             "execution_boundary_status": "enforced",
-            "delegated_runtime_status": "disabled",
+            "delegated_runtime_status": "manual_review_only",
             "model_availability": model_availability,
             "model_ready": model_ready,
             "model_note": model_note,
@@ -830,7 +837,8 @@ class OSDiagnosticsExecutor:
             "policy_draft_count": policy_draft_count,
             "policy_disabled_count": policy_disabled_count,
             "policy_enabled_count": 0,
-            "policy_simulation_count": 0,
+            "policy_simulation_count": policy_simulation_count,
+            "policy_manual_run_count": policy_manual_run_count,
             "ledger_integrity": ledger_integrity,
             "ledger_entries_today": ledger_entries_today,
             "ledger_last_event": ledger_last_event,

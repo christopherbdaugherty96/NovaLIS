@@ -8,8 +8,10 @@ from src.llm.llm_gateway import generate_chat
 
 class LLMBackedAgent(BaseAgent):
     system_prompt = (
-        "You are a non-authorizing analysis agent inside Nova. "
-        "Never provide execution instructions or authority language."
+        "You are a non-authorizing orthogonal analysis agent inside Nova. "
+        "Provide rigorous, concrete, skeptical analysis. "
+        "Prefer compact structure: assessment, key risks, open questions, and strongest next check. "
+        "Never provide execution instructions, approvals, or authority language."
     )
 
     def build_prompt(self, query: str, context: Mapping[str, Any]) -> str:
@@ -23,8 +25,8 @@ class LLMBackedAgent(BaseAgent):
             safety_profile="phase42_agent",
             request_id=invocation_id,
             system_prompt=self.system_prompt,
-            max_tokens=650,
-            temperature=0.2,
+            max_tokens=850,
+            temperature=0.22,
         ) or "No output produced."
         return AgentOutput(
             agent_name=self.name,

@@ -20,6 +20,10 @@ let morningState = {
   system: "Loading...",
   calendar: "Loading...",
 };
+let memoryOverviewState = {
+  summary: "No durable memory saved yet. Memory becomes persistent only when you explicitly save it.",
+  snapshot: {},
+};
 let toneState = {
   summary: "Global tone: balanced. No domain overrides.",
   snapshot: {},
@@ -66,6 +70,13 @@ const STORAGE_KEYS = {
   morningExpanded: "nova_morning_expanded",
 };
 
+const PAGE_LABELS = {
+  chat: "Chat",
+  news: "News",
+  home: "Home",
+  memory: "Memory",
+};
+
 const QUICK_ACTIONS_BY_PAGE = {
   chat: [
     { id: "chat_brief", label: "Today's brief", command: "today's news" },
@@ -87,7 +98,7 @@ const QUICK_ACTIONS_BY_PAGE = {
   ],
   news: [
     { id: "news_get", label: "Get headlines", command: "news", stayOnPage: true },
-    { id: "news_sum", label: "Summarize all", command: "summarize all headlines", stayOnPage: true },
+    { id: "news_sum", label: "Source brief", command: "today's news", switchToPage: "chat" },
     { id: "news_brief", label: "Daily brief", command: "today's news", stayOnPage: true },
     { id: "news_compare", label: "Compare stories", command: "compare headlines 1 and 2", stayOnPage: true },
     { id: "news_explain_page", label: "Explain this page", command: "what is this page" },
@@ -101,16 +112,26 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "home_threads", label: "Show threads", command: "show threads", switchToPage: "chat" },
     { id: "home_thread_status", label: "Project status", command: "project status this", switchToPage: "chat" },
     { id: "home_most_blocked", label: "Most blocked", command: "which project is most blocked right now", switchToPage: "chat" },
-    { id: "home_memory_overview", label: "Memory overview", command: "memory overview", switchToPage: "chat" },
+    { id: "home_memory_overview", label: "Memory overview", command: "memory overview", switchToPage: "memory" },
     { id: "home_tone", label: "Tone settings", command: "tone status", switchToPage: "chat" },
     { id: "home_schedules", label: "Schedules", command: "show schedules", switchToPage: "chat" },
     { id: "home_patterns", label: "Pattern review", command: "pattern status", switchToPage: "chat" },
+  ],
+  memory: [
+    { id: "memory_page_overview", label: "Overview", command: "memory overview", stayOnPage: true },
+    { id: "memory_page_list", label: "List memory", command: "memory list", switchToPage: "chat" },
+    { id: "memory_page_threads", label: "Thread memory", command: "memory list thread this", switchToPage: "chat" },
+    { id: "memory_page_save", label: "Save decision", command: "memory save decision for deployment issue: verify next step", switchToPage: "chat" },
   ],
 };
 
 const COMMAND_SUGGESTIONS = [
   "morning brief",
   "summarize all headlines",
+  "summary of article 1",
+  "summarize politics left news",
+  "summarize politics center news",
+  "summarize politics right news",
   "explain this",
   "help me do this",
   "show threads",
@@ -153,6 +174,10 @@ const COMMAND_SUGGESTIONS = [
 const HELP_EXAMPLES = [
   "morning brief",
   "summarize all headlines",
+  "summary of article 1",
+  "summarize politics left news",
+  "summarize politics center news",
+  "summarize politics right news",
   "explain this",
   "help me do this",
   "show threads",
@@ -252,10 +277,124 @@ function formatThreadTimestamp(value) {
 
 function buildNewsItemSnippet(item) {
   const summary = String(item?.summary || "").trim();
-  if (summary) return summary;
   const title = String(item?.title || "").trim();
+  if (summary) {
+    const normalizedSummary = summary.replace(/\s+/g, " ").trim().toLowerCase();
+    const normalizedTitle = title.replace(/\s+/g, " ").trim().toLowerCase();
+    if (normalizedSummary && normalizedSummary !== normalizedTitle) return summary;
+  }
   if (!title) return "No synopsis available for this headline.";
-  return `Headline indicates: ${title}`;
+  return `Open the source summary for webpage-level context beyond the headline.`;
+}
+
+function normalizePageKey(page) {
+  if (page === "ops") return "home";
+  return Object.prototype.hasOwnProperty.call(PAGE_LABELS, page) ? page : "chat";
+}
+
+function closeHeaderMenus() {
+  document.querySelectorAll(".header-menu[open]").forEach((menu) => {
+    menu.removeAttribute("open");
+  });
+}
+
+function createOverviewChip(label, value) {
+  const chip = document.createElement("div");
+  chip.className = "memory-overview-tier";
+  chip.textContent = `${label}: ${Number.isFinite(value) ? value : 0}`;
+  return chip;
+}
+
+function renderPersonalLayerWidget() {
+  const summary = $("personal-layer-summary");
+  const grid = $("personal-layer-grid");
+  if (!summary || !grid) return;
+
+  const memoryTotal = Number((memoryOverviewState.snapshot && memoryOverviewState.snapshot.total_count) || 0);
+  const dueCount = Array.isArray(notificationState.snapshot && notificationState.snapshot.due_items)
+    ? notificationState.snapshot.due_items.length
+    : 0;
+  const upcomingCount = Array.isArray(notificationState.snapshot && notificationState.snapshot.upcoming_items)
+    ? notificationState.snapshot.upcoming_items.length
+    : 0;
+  const patternCount = Array.isArray(patternReviewState.snapshot && patternReviewState.snapshot.proposals)
+    ? patternReviewState.snapshot.proposals.length
+    : 0;
+
+  summary.textContent = [
+    memoryOverviewState.summary || "Memory is ready for explicit saves.",
+    toneState.summary || "Tone is balanced.",
+  ].filter(Boolean).slice(0, 2).join(" ");
+
+  clear(grid);
+  [
+    {
+      title: "Memory",
+      copy: memoryOverviewState.summary || "No durable memory saved yet.",
+      chips: [`${memoryTotal} durable item${memoryTotal === 1 ? "" : "s"}`],
+      action: () => setActivePage("memory"),
+      actionLabel: "Open page",
+    },
+    {
+      title: "Tone",
+      copy: toneState.summary || "Global tone: balanced.",
+      chips: [String((toneState.snapshot && toneState.snapshot.global_profile_label) || "Balanced")],
+      action: () => showToneModal(),
+      actionLabel: "Settings",
+    },
+    {
+      title: "Schedules",
+      copy: notificationState.summary || "No schedules yet.",
+      chips: [
+        dueCount > 0 ? `${dueCount} due now` : "No items due",
+        upcomingCount > 0 ? `${upcomingCount} upcoming` : "No upcoming",
+      ],
+      action: () => showScheduleModal(),
+      actionLabel: "Review",
+    },
+    {
+      title: "Pattern Review",
+      copy: patternReviewState.summary || "Pattern review is off.",
+      chips: [
+        Boolean(patternReviewState.snapshot && patternReviewState.snapshot.opt_in_enabled) ? "Opted in" : "Opted out",
+        patternCount > 0 ? `${patternCount} proposal${patternCount === 1 ? "" : "s"}` : "No proposals",
+      ],
+      action: () => injectUserText("pattern status", "text"),
+      actionLabel: "Status",
+    },
+  ].forEach((entry) => {
+    const tile = document.createElement("div");
+    tile.className = "personal-layer-tile";
+
+    const title = document.createElement("div");
+    title.className = "personal-layer-title";
+    title.textContent = entry.title;
+    tile.appendChild(title);
+
+    const copy = document.createElement("div");
+    copy.className = "personal-layer-copy";
+    copy.textContent = entry.copy;
+    tile.appendChild(copy);
+
+    const chipRow = document.createElement("div");
+    chipRow.className = "personal-layer-chip-row";
+    entry.chips.filter(Boolean).forEach((chipText) => {
+      const chip = document.createElement("span");
+      chip.className = "confidence-badge";
+      chip.textContent = chipText;
+      chipRow.appendChild(chip);
+    });
+    tile.appendChild(chipRow);
+
+    const actionBtn = document.createElement("button");
+    actionBtn.type = "button";
+    actionBtn.className = "assistant-action-btn";
+    actionBtn.textContent = entry.actionLabel;
+    actionBtn.addEventListener("click", entry.action);
+    tile.appendChild(actionBtn);
+
+    grid.appendChild(tile);
+  });
 }
 
 function setOrbStatus(state) {
@@ -650,21 +789,31 @@ function renderThreadDetailWidget(data = {}) {
 }
 
 function renderMemoryOverviewWidget(data = {}) {
+  memoryOverviewState.snapshot = (data && typeof data === "object") ? { ...data } : {};
+  memoryOverviewState.summary = String((data && data.summary) || "No durable memory saved yet. Memory becomes persistent only when you explicitly save it.").trim();
+
   const summary = $("memory-overview-summary");
   const tierRow = $("memory-overview-tier-row");
+  const scopeRow = $("memory-overview-scope-row");
   const linkedHost = $("memory-overview-linked");
   const recentHost = $("memory-overview-recent");
   const note = $("memory-overview-note");
-  if (!summary || !tierRow || !linkedHost || !recentHost || !note) return;
-
   const total = Number((data && data.total_count) || 0);
   const tiers = (data && typeof data.tier_counts === "object" && data.tier_counts) ? data.tier_counts : {};
+  const scopes = (data && typeof data.scope_counts === "object" && data.scope_counts) ? data.scope_counts : {};
   const linkedThreads = Array.isArray(data && data.linked_threads) ? data.linked_threads : [];
   const recentItems = Array.isArray(data && data.recent_items) ? data.recent_items : [];
   const summaryText = String((data && data.summary) || "").trim();
   const inspectabilityNote = String((data && data.inspectability_note) || "").trim();
 
-  summary.textContent = summaryText || "No durable memory saved yet. Ask Nova for \"memory overview\" to inspect it.";
+  const pageSummary = $("memory-page-summary");
+  if (pageSummary) pageSummary.textContent = summaryText || "Memory becomes durable only when you explicitly save it.";
+  if (!summary || !tierRow || !linkedHost || !recentHost || !note) {
+    renderPersonalLayerWidget();
+    return;
+  }
+
+  summary.textContent = memoryOverviewState.summary;
   note.textContent = inspectabilityNote || "Memory is explicit, inspectable, and revocable.";
 
   clear(tierRow);
@@ -674,11 +823,19 @@ function renderMemoryOverviewWidget(data = {}) {
     { label: "Deferred", value: Number(tiers.deferred || 0) },
   ];
   tierEntries.forEach((entry) => {
-    const chip = document.createElement("div");
-    chip.className = "memory-overview-tier";
-    chip.textContent = `${entry.label}: ${Number.isFinite(entry.value) ? entry.value : 0}`;
-    tierRow.appendChild(chip);
+    tierRow.appendChild(createOverviewChip(entry.label, entry.value));
   });
+
+  if (scopeRow) {
+    clear(scopeRow);
+    [
+      { label: "General", value: Number(scopes.general || 0) },
+      { label: "Project", value: Number(scopes.project || 0) },
+      { label: "Ops", value: Number(scopes.ops || 0) },
+    ].forEach((entry) => {
+      scopeRow.appendChild(createOverviewChip(entry.label, entry.value));
+    });
+  }
 
   clear(linkedHost);
   const linkedLabel = document.createElement("div");
@@ -764,6 +921,8 @@ function renderMemoryOverviewWidget(data = {}) {
     });
     recentHost.appendChild(list);
   }
+
+  renderPersonalLayerWidget();
 }
 
 function buildToneProfileButtons(currentProfile, onSelect) {
@@ -869,6 +1028,7 @@ function renderToneOverviewWidget(data = {}) {
   }
 
   refreshToneModal();
+  renderPersonalLayerWidget();
 }
 
 function refreshToneModal() {
@@ -1122,6 +1282,8 @@ function renderNotificationOverviewWidget(data = {}) {
       upcomingHost.appendChild(list);
     }
   }
+
+  renderPersonalLayerWidget();
 }
 
 function renderPatternReviewWidget(data = {}) {
@@ -1251,6 +1413,8 @@ function renderPatternReviewWidget(data = {}) {
       historyHost.appendChild(list);
     }
   }
+
+  renderPersonalLayerWidget();
 }
 
 function showScheduleModal() {
@@ -1453,7 +1617,10 @@ function renderOperatorHealthWidget(data = {}) {
       ["Network Mediator", String(data.network_mediator_status || "Unknown").trim() || "Unknown"],
       ["Voice", String(data.voice_status || "Unknown").trim() || "Unknown"],
       ["Memory", String(data.memory_summary || data.memory_status || "Unknown").trim() || "Unknown"],
-      ["Policies", `Drafts ${Math.max(0, Number(data.policy_draft_count) || 0)} · Enabled ${Math.max(0, Number(data.policy_enabled_count) || 0)}`],
+      [
+        "Policies",
+        `Drafts ${Math.max(0, Number(data.policy_draft_count) || 0)} · Sims ${Math.max(0, Number(data.policy_simulation_count) || 0)} · Runs ${Math.max(0, Number(data.policy_manual_run_count) || 0)}`
+      ],
       ["Ledger", `${String(data.ledger_integrity || "Unknown").trim() || "Unknown"} · ${Math.max(0, Number(data.ledger_entries_today) || 0)} today`],
       ["Locks", `${Math.max(0, Number(data.locks_active_count) || 0)} active`],
     ];
@@ -2734,15 +2901,29 @@ function renderWeatherWidget(data) {
   renderMorningPanel();
 }
 
+function runNewsSearch() {
+  const input = $("news-search-input");
+  const query = String((input && input.value) || "").trim();
+  if (!query) return;
+  if (input) input.value = "";
+  setActivePage("chat");
+  injectUserText(`research latest coverage of ${query}`, "text");
+}
+
+function openPatternReview() {
+  setActivePage("chat");
+  injectUserText("review patterns", "text");
+}
+
 function updateNewsSummary(summaryText) {
   const summary = $("news-summary");
   if (!summary) return;
-  summary.textContent = (summaryText || "").trim() || "Headlines loaded. Press 'Summarize headlines' for a briefing.";
+  summary.textContent = (summaryText || "").trim() || "Headlines loaded. Use source-grounded brief or article summaries when you want webpage-level context.";
 }
 
 function getOrderedNewsCategoryKeys(categories) {
   const safeCategories = (categories && typeof categories === "object") ? categories : {};
-  const preferred = ["global", "political", "breaking", "tech", "markets"];
+  const preferred = ["global", "politics_left", "politics_center", "politics_right", "breaking", "tech", "markets"];
   const keys = Object.keys(safeCategories).filter((key) => {
     const bucket = safeCategories[key];
     return Array.isArray(bucket && bucket.items) && bucket.items.length > 0;
@@ -2800,12 +2981,24 @@ function renderNewsCategoryPage(categoryKey, bucket) {
   const summarizeCategoryBtn = document.createElement("button");
   summarizeCategoryBtn.type = "button";
   summarizeCategoryBtn.className = "assistant-action-btn";
-  summarizeCategoryBtn.textContent = "Summarize category";
-  summarizeCategoryBtn.addEventListener("click", () => injectUserText(`summarize ${categoryKey} news`, "text"));
+  summarizeCategoryBtn.textContent = "Summarize articles";
+  summarizeCategoryBtn.addEventListener("click", () => {
+    setActivePage("chat");
+    injectUserText(`summarize ${categoryKey} news`, "text");
+  });
   categoryActions.appendChild(summarizeCategoryBtn);
+  const researchCategoryBtn = document.createElement("button");
+  researchCategoryBtn.type = "button";
+  researchCategoryBtn.className = "assistant-action-btn";
+  researchCategoryBtn.textContent = "Research topic";
+  researchCategoryBtn.addEventListener("click", () => {
+    setActivePage("chat");
+    injectUserText(`research latest ${titleText}`, "text");
+  });
+  categoryActions.appendChild(researchCategoryBtn);
   page.appendChild(categoryActions);
 
-  const list = document.createElement("ul");
+  const list = document.createElement("ol");
   list.className = "news-category-page-list";
 
   items.forEach((item) => {
@@ -2835,6 +3028,17 @@ function renderNewsCategoryPage(categoryKey, bucket) {
     openSource.rel = "noopener noreferrer";
     openSource.textContent = "Open source";
     actions.appendChild(openSource);
+    const summarizeArticleBtn = document.createElement("button");
+    summarizeArticleBtn.type = "button";
+    summarizeArticleBtn.className = "assistant-action-btn";
+    summarizeArticleBtn.textContent = "Research coverage";
+    summarizeArticleBtn.addEventListener("click", () => {
+      const topic = String(item.title || "").trim();
+      if (!topic) return;
+      setActivePage("chat");
+      injectUserText(`research latest coverage of ${topic}`, "text");
+    });
+    actions.appendChild(summarizeArticleBtn);
     const videoUrl = String(item.video_url || "").trim();
     if (videoUrl) {
       const watchLink = document.createElement("a");
@@ -3005,9 +3209,24 @@ function renderNewsWidget(items, summaryText = "", categories = null) {
     const summarizeBtn = document.createElement("button");
     summarizeBtn.type = "button";
     summarizeBtn.className = "assistant-action-btn";
-    summarizeBtn.textContent = "Summarize this";
-    summarizeBtn.addEventListener("click", () => injectUserText(`summarize headline ${storyIndex}`, "text"));
+    summarizeBtn.textContent = "Summarize article";
+    summarizeBtn.addEventListener("click", () => {
+      setActivePage("chat");
+      injectUserText(`summary of article ${storyIndex}`, "text");
+    });
     row.appendChild(summarizeBtn);
+
+    const compareBtn = document.createElement("button");
+    compareBtn.type = "button";
+    compareBtn.className = "assistant-action-btn";
+    compareBtn.textContent = "Research this";
+    compareBtn.addEventListener("click", () => {
+      const topic = String(item.title || "").trim();
+      if (!topic) return;
+      setActivePage("chat");
+      injectUserText(`research latest coverage of ${topic}`, "text");
+    });
+    row.appendChild(compareBtn);
 
     const videoUrl = String(item.video_url || "").trim();
     if (videoUrl) {
@@ -3464,24 +3683,29 @@ function setupSidebarTabs() {
 }
 
 function setActivePage(page) {
-  const normalized = page === "ops" ? "home" : page;
   const pages = {
     chat: $("page-chat"),
     news: $("page-news"),
     home: $("page-home"),
+    memory: $("page-memory"),
   };
-  const target = pages[normalized] ? normalized : "chat";
+  const target = normalizePageKey(page);
 
   Object.entries(pages).forEach(([name, el]) => {
     if (!el) return;
     el.hidden = name !== target;
   });
 
-  document.querySelectorAll(".page-btn").forEach((btn) => {
+  document.querySelectorAll(".header-menu-page-btn").forEach((btn) => {
     const active = btn.dataset.page === target;
     btn.classList.toggle("active", active);
     btn.setAttribute("aria-pressed", active ? "true" : "false");
   });
+
+  const workspaceCurrent = $("workspace-current-label");
+  if (workspaceCurrent) {
+    workspaceCurrent.textContent = PAGE_LABELS[target] || "Chat";
+  }
 
   localStorage.setItem(STORAGE_KEYS.activePage, target);
   renderQuickActions();
@@ -3494,11 +3718,12 @@ function setActivePage(page) {
 }
 
 function setupPageNavigation() {
-  const buttons = document.querySelectorAll(".page-btn");
+  const buttons = document.querySelectorAll(".header-menu-page-btn");
   if (!buttons || buttons.length === 0) return;
 
   buttons.forEach((btn) => {
     btn.addEventListener("click", () => {
+      closeHeaderMenus();
       setActivePage(btn.dataset.page || "chat");
     });
   });
@@ -3857,36 +4082,118 @@ function showQuickCustomizeModal() {
   overlay.style.display = "flex";
 }
 
-function injectUtilityButtons() {
-  const headerLeft = document.querySelector(".header-left");
-  if (!headerLeft || $("utility-bar")) return;
+function createHeaderMenu(id, title, currentText = "", currentId = "") {
+  const details = document.createElement("details");
+  details.className = "header-menu";
+  details.id = id;
 
-  const bar = document.createElement("div");
-  bar.id = "utility-bar";
-  bar.className = "utility-bar";
+  const summary = document.createElement("summary");
+  summary.className = "header-menu-toggle";
+  summary.innerHTML = currentText
+    ? `${title} <span class="header-menu-current" id="${currentId || `${id}-current-label`}">${currentText}</span>`
+    : title;
+  details.appendChild(summary);
 
+  const panel = document.createElement("div");
+  panel.className = "header-menu-panel";
+  details.appendChild(panel);
+
+  return { details, panel };
+}
+
+function injectHeaderMenus() {
+  const host = $("header-menu-strip");
+  if (!host || host.children.length > 0) return;
+
+  const workspaceMenu = createHeaderMenu("workspace-menu", "Workspace", "Chat", "workspace-current-label");
+  const workspaceLabel = document.createElement("div");
+  workspaceLabel.className = "header-menu-label";
+  workspaceLabel.textContent = "Views";
+  workspaceMenu.panel.appendChild(workspaceLabel);
+
+  const workspaceGrid = document.createElement("div");
+  workspaceGrid.className = "header-menu-grid";
   [
-    { id: "btn-help", label: "Help", fn: showHelpModal },
-    { id: "btn-tone", label: "Tone", fn: showToneModal },
-    { id: "btn-schedule", label: "Schedule", fn: showScheduleModal },
-    { id: "btn-privacy", label: "Privacy", fn: showPrivacyModal },
-    { id: "btn-accessibility", label: "Accessibility", fn: showAccessibilityModal },
+    { label: "Chat", page: "chat" },
+    { label: "News", page: "news" },
+    { label: "Home", page: "home" },
+    { label: "Memory", page: "memory" },
   ].forEach((item) => {
-    const b = document.createElement("button");
-    b.id = item.id;
-    b.type = "button";
-    b.className = "utility-btn";
-    b.textContent = item.label;
-    b.addEventListener("click", item.fn);
-    bar.appendChild(b);
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "header-menu-item header-menu-page-btn";
+    btn.dataset.page = item.page;
+    btn.textContent = item.label;
+    workspaceGrid.appendChild(btn);
   });
+  workspaceMenu.panel.appendChild(workspaceGrid);
+  host.appendChild(workspaceMenu.details);
 
-  headerLeft.appendChild(bar);
+  const controlsMenu = createHeaderMenu("controls-menu", "Controls");
+  const controlsLabel = document.createElement("div");
+  controlsLabel.className = "header-menu-label";
+  controlsLabel.textContent = "Panels";
+  controlsMenu.panel.appendChild(controlsLabel);
+  const controlsGrid = document.createElement("div");
+  controlsGrid.className = "header-menu-grid";
+  [
+    { label: "Help", fn: showHelpModal },
+    { label: "Tone", fn: showToneModal },
+    { label: "Schedule", fn: showScheduleModal },
+    { label: "Privacy", fn: showPrivacyModal },
+    { label: "Accessibility", fn: showAccessibilityModal },
+  ].forEach((item) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "header-menu-item";
+    btn.textContent = item.label;
+    btn.addEventListener("click", () => {
+      closeHeaderMenus();
+      item.fn();
+    });
+    controlsGrid.appendChild(btn);
+  });
+  controlsMenu.panel.appendChild(controlsGrid);
+  host.appendChild(controlsMenu.details);
+
+  const actionsMenu = createHeaderMenu("actions-menu", "Actions");
+  const actionsLabel = document.createElement("div");
+  actionsLabel.className = "header-menu-label";
+  actionsLabel.textContent = "Quick runs";
+  actionsMenu.panel.appendChild(actionsLabel);
+  const actionsGrid = document.createElement("div");
+  actionsGrid.className = "header-menu-grid";
+  [
+    { label: "System status", command: "system status", page: "chat" },
+    { label: "Explain this", command: "explain this", page: "chat" },
+    { label: "Memory overview", command: "memory overview", page: "memory" },
+    { label: "Show schedules", command: "show schedules", page: "chat" },
+    { label: "Pattern status", command: "pattern status", page: "chat" },
+    { label: "Review patterns", fn: openPatternReview },
+    { label: "Today's news", command: "today's news", page: "chat" },
+  ].forEach((item) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "header-menu-item";
+    btn.textContent = item.label;
+    btn.addEventListener("click", () => {
+      closeHeaderMenus();
+      if (item.fn) {
+        item.fn();
+        return;
+      }
+      if (item.page) setActivePage(item.page);
+      injectUserText(item.command, "text");
+    });
+    actionsGrid.appendChild(btn);
+  });
+  actionsMenu.panel.appendChild(actionsGrid);
+  host.appendChild(actionsMenu.details);
 }
 
 window.addEventListener("DOMContentLoaded", () => {
   applyAccessibilityFromStorage();
-  injectUtilityButtons();
+  injectHeaderMenus();
   setOrbStatus("READY");
   ensureDatalist();
   renderMorningPanel();
@@ -3895,9 +4202,11 @@ window.addEventListener("DOMContentLoaded", () => {
   renderMemoryOverviewWidget({});
   renderToneOverviewWidget({});
   renderNotificationOverviewWidget({});
+  renderPatternReviewWidget({});
   renderOperatorHealthWidget({});
   renderCapabilitySurfaceWidget({});
   renderTrustPanel();
+  renderPersonalLayerWidget();
   renderQuickActions();
   setupHintsPanelToggle();
   renderCommandDiscovery();
@@ -3926,7 +4235,21 @@ window.addEventListener("DOMContentLoaded", () => {
   const newsSummaryBtn = $("btn-news-summary");
   if (newsSummaryBtn) {
     newsSummaryBtn.addEventListener("click", () => {
-      injectUserText("Summarize the news headlines on the dashboard.", "text");
+      setActivePage("chat");
+      injectUserText("today's news", "text");
+    });
+  }
+
+  const newsRefreshBtn = $("btn-news-refresh");
+  if (newsRefreshBtn) newsRefreshBtn.addEventListener("click", () => safeWSSend({ text: "news", silent_widget_refresh: true }));
+
+  const newsSearchBtn = $("btn-news-search");
+  if (newsSearchBtn) newsSearchBtn.addEventListener("click", runNewsSearch);
+
+  const newsSearchInput = $("news-search-input");
+  if (newsSearchInput) {
+    newsSearchInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") runNewsSearch();
     });
   }
 
@@ -3938,72 +4261,96 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  const homeExplainBtn = $("btn-home-explain");
-  if (homeExplainBtn) homeExplainBtn.addEventListener("click", () => injectUserText("explain this", "text"));
+  const homeBriefBtn = $("btn-home-brief");
+  if (homeBriefBtn) {
+    homeBriefBtn.addEventListener("click", () => {
+      setActivePage("chat");
+      injectUserText("morning brief", "text");
+    });
+  }
 
-  const homeHelpBtn = $("btn-home-help");
-  if (homeHelpBtn) homeHelpBtn.addEventListener("click", () => injectUserText("help me do this", "text"));
+  const homeExplainBtn = $("btn-home-explain");
+  if (homeExplainBtn) {
+    homeExplainBtn.addEventListener("click", () => {
+      setActivePage("chat");
+      injectUserText("explain this", "text");
+    });
+  }
+
+  const homeResearchBtn = $("btn-home-research");
+  if (homeResearchBtn) {
+    homeResearchBtn.addEventListener("click", () => {
+      setActivePage("chat");
+      injectUserText("research latest technology policy updates", "text");
+    });
+  }
+
+  const homeContinueProjectBtn = $("btn-home-continue-project");
+  if (homeContinueProjectBtn) {
+    homeContinueProjectBtn.addEventListener("click", () => {
+      setActivePage("chat");
+      injectUserText("show threads", "text");
+    });
+  }
 
   const homeThreadsBtn = $("btn-home-threads");
-  if (homeThreadsBtn) homeThreadsBtn.addEventListener("click", () => injectUserText("show threads", "text"));
+  if (homeThreadsBtn) homeThreadsBtn.addEventListener("click", () => {
+    setActivePage("chat");
+    injectUserText("show threads", "text");
+  });
 
-  const homeMemoryOverviewBtn = $("btn-home-memory-overview");
-  if (homeMemoryOverviewBtn) {
-    homeMemoryOverviewBtn.addEventListener("click", () => injectUserText("memory overview", "text"));
-  }
-
-  const homeMemoryListBtn = $("btn-home-memory-list");
-  if (homeMemoryListBtn) {
-    homeMemoryListBtn.addEventListener("click", () => injectUserText("memory list", "text"));
-  }
+  const homeMemoryPageBtn = $("btn-home-memory-page");
+  if (homeMemoryPageBtn) homeMemoryPageBtn.addEventListener("click", () => setActivePage("memory"));
 
   const homeToneStatusBtn = $("btn-home-tone-status");
   if (homeToneStatusBtn) {
     homeToneStatusBtn.addEventListener("click", () => showToneModal());
   }
 
-  const homeToneResetBtn = $("btn-home-tone-reset");
-  if (homeToneResetBtn) {
-    homeToneResetBtn.addEventListener("click", () => injectUserText("tone reset all", "text"));
-  }
-
   const homeSchedulesBtn = $("btn-home-schedules");
   if (homeSchedulesBtn) {
-    homeSchedulesBtn.addEventListener("click", () => injectUserText("show schedules", "text"));
-  }
-
-  const homeScheduleBriefBtn = $("btn-home-schedule-brief");
-  if (homeScheduleBriefBtn) {
-    homeScheduleBriefBtn.addEventListener("click", () => showScheduleModal());
-  }
-
-  const homeScheduleReminderBtn = $("btn-home-schedule-reminder");
-  if (homeScheduleReminderBtn) {
-    homeScheduleReminderBtn.addEventListener("click", () => showScheduleModal());
+    homeSchedulesBtn.addEventListener("click", () => showScheduleModal());
   }
 
   const homePatternStatusBtn = $("btn-home-pattern-status");
   if (homePatternStatusBtn) {
-    homePatternStatusBtn.addEventListener("click", () => injectUserText("pattern status", "text"));
-  }
-
-  const homePatternReviewBtn = $("btn-home-pattern-review");
-  if (homePatternReviewBtn) {
-    homePatternReviewBtn.addEventListener("click", () => injectUserText("review patterns", "text"));
-  }
-
-  const homePatternOptBtn = $("btn-home-pattern-opt");
-  if (homePatternOptBtn) {
-    homePatternOptBtn.addEventListener("click", () => {
-      const optInEnabled = Boolean(patternReviewState.snapshot && patternReviewState.snapshot.opt_in_enabled);
-      injectUserText(optInEnabled ? "pattern opt out" : "pattern opt in", "text");
+    homePatternStatusBtn.addEventListener("click", () => {
+      setActivePage("chat");
+      injectUserText("pattern status", "text");
     });
   }
 
   const homeSystemStatusBtn = $("btn-home-system-status");
   if (homeSystemStatusBtn) {
-    homeSystemStatusBtn.addEventListener("click", () => injectUserText("system status", "text"));
+    homeSystemStatusBtn.addEventListener("click", () => {
+      setActivePage("chat");
+      injectUserText("system status", "text");
+    });
   }
+
+  const memoryOverviewBtn = $("btn-memory-overview");
+  if (memoryOverviewBtn) memoryOverviewBtn.addEventListener("click", () => injectUserText("memory overview", "text"));
+
+  const memoryListBtn = $("btn-memory-list");
+  if (memoryListBtn) memoryListBtn.addEventListener("click", () => {
+    setActivePage("chat");
+    injectUserText("memory list", "text");
+  });
+
+  const memoryThreadsBtn = $("btn-memory-threads");
+  if (memoryThreadsBtn) memoryThreadsBtn.addEventListener("click", () => {
+    setActivePage("chat");
+    injectUserText("memory list thread this", "text");
+  });
+
+  const memoryRefreshBtn = $("btn-memory-refresh");
+  if (memoryRefreshBtn) memoryRefreshBtn.addEventListener("click", () => injectUserText("memory overview", "text"));
+
+  const memoryReviewListBtn = $("btn-memory-review-list");
+  if (memoryReviewListBtn) memoryReviewListBtn.addEventListener("click", () => {
+    setActivePage("chat");
+    injectUserText("memory list", "text");
+  });
 
   const micBtn = $("ptt-btn");
   if (micBtn) {

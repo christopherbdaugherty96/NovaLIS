@@ -237,17 +237,23 @@ These may be useful in the Phase-6 era, but they are not the core delegated-auto
 - depends on strong installability and polished explain/document surfaces
 - not part of delegated autonomy core by itself
 
-### D. Product surfaces
+### D. End-of-Phase-6 productization and launch readiness
+- see `docs/design/Phase 6/PHASE_6_ENDGAME_PRODUCTIZATION_ROADMAP.md`
+- includes desktop packaging, distribution, updates, API handling, and early-launch legal/business readiness
+- should be treated as the productization track that follows a mature Phase-6 platform
+- not part of delegated autonomy core by itself
+
+### E. Product surfaces
 - see `docs/design/Phase 6/PHASE_6_PRODUCT_SURFACES_SPEC.md`
 - operator health, daily utility, and trust/review packaging layer
 - critical to making Nova feel like a real product
 - not part of delegated autonomy core by itself
 
-### E. Self-hosted search index
+### F. Self-hosted search index
 - infrastructure/sovereignty direction
 - not required for policy-bound delegated action
 
-### F. Deep Thought secondary orb / second-orb exploration
+### G. Deep Thought secondary orb / second-orb exploration
 - UX exploration only
 - not part of delegated autonomy core
 - should remain deferred unless user research proves a real need
@@ -306,6 +312,8 @@ Current practical interpretation:
 7. `docs/design/Phase 6/PHASE_6_POLICY_SIMULATION_SURFACE_SPEC.md`
 8. `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`
 9. `docs/PROOFS/Phase-6/PHASE_6_NEXT_STEP_INDEX.md`
+10. `docs/design/Phase 6/PHASE_6_ENDGAME_PRODUCTIZATION_ROADMAP.md`
+11. `docs/design/Phase 6/PHASE_6_LOCAL_AI_APPLIANCE_AND_PRODUCT_DIRECTION.md`
 
 ## Bottom Line
 The correct Phase-6 order is:

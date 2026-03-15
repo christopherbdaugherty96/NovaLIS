@@ -70,3 +70,28 @@ def test_invalid_validation_result_cannot_be_stored(tmp_path):
         assert "successful validation" in str(exc)
     else:
         raise AssertionError("Expected invalid draft creation to fail.")
+
+
+def test_record_simulation_and_manual_run_metadata(tmp_path):
+    store = AtomicPolicyStore(path=tmp_path / "atomic_policies.json")
+
+    item = store.create_draft(policy=_valid_result().normalized_policy or {}, validation_result=_valid_result())
+    simulated = store.record_simulation(
+        item["policy_id"],
+        {
+            "allowed": True,
+            "governor_verdict": "Allowed under current Phase-6 delegation rules.",
+            "readiness_label": "Ready for manual review run",
+        },
+    )
+    updated = store.record_manual_run(
+        item["policy_id"],
+        {"allowed": True},
+        {"success": True, "message": "Run completed."},
+    )
+    snapshot = store.overview()
+
+    assert simulated["simulation_count"] == 1
+    assert updated["manual_run_count"] == 1
+    assert snapshot["simulation_count"] == 1
+    assert snapshot["manual_run_count"] == 1

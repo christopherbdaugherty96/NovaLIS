@@ -111,7 +111,7 @@ def test_os_diagnostics_executor_returns_extended_metrics(monkeypatch):
     monkeypatch.setattr(
         mod.OSDiagnosticsExecutor,
         "_policy_status_details",
-        staticmethod(lambda: ("draft_only", "2 draft policy item(s)", 2, 2, 0)),
+        staticmethod(lambda: ("manual_review_ready", "2 draft policy item(s)", 2, 2, 0, 3, 1)),
     )
     monkeypatch.setattr(
         mod.OSDiagnosticsExecutor,
@@ -134,6 +134,8 @@ def test_os_diagnostics_executor_returns_extended_metrics(monkeypatch):
     assert result.data.get("execution_boundary_status") == "enforced"
     assert result.data.get("memory_total_count") == 3
     assert result.data.get("policy_draft_count") == 2
+    assert result.data.get("policy_simulation_count") == 3
+    assert result.data.get("policy_manual_run_count") == 1
     assert result.data.get("ledger_entries_today") == 24
     assert isinstance(result.data.get("blocked_conditions"), list)
     assert isinstance(result.data.get("system_reasons"), list)

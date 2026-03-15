@@ -1,5 +1,5 @@
 # Command Examples
-Updated: 2026-03-13
+Updated: 2026-03-14
 
 ## Purpose
 This guide shows natural ways to talk to Nova.
@@ -44,16 +44,23 @@ Examples:
 - `headlines`
 - `daily brief`
 - `intelligence brief`
+- `today's news`
 
 Good follow-ups:
 - `summarize headline 1`
+- `summary of article 1`
 - `more on story 2`
 - `summary of story #3`
 - `compare headlines 1 and 2`
+- `summarize politics left news`
+- `summarize politics center news`
+- `summarize politics right news`
+- `research latest coverage of NVIDIA`
 - `track story EU AI Act`
 
 Important note:
-- `more on story 2` is meant to summarize the linked article page when Nova has the URL, not just repeat the headline.
+- `today's news` is the source-grounded brief path, not just a headline recap
+- `more on story 2` and `summary of article 1` are meant to summarize the linked article page when Nova has the URL, not just repeat the headline.
 
 ## 3. Weather, Calendar, and System Snapshots
 
@@ -190,6 +197,9 @@ Thread-linked memory examples:
 - `memory save decision for deployment issue: inspect path before rebuild`
 - `memory list thread deployment issue`
 
+Dashboard note:
+- Nova now also exposes a dedicated Memory page for reviewing durable memory, linked threads, and recent items.
+
 ## 10. Natural Follow-Up Examples
 
 Nova works best when follow-ups stay close to the current task.
@@ -268,7 +278,26 @@ Important note:
 - reviewing patterns is explicit
 - accepting a pattern does not execute anything
 
-## 14. Best Practices
+## 14. Delegated Policy Review
+
+Use these when you want Nova to prepare, inspect, simulate, or manually review-run a very small delegated policy without turning on automation.
+
+Examples:
+- `policy overview`
+- `policy create weekday calendar snapshot at 8:00 am`
+- `policy create daily weather snapshot at 7:30 am`
+- `policy show POL-123`
+- `policy simulate POL-123`
+- `policy run POL-123 once`
+- `policy delete POL-123 confirm`
+
+Important note:
+- policy drafts stay disabled by default
+- simulation is read-only review
+- `policy run ... once` is explicit and manual
+- background triggers are still not active
+
+## 15. Best Practices
 
 If you want the smoothest experience:
 - be direct
@@ -276,7 +305,7 @@ If you want the smoothest experience:
 - use thread names consistently for long-running work
 - use explicit memory commands when something matters enough to preserve
 
-## 15. Examples of Good Everyday Flows
+## 16. Examples of Good Everyday Flows
 
 ### News flow
 - `news`
@@ -311,6 +340,12 @@ If you want the smoothest experience:
 - `review patterns`
 - `accept pattern PAT-123`
 - `dismiss pattern PAT-123`
+
+### Delegated policy review flow
+- `policy overview`
+- `policy create weekday calendar snapshot at 8:00 am`
+- `policy simulate POL-123`
+- `policy run POL-123 once`
 
 ### System help flow
 - `system status`
