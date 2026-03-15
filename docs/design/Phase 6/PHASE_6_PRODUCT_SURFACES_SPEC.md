@@ -1,6 +1,6 @@
 # Phase 6 Product Surfaces Specification
 Date: 2026-03-13
-Status: Adjacent product-direction spec; not yet live runtime
+Status: Adjacent product-direction spec; partially reflected in live runtime
 Scope: The three user-facing surfaces that make Nova feel like a real product rather than only a development system
 
 ## Purpose
@@ -143,7 +143,7 @@ Policy draft created
 No delegated policies enabled
 
 Blocked:
-Policy execution unavailable - executor gate not live
+Delegated trigger runtime unavailable - manual review gate active, background triggers still disabled
 
 Why it matters:
 - proves the system is honest
@@ -164,9 +164,9 @@ Together they create the full product loop:
 
 ## Recommended Product Order
 The strongest product-facing order is:
-1. refine the Operator Health Surface
-2. tighten the Daily Utility Surface
-3. expand the Trust / Review Surface
+1. refine the Daily Utility Surface
+2. expand policy simulation and delegated-review visibility inside the Trust / Review Surface
+3. improve installability and startup legibility
 4. continue deeper Phase-6 infrastructure underneath
 
 This lets Nova feel more real while the delegated-policy stack matures safely.

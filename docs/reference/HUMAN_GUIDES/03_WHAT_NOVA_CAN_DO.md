@@ -1,5 +1,5 @@
 ﻿# What Nova Can Do
-Updated: 2026-03-13
+Updated: 2026-03-14
 
 ## Overview
 Nova's active capability surface now covers five big areas:
@@ -19,6 +19,8 @@ Nova can:
 - summarize headlines
 - give more detail on a selected story
 - summarize the page behind a story link when available
+- search for a news topic and route that into research
+- show broader political channels including left, center, and right views
 - create multi-source reports
 - build intelligence briefs
 - show topic maps across the news cycle
@@ -30,6 +32,9 @@ Examples:
 - `search for local AI sovereignty tools`
 - `open source 2`
 - `summarize headline 3`
+- `summary of article 1`
+- `today's news`
+- `summarize politics left news`
 - `more on story 1`
 - `daily brief`
 - `verify this`
@@ -124,6 +129,7 @@ It can:
 - save thread snapshots into memory
 - save thread decisions into memory
 - list memory linked to a specific thread
+- expose a dedicated Memory page for reviewing durable memory, scope distribution, linked threads, and recent items
 
 Examples:
 - `memory save deployment fix: confirm PYTHONPATH in container`
@@ -219,6 +225,30 @@ Important boundary:
 - no proposal is auto-applied
 - review does not run in the background
 
+## 11. Delegated Policy Review
+Nova can now prepare and review very small delegated policy drafts without turning on automation.
+
+It can:
+- create a draft delegated policy
+- show policy drafts and individual policy details
+- simulate a policy through the Governor
+- manually run a safe policy one time for review
+- block unsafe policy targets with an explicit reason
+
+Examples:
+- `policy overview`
+- `policy create weekday calendar snapshot at 8:00 am`
+- `policy show POL-...`
+- `policy simulate POL-...`
+- `policy run POL-... once`
+- `policy delete POL-... confirm`
+
+Important boundary:
+- policies are still draft-first and disabled by default
+- manual review runs are explicit and one-time
+- background triggers are still not active
+- Nova is not autonomously running stored policies
+
 ## Short Summary
 Today Nova can already:
 - research
@@ -231,6 +261,7 @@ Today Nova can already:
 - expose manual response-style controls
 - support explicit scheduled updates and reminders
 - support opt-in pattern review for ongoing work
+- simulate and manually review-run safe delegated policy drafts
 - help with the current screen
 - help with the local computer in bounded ways
 

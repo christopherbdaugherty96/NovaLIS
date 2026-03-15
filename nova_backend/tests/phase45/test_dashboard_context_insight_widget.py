@@ -38,11 +38,12 @@ def test_dashboard_handles_screen_and_file_insight_widgets():
     assert "why this recommendation" in source
 
 
-def test_home_page_includes_context_insight_widget():
+def test_home_page_keeps_explain_entry_and_project_thread_surface():
     source = INDEX_PATH.read_text(encoding="utf-8")
-    assert 'id="context-insight-widget"' in source
+    assert 'id="home-launch-widget"' in source
     assert 'id="btn-home-explain"' in source
-    assert 'id="btn-home-help"' in source
+    assert 'id="btn-home-research"' in source
+    assert 'id="btn-home-continue-project"' in source
     assert 'id="thread-map-widget"' in source
     assert 'id="btn-home-threads"' in source
     assert 'id="thread-detail-panel"' in source

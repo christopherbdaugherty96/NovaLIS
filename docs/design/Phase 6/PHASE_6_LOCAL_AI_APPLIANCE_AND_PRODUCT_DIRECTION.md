@@ -131,8 +131,24 @@ Real product readiness requires:
 - startup readiness diagnostics
 - clearer model / network / microphone status
 
+### 4.5. Package Nova as real desktop software
+Recommended first distribution model:
+- local desktop app
+
+Recommended early channels:
+- GitHub Releases
+- direct download website
+- technical early-adopter communities
+
 ### 5. Package toward a local AI hub
 Only after the software experience is strong enough should Nova be treated as an appliance package direction.
+
+Supporting end-of-Phase-6 productization docs:
+- `docs/design/Phase 6/PHASE_6_ENDGAME_PRODUCTIZATION_ROADMAP.md`
+- `docs/design/Phase 6/PHASE_6_DESKTOP_APP_PACKAGING_AND_DISTRIBUTION_SPEC.md`
+- `docs/design/Phase 6/PHASE_6_UPDATE_AND_COMPONENT_DELIVERY_SPEC.md`
+- `docs/design/Phase 6/PHASE_6_API_CONFIGURATION_AND_EXTERNAL_SERVICE_COMPLIANCE_SPEC.md`
+- `docs/design/Phase 6/PHASE_6_EARLY_LAUNCH_LEGAL_AND_BUSINESS_READINESS.md`
 
 ## Relationship to Phase 6 Core
 This document is not the constitutional core of Phase 6.

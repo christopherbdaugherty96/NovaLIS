@@ -3,6 +3,9 @@ Date: 2026-03-13
 Status: Implemented runtime slice
 Scope: First real Phase-6 code foundation without trigger execution
 
+Follow-on note:
+- this foundation slice is now extended by `PHASE_6_POLICY_EXECUTOR_GATE_RUNTIME_SLICE_2026-03-13.md`
+
 ## Purpose
 This slice starts Phase-6 implementation at the safest boundary:
 - policy validation

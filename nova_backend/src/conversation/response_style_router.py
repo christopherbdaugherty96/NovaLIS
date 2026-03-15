@@ -150,7 +150,18 @@ class ResponseStyleRouter:
         if "brainstorm" in text or "ideas" in text:
             return ResponseStyle.BRAINSTORM
 
-        if "deep analysis" in text or len(text.split()) >= 40:
+        deep_markers = (
+            "deep analysis",
+            "deep thought",
+            "deep think",
+            "go deeper",
+            "think deeper",
+            "challenge this",
+            "pressure test",
+            "orthogonal analysis",
+            "phase42:",
+        )
+        if any(marker in text for marker in deep_markers) or len(text.split()) >= 40:
             return ResponseStyle.DEEP
 
         return ResponseStyle.DIRECT

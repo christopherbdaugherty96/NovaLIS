@@ -29,6 +29,13 @@ That means the current runtime already includes:
 - manual tone controls
 - explicit scheduling with policy controls
 - opt-in pattern review
+- policy executor-gate review foundations with simulation and one-shot manual runs
+
+The earlier Phase-6 foundation steps are no longer just planned:
+- policy validator: implemented
+- draft policy store: implemented
+- policy executor gate: implemented
+- capability topology: implemented
 
 This creates a new project-wide question:
 
@@ -60,35 +67,21 @@ This stage should also begin shaping the Daily Utility Surface:
 - summarize this document
 - continue my project
 
-### 2. Governor Policy Executor Gate
+### 2. Delegated-Policy Visibility and Review Surface
 Purpose:
-- complete the missing lawful execution boundary between delegated policy and capability runtime
+- make the new executor-gate path visible, understandable, and usable in everyday Nova workflows
 
 Priority work:
-- Governor-side delegated execution gate
-- one-policy, one-action execution path
-- envelope checks at execution time
-- explicit block reasons at execution time
-- emergency-stop enforcement for delegated execution
+- delegated policies panel
+- simulation/result rendering in dashboard trust surfaces
+- visible blocked-policy reasons
+- manual review-run controls
+- policy readiness indicators and summaries
 
 Why second:
-- validation and draft storage now exist, but triggers should still not exist until execution itself has a lawful Governor-side gate
+- executor-gate and topology foundations now exist, so the next high-value move is turning them into an inspectable user-facing control plane before any trigger runtime expands
 
-### 3. Capability Topology System
-Purpose:
-- make Nova's capability surface governable as delegated execution grows
-
-Priority work:
-- authority-class model
-- risk and reversibility metadata
-- policy-delegatable classification
-- confirmation and external-effect flags
-- Governor-readable topology queries
-
-Why third:
-- policy delegation becomes much safer once Nova can classify capabilities by authority instead of relying on scattered hardcoded exceptions
-
-### 4. One End-to-End Delegated Atomic-Policy Slice
+### 3. One End-to-End Delegated Atomic-Policy Slice
 Purpose:
 - prove the delegated-policy model in one small real runtime slice
 
@@ -99,15 +92,15 @@ Priority work:
 - one audit trail
 - one emergency-stop path
 
-Recommended style:
+Why third:
 - keep it time-based or similarly deterministic
 - keep it read-only or very low risk
 - avoid orchestration, chaining, or durable-state mutation
 
-Why fourth:
+Why third:
 - one truthful slice is more valuable than a wide but blurry autonomy system
 
-### 5. Unified Operator Health Surface
+### 4. Unified Operator Health Surface
 Purpose:
 - make Nova's moving parts legible to operators and reviewers
 
@@ -121,13 +114,13 @@ Priority work:
 - ledger status
 - future microphone / wake status when relevant
 
-Why fifth:
+Why fourth:
 - Nova is now complex enough that trust improves when health is visible in one place instead of scattered across surfaces
 
 This is the first of the three key product surfaces:
 - Operator Health Surface
 
-### 6. Installability and Startup Hardening
+### 5. Installability and Startup Hardening
 Purpose:
 - reduce the gap between Nova as an internal architecture and Nova as real software
 
@@ -139,32 +132,51 @@ Priority work:
 - explicit status for model, network, microphone, and runtime locks
 - packaging assumptions that could later support a local AI appliance or hub
 
-Why sixth:
+Why fifth:
 - install friction is now one of the biggest blockers to Nova feeling real outside the current workspace
 
-### 7. Policy Visibility and Delegated-Policy Dashboard Surface
+### 6. Desktop Packaging and Distribution
 Purpose:
-- make delegated policy understandable and manageable in everyday use
+- turn Nova from a local runtime into installable software
 
 Priority work:
-- delegated policies panel
-- policy id, trigger, action, and status display
-- enable / disable controls
-- audit-log visibility
-- clean allowed / blocked explanations
+- desktop shell or executable packaging path
+- installer assets
+- GitHub Releases distribution path
+- download-website readiness
+
+Why sixth:
+- once installability is strong enough, packaging becomes the bridge from internal system to real product
+
+### 7. Update Delivery and External-Service Readiness
+Purpose:
+- make Nova maintainable and launchable as software used by other people
+
+Priority work:
+- simple update path
+- stable config and key handling
+- API attribution and service-compliance review
+- model-license review
 
 Why seventh:
-- once the core policy path exists, policy visibility becomes the difference between lawful infrastructure and a usable feature
+- installation without maintainable updates and external-service readiness will not hold up under real users
 
-This should grow into the broader Trust / Review Surface:
-- recent actions
-- policy drafts
-- policy simulations
-- memory changes
-- blocked reasons
-- confirmation-required items
+### 8. Early-Launch Legal and Business Readiness
+Purpose:
+- prepare the minimum non-runtime packet needed for an honest alpha or beta launch
 
-### 8. Wake Word as an Adjacent Convenience Layer
+Priority work:
+- terms
+- privacy
+- third-party licenses
+- software-license position
+- security contact
+- company-formation trigger rules
+
+Why eighth:
+- this is where Nova stops being only a project and becomes something that can be distributed responsibly
+
+### 9. Wake Word as an Adjacent Convenience Layer
 Purpose:
 - improve everyday UX without confusing it with delegated autonomy
 
@@ -174,11 +186,11 @@ Priority work:
 - non-authorizing design
 - clean status visibility and kill switch
 
-Why eighth:
+Why ninth:
 - wake word helps delight and flow
 - but it should not outrank the executor gate, topology, installability, or operator health work
 
-### 9. Local AI Appliance / Nova Hub Productization Direction
+### 10. Local AI Appliance / Nova Hub Productization Direction
 Purpose:
 - keep the hardware/product direction coherent without letting it distort the core software roadmap
 
@@ -187,10 +199,10 @@ Priority work:
 - keep the message centered on local + governed AI
 - package screen explanation, research, and computer help as the core value loop
 
-Why ninth:
+Why tenth:
 - the appliance direction becomes believable only after the software experience, installability, and health surfaces are strong enough
 
-### 10. Broader Phase-6 Policy UI and Trigger Expansion
+### 11. Broader Phase-6 Policy UI and Trigger Expansion
 Purpose:
 - expand delegated-policy usability after the lawful core is proven
 
@@ -200,7 +212,7 @@ Priority work:
 - richer policy inspection surfaces
 - stronger blocked/allowed explanations
 
-Why tenth:
+Why eleventh:
 - expansion should happen after the first policy slice proves the model and after the product is easier to run
 
 ## Explicit Non-Priorities Right Now
@@ -227,7 +239,7 @@ The corrected Phase-6 roadmap still defines the constitutional implementation or
 This project-wide roadmap adds a product and platform lens on top of that order.
 
 In practice, it means:
-- Phase-6 core should continue with the executor gate and capability-topology path before triggers
+- Phase-6 core should continue with policy visibility and one truthful trigger slice before broad trigger expansion
 - while Nova as a whole should also invest in polish, installability, and health visibility
 - and keep progressive screen intelligence as the signature product-surface track
 
@@ -237,7 +249,7 @@ The three product surfaces are documented here:
 ## Best Single Summary
 The smartest next move for Nova as a whole is:
 
-build the Governor policy executor gate next, while freezing and hardening the Phase-5 product layer.
+turn the new delegated-policy review path into a visible, trustworthy surface while freezing and hardening the Phase-5 product layer.
 
 That combination improves both:
 - Nova as a lawful platform

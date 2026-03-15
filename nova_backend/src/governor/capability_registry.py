@@ -208,3 +208,7 @@ class CapabilityRegistry:
     def authority_scope(self, capability_id: int) -> str:
         """Return capability authority scope (observe/suggest/confirm/automatic)."""
         return self.get(capability_id).authority_scope
+
+    def all_capabilities(self) -> list[Capability]:
+        """Return all registered capabilities in stable ID order."""
+        return [cap for _, cap in sorted(self._capabilities.items(), key=lambda item: item[0])]
