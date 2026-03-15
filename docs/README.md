@@ -17,10 +17,12 @@ Human-language guides (explanatory, non-authorizing):
 Design intent (non-authorizing):
 - `docs/design/`
 - See `docs/design/DESIGN_AUTHORITY.md`
+- Phase-6 design now includes both delegated-policy core specs and end-of-phase productization/launch-planning docs
 
 Forward planning (non-authorizing, next-step packets):
 - `docs/PROOFS/Phase-6/PHASE_6_NEXT_STEP_INDEX.md`
 - includes `PHASE_6_PROJECT_WIDE_NEXT_STEPS_2026-03-13.md` for the recommended whole-project priority order after Phase-5 closure
+- current implemented Phase-6 runtime proofs include the policy foundation slice, executor-gate slice, operator health surface, live capability discovery surface, and trust review surface
 
 Canonical governance contracts:
 - `docs/canonical/`

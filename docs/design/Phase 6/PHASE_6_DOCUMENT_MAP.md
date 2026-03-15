@@ -30,6 +30,11 @@ These define the handoff boundary and the philosophical model for delegated auto
 - `docs/design/Phase 6/PHASE_6_PRODUCT_SURFACES_SPEC.md`
 - `docs/design/Phase 6/PHASE_6_PROGRESSIVE_SCREEN_INTELLIGENCE_PRODUCT_SPEC.md`
 - `docs/design/Phase 6/PHASE_6_LOCAL_AI_APPLIANCE_AND_PRODUCT_DIRECTION.md`
+- `docs/design/Phase 6/PHASE_6_ENDGAME_PRODUCTIZATION_ROADMAP.md`
+- `docs/design/Phase 6/PHASE_6_DESKTOP_APP_PACKAGING_AND_DISTRIBUTION_SPEC.md`
+- `docs/design/Phase 6/PHASE_6_UPDATE_AND_COMPONENT_DELIVERY_SPEC.md`
+- `docs/design/Phase 6/PHASE_6_API_CONFIGURATION_AND_EXTERNAL_SERVICE_COMPLIANCE_SPEC.md`
+- `docs/design/Phase 6/PHASE_6_EARLY_LAUNCH_LEGAL_AND_BUSINESS_READINESS.md`
 - `docs/PROOFS/Phase-6/PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
 - the self-hosted search-index option document in this folder
 - `docs/design/Phase 6/# Deepseek's Orb(2nd orb).txt`

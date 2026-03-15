@@ -1,5 +1,5 @@
 # Project Continuity and Memory
-Updated: 2026-03-13
+Updated: 2026-03-14
 
 ## Why This Part Matters
 A lot of AI systems can answer one prompt well.
@@ -81,8 +81,11 @@ Nova's memory model is closer to:
 Nova can also show a governed memory overview so the user can inspect:
 - how many durable items exist
 - how many are active, locked, or deferred
+- how those items are split across general, project, and ops scopes
 - which threads have linked memory
 - what was saved most recently
+
+Nova now also gives governed memory its own dedicated dashboard page so this review surface does not have to compete with the Home-page cards.
 
 ## 4. The Thread-Memory Bridge
 One of the most important recent changes is the bridge between threads and governed memory.

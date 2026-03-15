@@ -43,6 +43,8 @@ class Governor:
         self._network = None
         self._ledger = None
         self._policy_validator = None
+        self._capability_topology = None
+        self._policy_executor_gate = None
 
     @property
     def execute_boundary(self) -> ExecuteBoundary:
@@ -82,9 +84,107 @@ class Governor:
             self._policy_validator = PolicyValidator(self.registry)
         return self._policy_validator
 
+    @property
+    def capability_topology(self):
+        """Lazy load capability topology metadata for delegated-policy decisions."""
+        if self._capability_topology is None:
+            from src.governor.capability_topology import CapabilityTopology
+
+            self._capability_topology = CapabilityTopology(self.registry)
+        return self._capability_topology
+
+    @property
+    def policy_executor_gate(self):
+        """Lazy load the Phase-6 policy executor gate."""
+        if self._policy_executor_gate is None:
+            from src.governor.policy_executor_gate import PolicyExecutorGate
+
+            self._policy_executor_gate = PolicyExecutorGate(
+                self.registry,
+                self.policy_validator,
+                self.capability_topology,
+            )
+        return self._policy_executor_gate
+
     def validate_atomic_policy(self, policy: Dict[str, Any]) -> Any:
         """Validate a disabled-by-default atomic delegated policy draft."""
         return self.policy_validator.validate(policy)
+
+    def simulate_atomic_policy(self, policy_item: Dict[str, Any]) -> Any:
+        """Run a read-only delegated-policy simulation through the executor gate."""
+        decision = self.policy_executor_gate.simulate(policy_item)
+        try:
+            self.ledger.log_event(
+                "POLICY_SIMULATED",
+                {
+                    "policy_id": str(policy_item.get("policy_id") or ""),
+                    "capability_id": int(dict(policy_item.get("action") or {}).get("capability_id") or 0),
+                    "allowed": bool(decision.allowed),
+                    "readiness_label": str(decision.readiness_label),
+                },
+            )
+        except Exception:
+            pass
+        return decision
+
+    def run_atomic_policy_once(self, policy_item: Dict[str, Any]) -> tuple[Any, ActionResult]:
+        """Explicitly execute one manual delegated-policy run through the executor gate."""
+        decision = self.policy_executor_gate.authorize_manual_run(policy_item)
+        policy_id = str(policy_item.get("policy_id") or "").strip()
+        capability_id = int(dict(policy_item.get("action") or {}).get("capability_id") or 0)
+        action_params = dict(dict(policy_item.get("action") or {}).get("input") or {})
+
+        try:
+            self.ledger.log_event(
+                "POLICY_EXECUTION_ATTEMPTED",
+                {
+                    "policy_id": policy_id,
+                    "capability_id": capability_id,
+                    "allowed": bool(decision.allowed),
+                },
+            )
+        except Exception:
+            pass
+
+        if not decision.allowed:
+            try:
+                self.ledger.log_event(
+                    "POLICY_EXECUTION_BLOCKED",
+                    {
+                        "policy_id": policy_id,
+                        "capability_id": capability_id,
+                        "reason": str(decision.blocked_reason or "blocked"),
+                    },
+                )
+            except Exception:
+                pass
+            blocked = ActionResult.refusal(
+                str(decision.governor_verdict),
+                data={"simulation": decision.as_dict()},
+                authority_class="read_only",
+                external_effect=False,
+                reversible=True,
+            )
+            return decision, blocked
+
+        result = self.handle_governed_invocation(capability_id, action_params)
+        try:
+            self.ledger.log_event(
+                "POLICY_EXECUTION_COMPLETED",
+                {
+                    "policy_id": policy_id,
+                    "capability_id": capability_id,
+                    "request_id": str(result.request_id or ""),
+                    "success": bool(result.success),
+                },
+            )
+        except Exception:
+            pass
+        if result.data is None:
+            result.data = {}
+        result.data["simulation"] = decision.as_dict()
+        result.data["policy_id"] = policy_id
+        return decision, result
 
     def handle_governed_invocation(
         self,

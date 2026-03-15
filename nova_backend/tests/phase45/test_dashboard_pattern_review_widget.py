@@ -17,13 +17,8 @@ def test_dashboard_handles_pattern_review_widget_and_hydration():
     assert 'injectUserText("review patterns", "text")' in source
 
 
-def test_home_page_includes_pattern_review_widget():
+def test_home_page_includes_pattern_review_controls_in_personal_layer():
     source = INDEX_PATH.read_text(encoding="utf-8")
 
-    assert 'id="pattern-review-widget"' in source
-    assert 'id="pattern-review-summary"' in source
-    assert 'id="pattern-review-queue"' in source
-    assert 'id="pattern-review-history"' in source
+    assert 'id="personal-layer-widget"' in source
     assert 'id="btn-home-pattern-status"' in source
-    assert 'id="btn-home-pattern-review"' in source
-    assert 'id="btn-home-pattern-opt"' in source

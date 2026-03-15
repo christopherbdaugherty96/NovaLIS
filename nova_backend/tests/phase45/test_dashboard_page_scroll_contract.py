@@ -26,7 +26,7 @@ def test_news_surfaces_do_not_force_inner_scroll_regions():
     assert page_block and "overflow: visible;" in page_block.group(1)
 
 
-def test_home_page_uses_item_alignment_for_scrollable_stack():
+def test_home_page_uses_responsive_document_level_grid():
     source = STYLE_PATH.read_text(encoding="utf-8")
     assert ".page-home {" in source
-    assert "justify-items: end;" in source
+    assert "grid-template-columns: repeat(12, minmax(0, 1fr));" in source
