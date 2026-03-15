@@ -65,6 +65,12 @@ class AtomicPolicyStore:
                 "reasons": [],
                 "warnings": list(validation_result.warnings),
             },
+            "simulation_count": 0,
+            "manual_run_count": 0,
+            "last_simulated_at": "",
+            "last_simulation": {},
+            "last_manual_run_at": "",
+            "last_manual_run": {},
         }
 
         with self._lock:
@@ -110,12 +116,54 @@ class AtomicPolicyStore:
                 return dict(item)
         raise KeyError(target)
 
+    def record_simulation(self, policy_id: str, decision: dict[str, Any]) -> dict[str, Any]:
+        target = str(policy_id or "").strip().upper()
+        with self._lock:
+            state = self._read_state()
+            for item in list(state.get("policies") or []):
+                if str(item.get("policy_id") or "").strip().upper() != target:
+                    continue
+                now = _utc_now()
+                item["simulation_count"] = int(item.get("simulation_count") or 0) + 1
+                item["last_simulated_at"] = now
+                item["last_simulation"] = dict(decision or {})
+                item["updated_at"] = now
+                self._write_state(state)
+                return dict(item)
+        raise KeyError(target)
+
+    def record_manual_run(
+        self,
+        policy_id: str,
+        decision: dict[str, Any],
+        action_result: dict[str, Any],
+    ) -> dict[str, Any]:
+        target = str(policy_id or "").strip().upper()
+        with self._lock:
+            state = self._read_state()
+            for item in list(state.get("policies") or []):
+                if str(item.get("policy_id") or "").strip().upper() != target:
+                    continue
+                now = _utc_now()
+                item["manual_run_count"] = int(item.get("manual_run_count") or 0) + 1
+                item["last_manual_run_at"] = now
+                item["last_manual_run"] = {
+                    "simulation": dict(decision or {}),
+                    "result": dict(action_result or {}),
+                }
+                item["updated_at"] = now
+                self._write_state(state)
+                return dict(item)
+        raise KeyError(target)
+
     def overview(self) -> dict[str, Any]:
         items = self.list_policies(include_deleted=True, limit=100)
         visible_items = [item for item in items if str(item.get("state") or "") != "deleted"]
         draft_count = sum(1 for item in visible_items if str(item.get("state") or "") == "draft")
         disabled_count = sum(1 for item in visible_items if str(item.get("state") or "") == "disabled")
         deleted_count = sum(1 for item in items if str(item.get("state") or "") == "deleted")
+        simulation_count = sum(int(item.get("simulation_count") or 0) for item in visible_items)
+        manual_run_count = sum(int(item.get("manual_run_count") or 0) for item in visible_items)
 
         summary = (
             f"{len(visible_items)} draft policy item(s)"
@@ -129,8 +177,13 @@ class AtomicPolicyStore:
             "draft_count": draft_count,
             "disabled_count": disabled_count,
             "deleted_count": deleted_count,
+            "simulation_count": simulation_count,
+            "manual_run_count": manual_run_count,
             "items": visible_items[:8],
-            "inspectability_note": "Policies are stored as disabled-by-default drafts. Trigger execution is not active in this foundation slice.",
+            "inspectability_note": (
+                "Policies are stored as disabled-by-default drafts. "
+                "Manual simulation and one-shot review runs are available, but trigger execution is not active."
+            ),
         }
 
     def _default_state(self) -> dict[str, Any]:

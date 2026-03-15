@@ -1,5 +1,5 @@
 ﻿# Phase-6 Next-Step Index
-Updated: 2026-03-13
+Updated: 2026-03-14
 Status: Planned next-step packet only
 Purpose: Index of Phase-6 planning artifacts that describe the next implementation slice without claiming live runtime status.
 
@@ -13,9 +13,11 @@ Current runtime truth still lives in:
 
 Implemented Phase-6-era runtime slices already include:
 - `PHASE_6_POLICY_VALIDATOR_FOUNDATION_RUNTIME_SLICE_2026-03-13.md`
+- `PHASE_6_POLICY_EXECUTOR_GATE_RUNTIME_SLICE_2026-03-13.md`
 - `PHASE_6_OPERATOR_HEALTH_SURFACE_RUNTIME_SLICE_2026-03-13.md`
 - `PHASE_6_LIVE_CAPABILITY_DISCOVERY_SURFACE_RUNTIME_SLICE_2026-03-13.md`
 - `PHASE_6_TRUST_REVIEW_SURFACE_RUNTIME_SLICE_2026-03-13.md`
+- `PHASE_6_DASHBOARD_REFINEMENT_MEMORY_AND_NEWS_RUNTIME_SLICE_2026-03-14.md`
 
 ## Core Planning References
 - the corrected Phase-6 roadmap document in `docs/design/Phase 6/`
@@ -41,6 +43,7 @@ Implemented Phase-6-era runtime slices already include:
 5. `docs/design/Phase 6/PHASE_6_POLICY_SIMULATION_SURFACE_SPEC.md`
    - Defines Nova's first delegated-policy trust surface through dry-run inspection
    - Standardizes simulation result format, safety indicators, and review flow before broad enablement
+   - The core simulation contract is now implemented in the current runtime, but broader surface/UI expansion is still planned
 6. `PHASE_6_PROJECT_WIDE_NEXT_STEPS_2026-03-13.md`
    - Recommended whole-project priority order after Phase-5 closure
    - Keeps Phase-6 core work, product hardening, installability, operator health, and productization in the right sequence
@@ -57,7 +60,18 @@ Implemented Phase-6-era runtime slices already include:
 10. `docs/design/Phase 6/PHASE_6_LOCAL_AI_APPLIANCE_AND_PRODUCT_DIRECTION.md`
    - Local AI appliance / Nova Hub direction for the Phase-6 era
    - Frames installability, sellability, and product packaging around Nova's architecture
-11. `PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
+11. `docs/design/Phase 6/PHASE_6_ENDGAME_PRODUCTIZATION_ROADMAP.md`
+   - End-of-Phase-6 productization roadmap for packaging, updates, launch readiness, and distribution
+   - Treats desktop packaging and launch preparation as a Phase-6-era product track, not runtime truth
+12. `docs/design/Phase 6/PHASE_6_DESKTOP_APP_PACKAGING_AND_DISTRIBUTION_SPEC.md`
+   - Recommended local desktop app path, packaging options, and first distribution channels
+13. `docs/design/Phase 6/PHASE_6_UPDATE_AND_COMPONENT_DELIVERY_SPEC.md`
+   - Documents the recommended early update flow and component-delivery model
+14. `docs/design/Phase 6/PHASE_6_API_CONFIGURATION_AND_EXTERNAL_SERVICE_COMPLIANCE_SPEC.md`
+   - Clarifies that Nova's API architecture can largely stay intact while productizing config, attribution, and external-service compliance
+15. `docs/design/Phase 6/PHASE_6_EARLY_LAUNCH_LEGAL_AND_BUSINESS_READINESS.md`
+   - Records the minimum early-launch legal packet, company-formation triggers, and state/federal verification reminders
+16. `PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
    - Governance-safe plan for adding a local Porcupine wake-word gate
    - Explicitly non-authorizing
    - Adjacent convenience/input track, not the delegated-autonomy core

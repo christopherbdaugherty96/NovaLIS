@@ -66,8 +66,16 @@ For the current repository state, Phase 5 is a good example of this layering:
 
 Phase 6 currently shows the opposite pattern:
 - the design docs now define the first lawful policy model plus the next core execution layers
-- the proof packet records next-step planning, implemented validator/store foundation, and Phase-5 deferrals
-- the runtime docs still do not claim live Phase-6 delegated behavior
+- the proof packet records next-step planning, implemented validator/store foundation, executor-gate review slice, and Phase-5 deferrals
+- the runtime docs now describe manual delegated review surfaces, but still do not claim live delegated trigger runtime
+
+Phase 6 also now has an endgame productization layer in design docs:
+- desktop packaging
+- update delivery
+- API/service compliance
+- early-launch legal and business readiness
+
+Those are still planning/docs surfaces, not live runtime truth.
 
 ## The Best Reading Order For Most People
 1. human guides

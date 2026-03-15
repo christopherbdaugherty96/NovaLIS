@@ -281,6 +281,14 @@ POLICY_DELETE_RE = re.compile(
     r"^\s*policy\s+delete\s+(?P<policy_id>POL-[A-Z0-9\-]+)(?:\s+(?P<confirm>confirm(?:ed)?))?\s*$",
     re.IGNORECASE,
 )
+POLICY_SIMULATE_RE = re.compile(
+    r"^\s*policy\s+simulate\s+(?P<policy_id>POL-[A-Z0-9\-]+)\s*$",
+    re.IGNORECASE,
+)
+POLICY_RUN_ONCE_RE = re.compile(
+    r"^\s*policy\s+run\s+(?P<policy_id>POL-[A-Z0-9\-]+)(?:\s+(?P<once>once))?\s*$",
+    re.IGNORECASE,
+)
 
 
 def _build_phase42_agents() -> list:
@@ -841,6 +849,7 @@ def _build_thread_detail_widget(
 def _build_memory_overview_widget(overview: dict | None) -> dict:
     payload = dict(overview or {})
     tier_counts = dict(payload.get("tier_counts") or {})
+    scope_counts = dict(payload.get("scope_counts") or {})
     total_count = int(payload.get("total_count") or 0)
     active_count = int(tier_counts.get("active") or 0)
     locked_count = int(tier_counts.get("locked") or 0)
@@ -891,6 +900,11 @@ def _build_memory_overview_widget(overview: dict | None) -> dict:
             "active": active_count,
             "locked": locked_count,
             "deferred": deferred_count,
+        },
+        "scope_counts": {
+            "general": int(scope_counts.get("general") or 0),
+            "project": int(scope_counts.get("project") or 0),
+            "ops": int(scope_counts.get("ops") or 0),
         },
         "recent_items": recent_items,
         "linked_threads": linked_threads,
@@ -1207,11 +1221,20 @@ def _describe_policy_action(action: dict | None) -> str:
     return f"Capability {capability_id}"
 
 
+def _policy_yes_no_label(value: bool) -> str:
+    return "yes" if bool(value) else "no"
+
+
 def _render_policy_overview_message(snapshot: dict | None) -> str:
     payload = dict(snapshot or {})
     items = list(payload.get("items") or [])
     lines = ["Policy Drafts", ""]
     lines.append(str(payload.get("summary") or "No policy drafts yet.").strip())
+    lines.append(
+        "Activity: "
+        f"{int(payload.get('simulation_count') or 0)} simulation(s) · "
+        f"{int(payload.get('manual_run_count') or 0)} manual run(s)"
+    )
 
     if items:
         lines.append("")
@@ -1220,7 +1243,11 @@ def _render_policy_overview_message(snapshot: dict | None) -> str:
             policy_id = str(item.get("policy_id") or "").strip()
             title = str(item.get("name") or "").strip()
             trigger = _describe_policy_trigger(item.get("trigger"))
-            lines.append(f"- {policy_id}: {title} ({trigger})")
+            lines.append(
+                f"- {policy_id}: {title} ({trigger}) | "
+                f"sim {int(item.get('simulation_count') or 0)} | "
+                f"runs {int(item.get('manual_run_count') or 0)}"
+            )
 
     note = str(payload.get("inspectability_note") or "").strip()
     if note:
@@ -1234,6 +1261,8 @@ def _render_policy_overview_message(snapshot: dict | None) -> str:
             "- policy create weekday calendar snapshot at 8:00 am",
             "- policy create daily weather snapshot at 7:30 am",
             "- policy show <id>",
+            "- policy simulate <id>",
+            "- policy run <id> once",
             "- policy delete <id> confirm",
         ]
     )
@@ -1267,14 +1296,133 @@ def _render_policy_detail_message(item: dict | None) -> str:
         f"- network allowed: {'yes' if bool(dict(payload.get('envelope') or {}).get('network_allowed')) else 'no'}",
         "",
         "Foundation note",
-        "This policy is stored as a disabled draft. Trigger execution is not active in this slice yet.",
+        "This policy is stored as a disabled draft. Manual simulation and one-shot review runs are available. Trigger execution is not active yet.",
     ]
 
     if warnings:
         lines.extend(["", "Warnings"])
         lines.extend(f"- {str(warning).strip()}" for warning in warnings if str(warning).strip())
 
-    lines.extend(["", "Try next:", "- policy overview", f"- policy delete {str(payload.get('policy_id') or '').strip()} confirm"])
+    simulation_count = int(payload.get("simulation_count") or 0)
+    manual_run_count = int(payload.get("manual_run_count") or 0)
+    last_simulated_at = str(payload.get("last_simulated_at") or "").strip()
+    last_manual_run_at = str(payload.get("last_manual_run_at") or "").strip()
+    if simulation_count or manual_run_count:
+        lines.extend(
+            [
+                "",
+                "Review activity",
+                f"- simulations: {simulation_count}",
+                f"- manual runs: {manual_run_count}",
+            ]
+        )
+        if last_simulated_at:
+            lines.append(f"- last simulated: {last_simulated_at}")
+        if last_manual_run_at:
+            lines.append(f"- last manual run: {last_manual_run_at}")
+
+    policy_id = str(payload.get("policy_id") or "").strip()
+    lines.extend(
+        [
+            "",
+            "Try next:",
+            "- policy overview",
+            f"- policy simulate {policy_id}",
+            f"- policy run {policy_id} once",
+            f"- policy delete {policy_id} confirm",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_policy_simulation_message(decision: dict | None) -> str:
+    payload = dict(decision or {})
+    risk_summary = dict(payload.get("risk_summary") or {})
+    lines = [
+        "Policy Simulation",
+        "",
+        f"Policy ID: {str(payload.get('policy_id') or '').strip()}",
+        f"Trigger: {str(payload.get('trigger') or '').strip()}",
+        f"Action: {str(payload.get('action') or '').strip()}",
+        "",
+        "Delegation Review",
+        f"- capability class: {str(payload.get('capability_class') or 'unknown').strip()}",
+        f"- delegation class: {str(payload.get('delegation_class') or 'observational').strip()}",
+        f"- policy delegatable: {_policy_yes_no_label(bool(payload.get('policy_delegatable')))}",
+        f"- network required: {_policy_yes_no_label(bool(payload.get('network_required')))}",
+        f"- estimated runtime: {str(payload.get('estimated_runtime') or 'unknown').strip()}",
+        "",
+        "Risk Summary",
+        f"- local system impact: {str(risk_summary.get('local_system_impact') or payload.get('local_system_impact') or 'none').strip()}",
+        f"- network activity: {str(risk_summary.get('network_activity') or payload.get('network_activity') or 'none').strip()}",
+        f"- persistent change: {str(risk_summary.get('persistent_change') or payload.get('persistent_changes') or 'none').strip()}",
+        f"- external effect: {str(risk_summary.get('external_effect') or payload.get('external_effects') or 'none').strip()}",
+        "",
+        "Governor Verdict",
+        str(payload.get("governor_verdict") or "").strip(),
+        f"Readiness: {str(payload.get('readiness_label') or '').strip()}",
+    ]
+
+    reasoning = [str(item).strip() for item in list(payload.get("reasoning") or []) if str(item).strip()]
+    if reasoning:
+        lines.extend(["", "Reasoning"])
+        lines.extend(f"- {item}" for item in reasoning)
+
+    policy_id = str(payload.get("policy_id") or "").strip()
+    lines.extend(
+        [
+            "",
+            "Try next:",
+            f"- policy show {policy_id}",
+            f"- policy run {policy_id} once",
+            "- policy overview",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_policy_run_message(decision: dict | None, action_result: object | None) -> str:
+    payload = dict(decision or {})
+    result_data = getattr(action_result, "data", None)
+    if not isinstance(result_data, dict):
+        result_data = {}
+    lines = [
+        "Policy Manual Run",
+        "",
+        f"Policy ID: {str(payload.get('policy_id') or '').strip()}",
+        f"Trigger: {str(payload.get('trigger') or '').strip()}",
+        f"Action: {str(payload.get('action') or '').strip()}",
+        "",
+        "Governor Verdict",
+        str(payload.get("governor_verdict") or "").strip(),
+        f"Readiness: {str(payload.get('readiness_label') or '').strip()}",
+        "",
+        "Run Result",
+        f"- success: {_policy_yes_no_label(bool(getattr(action_result, 'success', False)))}",
+        f"- authority class: {str(getattr(action_result, 'authority_class', 'read_only') or 'read_only').strip()}",
+        f"- external effect: {_policy_yes_no_label(bool(getattr(action_result, 'external_effect', False)))}",
+        f"- message: {str(getattr(action_result, 'message', '') or '').strip()}",
+    ]
+
+    request_id = str(getattr(action_result, "request_id", "") or "").strip()
+    if request_id:
+        lines.append(f"- request id: {request_id}")
+
+    reasoning = [str(item).strip() for item in list(payload.get("reasoning") or []) if str(item).strip()]
+    if reasoning:
+        lines.extend(["", "Delegation Review"])
+        lines.extend(f"- {item}" for item in reasoning)
+
+    policy_id = str(payload.get("policy_id") or "").strip()
+    lines.extend(
+        [
+            "",
+            "Try next:",
+            f"- policy simulate {policy_id}",
+            f"- policy show {policy_id}",
+            "- policy overview",
+        ]
+    )
     return "\n".join(lines)
 
 
@@ -2103,6 +2251,8 @@ async def websocket_endpoint(ws: WebSocket):
                     "- policy create weekday calendar snapshot at 8:00 am\n"
                     "- policy create daily weather snapshot at 7:30 am\n"
                     "- policy show <id>\n"
+                    "- policy simulate <id>\n"
+                    "- policy run <id> once\n"
                     "- policy delete <id> confirm"
                 )
                 await send_chat_message(ws, capability_message)
@@ -3635,7 +3785,7 @@ async def websocket_endpoint(ws: WebSocket):
                         f"Trigger: {_describe_policy_trigger(item.get('trigger'))}\n"
                         f"Action: {_describe_policy_action(item.get('action'))}\n"
                         "State: draft (disabled)\n\n"
-                        "This slice stores and validates draft policies, but trigger execution is not active yet.\n\n"
+                        "This slice stores and validates draft policies. You can now simulate them and manually review-run safe ones once, but trigger execution is not active yet.\n\n"
                         f"{str(policy_drafts.overview().get('summary') or '').strip()}"
                     ),
                     tone_domain="system",
@@ -3661,6 +3811,75 @@ async def websocket_endpoint(ws: WebSocket):
                     _render_policy_detail_message(item),
                     tone_domain="system",
                 )
+                await send_chat_done(ws)
+                continue
+
+            policy_simulate_match = POLICY_SIMULATE_RE.match(text)
+            if policy_simulate_match:
+                policy_id = str(policy_simulate_match.group("policy_id") or "").strip().upper()
+                item = policy_drafts.get_policy(policy_id)
+                if item is None or str(item.get("state") or "") == "deleted":
+                    await send_chat_message(ws, "I could not find that policy draft ID yet.", tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+
+                decision = governor.simulate_atomic_policy(item)
+                item = policy_drafts.record_simulation(policy_id, decision.as_dict())
+                await send_chat_message(
+                    ws,
+                    _render_policy_simulation_message(decision.as_dict()),
+                    tone_domain="system",
+                )
+                await send_chat_done(ws)
+                continue
+
+            policy_run_match = POLICY_RUN_ONCE_RE.match(text)
+            if policy_run_match:
+                policy_id = str(policy_run_match.group("policy_id") or "").strip().upper()
+                if not str(policy_run_match.group("once") or "").strip():
+                    await send_chat_message(
+                        ws,
+                        f"Manual delegated review runs need explicit confirmation.\n\nTry next:\n- policy run {policy_id} once",
+                        tone_domain="system",
+                    )
+                    await send_chat_done(ws)
+                    continue
+
+                item = policy_drafts.get_policy(policy_id)
+                if item is None or str(item.get("state") or "") == "deleted":
+                    await send_chat_message(ws, "I could not find that policy draft ID yet.", tone_domain="system")
+                    await send_chat_done(ws)
+                    continue
+
+                decision, policy_result = governor.run_atomic_policy_once(item)
+                item = policy_drafts.record_manual_run(
+                    policy_id,
+                    decision.as_dict(),
+                    {
+                        "success": bool(policy_result.success),
+                        "message": str(policy_result.message or "").strip(),
+                        "request_id": str(policy_result.request_id or "").strip(),
+                        "authority_class": str(policy_result.authority_class or "read_only").strip(),
+                        "external_effect": bool(policy_result.external_effect),
+                        "reversible": bool(policy_result.reversible),
+                    },
+                )
+                await send_chat_message(
+                    ws,
+                    _render_policy_run_message(decision.as_dict(), policy_result),
+                    tone_domain="system",
+                )
+
+                if (
+                    isinstance(policy_result.data, dict)
+                    and "widget" in policy_result.data
+                    and policy_result.success
+                ):
+                    await ws_send(ws, policy_result.data["widget"])
+                elif int(dict(item.get("action") or {}).get("capability_id") or 0) == 32 and policy_result.success:
+                    if isinstance(policy_result.data, dict):
+                        await ws_send(ws, {"type": "system", "data": policy_result.data, "summary": policy_result.message})
+
                 await send_chat_done(ws)
                 continue
 

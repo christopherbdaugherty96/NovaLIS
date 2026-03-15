@@ -18,13 +18,8 @@ def test_dashboard_handles_notification_widget_and_schedule_modal():
     assert 'injectUserText("show schedules", "text")' in source
 
 
-def test_home_page_includes_notification_widget():
+def test_home_page_includes_schedule_controls_in_personal_layer():
     source = INDEX_PATH.read_text(encoding="utf-8")
 
-    assert 'id="notification-overview-widget"' in source
-    assert 'id="notification-overview-summary"' in source
-    assert 'id="notification-overview-due"' in source
-    assert 'id="notification-overview-upcoming"' in source
+    assert 'id="personal-layer-widget"' in source
     assert 'id="btn-home-schedules"' in source
-    assert 'id="btn-home-schedule-brief"' in source
-    assert 'id="btn-home-schedule-reminder"' in source

@@ -409,6 +409,9 @@ LOCATION_HINT_RE = re.compile(r"\b(?:in|for|under)\s+[a-z][a-z\s]{2,}\b", re.IGN
 NEWS_CATEGORY_ALIASES: dict[str, set[str]] = {
     "global": {"global", "world", "international"},
     "political": {"political", "politics", "policy", "government"},
+    "politics_left": {"politics left", "left politics", "progressive politics", "left leaning politics"},
+    "politics_center": {"politics center", "center politics", "centrist politics", "institutional politics"},
+    "politics_right": {"politics right", "right politics", "conservative politics", "right leaning politics"},
     "breaking": {"breaking"},
     "tech": {"tech", "technology", "ai"},
     "markets": {"markets", "market", "stocks", "stock", "crypto", "business", "finance"},
