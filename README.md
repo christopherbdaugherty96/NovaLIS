@@ -1,7 +1,5 @@
 ﻿# NOVA
-
-Nova is a governed personal intelligence workspace.
-
+Nova is Governed personal agent over contained intelligence.
 It is built to help with:
 - research and explanation
 - daily information snapshots
