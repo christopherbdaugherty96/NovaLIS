@@ -127,3 +127,24 @@ def test_governance_rows_prefer_explicit_registry_authority_metadata():
     assert rows[0]["confirmation_required"] is True
     assert rows[0]["reversible"] is True
     assert rows[0]["external_effect"] is False
+
+
+def test_runtime_surface_hash_ignores_line_ending_only_differences(monkeypatch, tmp_path):
+    import src.audit.runtime_auditor as ra
+
+    runtime_dir = tmp_path / "docs" / "current_runtime"
+    runtime_dir.mkdir(parents=True)
+    sample = tmp_path / "nova_backend" / "src" / "executors" / "sample_executor.py"
+    sample.parent.mkdir(parents=True)
+
+    monkeypatch.setattr(ra, "PROJECT_ROOT", tmp_path)
+    monkeypatch.setattr(ra, "RUNTIME_DOC_DIR", runtime_dir)
+    monkeypatch.setattr(ra, "ALLOWED_READ_PATHS", {sample})
+
+    sample.write_bytes(b"line one\r\nline two\r\n")
+    crlf_hash = ra._runtime_surface_hash()
+
+    sample.write_bytes(b"line one\nline two\n")
+    lf_hash = ra._runtime_surface_hash()
+
+    assert crlf_hash == lf_hash
