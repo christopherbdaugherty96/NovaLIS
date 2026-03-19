@@ -149,6 +149,9 @@ class GeneralChatSkill(BaseSkill):
     }
     _MAX_CONTEXT_TURNS = 6
     _MAX_CONTEXT_CHARS_PER_TURN = 220
+    _SUMMARY_RETAIN_CONTEXT_ENTRIES = 12
+    _SUMMARY_MAX_FIELD_CHARS = 180
+    _SUMMARY_MAX_OPTIONS = 3
     _LIST_ITEM_RE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(.*\S)\s*$")
     _INLINE_NUMBERED_RE = re.compile(r"(?:^|\s)(\d+)[.)]\s+([^:]+?)(?=(?:\s+\d+[.)]\s+)|$)")
     _ORDINAL_REFERENCE_PATTERNS: Tuple[Tuple[re.Pattern, int], ...] = (
@@ -400,8 +403,9 @@ class GeneralChatSkill(BaseSkill):
         session_state: Optional[dict] = None,
     ) -> str:
         normalized_query = InputNormalizer.normalize(query)
+        context_entries = list(context or [])
         recent_lines: list[str] = []
-        for entry in list(context or [])[-self._MAX_CONTEXT_TURNS :]:
+        for entry in context_entries[-self._MAX_CONTEXT_TURNS :]:
             summarized = self._summarize_context_entry(entry)
             if summarized is None:
                 continue
@@ -411,7 +415,7 @@ class GeneralChatSkill(BaseSkill):
 
         hints: list[str] = []
         state = session_state or {}
-        active_topic = str(state.get("active_topic") or "").strip()
+        active_topic = self._stable_topic_hint(str(state.get("active_topic") or ""))
         if active_topic:
             hints.append(f"Active topic: {active_topic}")
         project_thread = str(state.get("project_thread_active") or "").strip()
@@ -421,12 +425,24 @@ class GeneralChatSkill(BaseSkill):
         if reference_hint:
             hints.append(reference_hint)
 
-        if not recent_lines and not hints:
+        summary_data = dict(state.get("general_chat_summary") or {})
+        older_entries = context_entries[:-self._MAX_CONTEXT_TURNS]
+        if older_entries:
+            summary_data = self._build_summary_snapshot(
+                older_entries,
+                session_state=state,
+                existing=summary_data,
+            )
+        summary_text = self._format_conversation_summary(summary_data)
+
+        if not recent_lines and not hints and not summary_text:
             return normalized_query
 
         blocks: list[str] = []
         if hints:
             blocks.append("Session hints:\n" + "\n".join(f"- {hint}" for hint in hints))
+        if summary_text:
+            blocks.append("Earlier conversation summary:\n" + summary_text)
         if recent_lines:
             blocks.append("Recent conversation (most recent last):\n" + "\n".join(recent_lines))
         blocks.append(f"Current user message:\n{normalized_query}")
@@ -494,6 +510,127 @@ class GeneralChatSkill(BaseSkill):
             return ""
 
         return f"Likely referenced prior option {resolved_index + 1}: {options[resolved_index]}"
+
+    @classmethod
+    def _clip_summary_text(cls, text: str) -> str:
+        normalized = re.sub(r"\s+", " ", str(text or "")).strip()
+        if len(normalized) > cls._SUMMARY_MAX_FIELD_CHARS:
+            normalized = normalized[: cls._SUMMARY_MAX_FIELD_CHARS - 3].rstrip() + "..."
+        return normalized
+
+    @classmethod
+    def _stable_topic_hint(cls, text: str) -> str:
+        candidate = cls._clip_summary_text(text)
+        lowered = candidate.lower()
+        if not candidate:
+            return ""
+        if candidate.endswith("?"):
+            return ""
+        if lowered in {"continue", "keep going", "go on", "more", "tell me more"}:
+            return ""
+        if lowered.startswith(("what ", "why ", "how ", "which ", "should ", "can we ", "could we ")):
+            return ""
+        return candidate
+
+    @classmethod
+    def _extract_summary_user_goal(cls, entries: list[dict]) -> str:
+        user_messages = [
+            cls._clip_summary_text(str(entry.get("content") or ""))
+            for entry in entries
+            if str(entry.get("role") or "").strip().lower() == "user"
+            and str(entry.get("content") or "").strip()
+        ]
+        for message in user_messages:
+            if len(message.split()) >= 5:
+                return message
+        return user_messages[0] if user_messages else ""
+
+    @classmethod
+    def _extract_summary_open_question(cls, entries: list[dict]) -> str:
+        for entry in reversed(entries):
+            if str(entry.get("role") or "").strip().lower() != "user":
+                continue
+            content = cls._clip_summary_text(str(entry.get("content") or ""))
+            if not content:
+                continue
+            lowered = content.lower()
+            if content.endswith("?") or lowered.startswith(("what ", "why ", "how ", "which ", "should ", "can we ")):
+                return content
+        return ""
+
+    @classmethod
+    def _extract_summary_options(cls, entries: list[dict]) -> list[str]:
+        for entry in reversed(entries):
+            if str(entry.get("role") or "").strip().lower() != "assistant":
+                continue
+            options = cls._extract_prior_options(str(entry.get("content") or ""))
+            if options:
+                return [cls._clip_summary_text(option) for option in options[: cls._SUMMARY_MAX_OPTIONS]]
+        return []
+
+    @classmethod
+    def _build_summary_snapshot(
+        cls,
+        entries: list[dict],
+        *,
+        session_state: Optional[dict] = None,
+        existing: Optional[dict] = None,
+    ) -> dict:
+        summary = dict(existing or {})
+        state = session_state or {}
+
+        topic = cls._clip_summary_text(str(summary.get("topic") or "")) or cls._stable_topic_hint(str(state.get("active_topic") or ""))
+        user_goal = cls._clip_summary_text(str(summary.get("user_goal") or "")) or cls._extract_summary_user_goal(entries)
+        open_question = cls._extract_summary_open_question(entries) or cls._clip_summary_text(str(summary.get("open_question") or ""))
+        relevant_options = cls._extract_summary_options(entries) or list(summary.get("relevant_options") or [])
+
+        built = {
+            "topic": topic,
+            "user_goal": user_goal,
+            "open_question": open_question,
+            "relevant_options": relevant_options[: cls._SUMMARY_MAX_OPTIONS],
+        }
+        return {key: value for key, value in built.items() if value}
+
+    @classmethod
+    def _format_conversation_summary(cls, summary: Optional[dict]) -> str:
+        data = dict(summary or {})
+        lines: list[str] = []
+
+        topic = cls._clip_summary_text(str(data.get("topic") or ""))
+        if topic:
+            lines.append(f"- Topic: {topic}")
+
+        user_goal = cls._clip_summary_text(str(data.get("user_goal") or ""))
+        if user_goal:
+            lines.append(f"- User goal: {user_goal}")
+
+        open_question = cls._clip_summary_text(str(data.get("open_question") or ""))
+        if open_question:
+            lines.append(f"- Open question: {open_question}")
+
+        options = [cls._clip_summary_text(str(item or "")) for item in list(data.get("relevant_options") or []) if str(item or "").strip()]
+        if options:
+            lines.append("- Earlier options still relevant:")
+            lines.extend(f"  {index + 1}. {option}" for index, option in enumerate(options[: cls._SUMMARY_MAX_OPTIONS]))
+
+        return "\n".join(lines).strip()
+
+    @classmethod
+    def roll_context_forward(cls, context: list[dict], session_state: Optional[dict] = None) -> list[dict]:
+        entries = list(context or [])
+        if len(entries) <= cls._SUMMARY_RETAIN_CONTEXT_ENTRIES:
+            return entries
+
+        retained = entries[-cls._SUMMARY_RETAIN_CONTEXT_ENTRIES :]
+        summary_entries = entries[:-cls._MAX_CONTEXT_TURNS]
+        if session_state is not None:
+            session_state["general_chat_summary"] = cls._build_summary_snapshot(
+                summary_entries,
+                session_state=session_state,
+                existing=dict(session_state.get("general_chat_summary") or {}),
+            )
+        return retained
 
     @classmethod
     def _is_geopolitical_query(cls, query: str) -> bool:
