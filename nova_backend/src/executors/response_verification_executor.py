@@ -21,12 +21,59 @@ class ResponseVerificationExecutor:
         self._bridge = DeepSeekBridge()
         self._safety = DeepSeekSafetyWrapper()
 
+    @staticmethod
+    def _speakable_report_summary(
+        *,
+        accuracy_label: str,
+        confidence_label: str,
+        issue_count: int,
+        correction_count: int,
+        verification_recommended: bool,
+    ) -> str:
+        recommendation = (
+            "Verification is recommended before relying on this claim."
+            if verification_recommended
+            else "No immediate re-check is required."
+        )
+        return (
+            "Verification complete. "
+            f"Claim reliability {accuracy_label}. "
+            f"Report confidence {confidence_label}. "
+            f"Potential issues found {issue_count}. "
+            f"Suggested corrections {correction_count}. "
+            f"{recommendation}"
+        )
+
+    @staticmethod
+    def _failure_result(
+        message: str,
+        *,
+        request_id: str,
+        failure_kind: str,
+    ) -> ActionResult:
+        payload = {
+            "verification_available": False,
+            "failure_kind": failure_kind,
+        }
+        return ActionResult.failure(
+            message,
+            data=payload,
+            structured_data=payload,
+            speakable_text=message,
+            request_id=request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+            outcome_reason=message,
+        )
+
     def execute(self, request) -> ActionResult:
         text = str((request.params or {}).get("text") or "").strip()
         if not text:
-            return ActionResult.failure(
+            return self._failure_result(
                 "I need text to verify. Ask me to verify a statement or previous response.",
                 request_id=request.request_id,
+                failure_kind="missing_text",
             )
 
         prompt = (
@@ -50,25 +97,22 @@ class ResponseVerificationExecutor:
         )
         clean = self._safety.sanitize(raw)
         if not clean:
-            return ActionResult.failure(
+            return self._failure_result(
                 "I couldn't verify that right now.",
                 request_id=request.request_id,
+                failure_kind="empty_analysis",
             )
         if self._verification_unavailable(clean):
-            return ActionResult.failure(
+            return self._failure_result(
                 "Verification is unavailable in this runtime because structured analysis is currently blocked or unavailable.",
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
-                reversible=True,
+                failure_kind="analysis_unavailable",
             )
         if not self._looks_structured(clean):
-            return ActionResult.failure(
+            return self._failure_result(
                 "Verification returned an incomplete report, so I did not present it as a finished check.",
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
-                reversible=True,
+                failure_kind="incomplete_report",
             )
 
         accuracy_label, accuracy_score = self._derive_section_label(clean, "accuracy", default="medium")
@@ -98,23 +142,32 @@ class ResponseVerificationExecutor:
             "- summarize the issues only\n"
             "- show me the safest corrected version"
         )
+        payload = {
+            "verification_text": clean,
+            "verification_accuracy_label": accuracy_label,
+            "verification_accuracy_score": accuracy_score,
+            "verification_confidence_label": confidence_label,
+            "verification_confidence_score": confidence_score,
+            "verification_recommended": verification_recommended,
+            "issue_count": issue_count,
+            "correction_count": correction_count,
+            "follow_up_prompts": [
+                "verify a revised version",
+                "summarize the issues only",
+                "show me the safest corrected version",
+            ],
+        }
         return ActionResult.ok(
             message=message,
-            data={
-                "verification_text": clean,
-                "verification_accuracy_label": accuracy_label,
-                "verification_accuracy_score": accuracy_score,
-                "verification_confidence_label": confidence_label,
-                "verification_confidence_score": confidence_score,
-                "verification_recommended": verification_recommended,
-                "issue_count": issue_count,
-                "correction_count": correction_count,
-                "follow_up_prompts": [
-                    "verify a revised version",
-                    "summarize the issues only",
-                    "show me the safest corrected version",
-                ],
-            },
+            data=payload,
+            structured_data=payload,
+            speakable_text=self._speakable_report_summary(
+                accuracy_label=accuracy_label,
+                confidence_label=confidence_label,
+                issue_count=issue_count,
+                correction_count=correction_count,
+                verification_recommended=verification_recommended,
+            ),
             request_id=request.request_id,
             authority_class="read_only",
             external_effect=False,

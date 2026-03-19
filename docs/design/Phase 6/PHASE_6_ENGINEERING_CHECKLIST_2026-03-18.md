@@ -198,6 +198,118 @@ Make Nova visibly explain:
   - audit/ledger correlation
 - document any legacy result shims required during migration
 
+### Canonical ActionResult Contract
+
+#### Required Runtime Fields
+- `success`
+  - boolean execution outcome
+- `status`
+  - normalized lifecycle-facing status string
+  - allowed values in this phase: `completed`, `failed`, `refused`
+- `user_message`
+  - final user-facing text
+- `speakable_text`
+  - TTS-safe version of the response
+- `structured_data`
+  - machine-readable payload dictionary
+- `risk_level`
+  - current normalized values: `low`, `moderate`, `high`, `critical`
+- `external_effect`
+  - whether the action changed something outside the bounded runtime response path
+- `reversible`
+  - whether the action can be reasonably undone
+- `request_id`
+  - request correlation id carried across the governed path
+- `capability_id`
+  - governed capability id that produced the result
+
+#### Optional Runtime Fields
+- `authority_class`
+  - present when capability-topology truth is available
+- `ledger_ref`
+  - present when a deterministic ledger reference is available at the emitting layer
+- `outcome_reason`
+  - normalized cause/detail field for failure, refusal, or bounded degraded outcome
+
+#### Ownership Rules
+- executors should primarily supply:
+  - success/failure intent
+  - user-facing message
+  - speakable text when executor-specific shaping is needed
+  - structured payload
+  - outcome-specific reason/details
+  - explicit overrides for `risk_level`, `external_effect`, `reversible`, or `authority_class` when the executor has truth the Governor cannot infer safely
+- Governor should centrally stamp or normalize wherever possible:
+  - `request_id`
+  - `capability_id`
+  - `status`
+  - default `risk_level`
+  - default `external_effect`
+  - default `reversible`
+  - topology-backed `authority_class` when available
+- trust/recent-activity surfaces may derive `ledger_ref` from the append-only ledger until the ledger writer itself becomes the canonical source for that field
+
+#### Legacy Normalization Rules
+- legacy `message` should normalize to `user_message`
+- legacy `data` should normalize into `structured_data` unless it already contains an explicit nested `structured_data`
+- missing `speakable_text` should default to a TTS-safe version of `user_message`
+- missing `status` should normalize from:
+  - `success=True` -> `completed`
+  - `success=False` + refusal/policy block -> `refused`
+  - other `success=False` -> `failed`
+- missing `outcome_reason` should normalize from executor-supplied failure/refusal text when that text is the most truthful available cause
+- legacy consumers may continue reading `message` and `data` during migration, but all new boundary logic should read the normalized contract
+
+### ActionResult Migration Checklist
+- lock the canonical contract in `nova_backend/src/actions/action_result.py`
+- add one normalization helper so ActionResult can expose the canonical shape without requiring every executor to migrate at once
+- normalize the Governor boundary in `nova_backend/src/governor/governor.py`
+  - stamp `request_id`
+  - stamp `capability_id`
+  - normalize `status`
+  - attach topology-backed authority metadata when available
+- migrate first-wave governed executors:
+  - `response_verification_executor.py`
+  - `news_intelligence_executor.py`
+  - `multi_source_reporting_executor.py`
+  - `analysis_document_executor.py`
+  - `explain_anything_executor.py`
+  - `screen_capture_executor.py`
+  - `screen_analysis_executor.py`
+- migrate main consumers:
+  - `brain_server.py`
+  - trust/recent-activity reducer in `os_diagnostics_executor.py`
+- preserve backward compatibility during migration:
+  - keep `message` / `data` aliases usable
+  - prefer canonical reads in new logic
+- expand release-gate coverage before calling the refactor complete:
+  - `tests/test_governor_execution_timeout.py`
+  - `tests/phase45/test_brain_server_trust_status.py`
+  - `tests/phase45/test_system_status_reporting_contract.py`
+  - `tests/executors/test_response_verification_executor.py`
+  - `tests/executors/test_news_intelligence_executor.py`
+  - `tests/executors/test_explain_anything_executor.py`
+  - `tests/test_runtime_auditor.py`
+
+Current migration state as of 2026-03-19:
+- completed:
+  - canonical ActionResult contract locked in docs and `action_result.py`
+  - Governor result stamping normalized in `governor.py`
+  - first governed executor wave migrated:
+    - `response_verification_executor.py`
+    - `news_intelligence_executor.py`
+    - `multi_source_reporting_executor.py`
+    - `analysis_document_executor.py`
+  - explain/screen executor wave migrated:
+    - `explain_anything_executor.py`
+    - `screen_capture_executor.py`
+    - `screen_analysis_executor.py`
+  - main governed consumer path in `brain_server.py` now prefers canonical `user_message` and `structured_data`
+  - trust/recent-activity normalization now prefers canonical status and outcome metadata in `os_diagnostics_executor.py`
+- next:
+  - add authority-metadata parity enforcement
+  - remove remaining legacy read fallbacks after broader executor coverage is complete
+
 ### Ledger Lifecycle Tasks
 - verify each governed action produces:
   1. `INTENT_RECEIVED`

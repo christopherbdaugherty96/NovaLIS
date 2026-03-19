@@ -19,7 +19,7 @@ import uuid
 import asyncio
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import PlainTextResponse
@@ -573,9 +573,9 @@ def _build_thread_attachment_summary(
     default_category = "artifact"
 
     if action_result is not None:
-        message = str(getattr(action_result, "message", "") or "").strip()
+        message = _action_result_message(action_result)
         summary = _make_shorter_followup(message)
-        data = getattr(action_result, "data", None)
+        data = _action_result_payload(action_result)
         if isinstance(data, dict):
             analysis = data.get("analysis")
             if isinstance(analysis, dict):
@@ -619,8 +619,8 @@ def _derive_recommendation_reason(
     if followup_target:
         reasons.append(f"the current context target is '{followup_target}'")
 
-    if isinstance(getattr(action_result, "data", None), dict):
-        data = dict(getattr(action_result, "data") or {})
+    data = _action_result_payload(action_result)
+    if isinstance(data, dict):
         analysis = data.get("analysis")
         if isinstance(analysis, dict):
             signals = dict(analysis.get("signals") or {})
@@ -638,6 +638,34 @@ def _derive_recommendation_reason(
     if len(reasons) == 1:
         return f"I suggested that based on {reasons[0]}."
     return "I suggested that based on " + "; ".join(reasons[:3]) + "."
+
+
+def _action_result_message(action_result: object | None) -> str:
+    if action_result is None:
+        return ""
+    return str(
+        getattr(action_result, "user_message", getattr(action_result, "message", "")) or ""
+    ).strip()
+
+
+def _action_result_payload(action_result: object | None) -> dict[str, Any]:
+    if action_result is None:
+        return {}
+    try:
+        structured = getattr(action_result, "structured_data", None)
+    except Exception:
+        structured = None
+    if isinstance(structured, dict) and structured:
+        return dict(structured)
+    data = getattr(action_result, "data", None)
+    if isinstance(data, dict):
+        nested = data.get("structured_data")
+        if isinstance(nested, dict) and nested:
+            return dict(nested)
+        return dict(data)
+    if isinstance(structured, dict):
+        return dict(structured)
+    return {}
 
 
 def _prepare_memory_bridge_params(
@@ -1384,9 +1412,7 @@ def _render_policy_simulation_message(decision: dict | None) -> str:
 
 def _render_policy_run_message(decision: dict | None, action_result: object | None) -> str:
     payload = dict(decision or {})
-    result_data = getattr(action_result, "data", None)
-    if not isinstance(result_data, dict):
-        result_data = {}
+    result_data = _action_result_payload(action_result)
     lines = [
         "Policy Manual Run",
         "",
@@ -1402,7 +1428,7 @@ def _render_policy_run_message(decision: dict | None, action_result: object | No
         f"- success: {_policy_yes_no_label(bool(getattr(action_result, 'success', False)))}",
         f"- authority class: {str(getattr(action_result, 'authority_class', 'read_only') or 'read_only').strip()}",
         f"- external effect: {_policy_yes_no_label(bool(getattr(action_result, 'external_effect', False)))}",
-        f"- message: {str(getattr(action_result, 'message', '') or '').strip()}",
+        f"- message: {_action_result_message(action_result)}",
     ]
 
     request_id = str(getattr(action_result, "request_id", "") or "").strip()
@@ -2597,7 +2623,7 @@ async def websocket_endpoint(ws: WebSocket):
                     params.setdefault("session_id", session_id)
                     action_result = await invoke_governed_capability(governor, capability_id, params)
                     session_state["pending_governed_confirm"] = None
-                    outgoing_message = _structure_long_message(action_result.message)
+                    outgoing_message = _structure_long_message(_action_result_message(action_result))
                     await send_chat_message(ws, outgoing_message)
                     await send_chat_done(ws)
                     continue
@@ -2622,9 +2648,10 @@ async def websocket_endpoint(ws: WebSocket):
                         {**pending_web_open, "confirmed": True, "session_id": session_id},
                     )
                     session_state["pending_web_open"] = None
-                    outgoing_message = _structure_long_message(action_result.message)
-                    if action_result.success and isinstance(action_result.data, dict):
-                        opened_domain = str(action_result.data.get("opened_domain") or "").strip()
+                    action_payload = _action_result_payload(action_result)
+                    outgoing_message = _structure_long_message(_action_result_message(action_result))
+                    if action_result.success and isinstance(action_payload, dict):
+                        opened_domain = str(action_payload.get("opened_domain") or "").strip()
                         if opened_domain:
                             session_state["last_sources"] = [opened_domain]
                     await send_chat_message(ws, outgoing_message)
@@ -3125,7 +3152,9 @@ async def websocket_endpoint(ws: WebSocket):
                     await send_chat_done(ws)
                     continue
                 if action_result.success:
-                    message = _structure_long_message(action_result.message)
+                    action_message = _action_result_message(action_result)
+                    action_payload = _action_result_payload(action_result)
+                    message = _structure_long_message(action_message)
                     if not silent_widget_refresh:
                         session_state["last_response"] = message
                         await send_chat_message(ws, message, tone_domain="system")
@@ -3134,7 +3163,7 @@ async def websocket_endpoint(ws: WebSocket):
                         {
                             "type": "system",
                             "summary": message,
-                            "data": dict(action_result.data or {}),
+                            "data": action_payload,
                         },
                     )
                     session_state["trust_status"] = failure_ladder.record_local_success(
@@ -3876,12 +3905,13 @@ async def websocket_endpoint(ws: WebSocket):
                     continue
 
                 decision, policy_result = governor.run_atomic_policy_once(item)
+                policy_payload = _action_result_payload(policy_result)
                 item = policy_drafts.record_manual_run(
                     policy_id,
                     decision.as_dict(),
                     {
                         "success": bool(policy_result.success),
-                        "message": str(policy_result.message or "").strip(),
+                        "message": _action_result_message(policy_result),
                         "request_id": str(policy_result.request_id or "").strip(),
                         "authority_class": str(policy_result.authority_class or "read_only").strip(),
                         "external_effect": bool(policy_result.external_effect),
@@ -3895,14 +3925,14 @@ async def websocket_endpoint(ws: WebSocket):
                 )
 
                 if (
-                    isinstance(policy_result.data, dict)
-                    and "widget" in policy_result.data
+                    isinstance(policy_payload, dict)
+                    and "widget" in policy_payload
                     and policy_result.success
                 ):
-                    await ws_send(ws, policy_result.data["widget"])
+                    await ws_send(ws, policy_payload["widget"])
                 elif int(dict(item.get("action") or {}).get("capability_id") or 0) == 32 and policy_result.success:
-                    if isinstance(policy_result.data, dict):
-                        await ws_send(ws, {"type": "system", "data": policy_result.data, "summary": policy_result.message})
+                    if isinstance(policy_payload, dict):
+                        await ws_send(ws, {"type": "system", "data": policy_payload, "summary": _action_result_message(policy_result)})
 
                 await send_chat_done(ws)
                 continue
@@ -4205,24 +4235,26 @@ async def websocket_endpoint(ws: WebSocket):
                         continue
 
                 action_result = await invoke_governed_capability(governor, capability_id, params)
+                action_message = _action_result_message(action_result)
+                action_payload = _action_result_payload(action_result)
                 track_topic_hint = ""
                 if capability_id == 50 and params.get("action") == "track_cluster":
-                    if isinstance(action_result.data, dict):
-                        track_topic_hint = str(action_result.data.get("track_topic") or "").strip()
-                if isinstance(action_result.data, dict):
-                    context_snapshot = action_result.data.get("context_snapshot")
+                    if isinstance(action_payload, dict):
+                        track_topic_hint = str(action_payload.get("track_topic") or "").strip()
+                if isinstance(action_payload, dict):
+                    context_snapshot = action_payload.get("context_snapshot")
                     if isinstance(context_snapshot, dict):
                         working_context.apply_snapshot(context_snapshot)
-                    working_context_delta = action_result.data.get("working_context_delta")
+                    working_context_delta = action_payload.get("working_context_delta")
                     if isinstance(working_context_delta, dict):
                         working_context.apply_patch(
                             working_context_delta,
                             source=f"capability_{capability_id}",
                         )
-                    topic_map = action_result.data.get("topic_map")
+                    topic_map = action_payload.get("topic_map")
                     if isinstance(topic_map, dict):
                         session_state["topic_memory_map"] = topic_map
-                    widget = action_result.data.get("widget")
+                    widget = action_payload.get("widget")
                     if isinstance(widget, dict) and widget.get("type") == "search":
                         search_data = widget.get("data") if isinstance(widget.get("data"), dict) else {}
                         results = search_data.get("results") if isinstance(search_data, dict) else []
@@ -4238,11 +4270,11 @@ async def websocket_endpoint(ws: WebSocket):
                     if isinstance(widget, dict) and widget.get("type") == "calendar":
                         session_state["last_calendar_summary"] = str(widget.get("summary") or "")
                         session_state["last_calendar_events"] = list(widget.get("events") or [])
-                    analysis_docs = action_result.data.get("analysis_documents")
+                    analysis_docs = action_payload.get("analysis_documents")
                     if isinstance(analysis_docs, list):
                         session_state["analysis_documents"] = analysis_docs
                     if capability_id == 61:
-                        memory_item = action_result.data.get("memory_item")
+                        memory_item = action_payload.get("memory_item")
                         if isinstance(memory_item, dict):
                             item_id = str(memory_item.get("id") or "").strip()
                             if item_id:
@@ -4251,7 +4283,7 @@ async def websocket_endpoint(ws: WebSocket):
                             linked_thread = str(links.get("project_thread_name") or "").strip()
                             if linked_thread:
                                 session_state["project_thread_active"] = linked_thread
-                        overview_data = action_result.data.get("memory_overview")
+                        overview_data = action_payload.get("memory_overview")
                         if isinstance(overview_data, dict):
                             await send_memory_overview_widget(
                                 ws,
@@ -4260,12 +4292,12 @@ async def websocket_endpoint(ws: WebSocket):
                             )
                         elif action_result.success:
                             await send_memory_overview_widget(ws, session_state)
-                    sources = action_result.data.get("sources")
+                    sources = action_payload.get("sources")
                     if isinstance(sources, list) and sources:
                         session_state["last_sources"] = [str(src) for src in sources[:10]]
-                    if capability_id == 17 and isinstance(action_result.data.get("opened_domain"), str):
-                        session_state["last_sources"] = [action_result.data.get("opened_domain")]
-                    brief_clusters = action_result.data.get("brief_clusters")
+                    if capability_id == 17 and isinstance(action_payload.get("opened_domain"), str):
+                        session_state["last_sources"] = [action_payload.get("opened_domain")]
+                    brief_clusters = action_payload.get("brief_clusters")
                     if isinstance(brief_clusters, list):
                         session_state["last_brief_clusters"] = brief_clusters
                         flattened_links: list[dict[str, str]] = []
@@ -4287,9 +4319,9 @@ async def websocket_endpoint(ws: WebSocket):
                                 )
                         if flattened_links:
                             session_state["last_source_links"] = _extract_source_links(flattened_links)
-                    if "document_id" in action_result.data:
-                        session_state["last_analysis_doc_id"] = action_result.data.get("document_id")
-                        working_context.set_open_report_id(action_result.data.get("document_id"))
+                    if "document_id" in action_payload:
+                        session_state["last_analysis_doc_id"] = action_payload.get("document_id")
+                        working_context.set_open_report_id(action_payload.get("document_id"))
 
                 if capability_id == 22 and action_result.success:
                     opened_path = str(params.get("path") or "").strip()
@@ -4298,8 +4330,8 @@ async def websocket_endpoint(ws: WebSocket):
 
                 session_state["working_context"] = working_context.to_dict()
 
-                if capability_id != 18 and action_result.message:
-                    session_state["last_response"] = action_result.message
+                if capability_id != 18 and action_message:
+                    session_state["last_response"] = action_message
 
                 if capability_id in {16, 48, 55, 56}:
                     if action_result.success:
@@ -4329,21 +4361,21 @@ async def websocket_endpoint(ws: WebSocket):
 
                 message_confidence: Optional[str] = None
                 message_suggestions: list[dict[str, str]] | None = None
-                if capability_id == 31 and isinstance(action_result.data, dict):
-                    accuracy_label = str(action_result.data.get("verification_accuracy_label") or "").strip()
-                    confidence_label = str(action_result.data.get("verification_confidence_label") or "").strip()
+                if capability_id == 31 and isinstance(action_payload, dict):
+                    accuracy_label = str(action_payload.get("verification_accuracy_label") or "").strip()
+                    confidence_label = str(action_payload.get("verification_confidence_label") or "").strip()
                     if accuracy_label:
                         message_confidence = f"Claim reliability {accuracy_label}"
                     elif confidence_label:
                         message_confidence = f"Verification {confidence_label}"
-                    if action_result.data.get("verification_recommended") is True:
+                    if action_payload.get("verification_recommended") is True:
                         message_suggestions = [
                             {"label": "Re-check with sources", "command": "show sources for your last response"},
                             {"label": "Summarize risk", "command": "summarize verification risks in 3 bullets"},
                             {"label": "Revise answer", "command": "revise your last answer using this verification report"},
                         ]
-                if capability_id == 49 and isinstance(action_result.data, dict):
-                    story_index = int(action_result.data.get("story_index") or 0)
+                if capability_id == 49 and isinstance(action_payload, dict):
+                    story_index = int(action_payload.get("story_index") or 0)
                     if story_index > 0:
                         session_state["last_news_story_index"] = story_index
                         if not message_suggestions:
@@ -4353,7 +4385,7 @@ async def websocket_endpoint(ws: WebSocket):
                                 {"label": "Today's brief", "command": "today's news"},
                             ]
                     elif action_result.success:
-                        widget = action_result.data.get("widget")
+                        widget = action_payload.get("widget")
                         if isinstance(widget, dict):
                             widget_data = widget.get("data")
                             if isinstance(widget_data, dict):
@@ -4363,7 +4395,7 @@ async def websocket_endpoint(ws: WebSocket):
                                         session_state["last_news_story_index"] = int(indices[0])
                                     except Exception:
                                         pass
-                    related_pairs = action_result.data.get("related_pairs")
+                    related_pairs = action_payload.get("related_pairs")
                     if isinstance(related_pairs, list) and related_pairs:
                         pair = next((p for p in related_pairs if isinstance(p, dict)), {})
                         left = int(pair.get("left_index") or 0)
@@ -4380,8 +4412,8 @@ async def websocket_endpoint(ws: WebSocket):
                         {"label": "Show topic map", "command": "show topic map"},
                         {"label": "Today's brief", "command": "today's news"},
                     ]
-                if capability_id == 61 and action_result.success and isinstance(action_result.data, dict):
-                    memory_item = action_result.data.get("memory_item")
+                if capability_id == 61 and action_result.success and isinstance(action_payload, dict):
+                    memory_item = action_payload.get("memory_item")
                     if isinstance(memory_item, dict):
                         item_id = str(memory_item.get("id") or "").strip()
                         links = dict(memory_item.get("links") or {})
@@ -4453,7 +4485,7 @@ async def websocket_endpoint(ws: WebSocket):
                         deduped.append(item)
                     message_suggestions = deduped[:4]
 
-                outgoing_message = _structure_long_message(action_result.message)
+                outgoing_message = _structure_long_message(action_message)
                 if not outgoing_message.strip() and capability_id == 18 and action_result.success:
                     outgoing_message = "Speaking now."
                 if recommendation_reason:
@@ -4471,13 +4503,13 @@ async def websocket_endpoint(ws: WebSocket):
                 )
 
                 if (
-                    isinstance(action_result.data, dict)
-                    and "widget" in action_result.data
+                    isinstance(action_payload, dict)
+                    and "widget" in action_payload
                     and (action_result.success or capability_id in {55, 56, 57})
                 ):
-                    await ws_send(ws, action_result.data["widget"])
-                elif capability_id == 32 and action_result.success and isinstance(action_result.data, dict):
-                    await ws_send(ws, {"type": "system", "data": action_result.data, "summary": action_result.message})
+                    await ws_send(ws, action_payload["widget"])
+                elif capability_id == 32 and action_result.success and isinstance(action_payload, dict):
+                    await ws_send(ws, {"type": "system", "data": action_payload, "summary": action_message})
 
                 await send_chat_done(ws)
 

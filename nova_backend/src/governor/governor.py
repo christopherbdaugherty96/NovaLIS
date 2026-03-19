@@ -200,19 +200,34 @@ class Governor:
         try:
             cap = self.registry.get(capability_id)
         except CapabilityRegistryError as exc:
-            return ActionResult.failure(f"I can't do that. {exc}")
+            return self._normalize_action_result(
+                ActionResult.failure(f"I can't do that. {exc}"),
+                capability_id=capability_id,
+            )
 
         if not self.registry.is_enabled(capability_id):
-            return ActionResult.failure("I can't do that yet.")
+            return self._normalize_action_result(
+                ActionResult.failure("I can't do that yet."),
+                capability_id=capability_id,
+            )
 
         if getattr(cap, "risk_level", "low") == "confirm" and not bool((params or {}).get("confirmed")):
-            return ActionResult.refusal("This action requires confirmation before I can proceed.")
+            return self._normalize_action_result(
+                ActionResult.refusal("This action requires confirmation before I can proceed."),
+                capability_id=capability_id,
+            )
 
         if not self._execute_boundary.allow_execution():
-            return ActionResult.failure("That requires a specific action, which I can't perform right now.")
+            return self._normalize_action_result(
+                ActionResult.failure("That requires a specific action, which I can't perform right now."),
+                capability_id=capability_id,
+            )
 
         if self._queue.has_pending():
-            return ActionResult.failure("I couldn't do that right now.")
+            return self._normalize_action_result(
+                ActionResult.failure("I couldn't do that right now."),
+                capability_id=capability_id,
+            )
 
         try:
             self.ledger.log_event(
@@ -220,16 +235,27 @@ class Governor:
                 {"capability_id": capability_id, "capability_name": cap.name},
             )
         except Exception:
-            return ActionResult.failure("I couldn't do that right now.")
+            return self._normalize_action_result(
+                ActionResult.failure("I couldn't do that right now."),
+                capability_id=capability_id,
+            )
 
         req = ActionRequest(capability_id=capability_id, params=params)
 
         try:
             return self._execute(req)
         except (NetworkMediatorError, LedgerWriteFailed):
-            return ActionResult.failure("I couldn't do that right now.", request_id=req.request_id)
+            return self._normalize_action_result(
+                ActionResult.failure("I couldn't do that right now.", request_id=req.request_id),
+                capability_id=capability_id,
+                request_id=req.request_id,
+            )
         except Exception:
-            return ActionResult.failure("I couldn't do that right now.", request_id=req.request_id)
+            return self._normalize_action_result(
+                ActionResult.failure("I couldn't do that right now.", request_id=req.request_id),
+                capability_id=capability_id,
+                request_id=req.request_id,
+            )
 
     def _execute(self, req: ActionRequest) -> ActionResult:
         self._queue.set_pending(req.request_id)
@@ -249,6 +275,11 @@ class Governor:
             result = self._execute_boundary.run_with_timeout(
                 lambda: self._dispatch_capability(req),
                 timeout_seconds=timeout_seconds,
+            )
+            result = self._normalize_action_result(
+                result,
+                capability_id=req.capability_id,
+                request_id=req.request_id,
             )
             self._execute_boundary.enforce_memory_limits()
             self._execute_boundary.enforce_cpu_limits()
@@ -273,6 +304,7 @@ class Governor:
                     "capability_id": req.capability_id,
                     "request_id": req.request_id,
                     "success": result.success,
+                    "status": str(result.status or ""),
                     "external_effect": bool(result.external_effect),
                     "reversible": bool(result.reversible),
                 }
@@ -286,7 +318,7 @@ class Governor:
                         topology_entry.requires_confirmation
                     )
                 if not result.success:
-                    failure_reason = str(result.message or "").strip()
+                    failure_reason = str(result.outcome_reason or result.message or "").strip()
                     if failure_reason:
                         completion_metadata["failure_reason"] = failure_reason[:240]
                 self.ledger.log_event(
@@ -299,8 +331,12 @@ class Governor:
             return result
 
         except TimeoutError:
-            return ActionResult.refusal(
-                "The request took too long and was cancelled.",
+            return self._normalize_action_result(
+                ActionResult.refusal(
+                    "The request took too long and was cancelled.",
+                    request_id=req.request_id,
+                ),
+                capability_id=req.capability_id,
                 request_id=req.request_id,
             )
         except MemoryError:
@@ -311,8 +347,12 @@ class Governor:
                 )
             except LedgerWriteFailed:
                 pass
-            return ActionResult.refusal(
-                "Execution exceeded allowed memory.",
+            return self._normalize_action_result(
+                ActionResult.refusal(
+                    "Execution exceeded allowed memory.",
+                    request_id=req.request_id,
+                ),
+                capability_id=req.capability_id,
                 request_id=req.request_id,
             )
         except ExecutionCPUExceededError:
@@ -323,13 +363,21 @@ class Governor:
                 )
             except LedgerWriteFailed:
                 pass
-            return ActionResult.refusal(
-                "Execution exceeded allowed CPU budget.",
+            return self._normalize_action_result(
+                ActionResult.refusal(
+                    "Execution exceeded allowed CPU budget.",
+                    request_id=req.request_id,
+                ),
+                capability_id=req.capability_id,
                 request_id=req.request_id,
             )
         except Exception:
-            return ActionResult.refusal(
-                "I couldn't do that right now.",
+            return self._normalize_action_result(
+                ActionResult.refusal(
+                    "I couldn't do that right now.",
+                    request_id=req.request_id,
+                ),
+                capability_id=req.capability_id,
                 request_id=req.request_id,
             )
         finally:
@@ -339,6 +387,25 @@ class Governor:
     @staticmethod
     def _execution_timeout_seconds(capability_id: int) -> float:
         return float(CAPABILITY_TIMEOUT_OVERRIDES.get(int(capability_id), MAX_EXECUTION_TIME))
+
+    def _authority_class_for(self, capability_id: int) -> str | None:
+        try:
+            return str(self.capability_topology.get(capability_id).authority_class)
+        except Exception:
+            return None
+
+    def _normalize_action_result(
+        self,
+        result: ActionResult,
+        *,
+        capability_id: int,
+        request_id: str | None = None,
+    ) -> ActionResult:
+        return result.normalize(
+            request_id=request_id,
+            capability_id=capability_id,
+            authority_class=self._authority_class_for(capability_id),
+        )
 
     def allow_notification_delivery(self, metadata: Dict[str, Any]) -> tuple[bool, str]:
         schedule_id = str((metadata or {}).get("schedule_id") or "").strip()

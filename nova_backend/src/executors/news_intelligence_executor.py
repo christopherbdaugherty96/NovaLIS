@@ -83,6 +83,55 @@ class NewsIntelligenceExecutor:
         self.renderer = IntelligenceBriefRenderer()
         self.network = network
 
+    @staticmethod
+    def _speakable_preview(text: str, *, limit: int = 220) -> str:
+        clean = re.sub(r"\s+", " ", str(text or "").strip())
+        if len(clean) <= limit:
+            return clean
+        return clean[: limit - 3].rstrip() + "..."
+
+    def _ok_result(
+        self,
+        message: str,
+        *,
+        data: dict[str, Any] | None = None,
+        request_id: str | None = None,
+        speakable_text: str | None = None,
+    ) -> ActionResult:
+        payload = dict(data or {})
+        return ActionResult.ok(
+            message=message,
+            data=payload,
+            structured_data=payload,
+            speakable_text=speakable_text or self._speakable_preview(message),
+            request_id=request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+        )
+
+    def _failure_result(
+        self,
+        message: str,
+        *,
+        request_id: str | None = None,
+        failure_kind: str,
+        data: dict[str, Any] | None = None,
+    ) -> ActionResult:
+        payload = dict(data or {})
+        payload.setdefault("failure_kind", failure_kind)
+        return ActionResult.failure(
+            message=message,
+            data=payload,
+            structured_data=payload,
+            speakable_text=message,
+            request_id=request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+            outcome_reason=message,
+        )
+
     def _sanitize_headlines(self, raw: Any) -> list[dict[str, str]]:
         if not isinstance(raw, list):
             return []
@@ -540,7 +589,11 @@ class NewsIntelligenceExecutor:
     def _expand_cluster(self, clusters: list[dict[str, Any]], story_id: int) -> ActionResult:
         idx = int(story_id) - 1
         if idx < 0 or idx >= len(clusters):
-            return ActionResult.failure("I couldn't find that story number in the latest brief.")
+            return self._failure_result(
+                "I couldn't find that story number in the latest brief.",
+                failure_kind="brief_story_not_found",
+                data={"story_id": story_id},
+            )
         cluster = clusters[idx]
         title = str(cluster.get("title") or "General Developments")
         summary = str(cluster.get("summary") or "")
@@ -559,13 +612,21 @@ class NewsIntelligenceExecutor:
             lines.append(f"- {item.get('title','Unknown')} ({item.get('source','Unknown')})")
         lines.append("")
         lines.append(f"Sources: {', '.join(sources) if sources else 'Unknown'}")
-        return ActionResult.ok(message="\n".join(lines), data={"sources": sources})
+        return self._ok_result(
+            "\n".join(lines),
+            data={"sources": sources, "story_id": story_id},
+            speakable_text=f"Story {story_id}. {self._speakable_preview(summary or implication, limit=170)}",
+        )
 
     def _compare_clusters(self, clusters: list[dict[str, Any]], left_story_id: int, right_story_id: int) -> ActionResult:
         left_idx = int(left_story_id) - 1
         right_idx = int(right_story_id) - 1
         if left_idx < 0 or right_idx < 0 or left_idx >= len(clusters) or right_idx >= len(clusters):
-            return ActionResult.failure("I couldn't compare those story numbers from the latest brief.")
+            return self._failure_result(
+                "I couldn't compare those story numbers from the latest brief.",
+                failure_kind="brief_compare_not_found",
+                data={"left_story_id": left_story_id, "right_story_id": right_story_id},
+            )
         left = clusters[left_idx]
         right = clusters[right_idx]
         lines = [
@@ -584,7 +645,18 @@ class NewsIntelligenceExecutor:
         for src in (left.get("sources") or []) + (right.get("sources") or []):
             if src not in merged_sources:
                 merged_sources.append(src)
-        return ActionResult.ok(message="\n".join(lines), data={"sources": merged_sources[:10]})
+        comparison_text = (
+            f"{str(left.get('title') or '').strip()} compared with "
+            f"{str(right.get('title') or '').strip()}"
+        ).strip()
+        return self._ok_result(
+            "\n".join(lines),
+            data={"sources": merged_sources[:10], "comparison": {"left_story_id": left_story_id, "right_story_id": right_story_id}},
+            speakable_text=(
+                f"Compared story {left_story_id} and story {right_story_id}. "
+                f"{self._speakable_preview(comparison_text, limit=140)}"
+            ),
+        )
 
     def _build_topic_map(self, headlines: list[dict[str, str]], prior: dict[str, int] | None = None) -> dict[str, int]:
         counts = Counter(prior or {})
@@ -794,9 +866,19 @@ class NewsIntelligenceExecutor:
         request_id: str | None = None,
     ) -> ActionResult:
         if left_index == right_index:
-            return ActionResult.failure("Choose two different headline numbers to compare.")
+            return self._failure_result(
+                "Choose two different headline numbers to compare.",
+                request_id=request_id,
+                failure_kind="duplicate_headline_compare",
+                data={"left_index": left_index, "right_index": right_index},
+            )
         if left_index < 1 or right_index < 1 or left_index > len(headlines) or right_index > len(headlines):
-            return ActionResult.failure("I couldn't compare those headline numbers from the current list.")
+            return self._failure_result(
+                "I couldn't compare those headline numbers from the current list.",
+                request_id=request_id,
+                failure_kind="headline_compare_not_found",
+                data={"left_index": left_index, "right_index": right_index},
+            )
 
         left = headlines[left_index - 1]
         right = headlines[right_index - 1]
@@ -818,21 +900,23 @@ class NewsIntelligenceExecutor:
             lines.append("These stories appear related and should be reviewed together for context alignment.")
         else:
             lines.append("These stories appear distinct based on headline-level text.")
-        return ActionResult.ok(
-            message="\n".join(lines),
-            data={
-                "widget": {
-                    "type": "news_summary",
-                    "data": {
-                        "comparison": {"left": left_index, "right": right_index, "shared_terms": shared[:8]},
-                    },
+        payload = {
+            "widget": {
+                "type": "news_summary",
+                "data": {
+                    "comparison": {"left": left_index, "right": right_index, "shared_terms": shared[:8]},
                 },
-                "related_pairs": [{"left_index": left_index, "right_index": right_index, "shared_terms": shared[:8]}],
             },
+            "related_pairs": [{"left_index": left_index, "right_index": right_index, "shared_terms": shared[:8]}],
+        }
+        return self._ok_result(
+            "\n".join(lines),
+            data=payload,
             request_id=request_id,
-            authority_class="read_only",
-            external_effect=False,
-            reversible=True,
+            speakable_text=(
+                f"Headline comparison ready for story {left_index} and story {right_index}. "
+                f"Shared terms: {self._speakable_preview(shared_terms, limit=120)}"
+            ),
         )
 
     def _story_page_prompt(self, item: dict[str, str], story_index: int, source_text: str) -> str:
@@ -894,17 +978,21 @@ class NewsIntelligenceExecutor:
 
     def _summarize_story_page(self, request, headlines: list[dict[str, str]], story_index: int, session_id: str | None) -> ActionResult:
         if story_index < 1 or story_index > len(headlines):
-            return ActionResult.failure(
+            return self._failure_result(
                 "I couldn't find that story number in the current headlines.",
                 request_id=request.request_id,
+                failure_kind="story_page_not_found",
+                data={"story_index": story_index},
             )
 
         item = headlines[story_index - 1]
         url = str(item.get("url") or "").strip()
         if not url:
-            return ActionResult.failure(
+            return self._failure_result(
                 f"Story {story_index} does not have a source URL to read.",
                 request_id=request.request_id,
+                failure_kind="story_page_missing_url",
+                data={"story_index": story_index},
             )
 
         source_text = self._fetch_source_text(
@@ -914,12 +1002,14 @@ class NewsIntelligenceExecutor:
             session_id=session_id,
         )
         if not source_text:
-            return ActionResult.failure(
+            return self._failure_result(
                 (
                     f"I couldn't read the article page for story {story_index} right now. "
                     "Try again, or open the source link and ask once the page is accessible."
                 ),
                 request_id=request.request_id,
+                failure_kind="story_page_unavailable",
+                data={"story_index": story_index, "url": url},
             )
 
         fallback = self._story_page_fallback_from_text(source_text)
@@ -951,23 +1041,22 @@ class NewsIntelligenceExecutor:
             ]
         )
 
-        return ActionResult.ok(
-            message="\n".join(lines).strip(),
-            data={
-                "widget": {
-                    "type": "news_summary",
-                    "data": {
-                        "selection": "story_page",
-                        "story_index": story_index,
-                        "source_read": True,
-                    },
+        payload = {
+            "widget": {
+                "type": "news_summary",
+                "data": {
+                    "selection": "story_page",
+                    "story_index": story_index,
+                    "source_read": True,
                 },
-                "story_index": story_index,
             },
+            "story_index": story_index,
+        }
+        return self._ok_result(
+            "\n".join(lines).strip(),
+            data=payload,
             request_id=request.request_id,
-            authority_class="read_only",
-            external_effect=False,
-            reversible=True,
+            speakable_text=f"Story page summary ready for story {story_index}. {self._speakable_preview(normalized, limit=170)}",
         )
 
     def execute_summary(self, request) -> ActionResult:
@@ -975,9 +1064,10 @@ class NewsIntelligenceExecutor:
         categories = self._sanitize_categories((request.params or {}).get("categories"))
         session_id = str((request.params or {}).get("session_id") or "").strip() or None
         if not headlines:
-            return ActionResult.failure(
+            return self._failure_result(
                 "No cached headlines found. Say 'news' first, then choose headline numbers.",
                 request_id=request.request_id,
+                failure_kind="missing_headline_cache",
             )
 
         action = str((request.params or {}).get("action") or "").strip().lower()
@@ -1031,32 +1121,42 @@ class NewsIntelligenceExecutor:
                     }
                 )
                 source_list = ", ".join(available_sources[:8]) or "no sources available"
-                return ActionResult.failure(
+                return self._failure_result(
                     f"I couldn't find recent headlines for {wanted_source}. Available sources: {source_list}.",
                     request_id=request.request_id,
+                    failure_kind="source_not_found",
+                    data={"selection": selection, "source_query": wanted_source},
                 )
             if selection == "topic":
                 wanted_topic = str((request.params or {}).get("topic_query") or "").strip()
-                return ActionResult.failure(
+                return self._failure_result(
                     f"I couldn't find recent headlines for topic '{wanted_topic}'. Try a broader term.",
                     request_id=request.request_id,
+                    failure_kind="topic_not_found",
+                    data={"selection": selection, "topic_query": wanted_topic},
                 )
             if selection == "category":
                 requested_category = str((request.params or {}).get("category_key") or "").strip().lower()
                 available_categories = ", ".join(sorted(categories.keys())) if categories else "none"
-                return ActionResult.failure(
+                return self._failure_result(
                     f"I couldn't find category '{requested_category}'. Available categories: {available_categories}.",
                     request_id=request.request_id,
+                    failure_kind="category_not_found",
+                    data={"selection": selection, "category_key": requested_category},
                 )
-            return ActionResult.failure(
+            return self._failure_result(
                 "I couldn't match those headline numbers. Try: summarize headline 1.",
                 request_id=request.request_id,
+                failure_kind="headline_selection_not_found",
+                data={"selection": selection or "indices"},
             )
 
         if len(selected) > MAX_HEADLINES_PER_SUMMARY:
-            return ActionResult.failure(
+            return self._failure_result(
                 "Please select up to three headlines per request.",
                 request_id=request.request_id,
+                failure_kind="headline_selection_limit",
+                data={"selection_count": len(selected)},
             )
 
         normalized_summaries: list[str] = []
@@ -1083,24 +1183,27 @@ class NewsIntelligenceExecutor:
             report_title=report_title,
         )
 
-        return ActionResult.ok(
-            message=report,
-            data={
-                "widget": {
-                    "type": "news_summary",
-                    "data": {
-                        "indices": indices,
-                        "count": len(selected),
-                        "selection": selection or "indices",
-                        "category_key": (request.params or {}).get("category_key"),
-                    },
+        payload = {
+            "widget": {
+                "type": "news_summary",
+                "data": {
+                    "indices": indices,
+                    "count": len(selected),
+                    "selection": selection or "indices",
+                    "category_key": (request.params or {}).get("category_key"),
                 },
-                "related_pairs": related_pairs,
             },
+            "related_pairs": related_pairs,
+        }
+        return self._ok_result(
+            report,
+            data=payload,
             request_id=request.request_id,
-            authority_class="read_only",
-            external_effect=False,
-            reversible=True,
+            speakable_text=(
+                f"Headline summary ready for {len(selected)} stor"
+                f"{'ies' if len(selected) != 1 else 'y'}. "
+                f"{self._speakable_preview(report, limit=170)}"
+            ),
         )
 
     def execute_brief(self, request) -> ActionResult:
@@ -1119,15 +1222,26 @@ class NewsIntelligenceExecutor:
             story_id = int((request.params or {}).get("story_id") or 0)
             idx = story_id - 1
             if idx < 0 or idx >= len(cluster_state):
-                return ActionResult.failure("I couldn't find that story number in the latest brief.")
+                return self._failure_result(
+                    "I couldn't find that story number in the latest brief.",
+                    request_id=request.request_id,
+                    failure_kind="brief_story_not_found",
+                    data={"story_id": story_id},
+                )
             topic = str(cluster_state[idx].get("title") or "").strip()
-            return ActionResult.ok(message=f"Track request ready for story {story_id}: {topic}", data={"track_topic": topic})
+            return self._ok_result(
+                f"Track request ready for story {story_id}: {topic}",
+                data={"track_topic": topic, "story_id": story_id},
+                request_id=request.request_id,
+                speakable_text=f"Track request ready for story {story_id}: {topic}",
+            )
 
         headlines = self._sanitize_headlines((request.params or {}).get("headlines"))
         if not headlines:
-            return ActionResult.failure(
+            return self._failure_result(
                 "No cached headlines found. Say 'news' first, then ask for a daily brief.",
                 request_id=request.request_id,
+                failure_kind="missing_headline_cache",
             )
 
         source = headlines[:6]
@@ -1176,9 +1290,10 @@ class NewsIntelligenceExecutor:
                     )
 
                 if not rendered_clusters:
-                    return ActionResult.failure(
+                    return self._failure_result(
                         "I couldn't generate a source-grounded brief right now. Please try again in a moment.",
                         request_id=request.request_id,
+                        failure_kind="brief_generation_unavailable",
                     )
 
                 report, all_sources = self._render_daily_brief_v2(rendered_clusters)
@@ -1190,26 +1305,28 @@ class NewsIntelligenceExecutor:
                     report = (
                         f"{report}\n\nNote: {omitted_clusters} topic cluster(s) were omitted due to incomplete source-grounded synthesis."
                     )
-                return ActionResult.ok(
-                    message=report.strip(),
-                    data={
-                        "widget": {
-                            "type": "intelligence_brief",
-                            "data": {
-                                "headline_count": len(source),
-                                "source_pages_read": len(packets),
-                                "cluster_count": len(rendered_clusters),
-                                "placeholder_cluster_count": placeholder_clusters,
-                                "omitted_cluster_count": omitted_clusters,
-                            },
+                payload = {
+                    "widget": {
+                        "type": "intelligence_brief",
+                        "data": {
+                            "headline_count": len(source),
+                            "source_pages_read": len(packets),
+                            "cluster_count": len(rendered_clusters),
+                            "placeholder_cluster_count": placeholder_clusters,
+                            "omitted_cluster_count": omitted_clusters,
                         },
-                        "brief_clusters": rendered_clusters,
-                        "sources": all_sources,
                     },
+                    "brief_clusters": rendered_clusters,
+                    "sources": all_sources,
+                }
+                return self._ok_result(
+                    report.strip(),
+                    data=payload,
                     request_id=request.request_id,
-                    authority_class="read_only",
-                    external_effect=False,
-                    reversible=True,
+                    speakable_text=(
+                        "Daily intelligence brief ready. "
+                        f"{len(rendered_clusters)} topic clusters across {len(all_sources)} sources."
+                    ),
                 )
 
         developing_stories = self._load_developing_stories()
@@ -1237,16 +1354,18 @@ class NewsIntelligenceExecutor:
         prior_map = prior if isinstance(prior, dict) else {}
         topic_map = self._build_topic_map(source, prior_map)
 
-        return ActionResult.ok(
-            message=brief.strip(),
-            data={
-                "widget": {"type": "intelligence_brief", "data": {"headline_count": len(source)}},
-                "topic_map": topic_map,
-            },
+        payload = {
+            "widget": {"type": "intelligence_brief", "data": {"headline_count": len(source)}},
+            "topic_map": topic_map,
+        }
+        return self._ok_result(
+            brief.strip(),
+            data=payload,
             request_id=request.request_id,
-            authority_class="read_only",
-            external_effect=False,
-            reversible=True,
+            speakable_text=(
+                "Daily intelligence brief ready. "
+                f"{self._speakable_preview(brief, limit=170)}"
+            ),
         )
 
     def execute_topic_map(self, request) -> ActionResult:
@@ -1256,20 +1375,20 @@ class NewsIntelligenceExecutor:
         topic_map = self._build_topic_map(headlines, prior_map)
 
         if not topic_map:
-            return ActionResult.failure(
+            return self._failure_result(
                 "No topic map is available yet. Ask for news first.",
                 request_id=request.request_id,
+                failure_kind="topic_map_unavailable",
             )
 
         lines = ["TOPIC MEMORY MAP"]
         for idx, (topic, weight) in enumerate(topic_map.items(), start=1):
             lines.append(f"{idx}. {topic} ({weight})")
 
-        return ActionResult.ok(
-            message="\n".join(lines),
-            data={"widget": {"type": "topic_map", "data": {"topics": topic_map}}, "topic_map": topic_map},
+        payload = {"widget": {"type": "topic_map", "data": {"topics": topic_map}}, "topic_map": topic_map}
+        return self._ok_result(
+            "\n".join(lines),
+            data=payload,
             request_id=request.request_id,
-            authority_class="read_only",
-            external_effect=False,
-            reversible=True,
+            speakable_text=f"Topic memory map ready with {len(topic_map)} topic{'s' if len(topic_map) != 1 else ''}.",
         )

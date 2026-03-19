@@ -83,8 +83,11 @@ def test_governor_memory_cap_fails_closed_and_logs_event(monkeypatch):
     assert result.success is False
     assert "exceeded allowed memory" in result.message.lower()
 
-    # 2) No partial success payload leaks through.
-    assert result.data is None
+    # 2) No partial success payload leaks through, but the normalized contract still exists.
+    assert isinstance(result.data, dict)
+    assert result.structured_data == {}
+    assert result.speakable_text == "Execution exceeded allowed memory."
+    assert result.status == "refused"
 
     # 3) Correct ledger event is emitted.
     assert any(e[0] == "EXECUTION_MEMORY_EXCEEDED" for e in gov._ledger.events)
@@ -139,8 +142,11 @@ def test_governor_cpu_cap_fails_closed_and_logs_event(monkeypatch):
     assert result.success is False
     assert "exceeded allowed cpu budget" in result.message.lower()
 
-    # 2) No partial success payload leaks through.
-    assert result.data is None
+    # 2) No partial success payload leaks through, but the normalized contract still exists.
+    assert isinstance(result.data, dict)
+    assert result.structured_data == {}
+    assert result.speakable_text == "Execution exceeded allowed CPU budget."
+    assert result.status == "refused"
 
     # 3) Correct ledger event is emitted.
     assert any(e[0] == "EXECUTION_CPU_EXCEEDED" for e in gov._ledger.events)
@@ -202,6 +208,7 @@ def test_governor_action_completed_logs_failure_reason_and_effect_metadata(monke
     assert payload["failure_reason"] == "Model inference is blocked in this runtime."
     assert payload["external_effect"] is False
     assert payload["reversible"] is True
+    assert payload["status"] == "failed"
     assert payload["authority_class"] == "read_only_local"
     assert payload["requires_confirmation"] is False
 

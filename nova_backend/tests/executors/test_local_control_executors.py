@@ -124,6 +124,8 @@ def test_os_diagnostics_executor_returns_extended_metrics(monkeypatch):
     assert result.success is True
     assert "system checks complete" in result.message.lower()
     assert isinstance(result.data, dict)
+    assert result.speakable_text == result.message
+    assert isinstance(result.structured_data, dict)
     assert result.data.get("cpu_percent") == 24.7
     assert result.data.get("memory_percent") == 50.0
     assert result.data.get("disk_percent") == 50.0
@@ -140,6 +142,7 @@ def test_os_diagnostics_executor_returns_extended_metrics(monkeypatch):
     assert isinstance(result.data.get("blocked_conditions"), list)
     assert isinstance(result.data.get("system_reasons"), list)
     assert "Locks" in str(result.data.get("operator_health_summary") or "")
+    assert result.structured_data.get("health_state") == "healthy"
 
 
 def test_os_diagnostics_recent_activity_marks_unsuccessful_action_as_issue():
@@ -166,6 +169,30 @@ def test_os_diagnostics_recent_activity_marks_unsuccessful_action_as_issue():
     assert item["effect"] == "No external effect, Reversible"
     assert item["request_id"] == "req-verify-123"
     assert item["ledger_ref"] == "L42"
+
+
+def test_os_diagnostics_recent_activity_uses_status_and_outcome_reason_when_success_missing():
+    item = OSDiagnosticsExecutor._recent_activity_item(
+        {
+            "_ledger_line": 43,
+            "event_type": "ACTION_COMPLETED",
+            "capability_id": 60,
+            "request_id": "req-explain-456",
+            "status": "failed",
+            "outcome_reason": "Screen capture is unavailable in this runtime because the required dependency 'pyautogui' is missing.",
+            "external_effect": False,
+            "reversible": True,
+            "timestamp_utc": "2026-03-19T03:49:11+00:00",
+        },
+        {60: "explain anything"},
+    )
+
+    assert item is not None
+    assert item["title"] == "Action needs attention"
+    assert item["outcome"] == "issue"
+    assert "pyautogui" in item["reason"]
+    assert item["request_id"] == "req-explain-456"
+    assert item["ledger_ref"] == "L43"
 
 
 def test_os_diagnostics_recent_activity_surfaces_allow_reason_for_successful_action():

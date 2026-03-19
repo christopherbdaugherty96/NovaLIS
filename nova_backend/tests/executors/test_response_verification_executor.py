@@ -34,6 +34,9 @@ def test_response_verification_returns_report(monkeypatch):
     assert "Report Confidence: Medium (0.65)" in result.message
     assert "Accuracy:" in result.message
     assert isinstance(result.data, dict)
+    assert result.speakable_text.startswith("Verification complete.")
+    assert isinstance(result.structured_data, dict)
+    assert result.structured_data["verification_accuracy_label"] == "Medium"
     assert "verification_text" in result.data
     assert result.data["verification_accuracy_label"] == "Medium"
     assert result.data["verification_accuracy_score"] == 0.65
@@ -105,6 +108,8 @@ def test_response_verification_returns_truthful_failure_when_analysis_is_unavail
     result = mod.ResponseVerificationExecutor().execute(_request({"text": "The moon has an atmosphere"}))
     assert result.success is False
     assert "structured analysis is currently blocked or unavailable" in result.message.lower()
+    assert result.outcome_reason
+    assert result.structured_data["failure_kind"] == "analysis_unavailable"
 
 
 def test_response_verification_rejects_incomplete_report(monkeypatch):

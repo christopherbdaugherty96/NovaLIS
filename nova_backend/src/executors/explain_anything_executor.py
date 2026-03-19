@@ -38,6 +38,49 @@ class ExplainAnythingExecutor:
         self.screen_analysis_executor = screen_analysis_executor or ScreenAnalysisExecutor(ledger=self.ledger)
         self.router = router or ExplainAnythingRouter()
 
+    @staticmethod
+    def _failure_result(
+        message: str,
+        *,
+        request_id: str,
+        failure_kind: str,
+        payload: dict[str, Any] | None = None,
+    ) -> ActionResult:
+        structured = dict(payload or {})
+        structured.setdefault("explain_available", False)
+        structured.setdefault("failure_kind", failure_kind)
+        return ActionResult.failure(
+            message,
+            data=structured,
+            structured_data=structured,
+            speakable_text=message,
+            request_id=request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+            outcome_reason=message,
+        )
+
+    @staticmethod
+    def _ok_result(
+        message: str,
+        *,
+        request_id: str,
+        payload: dict[str, Any],
+        speakable_text: str,
+    ) -> ActionResult:
+        structured = dict(payload)
+        return ActionResult.ok(
+            message,
+            data=structured,
+            structured_data=structured,
+            speakable_text=speakable_text,
+            request_id=request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+        )
+
     def execute(self, request) -> ActionResult:
         params = dict(request.params or {})
         invocation_source = str(params.get("invocation_source") or "").strip().lower()
@@ -54,12 +97,11 @@ class ExplainAnythingExecutor:
             },
         )
         if invocation_source not in self.ALLOWED_INVOCATION_SOURCES:
-            result = ActionResult.failure(
+            result = self._failure_result(
                 "Explain mode requires explicit invocation source (voice, ui, or text). Try: explain this, what is this, or summarize this page.",
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
-                reversible=True,
+                failure_kind="invalid_invocation_source",
+                payload={"invocation_source": invocation_source or "unknown"},
             )
             self._safe_log(
                 "EXPLAIN_ANYTHING_COMPLETED",
@@ -112,13 +154,11 @@ class ExplainAnythingExecutor:
             )
             return result
 
-        result = ActionResult.failure(
+        result = self._failure_result(
             f"{self.router.clarification_message()}\nTry selecting a file, pointing at the screen region, or opening the page you want explained.",
-            data={"context_snapshot": context_snapshot},
             request_id=request.request_id,
-            authority_class="read_only",
-            external_effect=False,
-            reversible=True,
+            failure_kind="clarification_required",
+            payload={"context_snapshot": context_snapshot},
         )
         self._safe_log(
             "EXPLAIN_ANYTHING_COMPLETED",
@@ -133,36 +173,30 @@ class ExplainAnythingExecutor:
     def _explain_file(self, request, file_path_text: str, context_snapshot: dict[str, Any]) -> ActionResult:
         path = Path(file_path_text).expanduser()
         if not path.exists() or not path.is_file():
-            return ActionResult.failure(
+            return self._failure_result(
                 "I could not find that file to explain.",
-                data={"context_snapshot": context_snapshot},
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
-                reversible=True,
+                failure_kind="file_not_found",
+                payload={"context_snapshot": context_snapshot, "file_path": str(path)},
             )
 
         if not self.router.is_supported_file(str(path)):
-            return ActionResult.failure(
+            return self._failure_result(
                 "That file type is not supported yet. Try a text-based file, or use screen analysis if the file is already open on screen.",
-                data={"context_snapshot": context_snapshot, "file_path": str(path)},
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
-                reversible=True,
+                failure_kind="unsupported_file_type",
+                payload={"context_snapshot": context_snapshot, "file_path": str(path)},
             )
 
         try:
             with path.open("r", encoding="utf-8", errors="replace") as handle:
                 content = handle.read(self.MAX_FILE_CHARS + 1)
         except Exception:
-            return ActionResult.failure(
+            return self._failure_result(
                 "I could not read that file.",
-                data={"context_snapshot": context_snapshot, "file_path": str(path)},
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
-                reversible=True,
+                failure_kind="file_read_failed",
+                payload={"context_snapshot": context_snapshot, "file_path": str(path)},
             )
 
         was_truncated = len(content) > self.MAX_FILE_CHARS
@@ -185,33 +219,32 @@ class ExplainAnythingExecutor:
             "last_relevant_object": path.name,
             "current_step": "analysis",
         }
-        return ActionResult.ok(
-            message=message,
-            data={
-                "context_snapshot": context_snapshot,
-                "analysis": {
-                    "type": "file",
+        payload = {
+            "context_snapshot": context_snapshot,
+            "analysis": {
+                "type": "file",
+                "file_path": str(path),
+                "summary": summary,
+            },
+            "widget": {
+                "type": "file_explanation",
+                "data": {
                     "file_path": str(path),
                     "summary": summary,
+                    "follow_up_prompts": [
+                        f"summarize {path.name}",
+                        "explain this file in more detail",
+                        "analyze this screen",
+                    ],
                 },
-                "widget": {
-                    "type": "file_explanation",
-                    "data": {
-                        "file_path": str(path),
-                        "summary": summary,
-                        "follow_up_prompts": [
-                            f"summarize {path.name}",
-                            "explain this file in more detail",
-                            "analyze this screen",
-                        ],
-                    },
-                },
-                "working_context_delta": working_context_delta,
             },
+            "working_context_delta": working_context_delta,
+        }
+        return self._ok_result(
+            message,
             request_id=request.request_id,
-            authority_class="read_only",
-            external_effect=False,
-            reversible=True,
+            payload=payload,
+            speakable_text=f"File explanation ready for {path.name}. {summary}",
         )
 
     def _safe_log(self, event_type: str, payload: dict[str, Any]) -> None:
