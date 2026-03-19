@@ -163,3 +163,34 @@ def test_general_chat_adds_natural_followup_prompt_for_exploratory_queries():
     assert result.success is True
     assert "simple dashboard with a few high-signal panels." in result.message
     assert "branch this into a few directions" in result.message
+
+
+def test_general_chat_adds_reference_hint_for_ordinal_followup():
+    skill = GeneralChatSkill()
+    captured = {}
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        captured["prompt"] = prompt
+        return "The first option is the best starting point because it is simpler to validate."
+
+    context = [
+        {"role": "user", "content": "Give me three dashboard ideas."},
+        {
+            "role": "assistant",
+            "content": "Here are three ideas:\n1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center",
+        },
+    ]
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(
+            skill.handle(
+                "Go with the first.",
+                context=context,
+                session_state={"session_id": "sess-ordinal"},
+            )
+        )
+
+    assert result is not None
+    assert result.success is True
+    assert "Likely referenced prior option 1: Minimal operator dashboard" in captured["prompt"]
+    assert "Current user message:\nGo with the first." in captured["prompt"]

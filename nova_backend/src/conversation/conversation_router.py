@@ -57,10 +57,20 @@ class ConversationRouter:
         "it",
         "them",
         "those",
+        "that one",
+        "this one",
         "what about",
         "and what about",
         "compare with",
         "the other one",
+        "the first",
+        "the second",
+        "the third",
+        "the last",
+        "go with",
+        "continue that",
+        "say more",
+        "what do you mean by that",
         "the result",
         "the article",
         "the report",
@@ -87,6 +97,11 @@ class ConversationRouter:
         "social mode": ConversationMode.CASUAL,
     }
     OVERRIDE_RESET_COMMANDS = {"reset mode", "default mode", "stop mode"}
+    ORDINAL_REFERENCE_RE = re.compile(
+        r"\b(?:go with|pick|choose|take)\s+(?:the\s+)?(first|second|third|last|final)\b"
+        r"|\b(?:the|that)\s+(first|second|third|last|final)\b",
+        re.IGNORECASE,
+    )
 
     @classmethod
     def route(cls, user_text: str, session_state: dict[str, Any] | None = None) -> ConversationDecision:
@@ -268,5 +283,7 @@ class ConversationRouter:
         if not has_context:
             return False
         if any(marker in lowered for marker in cls.FOLLOWUP_MARKERS):
+            return True
+        if cls.ORDINAL_REFERENCE_RE.search(lowered):
             return True
         return len(lowered.split()) <= 3
