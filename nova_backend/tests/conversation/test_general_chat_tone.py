@@ -136,3 +136,30 @@ def test_general_chat_builds_bounded_conversational_prompt_with_session_context(
     assert "Active topic: local AI hardware" in captured["prompt"]
     assert "Active project thread: Nova runtime polish" in captured["prompt"]
     assert captured["session_id"] == "sess-1"
+
+
+def test_general_chat_adds_natural_followup_prompt_for_exploratory_queries():
+    skill = GeneralChatSkill()
+
+    def _fake_generate_chat(_prompt: str, **kwargs):
+        return "A good starting point is a simple dashboard with a few high-signal panels."
+
+    session_state = {
+        "turn_count": 0,
+        "last_clarification_turn": None,
+        "deep_mode_armed": False,
+    }
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(
+            skill.handle(
+                "Can we brainstorm options and compare trade-offs for Nova's dashboard layout?",
+                context=[],
+                session_state=session_state,
+            )
+        )
+
+    assert result is not None
+    assert result.success is True
+    assert "simple dashboard with a few high-signal panels." in result.message
+    assert "branch this into a few directions" in result.message

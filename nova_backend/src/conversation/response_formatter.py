@@ -11,6 +11,24 @@ class ResponseFormatter:
         "implementation": CLARIFY_PROMPTS["concept_or_steps"],
         "brainstorming": CLARIFY_PROMPTS["broad_or_narrow"],
     }
+    BRANCH_SUGGESTION_TEMPLATES = {
+        "casual": "If you want, I can take this in a different direction or keep building on it.",
+        "analytical": "If useful, I can compare the trade-offs or test a different angle.",
+        "implementation": "If useful, I can turn this into steps or adapt it to your setup.",
+        "brainstorming": "If you want, I can branch this into a few directions and compare them.",
+    }
+    DEPTH_PROMPT_TEMPLATES = {
+        "casual": "If you want, I can keep it short or go deeper on one part.",
+        "analytical": "If useful, I can go deeper on one part or tighten this into the short version.",
+        "implementation": "If useful, I can expand a specific step or compress this into a quick checklist.",
+        "brainstorming": "If you want, I can go deeper on one option or keep it broad.",
+    }
+    COMBINED_FOLLOWUP_TEMPLATES = {
+        "casual": "If you want, I can go deeper on one part or take this in a different direction.",
+        "analytical": "If useful, I can compare the trade-offs or go deeper on one part.",
+        "implementation": "If useful, I can expand a specific step or adapt this to a different setup.",
+        "brainstorming": "If you want, I can branch this into a few directions or go deeper on one path.",
+    }
 
     ACK_REPLACEMENTS = {
         "operation completed": "That's done.",
@@ -95,9 +113,27 @@ class ResponseFormatter:
 
         if allow_clarification:
             add_ons.append(ResponseFormatter.CLARIFICATION_TEMPLATES.get(mode, ResponseFormatter.CLARIFICATION_TEMPLATES["casual"]))
-
-        _ = allow_depth_prompt
-        _ = allow_branch_suggestion
+        elif allow_branch_suggestion and allow_depth_prompt:
+            add_ons.append(
+                ResponseFormatter.COMBINED_FOLLOWUP_TEMPLATES.get(
+                    mode,
+                    ResponseFormatter.COMBINED_FOLLOWUP_TEMPLATES["casual"],
+                )
+            )
+        elif allow_branch_suggestion:
+            add_ons.append(
+                ResponseFormatter.BRANCH_SUGGESTION_TEMPLATES.get(
+                    mode,
+                    ResponseFormatter.BRANCH_SUGGESTION_TEMPLATES["casual"],
+                )
+            )
+        elif allow_depth_prompt:
+            add_ons.append(
+                ResponseFormatter.DEPTH_PROMPT_TEMPLATES.get(
+                    mode,
+                    ResponseFormatter.DEPTH_PROMPT_TEMPLATES["casual"],
+                )
+            )
 
         if add_ons:
             text = f"{text}\n\n" + "\n".join(add_ons[:1])
