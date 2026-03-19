@@ -25,6 +25,56 @@ class ScreenAnalysisExecutor:
         self.ocr_pipeline = ocr_pipeline or OCRPipeline()
         self.vision_analyzer = vision_analyzer or VisionAnalyzer()
 
+    @staticmethod
+    def _ok_result(
+        message: str,
+        *,
+        request_id: str,
+        payload: dict[str, Any],
+        speakable_text: str,
+    ) -> ActionResult:
+        structured = dict(payload)
+        return ActionResult.ok(
+            message,
+            data=structured,
+            structured_data=structured,
+            speakable_text=speakable_text,
+            request_id=request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+        )
+
+    @staticmethod
+    def _failure_result(
+        message: str,
+        *,
+        request_id: str,
+        payload: dict[str, Any] | None = None,
+    ) -> ActionResult:
+        structured = dict(payload or {})
+        structured.setdefault("analysis_available", False)
+        return ActionResult.failure(
+            message,
+            data=structured,
+            structured_data=structured,
+            speakable_text=message,
+            request_id=request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+            outcome_reason=message,
+        )
+
+    @staticmethod
+    def _speakable_summary(base_summary: str, *, ocr_text: str) -> str:
+        compact_summary = " ".join(str(base_summary or "").split()).strip()
+        if len(compact_summary) > 180:
+            compact_summary = compact_summary[:177].rstrip() + "..."
+        if str(ocr_text or "").strip():
+            return f"Screen analysis ready. {compact_summary} Readable text was detected."
+        return f"Screen analysis ready. {compact_summary}"
+
     def execute(self, request) -> ActionResult:
         try:
             request_params = dict(request.params or {})
@@ -33,11 +83,17 @@ class ScreenAnalysisExecutor:
             if not capture_result.success:
                 self._safe_log(
                     "SCREEN_ANALYSIS_COMPLETED",
-                    {"request_id": request.request_id, "success": False, "error": capture_result.message},
+                    {"request_id": request.request_id, "success": False, "error": capture_result.user_message},
                 )
-                return capture_result
+                payload = dict(capture_result.structured_data or {})
+                payload.setdefault("analysis_stage", "capture")
+                return self._failure_result(
+                    capture_result.user_message,
+                    request_id=request.request_id,
+                    payload=payload,
+                )
 
-            payload = dict(capture_result.data or {})
+            payload = dict(capture_result.structured_data or {})
             capture = dict(payload.get("capture") or {})
             image_path = str(capture.get("image_path") or "")
             ocr_text = self.ocr_pipeline.extract_text(image_path)
@@ -83,25 +139,21 @@ class ScreenAnalysisExecutor:
                 },
             }
 
-            return ActionResult.ok(
-                message=summary,
-                data=merged_data,
+            return self._ok_result(
+                summary,
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
-                reversible=True,
+                payload=merged_data,
+                speakable_text=self._speakable_summary(base_summary, ocr_text=ocr_text),
             )
         except Exception as error:
             self._safe_log(
                 "SCREEN_ANALYSIS_COMPLETED",
                 {"request_id": request.request_id, "success": False, "error": str(error)},
             )
-            return ActionResult.failure(
+            return self._failure_result(
                 "I could not analyze the captured screen region.",
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
-                reversible=True,
+                payload={"analysis_stage": "analysis", "analysis_error": str(error)},
             )
 
     def _safe_log(self, event_type: str, payload: dict[str, Any]) -> None:

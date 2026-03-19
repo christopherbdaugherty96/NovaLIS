@@ -29,11 +29,14 @@ def test_create_document_appends_and_sets_id(monkeypatch):
 
     assert result.success is True
     assert "Doc 1" in result.message
+    assert result.speakable_text.startswith("Analysis document created.")
     docs = result.data["analysis_documents"]
     assert len(docs) == 1
     assert docs[0]["id"] == 1
     assert docs[0]["sections"]
     assert docs[0]["summary"] == "Global policy competition is accelerating."
+    assert result.structured_data["document_id"] == 1
+    assert result.structured_data["section_count"] == 3
 
 
 def test_create_document_rejects_incomplete_stub(monkeypatch):
@@ -50,6 +53,7 @@ def test_create_document_rejects_incomplete_stub(monkeypatch):
 
     assert result.success is False
     assert "incomplete document" in result.message.lower()
+    assert result.structured_data["failure_kind"] == "incomplete_document"
 
 
 def test_summarize_doc_and_explain_section(monkeypatch):

@@ -25,16 +25,58 @@ class ScreenCaptureExecutor:
         self.context_service = context_service or ContextSnapshotService(ledger=self.ledger)
         self.capture_engine = capture_engine or ScreenCaptureEngine()
 
+    @staticmethod
+    def _failure_result(
+        message: str,
+        *,
+        request_id: str,
+        failure_kind: str,
+        payload: dict[str, Any] | None = None,
+    ) -> ActionResult:
+        structured = dict(payload or {})
+        structured.setdefault("capture_available", False)
+        structured.setdefault("capture_failure_kind", failure_kind)
+        return ActionResult.failure(
+            message,
+            data=structured,
+            structured_data=structured,
+            speakable_text=message,
+            request_id=request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+            outcome_reason=message,
+        )
+
+    @staticmethod
+    def _ok_result(
+        message: str,
+        *,
+        request_id: str,
+        payload: dict[str, Any],
+        speakable_text: str,
+    ) -> ActionResult:
+        structured = dict(payload)
+        return ActionResult.ok(
+            message,
+            data=structured,
+            structured_data=structured,
+            speakable_text=speakable_text,
+            request_id=request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+        )
+
     def execute(self, request) -> ActionResult:
         params = dict(request.params or {})
         invocation_source = str(params.get("invocation_source") or "").strip().lower()
         if invocation_source not in self.ALLOWED_INVOCATION_SOURCES:
-            return ActionResult.failure(
+            return self._failure_result(
                 "Screen capture requires explicit invocation source (voice, ui, or text).",
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
-                reversible=True,
+                failure_kind="invalid_invocation_source",
+                payload={"invocation_source": invocation_source or "unknown"},
             )
 
         region_size = self._parse_region_size(params.get("region_size"), default=800)
@@ -65,12 +107,10 @@ class ScreenCaptureExecutor:
                         "error": str(error),
                     },
                 )
-                return ActionResult.failure(
+                return self._failure_result(
                     "I could not collect context for screen capture.",
                     request_id=request.request_id,
-                    authority_class="read_only",
-                    external_effect=False,
-                    reversible=True,
+                    failure_kind="context_unavailable",
                 )
 
         cursor = dict(snapshot.get("cursor") or {})
@@ -104,13 +144,11 @@ class ScreenCaptureExecutor:
                     "missing_dependency": missing_dependency or None,
                 },
             )
-            return ActionResult.failure(
+            return self._failure_result(
                 message,
-                data=failure_data,
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
-                reversible=True,
+                failure_kind=failure_kind or "capture_failed",
+                payload=failure_data,
             )
 
         image_path = str(capture.get("image_path") or "")
@@ -127,32 +165,34 @@ class ScreenCaptureExecutor:
                 "bounds": dict(capture.get("bounds") or bounds),
             },
         )
-        return ActionResult.ok(
-            message=(
+        payload = {
+            "context_snapshot": snapshot,
+            "working_context_delta": self._build_working_context_delta(snapshot),
+            "capture": {
+                "image_path": image_path,
+                "bounds": dict(capture.get("bounds") or bounds),
+            },
+            "widget": {
+                "type": "screen_capture",
+                "data": {
+                    "image_path": image_path,
+                    "bounds": dict(capture.get("bounds") or bounds),
+                    "follow_up_prompts": ["analyze this screen", "explain this"],
+                },
+            },
+        }
+        return self._ok_result(
+            (
                 "Captured the screen region around your cursor."
                 + (f" Active context: {context_line}." if context_line else "")
                 + "\nTry next: analyze this screen or explain this."
             ),
-            data={
-                "context_snapshot": snapshot,
-                "working_context_delta": self._build_working_context_delta(snapshot),
-                "capture": {
-                    "image_path": image_path,
-                    "bounds": dict(capture.get("bounds") or bounds),
-                },
-                "widget": {
-                    "type": "screen_capture",
-                    "data": {
-                        "image_path": image_path,
-                        "bounds": dict(capture.get("bounds") or bounds),
-                        "follow_up_prompts": ["analyze this screen", "explain this"],
-                    },
-                },
-            },
             request_id=request.request_id,
-            authority_class="read_only",
-            external_effect=False,
-            reversible=True,
+            payload=payload,
+            speakable_text=(
+                "Screen region captured."
+                + (f" Active context {context_line}." if context_line else "")
+            ),
         )
 
     @staticmethod

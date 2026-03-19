@@ -36,6 +36,42 @@ class MultiSourceReportingExecutor:
         self.deepseek_safety = DeepSeekSafetyWrapper()
 
     @staticmethod
+    def _speakable_report_summary(
+        *,
+        topic: str,
+        summary: str,
+        confidence: float,
+        analysis_focus: str,
+    ) -> str:
+        focus_label = "source reliability report" if analysis_focus == "source_reliability" else "research report"
+        clean_summary = " ".join(str(summary or "").split()).strip()
+        if len(clean_summary) > 220:
+            clean_summary = clean_summary[:217].rstrip() + "..."
+        return (
+            f"{focus_label.capitalize()} ready on {topic}. "
+            f"Confidence {confidence:.2f}. "
+            f"{clean_summary}"
+        ).strip()
+
+    @staticmethod
+    def _failure_result(message: str, *, request_id: str, failure_kind: str) -> ActionResult:
+        payload = {
+            "failure_kind": failure_kind,
+            "report_available": False,
+        }
+        return ActionResult.failure(
+            message,
+            data=payload,
+            structured_data=payload,
+            speakable_text=message,
+            request_id=request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+            outcome_reason=message,
+        )
+
+    @staticmethod
     def _clamp(value: float, lower: float = 0.0, upper: float = 1.0) -> float:
         return max(lower, min(upper, float(value)))
 
@@ -316,7 +352,11 @@ class MultiSourceReportingExecutor:
         session_id = str(params.get("session_id") or "").strip() or None
         analysis_focus = str(params.get("analysis_focus") or "").strip().lower()
         if not query:
-            return ActionResult.failure("No report query provided.", request_id=request.request_id)
+            return self._failure_result(
+                "No report query provided.",
+                request_id=request.request_id,
+                failure_kind="missing_query",
+            )
 
         display_topic = query
         analyst_note_prompt = (
@@ -339,7 +379,11 @@ class MultiSourceReportingExecutor:
             session_id=session_id,
         )
         if not results:
-            return ActionResult.failure("I couldn't build the report due to a network issue.", request_id=request.request_id)
+            return self._failure_result(
+                "I couldn't build the report due to a network issue.",
+                request_id=request.request_id,
+                failure_kind="network_unavailable",
+            )
         top_results = list(results[:6])
         titles = [item.get("title", "").strip() for item in top_results if item.get("title")]
         domains = []
@@ -502,30 +546,38 @@ class MultiSourceReportingExecutor:
             }
             for i in results[:5]
         ]
-        return ActionResult.ok(
-            message=message,
-            data={
-                "widget": {
-                    "type": "search",
-                    "data": {
-                        "query": query,
-                        "provider": self._provider_label(provider),
-                        "result_count": len(widget_results),
-                        "summary": structured_brief.get("summary") or reporting_result.summary,
-                        "researched_summary": structured_brief.get("summary") or reporting_result.summary,
-                        "source_pages_read": 0,
-                        "analysis_focus": analysis_focus or None,
-                        "results": widget_results,
-                    },
-                },
-                "structured_brief": {
-                    **structured_brief,
-                    "search_provider": provider,
-                    "contract_status": contract_status,
-                    "validation_status": validation_status,
-                    "fallback_reason": fallback_reason,
+        payload = {
+            "widget": {
+                "type": "search",
+                "data": {
+                    "query": query,
+                    "provider": self._provider_label(provider),
+                    "result_count": len(widget_results),
+                    "summary": structured_brief.get("summary") or reporting_result.summary,
+                    "researched_summary": structured_brief.get("summary") or reporting_result.summary,
+                    "source_pages_read": 0,
+                    "analysis_focus": analysis_focus or None,
+                    "results": widget_results,
                 },
             },
+            "structured_brief": {
+                **structured_brief,
+                "search_provider": provider,
+                "contract_status": contract_status,
+                "validation_status": validation_status,
+                "fallback_reason": fallback_reason,
+            },
+        }
+        return ActionResult.ok(
+            message=message,
+            data=payload,
+            structured_data=payload,
+            speakable_text=self._speakable_report_summary(
+                topic=display_topic,
+                summary=structured_brief.get("summary") or reporting_result.summary,
+                confidence=confidence_score,
+                analysis_focus=analysis_focus,
+            ),
             request_id=request.request_id,
             authority_class="read_only",
             external_effect=False,

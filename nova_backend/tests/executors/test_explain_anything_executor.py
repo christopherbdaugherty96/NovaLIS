@@ -57,6 +57,7 @@ def test_explain_anything_requires_invocation_source():
     assert result.success is False
     assert "invocation source" in result.message.lower()
     assert "explain this" in result.message.lower()
+    assert result.structured_data["failure_kind"] == "invalid_invocation_source"
     event_names = [name for name, _ in ledger.events]
     assert "EXPLAIN_ANYTHING_REQUESTED" in event_names
     assert "EXPLAIN_ANYTHING_COMPLETED" in event_names
@@ -79,6 +80,7 @@ def test_explain_anything_delegates_to_screen_analysis_when_context_available():
     assert result.success is True
     assert "delegated" in result.message.lower()
     assert result.data["widget"]["type"] == "screen_analysis"
+    assert result.structured_data["widget"]["type"] == "screen_analysis"
     completion = [payload for name, payload in ledger.events if name == "EXPLAIN_ANYTHING_COMPLETED"][-1]
     assert completion.get("success") is True
     assert completion.get("route") in {"screen", "webpage"}
@@ -102,8 +104,10 @@ def test_explain_anything_file_route_summarizes_module_not_found(tmp_path):
         _request({"invocation_source": "text", "file_path": str(target), "query": "what is this error"})
     )
     assert result.success is True
+    assert result.speakable_text.startswith("File explanation ready for error.log.")
     assert "pip install requests" in result.message
     assert result.data["widget"]["type"] == "file_explanation"
+    assert result.structured_data["analysis"]["type"] == "file"
     assert result.data["widget"]["data"]["follow_up_prompts"]
     completion = [payload for name, payload in ledger.events if name == "EXPLAIN_ANYTHING_COMPLETED"][-1]
     assert completion.get("success") is True

@@ -33,7 +33,7 @@ The current repo also has unresolved practical truth gaps:
 - local control, speech output, file/folder opening, and diagnostics now have explicit side-effect-safe proof coverage so they are no longer floating as implied unclassified runtime claims
 - trust-facing payoff surfaces are now `reliable` for governed Recent Activity rows: Recent Activity distinguishes success vs issue states, surfaces `Why` and `Effect`, and exposes request/ledger correlation for the governed trust-status path without hiding the safe-case outcome
 - the Phase-6 release-gate bundle is currently green: trust-panel regressions, runtime-auditor checks, governance-boundary tests, and the key explain/verify/brief executor suites all passed on March 19, 2026
-- capability metadata and executor contracts are not yet normalized enough for safe external-provider expansion
+- the main remaining Phase-6 blocker is now cross-cutting contract normalization: ActionResult shape and capability authority metadata are still not normalized enough for safe external-provider expansion
 
 ## What Moves Here From The Source Spec
 The following source-spec themes belong in Phase 6:
@@ -118,6 +118,31 @@ Required work:
 - define one canonical ActionResult shape for all executors
 - verify that every governed execution path returns user-safe text, speakable text, structured metadata, and audit correlation
 - verify that every action produces a complete lifecycle in the ledger
+
+Current next implementation move:
+- lock the canonical ActionResult contract in the Phase-6 checklist
+- normalize `action_result.py` and the Governor boundary first
+- migrate the first governed executor wave and core consumers only after the boundary contract is stable
+
+Current implementation state as of 2026-03-19:
+- completed:
+  - ActionResult contract locked in docs
+  - `action_result.py` normalization spine added
+  - Governor boundary now stamps shared result metadata centrally
+  - first governed executor wave migrated:
+    - response verification
+    - news intelligence
+    - multi-source reporting
+    - analysis documents
+  - explain/screen executor wave migrated:
+    - explain anything
+    - screen capture
+    - screen analysis
+  - main governed `brain_server.py` path now prefers canonical result reads
+  - trust/recent-activity normalization now reads canonical status and outcome metadata first
+- next:
+  - enforce authority metadata parity for active capabilities
+  - remove remaining legacy consumer fallbacks after broader executor migration is complete
 
 Target lifecycle:
 1. `INTENT_RECEIVED`

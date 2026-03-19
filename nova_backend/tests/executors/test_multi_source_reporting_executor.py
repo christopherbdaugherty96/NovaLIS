@@ -41,6 +41,9 @@ def test_multi_source_report_structured_output(monkeypatch):
     assert "Counter Analysis" in result.message
     assert "abcnews.go.com" in result.message
     assert isinstance(result.data, dict)
+    assert result.speakable_text.startswith("Research report ready")
+    assert isinstance(result.structured_data, dict)
+    assert result.structured_data.get("widget", {}).get("type") == "search"
     assert result.data.get("widget", {}).get("type") == "search"
     widget_data = result.data.get("widget", {}).get("data", {})
     assert widget_data.get("query") == "ai regulation updates"
@@ -73,6 +76,7 @@ def test_multi_source_report_handles_missing_query():
     result = executor.execute(_request({"query": ""}))
     assert result.success is False
     assert "No report query provided." in result.message
+    assert result.structured_data["failure_kind"] == "missing_query"
 
 
 def test_multi_source_report_falls_back_on_validation_failure(monkeypatch):

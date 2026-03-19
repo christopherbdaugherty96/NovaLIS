@@ -306,7 +306,7 @@ class OSDiagnosticsExecutor:
             kind = "action"
             title = "Action completed" if outcome != "issue" else "Action needs attention"
             detail = OSDiagnosticsExecutor._capability_label_from_entry(entry, capability_lookup)
-            reason = str(entry.get("failure_reason") or "").strip()
+            reason = str(entry.get("failure_reason") or entry.get("outcome_reason") or "").strip()
             if not reason:
                 reason = OSDiagnosticsExecutor._recent_activity_allow_reason(entry)
             effect = OSDiagnosticsExecutor._recent_activity_effect(entry)
@@ -382,6 +382,11 @@ class OSDiagnosticsExecutor:
         success = entry.get("success")
         if isinstance(success, bool):
             return "success" if success else "issue"
+        status = str(entry.get("status") or "").strip().lower()
+        if status == "completed":
+            return "success"
+        if status in {"failed", "refused"}:
+            return "issue"
         return "info"
 
     @staticmethod
@@ -411,6 +416,7 @@ class OSDiagnosticsExecutor:
             "reversible_local": "reversible local",
             "persistent_change": "persistent-change",
             "external_effect": "external-effect",
+            "read_only": "read-only",
         }
         authority_label = label_map.get(authority_class, authority_class.replace("_", " "))
         requires_confirmation = entry.get("requires_confirmation")
@@ -936,6 +942,8 @@ class OSDiagnosticsExecutor:
         return ActionResult.ok(
             message=message,
             data=data,
+            structured_data=data,
+            speakable_text=message,
             request_id=request.request_id,
             authority_class="read_only",
             external_effect=False,

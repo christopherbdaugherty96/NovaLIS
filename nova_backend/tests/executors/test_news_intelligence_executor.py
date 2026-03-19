@@ -51,8 +51,11 @@ def test_intelligence_brief_updates_topic_map(monkeypatch):
     assert result.success is True
     assert "NOVA INTELLIGENCE BRIEF" in result.message
     assert isinstance(result.data, dict)
+    assert result.speakable_text.startswith("Daily intelligence brief ready.")
+    assert isinstance(result.structured_data, dict)
     assert isinstance(result.data.get("topic_map"), dict)
     assert "ai" in result.data["topic_map"]
+    assert "ai" in result.structured_data["topic_map"]
 
 
 def test_summary_falls_back_when_llm_is_slow(monkeypatch):
@@ -268,6 +271,8 @@ def test_story_page_summary_reads_article_page(monkeypatch):
     assert "STORY PAGE SUMMARY - Story 1" in result.message
     assert "Reference: https://example.com/a" in result.message
     assert isinstance(result.data, dict)
+    assert result.speakable_text.startswith("Story page summary ready for story 1.")
+    assert result.structured_data["widget"]["type"] == "news_summary"
     assert int(result.data.get("story_index") or 0) == 1
 
 

@@ -24,6 +24,56 @@ class AnalysisDocumentExecutor:
         self._bridge = DeepSeekBridge()
         self._safety = DeepSeekSafetyWrapper()
 
+    @staticmethod
+    def _speakable_preview(text: str, *, limit: int = 220) -> str:
+        clean = re.sub(r"\s+", " ", str(text or "").strip())
+        if len(clean) <= limit:
+            return clean
+        return clean[: limit - 3].rstrip() + "..."
+
+    @staticmethod
+    def _failure_result(
+        message: str,
+        *,
+        request_id: str,
+        action: str,
+        payload: dict[str, Any] | None = None,
+    ) -> ActionResult:
+        structured = dict(payload or {})
+        structured.setdefault("document_action", action)
+        structured.setdefault("document_available", False)
+        return ActionResult.failure(
+            message,
+            data=structured,
+            structured_data=structured,
+            speakable_text=message,
+            request_id=request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+            outcome_reason=message,
+        )
+
+    @staticmethod
+    def _ok_result(
+        message: str,
+        *,
+        request_id: str,
+        payload: dict[str, Any],
+        speakable_text: str,
+    ) -> ActionResult:
+        structured = dict(payload)
+        return ActionResult.ok(
+            message=message,
+            data=structured,
+            structured_data=structured,
+            speakable_text=speakable_text,
+            request_id=request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+        )
+
     def execute(self, request) -> ActionResult:
         params = dict(request.params or {})
         action = str(params.get("action") or "create").strip().lower()
@@ -38,12 +88,21 @@ class AnalysisDocumentExecutor:
         if action == "list":
             return self._list_documents(request, documents)
 
-        return ActionResult.failure("Unsupported analysis document action.", request_id=request.request_id)
+        return self._failure_result(
+            "Unsupported analysis document action.",
+            request_id=request.request_id,
+            action=action or "unknown",
+        )
 
     def _create_document(self, request, params: dict[str, Any], documents: list[dict[str, Any]]) -> ActionResult:
         topic = str(params.get("topic") or "").strip()
         if not topic:
-            return ActionResult.failure("Please provide a topic for the analysis document.", request_id=request.request_id)
+            return self._failure_result(
+                "Please provide a topic for the analysis document.",
+                request_id=request.request_id,
+                action="create",
+                payload={"topic": topic},
+            )
 
         prompt = (
             "Create a structured long-form analysis document.\n"
@@ -69,16 +128,25 @@ class AnalysisDocumentExecutor:
         )
         content = self._safety.sanitize(raw)
         if not content:
-            return ActionResult.failure("I couldn't generate the analysis document right now.", request_id=request.request_id)
+            return self._failure_result(
+                "I couldn't generate the analysis document right now.",
+                request_id=request.request_id,
+                action="create",
+                payload={"topic": topic},
+            )
         if self._analysis_unavailable(content):
-            return ActionResult.failure(
+            return self._failure_result(
                 "Analysis document generation is unavailable in this runtime because structured analysis is currently blocked or unavailable.",
                 request_id=request.request_id,
+                action="create",
+                payload={"topic": topic, "failure_kind": "analysis_unavailable"},
             )
         if not self._looks_complete_document(content):
-            return ActionResult.failure(
+            return self._failure_result(
                 "Analysis document generation returned an incomplete document, so I did not save it as a finished report.",
                 request_id=request.request_id,
+                action="create",
+                payload={"topic": topic, "failure_kind": "incomplete_document"},
             )
 
         next_id = self._next_id(documents)
@@ -111,27 +179,37 @@ class AnalysisDocumentExecutor:
             f"- explain section 1 of doc {next_id}\n"
             f"- list analysis docs"
         )
-        return ActionResult.ok(
-            message=message,
-            data={
-                "analysis_documents": documents,
-                "document_id": next_id,
-                "follow_up_prompts": [
-                    f"summarize doc {next_id}",
-                    f"explain section 1 of doc {next_id}",
-                    "list analysis docs",
-                ],
-            },
+        payload = {
+            "analysis_documents": documents,
+            "document_id": next_id,
+            "document_title": title,
+            "document_summary": summary,
+            "section_count": section_count,
+            "follow_up_prompts": [
+                f"summarize doc {next_id}",
+                f"explain section 1 of doc {next_id}",
+                "list analysis docs",
+            ],
+        }
+        return self._ok_result(
+            message,
             request_id=request.request_id,
-            authority_class="read_only",
-            external_effect=False,
-            reversible=True,
+            payload=payload,
+            speakable_text=(
+                f"Analysis document created. Doc {next_id}: {title}. "
+                f"{section_count} section{'s' if section_count != 1 else ''} detected."
+            ),
         )
 
     def _summarize_document(self, request, params: dict[str, Any], documents: list[dict[str, Any]]) -> ActionResult:
         doc = self._resolve_doc(params, documents)
         if doc is None:
-            return ActionResult.failure("I couldn't find that document in this session.", request_id=request.request_id)
+            return self._failure_result(
+                "I couldn't find that document in this session.",
+                request_id=request.request_id,
+                action="summarize_doc",
+                payload={"requested_doc_id": params.get("doc_id")},
+            )
 
         sections = list(doc.get("sections") or [])
         section_titles = ", ".join(str(s.get("title") or f"Section {s.get('number')}") for s in sections[:5])
@@ -146,46 +224,67 @@ class AnalysisDocumentExecutor:
             f"- explain section 2 of doc {doc['id']}\n"
             f"- list analysis docs"
         )
-        return ActionResult.ok(
-            message=message,
-            data={
-                "analysis_documents": documents,
-                "document_id": int(doc["id"]),
-                "follow_up_prompts": [
-                    f"explain section 1 of doc {doc['id']}",
-                    f"explain section 2 of doc {doc['id']}",
-                    "list analysis docs",
-                ],
-            },
+        payload = {
+            "analysis_documents": documents,
+            "document_id": int(doc["id"]),
+            "document_title": str(doc.get("title") or "Untitled"),
+            "document_summary": str(doc.get("summary") or ""),
+            "follow_up_prompts": [
+                f"explain section 1 of doc {doc['id']}",
+                f"explain section 2 of doc {doc['id']}",
+                "list analysis docs",
+            ],
+        }
+        return self._ok_result(
+            message,
             request_id=request.request_id,
-            authority_class="read_only",
-            external_effect=False,
-            reversible=True,
+            payload=payload,
+            speakable_text=(
+                f"Document summary ready for doc {doc['id']}. "
+                f"{self._speakable_preview(str(doc.get('summary') or ''), limit=160)}"
+            ),
         )
 
     def _explain_section(self, request, params: dict[str, Any], documents: list[dict[str, Any]]) -> ActionResult:
         doc = self._resolve_doc(params, documents)
         if doc is None:
-            return ActionResult.failure("I couldn't find that document in this session.", request_id=request.request_id)
+            return self._failure_result(
+                "I couldn't find that document in this session.",
+                request_id=request.request_id,
+                action="explain_section",
+                payload={"requested_doc_id": params.get("doc_id")},
+            )
 
         try:
             section_number = int(params.get("section_number") or 0)
         except Exception:
             section_number = 0
         if section_number <= 0:
-            return ActionResult.failure("Please specify a valid section number.", request_id=request.request_id)
+            return self._failure_result(
+                "Please specify a valid section number.",
+                request_id=request.request_id,
+                action="explain_section",
+                payload={"document_id": int(doc["id"]), "section_number": section_number},
+            )
 
         sections = list(doc.get("sections") or [])
         section = next((s for s in sections if int(s.get("number") or -1) == section_number), None)
         if section is None:
-            return ActionResult.failure(
+            return self._failure_result(
                 f"Section {section_number} is not available in doc {doc['id']}.",
                 request_id=request.request_id,
+                action="explain_section",
+                payload={"document_id": int(doc["id"]), "section_number": section_number},
             )
 
         section_text = str(section.get("content") or "").strip()
         if not section_text:
-            return ActionResult.failure("That section has no content to explain.", request_id=request.request_id)
+            return self._failure_result(
+                "That section has no content to explain.",
+                request_id=request.request_id,
+                action="explain_section",
+                payload={"document_id": int(doc["id"]), "section_number": section_number},
+            )
 
         prompt = (
             "Explain this section in clear, practical language.\n\n"
@@ -212,26 +311,34 @@ class AnalysisDocumentExecutor:
             f"- explain section {section_number + 1} of doc {doc['id']}\n"
             f"- list analysis docs"
         )
-        return ActionResult.ok(
-            message=message,
-            data={
-                "analysis_documents": documents,
-                "document_id": int(doc["id"]),
-                "follow_up_prompts": [
-                    f"summarize doc {doc['id']}",
-                    f"explain section {section_number + 1} of doc {doc['id']}",
-                    "list analysis docs",
-                ],
-            },
+        payload = {
+            "analysis_documents": documents,
+            "document_id": int(doc["id"]),
+            "section_number": section_number,
+            "section_title": str(section.get("title") or f"Section {section_number}"),
+            "follow_up_prompts": [
+                f"summarize doc {doc['id']}",
+                f"explain section {section_number + 1} of doc {doc['id']}",
+                "list analysis docs",
+            ],
+        }
+        return self._ok_result(
+            message,
             request_id=request.request_id,
-            authority_class="read_only",
-            external_effect=False,
-            reversible=True,
+            payload=payload,
+            speakable_text=(
+                f"Section explanation ready for doc {doc['id']} section {section_number}. "
+                f"{self._speakable_preview(explained, limit=170)}"
+            ),
         )
 
     def _list_documents(self, request, documents: list[dict[str, Any]]) -> ActionResult:
         if not documents:
-            return ActionResult.failure("No analysis documents are available in this session.", request_id=request.request_id)
+            return self._failure_result(
+                "No analysis documents are available in this session.",
+                request_id=request.request_id,
+                action="list",
+            )
 
         lines = [f"Analysis Documents ({len(documents)})"]
         for item in sorted(documents, key=lambda d: int(d.get("id", 0))):
@@ -241,19 +348,19 @@ class AnalysisDocumentExecutor:
             suffix = f" | {' | '.join(meta_parts)}" if meta_parts else ""
             lines.append(f"- Doc {item.get('id')}: {item.get('title', 'Untitled')}{suffix}")
         lines.extend(["", "Try next: summarize doc 1, explain section 1 of doc 1."])
-        return ActionResult.ok(
-            message="\n".join(lines),
-            data={
-                "analysis_documents": documents,
-                "follow_up_prompts": [
-                    "summarize doc 1",
-                    "explain section 1 of doc 1",
-                ],
-            },
+        payload = {
+            "analysis_documents": documents,
+            "document_count": len(documents),
+            "follow_up_prompts": [
+                "summarize doc 1",
+                "explain section 1 of doc 1",
+            ],
+        }
+        return self._ok_result(
+            "\n".join(lines),
             request_id=request.request_id,
-            authority_class="read_only",
-            external_effect=False,
-            reversible=True,
+            payload=payload,
+            speakable_text=f"Analysis document list ready. {len(documents)} document{'s' if len(documents) != 1 else ''} available.",
         )
 
     @staticmethod
