@@ -134,6 +134,13 @@ def _safe_read(path: Path) -> str:
     return path.read_text(encoding="utf-8")
 
 
+def _stable_hash_bytes(path: Path) -> bytes:
+    """Normalize text file line endings so runtime hashes are cross-platform stable."""
+    if not path.exists():
+        return b""
+    return path.read_bytes().replace(b"\r\n", b"\n").replace(b"\r", b"\n")
+
+
 def _load_registry() -> dict[str, Any]:
     raw = _safe_read(REGISTRY_PATH)
     if not raw:
@@ -457,7 +464,7 @@ def _runtime_surface_hash() -> str:
         digest.update(rel.encode("utf-8"))
         digest.update(b"\n")
         if resolved.exists():
-            digest.update(resolved.read_bytes())
+            digest.update(_stable_hash_bytes(resolved))
         digest.update(b"\n")
     return digest.hexdigest()
 
