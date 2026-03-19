@@ -140,8 +140,12 @@ Current implementation state as of 2026-03-19:
     - screen analysis
   - main governed `brain_server.py` path now prefers canonical result reads
   - trust/recent-activity normalization now reads canonical status and outcome metadata first
+  - active-capability authority metadata parity now enforced:
+    - active registry entries carry explicit authority metadata
+    - `CapabilityRegistry` fails closed on missing active-capability governance fields
+    - `CapabilityTopology` fails closed on registry/topology parity drift
+    - runtime-auditor governance rows now consume the explicit authority metadata when present
 - next:
-  - enforce authority metadata parity for active capabilities
   - remove remaining legacy consumer fallbacks after broader executor migration is complete
 
 Target lifecycle:

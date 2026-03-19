@@ -98,3 +98,32 @@ def test_render_current_runtime_state_uses_phase5_package_note():
 
     assert "Governed memory, continuity, tone, scheduling, and pattern-review surfaces active" in rendered
     assert "full closure remains gated" not in rendered
+
+
+def test_governance_rows_prefer_explicit_registry_authority_metadata():
+    import src.audit.runtime_auditor as ra
+
+    registry = {
+        "capabilities": [
+            {
+                "id": 22,
+                "name": "open_file_folder",
+                "enabled": True,
+                "status": "active",
+                "phase_introduced": "4",
+                "risk_level": "confirm",
+                "data_exfiltration": False,
+                "authority_class": "reversible_local",
+                "requires_confirmation": True,
+                "reversible": True,
+                "external_effect": False,
+            }
+        ]
+    }
+
+    rows = ra._derive_capability_governance_rows(registry)
+
+    assert rows[0]["authority_class"] == "reversible_local"
+    assert rows[0]["confirmation_required"] is True
+    assert rows[0]["reversible"] is True
+    assert rows[0]["external_effect"] is False

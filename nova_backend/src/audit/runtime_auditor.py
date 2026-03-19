@@ -273,23 +273,35 @@ def _derive_capability_governance_rows(registry: dict[str, Any]) -> list[dict[st
     for capability in registry.get("capabilities", []):
         cid = int(capability.get("id", -1))
         risk_level = str(capability.get("risk_level", ""))
-        confirmation_required = risk_level == "confirm"
-        network_access = cid in mediated_ids
+        authority_class = str(capability.get("authority_class") or "").strip() or None
+        confirmation_required = capability.get("requires_confirmation")
+        reversible = capability.get("reversible")
+        external_effect = capability.get("external_effect")
+
+        if authority_class is None:
+            if cid == 18:
+                authority_class = "speech_output"
+            elif risk_level == "confirm":
+                authority_class = "confirm_required"
+            elif cid in mediated_ids or capability.get("data_exfiltration") is True:
+                authority_class = "read_only"
+            else:
+                authority_class = "system_action"
+
+        if confirmation_required is None:
+            confirmation_required = risk_level == "confirm"
+        if reversible is None:
+            reversible = True
+        if external_effect is None:
+            external_effect = False
+
+        network_access = authority_class == "read_only_network" or cid in mediated_ids
 
         if cid == 18:
-            authority_class = "speech_output"
             execution_surface = "Governor -> Speech"
-        elif confirmation_required:
-            authority_class = "confirm_required"
-            execution_surface = "Governor -> Executor"
         elif network_access:
-            authority_class = "read_only"
             execution_surface = "Governor -> NetworkMediator"
-        elif capability.get("data_exfiltration") is True:
-            authority_class = "read_only"
-            execution_surface = "Governor -> Executor"
         else:
-            authority_class = "system_action"
             execution_surface = "Governor -> Executor"
 
         rows.append(
@@ -302,7 +314,9 @@ def _derive_capability_governance_rows(registry: dict[str, Any]) -> list[dict[st
                 "risk_level": risk_level,
                 "data_exfiltration": bool(capability.get("data_exfiltration", False)),
                 "authority_class": authority_class,
-                "confirmation_required": confirmation_required,
+                "confirmation_required": bool(confirmation_required),
+                "reversible": bool(reversible),
+                "external_effect": bool(external_effect),
                 "network_access": network_access,
                 "execution_surface": execution_surface,
                 "execution_gate": enforce["execution_gate_enabled"],
@@ -801,12 +815,12 @@ def render_governance_matrix_markdown(registry: dict[str, Any]) -> str:
         "",
         "Deterministic capability governance matrix derived from allowlisted runtime sources.",
         "",
-        "| id | name | enabled | status | phase_introduced | risk_level | data_exfiltration | authority_class | confirmation_required | network_access | execution_surface | execution_gate | single_action_queue | ledger_allowlist | dns_rebinding_guard | timeout_guard |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| id | name | enabled | status | phase_introduced | risk_level | data_exfiltration | authority_class | confirmation_required | reversible | external_effect | network_access | execution_surface | execution_gate | single_action_queue | ledger_allowlist | dns_rebinding_guard | timeout_guard |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for row in rows:
         lines.append(
-            "| {id} | {name} | {enabled} | {status} | {phase_introduced} | {risk_level} | {data_exfiltration} | {authority_class} | {confirmation_required} | {network_access} | {execution_surface} | {execution_gate} | {single_action_queue} | {ledger_allowlist} | {dns_rebinding_guard} | {timeout_guard} |".format(
+            "| {id} | {name} | {enabled} | {status} | {phase_introduced} | {risk_level} | {data_exfiltration} | {authority_class} | {confirmation_required} | {reversible} | {external_effect} | {network_access} | {execution_surface} | {execution_gate} | {single_action_queue} | {ledger_allowlist} | {dns_rebinding_guard} | {timeout_guard} |".format(
                 **row
             )
         )
@@ -816,8 +830,8 @@ def render_governance_matrix_markdown(registry: dict[str, Any]) -> str:
             "",
             "## Derivation notes",
             "",
-            "- authority_class derivation: `speech_output` for capability 18, `confirm_required` when risk_level is `confirm`, `read_only` for network-mediated/data-exfil surfaces, else `system_action`.",
-            "- network_access is derived from Governor execution branches that pass `self.network` to an executor.",
+            "- authority_class / confirmation_required / reversible / external_effect use explicit registry governance metadata when present; older stub inputs fall back to legacy heuristics.",
+            "- network_access is derived from explicit `read_only_network` authority or from Governor execution branches that pass `self.network` to an executor.",
             "- execution_gate/single_action_queue/dns_rebinding_guard/timeout_guard/ledger_allowlist are code-presence checks from allowlisted modules.",
             "- If a field cannot be proven from allowlisted runtime sources, value must be `unknown` (none currently unresolved under present code).",
             "",
@@ -934,7 +948,7 @@ def render_governance_matrix_tree_markdown(registry: dict[str, Any]) -> str:
         label = f"{row['id']}:{row['name']}"
         lines.append(f"  Caps --> C{row['id']}[{label}]")
         lines.append(
-            f"  C{row['id']} --> C{row['id']}A[authority={row['authority_class']}, risk={row['risk_level']}, network={row['network_access']}, exfil={row['data_exfiltration']}, confirm={row['confirmation_required']}, surface={row['execution_surface']}]"
+            f"  C{row['id']} --> C{row['id']}A[authority={row['authority_class']}, risk={row['risk_level']}, confirm={row['confirmation_required']}, reversible={row['reversible']}, external={row['external_effect']}, network={row['network_access']}, surface={row['execution_surface']}]"
         )
     lines.append("  Runtime --> Routes[Skill Routes]")
     for route in skill_routes:

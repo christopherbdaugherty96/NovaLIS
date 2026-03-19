@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from src.actions.action_result import ActionResult
 from src.governor.capability_registry import CapabilityRegistry
 from src.governor.capability_topology import CapabilityTopology
 from src.governor.governor import Governor
@@ -67,13 +68,21 @@ def test_executor_gate_blocks_network_snapshot_for_current_stage():
 def test_governor_manual_run_once_executes_safe_policy(monkeypatch):
     monkeypatch.setattr("src.ledger.writer.LedgerWriter.log_event", lambda self, event_type, metadata: None)
     governor = Governor()
+    monkeypatch.setattr(
+        governor,
+        "handle_governed_invocation",
+        lambda capability_id, params: ActionResult.ok(
+            "Diagnostics ready.",
+            structured_data={"health_state": "healthy"},
+        ),
+    )
 
     decision, result = governor.run_atomic_policy_once(_make_policy(capability_id=32))
 
     assert decision.allowed is True
     assert result.success is True
     assert isinstance(result.data, dict)
-    assert "health_state" in result.data
+    assert result.data.get("structured_data", {}).get("health_state") == "healthy"
     assert result.data.get("policy_id") == "POL-TEST-0001"
 
 

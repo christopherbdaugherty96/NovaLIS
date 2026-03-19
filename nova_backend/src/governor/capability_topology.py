@@ -12,6 +12,12 @@ AUTHORITY_CLASS_ORDER = {
     "external_effect": 5,
 }
 CURRENT_DELEGATED_AUTHORITY_LIMIT = "read_only_local"
+PARITY_FIELDS = (
+    "authority_class",
+    "requires_confirmation",
+    "reversible",
+    "external_effect",
+)
 
 
 @dataclass(frozen=True)
@@ -274,22 +280,51 @@ class CapabilityTopology:
         entries: dict[int, CapabilityTopologyEntry] = {}
         for capability in self._registry.all_capabilities():
             override = dict(_TOPOLOGY_OVERRIDES.get(int(capability.id)) or {})
+            if str(getattr(capability, "status", "")).strip().lower() == "active" and not override:
+                raise ValueError(f"Active capability {capability.id} missing topology override.")
             if not override:
                 continue
-            authority_class = str(override.get("authority_class") or "read_only_local").strip()
+            authority_class = str(getattr(capability, "authority_class", "read_only_local")).strip()
+            requires_confirmation = bool(getattr(capability, "requires_confirmation", False))
+            reversible = bool(getattr(capability, "reversible", True))
+            external_effect = bool(getattr(capability, "external_effect", False))
+            persistent_change = authority_class == "persistent_change"
+
+            mismatches: list[str] = []
+            for field_name in PARITY_FIELDS:
+                if field_name not in override:
+                    continue
+                if override[field_name] != getattr(capability, field_name):
+                    mismatches.append(
+                        f"{field_name}: registry={getattr(capability, field_name)!r}, topology={override[field_name]!r}"
+                    )
+            if "persistent_change" in override and bool(override["persistent_change"]) != persistent_change:
+                mismatches.append(
+                    f"persistent_change: derived={persistent_change!r}, topology={bool(override['persistent_change'])!r}"
+                )
+            if mismatches:
+                raise ValueError(
+                    f"Capability {capability.id} governance metadata parity mismatch: {', '.join(mismatches)}"
+                )
+
+            requires_network_mediator = bool(
+                override.get("requires_network_mediator", authority_class == "read_only_network")
+            )
+            if authority_class == "read_only_network" and not requires_network_mediator:
+                raise ValueError(
+                    f"Capability {capability.id} has read_only_network authority without network mediator enforcement."
+                )
             entries[int(capability.id)] = CapabilityTopologyEntry(
                 capability_id=int(capability.id),
                 name=str(capability.name),
                 authority_class=authority_class,
                 risk_level=str(capability.risk_level),
                 policy_delegatable=bool(override.get("policy_delegatable")),
-                requires_confirmation=bool(
-                    override.get("requires_confirmation", capability.risk_level == "confirm")
-                ),
-                reversible=bool(override.get("reversible", True)),
-                persistent_change=bool(override.get("persistent_change", False)),
-                external_effect=bool(override.get("external_effect", False)),
-                requires_network_mediator=bool(override.get("requires_network_mediator", False)),
+                requires_confirmation=requires_confirmation,
+                reversible=reversible,
+                persistent_change=persistent_change,
+                external_effect=external_effect,
+                requires_network_mediator=requires_network_mediator,
                 delegation_class=str(override.get("delegation_class") or "observational").strip(),
                 envelope_notes=str(override.get("envelope_notes") or "").strip(),
             )
