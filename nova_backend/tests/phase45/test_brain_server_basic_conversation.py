@@ -77,3 +77,29 @@ def test_project_status_this_without_active_thread_is_actionable(monkeypatch):
 
     chat_messages = _chat_messages(ws)
     assert any("I do not have an active project thread yet." in msg for msg in chat_messages)
+
+
+def test_followup_chat_uses_recent_conversation_context(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["What is a GPU?", "Why does that matter?"])
+    prompts: list[str] = []
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        prompts.append(prompt)
+        if len(prompts) == 1:
+            return "A GPU is a processor designed for parallel workloads like graphics and machine learning."
+        return "It matters because those parallel workloads are common in local AI and graphics."
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert len(prompts) >= 2
+    assert "Current user message:\nWhy does that matter?" in prompts[-1]
+    assert "Recent conversation" in prompts[-1]
+    assert "User: What is a GPU?" in prompts[-1]
+    assert "Nova: A GPU is a processor designed for parallel workloads" in prompts[-1]

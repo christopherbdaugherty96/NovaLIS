@@ -99,3 +99,40 @@ def test_general_chat_uses_deterministic_local_thanks_without_model_call():
     assert result is not None
     assert result.success is True
     assert result.message == "You're welcome."
+
+
+def test_general_chat_builds_bounded_conversational_prompt_with_session_context():
+    skill = GeneralChatSkill()
+    captured = {}
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        captured["prompt"] = prompt
+        captured.update(kwargs)
+        return "It matters because GPUs accelerate the parallel work used in graphics and machine learning."
+
+    context = [
+        {"role": "user", "content": "What is a GPU?"},
+        {"role": "assistant", "content": "A GPU is a processor designed for highly parallel work, especially graphics and machine learning."},
+        {"role": "user", "content": "I mostly care about why it matters for local AI."},
+        {"role": "assistant", "content": "It matters because local AI inference benefits from fast parallel math and enough memory bandwidth."},
+    ]
+    session_state = {
+        "active_topic": "local AI hardware",
+        "project_thread_active": "Nova runtime polish",
+        "session_id": "sess-1",
+    }
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(
+            skill.handle("Why does that matter?", context=context, session_state=session_state)
+        )
+
+    assert result is not None
+    assert result.success is True
+    assert "Recent conversation" in captured["prompt"]
+    assert "User: What is a GPU?" in captured["prompt"]
+    assert "Nova: A GPU is a processor designed for highly parallel work" in captured["prompt"]
+    assert "Current user message:\nWhy does that matter?" in captured["prompt"]
+    assert "Active topic: local AI hardware" in captured["prompt"]
+    assert "Active project thread: Nova runtime polish" in captured["prompt"]
+    assert captured["session_id"] == "sess-1"

@@ -147,6 +147,8 @@ class GeneralChatSkill(BaseSkill):
         "how's it going": "Ready to help. What do you want to work on?",
         "hows it going": "Ready to help. What do you want to work on?",
     }
+    _MAX_CONTEXT_TURNS = 6
+    _MAX_CONTEXT_CHARS_PER_TURN = 220
 
     def __init__(
         self,
@@ -365,6 +367,65 @@ class GeneralChatSkill(BaseSkill):
         )
 
     @classmethod
+    def _summarize_context_entry(cls, entry: dict) -> tuple[str, str] | None:
+        if not isinstance(entry, dict):
+            return None
+
+        role = str(entry.get("role") or "").strip().lower()
+        if role not in {"user", "assistant"}:
+            return None
+
+        content = str(entry.get("content") or "").strip()
+        if not content:
+            return None
+
+        normalized = re.sub(r"\s+", " ", content).strip()
+        if len(normalized) > cls._MAX_CONTEXT_CHARS_PER_TURN:
+            normalized = normalized[: cls._MAX_CONTEXT_CHARS_PER_TURN - 3].rstrip() + "..."
+        return role, normalized
+
+    def _build_conversational_prompt(
+        self,
+        query: str,
+        *,
+        context: Optional[list] = None,
+        session_state: Optional[dict] = None,
+    ) -> str:
+        normalized_query = InputNormalizer.normalize(query)
+        recent_lines: list[str] = []
+        for entry in list(context or [])[-self._MAX_CONTEXT_TURNS :]:
+            summarized = self._summarize_context_entry(entry)
+            if summarized is None:
+                continue
+            role, content = summarized
+            label = "User" if role == "user" else "Nova"
+            recent_lines.append(f"{label}: {content}")
+
+        hints: list[str] = []
+        state = session_state or {}
+        active_topic = str(state.get("active_topic") or "").strip()
+        if active_topic:
+            hints.append(f"Active topic: {active_topic}")
+        project_thread = str(state.get("project_thread_active") or "").strip()
+        if project_thread:
+            hints.append(f"Active project thread: {project_thread}")
+
+        if not recent_lines and not hints:
+            return normalized_query
+
+        blocks: list[str] = []
+        if hints:
+            blocks.append("Session hints:\n" + "\n".join(f"- {hint}" for hint in hints))
+        if recent_lines:
+            blocks.append("Recent conversation (most recent last):\n" + "\n".join(recent_lines))
+        blocks.append(f"Current user message:\n{normalized_query}")
+        blocks.append(
+            "Respond naturally and use the recent conversation to interpret short follow-ups "
+            "unless the message is genuinely too ambiguous."
+        )
+        return "\n\n".join(blocks)
+
+    @classmethod
     def _is_geopolitical_query(cls, query: str) -> bool:
         q = (query or "").lower()
         return any(k in q for k in cls._GEO_KEYWORDS)
@@ -401,7 +462,13 @@ class GeneralChatSkill(BaseSkill):
             concise = concise[: max_chars - 3].rstrip() + "..."
         return concise
 
-    async def _run_local_model(self, query: str) -> SkillResult | None:
+    async def _run_local_model(
+        self,
+        query: str,
+        *,
+        context: Optional[list] = None,
+        session_state: Optional[dict] = None,
+    ) -> SkillResult | None:
         social = self._local_social_result(query)
         if social is not None:
             return social
@@ -417,14 +484,21 @@ class GeneralChatSkill(BaseSkill):
             tone_profile=tone_profile,
             explicit_depth=explicit_depth,
         )
+        prompt = self._build_conversational_prompt(
+            normalized_query,
+            context=context,
+            session_state=session_state,
+        )
+        session_id = str((session_state or {}).get("session_id") or "").strip() or None
 
         try:
             text = await asyncio.to_thread(
                 generate_chat,
-                normalized_query,
+                prompt,
                 mode=mode,
                 safety_profile="general_chat",
                 request_id=f"general_chat:{mode}",
+                session_id=session_id,
                 system_prompt=system_prompt,
                 max_tokens=max_tokens,
                 temperature=0.3,
@@ -458,7 +532,7 @@ class GeneralChatSkill(BaseSkill):
 
         # Backward compatible path
         if context is None or session_state is None:
-            return await self._run_local_model(query)
+            return await self._run_local_model(query, context=context, session_state=session_state)
 
         normalized_query = InputNormalizer.normalize(query)
         heuristic_result = self.heuristics.assess(normalized_query, context)
@@ -518,7 +592,11 @@ class GeneralChatSkill(BaseSkill):
                 skill=self.name,
             )
 
-        local = await self._run_local_model(normalized_query)
+        local = await self._run_local_model(
+            normalized_query,
+            context=context,
+            session_state=session_state,
+        )
         if local is None:
             return None
 

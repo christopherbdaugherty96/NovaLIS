@@ -2048,6 +2048,7 @@ async def websocket_endpoint(ws: WebSocket):
     policy_drafts = AtomicPolicyStore()
     session_context = []
     session_state = {
+        "session_id": session_id,
         "turn_count": 0,
         "escalation_count": 0,
         "last_escalation_turn": None,
