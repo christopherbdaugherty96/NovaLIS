@@ -1336,11 +1336,19 @@ body {
 .trust-activity-meta,
 .trust-activity-reason,
 .trust-activity-effect,
+.trust-activity-correlation,
 #trust-summary,
 .trust-row {
   font-size: 0.82rem;
   line-height: 1.4;
   color: #d7e5fa;
+}
+
+.trust-activity-correlation {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 0.74rem;
+  color: #b7cceb;
+  word-break: break-all;
 }
 
 .trust-panel {

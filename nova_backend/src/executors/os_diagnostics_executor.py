@@ -258,7 +258,7 @@ class OSDiagnosticsExecutor:
             raw_lines = path.read_text(encoding="utf-8").splitlines()
             items: list[dict[str, str]] = []
 
-            for raw_line in reversed(raw_lines):
+            for line_number, raw_line in reversed(list(enumerate(raw_lines, start=1))):
                 line = raw_line.strip()
                 if not line:
                     continue
@@ -266,6 +266,7 @@ class OSDiagnosticsExecutor:
                     entry = json.loads(line)
                 except json.JSONDecodeError:
                     continue
+                entry["_ledger_line"] = line_number
                 item = OSDiagnosticsExecutor._recent_activity_item(entry, capability_lookup)
                 if not item:
                     continue
@@ -298,12 +299,16 @@ class OSDiagnosticsExecutor:
         outcome = OSDiagnosticsExecutor._recent_activity_outcome(entry)
         reason = ""
         effect = ""
+        request_id = OSDiagnosticsExecutor._recent_activity_request_id(entry)
+        ledger_ref = OSDiagnosticsExecutor._recent_activity_ledger_ref(entry)
 
         if event_type.startswith("ACTION_") and event_type.endswith("_COMPLETED"):
             kind = "action"
             title = "Action completed" if outcome != "issue" else "Action needs attention"
             detail = OSDiagnosticsExecutor._capability_label_from_entry(entry, capability_lookup)
             reason = str(entry.get("failure_reason") or "").strip()
+            if not reason:
+                reason = OSDiagnosticsExecutor._recent_activity_allow_reason(entry)
             effect = OSDiagnosticsExecutor._recent_activity_effect(entry)
         elif event_type.startswith("ACTION_") and event_type.endswith("_ATTEMPTED"):
             return None
@@ -368,6 +373,8 @@ class OSDiagnosticsExecutor:
             "outcome": outcome,
             "reason": reason,
             "effect": effect,
+            "request_id": request_id,
+            "ledger_ref": ledger_ref,
         }
 
     @staticmethod
@@ -385,20 +392,47 @@ class OSDiagnosticsExecutor:
         if not isinstance(external_effect, bool) and not isinstance(reversible, bool):
             return ""
 
-        show_effect = (
-            entry.get("success") is False
-            or external_effect is True
-            or reversible is False
-        )
-        if not show_effect:
-            return ""
-
         parts: list[str] = []
         if isinstance(external_effect, bool):
             parts.append("External effect" if external_effect else "No external effect")
         if isinstance(reversible, bool):
             parts.append("Reversible" if reversible else "Not reversible")
         return ", ".join(parts)
+
+    @staticmethod
+    def _recent_activity_allow_reason(entry: dict[str, object]) -> str:
+        authority_class = str(entry.get("authority_class") or "").strip().lower()
+        if not authority_class:
+            return ""
+
+        label_map = {
+            "read_only_local": "read-only local",
+            "read_only_network": "read-only network",
+            "reversible_local": "reversible local",
+            "persistent_change": "persistent-change",
+            "external_effect": "external-effect",
+        }
+        authority_label = label_map.get(authority_class, authority_class.replace("_", " "))
+        requires_confirmation = entry.get("requires_confirmation")
+        if isinstance(requires_confirmation, bool) and requires_confirmation:
+            return f"Allowed after explicit confirmation as a {authority_label} action."
+        return f"Allowed as an explicit {authority_label} action."
+
+    @staticmethod
+    def _recent_activity_request_id(entry: dict[str, object]) -> str:
+        return str(entry.get("request_id") or "").strip()
+
+    @staticmethod
+    def _recent_activity_ledger_ref(entry: dict[str, object]) -> str:
+        line_number = entry.get("_ledger_line")
+        try:
+            if line_number is not None:
+                resolved = int(line_number)
+                if resolved > 0:
+                    return f"L{resolved}"
+        except Exception:
+            pass
+        return ""
 
     @staticmethod
     def _recent_activity_timestamp(raw_value: str) -> str:

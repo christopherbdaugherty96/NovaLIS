@@ -174,6 +174,12 @@ def test_governor_action_completed_logs_failure_reason_and_effect_metadata(monke
 
     gov._registry = FakeRegistry()
     gov._ledger = FakeLedger()
+    gov._capability_topology = types.SimpleNamespace(
+        get=lambda _capability_id: types.SimpleNamespace(
+            authority_class="read_only_local",
+            requires_confirmation=False,
+        )
+    )
 
     monkeypatch.setattr(
         gov,
@@ -196,6 +202,8 @@ def test_governor_action_completed_logs_failure_reason_and_effect_metadata(monke
     assert payload["failure_reason"] == "Model inference is blocked in this runtime."
     assert payload["external_effect"] is False
     assert payload["reversible"] is True
+    assert payload["authority_class"] == "read_only_local"
+    assert payload["requires_confirmation"] is False
 
 
 def test_governor_uses_extended_timeout_for_response_verification(monkeypatch):

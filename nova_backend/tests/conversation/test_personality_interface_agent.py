@@ -63,3 +63,18 @@ def test_personality_interface_agent_applies_concise_profile_to_follow_ups(tmp_p
     assert "- option two" in out
     assert "- option three" not in out
     assert "Ask for more options" in out
+
+
+def test_personality_interface_agent_applies_detailed_profile_to_dense_sections(tmp_path: Path):
+    store = ToneProfileStore(tmp_path / "tone_profile.json")
+    store.set_global_profile("detailed")
+    agent = PersonalityInterfaceAgent(tone_store=store)
+
+    out = agent.present(
+        "Core answer: The short version is yes. Key drivers: latency, memory bandwidth. "
+        "What to verify next: benchmark the target workload."
+    )
+
+    assert "Core answer: The short version is yes." in out
+    assert "\n\nKey drivers:" in out
+    assert "\n\nWhat to verify next:" in out

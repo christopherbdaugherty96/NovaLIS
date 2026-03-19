@@ -999,7 +999,7 @@ def _tone_domain_for_skill(skill_name: str) -> str:
 
 
 def _parse_tone_set_body(raw_body: str) -> tuple[str, str, bool]:
-    body = str(raw_body or "").strip().lower()
+    body = str(raw_body or "").strip().lower().rstrip(".?!").strip()
     if not body:
         return "", "", False
 
@@ -1017,8 +1017,8 @@ def _parse_tone_set_body(raw_body: str) -> tuple[str, str, bool]:
     if len(parts) == 1 and parts[0] in valid_profiles:
         return "global", parts[0], True
 
-    profile = parts[-1]
-    domain = " ".join(parts[:-1]).strip().lower()
+    profile = parts[-1].rstrip(".?!").strip()
+    domain = " ".join(parts[:-1]).strip().lower().rstrip(".?!").strip()
     if profile not in valid_profiles:
         return "", "", False
     if domain not in valid_domains:
@@ -3224,6 +3224,7 @@ async def websocket_endpoint(ws: WebSocket):
             if tone_reset_match:
                 body = str(tone_reset_match.group("body") or "").strip().lower()
                 body = re.sub(r"^(?:domain|for)\s+", "", body).strip()
+                body = body.rstrip(".?!").strip()
                 if not body or body == "all":
                     snapshot = interface_personality_agent.reset_all_tone()
                     message = "Tone settings reset to the default profile."
@@ -4540,14 +4541,19 @@ async def websocket_endpoint(ws: WebSocket):
                 widget_data = getattr(skill_result, "widget_data", None)
                 result_data = getattr(skill_result, "data", {}) or {}
 
-                payload = response_formatter.format_payload(
-                    message,
-                    speakable_text=(result_data.get("speakable_text") or ""),
-                    structured_data=(result_data.get("structured_data") or {}),
-                )
-                message = _structure_long_message(payload["user_message"])
-                result_data["speakable_text"] = payload["speakable_text"]
-                result_data["structured_data"] = payload["structured_data"]
+                if skill_name == "general_chat" and result_data.get("speakable_text"):
+                    message = str(message or "").strip()
+                    result_data["speakable_text"] = str(result_data.get("speakable_text") or message)
+                    result_data["structured_data"] = dict(result_data.get("structured_data") or {})
+                else:
+                    payload = response_formatter.format_payload(
+                        message,
+                        speakable_text=(result_data.get("speakable_text") or ""),
+                        structured_data=(result_data.get("structured_data") or {}),
+                    )
+                    message = _structure_long_message(payload["user_message"])
+                    result_data["speakable_text"] = payload["speakable_text"]
+                    result_data["structured_data"] = payload["structured_data"]
 
                 speech_state.last_spoken_text = message
                 session_state["last_response"] = message

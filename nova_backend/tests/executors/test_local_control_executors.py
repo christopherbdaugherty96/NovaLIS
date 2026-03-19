@@ -145,8 +145,10 @@ def test_os_diagnostics_executor_returns_extended_metrics(monkeypatch):
 def test_os_diagnostics_recent_activity_marks_unsuccessful_action_as_issue():
     item = OSDiagnosticsExecutor._recent_activity_item(
         {
+            "_ledger_line": 42,
             "event_type": "ACTION_COMPLETED",
             "capability_id": 31,
+            "request_id": "req-verify-123",
             "success": False,
             "failure_reason": "Model inference is blocked in this runtime.",
             "external_effect": False,
@@ -162,6 +164,35 @@ def test_os_diagnostics_recent_activity_marks_unsuccessful_action_as_issue():
     assert item["outcome"] == "issue"
     assert item["reason"] == "Model inference is blocked in this runtime."
     assert item["effect"] == "No external effect, Reversible"
+    assert item["request_id"] == "req-verify-123"
+    assert item["ledger_ref"] == "L42"
+
+
+def test_os_diagnostics_recent_activity_surfaces_allow_reason_for_successful_action():
+    item = OSDiagnosticsExecutor._recent_activity_item(
+        {
+            "_ledger_line": 57,
+            "event_type": "ACTION_COMPLETED",
+            "capability_id": 16,
+            "request_id": "req-search-456",
+            "success": True,
+            "authority_class": "read_only_network",
+            "requires_confirmation": False,
+            "external_effect": False,
+            "reversible": True,
+            "timestamp_utc": "2026-03-19T04:05:00+00:00",
+        },
+        {16: "governed web search"},
+    )
+
+    assert item is not None
+    assert item["title"] == "Action completed"
+    assert item["detail"] == "governed web search"
+    assert item["outcome"] == "success"
+    assert item["reason"] == "Allowed as an explicit read-only network action."
+    assert item["effect"] == "No external effect, Reversible"
+    assert item["request_id"] == "req-search-456"
+    assert item["ledger_ref"] == "L57"
 
 
 def test_os_diagnostics_executor_handles_network_stat_errors(monkeypatch):

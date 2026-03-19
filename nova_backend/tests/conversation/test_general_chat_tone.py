@@ -1,4 +1,9 @@
+import asyncio
+from pathlib import Path
+from unittest.mock import patch
+
 from src.skills.general_chat import GeneralChatSkill
+from src.personality.tone_profile_store import ToneProfileStore
 
 
 def test_general_chat_depth_hint_detection():
@@ -19,3 +24,55 @@ def test_general_chat_concise_enforcer_limits_length_and_sentences():
     assert "Second sentence" in out
     assert "Third sentence" not in out
     assert len(out) <= 120
+
+
+def test_general_chat_detailed_tone_changes_prompt_and_preserves_more_context(tmp_path: Path):
+    store = ToneProfileStore(tmp_path / "tone_profile.json")
+    store.set_global_profile("detailed")
+    skill = GeneralChatSkill(tone_store=store)
+    captured = {}
+
+    def _fake_generate_chat(_prompt: str, **kwargs):
+        captured.update(kwargs)
+        return (
+            "First sentence has useful context. "
+            "Second sentence adds details. "
+            "Third sentence keeps important nuance. "
+            "Fourth sentence rounds it out."
+        )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(skill._run_local_model("What is a GPU?"))
+
+    assert result is not None
+    assert result.success is True
+    assert "Third sentence keeps important nuance." in result.message
+    assert "butler-like courtesy" not in captured["system_prompt"]
+    assert "Tone profile: Detailed." in captured["system_prompt"]
+    assert captured["max_tokens"] > 90
+    assert (result.data or {}).get("tone_profile") == "detailed"
+
+
+def test_general_chat_concise_tone_tightens_casual_chat_budget(tmp_path: Path):
+    store = ToneProfileStore(tmp_path / "tone_profile.json")
+    store.set_global_profile("concise")
+    skill = GeneralChatSkill(tone_store=store)
+    captured = {}
+
+    def _fake_generate_chat(_prompt: str, **kwargs):
+        captured.update(kwargs)
+        return (
+            "First sentence has useful context. "
+            "Second sentence adds details. "
+            "Third sentence keeps important nuance."
+        )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(skill._run_local_model("What is a GPU?"))
+
+    assert result is not None
+    assert result.success is True
+    assert "Second sentence adds details." not in result.message
+    assert captured["max_tokens"] <= 70
+    assert "Tone profile: Concise." in captured["system_prompt"]
+    assert (result.data or {}).get("tone_profile") == "concise"

@@ -1895,6 +1895,22 @@ function renderTrustPanel(data = {}) {
           row.appendChild(effectRow);
         }
 
+        const requestId = String(item.request_id || "").trim();
+        if (requestId) {
+          const requestRow = document.createElement("div");
+          requestRow.className = "trust-activity-correlation";
+          requestRow.textContent = `Request: ${requestId}`;
+          row.appendChild(requestRow);
+        }
+
+        const ledgerRef = String(item.ledger_ref || "").trim();
+        if (ledgerRef) {
+          const ledgerRow = document.createElement("div");
+          ledgerRow.className = "trust-activity-correlation";
+          ledgerRow.textContent = `Ledger: ${ledgerRef}`;
+          row.appendChild(ledgerRow);
+        }
+
         list.appendChild(row);
       });
       activityHost.appendChild(list);

@@ -26,6 +26,8 @@ def test_send_trust_status_includes_trust_review_snapshot(monkeypatch):
                     "kind": "local",
                     "detail": "Screen analysis completed",
                     "timestamp": "2026-03-18 09:45",
+                    "request_id": "req-screen-123",
+                    "ledger_ref": "L88",
                 }
             ],
             "blocked_conditions": [
@@ -58,4 +60,6 @@ def test_send_trust_status_includes_trust_review_snapshot(monkeypatch):
     assert message["data"]["mode"] == "Online"
     assert message["data"]["trust_review_summary"] == "Recent governed actions are visible."
     assert message["data"]["recent_runtime_activity"][0]["title"] == "Explain anything"
+    assert message["data"]["recent_runtime_activity"][0]["request_id"] == "req-screen-123"
+    assert message["data"]["recent_runtime_activity"][0]["ledger_ref"] == "L88"
     assert message["data"]["blocked_conditions"][0]["label"] == "Autonomy"

@@ -211,31 +211,31 @@ Make Nova visibly explain:
 - add or normalize authority metadata so trust surfaces can render truthful summaries
 - keep registry truth and capability-topology truth aligned rather than splitting authority semantics across hardcoded files
 
-### Current Phase-6 Freeze State (2026-03-18)
+### Current Phase-6 Freeze State (2026-03-19)
 - surface: `trust_review_recent_actions`
-- status: `partial`
-- subtype: `partial.surface_contract`
+- status: `reliable`
 - first supported user journey:
-  - blocked governed action -> `trust_status` payload -> Recent Activity row marked as needing attention with per-row reason/effect metadata where it is reliably available
+  - successful governed action -> `trust_status` payload -> Recent Activity row with outcome, `Why`, `Effect`, `Request`, and `Ledger`
+  - blocked governed action -> `trust_status` payload -> Recent Activity row marked as needing attention with the same trust metadata surfaced truthfully
 - repaired and verified:
   - unsuccessful ledger-backed actions no longer render as `Action completed` in the trust review reducer
   - Recent Activity rows now carry explicit outcome labels so success and issue states are distinguishable at a glance
   - the dashboard trust panel now surfaces the outcome visibly instead of relying only on generic title text
   - failed action rows now carry a direct per-row `Why` reason from the governed result message instead of forcing the trust panel to infer cause indirectly
-  - effect metadata is now surfaced for rows where the governed action already provides reliable `external_effect` and `reversible` data
+  - successful governed action rows now also surface explicit safe-case effect metadata instead of leaving `Effect` blank when the action had no external effect and remained reversible
+  - request correlation is now surfaced directly from ledger-backed `request_id` values when the originating event includes one
+  - each trust row now carries a deterministic ledger line reference so Recent Activity items can be correlated back to the append-only ledger without inventing a synthetic event id
+  - governed action rows now carry explicit allow reasoning from authority metadata when the Governor has that data, so the trust surface can explain why a completed action was allowed instead of only why a failed action was blocked
 - proof bundle:
-  - live in-process WebSocket proof for `fact check The moon has an atmosphere`
+  - live in-process WebSocket proof for `fact check The moon has a thick atmosphere like Earth`
   - focused regression coverage in:
     - `nova_backend/tests/test_governor_execution_timeout.py`
     - `nova_backend/tests/executors/test_local_control_executors.py`
     - `nova_backend/tests/phase45/test_dashboard_trust_review_widget.py`
     - `nova_backend/tests/phase45/test_brain_server_trust_status.py`
     - `nova_backend/tests/phase45/test_system_status_reporting_contract.py`
-- remaining limitation:
-  - the trust panel still summarizes runtime events rather than a fully normalized Recent Actions contract with request/ledger correlation and consistently structured allow/block reasoning on every surfaced row
-- promote to `reliable` when:
-  - the canonical Recent Actions payload is implemented across governed actions
-  - blocked, degraded, and completed rows all carry consistent cause-and-outcome detail in both system-status and trust-status surfaces
+- current boundary:
+  - the reliable claim applies to governed Recent Activity rows backed by the trust-status/reducer path; other runtime event summaries still remain event-type-specific rather than a fully universal action schema
 
 ### Definition Of Done
 - Recent Actions is present and informative
@@ -468,7 +468,41 @@ Repair currently surfaced features whose real-world reliability is below their c
   - create-document and explain-section flows are both live-proven with real structured analysis
   - the strict document contract produces full structured reports consistently enough that Nova is not relying on incomplete-document refusal as the normal outcome
 
-### 3F. Remaining Stable And Environment-Blocked Freeze States
+### 3F. Basic Conversation And Personality Tone Alignment
+
+#### Files
+- `nova_backend/src/skills/general_chat.py`
+- `nova_backend/src/personality/interface_agent.py`
+- `nova_backend/src/brain_server.py`
+
+#### Tests To Use Or Extend
+- `nova_backend/tests/conversation/test_general_chat_tone.py`
+- `nova_backend/tests/conversation/test_personality_interface_agent.py`
+- `nova_backend/tests/phase45/test_brain_server_tone_commands.py`
+
+#### Current Phase-6 Freeze State (2026-03-19)
+- surface `general_chat` and tone-profile controls
+- status: `reliable`
+- first supported user journey:
+  - `tone set concise` -> `what is a gpu?` -> short direct answer
+  - `tone set detailed` -> `what is a gpu?` -> fuller answer without duplicated summary framing
+- repaired and verified:
+  - explicit tone selection now changes the actual general-chat prompt contract, token budget, and length shaping instead of acting as a presentation-only label
+  - the core general-chat contract no longer instructs a dated `butler-like courtesy` style and is now aligned with Nova's calm, grounded, collaborative voice
+  - detailed tone now improves dense structured output readability in the personality presentation layer by separating known section headers cleanly
+  - tone commands now accept the normal trailing punctuation introduced by Nova's own input normalization path
+  - the brain-server skill path no longer double-formats general-chat replies, so detailed answers do not surface duplicated `Summary:` blocks
+- proof bundle:
+  - live in-process WebSocket proof for `tone set concise` -> `what is a gpu?`
+  - live in-process WebSocket proof for `tone set detailed` -> `what is a gpu?`
+  - focused regression coverage in:
+    - `nova_backend/tests/conversation/test_general_chat_tone.py`
+    - `nova_backend/tests/conversation/test_personality_interface_agent.py`
+    - `nova_backend/tests/phase45/test_brain_server_tone_commands.py`
+- current boundary:
+  - tone profiles are now dependable for the basic conversation path, but they do not yet retune every governed capability response contract outside `general_chat`
+
+### 3G. Remaining Stable And Environment-Blocked Freeze States
 
 The remaining active capabilities were validated in this pass through the freeze matrix, the focused regression bundle, and the live runtime sweep where side effects were safe to observe.
 

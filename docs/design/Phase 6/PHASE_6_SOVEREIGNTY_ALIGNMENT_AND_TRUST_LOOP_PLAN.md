@@ -27,10 +27,12 @@ The current repo also has unresolved practical truth gaps:
 - governed web search is now `reliable`: surfaced follow-up prompts are truthful, and the promised first-step follow-up family (`research`, `create an intelligence brief`, `analyze source reliability`) has live in-process proof without contextual drift
 - response verification is now `reliable`: live governed verification, truthful degraded handling, and surfaced claim-reliability framing are aligned
 - analysis document generation is currently `partial.degraded_but_usable`: fake successful documents are gone, but live create-doc synthesis still degrades into truthful incomplete-document refusal on this local model/runtime
+- the basic conversation and tone-control surface is now `reliable`: `tone set concise` and `tone set detailed` work in normal chat, general-chat generation now honors those tone profiles, and the detailed path no longer double-formats long replies
 - calendar, screen capture, and screen analysis are now sharply classified as environment-blocked rather than vaguely broken on this machine/runtime
 - open-website preview, system status, research reporting, weather/news snapshots, story tracking, and memory overview now have frozen truthful first-journey proofs in the Phase-6 checklist
 - local control, speech output, file/folder opening, and diagnostics now have explicit side-effect-safe proof coverage so they are no longer floating as implied unclassified runtime claims
-- trust-facing payoff surfaces are currently `partial.surface_contract`: Recent Activity now distinguishes successful vs issue states at a glance and carries per-row reason/effect metadata where it is already reliable, but the fuller allow/block reason and request-correlation contract is still unfinished
+- trust-facing payoff surfaces are now `reliable` for governed Recent Activity rows: Recent Activity distinguishes success vs issue states, surfaces `Why` and `Effect`, and exposes request/ledger correlation for the governed trust-status path without hiding the safe-case outcome
+- the Phase-6 release-gate bundle is currently green: trust-panel regressions, runtime-auditor checks, governance-boundary tests, and the key explain/verify/brief executor suites all passed on March 19, 2026
 - capability metadata and executor contracts are not yet normalized enough for safe external-provider expansion
 
 ## What Moves Here From The Source Spec
