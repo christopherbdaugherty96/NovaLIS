@@ -35,6 +35,9 @@ def test_dashboard_trust_review_surface_marks_activity_outcomes():
     assert '.trust-activity-item[data-outcome="issue"]' in styles
     assert "item.reason" in source
     assert "item.effect" in source
+    assert "item.request_id" in source
+    assert "item.ledger_ref" in source
+    assert ".trust-activity-correlation" in styles
 
 
 def test_home_page_includes_trust_review_sections():

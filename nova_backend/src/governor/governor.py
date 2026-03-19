@@ -276,6 +276,15 @@ class Governor:
                     "external_effect": bool(result.external_effect),
                     "reversible": bool(result.reversible),
                 }
+                try:
+                    topology_entry = self.capability_topology.get(req.capability_id)
+                except Exception:
+                    topology_entry = None
+                if topology_entry is not None:
+                    completion_metadata["authority_class"] = str(topology_entry.authority_class)
+                    completion_metadata["requires_confirmation"] = bool(
+                        topology_entry.requires_confirmation
+                    )
                 if not result.success:
                     failure_reason = str(result.message or "").strip()
                     if failure_reason:

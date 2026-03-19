@@ -17,6 +17,7 @@ from src.conversation.safety_filter import SafetyFilter
 from src.conversation.deepseek_safety_wrapper import DeepSeekSafetyWrapper
 from src.governor.network_mediator import NetworkMediator
 from src.llm.llm_gateway import generate_chat
+from src.personality.tone_profile_store import ToneProfileStore
 
 from ..base_skill import BaseSkill, SkillResult
 
@@ -29,25 +30,50 @@ class GeneralChatSkill(BaseSkill):
         "You are Nova.\n"
         "\n"
         "Core constraints:\n"
-        "- Speak calmly, with composed, butler-like courtesy.\n"
-        "- Use complete, polished sentences with natural flow.\n"
-        "- Keep language human, concise, and quietly confident.\n"
-        "- Avoid slang, hype, or theatrical enthusiasm.\n"
+        "- Sound calm, grounded, and collaborative.\n"
+        "- Use direct, human language with natural flow.\n"
+        "- Be warm without theatrical enthusiasm.\n"
         "- No emotional simulation. No therapy tone. No flattery.\n"
         "- No marketing language. No brand voice.\n"
         "- Do not introduce yourself unless explicitly asked.\n"
         "- Do not describe what Nova is unless explicitly asked.\n"
         "- Do not claim capabilities you do not have.\n"
         "- Do not mention being a 'virtual assistant' or similar.\n"
-        "- Answer directly. Keep it short unless the user asks for depth.\n"
+        "- Answer directly. Add detail only when it helps or the user asks for it.\n"
         "- When giving instructions, address the user directly with 'you'.\n"
         "- If the request is unclear, ask ONE brief clarification question.\n"
     )
 
+    TONE_BLOCKS: Dict[str, str] = {
+        "balanced": (
+            "Tone profile: Balanced.\n"
+            "- Keep the response calm, clear, and collaborative.\n"
+            "- Be direct without sounding stiff.\n"
+            "- Prefer useful clarity over polish for its own sake.\n"
+        ),
+        "concise": (
+            "Tone profile: Concise.\n"
+            "- Keep the response tight and to the point.\n"
+            "- Use the shortest complete answer that still helps.\n"
+            "- Minimize extra commentary unless the user asks for more.\n"
+        ),
+        "detailed": (
+            "Tone profile: Detailed.\n"
+            "- Give a fuller explanation when it improves clarity.\n"
+            "- Preserve useful nuance, structure, and follow-up detail.\n"
+            "- Do not compress the response so aggressively that key context is lost.\n"
+        ),
+        "formal": (
+            "Tone profile: Formal.\n"
+            "- Use slightly more formal wording while staying plain and direct.\n"
+            "- Avoid stiff ceremonial phrasing.\n"
+        ),
+    }
+
     MODE_BLOCKS: Dict[str, str] = {
         "casual": (
             "Communication style: Concise.\n"
-            "- Answer in one or two short, complete sentences.\n"
+            "- Answer briefly in a short paragraph or two short sentences.\n"
             "- No additional commentary.\n"
         ),
         "brainstorming": (
@@ -104,7 +130,12 @@ class GeneralChatSkill(BaseSkill):
         "explain deeply",
     )
 
-    def __init__(self, policy_config: Optional[dict] = None, network: NetworkMediator | None = None):
+    def __init__(
+        self,
+        policy_config: Optional[dict] = None,
+        network: NetworkMediator | None = None,
+        tone_store: ToneProfileStore | None = None,
+    ):
         self.heuristics = ComplexityHeuristics()
         self.policy = EscalationPolicy(policy_config)
         self.deepseek = DeepSeekBridge()
@@ -112,6 +143,7 @@ class GeneralChatSkill(BaseSkill):
         self.analysis_safety = DeepSeekSafetyWrapper()
         self.style_router = ResponseStyleRouter()
         self.formatter = ResponseFormatter()
+        self._tone_store = tone_store or ToneProfileStore()
 
     def can_handle(self, query: str) -> bool:
         q = InputNormalizer.normalize(query).lower().strip(".?!")
@@ -142,8 +174,23 @@ class GeneralChatSkill(BaseSkill):
 
         return "casual"
 
-    def _build_system_prompt(self, mode: str, style: ResponseStyle = ResponseStyle.DIRECT) -> str:
+    def _current_tone_profile(self, domain: str = "general") -> str:
+        try:
+            profile = self._tone_store.effective_profile(domain)
+        except Exception:
+            return "balanced"
+        if profile not in self.TONE_BLOCKS:
+            return "balanced"
+        return profile
+
+    def _build_system_prompt(
+        self,
+        mode: str,
+        style: ResponseStyle = ResponseStyle.DIRECT,
+        tone_profile: str = "balanced",
+    ) -> str:
         mode_block = self.MODE_BLOCKS.get(mode, self.MODE_BLOCKS["casual"])
+        tone_block = self.TONE_BLOCKS.get(tone_profile, self.TONE_BLOCKS["balanced"])
 
         style_blocks = {
             ResponseStyle.DIRECT: "Style: Direct and concise. Prioritize factual precision.",
@@ -153,7 +200,54 @@ class GeneralChatSkill(BaseSkill):
         }
 
         style_block = style_blocks.get(style, style_blocks[ResponseStyle.DIRECT])
-        return f"{self.BASE_CONTRACT}\n{mode_block}\n{style_block}".strip()
+        return f"{self.BASE_CONTRACT}\n\n{tone_block}\n\n{mode_block}\n\n{style_block}".strip()
+
+    def _resolve_max_tokens(self, mode: str, *, tone_profile: str, explicit_depth: bool) -> int:
+        max_tokens = self.MAX_TOKENS.get(mode, self.MAX_TOKENS["casual"])
+        if not explicit_depth and mode == "casual":
+            max_tokens = min(max_tokens, 90)
+
+        if tone_profile == "concise":
+            if not explicit_depth and mode == "casual":
+                return min(max_tokens, 70)
+            return max(120, int(max_tokens * 0.75))
+
+        if tone_profile == "detailed":
+            expanded = max_tokens + (120 if mode == "casual" else 180)
+            return min(expanded, 900)
+
+        return max_tokens
+
+    def _shape_response_for_tone(
+        self,
+        text: str,
+        *,
+        mode: str,
+        tone_profile: str,
+        explicit_depth: bool,
+    ) -> str:
+        if explicit_depth:
+            return text
+
+        if tone_profile == "concise":
+            if mode == "casual":
+                return self._enforce_concise_response(text, max_sentences=1, max_chars=180)
+            if mode in {"analytical", "implementation"}:
+                return self._enforce_concise_response(text, max_sentences=3, max_chars=420)
+            return self._enforce_concise_response(text, max_sentences=2, max_chars=260)
+
+        if tone_profile == "detailed":
+            if mode == "casual":
+                return self._enforce_concise_response(text, max_sentences=4, max_chars=560)
+            if mode in {"analytical", "implementation"}:
+                return self._enforce_concise_response(text, max_sentences=6, max_chars=900)
+            return self._enforce_concise_response(text, max_sentences=5, max_chars=760)
+
+        if mode == "casual":
+            return self._enforce_concise_response(text, max_sentences=2, max_chars=260)
+        if mode in {"analytical", "implementation"}:
+            return self._enforce_concise_response(text, max_sentences=4, max_chars=520)
+        return text
 
     def _build_ask_user_message(self, mode: str, heuristic_result: Dict[str, Any]) -> str:
         reason = self.policy.summarize_reason(heuristic_result)
@@ -251,11 +345,14 @@ class GeneralChatSkill(BaseSkill):
         normalized_query = InputNormalizer.normalize(query)
         mode = self._detect_mode(normalized_query)
         style = self.style_router.route(normalized_query)
-        system_prompt = self._build_system_prompt(mode, style)
         explicit_depth = self._user_requested_depth(normalized_query)
-        max_tokens = self.MAX_TOKENS.get(mode, self.MAX_TOKENS["casual"])
-        if not explicit_depth and mode == "casual":
-            max_tokens = min(max_tokens, 90)
+        tone_profile = self._current_tone_profile("general")
+        system_prompt = self._build_system_prompt(mode, style, tone_profile=tone_profile)
+        max_tokens = self._resolve_max_tokens(
+            mode,
+            tone_profile=tone_profile,
+            explicit_depth=explicit_depth,
+        )
 
         try:
             text = await asyncio.to_thread(
@@ -273,13 +370,20 @@ class GeneralChatSkill(BaseSkill):
                 text = ResponseFormatter.friendly_fallback()
             if self._is_geopolitical_query(normalized_query) and self._is_blanket_refusal(text):
                 text = self._safe_geopolitical_fallback(normalized_query)
-            if not explicit_depth:
-                if mode == "casual":
-                    text = self._enforce_concise_response(text, max_sentences=2, max_chars=260)
-                elif mode in {"analytical", "implementation"}:
-                    text = self._enforce_concise_response(text, max_sentences=4, max_chars=520)
+            text = self._shape_response_for_tone(
+                text,
+                mode=mode,
+                tone_profile=tone_profile,
+                explicit_depth=explicit_depth,
+            )
 
-            return SkillResult(success=True, message=text, data={"mode": mode, "style": style.value}, widget_data=None, skill=self.name)
+            return SkillResult(
+                success=True,
+                message=text,
+                data={"mode": mode, "style": style.value, "tone_profile": tone_profile},
+                widget_data=None,
+                skill=self.name,
+            )
         except Exception:
             return None
 

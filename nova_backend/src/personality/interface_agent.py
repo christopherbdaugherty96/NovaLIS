@@ -8,6 +8,15 @@ from src.personality.tone_profile_store import ToneProfileStore
 class PersonalityInterfaceAgent:
     """Presentation-only personality layer for outbound chat messages."""
 
+    _DETAILED_SECTION_HEADERS = (
+        "Summary:",
+        "Core answer:",
+        "Key drivers:",
+        "Risks and uncertainties:",
+        "What to verify next:",
+        "Try next:",
+    )
+
     _SYSTEM_TOKEN_PATTERNS = (
         re.compile(r"<function_call[^>]*>", re.IGNORECASE),
         re.compile(r"\btool_call\b", re.IGNORECASE),
@@ -97,6 +106,8 @@ class PersonalityInterfaceAgent:
             return text
         if profile == "concise":
             return self._apply_concise_profile(text)
+        if profile == "detailed":
+            return self._apply_detailed_profile(text)
         return text
 
     def _apply_concise_profile(self, text: str) -> str:
@@ -134,3 +145,13 @@ class PersonalityInterfaceAgent:
         trimmed = list(lines[:2])
         trimmed.append("- Ask for more options if you want a longer list.")
         return trimmed
+
+    def _apply_detailed_profile(self, text: str) -> str:
+        expanded = text
+        for header in self._DETAILED_SECTION_HEADERS:
+            pattern = re.compile(rf"([^\n])\s+({re.escape(header)})", re.IGNORECASE)
+            expanded = pattern.sub(r"\1\n\n\2", expanded)
+        expanded = re.sub(r"(Try next:)\s*-\s*", r"\1\n- ", expanded, flags=re.IGNORECASE)
+        expanded = re.sub(r"\n-([^\s])", r"\n- \1", expanded)
+        expanded = re.sub(r"\n{3,}", "\n\n", expanded)
+        return expanded.strip()

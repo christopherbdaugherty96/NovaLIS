@@ -111,6 +111,15 @@ _TOPOLOGY_OVERRIDES: dict[int, dict[str, Any]] = {
         "requires_network_mediator": False,
         "delegation_class": "local_action",
     },
+    31: {
+        "authority_class": "read_only_local",
+        "policy_delegatable": False,
+        "reversible": True,
+        "persistent_change": False,
+        "external_effect": False,
+        "requires_network_mediator": False,
+        "delegation_class": "informational",
+    },
     32: {
         "authority_class": "read_only_local",
         "policy_delegatable": True,
