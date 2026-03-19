@@ -103,3 +103,47 @@ def test_followup_chat_uses_recent_conversation_context(monkeypatch):
     assert "Recent conversation" in prompts[-1]
     assert "User: What is a GPU?" in prompts[-1]
     assert "Nova: A GPU is a processor designed for parallel workloads" in prompts[-1]
+
+
+def test_long_chat_uses_rolling_summary_after_context_rollover(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(
+        [
+            "I want to redesign Nova's dashboard for daily use.",
+            "Give me three layout ideas.",
+            "Which one would feel calm but still useful?",
+            "What should we prototype first?",
+            "Keep going.",
+            "What else matters?",
+            "Continue.",
+            "What should we build first now?",
+        ]
+    )
+    prompts: list[str] = []
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        prompts.append(prompt)
+        responses = {
+            1: "A good goal is a calmer, more readable dashboard.",
+            2: "1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center",
+            3: "The minimal operator dashboard is the calmest while staying useful.",
+            4: "Prototype the minimal operator dashboard first.",
+            5: "Keep the first version narrow and high-signal.",
+            6: "Visual hierarchy and trust status matter most next.",
+            7: "Then refine the brief and recent activity surfaces.",
+            8: "Start with the minimal operator dashboard and keep the first build narrow.",
+        }
+        return responses[len(prompts)]
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert len(prompts) == 8
+    assert "Earlier conversation summary" in prompts[-1]
+    assert "Minimal operator dashboard" in prompts[-1]
+    assert "User goal: I want to redesign Nova's dashboard for daily use." in prompts[-1]

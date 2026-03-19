@@ -2090,6 +2090,8 @@ async def websocket_endpoint(ws: WebSocket):
         "last_tone_snapshot": {},
         "last_schedule_overview": {},
         "last_pattern_review": {},
+        "general_chat_context": [],
+        "general_chat_summary": {},
     }
 
     await send_chat_message(ws, "Hello. How can I help?")
@@ -4577,7 +4579,8 @@ async def websocket_endpoint(ws: WebSocket):
                 if not skill.can_handle(mediated_text):
                     continue
                 if getattr(skill, "name", "") == "general_chat":
-                    skill_result = await skill.handle(mediated_text, session_context, session_state)
+                    chat_context = list(session_state.get("general_chat_context") or session_context)
+                    skill_result = await skill.handle(mediated_text, chat_context, session_state)
                 else:
                     maybe = skill.handle(mediated_text)
                     skill_result = await maybe if hasattr(maybe, "__await__") else maybe
@@ -4689,9 +4692,17 @@ async def websocket_endpoint(ws: WebSocket):
                         and getattr(skill_result, "success", True)):   # assume success if not present
                     session_state["last_input_channel"] = None   # prevent re-trigger
 
-                session_context.extend([{"role": "user", "content": mediated_text}, {"role": "assistant", "content": message}])
+                new_turn = [{"role": "user", "content": mediated_text}, {"role": "assistant", "content": message}]
+                session_context.extend(new_turn)
                 context_limit = 40 if session_state.get("presence_mode") else 20
                 session_context = session_context[-context_limit:]
+                if skill_name == "general_chat":
+                    chat_context = list(session_state.get("general_chat_context") or [])
+                    chat_context.extend(new_turn)
+                    if hasattr(skill, "roll_context_forward"):
+                        session_state["general_chat_context"] = skill.roll_context_forward(chat_context, session_state)
+                    else:
+                        session_state["general_chat_context"] = chat_context
                 session_state["turn_count"] += 1
                 continue
 

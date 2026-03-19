@@ -194,3 +194,87 @@ def test_general_chat_adds_reference_hint_for_ordinal_followup():
     assert result.success is True
     assert "Likely referenced prior option 1: Minimal operator dashboard" in captured["prompt"]
     assert "Current user message:\nGo with the first." in captured["prompt"]
+
+
+def test_general_chat_rolls_older_context_into_summary():
+    skill = GeneralChatSkill()
+    session_state = {"active_topic": "Nova dashboard", "general_chat_summary": {}}
+    context = [
+        {"role": "user", "content": "I want to redesign Nova's dashboard for daily use."},
+        {"role": "assistant", "content": "We can focus on clarity first."},
+        {"role": "user", "content": "Give me three layout ideas."},
+        {
+            "role": "assistant",
+            "content": "1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center",
+        },
+        {"role": "user", "content": "Which one would feel calm but still useful?"},
+        {"role": "assistant", "content": "The minimal operator dashboard is the calmest."},
+        {"role": "user", "content": "What should we prototype first?"},
+        {"role": "assistant", "content": "Start with the minimal operator dashboard."},
+        {"role": "user", "content": "Keep going."},
+        {"role": "assistant", "content": "We should keep the first version narrow."},
+        {"role": "user", "content": "What else matters?"},
+        {"role": "assistant", "content": "Visual hierarchy and scannability."},
+        {"role": "user", "content": "Continue."},
+        {"role": "assistant", "content": "Then refine the trust surfaces."},
+    ]
+
+    retained = skill.roll_context_forward(context, session_state)
+
+    assert len(retained) == skill._SUMMARY_RETAIN_CONTEXT_ENTRIES
+    summary = session_state["general_chat_summary"]
+    assert summary["topic"] == "Nova dashboard"
+    assert "redesign nova's dashboard" in summary["user_goal"].lower()
+    assert "what should we prototype first?" in summary["open_question"].lower()
+    assert summary["relevant_options"][0] == "Minimal operator dashboard"
+
+
+def test_general_chat_uses_summary_when_older_context_rolls_out():
+    skill = GeneralChatSkill()
+    captured = {}
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        captured["prompt"] = prompt
+        return "Start with the minimal operator dashboard and refine it in small passes."
+
+    context = [
+        {"role": "user", "content": "I want to redesign Nova's dashboard for daily use."},
+        {"role": "assistant", "content": "We can focus on clarity first."},
+        {"role": "user", "content": "Give me three layout ideas."},
+        {
+            "role": "assistant",
+            "content": "1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center",
+        },
+        {"role": "user", "content": "Which one would feel calm but still useful?"},
+        {"role": "assistant", "content": "The minimal operator dashboard is the calmest."},
+        {"role": "user", "content": "What should we prototype first?"},
+        {"role": "assistant", "content": "Start with the minimal operator dashboard."},
+        {"role": "user", "content": "Keep going."},
+        {"role": "assistant", "content": "We should keep the first version narrow."},
+    ]
+    session_state = {
+        "session_id": "sess-summary",
+        "active_topic": "Nova dashboard",
+        "general_chat_summary": {
+            "topic": "Nova dashboard",
+            "user_goal": "I want to redesign Nova's dashboard for daily use.",
+            "open_question": "What should we prototype first?",
+            "relevant_options": ["Minimal operator dashboard", "Research-first workspace"],
+        },
+    }
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(
+            skill.handle(
+                "What should we build first now?",
+                context=context,
+                session_state=session_state,
+            )
+        )
+
+    assert result is not None
+    assert result.success is True
+    assert "Earlier conversation summary" in captured["prompt"]
+    assert "- Topic: Nova dashboard" in captured["prompt"]
+    assert "- User goal: I want to redesign Nova's dashboard for daily use." in captured["prompt"]
+    assert "Earlier options still relevant" in captured["prompt"]
