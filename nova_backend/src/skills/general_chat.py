@@ -149,6 +149,14 @@ class GeneralChatSkill(BaseSkill):
     }
     _MAX_CONTEXT_TURNS = 6
     _MAX_CONTEXT_CHARS_PER_TURN = 220
+    _LIST_ITEM_RE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(.*\S)\s*$")
+    _INLINE_NUMBERED_RE = re.compile(r"(?:^|\s)(\d+)[.)]\s+([^:]+?)(?=(?:\s+\d+[.)]\s+)|$)")
+    _ORDINAL_REFERENCE_PATTERNS: Tuple[Tuple[re.Pattern, int], ...] = (
+        (re.compile(r"\b(?:go with|pick|choose|take)\s+(?:the\s+)?first\b|\b(?:the|that)\s+first\b|\bfirst one\b", re.IGNORECASE), 0),
+        (re.compile(r"\b(?:go with|pick|choose|take)\s+(?:the\s+)?second\b|\b(?:the|that)\s+second\b|\bsecond one\b", re.IGNORECASE), 1),
+        (re.compile(r"\b(?:go with|pick|choose|take)\s+(?:the\s+)?third\b|\b(?:the|that)\s+third\b|\bthird one\b", re.IGNORECASE), 2),
+        (re.compile(r"\b(?:go with|pick|choose|take)\s+(?:the\s+)?(?:last|final)\b|\b(?:the|that)\s+(?:last|final)\b", re.IGNORECASE), -1),
+    )
 
     def __init__(
         self,
@@ -409,6 +417,9 @@ class GeneralChatSkill(BaseSkill):
         project_thread = str(state.get("project_thread_active") or "").strip()
         if project_thread:
             hints.append(f"Active project thread: {project_thread}")
+        reference_hint = self._build_reference_hint(normalized_query, context=context)
+        if reference_hint:
+            hints.append(reference_hint)
 
         if not recent_lines and not hints:
             return normalized_query
@@ -424,6 +435,65 @@ class GeneralChatSkill(BaseSkill):
             "unless the message is genuinely too ambiguous."
         )
         return "\n\n".join(blocks)
+
+    @classmethod
+    def _extract_prior_options(cls, text: str) -> list[str]:
+        raw = str(text or "").strip()
+        if not raw:
+            return []
+
+        options: list[str] = []
+        for line in raw.splitlines():
+            match = cls._LIST_ITEM_RE.match(line)
+            if not match:
+                continue
+            item = re.sub(r"\s+", " ", match.group(1)).strip(" .-")
+            if item:
+                options.append(item)
+
+        if options:
+            return options[:4]
+
+        inline_matches = cls._INLINE_NUMBERED_RE.findall(raw.replace("\n", " "))
+        for _, item in inline_matches:
+            normalized = re.sub(r"\s+", " ", str(item or "")).strip(" .-")
+            if normalized:
+                options.append(normalized)
+        return options[:4]
+
+    @classmethod
+    def _reference_target_index(cls, query: str) -> int | None:
+        text = str(query or "").strip()
+        if not text:
+            return None
+        for pattern, index in cls._ORDINAL_REFERENCE_PATTERNS:
+            if pattern.search(text):
+                return index
+        return None
+
+    @classmethod
+    def _build_reference_hint(cls, query: str, *, context: Optional[list] = None) -> str:
+        target_index = cls._reference_target_index(query)
+        if target_index is None:
+            return ""
+
+        last_assistant_message = ""
+        for entry in reversed(list(context or [])):
+            if str(entry.get("role") or "").strip().lower() != "assistant":
+                continue
+            last_assistant_message = str(entry.get("content") or "").strip()
+            if last_assistant_message:
+                break
+
+        options = cls._extract_prior_options(last_assistant_message)
+        if not options:
+            return ""
+
+        resolved_index = len(options) - 1 if target_index < 0 else target_index
+        if resolved_index < 0 or resolved_index >= len(options):
+            return ""
+
+        return f"Likely referenced prior option {resolved_index + 1}: {options[resolved_index]}"
 
     @classmethod
     def _is_geopolitical_query(cls, query: str) -> bool:
