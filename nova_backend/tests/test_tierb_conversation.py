@@ -36,3 +36,19 @@ def test_formatter_adds_at_most_two_tierb_prompts():
     )
     assert "Baseline answer." in text
     assert text.count("\n") >= 2
+    assert "broad options" in text.lower()
+    assert "narrower direction" in text.lower()
+
+
+def test_formatter_uses_combined_followup_prompt_when_branch_and_depth_are_allowed():
+    text = ResponseFormatter.with_conversational_initiative(
+        "Baseline answer.",
+        mode="brainstorming",
+        allow_clarification=False,
+        allow_branch_suggestion=True,
+        allow_depth_prompt=True,
+    )
+
+    assert "Baseline answer." in text
+    assert "branch this into a few directions" in text
+    assert "go deeper on one path" in text
