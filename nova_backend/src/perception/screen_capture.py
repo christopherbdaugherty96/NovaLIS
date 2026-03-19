@@ -21,12 +21,27 @@ class ScreenCaptureEngine:
         width = int(bounds.get("width") or 0)
         height = int(bounds.get("height") or 0)
         if width <= 0 or height <= 0:
-            return {"ok": False, "error": "Capture bounds must include positive width and height."}
+            return {
+                "ok": False,
+                "error": "Capture bounds must include positive width and height.",
+                "failure_kind": "invalid_bounds",
+            }
 
         try:
             pyautogui = importlib.import_module("pyautogui")
+        except ModuleNotFoundError as error:
+            return {
+                "ok": False,
+                "error": f"Capture dependency unavailable: {error}",
+                "failure_kind": "missing_dependency",
+                "missing_dependency": str(getattr(error, "name", "") or "pyautogui").strip(),
+            }
         except Exception as error:
-            return {"ok": False, "error": f"Capture dependency unavailable: {error}"}
+            return {
+                "ok": False,
+                "error": f"Capture dependency unavailable: {error}",
+                "failure_kind": "dependency_unavailable",
+            }
 
         try:
             image = pyautogui.screenshot(region=(left, top, width, height))
@@ -37,7 +52,11 @@ class ScreenCaptureEngine:
                 "bounds": {"left": left, "top": top, "width": width, "height": height},
             }
         except Exception as error:
-            return {"ok": False, "error": f"Screen capture failed: {error}"}
+            return {
+                "ok": False,
+                "error": f"Screen capture failed: {error}",
+                "failure_kind": "capture_failed",
+            }
 
     def _save_image(self, image: Any) -> Path:
         self.output_dir.mkdir(parents=True, exist_ok=True)

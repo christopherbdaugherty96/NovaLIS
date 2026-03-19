@@ -88,11 +88,34 @@ class LLMManager:
                 timeout=5,
             )
             data = response.data
-            # The digest is usually in `digest` or `model_info`; Ollama API returns `digest`
-            return data.get("digest")
+            digest = data.get("digest")
+            if digest:
+                return digest
+            logger.info("Ollama /api/show omitted digest for model %s; falling back to /api/tags.", self.model)
+            return self._get_model_digest_from_tags()
         except Exception as e:
             logger.warning(f"Could not fetch model digest: {e}")
             return None
+
+    def _get_model_digest_from_tags(self) -> Optional[str]:
+        """Fallback digest lookup for Ollama versions that omit digest from /api/show."""
+        try:
+            response = self._network.request_json(
+                method="GET",
+                url=f"{self.base_url.rstrip('/')}/api/tags",
+                timeout=5,
+            )
+        except Exception as error:
+            logger.warning("Could not fetch model digest from tags: %s", error)
+            return None
+
+        models = response.data.get("models", [])
+        for model_entry in models:
+            if model_entry.get("name") == self.model:
+                digest = model_entry.get("digest")
+                if digest:
+                    return digest
+        return None
 
     def _compute_current_hash(self) -> str:
         """Compute hash based on current configuration."""
@@ -204,6 +227,7 @@ class LLMManager:
         *,
         temperature: Optional[float] = None,
         max_tokens: Optional[int] = None,
+        timeout: Optional[float] = None,
         request_id: Optional[str] = None,
         session_id: Optional[str] = None,
     ) -> Optional[str]:
@@ -229,6 +253,7 @@ class LLMManager:
             options["temperature"] = float(temperature)
         if max_tokens is not None:
             options["num_predict"] = int(max_tokens)
+        request_timeout = float(timeout) if timeout is not None else float(self.timeout)
 
         messages: list[dict[str, str]] = []
         if system:
@@ -245,7 +270,7 @@ class LLMManager:
                     "stream": False,
                     "options": options,
                 },
-                timeout=self.timeout,
+                timeout=request_timeout,
                 request_id=request_id,
                 session_id=session_id,
             )

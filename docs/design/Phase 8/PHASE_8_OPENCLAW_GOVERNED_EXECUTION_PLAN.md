@@ -1,0 +1,118 @@
+# Phase 8 OpenClaw Governed Execution Plan
+Date: 2026-03-18
+Status: Planning packet only; runtime not authorized
+Scope: Governed external execution through an untrusted executor such as OpenClaw
+
+## Purpose
+This document relocates the OpenClaw material from the source spec into the correct future phase.
+
+Phase 8 is where Nova may widen from governed reasoning into governed external execution.
+That step should happen only after Phase 6 alignment and Phase 7 external reasoning controls are complete.
+
+## Current Grounded Starting Point
+The current runtime already has many local governed actions plus read-only intelligence and perception surfaces.
+However, it does not yet have a governed OpenClaw execution capability in the active registry.
+
+The current repo also already uses capability `60` for `explain_anything`.
+Therefore the source spec's proposed reuse of `60` for OpenClaw must be corrected.
+
+## Candidate Capability Reservation
+Current planning reservation:
+- candidate capability `63`: `openclaw_execute`
+
+This remains planning-only until the runtime registry and capability audit confirm the next safe open slot.
+
+## Phase-8 Goal
+Introduce a dumb external executor that has zero decision authority.
+
+The governing rule is simple:
+- Claude or any reasoning provider may suggest
+- the Governor may validate
+- the user may confirm when required
+- OpenClaw may execute a structured action only
+
+## Execution Model
+1. user intent arrives
+2. GovernorMediator parses and routes the request
+3. capability and authority class are checked
+4. if the action is write-class or externally effectful, confirmation is required
+5. ExecuteBoundary applies timeout, concurrency, and fail-closed resource rules
+6. OpenClaw receives only a structured approved action object
+7. OpenClaw returns output that is treated as untrusted
+8. Nova sanitizes, validates, logs, and presents the result
+
+## Input Isolation Rules
+OpenClaw must be treated as an untrusted executor.
+That means:
+- it never interprets user intent on its own
+- it never receives raw Claude output as authority
+- it never receives free-form "do whatever seems right" instructions
+- it only receives Governor-approved structured action payloads
+
+## Output Isolation Rules
+OpenClaw output must be treated as untrusted.
+That means:
+- schema validation before downstream use
+- sanitizer pass before any reasoning-provider analysis
+- explicit error surfacing instead of swallowed failures
+- no direct feedback loop from OpenClaw output into execution authority
+
+## Required Governance Metadata
+Before this phase is implemented, Nova needs a normalized capability metadata model that can express:
+- authority class
+- confirmation requirement
+- reversibility
+- external effect
+- delegated execution eligibility
+
+That is why Phase 6 owns the metadata hardening work.
+
+## User-Facing Payoff Loop
+Phase 8 should not ship without the missing trust loop.
+Required surfaces:
+- Recent Actions
+- plain-language confirmation echo
+- visible result status
+- timestamped execution history
+- clear failure reason when something is blocked or fails
+
+## Example Walkthrough
+Example flow:
+- user asks Nova to summarize emails
+- governed read path gathers the messages
+- reasoning provider summarizes and drafts a reply as text only
+- Nova presents the proposed action in plain language
+- user explicitly approves the send action
+- Governor validates capability `63`, confirmation state, and execution bounds
+- OpenClaw executes the structured send action
+- result is sanitized, logged, and shown in Recent Actions
+
+## Non-Negotiable Guardrails
+- no OpenClaw execution without Governor validation
+- no write-class action without confirmation
+- no raw OpenClaw output trusted as safe
+- no direct OpenClaw pathway around the Governor
+- no hidden background execution loops
+
+## Suggested Implementation Order
+1. finish Phase-6 trust and contract work
+2. finish Phase-7 external reasoning containment
+3. define the structured OpenClaw action schema
+4. add executor isolation and sanitizer layers
+5. wire capability `63` through the Governor path
+6. add confirmation, Recent Actions, and failure visibility surfaces
+7. add adversarial tests for prompt injection and tool-output contamination
+
+## Exit Criteria
+Phase 8 is ready only when:
+- OpenClaw has zero decision authority in architecture and code
+- write flows require explicit confirmation
+- untrusted output is sanitized and validated before reuse
+- the trust loop clearly shows what happened and why
+- bypass and prompt-injection defenses are tested
+
+## Related Inputs
+- `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
+- `docs/design/Phase 6/PHASE_6_SOVEREIGNTY_ALIGNMENT_AND_TRUST_LOOP_PLAN.md`
+- `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
+- `docs/design/Phase 8/node design.txt`

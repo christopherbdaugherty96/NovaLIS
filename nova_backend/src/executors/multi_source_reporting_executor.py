@@ -18,6 +18,8 @@ from src.validation.pipeline import ValidationPipeline
 
 BRAVE_SEARCH_URL = "https://api.search.brave.com/res/v1/web/search"
 DUCK_SEARCH_URL = "https://api.duckduckgo.com/"
+ANALYST_NOTE_TIMEOUT_SECONDS = 3.5
+COUNTER_ANALYSIS_TIMEOUT_SECONDS = 2.5
 
 
 class MultiSourceReportingExecutor:
@@ -46,6 +48,15 @@ class MultiSourceReportingExecutor:
         if domain.startswith("www."):
             return domain[4:]
         return domain
+
+    @staticmethod
+    def _provider_label(provider: str) -> str:
+        normalized = str(provider or "").strip().lower()
+        if normalized == "brave":
+            return "Brave Search"
+        if normalized == "duckduckgo":
+            return "DuckDuckGo Instant Answer"
+        return normalized.title() or "Unknown"
 
     @classmethod
     def _classify_source(cls, domain: str, title: str = "") -> str:
@@ -182,7 +193,15 @@ class MultiSourceReportingExecutor:
         }
         return round(final_confidence, 2), factor_map
 
-    def _build_counter_analysis(self, query: str, findings: list[str]) -> str:
+    def _build_counter_analysis(
+        self,
+        query: str,
+        findings: list[str],
+        *,
+        allow_model_enrichment: bool = True,
+    ) -> str:
+        if not allow_model_enrichment:
+            return "Counter-view: available sources may be incomplete, so conclusions should remain provisional."
         prompt = (
             "Provide one short counter-analysis paragraph that challenges the main narrative.\n"
             "Stay factual and bounded to uncertainty.\n"
@@ -192,7 +211,13 @@ class MultiSourceReportingExecutor:
             + "\n".join(f"- {item}" for item in (findings or [])[:5])
         )
         try:
-            raw = self.deepseek_bridge.analyze(prompt, [], suggested_max_tokens=240)
+            raw = self.deepseek_bridge.analyze(
+                prompt,
+                [],
+                suggested_max_tokens=240,
+                analysis_profile="task_scoped",
+                timeout_seconds=COUNTER_ANALYSIS_TIMEOUT_SECONDS,
+            )
             sanitized = self.deepseek_safety.sanitize(raw)
             cleaned = " ".join(str(sanitized or "").split()).strip()
             if cleaned:
@@ -286,10 +311,26 @@ class MultiSourceReportingExecutor:
             return [], "none"
 
     def execute(self, request) -> ActionResult:
-        query = (request.params or {}).get("query", "").strip()
-        session_id = str((request.params or {}).get("session_id") or "").strip() or None
+        params = request.params or {}
+        query = str(params.get("query") or "").strip()
+        session_id = str(params.get("session_id") or "").strip() or None
+        analysis_focus = str(params.get("analysis_focus") or "").strip().lower()
         if not query:
             return ActionResult.failure("No report query provided.", request_id=request.request_id)
+
+        display_topic = query
+        analyst_note_prompt = (
+            "Create a short factual analyst note for this query using the findings.\n"
+            f"Query: {query}\n"
+            "Findings:\n"
+        )
+        if analysis_focus == "source_reliability":
+            display_topic = f"source reliability for {query}"
+            analyst_note_prompt = (
+                "Create a short factual note about source reliability and evidence quality for this query.\n"
+                f"Query: {query}\n"
+                "Findings:\n"
+            )
 
         results, provider = self._fetch_governed_results(
             capability_id=48,
@@ -309,9 +350,7 @@ class MultiSourceReportingExecutor:
                 domains.append(dom)
 
         analysis_text = generate_chat(
-            "Create a short factual analyst note for this query using the findings.\n"
-            f"Query: {query}\n"
-            "Findings:\n"
+            analyst_note_prompt
             + "\n".join(f"- {item}" for item in titles)
             + "\n"
             "Avoid directives. Keep to 2-4 lines.",
@@ -321,6 +360,7 @@ class MultiSourceReportingExecutor:
             session_id=session_id,
             max_tokens=220,
             temperature=0.2,
+            timeout=ANALYST_NOTE_TIMEOUT_SECONDS,
         )
         research_result = self.research_module.analyze(
             CognitiveRequest(
@@ -370,11 +410,19 @@ class MultiSourceReportingExecutor:
         counter_analysis = self._build_counter_analysis(
             query=query,
             findings=list(reporting_result.key_points),
+            allow_model_enrichment=bool((analysis_text or "").strip()),
         )
+        summary_text = reporting_result.summary
+        if analysis_focus == "source_reliability":
+            domain_count = len({row.get("source") for row in source_credibility if row.get("source")}) or len(domains)
+            summary_text = (
+                f"Source reliability scan for '{query}' reviewed {len(top_results)} finding(s) "
+                f"across {domain_count} source domain(s)."
+            )
 
         structured_brief = {
-            "topic": query,
-            "summary": reporting_result.summary,
+            "topic": display_topic,
+            "summary": summary_text,
             "key_findings": list(reporting_result.key_points),
             "supporting_sources": list(reporting_result.supporting_sources),
             "contradictions": contradictions,
@@ -382,6 +430,7 @@ class MultiSourceReportingExecutor:
             "source_credibility": source_credibility,
             "confidence_factors": confidence_factors,
             "counter_analysis": counter_analysis,
+            "analysis_focus": analysis_focus or None,
         }
 
         contract_status = "pass"
@@ -409,8 +458,10 @@ class MultiSourceReportingExecutor:
             contract_status = "fail"
             fallback_reason = str(exc)
             fallback_structured = {
-                "topic": query,
-                "summary": "Report generated with fallback due to contract validation safeguards.",
+                "topic": display_topic,
+                "summary": summary_text
+                if analysis_focus == "source_reliability"
+                else "Report generated with fallback due to contract validation safeguards.",
                 "key_findings": [
                     "Primary report output did not satisfy structured contract checks.",
                     "Fallback sections are rendered to preserve deterministic report shape.",
@@ -427,6 +478,7 @@ class MultiSourceReportingExecutor:
                     "factor_model": 0.44,
                 },
                 "counter_analysis": "Counter-view: fallback path was used due to report validation safeguards.",
+                "analysis_focus": analysis_focus or None,
             }
             structured_brief = fallback_structured
             message = self.renderer.render_structured_intelligence_brief(
@@ -442,11 +494,30 @@ class MultiSourceReportingExecutor:
             )
             validate_rendered_report_text(message)
 
-        widget_results = [{"title": i.get("title", "")[:100], "url": i.get("url", "")} for i in results[:5]]
+        widget_results = [
+            {
+                "title": i.get("title", "")[:100],
+                "url": i.get("url", ""),
+                "snippet": str(i.get("description") or "")[:200],
+            }
+            for i in results[:5]
+        ]
         return ActionResult.ok(
             message=message,
             data={
-                "widget": {"type": "search", "data": {"results": widget_results}},
+                "widget": {
+                    "type": "search",
+                    "data": {
+                        "query": query,
+                        "provider": self._provider_label(provider),
+                        "result_count": len(widget_results),
+                        "summary": structured_brief.get("summary") or reporting_result.summary,
+                        "researched_summary": structured_brief.get("summary") or reporting_result.summary,
+                        "source_pages_read": 0,
+                        "analysis_focus": analysis_focus or None,
+                        "results": widget_results,
+                    },
+                },
                 "structured_brief": {
                     **structured_brief,
                     "search_provider": provider,

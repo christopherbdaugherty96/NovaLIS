@@ -353,6 +353,39 @@ def test_brief_reads_source_pages_when_enabled(monkeypatch):
     assert len(result.data.get("brief_clusters")) >= 1
 
 
+def test_brief_uses_cluster_fallback_when_source_synthesis_is_unavailable(monkeypatch):
+    from src.executors import news_intelligence_executor as mod
+
+    monkeypatch.setattr(mod, "generate_chat", lambda *args, **kwargs: "")
+
+    class _FakeNetwork:
+        def request(self, capability_id, method, url, **kwargs):
+            return {
+                "status_code": 200,
+                "text": f"<html><body><h1>{url}</h1><p>Detail from source page for {url}.</p></body></html>",
+            }
+
+    headlines = [
+        {"title": "AI chip roadmap", "source": "ABC News", "url": "https://abc.example/a"},
+        {"title": "AI export policy", "source": "BBC News", "url": "https://bbc.example/b"},
+    ]
+    executor = mod.NewsIntelligenceExecutor(network=_FakeNetwork())
+    result = executor.execute_brief(_request(50, {"headlines": headlines, "read_sources": True}))
+    assert result.success is True
+    assert "NOVA DAILY INTELLIGENCE BRIEF" in result.message
+    assert "[Fallback]" in result.message
+    assert "placeholder source-grounded summaries" in result.message
+    assert isinstance(result.data, dict)
+    assert isinstance(result.data.get("brief_clusters"), list)
+    assert len(result.data.get("brief_clusters")) >= 1
+    assert result.data["brief_clusters"][0]["summary"].startswith("[Fallback]")
+    assert result.data["brief_clusters"][0]["implication"] == (
+        "Treat this as a placeholder and review the linked source pages directly."
+    )
+    assert result.data["widget"]["data"]["placeholder_cluster_count"] >= 1
+    assert result.data["widget"]["data"]["omitted_cluster_count"] == 0
+
+
 def test_brief_followup_actions_expand_compare_track():
     from src.executors import news_intelligence_executor as mod
 

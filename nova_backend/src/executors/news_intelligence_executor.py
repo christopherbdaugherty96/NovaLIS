@@ -1142,7 +1142,8 @@ class NewsIntelligenceExecutor:
             if packets:
                 clusters = self._cluster_packets(packets)
                 rendered_clusters: list[dict[str, Any]] = []
-                synthesis_failures = 0
+                omitted_clusters = 0
+                placeholder_clusters = 0
                 for cluster in clusters:
                     analysis = self._llm_or_fallback(
                         self._cluster_prompt(cluster),
@@ -1152,14 +1153,17 @@ class NewsIntelligenceExecutor:
                         timeout_seconds=SOURCE_READ_TIMEOUT_SECONDS,
                         max_tokens=380,
                     )
+                    fallback_summary, fallback_implication = self._cluster_fallback(cluster)
                     summary, implication = self._parse_summary_and_implication(
                         analysis,
                         cluster,
-                        use_fallback=False,
+                        use_fallback=True,
                     )
                     if not summary or not implication:
-                        synthesis_failures += 1
+                        omitted_clusters += 1
                         continue
+                    if summary == fallback_summary or implication == fallback_implication:
+                        placeholder_clusters += 1
                     rendered_clusters.append(
                         {
                             "id": len(rendered_clusters) + 1,
@@ -1178,9 +1182,13 @@ class NewsIntelligenceExecutor:
                     )
 
                 report, all_sources = self._render_daily_brief_v2(rendered_clusters)
-                if synthesis_failures:
+                if placeholder_clusters:
                     report = (
-                        f"{report}\n\nNote: {synthesis_failures} topic cluster(s) were omitted due to incomplete source-grounded synthesis."
+                        f"{report}\n\nNote: {placeholder_clusters} topic cluster(s) are using placeholder source-grounded summaries because synthesis was unavailable."
+                    )
+                if omitted_clusters:
+                    report = (
+                        f"{report}\n\nNote: {omitted_clusters} topic cluster(s) were omitted due to incomplete source-grounded synthesis."
                     )
                 return ActionResult.ok(
                     message=report.strip(),
@@ -1191,6 +1199,8 @@ class NewsIntelligenceExecutor:
                                 "headline_count": len(source),
                                 "source_pages_read": len(packets),
                                 "cluster_count": len(rendered_clusters),
+                                "placeholder_cluster_count": placeholder_clusters,
+                                "omitted_cluster_count": omitted_clusters,
                             },
                         },
                         "brief_clusters": rendered_clusters,

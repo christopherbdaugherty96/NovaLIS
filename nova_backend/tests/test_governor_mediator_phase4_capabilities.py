@@ -97,6 +97,12 @@ def test_volume_media_brightness_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 55
 
+    inv = GovernorMediator.parse_governed_invocation("analyze source reliability for semiconductor policy updates")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 48
+    assert inv.params["query"] == "semiconductor policy updates"
+    assert inv.params["analysis_focus"] == "source_reliability"
+
     inv = GovernorMediator.parse_governed_invocation("what is the weather in ann arbor today")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 55
@@ -128,6 +134,14 @@ def test_volume_media_brightness_parsing():
     assert inv.capability_id == 60
 
     inv = GovernorMediator.parse_governed_invocation("what is this")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 60
+
+    inv = GovernorMediator.parse_governed_invocation("what am I looking at")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 60
+
+    inv = GovernorMediator.parse_governed_invocation("view screen")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 60
 

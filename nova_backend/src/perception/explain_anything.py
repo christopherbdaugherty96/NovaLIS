@@ -62,6 +62,24 @@ class ExplainAnythingRouter:
         )
         return any(marker in lowered for marker in file_markers)
 
+    @staticmethod
+    def _query_prefers_screen(query_text: str) -> bool:
+        lowered = str(query_text or "").strip().lower()
+        if not lowered:
+            return False
+        screen_markers = (
+            "what am i looking at",
+            "what i'm looking at",
+            "what is on my screen",
+            "what's on my screen",
+            "view screen",
+            "view the screen",
+            "view this screen",
+            "this screen",
+            "on my screen",
+        )
+        return any(marker in lowered for marker in screen_markers)
+
     def decide(self, *, params: Mapping[str, Any] | None, context_snapshot: Mapping[str, Any] | None) -> ExplainRoute:
         file_path = self._extract_file_path(params)
         if file_path:
@@ -90,6 +108,9 @@ class ExplainAnythingRouter:
             and int(cursor.get("screen_height") or 0) > 0
         ) or str(working_context.get("active_window") or "").strip():
             return ExplainRoute(kind="screen", reason="cursor_region_available")
+
+        if self._query_prefers_screen(query_text):
+            return ExplainRoute(kind="screen", reason="explicit_screen_query")
 
         if selected_file:
             return ExplainRoute(kind="file", reason="fallback_file_context", file_path=selected_file)
