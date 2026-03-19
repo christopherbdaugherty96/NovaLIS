@@ -306,8 +306,12 @@ Current migration state as of 2026-03-19:
     - `screen_analysis_executor.py`
   - main governed consumer path in `brain_server.py` now prefers canonical `user_message` and `structured_data`
   - trust/recent-activity normalization now prefers canonical status and outcome metadata in `os_diagnostics_executor.py`
+  - active-capability authority metadata parity enforcement added:
+    - `registry.json` now carries explicit `authority_class`, `requires_confirmation`, `reversible`, and `external_effect` fields for the active runtime set
+    - `CapabilityRegistry` now fails closed if an active capability is missing that authority metadata
+    - `CapabilityTopology` now consumes registry authority truth and fails closed on parity drift
+    - runtime-auditor governance rows now prefer explicit registry authority metadata over legacy heuristics when available
 - next:
-  - add authority-metadata parity enforcement
   - remove remaining legacy read fallbacks after broader executor coverage is complete
 
 ### Ledger Lifecycle Tasks

@@ -13,6 +13,19 @@ EXPECTED_PHASE = "4"
 RUNTIME_PROFILE_ENV = "NOVA_RUNTIME_PROFILE"
 DEFAULT_RUNTIME_PROFILE = "default"
 ALLOWED_AUTHORITY_SCOPES = {"observe", "suggest", "confirm", "automatic"}
+ALLOWED_AUTHORITY_CLASSES = {
+    "read_only_local",
+    "read_only_network",
+    "reversible_local",
+    "persistent_change",
+    "external_effect",
+}
+ACTIVE_GOVERNANCE_REQUIRED_FIELDS = {
+    "authority_class",
+    "requires_confirmation",
+    "reversible",
+    "external_effect",
+}
 
 
 def _default_authority_scope_for_risk(risk_level: str) -> str:
@@ -31,6 +44,10 @@ class Capability:
     data_exfiltration: bool
     enabled: bool               # runtime gate, separate from status
     authority_scope: str = "suggest"
+    authority_class: str = "read_only_local"
+    requires_confirmation: bool = False
+    reversible: bool = True
+    external_effect: bool = False
 
 
 class CapabilityRegistry:
@@ -97,6 +114,28 @@ class CapabilityRegistry:
             if not isinstance(entry["enabled"], bool):
                 raise CapabilityRegistryError("enabled must be a boolean")
 
+            status = str(entry["status"]).strip().lower()
+            if status == "active":
+                missing_governance = ACTIVE_GOVERNANCE_REQUIRED_FIELDS - entry.keys()
+                if missing_governance:
+                    raise CapabilityRegistryError(
+                        f"Active capability {entry['id']} missing governance fields: {sorted(missing_governance)}"
+                    )
+
+            authority_class = entry.get("authority_class", "read_only_local")
+            authority_class = str(authority_class).strip().lower()
+            if authority_class not in ALLOWED_AUTHORITY_CLASSES:
+                raise CapabilityRegistryError(f"Invalid authority_class: {authority_class}")
+
+            for field_name in ("requires_confirmation", "reversible", "external_effect"):
+                if field_name in entry and not isinstance(entry[field_name], bool):
+                    raise CapabilityRegistryError(f"{field_name} must be a boolean")
+
+            if entry["risk_level"] == "confirm" and entry.get("requires_confirmation") is False:
+                raise CapabilityRegistryError(
+                    f"Capability {entry['id']} has confirm risk_level but requires_confirmation is false."
+                )
+
             normalized = dict(entry)
             authority_scope = normalized.get("authority_scope")
             if authority_scope is None:
@@ -105,6 +144,10 @@ class CapabilityRegistry:
             if authority_scope not in ALLOWED_AUTHORITY_SCOPES:
                 raise CapabilityRegistryError(f"Invalid authority_scope: {authority_scope}")
             normalized["authority_scope"] = authority_scope
+            normalized["authority_class"] = authority_class
+            normalized["requires_confirmation"] = bool(normalized.get("requires_confirmation", False))
+            normalized["reversible"] = bool(normalized.get("reversible", True))
+            normalized["external_effect"] = bool(normalized.get("external_effect", False))
 
             cid = normalized["id"]
             if cid in capabilities:

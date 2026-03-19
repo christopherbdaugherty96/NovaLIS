@@ -2,10 +2,34 @@
   "schema_version": "1.0",
   "phase": "4",
   "capability_groups": {
-    "speech_output": [18],
-    "local_control": [22],
-    "intelligence": [16, 31, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61],
-    "diagnostics": [17, 32]
+    "speech_output": [
+      18
+    ],
+    "local_control": [
+      22
+    ],
+    "intelligence": [
+      16,
+      31,
+      48,
+      49,
+      50,
+      51,
+      52,
+      53,
+      54,
+      55,
+      56,
+      57,
+      58,
+      59,
+      60,
+      61
+    ],
+    "diagnostics": [
+      17,
+      32
+    ]
   },
   "profiles": {
     "default": {
@@ -13,13 +37,21 @@
       "enabled_overrides": {}
     },
     "local-control": {
-      "groups": ["local_control", "speech_output", "intelligence", "diagnostics"],
+      "groups": [
+        "local_control",
+        "speech_output",
+        "intelligence",
+        "diagnostics"
+      ],
       "enabled_overrides": {}
     },
     "analyst": {
-      "groups": ["intelligence", "speech_output", "diagnostics"],
-      "enabled_overrides": {
-      }
+      "groups": [
+        "intelligence",
+        "speech_output",
+        "diagnostics"
+      ],
+      "enabled_overrides": {}
     }
   },
   "capabilities": [
@@ -30,7 +62,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": true,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_network",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 17,
@@ -39,7 +75,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "reversible_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 18,
@@ -48,7 +88,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "reversible_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 22,
@@ -57,7 +101,11 @@
       "phase_introduced": "4",
       "risk_level": "confirm",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "reversible_local",
+      "requires_confirmation": true,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 19,
@@ -66,7 +114,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "reversible_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 20,
@@ -75,7 +127,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "reversible_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 21,
@@ -84,7 +140,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "reversible_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 31,
@@ -93,7 +153,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 32,
@@ -102,7 +166,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 48,
@@ -111,7 +179,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": true,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_network",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 49,
@@ -120,7 +192,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 50,
@@ -129,7 +205,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 51,
@@ -138,7 +218,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 52,
@@ -147,7 +231,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 53,
@@ -156,7 +244,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 54,
@@ -165,7 +257,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 55,
@@ -174,7 +270,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": true,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_network",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 56,
@@ -183,7 +283,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": true,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_network",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 57,
@@ -192,7 +296,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 58,
@@ -201,7 +309,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 59,
@@ -210,7 +322,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 60,
@@ -219,7 +335,11 @@
       "phase_introduced": "4",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "read_only_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
     },
     {
       "id": 61,
@@ -228,7 +348,11 @@
       "phase_introduced": "5",
       "risk_level": "low",
       "data_exfiltration": false,
-      "enabled": true
+      "enabled": true,
+      "authority_class": "persistent_change",
+      "requires_confirmation": false,
+      "reversible": false,
+      "external_effect": false
     }
   ],
   "retired_ids": []
