@@ -60,3 +60,13 @@ def test_explain_anything_router_falls_back_to_working_context_file_when_no_scre
     )
     assert route.kind == "file"
     assert route.reason in {"fallback_file_context", "file_selected"}
+
+
+def test_explain_anything_router_uses_screen_route_for_explicit_screen_query_without_snapshot():
+    router = ExplainAnythingRouter()
+    route = router.decide(
+        params={"query": "what am i looking at"},
+        context_snapshot={"browser": {"is_browser": False}, "cursor": {"screen_width": 0, "screen_height": 0}},
+    )
+    assert route.kind == "screen"
+    assert route.reason == "explicit_screen_query"

@@ -96,6 +96,16 @@ def test_successful_search_returns_results(executor, mock_network, sample_reques
     assert isinstance(widget_data["suggested_actions"], list)
     assert widget_data["suggested_actions"]
     assert isinstance(widget_data["follow_up_prompts"], list)
+    assert widget_data["follow_up_prompts"] == [
+        "research test query",
+        "create an intelligence brief on test query",
+        "analyze source reliability for test query",
+    ]
+    assert [item["label"] for item in widget_data["suggested_actions"]] == [
+        "Research this topic",
+        "Create brief",
+        "Check source reliability",
+    ]
 
 
 def test_no_results_returns_empty_widget(executor, mock_network, sample_request):
@@ -231,3 +241,35 @@ def test_search_reads_source_pages_and_uses_researched_summary(executor, mock_ne
     widget_data = result.data["widget"]["data"]
     assert widget_data["source_pages_read"] == 2
     assert "Sourced answer based on reviewed pages" in widget_data["researched_summary"]
+
+
+def test_search_synthesis_uses_bounded_gateway_timeout(executor, mock_network, sample_request, monkeypatch):
+    captured = {}
+
+    def _fake_generate_chat(*args, **kwargs):
+        captured.update(kwargs)
+        return "Sourced answer based on reviewed pages."
+
+    monkeypatch.setattr("src.executors.web_search_executor.generate_chat", _fake_generate_chat)
+    mock_network.request.side_effect = [
+        {
+            "status_code": 200,
+            "data": {
+                "web": {
+                    "results": [
+                        {
+                            "title": "Result one title",
+                            "url": "https://example.com/one",
+                            "description": "One",
+                        },
+                    ]
+                }
+            },
+        },
+        {"status_code": 200, "text": "<html><body><article>First source details.</article></body></html>"},
+    ]
+
+    result = executor.execute(sample_request)
+
+    assert result.success is True
+    assert captured["timeout"] == 4.2

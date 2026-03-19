@@ -12,6 +12,14 @@ from src.conversation.deepseek_safety_wrapper import DeepSeekSafetyWrapper
 class AnalysisDocumentExecutor:
     """Governed, session-scoped analysis document lifecycle."""
 
+    _UNAVAILABLE_MARKERS = (
+        "currently unavailable",
+        "structured analysis",
+        "model is blocked",
+        "version mismatch",
+    )
+    _CREATE_TIMEOUT_SECONDS = 150.0
+
     def __init__(self) -> None:
         self._bridge = DeepSeekBridge()
         self._safety = DeepSeekSafetyWrapper()
@@ -40,20 +48,38 @@ class AnalysisDocumentExecutor:
         prompt = (
             "Create a structured long-form analysis document.\n"
             f"Topic: {topic}\n\n"
+            "Return plain text only. Do not use markdown emphasis. Do not use blank lines anywhere in the response.\n"
+            "Put each heading and its content on a single line.\n"
             "Format strictly as:\n"
             "Title: ...\n"
             "Executive Summary: ...\n"
-            "Section 1 - ...\n"
-            "Section 2 - ...\n"
-            "Section 3 - ...\n"
+            "Section 1 - ...: ...\n"
+            "Section 2 - ...: ...\n"
+            "Section 3 - ...: ...\n"
             "Key Risks: ...\n"
             "Key Signals To Watch: ...\n"
             "Keep tone neutral, factual, and non-predictive."
         )
-        raw = self._bridge.analyze(prompt, [], suggested_max_tokens=1100)
+        raw = self._bridge.analyze(
+            prompt,
+            [],
+            suggested_max_tokens=500,
+            analysis_profile="task_scoped",
+            timeout_seconds=self._CREATE_TIMEOUT_SECONDS,
+        )
         content = self._safety.sanitize(raw)
         if not content:
             return ActionResult.failure("I couldn't generate the analysis document right now.", request_id=request.request_id)
+        if self._analysis_unavailable(content):
+            return ActionResult.failure(
+                "Analysis document generation is unavailable in this runtime because structured analysis is currently blocked or unavailable.",
+                request_id=request.request_id,
+            )
+        if not self._looks_complete_document(content):
+            return ActionResult.failure(
+                "Analysis document generation returned an incomplete document, so I did not save it as a finished report.",
+                request_id=request.request_id,
+            )
 
         next_id = self._next_id(documents)
         sections = self._extract_sections(content)
@@ -167,9 +193,14 @@ class AnalysisDocumentExecutor:
             f"Section text:\n{section_text}\n\n"
             "Return:\n- Main point\n- Why it matters\n- Key detail to remember"
         )
-        raw = self._bridge.analyze(prompt, [], suggested_max_tokens=450)
+        raw = self._bridge.analyze(
+            prompt,
+            [],
+            suggested_max_tokens=450,
+            analysis_profile="task_scoped",
+        )
         explained = self._safety.sanitize(raw)
-        if not explained:
+        if not explained or self._analysis_unavailable(explained):
             explained = self._first_text_snippet(section_text, limit=420)
 
         message = (
@@ -247,6 +278,8 @@ class AnalysisDocumentExecutor:
     def _extract_title(text: str) -> str:
         for line in text.splitlines():
             stripped = line.strip()
+            stripped = re.sub(r"^\*+\s*", "", stripped)
+            stripped = re.sub(r"\s*\*+$", "", stripped)
             if stripped.lower().startswith("title:"):
                 return stripped.split(":", 1)[1].strip()
         return ""
@@ -255,6 +288,8 @@ class AnalysisDocumentExecutor:
     def _extract_summary(text: str) -> str:
         for line in text.splitlines():
             stripped = line.strip()
+            stripped = re.sub(r"^\*+\s*", "", stripped)
+            stripped = re.sub(r"\s*\*+$", "", stripped)
             if stripped.lower().startswith("executive summary:"):
                 return stripped.split(":", 1)[1].strip()
         return ""
@@ -290,6 +325,25 @@ class AnalysisDocumentExecutor:
 
         for line in lines:
             stripped = line.strip()
+            inline_match = re.match(
+                r"^section\s+(\d+)\s*-\s*([^:]+?)\s*:\s*(.+)$",
+                stripped,
+                flags=re.IGNORECASE,
+            )
+            if inline_match:
+                flush()
+                sections.append(
+                    {
+                        "number": int(inline_match.group(1)),
+                        "title": inline_match.group(2).strip(),
+                        "content": inline_match.group(3).strip(),
+                    }
+                )
+                current_number = 0
+                current_title = ""
+                current_buffer = []
+                continue
+
             match = re.match(r"^section\s+(\d+)\s*[-:]\s*(.+)$", stripped, flags=re.IGNORECASE)
             if match:
                 flush()
@@ -303,3 +357,20 @@ class AnalysisDocumentExecutor:
         if not sections:
             sections.append({"number": 1, "title": "Overview", "content": text.strip()})
         return sections
+
+    @classmethod
+    def _looks_complete_document(cls, text: str) -> bool:
+        title = cls._extract_title(text)
+        summary = cls._extract_summary(text)
+        sections = cls._extract_sections(text)
+        lowered = str(text or "").lower()
+        has_key_risks = "key risks:" in lowered
+        has_key_signals = "key signals to watch:" in lowered
+        return bool(title and summary and len(sections) >= 3 and has_key_risks and has_key_signals)
+
+    @classmethod
+    def _analysis_unavailable(cls, text: str) -> bool:
+        lowered = str(text or "").strip().lower()
+        if not lowered:
+            return True
+        return any(marker in lowered for marker in cls._UNAVAILABLE_MARKERS)

@@ -94,10 +94,34 @@ class LLMManager:
                 timeout=5,
             )
             data = response.data
-            return data.get("digest")
+            digest = data.get("digest")
+            if digest:
+                return digest
+            logger.info("Ollama /api/show omitted digest for model %s; falling back to /api/tags.", self.model)
+            return self._get_model_digest_from_tags()
         except Exception as error:
             logger.warning("Could not fetch model digest: %s", error)
             return None
+
+    def _get_model_digest_from_tags(self) -> Optional[str]:
+        """Fallback digest lookup for Ollama versions that omit digest from /api/show."""
+        try:
+            response = self._network.request_json(
+                method="GET",
+                url=f"{self.base_url.rstrip('/')}/api/tags",
+                timeout=5,
+            )
+        except Exception as error:
+            logger.warning("Could not fetch model digest from tags: %s", error)
+            return None
+
+        models = response.data.get("models", [])
+        for model_entry in models:
+            if model_entry.get("name") == self.model:
+                digest = model_entry.get("digest")
+                if digest:
+                    return digest
+        return None
 
     def _compute_current_hash(self) -> str:
         """Compute hash based on current configuration."""

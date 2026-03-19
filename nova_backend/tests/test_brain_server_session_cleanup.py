@@ -96,3 +96,34 @@ def test_open_file_folder_requires_confirmation_before_dispatch(monkeypatch):
     cap_id, params = calls[0]
     assert cap_id == 22
     assert params.get("confirmed") is True
+
+
+def test_response_verification_chat_surface_prefers_accuracy_label(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(
+        brain_server.RUNTIME_GOVERNOR,
+        "handle_governed_invocation",
+        lambda capability_id, params: ActionResult.ok(
+            "Verification Report\nClaim Reliability: Low (0.40)\nReport Confidence: High (0.90)",
+            data={
+                "verification_accuracy_label": "Low",
+                "verification_confidence_label": "High",
+                "verification_recommended": True,
+            },
+            request_id="verify-runtime",
+        ),
+    )
+
+    ws = _ScriptedWebSocket(["fact check The moon has a thick atmosphere like Earth."])
+    asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = [msg for msg in ws.sent_messages if msg.get("type") == "chat"]
+    assert any(msg.get("confidence") == "Claim reliability Low" for msg in chat_messages)
+    assert any(
+        any(action.get("label") == "Re-check with sources" for action in (msg.get("suggested_actions") or []))
+        for msg in chat_messages
+    )

@@ -93,6 +93,10 @@ def _invocation_if_enabled(capability_id: int, params: Dict[str, Any]) -> Invoca
     return None
 
 SEARCH_RE = re.compile(r"^\s*(search(?: for)?|look up)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
+SOURCE_RELIABILITY_RE = re.compile(
+    r"^\s*analy[sz]e\s+source\s+reliability\s+(?:for|of|on)\s+(?P<q>.+?)\s*$",
+    re.IGNORECASE,
+)
 INTEL_RESEARCH_RE = re.compile(
     r"^\s*(?:research|analy[sz]e|create\s+(?:an?\s+)?intelligence\s+brief(?:\s+(?:on|about))?|intelligence\s+brief\s+(?:on|about)|report)\s+(?P<q>.+?)\s*$",
     re.IGNORECASE,
@@ -155,8 +159,10 @@ SCREEN_ANALYSIS_RE = re.compile(
 EXPLAIN_ANYTHING_RE = re.compile(
     r"^\s*(?:"
     r"what(?:'s| is)\s+(?:this|this\s+error|this\s+page|this\s+chart)"
+    r"|what\s+(?:am\s+i|i(?:'m| am))\s+looking\s+at"
     r"|explain\s+(?:this|what\s+i\s+am\s+looking\s+at|what\s+i'm\s+looking\s+at|this\s+error|this\s+chart|this\s+page)"
     r"|analy[sz]e\s+this"
+    r"|view\s+(?:the\s+|this\s+)?screen"
     r"|which\s+one\s+should\s+i\s+download"
     r")\s*$",
     re.IGNORECASE,
@@ -645,6 +651,16 @@ class GovernorMediator:
             topic_query = (tm.group("topic") or "").strip()
             if topic_query:
                 return _invocation_if_enabled(49, {"selection": "topic", "topic_query": topic_query, "recent": True})
+
+        m = SOURCE_RELIABILITY_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                48,
+                {
+                    "query": m.group("q").strip(),
+                    "analysis_focus": "source_reliability",
+                },
+            )
 
         m = INTEL_RESEARCH_RE.match(t)
         if m:

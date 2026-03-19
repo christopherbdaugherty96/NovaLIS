@@ -327,6 +327,7 @@ class GeneralChatSkill(BaseSkill):
                 normalized_query,
                 context,
                 heuristic_result.get("suggested_max_tokens", 800),
+                analysis_profile="deep_reason",
             )
             safe = self.safety.filter(raw)
             safe = self.analysis_safety.sanitize(safe)

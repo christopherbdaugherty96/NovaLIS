@@ -77,18 +77,36 @@ class ScreenCaptureExecutor:
         bounds = build_cursor_region(cursor, size=region_size)
         capture = self.capture_engine.capture_region(bounds)
         if not bool(capture.get("ok")):
-            message = str(capture.get("error") or "Screen capture failed.")
+            raw_error = str(capture.get("error") or "Screen capture failed.")
+            failure_kind = str(capture.get("failure_kind") or "").strip().lower()
+            missing_dependency = str(capture.get("missing_dependency") or "").strip()
+            message = self._render_capture_failure_message(
+                raw_error,
+                failure_kind=failure_kind,
+                missing_dependency=missing_dependency,
+            )
+            failure_data = {
+                "context_snapshot": snapshot,
+                "capture_error": raw_error,
+                "capture_bounds": dict(bounds),
+            }
+            if failure_kind:
+                failure_data["capture_failure_kind"] = failure_kind
+            if missing_dependency:
+                failure_data["missing_dependency"] = missing_dependency
             self._safe_log(
                 "SCREEN_CAPTURE_COMPLETED",
                 {
                     "request_id": request.request_id,
                     "success": False,
-                    "error": message,
+                    "error": raw_error,
+                    "failure_kind": failure_kind,
+                    "missing_dependency": missing_dependency or None,
                 },
             )
             return ActionResult.failure(
-                "I could not capture the screen region.",
-                data={"context_snapshot": snapshot},
+                message,
+                data=failure_data,
                 request_id=request.request_id,
                 authority_class="read_only",
                 external_effect=False,
@@ -150,6 +168,33 @@ class ScreenCaptureExecutor:
             self.ledger.log_event(event_type, payload)
         except Exception:
             return
+
+    @staticmethod
+    def _render_capture_failure_message(
+        raw_error: str,
+        *,
+        failure_kind: str,
+        missing_dependency: str,
+    ) -> str:
+        if failure_kind == "missing_dependency":
+            dependency = missing_dependency or "required local capture dependency"
+            return (
+                f"Screen capture is unavailable in this runtime because the required dependency "
+                f"'{dependency}' is missing. Install it, then try again."
+            )
+        if failure_kind == "dependency_unavailable":
+            return (
+                "Screen capture is unavailable in this runtime because the local capture dependency "
+                "could not be loaded."
+            )
+        if failure_kind == "invalid_bounds":
+            return (
+                "Screen capture is unavailable because this runtime could not read valid screen bounds "
+                "for the current cursor region."
+            )
+        if raw_error:
+            return f"Screen capture is unavailable right now. {raw_error}"
+        return "Screen capture is unavailable right now."
 
     @staticmethod
     def _build_working_context_delta(snapshot: dict[str, Any]) -> dict[str, Any]:

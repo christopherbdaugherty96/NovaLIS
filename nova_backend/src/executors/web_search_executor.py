@@ -54,16 +54,23 @@ class WebSearchExecutor:
         return f'Top results for "{query}": {top[0]}; {top[1]}.'
 
     @staticmethod
-    def _build_suggested_actions() -> list[dict]:
+    def _build_suggested_actions(query: str = "") -> list[dict]:
+        normalized_query = str(query or "").strip()
+        if normalized_query:
+            return [
+                {"label": "Research this topic", "prompt": f"research {normalized_query}"},
+                {"label": "Create brief", "prompt": f"create an intelligence brief on {normalized_query}"},
+                {"label": "Check source reliability", "prompt": f"analyze source reliability for {normalized_query}"},
+            ]
         return [
-            {"label": "Summarize results", "prompt": "summarize these search results"},
-            {"label": "Compare top results", "prompt": "compare the top 3 search results"},
-            {"label": "Most reliable source", "prompt": "which result is the most reliable source and why"},
+            {"label": "Research this topic", "prompt": "research this topic"},
+            {"label": "Create brief", "prompt": "create an intelligence brief on this topic"},
+            {"label": "Check source reliability", "prompt": "analyze source reliability for this topic"},
         ]
 
     @classmethod
-    def _follow_up_prompts(cls) -> list[str]:
-        return [item["prompt"] for item in cls._build_suggested_actions()]
+    def _follow_up_prompts(cls, query: str = "") -> list[str]:
+        return [item["prompt"] for item in cls._build_suggested_actions(query)]
 
     def _empty_widget(
         self,
@@ -85,8 +92,8 @@ class WebSearchExecutor:
                     "summary": researched_summary,
                     "researched_summary": researched_summary,
                     "source_pages_read": source_pages_read,
-                    "follow_up_prompts": self._follow_up_prompts(),
-                    "suggested_actions": self._build_suggested_actions(),
+                    "follow_up_prompts": self._follow_up_prompts(query),
+                    "suggested_actions": self._build_suggested_actions(query),
                     "results": [],
                 },
             }
@@ -114,8 +121,8 @@ class WebSearchExecutor:
                     "summary": widget_summary,
                     "researched_summary": widget_summary,
                     "source_pages_read": source_pages_read,
-                    "follow_up_prompts": self._follow_up_prompts(),
-                    "suggested_actions": self._build_suggested_actions(),
+                    "follow_up_prompts": self._follow_up_prompts(query),
+                    "suggested_actions": self._build_suggested_actions(query),
                     "results": results,
                 },
             }
@@ -334,9 +341,8 @@ class WebSearchExecutor:
             "Source excerpts:\n"
             + "\n\n".join(source_blocks)
         )
-
-        def _generate() -> str:
-            return (
+        try:
+            text = (
                 generate_chat(
                     prompt,
                     mode="analysis_only",
@@ -345,24 +351,15 @@ class WebSearchExecutor:
                     session_id=session_id,
                     max_tokens=260,
                     temperature=0.2,
+                    timeout=SYNTHESIS_TIMEOUT_SECONDS,
                 )
                 or ""
-            )
-
-        pool = ThreadPoolExecutor(max_workers=1)
-        future = pool.submit(_generate)
-        try:
-            text = (future.result(timeout=SYNTHESIS_TIMEOUT_SECONDS) or "").strip()
+            ).strip()
             if not text:
                 return fallback
             return " ".join(text.split())
-        except FuturesTimeoutError:
-            future.cancel()
-            return fallback
         except Exception:
             return fallback
-        finally:
-            pool.shutdown(wait=True, cancel_futures=True)
 
     def execute(self, request) -> ActionResult:
         query = request.params.get("query", "").strip()
@@ -527,9 +524,9 @@ class WebSearchExecutor:
             "Open any dashboard result for full article detail.",
             "",
             "Try next",
-            "- summarize these search results",
-            "- compare the top 3 search results",
-            "- which result is the most reliable source and why",
+            f"- research {query}",
+            f"- create an intelligence brief on {query}",
+            f"- analyze source reliability for {query}",
         ]
         user_message = "\n".join(report_sections)
 

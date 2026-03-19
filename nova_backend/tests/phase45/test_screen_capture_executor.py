@@ -39,6 +39,17 @@ class _FailingCaptureEngine:
         return {"ok": False, "error": "capture unavailable"}
 
 
+class _MissingDependencyCaptureEngine:
+    def capture_region(self, bounds: dict) -> dict:
+        del bounds
+        return {
+            "ok": False,
+            "error": "Capture dependency unavailable: No module named 'pyautogui'",
+            "failure_kind": "missing_dependency",
+            "missing_dependency": "pyautogui",
+        }
+
+
 def test_screen_capture_executor_requires_explicit_invocation_source():
     ledger = _FakeLedger()
     executor = ScreenCaptureExecutor(
@@ -82,6 +93,30 @@ def test_screen_capture_executor_logs_failure_when_capture_fails():
     )
     result = executor.execute(_request({"invocation_source": "voice"}))
     assert result.success is False
-    assert "could not capture" in result.message.lower()
+    assert "screen capture is unavailable" in result.message.lower()
+    assert result.data["capture_error"] == "capture unavailable"
+    assert result.data["capture_bounds"]["width"] > 0
     completion = [payload for name, payload in ledger.events if name == "SCREEN_CAPTURE_COMPLETED"][-1]
     assert completion.get("success") is False
+
+
+def test_screen_capture_executor_surfaces_missing_dependency_reason():
+    ledger = _FakeLedger()
+    executor = ScreenCaptureExecutor(
+        ledger=ledger,
+        context_service=_FakeContextService(),
+        capture_engine=_MissingDependencyCaptureEngine(),
+    )
+    result = executor.execute(_request({"invocation_source": "ui"}))
+
+    assert result.success is False
+    assert "pyautogui" in result.message
+    assert "missing" in result.message.lower()
+    assert result.data["capture_failure_kind"] == "missing_dependency"
+    assert result.data["missing_dependency"] == "pyautogui"
+    assert result.data["capture_error"] == "Capture dependency unavailable: No module named 'pyautogui'"
+
+    completion = [payload for name, payload in ledger.events if name == "SCREEN_CAPTURE_COMPLETED"][-1]
+    assert completion.get("success") is False
+    assert completion.get("failure_kind") == "missing_dependency"
+    assert completion.get("missing_dependency") == "pyautogui"

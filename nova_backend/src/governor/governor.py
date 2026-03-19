@@ -27,6 +27,12 @@ from src.governor.execute_boundary.execute_boundary import (
 from src.governor.single_action_queue import SingleActionQueue
 
 
+CAPABILITY_TIMEOUT_OVERRIDES = {
+    31: 90.0,  # Response verification may need local-model cold-start time.
+    54: 150.0,  # Analysis documents need more time for local-model long-form generation.
+}
+
+
 class Governor:
     """
     Single authority choke point.
@@ -229,6 +235,7 @@ class Governor:
         self._queue.set_pending(req.request_id)
         self._execute_boundary.enter_execution()
         start_time = time.monotonic()
+        timeout_seconds = self._execution_timeout_seconds(req.capability_id)
 
         try:
             if req.capability_id == 16:
@@ -241,13 +248,13 @@ class Governor:
 
             result = self._execute_boundary.run_with_timeout(
                 lambda: self._dispatch_capability(req),
-                timeout_seconds=MAX_EXECUTION_TIME,
+                timeout_seconds=timeout_seconds,
             )
             self._execute_boundary.enforce_memory_limits()
             self._execute_boundary.enforce_cpu_limits()
 
             elapsed = time.monotonic() - start_time
-            if elapsed > MAX_EXECUTION_TIME:
+            if elapsed > timeout_seconds:
                 try:
                     self.ledger.log_event(
                         "EXECUTION_TIMEOUT",
@@ -262,13 +269,20 @@ class Governor:
                 return ActionResult.refusal("Execution exceeded allowed time.", request_id=req.request_id)
 
             try:
+                completion_metadata = {
+                    "capability_id": req.capability_id,
+                    "request_id": req.request_id,
+                    "success": result.success,
+                    "external_effect": bool(result.external_effect),
+                    "reversible": bool(result.reversible),
+                }
+                if not result.success:
+                    failure_reason = str(result.message or "").strip()
+                    if failure_reason:
+                        completion_metadata["failure_reason"] = failure_reason[:240]
                 self.ledger.log_event(
                     "ACTION_COMPLETED",
-                    {
-                        "capability_id": req.capability_id,
-                        "request_id": req.request_id,
-                        "success": result.success,
-                    },
+                    completion_metadata,
                 )
             except LedgerWriteFailed:
                 pass
@@ -312,6 +326,10 @@ class Governor:
         finally:
             self._execute_boundary.exit_execution()
             self._queue.clear()
+
+    @staticmethod
+    def _execution_timeout_seconds(capability_id: int) -> float:
+        return float(CAPABILITY_TIMEOUT_OVERRIDES.get(int(capability_id), MAX_EXECUTION_TIME))
 
     def allow_notification_delivery(self, metadata: Dict[str, Any]) -> tuple[bool, str]:
         schedule_id = str((metadata or {}).get("schedule_id") or "").strip()

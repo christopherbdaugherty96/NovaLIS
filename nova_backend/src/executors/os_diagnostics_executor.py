@@ -295,11 +295,16 @@ class OSDiagnosticsExecutor:
         detail = ""
         title = ""
         kind = "system"
+        outcome = OSDiagnosticsExecutor._recent_activity_outcome(entry)
+        reason = ""
+        effect = ""
 
         if event_type.startswith("ACTION_") and event_type.endswith("_COMPLETED"):
             kind = "action"
-            title = "Action completed"
+            title = "Action completed" if outcome != "issue" else "Action needs attention"
             detail = OSDiagnosticsExecutor._capability_label_from_entry(entry, capability_lookup)
+            reason = str(entry.get("failure_reason") or "").strip()
+            effect = OSDiagnosticsExecutor._recent_activity_effect(entry)
         elif event_type.startswith("ACTION_") and event_type.endswith("_ATTEMPTED"):
             return None
         elif event_type == "EXTERNAL_NETWORK_CALL":
@@ -338,7 +343,10 @@ class OSDiagnosticsExecutor:
         elif event_type in {"SCREEN_CAPTURE_COMPLETED", "SCREEN_ANALYSIS_COMPLETED", "EXPLAIN_ANYTHING_COMPLETED"}:
             kind = "screen"
             title = event_type.replace("_", " ").title()
+            if outcome == "issue":
+                title = title.replace("Completed", "Needs Attention")
             detail = "Screen and explanation workflow"
+            reason = str(entry.get("error") or "").strip()
         elif event_type in {"PROJECT_THREAD_CREATED", "PROJECT_THREAD_UPDATED", "PROJECT_THREAD_RESUMED", "PROJECT_THREAD_MAP_VIEWED"}:
             kind = "thread"
             title = event_type.replace("_", " ").title()
@@ -357,7 +365,40 @@ class OSDiagnosticsExecutor:
             "title": title,
             "detail": detail,
             "timestamp": timestamp_label,
+            "outcome": outcome,
+            "reason": reason,
+            "effect": effect,
         }
+
+    @staticmethod
+    def _recent_activity_outcome(entry: dict[str, object]) -> str:
+        success = entry.get("success")
+        if isinstance(success, bool):
+            return "success" if success else "issue"
+        return "info"
+
+    @staticmethod
+    def _recent_activity_effect(entry: dict[str, object]) -> str:
+        external_effect = entry.get("external_effect")
+        reversible = entry.get("reversible")
+
+        if not isinstance(external_effect, bool) and not isinstance(reversible, bool):
+            return ""
+
+        show_effect = (
+            entry.get("success") is False
+            or external_effect is True
+            or reversible is False
+        )
+        if not show_effect:
+            return ""
+
+        parts: list[str] = []
+        if isinstance(external_effect, bool):
+            parts.append("External effect" if external_effect else "No external effect")
+        if isinstance(reversible, bool):
+            parts.append("Reversible" if reversible else "Not reversible")
+        return ", ".join(parts)
 
     @staticmethod
     def _recent_activity_timestamp(raw_value: str) -> str:

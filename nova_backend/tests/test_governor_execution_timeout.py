@@ -150,3 +150,133 @@ def test_governor_cpu_cap_fails_closed_and_logs_event(monkeypatch):
         event == "ACTION_COMPLETED" and bool(meta.get("success")) is True
         for event, meta in gov._ledger.events
     )
+
+
+def test_governor_action_completed_logs_failure_reason_and_effect_metadata(monkeypatch):
+    from src.actions.action_result import ActionResult
+    from src.governor.governor import Governor
+
+    gov = Governor()
+
+    class FakeRegistry:
+        def get(self, capability_id):
+            return types.SimpleNamespace(name="fake")
+
+        def is_enabled(self, capability_id):
+            return True
+
+    class FakeLedger:
+        def __init__(self):
+            self.events = []
+
+        def log_event(self, event_type, metadata):
+            self.events.append((event_type, metadata))
+
+    gov._registry = FakeRegistry()
+    gov._ledger = FakeLedger()
+
+    monkeypatch.setattr(
+        gov,
+        "_dispatch_capability",
+        lambda req: ActionResult.failure(
+            "Model inference is blocked in this runtime.",
+            request_id=req.request_id,
+            external_effect=False,
+            reversible=True,
+        ),
+    )
+
+    result = gov.handle_governed_invocation(31, {"text": "fact check this"})
+
+    assert result.success is False
+    completed = [meta for event, meta in gov._ledger.events if event == "ACTION_COMPLETED"]
+    assert completed
+    payload = completed[-1]
+    assert payload["success"] is False
+    assert payload["failure_reason"] == "Model inference is blocked in this runtime."
+    assert payload["external_effect"] is False
+    assert payload["reversible"] is True
+
+
+def test_governor_uses_extended_timeout_for_response_verification(monkeypatch):
+    from src.actions.action_result import ActionResult
+    from src.governor.governor import Governor
+
+    gov = Governor()
+
+    class FakeRegistry:
+        def get(self, capability_id):
+            return types.SimpleNamespace(name="response_verification")
+
+        def is_enabled(self, capability_id):
+            return True
+
+    class FakeLedger:
+        def __init__(self):
+            self.events = []
+
+        def log_event(self, event_type, metadata):
+            self.events.append((event_type, metadata))
+
+    captured = {}
+    gov._registry = FakeRegistry()
+    gov._ledger = FakeLedger()
+
+    monkeypatch.setattr(
+        gov,
+        "_dispatch_capability",
+        lambda req: ActionResult.ok("verified", request_id=req.request_id),
+    )
+
+    def _fake_run_with_timeout(operation, timeout_seconds=None):
+        captured["timeout_seconds"] = timeout_seconds
+        return operation()
+
+    monkeypatch.setattr(gov._execute_boundary, "run_with_timeout", _fake_run_with_timeout)
+
+    result = gov.handle_governed_invocation(31, {"text": "fact check this"})
+
+    assert result.success is True
+    assert captured["timeout_seconds"] == 90.0
+
+
+def test_governor_uses_extended_timeout_for_analysis_document(monkeypatch):
+    from src.actions.action_result import ActionResult
+    from src.governor.governor import Governor
+
+    gov = Governor()
+
+    class FakeRegistry:
+        def get(self, capability_id):
+            return types.SimpleNamespace(name="analysis_document")
+
+        def is_enabled(self, capability_id):
+            return True
+
+    class FakeLedger:
+        def __init__(self):
+            self.events = []
+
+        def log_event(self, event_type, metadata):
+            self.events.append((event_type, metadata))
+
+    captured = {}
+    gov._registry = FakeRegistry()
+    gov._ledger = FakeLedger()
+
+    monkeypatch.setattr(
+        gov,
+        "_dispatch_capability",
+        lambda req: ActionResult.ok("created", request_id=req.request_id),
+    )
+
+    def _fake_run_with_timeout(operation, timeout_seconds=None):
+        captured["timeout_seconds"] = timeout_seconds
+        return operation()
+
+    monkeypatch.setattr(gov._execute_boundary, "run_with_timeout", _fake_run_with_timeout)
+
+    result = gov.handle_governed_invocation(54, {"action": "create", "topic": "AI geopolitics"})
+
+    assert result.success is True
+    assert captured["timeout_seconds"] == 150.0

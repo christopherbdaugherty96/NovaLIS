@@ -37,6 +37,7 @@ from src.voice.tts_engine import stop_speaking
 from src.conversation.clarify_prompts import CLARIFY_PROMPTS
 from src.conversation.response_formatter import ResponseFormatter
 from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
+from src.executors.os_diagnostics_executor import OSDiagnosticsExecutor
 from src.trust.failure_ladder import FailureLadder
 from src.trust.trust_contract import normalize_trust_status
 from src.patterns.pattern_review_store import PatternReviewStore
@@ -1936,7 +1937,29 @@ async def send_widget_message(
 
 
 async def send_trust_status(ws: WebSocket, trust_status: dict) -> None:
-    await ws_send(ws, {"type": "trust_status", "data": normalize_trust_status(trust_status)})
+    payload = normalize_trust_status(trust_status)
+    payload.update(_build_trust_review_snapshot())
+    await ws_send(ws, {"type": "trust_status", "data": payload})
+
+
+def _build_trust_review_snapshot() -> dict[str, object]:
+    try:
+        enabled_entries = OSDiagnosticsExecutor._enabled_capability_entries()
+        recent_runtime_activity, trust_review_summary = OSDiagnosticsExecutor._recent_runtime_activity(
+            enabled_entries
+        )
+        model_availability, _, _, _ = OSDiagnosticsExecutor._model_status_details()
+        blocked_conditions = OSDiagnosticsExecutor._blocked_conditions(
+            model_availability=model_availability
+        )
+    except Exception:
+        return {}
+
+    return {
+        "trust_review_summary": trust_review_summary,
+        "recent_runtime_activity": recent_runtime_activity,
+        "blocked_conditions": blocked_conditions,
+    }
 
 
 async def invoke_governed_capability(
@@ -4163,7 +4186,7 @@ async def websocket_endpoint(ws: WebSocket):
                         await send_chat_message(ws, str(plan.get("message") or "I couldn't resolve that website."))
                         await send_chat_done(ws)
                         continue
-                    if plan.get("requires_confirmation") and not params.get("confirmed"):
+                    if plan.get("requires_confirmation") and not params.get("confirmed") and not params.get("preview"):
                         session_state["pending_web_open"] = {
                             "target": params.get("target", ""),
                             "resolved_url": plan.get("url", ""),
@@ -4306,8 +4329,11 @@ async def websocket_endpoint(ws: WebSocket):
                 message_confidence: Optional[str] = None
                 message_suggestions: list[dict[str, str]] | None = None
                 if capability_id == 31 and isinstance(action_result.data, dict):
+                    accuracy_label = str(action_result.data.get("verification_accuracy_label") or "").strip()
                     confidence_label = str(action_result.data.get("verification_confidence_label") or "").strip()
-                    if confidence_label:
+                    if accuracy_label:
+                        message_confidence = f"Claim reliability {accuracy_label}"
+                    elif confidence_label:
                         message_confidence = f"Verification {confidence_label}"
                     if action_result.data.get("verification_recommended") is True:
                         message_suggestions = [

@@ -1,15 +1,19 @@
-﻿# Design Documentation Index
+# Design Documentation Index
 
 Read this first: `docs/design/DESIGN_AUTHORITY.md`
 
 Purpose:
 - `docs/design/` contains intended architecture and phase direction.
 - It does not define runtime behavior.
+- Cross-phase planning realignments should be captured in explicit planning packets rather than overwriting runtime truth.
 
 Canonical runtime truth:
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
 - `docs/PROOFS/`
+
+Current cross-phase planning packet:
+- `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 
 Canonical design phase folders:
 - `Phase 4`

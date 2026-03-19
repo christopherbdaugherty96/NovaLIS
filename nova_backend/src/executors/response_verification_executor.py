@@ -10,6 +10,13 @@ from src.conversation.deepseek_safety_wrapper import DeepSeekSafetyWrapper
 class ResponseVerificationExecutor:
     """Invocation-bound analysis verifier. Advisory only, never authorizing."""
 
+    _UNAVAILABLE_MARKERS = (
+        "currently unavailable",
+        "structured analysis",
+        "model is blocked",
+        "version mismatch",
+    )
+
     def __init__(self) -> None:
         self._bridge = DeepSeekBridge()
         self._safety = DeepSeekSafetyWrapper()
@@ -35,18 +42,44 @@ class ResponseVerificationExecutor:
             "Do not include execution instructions."
         )
 
-        raw = self._bridge.analyze(prompt, [], suggested_max_tokens=700)
+        raw = self._bridge.analyze(
+            prompt,
+            [],
+            suggested_max_tokens=700,
+            analysis_profile="task_scoped",
+        )
         clean = self._safety.sanitize(raw)
         if not clean:
             return ActionResult.failure(
                 "I couldn't verify that right now.",
                 request_id=request.request_id,
             )
+        if self._verification_unavailable(clean):
+            return ActionResult.failure(
+                "Verification is unavailable in this runtime because structured analysis is currently blocked or unavailable.",
+                request_id=request.request_id,
+                authority_class="read_only",
+                external_effect=False,
+                reversible=True,
+            )
+        if not self._looks_structured(clean):
+            return ActionResult.failure(
+                "Verification returned an incomplete report, so I did not present it as a finished check.",
+                request_id=request.request_id,
+                authority_class="read_only",
+                external_effect=False,
+                reversible=True,
+            )
 
-        confidence_label, confidence_score = self._derive_confidence(clean)
-        verification_recommended = confidence_score < 0.75
+        accuracy_label, accuracy_score = self._derive_section_label(clean, "accuracy", default="medium")
+        confidence_label, confidence_score = self._derive_section_label(clean, "confidence", default=accuracy_label)
         issue_count = self._count_bullets(clean, "Potential Issues")
         correction_count = self._count_bullets(clean, "Suggested Corrections")
+        verification_recommended = (
+            accuracy_score < 0.75
+            or issue_count > 0
+            or correction_count > 0
+        )
         recommendation_line = (
             "Recommendation: Verification is recommended before relying on this claim."
             if verification_recommended
@@ -54,7 +87,8 @@ class ResponseVerificationExecutor:
         )
         message = (
             "Verification Report\n"
-            f"Verification Confidence: {confidence_label} ({confidence_score:.2f})\n"
+            f"Claim Reliability: {accuracy_label} ({accuracy_score:.2f})\n"
+            f"Report Confidence: {confidence_label} ({confidence_score:.2f})\n"
             f"Potential issues found: {issue_count}\n"
             f"Suggested corrections: {correction_count}\n"
             f"{recommendation_line}\n\n"
@@ -68,6 +102,8 @@ class ResponseVerificationExecutor:
             message=message,
             data={
                 "verification_text": clean,
+                "verification_accuracy_label": accuracy_label,
+                "verification_accuracy_score": accuracy_score,
                 "verification_confidence_label": confidence_label,
                 "verification_confidence_score": confidence_score,
                 "verification_recommended": verification_recommended,
@@ -85,23 +121,26 @@ class ResponseVerificationExecutor:
             reversible=True,
         )
 
-    @staticmethod
-    def _derive_confidence(report_text: str) -> tuple[str, float]:
-        text = (report_text or "").lower()
-        confidence_match = re.search(r"\bconfidence\s*:\s*(high|medium|low)\b", text, flags=re.IGNORECASE)
-        accuracy_match = re.search(r"\baccuracy\s*:\s*(high|medium|low)\b", text, flags=re.IGNORECASE)
-        label = (confidence_match.group(1) if confidence_match else None) or (
-            accuracy_match.group(1) if accuracy_match else "medium"
-        )
-        normalized = str(label).strip().lower()
-        if normalized == "high":
-            return "High", 0.9
-        if normalized == "low":
-            return "Low", 0.4
-        return "Medium", 0.65
+    @classmethod
+    def _verification_unavailable(cls, report_text: str) -> bool:
+        lowered = str(report_text or "").strip().lower()
+        if not lowered:
+            return True
+        return any(marker in lowered for marker in cls._UNAVAILABLE_MARKERS)
 
     @staticmethod
-    def _count_bullets(report_text: str, section_name: str) -> int:
+    def _looks_structured(report_text: str) -> bool:
+        lowered = str(report_text or "").lower()
+        required_sections = (
+            "accuracy:",
+            "potential issues:",
+            "suggested corrections:",
+            "confidence:",
+        )
+        return all(section in lowered for section in required_sections)
+
+    @staticmethod
+    def _section_text(report_text: str, section_name: str) -> str:
         text = str(report_text or "")
         match = re.search(
             rf"{re.escape(section_name)}\s*:\s*(.+?)(?:\n[A-Z][A-Za-z ]+:\s*|\Z)",
@@ -109,6 +148,41 @@ class ResponseVerificationExecutor:
             flags=re.IGNORECASE | re.DOTALL,
         )
         if not match:
+            return ""
+        return match.group(1).strip()
+
+    @classmethod
+    def _derive_section_label(cls, report_text: str, section_name: str, default: str = "medium") -> tuple[str, float]:
+        text = (report_text or "").lower()
+        match = re.search(rf"\b{re.escape(section_name)}\s*:\s*(high|medium|low)\b", text, flags=re.IGNORECASE)
+        label = (match.group(1) if match else None) or default
+        normalized = str(label).strip().lower()
+        if normalized == "high":
+            return "High", 0.9
+        if normalized == "low":
+            return "Low", 0.4
+        return "Medium", 0.65
+
+    @classmethod
+    def _count_bullets(cls, report_text: str, section_name: str) -> int:
+        block = cls._section_text(report_text, section_name)
+        if not block:
             return 0
-        block = match.group(1)
-        return len([line for line in block.splitlines() if line.strip().startswith("-")])
+        bullet_lines = []
+        for line in block.splitlines():
+            stripped = line.strip()
+            if not stripped.startswith("-"):
+                continue
+            payload = stripped.lstrip("-").strip().lower()
+            if payload in {"none", "none.", "none noted", "none identified", "not applicable", "n/a"}:
+                continue
+            bullet_lines.append(line)
+        if bullet_lines:
+            return len(bullet_lines)
+        lowered = block.strip().lower()
+        normalized = lowered.lstrip("-").strip()
+        if not normalized or normalized in {"none", "none.", "none noted", "none identified", "not applicable", "n/a"}:
+            return 0
+        if normalized.startswith("none identified") or normalized.startswith("none noted") or normalized.startswith("not applicable"):
+            return 0
+        return 1

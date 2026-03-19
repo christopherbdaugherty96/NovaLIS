@@ -170,3 +170,29 @@ def test_explain_anything_uses_working_context_goal_when_query_missing():
     )
     assert result.success is True
     assert screen.last_params.get("query") == "which one should i download"
+
+
+def test_explain_anything_delegates_to_screen_analysis_for_explicit_screen_query_without_snapshot():
+    snapshot = {
+        "cursor": {"x": 0, "y": 0, "screen_width": 0, "screen_height": 0},
+        "browser": {"is_browser": False},
+        "active_window": {"title": "", "app": ""},
+        "system": {"os": "Windows"},
+    }
+    screen = _FakeScreenAnalysisExecutor()
+    executor = ExplainAnythingExecutor(
+        ledger=_FakeLedger(),
+        context_service=_FakeContextService(snapshot),
+        screen_analysis_executor=screen,
+    )
+    result = executor.execute(
+        _request(
+            {
+                "invocation_source": "ui",
+                "query": "what am i looking at",
+            }
+        )
+    )
+    assert result.success is True
+    assert result.data["widget"]["type"] == "screen_analysis"
+    assert screen.last_params.get("query") == "what am i looking at"

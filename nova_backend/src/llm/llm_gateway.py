@@ -29,6 +29,7 @@ def generate_chat(
     system_prompt: str | None = None,
     max_tokens: int = 400,
     temperature: float = 0.3,
+    timeout: float | None = None,
 ) -> str | None:
     """Centralized non-authorizing local model gateway (text in, text out)."""
     del mode, safety_profile
@@ -39,6 +40,7 @@ def generate_chat(
             system_prompt=system_prompt or "",
             temperature=temperature,
             max_tokens=max_tokens,
+            timeout=timeout,
             request_id=request_id,
             session_id=session_id,
         )

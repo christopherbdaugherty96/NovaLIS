@@ -142,6 +142,28 @@ def test_os_diagnostics_executor_returns_extended_metrics(monkeypatch):
     assert "Locks" in str(result.data.get("operator_health_summary") or "")
 
 
+def test_os_diagnostics_recent_activity_marks_unsuccessful_action_as_issue():
+    item = OSDiagnosticsExecutor._recent_activity_item(
+        {
+            "event_type": "ACTION_COMPLETED",
+            "capability_id": 31,
+            "success": False,
+            "failure_reason": "Model inference is blocked in this runtime.",
+            "external_effect": False,
+            "reversible": True,
+            "timestamp_utc": "2026-03-19T03:43:11+00:00",
+        },
+        {31: "response verification"},
+    )
+
+    assert item is not None
+    assert item["title"] == "Action needs attention"
+    assert item["detail"] == "response verification"
+    assert item["outcome"] == "issue"
+    assert item["reason"] == "Model inference is blocked in this runtime."
+    assert item["effect"] == "No external effect, Reversible"
+
+
 def test_os_diagnostics_executor_handles_network_stat_errors(monkeypatch):
     import src.executors.os_diagnostics_executor as mod
 
