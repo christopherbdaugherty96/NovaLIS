@@ -129,6 +129,24 @@ class GeneralChatSkill(BaseSkill):
         "break this down",
         "explain deeply",
     )
+    _GREETING_RESPONSES: Dict[str, str] = {
+        "hi": "Hello. What do you want to work on?",
+        "hello": "Hello. What do you want to work on?",
+        "hey": "Hello. What do you want to work on?",
+        "good morning": "Good morning. What do you want to work on?",
+        "good afternoon": "Good afternoon. What do you want to work on?",
+        "good evening": "Good evening. What do you want to work on?",
+    }
+    _THANKS_RESPONSES: Dict[str, str] = {
+        "thanks": "You're welcome.",
+        "thank you": "You're welcome.",
+    }
+    _STATUS_RESPONSES: Dict[str, str] = {
+        "how are you": "Ready to help. What do you want to work on?",
+        "how are you doing": "Ready to help. What do you want to work on?",
+        "how's it going": "Ready to help. What do you want to work on?",
+        "hows it going": "Ready to help. What do you want to work on?",
+    }
 
     def __init__(
         self,
@@ -304,6 +322,48 @@ class GeneralChatSkill(BaseSkill):
         clean = re.sub(r"\n+$", "\n", clean).rstrip("\n")
         return clean
 
+    @staticmethod
+    def _canonical_social_query(query: str) -> str:
+        normalized = InputNormalizer.normalize(query).lower().strip().rstrip(".?!")
+        normalized = re.sub(r"\bnova\b", " ", normalized, flags=re.IGNORECASE)
+        normalized = re.sub(r"\s+", " ", normalized).strip(" ,")
+        return normalized
+
+    def _local_social_result(self, query: str) -> SkillResult | None:
+        canonical = self._canonical_social_query(query)
+        if not canonical:
+            return None
+
+        response = (
+            self._GREETING_RESPONSES.get(canonical)
+            or self._THANKS_RESPONSES.get(canonical)
+            or self._STATUS_RESPONSES.get(canonical)
+        )
+        if not response:
+            return None
+
+        tone_profile = self._current_tone_profile("general")
+        shaped = self._shape_response_for_tone(
+            response,
+            mode="casual",
+            tone_profile=tone_profile,
+            explicit_depth=False,
+        )
+
+        return SkillResult(
+            success=True,
+            message=shaped,
+            data={
+                "mode": "casual",
+                "style": ResponseStyle.CASUAL.value,
+                "tone_profile": tone_profile,
+                "speakable_text": shaped,
+                "structured_data": {"deterministic_social": True},
+            },
+            widget_data=None,
+            skill=self.name,
+        )
+
     @classmethod
     def _is_geopolitical_query(cls, query: str) -> bool:
         q = (query or "").lower()
@@ -342,6 +402,10 @@ class GeneralChatSkill(BaseSkill):
         return concise
 
     async def _run_local_model(self, query: str) -> SkillResult | None:
+        social = self._local_social_result(query)
+        if social is not None:
+            return social
+
         normalized_query = InputNormalizer.normalize(query)
         mode = self._detect_mode(normalized_query)
         style = self.style_router.route(normalized_query)
@@ -388,6 +452,10 @@ class GeneralChatSkill(BaseSkill):
             return None
 
     async def handle(self, query: str, context: Optional[list] = None, session_state: Optional[dict] = None) -> SkillResult | None:
+        social = self._local_social_result(query)
+        if social is not None:
+            return social
+
         # Backward compatible path
         if context is None or session_state is None:
             return await self._run_local_model(query)

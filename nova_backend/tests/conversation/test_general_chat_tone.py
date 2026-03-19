@@ -76,3 +76,26 @@ def test_general_chat_concise_tone_tightens_casual_chat_budget(tmp_path: Path):
     assert captured["max_tokens"] <= 70
     assert "Tone profile: Concise." in captured["system_prompt"]
     assert (result.data or {}).get("tone_profile") == "concise"
+
+
+def test_general_chat_uses_deterministic_local_greeting_without_model_call():
+    skill = GeneralChatSkill()
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        result = asyncio.run(skill.handle("hello", context=[], session_state={}))
+
+    assert result is not None
+    assert result.success is True
+    assert result.message == "Hello. What do you want to work on?"
+    assert (result.data or {}).get("structured_data", {}).get("deterministic_social") is True
+
+
+def test_general_chat_uses_deterministic_local_thanks_without_model_call():
+    skill = GeneralChatSkill()
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        result = asyncio.run(skill.handle("thanks", context=[], session_state={}))
+
+    assert result is not None
+    assert result.success is True
+    assert result.message == "You're welcome."

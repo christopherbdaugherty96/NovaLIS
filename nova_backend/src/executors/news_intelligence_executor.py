@@ -1239,7 +1239,7 @@ class NewsIntelligenceExecutor:
         headlines = self._sanitize_headlines((request.params or {}).get("headlines"))
         if not headlines:
             return self._failure_result(
-                "No cached headlines found. Say 'news' first, then ask for a daily brief.",
+                "I couldn't build a daily brief because current headline data isn't available right now.",
                 request_id=request.request_id,
                 failure_kind="missing_headline_cache",
             )

@@ -17,6 +17,15 @@ def test_summary_requires_cached_headlines():
     assert "Say 'news' first" in result.message
 
 
+def test_daily_brief_missing_headlines_reports_current_state():
+    from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
+
+    executor = NewsIntelligenceExecutor()
+    result = executor.execute_brief(_request(50, {"headlines": []}))
+    assert result.success is False
+    assert "headline data isn't available right now" in result.message
+
+
 def test_summary_enforces_max_three(monkeypatch):
     from src.executors import news_intelligence_executor as mod
 

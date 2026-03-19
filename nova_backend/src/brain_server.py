@@ -676,7 +676,7 @@ def _prepare_memory_bridge_params(
     action = str(params.get("action") or "").strip().lower()
     if action == "save_thread_snapshot":
         requested = str(params.get("thread_name") or "").strip()
-        if requested.lower() in {"this", "it", "thread", "project"}:
+        if _canonical_thread_reference(requested) in {"this", "it", "thread", "project"}:
             requested = project_threads.active_thread_name()
         found, brief = project_threads.render_brief(requested)
         if not found:
@@ -709,7 +709,7 @@ def _prepare_memory_bridge_params(
 
     if action == "save_thread_decision":
         requested = str(params.get("thread_name") or "").strip()
-        if requested.lower() in {"this", "it", "thread", "project"}:
+        if _canonical_thread_reference(requested) in {"this", "it", "thread", "project"}:
             requested = project_threads.active_thread_name()
         found, resolved_name, resolved_key = project_threads.resolve_thread_identity(requested)
         if not found:
@@ -744,7 +744,7 @@ def _prepare_memory_bridge_params(
 
     if action == "list" and str(params.get("thread_name") or "").strip():
         requested = str(params.get("thread_name") or "").strip()
-        if requested.lower() in {"this", "it", "thread", "project"}:
+        if _canonical_thread_reference(requested) in {"this", "it", "thread", "project"}:
             requested = project_threads.active_thread_name()
         prepared = dict(params)
         found, resolved_name, resolved_key = project_threads.resolve_thread_identity(requested)
@@ -1075,6 +1075,10 @@ def _format_local_schedule_time(value: datetime | None) -> str:
     local = value.astimezone()
     rendered = local.strftime("%b %d, %I:%M %p")
     return re.sub(r"(?<=\s)0(\d:)", r"\1", rendered)
+
+
+def _canonical_thread_reference(value: str) -> str:
+    return str(value or "").strip().lower().rstrip(".?!")
 
 
 def _parse_iso_datetime(raw: str) -> datetime | None:
@@ -2368,7 +2372,7 @@ async def websocket_endpoint(ws: WebSocket):
             continue_thread_match = CONTINUE_THREAD_RE.match(text)
             if continue_thread_match:
                 thread_name = str(continue_thread_match.group("name") or "").strip()
-                if thread_name.lower() in {"this", "it", "thread"}:
+                if _canonical_thread_reference(thread_name) in {"this", "it", "thread"}:
                     thread_name = project_threads.active_thread_name() or session_state.get("project_thread_active") or ""
                 found, brief = project_threads.render_brief(thread_name)
                 if found:
@@ -2397,9 +2401,21 @@ async def websocket_endpoint(ws: WebSocket):
 
             status_thread_match = PROJECT_STATUS_RE.match(text)
             if status_thread_match:
-                thread_name = str(status_thread_match.group("name") or "").strip()
-                if thread_name.lower() in {"this", "it", "thread", "project"}:
+                requested_name = str(status_thread_match.group("name") or "").strip()
+                thread_name = requested_name
+                if _canonical_thread_reference(requested_name) in {"this", "it", "thread", "project"}:
                     thread_name = project_threads.active_thread_name() or str(session_state.get("project_thread_active") or "").strip()
+                    if not thread_name:
+                        await send_chat_message(
+                            ws,
+                            "I do not have an active project thread yet. Try 'show threads' or 'create thread <name>'.",
+                            suggested_actions=[
+                                {"label": "Show threads", "command": "show threads"},
+                                {"label": "Create thread", "command": "create thread current project"},
+                            ],
+                        )
+                        await send_chat_done(ws)
+                        continue
                 found, status_text = project_threads.render_status(thread_name)
                 if found:
                     session_state["project_thread_active"] = project_threads.active_thread_name()
@@ -2429,7 +2445,7 @@ async def websocket_endpoint(ws: WebSocket):
             blocker_thread_match = BIGGEST_BLOCKER_RE.match(text)
             if blocker_thread_match:
                 thread_name = str(blocker_thread_match.group("name") or "").strip()
-                if not thread_name or thread_name.lower() in {"this", "it", "thread", "project"}:
+                if not thread_name or _canonical_thread_reference(thread_name) in {"this", "it", "thread", "project"}:
                     thread_name = project_threads.active_thread_name() or str(session_state.get("project_thread_active") or "").strip()
                 found, blocker_text = project_threads.render_biggest_blocker(thread_name)
                 if found:
@@ -2460,7 +2476,7 @@ async def websocket_endpoint(ws: WebSocket):
             detail_thread_match = THREAD_DETAIL_RE.match(text)
             if detail_thread_match:
                 thread_name = str(detail_thread_match.group("name") or "").strip()
-                if thread_name.lower() in {"this", "it", "thread", "project"}:
+                if _canonical_thread_reference(thread_name) in {"this", "it", "thread", "project"}:
                     thread_name = project_threads.active_thread_name() or str(session_state.get("project_thread_active") or "").strip()
                 found, detail = project_threads.get_thread_detail(thread_name)
                 if found:
