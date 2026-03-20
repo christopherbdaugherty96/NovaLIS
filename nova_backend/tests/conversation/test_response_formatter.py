@@ -70,3 +70,33 @@ def test_formatter_preserves_spoken_sure_thing_acknowledgement():
     out = ResponseFormatter.format("Sure thing. I can explain that more simply.")
 
     assert out == "Sure thing. I can explain that more simply."
+
+
+def test_formatter_uses_nova_brainstorming_initiative_tail():
+    from src.conversation.response_formatter import ResponseFormatter
+
+    out = ResponseFormatter.with_conversational_initiative(
+        "A clean starting point is a simpler dashboard shell.",
+        mode="brainstorming",
+        allow_branch_suggestion=True,
+        allow_depth_prompt=True,
+    )
+
+    assert "A clean starting point is a simpler dashboard shell." in out
+    assert "compare two or three directions or go deeper on one path" in out
+
+
+def test_formatter_rewrites_brainstorming_intro_into_nova_wording():
+    from src.conversation.response_formatter import ResponseFormatter
+
+    out = ResponseFormatter.format("Here are a few ideas. One is calmer. One is denser.", mode="brainstorming")
+
+    assert out.startswith("Here are a few grounded directions.")
+
+
+def test_formatter_rewrites_analytical_i_think_intro_into_nova_wording():
+    from src.conversation.response_formatter import ResponseFormatter
+
+    out = ResponseFormatter.format("I think the first trade-off matters most.", mode="analytical")
+
+    assert out == "The clearest read is that the first trade-off matters most."

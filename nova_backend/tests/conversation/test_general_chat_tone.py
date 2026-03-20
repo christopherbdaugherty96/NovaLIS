@@ -357,7 +357,39 @@ def test_general_chat_adds_natural_followup_prompt_for_exploratory_queries():
     assert result is not None
     assert result.success is True
     assert "simple dashboard with a few high-signal panels." in result.message
-    assert "branch this into a few directions" in result.message
+    assert "compare two or three directions or go deeper on one path" in result.message
+
+
+def test_general_chat_uses_nova_mode_guidance_for_brainstorming_prompt():
+    skill = GeneralChatSkill()
+    captured = {}
+
+    def _fake_generate_chat(_prompt: str, **kwargs):
+        captured.update(kwargs)
+        return "Here are a few ideas. One is calmer. One is denser."
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(skill._run_local_model("Brainstorm three dashboard directions."))
+
+    assert result is not None
+    assert result.success is True
+    assert "Communication style: Exploratory and grounded." in captured["system_prompt"]
+    assert "Keep the options easy to compare." in captured["system_prompt"]
+    assert result.message.startswith("Here are a few grounded directions.")
+
+
+def test_general_chat_uses_nova_wording_for_analytical_answers():
+    skill = GeneralChatSkill()
+
+    def _fake_generate_chat(_prompt: str, **kwargs):
+        return "I think the first trade-off matters most because it keeps the interface calmer."
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(skill._run_local_model("Analyze the trade-offs in this dashboard design."))
+
+    assert result is not None
+    assert result.success is True
+    assert result.message == "The clearest read is that the first trade-off matters most because it keeps the interface calmer."
 
 
 def test_general_chat_adds_reference_hint_for_ordinal_followup():
