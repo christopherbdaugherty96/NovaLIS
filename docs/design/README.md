@@ -18,6 +18,9 @@ Current cross-phase planning packet:
 Current bounded conversational planning packet:
 - `docs/design/CONVERSATIONAL_CORE_PHASE_PLAN_2026-03-19.md`
 
+Current bounded style planning packet:
+- `docs/design/NOVA_STYLE_LAYER_PLAN_2026-03-20.md`
+
 Canonical design phase folders:
 - `Phase 4`
 - `Phase 4.2`
