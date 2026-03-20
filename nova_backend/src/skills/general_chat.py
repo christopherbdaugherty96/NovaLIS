@@ -234,6 +234,19 @@ class GeneralChatSkill(BaseSkill):
         r"|\bwhat do you mean by that\b",
         re.IGNORECASE,
     )
+    _SEMANTIC_MODIFIER_HINTS: Tuple[Tuple[re.Pattern, str], ...] = (
+        (re.compile(r"\bsafer\b", re.IGNORECASE), "safer"),
+        (re.compile(r"\bcalmer\b", re.IGNORECASE), "calmer"),
+        (re.compile(r"\bsimpler\b", re.IGNORECASE), "simpler"),
+        (re.compile(r"\bstronger\b", re.IGNORECASE), "stronger"),
+        (re.compile(r"\bcheaper\b", re.IGNORECASE), "cheaper"),
+        (re.compile(r"\bfaster\b", re.IGNORECASE), "faster"),
+    )
+    _APPROACH_REFERENCE_RE = re.compile(
+        r"\b(?:that|this)\s+(?:approach|direction|path|version|option)\b"
+        r"|\b(?:the\s+)?(?:safer|calmer|simpler|stronger|cheaper|faster)\s+(?:one|option|version|approach)\b",
+        re.IGNORECASE,
+    )
     _REWRITE_HINT_PATTERNS: Tuple[Tuple[re.Pattern, str], ...] = (
         (
             re.compile(r"\b(?:what do you mean by that|what did you mean by that|clarify that|explain that)\b", re.IGNORECASE),
@@ -712,7 +725,11 @@ class GeneralChatSkill(BaseSkill):
         rewrite_hint = self._build_rewrite_hint(normalized_query, context=context)
         if rewrite_hint:
             hints.append(rewrite_hint)
-        reference_hint = self._build_reference_hint(normalized_query, context=context)
+        reference_hint = self._build_reference_hint(
+            normalized_query,
+            context=context,
+            session_state=session_state,
+        )
         if reference_hint:
             hints.append(reference_hint)
 
@@ -779,19 +796,30 @@ class GeneralChatSkill(BaseSkill):
         return None
 
     @classmethod
-    def _build_reference_hint(cls, query: str, *, context: Optional[list] = None) -> str:
+    def _build_reference_hint(
+        cls,
+        query: str,
+        *,
+        context: Optional[list] = None,
+        session_state: Optional[dict] = None,
+    ) -> str:
         target_index = cls._reference_target_index(query)
-        option_catalog = cls._reference_option_catalog(context)
+        option_catalog = cls._conversation_option_catalog(context=context, session_state=session_state)
         if not option_catalog:
             return ""
 
-        options, recent_entries = option_catalog
+        options, recent_entries, latest_recommendation = option_catalog
         if target_index is not None:
             resolved_index = len(options) - 1 if target_index < 0 else target_index
             if 0 <= resolved_index < len(options):
                 return f"Likely referenced prior option {resolved_index + 1}: {options[resolved_index]}"
 
-        semantic_match = cls._semantic_option_reference(query, options=options, recent_entries=recent_entries)
+        semantic_match = cls._semantic_option_reference(
+            query,
+            options=options,
+            recent_entries=recent_entries,
+            latest_recommendation=latest_recommendation,
+        )
         if semantic_match is None:
             return ""
         resolved_index, option = semantic_match
@@ -833,6 +861,25 @@ class GeneralChatSkill(BaseSkill):
             if options:
                 return options, entries[index + 1 :]
         return None
+
+    @classmethod
+    def _conversation_option_catalog(
+        cls,
+        *,
+        context: Optional[list],
+        session_state: Optional[dict],
+    ) -> tuple[list[str], list[dict], str] | None:
+        option_catalog = cls._reference_option_catalog(context)
+        if option_catalog:
+            options, recent_entries = option_catalog
+            recommendation = SessionConversationContext.from_session_state(session_state).latest_recommendation
+            return options, recent_entries, recommendation
+
+        conversation_context = SessionConversationContext.from_session_state(session_state)
+        options = [cls._clip_summary_text(option) for option in list(conversation_context.active_options or conversation_context.last_options_snapshot or []) if cls._clip_summary_text(option)]
+        if not options:
+            return None
+        return options[: cls._SUMMARY_MAX_OPTIONS], [], conversation_context.latest_recommendation
 
     @classmethod
     def _last_assistant_message(cls, context: Optional[list]) -> str:
@@ -919,9 +966,12 @@ class GeneralChatSkill(BaseSkill):
         *,
         options: list[str],
         recent_entries: list[dict],
+        latest_recommendation: str = "",
     ) -> tuple[int, str] | None:
         query_tokens = cls._reference_tokens(query)
-        vague_reference = bool(cls._VAGUE_OPTION_REFERENCE_RE.search(str(query or "")))
+        raw_query = str(query or "")
+        vague_reference = bool(cls._VAGUE_OPTION_REFERENCE_RE.search(raw_query))
+        semantic_reference = bool(cls._APPROACH_REFERENCE_RE.search(raw_query))
         if not query_tokens and not vague_reference:
             return None
 
@@ -948,8 +998,44 @@ class GeneralChatSkill(BaseSkill):
             if direct_overlap:
                 scores[index] += 3 + direct_overlap
 
+        recommendation_text = str(latest_recommendation or "").strip()
+        if recommendation_text:
+            recommendation_tokens = cls._reference_tokens(recommendation_text)
+            for index, option in enumerate(options):
+                if cls._option_is_mentioned(option, recommendation_text):
+                    last_recommended_index = index
+                    scores[index] += 2
+                    overlap = len(query_tokens & recommendation_tokens)
+                    if overlap:
+                        scores[index] += 2 + overlap
+
+        if semantic_reference and last_recommended_index is not None:
+            scores[last_recommended_index] += 2
+
         if vague_reference and last_recommended_index is not None:
             scores[last_recommended_index] += 3
+
+        for pattern, label in cls._SEMANTIC_MODIFIER_HINTS:
+            if not pattern.search(raw_query):
+                continue
+            label_tokens = cls._reference_tokens(label)
+            for entry in recent_entries:
+                if str(entry.get("role") or "").strip().lower() != "assistant":
+                    continue
+                content = str(entry.get("content") or "").strip()
+                if not content:
+                    continue
+                content_tokens = cls._reference_tokens(content)
+                for index, option in enumerate(options):
+                    if not cls._option_is_mentioned(option, content):
+                        continue
+                    if label_tokens & content_tokens:
+                        scores[index] += 3
+                        last_recommended_index = index
+            if recommendation_text:
+                recommendation_tokens = cls._reference_tokens(recommendation_text)
+                if label_tokens & recommendation_tokens and last_recommended_index is not None:
+                    scores[last_recommended_index] += 3
 
         best_score = max(scores) if scores else 0
         if best_score < 3:
