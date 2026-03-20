@@ -8,13 +8,9 @@ class NovaStyleContract:
 
     _LEADING_OPENERS = (
         (re.compile(r"^\s*(?:absolutely|certainly|sure|of course)[,!.:\s]+", re.IGNORECASE), ""),
-        (re.compile(r"^\s*great question[,!.:\s]+", re.IGNORECASE), ""),
-        (re.compile(r"^\s*happy to help[,!.:\s]+", re.IGNORECASE), ""),
     )
 
     _INLINE_REPLACEMENTS = (
-        (re.compile(r"\bi(?: would|'d) be happy to\b", re.IGNORECASE), "I can"),
-        (re.compile(r"\bi(?: am|'m) happy to\b", re.IGNORECASE), "I can"),
         (re.compile(r"\bi can absolutely\b", re.IGNORECASE), "I can"),
         (re.compile(r"\bgladly\b", re.IGNORECASE), ""),
         (re.compile(r"\bas an ai\b", re.IGNORECASE), ""),
