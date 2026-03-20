@@ -54,3 +54,17 @@ def test_normalization_change_flag_for_stt_phrase():
     out = SessionRouter.normalize_and_route("open A B C new", {})
     assert out.normalization_changed is True
     assert out.text.lower().startswith("open abc news")
+
+
+def test_normalize_and_route_spoken_repeat_alias():
+    out = SessionRouter.normalize_and_route("say again", {})
+    assert out.text == "Repeat."
+    assert out.lowered == "repeat"
+    assert out.normalization_changed is True
+
+
+def test_normalize_and_route_keeps_ambiguous_turn_it_down_unresolved():
+    out = SessionRouter.normalize_and_route("turn it down a bit", {})
+    assert out.text == "Turn it down a bit."
+    assert out.decision.intent_family == "unknown"
+    assert out.decision.mode.value == "direct"

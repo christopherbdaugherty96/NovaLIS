@@ -18,6 +18,10 @@ class InputNormalizer:
     TYPO_REPLACEMENTS = (
         (r"\bwether\b", "weather"),
         (r"\bwaether\b", "weather"),
+        (r"\bwhats\b", "what's"),
+        (r"\bim\b", "i'm"),
+        (r"\bdont\b", "don't"),
+        (r"\bcant\b", "can't"),
         (r"\bhedlines\b", "headlines"),
         (r"\bheadines\b", "headlines"),
         (r"\bserch\b", "search"),
@@ -60,6 +64,7 @@ class InputNormalizer:
         (r"^\s*(?:give me|show me)\s+(?:today(?:'s)?\s+)?news\s*$", "today's news"),
         (r"^\s*read\s+(?:me\s+)?(?:today(?:'s)?\s+)?news\s*$", "today's news"),
         (r"^\s*summarize\s+(?:all\s+)?(?:today(?:'s)?\s+)?news\s*$", "summarize all headlines"),
+        (r"^\s*(?:say|tell|show)(?: me)?(?: that| it)? again\s*$", "repeat"),
         (r"\bwhat(?:'s| is) going on in tech today\b", "daily brief tech"),
         (r"^\s*what(?:'s| is)\s+going on with\s+(.+?)\s+today\s*$", r"research \1 latest updates"),
         (r"^\s*what(?:'s| is)\s+going on with\s+(.+?)\s*$", r"research \1"),
