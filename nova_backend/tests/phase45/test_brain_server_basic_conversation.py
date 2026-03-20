@@ -105,6 +105,63 @@ def test_followup_chat_uses_recent_conversation_context(monkeypatch):
     assert "Nova: A GPU is a processor designed for parallel workloads" in prompts[-1]
 
 
+def test_brain_server_carries_structured_conversation_context_between_chat_turns(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(
+        [
+            "I want to redesign Nova's dashboard for daily use.",
+            "Give me three layout ideas.",
+        ]
+    )
+    prompts: list[str] = []
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        prompts.append(prompt)
+        responses = {
+            1: "A good goal is a calmer, more readable dashboard for daily use.",
+            2: "1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center",
+        }
+        return responses[len(prompts)]
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert len(prompts) == 2
+    assert "Current thread goal: I want to redesign Nova's dashboard for daily use." in prompts[-1]
+
+
+def test_project_status_this_stays_governed_even_after_chat_context_builds(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(
+        [
+            "Give me three dashboard ideas.",
+            "project status this",
+        ]
+    )
+    prompts: list[str] = []
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        prompts.append(prompt)
+        return "1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center"
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert len(prompts) == 1
+    assert any("I do not have an active project thread yet." in msg for msg in chat_messages)
+
+
 def test_long_chat_uses_rolling_summary_after_context_rollover(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
