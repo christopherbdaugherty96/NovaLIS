@@ -120,6 +120,13 @@ def test_general_chat_builds_bounded_conversational_prompt_with_session_context(
         "active_topic": "local AI hardware",
         "project_thread_active": "Nova runtime polish",
         "session_id": "sess-1",
+        "conversation_context": {
+            "topic": "local AI hardware",
+            "user_goal": "Figure out why GPUs matter for local AI.",
+            "open_question": "Why does that matter for local AI?",
+            "active_options": ["Use a GPU", "Stay CPU-only"],
+            "latest_recommendation": "Use a GPU if you care about practical local model speed.",
+        },
     }
 
     with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
@@ -135,7 +142,107 @@ def test_general_chat_builds_bounded_conversational_prompt_with_session_context(
     assert "Current user message:\nWhy does that matter?" in captured["prompt"]
     assert "Active topic: local AI hardware" in captured["prompt"]
     assert "Active project thread: Nova runtime polish" in captured["prompt"]
+    assert "Current thread goal: Figure out why GPUs matter for local AI." in captured["prompt"]
+    assert "Active options: 1. Use a GPU | 2. Stay CPU-only" in captured["prompt"]
+    assert "Latest recommendation: Use a GPU if you care about practical local model speed." in captured["prompt"]
     assert captured["session_id"] == "sess-1"
+
+
+def test_general_chat_emits_structured_conversation_context_for_option_thread():
+    skill = GeneralChatSkill()
+
+    def _fake_generate_chat(_prompt: str, **kwargs):
+        return "Start with the minimal operator dashboard because it is the calmest and easiest to validate first."
+
+    context = [
+        {"role": "user", "content": "Give me three dashboard ideas."},
+        {
+            "role": "assistant",
+            "content": "1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center",
+        },
+        {"role": "user", "content": "Which one should we start with?"},
+    ]
+    session_state = {
+        "session_id": "sess-context",
+        "active_topic": "Nova dashboard",
+    }
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(
+            skill.handle(
+                "Which one should we start with?",
+                context=context,
+                session_state=session_state,
+            )
+        )
+
+    assert result is not None
+    assert result.success is True
+    conversation_context = (result.data or {}).get("conversation_context") or {}
+    assert conversation_context["topic"] == "Nova dashboard"
+    assert conversation_context["open_question"] == "Which one should we start with?"
+    assert conversation_context["last_answer_kind"] == "recommendation"
+    assert conversation_context["active_options"] == [
+        "Minimal operator dashboard",
+        "Research-first workspace",
+        "Ambient command center",
+    ]
+    assert "minimal operator dashboard" in conversation_context["latest_recommendation"].lower()
+    assert conversation_context["last_options_snapshot"] == conversation_context["active_options"]
+
+
+def test_general_chat_resets_stale_context_when_topic_clearly_changes():
+    skill = GeneralChatSkill()
+    captured = {}
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        captured["prompt"] = prompt
+        return "Start by keeping the weather page simple and readable."
+
+    context = [
+        {"role": "user", "content": "Give me three dashboard ideas."},
+        {
+            "role": "assistant",
+            "content": "1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center",
+        },
+        {"role": "user", "content": "Which one feels calm but useful?"},
+        {"role": "assistant", "content": "The minimal operator dashboard is the calmest while still staying useful."},
+    ]
+    session_state = {
+        "session_id": "sess-reset",
+        "active_topic": "weather page redesign",
+        "conversation_context": {
+            "topic": "Nova dashboard",
+            "user_goal": "Choose a calmer dashboard direction.",
+            "open_question": "Which one feels calm but useful?",
+            "active_options": [
+                "Minimal operator dashboard",
+                "Research-first workspace",
+                "Ambient command center",
+            ],
+            "latest_recommendation": "The minimal operator dashboard is the calmest while still staying useful.",
+        },
+    }
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(
+            skill.handle(
+                "How should we redesign the weather page?",
+                context=context,
+                session_state=session_state,
+            )
+        )
+
+    assert result is not None
+    assert result.success is True
+    assert "Active topic: weather page redesign" in captured["prompt"]
+    assert "Current thread goal: Choose a calmer dashboard direction." not in captured["prompt"]
+    assert "Active options:" not in captured["prompt"]
+    conversation_context = (result.data or {}).get("conversation_context") or {}
+    assert conversation_context["topic"] == "weather page redesign"
+    assert conversation_context["user_goal"] == "How should we redesign the weather page?"
+    assert conversation_context["active_options"] == []
+    assert "dashboard" not in (conversation_context.get("latest_recommendation") or "").lower()
 
 
 def test_general_chat_adds_natural_followup_prompt_for_exploratory_queries():

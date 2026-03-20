@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import asyncio
 import re
+from dataclasses import dataclass, field
 from typing import Any, Dict, Optional, Tuple
 
 from src.conversation.complexity_heuristics import ComplexityHeuristics
@@ -20,6 +21,53 @@ from src.llm.llm_gateway import generate_chat
 from src.personality.tone_profile_store import ToneProfileStore
 
 from ..base_skill import BaseSkill, SkillResult
+
+
+@dataclass
+class SessionConversationContext:
+    topic: str = ""
+    user_goal: str = ""
+    open_question: str = ""
+    active_options: list[str] = field(default_factory=list)
+    latest_recommendation: str = ""
+    rewrite_target: str = ""
+    presentation_preference: str = ""
+    last_answer_kind: str = ""
+    last_options_snapshot: list[str] = field(default_factory=list)
+
+    @classmethod
+    def from_session_state(cls, session_state: Optional[dict]) -> "SessionConversationContext":
+        state = session_state or {}
+        payload = dict(state.get("conversation_context") or {})
+        legacy = dict(state.get("general_chat_summary") or {})
+
+        active_options = list(payload.get("active_options") or legacy.get("relevant_options") or [])
+        last_options_snapshot = list(payload.get("last_options_snapshot") or active_options)
+
+        return cls(
+            topic=str(payload.get("topic") or state.get("active_topic") or legacy.get("topic") or "").strip(),
+            user_goal=str(payload.get("user_goal") or legacy.get("user_goal") or "").strip(),
+            open_question=str(payload.get("open_question") or legacy.get("open_question") or "").strip(),
+            active_options=[str(item).strip() for item in active_options if str(item).strip()],
+            latest_recommendation=str(payload.get("latest_recommendation") or "").strip(),
+            rewrite_target=str(payload.get("rewrite_target") or "").strip(),
+            presentation_preference=str(payload.get("presentation_preference") or "").strip(),
+            last_answer_kind=str(payload.get("last_answer_kind") or "").strip(),
+            last_options_snapshot=[str(item).strip() for item in last_options_snapshot if str(item).strip()],
+        )
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "topic": self.topic,
+            "user_goal": self.user_goal,
+            "open_question": self.open_question,
+            "active_options": list(self.active_options),
+            "latest_recommendation": self.latest_recommendation,
+            "rewrite_target": self.rewrite_target,
+            "presentation_preference": self.presentation_preference,
+            "last_answer_kind": self.last_answer_kind,
+            "last_options_snapshot": list(self.last_options_snapshot),
+        }
 
 
 class GeneralChatSkill(BaseSkill):
@@ -468,12 +516,35 @@ class GeneralChatSkill(BaseSkill):
 
         hints: list[str] = []
         state = session_state or {}
-        active_topic = self._stable_topic_hint(str(state.get("active_topic") or ""))
+        conversation_context = SessionConversationContext.from_session_state(state)
+        rewrite_kind = self._rewrite_request_kind(normalized_query)
+        active_topic = self._stable_topic_hint(str(state.get("active_topic") or "")) or self._stable_topic_hint(conversation_context.topic)
+        if (
+            active_topic
+            and conversation_context.topic
+            and active_topic.lower() != conversation_context.topic.lower()
+            and not rewrite_kind
+        ):
+            conversation_context = SessionConversationContext(topic=active_topic)
         if active_topic:
             hints.append(f"Active topic: {active_topic}")
         project_thread = str(state.get("project_thread_active") or "").strip()
         if project_thread:
             hints.append(f"Active project thread: {project_thread}")
+        if conversation_context.user_goal:
+            hints.append(f"Current thread goal: {self._clip_summary_text(conversation_context.user_goal)}")
+        if conversation_context.open_question and conversation_context.open_question.lower() != normalized_query.lower():
+            hints.append(f"Open question in thread: {self._clip_summary_text(conversation_context.open_question)}")
+        if conversation_context.active_options:
+            option_lines = " | ".join(
+                f"{index + 1}. {self._clip_summary_text(option)}"
+                for index, option in enumerate(conversation_context.active_options[: self._SUMMARY_MAX_OPTIONS])
+            )
+            hints.append(f"Active options: {option_lines}")
+        if conversation_context.latest_recommendation:
+            hints.append(f"Latest recommendation: {self._clip_summary_text(conversation_context.latest_recommendation)}")
+        if conversation_context.presentation_preference:
+            hints.append(f"Presentation preference: {conversation_context.presentation_preference}")
         rewrite_hint = self._build_rewrite_hint(normalized_query, context=context)
         if rewrite_hint:
             hints.append(rewrite_hint)
@@ -844,6 +915,160 @@ class GeneralChatSkill(BaseSkill):
         return retained
 
     @classmethod
+    def _answer_kind(
+        cls,
+        query: str,
+        response_text: str,
+        *,
+        mode: str,
+    ) -> str:
+        rewrite_kind = cls._rewrite_request_kind(query)
+        if rewrite_kind:
+            return rewrite_kind
+        if cls._extract_prior_options(response_text):
+            return "options"
+
+        lowered_query = str(query or "").lower()
+        lowered_response = str(response_text or "").lower()
+        if any(token in lowered_query for token in ("which", "recommend", "best", "go with", "choose", "pick")):
+            return "recommendation"
+        if any(token in lowered_response for token in ("start with", "best fit", "best starting point", "go with", "i would use", "the calmest")):
+            return "recommendation"
+        if mode == "analytical" or any(token in lowered_query for token in ("compare", "trade-off", "pros and cons")):
+            return "comparison"
+        if any(token in lowered_query for token in ("why", "how", "explain", "what do you mean")):
+            return "explanation"
+        return "answer"
+
+    @classmethod
+    def _extract_latest_recommendation(
+        cls,
+        response_text: str,
+        *,
+        options: list[str],
+        answer_kind: str,
+        existing: str = "",
+    ) -> str:
+        response = cls._clip_summary_text(cls._strip_initiative_tail(response_text))
+        if not response:
+            return existing
+
+        if answer_kind == "recommendation":
+            return response
+
+        lowered = response.lower()
+        if any(token in lowered for token in ("start with", "best fit", "best starting point", "go with", "i would use", "the calmest")):
+            return response
+
+        if options and any(cls._option_is_mentioned(option, response) for option in options):
+            return response
+        return existing
+
+    @classmethod
+    def _presentation_preference(
+        cls,
+        *,
+        rewrite_kind: str,
+        tone_profile: str,
+        existing: str = "",
+    ) -> str:
+        if rewrite_kind in {"simpler", "reworded", "shorter"}:
+            return rewrite_kind
+        if tone_profile and tone_profile != "balanced":
+            return tone_profile
+        return existing
+
+    @classmethod
+    def _next_conversation_context(
+        cls,
+        *,
+        query: str,
+        response_text: str,
+        context: Optional[list],
+        session_state: Optional[dict],
+        mode: str,
+        tone_profile: str,
+    ) -> SessionConversationContext:
+        state = session_state or {}
+        existing = SessionConversationContext.from_session_state(state)
+        rewrite_kind = cls._rewrite_request_kind(query)
+        active_topic = cls._stable_topic_hint(str(state.get("active_topic") or "")) or existing.topic
+        topic_shift = bool(
+            active_topic
+            and existing.topic
+            and active_topic.lower() != existing.topic.lower()
+            and not rewrite_kind
+        )
+        if topic_shift:
+            existing = SessionConversationContext()
+        thread_context = [] if topic_shift else list(context or [])
+
+        current_query = cls._clip_summary_text(query)
+        older_goal = existing.user_goal or cls._extract_summary_user_goal(thread_context)
+        if rewrite_kind:
+            user_goal = older_goal
+        elif active_topic and active_topic.lower() != existing.topic.lower() and current_query:
+            user_goal = current_query
+        elif older_goal:
+            user_goal = older_goal
+        elif len(current_query.split()) >= 5:
+            user_goal = current_query
+        else:
+            user_goal = existing.user_goal
+
+        last_options_snapshot = cls._extract_prior_options(response_text)
+        if not last_options_snapshot:
+            option_catalog = cls._reference_option_catalog(thread_context)
+            if option_catalog:
+                last_options_snapshot = option_catalog[0]
+        if not last_options_snapshot:
+            last_options_snapshot = list(existing.last_options_snapshot)
+        last_options_snapshot = [cls._clip_summary_text(item) for item in last_options_snapshot[: cls._SUMMARY_MAX_OPTIONS]]
+
+        if last_options_snapshot:
+            active_options = list(last_options_snapshot)
+        else:
+            active_options = list(existing.active_options)
+
+        answer_kind = cls._answer_kind(query, response_text, mode=mode)
+        latest_recommendation = cls._extract_latest_recommendation(
+            response_text,
+            options=active_options,
+            answer_kind=answer_kind,
+            existing="" if topic_shift else existing.latest_recommendation,
+        )
+
+        lowered_query = str(query or "").strip().lower()
+        if rewrite_kind:
+            open_question = existing.open_question
+        elif current_query.endswith("?") or lowered_query.startswith(("what ", "why ", "how ", "which ", "should ", "can we ", "could we ")):
+            open_question = current_query
+        else:
+            open_question = existing.open_question
+
+        if rewrite_kind:
+            rewrite_target = cls._strip_initiative_tail(cls._last_assistant_message(thread_context))
+        else:
+            rewrite_target = cls._strip_initiative_tail(response_text)
+        rewrite_target = cls._clip_summary_text(rewrite_target or existing.rewrite_target)
+
+        return SessionConversationContext(
+            topic=active_topic,
+            user_goal=user_goal,
+            open_question=open_question,
+            active_options=active_options[: cls._SUMMARY_MAX_OPTIONS],
+            latest_recommendation=latest_recommendation,
+            rewrite_target=rewrite_target,
+            presentation_preference=cls._presentation_preference(
+                rewrite_kind=rewrite_kind,
+                tone_profile=tone_profile,
+                existing="" if topic_shift else existing.presentation_preference,
+            ),
+            last_answer_kind=answer_kind,
+            last_options_snapshot=last_options_snapshot[: cls._SUMMARY_MAX_OPTIONS],
+        )
+
+    @classmethod
     def _is_geopolitical_query(cls, query: str) -> bool:
         q = (query or "").lower()
         return any(k in q for k in cls._GEO_KEYWORDS)
@@ -932,11 +1157,24 @@ class GeneralChatSkill(BaseSkill):
                 tone_profile=tone_profile,
                 explicit_depth=explicit_depth,
             )
+            conversation_context = self._next_conversation_context(
+                query=normalized_query,
+                response_text=text,
+                context=context,
+                session_state=session_state,
+                mode=mode,
+                tone_profile=tone_profile,
+            )
 
             return SkillResult(
                 success=True,
                 message=text,
-                data={"mode": mode, "style": style.value, "tone_profile": tone_profile},
+                data={
+                    "mode": mode,
+                    "style": style.value,
+                    "tone_profile": tone_profile,
+                    "conversation_context": conversation_context.to_dict(),
+                },
                 widget_data=None,
                 skill=self.name,
             )
@@ -963,11 +1201,20 @@ class GeneralChatSkill(BaseSkill):
                 self._build_ask_user_message(mode, heuristic_result),
                 mode=mode,
             )
+            conversation_context = self._next_conversation_context(
+                query=normalized_query,
+                response_text=payload["user_message"],
+                context=context,
+                session_state=session_state,
+                mode=mode,
+                tone_profile=self._current_tone_profile("general"),
+            )
             return SkillResult(
                 success=True,
                 message=payload["user_message"],
                 data={
                     "speakable_text": payload["speakable_text"],
+                    "conversation_context": conversation_context.to_dict(),
                     "escalation": {
                         "ask_user": True,
                         "original_query": normalized_query,
@@ -998,12 +1245,21 @@ class GeneralChatSkill(BaseSkill):
             if not safe:
                 safe = "I could not produce a stable deep analysis right now. Please retry with a narrower question."
             payload = self.formatter.format_payload(safe, mode=mode)
+            conversation_context = self._next_conversation_context(
+                query=normalized_query,
+                response_text=payload["user_message"],
+                context=context,
+                session_state=session_state,
+                mode=mode,
+                tone_profile=self._current_tone_profile("general"),
+            )
             return SkillResult(
                 success=True,
                 message=payload["user_message"],
                 data={
                     "speakable_text": payload["speakable_text"],
                     "structured_data": payload["structured_data"],
+                    "conversation_context": conversation_context.to_dict(),
                     "escalation": {"escalated": True, "thought_data": thought_data},
                 },
                 widget_data=None,
@@ -1032,13 +1288,10 @@ class GeneralChatSkill(BaseSkill):
         local.data = {
             "speakable_text": payload["speakable_text"],
             "structured_data": payload["structured_data"],
+            "conversation_context": dict((local.data or {}).get("conversation_context") or {}),
             "escalation": {
                 "escalated": False,
                 "reason_codes": list(heuristic_result.get("reason_codes") or []),
             },
         }
         return local
-
-
-
-

@@ -2092,6 +2092,7 @@ async def websocket_endpoint(ws: WebSocket):
         "last_pattern_review": {},
         "general_chat_context": [],
         "general_chat_summary": {},
+        "conversation_context": {},
     }
 
     await send_chat_message(ws, "Hello. How can I help?")
@@ -4609,6 +4610,8 @@ async def websocket_endpoint(ws: WebSocket):
 
                 speech_state.last_spoken_text = message
                 session_state["last_response"] = message
+                if skill_name == "general_chat" and isinstance(result_data.get("conversation_context"), dict):
+                    session_state["conversation_context"] = dict(result_data.get("conversation_context") or {})
 
                 escalation = result_data.get("escalation", {})
                 if escalation.get("ask_user"):
@@ -4724,4 +4727,3 @@ async def websocket_endpoint(ws: WebSocket):
     finally:
         thought_store.clear_session(session_id)
         GovernorMediator.clear_session(session_id)
-
