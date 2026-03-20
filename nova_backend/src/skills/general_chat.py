@@ -119,33 +119,6 @@ class GeneralChatSkill(BaseSkill):
         ),
     }
 
-    MODE_BLOCKS: Dict[str, str] = {
-        "casual": (
-            "Communication style: Concise.\n"
-            "- Answer briefly in a short paragraph or two short sentences.\n"
-            "- No additional commentary.\n"
-        ),
-        "brainstorming": (
-            "Communication style: Explanatory.\n"
-            "- Explain clearly using cause and effect.\n"
-            "- Use precise, straightforward language.\n"
-            "- Avoid persuasive or motivational tone.\n"
-        ),
-        "implementation": (
-            "Communication style: Procedural.\n"
-            "- Provide ordered steps using direct address ('you').\n"
-            "- Use composed, precise language.\n"
-            "- Keep each instruction self-contained.\n"
-            "- Do not add commentary beyond the steps.\n"
-        ),
-        "analytical": (
-            "Communication style: Analytical.\n"
-            "- Present reasoning clearly and concisely.\n"
-            "- Use structured breakdowns if helpful.\n"
-            "- State conclusions directly without embellishment.\n"
-        ),
-    }
-
     MAX_TOKENS: Dict[str, int] = {
         "casual": 150,
         "brainstorming": 500,
@@ -352,14 +325,14 @@ class GeneralChatSkill(BaseSkill):
         presentation_preference: str = "",
         last_answer_kind: str = "",
     ) -> str:
-        mode_block = self.MODE_BLOCKS.get(mode, self.MODE_BLOCKS["casual"])
+        mode_block = NovaStyleContract.chat_mode_guidance(mode)
         tone_block = self.TONE_BLOCKS.get(tone_profile, self.TONE_BLOCKS["balanced"])
 
         style_blocks = {
-            ResponseStyle.DIRECT: "Style: Direct and concise. Prioritize factual precision.",
-            ResponseStyle.BRAINSTORM: "Style: Brainstorm mode. Provide structured ideas as bullet points.",
-            ResponseStyle.DEEP: "Style: Deep mode. Provide layered reasoning with concise section headers.",
-            ResponseStyle.CASUAL: "Style: Conversational mode. Keep response brief, warm, and polished.",
+            ResponseStyle.DIRECT: "Style: Direct mode. Lead with the answer and keep the wording clean.",
+            ResponseStyle.BRAINSTORM: "Style: Brainstorm mode. Present distinct grounded directions that are easy to compare.",
+            ResponseStyle.DEEP: "Style: Deep mode. Use short sections and grounded transitions instead of flourish.",
+            ResponseStyle.CASUAL: "Style: Conversational mode. Keep the reply calm, direct, and lightly warm.",
         }
 
         style_block = style_blocks.get(style, style_blocks[ResponseStyle.DIRECT])
@@ -638,6 +611,7 @@ class GeneralChatSkill(BaseSkill):
             tone_profile=tone_profile,
             explicit_depth=False,
         )
+        shaped = self.formatter.format(shaped, mode="casual")
 
         return SkillResult(
             success=True,
@@ -1497,6 +1471,7 @@ class GeneralChatSkill(BaseSkill):
                 explicit_depth=explicit_depth,
                 presentation_preference=presentation_preference,
             )
+            text = self.formatter.format(text, mode=mode)
             conversation_context = self._next_conversation_context(
                 query=normalized_query,
                 response_text=text,
