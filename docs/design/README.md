@@ -15,6 +15,9 @@ Canonical runtime truth:
 Current cross-phase planning packet:
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 
+Current bounded conversational planning packet:
+- `docs/design/CONVERSATIONAL_CORE_PHASE_PLAN_2026-03-19.md`
+
 Canonical design phase folders:
 - `Phase 4`
 - `Phase 4.2`
