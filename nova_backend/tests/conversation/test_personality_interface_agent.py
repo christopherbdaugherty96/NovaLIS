@@ -78,3 +78,15 @@ def test_personality_interface_agent_applies_detailed_profile_to_dense_sections(
     assert "Core answer: The short version is yes." in out
     assert "\n\nKey drivers:" in out
     assert "\n\nWhat to verify next:" in out
+
+
+def test_personality_interface_agent_applies_nova_style_contract_without_removing_light_warmth():
+    agent = PersonalityInterfaceAgent()
+
+    out = agent.present("Absolutely. Great question. I'd be happy to help with that!")
+
+    lowered = out.lower()
+    assert "absolutely" not in lowered
+    assert "great question" in lowered
+    assert "happy to help" in lowered
+    assert out == "Great question. I'd be happy to help with that."

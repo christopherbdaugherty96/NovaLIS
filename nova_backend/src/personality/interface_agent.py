@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 
+from src.personality.nova_style_contract import NovaStyleContract
 from src.personality.tone_profile_store import ToneProfileStore
 
 
@@ -71,6 +72,7 @@ class PersonalityInterfaceAgent:
         clean = re.sub(r"\n{3,}", "\n\n", clean)
         clean = re.sub(r"!+", ".", clean)
         clean = re.sub(r"\s{2,}", " ", clean)
+        clean = NovaStyleContract.normalize(clean)
         clean = self._apply_tone_profile(clean.strip(), domain=domain)
         return clean.strip()
 

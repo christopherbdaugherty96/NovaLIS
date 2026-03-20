@@ -50,3 +50,15 @@ def test_initiative_is_suppressed_for_rewrite_style_preferences():
     )
 
     assert out == "Baseline answer."
+
+
+def test_formatter_applies_nova_style_contract_without_removing_light_warmth():
+    from src.conversation.response_formatter import ResponseFormatter
+
+    out = ResponseFormatter.format("Absolutely. Great question. I'd be happy to help with that.")
+
+    lowered = out.lower()
+    assert "absolutely" not in lowered
+    assert "great question" in lowered
+    assert "happy to help" in lowered
+    assert out == "Great question. I'd be happy to help with that."
