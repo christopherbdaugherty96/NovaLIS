@@ -21,6 +21,9 @@ Current bounded conversational planning packet:
 Current bounded style planning packet:
 - `docs/design/NOVA_STYLE_LAYER_PLAN_2026-03-20.md`
 
+Current bounded speech/input naturalness planning packet:
+- `docs/design/SPEECH_AND_INPUT_NATURALNESS_PLAN_2026-03-20.md`
+
 Canonical design phase folders:
 - `Phase 4`
 - `Phase 4.2`
