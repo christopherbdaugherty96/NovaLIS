@@ -252,6 +252,24 @@ class GeneralChatSkill(BaseSkill):
             "shorter",
         ),
     )
+    _PRESENTATION_PREFERENCE_PATTERNS: Tuple[Tuple[re.Pattern, str], ...] = (
+        (
+            re.compile(r"\b(?:more technical|technical version|use technical terms|get more technical)\b", re.IGNORECASE),
+            "technical",
+        ),
+        (
+            re.compile(r"\b(?:say more|tell me more|go deeper|more detail|more detailed|longer version|expand on that|expand this|break that down further)\b", re.IGNORECASE),
+            "detailed",
+        ),
+        (
+            re.compile(r"\b(?:just the answer|be direct|more direct|direct answer|cut to the point|skip the extras)\b", re.IGNORECASE),
+            "direct",
+        ),
+        (
+            re.compile(r"\b(?:explore that|brainstorm that|different angles|different directions|a few angles|a few directions)\b", re.IGNORECASE),
+            "exploratory",
+        ),
+    )
     _ORDINAL_REFERENCE_PATTERNS: Tuple[Tuple[re.Pattern, int], ...] = (
         (re.compile(r"\b(?:go with|pick|choose|take)\s+(?:the\s+)?first\b|\b(?:the|that)\s+first\b|\bfirst one\b", re.IGNORECASE), 0),
         (re.compile(r"\b(?:go with|pick|choose|take)\s+(?:the\s+)?second\b|\b(?:the|that)\s+second\b|\bsecond one\b", re.IGNORECASE), 1),
@@ -317,6 +335,8 @@ class GeneralChatSkill(BaseSkill):
         mode: str,
         style: ResponseStyle = ResponseStyle.DIRECT,
         tone_profile: str = "balanced",
+        presentation_preference: str = "",
+        last_answer_kind: str = "",
     ) -> str:
         mode_block = self.MODE_BLOCKS.get(mode, self.MODE_BLOCKS["casual"])
         tone_block = self.TONE_BLOCKS.get(tone_profile, self.TONE_BLOCKS["balanced"])
@@ -329,12 +349,36 @@ class GeneralChatSkill(BaseSkill):
         }
 
         style_block = style_blocks.get(style, style_blocks[ResponseStyle.DIRECT])
-        return f"{self.BASE_CONTRACT}\n\n{tone_block}\n\n{mode_block}\n\n{style_block}".strip()
+        presentation_block = self._presentation_instruction_block(
+            presentation_preference,
+            last_answer_kind=last_answer_kind,
+        )
+        blocks = [self.BASE_CONTRACT, tone_block, mode_block, style_block]
+        if presentation_block:
+            blocks.append(presentation_block)
+        return "\n\n".join(block.strip() for block in blocks if block.strip())
 
-    def _resolve_max_tokens(self, mode: str, *, tone_profile: str, explicit_depth: bool) -> int:
+    def _resolve_max_tokens(
+        self,
+        mode: str,
+        *,
+        tone_profile: str,
+        explicit_depth: bool,
+        presentation_preference: str = "",
+    ) -> int:
         max_tokens = self.MAX_TOKENS.get(mode, self.MAX_TOKENS["casual"])
         if not explicit_depth and mode == "casual":
             max_tokens = min(max_tokens, 90)
+
+        preference = str(presentation_preference or "").strip().lower()
+        if preference in {"shorter", "direct"}:
+            max_tokens = min(max_tokens, 80 if mode == "casual" else 220)
+        elif preference in {"simpler", "reworded"}:
+            max_tokens = min(max_tokens, 140 if mode == "casual" else 280)
+        elif preference == "technical":
+            max_tokens = min(max_tokens + 80, 700)
+        elif preference == "detailed":
+            max_tokens = min(max_tokens + (160 if mode == "casual" else 220), 900)
 
         if tone_profile == "concise":
             if not explicit_depth and mode == "casual":
@@ -354,9 +398,33 @@ class GeneralChatSkill(BaseSkill):
         mode: str,
         tone_profile: str,
         explicit_depth: bool,
+        presentation_preference: str = "",
     ) -> str:
-        if explicit_depth:
+        preference = str(presentation_preference or "").strip().lower()
+
+        if preference == "shorter":
+            return self._enforce_concise_response(text, max_sentences=1 if mode == "casual" else 2, max_chars=180 if mode == "casual" else 260)
+        if preference == "direct":
+            return self._enforce_concise_response(text, max_sentences=2, max_chars=220 if mode == "casual" else 320)
+        if preference == "simpler":
+            simplified = re.sub(r"\s*;\s*", ". ", str(text or ""))
+            return self._enforce_concise_response(simplified, max_sentences=2 if mode == "casual" else 3, max_chars=260 if mode == "casual" else 360)
+        if preference == "reworded":
+            return self._enforce_concise_response(text, max_sentences=2 if mode == "casual" else 3, max_chars=260 if mode == "casual" else 360)
+        if explicit_depth and preference != "detailed":
             return text
+        if preference == "detailed":
+            if mode == "casual":
+                return self._enforce_concise_response(text, max_sentences=5, max_chars=640)
+            if mode in {"analytical", "implementation"}:
+                return self._enforce_concise_response(text, max_sentences=7, max_chars=980)
+            return self._enforce_concise_response(text, max_sentences=6, max_chars=820)
+        if preference == "technical":
+            if mode == "casual":
+                return self._enforce_concise_response(text, max_sentences=3, max_chars=420)
+            if mode in {"analytical", "implementation"}:
+                return self._enforce_concise_response(text, max_sentences=5, max_chars=760)
+            return self._enforce_concise_response(text, max_sentences=4, max_chars=620)
 
         if tone_profile == "concise":
             if mode == "casual":
@@ -377,6 +445,102 @@ class GeneralChatSkill(BaseSkill):
         if mode in {"analytical", "implementation"}:
             return self._enforce_concise_response(text, max_sentences=4, max_chars=520)
         return text
+
+    @classmethod
+    def _query_presentation_preference(cls, query: str) -> str:
+        rewrite_kind = cls._rewrite_request_kind(query)
+        if rewrite_kind in {"simpler", "reworded", "shorter"}:
+            return rewrite_kind
+        for pattern, preference in cls._PRESENTATION_PREFERENCE_PATTERNS:
+            if pattern.search(str(query or "")):
+                return preference
+        return ""
+
+    @classmethod
+    def _presentation_style(
+        cls,
+        style: ResponseStyle,
+        *,
+        presentation_preference: str,
+    ) -> ResponseStyle:
+        preference = str(presentation_preference or "").strip().lower()
+        if preference in {"shorter", "direct"}:
+            return ResponseStyle.DIRECT
+        if preference == "exploratory":
+            return ResponseStyle.BRAINSTORM
+        return style
+
+    @classmethod
+    def _presentation_instruction_block(cls, presentation_preference: str, *, last_answer_kind: str = "") -> str:
+        preference = str(presentation_preference or "").strip().lower()
+        answer_kind = str(last_answer_kind or "").strip().lower()
+        lines: list[str] = []
+
+        blocks = {
+            "shorter": [
+                "Presentation preference: Shorter.",
+                "- Lead with the answer immediately.",
+                "- Keep the response compact and avoid extra framing.",
+            ],
+            "simpler": [
+                "Presentation preference: Plain language.",
+                "- Use simpler wording and short sentences.",
+                "- Avoid jargon unless you briefly explain it.",
+            ],
+            "reworded": [
+                "Presentation preference: Reworded.",
+                "- Preserve the meaning but restate it in fresher wording.",
+                "- Keep the same thread and do not change the answer.",
+            ],
+            "detailed": [
+                "Presentation preference: Detailed.",
+                "- Stay on the same thread and add useful supporting detail.",
+                "- Keep the explanation grounded instead of drifting broader.",
+            ],
+            "technical": [
+                "Presentation preference: Technical.",
+                "- Use more precise technical language where it genuinely helps.",
+                "- Keep the explanation concrete and avoid unnecessary simplification.",
+            ],
+            "direct": [
+                "Presentation preference: Direct.",
+                "- Answer first and keep the framing minimal.",
+                "- Avoid branching into extra options unless the user asks.",
+            ],
+            "exploratory": [
+                "Presentation preference: Exploratory.",
+                "- Offer a few grounded angles or options.",
+                "- Keep the options distinct and easy to compare.",
+            ],
+        }
+
+        if preference in blocks:
+            lines.extend(blocks[preference])
+
+        if answer_kind == "recommendation":
+            lines.extend(
+                [
+                    "Current thread state: Recommendation.",
+                    "- Keep the recommendation stable unless the user asks to change it.",
+                    "- If you shorten the answer, keep one clear reason with the recommendation.",
+                ]
+            )
+        elif answer_kind == "options":
+            lines.extend(
+                [
+                    "Current thread state: Options are already active.",
+                    "- Keep option identities stable so follow-up references still make sense.",
+                ]
+            )
+        elif answer_kind in {"clarify", "simpler", "reworded", "shorter"}:
+            lines.extend(
+                [
+                    "Current thread state: Rewrite the existing answer.",
+                    "- Stay anchored to the prior answer instead of switching topics.",
+                ]
+            )
+
+        return "\n".join(lines).strip()
 
     def _build_ask_user_message(self, mode: str, heuristic_result: Dict[str, Any]) -> str:
         reason = self.policy.summarize_reason(heuristic_result)
@@ -968,12 +1132,19 @@ class GeneralChatSkill(BaseSkill):
     def _presentation_preference(
         cls,
         *,
+        query: str,
         rewrite_kind: str,
         tone_profile: str,
         existing: str = "",
+        explicit_depth: bool = False,
     ) -> str:
+        requested = cls._query_presentation_preference(query)
+        if requested:
+            return requested
         if rewrite_kind in {"simpler", "reworded", "shorter"}:
             return rewrite_kind
+        if explicit_depth:
+            return "detailed"
         if tone_profile and tone_profile != "balanced":
             return tone_profile
         return existing
@@ -1060,9 +1231,11 @@ class GeneralChatSkill(BaseSkill):
             latest_recommendation=latest_recommendation,
             rewrite_target=rewrite_target,
             presentation_preference=cls._presentation_preference(
+                query=query,
                 rewrite_kind=rewrite_kind,
                 tone_profile=tone_profile,
                 existing="" if topic_shift else existing.presentation_preference,
+                explicit_depth=cls._user_requested_depth(query),
             ),
             last_answer_kind=answer_kind,
             last_options_snapshot=last_options_snapshot[: cls._SUMMARY_MAX_OPTIONS],
@@ -1121,11 +1294,27 @@ class GeneralChatSkill(BaseSkill):
         style = self.style_router.route(normalized_query)
         explicit_depth = self._user_requested_depth(normalized_query)
         tone_profile = self._current_tone_profile("general")
-        system_prompt = self._build_system_prompt(mode, style, tone_profile=tone_profile)
+        prior_conversation = SessionConversationContext.from_session_state(session_state)
+        presentation_preference = self._presentation_preference(
+            query=normalized_query,
+            rewrite_kind=self._rewrite_request_kind(normalized_query),
+            tone_profile=tone_profile,
+            existing=prior_conversation.presentation_preference,
+            explicit_depth=explicit_depth,
+        )
+        shaped_style = self._presentation_style(style, presentation_preference=presentation_preference)
+        system_prompt = self._build_system_prompt(
+            mode,
+            shaped_style,
+            tone_profile=tone_profile,
+            presentation_preference=presentation_preference,
+            last_answer_kind=prior_conversation.last_answer_kind,
+        )
         max_tokens = self._resolve_max_tokens(
             mode,
             tone_profile=tone_profile,
             explicit_depth=explicit_depth,
+            presentation_preference=presentation_preference,
         )
         prompt = self._build_conversational_prompt(
             normalized_query,
@@ -1156,6 +1345,7 @@ class GeneralChatSkill(BaseSkill):
                 mode=mode,
                 tone_profile=tone_profile,
                 explicit_depth=explicit_depth,
+                presentation_preference=presentation_preference,
             )
             conversation_context = self._next_conversation_context(
                 query=normalized_query,
@@ -1171,7 +1361,7 @@ class GeneralChatSkill(BaseSkill):
                 message=text,
                 data={
                     "mode": mode,
-                    "style": style.value,
+                    "style": shaped_style.value,
                     "tone_profile": tone_profile,
                     "conversation_context": conversation_context.to_dict(),
                 },
@@ -1274,12 +1464,15 @@ class GeneralChatSkill(BaseSkill):
         if local is None:
             return None
 
+        current_conversation = dict((local.data or {}).get("conversation_context") or {})
         local_message = self.formatter.with_conversational_initiative(
             local.message,
             mode=mode,
             allow_clarification=initiative.get("allow_clarification", False),
             allow_branch_suggestion=initiative.get("allow_branch_suggestion", False),
             allow_depth_prompt=initiative.get("allow_depth_prompt", False),
+            presentation_preference=str(current_conversation.get("presentation_preference") or ""),
+            last_answer_kind=str(current_conversation.get("last_answer_kind") or ""),
         )
         payload = self.formatter.format_payload(local_message, mode=mode)
         local.message = payload["user_message"]
@@ -1288,7 +1481,7 @@ class GeneralChatSkill(BaseSkill):
         local.data = {
             "speakable_text": payload["speakable_text"],
             "structured_data": payload["structured_data"],
-            "conversation_context": dict((local.data or {}).get("conversation_context") or {}),
+            "conversation_context": current_conversation,
             "escalation": {
                 "escalated": False,
                 "reason_codes": list(heuristic_result.get("reason_codes") or []),

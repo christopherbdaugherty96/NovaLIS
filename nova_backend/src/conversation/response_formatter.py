@@ -107,8 +107,16 @@ class ResponseFormatter:
         allow_clarification: bool = False,
         allow_branch_suggestion: bool = False,
         allow_depth_prompt: bool = False,
+        presentation_preference: str = "",
+        last_answer_kind: str = "",
     ) -> str:
         text = ResponseFormatter.format(base_text, mode=mode)
+        preference = str(presentation_preference or "").strip().lower()
+        prior_kind = str(last_answer_kind or "").strip().lower()
+        if preference in {"shorter", "simpler", "reworded", "direct"}:
+            return text.strip()
+        if prior_kind in {"clarify", "simpler", "reworded", "shorter"}:
+            return text.strip()
         add_ons = []
 
         if allow_clarification:

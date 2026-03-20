@@ -268,3 +268,33 @@ def test_rewrite_followup_uses_prior_answer_hint(monkeypatch):
     assert "User wants you to clarify the last assistant answer." in prompts[-1]
     assert "Target prior answer: They matter because local AI inference benefits from fast parallel math and enough memory bandwidth." in prompts[-1]
     assert "If you want, I can go deeper on one part." not in prompts[-1]
+
+
+def test_technical_followup_keeps_chat_thread_but_changes_presentation(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(
+        [
+            "Why do GPUs matter for local AI?",
+            "Give me the technical version.",
+        ]
+    )
+    system_prompts: list[str] = []
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        system_prompts.append(kwargs.get("system_prompt", ""))
+        responses = {
+            1: "They matter because they speed up the parallel math used in local AI.",
+            2: "They matter because GPUs accelerate matrix operations, parallel tensor workloads, and memory-bandwidth-heavy inference steps.",
+        }
+        return responses[len(system_prompts)]
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert len(system_prompts) == 2
+    assert "Presentation preference: Technical." in system_prompts[-1]

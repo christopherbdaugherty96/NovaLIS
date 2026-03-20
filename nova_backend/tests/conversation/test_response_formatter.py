@@ -35,3 +35,18 @@ def test_friendly_fallback_guides_user():
     out = ResponseFormatter.friendly_fallback()
     assert "weather" in out.lower()
     assert "today's news" in out.lower()
+
+
+def test_initiative_is_suppressed_for_rewrite_style_preferences():
+    from src.conversation.response_formatter import ResponseFormatter
+
+    out = ResponseFormatter.with_conversational_initiative(
+        "Baseline answer.",
+        mode="brainstorming",
+        allow_clarification=False,
+        allow_branch_suggestion=True,
+        allow_depth_prompt=True,
+        presentation_preference="simpler",
+    )
+
+    assert out == "Baseline answer."

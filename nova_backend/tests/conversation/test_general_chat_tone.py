@@ -245,6 +245,94 @@ def test_general_chat_resets_stale_context_when_topic_clearly_changes():
     assert "dashboard" not in (conversation_context.get("latest_recommendation") or "").lower()
 
 
+def test_general_chat_uses_detailed_presentation_preference_for_followup_depth_request():
+    skill = GeneralChatSkill()
+    captured = {}
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        captured["prompt"] = prompt
+        captured.update(kwargs)
+        return (
+            "The bigger reason is that GPUs handle parallel math well. "
+            "That matters because local AI workloads often batch many similar operations. "
+            "It also matters because memory bandwidth and accelerator tooling affect practical speed."
+        )
+
+    context = [
+        {"role": "user", "content": "Why do GPUs matter for local AI?"},
+        {"role": "assistant", "content": "They matter because they speed up the parallel math used in local AI."},
+    ]
+    session_state = {
+        "session_id": "sess-detailed",
+        "active_topic": "local AI hardware",
+        "conversation_context": {
+            "topic": "local AI hardware",
+            "user_goal": "Understand why GPUs matter for local AI.",
+            "open_question": "Why do GPUs matter for local AI?",
+            "last_answer_kind": "explanation",
+        },
+    }
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(
+            skill.handle(
+                "Go deeper on that.",
+                context=context,
+                session_state=session_state,
+            )
+        )
+
+    assert result is not None
+    assert result.success is True
+    assert "Presentation preference: Detailed." in captured["system_prompt"]
+    assert captured["max_tokens"] > 200
+    conversation_context = (result.data or {}).get("conversation_context") or {}
+    assert conversation_context["presentation_preference"] == "detailed"
+    assert conversation_context["topic"] == "local AI hardware"
+
+
+def test_general_chat_uses_technical_presentation_preference_for_rewrite_followup():
+    skill = GeneralChatSkill()
+    captured = {}
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        captured["prompt"] = prompt
+        captured.update(kwargs)
+        return "A GPU matters because it accelerates matrix operations, parallel tensor workloads, and memory-bandwidth-heavy inference steps."
+
+    context = [
+        {"role": "user", "content": "Why do GPUs matter for local AI?"},
+        {"role": "assistant", "content": "They matter because they speed up the parallel math used in local AI."},
+    ]
+    session_state = {
+        "session_id": "sess-technical",
+        "active_topic": "local AI hardware",
+        "conversation_context": {
+            "topic": "local AI hardware",
+            "user_goal": "Understand why GPUs matter for local AI.",
+            "open_question": "Why do GPUs matter for local AI?",
+            "rewrite_target": "They matter because they speed up the parallel math used in local AI.",
+            "last_answer_kind": "explanation",
+        },
+    }
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(
+            skill.handle(
+                "Give me the technical version.",
+                context=context,
+                session_state=session_state,
+            )
+        )
+
+    assert result is not None
+    assert result.success is True
+    assert "Presentation preference: Technical." in captured["system_prompt"]
+    assert "Current thread goal: Understand why GPUs matter for local AI." in captured["prompt"]
+    conversation_context = (result.data or {}).get("conversation_context") or {}
+    assert conversation_context["presentation_preference"] == "technical"
+
+
 def test_general_chat_adds_natural_followup_prompt_for_exploratory_queries():
     skill = GeneralChatSkill()
 
