@@ -196,6 +196,76 @@ def test_general_chat_adds_reference_hint_for_ordinal_followup():
     assert "Current user message:\nGo with the first." in captured["prompt"]
 
 
+def test_general_chat_adds_semantic_reference_hint_for_descriptor_followup():
+    skill = GeneralChatSkill()
+    captured = {}
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        captured["prompt"] = prompt
+        return "The minimal operator dashboard is still the best fit."
+
+    context = [
+        {"role": "user", "content": "Give me three dashboard ideas."},
+        {
+            "role": "assistant",
+            "content": "Here are three ideas:\n1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center",
+        },
+        {"role": "user", "content": "Which one would feel calm but still useful?"},
+        {
+            "role": "assistant",
+            "content": "The minimal operator dashboard is the calmest while still staying useful.",
+        },
+    ]
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(
+            skill.handle(
+                "Go with the calmer option.",
+                context=context,
+                session_state={"session_id": "sess-semantic"},
+            )
+        )
+
+    assert result is not None
+    assert result.success is True
+    assert "Likely referenced prior option 1: Minimal operator dashboard" in captured["prompt"]
+
+
+def test_general_chat_adds_semantic_reference_hint_for_that_one_followup():
+    skill = GeneralChatSkill()
+    captured = {}
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        captured["prompt"] = prompt
+        return "Then we should continue with the minimal operator dashboard."
+
+    context = [
+        {"role": "user", "content": "Give me three dashboard ideas."},
+        {
+            "role": "assistant",
+            "content": "Here are three ideas:\n1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center",
+        },
+        {"role": "user", "content": "Which one would feel calm but still useful?"},
+        {
+            "role": "assistant",
+            "content": "The minimal operator dashboard is the calmest while still staying useful.",
+        },
+    ]
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(
+            skill.handle(
+                "Go with that one.",
+                context=context,
+                session_state={"session_id": "sess-that-one"},
+            )
+        )
+
+    assert result is not None
+    assert result.success is True
+    assert "Likely referenced prior option 1: Minimal operator dashboard" in captured["prompt"]
+
+
 def test_general_chat_rolls_older_context_into_summary():
     skill = GeneralChatSkill()
     session_state = {"active_topic": "Nova dashboard", "general_chat_summary": {}}

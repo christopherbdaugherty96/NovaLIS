@@ -147,3 +147,35 @@ def test_long_chat_uses_rolling_summary_after_context_rollover(monkeypatch):
     assert "Earlier conversation summary" in prompts[-1]
     assert "Minimal operator dashboard" in prompts[-1]
     assert "User goal: I want to redesign Nova's dashboard for daily use." in prompts[-1]
+
+
+def test_vague_option_followup_uses_prior_recommendation_hint(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(
+        [
+            "Give me three dashboard ideas.",
+            "Which one would feel calm but still useful?",
+            "Go with that one.",
+        ]
+    )
+    prompts: list[str] = []
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        prompts.append(prompt)
+        responses = {
+            1: "1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center",
+            2: "The minimal operator dashboard is the calmest while still staying useful.",
+            3: "Then we should continue with the minimal operator dashboard.",
+        }
+        return responses[len(prompts)]
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert len(prompts) == 3
+    assert "Likely referenced prior option 1: Minimal operator dashboard" in prompts[-1]
