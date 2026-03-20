@@ -152,8 +152,39 @@ class GeneralChatSkill(BaseSkill):
     _SUMMARY_RETAIN_CONTEXT_ENTRIES = 12
     _SUMMARY_MAX_FIELD_CHARS = 180
     _SUMMARY_MAX_OPTIONS = 3
+    _REFERENCE_STOPWORDS = {
+        "a",
+        "an",
+        "and",
+        "by",
+        "choose",
+        "could",
+        "do",
+        "for",
+        "go",
+        "idea",
+        "it",
+        "mean",
+        "of",
+        "one",
+        "option",
+        "pick",
+        "should",
+        "take",
+        "that",
+        "the",
+        "this",
+        "what",
+        "with",
+    }
     _LIST_ITEM_RE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(.*\S)\s*$")
     _INLINE_NUMBERED_RE = re.compile(r"(?:^|\s)(\d+)[.)]\s+([^:]+?)(?=(?:\s+\d+[.)]\s+)|$)")
+    _VAGUE_OPTION_REFERENCE_RE = re.compile(
+        r"\b(?:go with|pick|choose|take)\s+(?:that|this)\b"
+        r"|\b(?:that|this)\s+(?:one|option|idea)\b"
+        r"|\bwhat do you mean by that\b",
+        re.IGNORECASE,
+    )
     _ORDINAL_REFERENCE_PATTERNS: Tuple[Tuple[re.Pattern, int], ...] = (
         (re.compile(r"\b(?:go with|pick|choose|take)\s+(?:the\s+)?first\b|\b(?:the|that)\s+first\b|\bfirst one\b", re.IGNORECASE), 0),
         (re.compile(r"\b(?:go with|pick|choose|take)\s+(?:the\s+)?second\b|\b(?:the|that)\s+second\b|\bsecond one\b", re.IGNORECASE), 1),
@@ -490,26 +521,112 @@ class GeneralChatSkill(BaseSkill):
     @classmethod
     def _build_reference_hint(cls, query: str, *, context: Optional[list] = None) -> str:
         target_index = cls._reference_target_index(query)
-        if target_index is None:
+        option_catalog = cls._reference_option_catalog(context)
+        if not option_catalog:
             return ""
 
-        last_assistant_message = ""
-        for entry in reversed(list(context or [])):
+        options, recent_entries = option_catalog
+        if target_index is not None:
+            resolved_index = len(options) - 1 if target_index < 0 else target_index
+            if 0 <= resolved_index < len(options):
+                return f"Likely referenced prior option {resolved_index + 1}: {options[resolved_index]}"
+
+        semantic_match = cls._semantic_option_reference(query, options=options, recent_entries=recent_entries)
+        if semantic_match is None:
+            return ""
+        resolved_index, option = semantic_match
+        return f"Likely referenced prior option {resolved_index + 1}: {option}"
+
+    @staticmethod
+    def _reference_token_root(token: str) -> str:
+        clean = re.sub(r"[^a-z0-9]+", "", str(token or "").lower())
+        if len(clean) > 5 and clean.endswith("est"):
+            clean = clean[:-3]
+        elif len(clean) > 4 and clean.endswith("er"):
+            clean = clean[:-2]
+        elif len(clean) > 4 and clean.endswith("ing"):
+            clean = clean[:-3]
+        elif len(clean) > 4 and clean.endswith("ed"):
+            clean = clean[:-2]
+        elif len(clean) > 4 and clean.endswith("s"):
+            clean = clean[:-1]
+        return clean
+
+    @classmethod
+    def _reference_tokens(cls, text: str) -> set[str]:
+        tokens: set[str] = set()
+        for raw in re.findall(r"[A-Za-z0-9']+", str(text or "").lower()):
+            root = cls._reference_token_root(raw)
+            if not root or root in cls._REFERENCE_STOPWORDS:
+                continue
+            tokens.add(root)
+        return tokens
+
+    @classmethod
+    def _reference_option_catalog(cls, context: Optional[list]) -> tuple[list[str], list[dict]] | None:
+        entries = list(context or [])
+        for index in range(len(entries) - 1, -1, -1):
+            entry = entries[index]
             if str(entry.get("role") or "").strip().lower() != "assistant":
                 continue
-            last_assistant_message = str(entry.get("content") or "").strip()
-            if last_assistant_message:
-                break
+            options = cls._extract_prior_options(str(entry.get("content") or ""))
+            if options:
+                return options, entries[index + 1 :]
+        return None
 
-        options = cls._extract_prior_options(last_assistant_message)
-        if not options:
-            return ""
+    @classmethod
+    def _option_is_mentioned(cls, option: str, text: str) -> bool:
+        option_tokens = cls._reference_tokens(option)
+        text_tokens = cls._reference_tokens(text)
+        if not option_tokens or not text_tokens:
+            return False
+        overlap = option_tokens & text_tokens
+        return len(overlap) >= min(2, len(option_tokens))
 
-        resolved_index = len(options) - 1 if target_index < 0 else target_index
-        if resolved_index < 0 or resolved_index >= len(options):
-            return ""
+    @classmethod
+    def _semantic_option_reference(
+        cls,
+        query: str,
+        *,
+        options: list[str],
+        recent_entries: list[dict],
+    ) -> tuple[int, str] | None:
+        query_tokens = cls._reference_tokens(query)
+        vague_reference = bool(cls._VAGUE_OPTION_REFERENCE_RE.search(str(query or "")))
+        if not query_tokens and not vague_reference:
+            return None
 
-        return f"Likely referenced prior option {resolved_index + 1}: {options[resolved_index]}"
+        last_recommended_index: int | None = None
+        scores = [0 for _ in options]
+
+        for entry in recent_entries:
+            if str(entry.get("role") or "").strip().lower() != "assistant":
+                continue
+            content = str(entry.get("content") or "").strip()
+            if not content:
+                continue
+            content_tokens = cls._reference_tokens(content)
+            for index, option in enumerate(options):
+                if not cls._option_is_mentioned(option, content):
+                    continue
+                last_recommended_index = index
+                overlap = len(query_tokens & content_tokens)
+                if overlap:
+                    scores[index] += 2 + overlap
+
+        for index, option in enumerate(options):
+            direct_overlap = len(query_tokens & cls._reference_tokens(option))
+            if direct_overlap:
+                scores[index] += 3 + direct_overlap
+
+        if vague_reference and last_recommended_index is not None:
+            scores[last_recommended_index] += 3
+
+        best_score = max(scores) if scores else 0
+        if best_score < 3:
+            return None
+        best_index = scores.index(best_score)
+        return best_index, options[best_index]
 
     @classmethod
     def _clip_summary_text(cls, text: str) -> str:
