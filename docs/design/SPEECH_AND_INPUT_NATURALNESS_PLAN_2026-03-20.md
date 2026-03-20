@@ -1,6 +1,6 @@
 # Speech And Input Naturalness Plan
 Date: 2026-03-20
-Status: Planning packet only; post-Conversational-Core and Style-Layer design plan grounded in current `main`
+Status: Planning packet with Stage 1-2 now landed on `main`; current speech/input baseline checkpoint recorded below
 Scope: Make Nova easier to talk to and easier for the user to talk to without changing authority, routing, or trust boundaries
 
 ## Core Rule
@@ -37,6 +37,27 @@ There are two distinct needs here:
 This packet defines both as bounded presentation and interpretation improvements.
 It does not authorize looser execution inference.
 It does not authorize personality learning.
+
+## Current Checkpoint
+Speech & Input Naturalness now has a real landed checkpoint on `main`.
+
+Landed stages:
+- Stage 1: tolerant input handling
+- Stage 2: spoken acknowledgments, repair prompts, and repeat behavior polish
+
+Checkpoint commit:
+- `39b3d20`
+
+What is now true at that checkpoint:
+- casual, slightly messy input is understood more reliably
+- short spoken acknowledgments are lighter and more natural
+- repeat and repair moments recover more cleanly
+- authority interpretation remains just as strict as before
+
+This means Nova is:
+- easier to talk to
+- easier to recover with
+- not more willing to guess commands or execution intent
 
 ## Goal
 Make Nova more forgiving of natural, informal, or imperfect input, and make Nova's short spoken responses feel more natural and less formal.
@@ -258,9 +279,25 @@ This plan does not include:
 - changing the Governor threshold for ambiguous actions
 
 ## Practical Next Slice
-If coding starts from this packet, the best first bounded slice is:
-- define the input tolerance contract for casual phrasing, misspellings, and spoken fragments
+This packet is no longer waiting for the first slice.
 
-After that:
-- light spoken acknowledgments and repair prompts
-- speech-oriented clarification behavior
+Recommended posture now:
+- pause and evaluate the landed Stage 1-2 checkpoint in actual use
+- do not broaden this line immediately just because more ideas are available
+
+If a fresh follow-up branch is warranted later, keep it small.
+
+Safest next options:
+- `Speech & Input Naturalness Stage 3`
+  - repeat vs rephrase choice prompts
+  - one or two more short repair turns
+  - still no routing or authority changes
+- `Nova Style Layer Stage 2+`
+  - if the larger product need is full-answer consistency rather than more speech behavior
+
+Recommended discipline for any follow-up:
+- fresh small branch
+- one narrow slice
+- focused tests on branch
+- rerun on `main`
+- land only if the slice stays bounded

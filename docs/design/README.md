@@ -24,6 +24,14 @@ Current bounded style planning packet:
 Current bounded speech/input naturalness planning packet:
 - `docs/design/SPEECH_AND_INPUT_NATURALNESS_PLAN_2026-03-20.md`
 
+Current conversational/style baseline on `main`:
+- `39b3d20` - Speech & Input Naturalness Stage 1-2 checkpoint
+- `d0a80c3` - Nova Style Layer Stage 2 checkpoint
+
+Current recommended next-step posture:
+- pause and evaluate the new baseline in use
+- if work resumes, prefer a fresh small branch for a non-chat style consistency audit before broader new conversation behavior
+
 Canonical design phase folders:
 - `Phase 4`
 - `Phase 4.2`

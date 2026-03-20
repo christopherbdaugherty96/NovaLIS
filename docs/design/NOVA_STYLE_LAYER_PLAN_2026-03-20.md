@@ -1,6 +1,6 @@
 # Nova Style Layer Plan
 Date: 2026-03-20
-Status: Planning packet only; post-Conversational-Core design plan grounded in current `main`
+Status: Planning packet with Stage 1-2 now landed on `main`; current style baseline checkpoint recorded below
 Scope: Define a stable, recognizable Nova presentation layer without changing routing, execution authority, or trust boundaries
 
 ## Core Rule
@@ -42,6 +42,27 @@ Nova now needs a defined presentation identity so that:
 This packet defines that style layer as an explicit design surface.
 It does not define runtime truth.
 It does not authorize adaptive personality learning.
+
+## Current Checkpoint
+Nova Style Layer now has a real landed checkpoint on `main`.
+
+Landed stages:
+- Stage 1: style contract in formatter and interface-agent surfaces
+- Stage 2: local-chat full-answer alignment with shared Nova voice rules
+
+Current baseline commit:
+- `d0a80c3`
+
+What is now true at that checkpoint:
+- full local-chat answers sound more consistently like the same assistant
+- initiative tails are centralized instead of drifting by mode
+- concise, detailed, analytical, brainstorming, and implementation modes stay more recognizably Nova
+- no routing, authority, or execution behavior changed
+
+This means Nova is now:
+- more stylistically consistent
+- more recognizably Nova across full local-chat answers
+- still operating under the same authority boundaries
 
 ## Goal
 Make Nova feel consistently and recognizably Nova across conversation modes while preserving the same routing, safety, and authority boundaries.
@@ -283,9 +304,19 @@ This plan does not include:
 - external-provider persona work
 
 ## Practical Next Slice
-If coding starts from this packet, the best first bounded slice is:
-- define the Nova style contract in formatter- and interface-agent-facing rules
+This packet is no longer waiting for the first coding slice.
 
-After that:
-- align local chat wording with the same contract
-- evaluate whether the system feels more distinct without becoming theatrical
+Recommended posture now:
+- pause and evaluate the landed Stage 1-2 baseline before broadening style work further
+- do not immediately open another style branch without a concrete mismatch to fix
+
+If a fresh follow-up branch is warranted later, the safest next target is:
+- `Nova Style Layer Stage 3`
+  - remaining rough wording spots
+  - non-chat surface consistency audit
+  - clarification/rewrite surface alignment
+  - still no routing or authority changes
+
+Practical recommendation after the pause:
+- audit non-chat presentation surfaces for places where Nova sounds like itself in chat but not elsewhere
+- only open a new branch if that audit surfaces a clear, bounded mismatch
