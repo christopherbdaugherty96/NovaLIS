@@ -56,3 +56,18 @@ def test_input_normalizer_maps_todays_news_phrase():
 def test_input_normalizer_maps_weather_phrase():
     normalized = InputNormalizer.normalize("what is the weather tomorrow")
     assert normalized.lower() == "weather forecast."
+
+
+def test_input_normalizer_maps_spoken_repeat_phrase():
+    normalized = InputNormalizer.normalize("say that again")
+    assert normalized.lower() == "repeat."
+
+
+def test_input_normalizer_tolerates_missing_apostrophes():
+    normalized = InputNormalizer.normalize("whats the weather tomorrow")
+    assert normalized.lower() == "weather forecast."
+
+
+def test_input_normalizer_does_not_overmap_ambiguous_turn_it_down_phrase():
+    normalized = InputNormalizer.normalize("turn it down a bit")
+    assert normalized.lower() == "turn it down a bit."

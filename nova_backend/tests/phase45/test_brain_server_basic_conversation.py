@@ -47,6 +47,30 @@ def test_hello_uses_deterministic_local_response(monkeypatch):
     assert any("Hello. What do you want to work on?" in msg for msg in chat_messages)
 
 
+def test_say_again_alias_repeats_last_spoken_text_without_model_call(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["What is a GPU?", "say that again"])
+    prompts: list[str] = []
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        prompts.append(prompt)
+        return "A GPU is a processor designed for parallel workloads like graphics and machine learning."
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert len(prompts) == 1
+    assert chat_messages.count(
+        "A GPU is a processor designed for parallel workloads like graphics and machine learning."
+    ) == 2
+
+
 def test_what_can_you_do_with_question_mark_stays_on_capability_path(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
