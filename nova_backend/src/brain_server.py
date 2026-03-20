@@ -46,6 +46,7 @@ from src.working_context.context_store import WorkingContextStore
 from src.working_context.project_threads import ProjectThreadStore
 from src.tasks.notification_schedule_store import NotificationScheduleStore
 from src.personality.interface_agent import PersonalityInterfaceAgent
+from src.personality.nova_style_contract import NovaStyleContract
 from src.personality.tone_profile_store import ToneProfileStore
 from src.audit.runtime_auditor import (
     run_runtime_truth_audit,
@@ -2761,7 +2762,12 @@ async def websocket_endpoint(ws: WebSocket):
             if lowered == "repeat":
                 last = speech_state.last_spoken_text
                 if last:
-                    await send_chat_message(ws, last)
+                    await send_chat_message(
+                        ws,
+                        f"{NovaStyleContract.spoken_acknowledgement('confirm')}\n\n{last}",
+                    )
+                else:
+                    await send_chat_message(ws, NovaStyleContract.spoken_repeat_prompt())
                 await send_chat_done(ws)
                 continue
 

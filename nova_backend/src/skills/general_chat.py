@@ -18,6 +18,7 @@ from src.conversation.safety_filter import SafetyFilter
 from src.conversation.deepseek_safety_wrapper import DeepSeekSafetyWrapper
 from src.governor.network_mediator import NetworkMediator
 from src.llm.llm_gateway import generate_chat
+from src.personality.nova_style_contract import NovaStyleContract
 from src.personality.tone_profile_store import ToneProfileStore
 
 from ..base_skill import BaseSkill, SkillResult
@@ -963,8 +964,14 @@ class GeneralChatSkill(BaseSkill):
         if len(clipped) < 2:
             return ""
         if len(clipped) == 2:
-            return f"Do you mean {clipped[0]} or {clipped[1]}?"
-        return f"Do you mean {clipped[0]}, {clipped[1]}, or {clipped[2]}?"
+            return NovaStyleContract.prefix_with_acknowledgement(
+                f"Do you mean {clipped[0]} or {clipped[1]}?",
+                kind="understood",
+            )
+        return NovaStyleContract.prefix_with_acknowledgement(
+            f"Do you mean {clipped[0]}, {clipped[1]}, or {clipped[2]}?",
+            kind="understood",
+        )
 
     @classmethod
     def _rewrite_clarification_prompt(cls, rewrite_kind: str) -> str:
@@ -974,7 +981,10 @@ class GeneralChatSkill(BaseSkill):
             "reworded": "Do you want a reworded version of my last answer or a different approach?",
             "shorter": "Do you want a shorter rewrite of my last answer or a different approach?",
         }
-        return prompts.get(rewrite_kind, "")
+        prompt = prompts.get(rewrite_kind, "")
+        if not prompt:
+            return ""
+        return NovaStyleContract.prefix_with_acknowledgement(prompt, kind="confirm")
 
     @classmethod
     def _semantic_clarification_prompt(

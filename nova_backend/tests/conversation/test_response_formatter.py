@@ -62,3 +62,11 @@ def test_formatter_applies_nova_style_contract_without_removing_light_warmth():
     assert "great question" in lowered
     assert "happy to help" in lowered
     assert out == "Great question. I'd be happy to help with that."
+
+
+def test_formatter_preserves_spoken_sure_thing_acknowledgement():
+    from src.conversation.response_formatter import ResponseFormatter
+
+    out = ResponseFormatter.format("Sure thing. I can explain that more simply.")
+
+    assert out == "Sure thing. I can explain that more simply."

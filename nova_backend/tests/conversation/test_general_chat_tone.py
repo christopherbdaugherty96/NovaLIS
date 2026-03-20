@@ -584,7 +584,7 @@ def test_general_chat_asks_short_clarification_for_weak_semantic_anchor_with_opt
     assert result is not None
     assert result.success is True
     assert result.message == (
-        "Do you mean 1. Minimal operator dashboard, 2. Research-first workspace, "
+        "Gotcha. Do you mean 1. Minimal operator dashboard, 2. Research-first workspace, "
         "or 3. Ambient command center?"
     )
     assert (result.data or {}).get("structured_data", {}).get("clarification_requested") is True
@@ -612,7 +612,7 @@ def test_general_chat_asks_rewrite_clarification_when_no_target_exists():
 
     assert result is not None
     assert result.success is True
-    assert result.message == "Do you want a simpler rewrite of my last answer or a different approach?"
+    assert result.message == "Sure thing. Do you want a simpler rewrite of my last answer or a different approach?"
     assert (result.data or {}).get("structured_data", {}).get("clarification_requested") is True
 
 
