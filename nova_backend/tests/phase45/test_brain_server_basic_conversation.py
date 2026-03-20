@@ -179,3 +179,35 @@ def test_vague_option_followup_uses_prior_recommendation_hint(monkeypatch):
 
     assert len(prompts) == 3
     assert "Likely referenced prior option 1: Minimal operator dashboard" in prompts[-1]
+
+
+def test_rewrite_followup_uses_prior_answer_hint(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(
+        [
+            "Why do GPUs matter for local AI?",
+            "What do you mean by that?",
+        ]
+    )
+    prompts: list[str] = []
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        prompts.append(prompt)
+        responses = {
+            1: "They matter because local AI inference benefits from fast parallel math and enough memory bandwidth.\n\nIf you want, I can go deeper on one part.",
+            2: "I mean they help because they can do the needed math much faster.",
+        }
+        return responses[len(prompts)]
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert len(prompts) == 2
+    assert "User wants you to clarify the last assistant answer." in prompts[-1]
+    assert "Target prior answer: They matter because local AI inference benefits from fast parallel math and enough memory bandwidth." in prompts[-1]
+    assert "If you want, I can go deeper on one part." not in prompts[-1]

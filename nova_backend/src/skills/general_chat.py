@@ -152,6 +152,7 @@ class GeneralChatSkill(BaseSkill):
     _SUMMARY_RETAIN_CONTEXT_ENTRIES = 12
     _SUMMARY_MAX_FIELD_CHARS = 180
     _SUMMARY_MAX_OPTIONS = 3
+    _FOLLOWUP_TARGET_MAX_CHARS = 260
     _REFERENCE_STOPWORDS = {
         "a",
         "an",
@@ -184,6 +185,24 @@ class GeneralChatSkill(BaseSkill):
         r"|\b(?:that|this)\s+(?:one|option|idea)\b"
         r"|\bwhat do you mean by that\b",
         re.IGNORECASE,
+    )
+    _REWRITE_HINT_PATTERNS: Tuple[Tuple[re.Pattern, str], ...] = (
+        (
+            re.compile(r"\b(?:what do you mean by that|what did you mean by that|clarify that|explain that)\b", re.IGNORECASE),
+            "clarify",
+        ),
+        (
+            re.compile(r"\b(?:say that simpler|make that simpler|make that clearer|clearer|simpler|plain english|plain language)\b", re.IGNORECASE),
+            "simpler",
+        ),
+        (
+            re.compile(r"\b(?:reword that|rephrase that|say that another way|put that another way)\b", re.IGNORECASE),
+            "reworded",
+        ),
+        (
+            re.compile(r"\b(?:shorter version|make that shorter|condense that|briefer version|tldr|tl;dr)\b", re.IGNORECASE),
+            "shorter",
+        ),
     )
     _ORDINAL_REFERENCE_PATTERNS: Tuple[Tuple[re.Pattern, int], ...] = (
         (re.compile(r"\b(?:go with|pick|choose|take)\s+(?:the\s+)?first\b|\b(?:the|that)\s+first\b|\bfirst one\b", re.IGNORECASE), 0),
@@ -434,6 +453,7 @@ class GeneralChatSkill(BaseSkill):
         session_state: Optional[dict] = None,
     ) -> str:
         normalized_query = InputNormalizer.normalize(query)
+        rewrite_kind = self._rewrite_request_kind(normalized_query)
         context_entries = list(context or [])
         recent_lines: list[str] = []
         for entry in context_entries[-self._MAX_CONTEXT_TURNS :]:
@@ -441,6 +461,8 @@ class GeneralChatSkill(BaseSkill):
             if summarized is None:
                 continue
             role, content = summarized
+            if rewrite_kind and role == "assistant":
+                content = self._strip_initiative_tail(content)
             label = "User" if role == "user" else "Nova"
             recent_lines.append(f"{label}: {content}")
 
@@ -452,6 +474,9 @@ class GeneralChatSkill(BaseSkill):
         project_thread = str(state.get("project_thread_active") or "").strip()
         if project_thread:
             hints.append(f"Active project thread: {project_thread}")
+        rewrite_hint = self._build_rewrite_hint(normalized_query, context=context)
+        if rewrite_hint:
+            hints.append(rewrite_hint)
         reference_hint = self._build_reference_hint(normalized_query, context=context)
         if reference_hint:
             hints.append(reference_hint)
@@ -573,6 +598,75 @@ class GeneralChatSkill(BaseSkill):
             if options:
                 return options, entries[index + 1 :]
         return None
+
+    @classmethod
+    def _last_assistant_message(cls, context: Optional[list]) -> str:
+        for entry in reversed(list(context or [])):
+            if str(entry.get("role") or "").strip().lower() != "assistant":
+                continue
+            content = str(entry.get("content") or "").strip()
+            if content:
+                return content
+        return ""
+
+    @classmethod
+    def _strip_initiative_tail(cls, text: str) -> str:
+        raw = str(text or "").strip()
+        if not raw:
+            return ""
+        parts = [part.strip() for part in raw.split("\n\n") if part.strip()]
+        if len(parts) <= 1:
+            single = raw
+        else:
+            last = parts[-1].lower()
+            if last.startswith("if you want") or last.startswith("if useful") or last.startswith("would you like"):
+                single = "\n\n".join(parts[:-1]).strip()
+            else:
+                single = raw
+        single = re.sub(
+            r"\s+(If you want|If useful|Would you like)\b.*$",
+            "",
+            single,
+            flags=re.IGNORECASE,
+        ).strip()
+        return single
+
+    @classmethod
+    def _rewrite_request_kind(cls, query: str) -> str:
+        text = str(query or "").strip()
+        if not text:
+            return ""
+        for pattern, kind in cls._REWRITE_HINT_PATTERNS:
+            if pattern.search(text):
+                return kind
+        return ""
+
+    @classmethod
+    def _rewrite_hint_label(cls, kind: str) -> str:
+        return {
+            "clarify": "clarify the last assistant answer",
+            "simpler": "restate the last assistant answer in simpler language",
+            "reworded": "reword the last assistant answer",
+            "shorter": "give a shorter version of the last assistant answer",
+        }.get(kind, "")
+
+    @classmethod
+    def _build_rewrite_hint(cls, query: str, *, context: Optional[list] = None) -> str:
+        kind = cls._rewrite_request_kind(query)
+        if not kind:
+            return ""
+
+        prior = cls._strip_initiative_tail(cls._last_assistant_message(context))
+        if not prior:
+            return ""
+
+        label = cls._rewrite_hint_label(kind)
+        target = cls._clip_summary_text(prior)
+        if len(target) > cls._FOLLOWUP_TARGET_MAX_CHARS:
+            target = target[: cls._FOLLOWUP_TARGET_MAX_CHARS - 3].rstrip() + "..."
+        if not label or not target:
+            return ""
+        return f"User wants you to {label}. Target prior answer: {target}"
 
     @classmethod
     def _option_is_mentioned(cls, option: str, text: str) -> bool:
