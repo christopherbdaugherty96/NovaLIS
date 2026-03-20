@@ -2,6 +2,7 @@ import re
 from typing import Any
 
 from src.conversation.clarify_prompts import CLARIFY_PROMPTS
+from src.personality.nova_style_contract import NovaStyleContract
 
 
 class ResponseFormatter:
@@ -59,6 +60,7 @@ class ResponseFormatter:
             clean = re.sub(filler, "", clean, flags=re.IGNORECASE)
 
         clean = ResponseFormatter._apply_ack_replacements(clean)
+        clean = NovaStyleContract.normalize(clean)
         clean = ResponseFormatter._tone_shape(clean, mode)
         clean = re.sub(r"[ \t]{2,}", " ", clean).strip()
         return clean.strip()
