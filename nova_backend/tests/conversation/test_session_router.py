@@ -32,7 +32,7 @@ def test_evaluate_gate_handles_clarification_and_turn_marker():
     gate = SessionRouter.evaluate_gate(route.decision, state, 3)
     assert gate.handled is True
     assert gate.set_clarification_turn is True
-    assert "which file or folder" in gate.message.lower()
+    assert gate.message == "Gotcha. Which file or folder do you mean?"
 
 
 def test_evaluate_gate_repeats_same_turn_clarification_message():
@@ -41,7 +41,7 @@ def test_evaluate_gate_repeats_same_turn_clarification_message():
     gate = SessionRouter.evaluate_gate(route.decision, state, 3)
     assert gate.handled is True
     assert gate.set_clarification_turn is False
-    assert "still need a file or folder" in gate.message.lower()
+    assert gate.message == "Gotcha. I still need a file or folder name to continue."
 
 
 def test_pending_web_confirmation_yes_no_reprompt():
@@ -68,3 +68,9 @@ def test_normalize_and_route_keeps_ambiguous_turn_it_down_unresolved():
     assert out.text == "Turn it down a bit."
     assert out.decision.intent_family == "unknown"
     assert out.decision.mode.value == "direct"
+
+
+def test_spoken_gate_message_rewrites_generic_misheard_prompt():
+    assert SessionRouter._spoken_gate_message(
+        "I might have misheard that. Did you want me to search the web, open something, or show today's brief?"
+    ) == "Say that again? Did you want me to search the web, open something, or show today's brief?"

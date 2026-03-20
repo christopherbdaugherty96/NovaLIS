@@ -66,9 +66,27 @@ def test_say_again_alias_repeats_last_spoken_text_without_model_call(monkeypatch
 
     chat_messages = _chat_messages(ws)
     assert len(prompts) == 1
-    assert chat_messages.count(
-        "A GPU is a processor designed for parallel workloads like graphics and machine learning."
-    ) == 2
+    assert any(
+        msg.startswith("Sure thing.") and "A GPU is a processor designed for parallel workloads like graphics and machine learning." in msg
+        for msg in chat_messages
+    )
+
+
+def test_repeat_without_prior_spoken_text_asks_for_repeat_again(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    brain_server.speech_state.last_spoken_text = ""
+    ws = _ScriptedWebSocket(["say again"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any(msg == "Say that again?" for msg in chat_messages)
 
 
 def test_what_can_you_do_with_question_mark_stays_on_capability_path(monkeypatch):
@@ -319,7 +337,7 @@ def test_weak_semantic_anchor_returns_short_clarification_in_websocket_path(monk
 
     chat_messages = _chat_messages(ws)
     assert any(
-        "Do you mean 1. Minimal operator dashboard, 2. Research-first workspace, or 3. Ambient command center?"
+        "Gotcha. Do you mean 1. Minimal operator dashboard, 2. Research-first workspace, or 3. Ambient command center?"
         in msg
         for msg in chat_messages
     )

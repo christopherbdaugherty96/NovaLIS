@@ -90,3 +90,11 @@ def test_personality_interface_agent_applies_nova_style_contract_without_removin
     assert "great question" in lowered
     assert "happy to help" in lowered
     assert out == "Great question. I'd be happy to help with that."
+
+
+def test_personality_interface_agent_preserves_spoken_sure_thing_acknowledgement():
+    agent = PersonalityInterfaceAgent()
+
+    out = agent.present("Sure thing. I can explain that more simply.")
+
+    assert out == "Sure thing. I can explain that more simply."

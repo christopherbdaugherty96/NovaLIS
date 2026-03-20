@@ -7,6 +7,7 @@ from src.conversation.clarify_prompts import CLARIFY_PROMPTS
 from src.conversation.conversation_decision import ConversationDecision
 from src.conversation.conversation_router import ConversationRouter
 from src.conversation.response_style_router import InputNormalizer
+from src.personality.nova_style_contract import NovaStyleContract
 
 
 WEB_OPEN_CONFIRM_YES = {
@@ -119,10 +120,13 @@ class SessionRouter:
 
         if decision.needs_clarification:
             if session_state.get("last_clarification_turn") == turn_count:
-                return GateResult(handled=True, message="I still need a file or folder name to continue.")
+                return GateResult(
+                    handled=True,
+                    message=SessionRouter._spoken_gate_message("I still need a file or folder name to continue."),
+                )
             return GateResult(
                 handled=True,
-                message=str(decision.clarification_prompt or "Could you clarify that?"),
+                message=SessionRouter._spoken_gate_message(str(decision.clarification_prompt or "Could you clarify that?")),
                 set_clarification_turn=True,
             )
 
@@ -142,3 +146,26 @@ class SessionRouter:
     @staticmethod
     def ready_prompt() -> str:
         return CLARIFY_PROMPTS["ready_prompt"]
+
+    @staticmethod
+    def _spoken_gate_message(message: str) -> str:
+        clean = str(message or "").strip()
+        if not clean:
+            return NovaStyleContract.spoken_repeat_prompt()
+
+        lowered = clean.lower()
+        if lowered.startswith("which file or folder do you mean"):
+            return NovaStyleContract.prefix_with_acknowledgement(clean, kind="understood")
+        if lowered.startswith("what should i continue from"):
+            return NovaStyleContract.prefix_with_acknowledgement(clean, kind="understood")
+        if lowered.startswith("i still need a file or folder name"):
+            return NovaStyleContract.prefix_with_acknowledgement(clean, kind="understood")
+        if lowered.startswith("i might have misheard that"):
+            parts = clean.split(".", 1)
+            remainder = parts[1].strip() if len(parts) > 1 else ""
+            if remainder:
+                return f"{NovaStyleContract.spoken_repeat_prompt()} {remainder}".strip()
+            return NovaStyleContract.spoken_repeat_prompt()
+        if lowered.startswith("could you clarify that"):
+            return NovaStyleContract.spoken_repeat_prompt()
+        return clean
