@@ -951,6 +951,61 @@ class GeneralChatSkill(BaseSkill):
         return f"User wants you to {label}. Target prior answer: {target}"
 
     @classmethod
+    def _semantic_reference_marker(cls, query: str) -> bool:
+        raw = str(query or "")
+        if cls._VAGUE_OPTION_REFERENCE_RE.search(raw) or cls._APPROACH_REFERENCE_RE.search(raw):
+            return True
+        return any(pattern.search(raw) for pattern, _ in cls._SEMANTIC_MODIFIER_HINTS)
+
+    @classmethod
+    def _format_option_clarification(cls, options: list[str]) -> str:
+        clipped = [f"{index + 1}. {cls._clip_summary_text(option)}" for index, option in enumerate(options[: cls._SUMMARY_MAX_OPTIONS])]
+        if len(clipped) < 2:
+            return ""
+        if len(clipped) == 2:
+            return f"Do you mean {clipped[0]} or {clipped[1]}?"
+        return f"Do you mean {clipped[0]}, {clipped[1]}, or {clipped[2]}?"
+
+    @classmethod
+    def _rewrite_clarification_prompt(cls, rewrite_kind: str) -> str:
+        prompts = {
+            "clarify": "Do you want me to clarify my last answer or take a different approach?",
+            "simpler": "Do you want a simpler rewrite of my last answer or a different approach?",
+            "reworded": "Do you want a reworded version of my last answer or a different approach?",
+            "shorter": "Do you want a shorter rewrite of my last answer or a different approach?",
+        }
+        return prompts.get(rewrite_kind, "")
+
+    @classmethod
+    def _semantic_clarification_prompt(
+        cls,
+        query: str,
+        *,
+        context: Optional[list],
+        session_state: Optional[dict],
+    ) -> str:
+        rewrite_kind = cls._rewrite_request_kind(query)
+        conversation_context = SessionConversationContext.from_session_state(session_state)
+        prior_answer = cls._strip_initiative_tail(cls._last_assistant_message(context)) or conversation_context.rewrite_target
+        if rewrite_kind and not prior_answer:
+            if conversation_context.topic or conversation_context.user_goal or conversation_context.active_options:
+                return cls._rewrite_clarification_prompt(rewrite_kind)
+            return ""
+
+        if not cls._semantic_reference_marker(query):
+            return ""
+
+        if cls._build_reference_hint(query, context=context, session_state=session_state):
+            return ""
+
+        option_catalog = cls._conversation_option_catalog(context=context, session_state=session_state)
+        if not option_catalog:
+            return ""
+
+        options, _, _ = option_catalog
+        return cls._format_option_clarification(options)
+
+    @classmethod
     def _option_is_mentioned(cls, option: str, text: str) -> bool:
         option_tokens = cls._reference_tokens(option)
         text_tokens = cls._reference_tokens(text)
@@ -1205,12 +1260,11 @@ class GeneralChatSkill(BaseSkill):
 
         if answer_kind == "recommendation":
             return response
+        if answer_kind == "options":
+            return existing
 
         lowered = response.lower()
         if any(token in lowered for token in ("start with", "best fit", "best starting point", "go with", "i would use", "the calmest")):
-            return response
-
-        if options and any(cls._option_is_mentioned(option, response) for option in options):
             return response
         return existing
 
@@ -1467,6 +1521,31 @@ class GeneralChatSkill(BaseSkill):
             return await self._run_local_model(query, context=context, session_state=session_state)
 
         normalized_query = InputNormalizer.normalize(query)
+        semantic_clarification = self._semantic_clarification_prompt(
+            normalized_query,
+            context=context,
+            session_state=session_state,
+        )
+        if semantic_clarification:
+            mode = self._detect_mode(normalized_query)
+            user_message = self.formatter.format(semantic_clarification, mode=mode)
+            speakable_text = self.formatter.to_speakable_text(user_message)
+            session_state["last_clarification_turn"] = session_state.get("turn_count", 0)
+            return SkillResult(
+                success=True,
+                message=user_message,
+                data={
+                    "speakable_text": speakable_text,
+                    "structured_data": {"clarification_requested": True},
+                    "conversation_context": SessionConversationContext.from_session_state(session_state).to_dict(),
+                    "escalation": {
+                        "escalated": False,
+                        "clarification_requested": True,
+                    },
+                },
+                widget_data=None,
+                skill=self.name,
+            )
         heuristic_result = self.heuristics.assess(normalized_query, context)
         decision = self.policy.decide(heuristic_result, normalized_query, session_state)
         mode = heuristic_result.get("mode") or self._detect_mode(normalized_query)

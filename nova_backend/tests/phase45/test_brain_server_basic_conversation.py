@@ -270,6 +270,37 @@ def test_semantic_modifier_followup_uses_prior_recommendation_hint(monkeypatch):
     assert "Likely referenced prior option 1: Minimal operator dashboard" in prompts[-1]
 
 
+def test_weak_semantic_anchor_returns_short_clarification_in_websocket_path(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(
+        [
+            "Give me three dashboard ideas.",
+            "Go with the safer one.",
+        ]
+    )
+
+    with patch(
+        "src.skills.general_chat.generate_chat",
+        side_effect=[
+            "1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center",
+            AssertionError("model should not run for clarification turn"),
+        ],
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any(
+        "Do you mean 1. Minimal operator dashboard, 2. Research-first workspace, or 3. Ambient command center?"
+        in msg
+        for msg in chat_messages
+    )
+
+
 def test_rewrite_followup_uses_prior_answer_hint(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,

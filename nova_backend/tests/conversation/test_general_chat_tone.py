@@ -561,6 +561,83 @@ def test_general_chat_does_not_guess_semantic_modifier_without_clean_anchor():
     assert "Likely referenced prior option" not in captured["prompt"]
 
 
+def test_general_chat_asks_short_clarification_for_weak_semantic_anchor_with_options():
+    skill = GeneralChatSkill()
+
+    context = [
+        {"role": "user", "content": "Give me three dashboard ideas."},
+        {
+            "role": "assistant",
+            "content": "1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center",
+        },
+    ]
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        result = asyncio.run(
+            skill.handle(
+                "Go with the safer one.",
+                context=context,
+                session_state={"session_id": "sess-clarify-options"},
+            )
+        )
+
+    assert result is not None
+    assert result.success is True
+    assert result.message == (
+        "Do you mean 1. Minimal operator dashboard, 2. Research-first workspace, "
+        "or 3. Ambient command center?"
+    )
+    assert (result.data or {}).get("structured_data", {}).get("clarification_requested") is True
+
+
+def test_general_chat_asks_rewrite_clarification_when_no_target_exists():
+    skill = GeneralChatSkill()
+
+    session_state = {
+        "session_id": "sess-rewrite-clarify",
+        "conversation_context": {
+            "topic": "Nova dashboard",
+            "user_goal": "Choose a calmer dashboard direction.",
+        },
+    }
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        result = asyncio.run(
+            skill.handle(
+                "Make it simpler.",
+                context=[],
+                session_state=session_state,
+            )
+        )
+
+    assert result is not None
+    assert result.success is True
+    assert result.message == "Do you want a simpler rewrite of my last answer or a different approach?"
+    assert (result.data or {}).get("structured_data", {}).get("clarification_requested") is True
+
+
+def test_general_chat_falls_back_normally_when_no_meaningful_anchor_exists():
+    skill = GeneralChatSkill()
+    captured = {}
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        captured["prompt"] = prompt
+        return "I need more context to compare options here."
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(
+            skill.handle(
+                "Go with the safer one.",
+                context=[],
+                session_state={"session_id": "sess-no-meaningful-anchor"},
+            )
+        )
+
+    assert result is not None
+    assert result.success is True
+    assert captured["prompt"] == "Go with the safer one."
+
+
 def test_general_chat_adds_rewrite_hint_for_clarify_followup():
     skill = GeneralChatSkill()
     captured = {}
