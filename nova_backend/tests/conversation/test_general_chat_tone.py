@@ -266,6 +266,68 @@ def test_general_chat_adds_semantic_reference_hint_for_that_one_followup():
     assert "Likely referenced prior option 1: Minimal operator dashboard" in captured["prompt"]
 
 
+def test_general_chat_adds_rewrite_hint_for_clarify_followup():
+    skill = GeneralChatSkill()
+    captured = {}
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        captured["prompt"] = prompt
+        return "I mean that GPUs matter because they speed up the parallel math used in local AI."
+
+    context = [
+        {"role": "user", "content": "Why do GPUs matter for local AI?"},
+        {
+            "role": "assistant",
+            "content": "They matter because local AI inference benefits from fast parallel math and enough memory bandwidth.\n\nIf you want, I can go deeper on one part.",
+        },
+    ]
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(
+            skill.handle(
+                "What do you mean by that?",
+                context=context,
+                session_state={"session_id": "sess-clarify"},
+            )
+        )
+
+    assert result is not None
+    assert result.success is True
+    assert "User wants you to clarify the last assistant answer." in captured["prompt"]
+    assert "Target prior answer: They matter because local AI inference benefits from fast parallel math and enough memory bandwidth." in captured["prompt"]
+    assert "If you want, I can go deeper on one part." not in captured["prompt"]
+
+
+def test_general_chat_adds_rewrite_hint_for_simpler_followup():
+    skill = GeneralChatSkill()
+    captured = {}
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        captured["prompt"] = prompt
+        return "Put simply, GPUs help because they do lots of math at once."
+
+    context = [
+        {"role": "user", "content": "Why do GPUs matter for local AI?"},
+        {
+            "role": "assistant",
+            "content": "They matter because local AI inference benefits from fast parallel math and enough memory bandwidth.",
+        },
+    ]
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        result = asyncio.run(
+            skill.handle(
+                "Say that simpler.",
+                context=context,
+                session_state={"session_id": "sess-simpler"},
+            )
+        )
+
+    assert result is not None
+    assert result.success is True
+    assert "User wants you to restate the last assistant answer in simpler language." in captured["prompt"]
+
+
 def test_general_chat_rolls_older_context_into_summary():
     skill = GeneralChatSkill()
     session_state = {"active_topic": "Nova dashboard", "general_chat_summary": {}}
