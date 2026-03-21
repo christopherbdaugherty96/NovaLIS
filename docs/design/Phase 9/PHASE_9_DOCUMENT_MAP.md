@@ -18,6 +18,7 @@ This document remains valuable long-range theory for autonomy tiers and mutation
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 - `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
+- `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
 - `docs/design/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
 - `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
@@ -49,6 +50,11 @@ The governed crypto connector and trading packet should be read this way in Phas
   - portfolio context coherence across clients
   - consistent crypto alert/task visibility across Nova surfaces
 - it does not authorize autonomous live trading
+
+The continuous Agent-OS vision packet should be read this way in Phase 9:
+- this is where Nova becomes a truly continuous node across devices and surfaces
+- cross-client project continuity, shared schedules, shared memory behavior, and one trust model belong here
+- continuity does not equal hidden autonomy
 
 ## Interpretation Rule
 When reading the Phase-9 folder:
