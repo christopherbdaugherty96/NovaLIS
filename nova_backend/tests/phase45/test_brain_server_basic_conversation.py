@@ -231,6 +231,18 @@ def test_summarize_named_workspace_returns_local_codebase_summary(monkeypatch):
     assert any(r"C:\Nova-Project" in msg for msg in chat_messages)
 
 
+def test_summarize_named_workspace_stays_on_repo_summary_path_without_gate_patch():
+    ws = _ScriptedWebSocket(["summarize Nova-Project"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Local codebase summary" in msg for msg in chat_messages)
+    assert not any("INTELLIGENCE BRIEF" in msg for msg in chat_messages)
+    assert not any("I might have misunderstood that" in msg for msg in chat_messages)
+
+
 def test_summarize_this_repo_uses_current_workspace_summary(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
