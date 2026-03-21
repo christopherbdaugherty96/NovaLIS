@@ -203,6 +203,12 @@ OPEN_LOCAL_PROJECT_TARGET_RE = re.compile(
     r"^\s*open\s+(?P<kind>repo(?:sitory)?|project|folder|directory)\s+(?P<target>.+?)\s*$",
     re.IGNORECASE,
 )
+LOCAL_LOCATION_HINT_RE = re.compile(
+    r"^\s*(?P<target>.+?)\s+(?:from|within|on|in)\s+(?:the\s+)?"
+    r"(?P<location>documents|downloads|desktop|pictures|local\s+disk)"
+    r"(?:\s+folder)?\s*$",
+    re.IGNORECASE,
+)
 
 PROJECT_SURFACE_HINTS = {
     "docs": "human guides, runtime truth, proofs, and design packets",
@@ -1207,6 +1213,20 @@ def _resolve_existing_local_path(raw_value: str) -> Path | None:
     return None
 
 
+def _split_local_location_hint(raw_value: str) -> tuple[str, str]:
+    cleaned = str(raw_value or "").strip()
+    if not cleaned:
+        return "", ""
+
+    match = LOCAL_LOCATION_HINT_RE.match(cleaned)
+    if not match:
+        return cleaned, ""
+
+    target = str(match.group("target") or "").strip().strip("\"'")
+    location = re.sub(r"\s+", " ", str(match.group("location") or "").strip().lower())
+    return target, location
+
+
 def _candidate_local_project_paths(
     working_context: WorkingContextStore,
     session_state: dict[str, Any],
@@ -1660,6 +1680,7 @@ def _maybe_handle_local_codebase_summary_request(
 ) -> tuple[str, list[dict[str, str]], str] | None:
     raw_target = ""
     matched_kind = "repo"
+    location_hint = ""
 
     current_match = CODEBASE_SUMMARY_CURRENT_RE.match(text)
     if current_match:
@@ -1685,6 +1706,7 @@ def _maybe_handle_local_codebase_summary_request(
                         return None
                     raw_target = str(bare_match.group("target") or "").strip()
 
+    raw_target, location_hint = _split_local_location_hint(raw_target)
     normalized_target = _normalize_lookup_key(raw_target)
     if normalized_target in {
         "nova",
@@ -1705,13 +1727,17 @@ def _maybe_handle_local_codebase_summary_request(
         session_state=session_state,
     )
     if resolved_path is None:
-        if raw_target:
+        if raw_target and not location_hint:
             return None
         paths = _candidate_local_project_paths(working_context, session_state)
         workspace_path = str(paths[0]) if paths else ""
         lines = [
             f"I can summarize a local {matched_kind or 'project'}, but I need a concrete path or a clearly identified current workspace.",
         ]
+        if raw_target:
+            lines.append(f"Requested target: {raw_target}")
+        if location_hint:
+            lines.append(f"I treated '{location_hint}' as a local location hint, but I still need a path or a workspace I can match.")
         if workspace_path:
             lines.append("If you mean the current workspace, try: summarize this repo")
             lines.append(f"Current workspace: {workspace_path}")

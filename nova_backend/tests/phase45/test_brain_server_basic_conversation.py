@@ -243,6 +243,18 @@ def test_summarize_named_workspace_stays_on_repo_summary_path_without_gate_patch
     assert not any("I might have misunderstood that" in msg for msg in chat_messages)
 
 
+def test_summarize_named_workspace_from_documents_stays_on_local_repo_summary_path():
+    ws = _ScriptedWebSocket(["summarize Nova-Project from documents"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Local codebase summary" in msg for msg in chat_messages)
+    assert any("Target: C:\\Nova-Project" in msg for msg in chat_messages)
+    assert not any("INTELLIGENCE BRIEF" in msg for msg in chat_messages)
+
+
 def test_summarize_this_repo_uses_current_workspace_summary(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
@@ -293,6 +305,25 @@ def test_summarize_this_local_project_uses_repo_summary_lane(monkeypatch):
     chat_messages = _chat_messages(ws)
     assert any("Local codebase summary" in msg for msg in chat_messages)
     assert any("Major surfaces:" in msg for msg in chat_messages)
+
+
+def test_summarize_unknown_target_from_documents_requests_local_clarification(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["summarize some-random-project-name from documents"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("I can summarize a local" in msg for msg in chat_messages)
+    assert any("I treated 'documents' as a local location hint" in msg for msg in chat_messages)
+    assert any("summarize this repo" in msg for msg in chat_messages)
+    assert not any("INTELLIGENCE BRIEF" in msg for msg in chat_messages)
 
 
 def test_what_does_this_codebase_do_returns_grounded_repo_summary(monkeypatch):
