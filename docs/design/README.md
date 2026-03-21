@@ -30,6 +30,9 @@ Current next-level robust agent roadmap:
 Current continuous Nova Agent-OS vision and trust roadmap:
 - `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
 
+Current honest assessment and next-todo note:
+- `docs/design/NOVA_HONEST_ASSESSMENT_AND_NEXT_TODO_2026-03-21.md`
+
 Current future naming note:
 - `docs/design/NOVA_FUTURE_NAMING_NOTE_GHOVLIS_2026-03-21.md`
 
@@ -74,9 +77,10 @@ Current conversational/style baseline on `main`:
 - `d0a80c3` - Nova Style Layer Stage 2 checkpoint
 
 Current recommended next-step posture:
-- pause and evaluate the new baseline in use
-- if work resumes, prefer a fresh small branch for a non-chat style consistency audit before broader new conversation behavior
-- if the next target is conversation feel rather than surface consistency, use the bounded conversational-flow and silent-governor packet rather than broadening authority or personality work
+- the current highest-value next implementation target is explicit memory stage 1
+- start with `codex/memory-stage1-save-remember-flow`
+- prefer disciplined core-layer implementation over broad new expansion
+- memory, retrieval, and project foundations should come before wider home/crypto/wake-word/personality buildout
 
 Canonical design phase folders:
 - `Phase 4`
