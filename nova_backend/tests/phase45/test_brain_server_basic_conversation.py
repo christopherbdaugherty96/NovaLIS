@@ -255,6 +255,42 @@ def test_summarize_named_workspace_from_documents_stays_on_local_repo_summary_pa
     assert not any("INTELLIGENCE BRIEF" in msg for msg in chat_messages)
 
 
+def test_repo_summary_followup_capability_query_stays_on_local_summary_lane():
+    ws = _ScriptedWebSocket(
+        [
+            "summarize Nova-Project within documents",
+            "what can Nova do based on its own code?",
+        ]
+    )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert sum("Local codebase summary" in msg for msg in chat_messages) >= 2
+    assert not any("What should I continue from?" in msg for msg in chat_messages)
+    assert not any("I still need a file or folder name to continue." in msg for msg in chat_messages)
+
+
+def test_repo_summary_audit_followup_then_capability_query_does_not_loop_on_continue():
+    ws = _ScriptedWebSocket(
+        [
+            "summarize Nova-Project within documents",
+            "audit this repo",
+            "what can Nova do based on its own code?",
+        ]
+    )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert sum("Local codebase summary" in msg for msg in chat_messages) >= 2
+    assert any("Local project overview" in msg for msg in chat_messages)
+    assert not any("What should I continue from?" in msg for msg in chat_messages)
+    assert not any("I still need a file or folder name to continue." in msg for msg in chat_messages)
+
+
 def test_summarize_this_repo_uses_current_workspace_summary(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
