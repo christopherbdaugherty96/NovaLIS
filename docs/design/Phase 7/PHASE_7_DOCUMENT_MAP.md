@@ -11,10 +11,22 @@ This is the current next-step Phase-7 plan for adding a governed external reason
 Current bounded Phase-7 companion packet:
 - `docs/design/Phase 7/PHASE_7_DEEPSEEK_SECOND_OPINION_PLAN.md`
 
+Current Phase-7 news-reasoning companion input:
+- `docs/design/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
+
 This companion packet captures one specific product shape inside that same phase:
 - DeepSeek as a governed second-opinion reasoning source inside the same Nova chat box
 - Nova remaining the primary voice
 - no new execution authority
+
+The news reasoning packet should be read this way in Phase 7:
+- current product-track items in that packet stay in the current UI/product lane
+- Phase-7-relevant items are the later reasoning-quality extensions:
+  - stronger long-form article synthesis when the local model is weak
+  - more nuanced cross-source reasoning
+  - optional governed second-opinion review of a news summary
+  - harder ambiguity handling on complex current-events questions
+- it does not authorize execution or broad autonomy
 
 ## Adjacent / Historical Phase-7-Era Research
 - the older Phase-7 architecture document in this folder
