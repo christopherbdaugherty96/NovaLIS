@@ -399,6 +399,48 @@ def test_what_can_nova_do_based_on_its_own_code_reports_capability_signals(monke
     assert any("governed web search" in msg.lower() or "analysis document" in msg.lower() for msg in chat_messages)
 
 
+def test_create_analysis_report_on_local_architecture_stays_deterministic_and_local(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["create analysis report on Nova-Project architecture"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Local architecture report" in msg for msg in chat_messages)
+    assert any("Architecture orientation:" in msg for msg in chat_messages)
+    assert any("Implemented capability signals:" in msg for msg in chat_messages)
+    assert not any("The request took too long and was cancelled." in msg for msg in chat_messages)
+
+
+def test_audit_repo_then_create_architecture_report_stays_local_and_does_not_timeout(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(
+        [
+            "audit this repo",
+            "create analysis report on Nova-Project architecture",
+        ]
+    )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Local project overview" in msg for msg in chat_messages)
+    assert any("Local architecture report" in msg for msg in chat_messages)
+    assert not any("The request took too long and was cancelled." in msg for msg in chat_messages)
+
+
 def test_open_folder_named_workspace_resolves_to_repo_confirmation(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
