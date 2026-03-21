@@ -159,6 +159,7 @@ This is where Nova's governor matters most.
 
 ### 7. Background / Always-On Layer
 This is:
+- wake-word entrypoint later
 - schedules
 - recurring tasks
 - reminders
@@ -195,6 +196,7 @@ The right version of "continuously on" is not:
 
 The right version is:
 - always available
+- wakeable through a governed voice entrypoint later
 - project-aware
 - memory-aware
 - task-aware
@@ -291,9 +293,26 @@ These should stay:
 Home integration belongs in the vision, but under strong trust rules.
 
 The safe order is:
+- wake-word and voice entry first
 - read-only home/device status first
 - explicit approved actions second
 - no silent environmental action drift
+
+### 5.5. Wake Word / Wake Entry
+Wake word belongs in this long-term vision as part of the "continuously available" feel.
+
+But it should be treated carefully:
+- wake word is an entrypoint, not permission to act
+- wake word should not bypass the governor
+- wake word should not imply always-listening unrestricted autonomy
+- wake word should still lead into the same trust model as typed or clicked interaction
+
+The safest shape is:
+- wake word activates Nova's listening surface
+- Nova can hear the request
+- Nova still follows the same approval and action rules
+
+This keeps wake word useful without making it a hidden authority expansion.
 
 ### 6. Personality Stack
 Nova should eventually have:
