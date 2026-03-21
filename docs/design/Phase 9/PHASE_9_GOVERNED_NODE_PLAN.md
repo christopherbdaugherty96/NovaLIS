@@ -60,12 +60,43 @@ Platform direction should continue the existing Phase-6 appliance and packaging 
 - calm update surfaces
 - inspectable provider costs and dependencies
 
+### 6. Governed Capability Growth
+Phase 9 may eventually introduce a tightly bounded coordinator pattern where Nova can help identify capability gaps without granting itself authority to change runtime behavior on its own.
+
+In that future model:
+- Nova may recognize and describe a missing capability or workflow gap
+- Nova may propose a bounded implementation plan in plain language
+- Nova may delegate code generation, analysis, or review subtasks to external reasoning providers or execution tools such as Claude or OpenClaw
+- every delegated step remains auditable and reviewable
+- the user remains the final governor of whether a proposed capability is accepted, implemented, or activated
+
+The governing rule is:
+- Nova may coordinate capability growth proposals
+- Nova may not silently expand its own authority
+
+This means:
+- no autonomous capability installation
+- no hidden mutation of active authority surfaces
+- no external model or executor becomes authoritative by suggestion alone
+- all proposed changes must remain human-reviewed, explicitly approved, and consistent with mutation-control boundaries
+
+This pattern belongs after the earlier phases are stable because it depends on:
+- Phase 7 governed external reasoning containment
+- Phase 8 governed external execution isolation
+- Phase 9 and later mutation-control rules for reviewability, rollback, and user sovereignty
+
+The intended product shape is:
+- Nova acts as a coordinator
+- external tools may help generate or review candidate changes
+- the user remains the governor of what Nova is capable of doing
+
 ## Non-Goals
 Phase 9 is not permission for:
 - hidden always-on autonomy
 - background execution without prior policy design and explicit unlock
 - cloud-first authority outsourcing
 - silent data egress
+- self-authorized capability expansion
 
 ## Suggested Implementation Order
 1. complete Phases 6 through 8
