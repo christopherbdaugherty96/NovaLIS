@@ -27,6 +27,9 @@ Current bounded speech/input naturalness planning packet:
 Current user-observed assistant utility and UI audit packet:
 - `docs/design/NOVA_ASSISTANT_UTILITY_AND_UI_AUDIT_2026-03-20.md`
 
+Current user-observed local project and assistant utility audit packet:
+- `docs/design/NOVA_LOCAL_PROJECT_AND_ASSISTANT_UTILITY_AUDIT_2026-03-20.md`
+
 Current conversational/style baseline on `main`:
 - `39b3d20` - Speech & Input Naturalness Stage 1-2 checkpoint
 - `d0a80c3` - Nova Style Layer Stage 2 checkpoint
