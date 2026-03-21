@@ -17,6 +17,7 @@ It is useful context, but it is not the authoritative Phase-8 execution roadmap.
 ## Cross-Phase Inputs
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 - `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
+- `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
 - `docs/design/NOVA_WEBSEARCH_ANSWER_AND_REASONING_PLAN_2026-03-21.md`
 - `docs/design/Phase 6/PHASE_6_SOVEREIGNTY_ALIGNMENT_AND_TRUST_LOOP_PLAN.md`
@@ -35,6 +36,11 @@ The same interpretation applies to the web-search reasoning packet:
 - web search remains read-only
 - no search answer becomes execution authority
 - no provider-backed synthesis result becomes approval authority
+
+The next-level robust agent roadmap should be read this way in Phase 8:
+- read-only source connectors can begin earlier as product features
+- app-control connectors, write actions, and action-capable schedules belong here
+- stronger permission surfaces matter most once real-world effect is possible
 
 ## Interpretation Rule
 When reading the Phase-8 folder:
