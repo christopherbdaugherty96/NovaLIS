@@ -282,7 +282,7 @@ class ConversationRouter:
         has_context = bool(state.get("last_response")) or bool(state.get("last_object"))
         if not has_context:
             return False
-        if any(marker in lowered for marker in cls.FOLLOWUP_MARKERS):
+        if any(re.search(rf"(?<!\w){re.escape(marker)}(?!\w)", lowered) for marker in cls.FOLLOWUP_MARKERS):
             return True
         if cls.ORDINAL_REFERENCE_RE.search(lowered):
             return True

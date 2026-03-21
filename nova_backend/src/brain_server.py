@@ -2850,6 +2850,25 @@ async def websocket_endpoint(ws: WebSocket):
     await send_trust_status(ws, session_state["trust_status"])
     await send_chat_done(ws)
 
+    async def _complete_immediate_turn(
+        message: str,
+        *,
+        suggested_actions: list[dict[str, str]] | None = None,
+        remember_response: bool = True,
+        tone_domain: str | None = None,
+    ) -> None:
+        clean_message = str(message or "")
+        if remember_response and clean_message.strip():
+            session_state["last_response"] = clean_message
+        await send_chat_message(
+            ws,
+            clean_message,
+            suggested_actions=suggested_actions,
+            tone_domain=tone_domain,
+        )
+        await send_chat_done(ws)
+        session_state["turn_count"] += 1
+
     try:
         while True:
             GovernorMediator.clear_stale_sessions()
@@ -2887,8 +2906,7 @@ async def websocket_endpoint(ws: WebSocket):
 
             raw_text = (msg.get("text") or "").strip()
             if not raw_text:
-                await send_chat_message(ws, CLARIFY_PROMPTS["ready_prompt"])
-                await send_chat_done(ws)
+                await _complete_immediate_turn(CLARIFY_PROMPTS["ready_prompt"], remember_response=False)
                 continue
 
             session_state["last_input_channel"] = channel
@@ -2902,32 +2920,28 @@ async def websocket_endpoint(ws: WebSocket):
                     session_state["pending_interpret_confirm"] = None
                     interpreted_confirmation_consumed = True
                     if not raw_text:
-                        await send_chat_message(
-                            ws,
+                        await _complete_immediate_turn(
                             "Thanks. I lost the interpreted command. Please say it again.",
+                            remember_response=False,
                         )
-                        await send_chat_done(ws)
                         continue
                 elif interpret_decision.action == "cancel":
                     session_state["pending_interpret_confirm"] = None
-                    await send_chat_message(
-                        ws,
+                    await _complete_immediate_turn(
                         "No problem. I canceled that action. Please say it again in your own words.",
+                        remember_response=False,
                     )
-                    await send_chat_done(ws)
                     continue
                 else:
-                    await send_chat_message(
-                        ws,
+                    await _complete_immediate_turn(
                         "I want to make sure I heard you right. Reply 'yes' to continue or 'no' to cancel.",
+                        remember_response=False,
                     )
-                    await send_chat_done(ws)
                     continue
 
             route_context = SessionRouter.normalize_and_route(raw_text, session_state)
             if route_context.is_empty:
-                await send_chat_message(ws, SessionRouter.ready_prompt())
-                await send_chat_done(ws)
+                await _complete_immediate_turn(SessionRouter.ready_prompt(), remember_response=False)
                 continue
 
             text = route_context.text
@@ -2943,12 +2957,11 @@ async def websocket_endpoint(ws: WebSocket):
                     session_state["session_mode_override"] = ""
                 if gate.set_clarification_turn:
                     session_state["last_clarification_turn"] = session_state["turn_count"]
-                await send_chat_message(
-                    ws,
+                await _complete_immediate_turn(
                     gate.message,
                     suggested_actions=_clarification_suggestions(gate.message),
+                    remember_response=False,
                 )
-                await send_chat_done(ws)
                 continue
             if not decision.blocked_by_policy and not decision.needs_clarification:
                 session_state["last_intent_family"] = decision.intent_family
@@ -2968,15 +2981,14 @@ async def websocket_endpoint(ws: WebSocket):
             ):
                 interpreted_text = text.rstrip(".").strip()
                 session_state["pending_interpret_confirm"] = {"interpreted_text": interpreted_text}
-                await send_chat_message(
-                    ws,
+                await _complete_immediate_turn(
                     (
                         f'I heard: "{interpreted_text}".\n'
                         "Should I run that action?\n"
                         "Reply 'yes' to continue or 'no' to cancel."
                     ),
+                    remember_response=False,
                 )
-                await send_chat_done(ws)
                 continue
 
             command_text = re.sub(r"[.?!]+$", "", text).strip()
@@ -2988,16 +3000,11 @@ async def websocket_endpoint(ws: WebSocket):
                 "what are we discussing",
                 "what topic are we on",
             }:
-                await send_chat_message(
-                    ws,
-                    _topic_stack_message(session_state, session_state["turn_count"]),
-                )
-                await send_chat_done(ws)
+                await _complete_immediate_turn(_topic_stack_message(session_state, session_state["turn_count"]))
                 continue
 
             if CAPABILITY_HELP_RE.match(command_text):
-                await send_chat_message(
-                    ws,
+                await _complete_immediate_turn(
                     _capability_help_message(),
                     suggested_actions=[
                         {"label": "System status", "command": "system status"},
@@ -3006,19 +3013,16 @@ async def websocket_endpoint(ws: WebSocket):
                         {"label": "Open documents", "command": "open documents"},
                     ],
                 )
-                await send_chat_done(ws)
                 continue
 
             if TIME_QUERY_RE.match(command_text):
-                await send_chat_message(
-                    ws,
+                await _complete_immediate_turn(
                     _render_local_time_message(),
                     suggested_actions=[
                         {"label": "System status", "command": "system status"},
                         {"label": "Today's news", "command": "today's news"},
                     ],
                 )
-                await send_chat_done(ws)
                 continue
 
             local_codebase_response = _maybe_handle_local_codebase_summary_request(
@@ -3038,8 +3042,7 @@ async def websocket_endpoint(ws: WebSocket):
                         source="local_codebase_summary",
                     )
                     session_state["working_context"] = working_context.to_dict()
-                await send_chat_message(ws, project_message, suggested_actions=project_suggestions)
-                await send_chat_done(ws)
+                await _complete_immediate_turn(project_message, suggested_actions=project_suggestions)
                 continue
 
             local_open_request = _maybe_prepare_local_open_request(
@@ -3054,8 +3057,7 @@ async def websocket_endpoint(ws: WebSocket):
                         "capability_id": 22,
                         "params": dict(open_params),
                     }
-                await send_chat_message(ws, open_message, suggested_actions=open_suggestions)
-                await send_chat_done(ws)
+                await _complete_immediate_turn(open_message, suggested_actions=open_suggestions)
                 continue
 
             local_project_response = _maybe_handle_local_project_request(
@@ -3075,14 +3077,12 @@ async def websocket_endpoint(ws: WebSocket):
                         source="local_project_overview",
                     )
                     session_state["working_context"] = working_context.to_dict()
-                await send_chat_message(ws, project_message, suggested_actions=project_suggestions)
-                await send_chat_done(ws)
+                await _complete_immediate_turn(project_message, suggested_actions=project_suggestions)
                 continue
 
             if SHOW_THREADS_RE.match(text):
                 await send_thread_map_widget(ws, project_threads, session_state)
-                await send_chat_message(ws, project_threads.render_map_message())
-                await send_chat_done(ws)
+                await _complete_immediate_turn(project_threads.render_map_message())
                 continue
 
             if MOST_BLOCKED_PROJECT_RE.match(text):
@@ -3098,22 +3098,20 @@ async def websocket_endpoint(ws: WebSocket):
                             {"label": "Save thread memory", "command": f"memory save thread {top_name}"},
                             {"label": "Show threads", "command": "show threads"},
                         ]
-                    await send_chat_message(ws, blocked_message, suggested_actions=suggested)
+                    await _complete_immediate_turn(blocked_message, suggested_actions=suggested)
                 else:
-                    await send_chat_message(ws, blocked_message)
-                await send_chat_done(ws)
+                    await _complete_immediate_turn(blocked_message)
                 continue
 
             if WHY_RECOMMENDATION_RE.match(text):
                 reason = str(session_state.get("last_recommendation_reason") or "").strip()
                 if reason:
-                    await send_chat_message(ws, f"Why this recommendation\n\n{reason}")
+                    await _complete_immediate_turn(f"Why this recommendation\n\n{reason}")
                 else:
-                    await send_chat_message(
-                        ws,
+                    await _complete_immediate_turn(
                         "I do not have a recent recommendation context yet. Ask for analysis first (for example, 'explain this').",
+                        remember_response=False,
                     )
-                await send_chat_done(ws)
                 continue
 
             create_thread_match = CREATE_THREAD_RE.match(text)
@@ -3125,15 +3123,13 @@ async def websocket_endpoint(ws: WebSocket):
                 )
                 session_state["project_thread_active"] = created.name
                 await send_thread_map_widget(ws, project_threads, session_state)
-                await send_chat_message(
-                    ws,
+                await _complete_immediate_turn(
                     (
                         f"Thread ready: {created.name}.\n"
                         "You can now say 'save this as part of "
                         f"{created.name}' to attach progress updates."
                     ),
                 )
-                await send_chat_done(ws)
                 continue
 
             continue_thread_match = CONTINUE_THREAD_RE.match(text)
@@ -3145,8 +3141,7 @@ async def websocket_endpoint(ws: WebSocket):
                 if found:
                     session_state["project_thread_active"] = project_threads.active_thread_name()
                     await send_thread_map_widget(ws, project_threads, session_state)
-                    await send_chat_message(
-                        ws,
+                    await _complete_immediate_turn(
                         brief,
                         suggested_actions=[
                             {"label": "Save this update", "command": f"save this as part of {project_threads.active_thread_name()}"},
@@ -3159,11 +3154,9 @@ async def websocket_endpoint(ws: WebSocket):
                     if not project_threads.has_threads() and decision.intent_family == "followup":
                         pass
                     else:
-                        await send_chat_message(ws, brief)
-                        await send_chat_done(ws)
+                        await _complete_immediate_turn(brief, remember_response=False)
                         continue
                 if found:
-                    await send_chat_done(ws)
                     continue
 
             status_thread_match = PROJECT_STATUS_RE.match(text)
