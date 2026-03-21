@@ -93,6 +93,11 @@ Nova needs stronger:
 - source reading before summary
 - better follow-up handling after retrieval
 
+Nova also needs better visual explanation of local projects and codebases so users can see:
+- what parts exist
+- how they connect
+- what each part does
+
 The key pattern is:
 - understand
 - retrieve
@@ -256,6 +261,7 @@ These belong in the current bounded product and conversation program:
 - clearer mode architecture
 - stronger explicit memory UX
 - better research/retrieval answer engine
+- local project visual explainer layers on top of repo summary and architecture report
 - connector planning with read-only source-first integrations
 - evaluation/tracing/regression infrastructure
 - better context management for long-running work
@@ -345,11 +351,12 @@ If the goal is "next-level, robust, but safe," the best order is:
 2. project and workspace system
 3. stronger explicit memory plus contextual retrieval
 4. answer-first search/news/research implementation
-5. clear mode architecture
-6. read-only source connectors for common coding/writing tools
-7. permission and trust center
-8. governed background tasks and schedules
-9. stronger external reasoning lane
+5. local project visual explainer
+6. clear mode architecture
+7. read-only source connectors for common coding/writing tools
+8. permission and trust center
+9. governed background tasks and schedules
+10. stronger external reasoning lane
 
 ## What Not To Do Yet
 Do not prioritize:
@@ -366,6 +373,7 @@ Current product lane:
 - `codex/agent-os-stage1-project-workspaces`
 - `codex/agent-os-stage2-mode-architecture`
 - `codex/agent-os-stage3-evals-and-traces`
+- `codex/local-project-visualization-stage1-structure-map`
 - `codex/connector-stage1-readonly-sources`
 - `codex/context-stage1-active-work-continuity`
 - `codex/trust-center-stage1-visible-controls`

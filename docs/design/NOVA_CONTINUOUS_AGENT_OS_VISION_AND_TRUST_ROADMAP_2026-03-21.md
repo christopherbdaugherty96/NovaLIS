@@ -253,6 +253,12 @@ Nova should eventually be able to:
 - create reports
 - keep project materials current
 
+Nova should also be able to explain codebases visually enough that a user can:
+- see the main structure
+- understand the major modules
+- follow how parts connect
+- get a human-friendly map before digging into files
+
 But governed write/update actions must stay explicit and reviewable.
 
 ### 3. Strong Connector Strategy
@@ -347,6 +353,7 @@ These belong in the current bounded product and system-building lane:
 - stronger conversation flow
 - explicit memory system
 - answer-first retrieval and research
+- local project visual explainer on top of repo summary and architecture report
 - read-only connectors
 - evals/traces/regressions
 - mode architecture
