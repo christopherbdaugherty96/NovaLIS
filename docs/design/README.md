@@ -39,6 +39,9 @@ Current chatbox helper-buttons cleanup note:
 Current TTS regression note:
 - `docs/design/NOVA_TTS_REGRESSION_NOTE_2026-03-21.md`
 
+Current governed memory experience and context packet:
+- `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
+
 Current bounded style planning packet:
 - `docs/design/NOVA_STYLE_LAYER_PLAN_2026-03-20.md`
 
