@@ -175,6 +175,26 @@ LOCAL_PROJECT_DISK_RE = re.compile(
     r"^\s*explain\s+(?P<target>.+?)\s+(?:within|on|from)\s+(?:in\s+)?local\s+disk\s*$",
     re.IGNORECASE,
 )
+CODEBASE_SUMMARY_CURRENT_RE = re.compile(
+    r"^\s*(?P<action>summarize|explain|describe)\s+(?:this\s+)?(?:local\s+)?(?P<kind>repo(?:sitory)?|project|codebase)\s*$",
+    re.IGNORECASE,
+)
+CODEBASE_SUMMARY_TARGET_RE = re.compile(
+    r"^\s*(?P<action>summarize|explain|describe)\s+(?P<target>.+?)\s+(?P<kind>repo(?:sitory)?|project|codebase)\s*$",
+    re.IGNORECASE,
+)
+CODEBASE_SUMMARY_TARGET_ONLY_RE = re.compile(
+    r"^\s*(?P<action>summarize|describe)\s+(?P<target>.+?)\s*$",
+    re.IGNORECASE,
+)
+CODEBASE_DO_RE = re.compile(
+    r"^\s*what\s+does\s+(?:(?P<target>.+?)\s+)?(?P<kind>repo(?:sitory)?|project|codebase)\s+do\s*$",
+    re.IGNORECASE,
+)
+CODEBASE_CAPABILITY_RE = re.compile(
+    r"^\s*what\s+can\s+(?P<target>.+?)\s+do\s+based\s+on\s+(?:its|their|the)\s+own\s+code\s*$",
+    re.IGNORECASE,
+)
 OPEN_LOCAL_PROJECT_CURRENT_RE = re.compile(
     r"^\s*open\s+(?:this\s+)?(?P<kind>repo(?:sitory)?|project|folder|directory)\s*$",
     re.IGNORECASE,
@@ -183,6 +203,26 @@ OPEN_LOCAL_PROJECT_TARGET_RE = re.compile(
     r"^\s*open\s+(?P<kind>repo(?:sitory)?|project|folder|directory)\s+(?P<target>.+?)\s*$",
     re.IGNORECASE,
 )
+
+PROJECT_SURFACE_HINTS = {
+    "docs": "human guides, runtime truth, proofs, and design packets",
+    "nova_backend": "backend runtime, governor flow, executors, and tests",
+    "Nova-Frontend-Dashboard": "frontend/dashboard surface for the workspace UI",
+    "nova_workspace": "workspace state and local project context",
+    "NovaLIS-Governance": "governance and companion policy material",
+    "scripts": "local scripts and helper tooling",
+    "verification": "verification assets and support material",
+}
+BACKEND_MODULE_HINTS = {
+    "governor": "governed capability routing and execution boundaries",
+    "executors": "read-only and local-effect task implementations",
+    "conversation": "input normalization, response shaping, and session routing",
+    "working_context": "project thread and context continuity state",
+    "memory": "governed memory storage and retrieval",
+    "perception": "screen and local perception helpers",
+    "personality": "style contract and interface presentation rules",
+    "voice": "speech input and output runtime pieces",
+}
 
 CREATE_THREAD_RE = re.compile(
     r"^\s*(?:create|start)\s+(?:project\s+)?thread\s+(?P<name>.+?)\s*$",
@@ -1134,6 +1174,7 @@ def _capability_help_message() -> str:
         "- News and research: today's news, daily brief, search for <topic>, summarize all headlines\n"
         "- Local controls: open documents, open downloads, volume up, brightness down\n"
         "- Explain and analysis: explain this, help me do this, create analysis report on <topic>\n"
+        "- Local project understanding: audit this repo, summarize this repo, explain this repo\n"
         "- Project continuity: create thread <name>, continue my <name>, project status <name>\n"
         "- Memory and patterns: memory overview, memory save <title>: <content>, pattern status\n\n"
         "If you want, ask about a category like local controls, project work, or news."
@@ -1281,6 +1322,213 @@ def _local_project_markers(path: Path) -> list[str]:
     return found
 
 
+def _read_small_text_file(path: Path, max_chars: int = 6000) -> str:
+    for encoding in ("utf-8-sig", "utf-8"):
+        try:
+            return path.read_text(encoding=encoding)[:max_chars]
+        except UnicodeDecodeError:
+            continue
+        except Exception:
+            return ""
+    return ""
+
+
+def _extract_markdown_paragraph(text: str) -> str:
+    paragraph_lines: list[str] = []
+    for raw_line in str(text or "").splitlines():
+        line = str(raw_line or "").replace("\ufeff", "").strip()
+        if not line:
+            if paragraph_lines:
+                break
+            continue
+        if line.startswith("#") or line.startswith("```"):
+            if paragraph_lines:
+                break
+            continue
+        if line.startswith("- ") or line.startswith("* ") or re.match(r"^\d+\.\s+", line):
+            if paragraph_lines:
+                break
+            continue
+        paragraph_lines.append(line)
+
+    paragraph = " ".join(paragraph_lines).strip()
+    paragraph = re.sub(r"\s+", " ", paragraph).strip()
+    if len(paragraph) > 260:
+        paragraph = paragraph[:257].rstrip() + "..."
+    return paragraph
+
+
+def _extract_markdown_bullets_after_line(text: str, anchor_line: str, limit: int = 5) -> list[str]:
+    lines = str(text or "").splitlines()
+    anchor = anchor_line.strip().lower()
+    start_index = -1
+    for idx, raw_line in enumerate(lines):
+        if str(raw_line or "").strip().lower() == anchor:
+            start_index = idx + 1
+            break
+    if start_index < 0:
+        return []
+
+    bullets: list[str] = []
+    for raw_line in lines[start_index:]:
+        line = str(raw_line or "").strip()
+        if not line:
+            if bullets:
+                break
+            continue
+        if line.startswith("- ") or line.startswith("* "):
+            bullets.append(line[2:].strip())
+        else:
+            if bullets:
+                break
+            if line.startswith("#"):
+                break
+        if len(bullets) >= limit:
+            break
+    return bullets
+
+
+def _capability_registry_snapshot(path: Path) -> dict[str, Any]:
+    registry_path = path / "nova_backend" / "src" / "config" / "registry.json"
+    if not registry_path.exists():
+        registry_path = path / "src" / "config" / "registry.json"
+    if not registry_path.exists():
+        return {}
+
+    try:
+        payload = json.loads(registry_path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+    capabilities = list(payload.get("capabilities") or [])
+    active = [cap for cap in capabilities if str(cap.get("status") or "").strip().lower() == "active"]
+    active_names = [
+        str(cap.get("name") or "").strip().replace("_", " ")
+        for cap in active
+        if str(cap.get("name") or "").strip()
+    ]
+    group_names = [
+        str(name).replace("_", " ")
+        for name, ids in dict(payload.get("capability_groups") or {}).items()
+        if isinstance(ids, list) and ids
+    ]
+    return {
+        "active_count": len(active),
+        "group_names": group_names[:6],
+        "active_names": active_names[:8],
+    }
+
+
+def _major_project_surfaces(path: Path, limit: int = 6) -> list[str]:
+    surfaces: list[str] = []
+    for name, description in PROJECT_SURFACE_HINTS.items():
+        candidate = path / name
+        if candidate.exists():
+            surfaces.append(f"{name}: {description}")
+        if len(surfaces) >= limit:
+            break
+    if surfaces:
+        return surfaces
+
+    try:
+        directories = sorted(
+            [entry.name for entry in path.iterdir() if entry.is_dir() and not entry.name.startswith(".")],
+            key=str.lower,
+        )
+    except Exception:
+        directories = []
+    return directories[:limit]
+
+
+def _major_backend_modules(path: Path, limit: int = 6) -> list[str]:
+    src_root = path / "nova_backend" / "src"
+    if not src_root.exists():
+        src_root = path / "src"
+    if not src_root.exists():
+        return []
+
+    modules: list[str] = []
+    for name, description in BACKEND_MODULE_HINTS.items():
+        candidate = src_root / name
+        if candidate.exists():
+            modules.append(f"{name}: {description}")
+        if len(modules) >= limit:
+            break
+    return modules
+
+
+def _render_local_codebase_summary(path: Path) -> tuple[str, list[dict[str, str]]]:
+    target = path.resolve()
+    readme_text = _read_small_text_file(target / "README.md")
+    repo_map_text = _read_small_text_file(target / "REPO_MAP.md")
+    guide_text = _read_small_text_file(target / "docs" / "reference" / "HUMAN_GUIDES" / "README.md")
+
+    project_summary = (
+        _extract_markdown_paragraph(readme_text)
+        or _extract_markdown_paragraph(guide_text)
+        or "I found the local project, but I could only extract a limited plain-language summary."
+    )
+    built_to_help = _extract_markdown_bullets_after_line(readme_text, "It is built to help with:")
+    if not built_to_help:
+        built_to_help = _extract_markdown_bullets_after_line(guide_text, "It is for people who want to understand:")
+    surfaces = _major_project_surfaces(target)
+    backend_modules = _major_backend_modules(target)
+    registry_snapshot = _capability_registry_snapshot(target)
+    repo_map_summary = _extract_markdown_paragraph(repo_map_text)
+
+    lines = [
+        "Local codebase summary",
+        f"Target: {target}",
+        "",
+        f"Project summary: {project_summary}",
+    ]
+    if repo_map_summary:
+        lines.append(f"Repo orientation: {repo_map_summary}")
+    if built_to_help:
+        lines.append("What it appears to help with:")
+        lines.extend(f"- {item}" for item in built_to_help[:5])
+    if surfaces:
+        lines.append("Major surfaces:")
+        lines.extend(f"- {item}" for item in surfaces[:6])
+    if backend_modules:
+        lines.append("Backend modules:")
+        lines.extend(f"- {item}" for item in backend_modules[:6])
+    if registry_snapshot:
+        active_count = int(registry_snapshot.get("active_count") or 0)
+        groups = ", ".join(list(registry_snapshot.get("group_names") or [])[:4]) or "unlabeled groups"
+        capability_examples = ", ".join(list(registry_snapshot.get("active_names") or [])[:6]) or "no clear capability names"
+        lines.extend(
+            [
+                "Likely implemented capabilities:",
+                f"- Registry signals {active_count} active governed capabilities across {groups}.",
+                f"- Example active capabilities: {capability_examples}.",
+            ]
+        )
+    lines.extend(
+        [
+            "Confidence note:",
+            "- This summary is based on local README, repo map, folder structure, and registry signals.",
+            "- It does not inspect every file in the repo.",
+        ]
+    )
+    lines.extend(
+        [
+            "",
+            "Try next:",
+            "- audit this repo",
+            "- what can Nova do based on its own code?",
+            f"- create analysis report on {target.name} architecture",
+        ]
+    )
+
+    suggestions = [
+        {"label": "Audit this repo", "command": "audit this repo"},
+        {"label": "Open folder", "command": f"open {target}"},
+        {"label": "Create report", "command": f"create analysis report on {target.name} architecture"},
+    ]
+    return "\n".join(lines), suggestions
+
+
 def _render_local_project_summary(path: Path) -> tuple[str, list[dict[str, str]]]:
     target = path.resolve()
     if target.is_file():
@@ -1401,6 +1649,89 @@ def _maybe_handle_local_project_request(
         return "\n".join(lines), suggestions, ""
 
     message, suggestions = _render_local_project_summary(resolved_path)
+    return message, suggestions, str(resolved_path)
+
+
+def _maybe_handle_local_codebase_summary_request(
+    text: str,
+    *,
+    working_context: WorkingContextStore,
+    session_state: dict[str, Any],
+) -> tuple[str, list[dict[str, str]], str] | None:
+    raw_target = ""
+    matched_kind = "repo"
+
+    current_match = CODEBASE_SUMMARY_CURRENT_RE.match(text)
+    if current_match:
+        matched_kind = str(current_match.group("kind") or "repo").strip().lower()
+    else:
+        targeted_match = CODEBASE_SUMMARY_TARGET_RE.match(text)
+        if targeted_match:
+            raw_target = str(targeted_match.group("target") or "").strip()
+            matched_kind = str(targeted_match.group("kind") or "repo").strip().lower()
+        else:
+            do_match = CODEBASE_DO_RE.match(text)
+            if do_match:
+                raw_target = str(do_match.group("target") or "").strip()
+                matched_kind = str(do_match.group("kind") or "repo").strip().lower()
+            else:
+                capability_match = CODEBASE_CAPABILITY_RE.match(text)
+                if capability_match:
+                    raw_target = str(capability_match.group("target") or "").strip()
+                    matched_kind = "codebase"
+                else:
+                    bare_match = CODEBASE_SUMMARY_TARGET_ONLY_RE.match(text)
+                    if not bare_match:
+                        return None
+                    raw_target = str(bare_match.group("target") or "").strip()
+
+    normalized_target = _normalize_lookup_key(raw_target)
+    if normalized_target in {
+        "nova",
+        "novalis",
+        "novaproject",
+        "this",
+        "the",
+        "local",
+        "thisrepo",
+        "thisproject",
+        "thiscodebase",
+    }:
+        raw_target = "this repo"
+
+    resolved_path = _resolve_local_project_path(
+        raw_target,
+        working_context=working_context,
+        session_state=session_state,
+    )
+    if resolved_path is None:
+        if raw_target:
+            return None
+        paths = _candidate_local_project_paths(working_context, session_state)
+        workspace_path = str(paths[0]) if paths else ""
+        lines = [
+            f"I can summarize a local {matched_kind or 'project'}, but I need a concrete path or a clearly identified current workspace.",
+        ]
+        if workspace_path:
+            lines.append("If you mean the current workspace, try: summarize this repo")
+            lines.append(f"Current workspace: {workspace_path}")
+        lines.extend(
+            [
+                "",
+                "Try next:",
+                "- summarize this repo",
+                r"- summarize C:\path\to\your\project",
+                "- audit this repo",
+            ]
+        )
+        suggestions = [
+            {"label": "Summarize this repo", "command": "summarize this repo"},
+            {"label": "Audit this repo", "command": "audit this repo"},
+            {"label": "Open documents", "command": "open documents"},
+        ]
+        return "\n".join(lines), suggestions, ""
+
+    message, suggestions = _render_local_codebase_summary(resolved_path)
     return message, suggestions, str(resolved_path)
 
 
@@ -2661,6 +2992,27 @@ async def websocket_endpoint(ws: WebSocket):
                         {"label": "Today's news", "command": "today's news"},
                     ],
                 )
+                await send_chat_done(ws)
+                continue
+
+            local_codebase_response = _maybe_handle_local_codebase_summary_request(
+                command_text,
+                working_context=working_context,
+                session_state=session_state,
+            )
+            if local_codebase_response is not None:
+                project_message, project_suggestions, resolved_path = local_codebase_response
+                if resolved_path:
+                    session_state["last_object"] = resolved_path
+                    working_context.apply_patch(
+                        {
+                            "last_relevant_object": resolved_path,
+                            "current_step": "local_codebase_summary",
+                        },
+                        source="local_codebase_summary",
+                    )
+                    session_state["working_context"] = working_context.to_dict()
+                await send_chat_message(ws, project_message, suggested_actions=project_suggestions)
                 await send_chat_done(ws)
                 continue
 
