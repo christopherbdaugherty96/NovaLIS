@@ -17,6 +17,7 @@ This document remains valuable long-range theory for autonomy tiers and mutation
 ## Cross-Phase Inputs
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 - `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
+- `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
 - `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
@@ -30,6 +31,15 @@ The governed memory experience packet should be read this way in Phase 9:
   - stable governed memory behavior across devices
   - stronger node-level continuity of explicit memories
   - more robust memory surfaces across different Nova interfaces
+- it does not authorize hidden learning or silent authority growth
+
+The next-level robust agent roadmap should be read this way in Phase 9:
+- Phase-9-relevant items are the coherence layers:
+  - cross-client project continuity
+  - connector coherence across interfaces
+  - stable memory behavior across clients
+  - shared task visibility across Nova surfaces
+  - one trust model across device and client boundaries
 - it does not authorize hidden learning or silent authority growth
 
 ## Interpretation Rule
