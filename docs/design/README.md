@@ -33,6 +33,9 @@ Current news experience and reasoning improvement packet:
 Current web-search answer and reasoning improvement packet:
 - `docs/design/NOVA_WEBSEARCH_ANSWER_AND_REASONING_PLAN_2026-03-21.md`
 
+Current chatbox helper-buttons cleanup note:
+- `docs/design/NOVA_CHATBOX_HELPER_BUTTONS_CLEANUP_NOTE_2026-03-21.md`
+
 Current bounded style planning packet:
 - `docs/design/NOVA_STYLE_LAYER_PLAN_2026-03-20.md`
 
