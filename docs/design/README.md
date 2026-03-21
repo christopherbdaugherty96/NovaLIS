@@ -54,6 +54,9 @@ Current governed memory experience and context packet:
 Current governed crypto connector and trading packet:
 - `docs/design/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
 
+Current local-project visual explainer packet:
+- `docs/design/NOVA_LOCAL_PROJECT_VISUAL_EXPLAINER_PLAN_2026-03-21.md`
+
 Current bounded style planning packet:
 - `docs/design/NOVA_STYLE_LAYER_PLAN_2026-03-20.md`
 
