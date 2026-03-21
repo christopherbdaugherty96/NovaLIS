@@ -36,8 +36,8 @@ def test_formatter_adds_at_most_two_tierb_prompts():
     )
     assert "Baseline answer." in text
     assert text.count("\n") >= 2
-    assert "broad options" in text.lower()
-    assert "narrower direction" in text.lower()
+    assert "keep this broad" in text.lower()
+    assert "narrow it to one path" in text.lower()
 
 
 def test_formatter_uses_combined_followup_prompt_when_branch_and_depth_are_allowed():
@@ -50,5 +50,5 @@ def test_formatter_uses_combined_followup_prompt_when_branch_and_depth_are_allow
     )
 
     assert "Baseline answer." in text
-    assert "branch this into a few directions" in text
+    assert "compare two or three directions" in text
     assert "go deeper on one path" in text

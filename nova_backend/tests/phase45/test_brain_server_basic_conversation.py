@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+from datetime import datetime, timezone
 from unittest.mock import patch
 
 from fastapi import WebSocketDisconnect
@@ -11,7 +12,7 @@ from src.conversation.session_router import GateResult
 
 
 class _ScriptedWebSocket:
-    def __init__(self, messages: list[str]) -> None:
+    def __init__(self, messages: list[object]) -> None:
         self._messages = list(messages)
         self.sent_messages: list[dict] = []
 
@@ -23,7 +24,10 @@ class _ScriptedWebSocket:
 
     async def receive_text(self) -> str:
         if self._messages:
-            return json.dumps({"type": "chat", "text": self._messages.pop(0)})
+            next_message = self._messages.pop(0)
+            if isinstance(next_message, dict):
+                return json.dumps(next_message)
+            return json.dumps({"type": "chat", "text": next_message})
         raise WebSocketDisconnect()
 
 
@@ -44,7 +48,7 @@ def test_hello_uses_deterministic_local_response(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Hello. What do you want to work on?" in msg for msg in chat_messages)
+    assert any("Hello. How can I help?" in msg for msg in chat_messages)
 
 
 def test_say_again_alias_repeats_last_spoken_text_without_model_call(monkeypatch):
@@ -105,6 +109,78 @@ def test_what_can_you_do_with_question_mark_stays_on_capability_path(monkeypatch
     assert any("Nova Capabilities" in msg for msg in chat_messages)
 
 
+def test_tell_me_what_you_can_do_uses_friendlier_capability_help(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["tell me what you can do"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Everyday utility" in msg for msg in chat_messages)
+    assert any("Audit this repo" in str(item) for item in ws.sent_messages if item.get("type") == "chat")
+
+
+def test_what_time_is_it_returns_local_time_without_model_call(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(
+        brain_server,
+        "_local_now",
+        lambda: datetime(2026, 3, 20, 13, 48),
+    )
+
+    ws = _ScriptedWebSocket(["what time is it"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("It's 1:48 PM." in msg for msg in chat_messages)
+
+
+def test_audit_folder_current_workspace_returns_local_project_overview(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["audit folder Nova-Project"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Local project overview" in msg for msg in chat_messages)
+    assert any(r"C:\Nova-Project" in msg for msg in chat_messages)
+
+
+def test_explain_local_disk_project_handles_spokenish_path_request(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["explain Nova-Project within in local disk"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Local project overview" in msg for msg in chat_messages)
+    assert any("Top-level folders" in msg for msg in chat_messages)
+
+
 def test_project_status_this_without_active_thread_is_actionable(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
@@ -119,6 +195,45 @@ def test_project_status_this_without_active_thread_is_actionable(monkeypatch):
 
     chat_messages = _chat_messages(ws)
     assert any("I do not have an active project thread yet." in msg for msg in chat_messages)
+
+
+def test_silent_memory_overview_refresh_updates_widget_without_chat_noise(monkeypatch):
+    from src.actions.action_result import ActionResult
+
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket([{"type": "chat", "text": "memory overview", "silent_widget_refresh": True}])
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        assert capability_id == 61
+        assert params.get("action") == "overview"
+        return ActionResult.ok(
+            "Governed Memory Overview\n\nTotal items: 0",
+            data={
+                "memory_overview": {
+                    "total_count": 0,
+                    "tier_counts": {"active": 0, "locked": 0, "deferred": 0},
+                    "scope_counts": {"general": 0, "project": 0, "ops": 0},
+                    "recent_items": [],
+                    "linked_threads": [],
+                }
+            },
+            request_id="mem-overview-test",
+        )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.invoke_governed_capability",
+        side_effect=_fake_invoke_governed_capability,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert not any("Governed Memory Overview" in msg for msg in chat_messages)
+    assert any(msg.get("type") == "memory_overview" for msg in ws.sent_messages)
 
 
 def test_followup_chat_uses_recent_conversation_context(monkeypatch):

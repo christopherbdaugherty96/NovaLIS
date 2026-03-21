@@ -295,3 +295,87 @@ def test_governor_uses_extended_timeout_for_analysis_document(monkeypatch):
 
     assert result.success is True
     assert captured["timeout_seconds"] == 150.0
+
+
+def test_governor_uses_extended_timeout_for_news_summary(monkeypatch):
+    from src.actions.action_result import ActionResult
+    from src.governor.governor import Governor
+
+    gov = Governor()
+
+    class FakeRegistry:
+        def get(self, capability_id):
+            return types.SimpleNamespace(name="news_intelligence_summary")
+
+        def is_enabled(self, capability_id):
+            return True
+
+    class FakeLedger:
+        def __init__(self):
+            self.events = []
+
+        def log_event(self, event_type, metadata):
+            self.events.append((event_type, metadata))
+
+    captured = {}
+    gov._registry = FakeRegistry()
+    gov._ledger = FakeLedger()
+
+    monkeypatch.setattr(
+        gov,
+        "_dispatch_capability",
+        lambda req: ActionResult.ok("headline summary", request_id=req.request_id),
+    )
+
+    def _fake_run_with_timeout(operation, timeout_seconds=None):
+        captured["timeout_seconds"] = timeout_seconds
+        return operation()
+
+    monkeypatch.setattr(gov._execute_boundary, "run_with_timeout", _fake_run_with_timeout)
+
+    result = gov.handle_governed_invocation(49, {"selection": "all"})
+
+    assert result.success is True
+    assert captured["timeout_seconds"] == 30.0
+
+
+def test_governor_uses_extended_timeout_for_daily_brief(monkeypatch):
+    from src.actions.action_result import ActionResult
+    from src.governor.governor import Governor
+
+    gov = Governor()
+
+    class FakeRegistry:
+        def get(self, capability_id):
+            return types.SimpleNamespace(name="news_intelligence_brief")
+
+        def is_enabled(self, capability_id):
+            return True
+
+    class FakeLedger:
+        def __init__(self):
+            self.events = []
+
+        def log_event(self, event_type, metadata):
+            self.events.append((event_type, metadata))
+
+    captured = {}
+    gov._registry = FakeRegistry()
+    gov._ledger = FakeLedger()
+
+    monkeypatch.setattr(
+        gov,
+        "_dispatch_capability",
+        lambda req: ActionResult.ok("daily brief", request_id=req.request_id),
+    )
+
+    def _fake_run_with_timeout(operation, timeout_seconds=None):
+        captured["timeout_seconds"] = timeout_seconds
+        return operation()
+
+    monkeypatch.setattr(gov._execute_boundary, "run_with_timeout", _fake_run_with_timeout)
+
+    result = gov.handle_governed_invocation(50, {"read_sources": True})
+
+    assert result.success is True
+    assert captured["timeout_seconds"] == 35.0

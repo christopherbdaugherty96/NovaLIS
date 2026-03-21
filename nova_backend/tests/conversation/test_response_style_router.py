@@ -63,6 +63,21 @@ def test_input_normalizer_maps_spoken_repeat_phrase():
     assert normalized.lower() == "repeat."
 
 
+def test_input_normalizer_maps_help_variants_to_capability_path():
+    normalized = InputNormalizer.normalize("tell me what you can do")
+    assert normalized.lower() == "what can you do."
+
+
+def test_input_normalizer_maps_time_variant():
+    normalized = InputNormalizer.normalize("what's the time")
+    assert normalized.lower() == "what time is it."
+
+
+def test_input_normalizer_fixes_local_disk_phrase_artifact():
+    normalized = InputNormalizer.normalize("explain Nova-Project within in local disk")
+    assert normalized.lower() == "explain nova-project within local disk."
+
+
 def test_input_normalizer_tolerates_missing_apostrophes():
     normalized = InputNormalizer.normalize("whats the weather tomorrow")
     assert normalized.lower() == "weather forecast."

@@ -86,7 +86,7 @@ def test_general_chat_uses_deterministic_local_greeting_without_model_call():
 
     assert result is not None
     assert result.success is True
-    assert result.message == "Hello. What do you want to work on?"
+    assert result.message == "Hello. How can I help?"
     assert (result.data or {}).get("structured_data", {}).get("deterministic_social") is True
 
 

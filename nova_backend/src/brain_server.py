@@ -135,6 +135,46 @@ PHASE42_HELP_COMMANDS = {
     "phase42 help",
     "orthogonal help",
 }
+CAPABILITY_HELP_RE = re.compile(
+    r"^\s*(?:"
+    r"what can you do"
+    r"|nova what can you do"
+    r"|tell me what you can do"
+    r"|show me what you can do"
+    r"|show capabilities"
+    r"|show me your capabilities"
+    r"|what capabilities do you have"
+    r"|what capabilities can you do"
+    r"|capabilities"
+    r"|help capabilities"
+    r"|help"
+    r")\s*$",
+    re.IGNORECASE,
+)
+TIME_QUERY_RE = re.compile(
+    r"^\s*(?:"
+    r"time"
+    r"|current time"
+    r"|local time"
+    r"|time now"
+    r"|what(?:'s| is)\s+(?:the\s+)?time"
+    r"|what time is it"
+    r"|tell me(?:\s+the)?\s+time"
+    r")\s*$",
+    re.IGNORECASE,
+)
+LOCAL_PROJECT_CURRENT_RE = re.compile(
+    r"^\s*(?P<action>audit|summarize|explain)\s+(?:this\s+)?(?P<kind>repo(?:sitory)?|project|folder)\s*$",
+    re.IGNORECASE,
+)
+LOCAL_PROJECT_TARGET_RE = re.compile(
+    r"^\s*(?P<action>audit|summarize)\s+(?P<kind>repo(?:sitory)?|project|folder)\s+(?P<target>.+?)\s*$",
+    re.IGNORECASE,
+)
+LOCAL_PROJECT_DISK_RE = re.compile(
+    r"^\s*explain\s+(?P<target>.+?)\s+(?:within|on|from)\s+(?:in\s+)?local\s+disk\s*$",
+    re.IGNORECASE,
+)
 
 CREATE_THREAD_RE = re.compile(
     r"^\s*(?:create|start)\s+(?:project\s+)?thread\s+(?P<name>.+?)\s*$",
@@ -1076,6 +1116,284 @@ def _format_local_schedule_time(value: datetime | None) -> str:
     local = value.astimezone()
     rendered = local.strftime("%b %d, %I:%M %p")
     return re.sub(r"(?<=\s)0(\d:)", r"\1", rendered)
+
+
+def _capability_help_message() -> str:
+    return (
+        "Nova Capabilities\n\n"
+        "Here are the main things I can help with right now:\n"
+        "- Everyday utility: what time is it, weather, system status\n"
+        "- News and research: today's news, daily brief, search for <topic>, summarize all headlines\n"
+        "- Local controls: open documents, open downloads, volume up, brightness down\n"
+        "- Explain and analysis: explain this, help me do this, create analysis report on <topic>\n"
+        "- Project continuity: create thread <name>, continue my <name>, project status <name>\n"
+        "- Memory and patterns: memory overview, memory save <title>: <content>, pattern status\n\n"
+        "If you want, ask about a category like local controls, project work, or news."
+    )
+
+
+def _render_local_time_message() -> str:
+    rendered = _local_now().strftime("%I:%M %p").lstrip("0")
+    return f"It's {rendered}."
+
+
+def _normalize_lookup_key(value: str) -> str:
+    return re.sub(r"[^a-z0-9]+", "", str(value or "").strip().lower())
+
+
+def _resolve_existing_local_path(raw_value: str) -> Path | None:
+    cleaned = str(raw_value or "").strip().strip("\"'")
+    if not cleaned:
+        return None
+    try:
+        candidate = Path(cleaned)
+        if not candidate.is_absolute():
+            candidate = (Path.cwd() / candidate).resolve()
+        else:
+            candidate = candidate.resolve()
+    except Exception:
+        return None
+    if candidate.exists():
+        return candidate
+    return None
+
+
+def _candidate_local_project_paths(
+    working_context: WorkingContextStore,
+    session_state: dict[str, Any],
+) -> list[Path]:
+    candidates: list[Path] = []
+    seen: set[str] = set()
+
+    def _add(path_value: Path | None) -> None:
+        if path_value is None:
+            return
+        try:
+            resolved = path_value.resolve()
+        except Exception:
+            return
+        key = str(resolved).lower()
+        if key in seen or not resolved.exists():
+            return
+        seen.add(key)
+        candidates.append(resolved)
+
+    try:
+        cwd = Path.cwd().resolve()
+    except Exception:
+        cwd = None
+
+    if cwd is not None:
+        git_root = None
+        for candidate in [cwd, *cwd.parents]:
+            try:
+                if (candidate / ".git").exists():
+                    git_root = candidate
+                    break
+            except Exception:
+                continue
+        _add(git_root)
+        _add(cwd)
+        for parent in list(cwd.parents)[:3]:
+            _add(parent)
+
+    selected_file = str((working_context.to_dict() or {}).get("selected_file") or "").strip()
+    if selected_file:
+        selected_path = _resolve_existing_local_path(selected_file)
+        if selected_path is not None:
+            _add(selected_path if selected_path.is_dir() else selected_path.parent)
+
+    last_object = str(session_state.get("last_object") or "").strip()
+    if last_object:
+        last_path = _resolve_existing_local_path(last_object)
+        if last_path is not None:
+            _add(last_path if last_path.is_dir() else last_path.parent)
+
+    return candidates
+
+
+def _resolve_local_project_path(
+    target_text: str,
+    *,
+    working_context: WorkingContextStore,
+    session_state: dict[str, Any],
+) -> Path | None:
+    raw_target = str(target_text or "").strip()
+    if not raw_target:
+        paths = _candidate_local_project_paths(working_context, session_state)
+        return paths[0] if paths else None
+
+    direct_path = _resolve_existing_local_path(raw_target)
+    if direct_path is not None:
+        return direct_path
+
+    normalized_target = _normalize_lookup_key(raw_target)
+    if normalized_target in {
+        "thisrepo",
+        "thisrepository",
+        "thisproject",
+        "thisfolder",
+        "currentrepo",
+        "currentproject",
+        "currentfolder",
+        "localrepo",
+        "localproject",
+        "localfolder",
+    }:
+        paths = _candidate_local_project_paths(working_context, session_state)
+        return paths[0] if paths else None
+
+    for candidate in _candidate_local_project_paths(working_context, session_state):
+        candidate_key = _normalize_lookup_key(candidate.name)
+        if normalized_target == candidate_key:
+            return candidate
+
+    return None
+
+
+def _local_project_markers(path: Path) -> list[str]:
+    markers = [
+        ".git",
+        "README.md",
+        "pyproject.toml",
+        "package.json",
+        "requirements.txt",
+        "docs",
+        "src",
+        "tests",
+        "nova_backend",
+    ]
+    found: list[str] = []
+    for marker in markers:
+        try:
+            if (path / marker).exists():
+                found.append(marker)
+        except Exception:
+            continue
+    return found
+
+
+def _render_local_project_summary(path: Path) -> tuple[str, list[dict[str, str]]]:
+    target = path.resolve()
+    if target.is_file():
+        message = (
+            "I found a local file, not a folder.\n"
+            f"Target: {target}\n\n"
+            "If you want a file explanation, give me the file path explicitly or say 'explain this' while that file is visible."
+        )
+        suggestions = [
+            {"label": "Open file", "command": f"open {target}"},
+            {"label": "Explain this", "command": "explain this"},
+        ]
+        return message, suggestions
+
+    try:
+        entries = list(target.iterdir())
+    except Exception:
+        entries = []
+
+    directories = sorted(
+        [entry.name for entry in entries if entry.is_dir() and not entry.name.startswith(".")],
+        key=str.lower,
+    )[:6]
+    files = sorted(
+        [entry.name for entry in entries if entry.is_file() and not entry.name.startswith(".")],
+        key=str.lower,
+    )[:6]
+    visible_dir_count = len([entry for entry in entries if entry.is_dir() and not entry.name.startswith(".")])
+    visible_file_count = len([entry for entry in entries if entry.is_file() and not entry.name.startswith(".")])
+    markers = _local_project_markers(target)
+    is_repo = (target / ".git").exists()
+
+    lines = [
+        "Local project overview" if is_repo else "Local folder overview",
+        f"Target: {target}",
+        f"Type: {'Git repo folder' if is_repo else 'Local folder'}",
+        f"Top level: {visible_dir_count} folder{'s' if visible_dir_count != 1 else ''} | {visible_file_count} file{'s' if visible_file_count != 1 else ''}",
+    ]
+    if markers:
+        lines.append(f"Key markers: {', '.join(markers[:6])}")
+    if directories:
+        lines.append(f"Top-level folders: {', '.join(directories)}")
+    if files:
+        lines.append(f"Top-level files: {', '.join(files)}")
+    lines.extend(
+        [
+            "",
+            "Try next:",
+            f"- open {target}",
+            "- explain this while the folder is visible",
+            f"- create analysis report on {target.name} architecture",
+        ]
+    )
+
+    suggestions = [
+        {"label": "Open folder", "command": f"open {target}"},
+        {"label": "Explain this", "command": "explain this"},
+        {"label": "Create report", "command": f"create analysis report on {target.name} architecture"},
+    ]
+    return "\n".join(lines), suggestions
+
+
+def _maybe_handle_local_project_request(
+    text: str,
+    *,
+    working_context: WorkingContextStore,
+    session_state: dict[str, Any],
+) -> tuple[str, list[dict[str, str]], str] | None:
+    raw_target = ""
+    matched_kind = ""
+
+    current_match = LOCAL_PROJECT_CURRENT_RE.match(text)
+    if current_match:
+        matched_kind = str(current_match.group("kind") or "").strip().lower()
+    else:
+        targeted_match = LOCAL_PROJECT_TARGET_RE.match(text)
+        if targeted_match:
+            raw_target = str(targeted_match.group("target") or "").strip()
+            matched_kind = str(targeted_match.group("kind") or "").strip().lower()
+        else:
+            disk_match = LOCAL_PROJECT_DISK_RE.match(text)
+            if not disk_match:
+                return None
+            raw_target = str(disk_match.group("target") or "").strip()
+            matched_kind = "project"
+
+    resolved_path = _resolve_local_project_path(
+        raw_target,
+        working_context=working_context,
+        session_state=session_state,
+    )
+    if resolved_path is None:
+        target_label = raw_target or f"this {matched_kind or 'project'}"
+        workspace_path = ""
+        paths = _candidate_local_project_paths(working_context, session_state)
+        if paths:
+            workspace_path = str(paths[0])
+        lines = [
+            f"I can review a local {matched_kind or 'project'}, but I need a concrete path or a clearly identified current workspace for '{target_label}'.",
+        ]
+        if workspace_path:
+            lines.append(f"If you mean the current workspace, try: audit this repo")
+            lines.append(f"Current workspace: {workspace_path}")
+        lines.extend(
+            [
+                "",
+                "Try next:",
+                "- audit this repo",
+                r"- audit folder C:\path\to\your\project",
+                "- open documents",
+            ]
+        )
+        suggestions = [
+            {"label": "Audit this repo", "command": "audit this repo"},
+            {"label": "Open documents", "command": "open documents"},
+            {"label": "What can you do?", "command": "what can you do"},
+        ]
+        return "\n".join(lines), suggestions, ""
+
+    message, suggestions = _render_local_project_summary(resolved_path)
+    return message, suggestions, str(resolved_path)
 
 
 def _canonical_thread_reference(value: str) -> str:
@@ -2229,7 +2547,10 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
-            if lowered in {
+            command_text = re.sub(r"[.?!]+$", "", text).strip()
+            command_lowered = re.sub(r"[.?!]+$", "", lowered).strip()
+
+            if command_lowered in {
                 "topic stack",
                 "current topic",
                 "what are we discussing",
@@ -2242,78 +2563,50 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
-            if lowered in {
-                "what can you do",
-                "nova what can you do",
-                "show capabilities",
-                "capabilities",
-                "help capabilities",
-            }:
-                capability_message = (
-                    "Nova Capabilities\n"
-                    "Research\n"
-                    "- search for <topic>\n"
-                    "- research <topic>\n"
-                    "- summarize all headlines\n\n"
-                    "Explain Anything\n"
-                    "- explain this\n"
-                    "- what is this\n"
-                    "- help me do this\n"
-                    "- take a screenshot\n\n"
-                    "Document Analysis\n"
-                    "- create analysis report on <topic>\n"
-                    "- list analysis docs\n"
-                    "- summarize doc <id>\n"
-                    "- explain section <n> of doc <id>\n\n"
-                    "System Diagnostics\n"
-                    "- system status\n"
-                    "- morning brief\n\n"
-                    "Web Search\n"
-                    "- search for <query>\n"
-                    "- open source <n>\n\n"
-                    "Reports\n"
-                    "- daily brief\n"
-                    "- today's news\n"
-                    "- phase42: <analysis request>\n\n"
-                    "Project Continuity\n"
-                    "- create thread <name>\n"
-                    "- save this as part of <name>\n"
-                    "- continue my <name>\n"
-                    "- show threads\n"
-                    "- thread detail <name>\n"
-                    "- project status <name>\n"
-                    "- biggest blocker in <name>\n"
-                    "- which project is most blocked right now\n"
-                    "- why this recommendation\n\n"
-                    "Governed Memory\n"
-                    "- memory overview\n"
-                    "- memory save <title>: <content>\n"
-                    "- memory save thread <name>\n"
-                    "- memory save decision for <thread>: <text>\n"
-                    "- memory list [active|locked|deferred]\n"
-                    "- memory list thread <name>\n"
-                    "- memory show <id>\n"
-                    "- memory lock <id>\n"
-                    "- memory defer <id>\n"
-                    "- memory unlock <id> confirm\n"
-                    "- memory delete <id> confirm\n\n"
-                    "Pattern Review\n"
-                    "- pattern opt in\n"
-                    "- pattern status\n"
-                    "- review patterns\n"
-                    "- review patterns for <thread>\n"
-                    "- accept pattern <id>\n"
-                    "- dismiss pattern <id>\n\n"
-                    "Policy Drafts (Phase-6 foundation)\n"
-                    "- policy overview\n"
-                    "- policy create weekday calendar snapshot at 8:00 am\n"
-                    "- policy create daily weather snapshot at 7:30 am\n"
-                    "- policy show <id>\n"
-                    "- policy simulate <id>\n"
-                    "- policy run <id> once\n"
-                    "- policy delete <id> confirm"
+            if CAPABILITY_HELP_RE.match(command_text):
+                await send_chat_message(
+                    ws,
+                    _capability_help_message(),
+                    suggested_actions=[
+                        {"label": "System status", "command": "system status"},
+                        {"label": "Today's news", "command": "today's news"},
+                        {"label": "Audit this repo", "command": "audit this repo"},
+                        {"label": "Open documents", "command": "open documents"},
+                    ],
                 )
-                await send_chat_message(ws, capability_message)
+                await send_chat_done(ws)
+                continue
+
+            if TIME_QUERY_RE.match(command_text):
+                await send_chat_message(
+                    ws,
+                    _render_local_time_message(),
+                    suggested_actions=[
+                        {"label": "System status", "command": "system status"},
+                        {"label": "Today's news", "command": "today's news"},
+                    ],
+                )
+                await send_chat_done(ws)
+                continue
+
+            local_project_response = _maybe_handle_local_project_request(
+                command_text,
+                working_context=working_context,
+                session_state=session_state,
+            )
+            if local_project_response is not None:
+                project_message, project_suggestions, resolved_path = local_project_response
+                if resolved_path:
+                    session_state["last_object"] = resolved_path
+                    working_context.apply_patch(
+                        {
+                            "last_relevant_object": resolved_path,
+                            "current_step": "local_project_overview",
+                        },
+                        source="local_project_overview",
+                    )
+                    session_state["working_context"] = working_context.to_dict()
+                await send_chat_message(ws, project_message, suggested_actions=project_suggestions)
                 await send_chat_done(ws)
                 continue
 
@@ -4356,7 +4649,13 @@ async def websocket_endpoint(ws: WebSocket):
 
                 session_state["working_context"] = working_context.to_dict()
 
-                if capability_id != 18 and action_message:
+                suppress_silent_chat = bool(
+                    silent_widget_refresh
+                    and capability_id == 61
+                    and str(params.get("action") or "").strip().lower() == "overview"
+                )
+
+                if capability_id != 18 and action_message and not suppress_silent_chat:
                     session_state["last_response"] = action_message
 
                 if capability_id in {16, 48, 55, 56}:
@@ -4437,6 +4736,12 @@ async def websocket_endpoint(ws: WebSocket):
                         {"label": "Track this story", "command": f"track story {track_topic_hint}"},
                         {"label": "Show topic map", "command": "show topic map"},
                         {"label": "Today's brief", "command": "today's news"},
+                    ]
+                if capability_id in {49, 50} and not action_result.success and not message_suggestions:
+                    message_suggestions = [
+                        {"label": "Refresh headlines", "command": "today's news"},
+                        {"label": "Retry brief", "command": "daily brief"},
+                        {"label": "Summarize headlines", "command": "summarize all headlines"},
                     ]
                 if capability_id == 61 and action_result.success and isinstance(action_payload, dict):
                     memory_item = action_payload.get("memory_item")
@@ -4520,13 +4825,14 @@ async def websocket_endpoint(ws: WebSocket):
                         "Why this recommendation\n"
                         f"- {recommendation_reason}"
                     )
-                await send_chat_message(
-                    ws,
-                    outgoing_message,
-                    confidence=message_confidence,
-                    suggested_actions=message_suggestions,
-                    tone_domain=_tone_domain_for_capability(capability_id),
-                )
+                if not suppress_silent_chat:
+                    await send_chat_message(
+                        ws,
+                        outgoing_message,
+                        confidence=message_confidence,
+                        suggested_actions=message_suggestions,
+                        tone_domain=_tone_domain_for_capability(capability_id),
+                    )
 
                 if (
                     isinstance(action_payload, dict)

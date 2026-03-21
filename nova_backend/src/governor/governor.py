@@ -28,6 +28,8 @@ from src.governor.single_action_queue import SingleActionQueue
 
 
 CAPABILITY_TIMEOUT_OVERRIDES = {
+    49: 30.0,  # Headline summaries may need source reads plus local-model synthesis.
+    50: 35.0,  # Daily brief generation may need clustered source reads plus synthesis.
     31: 90.0,  # Response verification may need local-model cold-start time.
     54: 150.0,  # Analysis documents need more time for local-model long-form generation.
 }
