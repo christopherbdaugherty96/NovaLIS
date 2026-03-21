@@ -142,6 +142,22 @@ def test_help_typo_variant_still_uses_capability_help(monkeypatch):
     assert any("Nova Capabilities" in msg for msg in chat_messages)
 
 
+def test_help_double_o_typo_variant_still_uses_capability_help(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["what can you doo"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Nova Capabilities" in msg for msg in chat_messages)
+
+
 def test_what_time_is_it_returns_local_time_without_model_call(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
@@ -215,6 +231,58 @@ def test_summarize_named_workspace_returns_local_codebase_summary(monkeypatch):
     assert any(r"C:\Nova-Project" in msg for msg in chat_messages)
 
 
+def test_summarize_this_repo_uses_current_workspace_summary(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["summarize this repo"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Local codebase summary" in msg for msg in chat_messages)
+    assert any("Target: C:\\Nova-Project" in msg for msg in chat_messages)
+
+
+def test_summarize_explicit_repo_path_returns_grounded_summary(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket([r"summarize C:\Nova-Project"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Local codebase summary" in msg for msg in chat_messages)
+    assert any("Target: C:\\Nova-Project" in msg for msg in chat_messages)
+    assert any("Confidence note:" in msg for msg in chat_messages)
+
+
+def test_summarize_this_local_project_uses_repo_summary_lane(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["summarize this local project"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Local codebase summary" in msg for msg in chat_messages)
+    assert any("Major surfaces:" in msg for msg in chat_messages)
+
+
 def test_what_does_this_codebase_do_returns_grounded_repo_summary(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
@@ -230,6 +298,8 @@ def test_what_does_this_codebase_do_returns_grounded_repo_summary(monkeypatch):
     chat_messages = _chat_messages(ws)
     assert any("Local codebase summary" in msg for msg in chat_messages)
     assert any("governed personal intelligence workspace" in msg.lower() for msg in chat_messages)
+    assert all("Project summary: #" not in msg for msg in chat_messages)
+    assert all("\ufeff" not in msg for msg in chat_messages)
 
 
 def test_what_can_nova_do_based_on_its_own_code_reports_capability_signals(monkeypatch):
