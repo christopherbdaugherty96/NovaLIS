@@ -74,7 +74,7 @@ class ResponseFormatter:
     def friendly_fallback() -> str:
         return (
             "I might have misunderstood that. "
-            "Try one of these: weather, today's news, search for a topic, or open documents."
+            "Try one of these: what can you do, what time is it, today's news, or open documents."
         )
 
     @staticmethod

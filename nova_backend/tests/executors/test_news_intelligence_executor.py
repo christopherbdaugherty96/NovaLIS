@@ -14,7 +14,7 @@ def test_summary_requires_cached_headlines():
     executor = NewsIntelligenceExecutor()
     result = executor.execute_summary(_request(49, {"selection": "all", "headlines": []}))
     assert result.success is False
-    assert "Say 'news' first" in result.message
+    assert "refresh headlines" in result.message
 
 
 def test_daily_brief_missing_headlines_reports_current_state():
@@ -23,7 +23,7 @@ def test_daily_brief_missing_headlines_reports_current_state():
     executor = NewsIntelligenceExecutor()
     result = executor.execute_brief(_request(50, {"headlines": []}))
     assert result.success is False
-    assert "headline data isn't available right now" in result.message
+    assert "don't have current headlines yet" in result.message
 
 
 def test_summary_enforces_max_three(monkeypatch):
@@ -358,13 +358,27 @@ def test_brief_reads_source_pages_when_enabled(monkeypatch):
     result = executor.execute_brief(_request(50, {"headlines": headlines, "read_sources": True}))
     assert result.success is True
     assert "NOVA DAILY INTELLIGENCE BRIEF" in result.message
-    assert "Major Themes Today" in result.message
-    assert "Story 1:" in result.message
+
+
+def test_brief_falls_back_to_headline_only_when_source_reads_are_unavailable(monkeypatch):
+    from src.executors import news_intelligence_executor as mod
+
+    monkeypatch.setattr(mod, "generate_chat", lambda *args, **kwargs: "")
+
+    headlines = [
+        {"title": "A", "source": "ABC News", "url": "https://abc.example/a"},
+        {"title": "B", "source": "BBC News", "url": "https://bbc.example/b"},
+    ]
+    executor = mod.NewsIntelligenceExecutor(network=None)
+    result = executor.execute_brief(_request(50, {"headlines": headlines, "read_sources": True}))
+    assert result.success is True
+    assert "headline-only brief" in result.message.lower()
+    assert result.speakable_text.startswith("Headline-only brief ready.")
+    assert "NOVA INTELLIGENCE BRIEF" in result.message
+    assert "Detailed Story Briefs" in result.message
     assert isinstance(result.data, dict)
-    assert isinstance(result.data.get("sources"), list)
-    assert len(result.data.get("sources")) == 2
-    assert isinstance(result.data.get("brief_clusters"), list)
-    assert len(result.data.get("brief_clusters")) >= 1
+    assert isinstance(result.data.get("topic_map"), dict)
+    assert result.data.get("widget", {}).get("type") == "intelligence_brief"
 
 
 def test_brief_uses_cluster_fallback_when_source_synthesis_is_unavailable(monkeypatch):

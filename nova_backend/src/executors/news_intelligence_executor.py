@@ -17,7 +17,7 @@ from src.utils.content_extractor import extract_text_from_html
 MAX_HEADLINES_PER_SUMMARY = 3
 LLM_TIMEOUT_SECONDS = 8.0
 SOURCE_READ_TIMEOUT_SECONDS = 8.0
-MAX_SOURCE_PAGES_PER_BRIEF = 6
+MAX_SOURCE_PAGES_PER_BRIEF = 4
 MAX_SOURCE_TEXT_CHARS = 3500
 MAX_CLUSTER_STORIES = 4
 MAX_RELATED_PAIRS = 3
@@ -1065,7 +1065,7 @@ class NewsIntelligenceExecutor:
         session_id = str((request.params or {}).get("session_id") or "").strip() or None
         if not headlines:
             return self._failure_result(
-                "No cached headlines found. Say 'news' first, then choose headline numbers.",
+                "I don't have current headlines cached yet. Ask for today's news to refresh headlines, then I can summarize them.",
                 request_id=request.request_id,
                 failure_kind="missing_headline_cache",
             )
@@ -1239,13 +1239,14 @@ class NewsIntelligenceExecutor:
         headlines = self._sanitize_headlines((request.params or {}).get("headlines"))
         if not headlines:
             return self._failure_result(
-                "I couldn't build a daily brief because current headline data isn't available right now.",
+                "I couldn't build a daily brief because I don't have current headlines yet. Ask for today's news to refresh headlines, then try again.",
                 request_id=request.request_id,
                 failure_kind="missing_headline_cache",
             )
 
         source = headlines[:6]
         read_sources = bool((request.params or {}).get("read_sources"))
+        degraded_note = ""
         if read_sources:
             packets = self._collect_source_packets(
                 source,
@@ -1290,43 +1291,47 @@ class NewsIntelligenceExecutor:
                     )
 
                 if not rendered_clusters:
-                    return self._failure_result(
-                        "I couldn't generate a source-grounded brief right now. Please try again in a moment.",
-                        request_id=request.request_id,
-                        failure_kind="brief_generation_unavailable",
+                    degraded_note = (
+                        "Note: I couldn't finish the full source-grounded brief in time, "
+                        "so this is a quicker headline-only brief. You can retry with today's news or narrow the topic."
                     )
-
-                report, all_sources = self._render_daily_brief_v2(rendered_clusters)
-                if placeholder_clusters:
-                    report = (
-                        f"{report}\n\nNote: {placeholder_clusters} topic cluster(s) are using placeholder source-grounded summaries because synthesis was unavailable."
-                    )
-                if omitted_clusters:
-                    report = (
-                        f"{report}\n\nNote: {omitted_clusters} topic cluster(s) were omitted due to incomplete source-grounded synthesis."
-                    )
-                payload = {
-                    "widget": {
-                        "type": "intelligence_brief",
-                        "data": {
-                            "headline_count": len(source),
-                            "source_pages_read": len(packets),
-                            "cluster_count": len(rendered_clusters),
-                            "placeholder_cluster_count": placeholder_clusters,
-                            "omitted_cluster_count": omitted_clusters,
+                else:
+                    report, all_sources = self._render_daily_brief_v2(rendered_clusters)
+                    if placeholder_clusters:
+                        report = (
+                            f"{report}\n\nNote: {placeholder_clusters} topic cluster(s) are using placeholder source-grounded summaries because synthesis was unavailable."
+                        )
+                    if omitted_clusters:
+                        report = (
+                            f"{report}\n\nNote: {omitted_clusters} topic cluster(s) were omitted due to incomplete source-grounded synthesis."
+                        )
+                    payload = {
+                        "widget": {
+                            "type": "intelligence_brief",
+                            "data": {
+                                "headline_count": len(source),
+                                "source_pages_read": len(packets),
+                                "cluster_count": len(rendered_clusters),
+                                "placeholder_cluster_count": placeholder_clusters,
+                                "omitted_cluster_count": omitted_clusters,
+                            },
                         },
-                    },
-                    "brief_clusters": rendered_clusters,
-                    "sources": all_sources,
-                }
-                return self._ok_result(
-                    report.strip(),
-                    data=payload,
-                    request_id=request.request_id,
-                    speakable_text=(
-                        "Daily intelligence brief ready. "
-                        f"{len(rendered_clusters)} topic clusters across {len(all_sources)} sources."
-                    ),
+                        "brief_clusters": rendered_clusters,
+                        "sources": all_sources,
+                    }
+                    return self._ok_result(
+                        report.strip(),
+                        data=payload,
+                        request_id=request.request_id,
+                        speakable_text=(
+                            "Daily intelligence brief ready. "
+                            f"{len(rendered_clusters)} topic clusters across {len(all_sources)} sources."
+                        ),
+                    )
+            else:
+                degraded_note = (
+                    "Note: I couldn't read enough source pages in time, "
+                    "so this is a quicker headline-only brief. You can retry with today's news or narrow the topic."
                 )
 
         developing_stories = self._load_developing_stories()
@@ -1349,6 +1354,8 @@ class NewsIntelligenceExecutor:
             analysis_text=analysis,
             developing_stories=developing_stories,
         )
+        if degraded_note:
+            brief = f"{degraded_note}\n\n{brief}"
 
         prior = (request.params or {}).get("topic_history")
         prior_map = prior if isinstance(prior, dict) else {}
@@ -1363,7 +1370,7 @@ class NewsIntelligenceExecutor:
             data=payload,
             request_id=request.request_id,
             speakable_text=(
-                "Daily intelligence brief ready. "
+                f"{'Headline-only brief ready. ' if degraded_note else 'Daily intelligence brief ready. '}"
                 f"{self._speakable_preview(brief, limit=170)}"
             ),
         )

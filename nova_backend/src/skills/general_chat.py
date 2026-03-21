@@ -152,12 +152,12 @@ class GeneralChatSkill(BaseSkill):
         "explain deeply",
     )
     _GREETING_RESPONSES: Dict[str, str] = {
-        "hi": "Hello. What do you want to work on?",
-        "hello": "Hello. What do you want to work on?",
-        "hey": "Hello. What do you want to work on?",
-        "good morning": "Good morning. What do you want to work on?",
-        "good afternoon": "Good afternoon. What do you want to work on?",
-        "good evening": "Good evening. What do you want to work on?",
+        "hi": "Hello. How can I help?",
+        "hello": "Hello. How can I help?",
+        "hey": "Hello. How can I help?",
+        "good morning": "Good morning. How can I help?",
+        "good afternoon": "Good afternoon. How can I help?",
+        "good evening": "Good evening. How can I help?",
     }
     _THANKS_RESPONSES: Dict[str, str] = {
         "thanks": "You're welcome.",

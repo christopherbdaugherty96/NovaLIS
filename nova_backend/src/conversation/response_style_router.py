@@ -39,6 +39,12 @@ class InputNormalizer:
     )
 
     PHRASE_NORMALIZATION = (
+        (r"^\s*(?:tell me|show me)\s+what you can do\s*$", "what can you do"),
+        (r"^\s*what capabilities do you have\s*$", "what can you do"),
+        (r"^\s*what capabilities can you do\s*$", "what can you do"),
+        (r"^\s*one capabilities can you do\s*$", "what can you do"),
+        (r"^\s*what(?:'s| is)\s+(?:the\s+)?time\s*$", "what time is it"),
+        (r"^\s*time now\s*$", "what time is it"),
         (r"\bmake it louder\b", "volume up"),
         (r"\bturn (?:my )?sound up\b", "volume up"),
         (r"\bturn (?:the )?volume up\b", "volume up"),
@@ -72,6 +78,7 @@ class InputNormalizer:
         (r"^\s*i want to know about\s+(.+?)\s*$", r"research \1"),
         (r"^\s*i need info(?:rmation)? on\s+(.+?)\s*$", r"research \1"),
         (r"^\s*why is\s+(.+?)\s+(?:down|dropping|falling)\s*$", r"research why \1 is down"),
+        (r"\bwithin in local disk\b", "within local disk"),
         (r"\babc\s+new\b", "abc news"),
         (r"\babc\s+news\b", "abc news"),
     )
