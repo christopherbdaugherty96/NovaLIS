@@ -30,6 +30,9 @@ Current Phase-7 DeepSeek second-opinion companion packet:
 Current news experience and reasoning improvement packet:
 - `docs/design/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
 
+Current web-search answer and reasoning improvement packet:
+- `docs/design/NOVA_WEBSEARCH_ANSWER_AND_REASONING_PLAN_2026-03-21.md`
+
 Current bounded style planning packet:
 - `docs/design/NOVA_STYLE_LAYER_PLAN_2026-03-20.md`
 
