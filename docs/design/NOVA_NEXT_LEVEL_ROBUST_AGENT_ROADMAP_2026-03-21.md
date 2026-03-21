@@ -125,6 +125,10 @@ Writing-oriented connections:
 - OneNote exports or notes
 - PDFs and reference documents
 
+Read-only data connectors:
+- Crypto.com public market data
+- other public market/reference feeds only where they stay read-only and source-grounded
+
 Important product rule:
 - prefer source/file/workspace-level connections first
 - do not start by trying to drive every app UI directly
@@ -132,6 +136,7 @@ Important product rule:
 For example:
 - connecting to a Word document is better than pretending Nova should immediately remote-control Microsoft Word
 - connecting to a VS Code workspace or repo is better than starting with broad IDE automation
+- connecting to Crypto.com public market data is better than starting with trading or wallet actions
 
 ### 6. Background Tasks And Schedules
 Nova should eventually support visible, user-controlled recurring work such as:
@@ -221,6 +226,7 @@ Good first targets:
 - Google Docs
 - Notion exports/pages
 - Obsidian vaults
+- Crypto.com public market data API
 
 #### Stage B - Project-Aware Source Connectors
 Next, make those sources project-aware:
@@ -234,6 +240,11 @@ Only later, and only under approval, consider:
 - open this workspace
 - create a new note
 - insert reviewed text into a document
+
+The same rule should apply to crypto integrations:
+- public market data can be read earlier
+- trading, account, wallet, or withdrawal actions should not be part of the early connector lane
+- any private crypto API use belongs only in a much stricter governed execution context
 
 That belongs with stronger execution governance, not with casual chat.
 
@@ -274,6 +285,7 @@ These belong in Phase 8:
 - approval-gated connector actions
 - explicit scheduled actions or multi-step workflows with real-world effects
 - stronger permission surfaces tied to actual execution
+- any private or action-capable crypto API work
 
 Why they belong in Phase 8:
 - they touch real-world effect pathways
@@ -282,6 +294,23 @@ Why they belong in Phase 8:
 Important boundary:
 - read-only source connections can begin earlier
 - app control and write actions belong here
+- public crypto market data can begin earlier, but trading/account actions belong here or later only under explicit approval
+
+## Crypto.com Connector Note
+If you want Crypto.com specifically, the best first version is:
+- read-only public market data only
+- no trading
+- no account access
+- no withdrawals
+- no wallet actions
+
+Why this is the right first slice:
+- it is useful for prices, market snapshots, and crypto-related news context
+- it stays read-only
+- it fits the current product-track connector strategy
+- it avoids taking on finance-action risk early
+
+The official Crypto.com Exchange docs show public market-data endpoints such as `public/get-tickers`, while the private methods are the ones that require API key and digital signature for REST. The Crypto.com help center also states market API rate limits are enforced per IP address and describes API trading/key management separately.
 
 ### Phase 9 - Node-Scale Coherence
 These belong in Phase 9:
