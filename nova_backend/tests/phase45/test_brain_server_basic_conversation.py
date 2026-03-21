@@ -197,6 +197,59 @@ def test_explain_local_disk_project_handles_spokenish_path_request(monkeypatch):
     assert any("Top-level folders" in msg for msg in chat_messages)
 
 
+def test_summarize_named_workspace_returns_local_codebase_summary(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["summarize Nova-Project"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Local codebase summary" in msg for msg in chat_messages)
+    assert any("Likely implemented capabilities" in msg for msg in chat_messages)
+    assert any(r"C:\Nova-Project" in msg for msg in chat_messages)
+
+
+def test_what_does_this_codebase_do_returns_grounded_repo_summary(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["what does this codebase do?"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Local codebase summary" in msg for msg in chat_messages)
+    assert any("governed personal intelligence workspace" in msg.lower() for msg in chat_messages)
+
+
+def test_what_can_nova_do_based_on_its_own_code_reports_capability_signals(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["what can Nova do based on its own code?"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Likely implemented capabilities" in msg for msg in chat_messages)
+    assert any("active governed capabilities" in msg.lower() for msg in chat_messages)
+    assert any("governed web search" in msg.lower() or "analysis document" in msg.lower() for msg in chat_messages)
+
+
 def test_open_folder_named_workspace_resolves_to_repo_confirmation(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
