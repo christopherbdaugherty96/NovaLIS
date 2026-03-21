@@ -1,5 +1,5 @@
 # Phase 9 Document Map
-Updated: 2026-03-18
+Updated: 2026-03-20
 Status: Current design map
 Purpose: Separate the governed-node roadmap from older autonomy and mutation theory artifacts
 
@@ -7,6 +7,7 @@ Purpose: Separate the governed-node roadmap from older autonomy and mutation the
 - `docs/design/Phase 9/PHASE_9_GOVERNED_NODE_PLAN.md`
 
 This is the current Phase-9 planning core for Nova as a governed node and sovereignty platform.
+It now also carries the bounded future concept of governed capability growth, where Nova may coordinate proposed capability additions under explicit human approval without gaining self-expansion authority.
 
 ## Adjacent / Historical Research
 - the autonomy and mutation control design document in this folder
