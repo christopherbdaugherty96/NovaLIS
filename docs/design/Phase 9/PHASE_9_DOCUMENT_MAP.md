@@ -16,6 +16,7 @@ This document remains valuable long-range theory for autonomy tiers and mutation
 
 ## Cross-Phase Inputs
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
+- `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
 - `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
 - `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`

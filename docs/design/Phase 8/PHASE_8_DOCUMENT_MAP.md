@@ -16,6 +16,7 @@ It is useful context, but it is not the authoritative Phase-8 execution roadmap.
 
 ## Cross-Phase Inputs
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
+- `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
 - `docs/design/Phase 6/PHASE_6_SOVEREIGNTY_ALIGNMENT_AND_TRUST_LOOP_PLAN.md`
 - `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`

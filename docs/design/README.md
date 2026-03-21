@@ -21,6 +21,9 @@ Current bounded conversational planning packet:
 Current conversational-flow and silent-governor planning packet:
 - `docs/design/CONVERSATIONAL_FLOW_AND_SILENT_GOVERNOR_PLAN_2026-03-21.md`
 
+Current conversational competitiveness roadmap:
+- `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
+
 Current bounded style planning packet:
 - `docs/design/NOVA_STYLE_LAYER_PLAN_2026-03-20.md`
 
