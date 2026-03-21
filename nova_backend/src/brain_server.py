@@ -1878,10 +1878,18 @@ def _maybe_prepare_local_open_request(
         matched_kind = str(current_match.group("kind") or "").strip().lower()
     else:
         targeted_match = OPEN_LOCAL_PROJECT_TARGET_RE.match(text)
-        if not targeted_match:
-            return None
-        raw_target = str(targeted_match.group("target") or "").strip()
-        matched_kind = str(targeted_match.group("kind") or "").strip().lower()
+        if targeted_match:
+            raw_target = str(targeted_match.group("target") or "").strip()
+            matched_kind = str(targeted_match.group("kind") or "").strip().lower()
+        else:
+            stripped_text = str(text or "").strip()
+            if not stripped_text.lower().startswith("open "):
+                return None
+            raw_target = stripped_text[5:].strip()
+            direct_path = _resolve_existing_local_path(raw_target)
+            if direct_path is None:
+                return None
+            matched_kind = "folder"
 
     resolved_path = _resolve_local_project_path(
         raw_target,
