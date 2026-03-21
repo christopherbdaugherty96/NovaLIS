@@ -27,6 +27,9 @@ Current conversational competitiveness roadmap:
 Current next-level robust agent roadmap:
 - `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
 
+Current continuous Nova Agent-OS vision and trust roadmap:
+- `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
+
 Current Phase-7 DeepSeek second-opinion companion packet:
 - `docs/design/Phase 7/PHASE_7_DEEPSEEK_SECOND_OPINION_PLAN.md`
 

@@ -18,6 +18,7 @@ It is useful context, but it is not the authoritative Phase-8 execution roadmap.
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 - `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
+- `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
 - `docs/design/NOVA_WEBSEARCH_ANSWER_AND_REASONING_PLAN_2026-03-21.md`
 - `docs/design/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
@@ -48,6 +49,11 @@ The governed crypto connector and trading packet should be read this way in Phas
 - any private account API use belongs here
 - approval-gated live order placement belongs here
 - withdrawals, leverage, and derivatives should be treated as higher-risk later steps
+
+The continuous Agent-OS vision packet should be read this way in Phase 8:
+- governed document updates, GitHub write actions, app actions, and home actions belong here
+- "continuously on" does not remove approval requirements for real-world effects
+- actions remain explicit even if Nova becomes more present and useful
 
 ## Interpretation Rule
 When reading the Phase-8 folder:
