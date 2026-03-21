@@ -273,3 +273,29 @@ def test_search_synthesis_uses_bounded_gateway_timeout(executor, mock_network, s
 
     assert result.success is True
     assert captured["timeout"] == 4.2
+
+
+def test_research_fallback_single_source_uses_corroborating_result_signal():
+    from src.executors.web_search_executor import WebSearchExecutor
+
+    text = WebSearchExecutor._research_fallback(
+        "who won the super bowl 2026",
+        results=[
+            {
+                "title": "Seahawks 29-13 Patriots (Feb 8, 2026) Final Score - ESPN",
+                "snippet": "Seattle Seahawks beat the New England Patriots 29-13 in Super Bowl LX.",
+            },
+            {
+                "title": "Super Bowl LX - Wikipedia",
+                "snippet": "The Seattle Seahawks defeated the New England Patriots in Super Bowl LX.",
+            },
+        ],
+        source_packets=[
+            {"title": "The Final 2 Minutes Of Super Bowl LX"},
+        ],
+    )
+
+    lowered = text.lower()
+    assert "central reported development" not in lowered
+    assert "only reviewed one source page" in lowered
+    assert "seahawks 29-13 patriots" in lowered or "seattle seahawks" in lowered

@@ -68,6 +68,11 @@ def test_input_normalizer_maps_help_variants_to_capability_path():
     assert normalized.lower() == "what can you do."
 
 
+def test_input_normalizer_maps_help_typo_variant_to_capability_path():
+    normalized = InputNormalizer.normalize("what can you di")
+    assert normalized.lower() == "what can you do."
+
+
 def test_input_normalizer_maps_time_variant():
     normalized = InputNormalizer.normalize("what's the time")
     assert normalized.lower() == "what time is it."

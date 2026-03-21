@@ -220,8 +220,14 @@ class Governor:
             )
 
         if not self._execute_boundary.allow_execution():
+            capability_label = str(getattr(cap, "name", "that action") or "that action").replace("_", " ").strip()
             return self._normalize_action_result(
-                ActionResult.failure("That requires a specific action, which I can't perform right now."),
+                ActionResult.failure(
+                    (
+                        f"I recognized the action '{capability_label}', but this runtime can't execute it right now. "
+                        "Try again with a more specific local command or retry when execution is available."
+                    )
+                ),
                 capability_id=capability_id,
             )
 

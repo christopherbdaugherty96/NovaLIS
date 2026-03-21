@@ -2,6 +2,7 @@
 
 import logging
 import os
+import re
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 
@@ -294,9 +295,31 @@ class WebSearchExecutor:
                     "Details vary by outlet, so use the linked sources for full context."
                 )
             if len(leads) == 1:
+                lead = str(leads[0]).strip()
+                corroborating_signals: list[str] = []
+                for item in results[:3]:
+                    title = re.sub(r"<[^>]+>", "", str(item.get("title") or "")).strip()
+                    snippet = re.sub(r"<[^>]+>", "", str(item.get("snippet") or "")).strip()
+                    for candidate in (title, snippet):
+                        cleaned = " ".join(candidate.split()).strip()
+                        if not cleaned:
+                            continue
+                        if cleaned.lower() == lead.lower():
+                            continue
+                        corroborating_signals.append(cleaned)
+                if corroborating_signals:
+                    supporting = corroborating_signals[0]
+                    if len(supporting) > 220:
+                        supporting = supporting[:217].rstrip() + "..."
+                    return (
+                        f'I only reviewed one source page for "{query}". '
+                        f'Other result signals point to: {supporting} '
+                        "Check at least one more linked source before treating that as settled."
+                    )
                 return (
-                    f'Based on reviewed source pages for "{query}", the central reported development is {leads[0]}. '
-                    "Compare at least one additional source before final conclusions."
+                    f'I only reviewed one source page for "{query}". '
+                    f'The strongest reviewed title was {lead}. '
+                    "Check at least one more linked source before treating that as settled."
                 )
 
         snippets = [str(item.get("snippet") or "").strip() for item in results[:3] if str(item.get("snippet") or "").strip()]

@@ -43,6 +43,8 @@ class InputNormalizer:
         (r"^\s*what capabilities do you have\s*$", "what can you do"),
         (r"^\s*what capabilities can you do\s*$", "what can you do"),
         (r"^\s*one capabilities can you do\s*$", "what can you do"),
+        (r"^\s*what can you di(?:[.?!])?\s*$", "what can you do"),
+        (r"^\s*what can you doo(?:[.?!])?\s*$", "what can you do"),
         (r"^\s*what(?:'s| is)\s+(?:the\s+)?time\s*$", "what time is it"),
         (r"^\s*time now\s*$", "what time is it"),
         (r"\bmake it louder\b", "volume up"),

@@ -175,6 +175,14 @@ LOCAL_PROJECT_DISK_RE = re.compile(
     r"^\s*explain\s+(?P<target>.+?)\s+(?:within|on|from)\s+(?:in\s+)?local\s+disk\s*$",
     re.IGNORECASE,
 )
+OPEN_LOCAL_PROJECT_CURRENT_RE = re.compile(
+    r"^\s*open\s+(?:this\s+)?(?P<kind>repo(?:sitory)?|project|folder|directory)\s*$",
+    re.IGNORECASE,
+)
+OPEN_LOCAL_PROJECT_TARGET_RE = re.compile(
+    r"^\s*open\s+(?P<kind>repo(?:sitory)?|project|folder|directory)\s+(?P<target>.+?)\s*$",
+    re.IGNORECASE,
+)
 
 CREATE_THREAD_RE = re.compile(
     r"^\s*(?:create|start)\s+(?:project\s+)?thread\s+(?P<name>.+?)\s*$",
@@ -1396,6 +1404,73 @@ def _maybe_handle_local_project_request(
     return message, suggestions, str(resolved_path)
 
 
+def _maybe_prepare_local_open_request(
+    text: str,
+    *,
+    working_context: WorkingContextStore,
+    session_state: dict[str, Any],
+) -> tuple[str, list[dict[str, str]], dict[str, Any] | None] | None:
+    raw_target = ""
+    matched_kind = ""
+
+    current_match = OPEN_LOCAL_PROJECT_CURRENT_RE.match(text)
+    if current_match:
+        matched_kind = str(current_match.group("kind") or "").strip().lower()
+    else:
+        targeted_match = OPEN_LOCAL_PROJECT_TARGET_RE.match(text)
+        if not targeted_match:
+            return None
+        raw_target = str(targeted_match.group("target") or "").strip()
+        matched_kind = str(targeted_match.group("kind") or "").strip().lower()
+
+    resolved_path = _resolve_local_project_path(
+        raw_target,
+        working_context=working_context,
+        session_state=session_state,
+    )
+    if resolved_path is None:
+        target_label = raw_target or f"this {matched_kind or 'folder'}"
+        workspace_path = ""
+        paths = _candidate_local_project_paths(working_context, session_state)
+        if paths:
+            workspace_path = str(paths[0])
+        lines = [
+            f"I can open a local {matched_kind or 'folder'}, but I need a concrete path or a clearly identified current workspace for '{target_label}'.",
+        ]
+        if workspace_path:
+            lines.append("If you mean the current workspace, try: open this repo")
+            lines.append(f"Current workspace: {workspace_path}")
+        lines.extend(
+            [
+                "",
+                "Try next:",
+                "- open this repo",
+                r"- open folder C:\path\to\your\project",
+                "- audit this repo",
+            ]
+        )
+        suggestions = [
+            {"label": "Open this repo", "command": "open this repo"},
+            {"label": "Audit this repo", "command": "audit this repo"},
+            {"label": "Open documents", "command": "open documents"},
+        ]
+        return "\n".join(lines), suggestions, None
+
+    open_path = resolved_path if resolved_path.is_dir() else resolved_path.parent
+    resource = str(open_path)
+    message = (
+        f"Open {resource}?\n"
+        "This action needs confirmation.\n"
+        "Reply 'yes' to proceed or 'no' to cancel."
+    )
+    suggestions = [
+        {"label": "Open folder", "command": f"open {open_path}"},
+        {"label": "Audit this repo", "command": "audit this repo"},
+        {"label": "Explain this", "command": "explain this"},
+    ]
+    return message, suggestions, {"path": resource}
+
+
 def _canonical_thread_reference(value: str) -> str:
     return str(value or "").strip().lower().rstrip(".?!")
 
@@ -2586,6 +2661,22 @@ async def websocket_endpoint(ws: WebSocket):
                         {"label": "Today's news", "command": "today's news"},
                     ],
                 )
+                await send_chat_done(ws)
+                continue
+
+            local_open_request = _maybe_prepare_local_open_request(
+                command_text,
+                working_context=working_context,
+                session_state=session_state,
+            )
+            if local_open_request is not None:
+                open_message, open_suggestions, open_params = local_open_request
+                if isinstance(open_params, dict):
+                    session_state["pending_governed_confirm"] = {
+                        "capability_id": 22,
+                        "params": dict(open_params),
+                    }
+                await send_chat_message(ws, open_message, suggested_actions=open_suggestions)
                 await send_chat_done(ws)
                 continue
 

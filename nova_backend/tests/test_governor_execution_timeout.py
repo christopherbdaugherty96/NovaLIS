@@ -379,3 +379,25 @@ def test_governor_uses_extended_timeout_for_daily_brief(monkeypatch):
 
     assert result.success is True
     assert captured["timeout_seconds"] == 35.0
+
+
+def test_governor_blocked_execution_message_names_the_action(monkeypatch):
+    from src.governor.governor import Governor
+
+    gov = Governor()
+
+    class FakeRegistry:
+        def get(self, capability_id):
+            return types.SimpleNamespace(name="open_folder")
+
+        def is_enabled(self, capability_id):
+            return True
+
+    gov._registry = FakeRegistry()
+    monkeypatch.setattr(gov._execute_boundary, "allow_execution", lambda: False)
+
+    result = gov.handle_governed_invocation(22, {"path": r"C:\Nova-Project"})
+
+    assert result.success is False
+    assert "open folder" in result.message.lower()
+    assert "can't execute it right now" in result.message.lower()
