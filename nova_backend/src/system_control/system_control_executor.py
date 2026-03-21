@@ -19,6 +19,43 @@ class SystemControlExecutor:
     KEYEVENTF_KEYUP = 0x0002
 
     @staticmethod
+    def _workspace_path_roots() -> tuple[Path, ...]:
+        roots: list[Path] = []
+        seen: set[str] = set()
+
+        def _add(path_value: Path | None) -> None:
+            if path_value is None:
+                return
+            try:
+                resolved = path_value.resolve()
+            except Exception:
+                return
+            key = str(resolved).lower()
+            if key in seen or not resolved.exists():
+                return
+            seen.add(key)
+            roots.append(resolved)
+
+        try:
+            cwd = Path.cwd().resolve()
+        except Exception:
+            cwd = None
+
+        if cwd is None:
+            return ()
+
+        _add(cwd)
+        for candidate in [cwd, *cwd.parents]:
+            try:
+                if (candidate / ".git").exists():
+                    _add(candidate)
+                    break
+            except Exception:
+                continue
+
+        return tuple(roots)
+
+    @staticmethod
     def _allowed_path_roots() -> tuple[Path, ...]:
         home = Path.home().resolve()
         return (
@@ -27,6 +64,7 @@ class SystemControlExecutor:
             (home / "Downloads").resolve(),
             (home / "Desktop").resolve(),
             (home / "Pictures").resolve(),
+            *SystemControlExecutor._workspace_path_roots(),
         )
 
     @classmethod
