@@ -490,6 +490,38 @@ def test_open_this_repo_confirmation_executes_resolved_repo_path(monkeypatch):
     assert any("Opened folder: C:\\Nova-Project" in msg for msg in chat_messages)
 
 
+def test_open_explicit_repo_path_confirmation_executes_resolved_repo_path(monkeypatch):
+    from src.actions.action_result import ActionResult
+
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket([r"open C:\Nova-Project", "yes"])
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        assert capability_id == 22
+        assert params.get("confirmed") is True
+        assert params.get("path") == r"C:\Nova-Project"
+        return ActionResult.ok(
+            r"Opened folder: C:\Nova-Project",
+            data={"path": r"C:\Nova-Project", "opened_kind": "folder"},
+            request_id="open-explicit-path-test",
+        )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.invoke_governed_capability",
+        side_effect=_fake_invoke_governed_capability,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Open C:\\Nova-Project?" in msg for msg in chat_messages)
+    assert any("Opened folder: C:\\Nova-Project" in msg for msg in chat_messages)
+
+
 def test_project_status_this_without_active_thread_is_actionable(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
