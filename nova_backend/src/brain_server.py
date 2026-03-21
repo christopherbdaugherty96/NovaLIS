@@ -195,6 +195,10 @@ CODEBASE_CAPABILITY_RE = re.compile(
     r"^\s*what\s+can\s+(?P<target>.+?)\s+do\s+based\s+on\s+(?:its|their|the)\s+own\s+code\s*$",
     re.IGNORECASE,
 )
+LOCAL_ARCHITECTURE_REPORT_RE = re.compile(
+    r"^\s*create\s+(?:an?\s+)?(?:analysis\s+)?report\s+on\s+(?P<target>.+?)\s+architecture\s*$",
+    re.IGNORECASE,
+)
 OPEN_LOCAL_PROJECT_CURRENT_RE = re.compile(
     r"^\s*open\s+(?:this\s+)?(?P<kind>repo(?:sitory)?|project|folder|directory)\s*$",
     re.IGNORECASE,
@@ -1611,6 +1615,82 @@ def _render_local_project_summary(path: Path) -> tuple[str, list[dict[str, str]]
     return "\n".join(lines), suggestions
 
 
+def _render_local_architecture_report(path: Path) -> tuple[str, list[dict[str, str]]]:
+    target = path.resolve()
+    readme_text = _read_small_text_file(target / "README.md")
+    repo_map_text = _read_small_text_file(target / "REPO_MAP.md")
+    guide_text = _read_small_text_file(target / "docs" / "reference" / "HUMAN_GUIDES" / "README.md")
+
+    project_summary = (
+        _extract_markdown_paragraph(readme_text)
+        or _extract_markdown_paragraph(guide_text)
+        or "I found the local project, but I could only extract a limited architecture summary from the available docs."
+    )
+    repo_map_summary = _extract_markdown_paragraph(repo_map_text)
+    markers = _local_project_markers(target)
+    surfaces = _major_project_surfaces(target)
+    backend_modules = _major_backend_modules(target)
+    registry_snapshot = _capability_registry_snapshot(target)
+
+    try:
+        top_level_dirs = sorted(
+            [entry.name for entry in target.iterdir() if entry.is_dir() and not entry.name.startswith(".")],
+            key=str.lower,
+        )[:6]
+    except Exception:
+        top_level_dirs = []
+
+    lines = [
+        "Local architecture report",
+        f"Target: {target}",
+        "",
+        f"Project summary: {project_summary}",
+    ]
+    if repo_map_summary:
+        lines.append(f"Architecture orientation: {repo_map_summary}")
+    if markers:
+        lines.append(f"Repo markers: {', '.join(markers[:6])}")
+    if top_level_dirs:
+        lines.append("Primary folders:")
+        lines.extend(f"- {name}" for name in top_level_dirs)
+    if surfaces:
+        lines.append("Major surfaces:")
+        lines.extend(f"- {item}" for item in surfaces[:6])
+    if backend_modules:
+        lines.append("Backend architecture:")
+        lines.extend(f"- {item}" for item in backend_modules[:6])
+    if registry_snapshot:
+        active_count = int(registry_snapshot.get("active_count") or 0)
+        group_names = ", ".join(list(registry_snapshot.get("group_names") or [])[:4]) or "unlabeled groups"
+        capability_examples = ", ".join(list(registry_snapshot.get("active_names") or [])[:6]) or "no clear capability names"
+        lines.extend(
+            [
+                "Implemented capability signals:",
+                f"- Registry shows {active_count} active governed capabilities across {group_names}.",
+                f"- Example active capabilities: {capability_examples}.",
+            ]
+        )
+    lines.extend(
+        [
+            "Report note:",
+            "- This is a local read-only architecture report built from README, REPO_MAP, folder structure, and registry signals.",
+            "- It does not inspect every source file or claim a full code-level audit.",
+            "",
+            "Try next:",
+            "- summarize this repo",
+            "- audit this repo",
+            "- what can Nova do based on its own code?",
+        ]
+    )
+
+    suggestions = [
+        {"label": "Summarize repo", "command": "summarize this repo"},
+        {"label": "Audit this repo", "command": "audit this repo"},
+        {"label": "Open folder", "command": f"open {target}"},
+    ]
+    return "\n".join(lines), suggestions
+
+
 def _maybe_handle_local_project_request(
     text: str,
     *,
@@ -1669,6 +1749,29 @@ def _maybe_handle_local_project_request(
         return "\n".join(lines), suggestions, ""
 
     message, suggestions = _render_local_project_summary(resolved_path)
+    return message, suggestions, str(resolved_path)
+
+
+def _maybe_handle_local_architecture_report_request(
+    text: str,
+    *,
+    working_context: WorkingContextStore,
+    session_state: dict[str, Any],
+) -> tuple[str, list[dict[str, str]], str] | None:
+    match = LOCAL_ARCHITECTURE_REPORT_RE.match(text)
+    if not match:
+        return None
+
+    raw_target = str(match.group("target") or "").strip()
+    resolved_path = _resolve_local_project_path(
+        raw_target,
+        working_context=working_context,
+        session_state=session_state,
+    )
+    if resolved_path is None:
+        return None
+
+    message, suggestions = _render_local_architecture_report(resolved_path)
     return message, suggestions, str(resolved_path)
 
 
@@ -3040,6 +3143,26 @@ async def websocket_endpoint(ws: WebSocket):
                             "current_step": "local_codebase_summary",
                         },
                         source="local_codebase_summary",
+                    )
+                    session_state["working_context"] = working_context.to_dict()
+                await _complete_immediate_turn(project_message, suggested_actions=project_suggestions)
+                continue
+
+            local_architecture_report = _maybe_handle_local_architecture_report_request(
+                command_text,
+                working_context=working_context,
+                session_state=session_state,
+            )
+            if local_architecture_report is not None:
+                project_message, project_suggestions, resolved_path = local_architecture_report
+                if resolved_path:
+                    session_state["last_object"] = resolved_path
+                    working_context.apply_patch(
+                        {
+                            "last_relevant_object": resolved_path,
+                            "current_step": "local_architecture_report",
+                        },
+                        source="local_architecture_report",
                     )
                     session_state["working_context"] = working_context.to_dict()
                 await _complete_immediate_turn(project_message, suggested_actions=project_suggestions)
