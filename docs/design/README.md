@@ -18,6 +18,9 @@ Current cross-phase planning packet:
 Current bounded conversational planning packet:
 - `docs/design/CONVERSATIONAL_CORE_PHASE_PLAN_2026-03-19.md`
 
+Current conversational-flow and silent-governor planning packet:
+- `docs/design/CONVERSATIONAL_FLOW_AND_SILENT_GOVERNOR_PLAN_2026-03-21.md`
+
 Current bounded style planning packet:
 - `docs/design/NOVA_STYLE_LAYER_PLAN_2026-03-20.md`
 
@@ -37,6 +40,7 @@ Current conversational/style baseline on `main`:
 Current recommended next-step posture:
 - pause and evaluate the new baseline in use
 - if work resumes, prefer a fresh small branch for a non-chat style consistency audit before broader new conversation behavior
+- if the next target is conversation feel rather than surface consistency, use the bounded conversational-flow and silent-governor packet rather than broadening authority or personality work
 
 Canonical design phase folders:
 - `Phase 4`
