@@ -19,6 +19,7 @@ This document remains valuable long-range theory for autonomy tiers and mutation
 - `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
+- `docs/design/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
 - `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
 - `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`
@@ -41,6 +42,13 @@ The next-level robust agent roadmap should be read this way in Phase 9:
   - shared task visibility across Nova surfaces
   - one trust model across device and client boundaries
 - it does not authorize hidden learning or silent authority growth
+
+The governed crypto connector and trading packet should be read this way in Phase 9:
+- Phase-9-relevant items are coherence features such as:
+  - shared watchlists across devices
+  - portfolio context coherence across clients
+  - consistent crypto alert/task visibility across Nova surfaces
+- it does not authorize autonomous live trading
 
 ## Interpretation Rule
 When reading the Phase-9 folder:

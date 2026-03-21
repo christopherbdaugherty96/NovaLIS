@@ -7,11 +7,13 @@ Purpose: Separate long-horizon reviewable learning direction from older speculat
 - `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
 - `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
+- `docs/design/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
 
 These documents are the clearest current inputs for what should belong in Phase 10:
 - reviewable learning
 - adaptive behavior only with auditability
 - durable preference and retrieval adaptation only with rollback and approval
+- any much-later self-adjusting or reduced-approval crypto trading ideas only under strict reviewable controls
 
 ## Historical / Adjacent Input
 - `docs/design/Phase 10/PHASE 10.txt`
