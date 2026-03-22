@@ -20,6 +20,9 @@ Current Phase-7 web-search reasoning companion input:
 Current Phase-7 crypto reasoning companion input:
 - `docs/design/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
 
+Current governed intelligence execution direction companion input:
+- `docs/design/NOVA_GOVERNED_INTELLIGENCE_EXECUTION_DIRECTION_2026-03-21.md`
+
 This companion packet captures one specific product shape inside that same phase:
 - DeepSeek as a governed second-opinion reasoning source inside the same Nova chat box
 - Nova remaining the primary voice
@@ -51,6 +54,14 @@ The crypto connector and trading packet should be read this way in Phase 7:
   - optional second-opinion review of crypto research
 - it does not authorize live trading
 
+The governed intelligence execution direction packet should be read this way in Phase 7:
+- Phase-7-relevant items are the governed multi-model intelligence layers:
+  - external reasoning as bounded intelligence input
+  - verification or fact-check paths later
+  - stronger structured intelligence for harder research/search/news questions
+  - cost-aware reasoning routing that still preserves the intelligence-authority boundary
+- it does not authorize action autonomy
+
 ## Adjacent / Historical Phase-7-Era Research
 - the older Phase-7 architecture document in this folder
 - the older intelligence-capacity thesis document in this folder
@@ -62,6 +73,7 @@ Many of them describe broader presence and background-cognition ideas that are b
 ## Cross-Phase Inputs
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 - `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
+- `docs/design/NOVA_GOVERNED_INTELLIGENCE_EXECUTION_DIRECTION_2026-03-21.md`
 - `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
 - `docs/design/Phase 6/PHASE_6_SOVEREIGNTY_ALIGNMENT_AND_TRUST_LOOP_PLAN.md`
