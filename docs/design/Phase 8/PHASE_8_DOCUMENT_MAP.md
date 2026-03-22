@@ -17,6 +17,7 @@ It is useful context, but it is not the authoritative Phase-8 execution roadmap.
 ## Cross-Phase Inputs
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 - `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
+- `docs/design/NOVA_GOVERNED_INTELLIGENCE_EXECUTION_DIRECTION_2026-03-21.md`
 - `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
@@ -54,6 +55,12 @@ The continuous Agent-OS vision packet should be read this way in Phase 8:
 - governed document updates, GitHub write actions, app actions, and home actions belong here
 - "continuously on" does not remove approval requirements for real-world effects
 - actions remain explicit even if Nova becomes more present and useful
+
+The governed intelligence execution direction packet should be read this way in Phase 8:
+- capability-to-action predictability belongs here once actions have real-world effect
+- screen/context awareness may feed governed action previews and explicit execution paths here
+- structured reasoning output can support action previews, but must not become approval authority
+- nothing in this packet authorizes silent jumps from reasoning to execution
 
 ## Interpretation Rule
 When reading the Phase-8 folder:

@@ -24,6 +24,9 @@ Current conversational-flow and silent-governor planning packet:
 Current conversational competitiveness roadmap:
 - `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
 
+Current governed intelligence execution direction packet:
+- `docs/design/NOVA_GOVERNED_INTELLIGENCE_EXECUTION_DIRECTION_2026-03-21.md`
+
 Current next-level robust agent roadmap:
 - `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
 

@@ -17,6 +17,7 @@ This document remains valuable long-range theory for autonomy tiers and mutation
 ## Cross-Phase Inputs
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 - `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
+- `docs/design/NOVA_GOVERNED_INTELLIGENCE_EXECUTION_DIRECTION_2026-03-21.md`
 - `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
@@ -55,6 +56,11 @@ The continuous Agent-OS vision packet should be read this way in Phase 9:
 - this is where Nova becomes a truly continuous node across devices and surfaces
 - cross-client project continuity, shared schedules, shared memory behavior, and one trust model belong here
 - continuity does not equal hidden autonomy
+
+The governed intelligence execution direction packet should be read this way in Phase 9:
+- Nova should preserve one governed reasoning-and-action contract across clients and surfaces
+- continuity of system identity should not become self-starting execution
+- trust, predictability, and visible capability boundaries remain more important than generic agent behavior
 
 ## Interpretation Rule
 When reading the Phase-9 folder:
