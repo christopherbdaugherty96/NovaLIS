@@ -697,6 +697,19 @@ class GeneralChatSkill(BaseSkill):
             hints.append(f"Latest recommendation: {self._clip_summary_text(conversation_context.latest_recommendation)}")
         if conversation_context.presentation_preference:
             hints.append(f"Presentation preference: {conversation_context.presentation_preference}")
+        relevant_memory = list(state.get("relevant_memory_context") or [])
+        if relevant_memory:
+            for item in relevant_memory[:3]:
+                row = dict(item or {})
+                content = self._clip_summary_text(str(row.get("content") or row.get("title") or "").strip())
+                if not content:
+                    continue
+                item_id = str(row.get("id") or "").strip()
+                thread_name = str(row.get("thread_name") or "").strip()
+                label = f"Relevant explicit memory {item_id}" if item_id else "Relevant explicit memory"
+                if thread_name:
+                    label += f" (thread: {thread_name})"
+                hints.append(f"{label}: {content}")
         rewrite_hint = self._build_rewrite_hint(normalized_query, context=context)
         if rewrite_hint:
             hints.append(rewrite_hint)
