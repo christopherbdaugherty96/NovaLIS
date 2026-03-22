@@ -166,6 +166,116 @@ def test_memory_items_support_thread_link_and_filter(tmp_path: Path):
     assert "Tags:" in show_result.message
 
 
+def test_memory_save_persists_explicit_user_metadata(tmp_path: Path):
+    store = GovernedMemoryStore(tmp_path / "memory_items.json")
+    executor = MemoryGovernanceExecutor(store=store)
+
+    save_result = executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={
+                "action": "save",
+                "body": "Client supplies alcohol; Pour Social does not sell alcohol.",
+                "source": "explicit_user_save",
+                "session_id": "session-123",
+                "user_visible": True,
+            },
+        )
+    )
+
+    assert save_result.success is True
+    item = dict(save_result.data or {}).get("memory_item") or {}
+    assert item.get("source") == "explicit_user_save"
+    assert item.get("session_id") == "session-123"
+    assert item.get("user_visible") is True
+    assert item.get("content_raw") == "Client supplies alcohol; Pour Social does not sell alcohol."
+    assert str(item.get("content_display") or "").startswith("Client supplies alcohol")
+    assert item.get("status") == "active"
+
+
+def test_memory_supersede_preserves_visibility_links_and_sets_edit_metadata(tmp_path: Path):
+    store = GovernedMemoryStore(tmp_path / "memory_items.json")
+    executor = MemoryGovernanceExecutor(store=store)
+
+    saved = executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={
+                "action": "save",
+                "title": "Pour Social alcohol policy",
+                "body": "Client supplies alcohol; Pour Social does not sell alcohol.",
+                "thread_name": "Pour Social",
+                "thread_key": "pour social",
+                "source": "explicit_user_save",
+                "session_id": "session-1",
+                "user_visible": True,
+            },
+        )
+    )
+    original = dict(saved.data or {}).get("memory_item") or {}
+    original_id = str(original.get("id") or "")
+
+    updated = executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={
+                "action": "supersede",
+                "item_id": original_id,
+                "new_body": "Client supplies alcohol for private events only; Pour Social does not sell alcohol.",
+                "confirmed": True,
+                "source": "explicit_user_edit",
+                "session_id": "session-2",
+                "user_visible": True,
+            },
+        )
+    )
+
+    assert updated.success is True
+    replacement = dict(updated.data or {}).get("memory_item") or {}
+    assert replacement.get("source") == "explicit_user_edit"
+    assert replacement.get("session_id") == "session-2"
+    assert replacement.get("user_visible") is True
+    assert replacement.get("status") == "locked"
+    assert replacement.get("content_raw") == "Client supplies alcohol for private events only; Pour Social does not sell alcohol."
+    assert dict(replacement.get("links") or {}).get("project_thread_name") == "Pour Social"
+    assert original_id in list(dict(replacement.get("lock") or {}).get("supersedes") or [])
+
+
+def test_memory_relevant_search_prefers_visible_matching_items(tmp_path: Path):
+    store = GovernedMemoryStore(tmp_path / "memory_items.json")
+    executor = MemoryGovernanceExecutor(store=store)
+
+    executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={
+                "action": "save",
+                "title": "Pour Social alcohol policy",
+                "body": "Client supplies alcohol; Pour Social does not sell alcohol.",
+                "thread_name": "Pour Social",
+                "thread_key": "pour social",
+                "tags": ["events", "alcohol"],
+            },
+        )
+    )
+    executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={
+                "action": "save",
+                "title": "GPU note",
+                "body": "Use enough VRAM for local inference.",
+                "scope": "nova_core",
+            },
+        )
+    )
+
+    matches = store.find_relevant_items("What did we save about Pour Social alcohol?", thread_name="Pour Social", limit=3)
+    assert matches
+    assert matches[0]["title"] == "Pour Social alcohol policy"
+    assert all(match.get("user_visible", True) for match in matches)
+
+
 def test_thread_bridge_actions_require_orchestration_context(tmp_path: Path):
     store = GovernedMemoryStore(tmp_path / "memory_items.json")
     executor = MemoryGovernanceExecutor(store=store)

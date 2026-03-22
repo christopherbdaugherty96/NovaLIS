@@ -577,6 +577,303 @@ def test_silent_memory_overview_refresh_updates_widget_without_chat_noise(monkey
     assert any(msg.get("type") == "memory_overview" for msg in ws.sent_messages)
 
 
+def test_save_this_uses_last_response_and_routes_to_governed_memory(monkeypatch):
+    from src.actions.action_result import ActionResult
+
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(
+        brain_server,
+        "_local_now",
+        lambda: datetime(2026, 3, 21, 10, 15),
+    )
+
+    ws = _ScriptedWebSocket(["what time is it", "save this"])
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        assert capability_id == 61
+        assert params.get("action") == "save"
+        assert params.get("body") == "It's 10:15 AM."
+        assert params.get("source") == "explicit_user_save"
+        assert params.get("user_visible") is True
+        return ActionResult.ok(
+            'Saved. Memory MEM-00001: "It\'s 10:15 AM.".',
+            data={"memory_item": {"id": "MEM-00001", "content_display": "It's 10:15 AM."}},
+            request_id="memory-save-this-test",
+        )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.invoke_governed_capability",
+        side_effect=_fake_invoke_governed_capability,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any('Saved. Memory MEM-00001: "It\'s 10:15 AM.".' in msg for msg in chat_messages)
+
+
+def test_remember_this_with_inline_text_routes_directly_to_memory(monkeypatch):
+    from src.actions.action_result import ActionResult
+
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["remember this: Client supplies alcohol; Pour Social does not sell alcohol."])
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        assert capability_id == 61
+        assert params.get("action") == "save"
+        assert params.get("body") == "Client supplies alcohol; Pour Social does not sell alcohol."
+        assert params.get("title").startswith("Client supplies alcohol")
+        return ActionResult.ok(
+            'Saved. Memory MEM-00002: "Client supplies alcohol; Pour Social does not sell alcohol.".',
+            data={
+                "memory_item": {
+                    "id": "MEM-00002",
+                    "content_display": "Client supplies alcohol; Pour Social does not sell alcohol.",
+                }
+            },
+            request_id="memory-inline-save-test",
+        )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.invoke_governed_capability",
+        side_effect=_fake_invoke_governed_capability,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("MEM-00002" in msg for msg in chat_messages)
+
+
+def test_save_this_without_prior_content_fails_safe(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["save this"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.invoke_governed_capability",
+        side_effect=AssertionError("memory save should not run"),
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("I can save something explicitly, but I need the content first." in msg for msg in chat_messages)
+
+
+def test_list_memories_alias_routes_to_governed_memory(monkeypatch):
+    from src.actions.action_result import ActionResult
+
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["list memories"])
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        assert capability_id == 61
+        assert params.get("action") == "list"
+        return ActionResult.ok(
+            "Memory Items (1)\n- MEM-00003 | active | Example",
+            data={"memory_items": [{"id": "MEM-00003", "title": "Example", "tier": "active"}]},
+            request_id="memory-list-alias-test",
+        )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.invoke_governed_capability",
+        side_effect=_fake_invoke_governed_capability,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Memory Items (1)" in msg for msg in chat_messages)
+
+
+def test_show_that_memory_uses_last_saved_memory_reference(monkeypatch):
+    from src.actions.action_result import ActionResult
+
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(
+        [
+            "remember this: Client supplies alcohol; Pour Social does not sell alcohol.",
+            "show that memory",
+        ]
+    )
+    calls: list[tuple[int, dict]] = []
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        calls.append((capability_id, dict(params)))
+        if len(calls) == 1:
+            return ActionResult.ok(
+                'Saved. Memory MEM-00010: "Client supplies alcohol; Pour Social does not sell alcohol.".',
+                data={"memory_item": {"id": "MEM-00010", "content_display": "Client supplies alcohol; Pour Social does not sell alcohol."}},
+                request_id="memory-save-test",
+            )
+        assert capability_id == 61
+        assert params.get("action") == "show"
+        assert params.get("item_id") == "MEM-00010"
+        return ActionResult.ok(
+            "MEM-00010 (active)\nTitle: Pour Social alcohol policy\nScope: project\nStatus: active\nSource: explicit_user_save\n\nClient supplies alcohol; Pour Social does not sell alcohol.",
+            data={"memory_item": {"id": "MEM-00010", "title": "Pour Social alcohol policy", "status": "active"}},
+            request_id="memory-show-test",
+        )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.invoke_governed_capability",
+        side_effect=_fake_invoke_governed_capability,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("MEM-00010 (active)" in msg for msg in chat_messages)
+
+
+def test_delete_that_memory_requires_confirmation_then_executes(monkeypatch):
+    from src.actions.action_result import ActionResult
+
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(
+        [
+            "remember this: Client supplies alcohol; Pour Social does not sell alcohol.",
+            "delete that memory",
+            "yes",
+        ]
+    )
+    calls: list[tuple[int, dict]] = []
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        calls.append((capability_id, dict(params)))
+        if len(calls) == 1:
+            return ActionResult.ok(
+                'Saved. Memory MEM-00011: "Client supplies alcohol; Pour Social does not sell alcohol.".',
+                data={"memory_item": {"id": "MEM-00011", "title": "Pour Social alcohol policy"}},
+                request_id="memory-save-test",
+            )
+        assert capability_id == 61
+        assert params.get("action") == "delete"
+        assert params.get("item_id") == "MEM-00011"
+        assert params.get("confirmed") is True
+        return ActionResult.ok(
+            "Deleted memory MEM-00011.\nTry next:\n- list memories\n- memory overview",
+            data={"memory_item": {"id": "MEM-00011"}},
+            request_id="memory-delete-test",
+        )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.invoke_governed_capability",
+        side_effect=_fake_invoke_governed_capability,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Delete memory MEM-00011" in msg for msg in chat_messages)
+    assert any("Deleted memory MEM-00011." in msg for msg in chat_messages)
+
+
+def test_edit_that_memory_requires_confirmation_then_supersedes(monkeypatch):
+    from src.actions.action_result import ActionResult
+
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(
+        [
+            "remember this: Client supplies alcohol; Pour Social does not sell alcohol.",
+            "edit that memory: Client supplies alcohol for private events only; Pour Social does not sell alcohol.",
+            "yes",
+        ]
+    )
+    calls: list[tuple[int, dict]] = []
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        calls.append((capability_id, dict(params)))
+        if len(calls) == 1:
+            return ActionResult.ok(
+                'Saved. Memory MEM-00012: "Client supplies alcohol; Pour Social does not sell alcohol.".',
+                data={"memory_item": {"id": "MEM-00012", "title": "Pour Social alcohol policy"}},
+                request_id="memory-save-test",
+            )
+        assert capability_id == 61
+        assert params.get("action") == "supersede"
+        assert params.get("item_id") == "MEM-00012"
+        assert params.get("new_body") == "Client supplies alcohol for private events only; Pour Social does not sell alcohol."
+        assert params.get("source") == "explicit_user_edit"
+        assert params.get("confirmed") is True
+        return ActionResult.ok(
+            "Updated memory with replacement item MEM-00013.\nTry next:\n- memory show MEM-00013\n- list memories\n- memory unlock MEM-00013",
+            data={"memory_item": {"id": "MEM-00013", "source": "explicit_user_edit"}},
+            request_id="memory-edit-test",
+        )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.invoke_governed_capability",
+        side_effect=_fake_invoke_governed_capability,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Update memory MEM-00012" in msg for msg in chat_messages)
+    assert any("Updated memory with replacement item MEM-00013." in msg for msg in chat_messages)
+
+
+def test_general_chat_receives_relevant_explicit_memory_context(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["What do we remember about Pour Social and alcohol service?"])
+    prompts: list[str] = []
+
+    def _fake_generate_chat(prompt: str, **kwargs):
+        prompts.append(prompt)
+        return "The saved note says the client supplies alcohol and Pour Social does not sell alcohol."
+
+    monkeypatch.setattr(
+        brain_server,
+        "_select_relevant_memory_context",
+        lambda *args, **kwargs: [
+            {
+                "id": "MEM-00020",
+                "content": "Client supplies alcohol; Pour Social does not sell alcohol.",
+                "thread_name": "Pour Social",
+            }
+        ],
+    )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert prompts
+    assert "Relevant explicit memory MEM-00020 (thread: Pour Social): Client supplies alcohol; Pour Social does not sell alcohol." in prompts[-1]
+
+
 def test_followup_chat_uses_recent_conversation_context(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,

@@ -126,7 +126,7 @@ const QUICK_ACTIONS_BY_PAGE = {
   ],
   memory: [
     { id: "memory_page_overview", label: "Overview", command: "memory overview", stayOnPage: true },
-    { id: "memory_page_list", label: "List memory", command: "memory list", switchToPage: "chat" },
+    { id: "memory_page_list", label: "List memory", command: "list memories", switchToPage: "chat" },
     { id: "memory_page_threads", label: "Thread memory", command: "memory list thread this", switchToPage: "chat" },
     { id: "memory_page_save", label: "Save decision", command: "memory save decision for deployment issue: verify next step", switchToPage: "chat" },
   ],
@@ -836,7 +836,7 @@ function renderMemoryOverviewWidget(data = {}) {
   if (scopeRow) {
     clear(scopeRow);
     [
-      { label: "General", value: Number(scopes.general || 0) },
+      { label: "Core", value: Number(scopes.nova_core || scopes.general || 0) },
       { label: "Project", value: Number(scopes.project || 0) },
       { label: "Ops", value: Number(scopes.ops || 0) },
     ].forEach((entry) => {
@@ -4490,7 +4490,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const memoryListBtn = $("btn-memory-list");
   if (memoryListBtn) memoryListBtn.addEventListener("click", () => {
     setActivePage("chat");
-    injectUserText("memory list", "text");
+    injectUserText("list memories", "text");
   });
 
   const memoryThreadsBtn = $("btn-memory-threads");
@@ -4505,7 +4505,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const memoryReviewListBtn = $("btn-memory-review-list");
   if (memoryReviewListBtn) memoryReviewListBtn.addEventListener("click", () => {
     setActivePage("chat");
-    injectUserText("memory list", "text");
+    injectUserText("list memories", "text");
   });
 
   const micBtn = $("ptt-btn");

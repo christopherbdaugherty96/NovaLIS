@@ -301,6 +301,14 @@ MEMORY_LIST_RE = re.compile(
     r"^\s*memory\s+list(?:\s+(?P<tier>locked|active|deferred))?\s*$",
     re.IGNORECASE,
 )
+MEMORY_LIST_FRIENDLY_RE = re.compile(
+    r"^\s*(?:show|list)\s+(?:my\s+|saved\s+)?memories\s*$",
+    re.IGNORECASE,
+)
+MEMORY_SHOW_FRIENDLY_RE = re.compile(
+    r"^\s*(?:show|open)\s+(?:that|last|recent)\s+memory\s*$",
+    re.IGNORECASE,
+)
 MEMORY_SHOW_RE = re.compile(
     r"^\s*memory\s+show\s+(?P<item_id>[A-Za-z0-9\-_]+)\s*$",
     re.IGNORECASE,
@@ -321,9 +329,17 @@ MEMORY_DELETE_RE = re.compile(
     r"^\s*memory\s+delete\s+(?P<item_id>[A-Za-z0-9\-_]+)(?:\s+(?P<confirm>confirm(?:ed)?))?\s*$",
     re.IGNORECASE,
 )
+MEMORY_DELETE_FRIENDLY_RE = re.compile(
+    r"^\s*(?:delete|remove)\s+(?:(?:that|last|recent)\s+memory|memory\s+(?P<item_id>[A-Za-z0-9\-_]+))(?:\s+(?P<confirm>confirm(?:ed)?))?\s*$",
+    re.IGNORECASE,
+)
 MEMORY_SUPERSEDE_RE = re.compile(
     r"^\s*memory\s+supersede\s+(?P<item_id>[A-Za-z0-9\-_]+)\s+with\s+(?P<title>[^:]{1,120})\s*:\s*(?P<body>.+?)"
     r"(?:\s+(?P<confirm>confirm(?:ed)?))?\s*$",
+    re.IGNORECASE,
+)
+MEMORY_EDIT_RE = re.compile(
+    r"^\s*(?:edit|update)\s+(?:(?:that|last|recent)\s+memory|memory\s+(?P<item_id>[A-Za-z0-9\-_]+))\s*:\s*(?P<body>.+?)(?:\s+(?P<confirm>confirm(?:ed)?))?\s*$",
     re.IGNORECASE,
 )
 COMMAND_ONLY_RE = re.compile(
@@ -578,7 +594,17 @@ class GovernorMediator:
     @staticmethod
     def parse_governed_invocation(text: str, session_id: Optional[str] = None) -> Union[Invocation, Clarification, None]:
         t = (text or "").strip()
-        t = re.sub(r"[.?!]+$", "", t)
+        preserve_terminal_punctuation = bool(
+            re.match(r"^\s*(?:remember|save)\s+(?:this|that)\s*[:\-]", t, re.IGNORECASE)
+            or re.match(
+                r"^\s*(?:edit|update)\s+(?:(?:that|last|recent)\s+memory|memory\s+[A-Za-z0-9\-_]+)\s*:",
+                t,
+                re.IGNORECASE,
+            )
+            or re.match(r"^\s*memory\s+(?:save|supersede)\b.*:\s*.+$", t, re.IGNORECASE)
+        )
+        if not preserve_terminal_punctuation:
+            t = re.sub(r"[.?!]+$", "", t)
         if not t:
                return None
 
@@ -929,6 +955,12 @@ class GovernorMediator:
                 params["tier"] = tier
             return _invocation_if_enabled(61, params)
 
+        if MEMORY_LIST_FRIENDLY_RE.match(t):
+            return _invocation_if_enabled(61, {"action": "list"})
+
+        if MEMORY_SHOW_FRIENDLY_RE.match(t):
+            return _invocation_if_enabled(61, {"action": "show", "item_id": "last"})
+
         m = MEMORY_SHOW_RE.match(t)
         if m:
             return _invocation_if_enabled(61, {"action": "show", "item_id": m.group("item_id").strip()})
@@ -963,6 +995,17 @@ class GovernorMediator:
                 },
             )
 
+        m = MEMORY_DELETE_FRIENDLY_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "delete",
+                    "item_id": (m.group("item_id") or "last").strip(),
+                    "confirmed": bool((m.group("confirm") or "").strip()),
+                },
+            )
+
         m = MEMORY_SUPERSEDE_RE.match(t)
         if m:
             return _invocation_if_enabled(
@@ -971,6 +1014,19 @@ class GovernorMediator:
                     "action": "supersede",
                     "item_id": m.group("item_id").strip(),
                     "new_title": m.group("title").strip(),
+                    "new_body": m.group("body").strip(),
+                    "confirmed": bool((m.group("confirm") or "").strip()),
+                },
+            )
+
+        m = MEMORY_EDIT_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "supersede",
+                    "item_id": (m.group("item_id") or "last").strip(),
+                    "new_title": "",
                     "new_body": m.group("body").strip(),
                     "confirmed": bool((m.group("confirm") or "").strip()),
                 },
@@ -1057,7 +1113,7 @@ class GovernorMediator:
                 "track": (52, "What topic should I track?"),
                 "memory": (
                     61,
-                    "Try 'memory overview', 'memory save <title>: <content>', 'memory save thread <name>', or 'memory save decision for <thread>: <text>'.",
+                    "Try 'memory overview', 'save this', 'remember this: <text>', 'list memories', or 'memory show <id>'.",
                 ),
             }
             cap_id, message = prompts.get(verb, (16, "Could you clarify that request?"))

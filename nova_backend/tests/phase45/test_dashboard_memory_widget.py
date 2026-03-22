@@ -15,9 +15,10 @@ def test_dashboard_handles_memory_overview_widget_and_hydration():
     assert "renderMemoryOverviewWidget(" in source
     assert 'safeWSSend({ text: "memory overview", silent_widget_refresh: true });' in source
     assert 'injectUserText("memory overview", "text")' in source
-    assert 'injectUserText("memory list", "text")' in source
+    assert 'injectUserText("list memories", "text")' in source
     assert "memory list thread ${name}" in source
     assert "memory show ${id}" in source
+    assert 'Number(scopes.nova_core || scopes.general || 0)' in source
 
 
 def test_dashboard_includes_dedicated_memory_page_and_home_summary():

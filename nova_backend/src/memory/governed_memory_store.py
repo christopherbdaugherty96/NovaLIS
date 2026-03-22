@@ -7,6 +7,39 @@ from threading import RLock
 from typing import Any
 from uuid import uuid4
 
+_MEMORY_SEARCH_STOPWORDS = {
+    "a",
+    "about",
+    "an",
+    "and",
+    "for",
+    "from",
+    "have",
+    "i",
+    "in",
+    "is",
+    "it",
+    "later",
+    "me",
+    "memory",
+    "my",
+    "of",
+    "on",
+    "please",
+    "remember",
+    "save",
+    "saved",
+    "show",
+    "tell",
+    "that",
+    "the",
+    "this",
+    "to",
+    "what",
+    "with",
+    "you",
+}
+
 
 def _utc_now() -> str:
     return datetime.now(timezone.utc).isoformat()
@@ -42,6 +75,23 @@ def _normalize_thread_key(value: Any) -> str:
 def _normalize_thread_name(value: Any) -> str:
     text = _clean_text(value, limit=120).strip()
     return text.lower()
+
+
+def _memory_search_tokens(value: Any) -> list[str]:
+    raw = str(value or "").strip().lower()
+    if not raw:
+        return []
+    tokens: list[str] = []
+    seen: set[str] = set()
+    for token in raw.replace("_", " ").split():
+        cleaned = "".join(ch for ch in token if ch.isalnum() or ch in {"-", "_"})
+        if len(cleaned) < 3 or cleaned in _MEMORY_SEARCH_STOPWORDS:
+            continue
+        if cleaned in seen:
+            continue
+        seen.add(cleaned)
+        tokens.append(cleaned)
+    return tokens
 
 
 def _extract_decision_snippet(value: Any) -> str:
@@ -89,6 +139,9 @@ class GovernedMemoryStore:
         tags: list[Any] | None = None,
         thread_name: str = "",
         thread_key: str = "",
+        source: str = "explicit_user_save",
+        session_id: str = "",
+        user_visible: bool = True,
     ) -> dict[str, Any]:
         scope_value = str(scope or "project").strip().lower()
         if scope_value not in self.ALLOWED_SCOPES:
@@ -96,6 +149,8 @@ class GovernedMemoryStore:
 
         title_value = _clean_text(title, limit=120)
         body_value = _clean_text(body, limit=4000)
+        source_value = _clean_text(source, limit=64) or "explicit_user_save"
+        session_value = _clean_text(session_id, limit=64)
         if not body_value:
             raise ValueError("Memory body cannot be empty.")
         if not title_value:
@@ -113,10 +168,14 @@ class GovernedMemoryStore:
             "id": self._new_id(),
             "title": title_value,
             "tier": "active",
+            "status": "active",
             "scope": scope_value,
             "created_at": created_at,
             "updated_at": created_at,
             "version": 1,
+            "source": source_value,
+            "session_id": session_value,
+            "user_visible": bool(user_visible),
             "lock": {
                 "is_locked": False,
                 "unlock_policy": "explicit_user_unlock_only",
@@ -124,6 +183,8 @@ class GovernedMemoryStore:
             },
             "tags": _clean_tags(tags),
             "body": body_value,
+            "content_raw": body_value,
+            "content_display": title_value,
             "deleted": False,
         }
         if links:
@@ -363,6 +424,9 @@ class GovernedMemoryStore:
         new_title: str,
         new_body: str,
         confirmed: bool = False,
+        source: str = "explicit_user_edit",
+        session_id: str = "",
+        user_visible: bool | None = None,
     ) -> dict[str, Any]:
         if not confirmed:
             raise PermissionError("Supersede requires explicit confirmation.")
@@ -374,20 +438,26 @@ class GovernedMemoryStore:
 
             replacement_title = _clean_text(new_title, limit=120)
             replacement_body = _clean_text(new_body, limit=4000)
+            replacement_source = _clean_text(source, limit=64) or "explicit_user_edit"
+            replacement_session_id = _clean_text(session_id, limit=64)
             if not replacement_body:
                 raise ValueError("Superseding memory body cannot be empty.")
             if not replacement_title:
-                replacement_title = _clean_text(replacement_body, limit=60)
+                replacement_title = _clean_text(item.get("title") or "", limit=120) or _clean_text(replacement_body, limit=60)
 
             now = _utc_now()
             replacement = {
                 "id": self._new_id(),
                 "title": replacement_title,
                 "tier": "locked",
+                "status": "locked",
                 "scope": str(item.get("scope") or "project"),
                 "created_at": now,
                 "updated_at": now,
                 "version": 1,
+                "source": replacement_source,
+                "session_id": replacement_session_id,
+                "user_visible": bool(item.get("user_visible") if user_visible is None else user_visible),
                 "lock": {
                     "is_locked": True,
                     "unlock_policy": "explicit_user_unlock_only",
@@ -395,8 +465,12 @@ class GovernedMemoryStore:
                 },
                 "tags": list(item.get("tags") or []),
                 "body": replacement_body,
+                "content_raw": replacement_body,
+                "content_display": replacement_title,
                 "deleted": False,
             }
+            if dict(item.get("links") or {}):
+                replacement["links"] = dict(item.get("links") or {})
             state_items = list(state.get("items") or [])
             state_items.append(replacement)
             state["items"] = state_items
@@ -408,6 +482,64 @@ class GovernedMemoryStore:
             item["version"] = int(item.get("version") or 1) + 1
             self._write_state(state)
             return dict(replacement)
+
+    def find_relevant_items(
+        self,
+        query: str,
+        *,
+        thread_name: str = "",
+        thread_key: str = "",
+        limit: int = 3,
+    ) -> list[dict[str, Any]]:
+        tokens = _memory_search_tokens(query)
+        if not tokens:
+            return []
+
+        thread_name_filter = _normalize_thread_name(thread_name)
+        thread_key_filter = _normalize_thread_key(thread_key or thread_name)
+        with self._lock:
+            state = self._read_state()
+            items = [dict(item) for item in list(state.get("items") or []) if not bool(item.get("deleted"))]
+
+        ranked: list[tuple[int, str, dict[str, Any]]] = []
+        for item in items:
+            if not bool(item.get("user_visible", True)):
+                continue
+            tier = str(item.get("tier") or "").strip().lower()
+            if tier not in {"active", "locked"}:
+                continue
+
+            title = str(item.get("title") or "").lower()
+            body = str(item.get("body") or "").lower()
+            tags = " ".join(str(tag).lower() for tag in list(item.get("tags") or []))
+            links = dict(item.get("links") or {})
+            item_thread_name = _normalize_thread_name(links.get("project_thread_name"))
+            item_thread_key = _normalize_thread_key(links.get("project_thread_key"))
+
+            score = 0
+            if thread_key_filter and item_thread_key == thread_key_filter:
+                score += 8
+            elif thread_name_filter and item_thread_name == thread_name_filter:
+                score += 6
+
+            for token in tokens:
+                if token in title:
+                    score += 5
+                if token in tags:
+                    score += 4
+                if token in item_thread_name or token in item_thread_key:
+                    score += 4
+                if token in body:
+                    score += 2
+
+            if score <= 0:
+                continue
+
+            ranked.append((score, str(item.get("updated_at") or ""), item))
+
+        ranked.sort(key=lambda row: (row[0], row[1]), reverse=True)
+        safe_limit = max(1, min(int(limit or 3), 10))
+        return [dict(item) for _, _, item in ranked[:safe_limit]]
 
     def _mutate_tier(self, *, item_id: str, tier: str, lock_state: bool) -> dict[str, Any]:
         if tier not in self.ALLOWED_TIERS:

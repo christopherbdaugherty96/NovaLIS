@@ -254,6 +254,10 @@ ATTACH_ACTIVE_THREAD_RE = re.compile(
     r"^\s*(?:save|attach)\s+this\s*$",
     re.IGNORECASE,
 )
+EXPLICIT_MEMORY_SAVE_RE = re.compile(
+    r"^\s*(?P<verb>save|remember)\s+(?P<reference>this|that)(?:\s*[:\-]\s*(?P<body>.+?)\s*)?$",
+    re.IGNORECASE,
+)
 DECISION_THREAD_RE = re.compile(
     r"^\s*(?:remember|record)\s+decision\s+(?P<decision>.+?)\s+for\s+(?P<name>.+?)\s*$",
     re.IGNORECASE,
@@ -486,6 +490,130 @@ def _make_shorter_followup(text: str) -> str:
             short = short[:237].rstrip() + "..."
         return short
     return compact[:217].rstrip() + "..."
+
+
+def _strip_action_suggestions_from_response(text: str) -> str:
+    raw = str(text or "").strip()
+    if not raw:
+        return ""
+    marker = re.search(r"\nTry next:\s*$", raw, flags=re.IGNORECASE | re.MULTILINE)
+    if marker:
+        raw = raw[: marker.start()].rstrip()
+    return raw.strip()
+
+
+def _derive_memory_title(body: str) -> str:
+    compact = _make_shorter_followup(_strip_action_suggestions_from_response(body))
+    if not compact:
+        return "Saved memory"
+    if len(compact) <= 72:
+        return compact
+    return compact[:69].rstrip() + "..."
+
+
+def _prepare_explicit_memory_save_params(
+    *,
+    command_text: str,
+    session_state: dict,
+    project_threads: ProjectThreadStore,
+    session_id: str,
+) -> tuple[bool, dict, str]:
+    match = EXPLICIT_MEMORY_SAVE_RE.match(command_text)
+    if not match:
+        return False, {}, ""
+
+    explicit_body = str(match.group("body") or "").strip()
+    prior_response = _strip_action_suggestions_from_response(str(session_state.get("last_response") or ""))
+    memory_body = explicit_body or prior_response
+    if not memory_body:
+        return (
+            True,
+            {},
+            "I can save something explicitly, but I need the content first. Say 'save this: <text>' or ask me to save a specific answer.",
+        )
+
+    active_thread = project_threads.active_thread_name() or str(session_state.get("project_thread_active") or "").strip()
+    active_thread_key = project_threads.active_thread_key() if active_thread else ""
+    tags = ["explicit_user_save"]
+    scope = "nova_core"
+    if active_thread:
+        scope = "project"
+        tags.extend(["project_thread", active_thread_key or active_thread.lower()])
+
+    params = {
+        "action": "save",
+        "title": _derive_memory_title(memory_body),
+        "body": memory_body,
+        "scope": scope,
+        "source": "explicit_user_save",
+        "session_id": session_id,
+        "user_visible": True,
+        "tags": [tag for tag in tags if str(tag).strip()],
+    }
+    if active_thread:
+        params["thread_name"] = active_thread
+        params["thread_key"] = active_thread_key or active_thread.lower()
+    return True, params, ""
+
+
+def _resolve_memory_item_reference(item_id: str, session_state: dict | None) -> str:
+    raw = str(item_id or "").strip()
+    if not raw:
+        return ""
+    if raw.lower() in {"last", "recent", "that", "this"}:
+        return str((session_state or {}).get("last_memory_item_id") or "").strip()
+    return raw
+
+
+def _select_relevant_memory_context(
+    query: str,
+    *,
+    session_state: dict,
+    project_threads: ProjectThreadStore,
+) -> list[dict[str, str]]:
+    text = str(query or "").strip()
+    if not text:
+        return []
+
+    lowered = text.lower()
+    if lowered.startswith("memory ") or lowered in {"list memories", "show memories", "show saved memories"}:
+        return []
+    if EXPLICIT_MEMORY_SAVE_RE.match(text):
+        return []
+
+    try:
+        from src.memory.governed_memory_store import GovernedMemoryStore
+
+        active_thread = project_threads.active_thread_name() or str(session_state.get("project_thread_active") or "").strip()
+        active_thread_key = project_threads.active_thread_key() or (active_thread.lower() if active_thread else "")
+        matches = GovernedMemoryStore().find_relevant_items(
+            text,
+            thread_name=active_thread,
+            thread_key=active_thread_key,
+            limit=3,
+        )
+    except Exception:
+        matches = []
+
+    selected: list[dict[str, str]] = []
+    for item in matches[:3]:
+        links = dict(item.get("links") or {})
+        content = _make_shorter_followup(
+            str(item.get("content_raw") or item.get("body") or item.get("content_display") or item.get("title") or "").strip()
+        )
+        if not content:
+            continue
+        selected.append(
+            {
+                "id": str(item.get("id") or "").strip(),
+                "title": str(item.get("title") or "").strip(),
+                "content": content,
+                "scope": str(item.get("scope") or "").strip(),
+                "thread_name": str(links.get("project_thread_name") or "").strip(),
+                "source": str(item.get("source") or "explicit_user_save").strip(),
+            }
+        )
+    return selected
 
 
 def _clarification_suggestions(message: str) -> list[dict[str, str]]:
@@ -771,8 +899,11 @@ def _prepare_memory_bridge_params(
     *,
     params: dict,
     project_threads: ProjectThreadStore,
+    session_state: dict | None = None,
+    session_id: str = "",
 ) -> tuple[bool, dict, str]:
     action = str(params.get("action") or "").strip().lower()
+    state = session_state or {}
     if action == "save_thread_snapshot":
         requested = str(params.get("thread_name") or "").strip()
         if _canonical_thread_reference(requested) in {"this", "it", "thread", "project"}:
@@ -854,7 +985,64 @@ def _prepare_memory_bridge_params(
             prepared["thread_name"] = requested
         return True, prepared, ""
 
+    if action in {"show", "lock", "defer", "unlock", "delete", "supersede"}:
+        requested_item_id = str(params.get("item_id") or "").strip()
+        resolved_item_id = _resolve_memory_item_reference(requested_item_id, state)
+        if not resolved_item_id:
+            if requested_item_id.lower() in {"last", "recent", "that", "this"} or not requested_item_id:
+                return False, params, "I do not have a recent memory item yet. Try 'list memories' first."
+            return False, params, "Please provide a memory item ID."
+
+        prepared = dict(params)
+        prepared["item_id"] = resolved_item_id
+        if action == "supersede":
+            prepared.setdefault("source", "explicit_user_edit")
+            prepared.setdefault("user_visible", True)
+            if session_id:
+                prepared.setdefault("session_id", session_id)
+        return True, prepared, ""
+
     return True, params, ""
+
+
+def _memory_confirmation_prompt(action: str, params: dict) -> str:
+    item_id = str(params.get("item_id") or "that memory").strip()
+    item_title = item_id
+    try:
+        from src.memory.governed_memory_store import GovernedMemoryStore
+
+        item = GovernedMemoryStore().get_item(item_id)
+        if isinstance(item, dict):
+            item_title = str(item.get("title") or item.get("content_display") or item_id).strip() or item_id
+    except Exception:
+        item_title = item_id
+
+    if action == "delete":
+        return (
+            f"Delete memory {item_id} ({item_title})?\n"
+            "This action needs confirmation.\n"
+            "Reply 'yes' to proceed or 'no' to cancel."
+        )
+    if action == "unlock":
+        return (
+            f"Unlock memory {item_id} ({item_title})?\n"
+            "This action needs confirmation.\n"
+            "Reply 'yes' to proceed or 'no' to cancel."
+        )
+    if action == "supersede":
+        preview = _make_shorter_followup(str(params.get("new_body") or "").strip())
+        preview_line = f"New content: {preview}\n" if preview else ""
+        return (
+            f"Update memory {item_id} ({item_title})?\n"
+            f"{preview_line}"
+            "This action needs confirmation.\n"
+            "Reply 'yes' to proceed or 'no' to cancel."
+        )
+    return (
+        f"Proceed with memory action on {item_id}?\n"
+        "This action needs confirmation.\n"
+        "Reply 'yes' to proceed or 'no' to cancel."
+    )
 
 
 def _enrich_thread_map_widget_memory(widget: dict) -> dict:
@@ -1186,7 +1374,7 @@ def _capability_help_message() -> str:
         "- Explain and analysis: explain this, help me do this, create analysis report on <topic>\n"
         "- Local project understanding: audit this repo, summarize this repo, explain this repo\n"
         "- Project continuity: create thread <name>, continue my <name>, project status <name>\n"
-        "- Memory and patterns: memory overview, memory save <title>: <content>, pattern status\n\n"
+        "- Memory and patterns: save this, remember this: <text>, list memories, memory show <id>, pattern status\n\n"
         "If you want, ask about a category like local controls, project work, or news."
     )
 
@@ -2949,6 +3137,7 @@ async def websocket_endpoint(ws: WebSocket):
         "last_recommendation_reason": "",
         "thread_map_last": {},
         "last_memory_overview": {},
+        "last_memory_context": [],
         "last_tone_snapshot": {},
         "last_schedule_overview": {},
         "last_pattern_review": {},
@@ -3134,6 +3323,53 @@ async def websocket_endpoint(ws: WebSocket):
                         {"label": "Today's news", "command": "today's news"},
                     ],
                 )
+                continue
+
+            explicit_memory_command_text = (
+                text
+                if re.match(r"^\s*(?:save|remember)\s+(?:this|that)\s*[:\-]", text, re.IGNORECASE)
+                else command_text
+            )
+            explicit_memory_ok, explicit_memory_params, explicit_memory_message = _prepare_explicit_memory_save_params(
+                command_text=explicit_memory_command_text,
+                session_state=session_state,
+                project_threads=project_threads,
+                session_id=session_id,
+            )
+            if explicit_memory_ok:
+                if explicit_memory_message:
+                    await _complete_immediate_turn(
+                        explicit_memory_message,
+                        suggested_actions=[
+                            {"label": "Save with text", "command": "remember this: <text>"},
+                            {"label": "List memories", "command": "list memories"},
+                        ],
+                        remember_response=False,
+                    )
+                    continue
+
+                action_result = await invoke_governed_capability(governor, 61, explicit_memory_params)
+                action_message = _action_result_message(action_result)
+                action_payload = _action_result_payload(action_result)
+                if action_message:
+                    session_state["last_response"] = action_message
+                if isinstance(action_payload, dict):
+                    memory_item = action_payload.get("memory_item")
+                    if isinstance(memory_item, dict):
+                        item_id = str(memory_item.get("id") or "").strip()
+                        if item_id:
+                            session_state["last_memory_item_id"] = item_id
+                await send_chat_message(
+                    ws,
+                    _structure_long_message(action_message),
+                    suggested_actions=[
+                        {"label": "List memories", "command": "list memories"},
+                        {"label": "Memory overview", "command": "memory overview"},
+                    ],
+                    tone_domain="continuity",
+                )
+                await send_chat_done(ws)
+                session_state["turn_count"] += 1
                 continue
 
             local_codebase_response = _maybe_handle_local_codebase_summary_request(
@@ -3531,6 +3767,8 @@ async def websocket_endpoint(ws: WebSocket):
                     action_result = await invoke_governed_capability(governor, capability_id, params)
                     session_state["pending_governed_confirm"] = None
                     outgoing_message = _structure_long_message(_action_result_message(action_result))
+                    if outgoing_message:
+                        session_state["last_response"] = outgoing_message
                     await send_chat_message(ws, outgoing_message)
                     await send_chat_done(ws)
                     continue
@@ -5002,9 +5240,23 @@ async def websocket_endpoint(ws: WebSocket):
 
             # --- Governor mediation ---
             mediated_text = GovernorMediator.mediate(text)
+            governed_parse_text = (
+                raw_text
+                if re.match(
+                    r"^\s*(?:edit|update)\s+(?:(?:that|last|recent)\s+memory|memory\s+[A-Za-z0-9\-_]+)\s*:",
+                    raw_text,
+                    re.IGNORECASE,
+                )
+                or re.match(
+                    r"^\s*memory\s+supersede\s+[A-Za-z0-9\-_]+\s+with\s+[^:]{1,120}\s*:",
+                    raw_text,
+                    re.IGNORECASE,
+                )
+                else mediated_text
+            )
 
             # --- Phaseâ€‘4 governed invocation detection ---
-            inv_result = GovernorMediator.parse_governed_invocation(mediated_text, session_id=session_id)
+            inv_result = GovernorMediator.parse_governed_invocation(governed_parse_text, session_id=session_id)
             if inv_result is None and lowered in {"more", "tell me more", "more please"}:
                 try:
                     last_story_index = int(session_state.get("last_news_story_index") or 0)
@@ -5097,12 +5349,26 @@ async def websocket_endpoint(ws: WebSocket):
                     prepared_ok, prepared_params, prepared_message = _prepare_memory_bridge_params(
                         params=params,
                         project_threads=project_threads,
+                        session_state=session_state,
+                        session_id=session_id,
                     )
                     if not prepared_ok:
                         await send_chat_message(ws, prepared_message)
                         await send_chat_done(ws)
                         continue
                     params = prepared_params
+                    memory_action = str(params.get("action") or "").strip().lower()
+                    if memory_action in {"delete", "unlock", "supersede"} and not params.get("confirmed"):
+                        session_state["pending_governed_confirm"] = {
+                            "capability_id": capability_id,
+                            "params": dict(params),
+                        }
+                        await send_chat_message(
+                            ws,
+                            _memory_confirmation_prompt(memory_action, params),
+                        )
+                        await send_chat_done(ws)
+                        continue
 
                 if capability_id == 22 and not params.get("confirmed"):
                     target = str(params.get("target") or "").strip()
@@ -5345,6 +5611,10 @@ async def websocket_endpoint(ws: WebSocket):
                         suggestion_items: list[dict[str, str]] = []
                         if item_id:
                             suggestion_items.append({"label": "Show memory item", "command": f"memory show {item_id}"})
+                            suggestion_items.append(
+                                {"label": "Edit memory", "command": f"edit memory {item_id}: <updated text>"}
+                            )
+                            suggestion_items.append({"label": "Delete memory", "command": f"delete memory {item_id}"})
                         if linked_thread:
                             suggestion_items.append(
                                 {"label": f"Continue {linked_thread}", "command": f"continue my {linked_thread}"}
@@ -5485,8 +5755,16 @@ async def websocket_endpoint(ws: WebSocket):
                 if not skill.can_handle(mediated_text):
                     continue
                 if getattr(skill, "name", "") == "general_chat":
+                    relevant_memory_context = _select_relevant_memory_context(
+                        mediated_text,
+                        session_state=session_state,
+                        project_threads=project_threads,
+                    )
+                    session_state["last_memory_context"] = relevant_memory_context
                     chat_context = list(session_state.get("general_chat_context") or session_context)
-                    skill_result = await skill.handle(mediated_text, chat_context, session_state)
+                    skill_state = dict(session_state)
+                    skill_state["relevant_memory_context"] = relevant_memory_context
+                    skill_result = await skill.handle(mediated_text, chat_context, skill_state)
                 else:
                     maybe = skill.handle(mediated_text)
                     skill_result = await maybe if hasattr(maybe, "__await__") else maybe
