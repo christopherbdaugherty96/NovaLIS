@@ -1,6 +1,6 @@
 # Nova News Experience And Reasoning Plan
 Date: 2026-03-21
-Status: Planning packet only; current product-improvement roadmap with later Phase-7 reasoning extensions
+Status: Planning packet with core inline-summary/category improvements now partially implemented on `main`
 Scope: Improve the news page experience, timeout behavior, category labeling, and source-grounded news reasoning without widening authority
 
 ## Purpose
@@ -17,6 +17,19 @@ The user goals behind this packet are:
 
 This is not runtime truth.
 It is a product and design roadmap for improving the news surface and the reasoning quality behind it.
+
+## Implemented Foundation On `main` (2026-03-25)
+The current runtime now includes:
+- inline news summary rendering on the News page
+- in-place summary actions instead of bouncing to chat for the main payoff
+- cleaner visible category language:
+  - Politics news
+  - Global news
+  - Local news
+  - Tech news
+  - Crypto news
+
+Remaining items in this packet should be read as the next quality-improvement layer, not as untouched future-only ideas.
 
 ## Current Problems To Fix
 

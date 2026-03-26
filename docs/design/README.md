@@ -42,6 +42,9 @@ Current future naming note:
 Current Phase-7 DeepSeek second-opinion companion packet:
 - `docs/design/Phase 7/PHASE_7_DEEPSEEK_SECOND_OPINION_PLAN.md`
 
+Current Phase-7 proof packet:
+- `docs/PROOFS/Phase-7/PHASE_7_PROOF_PACKET_INDEX.md`
+
 Current Phase-8 canonical OpenClaw automation spec:
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
 
@@ -90,10 +93,11 @@ Current conversational/style baseline on `main`:
 - `d0a80c3` - Nova Style Layer Stage 2 checkpoint
 
 Current recommended next-step posture:
-- the current highest-value next implementation target is explicit memory stage 3 context retrieval
-- start with `codex/memory-stage3-context-retrieval`
+- the immediate live-runtime defect still worth closing is end-to-end TTS device restore and validation
+- the current highest-value next product-foundation target is project/workspace home
+- start with `codex/agent-os-stage1-project-workspaces`
+- trust-center and onboarding work should follow closely behind
 - prefer disciplined core-layer implementation over broad new expansion
-- memory retrieval, answer-first search/news, and project foundations should come before wider home/crypto/wake-word/personality buildout
 
 Canonical design phase folders:
 - `Phase 4`

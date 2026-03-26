@@ -11,7 +11,7 @@ The goal is to make it obvious what kinds of requests Nova handles well today.
 Current runtime truth:
 - typed commands are active
 - push-to-talk speech transcription is active
-- text-to-speech is active
+- text-to-speech is improved in code and still depends on local device/output validation
 - wake word is still planned, not active runtime truth yet
 
 So when you see examples below, read them as:
@@ -52,9 +52,11 @@ Good follow-ups:
 - `more on story 2`
 - `summary of story #3`
 - `compare headlines 1 and 2`
-- `summarize politics left news`
-- `summarize politics center news`
-- `summarize politics right news`
+- `summarize politics news`
+- `summarize global news`
+- `summarize local news`
+- `summarize tech news`
+- `summarize crypto news`
 - `research latest coverage of NVIDIA`
 - `track story EU AI Act`
 
@@ -155,6 +157,11 @@ Examples:
 - `say it`
 
 These work best after Nova has already produced some text worth hearing.
+
+There is also a bounded same-thread second-opinion control in the chat bar:
+- click `DeepSeek`
+- Nova will request a bounded external second opinion on the recent exchange
+- this stays advisory only
 
 ## 8. Project Continuity
 

@@ -745,6 +745,16 @@ body {
   gap: 6px;
 }
 
+.search-sources-section {
+  display: grid;
+  gap: 8px;
+}
+
+.search-sources-list {
+  display: grid;
+  gap: 8px;
+}
+
 .search-widget-actions {
   padding-top: 4px;
   border-top: 1px solid rgba(175, 198, 230, 0.2);
@@ -1300,6 +1310,40 @@ body {
   font-size: 0.75rem;
   color: #cadfff;
   line-height: 1.32;
+}
+
+.news-inline-summary {
+  display: grid;
+  gap: 6px;
+  padding: 10px 12px;
+  border: 1px solid rgba(104, 177, 255, 0.2);
+  border-radius: 12px;
+  background: rgba(104, 177, 255, 0.08);
+}
+
+.news-inline-summary.compact {
+  margin-top: 4px;
+}
+
+.news-inline-summary.pending {
+  border-color: rgba(255, 200, 118, 0.28);
+  background: rgba(255, 200, 118, 0.08);
+}
+
+.news-inline-summary-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #a5cbff;
+}
+
+.news-inline-summary-body {
+  margin: 0;
+  color: #deedff;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  white-space: pre-wrap;
 }
 
 .news-category-meta {
@@ -2644,7 +2688,7 @@ body {
 
 .chat-input {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
+  grid-template-columns: minmax(0, 1fr) auto auto auto;
   gap: 8px;
   align-items: center;
 }
@@ -3133,6 +3177,7 @@ body {
     grid-template-columns: 1fr;
   }
 
+  #deepseek-btn,
   #send-btn,
   #ptt-btn {
     width: 100%;

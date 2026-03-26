@@ -1,7 +1,18 @@
 # Phase 7 Document Map
-Updated: 2026-03-18
-Status: Current design map
+Updated: 2026-03-25
+Status: Current design map with Phase-7 product foundations now partially live
 Purpose: Separate the near-term Phase-7 external-reasoning plan from older autonomy-presence exploration documents
+
+## Current implemented Phase-7 product foundation on `main`
+The following bounded Phase-7 product slices are now live in runtime/proof:
+- answer-first governed web search with sources on demand
+- inline news summaries on the News page
+- cleaner user-facing news category language
+- bounded same-thread DeepSeek second-opinion control in the chat bar
+- stronger local TTS renderer preference before fallback
+
+Current proof packet:
+- `docs/PROOFS/Phase-7/PHASE_7_PROOF_PACKET_INDEX.md`
 
 ## Canonical Phase-7 Planning Core
 - `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
@@ -38,7 +49,8 @@ The news reasoning packet should be read this way in Phase 7:
 - it does not authorize execution or broad autonomy
 
 The web-search reasoning packet should be read this way in Phase 7:
-- current product-track items in that packet stay in the current search/UI lane
+- the first answer-first product slice is now live on `main`
+- remaining current product-track items in that packet stay in the current search/UI lane
 - Phase-7-relevant items are the later reasoning-quality extensions:
   - stronger provider-backed long-form synthesis for difficult web questions
   - deeper multi-source reasoning and contradiction handling
@@ -61,6 +73,12 @@ The governed intelligence execution direction packet should be read this way in 
   - stronger structured intelligence for harder research/search/news questions
   - cost-aware reasoning routing that still preserves the intelligence-authority boundary
 - it does not authorize action autonomy
+
+## Remaining Phase-7 work after the current product foundation slice
+- stronger structured intelligence-router behavior across harder research tasks
+- richer same-thread second-opinion presentation and provider transparency
+- deeper source-grounded search/news synthesis for difficult questions
+- stronger user-facing trust explanations for when external reasoning was used
 
 ## Adjacent / Historical Phase-7-Era Research
 - the older Phase-7 architecture document in this folder

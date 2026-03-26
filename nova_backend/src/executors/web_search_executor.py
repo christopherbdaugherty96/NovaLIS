@@ -7,7 +7,6 @@ import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
 
 from src.actions.action_result import ActionResult
-from src.conversation.response_style_router import ResponseTemplates
 from src.llm.llm_gateway import generate_chat
 from src.utils.content_extractor import extract_text_from_html
 
@@ -511,8 +510,6 @@ class WebSearchExecutor:
         avg_latency = self._record_latency(elapsed_seconds)
         logger.info("web_search latency=%.2fs avg=%.2fs query=%s", elapsed_seconds, avg_latency, query[:80])
 
-        findings_block = ResponseTemplates.top_findings_block([result["title"] for result in results[:3]])
-        sources_block = ResponseTemplates.sources_block(top_domains)
         provider_label = self._format_provider_label(used_provider)
         confidence_label = "Medium" if used_provider == "brave" else "Medium-Low"
         source_packets = self._collect_source_packets(
@@ -530,23 +527,15 @@ class WebSearchExecutor:
         )
 
         report_sections = [
-            "Answer",
-            f"{boundary_notice} {researched_summary}",
+            f'Search answer for "{query}"',
+            researched_summary,
             "",
-            findings_block.replace("Top Findings", "Key Points"),
-            "",
-            sources_block,
-            "",
-            f"Provider: {provider_label}",
-            f"Source pages reviewed: {len(source_packets)}",
-            "",
-            "Confidence",
-            confidence_label,
-            "",
-            f"Search latency: {elapsed_seconds:.1f}s (avg {avg_latency:.1f}s).",
-            "Open any dashboard result for full article detail.",
+            f"Confidence: {confidence_label}",
+            f"Source reading: reviewed {len(source_packets)} page{'s' if len(source_packets) != 1 else ''} via {provider_label}.",
+            "Use Show sources when you want the evidence list.",
             "",
             "Try next",
+            "- show sources",
             f"- research {query}",
             f"- create an intelligence brief on {query}",
             f"- analyze source reliability for {query}",

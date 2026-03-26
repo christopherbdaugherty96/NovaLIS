@@ -7,6 +7,7 @@ import threading
 from src.actions.action_result import ActionResult
 from src.ledger.writer import LedgerWriter
 from src.rendering.speech_formatter import SpeechFormatter
+from src.voice.tts_engine import try_render_tts
 
 log = logging.getLogger("nova")
 
@@ -62,12 +63,15 @@ def execute_tts(req, action_result_cls=ActionResult) -> ActionResult:
             )
 
         log.info("Speaking text (length %d chars)", len(speak_text))
-        TTSEngine.speak(speak_text)
+        rendered = try_render_tts(speak_text)
+        if not rendered:
+            TTSEngine.speak(speak_text)
         try:
             metadata = {
                 "request_id": req.request_id,
                 "character_count": len(speak_text),
                 "source": "capability_18",
+                "engine": "piper" if rendered else "pyttsx3",
             }
             if session_id:
                 metadata["session_id"] = session_id

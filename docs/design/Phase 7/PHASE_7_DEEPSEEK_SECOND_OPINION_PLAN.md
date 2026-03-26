@@ -1,6 +1,6 @@
 # Phase 7 DeepSeek Second-Opinion Plan
 Date: 2026-03-21
-Status: Planning packet only; runtime not authorized
+Status: Planning packet with bounded same-thread foundation now partially implemented on `main`
 Scope: Governed DeepSeek-backed second-opinion reasoning inside the same Nova chat surface
 
 ## Why This Belongs In Phase 7
@@ -17,6 +17,15 @@ DeepSeek in this design is:
 - a consultant
 - a second-opinion provider
 - never an execution authority
+
+## Implemented Foundation On `main` (2026-03-25)
+The current runtime now includes a bounded first product slice:
+- a `DeepSeek` button near the chat controls
+- same-thread invocation
+- bounded recent-exchange review context
+- advisory-only response path
+
+The richer presentation ideas in the rest of this packet should now be read as the next refinement layer after that first bounded implementation.
 
 ## Product Goal
 Allow Nova to request a second opinion from DeepSeek for audit, review, critique, or verification style tasks while keeping the interaction inside the same Nova chat experience.

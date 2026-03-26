@@ -29,12 +29,22 @@ class ResponseVerificationExecutor:
         issue_count: int,
         correction_count: int,
         verification_recommended: bool,
+        review_mode: str = "verification",
     ) -> str:
         recommendation = (
             "Verification is recommended before relying on this claim."
             if verification_recommended
             else "No immediate re-check is required."
         )
+        if review_mode == "second_opinion":
+            return (
+                "DeepSeek second opinion ready. "
+                f"Agreement level {accuracy_label}. "
+                f"Review confidence {confidence_label}. "
+                f"Gaps noted {issue_count}. "
+                f"Suggested improvements {correction_count}. "
+                f"{recommendation}"
+            )
         return (
             "Verification complete. "
             f"Claim reliability {accuracy_label}. "
@@ -69,6 +79,7 @@ class ResponseVerificationExecutor:
 
     def execute(self, request) -> ActionResult:
         text = str((request.params or {}).get("text") or "").strip()
+        review_mode = str((request.params or {}).get("review_mode") or "").strip().lower()
         if not text:
             return self._failure_result(
                 "I need text to verify. Ask me to verify a statement or previous response.",
@@ -76,18 +87,35 @@ class ResponseVerificationExecutor:
                 failure_kind="missing_text",
             )
 
-        prompt = (
-            "Verify the following text for factual reliability.\n\n"
-            f"Text:\n{text}\n\n"
-            "Return exactly these sections:\n"
-            "Accuracy: <high|medium|low>\n"
-            "Potential Issues:\n"
-            "- ...\n"
-            "Suggested Corrections:\n"
-            "- ...\n"
-            "Confidence: <high|medium|low>\n"
-            "Do not include execution instructions."
-        )
+        if review_mode == "second_opinion":
+            prompt = (
+                "Review the following recent Nova exchange and provide a bounded second opinion.\n\n"
+                f"Exchange:\n{text}\n\n"
+                "Treat Accuracy as your agreement level with Nova's last answer.\n"
+                "Potential Issues should capture gaps, caveats, or questionable claims.\n"
+                "Suggested Corrections should describe how the answer could improve.\n"
+                "Return exactly these sections:\n"
+                "Accuracy: <high|medium|low>\n"
+                "Potential Issues:\n"
+                "- ...\n"
+                "Suggested Corrections:\n"
+                "- ...\n"
+                "Confidence: <high|medium|low>\n"
+                "Stay advisory only. Do not include execution instructions."
+            )
+        else:
+            prompt = (
+                "Verify the following text for factual reliability.\n\n"
+                f"Text:\n{text}\n\n"
+                "Return exactly these sections:\n"
+                "Accuracy: <high|medium|low>\n"
+                "Potential Issues:\n"
+                "- ...\n"
+                "Suggested Corrections:\n"
+                "- ...\n"
+                "Confidence: <high|medium|low>\n"
+                "Do not include execution instructions."
+            )
 
         raw = self._bridge.analyze(
             prompt,
@@ -129,21 +157,37 @@ class ResponseVerificationExecutor:
             if verification_recommended
             else "Recommendation: No immediate re-check required."
         )
-        message = (
-            "Verification Report\n"
-            f"Claim Reliability: {accuracy_label} ({accuracy_score:.2f})\n"
-            f"Report Confidence: {confidence_label} ({confidence_score:.2f})\n"
-            f"Potential issues found: {issue_count}\n"
-            f"Suggested corrections: {correction_count}\n"
-            f"{recommendation_line}\n\n"
-            f"{clean}\n\n"
-            "Try next:\n"
-            "- verify a revised version\n"
-            "- summarize the issues only\n"
-            "- show me the safest corrected version"
-        )
+        if review_mode == "second_opinion":
+            message = (
+                "DeepSeek Second Opinion\n"
+                f"Agreement Level: {accuracy_label} ({accuracy_score:.2f})\n"
+                f"Review Confidence: {confidence_label} ({confidence_score:.2f})\n"
+                f"Gaps or concerns found: {issue_count}\n"
+                f"Suggested improvements: {correction_count}\n"
+                f"{recommendation_line}\n\n"
+                f"{clean}\n\n"
+                "Try next:\n"
+                "- ask Nova to revise the answer\n"
+                "- summarize the gaps only\n"
+                "- return to Nova's original answer"
+            )
+        else:
+            message = (
+                "Verification Report\n"
+                f"Claim Reliability: {accuracy_label} ({accuracy_score:.2f})\n"
+                f"Report Confidence: {confidence_label} ({confidence_score:.2f})\n"
+                f"Potential issues found: {issue_count}\n"
+                f"Suggested corrections: {correction_count}\n"
+                f"{recommendation_line}\n\n"
+                f"{clean}\n\n"
+                "Try next:\n"
+                "- verify a revised version\n"
+                "- summarize the issues only\n"
+                "- show me the safest corrected version"
+            )
         payload = {
             "verification_text": clean,
+            "verification_mode": review_mode or "verification",
             "verification_accuracy_label": accuracy_label,
             "verification_accuracy_score": accuracy_score,
             "verification_confidence_label": confidence_label,
@@ -151,11 +195,19 @@ class ResponseVerificationExecutor:
             "verification_recommended": verification_recommended,
             "issue_count": issue_count,
             "correction_count": correction_count,
-            "follow_up_prompts": [
-                "verify a revised version",
-                "summarize the issues only",
-                "show me the safest corrected version",
-            ],
+            "follow_up_prompts": (
+                [
+                    "ask Nova to revise the answer",
+                    "summarize the gaps only",
+                    "return to Nova's original answer",
+                ]
+                if review_mode == "second_opinion"
+                else [
+                    "verify a revised version",
+                    "summarize the issues only",
+                    "show me the safest corrected version",
+                ]
+            ),
         }
         return ActionResult.ok(
             message=message,
@@ -167,6 +219,7 @@ class ResponseVerificationExecutor:
                 issue_count=issue_count,
                 correction_count=correction_count,
                 verification_recommended=verification_recommended,
+                review_mode=review_mode or "verification",
             ),
             request_id=request.request_id,
             authority_class="read_only",

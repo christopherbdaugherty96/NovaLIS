@@ -20,11 +20,12 @@ Nova can:
 - give more detail on a selected story
 - summarize the page behind a story link when available
 - search for a news topic and route that into research
-- show broader political channels including left, center, and right views
+- summarize and compare cleaner news channels such as politics, global, local, tech, and crypto
 - create multi-source reports
 - build intelligence briefs
 - show topic maps across the news cycle
 - verify a statement or prior response
+- request a DeepSeek-backed second opinion from the chat bar
 - create session analysis documents
 - track stories over time
 
@@ -34,7 +35,11 @@ Examples:
 - `summarize headline 3`
 - `summary of article 1`
 - `today's news`
-- `summarize politics left news`
+- `summarize politics news`
+- `summarize global news`
+- `summarize local news`
+- `summarize tech news`
+- `summarize crypto news`
 - `more on story 1`
 - `daily brief`
 - `verify this`
@@ -45,7 +50,7 @@ Examples:
 Nova can:
 - open websites
 - open approved files and folders
-- speak text aloud
+- speak text aloud through the local speech path
 - change volume
 - control media playback
 - change brightness
@@ -94,6 +99,7 @@ Examples:
 Important note:
 - screenshot and screen analysis are live
 - wake word is still planned, not live runtime
+- voice output is improved in code but still depends on local device/audio validation
 - the next product-quality evolution is a cursor-first `what is this?` flow that expands to section or full page only when needed
 
 ## 5. Continuity and Ongoing Work

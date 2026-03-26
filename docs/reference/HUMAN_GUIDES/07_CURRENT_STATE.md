@@ -33,6 +33,9 @@ That means Nova already has:
 - a simplified Home page with fewer, higher-value cards
 - a dedicated Memory page for governed-memory review
 - a stronger News page with source-grounded briefing, topic search, and article-summary actions
+- answer-first search with sources on demand
+- in-place news summaries on the News page
+- a bounded same-thread DeepSeek second-opinion control
 - improved deep-analysis routing and orthogonal-review presentation
 - dashboard support for all of the above
 
@@ -55,6 +58,8 @@ These parts are already meaningfully real:
 - explicit scheduled updates through the Home-page schedule surface
 - explicit pattern review through the Home-page pattern queue
 - source-grounded news brief and per-article summary flows
+- answer-first search with hidden-by-default sources
+- bounded same-thread second-opinion review
 - local project summary, architecture report, and project overview flows
 
 ## What Is Still Maturing
@@ -63,9 +68,8 @@ These parts are active but still evolving:
 - more polished explain-anything flows
 - more premium dashboard interactions
 - stronger everyday workflows around thread and memory use
-- deeper memory retrieval and relevance tuning beyond the new management surface
-- answer-first search presentation
-- inline-news-card summary workflow
+- stronger project/workspace home foundations
+- clearer trust-center and onboarding surfaces
 - stronger local-project visualization for non-technical users
 
 ## What Is Planned But Not Fully Live Yet
@@ -74,13 +78,13 @@ Some highly important ideas are still planned or partially scaffolded rather tha
 Examples include:
 - wake word
 - richer read-only connectors
-- bounded external second-opinion flows like DeepSeek in the same chat box
+- richer provider-aware second-opinion presentation beyond the new bounded button flow
 - project/workspace system foundations
 - Phase-8 governed external execution / OpenClaw
 
 A careful plain-language description of the current system is:
 - voice input exists
-- voice output is still tracked as a regression to restore and verify end to end
+- voice output is improved in code and still tracked for end-to-end device validation
 - wake word is planned
 - governed external execution remains planned, not runtime-authorized
 

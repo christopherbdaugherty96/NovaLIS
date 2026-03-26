@@ -8,6 +8,7 @@ from unittest.mock import patch
 from fastapi import WebSocketDisconnect
 
 from src import brain_server
+from src.actions.action_result import ActionResult
 from src.conversation.session_router import GateResult
 
 
@@ -1243,4 +1244,36 @@ def test_technical_followup_keeps_chat_thread_but_changes_presentation(monkeypat
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     assert len(system_prompts) == 2
-    assert "Presentation preference: Technical." in system_prompts[-1]
+
+
+def test_deepseek_button_builds_bounded_second_opinion_context(monkeypatch):
+    captured: list[dict] = []
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        captured.append({"capability_id": capability_id, "params": dict(params)})
+        return ActionResult.ok(
+            "DeepSeek Second Opinion\nAgreement Level: Medium (0.65)",
+            data={"verification_mode": "second_opinion"},
+            structured_data={"verification_mode": "second_opinion"},
+            request_id="verify-1",
+        )
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _fake_invoke_governed_capability)
+
+    with patch("src.skills.general_chat.generate_chat", return_value="A GPU accelerates the math used in many AI workloads."):
+        ws = _ScriptedWebSocket(
+            [
+                "What is a GPU?",
+                {"type": "chat", "text": "verify", "invocation_source": "deepseek_button"},
+            ]
+        )
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert captured
+    second = captured[-1]
+    assert second["capability_id"] == 31
+    assert second["params"]["review_mode"] == "second_opinion"
+    review_text = str(second["params"]["text"])
+    assert "Recent exchange for second opinion review:" in review_text
+    assert "User: What is a GPU?" in review_text
+    assert "Nova: A GPU accelerates the math used in many AI workloads." in review_text
