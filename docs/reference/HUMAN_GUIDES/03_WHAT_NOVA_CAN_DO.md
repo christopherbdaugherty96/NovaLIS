@@ -167,12 +167,14 @@ Examples:
 Nova now has clearer product surfaces for understanding what it is doing and where current work lives.
 
 It can:
+- show a landing-preview page for product messaging review
 - show a Trust page
 - show a Policies page
 - show a Settings page
 - show an Introduction page
 - show remote bridge status
 - show provider and connection status
+- show estimated governed reasoning usage and budget state in Trust and Settings
 - change setup mode in Settings
 - pause or re-enable governed second-opinion review in Settings
 - pause or re-enable remote bridge access in Settings
@@ -189,6 +191,7 @@ It can:
 - show reasoning provider, route, and authority truth when a second opinion is used
 
 Examples:
+- `open /landing in the browser`
 - `intro`
 - `settings`
 - `trust center`

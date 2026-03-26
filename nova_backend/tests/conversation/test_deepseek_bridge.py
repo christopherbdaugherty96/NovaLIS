@@ -1,7 +1,17 @@
 from __future__ import annotations
 
+import pytest
+
 from src.conversation import prompts
 from src.conversation.deepseek_bridge import DeepSeekBridge
+from src.usage.provider_usage_store import ProviderUsageStore
+
+
+@pytest.fixture(autouse=True)
+def _isolated_usage_store(monkeypatch, tmp_path):
+    import src.conversation.deepseek_bridge as mod
+
+    monkeypatch.setattr(mod, "provider_usage_store", ProviderUsageStore(tmp_path / "provider_usage.json"))
 
 
 def test_deepseek_bridge_normalizes_plain_deep_reason_output(monkeypatch):

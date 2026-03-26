@@ -15,6 +15,11 @@ If there is tension between Phase-8 notes, this document wins.
 This remains useful as a narrower implementation-planning packet.
 It should now be read as supporting context beneath the canonical Phase-8 spec above.
 
+Together, the canonical spec and supporting plan now explicitly define OpenClaw this way:
+- OpenClaw may be a bounded autonomous worker
+- Nova remains the governing law, watcher, and intervention point
+- OpenClaw is inside Nova's envelope and boundary system, never above it
+
 ## Raw Source Inputs Preserved
 - `docs/design/Phase 8/openclaw.txt`
 - `docs/design/Phase 8/node design.txt`

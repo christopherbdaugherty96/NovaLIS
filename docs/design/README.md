@@ -15,6 +15,9 @@ Canonical runtime truth:
 Current cross-phase planning packet:
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 
+Current product-messaging hardening packet:
+- `docs/design/NOVA_PRODUCT_MESSAGING_HARDENING_AND_APPLICATION_PLAN_2026-03-26.md`
+
 Current bounded conversational planning packet:
 - `docs/design/CONVERSATIONAL_CORE_PHASE_PLAN_2026-03-19.md`
 
@@ -41,6 +44,9 @@ Current future naming note:
 
 Current Phase-7 DeepSeek second-opinion companion packet:
 - `docs/design/Phase 7/PHASE_7_DEEPSEEK_SECOND_OPINION_PLAN.md`
+
+Current Phase-7 provider usage and budget visibility packet:
+- `docs/design/Phase 7/PHASE_7_PROVIDER_USAGE_AND_BUDGET_VISIBILITY_PLAN_2026-03-26.md`
 
 Current Phase-7 proof packet:
 - `docs/PROOFS/Phase-7/PHASE_7_PROOF_PACKET_INDEX.md`

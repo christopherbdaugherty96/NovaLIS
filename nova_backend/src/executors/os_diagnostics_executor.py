@@ -13,6 +13,7 @@ import psutil
 from src.actions.action_result import ActionResult
 from src.build_phase import BUILD_PHASE
 from src.settings.runtime_settings_store import runtime_settings_store
+from src.usage.provider_usage_store import provider_usage_store
 
 
 class OSDiagnosticsExecutor:
@@ -714,7 +715,7 @@ class OSDiagnosticsExecutor:
         return f"{BUILD_PHASE}"
 
     @staticmethod
-    def _external_reasoning_status_details() -> dict[str, str]:
+    def _external_reasoning_status_details() -> dict[str, object]:
         enabled_entries = OSDiagnosticsExecutor._enabled_capability_entries()
         enabled_ids = {
             int(item.get("id"))
@@ -726,6 +727,7 @@ class OSDiagnosticsExecutor:
             "external_reasoning_enabled"
         )
         settings_snapshot = runtime_settings_store.snapshot()
+        usage_snapshot = provider_usage_store.snapshot()
         model_availability, _, model_remediation, model_ready = OSDiagnosticsExecutor._model_status_details()
 
         last_used = ""
@@ -793,6 +795,10 @@ class OSDiagnosticsExecutor:
             status = "disabled"
             summary = "Governed second opinion is not enabled in this runtime."
 
+        usage_note = str(usage_snapshot.get("summary") or "").strip()
+        if usage_note:
+            summary = f"{summary} {usage_note}".strip()
+
         return {
             "status": status,
             "summary": summary,
@@ -820,6 +826,15 @@ class OSDiagnosticsExecutor:
             "last_request_id": last_request_id or "Not recorded",
             "model_status": model_availability,
             "model_remediation": model_remediation,
+            "usage_summary": usage_note,
+            "usage_measurement_label": str(usage_snapshot.get("measurement_label") or "Estimated tokens"),
+            "usage_event_count": int(usage_snapshot.get("event_count") or 0),
+            "usage_estimated_total_tokens": int(usage_snapshot.get("estimated_total_tokens") or 0),
+            "usage_budget_state": str(usage_snapshot.get("budget_state") or "normal"),
+            "usage_budget_state_label": str(usage_snapshot.get("budget_state_label") or "Normal"),
+            "usage_budget_remaining_tokens": int(usage_snapshot.get("budget_remaining_tokens") or 0),
+            "usage_cost_tracking_label": str(usage_snapshot.get("cost_tracking_label") or "Exact cost tracking is not live yet"),
+            "usage_last_event_at": str(usage_snapshot.get("last_event_at") or ""),
             "status_label": (
                 "Available"
                 if status == "available"
@@ -886,6 +901,7 @@ class OSDiagnosticsExecutor:
         reasoning_runtime = OSDiagnosticsExecutor._external_reasoning_status_details()
         bridge_runtime = OSDiagnosticsExecutor._bridge_status_details()
         settings_snapshot = runtime_settings_store.snapshot()
+        usage_snapshot = provider_usage_store.snapshot()
 
         configured_keys = [
             label
@@ -928,6 +944,16 @@ class OSDiagnosticsExecutor:
                 "value": str(bridge_runtime.get("scope") or "Read and reasoning only"),
                 "note": "Remote bridge requests stay token-gated and cannot take quiet local actions yet.",
             },
+            {
+                "label": "Reasoning usage today",
+                "value": f"{int(usage_snapshot.get('estimated_total_tokens') or 0):,} estimated tokens",
+                "note": str(usage_snapshot.get("summary") or "").strip(),
+            },
+            {
+                "label": "Usage budget state",
+                "value": str(usage_snapshot.get("budget_state_label") or "Normal"),
+                "note": str(usage_snapshot.get("cost_tracking_label") or "Exact cost tracking is not live yet"),
+            },
         ]
 
         summary_parts = [
@@ -935,6 +961,7 @@ class OSDiagnosticsExecutor:
             "Local model route is " + model_availability + ".",
             ("BYO provider keys are configured." if configured_keys else "BYO provider keys are not configured."),
             str(bridge_runtime.get("summary") or "").strip(),
+            str(usage_snapshot.get("summary") or "").strip(),
         ]
         return {
             "summary": " ".join(part for part in summary_parts if part).strip(),
@@ -943,6 +970,7 @@ class OSDiagnosticsExecutor:
             "configured_provider_labels": configured_keys,
             "bridge_enabled": bool(bridge_runtime.get("enabled")),
             "setup_mode": str(settings_snapshot.get("setup_mode") or "local"),
+            "usage_runtime": usage_snapshot,
         }
 
     @staticmethod

@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nova - Personal Intelligence System</title>
+    <style>
+      :root {
+        --bg: #f4efe7;
+        --panel: rgba(255, 251, 245, 0.9);
+        --ink: #1d2b2c;
+        --muted: #576768;
+        --accent: #0f6c67;
+        --accent-2: #d9a65a;
+        --line: rgba(29, 43, 44, 0.12);
+        --shadow: 0 24px 80px rgba(21, 35, 36, 0.12);
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Aptos, "Segoe UI Variable", "Trebuchet MS", sans-serif;
+        color: var(--ink);
+        background:
+          radial-gradient(circle at top left, rgba(15, 108, 103, 0.12), transparent 34%),
+          radial-gradient(circle at bottom right, rgba(217, 166, 90, 0.14), transparent 28%),
+          linear-gradient(180deg, #fbf7f0 0%, var(--bg) 100%);
+      }
+
+      .wrap {
+        width: min(1120px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+
+      .hero {
+        padding: 72px 0 36px;
+      }
+
+      .hero-card,
+      .section-card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 28px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(12px);
+      }
+
+      .hero-card {
+        padding: 40px;
+        display: grid;
+        grid-template-columns: 1.3fr 0.9fr;
+        gap: 28px;
+      }
+
+      .eyebrow {
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.78rem;
+        color: var(--accent);
+        margin-bottom: 14px;
+      }
+
+      h1 {
+        margin: 0 0 18px;
+        font-size: clamp(2.6rem, 5vw, 4.5rem);
+        line-height: 0.96;
+      }
+
+      .hero-copy {
+        font-size: 1.14rem;
+        line-height: 1.65;
+        color: var(--muted);
+        max-width: 58ch;
+      }
+
+      .hero-points {
+        margin: 22px 0 0;
+        padding: 0;
+        list-style: none;
+        display: grid;
+        gap: 10px;
+      }
+
+      .hero-points li {
+        color: var(--ink);
+        font-weight: 600;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 26px;
+      }
+
+      .hero-cta,
+      .ghost-cta {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 20px;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 700;
+        border: 1px solid transparent;
+      }
+
+      .hero-cta {
+        background: var(--accent);
+        color: #fff;
+      }
+
+      .ghost-cta {
+        color: var(--ink);
+        border-color: var(--line);
+        background: rgba(255, 255, 255, 0.5);
+      }
+
+      .hero-side {
+        padding: 22px;
+        border-radius: 22px;
+        background: linear-gradient(180deg, rgba(15, 108, 103, 0.08), rgba(217, 166, 90, 0.12));
+        border: 1px solid rgba(15, 108, 103, 0.14);
+      }
+
+      .quote-label {
+        font-size: 0.82rem;
+        color: var(--accent);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        margin-bottom: 12px;
+      }
+
+      .quote-card {
+        font-size: 1rem;
+        line-height: 1.7;
+        color: var(--ink);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 18px;
+        margin: 18px 0 42px;
+      }
+
+      .section-card {
+        padding: 26px;
+      }
+
+      .section-title {
+        font-size: 1.35rem;
+        margin: 0 0 14px;
+      }
+
+      .section-copy {
+        color: var(--muted);
+        line-height: 1.7;
+        margin: 0 0 18px;
+      }
+
+      .capability-list,
+      .difference-list,
+      .start-list {
+        display: grid;
+        gap: 14px;
+      }
+
+      .capability-row,
+      .difference-row,
+      .start-row {
+        padding: 14px 0;
+        border-top: 1px solid var(--line);
+      }
+
+      .capability-row:first-child,
+      .difference-row:first-child,
+      .start-row:first-child {
+        border-top: 0;
+        padding-top: 0;
+      }
+
+      .row-title {
+        font-weight: 700;
+        margin-bottom: 4px;
+      }
+
+      .row-copy {
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      .moment {
+        margin: 0 0 42px;
+      }
+
+      .moment .section-card {
+        padding: 34px;
+      }
+
+      .moment-flow {
+        font-size: 1.08rem;
+        line-height: 1.8;
+        color: var(--ink);
+      }
+
+      .workflow {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-top: 18px;
+      }
+
+      .workflow span {
+        padding: 10px 14px;
+        border-radius: 999px;
+        background: rgba(15, 108, 103, 0.09);
+        color: var(--accent);
+        font-weight: 700;
+      }
+
+      footer {
+        padding: 0 0 48px;
+      }
+
+      @media (max-width: 860px) {
+        .hero-card,
+        .grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          padding-top: 48px;
+        }
+
+        .hero-card,
+        .section-card,
+        .moment .section-card {
+          padding: 24px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <section class="hero">
+        <div class="hero-card">
+          <div>
+            <div class="eyebrow">Nova</div>
+            <h1>Your Personal Intelligence System</h1>
+            <p class="hero-copy">
+              Understand. Continue. Decide. Without giving up control.
+            </p>
+            <ul class="hero-points">
+              <li>No background automation.</li>
+              <li>No hidden memory.</li>
+              <li>No surprises.</li>
+            </ul>
+            <div class="hero-actions">
+              <a class="hero-cta" href="/">Get Started</a>
+              <a class="ghost-cta" href="/">Open Nova</a>
+            </div>
+          </div>
+          <aside class="hero-side">
+            <div class="quote-label">Why Nova</div>
+            <div class="quote-card">
+              Most AI tools try to act for you.
+              <br /><br />
+              Nova does not.
+              <br /><br />
+              It helps you understand what you are looking at, continue your work, and organize important decisions. It only moves when you tell it to.
+            </div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="grid">
+        <div class="section-card">
+          <h2 class="section-title">What You Can Do</h2>
+          <div class="capability-list">
+            <div class="capability-row">
+              <div class="row-title">Research</div>
+              <div class="row-copy">Ask deeper questions than search alone.</div>
+            </div>
+            <div class="capability-row">
+              <div class="row-title">Explain</div>
+              <div class="row-copy">Point at anything and get clear answers.</div>
+            </div>
+            <div class="capability-row">
+              <div class="row-title">Continue</div>
+              <div class="row-copy">Pick up where you left off without losing context.</div>
+            </div>
+            <div class="capability-row">
+              <div class="row-title">Save</div>
+              <div class="row-copy">Remember only what you choose to keep.</div>
+            </div>
+            <div class="capability-row">
+              <div class="row-title">Control</div>
+              <div class="row-copy">Use simple governed actions on your system.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h2 class="section-title">The Difference</h2>
+          <div class="difference-list">
+            <div class="difference-row">
+              <div class="row-title">Other AI</div>
+              <div class="row-copy">Acts automatically, remembers implicitly, and hides what it is doing.</div>
+            </div>
+            <div class="difference-row">
+              <div class="row-title">Nova</div>
+              <div class="row-copy">Waits for you, shows what it used, and keeps you in control.</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="moment">
+        <div class="section-card">
+          <h2 class="section-title">A Simple Moment</h2>
+          <p class="section-copy">
+            This is the core experience in one move.
+          </p>
+          <div class="moment-flow">
+            You: <strong>“Explain this error”</strong><br />
+            Nova: Breaks it down and tells you what to try next.<br /><br />
+            You: <strong>“Save this as my fix”</strong><br />
+            Now it is part of your workflow because you chose to keep it.
+          </div>
+          <div class="workflow">
+            <span>Understand</span>
+            <span>Continue</span>
+            <span>Preserve</span>
+            <span>Decide</span>
+          </div>
+        </div>
+      </section>
+
+      <footer class="grid">
+        <div class="section-card">
+          <h2 class="section-title">Get Started</h2>
+          <div class="start-list">
+            <div class="start-row">
+              <div class="row-title">Type <code>news</code></div>
+              <div class="row-copy">See what is happening right now without leaving the product.</div>
+            </div>
+            <div class="start-row">
+              <div class="row-title">Type <code>explain this</code></div>
+              <div class="row-copy">Use Nova’s fastest magic moment.</div>
+            </div>
+            <div class="start-row">
+              <div class="row-title">Type <code>continue my project</code></div>
+              <div class="row-copy">Bring your work back into focus quickly.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h2 class="section-title">Built For Trust</h2>
+          <p class="section-copy">
+            Nova is powerful because it stays bounded. It is designed to think deeply, explain clearly, and remain under your control.
+          </p>
+          <a class="hero-cta" href="/">Open Nova</a>
+        </div>
+      </footer>
+    </main>
+  </body>
+</html>

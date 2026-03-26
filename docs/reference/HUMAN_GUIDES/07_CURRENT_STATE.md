@@ -28,6 +28,7 @@ That means Nova already has:
 - a dedicated Trust page with recent actions and blocked-condition review
 - a dedicated Policies page for draft review, delegation-readiness review, simulation, and one-shot manual runs
 - a dedicated Introduction page and a dedicated Settings page
+- a separate landing-preview page for product messaging review
 - a first-run onboarding guide for non-technical users
 - a visible local-project Structure Map surface with structured graph output
 - inspectable list/show/edit/delete memory paths with confirmation where needed
@@ -40,6 +41,7 @@ That means Nova already has:
 - answer-first search with sources on demand
 - in-place news summaries on the News page
 - a governed external reasoning lane with same-thread second-opinion review, provider visibility, and advisory-only boundaries
+- estimated governed reasoning-usage visibility in Trust and Settings
 - a token-gated governed remote bridge for read/reasoning access from OpenClaw-style remote clients
 - improved voice auto-speak routing with runtime fallback at the speech layer
 - a dedicated conversation personality layer and a dedicated voice presentation layer for smoother replies
@@ -71,6 +73,7 @@ These parts are already meaningfully real:
 - governed same-thread external reasoning review with Trust and Settings transparency
 - local project summary, architecture report, project overview, and structure-map flows
 - user-facing Introduction and Settings pages that explain Nova and now let users change setup mode and pause or re-enable governed reasoning and remote bridge access
+- a stronger first-run magic-moment prompt centered on `explain this`
 - a visible Policy Review Center that keeps delegated policy work inspectable and manual
 - a visible capability-authority map that shows what policies are safe now, later, or explicit-only
 - Trust and Settings visibility for remote bridge and provider/connection state
@@ -127,6 +130,8 @@ The most recent product-consolidation regression pass on 2026-03-26 also confirm
 - new Workspace page coverage passed
 - new Trust page coverage passed
 - new onboarding surface coverage passed
+- landing-preview route and product-entry coverage passed
+- governed reasoning-usage visibility coverage passed
 - TTS runtime fallback coverage passed
 - new Introduction and Settings product surfaces passed focused coverage
 - Settings runtime-permission API and UI coverage passed focused coverage

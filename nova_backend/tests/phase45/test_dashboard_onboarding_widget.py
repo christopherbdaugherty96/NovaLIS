@@ -20,7 +20,9 @@ def test_dashboard_boots_first_run_guide_with_product_surfaces():
     assert "Open Settings" in source
     assert "Open Workspace" in source
     assert "Open Trust" in source
-    assert "governed personal intelligence system" in source
+    assert "understand information, continue your work, and make decisions" in source
+    assert "One good first move" in source
+    assert "Try Explain This" in source
     assert 'showFirstRunGuide(true)' in source
 
 
@@ -37,6 +39,7 @@ def test_intro_and_settings_pages_include_getting_started_and_control_surfaces()
     assert 'id="page-intro"' in source
     assert 'id="intro-current-mode-badge"' in source
     assert 'id="btn-intro-open-settings"' in source
+    assert 'id="btn-intro-open-landing"' in source
     assert 'id="page-settings"' in source
     assert 'id="settings-mode-cards"' in source
     assert 'id="settings-permission-summary"' in source

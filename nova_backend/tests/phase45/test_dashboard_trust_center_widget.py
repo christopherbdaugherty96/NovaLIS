@@ -20,6 +20,8 @@ def test_dashboard_renders_trust_center_page_from_runtime_state():
     assert "trust-center-voice-grid" in source
     assert "trust-center-reasoning-grid" in source
     assert "trust-center-bridge-grid" in source
+    assert "Estimated tokens today" in source
+    assert "Budget state" in source
     assert "settings-reasoning-grid" in source
     assert "settings-connection-grid" in source
     assert '"trust"' in source

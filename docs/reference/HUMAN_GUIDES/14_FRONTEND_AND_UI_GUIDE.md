@@ -26,6 +26,9 @@ The runtime-served frontend lives in:
 There is also a mirrored copy in:
 - `Nova-Frontend-Dashboard/`
 
+There is now also a product-facing landing preview at:
+- `nova_backend/static/landing.html`
+
 ## What Each Main File Does
 
 ### `index.html`
@@ -65,6 +68,7 @@ It is meant to create a sense of calm presence, not a hidden semantic signal.
 ### `style.phase1.css`
 The main styling layer for the dashboard and orb surface.
 It now also styles the dedicated Workspace, Trust, Intro, and Settings pages and the first-run guide.
+The separate landing-preview page uses its own embedded product-preview styling.
 
 ## What The Frontend Shows Today
 The frontend can present:
@@ -77,12 +81,14 @@ The frontend can present:
 - a dedicated Policies page
 - a dedicated Trust page
 - a dedicated Introduction page
+- a separate landing-preview page
 - a dedicated Settings page
 - thread map and thread detail
 - continuity and memory actions
 - follow-up prompts
 - screen/perception results
 - a first-run guide for non-technical users
+- a stronger first-run magic-moment prompt centered on `explain this`
 
 More specifically, the current dashboard can now show:
 - Home-page operator health
