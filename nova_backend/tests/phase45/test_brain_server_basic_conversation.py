@@ -1345,3 +1345,121 @@ def test_deepseek_button_builds_bounded_second_opinion_context(monkeypatch):
     assert "Recent exchange for second opinion review:" in review_text
     assert "User: What is a GPU?" in review_text
     assert "Nova: A GPU accelerates the math used in many AI workloads." in review_text
+
+
+def test_trust_center_command_returns_summary_and_status_widget(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(
+        brain_server,
+        "_build_trust_review_snapshot",
+        lambda: {
+            "trust_review_summary": "Recent governed actions stay visible here.",
+            "recent_runtime_activity": [
+                {
+                    "title": "Memory save",
+                    "kind": "local",
+                    "detail": "Explicit save recorded",
+                    "timestamp": "2026-03-26 09:15",
+                    "outcome": "success",
+                }
+            ],
+            "blocked_conditions": [
+                {
+                    "label": "Autonomy",
+                    "status": "disabled",
+                    "reason": "Nova remains invocation-bound.",
+                }
+            ],
+        },
+    )
+
+    ws = _ScriptedWebSocket(["trust center"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Trust Center" in msg for msg in chat_messages)
+    assert any("Recent actions:" in msg for msg in chat_messages)
+    assert any(msg.get("type") == "trust_status" for msg in ws.sent_messages)
+
+
+def test_visualize_this_repo_returns_structure_map_and_widget(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["visualize this repo"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Local project structure map" in msg for msg in chat_messages)
+    assert any("Visual orientation:" in msg for msg in chat_messages)
+    assert any(msg.get("type") == "project_structure_map" for msg in ws.sent_messages)
+
+
+def test_workspace_board_command_sends_workspace_thread_and_structure_widgets(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["workspace board"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert chat_messages
+    sent_types = [msg.get("type") for msg in ws.sent_messages]
+    assert "workspace_home" in sent_types
+    assert "thread_map" in sent_types
+    assert "project_structure_map" in sent_types
+
+
+def test_voice_time_query_auto_speaks_response(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(brain_server, "_local_now", lambda: datetime(2026, 3, 26, 10, 15))
+    spoken: list[str] = []
+    monkeypatch.setattr(brain_server, "nova_speak", lambda text: spoken.append(text))
+
+    ws = _ScriptedWebSocket([{"type": "chat", "text": "what time is it", "channel": "voice"}])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert any("10:15 AM" in item for item in spoken)
+
+
+def test_voice_general_chat_auto_speaks_generated_answer(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    spoken: list[str] = []
+    monkeypatch.setattr(brain_server, "nova_speak", lambda text: spoken.append(text))
+
+    ws = _ScriptedWebSocket([{"type": "chat", "text": "What is a GPU?", "channel": "voice"}])
+
+    with patch(
+        "src.skills.general_chat.generate_chat",
+        return_value="A GPU helps by accelerating parallel math for graphics and AI workloads.",
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert spoken
+    assert "parallel math" in spoken[-1]

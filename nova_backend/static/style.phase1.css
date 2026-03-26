@@ -586,6 +586,158 @@ body {
   gap: 8px;
 }
 
+.page-workspace,
+.page-trust {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  gap: 12px;
+  align-content: start;
+}
+
+.page-workspace > .page-card,
+.page-trust > .page-card {
+  min-width: 0;
+}
+
+.workspace-board-hero,
+.trust-center-hero {
+  grid-column: span 12;
+  display: grid;
+  gap: 10px;
+}
+
+.workspace-board-panel,
+.project-structure-widget,
+.trust-center-panel {
+  grid-column: span 6;
+  display: grid;
+  gap: 10px;
+}
+
+.workspace-board-hero-header,
+.workspace-board-section-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.workspace-board-section-copy,
+.project-structure-note,
+.first-run-intro,
+.first-run-note {
+  margin: 0;
+  color: #d4e4fb;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.workspace-board-actions-toolbar,
+.trust-center-actions,
+.project-structure-actions,
+.trust-center-health-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.workspace-board-stats,
+.workspace-board-threads,
+.trust-center-capability-groups,
+.project-structure-highlights,
+.trust-center-list {
+  display: grid;
+  gap: 8px;
+}
+
+.workspace-spotlight-card {
+  width: 100%;
+  text-align: left;
+  display: grid;
+  gap: 6px;
+  padding: 10px 11px;
+  border: 1px solid rgba(168, 201, 242, 0.18);
+  border-radius: 12px;
+  background: rgba(14, 31, 56, 0.42);
+  color: var(--text);
+}
+
+button.workspace-spotlight-card {
+  cursor: pointer;
+}
+
+button.workspace-spotlight-card:hover,
+button.workspace-spotlight-card:focus-visible {
+  border-color: rgba(137, 198, 255, 0.42);
+  background: rgba(23, 48, 81, 0.74);
+}
+
+.workspace-spotlight-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #e1efff;
+}
+
+.workspace-spotlight-copy {
+  font-size: 0.76rem;
+  line-height: 1.42;
+  color: #c6dcfb;
+}
+
+.project-structure-tree {
+  margin: 0;
+  min-height: 220px;
+  max-height: 420px;
+  overflow: auto;
+  padding: 12px 13px;
+  border: 1px solid rgba(168, 201, 242, 0.18);
+  border-radius: 14px;
+  background: rgba(7, 17, 31, 0.86);
+  color: #d7e9ff;
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 0.77rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+.trust-center-metrics {
+  display: grid;
+  gap: 8px;
+  padding: 12px 13px;
+  border: 1px solid rgba(168, 201, 242, 0.18);
+  border-radius: 14px;
+  background: rgba(14, 31, 56, 0.42);
+}
+
+.first-run-pillars {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.first-run-pillar {
+  display: grid;
+  gap: 6px;
+  padding: 11px 12px;
+  border: 1px solid rgba(168, 201, 242, 0.18);
+  border-radius: 12px;
+  background: rgba(14, 31, 56, 0.42);
+}
+
+.first-run-pillar-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #deecff;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.first-run-pillar-copy {
+  color: #c6dcfb;
+  font-size: 0.8rem;
+  line-height: 1.42;
+}
+
 .page-memory {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -3132,7 +3284,10 @@ body {
   .workspace-home-widget,
   .trust-panel,
   .thread-map-widget,
-  .personal-layer-widget {
+  .personal-layer-widget,
+  .workspace-board-panel,
+  .project-structure-widget,
+  .trust-center-panel {
     grid-column: span 6;
   }
 
@@ -3193,11 +3348,18 @@ body {
   .workspace-home-widget,
   .trust-panel,
   .thread-map-widget,
-  .personal-layer-widget {
+  .personal-layer-widget,
+  .workspace-board-panel,
+  .project-structure-widget,
+  .trust-center-panel {
     grid-column: span 12;
   }
 
   .workspace-home-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .first-run-pillars {
     grid-template-columns: minmax(0, 1fr);
   }
 
@@ -3263,6 +3425,11 @@ body {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .page-workspace,
+  .page-trust {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .orb-shell {
     opacity: 0.5;
     width: min(48vmin, 250px);
@@ -3285,6 +3452,12 @@ body {
 
   .memory-management-header,
   .memory-panel-heading-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .workspace-board-hero-header,
+  .workspace-board-section-header {
     flex-direction: column;
     align-items: flex-start;
   }

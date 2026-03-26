@@ -1,5 +1,5 @@
 # Nova Honest Assessment And Next Todo
-Date: 2026-03-25
+Date: 2026-03-26
 Status: Priority note
 Scope: Preserve the honest current-state assessment of Nova and define the next build priority before broader expansion
 
@@ -10,7 +10,7 @@ Its strongest qualities right now are:
 - a coherent product thesis
 - unusually strong trust instincts
 - meaningful implemented progress
-- real differentiation around governed local work, project understanding, explicit authority, and now explicit governed memory
+- real differentiation around governed local work, project understanding, explicit authority, explicit governed memory, and now visible trust/workspace product layers
 
 Nova is not just:
 - a chatbot wrapper
@@ -24,44 +24,30 @@ Nova already has:
 - meaningful conversation improvements
 - stronger local project understanding
 - safer local action handling
+- answer-first search and source-grounded news behavior
 - clearer planning and phase structure
-- a better long-term product vision than most assistant projects
 - a real explicit memory save/inspect/retrieve layer on `main`
+- a visible Workspace page and Trust page
+- a first-run guide for non-technical users
 
 That is real progress.
 
 ## The Risk
-The biggest risk now is not bad ideas.
+The biggest risk now is still not bad ideas.
 
 The biggest risk is:
 - vision sprawl
 - too many valid directions at once
 - not enough ruthless sequencing
 
-Nova now has strong directions in:
-- conversation
-- memory
-- search
-- news
-- local project understanding
-- connectors
-- home integration
-- crypto
-- schedules
-- personality
-- continuous-agent vision
-
-None of those are bad.
-The problem is trying to push too many of them at the same time.
-
 ## The Core Gap
 The project is no longer missing "more ideas."
 
 It is missing more of the operating layers that make the vision stable:
-- stronger memory retrieval and continuity tuning
-- project/workspace foundations
-- answer-first retrieval implementation
-- evals, traces, and regression infrastructure
+- richer project/workspace foundations
+- richer trust-center history and drill-down
+- onboarding stage 2 with setup and permissions guidance
+- final real-device TTS confidence work
 - disciplined connector rollout
 
 That is the difference between:
@@ -80,48 +66,42 @@ That means the next work should be:
 - user-visible
 - trust-preserving
 
-and not:
-- broad new expansion across many fronts at once
-
 ## Next Todo Before Anything Else
 The next highest-value product-foundation priority should now be:
 
-### 1. Unified Trust Center Foundations
+### 1. Richer Project / Workspace Foundations
 Best next branch:
-- `codex/trust-center-stage1-recent-actions`
+- `codex/agent-os-stage3-project-workspaces`
 
 Why this should come first:
-- Workspace Home now exists as a calmer operating surface
-- the next biggest missing user-facing layer is one clearer place to review actions, approvals, blocks, and why Nova did what it did
-- this is the cleanest next trust-preserving move after continuity and workspace visibility became real
-- it improves product confidence for non-technical users without widening authority
+- Home, Workspace, Memory, and Trust now exist as real product surfaces
+- the next biggest user-facing gap is deeper project continuity inside that shell
+- this is the cleanest next move for a non-technical user because it improves where ongoing work actually lives
+- it builds on continuity without widening authority
 
 Best scope:
-- recent actions
-- blocked actions
-- approvals and denials
-- clearer "why" explanations
-- provider/source visibility where relevant
+- stronger project selection and switching
+- clearer focus-project persistence
+- better transitions between Home, Workspace, and thread detail
+- richer recent reports / memory / next-action handling
 - no authority expansion
 - no hidden autonomy
 
 ## Recommended Follow-On Order
-After trust-center foundations, the cleanest order is:
-
-1. `codex/onboarding-stage1-first-run`
-2. `codex/tts-regression-stage1-output-restore`
-3. `codex/agent-os-stage2-project-workspaces`
-4. `codex/local-project-visualization-stage1-structure-map`
+After richer workspace foundations, the cleanest order is:
+1. `codex/trust-center-stage2-history-and-drilldown`
+2. `codex/onboarding-stage2-setup-and-permissions`
+3. `codex/tts-regression-stage2-device-confidence`
+4. `codex/local-project-visualization-stage2-structured-graph`
 5. connector-management surface work
 
 ## Why This Order
 This order is strong because it:
-- improves trust first
-- improves continuity second
-- improves answer quality third
-- improves operating structure after that
-
-It avoids trying to expand everywhere at once.
+- improves where ongoing work lives
+- deepens trust second
+- improves user clarity third
+- closes a remaining voice confidence gap after that
+- keeps the next visualizer step grounded in real product need
 
 ## What To Avoid Right Now
 Before the next core layers are implemented, avoid broadening into too many of these at once:
@@ -130,7 +110,6 @@ Before the next core layers are implemented, avoid broadening into too many of t
 - wake-word implementation
 - more personality layering
 - broad connector sprawl
-- too many new UI surfaces
 - long-term learning work
 
 Those can all matter later.
@@ -139,4 +118,4 @@ They just should not come before the more foundational layers.
 ## Product Rule
 The anchor rule for this note should be:
 
-Nova is strong enough now that the next step is not more ideas. The next step is disciplined system-building.
+Nova is strong enough now that the next step is not more ideas. The next step is disciplined system-building around the product surfaces users already touch.

@@ -83,8 +83,18 @@ let trustReviewState = {
   activity: [],
   blocked: [],
 };
+let threadMapState = {
+  summary: "No project threads yet. Save work updates to start continuity.",
+  activeThread: "",
+  threads: [],
+};
 let workspaceHomeState = {
   summary: "Workspace home is preparing your latest project context.",
+  snapshot: {},
+  lastHydratedAt: 0,
+};
+let projectVisualizerState = {
+  summary: "Open the structure map to see the repo as a human-friendly system view.",
   snapshot: {},
   lastHydratedAt: 0,
 };
@@ -106,7 +116,9 @@ const PAGE_LABELS = {
   chat: "Chat",
   news: "News",
   home: "Home",
+  workspace: "Workspace",
   memory: "Memory",
+  trust: "Trust",
 };
 
 const QUICK_ACTIONS_BY_PAGE = {
@@ -149,11 +161,24 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "home_schedules", label: "Schedules", command: "show schedules", switchToPage: "chat" },
     { id: "home_patterns", label: "Pattern review", command: "pattern status", switchToPage: "chat" },
   ],
+  workspace: [
+    { id: "workspace_board", label: "Workspace board", command: "workspace board", stayOnPage: true },
+    { id: "workspace_threads", label: "Show threads", command: "show threads", switchToPage: "chat" },
+    { id: "workspace_status", label: "Project status", command: "project status this", switchToPage: "chat" },
+    { id: "workspace_visual", label: "Structure map", command: "show structure map", stayOnPage: true },
+    { id: "workspace_architecture", label: "Architecture report", command: "create analysis report on this repo architecture", switchToPage: "chat" },
+  ],
   memory: [
     { id: "memory_page_overview", label: "Overview", command: "memory overview", stayOnPage: true },
     { id: "memory_page_list", label: "List memory", command: "list memories", switchToPage: "chat" },
     { id: "memory_page_threads", label: "Thread memory", command: "memory list thread this", switchToPage: "chat" },
     { id: "memory_page_save", label: "Save decision", command: "memory save decision for deployment issue: verify next step", switchToPage: "chat" },
+  ],
+  trust: [
+    { id: "trust_refresh", label: "Refresh trust", command: "trust center", stayOnPage: true },
+    { id: "trust_system", label: "System status", command: "system status", switchToPage: "chat" },
+    { id: "trust_memory", label: "Memory overview", command: "memory overview", switchToPage: "memory" },
+    { id: "trust_workspace", label: "Workspace home", command: "workspace home", switchToPage: "chat" },
   ],
 };
 
@@ -168,6 +193,10 @@ const COMMAND_SUGGESTIONS = [
   "help me do this",
   "show threads",
   "workspace home",
+  "workspace board",
+  "trust center",
+  "show structure map",
+  "visualize this repo",
   "continue my deployment issue",
   "project status deployment issue",
   "biggest blocker in deployment issue",
@@ -215,6 +244,9 @@ const HELP_EXAMPLES = [
   "help me do this",
   "show threads",
   "workspace home",
+  "workspace board",
+  "trust center",
+  "show structure map",
   "save this as part of deployment issue",
   "continue my deployment issue",
   "project status deployment issue",
@@ -335,7 +367,8 @@ function closeHeaderMenus() {
 function createOverviewChip(label, value) {
   const chip = document.createElement("div");
   chip.className = "memory-overview-tier";
-  chip.textContent = `${label}: ${Number.isFinite(value) ? value : 0}`;
+  const renderedValue = Number.isFinite(value) ? value : (String(value || "").trim() || "0");
+  chip.textContent = `${label}: ${renderedValue}`;
   return chip;
 }
 
@@ -448,6 +481,13 @@ function requestWorkspaceHomeRefresh(force = false) {
   if (!force && now - Number(workspaceHomeState.lastHydratedAt || 0) < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
   workspaceHomeState.lastHydratedAt = now;
   safeWSSend({ text: "workspace home", silent_widget_refresh: true });
+}
+
+function requestProjectStructureMapRefresh(force = false) {
+  const now = Date.now();
+  if (!force && now - Number(projectVisualizerState.lastHydratedAt || 0) < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
+  projectVisualizerState.lastHydratedAt = now;
+  safeWSSend({ text: "show structure map", silent_widget_refresh: true });
 }
 
 function renderMemoryCenterSurface() {
@@ -794,6 +834,8 @@ function renderThreadMapWidget(data = {}) {
   const listHost = $("thread-map-list");
   const active = String((data && data.active_thread) || "").trim();
   const threads = Array.isArray(data && data.threads) ? data.threads : [];
+  threadMapState.activeThread = active;
+  threadMapState.threads = threads.map((item) => ({ ...(item || {}) }));
 
   if (summary) {
     if (!threads.length) {
@@ -803,6 +845,7 @@ function renderThreadMapWidget(data = {}) {
     } else {
       summary.textContent = `${threads.length} project thread${threads.length === 1 ? "" : "s"} available.`;
     }
+    threadMapState.summary = summary.textContent;
   }
   if (!listHost) return;
   clear(listHost);
@@ -987,6 +1030,7 @@ function renderThreadMapWidget(data = {}) {
   });
 
   requestWorkspaceHomeRefresh();
+  renderWorkspaceBoardPage();
 }
 
 function renderWorkspaceHomeWidget(data = {}) {
@@ -1198,6 +1242,233 @@ function renderWorkspaceHomeWidget(data = {}) {
       setActivePage("chat");
       injectUserText(command, "text");
     });
+    actionsHost.appendChild(button);
+  });
+
+  renderWorkspaceBoardPage();
+}
+
+function renderProjectStructureMapWidget(data = {}) {
+  if (data && typeof data === "object" && Object.keys(data).length) {
+    projectVisualizerState.snapshot = { ...projectVisualizerState.snapshot, ...data };
+    projectVisualizerState.summary = String(data.summary || projectVisualizerState.summary).trim() || projectVisualizerState.summary;
+  }
+
+  const summary = $("project-structure-summary");
+  const tree = $("project-structure-tree");
+  const highlightHost = $("project-structure-highlights");
+  const note = $("project-structure-note");
+  const actionsHost = $("project-structure-actions");
+  if (!summary || !tree || !highlightHost || !note || !actionsHost) {
+    renderWorkspaceBoardPage();
+    return;
+  }
+
+  const snapshot = projectVisualizerState.snapshot || {};
+  const treeLines = Array.isArray(snapshot.tree_lines) ? snapshot.tree_lines : [];
+  const highlights = Array.isArray(snapshot.highlights) ? snapshot.highlights : [];
+  const actions = Array.isArray(snapshot.recommended_actions) ? snapshot.recommended_actions : [];
+
+  summary.textContent = projectVisualizerState.summary || "Open the structure map to see the repo as a human-friendly system view.";
+  tree.textContent = treeLines.length
+    ? treeLines.join("\n")
+    : "No structure map loaded yet. Use Refresh map to build one for the current workspace.";
+  note.textContent = String(snapshot.note || "This structure map is read-only and meant to help people understand the codebase faster.").trim();
+
+  clear(highlightHost);
+  if (!highlights.length) {
+    const empty = document.createElement("div");
+    empty.className = "workspace-home-empty";
+    empty.textContent = "Key nodes will appear here after the structure map loads.";
+    highlightHost.appendChild(empty);
+  } else {
+    highlights.forEach((item) => {
+      const card = document.createElement("div");
+      card.className = "workspace-spotlight-card";
+
+      const title = document.createElement("div");
+      title.className = "workspace-spotlight-title";
+      title.textContent = String(item.label || "Key node").trim();
+      card.appendChild(title);
+
+      const copy = document.createElement("div");
+      copy.className = "workspace-spotlight-copy";
+      copy.textContent = String(item.detail || "").trim();
+      card.appendChild(copy);
+
+      highlightHost.appendChild(card);
+    });
+  }
+
+  clear(actionsHost);
+  [
+    ...actions,
+    { label: "Refresh map", command: "show structure map" },
+  ].slice(0, 4).forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "assistant-action-btn";
+    button.textContent = String(item.label || "Run").trim();
+    button.addEventListener("click", () => {
+      const command = String(item.command || "").trim();
+      if (!command) return;
+      if (command === "show structure map") {
+        requestProjectStructureMapRefresh(true);
+        return;
+      }
+      setActivePage("chat");
+      injectUserText(command, "text");
+    });
+    actionsHost.appendChild(button);
+  });
+
+  renderWorkspaceBoardPage();
+}
+
+function renderWorkspaceBoardPage() {
+  const summary = $("workspace-board-summary");
+  const focusHost = $("workspace-board-focus");
+  const statsHost = $("workspace-board-stats");
+  const threadHost = $("workspace-board-threads");
+  const feedHost = $("workspace-board-feed");
+  const actionsHost = $("workspace-board-actions");
+  if (!summary || !focusHost || !statsHost || !threadHost || !feedHost || !actionsHost) return;
+
+  const workspace = workspaceHomeState.snapshot || {};
+  const focus = (workspace && typeof workspace.focus_thread === "object") ? workspace.focus_thread : {};
+  const structure = projectVisualizerState.snapshot || {};
+  const threads = Array.isArray(threadMapState.threads) && threadMapState.threads.length
+    ? threadMapState.threads
+    : Array.isArray(workspace.recent_threads) ? workspace.recent_threads : [];
+  const recentDocs = Array.isArray(workspace.recent_documents) ? workspace.recent_documents : [];
+  const recentMemory = Array.isArray(workspace.recent_memory_items) ? workspace.recent_memory_items : [];
+
+  summary.textContent = workspaceHomeState.summary || "Workspace Board keeps project continuity, memory, and reports in one view.";
+
+  clear(focusHost);
+  const focusName = String(focus.name || "").trim();
+  if (!focusName) {
+    const empty = document.createElement("div");
+    empty.className = "workspace-home-empty";
+    empty.textContent = "No focus project yet. Start with a repo summary, a thread, or a structure map.";
+    focusHost.appendChild(empty);
+  } else {
+    [
+      `Focus project: ${focusName}`,
+      String(focus.goal || "").trim() ? `Goal: ${String(focus.goal || "").trim()}` : "",
+      String(focus.health_state || "").trim() ? `Health: ${String(focus.health_state || "").trim().toUpperCase()}` : "",
+      String(focus.latest_blocker || "").trim() ? `Current blocker: ${String(focus.latest_blocker || "").trim()}` : "",
+      String(focus.latest_next_action || "").trim() ? `Next step: ${String(focus.latest_next_action || "").trim()}` : "",
+    ].filter(Boolean).forEach((line, index) => {
+      const row = document.createElement("div");
+      row.className = index === 0 ? "workspace-home-focus-title" : "workspace-home-focus-copy";
+      row.textContent = line;
+      focusHost.appendChild(row);
+    });
+  }
+
+  clear(statsHost);
+  [
+    ["Threads", `${Number(workspace.thread_count || threads.length || 0)}`],
+    ["Project memory", `${Number(workspace.project_memory_total || 0)}`],
+    ["Recent reports", `${recentDocs.length}`],
+    ["Visual map", Array.isArray(structure.tree_lines) && structure.tree_lines.length ? "Ready" : "Not loaded"],
+  ].forEach(([label, value]) => {
+    statsHost.appendChild(createOverviewChip(label, value));
+  });
+
+  clear(threadHost);
+  if (!threads.length) {
+    const empty = document.createElement("div");
+    empty.className = "workspace-home-empty";
+    empty.textContent = "Project threads will appear here after you start saving work into a thread.";
+    threadHost.appendChild(empty);
+  } else {
+    threads.slice(0, 4).forEach((thread) => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "workspace-spotlight-card";
+      card.addEventListener("click", () => {
+        const name = String(thread.name || "").trim();
+        if (!name) return;
+        setActivePage("chat");
+        injectUserText(`thread detail ${name}`, "text");
+      });
+
+      const title = document.createElement("div");
+      title.className = "workspace-spotlight-title";
+      title.textContent = String(thread.name || "Project thread").trim();
+      card.appendChild(title);
+
+      const copy = document.createElement("div");
+      copy.className = "workspace-spotlight-copy";
+      const parts = [
+        String(thread.goal || "").trim(),
+        String(thread.health_state || "").trim() ? `Health ${String(thread.health_state || "").trim().toUpperCase()}` : "",
+        Number.isFinite(Number(thread.memory_count || 0)) ? `Memory ${Number(thread.memory_count || 0)}` : "",
+      ].filter(Boolean);
+      copy.textContent = parts.join(" · ") || "Open in chat for thread detail.";
+      card.appendChild(copy);
+
+      threadHost.appendChild(card);
+    });
+  }
+
+  clear(feedHost);
+  const feedItems = recentDocs.length
+    ? recentDocs.map((doc) => ({
+        title: `Doc ${doc.id}: ${String(doc.title || "").trim()}`,
+        copy: String(doc.summary || doc.topic || "Recent analysis document.").trim(),
+        command: `summarize doc ${doc.id}`,
+      }))
+    : recentMemory.map((item) => ({
+        title: String(item.title || item.id || "Memory item").trim(),
+        copy: "Recent project memory",
+        command: `memory show ${String(item.id || "").trim()}`,
+        page: "memory",
+      }));
+  if (!feedItems.length) {
+    const empty = document.createElement("div");
+    empty.className = "workspace-home-empty";
+    empty.textContent = "Recent reports and saved project memory will appear here as you use Nova.";
+    feedHost.appendChild(empty);
+  } else {
+    feedItems.slice(0, 4).forEach((item) => {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "workspace-home-doc";
+      row.addEventListener("click", () => {
+        if (item.page) setActivePage(item.page);
+        else setActivePage("chat");
+        injectUserText(item.command, "text");
+      });
+
+      const title = document.createElement("div");
+      title.className = "workspace-home-doc-title";
+      title.textContent = item.title;
+      row.appendChild(title);
+
+      const copy = document.createElement("div");
+      copy.className = "workspace-home-doc-copy";
+      copy.textContent = item.copy;
+      row.appendChild(copy);
+
+      feedHost.appendChild(row);
+    });
+  }
+
+  clear(actionsHost);
+  [
+    { label: "Refresh workspace", fn: () => requestWorkspaceHomeRefresh(true) },
+    { label: "Show structure map", fn: () => requestProjectStructureMapRefresh(true) },
+    { label: "Show threads", fn: () => { setActivePage("chat"); injectUserText("show threads", "text"); } },
+    { label: "Trust center", fn: () => setActivePage("trust") },
+  ].forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "assistant-action-btn";
+    button.textContent = item.label;
+    button.addEventListener("click", item.fn);
     actionsHost.appendChild(button);
   });
 }
@@ -2253,6 +2524,8 @@ function renderOperatorHealthWidget(data = {}) {
       reasonsHost.appendChild(list);
     }
   }
+
+  renderTrustCenterPage();
 }
 
 function renderCapabilitySurfaceWidget(data = {}) {
@@ -2337,6 +2610,8 @@ function renderCapabilitySurfaceWidget(data = {}) {
     }
     groupsHost.appendChild(card);
   });
+
+  renderTrustCenterPage();
 }
 
 function runCapabilityPrompt(prompt) {
@@ -2485,6 +2760,136 @@ function renderTrustPanel(data = {}) {
   }
 
   requestWorkspaceHomeRefresh();
+  renderTrustCenterPage();
+}
+
+function renderTrustCenterPage() {
+  const summary = $("trust-center-summary");
+  const mode = $("trust-center-mode");
+  const lastCall = $("trust-center-last-call");
+  const egress = $("trust-center-egress");
+  const failure = $("trust-center-failure");
+  const activityHost = $("trust-center-activity");
+  const blockedHost = $("trust-center-blocked");
+  const healthSummary = $("trust-center-health-summary");
+  const healthGrid = $("trust-center-health-grid");
+  const capabilitySummary = $("trust-center-capability-summary");
+  const capabilityHost = $("trust-center-capability-groups");
+  if (!summary || !mode || !lastCall || !egress || !failure || !activityHost || !blockedHost || !healthSummary || !healthGrid || !capabilitySummary || !capabilityHost) return;
+
+  summary.textContent = trustReviewState.summary || "Trust review keeps recent governed actions, blocked conditions, and failure state in one place.";
+  mode.textContent = trustState.mode || "Local-only";
+  lastCall.textContent = trustState.lastExternalCall || "None";
+  egress.textContent = trustState.dataEgress || "Read-only requests only";
+  failure.textContent = trustState.failureState || "Normal";
+
+  clear(activityHost);
+  if (!trustReviewState.activity.length) {
+    const empty = document.createElement("div");
+    empty.className = "trust-empty";
+    empty.textContent = "Recent governed actions will appear here as Nova works.";
+    activityHost.appendChild(empty);
+  } else {
+    trustReviewState.activity.slice(0, 6).forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "trust-activity-item";
+      row.dataset.outcome = String(item.outcome || "").trim().toLowerCase() || "info";
+
+      const title = document.createElement("div");
+      title.className = "trust-activity-title";
+      title.textContent = String(item.title || "Runtime event").trim() || "Runtime event";
+      row.appendChild(title);
+
+      const meta = document.createElement("div");
+      meta.className = "trust-activity-meta";
+      meta.textContent = [
+        String(item.kind || "").trim(),
+        String(item.detail || "").trim(),
+        String(item.timestamp || "").trim(),
+      ].filter(Boolean).join(" - ") || "Ledger-backed runtime activity";
+      row.appendChild(meta);
+
+      const reason = String(item.reason || "").trim();
+      if (reason) {
+        const reasonRow = document.createElement("div");
+        reasonRow.className = "trust-activity-reason";
+        reasonRow.textContent = `Why: ${reason}`;
+        row.appendChild(reasonRow);
+      }
+
+      activityHost.appendChild(row);
+    });
+  }
+
+  clear(blockedHost);
+  if (!trustReviewState.blocked.length) {
+    const empty = document.createElement("div");
+    empty.className = "trust-empty";
+    empty.textContent = "No blocked conditions are active right now.";
+    blockedHost.appendChild(empty);
+  } else {
+    trustReviewState.blocked.slice(0, 4).forEach((item) => {
+      const row = document.createElement("div");
+      row.className = "trust-activity-item";
+
+      const title = document.createElement("div");
+      title.className = "trust-activity-title";
+      title.textContent = `${String(item.label || item.area || "Condition").trim()}: ${String(item.status || "unknown").trim()}`;
+      row.appendChild(title);
+
+      const copy = document.createElement("div");
+      copy.className = "trust-activity-meta";
+      copy.textContent = String(item.reason || "").trim() || "No reason available.";
+      row.appendChild(copy);
+
+      blockedHost.appendChild(row);
+    });
+  }
+
+  healthSummary.textContent = operatorHealthState.summary || "Loading runtime health...";
+  clear(healthGrid);
+  [
+    ["Governor", String((operatorHealthState.snapshot && operatorHealthState.snapshot.governor_status) || "Unknown")],
+    ["Boundary", String((operatorHealthState.snapshot && operatorHealthState.snapshot.execution_boundary_status) || "Unknown")],
+    ["Network", String((operatorHealthState.snapshot && operatorHealthState.snapshot.network_mediator_status) || "Unknown")],
+    ["Voice", String((operatorHealthState.snapshot && operatorHealthState.snapshot.voice_status) || "Unknown")],
+    ["Memory", String((operatorHealthState.snapshot && operatorHealthState.snapshot.memory_summary) || (operatorHealthState.snapshot && operatorHealthState.snapshot.memory_status) || "Unknown")],
+    ["Model", String((operatorHealthState.snapshot && operatorHealthState.snapshot.model_availability) || "Unknown")],
+  ].forEach(([label, value]) => {
+    healthGrid.appendChild(createOverviewChip(label, value));
+  });
+
+  capabilitySummary.textContent = capabilityDiscoveryState.summary || "Loading live capabilities...";
+  clear(capabilityHost);
+  const groups = Array.isArray(capabilityDiscoveryState.snapshot && capabilityDiscoveryState.snapshot.available_capability_surface)
+    ? capabilityDiscoveryState.snapshot.available_capability_surface
+    : [];
+  if (!groups.length) {
+    const empty = document.createElement("div");
+    empty.className = "trust-empty";
+    empty.textContent = "Capability groups will appear here after the next runtime refresh.";
+    capabilityHost.appendChild(empty);
+  } else {
+    groups.slice(0, 4).forEach((group) => {
+      const card = document.createElement("div");
+      card.className = "workspace-spotlight-card";
+
+      const title = document.createElement("div");
+      title.className = "workspace-spotlight-title";
+      title.textContent = String(group.label || group.category || "Capability group").trim();
+      card.appendChild(title);
+
+      const copy = document.createElement("div");
+      copy.className = "workspace-spotlight-copy";
+      const entries = Array.isArray(group.items)
+        ? group.items.slice(0, 4).map((item) => String(item.action || item.label || item.name || "").trim()).filter(Boolean)
+        : [];
+      copy.textContent = entries.length ? entries.join(" · ") : "Live governed actions appear here.";
+      card.appendChild(copy);
+
+      capabilityHost.appendChild(card);
+    });
+  }
 }
 
 function markExternalCall(label) {
@@ -4325,6 +4730,8 @@ function hydrateDashboardWidgets() {
   safeWSSend({ text: "memory overview", silent_widget_refresh: true });
   safeWSSend({ text: "show threads", silent_widget_refresh: true });
   safeWSSend({ text: "workspace home", silent_widget_refresh: true });
+  safeWSSend({ text: "show structure map", silent_widget_refresh: true });
+  safeWSSend({ text: "trust center", silent_widget_refresh: true });
   safeWSSend({ text: "tone status", silent_widget_refresh: true });
   safeWSSend({ text: "notification status", silent_widget_refresh: true });
   safeWSSend({ text: "pattern status", silent_widget_refresh: true });
@@ -4405,6 +4812,9 @@ function connectWebSocket() {
         break;
       case "workspace_home":
         renderWorkspaceHomeWidget(msg);
+        break;
+      case "project_structure_map":
+        renderProjectStructureMapWidget(msg);
         break;
       case "thread_detail":
         renderThreadDetailWidget(msg);
@@ -4519,7 +4929,9 @@ function setActivePage(page) {
     chat: $("page-chat"),
     news: $("page-news"),
     home: $("page-home"),
+    workspace: $("page-workspace"),
     memory: $("page-memory"),
+    trust: $("page-trust"),
   };
   const target = normalizePageKey(page);
 
@@ -4547,6 +4959,14 @@ function setActivePage(page) {
   }
   if (target === "home") {
     requestWorkspaceHomeRefresh(true);
+  }
+  if (target === "workspace") {
+    requestWorkspaceHomeRefresh(true);
+    requestProjectStructureMapRefresh(true);
+  }
+  if (target === "trust") {
+    safeWSSend({ text: "trust center", silent_widget_refresh: true });
+    safeWSSend({ text: "system status", silent_widget_refresh: true });
   }
 
   if (latestNewsItems.length > 0) {
@@ -4628,36 +5048,98 @@ function createModalShell(id, title) {
   return { overlay, card };
 }
 
-function showFirstRunGuideIfNeeded() {
-  if (localStorage.getItem(STORAGE_KEYS.firstRunDone) === "1") return;
+function showFirstRunGuide(force = false) {
+  if (!force && localStorage.getItem(STORAGE_KEYS.firstRunDone) === "1") return;
+
+  const existing = $("first-run-modal");
+  if (existing) existing.remove();
 
   const { overlay, card } = createModalShell("first-run-modal", "Welcome to Nova");
-  const p = document.createElement("p");
-  p.textContent = "Quick start (about 60 seconds):";
-  card.appendChild(p);
+
+  const intro = document.createElement("p");
+  intro.className = "first-run-intro";
+  intro.textContent = "Nova is built to be useful without being pushy. It can explain, search, remember explicit things, and help you keep project context while still showing what it did and why.";
+  card.appendChild(intro);
+
+  const pillars = document.createElement("div");
+  pillars.className = "first-run-pillars";
+  [
+    ["Start on Home", "Daily brief, system status, memory, and current focus all live there."],
+    ["Use Workspace", "This is where project continuity, threads, reports, and the structure map come together."],
+    ["Check Trust", "Trust shows recent actions, blocked conditions, and the current operating state."],
+  ].forEach(([titleText, bodyText]) => {
+    const panel = document.createElement("div");
+    panel.className = "first-run-pillar";
+
+    const title = document.createElement("div");
+    title.className = "first-run-pillar-title";
+    title.textContent = titleText;
+    panel.appendChild(title);
+
+    const body = document.createElement("div");
+    body.className = "first-run-pillar-copy";
+    body.textContent = bodyText;
+    panel.appendChild(body);
+
+    pillars.appendChild(panel);
+  });
+  card.appendChild(pillars);
 
   const steps = document.createElement("ol");
   steps.className = "help-list";
-  ["Review dashboard snapshot", "Summarize top headlines", "Ask for your daily brief"].forEach((label) => {
+  [
+    "Open Home to see today, your current focus, and the latest memory.",
+    "Open Workspace to see project threads, reports, and the structure map.",
+    "Use Trust any time you want to understand recent actions, block conditions, or failure state.",
+    "Use explicit phrases like \"remember this\" when you want something saved durably.",
+  ].forEach((label) => {
     const li = document.createElement("li");
     li.textContent = label;
     steps.appendChild(li);
   });
   card.appendChild(steps);
 
+  const trustNote = document.createElement("p");
+  trustNote.className = "first-run-note";
+  trustNote.textContent = "Important: Nova stays invocation-bound. It can help broadly, but effectful actions still remain governed and inspectable.";
+  card.appendChild(trustNote);
+
   const row = document.createElement("div");
   row.className = "modal-actions";
 
   [
-    { label: "Summarize headlines", cmd: "summarize all headlines" },
-    { label: "Search something", cmd: "search for local events" },
-    { label: "Read last reply", cmd: "speak that" },
+    {
+      label: "Open Home",
+      fn: () => {
+        setActivePage("home");
+        requestWorkspaceHomeRefresh(true);
+      },
+    },
+    {
+      label: "Open Workspace",
+      fn: () => {
+        setActivePage("workspace");
+      },
+    },
+    {
+      label: "Open Trust",
+      fn: () => {
+        setActivePage("trust");
+      },
+    },
+    {
+      label: "Try Morning Brief",
+      fn: () => {
+        setActivePage("chat");
+        injectUserText("daily brief", "text");
+      },
+    },
   ].forEach((item) => {
     const b = document.createElement("button");
     b.type = "button";
     b.textContent = item.label;
     b.addEventListener("click", () => {
-      injectUserText(item.cmd, "text");
+      item.fn();
       overlay.style.display = "none";
       localStorage.setItem(STORAGE_KEYS.firstRunDone, "1");
     });
@@ -4675,6 +5157,10 @@ function showFirstRunGuideIfNeeded() {
 
   card.appendChild(row);
   overlay.style.display = "flex";
+}
+
+function showFirstRunGuideIfNeeded() {
+  showFirstRunGuide(false);
 }
 
 function renderCommandDiscovery() {
@@ -4956,7 +5442,9 @@ function injectHeaderMenus() {
     { label: "Chat", page: "chat" },
     { label: "News", page: "news" },
     { label: "Home", page: "home" },
+    { label: "Workspace", page: "workspace" },
     { label: "Memory", page: "memory" },
+    { label: "Trust", page: "trust" },
   ].forEach((item) => {
     const btn = document.createElement("button");
     btn.type = "button";
@@ -4977,6 +5465,7 @@ function injectHeaderMenus() {
   controlsGrid.className = "header-menu-grid";
   [
     { label: "Help", fn: showHelpModal },
+    { label: "First steps", fn: () => showFirstRunGuide(true) },
     { label: "Tone", fn: showToneModal },
     { label: "Schedule", fn: showScheduleModal },
     { label: "Privacy", fn: showPrivacyModal },
@@ -5004,6 +5493,8 @@ function injectHeaderMenus() {
   actionsGrid.className = "header-menu-grid";
   [
     { label: "System status", command: "system status", page: "chat" },
+    { label: "Trust center", page: "trust", fn: () => setActivePage("trust") },
+    { label: "Workspace board", page: "workspace", fn: () => setActivePage("workspace") },
     { label: "Explain this", command: "explain this", page: "chat" },
     { label: "Memory overview", command: "memory overview", page: "memory" },
     { label: "Show schedules", command: "show schedules", page: "chat" },
@@ -5046,6 +5537,9 @@ window.addEventListener("DOMContentLoaded", () => {
   renderCapabilitySurfaceWidget({});
   renderTrustPanel();
   renderWorkspaceHomeWidget({});
+  renderProjectStructureMapWidget({});
+  renderWorkspaceBoardPage();
+  renderTrustCenterPage();
   renderIntelligenceBriefWidget();
   renderPersonalLayerWidget();
   renderQuickActions();
@@ -5059,6 +5553,7 @@ window.addEventListener("DOMContentLoaded", () => {
   });
   window.addEventListener("focus", hydrateDashboardWidgets);
   ensureSingleWelcomeMessage();
+  showFirstRunGuideIfNeeded();
 
   const sendBtn = $("send-btn");
   if (sendBtn) sendBtn.addEventListener("click", sendChat);
@@ -5172,10 +5667,52 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  const homeWorkspacePageBtn = $("btn-home-workspace-page");
+  if (homeWorkspacePageBtn) homeWorkspacePageBtn.addEventListener("click", () => setActivePage("workspace"));
+
+  const homeTrustPageBtn = $("btn-home-trust-page");
+  if (homeTrustPageBtn) homeTrustPageBtn.addEventListener("click", () => setActivePage("trust"));
+
   const workspaceHomeRefreshBtn = $("btn-workspace-home-refresh");
   if (workspaceHomeRefreshBtn) {
     workspaceHomeRefreshBtn.addEventListener("click", () => requestWorkspaceHomeRefresh(true));
   }
+
+  const workspaceBoardRefreshBtn = $("btn-workspace-board-refresh");
+  if (workspaceBoardRefreshBtn) workspaceBoardRefreshBtn.addEventListener("click", () => requestWorkspaceHomeRefresh(true));
+
+  const workspaceBoardThreadsBtn = $("btn-workspace-board-threads");
+  if (workspaceBoardThreadsBtn) workspaceBoardThreadsBtn.addEventListener("click", () => {
+    setActivePage("chat");
+    injectUserText("show threads", "text");
+  });
+
+  const workspaceBoardVisualBtn = $("btn-workspace-board-visual");
+  if (workspaceBoardVisualBtn) workspaceBoardVisualBtn.addEventListener("click", () => requestProjectStructureMapRefresh(true));
+
+  const workspaceBoardArchitectureBtn = $("btn-workspace-board-architecture");
+  if (workspaceBoardArchitectureBtn) workspaceBoardArchitectureBtn.addEventListener("click", () => {
+    setActivePage("chat");
+    injectUserText("create analysis report on this repo architecture", "text");
+  });
+
+  const trustCenterRefreshBtn = $("btn-trust-center-refresh");
+  if (trustCenterRefreshBtn) trustCenterRefreshBtn.addEventListener("click", () => {
+    safeWSSend({ text: "trust center", silent_widget_refresh: true });
+    safeWSSend({ text: "system status", silent_widget_refresh: true });
+  });
+
+  const trustCenterSystemBtn = $("btn-trust-center-system");
+  if (trustCenterSystemBtn) trustCenterSystemBtn.addEventListener("click", () => {
+    setActivePage("chat");
+    injectUserText("system status", "text");
+  });
+
+  const trustCenterWorkspaceBtn = $("btn-trust-center-workspace");
+  if (trustCenterWorkspaceBtn) trustCenterWorkspaceBtn.addEventListener("click", () => setActivePage("workspace"));
+
+  const trustCenterMemoryBtn = $("btn-trust-center-memory");
+  if (trustCenterMemoryBtn) trustCenterMemoryBtn.addEventListener("click", () => setActivePage("memory"));
 
   const memoryOverviewBtn = $("btn-memory-overview");
   if (memoryOverviewBtn) memoryOverviewBtn.addEventListener("click", () => sendSilentMemoryCommand("memory overview"));

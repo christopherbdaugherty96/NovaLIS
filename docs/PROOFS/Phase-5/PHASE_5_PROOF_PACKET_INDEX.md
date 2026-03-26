@@ -1,5 +1,5 @@
 # Phase-5 Proof Packet Index
-Updated: 2026-03-25
+Updated: 2026-03-26
 Status: CLOSED for the current trust-facing Phase-5 package, with later runtime-aligned memory additions recorded below
 Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, implemented runtime slices, and deferred follow-on tracks.
 
@@ -32,6 +32,7 @@ Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, imple
 12. `PHASE_5_GOVERNED_MEMORY_STAGE1_SAVE_AND_RETRIEVAL_RUNTIME_SLICE_2026-03-25.md`
 13. `PHASE_5_GOVERNED_MEMORY_STAGE2_MANAGEMENT_SURFACE_RUNTIME_SLICE_2026-03-25.md`
 14. `PHASE_5_WORKSPACE_HOME_FOUNDATION_RUNTIME_SLICE_2026-03-25.md`
+15. `PHASE_5_TRUST_WORKSPACE_ONBOARDING_AND_TTS_RUNTIME_SLICE_2026-03-26.md`
 
 ## Historical Gate-Preparation Inputs (Retained for Traceability Only)
 These documents remain useful as design history, but they are not the current authority chain for the closed Phase-5 package.
@@ -75,7 +76,7 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
 - `python scripts/check_runtime_doc_drift.py`
 - `python scripts/check_frontend_mirror_sync.py`
 
-## Latest Verification Snapshot (2026-03-25)
+## Latest Verification Snapshot (2026-03-26)
 - memory/governor/conversation regression bundle: `117 passed`
 - news/search/tone regression bundle: `72 passed`
 - memory-stage2 focused bundle: `12 passed`
@@ -85,8 +86,12 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
 - workspace-home focused bundle: `7 passed`
 - dashboard/home regression bundle: `66 passed`
 - workspace-home conversation/governor safety bundle: `102 passed`
+- trust/workspace/onboarding focused dashboard bundle: `6 passed`
+- TTS runtime/fallback focused bundle: `6 passed`
+- trust/workspace/voice conversation-path bundle: `5 passed`
+- consolidated runtime regression bundle after trust/workspace/onboarding/TTS slice: `222 passed`
 - full active-capability sequential audit: all `23` active governed capabilities passed targeted verification
-- active-capability residual caveat: capability `18` (`speak_text`) passes executor and mediator tests, but still needs live device spoken-output validation
+- active-capability residual caveat: capability `18` (`speak_text`) now has a stronger runtime fallback path and passing code-path verification, but still needs live device spoken-output validation
 - runtime documentation drift check: passed
 - dashboard script syntax check: passed
 - frontend mirror sync check: passed
@@ -137,6 +142,23 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
    - quiet Home-page pattern-review widget
    - accept / dismiss proposal controls
    - no auto-apply and no background review loop
+
+11. Trust Center foundations landed:
+   - dedicated Trust page
+   - clearer recent governed actions
+   - blocked-condition visibility
+   - runtime health and capability-group visibility in one place
+12. Workspace Board and local-project visualizer stage 1 landed:
+   - dedicated Workspace page
+   - explicit `workspace board` command path
+   - Structure Map surface for non-technical codebase understanding
+13. First-run onboarding landed:
+   - guided Home / Workspace / Trust orientation
+   - explicit invocation-bound trust note
+   - clearer morning-brief entry point
+14. Voice response path strengthened:
+   - voice-origin turns now auto-speak through the shared Nova speech helper
+   - runtime speech path now falls back to the TTS executor engine when the preferred renderer cannot play
 
 ## Governance State
 - Runtime remains invocation-bound.

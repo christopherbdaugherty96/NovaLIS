@@ -1,14 +1,15 @@
-﻿# Voice, Screen, and Context
-Updated: 2026-03-13
+# Voice, Screen, and Context
+Updated: 2026-03-26
 
 ## Why This Matters
 One of the biggest shifts in Nova is that it is no longer limited to text-only requests.
 
-Nova is moving toward a much more natural pattern:
+Nova is moving toward a more natural pattern:
 - you speak
 - Nova understands what you mean
 - Nova uses the current screen or file context when asked
 - Nova explains what is in front of you
+- Nova can often speak the answer back on the same turn
 
 That is what makes Nova feel more like a computer intelligence layer.
 
@@ -16,6 +17,8 @@ That is what makes Nova feel more like a computer intelligence layer.
 The following are active today:
 - speech-to-text transcription
 - text-to-speech capability with an improved local renderer path
+- runtime auto-speak for voice-origin turns
+- runtime fallback from the preferred speech renderer into the governed TTS executor engine
 - bounded screenshot capture on request
 - screen analysis on request
 - explain-anything mode
@@ -74,15 +77,16 @@ Wake word is an important planned feature, but it is not fully live runtime yet.
 
 What exists now:
 - speech-to-text is active
-- text-to-speech capability is active, but real-device output still depends on local audio-path validation
-- wake word is documented as a planned surface
+- voice-origin turns can now auto-speak answers more reliably
+- the local speech path now has a stronger fallback route when the preferred renderer cannot play
+- wake word is still documented as a planned surface
 
 What does not yet exist as active runtime truth:
 - a live always-on wake-word module that is part of the current capability surface
 
 So the right way to describe the current project is:
 - voice input is active
-- voice output is implemented and still being validated end to end on real devices
+- voice output is stronger and still being validated end to end on real devices
 - wake word is planned
 
 ## Why This Still Matters Now
@@ -92,5 +96,6 @@ For example:
 - `more on story 2` can summarize the linked article page when available
 - `explain this` can analyze the current screen or file
 - `which one should I download?` can become a context-aware explanation instead of a generic answer
+- a voice-origin `what time is it` turn can now speak the answer back through the shared runtime speech helper
 
 That is one of the most "magic" parts of the project today.
