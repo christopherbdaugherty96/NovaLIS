@@ -93,11 +93,12 @@ Current conversational/style baseline on `main`:
 - `d0a80c3` - Nova Style Layer Stage 2 checkpoint
 
 Current recommended next-step posture:
-- Workspace Home, Workspace page, Trust page, first-run onboarding, and Structure Map stage 1 are now live in the current repository state
+- Workspace Home, Workspace page, Trust page, first-run onboarding, Introduction page, Settings page, and Structure Map stage 2 are now live in the current repository state
+- trust-center drill-down, onboarding stage 2, and workspace stage 3 are now live
 - the immediate remaining live-runtime voice caveat is final device-confidence validation for spoken output
-- the current highest-value next product-foundation target is richer project/workspace system work
-- start with `codex/agent-os-stage3-project-workspaces`
-- richer trust-center history, onboarding stage 2, and visualizer stage 2 should follow closely behind
+- the current highest-value next product-foundation target is explicit provider/connector setup and permission management
+- start with a settings/connector-management slice rather than broad new automation
+- richer project/workspace persistence and connector rollout should follow closely behind
 - prefer disciplined core-layer implementation over broad new expansion
 
 Canonical design phase folders:

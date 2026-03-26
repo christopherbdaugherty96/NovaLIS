@@ -60,6 +60,8 @@ Examples:
 - `today's schedule`
 - `system status`
 - `morning brief`
+- `intro`
+- `settings`
 
 ## 4. Screen and Explain Mode
 Examples:
@@ -94,6 +96,10 @@ There is also a bounded same-thread second-opinion control in the chat bar:
 - Nova will request a bounded external second opinion on the recent exchange
 - this stays advisory only
 
+Useful voice confidence commands:
+- `voice status`
+- `voice check`
+
 ## 7. Project Continuity And Workspace
 Examples:
 - `create thread deployment issue`
@@ -117,6 +123,7 @@ Use these when you want to understand:
 - what is currently blocked
 - what mode Nova is in
 - whether anything external happened recently
+- what the current voice runtime looks like
 
 ## 9. Governed Memory
 Examples:

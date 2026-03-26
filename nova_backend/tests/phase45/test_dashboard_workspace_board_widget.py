@@ -12,9 +12,11 @@ def test_dashboard_renders_workspace_board_and_structure_map():
     source = DASHBOARD_PATH.read_text(encoding="utf-8")
 
     assert "function requestProjectStructureMapRefresh(force = false)" in source
+    assert "function requestWorkspaceThreadDetail(threadName)" in source
     assert 'safeWSSend({ text: "show structure map", silent_widget_refresh: true });' in source
     assert "function renderProjectStructureMapWidget(data = {})" in source
     assert "function renderWorkspaceBoardPage()" in source
+    assert "populateThreadDetailSurface(\"workspace-thread-detail\", data);" in source
     assert 'setActivePage("workspace")' in source
     assert '"workspace board"' in source
 
@@ -27,6 +29,8 @@ def test_workspace_page_includes_board_and_structure_map_surfaces():
     assert 'id="workspace-board-focus"' in source
     assert 'id="workspace-board-stats"' in source
     assert 'id="workspace-board-threads"' in source
+    assert 'id="workspace-thread-detail-panel"' in source
+    assert 'id="workspace-board-decisions"' in source
     assert 'id="workspace-board-feed"' in source
     assert 'id="workspace-board-actions"' in source
     assert 'id="btn-workspace-board-refresh"' in source
@@ -35,6 +39,10 @@ def test_workspace_page_includes_board_and_structure_map_surfaces():
     assert 'id="btn-workspace-board-architecture"' in source
     assert 'id="project-structure-summary"' in source
     assert 'id="project-structure-tree"' in source
+    assert 'id="project-structure-graph-summary"' in source
+    assert 'id="project-structure-graph"' in source
+    assert 'id="project-structure-relations"' in source
+    assert 'id="project-structure-legend"' in source
     assert 'id="project-structure-highlights"' in source
     assert 'id="project-structure-note"' in source
     assert 'id="project-structure-actions"' in source

@@ -44,11 +44,11 @@ The biggest risk is:
 The project is no longer missing "more ideas."
 
 It is missing more of the operating layers that make the vision stable:
-- richer project/workspace foundations
-- richer trust-center history and drill-down
-- onboarding stage 2 with setup and permissions guidance
+- fuller provider and connector management
+- deeper project/workspace persistence
 - final real-device TTS confidence work
 - disciplined connector rollout
+- later home and external integrations only after those are explicit and visible
 
 That is the difference between:
 - a growing set of strong ideas
@@ -69,39 +69,40 @@ That means the next work should be:
 ## Next Todo Before Anything Else
 The next highest-value product-foundation priority should now be:
 
-### 1. Richer Project / Workspace Foundations
+### 1. Explicit Provider / Connector Setup And Permission Management
 Best next branch:
-- `codex/agent-os-stage3-project-workspaces`
+- `codex/settings-stage2-provider-and-permissions`
 
 Why this should come first:
-- Home, Workspace, Memory, and Trust now exist as real product surfaces
-- the next biggest user-facing gap is deeper project continuity inside that shell
-- this is the cleanest next move for a non-technical user because it improves where ongoing work actually lives
-- it builds on continuity without widening authority
+- Introduction, Settings, Home, Workspace, Memory, and Trust now exist as real product surfaces
+- the next biggest user-facing gap is that setup choices are visible, but not yet fully actionable through a connector and permissions layer
+- this is the cleanest next move for a non-technical user because it makes configuration understandable without widening authority
+- it prepares the product for later connectors, provider routing, and home integrations without hidden drift
 
 Best scope:
-- stronger project selection and switching
-- clearer focus-project persistence
-- better transitions between Home, Workspace, and thread detail
-- richer recent reports / memory / next-action handling
+- explicit provider status
+- explicit connector status
+- read-only vs effectful permission visibility
+- revoke / disconnect surfaces
+- clearer explanation of what is configured and what is still only a preference
 - no authority expansion
 - no hidden autonomy
 
 ## Recommended Follow-On Order
-After richer workspace foundations, the cleanest order is:
-1. `codex/trust-center-stage2-history-and-drilldown`
-2. `codex/onboarding-stage2-setup-and-permissions`
-3. `codex/tts-regression-stage2-device-confidence`
-4. `codex/local-project-visualization-stage2-structured-graph`
-5. connector-management surface work
+After settings/provider/permission work, the cleanest order is:
+1. `codex/connector-management-stage1-read-only`
+2. `codex/tts-regression-stage2-device-confidence`
+3. `codex/agent-os-stage4-project-persistence`
+4. richer provider transparency for Phase-7 reasoning surfaces
+5. connector-aware onboarding follow-through
 
 ## Why This Order
 This order is strong because it:
-- improves where ongoing work lives
-- deepens trust second
-- improves user clarity third
+- turns visible setup into explicit usable configuration
+- makes future connectors safer before they exist
 - closes a remaining voice confidence gap after that
-- keeps the next visualizer step grounded in real product need
+- deepens project persistence after the control layer is clearer
+- keeps future automation anchored to visible permissions
 
 ## What To Avoid Right Now
 Before the next core layers are implemented, avoid broadening into too many of these at once:

@@ -147,6 +147,125 @@
         </div>
       </section>
 
+      <section id="page-intro" class="page-view page-intro" hidden>
+        <div class="widget page-card intro-hero" aria-live="polite">
+          <div class="workspace-board-hero-header">
+            <div>
+              <div class="home-launch-kicker">Introduction</div>
+              <h3>Welcome to Nova</h3>
+            </div>
+            <span id="intro-current-mode-badge" class="confidence-badge">Offline-first</span>
+          </div>
+          <p class="workspace-board-section-copy">
+            Nova is a personal intelligence system designed to help you think, research, and interact with your computer while keeping you in full control.
+          </p>
+          <p id="intro-current-mode-copy" class="workspace-board-section-copy">
+            Local Mode: Nova stays local-first, private, and cost-free by default.
+          </p>
+          <div class="workspace-board-actions-toolbar">
+            <button id="btn-intro-open-home" type="button">Open Home</button>
+            <button id="btn-intro-open-workspace" type="button">Open Workspace</button>
+            <button id="btn-intro-open-trust" type="button">Open Trust</button>
+            <button id="btn-intro-open-settings" type="button">Open Settings</button>
+            <button id="btn-intro-daily-brief" type="button">Try Daily Brief</button>
+          </div>
+        </div>
+
+        <div class="widget page-card intro-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">What Nova Does</div>
+              <p class="workspace-board-section-copy">Research, summarize, explain, and help you work through decisions without hiding what it used.</p>
+            </div>
+          </div>
+          <ul class="help-list">
+            <li>Research and summarize information</li>
+            <li>Explain documents, code, or on-screen content</li>
+            <li>Help you think through decisions</li>
+            <li>Control parts of your system when explicitly allowed</li>
+            <li>Provide structured insights and reports</li>
+          </ul>
+        </div>
+
+        <div class="widget page-card intro-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Core Principles</div>
+              <p class="workspace-board-section-copy">Nova is powerful because it stays bounded.</p>
+            </div>
+          </div>
+          <div class="first-run-pillars">
+            <div class="first-run-pillar">
+              <div class="first-run-pillar-title">You Are In Control</div>
+              <div class="first-run-pillar-copy">Every action must be explicitly requested or approved.</div>
+            </div>
+            <div class="first-run-pillar">
+              <div class="first-run-pillar-title">Transparency First</div>
+              <div class="first-run-pillar-copy">You can see what Nova is doing, what data is being used, and what tools are being called.</div>
+            </div>
+            <div class="first-run-pillar">
+              <div class="first-run-pillar-title">Bounded Intelligence</div>
+              <div class="first-run-pillar-copy">Nova can reason and assist, but it cannot act autonomously or run hidden background work.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="widget page-card intro-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">How Nova Works</div>
+              <p class="workspace-board-section-copy">Every request follows the same simple flow.</p>
+            </div>
+          </div>
+          <div class="intro-flow-line">You → Nova → Validation → Execution → Result</div>
+          <p class="workspace-board-section-copy">
+            Before anything happens, Nova checks permissions, verifies scope, and enforces limits. If something is not allowed, it is blocked or requires approval.
+          </p>
+        </div>
+
+        <div class="widget page-card intro-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Setup Options</div>
+              <p class="workspace-board-section-copy">You can stay fully local or choose a future cloud path later in Settings.</p>
+            </div>
+          </div>
+          <div class="intro-setup-grid">
+            <div class="workspace-spotlight-card">
+              <div class="workspace-spotlight-title">Local Mode</div>
+              <div class="workspace-spotlight-copy">Uses local AI models, needs no API key, and is the safest current everyday setup.</div>
+            </div>
+            <div class="workspace-spotlight-card">
+              <div class="workspace-spotlight-title">Bring Your Own API Key</div>
+              <div class="workspace-spotlight-copy">Lets you control provider, usage, and billing once you explicitly connect one.</div>
+            </div>
+            <div class="workspace-spotlight-card">
+              <div class="workspace-spotlight-title">Managed Cloud Access</div>
+              <div class="workspace-spotlight-copy">Will be the easiest future setup path, but should still stay visible and explicit.</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="widget page-card intro-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Security, Privacy, and First Steps</div>
+              <p class="workspace-board-section-copy">Nova should feel strong without ever becoming sneaky.</p>
+            </div>
+          </div>
+          <ul class="help-list">
+            <li>No hidden actions, no background monitoring, and no continuous listening</li>
+            <li>Paid APIs should never be used without your knowledge</li>
+            <li>Sensitive actions may be blocked or require confirmation and are always logged</li>
+            <li>Start with Home, then Workspace, then Trust if you want to understand what happened</li>
+            <li>Try commands like “Summarize today’s news”, “Explain this file”, or “Help me think through this idea”</li>
+          </ul>
+          <p class="first-run-note">
+            Nova is built on a simple idea: intelligence should be powerful, but control should never be lost.
+          </p>
+        </div>
+      </section>
+
       <section id="page-home" class="page-view page-home" hidden>
         <div id="home-launch-widget" class="widget page-card home-launch-widget" aria-live="polite">
           <div class="home-launch-header">
@@ -289,6 +408,34 @@
         <div class="widget page-card workspace-board-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
+              <div class="workspace-home-section-title">Selected Project</div>
+              <p class="workspace-board-section-copy">Stay inside Workspace while drilling into the current thread, its next step, and linked memory.</p>
+            </div>
+          </div>
+          <div id="workspace-thread-detail-panel" class="thread-detail-panel" hidden>
+            <h4 id="workspace-thread-detail-title" class="thread-detail-title">Thread Detail</h4>
+            <p id="workspace-thread-detail-summary" class="thread-detail-summary"></p>
+            <p id="workspace-thread-detail-blocked" class="thread-detail-blocked"></p>
+            <p id="workspace-thread-detail-next" class="thread-detail-next"></p>
+            <div id="workspace-thread-detail-why" class="thread-detail-why"></div>
+            <div id="workspace-thread-detail-decisions" class="thread-detail-decisions"></div>
+            <div id="workspace-thread-detail-memory" class="thread-detail-memory"></div>
+          </div>
+        </div>
+
+        <div class="widget page-card workspace-board-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Recent Decisions</div>
+              <p class="workspace-board-section-copy">Recent decisions across active threads so you can resume with less guesswork.</p>
+            </div>
+          </div>
+          <div id="workspace-board-decisions" class="workspace-board-threads"></div>
+        </div>
+
+        <div class="widget page-card workspace-board-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
               <div class="workspace-home-section-title">Recent Reports And Memory</div>
               <p class="workspace-board-section-copy">Quick access to the latest reports and project memory that matter most right now.</p>
             </div>
@@ -307,6 +454,21 @@
           </div>
           <p id="project-structure-summary">Nova can show a clean structure map of the current repo so people can understand the system without reading every file.</p>
           <pre id="project-structure-tree" class="project-structure-tree"></pre>
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Structured Graph</div>
+              <p id="project-structure-graph-summary" class="workspace-board-section-copy">Structured nodes and relationships will appear here after the map is refreshed.</p>
+            </div>
+          </div>
+          <div id="project-structure-graph" class="project-structure-highlights"></div>
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Relationships</div>
+              <p class="workspace-board-section-copy">A readable view of how core parts of the system connect.</p>
+            </div>
+          </div>
+          <div id="project-structure-relations" class="trust-section trust-center-list"></div>
+          <div id="project-structure-legend" class="memory-detail-chip-row"></div>
           <div id="project-structure-highlights" class="project-structure-highlights"></div>
           <p id="project-structure-note" class="project-structure-note">This view stays explanatory and grounded in the repo structure.</p>
           <div id="project-structure-actions" class="workspace-home-actions"></div>
@@ -328,6 +490,8 @@
             <button id="btn-trust-center-system" type="button">System status</button>
             <button id="btn-trust-center-workspace" type="button">Open workspace</button>
             <button id="btn-trust-center-memory" type="button">Open memory</button>
+            <button id="btn-trust-center-voice-check" type="button">Run voice check</button>
+            <button id="btn-trust-center-settings" type="button">Open settings</button>
           </div>
         </div>
 
@@ -354,6 +518,7 @@
             </div>
           </div>
           <div id="trust-center-activity" class="trust-section trust-center-list"></div>
+          <div id="trust-center-activity-detail" class="operator-health-grid"></div>
         </div>
 
         <div class="widget page-card trust-center-panel" aria-live="polite">
@@ -364,6 +529,7 @@
             </div>
           </div>
           <div id="trust-center-blocked" class="trust-section trust-center-list"></div>
+          <div id="trust-center-blocked-detail" class="operator-health-grid"></div>
         </div>
 
         <div class="widget page-card trust-center-panel" aria-live="polite">
@@ -379,11 +545,84 @@
         <div class="widget page-card trust-center-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
+              <div class="workspace-home-section-title">Voice Runtime</div>
+              <p id="trust-center-voice-summary" class="workspace-board-section-copy">Voice runtime status will appear here after the next trust refresh.</p>
+            </div>
+          </div>
+          <div id="trust-center-voice-grid" class="trust-center-health-grid"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
               <div class="workspace-home-section-title">Live Capability Surface</div>
               <p id="trust-center-capability-summary" class="workspace-board-section-copy">Loading live capabilities...</p>
             </div>
           </div>
           <div id="trust-center-capability-groups" class="trust-center-capability-groups"></div>
+        </div>
+      </section>
+
+      <section id="page-settings" class="page-view page-settings" hidden>
+        <div class="widget page-card intro-hero" aria-live="polite">
+          <div class="workspace-board-hero-header">
+            <div>
+              <div class="home-launch-kicker">Settings</div>
+              <h3>Setup, Voice, Privacy, and Comfort</h3>
+            </div>
+            <span class="confidence-badge">Local settings</span>
+          </div>
+          <p id="settings-current-mode-summary" class="workspace-board-section-copy">
+            Local Mode. Nova stays local-first, private, and cost-free by default.
+          </p>
+          <div class="workspace-board-actions-toolbar">
+            <button id="btn-settings-open-intro" type="button">Open introduction</button>
+            <button id="btn-settings-open-home" type="button">Open home</button>
+            <button id="btn-settings-open-trust" type="button">Open trust</button>
+            <button id="btn-settings-voice-status" type="button">Voice status</button>
+            <button id="btn-settings-voice-check" type="button">Run voice check</button>
+          </div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Setup Mode</div>
+              <p class="workspace-board-section-copy">Choose how you want Nova configured. These choices stay visible and changeable later.</p>
+            </div>
+          </div>
+          <div id="settings-mode-cards" class="settings-mode-grid"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Accessibility and Comfort</div>
+              <p class="workspace-board-section-copy">These settings change the interface immediately and can be reviewed later.</p>
+            </div>
+          </div>
+          <div class="toggle-grid">
+            <label class="toggle-item"><input id="settings-toggle-large-text" type="checkbox" /> <span>Large text</span></label>
+            <label class="toggle-item"><input id="settings-toggle-high-contrast" type="checkbox" /> <span>High contrast</span></label>
+            <label class="toggle-item"><input id="settings-toggle-compact-density" type="checkbox" /> <span>Compact density</span></label>
+          </div>
+          <div class="workspace-board-actions-toolbar">
+            <button id="btn-settings-open-privacy" type="button">Privacy details</button>
+            <button id="btn-settings-open-accessibility" type="button">Accessibility modal</button>
+          </div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Voice Confidence</div>
+              <p id="settings-voice-summary" class="workspace-board-section-copy">Run Voice Check to confirm spoken output on this device.</p>
+            </div>
+          </div>
+          <div id="settings-voice-grid" class="trust-center-health-grid"></div>
+          <p class="first-run-note">
+            Voice Check plays a short spoken confirmation phrase and then reports which engine handled the attempt.
+          </p>
         </div>
       </section>
 
