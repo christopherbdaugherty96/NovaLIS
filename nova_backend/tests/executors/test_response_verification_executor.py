@@ -124,3 +124,26 @@ def test_response_verification_rejects_incomplete_report(monkeypatch):
     result = mod.ResponseVerificationExecutor().execute(_request({"text": "A claim"}))
     assert result.success is False
     assert "incomplete report" in result.message.lower()
+
+
+def test_response_verification_supports_second_opinion_mode(monkeypatch):
+    from src.executors import response_verification_executor as mod
+
+    monkeypatch.setattr(
+        mod.DeepSeekBridge,
+        "analyze",
+        lambda self, user_message, context, suggested_max_tokens=800, **_kwargs: (
+            "Accuracy: medium\nPotential Issues:\n- the answer needs a clearer caveat\n"
+            "Suggested Corrections:\n- explain the uncertainty in one sentence\nConfidence: high"
+        ),
+    )
+
+    result = mod.ResponseVerificationExecutor().execute(
+        _request({"text": "Recent exchange for second opinion review:\nUser: What changed?\nNova: Prices moved.", "review_mode": "second_opinion"})
+    )
+    assert result.success is True
+    assert "DeepSeek Second Opinion" in result.message
+    assert "Agreement Level: Medium (0.65)" in result.message
+    assert result.data["verification_mode"] == "second_opinion"
+    assert result.data["follow_up_prompts"][0] == "ask Nova to revise the answer"
+    assert result.speakable_text.startswith("DeepSeek second opinion ready.")

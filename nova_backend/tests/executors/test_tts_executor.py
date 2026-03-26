@@ -14,6 +14,7 @@ def test_execute_tts_success_with_mocked_engine(monkeypatch):
     def fake_speak(text):
         calls.append(text)
 
+    monkeypatch.setattr("src.executors.tts_executor.try_render_tts", lambda _text: False)
     monkeypatch.setattr(TTSEngine, "speak", fake_speak)
 
     req = ActionRequest(request_id="r2", capability_id=18, params={"text": "Hello"})
@@ -26,10 +27,26 @@ def test_execute_tts_success_with_mocked_engine(monkeypatch):
     assert result.data["character_count"] == 5
 
 
+def test_execute_tts_prefers_piper_renderer_when_available(monkeypatch):
+    fallback_calls = []
+
+    monkeypatch.setattr("src.executors.tts_executor.try_render_tts", lambda text: text == "Hello")
+    monkeypatch.setattr(TTSEngine, "speak", lambda text: fallback_calls.append(text))
+
+    req = ActionRequest(request_id="r-piper", capability_id=18, params={"text": "Hello"})
+    result = execute_tts(req)
+
+    assert result.success is True
+    assert fallback_calls == []
+    assert result.message == "I read that aloud."
+    assert result.data["spoken_text"] == "Hello"
+
+
 def test_execute_tts_returns_failure_when_engine_raises(monkeypatch):
     def broken_speak(_text):
         raise RuntimeError("engine failed")
 
+    monkeypatch.setattr("src.executors.tts_executor.try_render_tts", lambda _text: False)
     monkeypatch.setattr(TTSEngine, "speak", broken_speak)
 
     req = ActionRequest(request_id="r3", capability_id=18, params={"text": "Hello"})

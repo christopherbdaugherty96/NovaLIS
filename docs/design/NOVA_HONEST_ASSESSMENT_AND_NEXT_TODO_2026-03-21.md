@@ -84,34 +84,35 @@ and not:
 - broad new expansion across many fronts at once
 
 ## Next Todo Before Anything Else
-The next highest-value implementation priority should be:
+The next highest-value product-foundation priority should now be:
 
-### 1. Explicit Memory System Stage 3
+### 1. Project / Workspace Home Foundations
 Best next branch:
-- `codex/memory-stage3-context-retrieval`
+- `codex/agent-os-stage1-project-workspaces`
 
 Why this should come first:
-- stage 1 explicit save/retrieve is landed on `main`
-- stage 2 management UI is now in active implementation and proof on this branch
-- the next leverage is better bounded continuity, not broader expansion
-- this is the sharpest path to making Nova feel more continuous without making it feel ambient or creepy
+- governed memory now exists
+- bounded memory retrieval is already active
+- answer-first search and in-place news work are now stronger
+- the biggest missing user-facing operating layer is a place where project context, reports, memory, and next actions come together
+- this is the cleanest path from "capable assistant surfaces" toward the Agent-OS vision
 
 Best scope:
-- tighter relevance rules for explicit memory use
-- clearer memory-use visibility when context is applied
-- stronger project and thread-aware retrieval
-- no global memory injection
-- no hidden learning
-- no authority changes
+- active project home surface
+- recent work / next-step visibility
+- project-linked memory and report hooks
+- calm trust-preserving project continuity
+- no authority expansion
+- no hidden autonomy
 
 ## Recommended Follow-On Order
-After memory stage 3, the cleanest order is:
+After project/workspace foundations, the cleanest order is:
 
-1. `codex/websearch-stage1-answer-first-ui`
-2. `codex/news-ui-stage1-inline-card-summary`
-3. `codex/agent-os-stage1-project-workspaces`
+1. `codex/trust-center-stage1-recent-actions`
+2. `codex/onboarding-stage1-first-run`
+3. `codex/tts-regression-stage1-output-restore`
 4. `codex/local-project-visualization-stage1-structure-map`
-5. connector-management / trust-center surface work
+5. connector-management surface work
 
 ## Why This Order
 This order is strong because it:

@@ -86,8 +86,8 @@ class NewsSkill(BaseSkill):
             ],
         },
         {
-            "key": "political",
-            "title": "Political News",
+            "key": "politics",
+            "title": "Politics News",
             "sources": [
                 {"name": "NPR Politics", "feeds": ["https://feeds.npr.org/1014/rss.xml"], "domain": "npr.org"},
                 {"name": "BBC Politics", "feeds": ["https://feeds.bbci.co.uk/news/politics/rss.xml"], "domain": "bbc.com"},
@@ -96,36 +96,12 @@ class NewsSkill(BaseSkill):
             ],
         },
         {
-            "key": "politics_left",
-            "title": "Politics - Left / Progressive",
+            "key": "local",
+            "title": "Local News",
             "sources": [
-                {"name": "NPR Politics", "feeds": ["https://feeds.npr.org/1014/rss.xml"], "domain": "npr.org"},
-                {"name": "PBS Politics", "feeds": ["https://www.pbs.org/newshour/feeds/rss/politics"], "domain": "pbs.org"},
-            ],
-        },
-        {
-            "key": "politics_center",
-            "title": "Politics - Center / Institutional",
-            "sources": [
-                {"name": "BBC Politics", "feeds": ["https://feeds.bbci.co.uk/news/politics/rss.xml"], "domain": "bbc.com"},
-                {"name": "POLITICO", "feeds": ["https://www.politico.com/rss/politicopicks.xml"], "domain": "politico.com"},
-            ],
-        },
-        {
-            "key": "politics_right",
-            "title": "Politics - Right / Conservative",
-            "sources": [
-                {"name": "FOX Politics", "feeds": ["https://moxie.foxnews.com/google-publisher/politics.xml"], "domain": "foxnews.com"},
-                {"name": "FOX Latest", "feeds": ["https://moxie.foxnews.com/google-publisher/latest.xml"], "domain": "foxnews.com"},
-            ],
-        },
-        {
-            "key": "breaking",
-            "title": "Breaking News",
-            "sources": [
-                {"name": "Reuters", "feeds": ["https://www.reuters.com/rssFeed/topNews"], "domain": "reuters.com"},
                 {"name": "Associated Press", "feeds": ["https://apnews.com/rss"], "domain": "apnews.com"},
-                {"name": "CNN", "feeds": ["https://rss.cnn.com/rss/cnn_topstories.rss"], "domain": "cnn.com"},
+                {"name": "NPR", "feeds": ["https://feeds.npr.org/1001/rss.xml"], "domain": "npr.org"},
+                {"name": "ABC News", "feeds": ["https://abcnews.go.com/abcnews/topstories"], "domain": "abcnews.go.com"},
             ],
         },
         {
@@ -138,8 +114,8 @@ class NewsSkill(BaseSkill):
             ],
         },
         {
-            "key": "markets",
-            "title": "Crypto & Stocks",
+            "key": "crypto",
+            "title": "Crypto News",
             "sources": [
                 {"name": "CoinDesk", "feeds": ["https://www.coindesk.com/arc/outboundfeeds/rss/"], "domain": "coindesk.com"},
                 {"name": "CNBC Markets", "feeds": ["https://www.cnbc.com/id/100003114/device/rss/rss.html"], "domain": "cnbc.com"},

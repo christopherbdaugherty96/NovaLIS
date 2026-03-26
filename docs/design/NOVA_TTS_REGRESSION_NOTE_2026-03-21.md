@@ -1,6 +1,6 @@
 # Nova TTS Regression Note
 Date: 2026-03-21
-Status: Product/runtime regression note only
+Status: Product/runtime regression note with partial mitigation now in code
 Scope: Preserve the current user-observed speech regression where speech input still works but spoken output does not
 
 ## Regression Summary
@@ -11,6 +11,14 @@ Current observed behavior:
 In plain English:
 - Nova can still hear or receive spoken input
 - Nova is not speaking the response back
+
+## Partial Mitigation On `main` (2026-03-25)
+The current runtime now prefers the stronger local Piper-backed renderer before falling back to `pyttsx3`.
+
+That means:
+- the code path is stronger than before
+- fallback behavior is cleaner than before
+- but real-device output still needs hardware validation and final restore confidence
 
 ## Why This Note Matters
 This is a meaningful regression because it breaks the full speech loop.

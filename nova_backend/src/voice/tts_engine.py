@@ -41,16 +41,16 @@ class SpeechRenderer:
         self.profile = profile or VoiceProfile()
         self.formatter = SpeechFormatter()
 
-    def render(self, text: str) -> None:
+    def render(self, text: str) -> bool:
         # Prevent overlapping speech playback.
         if not self._playback_lock.acquire(blocking=False):
-            return
+            return False
 
         output_path: Optional[Path] = None
         try:
             speak_text = self.formatter.format_for_tts(text)
             if not speak_text:
-                return
+                return False
 
             # ----- Locate Piper executable (prefer bundled, fallback to PATH) -----
             project_root = Path(__file__).resolve().parents[2]   # up to nova_backend/
@@ -62,20 +62,20 @@ class SpeechRenderer:
                 if not piper_bin:
                     self._warn_once_missing_piper()
                     logger.error("Piper CLI not found – TTS unavailable")
-                    return
+                    return False
 
             # ----- Model path from environment -----
             model_path = os.getenv("NOVA_PIPER_MODEL_PATH", "").strip()
             if not model_path:
                 self._warn_once_missing_piper()
                 logger.error("NOVA_PIPER_MODEL_PATH not set – TTS unavailable")
-                return
+                return False
 
             model_file = Path(model_path)
             if not model_file.exists():
                 self._warn_once_missing_piper()
                 logger.error("Model file not found: %s", model_path)
-                return
+                return False
 
             temp_dir = Path(os.getenv("TEMP") or tempfile.gettempdir() or "/tmp")
             output_path = temp_dir / f"nova_tts_{uuid4().hex}.wav"
@@ -100,10 +100,10 @@ class SpeechRenderer:
                 check=True,
                 timeout=10,
             )
-            self._play_wave(output_path)
+            return self._play_wave(output_path)
         except Exception as e:
             logger.debug("TTS render exception: %s", e)
-            return
+            return False
         finally:
             if output_path:
                 try:
@@ -125,10 +125,9 @@ class SpeechRenderer:
             return
 
     @classmethod
-    def _play_wave(cls, output_path: Path) -> None:
+    def _play_wave(cls, output_path: Path) -> bool:
         if sys.platform == "win32":
-            cls._play_wave_windows(output_path)
-            return
+            return cls._play_wave_windows(output_path)
 
         for player in ("aplay", "paplay", "ffplay"):
             bin_path = shutil.which(player)
@@ -149,12 +148,13 @@ class SpeechRenderer:
                     )
                 cls._active_player = proc
                 proc.wait(timeout=10)
-                return
+                return True
             except Exception:
                 continue
+        return False
 
     @classmethod
-    def _play_wave_windows(cls, output_path: Path) -> None:
+    def _play_wave_windows(cls, output_path: Path) -> bool:
         # Primary: Windows native SoundPlayer via PowerShell
         powershell = shutil.which("powershell") or shutil.which("pwsh")
         if powershell:
@@ -167,7 +167,7 @@ class SpeechRenderer:
                 )
                 cls._active_player = proc
                 proc.wait(timeout=10)
-                return
+                return True
             except Exception:
                 pass
 
@@ -181,8 +181,10 @@ class SpeechRenderer:
                 )
                 cls._active_player = proc
                 proc.wait(timeout=10)
+                return True
             except Exception:
-                return
+                return False
+        return False
 
     @classmethod
     def _warn_once_missing_piper(cls) -> None:
@@ -236,3 +238,8 @@ def resolve_speakable_text(action_result: Any) -> str:
 
     message = getattr(action_result, "user_message", "") or getattr(action_result, "message", "")
     return ResponseFormatter.to_speakable_text((message or "").strip())
+
+
+def try_render_tts(text: str) -> bool:
+    """Attempt synchronous Piper-backed playback and report whether audio started."""
+    return SpeechRenderer().render(text)

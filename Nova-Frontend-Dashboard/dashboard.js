@@ -6,6 +6,13 @@ let messageMeta = new Map();
 let waitingForAssistant = false;
 let latestNewsItems = [];
 let latestNewsCategories = {};
+let latestNewsSummaryState = {
+  storySummaries: {},
+  categorySummaries: {},
+  comparisonSummary: "",
+  pendingStories: {},
+  pendingCategories: {},
+};
 let latestBriefWidgetState = {
   headlineCount: 0,
   sourcePagesRead: 0,
@@ -149,9 +156,9 @@ const COMMAND_SUGGESTIONS = [
   "morning brief",
   "summarize all headlines",
   "summary of article 1",
-  "summarize politics left news",
-  "summarize politics center news",
-  "summarize politics right news",
+    "summarize politics news",
+    "summarize global news",
+    "summarize crypto news",
   "explain this",
   "help me do this",
   "show threads",
@@ -195,9 +202,9 @@ const HELP_EXAMPLES = [
   "morning brief",
   "summarize all headlines",
   "summary of article 1",
-  "summarize politics left news",
-  "summarize politics center news",
-  "summarize politics right news",
+    "summarize politics news",
+    "summarize global news",
+    "summarize crypto news",
   "explain this",
   "help me do this",
   "show threads",
@@ -3364,9 +3371,29 @@ function updateNewsSummary(summaryText) {
   summary.textContent = (summaryText || "").trim() || "Headlines loaded. Use source-grounded brief or article summaries when you want webpage-level context.";
 }
 
+function renderInlineNewsSummary(text, { pending = false, compact = false } = {}) {
+  const clean = String(text || "").trim();
+  if (!clean && !pending) return null;
+
+  const panel = document.createElement("div");
+  panel.className = compact ? "news-inline-summary compact" : "news-inline-summary";
+  if (pending) panel.classList.add("pending");
+
+  const title = document.createElement("div");
+  title.className = "news-inline-summary-title";
+  title.textContent = pending ? "Working on this summary..." : "Source-grounded summary";
+  panel.appendChild(title);
+
+  const body = document.createElement("div");
+  body.className = "news-inline-summary-body";
+  body.textContent = pending ? "Nova is reading the source and preparing an inline summary for this card." : clean;
+  panel.appendChild(body);
+  return panel;
+}
+
 function getOrderedNewsCategoryKeys(categories) {
   const safeCategories = (categories && typeof categories === "object") ? categories : {};
-  const preferred = ["global", "politics_left", "politics_center", "politics_right", "breaking", "tech", "markets"];
+  const preferred = ["global", "local", "politics", "tech", "crypto"];
   const keys = Object.keys(safeCategories).filter((key) => {
     const bucket = safeCategories[key];
     return Array.isArray(bucket && bucket.items) && bucket.items.length > 0;
@@ -3375,6 +3402,33 @@ function getOrderedNewsCategoryKeys(categories) {
     ...preferred.filter((key) => keys.includes(key)),
     ...keys.filter((key) => !preferred.includes(key)),
   ];
+}
+
+function updateNewsSummaryState(data = {}) {
+  const payload = (data && typeof data === "object") ? data : {};
+  const selection = String(payload.selection || "").trim().toLowerCase();
+  const storyIndex = Number(payload.story_index || 0);
+  const categoryKey = String(payload.category_key || "").trim().toLowerCase();
+  const summaryText = String(payload.summary_text || "").trim();
+
+  if (selection === "story_page" && storyIndex > 0) {
+    delete latestNewsSummaryState.pendingStories[storyIndex];
+    if (summaryText) latestNewsSummaryState.storySummaries[storyIndex] = summaryText;
+  }
+
+  if (selection === "category" && categoryKey) {
+    delete latestNewsSummaryState.pendingCategories[categoryKey];
+    if (summaryText) latestNewsSummaryState.categorySummaries[categoryKey] = summaryText;
+  }
+
+  if (payload.comparison && summaryText) {
+    latestNewsSummaryState.comparisonSummary = summaryText;
+  }
+}
+
+function renderNewsSummaryWidget(data = {}) {
+  updateNewsSummaryState(data);
+  renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "", latestNewsCategories);
 }
 
 function renderNewsCategoryPage(categoryKey, bucket) {
@@ -3424,10 +3478,11 @@ function renderNewsCategoryPage(categoryKey, bucket) {
   const summarizeCategoryBtn = document.createElement("button");
   summarizeCategoryBtn.type = "button";
   summarizeCategoryBtn.className = "assistant-action-btn";
-  summarizeCategoryBtn.textContent = "Summarize articles";
+  summarizeCategoryBtn.textContent = "Summarize here";
   summarizeCategoryBtn.addEventListener("click", () => {
-    setActivePage("chat");
-    injectUserText(`summarize ${categoryKey} news`, "text");
+    latestNewsSummaryState.pendingCategories[categoryKey] = true;
+    renderNewsCategoryPage(categoryKey, bucket);
+    requestInlineAssistantAction(`summarize ${categoryKey} news`, `Reading ${titleText} and preparing an inline summary.`, "news_surface");
   });
   categoryActions.appendChild(summarizeCategoryBtn);
   const researchCategoryBtn = document.createElement("button");
@@ -3440,6 +3495,14 @@ function renderNewsCategoryPage(categoryKey, bucket) {
   });
   categoryActions.appendChild(researchCategoryBtn);
   page.appendChild(categoryActions);
+
+  const categoryInlineSummary = renderInlineNewsSummary(
+    latestNewsSummaryState.categorySummaries[categoryKey] || "",
+    { pending: Boolean(latestNewsSummaryState.pendingCategories[categoryKey]) }
+  );
+  if (categoryInlineSummary) {
+    page.appendChild(categoryInlineSummary);
+  }
 
   const list = document.createElement("ol");
   list.className = "news-category-page-list";
@@ -3652,10 +3715,11 @@ function renderNewsWidget(items, summaryText = "", categories = null) {
     const summarizeBtn = document.createElement("button");
     summarizeBtn.type = "button";
     summarizeBtn.className = "assistant-action-btn";
-    summarizeBtn.textContent = "Summarize article";
+    summarizeBtn.textContent = "Summarize here";
     summarizeBtn.addEventListener("click", () => {
-      setActivePage("chat");
-      injectUserText(`summary of article ${storyIndex}`, "text");
+      latestNewsSummaryState.pendingStories[storyIndex] = true;
+      renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "", latestNewsCategories);
+      requestInlineAssistantAction(`summary of article ${storyIndex}`, `Reading article ${storyIndex} and preparing an inline summary.`, "news_surface");
     });
     row.appendChild(summarizeBtn);
 
@@ -3683,6 +3747,14 @@ function renderNewsWidget(items, summaryText = "", categories = null) {
     }
 
     li.appendChild(row);
+
+    const storyInlineSummary = renderInlineNewsSummary(
+      latestNewsSummaryState.storySummaries[storyIndex] || "",
+      { pending: Boolean(latestNewsSummaryState.pendingStories[storyIndex]), compact: true }
+    );
+    if (storyInlineSummary) {
+      li.appendChild(storyInlineSummary);
+    }
 
     list.appendChild(li);
   });
@@ -3731,6 +3803,30 @@ function renderSearchWidget(data) {
       header.appendChild(summary);
     }
     container.appendChild(header);
+
+    const sourcesSection = document.createElement("div");
+    sourcesSection.className = "search-sources-section";
+
+    const sourcesToggleRow = document.createElement("div");
+    sourcesToggleRow.className = "search-widget-actions";
+
+    const sourcesToggle = document.createElement("button");
+    sourcesToggle.type = "button";
+    sourcesToggle.className = "assistant-action-btn";
+    sourcesToggle.textContent = `Show sources (${results.length})`;
+    sourcesToggle.setAttribute("aria-expanded", "false");
+    sourcesToggleRow.appendChild(sourcesToggle);
+
+    const sourceList = document.createElement("div");
+    sourceList.className = "search-sources-list";
+    sourceList.hidden = true;
+
+    sourcesToggle.addEventListener("click", () => {
+      const expanded = sourceList.hidden;
+      sourceList.hidden = !expanded;
+      sourcesToggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+      sourcesToggle.textContent = expanded ? "Hide sources" : `Show sources (${results.length})`;
+    });
 
     results.forEach((item, index) => {
       const div = document.createElement("div");
@@ -3789,9 +3885,11 @@ function renderSearchWidget(data) {
         actions.appendChild(compareBtn);
       }
       div.appendChild(actions);
-
-      container.appendChild(div);
+      sourceList.appendChild(div);
     });
+    sourcesSection.appendChild(sourcesToggleRow);
+    sourcesSection.appendChild(sourceList);
+    container.appendChild(sourcesSection);
 
     const suggested = Array.isArray(data && data.suggested_actions) ? data.suggested_actions : [];
     if (suggested.length) {
@@ -3848,6 +3946,37 @@ function injectUserText(text, channel = "text") {
   setThinkingBar(true);
 
   if (!safeWSSend({ text: clean, channel })) {
+    waitingForAssistant = false;
+    setThinkingBar(false);
+    appendChatMessage("assistant", "Connection is not ready yet. Please wait a second and try again.", null, "System status");
+  }
+}
+
+function requestInlineAssistantAction(text, statusText = "", invocationSource = "ui_surface") {
+  const clean = String(text || "").trim();
+  if (!clean) return false;
+
+  waitingForAssistant = true;
+  setLoadingHint(statusText || loadingHintForInput(clean));
+  setThinkingBar(true);
+
+  if (!safeWSSend({ text: clean, invocation_source: invocationSource })) {
+    waitingForAssistant = false;
+    setThinkingBar(false);
+    appendChatMessage("assistant", "Connection is not ready yet. Please wait a second and try again.", null, "System status");
+    return false;
+  }
+
+  return true;
+}
+
+function requestDeepSeekSecondOpinion() {
+  appendChatMessage("user", "DeepSeek second opinion");
+  waitingForAssistant = true;
+  setLoadingHint("DeepSeek is reviewing the recent exchange.");
+  setThinkingBar(true);
+
+  if (!safeWSSend({ text: "verify", invocation_source: "deepseek_button" })) {
     waitingForAssistant = false;
     setThinkingBar(false);
     appendChatMessage("assistant", "Connection is not ready yet. Please wait a second and try again.", null, "System status");
@@ -3998,7 +4127,17 @@ function connectWebSocket() {
         renderWeatherWidget(msg.data);
         break;
       case "news":
+        latestNewsSummaryState = {
+          storySummaries: {},
+          categorySummaries: {},
+          comparisonSummary: "",
+          pendingStories: {},
+          pendingCategories: {},
+        };
         renderNewsWidget(msg.items, msg.summary || "", msg.categories || {});
+        break;
+      case "news_summary":
+        renderNewsSummaryWidget(msg.data || {});
         break;
       case "intelligence_brief":
         renderIntelligenceBriefWidget(msg.data || {});
@@ -4681,6 +4820,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const sendBtn = $("send-btn");
   if (sendBtn) sendBtn.addEventListener("click", sendChat);
+
+  const deepSeekBtn = $("deepseek-btn");
+  if (deepSeekBtn) deepSeekBtn.addEventListener("click", requestDeepSeekSecondOpinion);
 
   const input = $("chat-input");
   if (input) {

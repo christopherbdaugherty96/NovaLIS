@@ -502,6 +502,30 @@ def _strip_action_suggestions_from_response(text: str) -> str:
     return raw.strip()
 
 
+def _build_second_opinion_review_text(session_context: list[dict] | None, session_state: dict) -> str:
+    recent = list(session_context or [])[-6:]
+    snippets: list[str] = []
+    for item in recent:
+        if not isinstance(item, dict):
+            continue
+        role = str(item.get("role") or "").strip().lower()
+        content = _make_shorter_followup(str(item.get("content") or ""))
+        if not content:
+            continue
+        if role == "user":
+            snippets.append(f"User: {content}")
+        elif role == "assistant":
+            snippets.append(f"Nova: {content}")
+
+    last_response = _strip_action_suggestions_from_response(str(session_state.get("last_response") or ""))
+    if last_response:
+        snippets.append(f"Current Nova answer: {_make_shorter_followup(last_response)}")
+
+    if not snippets:
+        return ""
+    return "Recent exchange for second opinion review:\n" + "\n".join(snippets)
+
+
 def _derive_memory_title(body: str) -> str:
     compact = _make_shorter_followup(_strip_action_suggestions_from_response(body))
     if not compact:
@@ -3305,7 +3329,7 @@ async def websocket_endpoint(ws: WebSocket):
             silent_widget_refresh = bool(msg.get("silent_widget_refresh"))
             if channel not in {"voice", "text"}:
                 channel = "text"
-            if invocation_source not in {"voice", "text", "ui"}:
+            if invocation_source not in {"voice", "text", "ui", "news_surface", "deepseek_button"}:
                 invocation_source = "voice" if channel == "voice" else "text"
 
             if msg_type == "get_thought":
@@ -5399,7 +5423,11 @@ async def websocket_endpoint(ws: WebSocket):
                 if capability_id == 18 and not params.get("text"):
                     params["text"] = session_state.get("last_response", "")
                 if capability_id == 31 and not params.get("text"):
-                    params["text"] = session_state.get("last_response", "")
+                    if invocation_source == "deepseek_button":
+                        params["text"] = _build_second_opinion_review_text(session_context, session_state)
+                        params["review_mode"] = "second_opinion"
+                    if not params.get("text"):
+                        params["text"] = session_state.get("last_response", "")
                 if capability_id in {49, 50, 51, 52, 53}:
                     if not session_state.get("news_cache"):
                         _, snapshot_result = await invoke_governed_text_command(

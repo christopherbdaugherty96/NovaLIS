@@ -74,9 +74,9 @@ def test_successful_search_returns_results(executor, mock_network, sample_reques
     result = executor.execute(sample_request)
 
     assert result.success
-    assert "Key Points" in result.message
-    assert "Sources" in result.message
-    assert "Confidence" in result.message
+    assert 'Search answer for "test query"' in result.message
+    assert "Confidence:" in result.message
+    assert "Show sources" in result.message
     assert "Try next" in result.message
 
     widget = result.data.get("widget", {})

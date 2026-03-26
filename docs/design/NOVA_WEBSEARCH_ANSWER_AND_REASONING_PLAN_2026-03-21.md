@@ -1,6 +1,6 @@
 # Nova Web Search Answer And Reasoning Plan
 Date: 2026-03-21
-Status: Planning packet only; current product-improvement roadmap with later Phase-7 reasoning extensions
+Status: Planning packet with answer-first search foundation now partially implemented on `main`
 Scope: Improve Nova's web-search answer quality, presentation style, source reading, and evidence surfacing without widening authority
 
 ## Purpose
@@ -16,6 +16,14 @@ Nova's web search should feel less like a visible search breakdown tool and more
 
 This is not runtime truth.
 It is a design and product roadmap for improving the search experience and search-based answering quality.
+
+## Implemented Foundation On `main` (2026-03-25)
+The current runtime now includes:
+- answer-first search response copy
+- hidden-by-default source lists in the search widget
+- cleaner evidence-on-demand behavior for normal search use
+
+The remaining items in this packet are the deeper reasoning and retrieval-quality extensions beyond that first product slice.
 
 ## Core Product Direction
 The best default shape is:
