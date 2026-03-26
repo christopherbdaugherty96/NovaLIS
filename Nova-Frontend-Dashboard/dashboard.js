@@ -6193,15 +6193,15 @@ function showFirstRunGuide(force = false) {
 
   const intro = document.createElement("p");
   intro.className = "first-run-intro";
-  intro.textContent = "Nova is a governed personal intelligence system. It helps with research, explanation, memory, and workspace continuity while keeping you in control of every meaningful action.";
+  intro.textContent = "Nova helps you understand information, continue your work, and make decisions without ever taking control away from you.";
   card.appendChild(intro);
 
   const pillars = document.createElement("div");
   pillars.className = "first-run-pillars";
   [
-    ["Read the Introduction", "See what Nova is, what it can do, and why it stays invocation-bound."],
-    ["Review Settings", "Choose Local Mode or a future cloud path, then review privacy, accessibility, and voice status."],
-    ["Use Workspace and Trust", "Workspace keeps project continuity together. Trust shows what happened, why it happened, and what stayed blocked."],
+    ["Read the Introduction", "See what Nova can do, how it works, and why it stays governed."],
+    ["Review Settings", "Choose the setup path that fits you, then review privacy, accessibility, and voice status."],
+    ["Use Workspace and Trust", "Workspace keeps your work together. Trust shows what happened, why it happened, and what stayed blocked."],
   ].forEach(([titleText, bodyText]) => {
     const panel = document.createElement("div");
     panel.className = "first-run-pillar";
@@ -6223,10 +6223,11 @@ function showFirstRunGuide(force = false) {
   const steps = document.createElement("ol");
   steps.className = "help-list";
   [
-    "Open Introduction to understand Nova's boundaries, setup modes, and first commands.",
-    "Open Settings to choose your preferred setup mode and review voice, privacy, and accessibility controls.",
-    "Open Workspace to see project threads, reports, recent decisions, and the structure map together.",
-    "Use explicit phrases like \"remember this\" when you want something saved durably.",
+    "Open Introduction to see what Nova is, what it can do, and how it stays under your control.",
+    "Open Settings to choose Local Mode now or save a future cloud preference for later.",
+    "Open Workspace to continue projects, review recent decisions, and see the structure map in one place.",
+    "Try simple commands like \"news\", \"explain this\", or \"continue my project\".",
+    "Use explicit phrases like \"remember this\" only when you want durable memory.",
   ].forEach((label) => {
     const li = document.createElement("li");
     li.textContent = label;
@@ -6236,7 +6237,7 @@ function showFirstRunGuide(force = false) {
 
   const trustNote = document.createElement("p");
   trustNote.className = "first-run-note";
-  trustNote.textContent = "Important: Nova stays invocation-bound. It can help broadly, but effectful actions still remain governed and inspectable.";
+  trustNote.textContent = "No background automation. No hidden memory. No surprises. Nova only moves when you ask.";
   card.appendChild(trustNote);
 
   const row = document.createElement("div");
@@ -6308,7 +6309,7 @@ function renderIntroPage() {
   const modeCopy = $("intro-current-mode-copy");
   const currentMode = getSetupModeMeta();
   if (modeBadge) modeBadge.textContent = currentMode.badge;
-  if (modeCopy) modeCopy.textContent = `${currentMode.label}: ${currentMode.copy}`;
+  if (modeCopy) modeCopy.textContent = `Current setup: ${currentMode.label}. ${currentMode.copy}`;
 }
 
 function renderSettingsPage() {
