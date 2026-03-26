@@ -301,6 +301,14 @@ class OSDiagnosticsExecutor:
         effect = ""
         request_id = OSDiagnosticsExecutor._recent_activity_request_id(entry)
         ledger_ref = OSDiagnosticsExecutor._recent_activity_ledger_ref(entry)
+        capability_id = OSDiagnosticsExecutor._recent_activity_capability_id(entry)
+        capability_name = (
+            capability_lookup.get(capability_id, "") if capability_id is not None else ""
+        )
+        status = str(entry.get("status") or "").strip().lower()
+        authority_class = str(entry.get("authority_class") or "").strip()
+        reversible = entry.get("reversible")
+        external_effect = entry.get("external_effect")
 
         if event_type.startswith("ACTION_") and event_type.endswith("_COMPLETED"):
             kind = "action"
@@ -375,6 +383,12 @@ class OSDiagnosticsExecutor:
             "effect": effect,
             "request_id": request_id,
             "ledger_ref": ledger_ref,
+            "status": status,
+            "capability_id": str(capability_id) if capability_id is not None else "",
+            "capability_name": capability_name,
+            "authority_class": authority_class,
+            "reversible": "" if not isinstance(reversible, bool) else ("yes" if reversible else "no"),
+            "external_effect": "" if not isinstance(external_effect, bool) else ("yes" if external_effect else "no"),
         }
 
     @staticmethod
@@ -427,6 +441,16 @@ class OSDiagnosticsExecutor:
     @staticmethod
     def _recent_activity_request_id(entry: dict[str, object]) -> str:
         return str(entry.get("request_id") or "").strip()
+
+    @staticmethod
+    def _recent_activity_capability_id(entry: dict[str, object]) -> int | None:
+        raw_value = entry.get("capability_id")
+        try:
+            if raw_value is None or str(raw_value).strip() == "":
+                return None
+            return int(raw_value)
+        except Exception:
+            return None
 
     @staticmethod
     def _recent_activity_ledger_ref(entry: dict[str, object]) -> str:
@@ -669,6 +693,8 @@ class OSDiagnosticsExecutor:
 
     @staticmethod
     def _phase_display() -> str:
+        if BUILD_PHASE >= 6:
+            return "6 complete / 7 partial"
         if BUILD_PHASE >= 5:
             return "5 closed / 6 foundation"
         return f"{BUILD_PHASE}"
@@ -681,30 +707,35 @@ class OSDiagnosticsExecutor:
                 "label": "Autonomy",
                 "status": "disabled",
                 "reason": "Nova remains invocation-bound. Delegated runtime is not active.",
+                "next_step": "Use the Policy Review Center for simulations and one-shot review runs.",
             },
             {
                 "area": "delegated_trigger_runtime",
                 "label": "Delegated trigger runtime",
                 "status": "disabled",
                 "reason": "Background delegated policy execution is still disabled. Manual review runs are allowed separately.",
+                "next_step": "Review drafts in Policies instead of expecting background runs.",
             },
             {
                 "area": "background_monitoring",
                 "label": "Background monitoring",
                 "status": "disabled",
                 "reason": "Trigger runtime is not active.",
+                "next_step": "Ask explicitly when you want Nova to run a snapshot or review.",
             },
             {
                 "area": "wake_word",
                 "label": "Wake word",
                 "status": "disabled",
                 "reason": "Wake-word runtime remains planned, not active.",
+                "next_step": "Use push-to-talk or typed commands for now.",
             },
             {
                 "area": "external_effect_policies",
                 "label": "External-effect delegation",
                 "status": "disabled",
                 "reason": "Only low-risk delegated classes are candidates for future enablement.",
+                "next_step": "Keep effectful actions explicit and user-invoked.",
             },
         ]
         if model_availability == "blocked":
@@ -714,9 +745,75 @@ class OSDiagnosticsExecutor:
                     "label": "Model inference",
                     "status": "blocked",
                     "reason": "Local inference is locked pending explicit confirmation.",
+                    "next_step": "Use local control and review surfaces, then retry once the model is available.",
                 }
             )
         return items
+
+    @staticmethod
+    def _policy_capability_readiness() -> dict[str, object]:
+        try:
+            from src.governor.capability_registry import CapabilityRegistry
+            from src.governor.capability_topology import CapabilityTopology
+        except Exception:
+            return {
+                "summary": "Capability delegation rules are unavailable right now.",
+                "current_authority_limit": "unknown",
+                "safe_now": [],
+                "allowed_later": [],
+                "manual_only": [],
+            }
+
+        try:
+            topology = CapabilityTopology(CapabilityRegistry())
+            safe_now: list[dict[str, str]] = []
+            allowed_later: list[dict[str, str]] = []
+            manual_only: list[dict[str, str]] = []
+            current_limit = str(topology.current_delegated_authority_limit() or "unknown").strip() or "unknown"
+
+            for entry in topology.all_entries():
+                row = {
+                    "capability_id": str(entry.capability_id),
+                    "name": str(entry.name),
+                    "authority_class": str(entry.authority_class),
+                    "delegation_class": str(entry.delegation_class),
+                    "policy_delegatable": "yes" if entry.policy_delegatable else "no",
+                    "network_required": "yes" if entry.requires_network_mediator else "no",
+                    "persistent_change": "yes" if entry.persistent_change else "no",
+                    "external_effect": "yes" if entry.external_effect else "no",
+                    "envelope_notes": str(entry.envelope_notes or "").strip(),
+                    "within_current_limit": "yes" if topology.is_within_current_limit(entry.capability_id) else "no",
+                }
+                if entry.policy_delegatable and topology.is_within_current_limit(entry.capability_id):
+                    row["why"] = "Safe for review-run now under the current delegated authority limit."
+                    safe_now.append(row)
+                elif entry.policy_delegatable:
+                    row["why"] = "Lawful later, but still above the current delegated authority limit."
+                    allowed_later.append(row)
+                else:
+                    row["why"] = "Remains explicit-user only in the current Phase-6 review model."
+                    manual_only.append(row)
+
+            summary = (
+                f"{len(safe_now)} capability{'ies' if len(safe_now) != 1 else 'y'} can be review-run now, "
+                f"{len(allowed_later)} {'are' if len(allowed_later) != 1 else 'is'} lawful later when delegation widens, "
+                f"and {len(manual_only)} remain explicit-user only."
+            )
+            return {
+                "summary": summary,
+                "current_authority_limit": current_limit,
+                "safe_now": safe_now,
+                "allowed_later": allowed_later,
+                "manual_only": manual_only,
+            }
+        except Exception:
+            return {
+                "summary": "Capability delegation rules are unavailable right now.",
+                "current_authority_limit": "unknown",
+                "safe_now": [],
+                "allowed_later": [],
+                "manual_only": [],
+            }
 
     @staticmethod
     def _system_reasons(
@@ -837,6 +934,7 @@ class OSDiagnosticsExecutor:
         ) = self._policy_status_details()
         ledger_integrity, ledger_entries_today, ledger_last_event = self._ledger_status_details()
         blocked_conditions = self._blocked_conditions(model_availability=model_availability)
+        policy_capability_readiness = self._policy_capability_readiness()
         system_reasons = self._system_reasons(
             model_availability=model_availability,
             model_note=model_note,
@@ -920,6 +1018,11 @@ class OSDiagnosticsExecutor:
             "policy_enabled_count": 0,
             "policy_simulation_count": policy_simulation_count,
             "policy_manual_run_count": policy_manual_run_count,
+            "policy_capability_readiness": policy_capability_readiness,
+            "policy_current_authority_limit": str(
+                policy_capability_readiness.get("current_authority_limit") or "unknown"
+            ).strip()
+            or "unknown",
             "ledger_integrity": ledger_integrity,
             "ledger_entries_today": ledger_entries_today,
             "ledger_last_event": ledger_last_event,

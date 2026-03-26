@@ -17,6 +17,8 @@ def test_dashboard_renders_trust_review_sections_from_system_status():
     assert '"trust_review_summary"' in source or "trustReviewState.summary" in source
     assert '"recent_runtime_activity"' in source or "trustReviewState.activity" in source
     assert '"blocked_conditions"' in source or "trustReviewState.blocked" in source
+    assert '"policy_capability_readiness"' in source or "trustReviewState.policyReadiness" in source
+    assert "selectedPolicyCapabilityKey" in source
 
 
 def test_dashboard_refreshes_trust_review_from_trust_status_messages():
@@ -47,3 +49,16 @@ def test_home_page_includes_trust_review_sections():
     assert 'id="trust-recent-activity"' in source
     assert 'id="trust-blocked"' in source
     assert 'id="trust-note"' in source
+
+
+def test_trust_center_page_includes_policy_readiness_sections():
+    source = INDEX_PATH.read_text(encoding="utf-8")
+    dashboard = DASHBOARD_PATH.read_text(encoding="utf-8")
+
+    assert 'id="btn-trust-center-policy-map"' in source
+    assert 'id="trust-center-policy-summary"' in source
+    assert 'id="trust-center-policy-limit"' in source
+    assert 'id="trust-center-policy-groups"' in source
+    assert 'id="trust-center-policy-detail"' in source
+    assert "selectedBlocked.next_step" in dashboard
+    assert "selected.capability_name" in dashboard or "selected.capability_id" in dashboard

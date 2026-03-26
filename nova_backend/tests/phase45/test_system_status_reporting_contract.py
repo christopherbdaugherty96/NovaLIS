@@ -43,6 +43,8 @@ def test_system_status_includes_model_and_capability_fields():
     assert "policy_draft_count" in data
     assert "policy_simulation_count" in data
     assert "policy_manual_run_count" in data
+    assert "policy_capability_readiness" in data
+    assert "policy_current_authority_limit" in data
     assert "ledger_entries_today" in data
     assert "blocked_conditions" in data
     assert "system_reasons" in data

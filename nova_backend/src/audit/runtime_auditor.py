@@ -592,7 +592,23 @@ def _phase_6_status() -> str:
         and "policy_overview" in dashboard_src
         and "policy_run" in dashboard_src
     )
+    trust_loop_complete = (
+        "renderTrustCenterPage" in dashboard_src
+        and 'id="page-trust"' in index_src
+        and 'id="trust-center-policy-summary"' in index_src
+        and "policy_capability_readiness" in brain_src
+        and "selectedPolicyCapabilityKey" in dashboard_src
+    )
+    capability_map_present = (
+        "getPolicyReadinessBuckets" in dashboard_src
+        and 'id="policy-center-readiness"' in index_src
+        and 'id="btn-policy-capability-map"' in index_src
+        and "POLICY_CAPABILITY_MAP_COMMANDS" in brain_src
+        and "POLICY_CAPABILITY_MAP_VIEWED" in brain_src
+    )
 
+    if foundation_present and review_commands_present and review_surface_present and trust_loop_complete and capability_map_present:
+        return "COMPLETE"
     if foundation_present and review_commands_present and review_surface_present:
         return "ACTIVE"
     if foundation_present and review_commands_present:
@@ -1067,7 +1083,12 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         phase_5_note = "Build phase promoted with partial memory/continuity runtime activation"
     else:
         phase_5_note = "Memory continuity planned"
-    if phase_6_status == "ACTIVE":
+    if phase_6_status == "COMPLETE":
+        phase_6_note = (
+            "Trust loop, policy review, capability authority map, and manual policy executor gate "
+            "are complete; delegated trigger runtime remains disabled by design"
+        )
+    elif phase_6_status == "ACTIVE":
         phase_6_note = (
             "Atomic policy draft foundation, executor-gate simulation, capability topology, "
             "and Policy Review Center active; trigger runtime remains disabled"

@@ -98,10 +98,10 @@ Current conversational/style baseline on `main`:
 Current recommended next-step posture:
 - Workspace Home, Workspace page, Trust page, first-run onboarding, Introduction page, Settings page, and Structure Map stage 2 are now live in the current repository state
 - trust-center drill-down, onboarding stage 2, and workspace stage 3 are now live
-- Phase-6 delegated-policy foundation is now live through the Policy Review Center, but trigger runtime remains disabled
+- Phase-6 trust, policy review, and capability-authority surfaces are now complete in the current repository state, but trigger runtime remains disabled
 - the immediate remaining live-runtime voice caveat is final device-confidence validation for spoken output
-- the current highest-value next product-foundation target is explicit provider/connector setup and permission management
-- start with a settings/connector-management slice rather than broad new automation
+- the current highest-value next product-foundation target is Phase-7 provider transparency, explicit provider/connector setup, and permission management
+- start with a settings/provider-management slice rather than broad new automation
 - richer project/workspace persistence and connector rollout should follow closely behind
 - prefer disciplined core-layer implementation over broad new expansion
 
