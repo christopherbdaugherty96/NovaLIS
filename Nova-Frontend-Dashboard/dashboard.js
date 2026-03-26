@@ -6,6 +6,13 @@ let messageMeta = new Map();
 let waitingForAssistant = false;
 let latestNewsItems = [];
 let latestNewsCategories = {};
+let latestBriefWidgetState = {
+  headlineCount: 0,
+  sourcePagesRead: 0,
+  clusterCount: 0,
+  placeholderClusterCount: 0,
+  omittedClusterCount: 0,
+};
 let newsExpanded = false;
 let selectedNewsCategoryKey = "";
 let sttState = "READY";
@@ -79,7 +86,7 @@ const PAGE_LABELS = {
 
 const QUICK_ACTIONS_BY_PAGE = {
   chat: [
-    { id: "chat_brief", label: "Today's brief", command: "today's news" },
+    { id: "chat_brief", label: "Today's brief", command: "daily brief" },
     { id: "chat_weather", label: "Weather", command: "weather" },
     { id: "chat_search", label: "Search web", command: "search latest technology news" },
     { id: "chat_system", label: "System status", command: "system status" },
@@ -99,7 +106,7 @@ const QUICK_ACTIONS_BY_PAGE = {
   news: [
     { id: "news_get", label: "Get headlines", command: "news", stayOnPage: true },
     { id: "news_sum", label: "Source brief", command: "today's news", switchToPage: "chat" },
-    { id: "news_brief", label: "Daily brief", command: "today's news", stayOnPage: true },
+    { id: "news_brief", label: "Daily brief", command: "daily brief", stayOnPage: true },
     { id: "news_compare", label: "Compare stories", command: "compare headlines 1 and 2", stayOnPage: true },
     { id: "news_explain_page", label: "Explain this page", command: "what is this page" },
   ],
@@ -119,7 +126,7 @@ const QUICK_ACTIONS_BY_PAGE = {
   ],
   memory: [
     { id: "memory_page_overview", label: "Overview", command: "memory overview", stayOnPage: true },
-    { id: "memory_page_list", label: "List memory", command: "memory list", switchToPage: "chat" },
+    { id: "memory_page_list", label: "List memory", command: "list memories", switchToPage: "chat" },
     { id: "memory_page_threads", label: "Thread memory", command: "memory list thread this", switchToPage: "chat" },
     { id: "memory_page_save", label: "Save decision", command: "memory save decision for deployment issue: verify next step", switchToPage: "chat" },
   ],
@@ -829,7 +836,7 @@ function renderMemoryOverviewWidget(data = {}) {
   if (scopeRow) {
     clear(scopeRow);
     [
-      { label: "General", value: Number(scopes.general || 0) },
+      { label: "Core", value: Number(scopes.nova_core || scopes.general || 0) },
       { label: "Project", value: Number(scopes.project || 0) },
       { label: "Ops", value: Number(scopes.ops || 0) },
     ].forEach((entry) => {
@@ -1845,11 +1852,24 @@ function renderTrustPanel(data = {}) {
       trustReviewState.activity.forEach((item) => {
         const row = document.createElement("div");
         row.className = "trust-activity-item";
+        const outcome = String(item.outcome || "").trim().toLowerCase() || "info";
+        row.dataset.outcome = outcome;
+
+        const titleRow = document.createElement("div");
+        titleRow.className = "trust-activity-title-row";
+
+        if (outcome && outcome !== "info") {
+          const badge = document.createElement("span");
+          badge.className = `trust-activity-outcome trust-activity-outcome-${outcome}`;
+          badge.textContent = outcome === "issue" ? "Needs attention" : "Success";
+          titleRow.appendChild(badge);
+        }
 
         const title = document.createElement("div");
         title.className = "trust-activity-title";
         title.textContent = String(item.title || "Runtime event").trim() || "Runtime event";
-        row.appendChild(title);
+        titleRow.appendChild(title);
+        row.appendChild(titleRow);
 
         const meta = document.createElement("div");
         meta.className = "trust-activity-meta";
@@ -1858,6 +1878,38 @@ function renderTrustPanel(data = {}) {
         const timestamp = String(item.timestamp || "").trim();
         meta.textContent = [kind, detail, timestamp].filter(Boolean).join(" - ");
         row.appendChild(meta);
+
+        const reason = String(item.reason || "").trim();
+        if (reason) {
+          const reasonRow = document.createElement("div");
+          reasonRow.className = "trust-activity-reason";
+          reasonRow.textContent = `Why: ${reason}`;
+          row.appendChild(reasonRow);
+        }
+
+        const effect = String(item.effect || "").trim();
+        if (effect) {
+          const effectRow = document.createElement("div");
+          effectRow.className = "trust-activity-effect";
+          effectRow.textContent = `Effect: ${effect}`;
+          row.appendChild(effectRow);
+        }
+
+        const requestId = String(item.request_id || "").trim();
+        if (requestId) {
+          const requestRow = document.createElement("div");
+          requestRow.className = "trust-activity-correlation";
+          requestRow.textContent = `Request: ${requestId}`;
+          row.appendChild(requestRow);
+        }
+
+        const ledgerRef = String(item.ledger_ref || "").trim();
+        if (ledgerRef) {
+          const ledgerRow = document.createElement("div");
+          ledgerRow.className = "trust-activity-correlation";
+          ledgerRow.textContent = `Ledger: ${ledgerRef}`;
+          row.appendChild(ledgerRow);
+        }
 
         list.appendChild(row);
       });
@@ -2323,6 +2375,103 @@ function parseDailyBriefV2(text) {
   return { title: "Today's Intelligence Brief", stories, confidence, sourcesUsed, coverage };
 }
 
+function normalizeBriefWidgetData(data = {}) {
+  const toCount = (value) => {
+    const numeric = Number(value);
+    if (!Number.isFinite(numeric)) return 0;
+    return Math.max(0, Math.trunc(numeric));
+  };
+
+  return {
+    headlineCount: toCount(data.headline_count),
+    sourcePagesRead: toCount(data.source_pages_read),
+    clusterCount: toCount(data.cluster_count),
+    placeholderClusterCount: toCount(data.placeholder_cluster_count),
+    omittedClusterCount: toCount(data.omitted_cluster_count),
+  };
+}
+
+function createBriefStat(label, value) {
+  const stat = document.createElement("div");
+  stat.className = "brief-status-stat";
+
+  const statLabel = document.createElement("div");
+  statLabel.className = "brief-status-label";
+  statLabel.textContent = label;
+  stat.appendChild(statLabel);
+
+  const statValue = document.createElement("div");
+  statValue.className = "brief-status-value";
+  statValue.textContent = String(value);
+  stat.appendChild(statValue);
+
+  return stat;
+}
+
+function renderIntelligenceBriefWidget(data = {}) {
+  if (data && typeof data === "object" && Object.keys(data).length > 0) {
+    latestBriefWidgetState = {
+      ...latestBriefWidgetState,
+      ...normalizeBriefWidgetData(data),
+    };
+  }
+
+  const badge = $("brief-grounding-badge");
+  const summary = $("brief-summary");
+  const stats = $("brief-stats");
+  const note = $("brief-grounding-note");
+  if (!badge || !summary || !stats || !note) return;
+
+  clear(stats);
+
+  const state = latestBriefWidgetState;
+  const hasBrief = state.headlineCount > 0 || state.sourcePagesRead > 0 || state.clusterCount > 0;
+  if (!hasBrief) {
+    badge.textContent = "Awaiting brief";
+    summary.textContent = "Run a daily brief or source-grounded brief to pin the latest briefing status here.";
+    note.textContent = "This panel will distinguish headline-only, grounded, and degraded placeholder brief states.";
+    return;
+  }
+
+  let badgeText = "Headline";
+  let summaryText = `Latest daily brief used ${state.headlineCount} headline(s).`;
+  let noteText = "This path is headline-grounded, not source-page-grounded.";
+  let pageSummaryText = "Latest daily brief is ready. This pass is headline-grounded only.";
+
+  if (state.sourcePagesRead > 0) {
+    badgeText = "Grounded";
+    summaryText = `Latest source-grounded brief used ${state.sourcePagesRead} source page(s) across ${state.clusterCount || 0} topic cluster(s).`;
+    noteText = "Story cards below reflect the latest brief captured in chat.";
+    pageSummaryText = "Latest source-grounded brief is ready.";
+
+    if (state.placeholderClusterCount > 0) {
+      badgeText = "Degraded";
+      summaryText = `${summaryText} ${state.placeholderClusterCount} cluster(s) are placeholder summaries.`;
+      noteText = "Placeholder summaries appear when source-grounded synthesis is unavailable, but source coverage is still shown.";
+      pageSummaryText = "Latest source-grounded brief is usable, but placeholder summaries are in use.";
+    } else if (state.omittedClusterCount > 0) {
+      badgeText = "Partial";
+      noteText = `${state.omittedClusterCount} topic cluster(s) were omitted due to incomplete source-grounded synthesis.`;
+      pageSummaryText = "Latest source-grounded brief is partial because some topic clusters were omitted.";
+    }
+  }
+
+  badge.textContent = badgeText;
+  summary.textContent = summaryText;
+  note.textContent = noteText;
+  updateNewsSummary(pageSummaryText);
+
+  [
+    ["Headlines", state.headlineCount],
+    ["Source pages", state.sourcePagesRead],
+    ["Clusters", state.clusterCount],
+    ["Placeholder", state.placeholderClusterCount],
+    ["Omitted", state.omittedClusterCount],
+  ].forEach(([label, value]) => {
+    stats.appendChild(createBriefStat(label, value));
+  });
+}
+
 function createBriefCardElement(story, compact = false) {
   const card = document.createElement("div");
   card.className = "brief-card";
@@ -2520,7 +2669,7 @@ function deriveSuggestedActions(text) {
 
   if (msg.includes("not sure what you'd like me to do") || msg.includes("could you clarify")) {
     return [
-      { label: "Today's brief", command: "today's news" },
+      { label: "Today's brief", command: "daily brief" },
       { label: "Weather", command: "weather" },
       { label: "Open documents", command: "open documents" },
     ];
@@ -2536,14 +2685,14 @@ function deriveSuggestedActions(text) {
   if (msg.includes("weather")) {
     return [
       { label: "Forecast", command: "show weather forecast" },
-      { label: "Today's brief", command: "today's news" },
+      { label: "Today's brief", command: "daily brief" },
     ];
   }
 
   if (msg.includes("news") || msg.includes("headline")) {
     return [
       { label: "Summarize all", command: "summarize all headlines" },
-      { label: "Today's brief", command: "today's news" },
+      { label: "Today's brief", command: "daily brief" },
     ];
   }
 
@@ -3333,16 +3482,16 @@ function renderSearchWidget(data) {
       const summarizeBtn = document.createElement("button");
       summarizeBtn.type = "button";
       summarizeBtn.className = "assistant-action-btn";
-      summarizeBtn.textContent = "Summarize this";
-      summarizeBtn.addEventListener("click", () => injectUserText(`summarize this result: ${item.title}`, "text"));
+      summarizeBtn.textContent = "Research this topic";
+      summarizeBtn.addEventListener("click", () => injectUserText(`research ${item.title}`, "text"));
       actions.appendChild(summarizeBtn);
 
       if (index === 0 && results.length > 1) {
         const compareBtn = document.createElement("button");
         compareBtn.type = "button";
         compareBtn.className = "assistant-action-btn";
-        compareBtn.textContent = "Compare top results";
-        compareBtn.addEventListener("click", () => injectUserText("compare the top 3 search results", "text"));
+        compareBtn.textContent = "Brief this topic";
+        compareBtn.addEventListener("click", () => injectUserText(`create an intelligence brief on ${queryText || item.title}`, "text"));
         actions.appendChild(compareBtn);
       }
       div.appendChild(actions);
@@ -3557,6 +3706,9 @@ function connectWebSocket() {
       case "news":
         renderNewsWidget(msg.items, msg.summary || "", msg.categories || {});
         break;
+      case "intelligence_brief":
+        renderIntelligenceBriefWidget(msg.data || {});
+        break;
       case "search":
         renderSearchWidget(msg.data);
         break;
@@ -3616,7 +3768,10 @@ function connectWebSocket() {
           trustState.lastExternalCall = msg.data.last_external_call || trustState.lastExternalCall;
           trustState.dataEgress = msg.data.data_egress || trustState.dataEgress;
           trustState.failureState = msg.data.failure_state || trustState.failureState;
-          renderTrustPanel();
+          if (Number.isFinite(Number(msg.data.consecutive_failures))) {
+            trustState.consecutiveFailures = Math.max(0, Number(msg.data.consecutive_failures));
+          }
+          renderTrustPanel(msg.data || {});
         }
         break;
       case "chat_done":
@@ -4206,6 +4361,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderOperatorHealthWidget({});
   renderCapabilitySurfaceWidget({});
   renderTrustPanel();
+  renderIntelligenceBriefWidget();
   renderPersonalLayerWidget();
   renderQuickActions();
   setupHintsPanelToggle();
@@ -4334,7 +4490,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const memoryListBtn = $("btn-memory-list");
   if (memoryListBtn) memoryListBtn.addEventListener("click", () => {
     setActivePage("chat");
-    injectUserText("memory list", "text");
+    injectUserText("list memories", "text");
   });
 
   const memoryThreadsBtn = $("btn-memory-threads");
@@ -4349,7 +4505,7 @@ window.addEventListener("DOMContentLoaded", () => {
   const memoryReviewListBtn = $("btn-memory-review-list");
   if (memoryReviewListBtn) memoryReviewListBtn.addEventListener("click", () => {
     setActivePage("chat");
-    injectUserText("memory list", "text");
+    injectUserText("list memories", "text");
   });
 
   const micBtn = $("ptt-btn");

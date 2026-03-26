@@ -1090,6 +1090,61 @@ body {
   overflow: visible;
 }
 
+.news-brief-panel {
+  min-height: auto;
+  display: grid;
+  gap: 8px;
+  padding: 10px;
+  border: 1px solid rgba(175, 198, 230, 0.18);
+  border-radius: 12px;
+  background: rgba(104, 177, 255, 0.05);
+  overflow: visible;
+}
+
+.news-brief-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.brief-grounding-summary,
+.brief-grounding-note {
+  margin: 0;
+  font-size: 0.82rem;
+  line-height: 1.4;
+  color: #d7e5fa;
+}
+
+.brief-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 8px;
+}
+
+.brief-status-stat {
+  border: 1px solid rgba(104, 177, 255, 0.22);
+  border-radius: 10px;
+  background: rgba(104, 177, 255, 0.08);
+  padding: 8px;
+  display: grid;
+  gap: 4px;
+}
+
+.brief-status-label {
+  font-size: 0.72rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9fc4f2;
+}
+
+.brief-status-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #edf5ff;
+}
+
 .news-section-title {
   margin: 0;
   font-size: 0.83rem;
@@ -1279,11 +1334,21 @@ body {
 .trust-note,
 .trust-empty,
 .trust-activity-meta,
+.trust-activity-reason,
+.trust-activity-effect,
+.trust-activity-correlation,
 #trust-summary,
 .trust-row {
   font-size: 0.82rem;
   line-height: 1.4;
   color: #d7e5fa;
+}
+
+.trust-activity-correlation {
+  font-family: "Cascadia Code", "Consolas", monospace;
+  font-size: 0.74rem;
+  color: #b7cceb;
+  word-break: break-all;
 }
 
 .trust-panel {
@@ -1322,10 +1387,46 @@ body {
   background: rgba(10, 25, 46, 0.46);
 }
 
+.trust-activity-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
 .trust-activity-title {
   font-size: 0.74rem;
   font-weight: 700;
   color: #dcedff;
+}
+
+.trust-activity-outcome {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.trust-activity-outcome-success {
+  border: 1px solid rgba(126, 216, 178, 0.32);
+  background: rgba(47, 121, 92, 0.24);
+  color: #b8f0d5;
+}
+
+.trust-activity-outcome-issue {
+  border: 1px solid rgba(255, 182, 131, 0.34);
+  background: rgba(120, 55, 18, 0.28);
+  color: #ffd1a8;
+}
+
+.trust-activity-item[data-outcome="issue"] {
+  border-color: rgba(255, 182, 131, 0.28);
 }
 
 .context-insight-steps {
