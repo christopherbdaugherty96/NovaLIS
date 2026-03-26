@@ -1,6 +1,6 @@
 # Phase-6 Progressive Screen Intelligence Product Spec
 Date: 2026-03-13
-Status: Planning spec only; not fully implemented in runtime
+Status: Supporting product-direction spec; partially reflected in runtime
 Scope: Signature product-direction spec for Nova's "what is this?" interaction
 
 ## Purpose

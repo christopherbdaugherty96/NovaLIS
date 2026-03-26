@@ -52,6 +52,7 @@ Phase 6 is still not:
 ## Verification Snapshot
 - `python -m pytest tests\phase6 -q`
 - `python -m pytest tests\phase45\test_dashboard_policy_center_widget.py tests\phase45\test_dashboard_trust_review_widget.py tests\phase45\test_system_status_reporting_contract.py tests\phase45\test_policy_center_surface.py tests\executors\test_local_control_executors.py tests\test_runtime_auditor.py -q`
+- `python -m pytest tests\adversarial\test_governor_bypass.py tests\adversarial\test_no_direct_network_imports_outside_network_mediator.py tests\governance\test_no_direct_ollama_usage.py tests\governance\test_network_governance_boundaries.py tests\governance\test_model_network_mediator_thread_safety.py -q`
 - `node --check nova_backend/static/dashboard.js`
 - `python scripts/check_frontend_mirror_sync.py`
 - `python scripts/check_runtime_doc_drift.py`
@@ -60,3 +61,10 @@ Phase 6 is still not:
 Phase 6 is complete in runtime as a review-oriented delegated-policy and trust-alignment package.
 
 That means Nova can help a user prepare, inspect, simulate, and review-run safe delegated policy drafts without becoming an autonomous background agent.
+
+The phase has also been revalidated end to end against:
+- policy/runtime tests
+- trust/policy surface tests
+- governance-boundary tests
+- frontend mirror parity
+- runtime-doc drift checks

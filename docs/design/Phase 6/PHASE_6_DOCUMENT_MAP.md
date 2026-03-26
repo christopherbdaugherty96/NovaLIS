@@ -18,6 +18,12 @@ These documents define the current ordered roadmap and the core Phase-6 policy s
 - what trust-alignment work must be completed before external-provider or external-executor integrations are allowed
 - what the concrete implementation checklist is for closing the Phase-6 trust and reality gaps
 
+These core documents now also have live review-oriented foundations reflected in runtime.
+Use the proof packet and current runtime docs to distinguish:
+- what is design law
+- what is live now
+- what remains intentionally deferred
+
 ## Core Supporting Surface Specs
 - `docs/design/Phase 6/PHASE_6_POLICY_SIMULATION_SURFACE_SPEC.md`
 - `docs/design/Phase 6/PHASE_6_PROGRESSIVE_SCREEN_INTELLIGENCE_PRODUCT_SPEC.md`
@@ -72,6 +78,7 @@ Use the corrected roadmap for current ordering.
 When reading the Phase-6 folder:
 - use the corrected roadmap for order
 - use the atomic-policy, executor-gate, capability-topology, sovereignty-alignment plan, and engineering checklist as the core Phase-6 ladder
+- read the status lines in those core specs as a conservative review-oriented closure state, not as permission for delegated trigger runtime
 - use the policy-simulation and progressive-screen-intelligence specs as the first trust-facing support layer
 - use the Phase-6 proof packet to determine what is actually live in runtime
 - use the Phase-5 closed act and Phase-6 deferral note for boundary clarity

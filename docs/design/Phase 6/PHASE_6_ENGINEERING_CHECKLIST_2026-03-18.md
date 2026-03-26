@@ -1,7 +1,24 @@
 # Phase 6 Engineering Checklist
 Date: 2026-03-18
-Status: Execution checklist only; implementation packet for Phase-6 alignment work
+Status: Executed checklist and historical implementation packet for Phase-6 alignment work
 Scope: Turns the Phase-6 sovereignty-alignment plan into concrete engineering workstreams before any external reasoning or external execution expansion
+
+## Closure Note (2026-03-26)
+This checklist has now been substantially executed.
+
+Use it as:
+- the implementation ladder that Phase 6 followed
+- the historical freeze log for the earlier slice-by-slice reliability work
+- a reference for what had to be proven before Phase 6 could close
+
+Do not use this checklist as the primary live-status authority.
+For current truth, use:
+- `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+- `docs/PROOFS/Phase-6/PHASE_6_PROOF_PACKET_INDEX.md`
+- `docs/PROOFS/Phase-6/PHASE_6_COMPLETION_AND_HANDOFF_RUNTIME_SLICE_2026-03-26.md`
+
+The detailed freeze states preserved below are historical closure notes from the implementation climb.
+They are intentionally kept for traceability, but they do not override current runtime truth.
 
 ## Purpose
 This checklist is the execution bridge between:
@@ -130,7 +147,7 @@ It is the baseline journey to preserve while later slices extend behavior.
 - every row has a classification and proof reference
 - no user-facing claim remains unclassified
 
-### Current Active Capability Freeze Matrix (2026-03-18)
+### Historical Active Capability Freeze Matrix (2026-03-18)
 | ID | Capability | Status | Current proof basis |
 | --- | --- | --- | --- |
 | 16 | `governed_web_search` | `partial.multi_step_unproven` | live follow-up proof plus search/report regression coverage |

@@ -1,6 +1,6 @@
 # Phase 6 Policy Simulation Surface Specification
 Date: 2026-03-13
-Status: Supporting design spec; not yet live runtime
+Status: Supporting design spec; simulation surface is now reflected in runtime
 Scope: Human-visible dry-run and review surface for delegated policies before broad enablement
 
 ## Purpose
@@ -12,6 +12,17 @@ It exists so users and operators can ask:
 - why would it be allowed or blocked
 
 This should happen before broad delegated enablement and before trigger runtime expands.
+
+## Current Runtime Note
+The current runtime now exposes this simulation surface through the Policies page and command path:
+- `policy overview`
+- `policy simulate <id>`
+- policy drill-down with readiness, reasoning, and risk facts
+
+This remains:
+- read-only
+- non-authorizing
+- review-oriented
 
 ## Core Interpretation Rule
 Simulation is:

@@ -1,7 +1,22 @@
 # Phase 6 Sovereignty Alignment and Trust Loop Plan
 Date: 2026-03-18
-Status: Planning packet only; runtime not authorized
+Status: Canonical Phase-6 design core; runtime foundations now complete in a safe review-oriented form
 Scope: Pre-integration alignment work required before any external reasoning provider or external executor is added
+
+## Closure Note (2026-03-26)
+Phase 6 is now complete in runtime in its intended safe form:
+- review-oriented
+- trust-visible
+- non-autonomous
+- Governor-bound
+
+Use this document as the design explanation for why Phase 6 exists and what it was meant to close.
+Use runtime truth and the proof packet for what is live now:
+- `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+- `docs/PROOFS/Phase-6/PHASE_6_PROOF_PACKET_INDEX.md`
+- `docs/PROOFS/Phase-6/PHASE_6_COMPLETION_AND_HANDOFF_RUNTIME_SLICE_2026-03-26.md`
+
+This document should no longer be read as saying Phase 6 is only future planning.
 
 ## Purpose
 This document captures the parts of the sovereignty-platform spec that belong in Phase 6 instead of later integration phases.
@@ -13,27 +28,24 @@ Concrete execution packet:
 - `docs/design/Phase 6/PHASE_6_ENGINEERING_CHECKLIST_2026-03-18.md`
 
 ## Current Grounded Starting Point
-The current repo already has:
+The current repo now already has:
 - active runtime truth docs and runtime-auditor surfaces
 - a live capability registry with active capabilities through `61`
 - active perception capabilities `58`, `59`, and `60`
 - active memory-governance capability `61`
-- an existing mediated `llm_gateway`
-- Phase-6 foundation surfaces for policy drafts, executor gate simulation, and capability topology in runtime references
+- capability-topology truth enforced against registry metadata
+- ActionResult normalization and trust-surface consumption on the governed path
+- a Trust Center and Policies page with policy review, simulation, and one-shot manual run visibility
+- atomic policy draft storage, policy validation, capability topology, and a manual policy executor gate in runtime
 
-The current repo also has unresolved practical truth gaps:
-- explain-anything is currently `partial.environment_blocked`: routing and truthful failure reporting are repaired, but live capture is blocked by a runtime dependency on this machine
-- intelligence brief is currently `partial.degraded_but_usable`: entrypoint truth, degradation behavior, surfaced widget/sidebar state, and visual wording are aligned, but source-grounded quality can still degrade under blocked model conditions
-- governed web search is now `reliable`: surfaced follow-up prompts are truthful, and the promised first-step follow-up family (`research`, `create an intelligence brief`, `analyze source reliability`) has live in-process proof without contextual drift
-- response verification is now `reliable`: live governed verification, truthful degraded handling, and surfaced claim-reliability framing are aligned
-- analysis document generation is currently `partial.degraded_but_usable`: fake successful documents are gone, but live create-doc synthesis still degrades into truthful incomplete-document refusal on this local model/runtime
-- the basic conversation and tone-control surface is now `reliable`: `tone set concise` and `tone set detailed` work in normal chat, general-chat generation now honors those tone profiles, and the detailed path no longer double-formats long replies
-- calendar, screen capture, and screen analysis are now sharply classified as environment-blocked rather than vaguely broken on this machine/runtime
-- open-website preview, system status, research reporting, weather/news snapshots, story tracking, and memory overview now have frozen truthful first-journey proofs in the Phase-6 checklist
-- local control, speech output, file/folder opening, and diagnostics now have explicit side-effect-safe proof coverage so they are no longer floating as implied unclassified runtime claims
-- trust-facing payoff surfaces are now `reliable` for governed Recent Activity rows: Recent Activity distinguishes success vs issue states, surfaces `Why` and `Effect`, and exposes request/ledger correlation for the governed trust-status path without hiding the safe-case outcome
-- the Phase-6 release-gate bundle is currently green: trust-panel regressions, runtime-auditor checks, governance-boundary tests, and the key explain/verify/brief executor suites all passed on March 19, 2026
-- the main remaining Phase-6 blocker is now cross-cutting contract normalization: ActionResult shape and capability authority metadata are still not normalized enough for safe external-provider expansion
+The current repo does not have:
+- delegated trigger runtime
+- background policy execution
+- silent policy runs
+- widened execution authority outside the current Governor path
+
+That is the intended completion shape for Phase 6.
+The phase closes the truth, trust, and delegated-review substrate without authorizing autonomy.
 
 ## What Moves Here From The Source Spec
 The following source-spec themes belong in Phase 6:
@@ -178,6 +190,20 @@ Phase 6 is ready to hand off only when all of the following are true:
 - capability metadata can safely express future external-provider and executor classes
 - ActionResult and ledger lifecycle checks are enforced consistently
 - direct-network and direct-LLM bypass tests are green
+
+## Current Closure State
+As of 2026-03-26, this handoff condition is satisfied in the current repository in the following safe form:
+- runtime docs and live behavior agree on the major user-facing surfaces
+- trust-facing review surfaces exist and are informative
+- capability-topology and authority metadata are live enough for later phases to build on
+- ActionResult and governed trust metadata are normalized on the active path
+- governance-boundary and runtime-auditor checks are green
+
+What remains intentionally outside Phase 6:
+- background delegated triggers
+- autonomous policy execution
+- external executor wiring
+- widened external reasoning authority
 
 ## Related Inputs
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`

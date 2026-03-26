@@ -1,6 +1,6 @@
 # Phase 6 Policy Executor Gate Specification
 Date: 2026-03-13
-Status: Core design spec; not yet live runtime
+Status: Core design spec; review-only executor-gate foundation is now live in runtime
 Scope: The Governor-side execution gate that must exist before any Phase-6 trigger runtime is allowed
 
 ## Purpose
@@ -24,6 +24,17 @@ This preserves Nova's core rule:
 
 The wake of a policy may be automatic.
 The authority of a policy must still be lawful.
+
+## Current Runtime Note
+The current runtime now includes the executor-gate foundation in a review-oriented form:
+- policy simulation uses gate reasoning
+- safe policies can be manual review-run once through the Governor path
+- blocked reasons and readiness are surfaced in product UI
+
+The current runtime still does not authorize:
+- trigger-driven execution
+- background delegated runs
+- silent delegated execution
 
 ## Why This Must Come Before Triggers
 Trigger monitoring introduces the first real background behavior in Nova.

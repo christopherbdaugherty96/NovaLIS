@@ -1,6 +1,6 @@
 ﻿# Atomic Policy Language and Policy Envelope Spec
 Date: 2026-03-13
-Status: Planning spec only; not runtime authorized
+Status: Core Phase-6 design spec; delegated-policy draft model is now reflected in runtime review surfaces
 Scope: First core Phase-6 design artifact for delegated atomic policies
 
 ## Purpose
@@ -9,6 +9,18 @@ This document defines the smallest lawful policy model Nova may use in Phase 6.
 It exists to answer one question before any trigger monitor or policy UI is built:
 
 What exactly is a delegated policy, and what is the narrowest safe unit of automatic action?
+
+## Current Runtime Note
+The current runtime now reflects this model in a bounded review-only form:
+- policy drafts can be created and stored
+- policy definitions are validated against the narrow atomic model
+- policies can be simulated
+- safe policies can be manual review-run once
+
+The current runtime still does not authorize:
+- delegated trigger execution
+- background policy monitoring
+- silent policy enablement or autonomous execution
 
 ## Core Rule
 A Phase-6 policy is:

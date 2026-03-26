@@ -1,6 +1,6 @@
 # Phase 6 Capability Topology System Specification
 Date: 2026-03-13
-Status: Core design spec; not yet live runtime
+Status: Core design spec; capability-topology foundation is now live in runtime
 Scope: Capability classification and relationship model for lawful delegated execution and long-range extensibility
 
 ## Purpose
@@ -15,6 +15,15 @@ Phase 6 needs a capability topology system that explains:
 - whether policy delegation is allowed
 
 This turns Nova from a flat capability list into a governed capability model.
+
+## Current Runtime Note
+The current runtime now reflects this topology foundation in practice:
+- active registry entries carry explicit authority metadata
+- capability-topology parity is enforced against registry truth
+- policy simulation and manual review runs use topology-driven delegation rules
+- trust and policy review surfaces show authority and delegation information in product UI
+
+This remains a conservative delegated-review substrate, not a trigger-runtime authorization.
 
 ## Why This Matters Now
 Phase 6 introduces delegated execution.
