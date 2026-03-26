@@ -16,6 +16,25 @@ This document relocates the OpenClaw material from the source spec into the corr
 Phase 8 is where Nova may widen from governed reasoning into governed external execution.
 That step should happen only after Phase 6 alignment and Phase 7 external reasoning controls are complete.
 
+## Product Shipping Boundary
+Phase 8 should ship safe governed execution first, not mature quiet automation.
+
+That means Phase 8 should focus on:
+- Strict mode
+- TaskEnvelope v1
+- proposal normalization
+- Governor interception
+- ExecuteBoundary hardening
+- Data Minimization Engine
+- NetworkMediator
+- proposal-only OpenClaw integration
+- operator surfaces such as action preview, status, recent actions, stop, and failure visibility
+
+That also means Phase 8 should not claim:
+- broad Envelope mode without explicit resource budgets
+- silent supervisory execution
+- hidden background loops
+
 ## Current Grounded Starting Point
 The current runtime already has many local governed actions plus read-only intelligence and perception surfaces.
 However, it does not yet have a governed OpenClaw execution capability in the active registry.
@@ -30,10 +49,10 @@ Current planning reservation:
 This remains planning-only until the runtime registry and capability audit confirm the next safe open slot.
 
 ## Phase-8 Goal
-Introduce a dumb external executor that has zero decision authority.
+Introduce an untrusted external executor that has zero decision authority.
 
 The governing rule is simple:
-- Claude or any reasoning provider may suggest
+- reasoning providers may suggest
 - the Governor may validate
 - the user may confirm when required
 - OpenClaw may execute a structured action only
@@ -74,14 +93,15 @@ Before this phase is implemented, Nova needs a normalized capability metadata mo
 
 That is why Phase 6 owns the metadata hardening work.
 
-## User-Facing Payoff Loop
-Phase 8 should not ship without the missing trust loop.
+## Required Product Surfaces
+Phase 8 should not ship without the trust loop.
 Required surfaces:
 - Recent Actions
 - plain-language confirmation echo
 - visible result status
 - timestamped execution history
 - clear failure reason when something is blocked or fails
+- stop control for active runs
 
 ## Example Walkthrough
 Example flow:
@@ -106,9 +126,10 @@ Example flow:
 2. finish Phase-7 external reasoning containment
 3. define the structured OpenClaw action schema
 4. add executor isolation and sanitizer layers
-5. wire capability `63` through the Governor path
-6. add confirmation, Recent Actions, and failure visibility surfaces
-7. add adversarial tests for prompt injection and tool-output contamination
+5. add path, hostname, and resource-budget enforcement rules to the envelope model
+6. wire capability `63` through the Governor path
+7. add confirmation, Recent Actions, stop controls, and failure visibility surfaces
+8. add adversarial tests for prompt injection, redirect escape, path escape, and tool-output contamination
 
 ## Exit Criteria
 Phase 8 is ready only when:
@@ -116,7 +137,14 @@ Phase 8 is ready only when:
 - write flows require explicit confirmation
 - untrusted output is sanitized and validated before reuse
 - the trust loop clearly shows what happened and why
+- path and hostname scope checks are explicit and tested
 - bypass and prompt-injection defenses are tested
+
+## Later-Phase Hand-off
+The following items belong later than the first Phase-8 ship:
+- broad Envelope mode with explicit budgets in Phase 9
+- stronger active-run controls and pause/resume maturity in Phase 9
+- supervisory quietness only after long-run proof and reviewable controls in Phase 10 or later
 
 ## Related Inputs
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`

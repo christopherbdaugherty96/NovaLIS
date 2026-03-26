@@ -1,5 +1,5 @@
 # Phase 9 Document Map
-Updated: 2026-03-20
+Updated: 2026-03-25
 Status: Current design map
 Purpose: Separate the governed-node roadmap from older autonomy and mutation theory artifacts
 
@@ -23,8 +23,18 @@ This document remains valuable long-range theory for autonomy tiers and mutation
 - `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
 - `docs/design/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
 - `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
+- `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
 - `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`
+
+## Phase-9 OpenClaw Maturation Boundary
+Read the canonical OpenClaw spec this way in Phase 9:
+- Phase 8 already established strict governed execution and operator visibility
+- Phase 9 is the first safe home for bounded Envelope mode
+- Envelope mode here must include explicit resource budgets such as files touched, bytes read and written, network calls, hostnames, duration, and action count
+- anomaly detection should be envelope-scoped, not globally noisy
+- pause/resume and shared run visibility across Nova surfaces belong here
+- this is still governed automation, not autonomy
 
 ## Phase-9 Memory Coherence Input
 The governed memory experience packet should be read this way in Phase 9:

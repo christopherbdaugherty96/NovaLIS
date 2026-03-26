@@ -1,14 +1,14 @@
 # Phase 8 OpenClaw Canonical Governed Automation Spec
 Date: 2026-03-25
 Status: Canonical Phase-8 source of truth for OpenClaw direction
-Scope: Full governed automation and OpenClaw-style execution model under Nova governance
+Scope: Governed automation and OpenClaw-style execution under Nova governance
 Derived from: `docs/design/Phase 8/openclaw.txt` (raw source note preserved)
 
 ## Authority Note
-This document is now the formal canonical design truth for how OpenClaw should fit into Nova.
+This document is the canonical design truth for how OpenClaw should fit into Nova.
 
 It replaces the older role of `PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md` as the primary OpenClaw direction document.
-That earlier file remains useful as implementation context and phase sequencing support, but this document is the final architectural source of truth.
+That earlier file remains useful as implementation context and sequencing support, but this document is the final architectural source of truth.
 
 This is still a design document, not runtime truth.
 Runtime truth remains in:
@@ -16,17 +16,39 @@ Runtime truth remains in:
 - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
 - `docs/PROOFS/`
 
-## Purpose
+## Product Definition
+Nova is not just an assistant.
+Nova is not just an agent.
+
+Nova is a governed execution environment that allows untrusted intelligence to operate safely within enforced boundaries.
+
+Nova acts as:
+- the control plane for tasks and execution flow
+- the AI firewall that filters and enforces policy
+- the execution authority boundary
+- the data exposure filter
+- the audit and trace system
+- the user-trust layer that explains what happened and why
+
+## Product Goal
 Nova needs a future execution model that can:
-- grant near-full computer access for bounded automation tasks
-- enable OpenClaw-style intelligence systems to perform real work
-- support multi-step project execution while the user is away
-- remain user-friendly and low-friction at the interface layer
+- grant broad but bounded computer access for approved automation tasks
+- let OpenClaw-style intelligence systems perform useful work without gaining authority
+- support multi-step project execution while the user is away only when the envelope permits it
+- stay calm and low-friction in the interface
 - preserve strict governance, security, and system sovereignty
 - prevent unauthorized access, data leakage, and rogue behavior
 
 The core intent is not to make Nova autonomous.
 The core intent is to let untrusted intelligence operate inside a governed execution environment.
+
+## Product Non-Goals
+This design does not authorize:
+- hidden autonomy
+- silent background execution outside an approved envelope
+- provider output becoming execution authority
+- always-on listening or self-starting action loops
+- implicit trust because a model is persuasive
 
 ## Core Principles
 These are non-negotiable.
@@ -48,121 +70,112 @@ These rules apply equally to:
 - local models
 - any future agent or model provider
 
-## End-State Identity
-Nova is not just an assistant.
-Nova is not just an agent.
-
-Nova is a governed execution environment that allows untrusted intelligence to operate safely within enforced boundaries.
-
-Nova acts as:
-- the control plane for tasks and execution flow
-- the AI firewall that filters and enforces policy
-- the execution authority boundary
-- the data exposure filter
-- the policy enforcement system
-- the audit and trace system
-
 ## Canonical Architecture
 ```mermaid
 flowchart TD
     U["User"] --> UI["Nova Interface\ncalm, low-friction, user-friendly"]
-    UI --> TE["Task Envelope Engine\ndefines scope, rules, and constraints"]
+    UI --> TE["Task Envelope Engine\ndefines scope, rules, budgets, and constraints"]
     TE --> DM["Data Minimization Engine\nfilters what intelligence can see"]
     DM --> CF["Cognitive Federation Layer\nOpenClaw, Codex, DeepSeek, local LLMs\nall untrusted"]
     CF --> NL["Normalization Layer\nconverts proposals into canonical actions"]
-    NL --> GI["Governor Interceptor\nreal-time enforcement"]
+    NL --> GI["Governor Interceptor\nreal-time policy enforcement"]
     GI --> EB["ExecuteBoundary\nhard enforcement"]
     EB --> SYS["System / OS / Files / Network"]
     GI --> L["Ledger\ntruth source, trace, audit"]
     EB --> L
+    UI --> OPS["Operator Surfaces\naction preview, recent actions, stop, pause reason"]
+    GI --> OPS
+    EB --> OPS
 ```
 
-## Architecture Rules
-### Cognitive Federation Layer
-This layer is untrusted.
-Its job is to propose, not to execute.
+## Canonical Component Responsibilities
+| Component | Responsibility |
+| --- | --- |
+| Task Envelope Engine | Defines approved scope, resource budgets, time limits, and escalation conditions. |
+| Data Minimization Engine | Builds the smallest safe context before any intelligence call. |
+| Cognitive Federation Layer | Produces proposals only. Never executes. Never owns authority. |
+| Normalization Layer | Converts free-form provider output into canonical action attempts. |
+| Governor Interceptor | Evaluates every action attempt against policy, scope, budget, anomaly state, and user approval. |
+| ExecuteBoundary | Enforces approved actions only and fails closed on disallowed execution. |
+| NetworkMediator | The only outbound network authority. |
+| Ledger | Records proposal, normalization, decision, execution, and result continuity. |
+| Operator Surfaces | Keep the user informed with previews, status, stop controls, and failure reasons. |
+
+## Hard Boundary Rules
+### 1. Path authority must be canonical, not substring-based
+Allowed filesystem scope must use normalized, resolved paths.
 
 That means:
-- it may propose actions only
-- it has no direct execution path
-- it has no durable authority
-- it does not gain persistent memory or permission by existing in the stack
+- compare real canonical paths, not string fragments
+- reject path traversal escapes
+- evaluate symlinks and junctions after resolution
+- treat missing `allowed_paths` as deny-by-default
+- record the resolved path that was actually evaluated
 
-### Normalization Layer
-All free-form outputs from OpenClaw or any other intelligence provider must be normalized into canonical action shapes before enforcement.
-
-That means:
-- no raw model output is treated as authority
-- no free-form plan can execute directly
-- proposals become structured action attempts before policy evaluation
-
-### Governor Interceptor
-The Governor Interceptor is the only allowed path to real-world effect.
+### 2. Network authority must be hostname-based and re-checked on redirect
+`NetworkMediator` is the sole outbound network authority.
 
 That means:
-- it validates envelope scope and policy
-- it checks anomaly signals in real time
-- it allows, denies, pauses, or escalates each action attempt
-- it remains in the loop for every step, not just the first one
+- policy keys are normalized hostnames, not raw `netloc` strings
+- credentials in URLs are denied
+- redirects must be re-authorized hop by hop
+- domain approval and port policy must be explicit
+- missing network enablement means deny-by-default
 
-### ExecuteBoundary
-ExecuteBoundary is the hard enforcement layer.
+### 3. Envelope automation requires explicit resource budgets
+Envelope approval is not just "allowed actions."
+It also requires explicit budgets.
+
+Minimum envelope budgets should include:
+- max actions
+- max files touched
+- max bytes read
+- max bytes written
+- max network calls
+- allowed hostnames
+- max duration
+
+Without those budgets, Nova may support Strict mode only.
+
+### 4. Audit provenance must be end-to-end
+The ledger is only a truth source if it can prove continuity from proposal to execution result.
+
+Minimum provenance fields should include:
+- envelope id and envelope revision
+- proposal id or proposal hash
+- normalized payload hash
+- provider name and model identifier
+- decision reason
+- executor result id or result hash
+- timestamps for proposal, decision, execution, and completion
+
+### 5. Anomaly detection must be envelope-scoped
+Anomaly detection should not be globally noisy.
 
 That means:
-- only approved actions execute
-- disallowed actions fail closed
-- anomalies can pause execution mid-stream
-- there is no bypass around this boundary
+- recent action windows are tracked per envelope or task run
+- pause decisions identify the specific envelope and reason
+- anomaly rules start simple but are explicit and reviewable
+- false-positive handling must be traceable
 
-### Ledger
-The ledger is the truth source for all automation behavior.
+### 6. Proposal output never becomes authority
+Free-form provider output is advisory only.
 
 That means:
-- all action attempts are logged
-- policy breaches are recorded
-- envelope traces are preserved
-- the user can later understand what happened and why
+- no raw model text executes directly
+- no provider may invent permissions
+- no provider may widen envelope scope
+- normalization always happens before interception
 
-## Critical Gaps This Canonical Direction Closes
-### 1. No mandatory interception layer
-Old risk:
-- execution could be reached too directly after user approval
+### 7. Operator visibility is part of the product, not polish
+OpenClaw-style execution should not ship as an invisible backend behavior.
 
-Canonical fix:
-- the Governor Interceptor is the sole path to ExecuteBoundary
-- all real-world actions pass through interception first
-
-### 2. No mid-execution control
-Old risk:
-- multi-step automation could continue once started without per-step re-evaluation
-
-Canonical fix:
-- every action attempt is evaluated individually
-- anomaly detection and policy checks can pause or deny mid-stream
-
-### 3. Data minimization was conceptual only
-Old risk:
-- models could see more than they should
-
-Canonical fix:
-- Data Minimization Engine runs before any intelligence call
-- file scope, content slicing, and redaction become enforceable system behavior
-
-### 4. Network mediation was not universally enforced
-Old risk:
-- external calls could happen outside one central approval layer
-
-Canonical fix:
-- NetworkMediator becomes the sole outbound network authority
-- all network access is envelope-scoped and policy-checked
-
-### 5. Anomaly detection lacked concrete definition
-Old risk:
-- there was no formal runtime mechanism for suspicious sequences
-
-Canonical fix:
-- anomaly detection begins simple but mandatory
-- later phases extend it with sequence, chaining, drift, and intent-mismatch scoring
+Required user surfaces include:
+- plain-language action preview before execution when approval is required
+- live run card or status view while execution is active
+- visible stop and pause controls
+- recent actions history
+- plain-language blocked/failure reason
 
 ## Operational Invariants
 These are hard rules, not suggestions.
@@ -176,99 +189,105 @@ These are hard rules, not suggestions.
 7. Task envelopes are ephemeral.
 8. A global kill switch must always exist.
 
-## Final Hardening Rules
-### Envelope requirement
-If no active envelope exists, execution is denied.
-There is no default global execution authority.
+## Critical Gaps This Direction Closes
+### 1. No mandatory interception layer
+Canonical fix:
+- the Governor Interceptor is the sole path to ExecuteBoundary
+- all real-world actions pass through interception first
 
-### Default deny
-If an action cannot be confidently classified as allowed, it is denied or escalated.
-Nothing is implicitly permitted.
+### 2. No mid-execution control
+Canonical fix:
+- every action attempt is evaluated individually
+- anomaly detection and policy checks can pause or deny mid-stream
 
-### Network deny by default
-Network access is off unless explicitly enabled in the envelope.
+### 3. Data minimization was conceptual only
+Canonical fix:
+- Data Minimization Engine runs before any intelligence call
+- file scope, content slicing, and redaction become enforceable system behavior
 
-### Filesystem explicit-scope only
-If no `allowed_paths` are declared, no filesystem access is allowed.
+### 4. Network mediation was not universally enforced
+Canonical fix:
+- NetworkMediator becomes the sole outbound network authority
+- all network access is policy-checked and envelope-scoped
 
-### Anomaly evolution
-The initial anomaly detector is intentionally simple.
-Later phases can extend it to cover:
-- action sequence anomalies
-- suspicious tool chaining
-- task drift scoring
-- mismatch between original user request and current action stream
+### 5. Audit continuity was too weak
+Canonical fix:
+- ledger requirements now include proposal-to-execution continuity
+- the user can later see what was proposed, what was approved, and what actually ran
 
-## Canonical Component Set
-The core component families required by this direction are:
-- `TaskEnvelope`
-- `ActionAttempt`
-- `GovernorInterceptor`
-- `AnomalyDetector`
-- `DataMinimizationEngine`
-- `NetworkMediator`
-- `OpenClawAdapter`
-- `ExecuteBoundary`
-- `Ledger`
+### 6. Envelope automation could become too broad too early
+Canonical fix:
+- Strict mode ships first
+- Envelope mode requires explicit budgets and tighter proof
+- Supervisory mode is later still
 
-The exact implementation can evolve, but the architectural responsibilities above must remain.
+## Shipping Posture By Phase
+### Phase 8: Safe first ship
+Phase 8 should ship only the foundations for governed external execution.
 
-## Governor Modes
-| Mode | Behavior | Role in roadmap |
-| --- | --- | --- |
-| Strict | Every action requires approval; zero autonomy | earliest safe execution mode |
-| Envelope | User approves the task envelope once; in-scope actions proceed automatically | bounded automation mode |
-| Supervisory | Nova stays quiet while actions remain in-policy and only intervenes on breach, anomaly, or scope drift | long-term target |
+Phase-8-safe scope:
+- Strict mode only
+- TaskEnvelope v1
+- normalization layer
+- Governor Interceptor
+- ExecuteBoundary hardening
+- Data Minimization Engine
+- NetworkMediator
+- proposal-only OpenClaw adapter
+- operator surfaces such as action preview, recent actions, status, stop, and failure visibility
 
-The supervisory mode is the long-term OpenClaw target.
-It should only exist after the interception, minimization, anomaly, and trace layers are proven.
+Phase 8 should not claim:
+- quiet walk-away automation by default
+- broad Envelope mode without explicit budgets
+- silent supervisory execution
 
-## Implementation Order
-### Phase 1: Enforcement foundation
-- add `TaskEnvelope`, `ActionAttempt`, and `GovernorInterceptor`
-- route all execution attempts through the interceptor
-- enforce no-envelope denial
-- add first anomaly detector
-- wrap existing execution paths behind interception and mediation
+### Phase 9: Bounded envelope automation
+Phase 9 is the first safe home for richer envelope automation.
 
-### Phase 2: Data minimization
-- implement `DataMinimizationEngine`
-- integrate it before any intelligence call
-- refactor file-context building to use it consistently
+Phase-9-appropriate scope:
+- Envelope mode with explicit resource budgets
+- per-envelope anomaly isolation
+- pause/resume for bounded task runs
+- shared execution visibility across Nova surfaces
+- stronger operator controls for active runs
 
-### Phase 3: Network control
-- implement `NetworkMediator`
-- refactor all external-calling skills to use it
-- enforce envelope-based network rules
+This is still governed automation, not autonomy.
 
-### Phase 4: OpenClaw integration
-- implement `OpenClawAdapter` in proposal-only mode
-- wire it into the Cognitive Federation Layer
-- test only inside narrow envelopes first
+### Phase 10 and later: Supervisory quietness only under reviewable control
+Supervisory mode belongs only after:
+- replayable eval coverage
+- strong audit provenance
+- proven anomaly quality
+- explicit revocation and kill-switch reliability
+- reviewable rule evolution
 
-### Phase 5: Supervisory automation
-- extend anomaly detection
-- add pause/resume behavior
-- support bounded walk-away automation under envelope control
+Supervisory quietness must never mean invisible authority growth.
 
 ## Testing Requirements
 Before moving deeper into Phase 8, Nova should prove these failure cases:
-- action outside `allowed_paths` is denied
+- action outside resolved `allowed_paths` is denied
+- symlink or junction escape is denied
 - access to sensitive files pauses or denies
 - envelope action limits are enforced
+- envelope byte and file-count budgets are enforced before Envelope mode ships
 - no active envelope means denial
-- action-rate spikes pause execution
+- action-rate spikes pause the specific envelope under review
 - network without explicit enablement is denied
+- redirects to unauthorized domains are denied
+- URLs with embedded credentials are denied
 - unauthorized domains are denied
+- proposal hash and executed payload hash are both captured in the ledger
 
-## Risk and Mitigation
+## Risk And Mitigation
 | Risk | Mitigation |
 | --- | --- |
 | Fast-path execution bypasses interception | treat bypass attempts as architectural violations and test for them explicitly |
-| Envelope scope is too broad | require explicit allowed paths and fail closed when missing |
-| Anomaly detector raises false positives | allow override paths only with traceability and iterative rule hardening |
-| Per-step interception adds overhead | accept the overhead as a safety cost and optimize only after correctness |
+| Path policy is fooled by string matching | require resolved-path checks and block traversal, symlink, and junction escape |
+| Envelope scope is too broad | require explicit budgets and fail closed when missing |
+| Network policy is bypassed by redirects or URL tricks | re-authorize each hop and normalize hostname policy keys |
+| Anomaly detector raises false positives | keep rules envelope-scoped, reviewable, and overrideable with traceability |
 | OpenClaw output looks convincing but is unsafe | treat all output as untrusted until normalized, validated, and policy-checked |
+| Product UX becomes opaque under automation | require operator surfaces as part of the shipping contract |
 
 ## What This Means For OpenClaw Specifically
 OpenClaw should not be treated as a smart autonomous operator.
@@ -284,7 +303,7 @@ That means:
 - OpenClaw never becomes a side door around Nova's Governor
 
 ## Relationship To Existing Phase 8 Docs
-This file is now the canonical OpenClaw truth.
+This file is the canonical OpenClaw truth.
 
 Use the following support docs as secondary context:
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
@@ -294,7 +313,7 @@ Use the following support docs as secondary context:
 Interpretation rule:
 - this canonical spec defines what OpenClaw should be in Nova
 - the earlier governed execution plan helps sequence implementation
-- the raw note preserves the originating design language and hardening intent
+- the raw notes preserve the originating design language and hardening intent
 
 ## Final Identity Statement
 Nova does not trust intelligence.
@@ -302,3 +321,7 @@ Nova governs it.
 
 Nova's power does not come from what it can do.
 It comes from what it refuses to allow without governance.
+
+Document Version: 3.1
+Next Steps: Build Phase 8 as strict governed execution first, then mature envelope automation only in later phases.
+Canonical Location: `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
