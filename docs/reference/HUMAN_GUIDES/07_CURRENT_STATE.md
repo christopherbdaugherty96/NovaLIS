@@ -97,6 +97,13 @@ Nova already combines things that usually live in separate products:
 
 That combination is unusual.
 
+## Latest Capability Verification
+The latest full sequential capability audit on 2026-03-25 confirmed that all `23` active governed runtime capabilities passed targeted verification coverage in the current repository state.
+
+The one important caveat is voice output:
+- TTS executor and mediator tests are passing
+- real-device spoken output is still tracked as a live product regression that needs hardware validation and restore work
+
 ## The Best Honest Description Right Now
 If someone asked what Nova is today, a strong honest answer would be:
 

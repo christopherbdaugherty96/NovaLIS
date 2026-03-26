@@ -47,6 +47,7 @@ These documents remain useful as design history, but they are not the current au
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 - `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
 - `docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12.md`
+- `docs/PROOFS/CAPABILITY_VERIFICATION_AUDIT_2026-03-25.md`
 - `docs/PROOFS/Phase-4/PHASE_4_CLOSED_ACT_2026-03-09.md`
 - `docs/PROOFS/Phase-4.5/PHASE_4_5_CLOSED_ACT_2026-03-09.md`
 - `docs/PROOFS/Phase-4.5/PHASE_4_5_TO_PHASE_5_READINESS_NOTES_2026-03-09.md`
@@ -80,6 +81,8 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
 - memory executor bundle: `10 passed`
 - dashboard + memory regression bundle: `85 passed`
 - conversation/tone safety bundle: `98 passed`
+- full active-capability sequential audit: all `23` active governed capabilities passed targeted verification
+- active-capability residual caveat: capability `18` (`speak_text`) passes executor and mediator tests, but still needs live device spoken-output validation
 - runtime documentation drift check: passed
 - dashboard script syntax check: passed
 - frontend mirror sync check: passed
