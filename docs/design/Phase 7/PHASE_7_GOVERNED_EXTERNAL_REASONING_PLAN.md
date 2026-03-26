@@ -1,6 +1,6 @@
 # Phase 7 Governed External Reasoning Plan
 Date: 2026-03-18
-Status: Planning packet only; runtime not authorized
+Status: Planning packet with bounded runtime foundations now partially live
 Scope: Governed Anthropic-style external reasoning integration after Phase-6 alignment closes
 
 ## Purpose
@@ -8,6 +8,15 @@ This document relocates the Claude integration material from the source spec int
 
 Phase 7 is where Nova may add a governed external reasoning provider.
 It is not the place to weaken the Governor or bypass the current gateway model.
+
+## Implemented Foundation On `main` (2026-03-25)
+The current runtime now has a bounded Phase-7-style foundation already in place:
+- answer-first search behavior with evidence on demand
+- inline source-grounded news summaries
+- a bounded same-thread `DeepSeek` second-opinion control
+
+These do not yet complete the larger provider-architecture plan in this document.
+They are the first user-facing product slice that proves the Phase-7 direction can land without widening authority.
 
 ## Current Grounded Starting Point
 The current repo already has:

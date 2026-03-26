@@ -13,12 +13,12 @@ Not as active runtime truth yet.
 Current state:
 - typed input is active
 - push-to-talk speech transcription is active
-- text-to-speech is active
+- text-to-speech capability is active, but real-device output still needs local validation
 - wake word is planned, but not currently a live runtime capability
 
 So the right way to describe Nova today is:
 - voice input works
-- voice output works
+- voice output is implemented and improving, but still being validated on real devices
 - wake word is still a planned surface
 
 ## 2. Why didn't Nova do anything automatically?
