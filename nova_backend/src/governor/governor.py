@@ -31,6 +31,7 @@ CAPABILITY_TIMEOUT_OVERRIDES = {
     49: 30.0,  # Headline summaries may need source reads plus local-model synthesis.
     50: 35.0,  # Daily brief generation may need clustered source reads plus synthesis.
     31: 90.0,  # Response verification may need local-model cold-start time.
+    62: 90.0,  # Governed external reasoning review may need local-model cold-start time.
     54: 150.0,  # Analysis documents need more time for local-model long-form generation.
 }
 
@@ -329,6 +330,21 @@ class Governor:
                     failure_reason = str(result.outcome_reason or result.message or "").strip()
                     if failure_reason:
                         completion_metadata["failure_reason"] = failure_reason[:240]
+                structured_result = result.structured_data if hasattr(result, "structured_data") else {}
+                if isinstance(structured_result, dict):
+                    for field_name in (
+                        "reasoning_provider",
+                        "reasoning_provider_label",
+                        "reasoning_route",
+                        "reasoning_route_label",
+                        "reasoning_mode",
+                        "reasoning_authority",
+                        "reasoning_authority_label",
+                        "reasoning_governance_note",
+                    ):
+                        value = str(structured_result.get(field_name) or "").strip()
+                        if value:
+                            completion_metadata[field_name] = value[:240]
                 self.ledger.log_event(
                     "ACTION_COMPLETED",
                     completion_metadata,
@@ -540,6 +556,11 @@ class Governor:
             from src.executors.memory_governance_executor import MemoryGovernanceExecutor
 
             return MemoryGovernanceExecutor(ledger=self.ledger).execute(req)
+
+        elif req.capability_id == 62:
+            from src.executors.external_reasoning_executor import ExternalReasoningExecutor
+
+            return ExternalReasoningExecutor().execute(req)
 
         elif req.capability_id == 31:
             from src.executors.response_verification_executor import ResponseVerificationExecutor

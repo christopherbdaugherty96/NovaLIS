@@ -91,8 +91,10 @@ Examples:
 - `read that`
 - `say it`
 
-There is also a bounded same-thread second-opinion control in the chat bar:
+There is also a governed same-thread second-opinion lane:
 - click `DeepSeek`
+- or type `second opinion`
+- or type `review this answer`
 - Nova will request a bounded external second opinion on the recent exchange
 - this stays advisory only
 
@@ -123,6 +125,7 @@ Use these when you want to understand:
 - what is currently blocked
 - what mode Nova is in
 - whether anything external happened recently
+- which reasoning provider and route were used for a second opinion
 - what the current voice runtime looks like
 
 ## 9. Policy Review

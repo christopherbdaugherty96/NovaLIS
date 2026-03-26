@@ -38,6 +38,8 @@ ATOMIC_POLICY_STORE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "policies" / 
 POLICY_VALIDATOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "policies" / "policy_validator.py"
 POLICY_EXECUTOR_GATE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "policy_executor_gate.py"
 CAPABILITY_TOPOLOGY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "capability_topology.py"
+EXTERNAL_REASONING_EXECUTOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "executors" / "external_reasoning_executor.py"
+DEEPSEEK_SAFETY_WRAPPER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "conversation" / "deepseek_safety_wrapper.py"
 
 GOVERNANCE_MATRIX_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX.md"
 SKILL_SURFACE_MAP_PATH = RUNTIME_DOC_DIR / "SKILL_SURFACE_MAP.md"
@@ -115,6 +117,7 @@ MEDIATOR_TRIGGER_PROBES: dict[str, str] = {
     "daily brief": "intelligence_brief",
     "show topic memory map": "topic_memory_map",
     "verify this": "response_verification",
+    "second opinion": "external_reasoning_review",
     "summarize doc 2": "analysis_document",
     "update story ai regulation": "story_tracker_update",
     "show story ai regulation": "story_tracker_view",
@@ -618,6 +621,57 @@ def _phase_6_status() -> str:
     return "DESIGN"
 
 
+def _phase_7_status(registry: dict[str, Any]) -> str:
+    enabled_ids = set(_enabled_registry_ids(registry))
+    dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
+    index_src = _safe_read(STATIC_INDEX_PATH)
+    governor_src = _safe_read(GOVERNOR_PATH)
+    mediator_src = _safe_read(GOVERNOR_MEDIATOR_PATH)
+    brain_src = _safe_read(BRAIN_SERVER_PATH)
+    bridge_src = _safe_read(DEEPSEEK_BRIDGE_PATH)
+    capability_enabled = 62 in enabled_ids
+    executor_present = EXTERNAL_REASONING_EXECUTOR_PATH.exists()
+    safety_wrapper_present = DEEPSEEK_SAFETY_WRAPPER_PATH.exists()
+    gateway_mediated = "generate_chat" in bridge_src and "ollama.chat" not in bridge_src
+    governor_wired = "req.capability_id == 62" in governor_src
+    mediator_wired = "SECOND_OPINION_RE" in mediator_src and "second opinion" in MEDIATOR_TRIGGER_PROBES
+    trust_surface_present = (
+        'id="trust-center-reasoning-summary"' in index_src
+        and 'id="trust-center-reasoning-grid"' in index_src
+        and "trustReviewState.reasoningRuntime" in dashboard_src
+        and "trust-center-reasoning-summary" in dashboard_src
+    )
+    settings_surface_present = (
+        'id="settings-reasoning-summary"' in index_src
+        and 'id="settings-reasoning-grid"' in index_src
+        and "settings-reasoning-summary" in dashboard_src
+    )
+    brain_support_present = (
+        "capability_id == 62" in brain_src
+        and "_build_second_opinion_review_text" in brain_src
+        and "reasoning_runtime" in brain_src
+    )
+
+    if (
+        BUILD_PHASE >= 7
+        and capability_enabled
+        and executor_present
+        and safety_wrapper_present
+        and gateway_mediated
+        and governor_wired
+        and mediator_wired
+        and trust_surface_present
+        and settings_surface_present
+        and brain_support_present
+    ):
+        return "COMPLETE"
+    if capability_enabled and executor_present and gateway_mediated and governor_wired:
+        return "ACTIVE"
+    if capability_enabled or executor_present:
+        return "PARTIAL"
+    return "DESIGN"
+
+
 def _phase_45_status() -> str:
     """Derive coarse runtime status for Phase 4.5 UX surface."""
     dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
@@ -1062,6 +1116,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     phase_45_status = _phase_45_status()
     phase_5_status = _phase_5_status(registry)
     phase_6_status = _phase_6_status()
+    phase_7_status = _phase_7_status(registry)
 
     phase_42_note = (
         "Orthogonal cognition stack enabled via explicit invocation path"
@@ -1099,6 +1154,17 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         phase_6_note = "Phase-6 policy substrate exists in code, but no user-facing review surface is active"
     else:
         phase_6_note = "Delegated policy layer remains design-only"
+    if phase_7_status == "COMPLETE":
+        phase_7_note = (
+            "Governed external reasoning is complete: answer-first research surfaces, explicit second-opinion capability, "
+            "provider transparency, and advisory-only trust explanation are active"
+        )
+    elif phase_7_status == "ACTIVE":
+        phase_7_note = "Governed external reasoning is active, but not all user-facing transparency surfaces are complete"
+    elif phase_7_status == "PARTIAL":
+        phase_7_note = "Phase-7 reasoning substrate exists, but the full routed user-facing slice is incomplete"
+    else:
+        phase_7_note = "Governed external reasoning remains design-only"
 
     governor_modules = [
         "src/governor/governor.py",
@@ -1142,6 +1208,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         f"| Phase 4.5 | {phase_45_status} | {phase_45_note} |",
         f"| Phase 5 | {phase_5_status} | {phase_5_note} |",
         f"| Phase 6 | {phase_6_status} | {phase_6_note} |",
+        f"| Phase 7 | {phase_7_status} | {phase_7_note} |",
         "",
         "## Runtime Governance Spine",
         "",

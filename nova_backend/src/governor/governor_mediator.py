@@ -261,6 +261,11 @@ VERIFY_RE = re.compile(
     r"(?:\s+(?P<text>.+?))?\s*$",
     re.IGNORECASE,
 )
+SECOND_OPINION_RE = re.compile(
+    r"^\s*(?:second\s+opinion|deepseek\s+second\s+opinion|review\s+this\s+answer|pressure\s*check)"
+    r"(?:\s+(?P<text>.+?))?\s*$",
+    re.IGNORECASE,
+)
 DOC_CREATE_RE = re.compile(
     r"^\s*(?:write|create|generate)\s+(?:a\s+)?(?:detailed\s+)?(?:analysis(?:\s+report)?|report|document)\s+(?:on|about)\s+(?P<topic>.+?)\s*$",
     re.IGNORECASE,
@@ -890,6 +895,13 @@ class GovernorMediator:
 
         if SHOW_REL_GRAPH_RE.match(t):
             return _invocation_if_enabled(53, {"action": "show_graph"})
+
+        som = SECOND_OPINION_RE.match(t)
+        if som:
+            candidate = (som.group("text") or "").strip()
+            if candidate.lower() in {"this", "that", "it"}:
+                candidate = ""
+            return _invocation_if_enabled(62, {"text": candidate})
 
         vm = VERIFY_RE.match(t)
         if vm:

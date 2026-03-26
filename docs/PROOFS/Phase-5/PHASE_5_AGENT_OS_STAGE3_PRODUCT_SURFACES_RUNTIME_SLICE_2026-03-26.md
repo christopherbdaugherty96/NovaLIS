@@ -13,8 +13,8 @@ It specifically closes these gaps:
 - Structure Map stage 2 structured graph output
 - user-visible voice runtime status and voice-check workflow
 
-It does **not** claim that future phases are live.
-Phase 7 remains partially live.
+It does **not** claim that future phases beyond the work landed at that time were live.
+Later runtime work completed Phase 7.
 Phase 8+ remain designed, not runtime-authorized.
 
 ## Runtime Surfaces Added Or Deepened
@@ -113,7 +113,7 @@ It is that the dashboard is now closer to a real governed workspace for a non-te
 1. Real-device audible confirmation is still the final voice caveat.
 2. Provider connection and permission setup are still preference-first, not full connector management.
 3. Workspace continuity can still deepen beyond the current stage-3 shell.
-4. Phase 7 still needs richer structured intelligence routing and provider transparency.
+4. Later runtime work completed the Phase-7 governed external-reasoning lane.
 5. Phase 8+ remain documented only.
 
 ## Conclusion

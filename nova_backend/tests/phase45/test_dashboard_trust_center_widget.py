@@ -16,6 +16,8 @@ def test_dashboard_renders_trust_center_page_from_runtime_state():
     assert 'safeWSSend({ text: "system status", silent_widget_refresh: true });' in source
     assert "renderTrustCenterPage();" in source
     assert "trust-center-voice-grid" in source
+    assert "trust-center-reasoning-grid" in source
+    assert "settings-reasoning-grid" in source
     assert '"trust"' in source
 
 
@@ -36,8 +38,12 @@ def test_trust_page_includes_recent_actions_and_runtime_health_surfaces():
     assert 'id="trust-center-health-grid"' in source
     assert 'id="trust-center-voice-summary"' in source
     assert 'id="trust-center-voice-grid"' in source
+    assert 'id="trust-center-reasoning-summary"' in source
+    assert 'id="trust-center-reasoning-grid"' in source
     assert 'id="trust-center-capability-summary"' in source
     assert 'id="trust-center-capability-groups"' in source
+    assert 'id="settings-reasoning-summary"' in source
+    assert 'id="settings-reasoning-grid"' in source
     assert 'id="btn-trust-center-refresh"' in source
     assert 'id="btn-trust-center-system"' in source
     assert 'id="btn-trust-center-workspace"' in source

@@ -63,6 +63,11 @@ class OSDiagnosticsExecutor:
                 "action": "Verify or pressure-check an answer",
                 "prompt": "verify this answer",
             },
+            "external_reasoning_review": {
+                "category": "Research",
+                "action": "Get a governed second opinion",
+                "prompt": "second opinion",
+            },
             "multi_source_reporting": {
                 "category": "Research",
                 "action": "Create a research brief",
@@ -389,6 +394,11 @@ class OSDiagnosticsExecutor:
             "authority_class": authority_class,
             "reversible": "" if not isinstance(reversible, bool) else ("yes" if reversible else "no"),
             "external_effect": "" if not isinstance(external_effect, bool) else ("yes" if external_effect else "no"),
+            "reasoning_provider": str(entry.get("reasoning_provider_label") or entry.get("reasoning_provider") or "").strip(),
+            "reasoning_route": str(entry.get("reasoning_route_label") or entry.get("reasoning_route") or "").strip(),
+            "reasoning_mode": str(entry.get("reasoning_mode") or "").strip(),
+            "reasoning_authority": str(entry.get("reasoning_authority_label") or entry.get("reasoning_authority") or "").strip(),
+            "reasoning_governance_note": str(entry.get("reasoning_governance_note") or "").strip(),
         }
 
     @staticmethod
@@ -693,11 +703,105 @@ class OSDiagnosticsExecutor:
 
     @staticmethod
     def _phase_display() -> str:
+        if BUILD_PHASE >= 7:
+            return "7 complete / 8 design"
         if BUILD_PHASE >= 6:
             return "6 complete / 7 partial"
         if BUILD_PHASE >= 5:
             return "5 closed / 6 foundation"
         return f"{BUILD_PHASE}"
+
+    @staticmethod
+    def _external_reasoning_status_details() -> dict[str, str]:
+        enabled_entries = OSDiagnosticsExecutor._enabled_capability_entries()
+        enabled_ids = {
+            int(item.get("id"))
+            for item in enabled_entries
+            if item.get("id") is not None
+        }
+        capability_enabled = 62 in enabled_ids
+        model_availability, _, model_remediation, model_ready = OSDiagnosticsExecutor._model_status_details()
+
+        last_used = ""
+        last_outcome = ""
+        last_request_id = ""
+        last_provider = "DeepSeek"
+        last_route = "Governed second-opinion lane"
+        last_mode = "second_opinion"
+
+        try:
+            from src.ledger.writer import LEDGER_PATH
+
+            path = Path(LEDGER_PATH)
+            if path.exists():
+                raw_lines = path.read_text(encoding="utf-8").splitlines()
+                for raw_line in reversed(raw_lines):
+                    line = raw_line.strip()
+                    if not line:
+                        continue
+                    try:
+                        entry = json.loads(line)
+                    except json.JSONDecodeError:
+                        continue
+                    try:
+                        capability_id = int(entry.get("capability_id") or 0)
+                    except Exception:
+                        capability_id = 0
+                    if capability_id != 62:
+                        continue
+                    event_type = str(entry.get("event_type") or "").strip().upper()
+                    if event_type not in {"ACTION_COMPLETED", "ACTION_ATTEMPTED"}:
+                        continue
+                    last_used = OSDiagnosticsExecutor._recent_activity_timestamp(
+                        str(entry.get("timestamp_utc") or "")
+                    )
+                    success = entry.get("success")
+                    if isinstance(success, bool):
+                        last_outcome = "Ready" if success else "Needs attention"
+                    else:
+                        last_outcome = "Ready"
+                    last_request_id = OSDiagnosticsExecutor._recent_activity_request_id(entry)
+                    last_provider = str(entry.get("reasoning_provider_label") or entry.get("reasoning_provider") or last_provider).strip() or last_provider
+                    last_route = str(entry.get("reasoning_route_label") or entry.get("reasoning_route") or last_route).strip() or last_route
+                    last_mode = str(entry.get("reasoning_mode") or last_mode).strip() or last_mode
+                    break
+        except Exception:
+            pass
+
+        if capability_enabled and model_ready:
+            status = "available"
+            summary = (
+                "Governed second opinion is available. Nova can ask the DeepSeek reasoning lane to review an answer without granting it any execution authority."
+            )
+        elif capability_enabled:
+            status = "limited"
+            summary = (
+                "Governed second opinion is wired in, but the reasoning lane is limited until the current model route is healthy."
+            )
+        else:
+            status = "disabled"
+            summary = "Governed second opinion is not enabled in this runtime."
+
+        return {
+            "status": status,
+            "summary": summary,
+            "provider": "DeepSeek",
+            "provider_label": last_provider,
+            "route": "Governor -> ExternalReasoningExecutor -> DeepSeekBridge -> llm_gateway",
+            "route_label": last_route,
+            "authority": "analysis_only",
+            "authority_label": "Advisory only",
+            "capability_id": "62" if capability_enabled else "",
+            "mode": last_mode,
+            "available": "yes" if capability_enabled and model_ready else "no",
+            "switching_note": "Provider switching arrives later. Today's second-opinion lane stays inside Nova's governed route.",
+            "governance_note": "Second opinions can critique and clarify, but they cannot execute actions or widen authority.",
+            "last_used": last_used or "Not used yet",
+            "last_outcome": last_outcome or ("Available" if capability_enabled else "Not enabled"),
+            "last_request_id": last_request_id or "Not recorded",
+            "model_status": model_availability,
+            "model_remediation": model_remediation,
+        }
 
     @staticmethod
     def _blocked_conditions(*, model_availability: str) -> list[dict[str, str]]:
@@ -935,6 +1039,7 @@ class OSDiagnosticsExecutor:
         ledger_integrity, ledger_entries_today, ledger_last_event = self._ledger_status_details()
         blocked_conditions = self._blocked_conditions(model_availability=model_availability)
         policy_capability_readiness = self._policy_capability_readiness()
+        reasoning_runtime = self._external_reasoning_status_details()
         system_reasons = self._system_reasons(
             model_availability=model_availability,
             model_note=model_note,
@@ -992,6 +1097,8 @@ class OSDiagnosticsExecutor:
             "model_ready": model_ready,
             "model_note": model_note,
             "model_remediation": model_remediation,
+            "reasoning_runtime": reasoning_runtime,
+            "reasoning_summary": str(reasoning_runtime.get("summary") or "").strip(),
             "voice_status": "ready",
             "voice_note": "Push-to-talk and TTS are available. Wake word remains disabled.",
             "wake_word_status": "disabled",

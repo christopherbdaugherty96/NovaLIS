@@ -11,7 +11,7 @@ It now has:
 - a governed capability surface
 - explicit memory with a dedicated management page
 - answer-first search and source-grounded news flows
-- a bounded same-thread second-opinion path
+- a governed external reasoning lane with provider transparency
 - a Home page, Workspace page, Trust page, Policies page, Introduction page, Settings page, News page, Memory page, and chat surface
 - local-project understanding that now includes a visible structure-map view with structured graph output
 - a dedicated conversation personality layer and a dedicated voice presentation layer to keep replies smoother
@@ -62,14 +62,15 @@ At the time of this report, the runtime shows:
   - Phase 4.5 active
   - Phase 5 active
   - Phase 6 complete as a review-oriented trust and policy package
-- active governed capabilities: `23`
+  - Phase 7 complete as a governed external-reasoning package
+- active governed capabilities: `24`
 - active runtime surfaces:
   - governed web search
   - website opening
   - local voice output path
   - local system controls
   - local file and folder opening
-  - verification and second-opinion analysis
+  - verification and governed external reasoning review
   - diagnostics and operator health
   - multi-source reporting
   - news and intelligence brief surfaces
@@ -151,12 +152,15 @@ Nova can now do all of these locally:
 - explain major codebase surfaces
 - show a human-facing structure map of the current repo
 
-### 6. Bounded second-opinion review
-Nova now includes a small `DeepSeek` button near chat controls that:
+### 6. Governed external reasoning review
+Nova now includes a governed external reasoning lane that can be reached from chat or the `DeepSeek` button near chat controls.
+
+That lane:
 - stays in the same chat box
 - performs a bounded second-opinion review
 - does not become a second assistant
 - does not gain execution authority
+- shows provider, route, and advisory-only truth in Trust and Settings
 
 ## What Was Completed Most Recently
 The most recent product-development stretch landed a broad consolidation slice that made Nova easier for a normal user to understand and trust.
@@ -282,24 +286,22 @@ Meaning:
 
 ### Phase 7
 Status:
-- partially live
+- complete in runtime
 
 Meaning:
-- this phase is no longer only a design phase
-- the first bounded product-foundation slice has shipped
+- Nova's governed external reasoning lane is now active as a complete bounded product package
+- outside reasoning remains advisory-only
+- provider usage is visible
+- the Trust and Settings surfaces explain the route instead of hiding it
 
-Live Phase-7-aligned work now includes:
+Live Phase-7 work now includes:
 - answer-first search
 - inline news summaries
 - cleaner news taxonomy
-- bounded DeepSeek same-thread review
+- explicit governed external reasoning capability `62`
+- same-thread second-opinion review
+- provider, route, and authority visibility in Trust and Settings
 - stronger local TTS renderer preference before fallback
-
-Still remaining in Phase 7:
-- stronger structured intelligence routing
-- richer provider transparency
-- deeper source-grounded synthesis for harder search/news questions
-- better trust explanation when external reasoning is used
 
 ### Phase 8
 Status:
@@ -344,7 +346,7 @@ These include:
 - daily snapshot surfaces
 - source-grounded news flows
 - answer-first search behavior
-- bounded same-thread second-opinion review
+- governed same-thread external reasoning review
 - Workspace Home and the broader Workspace page
 - the first visible codebase structure-map view
 
@@ -371,12 +373,14 @@ That means:
 
 ## Latest Verification And Review Status
 The latest sequential capability audit confirmed:
-- all `23` active governed capabilities passed targeted verification coverage on `2026-03-25`
+- all then-active governed capabilities passed targeted verification coverage on `2026-03-25`
 
 The latest product-consolidation regression pass on `2026-03-26` also confirmed:
 - TTS runtime and executor bundle: `6 passed`
 - new dashboard Workspace/Trust/onboarding bundle: `6 passed`
 - new conversation-path bundle for trust/workspace/voice: `5 passed`
+- explicit external reasoning bundle: `8 passed`
+- runtime/governance Phase-7 bundle: `46 passed`
 - broader regression bundle: `222 passed`
 - frontend mirror sync check: passed
 - runtime doc drift check: passed
@@ -395,17 +399,18 @@ For someone who is not technical, the recent work means Nova is easier to use be
 ## What Still Needs To Be Built For The Product To Feel More Complete
 The biggest remaining user-facing product gaps are:
 
-### 1. Richer Trust Center
+### 1. Provider and connector setup that really works
 Users still need:
-- deeper history
-- approval/denial drill-down
-- clearer provider/source visibility
-- maybe an eventually unified recent-actions timeline
+- explicit provider connection status
+- clear connector enable/disable controls
+- read-only vs effectful permission visibility
+- revoke / disconnect controls
+- honest “not connected yet” states instead of preference-only placeholders
 
-### 2. Better onboarding stage 2
+### 2. Better onboarding follow-through
 New users still need:
-- permissions setup guidance
-- clearer explanation of the most useful flows
+- setup that actually carries into working provider and connector choices
+- clearer explanation of the most useful flows after first launch
 - connector expectations once those exist
 
 ### 3. Final TTS device confidence
@@ -420,21 +425,22 @@ Workspace Home and Workspace page are now real, but users still need a stronger 
 - continuation actions
 - clearer transitions between Home, Memory, Workspace, and project-specific work
 
-### 5. Richer visual project explanation
-Nova now shows a structure map, but later stages should make it more interactive and more digestible.
+### 5. Governed OpenClaw bridge before wider automation
+The product still needs a user-facing access bridge so Nova's current governed capabilities can be reached from remote surfaces without widening authority first.
 
 ## Recommended Next Steps
 If someone asked what Nova should build next for the best product outcome, the strongest current answer is:
 
-1. richer project/workspace system foundations
-2. trust-center stage 2 history and drill-down
-3. onboarding stage 2 with setup and permissions guidance
-4. final TTS device-confidence pass
-5. local-project visualizer stage 2 structured graph output
+1. governed OpenClaw bridge
+2. settings/provider/connector setup that becomes truly actionable
+3. final TTS device-confidence pass
+4. deeper project/workspace persistence
+5. Phase-8 strict execution foundations after the bridge is in place
 
 Why this order:
-- it improves the product for non-technical users
-- it increases clarity and control
+- it makes Nova reachable before widening authority
+- it turns visible setup into real product control
+- it closes the most visible remaining trust gap in voice
 - it builds on the strong governed foundation already in place
 
 ## Final Honest Description

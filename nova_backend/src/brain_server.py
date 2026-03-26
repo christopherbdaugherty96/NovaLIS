@@ -3931,7 +3931,7 @@ async def send_pattern_review_widget(
 @app.get("/phase-status")
 async def phase_status():
     from src.governor.execute_boundary import GOVERNED_ACTIONS_ENABLED
-    phase_display = "6 complete / 7 partial" if BUILD_PHASE >= 6 else "5 closed / 6 foundation" if BUILD_PHASE >= 5 else f"{BUILD_PHASE}"
+    phase_display = "7 complete / 8 design" if BUILD_PHASE >= 7 else "6 complete / 7 partial" if BUILD_PHASE >= 6 else "5 closed / 6 foundation" if BUILD_PHASE >= 5 else f"{BUILD_PHASE}"
     return {
         "phase": str(BUILD_PHASE),
         "phase_display": phase_display,
@@ -3939,8 +3939,8 @@ async def phase_status():
         "execution_enabled": GOVERNED_ACTIONS_ENABLED,
         "delegated_runtime_enabled": False,
         "note": (
-            "Phase-6 trust, policy review, and capability authority surfaces are complete. "
-            "Phase-7 bounded external reasoning is partially active, and delegated execution remains disabled."
+            "Phase-7 governed external reasoning is complete in the current runtime. "
+            "Second opinions stay advisory only, and delegated execution remains disabled."
         ),
     }
 @app.get("/system/audit/runtime-truth")
@@ -4219,6 +4219,7 @@ def _build_trust_review_snapshot() -> dict[str, object]:
         ledger_integrity, ledger_entries_today, ledger_last_event = OSDiagnosticsExecutor._ledger_status_details()
         voice_runtime = inspect_voice_runtime()
         policy_capability_readiness = OSDiagnosticsExecutor._policy_capability_readiness()
+        reasoning_runtime = OSDiagnosticsExecutor._external_reasoning_status_details()
     except Exception:
         return {}
 
@@ -4231,6 +4232,7 @@ def _build_trust_review_snapshot() -> dict[str, object]:
         "ledger_last_event": ledger_last_event,
         "voice_runtime": voice_runtime,
         "policy_capability_readiness": policy_capability_readiness,
+        "reasoning_runtime": reasoning_runtime,
     }
 
 
@@ -6687,12 +6689,15 @@ async def websocket_endpoint(ws: WebSocket):
                 capability_id = inv_result.capability_id
                 params = dict(inv_result.params)
                 params.setdefault("session_id", session_id)
+                if invocation_source == "deepseek_button" and capability_id == 31:
+                    capability_id = 62
                 if capability_id == 18 and not params.get("text"):
                     params["text"] = session_state.get("last_response", "")
                 if capability_id == 31 and not params.get("text"):
-                    if invocation_source == "deepseek_button":
-                        params["text"] = _build_second_opinion_review_text(session_context, session_state)
-                        params["review_mode"] = "second_opinion"
+                    if not params.get("text"):
+                        params["text"] = session_state.get("last_response", "")
+                if capability_id == 62 and not params.get("text"):
+                    params["text"] = _build_second_opinion_review_text(session_context, session_state)
                     if not params.get("text"):
                         params["text"] = session_state.get("last_response", "")
                 if capability_id in {49, 50, 51, 52, 53}:
@@ -7059,6 +7064,20 @@ async def websocket_endpoint(ws: WebSocket):
                         suggestion_items.append({"label": "Memory overview", "command": "memory overview"})
                         if suggestion_items:
                             message_suggestions = suggestion_items
+                if capability_id == 62 and isinstance(action_payload, dict):
+                    session_state["last_reasoning_review"] = dict(action_payload)
+                    accuracy_label = str(action_payload.get("reasoning_accuracy_label") or "").strip()
+                    confidence_label = str(action_payload.get("reasoning_confidence_label") or "").strip()
+                    if accuracy_label:
+                        message_confidence = f"Second opinion {accuracy_label}"
+                    elif confidence_label:
+                        message_confidence = f"Review confidence {confidence_label}"
+                    if not message_suggestions:
+                        message_suggestions = [
+                            {"label": "Revise answer", "command": "ask Nova to revise the answer"},
+                            {"label": "Summarize gaps", "command": "summarize the gaps only"},
+                            {"label": "Return to answer", "command": "return to Nova's original answer"},
+                        ]
 
                 recommendation_reason = ""
                 if action_result.success and capability_id in {54, 59, 60}:

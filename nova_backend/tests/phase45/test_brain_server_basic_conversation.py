@@ -1360,15 +1360,14 @@ def test_deepseek_button_builds_bounded_second_opinion_context(monkeypatch):
         ws = _ScriptedWebSocket(
             [
                 "What is a GPU?",
-                {"type": "chat", "text": "verify", "invocation_source": "deepseek_button"},
+                {"type": "chat", "text": "second opinion", "invocation_source": "deepseek_button"},
             ]
         )
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     assert captured
     second = captured[-1]
-    assert second["capability_id"] == 31
-    assert second["params"]["review_mode"] == "second_opinion"
+    assert second["capability_id"] == 62
     review_text = str(second["params"]["text"])
     assert "Recent exchange for second opinion review:" in review_text
     assert "User: What is a GPU?" in review_text

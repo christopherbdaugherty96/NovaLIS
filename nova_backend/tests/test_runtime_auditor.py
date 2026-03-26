@@ -151,6 +151,56 @@ def test_phase6_status_tracks_complete_review_surface(monkeypatch, tmp_path):
     assert ra._phase_6_status() == "COMPLETE"
 
 
+def test_phase7_status_tracks_complete_reasoning_surface(monkeypatch, tmp_path):
+    import src.audit.runtime_auditor as ra
+
+    executor_path = tmp_path / "external_reasoning_executor.py"
+    wrapper_path = tmp_path / "deepseek_safety_wrapper.py"
+    executor_path.write_text("# present\n", encoding="utf-8")
+    wrapper_path.write_text("# present\n", encoding="utf-8")
+
+    monkeypatch.setattr(ra, "EXTERNAL_REASONING_EXECUTOR_PATH", executor_path)
+    monkeypatch.setattr(ra, "DEEPSEEK_SAFETY_WRAPPER_PATH", wrapper_path)
+    monkeypatch.setattr(ra, "BUILD_PHASE", 7)
+
+    registry = {
+        "capabilities": [
+            {"id": 62, "name": "external_reasoning_review", "enabled": True, "status": "active"},
+        ]
+    }
+
+    contents = {
+        ra.STATIC_DASHBOARD_PATH: "\n".join(
+            [
+                "trustReviewState.reasoningRuntime = {};",
+                "trust-center-reasoning-summary",
+                "settings-reasoning-summary",
+            ]
+        ),
+        ra.STATIC_INDEX_PATH: "\n".join(
+            [
+                '<div id="trust-center-reasoning-summary"></div>',
+                '<div id="trust-center-reasoning-grid"></div>',
+                '<div id="settings-reasoning-summary"></div>',
+                '<div id="settings-reasoning-grid"></div>',
+            ]
+        ),
+        ra.GOVERNOR_PATH: "elif req.capability_id == 62:\n    return self._handle_external_reasoning(req)",
+        ra.GOVERNOR_MEDIATOR_PATH: "SECOND_OPINION_RE = re.compile('second opinion')",
+        ra.BRAIN_SERVER_PATH: "\n".join(
+            [
+                "capability_id == 62",
+                "_build_second_opinion_review_text",
+                "reasoning_runtime",
+            ]
+        ),
+        ra.DEEPSEEK_BRIDGE_PATH: "response = llm_gateway.generate_chat(prompt)",
+    }
+    monkeypatch.setattr(ra, "_safe_read", lambda path: contents.get(path, ""))
+
+    assert ra._phase_7_status(registry) == "COMPLETE"
+
+
 def test_governance_rows_prefer_explicit_registry_authority_metadata():
     import src.audit.runtime_auditor as ra
 

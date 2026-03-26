@@ -93,7 +93,7 @@ After settings/provider/permission work, the cleanest order is:
 1. `codex/connector-management-stage1-read-only`
 2. `codex/tts-regression-stage2-device-confidence`
 3. `codex/agent-os-stage4-project-persistence`
-4. richer provider transparency for Phase-7 reasoning surfaces
+4. governed OpenClaw bridge and Phase-8 strict foundations
 5. connector-aware onboarding follow-through
 
 ## Why This Order

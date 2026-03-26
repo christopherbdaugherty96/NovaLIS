@@ -31,7 +31,7 @@ Interpretation rule:
 | 20 | `media_play_pause` | Local control | 4 | Starts, pauses, or resumes local media playback through platform-specific media controls. | `play`, `pause`, `resume` | Local OS effect |
 | 21 | `brightness_control` | Local control | 4 | Raises, lowers, or sets display brightness using platform-supported controls. | `brightness up`, `set brightness to 65` | Local OS effect |
 | 22 | `open_file_folder` | Local navigation | 4 | Opens allowed folders or explicit file/folder paths inside Nova's approved path roots. | `open downloads`, `open file C:\\...` | Local OS effect |
-| 31 | `response_verification` | Analysis safety | 4.2 | Verifies text or a prior answer for likely issues, corrections, and confidence without authorizing any action. It also powers the bounded same-thread `DeepSeek` second-opinion control in the chat bar. | `verify this`, `fact check...`, `double check...` | Read-only analysis |
+| 31 | `response_verification` | Analysis safety | 4.2 | Verifies text or a prior answer for likely issues, corrections, and confidence without authorizing any action. | `verify this`, `fact check...`, `double check...` | Read-only analysis |
 | 32 | `os_diagnostics` | System insight | 4 | Reports system health, CPU, memory, disk, network-interface status, model readiness, and active capability count. | `system status`, `system check` | Read-only local inspection |
 | 48 | `multi_source_reporting` | Intelligence | 4.2 | Builds a structured multi-source report with findings, source credibility, counter-analysis, and decomposed confidence signals. | `research local AI sovereignty`, `analyze current robotics market` | Read-only network + analysis |
 | 49 | `headline_summary` | News intelligence | 4.2 | Summarizes selected headlines, compares headlines, and can read the linked story page when asked for `story #x` details. | `summarize headline 2`, `more on story 1`, `compare headlines 1 and 3` | Read-only analysis |
@@ -47,12 +47,14 @@ Interpretation rule:
 | 59 | `screen_analysis` | Perception | 4.5 | Runs OCR plus visual analysis on an explicit screen capture and returns "what I found" with suggested next steps. | `analyze this screen`, `explain this screen` | Read-only perception + analysis |
 | 60 | `explain_anything` | Perception | 4.5 | Routes an explicit "what is this?" request to the best read-only explainer path: current screen, current page, or selected file. | `explain this`, `what is this?`, `which one should I download?` | Read-only perception + analysis |
 | 61 | `memory_governance` | Governed persistence | 5 | Saves, lists, shows, locks, defers, unlocks, deletes, or supersedes explicit memory items, including thread-linked memory. | `memory save ...`, `memory list`, `memory show ...`, `memory lock ...` | Persistent local write |
+| 62 | `external_reasoning_review` | Governed reasoning | 7 | Gives Nova a same-thread governed second-opinion lane that can critique or strengthen an answer without gaining any execution authority. Trust and Settings surfaces explain the provider, route, and advisory boundary when it is used. | `second opinion`, `deepseek second opinion`, `review this answer` | Read-only analysis |
 
 ## Capability Notes By Category
 
 ### Research and intelligence
-- Capabilities `16`, `48`, `49`, `50`, and `51` are Nova's current information and reporting layer.
+- Capabilities `16`, `48`, `49`, `50`, `51`, and `62` are Nova's current information and reasoning layer.
 - `49` is no longer headline-only. Commands like `more on story 2` or `summary of story #2` are designed to read the linked article page and summarize that page when the URL is available.
+- `62` is advisory-only. It stays in the same thread, surfaces provider transparency, and cannot widen Nova's authority or trigger actions.
 - `52` and `53` support longer-running story tracking instead of one-shot summaries.
 - `54` keeps analysis documents session-scoped unless the user explicitly saves them elsewhere.
 

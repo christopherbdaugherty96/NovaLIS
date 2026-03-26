@@ -11,6 +11,7 @@ At a high level, the current state is:
 - Phase 4.5 perception and UX surfaces are active
 - Phase 5 trust-facing runtime package is active and formally closed for the current repository state, with later runtime-aligned expansions landed on top of it
 - Phase 6 is now complete in runtime as a review-oriented delegated-policy, trust-loop, and capability-authority package
+- Phase 7 is now complete in runtime as a governed external-reasoning package
 
 That means Nova already has:
 - governed execution
@@ -38,7 +39,7 @@ That means Nova already has:
 - a live "What Nova Can Do Right Now" panel driven from the currently enabled capability surface
 - answer-first search with sources on demand
 - in-place news summaries on the News page
-- a bounded same-thread DeepSeek second-opinion control
+- a governed external reasoning lane with same-thread second-opinion review, provider visibility, and advisory-only boundaries
 - improved voice auto-speak routing with runtime fallback at the speech layer
 - a dedicated conversation personality layer and a dedicated voice presentation layer for smoother replies
 - dashboard support for all of the above
@@ -66,7 +67,7 @@ These parts are already meaningfully real:
 - explicit pattern review through the Home-page pattern queue
 - source-grounded news brief and per-article summary flows
 - answer-first search with hidden-by-default sources
-- bounded same-thread second-opinion review
+- governed same-thread external reasoning review with Trust and Settings transparency
 - local project summary, architecture report, project overview, and structure-map flows
 - user-facing Introduction and Settings pages that explain Nova and keep setup choices visible
 - a visible Policy Review Center that keeps delegated policy work inspectable and manual
@@ -84,7 +85,7 @@ These parts are active but still evolving:
 - final device-confidence confirmation for audible TTS output
 - deeper provider and connector setup in Settings
 - deeper Phase-6 policy review ergonomics beyond the current manual-review center
-- richer Phase-7 provider transparency and structured external reasoning
+- future Phase-8 bridge and execution work beyond the now-complete reasoning lane
 
 ## What Is Planned But Not Fully Live Yet
 Some highly important ideas are still planned or partially scaffolded rather than fully live.
@@ -92,7 +93,7 @@ Some highly important ideas are still planned or partially scaffolded rather tha
 Examples include:
 - wake word
 - richer read-only connectors
-- richer provider-aware second-opinion presentation beyond the bounded current button flow
+- richer provider switching and setup beyond the current bounded governed reasoning lane
 - richer project/workspace system foundations beyond Workspace Home, Workspace Board, and the current selected-project drill-down
 - Phase-8 governed external execution / OpenClaw
 
@@ -117,7 +118,7 @@ Nova already combines things that usually live in separate products:
 That combination is unusual.
 
 ## Latest Capability Verification
-The latest full sequential capability audit on 2026-03-25 confirmed that all `23` active governed runtime capabilities passed targeted verification coverage in the current repository state.
+The latest full sequential capability audit on 2026-03-25 confirmed that all then-active governed runtime capabilities passed targeted verification coverage in the repository state for that day.
 
 The most recent product-consolidation regression pass on 2026-03-26 also confirmed:
 - new Workspace page coverage passed
@@ -126,6 +127,8 @@ The most recent product-consolidation regression pass on 2026-03-26 also confirm
 - TTS runtime fallback coverage passed
 - new Introduction and Settings product surfaces passed focused coverage
 - new Trust/Workspace drill-down and structure-map stage-2 surfaces passed focused coverage
+- explicit external reasoning capability coverage passed
+- runtime truth promotion to Phase 7 complete passed
 - a broader `165`-test regression bundle passed
 
 The main remaining voice caveat is still real-device confirmation:
@@ -136,7 +139,7 @@ The main remaining voice caveat is still real-device confirmation:
 ## The Best Honest Description Right Now
 If someone asked what Nova is today, a strong honest answer would be:
 
-Nova is a governed personal intelligence workspace that can research, explain, help with your computer, follow ongoing project threads in the current session, preserve explicit memory across sessions, use relevant saved memory in bounded ways, and surface trust, workspace, and onboarding tools without giving up user control.
+Nova is a governed personal intelligence workspace that can research, explain, help with your computer, follow ongoing project threads in the current session, preserve explicit memory across sessions, use relevant saved memory in bounded ways, use a governed external reasoning lane for second-opinion review, and surface trust, workspace, and onboarding tools without giving up user control.
 
 ## If You Need The Official Runtime Truth
 Use:
