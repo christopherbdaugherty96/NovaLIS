@@ -256,6 +256,62 @@
             <button id="btn-memory-review-list" type="button">Review list</button>
           </div>
         </div>
+        <div class="widget page-card memory-management-card" aria-live="polite">
+          <div class="memory-management-header">
+            <div>
+              <h3>Memory Center</h3>
+              <p id="memory-center-status" class="memory-management-status">
+                Load the governed memory list to browse durable items and inspect one in detail.
+              </p>
+            </div>
+            <div class="memory-management-actions">
+              <button id="btn-memory-list-all" type="button">All</button>
+              <button id="btn-memory-list-active" type="button">Active</button>
+              <button id="btn-memory-list-locked" type="button">Locked</button>
+              <button id="btn-memory-list-deferred" type="button">Deferred</button>
+              <button id="btn-memory-list-current-thread" type="button">Current thread</button>
+            </div>
+          </div>
+          <div class="memory-management-grid">
+            <section class="memory-list-panel">
+              <div class="memory-panel-heading-row">
+                <h4>Memory List</h4>
+                <button id="btn-memory-list-refresh-silent" type="button">Refresh list</button>
+              </div>
+              <p id="memory-list-filter-label" class="memory-panel-copy">Showing the current durable memory selection.</p>
+              <div id="memory-list-host" class="memory-list-host"></div>
+            </section>
+            <section class="memory-detail-panel">
+              <div class="memory-panel-heading-row">
+                <h4>Selected Memory</h4>
+                <button id="btn-memory-detail-show-chat" type="button">Show in chat</button>
+              </div>
+              <div id="memory-detail-empty" class="memory-detail-empty">
+                Select a memory item to inspect its full text and governed actions.
+              </div>
+              <div id="memory-detail-host" class="memory-detail-host" hidden></div>
+              <div class="memory-detail-editor">
+                <label class="memory-detail-label" for="memory-edit-input">Replacement text</label>
+                <textarea
+                  id="memory-edit-input"
+                  class="memory-edit-input"
+                  rows="5"
+                  placeholder="Select a memory item first. Edit requests still go through governed confirmation."
+                ></textarea>
+                <div class="memory-detail-actions">
+                  <button id="btn-memory-detail-edit" type="button">Prepare edit</button>
+                  <button id="btn-memory-detail-lock" type="button">Lock</button>
+                  <button id="btn-memory-detail-unlock" type="button">Unlock</button>
+                  <button id="btn-memory-detail-defer" type="button">Defer</button>
+                  <button id="btn-memory-detail-delete" type="button">Delete</button>
+                </div>
+                <p id="memory-detail-note" class="memory-detail-note">
+                  Memory remains explicit and user-owned. Edit, unlock, and delete still require the governed confirmation flow.
+                </p>
+              </div>
+            </section>
+          </div>
+        </div>
       </section>
     </main>
   </div>

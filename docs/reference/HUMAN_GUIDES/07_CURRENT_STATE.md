@@ -20,6 +20,7 @@ That means Nova already has:
 - governed memory
 - governed memory overview and inspectability surface
 - explicit save/remember memory flows
+- dedicated Memory Center list/detail page surface
 - inspectable list/show/edit/delete memory paths with confirmation where needed
 - bounded relevant-memory use in chat
 - manual response-style controls with inspectable tone settings
@@ -48,6 +49,7 @@ These parts are already meaningfully real:
 - thread health, blocker, and decision surfaces
 - governed memory and thread-linked memory
 - durable memory review through `memory overview` and the dedicated Memory page
+- Memory-page browsing with filters, selected-item detail, and governed item actions
 - natural `save this` / `remember this` flows and bounded relevant-memory recall
 - manual tone settings through the response-style surface
 - explicit scheduled updates through the Home-page schedule surface
@@ -61,7 +63,7 @@ These parts are active but still evolving:
 - more polished explain-anything flows
 - more premium dashboard interactions
 - stronger everyday workflows around thread and memory use
-- dedicated memory management UX beyond the current command-centered flows
+- deeper memory retrieval and relevance tuning beyond the new management surface
 - answer-first search presentation
 - inline-news-card summary workflow
 - stronger local-project visualization for non-technical users

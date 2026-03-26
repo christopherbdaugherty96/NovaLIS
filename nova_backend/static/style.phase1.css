@@ -1723,6 +1723,200 @@ body {
   gap: 8px;
 }
 
+.memory-management-card,
+.memory-list-panel,
+.memory-detail-panel,
+.memory-list-row,
+.memory-detail-host {
+  display: grid;
+  gap: 8px;
+}
+
+.memory-management-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.memory-management-status,
+.memory-panel-copy,
+.memory-detail-note {
+  margin: 0;
+  font-size: 0.74rem;
+  line-height: 1.4;
+  color: #c6dcfb;
+}
+
+.memory-management-actions,
+.memory-detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.memory-management-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 12px;
+}
+
+.memory-list-panel,
+.memory-detail-panel {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid rgba(168, 201, 242, 0.18);
+  border-radius: 12px;
+  background: rgba(14, 31, 56, 0.42);
+}
+
+.memory-panel-heading-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.memory-panel-heading-row h4 {
+  margin: 0;
+  font-size: 0.82rem;
+  color: #e5f0ff;
+}
+
+.memory-list-host {
+  display: grid;
+  gap: 8px;
+  max-height: 430px;
+  overflow-y: auto;
+  padding-right: 2px;
+}
+
+.memory-list-row {
+  text-align: left;
+  padding: 10px 11px;
+  border: 1px solid rgba(170, 203, 248, 0.22);
+  border-radius: 12px;
+  background: rgba(13, 31, 53, 0.82);
+  color: #dff0ff;
+  cursor: pointer;
+}
+
+.memory-list-row:hover,
+.memory-list-row.active {
+  border-color: rgba(132, 188, 255, 0.62);
+  background: rgba(17, 39, 67, 0.94);
+}
+
+.memory-list-row-title {
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.memory-list-row-preview,
+.memory-list-row-meta,
+.memory-detail-empty,
+.memory-detail-meta {
+  font-size: 0.73rem;
+  line-height: 1.38;
+  color: #c6dcfb;
+}
+
+.memory-list-row-preview {
+  color: #d6e9ff;
+}
+
+.memory-list-row-meta {
+  color: #9fc1eb;
+}
+
+.memory-detail-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #edf5ff;
+}
+
+.memory-detail-chip-row,
+.memory-detail-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.memory-detail-chip,
+.memory-detail-tag {
+  border-radius: 999px;
+  border: 1px solid rgba(133, 193, 255, 0.28);
+  background: rgba(18, 42, 71, 0.55);
+  padding: 4px 9px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #d5e8ff;
+}
+
+.memory-detail-body {
+  margin: 0;
+  white-space: pre-wrap;
+  word-break: break-word;
+  border: 1px solid rgba(168, 201, 242, 0.18);
+  border-radius: 11px;
+  background: rgba(10, 24, 43, 0.85);
+  padding: 10px 11px;
+  font-size: 0.76rem;
+  line-height: 1.48;
+  color: #e5f1ff;
+}
+
+.memory-detail-editor {
+  display: grid;
+  gap: 8px;
+}
+
+.memory-detail-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #d7e9ff;
+}
+
+.memory-edit-input {
+  width: 100%;
+  min-height: 124px;
+  resize: vertical;
+  border: 1px solid rgba(170, 203, 248, 0.35);
+  border-radius: 11px;
+  background: rgba(9, 24, 44, 0.82);
+  color: #e0eeff;
+  padding: 9px 10px;
+  font-size: 0.76rem;
+  line-height: 1.45;
+}
+
+.memory-edit-input:focus {
+  outline: none;
+  border-color: rgba(130, 193, 255, 0.72);
+  box-shadow: 0 0 0 2px rgba(72, 153, 236, 0.2);
+}
+
+.memory-management-actions button,
+.memory-panel-heading-row button,
+.memory-detail-actions button {
+  padding: 7px 10px;
+  border-radius: 10px;
+  border: 1px solid rgba(170, 203, 248, 0.35);
+  background: rgba(14, 33, 59, 0.75);
+  color: #d9e9ff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.memory-management-actions button:hover,
+.memory-panel-heading-row button:hover,
+.memory-detail-actions button:hover {
+  border-color: rgba(132, 188, 255, 0.62);
+  background: rgba(16, 39, 69, 0.9);
+}
+
 .personal-layer-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2905,6 +3099,10 @@ body {
     overflow: visible;
   }
 
+  .memory-management-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .orb-shell {
     opacity: 0.5;
     width: min(48vmin, 250px);
@@ -2923,6 +3121,12 @@ body {
 
   .personal-layer-grid {
     grid-template-columns: minmax(0, 1fr);
+  }
+
+  .memory-management-header,
+  .memory-panel-heading-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .chat-input {

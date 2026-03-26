@@ -1218,6 +1218,7 @@ def _build_memory_overview_widget(overview: dict | None) -> dict:
             "deferred": deferred_count,
         },
         "scope_counts": {
+            "nova_core": int(scope_counts.get("nova_core") or scope_counts.get("general") or 0),
             "general": int(scope_counts.get("general") or 0),
             "project": int(scope_counts.get("project") or 0),
             "ops": int(scope_counts.get("ops") or 0),
@@ -1225,6 +1226,92 @@ def _build_memory_overview_widget(overview: dict | None) -> dict:
         "recent_items": recent_items,
         "linked_threads": linked_threads,
         "inspectability_note": "Memory is explicit, inspectable, and revocable.",
+    }
+
+
+def _build_memory_list_widget(
+    items: list[dict] | None,
+    *,
+    filters: dict | None = None,
+) -> dict:
+    normalized_items: list[dict[str, object]] = []
+    for item in list(items or [])[:30]:
+        row = dict(item or {})
+        links = dict(row.get("links") or {})
+        normalized_items.append(
+            {
+                "id": str(row.get("id") or ""),
+                "title": str(row.get("title") or ""),
+                "tier": str(row.get("tier") or ""),
+                "status": str(row.get("status") or row.get("tier") or "active"),
+                "scope": str(row.get("scope") or ""),
+                "source": str(row.get("source") or ""),
+                "updated_at": str(row.get("updated_at") or ""),
+                "created_at": str(row.get("created_at") or ""),
+                "thread_name": str(links.get("project_thread_name") or ""),
+                "thread_key": str(links.get("project_thread_key") or ""),
+                "preview": str(row.get("content_display") or row.get("title") or ""),
+                "deleted": bool(row.get("deleted")),
+            }
+        )
+
+    filter_payload = dict(filters or {})
+    tier = str(filter_payload.get("tier") or "").strip().lower()
+    scope = str(filter_payload.get("scope") or "").strip().lower()
+    thread_name = str(filter_payload.get("thread_name") or "").strip()
+    thread_key = str(filter_payload.get("thread_key") or "").strip()
+
+    summary_parts = [f"{len(normalized_items)} item{'s' if len(normalized_items) != 1 else ''}"]
+    if tier:
+        summary_parts.append(f"tier {tier}")
+    if scope:
+        summary_parts.append(f"scope {scope}")
+    if thread_name:
+        summary_parts.append(f"thread {thread_name}")
+    elif thread_key:
+        summary_parts.append(f"thread {thread_key}")
+
+    return {
+        "type": "memory_list",
+        "summary": " | ".join(summary_parts),
+        "items": normalized_items,
+        "filters": {
+            "tier": tier,
+            "scope": scope,
+            "thread_name": thread_name,
+            "thread_key": thread_key,
+        },
+    }
+
+
+def _build_memory_item_widget(item: dict | None) -> dict:
+    payload = dict(item or {})
+    links = dict(payload.get("links") or {})
+    lock = dict(payload.get("lock") or {})
+    return {
+        "type": "memory_item",
+        "item": {
+            "id": str(payload.get("id") or ""),
+            "title": str(payload.get("title") or ""),
+            "body": str(payload.get("body") or ""),
+            "tier": str(payload.get("tier") or ""),
+            "status": str(payload.get("status") or payload.get("tier") or "active"),
+            "scope": str(payload.get("scope") or ""),
+            "source": str(payload.get("source") or ""),
+            "updated_at": str(payload.get("updated_at") or ""),
+            "created_at": str(payload.get("created_at") or ""),
+            "version": int(payload.get("version") or 0),
+            "tags": [str(tag) for tag in list(payload.get("tags") or []) if str(tag).strip()],
+            "thread_name": str(links.get("project_thread_name") or ""),
+            "thread_key": str(links.get("project_thread_key") or ""),
+            "is_locked": bool(lock.get("is_locked")),
+            "unlock_policy": str(lock.get("unlock_policy") or ""),
+            "supersedes": [str(value) for value in list(lock.get("supersedes") or []) if str(value).strip()],
+            "superseded_by": str(lock.get("superseded_by") or ""),
+            "deleted": bool(payload.get("deleted")),
+            "deleted_at": str(payload.get("deleted_at") or ""),
+            "content_display": str(payload.get("content_display") or payload.get("title") or ""),
+        },
     }
 
 
@@ -2957,6 +3044,32 @@ async def send_memory_overview_widget(
     session_state["last_memory_overview"] = payload
     await ws_send(ws, _build_memory_overview_widget(payload))
 
+
+async def send_memory_list_widget(
+    ws: WebSocket,
+    session_state: dict,
+    *,
+    items: list[dict] | None = None,
+    filters: dict | None = None,
+) -> None:
+    payload = _build_memory_list_widget(items or [], filters=filters)
+    session_state["last_memory_list"] = payload
+    await ws_send(ws, payload)
+
+
+async def send_memory_item_widget(
+    ws: WebSocket,
+    session_state: dict,
+    *,
+    item: dict | None = None,
+) -> None:
+    payload = _build_memory_item_widget(item or {})
+    item_id = str(dict(item or {}).get("id") or "").strip()
+    if item_id:
+        session_state["last_memory_item_id"] = item_id
+    session_state["last_memory_item"] = payload.get("item") or {}
+    await ws_send(ws, payload)
+
 async def send_chat_message(
     ws: WebSocket,
     text: str,
@@ -3356,9 +3469,20 @@ async def websocket_endpoint(ws: WebSocket):
                 if isinstance(action_payload, dict):
                     memory_item = action_payload.get("memory_item")
                     if isinstance(memory_item, dict):
-                        item_id = str(memory_item.get("id") or "").strip()
-                        if item_id:
-                            session_state["last_memory_item_id"] = item_id
+                        await send_memory_item_widget(
+                            ws,
+                            session_state,
+                            item=memory_item,
+                        )
+                    memory_items = action_payload.get("memory_items")
+                    if isinstance(memory_items, list):
+                        await send_memory_list_widget(
+                            ws,
+                            session_state,
+                            items=memory_items,
+                        )
+                if action_result.success:
+                    await send_memory_overview_widget(ws, session_state)
                 await send_chat_message(
                     ws,
                     _structure_long_message(action_message),
@@ -5454,13 +5578,28 @@ async def websocket_endpoint(ws: WebSocket):
                     if capability_id == 61:
                         memory_item = action_payload.get("memory_item")
                         if isinstance(memory_item, dict):
-                            item_id = str(memory_item.get("id") or "").strip()
-                            if item_id:
-                                session_state["last_memory_item_id"] = item_id
+                            await send_memory_item_widget(
+                                ws,
+                                session_state,
+                                item=memory_item,
+                            )
                             links = dict(memory_item.get("links") or {})
                             linked_thread = str(links.get("project_thread_name") or "").strip()
                             if linked_thread:
                                 session_state["project_thread_active"] = linked_thread
+                        memory_items = action_payload.get("memory_items")
+                        if isinstance(memory_items, list):
+                            await send_memory_list_widget(
+                                ws,
+                                session_state,
+                                items=memory_items,
+                                filters={
+                                    "tier": str(params.get("tier") or "").strip().lower(),
+                                    "scope": str(params.get("scope") or "").strip().lower(),
+                                    "thread_name": str(params.get("thread_name") or "").strip(),
+                                    "thread_key": str(params.get("thread_key") or "").strip(),
+                                },
+                            )
                         overview_data = action_payload.get("memory_overview")
                         if isinstance(overview_data, dict):
                             await send_memory_overview_widget(
@@ -5511,7 +5650,7 @@ async def websocket_endpoint(ws: WebSocket):
                 suppress_silent_chat = bool(
                     silent_widget_refresh
                     and capability_id == 61
-                    and str(params.get("action") or "").strip().lower() == "overview"
+                    and str(params.get("action") or "").strip().lower() in {"overview", "list", "show"}
                 )
 
                 if capability_id != 18 and action_message and not suppress_silent_chat:

@@ -58,7 +58,7 @@ The problem is trying to push too many of them at the same time.
 The project is no longer missing "more ideas."
 
 It is missing more of the operating layers that make the vision stable:
-- stronger memory management UX
+- stronger memory retrieval and continuity tuning
 - project/workspace foundations
 - answer-first retrieval implementation
 - evals, traces, and regression infrastructure
@@ -86,32 +86,32 @@ and not:
 ## Next Todo Before Anything Else
 The next highest-value implementation priority should be:
 
-### 1. Explicit Memory System Stage 2
+### 1. Explicit Memory System Stage 3
 Best next branch:
-- `codex/memory-stage2-management-ui`
+- `codex/memory-stage3-context-retrieval`
 
 Why this should come first:
-- stage 1 is now landed on `main`
-- it directly strengthens user trust and inspectability
-- it makes the memory layer feel like a real product surface instead of just a command set
-- it creates the clearest bridge into stronger context retrieval and project/workspace usefulness later
+- stage 1 explicit save/retrieve is landed on `main`
+- stage 2 management UI is now in active implementation and proof on this branch
+- the next leverage is better bounded continuity, not broader expansion
+- this is the sharpest path to making Nova feel more continuous without making it feel ambient or creepy
 
 Best scope:
-- dedicated memory browsing UX
-- clearer detail and item actions
-- better edit/delete visibility
-- stronger memory page usability
+- tighter relevance rules for explicit memory use
+- clearer memory-use visibility when context is applied
+- stronger project and thread-aware retrieval
+- no global memory injection
 - no hidden learning
 - no authority changes
 
 ## Recommended Follow-On Order
-After memory stage 2, the cleanest order is:
+After memory stage 3, the cleanest order is:
 
-1. `codex/memory-stage3-context-retrieval`
-2. `codex/websearch-stage1-answer-first-ui`
-3. `codex/news-ui-stage1-inline-card-summary`
-4. `codex/agent-os-stage1-project-workspaces`
-5. `codex/local-project-visualization-stage1-structure-map`
+1. `codex/websearch-stage1-answer-first-ui`
+2. `codex/news-ui-stage1-inline-card-summary`
+3. `codex/agent-os-stage1-project-workspaces`
+4. `codex/local-project-visualization-stage1-structure-map`
+5. connector-management / trust-center surface work
 
 ## Why This Order
 This order is strong because it:

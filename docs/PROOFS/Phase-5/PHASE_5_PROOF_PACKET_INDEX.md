@@ -30,6 +30,7 @@ Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, imple
 10. `PHASE_5_CUMULATIVE_IMPLEMENTATION_STATE_2026-03-12.md`
 11. `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
 12. `PHASE_5_GOVERNED_MEMORY_STAGE1_SAVE_AND_RETRIEVAL_RUNTIME_SLICE_2026-03-25.md`
+13. `PHASE_5_GOVERNED_MEMORY_STAGE2_MANAGEMENT_SURFACE_RUNTIME_SLICE_2026-03-25.md`
 
 ## Historical Gate-Preparation Inputs (Retained for Traceability Only)
 These documents remain useful as design history, but they are not the current authority chain for the closed Phase-5 package.
@@ -75,7 +76,12 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
 ## Latest Verification Snapshot (2026-03-25)
 - memory/governor/conversation regression bundle: `117 passed`
 - news/search/tone regression bundle: `72 passed`
+- memory-stage2 focused bundle: `12 passed`
+- memory executor bundle: `10 passed`
+- dashboard + memory regression bundle: `85 passed`
+- conversation/tone safety bundle: `98 passed`
 - runtime documentation drift check: passed
+- dashboard script syntax check: passed
 - frontend mirror sync check: passed
 
 ## Runtime Progression Summary
@@ -95,19 +101,24 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
    - `show that memory`
    - confirmation-backed `edit that memory` and `delete that memory`
    - bounded relevant-memory retrieval into general chat
-6. Manual tone settings / tone visibility landed:
+6. Memory stage-2 management surface landed:
+   - dedicated Memory Center list and selected-item detail panel
+   - silent `list memories` and `memory show <id>` widget hydration
+   - filter controls for all / active / locked / deferred / current thread
+   - explicit action buttons for show, edit, lock, unlock, defer, and delete
+7. Manual tone settings / tone visibility landed:
    - persistent tone-profile store in the presentation layer
    - `tone status` / `tone set ...` / `tone reset ...`
    - dashboard response-style widget and Tone modal
    - recent tone-change history + system-status tone summary
-7. User-directed notification scheduling landed:
+8. User-directed notification scheduling landed:
    - explicit daily brief + reminder schedules
    - quiet scheduled-updates widget on the Home page
    - schedule creation modal + cancel/dismiss controls
    - explicit quiet-hours + rate-limit controls
    - delivery attempts and outcomes logged
    - Governor-checked quiet delivery with no automatic scheduled action execution
-8. Opt-in pattern review landed:
+9. Opt-in pattern review landed:
    - explicit `pattern opt in` / `pattern opt out`
    - user-triggered `review patterns` queue generation
    - quiet Home-page pattern-review widget

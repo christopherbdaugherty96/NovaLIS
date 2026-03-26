@@ -104,7 +104,22 @@ Important boundary:
 - Nova does not silently convert ordinary chat into memory
 - destructive or mutating changes still require clear user action
 
-## 5. The Thread-Memory Bridge
+## 5. The New Memory Center
+The dedicated Memory page is no longer just an overview card.
+
+It now acts as a governed memory management surface where the user can:
+- browse durable memory items
+- filter by active / locked / deferred
+- inspect a selected memory item in full
+- review thread linkage, source, version, and tags
+- prepare governed actions like edit, lock, unlock, defer, and delete
+
+Important boundary:
+- the page does not bypass governance
+- silent page refresh is used only to keep the page clean while reviewing memory
+- mutating actions still route through the normal governed confirmation path when required
+
+## 6. The Thread-Memory Bridge
 One of the most important continuity changes is the bridge between threads and governed memory.
 
 This means Nova can preserve:
@@ -125,7 +140,7 @@ It is also:
 - blockers
 - preserved progress
 
-## 6. Bounded Relevant Memory Use
+## 7. Bounded Relevant Memory Use
 Nova can now use clearly relevant explicit memory as a bounded chat aid.
 
 That means:
@@ -136,7 +151,7 @@ That means:
 This is a very important trust boundary.
 Nova is supposed to feel helpful, not creepy.
 
-## 7. What This Feels Like In Practice
+## 8. What This Feels Like In Practice
 A realistic Nova continuity flow now looks like this:
 - you continue a thread
 - Nova shows the current blocker and latest decision
@@ -144,12 +159,14 @@ A realistic Nova continuity flow now looks like this:
 - the thread's memory count increases
 - you ask for `memory overview`
 - Nova shows the current durable memory state and linked threads
+- you open the Memory page and browse the list without cluttering chat
+- you inspect one memory item in full before deciding whether to edit or delete it
 - later you ask a directly related question
 - Nova can use the clearly relevant saved memory without pretending it remembers everything
 
 That is the beginning of a real personal continuity system.
 
-## 8. The Big Difference Between Context, Threads, and Memory
+## 9. The Big Difference Between Context, Threads, and Memory
 The easiest way to understand them is this:
 
 Working context:
@@ -163,7 +180,7 @@ Governed memory:
 
 Together, these three layers let Nova feel more coherent without becoming hidden or uncontrolled.
 
-## 9. Calm Scheduling
+## 10. Calm Scheduling
 Phase 5 also includes explicit scheduling for daily briefs and reminders.
 
 This is not meant to make Nova proactive in a hidden way.
@@ -187,7 +204,7 @@ Important boundary:
 - schedules are cancellable
 - scheduled items do not auto-run actions on the user's behalf
 
-## 10. Pattern Review
+## 11. Pattern Review
 Phase 5 also includes an explicit pattern-review layer for ongoing work.
 
 This is not hidden behavior.

@@ -577,6 +577,94 @@ def test_silent_memory_overview_refresh_updates_widget_without_chat_noise(monkey
     assert any(msg.get("type") == "memory_overview" for msg in ws.sent_messages)
 
 
+def test_silent_memory_list_refresh_updates_widget_without_chat_noise(monkeypatch):
+    from src.actions.action_result import ActionResult
+
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket([{"type": "chat", "text": "list memories", "silent_widget_refresh": True}])
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        assert capability_id == 61
+        assert params.get("action") == "list"
+        return ActionResult.ok(
+            "Memory Items (1)",
+            data={
+                "memory_items": [
+                    {
+                        "id": "MEM-00001",
+                        "title": "Pour Social alcohol rule",
+                        "tier": "active",
+                        "status": "active",
+                        "scope": "project",
+                        "updated_at": "2026-03-25T12:00:00+00:00",
+                        "links": {"project_thread_name": "Pour Social"},
+                        "content_display": "Client supplies alcohol; Pour Social does not sell alcohol.",
+                    }
+                ]
+            },
+            request_id="mem-list-test",
+        )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.invoke_governed_capability",
+        side_effect=_fake_invoke_governed_capability,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert not any("Memory Items (1)" in msg for msg in chat_messages)
+    assert any(msg.get("type") == "memory_list" for msg in ws.sent_messages)
+
+
+def test_silent_memory_show_refresh_updates_widget_without_chat_noise(monkeypatch):
+    from src.actions.action_result import ActionResult
+
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket([{"type": "chat", "text": "memory show MEM-00001", "silent_widget_refresh": True}])
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        assert capability_id == 61
+        assert params.get("action") == "show"
+        assert params.get("item_id") == "MEM-00001"
+        return ActionResult.ok(
+            "MEM-00001 (active)",
+            data={
+                "memory_item": {
+                    "id": "MEM-00001",
+                    "title": "Pour Social alcohol rule",
+                    "body": "Client supplies alcohol; Pour Social does not sell alcohol.",
+                    "tier": "active",
+                    "status": "active",
+                    "scope": "project",
+                    "source": "explicit_user_save",
+                    "updated_at": "2026-03-25T12:00:00+00:00",
+                    "version": 1,
+                }
+            },
+            request_id="mem-show-test",
+        )
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.invoke_governed_capability",
+        side_effect=_fake_invoke_governed_capability,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert not any("MEM-00001 (active)" in msg for msg in chat_messages)
+    assert any(msg.get("type") == "memory_item" for msg in ws.sent_messages)
+
+
 def test_save_this_uses_last_response_and_routes_to_governed_memory(monkeypatch):
     from src.actions.action_result import ActionResult
 
