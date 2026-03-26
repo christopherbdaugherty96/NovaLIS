@@ -18,6 +18,11 @@ Why it matters:
 - small changes are harder to review safely
 - the file makes architectural intent harder to audit than it should be
 
+Current nuance:
+- the websocket session loop has now been extracted
+- the real HTTP route groups have now been extracted
+- the remaining bulk is now mostly helper and payload-building logic rather than full route/runtime ownership
+
 ### 2. Dependency/install truth needed correction
 The repo had:
 - floating dependency versions
@@ -94,6 +99,15 @@ This gives Nova a documented startup path on macOS/Linux instead of a Windows-on
 - isolated pending escalation confirmation and general-chat fallback in `nova_backend/src/conversation/general_chat_runtime.py`
 - added focused regression coverage for the extracted runtime helper and the deeper-analysis confirmation flow
 
+### Entrypoint modularization correction
+- extracted the websocket session runtime to `nova_backend/src/websocket/session_handler.py`
+- extracted route families into:
+  - `nova_backend/src/api/workspace_api.py`
+  - `nova_backend/src/api/audit_api.py`
+  - `nova_backend/src/api/bridge_api.py`
+  - `nova_backend/src/api/settings_api.py`
+- reduced `brain_server.py` toward an app-assembly role
+
 ### Documentation correction
 - added a setup/startup guide for local operators
 - updated human-facing references so wake word is clearly planned, optional, and not part of the default install
@@ -104,11 +118,10 @@ This gives Nova a documented startup path on macOS/Linux instead of a Windows-on
 This is still the biggest structural cleanup item.
 
 Best decomposition targets:
-- websocket/session handling
-- page/widget API surfaces
 - governed invocation helpers
 - workspace/trust/memory UI payload builders
-- bridge/settings endpoints
+- pattern/schedule/policy command-preparation helpers
+- local-project summary/report helper surfaces
 
 ### 2. Full provider/connector setup
 Settings is now actionable for runtime permissions, but full provider and connector linking still belongs to later work.
@@ -123,7 +136,8 @@ The repo is in a better state after this pass because:
 - startup is no longer Windows-only
 - stale governance status files no longer understate the runtime
 - the live websocket runtime no longer depends on the broad legacy skill-registry path
+- the websocket session loop and real route families are no longer embedded in `brain_server.py`
 
 The biggest remaining problem is not missing capability.
 
-It is still codebase simplification around `brain_server.py`.
+It is still continued helper-level simplification around `brain_server.py`.

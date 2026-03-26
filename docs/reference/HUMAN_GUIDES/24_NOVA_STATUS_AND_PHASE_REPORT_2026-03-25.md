@@ -225,6 +225,12 @@ The newest architecture-cleanup slice then reduced one of the biggest remaining 
 - isolated the bounded general-chat fallback into a focused runtime helper
 - added focused coverage for deeper-analysis confirmation and fallback-chat continuity
 
+The newest entrypoint-modularization slice then carried that further:
+- extracted the websocket session loop into a dedicated runtime module
+- extracted the app shell, audit, bridge, and runtime-settings routes into focused API modules
+- kept `brain_server.py` as a thinner app assembly layer
+- preserved bridge-test compatibility while moving the actual route logic
+
 The newest settings-control slice then made that product surface real at runtime:
 - persistent setup mode in backend state
 - live Settings controls for second-opinion and remote-bridge permissions

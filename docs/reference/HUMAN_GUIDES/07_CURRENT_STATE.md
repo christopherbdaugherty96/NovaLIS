@@ -47,6 +47,7 @@ That means Nova already has:
 - improved voice auto-speak routing with runtime fallback at the speech layer
 - a dedicated conversation personality layer and a dedicated voice presentation layer for smoother replies
 - a cleaner live chat runtime with bounded general-chat fallback extracted out of the old skill-registry path
+- a thinner app entrypoint with the websocket session loop and the main HTTP route families extracted into focused modules
 - dashboard support for all of the above
 
 ## What Feels Mature Already
