@@ -31,12 +31,17 @@ The central orchestration file is:
 
 At a high level, `brain_server.py` is where many different parts of Nova come together.
 It coordinates:
-- websocket interaction
-- request routing
+- app assembly
+- shared runtime helpers
 - continuity commands
 - dashboard actions
 - mediated capability calls
 - output formatting
+
+It is no longer carrying every runtime surface directly by itself.
+The current repo now also has:
+- `nova_backend/src/websocket/session_handler.py` for the websocket session loop
+- `nova_backend/src/api/` for focused API route families such as audit, bridge, settings, and app-shell entry routes
 
 ## Major Backend Areas
 
