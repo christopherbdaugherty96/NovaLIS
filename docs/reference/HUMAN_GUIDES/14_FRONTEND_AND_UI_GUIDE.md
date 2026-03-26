@@ -97,8 +97,8 @@ More specifically, the current dashboard can now show:
 - Trust page recent governed actions, blocked conditions, drill-down, and capability visibility
 - Trust page reasoning-transparency section with provider, route, mode, authority, and last outcome
 - Policy Review Center draft overview, selected-draft detail, simulation review, and one-shot manual run review
-- Settings page setup-mode selection, reasoning transparency, and voice confidence review
-- Settings page provider, connection, and bridge-status review
+- Settings page setup-mode selection, runtime permission controls, reasoning transparency, and voice confidence review
+- Settings page provider, connection, bridge-status, and settings-history review
 - Trust page remote-bridge review
 
 ## What The Frontend Is Not Supposed To Become

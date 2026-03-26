@@ -435,12 +435,15 @@ def _find_requests_usage_outside_network_mediator() -> list[str]:
         "nova_backend/src/llm/llm_manager.py",
         "nova_backend/src/llm/llm_manager_vlock.py",
     }
+    request_usage_re = re.compile(
+        r"\b(?:import\s+requests\b|from\s+requests\s+import\b|requests\.(?:get|post|put|delete|patch|request|Session))"
+    )
     for path in sorted(ALLOWED_READ_PATHS):
         if path.suffix != ".py":
             continue
         rel = path.relative_to(PROJECT_ROOT).as_posix()
         src = _safe_read(path)
-        if "import requests" in src or "requests." in src:
+        if request_usage_re.search(src):
             if rel not in allowed_requests_users:
                 offenders.append(rel)
     return offenders
@@ -646,10 +649,17 @@ def _phase_7_status(registry: dict[str, Any]) -> str:
         and 'id="settings-reasoning-grid"' in index_src
         and "settings-reasoning-summary" in dashboard_src
     )
+    settings_control_surface_present = (
+        'id="settings-permission-summary"' in index_src
+        and 'id="settings-permission-grid"' in index_src
+        and "requestSettingsRuntimeRefresh(force = false)" in dashboard_src
+        and "setRuntimePermission(permission, enabled)" in dashboard_src
+    )
     brain_support_present = (
         "capability_id == 62" in brain_src
         and "_build_second_opinion_review_text" in brain_src
         and "reasoning_runtime" in brain_src
+        and "/api/settings/runtime" in brain_src
     )
 
     if (
@@ -662,6 +672,7 @@ def _phase_7_status(registry: dict[str, Any]) -> str:
         and mediator_wired
         and trust_surface_present
         and settings_surface_present
+        and settings_control_surface_present
         and brain_support_present
     ):
         return "COMPLETE"
@@ -1159,7 +1170,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     if phase_7_status == "COMPLETE":
         phase_7_note = (
             "Governed external reasoning is complete: answer-first research surfaces, explicit second-opinion capability, "
-            "provider transparency, and advisory-only trust explanation are active"
+            "provider transparency, actionable Settings controls, and advisory-only trust explanation are active"
         )
     elif phase_7_status == "ACTIVE":
         phase_7_note = "Governed external reasoning is active, but not all user-facing transparency surfaces are complete"

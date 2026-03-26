@@ -70,7 +70,7 @@ These parts are already meaningfully real:
 - answer-first search with hidden-by-default sources
 - governed same-thread external reasoning review with Trust and Settings transparency
 - local project summary, architecture report, project overview, and structure-map flows
-- user-facing Introduction and Settings pages that explain Nova and keep setup choices visible
+- user-facing Introduction and Settings pages that explain Nova and now let users change setup mode and pause or re-enable governed reasoning and remote bridge access
 - a visible Policy Review Center that keeps delegated policy work inspectable and manual
 - a visible capability-authority map that shows what policies are safe now, later, or explicit-only
 - Trust and Settings visibility for remote bridge and provider/connection state
@@ -82,10 +82,9 @@ These parts are active but still evolving:
 - more premium dashboard interactions
 - stronger everyday workflows around thread and memory use
 - deeper project/workspace persistence beyond the current shell
-- actual provider and connector setup beyond the current preference surface
+- fuller in-app provider key entry and connector linking beyond the current runtime-permission controls
 - stronger local-project visualization beyond the current stage-2 structure map
 - final device-confidence confirmation for audible TTS output
-- deeper provider and connector setup in Settings
 - deeper Phase-6 policy review ergonomics beyond the current manual-review center
 - future Phase-8 execution work beyond the now-live governed remote bridge
 
@@ -96,7 +95,7 @@ Examples include:
 - wake word
 - richer read-only connectors
 - richer provider switching and setup beyond the current bounded governed reasoning lane
-- richer provider/connector setup beyond the current visible connection status surface
+- richer provider/connector setup beyond the current visible status plus runtime-permission surface
 - richer project/workspace system foundations beyond Workspace Home, Workspace Board, and the current selected-project drill-down
 - Phase-8 governed external execution / OpenClaw
 
@@ -130,6 +129,7 @@ The most recent product-consolidation regression pass on 2026-03-26 also confirm
 - new onboarding surface coverage passed
 - TTS runtime fallback coverage passed
 - new Introduction and Settings product surfaces passed focused coverage
+- Settings runtime-permission API and UI coverage passed focused coverage
 - new Trust/Workspace drill-down and structure-map stage-2 surfaces passed focused coverage
 - explicit external reasoning capability coverage passed
 - runtime truth promotion to Phase 7 complete passed

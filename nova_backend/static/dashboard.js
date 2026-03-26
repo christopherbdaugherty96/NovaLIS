@@ -119,6 +119,23 @@ let projectVisualizerState = {
   snapshot: {},
   lastHydratedAt: 0,
 };
+let settingsRuntimeState = {
+  loaded: false,
+  loading: false,
+  summary: "Loading runtime settings...",
+  setupMode: "local",
+  setupModeLabel: "Local Mode",
+  setupModeBadge: "Offline-first",
+  setupModeDescription: "Nova stays local-first, private, and cost-free by default.",
+  permissions: {
+    external_reasoning_enabled: true,
+    remote_bridge_enabled: true,
+  },
+  permissionCards: [],
+  history: [],
+  updatedAt: "",
+  lastHydratedAt: 0,
+};
 
 const API_BASE = `${window.location.protocol}//${window.location.host}`;
 const WS_BASE = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`;
@@ -570,16 +587,135 @@ function requestWorkspaceThreadDetail(threadName) {
 }
 
 function getSetupMode() {
+  const fromRuntime = String(settingsRuntimeState.setupMode || "").trim().toLowerCase();
+  if (["local", "bring_your_own_key", "managed_cloud"].includes(fromRuntime)) {
+    return fromRuntime;
+  }
   const stored = String(localStorage.getItem(STORAGE_KEYS.setupMode) || "local").trim().toLowerCase();
   return ["local", "bring_your_own_key", "managed_cloud"].includes(stored) ? stored : "local";
 }
 
-function setSetupMode(mode) {
+function applyRuntimeSettingsPayload(data) {
+  const payload = (data && typeof data === "object" && data.settings && typeof data.settings === "object")
+    ? data.settings
+    : (data && typeof data === "object" ? data : {});
+  const setupMode = ["local", "bring_your_own_key", "managed_cloud"].includes(String(payload.setup_mode || "").trim().toLowerCase())
+    ? String(payload.setup_mode || "").trim().toLowerCase()
+    : "local";
+  settingsRuntimeState.loaded = true;
+  settingsRuntimeState.setupMode = setupMode;
+  settingsRuntimeState.setupModeLabel = String(payload.setup_mode_label || getSetupModeMeta(setupMode).label).trim() || getSetupModeMeta(setupMode).label;
+  settingsRuntimeState.setupModeBadge = String(payload.setup_mode_badge || getSetupModeMeta(setupMode).badge).trim() || getSetupModeMeta(setupMode).badge;
+  settingsRuntimeState.setupModeDescription = String(payload.setup_mode_description || getSetupModeMeta(setupMode).copy).trim() || getSetupModeMeta(setupMode).copy;
+  settingsRuntimeState.permissions = (payload.permissions && typeof payload.permissions === "object")
+    ? { ...payload.permissions }
+    : { external_reasoning_enabled: true, remote_bridge_enabled: true };
+  settingsRuntimeState.permissionCards = Array.isArray(payload.permission_cards)
+    ? payload.permission_cards.map((item) => ({ ...item }))
+    : [];
+  settingsRuntimeState.history = Array.isArray(payload.history) ? payload.history.map((item) => ({ ...item })) : [];
+  settingsRuntimeState.summary = String(payload.summary || "").trim() || "Runtime settings loaded.";
+  settingsRuntimeState.updatedAt = String(payload.updated_at || "").trim();
+  settingsRuntimeState.lastHydratedAt = Date.now();
+  localStorage.setItem(STORAGE_KEYS.setupMode, setupMode);
+
+  if (data && typeof data === "object") {
+    if (data.bridge && typeof data.bridge === "object") {
+      trustReviewState.bridgeRuntime = { ...data.bridge };
+    }
+    if (data.connections && typeof data.connections === "object") {
+      trustReviewState.connectionRuntime = { ...data.connections };
+    }
+    if (data.reasoning && typeof data.reasoning === "object") {
+      trustReviewState.reasoningRuntime = { ...data.reasoning };
+    }
+  }
+}
+
+async function requestSettingsRuntimeRefresh(force = false) {
+  const now = Date.now();
+  if (
+    !force
+    && settingsRuntimeState.loaded
+    && (now - Number(settingsRuntimeState.lastHydratedAt || 0)) < 15000
+  ) {
+    return;
+  }
+
+  settingsRuntimeState.loading = true;
+  try {
+    const res = await fetch(`${API_BASE}/api/settings/runtime`);
+    if (!res.ok) throw new Error("settings_runtime_unavailable");
+    const data = await res.json();
+    applyRuntimeSettingsPayload(data);
+    renderIntroPage();
+    renderTrustCenterPage();
+    renderSettingsPage();
+  } catch (_err) {
+    if (!settingsRuntimeState.loaded) {
+      settingsRuntimeState.summary = "Runtime settings are unavailable right now. Nova is using the local recommended defaults.";
+    }
+  } finally {
+    settingsRuntimeState.loading = false;
+  }
+}
+
+function reportSettingsError(message) {
+  appendChatMessage("assistant", message, null, "Settings");
+}
+
+async function setSetupMode(mode) {
   const normalized = String(mode || "").trim().toLowerCase();
   const nextMode = ["local", "bring_your_own_key", "managed_cloud"].includes(normalized) ? normalized : "local";
-  localStorage.setItem(STORAGE_KEYS.setupMode, nextMode);
-  renderIntroPage();
-  renderSettingsPage();
+  try {
+    const res = await fetch(`${API_BASE}/api/settings/runtime/setup-mode`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ setup_mode: nextMode }),
+    });
+    if (!res.ok) throw new Error("setup_mode_update_failed");
+    const data = await res.json();
+    applyRuntimeSettingsPayload(data);
+    renderIntroPage();
+    renderTrustCenterPage();
+    renderSettingsPage();
+  } catch (_err) {
+    reportSettingsError("I couldn't update setup mode right now. Nova kept the previous setting.");
+  }
+}
+
+async function setRuntimePermission(permission, enabled) {
+  try {
+    const res = await fetch(`${API_BASE}/api/settings/runtime/permissions`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ permission, enabled: Boolean(enabled) }),
+    });
+    if (!res.ok) throw new Error("runtime_permission_update_failed");
+    const data = await res.json();
+    applyRuntimeSettingsPayload(data);
+    renderTrustCenterPage();
+    renderSettingsPage();
+  } catch (_err) {
+    reportSettingsError("I couldn't update that setting right now. Nova kept the previous permission.");
+  }
+}
+
+async function resetRuntimeSettings() {
+  try {
+    const res = await fetch(`${API_BASE}/api/settings/runtime/reset`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error("runtime_settings_reset_failed");
+    const data = await res.json();
+    applyRuntimeSettingsPayload(data);
+    renderIntroPage();
+    renderTrustCenterPage();
+    renderSettingsPage();
+  } catch (_err) {
+    reportSettingsError("I couldn't restore the recommended defaults right now.");
+  }
 }
 
 function getSetupModeMeta(mode = getSetupMode()) {
@@ -5958,11 +6094,13 @@ function setActivePage(page) {
     safeWSSend({ text: "system status", silent_widget_refresh: true });
   }
   if (target === "intro") {
+    requestSettingsRuntimeRefresh();
     renderIntroPage();
   }
   if (target === "settings") {
     safeWSSend({ text: "trust center", silent_widget_refresh: true });
     safeWSSend({ text: "system status", silent_widget_refresh: true });
+    requestSettingsRuntimeRefresh(true);
     renderSettingsPage();
   }
 
@@ -6176,6 +6314,9 @@ function renderIntroPage() {
 function renderSettingsPage() {
   const modeHost = $("settings-mode-cards");
   const modeSummary = $("settings-current-mode-summary");
+  const permissionSummary = $("settings-permission-summary");
+  const permissionGrid = $("settings-permission-grid");
+  const historyHost = $("settings-history-list");
   const voiceSummary = $("settings-voice-summary");
   const voiceGrid = $("settings-voice-grid");
   const reasoningSummary = $("settings-reasoning-summary");
@@ -6243,6 +6384,89 @@ function renderSettingsPage() {
   const compactDensity = $("settings-toggle-compact-density");
   if (compactDensity) compactDensity.checked = localStorage.getItem(STORAGE_KEYS.uiCompactDensity) === "1";
 
+  if (permissionSummary) {
+    const statusBits = [
+      settingsRuntimeState.summary,
+      settingsRuntimeState.updatedAt ? `Updated ${new Date(settingsRuntimeState.updatedAt).toLocaleString()}` : "",
+    ].filter(Boolean);
+    permissionSummary.textContent = statusBits.join(" · ") || "Governed runtime permissions will appear here.";
+  }
+
+  if (permissionGrid) {
+    clear(permissionGrid);
+    const cards = Array.isArray(settingsRuntimeState.permissionCards) ? settingsRuntimeState.permissionCards : [];
+    if (!cards.length) {
+      permissionGrid.appendChild(createOverviewChip("Runtime permissions", "Loading"));
+    } else {
+      cards.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "workspace-home-focus settings-permission-card";
+
+        const title = document.createElement("div");
+        title.className = "workspace-home-focus-title";
+        title.textContent = String(item.label || "Permission").trim() || "Permission";
+        card.appendChild(title);
+
+        const status = document.createElement("div");
+        status.className = "workspace-home-focus-meta";
+        status.textContent = String(item.status_label || (item.enabled ? "Enabled" : "Paused")).trim();
+        card.appendChild(status);
+
+        const copy = document.createElement("div");
+        copy.className = "workspace-home-focus-copy";
+        copy.textContent = String(item.description || item.summary || "").trim() || "Governed runtime permission.";
+        card.appendChild(copy);
+
+        const actionRow = document.createElement("div");
+        actionRow.className = "workspace-board-actions-toolbar";
+        const actionBtn = document.createElement("button");
+        actionBtn.type = "button";
+        actionBtn.textContent = item.enabled ? "Pause" : "Enable";
+        actionBtn.addEventListener("click", () => setRuntimePermission(item.id, !item.enabled));
+        actionRow.appendChild(actionBtn);
+        card.appendChild(actionRow);
+
+        permissionGrid.appendChild(card);
+      });
+    }
+  }
+
+  if (historyHost) {
+    clear(historyHost);
+    const history = Array.isArray(settingsRuntimeState.history) ? settingsRuntimeState.history : [];
+    if (!history.length) {
+      const empty = document.createElement("div");
+      empty.className = "workspace-home-empty";
+      empty.textContent = "No settings changes recorded yet. Change setup mode or a permission to create an audit trail.";
+      historyHost.appendChild(empty);
+    } else {
+      history.slice(0, 6).forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "workspace-home-focus settings-history-row";
+
+        const title = document.createElement("div");
+        title.className = "workspace-home-focus-title";
+        title.textContent = `${String(item.action || "updated").replaceAll("_", " ")} · ${String(item.target || "runtime_settings").replaceAll("_", " ")}`;
+        row.appendChild(title);
+
+        const meta = document.createElement("div");
+        meta.className = "workspace-home-focus-meta";
+        meta.textContent = [
+          item.timestamp ? new Date(item.timestamp).toLocaleString() : "",
+          String(item.source || "settings_page").replaceAll("_", " "),
+        ].filter(Boolean).join(" · ");
+        row.appendChild(meta);
+
+        const copy = document.createElement("div");
+        copy.className = "workspace-home-focus-copy";
+        copy.textContent = `Changed from ${JSON.stringify(item.old_value)} to ${JSON.stringify(item.new_value)}.`;
+        row.appendChild(copy);
+
+        historyHost.appendChild(row);
+      });
+    }
+  }
+
   if (voiceSummary && voiceGrid) {
     const voice = (trustReviewState.voiceRuntime && typeof trustReviewState.voiceRuntime === "object")
       ? trustReviewState.voiceRuntime
@@ -6272,6 +6496,7 @@ function renderSettingsPage() {
       : {};
     reasoningSummary.textContent = [
       String(reasoning.summary || "").trim() || "Second opinions stay advisory-only and visible when used.",
+      String(reasoning.settings_permission || "").trim() ? `Settings: ${String(reasoning.settings_permission || "").trim()}` : "",
       String(reasoning.switching_note || "").trim(),
     ].filter(Boolean).join(" · ");
 
@@ -6280,7 +6505,8 @@ function renderSettingsPage() {
       ["Current provider", String(reasoning.provider_label || reasoning.provider || "DeepSeek").trim() || "DeepSeek"],
       ["Current route", String(reasoning.route_label || "Governed second-opinion lane").trim() || "Governed second-opinion lane"],
       ["Authority", String(reasoning.authority_label || "Advisory only").trim() || "Advisory only"],
-      ["Availability", String(reasoning.status || "Unknown").trim() || "Unknown"],
+      ["Availability", String(reasoning.status_label || reasoning.status || "Unknown").trim() || "Unknown"],
+      ["Settings permission", String(reasoning.settings_permission || "enabled").trim() || "enabled"],
       ["Last used", String(reasoning.last_used || "Not used yet").trim() || "Not used yet"],
       ["Provider switching", "Later"],
     ].forEach(([label, value]) => {
@@ -6294,7 +6520,7 @@ function renderSettingsPage() {
       : {};
     connectionSummary.textContent = [
       String(connections.summary || "").trim() || "Connection and provider status will appear here after the next trust refresh.",
-      "Visible now, configurable later.",
+      "Permissions here are live now. In-app provider key entry still arrives later.",
     ].filter(Boolean).join(" · ");
 
     clear(connectionGrid);
@@ -6702,6 +6928,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderTrustCenterPage();
   renderIntroPage();
   renderSettingsPage();
+  requestSettingsRuntimeRefresh(true);
   renderIntelligenceBriefWidget();
   renderPersonalLayerWidget();
   renderQuickActions();
@@ -6927,7 +7154,18 @@ window.addEventListener("DOMContentLoaded", () => {
   const settingsOpenConnectionsBtn = $("btn-settings-open-connections");
   if (settingsOpenConnectionsBtn) settingsOpenConnectionsBtn.addEventListener("click", () => {
     safeWSSend({ text: "connection status", silent_widget_refresh: true });
+    requestSettingsRuntimeRefresh(true);
     renderSettingsPage();
+  });
+
+  const settingsRefreshRuntimeBtn = $("btn-settings-refresh-runtime");
+  if (settingsRefreshRuntimeBtn) settingsRefreshRuntimeBtn.addEventListener("click", () => {
+    requestSettingsRuntimeRefresh(true);
+  });
+
+  const settingsResetDefaultsBtn = $("btn-settings-reset-defaults");
+  if (settingsResetDefaultsBtn) settingsResetDefaultsBtn.addEventListener("click", () => {
+    resetRuntimeSettings();
   });
 
   const settingsOpenPrivacyBtn = $("btn-settings-open-privacy");

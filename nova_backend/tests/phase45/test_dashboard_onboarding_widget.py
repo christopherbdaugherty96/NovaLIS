@@ -39,10 +39,15 @@ def test_intro_and_settings_pages_include_getting_started_and_control_surfaces()
     assert 'id="btn-intro-open-settings"' in source
     assert 'id="page-settings"' in source
     assert 'id="settings-mode-cards"' in source
+    assert 'id="settings-permission-summary"' in source
+    assert 'id="settings-permission-grid"' in source
+    assert 'id="settings-history-list"' in source
     assert 'id="settings-voice-summary"' in source
     assert 'id="settings-voice-grid"' in source
     assert 'id="settings-connection-summary"' in source
     assert 'id="settings-connection-grid"' in source
     assert 'id="btn-settings-open-connections"' in source
+    assert 'id="btn-settings-refresh-runtime"' in source
+    assert 'id="btn-settings-reset-defaults"' in source
     assert 'id="settings-toggle-large-text"' in source
     assert 'id="btn-settings-voice-check"' in source

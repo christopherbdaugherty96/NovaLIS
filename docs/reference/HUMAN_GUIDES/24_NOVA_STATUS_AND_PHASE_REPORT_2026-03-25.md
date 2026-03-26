@@ -119,8 +119,8 @@ Nova currently has:
 - schedule and pattern-review surfaces
 - follow-up actions tied to dashboard widgets
 - a first-run guide for non-technical users
-- a settings surface for setup-mode choice, voice checks, and comfort controls
-- visible provider, connection, and remote-bridge status in Settings
+- a settings surface for setup-mode choice, voice checks, comfort controls, and governed runtime permissions
+- visible provider, connection, and remote-bridge status in Settings, with live pause/re-enable controls for second opinion and bridge access
 - smoother conversational acknowledgements and shorter spoken versions of long answers
 - a policy review surface for disabled drafts, simulations, and one-shot manual runs
 
@@ -211,6 +211,12 @@ The newest governed-access slice then closed the remote reachability gap without
 - bridge status visibility in Trust Center
 - connection and provider status visibility in Settings
 - explicit remote-scope blocking for effectful local actions
+
+The newest settings-control slice then made that product surface real at runtime:
+- persistent setup mode in backend state
+- live Settings controls for second-opinion and remote-bridge permissions
+- runtime enforcement so paused settings actually block the feature
+- settings-change history visible on the Settings page
 
 This matters because it turned several already-good backend pieces into a more understandable product.
 
@@ -310,6 +316,7 @@ Live Phase-7 work now includes:
 - explicit governed external reasoning capability `62`
 - same-thread second-opinion review
 - provider, route, and authority visibility in Trust and Settings
+- actionable runtime-permission controls in Settings for second opinion and the remote bridge
 - stronger local TTS renderer preference before fallback
 
 ### Phase 8
@@ -368,7 +375,7 @@ Important current limitations:
 - wake word is still planned, not live
 - richer connector systems are still planned
 - richer project/workspace foundations are still needed beyond the current Workspace stage-3 shell
-- provider and connector setup is still preference-first rather than fully connected and governed through a dedicated management surface
+- provider and connector setup is still not fully connected through in-app key entry or connector linking, even though runtime permissions and setup mode are now actionable
 - OpenClaw/governed external execution is designed, not live
 - governed OpenClaw bridge access is live, but it remains read/reasoning-only and does not execute actions
 
@@ -409,17 +416,17 @@ For someone who is not technical, the recent work means Nova is easier to use be
 ## What Still Needs To Be Built For The Product To Feel More Complete
 The biggest remaining user-facing product gaps are:
 
-### 1. Provider and connector setup that really works
+### 1. Full provider and connector setup that really works
 Users still need:
 - explicit provider connection status
 - clear connector enable/disable controls
 - read-only vs effectful permission visibility
 - revoke / disconnect controls
-- honest “not connected yet” states instead of preference-only placeholders
+- honest "not connected yet" states instead of preference-only placeholders
 
 ### 2. Better onboarding follow-through
 New users still need:
-- setup that actually carries into working provider and connector choices
+- setup that carries from current runtime-permission controls into future provider and connector choices
 - clearer explanation of the most useful flows after first launch
 - connector expectations once those exist
 
@@ -435,17 +442,17 @@ Workspace Home and Workspace page are now real, but users still need a stronger 
 - continuation actions
 - clearer transitions between Home, Memory, Workspace, and project-specific work
 
-### 5. Actionable provider and connector setup
-The product now has visible connection and bridge status, but users still need explicit setup, revoke, and permission controls that actually change live provider and connector state.
+### 5. Full provider and connector management
+The product now has live runtime-permission controls for second-opinion and remote-bridge access, but users still need full provider entry, revoke, and richer connector management.
 
 ## Recommended Next Steps
 If someone asked what Nova should build next for the best product outcome, the strongest current answer is:
 
-1. settings/provider/connector setup that becomes truly actionable
-2. final TTS device-confidence pass
-3. deeper project/workspace persistence
-4. Phase-8 strict execution foundations after the bridge
-5. first narrow governed OpenClaw execution path only after those foundations
+1. final TTS device-confidence pass
+2. deeper project/workspace persistence
+3. Phase-8 strict execution foundations after the bridge
+4. first narrow governed OpenClaw execution path only after those foundations
+5. fuller provider and connector management after the Phase-8 foundation is stable
 
 Why this order:
 - it turns visible setup into real product control

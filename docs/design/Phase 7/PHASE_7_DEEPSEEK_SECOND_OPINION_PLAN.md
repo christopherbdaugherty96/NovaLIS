@@ -1,6 +1,6 @@
 # Phase 7 DeepSeek Second-Opinion Plan
 Date: 2026-03-21
-Status: Planning packet with bounded same-thread foundation now partially implemented on `main`
+Status: Planning packet with the bounded same-thread runtime now complete on `main`
 Scope: Governed DeepSeek-backed second-opinion reasoning inside the same Nova chat surface
 
 ## Why This Belongs In Phase 7
