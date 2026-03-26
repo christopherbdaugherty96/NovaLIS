@@ -16,8 +16,7 @@ The most important truth is:
 The current repository state is:
 - branch: `main`
 - runtime truth date: `2026-03-25`
-- latest synced commit at the time of this report: `ea45aac`
-- worktree state when this report was written: clean
+- worktree state when this report was last updated: clean
 
 ## What Nova Is Today
 The best plain-language description is:
@@ -92,6 +91,7 @@ Nova currently has:
 - a Home page
 - a News page
 - a Memory page
+- a Workspace Home surface on the Home page
 - operator health and trust surfaces
 - capability visibility
 - schedule and pattern-review surfaces
@@ -132,10 +132,23 @@ Nova now includes a small `DeepSeek` button near chat controls that:
 - does not gain execution authority
 
 ## What Was Completed Most Recently
-The most recent product-development stretch had two layers.
+The most recent product-development stretch had three layers.
 
 ### Latest substantial shipped product slice
-The biggest recent runtime shipment was the Phase-7 product foundation slice.
+The latest runtime shipment is the Workspace Home foundation slice.
+
+That shipped:
+- a Home-page workspace summary card
+- an explicit `workspace home` / `project home` command
+- focus project visibility
+- blocker / next-step / latest-decision visibility
+- recent project memory and recent report visibility
+- recommended next actions grounded in existing governed commands
+
+This is important because it turns scattered continuity surfaces into a calmer daily workspace entry point for non-technical users.
+
+### Prior major product slice
+The major slice immediately before that was the Phase-7 product foundation runtime shipment.
 
 That shipped:
 - answer-first governed web search with sources on demand
@@ -149,10 +162,10 @@ That shipped:
 - bounded same-thread DeepSeek second-opinion review
 - stronger local TTS renderer preference before fallback
 
-This is the most important recent product change because it made Nova feel more like a usable daily product, not just a governed system with good internals.
+This remains one of the most important product changes because it made Nova feel more like a usable daily product, not just a governed system with good internals.
 
 ### Latest follow-up alignment work
-After that product slice landed, the next work closed truth gaps between:
+After those product slices landed, the follow-on work closed truth gaps between:
 - runtime docs
 - human guides
 - Phase-7 design wording
@@ -216,8 +229,13 @@ Recent Phase-5 growth after the earlier closure includes:
   - bounded retrieval in chat
 - memory stage 2:
   - Memory Center
-  - list/detail/filer surface
+  - list/detail/filter surface
   - explicit memory actions in the UI
+- workspace home foundation:
+  - Home-page workspace summary
+  - focus project and next-step visibility
+  - recent report and project-memory visibility
+  - recommended next actions without authority expansion
 
 ### Phase 6
 Status:
@@ -306,6 +324,7 @@ These include:
 - source-grounded news flows
 - answer-first search behavior
 - bounded same-thread second-opinion review
+- Workspace Home as a calmer daily continuity surface
 
 This matters because Nova is already beyond the "assistant wrapper" stage.
 
@@ -315,7 +334,7 @@ Nova is strong, but it is not finished.
 Important current limitations:
 - wake word is still planned, not live
 - richer connector systems are still planned
-- project/workspace home is still not the main product surface yet
+- richer project/workspace system foundations are still needed beyond the new Workspace Home layer
 - trust-center consolidation is still incomplete
 - onboarding and first-run guidance still need stronger product treatment
 - OpenClaw/governed external execution is designed, not live
@@ -362,15 +381,7 @@ This is the product-level value of the recent work.
 ## What Still Needs To Be Built For The Product To Feel More Complete
 The biggest remaining user-facing product gaps are:
 
-### 1. Project / Workspace Home
-Nova still needs a stronger place where ongoing work lives:
-- active project
-- recent reports
-- files
-- project memory
-- continuation actions
-
-### 2. Unified Trust Center
+### 1. Unified Trust Center
 Nova has trust surfaces, but they are still spread across the product.
 Users still need one clearer place to review:
 - recent actions
@@ -379,14 +390,23 @@ Users still need one clearer place to review:
 - what memory was used
 - what provider or source was used
 
-### 3. Better onboarding
+### 2. Better onboarding
 New users still need:
 - first-run guidance
 - clearer permissions setup
 - clearer explanation of what Nova can do today
 
-### 4. TTS final validation
+### 3. TTS final validation
 Voice output is close, but not fully closed in product confidence yet.
+
+### 4. Richer project/workspace system
+Workspace Home is now real, but users still need a stronger place where ongoing work lives:
+- active project
+- recent reports
+- files
+- project memory
+- continuation actions
+- clearer transitions between Home, Memory, and project-specific work
 
 ### 5. Richer visual project explanation
 Nova understands projects better than it currently shows them.
@@ -395,11 +415,16 @@ The visual codebase explainer work is one of the best future UX wins.
 ## Recommended Next Steps
 If someone asked what Nova should build next for the best product outcome, the strongest current answer is:
 
-1. project/workspace home
-2. unified trust center
-3. onboarding / first-run surface
-4. final TTS restore and device-confidence pass
+1. unified trust center
+2. onboarding / first-run surface
+3. final TTS restore and device-confidence pass
+4. richer project/workspace system
 5. richer visual local-project explainer
+
+That sequence now means:
+- deepen Workspace Home into a broader project/workspace system
+- make trust easier to review
+- make first-run safer and clearer
 
 Why this order:
 - it improves the product for non-technical users

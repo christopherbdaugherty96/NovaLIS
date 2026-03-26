@@ -456,6 +456,12 @@ body {
   gap: 10px;
 }
 
+.workspace-home-widget {
+  grid-column: span 8;
+  display: grid;
+  gap: 12px;
+}
+
 .operator-health-widget,
 .capability-surface-widget,
 .trust-panel {
@@ -474,6 +480,110 @@ body {
   grid-column: span 5;
   display: grid;
   gap: 10px;
+}
+
+.workspace-home-header,
+.personal-layer-header,
+.home-launch-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.workspace-home-focus,
+.workspace-home-section,
+.workspace-home-stat {
+  border: 1px solid rgba(168, 201, 242, 0.18);
+  border-radius: 14px;
+  background: rgba(14, 31, 56, 0.42);
+}
+
+.workspace-home-focus,
+.workspace-home-section {
+  padding: 12px 13px;
+}
+
+.workspace-home-focus-title,
+.workspace-home-section-title,
+.workspace-home-stat-title {
+  font-size: 0.84rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(208, 228, 255, 0.92);
+}
+
+.workspace-home-focus-meta,
+.workspace-home-doc-copy,
+.workspace-home-stat-copy,
+.workspace-home-focus-copy,
+.workspace-home-empty,
+.workspace-home-blocked {
+  color: rgba(212, 224, 242, 0.78);
+  font-size: 0.95rem;
+  line-height: 1.45;
+}
+
+.workspace-home-focus {
+  display: grid;
+  gap: 8px;
+}
+
+.workspace-home-focus-next {
+  color: rgba(237, 246, 255, 0.94);
+}
+
+.workspace-home-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.workspace-home-stat {
+  padding: 12px 13px;
+  display: grid;
+  gap: 6px;
+}
+
+.workspace-home-stat-value {
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: rgba(246, 250, 255, 0.96);
+}
+
+.workspace-home-docs {
+  display: grid;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.workspace-home-doc {
+  width: 100%;
+  text-align: left;
+  border: 1px solid rgba(168, 201, 242, 0.16);
+  border-radius: 12px;
+  padding: 10px 11px;
+  background: rgba(16, 36, 62, 0.58);
+  color: rgba(235, 244, 255, 0.94);
+  display: grid;
+  gap: 4px;
+}
+
+.workspace-home-doc:hover,
+.workspace-home-doc:focus-visible {
+  border-color: rgba(137, 198, 255, 0.42);
+  background: rgba(23, 48, 81, 0.74);
+}
+
+.workspace-home-doc-title {
+  font-weight: 700;
+}
+
+.workspace-home-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
 }
 
 .page-memory {
@@ -3019,6 +3129,7 @@ body {
 
   .operator-health-widget,
   .capability-surface-widget,
+  .workspace-home-widget,
   .trust-panel,
   .thread-map-widget,
   .personal-layer-widget {
@@ -3079,10 +3190,15 @@ body {
 
   .operator-health-widget,
   .capability-surface-widget,
+  .workspace-home-widget,
   .trust-panel,
   .thread-map-widget,
   .personal-layer-widget {
     grid-column: span 12;
+  }
+
+  .workspace-home-grid {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .orb-shell {

@@ -93,10 +93,11 @@ Current conversational/style baseline on `main`:
 - `d0a80c3` - Nova Style Layer Stage 2 checkpoint
 
 Current recommended next-step posture:
+- the Workspace Home foundation slice is now live in the current repository state
 - the immediate live-runtime defect still worth closing is end-to-end TTS device restore and validation
-- the current highest-value next product-foundation target is project/workspace home
-- start with `codex/agent-os-stage1-project-workspaces`
-- trust-center and onboarding work should follow closely behind
+- the current highest-value next product-foundation target is unified trust-center groundwork
+- start with `codex/trust-center-stage1-recent-actions`
+- onboarding and richer project/workspace work should follow closely behind
 - prefer disciplined core-layer implementation over broad new expansion
 
 Canonical design phase folders:

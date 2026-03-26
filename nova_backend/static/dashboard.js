@@ -83,6 +83,11 @@ let trustReviewState = {
   activity: [],
   blocked: [],
 };
+let workspaceHomeState = {
+  summary: "Workspace home is preparing your latest project context.",
+  snapshot: {},
+  lastHydratedAt: 0,
+};
 
 const API_BASE = `${window.location.protocol}//${window.location.host}`;
 const WS_BASE = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`;
@@ -162,6 +167,7 @@ const COMMAND_SUGGESTIONS = [
   "explain this",
   "help me do this",
   "show threads",
+  "workspace home",
   "continue my deployment issue",
   "project status deployment issue",
   "biggest blocker in deployment issue",
@@ -208,6 +214,7 @@ const HELP_EXAMPLES = [
   "explain this",
   "help me do this",
   "show threads",
+  "workspace home",
   "save this as part of deployment issue",
   "continue my deployment issue",
   "project status deployment issue",
@@ -434,6 +441,13 @@ function hydrateMemoryManagement(force = false) {
   memoryCenterState.lastHydratedAt = now;
   sendSilentMemoryCommand("memory overview");
   sendSilentMemoryCommand("list memories");
+}
+
+function requestWorkspaceHomeRefresh(force = false) {
+  const now = Date.now();
+  if (!force && now - Number(workspaceHomeState.lastHydratedAt || 0) < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
+  workspaceHomeState.lastHydratedAt = now;
+  safeWSSend({ text: "workspace home", silent_widget_refresh: true });
 }
 
 function renderMemoryCenterSurface() {
@@ -971,6 +985,221 @@ function renderThreadMapWidget(data = {}) {
     li.appendChild(actions);
     listHost.appendChild(li);
   });
+
+  requestWorkspaceHomeRefresh();
+}
+
+function renderWorkspaceHomeWidget(data = {}) {
+  if (data && typeof data === "object" && Object.keys(data).length) {
+    workspaceHomeState.snapshot = { ...workspaceHomeState.snapshot, ...data };
+    workspaceHomeState.summary = String(data.summary || workspaceHomeState.summary).trim() || workspaceHomeState.summary;
+  }
+
+  const summary = $("workspace-home-summary");
+  const focusHost = $("workspace-home-focus");
+  const gridHost = $("workspace-home-grid");
+  const docsHost = $("workspace-home-docs");
+  const actionsHost = $("workspace-home-actions");
+  if (!summary || !focusHost || !gridHost || !docsHost || !actionsHost) return;
+
+  const snapshot = workspaceHomeState.snapshot || {};
+  const focus = (snapshot && typeof snapshot.focus_thread === "object") ? snapshot.focus_thread : {};
+  const recentDocs = Array.isArray(snapshot.recent_documents) ? snapshot.recent_documents : [];
+  const recentActivity = Array.isArray(snapshot.recent_activity) ? snapshot.recent_activity : [];
+  const recentMemory = Array.isArray(snapshot.recent_memory_items) ? snapshot.recent_memory_items : [];
+  const blockedConditions = Array.isArray(snapshot.blocked_conditions) ? snapshot.blocked_conditions : [];
+  const recommendedActions = Array.isArray(snapshot.recommended_actions) ? snapshot.recommended_actions : [];
+  const recentThreads = Array.isArray(snapshot.recent_threads) ? snapshot.recent_threads : [];
+
+  summary.textContent = workspaceHomeState.summary || "Workspace home is preparing your latest project context.";
+
+  clear(focusHost);
+  const focusName = String(focus.name || "").trim();
+  if (focusName) {
+    const title = document.createElement("div");
+    title.className = "workspace-home-focus-title";
+    title.textContent = focusName;
+    focusHost.appendChild(title);
+
+    const meta = document.createElement("div");
+    meta.className = "workspace-home-focus-meta";
+    const metaParts = [];
+    const goal = String(focus.goal || "").trim();
+    const healthState = String(focus.health_state || "").trim().toUpperCase();
+    if (goal) metaParts.push(goal);
+    if (healthState) metaParts.push(`Health ${healthState}`);
+    if (Number.isFinite(Number(focus.memory_count || 0))) metaParts.push(`Memory ${Number(focus.memory_count || 0)}`);
+    meta.textContent = metaParts.join(" · ");
+    focusHost.appendChild(meta);
+
+    const healthReason = String(focus.health_reason || "").trim();
+    if (healthReason) {
+      const why = document.createElement("div");
+      why.className = "workspace-home-focus-copy";
+      why.textContent = `Why: ${healthReason}`;
+      focusHost.appendChild(why);
+    }
+
+    const blocker = String(focus.latest_blocker || "").trim();
+    if (blocker) {
+      const blockerRow = document.createElement("div");
+      blockerRow.className = "workspace-home-focus-copy";
+      blockerRow.textContent = `Current blocker: ${blocker}`;
+      focusHost.appendChild(blockerRow);
+    }
+
+    const nextAction = String(focus.latest_next_action || "").trim();
+    if (nextAction) {
+      const nextRow = document.createElement("div");
+      nextRow.className = "workspace-home-focus-copy workspace-home-focus-next";
+      nextRow.textContent = `Next step: ${nextAction}`;
+      focusHost.appendChild(nextRow);
+    }
+
+    const latestDecision = String(focus.latest_decision || "").trim();
+    if (latestDecision) {
+      const decisionRow = document.createElement("div");
+      decisionRow.className = "workspace-home-focus-copy";
+      decisionRow.textContent = `Latest decision: ${latestDecision}`;
+      focusHost.appendChild(decisionRow);
+    }
+  } else {
+    const empty = document.createElement("div");
+    empty.className = "workspace-home-empty";
+    empty.textContent = "No focus project yet. Start with a repo summary, create a thread, or save a work update into memory.";
+    focusHost.appendChild(empty);
+  }
+
+  clear(gridHost);
+  [
+    {
+      title: "Project Threads",
+      value: `${Number(snapshot.thread_count || 0)}`,
+      copy: recentThreads.length
+        ? recentThreads.slice(0, 2).map((item) => String(item.name || "").trim()).filter(Boolean).join(" · ")
+        : "No project threads yet.",
+    },
+    {
+      title: "Project Memory",
+      value: `${Number(snapshot.project_memory_total || 0)}`,
+      copy: `${Number(snapshot.memory_total || 0)} total durable item${Number(snapshot.memory_total || 0) === 1 ? "" : "s"}`,
+    },
+    {
+      title: "Reports",
+      value: `${recentDocs.length}`,
+      copy: recentDocs.length
+        ? recentDocs.map((doc) => `Doc ${doc.id}`).join(" · ")
+        : "No analysis docs in this session yet.",
+    },
+    {
+      title: "Recent Actions",
+      value: `${recentActivity.length}`,
+      copy: recentActivity.length
+        ? recentActivity.slice(0, 2).map((item) => String(item.title || "Runtime event").trim()).join(" · ")
+        : "No recent runtime activity captured here yet.",
+    },
+  ].forEach((item) => {
+    const card = document.createElement("div");
+    card.className = "workspace-home-stat";
+
+    const heading = document.createElement("div");
+    heading.className = "workspace-home-stat-title";
+    heading.textContent = item.title;
+    card.appendChild(heading);
+
+    const value = document.createElement("div");
+    value.className = "workspace-home-stat-value";
+    value.textContent = item.value;
+    card.appendChild(value);
+
+    const copy = document.createElement("div");
+    copy.className = "workspace-home-stat-copy";
+    copy.textContent = item.copy;
+    card.appendChild(copy);
+
+    gridHost.appendChild(card);
+  });
+
+  clear(docsHost);
+  if (recentDocs.length) {
+    recentDocs.forEach((doc) => {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "workspace-home-doc";
+      row.addEventListener("click", () => {
+        setActivePage("chat");
+        injectUserText(`summarize doc ${doc.id}`, "text");
+      });
+
+      const title = document.createElement("div");
+      title.className = "workspace-home-doc-title";
+      title.textContent = `Doc ${doc.id}: ${String(doc.title || "").trim()}`;
+      row.appendChild(title);
+
+      const copy = document.createElement("div");
+      copy.className = "workspace-home-doc-copy";
+      copy.textContent = String(doc.summary || doc.topic || "Open in chat for the current summary.").trim();
+      row.appendChild(copy);
+
+      docsHost.appendChild(row);
+    });
+  } else if (recentMemory.length) {
+    recentMemory.forEach((item) => {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "workspace-home-doc";
+      row.addEventListener("click", () => {
+        setActivePage("memory");
+        sendSilentMemoryCommand(`memory show ${String(item.id || "").trim()}`);
+      });
+
+      const title = document.createElement("div");
+      title.className = "workspace-home-doc-title";
+      title.textContent = String(item.title || item.id || "Memory item").trim();
+      row.appendChild(title);
+
+      const copy = document.createElement("div");
+      copy.className = "workspace-home-doc-copy";
+      copy.textContent = `Recent memory${item.updated_at ? ` · ${formatThreadTimestamp(item.updated_at)}` : ""}`;
+      row.appendChild(copy);
+
+      docsHost.appendChild(row);
+    });
+  } else {
+    const empty = document.createElement("div");
+    empty.className = "workspace-home-empty";
+    empty.textContent = "Reports and recent project memory will appear here as you use Nova on ongoing work.";
+    docsHost.appendChild(empty);
+  }
+
+  if (blockedConditions.length) {
+    const blocked = document.createElement("div");
+    blocked.className = "workspace-home-blocked";
+    blocked.textContent = `Blocked now: ${blockedConditions.map((item) => String(item.label || item.area || "Condition").trim()).filter(Boolean).join(" · ")}`;
+    docsHost.appendChild(blocked);
+  }
+
+  clear(actionsHost);
+  const actions = recommendedActions.length
+    ? recommendedActions
+    : [
+        { label: "Show threads", command: "show threads" },
+        { label: "Memory overview", command: "memory overview" },
+        { label: "List analysis docs", command: "list analysis docs" },
+      ];
+  actions.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "assistant-action-btn";
+    button.textContent = String(item.label || "Run").trim();
+    button.addEventListener("click", () => {
+      const command = String(item.command || "").trim();
+      if (!command) return;
+      setActivePage("chat");
+      injectUserText(command, "text");
+    });
+    actionsHost.appendChild(button);
+  });
 }
 
 function renderThreadDetailWidget(data = {}) {
@@ -1082,6 +1311,7 @@ function renderMemoryOverviewWidget(data = {}) {
   if (pageSummary) pageSummary.textContent = summaryText || "Memory becomes durable only when you explicitly save it.";
   if (!summary || !tierRow || !linkedHost || !recentHost || !note) {
     renderPersonalLayerWidget();
+    requestWorkspaceHomeRefresh();
     return;
   }
 
@@ -1200,6 +1430,7 @@ function renderMemoryOverviewWidget(data = {}) {
     setMemoryCenterStatus(memoryCenterState.summary || "Memory is ready for explicit saves and review.");
   }
   renderMemoryCenterSurface();
+  requestWorkspaceHomeRefresh();
 }
 
 function renderMemoryListWidget(data = {}) {
@@ -2252,6 +2483,8 @@ function renderTrustPanel(data = {}) {
       blockedHost.appendChild(list);
     }
   }
+
+  requestWorkspaceHomeRefresh();
 }
 
 function markExternalCall(label) {
@@ -4090,6 +4323,8 @@ function hydrateDashboardWidgets() {
   safeWSSend({ text: "system status", silent_widget_refresh: true });
   safeWSSend({ text: "calendar", silent_widget_refresh: true });
   safeWSSend({ text: "memory overview", silent_widget_refresh: true });
+  safeWSSend({ text: "show threads", silent_widget_refresh: true });
+  safeWSSend({ text: "workspace home", silent_widget_refresh: true });
   safeWSSend({ text: "tone status", silent_widget_refresh: true });
   safeWSSend({ text: "notification status", silent_widget_refresh: true });
   safeWSSend({ text: "pattern status", silent_widget_refresh: true });
@@ -4167,6 +4402,9 @@ function connectWebSocket() {
         break;
       case "thread_map":
         renderThreadMapWidget(msg);
+        break;
+      case "workspace_home":
+        renderWorkspaceHomeWidget(msg);
         break;
       case "thread_detail":
         renderThreadDetailWidget(msg);
@@ -4306,6 +4544,9 @@ function setActivePage(page) {
 
   if (target === "memory") {
     hydrateMemoryManagement();
+  }
+  if (target === "home") {
+    requestWorkspaceHomeRefresh(true);
   }
 
   if (latestNewsItems.length > 0) {
@@ -4804,6 +5045,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderOperatorHealthWidget({});
   renderCapabilitySurfaceWidget({});
   renderTrustPanel();
+  renderWorkspaceHomeWidget({});
   renderIntelligenceBriefWidget();
   renderPersonalLayerWidget();
   renderQuickActions();
@@ -4928,6 +5170,11 @@ window.addEventListener("DOMContentLoaded", () => {
       setActivePage("chat");
       injectUserText("system status", "text");
     });
+  }
+
+  const workspaceHomeRefreshBtn = $("btn-workspace-home-refresh");
+  if (workspaceHomeRefreshBtn) {
+    workspaceHomeRefreshBtn.addEventListener("click", () => requestWorkspaceHomeRefresh(true));
   }
 
   const memoryOverviewBtn = $("btn-memory-overview");

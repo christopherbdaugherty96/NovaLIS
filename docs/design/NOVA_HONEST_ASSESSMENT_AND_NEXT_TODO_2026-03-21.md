@@ -86,31 +86,31 @@ and not:
 ## Next Todo Before Anything Else
 The next highest-value product-foundation priority should now be:
 
-### 1. Project / Workspace Home Foundations
+### 1. Unified Trust Center Foundations
 Best next branch:
-- `codex/agent-os-stage1-project-workspaces`
+- `codex/trust-center-stage1-recent-actions`
 
 Why this should come first:
-- governed memory now exists
-- bounded memory retrieval is already active
-- answer-first search and in-place news work are now stronger
-- the biggest missing user-facing operating layer is a place where project context, reports, memory, and next actions come together
-- this is the cleanest path from "capable assistant surfaces" toward the Agent-OS vision
+- Workspace Home now exists as a calmer operating surface
+- the next biggest missing user-facing layer is one clearer place to review actions, approvals, blocks, and why Nova did what it did
+- this is the cleanest next trust-preserving move after continuity and workspace visibility became real
+- it improves product confidence for non-technical users without widening authority
 
 Best scope:
-- active project home surface
-- recent work / next-step visibility
-- project-linked memory and report hooks
-- calm trust-preserving project continuity
+- recent actions
+- blocked actions
+- approvals and denials
+- clearer "why" explanations
+- provider/source visibility where relevant
 - no authority expansion
 - no hidden autonomy
 
 ## Recommended Follow-On Order
-After project/workspace foundations, the cleanest order is:
+After trust-center foundations, the cleanest order is:
 
-1. `codex/trust-center-stage1-recent-actions`
-2. `codex/onboarding-stage1-first-run`
-3. `codex/tts-regression-stage1-output-restore`
+1. `codex/onboarding-stage1-first-run`
+2. `codex/tts-regression-stage1-output-restore`
+3. `codex/agent-os-stage2-project-workspaces`
 4. `codex/local-project-visualization-stage1-structure-map`
 5. connector-management surface work
 

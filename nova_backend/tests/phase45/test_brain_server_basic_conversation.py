@@ -666,6 +666,74 @@ def test_silent_memory_show_refresh_updates_widget_without_chat_noise(monkeypatc
     assert any(msg.get("type") == "memory_item" for msg in ws.sent_messages)
 
 
+def test_silent_workspace_home_refresh_updates_widget_without_chat_noise(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket([{"type": "chat", "text": "workspace home", "silent_widget_refresh": True}])
+
+    async def _fake_send_workspace_home_widget(_ws, session_state, project_threads):
+        payload = {
+            "type": "workspace_home",
+            "summary": "Active workspace: Pour Social.",
+            "focus_thread": {"name": "Pour Social", "health_state": "on-track"},
+            "recommended_actions": [{"label": "Continue Pour Social", "command": "continue my Pour Social"}],
+        }
+        session_state["last_workspace_home"] = payload
+        await brain_server.ws_send(_ws, payload)
+        return payload
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.send_workspace_home_widget",
+        side_effect=_fake_send_workspace_home_widget,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert not any("Workspace Home" in msg for msg in chat_messages)
+    assert any(msg.get("type") == "workspace_home" for msg in ws.sent_messages)
+
+
+def test_workspace_home_command_returns_widget_and_summary(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["workspace home"])
+
+    async def _fake_send_workspace_home_widget(_ws, session_state, project_threads):
+        payload = {
+            "type": "workspace_home",
+            "summary": "Active workspace: Pour Social.",
+            "focus_thread": {
+                "name": "Pour Social",
+                "health_state": "on-track",
+                "latest_blocker": "Vendor reply pending",
+                "latest_next_action": "Confirm event package",
+            },
+            "recommended_actions": [{"label": "Continue Pour Social", "command": "continue my Pour Social"}],
+        }
+        session_state["last_workspace_home"] = payload
+        await brain_server.ws_send(_ws, payload)
+        return payload
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.send_workspace_home_widget",
+        side_effect=_fake_send_workspace_home_widget,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Workspace Home" in msg for msg in chat_messages)
+    assert any("Focus project: Pour Social" in msg for msg in chat_messages)
+    assert any(msg.get("type") == "workspace_home" for msg in ws.sent_messages)
+
+
 def test_save_this_uses_last_response_and_routes_to_governed_memory(monkeypatch):
     from src.actions.action_result import ActionResult
 

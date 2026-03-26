@@ -1,6 +1,6 @@
 # Phase 5 Governed Memory Stage 2 Management Surface Runtime Slice
 Date: 2026-03-25
-Status: Implemented runtime slice on `codex/memory-stage2-management-ui`; ready to merge after branch review
+Status: Implemented in the current repository state on `main`
 Scope: Expand governed memory from an inspectable command surface into a dedicated dashboard management page with silent list/detail hydration, bounded item selection, and explicit governed item actions
 
 ## What Landed
