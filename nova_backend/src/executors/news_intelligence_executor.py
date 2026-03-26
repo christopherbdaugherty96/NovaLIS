@@ -2,12 +2,13 @@ from __future__ import annotations
 
 import json
 import re
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError, as_completed
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from itertools import combinations
 from pathlib import Path
 from typing import Any
+import time
 
 from src.actions.action_result import ActionResult
 from src.llm.llm_gateway import generate_chat
@@ -16,7 +17,14 @@ from src.utils.content_extractor import extract_text_from_html
 
 MAX_HEADLINES_PER_SUMMARY = 3
 LLM_TIMEOUT_SECONDS = 8.0
-SOURCE_READ_TIMEOUT_SECONDS = 8.0
+SOURCE_FETCH_TIMEOUT_SECONDS = 3.0
+SUMMARY_REQUEST_TIMEOUT_SECONDS = 7.0
+BRIEF_REQUEST_TIMEOUT_SECONDS = 8.5
+STORY_PAGE_REQUEST_TIMEOUT_SECONDS = 6.0
+HEADLINE_ANALYSIS_TIMEOUT_SECONDS = 2.4
+CLUSTER_ANALYSIS_TIMEOUT_SECONDS = 2.2
+BRIEF_ANALYSIS_TIMEOUT_SECONDS = 2.8
+STORY_PAGE_ANALYSIS_TIMEOUT_SECONDS = 2.8
 MAX_SOURCE_PAGES_PER_BRIEF = 4
 MAX_SOURCE_TEXT_CHARS = 3500
 MAX_CLUSTER_STORIES = 4
@@ -325,6 +333,8 @@ class NewsIntelligenceExecutor:
         max_tokens: int = 550,
     ) -> str:
         effective_timeout = LLM_TIMEOUT_SECONDS if timeout_seconds is None else timeout_seconds
+        if effective_timeout <= 0.05:
+            return fallback
         pool = ThreadPoolExecutor(max_workers=1)
         future = pool.submit(
             generate_chat,
@@ -335,6 +345,7 @@ class NewsIntelligenceExecutor:
             session_id=session_id,
             max_tokens=max_tokens,
             temperature=0.2,
+            timeout=effective_timeout,
         )
         try:
             text = future.result(timeout=effective_timeout)
@@ -345,8 +356,21 @@ class NewsIntelligenceExecutor:
         except Exception:
             return fallback
         finally:
-            # wait=True ensures timed-out work cannot continue after return.
-            pool.shutdown(wait=True, cancel_futures=True)
+            # Return promptly on timeout instead of waiting for the worker to drain.
+            pool.shutdown(wait=False, cancel_futures=True)
+
+    @staticmethod
+    def _remaining_seconds(deadline: float | None) -> float | None:
+        if deadline is None:
+            return None
+        return max(0.0, deadline - time.monotonic())
+
+    @classmethod
+    def _bounded_timeout(cls, deadline: float | None, preferred_timeout: float) -> float:
+        remaining = cls._remaining_seconds(deadline)
+        if remaining is None:
+            return preferred_timeout
+        return max(0.05, min(preferred_timeout, remaining))
 
     def _fetch_source_text(
         self,
@@ -355,17 +379,21 @@ class NewsIntelligenceExecutor:
         *,
         request_id: str | None = None,
         session_id: str | None = None,
+        timeout_seconds: float | None = None,
     ) -> str:
         cleaned_url = (url or "").strip()
         if not cleaned_url or self.network is None:
             return ""
+        effective_timeout = (
+            SOURCE_FETCH_TIMEOUT_SECONDS if timeout_seconds is None else max(0.05, timeout_seconds)
+        )
         try:
             response = self.network.request(
                 capability_id=capability_id,
                 method="GET",
                 url=cleaned_url,
                 as_json=False,
-                timeout=6,
+                timeout=effective_timeout,
                 request_id=request_id,
                 session_id=session_id,
             )
@@ -383,32 +411,62 @@ class NewsIntelligenceExecutor:
         *,
         request_id: str | None = None,
         session_id: str | None = None,
+        deadline: float | None = None,
     ) -> list[dict[str, str]]:
-        packets: list[dict[str, str]] = []
+        candidates: list[dict[str, str]] = []
         seen_urls: set[str] = set()
         for item in headlines:
             url = (item.get("url") or "").strip()
             if not url or url in seen_urls:
                 continue
             seen_urls.add(url)
-            text = self._fetch_source_text(
-                url,
+            candidates.append(item)
+            if len(candidates) >= MAX_SOURCE_PAGES_PER_BRIEF:
+                break
+        if not candidates:
+            return []
+
+        request_timeout = self._bounded_timeout(deadline, SOURCE_FETCH_TIMEOUT_SECONDS)
+        if request_timeout <= 0.05:
+            return []
+
+        packets: list[dict[str, str]] = []
+        worker_count = min(MAX_SOURCE_PAGES_PER_BRIEF, len(candidates))
+        pool = ThreadPoolExecutor(max_workers=worker_count)
+        futures = {
+            pool.submit(
+                self._fetch_source_text,
+                (item.get("url") or "").strip(),
                 capability_id=capability_id,
                 request_id=request_id,
                 session_id=session_id,
-            )
-            if not text:
-                continue
-            packets.append(
-                {
-                    "title": (item.get("title") or "").strip(),
-                    "source": (item.get("source") or "").strip() or "Unknown",
-                    "url": url,
-                    "text": text,
-                }
-            )
-            if len(packets) >= MAX_SOURCE_PAGES_PER_BRIEF:
-                break
+                timeout_seconds=request_timeout,
+            ): item
+            for item in candidates
+        }
+        try:
+            for future in as_completed(futures, timeout=request_timeout + 0.1):
+                item = futures[future]
+                try:
+                    text = (future.result() or "").strip()
+                except Exception:
+                    text = ""
+                if not text:
+                    continue
+                packets.append(
+                    {
+                        "title": (item.get("title") or "").strip(),
+                        "source": (item.get("source") or "").strip() or "Unknown",
+                        "url": (item.get("url") or "").strip(),
+                        "text": text,
+                    }
+                )
+        except FuturesTimeoutError:
+            pass
+        finally:
+            for future in futures:
+                future.cancel()
+            pool.shutdown(wait=False, cancel_futures=True)
         return packets
 
     def _source_brief_prompt(self, packets: list[dict[str, str]]) -> str:
@@ -978,6 +1036,7 @@ class NewsIntelligenceExecutor:
         return cleaned
 
     def _summarize_story_page(self, request, headlines: list[dict[str, str]], story_index: int, session_id: str | None) -> ActionResult:
+        deadline = time.monotonic() + STORY_PAGE_REQUEST_TIMEOUT_SECONDS
         if story_index < 1 or story_index > len(headlines):
             return self._failure_result(
                 "I couldn't find that story number in the current headlines.",
@@ -1001,6 +1060,7 @@ class NewsIntelligenceExecutor:
             capability_id=request.capability_id,
             request_id=f"{request.request_id}:story-page:{story_index}",
             session_id=session_id,
+            timeout_seconds=self._bounded_timeout(deadline, SOURCE_FETCH_TIMEOUT_SECONDS),
         )
         if not source_text:
             return self._failure_result(
@@ -1019,7 +1079,7 @@ class NewsIntelligenceExecutor:
             fallback,
             request_id=f"{request.request_id}:story-page-analysis:{story_index}",
             session_id=session_id,
-            timeout_seconds=SOURCE_READ_TIMEOUT_SECONDS,
+            timeout_seconds=self._bounded_timeout(deadline, STORY_PAGE_ANALYSIS_TIMEOUT_SECONDS),
             max_tokens=520,
         )
         normalized = self._normalize_story_page_summary(analysis, fallback)
@@ -1065,6 +1125,7 @@ class NewsIntelligenceExecutor:
         )
 
     def execute_summary(self, request) -> ActionResult:
+        deadline = time.monotonic() + SUMMARY_REQUEST_TIMEOUT_SECONDS
         headlines = self._sanitize_headlines((request.params or {}).get("headlines"))
         categories = self._sanitize_categories((request.params or {}).get("categories"))
         session_id = str((request.params or {}).get("session_id") or "").strip() or None
@@ -1164,20 +1225,31 @@ class NewsIntelligenceExecutor:
                 data={"selection_count": len(selected)},
             )
 
+        source_packets = self._collect_source_packets(
+            selected,
+            capability_id=request.capability_id,
+            request_id=f"{request.request_id}:headline-source",
+            session_id=session_id,
+            deadline=deadline,
+        )
+        source_by_url = {
+            str(packet.get("url") or "").strip(): str(packet.get("text") or "")
+            for packet in source_packets
+        }
+
         normalized_summaries: list[str] = []
         for item, idx in zip(selected, indices):
             fallback = self._headline_summary_fallback(item)
-            article_excerpt = self._fetch_source_text(
-                str(item.get("url") or ""),
-                capability_id=request.capability_id,
-                request_id=f"{request.request_id}:article:{idx}",
-                session_id=session_id,
-            )
+            article_excerpt = source_by_url.get(str(item.get("url") or "").strip(), "")
+            if (self._remaining_seconds(deadline) or 0.0) <= 0.05:
+                normalized_summaries.append(self._normalize_headline_summary(fallback, item))
+                continue
             analysis = self._llm_or_fallback(
                 self._headline_prompt(item, idx, article_excerpt=article_excerpt),
                 fallback,
                 request_id=f"{request.request_id}:headline:{idx}",
                 session_id=session_id,
+                timeout_seconds=self._bounded_timeout(deadline, HEADLINE_ANALYSIS_TIMEOUT_SECONDS),
             )
             normalized_summaries.append(self._normalize_headline_summary(analysis, item))
 
@@ -1213,6 +1285,7 @@ class NewsIntelligenceExecutor:
         )
 
     def execute_brief(self, request) -> ActionResult:
+        deadline = time.monotonic() + BRIEF_REQUEST_TIMEOUT_SECONDS
         session_id = str((request.params or {}).get("session_id") or "").strip() or None
         action = str((request.params or {}).get("action") or "").strip().lower()
         brief_clusters = (request.params or {}).get("brief_clusters")
@@ -1259,6 +1332,7 @@ class NewsIntelligenceExecutor:
                 capability_id=request.capability_id,
                 request_id=request.request_id,
                 session_id=session_id,
+                deadline=deadline,
             )
             if packets:
                 clusters = self._cluster_packets(packets)
@@ -1266,14 +1340,17 @@ class NewsIntelligenceExecutor:
                 omitted_clusters = 0
                 placeholder_clusters = 0
                 for cluster in clusters:
-                    analysis = self._llm_or_fallback(
-                        self._cluster_prompt(cluster),
-                        "",
-                        request_id=f"{request.request_id}:cluster:{cluster.get('title','general')}",
-                        session_id=session_id,
-                        timeout_seconds=SOURCE_READ_TIMEOUT_SECONDS,
-                        max_tokens=380,
-                    )
+                    if (self._remaining_seconds(deadline) or 0.0) <= 0.05:
+                        analysis = ""
+                    else:
+                        analysis = self._llm_or_fallback(
+                            self._cluster_prompt(cluster),
+                            "",
+                            request_id=f"{request.request_id}:cluster:{cluster.get('title','general')}",
+                            session_id=session_id,
+                            timeout_seconds=self._bounded_timeout(deadline, CLUSTER_ANALYSIS_TIMEOUT_SECONDS),
+                            max_tokens=380,
+                        )
                     fallback_summary, fallback_implication = self._cluster_fallback(cluster)
                     summary, implication = self._parse_summary_and_implication(
                         analysis,
@@ -1354,6 +1431,7 @@ class NewsIntelligenceExecutor:
             fallback,
             request_id=f"{request.request_id}:brief",
             session_id=session_id,
+            timeout_seconds=self._bounded_timeout(deadline, BRIEF_ANALYSIS_TIMEOUT_SECONDS),
         )
         brief = self.renderer.render_brief(
             source,

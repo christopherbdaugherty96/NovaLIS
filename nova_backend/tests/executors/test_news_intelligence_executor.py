@@ -75,7 +75,7 @@ def test_summary_falls_back_when_llm_is_slow(monkeypatch):
         return "this should timeout in test"
 
     monkeypatch.setattr(mod, "generate_chat", _slow_generate)
-    monkeypatch.setattr(mod, "LLM_TIMEOUT_SECONDS", 0.01)
+    monkeypatch.setattr(mod, "HEADLINE_ANALYSIS_TIMEOUT_SECONDS", 0.01)
 
     headlines = [{"title": "A", "source": "S1", "url": "u1"}]
     executor = mod.NewsIntelligenceExecutor()
@@ -84,22 +84,53 @@ def test_summary_falls_back_when_llm_is_slow(monkeypatch):
     assert "Limited detail is available from the headline alone." in result.message
 
 
-def test_llm_timeout_waits_for_worker_completion(monkeypatch):
+def test_llm_timeout_returns_promptly_without_waiting_for_worker_completion(monkeypatch):
     from src.executors import news_intelligence_executor as mod
 
     state = {"done": False}
 
     def _slow_generate(*args, **kwargs):
-        time.sleep(0.05)
+        time.sleep(0.2)
         state["done"] = True
         return "slow output"
 
     monkeypatch.setattr(mod, "generate_chat", _slow_generate)
 
     executor = mod.NewsIntelligenceExecutor()
-    _ = executor._llm_or_fallback("prompt", "fallback", "req-timeout-test", timeout_seconds=0.01)
+    started_at = time.monotonic()
+    result = executor._llm_or_fallback("prompt", "fallback", "req-timeout-test", timeout_seconds=0.01)
+    elapsed = time.monotonic() - started_at
 
-    assert state["done"] is True
+    assert result == "fallback"
+    assert elapsed < 0.1
+    assert state["done"] is False
+
+
+def test_brief_returns_promptly_when_source_reads_are_slow(monkeypatch):
+    from src.executors import news_intelligence_executor as mod
+
+    def _slow_fetch(*args, **kwargs):
+        time.sleep(0.2)
+        return "late article text"
+
+    monkeypatch.setattr(mod.NewsIntelligenceExecutor, "_fetch_source_text", _slow_fetch)
+    monkeypatch.setattr(mod, "SOURCE_FETCH_TIMEOUT_SECONDS", 0.01)
+    monkeypatch.setattr(mod, "generate_chat", lambda *args, **kwargs: "Top Headlines\n- Quick fallback.")
+
+    headlines = [
+        {"title": "A", "source": "S1", "url": "https://example.com/a"},
+        {"title": "B", "source": "S2", "url": "https://example.com/b"},
+        {"title": "C", "source": "S3", "url": "https://example.com/c"},
+    ]
+    executor = mod.NewsIntelligenceExecutor()
+
+    started_at = time.monotonic()
+    result = executor.execute_brief(_request(50, {"headlines": headlines, "read_sources": True}))
+    elapsed = time.monotonic() - started_at
+
+    assert result.success is True
+    assert "quicker headline-only brief" in result.message.lower()
+    assert elapsed < 0.3
 
 
 def test_summary_filters_by_source(monkeypatch):
