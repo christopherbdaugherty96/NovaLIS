@@ -1,0 +1,2 @@
+# Compatibility shim for existing tooling paths.
+-r ../requirements-optional-wakeword.txt

@@ -1,15 +1,3 @@
-fastapi
-uvicorn[standard]
-httpx
-websockets
-psutil
-pydantic
-python-multipart
-aiofiles
-openwakeword
-sounddevice
-numpy
-vosk
-feedparser
-pyttsx3
-beautifulsoup4
+# Compatibility shim for existing workflow paths.
+# Canonical runtime dependencies now live in `nova_backend/requirements.txt`.
+-r ../requirements.txt

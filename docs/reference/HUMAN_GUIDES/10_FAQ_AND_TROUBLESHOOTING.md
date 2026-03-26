@@ -1,5 +1,5 @@
 # FAQ and Troubleshooting
-Updated: 2026-03-13
+Updated: 2026-03-26
 
 ## Purpose
 This guide answers common practical questions about using Nova.
@@ -15,11 +15,21 @@ Current state:
 - push-to-talk speech transcription is active
 - text-to-speech capability is active, but real-device output still needs local validation
 - wake word is planned, but not currently a live runtime capability
+- wake word is not part of the default dependency install
 
 So the right way to describe Nova today is:
 - voice input works
 - voice output is implemented and improving, but still being validated on real devices
 - wake word is still a planned surface
+
+## 1A. How do I start Nova locally?
+Use the startup script that matches your system:
+
+- Windows: `start_nova.bat`
+- macOS/Linux: `./start_nova.sh`
+
+If you want the full install and startup guide, read:
+- `26_LOCAL_SETUP_AND_STARTUP.md`
 
 ## 2. Why didn't Nova do anything automatically?
 Usually because Nova is designed not to act automatically.

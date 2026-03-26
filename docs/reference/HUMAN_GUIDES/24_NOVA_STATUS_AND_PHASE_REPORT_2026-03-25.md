@@ -16,6 +16,7 @@ It now has:
 - a token-gated governed remote bridge for read/reasoning access
 - a Home page, Workspace page, Trust page, Policies page, Introduction page, Settings page, News page, Memory page, and chat surface
 - a separate landing-preview page for product messaging review
+- a pinned base dependency path plus Windows and Unix startup scripts
 - local-project understanding that now includes a visible structure-map view with structured graph output
 - a dedicated conversation personality layer and a dedicated voice presentation layer to keep replies smoother
 
@@ -84,6 +85,7 @@ At the time of this report, the runtime shows:
   - Workspace page, Trust page, Policies page, Introduction page, and Settings page dashboard surfaces
   - local-project structure-map surface with stage-2 graph output
   - token-gated OpenClaw bridge status and read/reasoning message ingress
+  - cross-platform startup scripts and a smaller default dependency install
 
 Runtime invariants still in force:
 - no autonomy

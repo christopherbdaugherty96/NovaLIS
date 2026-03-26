@@ -18,6 +18,9 @@ Current cross-phase planning packet:
 Current product-messaging hardening packet:
 - `docs/design/NOVA_PRODUCT_MESSAGING_HARDENING_AND_APPLICATION_PLAN_2026-03-26.md`
 
+Current corrected repo-audit and remediation packet:
+- `docs/design/NOVA_CORRECTED_REPO_AUDIT_AND_REMEDIATION_2026-03-26.md`
+
 Current bounded conversational planning packet:
 - `docs/design/CONVERSATIONAL_CORE_PHASE_PLAN_2026-03-19.md`
 

@@ -29,6 +29,7 @@ That means Nova already has:
 - a dedicated Policies page for draft review, delegation-readiness review, simulation, and one-shot manual runs
 - a dedicated Introduction page and a dedicated Settings page
 - a separate landing-preview page for product messaging review
+- a pinned base dependency file and cross-platform startup scripts
 - a first-run onboarding guide for non-technical users
 - a visible local-project Structure Map surface with structured graph output
 - inspectable list/show/edit/delete memory paths with confirmation where needed
@@ -106,6 +107,7 @@ A careful plain-language description of the current system is:
 - voice input exists
 - voice output is improved in code, auto-speaks voice-origin turns more reliably, trims long spoken replies more intelligently, and still depends on local device/audio validation
 - wake word is planned
+- wake word is optional and not part of the default install
 - governed external execution remains planned, not runtime-authorized
 - governed remote bridge access is now live, but it remains read/reasoning-only and token-gated
 

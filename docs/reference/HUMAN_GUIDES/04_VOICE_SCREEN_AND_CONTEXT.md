@@ -80,6 +80,7 @@ What exists now:
 - voice-origin turns can now auto-speak answers more reliably
 - the local speech path now has a stronger fallback route when the preferred renderer cannot play
 - wake word is still documented as a planned surface
+- wake-word dependencies are now treated as optional, not part of the base install
 
 What does not yet exist as active runtime truth:
 - a live always-on wake-word module that is part of the current capability surface
