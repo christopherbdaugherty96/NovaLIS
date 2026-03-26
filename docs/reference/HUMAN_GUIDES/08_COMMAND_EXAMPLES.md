@@ -1,5 +1,5 @@
 # Command Examples
-Updated: 2026-03-14
+Updated: 2026-03-26
 
 ## Purpose
 This guide shows natural ways to talk to Nova.
@@ -11,7 +11,8 @@ The goal is to make it obvious what kinds of requests Nova handles well today.
 Current runtime truth:
 - typed commands are active
 - push-to-talk speech transcription is active
-- text-to-speech is improved in code and still depends on local device/output validation
+- voice-origin replies now auto-speak through the runtime speech helper more reliably
+- text-to-speech is still subject to local device/output validation for final confidence
 - wake word is still planned, not active runtime truth yet
 
 So when you see examples below, read them as:
@@ -19,9 +20,6 @@ So when you see examples below, read them as:
 - or something you can say through the active voice input path
 
 ## 1. Research and Search
-
-Use these when you want current information or a quick lookup.
-
 Examples:
 - `search for local AI sovereignty tools`
 - `look up the latest OpenAI API pricing`
@@ -35,9 +33,6 @@ Good follow-ups:
 - `which result is the most reliable source and why`
 
 ## 2. News and Daily Briefing
-
-Use these when you want current headlines, summaries, or a more detailed story explanation.
-
 Examples:
 - `news`
 - `latest news`
@@ -50,41 +45,23 @@ Good follow-ups:
 - `summarize headline 1`
 - `summary of article 1`
 - `more on story 2`
-- `summary of story #3`
 - `compare headlines 1 and 2`
 - `summarize politics news`
 - `summarize global news`
 - `summarize local news`
 - `summarize tech news`
 - `summarize crypto news`
-- `research latest coverage of NVIDIA`
-- `track story EU AI Act`
-
-Important note:
-- `today's news` is the source-grounded brief path, not just a headline recap
-- `more on story 2` and `summary of article 1` are meant to summarize the linked article page when Nova has the URL, not just repeat the headline.
 
 ## 3. Weather, Calendar, and System Snapshots
-
-Use these when you want quick daily situational context.
-
 Examples:
 - `weather`
 - `forecast`
 - `calendar`
 - `today's schedule`
 - `system status`
-- `system check`
-
-Good follow-ups:
 - `morning brief`
-- `show my calendar`
-- `what is the system status`
 
 ## 4. Screen and Explain Mode
-
-Use these when you want Nova to help with what is currently on your screen.
-
 Examples:
 - `take a screenshot`
 - `capture the screen`
@@ -95,276 +72,106 @@ Examples:
 - `what am I looking at?`
 - `which one should I download?`
 
-Good follow-ups:
-- `help me do this`
-- `what should I click next`
-- `explain this in more detail`
-
-Use cases:
-- software download pages
-- errors on screen
-- settings panels
-- charts
-- code snippets
-- technical pages
-
-## 5. File and Document Help
-
-Use these when you want Nova to explain or organize document-like material.
-
-Examples:
-- `create analysis report on the EU AI Act`
-- `list analysis docs`
-- `summarize doc 1`
-- `explain section 2 of doc 1`
-- `verify this`
-
-If a file is selected or already part of the current context, these also fit naturally:
-- `explain this`
-- `summarize this file`
-
-## 6. Websites, Files, and Local Computer Help
-
-Use these when you want a local action or quick computer control.
-
+## 5. Websites, Files, and Local Computer Help
 Examples:
 - `open github`
-- `open source 2`
-- `preview source 1`
 - `open downloads`
-- `open desktop`
-- `open file C:\\Users\\Chris\\Downloads\\notes.txt`
-
-Local control examples:
+- `open file C:\Users\Chris\Downloads\notes.txt`
 - `volume up`
 - `mute`
-- `unmute`
-- `set volume to 40`
-- `play`
 - `pause`
-- `resume`
-- `brightness up`
 - `brightness down`
 - `set brightness to 65`
 
-## 7. Voice Output
-
-Use these when you want Nova to read something aloud.
-
+## 6. Voice Output
 Examples:
 - `speak that`
 - `read that`
 - `say it`
-
-These work best after Nova has already produced some text worth hearing.
 
 There is also a bounded same-thread second-opinion control in the chat bar:
 - click `DeepSeek`
 - Nova will request a bounded external second opinion on the recent exchange
 - this stays advisory only
 
-## 8. Project Continuity
-
-Use these when you are working on something over time and do not want to restate everything.
-
+## 7. Project Continuity And Workspace
 Examples:
 - `create thread deployment issue`
 - `show threads`
 - `continue my deployment issue`
 - `project status deployment issue`
-- `biggest blocker in deployment issue`
-- `which project is most blocked right now`
 - `thread detail deployment issue`
-- `why this recommendation`
+- `workspace home`
+- `workspace board`
+- `project home`
 
-These are especially useful for:
-- debugging efforts
-- research projects
-- design work
-- long-running implementation tasks
+## 8. Trust Review
+Examples:
+- `trust center`
+- `trust review`
+- `trust status`
+- `system status`
+
+Use these when you want to understand:
+- what Nova did recently
+- what is currently blocked
+- what mode Nova is in
+- whether anything external happened recently
 
 ## 9. Governed Memory
-
-Use these when you want to preserve something across time on purpose.
-
 Examples:
+- `save this`
+- `remember this: client supplies alcohol`
 - `memory overview`
-- `memory status`
-- `memory save deployment fix: confirm PYTHONPATH in container`
-- `memory list`
+- `list memories`
+- `show that memory`
 - `memory show mem_123`
-- `memory lock mem_123`
-- `memory defer mem_123`
-- `memory unlock mem_123 confirm`
-- `memory delete mem_123 confirm`
-- `memory supersede mem_123 with deployment fix v2: use explicit path validation confirm`
-
-Thread-linked memory examples:
-- `memory save thread deployment issue`
-- `memory save decision for deployment issue: inspect path before rebuild`
-- `memory list thread deployment issue`
+- `edit that memory: updated text`
+- `delete that memory`
 
 Dashboard note:
-- Nova now also exposes a dedicated Memory page for reviewing durable memory, linked threads, and recent items.
+- Nova now exposes a dedicated Memory page for reviewing durable memory, linked threads, and recent items.
 
-## 10. Natural Follow-Up Examples
-
-Nova works best when follow-ups stay close to the current task.
-
+## 10. Local Project Understanding
 Examples:
-- `shorter`
-- `compare those`
-- `open the first one`
-- `more on story 1`
-- `help me do that`
-- `what should I do next`
-- `save this`
-- `save this as part of deployment issue`
+- `audit this repo`
+- `summarize this repo`
+- `create analysis report on this repo architecture`
+- `visualize this repo`
+- `show structure map`
 
 ## 11. Response Style and Tone
-
-Use these when you want to explicitly control how Nova presents information.
-
 Examples:
-- `tone`
 - `tone status`
-- `tone settings`
 - `tone set concise`
 - `tone set detailed`
-- `tone set formal`
 - `tone set research detailed`
-- `tone set system formal`
-- `tone reset research`
 - `tone reset all`
 
-Use cases:
-- make system answers tighter
-- make research answers fuller
-- inspect whether any domain overrides are active
-- reset Nova back to the default presentation profile
-
 ## 12. Scheduled Updates and Reminders
-
-Use these when you want Nova to keep a calm, explicit daily rhythm.
-
 Examples:
 - `show schedules`
-- `notification status`
-- `notification settings`
 - `schedule daily brief at 8:00 am`
-- `schedule daily brief at 7:30 am`
 - `remind me at 2:00 pm to review deployment issue`
-- `remind me daily at 9:00 am to review project threads`
-- `reschedule schedule SCH-123 to 3:00 pm`
 - `set quiet hours from 10:00 pm to 7:00 am`
-- `clear quiet hours`
-- `set notification rate limit 2 per hour`
 - `cancel schedule SCH-123`
-- `dismiss schedule SCH-123`
-
-Important note:
-- schedules are created only when you ask
-- scheduled items surface quietly
-- scheduled items do not auto-run actions for you
-- quiet hours and rate limits are explicit settings you control
 
 ## 13. Pattern Review
-
-Use these when you want Nova to inspect ongoing work for repeated themes without letting it act on those themes automatically.
-
 Examples:
 - `pattern opt in`
 - `pattern status`
 - `review patterns`
-- `review patterns for deployment issue`
 - `accept pattern PAT-123`
 - `dismiss pattern PAT-123`
-
-Important note:
-- you must opt in first
-- reviewing patterns is explicit
-- accepting a pattern does not execute anything
-
-## 14. Delegated Policy Review
-
-Use these when you want Nova to prepare, inspect, simulate, or manually review-run a very small delegated policy without turning on automation.
-
-Examples:
-- `policy overview`
-- `policy create weekday calendar snapshot at 8:00 am`
-- `policy create daily weather snapshot at 7:30 am`
-- `policy show POL-123`
-- `policy simulate POL-123`
-- `policy run POL-123 once`
-- `policy delete POL-123 confirm`
-
-Important note:
-- policy drafts stay disabled by default
-- simulation is read-only review
-- `policy run ... once` is explicit and manual
-- background triggers are still not active
-
-## 15. Best Practices
-
-If you want the smoothest experience:
-- be direct
-- mention the thing you want if the context is ambiguous
-- use thread names consistently for long-running work
-- use explicit memory commands when something matters enough to preserve
-
-## 16. Examples of Good Everyday Flows
-
-### News flow
-- `news`
-- `more on story 2`
-- `open source 2`
-
-### Screen help flow
-- `explain this`
-- `what should I click next`
-
-### Project continuity flow
-- `continue my deployment issue`
-- `biggest blocker in deployment issue`
-- `memory save decision for deployment issue: inspect path before rebuild`
-
-### Response style flow
-- `tone status`
-- `tone set concise`
-- `tone set research detailed`
-- `tone reset all`
-
-### Scheduling flow
-- `show schedules`
-- `schedule daily brief at 8:00 am`
-- `remind me daily at 9:00 am to review project threads`
-- `set quiet hours from 10:00 pm to 7:00 am`
-- `set notification rate limit 2 per hour`
-- `notification status`
-
-### Pattern review flow
-- `pattern opt in`
-- `review patterns`
-- `accept pattern PAT-123`
-- `dismiss pattern PAT-123`
-
-### Delegated policy review flow
-- `policy overview`
-- `policy create weekday calendar snapshot at 8:00 am`
-- `policy simulate POL-123`
-- `policy run POL-123 once`
-
-### System help flow
-- `system status`
-- `open downloads`
-- `set brightness to 60`
 
 ## Short Version
 If you are not sure what to say, start with one of these:
-
 - `news`
 - `weather`
 - `system status`
+- `trust center`
+- `workspace board`
 - `explain this`
 - `continue my <project>`
-- `memory list`
+- `list memories`
+- `visualize this repo`

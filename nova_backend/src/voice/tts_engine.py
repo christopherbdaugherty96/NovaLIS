@@ -7,6 +7,7 @@ import subprocess
 import sys
 import tempfile
 import threading
+import importlib
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Dict, Optional
@@ -222,8 +223,24 @@ def nova_speak(text: str) -> None:
         logger.debug("SPEECH_RENDERED ledger write failed")
     except Exception:
         logger.debug("Unexpected speech ledger error", exc_info=True)
+
+    def _render_with_fallback() -> None:
+        rendered = SpeechRenderer().render(speak_text)
+        if rendered:
+            return
+        try:
+            tts_executor = importlib.import_module("src.executors.tts_executor")
+            engine_cls = getattr(tts_executor, "TTSEngine", None)
+            if engine_cls is None:
+                return
+            speak_fn = getattr(engine_cls, "speak", None)
+            if callable(speak_fn):
+                speak_fn(speak_text)
+        except Exception:
+            logger.debug("Fallback speech render failed", exc_info=True)
+
     # Use audio task helper to avoid direct threading outside allowed files.
-    run_speech_task(lambda: SpeechRenderer().render(speak_text))
+    run_speech_task(_render_with_fallback)
 
 
 def resolve_speakable_text(action_result: Any) -> str:

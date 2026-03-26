@@ -162,6 +162,8 @@
             <button id="btn-home-explain" type="button">Explain this</button>
             <button id="btn-home-research" type="button">Research topic</button>
             <button id="btn-home-continue-project" type="button">Continue project</button>
+            <button id="btn-home-workspace-page" type="button">Open workspace</button>
+            <button id="btn-home-trust-page" type="button">Open trust</button>
           </div>
         </div>
         <div id="workspace-home-widget" class="widget page-card workspace-home-widget" aria-live="polite">
@@ -242,6 +244,146 @@
             <button id="btn-home-schedules" type="button">Schedules</button>
             <button id="btn-home-pattern-status" type="button">Pattern review</button>
           </div>
+        </div>
+      </section>
+
+      <section id="page-workspace" class="page-view page-workspace" hidden>
+        <div class="widget page-card workspace-board-hero" aria-live="polite">
+          <div class="workspace-board-hero-header">
+            <div>
+              <div class="home-launch-kicker">Workspace</div>
+              <h3>Project Board</h3>
+            </div>
+            <span class="confidence-badge">Continuity, not clutter</span>
+          </div>
+          <p id="workspace-board-summary">Workspace Board brings together the current project, recent memory, reports, and the structure map in one calm view.</p>
+          <div class="workspace-board-actions-toolbar">
+            <button id="btn-workspace-board-refresh" type="button">Refresh board</button>
+            <button id="btn-workspace-board-threads" type="button">Show threads</button>
+            <button id="btn-workspace-board-visual" type="button">Refresh structure map</button>
+            <button id="btn-workspace-board-architecture" type="button">Architecture report</button>
+          </div>
+        </div>
+
+        <div class="widget page-card workspace-board-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Current Focus</div>
+              <p class="workspace-board-section-copy">The project Nova thinks you are most likely trying to continue.</p>
+            </div>
+          </div>
+          <div id="workspace-board-focus" class="workspace-home-focus"></div>
+          <div id="workspace-board-stats" class="workspace-board-stats"></div>
+        </div>
+
+        <div class="widget page-card workspace-board-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Project Threads</div>
+              <p class="workspace-board-section-copy">Threads keep decisions, blockers, and the next step connected over time.</p>
+            </div>
+          </div>
+          <div id="workspace-board-threads" class="workspace-board-threads"></div>
+        </div>
+
+        <div class="widget page-card workspace-board-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Recent Reports And Memory</div>
+              <p class="workspace-board-section-copy">Quick access to the latest reports and project memory that matter most right now.</p>
+            </div>
+          </div>
+          <div id="workspace-board-feed" class="workspace-home-docs"></div>
+          <div id="workspace-board-actions" class="workspace-home-actions"></div>
+        </div>
+
+        <div class="widget page-card project-structure-widget" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="home-launch-kicker">Visual Codebase Explainer</div>
+              <h3>Structure Map</h3>
+            </div>
+            <span class="confidence-badge">Read-only</span>
+          </div>
+          <p id="project-structure-summary">Nova can show a clean structure map of the current repo so people can understand the system without reading every file.</p>
+          <pre id="project-structure-tree" class="project-structure-tree"></pre>
+          <div id="project-structure-highlights" class="project-structure-highlights"></div>
+          <p id="project-structure-note" class="project-structure-note">This view stays explanatory and grounded in the repo structure.</p>
+          <div id="project-structure-actions" class="workspace-home-actions"></div>
+        </div>
+      </section>
+
+      <section id="page-trust" class="page-view page-trust" hidden>
+        <div class="widget page-card trust-center-hero" aria-live="polite">
+          <div class="workspace-board-hero-header">
+            <div>
+              <div class="home-launch-kicker">Trust</div>
+              <h3>Trust Center</h3>
+            </div>
+            <span class="confidence-badge">Visible and inspectable</span>
+          </div>
+          <p id="trust-center-summary">Trust Center keeps recent governed actions, blocked conditions, runtime health, and capability state in one place.</p>
+          <div class="workspace-board-actions-toolbar">
+            <button id="btn-trust-center-refresh" type="button">Refresh trust</button>
+            <button id="btn-trust-center-system" type="button">System status</button>
+            <button id="btn-trust-center-workspace" type="button">Open workspace</button>
+            <button id="btn-trust-center-memory" type="button">Open memory</button>
+          </div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Operating State</div>
+              <p class="workspace-board-section-copy">A plain-language view of what mode Nova is in and whether anything external happened recently.</p>
+            </div>
+          </div>
+          <div class="trust-center-metrics">
+            <div class="trust-row"><strong>Mode:</strong> <span id="trust-center-mode">Local-only</span></div>
+            <div class="trust-row"><strong>Last external call:</strong> <span id="trust-center-last-call">None</span></div>
+            <div class="trust-row"><strong>Data egress:</strong> <span id="trust-center-egress">Read-only requests only</span></div>
+            <div class="trust-row"><strong>Failure state:</strong> <span id="trust-center-failure">Normal</span></div>
+          </div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Recent Governed Actions</div>
+              <p class="workspace-board-section-copy">What Nova did recently and why it happened.</p>
+            </div>
+          </div>
+          <div id="trust-center-activity" class="trust-section trust-center-list"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Blocked Conditions</div>
+              <p class="workspace-board-section-copy">Places where Nova stayed inside a boundary instead of pushing through it.</p>
+            </div>
+          </div>
+          <div id="trust-center-blocked" class="trust-section trust-center-list"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Runtime Health</div>
+              <p id="trust-center-health-summary" class="workspace-board-section-copy">Loading runtime health...</p>
+            </div>
+          </div>
+          <div id="trust-center-health-grid" class="trust-center-health-grid"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Live Capability Surface</div>
+              <p id="trust-center-capability-summary" class="workspace-board-section-copy">Loading live capabilities...</p>
+            </div>
+          </div>
+          <div id="trust-center-capability-groups" class="trust-center-capability-groups"></div>
         </div>
       </section>
 

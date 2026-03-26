@@ -1,5 +1,5 @@
-﻿# Frontend and UI Guide
-Updated: 2026-03-25
+# Frontend and UI Guide
+Updated: 2026-03-26
 
 ## Purpose
 This guide explains Nova's frontend in plain language.
@@ -14,6 +14,7 @@ Its job is to:
 - make follow-up actions easy
 - provide calm presence through the orb
 - display system and continuity state without becoming an authority surface
+- make trust, workspace, memory, and onboarding legible to non-technical users
 
 ## Main Runtime Frontend Files
 The runtime-served frontend lives in:
@@ -29,6 +30,13 @@ There is also a mirrored copy in:
 
 ### `index.html`
 The main shell of the dashboard page.
+It now defines the major user-facing views:
+- Chat
+- News
+- Home
+- Workspace
+- Memory
+- Trust
 
 ### `dashboard.js`
 The most important frontend logic file.
@@ -36,7 +44,11 @@ It handles things like:
 - websocket interaction
 - rendering chat and widgets
 - thread map and thread detail behavior
-- system status surfaces
+- trust and system-status surfaces
+- memory review and item actions
+- workspace-board rendering
+- structure-map rendering
+- first-run guidance
 - follow-up actions
 
 ### `orb.js`
@@ -45,6 +57,7 @@ It is meant to create a sense of calm presence, not a hidden semantic signal.
 
 ### `style.phase1.css`
 The main styling layer for the dashboard and orb surface.
+It now also styles the dedicated Workspace and Trust pages and the first-run guide.
 
 ## What The Frontend Shows Today
 The frontend can present:
@@ -52,11 +65,14 @@ The frontend can present:
 - search widgets
 - weather/news/calendar widgets
 - system status
-- a Workspace Home card on the Home page
+- Workspace Home on the Home page
+- a dedicated Workspace page
+- a dedicated Trust page
 - thread map and thread detail
-- continuity/memory actions
+- continuity and memory actions
 - follow-up prompts
 - screen/perception results
+- a first-run guide for non-technical users
 
 More specifically, the current dashboard can now show:
 - Home-page operator health
@@ -64,7 +80,10 @@ More specifically, the current dashboard can now show:
 - Home-page Workspace Home
 - Memory Center list and item detail
 - News-page in-card summaries
-- second-opinion and follow-up controls
+- bounded second-opinion controls
+- Workspace page project board
+- Structure Map for local-project visualization
+- Trust page recent governed actions, blocked conditions, and capability visibility
 
 ## What The Frontend Is Not Supposed To Become
 Nova's frontend is not supposed to become a hidden authority layer.
@@ -81,8 +100,7 @@ Many systems become impressive in code but weak in real use.
 The frontend is where Nova starts to feel like:
 - a workspace
 - a continuity system
+- a trust-preserving daily tool
 - a calm intelligence layer
 
-That is why the dashboard and thread surfaces matter so much.
-
-The newer Workspace Home and Memory Center surfaces are especially important because they make Nova feel less like a command console and more like a place where ongoing work lives.
+The newer Workspace, Trust, Memory, and first-run surfaces are especially important because they make Nova feel less like a command console and more like a product a normal person can return to every day.

@@ -1,13 +1,21 @@
 # Nova Status And Phase Report
-Updated: 2026-03-25
+Updated: 2026-03-26
 Audience: People reviewing Nova from the outside
 Purpose: Give one clear view of where Nova is today, what is live in runtime, what was completed most recently, what phase each major area belongs to, and what still comes next.
 
 ## Executive Summary
-Nova is no longer just a concept or design packet.
-It is a working governed intelligence workspace with a live runtime, an active capability surface, a usable dashboard, explicit memory, local-project understanding, answer-first search, inline news summaries, and a bounded second-opinion review flow.
+Nova is a working governed intelligence workspace.
 
-The most important truth is:
+It now has:
+- a live runtime
+- a governed capability surface
+- explicit memory with a dedicated management page
+- answer-first search and source-grounded news flows
+- a bounded same-thread second-opinion path
+- a Home page, Workspace page, Trust page, News page, Memory page, and chat surface
+- local-project understanding that now includes a visible structure-map view
+
+The most important truth is still:
 - Nova is live
 - Nova is still governed
 - Nova is not autonomous
@@ -15,8 +23,8 @@ The most important truth is:
 
 The current repository state is:
 - branch: `main`
-- runtime truth date: `2026-03-25`
-- worktree state when this report was last updated: clean
+- runtime truth date: `2026-03-26`
+- worktree state when this report was last updated: clean after the current implementation slice
 
 ## What Nova Is Today
 The best plain-language description is:
@@ -27,7 +35,7 @@ That means it is designed to:
 - help with research, explanation, and ongoing work
 - assist with bounded local computer actions
 - preserve explicit memory across sessions
-- show its reasoning and trust boundaries more clearly than a normal chatbot
+- show trust and workspace state more clearly than a normal chatbot
 - stay under user control instead of drifting into silent autonomy
 
 Nova is not just a chatbot.
@@ -66,6 +74,8 @@ At the time of this report, the runtime shows:
   - weather, news, and calendar snapshots
   - screen capture, screen analysis, and explain-anything
   - governed memory
+  - Workspace page and Trust page dashboard surfaces
+  - local-project structure-map surface
 
 Runtime invariants still in force:
 - no autonomy
@@ -89,13 +99,17 @@ Nova can:
 ### 2. Daily workspace surfaces
 Nova currently has:
 - a Home page
+- a Workspace page
+- a Trust page
 - a News page
 - a Memory page
-- a Workspace Home surface on the Home page
+- a chat page
+- Workspace Home on Home
 - operator health and trust surfaces
 - capability visibility
 - schedule and pattern-review surfaces
 - follow-up actions tied to dashboard widgets
+- a first-run guide for non-technical users
 
 ### 3. Local computer help
 Nova can:
@@ -105,6 +119,7 @@ Nova can:
 - adjust volume
 - control media
 - adjust brightness
+- speak text through the local speech path
 
 ### 4. Memory and continuity
 Nova now supports:
@@ -115,6 +130,8 @@ Nova now supports:
 - governed edit/delete with confirmation
 - a dedicated Memory Center page
 - bounded relevant-memory use in chat
+- thread continuity surfaces and thread detail
+- Workspace Home and Workspace Board project continuity surfaces
 
 ### 5. Local project understanding
 Nova can now do all of these locally:
@@ -122,7 +139,7 @@ Nova can now do all of these locally:
 - give a local project overview
 - create a local architecture report
 - explain major codebase surfaces
-- prepare for visual project explanation work
+- show a human-facing structure map of the current repo
 
 ### 6. Bounded second-opinion review
 Nova now includes a small `DeepSeek` button near chat controls that:
@@ -132,45 +149,16 @@ Nova now includes a small `DeepSeek` button near chat controls that:
 - does not gain execution authority
 
 ## What Was Completed Most Recently
-The most recent product-development stretch had three layers.
+The most recent product-development stretch landed a broad consolidation slice that made Nova easier for a normal user to understand and trust.
 
-### Latest substantial shipped product slice
-The latest runtime shipment is the Workspace Home foundation slice.
+That slice shipped:
+- a dedicated Trust page
+- a dedicated Workspace page
+- a first-run guide
+- the first visible local-project Structure Map page surface
+- a stronger runtime TTS fallback and voice auto-speak path
 
-That shipped:
-- a Home-page workspace summary card
-- an explicit `workspace home` / `project home` command
-- focus project visibility
-- blocker / next-step / latest-decision visibility
-- recent project memory and recent report visibility
-- recommended next actions grounded in existing governed commands
-
-This is important because it turns scattered continuity surfaces into a calmer daily workspace entry point for non-technical users.
-
-### Prior major product slice
-The major slice immediately before that was the Phase-7 product foundation runtime shipment.
-
-That shipped:
-- answer-first governed web search with sources on demand
-- inline news summaries on the News page
-- cleaner visible news categories:
-  - Politics news
-  - Global news
-  - Local news
-  - Tech news
-  - Crypto news
-- bounded same-thread DeepSeek second-opinion review
-- stronger local TTS renderer preference before fallback
-
-This remains one of the most important product changes because it made Nova feel more like a usable daily product, not just a governed system with good internals.
-
-### Latest follow-up alignment work
-After those product slices landed, the follow-on work closed truth gaps between:
-- runtime docs
-- human guides
-- Phase-7 design wording
-
-That alignment made sure the documentation now matches what is actually live instead of describing older expectations.
+This matters because it turned several already-good backend pieces into a more understandable product.
 
 ## Phase-By-Phase Grounding
 This is the simplest honest way to understand Nova's phase position.
@@ -210,10 +198,11 @@ Meaning:
 - perception surfaces exist
 - calendar and dashboard-facing product layers are real
 - explain-anything is not just planned
+- the voice loop is stronger than before, though still finishing device-confidence work
 
 ### Phase 5
 Status:
-- active and closed for the core trust-facing package, with later memory-aligned extensions now landed
+- active and closed for the core trust-facing package, with later runtime-aligned extensions now landed
 
 Meaning:
 - governed memory is real
@@ -221,21 +210,16 @@ Meaning:
 - schedules exist
 - pattern review exists
 - explicit continuity tools are part of the product now
+- the workspace layer is now more product-shaped than before
 
 Recent Phase-5 growth after the earlier closure includes:
-- memory stage 1:
-  - natural save and retrieval
-  - edit/delete confirmations
-  - bounded retrieval in chat
-- memory stage 2:
-  - Memory Center
-  - list/detail/filter surface
-  - explicit memory actions in the UI
-- workspace home foundation:
-  - Home-page workspace summary
-  - focus project and next-step visibility
-  - recent report and project-memory visibility
-  - recommended next actions without authority expansion
+- memory stage 1
+- memory stage 2
+- Workspace Home foundation
+- Trust Center stage 1
+- onboarding stage 1
+- local-project visualization stage 1
+- stronger TTS runtime behavior for voice-origin turns
 
 ### Phase 6
 Status:
@@ -253,14 +237,14 @@ Status:
 
 Meaning:
 - this phase is no longer only a design phase
-- the first bounded product foundation slice has shipped
+- the first bounded product-foundation slice has shipped
 
 Live Phase-7-aligned work now includes:
 - answer-first search
 - inline news summaries
 - cleaner news taxonomy
 - bounded DeepSeek same-thread review
-- stronger local TTS renderer preference
+- stronger local TTS renderer preference before fallback
 
 Still remaining in Phase 7:
 - stronger structured intelligence routing
@@ -276,19 +260,6 @@ Meaning:
 - this is where governed external execution and OpenClaw-style automation belong
 - the design is now much clearer and safer than before
 - Phase 8 is not currently runtime-authorized
-
-Current Phase-8 truth is:
-- strict governed execution first
-- task envelopes
-- data minimization
-- network mediation
-- proposal-only OpenClaw integration
-- operator visibility
-
-Phase 8 does not currently mean:
-- silent automation
-- hidden background action
-- autonomy
 
 ### Phase 9
 Status:
@@ -324,7 +295,8 @@ These include:
 - source-grounded news flows
 - answer-first search behavior
 - bounded same-thread second-opinion review
-- Workspace Home as a calmer daily continuity surface
+- Workspace Home and the broader Workspace page
+- the first visible codebase structure-map view
 
 This matters because Nova is already beyond the "assistant wrapper" stage.
 
@@ -334,14 +306,14 @@ Nova is strong, but it is not finished.
 Important current limitations:
 - wake word is still planned, not live
 - richer connector systems are still planned
-- richer project/workspace system foundations are still needed beyond the new Workspace Home layer
-- trust-center consolidation is still incomplete
-- onboarding and first-run guidance still need stronger product treatment
+- richer project/workspace foundations are still needed beyond the current Workspace page
+- trust-center history and drill-down are still shallow
+- onboarding still needs a deeper setup/permissions pass
 - OpenClaw/governed external execution is designed, not live
 
 Important voice caveat:
 - the TTS path is stronger in code now
-- tests are passing for the executor and mediator paths
+- tests are passing for the executor, mediator, and runtime fallback paths
 - real-device spoken-output validation is still the main remaining voice caveat
 
 That means:
@@ -352,79 +324,64 @@ That means:
 The latest sequential capability audit confirmed:
 - all `23` active governed capabilities passed targeted verification coverage on `2026-03-25`
 
-This included:
-- executor tests
-- conversation-path tests
-- dashboard-surface tests
-- capability-by-capability audit notes
-
-Important residual caveat from that audit:
-- `speak_text` passed code-path verification
-- but still needs real-device spoken-output validation
-
-The repo has also recently passed:
-- runtime documentation drift checks
-- frontend mirror sync checks
-- large regression bundles covering memory, news, search, tone, conversation, and governor behavior
+The latest product-consolidation regression pass on `2026-03-26` also confirmed:
+- TTS runtime and executor bundle: `6 passed`
+- new dashboard Workspace/Trust/onboarding bundle: `6 passed`
+- new conversation-path bundle for trust/workspace/voice: `5 passed`
+- broader regression bundle: `222 passed`
+- frontend mirror sync check: passed
+- runtime doc drift check: passed
 
 ## What The Last Stretch Changed For Non-Technical Users
 For someone who is not technical, the recent work means Nova is easier to use because:
-- search now answers more directly
+- search answers more directly
 - news summaries stay on the news page
 - memory is visible and manageable instead of invisible
-- second-opinion review is accessible with one small button
-- project questions are answered more cleanly
-- trust boundaries are still preserved
-
-This is the product-level value of the recent work.
+- trust now has its own clearer page
+- projects now have a clearer Workspace page
+- local repo understanding is visible as a structure map instead of only text reports
+- first-run guidance points people to the right surfaces instead of leaving them to guess
+- voice-origin turns are more likely to answer back aloud through the runtime path
 
 ## What Still Needs To Be Built For The Product To Feel More Complete
 The biggest remaining user-facing product gaps are:
 
-### 1. Unified Trust Center
-Nova has trust surfaces, but they are still spread across the product.
-Users still need one clearer place to review:
-- recent actions
-- blocked actions
-- approvals
-- what memory was used
-- what provider or source was used
+### 1. Richer Trust Center
+Users still need:
+- deeper history
+- approval/denial drill-down
+- clearer provider/source visibility
+- maybe an eventually unified recent-actions timeline
 
-### 2. Better onboarding
+### 2. Better onboarding stage 2
 New users still need:
-- first-run guidance
-- clearer permissions setup
-- clearer explanation of what Nova can do today
+- permissions setup guidance
+- clearer explanation of the most useful flows
+- connector expectations once those exist
 
-### 3. TTS final validation
+### 3. Final TTS device confidence
 Voice output is close, but not fully closed in product confidence yet.
 
 ### 4. Richer project/workspace system
-Workspace Home is now real, but users still need a stronger place where ongoing work lives:
-- active project
+Workspace Home and Workspace page are now real, but users still need a stronger place where ongoing work lives:
+- active project context
 - recent reports
-- files
+- files and sources
 - project memory
 - continuation actions
-- clearer transitions between Home, Memory, and project-specific work
+- clearer transitions between Home, Memory, Workspace, and project-specific work
 
 ### 5. Richer visual project explanation
-Nova understands projects better than it currently shows them.
-The visual codebase explainer work is one of the best future UX wins.
+Nova now shows a structure map, but later stages should make it more interactive and more digestible.
 
 ## Recommended Next Steps
 If someone asked what Nova should build next for the best product outcome, the strongest current answer is:
 
-1. unified trust center
-2. onboarding / first-run surface
-3. final TTS restore and device-confidence pass
-4. richer project/workspace system
-5. richer visual local-project explainer
-
-That sequence now means:
-- deepen Workspace Home into a broader project/workspace system
-- make trust easier to review
-- make first-run safer and clearer
+1. richer project/workspace system foundations
+2. trust-center stage 2 history and drill-down
+3. onboarding stage 2 with setup and permissions guidance
+4. final TTS device-confidence pass
+5. local-project visualizer stage 2 structured graph output
 
 Why this order:
 - it improves the product for non-technical users
@@ -434,7 +391,7 @@ Why this order:
 ## Final Honest Description
 If someone needs one careful sentence that fits the current reality, use this:
 
-Nova is a live governed intelligence workspace with bounded local action, explicit memory, answer-first research, source-grounded news and explanation surfaces, and a growing dashboard-based product layer, while future phases for external execution, cross-client coherence, and reviewable learning remain designed but not yet live.
+Nova is a live governed intelligence workspace with bounded local action, explicit memory, answer-first research, source-grounded news and explanation surfaces, visible trust and workspace product layers, and a growing dashboard-based experience, while future phases for external execution, cross-client coherence, and reviewable learning remain designed but not yet live.
 
 ## Best Companion Documents
 For people who want to keep reading after this report, the best next documents are:
@@ -442,7 +399,9 @@ For people who want to keep reading after this report, the best next documents a
 - `docs/reference/HUMAN_GUIDES/03_WHAT_NOVA_CAN_DO.md`
 - `docs/reference/HUMAN_GUIDES/07_CURRENT_STATE.md`
 - `docs/reference/HUMAN_GUIDES/12_CODEBASE_TOUR.md`
+- `docs/reference/HUMAN_GUIDES/14_FRONTEND_AND_UI_GUIDE.md`
 - `docs/reference/HUMAN_GUIDES/21_VISUAL_ARCHITECTURE_MAP.md`
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 - `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
 - `docs/PROOFS/CAPABILITY_VERIFICATION_AUDIT_2026-03-25.md`
+- `docs/PROOFS/Phase-5/PHASE_5_TRUST_WORKSPACE_ONBOARDING_AND_TTS_RUNTIME_SLICE_2026-03-26.md`

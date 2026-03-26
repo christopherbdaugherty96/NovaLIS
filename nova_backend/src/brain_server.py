@@ -33,7 +33,7 @@ from src.conversation.thought_store import ThoughtStore
 from src.conversation.complexity_heuristics import ComplexityHeuristics
 from src.conversation.session_router import SessionRouter
 from src.voice.stt_pipeline import STTAckConfig, build_ack_payload
-from src.voice.tts_engine import stop_speaking
+from src.voice.tts_engine import nova_speak, resolve_speakable_text, stop_speaking
 from src.conversation.clarify_prompts import CLARIFY_PROMPTS
 from src.conversation.response_formatter import ResponseFormatter
 from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
@@ -199,6 +199,10 @@ LOCAL_ARCHITECTURE_REPORT_RE = re.compile(
     r"^\s*create\s+(?:an?\s+)?(?:analysis\s+)?report\s+on\s+(?P<target>.+?)\s+architecture\s*$",
     re.IGNORECASE,
 )
+TRUST_CENTER_RE = re.compile(
+    r"^\s*(?:show\s+)?trust\s+(?:center|review|status)\s*$",
+    re.IGNORECASE,
+)
 OPEN_LOCAL_PROJECT_CURRENT_RE = re.compile(
     r"^\s*open\s+(?:this\s+)?(?P<kind>repo(?:sitory)?|project|folder|directory)\s*$",
     re.IGNORECASE,
@@ -276,6 +280,10 @@ THREAD_DETAIL_RE = re.compile(
 )
 WORKSPACE_HOME_RE = re.compile(
     r"^\s*(?:show\s+)?(?:workspace|project)\s+home\s*$",
+    re.IGNORECASE,
+)
+WORKSPACE_BOARD_RE = re.compile(
+    r"^\s*(?:show\s+)?(?:workspace\s+board|project\s+board|project\s+workspace)\s*$",
     re.IGNORECASE,
 )
 MOST_BLOCKED_PROJECT_RE = re.compile(
@@ -2191,6 +2199,294 @@ def _render_local_architecture_report(path: Path) -> tuple[str, list[dict[str, s
     return "\n".join(lines), suggestions
 
 
+def _project_tree_node(
+    label: str,
+    detail: str = "",
+    children: Optional[list[dict[str, Any]]] = None,
+) -> dict[str, Any]:
+    return {
+        "label": str(label or "").strip(),
+        "detail": str(detail or "").strip(),
+        "children": list(children or []),
+    }
+
+
+def _append_project_tree_lines(
+    lines: list[str],
+    nodes: list[dict[str, Any]],
+    *,
+    prefix: str = "",
+) -> None:
+    total = len(nodes)
+    for index, node in enumerate(nodes):
+        is_last = index == total - 1
+        connector = "\\--" if is_last else "|--"
+        label = str(node.get("label") or "").strip()
+        detail = str(node.get("detail") or "").strip()
+        rendered = f"{prefix}{connector} {label}"
+        if detail:
+            rendered += f" ({detail})"
+        lines.append(rendered)
+        children = [dict(item or {}) for item in list(node.get("children") or []) if dict(item or {}).get("label")]
+        if children:
+            child_prefix = prefix + ("    " if is_last else "|   ")
+            _append_project_tree_lines(lines, children, prefix=child_prefix)
+
+
+def _build_local_project_structure_map_widget(path: Path) -> dict[str, Any]:
+    target = path.resolve()
+    readme_text = _read_small_text_file(target / "README.md")
+    repo_map_text = _read_small_text_file(target / "REPO_MAP.md")
+    project_summary = (
+        _extract_markdown_paragraph(readme_text)
+        or _extract_markdown_paragraph(repo_map_text)
+        or "This local project already has enough structure for Nova to draw a high-signal map of the main surfaces."
+    )
+
+    children_by_surface: dict[str, list[dict[str, Any]]] = {}
+    docs_path = target / "docs"
+    if docs_path.exists():
+        doc_children: list[dict[str, Any]] = []
+        if (docs_path / "reference" / "HUMAN_GUIDES").exists():
+            doc_children.append(_project_tree_node("reference/HUMAN_GUIDES/", "plain-language guides"))
+        if (docs_path / "PROOFS").exists():
+            doc_children.append(_project_tree_node("PROOFS/", "runtime verification and proof packets"))
+        if (docs_path / "design").exists():
+            doc_children.append(_project_tree_node("design/", "roadmaps, phase plans, and future direction"))
+        if doc_children:
+            children_by_surface["docs"] = doc_children
+
+    backend_children: list[dict[str, Any]] = []
+    backend_root = target / "nova_backend"
+    backend_src = backend_root / "src"
+    if backend_src.exists():
+        src_children: list[dict[str, Any]] = []
+        if (backend_src / "brain_server.py").exists():
+            src_children.append(_project_tree_node("brain_server.py", "main orchestration hub"))
+        for name in _major_backend_modules(target)[:6]:
+            src_children.append(_project_tree_node(f"{name}/", BACKEND_MODULE_HINTS.get(name, "runtime subsystem")))
+        if src_children:
+            backend_children.append(_project_tree_node("src/", "runtime logic", src_children))
+    if (backend_root / "tests").exists():
+        backend_children.append(_project_tree_node("tests/", "regression and safety proof"))
+    if (backend_root / "static").exists():
+        backend_children.append(_project_tree_node("static/", "dashboard assets served by the backend"))
+    if backend_children:
+        children_by_surface["nova_backend"] = backend_children
+
+    frontend_root = target / "Nova-Frontend-Dashboard"
+    if frontend_root.exists():
+        frontend_children: list[dict[str, Any]] = []
+        if (frontend_root / "dashboard.js").exists():
+            frontend_children.append(_project_tree_node("dashboard.js", "dashboard interaction layer"))
+        if (frontend_root / "index.html").exists():
+            frontend_children.append(_project_tree_node("index.html", "page shell and widget surfaces"))
+        if frontend_children:
+            children_by_surface["Nova-Frontend-Dashboard"] = frontend_children
+
+    preferred_surfaces = [
+        "docs",
+        "nova_backend",
+        "Nova-Frontend-Dashboard",
+        "nova_workspace",
+        "NovaLIS-Governance",
+        "scripts",
+    ]
+    top_nodes: list[dict[str, Any]] = []
+    seen_surfaces: set[str] = set()
+    for surface in preferred_surfaces:
+        surface_path = target / surface
+        if not surface_path.exists():
+            continue
+        seen_surfaces.add(surface.lower())
+        top_nodes.append(
+            _project_tree_node(
+                f"{surface}/",
+                PROJECT_SURFACE_HINTS.get(surface, "project surface"),
+                children_by_surface.get(surface, []),
+            )
+        )
+    for entry in sorted(target.iterdir(), key=lambda item: item.name.lower()):
+        if not entry.is_dir() or entry.name.startswith("."):
+            continue
+        if entry.name.lower() in seen_surfaces:
+            continue
+        top_nodes.append(_project_tree_node(f"{entry.name}/", "additional project surface"))
+        if len(top_nodes) >= 8:
+            break
+
+    file_nodes: list[dict[str, Any]] = []
+    for file_name, detail in [
+        ("README.md", "project overview"),
+        ("REPO_MAP.md", "repo orientation and navigation"),
+        ("start_nova.bat", "local launch helper"),
+    ]:
+        if (target / file_name).exists():
+            file_nodes.append(_project_tree_node(file_name, detail))
+
+    root_nodes = top_nodes + file_nodes
+    tree_lines = [target.name]
+    _append_project_tree_lines(tree_lines, root_nodes)
+
+    highlights = [
+        {"label": "brain_server.py", "detail": "Coordinates conversation, routing, widgets, and local-project helpers."},
+        {"label": "governor/", "detail": "Keeps authority and execution under policy instead of trusting raw model output."},
+        {"label": "executors/", "detail": "Holds the concrete governed actions Nova can actually perform."},
+        {"label": "memory/", "detail": "Stores explicit governed memory and keeps it inspectable."},
+        {"label": "static/ + dashboard", "detail": "Turns backend state into the UI a person actually uses."},
+    ]
+
+    summary = (
+        f"Structure map ready for {target.name}. "
+        "This is a read-only human-facing view of the major surfaces and the backend spine."
+    )
+    return {
+        "type": "project_structure_map",
+        "target": str(target),
+        "summary": summary,
+        "project_summary": project_summary,
+        "tree_lines": tree_lines,
+        "highlights": highlights,
+        "recommended_actions": [
+            {"label": "Workspace Home", "command": "workspace home"},
+            {"label": "Audit this repo", "command": "audit this repo"},
+            {"label": "Architecture report", "command": f"create analysis report on {target.name} architecture"},
+        ],
+        "note": (
+            "This map is grounded in local folder structure and high-signal files. "
+            "It is meant to help a person understand the codebase quickly, not to claim a full file-by-file audit."
+        ),
+    }
+
+
+def _render_local_project_structure_map(path: Path) -> tuple[str, list[dict[str, str]], dict[str, Any]]:
+    widget = _build_local_project_structure_map_widget(path)
+    lines = [
+        "Local project structure map",
+        f"Target: {widget.get('target')}",
+        "",
+        f"Project summary: {widget.get('project_summary')}",
+        "",
+        "Visual orientation:",
+        *list(widget.get("tree_lines") or []),
+        "",
+        "Key nodes:",
+    ]
+    for item in list(widget.get("highlights") or [])[:5]:
+        label = str(item.get("label") or "").strip()
+        detail = str(item.get("detail") or "").strip()
+        if label and detail:
+            lines.append(f"- {label}: {detail}")
+    lines.extend(
+        [
+            "",
+            "Map note:",
+            f"- {widget.get('note')}",
+            "",
+            "Try next:",
+            "- workspace home",
+            "- audit this repo",
+            f"- create analysis report on {path.resolve().name} architecture",
+        ]
+    )
+    suggestions = [dict(item or {}) for item in list(widget.get("recommended_actions") or [])[:4]]
+    return "\n".join(lines), suggestions, widget
+
+
+def _maybe_handle_local_project_structure_map_request(
+    text: str,
+    *,
+    working_context: WorkingContextStore,
+    session_state: dict[str, Any],
+) -> tuple[str, list[dict[str, str]], str, dict[str, Any]] | None:
+    lowered = re.sub(r"\s+", " ", str(text or "").strip().lower())
+    if not lowered:
+        return None
+
+    current_phrases = {
+        "show structure map",
+        "show repo map",
+        "show project map",
+        "show codebase map",
+        "create structure map",
+        "generate structure map",
+        "visualize this repo",
+        "visualise this repo",
+        "visualize this project",
+        "visualise this project",
+        "visualize this codebase",
+        "visualise this codebase",
+    }
+    if lowered not in current_phrases and "structure map" not in lowered and "repo map" not in lowered:
+        return None
+
+    target_hint = "this repo"
+    targeted_match = re.match(
+        r"^\s*(?:show|create|generate|visual(?:ize|ise))\s+(?P<target>.+?)\s+(?:repo|project|codebase)\s+(?:structure\s+map|repo\s+map|project\s+map|codebase\s+map)\s*$",
+        str(text or ""),
+        re.IGNORECASE,
+    )
+    if targeted_match:
+        target_hint = str(targeted_match.group("target") or "").strip()
+    resolved_path = _resolve_local_project_path(
+        target_hint,
+        working_context=working_context,
+        session_state=session_state,
+    )
+    if resolved_path is None:
+        return None
+
+    message, suggestions, widget = _render_local_project_structure_map(resolved_path)
+    return message, suggestions, str(resolved_path), widget
+
+
+def _render_trust_center_message(trust_status: dict[str, Any]) -> tuple[str, list[dict[str, str]]]:
+    payload = normalize_trust_status(trust_status)
+    payload.update(_build_trust_review_snapshot())
+    activity = [dict(item or {}) for item in list(payload.get("recent_runtime_activity") or [])[:3]]
+    blocked = [dict(item or {}) for item in list(payload.get("blocked_conditions") or [])[:3]]
+    lines = [
+        "Trust Center",
+        "",
+        f"Mode: {payload.get('mode') or 'Local-only'}",
+        f"Last external call: {payload.get('last_external_call') or 'None'}",
+        f"Data egress: {payload.get('data_egress') or 'Read-only requests only'}",
+        f"Failure state: {payload.get('failure_state') or 'Normal'}",
+        "",
+        str(payload.get("trust_review_summary") or "Recent governed actions and blocked conditions will appear here.").strip(),
+    ]
+    if activity:
+        lines.append("")
+        lines.append("Recent actions:")
+        for item in activity:
+            title = str(item.get("title") or "Runtime event").strip()
+            detail = str(item.get("detail") or item.get("kind") or "").strip()
+            outcome = str(item.get("outcome") or "info").strip()
+            rendered = f"- {title}"
+            if detail:
+                rendered += f" - {detail}"
+            if outcome:
+                rendered += f" [{outcome}]"
+            lines.append(rendered)
+    if blocked:
+        lines.append("")
+        lines.append("Currently blocked:")
+        for item in blocked:
+            label = str(item.get("label") or item.get("area") or "Condition").strip()
+            status = str(item.get("status") or "unknown").strip()
+            reason = str(item.get("reason") or "").strip()
+            rendered = f"- {label}: {status}"
+            if reason:
+                rendered += f" - {reason}"
+            lines.append(rendered)
+    suggestions = [
+        {"label": "Workspace Home", "command": "workspace home"},
+        {"label": "System status", "command": "system status"},
+        {"label": "Memory overview", "command": "memory overview"},
+    ]
+    return "\n".join(lines).strip(), suggestions
+
+
 def _maybe_handle_local_project_request(
     text: str,
     *,
@@ -3394,6 +3690,23 @@ def _build_trust_review_snapshot() -> dict[str, object]:
     }
 
 
+def _maybe_auto_speak_for_voice_turn(
+    session_state: dict[str, Any],
+    text: str,
+) -> None:
+    if session_state.get("last_input_channel") != "voice":
+        return
+    session_state["last_input_channel"] = None
+    speakable = ResponseFormatter.to_speakable_text(str(text or "").strip())
+    if not speakable:
+        return
+    speech_state.last_spoken_text = speakable
+    try:
+        nova_speak(speakable)
+    except Exception:
+        log.debug("Auto-speak failed", exc_info=True)
+
+
 async def invoke_governed_capability(
     governor: Governor,
     capability_id: int,
@@ -3493,6 +3806,7 @@ async def websocket_endpoint(ws: WebSocket):
         "last_memory_item_id": "",
         "last_memory_item": {},
         "last_workspace_home": {},
+        "last_project_structure_map": {},
         "last_memory_context": [],
         "last_tone_snapshot": {},
         "last_schedule_overview": {},
@@ -3523,6 +3837,7 @@ async def websocket_endpoint(ws: WebSocket):
             tone_domain=tone_domain,
         )
         await send_chat_done(ws)
+        _maybe_auto_speak_for_voice_turn(session_state, clean_message)
         session_state["turn_count"] += 1
 
     try:
@@ -3779,6 +4094,32 @@ async def websocket_endpoint(ws: WebSocket):
                 await _complete_immediate_turn(project_message, suggested_actions=project_suggestions)
                 continue
 
+            local_structure_map_response = _maybe_handle_local_project_structure_map_request(
+                command_text,
+                working_context=working_context,
+                session_state=session_state,
+            )
+            if local_structure_map_response is not None:
+                project_message, project_suggestions, resolved_path, structure_widget = local_structure_map_response
+                if resolved_path:
+                    session_state["last_object"] = resolved_path
+                    session_state["last_project_structure_map"] = dict(structure_widget or {})
+                    working_context.apply_patch(
+                        {
+                            "last_relevant_object": resolved_path,
+                            "current_step": "local_project_structure_map",
+                        },
+                        source="local_project_structure_map",
+                    )
+                    session_state["working_context"] = working_context.to_dict()
+                await ws_send(ws, structure_widget)
+                if silent_widget_refresh:
+                    await send_chat_done(ws)
+                    session_state["turn_count"] += 1
+                else:
+                    await _complete_immediate_turn(project_message, suggested_actions=project_suggestions)
+                continue
+
             local_open_request = _maybe_prepare_local_open_request(
                 command_text,
                 working_context=working_context,
@@ -3824,6 +4165,45 @@ async def websocket_endpoint(ws: WebSocket):
                     await _complete_immediate_turn(
                         _render_workspace_home_message(workspace_widget),
                         suggested_actions=suggested_actions,
+                    )
+                continue
+
+            if WORKSPACE_BOARD_RE.match(command_text):
+                workspace_widget = await send_workspace_home_widget(ws, session_state, project_threads)
+                await send_thread_map_widget(ws, project_threads, session_state)
+                structure_map = _maybe_handle_local_project_structure_map_request(
+                    "show structure map",
+                    working_context=working_context,
+                    session_state=session_state,
+                )
+                if structure_map is not None:
+                    _, _, resolved_path, structure_widget = structure_map
+                    if resolved_path:
+                        session_state["last_project_structure_map"] = dict(structure_widget or {})
+                    await ws_send(ws, structure_widget)
+                if silent_widget_refresh:
+                    await send_chat_done(ws)
+                    session_state["turn_count"] += 1
+                else:
+                    await _complete_immediate_turn(
+                        _render_workspace_home_message(workspace_widget),
+                        suggested_actions=list(workspace_widget.get("recommended_actions") or []),
+                    )
+                continue
+
+            if TRUST_CENTER_RE.match(command_text):
+                await send_trust_status(ws, session_state["trust_status"])
+                if silent_widget_refresh:
+                    await send_chat_done(ws)
+                    session_state["turn_count"] += 1
+                else:
+                    trust_message, trust_suggestions = _render_trust_center_message(
+                        session_state.get("trust_status", {})
+                    )
+                    await _complete_immediate_turn(
+                        trust_message,
+                        suggested_actions=trust_suggestions,
+                        tone_domain="system",
                     )
                 continue
 
@@ -4407,6 +4787,7 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_message(ws, phase42_message, apply_personality=False)
                 await send_trust_status(ws, session_state["trust_status"])
                 await send_chat_done(ws)
+                _maybe_auto_speak_for_voice_turn(session_state, phase42_message)
 
                 session_context.extend(
                     [
@@ -6115,7 +6496,10 @@ async def websocket_endpoint(ws: WebSocket):
                 if (session_state.get("last_input_channel") == "voice"
                         and action_result.success
                         and capability_id != 18):
-                    session_state["last_input_channel"] = None   # prevent re-trigger
+                    speak_text = resolve_speakable_text(action_result) or outgoing_message
+                    _maybe_auto_speak_for_voice_turn(session_state, speak_text)
+                elif session_state.get("last_input_channel") == "voice" and capability_id == 18:
+                    session_state["last_input_channel"] = None
                 session_state["turn_count"] += 1
                 continue
 
@@ -6126,6 +6510,7 @@ async def websocket_endpoint(ws: WebSocket):
                     suggested_actions=_clarification_suggestions(inv_result.message),
                 )
                 await send_chat_done(ws)
+                _maybe_auto_speak_for_voice_turn(session_state, inv_result.message)
                 session_state["turn_count"] += 1
                 continue
 
@@ -6194,7 +6579,7 @@ async def websocket_endpoint(ws: WebSocket):
                     result_data["speakable_text"] = payload["speakable_text"]
                     result_data["structured_data"] = payload["structured_data"]
 
-                speech_state.last_spoken_text = message
+                speech_state.last_spoken_text = str(result_data.get("speakable_text") or message or "").strip()
                 session_state["last_response"] = message
                 if skill_name == "general_chat" and isinstance(result_data.get("conversation_context"), dict):
                     session_state["conversation_context"] = dict(result_data.get("conversation_context") or {})
@@ -6208,6 +6593,10 @@ async def websocket_endpoint(ws: WebSocket):
                     )
                     await send_chat_message(ws, message, tone_domain=skill_tone_domain)
                     await send_chat_done(ws)
+                    _maybe_auto_speak_for_voice_turn(
+                        session_state,
+                        str(result_data.get("speakable_text") or message or "").strip(),
+                    )
                     continue
 
                 message_id = None
@@ -6279,7 +6668,10 @@ async def websocket_endpoint(ws: WebSocket):
                 # Autoâ€‘speak for voice input
                 if (session_state.get("last_input_channel") == "voice"
                         and getattr(skill_result, "success", True)):   # assume success if not present
-                    session_state["last_input_channel"] = None   # prevent re-trigger
+                    _maybe_auto_speak_for_voice_turn(
+                        session_state,
+                        str(result_data.get("speakable_text") or message or "").strip(),
+                    )
 
                 new_turn = [{"role": "user", "content": mediated_text}, {"role": "assistant", "content": message}]
                 session_context.extend(new_turn)
@@ -6304,9 +6696,8 @@ async def websocket_endpoint(ws: WebSocket):
                 suggested_actions=_conversation_suggestions(session_state),
             )
             await send_chat_done(ws)
+            _maybe_auto_speak_for_voice_turn(session_state, fallback_message)
             session_state["turn_count"] += 1
-
-            # (No autoâ€‘speak for fallback â€“ optional, but omitted to stay minimal)
 
     except WebSocketDisconnect:
         log.info("WebSocket disconnected")

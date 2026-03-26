@@ -1,8 +1,8 @@
-﻿# What Nova Can Do
-Updated: 2026-03-14
+# What Nova Can Do
+Updated: 2026-03-26
 
 ## Overview
-Nova's active capability surface now covers five big areas:
+Nova's active capability surface now covers these big areas:
 - research and information work
 - computer help and local control
 - voice and screen understanding
@@ -11,19 +11,20 @@ Nova's active capability surface now covers five big areas:
 - manual response-style control
 - user-directed scheduled updates and reminders
 - opt-in pattern review for ongoing work
+- visible workspace and trust review surfaces
 
 ## 1. Research and Information Work
 Nova can:
 - search the web through its governed search path
+- answer first and show sources on demand
 - open source pages in the browser
 - summarize headlines
 - give more detail on a selected story
 - summarize the page behind a story link when available
 - search for a news topic and route that into research
-- summarize and compare cleaner news channels such as politics, global, local, tech, and crypto
+- summarize cleaner news channels such as politics, global, local, tech, and crypto
 - create multi-source reports
 - build intelligence briefs
-- show topic maps across the news cycle
 - verify a statement or prior response
 - request a DeepSeek-backed second opinion from the chat bar
 - create session analysis documents
@@ -71,14 +72,18 @@ Nova can load quick information views for:
 - news
 - calendar
 - system state
-
-These are meant to make the dashboard and daily workflow easier to use.
+- memory
+- workspace continuity
+- trust review
 
 Examples:
 - `weather`
 - `news`
 - `calendar`
 - `system status`
+- `workspace home`
+- `workspace board`
+- `trust center`
 
 ## 4. Voice, Screen, and Explain Mode
 Nova can:
@@ -88,6 +93,7 @@ Nova can:
 - analyze the visible screen
 - explain what you are looking at
 - route explain requests to the right source, such as screen or file
+- auto-speak voice-origin answers through the runtime speech helper
 
 Examples:
 - `take a screenshot`
@@ -99,8 +105,7 @@ Examples:
 Important note:
 - screenshot and screen analysis are live
 - wake word is still planned, not live runtime
-- voice output is improved in code but still depends on local device/audio validation
-- the next product-quality evolution is a cursor-first `what is this?` flow that expands to section or full page only when needed
+- voice output is improved in code and still depends on final local device/audio validation for full confidence
 
 ## 5. Continuity and Ongoing Work
 Nova can now help with ongoing work rather than only one-off prompts.
@@ -113,17 +118,20 @@ It can:
 - identify the most blocked project
 - explain why it is recommending a next step
 - open a thread detail panel with the current project snapshot
+- show a broader Workspace page for project continuity
 
 Examples:
 - `create thread deployment issue`
+- `show threads`
 - `continue my deployment issue`
 - `project status deployment issue`
 - `biggest blocker in deployment issue`
 - `which project is most blocked right now`
 - `thread detail deployment issue`
+- `workspace board`
 
 ## 6. Governed Memory
-Nova now has active governed memory, which means it can preserve things across time under explicit user control.
+Nova has active governed memory, which means it can preserve things across time under explicit user control.
 
 It can:
 - save a memory item
@@ -138,7 +146,9 @@ It can:
 - expose a dedicated Memory page for reviewing durable memory, scope distribution, linked threads, and recent items
 
 Examples:
-- `memory save deployment fix: confirm PYTHONPATH in container`
+- `save this`
+- `remember this: the client supplies alcohol`
+- `memory overview`
 - `memory list`
 - `memory show mem_...`
 - `memory lock mem_...`
@@ -146,18 +156,48 @@ Examples:
 - `memory save decision for deployment issue: inspect path before rebuild`
 - `memory list thread deployment issue`
 
-## 7. What Is Planned But Not Fully Live Yet
+## 7. Trust And Workspace Visibility
+Nova now has clearer product surfaces for understanding what it is doing and where current work lives.
+
+It can:
+- show a Trust page
+- summarize recent governed actions
+- show blocked conditions
+- show current operating mode and failure state
+- show a Workspace page
+- show a local-project Structure Map
+
+Examples:
+- `trust center`
+- `trust status`
+- `workspace board`
+- `visualize this repo`
+- `show structure map`
+
+## 8. Local Project Understanding
+Nova can locally:
+- summarize a repo
+- give a local project overview
+- create a local architecture report
+- show a human-facing Structure Map for the repo
+
+Examples:
+- `audit this repo`
+- `summarize this repo`
+- `create analysis report on this repo architecture`
+- `visualize this repo`
+
+## 9. What Is Planned But Not Fully Live Yet
 Some important ideas are documented and partly scaffolded, but are not fully active runtime features today.
 
-The biggest example is wake word.
+The biggest examples are:
+- wake word
+- richer connectors
+- deeper project/workspace system work
+- richer visualizer stages beyond the current text-based structure map
 
-Wake word is planned as a natural entrypoint like:
-- `Hey Nova...`
-
-But in the current runtime, Nova supports voice transcription and speech output without a live always-listening wake-word module.
-
-## 8. Response Style Control
-Nova can now expose and adjust its manual presentation tone without changing what it is allowed to do.
+## 10. Response Style Control
+Nova can expose and adjust its manual presentation tone without changing what it is allowed to do.
 
 It can:
 - show the current global tone profile
@@ -172,88 +212,29 @@ Examples:
 - `tone set research detailed`
 - `tone reset all`
 
-## 9. Scheduled Updates and Reminders
-Nova can now support calm, user-directed scheduling without turning into a background actor.
-
-It can:
-- create a daily brief schedule
-- create one-time reminders
-- create recurring daily reminders
-- show due and upcoming schedules
-- show notification policy settings
-- let the user set quiet hours
-- let the user set a delivery rate limit
-- let the user reschedule an existing item
-- let the user cancel or dismiss schedule items
-- surface scheduled items quietly in the dashboard
+## 11. Scheduled Updates and Reminders
+Nova can support calm, user-directed scheduling without turning into a background actor.
 
 Examples:
 - `show schedules`
-- `notification status`
-- `notification settings`
 - `schedule daily brief at 8:00 am`
 - `remind me at 2:00 pm to review deployment issue`
-- `remind me daily at 9:00 am to review project threads`
-- `reschedule schedule SCH-123 to 3:00 pm`
 - `set quiet hours from 10:00 pm to 7:00 am`
-- `clear quiet hours`
-- `set notification rate limit 2 per hour`
 - `cancel schedule SCH-123`
-- `dismiss schedule SCH-123`
 
 Important boundary:
 - schedules are created only when the user asks
 - scheduled items do not auto-run actions
-- delivery is meant to stay calm, visible, cancellable, and policy-bound
 
-## 10. Pattern Review
-Nova can now help you review repeated patterns across threads and durable memory, but only if you explicitly opt in first.
-
-It can:
-- let you opt in or opt out of pattern review
-- generate an advisory review queue on request
-- show repeated blocker themes
-- highlight blocked work that has no next step recorded
-- highlight durable context that may still need a saved decision
-- let you accept or dismiss proposals explicitly
+## 12. Pattern Review
+Nova can help review repeated patterns across threads and durable memory, but only if you explicitly opt in first.
 
 Examples:
 - `pattern opt in`
 - `pattern status`
 - `review patterns`
-- `review patterns for deployment issue`
 - `accept pattern PAT-...`
 - `dismiss pattern PAT-...`
-
-Important boundary:
-- pattern review is opt-in only
-- proposals are advisory only
-- no proposal is auto-applied
-- review does not run in the background
-
-## 11. Delegated Policy Review
-Nova can now prepare and review very small delegated policy drafts without turning on automation.
-
-It can:
-- create a draft delegated policy
-- show policy drafts and individual policy details
-- simulate a policy through the Governor
-- manually run a safe policy one time for review
-- block unsafe policy targets with an explicit reason
-
-Examples:
-- `policy overview`
-- `policy create weekday calendar snapshot at 8:00 am`
-- `policy show POL-...`
-- `policy simulate POL-...`
-- `policy run POL-... once`
-- `policy delete POL-... confirm`
-
-Important boundary:
-- policies are still draft-first and disabled by default
-- manual review runs are explicit and one-time
-- background triggers are still not active
-- Nova is not autonomously running stored policies
 
 ## Short Summary
 Today Nova can already:
@@ -261,13 +242,9 @@ Today Nova can already:
 - explain
 - summarize
 - inspect
-- guide
 - continue project work
 - preserve governed memory
-- expose manual response-style controls
-- support explicit scheduled updates and reminders
-- support opt-in pattern review for ongoing work
-- simulate and manually review-run safe delegated policy drafts
+- expose trust and workspace state more clearly
 - help with the current screen
 - help with the local computer in bounded ways
 
