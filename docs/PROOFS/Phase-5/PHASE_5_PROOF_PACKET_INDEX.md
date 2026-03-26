@@ -31,6 +31,7 @@ Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, imple
 11. `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
 12. `PHASE_5_GOVERNED_MEMORY_STAGE1_SAVE_AND_RETRIEVAL_RUNTIME_SLICE_2026-03-25.md`
 13. `PHASE_5_GOVERNED_MEMORY_STAGE2_MANAGEMENT_SURFACE_RUNTIME_SLICE_2026-03-25.md`
+14. `PHASE_5_WORKSPACE_HOME_FOUNDATION_RUNTIME_SLICE_2026-03-25.md`
 
 ## Historical Gate-Preparation Inputs (Retained for Traceability Only)
 These documents remain useful as design history, but they are not the current authority chain for the closed Phase-5 package.
@@ -81,6 +82,9 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
 - memory executor bundle: `10 passed`
 - dashboard + memory regression bundle: `85 passed`
 - conversation/tone safety bundle: `98 passed`
+- workspace-home focused bundle: `7 passed`
+- dashboard/home regression bundle: `66 passed`
+- workspace-home conversation/governor safety bundle: `102 passed`
 - full active-capability sequential audit: all `23` active governed capabilities passed targeted verification
 - active-capability residual caveat: capability `18` (`speak_text`) passes executor and mediator tests, but still needs live device spoken-output validation
 - runtime documentation drift check: passed
@@ -109,19 +113,25 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
    - silent `list memories` and `memory show <id>` widget hydration
    - filter controls for all / active / locked / deferred / current thread
    - explicit action buttons for show, edit, lock, unlock, defer, and delete
-7. Manual tone settings / tone visibility landed:
+7. Workspace Home foundation landed:
+   - explicit `workspace home` / `project home` command path
+   - quiet Home-page workspace summary widget
+   - focus project, blocker, next step, latest decision, and recent report visibility
+   - recommended next actions tied to existing governed commands
+   - project continuity, memory, and trust activity brought together into one calmer operating surface
+8. Manual tone settings / tone visibility landed:
    - persistent tone-profile store in the presentation layer
    - `tone status` / `tone set ...` / `tone reset ...`
    - dashboard response-style widget and Tone modal
    - recent tone-change history + system-status tone summary
-8. User-directed notification scheduling landed:
+9. User-directed notification scheduling landed:
    - explicit daily brief + reminder schedules
    - quiet scheduled-updates widget on the Home page
    - schedule creation modal + cancel/dismiss controls
    - explicit quiet-hours + rate-limit controls
    - delivery attempts and outcomes logged
    - Governor-checked quiet delivery with no automatic scheduled action execution
-9. Opt-in pattern review landed:
+10. Opt-in pattern review landed:
    - explicit `pattern opt in` / `pattern opt out`
    - user-triggered `review patterns` queue generation
    - quiet Home-page pattern-review widget

@@ -11,6 +11,7 @@ Nova now supports five closely related ideas:
 - working context
 - project continuity threads
 - governed memory
+- workspace home
 - calm scheduling
 - opt-in pattern review
 
@@ -59,7 +60,7 @@ This means Nova can answer questions like:
 - `which project is most blocked right now`
 - `thread detail deployment issue`
 
-The thread map and thread detail view make Nova feel more like a workspace than a chat transcript.
+The thread map, thread detail view, and new Workspace Home surface make Nova feel more like a workspace than a chat transcript.
 
 ## 3. Governed Memory
 Memory in Nova is explicit and governed.
@@ -166,7 +167,26 @@ A realistic Nova continuity flow now looks like this:
 
 That is the beginning of a real personal continuity system.
 
-## 9. The Big Difference Between Context, Threads, and Memory
+## 9. Workspace Home
+Nova now also has a calmer Workspace Home surface on the Home page.
+
+This surface brings together:
+- the active project thread
+- current blocker and next step
+- latest project decision
+- recent project-linked memory
+- recent analysis documents
+- recent trust activity and blocked conditions
+
+This matters because continuity is not only about remembering.
+It is also about helping the user re-enter work without having to reconstruct everything from scratch.
+
+Important boundary:
+- Workspace Home does not gain new authority
+- it is a visibility and next-step surface
+- all recommended actions still route through the normal governed command path
+
+## 10. The Big Difference Between Context, Threads, Memory, and Workspace Home
 The easiest way to understand them is this:
 
 Working context:
@@ -178,9 +198,12 @@ Thread continuity:
 Governed memory:
 - what the user explicitly chose to preserve across time
 
-Together, these three layers let Nova feel more coherent without becoming hidden or uncontrolled.
+Workspace Home:
+- the calmer product surface that brings those pieces together into one place
 
-## 10. Calm Scheduling
+Together, these four layers let Nova feel more coherent without becoming hidden or uncontrolled.
+
+## 11. Calm Scheduling
 Phase 5 also includes explicit scheduling for daily briefs and reminders.
 
 This is not meant to make Nova proactive in a hidden way.
@@ -204,7 +227,7 @@ Important boundary:
 - schedules are cancellable
 - scheduled items do not auto-run actions on the user's behalf
 
-## 11. Pattern Review
+## 12. Pattern Review
 Phase 5 also includes an explicit pattern-review layer for ongoing work.
 
 This is not hidden behavior.

@@ -21,6 +21,7 @@ That means Nova already has:
 - governed memory overview and inspectability surface
 - explicit save/remember memory flows
 - dedicated Memory Center list/detail page surface
+- a calmer Workspace Home surface on the Home page
 - inspectable list/show/edit/delete memory paths with confirmation where needed
 - bounded relevant-memory use in chat
 - manual response-style controls with inspectable tone settings
@@ -50,6 +51,7 @@ These parts are already meaningfully real:
 - screenshot capture and screen explanation
 - session-scoped project thread continuity
 - thread health, blocker, and decision surfaces
+- Workspace Home with focus project, reports, memory, trust activity, and next actions
 - governed memory and thread-linked memory
 - durable memory review through `memory overview` and the dedicated Memory page
 - Memory-page browsing with filters, selected-item detail, and governed item actions
@@ -68,7 +70,6 @@ These parts are active but still evolving:
 - more polished explain-anything flows
 - more premium dashboard interactions
 - stronger everyday workflows around thread and memory use
-- stronger project/workspace home foundations
 - clearer trust-center and onboarding surfaces
 - stronger local-project visualization for non-technical users
 
@@ -79,7 +80,7 @@ Examples include:
 - wake word
 - richer read-only connectors
 - richer provider-aware second-opinion presentation beyond the new bounded button flow
-- project/workspace system foundations
+- richer project/workspace system foundations beyond the new Workspace Home layer
 - Phase-8 governed external execution / OpenClaw
 
 A careful plain-language description of the current system is:

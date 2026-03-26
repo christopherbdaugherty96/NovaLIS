@@ -1,5 +1,5 @@
 ﻿# Frontend and UI Guide
-Updated: 2026-03-13
+Updated: 2026-03-25
 
 ## Purpose
 This guide explains Nova's frontend in plain language.
@@ -52,10 +52,19 @@ The frontend can present:
 - search widgets
 - weather/news/calendar widgets
 - system status
+- a Workspace Home card on the Home page
 - thread map and thread detail
 - continuity/memory actions
 - follow-up prompts
 - screen/perception results
+
+More specifically, the current dashboard can now show:
+- Home-page operator health
+- Home-page trust review
+- Home-page Workspace Home
+- Memory Center list and item detail
+- News-page in-card summaries
+- second-opinion and follow-up controls
 
 ## What The Frontend Is Not Supposed To Become
 Nova's frontend is not supposed to become a hidden authority layer.
@@ -75,3 +84,5 @@ The frontend is where Nova starts to feel like:
 - a calm intelligence layer
 
 That is why the dashboard and thread surfaces matter so much.
+
+The newer Workspace Home and Memory Center surfaces are especially important because they make Nova feel less like a command console and more like a place where ongoing work lives.

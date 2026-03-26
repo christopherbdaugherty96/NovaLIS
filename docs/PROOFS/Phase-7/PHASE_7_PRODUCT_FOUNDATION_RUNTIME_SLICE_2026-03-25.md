@@ -1,6 +1,6 @@
 # Phase 7 Product Foundation Runtime Slice
 Date: 2026-03-25
-Status: Verified on current branch and ready to land
+Status: Implemented in the current repository state on `main`
 Scope: Ship the highest-value bounded Phase-7 user-facing improvements without widening authority
 
 ## What this slice implements
@@ -72,7 +72,7 @@ Truthful current state:
 - hardware/audio-path confirmation still matters on real machines
 
 ## Next strongest product moves after this slice
-- project/workspace home foundations
 - unified trust-center surface
 - onboarding / first-run guidance
 - live TTS device restore validation and polish
+- richer visual local-project explanation

@@ -274,6 +274,10 @@ THREAD_DETAIL_RE = re.compile(
     r"^\s*(?:thread\s+detail|show\s+thread\s+detail|show\s+thread|thread\s+snapshot|details?\s+for)\s+(?P<name>.+?)\s*$",
     re.IGNORECASE,
 )
+WORKSPACE_HOME_RE = re.compile(
+    r"^\s*(?:show\s+)?(?:workspace|project)\s+home\s*$",
+    re.IGNORECASE,
+)
 MOST_BLOCKED_PROJECT_RE = re.compile(
     r"^\s*(?:which(?:\s+of\s+my)?\s+projects?\s+is\s+most\s+blocked(?:\s+right\s+now)?|most\s+blocked\s+project)\s*$",
     re.IGNORECASE,
@@ -1337,6 +1341,203 @@ def _build_memory_item_widget(item: dict | None) -> dict:
             "content_display": str(payload.get("content_display") or payload.get("title") or ""),
         },
     }
+
+
+def _build_workspace_home_widget(
+    *,
+    session_state: dict,
+    project_threads: ProjectThreadStore,
+) -> dict[str, object]:
+    threads = [dict(item or {}) for item in project_threads.list_summaries()]
+    active_thread_name = str(project_threads.active_thread_name() or "").strip()
+    try:
+        from src.memory.governed_memory_store import GovernedMemoryStore
+
+        thread_insights = GovernedMemoryStore().summarize_thread_insights()
+    except Exception:
+        thread_insights = {}
+    for item in threads:
+        key = str(item.get("key") or "").strip().lower()
+        insight = dict(thread_insights.get(key) or {})
+        item["memory_count"] = int(insight.get("memory_count") or 0)
+        item["last_memory_updated_at"] = str(insight.get("last_memory_updated_at") or "")
+        item["latest_decision"] = str(insight.get("latest_decision") or item.get("latest_decision") or "")
+
+    memory_overview: dict[str, Any] = {}
+    recent_memory_items: list[dict[str, str]] = []
+    try:
+        from src.memory.governed_memory_store import GovernedMemoryStore
+
+        memory_store = GovernedMemoryStore()
+        memory_overview = memory_store.summarize_overview(recent_limit=3, thread_limit=5)
+    except Exception:
+        memory_overview = {}
+
+    focus_thread: dict[str, Any] = {}
+    if active_thread_name:
+        focus_thread = next(
+            (
+                row
+                for row in threads
+                if str(row.get("name") or "").strip().lower() == active_thread_name.lower()
+            ),
+            {},
+        )
+    if not focus_thread and threads:
+        focus_thread = dict(threads[0])
+
+    focus_thread_name = str(focus_thread.get("name") or "").strip()
+    focus_thread_key = str(focus_thread.get("key") or "").strip()
+    if focus_thread_name:
+        try:
+            from src.memory.governed_memory_store import GovernedMemoryStore
+
+            recent_memory_items = [
+                {
+                    "id": str(item.get("id") or ""),
+                    "title": str(item.get("title") or ""),
+                    "tier": str(item.get("tier") or ""),
+                    "updated_at": str(item.get("updated_at") or ""),
+                }
+                for item in GovernedMemoryStore().list_items(
+                    thread_name=focus_thread_name,
+                    thread_key=focus_thread_key,
+                    limit=3,
+                )
+            ]
+        except Exception:
+            recent_memory_items = []
+
+    trust_snapshot = _build_trust_review_snapshot()
+    recent_activity = [dict(item or {}) for item in list(trust_snapshot.get("recent_runtime_activity") or [])[:4]]
+
+    analysis_documents = list(session_state.get("analysis_documents") or [])
+    analysis_documents = sorted(
+        [dict(item or {}) for item in analysis_documents],
+        key=lambda row: int(row.get("id") or 0),
+        reverse=True,
+    )
+    recent_documents = [
+        {
+            "id": int(item.get("id") or 0),
+            "title": str(item.get("title") or f"Doc {item.get('id') or '?'}"),
+            "topic": str(item.get("topic") or ""),
+            "summary": str(item.get("summary") or ""),
+        }
+        for item in analysis_documents[:3]
+    ]
+
+    tier_counts = dict(memory_overview.get("tier_counts") or {})
+    scope_counts = dict(memory_overview.get("scope_counts") or {})
+    total_memory = int(memory_overview.get("total_count") or 0)
+    project_memory_total = int(scope_counts.get("project") or 0)
+    linked_thread_count = len(list(memory_overview.get("linked_threads") or []))
+
+    if focus_thread_name:
+        health_state = str(focus_thread.get("health_state") or "at-risk").strip().upper()
+        summary = (
+            f"Active workspace: {focus_thread_name}. "
+            f"Health {health_state}. "
+            f"{project_memory_total} project memory item{'s' if project_memory_total != 1 else ''} "
+            f"and {len(recent_documents)} recent report{'s' if len(recent_documents) != 1 else ''} are available."
+        )
+    elif threads:
+        summary = (
+            f"{len(threads)} project thread{'s' if len(threads) != 1 else ''} available. "
+            f"{project_memory_total} project memory item{'s' if project_memory_total != 1 else ''} tracked."
+        )
+    else:
+        summary = (
+            "No active project thread yet. Use project summaries, thread saves, or analysis reports to start a calmer "
+            "workspace history."
+        )
+
+    recommended_actions: list[dict[str, str]] = []
+    if focus_thread_name:
+        recommended_actions.extend(
+            [
+                {"label": f"Continue {focus_thread_name}", "command": f"continue my {focus_thread_name}"},
+                {"label": "Project status", "command": f"project status {focus_thread_name}"},
+                {"label": "Thread memory", "command": f"memory list thread {focus_thread_name}"},
+            ]
+        )
+    else:
+        recommended_actions.extend(
+            [
+                {"label": "Show threads", "command": "show threads"},
+                {"label": "Create report", "command": "create analysis report on this repo architecture"},
+                {"label": "Memory overview", "command": "memory overview"},
+            ]
+        )
+    recommended_actions.extend(
+        [
+            {"label": "List analysis docs", "command": "list analysis docs"},
+            {"label": "Memory Center", "command": "list memories"},
+        ]
+    )
+
+    return {
+        "type": "workspace_home",
+        "summary": summary,
+        "active_thread": active_thread_name,
+        "thread_count": len(threads),
+        "linked_thread_count": linked_thread_count,
+        "memory_total": total_memory,
+        "project_memory_total": project_memory_total,
+        "locked_memory_total": int(tier_counts.get("locked") or 0),
+        "deferred_memory_total": int(tier_counts.get("deferred") or 0),
+        "focus_thread": {
+            "name": focus_thread_name,
+            "goal": str(focus_thread.get("goal") or ""),
+            "health_state": str(focus_thread.get("health_state") or ""),
+            "health_reason": str(focus_thread.get("health_reason") or ""),
+            "latest_blocker": str(focus_thread.get("latest_blocker") or ""),
+            "latest_next_action": str(focus_thread.get("latest_next_action") or ""),
+            "latest_decision": str(focus_thread.get("latest_decision") or ""),
+            "memory_count": int(focus_thread.get("memory_count") or 0),
+            "last_memory_updated_at": str(focus_thread.get("last_memory_updated_at") or ""),
+            "updated_at": str(focus_thread.get("updated_at") or ""),
+        },
+        "recent_threads": [
+            {
+                "name": str(item.get("name") or ""),
+                "health_state": str(item.get("health_state") or ""),
+                "latest_next_action": str(item.get("latest_next_action") or ""),
+                "memory_count": int(item.get("memory_count") or 0),
+            }
+            for item in threads[:4]
+        ],
+        "recent_memory_items": recent_memory_items,
+        "recent_documents": recent_documents,
+        "recent_activity": recent_activity,
+        "recommended_actions": recommended_actions[:5],
+        "blocked_conditions": [dict(item or {}) for item in list(trust_snapshot.get("blocked_conditions") or [])[:3]],
+    }
+
+
+def _render_workspace_home_message(widget: dict[str, object]) -> str:
+    payload = dict(widget or {})
+    focus = dict(payload.get("focus_thread") or {})
+    thread_name = str(focus.get("name") or "").strip()
+    summary = str(payload.get("summary") or "").strip()
+    lines = ["Workspace Home", ""]
+    if summary:
+        lines.append(summary)
+        lines.append("")
+    if thread_name:
+        lines.append(f"Focus project: {thread_name}")
+        health_state = str(focus.get("health_state") or "").strip().upper()
+        if health_state:
+            lines.append(f"Health: {health_state}")
+        latest_blocker = str(focus.get("latest_blocker") or "").strip()
+        if latest_blocker:
+            lines.append(f"Current blocker: {latest_blocker}")
+        latest_next_action = str(focus.get("latest_next_action") or "").strip()
+        if latest_next_action:
+            lines.append(f"Next step: {latest_next_action}")
+    else:
+        lines.append("No focus project is active yet.")
+    return "\n".join(lines).strip()
 
 
 def _build_tone_profile_widget(snapshot: dict | None) -> dict:
@@ -3094,6 +3295,20 @@ async def send_memory_item_widget(
     session_state["last_memory_item"] = payload.get("item") or {}
     await ws_send(ws, payload)
 
+
+async def send_workspace_home_widget(
+    ws: WebSocket,
+    session_state: dict,
+    project_threads: ProjectThreadStore,
+) -> dict[str, object]:
+    payload = _build_workspace_home_widget(
+        session_state=session_state,
+        project_threads=project_threads,
+    )
+    session_state["last_workspace_home"] = payload
+    await ws_send(ws, payload)
+    return payload
+
 async def send_chat_message(
     ws: WebSocket,
     text: str,
@@ -3274,6 +3489,10 @@ async def websocket_endpoint(ws: WebSocket):
         "last_recommendation_reason": "",
         "thread_map_last": {},
         "last_memory_overview": {},
+        "last_memory_list": {},
+        "last_memory_item_id": "",
+        "last_memory_item": {},
+        "last_workspace_home": {},
         "last_memory_context": [],
         "last_tone_snapshot": {},
         "last_schedule_overview": {},
@@ -3595,9 +3814,26 @@ async def websocket_endpoint(ws: WebSocket):
                 await _complete_immediate_turn(project_message, suggested_actions=project_suggestions)
                 continue
 
-            if SHOW_THREADS_RE.match(text):
+            if WORKSPACE_HOME_RE.match(command_text):
+                workspace_widget = await send_workspace_home_widget(ws, session_state, project_threads)
+                if silent_widget_refresh:
+                    await send_chat_done(ws)
+                    session_state["turn_count"] += 1
+                else:
+                    suggested_actions = list(workspace_widget.get("recommended_actions") or [])
+                    await _complete_immediate_turn(
+                        _render_workspace_home_message(workspace_widget),
+                        suggested_actions=suggested_actions,
+                    )
+                continue
+
+            if SHOW_THREADS_RE.match(command_text):
                 await send_thread_map_widget(ws, project_threads, session_state)
-                await _complete_immediate_turn(project_threads.render_map_message())
+                if silent_widget_refresh:
+                    await send_chat_done(ws)
+                    session_state["turn_count"] += 1
+                else:
+                    await _complete_immediate_turn(project_threads.render_map_message())
                 continue
 
             if MOST_BLOCKED_PROJECT_RE.match(text):
