@@ -20,9 +20,11 @@ def test_dashboard_boots_first_run_guide_with_product_surfaces():
     assert "Open Settings" in source
     assert "Open Workspace" in source
     assert "Open Trust" in source
-    assert "understand information, continue your work, and make decisions" in source
+    assert "understand, continue, and organize your work" in source
     assert "One good first move" in source
     assert "Try Explain This" in source
+    assert "getInitialPage()" in source
+    assert "injectPrimaryNav()" in source
     assert 'showFirstRunGuide(true)' in source
 
 
@@ -36,6 +38,9 @@ def test_home_page_includes_workspace_and_trust_launch_buttons():
 def test_intro_and_settings_pages_include_getting_started_and_control_surfaces():
     source = INDEX_PATH.read_text(encoding="utf-8")
 
+    assert 'id="primary-nav-strip"' in source
+    assert 'id="header-page-context"' in source
+    assert 'id="header-connection-chip"' in source
     assert 'id="page-intro"' in source
     assert 'id="intro-current-mode-badge"' in source
     assert 'id="btn-intro-open-settings"' in source
@@ -54,3 +59,15 @@ def test_intro_and_settings_pages_include_getting_started_and_control_surfaces()
     assert 'id="btn-settings-reset-defaults"' in source
     assert 'id="settings-toggle-large-text"' in source
     assert 'id="btn-settings-voice-check"' in source
+
+
+def test_chat_and_memory_surfaces_include_new_feedback_and_guardrails():
+    source = INDEX_PATH.read_text(encoding="utf-8")
+
+    assert 'id="thinking-bar"' in source
+    assert 'title="Type a message and press Enter to send."' in source
+    assert 'Second opinion' in source
+    assert 'id="btn-morning-calendar-connect"' in source
+    assert 'id="memory-inline-confirmation"' in source
+    assert 'id="btn-memory-inline-confirm"' in source
+    assert 'id="btn-memory-inline-cancel"' in source

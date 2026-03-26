@@ -20,7 +20,15 @@
       <div class="header-left">
         <div class="brand-block">
           <h1>Nova</h1>
+          <div class="brand-status-row">
+            <div id="header-page-context" class="header-page-context">Nova / Chat</div>
+            <div id="header-connection-chip" class="header-connection-chip status-connecting" role="status" aria-live="polite">
+              <span class="status-dot" aria-hidden="true"></span>
+              <span id="header-connection-label">Connecting</span>
+            </div>
+          </div>
         </div>
+        <nav id="primary-nav-strip" class="primary-nav-strip" aria-label="Primary navigation"></nav>
       </div>
       <div class="header-right">
         <div class="header-utility-strip">
@@ -48,7 +56,7 @@
             <div class="morning-row"><strong>Weather:</strong> <span id="morning-weather">Loading...</span></div>
             <div class="morning-row"><strong>News:</strong> <span id="morning-news">Loading...</span></div>
             <div class="morning-row"><strong>System:</strong> <span id="morning-system">Loading...</span></div>
-            <div class="morning-row"><strong>Calendar:</strong> <span id="morning-calendar">Loading...</span></div>
+            <div class="morning-row"><strong>Calendar:</strong> <span id="morning-calendar">Loading...</span> <button id="btn-morning-calendar-connect" class="morning-row-inline-action" type="button" hidden>Connect calendar</button></div>
           </div>
         </div>
 
@@ -76,11 +84,11 @@
         </section>
 
         <div class="chat-input">
-          <div id="thinking-bar" class="thinking-bar" style="display:none"></div>
-          <input id="chat-input" type="text" placeholder="Ask Nova anything..." autocomplete="off" spellcheck="false" />
-          <button id="deepseek-btn" type="button" aria-label="DeepSeek second opinion" title="DeepSeek second opinion">DeepSeek</button>
-          <button id="send-btn" type="button">Send</button>
-          <button id="ptt-btn" type="button" aria-label="Push to talk" title="Push to talk">Mic</button>
+          <div id="thinking-bar" class="thinking-bar" style="display:none" role="status" aria-live="polite"></div>
+          <input id="chat-input" type="text" placeholder="Ask Nova anything..." title="Type a message and press Enter to send." autocomplete="off" spellcheck="false" />
+          <button id="deepseek-btn" type="button" aria-label="Ask for a second opinion" title="Ask for a second opinion on the latest message">Second opinion</button>
+          <button id="send-btn" type="button" title="Send message (Enter)">Send</button>
+          <button id="ptt-btn" type="button" aria-label="Push to talk" title="Press to record a short voice question">Talk</button>
         </div>
       </section>
 
@@ -867,12 +875,19 @@
                   rows="5"
                   placeholder="Select a memory item first. Edit requests still go through governed confirmation."
                 ></textarea>
-                <div class="memory-detail-actions">
+              <div class="memory-detail-actions">
                   <button id="btn-memory-detail-edit" type="button">Prepare edit</button>
                   <button id="btn-memory-detail-lock" type="button">Lock</button>
                   <button id="btn-memory-detail-unlock" type="button">Unlock</button>
                   <button id="btn-memory-detail-defer" type="button">Defer</button>
                   <button id="btn-memory-detail-delete" type="button">Delete</button>
+                </div>
+                <div id="memory-inline-confirmation" class="memory-inline-confirmation" hidden>
+                  <p id="memory-inline-confirmation-text" class="memory-detail-note">Confirm this governed memory action.</p>
+                  <div class="memory-inline-confirmation-actions">
+                    <button id="btn-memory-inline-confirm" type="button">Confirm</button>
+                    <button id="btn-memory-inline-cancel" type="button">Cancel</button>
+                  </div>
                 </div>
                 <p id="memory-detail-note" class="memory-detail-note">
                   Memory remains explicit and user-owned. Edit, unlock, and delete still require the governed confirmation flow.

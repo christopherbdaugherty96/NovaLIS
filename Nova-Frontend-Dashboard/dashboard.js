@@ -4,6 +4,7 @@ let ws = null;
 let pendingThoughtMessageId = null;
 let messageMeta = new Map();
 let waitingForAssistant = false;
+let activePageState = "chat";
 let latestNewsItems = [];
 let latestNewsCategories = {};
 let latestNewsSummaryState = {
@@ -28,12 +29,14 @@ let silenceTimer = null;
 let ackResetTimer = null;
 let lastWidgetHydrationAt = 0;
 let widgetRefreshTimer = null;
+let morningFallbackTimer = null;
 let morningState = {
   weather: "Loading...",
   news: "Loading...",
   system: "Loading...",
   calendar: "Loading...",
 };
+let memoryPendingActionState = null;
 let memoryOverviewState = {
   summary: "No durable memory saved yet. Memory becomes persistent only when you explicitly save it.",
   snapshot: {},
@@ -162,6 +165,20 @@ const PAGE_LABELS = {
   trust: "Trust",
   settings: "Settings",
 };
+
+const PRIMARY_NAV_ITEMS = [
+  { page: "chat", label: "Chat" },
+  { page: "home", label: "Home" },
+  { page: "news", label: "News" },
+  { page: "workspace", label: "Workspace" },
+  { page: "memory", label: "Memory" },
+  { page: "policy", label: "Policies" },
+  { page: "trust", label: "Trust" },
+  { page: "settings", label: "Settings" },
+  { page: "intro", label: "Intro" },
+];
+
+const MORNING_FALLBACK_TIMEOUT_MS = 4500;
 
 const QUICK_ACTIONS_BY_PAGE = {
   chat: [
@@ -431,6 +448,142 @@ function buildNewsItemSnippet(item) {
 function normalizePageKey(page) {
   if (page === "ops") return "home";
   return Object.prototype.hasOwnProperty.call(PAGE_LABELS, page) ? page : "chat";
+}
+
+function getInitialPage() {
+  const firstRunDone = localStorage.getItem(STORAGE_KEYS.firstRunDone) === "1";
+  if (!firstRunDone) return "intro";
+  return normalizePageKey(localStorage.getItem(STORAGE_KEYS.activePage) || "chat");
+}
+
+function getHeaderConnectionPresentation() {
+  const readyState = ws ? ws.readyState : WebSocket.CONNECTING;
+  if (readyState === WebSocket.CONNECTING) {
+    return { tone: "connecting", label: "Connecting" };
+  }
+  if (readyState !== WebSocket.OPEN) {
+    return { tone: "reconnecting", label: "Reconnecting" };
+  }
+
+  const failureState = String(trustState.failureState || "").trim().toLowerCase();
+  if (failureState && failureState !== "normal") {
+    return { tone: "degraded", label: "Degraded" };
+  }
+
+  const connectionSummary = String((trustReviewState.connectionRuntime && trustReviewState.connectionRuntime.summary) || "").trim().toLowerCase();
+  const trustMode = String(trustState.mode || "").trim().toLowerCase();
+  if (connectionSummary.includes("local") || trustMode.includes("local")) {
+    return { tone: "connected", label: "Local-only" };
+  }
+
+  return { tone: "connected", label: "Connected" };
+}
+
+function renderHeaderStatus(page = activePageState) {
+  const normalizedPage = normalizePageKey(page);
+  const context = $("header-page-context");
+  if (context) {
+    context.textContent = `Nova / ${PAGE_LABELS[normalizedPage] || "Chat"}`;
+  }
+
+  const chip = $("header-connection-chip");
+  const label = $("header-connection-label");
+  if (!chip || !label) return;
+
+  const presentation = getHeaderConnectionPresentation();
+  chip.classList.remove("status-connected", "status-connecting", "status-reconnecting", "status-degraded");
+  chip.classList.add(`status-${presentation.tone}`);
+  label.textContent = presentation.label;
+}
+
+function injectPrimaryNav() {
+  const host = $("primary-nav-strip");
+  if (!host || host.children.length > 0) return;
+
+  PRIMARY_NAV_ITEMS.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "primary-nav-btn";
+    button.dataset.page = item.page;
+    button.textContent = item.label;
+    button.setAttribute("aria-pressed", "false");
+    host.appendChild(button);
+  });
+}
+
+function setPTTButtonState(state = "idle") {
+  const btn = $("ptt-btn");
+  if (!btn) return;
+
+  const safeState = ["idle", "recording", "sending", "error"].includes(state) ? state : "idle";
+  btn.classList.remove("mic-idle", "mic-recording", "mic-sending", "mic-error");
+  btn.classList.add(`mic-${safeState}`);
+
+  const labels = {
+    idle: { text: "Talk", title: "Press to record a short voice question" },
+    recording: { text: "Listening", title: "Nova is listening. Press again to stop." },
+    sending: { text: "Sending", title: "Sending your voice request to Nova" },
+    error: { text: "Mic issue", title: "Voice input is unavailable right now" },
+  };
+  const next = labels[safeState];
+  btn.textContent = next.text;
+  btn.title = next.title;
+  btn.setAttribute("aria-label", next.title);
+}
+
+function flashPTTError() {
+  setPTTButtonState("error");
+  setTimeout(() => {
+    if (!mediaRecorder) setPTTButtonState("idle");
+  }, 1600);
+}
+
+function startMorningFallbackTimer() {
+  if (morningFallbackTimer) clearTimeout(morningFallbackTimer);
+  morningFallbackTimer = setTimeout(() => {
+    let changed = false;
+    if (morningState.weather === "Loading...") {
+      morningState.weather = "Weather unavailable right now.";
+      changed = true;
+    }
+    if (morningState.news === "Loading...") {
+      morningState.news = "News unavailable right now.";
+      changed = true;
+    }
+    if (morningState.system === "Loading...") {
+      morningState.system = "System status unavailable right now.";
+      changed = true;
+    }
+    if (morningState.calendar === "Loading...") {
+      morningState.calendar = "Calendar not connected yet.";
+      changed = true;
+    }
+    if (changed) renderMorningPanel();
+  }, MORNING_FALLBACK_TIMEOUT_MS);
+}
+
+function clearMemoryInlineConfirmation() {
+  memoryPendingActionState = null;
+  const panel = $("memory-inline-confirmation");
+  const text = $("memory-inline-confirmation-text");
+  if (panel) panel.hidden = true;
+  if (text) text.textContent = "Confirm this governed memory action.";
+}
+
+function queueMemoryInlineConfirmation(actionLabel, command, detailText = "") {
+  memoryPendingActionState = {
+    actionLabel: String(actionLabel || "Confirm action").trim(),
+    command: String(command || "").trim(),
+    detailText: String(detailText || "").trim(),
+  };
+
+  const panel = $("memory-inline-confirmation");
+  const text = $("memory-inline-confirmation-text");
+  if (text) {
+    text.textContent = memoryPendingActionState.detailText
+      || `${memoryPendingActionState.actionLabel}. Nova will still route the request through the governed path.`;
+  }
+  if (panel) panel.hidden = false;
 }
 
 function closeHeaderMenus() {
@@ -768,6 +921,7 @@ function renderMemoryCenterSurface() {
       }
       row.addEventListener("click", () => {
         memoryCenterState.selectedId = item.id;
+        clearMemoryInlineConfirmation();
         if (item.body) {
           memoryCenterState.selectedItem = { ...item };
           renderMemoryCenterSurface();
@@ -803,10 +957,11 @@ function renderMemoryCenterSurface() {
     detailHost.hidden = true;
     clear(detailHost);
     detailEmpty.hidden = false;
+    clearMemoryInlineConfirmation();
     if (!editInput.dataset.userEdited) {
       editInput.value = "";
     }
-    detailNote.textContent = "Memory remains explicit and user-owned. Edit, unlock, and delete still require the governed confirmation flow.";
+    detailNote.textContent = "Memory remains explicit and user-owned. Inline confirmation appears here before state-changing actions are sent through Nova.";
     return;
   }
 
@@ -876,9 +1031,18 @@ function renderMemoryCenterSurface() {
     editInput.dataset.sourceId = selected.id;
     editInput.dataset.userEdited = "";
   }
+  const confirmationPanel = $("memory-inline-confirmation");
+  const confirmationText = $("memory-inline-confirmation-text");
+  if (confirmationPanel) {
+    confirmationPanel.hidden = !(memoryPendingActionState && memoryPendingActionState.command);
+  }
+  if (confirmationText && memoryPendingActionState && memoryPendingActionState.command) {
+    confirmationText.textContent = memoryPendingActionState.detailText
+      || `${memoryPendingActionState.actionLabel}. Nova will still route the request through the governed path.`;
+  }
   detailNote.textContent = selected.deleted
     ? "This memory item has been deleted. Refresh the list to inspect the current durable set."
-    : "Edit, unlock, and delete stay governed. The page prepares the command, and Nova still confirms destructive changes.";
+    : "Edit, lock, unlock, defer, and delete stay governed. This page now adds an inline check before state-changing requests are sent.";
 }
 
 function renderPersonalLayerWidget() {
@@ -994,13 +1158,14 @@ function handleVoiceAck(message) {
 function setLoadingHint(text = "") {
   const bar = $("thinking-bar");
   if (!bar) return;
-  bar.textContent = text || "Processing";
+  bar.textContent = text || "Nova is thinking...";
 }
 
 function setThinkingBar(visible) {
   const bar = $("thinking-bar");
   if (!bar) return;
-  bar.style.display = visible ? "block" : "none";
+  bar.style.display = visible ? "flex" : "none";
+  bar.setAttribute("aria-hidden", visible ? "false" : "true");
 }
 
 function loadingHintForInput(text) {
@@ -1008,7 +1173,7 @@ function loadingHintForInput(text) {
   if (q.includes("search") || q.includes("look up") || q.includes("research")) return "Checking online sources";
   if (q.includes("morning") || q.includes("brief")) return "Preparing your brief";
   if (q.includes("explain this") || q.includes("what is this") || q.includes("analyze this") || q.includes("screenshot")) return "Analyzing visible context";
-  return "Processing";
+  return "Nova is thinking...";
 }
 
 function safeWSSend(message) {
@@ -1030,10 +1195,15 @@ function renderMorningPanel() {
   const news = $("morning-news");
   const system = $("morning-system");
   const calendar = $("morning-calendar");
+  const calendarConnectBtn = $("btn-morning-calendar-connect");
   if (weather) weather.textContent = morningState.weather;
   if (news) news.textContent = morningState.news;
   if (system) system.textContent = morningState.system;
   if (calendar) calendar.textContent = morningState.calendar;
+  if (calendarConnectBtn) {
+    const calendarText = String(morningState.calendar || "").trim().toLowerCase();
+    calendarConnectBtn.hidden = !(calendarText.includes("not connected") || calendarText.includes("connect"));
+  }
 }
 
 function renderContextInsight(summaryText, steps = []) {
@@ -3290,6 +3460,7 @@ function renderOperatorHealthWidget(data = {}) {
     }
   }
 
+  renderHeaderStatus(activePageState);
   renderTrustCenterPage();
 }
 
@@ -4498,6 +4669,15 @@ function renderIntelligenceBriefWidget(data = {}) {
   });
 }
 
+function getBriefGroundingLabel() {
+  if (latestBriefWidgetState.sourcePagesRead > 0) {
+    if (latestBriefWidgetState.placeholderClusterCount > 0) return "Degraded";
+    if (latestBriefWidgetState.omittedClusterCount > 0) return "Partial";
+    return "Grounded";
+  }
+  return "Headline only";
+}
+
 function createBriefCardElement(story, compact = false) {
   const card = document.createElement("div");
   card.className = "brief-card";
@@ -4521,6 +4701,19 @@ function createBriefCardElement(story, compact = false) {
   sources.className = "brief-card-row brief-card-sources";
   sources.textContent = `Sources: ${story.sources || "Unknown"}`;
   card.appendChild(sources);
+
+  const chipRow = document.createElement("div");
+  chipRow.className = "memory-detail-chip-row";
+  [
+    getBriefGroundingLabel(),
+    String(story.sources || "").trim() ? "Named sources" : "Source summary pending",
+  ].forEach((label) => {
+    const chip = document.createElement("span");
+    chip.className = "memory-detail-chip";
+    chip.textContent = label;
+    chipRow.appendChild(chip);
+  });
+  card.appendChild(chipRow);
 
   const actions = document.createElement("div");
   actions.className = "brief-card-actions";
@@ -5716,9 +5909,9 @@ function requestInlineAssistantAction(text, statusText = "", invocationSource = 
 }
 
 function requestDeepSeekSecondOpinion() {
-  appendChatMessage("user", "DeepSeek second opinion");
+  appendChatMessage("user", "Second opinion");
   waitingForAssistant = true;
-  setLoadingHint("DeepSeek is reviewing the recent exchange.");
+  setLoadingHint("Checking a second opinion on the recent exchange...");
   setThinkingBar(true);
 
   if (!safeWSSend({ text: "second opinion", invocation_source: "deepseek_button" })) {
@@ -5730,13 +5923,20 @@ function requestDeepSeekSecondOpinion() {
 
 async function startSTT() {
   if (mediaRecorder) return;
-  if (!navigator.mediaDevices || !window.MediaRecorder) return;
+  if (!navigator.mediaDevices || !window.MediaRecorder) {
+    flashPTTError();
+    return;
+  }
 
   let stream;
   try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
-  catch { return; }
+  catch {
+    flashPTTError();
+    return;
+  }
 
   setOrbStatus("LISTENING");
+  setPTTButtonState("recording");
   const options = {};
   if (MediaRecorder.isTypeSupported("audio/webm;codecs=pcm")) options.mimeType = "audio/webm;codecs=pcm";
   else if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) options.mimeType = "audio/webm;codecs=opus";
@@ -5745,6 +5945,7 @@ async function startSTT() {
   if (!options.mimeType) {
     stream.getTracks().forEach((t) => t.stop());
     setOrbStatus("READY");
+    flashPTTError();
     return;
   }
 
@@ -5755,6 +5956,7 @@ async function startSTT() {
     if (e.data.size > 0) {
       chunks.push(e.data);
       setOrbStatus("LISTENING");
+      setPTTButtonState("recording");
       clearTimeout(silenceTimer);
       silenceTimer = setTimeout(() => setOrbStatus("PAUSED"), 1200);
     }
@@ -5764,6 +5966,7 @@ async function startSTT() {
     clearTimeout(silenceTimer);
     silenceTimer = null;
     setOrbStatus("PROCESSING");
+    setPTTButtonState("sending");
 
     try {
       const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
@@ -5785,11 +5988,13 @@ async function startSTT() {
           null,
           "Voice input",
         );
+        flashPTTError();
         return;
       }
 
       if (data.error) {
         appendChatMessage("assistant", String(data.error), null, "Voice input");
+        flashPTTError();
         return;
       }
 
@@ -5803,12 +6008,16 @@ async function startSTT() {
           null,
           "Voice input",
         );
+        flashPTTError();
       }
     } finally {
       if (stream) stream.getTracks().forEach((t) => t.stop());
       mediaRecorder = null;
       chunks.length = 0;
       setOrbStatus("READY");
+      if (!($("ptt-btn") && $("ptt-btn").classList.contains("mic-error"))) {
+        setPTTButtonState("idle");
+      }
     }
   };
 
@@ -5822,7 +6031,10 @@ function stopSTT() {
     clearTimeout(ackResetTimer);
     ackResetTimer = null;
   }
-  if (mediaRecorder && mediaRecorder.state === "recording") mediaRecorder.stop();
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    setPTTButtonState("sending");
+    mediaRecorder.stop();
+  }
 }
 
 function hydrateDashboardWidgets() {
@@ -5860,11 +6072,14 @@ function stopWidgetAutoRefresh() {
 
 function connectWebSocket() {
   ws = new WebSocket(`${WS_BASE}/ws`);
+  renderHeaderStatus(activePageState);
 
   ws.onopen = () => {
+    renderHeaderStatus(activePageState);
     refreshPrivacyPanel();
     hydrateDashboardWidgets();
     startWidgetAutoRefresh();
+    startMorningFallbackTimer();
   };
 
   ws.onmessage = (e) => {
@@ -6005,6 +6220,7 @@ function connectWebSocket() {
     waitingForAssistant = false;
     setThinkingBar(false);
     stopWidgetAutoRefresh();
+    renderHeaderStatus(activePageState);
     if (ackResetTimer) {
       clearTimeout(ackResetTimer);
       ackResetTimer = null;
@@ -6063,16 +6279,18 @@ function setActivePage(page) {
     el.hidden = name !== target;
   });
 
-  document.querySelectorAll(".header-menu-page-btn").forEach((btn) => {
+  document.querySelectorAll(".header-menu-page-btn, .primary-nav-btn").forEach((btn) => {
     const active = btn.dataset.page === target;
     btn.classList.toggle("active", active);
     btn.setAttribute("aria-pressed", active ? "true" : "false");
   });
 
+  activePageState = target;
   const workspaceCurrent = $("workspace-current-label");
   if (workspaceCurrent) {
     workspaceCurrent.textContent = PAGE_LABELS[target] || "Chat";
   }
+  renderHeaderStatus(target);
 
   localStorage.setItem(STORAGE_KEYS.activePage, target);
   renderQuickActions();
@@ -6117,7 +6335,7 @@ function setActivePage(page) {
 }
 
 function setupPageNavigation() {
-  const buttons = document.querySelectorAll(".header-menu-page-btn");
+  const buttons = document.querySelectorAll(".header-menu-page-btn, .primary-nav-btn");
   if (!buttons || buttons.length === 0) return;
 
   buttons.forEach((btn) => {
@@ -6127,8 +6345,7 @@ function setupPageNavigation() {
     });
   });
 
-  const stored = localStorage.getItem(STORAGE_KEYS.activePage) || "chat";
-  setActivePage(stored);
+  setActivePage(getInitialPage());
 }
 
 function sendChat() {
@@ -6198,15 +6415,15 @@ function showFirstRunGuide(force = false) {
 
   const intro = document.createElement("p");
   intro.className = "first-run-intro";
-  intro.textContent = "Nova helps you understand information, continue your work, and make decisions without ever taking control away from you.";
+  intro.textContent = "Nova helps you understand, continue, and organize your work without ever taking control away from you.";
   card.appendChild(intro);
 
   const pillars = document.createElement("div");
   pillars.className = "first-run-pillars";
   [
     ["Read the Introduction", "See what Nova can do, how it works, and why it stays governed."],
-    ["Review Settings", "Choose the setup path that fits you, then review privacy, accessibility, and voice status."],
-    ["Use Workspace and Trust", "Workspace keeps your work together. Trust shows what happened, why it happened, and what stayed blocked."],
+    ["Review Settings", "Choose the setup path that fits you and review voice, privacy, and comfort controls."],
+    ["Use Workspace and Trust", "Workspace keeps work together. Trust shows what happened, why it happened, and what stayed blocked."],
   ].forEach(([titleText, bodyText]) => {
     const panel = document.createElement("div");
     panel.className = "first-run-pillar";
@@ -6254,7 +6471,7 @@ function showFirstRunGuide(force = false) {
 
   const trustNote = document.createElement("p");
   trustNote.className = "first-run-note";
-  trustNote.textContent = "No background automation. No hidden memory. No surprises. Nova only moves when you ask.";
+  trustNote.textContent = "No background automation. No hidden memory. No surprises. Just intelligence under your control.";
   card.appendChild(trustNote);
 
   const row = document.createElement("div");
@@ -6931,10 +7148,13 @@ function injectHeaderMenus() {
 
 window.addEventListener("DOMContentLoaded", () => {
   applyAccessibilityFromStorage();
+  injectPrimaryNav();
   injectHeaderMenus();
   setOrbStatus("READY");
+  setPTTButtonState("idle");
   ensureDatalist();
   renderMorningPanel();
+  renderHeaderStatus("chat");
   renderContextInsight("");
   renderThreadMapWidget({});
   renderMemoryOverviewWidget({});
@@ -6960,6 +7180,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setupMorningWidgetToggle();
   setupPageNavigation();
   connectWebSocket();
+  startMorningFallbackTimer();
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) hydrateDashboardWidgets();
   });
@@ -6993,6 +7214,11 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const newsRefreshBtn = $("btn-news-refresh");
   if (newsRefreshBtn) newsRefreshBtn.addEventListener("click", () => safeWSSend({ text: "news", silent_widget_refresh: true }));
+
+  const morningCalendarConnectBtn = $("btn-morning-calendar-connect");
+  if (morningCalendarConnectBtn) morningCalendarConnectBtn.addEventListener("click", () => {
+    setActivePage("settings");
+  });
 
   const newsSearchBtn = $("btn-news-search");
   if (newsSearchBtn) newsSearchBtn.addEventListener("click", runNewsSearch);
@@ -7316,28 +7542,63 @@ window.addEventListener("DOMContentLoaded", () => {
   if (memoryDetailLockBtn) memoryDetailLockBtn.addEventListener("click", () => {
     const selected = getSelectedMemoryItem();
     if (!selected || !selected.id) return;
-    injectUserText(`memory lock ${selected.id}`, "text");
+    queueMemoryInlineConfirmation(
+      `Lock ${selected.title || selected.id}`,
+      `memory lock ${selected.id}`,
+      `Lock ${selected.title || selected.id}? Nova will still route this through the governed path.`
+    );
+    renderMemoryCenterSurface();
   });
 
   const memoryDetailUnlockBtn = $("btn-memory-detail-unlock");
   if (memoryDetailUnlockBtn) memoryDetailUnlockBtn.addEventListener("click", () => {
     const selected = getSelectedMemoryItem();
     if (!selected || !selected.id) return;
-    injectUserText(`memory unlock ${selected.id}`, "text");
+    queueMemoryInlineConfirmation(
+      `Unlock ${selected.title || selected.id}`,
+      `memory unlock ${selected.id}`,
+      `Unlock ${selected.title || selected.id}? Nova will still validate the request before changing it.`
+    );
+    renderMemoryCenterSurface();
   });
 
   const memoryDetailDeferBtn = $("btn-memory-detail-defer");
   if (memoryDetailDeferBtn) memoryDetailDeferBtn.addEventListener("click", () => {
     const selected = getSelectedMemoryItem();
     if (!selected || !selected.id) return;
-    injectUserText(`memory defer ${selected.id}`, "text");
+    queueMemoryInlineConfirmation(
+      `Defer ${selected.title || selected.id}`,
+      `memory defer ${selected.id}`,
+      `Defer ${selected.title || selected.id}? Nova will still keep the change inside the governed path.`
+    );
+    renderMemoryCenterSurface();
   });
 
   const memoryDetailDeleteBtn = $("btn-memory-detail-delete");
   if (memoryDetailDeleteBtn) memoryDetailDeleteBtn.addEventListener("click", () => {
     const selected = getSelectedMemoryItem();
     if (!selected || !selected.id) return;
-    injectUserText(`delete memory ${selected.id}`, "text");
+    queueMemoryInlineConfirmation(
+      `Delete ${selected.title || selected.id}`,
+      `delete memory ${selected.id}`,
+      `Delete ${selected.title || selected.id}? Nova will still require the governed path for the final request.`
+    );
+    renderMemoryCenterSurface();
+  });
+
+  const memoryInlineConfirmBtn = $("btn-memory-inline-confirm");
+  if (memoryInlineConfirmBtn) memoryInlineConfirmBtn.addEventListener("click", () => {
+    const command = String((memoryPendingActionState && memoryPendingActionState.command) || "").trim();
+    if (!command) return;
+    injectUserText(command, "text");
+    clearMemoryInlineConfirmation();
+    renderMemoryCenterSurface();
+  });
+
+  const memoryInlineCancelBtn = $("btn-memory-inline-cancel");
+  if (memoryInlineCancelBtn) memoryInlineCancelBtn.addEventListener("click", () => {
+    clearMemoryInlineConfirmation();
+    renderMemoryCenterSurface();
   });
 
   const policyRefreshBtn = $("btn-policy-refresh");
