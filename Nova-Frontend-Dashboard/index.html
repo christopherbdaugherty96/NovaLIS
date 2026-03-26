@@ -217,7 +217,7 @@
               <p class="workspace-board-section-copy">Every request follows the same simple flow.</p>
             </div>
           </div>
-          <div class="intro-flow-line">You → Nova → Validation → Execution → Result</div>
+          <div class="intro-flow-line">You -> Nova -> Validation -> Execution -> Result</div>
           <p class="workspace-board-section-copy">
             Before anything happens, Nova checks permissions, verifies scope, and enforces limits. If something is not allowed, it is blocked or requires approval.
           </p>
@@ -258,7 +258,7 @@
             <li>Paid APIs should never be used without your knowledge</li>
             <li>Sensitive actions may be blocked or require confirmation and are always logged</li>
             <li>Start with Home, then Workspace, then Trust if you want to understand what happened</li>
-            <li>Try commands like “Summarize today’s news”, “Explain this file”, or “Help me think through this idea”</li>
+            <li>Try commands like "Summarize today's news", "Explain this file", or "Help me think through this idea"</li>
           </ul>
           <p class="first-run-note">
             Nova is built on a simple idea: intelligence should be powerful, but control should never be lost.
@@ -623,6 +623,78 @@
           <p class="first-run-note">
             Voice Check plays a short spoken confirmation phrase and then reports which engine handled the attempt.
           </p>
+        </div>
+      </section>
+
+      <section id="page-policy" class="page-view page-policy" hidden>
+        <div class="widget page-card workspace-board-hero" aria-live="polite">
+          <div class="workspace-board-hero-header">
+            <div>
+              <div class="home-launch-kicker">Policies</div>
+              <h3>Policy Review Center</h3>
+            </div>
+            <span class="confidence-badge">Manual review only</span>
+          </div>
+          <p id="policy-center-summary" class="workspace-board-section-copy">
+            Policy drafts stay disabled until you explicitly review them. Nova does not run them in the background.
+          </p>
+          <div class="workspace-board-actions-toolbar">
+            <button id="btn-policy-refresh" type="button">Refresh drafts</button>
+            <button id="btn-policy-create-calendar" type="button">Create calendar draft</button>
+            <button id="btn-policy-create-weather" type="button">Create weather draft</button>
+            <button id="btn-policy-open-trust" type="button">Open trust</button>
+            <button id="btn-policy-open-settings" type="button">Open settings</button>
+          </div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Draft Snapshot</div>
+              <p class="workspace-board-section-copy">A quick count of what is ready to inspect, simulate, or review-run once.</p>
+            </div>
+          </div>
+          <div id="policy-center-stats" class="workspace-home-grid"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Policy Drafts</div>
+              <p class="workspace-board-section-copy">Each draft stays disabled until you explicitly inspect and act on it.</p>
+            </div>
+          </div>
+          <div id="policy-center-list" class="trust-section trust-center-list"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Selected Draft</div>
+              <p class="workspace-board-section-copy">Trigger, action, envelope, and any validator warnings appear here.</p>
+            </div>
+          </div>
+          <div id="policy-center-detail" class="workspace-home-focus"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Simulation</div>
+              <p class="workspace-board-section-copy">Simulation shows how the Governor would classify the policy without enabling trigger execution.</p>
+            </div>
+          </div>
+          <div id="policy-center-simulation" class="workspace-home-focus"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">One-Shot Manual Run</div>
+              <p class="workspace-board-section-copy">Manual review runs stay invocation-bound and use the same governed path as any other allowed action.</p>
+            </div>
+          </div>
+          <div id="policy-center-run" class="workspace-home-focus"></div>
         </div>
       </section>
 

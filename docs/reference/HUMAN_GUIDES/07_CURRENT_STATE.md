@@ -10,6 +10,7 @@ At a high level, the current state is:
 - Phase 4.2 cognitive/reporting layer is active
 - Phase 4.5 perception and UX surfaces are active
 - Phase 5 trust-facing runtime package is active and formally closed for the current repository state, with later runtime-aligned expansions landed on top of it
+- Phase 6 has now begun in runtime through the review-only delegated-policy foundation and Policy Review Center
 
 That means Nova already has:
 - governed execution
@@ -24,6 +25,7 @@ That means Nova already has:
 - a calmer Workspace Home surface on the Home page
 - a dedicated Workspace page with a broader project board
 - a dedicated Trust page with recent actions and blocked-condition review
+- a dedicated Policies page for draft review, simulation, and one-shot manual runs
 - a dedicated Introduction page and a dedicated Settings page
 - a first-run onboarding guide for non-technical users
 - a visible local-project Structure Map surface with structured graph output
@@ -66,6 +68,7 @@ These parts are already meaningfully real:
 - bounded same-thread second-opinion review
 - local project summary, architecture report, project overview, and structure-map flows
 - user-facing Introduction and Settings pages that explain Nova and keep setup choices visible
+- a visible Policy Review Center that keeps delegated policy work inspectable and manual
 
 ## What Is Still Maturing
 These parts are active but still evolving:
@@ -77,6 +80,7 @@ These parts are active but still evolving:
 - actual provider and connector setup beyond the current preference surface
 - stronger local-project visualization beyond the current stage-2 structure map
 - final device-confidence confirmation for audible TTS output
+- deeper Phase-6 policy review ergonomics beyond the current manual-review center
 
 ## What Is Planned But Not Fully Live Yet
 Some highly important ideas are still planned or partially scaffolded rather than fully live.

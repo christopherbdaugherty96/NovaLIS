@@ -12,7 +12,7 @@ It now has:
 - explicit memory with a dedicated management page
 - answer-first search and source-grounded news flows
 - a bounded same-thread second-opinion path
-- a Home page, Workspace page, Trust page, Introduction page, Settings page, News page, Memory page, and chat surface
+- a Home page, Workspace page, Trust page, Policies page, Introduction page, Settings page, News page, Memory page, and chat surface
 - local-project understanding that now includes a visible structure-map view with structured graph output
 
 The most important truth is still:
@@ -60,6 +60,7 @@ At the time of this report, the runtime shows:
   - Phase 4.2 active
   - Phase 4.5 active
   - Phase 5 active
+  - Phase 6 active as a review-only foundation
 - active governed capabilities: `23`
 - active runtime surfaces:
   - governed web search
@@ -74,7 +75,8 @@ At the time of this report, the runtime shows:
   - weather, news, and calendar snapshots
   - screen capture, screen analysis, and explain-anything
   - governed memory
-  - Workspace page, Trust page, Introduction page, and Settings page dashboard surfaces
+  - policy draft validation, simulation, and one-shot manual review runs
+  - Workspace page, Trust page, Policies page, Introduction page, and Settings page dashboard surfaces
   - local-project structure-map surface with stage-2 graph output
 
 Runtime invariants still in force:
@@ -102,6 +104,7 @@ Nova currently has:
 - an Introduction page
 - a Workspace page
 - a Trust page
+- a Policies page
 - a Settings page
 - a News page
 - a Memory page
@@ -113,6 +116,7 @@ Nova currently has:
 - follow-up actions tied to dashboard widgets
 - a first-run guide for non-technical users
 - a settings surface for setup-mode choice, voice checks, and comfort controls
+- a policy review surface for disabled drafts, simulations, and one-shot manual runs
 
 ### 3. Local computer help
 Nova can:
@@ -169,6 +173,14 @@ The latest follow-on slice deepened that further:
 - Workspace selected-project drill-down and recent-decision feed
 - Structure Map stage-2 graph and relationship view
 - a visible voice status / voice check workflow tied back into Trust data
+
+The newest safe Phase-6 slice then began delegated-policy work in runtime without enabling automation:
+- a dedicated Policies page
+- policy overview widget hydration
+- selected-draft detail
+- simulation review
+- one-shot manual policy run review
+- a punctuation-safe fix for `policy show`, `policy simulate`, `policy run`, and `policy delete`
 
 This matters because it turned several already-good backend pieces into a more understandable product.
 
@@ -240,12 +252,13 @@ Recent Phase-5 growth after the earlier closure includes:
 
 ### Phase 6
 Status:
-- design foundation prepared
-- trust/governance planning layer is strong
-- not the main current runtime expansion track
+- active foundation slice in runtime
+- review-only delegated-policy layer visible in-product
 
 Meaning:
 - Nova has the policy and sovereignty groundwork for later expansion
+- users can now inspect disabled policy drafts, simulate them, and manually review-run safe ones once
+- delegated trigger runtime is still disabled
 - this phase matters because it protects later work from becoming sloppy or unsafe
 
 ### Phase 7
@@ -308,6 +321,7 @@ These include:
 - explicit memory
 - memory management surface
 - dashboard trust and operator surfaces
+- policy review surface
 - daily snapshot surfaces
 - source-grounded news flows
 - answer-first search behavior

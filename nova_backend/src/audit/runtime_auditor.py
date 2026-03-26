@@ -34,6 +34,10 @@ BRAIN_SERVER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "brain_server.py"
 STATIC_DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
 STATIC_INDEX_PATH = PROJECT_ROOT / "nova_backend" / "static" / "index.html"
 BUILD_PHASE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "build_phase.py"
+ATOMIC_POLICY_STORE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "policies" / "atomic_policy_store.py"
+POLICY_VALIDATOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "policies" / "policy_validator.py"
+POLICY_EXECUTOR_GATE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "policy_executor_gate.py"
+CAPABILITY_TOPOLOGY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "capability_topology.py"
 
 GOVERNANCE_MATRIX_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX.md"
 SKILL_SURFACE_MAP_PATH = RUNTIME_DOC_DIR / "SKILL_SURFACE_MAP.md"
@@ -560,6 +564,44 @@ def _phase_5_status(registry: dict[str, Any]) -> str:
     return "DESIGN"
 
 
+def _phase_6_status() -> str:
+    dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
+    index_src = _safe_read(STATIC_INDEX_PATH)
+    brain_src = _safe_read(BRAIN_SERVER_PATH)
+
+    foundation_present = all(
+        path.exists()
+        for path in (
+            ATOMIC_POLICY_STORE_PATH,
+            POLICY_VALIDATOR_PATH,
+            POLICY_EXECUTOR_GATE_PATH,
+            CAPABILITY_TOPOLOGY_PATH,
+        )
+    )
+    review_commands_present = all(
+        token in brain_src
+        for token in (
+            "policy overview",
+            "policy simulate <id>",
+            "policy run <id> once",
+        )
+    )
+    review_surface_present = (
+        "renderPolicyCenterPage" in dashboard_src
+        and 'id="page-policy"' in index_src
+        and "policy_overview" in dashboard_src
+        and "policy_run" in dashboard_src
+    )
+
+    if foundation_present and review_commands_present and review_surface_present:
+        return "ACTIVE"
+    if foundation_present and review_commands_present:
+        return "PARTIAL"
+    if foundation_present:
+        return "FOUNDATION"
+    return "DESIGN"
+
+
 def _phase_45_status() -> str:
     """Derive coarse runtime status for Phase 4.5 UX surface."""
     dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
@@ -1003,6 +1045,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     phase_42_status = _phase_42_status()
     phase_45_status = _phase_45_status()
     phase_5_status = _phase_5_status(registry)
+    phase_6_status = _phase_6_status()
 
     phase_42_note = (
         "Orthogonal cognition stack enabled via explicit invocation path"
@@ -1024,6 +1067,17 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         phase_5_note = "Build phase promoted with partial memory/continuity runtime activation"
     else:
         phase_5_note = "Memory continuity planned"
+    if phase_6_status == "ACTIVE":
+        phase_6_note = (
+            "Atomic policy draft foundation, executor-gate simulation, capability topology, "
+            "and Policy Review Center active; trigger runtime remains disabled"
+        )
+    elif phase_6_status == "PARTIAL":
+        phase_6_note = "Phase-6 policy foundation is in code, but the full review surface is incomplete"
+    elif phase_6_status == "FOUNDATION":
+        phase_6_note = "Phase-6 policy substrate exists in code, but no user-facing review surface is active"
+    else:
+        phase_6_note = "Delegated policy layer remains design-only"
 
     governor_modules = [
         "src/governor/governor.py",
@@ -1066,6 +1120,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         f"| Phase 4.2 | {phase_42_status} | {phase_42_note} |",
         f"| Phase 4.5 | {phase_45_status} | {phase_45_note} |",
         f"| Phase 5 | {phase_5_status} | {phase_5_note} |",
+        f"| Phase 6 | {phase_6_status} | {phase_6_note} |",
         "",
         "## Runtime Governance Spine",
         "",

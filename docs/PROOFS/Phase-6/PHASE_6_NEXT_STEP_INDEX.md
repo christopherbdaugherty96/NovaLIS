@@ -10,6 +10,7 @@ Current runtime truth still lives in:
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 - `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
 - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
+- `docs/PROOFS/Phase-6/PHASE_6_PROOF_PACKET_INDEX.md`
 
 Implemented Phase-6-era runtime slices already include:
 - `PHASE_6_POLICY_VALIDATOR_FOUNDATION_RUNTIME_SLICE_2026-03-13.md`
@@ -18,6 +19,7 @@ Implemented Phase-6-era runtime slices already include:
 - `PHASE_6_LIVE_CAPABILITY_DISCOVERY_SURFACE_RUNTIME_SLICE_2026-03-13.md`
 - `PHASE_6_TRUST_REVIEW_SURFACE_RUNTIME_SLICE_2026-03-13.md`
 - `PHASE_6_DASHBOARD_REFINEMENT_MEMORY_AND_NEWS_RUNTIME_SLICE_2026-03-14.md`
+- `PHASE_6_POLICY_REVIEW_CENTER_RUNTIME_SLICE_2026-03-26.md`
 
 ## Core Planning References
 - the corrected Phase-6 roadmap document in `docs/design/Phase 6/`

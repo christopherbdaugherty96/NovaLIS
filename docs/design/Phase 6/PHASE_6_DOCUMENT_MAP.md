@@ -21,10 +21,14 @@ These documents define the current ordered roadmap and the core Phase-6 policy s
 ## Core Supporting Surface Specs
 - `docs/design/Phase 6/PHASE_6_POLICY_SIMULATION_SURFACE_SPEC.md`
 - `docs/design/Phase 6/PHASE_6_PROGRESSIVE_SCREEN_INTELLIGENCE_PRODUCT_SPEC.md`
+- `docs/PROOFS/Phase-6/PHASE_6_POLICY_REVIEW_CENTER_RUNTIME_SLICE_2026-03-26.md`
+- `docs/PROOFS/Phase-6/PHASE_6_PROOF_PACKET_INDEX.md`
 
 These supporting specs define:
 - the first trust-facing delegated-policy inspection surface
 - the cursor-first product direction for Nova's explain-anything experience
+- the currently implemented Policy Review Center runtime slice
+- the canonical proof packet for Phase-6 foundation work
 
 ## Core Cross-Phase Inputs
 - `docs/PROOFS/Phase-5/PHASE_5_CLOSED_ACT_2026-03-13.md`
@@ -67,6 +71,7 @@ When reading the Phase-6 folder:
 - use the corrected roadmap for order
 - use the atomic-policy, executor-gate, capability-topology, sovereignty-alignment plan, and engineering checklist as the core Phase-6 ladder
 - use the policy-simulation and progressive-screen-intelligence specs as the first trust-facing support layer
+- use the Phase-6 proof packet to determine what is actually live in runtime
 - use the Phase-5 closed act and Phase-6 deferral note for boundary clarity
 - treat optional UX/infrastructure experiments as non-core
 - treat mutation/evolution documents as future-phase or explicitly pull-forward only

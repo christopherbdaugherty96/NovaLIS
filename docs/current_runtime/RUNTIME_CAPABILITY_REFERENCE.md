@@ -86,6 +86,7 @@ Interpretation rule:
 | Atomic policy draft foundation | Active | Validates and stores disabled-by-default one-trigger / one-action policy drafts and exposes explicit draft commands. | Phase-6 foundation surface only; no trigger runtime |
 | Policy executor gate | Active | Simulates delegated policies and permits one-shot manual review runs for safe low-authority policies through the Governor. | Manual review only; no background execution |
 | Capability topology | Active | Classifies governed capabilities by authority class, delegation class, reversibility, and policy delegatability. | Internal governance surface used by the executor gate |
+| Policy Review Center | Active | Gives users a dedicated Policies page for draft inspection, simulation review, and one-shot manual run results. | Product surface only; trigger runtime remains disabled |
 | Dashboard widgets and detail panels | Active | Displays weather, news, calendar, system status, thread map, thread detail, structure-map graph output, and follow-up actions in the UI. | UI surface only |
 | Introduction and Settings pages | Active | Gives non-technical users a first-run explanation of Nova plus explicit setup-mode, accessibility, and voice-confidence controls. | Product surface only; does not grant execution authority |
 | Orb presence layer | Active | Provides calm visual presence only. It does not signal hidden state, reasoning depth, or execution readiness. | Non-authoritative |
@@ -120,10 +121,10 @@ Relevant design reference:
 5. `docs/PROOFS/Phase-4.5/`
 6. `docs/PROOFS/Phase-5/`
 7. `docs/PROOFS/Phase-6/`
+8. `docs/PROOFS/Phase-6/PHASE_6_PROOF_PACKET_INDEX.md`
 
 ## Maintenance Rule
 When a capability or surface changes:
 1. Update runtime code and tests first.
 2. Regenerate runtime truth artifacts as needed.
 3. Update this reference in the same change set so the descriptions stay aligned with the live system.
-

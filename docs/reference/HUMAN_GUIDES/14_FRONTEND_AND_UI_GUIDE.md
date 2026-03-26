@@ -36,6 +36,7 @@ It now defines the major user-facing views:
 - Intro
 - Home
 - Workspace
+- Policies
 - Memory
 - Trust
 - Settings
@@ -47,6 +48,7 @@ It handles things like:
 - rendering chat and widgets
 - thread map and thread detail behavior
 - trust and system-status surfaces
+- policy review rendering
 - memory review and item actions
 - workspace-board rendering
 - structure-map rendering
@@ -70,6 +72,7 @@ The frontend can present:
 - system status
 - Workspace Home on the Home page
 - a dedicated Workspace page
+- a dedicated Policies page
 - a dedicated Trust page
 - a dedicated Introduction page
 - a dedicated Settings page
@@ -90,6 +93,7 @@ More specifically, the current dashboard can now show:
 - Workspace page selected-project drill-down and recent decisions
 - Structure Map for local-project visualization with structured graph output
 - Trust page recent governed actions, blocked conditions, drill-down, and capability visibility
+- Policy Review Center draft overview, selected-draft detail, simulation review, and one-shot manual run review
 - Settings page setup-mode selection and voice confidence review
 
 ## What The Frontend Is Not Supposed To Become
@@ -110,4 +114,4 @@ The frontend is where Nova starts to feel like:
 - a trust-preserving daily tool
 - a calm intelligence layer
 
-The newer Workspace, Trust, Memory, Intro, Settings, and first-run surfaces are especially important because they make Nova feel less like a command console and more like a product a normal person can return to every day.
+The newer Workspace, Trust, Policies, Memory, Intro, Settings, and first-run surfaces are especially important because they make Nova feel less like a command console and more like a product a normal person can return to every day.

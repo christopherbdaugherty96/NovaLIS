@@ -12,6 +12,7 @@ Nova's active capability surface now covers these big areas:
 - user-directed scheduled updates and reminders
 - opt-in pattern review for ongoing work
 - visible workspace and trust review surfaces
+- visible policy review surfaces for disabled delegated drafts
 
 ## 1. Research and Information Work
 Nova can:
@@ -164,6 +165,7 @@ Nova now has clearer product surfaces for understanding what it is doing and whe
 
 It can:
 - show a Trust page
+- show a Policies page
 - show a Settings page
 - show an Introduction page
 - summarize recent governed actions
@@ -172,12 +174,18 @@ It can:
 - show current operating mode and failure state
 - show a Workspace page
 - show a local-project Structure Map
+- inspect disabled policy drafts
+- simulate a policy draft
+- run a safe draft once manually
 - show voice runtime status and a voice-check path
 
 Examples:
 - `intro`
 - `settings`
 - `trust center`
+- `policy center`
+- `policy overview`
+- `policy create weekday system status at 8:00 am`
 - `trust status`
 - `voice status`
 - `voice check`
@@ -206,6 +214,7 @@ The biggest examples are:
 - richer connectors
 - deeper project/workspace system work
 - richer visualizer stages beyond the current structured graph view
+- delegated trigger runtime for policies
 
 ## 10. Response Style Control
 Nova can expose and adjust its manual presentation tone without changing what it is allowed to do.
