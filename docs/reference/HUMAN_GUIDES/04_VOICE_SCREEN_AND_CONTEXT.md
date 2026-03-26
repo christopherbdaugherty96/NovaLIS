@@ -15,7 +15,7 @@ That is what makes Nova feel more like a computer intelligence layer.
 ## What Is Active Today
 The following are active today:
 - speech-to-text transcription
-- text-to-speech
+- text-to-speech capability with an improved local renderer path
 - bounded screenshot capture on request
 - screen analysis on request
 - explain-anything mode
@@ -74,7 +74,7 @@ Wake word is an important planned feature, but it is not fully live runtime yet.
 
 What exists now:
 - speech-to-text is active
-- text-to-speech is active
+- text-to-speech capability is active, but real-device output still depends on local audio-path validation
 - wake word is documented as a planned surface
 
 What does not yet exist as active runtime truth:
@@ -82,7 +82,7 @@ What does not yet exist as active runtime truth:
 
 So the right way to describe the current project is:
 - voice input is active
-- voice output is active
+- voice output is implemented and still being validated end to end on real devices
 - wake word is planned
 
 ## Why This Still Matters Now

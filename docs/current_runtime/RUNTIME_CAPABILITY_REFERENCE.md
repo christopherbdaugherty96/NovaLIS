@@ -26,12 +26,12 @@ Interpretation rule:
 | --- | --- | --- | --- | --- | --- | --- |
 | 16 | `governed_web_search` | Research | 4 | Searches current web sources through the governed network path, can read a few source pages, and returns a results widget with suggested follow-ups. | `search for...`, `look up...`, `research...` | Read-only network |
 | 17 | `open_website` | Navigation | 4 | Opens a requested website, source URL, or article page in the default browser. Can preview before opening. | `open source 2`, `open reuters`, `preview source 1` | Local browser launch |
-| 18 | `speak_text` | Voice output | 4 | Reads text aloud through local offline TTS after speech-safe formatting removes raw links and system tokens. | `speak that`, `read that`, `say it` | Local audio output |
+| 18 | `speak_text` | Voice output | 4 | Reads text aloud through the local offline TTS path after speech-safe formatting removes raw links and system tokens. The runtime now prefers the stronger local renderer before fallback. | `speak that`, `read that`, `say it` | Local audio output |
 | 19 | `volume_up_down` | Local control | 4 | Raises, lowers, mutes, unmutes, or sets system volume on the local device. | `volume up`, `mute`, `set volume to 40` | Local OS effect |
 | 20 | `media_play_pause` | Local control | 4 | Starts, pauses, or resumes local media playback through platform-specific media controls. | `play`, `pause`, `resume` | Local OS effect |
 | 21 | `brightness_control` | Local control | 4 | Raises, lowers, or sets display brightness using platform-supported controls. | `brightness up`, `set brightness to 65` | Local OS effect |
 | 22 | `open_file_folder` | Local navigation | 4 | Opens allowed folders or explicit file/folder paths inside Nova's approved path roots. | `open downloads`, `open file C:\\...` | Local OS effect |
-| 31 | `response_verification` | Analysis safety | 4.2 | Verifies text or a prior answer for likely issues, corrections, and confidence without authorizing any action. | `verify this`, `fact check...`, `double check...` | Read-only analysis |
+| 31 | `response_verification` | Analysis safety | 4.2 | Verifies text or a prior answer for likely issues, corrections, and confidence without authorizing any action. It also powers the bounded same-thread `DeepSeek` second-opinion control in the chat bar. | `verify this`, `fact check...`, `double check...` | Read-only analysis |
 | 32 | `os_diagnostics` | System insight | 4 | Reports system health, CPU, memory, disk, network-interface status, model readiness, and active capability count. | `system status`, `system check` | Read-only local inspection |
 | 48 | `multi_source_reporting` | Intelligence | 4.2 | Builds a structured multi-source report with findings, source credibility, counter-analysis, and decomposed confidence signals. | `research local AI sovereignty`, `analyze current robotics market` | Read-only network + analysis |
 | 49 | `headline_summary` | News intelligence | 4.2 | Summarizes selected headlines, compares headlines, and can read the linked story page when asked for `story #x` details. | `summarize headline 2`, `more on story 1`, `compare headlines 1 and 3` | Read-only analysis |
@@ -102,7 +102,8 @@ Wake word is important enough to call out directly because it is easy to confuse
 
 Current truth:
 - Voice transcription is active.
-- Text-to-speech is active.
+- Text-to-speech capability is active, with stronger renderer preference now in code.
+- Real-device spoken output still deserves local validation.
 - Wake word is documented and planned.
 - Wake word is not yet a live governed capability or active runtime surface in the current registry.
 
