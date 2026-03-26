@@ -6,7 +6,7 @@ Purpose: Keep the canonical OpenClaw direction, supporting execution plan, and r
 ## Canonical Phase-8 OpenClaw Truth
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
 
-This is now the formal canonical design truth for how OpenClaw should fit into Nova.
+This is the formal canonical design truth for how OpenClaw should fit into Nova.
 If there is tension between Phase-8 notes, this document wins.
 
 ## Supporting Phase-8 Implementation Context
@@ -21,6 +21,25 @@ It should now be read as supporting context beneath the canonical Phase-8 spec a
 
 These notes remain valuable because they capture the originating product and hardening intent.
 They are preserved as source material, but they are not the final authority over the formal canonical spec.
+
+## Phase-8 Shipping Line
+Phase 8 is the safe first ship for governed external execution.
+
+Phase-8-safe scope:
+- Strict mode only
+- TaskEnvelope v1
+- normalization layer
+- Governor Interceptor
+- ExecuteBoundary hardening
+- Data Minimization Engine
+- NetworkMediator
+- proposal-only OpenClaw adapter
+- operator surfaces such as action preview, recent actions, status, stop, and failure visibility
+
+Phase 8 should not be read as authorization for:
+- broad Envelope mode without explicit budgets
+- silent supervisory execution
+- hidden background automation loops
 
 ## Cross-Phase Inputs
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
@@ -48,6 +67,12 @@ The same interpretation applies to broader agent-roadmap packets:
 - read-only connectors can arrive earlier
 - write-capable connectors, app control, and action-capable schedules belong here
 - continuously-on usefulness never removes approval requirements for real-world effect
+
+## Hand-off To Later Phases
+Read the canonical OpenClaw spec this way across phases:
+- Phase 8: strict governed execution foundations
+- Phase 9: bounded Envelope mode with explicit budgets and stronger run controls
+- Phase 10 and later: supervisory quietness only under reviewable control
 
 ## Interpretation Rule
 When reading the Phase-8 folder:
