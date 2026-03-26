@@ -94,6 +94,34 @@ def test_repeat_without_prior_spoken_text_asks_for_repeat_again(monkeypatch):
     assert any(msg == "Say that again?" for msg in chat_messages)
 
 
+def test_voice_turn_uses_voice_agent_to_keep_spoken_reply_short_and_screen_friendly(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    spoken: list[str] = []
+    ws = _ScriptedWebSocket([{"type": "chat", "channel": "voice", "text": "Explain why GPUs matter for local AI."}])
+
+    def _fake_generate_chat(_prompt: str, **kwargs):
+        return (
+            "Summary: GPUs matter because they accelerate the parallel math local AI relies on. "
+            "They also improve practical speed once model size and memory bandwidth start to matter. "
+            "If you want, I can compare that with CPU-only setups."
+        )
+
+    monkeypatch.setattr(brain_server, "nova_speak", lambda text: spoken.append(text))
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert spoken
+    assert spoken[0].startswith("GPUs matter because they accelerate the parallel math local AI relies on.")
+    assert "If you want, I can compare that with CPU-only setups." not in spoken[0]
+    assert "full answer on screen" in spoken[0]
+
+
 def test_what_can_you_do_with_question_mark_stays_on_capability_path(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,

@@ -35,10 +35,10 @@ class ConversationRouter:
     )
 
     MICRO_ACK = {
-        ConversationMode.ANALYSIS: "One moment. I'll break that down.",
-        ConversationMode.BRAINSTORM: "Okay. I'll give you structured options.",
-        ConversationMode.ACTION: "Okay. Working on that.",
-        ConversationMode.DIRECT: "Let me check.",
+        ConversationMode.ANALYSIS: "Okay. Let me think that through.",
+        ConversationMode.BRAINSTORM: "Okay. Let's map a few directions.",
+        ConversationMode.ACTION: "Okay. I'm on it.",
+        ConversationMode.DIRECT: "Okay. Let me check.",
     }
     NEVER_ESCALATE_PATTERNS = (
         re.compile(r"^\s*(hi|hello|hey|good morning|good afternoon|good evening)\b", re.IGNORECASE),
