@@ -33,6 +33,7 @@ def test_friendly_fallback_guides_user():
     from src.conversation.response_formatter import ResponseFormatter
 
     out = ResponseFormatter.friendly_fallback()
+    assert "didn't quite catch that" in out.lower()
     assert "what can you do" in out.lower()
     assert "what time is it" in out.lower()
     assert "today's news" in out.lower()

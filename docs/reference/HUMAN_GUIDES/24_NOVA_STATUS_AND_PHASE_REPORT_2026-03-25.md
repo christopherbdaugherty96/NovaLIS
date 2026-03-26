@@ -14,6 +14,7 @@ It now has:
 - a bounded same-thread second-opinion path
 - a Home page, Workspace page, Trust page, Policies page, Introduction page, Settings page, News page, Memory page, and chat surface
 - local-project understanding that now includes a visible structure-map view with structured graph output
+- a dedicated conversation personality layer and a dedicated voice presentation layer to keep replies smoother
 
 The most important truth is still:
 - Nova is live
@@ -116,6 +117,7 @@ Nova currently has:
 - follow-up actions tied to dashboard widgets
 - a first-run guide for non-technical users
 - a settings surface for setup-mode choice, voice checks, and comfort controls
+- smoother conversational acknowledgements and shorter spoken versions of long answers
 - a policy review surface for disabled drafts, simulations, and one-shot manual runs
 
 ### 3. Local computer help
@@ -190,6 +192,12 @@ The closing Phase-6 slice completed that package with:
 - richer topology detail in selected policy drafts
 - clearer simulation and one-shot run-result detail
 - runtime promotion from Phase-6 foundation to Phase-6 complete
+
+The newest conversation-quality slice then improved the assistant feel without widening authority:
+- a dedicated conversation-facing personality layer
+- a dedicated voice-facing acknowledgement and speech-shaping layer
+- calmer fallback wording
+- shorter spoken versions of longer answers so voice replies stay fluid
 
 This matters because it turned several already-good backend pieces into a more understandable product.
 

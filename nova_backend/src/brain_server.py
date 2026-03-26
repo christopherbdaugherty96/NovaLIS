@@ -32,7 +32,7 @@ from src.speech_state import speech_state
 from src.conversation.thought_store import ThoughtStore
 from src.conversation.complexity_heuristics import ComplexityHeuristics
 from src.conversation.session_router import SessionRouter
-from src.voice.stt_pipeline import STTAckConfig, build_ack_payload
+from src.voice.stt_pipeline import STTAckConfig
 from src.voice.tts_engine import (
     inspect_voice_runtime,
     nova_speak,
@@ -50,9 +50,11 @@ from src.policies.atomic_policy_store import AtomicPolicyStore
 from src.working_context.context_store import WorkingContextStore
 from src.working_context.project_threads import ProjectThreadStore
 from src.tasks.notification_schedule_store import NotificationScheduleStore
+from src.personality.conversation_personality_agent import ConversationPersonalityAgent
 from src.personality.interface_agent import PersonalityInterfaceAgent
 from src.personality.nova_style_contract import NovaStyleContract
 from src.personality.tone_profile_store import ToneProfileStore
+from src.voice.voice_agent import VoiceExperienceAgent
 from src.audit.runtime_auditor import (
     run_runtime_truth_audit,
     render_runtime_truth_markdown,
@@ -119,6 +121,8 @@ conversation_heuristics = ComplexityHeuristics()
 response_formatter = ResponseFormatter()
 failure_ladder = FailureLadder()
 interface_personality_agent = PersonalityInterfaceAgent()
+conversation_personality_agent = ConversationPersonalityAgent(interface_agent=interface_personality_agent)
+voice_experience_agent = VoiceExperienceAgent()
 RUNTIME_GOVERNOR = Governor()
 
 # -------------------------------------------------
@@ -4143,10 +4147,10 @@ async def send_chat_message(
     suggested_actions: Optional[list[dict[str, str]]] = None,
     apply_personality: bool = True,
     tone_domain: str = "general",
-) -> None:
+) -> str:
     presented = str(text or "").strip()
     if apply_personality:
-        presented = interface_personality_agent.present(presented, domain=tone_domain)
+        presented = conversation_personality_agent.present(presented, domain=tone_domain)
     if not presented and text:
         presented = str(text).strip()
     payload = {"type": "chat", "message": presented}
@@ -4157,6 +4161,7 @@ async def send_chat_message(
     if suggested_actions:
         payload["suggested_actions"] = suggested_actions
     await ws_send(ws, payload)
+    return presented
 
 async def send_chat_done(ws: WebSocket) -> None:
     await ws_send(ws, {"type": "chat_done"})
@@ -4236,7 +4241,11 @@ def _maybe_auto_speak_for_voice_turn(
     if session_state.get("last_input_channel") != "voice":
         return
     session_state["last_input_channel"] = None
-    speakable = ResponseFormatter.to_speakable_text(str(text or "").strip())
+    presented = conversation_personality_agent.present(str(text or "").strip(), domain="general")
+    speakable = voice_experience_agent.prepare_spoken_reply(
+        presented,
+        mode=str(session_state.get("last_mode") or "casual"),
+    )
     if not speakable:
         return
     speech_state.last_spoken_text = speakable
@@ -4375,14 +4384,14 @@ async def websocket_endpoint(ws: WebSocket):
         clean_message = str(message or "")
         if remember_response and clean_message.strip():
             session_state["last_response"] = clean_message
-        await send_chat_message(
+        presented_message = await send_chat_message(
             ws,
             clean_message,
             suggested_actions=suggested_actions,
             tone_domain=tone_domain,
         )
         await send_chat_done(ws)
-        _maybe_auto_speak_for_voice_turn(session_state, clean_message)
+        _maybe_auto_speak_for_voice_turn(session_state, presented_message)
         session_state["turn_count"] += 1
 
     try:
@@ -5169,7 +5178,10 @@ async def websocket_endpoint(ws: WebSocket):
                 continue
 
             if channel == "voice" and msg_type == "chat":
-                ack_payload = build_ack_payload(VOICE_ACK_CONFIG)
+                ack_payload = voice_experience_agent.build_ack_payload(
+                    VOICE_ACK_CONFIG,
+                    mode=decision.mode.value,
+                )
                 if ack_payload is not None:
                     await ws_send(ws, ack_payload)
 

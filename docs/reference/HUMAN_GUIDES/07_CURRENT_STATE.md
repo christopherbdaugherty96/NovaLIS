@@ -40,6 +40,7 @@ That means Nova already has:
 - in-place news summaries on the News page
 - a bounded same-thread DeepSeek second-opinion control
 - improved voice auto-speak routing with runtime fallback at the speech layer
+- a dedicated conversation personality layer and a dedicated voice presentation layer for smoother replies
 - dashboard support for all of the above
 
 ## What Feels Mature Already
@@ -81,6 +82,7 @@ These parts are active but still evolving:
 - actual provider and connector setup beyond the current preference surface
 - stronger local-project visualization beyond the current stage-2 structure map
 - final device-confidence confirmation for audible TTS output
+- deeper provider and connector setup in Settings
 - deeper Phase-6 policy review ergonomics beyond the current manual-review center
 - richer Phase-7 provider transparency and structured external reasoning
 
@@ -96,7 +98,7 @@ Examples include:
 
 A careful plain-language description of the current system is:
 - voice input exists
-- voice output is improved in code, auto-speaks voice-origin turns more reliably, and still depends on local device/audio validation
+- voice output is improved in code, auto-speaks voice-origin turns more reliably, trims long spoken replies more intelligently, and still depends on local device/audio validation
 - wake word is planned
 - governed external execution remains planned, not runtime-authorized
 
