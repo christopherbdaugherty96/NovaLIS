@@ -42,6 +42,16 @@ Current future naming note:
 Current Phase-7 DeepSeek second-opinion companion packet:
 - `docs/design/Phase 7/PHASE_7_DEEPSEEK_SECOND_OPINION_PLAN.md`
 
+Current Phase-8 canonical OpenClaw automation spec:
+- `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
+
+Current Phase-8 supporting OpenClaw execution packet:
+- `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
+
+Current Phase-8 preserved raw source notes:
+- `docs/design/Phase 8/openclaw.txt`
+- `docs/design/Phase 8/node design.txt`
+
 Current news experience and reasoning improvement packet:
 - `docs/design/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
 
