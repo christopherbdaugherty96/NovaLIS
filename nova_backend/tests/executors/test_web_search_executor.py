@@ -1,4 +1,5 @@
 from unittest.mock import Mock
+import time
 import pytest
 
 
@@ -273,6 +274,50 @@ def test_search_synthesis_uses_bounded_gateway_timeout(executor, mock_network, s
 
     assert result.success is True
     assert captured["timeout"] == 4.2
+
+
+def test_search_returns_promptly_when_source_reads_are_slow(executor, mock_network, sample_request, monkeypatch):
+    from src.executors import web_search_executor as mod
+
+    def _slow_fetch(*args, **kwargs):
+        time.sleep(0.2)
+        return "late page text"
+
+    monkeypatch.setattr(executor, "_fetch_source_text", _slow_fetch)
+    monkeypatch.setattr(mod, "SOURCE_READ_TIMEOUT_SECONDS", 0.01)
+    monkeypatch.setattr("src.executors.web_search_executor.generate_chat", lambda *args, **kwargs: "Fast fallback-safe answer.")
+    mock_network.request.return_value = {
+        "status_code": 200,
+        "data": {
+            "web": {
+                "results": [
+                    {
+                        "title": "Result one title",
+                        "url": "https://example.com/one",
+                        "description": "One",
+                    },
+                    {
+                        "title": "Result two title",
+                        "url": "https://example.com/two",
+                        "description": "Two",
+                    },
+                    {
+                        "title": "Result three title",
+                        "url": "https://example.com/three",
+                        "description": "Three",
+                    },
+                ]
+            }
+        },
+    }
+
+    started_at = time.monotonic()
+    result = executor.execute(sample_request)
+    elapsed = time.monotonic() - started_at
+
+    assert result.success is True
+    assert elapsed < 0.3
+    assert result.data["widget"]["data"]["source_pages_read"] == 0
 
 
 def test_research_fallback_single_source_uses_corroborating_result_signal():

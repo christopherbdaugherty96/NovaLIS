@@ -4,7 +4,7 @@ import logging
 import os
 import re
 import time
-from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError
+from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError, as_completed
 
 from src.actions.action_result import ActionResult
 from src.llm.llm_gateway import generate_chat
@@ -204,17 +204,19 @@ class WebSearchExecutor:
         url: str,
         request_id: str | None,
         session_id: str | None,
+        timeout_seconds: float | None = None,
     ) -> str:
         cleaned_url = str(url or "").strip()
         if not cleaned_url:
             return ""
+        effective_timeout = SOURCE_READ_TIMEOUT_SECONDS if timeout_seconds is None else max(0.05, timeout_seconds)
         try:
             response = self.network.request(
                 capability_id=capability_id,
                 method="GET",
                 url=cleaned_url,
                 as_json=False,
-                timeout=SOURCE_READ_TIMEOUT_SECONDS,
+                timeout=effective_timeout,
                 request_id=request_id,
                 session_id=session_id,
             )
@@ -232,6 +234,7 @@ class WebSearchExecutor:
         results: list[dict],
         request_id: str | None,
         session_id: str | None,
+        deadline: float | None = None,
     ) -> list[dict]:
         candidates: list[dict] = []
         seen_urls: set[str] = set()
@@ -249,26 +252,30 @@ class WebSearchExecutor:
 
         packets: list[dict] = []
         worker_count = min(3, len(candidates))
+        if deadline is None:
+            remaining_budget = SOURCE_READ_TIMEOUT_SECONDS
+        else:
+            remaining_budget = max(0.05, min(SOURCE_READ_TIMEOUT_SECONDS, deadline - time.monotonic()))
+        if remaining_budget <= 0.05:
+            return packets
         pool = ThreadPoolExecutor(max_workers=worker_count)
-        futures = [
-            (
-                item,
-                pool.submit(
-                    self._fetch_source_text,
-                    capability_id=capability_id,
-                    url=str(item.get("url") or ""),
-                    request_id=request_id,
-                    session_id=session_id,
-                ),
-            )
+        futures = {
+            pool.submit(
+                self._fetch_source_text,
+                capability_id=capability_id,
+                url=str(item.get("url") or ""),
+                request_id=request_id,
+                session_id=session_id,
+                timeout_seconds=remaining_budget,
+            ): item
             for item in candidates
-        ]
+        }
         try:
-            for item, future in futures:
+            for future in as_completed(futures, timeout=remaining_budget + 0.1):
+                item = futures[future]
                 try:
-                    text = (future.result(timeout=SOURCE_READ_TIMEOUT_SECONDS + 0.5) or "").strip()
-                except FuturesTimeoutError:
-                    future.cancel()
+                    text = (future.result() or "").strip()
+                except Exception:
                     text = ""
                 if not text:
                     continue
@@ -280,8 +287,12 @@ class WebSearchExecutor:
                         "text": text,
                     }
                 )
+        except FuturesTimeoutError:
+            pass
         finally:
-            pool.shutdown(wait=True, cancel_futures=True)
+            for future in futures:
+                future.cancel()
+            pool.shutdown(wait=False, cancel_futures=True)
         return packets
 
     @staticmethod
@@ -338,6 +349,7 @@ class WebSearchExecutor:
         source_packets: list[dict],
         request_id: str,
         session_id: str | None,
+        timeout_seconds: float | None = None,
     ) -> str:
         fallback = self._research_fallback(query, results, source_packets)
         if not source_packets:
@@ -373,7 +385,7 @@ class WebSearchExecutor:
                     session_id=session_id,
                     max_tokens=260,
                     temperature=0.2,
-                    timeout=SYNTHESIS_TIMEOUT_SECONDS,
+                    timeout=SYNTHESIS_TIMEOUT_SECONDS if timeout_seconds is None else max(0.05, timeout_seconds),
                 )
                 or ""
             ).strip()
@@ -512,19 +524,26 @@ class WebSearchExecutor:
 
         provider_label = self._format_provider_label(used_provider)
         confidence_label = "Medium" if used_provider == "brave" else "Medium-Low"
+        search_deadline = started_at + SEARCH_HARD_TIMEOUT_SECONDS
         source_packets = self._collect_source_packets(
             capability_id=request.capability_id,
             results=results,
             request_id=request.request_id,
             session_id=session_id,
+            deadline=search_deadline,
         )
-        researched_summary = self._synthesize_researched_summary(
-            query=query,
-            results=results,
-            source_packets=source_packets,
-            request_id=request.request_id,
-            session_id=session_id,
-        )
+        remaining_synthesis_budget = max(0.0, search_deadline - time.monotonic())
+        if remaining_synthesis_budget <= 0.05:
+            researched_summary = self._research_fallback(query, results, source_packets)
+        else:
+            researched_summary = self._synthesize_researched_summary(
+                query=query,
+                results=results,
+                source_packets=source_packets,
+                request_id=request.request_id,
+                session_id=session_id,
+                timeout_seconds=min(SYNTHESIS_TIMEOUT_SECONDS, remaining_synthesis_budget),
+            )
 
         report_sections = [
             f'Search answer for "{query}"',
