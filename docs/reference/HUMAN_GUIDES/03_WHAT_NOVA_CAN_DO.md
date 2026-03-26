@@ -173,6 +173,9 @@ It can:
 - show an Introduction page
 - show remote bridge status
 - show provider and connection status
+- change setup mode in Settings
+- pause or re-enable governed second-opinion review in Settings
+- pause or re-enable remote bridge access in Settings
 - summarize recent governed actions
 - show blocked conditions
 - let you drill into why a recent action happened
@@ -221,7 +224,7 @@ Some important ideas are documented and partly scaffolded, but are not fully act
 The biggest examples are:
 - wake word
 - richer connectors
-- actionable provider/connector setup instead of visibility-first status only
+- full in-app provider key entry and richer connector management beyond the current runtime-permission controls
 - deeper project/workspace system work
 - richer visualizer stages beyond the current structured graph view
 - delegated trigger runtime for policies

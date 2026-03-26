@@ -100,8 +100,9 @@ Current recommended next-step posture:
 - trust-center drill-down, onboarding stage 2, and workspace stage 3 are now live
 - Phase-6 trust, policy review, and capability-authority surfaces are now complete in the current repository state, but trigger runtime remains disabled
 - Phase-7 governed external reasoning is now complete in the current repository state
+- Settings stage 2 provider/bridge/runtime-permission controls are now live in the current repository state
 - the immediate remaining live-runtime voice caveat is final device-confidence validation for spoken output
-- the current highest-value next product-foundation target is the governed OpenClaw bridge and Phase-8 strict execution foundations
+- the current highest-value next product-foundation target is final voice device-confidence validation, then Phase-8 strict execution foundations
 - keep execution widening narrower than the UI/access bridge at first
 - richer project/workspace persistence and connector rollout should follow closely behind
 - prefer disciplined core-layer implementation over broad new expansion

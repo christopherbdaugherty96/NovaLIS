@@ -10,6 +10,7 @@ The following Phase-7 product slices are now live in runtime/proof:
 - cleaner user-facing news category language
 - explicit governed external reasoning capability for same-thread second-opinion review
 - provider transparency in Trust and Settings
+- actionable setup-mode and governed runtime-permission controls in Settings
 - advisory-only explanation of the reasoning lane
 - stronger local TTS renderer preference before fallback
 

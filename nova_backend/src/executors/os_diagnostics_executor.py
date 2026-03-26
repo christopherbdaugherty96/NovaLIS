@@ -12,6 +12,7 @@ import psutil
 
 from src.actions.action_result import ActionResult
 from src.build_phase import BUILD_PHASE
+from src.settings.runtime_settings_store import runtime_settings_store
 
 
 class OSDiagnosticsExecutor:
@@ -721,6 +722,10 @@ class OSDiagnosticsExecutor:
             if item.get("id") is not None
         }
         capability_enabled = 62 in enabled_ids
+        reasoning_permission_enabled = runtime_settings_store.is_permission_enabled(
+            "external_reasoning_enabled"
+        )
+        settings_snapshot = runtime_settings_store.snapshot()
         model_availability, _, model_remediation, model_ready = OSDiagnosticsExecutor._model_status_details()
 
         last_used = ""
@@ -769,10 +774,15 @@ class OSDiagnosticsExecutor:
         except Exception:
             pass
 
-        if capability_enabled and model_ready:
+        if capability_enabled and model_ready and reasoning_permission_enabled:
             status = "available"
             summary = (
                 "Governed second opinion is available. Nova can ask the DeepSeek reasoning lane to review an answer without granting it any execution authority."
+            )
+        elif capability_enabled and not reasoning_permission_enabled:
+            status = "paused"
+            summary = (
+                "Governed second opinion is paused in Settings. Re-enable it when you want advisory-only review help again."
             )
         elif capability_enabled:
             status = "limited"
@@ -794,14 +804,31 @@ class OSDiagnosticsExecutor:
             "authority_label": "Advisory only",
             "capability_id": "62" if capability_enabled else "",
             "mode": last_mode,
-            "available": "yes" if capability_enabled and model_ready else "no",
+            "available": "yes" if capability_enabled and model_ready and reasoning_permission_enabled else "no",
             "switching_note": "Provider switching arrives later. Today's second-opinion lane stays inside Nova's governed route.",
             "governance_note": "Second opinions can critique and clarify, but they cannot execute actions or widen authority.",
+            "settings_permission": "enabled" if reasoning_permission_enabled else "paused",
+            "settings_setup_mode": str(settings_snapshot.get("setup_mode_label") or ""),
             "last_used": last_used or "Not used yet",
-            "last_outcome": last_outcome or ("Available" if capability_enabled else "Not enabled"),
+            "last_outcome": last_outcome or (
+                "Available"
+                if capability_enabled and reasoning_permission_enabled
+                else "Paused"
+                if capability_enabled
+                else "Not enabled"
+            ),
             "last_request_id": last_request_id or "Not recorded",
             "model_status": model_availability,
             "model_remediation": model_remediation,
+            "status_label": (
+                "Available"
+                if status == "available"
+                else "Paused"
+                if status == "paused"
+                else "Limited"
+                if status == "limited"
+                else "Disabled"
+            ),
         }
 
     @staticmethod
@@ -815,27 +842,42 @@ class OSDiagnosticsExecutor:
     @staticmethod
     def _bridge_status_details() -> dict[str, object]:
         token = OSDiagnosticsExecutor._bridge_token_value()
-        enabled = bool(token)
-        status = "enabled" if enabled else "disabled"
-        summary = (
-            "OpenClaw bridge is enabled. Token-authenticated remote requests can enter Nova through the governed bridge "
-            "without widening execution authority."
-            if enabled
-            else "OpenClaw bridge is disabled until a bridge token is configured."
+        bridge_permission_enabled = runtime_settings_store.is_permission_enabled(
+            "remote_bridge_enabled"
         )
+        token_configured = bool(token)
+        enabled = bool(token and bridge_permission_enabled)
+        if enabled:
+            status = "enabled"
+            summary = (
+                "OpenClaw bridge is enabled. Token-authenticated remote requests can enter Nova through the governed bridge "
+                "without widening execution authority."
+            )
+        elif token_configured:
+            status = "paused"
+            summary = (
+                "OpenClaw bridge is configured but paused in Settings. Remote requests stay blocked until you re-enable the bridge."
+            )
+        else:
+            status = "disabled"
+            summary = "OpenClaw bridge is disabled until a bridge token is configured."
         return {
             "status": status,
             "enabled": enabled,
+            "token_configured": token_configured,
             "summary": summary,
             "name": "OpenClaw Bridge",
             "transport": "HTTP",
-            "auth": "Token required" if enabled else "Token not configured",
+            "auth": "Token required" if token_configured else "Token not configured",
             "scope": "Read and reasoning only",
             "effectful_actions": "Blocked",
             "continuity": "Stateless stage-1 bridge",
             "endpoint": "/api/openclaw/bridge/message",
-            "status_label": "Enabled" if enabled else "Disabled",
-            "auth_label": "Configured" if enabled else "Missing",
+            "status_label": (
+                "Enabled" if enabled else "Paused" if token_configured else "Disabled"
+            ),
+            "auth_label": "Configured" if token_configured else "Missing",
+            "settings_permission": "enabled" if bridge_permission_enabled else "paused",
         }
 
     @staticmethod
@@ -843,6 +885,7 @@ class OSDiagnosticsExecutor:
         model_availability, model_note, _, _ = OSDiagnosticsExecutor._model_status_details()
         reasoning_runtime = OSDiagnosticsExecutor._external_reasoning_status_details()
         bridge_runtime = OSDiagnosticsExecutor._bridge_status_details()
+        settings_snapshot = runtime_settings_store.snapshot()
 
         configured_keys = [
             label
@@ -856,6 +899,11 @@ class OSDiagnosticsExecutor:
 
         items = [
             {
+                "label": "Setup mode",
+                "value": str(settings_snapshot.get("setup_mode_label") or "Local Mode"),
+                "note": str(settings_snapshot.get("setup_mode_description") or "").strip(),
+            },
+            {
                 "label": "Local model route",
                 "value": model_availability.title(),
                 "note": model_note,
@@ -868,7 +916,7 @@ class OSDiagnosticsExecutor:
             {
                 "label": "BYO provider keys",
                 "value": ", ".join(configured_keys) if configured_keys else "Not configured",
-                "note": "Bring Your Own API Key remains explicit and optional.",
+                "note": "Environment-based key detection is live now. In-app key entry arrives later and should stay explicit.",
             },
             {
                 "label": "OpenClaw bridge",
@@ -883,6 +931,7 @@ class OSDiagnosticsExecutor:
         ]
 
         summary_parts = [
+            str(settings_snapshot.get("summary") or "").strip(),
             "Local model route is " + model_availability + ".",
             ("BYO provider keys are configured." if configured_keys else "BYO provider keys are not configured."),
             str(bridge_runtime.get("summary") or "").strip(),
@@ -893,6 +942,7 @@ class OSDiagnosticsExecutor:
             "configured_provider_count": len(configured_keys),
             "configured_provider_labels": configured_keys,
             "bridge_enabled": bool(bridge_runtime.get("enabled")),
+            "setup_mode": str(settings_snapshot.get("setup_mode") or "local"),
         }
 
     @staticmethod

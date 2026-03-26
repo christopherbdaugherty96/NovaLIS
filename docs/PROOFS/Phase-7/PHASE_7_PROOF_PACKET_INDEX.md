@@ -5,6 +5,7 @@ Status: Current proof index
 ## Current canonical Phase-7 completion packet
 - `docs/PROOFS/Phase-7/PHASE_7_COMPLETION_AND_REASONING_TRANSPARENCY_RUNTIME_SLICE_2026-03-26.md`
 - `docs/PROOFS/Phase-7/PHASE_7_GOVERNED_REMOTE_BRIDGE_RUNTIME_SLICE_2026-03-26.md`
+- `docs/PROOFS/Phase-7/PHASE_7_SETTINGS_RUNTIME_PERMISSIONS_SLICE_2026-03-26.md`
 
 ## Earlier bounded Phase-7 foundation packet
 - `docs/PROOFS/Phase-7/PHASE_7_PRODUCT_FOUNDATION_RUNTIME_SLICE_2026-03-25.md`
@@ -15,6 +16,7 @@ Status: Current proof index
 - cleaner user-facing news category language
 - explicit governed external reasoning capability for same-thread second-opinion review
 - provider transparency in Trust and Settings
+- actionable setup-mode and governed runtime-permission controls in Settings
 - advisory-only explanation of the reasoning lane
 - TTS executor preference for the stronger local renderer before fallback
 - token-gated governed remote bridge for read/reasoning access

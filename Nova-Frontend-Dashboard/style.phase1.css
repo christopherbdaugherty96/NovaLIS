@@ -720,6 +720,14 @@ button.workspace-spotlight-card.active {
   background: rgba(23, 48, 81, 0.8);
 }
 
+.settings-permission-card {
+  min-height: 100%;
+}
+
+.settings-history-row {
+  gap: 6px;
+}
+
 .settings-mode-title {
   font-size: 0.8rem;
   font-weight: 700;

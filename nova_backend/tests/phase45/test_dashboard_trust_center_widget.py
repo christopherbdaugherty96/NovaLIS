@@ -12,6 +12,8 @@ def test_dashboard_renders_trust_center_page_from_runtime_state():
     source = DASHBOARD_PATH.read_text(encoding="utf-8")
 
     assert "function renderTrustCenterPage()" in source
+    assert "function requestSettingsRuntimeRefresh(force = false)" in source
+    assert "function setRuntimePermission(permission, enabled)" in source
     assert 'safeWSSend({ text: "trust center", silent_widget_refresh: true });' in source
     assert 'safeWSSend({ text: "system status", silent_widget_refresh: true });' in source
     assert "renderTrustCenterPage();" in source

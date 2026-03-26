@@ -4,6 +4,7 @@ from types import SimpleNamespace
 
 from src.actions.action_result import ActionResult
 from src.executors.response_verification_executor import ResponseVerificationExecutor
+from src.settings.runtime_settings_store import runtime_settings_store
 
 
 class ExternalReasoningExecutor:
@@ -22,6 +23,34 @@ class ExternalReasoningExecutor:
 
     def execute(self, request) -> ActionResult:
         text = str((request.params or {}).get("text") or "").strip()
+        if not runtime_settings_store.is_permission_enabled("external_reasoning_enabled"):
+            payload = {
+                "reasoning_available": False,
+                "failure_kind": "settings_paused",
+                "reasoning_provider": self._PROVIDER_LABEL,
+                "reasoning_provider_label": self._PROVIDER_LABEL,
+                "reasoning_route": self._ROUTE_DETAIL,
+                "reasoning_route_label": self._ROUTE_LABEL,
+                "reasoning_mode": "second_opinion",
+                "reasoning_authority": "analysis_only",
+                "reasoning_authority_label": self._AUTHORITY_LABEL,
+                "reasoning_governance_note": self._GOVERNANCE_NOTE,
+            }
+            message = (
+                "Governed second opinion is paused in Settings right now. "
+                "Re-enable it when you want advisory-only review help again."
+            )
+            return ActionResult.failure(
+                message,
+                data=payload,
+                structured_data=payload,
+                speakable_text="Governed second opinion is paused in Settings.",
+                request_id=request.request_id,
+                authority_class="read_only",
+                external_effect=False,
+                reversible=True,
+                outcome_reason=message,
+            )
         if not text:
             return ActionResult.failure(
                 "I need an answer or exchange to review before I can give a second opinion.",

@@ -44,9 +44,9 @@ The biggest risk is:
 The project is no longer missing "more ideas."
 
 It is missing more of the operating layers that make the vision stable:
-- fuller provider and connector management
 - deeper project/workspace persistence
 - final real-device TTS confidence work
+- fuller provider and connector management beyond the current runtime-permission layer
 - disciplined connector rollout
 - later home and external integrations only after those are explicit and visible
 
@@ -69,39 +69,36 @@ That means the next work should be:
 ## Next Todo Before Anything Else
 The next highest-value product-foundation priority should now be:
 
-### 1. Explicit Provider / Connector Setup And Permission Management
+### 1. Final TTS Device Confidence
 Best next branch:
-- `codex/settings-stage2-provider-and-permissions`
+- `codex/tts-regression-stage2-device-confidence`
 
 Why this should come first:
-- Introduction, Settings, Home, Workspace, Memory, and Trust now exist as real product surfaces
-- the next biggest user-facing gap is that setup choices are visible, but not yet fully actionable through a connector and permissions layer
-- this is the cleanest next move for a non-technical user because it makes configuration understandable without widening authority
-- it prepares the product for later connectors, provider routing, and home integrations without hidden drift
+- the Settings/runtime-permission layer is now real and actionable
+- the biggest remaining non-technical trust gap is whether spoken output feels reliably real on device
+- this is a visible confidence issue that users notice immediately
+- closing it keeps Nova feeling polished before widening into more execution
 
 Best scope:
-- explicit provider status
-- explicit connector status
-- read-only vs effectful permission visibility
-- revoke / disconnect surfaces
-- clearer explanation of what is configured and what is still only a preference
+- real-device voice validation workflow
+- clearer remediation guidance when spoken output fails
+- any last runtime fallback tuning needed after live confirmation
 - no authority expansion
 - no hidden autonomy
 
 ## Recommended Follow-On Order
-After settings/provider/permission work, the cleanest order is:
-1. `codex/connector-management-stage1-read-only`
-2. `codex/tts-regression-stage2-device-confidence`
-3. `codex/agent-os-stage4-project-persistence`
-4. governed OpenClaw bridge and Phase-8 strict foundations
-5. connector-aware onboarding follow-through
+After TTS device-confidence work, the cleanest order is:
+1. `codex/agent-os-stage4-project-persistence`
+2. governed OpenClaw bridge and Phase-8 strict foundations
+3. `codex/connector-management-stage1-read-only`
+4. connector-aware onboarding follow-through
+5. fuller provider entry / revoke / connector linking once the Phase-8 foundation is stable
 
 ## Why This Order
 This order is strong because it:
-- turns visible setup into explicit usable configuration
-- makes future connectors safer before they exist
-- closes a remaining voice confidence gap after that
-- deepens project persistence after the control layer is clearer
+- closes a remaining voice confidence gap first
+- deepens project persistence after the current control layer is clearer
+- keeps future connectors safer before they widen
 - keeps future automation anchored to visible permissions
 
 ## What To Avoid Right Now

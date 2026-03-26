@@ -55,6 +55,7 @@ from src.personality.interface_agent import PersonalityInterfaceAgent
 from src.personality.nova_style_contract import NovaStyleContract
 from src.personality.tone_profile_store import ToneProfileStore
 from src.voice.voice_agent import VoiceExperienceAgent
+from src.settings.runtime_settings_store import runtime_settings_store
 from src.audit.runtime_auditor import (
     run_runtime_truth_audit,
     render_runtime_truth_markdown,
@@ -4081,6 +4082,7 @@ async def openclaw_bridge_status():
     return {
         "bridge": OSDiagnosticsExecutor._bridge_status_details(),
         "connections": OSDiagnosticsExecutor._connection_status_details(),
+        "settings": runtime_settings_store.snapshot(),
     }
 
 
@@ -4091,6 +4093,11 @@ async def openclaw_bridge_message(
     authorization: str | None = Header(default=None),
 ):
     bridge_runtime = OSDiagnosticsExecutor._bridge_status_details()
+    if not runtime_settings_store.is_permission_enabled("remote_bridge_enabled"):
+        raise HTTPException(
+            status_code=403,
+            detail="OpenClaw bridge is paused in Settings. Re-enable it before sending remote requests.",
+        )
     expected_token = OSDiagnosticsExecutor._bridge_token_value()
     if not expected_token:
         raise HTTPException(status_code=503, detail="OpenClaw bridge is disabled until a bridge token is configured.")
@@ -4126,6 +4133,96 @@ async def openclaw_bridge_message(
         ]
     )
     return _build_bridge_response(request_text=text, bridge_runtime=bridge_runtime, events=events)
+
+
+@app.get("/api/settings/runtime")
+async def get_runtime_settings():
+    snapshot = runtime_settings_store.snapshot()
+    return {
+        "settings": snapshot,
+        "bridge": OSDiagnosticsExecutor._bridge_status_details(),
+        "connections": OSDiagnosticsExecutor._connection_status_details(),
+        "reasoning": OSDiagnosticsExecutor._external_reasoning_status_details(),
+    }
+
+
+@app.post("/api/settings/runtime/setup-mode")
+async def set_runtime_setup_mode(payload: dict[str, Any]):
+    mode = str(payload.get("setup_mode") or "").strip()
+    if not mode:
+        raise HTTPException(status_code=400, detail="setup_mode is required.")
+    try:
+        snapshot = runtime_settings_store.set_setup_mode(mode, source="settings_page")
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    _log_ledger_event(
+        RUNTIME_GOVERNOR,
+        "RUNTIME_SETTINGS_UPDATED",
+        {
+            "action": "set_setup_mode",
+            "setup_mode": str(snapshot.get("setup_mode") or ""),
+            "source": "settings_page",
+        },
+    )
+    return {
+        "settings": snapshot,
+        "bridge": OSDiagnosticsExecutor._bridge_status_details(),
+        "connections": OSDiagnosticsExecutor._connection_status_details(),
+        "reasoning": OSDiagnosticsExecutor._external_reasoning_status_details(),
+    }
+
+
+@app.post("/api/settings/runtime/permissions")
+async def set_runtime_permission(payload: dict[str, Any]):
+    permission_name = str(payload.get("permission") or "").strip()
+    if not permission_name:
+        raise HTTPException(status_code=400, detail="permission is required.")
+    if "enabled" not in payload:
+        raise HTTPException(status_code=400, detail="enabled is required.")
+    try:
+        snapshot = runtime_settings_store.set_permission(
+            permission_name,
+            bool(payload.get("enabled")),
+            source="settings_page",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    _log_ledger_event(
+        RUNTIME_GOVERNOR,
+        "RUNTIME_SETTINGS_UPDATED",
+        {
+            "action": "set_permission",
+            "permission": permission_name,
+            "enabled": bool(payload.get("enabled")),
+            "source": "settings_page",
+        },
+    )
+    return {
+        "settings": snapshot,
+        "bridge": OSDiagnosticsExecutor._bridge_status_details(),
+        "connections": OSDiagnosticsExecutor._connection_status_details(),
+        "reasoning": OSDiagnosticsExecutor._external_reasoning_status_details(),
+    }
+
+
+@app.post("/api/settings/runtime/reset")
+async def reset_runtime_settings():
+    snapshot = runtime_settings_store.reset_recommended_defaults(source="settings_page")
+    _log_ledger_event(
+        RUNTIME_GOVERNOR,
+        "RUNTIME_SETTINGS_UPDATED",
+        {
+            "action": "reset_recommended_defaults",
+            "setup_mode": str(snapshot.get("setup_mode") or ""),
+            "source": "settings_page",
+        },
+    )
+    return {
+        "settings": snapshot,
+        "bridge": OSDiagnosticsExecutor._bridge_status_details(),
+        "connections": OSDiagnosticsExecutor._connection_status_details(),
+        "reasoning": OSDiagnosticsExecutor._external_reasoning_status_details(),
+    }
 
 # -------------------------------------------------
 # WebSocket Utilities

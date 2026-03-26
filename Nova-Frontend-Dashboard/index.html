@@ -616,6 +616,8 @@
             <button id="btn-settings-open-home" type="button">Open home</button>
             <button id="btn-settings-open-trust" type="button">Open trust</button>
             <button id="btn-settings-open-connections" type="button">Connection status</button>
+            <button id="btn-settings-refresh-runtime" type="button">Refresh runtime</button>
+            <button id="btn-settings-reset-defaults" type="button">Restore recommended defaults</button>
             <button id="btn-settings-voice-status" type="button">Voice status</button>
             <button id="btn-settings-voice-check" type="button">Run voice check</button>
           </div>
@@ -629,6 +631,20 @@
             </div>
           </div>
           <div id="settings-mode-cards" class="settings-mode-grid"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Governed Permissions</div>
+              <p id="settings-permission-summary" class="workspace-board-section-copy">Runtime permissions will appear here after the next settings refresh.</p>
+            </div>
+          </div>
+          <div id="settings-permission-grid" class="settings-mode-grid"></div>
+          <div id="settings-history-list" class="trust-center-list"></div>
+          <p class="first-run-note">
+            These controls are live now. They change whether governed second opinions and the remote bridge are available at runtime.
+          </p>
         </div>
 
         <div class="widget page-card trust-center-panel" aria-live="polite">

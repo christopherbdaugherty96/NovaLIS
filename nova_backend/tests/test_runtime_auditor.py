@@ -37,6 +37,19 @@ def test_enabled_id_extraction_ignores_non_enabled_truthy_columns():
     assert _extract_enabled_ids_from_markdown(markdown) == [16]
 
 
+def test_requests_detector_ignores_plain_language_mentions(monkeypatch, tmp_path):
+    import src.audit.runtime_auditor as ra
+
+    brain_path = tmp_path / "brain_server.py"
+    brain_path.write_text('detail = "Remote requests stay blocked until enabled."\n', encoding="utf-8")
+
+    allowed = frozenset({brain_path})
+    monkeypatch.setattr(ra, "ALLOWED_READ_PATHS", allowed)
+    monkeypatch.setattr(ra, "PROJECT_ROOT", tmp_path)
+
+    assert ra._find_requests_usage_outside_network_mediator() == []
+
+
 def test_missing_enabled_mediator_route_is_hard_fail():
     discrepancies = _build_discrepancies(
         runtime_doc_enabled_ids=[16, 17],
@@ -194,6 +207,8 @@ def test_phase7_status_tracks_complete_reasoning_surface(monkeypatch, tmp_path):
                 "trustReviewState.reasoningRuntime = {};",
                 "trust-center-reasoning-summary",
                 "settings-reasoning-summary",
+                "requestSettingsRuntimeRefresh(force = false)",
+                "setRuntimePermission(permission, enabled)",
             ]
         ),
         ra.STATIC_INDEX_PATH: "\n".join(
@@ -202,6 +217,8 @@ def test_phase7_status_tracks_complete_reasoning_surface(monkeypatch, tmp_path):
                 '<div id="trust-center-reasoning-grid"></div>',
                 '<div id="settings-reasoning-summary"></div>',
                 '<div id="settings-reasoning-grid"></div>',
+                '<div id="settings-permission-summary"></div>',
+                '<div id="settings-permission-grid"></div>',
             ]
         ),
         ra.GOVERNOR_PATH: "elif req.capability_id == 62:\n    return self._handle_external_reasoning(req)",
@@ -211,6 +228,7 @@ def test_phase7_status_tracks_complete_reasoning_surface(monkeypatch, tmp_path):
                 "capability_id == 62",
                 "_build_second_opinion_review_text",
                 "reasoning_runtime",
+                "/api/settings/runtime",
             ]
         ),
         ra.DEEPSEEK_BRIDGE_PATH: "response = llm_gateway.generate_chat(prompt)",
