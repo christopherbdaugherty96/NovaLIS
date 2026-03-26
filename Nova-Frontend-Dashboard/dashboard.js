@@ -194,7 +194,7 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "intro_workspace", label: "Open Workspace", switchToPage: "workspace", command: "workspace board", stayOnPage: true },
     { id: "intro_trust", label: "Open Trust", switchToPage: "trust", command: "trust center", stayOnPage: true },
     { id: "intro_settings", label: "Open Settings", switchToPage: "settings", command: "voice status", stayOnPage: true },
-    { id: "intro_brief", label: "Today's brief", command: "daily brief", switchToPage: "chat" },
+    { id: "intro_magic", label: "Try Explain This", command: "explain this", switchToPage: "chat" },
   ],
   home: [
     { id: "home_system", label: "System status", command: "system status", switchToPage: "chat" },
@@ -3930,6 +3930,7 @@ function renderTrustCenterPage() {
     reasoningSummary.textContent = [
       String(reasoning.summary || "").trim(),
       String(reasoning.last_used || "").trim() && `Last used: ${String(reasoning.last_used || "").trim()}`,
+      String(reasoning.usage_budget_state_label || "").trim() && `Usage: ${String(reasoning.usage_budget_state_label || "").trim()}`,
     ].filter(Boolean).join(" · ") || "Governed second-opinion status will appear here after the next trust refresh.";
 
     clear(reasoningGrid);
@@ -3940,6 +3941,10 @@ function renderTrustCenterPage() {
       ["Mode", String(reasoning.mode || "second_opinion").trim() || "second_opinion"],
       ["Availability", String(reasoning.status || "Unknown").trim() || "Unknown"],
       ["Last outcome", String(reasoning.last_outcome || "Not recorded").trim() || "Not recorded"],
+      ["Estimated tokens today", `${Number(reasoning.usage_estimated_total_tokens || 0).toLocaleString()} ${String(reasoning.usage_measurement_label || "estimated tokens").toLowerCase()}`],
+      ["Budget state", String(reasoning.usage_budget_state_label || "Normal").trim() || "Normal"],
+      ["Budget remaining", `${Number(reasoning.usage_budget_remaining_tokens || 0).toLocaleString()} tokens`],
+      ["Cost tracking", String(reasoning.usage_cost_tracking_label || "Exact cost tracking is not live yet").trim() || "Exact cost tracking is not live yet"],
     ].forEach(([label, value]) => {
       reasoningGrid.appendChild(createOverviewChip(label, value));
     });
@@ -6235,6 +6240,18 @@ function showFirstRunGuide(force = false) {
   });
   card.appendChild(steps);
 
+  const magicMoment = document.createElement("div");
+  magicMoment.className = "first-run-pillar";
+  const magicTitle = document.createElement("div");
+  magicTitle.className = "first-run-pillar-title";
+  magicTitle.textContent = "One good first move";
+  magicMoment.appendChild(magicTitle);
+  const magicCopy = document.createElement("div");
+  magicCopy.className = "first-run-pillar-copy";
+  magicCopy.textContent = "Try \"explain this.\" It is the fastest way to feel Nova become useful without learning the whole system first.";
+  magicMoment.appendChild(magicCopy);
+  card.appendChild(magicMoment);
+
   const trustNote = document.createElement("p");
   trustNote.className = "first-run-note";
   trustNote.textContent = "No background automation. No hidden memory. No surprises. Nova only moves when you ask.";
@@ -6269,10 +6286,10 @@ function showFirstRunGuide(force = false) {
       },
     },
     {
-      label: "Try Morning Brief",
+      label: "Try Explain This",
       fn: () => {
         setActivePage("chat");
-        injectUserText("daily brief", "text");
+        injectUserText("explain this", "text");
       },
     },
   ].forEach((item) => {
@@ -6499,6 +6516,7 @@ function renderSettingsPage() {
       String(reasoning.summary || "").trim() || "Second opinions stay advisory-only and visible when used.",
       String(reasoning.settings_permission || "").trim() ? `Settings: ${String(reasoning.settings_permission || "").trim()}` : "",
       String(reasoning.switching_note || "").trim(),
+      String(reasoning.usage_budget_state_label || "").trim() ? `Usage: ${String(reasoning.usage_budget_state_label || "").trim()}` : "",
     ].filter(Boolean).join(" · ");
 
     clear(reasoningGrid);
@@ -6509,6 +6527,10 @@ function renderSettingsPage() {
       ["Availability", String(reasoning.status_label || reasoning.status || "Unknown").trim() || "Unknown"],
       ["Settings permission", String(reasoning.settings_permission || "enabled").trim() || "enabled"],
       ["Last used", String(reasoning.last_used || "Not used yet").trim() || "Not used yet"],
+      ["Estimated tokens today", `${Number(reasoning.usage_estimated_total_tokens || 0).toLocaleString()} ${String(reasoning.usage_measurement_label || "estimated tokens").toLowerCase()}`],
+      ["Budget state", String(reasoning.usage_budget_state_label || "Normal").trim() || "Normal"],
+      ["Budget remaining", `${Number(reasoning.usage_budget_remaining_tokens || 0).toLocaleString()} tokens`],
+      ["Cost tracking", String(reasoning.usage_cost_tracking_label || "Exact cost tracking is not live yet").trim() || "Exact cost tracking is not live yet"],
       ["Provider switching", "Later"],
     ].forEach(([label, value]) => {
       reasoningGrid.appendChild(createOverviewChip(label, value));
@@ -6525,7 +6547,7 @@ function renderSettingsPage() {
     ].filter(Boolean).join(" · ");
 
     clear(connectionGrid);
-    (Array.isArray(connections.items) ? connections.items : []).slice(0, 6).forEach((item) => {
+    (Array.isArray(connections.items) ? connections.items : []).slice(0, 8).forEach((item) => {
       const label = String(item.label || "Connection").trim() || "Connection";
       const value = String(item.value || "Unknown").trim() || "Unknown";
       const note = String(item.note || "").trim();
@@ -7075,10 +7097,15 @@ window.addEventListener("DOMContentLoaded", () => {
   const introSettingsBtn = $("btn-intro-open-settings");
   if (introSettingsBtn) introSettingsBtn.addEventListener("click", () => setActivePage("settings"));
 
+  const introLandingBtn = $("btn-intro-open-landing");
+  if (introLandingBtn) introLandingBtn.addEventListener("click", () => {
+    window.open("/landing", "_blank", "noopener");
+  });
+
   const introBriefBtn = $("btn-intro-daily-brief");
   if (introBriefBtn) introBriefBtn.addEventListener("click", () => {
     setActivePage("chat");
-    injectUserText("daily brief", "text");
+    injectUserText("explain this", "text");
   });
 
   const workspaceHomeRefreshBtn = $("btn-workspace-home-refresh");

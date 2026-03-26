@@ -12,8 +12,10 @@ It now has:
 - explicit memory with a dedicated management page
 - answer-first search and source-grounded news flows
 - a governed external reasoning lane with provider transparency
+- estimated governed reasoning-usage visibility in Trust and Settings
 - a token-gated governed remote bridge for read/reasoning access
 - a Home page, Workspace page, Trust page, Policies page, Introduction page, Settings page, News page, Memory page, and chat surface
+- a separate landing-preview page for product messaging review
 - local-project understanding that now includes a visible structure-map view with structured graph output
 - a dedicated conversation personality layer and a dedicated voice presentation layer to keep replies smoother
 
@@ -119,8 +121,10 @@ Nova currently has:
 - schedule and pattern-review surfaces
 - follow-up actions tied to dashboard widgets
 - a first-run guide for non-technical users
+- a stronger first-run magic-moment prompt centered on `explain this`
 - a settings surface for setup-mode choice, voice checks, comfort controls, and governed runtime permissions
 - visible provider, connection, and remote-bridge status in Settings, with live pause/re-enable controls for second opinion and bridge access
+- visible estimated reasoning usage and budget state in Trust and Settings
 - smoother conversational acknowledgements and shorter spoken versions of long answers
 - a policy review surface for disabled drafts, simulations, and one-shot manual runs
 
@@ -217,6 +221,12 @@ The newest settings-control slice then made that product surface real at runtime
 - live Settings controls for second-opinion and remote-bridge permissions
 - runtime enforcement so paused settings actually block the feature
 - settings-change history visible on the Settings page
+
+The newest product-entry and trust-visibility slice then widened clarity without widening authority:
+- a separate landing-preview page
+- a stronger first-run magic moment centered on `explain this`
+- estimated governed reasoning-usage visibility and budget-state surfacing in Trust and Settings
+- deeper design truth for product messaging, OpenClaw-inside-Nova framing, and usage visibility
 
 This matters because it turned several already-good backend pieces into a more understandable product.
 

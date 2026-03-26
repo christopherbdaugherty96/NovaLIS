@@ -99,6 +99,7 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parents[1]   # nova_backend/
 STATIC_DIR = BASE_DIR / "static"
 INDEX_HTML = STATIC_DIR / "index.html"
+LANDING_HTML = STATIC_DIR / "landing.html"
 
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
@@ -108,6 +109,13 @@ async def root():
     if INDEX_HTML.exists():
         return FileResponse(INDEX_HTML)
     return {"error": "static/index.html not found"}
+
+
+@app.get("/landing")
+async def landing():
+    if LANDING_HTML.exists():
+        return FileResponse(LANDING_HTML)
+    return {"error": "static/landing.html not found"}
 
 # -------------------------------------------------
 # Routers

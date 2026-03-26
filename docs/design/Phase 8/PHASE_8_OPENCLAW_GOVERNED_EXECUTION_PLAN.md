@@ -62,6 +62,18 @@ The governing rule is simple:
 - the user may confirm when required
 - OpenClaw may execute a structured action only
 
+## Mental Model
+OpenClaw should be treated as a contained worker inside Nova, not as an authority surface.
+
+That means:
+- OpenClaw may do broad work only inside a declared envelope
+- Nova remains the watcher, law, boundary, and intervention point
+- OpenClaw can feel autonomous within a task, but not outside Nova's control
+
+The correct product phrase is:
+
+`OpenClaw runs as a bounded autonomous worker under Nova governance.`
+
 ## Execution Model
 1. user intent arrives
 2. GovernorMediator parses and routes the request
@@ -125,6 +137,7 @@ Example flow:
 - no raw OpenClaw output trusted as safe
 - no direct OpenClaw pathway around the Governor
 - no hidden background execution loops
+- no framing OpenClaw as a free-standing personal agent with master-key authority
 
 ## Suggested Implementation Order
 1. keep the governed remote bridge narrow and ingress-only

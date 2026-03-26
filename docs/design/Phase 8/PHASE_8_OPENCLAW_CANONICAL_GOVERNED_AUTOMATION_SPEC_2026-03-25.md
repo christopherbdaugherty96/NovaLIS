@@ -42,6 +42,30 @@ Nova needs a future execution model that can:
 The core intent is not to make Nova autonomous.
 The core intent is to let untrusted intelligence operate inside a governed execution environment.
 
+## OpenClaw Inside Nova
+The clean mental model is:
+
+- OpenClaw is the worker
+- Nova is the law
+
+That means OpenClaw should live inside Nova's governed execution environment, not above it and not beside it.
+
+OpenClaw may become a powerful personal auto agent only in the bounded sense that it can:
+- run multi-step work
+- iterate toward a declared task
+- feel low-friction inside an approved run
+
+But only when:
+- the task envelope exists
+- Nova has full visibility
+- Nova can interrupt or stop it
+- all real effects still pass through Nova's interception and boundary layers
+
+This should not be described as free autonomy.
+The better description is:
+
+`OpenClaw runs as a bounded autonomous worker under Nova governance.`
+
 ## Product Non-Goals
 This design does not authorize:
 - hidden autonomy
@@ -176,6 +200,22 @@ Required user surfaces include:
 - visible stop and pause controls
 - recent actions history
 - plain-language blocked/failure reason
+
+### 8. OpenClaw never gets master-key authority
+OpenClaw should not execute like:
+
+`User -> OpenClaw -> system`
+
+and not even:
+
+`User -> Nova -> OpenClaw -> system with Nova watching later`
+
+The required shape is:
+
+`User -> Nova -> envelope and policy -> OpenClaw proposals or bounded actions -> Governor Interceptor -> ExecuteBoundary -> system`
+
+Watching later is not enough.
+Nova must be able to catch drift, leak risk, and out-of-scope behavior as it happens.
 
 ## Operational Invariants
 These are hard rules, not suggestions.

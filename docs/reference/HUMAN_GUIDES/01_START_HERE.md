@@ -39,7 +39,7 @@ Nova:
 Breaks it down, explains the likely cause, and tells you what to try next.
 
 You:
-`Remember this`
+`Save this as my fix`
 
 Now it is part of your workflow because you chose to keep it.
 

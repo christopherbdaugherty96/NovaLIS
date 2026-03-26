@@ -25,6 +25,9 @@ This is the current next-step Phase-7 plan for adding a governed external reason
 Current bounded Phase-7 companion packet:
 - `docs/design/Phase 7/PHASE_7_DEEPSEEK_SECOND_OPINION_PLAN.md`
 
+Current provider usage and budget visibility companion packet:
+- `docs/design/Phase 7/PHASE_7_PROVIDER_USAGE_AND_BUDGET_VISIBILITY_PLAN_2026-03-26.md`
+
 Current Phase-7 news-reasoning companion input:
 - `docs/design/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
 
@@ -41,6 +44,12 @@ This companion packet captures one specific product shape inside that same phase
 - DeepSeek as a governed second-opinion reasoning source inside the same Nova chat box
 - Nova remaining the primary voice
 - no new execution authority
+
+The usage-visibility packet should be read this way in Phase 7:
+- provider usage visibility belongs to trust, not just billing
+- estimated token awareness is acceptable before exact provider billing is available
+- Settings and Trust should surface usage state honestly
+- this does not authorize hidden paid-provider usage
 
 The news reasoning packet should be read this way in Phase 7:
 - current product-track items in that packet stay in the current UI/product lane

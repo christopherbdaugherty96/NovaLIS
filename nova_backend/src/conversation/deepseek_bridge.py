@@ -5,6 +5,7 @@ from typing import List
 from . import prompts
 from src.cognition.cognitive_operation_logger import CognitiveOperationLogger
 from src.llm import llm_gateway
+from src.usage.provider_usage_store import provider_usage_store
 
 logger = logging.getLogger(__name__)
 
@@ -52,6 +53,16 @@ class DeepSeekBridge:
                 timeout=timeout_seconds,
             )
             if response:
+                provider_usage_store.record_reasoning_event(
+                    provider="DeepSeek reasoning lane",
+                    route="DeepSeekBridge -> llm_gateway",
+                    analysis_profile=analysis_profile,
+                    prompt_text=prompt,
+                    response_text=response,
+                    model_label="DeepSeek via llm_gateway",
+                    request_id="deepseek_bridge",
+                    exact_usage_available=False,
+                )
                 if analysis_profile == "deep_reason":
                     return self._normalize_deep_reason_response(response)
                 return response
