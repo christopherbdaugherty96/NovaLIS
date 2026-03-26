@@ -75,12 +75,15 @@ Nova can load quick information views for:
 - memory
 - workspace continuity
 - trust review
+- introduction and settings guidance
 
 Examples:
 - `weather`
 - `news`
 - `calendar`
 - `system status`
+- `intro`
+- `settings`
 - `workspace home`
 - `workspace board`
 - `trust center`
@@ -161,15 +164,23 @@ Nova now has clearer product surfaces for understanding what it is doing and whe
 
 It can:
 - show a Trust page
+- show a Settings page
+- show an Introduction page
 - summarize recent governed actions
 - show blocked conditions
+- let you drill into why a recent action happened
 - show current operating mode and failure state
 - show a Workspace page
 - show a local-project Structure Map
+- show voice runtime status and a voice-check path
 
 Examples:
+- `intro`
+- `settings`
 - `trust center`
 - `trust status`
+- `voice status`
+- `voice check`
 - `workspace board`
 - `visualize this repo`
 - `show structure map`
@@ -194,7 +205,7 @@ The biggest examples are:
 - wake word
 - richer connectors
 - deeper project/workspace system work
-- richer visualizer stages beyond the current text-based structure map
+- richer visualizer stages beyond the current structured graph view
 
 ## 10. Response Style Control
 Nova can expose and adjust its manual presentation tone without changing what it is allowed to do.

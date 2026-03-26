@@ -33,7 +33,12 @@ from src.conversation.thought_store import ThoughtStore
 from src.conversation.complexity_heuristics import ComplexityHeuristics
 from src.conversation.session_router import SessionRouter
 from src.voice.stt_pipeline import STTAckConfig, build_ack_payload
-from src.voice.tts_engine import nova_speak, resolve_speakable_text, stop_speaking
+from src.voice.tts_engine import (
+    inspect_voice_runtime,
+    nova_speak,
+    resolve_speakable_text,
+    stop_speaking,
+)
 from src.conversation.clarify_prompts import CLARIFY_PROMPTS
 from src.conversation.response_formatter import ResponseFormatter
 from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
@@ -201,6 +206,14 @@ LOCAL_ARCHITECTURE_REPORT_RE = re.compile(
 )
 TRUST_CENTER_RE = re.compile(
     r"^\s*(?:show\s+)?trust\s+(?:center|review|status)\s*$",
+    re.IGNORECASE,
+)
+VOICE_CHECK_RE = re.compile(
+    r"^\s*(?:(?:voice|speaker|audio)\s+(?:check|test)|test\s+(?:voice|speaker|audio))\s*$",
+    re.IGNORECASE,
+)
+VOICE_STATUS_RE = re.compile(
+    r"^\s*(?:(?:voice|audio)\s+status|speaker\s+status)\s*$",
     re.IGNORECASE,
 )
 OPEN_LOCAL_PROJECT_CURRENT_RE = re.compile(
@@ -1440,6 +1453,20 @@ def _build_workspace_home_widget(
     total_memory = int(memory_overview.get("total_count") or 0)
     project_memory_total = int(scope_counts.get("project") or 0)
     linked_thread_count = len(list(memory_overview.get("linked_threads") or []))
+    recent_decisions_feed = [
+        {
+            "thread_name": str(item.get("name") or ""),
+            "decision": str(item.get("latest_decision") or ""),
+            "updated_at": str(item.get("updated_at") or ""),
+        }
+        for item in threads
+        if str(item.get("latest_decision") or "").strip()
+    ]
+    recent_decisions_feed = sorted(
+        recent_decisions_feed,
+        key=lambda row: str(row.get("updated_at") or ""),
+        reverse=True,
+    )[:6]
 
     if focus_thread_name:
         health_state = str(focus_thread.get("health_state") or "at-risk").strip().upper()
@@ -1509,12 +1536,20 @@ def _build_workspace_home_widget(
         "recent_threads": [
             {
                 "name": str(item.get("name") or ""),
+                "key": str(item.get("key") or ""),
+                "goal": str(item.get("goal") or ""),
                 "health_state": str(item.get("health_state") or ""),
+                "health_reason": str(item.get("health_reason") or ""),
+                "latest_blocker": str(item.get("latest_blocker") or ""),
                 "latest_next_action": str(item.get("latest_next_action") or ""),
+                "latest_decision": str(item.get("latest_decision") or ""),
+                "blocker_count": int(item.get("blocker_count") or 0),
                 "memory_count": int(item.get("memory_count") or 0),
+                "updated_at": str(item.get("updated_at") or ""),
             }
-            for item in threads[:4]
+            for item in threads[:6]
         ],
+        "recent_decisions_feed": recent_decisions_feed,
         "recent_memory_items": recent_memory_items,
         "recent_documents": recent_documents,
         "recent_activity": recent_activity,
@@ -2233,6 +2268,101 @@ def _append_project_tree_lines(
             _append_project_tree_lines(lines, children, prefix=child_prefix)
 
 
+def _project_graph_id(*parts: str) -> str:
+    cleaned = "-".join(str(part or "").strip().lower() for part in parts if str(part or "").strip())
+    cleaned = re.sub(r"[^a-z0-9]+", "-", cleaned).strip("-")
+    return cleaned or "node"
+
+
+def _append_project_graph_data(
+    *,
+    nodes: list[dict[str, Any]],
+    graph_nodes: list[dict[str, Any]],
+    graph_edges: list[dict[str, Any]],
+    parent_id: str,
+    parent_label: str,
+    prefix: str,
+    level: int,
+) -> None:
+    for index, node in enumerate(nodes):
+        label = str(node.get("label") or "").strip()
+        detail = str(node.get("detail") or "").strip()
+        if not label:
+            continue
+        node_id = _project_graph_id(prefix, label, str(index))
+        graph_nodes.append(
+            {
+                "id": node_id,
+                "label": label,
+                "detail": detail,
+                "kind": "surface" if level == 1 else "module",
+                "level": level,
+            }
+        )
+        graph_edges.append(
+            {
+                "source": parent_id,
+                "target": node_id,
+                "label": "contains",
+                "detail": f"{parent_label} contains {label}",
+            }
+        )
+        children = [dict(item or {}) for item in list(node.get("children") or []) if dict(item or {}).get("label")]
+        if children:
+            _append_project_graph_data(
+                nodes=children,
+                graph_nodes=graph_nodes,
+                graph_edges=graph_edges,
+                parent_id=node_id,
+                parent_label=label,
+                prefix=f"{prefix}-{index}",
+                level=level + 1,
+            )
+
+
+def _project_relationship_edges(target: Path) -> list[dict[str, str]]:
+    edges: list[dict[str, str]] = []
+    backend_src = target / "nova_backend" / "src"
+    backend_static = target / "nova_backend" / "static"
+    if (backend_src / "brain_server.py").exists() and (backend_src / "governor").exists():
+        edges.append(
+            {
+                "source": "brain_server.py",
+                "target": "governor/",
+                "label": "routes through",
+                "detail": "Brain Server routes effectful work through the Governor layer.",
+            }
+        )
+    if (backend_src / "brain_server.py").exists() and (backend_src / "executors").exists():
+        edges.append(
+            {
+                "source": "brain_server.py",
+                "target": "executors/",
+                "label": "delegates to",
+                "detail": "Governed executors perform the concrete actions Nova can actually take.",
+            }
+        )
+    if (backend_src / "brain_server.py").exists() and (backend_src / "memory").exists():
+        edges.append(
+            {
+                "source": "brain_server.py",
+                "target": "memory/",
+                "label": "grounds with",
+                "detail": "Brain Server uses governed memory and continuity state for explicit persistence.",
+            }
+        )
+    if (backend_static / "dashboard.js").exists() and (backend_src / "brain_server.py").exists():
+        edges.append(
+            {
+                "source": "dashboard.js",
+                "target": "brain_server.py",
+                "label": "talks to",
+                "detail": "The dashboard UI talks to the backend brain over the live websocket session.",
+            }
+        )
+    return edges
+
+
 def _build_local_project_structure_map_widget(path: Path) -> dict[str, Any]:
     target = path.resolve()
     readme_text = _read_small_text_file(target / "README.md")
@@ -2327,6 +2457,26 @@ def _build_local_project_structure_map_widget(path: Path) -> dict[str, Any]:
     root_nodes = top_nodes + file_nodes
     tree_lines = [target.name]
     _append_project_tree_lines(tree_lines, root_nodes)
+    graph_nodes = [
+        {
+            "id": _project_graph_id(target.name, "root"),
+            "label": target.name,
+            "detail": "current workspace root",
+            "kind": "root",
+            "level": 0,
+        }
+    ]
+    graph_edges: list[dict[str, Any]] = []
+    _append_project_graph_data(
+        nodes=root_nodes,
+        graph_nodes=graph_nodes,
+        graph_edges=graph_edges,
+        parent_id=graph_nodes[0]["id"],
+        parent_label=target.name,
+        prefix=target.name,
+        level=1,
+    )
+    relationship_edges = _project_relationship_edges(target)
 
     highlights = [
         {"label": "brain_server.py", "detail": "Coordinates conversation, routing, widgets, and local-project helpers."},
@@ -2347,6 +2497,18 @@ def _build_local_project_structure_map_widget(path: Path) -> dict[str, Any]:
         "project_summary": project_summary,
         "tree_lines": tree_lines,
         "highlights": highlights,
+        "graph_summary": (
+            f"Structured graph ready with {len(graph_nodes)} nodes and "
+            f"{len(graph_edges) + len(relationship_edges)} visible relationships."
+        ),
+        "graph_nodes": graph_nodes[:24],
+        "graph_edges": (graph_edges + relationship_edges)[:36],
+        "graph_legend": [
+            {"label": "Root", "detail": "The current repo or workspace root."},
+            {"label": "Surface", "detail": "A major product surface like docs, backend, or dashboard."},
+            {"label": "Module", "detail": "A high-signal file or subsystem inside a surface."},
+            {"label": "Relationship", "detail": "A human-facing connection Nova can explain without claiming full code certainty."},
+        ],
         "recommended_actions": [
             {"label": "Workspace Home", "command": "workspace home"},
             {"label": "Audit this repo", "command": "audit this repo"},
@@ -2366,6 +2528,7 @@ def _render_local_project_structure_map(path: Path) -> tuple[str, list[dict[str,
         f"Target: {widget.get('target')}",
         "",
         f"Project summary: {widget.get('project_summary')}",
+        f"Graph summary: {widget.get('graph_summary')}",
         "",
         "Visual orientation:",
         *list(widget.get("tree_lines") or []),
@@ -2379,6 +2542,13 @@ def _render_local_project_structure_map(path: Path) -> tuple[str, list[dict[str,
             lines.append(f"- {label}: {detail}")
     lines.extend(
         [
+            "",
+            "Structured relationships:",
+            *[
+                f"- {str(item.get('source') or '').strip()} {str(item.get('label') or 'links to').strip()} {str(item.get('target') or '').strip()}"
+                for item in list(widget.get("graph_edges") or [])[:4]
+                if str(item.get("source") or "").strip() and str(item.get("target") or "").strip()
+            ],
             "",
             "Map note:",
             f"- {widget.get('note')}",
@@ -2483,6 +2653,43 @@ def _render_trust_center_message(trust_status: dict[str, Any]) -> tuple[str, lis
         {"label": "Workspace Home", "command": "workspace home"},
         {"label": "System status", "command": "system status"},
         {"label": "Memory overview", "command": "memory overview"},
+    ]
+    return "\n".join(lines).strip(), suggestions
+
+
+def _render_voice_runtime_message(snapshot: dict[str, Any], *, check_mode: bool) -> tuple[str, list[dict[str, str]]]:
+    payload = dict(snapshot or {})
+    lines = ["Voice check" if check_mode else "Voice status", ""]
+    lines.append(str(payload.get("summary") or "Voice runtime status is unavailable.").strip())
+    lines.append("")
+    lines.append(
+        f"Preferred engine: {str(payload.get('preferred_engine') or 'piper')} "
+        f"({str(payload.get('preferred_status') or 'unknown')})"
+    )
+    lines.append(
+        f"Fallback engine: {str(payload.get('fallback_engine') or 'pyttsx3')} "
+        f"({str(payload.get('fallback_status') or 'unknown')})"
+    )
+    if str(payload.get("last_engine") or "").strip():
+        lines.append(f"Last runtime engine: {str(payload.get('last_engine') or '').strip()}")
+    if str(payload.get("last_attempt_status") or "").strip():
+        lines.append(f"Last runtime status: {str(payload.get('last_attempt_status') or '').strip()}")
+    if str(payload.get("last_attempt_at") or "").strip():
+        lines.append(f"Last attempt: {str(payload.get('last_attempt_at') or '').strip()}")
+    if str(payload.get("last_error") or "").strip():
+        lines.append(f"Last error: {str(payload.get('last_error') or '').strip()}")
+    if check_mode:
+        lines.extend(
+            [
+                "",
+                "If you heard Nova's voice check phrase, spoken output is working on this device.",
+                "If you did not hear it, open Settings and run the check again after reviewing the voice status note.",
+            ]
+        )
+    suggestions = [
+        {"label": "Trust center", "command": "trust center"},
+        {"label": "Speak that", "command": "speak that"},
+        {"label": "System status", "command": "system status"},
     ]
     return "\n".join(lines).strip(), suggestions
 
@@ -3523,7 +3730,7 @@ async def send_thread_map_widget(
     ws: WebSocket,
     project_threads: ProjectThreadStore,
     session_state: dict,
-) -> None:
+) -> dict[str, Any]:
     widget = _enrich_thread_map_widget_memory(project_threads.render_map_widget())
     threads = list(widget.get("threads") or [])
     previous_map = dict(session_state.get("thread_map_last") or {})
@@ -3546,6 +3753,7 @@ async def send_thread_map_widget(
     widget["threads"] = enriched_threads
     session_state["thread_map_last"] = snapshot
     await ws_send(ws, widget)
+    return widget
 
 
 async def send_memory_overview_widget(
@@ -3602,6 +3810,37 @@ async def send_workspace_home_widget(
         project_threads=project_threads,
     )
     session_state["last_workspace_home"] = payload
+    await ws_send(ws, payload)
+    return payload
+
+
+async def send_thread_detail_widget(
+    ws: WebSocket,
+    session_state: dict,
+    project_threads: ProjectThreadStore,
+    *,
+    thread_name: str,
+) -> dict[str, Any] | None:
+    found, detail = project_threads.get_thread_detail(thread_name)
+    if not found:
+        return None
+
+    memory_items: list[dict] = []
+    try:
+        from src.memory.governed_memory_store import GovernedMemoryStore
+
+        memory_items = GovernedMemoryStore().list_items(
+            thread_name=str(detail.get("name") or ""),
+            thread_key=str(detail.get("key") or ""),
+            limit=5,
+        )
+    except Exception:
+        memory_items = []
+
+    payload = _build_thread_detail_widget(detail=detail, memory_items=memory_items)
+    session_state["project_thread_active"] = str(detail.get("name") or "")
+    session_state["last_thread_detail"] = payload
+    await send_thread_map_widget(ws, project_threads, session_state)
     await ws_send(ws, payload)
     return payload
 
@@ -3674,12 +3913,15 @@ def _build_trust_review_snapshot() -> dict[str, object]:
     try:
         enabled_entries = OSDiagnosticsExecutor._enabled_capability_entries()
         recent_runtime_activity, trust_review_summary = OSDiagnosticsExecutor._recent_runtime_activity(
-            enabled_entries
+            enabled_entries,
+            limit=12,
         )
         model_availability, _, _, _ = OSDiagnosticsExecutor._model_status_details()
         blocked_conditions = OSDiagnosticsExecutor._blocked_conditions(
             model_availability=model_availability
         )
+        ledger_integrity, ledger_entries_today, ledger_last_event = OSDiagnosticsExecutor._ledger_status_details()
+        voice_runtime = inspect_voice_runtime()
     except Exception:
         return {}
 
@@ -3687,6 +3929,10 @@ def _build_trust_review_snapshot() -> dict[str, object]:
         "trust_review_summary": trust_review_summary,
         "recent_runtime_activity": recent_runtime_activity,
         "blocked_conditions": blocked_conditions,
+        "ledger_integrity": ledger_integrity,
+        "ledger_entries_today": ledger_entries_today,
+        "ledger_last_event": ledger_last_event,
+        "voice_runtime": voice_runtime,
     }
 
 
@@ -3807,6 +4053,7 @@ async def websocket_endpoint(ws: WebSocket):
         "last_memory_item": {},
         "last_workspace_home": {},
         "last_project_structure_map": {},
+        "last_thread_detail": {},
         "last_memory_context": [],
         "last_tone_snapshot": {},
         "last_schedule_overview": {},
@@ -4170,7 +4417,19 @@ async def websocket_endpoint(ws: WebSocket):
 
             if WORKSPACE_BOARD_RE.match(command_text):
                 workspace_widget = await send_workspace_home_widget(ws, session_state, project_threads)
-                await send_thread_map_widget(ws, project_threads, session_state)
+                thread_map_widget = await send_thread_map_widget(ws, project_threads, session_state)
+                focus_thread_name = str(dict(workspace_widget.get("focus_thread") or {}).get("name") or "").strip()
+                if not focus_thread_name:
+                    focus_thread_name = str(
+                        dict((list(thread_map_widget.get("threads") or []) or [{}])[0]).get("name") or ""
+                    ).strip()
+                if focus_thread_name:
+                    await send_thread_detail_widget(
+                        ws,
+                        session_state,
+                        project_threads,
+                        thread_name=focus_thread_name,
+                    )
                 structure_map = _maybe_handle_local_project_structure_map_request(
                     "show structure map",
                     working_context=working_context,
@@ -4205,6 +4464,49 @@ async def websocket_endpoint(ws: WebSocket):
                         suggested_actions=trust_suggestions,
                         tone_domain="system",
                     )
+                continue
+
+            if VOICE_STATUS_RE.match(command_text):
+                snapshot = inspect_voice_runtime()
+                await send_trust_status(ws, session_state["trust_status"])
+                message, suggestions = _render_voice_runtime_message(snapshot, check_mode=False)
+                await _complete_immediate_turn(
+                    message,
+                    suggested_actions=suggestions,
+                    tone_domain="system",
+                )
+                continue
+
+            if VOICE_CHECK_RE.match(command_text):
+                test_phrase = (
+                    "Nova voice check complete. If you can hear this, spoken output is working on this device."
+                )
+                action_result = await invoke_governed_capability(
+                    governor,
+                    18,
+                    {
+                        "text": test_phrase,
+                        "session_id": session_id,
+                    },
+                )
+                if hasattr(action_result, "success") and getattr(action_result, "success", False):
+                    session_state["trust_status"] = failure_ladder.record_local_success(
+                        session_state.get("trust_status", {})
+                    )
+                else:
+                    session_state["trust_status"] = failure_ladder.record_failure(
+                        session_state.get("trust_status", {}),
+                        reason="Voice check failed",
+                        external=False,
+                    )
+                snapshot = inspect_voice_runtime()
+                await send_trust_status(ws, session_state["trust_status"])
+                message, suggestions = _render_voice_runtime_message(snapshot, check_mode=True)
+                await _complete_immediate_turn(
+                    message,
+                    suggested_actions=suggestions,
+                    tone_domain="system",
+                )
                 continue
 
             if SHOW_THREADS_RE.match(command_text):
@@ -4369,28 +4671,18 @@ async def websocket_endpoint(ws: WebSocket):
                 thread_name = str(detail_thread_match.group("name") or "").strip()
                 if _canonical_thread_reference(thread_name) in {"this", "it", "thread", "project"}:
                     thread_name = project_threads.active_thread_name() or str(session_state.get("project_thread_active") or "").strip()
-                found, detail = project_threads.get_thread_detail(thread_name)
-                if found:
-                    session_state["project_thread_active"] = str(detail.get("name") or "")
-                    await send_thread_map_widget(ws, project_threads, session_state)
-                    memory_items: list[dict] = []
-                    try:
-                        from src.memory.governed_memory_store import GovernedMemoryStore
-
-                        memory_items = GovernedMemoryStore().list_items(
-                            thread_name=str(detail.get("name") or ""),
-                            thread_key=str(detail.get("key") or ""),
-                            limit=5,
-                        )
-                    except Exception:
-                        memory_items = []
-                    await ws_send(
-                        ws,
-                        _build_thread_detail_widget(
-                            detail=detail,
-                            memory_items=memory_items,
-                        ),
-                    )
+                detail_widget = await send_thread_detail_widget(
+                    ws,
+                    session_state,
+                    project_threads,
+                    thread_name=thread_name,
+                )
+                if detail_widget is not None:
+                    detail = dict(detail_widget.get("thread") or {})
+                    if silent_widget_refresh:
+                        await send_chat_done(ws)
+                        session_state["turn_count"] += 1
+                        continue
                     latest_decision = str(detail.get("latest_decision") or "").strip() or "No decision recorded yet."
                     latest_blocker = str(detail.get("latest_blocker") or "").strip() or "No blocker recorded."
                     await send_chat_message(

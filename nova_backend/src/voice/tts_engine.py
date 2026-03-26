@@ -18,8 +18,36 @@ from src.conversation.response_formatter import ResponseFormatter
 from src.governor.exceptions import LedgerWriteFailed
 from src.ledger.writer import LedgerWriter
 from src.rendering.speech_formatter import SpeechFormatter
+from src.speech_state import speech_state
 
 logger = logging.getLogger(__name__)
+
+
+def _voice_preferred_engine_status() -> tuple[str, str]:
+    project_root = Path(__file__).resolve().parents[2]
+    bundled_piper = project_root / "tools" / "piper" / "piper.exe"
+    piper_bin = str(bundled_piper) if bundled_piper.exists() else shutil.which("piper")
+    if not piper_bin:
+        return "unavailable", "Piper CLI not found."
+
+    model_path = os.getenv("NOVA_PIPER_MODEL_PATH", "").strip()
+    if not model_path:
+        return "unavailable", "NOVA_PIPER_MODEL_PATH is not set."
+
+    model_file = Path(model_path)
+    if not model_file.exists():
+        return "unavailable", f"Configured model is missing: {model_path}"
+
+    return "ready", f"Piper ready with {model_file.name}."
+
+
+def _voice_fallback_engine_status() -> tuple[str, str]:
+    try:
+        if importlib.util.find_spec("pyttsx3") is None:
+            return "unavailable", "pyttsx3 is not installed."
+    except Exception:
+        return "unknown", "Fallback engine availability could not be checked."
+    return "ready", "pyttsx3 fallback is available."
 
 
 @dataclass(frozen=True)
@@ -198,6 +226,7 @@ class SpeechRenderer:
 def stop_speaking() -> None:
     """Best-effort stop of currently playing speech."""
     SpeechRenderer.stop()
+    speech_state.record_attempt(engine="runtime", status="stopped")
     try:
         from src.executors.tts_executor import TTSEngine
         TTSEngine.stop()
@@ -205,11 +234,50 @@ def stop_speaking() -> None:
         return
 
 
+def inspect_voice_runtime() -> dict[str, str]:
+    preferred_status, preferred_note = _voice_preferred_engine_status()
+    fallback_status, fallback_note = _voice_fallback_engine_status()
+    snapshot = speech_state.snapshot()
+    summary_parts = [
+        f"Preferred engine {preferred_status}.",
+        f"Fallback engine {fallback_status}.",
+    ]
+    last_engine = str(snapshot.get("last_engine") or "").strip()
+    last_status = str(snapshot.get("last_attempt_status") or "").strip()
+    last_attempt_at = str(snapshot.get("last_attempt_at") or "").strip()
+    if last_engine and last_status:
+        recent = f"Last attempt {last_status} via {last_engine}"
+        if last_attempt_at:
+            recent += f" at {last_attempt_at}"
+        summary_parts.append(recent + ".")
+    elif last_attempt_at:
+        summary_parts.append(f"Last voice attempt recorded at {last_attempt_at}.")
+    if snapshot.get("last_error"):
+        summary_parts.append(f"Last error: {snapshot['last_error']}.")
+    else:
+        summary_parts.append("Run a voice check on this device to confirm audible output.")
+    return {
+        "summary": " ".join(part for part in summary_parts if part).strip(),
+        "preferred_engine": "piper",
+        "preferred_status": preferred_status,
+        "preferred_note": preferred_note,
+        "fallback_engine": "pyttsx3",
+        "fallback_status": fallback_status,
+        "fallback_note": fallback_note,
+        "last_engine": str(snapshot.get("last_engine") or ""),
+        "last_attempt_status": str(snapshot.get("last_attempt_status") or ""),
+        "last_attempt_at": str(snapshot.get("last_attempt_at") or ""),
+        "last_error": str(snapshot.get("last_error") or ""),
+        "last_spoken_text": str(snapshot.get("last_spoken_text") or ""),
+    }
+
+
 def nova_speak(text: str) -> None:
     """Default runtime speech path with profile-based rendering (non-blocking)."""
     speak_text = (text or "").strip()
     if not speak_text:
         return
+    speech_state.record_attempt(engine="pending", status="queued", spoken_text=speak_text)
     try:
         LedgerWriter().log_event(
             "SPEECH_RENDERED",
@@ -227,16 +295,37 @@ def nova_speak(text: str) -> None:
     def _render_with_fallback() -> None:
         rendered = SpeechRenderer().render(speak_text)
         if rendered:
+            speech_state.record_attempt(engine="piper", status="rendered", spoken_text=speak_text)
             return
         try:
             tts_executor = importlib.import_module("src.executors.tts_executor")
             engine_cls = getattr(tts_executor, "TTSEngine", None)
             if engine_cls is None:
+                speech_state.record_attempt(
+                    engine="runtime",
+                    status="failed",
+                    error="Fallback TTSEngine is unavailable.",
+                    spoken_text=speak_text,
+                )
                 return
             speak_fn = getattr(engine_cls, "speak", None)
             if callable(speak_fn):
                 speak_fn(speak_text)
+                speech_state.record_attempt(engine="pyttsx3", status="rendered", spoken_text=speak_text)
+            else:
+                speech_state.record_attempt(
+                    engine="runtime",
+                    status="failed",
+                    error="Fallback TTSEngine.speak is unavailable.",
+                    spoken_text=speak_text,
+                )
         except Exception:
+            speech_state.record_attempt(
+                engine="runtime",
+                status="failed",
+                error="Fallback speech render failed.",
+                spoken_text=speak_text,
+            )
             logger.debug("Fallback speech render failed", exc_info=True)
 
     # Use audio task helper to avoid direct threading outside allowed files.
@@ -259,4 +348,11 @@ def resolve_speakable_text(action_result: Any) -> str:
 
 def try_render_tts(text: str) -> bool:
     """Attempt synchronous Piper-backed playback and report whether audio started."""
-    return SpeechRenderer().render(text)
+    rendered = SpeechRenderer().render(text)
+    speech_state.record_attempt(
+        engine="piper" if rendered else "piper",
+        status="rendered" if rendered else "failed",
+        error="" if rendered else "Preferred Piper renderer could not play audio.",
+        spoken_text=text,
+    )
+    return rendered

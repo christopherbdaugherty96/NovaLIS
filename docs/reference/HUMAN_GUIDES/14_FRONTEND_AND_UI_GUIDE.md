@@ -33,10 +33,12 @@ The main shell of the dashboard page.
 It now defines the major user-facing views:
 - Chat
 - News
+- Intro
 - Home
 - Workspace
 - Memory
 - Trust
+- Settings
 
 ### `dashboard.js`
 The most important frontend logic file.
@@ -48,6 +50,7 @@ It handles things like:
 - memory review and item actions
 - workspace-board rendering
 - structure-map rendering
+- intro and settings rendering
 - first-run guidance
 - follow-up actions
 
@@ -57,7 +60,7 @@ It is meant to create a sense of calm presence, not a hidden semantic signal.
 
 ### `style.phase1.css`
 The main styling layer for the dashboard and orb surface.
-It now also styles the dedicated Workspace and Trust pages and the first-run guide.
+It now also styles the dedicated Workspace, Trust, Intro, and Settings pages and the first-run guide.
 
 ## What The Frontend Shows Today
 The frontend can present:
@@ -68,6 +71,8 @@ The frontend can present:
 - Workspace Home on the Home page
 - a dedicated Workspace page
 - a dedicated Trust page
+- a dedicated Introduction page
+- a dedicated Settings page
 - thread map and thread detail
 - continuity and memory actions
 - follow-up prompts
@@ -82,8 +87,10 @@ More specifically, the current dashboard can now show:
 - News-page in-card summaries
 - bounded second-opinion controls
 - Workspace page project board
-- Structure Map for local-project visualization
-- Trust page recent governed actions, blocked conditions, and capability visibility
+- Workspace page selected-project drill-down and recent decisions
+- Structure Map for local-project visualization with structured graph output
+- Trust page recent governed actions, blocked conditions, drill-down, and capability visibility
+- Settings page setup-mode selection and voice confidence review
 
 ## What The Frontend Is Not Supposed To Become
 Nova's frontend is not supposed to become a hidden authority layer.
@@ -103,4 +110,4 @@ The frontend is where Nova starts to feel like:
 - a trust-preserving daily tool
 - a calm intelligence layer
 
-The newer Workspace, Trust, Memory, and first-run surfaces are especially important because they make Nova feel less like a command console and more like a product a normal person can return to every day.
+The newer Workspace, Trust, Memory, Intro, Settings, and first-run surfaces are especially important because they make Nova feel less like a command console and more like a product a normal person can return to every day.

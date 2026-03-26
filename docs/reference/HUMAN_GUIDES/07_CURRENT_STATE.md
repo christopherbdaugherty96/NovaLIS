@@ -24,8 +24,9 @@ That means Nova already has:
 - a calmer Workspace Home surface on the Home page
 - a dedicated Workspace page with a broader project board
 - a dedicated Trust page with recent actions and blocked-condition review
+- a dedicated Introduction page and a dedicated Settings page
 - a first-run onboarding guide for non-technical users
-- a visible local-project Structure Map surface
+- a visible local-project Structure Map surface with structured graph output
 - inspectable list/show/edit/delete memory paths with confirmation where needed
 - bounded relevant-memory use in chat
 - manual response-style controls with inspectable tone settings
@@ -51,8 +52,8 @@ These parts are already meaningfully real:
 - session-scoped project thread continuity
 - thread health, blocker, and decision surfaces
 - Workspace Home with focus project, reports, memory, trust activity, and next actions
-- Workspace page with a broader project board and visible structure-map layer
-- Trust page with recent governed actions, runtime health, and capability-group visibility
+- Workspace page with a broader project board, selected-project drill-down, recent decisions, and a visible structure-map layer
+- Trust page with recent governed actions, runtime health, capability-group visibility, blocked-condition drill-down, and voice runtime review
 - governed memory and thread-linked memory
 - durable memory review through `memory overview` and the dedicated Memory page
 - Memory-page browsing with filters, selected-item detail, and governed item actions
@@ -64,6 +65,7 @@ These parts are already meaningfully real:
 - answer-first search with hidden-by-default sources
 - bounded same-thread second-opinion review
 - local project summary, architecture report, project overview, and structure-map flows
+- user-facing Introduction and Settings pages that explain Nova and keep setup choices visible
 
 ## What Is Still Maturing
 These parts are active but still evolving:
@@ -71,9 +73,10 @@ These parts are active but still evolving:
 - more polished explain-anything flows
 - more premium dashboard interactions
 - stronger everyday workflows around thread and memory use
-- richer trust-center history and drill-down
-- onboarding stage 2 for permissions and setup guidance
-- stronger local-project visualization beyond the current stage-1 structure map
+- deeper project/workspace persistence beyond the current shell
+- actual provider and connector setup beyond the current preference surface
+- stronger local-project visualization beyond the current stage-2 structure map
+- final device-confidence confirmation for audible TTS output
 
 ## What Is Planned But Not Fully Live Yet
 Some highly important ideas are still planned or partially scaffolded rather than fully live.
@@ -82,7 +85,7 @@ Examples include:
 - wake word
 - richer read-only connectors
 - richer provider-aware second-opinion presentation beyond the bounded current button flow
-- richer project/workspace system foundations beyond Workspace Home and the new Workspace page
+- richer project/workspace system foundations beyond Workspace Home, Workspace Board, and the current selected-project drill-down
 - Phase-8 governed external execution / OpenClaw
 
 A careful plain-language description of the current system is:
@@ -113,10 +116,13 @@ The most recent product-consolidation regression pass on 2026-03-26 also confirm
 - new Trust page coverage passed
 - new onboarding surface coverage passed
 - TTS runtime fallback coverage passed
-- a broader `222`-test regression bundle passed
+- new Introduction and Settings product surfaces passed focused coverage
+- new Trust/Workspace drill-down and structure-map stage-2 surfaces passed focused coverage
+- a broader `165`-test regression bundle passed
 
-The one important remaining caveat is still voice output:
+The main remaining voice caveat is still real-device confirmation:
 - TTS executor, runtime fallback, and mediator-path tests are passing
+- voice status and voice check surfaces are now visible in-product
 - real-device spoken output still needs final hardware confidence validation
 
 ## The Best Honest Description Right Now

@@ -1,5 +1,5 @@
 ﻿# Nova Human Guides
-Updated: 2026-03-25
+Updated: 2026-03-26
 Status: Explanatory guide set
 
 ## What These Documents Are

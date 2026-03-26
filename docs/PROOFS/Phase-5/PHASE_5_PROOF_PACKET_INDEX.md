@@ -33,6 +33,7 @@ Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, imple
 13. `PHASE_5_GOVERNED_MEMORY_STAGE2_MANAGEMENT_SURFACE_RUNTIME_SLICE_2026-03-25.md`
 14. `PHASE_5_WORKSPACE_HOME_FOUNDATION_RUNTIME_SLICE_2026-03-25.md`
 15. `PHASE_5_TRUST_WORKSPACE_ONBOARDING_AND_TTS_RUNTIME_SLICE_2026-03-26.md`
+16. `PHASE_5_AGENT_OS_STAGE3_PRODUCT_SURFACES_RUNTIME_SLICE_2026-03-26.md`
 
 ## Historical Gate-Preparation Inputs (Retained for Traceability Only)
 These documents remain useful as design history, but they are not the current authority chain for the closed Phase-5 package.
@@ -90,6 +91,9 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
 - TTS runtime/fallback focused bundle: `6 passed`
 - trust/workspace/voice conversation-path bundle: `5 passed`
 - consolidated runtime regression bundle after trust/workspace/onboarding/TTS slice: `222 passed`
+- stage-3 onboarding/workspace/trust/voice focused bundle: `10 passed`
+- stage-3 workspace/trust/voice conversation bundle: `6 passed`
+- stage-3 broader regression bundle: `165 passed`
 - full active-capability sequential audit: all `23` active governed capabilities passed targeted verification
 - active-capability residual caveat: capability `18` (`speak_text`) now has a stronger runtime fallback path and passing code-path verification, but still needs live device spoken-output validation
 - runtime documentation drift check: passed
@@ -159,6 +163,14 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
 14. Voice response path strengthened:
    - voice-origin turns now auto-speak through the shared Nova speech helper
    - runtime speech path now falls back to the TTS executor engine when the preferred renderer cannot play
+15. Agent-OS stage-3 product surfaces landed:
+   - dedicated Introduction page
+   - dedicated Settings page
+   - stage-2 onboarding guidance and setup-mode visibility
+   - Trust Center history and detail drill-down
+   - Workspace selected-project drill-down that stays on the Workspace page
+   - Structure Map stage-2 structured graph and relationship view
+   - visible voice status and voice-check flow tied back into Trust data
 
 ## Governance State
 - Runtime remains invocation-bound.

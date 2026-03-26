@@ -1403,7 +1403,10 @@ def test_visualize_this_repo_returns_structure_map_and_widget(monkeypatch):
     chat_messages = _chat_messages(ws)
     assert any("Local project structure map" in msg for msg in chat_messages)
     assert any("Visual orientation:" in msg for msg in chat_messages)
-    assert any(msg.get("type") == "project_structure_map" for msg in ws.sent_messages)
+    structure_msg = next((msg for msg in ws.sent_messages if msg.get("type") == "project_structure_map"), None)
+    assert structure_msg is not None
+    assert isinstance(structure_msg.get("graph_nodes"), list)
+    assert isinstance(structure_msg.get("graph_edges"), list)
 
 
 def test_workspace_board_command_sends_workspace_thread_and_structure_widgets(monkeypatch):
@@ -1424,6 +1427,114 @@ def test_workspace_board_command_sends_workspace_thread_and_structure_widgets(mo
     assert "workspace_home" in sent_types
     assert "thread_map" in sent_types
     assert "project_structure_map" in sent_types
+
+
+def test_workspace_board_prefers_selected_thread_detail_when_focus_exists(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    async def _fake_send_workspace_home_widget(ws, session_state, project_threads):
+        payload = {
+            "type": "workspace_home",
+            "summary": "Workspace Home",
+            "focus_thread": {"name": "Pour Social"},
+            "recommended_actions": [],
+        }
+        await brain_server.ws_send(ws, payload)
+        return payload
+
+    async def _fake_send_thread_map_widget(ws, project_threads, session_state):
+        payload = {"type": "thread_map", "threads": [{"name": "Pour Social"}], "active_thread": "Pour Social"}
+        await brain_server.ws_send(ws, payload)
+        return payload
+
+    async def _fake_send_thread_detail_widget(ws, session_state, project_threads, *, thread_name):
+        await brain_server.ws_send(ws, {"type": "thread_detail", "thread": {"name": thread_name}})
+        return {"type": "thread_detail", "thread": {"name": thread_name}}
+
+    monkeypatch.setattr(brain_server, "send_workspace_home_widget", _fake_send_workspace_home_widget)
+    monkeypatch.setattr(brain_server, "send_thread_map_widget", _fake_send_thread_map_widget)
+    monkeypatch.setattr(brain_server, "send_thread_detail_widget", _fake_send_thread_detail_widget)
+
+    ws = _ScriptedWebSocket(["workspace board"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    sent_types = [msg.get("type") for msg in ws.sent_messages]
+    assert "workspace_home" in sent_types
+    assert "thread_map" in sent_types
+    assert "thread_detail" in sent_types
+
+
+def test_voice_status_command_returns_runtime_summary_and_trust_widget(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(
+        brain_server,
+        "inspect_voice_runtime",
+        lambda: {
+            "summary": "Preferred engine ready. Fallback ready.",
+            "preferred_engine": "piper",
+            "preferred_status": "ready",
+            "fallback_engine": "pyttsx3",
+            "fallback_status": "ready",
+            "last_attempt_status": "rendered",
+            "last_engine": "piper",
+        },
+    )
+
+    ws = _ScriptedWebSocket(["voice status"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Voice status" in msg for msg in chat_messages)
+    assert any(msg.get("type") == "trust_status" for msg in ws.sent_messages)
+
+
+def test_voice_check_command_runs_tts_capability_and_reports_status(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        assert capability_id == 18
+        assert "Nova voice check complete." in str(params.get("text") or "")
+        return ActionResult.ok("spoken")
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _fake_invoke_governed_capability)
+    monkeypatch.setattr(
+        brain_server,
+        "inspect_voice_runtime",
+        lambda: {
+            "summary": "Preferred engine ready. Last attempt rendered via piper.",
+            "preferred_engine": "piper",
+            "preferred_status": "ready",
+            "fallback_engine": "pyttsx3",
+            "fallback_status": "ready",
+            "last_attempt_status": "rendered",
+            "last_engine": "piper",
+        },
+    )
+
+    ws = _ScriptedWebSocket(["voice check"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Voice check" in msg for msg in chat_messages)
+    assert any(msg.get("type") == "trust_status" for msg in ws.sent_messages)
 
 
 def test_voice_time_query_auto_speaks_response(monkeypatch):

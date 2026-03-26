@@ -7,6 +7,7 @@ import threading
 from src.actions.action_result import ActionResult
 from src.ledger.writer import LedgerWriter
 from src.rendering.speech_formatter import SpeechFormatter
+from src.speech_state import speech_state
 from src.voice.tts_engine import try_render_tts
 
 log = logging.getLogger("nova")
@@ -66,6 +67,7 @@ def execute_tts(req, action_result_cls=ActionResult) -> ActionResult:
         rendered = try_render_tts(speak_text)
         if not rendered:
             TTSEngine.speak(speak_text)
+            speech_state.record_attempt(engine="pyttsx3", status="rendered", spoken_text=speak_text)
         try:
             metadata = {
                 "request_id": req.request_id,
@@ -91,6 +93,12 @@ def execute_tts(req, action_result_cls=ActionResult) -> ActionResult:
             request_id=req.request_id,
         )
     except Exception as error:
+        speech_state.record_attempt(
+            engine="runtime",
+            status="failed",
+            error=str(error),
+            spoken_text=text,
+        )
         log.error("TTS failed: %s", error)
         return action_result_cls.failure(
             "I couldn't speak that. Please try again.",

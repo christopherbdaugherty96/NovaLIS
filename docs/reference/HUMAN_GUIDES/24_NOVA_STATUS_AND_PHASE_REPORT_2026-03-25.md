@@ -12,8 +12,8 @@ It now has:
 - explicit memory with a dedicated management page
 - answer-first search and source-grounded news flows
 - a bounded same-thread second-opinion path
-- a Home page, Workspace page, Trust page, News page, Memory page, and chat surface
-- local-project understanding that now includes a visible structure-map view
+- a Home page, Workspace page, Trust page, Introduction page, Settings page, News page, Memory page, and chat surface
+- local-project understanding that now includes a visible structure-map view with structured graph output
 
 The most important truth is still:
 - Nova is live
@@ -74,8 +74,8 @@ At the time of this report, the runtime shows:
   - weather, news, and calendar snapshots
   - screen capture, screen analysis, and explain-anything
   - governed memory
-  - Workspace page and Trust page dashboard surfaces
-  - local-project structure-map surface
+  - Workspace page, Trust page, Introduction page, and Settings page dashboard surfaces
+  - local-project structure-map surface with stage-2 graph output
 
 Runtime invariants still in force:
 - no autonomy
@@ -99,8 +99,10 @@ Nova can:
 ### 2. Daily workspace surfaces
 Nova currently has:
 - a Home page
+- an Introduction page
 - a Workspace page
 - a Trust page
+- a Settings page
 - a News page
 - a Memory page
 - a chat page
@@ -110,6 +112,7 @@ Nova currently has:
 - schedule and pattern-review surfaces
 - follow-up actions tied to dashboard widgets
 - a first-run guide for non-technical users
+- a settings surface for setup-mode choice, voice checks, and comfort controls
 
 ### 3. Local computer help
 Nova can:
@@ -132,6 +135,7 @@ Nova now supports:
 - bounded relevant-memory use in chat
 - thread continuity surfaces and thread detail
 - Workspace Home and Workspace Board project continuity surfaces
+- selected-project detail and recent-decision review on the Workspace page
 
 ### 5. Local project understanding
 Nova can now do all of these locally:
@@ -157,6 +161,14 @@ That slice shipped:
 - a first-run guide
 - the first visible local-project Structure Map page surface
 - a stronger runtime TTS fallback and voice auto-speak path
+
+The latest follow-on slice deepened that further:
+- a dedicated Introduction page
+- a dedicated Settings page
+- Trust Center history and blocked-condition drill-down
+- Workspace selected-project drill-down and recent-decision feed
+- Structure Map stage-2 graph and relationship view
+- a visible voice status / voice check workflow tied back into Trust data
 
 This matters because it turned several already-good backend pieces into a more understandable product.
 
@@ -220,6 +232,11 @@ Recent Phase-5 growth after the earlier closure includes:
 - onboarding stage 1
 - local-project visualization stage 1
 - stronger TTS runtime behavior for voice-origin turns
+- Introduction and Settings pages
+- Trust Center stage 2 drill-down
+- onboarding stage 2 setup-mode and permissions guidance surface
+- local-project visualization stage 2 structured graph output
+- deeper Workspace stage-3 selected-project continuity surface
 
 ### Phase 6
 Status:
@@ -306,14 +323,13 @@ Nova is strong, but it is not finished.
 Important current limitations:
 - wake word is still planned, not live
 - richer connector systems are still planned
-- richer project/workspace foundations are still needed beyond the current Workspace page
-- trust-center history and drill-down are still shallow
-- onboarding still needs a deeper setup/permissions pass
+- richer project/workspace foundations are still needed beyond the current Workspace stage-3 shell
+- provider and connector setup is still preference-first rather than fully connected and governed through a dedicated management surface
 - OpenClaw/governed external execution is designed, not live
 
 Important voice caveat:
 - the TTS path is stronger in code now
-- tests are passing for the executor, mediator, and runtime fallback paths
+- tests are passing for the executor, mediator, runtime fallback, and voice-status/check paths
 - real-device spoken-output validation is still the main remaining voice caveat
 
 That means:

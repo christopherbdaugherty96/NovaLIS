@@ -82,11 +82,15 @@ let trustReviewState = {
   summary: "Live review of recent actions and network activity will appear here.",
   activity: [],
   blocked: [],
+  selectedActivityKey: "",
+  selectedBlockedKey: "",
+  voiceRuntime: {},
 };
 let threadMapState = {
   summary: "No project threads yet. Save work updates to start continuity.",
   activeThread: "",
   threads: [],
+  detail: null,
 };
 let workspaceHomeState = {
   summary: "Workspace home is preparing your latest project context.",
@@ -110,15 +114,18 @@ const STORAGE_KEYS = {
   uiCompactDensity: "nova_ui_compact_density",
   activePage: "nova_active_page",
   morningExpanded: "nova_morning_expanded",
+  setupMode: "nova_setup_mode",
 };
 
 const PAGE_LABELS = {
   chat: "Chat",
   news: "News",
+  intro: "Intro",
   home: "Home",
   workspace: "Workspace",
   memory: "Memory",
   trust: "Trust",
+  settings: "Settings",
 };
 
 const QUICK_ACTIONS_BY_PAGE = {
@@ -146,6 +153,13 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "news_brief", label: "Daily brief", command: "daily brief", stayOnPage: true },
     { id: "news_compare", label: "Compare stories", command: "compare headlines 1 and 2", stayOnPage: true },
     { id: "news_explain_page", label: "Explain this page", command: "what is this page" },
+  ],
+  intro: [
+    { id: "intro_home", label: "Open Home", switchToPage: "home", command: "workspace home", stayOnPage: true },
+    { id: "intro_workspace", label: "Open Workspace", switchToPage: "workspace", command: "workspace board", stayOnPage: true },
+    { id: "intro_trust", label: "Open Trust", switchToPage: "trust", command: "trust center", stayOnPage: true },
+    { id: "intro_settings", label: "Open Settings", switchToPage: "settings", command: "voice status", stayOnPage: true },
+    { id: "intro_brief", label: "Today's brief", command: "daily brief", switchToPage: "chat" },
   ],
   home: [
     { id: "home_system", label: "System status", command: "system status", switchToPage: "chat" },
@@ -179,6 +193,13 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "trust_system", label: "System status", command: "system status", switchToPage: "chat" },
     { id: "trust_memory", label: "Memory overview", command: "memory overview", switchToPage: "memory" },
     { id: "trust_workspace", label: "Workspace home", command: "workspace home", switchToPage: "chat" },
+    { id: "trust_settings", label: "Settings", command: "voice status", switchToPage: "settings", stayOnPage: true },
+  ],
+  settings: [
+    { id: "settings_voice", label: "Voice status", command: "voice status", switchToPage: "chat" },
+    { id: "settings_voice_check", label: "Voice check", command: "voice check", switchToPage: "chat" },
+    { id: "settings_trust", label: "Trust center", command: "trust center", switchToPage: "trust", stayOnPage: true },
+    { id: "settings_intro", label: "Introduction", switchToPage: "intro", command: "workspace home", stayOnPage: true },
   ],
 };
 
@@ -192,9 +213,13 @@ const COMMAND_SUGGESTIONS = [
   "explain this",
   "help me do this",
   "show threads",
+  "intro",
+  "settings",
   "workspace home",
   "workspace board",
   "trust center",
+  "voice status",
+  "voice check",
   "show structure map",
   "visualize this repo",
   "continue my deployment issue",
@@ -488,6 +513,48 @@ function requestProjectStructureMapRefresh(force = false) {
   if (!force && now - Number(projectVisualizerState.lastHydratedAt || 0) < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
   projectVisualizerState.lastHydratedAt = now;
   safeWSSend({ text: "show structure map", silent_widget_refresh: true });
+}
+
+function requestWorkspaceThreadDetail(threadName) {
+  const clean = String(threadName || "").trim();
+  if (!clean) return;
+  threadMapState.activeThread = clean;
+  safeWSSend({ text: `thread detail ${clean}`, silent_widget_refresh: true });
+}
+
+function getSetupMode() {
+  const stored = String(localStorage.getItem(STORAGE_KEYS.setupMode) || "local").trim().toLowerCase();
+  return ["local", "bring_your_own_key", "managed_cloud"].includes(stored) ? stored : "local";
+}
+
+function setSetupMode(mode) {
+  const normalized = String(mode || "").trim().toLowerCase();
+  const nextMode = ["local", "bring_your_own_key", "managed_cloud"].includes(normalized) ? normalized : "local";
+  localStorage.setItem(STORAGE_KEYS.setupMode, nextMode);
+  renderIntroPage();
+  renderSettingsPage();
+}
+
+function getSetupModeMeta(mode = getSetupMode()) {
+  if (mode === "bring_your_own_key") {
+    return {
+      label: "Bring Your Own API Key",
+      badge: "Manual cloud",
+      copy: "You control provider choice, billing, and limits. Nova should only use paid APIs when you knowingly configure them.",
+    };
+  }
+  if (mode === "managed_cloud") {
+    return {
+      label: "Managed Cloud Access",
+      badge: "Guided setup",
+      copy: "This is the easiest long-term setup path, but it still needs an explicit account and visible usage controls before it should be treated as active.",
+    };
+  }
+  return {
+    label: "Local Mode",
+    badge: "Offline-first",
+    copy: "Nova stays local-first, private, and cost-free by default. This is the safest current setup for everyday use.",
+  };
 }
 
 function renderMemoryCenterSurface() {
@@ -1257,6 +1324,10 @@ function renderProjectStructureMapWidget(data = {}) {
   const summary = $("project-structure-summary");
   const tree = $("project-structure-tree");
   const highlightHost = $("project-structure-highlights");
+  const graphSummary = $("project-structure-graph-summary");
+  const graphHost = $("project-structure-graph");
+  const relationsHost = $("project-structure-relations");
+  const legendHost = $("project-structure-legend");
   const note = $("project-structure-note");
   const actionsHost = $("project-structure-actions");
   if (!summary || !tree || !highlightHost || !note || !actionsHost) {
@@ -1268,11 +1339,17 @@ function renderProjectStructureMapWidget(data = {}) {
   const treeLines = Array.isArray(snapshot.tree_lines) ? snapshot.tree_lines : [];
   const highlights = Array.isArray(snapshot.highlights) ? snapshot.highlights : [];
   const actions = Array.isArray(snapshot.recommended_actions) ? snapshot.recommended_actions : [];
+  const graphNodes = Array.isArray(snapshot.graph_nodes) ? snapshot.graph_nodes : [];
+  const graphEdges = Array.isArray(snapshot.graph_edges) ? snapshot.graph_edges : [];
+  const graphLegend = Array.isArray(snapshot.graph_legend) ? snapshot.graph_legend : [];
 
   summary.textContent = projectVisualizerState.summary || "Open the structure map to see the repo as a human-friendly system view.";
   tree.textContent = treeLines.length
     ? treeLines.join("\n")
     : "No structure map loaded yet. Use Refresh map to build one for the current workspace.";
+  if (graphSummary) {
+    graphSummary.textContent = String(snapshot.graph_summary || "Structured graph output will appear here once Nova has mapped the current workspace.").trim();
+  }
   note.textContent = String(snapshot.note || "This structure map is read-only and meant to help people understand the codebase faster.").trim();
 
   clear(highlightHost);
@@ -1298,6 +1375,76 @@ function renderProjectStructureMapWidget(data = {}) {
 
       highlightHost.appendChild(card);
     });
+  }
+
+  if (graphHost) {
+    clear(graphHost);
+    if (!graphNodes.length) {
+      const empty = document.createElement("div");
+      empty.className = "workspace-home-empty";
+      empty.textContent = "Structured nodes will appear here after the map is refreshed.";
+      graphHost.appendChild(empty);
+    } else {
+      graphNodes.slice(0, 12).forEach((node) => {
+        const card = document.createElement("div");
+        card.className = "workspace-spotlight-card";
+
+        const title = document.createElement("div");
+        title.className = "workspace-spotlight-title";
+        title.textContent = String(node.label || node.id || "Node").trim();
+        card.appendChild(title);
+
+        const copy = document.createElement("div");
+        copy.className = "workspace-spotlight-copy";
+        const parts = [
+          String(node.type || "").trim(),
+          String(node.group || "").trim(),
+          String(node.path || "").trim(),
+        ].filter(Boolean);
+        copy.textContent = parts.join(" · ") || "Structured node";
+        card.appendChild(copy);
+
+        graphHost.appendChild(card);
+      });
+    }
+  }
+
+  if (relationsHost) {
+    clear(relationsHost);
+    if (!graphEdges.length) {
+      const empty = document.createElement("div");
+      empty.className = "workspace-home-empty";
+      empty.textContent = "Structured relationships will appear here once Nova has enough repo context.";
+      relationsHost.appendChild(empty);
+    } else {
+      graphEdges.slice(0, 10).forEach((edge) => {
+        const row = document.createElement("div");
+        row.className = "project-structure-relation";
+        row.textContent = [
+          String(edge.from_label || edge.from || "").trim() || "Source",
+          String(edge.label || "connects to").trim(),
+          String(edge.to_label || edge.to || "").trim() || "Target",
+        ].join(" -> ");
+        relationsHost.appendChild(row);
+      });
+    }
+  }
+
+  if (legendHost) {
+    clear(legendHost);
+    if (!graphLegend.length) {
+      const chip = document.createElement("div");
+      chip.className = "memory-detail-chip";
+      chip.textContent = "Read-only explainer";
+      legendHost.appendChild(chip);
+    } else {
+      graphLegend.forEach((item) => {
+        const chip = document.createElement("div");
+        chip.className = "memory-detail-chip";
+        chip.textContent = String(item || "").trim();
+        legendHost.appendChild(chip);
+      });
+    }
   }
 
   clear(actionsHost);
@@ -1330,6 +1477,7 @@ function renderWorkspaceBoardPage() {
   const focusHost = $("workspace-board-focus");
   const statsHost = $("workspace-board-stats");
   const threadHost = $("workspace-board-threads");
+  const decisionHost = $("workspace-board-decisions");
   const feedHost = $("workspace-board-feed");
   const actionsHost = $("workspace-board-actions");
   if (!summary || !focusHost || !statsHost || !threadHost || !feedHost || !actionsHost) return;
@@ -1340,8 +1488,13 @@ function renderWorkspaceBoardPage() {
   const threads = Array.isArray(threadMapState.threads) && threadMapState.threads.length
     ? threadMapState.threads
     : Array.isArray(workspace.recent_threads) ? workspace.recent_threads : [];
+  const selectedThread = (threadMapState.detail && typeof threadMapState.detail.thread === "object")
+    ? threadMapState.detail.thread
+    : {};
+  const selectedThreadName = String(selectedThread.name || threadMapState.activeThread || focus.name || "").trim();
   const recentDocs = Array.isArray(workspace.recent_documents) ? workspace.recent_documents : [];
   const recentMemory = Array.isArray(workspace.recent_memory_items) ? workspace.recent_memory_items : [];
+  const recentDecisions = Array.isArray(workspace.recent_decisions_feed) ? workspace.recent_decisions_feed : [];
 
   summary.textContent = workspaceHomeState.summary || "Workspace Board keeps project continuity, memory, and reports in one view.";
 
@@ -1388,16 +1541,19 @@ function renderWorkspaceBoardPage() {
       const card = document.createElement("button");
       card.type = "button";
       card.className = "workspace-spotlight-card";
+      const threadName = String(thread.name || "").trim();
+      if (threadName && threadName === selectedThreadName) {
+        card.classList.add("active");
+      }
       card.addEventListener("click", () => {
-        const name = String(thread.name || "").trim();
-        if (!name) return;
-        setActivePage("chat");
-        injectUserText(`thread detail ${name}`, "text");
+        if (!threadName) return;
+        setActivePage("workspace");
+        requestWorkspaceThreadDetail(threadName);
       });
 
       const title = document.createElement("div");
       title.className = "workspace-spotlight-title";
-      title.textContent = String(thread.name || "Project thread").trim();
+      title.textContent = threadName || "Project thread";
       card.appendChild(title);
 
       const copy = document.createElement("div");
@@ -1412,6 +1568,48 @@ function renderWorkspaceBoardPage() {
 
       threadHost.appendChild(card);
     });
+  }
+
+  if (decisionHost) {
+    clear(decisionHost);
+    if (!recentDecisions.length) {
+      const empty = document.createElement("div");
+      empty.className = "workspace-home-empty";
+      empty.textContent = "Recent project decisions will appear here as threads mature.";
+      decisionHost.appendChild(empty);
+    } else {
+      recentDecisions.slice(0, 6).forEach((item) => {
+        const row = document.createElement("div");
+        row.className = "workspace-spotlight-card";
+
+        const title = document.createElement("div");
+        title.className = "workspace-spotlight-title";
+        title.textContent = String(item.thread_name || item.name || "Project thread").trim();
+        row.appendChild(title);
+
+        const copy = document.createElement("div");
+        copy.className = "workspace-spotlight-copy";
+        copy.textContent = [
+          String(item.decision || item.latest_decision || "").trim(),
+          String(item.updated_at ? formatThreadTimestamp(item.updated_at) : "").trim(),
+        ].filter(Boolean).join(" · ") || "Recent decision";
+        row.appendChild(copy);
+
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "assistant-action-btn";
+        btn.textContent = "Open thread";
+        btn.addEventListener("click", () => {
+          const name = String(item.thread_name || item.name || "").trim();
+          if (!name) return;
+          setActivePage("workspace");
+          requestWorkspaceThreadDetail(name);
+        });
+        row.appendChild(btn);
+
+        decisionHost.appendChild(row);
+      });
+    }
   }
 
   clear(feedHost);
@@ -1461,8 +1659,11 @@ function renderWorkspaceBoardPage() {
   [
     { label: "Refresh workspace", fn: () => requestWorkspaceHomeRefresh(true) },
     { label: "Show structure map", fn: () => requestProjectStructureMapRefresh(true) },
-    { label: "Show threads", fn: () => { setActivePage("chat"); injectUserText("show threads", "text"); } },
+    selectedThreadName
+      ? { label: "Selected thread", fn: () => requestWorkspaceThreadDetail(selectedThreadName) }
+      : { label: "Show threads", fn: () => { setActivePage("chat"); injectUserText("show threads", "text"); } },
     { label: "Trust center", fn: () => setActivePage("trust") },
+    { label: "Settings", fn: () => setActivePage("settings") },
   ].forEach((item) => {
     const button = document.createElement("button");
     button.type = "button";
@@ -1473,16 +1674,16 @@ function renderWorkspaceBoardPage() {
   });
 }
 
-function renderThreadDetailWidget(data = {}) {
-  const panel = $("thread-detail-panel");
-  const title = $("thread-detail-title");
-  const summary = $("thread-detail-summary");
-  const blocked = $("thread-detail-blocked");
-  const next = $("thread-detail-next");
-  const why = $("thread-detail-why");
-  const decisionsHost = $("thread-detail-decisions");
-  const memoryHost = $("thread-detail-memory");
-  if (!panel || !title || !summary || !blocked || !next || !why || !decisionsHost || !memoryHost) return;
+function populateThreadDetailSurface(prefix, data = {}) {
+  const panel = $(`${prefix}-panel`);
+  const title = $(`${prefix}-title`);
+  const summary = $(`${prefix}-summary`);
+  const blocked = $(`${prefix}-blocked`);
+  const next = $(`${prefix}-next`);
+  const why = $(`${prefix}-why`);
+  const decisionsHost = $(`${prefix}-decisions`);
+  const memoryHost = $(`${prefix}-memory`);
+  if (!panel || !title || !summary || !blocked || !next || !why || !decisionsHost || !memoryHost) return false;
 
   const thread = (data && typeof data.thread === "object") ? data.thread : {};
   const memoryItems = Array.isArray(data && data.memory_items) ? data.memory_items : [];
@@ -1558,6 +1759,20 @@ function renderThreadDetailWidget(data = {}) {
   }
 
   panel.hidden = false;
+  return true;
+}
+
+function renderThreadDetailWidget(data = {}) {
+  threadMapState.detail = (data && typeof data === "object") ? { ...data } : null;
+  const thread = (data && typeof data.thread === "object") ? data.thread : {};
+  const name = String(thread.name || "").trim();
+  if (name) {
+    threadMapState.activeThread = name;
+  }
+
+  populateThreadDetailSurface("thread-detail", data);
+  populateThreadDetailSurface("workspace-thread-detail", data);
+  renderWorkspaceBoardPage();
 }
 
 function renderMemoryOverviewWidget(data = {}) {
@@ -2624,8 +2839,19 @@ function runCapabilityPrompt(prompt) {
 function renderTrustPanel(data = {}) {
   if (data && typeof data === "object") {
     trustReviewState.summary = String(data.trust_review_summary || trustReviewState.summary).trim() || trustReviewState.summary;
-    trustReviewState.activity = Array.isArray(data.recent_runtime_activity) ? data.recent_runtime_activity.slice(0, 6) : trustReviewState.activity;
-    trustReviewState.blocked = Array.isArray(data.blocked_conditions) ? data.blocked_conditions.slice(0, 3) : trustReviewState.blocked;
+    trustReviewState.activity = Array.isArray(data.recent_runtime_activity) ? data.recent_runtime_activity.slice() : trustReviewState.activity;
+    trustReviewState.blocked = Array.isArray(data.blocked_conditions) ? data.blocked_conditions.slice() : trustReviewState.blocked;
+    trustReviewState.voiceRuntime = (data.voice_runtime && typeof data.voice_runtime === "object")
+      ? { ...data.voice_runtime }
+      : trustReviewState.voiceRuntime;
+    if (!trustReviewState.selectedActivityKey && trustReviewState.activity.length) {
+      const first = trustReviewState.activity[0];
+      trustReviewState.selectedActivityKey = String(first.request_id || first.ledger_ref || first.title || "0").trim();
+    }
+    if (!trustReviewState.selectedBlockedKey && trustReviewState.blocked.length) {
+      const firstBlocked = trustReviewState.blocked[0];
+      trustReviewState.selectedBlockedKey = String(firstBlocked.label || firstBlocked.area || "0").trim();
+    }
   }
 
   const mode = $("trust-mode");
@@ -2656,7 +2882,7 @@ function renderTrustPanel(data = {}) {
     } else {
       const list = document.createElement("div");
       list.className = "trust-activity-list";
-      trustReviewState.activity.forEach((item) => {
+      trustReviewState.activity.slice(0, 6).forEach((item) => {
         const row = document.createElement("div");
         row.className = "trust-activity-item";
         const outcome = String(item.outcome || "").trim().toLowerCase() || "info";
@@ -2739,7 +2965,7 @@ function renderTrustPanel(data = {}) {
     } else {
       const list = document.createElement("div");
       list.className = "trust-activity-list";
-      trustReviewState.blocked.forEach((item) => {
+      trustReviewState.blocked.slice(0, 3).forEach((item) => {
         const row = document.createElement("div");
         row.className = "trust-activity-item";
 
@@ -2761,6 +2987,7 @@ function renderTrustPanel(data = {}) {
 
   requestWorkspaceHomeRefresh();
   renderTrustCenterPage();
+  renderSettingsPage();
 }
 
 function renderTrustCenterPage() {
@@ -2770,11 +2997,15 @@ function renderTrustCenterPage() {
   const egress = $("trust-center-egress");
   const failure = $("trust-center-failure");
   const activityHost = $("trust-center-activity");
+  const activityDetail = $("trust-center-activity-detail");
   const blockedHost = $("trust-center-blocked");
+  const blockedDetail = $("trust-center-blocked-detail");
   const healthSummary = $("trust-center-health-summary");
   const healthGrid = $("trust-center-health-grid");
   const capabilitySummary = $("trust-center-capability-summary");
   const capabilityHost = $("trust-center-capability-groups");
+  const voiceSummary = $("trust-center-voice-summary");
+  const voiceGrid = $("trust-center-voice-grid");
   if (!summary || !mode || !lastCall || !egress || !failure || !activityHost || !blockedHost || !healthSummary || !healthGrid || !capabilitySummary || !capabilityHost) return;
 
   summary.textContent = trustReviewState.summary || "Trust review keeps recent governed actions, blocked conditions, and failure state in one place.";
@@ -2790,10 +3021,17 @@ function renderTrustCenterPage() {
     empty.textContent = "Recent governed actions will appear here as Nova works.";
     activityHost.appendChild(empty);
   } else {
-    trustReviewState.activity.slice(0, 6).forEach((item) => {
-      const row = document.createElement("div");
+    trustReviewState.activity.slice(0, 12).forEach((item, index) => {
+      const key = String(item.request_id || item.ledger_ref || item.title || index).trim();
+      const row = document.createElement("button");
+      row.type = "button";
       row.className = "trust-activity-item";
+      if (trustReviewState.selectedActivityKey === key) row.classList.add("active");
       row.dataset.outcome = String(item.outcome || "").trim().toLowerCase() || "info";
+      row.addEventListener("click", () => {
+        trustReviewState.selectedActivityKey = key;
+        renderTrustCenterPage();
+      });
 
       const title = document.createElement("div");
       title.className = "trust-activity-title";
@@ -2804,21 +3042,60 @@ function renderTrustCenterPage() {
       meta.className = "trust-activity-meta";
       meta.textContent = [
         String(item.kind || "").trim(),
-        String(item.detail || "").trim(),
         String(item.timestamp || "").trim(),
-      ].filter(Boolean).join(" - ") || "Ledger-backed runtime activity";
+      ].filter(Boolean).join(" · ") || "Ledger-backed runtime activity";
       row.appendChild(meta);
 
-      const reason = String(item.reason || "").trim();
-      if (reason) {
-        const reasonRow = document.createElement("div");
-        reasonRow.className = "trust-activity-reason";
-        reasonRow.textContent = `Why: ${reason}`;
-        row.appendChild(reasonRow);
+      const detail = String(item.detail || "").trim();
+      if (detail) {
+        const detailRow = document.createElement("div");
+        detailRow.className = "trust-activity-reason";
+        detailRow.textContent = detail;
+        row.appendChild(detailRow);
       }
 
       activityHost.appendChild(row);
     });
+  }
+
+  if (activityDetail) {
+    clear(activityDetail);
+    const selected = trustReviewState.activity.find((item, index) => {
+      const key = String(item.request_id || item.ledger_ref || item.title || index).trim();
+      return key === trustReviewState.selectedActivityKey;
+    }) || trustReviewState.activity[0];
+
+    if (!selected) {
+      const empty = document.createElement("div");
+      empty.className = "trust-empty";
+      empty.textContent = "Select a governed action to see why it happened and what effect it had.";
+      activityDetail.appendChild(empty);
+    } else {
+      [
+        ["Title", String(selected.title || "Runtime event").trim() || "Runtime event"],
+        ["Kind", String(selected.kind || "system").trim() || "system"],
+        ["When", String(selected.timestamp || "Unknown").trim() || "Unknown"],
+        ["Why", String(selected.reason || selected.detail || "No reason recorded.").trim() || "No reason recorded."],
+        ["Effect", String(selected.effect || "No external effect").trim() || "No external effect"],
+        ["Request", String(selected.request_id || "Not recorded").trim() || "Not recorded"],
+        ["Ledger", String(selected.ledger_ref || "Not recorded").trim() || "Not recorded"],
+      ].forEach(([label, value]) => {
+        const row = document.createElement("div");
+        row.className = "operator-health-row";
+
+        const labelEl = document.createElement("div");
+        labelEl.className = "operator-health-label";
+        labelEl.textContent = label;
+        row.appendChild(labelEl);
+
+        const valueEl = document.createElement("div");
+        valueEl.className = "operator-health-value";
+        valueEl.textContent = value;
+        row.appendChild(valueEl);
+
+        activityDetail.appendChild(row);
+      });
+    }
   }
 
   clear(blockedHost);
@@ -2828,9 +3105,16 @@ function renderTrustCenterPage() {
     empty.textContent = "No blocked conditions are active right now.";
     blockedHost.appendChild(empty);
   } else {
-    trustReviewState.blocked.slice(0, 4).forEach((item) => {
-      const row = document.createElement("div");
+    trustReviewState.blocked.slice(0, 8).forEach((item, index) => {
+      const key = String(item.label || item.area || index).trim();
+      const row = document.createElement("button");
+      row.type = "button";
       row.className = "trust-activity-item";
+      if (trustReviewState.selectedBlockedKey === key) row.classList.add("active");
+      row.addEventListener("click", () => {
+        trustReviewState.selectedBlockedKey = key;
+        renderTrustCenterPage();
+      });
 
       const title = document.createElement("div");
       title.className = "trust-activity-title";
@@ -2844,6 +3128,42 @@ function renderTrustCenterPage() {
 
       blockedHost.appendChild(row);
     });
+  }
+
+  if (blockedDetail) {
+    clear(blockedDetail);
+    const selectedBlocked = trustReviewState.blocked.find((item, index) => {
+      const key = String(item.label || item.area || index).trim();
+      return key === trustReviewState.selectedBlockedKey;
+    }) || trustReviewState.blocked[0];
+
+    if (!selectedBlocked) {
+      const empty = document.createElement("div");
+      empty.className = "trust-empty";
+      empty.textContent = "Select a blocked condition to see what boundary Nova is honoring.";
+      blockedDetail.appendChild(empty);
+    } else {
+      [
+        ["Boundary", String(selectedBlocked.label || selectedBlocked.area || "Condition").trim() || "Condition"],
+        ["Status", String(selectedBlocked.status || "unknown").trim() || "unknown"],
+        ["Why blocked", String(selectedBlocked.reason || "No reason available.").trim() || "No reason available."],
+      ].forEach(([label, value]) => {
+        const row = document.createElement("div");
+        row.className = "operator-health-row";
+
+        const labelEl = document.createElement("div");
+        labelEl.className = "operator-health-label";
+        labelEl.textContent = label;
+        row.appendChild(labelEl);
+
+        const valueEl = document.createElement("div");
+        valueEl.className = "operator-health-value";
+        valueEl.textContent = value;
+        row.appendChild(valueEl);
+
+        blockedDetail.appendChild(row);
+      });
+    }
   }
 
   healthSummary.textContent = operatorHealthState.summary || "Loading runtime health...";
@@ -2888,6 +3208,28 @@ function renderTrustCenterPage() {
       card.appendChild(copy);
 
       capabilityHost.appendChild(card);
+    });
+  }
+
+  if (voiceSummary && voiceGrid) {
+    const voice = (trustReviewState.voiceRuntime && typeof trustReviewState.voiceRuntime === "object")
+      ? trustReviewState.voiceRuntime
+      : {};
+    voiceSummary.textContent = [
+      String(voice.summary || "").trim(),
+      String(voice.last_status || voice.last_attempt_status || "").trim(),
+    ].filter(Boolean).join(" · ") || "Voice status will appear here after the next trust refresh.";
+
+    clear(voiceGrid);
+    [
+      ["Preferred", String(voice.preferred_engine || "Piper").trim() || "Piper"],
+      ["Preferred status", String(voice.preferred_status || "Unknown").trim() || "Unknown"],
+      ["Fallback", String(voice.fallback_engine || "pyttsx3").trim() || "pyttsx3"],
+      ["Fallback status", String(voice.fallback_status || "Unknown").trim() || "Unknown"],
+      ["Last attempt", String(voice.last_attempt_status || "No voice check yet").trim() || "No voice check yet"],
+      ["Last engine", String(voice.last_engine || "None").trim() || "None"],
+    ].forEach(([label, value]) => {
+      voiceGrid.appendChild(createOverviewChip(label, value));
     });
   }
 }
@@ -3060,7 +3402,12 @@ function renderQuickActions() {
     const hintText = {
       chat: "Starter prompts for everyday chat and explain mode.",
       news: "News actions for summaries, comparisons, and context checks.",
+      intro: "Use Intro to understand how Nova works before you start leaning on it.",
       home: "Status checks, explain actions, and project continuity threads.",
+      workspace: "Workspace keeps project continuity, structure, and recent decisions together.",
+      memory: "Memory stays explicit, inspectable, and revocable.",
+      trust: "Trust keeps recent actions, boundaries, and runtime health visible.",
+      settings: "Settings keeps setup choices, voice checks, and comfort controls in one place.",
     };
     copy.textContent = hintText[page] || hintText.chat;
   }
@@ -4574,9 +4921,28 @@ function translateError(code, message) {
   return map[code] || message || "Something went wrong. Please try again.";
 }
 
+function tryHandleLocalPageCommand(text) {
+  const clean = String(text || "").trim().toLowerCase();
+  if (!clean) return false;
+
+  const localRoutes = [
+    { pattern: /^(intro|introduction|get(ting)? started|welcome)$/i, page: "intro", reply: "Opening the Introduction page so you can see what Nova is, how it works, and the safest way to start." },
+    { pattern: /^(settings|open settings|show settings|preferences|setup options)$/i, page: "settings", reply: "Opening Settings so you can review setup mode, voice status, privacy, and comfort controls." },
+  ];
+
+  const found = localRoutes.find((item) => item.pattern.test(clean));
+  if (!found) return false;
+
+  appendChatMessage("user", text);
+  setActivePage(found.page);
+  appendChatMessage("assistant", found.reply, null, "System status");
+  return true;
+}
+
 function injectUserText(text, channel = "text") {
   const clean = (text || "").trim();
   if (!clean) return;
+  if (channel === "text" && tryHandleLocalPageCommand(clean)) return;
 
   appendChatMessage("user", clean);
   waitingForAssistant = true;
@@ -4928,10 +5294,12 @@ function setActivePage(page) {
   const pages = {
     chat: $("page-chat"),
     news: $("page-news"),
+    intro: $("page-intro"),
     home: $("page-home"),
     workspace: $("page-workspace"),
     memory: $("page-memory"),
     trust: $("page-trust"),
+    settings: $("page-settings"),
   };
   const target = normalizePageKey(page);
 
@@ -4967,6 +5335,14 @@ function setActivePage(page) {
   if (target === "trust") {
     safeWSSend({ text: "trust center", silent_widget_refresh: true });
     safeWSSend({ text: "system status", silent_widget_refresh: true });
+  }
+  if (target === "intro") {
+    renderIntroPage();
+  }
+  if (target === "settings") {
+    safeWSSend({ text: "trust center", silent_widget_refresh: true });
+    safeWSSend({ text: "system status", silent_widget_refresh: true });
+    renderSettingsPage();
   }
 
   if (latestNewsItems.length > 0) {
@@ -5058,15 +5434,15 @@ function showFirstRunGuide(force = false) {
 
   const intro = document.createElement("p");
   intro.className = "first-run-intro";
-  intro.textContent = "Nova is built to be useful without being pushy. It can explain, search, remember explicit things, and help you keep project context while still showing what it did and why.";
+  intro.textContent = "Nova is a governed personal intelligence system. It helps with research, explanation, memory, and workspace continuity while keeping you in control of every meaningful action.";
   card.appendChild(intro);
 
   const pillars = document.createElement("div");
   pillars.className = "first-run-pillars";
   [
-    ["Start on Home", "Daily brief, system status, memory, and current focus all live there."],
-    ["Use Workspace", "This is where project continuity, threads, reports, and the structure map come together."],
-    ["Check Trust", "Trust shows recent actions, blocked conditions, and the current operating state."],
+    ["Read the Introduction", "See what Nova is, what it can do, and why it stays invocation-bound."],
+    ["Review Settings", "Choose Local Mode or a future cloud path, then review privacy, accessibility, and voice status."],
+    ["Use Workspace and Trust", "Workspace keeps project continuity together. Trust shows what happened, why it happened, and what stayed blocked."],
   ].forEach(([titleText, bodyText]) => {
     const panel = document.createElement("div");
     panel.className = "first-run-pillar";
@@ -5088,9 +5464,9 @@ function showFirstRunGuide(force = false) {
   const steps = document.createElement("ol");
   steps.className = "help-list";
   [
-    "Open Home to see today, your current focus, and the latest memory.",
-    "Open Workspace to see project threads, reports, and the structure map.",
-    "Use Trust any time you want to understand recent actions, block conditions, or failure state.",
+    "Open Introduction to understand Nova's boundaries, setup modes, and first commands.",
+    "Open Settings to choose your preferred setup mode and review voice, privacy, and accessibility controls.",
+    "Open Workspace to see project threads, reports, recent decisions, and the structure map together.",
     "Use explicit phrases like \"remember this\" when you want something saved durably.",
   ].forEach((label) => {
     const li = document.createElement("li");
@@ -5109,10 +5485,15 @@ function showFirstRunGuide(force = false) {
 
   [
     {
-      label: "Open Home",
+      label: "Open Introduction",
       fn: () => {
-        setActivePage("home");
-        requestWorkspaceHomeRefresh(true);
+        setActivePage("intro");
+      },
+    },
+    {
+      label: "Open Settings",
+      fn: () => {
+        setActivePage("settings");
       },
     },
     {
@@ -5161,6 +5542,104 @@ function showFirstRunGuide(force = false) {
 
 function showFirstRunGuideIfNeeded() {
   showFirstRunGuide(false);
+}
+
+function renderIntroPage() {
+  const modeBadge = $("intro-current-mode-badge");
+  const modeCopy = $("intro-current-mode-copy");
+  const currentMode = getSetupModeMeta();
+  if (modeBadge) modeBadge.textContent = currentMode.badge;
+  if (modeCopy) modeCopy.textContent = `${currentMode.label}: ${currentMode.copy}`;
+}
+
+function renderSettingsPage() {
+  const modeHost = $("settings-mode-cards");
+  const modeSummary = $("settings-current-mode-summary");
+  const voiceSummary = $("settings-voice-summary");
+  const voiceGrid = $("settings-voice-grid");
+  const setupMode = getSetupMode();
+  const currentMode = getSetupModeMeta(setupMode);
+
+  if (modeSummary) {
+    modeSummary.textContent = `${currentMode.label}. ${currentMode.copy}`;
+  }
+
+  if (modeHost) {
+    clear(modeHost);
+    [
+      {
+        id: "local",
+        title: "Local Mode",
+        badge: "Free · Offline-first",
+        copy: "Uses local models and keeps Nova private by default. This is the best current everyday mode.",
+      },
+      {
+        id: "bring_your_own_key",
+        title: "Bring Your Own API Key",
+        badge: "Manual cloud",
+        copy: "Lets you bring your own provider later while keeping cost visibility and local control.",
+      },
+      {
+        id: "managed_cloud",
+        title: "Managed Cloud Access",
+        badge: "Later guided setup",
+        copy: "The easiest long-term setup path. Keep this as a saved preference until the full managed flow is live.",
+      },
+    ].forEach((entry) => {
+      const card = document.createElement("button");
+      card.type = "button";
+      card.className = "settings-mode-card";
+      if (setupMode === entry.id) card.classList.add("active");
+      card.addEventListener("click", () => setSetupMode(entry.id));
+
+      const title = document.createElement("div");
+      title.className = "settings-mode-title";
+      title.textContent = entry.title;
+      card.appendChild(title);
+
+      const badge = document.createElement("div");
+      badge.className = "settings-mode-badge";
+      badge.textContent = entry.badge;
+      card.appendChild(badge);
+
+      const copy = document.createElement("div");
+      copy.className = "settings-mode-copy";
+      copy.textContent = entry.copy;
+      card.appendChild(copy);
+
+      modeHost.appendChild(card);
+    });
+  }
+
+  const largeText = $("settings-toggle-large-text");
+  if (largeText) largeText.checked = localStorage.getItem(STORAGE_KEYS.uiLargeText) === "1";
+  const highContrast = $("settings-toggle-high-contrast");
+  if (highContrast) highContrast.checked = localStorage.getItem(STORAGE_KEYS.uiHighContrast) === "1";
+  const compactDensity = $("settings-toggle-compact-density");
+  if (compactDensity) compactDensity.checked = localStorage.getItem(STORAGE_KEYS.uiCompactDensity) === "1";
+
+  if (voiceSummary && voiceGrid) {
+    const voice = (trustReviewState.voiceRuntime && typeof trustReviewState.voiceRuntime === "object")
+      ? trustReviewState.voiceRuntime
+      : {};
+    voiceSummary.textContent = [
+      String(voice.summary || "").trim() || "Run Voice Check to confirm spoken output on this device.",
+      String(voice.last_attempt_status || "").trim(),
+      String(voice.last_engine || "").trim(),
+    ].filter(Boolean).join(" · ");
+
+    clear(voiceGrid);
+    [
+      ["Preferred engine", String(voice.preferred_engine || "Piper").trim() || "Piper"],
+      ["Preferred status", String(voice.preferred_status || "Unknown").trim() || "Unknown"],
+      ["Fallback engine", String(voice.fallback_engine || "pyttsx3").trim() || "pyttsx3"],
+      ["Fallback status", String(voice.fallback_status || "Unknown").trim() || "Unknown"],
+      ["Last attempt", String(voice.last_attempt_status || "No voice check yet").trim() || "No voice check yet"],
+      ["Last engine", String(voice.last_engine || "None").trim() || "None"],
+    ].forEach(([label, value]) => {
+      voiceGrid.appendChild(createOverviewChip(label, value));
+    });
+  }
 }
 
 function renderCommandDiscovery() {
@@ -5441,10 +5920,12 @@ function injectHeaderMenus() {
   [
     { label: "Chat", page: "chat" },
     { label: "News", page: "news" },
+    { label: "Intro", page: "intro" },
     { label: "Home", page: "home" },
     { label: "Workspace", page: "workspace" },
     { label: "Memory", page: "memory" },
     { label: "Trust", page: "trust" },
+    { label: "Settings", page: "settings" },
   ].forEach((item) => {
     const btn = document.createElement("button");
     btn.type = "button";
@@ -5466,6 +5947,8 @@ function injectHeaderMenus() {
   [
     { label: "Help", fn: showHelpModal },
     { label: "First steps", fn: () => showFirstRunGuide(true) },
+    { label: "Introduction", fn: () => setActivePage("intro") },
+    { label: "Settings", fn: () => setActivePage("settings") },
     { label: "Tone", fn: showToneModal },
     { label: "Schedule", fn: showScheduleModal },
     { label: "Privacy", fn: showPrivacyModal },
@@ -5540,6 +6023,8 @@ window.addEventListener("DOMContentLoaded", () => {
   renderProjectStructureMapWidget({});
   renderWorkspaceBoardPage();
   renderTrustCenterPage();
+  renderIntroPage();
+  renderSettingsPage();
   renderIntelligenceBriefWidget();
   renderPersonalLayerWidget();
   renderQuickActions();
@@ -5673,6 +6158,24 @@ window.addEventListener("DOMContentLoaded", () => {
   const homeTrustPageBtn = $("btn-home-trust-page");
   if (homeTrustPageBtn) homeTrustPageBtn.addEventListener("click", () => setActivePage("trust"));
 
+  const introHomeBtn = $("btn-intro-open-home");
+  if (introHomeBtn) introHomeBtn.addEventListener("click", () => setActivePage("home"));
+
+  const introWorkspaceBtn = $("btn-intro-open-workspace");
+  if (introWorkspaceBtn) introWorkspaceBtn.addEventListener("click", () => setActivePage("workspace"));
+
+  const introTrustBtn = $("btn-intro-open-trust");
+  if (introTrustBtn) introTrustBtn.addEventListener("click", () => setActivePage("trust"));
+
+  const introSettingsBtn = $("btn-intro-open-settings");
+  if (introSettingsBtn) introSettingsBtn.addEventListener("click", () => setActivePage("settings"));
+
+  const introBriefBtn = $("btn-intro-daily-brief");
+  if (introBriefBtn) introBriefBtn.addEventListener("click", () => {
+    setActivePage("chat");
+    injectUserText("daily brief", "text");
+  });
+
   const workspaceHomeRefreshBtn = $("btn-workspace-home-refresh");
   if (workspaceHomeRefreshBtn) {
     workspaceHomeRefreshBtn.addEventListener("click", () => requestWorkspaceHomeRefresh(true));
@@ -5713,6 +6216,63 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const trustCenterMemoryBtn = $("btn-trust-center-memory");
   if (trustCenterMemoryBtn) trustCenterMemoryBtn.addEventListener("click", () => setActivePage("memory"));
+
+  const trustCenterVoiceCheckBtn = $("btn-trust-center-voice-check");
+  if (trustCenterVoiceCheckBtn) trustCenterVoiceCheckBtn.addEventListener("click", () => {
+    setActivePage("chat");
+    injectUserText("voice check", "text");
+  });
+
+  const trustCenterSettingsBtn = $("btn-trust-center-settings");
+  if (trustCenterSettingsBtn) trustCenterSettingsBtn.addEventListener("click", () => setActivePage("settings"));
+
+  const settingsOpenIntroBtn = $("btn-settings-open-intro");
+  if (settingsOpenIntroBtn) settingsOpenIntroBtn.addEventListener("click", () => setActivePage("intro"));
+
+  const settingsOpenTrustBtn = $("btn-settings-open-trust");
+  if (settingsOpenTrustBtn) settingsOpenTrustBtn.addEventListener("click", () => setActivePage("trust"));
+
+  const settingsOpenHomeBtn = $("btn-settings-open-home");
+  if (settingsOpenHomeBtn) settingsOpenHomeBtn.addEventListener("click", () => setActivePage("home"));
+
+  const settingsOpenPrivacyBtn = $("btn-settings-open-privacy");
+  if (settingsOpenPrivacyBtn) settingsOpenPrivacyBtn.addEventListener("click", showPrivacyModal);
+
+  const settingsOpenAccessibilityBtn = $("btn-settings-open-accessibility");
+  if (settingsOpenAccessibilityBtn) settingsOpenAccessibilityBtn.addEventListener("click", showAccessibilityModal);
+
+  const settingsVoiceStatusBtn = $("btn-settings-voice-status");
+  if (settingsVoiceStatusBtn) settingsVoiceStatusBtn.addEventListener("click", () => {
+    setActivePage("chat");
+    injectUserText("voice status", "text");
+  });
+
+  const settingsVoiceCheckBtn = $("btn-settings-voice-check");
+  if (settingsVoiceCheckBtn) settingsVoiceCheckBtn.addEventListener("click", () => {
+    setActivePage("chat");
+    injectUserText("voice check", "text");
+  });
+
+  const settingsToggleLargeText = $("settings-toggle-large-text");
+  if (settingsToggleLargeText) settingsToggleLargeText.addEventListener("change", () => {
+    localStorage.setItem(STORAGE_KEYS.uiLargeText, settingsToggleLargeText.checked ? "1" : "0");
+    applyAccessibilityFromStorage();
+    renderSettingsPage();
+  });
+
+  const settingsToggleHighContrast = $("settings-toggle-high-contrast");
+  if (settingsToggleHighContrast) settingsToggleHighContrast.addEventListener("change", () => {
+    localStorage.setItem(STORAGE_KEYS.uiHighContrast, settingsToggleHighContrast.checked ? "1" : "0");
+    applyAccessibilityFromStorage();
+    renderSettingsPage();
+  });
+
+  const settingsToggleCompactDensity = $("settings-toggle-compact-density");
+  if (settingsToggleCompactDensity) settingsToggleCompactDensity.addEventListener("change", () => {
+    localStorage.setItem(STORAGE_KEYS.uiCompactDensity, settingsToggleCompactDensity.checked ? "1" : "0");
+    applyAccessibilityFromStorage();
+    renderSettingsPage();
+  });
 
   const memoryOverviewBtn = $("btn-memory-overview");
   if (memoryOverviewBtn) memoryOverviewBtn.addEventListener("click", () => sendSilentMemoryCommand("memory overview"));
