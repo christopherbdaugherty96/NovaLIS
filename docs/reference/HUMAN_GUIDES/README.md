@@ -1,5 +1,5 @@
 ﻿# Nova Human Guides
-Updated: 2026-03-13
+Updated: 2026-03-25
 Status: Explanatory guide set
 
 ## What These Documents Are
@@ -50,6 +50,7 @@ Runtime truth lives in:
 21. `21_VISUAL_ARCHITECTURE_MAP.md`
 22. `22_GOVERNED_CRYPTO_AND_TRADING_GUIDE.md`
 23. `23_CONTINUOUS_NOVA_AGENT_OS_VISION.md`
+24. `24_NOVA_STATUS_AND_PHASE_REPORT_2026-03-25.md`
 
 ## Quick Summary
 Nova is a governed personal intelligence system.
