@@ -46,6 +46,7 @@ That means Nova already has:
 - a token-gated governed remote bridge for read/reasoning access from OpenClaw-style remote clients
 - improved voice auto-speak routing with runtime fallback at the speech layer
 - a dedicated conversation personality layer and a dedicated voice presentation layer for smoother replies
+- a cleaner live chat runtime with bounded general-chat fallback extracted out of the old skill-registry path
 - dashboard support for all of the above
 
 ## What Feels Mature Already
@@ -141,6 +142,7 @@ The most recent product-consolidation regression pass on 2026-03-26 also confirm
 - explicit external reasoning capability coverage passed
 - runtime truth promotion to Phase 7 complete passed
 - a broader `165`-test regression bundle passed
+- the live runtime routing cleanup for general-chat fallback and deeper-analysis confirmation passed focused coverage
 
 The main remaining voice caveat is still real-device confirmation:
 - TTS executor, runtime fallback, and mediator-path tests are passing

@@ -17,6 +17,7 @@ It now has:
 - a Home page, Workspace page, Trust page, Policies page, Introduction page, Settings page, News page, Memory page, and chat surface
 - a separate landing-preview page for product messaging review
 - a pinned base dependency path plus Windows and Unix startup scripts
+- a cleaner live runtime entrypoint with the legacy skill-registry path removed from the websocket hot path
 - local-project understanding that now includes a visible structure-map view with structured graph output
 - a dedicated conversation personality layer and a dedicated voice presentation layer to keep replies smoother
 
@@ -217,6 +218,12 @@ The newest governed-access slice then closed the remote reachability gap without
 - bridge status visibility in Trust Center
 - connection and provider status visibility in Settings
 - explicit remote-scope blocking for effectful local actions
+
+The newest architecture-cleanup slice then reduced one of the biggest remaining repo debts:
+- removed `SkillRegistry` from the live websocket hot path
+- removed the inert confirmation-gate check from the live websocket runtime
+- isolated the bounded general-chat fallback into a focused runtime helper
+- added focused coverage for deeper-analysis confirmation and fallback-chat continuity
 
 The newest settings-control slice then made that product surface real at runtime:
 - persistent setup mode in backend state

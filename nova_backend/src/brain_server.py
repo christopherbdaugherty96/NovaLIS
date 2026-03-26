@@ -5,7 +5,7 @@ NovaLIS Brain Server â€” Phase 4 Staging
 - Sessionâ€‘aware mediator
 - Dataclassâ€‘based invocation handling
 - Governor mediation
-- Phaseâ€‘3.5 skill fallback preserved
+- Bounded general-chat fallback isolated
 """
 
 from src.governor.governor import Governor
@@ -24,8 +24,11 @@ from typing import Any, Optional
 from fastapi import FastAPI, Header, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import PlainTextResponse
 
-from src.skill_registry import SkillRegistry
-from src.gates.confirmation_gate import confirmation_gate
+from src.conversation.general_chat_runtime import (
+    build_general_chat_skill,
+    resolve_pending_escalation_reply,
+    run_general_chat_fallback,
+)
 from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
 from src.utils.web_target_planner import plan_web_open
 from src.speech_state import speech_state
@@ -4628,7 +4631,7 @@ async def websocket_endpoint(ws: WebSocket):
 
     session_id = str(uuid.uuid4())
     governor = RUNTIME_GOVERNOR
-    skill_registry = SkillRegistry(network=governor.network)
+    general_chat_skill = build_general_chat_skill(network=governor.network)
     personality_agent = _Phase42PersonalityAgent() if _Phase42PersonalityAgent is not None else None
     working_context = WorkingContextStore(session_id=session_id, ledger=governor.ledger)
     project_threads = ProjectThreadStore(session_id=session_id, ledger=governor.ledger)
@@ -5544,50 +5547,39 @@ async def websocket_endpoint(ws: WebSocket):
 
             # --- Escalation handling (fixed: clear pending on all outcomes) ---
             if session_state["pending_escalation"]:
-                pending = session_state["pending_escalation"]
-                escalate_decision = SessionRouter.route_pending_web_confirmation(lowered)
-                if escalate_decision.action == "confirm":
-                    original_query, context_snapshot, heuristic_result = pending
-                    skill = next((s for s in skill_registry.skills if getattr(s, "name", "") == "general_chat"), None)
-                    if skill is not None:
-                        forced_state = dict(session_state)
-                        forced_state["escalation_count"] = 0
-                        forced_state["last_escalation_turn"] = None
-                        forced_state["turn_count"] = 999
-                        forced_state["deep_mode_disabled"] = False
-                        forced_state["deep_mode_armed"] = True
-                        forced_result = await skill.handle(original_query, context_snapshot, forced_state)
-                        message_id = None
-                        if forced_result is not None:
-                            esc = (forced_result.data or {}).get("escalation", {})
-                            if esc.get("escalated") and esc.get("thought_data"):
-                                message_id = str(uuid.uuid4())
-                                thought_store.put(session_id, message_id, esc["thought_data"])
-                                session_state["escalation_count"] += 1
-                                session_state["last_escalation_turn"] = session_state["turn_count"]
-                            await send_chat_message(ws, forced_result.message, message_id=message_id)
-                            await send_chat_done(ws)
-                            session_context.extend([{"role": "user", "content": original_query}, {"role": "assistant", "content": forced_result.message}])
-                            context_limit = 40 if session_state.get("presence_mode") else 20
-                            session_context = session_context[-context_limit:]
-                            session_state["turn_count"] += 1
-                            session_state["pending_escalation"] = None
-                            session_state["deep_mode_armed"] = False
-                            continue
-                    # skill is None or forced_result is None
-                    await send_chat_message(ws, "Deep analysis is unavailable right now. Please answer 'yes', 'no', or 'cancel'.")
+                escalation_outcome = await resolve_pending_escalation_reply(
+                    lowered,
+                    session_state=session_state,
+                    general_chat_skill=general_chat_skill,
+                )
+                if escalation_outcome.skill_result is not None:
+                    forced_result = escalation_outcome.skill_result
+                    message_id = None
+                    esc = (forced_result.data or {}).get("escalation", {})
+                    if esc.get("escalated") and esc.get("thought_data"):
+                        message_id = str(uuid.uuid4())
+                        thought_store.put(session_id, message_id, esc["thought_data"])
+                    await send_chat_message(ws, forced_result.message, message_id=message_id)
                     await send_chat_done(ws)
-                    session_state["pending_escalation"] = None
-                    session_state["deep_mode_armed"] = False
+                    session_context.extend(escalation_outcome.context_entries)
+                    context_limit = 40 if session_state.get("presence_mode") else 20
+                    session_context = session_context[-context_limit:]
+                    if getattr(forced_result, "success", False):
+                        session_state["trust_status"] = failure_ladder.record_local_success(
+                            session_state.get("trust_status", {})
+                        )
+                    else:
+                        session_state["trust_status"] = failure_ladder.record_failure(
+                            session_state.get("trust_status", {}),
+                            reason="Temporary issue",
+                            external=False,
+                        )
+                    await send_trust_status(ws, session_state["trust_status"])
+                    _maybe_auto_speak_for_voice_turn(session_state, forced_result.message)
+                    session_state["turn_count"] += 1
                     continue
-                elif escalate_decision.action == "cancel":
-                    session_state["pending_escalation"] = None
-                    session_state["deep_mode_armed"] = False
-                    await send_chat_message(ws, "Okay, keeping it brief.")
-                    await send_chat_done(ws)
-                    continue
-                else:
-                    await send_chat_message(ws, "Please answer 'yes', 'no', or 'cancel'.")
+                if escalation_outcome.handled:
+                    await send_chat_message(ws, escalation_outcome.message)
                     await send_chat_done(ws)
                     continue
 
@@ -7542,38 +7534,15 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
-            # --- Confirmation gate ---
-            if confirmation_gate.has_pending_confirmation():
-                gate_result = confirmation_gate.try_resolve(mediated_text)
-                if gate_result.message is not None:
-                    await send_chat_message(ws, gate_result.message)
-                    await send_chat_done(ws)
-                    continue
-
-            # --- Skills ---
-            skill_result = None
-            for skill in skill_registry.skills:
-                skill_name = str(getattr(skill, "name", "") or "").strip().lower()
-                if skill_name in {"weather", "news", "calendar", "system"}:
-                    # These flows are capability-routed and must remain governed.
-                    continue
-                if not skill.can_handle(mediated_text):
-                    continue
-                if getattr(skill, "name", "") == "general_chat":
-                    relevant_memory_context = _select_relevant_memory_context(
-                        mediated_text,
-                        session_state=session_state,
-                        project_threads=project_threads,
-                    )
-                    session_state["last_memory_context"] = relevant_memory_context
-                    chat_context = list(session_state.get("general_chat_context") or session_context)
-                    skill_state = dict(session_state)
-                    skill_state["relevant_memory_context"] = relevant_memory_context
-                    skill_result = await skill.handle(mediated_text, chat_context, skill_state)
-                else:
-                    maybe = skill.handle(mediated_text)
-                    skill_result = await maybe if hasattr(maybe, "__await__") else maybe
-                break
+            # --- Bounded advisory general-chat fallback ---
+            skill_result = await run_general_chat_fallback(
+                mediated_text,
+                general_chat_skill=general_chat_skill,
+                session_state=session_state,
+                session_context=session_context,
+                project_threads=project_threads,
+                select_relevant_memory_context=_select_relevant_memory_context,
+            )
 
             if skill_result:
                 skill_name = getattr(skill_result, "skill", "") or ""
@@ -7697,8 +7666,11 @@ async def websocket_endpoint(ws: WebSocket):
                 if skill_name == "general_chat":
                     chat_context = list(session_state.get("general_chat_context") or [])
                     chat_context.extend(new_turn)
-                    if hasattr(skill, "roll_context_forward"):
-                        session_state["general_chat_context"] = skill.roll_context_forward(chat_context, session_state)
+                    if hasattr(general_chat_skill, "roll_context_forward"):
+                        session_state["general_chat_context"] = general_chat_skill.roll_context_forward(
+                            chat_context,
+                            session_state,
+                        )
                     else:
                         session_state["general_chat_context"] = chat_context
                 session_state["turn_count"] += 1
@@ -7721,3 +7693,4 @@ async def websocket_endpoint(ws: WebSocket):
     finally:
         thought_store.clear_session(session_id)
         GovernorMediator.clear_session(session_id)
+
