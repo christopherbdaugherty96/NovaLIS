@@ -64,12 +64,14 @@ That is the correct product shape for Phase 6.
 Focused verification completed:
 
 - `python -m pytest nova_backend/tests/phase45/test_dashboard_policy_center_widget.py nova_backend/tests/phase45/test_dashboard_trust_review_widget.py nova_backend/tests/phase45/test_system_status_reporting_contract.py nova_backend/tests/phase45/test_policy_center_surface.py nova_backend/tests/executors/test_local_control_executors.py nova_backend/tests/test_runtime_auditor.py nova_backend/tests/phase6 -q`
+- `python -m pytest nova_backend/tests/adversarial/test_governor_bypass.py nova_backend/tests/adversarial/test_no_direct_network_imports_outside_network_mediator.py nova_backend/tests/governance/test_no_direct_ollama_usage.py nova_backend/tests/governance/test_network_governance_boundaries.py nova_backend/tests/governance/test_model_network_mediator_thread_safety.py -q`
 - `node --check nova_backend/static/dashboard.js`
 - `python scripts/check_frontend_mirror_sync.py`
 - `python scripts/check_runtime_doc_drift.py`
 
 Observed result:
 - `57 passed`
+- `8 passed`
 - frontend mirror sync passed
 - runtime doc drift check passed
 

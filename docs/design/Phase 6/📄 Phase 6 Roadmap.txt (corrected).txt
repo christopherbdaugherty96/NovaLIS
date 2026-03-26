@@ -1,6 +1,6 @@
 ﻿# Phase 6 Roadmap (Corrected)
 Date: 2026-03-13
-Status: Planning packet only; runtime not authorized
+Status: Historical corrected roadmap; superseded by the current Phase-6 design core, proof packet, and runtime truth
 Scope: Ordered roadmap for the Phase-6 core package after Phase-5 closure
 
 ## Current Starting Point
