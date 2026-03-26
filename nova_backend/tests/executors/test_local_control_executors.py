@@ -131,7 +131,7 @@ def test_os_diagnostics_executor_returns_extended_metrics(monkeypatch):
     assert result.data.get("disk_percent") == 50.0
     assert result.data.get("network_status") == "available"
     assert result.data.get("health_state") == "healthy"
-    assert result.data.get("phase_display") == "6 complete / 7 partial"
+    assert result.data.get("phase_display") == "7 complete / 8 design"
     assert result.data.get("governor_status") == "active"
     assert result.data.get("execution_boundary_status") == "enforced"
     assert result.data.get("memory_total_count") == 3

@@ -1,6 +1,6 @@
 # Phase 7 Governed External Reasoning Plan
 Date: 2026-03-18
-Status: Planning packet with bounded runtime foundations now partially live
+Status: Canonical Phase-7 planning packet; runtime completion achieved on 2026-03-26
 Scope: Governed Anthropic-style external reasoning integration after Phase-6 alignment closes
 
 ## Purpose
@@ -9,14 +9,16 @@ This document relocates the Claude integration material from the source spec int
 Phase 7 is where Nova may add a governed external reasoning provider.
 It is not the place to weaken the Governor or bypass the current gateway model.
 
-## Implemented Foundation On `main` (2026-03-25)
-The current runtime now has a bounded Phase-7-style foundation already in place:
+## Runtime Completion On `main` (2026-03-26)
+The current runtime now has the bounded Phase-7 package in place:
 - answer-first search behavior with evidence on demand
 - inline source-grounded news summaries
-- a bounded same-thread `DeepSeek` second-opinion control
+- an explicit governed external reasoning capability for same-thread `DeepSeek` second-opinion review
+- provider transparency in Trust and Settings
+- advisory-only trust explanation for the reasoning lane
 
-These do not yet complete the larger provider-architecture plan in this document.
-They are the first user-facing product slice that proves the Phase-7 direction can land without widening authority.
+This completes the bounded runtime goal for Phase 7 in the current repo without widening authority.
+Later provider expansion can still happen, but it is not required for Phase-7 completion.
 
 ## Current Grounded Starting Point
 The current repo already has:
@@ -40,12 +42,11 @@ Desired outcome:
 - all routing still stays inside Nova's Governor and gateway spine
 - users can inspect what happened and which provider/model was used
 
-## Candidate Capability Reservation
-Because current runtime IDs are already occupied, the current planning reservation is:
-- candidate capability `62`: `llm_reasoning_claude`
+## Finalized Runtime Capability
+The current runtime now uses:
+- capability `62`: `external_reasoning_review`
 
-This is a planning reservation only.
-It should be finalized only when the runtime capability audit confirms the next safe open ID.
+This keeps the capability provider-neutral while still allowing the current `DeepSeek` review lane to be surfaced honestly.
 
 ## Architecture Plan
 
@@ -108,22 +109,26 @@ The following are mandatory:
 - no action-taking output trusted without sanitization
 - no capability-ID reuse that collides with live runtime surfaces
 
-## Suggested Implementation Order
-1. close Phase-6 trust and contract gaps
-2. reserve the external-reasoning capability ID safely
-3. add provider abstraction
-4. add output sanitizer
-5. extend gateway and mediator routing
-6. add tests for bypass, timeout, sanitization, and ledger coverage
-7. expose a narrow inspected user-facing surface
+## Implemented Runtime Order
+The runtime closure followed this order:
+1. keep Phase-6 trust and contract surfaces complete
+2. finalize capability `62`
+3. keep the DeepSeek bridge on the approved gateway path
+4. keep the safety wrapper in the reasoning lane
+5. extend mediator and governor routing
+6. add Trust and Settings transparency surfaces
+7. regenerate runtime truth and proofs
 
 ## Exit Criteria
-Phase 7 is ready only when:
+Phase 7 is complete when:
 - provider traffic is fully mediated and auditable
 - sanitizer coverage is tested and mandatory
 - no direct-provider call path exists outside the gateway
 - capability `62` is wired without colliding with existing runtime IDs
 - user-visible output makes it clear that reasoning occurred but no execution authority was granted
+
+Current runtime result:
+- complete
 
 ## Related Inputs
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`

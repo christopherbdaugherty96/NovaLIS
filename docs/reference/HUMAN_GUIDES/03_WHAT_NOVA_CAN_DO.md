@@ -27,7 +27,7 @@ Nova can:
 - create multi-source reports
 - build intelligence briefs
 - verify a statement or prior response
-- request a DeepSeek-backed second opinion from the chat bar
+- request a governed external second opinion from the chat bar or with `second opinion`
 - create session analysis documents
 - track stories over time
 
@@ -45,6 +45,8 @@ Examples:
 - `more on story 1`
 - `daily brief`
 - `verify this`
+- `second opinion`
+- `review this answer`
 - `create analysis report on robotics startups`
 - `track story EU AI Act`
 
@@ -178,6 +180,7 @@ It can:
 - simulate a policy draft
 - run a safe draft once manually
 - show voice runtime status and a voice-check path
+- show reasoning provider, route, and authority truth when a second opinion is used
 
 Examples:
 - `intro`
@@ -189,6 +192,7 @@ Examples:
 - `trust status`
 - `voice status`
 - `voice check`
+- `second opinion`
 - `workspace board`
 - `visualize this repo`
 - `show structure map`

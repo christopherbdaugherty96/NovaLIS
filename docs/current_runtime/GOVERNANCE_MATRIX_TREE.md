@@ -5,7 +5,7 @@ Deterministic generated tree diagram derived from allowlisted runtime sources.
 ```mermaid
 graph TD
   Runtime[Phase-4 Runtime]
-  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61]]
+  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62]]
   Runtime --> Disabled[Disabled IDs: []]
   Runtime --> Gov[Governor Guards]
   Gov --> EG[execution_gate: True]
@@ -60,12 +60,15 @@ graph TD
   C60 --> C60A[authority=read_only_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C61[61:memory_governance]
   C61 --> C61A[authority=persistent_change, risk=low, confirm=False, reversible=False, external=False, network=False, surface=Governor -> Executor]
+  Caps --> C62[62:external_reasoning_review]
+  C62 --> C62A[authority=read_only_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Runtime --> Routes[Skill Routes]
   Routes --> R54_analysis_document[analysis_document -> capability 54]
   Routes --> R21_brightness[brightness -> capability 21]
   Routes --> R57_calendar_snapshot[calendar_snapshot -> capability 57]
   Routes --> R32_diagnostics[diagnostics -> capability 32]
   Routes --> R60_explain_anything[explain_anything -> capability 60]
+  Routes --> R62_external_reasoning_review[external_reasoning_review -> capability 62]
   Routes --> R49_headline_summary[headline_summary -> capability 49]
   Routes --> R50_intelligence_brief[intelligence_brief -> capability 50]
   Routes --> R20_media[media -> capability 20]
@@ -91,7 +94,7 @@ graph TD
 
 ```text
 Runtime
-|- Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61]
+|- Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62]
 |- Disabled IDs: []
 |- Governor Guards
 |  |- execution_gate: True
@@ -123,12 +126,14 @@ Runtime
 |  |- 59 screen_analysis (authority=read_only_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |  |- 60 explain_anything (authority=read_only_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |  |- 61 memory_governance (authority=persistent_change, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 62 external_reasoning_review (authority=read_only_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |- Skill -> capability routes
 |  |- analysis_document -> 54
 |  |- brightness -> 21
 |  |- calendar_snapshot -> 57
 |  |- diagnostics -> 32
 |  |- explain_anything -> 60
+|  |- external_reasoning_review -> 62
 |  |- headline_summary -> 49
 |  |- intelligence_brief -> 50
 |  |- media -> 20

@@ -1,14 +1,16 @@
 # Phase 7 Document Map
-Updated: 2026-03-25
-Status: Current design map with Phase-7 product foundations now partially live
+Updated: 2026-03-26
+Status: Current design map with Phase-7 runtime now complete in the governed external-reasoning lane
 Purpose: Separate the near-term Phase-7 external-reasoning plan from older autonomy-presence exploration documents
 
-## Current implemented Phase-7 product foundation on `main`
-The following bounded Phase-7 product slices are now live in runtime/proof:
+## Current implemented Phase-7 runtime on `main`
+The following Phase-7 product slices are now live in runtime/proof:
 - answer-first governed web search with sources on demand
 - inline news summaries on the News page
 - cleaner user-facing news category language
-- bounded same-thread DeepSeek second-opinion control in the chat bar
+- explicit governed external reasoning capability for same-thread second-opinion review
+- provider transparency in Trust and Settings
+- advisory-only explanation of the reasoning lane
 - stronger local TTS renderer preference before fallback
 
 Current proof packet:
@@ -74,11 +76,14 @@ The governed intelligence execution direction packet should be read this way in 
   - cost-aware reasoning routing that still preserves the intelligence-authority boundary
 - it does not authorize action autonomy
 
-## Remaining Phase-7 work after the current product foundation slice
-- stronger structured intelligence-router behavior across harder research tasks
-- richer same-thread second-opinion presentation and provider transparency
-- deeper source-grounded search/news synthesis for difficult questions
-- stronger user-facing trust explanations for when external reasoning was used
+## Phase-7 Completion Note
+Phase 7 is now complete in the current repo in the bounded sense defined by the canonical plan:
+- governed text-only external reasoning is active
+- explicit same-thread second-opinion review is active
+- provider and route transparency are active
+- the reasoning lane remains advisory only
+
+Later work may still deepen quality, but that belongs to product refinement after Phase 7, not to the definition of whether Phase 7 exists at runtime.
 
 ## Adjacent / Historical Phase-7-Era Research
 - the older Phase-7 architecture document in this folder

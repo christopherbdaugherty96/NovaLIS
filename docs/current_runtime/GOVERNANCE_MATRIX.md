@@ -27,6 +27,7 @@ Deterministic capability governance matrix derived from allowlisted runtime sour
 | 59 | screen_analysis | True | active | 4 | low | False | read_only_local | False | True | False | False | Governor -> Executor | True | True | True | True | True |
 | 60 | explain_anything | True | active | 4 | low | False | read_only_local | False | True | False | False | Governor -> Executor | True | True | True | True | True |
 | 61 | memory_governance | True | active | 5 | low | False | persistent_change | False | False | False | False | Governor -> Executor | True | True | True | True | True |
+| 62 | external_reasoning_review | True | active | 7 | low | False | read_only_local | False | True | False | False | Governor -> Executor | True | True | True | True | True |
 
 ## Derivation notes
 

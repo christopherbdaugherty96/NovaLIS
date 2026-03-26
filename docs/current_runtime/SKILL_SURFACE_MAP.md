@@ -10,6 +10,7 @@ Deterministic surface map for skills, conversation modules, and governor capabil
 | calendar_snapshot | src/governor/governor_mediator.py | governor_capability | no | none | 57 |
 | diagnostics | src/governor/governor_mediator.py | governor_capability | no | none | 32 |
 | explain_anything | src/governor/governor_mediator.py | governor_capability | no | none | 60 |
+| external_reasoning_review | src/governor/governor_mediator.py | governor_capability | no | none | 62 |
 | headline_summary | src/governor/governor_mediator.py | governor_capability | yes | none | 49 |
 | intelligence_brief | src/governor/governor_mediator.py | governor_capability | yes | none | 50 |
 | media | src/governor/governor_mediator.py | governor_capability | no | none | 20 |

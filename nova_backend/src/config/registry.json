@@ -11,6 +11,7 @@
     "intelligence": [
       16,
       31,
+      62,
       48,
       49,
       50,
@@ -151,6 +152,19 @@
       "name": "response_verification",
       "status": "active",
       "phase_introduced": "4",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": true,
+      "authority_class": "read_only_local",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": false
+    },
+    {
+      "id": 62,
+      "name": "external_reasoning_review",
+      "status": "active",
+      "phase_introduced": "7",
       "risk_level": "low",
       "data_exfiltration": false,
       "enabled": true,

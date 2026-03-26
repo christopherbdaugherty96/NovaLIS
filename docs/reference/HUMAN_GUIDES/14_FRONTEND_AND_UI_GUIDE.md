@@ -48,6 +48,7 @@ It handles things like:
 - rendering chat and widgets
 - thread map and thread detail behavior
 - trust and system-status surfaces
+- reasoning transparency surfaces
 - policy review rendering
 - memory review and item actions
 - workspace-board rendering
@@ -93,8 +94,9 @@ More specifically, the current dashboard can now show:
 - Workspace page selected-project drill-down and recent decisions
 - Structure Map for local-project visualization with structured graph output
 - Trust page recent governed actions, blocked conditions, drill-down, and capability visibility
+- Trust page reasoning-transparency section with provider, route, mode, authority, and last outcome
 - Policy Review Center draft overview, selected-draft detail, simulation review, and one-shot manual run review
-- Settings page setup-mode selection and voice confidence review
+- Settings page setup-mode selection, reasoning transparency, and voice confidence review
 
 ## What The Frontend Is Not Supposed To Become
 Nova's frontend is not supposed to become a hidden authority layer.

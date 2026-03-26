@@ -27,7 +27,7 @@ This closing slice finished the remaining trust and policy visibility work neede
 4. enriched blocked-condition drill-down with explicit next-step guidance
 5. surfaced policy topology truth directly in selected-draft detail
 6. surfaced richer simulation and one-shot manual-run result detail
-7. promoted runtime phase truth to Phase 6 complete / Phase 7 partial
+7. promoted runtime phase truth to Phase 6 complete while leaving later Phase-7 completion work for the next slice
 
 ## What Users Can Now See
 For a non-technical user, Phase 6 now means:
@@ -87,8 +87,8 @@ That remains intentionally outside this phase.
 
 ## Handoff
 The correct next product lane after this slice is Phase 7 work:
-- richer provider transparency
-- deeper structured external reasoning
+- later Phase-7 provider transparency
+- later Phase-7 governed external reasoning completion
 - calmer, more helpful user-facing reasoning surfaces
 
 Nova should move forward from here by becoming more useful and more understandable, not by becoming quietly more autonomous.

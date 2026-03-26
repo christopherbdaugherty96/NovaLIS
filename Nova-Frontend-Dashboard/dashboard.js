@@ -99,6 +99,7 @@ let trustReviewState = {
   policyReadiness: {},
   selectedPolicyCapabilityKey: "",
   voiceRuntime: {},
+  reasoningRuntime: {},
 };
 let threadMapState = {
   summary: "No project threads yet. Save work updates to start continuity.",
@@ -3254,6 +3255,9 @@ function renderTrustPanel(data = {}) {
     trustReviewState.voiceRuntime = (data.voice_runtime && typeof data.voice_runtime === "object")
       ? { ...data.voice_runtime }
       : trustReviewState.voiceRuntime;
+    trustReviewState.reasoningRuntime = (data.reasoning_runtime && typeof data.reasoning_runtime === "object")
+      ? { ...data.reasoning_runtime }
+      : trustReviewState.reasoningRuntime;
     if (!trustReviewState.selectedActivityKey && trustReviewState.activity.length) {
       const first = trustReviewState.activity[0];
       trustReviewState.selectedActivityKey = String(first.request_id || first.ledger_ref || first.title || "0").trim();
@@ -3439,6 +3443,8 @@ function renderTrustCenterPage() {
   const capabilityHost = $("trust-center-capability-groups");
   const voiceSummary = $("trust-center-voice-summary");
   const voiceGrid = $("trust-center-voice-grid");
+  const reasoningSummary = $("trust-center-reasoning-summary");
+  const reasoningGrid = $("trust-center-reasoning-grid");
   if (!summary || !mode || !lastCall || !egress || !failure || !activityHost || !blockedHost || !healthSummary || !healthGrid || !policySummary || !policyLimit || !policyGroups || !policyDetail || !capabilitySummary || !capabilityHost) return;
 
   summary.textContent = trustReviewState.summary || "Trust review keeps recent governed actions, blocked conditions, and failure state in one place.";
@@ -3504,7 +3510,20 @@ function renderTrustCenterPage() {
       empty.textContent = "Select a governed action to see why it happened and what effect it had.";
       activityDetail.appendChild(empty);
     } else {
-      [
+      const reasoningRows = [];
+      if (String(selected.reasoning_provider || "").trim()) {
+        reasoningRows.push(["Reasoning provider", String(selected.reasoning_provider || "").trim()]);
+      }
+      if (String(selected.reasoning_route || "").trim()) {
+        reasoningRows.push(["Reasoning route", String(selected.reasoning_route || "").trim()]);
+      }
+      if (String(selected.reasoning_authority || "").trim()) {
+        reasoningRows.push(["Reasoning authority", String(selected.reasoning_authority || "").trim()]);
+      }
+      if (String(selected.reasoning_governance_note || "").trim()) {
+        reasoningRows.push(["Reasoning note", String(selected.reasoning_governance_note || "").trim()]);
+      }
+      const detailRows = [
         ["Title", String(selected.title || "Runtime event").trim() || "Runtime event"],
         ["Kind", String(selected.kind || "system").trim() || "system"],
         ["Status", String(selected.status || "unknown").trim() || "unknown"],
@@ -3513,11 +3532,13 @@ function renderTrustCenterPage() {
         ["Authority", String(selected.authority_class || "Not recorded").trim() || "Not recorded"],
         ["Reversible", String(selected.reversible || "Not recorded").trim() || "Not recorded"],
         ["External effect", String(selected.external_effect || "Not recorded").trim() || "Not recorded"],
+        ...reasoningRows,
         ["Why", String(selected.reason || selected.detail || "No reason recorded.").trim() || "No reason recorded."],
         ["Effect", String(selected.effect || "No external effect").trim() || "No external effect"],
         ["Request", String(selected.request_id || "Not recorded").trim() || "Not recorded"],
         ["Ledger", String(selected.ledger_ref || "Not recorded").trim() || "Not recorded"],
-      ].forEach(([label, value]) => {
+      ];
+      detailRows.forEach(([label, value]) => {
         const row = document.createElement("div");
         row.className = "operator-health-row";
 
@@ -3749,6 +3770,28 @@ function renderTrustCenterPage() {
       ["Last engine", String(voice.last_engine || "None").trim() || "None"],
     ].forEach(([label, value]) => {
       voiceGrid.appendChild(createOverviewChip(label, value));
+    });
+  }
+
+  if (reasoningSummary && reasoningGrid) {
+    const reasoning = (trustReviewState.reasoningRuntime && typeof trustReviewState.reasoningRuntime === "object")
+      ? trustReviewState.reasoningRuntime
+      : {};
+    reasoningSummary.textContent = [
+      String(reasoning.summary || "").trim(),
+      String(reasoning.last_used || "").trim() && `Last used: ${String(reasoning.last_used || "").trim()}`,
+    ].filter(Boolean).join(" · ") || "Governed second-opinion status will appear here after the next trust refresh.";
+
+    clear(reasoningGrid);
+    [
+      ["Provider", String(reasoning.provider_label || reasoning.provider || "DeepSeek").trim() || "DeepSeek"],
+      ["Route", String(reasoning.route_label || "Governed second-opinion lane").trim() || "Governed second-opinion lane"],
+      ["Authority", String(reasoning.authority_label || "Advisory only").trim() || "Advisory only"],
+      ["Mode", String(reasoning.mode || "second_opinion").trim() || "second_opinion"],
+      ["Availability", String(reasoning.status || "Unknown").trim() || "Unknown"],
+      ["Last outcome", String(reasoning.last_outcome || "Not recorded").trim() || "Not recorded"],
+    ].forEach(([label, value]) => {
+      reasoningGrid.appendChild(createOverviewChip(label, value));
     });
   }
 }
@@ -5500,7 +5543,7 @@ function requestDeepSeekSecondOpinion() {
   setLoadingHint("DeepSeek is reviewing the recent exchange.");
   setThinkingBar(true);
 
-  if (!safeWSSend({ text: "verify", invocation_source: "deepseek_button" })) {
+  if (!safeWSSend({ text: "second opinion", invocation_source: "deepseek_button" })) {
     waitingForAssistant = false;
     setThinkingBar(false);
     appendChatMessage("assistant", "Connection is not ready yet. Please wait a second and try again.", null, "System status");
@@ -6098,6 +6141,8 @@ function renderSettingsPage() {
   const modeSummary = $("settings-current-mode-summary");
   const voiceSummary = $("settings-voice-summary");
   const voiceGrid = $("settings-voice-grid");
+  const reasoningSummary = $("settings-reasoning-summary");
+  const reasoningGrid = $("settings-reasoning-grid");
   const setupMode = getSetupMode();
   const currentMode = getSetupModeMeta(setupMode);
 
@@ -6179,6 +6224,28 @@ function renderSettingsPage() {
       ["Last engine", String(voice.last_engine || "None").trim() || "None"],
     ].forEach(([label, value]) => {
       voiceGrid.appendChild(createOverviewChip(label, value));
+    });
+  }
+
+  if (reasoningSummary && reasoningGrid) {
+    const reasoning = (trustReviewState.reasoningRuntime && typeof trustReviewState.reasoningRuntime === "object")
+      ? trustReviewState.reasoningRuntime
+      : {};
+    reasoningSummary.textContent = [
+      String(reasoning.summary || "").trim() || "Second opinions stay advisory-only and visible when used.",
+      String(reasoning.switching_note || "").trim(),
+    ].filter(Boolean).join(" · ");
+
+    clear(reasoningGrid);
+    [
+      ["Current provider", String(reasoning.provider_label || reasoning.provider || "DeepSeek").trim() || "DeepSeek"],
+      ["Current route", String(reasoning.route_label || "Governed second-opinion lane").trim() || "Governed second-opinion lane"],
+      ["Authority", String(reasoning.authority_label || "Advisory only").trim() || "Advisory only"],
+      ["Availability", String(reasoning.status || "Unknown").trim() || "Unknown"],
+      ["Last used", String(reasoning.last_used || "Not used yet").trim() || "Not used yet"],
+      ["Provider switching", "Later"],
+    ].forEach(([label, value]) => {
+      reasoningGrid.appendChild(createOverviewChip(label, value));
     });
   }
 }
