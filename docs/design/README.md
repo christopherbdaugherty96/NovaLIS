@@ -45,6 +45,9 @@ Current Phase-7 DeepSeek second-opinion companion packet:
 Current Phase-7 proof packet:
 - `docs/PROOFS/Phase-7/PHASE_7_PROOF_PACKET_INDEX.md`
 
+Current Phase-6 proof packet:
+- `docs/PROOFS/Phase-6/PHASE_6_PROOF_PACKET_INDEX.md`
+
 Current Phase-8 canonical OpenClaw automation spec:
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
 
@@ -95,6 +98,7 @@ Current conversational/style baseline on `main`:
 Current recommended next-step posture:
 - Workspace Home, Workspace page, Trust page, first-run onboarding, Introduction page, Settings page, and Structure Map stage 2 are now live in the current repository state
 - trust-center drill-down, onboarding stage 2, and workspace stage 3 are now live
+- Phase-6 delegated-policy foundation is now live through the Policy Review Center, but trigger runtime remains disabled
 - the immediate remaining live-runtime voice caveat is final device-confidence validation for spoken output
 - the current highest-value next product-foundation target is explicit provider/connector setup and permission management
 - start with a settings/connector-management slice rather than broad new automation

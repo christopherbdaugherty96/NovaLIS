@@ -588,6 +588,7 @@ body {
 
 .page-intro,
 .page-workspace,
+.page-policy,
 .page-trust,
 .page-settings {
   display: grid;
@@ -598,6 +599,7 @@ body {
 
 .page-intro > .page-card,
 .page-workspace > .page-card,
+.page-policy > .page-card,
 .page-trust > .page-card,
 .page-settings > .page-card {
   min-width: 0;
@@ -3518,6 +3520,7 @@ button.workspace-spotlight-card.active {
   }
 
   .page-workspace,
+  .page-policy,
   .page-trust {
     grid-template-columns: minmax(0, 1fr);
   }

@@ -51,6 +51,7 @@ These documents remain useful as design history, but they are not the current au
 - `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
 - `docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12.md`
 - `docs/PROOFS/CAPABILITY_VERIFICATION_AUDIT_2026-03-25.md`
+- `docs/PROOFS/Phase-6/PHASE_6_PROOF_PACKET_INDEX.md`
 - `docs/PROOFS/Phase-4/PHASE_4_CLOSED_ACT_2026-03-09.md`
 - `docs/PROOFS/Phase-4.5/PHASE_4_5_CLOSED_ACT_2026-03-09.md`
 - `docs/PROOFS/Phase-4.5/PHASE_4_5_TO_PHASE_5_READINESS_NOTES_2026-03-09.md`

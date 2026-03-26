@@ -51,6 +51,16 @@ let memoryCenterState = {
   summary: "Load the governed memory list to browse durable items and inspect one in detail.",
   lastHydratedAt: 0,
 };
+let policyCenterState = {
+  summary: "No policy drafts yet. Create one explicitly when you want to prepare a delegated policy.",
+  overview: {},
+  items: [],
+  selectedId: "",
+  selectedItem: null,
+  simulation: null,
+  runResult: null,
+  lastHydratedAt: 0,
+};
 let toneState = {
   summary: "Global tone: balanced. No domain overrides.",
   snapshot: {},
@@ -124,6 +134,7 @@ const PAGE_LABELS = {
   home: "Home",
   workspace: "Workspace",
   memory: "Memory",
+  policy: "Policies",
   trust: "Trust",
   settings: "Settings",
 };
@@ -188,17 +199,25 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "memory_page_threads", label: "Thread memory", command: "memory list thread this", switchToPage: "chat" },
     { id: "memory_page_save", label: "Save decision", command: "memory save decision for deployment issue: verify next step", switchToPage: "chat" },
   ],
+  policy: [
+    { id: "policy_page_overview", label: "Refresh drafts", command: "policy overview", stayOnPage: true },
+    { id: "policy_page_calendar", label: "Create calendar draft", command: "policy create weekday calendar snapshot at 8:00 am", stayOnPage: true },
+    { id: "policy_page_weather", label: "Create weather draft", command: "policy create daily weather snapshot at 7:30 am", stayOnPage: true },
+    { id: "policy_page_trust", label: "Trust center", command: "trust center", switchToPage: "trust", stayOnPage: true },
+  ],
   trust: [
     { id: "trust_refresh", label: "Refresh trust", command: "trust center", stayOnPage: true },
     { id: "trust_system", label: "System status", command: "system status", switchToPage: "chat" },
     { id: "trust_memory", label: "Memory overview", command: "memory overview", switchToPage: "memory" },
     { id: "trust_workspace", label: "Workspace home", command: "workspace home", switchToPage: "chat" },
+    { id: "trust_policies", label: "Policies", command: "policy overview", switchToPage: "policy", stayOnPage: true },
     { id: "trust_settings", label: "Settings", command: "voice status", switchToPage: "settings", stayOnPage: true },
   ],
   settings: [
     { id: "settings_voice", label: "Voice status", command: "voice status", switchToPage: "chat" },
     { id: "settings_voice_check", label: "Voice check", command: "voice check", switchToPage: "chat" },
     { id: "settings_trust", label: "Trust center", command: "trust center", switchToPage: "trust", stayOnPage: true },
+    { id: "settings_policies", label: "Policies", command: "policy overview", switchToPage: "policy", stayOnPage: true },
     { id: "settings_intro", label: "Introduction", switchToPage: "intro", command: "workspace home", stayOnPage: true },
   ],
 };
@@ -217,6 +236,9 @@ const COMMAND_SUGGESTIONS = [
   "settings",
   "workspace home",
   "workspace board",
+  "policy overview",
+  "policy center",
+  "policy create weekday calendar snapshot at 8:00 am",
   "trust center",
   "voice status",
   "voice check",
@@ -513,6 +535,20 @@ function requestProjectStructureMapRefresh(force = false) {
   if (!force && now - Number(projectVisualizerState.lastHydratedAt || 0) < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
   projectVisualizerState.lastHydratedAt = now;
   safeWSSend({ text: "show structure map", silent_widget_refresh: true });
+}
+
+function requestPolicyOverviewRefresh(force = false) {
+  const now = Date.now();
+  if (!force && now - Number(policyCenterState.lastHydratedAt || 0) < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
+  policyCenterState.lastHydratedAt = now;
+  safeWSSend({ text: "policy overview", silent_widget_refresh: true });
+}
+
+function requestPolicyDetail(policyId) {
+  const clean = String(policyId || "").trim().toUpperCase();
+  if (!clean) return;
+  policyCenterState.selectedId = clean;
+  safeWSSend({ text: `policy show ${clean}`, silent_widget_refresh: true });
 }
 
 function requestWorkspaceThreadDetail(threadName) {
@@ -1948,6 +1984,283 @@ function renderMemoryItemWidget(data = {}) {
   upsertMemoryCenterItem(item);
   setMemoryCenterStatus(item.deleted ? `Removed ${item.title || item.id} from the durable memory set.` : `Selected ${item.title || item.id}.`);
   renderMemoryCenterSurface();
+}
+
+function renderPolicyCenterPage() {
+  const summary = $("policy-center-summary");
+  const statsHost = $("policy-center-stats");
+  const listHost = $("policy-center-list");
+  const detailHost = $("policy-center-detail");
+  const simulationHost = $("policy-center-simulation");
+  const runHost = $("policy-center-run");
+  if (!summary || !statsHost || !listHost || !detailHost || !simulationHost || !runHost) return;
+
+  const overview = (policyCenterState.overview && typeof policyCenterState.overview === "object")
+    ? policyCenterState.overview
+    : {};
+  const items = Array.isArray(policyCenterState.items) ? policyCenterState.items : [];
+  const selected = policyCenterState.selectedItem
+    || items.find((item) => String(item.policy_id || "").trim() === String(policyCenterState.selectedId || "").trim())
+    || items[0]
+    || null;
+  if (selected && !policyCenterState.selectedItem) {
+    policyCenterState.selectedItem = selected;
+    policyCenterState.selectedId = String(selected.policy_id || "").trim();
+  }
+
+  summary.textContent = policyCenterState.summary
+    || "Policy drafts stay disabled until you explicitly review them. Nova does not run them in the background.";
+
+  clear(statsHost);
+  [
+    ["Drafts", `${Math.max(0, Number(overview.draft_count || 0))}`],
+    ["Simulations", `${Math.max(0, Number(overview.simulation_count || 0))}`],
+    ["Manual runs", `${Math.max(0, Number(overview.manual_run_count || 0))}`],
+    ["Mode", "Manual review only"],
+  ].forEach(([label, value]) => {
+    const card = document.createElement("div");
+    card.className = "workspace-home-stat";
+    const heading = document.createElement("div");
+    heading.className = "workspace-home-stat-title";
+    heading.textContent = label;
+    const amount = document.createElement("div");
+    amount.className = "workspace-home-stat-value";
+    amount.textContent = value;
+    card.appendChild(heading);
+    card.appendChild(amount);
+    statsHost.appendChild(card);
+  });
+
+  clear(listHost);
+  if (!items.length) {
+    const empty = document.createElement("div");
+    empty.className = "workspace-home-empty";
+    empty.textContent = "No policy drafts yet. Use the starter actions above to create a safe review draft.";
+    listHost.appendChild(empty);
+  } else {
+    items.forEach((item) => {
+      const policyId = String(item.policy_id || "").trim();
+      if (!policyId) return;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "trust-activity-item";
+      if (String(policyCenterState.selectedId || "").trim() === policyId) button.classList.add("active");
+      button.addEventListener("click", () => {
+        policyCenterState.selectedId = policyId;
+        policyCenterState.selectedItem = null;
+        renderPolicyCenterPage();
+        requestPolicyDetail(policyId);
+      });
+
+      const title = document.createElement("div");
+      title.className = "trust-activity-title";
+      title.textContent = String(item.name || policyId).trim();
+      button.appendChild(title);
+
+      const meta = document.createElement("div");
+      meta.className = "trust-activity-meta";
+      meta.textContent = [
+        String(item.state || "draft").trim(),
+        String(item.trigger_summary || "").trim(),
+        `sim ${Math.max(0, Number(item.simulation_count || 0))}`,
+        `runs ${Math.max(0, Number(item.manual_run_count || 0))}`,
+      ].filter(Boolean).join(" · ");
+      button.appendChild(meta);
+
+      listHost.appendChild(button);
+    });
+  }
+
+  clear(detailHost);
+  if (!selected) {
+    const empty = document.createElement("div");
+    empty.className = "trust-empty";
+    empty.textContent = "Select a draft to inspect its trigger, action, and envelope.";
+    detailHost.appendChild(empty);
+  } else {
+    [
+      ["ID", String(selected.policy_id || "").trim()],
+      ["Name", String(selected.name || "").trim()],
+      ["State", String(selected.state || "draft").trim()],
+      ["Trigger", String(selected.trigger_summary || "").trim()],
+      ["Action", String(selected.action_summary || "").trim()],
+      ["Created by", String(selected.created_by || "user").trim()],
+    ].forEach(([label, value], index) => {
+      const row = document.createElement("div");
+      row.className = index === 0 ? "workspace-home-focus-title" : "workspace-home-focus-copy";
+      row.textContent = `${label}: ${value || "Unknown"}`;
+      detailHost.appendChild(row);
+    });
+
+    const envelope = (selected.envelope && typeof selected.envelope === "object") ? selected.envelope : {};
+    const envelopeRow = document.createElement("div");
+    envelopeRow.className = "workspace-home-focus-copy";
+    envelopeRow.textContent = `Envelope: ${Math.max(0, Number(envelope.max_runs_per_hour || 0))}/hour · ${Math.max(0, Number(envelope.max_runs_per_day || 0))}/day · timeout ${Math.max(0, Number(envelope.timeout_seconds || 0))}s · network ${envelope.network_allowed ? "allowed" : "off"}`;
+    detailHost.appendChild(envelopeRow);
+
+    const note = document.createElement("div");
+    note.className = "workspace-home-focus-copy";
+    note.textContent = String(selected.foundation_note || "Stored as a disabled draft. Trigger execution is not active.");
+    detailHost.appendChild(note);
+
+    const warnings = Array.isArray(selected.warnings) ? selected.warnings : [];
+    warnings.slice(0, 3).forEach((warning) => {
+      const row = document.createElement("div");
+      row.className = "trust-activity-reason";
+      row.textContent = `Warning: ${String(warning || "").trim()}`;
+      detailHost.appendChild(row);
+    });
+
+    const actionRow = document.createElement("div");
+    actionRow.className = "workspace-board-actions-toolbar";
+    [
+      { label: "Show in chat", fn: () => injectUserText(`policy show ${selected.policy_id}`, "text") },
+      { label: "Simulate", fn: () => injectUserText(`policy simulate ${selected.policy_id}`, "text") },
+      { label: "Run once", fn: () => injectUserText(`policy run ${selected.policy_id} once`, "text") },
+      { label: "Delete", fn: () => injectUserText(`policy delete ${selected.policy_id} confirm`, "text") },
+    ].forEach((action) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = action.label;
+      button.addEventListener("click", action.fn);
+      actionRow.appendChild(button);
+    });
+    detailHost.appendChild(actionRow);
+  }
+
+  clear(simulationHost);
+  const simulation = (policyCenterState.simulation && typeof policyCenterState.simulation === "object")
+    ? policyCenterState.simulation
+    : null;
+  if (!simulation) {
+    const empty = document.createElement("div");
+    empty.className = "trust-empty";
+    empty.textContent = "Simulation results will appear here after you run a policy simulation.";
+    simulationHost.appendChild(empty);
+  } else {
+    [
+      ["Policy", String(simulation.policy_name || simulation.policy_id || "").trim()],
+      ["Trigger", String(simulation.trigger || "").trim()],
+      ["Action", String(simulation.action || "").trim()],
+      ["Verdict", String(simulation.governor_verdict || "").trim()],
+      ["Readiness", String(simulation.readiness_label || "").trim()],
+      ["Capability class", String(simulation.capability_class || "").trim()],
+      ["Delegation class", String(simulation.delegation_class || "").trim()],
+    ].forEach(([label, value], index) => {
+      const row = document.createElement("div");
+      row.className = index === 0 ? "workspace-home-focus-title" : "workspace-home-focus-copy";
+      row.textContent = `${label}: ${value || "Unknown"}`;
+      simulationHost.appendChild(row);
+    });
+
+    const reasoning = Array.isArray(simulation.reasoning) ? simulation.reasoning : [];
+    reasoning.slice(0, 5).forEach((reason) => {
+      const row = document.createElement("div");
+      row.className = "trust-activity-reason";
+      row.textContent = String(reason || "").trim();
+      simulationHost.appendChild(row);
+    });
+  }
+
+  clear(runHost);
+  const runResult = (policyCenterState.runResult && typeof policyCenterState.runResult === "object")
+    ? policyCenterState.runResult
+    : null;
+  if (!runResult || !runResult.result) {
+    const empty = document.createElement("div");
+    empty.className = "trust-empty";
+    empty.textContent = "Manual review-run results will appear here after you explicitly run a safe draft once.";
+    runHost.appendChild(empty);
+  } else {
+    [
+      ["Policy", String(runResult.policy_id || "").trim()],
+      ["Success", runResult.result.success ? "yes" : "no"],
+      ["Authority class", String(runResult.result.authority_class || "").trim()],
+      ["External effect", runResult.result.external_effect ? "yes" : "no"],
+      ["Message", String(runResult.result.message || "").trim()],
+    ].forEach(([label, value], index) => {
+      const row = document.createElement("div");
+      row.className = index === 0 ? "workspace-home-focus-title" : "workspace-home-focus-copy";
+      row.textContent = `${label}: ${value || "Unknown"}`;
+      runHost.appendChild(row);
+    });
+    if (String(runResult.result.request_id || "").trim()) {
+      const requestRow = document.createElement("div");
+      requestRow.className = "trust-activity-meta";
+      requestRow.textContent = `Request ID: ${String(runResult.result.request_id || "").trim()}`;
+      runHost.appendChild(requestRow);
+    }
+  }
+}
+
+function renderPolicyOverviewWidget(data = {}) {
+  policyCenterState.overview = (data && typeof data === "object") ? { ...data } : {};
+  policyCenterState.summary = String((data && data.summary) || policyCenterState.summary).trim() || policyCenterState.summary;
+  policyCenterState.items = Array.isArray(data && data.items) ? data.items.slice() : [];
+  if (!policyCenterState.selectedId && policyCenterState.items.length > 0) {
+    policyCenterState.selectedId = String(policyCenterState.items[0].policy_id || "").trim();
+  } else if (
+    policyCenterState.selectedId
+    && !policyCenterState.items.some((item) => String(item.policy_id || "").trim() === String(policyCenterState.selectedId || "").trim())
+  ) {
+    policyCenterState.selectedId = policyCenterState.items.length > 0 ? String(policyCenterState.items[0].policy_id || "").trim() : "";
+    if (!policyCenterState.selectedId) policyCenterState.selectedItem = null;
+  }
+  if (
+    policyCenterState.selectedId
+    && (
+      !policyCenterState.selectedItem
+      || String(policyCenterState.selectedItem.policy_id || "").trim() !== String(policyCenterState.selectedId || "").trim()
+    )
+  ) {
+    requestPolicyDetail(policyCenterState.selectedId);
+  }
+  renderPolicyCenterPage();
+}
+
+function renderPolicyItemWidget(data = {}) {
+  const item = (data && data.item && typeof data.item === "object") ? { ...data.item } : null;
+  const policyId = String((item && item.policy_id) || "").trim();
+  if (!policyId) return;
+  policyCenterState.selectedId = policyId;
+  policyCenterState.selectedItem = item;
+  const summaryItem = {
+    policy_id: policyId,
+    name: String(item.name || "").trim(),
+    state: String(item.state || "draft").trim(),
+    trigger_summary: String(item.trigger_summary || "").trim(),
+    action_summary: String(item.action_summary || "").trim(),
+    simulation_count: Number(item.simulation_count || 0),
+    manual_run_count: Number(item.manual_run_count || 0),
+    created_by: String(item.created_by || "user").trim(),
+    envelope: item.envelope || {},
+    warnings: Array.isArray(item.warnings) ? item.warnings.slice() : [],
+    foundation_note: String(item.foundation_note || "").trim(),
+  };
+  const existingIndex = policyCenterState.items.findIndex((entry) => String(entry.policy_id || "").trim() === policyId);
+  if (existingIndex >= 0) {
+    policyCenterState.items.splice(existingIndex, 1, summaryItem);
+  } else {
+    policyCenterState.items.unshift(summaryItem);
+  }
+  renderPolicyCenterPage();
+}
+
+function renderPolicySimulationWidget(data = {}) {
+  const payload = (data && data.data && typeof data.data === "object") ? data.data : {};
+  policyCenterState.simulation = { ...payload };
+  if (String(payload.policy_id || "").trim()) {
+    policyCenterState.selectedId = String(payload.policy_id || "").trim();
+  }
+  renderPolicyCenterPage();
+}
+
+function renderPolicyRunWidget(data = {}) {
+  policyCenterState.runResult = (data && typeof data === "object") ? { ...data } : null;
+  if (data && String(data.policy_id || "").trim()) {
+    policyCenterState.selectedId = String(data.policy_id || "").trim();
+  }
+  renderPolicyCenterPage();
 }
 
 function buildToneProfileButtons(currentProfile, onSelect) {
@@ -4928,6 +5241,7 @@ function tryHandleLocalPageCommand(text) {
   const localRoutes = [
     { pattern: /^(intro|introduction|get(ting)? started|welcome)$/i, page: "intro", reply: "Opening the Introduction page so you can see what Nova is, how it works, and the safest way to start." },
     { pattern: /^(settings|open settings|show settings|preferences|setup options)$/i, page: "settings", reply: "Opening Settings so you can review setup mode, voice status, privacy, and comfort controls." },
+    { pattern: /^(policy center|policy review|open policies)$/i, page: "policy", reply: "Opening Policies so you can inspect drafts, simulations, and one-shot review runs without enabling background automation." },
   ];
 
   const found = localRoutes.find((item) => item.pattern.test(clean));
@@ -5098,6 +5412,7 @@ function hydrateDashboardWidgets() {
   safeWSSend({ text: "workspace home", silent_widget_refresh: true });
   safeWSSend({ text: "show structure map", silent_widget_refresh: true });
   safeWSSend({ text: "trust center", silent_widget_refresh: true });
+  safeWSSend({ text: "policy overview", silent_widget_refresh: true });
   safeWSSend({ text: "tone status", silent_widget_refresh: true });
   safeWSSend({ text: "notification status", silent_widget_refresh: true });
   safeWSSend({ text: "pattern status", silent_widget_refresh: true });
@@ -5193,6 +5508,18 @@ function connectWebSocket() {
         break;
       case "memory_item":
         renderMemoryItemWidget(msg);
+        break;
+      case "policy_overview":
+        renderPolicyOverviewWidget(msg);
+        break;
+      case "policy_item":
+        renderPolicyItemWidget(msg);
+        break;
+      case "policy_simulation":
+        renderPolicySimulationWidget(msg);
+        break;
+      case "policy_run":
+        renderPolicyRunWidget(msg);
         break;
       case "tone_profile":
         renderToneOverviewWidget(msg);
@@ -5298,6 +5625,7 @@ function setActivePage(page) {
     home: $("page-home"),
     workspace: $("page-workspace"),
     memory: $("page-memory"),
+    policy: $("page-policy"),
     trust: $("page-trust"),
     settings: $("page-settings"),
   };
@@ -5324,6 +5652,13 @@ function setActivePage(page) {
 
   if (target === "memory") {
     hydrateMemoryManagement();
+  }
+  if (target === "policy") {
+    requestPolicyOverviewRefresh(true);
+    if (policyCenterState.selectedId && !policyCenterState.selectedItem) {
+      requestPolicyDetail(policyCenterState.selectedId);
+    }
+    renderPolicyCenterPage();
   }
   if (target === "home") {
     requestWorkspaceHomeRefresh(true);
@@ -5924,6 +6259,7 @@ function injectHeaderMenus() {
     { label: "Home", page: "home" },
     { label: "Workspace", page: "workspace" },
     { label: "Memory", page: "memory" },
+    { label: "Policies", page: "policy" },
     { label: "Trust", page: "trust" },
     { label: "Settings", page: "settings" },
   ].forEach((item) => {
@@ -6022,6 +6358,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderWorkspaceHomeWidget({});
   renderProjectStructureMapWidget({});
   renderWorkspaceBoardPage();
+  renderPolicyCenterPage();
   renderTrustCenterPage();
   renderIntroPage();
   renderSettingsPage();
@@ -6377,6 +6714,32 @@ window.addEventListener("DOMContentLoaded", () => {
     const selected = getSelectedMemoryItem();
     if (!selected || !selected.id) return;
     injectUserText(`delete memory ${selected.id}`, "text");
+  });
+
+  const policyRefreshBtn = $("btn-policy-refresh");
+  if (policyRefreshBtn) policyRefreshBtn.addEventListener("click", () => {
+    requestPolicyOverviewRefresh(true);
+  });
+
+  const policyCreateCalendarBtn = $("btn-policy-create-calendar");
+  if (policyCreateCalendarBtn) policyCreateCalendarBtn.addEventListener("click", () => {
+    injectUserText("policy create weekday calendar snapshot at 8:00 am", "text");
+  });
+
+  const policyCreateWeatherBtn = $("btn-policy-create-weather");
+  if (policyCreateWeatherBtn) policyCreateWeatherBtn.addEventListener("click", () => {
+    injectUserText("policy create daily weather snapshot at 7:30 am", "text");
+  });
+
+  const policyOpenTrustBtn = $("btn-policy-open-trust");
+  if (policyOpenTrustBtn) policyOpenTrustBtn.addEventListener("click", () => {
+    setActivePage("trust");
+    safeWSSend({ text: "trust center", silent_widget_refresh: true });
+  });
+
+  const policyOpenSettingsBtn = $("btn-policy-open-settings");
+  if (policyOpenSettingsBtn) policyOpenSettingsBtn.addEventListener("click", () => {
+    setActivePage("settings");
   });
 
   const micBtn = $("ptt-btn");

@@ -125,7 +125,24 @@ Use these when you want to understand:
 - whether anything external happened recently
 - what the current voice runtime looks like
 
-## 9. Governed Memory
+## 9. Policy Review
+Examples:
+- `policy center`
+- `policy overview`
+- `policy create weekday system status at 8:00 am`
+- `policy create daily weather snapshot at 7:30 am`
+- `policy show POL-...`
+- `policy simulate POL-...`
+- `policy run POL-... once`
+- `policy delete POL-... confirm`
+
+Use these when you want to:
+- prepare a safe delegated policy draft
+- inspect what the policy would do
+- review the Governor verdict before any run
+- run a safe draft once without enabling background automation
+
+## 10. Governed Memory
 Examples:
 - `save this`
 - `remember this: client supplies alcohol`
@@ -139,7 +156,7 @@ Examples:
 Dashboard note:
 - Nova now exposes a dedicated Memory page for reviewing durable memory, linked threads, and recent items.
 
-## 10. Local Project Understanding
+## 11. Local Project Understanding
 Examples:
 - `audit this repo`
 - `summarize this repo`
@@ -147,7 +164,7 @@ Examples:
 - `visualize this repo`
 - `show structure map`
 
-## 11. Response Style and Tone
+## 12. Response Style and Tone
 Examples:
 - `tone status`
 - `tone set concise`
@@ -155,7 +172,7 @@ Examples:
 - `tone set research detailed`
 - `tone reset all`
 
-## 12. Scheduled Updates and Reminders
+## 13. Scheduled Updates and Reminders
 Examples:
 - `show schedules`
 - `schedule daily brief at 8:00 am`
@@ -163,7 +180,7 @@ Examples:
 - `set quiet hours from 10:00 pm to 7:00 am`
 - `cancel schedule SCH-123`
 
-## 13. Pattern Review
+## 14. Pattern Review
 Examples:
 - `pattern opt in`
 - `pattern status`

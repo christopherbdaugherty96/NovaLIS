@@ -396,6 +396,8 @@ POLICY_STATUS_COMMANDS = {
     "policy list",
     "policies",
     "policy drafts",
+    "policy center",
+    "policy review",
 }
 POLICY_CREATE_RE = re.compile(
     r"^\s*policy\s+(?:create|draft)\s+(?P<schedule>daily|weekday)\s+"
@@ -3322,6 +3324,107 @@ def _render_policy_run_message(decision: dict | None, action_result: object | No
     return "\n".join(lines)
 
 
+def _build_policy_overview_widget(snapshot: dict | None) -> dict[str, Any]:
+    payload = dict(snapshot or {})
+    items = []
+    for item in list(payload.get("items") or [])[:8]:
+        entry = dict(item or {})
+        items.append(
+            {
+                "policy_id": str(entry.get("policy_id") or "").strip(),
+                "name": str(entry.get("name") or "").strip(),
+                "state": str(entry.get("state") or "draft").strip(),
+                "trigger_summary": _describe_policy_trigger(entry.get("trigger")),
+                "action_summary": _describe_policy_action(entry.get("action")),
+                "simulation_count": int(entry.get("simulation_count") or 0),
+                "manual_run_count": int(entry.get("manual_run_count") or 0),
+                "last_simulated_at": str(entry.get("last_simulated_at") or "").strip(),
+                "last_manual_run_at": str(entry.get("last_manual_run_at") or "").strip(),
+            }
+        )
+
+    return {
+        "type": "policy_overview",
+        "summary": str(payload.get("summary") or "No policy drafts yet.").strip(),
+        "active_count": int(payload.get("active_count") or 0),
+        "draft_count": int(payload.get("draft_count") or 0),
+        "disabled_count": int(payload.get("disabled_count") or 0),
+        "deleted_count": int(payload.get("deleted_count") or 0),
+        "simulation_count": int(payload.get("simulation_count") or 0),
+        "manual_run_count": int(payload.get("manual_run_count") or 0),
+        "items": items,
+        "inspectability_note": str(payload.get("inspectability_note") or "").strip(),
+        "review_mode": "manual_review_only",
+    }
+
+
+def _build_policy_item_widget(item: dict | None) -> dict[str, Any]:
+    payload = dict(item or {})
+    envelope = dict(payload.get("envelope") or {})
+    validation = dict(payload.get("last_validation") or {})
+    return {
+        "type": "policy_item",
+        "item": {
+            "policy_id": str(payload.get("policy_id") or "").strip(),
+            "name": str(payload.get("name") or "").strip(),
+            "state": str(payload.get("state") or "draft").strip(),
+            "created_by": str(payload.get("created_by") or "user").strip(),
+            "created_at": str(payload.get("created_at") or "").strip(),
+            "updated_at": str(payload.get("updated_at") or "").strip(),
+            "trigger_summary": _describe_policy_trigger(payload.get("trigger")),
+            "action_summary": _describe_policy_action(payload.get("action")),
+            "trigger": dict(payload.get("trigger") or {}),
+            "action": dict(payload.get("action") or {}),
+            "envelope": {
+                "max_runs_per_hour": int(envelope.get("max_runs_per_hour") or 0),
+                "max_runs_per_day": int(envelope.get("max_runs_per_day") or 0),
+                "timeout_seconds": int(envelope.get("timeout_seconds") or 0),
+                "retry_budget": int(envelope.get("retry_budget") or 0),
+                "suspend_after_failures": int(envelope.get("suspend_after_failures") or 0),
+                "network_allowed": bool(envelope.get("network_allowed")),
+            },
+            "simulation_count": int(payload.get("simulation_count") or 0),
+            "manual_run_count": int(payload.get("manual_run_count") or 0),
+            "last_simulated_at": str(payload.get("last_simulated_at") or "").strip(),
+            "last_manual_run_at": str(payload.get("last_manual_run_at") or "").strip(),
+            "warnings": [str(w).strip() for w in list(validation.get("warnings") or []) if str(w).strip()],
+            "foundation_note": (
+                "Stored as a disabled draft. Simulation and one-shot manual review runs are available, but trigger execution is not active."
+            ),
+        },
+    }
+
+
+def _build_policy_simulation_widget(decision: dict | None) -> dict[str, Any]:
+    payload = dict(decision or {})
+    return {
+        "type": "policy_simulation",
+        "data": payload,
+        "policy_id": str(payload.get("policy_id") or "").strip(),
+    }
+
+
+def _build_policy_run_widget(decision: dict | None, action_result: object | None) -> dict[str, Any]:
+    payload = dict(decision or {})
+    result_payload = _action_result_payload(action_result)
+    return {
+        "type": "policy_run",
+        "policy_id": str(payload.get("policy_id") or "").strip(),
+        "decision": payload,
+        "result": {
+            "success": bool(getattr(action_result, "success", False)),
+            "message": _action_result_message(action_result),
+            "request_id": str(getattr(action_result, "request_id", "") or "").strip(),
+            "authority_class": str(getattr(action_result, "authority_class", "read_only") or "read_only").strip(),
+            "external_effect": bool(getattr(action_result, "external_effect", False)),
+            "reversible": bool(getattr(action_result, "reversible", True)),
+            "status": str(getattr(action_result, "status", "") or "").strip(),
+            "outcome_reason": str(getattr(action_result, "outcome_reason", "") or "").strip(),
+            "structured_data": dict(result_payload.get("structured_data") or {}),
+        },
+    }
+
+
 def _build_notification_note(snapshot: dict | None) -> str:
     payload = dict(snapshot or {})
     parts = [
@@ -3800,6 +3903,64 @@ async def send_memory_item_widget(
     await ws_send(ws, payload)
 
 
+async def send_policy_overview_widget(
+    ws: WebSocket,
+    session_state: dict,
+    *,
+    snapshot: dict | None = None,
+) -> dict[str, Any]:
+    payload = dict(snapshot or {})
+    if not payload:
+        try:
+            payload = AtomicPolicyStore().overview()
+        except Exception:
+            payload = {}
+    widget = _build_policy_overview_widget(payload)
+    session_state["last_policy_overview"] = widget
+    await ws_send(ws, widget)
+    return widget
+
+
+async def send_policy_item_widget(
+    ws: WebSocket,
+    session_state: dict,
+    *,
+    item: dict | None = None,
+) -> dict[str, Any]:
+    widget = _build_policy_item_widget(item or {})
+    policy_id = str(dict(item or {}).get("policy_id") or "").strip()
+    if policy_id:
+        session_state["last_policy_item_id"] = policy_id
+    session_state["last_policy_item"] = widget
+    await ws_send(ws, widget)
+    return widget
+
+
+async def send_policy_simulation_widget(
+    ws: WebSocket,
+    session_state: dict,
+    *,
+    decision: dict | None = None,
+) -> dict[str, Any]:
+    widget = _build_policy_simulation_widget(decision or {})
+    session_state["last_policy_simulation"] = widget
+    await ws_send(ws, widget)
+    return widget
+
+
+async def send_policy_run_widget(
+    ws: WebSocket,
+    session_state: dict,
+    *,
+    decision: dict | None = None,
+    action_result: object | None = None,
+) -> dict[str, Any]:
+    widget = _build_policy_run_widget(decision or {}, action_result)
+    session_state["last_policy_run"] = widget
+    await ws_send(ws, widget)
+    return widget
+
+
 async def send_workspace_home_widget(
     ws: WebSocket,
     session_state: dict,
@@ -4051,6 +4212,11 @@ async def websocket_endpoint(ws: WebSocket):
         "last_memory_list": {},
         "last_memory_item_id": "",
         "last_memory_item": {},
+        "last_policy_overview": {},
+        "last_policy_item_id": "",
+        "last_policy_item": {},
+        "last_policy_simulation": {},
+        "last_policy_run": {},
         "last_workspace_home": {},
         "last_project_structure_map": {},
         "last_thread_detail": {},
@@ -5974,15 +6140,17 @@ async def websocket_endpoint(ws: WebSocket):
                     "POLICY_DRAFT_VIEWED",
                     {"active_count": int(snapshot.get("active_count") or 0)},
                 )
-                await send_chat_message(
-                    ws,
-                    _render_policy_overview_message(snapshot),
-                    tone_domain="system",
-                )
+                if not silent_widget_refresh:
+                    await send_chat_message(
+                        ws,
+                        _render_policy_overview_message(snapshot),
+                        tone_domain="system",
+                    )
+                await send_policy_overview_widget(ws, session_state, snapshot=snapshot)
                 await send_chat_done(ws)
                 continue
 
-            policy_create_match = POLICY_CREATE_RE.match(text)
+            policy_create_match = POLICY_CREATE_RE.match(command_text)
             if policy_create_match:
                 try:
                     compiled_policy = _compile_atomic_policy_template(
@@ -6050,10 +6218,12 @@ async def websocket_endpoint(ws: WebSocket):
                     ),
                     tone_domain="system",
                 )
+                await send_policy_overview_widget(ws, session_state, snapshot=policy_drafts.overview())
+                await send_policy_item_widget(ws, session_state, item=item)
                 await send_chat_done(ws)
                 continue
 
-            policy_show_match = POLICY_SHOW_RE.match(text)
+            policy_show_match = POLICY_SHOW_RE.match(command_text)
             if policy_show_match:
                 policy_id = str(policy_show_match.group("policy_id") or "").strip().upper()
                 item = policy_drafts.get_policy(policy_id)
@@ -6071,10 +6241,11 @@ async def websocket_endpoint(ws: WebSocket):
                     _render_policy_detail_message(item),
                     tone_domain="system",
                 )
+                await send_policy_item_widget(ws, session_state, item=item)
                 await send_chat_done(ws)
                 continue
 
-            policy_simulate_match = POLICY_SIMULATE_RE.match(text)
+            policy_simulate_match = POLICY_SIMULATE_RE.match(command_text)
             if policy_simulate_match:
                 policy_id = str(policy_simulate_match.group("policy_id") or "").strip().upper()
                 item = policy_drafts.get_policy(policy_id)
@@ -6090,10 +6261,13 @@ async def websocket_endpoint(ws: WebSocket):
                     _render_policy_simulation_message(decision.as_dict()),
                     tone_domain="system",
                 )
+                await send_policy_item_widget(ws, session_state, item=item)
+                await send_policy_simulation_widget(ws, session_state, decision=decision.as_dict())
+                await send_policy_overview_widget(ws, session_state, snapshot=policy_drafts.overview())
                 await send_chat_done(ws)
                 continue
 
-            policy_run_match = POLICY_RUN_ONCE_RE.match(text)
+            policy_run_match = POLICY_RUN_ONCE_RE.match(command_text)
             if policy_run_match:
                 policy_id = str(policy_run_match.group("policy_id") or "").strip().upper()
                 if not str(policy_run_match.group("once") or "").strip():
@@ -6130,6 +6304,14 @@ async def websocket_endpoint(ws: WebSocket):
                     _render_policy_run_message(decision.as_dict(), policy_result),
                     tone_domain="system",
                 )
+                await send_policy_item_widget(ws, session_state, item=item)
+                await send_policy_run_widget(
+                    ws,
+                    session_state,
+                    decision=decision.as_dict(),
+                    action_result=policy_result,
+                )
+                await send_policy_overview_widget(ws, session_state, snapshot=policy_drafts.overview())
 
                 if (
                     isinstance(policy_payload, dict)
@@ -6144,7 +6326,7 @@ async def websocket_endpoint(ws: WebSocket):
                 await send_chat_done(ws)
                 continue
 
-            policy_delete_match = POLICY_DELETE_RE.match(text)
+            policy_delete_match = POLICY_DELETE_RE.match(command_text)
             if policy_delete_match:
                 policy_id = str(policy_delete_match.group("policy_id") or "").strip().upper()
                 confirmed = bool(str(policy_delete_match.group("confirm") or "").strip())
@@ -6172,6 +6354,7 @@ async def websocket_endpoint(ws: WebSocket):
                     f"Policy draft deleted: {policy_id}\n\n{str(policy_drafts.overview().get('summary') or '').strip()}",
                     tone_domain="system",
                 )
+                await send_policy_overview_widget(ws, session_state, snapshot=policy_drafts.overview())
                 await send_chat_done(ws)
                 continue
 
