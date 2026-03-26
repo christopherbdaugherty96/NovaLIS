@@ -16,6 +16,10 @@ This document relocates the OpenClaw material from the source spec into the corr
 Phase 8 is where Nova may widen from governed reasoning into governed external execution.
 That step should happen only after Phase 6 alignment and Phase 7 external reasoning controls are complete.
 
+Important current-state note:
+- a token-gated governed remote bridge is now live as a pre-Phase-8 access layer
+- that bridge is read/reasoning-only and is not the same thing as OpenClaw execution
+
 ## Product Shipping Boundary
 Phase 8 should ship safe governed execution first, not mature quiet automation.
 
@@ -37,7 +41,8 @@ That also means Phase 8 should not claim:
 
 ## Current Grounded Starting Point
 The current runtime already has many local governed actions plus read-only intelligence and perception surfaces.
-However, it does not yet have a governed OpenClaw execution capability in the active registry.
+It also now has a token-gated OpenClaw-facing bridge for remote read/reasoning access.
+However, it still does not have a governed OpenClaw execution capability in the active registry.
 
 The current repo also already uses capability `60` for `explain_anything`.
 Therefore the source spec's proposed reuse of `60` for OpenClaw must be corrected.
@@ -122,14 +127,14 @@ Example flow:
 - no hidden background execution loops
 
 ## Suggested Implementation Order
-1. finish Phase-6 trust and contract work
-2. finish Phase-7 external reasoning containment
-3. define the structured OpenClaw action schema
-4. add executor isolation and sanitizer layers
-5. add path, hostname, and resource-budget enforcement rules to the envelope model
-6. wire capability `63` through the Governor path
-7. add confirmation, Recent Actions, stop controls, and failure visibility surfaces
-8. add adversarial tests for prompt injection, redirect escape, path escape, and tool-output contamination
+1. keep the governed remote bridge narrow and ingress-only
+2. define the structured OpenClaw action schema
+3. add executor isolation and sanitizer layers
+4. add path, hostname, and resource-budget enforcement rules to the envelope model
+5. wire capability `63` through the Governor path
+6. add confirmation, Recent Actions, stop controls, and failure visibility surfaces
+7. add adversarial tests for prompt injection, redirect escape, path escape, and tool-output contamination
+8. ship one narrow structured execution path before considering anything broader
 
 ## Exit Criteria
 Phase 8 is ready only when:

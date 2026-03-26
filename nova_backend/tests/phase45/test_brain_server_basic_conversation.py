@@ -138,6 +138,68 @@ def test_what_can_you_do_with_question_mark_stays_on_capability_path(monkeypatch
     assert any("Nova Capabilities" in msg for msg in chat_messages)
 
 
+def test_bridge_status_returns_remote_bridge_summary_without_model_call(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(
+        brain_server.OSDiagnosticsExecutor,
+        "_bridge_status_details",
+        staticmethod(
+            lambda: {
+                "summary": "OpenClaw bridge is enabled for token-authenticated remote access.",
+                "status": "enabled",
+                "status_label": "Enabled",
+                "auth": "Token required",
+                "scope": "Read and reasoning only",
+                "effectful_actions": "Blocked",
+                "continuity": "Stateless stage-1 bridge",
+            }
+        ),
+    )
+
+    ws = _ScriptedWebSocket(["bridge status"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("OpenClaw Bridge" in msg for msg in chat_messages)
+    assert any("Read and reasoning only" in msg for msg in chat_messages)
+
+
+def test_connection_status_returns_provider_summary_without_model_call(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(
+        brain_server.OSDiagnosticsExecutor,
+        "_connection_status_details",
+        staticmethod(
+            lambda: {
+                "summary": "Local route is available and OpenClaw bridge is visible.",
+                "items": [
+                    {"label": "Local model route", "value": "Available"},
+                    {"label": "OpenClaw bridge", "value": "Enabled"},
+                ],
+            }
+        ),
+    )
+
+    ws = _ScriptedWebSocket(["connection status"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Provider and Connector Status" in msg for msg in chat_messages)
+    assert any("OpenClaw bridge: Enabled" in msg for msg in chat_messages)
+
+
 def test_tell_me_what_you_can_do_uses_friendlier_capability_help(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,

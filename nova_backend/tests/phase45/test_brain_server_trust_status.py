@@ -42,6 +42,15 @@ def test_send_trust_status_includes_trust_review_snapshot(monkeypatch):
                 "provider_label": "DeepSeek",
                 "route_label": "Governed second-opinion lane",
             },
+            "bridge_runtime": {
+                "summary": "OpenClaw bridge is enabled.",
+                "status_label": "Enabled",
+                "scope": "Read and reasoning only",
+            },
+            "connection_runtime": {
+                "summary": "Connection status is visible.",
+                "configured_provider_count": 1,
+            },
         },
     )
 
@@ -69,3 +78,5 @@ def test_send_trust_status_includes_trust_review_snapshot(monkeypatch):
     assert message["data"]["recent_runtime_activity"][0]["ledger_ref"] == "L88"
     assert message["data"]["blocked_conditions"][0]["label"] == "Autonomy"
     assert message["data"]["reasoning_runtime"]["provider_label"] == "DeepSeek"
+    assert message["data"]["bridge_runtime"]["status_label"] == "Enabled"
+    assert message["data"]["connection_runtime"]["configured_provider_count"] == 1

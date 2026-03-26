@@ -21,7 +21,7 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Any, Optional
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Header, HTTPException, WebSocket, WebSocketDisconnect
 from fastapi.responses import PlainTextResponse
 
 from src.skill_registry import SkillRegistry
@@ -218,6 +218,14 @@ VOICE_CHECK_RE = re.compile(
 )
 VOICE_STATUS_RE = re.compile(
     r"^\s*(?:(?:voice|audio)\s+status|speaker\s+status)\s*$",
+    re.IGNORECASE,
+)
+BRIDGE_STATUS_RE = re.compile(
+    r"^\s*(?:(?:openclaw|remote|bridge)\s+status|bridge\s+status)\s*$",
+    re.IGNORECASE,
+)
+CONNECTION_STATUS_RE = re.compile(
+    r"^\s*(?:(?:connection|connections|provider|providers)\s+status|show\s+connections)\s*$",
     re.IGNORECASE,
 )
 OPEN_LOCAL_PROJECT_CURRENT_RE = re.compile(
@@ -3955,6 +3963,170 @@ async def audit_runtime_truth_markdown():
     report = run_runtime_truth_audit()
     return render_runtime_truth_markdown(report)
 
+
+class _BridgeScriptedWebSocket:
+    def __init__(self, messages: list[dict[str, Any]]) -> None:
+        self._messages = [dict(item or {}) for item in messages]
+        self.sent_messages: list[dict[str, Any]] = []
+
+    async def accept(self) -> None:
+        return None
+
+    async def send_text(self, payload: str) -> None:
+        self.sent_messages.append(json.loads(payload))
+
+    async def receive_text(self) -> str:
+        if self._messages:
+            return json.dumps(self._messages.pop(0))
+        raise WebSocketDisconnect()
+
+
+def _extract_bridge_bearer_token(authorization: str | None) -> str:
+    raw = str(authorization or "").strip()
+    if not raw:
+        return ""
+    if not raw.lower().startswith("bearer "):
+        return ""
+    return raw[7:].strip()
+
+
+def _bridge_text_block_reason(text: str) -> str:
+    lowered = str(text or "").strip().lower().rstrip(".?!")
+    if not lowered:
+        return ""
+    if any(lowered.startswith(prefix.strip()) for prefix in HARD_ACTION_PREFIXES):
+        return "The remote bridge stays read-and-review only right now. Use the local dashboard for device control and local-effect actions."
+    for prefix in (
+        "save this",
+        "remember this",
+        "memory save",
+        "memory lock",
+        "memory unlock",
+        "memory defer",
+        "delete that memory",
+        "edit that memory",
+        "tone set",
+        "tone reset",
+        "schedule ",
+        "remind me",
+        "cancel schedule",
+        "dismiss schedule",
+        "reschedule schedule",
+        "set quiet hours",
+        "clear quiet hours",
+        "disable quiet hours",
+        "set notification rate limit",
+        "policy create",
+        "policy run",
+        "policy delete",
+        "pattern opt in",
+        "accept pattern",
+        "dismiss pattern",
+    ):
+        if lowered.startswith(prefix):
+            return "The remote bridge currently allows read, review, and reasoning only. Use the local dashboard for changes to memory, schedules, policies, or settings."
+    return ""
+
+
+async def _run_bridge_messages(messages: list[dict[str, Any]]) -> list[dict[str, Any]]:
+    ws = _BridgeScriptedWebSocket(messages)
+    await websocket_endpoint(ws)
+    return list(ws.sent_messages)
+
+
+def _build_bridge_response(
+    *,
+    request_text: str,
+    bridge_runtime: dict[str, Any],
+    events: list[dict[str, Any]],
+) -> dict[str, Any]:
+    chat_messages = [dict(item or {}) for item in events if str(item.get("type") or "").strip() == "chat"]
+    widget_messages = [
+        dict(item or {})
+        for item in events
+        if str(item.get("type") or "").strip()
+        not in {"chat", "chat_done", "trust_status", "error", "stt_ack"}
+    ]
+    error_messages = [dict(item or {}) for item in events if str(item.get("type") or "").strip() == "error"]
+    trust_payload = {}
+    for item in reversed(events):
+        if str(item.get("type") or "").strip() == "trust_status":
+            trust_payload = dict(item.get("data") or {})
+            break
+
+    final_chat = chat_messages[-1] if chat_messages else {}
+    reply = str(final_chat.get("message") or "").strip()
+    return {
+        "ok": not error_messages,
+        "request_text": request_text,
+        "reply": reply,
+        "confidence": str(final_chat.get("confidence") or "").strip(),
+        "suggested_actions": list(final_chat.get("suggested_actions") or []),
+        "bridge": {
+            "name": str(bridge_runtime.get("name") or "OpenClaw Bridge").strip(),
+            "status": str(bridge_runtime.get("status") or "").strip(),
+            "summary": str(bridge_runtime.get("summary") or "").strip(),
+            "scope": str(bridge_runtime.get("scope") or "").strip(),
+            "continuity": str(bridge_runtime.get("continuity") or "").strip(),
+        },
+        "trust_status": trust_payload,
+        "widgets": widget_messages,
+        "errors": error_messages,
+        "event_count": len(events),
+    }
+
+
+@app.get("/api/openclaw/bridge/status")
+async def openclaw_bridge_status():
+    return {
+        "bridge": OSDiagnosticsExecutor._bridge_status_details(),
+        "connections": OSDiagnosticsExecutor._connection_status_details(),
+    }
+
+
+@app.post("/api/openclaw/bridge/message")
+async def openclaw_bridge_message(
+    payload: dict[str, Any],
+    x_nova_bridge_token: str | None = Header(default=None),
+    authorization: str | None = Header(default=None),
+):
+    bridge_runtime = OSDiagnosticsExecutor._bridge_status_details()
+    expected_token = OSDiagnosticsExecutor._bridge_token_value()
+    if not expected_token:
+        raise HTTPException(status_code=503, detail="OpenClaw bridge is disabled until a bridge token is configured.")
+
+    provided_token = str(x_nova_bridge_token or "").strip() or _extract_bridge_bearer_token(authorization)
+    if not provided_token or provided_token != expected_token:
+        raise HTTPException(status_code=401, detail="Bridge token is missing or invalid.")
+
+    text = str(payload.get("text") or "").strip()
+    if not text:
+        raise HTTPException(status_code=400, detail="Bridge request must include non-empty text.")
+
+    blocked_reason = _bridge_text_block_reason(text)
+    if blocked_reason:
+        return {
+            "ok": False,
+            "request_text": text,
+            "reply": blocked_reason,
+            "bridge": bridge_runtime,
+            "widgets": [],
+            "errors": [{"code": "bridge_scope_limited", "message": blocked_reason}],
+            "event_count": 0,
+        }
+
+    events = await _run_bridge_messages(
+        [
+            {
+                "type": "chat",
+                "text": text,
+                "channel": "text",
+                "invocation_source": "openclaw_bridge",
+            }
+        ]
+    )
+    return _build_bridge_response(request_text=text, bridge_runtime=bridge_runtime, events=events)
+
 # -------------------------------------------------
 # WebSocket Utilities
 # -------------------------------------------------
@@ -4220,6 +4392,8 @@ def _build_trust_review_snapshot() -> dict[str, object]:
         voice_runtime = inspect_voice_runtime()
         policy_capability_readiness = OSDiagnosticsExecutor._policy_capability_readiness()
         reasoning_runtime = OSDiagnosticsExecutor._external_reasoning_status_details()
+        bridge_runtime = OSDiagnosticsExecutor._bridge_status_details()
+        connection_runtime = OSDiagnosticsExecutor._connection_status_details()
     except Exception:
         return {}
 
@@ -4233,7 +4407,52 @@ def _build_trust_review_snapshot() -> dict[str, object]:
         "voice_runtime": voice_runtime,
         "policy_capability_readiness": policy_capability_readiness,
         "reasoning_runtime": reasoning_runtime,
+        "bridge_runtime": bridge_runtime,
+        "connection_runtime": connection_runtime,
     }
+
+
+def _render_bridge_status_message(snapshot: dict[str, Any]) -> tuple[str, list[dict[str, str]]]:
+    payload = dict(snapshot or {})
+    lines = ["OpenClaw Bridge", ""]
+    lines.append(str(payload.get("summary") or "Bridge status is unavailable.").strip())
+    lines.append("")
+    lines.append(f"Status: {str(payload.get('status_label') or payload.get('status') or 'Unknown').strip()}")
+    lines.append(f"Auth: {str(payload.get('auth') or 'Unknown').strip()}")
+    lines.append(f"Scope: {str(payload.get('scope') or 'Read and reasoning only').strip()}")
+    lines.append(f"Effectful actions: {str(payload.get('effectful_actions') or 'Blocked').strip()}")
+    lines.append(f"Continuity: {str(payload.get('continuity') or 'Stateless').strip()}")
+    suggestions = [
+        {"label": "Open Settings", "command": "settings"},
+        {"label": "Open Trust", "command": "trust center"},
+        {"label": "Connection status", "command": "connection status"},
+    ]
+    return "\n".join(lines), suggestions
+
+
+def _render_connection_status_message(snapshot: dict[str, Any]) -> tuple[str, list[dict[str, str]]]:
+    payload = dict(snapshot or {})
+    items = [dict(item or {}) for item in list(payload.get("items") or [])[:6]]
+    lines = ["Provider and Connector Status", ""]
+    lines.append(str(payload.get("summary") or "Connection status is unavailable.").strip())
+    if items:
+        lines.append("")
+        for item in items:
+            label = str(item.get("label") or "").strip()
+            value = str(item.get("value") or "").strip()
+            note = str(item.get("note") or "").strip()
+            if label and value:
+                lines.append(f"- {label}: {value}")
+            elif label:
+                lines.append(f"- {label}")
+            if note:
+                lines.append(f"  {note}")
+    suggestions = [
+        {"label": "Open Settings", "command": "settings"},
+        {"label": "Bridge status", "command": "bridge status"},
+        {"label": "System status", "command": "system status"},
+    ]
+    return "\n".join(lines), suggestions
 
 
 def _maybe_auto_speak_for_voice_turn(
@@ -4419,7 +4638,7 @@ async def websocket_endpoint(ws: WebSocket):
             silent_widget_refresh = bool(msg.get("silent_widget_refresh"))
             if channel not in {"voice", "text"}:
                 channel = "text"
-            if invocation_source not in {"voice", "text", "ui", "news_surface", "deepseek_button"}:
+            if invocation_source not in {"voice", "text", "ui", "news_surface", "deepseek_button", "openclaw_bridge"}:
                 invocation_source = "voice" if channel == "voice" else "text"
 
             if msg_type == "get_thought":
@@ -4773,6 +4992,30 @@ async def websocket_endpoint(ws: WebSocket):
                         suggested_actions=trust_suggestions,
                         tone_domain="system",
                     )
+                continue
+
+            if BRIDGE_STATUS_RE.match(command_text):
+                await send_trust_status(ws, session_state["trust_status"])
+                bridge_message, bridge_suggestions = _render_bridge_status_message(
+                    OSDiagnosticsExecutor._bridge_status_details()
+                )
+                await _complete_immediate_turn(
+                    bridge_message,
+                    suggested_actions=bridge_suggestions,
+                    tone_domain="system",
+                )
+                continue
+
+            if CONNECTION_STATUS_RE.match(command_text):
+                await send_trust_status(ws, session_state["trust_status"])
+                connection_message, connection_suggestions = _render_connection_status_message(
+                    OSDiagnosticsExecutor._connection_status_details()
+                )
+                await _complete_immediate_turn(
+                    connection_message,
+                    suggested_actions=connection_suggestions,
+                    tone_domain="system",
+                )
                 continue
 
             if VOICE_STATUS_RE.match(command_text):

@@ -40,6 +40,7 @@ That means Nova already has:
 - answer-first search with sources on demand
 - in-place news summaries on the News page
 - a governed external reasoning lane with same-thread second-opinion review, provider visibility, and advisory-only boundaries
+- a token-gated governed remote bridge for read/reasoning access from OpenClaw-style remote clients
 - improved voice auto-speak routing with runtime fallback at the speech layer
 - a dedicated conversation personality layer and a dedicated voice presentation layer for smoother replies
 - dashboard support for all of the above
@@ -72,6 +73,7 @@ These parts are already meaningfully real:
 - user-facing Introduction and Settings pages that explain Nova and keep setup choices visible
 - a visible Policy Review Center that keeps delegated policy work inspectable and manual
 - a visible capability-authority map that shows what policies are safe now, later, or explicit-only
+- Trust and Settings visibility for remote bridge and provider/connection state
 
 ## What Is Still Maturing
 These parts are active but still evolving:
@@ -85,7 +87,7 @@ These parts are active but still evolving:
 - final device-confidence confirmation for audible TTS output
 - deeper provider and connector setup in Settings
 - deeper Phase-6 policy review ergonomics beyond the current manual-review center
-- future Phase-8 bridge and execution work beyond the now-complete reasoning lane
+- future Phase-8 execution work beyond the now-live governed remote bridge
 
 ## What Is Planned But Not Fully Live Yet
 Some highly important ideas are still planned or partially scaffolded rather than fully live.
@@ -94,6 +96,7 @@ Examples include:
 - wake word
 - richer read-only connectors
 - richer provider switching and setup beyond the current bounded governed reasoning lane
+- richer provider/connector setup beyond the current visible connection status surface
 - richer project/workspace system foundations beyond Workspace Home, Workspace Board, and the current selected-project drill-down
 - Phase-8 governed external execution / OpenClaw
 
@@ -102,6 +105,7 @@ A careful plain-language description of the current system is:
 - voice output is improved in code, auto-speaks voice-origin turns more reliably, trims long spoken replies more intelligently, and still depends on local device/audio validation
 - wake word is planned
 - governed external execution remains planned, not runtime-authorized
+- governed remote bridge access is now live, but it remains read/reasoning-only and token-gated
 
 ## What Makes The Current State Special
 Nova already combines things that usually live in separate products:
