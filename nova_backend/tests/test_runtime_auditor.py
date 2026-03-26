@@ -100,6 +100,57 @@ def test_render_current_runtime_state_uses_phase5_package_note():
     assert "full closure remains gated" not in rendered
 
 
+def test_phase6_status_tracks_complete_review_surface(monkeypatch, tmp_path):
+    import src.audit.runtime_auditor as ra
+
+    atomic_store = tmp_path / "atomic_policy_store.py"
+    policy_validator = tmp_path / "policy_validator.py"
+    policy_gate = tmp_path / "policy_executor_gate.py"
+    capability_topology = tmp_path / "capability_topology.py"
+    for path in (atomic_store, policy_validator, policy_gate, capability_topology):
+        path.write_text("# present\n", encoding="utf-8")
+
+    monkeypatch.setattr(ra, "ATOMIC_POLICY_STORE_PATH", atomic_store)
+    monkeypatch.setattr(ra, "POLICY_VALIDATOR_PATH", policy_validator)
+    monkeypatch.setattr(ra, "POLICY_EXECUTOR_GATE_PATH", policy_gate)
+    monkeypatch.setattr(ra, "CAPABILITY_TOPOLOGY_PATH", capability_topology)
+
+    contents = {
+        ra.STATIC_DASHBOARD_PATH: "\n".join(
+            [
+                "function renderPolicyCenterPage() {}",
+                "function renderTrustCenterPage() {}",
+                'case "policy_overview":',
+                'case "policy_run":',
+                "let trustReviewState = { selectedPolicyCapabilityKey: '' };",
+                "function getPolicyReadinessBuckets(snapshot = {}) {}",
+            ]
+        ),
+        ra.STATIC_INDEX_PATH: "\n".join(
+            [
+                '<div id="page-policy"></div>',
+                '<div id="page-trust"></div>',
+                '<div id="trust-center-policy-summary"></div>',
+                '<div id="policy-center-readiness"></div>',
+                '<button id="btn-policy-capability-map"></button>',
+            ]
+        ),
+        ra.BRAIN_SERVER_PATH: "\n".join(
+            [
+                "policy overview",
+                "policy simulate <id>",
+                "policy run <id> once",
+                "policy_capability_readiness",
+                "POLICY_CAPABILITY_MAP_COMMANDS",
+                "POLICY_CAPABILITY_MAP_VIEWED",
+            ]
+        ),
+    }
+    monkeypatch.setattr(ra, "_safe_read", lambda path: contents.get(path, ""))
+
+    assert ra._phase_6_status() == "COMPLETE"
+
+
 def test_governance_rows_prefer_explicit_registry_authority_metadata():
     import src.audit.runtime_auditor as ra
 

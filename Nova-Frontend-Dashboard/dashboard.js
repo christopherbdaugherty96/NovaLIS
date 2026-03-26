@@ -57,6 +57,8 @@ let policyCenterState = {
   items: [],
   selectedId: "",
   selectedItem: null,
+  readiness: {},
+  selectedReadinessKey: "",
   simulation: null,
   runResult: null,
   lastHydratedAt: 0,
@@ -94,6 +96,8 @@ let trustReviewState = {
   blocked: [],
   selectedActivityKey: "",
   selectedBlockedKey: "",
+  policyReadiness: {},
+  selectedPolicyCapabilityKey: "",
   voiceRuntime: {},
 };
 let threadMapState = {
@@ -1989,16 +1993,20 @@ function renderMemoryItemWidget(data = {}) {
 function renderPolicyCenterPage() {
   const summary = $("policy-center-summary");
   const statsHost = $("policy-center-stats");
+  const readinessSummary = $("policy-center-readiness-summary");
+  const readinessLimit = $("policy-center-readiness-limit");
+  const readinessHost = $("policy-center-readiness");
   const listHost = $("policy-center-list");
   const detailHost = $("policy-center-detail");
   const simulationHost = $("policy-center-simulation");
   const runHost = $("policy-center-run");
-  if (!summary || !statsHost || !listHost || !detailHost || !simulationHost || !runHost) return;
+  if (!summary || !statsHost || !readinessSummary || !readinessLimit || !readinessHost || !listHost || !detailHost || !simulationHost || !runHost) return;
 
   const overview = (policyCenterState.overview && typeof policyCenterState.overview === "object")
     ? policyCenterState.overview
     : {};
   const items = Array.isArray(policyCenterState.items) ? policyCenterState.items : [];
+  const readiness = getPolicyReadinessBuckets(policyCenterState.readiness);
   const selected = policyCenterState.selectedItem
     || items.find((item) => String(item.policy_id || "").trim() === String(policyCenterState.selectedId || "").trim())
     || items[0]
@@ -2029,6 +2037,47 @@ function renderPolicyCenterPage() {
     card.appendChild(heading);
     card.appendChild(amount);
     statsHost.appendChild(card);
+  });
+
+  readinessSummary.textContent = readiness.summary || "Capability delegation guidance will appear here after the next policy refresh.";
+  readinessLimit.textContent = readiness.currentLimit;
+  clear(readinessHost);
+  [
+    { label: "Safe now", items: readiness.safeNow },
+    { label: "Later", items: readiness.allowedLater },
+    { label: "Explicit only", items: readiness.manualOnly },
+  ].forEach((group) => {
+    const card = document.createElement("div");
+    card.className = "workspace-spotlight-card";
+
+    const title = document.createElement("div");
+    title.className = "workspace-spotlight-title";
+    title.textContent = `${group.label} (${group.items.length})`;
+    card.appendChild(title);
+
+    const copy = document.createElement("div");
+    copy.className = "workspace-spotlight-copy";
+    copy.textContent = group.items.length
+      ? group.items.slice(0, 4).map((item) => String(item.name || "").trim()).filter(Boolean).join(" · ")
+      : "None right now.";
+    card.appendChild(copy);
+
+    group.items.slice(0, 4).forEach((item) => {
+      const key = String(item.capability_id || "").trim();
+      if (!key) return;
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "assistant-action-btn";
+      button.textContent = String(item.name || key).trim();
+      if (policyCenterState.selectedReadinessKey === key) button.classList.add("active");
+      button.addEventListener("click", () => {
+        policyCenterState.selectedReadinessKey = key;
+        renderPolicyCenterPage();
+      });
+      card.appendChild(button);
+    });
+
+    readinessHost.appendChild(card);
   });
 
   clear(listHost);
@@ -2103,6 +2152,34 @@ function renderPolicyCenterPage() {
     note.textContent = String(selected.foundation_note || "Stored as a disabled draft. Trigger execution is not active.");
     detailHost.appendChild(note);
 
+    const topology = (selected.topology && typeof selected.topology === "object") ? selected.topology : {};
+    [
+      ["Capability", String(topology.name || "Not mapped").trim() || "Not mapped"],
+      ["Authority class", String(topology.authority_class || "unknown").trim() || "unknown"],
+      ["Delegation class", String(topology.delegation_class || "observational").trim() || "observational"],
+      ["Policy-delegatable", String(topology.policy_delegatable || "no").trim() || "no"],
+      ["Within current limit", String(topology.within_current_limit || "no").trim() || "no"],
+      ["Network required", String(topology.network_required || "no").trim() || "no"],
+      ["Persistent change", String(topology.persistent_change || "no").trim() || "no"],
+      ["External effect", String(topology.external_effect || "no").trim() || "no"],
+      ["Why", String(topology.why || topology.envelope_notes || "No topology note available.").trim() || "No topology note available."],
+    ].forEach(([label, value]) => {
+      const row = document.createElement("div");
+      row.className = "operator-health-row";
+
+      const labelEl = document.createElement("div");
+      labelEl.className = "operator-health-label";
+      labelEl.textContent = label;
+      row.appendChild(labelEl);
+
+      const valueEl = document.createElement("div");
+      valueEl.className = "operator-health-value";
+      valueEl.textContent = value;
+      row.appendChild(valueEl);
+
+      detailHost.appendChild(row);
+    });
+
     const warnings = Array.isArray(selected.warnings) ? selected.warnings : [];
     warnings.slice(0, 3).forEach((warning) => {
       const row = document.createElement("div");
@@ -2142,10 +2219,14 @@ function renderPolicyCenterPage() {
       ["Policy", String(simulation.policy_name || simulation.policy_id || "").trim()],
       ["Trigger", String(simulation.trigger || "").trim()],
       ["Action", String(simulation.action || "").trim()],
+      ["Capability", String(simulation.capability_name || simulation.capability_id || "").trim()],
       ["Verdict", String(simulation.governor_verdict || "").trim()],
       ["Readiness", String(simulation.readiness_label || "").trim()],
       ["Capability class", String(simulation.capability_class || "").trim()],
       ["Delegation class", String(simulation.delegation_class || "").trim()],
+      ["Envelope", String(simulation.envelope_summary || "").trim()],
+      ["Current limit", String(simulation.current_authority_limit || "").trim()],
+      ["Blocked reason", String(simulation.blocked_reason || "").trim()],
     ].forEach(([label, value], index) => {
       const row = document.createElement("div");
       row.className = index === 0 ? "workspace-home-focus-title" : "workspace-home-focus-copy";
@@ -2176,7 +2257,10 @@ function renderPolicyCenterPage() {
       ["Policy", String(runResult.policy_id || "").trim()],
       ["Success", runResult.result.success ? "yes" : "no"],
       ["Authority class", String(runResult.result.authority_class || "").trim()],
+      ["Status", String(runResult.result.status || "").trim()],
+      ["Reversible", runResult.result.reversible ? "yes" : "no"],
       ["External effect", runResult.result.external_effect ? "yes" : "no"],
+      ["Outcome reason", String(runResult.result.outcome_reason || "").trim()],
       ["Message", String(runResult.result.message || "").trim()],
     ].forEach(([label, value], index) => {
       const row = document.createElement("div");
@@ -2197,6 +2281,9 @@ function renderPolicyOverviewWidget(data = {}) {
   policyCenterState.overview = (data && typeof data === "object") ? { ...data } : {};
   policyCenterState.summary = String((data && data.summary) || policyCenterState.summary).trim() || policyCenterState.summary;
   policyCenterState.items = Array.isArray(data && data.items) ? data.items.slice() : [];
+  policyCenterState.readiness = (data && data.policy_capability_readiness && typeof data.policy_capability_readiness === "object")
+    ? { ...data.policy_capability_readiness }
+    : policyCenterState.readiness;
   if (!policyCenterState.selectedId && policyCenterState.items.length > 0) {
     policyCenterState.selectedId = String(policyCenterState.items[0].policy_id || "").trim();
   } else if (
@@ -2214,6 +2301,12 @@ function renderPolicyOverviewWidget(data = {}) {
     )
   ) {
     requestPolicyDetail(policyCenterState.selectedId);
+  }
+  if (!policyCenterState.selectedReadinessKey) {
+    const readiness = getPolicyReadinessBuckets(policyCenterState.readiness);
+    const firstCandidate = []
+      .concat(readiness.safeNow, readiness.allowedLater, readiness.manualOnly)[0];
+    if (firstCandidate) policyCenterState.selectedReadinessKey = String(firstCandidate.capability_id || "").trim();
   }
   renderPolicyCenterPage();
 }
@@ -2234,6 +2327,7 @@ function renderPolicyItemWidget(data = {}) {
     manual_run_count: Number(item.manual_run_count || 0),
     created_by: String(item.created_by || "user").trim(),
     envelope: item.envelope || {},
+    topology: item.topology || {},
     warnings: Array.isArray(item.warnings) ? item.warnings.slice() : [],
     foundation_note: String(item.foundation_note || "").trim(),
   };
@@ -3154,6 +3248,9 @@ function renderTrustPanel(data = {}) {
     trustReviewState.summary = String(data.trust_review_summary || trustReviewState.summary).trim() || trustReviewState.summary;
     trustReviewState.activity = Array.isArray(data.recent_runtime_activity) ? data.recent_runtime_activity.slice() : trustReviewState.activity;
     trustReviewState.blocked = Array.isArray(data.blocked_conditions) ? data.blocked_conditions.slice() : trustReviewState.blocked;
+    trustReviewState.policyReadiness = (data.policy_capability_readiness && typeof data.policy_capability_readiness === "object")
+      ? { ...data.policy_capability_readiness }
+      : trustReviewState.policyReadiness;
     trustReviewState.voiceRuntime = (data.voice_runtime && typeof data.voice_runtime === "object")
       ? { ...data.voice_runtime }
       : trustReviewState.voiceRuntime;
@@ -3164,6 +3261,14 @@ function renderTrustPanel(data = {}) {
     if (!trustReviewState.selectedBlockedKey && trustReviewState.blocked.length) {
       const firstBlocked = trustReviewState.blocked[0];
       trustReviewState.selectedBlockedKey = String(firstBlocked.label || firstBlocked.area || "0").trim();
+    }
+    if (!trustReviewState.selectedPolicyCapabilityKey) {
+      const readiness = trustReviewState.policyReadiness || {};
+      const firstCandidate = []
+        .concat(Array.isArray(readiness.safe_now) ? readiness.safe_now : [])
+        .concat(Array.isArray(readiness.allowed_later) ? readiness.allowed_later : [])
+        .concat(Array.isArray(readiness.manual_only) ? readiness.manual_only : [])[0];
+      if (firstCandidate) trustReviewState.selectedPolicyCapabilityKey = String(firstCandidate.capability_id || "").trim();
     }
   }
 
@@ -3303,6 +3408,17 @@ function renderTrustPanel(data = {}) {
   renderSettingsPage();
 }
 
+function getPolicyReadinessBuckets(snapshot = {}) {
+  const readiness = (snapshot && typeof snapshot === "object") ? snapshot : {};
+  return {
+    summary: String(readiness.summary || "").trim(),
+    currentLimit: String(readiness.current_authority_limit || "").trim() || "Unknown",
+    safeNow: Array.isArray(readiness.safe_now) ? readiness.safe_now : [],
+    allowedLater: Array.isArray(readiness.allowed_later) ? readiness.allowed_later : [],
+    manualOnly: Array.isArray(readiness.manual_only) ? readiness.manual_only : [],
+  };
+}
+
 function renderTrustCenterPage() {
   const summary = $("trust-center-summary");
   const mode = $("trust-center-mode");
@@ -3315,11 +3431,15 @@ function renderTrustCenterPage() {
   const blockedDetail = $("trust-center-blocked-detail");
   const healthSummary = $("trust-center-health-summary");
   const healthGrid = $("trust-center-health-grid");
+  const policySummary = $("trust-center-policy-summary");
+  const policyLimit = $("trust-center-policy-limit");
+  const policyGroups = $("trust-center-policy-groups");
+  const policyDetail = $("trust-center-policy-detail");
   const capabilitySummary = $("trust-center-capability-summary");
   const capabilityHost = $("trust-center-capability-groups");
   const voiceSummary = $("trust-center-voice-summary");
   const voiceGrid = $("trust-center-voice-grid");
-  if (!summary || !mode || !lastCall || !egress || !failure || !activityHost || !blockedHost || !healthSummary || !healthGrid || !capabilitySummary || !capabilityHost) return;
+  if (!summary || !mode || !lastCall || !egress || !failure || !activityHost || !blockedHost || !healthSummary || !healthGrid || !policySummary || !policyLimit || !policyGroups || !policyDetail || !capabilitySummary || !capabilityHost) return;
 
   summary.textContent = trustReviewState.summary || "Trust review keeps recent governed actions, blocked conditions, and failure state in one place.";
   mode.textContent = trustState.mode || "Local-only";
@@ -3387,7 +3507,12 @@ function renderTrustCenterPage() {
       [
         ["Title", String(selected.title || "Runtime event").trim() || "Runtime event"],
         ["Kind", String(selected.kind || "system").trim() || "system"],
+        ["Status", String(selected.status || "unknown").trim() || "unknown"],
         ["When", String(selected.timestamp || "Unknown").trim() || "Unknown"],
+        ["Capability", String(selected.capability_name || selected.capability_id || "Not recorded").trim() || "Not recorded"],
+        ["Authority", String(selected.authority_class || "Not recorded").trim() || "Not recorded"],
+        ["Reversible", String(selected.reversible || "Not recorded").trim() || "Not recorded"],
+        ["External effect", String(selected.external_effect || "Not recorded").trim() || "Not recorded"],
         ["Why", String(selected.reason || selected.detail || "No reason recorded.").trim() || "No reason recorded."],
         ["Effect", String(selected.effect || "No external effect").trim() || "No external effect"],
         ["Request", String(selected.request_id || "Not recorded").trim() || "Not recorded"],
@@ -3460,6 +3585,7 @@ function renderTrustCenterPage() {
         ["Boundary", String(selectedBlocked.label || selectedBlocked.area || "Condition").trim() || "Condition"],
         ["Status", String(selectedBlocked.status || "unknown").trim() || "unknown"],
         ["Why blocked", String(selectedBlocked.reason || "No reason available.").trim() || "No reason available."],
+        ["Next step", String(selectedBlocked.next_step || "No action needed right now.").trim() || "No action needed right now."],
       ].forEach(([label, value]) => {
         const row = document.createElement("div");
         row.className = "operator-health-row";
@@ -3477,6 +3603,86 @@ function renderTrustCenterPage() {
         blockedDetail.appendChild(row);
       });
     }
+  }
+
+  const readiness = getPolicyReadinessBuckets(trustReviewState.policyReadiness);
+  policySummary.textContent = readiness.summary || "Capability delegation rules will appear here after the next trust refresh.";
+  policyLimit.textContent = readiness.currentLimit;
+  clear(policyGroups);
+  [
+    { label: "Safe now", items: readiness.safeNow },
+    { label: "Later", items: readiness.allowedLater },
+    { label: "Explicit only", items: readiness.manualOnly },
+  ].forEach((group) => {
+    const card = document.createElement("div");
+    card.className = "workspace-spotlight-card";
+
+    const title = document.createElement("div");
+    title.className = "workspace-spotlight-title";
+    title.textContent = `${group.label} (${group.items.length})`;
+    card.appendChild(title);
+
+    const copy = document.createElement("div");
+    copy.className = "workspace-spotlight-copy";
+    copy.textContent = group.items.length
+      ? group.items.slice(0, 4).map((item) => String(item.name || "").trim()).filter(Boolean).join(" · ")
+      : "None right now.";
+    card.appendChild(copy);
+
+    group.items.slice(0, 4).forEach((item) => {
+      const key = String(item.capability_id || "").trim();
+      if (!key) return;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "assistant-action-btn";
+      btn.textContent = String(item.name || key).trim();
+      if (trustReviewState.selectedPolicyCapabilityKey === key) btn.classList.add("active");
+      btn.addEventListener("click", () => {
+        trustReviewState.selectedPolicyCapabilityKey = key;
+        renderTrustCenterPage();
+      });
+      card.appendChild(btn);
+    });
+
+    policyGroups.appendChild(card);
+  });
+
+  clear(policyDetail);
+  const policySelected = []
+    .concat(readiness.safeNow, readiness.allowedLater, readiness.manualOnly)
+    .find((item) => String(item.capability_id || "").trim() === String(trustReviewState.selectedPolicyCapabilityKey || "").trim())
+    || readiness.safeNow[0]
+    || readiness.allowedLater[0]
+    || readiness.manualOnly[0];
+  if (!policySelected) {
+    const empty = document.createElement("div");
+    empty.className = "trust-empty";
+    empty.textContent = "Delegation rules will appear here after the next runtime refresh.";
+    policyDetail.appendChild(empty);
+  } else {
+    [
+      ["Capability", String(policySelected.name || policySelected.capability_id || "Unknown").trim() || "Unknown"],
+      ["Authority class", String(policySelected.authority_class || "unknown").trim() || "unknown"],
+      ["Delegation class", String(policySelected.delegation_class || "observational").trim() || "observational"],
+      ["Policy-delegatable", String(policySelected.policy_delegatable || "no").trim() || "no"],
+      ["Within current limit", String(policySelected.within_current_limit || "no").trim() || "no"],
+      ["Network required", String(policySelected.network_required || "no").trim() || "no"],
+      ["Persistent change", String(policySelected.persistent_change || "no").trim() || "no"],
+      ["External effect", String(policySelected.external_effect || "no").trim() || "no"],
+      ["Why", String(policySelected.why || policySelected.envelope_notes || "No note available.").trim() || "No note available."],
+    ].forEach(([label, value]) => {
+      const row = document.createElement("div");
+      row.className = "operator-health-row";
+      const labelEl = document.createElement("div");
+      labelEl.className = "operator-health-label";
+      labelEl.textContent = label;
+      const valueEl = document.createElement("div");
+      valueEl.className = "operator-health-value";
+      valueEl.textContent = value;
+      row.appendChild(labelEl);
+      row.appendChild(valueEl);
+      policyDetail.appendChild(row);
+    });
   }
 
   healthSummary.textContent = operatorHealthState.summary || "Loading runtime health...";
@@ -6554,6 +6760,12 @@ window.addEventListener("DOMContentLoaded", () => {
   const trustCenterMemoryBtn = $("btn-trust-center-memory");
   if (trustCenterMemoryBtn) trustCenterMemoryBtn.addEventListener("click", () => setActivePage("memory"));
 
+  const trustCenterPolicyMapBtn = $("btn-trust-center-policy-map");
+  if (trustCenterPolicyMapBtn) trustCenterPolicyMapBtn.addEventListener("click", () => {
+    safeWSSend({ text: "what can policies run", silent_widget_refresh: true });
+    safeWSSend({ text: "trust center", silent_widget_refresh: true });
+  });
+
   const trustCenterVoiceCheckBtn = $("btn-trust-center-voice-check");
   if (trustCenterVoiceCheckBtn) trustCenterVoiceCheckBtn.addEventListener("click", () => {
     setActivePage("chat");
@@ -6729,6 +6941,17 @@ window.addEventListener("DOMContentLoaded", () => {
   const policyCreateWeatherBtn = $("btn-policy-create-weather");
   if (policyCreateWeatherBtn) policyCreateWeatherBtn.addEventListener("click", () => {
     injectUserText("policy create daily weather snapshot at 7:30 am", "text");
+  });
+
+  const policyCreateStatusBtn = $("btn-policy-create-status");
+  if (policyCreateStatusBtn) policyCreateStatusBtn.addEventListener("click", () => {
+    injectUserText("policy create weekday system status at 8:00 am", "text");
+  });
+
+  const policyCapabilityMapBtn = $("btn-policy-capability-map");
+  if (policyCapabilityMapBtn) policyCapabilityMapBtn.addEventListener("click", () => {
+    safeWSSend({ text: "what can policies run", silent_widget_refresh: true });
+    requestPolicyOverviewRefresh(true);
   });
 
   const policyOpenTrustBtn = $("btn-policy-open-trust");

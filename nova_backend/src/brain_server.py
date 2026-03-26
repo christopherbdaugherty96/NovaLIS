@@ -399,6 +399,15 @@ POLICY_STATUS_COMMANDS = {
     "policy center",
     "policy review",
 }
+POLICY_CAPABILITY_MAP_COMMANDS = {
+    "capability map",
+    "authority map",
+    "policy capability map",
+    "policy candidates",
+    "what can policies run",
+    "what policies can run",
+    "show capability map",
+}
 POLICY_CREATE_RE = re.compile(
     r"^\s*policy\s+(?:create|draft)\s+(?P<schedule>daily|weekday)\s+"
     r"(?P<action>calendar\s+snapshot|weather\s+snapshot|news\s+snapshot|system\s+status)\s+at\s+(?P<time>.+?)\s*$",
@@ -2655,6 +2664,70 @@ def _render_trust_center_message(trust_status: dict[str, Any]) -> tuple[str, lis
         {"label": "Workspace Home", "command": "workspace home"},
         {"label": "System status", "command": "system status"},
         {"label": "Memory overview", "command": "memory overview"},
+        {"label": "Policy map", "command": "what can policies run"},
+    ]
+    return "\n".join(lines).strip(), suggestions
+
+
+def _build_policy_capability_readiness_snapshot() -> dict[str, Any]:
+    try:
+        return dict(OSDiagnosticsExecutor._policy_capability_readiness() or {})
+    except Exception:
+        return {
+            "summary": "Capability delegation rules are unavailable right now.",
+            "current_authority_limit": "unknown",
+            "safe_now": [],
+            "allowed_later": [],
+            "manual_only": [],
+        }
+
+
+def _render_policy_capability_map_message(snapshot: dict[str, Any] | None) -> tuple[str, list[dict[str, str]]]:
+    payload = dict(snapshot or {})
+    safe_now = [dict(item or {}) for item in list(payload.get("safe_now") or [])[:5]]
+    allowed_later = [dict(item or {}) for item in list(payload.get("allowed_later") or [])[:5]]
+    manual_only = [dict(item or {}) for item in list(payload.get("manual_only") or [])[:5]]
+    current_limit = str(payload.get("current_authority_limit") or "unknown").strip() or "unknown"
+
+    lines = ["Capability Authority Map", ""]
+    lines.append(
+        str(
+            payload.get("summary")
+            or "Capability delegation rules are visible here so users can see what is safe now, later, or explicit-only."
+        ).strip()
+    )
+    lines.append(f"Current delegated authority limit: {current_limit}")
+
+    if safe_now:
+        lines.extend(["", "Safe for manual review runs now"])
+        for item in safe_now:
+            lines.append(
+                f"- {str(item.get('name') or '').strip()} "
+                f"({str(item.get('authority_class') or 'unknown').strip()} · "
+                f"{str(item.get('delegation_class') or 'observational').strip()})"
+            )
+
+    if allowed_later:
+        lines.extend(["", "Lawful later when delegation widens"])
+        for item in allowed_later:
+            notes = str(item.get("envelope_notes") or item.get("why") or "").strip()
+            rendered = f"- {str(item.get('name') or '').strip()} ({str(item.get('authority_class') or 'unknown').strip()})"
+            if notes:
+                rendered += f" - {notes}"
+            lines.append(rendered)
+
+    if manual_only:
+        lines.extend(["", "Explicit-user only right now"])
+        for item in manual_only[:4]:
+            lines.append(
+                f"- {str(item.get('name') or '').strip()} "
+                f"({str(item.get('authority_class') or 'unknown').strip()})"
+            )
+
+    suggestions = [
+        {"label": "Policy center", "command": "policy overview"},
+        {"label": "Trust center", "command": "trust center"},
+        {"label": "System status", "command": "system status"},
     ]
     return "\n".join(lines).strip(), suggestions
 
@@ -3128,6 +3201,7 @@ def _policy_yes_no_label(value: bool) -> str:
 def _render_policy_overview_message(snapshot: dict | None) -> str:
     payload = dict(snapshot or {})
     items = list(payload.get("items") or [])
+    readiness = dict(payload.get("policy_capability_readiness") or {})
     lines = ["Policy Drafts", ""]
     lines.append(str(payload.get("summary") or "No policy drafts yet.").strip())
     lines.append(
@@ -3154,16 +3228,29 @@ def _render_policy_overview_message(snapshot: dict | None) -> str:
         lines.append("")
         lines.append(note)
 
+    readiness_summary = str(readiness.get("summary") or "").strip()
+    if readiness_summary:
+        lines.extend(
+            [
+                "",
+                "Delegation readiness",
+                readiness_summary,
+                f"Current delegated authority limit: {str(readiness.get('current_authority_limit') or 'unknown').strip() or 'unknown'}",
+            ]
+        )
+
     lines.extend(
         [
             "",
             "Try next:",
             "- policy create weekday calendar snapshot at 8:00 am",
             "- policy create daily weather snapshot at 7:30 am",
+            "- policy create weekday system status at 8:00 am",
             "- policy show <id>",
             "- policy simulate <id>",
             "- policy run <id> once",
             "- policy delete <id> confirm",
+            "- what can policies run",
         ]
     )
     return "\n".join(lines)
@@ -3172,6 +3259,7 @@ def _render_policy_overview_message(snapshot: dict | None) -> str:
 def _render_policy_detail_message(item: dict | None) -> str:
     payload = dict(item or {})
     validation = dict(payload.get("last_validation") or {})
+    topology = dict(payload.get("topology") or {})
     warnings = list(validation.get("warnings") or [])
     lines = [
         "Policy Draft",
@@ -3198,6 +3286,22 @@ def _render_policy_detail_message(item: dict | None) -> str:
         "Foundation note",
         "This policy is stored as a disabled draft. Manual simulation and one-shot review runs are available. Trigger execution is not active yet.",
     ]
+
+    if topology:
+        lines.extend(
+            [
+                "",
+                "Delegation fit",
+                f"- authority class: {str(topology.get('authority_class') or 'unknown').strip()}",
+                f"- delegation class: {str(topology.get('delegation_class') or 'observational').strip()}",
+                f"- policy delegatable: {'yes' if bool(topology.get('policy_delegatable')) else 'no'}",
+                f"- within current limit: {'yes' if bool(topology.get('within_current_limit')) else 'no'}",
+                f"- network required: {'yes' if bool(topology.get('network_required')) else 'no'}",
+            ]
+        )
+        topology_note = str(topology.get("envelope_notes") or topology.get("why") or "").strip()
+        if topology_note:
+            lines.append(f"- note: {topology_note}")
 
     if warnings:
         lines.extend(["", "Warnings"])
@@ -3246,11 +3350,14 @@ def _render_policy_simulation_message(decision: dict | None) -> str:
         f"Action: {str(payload.get('action') or '').strip()}",
         "",
         "Delegation Review",
+        f"- capability: {str(payload.get('capability_name') or payload.get('action') or 'unknown').strip()}",
         f"- capability class: {str(payload.get('capability_class') or 'unknown').strip()}",
         f"- delegation class: {str(payload.get('delegation_class') or 'observational').strip()}",
         f"- policy delegatable: {_policy_yes_no_label(bool(payload.get('policy_delegatable')))}",
         f"- network required: {_policy_yes_no_label(bool(payload.get('network_required')))}",
         f"- estimated runtime: {str(payload.get('estimated_runtime') or 'unknown').strip()}",
+        f"- envelope: {str(payload.get('envelope_summary') or 'unknown').strip()}",
+        f"- current authority limit: {str(payload.get('current_authority_limit') or 'unknown').strip()}",
         "",
         "Risk Summary",
         f"- local system impact: {str(risk_summary.get('local_system_impact') or payload.get('local_system_impact') or 'none').strip()}",
@@ -3264,6 +3371,9 @@ def _render_policy_simulation_message(decision: dict | None) -> str:
     ]
 
     reasoning = [str(item).strip() for item in list(payload.get("reasoning") or []) if str(item).strip()]
+    blocked_reason = str(payload.get("blocked_reason") or "").strip()
+    if blocked_reason:
+        lines.append(f"Blocked reason: {blocked_reason}")
     if reasoning:
         lines.extend(["", "Reasoning"])
         lines.extend(f"- {item}" for item in reasoning)
@@ -3299,12 +3409,17 @@ def _render_policy_run_message(decision: dict | None, action_result: object | No
         f"- success: {_policy_yes_no_label(bool(getattr(action_result, 'success', False)))}",
         f"- authority class: {str(getattr(action_result, 'authority_class', 'read_only') or 'read_only').strip()}",
         f"- external effect: {_policy_yes_no_label(bool(getattr(action_result, 'external_effect', False)))}",
+        f"- reversible: {_policy_yes_no_label(bool(getattr(action_result, 'reversible', True)))}",
+        f"- status: {str(getattr(action_result, 'status', 'unknown') or 'unknown').strip()}",
         f"- message: {_action_result_message(action_result)}",
     ]
 
     request_id = str(getattr(action_result, "request_id", "") or "").strip()
     if request_id:
         lines.append(f"- request id: {request_id}")
+    outcome_reason = str(getattr(action_result, "outcome_reason", "") or "").strip()
+    if outcome_reason:
+        lines.append(f"- outcome reason: {outcome_reason}")
 
     reasoning = [str(item).strip() for item in list(payload.get("reasoning") or []) if str(item).strip()]
     if reasoning:
@@ -3355,6 +3470,7 @@ def _build_policy_overview_widget(snapshot: dict | None) -> dict[str, Any]:
         "items": items,
         "inspectability_note": str(payload.get("inspectability_note") or "").strip(),
         "review_mode": "manual_review_only",
+        "policy_capability_readiness": dict(payload.get("policy_capability_readiness") or {}),
     }
 
 
@@ -3362,6 +3478,17 @@ def _build_policy_item_widget(item: dict | None) -> dict[str, Any]:
     payload = dict(item or {})
     envelope = dict(payload.get("envelope") or {})
     validation = dict(payload.get("last_validation") or {})
+    topology_snapshot = _build_policy_capability_readiness_snapshot()
+    action_capability_id = int(dict(payload.get("action") or {}).get("capability_id") or 0)
+    topology_item = {}
+    for collection_name in ("safe_now", "allowed_later", "manual_only"):
+        for candidate in list(topology_snapshot.get(collection_name) or []):
+            if str(candidate.get("capability_id") or "").strip() == str(action_capability_id):
+                topology_item = dict(candidate)
+                topology_item["within_current_limit"] = collection_name == "safe_now"
+                break
+        if topology_item:
+            break
     return {
         "type": "policy_item",
         "item": {
@@ -3388,6 +3515,7 @@ def _build_policy_item_widget(item: dict | None) -> dict[str, Any]:
             "last_simulated_at": str(payload.get("last_simulated_at") or "").strip(),
             "last_manual_run_at": str(payload.get("last_manual_run_at") or "").strip(),
             "warnings": [str(w).strip() for w in list(validation.get("warnings") or []) if str(w).strip()],
+            "topology": topology_item,
             "foundation_note": (
                 "Stored as a disabled draft. Simulation and one-shot manual review runs are available, but trigger execution is not active."
             ),
@@ -3799,15 +3927,16 @@ async def send_pattern_review_widget(
 @app.get("/phase-status")
 async def phase_status():
     from src.governor.execute_boundary import GOVERNED_ACTIONS_ENABLED
+    phase_display = "6 complete / 7 partial" if BUILD_PHASE >= 6 else "5 closed / 6 foundation" if BUILD_PHASE >= 5 else f"{BUILD_PHASE}"
     return {
         "phase": str(BUILD_PHASE),
-        "phase_display": "5 closed / 6 foundation" if BUILD_PHASE >= 5 else f"{BUILD_PHASE}",
+        "phase_display": phase_display,
         "status": "active" if GOVERNED_ACTIONS_ENABLED else "sealed",
         "execution_enabled": GOVERNED_ACTIONS_ENABLED,
         "delegated_runtime_enabled": False,
         "note": (
-            "Phase-5 trust layer is active. "
-            "Phase-6 policy foundation exists, but delegated execution remains disabled."
+            "Phase-6 trust, policy review, and capability authority surfaces are complete. "
+            "Phase-7 bounded external reasoning is partially active, and delegated execution remains disabled."
         ),
     }
 @app.get("/system/audit/runtime-truth")
@@ -3915,6 +4044,7 @@ async def send_policy_overview_widget(
             payload = AtomicPolicyStore().overview()
         except Exception:
             payload = {}
+    payload.setdefault("policy_capability_readiness", _build_policy_capability_readiness_snapshot())
     widget = _build_policy_overview_widget(payload)
     session_state["last_policy_overview"] = widget
     await ws_send(ws, widget)
@@ -4083,6 +4213,7 @@ def _build_trust_review_snapshot() -> dict[str, object]:
         )
         ledger_integrity, ledger_entries_today, ledger_last_event = OSDiagnosticsExecutor._ledger_status_details()
         voice_runtime = inspect_voice_runtime()
+        policy_capability_readiness = OSDiagnosticsExecutor._policy_capability_readiness()
     except Exception:
         return {}
 
@@ -4094,6 +4225,7 @@ def _build_trust_review_snapshot() -> dict[str, object]:
         "ledger_entries_today": ledger_entries_today,
         "ledger_last_event": ledger_last_event,
         "voice_runtime": voice_runtime,
+        "policy_capability_readiness": policy_capability_readiness,
     }
 
 
@@ -6135,6 +6267,7 @@ async def websocket_endpoint(ws: WebSocket):
 
             if lowered in POLICY_STATUS_COMMANDS:
                 snapshot = policy_drafts.overview()
+                snapshot["policy_capability_readiness"] = _build_policy_capability_readiness_snapshot()
                 _log_ledger_event(
                     governor,
                     "POLICY_DRAFT_VIEWED",
@@ -6147,6 +6280,36 @@ async def websocket_endpoint(ws: WebSocket):
                         tone_domain="system",
                     )
                 await send_policy_overview_widget(ws, session_state, snapshot=snapshot)
+                await send_chat_done(ws)
+                continue
+
+            if lowered in POLICY_CAPABILITY_MAP_COMMANDS:
+                readiness_snapshot = _build_policy_capability_readiness_snapshot()
+                _log_ledger_event(
+                    governor,
+                    "POLICY_CAPABILITY_MAP_VIEWED",
+                    {
+                        "safe_now_count": len(list(readiness_snapshot.get("safe_now") or [])),
+                        "allowed_later_count": len(list(readiness_snapshot.get("allowed_later") or [])),
+                    },
+                )
+                message, suggestions = _render_policy_capability_map_message(readiness_snapshot)
+                if not silent_widget_refresh:
+                    await send_chat_message(
+                        ws,
+                        message,
+                        tone_domain="system",
+                        suggested_actions=suggestions,
+                    )
+                await send_trust_status(ws, session_state.get("trust_status", {}))
+                await send_policy_overview_widget(
+                    ws,
+                    session_state,
+                    snapshot={
+                        **policy_drafts.overview(),
+                        "policy_capability_readiness": readiness_snapshot,
+                    },
+                )
                 await send_chat_done(ws)
                 continue
 

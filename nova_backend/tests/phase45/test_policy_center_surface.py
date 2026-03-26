@@ -94,3 +94,22 @@ def test_policy_create_simulate_and_run_once_emit_policy_widgets(monkeypatch, tm
     assert refreshed is not None
     assert int(refreshed.get("simulation_count") or 0) >= 1
     assert int(refreshed.get("manual_run_count") or 0) >= 1
+
+
+def test_policy_capability_map_emits_trust_and_policy_surfaces(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    store = brain_server.AtomicPolicyStore(path=tmp_path / "atomic_policies.json")
+    monkeypatch.setattr(brain_server, "AtomicPolicyStore", lambda *args, **kwargs: store)
+
+    ws = _ScriptedWebSocket(["what can policies run"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert "trust_status" in _message_types(ws)
+    assert "policy_overview" in _message_types(ws)
+    assert any("Capability Authority Map" in msg for msg in _chat_messages(ws))

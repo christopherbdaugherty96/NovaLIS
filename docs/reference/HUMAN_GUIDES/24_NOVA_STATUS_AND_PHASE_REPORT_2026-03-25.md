@@ -60,7 +60,7 @@ At the time of this report, the runtime shows:
   - Phase 4.2 active
   - Phase 4.5 active
   - Phase 5 active
-  - Phase 6 active as a review-only foundation
+  - Phase 6 complete as a review-oriented trust and policy package
 - active governed capabilities: `23`
 - active runtime surfaces:
   - governed web search
@@ -182,6 +182,15 @@ The newest safe Phase-6 slice then began delegated-policy work in runtime withou
 - one-shot manual policy run review
 - a punctuation-safe fix for `policy show`, `policy simulate`, `policy run`, and `policy delete`
 
+The closing Phase-6 slice completed that package with:
+- Trust Center policy-delegation map
+- blocked-condition next-step guidance
+- richer recent-action detail including capability and authority truth
+- Policies-page delegation-readiness review
+- richer topology detail in selected policy drafts
+- clearer simulation and one-shot run-result detail
+- runtime promotion from Phase-6 foundation to Phase-6 complete
+
 This matters because it turned several already-good backend pieces into a more understandable product.
 
 ## Phase-By-Phase Grounding
@@ -252,12 +261,14 @@ Recent Phase-5 growth after the earlier closure includes:
 
 ### Phase 6
 Status:
-- active foundation slice in runtime
+- complete in runtime as a review-oriented package
 - review-only delegated-policy layer visible in-product
 
 Meaning:
 - Nova has the policy and sovereignty groundwork for later expansion
 - users can now inspect disabled policy drafts, simulate them, and manually review-run safe ones once
+- users can now see which policy-capable actions are safe now, later, or explicit-only
+- users can now review clearer recent-action and blocked-boundary explanations in the Trust Center
 - delegated trigger runtime is still disabled
 - this phase matters because it protects later work from becoming sloppy or unsafe
 

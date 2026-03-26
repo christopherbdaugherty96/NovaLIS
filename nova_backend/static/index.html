@@ -490,6 +490,7 @@
             <button id="btn-trust-center-system" type="button">System status</button>
             <button id="btn-trust-center-workspace" type="button">Open workspace</button>
             <button id="btn-trust-center-memory" type="button">Open memory</button>
+            <button id="btn-trust-center-policy-map" type="button">What policies can run</button>
             <button id="btn-trust-center-voice-check" type="button">Run voice check</button>
             <button id="btn-trust-center-settings" type="button">Open settings</button>
           </div>
@@ -550,6 +551,20 @@
             </div>
           </div>
           <div id="trust-center-voice-grid" class="trust-center-health-grid"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Policy Delegation Map</div>
+              <p id="trust-center-policy-summary" class="workspace-board-section-copy">Loading which capabilities are safe now, later, or explicit-only.</p>
+            </div>
+          </div>
+          <div class="trust-center-metrics">
+            <div class="trust-row"><strong>Current delegated limit:</strong> <span id="trust-center-policy-limit">Unknown</span></div>
+          </div>
+          <div id="trust-center-policy-groups" class="trust-center-capability-groups"></div>
+          <div id="trust-center-policy-detail" class="operator-health-grid"></div>
         </div>
 
         <div class="widget page-card trust-center-panel" aria-live="polite">
@@ -642,6 +657,8 @@
             <button id="btn-policy-refresh" type="button">Refresh drafts</button>
             <button id="btn-policy-create-calendar" type="button">Create calendar draft</button>
             <button id="btn-policy-create-weather" type="button">Create weather draft</button>
+            <button id="btn-policy-create-status" type="button">Create system-status draft</button>
+            <button id="btn-policy-capability-map" type="button">What policies can run</button>
             <button id="btn-policy-open-trust" type="button">Open trust</button>
             <button id="btn-policy-open-settings" type="button">Open settings</button>
           </div>
@@ -655,6 +672,19 @@
             </div>
           </div>
           <div id="policy-center-stats" class="workspace-home-grid"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Delegation Readiness</div>
+              <p id="policy-center-readiness-summary" class="workspace-board-section-copy">Loading which capabilities are safe now, later, or explicit-only.</p>
+            </div>
+          </div>
+          <div class="trust-center-metrics">
+            <div class="trust-row"><strong>Current delegated limit:</strong> <span id="policy-center-readiness-limit">Unknown</span></div>
+          </div>
+          <div id="policy-center-readiness" class="trust-center-capability-groups"></div>
         </div>
 
         <div class="widget page-card trust-center-panel" aria-live="polite">

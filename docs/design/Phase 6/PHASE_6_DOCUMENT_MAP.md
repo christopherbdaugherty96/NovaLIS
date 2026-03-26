@@ -1,5 +1,5 @@
 # Phase 6 Document Map
-Updated: 2026-03-18
+Updated: 2026-03-26
 Status: Current design map
 Purpose: Classify the Phase-6 document set by authority and implementation order.
 
@@ -22,13 +22,15 @@ These documents define the current ordered roadmap and the core Phase-6 policy s
 - `docs/design/Phase 6/PHASE_6_POLICY_SIMULATION_SURFACE_SPEC.md`
 - `docs/design/Phase 6/PHASE_6_PROGRESSIVE_SCREEN_INTELLIGENCE_PRODUCT_SPEC.md`
 - `docs/PROOFS/Phase-6/PHASE_6_POLICY_REVIEW_CENTER_RUNTIME_SLICE_2026-03-26.md`
+- `docs/PROOFS/Phase-6/PHASE_6_COMPLETION_AND_HANDOFF_RUNTIME_SLICE_2026-03-26.md`
 - `docs/PROOFS/Phase-6/PHASE_6_PROOF_PACKET_INDEX.md`
 
 These supporting specs define:
 - the first trust-facing delegated-policy inspection surface
 - the cursor-first product direction for Nova's explain-anything experience
 - the currently implemented Policy Review Center runtime slice
-- the canonical proof packet for Phase-6 foundation work
+- the closing runtime slice that completes Phase 6 in its safe review-oriented form
+- the canonical proof packet for completed Phase-6 runtime work
 
 ## Core Cross-Phase Inputs
 - `docs/PROOFS/Phase-5/PHASE_5_CLOSED_ACT_2026-03-13.md`

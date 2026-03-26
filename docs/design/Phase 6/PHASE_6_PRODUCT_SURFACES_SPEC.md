@@ -44,7 +44,7 @@ Example:
 
 NOVA STATUS
 
-Phase: 5 closed / 6 foundation
+Phase: 6 complete / 7 partial
 Governor: active
 Execution boundary: delegated runtime locked
 Policies: 3 drafts, 0 enabled

@@ -1,7 +1,7 @@
 # Phase-6 Proof Packet Index
 Updated: 2026-03-26
-Status: ACTIVE foundation packet
-Purpose: Canonical index of the runtime-implemented Phase-6 foundation slices that are actually live in the repository.
+Status: COMPLETE runtime packet
+Purpose: Canonical index of the runtime-implemented Phase-6 slices that are actually live in the repository.
 
 ## Interpretation Rule
 Use this packet to answer:
@@ -22,6 +22,7 @@ Do not use this packet to claim:
 5. `PHASE_6_TRUST_REVIEW_SURFACE_RUNTIME_SLICE_2026-03-13.md`
 6. `PHASE_6_DASHBOARD_REFINEMENT_MEMORY_AND_NEWS_RUNTIME_SLICE_2026-03-14.md`
 7. `PHASE_6_POLICY_REVIEW_CENTER_RUNTIME_SLICE_2026-03-26.md`
+8. `PHASE_6_COMPLETION_AND_HANDOFF_RUNTIME_SLICE_2026-03-26.md`
 
 ## Core Design Inputs
 - `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`
@@ -33,12 +34,14 @@ Do not use this packet to claim:
 - `docs/design/Phase 6/PHASE_6_ENGINEERING_CHECKLIST_2026-03-18.md`
 
 ## Boundary Summary
-Phase 6 is now active only in the following safe form:
+Phase 6 is now complete only in the following safe form:
 - atomic policy drafts can be created and stored
 - policy drafts can be inspected
 - safe drafts can be simulated
 - safe drafts can be review-run once manually
 - a user-facing Policy Review Center now exposes that flow
+- Trust Center now shows policy-delegation readiness, action reasoning, and blocked next-step guidance
+- the Policies page now shows delegation readiness and richer drill-down truth
 
 Phase 6 is still not:
 - trigger-driven
@@ -48,13 +51,12 @@ Phase 6 is still not:
 
 ## Verification Snapshot
 - `python -m pytest tests\phase6 -q`
-- `python -m pytest tests\phase45\test_dashboard_policy_center_widget.py tests\phase45\test_policy_center_surface.py -q`
-- `python -m pytest tests\phase45\test_brain_server_basic_conversation.py -k "trust_center or workspace_board or memory_overview or voice_status" -q`
+- `python -m pytest tests\phase45\test_dashboard_policy_center_widget.py tests\phase45\test_dashboard_trust_review_widget.py tests\phase45\test_system_status_reporting_contract.py tests\phase45\test_policy_center_surface.py tests\executors\test_local_control_executors.py tests\test_runtime_auditor.py -q`
 - `node --check nova_backend/static/dashboard.js`
 - `python scripts/check_frontend_mirror_sync.py`
 - `python scripts/check_runtime_doc_drift.py`
 
 ## Current Honest Summary
-Phase 6 has begun in runtime as a review-oriented delegated-policy foundation.
+Phase 6 is complete in runtime as a review-oriented delegated-policy and trust-alignment package.
 
-That means Nova can help a user prepare and inspect delegated policy drafts without becoming an autonomous background agent.
+That means Nova can help a user prepare, inspect, simulate, and review-run safe delegated policy drafts without becoming an autonomous background agent.
