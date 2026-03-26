@@ -18,21 +18,13 @@ Why it matters:
 - small changes are harder to review safely
 - the file makes architectural intent harder to audit than it should be
 
-### 2. Legacy non-execution routing still exists beside governed routing
-`brain_server.py` still carries `SkillRegistry` and `confirmation_gate` imports.
-
-Current interpretation:
-- governed execution still routes through the Governor path
-- the legacy path does not currently create a second execution authority path
-- it is still architectural debt and should be simplified away over time
-
-### 3. Dependency/install truth needed correction
+### 2. Dependency/install truth needed correction
 The repo had:
 - floating dependency versions
 - wake-word dependency pulled into the base install even though wake word is not a live runtime surface
 - no Unix startup script
 
-### 4. Governance-facing status files were stale
+### 3. Governance-facing status files were stale
 `NovaLIS-Governance/STATUS.md` was still written as if Nova were a Capability-16-only staging runtime.
 
 ## Closed Or Reclassified
@@ -60,6 +52,21 @@ There is now:
 - a mirror-sync checker
 - workflow enforcement for that checker
 
+### Legacy conversational hybrid path
+This was reduced in the live runtime.
+
+The websocket hot path no longer:
+- imports `SkillRegistry`
+- checks the passive `confirmation_gate`
+
+Instead it now uses a focused helper:
+- `nova_backend/src/conversation/general_chat_runtime.py`
+
+Residual nuance:
+- the older modules still exist on disk
+- `brain_server.py` is still too large
+- the remaining bounded general-chat fallback should keep moving toward smaller runtime services over time
+
 ## Remediation Applied In This Change Set
 
 ### Dependency correction
@@ -81,6 +88,12 @@ This gives Nova a documented startup path on macOS/Linux instead of a Windows-on
 - rewrote `NovaLIS-Governance/README.md` so new readers are pointed to current runtime truth first
 - reclassified `NovaLIS-Governance/RUNTIME_TRUTH.md` as a historical mechanical snapshot instead of a current canonical runtime status source
 
+### Runtime routing correction
+- removed `SkillRegistry` from the live websocket path in `nova_backend/src/brain_server.py`
+- removed the passive `confirmation_gate` branch from the live websocket path
+- isolated pending escalation confirmation and general-chat fallback in `nova_backend/src/conversation/general_chat_runtime.py`
+- added focused regression coverage for the extracted runtime helper and the deeper-analysis confirmation flow
+
 ### Documentation correction
 - added a setup/startup guide for local operators
 - updated human-facing references so wake word is clearly planned, optional, and not part of the default install
@@ -97,13 +110,10 @@ Best decomposition targets:
 - workspace/trust/memory UI payload builders
 - bridge/settings endpoints
 
-### 2. Legacy routing cleanup
-The legacy conversational path should be reduced so the runtime entrypoint better matches Nova's declared architecture.
-
-### 3. Full provider/connector setup
+### 2. Full provider/connector setup
 Settings is now actionable for runtime permissions, but full provider and connector linking still belongs to later work.
 
-### 4. Final real-device TTS confidence
+### 3. Final real-device TTS confidence
 The code path is better than before, but real-device spoken-output confidence is still a separate last-mile validation task.
 
 ## Short Version
@@ -112,7 +122,8 @@ The repo is in a better state after this pass because:
 - wake word no longer pollutes the default dependency path
 - startup is no longer Windows-only
 - stale governance status files no longer understate the runtime
+- the live websocket runtime no longer depends on the broad legacy skill-registry path
 
 The biggest remaining problem is not missing capability.
 
-It is still codebase simplification around `brain_server.py` and the legacy routing layer.
+It is still codebase simplification around `brain_server.py`.

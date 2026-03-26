@@ -9,6 +9,7 @@ from fastapi import WebSocketDisconnect
 
 from src import brain_server
 from src.actions.action_result import ActionResult
+from src.base_skill import SkillResult
 from src.conversation.session_router import GateResult
 
 
@@ -120,6 +121,47 @@ def test_voice_turn_uses_voice_agent_to_keep_spoken_reply_short_and_screen_frien
     assert spoken[0].startswith("GPUs matter because they accelerate the parallel math local AI relies on.")
     assert "If you want, I can compare that with CPU-only setups." not in spoken[0]
     assert "full answer on screen" in spoken[0]
+
+
+def test_pending_escalation_confirmation_returns_deeper_general_chat_answer(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["Why do GPUs matter?", "yes"])
+    calls = {"count": 0}
+
+    async def _fake_handle(self, query: str, context=None, session_state=None):
+        calls["count"] += 1
+        if calls["count"] == 1:
+            return SkillResult(
+                success=True,
+                message="I can go deeper if you want.",
+                data={
+                    "escalation": {
+                        "ask_user": True,
+                        "original_query": query,
+                        "context_snapshot": list(context or []),
+                        "heuristic_result": {},
+                    }
+                },
+                skill="general_chat",
+            )
+        return SkillResult(
+            success=True,
+            message="Here is the deeper answer.",
+            data={"conversation_context": {"topic": "gpu"}},
+            skill="general_chat",
+        )
+
+    with patch("src.skills.general_chat.GeneralChatSkill.handle", side_effect=_fake_handle):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("I can go deeper if you want." in msg for msg in chat_messages)
+    assert any("Here is the deeper answer." in msg for msg in chat_messages)
 
 
 def test_what_can_you_do_with_question_mark_stays_on_capability_path(monkeypatch):
