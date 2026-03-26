@@ -1,0 +1,558 @@
+# NOVA — GOVERNED AUTOMATION & OPENCLAW INTEGRATION  
+## Canonical Design Document (Final, v3.0)
+
+**Status:** Approved for Implementation  
+**Scope:** Full integration model for OpenClaw‑style automation under Nova governance  
+**Date:** March 22, 2026  
+**Version:** 3.0 (with final hardening)
+
+---
+
+## 1. Purpose
+
+This document defines how Nova can:
+
+- Grant **near‑full computer access** for automation tasks  
+- Enable **OpenClaw‑style intelligence systems** to perform real work  
+- Support **multi‑step project execution** while the user is away  
+- Remain **user‑friendly** (low friction, minimal interruptions)  
+- Maintain **strict governance, security, and system sovereignty**  
+- Protect against **unauthorized access, data leakage, and rogue behavior**
+
+It supersedes all previous drafts and incorporates the outcomes of the March 22, 2026 canonical review and final hardening.
+
+---
+
+## 2. Core Principles (Non‑Negotiable)
+
+| Principle | Statement |
+|-----------|-----------|
+| **Distrust** | ALL intelligence is untrusted. |
+| **Control** | ALL execution must remain governed. |
+| **Boundary** | Intelligence and authority are separated. |
+| **Visibility** | All actions are observable and auditable. |
+| **Intervention** | The Governor must be able to stop, pause, or deny **mid‑action**. |
+| **Minimization** | Only necessary data is exposed to AI. |
+
+These apply to **all** intelligence sources: OpenClaw, Codex, DeepSeek, OpenAI APIs, local models, and any future agents.
+
+---
+
+## 3. End‑State Identity
+
+Nova is **not** an assistant.  
+Nova is **not** an agent.
+
+**Nova is a governed execution environment that allows untrusted intelligence to operate safely within enforced boundaries.**
+
+It acts as:
+
+| Role | Function |
+|------|----------|
+| **Control Plane** | Manages task definitions and execution flow |
+| **AI Firewall** | Filters, monitors, and enforces policy on AI behavior |
+| **Execution Authority** | All system actions pass through this boundary |
+| **Data Exposure Filter** | Controls what AI sees and touches |
+| **Policy Enforcement System** | Defines and enforces allowed actions |
+| **Audit & Trace System** | Records all actions for review and accountability |
+
+---
+
+## 4. Canonical Architecture
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                           USER                                  │
+└─────────────────────────────┬───────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                      NOVA INTERFACE                             │
+│                    (Calm, user‑friendly)                        │
+└─────────────────────────────┬───────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                   TASK ENVELOPE ENGINE                          │
+│               (Defines scope, rules, constraints)               │
+└─────────────────────────────┬───────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                DATA MINIMIZATION ENGINE                         │
+│            (Filters what intelligence sees/touches)             │
+└─────────────────────────────┬───────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│               COGNITIVE FEDERATION LAYER                        │
+│                    (UNTRUSTED)                                  │
+├─────────────────────────────────────────────────────────────────┤
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐       │
+│  │ OpenClaw │  │  Codex   │  │ DeepSeek │  │  Local   │       │
+│  │          │  │          │  │          │  │   LLM    │       │
+│  └──────────┘  └──────────┘  └──────────┘  └──────────┘       │
+│                                                                 │
+│  • Propose actions only                                         │
+│  • No direct execution                                          │
+│  • No persistent memory                                         │
+└─────────────────────────────┬───────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                   NORMALIZATION LAYER                           │
+│          • Convert proposals to canonical actions               │
+│          • Apply envelope constraints                           │
+└─────────────────────────────┬───────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                 GOVERNOR INTERCEPTOR                            │
+│                 (REAL‑TIME ENFORCEMENT)                         │
+├─────────────────────────────────────────────────────────────────┤
+│  • Validates against envelope, policy, anomaly detection        │
+│  • Allows, denies, pauses, or escalates each action attempt     │
+│  • The ONLY path to ExecuteBoundary                             │
+└─────────────────────────────┬───────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                   EXECUTEBOUNDARY                               │
+│                 (Hard enforcement)                              │
+│  • Executes allowed actions                                     │
+│  • Blocks disallowed actions                                    │
+│  • Pauses on anomalies                                          │
+└─────────────────────────────┬───────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│            SYSTEM / OS / FILES / NETWORK                        │
+└─────────────────────────────┬───────────────────────────────────┘
+                              ↓
+┌─────────────────────────────────────────────────────────────────┐
+│                       LEDGER                                    │
+│                    (Truth source)                               │
+│  • All actions logged                                           │
+│  • Policy breaches recorded                                     │
+│  • Envelope trace preserved                                     │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 5. Critical Gaps Addressed
+
+The canonical review identified five gaps. They are closed as follows:
+
+### 5.1 ❌ No mandatory interception layer
+
+**Gap:** Current `execute_action()` was reachable directly after user confirmation.  
+**Solution:** `GovernorInterceptor` is now the **only** entry point to `ExecuteBoundary`. All execution attempts must pass through it.
+
+### 5.2 ❌ No mid‑execution control
+
+**Gap:** Multi‑step automation could not be interrupted mid‑stream.  
+**Solution:** The interceptor evaluates **each action attempt** individually. The anomaly detector tracks real‑time patterns and can pause or deny at any step.
+
+### 5.3 ❌ Data minimization was conceptual
+
+**Gap:** No engine enforced file filtering, context slicing, or secret masking.  
+**Solution:** `DataMinimizationEngine` runs **before** any intelligence call, providing a safe, minimal context.
+
+### 5.4 ❌ Network mediation was not enforced
+
+**Gap:** Skills called external APIs directly.  
+**Solution:** `NetworkMediator` is the **sole** outbound network authority; all external calls must route through it.
+
+### 5.5 ❌ Anomaly detection undefined concretely
+
+**Gap:** No runtime detection logic existed.  
+**Solution:** `AnomalyDetector` tracks action frequency, path sensitivity, and other patterns, feeding decisions to the interceptor.
+
+---
+
+## 6. Operational Invariants (Hard Rules)
+
+1. **Every execution must be associated with an active `TaskEnvelope`.**  
+   No default/global execution context exists. If no envelope is active, all execution attempts are denied.
+
+2. **No execution path may exist outside the Governor Interceptor.**  
+   `execute_action()` and all future executors are downstream of interception.
+
+3. **All actions are observed and logged.**  
+   Every attempt is recorded in the Ledger, including decisions and reasons.
+
+4. **The Governor can stop mid‑action.**  
+   The interceptor evaluates each step individually; a pause or deny decision halts further processing.
+
+5. **Data minimization is enforced before any intelligence call.**  
+   No raw file content or sensitive data reaches OpenClaw or other models without filtering.
+
+6. **Network mediation is centralized.**  
+   No outbound call bypasses `NetworkMediator`.
+
+7. **Task envelopes are ephemeral.**  
+   Envelopes expire; no permanent elevated privileges persist.
+
+8. **Kill switch is always available.**  
+   A global emergency stop terminates any running envelope immediately.
+
+---
+
+## 7. Enforcement Rules (Final Hardening)
+
+These rules are added to close the last 5% of design gaps.
+
+### 🔒 A. Envelope Requirement
+
+> **Every execution must be associated with an active TaskEnvelope. If no envelope exists, execution is denied.**
+
+### 🔒 B. Default = Deny
+
+> If an action cannot be confidently classified as allowed by envelope and policy, it must be **denied or escalated**. No implicit allowance.
+
+### 🔒 C. Network = Deny by Default
+
+> Network access is disabled unless explicitly enabled per envelope via `network.enabled = True`.
+
+### 🔒 D. File System = Explicit Scope Only
+
+> If no `allowed_paths` are defined in the envelope, no filesystem access is permitted.
+
+### 🔒 E. Anomaly Detection Evolution
+
+The initial anomaly detector will be extended in later phases to include:
+
+- Sequence pattern detection
+- Tool chaining detection
+- Task drift scoring
+- Intent mismatch detection (comparing action stream to original user request)
+
+---
+
+## 8. Core Components (Implementation Ready)
+
+### 8.1 Task Envelope (`governor/envelope/task_envelope.py`)
+
+```python
+from dataclasses import dataclass, field
+from typing import Set, List
+import time
+
+@dataclass
+class NetworkAccessPolicy:
+    enabled: bool = False
+    allowed_domains: Set[str] = field(default_factory=set)
+
+@dataclass
+class TaskEnvelope:
+    envelope_id: str
+    title: str
+    created_at: float = field(default_factory=time.time)
+
+    allowed_paths: List[str] = field(default_factory=list)
+    forbidden_paths: List[str] = field(default_factory=list)
+
+    allowed_actions: Set[str] = field(default_factory=set)
+    forbidden_actions: Set[str] = field(default_factory=set)
+
+    allowed_tools: Set[str] = field(default_factory=set)
+    network: NetworkAccessPolicy = field(default_factory=NetworkAccessPolicy)
+
+    max_actions: int = 50
+    max_duration_seconds: int = 1800
+
+    escalation_triggers: Set[str] = field(default_factory=set)
+
+    def is_expired(self) -> bool:
+        return (time.time() - self.created_at) > self.max_duration_seconds
+```
+
+### 8.2 Action Attempt (`automation/action_attempt.py`)
+
+```python
+from dataclasses import dataclass, field
+from typing import Any, Dict, Optional
+import time, uuid
+
+@dataclass
+class ActionAttempt:
+    action_type: str
+    title: str
+    payload: Dict[str, Any] = field(default_factory=dict)
+
+    source: str = "unknown"          # user | openclaw | codex | deepseek
+    tool_name: Optional[str] = None
+    envelope_id: Optional[str] = None
+
+    created_at: float = field(default_factory=time.time)
+    attempt_id: str = field(default_factory=lambda: str(uuid.uuid4()))
+```
+
+### 8.3 Anomaly Detector (`governor/anomaly_detector.py`)
+
+```python
+from dataclasses import dataclass, field
+from typing import List
+import time
+
+@dataclass
+class AnomalyResult:
+    flagged: bool
+    reasons: List[str] = field(default_factory=list)
+
+class AnomalyDetector:
+    def __init__(self) -> None:
+        self._recent_attempt_times: list[float] = []
+
+    def evaluate(self, action_type: str, payload: dict) -> AnomalyResult:
+        now = time.time()
+        self._recent_attempt_times = [t for t in self._recent_attempt_times if now - t < 10]
+        self._recent_attempt_times.append(now)
+
+        reasons = []
+        if len(self._recent_attempt_times) > 25:
+            reasons.append("action_rate_spike")
+
+        path = str(payload.get("path", ""))
+        if any(token in path.lower() for token in [".env", "credentials", "secret", "token", "key"]):
+            reasons.append("sensitive_path_access")
+
+        return AnomalyResult(flagged=bool(reasons), reasons=reasons)
+```
+
+### 8.4 Governor Interceptor (`governor/governor_interceptor.py`)
+
+```python
+from dataclasses import dataclass
+from automation.action_attempt import ActionAttempt
+from governor.envelope.task_envelope import TaskEnvelope
+from governor.anomaly_detector import AnomalyDetector
+
+@dataclass
+class InterceptDecision:
+    decision: str   # allow | deny | escalate | pause
+    reason: str
+
+class GovernorInterceptor:
+    def __init__(self, anomaly_detector: AnomalyDetector = None) -> None:
+        self._anomaly_detector = anomaly_detector or AnomalyDetector()
+        self._action_counts: dict[str, int] = {}
+
+    def evaluate(self, attempt: ActionAttempt, envelope: TaskEnvelope) -> InterceptDecision:
+        if envelope is None:
+            return InterceptDecision("deny", "no_active_envelope")
+
+        if envelope.is_expired():
+            return InterceptDecision("deny", "envelope_expired")
+
+        if attempt.action_type in envelope.forbidden_actions:
+            return InterceptDecision("deny", "forbidden_action")
+
+        if envelope.allowed_actions and attempt.action_type not in envelope.allowed_actions:
+            return InterceptDecision("escalate", "action_not_in_allowed_set")
+
+        self._action_counts.setdefault(envelope.envelope_id, 0)
+        self._action_counts[envelope.envelope_id] += 1
+        if self._action_counts[envelope.envelope_id] > envelope.max_actions:
+            return InterceptDecision("deny", "action_limit_exceeded")
+
+        anomaly = self._anomaly_detector.evaluate(attempt.action_type, attempt.payload)
+        if anomaly.flagged:
+            return InterceptDecision("pause", ",".join(anomaly.reasons))
+
+        return InterceptDecision("allow", "in_policy")
+```
+
+### 8.5 Data Minimization Engine (`governor/data_minimization/data_minimization_engine.py`)
+
+```python
+from dataclasses import dataclass
+from pathlib import Path
+from typing import Iterable, List
+import re
+
+from governor.envelope.task_envelope import TaskEnvelope
+
+@dataclass
+class MinimizedContext:
+    files: List[str]
+    contents: List[str]
+
+class DataMinimizationEngine:
+    SECRET_PATTERNS = [
+        re.compile(r"api[_-]?key\s*=\s*['\"].+?['\"]", re.IGNORECASE),
+        re.compile(r"secret\s*=\s*['\"].+?['\"]", re.IGNORECASE),
+        re.compile(r"token\s*=\s*['\"].+?['\"]", re.IGNORECASE),
+    ]
+
+    def minimize_files(self, candidates: Iterable[str], envelope: TaskEnvelope) -> List[str]:
+        out = []
+        for raw in candidates:
+            path = str(raw)
+            if any(blocked.lower() in path.lower() for blocked in envelope.forbidden_paths):
+                continue
+            if envelope.allowed_paths and not any(allowed.lower() in path.lower() for allowed in envelope.allowed_paths):
+                continue
+            out.append(path)
+        return out
+
+    def redact_text(self, text: str) -> str:
+        cleaned = text
+        for pattern in self.SECRET_PATTERNS:
+            cleaned = pattern.sub("[REDACTED]", cleaned)
+        return cleaned
+
+    def build_context(self, paths: Iterable[str], max_files: int = 10) -> MinimizedContext:
+        kept_files = []
+        contents = []
+
+        for path_str in list(paths)[:max_files]:
+            p = Path(path_str)
+            if not p.exists() or not p.is_file():
+                continue
+            try:
+                text = p.read_text(encoding="utf-8", errors="ignore")
+            except Exception:
+                continue
+
+            kept_files.append(path_str)
+            contents.append(self.redact_text(text[:20000]))
+
+        return MinimizedContext(files=kept_files, contents=contents)
+```
+
+### 8.6 Network Mediator (`governor/network/network_mediator.py`)
+
+```python
+from dataclasses import dataclass
+from urllib.parse import urlparse
+
+from governor.envelope.task_envelope import TaskEnvelope
+
+@dataclass
+class NetworkDecision:
+    allowed: bool
+    reason: str
+
+class NetworkMediator:
+    def authorize(self, url: str, envelope: TaskEnvelope) -> NetworkDecision:
+        if not envelope.network.enabled:
+            return NetworkDecision(False, "network_disabled")
+
+        domain = urlparse(url).netloc.lower()
+        if envelope.network.allowed_domains and domain not in envelope.network.allowed_domains:
+            return NetworkDecision(False, "domain_not_allowed")
+
+        return NetworkDecision(True, "allowed")
+```
+
+### 8.7 OpenClaw Adapter (`integrations/openclaw/openclaw_adapter.py`)
+
+```python
+from typing import Any, Dict, List
+
+from governor.data_minimization.data_minimization_engine import MinimizedContext
+
+class OpenClawAdapter:
+    def build_task_payload(
+        self,
+        task_title: str,
+        task_description: str,
+        context: MinimizedContext,
+    ) -> Dict[str, Any]:
+        return {
+            "task_title": task_title,
+            "task_description": task_description,
+            "files": context.files,
+            "contents": context.contents,
+            "instruction": (
+                "You may propose actions and edits only. "
+                "Do not execute commands directly. "
+                "Return a stepwise proposal stream."
+            ),
+        }
+
+    def parse_proposals(self, raw_output: Dict[str, Any]) -> List[Dict[str, Any]]:
+        proposals = raw_output.get("proposals", [])
+        return [p for p in proposals if isinstance(p, dict)]
+```
+
+---
+
+## 9. Governor Modes
+
+| Mode | Behavior | Phase |
+|------|----------|-------|
+| **Strict** | Approve every action manually; zero autonomy | Phase 3.5 |
+| **Envelope** | Approve task once; all in‑scope actions allowed automatically | Phase 4.5 |
+| **Supervisory** | Silent when in‑policy; intervene on breach, anomaly, or scope drift | Phase 5+ |
+
+The **Supervisory** mode is the long‑term target.
+
+---
+
+## 10. Implementation Plan
+
+### Phase 1: Foundation (Do First)
+
+1. **Add `TaskEnvelope`, `ActionAttempt`, `GovernorInterceptor`**  
+2. **Modify `brain_server.py`** to route all execution attempts through interceptor  
+3. **Enforce no‑envelope denial**  
+4. **Add simple anomaly detector**  
+5. **Wrap existing execution paths** (file writes, subprocess, HTTP) behind interceptor/mediator
+
+### Phase 2: Data Minimization
+
+1. **Implement `DataMinimizationEngine`**  
+2. **Integrate before any intelligence call** (Codex, OpenClaw, etc.)  
+3. **Refactor file context building to use the engine**
+
+### Phase 3: Network Control
+
+1. **Implement `NetworkMediator`**  
+2. **Refactor all external‑calling skills** (weather, search, etc.) to use it  
+3. **Enforce envelope‑based network rules**
+
+### Phase 4: OpenClaw Integration
+
+1. **Implement `OpenClawAdapter`** in proposal‑only mode  
+2. **Wire into Cognitive Federation Layer**  
+3. **Test with a narrow envelope** (e.g., refactor a single module)
+
+### Phase 5: Supervisory Mode
+
+1. **Expand anomaly detection rules** (sequence, chaining, drift, intent mismatch)  
+2. **Implement mid‑stream pause/resume**  
+3. **Support full “walk‑away” automation** with bounded envelopes
+
+---
+
+## 11. Testing Requirements
+
+Before moving to Phase 2, prove these failure cases:
+
+- [ ] Action outside allowed_paths → denied  
+- [ ] Access to secret file (.env, etc.) → paused  
+- [ ] More than max_actions → denied  
+- [ ] No active envelope → denied  
+- [ ] Rate spike → paused  
+- [ ] Network call without envelope.network.enabled → denied  
+- [ ] Network call to unauthorized domain → denied  
+
+---
+
+## 12. Risk & Mitigation
+
+| Risk | Mitigation |
+|------|------------|
+| Bypassing the interceptor for “quick” tasks | Enforce invariant #1; code review for direct `execute_action` calls |
+| Envelope too broad (full disk access) | Require explicit `allowed_paths`; deny if empty |
+| Anomaly detector false positives | Allow override but log; refine rules iteratively |
+| Performance overhead of per‑action interception | Start with synchronous; optimize later; overhead is acceptable for safety |
+
+---
+
+## 13. Final Identity Statement
+
+> **Nova does not trust intelligence. Nova governs it.**
+
+> **Nova’s power does not come from what it can do — it comes from what it refuses to allow.**
+
+---
+
+**Document Version:** 3.0  
+**Next Steps:** Begin Phase 1 implementation as described.  
+**Canonical Location:** `/nova/docs/design/governed-automation-spec.md`

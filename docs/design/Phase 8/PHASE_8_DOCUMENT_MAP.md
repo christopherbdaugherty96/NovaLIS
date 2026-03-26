@@ -1,18 +1,26 @@
 # Phase 8 Document Map
-Updated: 2026-03-18
+Updated: 2026-03-25
 Status: Current design map
-Purpose: Separate the new governed-execution integration plan from exploratory notes already sitting in this folder
+Purpose: Keep the canonical OpenClaw direction, supporting execution plan, and raw source notes clearly separated
 
-## Canonical Phase-8 Planning Core
+## Canonical Phase-8 OpenClaw Truth
+- `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
+
+This is now the formal canonical design truth for how OpenClaw should fit into Nova.
+If there is tension between Phase-8 notes, this document wins.
+
+## Supporting Phase-8 Implementation Context
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
 
-This is the current next-step Phase-8 plan for governed external execution.
+This remains useful as a narrower implementation-planning packet.
+It should now be read as supporting context beneath the canonical Phase-8 spec above.
 
-## Adjacent Inputs
+## Raw Source Inputs Preserved
+- `docs/design/Phase 8/openclaw.txt`
 - `docs/design/Phase 8/node design.txt`
 
-This note captures practical product pain points around screen awareness and the brief flow.
-It is useful context, but it is not the authoritative Phase-8 execution roadmap.
+These notes remain valuable because they capture the originating product and hardening intent.
+They are preserved as source material, but they are not the final authority over the formal canonical spec.
 
 ## Cross-Phase Inputs
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
@@ -27,43 +35,23 @@ It is useful context, but it is not the authoritative Phase-8 execution roadmap.
 - `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 
-## Phase-8 Boundary For News Work
-The news experience and reasoning packet is primarily a current product-track document with later Phase-7 reasoning extensions.
+## Phase-8 Boundary For News, Search, And Reasoning Work
+The news and web-search packets are primarily current product-track and Phase-7 reasoning documents.
 
-For Phase 8, read it only with this boundary:
+In Phase 8, read them with this boundary:
 - news remains read-only
-- no news summarization or article-reading flow becomes execution authority
-- no provider-backed reasoning result becomes approval authority
-
-The same interpretation applies to the web-search reasoning packet:
 - web search remains read-only
-- no search answer becomes execution authority
-- no provider-backed synthesis result becomes approval authority
+- reasoning output can support action previews
+- reasoning output never becomes execution authority or approval authority
 
-The next-level robust agent roadmap should be read this way in Phase 8:
-- read-only source connectors can begin earlier as product features
-- app-control connectors, write actions, and action-capable schedules belong here
-- stronger permission surfaces matter most once real-world effect is possible
-
-The governed crypto connector and trading packet should be read this way in Phase 8:
-- public crypto market data belongs earlier in the product lane
-- any private account API use belongs here
-- approval-gated live order placement belongs here
-- withdrawals, leverage, and derivatives should be treated as higher-risk later steps
-
-The continuous Agent-OS vision packet should be read this way in Phase 8:
-- governed document updates, GitHub write actions, app actions, and home actions belong here
-- "continuously on" does not remove approval requirements for real-world effects
-- actions remain explicit even if Nova becomes more present and useful
-
-The governed intelligence execution direction packet should be read this way in Phase 8:
-- capability-to-action predictability belongs here once actions have real-world effect
-- screen/context awareness may feed governed action previews and explicit execution paths here
-- structured reasoning output can support action previews, but must not become approval authority
-- nothing in this packet authorizes silent jumps from reasoning to execution
+The same interpretation applies to broader agent-roadmap packets:
+- read-only connectors can arrive earlier
+- write-capable connectors, app control, and action-capable schedules belong here
+- continuously-on usefulness never removes approval requirements for real-world effect
 
 ## Interpretation Rule
 When reading the Phase-8 folder:
-- use the governed execution plan first
-- use `node design.txt` as a product/reality signal about what is still not working well
+- use the canonical governed automation spec first
+- use the governed execution plan second
+- use `openclaw.txt` and `node design.txt` as preserved raw source inputs
 - do not treat the existence of a Phase-8 folder as proof that Phase 8 is live in runtime

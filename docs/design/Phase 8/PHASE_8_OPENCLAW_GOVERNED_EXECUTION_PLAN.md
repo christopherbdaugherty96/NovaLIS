@@ -1,7 +1,14 @@
 # Phase 8 OpenClaw Governed Execution Plan
 Date: 2026-03-18
-Status: Planning packet only; runtime not authorized
-Scope: Governed external execution through an untrusted executor such as OpenClaw
+Status: Supporting Phase-8 implementation packet; no longer the canonical OpenClaw truth doc
+Scope: Narrow governed external execution planning through an untrusted executor such as OpenClaw
+
+## Canonical Authority Note
+The primary OpenClaw source-of-truth document is now:
+- `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
+
+This file remains useful as an implementation-sequencing packet.
+Use it to support execution planning, but resolve architectural questions in favor of the canonical spec above.
 
 ## Purpose
 This document relocates the OpenClaw material from the source spec into the correct future phase.
@@ -45,7 +52,7 @@ The governing rule is simple:
 OpenClaw must be treated as an untrusted executor.
 That means:
 - it never interprets user intent on its own
-- it never receives raw Claude output as authority
+- it never receives raw reasoning output as authority
 - it never receives free-form "do whatever seems right" instructions
 - it only receives Governor-approved structured action payloads
 
@@ -112,7 +119,9 @@ Phase 8 is ready only when:
 - bypass and prompt-injection defenses are tested
 
 ## Related Inputs
+- `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 - `docs/design/Phase 6/PHASE_6_SOVEREIGNTY_ALIGNMENT_AND_TRUST_LOOP_PLAN.md`
 - `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
 - `docs/design/Phase 8/node design.txt`
+- `docs/design/Phase 8/openclaw.txt`
