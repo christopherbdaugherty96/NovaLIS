@@ -51,6 +51,7 @@ Runtime truth lives in:
 22. `22_GOVERNED_CRYPTO_AND_TRADING_GUIDE.md`
 23. `23_CONTINUOUS_NOVA_AGENT_OS_VISION.md`
 24. `24_NOVA_STATUS_AND_PHASE_REPORT_2026-03-25.md`
+25. `25_NOVA_PRODUCT_MESSAGING_VARIANTS_2026-03-26.md`
 
 ## Quick Summary
 Nova is a governed personal intelligence system.
