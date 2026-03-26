@@ -51,6 +51,7 @@ It handles things like:
 - rendering chat and widgets
 - thread map and thread detail behavior
 - trust and system-status surfaces
+- persistent navigation and header page/runtime status
 - reasoning transparency surfaces
 - remote bridge and connection-status surfaces
 - policy review rendering
@@ -76,6 +77,7 @@ The frontend can present:
 - search widgets
 - weather/news/calendar widgets
 - system status
+- persistent page navigation and header context
 - Workspace Home on the Home page
 - a dedicated Workspace page
 - a dedicated Policies page
@@ -89,12 +91,18 @@ The frontend can present:
 - screen/perception results
 - a first-run guide for non-technical users
 - a stronger first-run magic-moment prompt centered on `explain this`
+- a clearer text-bearing thinking bar while Nova is working
+- visible push-to-talk state changes
+- timeout-backed snapshot fallbacks with a direct calendar-to-Settings action
+- inline confirmation before state-changing memory actions are sent
 
 More specifically, the current dashboard can now show:
 - Home-page operator health
 - Home-page trust review
 - Home-page Workspace Home
 - Memory Center list and item detail
+- top-level navigation between Chat, Home, News, Workspace, Memory, Policies, Trust, Settings, and Intro
+- header page context and runtime connection state
 - News-page in-card summaries
 - bounded second-opinion controls
 - Workspace page project board

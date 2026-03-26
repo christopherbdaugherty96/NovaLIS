@@ -92,7 +92,7 @@ Examples:
 - `say it`
 
 There is also a governed same-thread second-opinion lane:
-- click `DeepSeek`
+- click `Second opinion`
 - or type `second opinion`
 - or type `review this answer`
 - Nova will request a bounded external second opinion on the recent exchange

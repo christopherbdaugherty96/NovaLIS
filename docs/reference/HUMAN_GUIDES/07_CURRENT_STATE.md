@@ -29,6 +29,7 @@ That means Nova already has:
 - a dedicated Policies page for draft review, delegation-readiness review, simulation, and one-shot manual runs
 - a dedicated Introduction page and a dedicated Settings page
 - a separate landing-preview page for product messaging review
+- a visible primary navigation strip and a header page/connection status surface
 - a pinned base dependency file and cross-platform startup scripts
 - a first-run onboarding guide for non-technical users
 - a visible local-project Structure Map surface with structured graph output
@@ -49,6 +50,7 @@ That means Nova already has:
 - a cleaner live chat runtime with bounded general-chat fallback extracted out of the old skill-registry path
 - a thinner app entrypoint with the websocket session loop and the main HTTP route families extracted into focused modules
 - dashboard support for all of the above
+- stronger first-run orientation, clearer live processing feedback, clearer mic-state feedback, and safer inline memory-action checks
 
 ## What Feels Mature Already
 These parts are already meaningfully real:
@@ -77,6 +79,11 @@ These parts are already meaningfully real:
 - local project summary, architecture report, project overview, and structure-map flows
 - user-facing Introduction and Settings pages that explain Nova and now let users change setup mode and pause or re-enable governed reasoning and remote bridge access
 - a stronger first-run magic-moment prompt centered on `explain this`
+- persistent top-level page navigation and a clearer current-page/runtime-status header
+- Intro-first first-run routing instead of starting new users in a blank chat view
+- a clearer text-bearing thinking bar and better voice/PTT state feedback
+- timed snapshot fallback states with a direct Settings path for calendar setup
+- inline confirmation before lock/unlock/defer/delete memory actions are sent
 - a visible Policy Review Center that keeps delegated policy work inspectable and manual
 - a visible capability-authority map that shows what policies are safe now, later, or explicit-only
 - Trust and Settings visibility for remote bridge and provider/connection state

@@ -9,6 +9,7 @@ Status: Current proof index
 - `docs/PROOFS/Phase-7/PHASE_7_PRODUCT_ENTRY_AND_USAGE_VISIBILITY_RUNTIME_SLICE_2026-03-26.md`
 - `docs/PROOFS/Phase-7/PHASE_7_RUNTIME_ROUTING_CLEANUP_2026-03-26.md`
 - `docs/PROOFS/Phase-7/PHASE_7_RUNTIME_ENTRYPOINT_MODULARIZATION_2026-03-26.md`
+- `docs/PROOFS/Phase-7/PHASE_7_FRONTEND_ORIENTATION_AND_FEEDBACK_RUNTIME_SLICE_2026-03-26.md`
 
 ## Earlier bounded Phase-7 foundation packet
 - `docs/PROOFS/Phase-7/PHASE_7_PRODUCT_FOUNDATION_RUNTIME_SLICE_2026-03-25.md`
@@ -26,6 +27,12 @@ Status: Current proof index
 - Trust and Settings visibility for provider, connection, and bridge state
 - a separate landing-preview page for product messaging review
 - a stronger first-run magic-moment prompt centered on `explain this`
+- a visible primary navigation strip across the major Nova pages
+- an explicit header page-context and connection-status surface
+- Intro-first first-run routing instead of dropping new users directly into Chat
+- a stronger text-bearing thinking bar instead of a nearly invisible activity line
+- clearer push-to-talk state feedback and safer inline memory action confirmation
+- timeout-backed snapshot fallback states with a direct calendar-to-Settings funnel
 - estimated governed reasoning-usage visibility in Trust and Settings
 - bounded general-chat fallback isolated from the legacy skill registry path
 - passive confirmation-gate logic removed from the live websocket runtime path

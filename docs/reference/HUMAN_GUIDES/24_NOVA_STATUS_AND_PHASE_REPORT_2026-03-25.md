@@ -16,6 +16,7 @@ It now has:
 - a token-gated governed remote bridge for read/reasoning access
 - a Home page, Workspace page, Trust page, Policies page, Introduction page, Settings page, News page, Memory page, and chat surface
 - a separate landing-preview page for product messaging review
+- a persistent top-level navigation strip plus a clearer header page/connection status surface
 - a pinned base dependency path plus Windows and Unix startup scripts
 - a cleaner live runtime entrypoint with the legacy skill-registry path removed from the websocket hot path
 - local-project understanding that now includes a visible structure-map view with structured graph output
@@ -124,7 +125,10 @@ Nova currently has:
 - schedule and pattern-review surfaces
 - follow-up actions tied to dashboard widgets
 - a first-run guide for non-technical users
+- Intro-first first-run routing instead of dropping new users into Chat
 - a stronger first-run magic-moment prompt centered on `explain this`
+- a clearer text-bearing thinking bar while Nova is working
+- visible push-to-talk state feedback during voice capture
 - a settings surface for setup-mode choice, voice checks, comfort controls, and governed runtime permissions
 - visible provider, connection, and remote-bridge status in Settings, with live pause/re-enable controls for second opinion and bridge access
 - visible estimated reasoning usage and budget state in Trust and Settings
@@ -163,7 +167,7 @@ Nova can now do all of these locally:
 - show a human-facing structure map of the current repo
 
 ### 6. Governed external reasoning review
-Nova now includes a governed external reasoning lane that can be reached from chat or the `DeepSeek` button near chat controls.
+Nova now includes a governed external reasoning lane that can be reached from chat or the `Second opinion` button near chat controls.
 
 That lane:
 - stays in the same chat box
@@ -218,6 +222,15 @@ The newest governed-access slice then closed the remote reachability gap without
 - bridge status visibility in Trust Center
 - connection and provider status visibility in Settings
 - explicit remote-scope blocking for effectful local actions
+
+The newest frontend-orientation slice then made the existing product easier to understand on day one:
+- persistent top-level page navigation
+- header page-context and connection-state visibility
+- Intro-first first-run routing
+- a clearer text-bearing thinking bar
+- clearer push-to-talk state feedback
+- timeout-backed snapshot fallback states including a Settings path for calendar setup
+- inline confirmation before state-changing memory actions are sent
 
 The newest architecture-cleanup slice then reduced one of the biggest remaining repo debts:
 - removed `SkillRegistry` from the live websocket hot path
