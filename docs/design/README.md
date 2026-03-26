@@ -90,10 +90,10 @@ Current conversational/style baseline on `main`:
 - `d0a80c3` - Nova Style Layer Stage 2 checkpoint
 
 Current recommended next-step posture:
-- the current highest-value next implementation target is explicit memory stage 2 management UI
-- start with `codex/memory-stage2-management-ui`
+- the current highest-value next implementation target is explicit memory stage 3 context retrieval
+- start with `codex/memory-stage3-context-retrieval`
 - prefer disciplined core-layer implementation over broad new expansion
-- memory management, retrieval, and project foundations should come before wider home/crypto/wake-word/personality buildout
+- memory retrieval, answer-first search/news, and project foundations should come before wider home/crypto/wake-word/personality buildout
 
 Canonical design phase folders:
 - `Phase 4`

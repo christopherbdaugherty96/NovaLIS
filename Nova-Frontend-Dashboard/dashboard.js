@@ -31,6 +31,19 @@ let memoryOverviewState = {
   summary: "No durable memory saved yet. Memory becomes persistent only when you explicitly save it.",
   snapshot: {},
 };
+let memoryCenterState = {
+  items: [],
+  selectedId: "",
+  selectedItem: null,
+  filters: {
+    tier: "",
+    scope: "",
+    thread_name: "",
+    thread_key: "",
+  },
+  summary: "Load the governed memory list to browse durable items and inspect one in detail.",
+  lastHydratedAt: 0,
+};
 let toneState = {
   summary: "Global tone: balanced. No domain overrides.",
   snapshot: {},
@@ -310,6 +323,251 @@ function createOverviewChip(label, value) {
   chip.className = "memory-overview-tier";
   chip.textContent = `${label}: ${Number.isFinite(value) ? value : 0}`;
   return chip;
+}
+
+function describeMemoryFilter(filters = {}) {
+  const tier = String(filters.tier || "").trim().toLowerCase();
+  const scope = String(filters.scope || "").trim().toLowerCase();
+  const threadName = String(filters.thread_name || filters.threadName || "").trim();
+  const threadKey = String(filters.thread_key || filters.threadKey || "").trim();
+  const parts = ["All durable memory"];
+  if (tier) parts.push(`tier ${tier}`);
+  if (scope) parts.push(`scope ${scope}`);
+  if (threadName) parts.push(`thread ${threadName}`);
+  else if (threadKey) parts.push(`thread ${threadKey}`);
+  return parts.join(" · ");
+}
+
+function normalizeMemoryItem(item = {}) {
+  return {
+    id: String(item.id || "").trim(),
+    title: String(item.title || "").trim(),
+    body: String(item.body || "").trim(),
+    tier: String(item.tier || item.status || "active").trim().toLowerCase(),
+    status: String(item.status || item.tier || "active").trim().toLowerCase(),
+    scope: String(item.scope || "").trim().toLowerCase(),
+    source: String(item.source || "").trim(),
+    updated_at: String(item.updated_at || "").trim(),
+    created_at: String(item.created_at || "").trim(),
+    version: Number(item.version || 0),
+    tags: Array.isArray(item.tags) ? item.tags.map((tag) => String(tag || "").trim()).filter(Boolean) : [],
+    thread_name: String(item.thread_name || "").trim(),
+    thread_key: String(item.thread_key || "").trim(),
+    preview: String(item.preview || item.content_display || item.title || item.id || "").trim(),
+    content_display: String(item.content_display || item.preview || item.title || item.id || "").trim(),
+    deleted: Boolean(item.deleted),
+    deleted_at: String(item.deleted_at || "").trim(),
+    is_locked: Boolean(item.is_locked),
+    unlock_policy: String(item.unlock_policy || "").trim(),
+    supersedes: Array.isArray(item.supersedes) ? item.supersedes.map((value) => String(value || "").trim()).filter(Boolean) : [],
+    superseded_by: String(item.superseded_by || "").trim(),
+  };
+}
+
+function upsertMemoryCenterItem(item) {
+  const normalized = normalizeMemoryItem(item);
+  if (!normalized.id) return;
+
+  const nextItems = Array.isArray(memoryCenterState.items) ? memoryCenterState.items.slice() : [];
+  const index = nextItems.findIndex((row) => String(row.id || "").trim() === normalized.id);
+
+  if (normalized.deleted) {
+    if (index >= 0) nextItems.splice(index, 1);
+    if (memoryCenterState.selectedId === normalized.id) {
+      memoryCenterState.selectedId = "";
+      memoryCenterState.selectedItem = null;
+    }
+    memoryCenterState.items = nextItems;
+    return;
+  }
+
+  if (index >= 0) {
+    nextItems[index] = { ...nextItems[index], ...normalized };
+  } else {
+    nextItems.unshift(normalized);
+  }
+  nextItems.sort((left, right) => {
+    const leftTime = String(left.updated_at || "");
+    const rightTime = String(right.updated_at || "");
+    return rightTime.localeCompare(leftTime);
+  });
+  memoryCenterState.items = nextItems.slice(0, 30);
+}
+
+function getSelectedMemoryItem() {
+  const selectedId = String(memoryCenterState.selectedId || "").trim();
+  if (!selectedId) return null;
+  const fromList = Array.isArray(memoryCenterState.items)
+    ? memoryCenterState.items.find((item) => String(item.id || "").trim() === selectedId)
+    : null;
+  if (fromList && memoryCenterState.selectedItem) {
+    return { ...fromList, ...memoryCenterState.selectedItem };
+  }
+  return fromList || memoryCenterState.selectedItem || null;
+}
+
+function setMemoryCenterStatus(text) {
+  const status = $("memory-center-status");
+  if (status) status.textContent = text;
+}
+
+function sendSilentMemoryCommand(text) {
+  const clean = String(text || "").trim();
+  if (!clean) return false;
+  if (!safeWSSend({ text: clean, silent_widget_refresh: true })) {
+    appendChatMessage("assistant", "Connection is not ready yet. Please wait a second and try again.", null, "System status");
+    return false;
+  }
+  return true;
+}
+
+function hydrateMemoryManagement(force = false) {
+  const now = Date.now();
+  if (!force && now - Number(memoryCenterState.lastHydratedAt || 0) < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
+  memoryCenterState.lastHydratedAt = now;
+  sendSilentMemoryCommand("memory overview");
+  sendSilentMemoryCommand("list memories");
+}
+
+function renderMemoryCenterSurface() {
+  const filterLabel = $("memory-list-filter-label");
+  const listHost = $("memory-list-host");
+  const detailEmpty = $("memory-detail-empty");
+  const detailHost = $("memory-detail-host");
+  const editInput = $("memory-edit-input");
+  const detailNote = $("memory-detail-note");
+  if (!filterLabel || !listHost || !detailEmpty || !detailHost || !editInput || !detailNote) return;
+
+  const items = Array.isArray(memoryCenterState.items) ? memoryCenterState.items.slice() : [];
+  filterLabel.textContent = describeMemoryFilter(memoryCenterState.filters);
+
+  clear(listHost);
+  if (!items.length) {
+    const empty = document.createElement("div");
+    empty.className = "memory-overview-empty";
+    empty.textContent = "No memory items loaded yet. Use the list controls above to fetch durable items.";
+    listHost.appendChild(empty);
+  } else {
+    items.forEach((item) => {
+      const row = document.createElement("button");
+      row.type = "button";
+      row.className = "memory-list-row";
+      if (String(memoryCenterState.selectedId || "").trim() === item.id) {
+        row.classList.add("active");
+      }
+      row.addEventListener("click", () => {
+        memoryCenterState.selectedId = item.id;
+        if (item.body) {
+          memoryCenterState.selectedItem = { ...item };
+          renderMemoryCenterSurface();
+        }
+        setMemoryCenterStatus(`Loading ${item.title || item.id}...`);
+        sendSilentMemoryCommand(`memory show ${item.id}`);
+      });
+
+      const title = document.createElement("div");
+      title.className = "memory-list-row-title";
+      title.textContent = item.title || item.id;
+      row.appendChild(title);
+
+      const preview = document.createElement("div");
+      preview.className = "memory-list-row-preview";
+      preview.textContent = item.preview || "No preview available.";
+      row.appendChild(preview);
+
+      const meta = document.createElement("div");
+      meta.className = "memory-list-row-meta";
+      const metaParts = [item.status || item.tier || "active"];
+      if (item.thread_name) metaParts.push(item.thread_name);
+      if (item.updated_at) metaParts.push(formatThreadTimestamp(item.updated_at));
+      meta.textContent = metaParts.join(" · ");
+      row.appendChild(meta);
+
+      listHost.appendChild(row);
+    });
+  }
+
+  const selected = getSelectedMemoryItem();
+  if (!selected || !selected.id) {
+    detailHost.hidden = true;
+    clear(detailHost);
+    detailEmpty.hidden = false;
+    if (!editInput.dataset.userEdited) {
+      editInput.value = "";
+    }
+    detailNote.textContent = "Memory remains explicit and user-owned. Edit, unlock, and delete still require the governed confirmation flow.";
+    return;
+  }
+
+  detailEmpty.hidden = true;
+  detailHost.hidden = false;
+  clear(detailHost);
+
+  const title = document.createElement("div");
+  title.className = "memory-detail-title";
+  title.textContent = selected.title || selected.id;
+  detailHost.appendChild(title);
+
+  const chipRow = document.createElement("div");
+  chipRow.className = "memory-detail-chip-row";
+  [
+    selected.status || selected.tier || "active",
+    selected.scope || "project",
+    selected.source || "explicit_user_save",
+  ].filter(Boolean).forEach((label) => {
+    const chip = document.createElement("span");
+    chip.className = "memory-detail-chip";
+    chip.textContent = label;
+    chipRow.appendChild(chip);
+  });
+  detailHost.appendChild(chipRow);
+
+  const meta = document.createElement("div");
+  meta.className = "memory-detail-meta";
+  const metaParts = [];
+  if (selected.thread_name) metaParts.push(`Thread ${selected.thread_name}`);
+  if (selected.version > 0) metaParts.push(`Version ${selected.version}`);
+  if (selected.updated_at) metaParts.push(`Updated ${formatThreadTimestamp(selected.updated_at)}`);
+  if (selected.deleted_at) metaParts.push(`Deleted ${formatThreadTimestamp(selected.deleted_at)}`);
+  meta.textContent = metaParts.join(" · ");
+  if (meta.textContent) detailHost.appendChild(meta);
+
+  if (selected.tags.length) {
+    const tags = document.createElement("div");
+    tags.className = "memory-detail-tags";
+    selected.tags.forEach((tag) => {
+      const chip = document.createElement("span");
+      chip.className = "memory-detail-tag";
+      chip.textContent = tag;
+      tags.appendChild(chip);
+    });
+    detailHost.appendChild(tags);
+  }
+
+  const body = document.createElement("pre");
+  body.className = "memory-detail-body";
+  body.textContent = selected.body || selected.preview || "No body stored for this memory item.";
+  detailHost.appendChild(body);
+
+  const relationship = [];
+  if (selected.supersedes.length) relationship.push(`Supersedes ${selected.supersedes.join(", ")}`);
+  if (selected.superseded_by) relationship.push(`Superseded by ${selected.superseded_by}`);
+  if (selected.unlock_policy) relationship.push(`Unlock policy ${selected.unlock_policy}`);
+  if (relationship.length) {
+    const relationText = document.createElement("div");
+    relationText.className = "memory-detail-meta";
+    relationText.textContent = relationship.join(" · ");
+    detailHost.appendChild(relationText);
+  }
+
+  if (!editInput.dataset.userEdited || editInput.dataset.sourceId !== selected.id) {
+    editInput.value = selected.body || "";
+    editInput.dataset.sourceId = selected.id;
+    editInput.dataset.userEdited = "";
+  }
+  detailNote.textContent = selected.deleted
+    ? "This memory item has been deleted. Refresh the list to inspect the current durable set."
+    : "Edit, unlock, and delete stay governed. The page prepares the command, and Nova still confirms destructive changes.";
 }
 
 function renderPersonalLayerWidget() {
@@ -930,6 +1188,42 @@ function renderMemoryOverviewWidget(data = {}) {
   }
 
   renderPersonalLayerWidget();
+  if (!memoryCenterState.summary || !Array.isArray(memoryCenterState.items) || memoryCenterState.items.length === 0) {
+    memoryCenterState.summary = summaryText || memoryOverviewState.summary;
+    setMemoryCenterStatus(memoryCenterState.summary || "Memory is ready for explicit saves and review.");
+  }
+  renderMemoryCenterSurface();
+}
+
+function renderMemoryListWidget(data = {}) {
+  const items = Array.isArray(data && data.items) ? data.items : [];
+  const filters = (data && typeof data.filters === "object" && data.filters) ? data.filters : {};
+  memoryCenterState.items = items.map((item) => normalizeMemoryItem(item)).filter((item) => item.id);
+  memoryCenterState.filters = {
+    tier: String(filters.tier || "").trim().toLowerCase(),
+    scope: String(filters.scope || "").trim().toLowerCase(),
+    thread_name: String(filters.thread_name || "").trim(),
+    thread_key: String(filters.thread_key || "").trim(),
+  };
+  memoryCenterState.summary = String((data && data.summary) || "").trim() || describeMemoryFilter(memoryCenterState.filters);
+  if (!memoryCenterState.selectedId && memoryCenterState.items.length > 0) {
+    memoryCenterState.selectedId = memoryCenterState.items[0].id;
+  } else if (memoryCenterState.selectedId && !memoryCenterState.items.some((item) => item.id === memoryCenterState.selectedId)) {
+    memoryCenterState.selectedId = memoryCenterState.items.length > 0 ? memoryCenterState.items[0].id : "";
+    if (!memoryCenterState.selectedId) memoryCenterState.selectedItem = null;
+  }
+  setMemoryCenterStatus(memoryCenterState.summary || "Governed memory list refreshed.");
+  renderMemoryCenterSurface();
+}
+
+function renderMemoryItemWidget(data = {}) {
+  const item = normalizeMemoryItem((data && data.item) || {});
+  if (!item.id) return;
+  memoryCenterState.selectedId = item.id;
+  memoryCenterState.selectedItem = item;
+  upsertMemoryCenterItem(item);
+  setMemoryCenterStatus(item.deleted ? `Removed ${item.title || item.id} from the durable memory set.` : `Selected ${item.title || item.id}.`);
+  renderMemoryCenterSurface();
 }
 
 function buildToneProfileButtons(currentProfile, onSelect) {
@@ -3741,6 +4035,12 @@ function connectWebSocket() {
       case "memory_overview":
         renderMemoryOverviewWidget(msg);
         break;
+      case "memory_list":
+        renderMemoryListWidget(msg);
+        break;
+      case "memory_item":
+        renderMemoryItemWidget(msg);
+        break;
       case "tone_profile":
         renderToneOverviewWidget(msg);
         break;
@@ -3865,11 +4165,15 @@ function setActivePage(page) {
   localStorage.setItem(STORAGE_KEYS.activePage, target);
   renderQuickActions();
 
-    if (latestNewsItems.length > 0) {
-      renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "", latestNewsCategories);
-    } else {
-      setNewsExpandButton();
-    }
+  if (target === "memory") {
+    hydrateMemoryManagement();
+  }
+
+  if (latestNewsItems.length > 0) {
+    renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "", latestNewsCategories);
+  } else {
+    setNewsExpandButton();
+  }
 }
 
 function setupPageNavigation() {
@@ -4485,27 +4789,108 @@ window.addEventListener("DOMContentLoaded", () => {
   }
 
   const memoryOverviewBtn = $("btn-memory-overview");
-  if (memoryOverviewBtn) memoryOverviewBtn.addEventListener("click", () => injectUserText("memory overview", "text"));
+  if (memoryOverviewBtn) memoryOverviewBtn.addEventListener("click", () => sendSilentMemoryCommand("memory overview"));
 
   const memoryListBtn = $("btn-memory-list");
   if (memoryListBtn) memoryListBtn.addEventListener("click", () => {
-    setActivePage("chat");
-    injectUserText("list memories", "text");
+    sendSilentMemoryCommand("list memories");
   });
 
   const memoryThreadsBtn = $("btn-memory-threads");
   if (memoryThreadsBtn) memoryThreadsBtn.addEventListener("click", () => {
-    setActivePage("chat");
-    injectUserText("memory list thread this", "text");
+    sendSilentMemoryCommand("memory list thread this");
   });
 
   const memoryRefreshBtn = $("btn-memory-refresh");
-  if (memoryRefreshBtn) memoryRefreshBtn.addEventListener("click", () => injectUserText("memory overview", "text"));
+  if (memoryRefreshBtn) memoryRefreshBtn.addEventListener("click", () => {
+    hydrateMemoryManagement(true);
+  });
 
   const memoryReviewListBtn = $("btn-memory-review-list");
-  if (memoryReviewListBtn) memoryReviewListBtn.addEventListener("click", () => {
-    setActivePage("chat");
-    injectUserText("list memories", "text");
+  if (memoryReviewListBtn) memoryReviewListBtn.addEventListener("click", () => sendSilentMemoryCommand("list memories"));
+
+  const memoryListAllBtn = $("btn-memory-list-all");
+  if (memoryListAllBtn) memoryListAllBtn.addEventListener("click", () => sendSilentMemoryCommand("list memories"));
+
+  const memoryListActiveBtn = $("btn-memory-list-active");
+  if (memoryListActiveBtn) memoryListActiveBtn.addEventListener("click", () => sendSilentMemoryCommand("memory list active"));
+
+  const memoryListLockedBtn = $("btn-memory-list-locked");
+  if (memoryListLockedBtn) memoryListLockedBtn.addEventListener("click", () => sendSilentMemoryCommand("memory list locked"));
+
+  const memoryListDeferredBtn = $("btn-memory-list-deferred");
+  if (memoryListDeferredBtn) memoryListDeferredBtn.addEventListener("click", () => sendSilentMemoryCommand("memory list deferred"));
+
+  const memoryListCurrentThreadBtn = $("btn-memory-list-current-thread");
+  if (memoryListCurrentThreadBtn) memoryListCurrentThreadBtn.addEventListener("click", () => sendSilentMemoryCommand("memory list thread this"));
+
+  const memoryListRefreshSilentBtn = $("btn-memory-list-refresh-silent");
+  if (memoryListRefreshSilentBtn) memoryListRefreshSilentBtn.addEventListener("click", () => {
+    const filters = memoryCenterState.filters || {};
+    if (String(filters.thread_name || "").trim()) {
+      sendSilentMemoryCommand(`memory list thread ${String(filters.thread_name || "").trim()}`);
+      return;
+    }
+    if (String(filters.thread_key || "").trim()) {
+      sendSilentMemoryCommand(`memory list thread ${String(filters.thread_key || "").trim()}`);
+      return;
+    }
+    if (String(filters.tier || "").trim()) {
+      sendSilentMemoryCommand(`memory list ${String(filters.tier || "").trim()}`);
+      return;
+    }
+    sendSilentMemoryCommand("list memories");
+  });
+
+  const memoryEditInput = $("memory-edit-input");
+  if (memoryEditInput) {
+    memoryEditInput.addEventListener("input", () => {
+      memoryEditInput.dataset.userEdited = "true";
+    });
+  }
+
+  const memoryDetailShowChatBtn = $("btn-memory-detail-show-chat");
+  if (memoryDetailShowChatBtn) memoryDetailShowChatBtn.addEventListener("click", () => {
+    const selected = getSelectedMemoryItem();
+    if (!selected || !selected.id) return;
+    injectUserText(`memory show ${selected.id}`, "text");
+  });
+
+  const memoryDetailEditBtn = $("btn-memory-detail-edit");
+  if (memoryDetailEditBtn) memoryDetailEditBtn.addEventListener("click", () => {
+    const selected = getSelectedMemoryItem();
+    if (!selected || !selected.id || !memoryEditInput) return;
+    const nextValue = String(memoryEditInput.value || "").trim();
+    if (!nextValue) return;
+    injectUserText(`edit memory ${selected.id}: ${nextValue}`, "text");
+  });
+
+  const memoryDetailLockBtn = $("btn-memory-detail-lock");
+  if (memoryDetailLockBtn) memoryDetailLockBtn.addEventListener("click", () => {
+    const selected = getSelectedMemoryItem();
+    if (!selected || !selected.id) return;
+    injectUserText(`memory lock ${selected.id}`, "text");
+  });
+
+  const memoryDetailUnlockBtn = $("btn-memory-detail-unlock");
+  if (memoryDetailUnlockBtn) memoryDetailUnlockBtn.addEventListener("click", () => {
+    const selected = getSelectedMemoryItem();
+    if (!selected || !selected.id) return;
+    injectUserText(`memory unlock ${selected.id}`, "text");
+  });
+
+  const memoryDetailDeferBtn = $("btn-memory-detail-defer");
+  if (memoryDetailDeferBtn) memoryDetailDeferBtn.addEventListener("click", () => {
+    const selected = getSelectedMemoryItem();
+    if (!selected || !selected.id) return;
+    injectUserText(`memory defer ${selected.id}`, "text");
+  });
+
+  const memoryDetailDeleteBtn = $("btn-memory-detail-delete");
+  if (memoryDetailDeleteBtn) memoryDetailDeleteBtn.addEventListener("click", () => {
+    const selected = getSelectedMemoryItem();
+    if (!selected || !selected.id) return;
+    injectUserText(`delete memory ${selected.id}`, "text");
   });
 
   const micBtn = $("ptt-btn");
