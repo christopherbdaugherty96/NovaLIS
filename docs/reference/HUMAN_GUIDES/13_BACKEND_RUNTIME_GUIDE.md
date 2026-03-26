@@ -4,6 +4,15 @@ Updated: 2026-03-13
 ## Purpose
 This guide explains the backend in human language.
 
+## Practical Runtime Note
+The canonical base dependency file is now:
+- `nova_backend/requirements.txt`
+
+Wake word is split out into an optional file:
+- `nova_backend/requirements-optional-wakeword.txt`
+
+That keeps the default install aligned with the current live runtime instead of pulling in planned-only dependency weight.
+
 ## The Backend's Main Job
 The backend is where Nova's real behavior lives.
 

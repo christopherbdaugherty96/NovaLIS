@@ -98,7 +98,7 @@ Interpretation rule:
 
 | Surface | Status | What it is | Why it is not listed as active runtime |
 | --- | --- | --- | --- |
-| Wake word listener (`Hey Nova`) | Design-stage | Proposed local-only voice activator that would wake Nova and then hand off to STT. | Design docs and dependencies exist, but there is no active wake-word runtime module in the current capability registry or voice package |
+| Wake word listener (`Hey Nova`) | Design-stage | Proposed local-only voice activator that would wake Nova and then hand off to STT. | Design docs and an optional dependency path exist, but there is no active wake-word runtime module in the current capability registry or voice package |
 | Deeper browser context adapters | Partial/design-stage | Richer active-tab, selection, and browser-state capture for explain flows. | Current runtime uses bounded context snapshot signals; richer browser integration is not yet a separate active runtime surface |
 
 ## Wake Word Clarification
@@ -110,6 +110,7 @@ Current truth:
 - Voice status and voice check product surfaces are active.
 - Real-device spoken output still deserves local validation.
 - Wake word is documented and planned.
+- Wake word is not part of the default dependency install.
 - Wake word is not yet a live governed capability or active runtime surface in the current registry.
 
 Relevant design reference:

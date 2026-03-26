@@ -1,0 +1,2 @@
+-r requirements.txt
+openwakeword==0.6.0

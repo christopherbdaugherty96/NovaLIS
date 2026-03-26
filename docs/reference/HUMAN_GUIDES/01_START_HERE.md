@@ -54,6 +54,9 @@ Try one of these:
 If you want the product-facing versions of Nova's message, also read:
 - `25_NOVA_PRODUCT_MESSAGING_VARIANTS_2026-03-26.md`
 
+If you want the practical local install and startup path, also read:
+- `26_LOCAL_SETUP_AND_STARTUP.md`
+
 ## What Nova Is Not
 Nova is not:
 - a hidden background monitor

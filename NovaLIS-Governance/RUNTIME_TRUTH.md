@@ -1,14 +1,22 @@
-# ⚙️ RUNTIME_TRUTH.md
+# Runtime Truth
 
-**NovaLIS — Mechanical Runtime Specification**  
-**Document ID:** `NOVA-RUNTIME-TRUTH-v2.1`  
-**Status:** CANONICAL — Phase-4 Staging (Active)  
-**Supersedes:** NOVA-RUNTIME-TRUTH-v2.0  
-**Last Updated:** 2026-02-24  
-**Scope:** `nova_backend/src/` only  
-**Nature:** Implementation-binding, non-aspirational
+**NovaLIS - Mechanical Runtime Specification**
+**Document ID:** `NOVA-RUNTIME-TRUTH-v2.1`
+**Status:** HISTORICAL MECHANICAL SNAPSHOT
+**Supersedes:** NOVA-RUNTIME-TRUTH-v2.0
+**Last Grounded Snapshot:** 2026-02-24
+**Scope:** `nova_backend/src/` only
+**Nature:** Implementation-heavy historical reference
 
----
+Important correction:
+- this file captures an older Phase 4 / early Phase 5 mechanical snapshot
+- it is not the best source for the current active capability count or current phase depth
+- use these for current truth instead:
+  - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+  - `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
+  - `NovaLIS-Governance/STATUS.md`
+
+------
 
 ## Grounded In (Source Files Read)
 
@@ -352,3 +360,4 @@ Schema requirements enforced at load time:
 - `phase == "4"`
 - Each entry must include: `id`, `name`, `status`, `phase_introduced`, `risk_level`, `data_exfiltration`, `enabled`
 - `risk_level` must be one of: `
+

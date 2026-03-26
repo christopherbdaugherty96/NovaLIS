@@ -20,7 +20,7 @@ jobs:
       - name: Install backend dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r nova_backend/src/requirements.txt
+          pip install -r nova_backend/requirements.txt
 
       - name: Regenerate runtime docs and verify committed output
         run: |
