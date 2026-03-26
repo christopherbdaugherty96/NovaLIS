@@ -13,6 +13,7 @@ Nova's active capability surface now covers these big areas:
 - opt-in pattern review for ongoing work
 - visible workspace and trust review surfaces
 - visible policy review surfaces for disabled delegated drafts
+- token-gated remote bridge access for read/reasoning requests
 
 ## 1. Research and Information Work
 Nova can:
@@ -170,6 +171,8 @@ It can:
 - show a Policies page
 - show a Settings page
 - show an Introduction page
+- show remote bridge status
+- show provider and connection status
 - summarize recent governed actions
 - show blocked conditions
 - let you drill into why a recent action happened
@@ -190,6 +193,8 @@ Examples:
 - `policy overview`
 - `policy create weekday system status at 8:00 am`
 - `trust status`
+- `bridge status`
+- `connection status`
 - `voice status`
 - `voice check`
 - `second opinion`
@@ -216,6 +221,7 @@ Some important ideas are documented and partly scaffolded, but are not fully act
 The biggest examples are:
 - wake word
 - richer connectors
+- actionable provider/connector setup instead of visibility-first status only
 - deeper project/workspace system work
 - richer visualizer stages beyond the current structured graph view
 - delegated trigger runtime for policies

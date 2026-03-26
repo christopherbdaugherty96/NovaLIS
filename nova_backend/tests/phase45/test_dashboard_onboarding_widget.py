@@ -41,5 +41,8 @@ def test_intro_and_settings_pages_include_getting_started_and_control_surfaces()
     assert 'id="settings-mode-cards"' in source
     assert 'id="settings-voice-summary"' in source
     assert 'id="settings-voice-grid"' in source
+    assert 'id="settings-connection-summary"' in source
+    assert 'id="settings-connection-grid"' in source
+    assert 'id="btn-settings-open-connections"' in source
     assert 'id="settings-toggle-large-text"' in source
     assert 'id="btn-settings-voice-check"' in source

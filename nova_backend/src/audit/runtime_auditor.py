@@ -1108,6 +1108,8 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     disabled_ids = sorted(int(item["id"]) for item in capabilities if item.get("enabled") is not True)
     governance_rows = _derive_capability_governance_rows(registry)
     enforcement = _governor_enforcement_summary()
+    brain_src = _safe_read(BRAIN_SERVER_PATH)
+    bridge_surface_present = '"/api/openclaw/bridge/message"' in brain_src and "openclaw_bridge" in brain_src
     fingerprint = _runtime_fingerprint(enabled_ids)
     known_gaps = _known_runtime_gaps()
     design_divergences = _design_runtime_divergences(registry)
@@ -1279,6 +1281,16 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
             "Location: src/conversation/deepseek_bridge.py",
             "Status: Contained analysis-only",
             "",
+            *(
+                [
+                    "Governed Remote Bridge",
+                    "Location: src/brain_server.py (/api/openclaw/bridge/*)",
+                    "Status: Token-gated read/reasoning ingress active",
+                    "",
+                ]
+                if bridge_surface_present
+                else []
+            ),
             "Voice System",
             "Location: src/voice",
             "Status: Active",

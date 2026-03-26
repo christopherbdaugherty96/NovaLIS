@@ -4,6 +4,7 @@ Status: Current proof index
 
 ## Current canonical Phase-7 completion packet
 - `docs/PROOFS/Phase-7/PHASE_7_COMPLETION_AND_REASONING_TRANSPARENCY_RUNTIME_SLICE_2026-03-26.md`
+- `docs/PROOFS/Phase-7/PHASE_7_GOVERNED_REMOTE_BRIDGE_RUNTIME_SLICE_2026-03-26.md`
 
 ## Earlier bounded Phase-7 foundation packet
 - `docs/PROOFS/Phase-7/PHASE_7_PRODUCT_FOUNDATION_RUNTIME_SLICE_2026-03-25.md`
@@ -16,6 +17,8 @@ Status: Current proof index
 - provider transparency in Trust and Settings
 - advisory-only explanation of the reasoning lane
 - TTS executor preference for the stronger local renderer before fallback
+- token-gated governed remote bridge for read/reasoning access
+- Trust and Settings visibility for provider, connection, and bridge state
 
 ## Read with
 - `docs/design/Phase 7/PHASE_7_DOCUMENT_MAP.md`

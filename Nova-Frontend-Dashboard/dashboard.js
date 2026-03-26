@@ -100,6 +100,8 @@ let trustReviewState = {
   selectedPolicyCapabilityKey: "",
   voiceRuntime: {},
   reasoningRuntime: {},
+  bridgeRuntime: {},
+  connectionRuntime: {},
 };
 let threadMapState = {
   summary: "No project threads yet. Save work updates to start continuity.",
@@ -216,11 +218,13 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "trust_memory", label: "Memory overview", command: "memory overview", switchToPage: "memory" },
     { id: "trust_workspace", label: "Workspace home", command: "workspace home", switchToPage: "chat" },
     { id: "trust_policies", label: "Policies", command: "policy overview", switchToPage: "policy", stayOnPage: true },
+    { id: "trust_bridge", label: "Bridge status", command: "bridge status", stayOnPage: true },
     { id: "trust_settings", label: "Settings", command: "voice status", switchToPage: "settings", stayOnPage: true },
   ],
   settings: [
     { id: "settings_voice", label: "Voice status", command: "voice status", switchToPage: "chat" },
     { id: "settings_voice_check", label: "Voice check", command: "voice check", switchToPage: "chat" },
+    { id: "settings_connections", label: "Connections", command: "connection status", stayOnPage: true },
     { id: "settings_trust", label: "Trust center", command: "trust center", switchToPage: "trust", stayOnPage: true },
     { id: "settings_policies", label: "Policies", command: "policy overview", switchToPage: "policy", stayOnPage: true },
     { id: "settings_intro", label: "Introduction", switchToPage: "intro", command: "workspace home", stayOnPage: true },
@@ -245,6 +249,8 @@ const COMMAND_SUGGESTIONS = [
   "policy center",
   "policy create weekday calendar snapshot at 8:00 am",
   "trust center",
+  "bridge status",
+  "connection status",
   "voice status",
   "voice check",
   "show structure map",
@@ -3258,6 +3264,12 @@ function renderTrustPanel(data = {}) {
     trustReviewState.reasoningRuntime = (data.reasoning_runtime && typeof data.reasoning_runtime === "object")
       ? { ...data.reasoning_runtime }
       : trustReviewState.reasoningRuntime;
+    trustReviewState.bridgeRuntime = (data.bridge_runtime && typeof data.bridge_runtime === "object")
+      ? { ...data.bridge_runtime }
+      : trustReviewState.bridgeRuntime;
+    trustReviewState.connectionRuntime = (data.connection_runtime && typeof data.connection_runtime === "object")
+      ? { ...data.connection_runtime }
+      : trustReviewState.connectionRuntime;
     if (!trustReviewState.selectedActivityKey && trustReviewState.activity.length) {
       const first = trustReviewState.activity[0];
       trustReviewState.selectedActivityKey = String(first.request_id || first.ledger_ref || first.title || "0").trim();
@@ -3445,6 +3457,8 @@ function renderTrustCenterPage() {
   const voiceGrid = $("trust-center-voice-grid");
   const reasoningSummary = $("trust-center-reasoning-summary");
   const reasoningGrid = $("trust-center-reasoning-grid");
+  const bridgeSummary = $("trust-center-bridge-summary");
+  const bridgeGrid = $("trust-center-bridge-grid");
   if (!summary || !mode || !lastCall || !egress || !failure || !activityHost || !blockedHost || !healthSummary || !healthGrid || !policySummary || !policyLimit || !policyGroups || !policyDetail || !capabilitySummary || !capabilityHost) return;
 
   summary.textContent = trustReviewState.summary || "Trust review keeps recent governed actions, blocked conditions, and failure state in one place.";
@@ -3792,6 +3806,29 @@ function renderTrustCenterPage() {
       ["Last outcome", String(reasoning.last_outcome || "Not recorded").trim() || "Not recorded"],
     ].forEach(([label, value]) => {
       reasoningGrid.appendChild(createOverviewChip(label, value));
+    });
+  }
+
+  if (bridgeSummary && bridgeGrid) {
+    const bridge = (trustReviewState.bridgeRuntime && typeof trustReviewState.bridgeRuntime === "object")
+      ? trustReviewState.bridgeRuntime
+      : {};
+    bridgeSummary.textContent = [
+      String(bridge.summary || "").trim(),
+      String(bridge.scope || "").trim(),
+    ].filter(Boolean).join(" · ") || "Remote bridge status will appear here after the next trust refresh.";
+
+    clear(bridgeGrid);
+    [
+      ["Status", String(bridge.status_label || bridge.status || "Unknown").trim() || "Unknown"],
+      ["Transport", String(bridge.transport || "HTTP").trim() || "HTTP"],
+      ["Authentication", String(bridge.auth || "Unknown").trim() || "Unknown"],
+      ["Scope", String(bridge.scope || "Read and reasoning only").trim() || "Read and reasoning only"],
+      ["Effectful actions", String(bridge.effectful_actions || "Blocked").trim() || "Blocked"],
+      ["Continuity", String(bridge.continuity || "Stateless").trim() || "Stateless"],
+      ["Endpoint", String(bridge.endpoint || "/api/openclaw/bridge/message").trim() || "/api/openclaw/bridge/message"],
+    ].forEach(([label, value]) => {
+      bridgeGrid.appendChild(createOverviewChip(label, value));
     });
   }
 }
@@ -6143,6 +6180,8 @@ function renderSettingsPage() {
   const voiceGrid = $("settings-voice-grid");
   const reasoningSummary = $("settings-reasoning-summary");
   const reasoningGrid = $("settings-reasoning-grid");
+  const connectionSummary = $("settings-connection-summary");
+  const connectionGrid = $("settings-connection-grid");
   const setupMode = getSetupMode();
   const currentMode = getSetupModeMeta(setupMode);
 
@@ -6247,6 +6286,34 @@ function renderSettingsPage() {
     ].forEach(([label, value]) => {
       reasoningGrid.appendChild(createOverviewChip(label, value));
     });
+  }
+
+  if (connectionSummary && connectionGrid) {
+    const connections = (trustReviewState.connectionRuntime && typeof trustReviewState.connectionRuntime === "object")
+      ? trustReviewState.connectionRuntime
+      : {};
+    connectionSummary.textContent = [
+      String(connections.summary || "").trim() || "Connection and provider status will appear here after the next trust refresh.",
+      "Visible now, configurable later.",
+    ].filter(Boolean).join(" · ");
+
+    clear(connectionGrid);
+    (Array.isArray(connections.items) ? connections.items : []).slice(0, 6).forEach((item) => {
+      const label = String(item.label || "Connection").trim() || "Connection";
+      const value = String(item.value || "Unknown").trim() || "Unknown";
+      const note = String(item.note || "").trim();
+      connectionGrid.appendChild(createOverviewChip(label, value));
+      if (note) {
+        const noteEl = document.createElement("div");
+        noteEl.className = "first-run-note";
+        noteEl.textContent = note;
+        connectionGrid.appendChild(noteEl);
+      }
+    });
+
+    if (!Array.isArray(connections.items) || !connections.items.length) {
+      connectionGrid.appendChild(createOverviewChip("Connection status", "Awaiting trust refresh"));
+    }
   }
 }
 
@@ -6833,6 +6900,12 @@ window.addEventListener("DOMContentLoaded", () => {
     safeWSSend({ text: "trust center", silent_widget_refresh: true });
   });
 
+  const trustCenterBridgeStatusBtn = $("btn-trust-center-bridge-status");
+  if (trustCenterBridgeStatusBtn) trustCenterBridgeStatusBtn.addEventListener("click", () => {
+    safeWSSend({ text: "bridge status", silent_widget_refresh: true });
+    safeWSSend({ text: "trust center", silent_widget_refresh: true });
+  });
+
   const trustCenterVoiceCheckBtn = $("btn-trust-center-voice-check");
   if (trustCenterVoiceCheckBtn) trustCenterVoiceCheckBtn.addEventListener("click", () => {
     setActivePage("chat");
@@ -6850,6 +6923,12 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const settingsOpenHomeBtn = $("btn-settings-open-home");
   if (settingsOpenHomeBtn) settingsOpenHomeBtn.addEventListener("click", () => setActivePage("home"));
+
+  const settingsOpenConnectionsBtn = $("btn-settings-open-connections");
+  if (settingsOpenConnectionsBtn) settingsOpenConnectionsBtn.addEventListener("click", () => {
+    safeWSSend({ text: "connection status", silent_widget_refresh: true });
+    renderSettingsPage();
+  });
 
   const settingsOpenPrivacyBtn = $("btn-settings-open-privacy");
   if (settingsOpenPrivacyBtn) settingsOpenPrivacyBtn.addEventListener("click", showPrivacyModal);

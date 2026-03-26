@@ -17,7 +17,9 @@ def test_dashboard_renders_trust_center_page_from_runtime_state():
     assert "renderTrustCenterPage();" in source
     assert "trust-center-voice-grid" in source
     assert "trust-center-reasoning-grid" in source
+    assert "trust-center-bridge-grid" in source
     assert "settings-reasoning-grid" in source
+    assert "settings-connection-grid" in source
     assert '"trust"' in source
 
 
@@ -40,13 +42,18 @@ def test_trust_page_includes_recent_actions_and_runtime_health_surfaces():
     assert 'id="trust-center-voice-grid"' in source
     assert 'id="trust-center-reasoning-summary"' in source
     assert 'id="trust-center-reasoning-grid"' in source
+    assert 'id="trust-center-bridge-summary"' in source
+    assert 'id="trust-center-bridge-grid"' in source
     assert 'id="trust-center-capability-summary"' in source
     assert 'id="trust-center-capability-groups"' in source
     assert 'id="settings-reasoning-summary"' in source
     assert 'id="settings-reasoning-grid"' in source
+    assert 'id="settings-connection-summary"' in source
+    assert 'id="settings-connection-grid"' in source
     assert 'id="btn-trust-center-refresh"' in source
     assert 'id="btn-trust-center-system"' in source
     assert 'id="btn-trust-center-workspace"' in source
     assert 'id="btn-trust-center-memory"' in source
+    assert 'id="btn-trust-center-bridge-status"' in source
     assert 'id="btn-trust-center-voice-check"' in source
     assert 'id="btn-trust-center-settings"' in source

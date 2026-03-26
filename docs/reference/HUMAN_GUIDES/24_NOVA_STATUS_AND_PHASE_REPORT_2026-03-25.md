@@ -12,6 +12,7 @@ It now has:
 - explicit memory with a dedicated management page
 - answer-first search and source-grounded news flows
 - a governed external reasoning lane with provider transparency
+- a token-gated governed remote bridge for read/reasoning access
 - a Home page, Workspace page, Trust page, Policies page, Introduction page, Settings page, News page, Memory page, and chat surface
 - local-project understanding that now includes a visible structure-map view with structured graph output
 - a dedicated conversation personality layer and a dedicated voice presentation layer to keep replies smoother
@@ -80,6 +81,7 @@ At the time of this report, the runtime shows:
   - policy draft validation, simulation, and one-shot manual review runs
   - Workspace page, Trust page, Policies page, Introduction page, and Settings page dashboard surfaces
   - local-project structure-map surface with stage-2 graph output
+  - token-gated OpenClaw bridge status and read/reasoning message ingress
 
 Runtime invariants still in force:
 - no autonomy
@@ -118,6 +120,7 @@ Nova currently has:
 - follow-up actions tied to dashboard widgets
 - a first-run guide for non-technical users
 - a settings surface for setup-mode choice, voice checks, and comfort controls
+- visible provider, connection, and remote-bridge status in Settings
 - smoother conversational acknowledgements and shorter spoken versions of long answers
 - a policy review surface for disabled drafts, simulations, and one-shot manual runs
 
@@ -202,6 +205,12 @@ The newest conversation-quality slice then improved the assistant feel without w
 - a dedicated voice-facing acknowledgement and speech-shaping layer
 - calmer fallback wording
 - shorter spoken versions of longer answers so voice replies stay fluid
+
+The newest governed-access slice then closed the remote reachability gap without widening authority:
+- token-gated `OpenClaw` bridge status and message endpoints
+- bridge status visibility in Trust Center
+- connection and provider status visibility in Settings
+- explicit remote-scope blocking for effectful local actions
 
 This matters because it turned several already-good backend pieces into a more understandable product.
 
@@ -361,6 +370,7 @@ Important current limitations:
 - richer project/workspace foundations are still needed beyond the current Workspace stage-3 shell
 - provider and connector setup is still preference-first rather than fully connected and governed through a dedicated management surface
 - OpenClaw/governed external execution is designed, not live
+- governed OpenClaw bridge access is live, but it remains read/reasoning-only and does not execute actions
 
 Important voice caveat:
 - the TTS path is stronger in code now
@@ -425,28 +435,28 @@ Workspace Home and Workspace page are now real, but users still need a stronger 
 - continuation actions
 - clearer transitions between Home, Memory, Workspace, and project-specific work
 
-### 5. Governed OpenClaw bridge before wider automation
-The product still needs a user-facing access bridge so Nova's current governed capabilities can be reached from remote surfaces without widening authority first.
+### 5. Actionable provider and connector setup
+The product now has visible connection and bridge status, but users still need explicit setup, revoke, and permission controls that actually change live provider and connector state.
 
 ## Recommended Next Steps
 If someone asked what Nova should build next for the best product outcome, the strongest current answer is:
 
-1. governed OpenClaw bridge
-2. settings/provider/connector setup that becomes truly actionable
-3. final TTS device-confidence pass
-4. deeper project/workspace persistence
-5. Phase-8 strict execution foundations after the bridge is in place
+1. settings/provider/connector setup that becomes truly actionable
+2. final TTS device-confidence pass
+3. deeper project/workspace persistence
+4. Phase-8 strict execution foundations after the bridge
+5. first narrow governed OpenClaw execution path only after those foundations
 
 Why this order:
-- it makes Nova reachable before widening authority
 - it turns visible setup into real product control
+- it already made Nova reachable before widening authority
 - it closes the most visible remaining trust gap in voice
 - it builds on the strong governed foundation already in place
 
 ## Final Honest Description
 If someone needs one careful sentence that fits the current reality, use this:
 
-Nova is a live governed intelligence workspace with bounded local action, explicit memory, answer-first research, source-grounded news and explanation surfaces, visible trust and workspace product layers, and a growing dashboard-based experience, while future phases for external execution, cross-client coherence, and reviewable learning remain designed but not yet live.
+Nova is a live governed intelligence workspace with bounded local action, explicit memory, answer-first research, source-grounded news and explanation surfaces, visible trust and workspace product layers, and a token-gated remote bridge for read/reasoning access, while future phases for external execution, cross-client coherence, and reviewable learning remain designed but not yet live.
 
 ## Best Companion Documents
 For people who want to keep reading after this report, the best next documents are:

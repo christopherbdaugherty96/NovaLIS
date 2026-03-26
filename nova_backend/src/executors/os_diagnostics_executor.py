@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import os
 import platform
 import shutil
 import time
@@ -804,6 +805,97 @@ class OSDiagnosticsExecutor:
         }
 
     @staticmethod
+    def _bridge_token_value() -> str:
+        for key in ("NOVA_OPENCLAW_BRIDGE_TOKEN", "NOVA_BRIDGE_TOKEN"):
+            value = str(os.getenv(key, "") or "").strip()
+            if value:
+                return value
+        return ""
+
+    @staticmethod
+    def _bridge_status_details() -> dict[str, object]:
+        token = OSDiagnosticsExecutor._bridge_token_value()
+        enabled = bool(token)
+        status = "enabled" if enabled else "disabled"
+        summary = (
+            "OpenClaw bridge is enabled. Token-authenticated remote requests can enter Nova through the governed bridge "
+            "without widening execution authority."
+            if enabled
+            else "OpenClaw bridge is disabled until a bridge token is configured."
+        )
+        return {
+            "status": status,
+            "enabled": enabled,
+            "summary": summary,
+            "name": "OpenClaw Bridge",
+            "transport": "HTTP",
+            "auth": "Token required" if enabled else "Token not configured",
+            "scope": "Read and reasoning only",
+            "effectful_actions": "Blocked",
+            "continuity": "Stateless stage-1 bridge",
+            "endpoint": "/api/openclaw/bridge/message",
+            "status_label": "Enabled" if enabled else "Disabled",
+            "auth_label": "Configured" if enabled else "Missing",
+        }
+
+    @staticmethod
+    def _connection_status_details() -> dict[str, object]:
+        model_availability, model_note, _, _ = OSDiagnosticsExecutor._model_status_details()
+        reasoning_runtime = OSDiagnosticsExecutor._external_reasoning_status_details()
+        bridge_runtime = OSDiagnosticsExecutor._bridge_status_details()
+
+        configured_keys = [
+            label
+            for env_name, label in (
+                ("OPENAI_API_KEY", "OpenAI"),
+                ("ANTHROPIC_API_KEY", "Anthropic"),
+                ("DEEPSEEK_API_KEY", "DeepSeek"),
+            )
+            if str(os.getenv(env_name, "") or "").strip()
+        ]
+
+        items = [
+            {
+                "label": "Local model route",
+                "value": model_availability.title(),
+                "note": model_note,
+            },
+            {
+                "label": "Governed second opinion",
+                "value": str(reasoning_runtime.get("status_label") or reasoning_runtime.get("status") or "Unknown"),
+                "note": str(reasoning_runtime.get("summary") or "").strip(),
+            },
+            {
+                "label": "BYO provider keys",
+                "value": ", ".join(configured_keys) if configured_keys else "Not configured",
+                "note": "Bring Your Own API Key remains explicit and optional.",
+            },
+            {
+                "label": "OpenClaw bridge",
+                "value": str(bridge_runtime.get("status_label") or "Disabled"),
+                "note": str(bridge_runtime.get("summary") or "").strip(),
+            },
+            {
+                "label": "Bridge scope",
+                "value": str(bridge_runtime.get("scope") or "Read and reasoning only"),
+                "note": "Remote bridge requests stay token-gated and cannot take quiet local actions yet.",
+            },
+        ]
+
+        summary_parts = [
+            "Local model route is " + model_availability + ".",
+            ("BYO provider keys are configured." if configured_keys else "BYO provider keys are not configured."),
+            str(bridge_runtime.get("summary") or "").strip(),
+        ]
+        return {
+            "summary": " ".join(part for part in summary_parts if part).strip(),
+            "items": items,
+            "configured_provider_count": len(configured_keys),
+            "configured_provider_labels": configured_keys,
+            "bridge_enabled": bool(bridge_runtime.get("enabled")),
+        }
+
+    @staticmethod
     def _blocked_conditions(*, model_availability: str) -> list[dict[str, str]]:
         items = [
             {
@@ -1040,6 +1132,8 @@ class OSDiagnosticsExecutor:
         blocked_conditions = self._blocked_conditions(model_availability=model_availability)
         policy_capability_readiness = self._policy_capability_readiness()
         reasoning_runtime = self._external_reasoning_status_details()
+        bridge_runtime = self._bridge_status_details()
+        connection_runtime = self._connection_status_details()
         system_reasons = self._system_reasons(
             model_availability=model_availability,
             model_note=model_note,
@@ -1099,6 +1193,10 @@ class OSDiagnosticsExecutor:
             "model_remediation": model_remediation,
             "reasoning_runtime": reasoning_runtime,
             "reasoning_summary": str(reasoning_runtime.get("summary") or "").strip(),
+            "bridge_runtime": bridge_runtime,
+            "bridge_summary": str(bridge_runtime.get("summary") or "").strip(),
+            "connection_runtime": connection_runtime,
+            "connection_summary": str(connection_runtime.get("summary") or "").strip(),
             "voice_status": "ready",
             "voice_note": "Push-to-talk and TTS are available. Wake word remains disabled.",
             "wake_word_status": "disabled",

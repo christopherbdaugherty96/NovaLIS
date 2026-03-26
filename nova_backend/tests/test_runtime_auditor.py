@@ -100,6 +100,25 @@ def test_render_current_runtime_state_uses_phase5_package_note():
     assert "full closure remains gated" not in rendered
 
 
+def test_render_current_runtime_state_mentions_remote_bridge_when_present(monkeypatch):
+    import src.audit.runtime_auditor as ra
+
+    registry = {"capabilities": []}
+    original_safe_read = ra._safe_read
+
+    def _fake_safe_read(path):
+        if path == ra.BRAIN_SERVER_PATH:
+            return '"/api/openclaw/bridge/message"\nopenclaw_bridge'
+        return original_safe_read(path)
+
+    monkeypatch.setattr(ra, "_safe_read", _fake_safe_read)
+
+    rendered = ra.render_current_runtime_state_markdown({"discrepancies": []}, registry)
+
+    assert "Governed Remote Bridge" in rendered
+    assert "Token-gated read/reasoning ingress active" in rendered
+
+
 def test_phase6_status_tracks_complete_review_surface(monkeypatch, tmp_path):
     import src.audit.runtime_auditor as ra
 

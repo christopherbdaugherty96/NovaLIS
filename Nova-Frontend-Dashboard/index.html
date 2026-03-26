@@ -491,6 +491,7 @@
             <button id="btn-trust-center-workspace" type="button">Open workspace</button>
             <button id="btn-trust-center-memory" type="button">Open memory</button>
             <button id="btn-trust-center-policy-map" type="button">What policies can run</button>
+            <button id="btn-trust-center-bridge-status" type="button">Bridge status</button>
             <button id="btn-trust-center-voice-check" type="button">Run voice check</button>
             <button id="btn-trust-center-settings" type="button">Open settings</button>
           </div>
@@ -566,6 +567,16 @@
         <div class="widget page-card trust-center-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
+              <div class="workspace-home-section-title">Remote Bridge</div>
+              <p id="trust-center-bridge-summary" class="workspace-board-section-copy">Remote bridge status will appear here after the next trust refresh.</p>
+            </div>
+          </div>
+          <div id="trust-center-bridge-grid" class="trust-center-health-grid"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
               <div class="workspace-home-section-title">Policy Delegation Map</div>
               <p id="trust-center-policy-summary" class="workspace-board-section-copy">Loading which capabilities are safe now, later, or explicit-only.</p>
             </div>
@@ -604,6 +615,7 @@
             <button id="btn-settings-open-intro" type="button">Open introduction</button>
             <button id="btn-settings-open-home" type="button">Open home</button>
             <button id="btn-settings-open-trust" type="button">Open trust</button>
+            <button id="btn-settings-open-connections" type="button">Connection status</button>
             <button id="btn-settings-voice-status" type="button">Voice status</button>
             <button id="btn-settings-voice-check" type="button">Run voice check</button>
           </div>
@@ -660,6 +672,19 @@
           <div id="settings-reasoning-grid" class="trust-center-health-grid"></div>
           <p class="first-run-note">
             Provider switching and richer connector setup arrive later. Today, Nova keeps second opinions inside one governed review lane.
+          </p>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Providers, Connectors, and Remote Bridge</div>
+              <p id="settings-connection-summary" class="workspace-board-section-copy">Connection and provider status will appear here after the next trust refresh.</p>
+            </div>
+          </div>
+          <div id="settings-connection-grid" class="trust-center-health-grid"></div>
+          <p class="first-run-note">
+            These surfaces are visible now so you can understand what is connected. Full provider and connector setup arrives later and should stay explicit and governed.
           </p>
         </div>
       </section>
