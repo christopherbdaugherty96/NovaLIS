@@ -1,5 +1,5 @@
 # Project Continuity and Memory
-Updated: 2026-03-14
+Updated: 2026-03-25
 
 ## Why This Part Matters
 A lot of AI systems can answer one prompt well.
@@ -7,17 +7,16 @@ Very few can help you continue real work across time.
 
 This is where Nova starts to feel different.
 
-Nova now supports three related ideas:
+Nova now supports five closely related ideas:
 - working context
 - project continuity threads
 - governed memory
-- manual response-style controls
-- user-directed notification scheduling
+- calm scheduling
 - opt-in pattern review
 
 They are connected, but they are not the same thing.
 
-For the current repository state, this trust-facing Phase-5 package is closed as a real runtime layer.
+For the current repository state, this trust-facing Phase-5 package is closed as a real runtime layer, and the explicit memory surface has since become stronger on top of that baseline.
 
 ## 1. Working Context
 Working context is the short-term picture of what is happening right now.
@@ -68,7 +67,7 @@ Memory in Nova is explicit and governed.
 That means:
 - the user chooses what to save
 - the memory system is visible and inspectable
-- deletion and unlock flows require the appropriate explicit action
+- deletion and edit flows require the appropriate explicit action or confirmation
 - persistence is not supposed to happen silently
 
 This is different from systems that quietly absorb everything into hidden memory.
@@ -78,19 +77,37 @@ Nova's memory model is closer to:
 - durable project context
 - explicit preservation of decisions and artifacts
 
-Nova can also show a governed memory overview so the user can inspect:
+Nova can show a governed memory overview so the user can inspect:
 - how many durable items exist
 - how many are active, locked, or deferred
 - how those items are split across general, project, and ops scopes
 - which threads have linked memory
 - what was saved most recently
 
-Nova now also gives governed memory its own dedicated dashboard page so this review surface does not have to compete with the Home-page cards.
+Nova also gives governed memory its own dedicated dashboard page so this review surface does not have to compete with the Home-page cards.
 
-## 4. The Thread-Memory Bridge
-One of the most important recent changes is the bridge between threads and governed memory.
+## 4. The New Explicit Save / Remember Layer
+Nova now has a stronger everyday memory layer on top of the older memory-overview surface.
 
-This means Nova can now preserve:
+This means Nova can now handle natural flows like:
+- `save this`
+- `remember this`
+- `remember this: Client supplies alcohol; Pour Social does not sell alcohol.`
+- `list memories`
+- `show that memory`
+- `edit that memory: <updated text>`
+- `delete that memory`
+
+Important boundary:
+- this is still explicit
+- Nova does not autosave
+- Nova does not silently convert ordinary chat into memory
+- destructive or mutating changes still require clear user action
+
+## 5. The Thread-Memory Bridge
+One of the most important continuity changes is the bridge between threads and governed memory.
+
+This means Nova can preserve:
 - thread snapshots
 - thread decisions
 - durable thread-linked memory history
@@ -108,7 +125,18 @@ It is also:
 - blockers
 - preserved progress
 
-## 5. What This Feels Like In Practice
+## 6. Bounded Relevant Memory Use
+Nova can now use clearly relevant explicit memory as a bounded chat aid.
+
+That means:
+- a memory that directly matches the current question may be used as a small context hint
+- unrelated questions do not automatically drag in saved memory
+- memory remains separate from Nova's identity or personality
+
+This is a very important trust boundary.
+Nova is supposed to feel helpful, not creepy.
+
+## 7. What This Feels Like In Practice
 A realistic Nova continuity flow now looks like this:
 - you continue a thread
 - Nova shows the current blocker and latest decision
@@ -116,12 +144,12 @@ A realistic Nova continuity flow now looks like this:
 - the thread's memory count increases
 - you ask for `memory overview`
 - Nova shows the current durable memory state and linked threads
-- later you come back and Nova can show the durable context again
-- if you start a new session, Nova can recover durable context through governed memory even though the live thread surface itself is session-scoped
+- later you ask a directly related question
+- Nova can use the clearly relevant saved memory without pretending it remembers everything
 
 That is the beginning of a real personal continuity system.
 
-## 6. The Big Difference Between Context, Threads, and Memory
+## 8. The Big Difference Between Context, Threads, and Memory
 The easiest way to understand them is this:
 
 Working context:
@@ -135,38 +163,8 @@ Governed memory:
 
 Together, these three layers let Nova feel more coherent without becoming hidden or uncontrolled.
 
-## 7. Response Style Controls
-Phase 5 now also includes a manual response-style layer built on Nova's presentation personality.
-
-This means the user can explicitly inspect and change how Nova presents information without changing what Nova is allowed to do.
-
-Current supported tone profiles:
-- balanced
-- concise
-- detailed
-- formal
-
-Current supported domains:
-- general chat
-- system and diagnostics
-- research and analysis
-- weather/news/calendar
-- projects, threads, and memory
-
-Important boundary:
-- these are explicit user-controlled settings
-- they are inspectable and resettable
-- they are not hidden adaptive behavior
-
-Examples:
-- `tone status`
-- `tone set concise`
-- `tone set research detailed`
-- `tone reset research`
-- `tone reset all`
-
-## 8. Calm Scheduling
-Phase 5 now also includes explicit scheduling for daily briefs and reminders.
+## 9. Calm Scheduling
+Phase 5 also includes explicit scheduling for daily briefs and reminders.
 
 This is not meant to make Nova proactive in a hidden way.
 It is meant to make Nova easier to live with day to day while keeping the same governance model.
@@ -183,25 +181,14 @@ What the user can do:
 - dismiss due items
 - cancel schedules they no longer want
 
-Examples:
-- `show schedules`
-- `notification status`
-- `notification settings`
-- `schedule daily brief at 8:00 am`
-- `remind me at 2:00 pm to review deployment issue`
-- `remind me daily at 9:00 am to review project threads`
-- `set quiet hours from 10:00 pm to 7:00 am`
-- `set notification rate limit 2 per hour`
-- `reschedule schedule SCH-123 to 3:00 pm`
-
 Important boundary:
 - schedules are explicit
 - schedules are inspectable
 - schedules are cancellable
 - scheduled items do not auto-run actions on the user's behalf
 
-## 9. Pattern Review
-Phase 5 now also includes an explicit pattern-review layer for ongoing work.
+## 10. Pattern Review
+Phase 5 also includes an explicit pattern-review layer for ongoing work.
 
 This is not hidden behavior.
 Nova only generates pattern proposals after the user opts in and explicitly asks for a review.
@@ -210,13 +197,6 @@ What Nova can propose:
 - a blocked thread without a next step
 - a repeated blocker theme across threads
 - durable context that may still need a clearer saved decision
-
-Examples:
-- `pattern opt in`
-- `pattern status`
-- `review patterns`
-- `review patterns for deployment issue`
-- `dismiss pattern PAT-...`
 
 Important boundary:
 - pattern review is opt-in

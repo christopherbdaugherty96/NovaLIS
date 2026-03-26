@@ -1,6 +1,6 @@
 # Phase-5 Proof Packet Index
-Updated: 2026-03-13
-Status: CLOSED for the current trust-facing Phase-5 package
+Updated: 2026-03-25
+Status: CLOSED for the current trust-facing Phase-5 package, with later runtime-aligned memory additions recorded below
 Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, implemented runtime slices, and deferred follow-on tracks.
 
 ## Current Authority Chain
@@ -29,6 +29,7 @@ Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, imple
 9. `PHASE_5_EVERYDAY_USER_JOURNEYS_2026-03-12.md`
 10. `PHASE_5_CUMULATIVE_IMPLEMENTATION_STATE_2026-03-12.md`
 11. `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
+12. `PHASE_5_GOVERNED_MEMORY_STAGE1_SAVE_AND_RETRIEVAL_RUNTIME_SLICE_2026-03-25.md`
 
 ## Historical Gate-Preparation Inputs (Retained for Traceability Only)
 These documents remain useful as design history, but they are not the current authority chain for the closed Phase-5 package.
@@ -53,30 +54,29 @@ These documents remain useful as design history, but they are not the current au
 - `docs/design/Phase 5/MEMORY GOVERNANCE.md`
 - `docs/design/Phase 5/NOVA_WORKING_CONTEXT_ENGINE.md`
 - `docs/design/Phase 5/PHASE_5_DOCUMENT_MAP.md`
-- `docs/design/Phase 5/# 🧭 Tonal Calibration Scope – Desi.txt`
-- `docs/design/Phase 5/# 🧭 Tonal Calibration Visibility –.txt`
-- `docs/design/Phase 5/📄 Phase 5 Roadmap.txt (corrected).txt`
+- `docs/design/Phase 5/# ðŸ§­ Tonal Calibration Scope â€“ Desi.txt`
+- `docs/design/Phase 5/# ðŸ§­ Tonal Calibration Visibility â€“.txt`
+- `docs/design/Phase 5/ðŸ“„ Phaseâ€¯5 Roadmap.txt (corrected).txt`
 - `docs/design/Phase 5/Delegated Autonomy.txt`
 - `docs/design/Phase 5/Consolidated API's.txt`
+- `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
 
 ## Deferred-to-Phase-6 Note
 Tracks intentionally not added to the closed Phase-5 package are indexed here:
 - `docs/PROOFS/Phase-6/PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
 
 ## Verification Commands (Current)
-- `$env:PYTHONPATH='nova_backend'; python -m pytest -q nova_backend/tests/phase5`
-- `$env:PYTHONPATH='nova_backend'; python -m pytest -q nova_backend/tests/phase45`
-- `$env:PYTHONPATH='nova_backend'; python -m pytest -q nova_backend/tests`
+- `python -m pytest tests\phase45\test_brain_server_basic_conversation.py tests\phase45\test_dashboard_memory_widget.py tests\phase5\test_memory_governance_executor.py tests\conversation\test_response_style_router.py tests\conversation\test_response_formatter.py tests\conversation\test_session_router.py tests\conversation\test_conversation_router.py tests\test_governor_execution_timeout.py`
+- `python -m pytest tests\executors\test_news_intelligence_executor.py tests\executors\test_web_search_executor.py tests\phase45\test_brain_server_tone_commands.py tests\conversation\test_general_chat_tone.py tests\conversation\test_personality_interface_agent.py tests\test_tierb_conversation.py`
 - `python scripts/generate_runtime_docs.py`
 - `python scripts/check_runtime_doc_drift.py`
 - `python scripts/check_frontend_mirror_sync.py`
 
-## Latest Verification Snapshot (2026-03-13)
-- `nova_backend/tests/phase5`: `41 passed`
-- `nova_backend/tests/phase45`: `49 passed`
-- Full backend suite (`nova_backend/tests`): `395 passed`
-- Runtime documentation drift check: passed
-- Frontend mirror sync check: passed
+## Latest Verification Snapshot (2026-03-25)
+- memory/governor/conversation regression bundle: `117 passed`
+- news/search/tone regression bundle: `72 passed`
+- runtime documentation drift check: passed
+- frontend mirror sync check: passed
 
 ## Runtime Progression Summary
 1. Session-scoped project continuity layer landed (thread store + thread map + status/blocker reasoning).
@@ -85,44 +85,44 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
    - `memory save thread <name>`
    - `memory save decision for <thread>: <text>`
    - `memory list thread <name>`
-4. UX polish landed:
-   - Thread memory count badge (`Memory: N`)
-   - Inline save decision entry
-   - Session-relative `Changed: ...` mini-diff line
-   - Thread detail panel with decision/memory context
-   - Recent decisions + timestamped linked memory in detail view
-5. Memory inspectability surface landed:
+4. Memory inspectability surface landed:
    - `memory overview` / `memory status` / `memory review`
-   - Dashboard governed-memory overview widget
-   - Tier counts, linked-thread counts, and recent memory review surface
-   - Memory widget refresh after governed-memory operations
+   - dashboard governed-memory overview widget
+   - tier counts, linked-thread counts, and recent memory review surface
+5. Memory stage-1 save and retrieval expansion landed:
+   - natural `save this` / `remember this`
+   - natural `list memories`
+   - `show that memory`
+   - confirmation-backed `edit that memory` and `delete that memory`
+   - bounded relevant-memory retrieval into general chat
 6. Manual tone settings / tone visibility landed:
-   - Persistent tone-profile store in the presentation layer
+   - persistent tone-profile store in the presentation layer
    - `tone status` / `tone set ...` / `tone reset ...`
-   - Dashboard response-style widget and Tone modal
-   - Recent tone-change history + system-status tone summary
+   - dashboard response-style widget and Tone modal
+   - recent tone-change history + system-status tone summary
 7. User-directed notification scheduling landed:
-   - Explicit daily brief + reminder schedules
-   - Quiet scheduled-updates widget on the Home page
-   - Schedule creation modal + cancel/dismiss controls
-   - Explicit quiet-hours + rate-limit controls
-   - Delivery attempts and outcomes logged
+   - explicit daily brief + reminder schedules
+   - quiet scheduled-updates widget on the Home page
+   - schedule creation modal + cancel/dismiss controls
+   - explicit quiet-hours + rate-limit controls
+   - delivery attempts and outcomes logged
    - Governor-checked quiet delivery with no automatic scheduled action execution
 8. Opt-in pattern review landed:
-   - Explicit `pattern opt in` / `pattern opt out`
-   - User-triggered `review patterns` queue generation
-   - Quiet Home-page pattern-review widget
-   - Accept / dismiss proposal controls
-   - No auto-apply and no background review loop
+   - explicit `pattern opt in` / `pattern opt out`
+   - user-triggered `review patterns` queue generation
+   - quiet Home-page pattern-review widget
+   - accept / dismiss proposal controls
+   - no auto-apply and no background review loop
 
 ## Governance State
 - Runtime remains invocation-bound.
 - No autonomous/background execution introduced.
 - Project threads remain session-scoped; durable cross-session continuity is provided by explicit governed memory.
 - Memory writes remain explicit and Governor-mediated.
+- Memory retrieval remains bounded and relevance-based rather than globally injected.
 - Tone changes remain explicit, inspectable, and user-invoked only.
 - Schedules remain explicit, inspectable, cancellable, and policy-bound.
 - Pattern review remains opt-in, advisory, and discardable.
 - Admission gate is satisfied for the current repository state.
-- The trust-facing Phase-5 package is now formally closed by `PHASE_5_CLOSED_ACT_2026-03-13.md`.
+- The trust-facing Phase-5 package remains closed by `PHASE_5_CLOSED_ACT_2026-03-13.md`, with the newer memory slice recorded here as a runtime-aligned extension rather than a reopening of hidden autonomy.
 - Tracks not added to the closed package are deferred to the Phase-6 planning packet, not left as implied Phase-5 promises.

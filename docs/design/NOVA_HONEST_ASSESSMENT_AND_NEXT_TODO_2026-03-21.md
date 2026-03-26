@@ -1,5 +1,5 @@
 # Nova Honest Assessment And Next Todo
-Date: 2026-03-21
+Date: 2026-03-25
 Status: Priority note
 Scope: Preserve the honest current-state assessment of Nova and define the next build priority before broader expansion
 
@@ -10,7 +10,7 @@ Its strongest qualities right now are:
 - a coherent product thesis
 - unusually strong trust instincts
 - meaningful implemented progress
-- real differentiation around governed local work, project understanding, and explicit authority
+- real differentiation around governed local work, project understanding, explicit authority, and now explicit governed memory
 
 Nova is not just:
 - a chatbot wrapper
@@ -26,6 +26,7 @@ Nova already has:
 - safer local action handling
 - clearer planning and phase structure
 - a better long-term product vision than most assistant projects
+- a real explicit memory save/inspect/retrieve layer on `main`
 
 That is real progress.
 
@@ -57,7 +58,7 @@ The problem is trying to push too many of them at the same time.
 The project is no longer missing "more ideas."
 
 It is missing more of the operating layers that make the vision stable:
-- explicit memory implementation
+- stronger memory management UX
 - project/workspace foundations
 - answer-first retrieval implementation
 - evals, traces, and regression infrastructure
@@ -85,33 +86,32 @@ and not:
 ## Next Todo Before Anything Else
 The next highest-value implementation priority should be:
 
-### 1. Explicit Memory System Stage 1
+### 1. Explicit Memory System Stage 2
 Best next branch:
-- `codex/memory-stage1-save-remember-flow`
+- `codex/memory-stage2-management-ui`
 
 Why this should come first:
-- it directly supports the continuous Nova vision
-- it improves trust
-- it improves continuity
-- it is one of the clearest user-facing missing layers
-- it creates the base for project memory, schedules, and connector usefulness later
+- stage 1 is now landed on `main`
+- it directly strengthens user trust and inspectability
+- it makes the memory layer feel like a real product surface instead of just a command set
+- it creates the clearest bridge into stronger context retrieval and project/workspace usefulness later
 
 Best scope:
-- stronger `save this`
-- stronger `remember this`
-- clearer save confirmations
-- better immediate next-step guidance
+- dedicated memory browsing UX
+- clearer detail and item actions
+- better edit/delete visibility
+- stronger memory page usability
 - no hidden learning
 - no authority changes
 
 ## Recommended Follow-On Order
-After memory stage 1, the cleanest order is:
+After memory stage 2, the cleanest order is:
 
-1. `codex/memory-stage2-management-ui`
-2. `codex/memory-stage3-context-retrieval`
+1. `codex/memory-stage3-context-retrieval`
+2. `codex/websearch-stage1-answer-first-ui`
 3. `codex/news-ui-stage1-inline-card-summary`
-4. `codex/websearch-stage1-answer-first-ui`
-5. `codex/agent-os-stage1-project-workspaces`
+4. `codex/agent-os-stage1-project-workspaces`
+5. `codex/local-project-visualization-stage1-structure-map`
 
 ## Why This Order
 This order is strong because it:
