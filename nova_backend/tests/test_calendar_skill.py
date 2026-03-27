@@ -12,7 +12,10 @@ def test_calendar_skill_reports_not_connected_when_path_missing(monkeypatch):
     assert result.success is True
     assert result.skill == "calendar"
     assert "no ICS file is connected" in result.message
-    assert (result.widget_data or {}).get("summary") == "Not connected."
+    widget = result.widget_data or {}
+    assert widget.get("summary") == "Not connected."
+    assert widget.get("status") == "not_connected"
+    assert "NOVA_CALENDAR_ICS_PATH" in widget.get("setup_hint", "")
 
 
 def test_calendar_skill_reads_todays_events(monkeypatch, tmp_path):
@@ -43,3 +46,13 @@ def test_calendar_skill_reads_todays_events(monkeypatch, tmp_path):
     events = widget.get("events") or []
     assert len(events) == 1
     assert events[0]["title"] == "Team Standup"
+    assert widget.get("status") == "ok"
+    assert widget.get("source_label") == "calendar.ics"
+
+
+def test_calendar_skill_does_not_hijack_schedule_management_commands():
+    skill = CalendarSkill()
+
+    assert skill.can_handle("show schedules") is False
+    assert skill.can_handle("schedule daily brief at 8:00 am") is False
+    assert skill.can_handle("what's on my schedule today") is True
