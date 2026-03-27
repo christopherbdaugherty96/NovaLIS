@@ -9,6 +9,7 @@ SRC_ROOT = PROJECT_ROOT / "src"
 TARGET_ROOTS = [
     SRC_ROOT / "perception",
     SRC_ROOT / "context",
+    SRC_ROOT / "openclaw",
 ]
 TARGET_FILES = [
     SRC_ROOT / "executors" / "screen_capture_executor.py",

@@ -40,6 +40,7 @@ POLICY_EXECUTOR_GATE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" /
 CAPABILITY_TOPOLOGY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "capability_topology.py"
 EXTERNAL_REASONING_EXECUTOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "executors" / "external_reasoning_executor.py"
 DEEPSEEK_SAFETY_WRAPPER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "conversation" / "deepseek_safety_wrapper.py"
+BRIDGE_API_PATH = PROJECT_ROOT / "nova_backend" / "src" / "api" / "bridge_api.py"
 
 GOVERNANCE_MATRIX_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX.md"
 SKILL_SURFACE_MAP_PATH = RUNTIME_DOC_DIR / "SKILL_SURFACE_MAP.md"
@@ -51,6 +52,7 @@ SKILLS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "skills"
 EXECUTORS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "executors"
 CONVERSATION_DIR = PROJECT_ROOT / "nova_backend" / "src" / "conversation"
 WORKING_CONTEXT_DIR = PROJECT_ROOT / "nova_backend" / "src" / "working_context"
+OPENCLAW_MODULE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw"
 
 
 def _build_allowlisted_paths() -> frozenset[Path]:
@@ -72,6 +74,7 @@ def _build_allowlisted_paths() -> frozenset[Path]:
         STATIC_DASHBOARD_PATH,
         STATIC_INDEX_PATH,
         BUILD_PHASE_PATH,
+        BRIDGE_API_PATH,
     }
     paths.update(SKILLS_DIR.glob("*.py"))
     paths.update(EXECUTORS_DIR.glob("*.py"))
@@ -683,6 +686,32 @@ def _phase_7_status(registry: dict[str, Any]) -> str:
     return "DESIGN"
 
 
+def _phase_8_status() -> str:
+    """Derive runtime status for Phase 8 OpenClaw governed task execution module."""
+    module_dir_exists = OPENCLAW_MODULE_PATH.exists()
+    task_envelope_exists = (OPENCLAW_MODULE_PATH / "task_envelope.py").exists()
+    agent_runner_exists = (OPENCLAW_MODULE_PATH / "agent_runner.py").exists()
+    personality_bridge_exists = (OPENCLAW_MODULE_PATH / "agent_personality_bridge.py").exists()
+    runtime_store_exists = (OPENCLAW_MODULE_PATH / "agent_runtime_store.py").exists()
+
+    bridge_src = _safe_read(BRIDGE_API_PATH)
+    bridge_live = "/api/openclaw/bridge/message" in bridge_src
+
+    all_module_files = (
+        module_dir_exists
+        and task_envelope_exists
+        and agent_runner_exists
+        and personality_bridge_exists
+        and runtime_store_exists
+    )
+
+    if all_module_files and bridge_live:
+        return "ACTIVE"
+    if bridge_live or any([task_envelope_exists, agent_runner_exists, personality_bridge_exists, runtime_store_exists]):
+        return "PARTIAL"
+    return "DESIGN"
+
+
 def _phase_45_status() -> str:
     """Derive coarse runtime status for Phase 4.5 UX surface."""
     dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
@@ -1130,6 +1159,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     phase_5_status = _phase_5_status(registry)
     phase_6_status = _phase_6_status()
     phase_7_status = _phase_7_status(registry)
+    phase_8_status = _phase_8_status()
 
     phase_42_note = (
         "Orthogonal cognition stack enabled via explicit invocation path"
@@ -1178,6 +1208,15 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         phase_7_note = "Phase-7 reasoning substrate exists, but the full routed user-facing slice is incomplete"
     else:
         phase_7_note = "Governed external reasoning remains design-only"
+    if phase_8_status == "ACTIVE":
+        phase_8_note = "Governed OpenClaw execution module and proposal-only adapter active"
+    elif phase_8_status == "PARTIAL":
+        phase_8_note = (
+            "OpenClaw bridge active; governed execution module scaffolded (Phase 8.0 strict mode); "
+            "full wiring pending"
+        )
+    else:
+        phase_8_note = "Governed OpenClaw task execution remains design-only"
 
     governor_modules = [
         "src/governor/governor.py",
@@ -1222,6 +1261,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         f"| Phase 5 | {phase_5_status} | {phase_5_note} |",
         f"| Phase 6 | {phase_6_status} | {phase_6_note} |",
         f"| Phase 7 | {phase_7_status} | {phase_7_note} |",
+        f"| Phase 8 | {phase_8_status} | {phase_8_note} |",
         "",
         "## Runtime Governance Spine",
         "",
@@ -1300,6 +1340,16 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
                     "",
                 ]
                 if bridge_surface_present
+                else []
+            ),
+            *(
+                [
+                    "OpenClaw Module",
+                    "Location: src/openclaw/",
+                    "Status: Scaffolded (Phase 8.0) — manual trigger only, no scheduler",
+                    "",
+                ]
+                if OPENCLAW_MODULE_PATH.exists()
                 else []
             ),
             "Voice System",
