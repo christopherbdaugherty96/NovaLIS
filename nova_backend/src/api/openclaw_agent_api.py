@@ -81,4 +81,21 @@ def build_openclaw_agent_router(deps) -> APIRouter:
             **_agent_status_payload(deps),
         }
 
+    @router.post("/api/openclaw/agent/delivery/{delivery_id}/dismiss")
+    async def dismiss_openclaw_agent_delivery(delivery_id: str):
+        try:
+            snapshot = deps.openclaw_agent_runtime_store.dismiss_delivery(delivery_id)
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="Unknown OpenClaw delivery item.") from exc
+
+        deps._log_ledger_event(
+            deps.RUNTIME_GOVERNOR,
+            "OPENCLAW_AGENT_DELIVERY_DISMISSED",
+            {
+                "delivery_id": delivery_id,
+                "source": "agent_page",
+            },
+        )
+        return _agent_status_payload(deps, snapshot)
+
     return router

@@ -14,7 +14,7 @@ It now has:
 - a governed external reasoning lane with provider transparency
 - estimated governed reasoning-usage visibility in Trust and Settings
 - a token-gated governed remote bridge for read/reasoning access
-- a manual OpenClaw home-agent foundation with an Agent page, manual briefing templates, and delivery controls
+- a manual OpenClaw home-agent foundation with an Agent page, manual briefing templates, delivery controls, a delivery inbox, and strict manual preflight
 - a Home page, Workspace page, Trust page, Policies page, Introduction page, Settings page, News page, Memory page, and chat surface
 - a separate landing-preview page for product messaging review
 - a persistent top-level navigation strip plus a clearer header page/connection status surface
@@ -133,7 +133,7 @@ Nova currently has:
 - visible push-to-talk state feedback during voice capture
 - a settings surface for setup-mode choice, voice checks, comfort controls, and governed runtime permissions
 - visible provider, connection, and remote-bridge status in Settings, with live pause/re-enable controls for second opinion and bridge access
-- a dedicated Agent page for manual OpenClaw home-agent briefings, delivery-mode changes, and recent-run review
+- a dedicated Agent page for manual OpenClaw home-agent briefings, delivery-mode changes, ready-for-review delivery items, and recent-run review
 - visible estimated reasoning usage and budget state in Trust and Settings
 - smoother conversational acknowledgements and shorter spoken versions of long answers
 - a policy review surface for disabled drafts, simulations, and one-shot manual runs
@@ -368,7 +368,7 @@ Live Phase-7 work now includes:
 - provider, route, and authority visibility in Trust and Settings
 - actionable runtime-permission controls in Settings for second opinion and the remote bridge
 - stronger local TTS renderer preference before fallback
-- a manual OpenClaw home-agent foundation with Nova-owned briefing presentation, an Agent page, manual template runs, and delivery controls
+- a manual OpenClaw home-agent foundation with Nova-owned briefing presentation, an Agent page, manual template runs, delivery controls, a delivery inbox, and strict manual preflight
 
 ### Phase 8
 Status:

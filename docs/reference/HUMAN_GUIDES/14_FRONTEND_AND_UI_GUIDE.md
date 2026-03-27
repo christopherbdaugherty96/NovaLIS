@@ -118,7 +118,7 @@ More specifically, the current dashboard can now show:
 - Settings page setup-mode selection, runtime permission controls, reasoning transparency, and voice confidence review
 - Settings page provider, connection, bridge-status, and settings-history review
 - Trust page remote-bridge review
-- Agent page runtime cards, template availability state, delivery-mode controls, and recent manual run history
+- Agent page runtime cards, template availability state, delivery-mode controls, ready-for-review inbox state, and recent manual run history
 - Agent page manual briefing runs that still keep scheduled/background execution disabled
 
 ## What The Frontend Is Not Supposed To Become

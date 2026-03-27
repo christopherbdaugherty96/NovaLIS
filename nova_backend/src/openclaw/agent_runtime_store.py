@@ -5,11 +5,13 @@ from datetime import datetime, timezone
 from pathlib import Path
 from threading import RLock
 from typing import Any
+from uuid import uuid4
 
 from src.openclaw.agent_personality_bridge import (
     DEFAULT_DELIVERY_MODE_BY_TEMPLATE,
     normalize_delivery_mode,
 )
+from src.openclaw.strict_preflight import strict_foundation_snapshot
 
 
 def _utc_now_iso() -> str:
@@ -19,7 +21,7 @@ def _utc_now_iso() -> str:
 class OpenClawAgentRuntimeStore:
     """Persistent operator-facing store for OpenClaw home-agent foundations."""
 
-    SCHEMA_VERSION = "1.0"
+    SCHEMA_VERSION = "1.1"
     DEFAULT_TEMPLATES = (
         {
             "id": "morning_brief",
@@ -91,7 +93,14 @@ class OpenClawAgentRuntimeStore:
             state = self._read_state()
         templates = self._normalized_templates(state.get("templates"))
         recent_runs = list(state.get("recent_runs") or [])[:12]
+        delivery_inbox = [
+            item
+            for item in list(state.get("delivery_inbox") or [])
+            if str(dict(item).get("status") or "ready").strip() == "ready"
+        ][:8]
         runnable = sum(1 for item in templates if item.get("manual_run_available"))
+        strict_foundation = strict_foundation_snapshot()
+        delivery_ready_count = len(delivery_inbox)
         return {
             "schema_version": self.SCHEMA_VERSION,
             "status": "foundation",
@@ -108,10 +117,19 @@ class OpenClawAgentRuntimeStore:
                 "Nova owns the voice. OpenClaw stays behind the scenes and results come back through Nova's presentation layer."
             ),
             "schedule_summary": "Template schedules are documented and visible, but automatic triggers are not live yet.",
+            "strict_foundation_label": str(strict_foundation.get("label") or "").strip(),
+            "strict_foundation_summary": str(strict_foundation.get("summary") or "").strip(),
             "template_count": len(templates),
             "manual_run_count": runnable,
             "templates": templates,
             "recent_runs": recent_runs,
+            "delivery_ready_count": delivery_ready_count,
+            "delivery_summary": (
+                f"{delivery_ready_count} agent deliver{'y' if delivery_ready_count == 1 else 'ies'} ready for review."
+                if delivery_ready_count
+                else "No agent deliveries are waiting right now."
+            ),
+            "delivery_inbox": delivery_inbox,
             "updated_at": str(state.get("updated_at") or ""),
         }
 
@@ -159,15 +177,42 @@ class OpenClawAgentRuntimeStore:
             recent_runs = list(state.get("recent_runs") or [])
             recent_runs.insert(0, entry)
             state["recent_runs"] = recent_runs[:20]
+            delivery_inbox = [self._normalize_delivery_item(item) for item in list(state.get("delivery_inbox") or [])]
+            if bool(dict(entry.get("delivery_channels") or {}).get("widget")):
+                delivery_inbox.insert(0, self._build_delivery_item(entry))
+            state["delivery_inbox"] = delivery_inbox[:20]
             state["updated_at"] = _utc_now_iso()
             self._write_state(state)
         return dict(entry)
+
+    def dismiss_delivery(self, delivery_id: str) -> dict[str, Any]:
+        target = str(delivery_id or "").strip()
+        if not target:
+            raise KeyError(delivery_id)
+        with self._lock:
+            state = self._read_state()
+            delivery_inbox = [self._normalize_delivery_item(item) for item in list(state.get("delivery_inbox") or [])]
+            found = False
+            for item in delivery_inbox:
+                if str(item.get("id") or "").strip() != target:
+                    continue
+                item["status"] = "dismissed"
+                item["dismissed_at"] = _utc_now_iso()
+                found = True
+                break
+            if not found:
+                raise KeyError(delivery_id)
+            state["delivery_inbox"] = delivery_inbox
+            state["updated_at"] = _utc_now_iso()
+            self._write_state(state)
+            return self.snapshot()
 
     def _default_state(self) -> dict[str, Any]:
         return {
             "schema_version": self.SCHEMA_VERSION,
             "templates": [dict(item) for item in self.DEFAULT_TEMPLATES],
             "recent_runs": [],
+            "delivery_inbox": [],
             "updated_at": _utc_now_iso(),
         }
 
@@ -181,6 +226,10 @@ class OpenClawAgentRuntimeStore:
         payload.setdefault("schema_version", self.SCHEMA_VERSION)
         payload["templates"] = self._normalized_templates(payload.get("templates"))
         payload["recent_runs"] = [self._normalize_run(item) for item in list(payload.get("recent_runs") or [])]
+        payload["delivery_inbox"] = [
+            self._normalize_delivery_item(item)
+            for item in list(payload.get("delivery_inbox") or [])
+        ]
         payload.setdefault("updated_at", _utc_now_iso())
         return payload
 
@@ -189,6 +238,10 @@ class OpenClawAgentRuntimeStore:
             "schema_version": self.SCHEMA_VERSION,
             "templates": self._normalized_templates(state.get("templates")),
             "recent_runs": [self._normalize_run(item) for item in list(state.get("recent_runs") or [])],
+            "delivery_inbox": [
+                self._normalize_delivery_item(item)
+                for item in list(state.get("delivery_inbox") or [])
+            ],
             "updated_at": str(state.get("updated_at") or _utc_now_iso()),
         }
         self._path.write_text(json.dumps(normalized, indent=2), encoding="utf-8")
@@ -212,7 +265,7 @@ class OpenClawAgentRuntimeStore:
             merged["tools_allowed"] = [
                 str(tool).strip()
                 for tool in list(merged.get("tools_allowed") or [])
-                if str(tool).strip()
+                if tool is not None and str(tool).strip()
             ]
             merged["manual_run_available"] = bool(merged.get("manual_run_available"))
             templates.append(merged)
@@ -240,8 +293,48 @@ class OpenClawAgentRuntimeStore:
             "estimated_output_tokens": int(raw.get("estimated_output_tokens") or 0),
             "estimated_total_tokens": int(raw.get("estimated_total_tokens") or 0),
             "source_notes": dict(raw.get("source_notes") or {}),
+            "strict_preflight": dict(raw.get("strict_preflight") or {}),
         }
+
+    def _build_delivery_item(self, run_entry: dict[str, Any]) -> dict[str, Any]:
+        return self._normalize_delivery_item(
+            {
+                "id": self._new_delivery_id(),
+                "envelope_id": str(run_entry.get("envelope_id") or "").strip(),
+                "template_id": str(run_entry.get("template_id") or "").strip(),
+                "title": str(run_entry.get("title") or "").strip(),
+                "presented_message": str(run_entry.get("presented_message") or "").strip(),
+                "summary": str(run_entry.get("summary") or "").strip(),
+                "delivery_mode": str(run_entry.get("delivery_mode") or "").strip() or "widget",
+                "delivery_channels": dict(run_entry.get("delivery_channels") or {}),
+                "created_at": str(run_entry.get("completed_at") or run_entry.get("started_at") or _utc_now_iso()),
+                "status": "ready",
+                "dismissed_at": "",
+            }
+        )
+
+    def _normalize_delivery_item(self, value: Any) -> dict[str, Any]:
+        raw = dict(value or {})
+        return {
+            "id": str(raw.get("id") or "").strip(),
+            "envelope_id": str(raw.get("envelope_id") or "").strip(),
+            "template_id": str(raw.get("template_id") or "").strip(),
+            "title": str(raw.get("title") or "").strip(),
+            "presented_message": str(raw.get("presented_message") or "").strip(),
+            "summary": str(raw.get("summary") or "").strip(),
+            "delivery_mode": str(raw.get("delivery_mode") or "").strip() or "widget",
+            "delivery_channels": {
+                "widget": bool(dict(raw.get("delivery_channels") or {}).get("widget")),
+                "chat": bool(dict(raw.get("delivery_channels") or {}).get("chat")),
+            },
+            "created_at": str(raw.get("created_at") or _utc_now_iso()),
+            "status": str(raw.get("status") or "ready").strip() or "ready",
+            "dismissed_at": str(raw.get("dismissed_at") or "").strip(),
+        }
+
+    def _new_delivery_id(self) -> str:
+        stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
+        return f"DEL-{stamp}-{uuid4().hex[:4].upper()}"
 
 
 openclaw_agent_runtime_store = OpenClawAgentRuntimeStore()
-

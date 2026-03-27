@@ -26,6 +26,7 @@ async def test_agent_runner_records_manual_brief_without_network(monkeypatch, tm
 
     assert result["delivery_channels"] == {"widget": True, "chat": True}
     assert result["presented_message"].startswith("Here's your morning.")
+    assert result["strict_preflight"]["allowed"] is True
     assert result["estimated_total_tokens"] > 0
     assert store.snapshot()["recent_runs"][0]["template_id"] == "morning_brief"
 
@@ -37,3 +38,26 @@ async def test_agent_runner_rejects_template_that_is_not_ready(tmp_path):
 
     with pytest.raises(RuntimeError):
         await runner.run_template("inbox_check", triggered_by="test")
+
+
+@pytest.mark.asyncio
+async def test_agent_runner_blocks_manual_template_that_fails_strict_preflight(monkeypatch, tmp_path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    runner = OpenClawAgentRunner(store=store)
+
+    monkeypatch.setattr(
+        store,
+        "get_template",
+        lambda _template_id: {
+            "id": "unsafe_task",
+            "title": "Unsafe Task",
+            "manual_run_available": True,
+            "tools_allowed": ["weather", "email_read"],
+            "delivery_mode": "widget",
+            "max_steps": 3,
+            "max_duration_s": 60,
+        },
+    )
+
+    with pytest.raises(RuntimeError, match="strict home-agent preflight"):
+        await runner.run_template("unsafe_task", triggered_by="agent_page")

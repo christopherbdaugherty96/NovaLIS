@@ -64,6 +64,9 @@ Files and roles:
 - `agent_runner.py`
   - manual low-token briefing runner
   - currently supports named briefing-style collection and one-pass summary behavior
+- `strict_preflight.py`
+  - strict manual-foundation preflight gate
+  - validates allowed tools, max steps, max duration, and allowed trigger source before the runner starts
 
 ### Local API surface
 `nova_backend/src/api/openclaw_agent_api.py`
@@ -107,12 +110,15 @@ What the user can do now:
 - run `morning_brief`
 - run `evening_digest`
 - change delivery mode
+- review pending surface deliveries from the Home page and Agent page
+- dismiss finished surface deliveries after review
 - inspect recent run history
 - navigate to Settings or Trust from the Agent page
 
 ### Live settings and trust integration
 - `home_agent_enabled` is a real runtime permission in `runtime_settings_store.py`
 - OpenClaw home-agent status appears in diagnostics via `os_diagnostics_executor.py`
+- strict manual preflight status appears in diagnostics and runtime truth
 - the runtime auditor already recognizes the home-agent foundation as a live runtime system
 
 ### Live test coverage
@@ -223,6 +229,7 @@ Live now:
 Current truth:
 - delivery modes control presentation channels for manual runs
 - they do not imply proactive scheduled delivery
+- surface-first delivery now includes a persistent delivery inbox for widget/hybrid runs
 
 Longer-term desired model:
 - named briefings can feel like Nova check-ins
@@ -268,6 +275,8 @@ The major remaining gaps are:
   - impact: home-agent foundation still feels manual
 - no full strict Phase-8 execution substrate
   - impact: operator surface exists before full governed execution architecture
+- no proactive timed notification push yet
+  - impact: delivery inbox is visible when the user returns, but Nova still does not initiate delivery on its own
 - `inbox_check` is visible but not connected
   - impact: product promise is ahead of connector readiness
 - no Home Assistant or MQTT connector
@@ -285,6 +294,7 @@ Most important files for this topic:
 Design:
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_HOME_AGENT_AND_PERSONALITY_LAYER_PLAN_2026-03-26.md`
+- `docs/design/Phase 8/PHASE_8_5_SCHEDULER_AND_PROACTIVE_DELIVERY_PLAN_2026-03-27.md`
 - `docs/design/Phase 8/PHASE_8_DOCUMENT_MAP.md`
 
 Runtime:
@@ -306,6 +316,10 @@ Runtime truth:
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
 - `docs/current_runtime/GOVERNANCE_MATRIX_TREE.md`
+
+Proof:
+- `docs/PROOFS/Phase-8/PHASE_8_PROOF_PACKET_INDEX.md`
+- `docs/PROOFS/Phase-8/PHASE_8_MANUAL_FOUNDATION_AND_DELIVERY_INBOX_RUNTIME_SLICE_2026-03-27.md`
 
 Tests:
 - `nova_backend/tests/openclaw/`

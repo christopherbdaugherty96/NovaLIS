@@ -1,0 +1,19 @@
+# Phase 8 Proof Packet Index
+Updated: 2026-03-27
+Status: Current Phase-8 proof map
+
+## Purpose
+This folder tracks repo-grounded proof for the live Phase-8 foundation slice.
+
+Phase-8 current truth:
+- manual OpenClaw home-agent foundation is live
+- strict manual preflight is live
+- delivery inbox / surface-first review is live
+- scheduling and full governed external execution remain deferred
+
+## Current Packets
+- `docs/PROOFS/Phase-8/PHASE_8_MANUAL_FOUNDATION_AND_DELIVERY_INBOX_RUNTIME_SLICE_2026-03-27.md`
+
+## Notes
+- Do not read this folder as proof that full canonical Phase-8 automation is complete.
+- Runtime truth still lives in `docs/current_runtime/CURRENT_RUNTIME_STATE.md`.

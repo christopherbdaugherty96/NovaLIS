@@ -128,6 +128,7 @@ let openClawAgentState = {
   summary: "Loading home-agent foundations...",
   snapshot: {},
   templates: [],
+  deliveryInbox: [],
   recentRuns: [],
   lastHydratedAt: 0,
 };
@@ -843,6 +844,7 @@ function applyOpenClawAgentPayload(data) {
   openClawAgentState.summary = String(payload.summary || "").trim() || "OpenClaw home-agent foundations are available.";
   openClawAgentState.snapshot = { ...payload };
   openClawAgentState.templates = Array.isArray(payload.templates) ? payload.templates.map((item) => ({ ...item })) : [];
+  openClawAgentState.deliveryInbox = Array.isArray(payload.delivery_inbox) ? payload.delivery_inbox.map((item) => ({ ...item })) : [];
   openClawAgentState.recentRuns = Array.isArray(payload.recent_runs) ? payload.recent_runs.map((item) => ({ ...item })) : [];
   openClawAgentState.lastHydratedAt = Date.now();
 
@@ -876,6 +878,7 @@ async function requestOpenClawAgentRefresh(force = false) {
     if (!res.ok) throw new Error("openclaw_agent_unavailable");
     const data = await res.json();
     applyOpenClawAgentPayload(data);
+    renderOpenClawDeliveryWidget();
     renderOpenClawAgentPage();
     renderSettingsPage();
     renderTrustCenterPage();
@@ -898,6 +901,7 @@ async function setOpenClawAgentDeliveryMode(templateId, deliveryMode) {
     if (!res.ok) throw new Error("openclaw_agent_delivery_failed");
     const data = await res.json();
     applyOpenClawAgentPayload(data);
+    renderOpenClawDeliveryWidget();
     renderOpenClawAgentPage();
     renderSettingsPage();
     renderTrustCenterPage();
@@ -919,6 +923,7 @@ async function runOpenClawAgentTemplate(templateId) {
       return;
     }
     applyOpenClawAgentPayload(data);
+    renderOpenClawDeliveryWidget();
     renderOpenClawAgentPage();
     renderSettingsPage();
     renderTrustCenterPage();
@@ -926,9 +931,29 @@ async function runOpenClawAgentTemplate(templateId) {
     const delivery = (run.delivery_channels && typeof run.delivery_channels === "object") ? run.delivery_channels : {};
     if (delivery.chat && String(run.presented_message || "").trim()) {
       appendChatMessage("assistant", String(run.presented_message || "").trim(), null, "Task report");
+    } else if (delivery.widget) {
+      appendChatMessage("assistant", "That run is ready in the Agent delivery inbox.", null, "Agent");
     }
   } catch (_err) {
     appendChatMessage("assistant", "I couldn't run that home-agent template right now.", null, "Agent");
+  }
+}
+
+async function dismissOpenClawDelivery(deliveryId) {
+  try {
+    const res = await fetch(`${API_BASE}/api/openclaw/agent/delivery/${encodeURIComponent(deliveryId)}/dismiss`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    if (!res.ok) throw new Error("openclaw_agent_delivery_dismiss_failed");
+    const data = await res.json();
+    applyOpenClawAgentPayload(data);
+    renderOpenClawDeliveryWidget();
+    renderOpenClawAgentPage();
+    renderSettingsPage();
+    renderTrustCenterPage();
+  } catch (_err) {
+    appendChatMessage("assistant", "I couldn't dismiss that agent delivery right now.", null, "Agent");
   }
 }
 
@@ -6671,11 +6696,94 @@ function renderIntroPage() {
   if (modeCopy) modeCopy.textContent = `Current setup: ${currentMode.label}. ${currentMode.copy}`;
 }
 
+function renderOpenClawDeliveryFeed(host, items = [], emptyText = "No agent deliveries are waiting right now.") {
+  if (!host) return;
+  clear(host);
+  const rows = Array.isArray(items) ? items : [];
+  if (!rows.length) {
+    const empty = document.createElement("div");
+    empty.className = "memory-detail-empty";
+    empty.textContent = emptyText;
+    host.appendChild(empty);
+    return;
+  }
+
+  rows.forEach((item) => {
+    const row = document.createElement("div");
+    row.className = "trust-center-activity-item";
+
+    const title = document.createElement("strong");
+    title.textContent = String(item.title || "Delivery").trim() || "Delivery";
+
+    const meta = document.createElement("div");
+    const createdLabel = String(item.created_at || "").trim()
+      ? new Date(String(item.created_at || "").trim()).toLocaleString()
+      : "Unknown time";
+    const channels = [];
+    if (item.delivery_channels && item.delivery_channels.chat) channels.push("chat");
+    if (item.delivery_channels && item.delivery_channels.widget) channels.push("surface");
+    meta.textContent = [
+      createdLabel,
+      channels.length ? `delivery: ${channels.join(" + ")}` : "",
+      String(item.delivery_mode || "").trim() || "widget",
+    ].filter(Boolean).join(" · ");
+
+    const body = document.createElement("p");
+    body.className = "workspace-board-section-copy";
+    body.textContent = String(item.presented_message || item.summary || "").trim() || "Agent delivery recorded.";
+
+    const actions = document.createElement("div");
+    actions.className = "workspace-board-actions-toolbar";
+
+    const openBtn = document.createElement("button");
+    openBtn.type = "button";
+    openBtn.textContent = "Open agent";
+    openBtn.addEventListener("click", () => setActivePage("agent"));
+    actions.appendChild(openBtn);
+
+    if (item.delivery_channels && item.delivery_channels.chat) {
+      const chatBtn = document.createElement("button");
+      chatBtn.type = "button";
+      chatBtn.textContent = "Go to chat";
+      chatBtn.addEventListener("click", () => setActivePage("chat"));
+      actions.appendChild(chatBtn);
+    }
+
+    const dismissBtn = document.createElement("button");
+    dismissBtn.type = "button";
+    dismissBtn.textContent = "Dismiss";
+    dismissBtn.addEventListener("click", () => dismissOpenClawDelivery(String(item.id || "").trim()));
+    actions.appendChild(dismissBtn);
+
+    row.appendChild(title);
+    row.appendChild(meta);
+    row.appendChild(body);
+    row.appendChild(actions);
+    host.appendChild(row);
+  });
+}
+
+function renderOpenClawDeliveryWidget() {
+  const summary = $("agent-delivery-home-summary");
+  const host = $("agent-delivery-list");
+  const snapshot = (openClawAgentState.snapshot && typeof openClawAgentState.snapshot === "object")
+    ? openClawAgentState.snapshot
+    : {};
+  const items = Array.isArray(openClawAgentState.deliveryInbox) ? openClawAgentState.deliveryInbox : [];
+
+  if (summary) {
+    summary.textContent = String(snapshot.delivery_summary || "").trim() || "No agent deliveries are waiting right now.";
+  }
+  renderOpenClawDeliveryFeed(host, items, "No home-agent deliveries are waiting right now.");
+}
+
 function renderOpenClawAgentPage() {
   const summary = $("agent-page-summary");
   const runtimeGrid = $("agent-runtime-grid");
   const deliverySummary = $("agent-delivery-summary");
   const templateList = $("agent-template-list");
+  const inboxSummary = $("agent-inbox-summary");
+  const inboxList = $("agent-inbox-list");
   const runSummary = $("agent-run-summary");
   const runList = $("agent-run-list");
   const snapshot = (openClawAgentState.snapshot && typeof openClawAgentState.snapshot === "object")
@@ -6697,6 +6805,8 @@ function renderOpenClawAgentPage() {
       ["Execution mode", permissionEnabled ? "Manual foundation only" : "Paused in Settings"],
       ["Templates", `${Number(snapshot.template_count || 0)} total`],
       ["Runnable now", `${Number(snapshot.manual_run_count || 0)} ready`],
+      ["Strict foundation", String(snapshot.strict_foundation_label || "Manual preflight active").trim() || "Manual preflight active"],
+      ["Deliveries ready", `${Number(snapshot.delivery_ready_count || 0)} waiting`],
       ["Delivery model", "Named tasks can chat; quiet tasks stay surface-first"],
       ["Schedules", String(snapshot.schedule_summary || "Planned, not active yet").trim() || "Planned, not active yet"],
     ].forEach(([label, value]) => {
@@ -6708,6 +6818,17 @@ function renderOpenClawAgentPage() {
     deliverySummary.textContent = String(snapshot.delivery_model_summary || "").trim()
       || "Delivery preferences will appear here after the next agent refresh.";
   }
+
+  if (inboxSummary) {
+    inboxSummary.textContent = String(snapshot.delivery_summary || "").trim()
+      || "No completed surface deliveries are waiting right now.";
+  }
+
+  renderOpenClawDeliveryFeed(
+    inboxList,
+    Array.isArray(openClawAgentState.deliveryInbox) ? openClawAgentState.deliveryInbox : [],
+    "No completed surface deliveries are waiting right now."
+  );
 
   if (templateList) {
     clear(templateList);
@@ -7452,6 +7573,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderTrustPanel();
   renderWorkspaceHomeWidget({});
   renderProjectStructureMapWidget({});
+  renderOpenClawDeliveryWidget();
   renderWorkspaceBoardPage();
   renderOpenClawAgentPage();
   renderPolicyCenterPage();
@@ -7566,6 +7688,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const homeMemoryPageBtn = $("btn-home-memory-page");
   if (homeMemoryPageBtn) homeMemoryPageBtn.addEventListener("click", () => setActivePage("memory"));
+
+  const homeOpenAgentDeliveryBtn = $("btn-home-open-agent-delivery");
+  if (homeOpenAgentDeliveryBtn) homeOpenAgentDeliveryBtn.addEventListener("click", () => setActivePage("agent"));
 
   const homeToneStatusBtn = $("btn-home-tone-status");
   if (homeToneStatusBtn) {

@@ -333,6 +333,17 @@
             Only currently enabled, Governor-approved capabilities appear here.
           </p>
         </div>
+        <div id="agent-delivery-widget" class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="home-launch-kicker">Agent Delivery</div>
+              <h3>Ready For Review</h3>
+            </div>
+            <button id="btn-home-open-agent-delivery" type="button" class="assistant-action-btn">Open agent</button>
+          </div>
+          <p id="agent-delivery-home-summary">No agent deliveries are waiting right now.</p>
+          <div id="agent-delivery-list" class="trust-section trust-center-list"></div>
+        </div>
         <div id="trust-panel" class="widget page-card trust-panel" aria-live="polite">
           <h3>Trust Panel</h3>
           <p id="trust-summary">Live review of recent actions and network activity will appear here.</p>
@@ -417,6 +428,16 @@
             </div>
           </div>
           <div id="agent-template-list" class="agent-template-list"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Ready For Review</div>
+              <p id="agent-inbox-summary" class="workspace-board-section-copy">Completed agent runs that still have a surface delivery waiting for review appear here.</p>
+            </div>
+          </div>
+          <div id="agent-inbox-list" class="trust-section trust-center-list"></div>
         </div>
 
         <div class="widget page-card trust-center-panel" aria-live="polite">

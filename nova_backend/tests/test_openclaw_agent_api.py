@@ -43,6 +43,7 @@ def test_openclaw_agent_status_reports_foundation(monkeypatch, tmp_path):
     payload = response.json()
     assert payload["agent"]["status"] == "foundation"
     assert payload["agent"]["status_label"] == "Foundation live"
+    assert payload["agent"]["delivery_ready_count"] == 0
     assert payload["settings"]["permissions"]["home_agent_enabled"] is True
 
 
@@ -103,3 +104,29 @@ def test_openclaw_agent_run_returns_manual_brief(monkeypatch, tmp_path):
     assert payload["run"]["delivery_channels"]["chat"] is True
     assert payload["run"]["presented_message"].startswith("Here's your morning.")
     assert payload["agent"]["recent_runs"][0]["template_id"] == "morning_brief"
+    assert payload["agent"]["delivery_ready_count"] == 1
+
+
+def test_openclaw_agent_dismisses_delivery_item(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+    agent_store = _install_agent_store(monkeypatch, tmp_path)
+    run = agent_store.record_run(
+        {
+            "envelope_id": "ENV-123",
+            "template_id": "morning_brief",
+            "title": "Morning Brief",
+            "delivery_mode": "hybrid",
+            "delivery_channels": {"widget": True, "chat": True},
+            "presented_message": "Here's your morning. Clear skies and one meeting at 10.",
+            "summary": "Clear skies and one meeting at 10.",
+        }
+    )
+    delivery_id = agent_store.snapshot()["delivery_inbox"][0]["id"]
+
+    client = TestClient(brain_server.app)
+    response = client.post(f"/api/openclaw/agent/delivery/{delivery_id}/dismiss")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["agent"]["delivery_ready_count"] == 0
+    assert run["template_id"] == "morning_brief"
