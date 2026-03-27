@@ -48,6 +48,7 @@ OPENCLAW_AGENT_RUNTIME_STORE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "ope
 OPENCLAW_AGENT_RUNNER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" / "agent_runner.py"
 OPENCLAW_AGENT_PERSONALITY_BRIDGE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" / "agent_personality_bridge.py"
 OPENCLAW_STRICT_PREFLIGHT_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" / "strict_preflight.py"
+OPENCLAW_AGENT_SCHEDULER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" / "agent_scheduler.py"
 
 GOVERNANCE_MATRIX_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX.md"
 SKILL_SURFACE_MAP_PATH = RUNTIME_DOC_DIR / "SKILL_SURFACE_MAP.md"
@@ -94,6 +95,7 @@ def _build_allowlisted_paths() -> frozenset[Path]:
         OPENCLAW_AGENT_RUNNER_PATH,
         OPENCLAW_AGENT_PERSONALITY_BRIDGE_PATH,
         OPENCLAW_STRICT_PREFLIGHT_PATH,
+        OPENCLAW_AGENT_SCHEDULER_PATH,
     }
     paths.update(SKILLS_DIR.glob("*.py"))
     paths.update(EXECUTORS_DIR.glob("*.py"))
@@ -683,7 +685,7 @@ def _openclaw_home_agent_foundation_present() -> bool:
 def _phase_8_status() -> str:
     if not _openclaw_home_agent_foundation_present():
         return "DESIGN"
-    if (OPENCLAW_DIR / "agent_scheduler.py").exists():
+    if OPENCLAW_AGENT_SCHEDULER_PATH.exists():
         return "ACTIVE"
     return "FOUNDATION"
 
@@ -795,6 +797,14 @@ def _known_runtime_gaps() -> list[str]:
         checks.extend(
             [
                 ("OpenClaw proactive scheduling (Phase 8.5)", (OPENCLAW_DIR / "agent_scheduler.py").exists()),
+                (
+                    "OpenClaw scheduler quiet-hours suppression",
+                    False,
+                ),
+                (
+                    "OpenClaw scheduler rate limiting",
+                    False,
+                ),
                 (
                     "Full Phase-8 governed envelope execution",
                     False,
@@ -1264,7 +1274,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         phase_7_note = "Governed external reasoning remains design-only"
     if phase_8_status == "ACTIVE":
         phase_8_note = (
-            "OpenClaw home-agent foundations and scheduled operator delivery are active; "
+            "Manual strict preflight is active. Scheduled home-agent runtime is available behind explicit settings control; "
             "broader envelope-governed execution still remains deferred"
         )
     elif phase_8_status == "FOUNDATION":
@@ -1440,8 +1450,8 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
             "",
             "## Runtime Invariants",
             "",
-            "- No autonomy",
-            "- No background execution",
+            "- No broad autonomy",
+            "- No hidden background execution outside the explicit OpenClaw scheduler carve-out",
             "- All actions must pass GovernorMediator",
             "- All outbound HTTP must pass NetworkMediator",
             "- All execution logged to ledger",

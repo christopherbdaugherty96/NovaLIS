@@ -9,10 +9,13 @@ SRC_ROOT = PROJECT_ROOT / "src"
 TARGET_ROOTS = [
     SRC_ROOT / "perception",
     SRC_ROOT / "context",
-    # OpenClaw foundations remain manual-only today, so the module stays under the same
-    # no-background-execution scan until a narrower scheduler carve-out is explicitly approved.
+    # OpenClaw remains under the same scan by default; only the dedicated scheduler file is
+    # allowlisted once it becomes the explicitly approved background location.
     SRC_ROOT / "openclaw",
 ]
+ALLOWED_BACKGROUND_FILES = {
+    SRC_ROOT / "openclaw" / "agent_scheduler.py",
+}
 TARGET_FILES = [
     SRC_ROOT / "executors" / "screen_capture_executor.py",
     SRC_ROOT / "executors" / "screen_analysis_executor.py",
@@ -34,6 +37,8 @@ def test_perception_scaffold_has_no_background_monitoring_loops_or_schedulers():
     offenders: list[str] = []
 
     for py_file in _iter_targets():
+        if py_file in ALLOWED_BACKGROUND_FILES:
+            continue
         source = py_file.read_text(encoding="utf-8", errors="replace")
         lowered = source.lower()
         tree = ast.parse(source, filename=str(py_file))

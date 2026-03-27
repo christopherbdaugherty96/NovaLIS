@@ -7,6 +7,9 @@ from fastapi import APIRouter, HTTPException
 
 def _agent_status_payload(deps, snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
     agent_snapshot = dict(snapshot or deps.openclaw_agent_runtime_store.snapshot())
+    scheduler_enabled = deps.runtime_settings_store.is_permission_enabled("home_agent_scheduler_enabled")
+    agent_snapshot["scheduler_permission_enabled"] = scheduler_enabled
+    agent_snapshot["scheduler_status_label"] = "Enabled" if scheduler_enabled else "Paused"
     return {
         "agent": agent_snapshot,
         "bridge": deps.OSDiagnosticsExecutor._bridge_status_details(),
@@ -40,6 +43,33 @@ def build_openclaw_agent_router(deps) -> APIRouter:
             {
                 "template_id": template_id,
                 "delivery_mode": delivery_mode,
+                "source": "agent_page",
+            },
+        )
+        return _agent_status_payload(deps, snapshot)
+
+    @router.post("/api/openclaw/agent/templates/{template_id}/schedule")
+    async def set_openclaw_agent_template_schedule(template_id: str, payload: dict[str, Any]):
+        if "enabled" not in payload:
+            raise HTTPException(status_code=400, detail="enabled is required.")
+        try:
+            snapshot = deps.openclaw_agent_runtime_store.set_template_schedule_enabled(
+                template_id,
+                bool(payload.get("enabled")),
+            )
+        except KeyError as exc:
+            raise HTTPException(status_code=404, detail="Unknown OpenClaw template.") from exc
+        except RuntimeError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)) from exc
+        deps._log_ledger_event(
+            deps.RUNTIME_GOVERNOR,
+            "OPENCLAW_AGENT_SCHEDULE_UPDATED",
+            {
+                "template_id": template_id,
+                "enabled": bool(payload.get("enabled")),
+                "scheduler_permission_enabled": deps.runtime_settings_store.is_permission_enabled(
+                    "home_agent_scheduler_enabled"
+                ),
                 "source": "agent_page",
             },
         )

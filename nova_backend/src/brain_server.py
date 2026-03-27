@@ -60,6 +60,7 @@ from src.working_context.project_threads import ProjectThreadStore
 from src.tasks.notification_schedule_store import NotificationScheduleStore
 from src.openclaw.agent_runner import openclaw_agent_runner
 from src.openclaw.agent_runtime_store import openclaw_agent_runtime_store
+from src.openclaw.agent_scheduler import openclaw_agent_scheduler
 from src.personality.conversation_personality_agent import ConversationPersonalityAgent
 from src.personality.interface_agent import PersonalityInterfaceAgent
 from src.personality.nova_style_contract import NovaStyleContract
@@ -91,7 +92,14 @@ async def _lifespan(_app: FastAPI):
         log.info("Runtime snapshot refreshed at startup: %s", output_path)
     except Exception:
         log.exception("Failed to refresh runtime snapshot on startup")
-    yield
+    openclaw_agent_scheduler._ledger_logger = (
+        lambda event_type, metadata: _log_ledger_event(RUNTIME_GOVERNOR, event_type, metadata)
+    )
+    await openclaw_agent_scheduler.start()
+    try:
+        yield
+    finally:
+        await openclaw_agent_scheduler.stop()
 
 
 app = FastAPI(lifespan=_lifespan)

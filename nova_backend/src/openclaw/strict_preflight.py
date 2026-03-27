@@ -21,7 +21,7 @@ MANUAL_FOUNDATION_ALLOWED_TOOLS = frozenset(
 )
 MANUAL_FOUNDATION_MAX_STEPS = 8
 MANUAL_FOUNDATION_MAX_DURATION_S = 120
-MANUAL_FOUNDATION_ALLOWED_TRIGGERS = frozenset({"agent_page", "dashboard", "test", "user"})
+MANUAL_FOUNDATION_ALLOWED_TRIGGERS = frozenset({"agent_page", "dashboard", "scheduler", "test", "user"})
 
 
 @dataclass(frozen=True)

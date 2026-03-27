@@ -900,6 +900,7 @@ class OSDiagnosticsExecutor:
     def _openclaw_agent_status_details() -> dict[str, object]:
         snapshot = openclaw_agent_runtime_store.snapshot()
         enabled = runtime_settings_store.is_permission_enabled("home_agent_enabled")
+        scheduler_enabled = runtime_settings_store.is_permission_enabled("home_agent_scheduler_enabled")
         status = "enabled" if enabled else "paused"
         summary = str(snapshot.get("summary") or "").strip()
         if not enabled:
@@ -913,11 +914,14 @@ class OSDiagnosticsExecutor:
             "enabled": enabled,
             "summary": summary,
             "execution_mode": "Manual foundation only",
+            "scheduler_permission_enabled": scheduler_enabled,
+            "scheduler_status_label": "Enabled" if scheduler_enabled else "Paused",
             "delivery_model_summary": str(snapshot.get("delivery_model_summary") or "").strip(),
             "delivery_summary": str(snapshot.get("delivery_summary") or "").strip(),
             "delivery_ready_count": int(snapshot.get("delivery_ready_count") or 0),
             "personality_summary": str(snapshot.get("personality_summary") or "").strip(),
             "schedule_summary": str(snapshot.get("schedule_summary") or "").strip(),
+            "scheduled_enabled_count": int(snapshot.get("scheduled_enabled_count") or 0),
             "strict_foundation_label": str(snapshot.get("strict_foundation_label") or "").strip(),
             "strict_foundation_summary": str(snapshot.get("strict_foundation_summary") or "").strip(),
             "template_count": int(snapshot.get("template_count") or 0),
@@ -985,6 +989,11 @@ class OSDiagnosticsExecutor:
                 "label": "Agent delivery model",
                 "value": str(agent_runtime.get("execution_mode") or "Manual foundation only"),
                 "note": str(agent_runtime.get("delivery_model_summary") or "").strip(),
+            },
+            {
+                "label": "Agent scheduler",
+                "value": str(agent_runtime.get("scheduler_status_label") or "Paused"),
+                "note": str(agent_runtime.get("schedule_summary") or "").strip(),
             },
             {
                 "label": "Agent deliveries ready",

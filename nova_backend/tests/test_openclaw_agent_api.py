@@ -44,7 +44,9 @@ def test_openclaw_agent_status_reports_foundation(monkeypatch, tmp_path):
     assert payload["agent"]["status"] == "foundation"
     assert payload["agent"]["status_label"] == "Foundation live"
     assert payload["agent"]["delivery_ready_count"] == 0
+    assert payload["agent"]["scheduler_status_label"] == "Paused"
     assert payload["settings"]["permissions"]["home_agent_enabled"] is True
+    assert payload["settings"]["permissions"]["home_agent_scheduler_enabled"] is False
 
 
 def test_openclaw_agent_run_respects_settings_permission(monkeypatch, tmp_path):
@@ -105,6 +107,38 @@ def test_openclaw_agent_run_returns_manual_brief(monkeypatch, tmp_path):
     assert payload["run"]["presented_message"].startswith("Here's your morning.")
     assert payload["agent"]["recent_runs"][0]["template_id"] == "morning_brief"
     assert payload["agent"]["delivery_ready_count"] == 1
+
+
+def test_openclaw_agent_schedule_can_be_staged_while_scheduler_is_paused(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+    _install_agent_store(monkeypatch, tmp_path)
+
+    client = TestClient(brain_server.app)
+    response = client.post(
+        "/api/openclaw/agent/templates/morning_brief/schedule",
+        json={"enabled": True},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    morning = next(item for item in payload["agent"]["templates"] if item["id"] == "morning_brief")
+    assert morning["schedule_enabled"] is True
+    assert morning["next_run_label"].startswith("Next at ")
+    assert payload["agent"]["scheduler_permission_enabled"] is False
+
+
+def test_openclaw_agent_schedule_rejects_template_that_is_not_schedule_ready(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+    _install_agent_store(monkeypatch, tmp_path)
+
+    client = TestClient(brain_server.app)
+    response = client.post(
+        "/api/openclaw/agent/templates/inbox_check/schedule",
+        json={"enabled": True},
+    )
+
+    assert response.status_code == 409
+    assert "not connected yet" in response.json()["detail"].lower()
 
 
 def test_openclaw_agent_dismisses_delivery_item(monkeypatch, tmp_path):

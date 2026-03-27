@@ -50,6 +50,7 @@ Current live Phase-8 truth is narrower than the full canonical shipping line.
 Live now:
 - manual OpenClaw home-agent foundation
 - manual briefing templates
+- narrow scheduled briefing lane behind explicit settings control
 - delivery-mode controls
 - operator-facing Agent page
 - Nova-owned task-result presentation
@@ -109,6 +110,6 @@ When reading the Phase-8 folder:
 - use the canonical governed automation spec next for the eventual strict automation model
 - use the governed execution plan second
 - use the home-agent and personality-layer plan as the practical product-direction companion
-- use the Phase-8.5 scheduler packet for the next-step proactive delivery design
+- use the Phase-8.5 scheduler packet for the shipped narrow scheduler and the remaining proactive-delivery guardrails
 - use `openclaw.txt` and `node design.txt` as preserved raw source inputs
 - do not treat the existence of a Phase-8 folder as proof that Phase 8 is live in runtime

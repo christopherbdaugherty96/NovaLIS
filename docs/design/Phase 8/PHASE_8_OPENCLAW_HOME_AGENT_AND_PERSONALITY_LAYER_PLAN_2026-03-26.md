@@ -193,7 +193,7 @@ If the first slice ships correctly, the truth should read like this:
 - manual briefing runs are live
 - Nova personality-owned task presentation is live
 - delivery-mode controls are live
-- scheduled background execution is not live yet
+- narrow scheduled briefing runs are now live behind explicit runtime settings control
 - envelope-scoped execution authority is not live yet
 
 That keeps the runtime honest while still moving meaningfully toward the full architecture.

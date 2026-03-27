@@ -49,6 +49,11 @@ class RuntimeSettingsStore:
             "description": "Allows Nova's manual OpenClaw home-agent brief templates and operator surface to stay available.",
             "default": True,
         },
+        "home_agent_scheduler_enabled": {
+            "label": "Home agent scheduler",
+            "description": "Allows the narrow OpenClaw scheduler to run named briefing templates on their planned schedule.",
+            "default": False,
+        },
     }
 
     def __init__(self, path: str | Path | None = None) -> None:
