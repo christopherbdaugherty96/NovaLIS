@@ -35,6 +35,7 @@ def test_runtime_settings_api_reports_defaults(monkeypatch, tmp_path):
     assert payload["settings"]["setup_mode"] == "local"
     assert payload["settings"]["permissions"]["external_reasoning_enabled"] is True
     assert payload["settings"]["permissions"]["remote_bridge_enabled"] is True
+    assert payload["settings"]["permissions"]["home_agent_enabled"] is True
 
 
 def test_runtime_settings_setup_mode_update_changes_snapshot(monkeypatch, tmp_path):

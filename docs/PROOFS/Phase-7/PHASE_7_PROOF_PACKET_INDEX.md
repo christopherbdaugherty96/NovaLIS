@@ -10,6 +10,7 @@ Status: Current proof index
 - `docs/PROOFS/Phase-7/PHASE_7_RUNTIME_ROUTING_CLEANUP_2026-03-26.md`
 - `docs/PROOFS/Phase-7/PHASE_7_RUNTIME_ENTRYPOINT_MODULARIZATION_2026-03-26.md`
 - `docs/PROOFS/Phase-7/PHASE_7_FRONTEND_ORIENTATION_AND_FEEDBACK_RUNTIME_SLICE_2026-03-26.md`
+- `docs/PROOFS/Phase-7/PHASE_7_OPENCLAW_HOME_AGENT_FOUNDATION_RUNTIME_SLICE_2026-03-26.md`
 
 ## Earlier bounded Phase-7 foundation packet
 - `docs/PROOFS/Phase-7/PHASE_7_PRODUCT_FOUNDATION_RUNTIME_SLICE_2026-03-25.md`
@@ -38,6 +39,10 @@ Status: Current proof index
 - passive confirmation-gate logic removed from the live websocket runtime path
 - focused API routers for app shell, audit, bridge, and runtime settings
 - websocket session loop extracted into a dedicated runtime module
+- Nova-owned personality tuning for calmer task-report delivery
+- a dedicated Agent page with manual home-agent briefing templates
+- delivery-mode controls for named briefings vs. quiet review work
+- Trust and Settings visibility for the manual OpenClaw home-agent foundation
 
 ## Read with
 - `docs/design/Phase 7/PHASE_7_DOCUMENT_MAP.md`

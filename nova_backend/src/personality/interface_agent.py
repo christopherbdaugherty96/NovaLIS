@@ -76,6 +76,22 @@ class PersonalityInterfaceAgent:
         clean = self._apply_tone_profile(clean.strip(), domain=domain)
         return clean.strip()
 
+    def present_agent_result(
+        self,
+        task_title: str,
+        result_text: str,
+        *,
+        opener: str = "",
+        domain: str = "daily",
+    ) -> str:
+        del task_title
+        body = self.present(str(result_text or "").strip(), domain=domain)
+        if not body:
+            return ""
+        if opener:
+            return NovaStyleContract.normalize(f"{str(opener).strip()} {body}".strip()).strip()
+        return body
+
     def current_tone_profile(self, domain: str = "general") -> str:
         try:
             return self._tone_store.effective_profile(domain)

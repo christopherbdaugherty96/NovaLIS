@@ -9,6 +9,9 @@ SRC_ROOT = PROJECT_ROOT / "src"
 TARGET_ROOTS = [
     SRC_ROOT / "perception",
     SRC_ROOT / "context",
+    # OpenClaw foundations remain manual-only today, so the module stays under the same
+    # no-background-execution scan until a narrower scheduler carve-out is explicitly approved.
+    SRC_ROOT / "openclaw",
 ]
 TARGET_FILES = [
     SRC_ROOT / "executors" / "screen_capture_executor.py",

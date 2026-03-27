@@ -84,6 +84,21 @@ class ConversationPersonalityAgent:
         clean = NovaStyleContract.normalize(clean)
         return clean.strip()
 
+    def present_agent_result(
+        self,
+        task_title: str,
+        result_text: str,
+        *,
+        opener: str = "",
+        domain: str = "daily",
+    ) -> str:
+        return self._interface_agent.present_agent_result(
+            task_title,
+            result_text,
+            opener=opener,
+            domain=domain,
+        )
+
     def _rewrite_known_status_messages(self, text: str) -> str:
         updated = str(text or "").strip()
         for pattern, replacement in self._SOFT_STATUS_REWRITES:

@@ -293,6 +293,7 @@
             <button id="btn-home-explain" type="button">Explain this</button>
             <button id="btn-home-research" type="button">Research topic</button>
             <button id="btn-home-continue-project" type="button">Continue project</button>
+            <button id="btn-home-agent-page" type="button">Open agent</button>
             <button id="btn-home-workspace-page" type="button">Open workspace</button>
             <button id="btn-home-trust-page" type="button">Open trust</button>
           </div>
@@ -375,6 +376,57 @@
             <button id="btn-home-schedules" type="button">Schedules</button>
             <button id="btn-home-pattern-status" type="button">Pattern review</button>
           </div>
+        </div>
+      </section>
+
+      <section id="page-agent" class="page-view page-agent" hidden>
+        <div class="widget page-card workspace-board-hero" aria-live="polite">
+          <div class="workspace-board-hero-header">
+            <div>
+              <div class="home-launch-kicker">Agent</div>
+              <h3>OpenClaw Home Agent</h3>
+            </div>
+            <span class="confidence-badge">Manual foundation only</span>
+          </div>
+          <p id="agent-page-summary" class="workspace-board-section-copy">
+            OpenClaw home-agent foundations are loading.
+          </p>
+          <div class="workspace-board-actions-toolbar">
+            <button id="btn-agent-refresh" type="button">Refresh agent</button>
+            <button id="btn-agent-open-settings" type="button">Open settings</button>
+            <button id="btn-agent-open-trust" type="button">Open trust</button>
+            <button id="btn-agent-open-home" type="button">Open home</button>
+          </div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Runtime</div>
+              <p class="workspace-board-section-copy">What is live now, what is still planned, and how the home-agent surface is currently bounded.</p>
+            </div>
+          </div>
+          <div id="agent-runtime-grid" class="trust-center-health-grid"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Templates and Delivery</div>
+              <p id="agent-delivery-summary" class="workspace-board-section-copy">Named briefings can surface in chat. Quiet review tasks stay surface-first.</p>
+            </div>
+          </div>
+          <div id="agent-template-list" class="agent-template-list"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Recent Runs</div>
+              <p id="agent-run-summary" class="workspace-board-section-copy">Run a manual template to see operator history here.</p>
+            </div>
+          </div>
+          <div id="agent-run-list" class="trust-section trust-center-list"></div>
         </div>
       </section>
 
@@ -504,6 +556,7 @@
             <button id="btn-trust-center-memory" type="button">Open memory</button>
             <button id="btn-trust-center-policy-map" type="button">What policies can run</button>
             <button id="btn-trust-center-bridge-status" type="button">Bridge status</button>
+            <button id="btn-trust-center-agent" type="button">Open agent</button>
             <button id="btn-trust-center-voice-check" type="button">Run voice check</button>
             <button id="btn-trust-center-settings" type="button">Open settings</button>
           </div>
@@ -627,6 +680,7 @@
             <button id="btn-settings-open-intro" type="button">Open introduction</button>
             <button id="btn-settings-open-home" type="button">Open home</button>
             <button id="btn-settings-open-trust" type="button">Open trust</button>
+            <button id="btn-settings-open-agent" type="button">Open agent</button>
             <button id="btn-settings-open-connections" type="button">Connection status</button>
             <button id="btn-settings-refresh-runtime" type="button">Refresh runtime</button>
             <button id="btn-settings-reset-defaults" type="button">Restore recommended defaults</button>
@@ -655,7 +709,7 @@
           <div id="settings-permission-grid" class="settings-mode-grid"></div>
           <div id="settings-history-list" class="trust-center-list"></div>
           <p class="first-run-note">
-            These controls are live now. They change whether governed second opinions and the remote bridge are available at runtime.
+            These controls are live now. They change whether governed second opinions, the remote bridge, and the home-agent foundation are available at runtime.
           </p>
         </div>
 

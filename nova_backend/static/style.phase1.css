@@ -674,6 +674,7 @@ body {
 }
 
 .page-intro,
+.page-agent,
 .page-workspace,
 .page-policy,
 .page-trust,
@@ -685,6 +686,7 @@ body {
 }
 
 .page-intro > .page-card,
+.page-agent > .page-card,
 .page-workspace > .page-card,
 .page-policy > .page-card,
 .page-trust > .page-card,
@@ -701,12 +703,18 @@ body {
 }
 
 .intro-panel,
+.openclaw-agent-card,
 .workspace-board-panel,
 .project-structure-widget,
 .trust-center-panel {
   grid-column: span 6;
   display: grid;
   gap: 10px;
+}
+
+.agent-template-list {
+  display: grid;
+  gap: 12px;
 }
 
 .workspace-board-hero-header,
@@ -3670,6 +3678,7 @@ button.workspace-spotlight-card.active {
   }
 
   .page-workspace,
+  .page-agent,
   .page-policy,
   .page-trust {
     grid-template-columns: minmax(0, 1fr);

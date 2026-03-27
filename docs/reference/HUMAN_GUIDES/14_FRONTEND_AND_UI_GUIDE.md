@@ -38,6 +38,7 @@ It now defines the major user-facing views:
 - News
 - Intro
 - Home
+- Agent
 - Workspace
 - Policies
 - Memory
@@ -59,6 +60,7 @@ It handles things like:
 - workspace-board rendering
 - structure-map rendering
 - intro and settings rendering
+- home-agent operator rendering
 - first-run guidance
 - follow-up actions
 
@@ -80,6 +82,7 @@ The frontend can present:
 - persistent page navigation and header context
 - Workspace Home on the Home page
 - a dedicated Workspace page
+- a dedicated Agent page
 - a dedicated Policies page
 - a dedicated Trust page
 - a dedicated Introduction page
@@ -102,6 +105,7 @@ More specifically, the current dashboard can now show:
 - Home-page Workspace Home
 - Memory Center list and item detail
 - top-level navigation between Chat, Home, News, Workspace, Memory, Policies, Trust, Settings, and Intro
+- top-level navigation between Chat, Home, News, Agent, Workspace, Memory, Policies, Trust, Settings, and Intro
 - header page context and runtime connection state
 - News-page in-card summaries
 - bounded second-opinion controls
@@ -114,6 +118,8 @@ More specifically, the current dashboard can now show:
 - Settings page setup-mode selection, runtime permission controls, reasoning transparency, and voice confidence review
 - Settings page provider, connection, bridge-status, and settings-history review
 - Trust page remote-bridge review
+- Agent page runtime cards, template availability state, delivery-mode controls, and recent manual run history
+- Agent page manual briefing runs that still keep scheduled/background execution disabled
 
 ## What The Frontend Is Not Supposed To Become
 Nova's frontend is not supposed to become a hidden authority layer.
@@ -133,4 +139,4 @@ The frontend is where Nova starts to feel like:
 - a trust-preserving daily tool
 - a calm intelligence layer
 
-The newer Workspace, Trust, Policies, Memory, Intro, Settings, and first-run surfaces are especially important because they make Nova feel less like a command console and more like a product a normal person can return to every day.
+The newer Workspace, Agent, Trust, Policies, Memory, Intro, Settings, and first-run surfaces are especially important because they make Nova feel less like a command console and more like a product a normal person can return to every day.
