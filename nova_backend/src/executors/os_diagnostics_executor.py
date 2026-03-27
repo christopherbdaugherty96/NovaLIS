@@ -12,6 +12,7 @@ import psutil
 
 from src.actions.action_result import ActionResult
 from src.build_phase import BUILD_PHASE
+from src.openclaw.agent_runtime_store import openclaw_agent_runtime_store
 from src.settings.runtime_settings_store import runtime_settings_store
 from src.usage.provider_usage_store import provider_usage_store
 
@@ -896,10 +897,37 @@ class OSDiagnosticsExecutor:
         }
 
     @staticmethod
+    def _openclaw_agent_status_details() -> dict[str, object]:
+        snapshot = openclaw_agent_runtime_store.snapshot()
+        enabled = runtime_settings_store.is_permission_enabled("home_agent_enabled")
+        status = "enabled" if enabled else "paused"
+        summary = str(snapshot.get("summary") or "").strip()
+        if not enabled:
+            summary = (
+                "OpenClaw home-agent foundations are paused in Settings. "
+                "Manual brief templates stay unavailable until you re-enable them."
+            )
+        return {
+            "status": status,
+            "status_label": "Enabled" if enabled else "Paused",
+            "enabled": enabled,
+            "summary": summary,
+            "execution_mode": "Manual foundation only",
+            "delivery_model_summary": str(snapshot.get("delivery_model_summary") or "").strip(),
+            "personality_summary": str(snapshot.get("personality_summary") or "").strip(),
+            "schedule_summary": str(snapshot.get("schedule_summary") or "").strip(),
+            "template_count": int(snapshot.get("template_count") or 0),
+            "manual_run_count": int(snapshot.get("manual_run_count") or 0),
+            "recent_runs": list(snapshot.get("recent_runs") or [])[:4],
+            "settings_permission": "enabled" if enabled else "paused",
+        }
+
+    @staticmethod
     def _connection_status_details() -> dict[str, object]:
         model_availability, model_note, _, _ = OSDiagnosticsExecutor._model_status_details()
         reasoning_runtime = OSDiagnosticsExecutor._external_reasoning_status_details()
         bridge_runtime = OSDiagnosticsExecutor._bridge_status_details()
+        agent_runtime = OSDiagnosticsExecutor._openclaw_agent_status_details()
         settings_snapshot = runtime_settings_store.snapshot()
         usage_snapshot = provider_usage_store.snapshot()
 
@@ -945,6 +973,16 @@ class OSDiagnosticsExecutor:
                 "note": "Remote bridge requests stay token-gated and cannot take quiet local actions yet.",
             },
             {
+                "label": "Home agent foundation",
+                "value": str(agent_runtime.get("status_label") or "Unknown"),
+                "note": str(agent_runtime.get("summary") or "").strip(),
+            },
+            {
+                "label": "Agent delivery model",
+                "value": str(agent_runtime.get("execution_mode") or "Manual foundation only"),
+                "note": str(agent_runtime.get("delivery_model_summary") or "").strip(),
+            },
+            {
                 "label": "Reasoning usage today",
                 "value": f"{int(usage_snapshot.get('estimated_total_tokens') or 0):,} estimated tokens",
                 "note": str(usage_snapshot.get("summary") or "").strip(),
@@ -961,6 +999,7 @@ class OSDiagnosticsExecutor:
             "Local model route is " + model_availability + ".",
             ("BYO provider keys are configured." if configured_keys else "BYO provider keys are not configured."),
             str(bridge_runtime.get("summary") or "").strip(),
+            str(agent_runtime.get("summary") or "").strip(),
             str(usage_snapshot.get("summary") or "").strip(),
         ]
         return {
@@ -970,6 +1009,7 @@ class OSDiagnosticsExecutor:
             "configured_provider_labels": configured_keys,
             "bridge_enabled": bool(bridge_runtime.get("enabled")),
             "setup_mode": str(settings_snapshot.get("setup_mode") or "local"),
+            "agent_runtime": agent_runtime,
             "usage_runtime": usage_snapshot,
         }
 

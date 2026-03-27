@@ -31,6 +31,10 @@ LEDGER_EVENT_TYPES_PATH = PROJECT_ROOT / "nova_backend" / "src" / "ledger" / "ev
 ESCALATION_POLICY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "conversation" / "escalation_policy.py"
 GENERAL_CHAT_PATH = PROJECT_ROOT / "nova_backend" / "src" / "skills" / "general_chat.py"
 BRAIN_SERVER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "brain_server.py"
+SESSION_HANDLER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "websocket" / "session_handler.py"
+BRIDGE_API_PATH = PROJECT_ROOT / "nova_backend" / "src" / "api" / "bridge_api.py"
+SETTINGS_API_PATH = PROJECT_ROOT / "nova_backend" / "src" / "api" / "settings_api.py"
+OPENCLAW_AGENT_API_PATH = PROJECT_ROOT / "nova_backend" / "src" / "api" / "openclaw_agent_api.py"
 STATIC_DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
 STATIC_INDEX_PATH = PROJECT_ROOT / "nova_backend" / "static" / "index.html"
 BUILD_PHASE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "build_phase.py"
@@ -40,6 +44,9 @@ POLICY_EXECUTOR_GATE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" /
 CAPABILITY_TOPOLOGY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "capability_topology.py"
 EXTERNAL_REASONING_EXECUTOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "executors" / "external_reasoning_executor.py"
 DEEPSEEK_SAFETY_WRAPPER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "conversation" / "deepseek_safety_wrapper.py"
+OPENCLAW_AGENT_RUNTIME_STORE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" / "agent_runtime_store.py"
+OPENCLAW_AGENT_RUNNER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" / "agent_runner.py"
+OPENCLAW_AGENT_PERSONALITY_BRIDGE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" / "agent_personality_bridge.py"
 
 GOVERNANCE_MATRIX_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX.md"
 SKILL_SURFACE_MAP_PATH = RUNTIME_DOC_DIR / "SKILL_SURFACE_MAP.md"
@@ -51,6 +58,12 @@ SKILLS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "skills"
 EXECUTORS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "executors"
 CONVERSATION_DIR = PROJECT_ROOT / "nova_backend" / "src" / "conversation"
 WORKING_CONTEXT_DIR = PROJECT_ROOT / "nova_backend" / "src" / "working_context"
+API_DIR = PROJECT_ROOT / "nova_backend" / "src" / "api"
+PERSONALITY_DIR = PROJECT_ROOT / "nova_backend" / "src" / "personality"
+SETTINGS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "settings"
+OPENCLAW_DIR = PROJECT_ROOT / "nova_backend" / "src" / "openclaw"
+TASKS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "tasks"
+WEBSOCKET_DIR = PROJECT_ROOT / "nova_backend" / "src" / "websocket"
 
 
 def _build_allowlisted_paths() -> frozenset[Path]:
@@ -69,14 +82,27 @@ def _build_allowlisted_paths() -> frozenset[Path]:
         LEDGER_EVENT_TYPES_PATH,
         ESCALATION_POLICY_PATH,
         BRAIN_SERVER_PATH,
+        SESSION_HANDLER_PATH,
+        BRIDGE_API_PATH,
+        SETTINGS_API_PATH,
+        OPENCLAW_AGENT_API_PATH,
         STATIC_DASHBOARD_PATH,
         STATIC_INDEX_PATH,
         BUILD_PHASE_PATH,
+        OPENCLAW_AGENT_RUNTIME_STORE_PATH,
+        OPENCLAW_AGENT_RUNNER_PATH,
+        OPENCLAW_AGENT_PERSONALITY_BRIDGE_PATH,
     }
     paths.update(SKILLS_DIR.glob("*.py"))
     paths.update(EXECUTORS_DIR.glob("*.py"))
     paths.update(CONVERSATION_DIR.glob("*.py"))
     paths.update(WORKING_CONTEXT_DIR.glob("*.py"))
+    paths.update(API_DIR.glob("*.py"))
+    paths.update(PERSONALITY_DIR.glob("*.py"))
+    paths.update(SETTINGS_DIR.glob("*.py"))
+    paths.update(OPENCLAW_DIR.glob("*.py"))
+    paths.update(TASKS_DIR.glob("*.py"))
+    paths.update(WEBSOCKET_DIR.glob("*.py"))
     return frozenset(paths)
 
 
@@ -574,6 +600,8 @@ def _phase_6_status() -> str:
     dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
     index_src = _safe_read(STATIC_INDEX_PATH)
     brain_src = _safe_read(BRAIN_SERVER_PATH)
+    session_handler_src = _safe_read(SESSION_HANDLER_PATH)
+    command_runtime_src = "\n".join((brain_src, session_handler_src))
 
     foundation_present = all(
         path.exists()
@@ -585,7 +613,7 @@ def _phase_6_status() -> str:
         )
     )
     review_commands_present = all(
-        token in brain_src
+        token in command_runtime_src
         for token in (
             "policy overview",
             "policy simulate <id>",
@@ -602,15 +630,15 @@ def _phase_6_status() -> str:
         "renderTrustCenterPage" in dashboard_src
         and 'id="page-trust"' in index_src
         and 'id="trust-center-policy-summary"' in index_src
-        and "policy_capability_readiness" in brain_src
+        and "policy_capability_readiness" in command_runtime_src
         and "selectedPolicyCapabilityKey" in dashboard_src
     )
     capability_map_present = (
         "getPolicyReadinessBuckets" in dashboard_src
         and 'id="policy-center-readiness"' in index_src
         and 'id="btn-policy-capability-map"' in index_src
-        and "POLICY_CAPABILITY_MAP_COMMANDS" in brain_src
-        and "POLICY_CAPABILITY_MAP_VIEWED" in brain_src
+        and "POLICY_CAPABILITY_MAP_COMMANDS" in command_runtime_src
+        and "POLICY_CAPABILITY_MAP_VIEWED" in command_runtime_src
     )
 
     if foundation_present and review_commands_present and review_surface_present and trust_loop_complete and capability_map_present:
@@ -624,6 +652,40 @@ def _phase_6_status() -> str:
     return "DESIGN"
 
 
+def _governed_remote_bridge_present() -> bool:
+    brain_src = _safe_read(BRAIN_SERVER_PATH)
+    bridge_api_src = _safe_read(BRIDGE_API_PATH)
+    return (
+        "build_bridge_router" in brain_src
+        and '"/api/openclaw/bridge/message"' in bridge_api_src
+        and "openclaw_bridge" in bridge_api_src
+    )
+
+
+def _openclaw_home_agent_foundation_present() -> bool:
+    dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
+    index_src = _safe_read(STATIC_INDEX_PATH)
+    agent_api_src = _safe_read(OPENCLAW_AGENT_API_PATH)
+    return (
+        OPENCLAW_AGENT_API_PATH.exists()
+        and OPENCLAW_AGENT_RUNTIME_STORE_PATH.exists()
+        and OPENCLAW_AGENT_RUNNER_PATH.exists()
+        and OPENCLAW_AGENT_PERSONALITY_BRIDGE_PATH.exists()
+        and 'id="page-agent"' in index_src
+        and "renderOpenClawAgentPage" in dashboard_src
+        and "/api/openclaw/agent/status" in agent_api_src
+        and "home_agent_enabled" in agent_api_src
+    )
+
+
+def _phase_8_status() -> str:
+    if not _openclaw_home_agent_foundation_present():
+        return "DESIGN"
+    if (OPENCLAW_DIR / "agent_scheduler.py").exists():
+        return "ACTIVE"
+    return "FOUNDATION"
+
+
 def _phase_7_status(registry: dict[str, Any]) -> str:
     enabled_ids = set(_enabled_registry_ids(registry))
     dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
@@ -631,6 +693,7 @@ def _phase_7_status(registry: dict[str, Any]) -> str:
     governor_src = _safe_read(GOVERNOR_PATH)
     mediator_src = _safe_read(GOVERNOR_MEDIATOR_PATH)
     brain_src = _safe_read(BRAIN_SERVER_PATH)
+    settings_api_src = _safe_read(SETTINGS_API_PATH)
     bridge_src = _safe_read(DEEPSEEK_BRIDGE_PATH)
     capability_enabled = 62 in enabled_ids
     executor_present = EXTERNAL_REASONING_EXECUTOR_PATH.exists()
@@ -655,11 +718,11 @@ def _phase_7_status(registry: dict[str, Any]) -> str:
         and "requestSettingsRuntimeRefresh(force = false)" in dashboard_src
         and "setRuntimePermission(permission, enabled)" in dashboard_src
     )
-    brain_support_present = (
-        "capability_id == 62" in brain_src
-        and "_build_second_opinion_review_text" in brain_src
+    runtime_support_present = (
+        "_build_second_opinion_review_text" in brain_src
         and "reasoning_runtime" in brain_src
-        and "/api/settings/runtime" in brain_src
+        and "build_settings_router" in brain_src
+        and '"/api/settings/runtime"' in settings_api_src
     )
 
     if (
@@ -673,7 +736,7 @@ def _phase_7_status(registry: dict[str, Any]) -> str:
         and trust_surface_present
         and settings_surface_present
         and settings_control_surface_present
-        and brain_support_present
+        and runtime_support_present
     ):
         return "COMPLETE"
     if capability_enabled and executor_present and gateway_mediated and governor_wired:
@@ -726,6 +789,16 @@ def _known_runtime_gaps() -> list[str]:
         ("Failure Mode Ladder", failure_ladder_present),
         ("Calendar integration", _calendar_integration_present()),
     ]
+    if _openclaw_home_agent_foundation_present():
+        checks.extend(
+            [
+                ("OpenClaw proactive scheduling (Phase 8.5)", (OPENCLAW_DIR / "agent_scheduler.py").exists()),
+                (
+                    "Full Phase-8 governed envelope execution",
+                    False,
+                ),
+            ]
+        )
     return [label for label, implemented in checks if not implemented]
 
 
@@ -753,6 +826,14 @@ def _design_runtime_divergences(registry: dict[str, Any]) -> list[str]:
     if not _calendar_integration_present():
         divergences.append(
             "Phase 4.5 calendar integration requirement is not represented in runtime UI + skill surfaces."
+        )
+
+    phase_8_status = _phase_8_status()
+    if phase_8_status == "FOUNDATION":
+        divergences.append(
+            "Phase 8 canonical governed automation remains only partially realized at runtime: "
+            "manual OpenClaw home-agent foundations are live, but scheduled delivery and full "
+            "envelope-governed execution are still deferred."
         )
 
     return divergences
@@ -1051,7 +1132,7 @@ def render_governance_matrix_tree_markdown(registry: dict[str, Any]) -> str:
     enforcement = _governor_enforcement_summary()
     skill_routes = [r for r in _skill_surface_rows() if r.get("surface_type") == "governor_capability" and r.get("capability_id")]
     llm_gateway_users = []
-    for rel_path in ("src/conversation/deepseek_bridge.py", "src/skills/general_chat.py"):
+    for rel_path in ("src/conversation/deepseek_bridge.py", "src/skills/general_chat.py", "src/openclaw/agent_runner.py"):
         src = _safe_read(PROJECT_ROOT / "nova_backend" / rel_path)
         if "generate_chat" in src:
             llm_gateway_users.append(rel_path)
@@ -1119,8 +1200,8 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     disabled_ids = sorted(int(item["id"]) for item in capabilities if item.get("enabled") is not True)
     governance_rows = _derive_capability_governance_rows(registry)
     enforcement = _governor_enforcement_summary()
-    brain_src = _safe_read(BRAIN_SERVER_PATH)
-    bridge_surface_present = '"/api/openclaw/bridge/message"' in brain_src and "openclaw_bridge" in brain_src
+    bridge_surface_present = _governed_remote_bridge_present()
+    openclaw_home_agent_present = _openclaw_home_agent_foundation_present()
     fingerprint = _runtime_fingerprint(enabled_ids)
     known_gaps = _known_runtime_gaps()
     design_divergences = _design_runtime_divergences(registry)
@@ -1130,6 +1211,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     phase_5_status = _phase_5_status(registry)
     phase_6_status = _phase_6_status()
     phase_7_status = _phase_7_status(registry)
+    phase_8_status = _phase_8_status()
 
     phase_42_note = (
         "Orthogonal cognition stack enabled via explicit invocation path"
@@ -1178,6 +1260,18 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         phase_7_note = "Phase-7 reasoning substrate exists, but the full routed user-facing slice is incomplete"
     else:
         phase_7_note = "Governed external reasoning remains design-only"
+    if phase_8_status == "ACTIVE":
+        phase_8_note = (
+            "OpenClaw home-agent foundations and scheduled operator delivery are active; "
+            "broader envelope-governed execution still remains deferred"
+        )
+    elif phase_8_status == "FOUNDATION":
+        phase_8_note = (
+            "Manual OpenClaw home-agent briefing templates, delivery controls, and operator surface are live; "
+            "scheduled automation and full Phase-8 execution enforcement remain deferred"
+        )
+    else:
+        phase_8_note = "Phase-8 home-agent and governed external execution remain design-only"
 
     governor_modules = [
         "src/governor/governor.py",
@@ -1222,6 +1316,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         f"| Phase 5 | {phase_5_status} | {phase_5_note} |",
         f"| Phase 6 | {phase_6_status} | {phase_6_note} |",
         f"| Phase 7 | {phase_7_status} | {phase_7_note} |",
+        f"| Phase 8 | {phase_8_status} | {phase_8_note} |",
         "",
         "## Runtime Governance Spine",
         "",
@@ -1295,11 +1390,21 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
             *(
                 [
                     "Governed Remote Bridge",
-                    "Location: src/brain_server.py (/api/openclaw/bridge/*)",
+                    "Location: src/api/bridge_api.py (/api/openclaw/bridge/*)",
                     "Status: Token-gated read/reasoning ingress active",
                     "",
                 ]
                 if bridge_surface_present
+                else []
+            ),
+            *(
+                [
+                    "OpenClaw Home Agent Foundation",
+                    "Location: src/openclaw + src/api/openclaw_agent_api.py",
+                    "Status: Manual briefing templates, delivery controls, and operator surface active",
+                    "",
+                ]
+                if openclaw_home_agent_present
                 else []
             ),
             "Voice System",
@@ -1307,7 +1412,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
             "Status: Active",
             "",
             "WebSocket Interface",
-            "Location: src/brain_server.py",
+            "Location: src/websocket/session_handler.py + src/brain_server.py",
             "Status: Active",
             "",
             "Dashboard UI",

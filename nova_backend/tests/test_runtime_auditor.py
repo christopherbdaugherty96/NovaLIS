@@ -121,6 +121,8 @@ def test_render_current_runtime_state_mentions_remote_bridge_when_present(monkey
 
     def _fake_safe_read(path):
         if path == ra.BRAIN_SERVER_PATH:
+            return "build_bridge_router"
+        if path == ra.BRIDGE_API_PATH:
             return '"/api/openclaw/bridge/message"\nopenclaw_bridge'
         return original_safe_read(path)
 
@@ -130,6 +132,64 @@ def test_render_current_runtime_state_mentions_remote_bridge_when_present(monkey
 
     assert "Governed Remote Bridge" in rendered
     assert "Token-gated read/reasoning ingress active" in rendered
+
+
+def test_render_current_runtime_state_mentions_openclaw_home_agent_foundation(monkeypatch, tmp_path):
+    import src.audit.runtime_auditor as ra
+
+    registry = {"capabilities": []}
+    original_safe_read = ra._safe_read
+    agent_api_path = tmp_path / "openclaw_agent_api.py"
+    runner_path = tmp_path / "agent_runner.py"
+    store_path = tmp_path / "agent_runtime_store.py"
+    personality_bridge_path = tmp_path / "agent_personality_bridge.py"
+    for path in (agent_api_path, runner_path, store_path, personality_bridge_path):
+        path.write_text("# present\n", encoding="utf-8")
+
+    monkeypatch.setattr(ra, "OPENCLAW_AGENT_API_PATH", agent_api_path)
+    monkeypatch.setattr(ra, "OPENCLAW_AGENT_RUNNER_PATH", runner_path)
+    monkeypatch.setattr(ra, "OPENCLAW_AGENT_RUNTIME_STORE_PATH", store_path)
+    monkeypatch.setattr(ra, "OPENCLAW_AGENT_PERSONALITY_BRIDGE_PATH", personality_bridge_path)
+
+    def _fake_safe_read(path):
+        if path == ra.STATIC_INDEX_PATH:
+            return '<section id="page-agent"></section>'
+        if path == ra.STATIC_DASHBOARD_PATH:
+            return "function renderOpenClawAgentPage() {}"
+        if path == ra.OPENCLAW_AGENT_API_PATH:
+            return '"/api/openclaw/agent/status"\nhome_agent_enabled'
+        return original_safe_read(path)
+
+    monkeypatch.setattr(ra, "_safe_read", _fake_safe_read)
+
+    rendered = ra.render_current_runtime_state_markdown({"discrepancies": []}, registry)
+
+    assert "OpenClaw Home Agent Foundation" in rendered
+    assert "Manual briefing templates, delivery controls, and operator surface active" in rendered
+
+
+def test_phase8_status_tracks_foundation_slice(monkeypatch, tmp_path):
+    import src.audit.runtime_auditor as ra
+
+    openclaw_dir = tmp_path / "openclaw"
+    openclaw_dir.mkdir()
+
+    monkeypatch.setattr(ra, "OPENCLAW_DIR", openclaw_dir)
+    monkeypatch.setattr(ra, "_openclaw_home_agent_foundation_present", lambda: True)
+
+    assert ra._phase_8_status() == "FOUNDATION"
+
+
+def test_render_current_runtime_state_includes_phase8_foundation_row(monkeypatch):
+    import src.audit.runtime_auditor as ra
+
+    registry = {"capabilities": []}
+    monkeypatch.setattr(ra, "_phase_8_status", lambda: "FOUNDATION")
+
+    rendered = ra.render_current_runtime_state_markdown({"discrepancies": []}, registry)
+
+    assert "| Phase 8 | FOUNDATION |" in rendered
+    assert "scheduled automation and full Phase-8 execution enforcement remain deferred" in rendered
 
 
 def test_phase6_status_tracks_complete_review_surface(monkeypatch, tmp_path):
@@ -188,11 +248,14 @@ def test_phase7_status_tracks_complete_reasoning_surface(monkeypatch, tmp_path):
 
     executor_path = tmp_path / "external_reasoning_executor.py"
     wrapper_path = tmp_path / "deepseek_safety_wrapper.py"
+    settings_api_path = tmp_path / "settings_api.py"
     executor_path.write_text("# present\n", encoding="utf-8")
     wrapper_path.write_text("# present\n", encoding="utf-8")
+    settings_api_path.write_text('@router.get("/api/settings/runtime")\n', encoding="utf-8")
 
     monkeypatch.setattr(ra, "EXTERNAL_REASONING_EXECUTOR_PATH", executor_path)
     monkeypatch.setattr(ra, "DEEPSEEK_SAFETY_WRAPPER_PATH", wrapper_path)
+    monkeypatch.setattr(ra, "SETTINGS_API_PATH", settings_api_path)
     monkeypatch.setattr(ra, "BUILD_PHASE", 7)
 
     registry = {
@@ -228,9 +291,10 @@ def test_phase7_status_tracks_complete_reasoning_surface(monkeypatch, tmp_path):
                 "capability_id == 62",
                 "_build_second_opinion_review_text",
                 "reasoning_runtime",
-                "/api/settings/runtime",
+                "build_settings_router",
             ]
         ),
+        ra.SETTINGS_API_PATH: '@router.get("/api/settings/runtime")',
         ra.DEEPSEEK_BRIDGE_PATH: "response = llm_gateway.generate_chat(prompt)",
     }
     monkeypatch.setattr(ra, "_safe_read", lambda path: contents.get(path, ""))

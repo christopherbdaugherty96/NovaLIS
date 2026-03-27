@@ -14,6 +14,7 @@ Nova's active capability surface now covers these big areas:
 - visible workspace and trust review surfaces
 - visible policy review surfaces for disabled delegated drafts
 - token-gated remote bridge access for read/reasoning requests
+- a manual home-agent operator surface for briefing templates and delivery review
 
 ## 1. Research and Information Work
 Nova can:
@@ -80,6 +81,7 @@ Nova can load quick information views for:
 - workspace continuity
 - trust review
 - introduction and settings guidance
+- the Agent page for manual home-agent briefings
 
 Examples:
 - `weather`
@@ -91,6 +93,9 @@ Examples:
 - `workspace home`
 - `workspace board`
 - `trust center`
+
+UI note:
+- the Agent page is available from Nova's top navigation for manual home-agent brief runs and delivery control
 
 ## 4. Voice, Screen, and Explain Mode
 Nova can:
@@ -168,6 +173,7 @@ Nova now has clearer product surfaces for understanding what it is doing and whe
 
 It can:
 - show a landing-preview page for product messaging review
+- show an Agent page
 - show a Trust page
 - show a Policies page
 - show a Settings page
@@ -178,6 +184,7 @@ It can:
 - change setup mode in Settings
 - pause or re-enable governed second-opinion review in Settings
 - pause or re-enable remote bridge access in Settings
+- pause or re-enable the manual home-agent foundation in Settings
 - summarize recent governed actions
 - show blocked conditions
 - let you drill into why a recent action happened
@@ -189,6 +196,7 @@ It can:
 - run a safe draft once manually
 - show voice runtime status and a voice-check path
 - show reasoning provider, route, and authority truth when a second opinion is used
+- review manual home-agent briefing templates, delivery modes, and recent runs
 
 Examples:
 - `open /landing in the browser`
@@ -261,6 +269,7 @@ Examples:
 Important boundary:
 - schedules are created only when the user asks
 - scheduled items do not auto-run actions
+- the manual home-agent foundation does not yet schedule or auto-run briefing templates in the background
 
 ## 12. Pattern Review
 Nova can help review repeated patterns across threads and durable memory, but only if you explicitly opt in first.

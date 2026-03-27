@@ -63,8 +63,14 @@ Current Phase-6 proof packet:
 Current Phase-8 canonical OpenClaw automation spec:
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
 
+Current Phase-8 master reference:
+- `docs/design/Phase 8/NOVA_OPENCLAW_HOME_AGENT_MASTER_REFERENCE_2026-03-27.md`
+
 Current Phase-8 supporting OpenClaw execution packet:
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
+
+Current Phase-8 home-agent and Nova personality-layer packet:
+- `docs/design/Phase 8/PHASE_8_OPENCLAW_HOME_AGENT_AND_PERSONALITY_LAYER_PLAN_2026-03-26.md`
 
 Current Phase-8 preserved raw source notes:
 - `docs/design/Phase 8/openclaw.txt`
@@ -112,9 +118,10 @@ Current recommended next-step posture:
 - trust-center drill-down, onboarding stage 2, and workspace stage 3 are now live
 - Phase-6 trust, policy review, and capability-authority surfaces are now complete in the current repository state, but trigger runtime remains disabled
 - Phase-7 governed external reasoning is now complete in the current repository state
+- a manual OpenClaw home-agent foundation is now live in the current repository state as an operator surface, not a Phase-8 execution path
 - Settings stage 2 provider/bridge/runtime-permission controls are now live in the current repository state
 - the immediate remaining live-runtime voice caveat is final device-confidence validation for spoken output
-- the current highest-value next product-foundation target is final voice device-confidence validation, then Phase-8 strict execution foundations
+- the current highest-value next product-foundation target is final voice device-confidence validation, then Phase-8 strict execution foundations that build on the manual home-agent surface
 - keep execution widening narrower than the UI/access bridge at first
 - richer project/workspace persistence and connector rollout should follow closely behind
 - prefer disciplined core-layer implementation over broad new expansion

@@ -159,7 +159,19 @@ Examples:
 Dashboard note:
 - Nova now exposes a dedicated Memory page for reviewing durable memory, linked threads, and recent items.
 
-## 11. Local Project Understanding
+## 11. Agent Surface
+There is now also a dedicated `Agent` page in the dashboard.
+
+Use it when you want to:
+- review the OpenClaw home-agent foundation
+- run manual briefing templates
+- choose whether a briefing should surface in chat, the operator surface, or both
+
+Important boundary:
+- this is a manual operator surface today
+- scheduled/background OpenClaw execution is still not live
+
+## 12. Local Project Understanding
 Examples:
 - `audit this repo`
 - `summarize this repo`
@@ -167,7 +179,7 @@ Examples:
 - `visualize this repo`
 - `show structure map`
 
-## 12. Response Style and Tone
+## 13. Response Style and Tone
 Examples:
 - `tone status`
 - `tone set concise`
@@ -175,7 +187,7 @@ Examples:
 - `tone set research detailed`
 - `tone reset all`
 
-## 13. Scheduled Updates and Reminders
+## 14. Scheduled Updates and Reminders
 Examples:
 - `show schedules`
 - `schedule daily brief at 8:00 am`
@@ -183,7 +195,7 @@ Examples:
 - `set quiet hours from 10:00 pm to 7:00 am`
 - `cancel schedule SCH-123`
 
-## 14. Pattern Review
+## 15. Pattern Review
 Examples:
 - `pattern opt in`
 - `pattern status`

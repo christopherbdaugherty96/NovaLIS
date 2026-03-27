@@ -44,6 +44,11 @@ class RuntimeSettingsStore:
             "description": "Allows token-gated OpenClaw bridge requests to enter Nova for read, review, and reasoning tasks only.",
             "default": True,
         },
+        "home_agent_enabled": {
+            "label": "Home agent foundation",
+            "description": "Allows Nova's manual OpenClaw home-agent brief templates and operator surface to stay available.",
+            "default": True,
+        },
     }
 
     def __init__(self, path: str | Path | None = None) -> None:
@@ -192,8 +197,10 @@ class RuntimeSettingsStore:
     def _render_summary(self, setup_mode: str, permission_cards: list[dict[str, Any]]) -> str:
         mode_label = self.SETUP_MODE_DEFINITIONS[setup_mode]["label"]
         paused = [item["label"] for item in permission_cards if not item.get("enabled")]
+        enabled = [item["label"] for item in permission_cards if item.get("enabled")]
         if not paused:
-            return f"{mode_label}. Governed reasoning and bridge permissions are enabled."
+            active_label = ", ".join(enabled[:3]) if enabled else "all current governed permissions"
+            return f"{mode_label}. Active now: {active_label}."
         if len(paused) == 1:
             return f"{mode_label}. {paused[0]} is currently paused."
         return f"{mode_label}. Paused now: {', '.join(paused[:2])}."

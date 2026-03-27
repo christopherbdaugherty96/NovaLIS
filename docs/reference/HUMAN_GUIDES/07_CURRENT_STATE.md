@@ -8,7 +8,7 @@ It has a real working runtime.
 At a high level, the current state is:
 - Phase 4 governance spine is active
 - Phase 4.2 cognitive/reporting layer is active
-- Phase 4.5 perception and UX surfaces are active
+- Phase 4.5 perception and UX surfaces are partially active
 - Phase 5 trust-facing runtime package is active and formally closed for the current repository state, with later runtime-aligned expansions landed on top of it
 - Phase 6 is now complete in runtime as a review-oriented delegated-policy, trust-loop, and capability-authority package
 - Phase 7 is now complete in runtime as a governed external-reasoning package
@@ -45,6 +45,7 @@ That means Nova already has:
 - a governed external reasoning lane with same-thread second-opinion review, provider visibility, and advisory-only boundaries
 - estimated governed reasoning-usage visibility in Trust and Settings
 - a token-gated governed remote bridge for read/reasoning access from OpenClaw-style remote clients
+- a manual OpenClaw home-agent foundation with a dedicated Agent page, manual briefing templates, delivery controls, and Nova-owned presentation
 - improved voice auto-speak routing with runtime fallback at the speech layer
 - a dedicated conversation personality layer and a dedicated voice presentation layer for smoother replies
 - a cleaner live chat runtime with bounded general-chat fallback extracted out of the old skill-registry path
@@ -87,6 +88,7 @@ These parts are already meaningfully real:
 - a visible Policy Review Center that keeps delegated policy work inspectable and manual
 - a visible capability-authority map that shows what policies are safe now, later, or explicit-only
 - Trust and Settings visibility for remote bridge and provider/connection state
+- a dedicated Agent page with manual home-agent briefing templates, delivery-mode controls, and recent-run history
 
 ## What Is Still Maturing
 These parts are active but still evolving:
@@ -99,7 +101,7 @@ These parts are active but still evolving:
 - stronger local-project visualization beyond the current stage-2 structure map
 - final device-confidence confirmation for audible TTS output
 - deeper Phase-6 policy review ergonomics beyond the current manual-review center
-- future Phase-8 execution work beyond the now-live governed remote bridge
+- future Phase-8 execution work beyond the now-live governed remote bridge and manual home-agent foundation
 
 ## What Is Planned But Not Fully Live Yet
 Some highly important ideas are still planned or partially scaffolded rather than fully live.
@@ -119,6 +121,7 @@ A careful plain-language description of the current system is:
 - wake word is optional and not part of the default install
 - governed external execution remains planned, not runtime-authorized
 - governed remote bridge access is now live, but it remains read/reasoning-only and token-gated
+- the OpenClaw home-agent foundation is now live as a manual operator surface, but scheduled/background task execution is still not authorized
 
 ## What Makes The Current State Special
 Nova already combines things that usually live in separate products:
@@ -151,6 +154,8 @@ The most recent product-consolidation regression pass on 2026-03-26 also confirm
 - runtime truth promotion to Phase 7 complete passed
 - a broader `165`-test regression bundle passed
 - the live runtime routing cleanup for general-chat fallback and deeper-analysis confirmation passed focused coverage
+- the OpenClaw home-agent API, runtime store, runner, personality bridge, and diagnostics truth layer passed focused coverage
+- the runtime auditor and generated runtime docs were revalidated after the modularized router/runtime extraction and the new home-agent surfaces landed
 
 The main remaining voice caveat is still real-device confirmation:
 - TTS executor, runtime fallback, and mediator-path tests are passing
@@ -160,7 +165,7 @@ The main remaining voice caveat is still real-device confirmation:
 ## The Best Honest Description Right Now
 If someone asked what Nova is today, a strong honest answer would be:
 
-Nova is a governed personal intelligence workspace that can research, explain, help with your computer, follow ongoing project threads in the current session, preserve explicit memory across sessions, use relevant saved memory in bounded ways, use a governed external reasoning lane for second-opinion review, and surface trust, workspace, and onboarding tools without giving up user control.
+Nova is a governed personal intelligence workspace that can research, explain, help with your computer, follow ongoing project threads in the current session, preserve explicit memory across sessions, use relevant saved memory in bounded ways, use a governed external reasoning lane for second-opinion review, surface trust, workspace, onboarding, and manual home-agent tools, and still keep the user in control.
 
 ## If You Need The Official Runtime Truth
 Use:

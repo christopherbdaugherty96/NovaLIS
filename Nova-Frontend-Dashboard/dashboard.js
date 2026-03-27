@@ -122,6 +122,15 @@ let projectVisualizerState = {
   snapshot: {},
   lastHydratedAt: 0,
 };
+let openClawAgentState = {
+  loaded: false,
+  loading: false,
+  summary: "Loading home-agent foundations...",
+  snapshot: {},
+  templates: [],
+  recentRuns: [],
+  lastHydratedAt: 0,
+};
 let settingsRuntimeState = {
   loaded: false,
   loading: false,
@@ -133,6 +142,7 @@ let settingsRuntimeState = {
   permissions: {
     external_reasoning_enabled: true,
     remote_bridge_enabled: true,
+    home_agent_enabled: true,
   },
   permissionCards: [],
   history: [],
@@ -159,6 +169,7 @@ const PAGE_LABELS = {
   news: "News",
   intro: "Intro",
   home: "Home",
+  agent: "Agent",
   workspace: "Workspace",
   memory: "Memory",
   policy: "Policies",
@@ -169,6 +180,7 @@ const PAGE_LABELS = {
 const PRIMARY_NAV_ITEMS = [
   { page: "chat", label: "Chat" },
   { page: "home", label: "Home" },
+  { page: "agent", label: "Agent" },
   { page: "news", label: "News" },
   { page: "workspace", label: "Workspace" },
   { page: "memory", label: "Memory" },
@@ -217,6 +229,7 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "home_system", label: "System status", command: "system status", switchToPage: "chat" },
     { id: "home_calendar", label: "Calendar", command: "calendar", switchToPage: "chat" },
     { id: "home_weather", label: "Weather", command: "weather", switchToPage: "chat" },
+    { id: "home_agent", label: "Home agent", command: "bridge status", switchToPage: "agent", stayOnPage: true },
     { id: "home_explain", label: "Explain this", command: "explain this", switchToPage: "chat" },
     { id: "home_capture", label: "Analyze screen", command: "analyze this screen", switchToPage: "chat" },
     { id: "home_threads", label: "Show threads", command: "show threads", switchToPage: "chat" },
@@ -234,6 +247,12 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "workspace_visual", label: "Structure map", command: "show structure map", stayOnPage: true },
     { id: "workspace_architecture", label: "Architecture report", command: "create analysis report on this repo architecture", switchToPage: "chat" },
   ],
+  agent: [
+    { id: "agent_refresh", label: "Refresh agent", command: "bridge status", stayOnPage: true },
+    { id: "agent_settings", label: "Settings", command: "connection status", switchToPage: "settings", stayOnPage: true },
+    { id: "agent_trust", label: "Trust", command: "trust center", switchToPage: "trust", stayOnPage: true },
+    { id: "agent_brief", label: "Morning brief", command: "daily brief", switchToPage: "chat" },
+  ],
   memory: [
     { id: "memory_page_overview", label: "Overview", command: "memory overview", stayOnPage: true },
     { id: "memory_page_list", label: "List memory", command: "list memories", switchToPage: "chat" },
@@ -250,6 +269,7 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "trust_refresh", label: "Refresh trust", command: "trust center", stayOnPage: true },
     { id: "trust_system", label: "System status", command: "system status", switchToPage: "chat" },
     { id: "trust_memory", label: "Memory overview", command: "memory overview", switchToPage: "memory" },
+    { id: "trust_agent", label: "Agent", command: "bridge status", switchToPage: "agent", stayOnPage: true },
     { id: "trust_workspace", label: "Workspace home", command: "workspace home", switchToPage: "chat" },
     { id: "trust_policies", label: "Policies", command: "policy overview", switchToPage: "policy", stayOnPage: true },
     { id: "trust_bridge", label: "Bridge status", command: "bridge status", stayOnPage: true },
@@ -258,6 +278,7 @@ const QUICK_ACTIONS_BY_PAGE = {
   settings: [
     { id: "settings_voice", label: "Voice status", command: "voice status", switchToPage: "chat" },
     { id: "settings_voice_check", label: "Voice check", command: "voice check", switchToPage: "chat" },
+    { id: "settings_agent", label: "Agent", command: "bridge status", switchToPage: "agent", stayOnPage: true },
     { id: "settings_connections", label: "Connections", command: "connection status", stayOnPage: true },
     { id: "settings_trust", label: "Trust center", command: "trust center", switchToPage: "trust", stayOnPage: true },
     { id: "settings_policies", label: "Policies", command: "policy overview", switchToPage: "policy", stayOnPage: true },
@@ -279,6 +300,7 @@ const COMMAND_SUGGESTIONS = [
   "settings",
   "workspace home",
   "workspace board",
+  "open agent",
   "policy overview",
   "policy center",
   "policy create weekday calendar snapshot at 8:00 am",
@@ -762,7 +784,7 @@ function applyRuntimeSettingsPayload(data) {
   settingsRuntimeState.setupModeDescription = String(payload.setup_mode_description || getSetupModeMeta(setupMode).copy).trim() || getSetupModeMeta(setupMode).copy;
   settingsRuntimeState.permissions = (payload.permissions && typeof payload.permissions === "object")
     ? { ...payload.permissions }
-    : { external_reasoning_enabled: true, remote_bridge_enabled: true };
+    : { external_reasoning_enabled: true, remote_bridge_enabled: true, home_agent_enabled: true };
   settingsRuntimeState.permissionCards = Array.isArray(payload.permission_cards)
     ? payload.permission_cards.map((item) => ({ ...item }))
     : [];
@@ -810,6 +832,103 @@ async function requestSettingsRuntimeRefresh(force = false) {
     }
   } finally {
     settingsRuntimeState.loading = false;
+  }
+}
+
+function applyOpenClawAgentPayload(data) {
+  const payload = (data && typeof data === "object" && data.agent && typeof data.agent === "object")
+    ? data.agent
+    : (data && typeof data === "object" ? data : {});
+  openClawAgentState.loaded = true;
+  openClawAgentState.summary = String(payload.summary || "").trim() || "OpenClaw home-agent foundations are available.";
+  openClawAgentState.snapshot = { ...payload };
+  openClawAgentState.templates = Array.isArray(payload.templates) ? payload.templates.map((item) => ({ ...item })) : [];
+  openClawAgentState.recentRuns = Array.isArray(payload.recent_runs) ? payload.recent_runs.map((item) => ({ ...item })) : [];
+  openClawAgentState.lastHydratedAt = Date.now();
+
+  if (data && typeof data === "object") {
+    if (data.bridge && typeof data.bridge === "object") {
+      trustReviewState.bridgeRuntime = { ...data.bridge };
+    }
+    if (data.connections && typeof data.connections === "object") {
+      trustReviewState.connectionRuntime = { ...data.connections };
+    }
+    if (data.settings && typeof data.settings === "object") {
+      settingsRuntimeState.permissions = (data.settings.permissions && typeof data.settings.permissions === "object")
+        ? { ...settingsRuntimeState.permissions, ...data.settings.permissions }
+        : settingsRuntimeState.permissions;
+    }
+  }
+}
+
+async function requestOpenClawAgentRefresh(force = false) {
+  const now = Date.now();
+  if (
+    !force
+    && openClawAgentState.loaded
+    && (now - Number(openClawAgentState.lastHydratedAt || 0)) < 15000
+  ) {
+    return;
+  }
+  openClawAgentState.loading = true;
+  try {
+    const res = await fetch(`${API_BASE}/api/openclaw/agent/status`);
+    if (!res.ok) throw new Error("openclaw_agent_unavailable");
+    const data = await res.json();
+    applyOpenClawAgentPayload(data);
+    renderOpenClawAgentPage();
+    renderSettingsPage();
+    renderTrustCenterPage();
+  } catch (_err) {
+    if (!openClawAgentState.loaded) {
+      openClawAgentState.summary = "OpenClaw home-agent status is unavailable right now.";
+    }
+  } finally {
+    openClawAgentState.loading = false;
+  }
+}
+
+async function setOpenClawAgentDeliveryMode(templateId, deliveryMode) {
+  try {
+    const res = await fetch(`${API_BASE}/api/openclaw/agent/templates/${encodeURIComponent(templateId)}/delivery`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ delivery_mode: deliveryMode }),
+    });
+    if (!res.ok) throw new Error("openclaw_agent_delivery_failed");
+    const data = await res.json();
+    applyOpenClawAgentPayload(data);
+    renderOpenClawAgentPage();
+    renderSettingsPage();
+    renderTrustCenterPage();
+  } catch (_err) {
+    appendChatMessage("assistant", "I couldn't update that agent delivery mode right now.", null, "Agent");
+  }
+}
+
+async function runOpenClawAgentTemplate(templateId) {
+  try {
+    const res = await fetch(`${API_BASE}/api/openclaw/agent/templates/${encodeURIComponent(templateId)}/run`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const detail = String((data && data.detail) || "I couldn't run that template right now.").trim();
+      appendChatMessage("assistant", detail, null, "Agent");
+      return;
+    }
+    applyOpenClawAgentPayload(data);
+    renderOpenClawAgentPage();
+    renderSettingsPage();
+    renderTrustCenterPage();
+    const run = (data && data.run && typeof data.run === "object") ? data.run : {};
+    const delivery = (run.delivery_channels && typeof run.delivery_channels === "object") ? run.delivery_channels : {};
+    if (delivery.chat && String(run.presented_message || "").trim()) {
+      appendChatMessage("assistant", String(run.presented_message || "").trim(), null, "Task report");
+    }
+  } catch (_err) {
+    appendChatMessage("assistant", "I couldn't run that home-agent template right now.", null, "Agent");
   }
 }
 
@@ -4318,7 +4437,8 @@ function renderQuickActions() {
       workspace: "Workspace keeps project continuity, structure, and recent decisions together.",
       memory: "Memory stays explicit, inspectable, and revocable.",
       trust: "Trust keeps recent actions, boundaries, and runtime health visible.",
-      settings: "Settings keeps setup choices, voice checks, and comfort controls in one place.",
+  settings: "Settings keeps setup choices, voice checks, and comfort controls in one place.",
+      agent: "Agent keeps home-agent templates, delivery modes, and recent runs visible.",
     };
     copy.textContent = hintText[page] || hintText.chat;
   }
@@ -6266,6 +6386,7 @@ function setActivePage(page) {
     news: $("page-news"),
     intro: $("page-intro"),
     home: $("page-home"),
+    agent: $("page-agent"),
     workspace: $("page-workspace"),
     memory: $("page-memory"),
     policy: $("page-policy"),
@@ -6311,6 +6432,10 @@ function setActivePage(page) {
   if (target === "workspace") {
     requestWorkspaceHomeRefresh(true);
     requestProjectStructureMapRefresh(true);
+  }
+  if (target === "agent") {
+    requestOpenClawAgentRefresh(true);
+    renderOpenClawAgentPage();
   }
   if (target === "trust") {
     safeWSSend({ text: "trust center", silent_widget_refresh: true });
@@ -6544,6 +6669,167 @@ function renderIntroPage() {
   const currentMode = getSetupModeMeta();
   if (modeBadge) modeBadge.textContent = currentMode.badge;
   if (modeCopy) modeCopy.textContent = `Current setup: ${currentMode.label}. ${currentMode.copy}`;
+}
+
+function renderOpenClawAgentPage() {
+  const summary = $("agent-page-summary");
+  const runtimeGrid = $("agent-runtime-grid");
+  const deliverySummary = $("agent-delivery-summary");
+  const templateList = $("agent-template-list");
+  const runSummary = $("agent-run-summary");
+  const runList = $("agent-run-list");
+  const snapshot = (openClawAgentState.snapshot && typeof openClawAgentState.snapshot === "object")
+    ? openClawAgentState.snapshot
+    : {};
+  const permissionEnabled = !!(settingsRuntimeState.permissions && settingsRuntimeState.permissions.home_agent_enabled);
+
+  if (summary) {
+    summary.textContent = [
+      String(openClawAgentState.summary || "").trim() || "OpenClaw home-agent foundations are available.",
+      String(snapshot.personality_summary || "").trim(),
+    ].filter(Boolean).join(" · ");
+  }
+
+  if (runtimeGrid) {
+    clear(runtimeGrid);
+    [
+      ["Status", String(snapshot.status_label || "Foundation live").trim() || "Foundation live"],
+      ["Execution mode", permissionEnabled ? "Manual foundation only" : "Paused in Settings"],
+      ["Templates", `${Number(snapshot.template_count || 0)} total`],
+      ["Runnable now", `${Number(snapshot.manual_run_count || 0)} ready`],
+      ["Delivery model", "Named tasks can chat; quiet tasks stay surface-first"],
+      ["Schedules", String(snapshot.schedule_summary || "Planned, not active yet").trim() || "Planned, not active yet"],
+    ].forEach(([label, value]) => {
+      runtimeGrid.appendChild(createOverviewChip(label, value));
+    });
+  }
+
+  if (deliverySummary) {
+    deliverySummary.textContent = String(snapshot.delivery_model_summary || "").trim()
+      || "Delivery preferences will appear here after the next agent refresh.";
+  }
+
+  if (templateList) {
+    clear(templateList);
+    const templates = Array.isArray(openClawAgentState.templates) ? openClawAgentState.templates : [];
+    if (!templates.length) {
+      const empty = document.createElement("div");
+      empty.className = "memory-detail-empty";
+      empty.textContent = "No home-agent templates are available yet.";
+      templateList.appendChild(empty);
+    } else {
+      templates.forEach((template) => {
+        const card = document.createElement("div");
+        card.className = "widget page-card trust-center-panel openclaw-agent-card";
+
+        const titleRow = document.createElement("div");
+        titleRow.className = "workspace-board-section-header";
+        const titleWrap = document.createElement("div");
+        const title = document.createElement("div");
+        title.className = "workspace-home-section-title";
+        title.textContent = String(template.title || "Template").trim() || "Template";
+        const copy = document.createElement("p");
+        copy.className = "workspace-board-section-copy";
+        copy.textContent = String(template.description || "").trim() || "Operator template.";
+        titleWrap.appendChild(title);
+        titleWrap.appendChild(copy);
+        titleRow.appendChild(titleWrap);
+        card.appendChild(titleRow);
+
+        const chipRow = document.createElement("div");
+        chipRow.className = "memory-detail-chip-row";
+        [
+          ["Category", String(template.category || "Task").trim() || "Task"],
+          ["Availability", String(template.availability_label || "Unknown").trim() || "Unknown"],
+          ["Delivery", String(template.delivery_mode || "widget").trim() || "widget"],
+        ].forEach(([label, value]) => chipRow.appendChild(createOverviewChip(label, value)));
+        card.appendChild(chipRow);
+
+        const meta = document.createElement("p");
+        meta.className = "first-run-note";
+        meta.textContent = [
+          String(template.availability_reason || "").trim(),
+          String(template.schedule_label || "").trim(),
+        ].filter(Boolean).join(" · ");
+        card.appendChild(meta);
+
+        const tools = document.createElement("div");
+        tools.className = "memory-detail-chip-row";
+        (Array.isArray(template.tools_allowed) ? template.tools_allowed : []).forEach((tool) => {
+          tools.appendChild(createOverviewChip("Tool", String(tool || "").trim() || "tool"));
+        });
+        card.appendChild(tools);
+
+        const actions = document.createElement("div");
+        actions.className = "workspace-board-actions-toolbar";
+
+        const runBtn = document.createElement("button");
+        runBtn.type = "button";
+        runBtn.textContent = "Run now";
+        runBtn.disabled = !permissionEnabled || !template.manual_run_available;
+        runBtn.addEventListener("click", () => runOpenClawAgentTemplate(String(template.id || "").trim()));
+        actions.appendChild(runBtn);
+
+        ["widget", "chat", "hybrid"].forEach((mode) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.textContent = mode === "hybrid" ? "Chat + surface" : mode === "chat" ? "Chat only" : "Surface only";
+          if (String(template.delivery_mode || "").trim() === mode) {
+            btn.classList.add("assistant-action-btn");
+          }
+          btn.addEventListener("click", () => setOpenClawAgentDeliveryMode(String(template.id || "").trim(), mode));
+          actions.appendChild(btn);
+        });
+
+        card.appendChild(actions);
+        templateList.appendChild(card);
+      });
+    }
+  }
+
+  if (runSummary) {
+    const recentRuns = Array.isArray(openClawAgentState.recentRuns) ? openClawAgentState.recentRuns : [];
+    runSummary.textContent = recentRuns.length
+      ? `Showing the latest ${recentRuns.length} home-agent runs.`
+      : "No home-agent runs recorded yet.";
+  }
+
+  if (runList) {
+    clear(runList);
+    const recentRuns = Array.isArray(openClawAgentState.recentRuns) ? openClawAgentState.recentRuns : [];
+    if (!recentRuns.length) {
+      const empty = document.createElement("div");
+      empty.className = "memory-detail-empty";
+      empty.textContent = "Run a manual briefing template to see operator history here.";
+      runList.appendChild(empty);
+    } else {
+      recentRuns.forEach((run) => {
+        const item = document.createElement("div");
+        item.className = "trust-center-activity-item";
+        const title = document.createElement("strong");
+        title.textContent = String(run.title || "Run").trim() || "Run";
+        const meta = document.createElement("div");
+        const startedLabel = String(run.started_at || "").trim()
+          ? new Date(String(run.started_at || "").trim()).toLocaleString()
+          : "Unknown time";
+        const channels = [];
+        if (run.delivery_channels && run.delivery_channels.chat) channels.push("chat");
+        if (run.delivery_channels && run.delivery_channels.widget) channels.push("surface");
+        meta.textContent = [
+          startedLabel,
+          `${Number(run.estimated_total_tokens || 0).toLocaleString()} estimated tokens`,
+          channels.length ? `delivery: ${channels.join(" + ")}` : "",
+        ].filter(Boolean).join(" · ");
+        const body = document.createElement("p");
+        body.className = "workspace-board-section-copy";
+        body.textContent = String(run.presented_message || run.summary || "").trim() || "Run recorded.";
+        item.appendChild(title);
+        item.appendChild(meta);
+        item.appendChild(body);
+        runList.appendChild(item);
+      });
+    }
+  }
 }
 
 function renderSettingsPage() {
@@ -7167,11 +7453,13 @@ window.addEventListener("DOMContentLoaded", () => {
   renderWorkspaceHomeWidget({});
   renderProjectStructureMapWidget({});
   renderWorkspaceBoardPage();
+  renderOpenClawAgentPage();
   renderPolicyCenterPage();
   renderTrustCenterPage();
   renderIntroPage();
   renderSettingsPage();
   requestSettingsRuntimeRefresh(true);
+  requestOpenClawAgentRefresh(true);
   renderIntelligenceBriefWidget();
   renderPersonalLayerWidget();
   renderQuickActions();
@@ -7387,6 +7675,9 @@ window.addEventListener("DOMContentLoaded", () => {
     safeWSSend({ text: "trust center", silent_widget_refresh: true });
   });
 
+  const trustCenterAgentBtn = $("btn-trust-center-agent");
+  if (trustCenterAgentBtn) trustCenterAgentBtn.addEventListener("click", () => setActivePage("agent"));
+
   const trustCenterVoiceCheckBtn = $("btn-trust-center-voice-check");
   if (trustCenterVoiceCheckBtn) trustCenterVoiceCheckBtn.addEventListener("click", () => {
     setActivePage("chat");
@@ -7404,6 +7695,9 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const settingsOpenHomeBtn = $("btn-settings-open-home");
   if (settingsOpenHomeBtn) settingsOpenHomeBtn.addEventListener("click", () => setActivePage("home"));
+
+  const settingsOpenAgentBtn = $("btn-settings-open-agent");
+  if (settingsOpenAgentBtn) settingsOpenAgentBtn.addEventListener("click", () => setActivePage("agent"));
 
   const settingsOpenConnectionsBtn = $("btn-settings-open-connections");
   if (settingsOpenConnectionsBtn) settingsOpenConnectionsBtn.addEventListener("click", () => {
@@ -7439,6 +7733,21 @@ window.addEventListener("DOMContentLoaded", () => {
     setActivePage("chat");
     injectUserText("voice check", "text");
   });
+
+  const homeAgentPageBtn = $("btn-home-agent-page");
+  if (homeAgentPageBtn) homeAgentPageBtn.addEventListener("click", () => setActivePage("agent"));
+
+  const agentRefreshBtn = $("btn-agent-refresh");
+  if (agentRefreshBtn) agentRefreshBtn.addEventListener("click", () => requestOpenClawAgentRefresh(true));
+
+  const agentOpenSettingsBtn = $("btn-agent-open-settings");
+  if (agentOpenSettingsBtn) agentOpenSettingsBtn.addEventListener("click", () => setActivePage("settings"));
+
+  const agentOpenTrustBtn = $("btn-agent-open-trust");
+  if (agentOpenTrustBtn) agentOpenTrustBtn.addEventListener("click", () => setActivePage("trust"));
+
+  const agentOpenHomeBtn = $("btn-agent-open-home");
+  if (agentOpenHomeBtn) agentOpenHomeBtn.addEventListener("click", () => setActivePage("home"));
 
   const settingsToggleLargeText = $("settings-toggle-large-text");
   if (settingsToggleLargeText) settingsToggleLargeText.addEventListener("change", () => {

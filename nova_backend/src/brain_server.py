@@ -25,6 +25,7 @@ from typing import Any, Optional
 from fastapi import FastAPI, WebSocket
 
 from src.api.audit_api import build_audit_router
+from src.api.openclaw_agent_api import build_openclaw_agent_router
 from src.api.bridge_api import build_bridge_router
 from src.api.settings_api import build_settings_router
 from src.api.workspace_api import build_workspace_router
@@ -57,6 +58,8 @@ from src.policies.atomic_policy_store import AtomicPolicyStore
 from src.working_context.context_store import WorkingContextStore
 from src.working_context.project_threads import ProjectThreadStore
 from src.tasks.notification_schedule_store import NotificationScheduleStore
+from src.openclaw.agent_runner import openclaw_agent_runner
+from src.openclaw.agent_runtime_store import openclaw_agent_runtime_store
 from src.personality.conversation_personality_agent import ConversationPersonalityAgent
 from src.personality.interface_agent import PersonalityInterfaceAgent
 from src.personality.nova_style_contract import NovaStyleContract
@@ -3943,6 +3946,7 @@ async def send_pattern_review_widget(
 # -------------------------------------------------
 app.include_router(build_audit_router(sys.modules[__name__]))
 app.include_router(build_bridge_router(sys.modules[__name__]))
+app.include_router(build_openclaw_agent_router(sys.modules[__name__]))
 app.include_router(build_settings_router(sys.modules[__name__]))
 
 # -------------------------------------------------

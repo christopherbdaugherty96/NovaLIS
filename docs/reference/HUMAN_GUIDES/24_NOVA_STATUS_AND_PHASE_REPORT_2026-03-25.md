@@ -14,6 +14,7 @@ It now has:
 - a governed external reasoning lane with provider transparency
 - estimated governed reasoning-usage visibility in Trust and Settings
 - a token-gated governed remote bridge for read/reasoning access
+- a manual OpenClaw home-agent foundation with an Agent page, manual briefing templates, and delivery controls
 - a Home page, Workspace page, Trust page, Policies page, Introduction page, Settings page, News page, Memory page, and chat surface
 - a separate landing-preview page for product messaging review
 - a persistent top-level navigation strip plus a clearer header page/connection status surface
@@ -65,7 +66,7 @@ At the time of this report, the runtime shows:
   - Phase 3.5 complete
   - Phase 4 active
   - Phase 4.2 active
-  - Phase 4.5 active
+  - Phase 4.5 partial
   - Phase 5 active
   - Phase 6 complete as a review-oriented trust and policy package
   - Phase 7 complete as a governed external-reasoning package
@@ -87,6 +88,7 @@ At the time of this report, the runtime shows:
   - Workspace page, Trust page, Policies page, Introduction page, and Settings page dashboard surfaces
   - local-project structure-map surface with stage-2 graph output
   - token-gated OpenClaw bridge status and read/reasoning message ingress
+  - manual OpenClaw home-agent foundation status, template review, delivery controls, and manual briefing runs
   - cross-platform startup scripts and a smaller default dependency install
 
 Runtime invariants still in force:
@@ -131,6 +133,7 @@ Nova currently has:
 - visible push-to-talk state feedback during voice capture
 - a settings surface for setup-mode choice, voice checks, comfort controls, and governed runtime permissions
 - visible provider, connection, and remote-bridge status in Settings, with live pause/re-enable controls for second opinion and bridge access
+- a dedicated Agent page for manual OpenClaw home-agent briefings, delivery-mode changes, and recent-run review
 - visible estimated reasoning usage and budget state in Trust and Settings
 - smoother conversational acknowledgements and shorter spoken versions of long answers
 - a policy review surface for disabled drafts, simulations, and one-shot manual runs
@@ -258,6 +261,14 @@ The newest product-entry and trust-visibility slice then widened clarity without
 
 This matters because it turned several already-good backend pieces into a more understandable product.
 
+The newest home-agent foundation slice then began the Nova-facing OpenClaw path without widening authority:
+- a calmer Nova personality/task-report layer for briefing-style output
+- a dedicated Agent page in the dashboard
+- manual `Morning Brief` and `Evening Digest` template runs
+- delivery-mode controls for chat, surface, or hybrid presentation
+- Trust and Settings visibility for the manual home-agent foundation
+- runtime-auditor truth updates so generated runtime docs reflect the extracted routers and the new Agent surface
+
 ## Phase-By-Phase Grounding
 This is the simplest honest way to understand Nova's phase position.
 
@@ -289,14 +300,15 @@ Meaning:
 
 ### Phase 4.5
 Status:
-- active in runtime
+- partial in runtime
 
 Meaning:
 - UX trust surfaces exist
 - perception surfaces exist
-- calendar and dashboard-facing product layers are real
+- dashboard-facing product layers are real
 - explain-anything is not just planned
 - the voice loop is stronger than before, though still finishing device-confidence work
+- calendar integration is still not fully represented end to end in runtime truth
 
 ### Phase 5
 Status:
@@ -356,6 +368,7 @@ Live Phase-7 work now includes:
 - provider, route, and authority visibility in Trust and Settings
 - actionable runtime-permission controls in Settings for second opinion and the remote bridge
 - stronger local TTS renderer preference before fallback
+- a manual OpenClaw home-agent foundation with Nova-owned briefing presentation, an Agent page, manual template runs, and delivery controls
 
 ### Phase 8
 Status:
@@ -396,6 +409,7 @@ These include:
 - explicit memory
 - memory management surface
 - dashboard trust and operator surfaces
+- the Agent page and manual home-agent operator surface
 - policy review surface
 - daily snapshot surfaces
 - source-grounded news flows
@@ -416,6 +430,7 @@ Important current limitations:
 - provider and connector setup is still not fully connected through in-app key entry or connector linking, even though runtime permissions and setup mode are now actionable
 - OpenClaw/governed external execution is designed, not live
 - governed OpenClaw bridge access is live, but it remains read/reasoning-only and does not execute actions
+- the OpenClaw home-agent foundation is live only as a manual operator surface; scheduled/background execution is still not live
 
 Important voice caveat:
 - the TTS path is stronger in code now
@@ -437,6 +452,9 @@ The latest product-consolidation regression pass on `2026-03-26` also confirmed:
 - explicit external reasoning bundle: `8 passed`
 - runtime/governance Phase-7 bundle: `46 passed`
 - broader regression bundle: `222 passed`
+- OpenClaw home-agent API / runner / store / personality bundle: `13 passed`
+- bridge + personality + dashboard regression bundle: `23 passed`
+- runtime auditor + home-agent diagnostics bundle: `16 passed`
 - frontend mirror sync check: passed
 - runtime doc drift check: passed
 
@@ -447,6 +465,7 @@ For someone who is not technical, the recent work means Nova is easier to use be
 - memory is visible and manageable instead of invisible
 - trust now has its own clearer page
 - projects now have a clearer Workspace page
+- the new Agent page makes the OpenClaw/Nova direction understandable without exposing raw worker internals
 - local repo understanding is visible as a structure map instead of only text reports
 - first-run guidance points people to the right surfaces instead of leaving them to guess
 - voice-origin turns are more likely to answer back aloud through the runtime path
@@ -488,7 +507,7 @@ If someone asked what Nova should build next for the best product outcome, the s
 
 1. final TTS device-confidence pass
 2. deeper project/workspace persistence
-3. Phase-8 strict execution foundations after the bridge
+3. Phase-8 strict execution foundations after the bridge and manual home-agent surface
 4. first narrow governed OpenClaw execution path only after those foundations
 5. fuller provider and connector management after the Phase-8 foundation is stable
 
@@ -501,7 +520,7 @@ Why this order:
 ## Final Honest Description
 If someone needs one careful sentence that fits the current reality, use this:
 
-Nova is a live governed intelligence workspace with bounded local action, explicit memory, answer-first research, source-grounded news and explanation surfaces, visible trust and workspace product layers, and a token-gated remote bridge for read/reasoning access, while future phases for external execution, cross-client coherence, and reviewable learning remain designed but not yet live.
+Nova is a live governed intelligence workspace with bounded local action, explicit memory, answer-first research, source-grounded news and explanation surfaces, visible trust and workspace product layers, a token-gated remote bridge for read/reasoning access, and a manual OpenClaw home-agent foundation, while future phases for external execution, cross-client coherence, and reviewable learning remain designed but not yet live.
 
 ## Best Companion Documents
 For people who want to keep reading after this report, the best next documents are:

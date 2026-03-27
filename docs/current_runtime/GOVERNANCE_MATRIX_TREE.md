@@ -90,6 +90,7 @@ graph TD
   Runtime --> LLM[Conversation/Model Surfaces]
   LLM --> src_conversation_deepseek_bridge_py[src/conversation/deepseek_bridge.py uses llm_gateway.generate_chat]
   LLM --> src_skills_general_chat_py[src/skills/general_chat.py uses llm_gateway.generate_chat]
+  LLM --> src_openclaw_agent_runner_py[src/openclaw/agent_runner.py uses llm_gateway.generate_chat]
 ```
 
 ```text
@@ -155,4 +156,5 @@ Runtime
 |- Conversation/model surfaces
    |- src/conversation/deepseek_bridge.py -> llm_gateway.generate_chat
    |- src/skills/general_chat.py -> llm_gateway.generate_chat
+   |- src/openclaw/agent_runner.py -> llm_gateway.generate_chat
 ```
