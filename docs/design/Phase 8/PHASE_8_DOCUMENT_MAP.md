@@ -22,6 +22,7 @@ If there is tension about the eventual strict automation model, this document wi
 ## Supporting Phase-8 Implementation Context
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_HOME_AGENT_AND_PERSONALITY_LAYER_PLAN_2026-03-26.md`
+- `docs/design/Phase 8/PHASE_8_5_SCHEDULER_AND_PROACTIVE_DELIVERY_PLAN_2026-03-27.md`
 
 This remains useful as a narrower implementation-planning packet.
 It should now be read as supporting context beneath the canonical Phase-8 spec above.
@@ -108,5 +109,6 @@ When reading the Phase-8 folder:
 - use the canonical governed automation spec next for the eventual strict automation model
 - use the governed execution plan second
 - use the home-agent and personality-layer plan as the practical product-direction companion
+- use the Phase-8.5 scheduler packet for the next-step proactive delivery design
 - use `openclaw.txt` and `node design.txt` as preserved raw source inputs
 - do not treat the existence of a Phase-8 folder as proof that Phase 8 is live in runtime

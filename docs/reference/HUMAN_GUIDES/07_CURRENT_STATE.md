@@ -1,5 +1,5 @@
 # Current State
-Updated: 2026-03-26
+Updated: 2026-03-27
 
 ## Where Nova Is Today
 Nova is no longer just a design project.
@@ -45,7 +45,7 @@ That means Nova already has:
 - a governed external reasoning lane with same-thread second-opinion review, provider visibility, and advisory-only boundaries
 - estimated governed reasoning-usage visibility in Trust and Settings
 - a token-gated governed remote bridge for read/reasoning access from OpenClaw-style remote clients
-- a manual OpenClaw home-agent foundation with a dedicated Agent page, manual briefing templates, delivery controls, and Nova-owned presentation
+- a manual OpenClaw home-agent foundation with a dedicated Agent page, manual briefing templates, delivery controls, a delivery inbox, strict manual preflight, and Nova-owned presentation
 - improved voice auto-speak routing with runtime fallback at the speech layer
 - a dedicated conversation personality layer and a dedicated voice presentation layer for smoother replies
 - a cleaner live chat runtime with bounded general-chat fallback extracted out of the old skill-registry path
@@ -88,7 +88,7 @@ These parts are already meaningfully real:
 - a visible Policy Review Center that keeps delegated policy work inspectable and manual
 - a visible capability-authority map that shows what policies are safe now, later, or explicit-only
 - Trust and Settings visibility for remote bridge and provider/connection state
-- a dedicated Agent page with manual home-agent briefing templates, delivery-mode controls, and recent-run history
+- a dedicated Agent page with manual home-agent briefing templates, delivery-mode controls, a ready-for-review inbox, and recent-run history
 
 ## What Is Still Maturing
 These parts are active but still evolving:
@@ -154,7 +154,7 @@ The most recent product-consolidation regression pass on 2026-03-26 also confirm
 - runtime truth promotion to Phase 7 complete passed
 - a broader `165`-test regression bundle passed
 - the live runtime routing cleanup for general-chat fallback and deeper-analysis confirmation passed focused coverage
-- the OpenClaw home-agent API, runtime store, runner, personality bridge, and diagnostics truth layer passed focused coverage
+- the OpenClaw home-agent API, runtime store, runner, strict-preflight layer, delivery inbox flow, personality bridge, and diagnostics truth layer passed focused coverage
 - the runtime auditor and generated runtime docs were revalidated after the modularized router/runtime extraction and the new home-agent surfaces landed
 
 The main remaining voice caveat is still real-device confirmation:

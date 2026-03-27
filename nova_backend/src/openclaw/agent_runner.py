@@ -13,6 +13,7 @@ from src.openclaw.agent_runtime_store import (
     OpenClawAgentRuntimeStore,
     openclaw_agent_runtime_store,
 )
+from src.openclaw.strict_preflight import evaluate_manual_envelope
 from src.openclaw.task_envelope import TaskEnvelope
 from src.personality.conversation_personality_agent import ConversationPersonalityAgent
 from src.skills.calendar import CalendarSkill
@@ -59,6 +60,9 @@ class OpenClawAgentRunner:
             raise RuntimeError(str(template.get("availability_reason") or "This template is not ready yet.").strip())
 
         envelope = TaskEnvelope.from_template(template, triggered_by=triggered_by)
+        strict_preflight = evaluate_manual_envelope(envelope)
+        if not strict_preflight.allowed:
+            raise RuntimeError(strict_preflight.reason)
         started_at = _utc_now_iso()
         payload = await self._collect_payload(template_id)
         prompt = self._build_summary_prompt(template, payload)
@@ -87,6 +91,7 @@ class OpenClawAgentRunner:
                 "estimated_output_tokens": _estimate_tokens(summarized) if summarized else 0,
                 "estimated_total_tokens": (_estimate_tokens(prompt) + _estimate_tokens(summarized)) if summarized else 0,
                 "source_notes": dict(payload.get("source_notes") or {}),
+                "strict_preflight": strict_preflight.to_dict(),
             }
         )
 
@@ -101,6 +106,7 @@ class OpenClawAgentRunner:
             "estimated_output_tokens": _estimate_tokens(summarized) if summarized else 0,
             "estimated_total_tokens": (_estimate_tokens(prompt) + _estimate_tokens(summarized)) if summarized else 0,
             "source_notes": dict(payload.get("source_notes") or {}),
+            "strict_preflight": strict_preflight.to_dict(),
             "run_record": run_record,
         }
 

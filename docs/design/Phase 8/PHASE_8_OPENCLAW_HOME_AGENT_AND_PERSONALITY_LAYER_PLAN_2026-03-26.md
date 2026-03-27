@@ -12,6 +12,8 @@ What is live now:
 - a manual OpenClaw operator surface with named briefing templates
 - manual run of `morning_brief` and `evening_digest`
 - delivery-mode controls for named briefings and quiet-review tasks
+- a persistent delivery inbox for surface-first agent results
+- strict manual preflight before a manual home-agent envelope can run
 - Nova-owned task-result presentation through the OpenClaw personality bridge
 
 What is still not live:
@@ -139,6 +141,7 @@ OpenClaw tasks should be represented as bounded envelopes with:
 Nova needs a small persistent store for:
 - built-in task templates
 - delivery preferences
+- delivery inbox state
 - recent runs
 - current readiness labels
 
@@ -165,6 +168,7 @@ The first real execution path should be:
 - low-risk
 - read-heavy
 - manually invoked
+- preflight-validated against a strict manual tool and budget policy
 
 This earns the operator surface before background scheduling is introduced.
 

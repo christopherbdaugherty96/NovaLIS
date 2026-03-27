@@ -72,6 +72,9 @@ Current Phase-8 supporting OpenClaw execution packet:
 Current Phase-8 home-agent and Nova personality-layer packet:
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_HOME_AGENT_AND_PERSONALITY_LAYER_PLAN_2026-03-26.md`
 
+Current Phase-8.5 scheduler and proactive delivery packet:
+- `docs/design/Phase 8/PHASE_8_5_SCHEDULER_AND_PROACTIVE_DELIVERY_PLAN_2026-03-27.md`
+
 Current Phase-8 preserved raw source notes:
 - `docs/design/Phase 8/openclaw.txt`
 - `docs/design/Phase 8/node design.txt`
