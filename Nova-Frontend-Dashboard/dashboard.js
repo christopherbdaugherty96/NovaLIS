@@ -132,6 +132,7 @@ let openClawAgentState = {
   recentRuns: [],
   lastHydratedAt: 0,
 };
+const surfacedOpenClawDeliveryIds = new Set();
 let settingsRuntimeState = {
   loaded: false,
   loading: false,
@@ -144,6 +145,7 @@ let settingsRuntimeState = {
     external_reasoning_enabled: true,
     remote_bridge_enabled: true,
     home_agent_enabled: true,
+    home_agent_scheduler_enabled: false,
   },
   permissionCards: [],
   history: [],
@@ -837,6 +839,7 @@ async function requestSettingsRuntimeRefresh(force = false) {
 }
 
 function applyOpenClawAgentPayload(data) {
+  const wasLoaded = openClawAgentState.loaded;
   const payload = (data && typeof data === "object" && data.agent && typeof data.agent === "object")
     ? data.agent
     : (data && typeof data === "object" ? data : {});
@@ -861,6 +864,33 @@ function applyOpenClawAgentPayload(data) {
         : settingsRuntimeState.permissions;
     }
   }
+  syncOpenClawDeliveryChatSurface(openClawAgentState.deliveryInbox, { initialLoad: !wasLoaded });
+}
+
+function syncOpenClawDeliveryChatSurface(items, { initialLoad = false } = {}) {
+  const rows = Array.isArray(items) ? items : [];
+  if (initialLoad) {
+    rows.forEach((item) => {
+      const id = String(item && item.id || "").trim();
+      if (id) surfacedOpenClawDeliveryIds.add(id);
+    });
+    return;
+  }
+
+  rows.forEach((item) => {
+    const id = String(item && item.id || "").trim();
+    if (!id || surfacedOpenClawDeliveryIds.has(id)) return;
+    surfacedOpenClawDeliveryIds.add(id);
+
+    if (String(item && item.triggered_by || "").trim() !== "scheduler") return;
+    const delivery = (item && item.delivery_channels && typeof item.delivery_channels === "object")
+      ? item.delivery_channels
+      : {};
+    const message = String(item && (item.presented_message || item.summary) || "").trim();
+    if (delivery.chat && message) {
+      appendChatMessage("assistant", message, null, "Scheduled brief");
+    }
+  });
 }
 
 async function requestOpenClawAgentRefresh(force = false) {
@@ -907,6 +937,42 @@ async function setOpenClawAgentDeliveryMode(templateId, deliveryMode) {
     renderTrustCenterPage();
   } catch (_err) {
     appendChatMessage("assistant", "I couldn't update that agent delivery mode right now.", null, "Agent");
+  }
+}
+
+async function setOpenClawAgentScheduleEnabled(templateId, enabled) {
+  try {
+    const res = await fetch(`${API_BASE}/api/openclaw/agent/templates/${encodeURIComponent(templateId)}/schedule`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ enabled: !!enabled }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const detail = String((data && data.detail) || "I couldn't update that agent schedule right now.").trim();
+      appendChatMessage("assistant", detail, null, "Agent");
+      return;
+    }
+    applyOpenClawAgentPayload(data);
+    renderOpenClawDeliveryWidget();
+    renderOpenClawAgentPage();
+    renderSettingsPage();
+    renderTrustCenterPage();
+    if (enabled) {
+      const schedulerReady = !!(data && data.agent && data.agent.scheduler_permission_enabled);
+      appendChatMessage(
+        "assistant",
+        schedulerReady
+          ? "Schedule enabled. Nova will run that template at its planned local time."
+          : "Schedule saved. Turn on the home-agent scheduler in Settings when you want timed runs to start.",
+        null,
+        "Agent"
+      );
+    } else {
+      appendChatMessage("assistant", "Schedule paused for that template.", null, "Agent");
+    }
+  } catch (_err) {
+    appendChatMessage("assistant", "I couldn't update that agent schedule right now.", null, "Agent");
   }
 }
 
@@ -6200,6 +6266,7 @@ function hydrateDashboardWidgets() {
   safeWSSend({ text: "tone status", silent_widget_refresh: true });
   safeWSSend({ text: "notification status", silent_widget_refresh: true });
   safeWSSend({ text: "pattern status", silent_widget_refresh: true });
+  requestOpenClawAgentRefresh();
 }
 
 function startWidgetAutoRefresh() {
@@ -6724,6 +6791,7 @@ function renderOpenClawDeliveryFeed(host, items = [], emptyText = "No agent deli
     if (item.delivery_channels && item.delivery_channels.widget) channels.push("surface");
     meta.textContent = [
       createdLabel,
+      String(item.triggered_by || "").trim() === "scheduler" ? "scheduled" : "",
       channels.length ? `delivery: ${channels.join(" + ")}` : "",
       String(item.delivery_mode || "").trim() || "widget",
     ].filter(Boolean).join(" · ");
@@ -6790,6 +6858,7 @@ function renderOpenClawAgentPage() {
     ? openClawAgentState.snapshot
     : {};
   const permissionEnabled = !!(settingsRuntimeState.permissions && settingsRuntimeState.permissions.home_agent_enabled);
+  const schedulerPermissionEnabled = !!(settingsRuntimeState.permissions && settingsRuntimeState.permissions.home_agent_scheduler_enabled);
 
   if (summary) {
     summary.textContent = [
@@ -6802,13 +6871,14 @@ function renderOpenClawAgentPage() {
     clear(runtimeGrid);
     [
       ["Status", String(snapshot.status_label || "Foundation live").trim() || "Foundation live"],
-      ["Execution mode", permissionEnabled ? "Manual foundation only" : "Paused in Settings"],
+      ["Execution mode", permissionEnabled ? (schedulerPermissionEnabled ? "Manual foundation + narrow scheduler" : "Manual foundation only") : "Paused in Settings"],
       ["Templates", `${Number(snapshot.template_count || 0)} total`],
       ["Runnable now", `${Number(snapshot.manual_run_count || 0)} ready`],
       ["Strict foundation", String(snapshot.strict_foundation_label || "Manual preflight active").trim() || "Manual preflight active"],
       ["Deliveries ready", `${Number(snapshot.delivery_ready_count || 0)} waiting`],
       ["Delivery model", "Named tasks can chat; quiet tasks stay surface-first"],
-      ["Schedules", String(snapshot.schedule_summary || "Planned, not active yet").trim() || "Planned, not active yet"],
+      ["Scheduler", String(snapshot.scheduler_status_label || (schedulerPermissionEnabled ? "Enabled" : "Paused")).trim() || "Paused"],
+      ["Schedules", String(snapshot.schedule_summary || "No template schedules enabled yet").trim() || "No template schedules enabled yet"],
     ].forEach(([label, value]) => {
       runtimeGrid.appendChild(createOverviewChip(label, value));
     });
@@ -6859,19 +6929,30 @@ function renderOpenClawAgentPage() {
 
         const chipRow = document.createElement("div");
         chipRow.className = "memory-detail-chip-row";
+        const displayedScheduleStatus = !schedulerPermissionEnabled && template.schedule_enabled
+          ? "Scheduled (paused globally)"
+          : (String(template.schedule_status || template.next_run_label || "Paused").trim() || "Paused");
         [
           ["Category", String(template.category || "Task").trim() || "Task"],
           ["Availability", String(template.availability_label || "Unknown").trim() || "Unknown"],
           ["Delivery", String(template.delivery_mode || "widget").trim() || "widget"],
+          ["Schedule", displayedScheduleStatus],
         ].forEach(([label, value]) => chipRow.appendChild(createOverviewChip(label, value)));
         card.appendChild(chipRow);
 
         const meta = document.createElement("p");
         meta.className = "first-run-note";
-        meta.textContent = [
+        const scheduleBits = [
           String(template.availability_reason || "").trim(),
           String(template.schedule_label || "").trim(),
-        ].filter(Boolean).join(" · ");
+          String(template.next_run_label || "").trim(),
+          String(template.last_scheduled_outcome || "").trim()
+            ? `Last scheduled run: ${String(template.last_scheduled_outcome || "").trim()}`
+            : "",
+          String(template.last_scheduled_note || "").trim(),
+          (!schedulerPermissionEnabled && template.schedule_enabled) ? "Global scheduler is paused in Settings." : "",
+        ].filter(Boolean);
+        meta.textContent = scheduleBits.join(" · ");
         card.appendChild(meta);
 
         const tools = document.createElement("div");
@@ -6890,6 +6971,20 @@ function renderOpenClawAgentPage() {
         runBtn.disabled = !permissionEnabled || !template.manual_run_available;
         runBtn.addEventListener("click", () => runOpenClawAgentTemplate(String(template.id || "").trim()));
         actions.appendChild(runBtn);
+
+        const scheduleBtn = document.createElement("button");
+        scheduleBtn.type = "button";
+        if (!template.manual_run_available || !String(template.schedule_clock_local || "").trim()) {
+          scheduleBtn.textContent = "Scheduling later";
+          scheduleBtn.disabled = true;
+        } else {
+          scheduleBtn.textContent = template.schedule_enabled ? "Pause schedule" : "Enable schedule";
+          if (template.schedule_enabled) {
+            scheduleBtn.classList.add("assistant-action-btn");
+          }
+          scheduleBtn.addEventListener("click", () => setOpenClawAgentScheduleEnabled(String(template.id || "").trim(), !template.schedule_enabled));
+        }
+        actions.appendChild(scheduleBtn);
 
         ["widget", "chat", "hybrid"].forEach((mode) => {
           const btn = document.createElement("button");
@@ -6938,6 +7033,7 @@ function renderOpenClawAgentPage() {
         if (run.delivery_channels && run.delivery_channels.widget) channels.push("surface");
         meta.textContent = [
           startedLabel,
+          String(run.triggered_by || "").trim() === "scheduler" ? "scheduled" : "",
           `${Number(run.estimated_total_tokens || 0).toLocaleString()} estimated tokens`,
           channels.length ? `delivery: ${channels.join(" + ")}` : "",
         ].filter(Boolean).join(" · ");

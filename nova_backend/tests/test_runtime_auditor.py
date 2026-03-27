@@ -173,11 +173,25 @@ def test_phase8_status_tracks_foundation_slice(monkeypatch, tmp_path):
 
     openclaw_dir = tmp_path / "openclaw"
     openclaw_dir.mkdir()
+    scheduler_path = tmp_path / "agent_scheduler.py"
 
     monkeypatch.setattr(ra, "OPENCLAW_DIR", openclaw_dir)
+    monkeypatch.setattr(ra, "OPENCLAW_AGENT_SCHEDULER_PATH", scheduler_path)
     monkeypatch.setattr(ra, "_openclaw_home_agent_foundation_present", lambda: True)
 
     assert ra._phase_8_status() == "FOUNDATION"
+
+
+def test_phase8_status_tracks_active_scheduler_slice(monkeypatch, tmp_path):
+    import src.audit.runtime_auditor as ra
+
+    scheduler_path = tmp_path / "agent_scheduler.py"
+    scheduler_path.write_text("# present\n", encoding="utf-8")
+
+    monkeypatch.setattr(ra, "OPENCLAW_AGENT_SCHEDULER_PATH", scheduler_path)
+    monkeypatch.setattr(ra, "_openclaw_home_agent_foundation_present", lambda: True)
+
+    assert ra._phase_8_status() == "ACTIVE"
 
 
 def test_render_current_runtime_state_includes_phase8_foundation_row(monkeypatch):
@@ -190,6 +204,18 @@ def test_render_current_runtime_state_includes_phase8_foundation_row(monkeypatch
 
     assert "| Phase 8 | FOUNDATION |" in rendered
     assert "scheduled automation and full Phase-8 execution enforcement remain deferred" in rendered
+
+
+def test_render_current_runtime_state_includes_phase8_active_row(monkeypatch):
+    import src.audit.runtime_auditor as ra
+
+    registry = {"capabilities": []}
+    monkeypatch.setattr(ra, "_phase_8_status", lambda: "ACTIVE")
+
+    rendered = ra.render_current_runtime_state_markdown({"discrepancies": []}, registry)
+
+    assert "| Phase 8 | ACTIVE |" in rendered
+    assert "Scheduled home-agent runtime is available behind explicit settings control" in rendered
 
 
 def test_phase6_status_tracks_complete_review_surface(monkeypatch, tmp_path):

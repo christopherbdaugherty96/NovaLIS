@@ -9,10 +9,12 @@ Phase-8 current truth:
 - manual OpenClaw home-agent foundation is live
 - strict manual preflight is live
 - delivery inbox / surface-first review is live
-- scheduling and full governed external execution remain deferred
+- narrow scheduled briefing runtime is live behind explicit settings control
+- full governed external execution still remains deferred
 
 ## Current Packets
 - `docs/PROOFS/Phase-8/PHASE_8_MANUAL_FOUNDATION_AND_DELIVERY_INBOX_RUNTIME_SLICE_2026-03-27.md`
+- `docs/PROOFS/Phase-8/PHASE_8_5_NARROW_SCHEDULER_RUNTIME_SLICE_2026-03-27.md`
 
 ## Notes
 - Do not read this folder as proof that full canonical Phase-8 automation is complete.

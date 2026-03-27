@@ -67,6 +67,9 @@ Files and roles:
 - `strict_preflight.py`
   - strict manual-foundation preflight gate
   - validates allowed tools, max steps, max duration, and allowed trigger source before the runner starts
+- `agent_scheduler.py`
+  - narrow local scheduler for named briefing templates only
+  - stays behind explicit runtime settings control and does not widen general execution authority
 
 ### Local API surface
 `nova_backend/src/api/openclaw_agent_api.py`
@@ -76,6 +79,8 @@ Live endpoints:
   - returns agent snapshot, bridge status, connection state, and settings snapshot
 - `POST /api/openclaw/agent/templates/{template_id}/delivery`
   - updates template delivery mode
+- `POST /api/openclaw/agent/templates/{template_id}/schedule`
+  - updates per-template schedule state for schedule-ready templates
 - `POST /api/openclaw/agent/templates/{template_id}/run`
   - runs a manual template if `home_agent_enabled` is on
 
@@ -90,10 +95,12 @@ The runtime store currently ships with:
   - manual run available
   - named briefing
   - hybrid delivery by default
+  - schedule-ready
 - `evening_digest`
   - manual run available
   - named briefing
   - hybrid delivery by default
+  - schedule-ready
 - `inbox_check`
   - visible but not runnable yet
   - future quiet-review connector path
@@ -110,6 +117,8 @@ What the user can do now:
 - run `morning_brief`
 - run `evening_digest`
 - change delivery mode
+- enable or pause schedule-ready templates
+- inspect next-run state from the Agent page
 - review pending surface deliveries from the Home page and Agent page
 - dismiss finished surface deliveries after review
 - inspect recent run history
@@ -117,6 +126,7 @@ What the user can do now:
 
 ### Live settings and trust integration
 - `home_agent_enabled` is a real runtime permission in `runtime_settings_store.py`
+- `home_agent_scheduler_enabled` is a real runtime permission in `runtime_settings_store.py`
 - OpenClaw home-agent status appears in diagnostics via `os_diagnostics_executor.py`
 - strict manual preflight status appears in diagnostics and runtime truth
 - the runtime auditor already recognizes the home-agent foundation as a live runtime system
@@ -125,6 +135,7 @@ What the user can do now:
 Current repo-backed coverage includes:
 - `nova_backend/tests/openclaw/test_agent_runtime_store.py`
 - `nova_backend/tests/openclaw/test_agent_runner.py`
+- `nova_backend/tests/openclaw/test_agent_scheduler.py`
 - `nova_backend/tests/openclaw/test_task_envelope.py`
 - `nova_backend/tests/conversation/test_openclaw_agent_personality_bridge.py`
 - `nova_backend/tests/test_openclaw_agent_api.py`
@@ -135,9 +146,7 @@ Current repo-backed coverage includes:
 These items are not live and should not be described as runtime behavior.
 
 Not live:
-- background scheduling
 - APScheduler or cron-driven execution
-- proactive morning or evening delivery without user invocation
 - full GovernorMediator TaskEnvelope execution path
 - Data Minimization Engine from the canonical Phase-8 automation spec
 - dedicated Governor Interceptor from the canonical Phase-8 automation spec
@@ -248,11 +257,15 @@ Live now:
 - Nova-owned presentation bridge
 
 ### Phase 8.5
-Next likely step:
+Live now:
 - scheduler design packet
-- narrow scheduled delivery
-- operator-visible rate limiting and run controls
+- narrow scheduled delivery behind explicit runtime settings control
+- operator-visible schedule enable/pause and next-run visibility
 - precise governance carve-out for the scheduler location
+
+Still ahead inside the same lane:
+- operator-visible rate limiting and quiet-hours suppression
+- richer proactive notification UX beyond the current delivery inbox plus chat-surface model
 
 ### Full canonical Phase 8 execution
 Still ahead:
@@ -270,23 +283,20 @@ Later work:
 
 ## 10. Gap Analysis
 The major remaining gaps are:
-
-- no proactive scheduler
-  - impact: home-agent foundation still feels manual
 - no full strict Phase-8 execution substrate
   - impact: operator surface exists before full governed execution architecture
-- no proactive timed notification push yet
-  - impact: delivery inbox is visible when the user returns, but Nova still does not initiate delivery on its own
+- no quiet-hours or rate-limit suppression for scheduled runs yet
+  - impact: narrow scheduling is live, but the broader operator controls for suppression are still incomplete
+- no richer proactive notification push beyond chat/inbox
+  - impact: delivery is visible and timed now, but still intentionally narrow
 - `inbox_check` is visible but not connected
   - impact: product promise is ahead of connector readiness
 - no Home Assistant or MQTT connector
   - impact: not yet a real home-control worker
 - no IMAP or task connector
   - impact: household utility remains briefing-first
-- no distinct Phase-8 proof packet yet
-  - impact: runtime slice is documented, but phase-proof structure still trails the implementation
-- no proactive notification UX for completed agent runs
-  - impact: results are inspectable but not yet ambient
+- no full action-level stop/review surface for broader governed execution
+  - impact: the narrow scheduler is inspectable, but the canonical Phase-8 operator model is still ahead
 
 ## 11. Cross-Reference Map
 Most important files for this topic:
@@ -302,6 +312,7 @@ Runtime:
 - `nova_backend/src/openclaw/agent_runtime_store.py`
 - `nova_backend/src/openclaw/agent_personality_bridge.py`
 - `nova_backend/src/openclaw/agent_runner.py`
+- `nova_backend/src/openclaw/agent_scheduler.py`
 - `nova_backend/src/api/openclaw_agent_api.py`
 - `nova_backend/src/settings/runtime_settings_store.py`
 - `nova_backend/src/executors/os_diagnostics_executor.py`
@@ -320,6 +331,7 @@ Runtime truth:
 Proof:
 - `docs/PROOFS/Phase-8/PHASE_8_PROOF_PACKET_INDEX.md`
 - `docs/PROOFS/Phase-8/PHASE_8_MANUAL_FOUNDATION_AND_DELIVERY_INBOX_RUNTIME_SLICE_2026-03-27.md`
+- `docs/PROOFS/Phase-8/PHASE_8_5_NARROW_SCHEDULER_RUNTIME_SLICE_2026-03-27.md`
 
 Tests:
 - `nova_backend/tests/openclaw/`
@@ -334,10 +346,10 @@ The next highest-value follow-through is:
    - done in this pass through the runtime auditor and regenerated runtime docs
 
 2. keep the Phase 8 planning docs truthful
-   - the home-agent and personality-layer packet must describe the current foundation stage, not pretend nothing shipped
+   - the home-agent and personality-layer packet must describe the live narrow scheduler honestly, not collapse it into “full automation”
 
-3. design the narrow scheduler step before implementing it
-   - create a dedicated Phase 8.5 packet before any scheduler code lands
+3. finish the remaining narrow scheduler controls before widening anything
+   - add quiet-hours and rate-limit suppression
    - keep the carve-out precise and auditable
 
 Bottom line:

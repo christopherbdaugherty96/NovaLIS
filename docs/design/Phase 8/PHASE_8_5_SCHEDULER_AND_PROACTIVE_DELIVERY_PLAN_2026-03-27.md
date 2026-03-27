@@ -1,7 +1,7 @@
 # Phase 8.5 Scheduler And Proactive Delivery Plan
 Updated: 2026-03-27
-Status: Design-only next step
-Purpose: Define the narrow, auditable path from the current manual OpenClaw home-agent foundation to scheduled delivery without overstating autonomy
+Status: Implemented narrow scheduler slice; still the governing design reference for the remaining operator controls
+Purpose: Define and now anchor the narrow, auditable path from the manual OpenClaw home-agent foundation to scheduled delivery without overstating autonomy
 
 ## Why Phase 8.5 Exists
 The current runtime already has:
@@ -10,11 +10,25 @@ The current runtime already has:
 - strict manual preflight for current envelopes
 
 What it still does not have:
-- proactive scheduling
-- timed delivery
-- a governance carve-out for any background trigger loop
+- quiet-hours suppression
+- rate-limit suppression
+- richer proactive notification controls beyond the current chat/inbox model
 
 Phase 8.5 is the step that adds scheduled triggering without pretending the full canonical Phase-8 execution model is already complete.
+
+## Current Implementation Baseline
+Live now in the repo:
+- `nova_backend/src/openclaw/agent_scheduler.py`
+- `home_agent_scheduler_enabled` runtime permission
+- per-template schedule enable / pause controls on the Agent page
+- next-run and last scheduled outcome visibility on the Agent page
+- scheduler-triggered ledger events and runtime truth detection
+- scheduled runs recorded into the existing delivery inbox
+
+Still intentionally deferred inside this lane:
+- quiet-hours suppression
+- schedule rate limiting
+- broader connector-backed scheduled work
 
 ## Scope
 Phase 8.5 should add only:
@@ -57,7 +71,7 @@ Scheduled behavior should read this way:
   - Nova posts into chat and keeps a visible delivery item for later review
 
 ## Governance Requirements
-Before scheduler code lands, all of the following must exist:
+These are the requirements for the shipped narrow scheduler and for any further widening:
 1. explicit scheduler module path
 2. explicit runtime flag for scheduled delivery
 3. explicit test carve-out for the scheduler path only
@@ -85,21 +99,23 @@ The Home page should remain lighter:
   - optional Phase 8.5 or later, depending on whether delivery mode alone is enough
 
 ## Required Tests
-Add before shipping:
+Current shipped coverage includes:
+- scheduler never runs when `home_agent_scheduler_enabled` is false
+- scheduler runs due allowlisted templates and records completion
+- per-template schedule enable / disable state persists through the runtime store
+
+Still needed before widening:
 - scheduler only runs allowlisted templates
 - quiet hours suppress delivery correctly
 - rate limit suppresses repeated scheduled runs
 - paused template does not fire
-- scheduler never runs when `home_agent_enabled` is false
 - delivery mode controls proactive chat vs. inbox behavior
 
-## Recommended Order
-1. add scheduler design packet
-2. add scheduler runtime flag
-3. add scheduler module behind explicit startup wiring
-4. add operator-visible schedule state
-5. add suppression + rate-limit tests
-6. then allow morning/evening schedule activation
+## Recommended Remaining Order
+1. add suppression + rate-limit tests
+2. add quiet-hours aware suppression logic
+3. add operator-visible suppression reasons
+4. then consider widening beyond morning/evening briefing templates
 
 ## Shipping Rule
 Phase 8.5 is complete only when scheduled delivery is:

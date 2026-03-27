@@ -118,8 +118,8 @@ More specifically, the current dashboard can now show:
 - Settings page setup-mode selection, runtime permission controls, reasoning transparency, and voice confidence review
 - Settings page provider, connection, bridge-status, and settings-history review
 - Trust page remote-bridge review
-- Agent page runtime cards, template availability state, delivery-mode controls, ready-for-review inbox state, and recent manual run history
-- Agent page manual briefing runs that still keep scheduled/background execution disabled
+- Agent page runtime cards, template availability state, delivery-mode controls, per-template schedule controls, ready-for-review inbox state, and recent run history
+- Agent page narrow scheduled briefing controls that stay visible and pausable instead of acting like hidden automation
 
 ## What The Frontend Is Not Supposed To Become
 Nova's frontend is not supposed to become a hidden authority layer.

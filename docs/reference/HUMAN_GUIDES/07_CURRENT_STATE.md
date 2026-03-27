@@ -119,9 +119,9 @@ A careful plain-language description of the current system is:
 - voice output is improved in code, auto-speaks voice-origin turns more reliably, trims long spoken replies more intelligently, and still depends on local device/audio validation
 - wake word is planned
 - wake word is optional and not part of the default install
-- governed external execution remains planned, not runtime-authorized
+- governed external execution beyond the narrow home-agent scheduler remains planned, not runtime-authorized
 - governed remote bridge access is now live, but it remains read/reasoning-only and token-gated
-- the OpenClaw home-agent foundation is now live as a manual operator surface, but scheduled/background task execution is still not authorized
+- the OpenClaw home-agent foundation is now live as a manual operator surface, and a narrow scheduled briefing lane is now live behind explicit settings control
 
 ## What Makes The Current State Special
 Nova already combines things that usually live in separate products:
