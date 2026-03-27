@@ -2,6 +2,7 @@
 
 from datetime import datetime
 import logging
+import re
 
 from src.base_skill import BaseSkill, SkillResult
 from src.services.weather_service import WeatherService
@@ -14,11 +15,36 @@ class WeatherSkill(BaseSkill):
     name = "weather"
     description = "Provides the current weather conditions."
 
+    _TIME_HINTS = (
+        "outside",
+        "today",
+        "tomorrow",
+        "right now",
+        "this morning",
+        "this afternoon",
+        "this evening",
+        "tonight",
+        "later",
+    )
+
     def __init__(self, network: NetworkMediator | None = None):
         self.service = WeatherService(network=network)
 
     def can_handle(self, text: str) -> bool:
-        return "weather" in text.lower()
+        query = str(text or "").strip().lower()
+        if not query:
+            return False
+        if "weather" in query or "forecast" in query:
+            return True
+        if ("temperature" in query or re.search(r"\btemp\b", query)) and any(
+            hint in query for hint in self._TIME_HINTS
+        ):
+            return True
+        if any(term in query for term in ("rain", "snow", "umbrella", "conditions")) and any(
+            hint in query for hint in self._TIME_HINTS
+        ):
+            return True
+        return False
 
     async def handle(self, text: str) -> SkillResult:
         try:
@@ -42,6 +68,10 @@ class WeatherSkill(BaseSkill):
                         "forecast": forecast,
                         "alerts": alerts,
                         "updated_at": timestamp,
+                        "status": "ok",
+                        "connected": True,
+                        "provider": "Visual Crossing",
+                        "setup_hint": "",
                     },
                 },
                 skill=self.name,
@@ -49,9 +79,39 @@ class WeatherSkill(BaseSkill):
 
         except Exception as e:
             log.debug(f"Weather failure: {e}")
+            detail = str(e or "").strip()
+            if "WEATHER_API_KEY" in detail:
+                message = "Weather is available, but no provider key is configured yet."
+                status = "not_configured"
+                connected = False
+                setup_hint = "Add WEATHER_API_KEY to enable live weather."
+            else:
+                message = "Weather is unavailable right now."
+                status = "unavailable"
+                connected = False
+                setup_hint = ""
+            timestamp = datetime.now().strftime("%I:%M %p").lstrip("0")
             return SkillResult(
-                success=False,
-                message="Weather is currently unavailable.",
+                success=True,
+                message=message,
+                data={
+                    "connected": connected,
+                    "status": status,
+                    "setup_hint": setup_hint,
+                },
+                widget_data={
+                    "type": "weather",
+                    "data": {
+                        "summary": message,
+                        "forecast": "",
+                        "alerts": [],
+                        "updated_at": timestamp,
+                        "status": status,
+                        "connected": connected,
+                        "provider": "Visual Crossing",
+                        "setup_hint": setup_hint,
+                    },
+                },
                 skill=self.name,
             )
 

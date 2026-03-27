@@ -171,17 +171,40 @@ class NewsSkill(BaseSkill):
         semaphore = asyncio.Semaphore(self.MAX_CONCURRENT_FEEDS)
         items = await self._fetch_many(self.SOURCES, semaphore=semaphore)
         categories = await self._fetch_category_groups(semaphore=semaphore)
+        source_count = len(
+            {
+                str(item.get("source") or "").strip()
+                for item in items
+                if str(item.get("source") or "").strip()
+            }
+        )
+        category_count = sum(
+            1
+            for bucket in categories.values()
+            if isinstance(bucket, dict) and list(bucket.get("items") or [])
+        )
+        if items:
+            summary = self._summarize_headlines(items)
+            message = summary
+            status = "ok"
+        else:
+            summary = "News unavailable right now."
+            message = "I couldn't pull fresh headlines right now."
+            status = "unavailable"
 
         widget = {
             "type": "news",
             "items": items,
-            "summary": self._summarize_headlines(items),
+            "summary": summary,
             "categories": categories,
+            "status": status,
+            "source_count": source_count,
+            "category_count": category_count,
         }
 
         return SkillResult(
             success=True,
-            message="Here are the latest headlines.",
+            message=message,
             data={},
             widget_data=widget,
             skill=self.name,

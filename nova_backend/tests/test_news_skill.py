@@ -150,6 +150,29 @@ def test_news_skill_returns_category_groups(monkeypatch):
     assert categories["global"]["items"][0]["source"] == "Global One"
 
 
+def test_news_skill_reports_unavailable_when_feeds_return_nothing(monkeypatch):
+    async def _fake_fetch(*args, **kwargs):
+        return []
+
+    monkeypatch.setattr("src.skills.news.fetch_rss_headlines", _fake_fetch)
+    monkeypatch.setattr(
+        NewsSkill,
+        "SOURCES",
+        [{"name": "Example Source", "feed": "https://example.com/rss", "domain": "example.com"}],
+    )
+    monkeypatch.setattr(NewsSkill, "CATEGORY_GROUPS", [])
+
+    result = asyncio.run(NewsSkill().handle("news"))
+
+    assert result.success is True
+    assert "couldn't pull fresh headlines" in result.message.lower()
+    widget = result.widget_data or {}
+    assert widget["status"] == "unavailable"
+    assert widget["source_count"] == 0
+    assert widget["category_count"] == 0
+    assert widget["summary"] == "News unavailable right now."
+
+
 def test_news_skill_summary_dedupes_duplicate_titles_and_adds_theme():
     skill = NewsSkill()
     items = [

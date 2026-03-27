@@ -9,16 +9,31 @@ from ..base_skill import BaseSkill, SkillResult
 
 class CalendarSkill(BaseSkill):
     name = "calendar"
+    _SCHEDULE_COMMAND_HINTS = (
+        "schedule daily",
+        "schedule an",
+        "show schedules",
+        "cancel schedule",
+        "dismiss schedule",
+        "reschedule",
+        "remind me",
+    )
 
     def can_handle(self, query: str) -> bool:
         q = (query or "").strip().lower()
         if not q:
             return False
-        if q in {"calendar", "agenda", "schedule"}:
+        if any(hint in q for hint in self._SCHEDULE_COMMAND_HINTS):
+            return False
+        if q in {"calendar", "agenda"}:
             return True
         if "calendar" in q:
             return True
         if "today" in q and ("schedule" in q or "agenda" in q or "events" in q):
+            return True
+        if "schedule" in q and any(
+            hint in q for hint in ("my ", "on my", "what", "what's", "whats", "today", "tomorrow", "events")
+        ):
             return True
         return False
 
@@ -109,15 +124,43 @@ class CalendarSkill(BaseSkill):
             item.pop("sort_key", None)
         return events
 
+    @staticmethod
+    def _widget_payload(
+        *,
+        summary: str,
+        events: list[dict],
+        connected: bool,
+        status: str,
+        source_label: str = "",
+        setup_hint: str = "",
+    ) -> dict:
+        return {
+            "type": "calendar",
+            "summary": summary,
+            "events": events,
+            "connected": connected,
+            "status": status,
+            "source_label": source_label,
+            "setup_hint": setup_hint,
+        }
+
     async def handle(self, query: str) -> SkillResult:
         path = self._calendar_path()
         if path is None:
             summary = "Not connected."
+            setup_hint = "Set NOVA_CALENDAR_ICS_PATH to a local .ics file to enable calendar snapshots."
             return SkillResult(
                 success=True,
-                message="Calendar is available, but no ICS file is connected.",
-                data={"connected": False, "events": []},
-                widget_data={"type": "calendar", "summary": summary, "events": []},
+                message="Calendar is available, but no ICS file is connected yet.",
+                data={"connected": False, "events": [], "setup_hint": setup_hint, "source_label": ""},
+                widget_data=self._widget_payload(
+                    summary=summary,
+                    events=[],
+                    connected=False,
+                    status="not_connected",
+                    source_label="",
+                    setup_hint=setup_hint,
+                ),
                 skill=self.name,
             )
 
@@ -125,10 +168,17 @@ class CalendarSkill(BaseSkill):
             events = self._read_today_events(path)
         except Exception:
             return SkillResult(
-                success=False,
+                success=True,
                 message="Calendar data is currently unavailable.",
-                data={"connected": True, "events": []},
-                widget_data={"type": "calendar", "summary": "Unavailable.", "events": []},
+                data={"connected": True, "events": [], "source_label": path.name, "setup_hint": ""},
+                widget_data=self._widget_payload(
+                    summary="Unavailable.",
+                    events=[],
+                    connected=True,
+                    status="unavailable",
+                    source_label=path.name,
+                    setup_hint="",
+                ),
                 skill=self.name,
             )
 
@@ -146,7 +196,14 @@ class CalendarSkill(BaseSkill):
         return SkillResult(
             success=True,
             message=message,
-            data={"connected": True, "events": events},
-            widget_data={"type": "calendar", "summary": summary, "events": events},
+            data={"connected": True, "events": events, "source_label": path.name, "setup_hint": ""},
+            widget_data=self._widget_payload(
+                summary=summary,
+                events=events,
+                connected=True,
+                status="ok",
+                source_label=path.name,
+                setup_hint="",
+            ),
             skill=self.name,
         )
