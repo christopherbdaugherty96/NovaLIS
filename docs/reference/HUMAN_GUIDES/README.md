@@ -54,6 +54,7 @@ Runtime truth lives in:
 25. `25_NOVA_PRODUCT_MESSAGING_VARIANTS_2026-03-26.md`
 26. `26_LOCAL_SETUP_AND_STARTUP.md`
 27. `27_KEY_SKILL_RELIABILITY_MATRIX_2026-03-27.md`
+28. `28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27.md`
 
 ## Quick Summary
 Nova is a governed personal intelligence system.

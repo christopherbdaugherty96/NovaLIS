@@ -35,6 +35,10 @@ def _install_agent_store(monkeypatch, tmp_path: Path):
 def test_openclaw_agent_status_reports_foundation(monkeypatch, tmp_path):
     _install_runtime_settings_store(monkeypatch, tmp_path)
     _install_agent_store(monkeypatch, tmp_path)
+    monkeypatch.delenv("WEATHER_API_KEY", raising=False)
+    monkeypatch.delenv("NOVA_OPENCLAW_BRIDGE_TOKEN", raising=False)
+    monkeypatch.delenv("NOVA_BRIDGE_TOKEN", raising=False)
+    monkeypatch.delenv("NOVA_CALENDAR_ICS_PATH", raising=False)
 
     client = TestClient(brain_server.app)
     response = client.get("/api/openclaw/agent/status")
@@ -45,8 +49,35 @@ def test_openclaw_agent_status_reports_foundation(monkeypatch, tmp_path):
     assert payload["agent"]["status_label"] == "Foundation live"
     assert payload["agent"]["delivery_ready_count"] == 0
     assert payload["agent"]["scheduler_status_label"] == "Paused"
+    assert payload["agent"]["setup"]["status_label"] == "Ready for briefing runs"
+    assert payload["agent"]["setup"]["weather_provider_configured"] is False
+    assert payload["agent"]["setup"]["calendar_connected"] is False
+    assert payload["agent"]["setup"]["remote_bridge_token_configured"] is False
+    assert "morning_brief" in payload["agent"]["setup"]["runnable_template_ids"]
+    assert "inbox_check" in [item["id"] for item in payload["agent"]["setup"]["blocked_templates"]]
     assert payload["settings"]["permissions"]["home_agent_enabled"] is True
     assert payload["settings"]["permissions"]["home_agent_scheduler_enabled"] is False
+
+
+def test_openclaw_agent_status_reports_connected_setup_inputs(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+    _install_agent_store(monkeypatch, tmp_path)
+    calendar_path = tmp_path / "calendar.ics"
+    calendar_path.write_text("BEGIN:VCALENDAR\nEND:VCALENDAR\n", encoding="utf-8")
+    monkeypatch.setenv("WEATHER_API_KEY", "weather-key")
+    monkeypatch.setenv("NOVA_OPENCLAW_BRIDGE_TOKEN", "bridge-token")
+    monkeypatch.setenv("NOVA_CALENDAR_ICS_PATH", str(calendar_path))
+
+    client = TestClient(brain_server.app)
+    response = client.get("/api/openclaw/agent/status")
+
+    assert response.status_code == 200
+    payload = response.json()
+    setup = payload["agent"]["setup"]
+    assert setup["weather_provider_configured"] is True
+    assert setup["calendar_connected"] is True
+    assert setup["remote_bridge_token_configured"] is True
+    assert any(item["label"] == "Calendar source" and item["status_label"] == "Ready" for item in setup["source_cards"])
 
 
 def test_openclaw_agent_run_respects_settings_permission(monkeypatch, tmp_path):

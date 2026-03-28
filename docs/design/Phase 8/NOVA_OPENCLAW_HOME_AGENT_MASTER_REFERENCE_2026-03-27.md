@@ -76,7 +76,7 @@ Files and roles:
 
 Live endpoints:
 - `GET /api/openclaw/agent/status`
-  - returns agent snapshot, bridge status, connection state, and settings snapshot
+  - returns agent snapshot, bridge status, connection state, settings snapshot, and setup/readiness detail for the live home-agent surface
 - `POST /api/openclaw/agent/templates/{template_id}/delivery`
   - updates template delivery mode
 - `POST /api/openclaw/agent/templates/{template_id}/schedule`
@@ -113,6 +113,7 @@ Frontend pages and controls are live in:
 
 What the user can do now:
 - open the Agent page
+- inspect setup and readiness for local model, weather, calendar, remote bridge, and scheduler inputs
 - inspect template readiness
 - run `morning_brief`
 - run `evening_digest`
@@ -185,6 +186,52 @@ Guiding rule:
 - fetch structured data first
 - summarize once
 - avoid repeated LLM loops
+
+## 5.1 How OpenClaw Is Set Up Today
+OpenClaw currently has two distinct runtime surfaces inside Nova.
+
+### Remote bridge
+Files:
+- `nova_backend/src/api/bridge_api.py`
+
+Purpose:
+- token-gated remote ingress for read, review, and reasoning requests
+- stateless stage-1 bridge
+- explicitly blocked from widening into local device or durable-state actions
+
+Current requirements:
+- `remote_bridge_enabled` must be enabled in runtime settings
+- `NOVA_OPENCLAW_BRIDGE_TOKEN` or `NOVA_BRIDGE_TOKEN` must be configured
+
+Current guardrails:
+- prefix-based scope blocking still exists
+- capability-aware remote-safe blocking now exists on top of that
+- local-context and local-effect capabilities stay in the local dashboard
+
+### Local home-agent foundation
+Files:
+- `nova_backend/src/api/openclaw_agent_api.py`
+- `nova_backend/src/openclaw/agent_runtime_store.py`
+- `nova_backend/src/openclaw/agent_runner.py`
+- `nova_backend/src/openclaw/strict_preflight.py`
+- `nova_backend/src/openclaw/agent_scheduler.py`
+
+Purpose:
+- manual briefing runs
+- narrow scheduled briefing runs
+- operator-facing delivery and review
+
+Current requirements:
+- `home_agent_enabled` must be enabled
+- local model access is preferred for summarization but is not a hard requirement for fallback summaries
+- `WEATHER_API_KEY` improves weather completeness but is optional
+- `NOVA_CALENDAR_ICS_PATH` enables calendar snapshots but is optional
+- `home_agent_scheduler_enabled` must be enabled before timed runs start
+
+Current operator truth:
+- the Agent page now shows setup/readiness for the local summarizer, weather, calendar, remote bridge, and scheduler
+- `morning_brief` and `evening_digest` are the current runnable templates
+- `inbox_check` remains visible as a future connector-backed task
 
 ## 6. Token And Model Strategy
 Current low-token strategy:

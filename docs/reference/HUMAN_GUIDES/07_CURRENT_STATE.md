@@ -46,6 +46,7 @@ That means Nova already has:
 - estimated governed reasoning-usage visibility in Trust and Settings
 - a token-gated governed remote bridge for read/reasoning access from OpenClaw-style remote clients
 - a manual OpenClaw home-agent foundation with a dedicated Agent page, manual briefing templates, delivery controls, a delivery inbox, strict manual preflight, and Nova-owned presentation
+- a clearer OpenClaw setup/readiness layer that shows what the home-agent surface needs, what is optional, and what is paused
 - improved voice auto-speak routing with runtime fallback at the speech layer
 - a dedicated conversation personality layer and a dedicated voice presentation layer for smoother replies
 - a cleaner live chat runtime with bounded general-chat fallback extracted out of the old skill-registry path
@@ -89,6 +90,7 @@ These parts are already meaningfully real:
 - a visible capability-authority map that shows what policies are safe now, later, or explicit-only
 - Trust and Settings visibility for remote bridge and provider/connection state
 - a dedicated Agent page with manual home-agent briefing templates, delivery-mode controls, a ready-for-review inbox, and recent-run history
+- a dedicated Agent page setup/readiness surface for the local summarizer, weather, calendar, remote bridge, and scheduler
 
 ## What Is Still Maturing
 These parts are active but still evolving:
