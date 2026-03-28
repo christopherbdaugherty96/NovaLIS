@@ -1807,8 +1807,6 @@ def _tone_domain_for_skill(skill_name: str) -> str:
         return "system"
     if lowered in {"weather", "news", "calendar"}:
         return "daily"
-    if lowered in {"web_search", "web_search_skill"}:
-        return "research"
     return "general"
 
 
