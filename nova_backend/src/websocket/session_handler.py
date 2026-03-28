@@ -271,11 +271,14 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         *,
         suggested_actions: list[dict[str, str]] | None = None,
         remember_response: bool = True,
+        remembered_response: str | None = None,
+        speakable_message: str | None = None,
         tone_domain: str | None = None,
     ) -> None:
         clean_message = str(message or "")
-        if remember_response and clean_message.strip():
-            session_state["last_response"] = clean_message
+        remembered = str(remembered_response if remembered_response is not None else clean_message)
+        if remember_response and remembered.strip():
+            session_state["last_response"] = remembered
         presented_message = await send_chat_message(
             ws,
             clean_message,
@@ -283,7 +286,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             tone_domain=tone_domain,
         )
         await send_chat_done(ws)
-        _maybe_auto_speak_for_voice_turn(session_state, presented_message)
+        _maybe_auto_speak_for_voice_turn(
+            session_state,
+            str(speakable_message if speakable_message is not None else presented_message or "").strip(),
+        )
         session_state["turn_count"] += 1
 
     async def _complete_silent_widget_refresh() -> None:
@@ -296,6 +302,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         "ask nova to revise the answer",
         "revise the answer using this review",
         "revise your last answer using this verification report",
+    }
+    REVIEW_AUTO_FINAL_COMMANDS = {
+        "second opinion and final answer",
+        "second opinion then final answer",
+        "review and final answer",
+        "review this and give final answer",
+        "double check and final answer",
+        "double check and give final answer",
+        "run second opinion and final answer",
     }
     REVIEW_GAPS_COMMANDS = {
         "summarize the gaps only",
@@ -329,6 +344,105 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         )
         context_limit = 40 if session_state.get("presence_mode") else 20
         session_context = session_context[-context_limit:]
+
+    async def _maybe_handle_review_auto_final(command_lowered: str) -> bool:
+        normalized = str(command_lowered or "").strip().lower()
+        if normalized not in REVIEW_AUTO_FINAL_COMMANDS:
+            return False
+
+        source_answer = str(session_state.get("last_response") or "").strip()
+        review_text = _build_second_opinion_review_text(session_context, session_state)
+        if not review_text:
+            review_text = source_answer
+        if not review_text:
+            await _complete_immediate_turn(
+                "I need a recent Nova answer first before I can run a second opinion and final answer pass.",
+                remember_response=False,
+            )
+            return True
+
+        review_source_prompt = _latest_session_user_query()
+        action_result = await invoke_governed_capability(
+            governor,
+            62,
+            {
+                "text": review_text,
+                "session_id": session_id,
+            },
+        )
+        action_message = _action_result_message(action_result)
+        action_payload = _action_result_payload(action_result)
+
+        if action_result.success:
+            session_state["trust_status"] = failure_ladder.record_local_success(
+                session_state.get("trust_status", {})
+            )
+        else:
+            session_state["trust_status"] = failure_ladder.record_failure(
+                session_state.get("trust_status", {}),
+                reason="Temporary issue",
+                external=False,
+            )
+        await send_trust_status(ws, session_state["trust_status"])
+
+        if not action_result.success or not isinstance(action_payload, dict):
+            await _complete_immediate_turn(
+                action_message or "Governed second opinion is unavailable right now.",
+                remember_response=False,
+            )
+            return True
+
+        session_state["last_reasoning_review"] = dict(action_payload)
+        snapshot = build_review_followthrough_snapshot(
+            payload=action_payload,
+            source_answer=source_answer,
+            source_prompt=review_source_prompt,
+        )
+        session_state["last_review_followthrough"] = snapshot
+
+        final_message = build_revised_answer_from_review(
+            snapshot,
+            session_id=session_id,
+            request_id=f"review-auto-final-{uuid.uuid4()}",
+        )
+        if not final_message:
+            await _complete_immediate_turn(
+                "I completed the review, but I couldn't build the final revised answer right now.",
+                remember_response=False,
+                suggested_actions=[
+                    {"label": "Summarize gaps", "command": "summarize the gaps only"},
+                    {"label": "Original answer", "command": "return to Nova's original answer"},
+                ],
+            )
+            return True
+
+        review_summary = summarize_review_gaps(snapshot)
+        combined_message = (
+            "Second opinion summary:\n"
+            f"{review_summary}\n\n"
+            "Nova final answer:\n"
+            f"{final_message}"
+        ).strip()
+        _log_ledger_event(
+            governor,
+            "REASONING_REVIEW_AUTO_FINALIZED",
+            {
+                "session_id": session_id,
+                "review_kind": str(snapshot.get("review_kind") or "").strip(),
+                "had_source_answer": bool(source_answer),
+            },
+        )
+        await _complete_immediate_turn(
+            combined_message,
+            suggested_actions=[
+                {"label": "Summarize gaps", "command": "summarize the gaps only"},
+                {"label": "Original answer", "command": "return to Nova's original answer"},
+            ],
+            remembered_response=final_message,
+            speakable_message=final_message,
+        )
+        _remember_review_exchange(normalized, final_message)
+        return True
 
     async def _maybe_handle_review_followthrough(command_lowered: str) -> bool:
         normalized = str(command_lowered or "").strip().lower()
@@ -561,6 +675,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             command_text = re.sub(r"[.?!]+$", "", text).strip()
             command_lowered = re.sub(r"[.?!]+$", "", lowered).strip()
 
+            if await _maybe_handle_review_auto_final(command_lowered):
+                continue
             if await _maybe_handle_review_followthrough(command_lowered):
                 continue
 
