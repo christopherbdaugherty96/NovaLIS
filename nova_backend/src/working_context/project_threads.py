@@ -472,6 +472,18 @@ class ProjectThreadStore:
         top = sorted(summaries, key=_rank, reverse=True)[0]
         return str(top.get("name") or "").strip()
 
+    def reset(self) -> None:
+        cleared_count = len(self._threads)
+        self._threads = {}
+        self._active_key = ""
+        self._safe_log(
+            "PROJECT_THREADS_RESET",
+            {
+                "session_id": self.session_id,
+                "cleared_threads": cleared_count,
+            },
+        )
+
     def _safe_log(self, event_type: str, payload: dict[str, Any]) -> None:
         if self._ledger is None:
             return

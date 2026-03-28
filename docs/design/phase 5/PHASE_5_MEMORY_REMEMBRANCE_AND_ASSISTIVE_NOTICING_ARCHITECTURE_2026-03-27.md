@@ -29,6 +29,8 @@ The current repo already has meaningful foundations:
 - inspectable memory overview and Memory page surfaces
 - explicit `save this` and `remember this` flows
 - session-scoped working context and project/thread continuity
+- visible operational-context review in Home and Trust
+- explicit `reset operational context` support for clearing session continuity without deleting durable governed memory
 - bounded relevant-memory use in chat
 - opt-in pattern review
 - trust and recent-activity visibility
@@ -157,6 +159,11 @@ Rules:
 - not merged with user identity memory
 - primarily system-maintained
 - auditable
+
+Current runtime note:
+- the repo now has a visible operational-context surface in Workspace Home and Trust
+- the repo now has an explicit operational-context reset flow
+- this current slice is still session-scoped continuity, not durable cross-session remembrance
 
 ### 7.3 Assistive Noticing Layer
 This is not stored memory in the same way.

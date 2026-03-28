@@ -1,6 +1,6 @@
 # Phase 5 Document Map
 
-Updated: 2026-03-26
+Updated: 2026-03-27
 Status: Current design and proof map
 Purpose: Classify the closed Phase-5 package plus the later runtime-aligned expansions that are now part of Nova's active product surface.
 
@@ -51,6 +51,7 @@ These remain adjacent planning inputs, not active runtime authority.
 - `docs/PROOFS/Phase-5/PHASE_5_TRUST_WORKSPACE_ONBOARDING_AND_TTS_RUNTIME_SLICE_2026-03-26.md`
 - `docs/PROOFS/Phase-5/PHASE_5_AGENT_OS_STAGE3_PRODUCT_SURFACES_RUNTIME_SLICE_2026-03-26.md`
 - `docs/PROOFS/Phase-5/PHASE_5_MEMORY_EXPORT_AND_EXPLICIT_COMMAND_COMPLETION_RUNTIME_SLICE_2026-03-27.md`
+- `docs/PROOFS/Phase-5/PHASE_5_OPERATIONAL_REMEMBRANCE_AND_RESETTABLE_CONTINUITY_RUNTIME_SLICE_2026-03-27.md`
 - `docs/PROOFS/Phase-5/PHASE_5_PROOF_PACKET_INDEX.md`
 
 ## Runtime Clarification
@@ -58,6 +59,7 @@ These remain adjacent planning inputs, not active runtime authority.
 - The original Phase-5 package remains closed for the current repository state.
 - Later Memory Center, Workspace, Trust, onboarding, Introduction, Settings, and Structure Map layers are runtime-aligned expansions built on top of the closed Phase-5 trust model.
 - Working Context Engine remains session-scoped; durable cross-session continuity comes from explicit governed memory.
+- Operational remembrance is now visible and resettable in-product, but it remains session-scoped rather than durable personal memory.
 - Delegated policy work belongs to Phase 6 and later, not Phase 5.
 
 ## Cross-Phase Boundary

@@ -117,6 +117,11 @@ let workspaceHomeState = {
   snapshot: {},
   lastHydratedAt: 0,
 };
+let operationalContextState = {
+  summary: "Operational context keeps session continuity visible and resettable.",
+  snapshot: {},
+  lastHydratedAt: 0,
+};
 let projectVisualizerState = {
   summary: "Open the structure map to see the repo as a human-friendly system view.",
   snapshot: {},
@@ -795,6 +800,13 @@ function requestWorkspaceHomeRefresh(force = false) {
   if (!force && now - Number(workspaceHomeState.lastHydratedAt || 0) < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
   workspaceHomeState.lastHydratedAt = now;
   safeWSSend({ text: "workspace home", silent_widget_refresh: true });
+}
+
+function requestOperationalContextRefresh(force = false) {
+  const now = Date.now();
+  if (!force && now - Number(operationalContextState.lastHydratedAt || 0) < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
+  operationalContextState.lastHydratedAt = now;
+  safeWSSend({ text: "operational context", silent_widget_refresh: true });
 }
 
 function requestProjectStructureMapRefresh(force = false) {
@@ -2356,6 +2368,123 @@ function renderWorkspaceBoardPage() {
     button.addEventListener("click", item.fn);
     actionsHost.appendChild(button);
   });
+
+  const operationalContext = (snapshot && typeof snapshot.operational_context === "object")
+    ? snapshot.operational_context
+    : {};
+  renderOperationalContextWidget(operationalContext);
+}
+
+function renderOperationalContextWidget(data = {}) {
+  if (data && typeof data === "object" && Object.keys(data).length) {
+    operationalContextState.snapshot = { ...operationalContextState.snapshot, ...data };
+    operationalContextState.summary = String(data.summary || operationalContextState.summary).trim() || operationalContextState.summary;
+    operationalContextState.lastHydratedAt = Date.now();
+  }
+
+  const snapshot = operationalContextState.snapshot || {};
+  const recentTurns = Array.isArray(snapshot.recent_relevant_turns) ? snapshot.recent_relevant_turns : [];
+  const recentActivity = Array.isArray(snapshot.recent_activity) ? snapshot.recent_activity : [];
+  const blockedConditions = Array.isArray(snapshot.blocked_conditions) ? snapshot.blocked_conditions : [];
+
+  const homeHost = $("workspace-home-operational");
+  if (homeHost) {
+    clear(homeHost);
+
+    const summary = document.createElement("div");
+    summary.className = "workspace-home-doc-copy";
+    summary.textContent = operationalContextState.summary || "Operational context is available here after the next refresh.";
+    homeHost.appendChild(summary);
+
+    const note = document.createElement("div");
+    note.className = "workspace-home-doc-copy";
+    note.textContent = String(snapshot.continuity_note || "This is session continuity, not durable personal memory.").trim()
+      || "This is session continuity, not durable personal memory.";
+    homeHost.appendChild(note);
+
+    const grid = document.createElement("div");
+    grid.className = "operator-health-grid";
+    [
+      ["Focus thread", String(snapshot.active_thread || "None").trim() || "None"],
+      ["Goal", String(snapshot.task_goal || "None").trim() || "None"],
+      ["Current step", String(snapshot.current_step || "None").trim() || "None"],
+      ["Active topic", String(snapshot.active_topic || "None").trim() || "None"],
+      ["Selected file", String(snapshot.selected_file || "None").trim() || "None"],
+      ["Turns", `${Number(snapshot.turn_count || 0)}`],
+    ].forEach(([labelText, valueText]) => {
+      const row = document.createElement("div");
+      row.className = "operator-health-row";
+      const label = document.createElement("div");
+      label.className = "operator-health-label";
+      label.textContent = labelText;
+      const value = document.createElement("div");
+      value.className = "operator-health-value";
+      value.textContent = valueText;
+      row.appendChild(label);
+      row.appendChild(value);
+      grid.appendChild(row);
+    });
+    homeHost.appendChild(grid);
+
+    if (recentTurns.length) {
+      const turns = document.createElement("div");
+      turns.className = "workspace-home-blocked";
+      turns.textContent = `Recent turns: ${recentTurns.slice(0, 3).map((item) => String(item || "").trim()).filter(Boolean).join(" · ")}`;
+      homeHost.appendChild(turns);
+    }
+  }
+
+  const trustSummary = $("trust-center-operational-summary");
+  const trustGrid = $("trust-center-operational-grid");
+  if (trustSummary) {
+    trustSummary.textContent = [
+      operationalContextState.summary,
+      String(snapshot.memory_preserved_on_reset ? "Reset preserves durable memory." : "").trim(),
+    ].filter(Boolean).join(" · ") || "Operational context will appear here after the next refresh.";
+  }
+  if (trustGrid) {
+    clear(trustGrid);
+    const rows = [
+      ["Focus thread", String(snapshot.active_thread || "None").trim() || "None"],
+      ["Goal", String(snapshot.task_goal || "None").trim() || "None"],
+      ["Current step", String(snapshot.current_step || "None").trim() || "None"],
+      ["Task type", String(snapshot.task_type || "None").trim() || "None"],
+      ["Active topic", String(snapshot.active_topic || "None").trim() || "None"],
+      ["Selected file", String(snapshot.selected_file || "None").trim() || "None"],
+      ["Latest object", String(snapshot.last_relevant_object || "None").trim() || "None"],
+      ["Open report", String(snapshot.open_report_id || "None").trim() || "None"],
+      ["Thread count", `${Number(snapshot.thread_count || 0)}`],
+      ["Turn count", `${Number(snapshot.turn_count || 0)}`],
+      ["Recent runtime activity", `${recentActivity.length}`],
+      ["Blocked conditions", `${blockedConditions.length}`],
+    ];
+    rows.forEach(([labelText, valueText]) => {
+      const row = document.createElement("div");
+      row.className = "operator-health-row";
+      const label = document.createElement("div");
+      label.className = "operator-health-label";
+      label.textContent = labelText;
+      const value = document.createElement("div");
+      value.className = "operator-health-value";
+      value.textContent = valueText;
+      row.appendChild(label);
+      row.appendChild(value);
+      trustGrid.appendChild(row);
+    });
+
+    if (recentTurns.length) {
+      const turns = document.createElement("div");
+      turns.className = "trust-activity-reason";
+      turns.textContent = `Recent continuity anchors: ${recentTurns.slice(0, 4).map((item) => String(item || "").trim()).filter(Boolean).join(" · ")}`;
+      trustGrid.appendChild(turns);
+    }
+    if (blockedConditions.length) {
+      const blocked = document.createElement("div");
+      blocked.className = "trust-activity-reason";
+      blocked.textContent = `Current blocked conditions: ${blockedConditions.slice(0, 3).map((item) => String(item.label || item.area || "Condition").trim()).filter(Boolean).join(" · ")}`;
+      trustGrid.appendChild(blocked);
+    }
+  }
 }
 
 function populateThreadDetailSurface(prefix, data = {}) {
@@ -4474,6 +4603,9 @@ function renderTrustCenterPage() {
       bridgeGrid.appendChild(createOverviewChip(label, value));
     });
   }
+
+  renderOperationalContextWidget();
+  requestOperationalContextRefresh();
 }
 
 function markExternalCall(label) {
@@ -6456,6 +6588,7 @@ function hydrateDashboardWidgets() {
   safeWSSend({ text: "memory overview", silent_widget_refresh: true });
   safeWSSend({ text: "show threads", silent_widget_refresh: true });
   safeWSSend({ text: "workspace home", silent_widget_refresh: true });
+  safeWSSend({ text: "operational context", silent_widget_refresh: true });
   safeWSSend({ text: "show structure map", silent_widget_refresh: true });
   safeWSSend({ text: "trust center", silent_widget_refresh: true });
   safeWSSend({ text: "policy overview", silent_widget_refresh: true });
@@ -6544,6 +6677,9 @@ function connectWebSocket() {
       case "workspace_home":
         renderWorkspaceHomeWidget(msg);
         break;
+      case "operational_context":
+        renderOperationalContextWidget(msg);
+        break;
       case "project_structure_map":
         renderProjectStructureMapWidget(msg);
         break;
@@ -6602,6 +6738,7 @@ function connectWebSocket() {
             trustState.consecutiveFailures = Math.max(0, Number(msg.data.consecutive_failures));
           }
           renderTrustPanel(msg.data || {});
+          renderTrustCenterPage();
         }
         break;
       case "chat_done":
@@ -8158,6 +8295,7 @@ window.addEventListener("DOMContentLoaded", () => {
   if (trustCenterRefreshBtn) trustCenterRefreshBtn.addEventListener("click", () => {
     safeWSSend({ text: "trust center", silent_widget_refresh: true });
     safeWSSend({ text: "system status", silent_widget_refresh: true });
+    safeWSSend({ text: "operational context", silent_widget_refresh: true });
   });
 
   const trustCenterSystemBtn = $("btn-trust-center-system");
@@ -8195,6 +8333,19 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const trustCenterSettingsBtn = $("btn-trust-center-settings");
   if (trustCenterSettingsBtn) trustCenterSettingsBtn.addEventListener("click", () => setActivePage("settings"));
+
+  const operationalContextRefreshBtn = $("btn-operational-context-refresh");
+  if (operationalContextRefreshBtn) {
+    operationalContextRefreshBtn.addEventListener("click", () => requestOperationalContextRefresh(true));
+  }
+
+  const operationalContextResetBtn = $("btn-operational-context-reset");
+  if (operationalContextResetBtn) {
+    operationalContextResetBtn.addEventListener("click", () => {
+      setActivePage("chat");
+      injectUserText("reset operational context", "text");
+    });
+  }
 
   const settingsOpenIntroBtn = $("btn-settings-open-intro");
   if (settingsOpenIntroBtn) settingsOpenIntroBtn.addEventListener("click", () => setActivePage("intro"));

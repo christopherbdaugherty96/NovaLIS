@@ -104,6 +104,10 @@ class WorkingContextStore:
             return
         self.apply_patch({"open_report_id": value}, source="report")
 
+    def reset(self) -> None:
+        self._state = WorkingContextState().to_dict()
+        self._safe_log("WORKING_CONTEXT_RESET", {"session_id": self.session_id})
+
     def _safe_log(self, event_type: str, payload: dict[str, Any]) -> None:
         if self._ledger is None:
             return

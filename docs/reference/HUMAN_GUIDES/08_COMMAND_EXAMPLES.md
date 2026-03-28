@@ -1,5 +1,5 @@
 # Command Examples
-Updated: 2026-03-26
+Updated: 2026-03-27
 
 ## Purpose
 This guide shows natural ways to talk to Nova.
@@ -112,6 +112,9 @@ Examples:
 - `workspace home`
 - `workspace board`
 - `project home`
+- `operational context`
+- `continuity status`
+- `reset operational context`
 
 ## 8. Trust Review
 Examples:

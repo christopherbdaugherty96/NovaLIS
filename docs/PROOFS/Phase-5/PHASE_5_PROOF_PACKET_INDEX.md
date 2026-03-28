@@ -1,5 +1,5 @@
 # Phase-5 Proof Packet Index
-Updated: 2026-03-26
+Updated: 2026-03-27
 Status: CLOSED for the current trust-facing Phase-5 package, with later runtime-aligned memory additions recorded below
 Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, implemented runtime slices, and deferred follow-on tracks.
 
@@ -36,6 +36,7 @@ Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, imple
 16. `PHASE_5_AGENT_OS_STAGE3_PRODUCT_SURFACES_RUNTIME_SLICE_2026-03-26.md`
 17. `PHASE_5_CONVERSATION_PERSONALITY_AND_VOICE_FLUIDITY_RUNTIME_SLICE_2026-03-26.md`
 18. `PHASE_5_MEMORY_EXPORT_AND_EXPLICIT_COMMAND_COMPLETION_RUNTIME_SLICE_2026-03-27.md`
+19. `PHASE_5_OPERATIONAL_REMEMBRANCE_AND_RESETTABLE_CONTINUITY_RUNTIME_SLICE_2026-03-27.md`
 
 ## Historical Gate-Preparation Inputs (Retained for Traceability Only)
 These documents remain useful as design history, but they are not the current authority chain for the closed Phase-5 package.
@@ -103,6 +104,9 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
 - broader conversation/tone regression bundle: `64 passed`
 - governed speech-path regression bundle: `10 passed`
 - explicit-memory completion bundle: `15 passed`
+- operational-remembrance/unit bundle: `10 passed`
+- dashboard operational-context static bundle: `4 passed`
+- targeted operational-context websocket bundle: `5 passed`
 - full active-capability sequential audit: all `23` active governed capabilities passed targeted verification
 - active-capability residual caveat: capability `18` (`speak_text`) now has a stronger runtime fallback path and passing code-path verification, but still needs live device spoken-output validation
 - runtime documentation drift check: passed
@@ -130,53 +134,59 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
    - `forget this` mapped into the existing confirmation-backed delete path
    - confirmation-backed `edit that memory` and `delete that memory`
    - bounded relevant-memory retrieval into general chat
-6. Memory stage-2 management surface landed:
+6. Operational remembrance visibility landed:
+   - explicit `operational context` / `continuity status` command path
+   - Home-page Workspace Home operational-context section
+   - Trust-page operational-context panel
+   - explicit `reset operational context` path
+   - session continuity reset that preserves durable governed memory
+7. Memory stage-2 management surface landed:
    - dedicated Memory Center list and selected-item detail panel
    - silent `list memories` and `memory show <id>` widget hydration
    - filter controls for all / active / locked / deferred / current thread
    - explicit action buttons for show, edit, lock, unlock, defer, and delete
-7. Workspace Home foundation landed:
+8. Workspace Home foundation landed:
    - explicit `workspace home` / `project home` command path
    - quiet Home-page workspace summary widget
    - focus project, blocker, next step, latest decision, and recent report visibility
    - recommended next actions tied to existing governed commands
    - project continuity, memory, and trust activity brought together into one calmer operating surface
-8. Manual tone settings / tone visibility landed:
+9. Manual tone settings / tone visibility landed:
    - persistent tone-profile store in the presentation layer
    - `tone status` / `tone set ...` / `tone reset ...`
    - dashboard response-style widget and Tone modal
    - recent tone-change history + system-status tone summary
-9. User-directed notification scheduling landed:
+10. User-directed notification scheduling landed:
    - explicit daily brief + reminder schedules
    - quiet scheduled-updates widget on the Home page
    - schedule creation modal + cancel/dismiss controls
    - explicit quiet-hours + rate-limit controls
    - delivery attempts and outcomes logged
    - Governor-checked quiet delivery with no automatic scheduled action execution
-10. Opt-in pattern review landed:
+11. Opt-in pattern review landed:
    - explicit `pattern opt in` / `pattern opt out`
    - user-triggered `review patterns` queue generation
    - quiet Home-page pattern-review widget
    - accept / dismiss proposal controls
    - no auto-apply and no background review loop
 
-11. Trust Center foundations landed:
+12. Trust Center foundations landed:
    - dedicated Trust page
    - clearer recent governed actions
    - blocked-condition visibility
    - runtime health and capability-group visibility in one place
-12. Workspace Board and local-project visualizer stage 1 landed:
+13. Workspace Board and local-project visualizer stage 1 landed:
    - dedicated Workspace page
    - explicit `workspace board` command path
    - Structure Map surface for non-technical codebase understanding
-13. First-run onboarding landed:
+14. First-run onboarding landed:
    - guided Home / Workspace / Trust orientation
    - explicit invocation-bound trust note
    - clearer morning-brief entry point
-14. Voice response path strengthened:
+15. Voice response path strengthened:
    - voice-origin turns now auto-speak through the shared Nova speech helper
    - runtime speech path now falls back to the TTS executor engine when the preferred renderer cannot play
-15. Agent-OS stage-3 product surfaces landed:
+16. Agent-OS stage-3 product surfaces landed:
    - dedicated Introduction page
    - dedicated Settings page
    - stage-2 onboarding guidance and setup-mode visibility
@@ -184,7 +194,7 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
    - Workspace selected-project drill-down that stays on the Workspace page
    - Structure Map stage-2 structured graph and relationship view
    - visible voice status and voice-check flow tied back into Trust data
-16. Conversation personality and voice fluidity layer landed:
+17. Conversation personality and voice fluidity layer landed:
    - dedicated conversation-facing personality presentation pass
    - dedicated voice-facing acknowledgement and speech-shaping pass
    - smoother short confirmations and calmer fallback wording

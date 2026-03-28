@@ -313,6 +313,10 @@
             <div class="workspace-home-section-title">Recent reports and memory</div>
             <div id="workspace-home-docs" class="workspace-home-docs"></div>
           </div>
+          <div class="workspace-home-section">
+            <div class="workspace-home-section-title">Operational Context</div>
+            <div id="workspace-home-operational" class="workspace-home-docs"></div>
+          </div>
           <div id="workspace-home-actions" class="workspace-home-actions"></div>
         </div>
         <div id="operator-health-widget" class="widget page-card operator-health-widget" aria-live="polite">
@@ -638,6 +642,20 @@
             </div>
           </div>
           <div id="trust-center-health-grid" class="trust-center-health-grid"></div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Operational Context</div>
+              <p id="trust-center-operational-summary" class="workspace-board-section-copy">Session continuity will appear here after the next refresh.</p>
+            </div>
+            <div class="workspace-board-actions-toolbar">
+              <button id="btn-operational-context-refresh" type="button">Refresh continuity</button>
+              <button id="btn-operational-context-reset" type="button">Reset continuity</button>
+            </div>
+          </div>
+          <div id="trust-center-operational-grid" class="operator-health-grid"></div>
         </div>
 
         <div class="widget page-card trust-center-panel" aria-live="polite">

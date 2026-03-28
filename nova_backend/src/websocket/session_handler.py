@@ -55,6 +55,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     send_workspace_home_widget = deps.send_workspace_home_widget
     _render_workspace_home_message = deps._render_workspace_home_message
     WORKSPACE_BOARD_RE = deps.WORKSPACE_BOARD_RE
+    OPERATIONAL_CONTEXT_RE = deps.OPERATIONAL_CONTEXT_RE
+    RESET_OPERATIONAL_CONTEXT_RE = deps.RESET_OPERATIONAL_CONTEXT_RE
+    send_operational_context_widget = deps.send_operational_context_widget
+    _render_operational_context_message = deps.render_operational_context_message
+    _reset_operational_session_state = deps._reset_operational_session_state
     send_thread_map_widget = deps.send_thread_map_widget
     send_thread_detail_widget = deps.send_thread_detail_widget
     TRUST_CENTER_RE = deps.TRUST_CENTER_RE
@@ -231,6 +236,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         "last_policy_simulation": {},
         "last_policy_run": {},
         "last_workspace_home": {},
+        "last_operational_context": {},
         "last_project_structure_map": {},
         "last_thread_detail": {},
         "last_memory_context": [],
@@ -591,6 +597,58 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     await _complete_immediate_turn(
                         _render_workspace_home_message(workspace_widget),
                         suggested_actions=suggested_actions,
+                    )
+                continue
+
+            if OPERATIONAL_CONTEXT_RE.match(command_text):
+                operational_widget = await send_operational_context_widget(ws, session_state, project_threads)
+                if silent_widget_refresh:
+                    await send_chat_done(ws)
+                    session_state["turn_count"] += 1
+                else:
+                    suggested_actions = list(operational_widget.get("recommended_actions") or [])
+                    await _complete_immediate_turn(
+                        _render_operational_context_message(operational_widget),
+                        suggested_actions=suggested_actions,
+                        tone_domain="continuity",
+                    )
+                continue
+
+            if RESET_OPERATIONAL_CONTEXT_RE.match(command_text):
+                working_context.reset()
+                project_threads.reset()
+                session_state["working_context"] = working_context.to_dict()
+                _reset_operational_session_state(
+                    session_state,
+                    working_context_snapshot=session_state["working_context"],
+                )
+                _log_ledger_event(
+                    governor,
+                    "OPERATIONAL_CONTEXT_RESET",
+                    {
+                        "session_id": session_id,
+                        "memory_preserved": True,
+                    },
+                )
+                await send_operational_context_widget(ws, session_state, project_threads)
+                await send_workspace_home_widget(ws, session_state, project_threads)
+                await send_thread_map_widget(ws, project_threads, session_state)
+                await send_trust_status(ws, session_state["trust_status"])
+                if silent_widget_refresh:
+                    await send_chat_done(ws)
+                    session_state["turn_count"] += 1
+                else:
+                    await _complete_immediate_turn(
+                        (
+                            "Operational context reset.\n\n"
+                            "Session continuity was cleared. Durable governed memory was preserved."
+                        ),
+                        suggested_actions=[
+                            {"label": "Workspace Home", "command": "workspace home"},
+                            {"label": "Operational context", "command": "operational context"},
+                            {"label": "Memory overview", "command": "memory overview"},
+                        ],
+                        tone_domain="continuity",
                     )
                 continue
 

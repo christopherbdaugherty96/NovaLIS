@@ -58,6 +58,10 @@ from src.patterns.pattern_review_store import PatternReviewStore
 from src.policies.atomic_policy_store import AtomicPolicyStore
 from src.working_context.context_store import WorkingContextStore
 from src.working_context.project_threads import ProjectThreadStore
+from src.working_context.operational_remembrance import (
+    build_operational_context_widget,
+    render_operational_context_message,
+)
 from src.tasks.notification_schedule_store import NotificationScheduleStore
 from src.openclaw.agent_runner import openclaw_agent_runner
 from src.openclaw.agent_runtime_store import openclaw_agent_runtime_store
@@ -326,6 +330,14 @@ WORKSPACE_HOME_RE = re.compile(
 )
 WORKSPACE_BOARD_RE = re.compile(
     r"^\s*(?:show\s+)?(?:workspace\s+board|project\s+board|project\s+workspace)\s*$",
+    re.IGNORECASE,
+)
+OPERATIONAL_CONTEXT_RE = re.compile(
+    r"^\s*(?:show\s+)?(?:operational\s+context|continuity\s+status|session\s+continuity)\s*$",
+    re.IGNORECASE,
+)
+RESET_OPERATIONAL_CONTEXT_RE = re.compile(
+    r"^\s*(?:reset|clear)\s+(?:operational\s+context|continuity|session\s+continuity)\s*$",
     re.IGNORECASE,
 )
 MOST_BLOCKED_PROJECT_RE = re.compile(
@@ -675,6 +687,11 @@ def _select_relevant_memory_context(
         "download my memory",
         "forget this",
         "forget that",
+        "operational context",
+        "show operational context",
+        "continuity status",
+        "reset operational context",
+        "reset continuity",
     }:
         return []
     if EXPLICIT_MEMORY_SAVE_RE.match(text):
@@ -1556,9 +1573,17 @@ def _build_workspace_home_widget(
         )
     recommended_actions.extend(
         [
+            {"label": "Operational context", "command": "operational context"},
             {"label": "List analysis docs", "command": "list analysis docs"},
             {"label": "Memory Center", "command": "list memories"},
         ]
+    )
+
+    operational_context = build_operational_context_widget(
+        session_state=session_state,
+        working_context_snapshot=dict(session_state.get("working_context") or {}),
+        project_threads=project_threads,
+        trust_snapshot=trust_snapshot,
     )
 
     return {
@@ -1603,6 +1628,7 @@ def _build_workspace_home_widget(
         "recent_memory_items": recent_memory_items,
         "recent_documents": recent_documents,
         "recent_activity": recent_activity,
+        "operational_context": operational_context,
         "recommended_actions": recommended_actions[:5],
         "blocked_conditions": [dict(item or {}) for item in list(trust_snapshot.get("blocked_conditions") or [])[:3]],
     }
@@ -1631,6 +1657,39 @@ def _render_workspace_home_message(widget: dict[str, object]) -> str:
     else:
         lines.append("No focus project is active yet.")
     return "\n".join(lines).strip()
+
+
+def _reset_operational_session_state(
+    session_state: dict[str, Any],
+    *,
+    working_context_snapshot: dict[str, Any] | None = None,
+) -> None:
+    session_state["last_response"] = ""
+    session_state["last_object"] = ""
+    session_state["analysis_documents"] = []
+    session_state["last_analysis_doc_id"] = None
+    session_state["last_intent_family"] = ""
+    session_state["last_mode"] = ""
+    session_state["session_mode_override"] = ""
+    session_state["topic_stack"] = []
+    session_state["active_topic"] = ""
+    session_state["pending_web_open"] = None
+    session_state["pending_governed_confirm"] = None
+    session_state["pending_interpret_confirm"] = None
+    session_state["last_calendar_summary"] = ""
+    session_state["last_calendar_events"] = []
+    session_state["working_context"] = dict(working_context_snapshot or {})
+    session_state["project_thread_active"] = ""
+    session_state["last_recommendation_reason"] = ""
+    session_state["thread_map_last"] = {}
+    session_state["last_workspace_home"] = {}
+    session_state["last_project_structure_map"] = {}
+    session_state["last_thread_detail"] = {}
+    session_state["last_memory_context"] = []
+    session_state["last_operational_context"] = {}
+    session_state["general_chat_context"] = []
+    session_state["general_chat_summary"] = {}
+    session_state["conversation_context"] = {}
 
 
 def _build_tone_profile_widget(snapshot: dict | None) -> dict:
@@ -2701,6 +2760,7 @@ def _render_trust_center_message(trust_status: dict[str, Any]) -> tuple[str, lis
             lines.append(rendered)
     suggestions = [
         {"label": "Workspace Home", "command": "workspace home"},
+        {"label": "Operational context", "command": "operational context"},
         {"label": "System status", "command": "system status"},
         {"label": "Memory overview", "command": "memory overview"},
         {"label": "Policy map", "command": "what can policies run"},
@@ -4133,6 +4193,31 @@ async def send_workspace_home_widget(
         project_threads=project_threads,
     )
     session_state["last_workspace_home"] = payload
+    await ws_send(ws, payload)
+    return payload
+
+
+async def send_operational_context_widget(
+    ws: WebSocket,
+    session_state: dict,
+    project_threads: ProjectThreadStore,
+) -> dict[str, Any]:
+    payload = build_operational_context_widget(
+        session_state=session_state,
+        working_context_snapshot=dict(session_state.get("working_context") or {}),
+        project_threads=project_threads,
+        trust_snapshot=_build_trust_review_snapshot(),
+    )
+    session_state["last_operational_context"] = payload
+    _log_ledger_event(
+        RUNTIME_GOVERNOR,
+        "OPERATIONAL_CONTEXT_VIEWED",
+        {
+            "session_id": str(session_state.get("session_id") or ""),
+            "active_thread": str(payload.get("active_thread") or ""),
+            "turn_count": int(session_state.get("turn_count") or 0),
+        },
+    )
     await ws_send(ws, payload)
     return payload
 
