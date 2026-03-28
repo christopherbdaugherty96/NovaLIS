@@ -37,6 +37,7 @@ Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, imple
 17. `PHASE_5_CONVERSATION_PERSONALITY_AND_VOICE_FLUIDITY_RUNTIME_SLICE_2026-03-26.md`
 18. `PHASE_5_MEMORY_EXPORT_AND_EXPLICIT_COMMAND_COMPLETION_RUNTIME_SLICE_2026-03-27.md`
 19. `PHASE_5_OPERATIONAL_REMEMBRANCE_AND_RESETTABLE_CONTINUITY_RUNTIME_SLICE_2026-03-27.md`
+20. `PHASE_5_MEMORY_RECALL_RECENCY_AND_LINEAGE_REFINEMENT_2026-03-28.md`
 
 ## Historical Gate-Preparation Inputs (Retained for Traceability Only)
 These documents remain useful as design history, but they are not the current authority chain for the closed Phase-5 package.

@@ -20,6 +20,7 @@ def test_dashboard_handles_memory_overview_widget_and_hydration():
     assert 'safeWSSend({ text: "memory overview", silent_widget_refresh: true });' in source
     assert 'sendSilentMemoryCommand("memory overview")' in source
     assert 'sendSilentMemoryCommand("list memories")' in source
+    assert 'sendSilentMemoryCommand("recent memories")' in source
     assert 'sendSilentMemoryCommand(`memory show ${item.id}`)' in source
     assert "memory list thread ${name}" in source
     assert 'injectUserText(`edit memory ${selected.id}: ${nextValue}`, "text")' in source
@@ -45,5 +46,6 @@ def test_dashboard_includes_dedicated_memory_page_and_home_summary():
     assert 'id="btn-memory-detail-edit"' in source
     assert 'id="btn-memory-overview"' in source
     assert 'id="btn-memory-list"' in source
+    assert 'id="btn-memory-recent"' in source
     assert 'id="personal-layer-widget"' in source
     assert 'id="btn-home-memory-page"' in source

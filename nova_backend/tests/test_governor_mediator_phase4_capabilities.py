@@ -165,6 +165,17 @@ def test_volume_media_brightness_parsing():
     assert inv.capability_id == 61
     assert inv.params["action"] == "overview"
 
+    inv = GovernorMediator.parse_governed_invocation("recent memories")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 61
+    assert inv.params["action"] == "recent"
+
+    inv = GovernorMediator.parse_governed_invocation("search memories for pour social alcohol")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 61
+    assert inv.params["action"] == "search"
+    assert inv.params["query"] == "pour social alcohol"
+
     inv = GovernorMediator.parse_governed_invocation("memory overview")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 61

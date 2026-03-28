@@ -96,6 +96,8 @@ This means Nova can now handle natural flows like:
 - `save this`
 - `remember this`
 - `what do you remember`
+- `recent memories`
+- `search memories for pour social alcohol`
 - `remember this: Client supplies alcohol; Pour Social does not sell alcohol.`
 - `list memories`
 - `memory export`
@@ -115,10 +117,12 @@ The dedicated Memory page is no longer just an overview card.
 
 It now acts as a governed memory management surface where the user can:
 - browse durable memory items
+- review the most recent durable memory items without leaving the page
 - filter by active / locked / deferred
 - inspect a selected memory item in full
 - export a governed JSON snapshot
 - review thread linkage, source, version, and tags
+- review superseded / replacement lineage for edited memory items
 - prepare governed actions like edit, lock, unlock, defer, and delete
 
 Important boundary:
@@ -157,6 +161,11 @@ That means:
 
 This is a very important trust boundary.
 Nova is supposed to feel helpful, not creepy.
+
+The recall layer is also stronger now:
+- recent memory can be reviewed directly
+- explicit memory search is available through governed commands
+- superseded older memory items no longer outrank the replacement item when Nova is trying to recall something relevant
 
 ## 8. What This Feels Like In Practice
 A realistic Nova continuity flow now looks like this:

@@ -156,6 +156,8 @@ Examples:
 - `remember this: client supplies alcohol`
 - `what do you remember`
 - `memory overview`
+- `recent memories`
+- `search memories for pour social alcohol`
 - `list memories`
 - `memory export`
 - `export memory`

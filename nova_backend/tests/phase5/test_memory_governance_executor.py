@@ -314,6 +314,93 @@ def test_memory_relevant_search_prefers_visible_matching_items(tmp_path: Path):
     assert all(match.get("user_visible", True) for match in matches)
 
 
+def test_memory_recent_and_search_commands_surface_recent_and_best_matches(tmp_path: Path):
+    store = GovernedMemoryStore(tmp_path / "memory_items.json")
+    executor = MemoryGovernanceExecutor(store=store)
+
+    original = executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={
+                "action": "save",
+                "title": "Pour Social alcohol policy",
+                "body": "Client supplies alcohol; Pour Social does not sell alcohol.",
+                "thread_name": "Pour Social",
+                "thread_key": "pour social",
+                "tags": ["events", "alcohol"],
+            },
+        )
+    )
+    original_id = str((original.data or {}).get("memory_item", {}).get("id") or "")
+    executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={
+                "action": "supersede",
+                "item_id": original_id,
+                "new_body": "Client supplies alcohol for private events only; Pour Social does not sell alcohol.",
+                "confirmed": True,
+            },
+        )
+    )
+    executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={"action": "save", "title": "GPU note", "body": "Use enough VRAM for local inference."},
+        )
+    )
+
+    recent = executor.execute(ActionRequest(capability_id=61, params={"action": "recent"}))
+    assert recent.success is True
+    assert "Recent Memory" in recent.message
+    recent_items = list(dict(recent.data or {}).get("memory_items") or [])
+    assert recent_items
+    assert all(not dict(item.get("lock") or {}).get("superseded_by") for item in recent_items)
+
+    search = executor.execute(
+        ActionRequest(capability_id=61, params={"action": "search", "query": "Pour Social alcohol"})
+    )
+    assert search.success is True
+    assert "Memory Search Matches" in search.message
+    search_items = list(dict(search.data or {}).get("memory_items") or [])
+    assert search_items
+    assert "private events only" in str(search_items[0].get("body") or "")
+
+
+def test_memory_show_includes_version_and_lineage(tmp_path: Path):
+    store = GovernedMemoryStore(tmp_path / "memory_items.json")
+    executor = MemoryGovernanceExecutor(store=store)
+
+    saved = executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={"action": "save", "title": "Policy", "body": "Old policy body."},
+        )
+    )
+    original_id = str((saved.data or {}).get("memory_item", {}).get("id") or "")
+    updated = executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={
+                "action": "supersede",
+                "item_id": original_id,
+                "new_body": "New policy body.",
+                "confirmed": True,
+            },
+        )
+    )
+    replacement_id = str((updated.data or {}).get("memory_item", {}).get("id") or "")
+
+    show_result = executor.execute(
+        ActionRequest(capability_id=61, params={"action": "show", "item_id": replacement_id})
+    )
+
+    assert show_result.success is True
+    assert "Version:" in show_result.message
+    assert "Lineage:" in show_result.message
+    assert original_id in show_result.message
+
+
 def test_thread_bridge_actions_require_orchestration_context(tmp_path: Path):
     store = GovernedMemoryStore(tmp_path / "memory_items.json")
     executor = MemoryGovernanceExecutor(store=store)

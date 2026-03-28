@@ -39,6 +39,8 @@ That means Nova already has:
 - a visible local-project Structure Map surface with structured graph output
 - inspectable list/show/edit/delete memory paths with confirmation where needed
 - governed memory export from both command and Memory-page surface
+- recent-memory review and explicit memory-search command paths
+- stronger memory recall ranking that now avoids preferring superseded older items over their replacement
 - bounded relevant-memory use in chat
 - manual response-style controls with inspectable tone settings
 - user-directed scheduling for daily briefs and reminders, with quiet-hours and rate-limit controls
@@ -81,6 +83,7 @@ These parts are already meaningfully real:
 - governed memory and thread-linked memory
 - durable memory review through `memory overview` and the dedicated Memory page
 - Memory-page browsing with filters, selected-item detail, and governed item actions
+- Memory-page recent-memory access and richer lineage/detail visibility for edited items
 - natural `save this` / `remember this` flows and bounded relevant-memory recall
 - natural `what do you remember`, `memory export`, and confirmation-backed `forget this` flows
 - explicit `reset operational context` that clears session continuity without deleting durable memory
