@@ -158,6 +158,8 @@ def test_render_current_runtime_state_mentions_openclaw_home_agent_foundation(mo
             return "function renderOpenClawAgentPage() {}"
         if path == ra.OPENCLAW_AGENT_API_PATH:
             return '"/api/openclaw/agent/status"\nhome_agent_enabled'
+        if path == ra.OPENCLAW_AGENT_RUNTIME_STORE_PATH:
+            return path.read_text(encoding="utf-8")
         return original_safe_read(path)
 
     monkeypatch.setattr(ra, "_safe_read", _fake_safe_read)

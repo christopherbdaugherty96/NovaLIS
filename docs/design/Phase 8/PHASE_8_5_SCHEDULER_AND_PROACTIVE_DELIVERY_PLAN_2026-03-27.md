@@ -1,6 +1,6 @@
 # Phase 8.5 Scheduler And Proactive Delivery Plan
 Updated: 2026-03-27
-Status: Implemented narrow scheduler slice; still the governing design reference for the remaining operator controls
+Status: Narrow scheduler plus policy suppression slice implemented; still the governing design reference for remaining widening decisions
 Purpose: Define and now anchor the narrow, auditable path from the manual OpenClaw home-agent foundation to scheduled delivery without overstating autonomy
 
 ## Why Phase 8.5 Exists
@@ -10,8 +10,6 @@ The current runtime already has:
 - strict manual preflight for current envelopes
 
 What it still does not have:
-- quiet-hours suppression
-- rate-limit suppression
 - richer proactive notification controls beyond the current chat/inbox model
 
 Phase 8.5 is the step that adds scheduled triggering without pretending the full canonical Phase-8 execution model is already complete.
@@ -22,13 +20,15 @@ Live now in the repo:
 - `home_agent_scheduler_enabled` runtime permission
 - per-template schedule enable / pause controls on the Agent page
 - next-run and last scheduled outcome visibility on the Agent page
+- quiet-hours suppression tied to the shared notification policy layer
+- hourly rate-limit suppression tied to the shared notification policy layer
+- operator-visible suppression reasons on the Agent page
 - scheduler-triggered ledger events and runtime truth detection
 - scheduled runs recorded into the existing delivery inbox
 
 Still intentionally deferred inside this lane:
-- quiet-hours suppression
-- schedule rate limiting
 - broader connector-backed scheduled work
+- richer proactive notification controls beyond the current chat/inbox model
 
 ## Scope
 Phase 8.5 should add only:
@@ -103,18 +103,19 @@ Current shipped coverage includes:
 - scheduler never runs when `home_agent_scheduler_enabled` is false
 - scheduler runs due allowlisted templates and records completion
 - per-template schedule enable / disable state persists through the runtime store
+- quiet hours suppress due scheduled runs and surface a held reason
+- rate limit suppresses due scheduled runs and surface a held reason
+- a previously suppressed slot runs once policy clears
 
 Still needed before widening:
 - scheduler only runs allowlisted templates
-- quiet hours suppress delivery correctly
-- rate limit suppresses repeated scheduled runs
 - paused template does not fire
 - delivery mode controls proactive chat vs. inbox behavior
 
 ## Recommended Remaining Order
-1. add suppression + rate-limit tests
-2. add quiet-hours aware suppression logic
-3. add operator-visible suppression reasons
+1. tighten proactive-chat delivery controls if chat-first scheduled delivery is widened further
+2. add connector-backed schedule readiness only after the connector itself is stable
+3. keep quiet-hours and rate-limit policy shared with the reminder layer unless there is a strong product reason to split it
 4. then consider widening beyond morning/evening briefing templates
 
 ## Shipping Rule

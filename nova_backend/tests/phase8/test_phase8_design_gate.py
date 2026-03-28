@@ -52,6 +52,7 @@ def test_phase8_proof_packet_separates_canonical_foundation_from_adjacent_compan
 
     assert "PHASE_8_MANUAL_FOUNDATION_AND_DELIVERY_INBOX_RUNTIME_SLICE_2026-03-27.md" in canonical
     assert "PHASE_8_5_NARROW_SCHEDULER_RUNTIME_SLICE_2026-03-27.md" in canonical
+    assert "PHASE_8_5_SCHEDULER_POLICY_SUPPRESSION_AND_END_TO_END_VALIDATION_2026-03-28.md" in canonical
     assert "PHASE_8_DEDICATED_VERIFICATION_AND_PROOF_ALIGNMENT_2026-03-28.md" in canonical
     assert "PHASE_8_OPENCLAW_REMOTE_BOUNDARY_AND_SETUP_READINESS_RUNTIME_SLICE_2026-03-27.md" not in canonical
     assert "PHASE_8_BOUNDED_ASSISTIVE_NOTICING_RUNTIME_SLICE_2026-03-27.md" not in canonical
@@ -81,6 +82,7 @@ def test_phase8_home_agent_plan_marks_narrow_scheduler_live_but_broad_autonomy_d
     content = PHASE8_HOME_AGENT_PLAN_PATH.read_text(encoding="utf-8")
 
     assert "a narrow scheduled briefing lane behind explicit runtime settings control" in content
+    assert "quiet-hours and hourly rate-limit suppression for that narrow scheduled lane" in content
     assert "no broad autonomous scheduling beyond the explicit narrow briefing scheduler" in content
     assert "Nova can now run narrow scheduled briefing templates when the scheduler setting is enabled" in content
     assert "no background scheduler" not in content

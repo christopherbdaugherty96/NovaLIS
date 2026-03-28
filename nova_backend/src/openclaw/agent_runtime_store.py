@@ -3,7 +3,6 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from threading import RLock
 from typing import Any
 from uuid import uuid4
 
@@ -12,6 +11,7 @@ from src.openclaw.agent_personality_bridge import (
     normalize_delivery_mode,
 )
 from src.openclaw.strict_preflight import strict_foundation_snapshot
+from src.utils.persistent_state import shared_path_lock, write_json_atomic
 
 
 def _utc_now_iso() -> str:
@@ -59,7 +59,7 @@ def _display_clock_label(clock_value: str) -> str:
 class OpenClawAgentRuntimeStore:
     """Persistent operator-facing store for OpenClaw home-agent foundations."""
 
-    SCHEMA_VERSION = "1.2"
+    SCHEMA_VERSION = "1.3"
     DEFAULT_TEMPLATES = (
         {
             "id": "morning_brief",
@@ -78,6 +78,10 @@ class OpenClawAgentRuntimeStore:
             "last_scheduled_run_at": "",
             "last_scheduled_outcome": "",
             "last_scheduled_note": "",
+            "last_suppression_window": "",
+            "last_suppressed_at": "",
+            "last_suppression_reason": "",
+            "last_suppression_note": "",
             "manual_run_available": True,
             "availability_label": "Ready now",
             "availability_reason": "Manual run is live. Scheduled background execution stays opt-in.",
@@ -101,6 +105,10 @@ class OpenClawAgentRuntimeStore:
             "last_scheduled_run_at": "",
             "last_scheduled_outcome": "",
             "last_scheduled_note": "",
+            "last_suppression_window": "",
+            "last_suppressed_at": "",
+            "last_suppression_reason": "",
+            "last_suppression_note": "",
             "manual_run_available": True,
             "availability_label": "Ready now",
             "availability_reason": "Manual run is live. Scheduled background execution stays opt-in.",
@@ -124,6 +132,10 @@ class OpenClawAgentRuntimeStore:
             "last_scheduled_run_at": "",
             "last_scheduled_outcome": "",
             "last_scheduled_note": "",
+            "last_suppression_window": "",
+            "last_suppressed_at": "",
+            "last_suppression_reason": "",
+            "last_suppression_note": "",
             "manual_run_available": False,
             "availability_label": "Needs connector",
             "availability_reason": "Email review is part of the longer OpenClaw path and is not connected yet.",
@@ -147,6 +159,10 @@ class OpenClawAgentRuntimeStore:
             "last_scheduled_run_at": "",
             "last_scheduled_outcome": "",
             "last_scheduled_note": "",
+            "last_suppression_window": "",
+            "last_suppressed_at": "",
+            "last_suppression_reason": "",
+            "last_suppression_note": "",
             "manual_run_available": True,
             "availability_label": "Read-only",
             "availability_reason": "Read-only market research is allowed. Paper trading and live order execution still stay disabled.",
@@ -164,10 +180,11 @@ class OpenClawAgentRuntimeStore:
             / "agent_runtime.json"
         )
         self._path = Path(path) if path else default_path
-        self._lock = RLock()
-        self._path.parent.mkdir(parents=True, exist_ok=True)
-        if not self._path.exists():
-            self._write_state(self._default_state())
+        self._lock = shared_path_lock(self._path)
+        with self._lock:
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+            if not self._path.exists():
+                self._write_state(self._default_state())
 
     @property
     def path(self) -> Path:
@@ -192,8 +209,8 @@ class OpenClawAgentRuntimeStore:
             "status": "foundation",
             "status_label": "Foundation live",
             "summary": (
-                "Manual home-agent briefing runs are available now. "
-                "Scheduled background execution and wider envelope authority still arrive later."
+                "Manual home-agent briefing runs and the narrow scheduled briefing lane are available now. "
+                "Wider envelope-governed execution still arrives later."
             ),
             "delivery_model_summary": (
                 "Named briefings can surface in chat and the operator surface. "
@@ -318,9 +335,9 @@ class OpenClawAgentRuntimeStore:
             self._write_state(state)
             return self.snapshot()
 
-    def claim_due_scheduled_templates(self, *, now: datetime | None = None) -> list[dict[str, Any]]:
+    def due_scheduled_templates(self, *, now: datetime | None = None) -> list[dict[str, Any]]:
         current = (now or _local_now()).astimezone()
-        claims: list[dict[str, Any]] = []
+        due: list[dict[str, Any]] = []
         with self._lock:
             state = self._read_state()
             templates = self._normalized_templates(state.get("templates"))
@@ -335,14 +352,121 @@ class OpenClawAgentRuntimeStore:
                 slot_key = slot_local.astimezone(timezone.utc).isoformat()
                 if str(item.get("last_scheduled_window") or "").strip() == slot_key:
                     continue
-                item["last_scheduled_window"] = slot_key
+                due.append(
+                    {
+                        "template_id": str(item.get("id") or "").strip(),
+                        "slot_key": slot_key,
+                        "last_suppression_window": str(item.get("last_suppression_window") or "").strip(),
+                        "last_suppression_reason": str(item.get("last_suppression_reason") or "").strip(),
+                        "last_suppression_note": str(item.get("last_suppression_note") or "").strip(),
+                    }
+                )
+        return due
+
+    def claim_due_scheduled_templates(self, *, now: datetime | None = None) -> list[dict[str, Any]]:
+        claims: list[dict[str, Any]] = []
+        for item in self.due_scheduled_templates(now=now):
+            template_id = str(item.get("template_id") or "").strip()
+            slot_key = str(item.get("slot_key") or "").strip()
+            if not template_id or not slot_key:
+                continue
+            if self.claim_scheduled_template(template_id, slot_key):
+                claims.append({"template_id": template_id, "slot_key": slot_key})
+        return claims
+
+    def claim_scheduled_template(self, template_id: str, slot_key: str) -> bool:
+        target = str(template_id or "").strip()
+        safe_slot_key = str(slot_key or "").strip()
+        if not target or not safe_slot_key:
+            raise KeyError(template_id)
+        with self._lock:
+            state = self._read_state()
+            templates = self._normalized_templates(state.get("templates"))
+            found = False
+            claimed = False
+            for item in templates:
+                if str(item.get("id") or "").strip() != target:
+                    continue
+                found = True
+                if str(item.get("last_scheduled_window") or "").strip() == safe_slot_key:
+                    claimed = False
+                    break
+                item["last_scheduled_window"] = safe_slot_key
+                item["last_suppression_window"] = ""
+                item["last_suppressed_at"] = ""
+                item["last_suppression_reason"] = ""
+                item["last_suppression_note"] = ""
                 item["schedule_status"] = "Running"
-                claims.append({"template_id": str(item.get("id") or "").strip(), "slot_key": slot_key})
-            if claims:
+                claimed = True
+                break
+            if not found:
+                raise KeyError(template_id)
+            if claimed:
                 state["templates"] = templates
                 state["updated_at"] = _utc_now_iso()
                 self._write_state(state)
-        return claims
+            return claimed
+
+    def record_schedule_suppression(
+        self,
+        template_id: str,
+        *,
+        slot_key: str,
+        reason: str,
+        note: str = "",
+        now: datetime | None = None,
+    ) -> dict[str, Any]:
+        current = (now or _local_now()).astimezone()
+        target = str(template_id or "").strip()
+        safe_slot_key = str(slot_key or "").strip()
+        if not target or not safe_slot_key:
+            raise KeyError(template_id)
+        with self._lock:
+            state = self._read_state()
+            templates = self._normalized_templates(state.get("templates"))
+            found = False
+            for item in templates:
+                if str(item.get("id") or "").strip() != target:
+                    continue
+                item["last_suppression_window"] = safe_slot_key
+                item["last_suppressed_at"] = current.astimezone(timezone.utc).isoformat()
+                item["last_suppression_reason"] = str(reason or "").strip()
+                item["last_suppression_note"] = str(note or "").strip()
+                item["last_scheduled_outcome"] = "suppressed"
+                item["last_scheduled_note"] = str(note or "").strip()
+                found = True
+                break
+            if not found:
+                raise KeyError(template_id)
+            state["templates"] = templates
+            state["updated_at"] = _utc_now_iso()
+            self._write_state(state)
+            return self.snapshot()
+
+    def scheduled_delivery_count_last_hour(self, *, now: datetime | None = None) -> int:
+        current = (now or _local_now()).astimezone(timezone.utc)
+        window_start = current - timedelta(hours=1)
+        with self._lock:
+            state = self._read_state()
+        count = 0
+        for item in list(state.get("recent_runs") or []):
+            row = self._normalize_run(item)
+            if str(row.get("triggered_by") or "").strip() != "scheduler":
+                continue
+            if str(row.get("status") or "").strip().lower() != "completed":
+                continue
+            completed_at = str(row.get("completed_at") or "").strip()
+            try:
+                completed = datetime.fromisoformat(completed_at)
+            except Exception:
+                continue
+            if completed.tzinfo is None:
+                completed = completed.replace(tzinfo=timezone.utc)
+            else:
+                completed = completed.astimezone(timezone.utc)
+            if completed >= window_start:
+                count += 1
+        return count
 
     def record_scheduled_run_outcome(
         self,
@@ -366,6 +490,10 @@ class OpenClawAgentRuntimeStore:
                 item["last_scheduled_run_at"] = current.astimezone(timezone.utc).isoformat()
                 item["last_scheduled_outcome"] = str(outcome or "").strip() or "completed"
                 item["last_scheduled_note"] = str(note or "").strip()
+                item["last_suppression_window"] = ""
+                item["last_suppressed_at"] = ""
+                item["last_suppression_reason"] = ""
+                item["last_suppression_note"] = ""
                 item["schedule_status"] = "Scheduled" if bool(item.get("schedule_enabled")) else "Paused"
                 found = True
                 break
@@ -413,7 +541,7 @@ class OpenClawAgentRuntimeStore:
             ],
             "updated_at": str(state.get("updated_at") or _utc_now_iso()),
         }
-        self._path.write_text(json.dumps(normalized, indent=2), encoding="utf-8")
+        write_json_atomic(self._path, normalized)
 
     def _normalized_templates(self, value: Any) -> list[dict[str, Any]]:
         raw_items = list(value or []) if isinstance(value, list) else [dict(item) for item in self.DEFAULT_TEMPLATES]
@@ -440,6 +568,10 @@ class OpenClawAgentRuntimeStore:
             merged["last_scheduled_run_at"] = str(merged.get("last_scheduled_run_at") or "").strip()
             merged["last_scheduled_outcome"] = str(merged.get("last_scheduled_outcome") or "").strip()
             merged["last_scheduled_note"] = str(merged.get("last_scheduled_note") or "").strip()
+            merged["last_suppression_window"] = str(merged.get("last_suppression_window") or "").strip()
+            merged["last_suppressed_at"] = str(merged.get("last_suppressed_at") or "").strip()
+            merged["last_suppression_reason"] = str(merged.get("last_suppression_reason") or "").strip()
+            merged["last_suppression_note"] = str(merged.get("last_suppression_note") or "").strip()
             next_run_at, next_run_label, schedule_status = self._schedule_runtime_fields(merged)
             merged["next_run_at"] = next_run_at
             merged["next_run_label"] = next_run_label
@@ -537,10 +669,15 @@ class OpenClawAgentRuntimeStore:
 
         slot_key = slot_local.astimezone(timezone.utc).isoformat()
         last_window = str(template.get("last_scheduled_window") or "").strip()
+        last_suppression_window = str(template.get("last_suppression_window") or "").strip()
+        last_suppression_reason = str(template.get("last_suppression_reason") or "").strip()
+        last_suppression_note = str(template.get("last_suppression_note") or "").strip()
         if now_local < slot_local:
             next_run_local = slot_local
         elif last_window == slot_key:
             next_run_local = slot_local + timedelta(days=1)
+        elif last_suppression_window == slot_key and last_suppression_reason:
+            return "", last_suppression_note or "Held until policy allows", self._suppression_status_label(last_suppression_reason)
         else:
             next_run_local = slot_local
 
@@ -548,6 +685,14 @@ class OpenClawAgentRuntimeStore:
         last_outcome = str(template.get("last_scheduled_outcome") or "").strip().lower()
         status = "Scheduled (last run failed)" if last_outcome == "failed" else "Scheduled"
         return next_run_at, f"Next at {_display_clock_label(clock_value)}", status
+
+    def _suppression_status_label(self, reason: str) -> str:
+        normalized = str(reason or "").strip().lower()
+        if normalized == "quiet_hours":
+            return "Held by quiet hours"
+        if normalized == "rate_limit":
+            return "Held by rate limit"
+        return "Held by policy"
 
 
 openclaw_agent_runtime_store = OpenClawAgentRuntimeStore()

@@ -6,11 +6,21 @@ from typing import Any
 from fastapi import APIRouter, HTTPException
 
 from src.skills.calendar import CalendarSkill
+from src.tasks.notification_schedule_store import NotificationScheduleStore
+
+
+def _notification_policy_snapshot(deps) -> dict[str, Any]:
+    store_factory = getattr(deps, "NotificationScheduleStore", NotificationScheduleStore)
+    try:
+        return store_factory().policy_snapshot()
+    except Exception:
+        return NotificationScheduleStore().policy_snapshot()
 
 
 def _agent_setup_snapshot(deps, agent_snapshot: dict[str, Any]) -> dict[str, Any]:
     permission_enabled = deps.runtime_settings_store.is_permission_enabled("home_agent_enabled")
     scheduler_enabled = deps.runtime_settings_store.is_permission_enabled("home_agent_scheduler_enabled")
+    scheduler_policy = _notification_policy_snapshot(deps)
     bridge_runtime = deps.OSDiagnosticsExecutor._bridge_status_details()
     openai_runtime = deps.OSDiagnosticsExecutor._openai_status_details()
     model_status, model_note, model_hint, model_ready = deps.OSDiagnosticsExecutor._model_status_details()
@@ -126,7 +136,7 @@ def _agent_setup_snapshot(deps, agent_snapshot: dict[str, Any]) -> dict[str, Any
             "status": "ready" if scheduler_enabled else "paused",
             "status_label": "Enabled" if scheduler_enabled else "Paused",
             "summary": (
-                "Narrow scheduled briefing runs are live."
+                f"Narrow scheduled briefing runs are live. {str(scheduler_policy.get('summary') or '').strip()}"
                 if scheduler_enabled
                 else "The scheduler is optional and stays paused until you enable it in Settings."
             ),
@@ -192,8 +202,15 @@ def _agent_setup_snapshot(deps, agent_snapshot: dict[str, Any]) -> dict[str, Any
 def _agent_status_payload(deps, snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
     agent_snapshot = dict(snapshot or deps.openclaw_agent_runtime_store.snapshot())
     scheduler_enabled = deps.runtime_settings_store.is_permission_enabled("home_agent_scheduler_enabled")
+    scheduler_policy = _notification_policy_snapshot(deps)
     agent_snapshot["scheduler_permission_enabled"] = scheduler_enabled
     agent_snapshot["scheduler_status_label"] = "Enabled" if scheduler_enabled else "Paused"
+    agent_snapshot["schedule_policy"] = scheduler_policy
+    if scheduler_enabled:
+        schedule_summary = str(agent_snapshot.get("schedule_summary") or "").strip()
+        policy_summary = str(scheduler_policy.get("summary") or "").strip()
+        if policy_summary and policy_summary not in schedule_summary:
+            agent_snapshot["schedule_summary"] = f"{schedule_summary} {policy_summary}".strip()
     agent_snapshot["setup"] = _agent_setup_snapshot(deps, agent_snapshot)
     return {
         "agent": agent_snapshot,
