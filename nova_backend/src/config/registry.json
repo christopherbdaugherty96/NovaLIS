@@ -67,7 +67,8 @@
       "authority_class": "read_only_network",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Searches current web sources through the governed network path and returns a results widget with bounded follow-up actions."
     },
     {
       "id": 17,
@@ -80,7 +81,8 @@
       "authority_class": "reversible_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Opens a requested website, source URL, or article page in the default browser through the governed local route."
     },
     {
       "id": 18,
@@ -93,7 +95,8 @@
       "authority_class": "reversible_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Reads text aloud through the local offline TTS path after speech-safe formatting removes raw links and system tokens."
     },
     {
       "id": 22,
@@ -106,7 +109,8 @@
       "authority_class": "reversible_local",
       "requires_confirmation": true,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Opens allowed files or folders inside Nova-approved path roots through a confirmation-backed local navigation path."
     },
     {
       "id": 19,
@@ -119,7 +123,8 @@
       "authority_class": "reversible_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Raises, lowers, mutes, unmutes, or sets system volume on the local device through the governed media-control path."
     },
     {
       "id": 20,
@@ -132,7 +137,8 @@
       "authority_class": "reversible_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Starts, pauses, or resumes local media playback through platform-specific media controls on the current device."
     },
     {
       "id": 21,
@@ -145,7 +151,8 @@
       "authority_class": "reversible_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Raises, lowers, or sets display brightness using platform-supported local controls on the active device."
     },
     {
       "id": 31,
@@ -158,7 +165,8 @@
       "authority_class": "read_only_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Verifies text or a prior answer for likely issues, corrections, and confidence without authorizing any action."
     },
     {
       "id": 62,
@@ -185,7 +193,8 @@
       "authority_class": "read_only_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Reports system health, resource status, model readiness, bridge state, and active capability/runtime diagnostics."
     },
     {
       "id": 48,
@@ -198,7 +207,8 @@
       "authority_class": "read_only_network",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Builds a structured multi-source report with findings, source credibility, counter-analysis, and decomposed confidence signals."
     },
     {
       "id": 49,
@@ -211,7 +221,8 @@
       "authority_class": "read_only_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Summarizes selected headlines, compares headline clusters, and can read the linked story page when deeper detail is requested."
     },
     {
       "id": 50,
@@ -224,7 +235,8 @@
       "authority_class": "read_only_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Builds a compact daily or topic intelligence brief from current headlines and related news clusters."
     },
     {
       "id": 51,
@@ -237,7 +249,8 @@
       "authority_class": "read_only_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Shows a topic map of recurring themes in the latest headline set so users can see what the current news cycle clusters around."
     },
     {
       "id": 52,
@@ -250,7 +263,8 @@
       "authority_class": "read_only_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Starts or refreshes tracked stories, links related stories, and stores new snapshots for comparison over time."
     },
     {
       "id": 53,
@@ -263,7 +277,8 @@
       "authority_class": "read_only_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Shows tracked story timelines, comparisons, and relationship views for stories already being followed."
     },
     {
       "id": 54,
@@ -276,7 +291,8 @@
       "authority_class": "read_only_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Creates session-scoped analysis documents, lists them, summarizes them, and explains specific sections on request."
     },
     {
       "id": 55,

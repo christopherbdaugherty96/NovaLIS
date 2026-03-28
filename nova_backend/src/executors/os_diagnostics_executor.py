@@ -731,6 +731,8 @@ class OSDiagnosticsExecutor:
 
     @staticmethod
     def _phase_display() -> str:
+        if BUILD_PHASE >= 8:
+            return "7 complete / 8 active"
         if BUILD_PHASE >= 7:
             return "7 complete / 8 design"
         if BUILD_PHASE >= 6:

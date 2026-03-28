@@ -13,6 +13,9 @@ def build_audit_router(deps) -> APIRouter:
 
         build_phase = deps.BUILD_PHASE
         phase_display = (
+            "7 complete / 8 active"
+            if build_phase >= 8
+            else
             "7 complete / 8 design"
             if build_phase >= 7
             else "6 complete / 7 partial"
