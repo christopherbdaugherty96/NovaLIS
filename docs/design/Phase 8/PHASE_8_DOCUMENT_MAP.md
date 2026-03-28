@@ -1,7 +1,23 @@
 # Phase 8 Document Map
-Updated: 2026-03-27
+Updated: 2026-03-28
 Status: Current design map
 Purpose: Keep the canonical OpenClaw direction, supporting execution plan, and raw source notes clearly separated
+
+## Current implemented Phase-8 runtime on `main`
+The following Phase-8 foundation slices are now live in runtime/proof:
+- manual OpenClaw home-agent foundation
+- manual briefing templates with operator-visible delivery controls
+- persistent delivery inbox and Agent page review surface
+- strict manual preflight before home-agent runs
+- narrow scheduled briefing runtime behind explicit settings control
+- local-first metered OpenAI fallback for narrow task reports
+- bounded assistive noticing with rate limiting, handled state, and Trust review
+
+Current proof packet:
+- `docs/PROOFS/Phase-8/PHASE_8_PROOF_PACKET_INDEX.md`
+
+Current dedicated verification package:
+- `nova_backend/tests/phase8/`
 
 ## Read This First
 - `docs/design/Phase 8/NOVA_OPENCLAW_HOME_AGENT_MASTER_REFERENCE_2026-03-27.md`
@@ -155,4 +171,4 @@ When reading the Phase-8 folder:
 - use the home-agent and personality-layer plan as the practical product-direction companion
 - use the Phase-8.5 scheduler packet for the shipped narrow scheduler and the remaining proactive-delivery guardrails
 - use `openclaw.txt` and `node design.txt` as preserved raw source inputs
-- do not treat the existence of a Phase-8 folder as proof that Phase 8 is live in runtime
+- do not treat the existence of a Phase-8 folder as proof that the full canonical Phase-8 automation model is live in runtime
