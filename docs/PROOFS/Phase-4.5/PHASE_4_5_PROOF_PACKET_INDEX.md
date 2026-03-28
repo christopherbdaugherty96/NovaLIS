@@ -23,6 +23,7 @@ Purpose: Canonical proof packet for Phase 4.5 closure refresh with current runti
 ## Later Runtime Refresh Slices
 1. `PHASE_4_5_MAGIC_EXPERIENCE_ALIGNMENT_2026-03-12.md`
 2. `PHASE_4_5_ONBOARDING_AND_SETUP_READINESS_REFRESH_2026-03-28.md`
+3. `PHASE_4_5_TRUST_AGENT_AND_CONNECTION_LANGUAGE_REFRESH_2026-03-28.md`
 
 ## Runtime Cross-References
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
@@ -47,5 +48,6 @@ Purpose: Canonical proof packet for Phase 4.5 closure refresh with current runti
 
 ## Latest Focused Verification Refresh (2026-03-28)
 - Onboarding and Trust widget bundle: `6 passed`
+- Trust, Agent, and connection-language bundle: focused frontend coverage passed
 - `node --check` passed for both dashboard copies
 - Frontend mirror sync check passed

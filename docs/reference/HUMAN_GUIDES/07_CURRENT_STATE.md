@@ -109,6 +109,7 @@ These parts are already meaningfully real:
 - a dedicated Agent page with manual home-agent briefing templates, delivery-mode controls, a ready-for-review inbox, and recent-run history
 - a dedicated Agent page setup/readiness surface for the local summarizer, weather, calendar, remote bridge, and scheduler
 - Settings and Trust visibility for local-first AI routing, OpenAI lane readiness, and metered budget state
+- Trust, Agent, and Settings wording that now explains what is ready now, what is optional, what stayed blocked, and what still needs manual setup in more user-facing language
 - a narrow metered OpenAI fallback that can summarize OpenClaw task reports when routing mode allows it and the local summarizer is unavailable
 - assistant chat cards that now surface bottom-line, main-gap, and best-correction review signals directly inside the conversation
 

@@ -75,6 +75,12 @@ The Agent page also now shows setup/readiness for:
 - remote bridge status
 - scheduler status
 
+The current Agent page wording is intentionally user-facing:
+- it explains that OpenClaw is Nova's worker layer
+- it separates what is ready now from what is optional
+- it points to Settings when a permission or scheduler toggle is still paused
+- it keeps broader automation framed as later work instead of pretending it is already live
+
 ## Settings That Matter
 Runtime permissions live in `nova_backend/src/settings/runtime_settings_store.py`.
 

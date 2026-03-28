@@ -165,7 +165,7 @@ let settingsRuntimeState = {
     preferred_openai_model: "gpt-5.4-mini",
     preferred_openai_model_label: "GPT-5.4 mini",
     metered_openai_enabled: false,
-    summary: "Nova stays local-first by default. Metered providers should stay explicit and budgeted.",
+    summary: "Nova stays local-first by default. Any paid or remote lane should stay optional, visible, and budgeted.",
   },
   providerPolicyCards: [],
   usageBudget: {
@@ -1171,7 +1171,7 @@ function applyOpenClawAgentPayload(data) {
     ? data.agent
     : (data && typeof data === "object" ? data : {});
   openClawAgentState.loaded = true;
-  openClawAgentState.summary = String(payload.summary || "").trim() || "OpenClaw home-agent foundations are available.";
+  openClawAgentState.summary = String(payload.summary || "").trim() || "OpenClaw is Nova's worker layer for manual, reviewable runs.";
   openClawAgentState.snapshot = { ...payload };
   openClawAgentState.templates = Array.isArray(payload.templates) ? payload.templates.map((item) => ({ ...item })) : [];
   openClawAgentState.deliveryInbox = Array.isArray(payload.delivery_inbox) ? payload.delivery_inbox.map((item) => ({ ...item })) : [];
@@ -4702,7 +4702,10 @@ function renderTrustCenterPage() {
   const bridgeGrid = $("trust-center-bridge-grid");
   if (!summary || !mode || !lastCall || !egress || !failure || !activityHost || !blockedHost || !healthSummary || !healthGrid || !policySummary || !policyLimit || !policyGroups || !policyDetail || !capabilitySummary || !capabilityHost) return;
 
-  summary.textContent = trustReviewState.summary || "Trust review keeps recent governed actions, blocked conditions, and failure state in one place.";
+  summary.textContent = [
+    String(trustReviewState.summary || "").trim(),
+    "Use this page to confirm what Nova did, what it refused, and whether anything left the device.",
+  ].filter(Boolean).join(" ") || "Use this page to confirm what Nova did, what it refused, and whether anything left the device.";
   mode.textContent = trustState.mode || "Local-only";
   lastCall.textContent = trustState.lastExternalCall || "None";
   egress.textContent = trustState.dataEgress || "Read-only requests only";
@@ -4712,7 +4715,7 @@ function renderTrustCenterPage() {
   if (!trustReviewState.activity.length) {
     const empty = document.createElement("div");
     empty.className = "trust-empty";
-    empty.textContent = "Recent governed actions will appear here as Nova works.";
+    empty.textContent = "As you use Nova, recent governed actions will appear here so you can confirm what happened.";
     activityHost.appendChild(empty);
   } else {
     trustReviewState.activity.slice(0, 12).forEach((item, index) => {
@@ -4762,7 +4765,7 @@ function renderTrustCenterPage() {
     if (!selected) {
       const empty = document.createElement("div");
       empty.className = "trust-empty";
-      empty.textContent = "Select a governed action to see why it happened and what effect it had.";
+      empty.textContent = "Select a governed action to see what happened, why it ran, and what effect it had.";
       activityDetail.appendChild(empty);
     } else {
       const reasoningRows = [];
@@ -4816,7 +4819,7 @@ function renderTrustCenterPage() {
   if (!trustReviewState.blocked.length) {
     const empty = document.createElement("div");
     empty.className = "trust-empty";
-    empty.textContent = "No blocked conditions are active right now.";
+    empty.textContent = "No active boundaries need your attention right now.";
     blockedHost.appendChild(empty);
   } else {
     trustReviewState.blocked.slice(0, 8).forEach((item, index) => {
@@ -4854,7 +4857,7 @@ function renderTrustCenterPage() {
     if (!selectedBlocked) {
       const empty = document.createElement("div");
       empty.className = "trust-empty";
-      empty.textContent = "Select a blocked condition to see what boundary Nova is honoring.";
+      empty.textContent = "Select a blocked condition to see which boundary Nova is honoring and what you can do next.";
       blockedDetail.appendChild(empty);
     } else {
       [
@@ -7765,27 +7768,40 @@ function renderOpenClawAgentPage() {
   const snapshot = (openClawAgentState.snapshot && typeof openClawAgentState.snapshot === "object")
     ? openClawAgentState.snapshot
     : {};
+  const setup = (snapshot.setup && typeof snapshot.setup === "object")
+    ? snapshot.setup
+    : {};
   const permissionEnabled = !!(settingsRuntimeState.permissions && settingsRuntimeState.permissions.home_agent_enabled);
   const schedulerPermissionEnabled = !!(settingsRuntimeState.permissions && settingsRuntimeState.permissions.home_agent_scheduler_enabled);
 
   if (summary) {
-    summary.textContent = [
-      String(openClawAgentState.summary || "").trim() || "OpenClaw home-agent foundations are available.",
+    const runnableCount = Array.isArray(setup.runnable_template_ids) ? setup.runnable_template_ids.length : 0;
+    const summaryBits = [
+      String(openClawAgentState.summary || "").trim() || "OpenClaw is Nova's worker layer for manual, reviewable runs.",
+      permissionEnabled
+        ? (runnableCount
+          ? `${runnableCount} template${runnableCount === 1 ? "" : "s"} can run now.`
+          : "Home Agent is on, but no templates are runnable yet.")
+        : "Turn on Home Agent in Settings to run templates.",
+      schedulerPermissionEnabled
+        ? "The narrow scheduler is available where a template is ready for it."
+        : "Scheduling stays paused until you enable it in Settings.",
       String(snapshot.personality_summary || "").trim(),
-    ].filter(Boolean).join(" · ");
+    ];
+    summary.textContent = summaryBits.filter(Boolean).join(" ");
   }
 
   if (runtimeGrid) {
     clear(runtimeGrid);
     [
       ["Status", String(snapshot.status_label || "Foundation live").trim() || "Foundation live"],
-      ["Execution mode", permissionEnabled ? (schedulerPermissionEnabled ? "Manual foundation + narrow scheduler" : "Manual foundation only") : "Paused in Settings"],
+      ["How it runs", permissionEnabled ? (schedulerPermissionEnabled ? "Manual foundation + narrow scheduler" : "Manual foundation only") : "Paused in Settings"],
       ["Templates", `${Number(snapshot.template_count || 0)} total`],
-      ["Runnable now", `${Number(snapshot.manual_run_count || 0)} ready`],
-      ["Strict foundation", String(snapshot.strict_foundation_label || "Manual preflight active").trim() || "Manual preflight active"],
+      ["Manual runs ready", `${Number(snapshot.manual_run_count || 0)} ready`],
+      ["Safety boundary", String(snapshot.strict_foundation_label || "Manual preflight active").trim() || "Manual preflight active"],
       ["Deliveries ready", `${Number(snapshot.delivery_ready_count || 0)} waiting`],
-      ["Delivery model", "Named tasks can chat; quiet tasks stay surface-first"],
-      ["Scheduler", String(snapshot.scheduler_status_label || (schedulerPermissionEnabled ? "Enabled" : "Paused")).trim() || "Paused"],
+      ["How results appear", "Named tasks can land in chat; quiet tasks stay surface-first"],
+      ["Background schedule", String(snapshot.scheduler_status_label || (schedulerPermissionEnabled ? "Enabled" : "Paused")).trim() || "Paused"],
       ["Schedules", String(snapshot.schedule_summary || "No template schedules enabled yet").trim() || "No template schedules enabled yet"],
     ].forEach(([label, value]) => {
       runtimeGrid.appendChild(createOverviewChip(label, value));
@@ -7793,34 +7809,48 @@ function renderOpenClawAgentPage() {
   }
 
   if (setupSummary && setupGrid) {
-    const setup = (snapshot.setup && typeof snapshot.setup === "object")
-      ? snapshot.setup
-      : {};
-    setupSummary.textContent = String(setup.summary || "").trim()
-      || "OpenClaw setup details will appear here after the next agent refresh.";
+    const guidanceBits = [];
+    if (!permissionEnabled) {
+      guidanceBits.push("Home Agent is paused in Settings.");
+    } else if (Array.isArray(setup.runnable_template_ids) && setup.runnable_template_ids.length) {
+      guidanceBits.push(`${setup.runnable_template_ids.length} template${setup.runnable_template_ids.length === 1 ? "" : "s"} can run right now.`);
+    } else {
+      guidanceBits.push("No templates are runnable on this device yet.");
+    }
+    if (!setup.local_model_ready) guidanceBits.push("The local summarizer is not ready yet.");
+    if (!setup.weather_provider_configured) guidanceBits.push("Weather is optional and not configured.");
+    if (!setup.calendar_connected) guidanceBits.push("Calendar is optional and not connected.");
+    setupSummary.textContent = [
+      String(setup.summary || "").trim(),
+      guidanceBits.join(" "),
+    ].filter(Boolean).join(" ") || "OpenClaw setup details will appear here after the next agent refresh.";
     clear(setupGrid);
     [
-      ["Readiness", String(setup.status_label || "Unknown").trim() || "Unknown"],
-      ["Runnable now", `${Array.isArray(setup.runnable_template_ids) ? setup.runnable_template_ids.length : 0} template(s)`],
-      ["Schedule-ready", `${Array.isArray(setup.schedule_ready_template_ids) ? setup.schedule_ready_template_ids.length : 0} template(s)`],
-      ["Local summarizer", setup.local_model_ready ? "Ready" : "Fallback mode"],
-      ["Weather", setup.weather_provider_configured ? "Configured" : "Optional"],
-      ["Calendar", setup.calendar_connected ? "Connected" : "Optional"],
-      ["Remote bridge", setup.remote_bridge_enabled ? "Enabled" : (setup.remote_bridge_token_configured ? "Paused" : "Not configured")],
-      ["Scheduler", setup.scheduler_permission_enabled ? "Enabled" : "Paused"],
+      ["Overall readiness", String(setup.status_label || "Unknown").trim() || "Unknown"],
+      ["Manual runs ready", `${Array.isArray(setup.runnable_template_ids) ? setup.runnable_template_ids.length : 0} template(s)`],
+      ["Can be scheduled", `${Array.isArray(setup.schedule_ready_template_ids) ? setup.schedule_ready_template_ids.length : 0} template(s)`],
+      ["Local summary lane", setup.local_model_ready ? "Ready" : "Fallback mode"],
+      ["Weather source", setup.weather_provider_configured ? "Configured" : "Optional"],
+      ["Calendar source", setup.calendar_connected ? "Connected" : "Optional"],
+      ["Remote access", setup.remote_bridge_enabled ? "Enabled" : (setup.remote_bridge_token_configured ? "Paused" : "Not configured")],
+      ["Scheduler permission", setup.scheduler_permission_enabled ? "Enabled" : "Paused"],
     ].forEach(([label, value]) => {
       setupGrid.appendChild(createOverviewChip(label, value));
     });
   }
 
   if (deliverySummary) {
-    deliverySummary.textContent = String(snapshot.delivery_model_summary || "").trim()
-      || "Delivery preferences will appear here after the next agent refresh.";
+    deliverySummary.textContent = [
+      String(snapshot.delivery_model_summary || "").trim(),
+      "Choose whether results stay on the page, land in chat, or do both.",
+    ].filter(Boolean).join(" ") || "Delivery preferences will appear here after the next agent refresh.";
   }
 
   if (inboxSummary) {
-    inboxSummary.textContent = String(snapshot.delivery_summary || "").trim()
-      || "No completed surface deliveries are waiting right now.";
+    inboxSummary.textContent = [
+      String(snapshot.delivery_summary || "").trim(),
+      "Review these before they fade into normal history.",
+    ].filter(Boolean).join(" ") || "No completed surface deliveries are waiting right now.";
   }
 
   renderOpenClawDeliveryFeed(
@@ -7935,8 +7965,8 @@ function renderOpenClawAgentPage() {
   if (runSummary) {
     const recentRuns = Array.isArray(openClawAgentState.recentRuns) ? openClawAgentState.recentRuns : [];
     runSummary.textContent = recentRuns.length
-      ? `Showing the latest ${recentRuns.length} home-agent runs.`
-      : "No home-agent runs recorded yet.";
+      ? `Showing the latest ${recentRuns.length} home-agent runs so you can confirm what happened and how each result was delivered.`
+      : "No home-agent runs are recorded yet. Start with a manual briefing template.";
   }
 
   if (runList) {
@@ -8327,10 +8357,14 @@ function renderSettingsPage() {
     const connections = (trustReviewState.connectionRuntime && typeof trustReviewState.connectionRuntime === "object")
       ? trustReviewState.connectionRuntime
       : {};
-    connectionSummary.textContent = [
-      String(connections.summary || "").trim() || "Connection and provider status will appear here after the next trust refresh.",
-      "Permissions here are live now. In-app provider key entry still arrives later.",
-    ].filter(Boolean).join(" · ");
+    const connectionBits = [String(connections.summary || "").trim()];
+    if (Array.isArray(connections.items) && connections.items.length) {
+      connectionBits.push("What is configured now is visible here.");
+    } else {
+      connectionBits.push("Refresh Connection Status to see what this device is ready to use.");
+    }
+    connectionBits.push("Most provider keys and connector logins are still configured manually today.");
+    connectionSummary.textContent = connectionBits.filter(Boolean).join(" ");
 
     clear(connectionGrid);
     (Array.isArray(connections.items) ? connections.items : []).slice(0, 12).forEach((item) => {
