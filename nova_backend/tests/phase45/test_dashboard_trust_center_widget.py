@@ -21,6 +21,9 @@ def test_dashboard_renders_trust_center_page_from_runtime_state():
     assert "trust-center-voice-grid" in source
     assert "trust-center-operational-grid" in source
     assert "trust-center-assistive-list" in source
+    assert "trust-center-assistive-handled" in source
+    assert "renderHandledList" in source
+    assert "No handled assistive notices are recorded in the current continuity window." in source
     assert "trust-center-reasoning-grid" in source
     assert "trust-center-bridge-grid" in source
     assert "Estimated tokens today" in source
@@ -50,6 +53,7 @@ def test_trust_page_includes_recent_actions_and_runtime_health_surfaces():
     assert 'id="trust-center-operational-grid"' in source
     assert 'id="trust-center-assistive-summary"' in source
     assert 'id="trust-center-assistive-list"' in source
+    assert 'id="trust-center-assistive-handled"' in source
     assert 'id="trust-center-voice-summary"' in source
     assert 'id="trust-center-voice-grid"' in source
     assert 'id="trust-center-reasoning-summary"' in source

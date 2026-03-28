@@ -26,7 +26,7 @@ That means Nova already has:
 - dedicated Memory Center list/detail page surface
 - a calmer Workspace Home surface on the Home page
 - a visible operational-context surface for session continuity review and reset
-- a bounded assistive-notices surface in Home and Trust, with visible settings control, rate-limited resurfacing, handled-state controls, and no silent execution
+- a bounded assistive-notices surface in Home and Trust, with visible settings control, per-type rate-limited resurfacing, handled-state controls, handled-notice review, and no silent execution
 - a dedicated Workspace page with a broader project board
 - a dedicated Trust page with recent actions and blocked-condition review
 - a dedicated Policies page for draft review, delegation-readiness review, simulation, and one-shot manual runs

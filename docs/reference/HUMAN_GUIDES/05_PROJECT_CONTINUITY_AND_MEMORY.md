@@ -240,8 +240,9 @@ Important boundary:
 - Nova does not silently act from these notices
 - Nova does not silently save memory because of them
 - Silent mode suppresses unsolicited notice surfacing
-- repeated notices now cool down instead of resurfacing on every refresh
+- repeated notices now cool down by notice type instead of resurfacing on every refresh
 - surfaced notices can now be dismissed or marked resolved for the current continuity window
+- handled notices remain reviewable in Trust for the current continuity window
 
 ## 12. The Big Difference Between Context, Threads, Memory, Workspace Home, and Operational Context
 The easiest way to understand them is this:
