@@ -5,13 +5,18 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 BRAIN_SERVER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "brain_server.py"
+SESSION_HANDLER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "websocket" / "session_handler.py"
 GOVERNOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "governor.py"
 STORE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "tasks" / "notification_schedule_store.py"
 EVENT_TYPES_PATH = PROJECT_ROOT / "nova_backend" / "src" / "ledger" / "event_types.py"
 
 
 def test_brain_server_exposes_manual_notification_scheduling_controls():
-    source = BRAIN_SERVER_PATH.read_text(encoding="utf-8")
+    source = (
+        BRAIN_SERVER_PATH.read_text(encoding="utf-8")
+        + "\n"
+        + SESSION_HANDLER_PATH.read_text(encoding="utf-8")
+    )
 
     assert "SHOW_SCHEDULES_COMMANDS" in source
     assert "NOTIFICATION_SETTINGS_COMMANDS" in source

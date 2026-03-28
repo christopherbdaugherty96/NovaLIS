@@ -807,7 +807,10 @@ def test_silent_workspace_home_refresh_updates_widget_without_chat_noise(monkeyp
 
     ws = _ScriptedWebSocket([{"type": "chat", "text": "workspace home", "silent_widget_refresh": True}])
 
+    observed_state = {}
+
     async def _fake_send_workspace_home_widget(_ws, session_state, project_threads):
+        observed_state["session_state"] = session_state
         payload = {
             "type": "workspace_home",
             "summary": "Active workspace: Pour Social.",
@@ -827,6 +830,41 @@ def test_silent_workspace_home_refresh_updates_widget_without_chat_noise(monkeyp
     chat_messages = _chat_messages(ws)
     assert not any("Workspace Home" in msg for msg in chat_messages)
     assert any(msg.get("type") == "workspace_home" for msg in ws.sent_messages)
+    assert int(observed_state["session_state"].get("turn_count") or 0) == 0
+
+
+def test_silent_operational_context_refresh_updates_widget_without_advancing_turn_count(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    observed_state = {}
+    ws = _ScriptedWebSocket([{"type": "chat", "text": "operational context", "silent_widget_refresh": True}])
+
+    async def _fake_send_operational_context_widget(_ws, session_state, project_threads):
+        observed_state["session_state"] = session_state
+        payload = {
+            "type": "operational_context",
+            "summary": "Current goal: tighten continuity handling.",
+            "continuity_note": "This is session continuity, not durable personal memory.",
+            "recommended_actions": [{"label": "Refresh continuity", "command": "operational context"}],
+        }
+        session_state["last_operational_context"] = payload
+        await brain_server.ws_send(_ws, payload)
+        return payload
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.send_operational_context_widget",
+        side_effect=_fake_send_operational_context_widget,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert not any("Operational Context" in msg for msg in chat_messages)
+    assert any(msg.get("type") == "operational_context" for msg in ws.sent_messages)
+    assert int(observed_state["session_state"].get("turn_count") or 0) == 0
 
 
 def test_workspace_home_command_returns_widget_and_summary(monkeypatch):
