@@ -73,6 +73,40 @@ def test_openclaw_bridge_message_blocks_effectful_scope(monkeypatch):
     assert "read, review, and reasoning only" in payload["reply"].lower()
 
 
+def test_openclaw_bridge_message_blocks_paraphrased_memory_write(monkeypatch):
+    monkeypatch.setenv("NOVA_OPENCLAW_BRIDGE_TOKEN", "secret-token")
+
+    client = TestClient(brain_server.app)
+    response = client.post(
+        "/api/openclaw/bridge/message",
+        json={"text": "please save this to memory for me"},
+        headers={"X-Nova-Bridge-Token": "secret-token"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["ok"] is False
+    assert payload["errors"][0]["code"] == "bridge_scope_limited"
+    assert "local dashboard" in payload["reply"].lower()
+
+
+def test_openclaw_bridge_message_blocks_local_context_capability(monkeypatch):
+    monkeypatch.setenv("NOVA_OPENCLAW_BRIDGE_TOKEN", "secret-token")
+
+    client = TestClient(brain_server.app)
+    response = client.post(
+        "/api/openclaw/bridge/message",
+        json={"text": "explain this"},
+        headers={"X-Nova-Bridge-Token": "secret-token"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["ok"] is False
+    assert payload["errors"][0]["code"] == "bridge_scope_limited"
+    assert "local dashboard" in payload["reply"].lower()
+
+
 def test_openclaw_bridge_message_routes_read_only_request(monkeypatch):
     monkeypatch.setenv("NOVA_OPENCLAW_BRIDGE_TOKEN", "secret-token")
 

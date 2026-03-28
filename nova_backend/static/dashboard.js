@@ -6848,6 +6848,8 @@ function renderOpenClawDeliveryWidget() {
 function renderOpenClawAgentPage() {
   const summary = $("agent-page-summary");
   const runtimeGrid = $("agent-runtime-grid");
+  const setupSummary = $("agent-setup-summary");
+  const setupGrid = $("agent-setup-grid");
   const deliverySummary = $("agent-delivery-summary");
   const templateList = $("agent-template-list");
   const inboxSummary = $("agent-inbox-summary");
@@ -6881,6 +6883,27 @@ function renderOpenClawAgentPage() {
       ["Schedules", String(snapshot.schedule_summary || "No template schedules enabled yet").trim() || "No template schedules enabled yet"],
     ].forEach(([label, value]) => {
       runtimeGrid.appendChild(createOverviewChip(label, value));
+    });
+  }
+
+  if (setupSummary && setupGrid) {
+    const setup = (snapshot.setup && typeof snapshot.setup === "object")
+      ? snapshot.setup
+      : {};
+    setupSummary.textContent = String(setup.summary || "").trim()
+      || "OpenClaw setup details will appear here after the next agent refresh.";
+    clear(setupGrid);
+    [
+      ["Readiness", String(setup.status_label || "Unknown").trim() || "Unknown"],
+      ["Runnable now", `${Array.isArray(setup.runnable_template_ids) ? setup.runnable_template_ids.length : 0} template(s)`],
+      ["Schedule-ready", `${Array.isArray(setup.schedule_ready_template_ids) ? setup.schedule_ready_template_ids.length : 0} template(s)`],
+      ["Local summarizer", setup.local_model_ready ? "Ready" : "Fallback mode"],
+      ["Weather", setup.weather_provider_configured ? "Configured" : "Optional"],
+      ["Calendar", setup.calendar_connected ? "Connected" : "Optional"],
+      ["Remote bridge", setup.remote_bridge_enabled ? "Enabled" : (setup.remote_bridge_token_configured ? "Paused" : "Not configured")],
+      ["Scheduler", setup.scheduler_permission_enabled ? "Enabled" : "Paused"],
+    ].forEach(([label, value]) => {
+      setupGrid.appendChild(createOverviewChip(label, value));
     });
   }
 

@@ -1,9 +1,72 @@
 from __future__ import annotations
 
 import json
+import re
+from functools import lru_cache
+from pathlib import Path
 from typing import Any
 
 from fastapi import APIRouter, Header, HTTPException, WebSocketDisconnect
+
+from src.governor.governor_mediator import Clarification, Invocation, GovernorMediator
+
+
+BRIDGE_ALLOWED_CAPABILITY_IDS = frozenset(
+    {
+        16,  # governed_web_search
+        31,  # response_verification
+        32,  # os_diagnostics
+        48,  # multi_source_reporting
+        49,  # headline_summary
+        50,  # intelligence_brief
+        51,  # topic_memory_map
+        53,  # story_tracker_view
+        55,  # weather_snapshot
+        56,  # news_snapshot
+        57,  # calendar_snapshot
+        62,  # external_reasoning_review
+    }
+)
+_REMOTE_BRIDGE_STATE_CHANGE_RE = re.compile(
+    r"\b(?:save|remember|delete|remove|edit|update|change|set|lock|unlock|defer|dismiss|cancel|reschedule|schedule|pause|resume|enable|disable|turn\s+on|turn\s+off|run)\b"
+    r".{0,48}\b(?:memory|memories|schedule|schedules|reminder|reminders|policy|policies|pattern|patterns|setting|settings|quiet\s+hours|notification|notifications|tone|volume|brightness|media)\b",
+    re.IGNORECASE,
+)
+_REMOTE_BRIDGE_EXPLICIT_EFFECT_RE = re.compile(
+    r"\b(?:remind me|save this to memory|remember this|delete that memory|edit that memory|set quiet hours|clear quiet hours|disable quiet hours)\b",
+    re.IGNORECASE,
+)
+
+
+@lru_cache(maxsize=1)
+def _bridge_capability_metadata() -> dict[int, dict[str, Any]]:
+    registry_path = Path(__file__).resolve().parents[1] / "config" / "registry.json"
+    try:
+        payload = json.loads(registry_path.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+    metadata: dict[int, dict[str, Any]] = {}
+    for item in payload.get("capabilities", []):
+        try:
+            capability_id = int(item.get("id"))
+        except Exception:
+            continue
+        metadata[capability_id] = {
+            "name": str(item.get("name") or f"Capability {capability_id}").strip(),
+            "authority_class": str(item.get("authority_class") or "").strip().lower(),
+            "requires_confirmation": bool(item.get("requires_confirmation")),
+            "external_effect": bool(item.get("external_effect")),
+            "enabled": bool(item.get("enabled")),
+            "status": str(item.get("status") or "").strip().lower(),
+        }
+    return metadata
+
+
+def _capability_label(capability_id: int) -> str:
+    metadata = _bridge_capability_metadata().get(int(capability_id), {})
+    raw = str(metadata.get("name") or f"capability {capability_id}").strip()
+    return raw.replace("_", " ")
 
 
 class _BridgeScriptedWebSocket:
@@ -65,6 +128,55 @@ def _bridge_text_block_reason(text: str, *, hard_action_prefixes: tuple[str, ...
     ):
         if lowered.startswith(prefix):
             return "The remote bridge currently allows read, review, and reasoning only. Use the local dashboard for changes to memory, schedules, policies, or settings."
+    return ""
+
+
+def _bridge_scope_block_reason(text: str, *, hard_action_prefixes: tuple[str, ...]) -> str:
+    prefix_reason = _bridge_text_block_reason(text, hard_action_prefixes=hard_action_prefixes)
+    if prefix_reason:
+        return prefix_reason
+
+    try:
+        parsed = GovernorMediator.parse_governed_invocation(text, session_id=None)
+    except Exception:
+        parsed = None
+
+    if isinstance(parsed, Invocation):
+        capability_id = int(parsed.capability_id)
+        if capability_id in BRIDGE_ALLOWED_CAPABILITY_IDS:
+            return ""
+
+        metadata = _bridge_capability_metadata().get(capability_id, {})
+        authority_class = str(metadata.get("authority_class") or "").strip().lower()
+        capability_name = _capability_label(capability_id)
+        if authority_class in {"reversible_local", "persistent_change", "external_effect"}:
+            return (
+                "The remote bridge currently allows only remote-safe read, review, and reasoning. "
+                f"{capability_name} stays in the local dashboard because it can change local or durable state."
+            )
+        if bool(metadata.get("requires_confirmation")) or bool(metadata.get("external_effect")):
+            return (
+                "The remote bridge currently allows only remote-safe read, review, and reasoning. "
+                f"{capability_name} stays in the local dashboard because it requires a local confirmation flow."
+            )
+        return (
+            "The remote bridge currently allows only remote-safe read, review, and reasoning. "
+            f"{capability_name} depends on local context or a broader operator surface, so it stays in the local dashboard."
+        )
+
+    if isinstance(parsed, Clarification) and int(parsed.capability_id) not in BRIDGE_ALLOWED_CAPABILITY_IDS:
+        capability_name = _capability_label(int(parsed.capability_id))
+        return (
+            "The remote bridge currently allows only remote-safe read, review, and reasoning. "
+            f"{capability_name} stays in the local dashboard."
+        )
+
+    lowered = str(text or "").strip().lower()
+    if _REMOTE_BRIDGE_EXPLICIT_EFFECT_RE.search(lowered) or _REMOTE_BRIDGE_STATE_CHANGE_RE.search(lowered):
+        return (
+            "The remote bridge currently allows only remote-safe read, review, and reasoning. "
+            "Requests that change memory, schedules, policies, settings, or device state must stay in the local dashboard."
+        )
     return ""
 
 
@@ -150,7 +262,7 @@ def build_bridge_router(deps) -> APIRouter:
         if not text:
             raise HTTPException(status_code=400, detail="Bridge request must include non-empty text.")
 
-        blocked_reason = _bridge_text_block_reason(text, hard_action_prefixes=deps.HARD_ACTION_PREFIXES)
+        blocked_reason = _bridge_scope_block_reason(text, hard_action_prefixes=deps.HARD_ACTION_PREFIXES)
         if blocked_reason:
             return {
                 "ok": False,

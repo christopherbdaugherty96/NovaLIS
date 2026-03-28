@@ -119,6 +119,7 @@ More specifically, the current dashboard can now show:
 - Settings page provider, connection, bridge-status, and settings-history review
 - Trust page remote-bridge review
 - Agent page runtime cards, template availability state, delivery-mode controls, per-template schedule controls, ready-for-review inbox state, and recent run history
+- Agent page setup/readiness review for the local summarizer, weather, calendar, remote bridge, and scheduler so the user can see what is optional versus currently ready
 - Agent page narrow scheduled briefing controls that stay visible and pausable instead of acting like hidden automation
 
 ## What The Frontend Is Not Supposed To Become
