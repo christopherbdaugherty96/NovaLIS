@@ -14,6 +14,7 @@ def test_agent_runtime_store_bootstraps_templates(tmp_path: Path):
     assert snapshot["delivery_ready_count"] == 0
     assert snapshot["strict_foundation_label"] == "Manual preflight active"
     assert any(item["id"] == "morning_brief" for item in snapshot["templates"])
+    assert any(item["id"] == "market_watch" for item in snapshot["templates"])
 
 
 def test_agent_runtime_store_updates_delivery_mode(tmp_path: Path):
@@ -37,6 +38,7 @@ def test_agent_runtime_store_records_surface_delivery_and_dismisses_it(tmp_path:
             "delivery_channels": {"widget": True, "chat": True},
             "presented_message": "Here's your morning.",
             "summary": "Here's your morning.",
+            "usage_meta": {"route": "local_model", "summary": "Stayed local."},
         }
     )
 
@@ -44,6 +46,7 @@ def test_agent_runtime_store_records_surface_delivery_and_dismisses_it(tmp_path:
     assert snapshot["delivery_ready_count"] == 1
     delivery = snapshot["delivery_inbox"][0]
     assert delivery["template_id"] == "morning_brief"
+    assert delivery["usage_meta"]["route"] == "local_model"
 
     updated = store.dismiss_delivery(delivery["id"])
     assert updated["delivery_ready_count"] == 0

@@ -49,6 +49,7 @@ OPENCLAW_AGENT_RUNNER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" 
 OPENCLAW_AGENT_PERSONALITY_BRIDGE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" / "agent_personality_bridge.py"
 OPENCLAW_STRICT_PREFLIGHT_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" / "strict_preflight.py"
 OPENCLAW_AGENT_SCHEDULER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" / "agent_scheduler.py"
+OPENAI_RESPONSES_LANE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "providers" / "openai_responses_lane.py"
 
 GOVERNANCE_MATRIX_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX.md"
 SKILL_SURFACE_MAP_PATH = RUNTIME_DOC_DIR / "SKILL_SURFACE_MAP.md"
@@ -64,6 +65,7 @@ API_DIR = PROJECT_ROOT / "nova_backend" / "src" / "api"
 PERSONALITY_DIR = PROJECT_ROOT / "nova_backend" / "src" / "personality"
 SETTINGS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "settings"
 OPENCLAW_DIR = PROJECT_ROOT / "nova_backend" / "src" / "openclaw"
+PROVIDERS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "providers"
 TASKS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "tasks"
 WEBSOCKET_DIR = PROJECT_ROOT / "nova_backend" / "src" / "websocket"
 
@@ -96,6 +98,7 @@ def _build_allowlisted_paths() -> frozenset[Path]:
         OPENCLAW_AGENT_PERSONALITY_BRIDGE_PATH,
         OPENCLAW_STRICT_PREFLIGHT_PATH,
         OPENCLAW_AGENT_SCHEDULER_PATH,
+        OPENAI_RESPONSES_LANE_PATH,
     }
     paths.update(SKILLS_DIR.glob("*.py"))
     paths.update(EXECUTORS_DIR.glob("*.py"))
@@ -105,6 +108,7 @@ def _build_allowlisted_paths() -> frozenset[Path]:
     paths.update(PERSONALITY_DIR.glob("*.py"))
     paths.update(SETTINGS_DIR.glob("*.py"))
     paths.update(OPENCLAW_DIR.glob("*.py"))
+    paths.update(PROVIDERS_DIR.glob("*.py"))
     paths.update(TASKS_DIR.glob("*.py"))
     paths.update(WEBSOCKET_DIR.glob("*.py"))
     return frozenset(paths)
@@ -1275,13 +1279,13 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     if phase_8_status == "ACTIVE":
         phase_8_note = (
             "Manual strict preflight is active. Scheduled home-agent runtime is available behind explicit settings control; "
-            "broader envelope-governed execution still remains deferred"
+            "local-first metered OpenAI fallback for narrow task reports is live; broader envelope-governed execution still remains deferred"
         )
     elif phase_8_status == "FOUNDATION":
         preflight_note = "Manual strict preflight is active. " if OPENCLAW_STRICT_PREFLIGHT_PATH.exists() else ""
         phase_8_note = (
             preflight_note
-            + "Manual OpenClaw home-agent briefing templates, delivery controls, and operator surface are live; "
+            + "Manual OpenClaw home-agent briefing templates, delivery controls, operator surface, and local-first metered OpenAI fallback are live; "
             "scheduled automation and full Phase-8 execution enforcement remain deferred"
         )
     else:
@@ -1419,6 +1423,16 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
                     "",
                 ]
                 if openclaw_home_agent_present
+                else []
+            ),
+            *(
+                [
+                    "Metered OpenAI Task-Report Lane",
+                    "Location: src/providers/openai_responses_lane.py",
+                    "Status: Local-first narrow fallback for OpenClaw task reports only",
+                    "",
+                ]
+                if OPENAI_RESPONSES_LANE_PATH.exists()
                 else []
             ),
             "Voice System",

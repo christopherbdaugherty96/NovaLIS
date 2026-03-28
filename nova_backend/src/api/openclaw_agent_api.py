@@ -100,9 +100,7 @@ def _agent_setup_snapshot(deps, agent_snapshot: dict[str, Any]) -> dict[str, Any
             "status_label": str(openai_runtime.get("status_label") or "Not configured").strip() or "Not configured",
             "summary": str(openai_runtime.get("summary") or "").strip()
             or "OpenAI is optional and stays outside Nova's local-first path until explicitly enabled.",
-            "ready": bool(openai_runtime.get("api_key_configured")) and bool(
-                str(openai_runtime.get("settings_permission") or "paused").strip() == "enabled"
-            ),
+            "ready": str(openai_runtime.get("status") or "").strip() == "available",
         },
         {
             "id": "remote_bridge",
@@ -289,6 +287,9 @@ def build_openclaw_agent_router(deps) -> APIRouter:
                 "delivery_channels": dict(result.get("delivery_channels") or {}),
                 "llm_summary_used": bool(result.get("llm_summary_used")),
                 "estimated_total_tokens": int(result.get("estimated_total_tokens") or 0),
+                "summary_route": str(dict(result.get("usage_meta") or {}).get("route") or "").strip(),
+                "summary_model": str(dict(result.get("usage_meta") or {}).get("model_label") or "").strip(),
+                "estimated_cost_usd": float(dict(result.get("usage_meta") or {}).get("estimated_cost_usd") or 0.0),
                 "source": "agent_page",
             },
         )

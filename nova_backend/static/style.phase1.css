@@ -1105,9 +1105,29 @@ button.workspace-spotlight-card.active {
   color: #b7cae6;
 }
 
+.message-usage-strip {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(106, 214, 188, 0.18);
+  font-size: 0.74rem;
+  color: #d7e8ff;
+}
+
+.message-usage-summary {
+  color: #d7e8ff;
+}
+
+.message-usage-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 6px;
+}
+
 .confidence-badge,
 .domain-badge,
-.citation-index {
+.citation-index,
+.usage-badge {
   display: inline-flex;
   align-items: center;
   margin-top: 6px;
@@ -1133,6 +1153,24 @@ button.workspace-spotlight-card.active {
   border: 1px solid rgba(175, 198, 230, 0.26);
   background: rgba(175, 198, 230, 0.1);
   color: #d6e5fb;
+}
+
+.usage-badge {
+  border: 1px solid rgba(175, 198, 230, 0.26);
+  background: rgba(175, 198, 230, 0.1);
+  color: #d6e5fb;
+}
+
+.usage-badge-local {
+  border-color: rgba(106, 214, 188, 0.38);
+  background: rgba(106, 214, 188, 0.12);
+  color: #d9fff2;
+}
+
+.usage-badge-metered {
+  border-color: rgba(244, 191, 117, 0.44);
+  background: rgba(244, 191, 117, 0.14);
+  color: #fff0d6;
 }
 
 .search-widget {

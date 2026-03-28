@@ -44,7 +44,7 @@ That means Nova already has:
 - in-place news summaries on the News page
 - a governed external reasoning lane with same-thread second-opinion review, provider visibility, and advisory-only boundaries
 - estimated governed reasoning-usage visibility in Trust and Settings
-- a local-first OpenAI operating model documented inside Phase 8, with runtime settings for an optional metered OpenAI lane, preferred model, and daily token budget
+- a local-first OpenAI operating model documented inside Phase 8, with runtime settings for an optional metered OpenAI lane, preferred model, daily token budget, and a narrow OpenClaw task-report fallback
 - a token-gated governed remote bridge for read/reasoning access from OpenClaw-style remote clients
 - a manual OpenClaw home-agent foundation with a dedicated Agent page, manual briefing templates, delivery controls, a delivery inbox, strict manual preflight, and Nova-owned presentation
 - a clearer OpenClaw setup/readiness layer that shows what the home-agent surface needs, what is optional, and what is paused
@@ -93,6 +93,7 @@ These parts are already meaningfully real:
 - a dedicated Agent page with manual home-agent briefing templates, delivery-mode controls, a ready-for-review inbox, and recent-run history
 - a dedicated Agent page setup/readiness surface for the local summarizer, weather, calendar, remote bridge, and scheduler
 - Settings and Trust visibility for local-first AI routing, OpenAI lane readiness, and metered budget state
+- a narrow metered OpenAI fallback that can summarize OpenClaw task reports when routing mode allows it and the local summarizer is unavailable
 
 ## What Is Still Maturing
 These parts are active but still evolving:
@@ -102,7 +103,7 @@ These parts are active but still evolving:
 - stronger everyday workflows around thread and memory use
 - deeper project/workspace persistence beyond the current shell
 - fuller in-app provider key entry and connector linking beyond the current runtime-permission controls
-- fuller OpenAI lane execution beyond the current optional settings, visibility, and budget policy baseline
+- broader OpenAI lane execution beyond the current narrow OpenClaw task-report fallback
 - stronger local-project visualization beyond the current stage-2 structure map
 - final device-confidence confirmation for audible TTS output
 - deeper Phase-6 policy review ergonomics beyond the current manual-review center

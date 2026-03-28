@@ -130,6 +130,29 @@ class OpenClawAgentRuntimeStore:
             "max_steps": 8,
             "max_duration_s": 120,
         },
+        {
+            "id": "market_watch",
+            "title": "Market Watch",
+            "category": "Research-only",
+            "description": "Read-only market and crypto news watch. Research only; no buy, sell, or broker actions.",
+            "tools_allowed": ["news", "summarize"],
+            "delivery_mode": "widget",
+            "schedule_label": "Manual research only",
+            "schedule_clock_local": "",
+            "schedule_enabled": False,
+            "schedule_status": "Manual only",
+            "next_run_at": "",
+            "next_run_label": "Manual only",
+            "last_scheduled_window": "",
+            "last_scheduled_run_at": "",
+            "last_scheduled_outcome": "",
+            "last_scheduled_note": "",
+            "manual_run_available": True,
+            "availability_label": "Read-only",
+            "availability_reason": "Read-only market research is allowed. Paper trading and live order execution still stay disabled.",
+            "max_steps": 4,
+            "max_duration_s": 90,
+        },
     )
 
     def __init__(self, path: str | Path | None = None) -> None:
@@ -445,8 +468,11 @@ class OpenClawAgentRuntimeStore:
             "estimated_input_tokens": int(raw.get("estimated_input_tokens") or 0),
             "estimated_output_tokens": int(raw.get("estimated_output_tokens") or 0),
             "estimated_total_tokens": int(raw.get("estimated_total_tokens") or 0),
+            "summary_route": str(raw.get("summary_route") or "").strip(),
+            "summary_model": str(raw.get("summary_model") or "").strip(),
             "source_notes": dict(raw.get("source_notes") or {}),
             "strict_preflight": dict(raw.get("strict_preflight") or {}),
+            "usage_meta": dict(raw.get("usage_meta") or {}),
         }
 
     def _build_delivery_item(self, run_entry: dict[str, Any]) -> dict[str, Any]:
@@ -464,6 +490,7 @@ class OpenClawAgentRuntimeStore:
                 "created_at": str(run_entry.get("completed_at") or run_entry.get("started_at") or _utc_now_iso()),
                 "status": "ready",
                 "dismissed_at": "",
+                "usage_meta": dict(run_entry.get("usage_meta") or {}),
             }
         )
 
@@ -485,6 +512,7 @@ class OpenClawAgentRuntimeStore:
             "created_at": str(raw.get("created_at") or _utc_now_iso()),
             "status": str(raw.get("status") or "ready").strip() or "ready",
             "dismissed_at": str(raw.get("dismissed_at") or "").strip(),
+            "usage_meta": dict(raw.get("usage_meta") or {}),
         }
 
     def _new_delivery_id(self) -> str:

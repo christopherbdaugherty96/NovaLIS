@@ -7,8 +7,17 @@ from fastapi import APIRouter, HTTPException
 from src.usage.provider_usage_store import provider_usage_store
 
 
+def _sync_usage_budget(settings_snapshot: dict[str, Any]) -> None:
+    usage_budget = dict(settings_snapshot.get("usage_budget") or {})
+    provider_usage_store.configure_budget(
+        daily_token_budget=int(usage_budget.get("daily_metered_token_budget") or 4000),
+        warning_ratio=float(usage_budget.get("warning_ratio") or 0.8),
+    )
+
+
 def _runtime_settings_payload(deps, settings_snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
     snapshot = dict(settings_snapshot or deps.runtime_settings_store.snapshot())
+    _sync_usage_budget(snapshot)
     return {
         "settings": snapshot,
         "bridge": deps.OSDiagnosticsExecutor._bridge_status_details(),
@@ -110,10 +119,7 @@ def build_settings_router(deps) -> APIRouter:
             )
         except (TypeError, ValueError) as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
-        provider_usage_store.configure_budget(
-            daily_token_budget=int(dict(snapshot.get("usage_budget") or {}).get("daily_metered_token_budget") or 0),
-            warning_ratio=float(dict(snapshot.get("usage_budget") or {}).get("warning_ratio") or 0.8),
-        )
+        _sync_usage_budget(snapshot)
         deps._log_ledger_event(
             deps.RUNTIME_GOVERNOR,
             "RUNTIME_SETTINGS_UPDATED",
@@ -131,10 +137,7 @@ def build_settings_router(deps) -> APIRouter:
     @router.post("/api/settings/runtime/reset")
     async def reset_runtime_settings():
         snapshot = deps.runtime_settings_store.reset_recommended_defaults(source="settings_page")
-        provider_usage_store.configure_budget(
-            daily_token_budget=int(dict(snapshot.get("usage_budget") or {}).get("daily_metered_token_budget") or 0),
-            warning_ratio=float(dict(snapshot.get("usage_budget") or {}).get("warning_ratio") or 0.8),
-        )
+        _sync_usage_budget(snapshot)
         deps._log_ledger_event(
             deps.RUNTIME_GOVERNOR,
             "RUNTIME_SETTINGS_UPDATED",
