@@ -1,5 +1,5 @@
 # Phase 6 Document Map
-Updated: 2026-03-26
+Updated: 2026-03-28
 Status: Current design map
 Purpose: Classify the Phase-6 document set by authority and implementation order.
 
@@ -29,6 +29,7 @@ Use the proof packet and current runtime docs to distinguish:
 - `docs/design/Phase 6/PHASE_6_PROGRESSIVE_SCREEN_INTELLIGENCE_PRODUCT_SPEC.md`
 - `docs/PROOFS/Phase-6/PHASE_6_POLICY_REVIEW_CENTER_RUNTIME_SLICE_2026-03-26.md`
 - `docs/PROOFS/Phase-6/PHASE_6_COMPLETION_AND_HANDOFF_RUNTIME_SLICE_2026-03-26.md`
+- `docs/PROOFS/Phase-6/PHASE_6_LOCAL_SURFACE_HARDENING_AND_GOVERNANCE_TRUTH_ALIGNMENT_2026-03-28.md`
 - `docs/PROOFS/Phase-6/PHASE_6_PROOF_PACKET_INDEX.md`
 
 These supporting specs define:
@@ -36,6 +37,7 @@ These supporting specs define:
 - the cursor-first product direction for Nova's explain-anything experience
 - the currently implemented Policy Review Center runtime slice
 - the closing runtime slice that completes Phase 6 in its safe review-oriented form
+- the 2026-03-28 hardening slice that closes local-surface trust gaps and governance-metadata drift
 - the canonical proof packet for completed Phase-6 runtime work
 
 ## Core Cross-Phase Inputs

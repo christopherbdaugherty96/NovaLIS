@@ -32,12 +32,11 @@ Deterministic surface map for skills, conversation modules, and governor capabil
 | calendar | src/skills/calendar.py | skill | no | none |  |
 | general_chat | src/skills/general_chat.py | skill | yes | llm_gateway |  |
 | news | src/skills/news.py | skill | yes | none |  |
-| news | src/skills/web_search.py | skill | no | none |  |
 | system | src/skills/system.py | skill | no | none |  |
 | weather | src/skills/weather.py | skill | yes | none |  |
-| web_search | src/skills/web_search_skill.py | skill | no | none |  |
 
 ## Escalation vs governed execution
 
 - `ALLOW_ANALYSIS_ONLY` is represented in `src/conversation/escalation_policy.py` and used by `GeneralChatSkill` as analysis-only output path.
 - Governed capabilities are routed by `GovernorMediator.parse_governed_invocation(...)` and executed via `Governor.handle_governed_invocation(...)`.
+- Legacy sealed skill shims that are not registered in `src/skill_registry.py` are intentionally omitted from this live runtime map.

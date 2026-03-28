@@ -23,10 +23,14 @@ def test_track_update_view_compare_stop(monkeypatch, tmp_path):
     tracked = executor.execute_update(_req(52, {"action": "track", "topic": "AI regulation", "headlines": headlines}))
     assert tracked.success is True
     assert "Started tracking story" in tracked.message
+    assert tracked.authority_class == "persistent_change"
+    assert tracked.reversible is False
 
     updated = executor.execute_update(_req(52, {"action": "update", "topic": "AI regulation", "headlines": headlines}))
     assert updated.success is True
     assert "Updated story" in updated.message
+    assert updated.authority_class == "persistent_change"
+    assert updated.reversible is False
 
     shown = executor.execute_view(_req(53, {"action": "show", "topic": "AI regulation"}))
     assert shown.success is True
@@ -41,6 +45,7 @@ def test_track_update_view_compare_stop(monkeypatch, tmp_path):
     stopped = executor.execute_update(_req(52, {"action": "stop", "topic": "AI regulation"}))
     assert stopped.success is True
     assert "Stopped tracking story" in stopped.message
+    assert stopped.authority_class == "persistent_change"
 
 
 def test_compare_stories(monkeypatch, tmp_path):

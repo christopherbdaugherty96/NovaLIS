@@ -42,9 +42,9 @@ class ScreenCaptureExecutor:
             structured_data=structured,
             speakable_text=message,
             request_id=request_id,
-            authority_class="read_only",
+            authority_class="persistent_change",
             external_effect=False,
-            reversible=True,
+            reversible=False,
             outcome_reason=message,
         )
 
@@ -63,9 +63,9 @@ class ScreenCaptureExecutor:
             structured_data=structured,
             speakable_text=speakable_text,
             request_id=request_id,
-            authority_class="read_only",
+            authority_class="persistent_change",
             external_effect=False,
-            reversible=True,
+            reversible=False,
         )
 
     def execute(self, request) -> ActionResult:

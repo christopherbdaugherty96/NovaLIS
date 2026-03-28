@@ -49,6 +49,22 @@ def _snapshot_hash(snapshot: dict[str, Any]) -> str:
 
 class StoryTrackerExecutor:
     @staticmethod
+    def _persistent_change_result(
+        message: str,
+        *,
+        request_id: str,
+        data: dict[str, Any] | None = None,
+    ) -> ActionResult:
+        return ActionResult.ok(
+            message=message,
+            data=data,
+            request_id=request_id,
+            authority_class="persistent_change",
+            external_effect=False,
+            reversible=False,
+        )
+
+    @staticmethod
     def _story_bottom_line(topic: str, snapshot: dict[str, Any]) -> str:
         events = list(snapshot.get("events") or [])
         if not events:
@@ -225,13 +241,10 @@ class StoryTrackerExecutor:
                 self._save_story(story)
                 updated.append({"topic": topic, "hash": snap["version_hash"]})
             msg = "Updated tracked stories:\n" + "\n".join(f"- {u['topic']} ({u['hash']})" for u in updated)
-            return ActionResult.ok(
+            return self._persistent_change_result(
                 message=f"{msg}\n\nTry next: show story <topic> or compare two stories.",
                 data={"widget": {"type": "story_tracker_update", "data": {"updated": updated}}},
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
-                reversible=True,
             )
 
         topic = (params.get("topic") or "").strip()
@@ -258,7 +271,7 @@ class StoryTrackerExecutor:
             graph["updated_at_utc"] = _utc_now()
             self._save_graph(graph)
 
-            return ActionResult.ok(
+            return self._persistent_change_result(
                 message=(
                     f"Linked story '{left}' to '{right}'.\n\n"
                     "Try next:\n"
@@ -267,9 +280,6 @@ class StoryTrackerExecutor:
                 ),
                 data={"widget": {"type": "story_tracker_update", "data": {"action": "link", "topics": [left, right]}}},
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
-                reversible=True,
             )
 
         if not topic:
@@ -286,7 +296,7 @@ class StoryTrackerExecutor:
                 snap = self._new_snapshot(topic, events)
                 story["snapshots"].append(snap)
                 self._save_story(story)
-                return ActionResult.ok(
+                return self._persistent_change_result(
                     message=(
                         f"Started tracking story '{topic}'.\n"
                         f"Snapshot hash: {snap['version_hash']}.\n"
@@ -295,13 +305,10 @@ class StoryTrackerExecutor:
                     ),
                     data={"widget": {"type": "story_tracker_update", "data": {"topic": topic, "hash": snap["version_hash"]}}},
                     request_id=request.request_id,
-                    authority_class="read_only",
-                    external_effect=False,
-                    reversible=True,
                 )
             self._save_story(story)
             latest = story["snapshots"][-1]
-            return ActionResult.ok(
+            return self._persistent_change_result(
                 message=(
                     f"Story '{topic}' is already tracked.\n"
                     f"Latest snapshot hash: {latest.get('version_hash', 'unknown')}.\n\n"
@@ -309,21 +316,15 @@ class StoryTrackerExecutor:
                 ),
                 data={"widget": {"type": "story_tracker_update", "data": {"topic": topic}}},
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
-                reversible=True,
             )
 
         if action == "stop":
             kept = [t for t in topics if t.lower() != topic.lower()]
             self._save_tracked_topics(kept)
-            return ActionResult.ok(
+            return self._persistent_change_result(
                 message=f"Stopped tracking story '{topic}'. You can track it again later with: track story {topic}",
                 data={"widget": {"type": "story_tracker_update", "data": {"topic": topic, "stopped": True}}},
                 request_id=request.request_id,
-                authority_class="read_only",
-                external_effect=False,
-                reversible=True,
             )
 
         story = self._load_story(topic)
@@ -335,7 +336,7 @@ class StoryTrackerExecutor:
             topics.append(topic)
             self._save_tracked_topics(topics)
 
-        return ActionResult.ok(
+        return self._persistent_change_result(
             message=(
                 f"Updated story '{topic}'.\n"
                 f"Snapshot hash: {snapshot['version_hash']}.\n"
@@ -344,9 +345,6 @@ class StoryTrackerExecutor:
             ),
             data={"widget": {"type": "story_tracker_update", "data": {"topic": topic, "hash": snapshot["version_hash"]}}},
             request_id=request.request_id,
-            authority_class="read_only",
-            external_effect=False,
-            reversible=True,
         )
 
     def execute_view(self, request) -> ActionResult:

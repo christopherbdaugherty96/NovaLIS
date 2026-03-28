@@ -8,6 +8,8 @@ from typing import Any
 
 from fastapi import WebSocket, WebSocketDisconnect
 
+from src.utils.local_request_guard import describe_websocket_rebinding_violation
+
 
 async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     """Run Nova's websocket session loop using the assembled runtime module as deps."""
@@ -184,6 +186,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     render_original_answer = deps.render_original_answer
     summarize_review_gaps = deps.summarize_review_gaps
     _conversation_suggestions = deps._conversation_suggestions
+    violation = describe_websocket_rebinding_violation(ws)
+    if violation:
+        log.warning("Rejected websocket session due to non-local Host/Origin: %s", violation)
+        await ws.close(code=1008, reason="Local Nova websocket access requires loopback Host/Origin.")
+        return
     await ws.accept()
     log.info("WebSocket connected")
 

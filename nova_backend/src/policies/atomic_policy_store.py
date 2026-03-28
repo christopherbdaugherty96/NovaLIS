@@ -3,11 +3,11 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from threading import RLock
 from typing import Any
 from uuid import uuid4
 
 from src.policies.policy_validator import PolicyValidationResult
+from src.utils.persistent_state import shared_path_lock, write_json_atomic
 
 
 def _utc_now() -> str:
@@ -28,10 +28,11 @@ class AtomicPolicyStore:
             / "atomic_policies.json"
         )
         self._path = Path(path) if path else default_path
-        self._lock = RLock()
-        self._path.parent.mkdir(parents=True, exist_ok=True)
-        if not self._path.exists():
-            self._write_state(self._default_state())
+        self._lock = shared_path_lock(self._path)
+        with self._lock:
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+            if not self._path.exists():
+                self._write_state(self._default_state())
 
     @property
     def path(self) -> Path:
@@ -216,4 +217,4 @@ class AtomicPolicyStore:
             "schema_version": self.SCHEMA_VERSION,
             "policies": list(state.get("policies") or []),
         }
-        self._path.write_text(json.dumps(normalized, indent=2), encoding="utf-8")
+        write_json_atomic(self._path, normalized)

@@ -25,6 +25,7 @@ LLM_GATEWAY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "llm" / "llm_gateway.
 GOVERNOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "governor.py"
 GOVERNOR_MEDIATOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "governor_mediator.py"
 NETWORK_MEDIATOR_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "network_mediator.py"
+EXECUTE_BOUNDARY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "governor" / "execute_boundary" / "execute_boundary.py"
 SKILL_REGISTRY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "skill_registry.py"
 LEDGER_WRITER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "ledger" / "writer.py"
 LEDGER_EVENT_TYPES_PATH = PROJECT_ROOT / "nova_backend" / "src" / "ledger" / "event_types.py"
@@ -81,6 +82,7 @@ def _build_allowlisted_paths() -> frozenset[Path]:
         GOVERNOR_PATH,
         GOVERNOR_MEDIATOR_PATH,
         NETWORK_MEDIATOR_PATH,
+        EXECUTE_BOUNDARY_PATH,
         SKILL_REGISTRY_PATH,
         LEDGER_WRITER_PATH,
         LEDGER_EVENT_TYPES_PATH,
@@ -289,11 +291,16 @@ def _governor_enforcement_summary() -> dict[str, bool]:
     governor_src = _safe_read(GOVERNOR_PATH)
     network_src = _safe_read(NETWORK_MEDIATOR_PATH)
     ledger_src = _safe_read(LEDGER_WRITER_PATH)
+    boundary_src = _safe_read(EXECUTE_BOUNDARY_PATH)
+    brain_src = _safe_read(BRAIN_SERVER_PATH)
+    websocket_src = _safe_read(SESSION_HANDLER_PATH)
 
     return {
         "single_action_queue_enforced": "SingleActionQueue" in governor_src and "has_pending" in governor_src,
-        "execution_timeout_guard_active": "MAX_EXECUTION_TIME" in governor_src,
-        "dns_rebinding_protection_active": "socket.getaddrinfo" in network_src,
+        "execution_timeout_guard_active": "_release_after_timeout" in boundary_src and "cancel_futures=True" in boundary_src,
+        "dns_rebinding_protection_active": (
+            "describe_http_rebinding_violation" in brain_src and "describe_websocket_rebinding_violation" in websocket_src
+        ) or "socket.getaddrinfo" in network_src,
         "ledger_logging_active": "log_event(" in governor_src or "log_event(" in network_src,
         "execution_gate_enabled": bool(GOVERNED_ACTIONS_ENABLED),
     }
@@ -384,16 +391,23 @@ def _skill_surface_rows() -> list[dict[str, str]]:
     rows: list[dict[str, str]] = []
     registry = _load_registry()
     governor_src = _safe_read(GOVERNOR_PATH)
+    skill_registry_src = _safe_read(SKILL_REGISTRY_PATH)
     network_mediated_ids = set(_network_mediated_capability_ids(governor_src))
     capability_network_map = {
         int(item.get("id")): ("yes" if int(item.get("id")) in network_mediated_ids else "no")
         for item in registry.get("capabilities", [])
         if item.get("id") is not None
     }
+    live_skill_modules = {
+        match.group(1)
+        for match in re.finditer(r"from\s+src\.skills\.([a-zA-Z0-9_]+)\s+import", skill_registry_src)
+    }
 
     for path in sorted(SKILLS_DIR.glob("*.py")):
         src = _safe_read(path)
         if not src.strip() or path.name == "__init__.py":
+            continue
+        if path.stem not in live_skill_modules:
             continue
         name_match = re.search(r'^\s*name\s*=\s*"([^"]+)"', src, re.MULTILINE)
         skill_name = name_match.group(1) if name_match else path.stem
@@ -1091,6 +1105,7 @@ def render_skill_surface_map_markdown() -> str:
             "",
             "- `ALLOW_ANALYSIS_ONLY` is represented in `src/conversation/escalation_policy.py` and used by `GeneralChatSkill` as analysis-only output path.",
             "- Governed capabilities are routed by `GovernorMediator.parse_governed_invocation(...)` and executed via `Governor.handle_governed_invocation(...)`.",
+            "- Legacy sealed skill shims that are not registered in `src/skill_registry.py` are intentionally omitted from this live runtime map.",
             "",
         ]
     )
@@ -1303,7 +1318,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     ]
 
     executor_count = len([p for p in EXECUTORS_DIR.glob("*.py") if p.name != "__init__.py"])
-    skill_count = len([p for p in SKILLS_DIR.glob("*.py") if p.name != "__init__.py"])
+    skill_count = len([row for row in _skill_surface_rows() if row.get("surface_type") == "skill"])
     fingerprint_payload = {
         "enabled_capability_ids": enabled_ids,
         "governor_modules": governor_modules,

@@ -3,8 +3,9 @@ from __future__ import annotations
 import json
 from datetime import datetime, timezone
 from pathlib import Path
-from threading import RLock
 from typing import Any
+
+from src.utils.persistent_state import shared_path_lock, write_json_atomic
 
 
 def _utc_now() -> str:
@@ -51,10 +52,11 @@ class ToneProfileStore:
             / "tone_profile.json"
         )
         self._path = Path(path) if path else default_path
-        self._lock = RLock()
-        self._path.parent.mkdir(parents=True, exist_ok=True)
-        if not self._path.exists():
-            self._write_state(self._default_state())
+        self._lock = shared_path_lock(self._path)
+        with self._lock:
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+            if not self._path.exists():
+                self._write_state(self._default_state())
 
     @property
     def path(self) -> Path:
@@ -313,4 +315,4 @@ class ToneProfileStore:
             "history": list(state.get("history") or [])[:20],
             "updated_at": str(state.get("updated_at") or _utc_now()),
         }
-        self._path.write_text(json.dumps(normalized, indent=2), encoding="utf-8")
+        write_json_atomic(self._path, normalized)

@@ -162,7 +162,7 @@ class NewsIntelligenceExecutor:
             structured_data=payload,
             speakable_text=speakable_text or self._speakable_preview(message),
             request_id=request_id,
-            authority_class="read_only",
+            authority_class="read_only_network",
             external_effect=False,
             reversible=True,
         )
@@ -183,7 +183,7 @@ class NewsIntelligenceExecutor:
             structured_data=payload,
             speakable_text=message,
             request_id=request_id,
-            authority_class="read_only",
+            authority_class="read_only_network",
             external_effect=False,
             reversible=True,
             outcome_reason=message,

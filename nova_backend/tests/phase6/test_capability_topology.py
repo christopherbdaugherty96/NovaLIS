@@ -26,9 +26,23 @@ def test_topology_blocks_network_and_persistent_classes_from_current_limit():
 
     weather = topology.get(55)
     memory = topology.get(61)
+    headline_summary = topology.get(49)
+    intelligence_brief = topology.get(50)
+    story_update = topology.get(52)
+    screen_capture = topology.get(58)
 
     assert weather.authority_class == "read_only_network"
     assert topology.is_within_current_limit(55) is False
+    assert headline_summary.authority_class == "read_only_network"
+    assert headline_summary.requires_network_mediator is True
+    assert intelligence_brief.authority_class == "read_only_network"
+    assert intelligence_brief.requires_network_mediator is True
+    assert story_update.authority_class == "persistent_change"
+    assert story_update.persistent_change is True
+    assert story_update.reversible is False
+    assert screen_capture.authority_class == "persistent_change"
+    assert screen_capture.persistent_change is True
+    assert screen_capture.reversible is False
     assert memory.persistent_change is True
     assert memory.policy_delegatable is False
 

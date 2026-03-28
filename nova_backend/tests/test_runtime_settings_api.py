@@ -43,6 +43,20 @@ def test_runtime_settings_api_reports_defaults(monkeypatch, tmp_path):
     assert payload["settings"]["assistive_policy"]["assistive_notice_mode"] == "suggestive"
 
 
+def test_runtime_settings_api_rejects_non_local_host(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+
+    client = TestClient(brain_server.app)
+    response = client.post(
+        "/api/settings/runtime/permissions",
+        json={"permission": "remote_bridge_enabled", "enabled": False},
+        headers={"Host": "evil.example"},
+    )
+
+    assert response.status_code == 403
+    assert "loopback host" in response.json()["detail"].lower()
+
+
 def test_runtime_settings_setup_mode_update_changes_snapshot(monkeypatch, tmp_path):
     _install_runtime_settings_store(monkeypatch, tmp_path)
 
