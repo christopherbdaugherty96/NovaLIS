@@ -20,6 +20,26 @@ def test_format_payload_builds_speakable_and_summary_for_structured_text():
     assert "speakable_text" in payload
 
 
+def test_format_payload_keeps_explicit_bottom_line_when_present():
+    from src.conversation.response_formatter import ResponseFormatter
+
+    payload = ResponseFormatter.format_payload(
+        "Bottom line: The review mostly agrees.\n\nAgreement Level: Medium\nMain gap: add one caveat."
+    )
+
+    assert payload["user_message"].startswith("Bottom line: The review mostly agrees.")
+
+
+def test_format_payload_uses_first_top_headline_as_summary_anchor():
+    from src.conversation.response_formatter import ResponseFormatter
+
+    payload = ResponseFormatter.format_payload(
+        "Top Headlines\n1. Markets rose after the inflation print cooled.\n\nSignals to Watch\n- Bond yields"
+    )
+
+    assert payload["user_message"].startswith("Summary: Markets rose after the inflation print cooled.")
+
+
 def test_speakable_text_strips_urls_and_paths():
     from src.conversation.response_formatter import ResponseFormatter
 

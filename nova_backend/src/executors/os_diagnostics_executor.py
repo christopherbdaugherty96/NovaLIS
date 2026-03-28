@@ -427,6 +427,9 @@ class OSDiagnosticsExecutor:
             "reasoning_mode": str(entry.get("reasoning_mode") or "").strip(),
             "reasoning_authority": str(entry.get("reasoning_authority_label") or entry.get("reasoning_authority") or "").strip(),
             "reasoning_governance_note": str(entry.get("reasoning_governance_note") or "").strip(),
+            "reasoning_summary_line": str(entry.get("reasoning_summary_line") or "").strip(),
+            "top_issue": str(entry.get("top_issue") or "").strip(),
+            "top_correction": str(entry.get("top_correction") or "").strip(),
         }
 
     @staticmethod
@@ -763,6 +766,9 @@ class OSDiagnosticsExecutor:
         last_provider = "DeepSeek"
         last_route = "Governed second-opinion lane"
         last_mode = "second_opinion"
+        reasoning_summary_line = ""
+        top_issue = ""
+        top_correction = ""
 
         try:
             from src.ledger.writer import LEDGER_PATH
@@ -799,6 +805,9 @@ class OSDiagnosticsExecutor:
                     last_provider = str(entry.get("reasoning_provider_label") or entry.get("reasoning_provider") or last_provider).strip() or last_provider
                     last_route = str(entry.get("reasoning_route_label") or entry.get("reasoning_route") or last_route).strip() or last_route
                     last_mode = str(entry.get("reasoning_mode") or last_mode).strip() or last_mode
+                    reasoning_summary_line = str(entry.get("reasoning_summary_line") or "").strip()
+                    top_issue = str(entry.get("top_issue") or "").strip()
+                    top_correction = str(entry.get("top_correction") or "").strip()
                     break
         except Exception:
             pass
@@ -840,6 +849,9 @@ class OSDiagnosticsExecutor:
             "available": "yes" if capability_enabled and model_ready and reasoning_permission_enabled else "no",
             "switching_note": "Provider switching arrives later. Today's second-opinion lane stays inside Nova's governed route.",
             "governance_note": "Second opinions can critique and clarify, but they cannot execute actions or widen authority.",
+            "reasoning_summary_line": reasoning_summary_line,
+            "top_issue": top_issue,
+            "top_correction": top_correction,
             "settings_permission": "enabled" if reasoning_permission_enabled else "paused",
             "settings_setup_mode": str(settings_snapshot.get("setup_mode_label") or ""),
             "last_used": last_used or "Not used yet",
