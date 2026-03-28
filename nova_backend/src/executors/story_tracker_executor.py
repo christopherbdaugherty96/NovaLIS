@@ -48,6 +48,17 @@ def _snapshot_hash(snapshot: dict[str, Any]) -> str:
 
 
 class StoryTrackerExecutor:
+    @staticmethod
+    def _story_bottom_line(topic: str, snapshot: dict[str, Any]) -> str:
+        events = list(snapshot.get("events") or [])
+        if not events:
+            return f"No fresh story movement was captured for {topic} in this refresh."
+        lead = str(events[0].get("headline") or "").strip()
+        source = str(events[0].get("source") or "Unknown").strip()
+        if len(events) == 1:
+            return f"Latest tracked movement: {lead} ({source})."
+        return f"Latest tracked movement: {lead} ({source}), with {len(events)} events in the current snapshot."
+
     def _tokenize(self, text: str) -> set[str]:
         return {w for w in re.findall(r"[a-zA-Z]{4,}", (text or "").lower())}
 
@@ -174,6 +185,7 @@ class StoryTrackerExecutor:
         lines = [f"STORY TRACKER - {topic}", ""]
         lines.append(f"Snapshots stored: {len(story.get('snapshots', []))}")
         lines.append(f"Latest update: {snapshot.get('timestamp_utc', 'unknown')}")
+        lines.append(f"Bottom line: {self._story_bottom_line(topic, snapshot)}")
         lines.append("")
         lines.append("Timeline")
         for event in snapshot.get("events", []):

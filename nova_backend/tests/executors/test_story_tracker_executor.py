@@ -31,6 +31,7 @@ def test_track_update_view_compare_stop(monkeypatch, tmp_path):
     shown = executor.execute_view(_req(53, {"action": "show", "topic": "AI regulation"}))
     assert shown.success is True
     assert "STORY TRACKER - AI regulation" in shown.message
+    assert "Bottom line:" in shown.message
     assert "Snapshot Hash:" in shown.message
 
     compared = executor.execute_view(_req(53, {"action": "compare", "topic": "AI regulation", "days": 7}))

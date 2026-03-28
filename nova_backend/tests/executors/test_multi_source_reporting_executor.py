@@ -33,6 +33,7 @@ def test_multi_source_report_structured_output(monkeypatch):
 
     assert result.success is True
     assert "INTELLIGENCE BRIEF" in result.message
+    assert "Bottom line:" in result.message
     assert "Key Findings" in result.message
     assert "Supporting Sources" in result.message
     assert "Confidence" in result.message
@@ -142,6 +143,7 @@ def test_multi_source_report_uses_duck_fallback_when_brave_missing(monkeypatch):
     brief = result.data.get("structured_brief", {})
     assert brief.get("search_provider") == "duckduckgo"
     assert "INTELLIGENCE BRIEF" in result.message
+    assert "Bottom line:" in result.message
 
 
 def test_multi_source_report_source_reliability_focus_preserves_topic_query(monkeypatch):

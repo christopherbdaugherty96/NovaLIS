@@ -1117,6 +1117,34 @@ button.workspace-spotlight-card.active {
   color: #d7e8ff;
 }
 
+.message-highlight-card {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding: 10px;
+  border: 1px solid rgba(143, 218, 255, 0.24);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(82, 176, 255, 0.14) 0%, rgba(82, 176, 255, 0.06) 100%);
+}
+
+.message-highlight-row {
+  display: grid;
+  gap: 4px;
+}
+
+.message-highlight-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #c4daf8;
+}
+
+.message-highlight-value {
+  color: #eef5ff;
+  line-height: 1.45;
+}
+
 .message-usage-chips {
   display: flex;
   flex-wrap: wrap;

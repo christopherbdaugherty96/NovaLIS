@@ -29,6 +29,7 @@ def test_create_document_appends_and_sets_id(monkeypatch):
 
     assert result.success is True
     assert "Doc 1" in result.message
+    assert "Bottom line: Global policy competition is accelerating." in result.message
     assert result.speakable_text.startswith("Analysis document created.")
     docs = result.data["analysis_documents"]
     assert len(docs) == 1
@@ -84,12 +85,14 @@ def test_summarize_doc_and_explain_section(monkeypatch):
     summarized = executor.execute(_request({"action": "summarize_doc", "doc_id": 2, "analysis_documents": docs}))
     assert summarized.success is True
     assert "Document Summary - Doc 2" in summarized.message
+    assert "Bottom line: Regulatory activity is increasing." in summarized.message
 
     explained = executor.execute(
         _request({"action": "explain_section", "doc_id": 2, "section_number": 3, "analysis_documents": docs})
     )
     assert explained.success is True
     assert "Section Explanation - Doc 2 Section 3" in explained.message
+    assert "Bottom line: Main point: regulation pressure is rising." in explained.message
 
 
 def test_list_documents_and_missing_doc():
