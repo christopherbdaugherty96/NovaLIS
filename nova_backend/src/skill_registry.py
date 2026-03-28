@@ -1,7 +1,12 @@
 # src/skill_registry.py
 
 """
-NovaLIS Skill Registry — Phase 3 Canonical
+NovaLIS deterministic skill registry.
+
+Runtime boundary:
+- support infrastructure for simulation and bounded deterministic fallback
+- not the primary websocket hot-path router
+- governed capability routing lives in GovernorMediator / Governor
 """
 
 from __future__ import annotations
@@ -25,10 +30,15 @@ class SkillRegistry:
     def __init__(self, network: NetworkMediator | None = None) -> None:
         """
         network is the governor-scoped mediator injected into all networked skills.
+
+        This registry remains intentionally small and support-oriented so
+        simulation and deterministic fallback paths can reuse the same skill
+        inventory without implying that all live user traffic still routes
+        through this module first.
         """
         self.network = network or NetworkMediator()
 
-        # Base skills – always present (original Phase‑3 implementations)
+        # Base skills - always present (original Phase-3 implementations)
         skills: List[BaseSkill] = [
             SystemSkill(),
             CalendarSkill(),

@@ -11,6 +11,10 @@ It covers:
 - documentation truth mismatches
 - stale governance and verification tests
 
+## Remaining Open Priorities
+After the current hardening and cleanup passes, the main remaining item from this packet is:
+- item 7: Windows media-control command semantics
+
 ## Recommended Execution Order
 1. Fix externally reachable security issues.
 2. Fix data-loss and execution-boundary correctness bugs.
@@ -21,7 +25,7 @@ It covers:
 ## P0
 
 ### 1. Block DNS rebinding on HTTP and WebSocket surfaces
-- Status: open
+- Status: closed on `main`
 - Risk: remote web pages can reach loopback-only Nova APIs and the websocket endpoint by spoofing `Host` and `Origin`.
 - Evidence:
   - `nova_backend/src/brain_server.py`
@@ -40,7 +44,7 @@ It covers:
 ## P1
 
 ### 2. Prevent lost updates in JSON-backed durable stores
-- Status: open
+- Status: closed on `main`
 - Risk: concurrent writes can silently drop durable state.
 - Primary evidence:
   - `nova_backend/src/memory/governed_memory_store.py`
@@ -59,7 +63,7 @@ It covers:
   - repeated concurrent save/update operations preserve all expected records
 
 ### 3. Make `ExecuteBoundary.run_with_timeout()` enforce a real wall-clock timeout
-- Status: open
+- Status: closed on `main`
 - Risk: timed-out work still occupies the single-action lane until the worker finishes.
 - Evidence:
   - `nova_backend/src/governor/execute_boundary/execute_boundary.py`
@@ -74,7 +78,7 @@ It covers:
 ## P2
 
 ### 4. Correct capability governance metadata for story tracking
-- Status: open
+- Status: closed on `main`
 - Risk: runtime, ledger, and docs describe a durable write path as read-only.
 - Evidence:
   - `nova_backend/src/config/registry.json`
@@ -89,7 +93,7 @@ It covers:
   - registry, runtime docs, ledger metadata, and executor results all agree
 
 ### 5. Correct capability governance metadata for headline summary and intelligence brief
-- Status: open
+- Status: closed on `main`
 - Risk: capabilities `49` and `50` are documented as local-only but can perform live network reads.
 - Evidence:
   - `nova_backend/src/config/registry.json`
@@ -104,7 +108,7 @@ It covers:
   - runtime docs and metadata reflect actual network reachability
 
 ### 6. Decide and encode the true governance contract for screen capture
-- Status: open
+- Status: closed on `main`
 - Risk: capability `58` is documented as read-only even though it persists PNG files.
 - Evidence:
   - `nova_backend/src/config/registry.json`
@@ -134,7 +138,7 @@ It covers:
 ## P3
 
 ### 8. Fix quiet-hours end-value normalization
-- Status: open
+- Status: closed on `main`
 - Risk: invalid quiet-hours end values silently fall back to the start default.
 - Evidence:
   - `nova_backend/src/tasks/notification_schedule_store.py`
@@ -145,7 +149,7 @@ It covers:
   - invalid end values no longer render `start == end` unless explicitly intended
 
 ### 9. Repair stale perception governance verification
-- Status: open
+- Status: closed on `main`
 - Risk: verification is red even though runtime invocation-source wiring still exists.
 - Evidence:
   - `nova_backend/tests/governance/test_screen_capture_requires_invocation.py`
@@ -158,7 +162,7 @@ It covers:
   - the perception governance slice passes for the current runtime architecture
 
 ### 10. Repair stale ledger-governor verification
-- Status: open
+- Status: closed on `main`
 - Risk: the governance test flags harmless string mentions as event emission.
 - Evidence:
   - `nova_backend/tests/governance/test_ledger_only_governor_logs_actions.py`
@@ -172,7 +176,7 @@ It covers:
 ## Skill And Tool Surface Cleanup
 
 ### 11. Remove or quarantine dead legacy web-search skill files
-- Status: open
+- Status: closed on `main`
 - Risk: dead compatibility surfaces are still documented as active and can mislead maintainers.
 - Evidence:
   - `nova_backend/src/skills/web_search.py`
@@ -191,7 +195,7 @@ It covers:
   - runtime docs only include reachable skill surfaces
 
 ### 12. Clarify the role of `SkillRegistry`
-- Status: open
+- Status: closed on `main`
 - Risk: it is easy to mistake `SkillRegistry` for live runtime routing even though it is no longer on the websocket hot path.
 - Evidence:
   - `nova_backend/src/skill_registry.py`
@@ -207,7 +211,7 @@ It covers:
 ## Runtime Docs Truth Work
 
 ### 13. Make runtime-doc generation exclude unreachable or compatibility-only skill files
-- Status: open
+- Status: closed on `main`
 - Risk: generated docs currently treat every `src/skills/*.py` file as a live skill.
 - Evidence:
   - `nova_backend/src/audit/runtime_auditor.py`
@@ -220,7 +224,7 @@ It covers:
   - `SKILL_SURFACE_MAP.md` matches actual runtime reachability
 
 ### 14. Strengthen runtime-doc tests beyond heading presence
-- Status: open
+- Status: closed on `main`
 - Risk: docs tests currently allow materially false docs to pass.
 - Evidence:
   - `nova_backend/tests/test_runtime_governance_docs.py`

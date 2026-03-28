@@ -1,10 +1,15 @@
 # Conversation Simulation
 
-This test harness runs scripted conversations through Nova's real routing path:
+This test harness runs scripted conversations through Nova's routed conversation stack:
 
 `InputNormalizer -> GovernorMediator -> Governor (for governed invocations) -> SkillRegistry fallback`
 
 It is designed for end-to-end conversation validation without bypassing governance.
+
+Important boundary:
+- `SkillRegistry` is support infrastructure for simulation and bounded deterministic fallback
+- it is not the primary live websocket hot-path router
+- governed capability routing still lives in `GovernorMediator` and `Governor`
 
 ## Location
 

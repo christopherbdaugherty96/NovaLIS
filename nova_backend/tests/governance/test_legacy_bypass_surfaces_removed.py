@@ -5,6 +5,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 SRC_ROOT = PROJECT_ROOT / "src"
+SESSION_HANDLER_PATH = SRC_ROOT / "websocket" / "session_handler.py"
 
 
 def _read(path: Path) -> str:
@@ -25,3 +26,13 @@ def test_legacy_web_search_tool_is_sealed_non_network_shim():
     assert "import requests" not in source
     assert "NetworkMediator" not in source
     assert "return None" in source
+
+
+def test_legacy_web_search_skill_files_are_removed_from_live_runtime():
+    assert not (SRC_ROOT / "skills" / "web_search.py").exists()
+    assert not (SRC_ROOT / "skills" / "web_search_skill.py").exists()
+
+
+def test_session_handler_no_longer_tracks_legacy_web_search_skill_names():
+    source = _read(SESSION_HANDLER_PATH)
+    assert "web_search_skill" not in source

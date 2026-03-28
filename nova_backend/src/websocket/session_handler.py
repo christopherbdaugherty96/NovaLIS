@@ -3642,7 +3642,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         tone_domain=skill_tone_domain,
                     )
 
-                if skill_name in {"weather", "news", "web_search", "web_search_skill"}:
+                if skill_name in {"weather", "news"}:
                     if getattr(skill_result, "success", False):
                         session_state["trust_status"] = failure_ladder.record_external_success(
                             session_state.get("trust_status", {}),
