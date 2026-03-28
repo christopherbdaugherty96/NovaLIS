@@ -16,6 +16,7 @@ class ResponseVerificationExecutor:
         "model is blocked",
         "version mismatch",
     )
+    _NONE_MARKERS = {"none", "none.", "none noted", "none identified", "not applicable", "n/a"}
 
     def __init__(self) -> None:
         self._bridge = DeepSeekBridge()
@@ -123,7 +124,7 @@ class ResponseVerificationExecutor:
             suggested_max_tokens=700,
             analysis_profile="task_scoped",
         )
-        clean = self._safety.sanitize(raw)
+        clean = self._normalize_structured_report(self._safety.sanitize(raw))
         if not clean:
             return self._failure_result(
                 "I couldn't verify that right now.",
@@ -147,10 +148,17 @@ class ResponseVerificationExecutor:
         confidence_label, confidence_score = self._derive_section_label(clean, "confidence", default=accuracy_label)
         issue_count = self._count_bullets(clean, "Potential Issues")
         correction_count = self._count_bullets(clean, "Suggested Corrections")
+        top_issue = self._first_meaningful_item(clean, "Potential Issues")
+        top_correction = self._first_meaningful_item(clean, "Suggested Corrections")
         verification_recommended = (
             accuracy_score < 0.75
             or issue_count > 0
             or correction_count > 0
+        )
+        summary_line = self._summary_line(
+            accuracy_label=accuracy_label,
+            verification_recommended=verification_recommended,
+            review_mode=review_mode or "verification",
         )
         recommendation_line = (
             "Recommendation: Verification is recommended before relying on this claim."
@@ -158,12 +166,25 @@ class ResponseVerificationExecutor:
             else "Recommendation: No immediate re-check required."
         )
         if review_mode == "second_opinion":
+            main_gap_line = (
+                f"Main gap: {top_issue}"
+                if top_issue
+                else "Main gap: No major gap was called out in the review."
+            )
+            best_correction_line = (
+                f"Best correction: {top_correction}"
+                if top_correction
+                else "Best correction: No specific revision was proposed."
+            )
             message = (
                 "DeepSeek Second Opinion\n"
+                f"{summary_line}\n"
                 f"Agreement Level: {accuracy_label} ({accuracy_score:.2f})\n"
                 f"Review Confidence: {confidence_label} ({confidence_score:.2f})\n"
                 f"Gaps or concerns found: {issue_count}\n"
                 f"Suggested improvements: {correction_count}\n"
+                f"{main_gap_line}\n"
+                f"{best_correction_line}\n"
                 f"{recommendation_line}\n\n"
                 f"{clean}\n\n"
                 "Try next:\n"
@@ -172,12 +193,25 @@ class ResponseVerificationExecutor:
                 "- return to Nova's original answer"
             )
         else:
+            main_gap_line = (
+                f"Main issue: {top_issue}"
+                if top_issue
+                else "Main issue: No major issue was called out in the review."
+            )
+            best_correction_line = (
+                f"Best correction: {top_correction}"
+                if top_correction
+                else "Best correction: No specific revision was proposed."
+            )
             message = (
                 "Verification Report\n"
+                f"{summary_line}\n"
                 f"Claim Reliability: {accuracy_label} ({accuracy_score:.2f})\n"
                 f"Report Confidence: {confidence_label} ({confidence_score:.2f})\n"
                 f"Potential issues found: {issue_count}\n"
                 f"Suggested corrections: {correction_count}\n"
+                f"{main_gap_line}\n"
+                f"{best_correction_line}\n"
                 f"{recommendation_line}\n\n"
                 f"{clean}\n\n"
                 "Try next:\n"
@@ -195,6 +229,9 @@ class ResponseVerificationExecutor:
             "verification_recommended": verification_recommended,
             "issue_count": issue_count,
             "correction_count": correction_count,
+            "verification_summary_line": summary_line,
+            "top_issue": top_issue,
+            "top_correction": top_correction,
             "follow_up_prompts": (
                 [
                     "ask Nova to revise the answer",
@@ -245,6 +282,27 @@ class ResponseVerificationExecutor:
         )
         return all(section in lowered for section in required_sections)
 
+    @classmethod
+    def _normalize_structured_report(cls, report_text: str) -> str:
+        clean = str(report_text or "").strip()
+        if not clean:
+            return ""
+
+        clean = re.sub(r"^\s*```(?:\w+)?\s*", "", clean, flags=re.IGNORECASE)
+        clean = re.sub(r"\s*```\s*$", "", clean, flags=re.IGNORECASE)
+        clean = re.sub(r"(?i)\*\*(accuracy|potential issues|suggested corrections|confidence)\*\*", r"\1", clean)
+        clean = re.sub(r"(?im)^\s*[*•]\s*", "- ", clean)
+        clean = re.sub(r"(?i)\bAccuracy\s*[-–]\s*", "Accuracy: ", clean)
+        clean = re.sub(r"(?i)\bPotential Issues\s*[-–]\s*", "\nPotential Issues:\n", clean)
+        clean = re.sub(r"(?i)\bSuggested Corrections\s*[-–]\s*", "\nSuggested Corrections:\n", clean)
+        clean = re.sub(r"(?i)\bConfidence\s*[-–]\s*", "\nConfidence: ", clean)
+        clean = re.sub(r"(?im)^\s*Accuracy\s*:\s*", "Accuracy: ", clean)
+        clean = re.sub(r"(?im)^\s*Potential Issues\s*:\s*", "Potential Issues:\n", clean)
+        clean = re.sub(r"(?im)^\s*Suggested Corrections\s*:\s*", "Suggested Corrections:\n", clean)
+        clean = re.sub(r"(?im)^\s*Confidence\s*:\s*", "Confidence: ", clean)
+        clean = re.sub(r"\n{3,}", "\n\n", clean)
+        return clean.strip()
+
     @staticmethod
     def _section_text(report_text: str, section_name: str) -> str:
         text = str(report_text or "")
@@ -280,15 +338,62 @@ class ResponseVerificationExecutor:
             if not stripped.startswith("-"):
                 continue
             payload = stripped.lstrip("-").strip().lower()
-            if payload in {"none", "none.", "none noted", "none identified", "not applicable", "n/a"}:
+            if payload in cls._NONE_MARKERS:
                 continue
             bullet_lines.append(line)
         if bullet_lines:
             return len(bullet_lines)
         lowered = block.strip().lower()
         normalized = lowered.lstrip("-").strip()
-        if not normalized or normalized in {"none", "none.", "none noted", "none identified", "not applicable", "n/a"}:
+        if not normalized or normalized in cls._NONE_MARKERS:
             return 0
         if normalized.startswith("none identified") or normalized.startswith("none noted") or normalized.startswith("not applicable"):
             return 0
         return 1
+
+    @classmethod
+    def _first_meaningful_item(cls, report_text: str, section_name: str) -> str:
+        block = cls._section_text(report_text, section_name)
+        if not block:
+            return ""
+
+        for line in block.splitlines():
+            stripped = line.strip().lstrip("-").strip()
+            lowered = stripped.lower()
+            if not stripped or lowered in cls._NONE_MARKERS:
+                continue
+            if lowered.startswith("none identified") or lowered.startswith("none noted") or lowered.startswith("not applicable"):
+                continue
+            return stripped.rstrip(".")
+
+        normalized = re.sub(r"\s+", " ", block).strip(" -")
+        lowered = normalized.lower()
+        if not normalized or lowered in cls._NONE_MARKERS:
+            return ""
+        if lowered.startswith("none identified") or lowered.startswith("none noted") or lowered.startswith("not applicable"):
+            return ""
+        return normalized.rstrip(".")
+
+    @staticmethod
+    def _summary_line(*, accuracy_label: str, verification_recommended: bool, review_mode: str) -> str:
+        normalized = str(accuracy_label or "").strip().lower()
+        if review_mode == "second_opinion":
+            if normalized == "high":
+                return "Bottom line: The review broadly agrees with Nova's answer."
+            if normalized == "low":
+                return "Bottom line: The review does not agree with Nova's answer as written."
+            return (
+                "Bottom line: The review partly agrees with Nova's answer but found a meaningful caveat."
+                if verification_recommended
+                else "Bottom line: The review partly agrees with Nova's answer."
+            )
+
+        if normalized == "high":
+            return "Bottom line: The claim looks solid in this review."
+        if normalized == "low":
+            return "Bottom line: The claim does not look reliable as written."
+        return (
+            "Bottom line: The claim looks partly reliable but still needs caution."
+            if verification_recommended
+            else "Bottom line: The claim looks partly reliable in this review."
+        )

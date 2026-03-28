@@ -22,8 +22,17 @@ class VoiceExperienceAgent:
     }
     _INITIATIVE_SPLIT_RE = re.compile(r"\n\n(?:If useful, I can|If you want, I can)\b", re.IGNORECASE)
     _TRY_NEXT_SPLIT_RE = re.compile(r"\n\nTry next:\s*", re.IGNORECASE)
+    _RECOMMENDED_ACTIONS_SPLIT_RE = re.compile(r"\n\n(?:Recommended actions|Recommended next steps):\s*", re.IGNORECASE)
     _SUMMARY_RE = re.compile(r"Summary:\s*(.+?)(?:(?<=\.)\s|$)", re.IGNORECASE)
     _SENTENCE_RE = re.compile(r"(?<=[.!?])\s+")
+    _SECOND_OPINION_HEADINGS = ("Governed Second Opinion", "DeepSeek Second Opinion")
+    _REVIEW_LINE_PATTERNS = {
+        "agreement": re.compile(r"(?im)^(?:Agreement Level|Claim Reliability):\s*(.+)$"),
+        "confidence": re.compile(r"(?im)^(?:Review Confidence|Report Confidence):\s*(.+)$"),
+        "main_gap": re.compile(r"(?im)^Main gap:\s*(.+)$"),
+        "best_correction": re.compile(r"(?im)^Best correction:\s*(.+)$"),
+        "recommendation": re.compile(r"(?im)^Recommendation:\s*(.+)$"),
+    }
 
     def build_ack_payload(self, config: STTAckConfig, *, mode: str = "direct") -> dict | None:
         payload = build_ack_payload(config)
@@ -49,6 +58,10 @@ class VoiceExperienceAgent:
             return ResponseFormatter.to_speakable_text(raw)
 
         raw = self._trim_visual_only_sections(raw)
+        review_summary = self._extract_structured_review_summary(raw)
+        if review_summary:
+            return review_summary
+
         speakable = ResponseFormatter.to_speakable_text(raw)
         if not speakable:
             return ""
@@ -75,8 +88,50 @@ class VoiceExperienceAgent:
 
     def _trim_visual_only_sections(self, text: str) -> str:
         trimmed = self._TRY_NEXT_SPLIT_RE.split(text, maxsplit=1)[0]
+        trimmed = self._RECOMMENDED_ACTIONS_SPLIT_RE.split(trimmed, maxsplit=1)[0]
         trimmed = self._INITIATIVE_SPLIT_RE.split(trimmed, maxsplit=1)[0]
         return trimmed.strip()
+
+    def _extract_structured_review_summary(self, text: str) -> str:
+        clean = str(text or "").strip()
+        if not clean:
+            return ""
+
+        is_second_opinion = any(clean.startswith(heading) for heading in self._SECOND_OPINION_HEADINGS)
+        if not is_second_opinion and not clean.startswith("Verification Report"):
+            return ""
+
+        agreement = self._extract_review_line(clean, "agreement")
+        confidence = self._extract_review_line(clean, "confidence")
+        main_gap = self._extract_review_line(clean, "main_gap")
+        best_correction = self._extract_review_line(clean, "best_correction")
+        recommendation = self._extract_review_line(clean, "recommendation")
+
+        parts = ["Second opinion ready." if is_second_opinion else "Verification ready."]
+        if agreement:
+            label = "Agreement level" if is_second_opinion else "Claim reliability"
+            parts.append(f"{label} {agreement}.")
+        if confidence:
+            label = "Review confidence" if is_second_opinion else "Report confidence"
+            parts.append(f"{label} {confidence}.")
+        if main_gap:
+            parts.append(f"Main gap: {main_gap}.")
+        if best_correction:
+            parts.append(f"Best correction: {best_correction}.")
+        elif recommendation:
+            parts.append(f"{recommendation}.")
+        parts.append("I also put the full review on screen.")
+        return " ".join(part.strip() for part in parts if part.strip()).strip()
+
+    def _extract_review_line(self, text: str, key: str) -> str:
+        pattern = self._REVIEW_LINE_PATTERNS[key]
+        match = pattern.search(text)
+        if not match:
+            return ""
+        value = re.sub(r"\s+", " ", match.group(1)).strip(" .")
+        if not value:
+            return ""
+        return value
 
     def _should_summarize_for_voice(self, text: str) -> bool:
         if "\n" in text:

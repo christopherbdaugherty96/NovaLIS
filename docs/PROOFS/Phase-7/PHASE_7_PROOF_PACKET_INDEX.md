@@ -8,6 +8,7 @@ Status: Current proof index
 - `docs/PROOFS/Phase-7/PHASE_7_SETTINGS_RUNTIME_PERMISSIONS_SLICE_2026-03-26.md`
 - `docs/PROOFS/Phase-7/PHASE_7_PRODUCT_ENTRY_AND_USAGE_VISIBILITY_RUNTIME_SLICE_2026-03-26.md`
 - `docs/PROOFS/Phase-7/PHASE_7_DEDICATED_VERIFICATION_AND_PROOF_ALIGNMENT_2026-03-27.md`
+- `docs/PROOFS/Phase-7/PHASE_7_CONVERSATION_VOICE_AND_SECOND_OPINION_PRESENTATION_REFINEMENT_2026-03-28.md`
 
 ## Adjacent late-Phase-7 / pre-Phase-8 access and foundation slices
 - `docs/PROOFS/Phase-7/PHASE_7_GOVERNED_REMOTE_BRIDGE_RUNTIME_SLICE_2026-03-26.md`
@@ -30,6 +31,8 @@ It is still part of the canonical packet above because answer-first search and n
 - provider transparency in Trust and Settings
 - actionable setup-mode and governed runtime-permission controls in Settings
 - advisory-only explanation of the reasoning lane
+- clearer second-opinion review summaries with bottom-line, main-gap, and best-correction signals
+- calmer voice summaries for structured review output instead of reading the full audit scaffold aloud
 - TTS executor preference for the stronger local renderer before fallback
 - a phase7 dedicated verification package for the bounded reasoning lane
 - token-gated governed remote bridge for read/reasoning access

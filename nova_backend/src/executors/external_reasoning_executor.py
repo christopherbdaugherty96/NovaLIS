@@ -138,11 +138,24 @@ class ExternalReasoningExecutor:
         correction_count = int(base_payload.get("correction_count") or 0)
         reasoning_text = str(base_payload.get("verification_text") or "").strip()
         follow_up_prompts = list(base_payload.get("follow_up_prompts") or [])
+        reasoning_summary_line = str(base_payload.get("verification_summary_line") or "").strip()
+        top_issue = str(base_payload.get("top_issue") or "").strip()
+        top_correction = str(base_payload.get("top_correction") or "").strip()
 
         recommendation_line = (
             "Recommendation: Ask Nova to revise the answer before relying on it."
             if bool(base_payload.get("verification_recommended"))
             else "Recommendation: No immediate re-check is required."
+        )
+        main_gap_line = (
+            f"Main gap: {top_issue}"
+            if top_issue
+            else "Main gap: No major gap was called out in the review."
+        )
+        best_correction_line = (
+            f"Best correction: {top_correction}"
+            if top_correction
+            else "Best correction: No specific revision was proposed."
         )
 
         message = (
@@ -150,29 +163,35 @@ class ExternalReasoningExecutor:
             f"Provider: {self._PROVIDER_LABEL}\n"
             f"Route: {self._ROUTE_LABEL}\n"
             f"Authority: {self._AUTHORITY_LABEL}\n"
+            f"{reasoning_summary_line}\n"
             f"Agreement Level: {accuracy_label} ({accuracy_score:.2f})\n"
             f"Review Confidence: {confidence_label} ({confidence_score:.2f})\n"
             f"Gaps or concerns found: {issue_count}\n"
             f"Suggested improvements: {correction_count}\n"
+            f"{main_gap_line}\n"
+            f"{best_correction_line}\n"
             f"{recommendation_line}\n"
             f"Note: {self._GOVERNANCE_NOTE}\n\n"
-            f"{reasoning_text}\n\n"
+            f"Full review:\n{reasoning_text}\n\n"
             "Try next:\n"
             "- ask Nova to revise the answer\n"
             "- summarize the gaps only\n"
             "- return to Nova's original answer"
         )
-        speakable_text = (
-            "Second opinion ready. "
-            f"Agreement level {accuracy_label}. "
-            f"Review confidence {confidence_label}. "
-            f"Gaps noted {issue_count}. "
-            f"Suggested improvements {correction_count}. "
-            "Advisory only. Nova remains in control."
-        )
+        speakable_parts = [
+            "Second opinion ready.",
+            f"{reasoning_summary_line.replace('Bottom line: ', '').rstrip('.')}." if reasoning_summary_line else "",
+            f"Agreement level {accuracy_label}.",
+            f"Review confidence {confidence_label}.",
+            f"Main gap: {top_issue}." if top_issue else "",
+            f"Best correction: {top_correction}." if top_correction else "",
+            "Advisory only. Nova remains in control.",
+        ]
+        speakable_text = " ".join(part.strip() for part in speakable_parts if part.strip())
         payload = {
             **shared_payload,
             "reasoning_text": reasoning_text,
+            "reasoning_summary_line": reasoning_summary_line,
             "reasoning_accuracy_label": accuracy_label,
             "reasoning_accuracy_score": accuracy_score,
             "reasoning_confidence_label": confidence_label,
@@ -180,6 +199,8 @@ class ExternalReasoningExecutor:
             "reasoning_recommended": bool(base_payload.get("verification_recommended")),
             "issue_count": issue_count,
             "correction_count": correction_count,
+            "top_issue": top_issue,
+            "top_correction": top_correction,
             "follow_up_prompts": follow_up_prompts,
             "reasoning_visible_label": "Governed second opinion",
         }

@@ -36,6 +36,27 @@ class ConversationPersonalityAgent:
             ),
             "Okay. I lost that command. Say it again.",
         ),
+        (
+            re.compile(
+                r"^Verification is unavailable in this runtime because structured analysis is currently blocked or unavailable\.$",
+                re.IGNORECASE,
+            ),
+            "Verification is unavailable right now because the analysis lane is not ready.",
+        ),
+        (
+            re.compile(
+                r"^Governed second opinion is unavailable right now because the analysis lane is blocked or unavailable\.$",
+                re.IGNORECASE,
+            ),
+            "Governed second opinion is unavailable right now because the analysis lane is not ready.",
+        ),
+        (
+            re.compile(
+                r"^Verification returned an incomplete report, so I did not present it as a finished check\.$",
+                re.IGNORECASE,
+            ),
+            "The review came back incomplete, so I did not present it as a finished check.",
+        ),
     )
     _SHORT_STATUS_PREFIXES = (
         "completed",
