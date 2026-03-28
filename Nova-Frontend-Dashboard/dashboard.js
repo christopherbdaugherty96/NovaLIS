@@ -331,6 +331,7 @@ const COMMAND_SUGGESTIONS = [
   "explain this",
   "help me do this",
   "show threads",
+  "assistive notices",
   "intro",
   "settings",
   "workspace home",
@@ -392,6 +393,7 @@ const HELP_EXAMPLES = [
   "explain this",
   "help me do this",
   "show threads",
+  "assistive notices",
   "workspace home",
   "workspace board",
   "trust center",
@@ -2541,6 +2543,9 @@ function renderAssistiveNoticesWidget(data = {}) {
   const recommendedActions = Array.isArray(snapshot.recommended_actions) ? snapshot.recommended_actions : [];
   const governanceNote = String(snapshot.governance_note || "").trim()
     || "Notice, ask, then assist remains the governing rule.";
+  const suppressedNoticeCount = Number(snapshot.suppressed_notice_count || 0);
+  const dismissedNoticeCount = Number(snapshot.dismissed_notice_count || 0);
+  const activeNoticeCount = Number(snapshot.active_notice_count || 0);
 
   const renderNoticeList = (host, { emptyCopy, includeActions = true } = {}) => {
     if (!host) return;
@@ -2555,6 +2560,17 @@ function renderAssistiveNoticesWidget(data = {}) {
     note.className = "workspace-home-doc-copy";
     note.textContent = governanceNote;
     host.appendChild(note);
+
+    if (suppressedNoticeCount > 0 || dismissedNoticeCount > 0 || activeNoticeCount > notices.length) {
+      const stateMeta = document.createElement("div");
+      stateMeta.className = "workspace-home-focus-meta";
+      stateMeta.textContent = [
+        suppressedNoticeCount > 0 ? `${suppressedNoticeCount} cooling down` : "",
+        dismissedNoticeCount > 0 ? `${dismissedNoticeCount} handled` : "",
+        activeNoticeCount > notices.length ? `${activeNoticeCount - notices.length} hidden by current mode` : "",
+      ].filter(Boolean).join(" · ");
+      host.appendChild(stateMeta);
+    }
 
     if (!notices.length) {
       const empty = document.createElement("div");
@@ -2609,6 +2625,39 @@ function renderAssistiveNoticesWidget(data = {}) {
             actionRow.appendChild(btn);
           });
           card.appendChild(actionRow);
+        }
+
+        if (includeActions) {
+          const stateRow = document.createElement("div");
+          stateRow.className = "workspace-board-actions-toolbar";
+
+          const dismissCommand = String(item.dismiss_command || "").trim();
+          if (dismissCommand) {
+            const dismissBtn = document.createElement("button");
+            dismissBtn.type = "button";
+            dismissBtn.textContent = "Dismiss";
+            dismissBtn.addEventListener("click", () => {
+              setActivePage("chat");
+              injectUserText(dismissCommand, "text");
+            });
+            stateRow.appendChild(dismissBtn);
+          }
+
+          const resolveCommand = String(item.resolve_command || "").trim();
+          if (resolveCommand) {
+            const resolveBtn = document.createElement("button");
+            resolveBtn.type = "button";
+            resolveBtn.textContent = "Mark resolved";
+            resolveBtn.addEventListener("click", () => {
+              setActivePage("chat");
+              injectUserText(resolveCommand, "text");
+            });
+            stateRow.appendChild(resolveBtn);
+          }
+
+          if (stateRow.childNodes.length) {
+            card.appendChild(stateRow);
+          }
         }
 
         host.appendChild(card);

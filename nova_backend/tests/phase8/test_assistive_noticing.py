@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 from src.working_context.assistive_noticing import (
+    apply_assistive_notice_feedback,
     build_assistive_notices_widget,
+    record_auto_surfaced_notices,
     render_assistive_notices_message,
 )
 from src.working_context.project_threads import ProjectThreadStore
@@ -76,6 +78,141 @@ def test_assistive_notices_explicit_view_can_show_silent_mode_findings():
 
     assert payload["notice_count"] >= 1
     assert any(item["type"] == "repeated_runtime_issue" for item in payload["notices"])
+
+
+def test_suggestive_mode_does_not_surface_continuity_anchor_notice():
+    store = ProjectThreadStore(session_id="assistive-4", ledger=None)
+
+    payload = build_assistive_notices_widget(
+        session_state={"turn_count": 5},
+        working_context_snapshot={
+            "task_goal": "Resume the same work",
+            "recent_relevant_turns": ["Continue the same thread", "Resume the same task"],
+        },
+        project_threads=store,
+        trust_snapshot={"recent_runtime_activity": [], "blocked_conditions": []},
+        assistive_notice_mode="suggestive",
+        explicit_request=True,
+    )
+
+    assert payload["notice_count"] == 0
+    assert payload["active_notice_count"] == 0
+
+
+def test_workflow_assist_mode_surfaces_continuity_anchor_notice():
+    store = ProjectThreadStore(session_id="assistive-5", ledger=None)
+
+    payload = build_assistive_notices_widget(
+        session_state={"turn_count": 5},
+        working_context_snapshot={
+            "task_goal": "Resume the same work",
+            "recent_relevant_turns": ["Continue the same thread", "Resume the same task"],
+        },
+        project_threads=store,
+        trust_snapshot={"recent_runtime_activity": [], "blocked_conditions": []},
+        assistive_notice_mode="workflow_assist",
+        explicit_request=True,
+    )
+
+    assert any(item["type"] == "missing_continuity_anchor" for item in payload["notices"])
+
+
+def test_high_awareness_mode_surfaces_trust_condition_notice():
+    store = ProjectThreadStore(session_id="assistive-6", ledger=None)
+
+    payload = build_assistive_notices_widget(
+        session_state={"turn_count": 1},
+        working_context_snapshot={},
+        project_threads=store,
+        trust_snapshot={
+            "recent_runtime_activity": [],
+            "blocked_conditions": [
+                {
+                    "label": "Remote bridge",
+                    "status": "paused",
+                    "reason": "Paused in settings for review.",
+                }
+            ],
+        },
+        assistive_notice_mode="high_awareness",
+        explicit_request=True,
+    )
+
+    assert any(item["type"] == "active_trust_condition" for item in payload["notices"])
+
+
+def test_dismissed_notice_stays_hidden_until_conditions_change():
+    store = ProjectThreadStore(session_id="assistive-7", ledger=None)
+    store.ensure_thread("Nova Runtime", goal="Finish bounded noticing")
+    store.attach_update(
+        thread_name="Nova Runtime",
+        summary="Runtime truth drift is still unresolved.",
+        category="blocker",
+    )
+
+    first_payload = build_assistive_notices_widget(
+        session_state={"turn_count": 4},
+        working_context_snapshot={"task_goal": "Finish bounded noticing"},
+        project_threads=store,
+        trust_snapshot={"recent_runtime_activity": [], "blocked_conditions": []},
+        assistive_notice_mode="suggestive",
+        explicit_request=True,
+    )
+    notice = first_payload["notices"][0]
+    notice_state = apply_assistive_notice_feedback({}, notice=notice, status="dismissed")
+
+    second_payload = build_assistive_notices_widget(
+        session_state={"turn_count": 4, "assistive_notice_state": notice_state},
+        working_context_snapshot={"task_goal": "Finish bounded noticing"},
+        project_threads=store,
+        trust_snapshot={"recent_runtime_activity": [], "blocked_conditions": []},
+        assistive_notice_mode="suggestive",
+        explicit_request=True,
+    )
+
+    assert second_payload["notice_count"] == 0
+    assert second_payload["dismissed_notice_count"] == 1
+
+
+def test_auto_surface_cooldown_hides_recently_shown_notice_but_explicit_view_can_still_open_it():
+    store = ProjectThreadStore(session_id="assistive-8", ledger=None)
+    store.ensure_thread("Nova Runtime", goal="Finish bounded noticing")
+    store.attach_update(
+        thread_name="Nova Runtime",
+        summary="Runtime truth drift is still unresolved.",
+        category="blocker",
+    )
+
+    first_payload = build_assistive_notices_widget(
+        session_state={"turn_count": 4},
+        working_context_snapshot={"task_goal": "Finish bounded noticing"},
+        project_threads=store,
+        trust_snapshot={"recent_runtime_activity": [], "blocked_conditions": []},
+        assistive_notice_mode="suggestive",
+        explicit_request=False,
+    )
+    notice_state = record_auto_surfaced_notices({}, notices=list(first_payload["notices"]))
+
+    auto_payload = build_assistive_notices_widget(
+        session_state={"turn_count": 4, "assistive_notice_state": notice_state},
+        working_context_snapshot={"task_goal": "Finish bounded noticing"},
+        project_threads=store,
+        trust_snapshot={"recent_runtime_activity": [], "blocked_conditions": []},
+        assistive_notice_mode="suggestive",
+        explicit_request=False,
+    )
+    explicit_payload = build_assistive_notices_widget(
+        session_state={"turn_count": 4, "assistive_notice_state": notice_state},
+        working_context_snapshot={"task_goal": "Finish bounded noticing"},
+        project_threads=store,
+        trust_snapshot={"recent_runtime_activity": [], "blocked_conditions": []},
+        assistive_notice_mode="suggestive",
+        explicit_request=True,
+    )
+
+    assert auto_payload["notice_count"] == 0
+    assert auto_payload["suppressed_notice_count"] == 1
+    assert explicit_payload["notice_count"] == 1
 
 
 def test_assistive_notices_message_stays_plain_language():

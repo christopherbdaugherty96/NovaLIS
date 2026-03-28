@@ -27,6 +27,10 @@ def test_dashboard_handles_workspace_home_widget_and_hydration():
     assert "function renderWorkspaceHomeWidget(data = {})" in source
     assert "function renderOperationalContextWidget(data = {})" in source
     assert "function renderAssistiveNoticesWidget(data = {})" in source
+    assert "dismiss_command" in source
+    assert "resolve_command" in source
+    assert '"Dismiss"' in source
+    assert '"Mark resolved"' in source
     assert 'requestWorkspaceHomeRefresh(true);' in source
     assert 'renderWorkspaceHomeWidget({});' in source
 

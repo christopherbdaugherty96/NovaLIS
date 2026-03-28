@@ -233,12 +233,15 @@ Right now, Nova can surface things like:
 - a blocker without a next step
 - repeated runtime issues
 - ongoing work without a continuity anchor yet
+- trust conditions in the highest-awareness mode
 
 Important boundary:
 - this is still `notice -> ask -> assist`
 - Nova does not silently act from these notices
 - Nova does not silently save memory because of them
 - Silent mode suppresses unsolicited notice surfacing
+- repeated notices now cool down instead of resurfacing on every refresh
+- surfaced notices can now be dismissed or marked resolved for the current continuity window
 
 ## 12. The Big Difference Between Context, Threads, Memory, Workspace Home, and Operational Context
 The easiest way to understand them is this:
@@ -260,7 +263,25 @@ Operational Context:
 
 Together, these four layers let Nova feel more coherent without becoming hidden or uncontrolled.
 
-## 12. Calm Scheduling
+## 12.1 Assistive Modes
+Assistive noticing now has four visible modes in Settings:
+- `Silent`
+- `Suggestive`
+- `Workflow Assist`
+- `High Awareness`
+
+What changes between them:
+- `Silent` keeps unsolicited notices hidden unless you explicitly open them
+- `Suggestive` focuses on low-risk repeated friction and missing-next-step cues
+- `Workflow Assist` adds stronger continuity nudges like missing project anchors
+- `High Awareness` adds the widest bounded set, including current trust-condition cues
+
+Important boundary:
+- the mode changes what Nova may surface
+- it does not grant new authority
+- even in `High Awareness`, Nova is still not supposed to silently decide or act
+
+## 13. Calm Scheduling
 Phase 5 also includes explicit scheduling for daily briefs and reminders.
 
 This is not meant to make Nova proactive in a hidden way.
@@ -284,7 +305,7 @@ Important boundary:
 - schedules are cancellable
 - scheduled items do not auto-run actions on the user's behalf
 
-## 13. Pattern Review
+## 14. Pattern Review
 Phase 5 also includes an explicit pattern-review layer for ongoing work.
 
 This is not hidden behavior.

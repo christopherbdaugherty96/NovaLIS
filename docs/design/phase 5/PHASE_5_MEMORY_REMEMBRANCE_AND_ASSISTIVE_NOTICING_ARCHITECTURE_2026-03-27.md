@@ -32,6 +32,8 @@ The current repo already has meaningful foundations:
 - visible operational-context review in Home and Trust
 - explicit `reset operational context` support for clearing session continuity without deleting durable governed memory
 - a first bounded assistive-notices surface in Home, Trust, Settings, and explicit command review
+- visible assistive-notice modes with meaningful differences
+- rate-limited assistive resurfacing and session-scoped dismiss / resolve handling
 - bounded relevant-memory use in chat
 - opt-in pattern review
 - trust and recent-activity visibility
@@ -561,6 +563,7 @@ Implement:
 - repeated-workflow recognition
 - stuck-loop notices
 - trust anomaly notices
+- rate limiting and handled-state controls so the layer stays calm instead of nagging
 
 ### Stage 4 - helpfulness modes
 Implement:
