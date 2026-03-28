@@ -872,6 +872,69 @@ class OSDiagnosticsExecutor:
         }
 
     @staticmethod
+    def _openai_status_details() -> dict[str, object]:
+        settings_snapshot = runtime_settings_store.snapshot()
+        permissions = dict(settings_snapshot.get("permissions") or {})
+        provider_policy = dict(settings_snapshot.get("provider_policy") or {})
+        usage_budget = dict(settings_snapshot.get("usage_budget") or {})
+        usage_snapshot = provider_usage_store.snapshot()
+
+        api_key_configured = bool(str(os.getenv("OPENAI_API_KEY", "") or "").strip())
+        permission_enabled = bool(permissions.get("metered_openai_enabled"))
+        routing_mode = str(provider_policy.get("routing_mode") or "local_first").strip() or "local_first"
+        routing_label = str(provider_policy.get("routing_mode_label") or "Local-first").strip() or "Local-first"
+        preferred_model = str(provider_policy.get("preferred_openai_model") or "gpt-5-mini").strip() or "gpt-5-mini"
+        preferred_model_label = str(
+            provider_policy.get("preferred_openai_model_label") or preferred_model
+        ).strip() or preferred_model
+        daily_budget = int(usage_budget.get("daily_metered_token_budget") or usage_snapshot.get("budget_tokens") or 0)
+        budget_state_label = str(
+            usage_snapshot.get("budget_state_label") or "Normal"
+        ).strip() or "Normal"
+
+        if api_key_configured and permission_enabled:
+            status = "available"
+            status_label = "Available"
+            summary = (
+                f"OpenAI is configured as a governed metered lane. Nova still routes local-first, with "
+                f"{preferred_model_label} preferred when the OpenAI lane is used."
+            )
+        elif api_key_configured:
+            status = "paused"
+            status_label = "Paused"
+            summary = (
+                "OpenAI is configured but paused in Settings. Nova remains local-first until you explicitly enable the metered lane."
+            )
+        else:
+            status = "not_configured"
+            status_label = "Not configured"
+            summary = (
+                "OpenAI is optional and not configured right now. Nova remains local-first and offline-first unless you add an API key later."
+            )
+
+        return {
+            "status": status,
+            "status_label": status_label,
+            "summary": summary,
+            "api_key_configured": api_key_configured,
+            "settings_permission": "enabled" if permission_enabled else "paused",
+            "routing_mode": routing_mode,
+            "routing_mode_label": routing_label,
+            "preferred_model": preferred_model,
+            "preferred_model_label": preferred_model_label,
+            "daily_budget_tokens": daily_budget,
+            "budget_state_label": budget_state_label,
+            "budget_remaining_tokens": int(usage_snapshot.get("budget_remaining_tokens") or 0),
+            "token_visibility_label": str(
+                usage_snapshot.get("cost_tracking_label") or "Exact cost tracking is not live yet"
+            ).strip() or "Exact cost tracking is not live yet",
+            "token_summary": str(usage_snapshot.get("summary") or "").strip(),
+            "local_first_boundary": (
+                "Local tools and local models should be attempted before OpenAI, unless you explicitly choose the metered lane."
+            ),
+        }
+
+    @staticmethod
     def _bridge_token_value() -> str:
         for key in ("NOVA_OPENCLAW_BRIDGE_TOKEN", "NOVA_BRIDGE_TOKEN"):
             value = str(os.getenv(key, "") or "").strip()
@@ -958,6 +1021,7 @@ class OSDiagnosticsExecutor:
     def _connection_status_details() -> dict[str, object]:
         model_availability, model_note, _, _ = OSDiagnosticsExecutor._model_status_details()
         reasoning_runtime = OSDiagnosticsExecutor._external_reasoning_status_details()
+        openai_runtime = OSDiagnosticsExecutor._openai_status_details()
         bridge_runtime = OSDiagnosticsExecutor._bridge_status_details()
         agent_runtime = OSDiagnosticsExecutor._openclaw_agent_status_details()
         settings_snapshot = runtime_settings_store.snapshot()
@@ -988,6 +1052,21 @@ class OSDiagnosticsExecutor:
                 "label": "Governed second opinion",
                 "value": str(reasoning_runtime.get("status_label") or reasoning_runtime.get("status") or "Unknown"),
                 "note": str(reasoning_runtime.get("summary") or "").strip(),
+            },
+            {
+                "label": "AI routing mode",
+                "value": str(openai_runtime.get("routing_mode_label") or "Local-first"),
+                "note": str(openai_runtime.get("local_first_boundary") or "").strip(),
+            },
+            {
+                "label": "OpenAI metered lane",
+                "value": str(openai_runtime.get("status_label") or "Not configured"),
+                "note": str(openai_runtime.get("summary") or "").strip(),
+            },
+            {
+                "label": "OpenAI preferred model",
+                "value": str(openai_runtime.get("preferred_model_label") or "GPT-5 mini"),
+                "note": "This only affects the optional metered lane. Local-first routing remains the default boundary.",
             },
             {
                 "label": "BYO provider keys",
@@ -1039,11 +1118,17 @@ class OSDiagnosticsExecutor:
                 "value": str(usage_snapshot.get("budget_state_label") or "Normal"),
                 "note": str(usage_snapshot.get("cost_tracking_label") or "Exact cost tracking is not live yet"),
             },
+            {
+                "label": "Metered budget",
+                "value": f"{int(openai_runtime.get('daily_budget_tokens') or 0):,} tokens/day",
+                "note": "This cap applies only to metered providers such as OpenAI. Local routes stay outside it.",
+            },
         ]
 
         summary_parts = [
             str(settings_snapshot.get("summary") or "").strip(),
             "Local model route is " + model_availability + ".",
+            str(openai_runtime.get("summary") or "").strip(),
             ("BYO provider keys are configured." if configured_keys else "BYO provider keys are not configured."),
             str(bridge_runtime.get("summary") or "").strip(),
             str(agent_runtime.get("summary") or "").strip(),
@@ -1056,6 +1141,7 @@ class OSDiagnosticsExecutor:
             "configured_provider_labels": configured_keys,
             "bridge_enabled": bool(bridge_runtime.get("enabled")),
             "setup_mode": str(settings_snapshot.get("setup_mode") or "local"),
+            "openai_runtime": openai_runtime,
             "agent_runtime": agent_runtime,
             "usage_runtime": usage_snapshot,
         }

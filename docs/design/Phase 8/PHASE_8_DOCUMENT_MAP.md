@@ -23,6 +23,10 @@ If there is tension about the eventual strict automation model, this document wi
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_HOME_AGENT_AND_PERSONALITY_LAYER_PLAN_2026-03-26.md`
 - `docs/design/Phase 8/PHASE_8_5_SCHEDULER_AND_PROACTIVE_DELIVERY_PLAN_2026-03-27.md`
+- `docs/design/Phase 8/OPENAI_AGENT_OPERATING_MODEL_2026-03-27.md`
+- `docs/design/Phase 8/OPENAI_PROVIDER_ROUTING_AND_BUDGET_POLICY_2026-03-27.md`
+- `docs/design/Phase 8/OPENAI_USAGE_VISIBILITY_SPEC_2026-03-27.md`
+- `docs/design/Phase 8/TRADING_MODE_GUARDRAILS_2026-03-27.md`
 
 This remains useful as a narrower implementation-planning packet.
 It should now be read as supporting context beneath the canonical Phase-8 spec above.
@@ -36,6 +40,12 @@ Together, the canonical spec and supporting plan now explicitly define OpenClaw 
 - OpenClaw may be a bounded autonomous worker
 - Nova remains the governing law, watcher, and intervention point
 - OpenClaw is inside Nova's envelope and boundary system, never above it
+
+The OpenAI documents define the metered-provider side of that same system:
+- OpenAI is optional and budgeted
+- Nova remains local-first by default
+- token and cost awareness are part of the trust model
+- trading research can arrive earlier than live autonomous trading
 
 ## Raw Source Inputs Preserved
 - `docs/design/Phase 8/openclaw.txt`

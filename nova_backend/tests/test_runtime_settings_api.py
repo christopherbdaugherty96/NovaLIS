@@ -37,6 +37,9 @@ def test_runtime_settings_api_reports_defaults(monkeypatch, tmp_path):
     assert payload["settings"]["permissions"]["remote_bridge_enabled"] is True
     assert payload["settings"]["permissions"]["home_agent_enabled"] is True
     assert payload["settings"]["permissions"]["home_agent_scheduler_enabled"] is False
+    assert payload["settings"]["permissions"]["metered_openai_enabled"] is False
+    assert payload["settings"]["provider_policy"]["routing_mode"] == "local_first"
+    assert payload["settings"]["usage_budget"]["daily_metered_token_budget"] == 4000
 
 
 def test_runtime_settings_setup_mode_update_changes_snapshot(monkeypatch, tmp_path):
@@ -76,6 +79,38 @@ def test_runtime_settings_can_pause_remote_bridge(monkeypatch, tmp_path):
     )
     assert bridge_response.status_code == 403
     assert "paused in settings" in bridge_response.json()["detail"].lower()
+
+
+def test_runtime_settings_provider_policy_update_changes_snapshot(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+
+    client = TestClient(brain_server.app)
+    response = client.post(
+        "/api/settings/runtime/provider-policy",
+        json={"routing_mode": "explicit_openai", "preferred_openai_model": "gpt-5.4"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["settings"]["provider_policy"]["routing_mode"] == "explicit_openai"
+    assert payload["settings"]["provider_policy"]["preferred_openai_model"] == "gpt-5.4"
+    assert payload["openai"]["routing_mode"] == "explicit_openai"
+
+
+def test_runtime_settings_usage_budget_update_changes_snapshot(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+
+    client = TestClient(brain_server.app)
+    response = client.post(
+        "/api/settings/runtime/usage-budget",
+        json={"daily_metered_token_budget": 12000, "warning_ratio": 0.9},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["settings"]["usage_budget"]["daily_metered_token_budget"] == 12000
+    assert payload["settings"]["usage_budget"]["warning_ratio"] == 0.9
+    assert payload["openai"]["daily_budget_tokens"] == 12000
 
 
 def test_external_reasoning_respects_runtime_permission(monkeypatch, tmp_path):

@@ -1,5 +1,5 @@
 # Frontend and UI Guide
-Updated: 2026-03-26
+Updated: 2026-03-27
 
 ## Purpose
 This guide explains Nova's frontend in plain language.
@@ -116,6 +116,7 @@ More specifically, the current dashboard can now show:
 - Trust page reasoning-transparency section with provider, route, mode, authority, and last outcome
 - Policy Review Center draft overview, selected-draft detail, simulation review, and one-shot manual run review
 - Settings page setup-mode selection, runtime permission controls, reasoning transparency, and voice confidence review
+- Settings page local-first AI routing controls, optional OpenAI lane visibility, and metered budget controls
 - Settings page provider, connection, bridge-status, and settings-history review
 - Trust page remote-bridge review
 - Agent page runtime cards, template availability state, delivery-mode controls, per-template schedule controls, ready-for-review inbox state, and recent run history

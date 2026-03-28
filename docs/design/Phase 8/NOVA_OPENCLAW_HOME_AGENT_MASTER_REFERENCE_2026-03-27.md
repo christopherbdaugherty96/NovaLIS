@@ -32,6 +32,7 @@ OpenClaw is the worker layer inside Nova.
 The correct product reading is:
 - Nova is the face, voice, trust layer, and explanation surface
 - OpenClaw is the bounded worker substrate for task-style runs
+- OpenAI is an optional metered lane inside Nova, not a replacement for Nova's local-first identity
 - the user talks to Nova, not to OpenClaw
 - OpenClaw results are presented through Nova's voice
 - OpenClaw is inside Nova governance, never above it
@@ -352,6 +353,10 @@ Design:
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_HOME_AGENT_AND_PERSONALITY_LAYER_PLAN_2026-03-26.md`
 - `docs/design/Phase 8/PHASE_8_5_SCHEDULER_AND_PROACTIVE_DELIVERY_PLAN_2026-03-27.md`
+- `docs/design/Phase 8/OPENAI_AGENT_OPERATING_MODEL_2026-03-27.md`
+- `docs/design/Phase 8/OPENAI_PROVIDER_ROUTING_AND_BUDGET_POLICY_2026-03-27.md`
+- `docs/design/Phase 8/OPENAI_USAGE_VISIBILITY_SPEC_2026-03-27.md`
+- `docs/design/Phase 8/TRADING_MODE_GUARDRAILS_2026-03-27.md`
 - `docs/design/Phase 8/PHASE_8_DOCUMENT_MAP.md`
 
 Runtime:

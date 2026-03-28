@@ -12,6 +12,7 @@ def _agent_setup_snapshot(deps, agent_snapshot: dict[str, Any]) -> dict[str, Any
     permission_enabled = deps.runtime_settings_store.is_permission_enabled("home_agent_enabled")
     scheduler_enabled = deps.runtime_settings_store.is_permission_enabled("home_agent_scheduler_enabled")
     bridge_runtime = deps.OSDiagnosticsExecutor._bridge_status_details()
+    openai_runtime = deps.OSDiagnosticsExecutor._openai_status_details()
     model_status, model_note, model_hint, model_ready = deps.OSDiagnosticsExecutor._model_status_details()
     weather_configured = bool(str(os.getenv("WEATHER_API_KEY") or "").strip())
     calendar_path = CalendarSkill._calendar_path()
@@ -93,6 +94,17 @@ def _agent_setup_snapshot(deps, agent_snapshot: dict[str, Any]) -> dict[str, Any
             "ready": True,
         },
         {
+            "id": "metered_openai",
+            "label": "OpenAI lane",
+            "status": str(openai_runtime.get("status") or "not_configured").strip() or "not_configured",
+            "status_label": str(openai_runtime.get("status_label") or "Not configured").strip() or "Not configured",
+            "summary": str(openai_runtime.get("summary") or "").strip()
+            or "OpenAI is optional and stays outside Nova's local-first path until explicitly enabled.",
+            "ready": bool(openai_runtime.get("api_key_configured")) and bool(
+                str(openai_runtime.get("settings_permission") or "paused").strip() == "enabled"
+            ),
+        },
+        {
             "id": "remote_bridge",
             "label": "Remote bridge",
             "status": str(bridge_runtime.get("status") or "disabled").strip() or "disabled",
@@ -126,7 +138,7 @@ def _agent_setup_snapshot(deps, agent_snapshot: dict[str, Any]) -> dict[str, Any
     optional_gaps = [
         card["summary"]
         for card in source_cards
-        if not bool(card.get("ready")) and str(card.get("id") or "") in {"weather", "calendar", "remote_bridge", "scheduler"}
+        if not bool(card.get("ready")) and str(card.get("id") or "") in {"weather", "calendar", "metered_openai", "remote_bridge", "scheduler"}
     ]
 
     if not permission_enabled:
