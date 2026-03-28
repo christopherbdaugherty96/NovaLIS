@@ -57,6 +57,11 @@ A strong first-use path is:
 4. `second opinion and final answer`
 - see Nova's bounded review loop in one step
 
+Nova now also includes a live onboarding path inside the product itself:
+- the Intro page now shows a setup-readiness checklist
+- the Settings page now mirrors that checklist with the current next step
+- startup help is now visible in-product if Nova is still stuck on `Connecting`
+
 ## What Makes Nova Different
 Most AI products are built like this:
 - answer first
@@ -87,7 +92,7 @@ Nova is real now, but it is still growing.
 
 Important things still maturing include:
 - broader connectors
-- more polished onboarding and setup
+- more polished connector entry and non-technical setup
 - deeper OpenClaw execution work
 - stronger packaging for non-technical users
 - more complete cross-system awareness over time

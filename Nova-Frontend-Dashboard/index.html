@@ -186,6 +186,25 @@
         <div class="widget page-card intro-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
+              <div class="workspace-home-section-title">Setup Readiness</div>
+              <p id="intro-checklist-summary" class="workspace-board-section-copy">Loading the current setup path and readiness checks.</p>
+            </div>
+          </div>
+          <div id="intro-checklist-grid" class="settings-mode-grid"></div>
+          <p id="intro-next-step-copy" class="first-run-note">
+            Nova is checking the best next step for this device.
+          </p>
+          <div class="workspace-board-actions-toolbar">
+            <button id="btn-intro-refresh-setup" type="button">Refresh setup</button>
+            <button id="btn-intro-open-connections" type="button">Connection status</button>
+            <button id="btn-intro-voice-check" type="button">Run voice check</button>
+            <button id="btn-intro-open-home-ready" type="button">Open Home</button>
+          </div>
+        </div>
+
+        <div class="widget page-card intro-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
               <div class="workspace-home-section-title">What You Can Do</div>
               <p class="workspace-board-section-copy">Start simple. Nova becomes useful fast.</p>
             </div>
@@ -238,8 +257,8 @@
         <div class="widget page-card intro-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Setup Options</div>
-              <p class="workspace-board-section-copy">You can stay fully local or choose a future cloud path later in Settings.</p>
+              <div class="workspace-home-section-title">Setup Paths</div>
+              <p class="workspace-board-section-copy">Start with what you need now. Everything else can stay optional until you want it.</p>
             </div>
           </div>
           <div class="intro-setup-grid">
@@ -256,6 +275,22 @@
               <div class="workspace-spotlight-copy">Will be the easiest future setup path, but should still stay visible and explicit.</div>
             </div>
           </div>
+        </div>
+
+        <div class="widget page-card intro-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">If Setup Gets Stuck</div>
+              <p class="workspace-board-section-copy">Nova should be usable without hunting through the repo. These are the core local recovery steps.</p>
+            </div>
+          </div>
+          <ul class="help-list">
+            <li>If the header stays on <code>Connecting</code>, restart Nova locally and refresh the dashboard.</li>
+            <li>Windows startup: <code>start_nova.bat</code> to start and <code>stop_nova.bat</code> to stop.</li>
+            <li>macOS/Linux startup: <code>./start_nova.sh</code> to start and <code>./stop_nova.sh</code> to stop.</li>
+            <li>Local mode should still work without provider keys, bridge tokens, or connector setup.</li>
+            <li>Voice check is recommended for comfort, but not required to start using Nova.</li>
+          </ul>
         </div>
 
         <div class="widget page-card intro-panel" aria-live="polite">
@@ -761,6 +796,19 @@
             <button id="btn-settings-voice-status" type="button">Voice status</button>
             <button id="btn-settings-voice-check" type="button">Run voice check</button>
           </div>
+        </div>
+
+        <div class="widget page-card trust-center-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Setup Checklist</div>
+              <p id="settings-setup-summary" class="workspace-board-section-copy">Loading the current readiness checks for this device.</p>
+            </div>
+          </div>
+          <div id="settings-setup-grid" class="settings-mode-grid"></div>
+          <p id="settings-setup-next-step" class="first-run-note">
+            Nova is checking the best next setup action for this runtime.
+          </p>
         </div>
 
         <div class="widget page-card trust-center-panel" aria-live="polite">

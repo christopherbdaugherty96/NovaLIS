@@ -20,6 +20,10 @@ Purpose: Canonical proof packet for Phase 4.5 closure refresh with current runti
 7. `CALENDAR_INTEGRATION_PROOF_2026-03-09.md`
 8. `ORB_NON_SEMANTIC_RUNTIME_PROOF_2026-03-09.md`
 
+## Later Runtime Refresh Slices
+1. `PHASE_4_5_MAGIC_EXPERIENCE_ALIGNMENT_2026-03-12.md`
+2. `PHASE_4_5_ONBOARDING_AND_SETUP_READINESS_REFRESH_2026-03-28.md`
+
 ## Runtime Cross-References
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 - `docs/current_runtime/GOVERNANCE_MATRIX.md`
@@ -39,4 +43,9 @@ Purpose: Canonical proof packet for Phase 4.5 closure refresh with current runti
 - Targeted Phase 4.5 safety bundle: `26 passed`
 - Full backend suite: `285 passed`
 - Runtime documentation drift check passed
+- Frontend mirror sync check passed
+
+## Latest Focused Verification Refresh (2026-03-28)
+- Onboarding and Trust widget bundle: `6 passed`
+- `node --check` passed for both dashboard copies
 - Frontend mirror sync check passed

@@ -1,5 +1,5 @@
 # Current State
-Updated: 2026-03-27
+Updated: 2026-03-28
 
 ## Where Nova Is Today
 Nova is no longer just a design project.
@@ -35,6 +35,7 @@ That means Nova already has:
 - a visible primary navigation strip and a header page/connection status surface
 - a pinned base dependency file and cross-platform startup scripts
 - a first-run onboarding guide for non-technical users
+- Intro and Settings setup-readiness checklists with current next-step guidance and in-product startup help
 - a visible local-project Structure Map surface with structured graph output
 - inspectable list/show/edit/delete memory paths with confirmation where needed
 - governed memory export from both command and Memory-page surface
@@ -98,6 +99,7 @@ These parts are already meaningfully real:
 - a stronger first-run magic-moment prompt centered on `explain this`
 - persistent top-level page navigation and a clearer current-page/runtime-status header
 - Intro-first first-run routing instead of starting new users in a blank chat view
+- Intro and Settings onboarding now explain what is required now, what is optional later, and what to do if Nova is still stuck on `Connecting`
 - a clearer text-bearing thinking bar and better voice/PTT state feedback
 - timed snapshot fallback states with a direct Settings path for calendar setup
 - inline confirmation before lock/unlock/defer/delete memory actions are sent
