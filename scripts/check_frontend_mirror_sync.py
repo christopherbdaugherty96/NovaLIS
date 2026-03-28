@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import hashlib
 from pathlib import Path
-import sys
 
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 PAIRS = (
-    (Path('nova_backend/static/index.html'), Path('Nova-Frontend-Dashboard/index.html')),
-    (Path('nova_backend/static/dashboard.js'), Path('Nova-Frontend-Dashboard/dashboard.js')),
-    (Path('nova_backend/static/style.phase1.css'), Path('Nova-Frontend-Dashboard/style.phase1.css')),
-    (Path('nova_backend/static/orb.js'), Path('Nova-Frontend-Dashboard/orb.js')),
+    (PROJECT_ROOT / "nova_backend" / "static" / "index.html", PROJECT_ROOT / "Nova-Frontend-Dashboard" / "index.html"),
+    (PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js", PROJECT_ROOT / "Nova-Frontend-Dashboard" / "dashboard.js"),
+    (PROJECT_ROOT / "nova_backend" / "static" / "style.phase1.css", PROJECT_ROOT / "Nova-Frontend-Dashboard" / "style.phase1.css"),
+    (PROJECT_ROOT / "nova_backend" / "static" / "orb.js", PROJECT_ROOT / "Nova-Frontend-Dashboard" / "orb.js"),
 )
 
 

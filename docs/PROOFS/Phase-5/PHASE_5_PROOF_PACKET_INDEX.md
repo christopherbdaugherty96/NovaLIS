@@ -63,9 +63,9 @@ These documents remain useful as design history, but they are not the current au
 - `docs/design/Phase 5/MEMORY GOVERNANCE.md`
 - `docs/design/Phase 5/NOVA_WORKING_CONTEXT_ENGINE.md`
 - `docs/design/Phase 5/PHASE_5_DOCUMENT_MAP.md`
-- `docs/design/Phase 5/# ðŸ§­ Tonal Calibration Scope â€“ Desi.txt`
-- `docs/design/Phase 5/# ðŸ§­ Tonal Calibration Visibility â€“.txt`
-- `docs/design/Phase 5/ðŸ“„ Phaseâ€¯5 Roadmap.txt (corrected).txt`
+- the tonal calibration scope design document in `docs/design/Phase 5/`
+- the tonal calibration visibility design document in `docs/design/Phase 5/`
+- the corrected Phase-5 roadmap document in `docs/design/Phase 5/`
 - `docs/design/Phase 5/Delegated Autonomy.txt`
 - `docs/design/Phase 5/Consolidated API's.txt`
 - `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
@@ -75,14 +75,17 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
 - `docs/PROOFS/Phase-6/PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
 
 ## Verification Commands (Current)
+Run these commands from `nova_backend/`.
+
 - `python -m pytest tests\phase45\test_brain_server_basic_conversation.py tests\phase45\test_dashboard_memory_widget.py tests\phase5\test_memory_governance_executor.py tests\conversation\test_response_style_router.py tests\conversation\test_response_formatter.py tests\conversation\test_session_router.py tests\conversation\test_conversation_router.py tests\test_governor_execution_timeout.py`
 - `python -m pytest tests\phase5\test_memory_governance_executor.py tests\test_governor_mediator_phase4_capabilities.py tests\test_memory_api.py`
+- `python -m pytest tests\phase5 -q`
 - `python -m pytest tests\executors\test_news_intelligence_executor.py tests\executors\test_web_search_executor.py tests\phase45\test_brain_server_tone_commands.py tests\conversation\test_general_chat_tone.py tests\conversation\test_personality_interface_agent.py tests\test_tierb_conversation.py`
-- `python scripts/generate_runtime_docs.py`
-- `python scripts/check_runtime_doc_drift.py`
-- `python scripts/check_frontend_mirror_sync.py`
+- `python ..\scripts\generate_runtime_docs.py`
+- `python ..\scripts\check_runtime_doc_drift.py`
+- `python ..\scripts\check_frontend_mirror_sync.py`
 
-## Latest Verification Snapshot (2026-03-26)
+## Latest Verification Snapshot (2026-03-27)
 - memory/governor/conversation regression bundle: `117 passed`
 - news/search/tone regression bundle: `72 passed`
 - memory-stage2 focused bundle: `12 passed`
@@ -107,6 +110,8 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
 - operational-remembrance/unit bundle: `10 passed`
 - dashboard operational-context static bundle: `4 passed`
 - targeted operational-context websocket bundle: `5 passed`
+- phase5 focused suite: `49 passed`
+- phase5 memory/continuity support bundle: `25 passed`
 - full active-capability sequential audit: all `23` active governed capabilities passed targeted verification
 - active-capability residual caveat: capability `18` (`speak_text`) now has a stronger runtime fallback path and passing code-path verification, but still needs live device spoken-output validation
 - runtime documentation drift check: passed

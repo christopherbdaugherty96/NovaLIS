@@ -321,6 +321,7 @@ def _derive_capability_governance_rows(registry: dict[str, Any]) -> list[dict[st
     for capability in registry.get("capabilities", []):
         cid = int(capability.get("id", -1))
         risk_level = str(capability.get("risk_level", ""))
+        description = str(capability.get("description") or "").strip()
         authority_class = str(capability.get("authority_class") or "").strip() or None
         confirmation_required = capability.get("requires_confirmation")
         reversible = capability.get("reversible")
@@ -356,6 +357,7 @@ def _derive_capability_governance_rows(registry: dict[str, Any]) -> list[dict[st
             {
                 "id": cid,
                 "name": capability.get("name", ""),
+                "description": description,
                 "enabled": bool(capability.get("enabled", False)),
                 "status": capability.get("status", ""),
                 "phase_introduced": capability.get("phase_introduced", ""),
@@ -1376,7 +1378,8 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
 
     for row in governance_rows:
         if row["enabled"]:
-            lines.append(f"| {row['id']} | {row['name']} | Governed runtime capability |")
+            description = str(row.get("description") or "").strip() or "Governed runtime capability"
+            lines.append(f"| {row['id']} | {row['name']} | {description} |")
 
     lines.extend(
         [
@@ -1458,6 +1461,15 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         lines.extend(f"- {gap}" for gap in known_gaps)
     else:
         lines.append("- None")
+
+    lines.extend(
+        [
+            "",
+            "Operational / QA Follow-Through",
+            "",
+            "- Live-device spoken-output validation remains recommended for the local TTS path",
+        ]
+    )
 
     lines.extend(
         [

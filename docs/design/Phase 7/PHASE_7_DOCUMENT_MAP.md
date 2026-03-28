@@ -17,6 +17,9 @@ The following Phase-7 product slices are now live in runtime/proof:
 Current proof packet:
 - `docs/PROOFS/Phase-7/PHASE_7_PROOF_PACKET_INDEX.md`
 
+Current dedicated verification package:
+- `nova_backend/tests/phase7/`
+
 ## Canonical Phase-7 Planning Core
 - `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
 
@@ -94,6 +97,10 @@ Phase 7 is now complete in the current repo in the bounded sense defined by the 
 - the reasoning lane remains advisory only
 
 Later work may still deepen quality, but that belongs to product refinement after Phase 7, not to the definition of whether Phase 7 exists at runtime.
+
+Interpretation note:
+- the late remote-bridge and manual home-agent slices are real runtime work
+- they should be read as adjacent late-Phase-7 / pre-Phase-8 foundations, not as a redefinition of the canonical Phase-7 core
 
 ## Adjacent / Historical Phase-7-Era Research
 - the older Phase-7 architecture document in this folder
