@@ -1,5 +1,5 @@
 # Phase 7 Document Map
-Updated: 2026-03-26
+Updated: 2026-03-28
 Status: Current design map with Phase-7 runtime now complete in the governed external-reasoning lane
 Purpose: Separate the near-term Phase-7 external-reasoning plan from older autonomy-presence exploration documents
 
@@ -9,6 +9,7 @@ The following Phase-7 product slices are now live in runtime/proof:
 - inline news summaries on the News page
 - cleaner user-facing news category language
 - explicit governed external reasoning capability for same-thread second-opinion review
+- same-session review followthrough and one-command review-plus-final-answer flow
 - provider transparency in Trust and Settings
 - actionable setup-mode and governed runtime-permission controls in Settings
 - advisory-only explanation of the reasoning lane

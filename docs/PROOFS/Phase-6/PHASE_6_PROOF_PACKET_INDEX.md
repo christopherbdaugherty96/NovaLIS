@@ -1,5 +1,5 @@
 # Phase-6 Proof Packet Index
-Updated: 2026-03-26
+Updated: 2026-03-28
 Status: COMPLETE runtime packet
 Purpose: Canonical index of the runtime-implemented Phase-6 slices that are actually live in the repository.
 
@@ -23,6 +23,7 @@ Do not use this packet to claim:
 6. `PHASE_6_DASHBOARD_REFINEMENT_MEMORY_AND_NEWS_RUNTIME_SLICE_2026-03-14.md`
 7. `PHASE_6_POLICY_REVIEW_CENTER_RUNTIME_SLICE_2026-03-26.md`
 8. `PHASE_6_COMPLETION_AND_HANDOFF_RUNTIME_SLICE_2026-03-26.md`
+9. `PHASE_6_LOCAL_SURFACE_HARDENING_AND_GOVERNANCE_TRUTH_ALIGNMENT_2026-03-28.md`
 
 ## Core Design Inputs
 - `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`
@@ -59,10 +60,12 @@ Run these commands from `nova_backend/`.
 - `python ..\scripts\check_frontend_mirror_sync.py`
 - `python ..\scripts\check_runtime_doc_drift.py`
 
-## Latest Verification Refresh (2026-03-27)
+## Latest Verification Refresh (2026-03-28)
 - phase6 focused suite: `21 passed`
 - trust/policy/runtime support bundle: `31 passed`
 - governance-boundary bundle: `8 passed`
+- focused hardening bundle: `42 passed`
+- surrounding phase7 / bridge / news / timeout bundle: `45 passed`
 - runtime documentation drift check: passed
 - frontend mirror parity check: passed
 
@@ -75,5 +78,7 @@ The phase has also been revalidated end to end against:
 - policy/runtime tests
 - trust/policy surface tests
 - governance-boundary tests
+- local-surface request-boundary tests
+- store-integrity and timeout-behavior tests
 - frontend mirror parity
 - runtime-doc drift checks

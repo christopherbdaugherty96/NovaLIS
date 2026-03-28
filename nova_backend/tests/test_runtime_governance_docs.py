@@ -37,6 +37,11 @@ def test_governance_docs_generation(tmp_path, monkeypatch):
         content = (runtime_dir / name).read_text(encoding="utf-8")
         assert anchor in content
 
+    skill_map = (runtime_dir / "SKILL_SURFACE_MAP.md").read_text(encoding="utf-8")
+    assert "src/skills/web_search.py" not in skill_map
+    assert "src/skills/web_search_skill.py" not in skill_map
+    assert "intentionally omitted from this live runtime map" in skill_map
+
 
 def test_current_runtime_state_includes_required_sections():
     report = ra.run_runtime_truth_audit()

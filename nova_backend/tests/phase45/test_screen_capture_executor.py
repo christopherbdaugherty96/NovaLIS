@@ -74,6 +74,8 @@ def test_screen_capture_executor_logs_requested_and_completed_on_success():
     assert result.success is True
     assert isinstance(result.data, dict)
     assert result.speakable_text.startswith("Screen region captured.")
+    assert result.authority_class == "persistent_change"
+    assert result.reversible is False
     assert result.structured_data["capture"]["image_path"] == "C:/tmp/capture.png"
     assert result.data.get("capture", {}).get("image_path") == "C:/tmp/capture.png"
     assert "Active context: Python Downloads." in result.message
@@ -96,6 +98,8 @@ def test_screen_capture_executor_logs_failure_when_capture_fails():
     result = executor.execute(_request({"invocation_source": "voice"}))
     assert result.success is False
     assert "screen capture is unavailable" in result.message.lower()
+    assert result.authority_class == "persistent_change"
+    assert result.reversible is False
     assert result.outcome_reason
     assert result.structured_data["capture_failure_kind"] == "capture_failed"
     assert result.data["capture_error"] == "capture unavailable"
@@ -116,6 +120,8 @@ def test_screen_capture_executor_surfaces_missing_dependency_reason():
     assert result.success is False
     assert "pyautogui" in result.message
     assert "missing" in result.message.lower()
+    assert result.authority_class == "persistent_change"
+    assert result.reversible is False
     assert result.structured_data["capture_failure_kind"] == "missing_dependency"
     assert result.data["capture_failure_kind"] == "missing_dependency"
     assert result.data["missing_dependency"] == "pyautogui"

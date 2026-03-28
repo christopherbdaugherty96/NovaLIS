@@ -26,3 +26,11 @@ def test_memory_export_api_returns_non_deleted_items(monkeypatch, tmp_path):
     assert payload["item_count"] == 1
     assert payload["items"][0]["id"] == kept["id"]
     assert all(not bool(item.get("deleted")) for item in payload["items"])
+
+
+def test_memory_export_api_rejects_non_local_host():
+    client = TestClient(brain_server.app)
+    response = client.get("/api/memory/export", headers={"Host": "evil.example"})
+
+    assert response.status_code == 403
+    assert "loopback host" in response.json()["detail"].lower()

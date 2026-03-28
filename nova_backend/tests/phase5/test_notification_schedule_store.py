@@ -94,6 +94,20 @@ def test_notification_schedule_store_policy_snapshot_and_quiet_hours(tmp_path: P
     assert result["reason"] == "quiet_hours"
 
 
+def test_notification_schedule_store_invalid_quiet_hours_end_falls_back_to_end_default(tmp_path: Path):
+    store = NotificationScheduleStore(tmp_path / "schedules.json")
+
+    policy = store.update_policy(
+        quiet_hours_enabled=True,
+        quiet_hours_start="10:00 pm",
+        quiet_hours_end="not-a-time",
+    )
+
+    assert policy["quiet_hours_start"] == "22:00"
+    assert policy["quiet_hours_end"] == "07:00"
+    assert policy["quiet_hours_label"] == "10:00 PM to 7:00 AM"
+
+
 def test_notification_schedule_store_enforces_rate_limit_and_tracks_delivery_audit(tmp_path: Path):
     store = NotificationScheduleStore(tmp_path / "schedules.json")
     now = datetime(2026, 3, 13, 15, 0, tzinfo=timezone.utc)

@@ -49,6 +49,7 @@ class ExecuteBoundary:
         self._start_rss_mb: Optional[float] = None
         self._start_cpu_seconds: Optional[float] = None
         self._active_executions = 0
+        self._release_pending = False
         self._lock = threading.Lock()
 
     def allow_execution(self) -> bool:
@@ -80,8 +81,33 @@ class ExecuteBoundary:
         self._start_rss_mb = None
         self._start_cpu_seconds = None
         with self._lock:
+            if self._release_pending:
+                return
             if self._active_executions > 0:
                 self._active_executions -= 1
+
+    def _release_after_timeout(self, pool: ThreadPoolExecutor, future) -> None:
+        with self._lock:
+            self._release_pending = True
+
+        def _drain() -> None:
+            try:
+                future.result()
+            except Exception:
+                pass
+            finally:
+                try:
+                    pool.shutdown(wait=False, cancel_futures=True)
+                finally:
+                    self._start_time = None
+                    self._start_rss_mb = None
+                    self._start_cpu_seconds = None
+                    with self._lock:
+                        self._release_pending = False
+                        if self._active_executions > 0:
+                            self._active_executions -= 1
+
+        threading.Thread(target=_drain, daemon=True).start()
 
     @staticmethod
     def _rss_mb() -> Optional[float]:
@@ -104,8 +130,8 @@ class ExecuteBoundary:
         """
         Execute an operation inside the boundary with timeout signaling.
 
-        If the timeout is hit, we wait for the worker thread to finish before
-        raising TimeoutError so execution does not continue in the background.
+        If the timeout is hit, we return promptly but keep the execution slot
+        occupied until the worker thread actually drains.
         """
         timeout = float(timeout_seconds if timeout_seconds is not None else MAX_EXECUTION_TIME)
         pool = ThreadPoolExecutor(max_workers=1)
@@ -114,10 +140,11 @@ class ExecuteBoundary:
             return future.result(timeout=timeout)
         except FutureTimeoutError as error:
             future.cancel()
+            self._release_after_timeout(pool, future)
             raise TimeoutError("Execution exceeded boundary timeout.") from error
         finally:
-            # wait=True prevents orphaned background execution after timeout.
-            pool.shutdown(wait=True, cancel_futures=True)
+            if not self._release_pending:
+                pool.shutdown(wait=False, cancel_futures=True)
 
     def enforce_memory_limits(self) -> None:
         """Check post-execution memory ceilings."""

@@ -12,6 +12,7 @@ Status: Current proof index
 - `docs/PROOFS/Phase-7/PHASE_7_REASONING_SURFACE_AND_LONG_FORM_PRESENTATION_REFINEMENT_2026-03-28.md`
 - `docs/PROOFS/Phase-7/PHASE_7_REPORT_SURFACES_CHAT_SUMMARY_CARD_AND_VOICE_REFINEMENT_2026-03-28.md`
 - `docs/PROOFS/Phase-7/PHASE_7_SAME_SESSION_REVIEW_FOLLOWTHROUGH_TRIAD_RUNTIME_SLICE_2026-03-28.md`
+- `docs/PROOFS/Phase-7/PHASE_7_FULL_DESIGN_REVIEW_AND_RUNTIME_ALIGNMENT_2026-03-28.md`
 
 ## Adjacent late-Phase-7 / pre-Phase-8 access and foundation slices
 - `docs/PROOFS/Phase-7/PHASE_7_GOVERNED_REMOTE_BRIDGE_RUNTIME_SLICE_2026-03-26.md`
@@ -31,6 +32,7 @@ It is still part of the canonical packet above because answer-first search and n
 - inline news-card and category summaries on the News page
 - cleaner user-facing news category language
 - explicit governed external reasoning capability for same-thread second-opinion review
+- same-session review followthrough and one-command review-plus-final-answer flow
 - provider transparency in Trust and Settings
 - actionable setup-mode and governed runtime-permission controls in Settings
 - advisory-only explanation of the reasoning lane
@@ -42,6 +44,7 @@ It is still part of the canonical packet above because answer-first search and n
 - reusable assistant chat summary cards for bottom-line, main-gap, and best-correction reporting signals
 - same-session review followthrough so Nova can revise, summarize, or restore an answer from the bounded second-opinion lane
 - explicit one-command review-plus-final-answer flow for the bounded second-opinion lane
+- full Phase-7 design-folder review confirming the canonical bounded reading against the live repo
 - TTS executor preference for the stronger local renderer before fallback
 - a phase7 dedicated verification package for the bounded reasoning lane
 - token-gated governed remote bridge for read/reasoning access
@@ -92,6 +95,7 @@ Run these commands from `nova_backend/`.
 ## Latest Verification Snapshot (2026-03-28)
 - phase7 dedicated verification package: `7 passed`
 - external-reasoning / bridge / usage / trust-surface bundle: `33 passed`
+- surrounding phase7 / bridge / news / timeout bundle: `45 passed`
 - reasoning-surface / general-chat / web-search / news-presentation bundle: `75 passed`
 - broader conversation / voice / second-opinion regression bundle: `18 passed`
 - focused report-surface / voice refinement bundle: `22 passed`

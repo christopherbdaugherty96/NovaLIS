@@ -3,9 +3,10 @@ from __future__ import annotations
 import json
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from threading import RLock
 from typing import Any
 from uuid import uuid4
+
+from src.utils.persistent_state import shared_path_lock, write_json_atomic
 
 
 def _utc_now() -> datetime:
@@ -53,10 +54,11 @@ class NotificationScheduleStore:
             / "schedules.json"
         )
         self._path = Path(path) if path else default_path
-        self._lock = RLock()
-        self._path.parent.mkdir(parents=True, exist_ok=True)
-        if not self._path.exists():
-            self._write_state(self._default_state())
+        self._lock = shared_path_lock(self._path)
+        with self._lock:
+            self._path.parent.mkdir(parents=True, exist_ok=True)
+            if not self._path.exists():
+                self._write_state(self._default_state())
 
     @property
     def path(self) -> Path:
@@ -143,9 +145,15 @@ class NotificationScheduleStore:
             if quiet_hours_enabled is not None:
                 policy["quiet_hours_enabled"] = bool(quiet_hours_enabled)
             if quiet_hours_start is not None:
-                policy["quiet_hours_start"] = self._normalize_clock_value(quiet_hours_start)
+                policy["quiet_hours_start"] = self._normalize_clock_value(
+                    quiet_hours_start,
+                    fallback=str(self.DEFAULT_POLICY["quiet_hours_start"]),
+                )
             if quiet_hours_end is not None:
-                policy["quiet_hours_end"] = self._normalize_clock_value(quiet_hours_end)
+                policy["quiet_hours_end"] = self._normalize_clock_value(
+                    quiet_hours_end,
+                    fallback=str(self.DEFAULT_POLICY["quiet_hours_end"]),
+                )
             if max_deliveries_per_hour is not None:
                 safe_limit = max(1, min(int(max_deliveries_per_hour), 12))
                 policy["max_deliveries_per_hour"] = safe_limit
@@ -425,7 +433,7 @@ class NotificationScheduleStore:
             "schedules": [self._normalize_item(dict(item or {})) for item in list(state.get("schedules") or [])],
             "policy": self._normalize_policy(state.get("policy")),
         }
-        self._path.write_text(json.dumps(normalized, indent=2), encoding="utf-8")
+        write_json_atomic(self._path, normalized)
 
     def _normalize_item(self, item: dict[str, Any]) -> dict[str, Any]:
         normalized = dict(item)
@@ -450,19 +458,21 @@ class NotificationScheduleStore:
         return {
             "quiet_hours_enabled": bool(raw.get("quiet_hours_enabled", self.DEFAULT_POLICY["quiet_hours_enabled"])),
             "quiet_hours_start": self._normalize_clock_value(
-                raw.get("quiet_hours_start", self.DEFAULT_POLICY["quiet_hours_start"])
+                raw.get("quiet_hours_start", self.DEFAULT_POLICY["quiet_hours_start"]),
+                fallback=str(self.DEFAULT_POLICY["quiet_hours_start"]),
             ),
             "quiet_hours_end": self._normalize_clock_value(
-                raw.get("quiet_hours_end", self.DEFAULT_POLICY["quiet_hours_end"])
+                raw.get("quiet_hours_end", self.DEFAULT_POLICY["quiet_hours_end"]),
+                fallback=str(self.DEFAULT_POLICY["quiet_hours_end"]),
             ),
             "max_deliveries_per_hour": limit_value,
         }
 
-    def _normalize_clock_value(self, raw: Any) -> str:
+    def _normalize_clock_value(self, raw: Any, *, fallback: str) -> str:
         text = str(raw or "").strip().lower().replace(".", "")
         text = text.replace("  ", " ")
         if not text:
-            text = str(self.DEFAULT_POLICY["quiet_hours_start"])
+            text = str(fallback)
         if text.endswith("am") or text.endswith("pm"):
             text = text[:-2].strip() + f" {text[-2:]}"
         for fmt in ("%H:%M", "%H", "%I:%M %p", "%I %p"):
@@ -471,7 +481,7 @@ class NotificationScheduleStore:
                 return parsed.strftime("%H:%M")
             except ValueError:
                 continue
-        return str(self.DEFAULT_POLICY["quiet_hours_start"])
+        return str(fallback)
 
     def _build_policy_snapshot(self, state: dict[str, Any], *, now: datetime) -> dict[str, Any]:
         policy = self._normalize_policy(state.get("policy"))

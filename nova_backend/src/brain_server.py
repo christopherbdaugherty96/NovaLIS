@@ -22,7 +22,9 @@ from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Any, Optional
 
-from fastapi import FastAPI, WebSocket
+from fastapi import FastAPI, Request, WebSocket
+from fastapi.responses import FileResponse, JSONResponse
+from fastapi.staticfiles import StaticFiles
 
 from src.api.audit_api import build_audit_router
 from src.api.bridge_api import build_bridge_router
@@ -78,6 +80,7 @@ from src.tasks.notification_schedule_store import NotificationScheduleStore
 from src.openclaw.agent_runner import openclaw_agent_runner
 from src.openclaw.agent_runtime_store import openclaw_agent_runtime_store
 from src.openclaw.agent_scheduler import openclaw_agent_scheduler
+from src.utils.local_request_guard import describe_http_rebinding_violation
 from src.personality.conversation_personality_agent import ConversationPersonalityAgent
 from src.personality.interface_agent import PersonalityInterfaceAgent
 from src.personality.nova_style_contract import NovaStyleContract
@@ -121,6 +124,14 @@ async def _lifespan(_app: FastAPI):
 
 app = FastAPI(lifespan=_lifespan)
 
+
+@app.middleware("http")
+async def _enforce_local_http_boundary(request: Request, call_next):
+    violation = describe_http_rebinding_violation(request)
+    if violation:
+        return JSONResponse(status_code=403, content={"detail": violation})
+    return await call_next(request)
+
 # Phase-build lock marker for runtime auditor and governance checks.
 # Phase 4 keeps 4.2 modules runtime-locked unless a build promotes phase.
 _ = (BUILD_PHASE, PHASE_4_2_ENABLED)
@@ -128,8 +139,6 @@ _ = (BUILD_PHASE, PHASE_4_2_ENABLED)
 # -------------------------------------------------
 # Static Files
 # -------------------------------------------------
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parents[1]   # nova_backend/

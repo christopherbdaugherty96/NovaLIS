@@ -16,8 +16,19 @@ def test_timeout_waits_for_worker_completion_before_returning():
         state["finished"] = True
         return "done"
 
-    with pytest.raises(TimeoutError):
-        boundary.run_with_timeout(_slow_operation, timeout_seconds=0.01)
+    boundary.enter_execution()
+    try:
+        start = time.perf_counter()
+        with pytest.raises(TimeoutError):
+            boundary.run_with_timeout(_slow_operation, timeout_seconds=0.01)
+        elapsed = time.perf_counter() - start
 
-    # Timeout should not leave the worker running in background.
-    assert state["finished"] is True
+        assert elapsed < 0.06
+        boundary.exit_execution()
+        assert boundary.allow_execution() is False
+
+        time.sleep(0.12)
+        assert state["finished"] is True
+        assert boundary.allow_execution() is True
+    finally:
+        boundary.exit_execution()
