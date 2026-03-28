@@ -103,6 +103,7 @@ Phase 8 should not be read as authorization for:
 - `docs/design/NOVA_GOVERNED_INTELLIGENCE_EXECUTION_DIRECTION_2026-03-21.md`
 - `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
+- `docs/design/NOVA_CROSS_SYSTEM_MEMORY_AND_GOVERNED_AWARENESS_DIRECTION_2026-03-27.md`
 - `docs/design/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
 - `docs/design/NOVA_WEBSEARCH_ANSWER_AND_REASONING_PLAN_2026-03-21.md`
 - `docs/design/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
@@ -123,6 +124,11 @@ The memory / remembrance / assistive-noticing packet matters here because:
 - user personal memory remains a Phase-5 governed memory concern
 - operational remembrance becomes trust-visible in later layers
 - assistive noticing and suggestive help should be treated as bounded later-phase behavior, not backported into Phase-5 runtime by accident
+
+The cross-system memory / governed-awareness direction packet matters here because:
+- it explains why Phase 8 is not just "more agent power"
+- it frames Nova as stateful across the environment, not only inside one repo
+- it reinforces that awareness should widen before autonomous authority does
 
 The first live assistive-noticing slice should be read that way too:
 - bounded visible notices are now live

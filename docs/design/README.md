@@ -42,6 +42,9 @@ Current next-level robust agent roadmap:
 Current continuous Nova Agent-OS vision and trust roadmap:
 - `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
 
+Current cross-system memory and governed-awareness direction packet:
+- `docs/design/NOVA_CROSS_SYSTEM_MEMORY_AND_GOVERNED_AWARENESS_DIRECTION_2026-03-27.md`
+
 Current honest assessment and next-todo note:
 - `docs/design/NOVA_HONEST_ASSESSMENT_AND_NEXT_TODO_2026-03-21.md`
 
