@@ -1,114 +1,160 @@
-﻿# How Nova Works
-Updated: 2026-03-13
+# How Nova Works
+Updated: 2026-03-28
 
 ## The Simple Model
-Nova has three big layers:
-- experience
-- intelligence
-- governed action
+Nova is easiest to understand as four connected layers:
+- conversation
+- memory and continuity
+- governance and trust
+- bounded agent and reasoning lanes
 
-### 1. Experience layer
-This is the part you see and interact with.
+These layers work together, but they do not all have the same authority.
+
+The most important design rule is:
+
+`Intelligence may expand. Authority may not expand silently.`
+
+## 1. Conversation Layer
+This is the part the user talks to.
+
 It includes:
-- the dashboard
-- the orb
-- chat responses
+- chat
 - voice input and voice output
-- thread views and widgets
+- explanation flows
+- follow-up handling
+- response shaping and presentation
 
-This layer is about interaction and presentation.
-It is not supposed to hold authority by itself.
+This layer is meant to feel natural and useful, but it is not supposed to grant itself execution power.
 
-### 2. Intelligence layer
-This is the part that analyzes, compares, summarizes, and explains.
+## 2. Memory And Continuity Layer
+This is how Nova stays coherent over time.
+
 It includes:
-- research and reporting
-- verification
-- screen analysis
-- explain-anything routing
-- analysis documents
-- thread reasoning
+- explicit personal memory
+- project threads and workspace continuity
+- operational remembrance
+- bounded assistive noticing
 
-This layer is where Nova "thinks," but that does not mean it gets to act freely.
+This is what lets Nova feel less stateless without becoming creepy.
 
-### 3. Governed action layer
-This is the part that handles any real execution.
-It includes things like:
-- opening a website
-- changing volume
-- changing brightness
-- opening a file or folder
-- saving governed memory
+Important boundary:
+- saved memory should be explicit and inspectable
+- continuity should stay visible and resettable
+- noticing should lead to suggestions, not hidden action
 
-The key rule is that real actions do not come directly from the intelligence layer.
-They go through a governance path first.
+## 3. Governance And Trust Layer
+This is Nova's control system.
 
-## Why That Matters
-Nova is built on a very important idea:
-- intelligence and authority are not the same thing
+It includes:
+- capability routing
+- execution boundaries
+- confirmation paths
+- policy review
+- trust and runtime diagnostics
+- usage visibility
 
-That means Nova can become better at:
-- reasoning
-- summarizing
-- comparing
-- understanding context
-- helping with projects
+This is the layer that keeps Nova from collapsing into "the model decided, so it ran."
+
+In user terms, this is why Nova can show:
+- what is enabled
+- what is paused
+- what route it used
+- when something is advisory only
+- when something needs confirmation
+
+## 4. Bounded Reasoning And Agent Layer
+This is where Nova becomes more than a plain assistant, but still stays bounded.
+
+Today this includes:
+- the governed second-opinion review lane
+- same-session review followthrough
+- the one-tap `second opinion and final answer` loop
+- manual OpenClaw home-agent templates
+- the narrow scheduler and delivery inbox
+
+Important boundary:
+- Nova remains the face the user talks to
+- OpenClaw is the worker layer inside Nova
+- the review lane can critique and improve answers, but it cannot take actions directly
+
+## The Typical Request Paths
+A Nova request usually follows one of these paths.
+
+### Path A: Local explanation or retrieval
+Examples:
+- `explain this`
+- `what do you remember`
+- `continue my project`
+
+Nova will:
+1. route local-first
+2. gather relevant context, memory, or workspace state
+3. present the answer in Nova's voice
+
+### Path B: Governed action
+Examples:
+- open a file
+- adjust a system setting
+- save governed memory
+
+Nova will:
+1. interpret the request
+2. route through the governor
+3. check capability and confirmation rules
+4. execute in the boundary
+5. log the result
+
+### Path C: Review and refinement
+Examples:
+- `second opinion`
+- `final answer`
+- `second opinion and final answer`
+
+Nova will:
+1. preserve the source answer
+2. run the bounded review lane
+3. summarize the review if needed
+4. give Nova's revised final answer in the same session
+
+### Path D: Agent-style assistance
+Examples:
+- manual briefs
+- narrow scheduled briefings
+- early OpenClaw worker tasks
+
+Nova will:
+1. build a bounded task from a template
+2. run preflight checks
+3. gather data first
+4. summarize and deliver in Nova's voice
+
+## Where Local-First Fits
+Local-first is not just a deployment choice. It is part of Nova's behavior model.
+
+Current routing posture is:
+1. deterministic local tools first
+2. local models second
+3. bounded worker lanes third
+4. optional metered cloud lanes only when explicitly allowed
+
+That keeps Nova from becoming cloud-first by accident.
+
+## Why The Separation Matters
+Nova is designed so these things stay separate:
+- thinking
+- remembering
+- noticing
+- acting
+
+That separation is what makes the system safer to expand.
+
+Nova can become better at:
+- reviewing answers
+- remembering explicit context
+- following project continuity
+- surfacing bounded suggestions
 
 without automatically becoming more powerful in what it is allowed to do.
 
-## What Happens When You Ask Nova For Something
-At a human level, a Nova request usually goes one of three ways.
-
-### Path A: explanation only
-Example:
-- `Nova, explain this page.`
-
-Nova will:
-- gather request-time context
-- analyze the current screen or page
-- return an explanation
-
-No real-world action is needed.
-
-### Path B: governed action
-Example:
-- `Nova, open source 2.`
-- `Nova, set brightness to 65.`
-
-Nova will:
-- interpret the request
-- route it into the governed action path
-- check whether the capability is enabled and allowed
-- execute inside the boundary
-- log the result
-
-### Path C: continuity or memory
-Example:
-- `Nova, continue my deployment issue.`
-- `Nova, memory list thread deployment issue.`
-
-Nova will:
-- retrieve current thread context or governed memory
-- explain where the work stands
-- show blocker, status, decisions, or saved memory
-
-## The Dashboard's Role
-The dashboard is where Nova starts to feel like a workspace rather than a simple chat window.
-
-It can show:
-- weather, news, calendar, and system snapshots
-- thread map and thread detail
-- memory counts and linked history
-- system status and model readiness
-- follow-up actions
-
-The dashboard should make Nova easier to understand, not more autonomous.
-
-## The Orb's Role
-The orb is meant to provide calm presence.
-It is not meant to secretly signal hidden reasoning state, execution readiness, or system authority.
-
-## The Most Important High-Level Truth
-Nova is designed so that deeper intelligence does not automatically become deeper authority.
-
-That separation is one of the most important things about the whole project.
+## The Short Version
+Nova works by keeping conversation, memory, governance, and agent behavior connected but not collapsed into one uncontrolled layer.

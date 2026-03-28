@@ -1,176 +1,153 @@
 # Visual Architecture Map
-Updated: 2026-03-21
+Updated: 2026-03-28
 
 ## Purpose
-This guide gives a simple visual map of Nova's codebase.
+This guide explains Nova's architecture in normal human language.
 
-It is meant for people who want an easy way to understand:
+Use it when you want a grounded answer to:
 - what the main parts of Nova are
-- how the pieces fit together
-- where the important code lives
-- what the repository is trying to do as a whole
+- how the pieces fit together today
+- where OpenClaw fits
+- where optional OpenAI routing fits
+- what is current versus future
 
-This is an explanatory guide, not runtime truth.
+This is an explanatory guide, not runtime law.
 If this guide ever conflicts with live runtime behavior, the runtime truth docs win.
 
 ## The Easiest Way To Think About Nova
-Nova is one workspace system with five main layers:
+Nova is one system with five main layers:
 
-1. UI
-2. Brain
-3. Governor
-4. Capabilities
-5. Memory and context
+1. UI and experience
+2. Conversation and presentation
+3. Governance and trust
+4. Capabilities, reasoning, and agent lanes
+5. Memory and continuity
 
-## Simple System Diagram
+## Current System Diagram
 ```mermaid
 flowchart TD
-    U["You"] --> UI["Nova Dashboard UI<br/>Chat, controls, weather, actions"]
-    UI --> B["Brain Server<br/>Main request hub"]
-    B --> C["Conversation Layer<br/>Understands wording, tone, follow-ups"]
-    B --> G["Governor Layer<br/>Checks authority, safety, confirmation rules"]
-    B --> M["Memory + Context<br/>Session context, project continuity, governed memory"]
-    B --> P["Perception + Intelligence<br/>Screen understanding, research, summaries"]
+    U["User"] --> UI["Nova UI\nChat / Home / Memory / Trust / Settings / Agent"]
+    UI --> APP["Nova runtime\napp assembly + websocket session handling"]
 
-    G --> E["Executors / Capabilities<br/>The actual actions Nova can perform"]
+    APP --> CONV["Conversation layer\nchat / voice / follow-ups / presentation"]
+    APP --> GOV["Governance and trust\npermissions / policy / confirmation / diagnostics"]
+    APP --> MEM["Memory and continuity\nexplicit memory / project threads / operational context / assistive notices"]
 
-    E --> OS["Local Computer Actions<br/>Open folders, volume, brightness, media"]
-    E --> INFO["Information Actions<br/>Weather, news, web search, reports"]
-    E --> EXPLAIN["Explanation Actions<br/>Explain screen, files, pages, project structure"]
+    GOV --> CAPS["Capabilities and bounded lanes"]
+    CAPS --> LOCAL["Local tools and skills\nweather / news / calendar / screen / system / memory"]
+    CAPS --> REVIEW["Bounded review lane\nsecond opinion / final answer followthrough"]
+    CAPS --> OPENCLAW["OpenClaw home-agent foundation\nmanual templates / narrow scheduler / delivery inbox"]
+    CAPS --> OPENAI["Optional metered OpenAI lane\nvisible / budgeted / local-first fallback"]
 
-    M --> B
-    P --> B
-    C --> B
-    UI --> U
+    LOCAL --> PRESENT["Nova-owned presentation layer"]
+    REVIEW --> PRESENT
+    OPENCLAW --> PRESENT
+    OPENAI --> PRESENT
+
+    PRESENT --> UI
+    GOV --> LEDGER["Ledger / Trust / usage visibility"]
 ```
 
 ## What Each Layer Means
 
-### UI
-The UI is the part you see and interact with.
-It includes the dashboard, chat area, controls, actions, weather, and other visible surfaces.
+### 1. UI and experience
+This is the part users actually see.
+It includes:
+- dashboard pages
+- chat surfaces
+- widgets
+- voice interactions
+- Agent, Trust, Memory, and Settings pages
 
-### Brain
-The brain is the main orchestration layer.
-It receives requests, decides what kind of request they are, and routes them to the right part of the system.
+### 2. Conversation and presentation
+This is how Nova turns requests into understandable responses.
+It includes:
+- input normalization
+- follow-up handling
+- response shaping
+- voice-friendly summaries
+- same-session answer refinement
 
-### Governor
-The governor is the execution boundary.
-It checks whether Nova is allowed to do something, whether confirmation is needed, and which capability should handle the request.
+### 3. Governance and trust
+This is Nova's authority boundary.
+It includes:
+- governor routing
+- execution rules
+- capability control
+- review and policy surfaces
+- runtime diagnostics
+- user-visible trust state
 
-### Capabilities
-Capabilities are the actual things Nova can do.
-These include local actions, search and reporting paths, explanation paths, and system-control helpers.
+### 4. Capabilities, reasoning, and agent lanes
+This is the working layer.
+It includes:
+- local skills and executors
+- bounded second-opinion reasoning
+- OpenClaw worker flows
+- optional metered cloud fallback where allowed
 
-### Memory And Context
-This layer helps Nova stay coherent.
-It includes session conversation context, governed memory, and project continuity surfaces.
+Important truth:
+- not every smart path is an execution path
+- advisory reasoning is not execution authority
+- agent help is still bounded and policy-shaped
+
+### 5. Memory and continuity
+This is how Nova stays coherent over time.
+It includes:
+- explicit personal memory
+- thread continuity
+- operational remembrance
+- bounded assistive noticing
 
 ## Repository Diagram
 ```mermaid
 flowchart LR
-    R["Nova Project Root"] --> D["docs/<br/>Human guides, runtime truth, design, proofs"]
-    R --> NB["nova_backend/<br/>Main backend runtime"]
-    R --> FD["Nova-Frontend-Dashboard/<br/>Frontend/dashboard surface"]
-    R --> WS["nova_workspace/<br/>Workspace state and local project context"]
-    R --> GOV["NovaLIS-Governance/<br/>Governance and policy material"]
-    R --> S["scripts/<br/>Start/stop helpers and tooling"]
+    R["Nova Project Root"] --> DOCS["docs/\ndesign / proofs / runtime truth / guides"]
+    R --> BACKEND["nova_backend/\nlive backend runtime"]
+    R --> FRONTEND["Nova-Frontend-Dashboard/\nmirrored UI copy"]
+    R --> WORKSPACE["nova_workspace/\nlocal workspace context"]
+    R --> SCRIPTS["scripts/\nstartup, maintenance, truth checks"]
 
-    NB --> SRC["src/<br/>Real logic"]
-    NB --> TESTS["tests/<br/>Safety + regression proof"]
-    NB --> STATIC["static/<br/>Served UI assets"]
+    BACKEND --> SRC["src/"]
+    BACKEND --> TESTS["tests/"]
+    BACKEND --> STATIC["static/"]
 
-    SRC --> BRAIN["brain_server.py<br/>Main orchestration hub"]
-    SRC --> GOV2["governor/<br/>Capability routing and execution boundaries"]
-    SRC --> EXEC["executors/<br/>Actual capabilities"]
-    SRC --> CONV["conversation/<br/>Input handling, follow-ups, style"]
-    SRC --> WC["working_context/<br/>Project thread continuity"]
-    SRC --> MEM["memory/<br/>Governed memory"]
-    SRC --> PER["perception/<br/>Screen/local understanding"]
-    SRC --> PERS["personality/<br/>Nova voice/style"]
-    SRC --> SYS["system_control/<br/>Local OS actions"]
+    SRC --> BRAIN["brain_server.py\nmain runtime assembly"]
+    SRC --> WS["websocket/session_handler.py\nlive session loop"]
+    SRC --> GOV2["governor/\nauthority and execution routing"]
+    SRC --> EXEC["executors/\nconcrete capability workers"]
+    SRC --> CONV2["conversation/\nprompts, review, formatting, routing"]
+    SRC --> WC["working_context/\ncontinuity, project threads, notices"]
+    SRC --> MEM2["memory/\ngoverned memory store"]
+    SRC --> OPENCLAW2["openclaw/\nmanual and narrow scheduled worker runtime"]
+    SRC --> PERS["personality/\nNova voice and style"]
 ```
 
-## Plain-English Repo Meaning
+## Current Big-Picture Truth
+If you explain Nova to a technical person today, the cleanest summary is:
+- Nova is the assistant and trust layer
+- local tools and local models come first
+- the review lane is bounded and advisory only
+- OpenClaw is a worker layer inside Nova, not a separate authority center
+- optional metered OpenAI use is visible and policy-shaped, not the default brain for everything
 
-### `docs/`
-The documentation system.
-This includes human guides, runtime truth docs, design packets, proof packets, and governance material.
+## Future Direction
+The intended future shape is:
+- stronger cross-system continuity
+- wider but still governed connectors
+- broader agent execution only after stricter Phase 8 execution components land
+- local-first routing staying the default even as higher-power lanes grow
 
-### `nova_backend/`
-The live backend runtime.
-This is where Nova's main logic, governor path, executors, conversation system, memory, and tests live.
+## Read With
+For the user explanation:
+- `01_START_HERE.md`
+- `02_HOW_NOVA_WORKS.md`
+- `07_CURRENT_STATE.md`
 
-### `Nova-Frontend-Dashboard/`
-A mirrored frontend/dashboard surface used to keep the interface aligned.
-
-### `nova_workspace/`
-Workspace state and local project context.
-
-### `NovaLIS-Governance/`
-Governance and policy materials connected to Nova's design posture.
-
-### `scripts/`
-Helper scripts for starting, stopping, checking, and maintaining the project.
-
-## The Most Important Backend Parts
-
-### `brain_server.py`
-The main request hub.
-If you want to understand how Nova decides what to do, start here.
-
-### `governor/`
-The safety and authority boundary.
-This is where governed execution logic and capability routing live.
-
-### `executors/`
-The concrete task implementations.
-These are the workers that actually carry out allowed capabilities.
-
-### `conversation/`
-The wording and response layer.
-This is where input handling, follow-up logic, style shaping, and session routing live.
-
-### `working_context/`
-The project continuity layer.
-This helps Nova stay aligned with the current thread of work.
-
-### `memory/`
-Governed memory storage and retrieval.
-
-### `perception/`
-Screen and local understanding helpers.
-
-### `personality/`
-Nova's style and presentation layer.
-
-### `system_control/`
-The local OS-control helpers used by allowed system actions.
-
-## What Nova Is Trying To Be
-Nova is not organized like a simple chatbot.
-
-It is organized like a governed workspace system with separate layers for:
-- execution authority
-- cognitive analysis
-- perception and explanation
-- continuity and memory
-- user experience
-
-That separation is one of the most important ideas in the whole project.
-
-## Fastest Understanding Path
-If you want the shortest useful tour of Nova, use this order:
-
-1. `README.md`
-2. `REPO_MAP.md`
-3. `docs/reference/HUMAN_GUIDES/README.md`
-4. `docs/reference/HUMAN_GUIDES/12_CODEBASE_TOUR.md`
-5. `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
-6. `nova_backend/src/brain_server.py`
-7. `nova_backend/src/governor/`
-8. `nova_backend/src/executors/`
+For the system explanation:
+- `docs/design/Phase 8/NOVA_SYSTEM_MAP_CURRENT_AND_FUTURE_2026-03-27.md`
+- `28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27.md`
+- `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 
 ## One-Sentence Summary
-Nova is a governed workspace assistant:
-the UI talks to the brain, the brain routes through the governor, the governor controls capabilities, and memory plus context keep the whole system coherent.
+Nova is a local-first governed AI workspace where conversation, memory, trust, reasoning, and agent help all connect through one visible authority boundary.
