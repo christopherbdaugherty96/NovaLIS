@@ -40,7 +40,7 @@ def test_external_reasoning_returns_governed_second_opinion(monkeypatch):
                 "top_issue": "the answer needs a clearer caveat",
                 "top_correction": "explain the uncertainty in one sentence",
                 "follow_up_prompts": [
-                    "ask Nova to revise the answer",
+                    "nova final answer",
                     "summarize the gaps only",
                     "return to Nova's original answer",
                 ],
@@ -61,7 +61,7 @@ def test_external_reasoning_returns_governed_second_opinion(monkeypatch):
                 "top_issue": "the answer needs a clearer caveat",
                 "top_correction": "explain the uncertainty in one sentence",
                 "follow_up_prompts": [
-                    "ask Nova to revise the answer",
+                    "nova final answer",
                     "summarize the gaps only",
                     "return to Nova's original answer",
                 ],

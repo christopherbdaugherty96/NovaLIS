@@ -188,7 +188,7 @@ class ResponseVerificationExecutor:
                 f"{recommendation_line}\n\n"
                 f"{clean}\n\n"
                 "Try next:\n"
-                "- ask Nova to revise the answer\n"
+                "- nova final answer\n"
                 "- summarize the gaps only\n"
                 "- return to Nova's original answer"
             )
@@ -234,7 +234,7 @@ class ResponseVerificationExecutor:
             "top_correction": top_correction,
             "follow_up_prompts": (
                 [
-                    "ask Nova to revise the answer",
+                    "nova final answer",
                     "summarize the gaps only",
                     "return to Nova's original answer",
                 ]

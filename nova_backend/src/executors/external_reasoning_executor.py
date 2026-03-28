@@ -174,7 +174,7 @@ class ExternalReasoningExecutor:
             f"Note: {self._GOVERNANCE_NOTE}\n\n"
             f"Full review:\n{reasoning_text}\n\n"
             "Try next:\n"
-            "- ask Nova to revise the answer\n"
+            "- nova final answer\n"
             "- summarize the gaps only\n"
             "- return to Nova's original answer"
         )

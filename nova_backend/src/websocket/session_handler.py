@@ -179,6 +179,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     _select_relevant_memory_context = deps._select_relevant_memory_context
     _tone_domain_for_skill = deps._tone_domain_for_skill
     response_formatter = deps.response_formatter
+    build_review_followthrough_snapshot = deps.build_review_followthrough_snapshot
+    build_revised_answer_from_review = deps.build_revised_answer_from_review
+    render_original_answer = deps.render_original_answer
+    summarize_review_gaps = deps.summarize_review_gaps
     _conversation_suggestions = deps._conversation_suggestions
     await ws.accept()
     log.info("WebSocket connected")
@@ -245,6 +249,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         "last_operational_context": {},
         "last_assistive_notices": {},
         "assistive_notice_state": {"items": {}},
+        "last_reasoning_review": {},
+        "last_review_followthrough": {},
         "last_project_structure_map": {},
         "last_thread_detail": {},
         "last_memory_context": [],
@@ -282,6 +288,153 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
     async def _complete_silent_widget_refresh() -> None:
         await send_chat_done(ws)
+
+    REVIEW_FINAL_COMMANDS = {
+        "final answer",
+        "nova final answer",
+        "final answer from review",
+        "ask nova to revise the answer",
+        "revise the answer using this review",
+        "revise your last answer using this verification report",
+    }
+    REVIEW_GAPS_COMMANDS = {
+        "summarize the gaps only",
+        "summarize the review gaps",
+        "summarize the issues only",
+    }
+    REVIEW_ORIGINAL_COMMANDS = {
+        "return to nova's original answer",
+        "return to the original answer",
+        "show nova's original answer",
+    }
+
+    def _latest_session_user_query() -> str:
+        for item in reversed(session_context):
+            if not isinstance(item, dict):
+                continue
+            if str(item.get("role") or "").strip().lower() != "user":
+                continue
+            content = str(item.get("content") or "").strip()
+            if content:
+                return content
+        return ""
+
+    def _remember_review_exchange(user_text: str, assistant_text: str) -> None:
+        nonlocal session_context
+        session_context.extend(
+            [
+                {"role": "user", "content": str(user_text or "").strip()},
+                {"role": "assistant", "content": str(assistant_text or "").strip()},
+            ]
+        )
+        context_limit = 40 if session_state.get("presence_mode") else 20
+        session_context = session_context[-context_limit:]
+
+    async def _maybe_handle_review_followthrough(command_lowered: str) -> bool:
+        normalized = str(command_lowered or "").strip().lower()
+        if normalized not in REVIEW_FINAL_COMMANDS | REVIEW_GAPS_COMMANDS | REVIEW_ORIGINAL_COMMANDS:
+            return False
+
+        snapshot = dict(session_state.get("last_review_followthrough") or {})
+        if not snapshot:
+            await _complete_immediate_turn(
+                "I don't have a recent review to work from yet. Ask for a second opinion first.",
+                remember_response=False,
+            )
+            return True
+
+        if normalized in REVIEW_FINAL_COMMANDS:
+            if not str(snapshot.get("source_answer") or "").strip():
+                await _complete_immediate_turn(
+                    (
+                        "I can use that review to summarize the gaps, but I do not have a Nova answer "
+                        "preserved for a final rewrite. Ask for a fresh second opinion on Nova's answer first."
+                    ),
+                    remember_response=False,
+                    suggested_actions=[
+                        {"label": "Summarize gaps", "command": "summarize the gaps only"},
+                    ],
+                )
+                return True
+
+            revised_message = build_revised_answer_from_review(
+                snapshot,
+                session_id=session_id,
+                request_id=f"review-followthrough-{uuid.uuid4()}",
+            )
+            if not revised_message:
+                await _complete_immediate_turn(
+                    "I couldn't build a final revised answer from that review right now.",
+                    remember_response=False,
+                )
+                return True
+            _log_ledger_event(
+                governor,
+                "REASONING_REVIEW_REVISED",
+                {
+                    "session_id": session_id,
+                    "review_kind": str(snapshot.get("review_kind") or "").strip(),
+                    "had_source_answer": bool(str(snapshot.get("source_answer") or "").strip()),
+                },
+            )
+            await _complete_immediate_turn(
+                revised_message,
+                suggested_actions=[
+                    {"label": "Summarize gaps", "command": "summarize the gaps only"},
+                    {"label": "Original answer", "command": "return to Nova's original answer"},
+                ],
+            )
+            _remember_review_exchange(normalized, revised_message)
+            return True
+
+        if normalized in REVIEW_GAPS_COMMANDS:
+            gap_summary = summarize_review_gaps(snapshot)
+            _log_ledger_event(
+                governor,
+                "REASONING_REVIEW_SUMMARIZED",
+                {
+                    "session_id": session_id,
+                    "review_kind": str(snapshot.get("review_kind") or "").strip(),
+                    "top_issue": str(snapshot.get("top_issue") or "").strip(),
+                },
+            )
+            await _complete_immediate_turn(
+                gap_summary,
+                suggested_actions=[
+                    {"label": "Nova final answer", "command": "final answer"},
+                    {"label": "Original answer", "command": "return to Nova's original answer"},
+                ],
+            )
+            _remember_review_exchange(normalized, gap_summary)
+            return True
+
+        original_message = render_original_answer(snapshot)
+        if not original_message:
+            await _complete_immediate_turn(
+                "I do not have Nova's original answer preserved for that review yet.",
+                remember_response=False,
+                suggested_actions=[
+                    {"label": "Summarize gaps", "command": "summarize the gaps only"},
+                ],
+            )
+            return True
+        _log_ledger_event(
+            governor,
+            "REASONING_REVIEW_ORIGINAL_RESTORED",
+            {
+                "session_id": session_id,
+                "review_kind": str(snapshot.get("review_kind") or "").strip(),
+            },
+        )
+        await _complete_immediate_turn(
+            original_message,
+            suggested_actions=[
+                {"label": "Nova final answer", "command": "final answer"},
+                {"label": "Summarize gaps", "command": "summarize the gaps only"},
+            ],
+        )
+        _remember_review_exchange(normalized, original_message)
+        return True
 
     try:
         while True:
@@ -407,6 +560,9 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             command_text = re.sub(r"[.?!]+$", "", text).strip()
             command_lowered = re.sub(r"[.?!]+$", "", lowered).strip()
+
+            if await _maybe_handle_review_followthrough(command_lowered):
+                continue
 
             if command_lowered in {
                 "topic stack",
@@ -2888,6 +3044,16 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         await send_chat_done(ws)
                         continue
 
+                review_followthrough_source_answer = ""
+                review_followthrough_source_prompt = ""
+                if capability_id in {31, 62}:
+                    review_followthrough_source_prompt = _latest_session_user_query()
+                    last_response = str(session_state.get("last_response") or "").strip()
+                    if capability_id == 62:
+                        review_followthrough_source_answer = last_response
+                    elif last_response and str(params.get("text") or "").strip() == last_response:
+                        review_followthrough_source_answer = last_response
+
                 action_result = await invoke_governed_capability(governor, capability_id, params)
                 action_message = _action_result_message(action_result)
                 action_payload = _action_result_payload(action_result)
@@ -2999,6 +3165,16 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
                 session_state["working_context"] = working_context.to_dict()
 
+                if capability_id in {31, 62}:
+                    if action_result.success and isinstance(action_payload, dict):
+                        session_state["last_review_followthrough"] = build_review_followthrough_snapshot(
+                            payload=action_payload,
+                            source_answer=review_followthrough_source_answer,
+                            source_prompt=review_followthrough_source_prompt,
+                        )
+                    else:
+                        session_state["last_review_followthrough"] = {}
+
                 suppress_silent_chat = bool(
                     silent_widget_refresh
                     and capability_id == 61
@@ -3039,16 +3215,24 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 if capability_id == 31 and isinstance(action_payload, dict):
                     accuracy_label = str(action_payload.get("verification_accuracy_label") or "").strip()
                     confidence_label = str(action_payload.get("verification_confidence_label") or "").strip()
+                    review_followthrough = dict(session_state.get("last_review_followthrough") or {})
+                    followthrough_ready = bool(str(review_followthrough.get("source_answer") or "").strip())
                     if accuracy_label:
                         message_confidence = f"Claim reliability {accuracy_label}"
                     elif confidence_label:
                         message_confidence = f"Verification {confidence_label}"
                     if action_payload.get("verification_recommended") is True:
-                        message_suggestions = [
-                            {"label": "Re-check with sources", "command": "show sources for your last response"},
-                            {"label": "Summarize risk", "command": "summarize verification risks in 3 bullets"},
-                            {"label": "Revise answer", "command": "revise your last answer using this verification report"},
-                        ]
+                        message_suggestions = []
+                        if followthrough_ready:
+                            message_suggestions.append({"label": "Nova final answer", "command": "final answer"})
+                            message_suggestions.append(
+                                {"label": "Original answer", "command": "return to Nova's original answer"}
+                            )
+                        else:
+                            message_suggestions.append(
+                                {"label": "Re-check with sources", "command": "show sources for your last response"}
+                            )
+                        message_suggestions.append({"label": "Summarize gaps", "command": "summarize the gaps only"})
                 if capability_id == 49 and isinstance(action_payload, dict):
                     story_index = int(action_payload.get("story_index") or 0)
                     if story_index > 0:
@@ -3126,7 +3310,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         message_confidence = f"Review confidence {confidence_label}"
                     if not message_suggestions:
                         message_suggestions = [
-                            {"label": "Revise answer", "command": "ask Nova to revise the answer"},
+                            {"label": "Nova final answer", "command": "final answer"},
                             {"label": "Summarize gaps", "command": "summarize the gaps only"},
                             {"label": "Return to answer", "command": "return to Nova's original answer"},
                         ]

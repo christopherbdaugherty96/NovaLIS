@@ -149,7 +149,7 @@ def test_response_verification_supports_second_opinion_mode(monkeypatch):
     assert result.data["verification_mode"] == "second_opinion"
     assert result.data["verification_summary_line"].startswith("Bottom line:")
     assert result.data["top_issue"] == "the answer needs a clearer caveat"
-    assert result.data["follow_up_prompts"][0] == "ask Nova to revise the answer"
+    assert result.data["follow_up_prompts"][0] == "nova final answer"
     assert result.speakable_text.startswith("DeepSeek second opinion ready.")
 
 
