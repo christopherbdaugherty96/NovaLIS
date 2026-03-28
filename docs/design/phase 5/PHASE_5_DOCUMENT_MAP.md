@@ -17,11 +17,16 @@ These documents define the original trust-facing Phase-5 package:
 ## Supporting Design Layer
 - tonal calibration scope design document in `docs/design/Phase 5/`
 - tonal calibration visibility design document in `docs/design/Phase 5/`
+- `docs/design/Phase 5/PHASE_5_MEMORY_REMEMBRANCE_AND_ASSISTIVE_NOTICING_ARCHITECTURE_2026-03-27.md`
 - `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
 - `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_LOCAL_PROJECT_VISUAL_EXPLAINER_PLAN_2026-03-21.md`
 
 These supporting documents explain how the Phase-5 runtime evolved into a more legible product layer for normal users.
+The memory / remembrance / assistive-noticing architecture packet should be read as:
+- Phase-5 anchored
+- Phase-6 trust-visible handoff aware
+- Phase-8 bounded assistive-noticing aware
 
 ## Future / Adjacent Direction
 - `docs/design/Phase 5/Delegated Autonomy.txt`
@@ -58,3 +63,10 @@ These remain adjacent planning inputs, not active runtime authority.
 Tracks intentionally not added to the closed Phase-5 package are indexed in:
 - `docs/PROOFS/Phase-6/PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
 - `docs/PROOFS/Phase-6/PHASE_6_PROOF_PACKET_INDEX.md`
+
+This especially applies to:
+- bounded assistive noticing
+- user-visible suggestion policy
+- policy-bound help modes
+
+Those should not be collapsed back into Phase-5 runtime truth prematurely.
