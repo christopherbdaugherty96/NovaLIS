@@ -272,6 +272,9 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         _maybe_auto_speak_for_voice_turn(session_state, presented_message)
         session_state["turn_count"] += 1
 
+    async def _complete_silent_widget_refresh() -> None:
+        await send_chat_done(ws)
+
     try:
         while True:
             GovernorMediator.clear_stale_sessions()
@@ -546,8 +549,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     session_state["working_context"] = working_context.to_dict()
                 await ws_send(ws, structure_widget)
                 if silent_widget_refresh:
-                    await send_chat_done(ws)
-                    session_state["turn_count"] += 1
+                    await _complete_silent_widget_refresh()
                 else:
                     await _complete_immediate_turn(project_message, suggested_actions=project_suggestions)
                 continue
@@ -590,8 +592,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if WORKSPACE_HOME_RE.match(command_text):
                 workspace_widget = await send_workspace_home_widget(ws, session_state, project_threads)
                 if silent_widget_refresh:
-                    await send_chat_done(ws)
-                    session_state["turn_count"] += 1
+                    await _complete_silent_widget_refresh()
                 else:
                     suggested_actions = list(workspace_widget.get("recommended_actions") or [])
                     await _complete_immediate_turn(
@@ -603,8 +604,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if OPERATIONAL_CONTEXT_RE.match(command_text):
                 operational_widget = await send_operational_context_widget(ws, session_state, project_threads)
                 if silent_widget_refresh:
-                    await send_chat_done(ws)
-                    session_state["turn_count"] += 1
+                    await _complete_silent_widget_refresh()
                 else:
                     suggested_actions = list(operational_widget.get("recommended_actions") or [])
                     await _complete_immediate_turn(
@@ -635,8 +635,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await send_thread_map_widget(ws, project_threads, session_state)
                 await send_trust_status(ws, session_state["trust_status"])
                 if silent_widget_refresh:
-                    await send_chat_done(ws)
-                    session_state["turn_count"] += 1
+                    await _complete_silent_widget_refresh()
                 else:
                     await _complete_immediate_turn(
                         (
@@ -678,8 +677,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         session_state["last_project_structure_map"] = dict(structure_widget or {})
                     await ws_send(ws, structure_widget)
                 if silent_widget_refresh:
-                    await send_chat_done(ws)
-                    session_state["turn_count"] += 1
+                    await _complete_silent_widget_refresh()
                 else:
                     await _complete_immediate_turn(
                         _render_workspace_home_message(workspace_widget),
@@ -690,8 +688,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if TRUST_CENTER_RE.match(command_text):
                 await send_trust_status(ws, session_state["trust_status"])
                 if silent_widget_refresh:
-                    await send_chat_done(ws)
-                    session_state["turn_count"] += 1
+                    await _complete_silent_widget_refresh()
                 else:
                     trust_message, trust_suggestions = _render_trust_center_message(
                         session_state.get("trust_status", {})
@@ -773,8 +770,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if SHOW_THREADS_RE.match(command_text):
                 await send_thread_map_widget(ws, project_threads, session_state)
                 if silent_widget_refresh:
-                    await send_chat_done(ws)
-                    session_state["turn_count"] += 1
+                    await _complete_silent_widget_refresh()
                 else:
                     await _complete_immediate_turn(project_threads.render_map_message())
                 continue
@@ -941,8 +937,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 if detail_widget is not None:
                     detail = dict(detail_widget.get("thread") or {})
                     if silent_widget_refresh:
-                        await send_chat_done(ws)
-                        session_state["turn_count"] += 1
+                        await _complete_silent_widget_refresh()
                         continue
                     latest_decision = str(detail.get("latest_decision") or "").strip() or "No decision recorded yet."
                     latest_blocker = str(detail.get("latest_blocker") or "").strip() or "No blocker recorded."

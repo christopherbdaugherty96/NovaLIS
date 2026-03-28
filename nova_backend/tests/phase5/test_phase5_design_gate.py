@@ -13,6 +13,6 @@ def test_phase5_runtime_slices_are_reflected_in_runtime_truth():
 
 def test_runtime_invariants_preserve_non_autonomous_boundary():
     content = RUNTIME_STATE_PATH.read_text(encoding="utf-8")
-    assert "- No autonomy" in content
-    assert "- No background execution" in content
+    assert "- No broad autonomy" in content
+    assert "- No hidden background execution outside the explicit OpenClaw scheduler carve-out" in content
     assert "- All actions must pass GovernorMediator" in content
