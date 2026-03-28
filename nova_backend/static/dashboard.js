@@ -2540,6 +2540,7 @@ function renderAssistiveNoticesWidget(data = {}) {
 
   const snapshot = assistiveNoticeState.snapshot || {};
   const notices = Array.isArray(snapshot.notices) ? snapshot.notices : [];
+  const handledNotices = Array.isArray(snapshot.handled_notices) ? snapshot.handled_notices : [];
   const recommendedActions = Array.isArray(snapshot.recommended_actions) ? snapshot.recommended_actions : [];
   const governanceNote = String(snapshot.governance_note || "").trim()
     || "Notice, ask, then assist remains the governing rule.";
@@ -2684,6 +2685,44 @@ function renderAssistiveNoticesWidget(data = {}) {
     }
   };
 
+  const renderHandledList = (host) => {
+    if (!host) return;
+    clear(host);
+
+    if (!handledNotices.length) {
+      const empty = document.createElement("div");
+      empty.className = "workspace-home-empty";
+      empty.textContent = "No handled assistive notices are recorded in the current continuity window.";
+      host.appendChild(empty);
+      return;
+    }
+
+    handledNotices.slice(0, 4).forEach((item) => {
+      const card = document.createElement("div");
+      card.className = "workspace-home-focus settings-permission-card";
+
+      const title = document.createElement("div");
+      title.className = "workspace-home-focus-title";
+      title.textContent = String(item.title || "Handled notice").trim() || "Handled notice";
+      card.appendChild(title);
+
+      const meta = document.createElement("div");
+      meta.className = "workspace-home-focus-meta";
+      meta.textContent = [
+        String(item.status || "handled").trim().toUpperCase(),
+        String(item.updated_at || "").trim() ? `Updated ${formatThreadTimestamp(String(item.updated_at || "").trim())}` : "",
+      ].filter(Boolean).join(" · ");
+      card.appendChild(meta);
+
+      const body = document.createElement("div");
+      body.className = "workspace-home-focus-copy";
+      body.textContent = String(item.summary || "").trim() || "Handled assistive notice.";
+      card.appendChild(body);
+
+      host.appendChild(card);
+    });
+  };
+
   renderNoticeList(
     $("workspace-home-assistive"),
     {
@@ -2706,6 +2745,7 @@ function renderAssistiveNoticesWidget(data = {}) {
       includeActions: true,
     },
   );
+  renderHandledList($("trust-center-assistive-handled"));
 }
 
 function populateThreadDetailSurface(prefix, data = {}) {

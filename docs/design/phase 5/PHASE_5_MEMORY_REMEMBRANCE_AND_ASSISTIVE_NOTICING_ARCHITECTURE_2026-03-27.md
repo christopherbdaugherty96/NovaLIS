@@ -34,6 +34,7 @@ The current repo already has meaningful foundations:
 - a first bounded assistive-notices surface in Home, Trust, Settings, and explicit command review
 - visible assistive-notice modes with meaningful differences
 - rate-limited assistive resurfacing and session-scoped dismiss / resolve handling
+- a handled-notice review surface for the current continuity window
 - bounded relevant-memory use in chat
 - opt-in pattern review
 - trust and recent-activity visibility

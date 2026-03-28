@@ -65,6 +65,13 @@ MODE_AUTO_SURFACE_COOLDOWN_SECONDS = {
     "high_awareness": 3 * 60,
 }
 
+NOTICE_TYPE_AUTO_SURFACE_COOLDOWN_SECONDS = {
+    "blocked_without_next_step": 20 * 60,
+    "repeated_runtime_issue": 15 * 60,
+    "missing_continuity_anchor": 8 * 60,
+    "active_trust_condition": 5 * 60,
+}
+
 NOTICE_STATUS_ACTIVE = "active"
 NOTICE_STATUS_DISMISSED = "dismissed"
 NOTICE_STATUS_RESOLVED = "resolved"
@@ -112,6 +119,9 @@ def _normalize_notice_state(value: Any) -> dict[str, Any]:
         items[key] = {
             "status": status,
             "signature": _clean(item.get("signature")),
+            "type": _clean(item.get("type")),
+            "title": _clean(item.get("title")),
+            "summary": _clean(item.get("summary")),
             "updated_at": _clean(item.get("updated_at")),
             "last_auto_surface_at": _clean(item.get("last_auto_surface_at")),
         }
@@ -264,6 +274,9 @@ def apply_assistive_notice_feedback(
     normalized["items"][notice_id] = {
         "status": target_status,
         "signature": _notice_signature(notice),
+        "type": _clean(notice.get("type")),
+        "title": _clean(notice.get("title")),
+        "summary": _clean(notice.get("summary")),
         "updated_at": _utc_now_iso(),
         "last_auto_surface_at": _clean(
             dict(normalized["items"].get(notice_id) or {}).get("last_auto_surface_at")
@@ -288,6 +301,9 @@ def record_auto_surfaced_notices(
         if _clean(existing.get("signature")) != signature:
             existing["status"] = NOTICE_STATUS_ACTIVE
         existing["signature"] = signature
+        existing["type"] = _clean(notice.get("type"))
+        existing["title"] = _clean(notice.get("title"))
+        existing["summary"] = _clean(notice.get("summary"))
         existing["last_auto_surface_at"] = timestamp
         existing.setdefault("updated_at", "")
         normalized["items"][notice_id] = existing
@@ -304,9 +320,13 @@ def _auto_surface_ready(
     last_surface = _parse_ts(state_item.get("last_auto_surface_at"))
     if last_surface is None:
         return True
-    cooldown_seconds = MODE_AUTO_SURFACE_COOLDOWN_SECONDS.get(
-        assistive_notice_mode,
-        MODE_AUTO_SURFACE_COOLDOWN_SECONDS["suggestive"],
+    notice_type = _clean(notice.get("type"))
+    cooldown_seconds = NOTICE_TYPE_AUTO_SURFACE_COOLDOWN_SECONDS.get(
+        notice_type,
+        MODE_AUTO_SURFACE_COOLDOWN_SECONDS.get(
+            assistive_notice_mode,
+            MODE_AUTO_SURFACE_COOLDOWN_SECONDS["suggestive"],
+        ),
     )
     return now - last_surface >= timedelta(seconds=cooldown_seconds)
 
@@ -378,6 +398,7 @@ def build_assistive_notices_widget(
     suppressed_count = 0
     surfaced_notices: list[dict[str, Any]] = []
     active_notices: list[dict[str, Any]] = []
+    handled_notices: list[dict[str, Any]] = []
 
     for notice in candidate_notices:
         notice_id = _clean(notice.get("id"))
@@ -387,6 +408,16 @@ def build_assistive_notices_widget(
         signature_matches = _clean(state_item.get("signature")) == signature
         if signature_matches and status in {NOTICE_STATUS_DISMISSED, NOTICE_STATUS_RESOLVED}:
             dismissed_count += 1
+            handled_notices.append(
+                {
+                    "id": notice_id,
+                    "type": _clean(state_item.get("type") or notice.get("type")),
+                    "title": _clean(state_item.get("title") or notice.get("title") or "Handled notice"),
+                    "summary": _clean(state_item.get("summary") or notice.get("summary")),
+                    "status": status,
+                    "updated_at": _clean(state_item.get("updated_at")),
+                }
+            )
             continue
 
         active_notices.append(notice)
@@ -449,6 +480,7 @@ def build_assistive_notices_widget(
         "suppressed_notice_count": suppressed_count,
         "dismissed_notice_count": dismissed_count,
         "notices": surfaced_notices[:4],
+        "handled_notices": handled_notices[:4],
         "recommended_actions": recommended_actions,
         "governance_note": (
             "Notice, ask, then assist. Nova may surface low-risk suggestions here, but it should not silently decide or act."

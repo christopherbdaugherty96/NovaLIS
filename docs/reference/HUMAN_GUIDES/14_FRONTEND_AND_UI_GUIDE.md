@@ -119,6 +119,7 @@ More specifically, the current dashboard can now show:
 - Trust page operational-context panel with refresh/reset controls
 - Trust page assistive-notices panel with refresh and direct Settings path
 - Trust page assistive-notices panel now also shows when notices are cooling down or already handled
+- Trust page now includes a handled-notices review list for the current continuity window
 - Trust page reasoning-transparency section with provider, route, mode, authority, and last outcome
 - Policy Review Center draft overview, selected-draft detail, simulation review, and one-shot manual run review
 - Settings page setup-mode selection, runtime permission controls, reasoning transparency, and voice confidence review

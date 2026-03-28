@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import src.working_context.assistive_noticing as assistive_noticing
 from src.working_context.assistive_noticing import (
     apply_assistive_notice_feedback,
     build_assistive_notices_widget,
@@ -172,6 +173,8 @@ def test_dismissed_notice_stays_hidden_until_conditions_change():
 
     assert second_payload["notice_count"] == 0
     assert second_payload["dismissed_notice_count"] == 1
+    assert second_payload["handled_notices"][0]["status"] == "dismissed"
+    assert second_payload["handled_notices"][0]["title"] == notice["title"]
 
 
 def test_auto_surface_cooldown_hides_recently_shown_notice_but_explicit_view_can_still_open_it():
@@ -213,6 +216,59 @@ def test_auto_surface_cooldown_hides_recently_shown_notice_but_explicit_view_can
     assert auto_payload["notice_count"] == 0
     assert auto_payload["suppressed_notice_count"] == 1
     assert explicit_payload["notice_count"] == 1
+
+
+def test_notice_type_specific_cooldown_overrides_mode_baseline(monkeypatch):
+    store = ProjectThreadStore(session_id="assistive-9", ledger=None)
+    monkeypatch.setattr(
+        assistive_noticing,
+        "_utc_now",
+        lambda: assistive_noticing.datetime(2026, 3, 27, 12, 0, 0, tzinfo=assistive_noticing.timezone.utc),
+    )
+
+    first_payload = build_assistive_notices_widget(
+        session_state={"turn_count": 1},
+        working_context_snapshot={},
+        project_threads=store,
+        trust_snapshot={
+            "recent_runtime_activity": [],
+            "blocked_conditions": [
+                {
+                    "label": "Remote bridge",
+                    "status": "paused",
+                    "reason": "Paused in settings for review.",
+                }
+            ],
+        },
+        assistive_notice_mode="high_awareness",
+        explicit_request=False,
+    )
+    notice_state = record_auto_surfaced_notices({}, notices=list(first_payload["notices"]))
+
+    updated_item = dict(notice_state["items"]["active_trust_condition::remote_bridge"])
+    updated_item["last_auto_surface_at"] = "2026-03-27T11:56:00+00:00"
+    notice_state["items"]["active_trust_condition::remote_bridge"] = updated_item
+
+    auto_payload = build_assistive_notices_widget(
+        session_state={"turn_count": 1, "assistive_notice_state": notice_state},
+        working_context_snapshot={},
+        project_threads=store,
+        trust_snapshot={
+            "recent_runtime_activity": [],
+            "blocked_conditions": [
+                {
+                    "label": "Remote bridge",
+                    "status": "paused",
+                    "reason": "Paused in settings for review.",
+                }
+            ],
+        },
+        assistive_notice_mode="high_awareness",
+        explicit_request=False,
+    )
+
+    assert auto_payload["notice_count"] == 0
+    assert auto_payload["suppressed_notice_count"] == 1
 
 
 def test_assistive_notices_message_stays_plain_language():
