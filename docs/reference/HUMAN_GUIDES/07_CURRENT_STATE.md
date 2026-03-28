@@ -92,6 +92,7 @@ These parts are already meaningfully real:
 - answer-first search with hidden-by-default sources
 - governed same-thread external reasoning review with Trust and Settings transparency
 - same-session review followthrough so Nova can take a bounded second-opinion report and then give a final revised answer, summarize the gaps, or restore the original answer inside the same session
+- explicit one-command review-plus-final-answer mode for the bounded second-opinion lane when you want Nova to run the whole triad flow in one step
 - local project summary, architecture report, project overview, and structure-map flows
 - user-facing Introduction and Settings pages that explain Nova and now let users change setup mode and pause or re-enable governed reasoning and remote bridge access
 - a stronger first-run magic-moment prompt centered on `explain this`

@@ -476,6 +476,91 @@ def test_second_opinion_followthrough_can_summarize_gaps_and_restore_original_an
     assert any("A GPU helps by accelerating parallel math for graphics and AI workloads." in msg for msg in chat_messages)
 
 
+def test_second_opinion_and_final_answer_runs_in_one_explicit_command(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    captured: list[dict] = []
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        captured.append({"capability_id": capability_id, "params": dict(params)})
+        assert capability_id == 62
+        return ActionResult.ok(
+            "Governed Second Opinion\nBottom line: The review partly agrees with Nova's answer but found a meaningful caveat.",
+            data={
+                "reasoning_mode": "second_opinion",
+                "reasoning_text": (
+                    "Accuracy: medium\nPotential Issues:\n- the answer needs a clearer caveat\n"
+                    "Suggested Corrections:\n- explain the uncertainty in one sentence\nConfidence: high"
+                ),
+                "reasoning_summary_line": (
+                    "Bottom line: The review partly agrees with Nova's answer but found a meaningful caveat."
+                ),
+                "reasoning_accuracy_label": "Medium",
+                "reasoning_confidence_label": "High",
+                "top_issue": "the answer needs a clearer caveat",
+                "top_correction": "explain the uncertainty in one sentence",
+                "reasoning_recommended": True,
+            },
+            structured_data={
+                "reasoning_mode": "second_opinion",
+                "reasoning_text": (
+                    "Accuracy: medium\nPotential Issues:\n- the answer needs a clearer caveat\n"
+                    "Suggested Corrections:\n- explain the uncertainty in one sentence\nConfidence: high"
+                ),
+                "reasoning_summary_line": (
+                    "Bottom line: The review partly agrees with Nova's answer but found a meaningful caveat."
+                ),
+                "reasoning_accuracy_label": "Medium",
+                "reasoning_confidence_label": "High",
+                "top_issue": "the answer needs a clearer caveat",
+                "top_correction": "explain the uncertainty in one sentence",
+                "reasoning_recommended": True,
+            },
+            request_id="reason-auto",
+        )
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _fake_invoke_governed_capability)
+
+    review_prompts: list[str] = []
+
+    def _fake_review_generate(prompt: str, **kwargs):
+        review_prompts.append(prompt)
+        return (
+            "Bottom line: GPUs matter because they accelerate the parallel math used in many AI workloads, "
+            "but the exact gain depends on the model and hardware."
+        )
+
+    with patch(
+        "src.skills.general_chat.generate_chat",
+        return_value="A GPU helps by accelerating parallel math for graphics and AI workloads.",
+    ), patch("src.conversation.review_followthrough.generate_chat", side_effect=_fake_review_generate):
+        ws = _ScriptedWebSocket(
+            [
+                "What is a GPU?",
+                "second opinion and final answer",
+            ]
+        )
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    assert captured
+    assert captured[-1]["capability_id"] == 62
+    assert "Recent exchange for second opinion review:" in str(captured[-1]["params"]["text"])
+    chat_messages = _chat_messages(ws)
+    assert any("Second opinion summary:" in msg for msg in chat_messages)
+    assert any("Nova final answer:" in msg for msg in chat_messages)
+    assert any("Main gap: the answer needs a clearer caveat" in msg for msg in chat_messages)
+    assert any(
+        "Bottom line: GPUs matter because they accelerate the parallel math used in many AI workloads"
+        in msg
+        for msg in chat_messages
+    )
+    assert review_prompts
+
+
 def test_trust_center_command_returns_summary_and_status_widget(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,

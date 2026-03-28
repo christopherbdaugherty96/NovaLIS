@@ -41,6 +41,7 @@ It is still part of the canonical packet above because answer-first search and n
 - report surfaces that now lead more consistently with an explicit bottom line in chat and voice
 - reusable assistant chat summary cards for bottom-line, main-gap, and best-correction reporting signals
 - same-session review followthrough so Nova can revise, summarize, or restore an answer from the bounded second-opinion lane
+- explicit one-command review-plus-final-answer flow for the bounded second-opinion lane
 - TTS executor preference for the stronger local renderer before fallback
 - a phase7 dedicated verification package for the bounded reasoning lane
 - token-gated governed remote bridge for read/reasoning access
@@ -81,7 +82,7 @@ Run these commands from `nova_backend/`.
 - `python -m pytest tests\phase7 -q`
 - `python -m pytest tests\executors\test_external_reasoning_executor.py tests\conversation\test_deepseek_bridge.py tests\conversation\test_provider_usage_store.py tests\test_runtime_settings_api.py tests\test_openclaw_bridge_api.py tests\test_runtime_auditor.py -q`
 - `python -m pytest tests\executors\test_response_verification_executor.py tests\executors\test_external_reasoning_executor.py -q`
-- `python -m pytest tests\phase45\test_brain_server_followups_and_voice.py -k "deepseek or second_opinion_followthrough" -q`
+- `python -m pytest tests\phase45\test_brain_server_followups_and_voice.py::test_deepseek_button_builds_bounded_second_opinion_context tests\phase45\test_brain_server_followups_and_voice.py::test_second_opinion_followthrough_generates_nova_final_answer tests\phase45\test_brain_server_followups_and_voice.py::test_second_opinion_followthrough_can_summarize_gaps_and_restore_original_answer tests\phase45\test_brain_server_followups_and_voice.py::test_second_opinion_and_final_answer_runs_in_one_explicit_command -q`
 - `python -m pytest tests\phase45\test_dashboard_phase7_chat_controls.py tests\phase45\test_dashboard_trust_center_widget.py tests\phase45\test_brain_server_trust_status.py tests\phase45\test_dashboard_onboarding_widget.py -q`
 - `python -m py_compile src\audit\runtime_auditor.py src\conversation\review_followthrough.py src\executors\external_reasoning_executor.py src\usage\provider_usage_store.py`
 - `python ..\scripts\generate_runtime_docs.py`
@@ -95,6 +96,6 @@ Run these commands from `nova_backend/`.
 - broader conversation / voice / second-opinion regression bundle: `18 passed`
 - focused report-surface / voice refinement bundle: `22 passed`
 - executor review-lane bundle: `10 passed`
-- websocket review-followthrough subset: `3 passed`
+- websocket review-followthrough subset: `4 passed`
 - runtime documentation drift check: passed
 - frontend mirror parity check: passed
