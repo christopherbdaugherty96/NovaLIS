@@ -93,11 +93,14 @@ Nova now has a stronger everyday memory layer on top of the older memory-overvie
 This means Nova can now handle natural flows like:
 - `save this`
 - `remember this`
+- `what do you remember`
 - `remember this: Client supplies alcohol; Pour Social does not sell alcohol.`
 - `list memories`
+- `memory export`
 - `show that memory`
 - `edit that memory: <updated text>`
 - `delete that memory`
+- `forget this`
 
 Important boundary:
 - this is still explicit
@@ -112,6 +115,7 @@ It now acts as a governed memory management surface where the user can:
 - browse durable memory items
 - filter by active / locked / deferred
 - inspect a selected memory item in full
+- export a governed JSON snapshot
 - review thread linkage, source, version, and tags
 - prepare governed actions like edit, lock, unlock, defer, and delete
 

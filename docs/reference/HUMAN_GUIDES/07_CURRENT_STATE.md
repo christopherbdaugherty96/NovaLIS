@@ -22,6 +22,7 @@ That means Nova already has:
 - governed memory
 - governed memory overview and inspectability surface
 - explicit save/remember memory flows
+- more natural explicit-memory prompts like `what do you remember` and `forget this`
 - dedicated Memory Center list/detail page surface
 - a calmer Workspace Home surface on the Home page
 - a dedicated Workspace page with a broader project board
@@ -34,6 +35,7 @@ That means Nova already has:
 - a first-run onboarding guide for non-technical users
 - a visible local-project Structure Map surface with structured graph output
 - inspectable list/show/edit/delete memory paths with confirmation where needed
+- governed memory export from both command and Memory-page surface
 - bounded relevant-memory use in chat
 - manual response-style controls with inspectable tone settings
 - user-directed scheduling for daily briefs and reminders, with quiet-hours and rate-limit controls
@@ -73,6 +75,7 @@ These parts are already meaningfully real:
 - durable memory review through `memory overview` and the dedicated Memory page
 - Memory-page browsing with filters, selected-item detail, and governed item actions
 - natural `save this` / `remember this` flows and bounded relevant-memory recall
+- natural `what do you remember`, `memory export`, and confirmation-backed `forget this` flows
 - manual tone settings through the response-style surface
 - explicit scheduled updates through the Home-page schedule surface
 - explicit pattern review through the Home-page pattern queue

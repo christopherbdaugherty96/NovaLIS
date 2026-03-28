@@ -35,6 +35,7 @@ Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, imple
 15. `PHASE_5_TRUST_WORKSPACE_ONBOARDING_AND_TTS_RUNTIME_SLICE_2026-03-26.md`
 16. `PHASE_5_AGENT_OS_STAGE3_PRODUCT_SURFACES_RUNTIME_SLICE_2026-03-26.md`
 17. `PHASE_5_CONVERSATION_PERSONALITY_AND_VOICE_FLUIDITY_RUNTIME_SLICE_2026-03-26.md`
+18. `PHASE_5_MEMORY_EXPORT_AND_EXPLICIT_COMMAND_COMPLETION_RUNTIME_SLICE_2026-03-27.md`
 
 ## Historical Gate-Preparation Inputs (Retained for Traceability Only)
 These documents remain useful as design history, but they are not the current authority chain for the closed Phase-5 package.
@@ -74,6 +75,7 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
 
 ## Verification Commands (Current)
 - `python -m pytest tests\phase45\test_brain_server_basic_conversation.py tests\phase45\test_dashboard_memory_widget.py tests\phase5\test_memory_governance_executor.py tests\conversation\test_response_style_router.py tests\conversation\test_response_formatter.py tests\conversation\test_session_router.py tests\conversation\test_conversation_router.py tests\test_governor_execution_timeout.py`
+- `python -m pytest tests\phase5\test_memory_governance_executor.py tests\test_governor_mediator_phase4_capabilities.py tests\test_memory_api.py`
 - `python -m pytest tests\executors\test_news_intelligence_executor.py tests\executors\test_web_search_executor.py tests\phase45\test_brain_server_tone_commands.py tests\conversation\test_general_chat_tone.py tests\conversation\test_personality_interface_agent.py tests\test_tierb_conversation.py`
 - `python scripts/generate_runtime_docs.py`
 - `python scripts/check_runtime_doc_drift.py`
@@ -100,6 +102,7 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
 - targeted voice-turn websocket bundle: `3 passed`
 - broader conversation/tone regression bundle: `64 passed`
 - governed speech-path regression bundle: `10 passed`
+- explicit-memory completion bundle: `15 passed`
 - full active-capability sequential audit: all `23` active governed capabilities passed targeted verification
 - active-capability residual caveat: capability `18` (`speak_text`) now has a stronger runtime fallback path and passing code-path verification, but still needs live device spoken-output validation
 - runtime documentation drift check: passed
@@ -120,7 +123,11 @@ Tracks intentionally not added to the closed Phase-5 package are indexed here:
 5. Memory stage-1 save and retrieval expansion landed:
    - natural `save this` / `remember this`
    - natural `list memories`
+   - natural `what do you remember`
    - `show that memory`
+   - `memory export` / `export memory`
+   - Memory-page export download
+   - `forget this` mapped into the existing confirmation-backed delete path
    - confirmation-backed `edit that memory` and `delete that memory`
    - bounded relevant-memory retrieval into general chat
 6. Memory stage-2 management surface landed:

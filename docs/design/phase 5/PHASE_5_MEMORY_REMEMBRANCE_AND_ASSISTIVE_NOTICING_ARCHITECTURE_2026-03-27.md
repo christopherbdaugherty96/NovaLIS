@@ -535,7 +535,8 @@ Implement:
 - `remember this`
 - `what do you remember`
 - `forget this`
-- `list memory`
+- `list memories`
+- `memory export`
 
 ### Stage 2 - operational remembrance
 Implement:

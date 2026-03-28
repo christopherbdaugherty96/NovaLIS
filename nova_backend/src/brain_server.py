@@ -25,8 +25,9 @@ from typing import Any, Optional
 from fastapi import FastAPI, WebSocket
 
 from src.api.audit_api import build_audit_router
-from src.api.openclaw_agent_api import build_openclaw_agent_router
 from src.api.bridge_api import build_bridge_router
+from src.api.memory_api import build_memory_router
+from src.api.openclaw_agent_api import build_openclaw_agent_router
 from src.api.settings_api import build_settings_router
 from src.api.workspace_api import build_workspace_router
 from src.conversation.general_chat_runtime import (
@@ -664,7 +665,17 @@ def _select_relevant_memory_context(
         return []
 
     lowered = text.lower()
-    if lowered.startswith("memory ") or lowered in {"list memories", "show memories", "show saved memories"}:
+    if lowered.startswith("memory ") or lowered in {
+        "list memories",
+        "show memories",
+        "show saved memories",
+        "what do you remember",
+        "show what you remember",
+        "export memory",
+        "download my memory",
+        "forget this",
+        "forget that",
+    }:
         return []
     if EXPLICIT_MEMORY_SAVE_RE.match(text):
         return []
@@ -1768,7 +1779,7 @@ def _capability_help_message() -> str:
         "- Explain and analysis: explain this, help me do this, create analysis report on <topic>\n"
         "- Local project understanding: audit this repo, summarize this repo, explain this repo\n"
         "- Project continuity: create thread <name>, continue my <name>, project status <name>\n"
-        "- Memory and patterns: save this, remember this: <text>, list memories, memory show <id>, pattern status\n\n"
+        "- Memory and patterns: save this, what do you remember, list memories, memory export, memory show <id>, pattern status\n\n"
         "If you want, ask about a category like local controls, project work, or news."
     )
 
@@ -3968,6 +3979,7 @@ async def send_pattern_review_widget(
 # -------------------------------------------------
 app.include_router(build_audit_router(sys.modules[__name__]))
 app.include_router(build_bridge_router(sys.modules[__name__]))
+app.include_router(build_memory_router(sys.modules[__name__]))
 app.include_router(build_openclaw_agent_router(sys.modules[__name__]))
 app.include_router(build_settings_router(sys.modules[__name__]))
 

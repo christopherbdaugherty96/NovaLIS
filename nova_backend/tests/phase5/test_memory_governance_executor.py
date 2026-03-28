@@ -123,6 +123,44 @@ def test_memory_unlock_and_delete_require_confirmation(tmp_path: Path):
     assert all(entry.get("id") != item_id for entry in listed)
 
 
+def test_memory_export_returns_non_deleted_items(tmp_path: Path):
+    ledger = _FakeLedger()
+    store = GovernedMemoryStore(tmp_path / "memory_items.json")
+    executor = MemoryGovernanceExecutor(ledger=ledger, store=store)
+
+    first = executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={"action": "save", "title": "Keep", "body": "Retain this governed note."},
+        )
+    )
+    second = executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={"action": "save", "title": "Delete", "body": "Remove this governed note."},
+        )
+    )
+    second_id = str((second.data or {}).get("memory_item", {}).get("id") or "")
+    executor.execute(
+        ActionRequest(
+            capability_id=61,
+            params={"action": "delete", "item_id": second_id, "confirmed": True},
+        )
+    )
+
+    export_result = executor.execute(ActionRequest(capability_id=61, params={"action": "export"}))
+
+    assert export_result.success is True
+    payload = dict(export_result.data or {}).get("memory_export") or {}
+    assert payload.get("export_version") == 1
+    assert payload.get("item_count") == 1
+    exported_items = list(payload.get("items") or [])
+    assert len(exported_items) == 1
+    assert exported_items[0]["title"] == "Keep"
+    assert all(not bool(item.get("deleted")) for item in exported_items)
+    assert "MEMORY_EXPORT_REQUESTED" in [name for name, _ in ledger.events]
+
+
 def test_memory_items_support_thread_link_and_filter(tmp_path: Path):
     store = GovernedMemoryStore(tmp_path / "memory_items.json")
     executor = MemoryGovernanceExecutor(store=store)

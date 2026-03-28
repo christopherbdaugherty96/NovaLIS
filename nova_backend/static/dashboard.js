@@ -737,6 +737,51 @@ function sendSilentMemoryCommand(text) {
   return true;
 }
 
+async function downloadMemoryExport() {
+  const pageSummary = $("memory-page-summary");
+  const previousSummary = pageSummary ? String(pageSummary.textContent || "").trim() : "";
+  if (pageSummary) pageSummary.textContent = "Preparing governed memory export...";
+
+  try {
+    const res = await fetch(`${API_BASE}/api/memory/export`);
+    if (!res.ok) throw new Error("memory_export_unavailable");
+    const payload = await res.json();
+    const itemCount = Number((payload && payload.item_count) || 0);
+    const exportDate = new Date();
+    const yyyy = exportDate.getFullYear();
+    const mm = String(exportDate.getMonth() + 1).padStart(2, "0");
+    const dd = String(exportDate.getDate()).padStart(2, "0");
+    const filename = `nova-memory-export-${yyyy}-${mm}-${dd}.json`;
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    if (pageSummary) {
+      pageSummary.textContent = itemCount > 0
+        ? `Downloaded ${itemCount} memory item${itemCount === 1 ? "" : "s"}.`
+        : "Downloaded an empty memory export snapshot.";
+    }
+  } catch (_err) {
+    if (pageSummary) {
+      pageSummary.textContent = "Memory export is unavailable right now. Please try again in a moment.";
+    }
+  } finally {
+    if (pageSummary) {
+      const fallbackSummary = previousSummary || "Memory becomes durable only when you explicitly save it.";
+      window.setTimeout(() => {
+        if (pageSummary.textContent && pageSummary.textContent !== fallbackSummary) {
+          pageSummary.textContent = fallbackSummary;
+        }
+      }, 5000);
+    }
+  }
+}
+
 function hydrateMemoryManagement(force = false) {
   const now = Date.now();
   if (!force && now - Number(memoryCenterState.lastHydratedAt || 0) < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
@@ -8245,6 +8290,11 @@ window.addEventListener("DOMContentLoaded", () => {
   const memoryThreadsBtn = $("btn-memory-threads");
   if (memoryThreadsBtn) memoryThreadsBtn.addEventListener("click", () => {
     sendSilentMemoryCommand("memory list thread this");
+  });
+
+  const memoryExportBtn = $("btn-memory-export");
+  if (memoryExportBtn) memoryExportBtn.addEventListener("click", () => {
+    downloadMemoryExport();
   });
 
   const memoryRefreshBtn = $("btn-memory-refresh");

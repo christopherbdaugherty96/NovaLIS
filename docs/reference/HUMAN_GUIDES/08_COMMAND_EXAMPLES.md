@@ -149,15 +149,19 @@ Use these when you want to:
 Examples:
 - `save this`
 - `remember this: client supplies alcohol`
+- `what do you remember`
 - `memory overview`
 - `list memories`
+- `memory export`
+- `export memory`
 - `show that memory`
 - `memory show mem_123`
 - `edit that memory: updated text`
 - `delete that memory`
+- `forget this`
 
 Dashboard note:
-- Nova now exposes a dedicated Memory page for reviewing durable memory, linked threads, and recent items.
+- Nova now exposes a dedicated Memory page for reviewing durable memory, linked threads, recent items, and governed export.
 
 ## 11. Agent Surface
 There is now also a dedicated `Agent` page in the dashboard.
