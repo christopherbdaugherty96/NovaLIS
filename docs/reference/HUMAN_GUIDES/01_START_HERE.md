@@ -1,68 +1,107 @@
 # Start Here
-Updated: 2026-03-26
+Updated: 2026-03-28
 
-## Welcome
-Nova is your personal intelligence system.
+## What Nova Is
+Nova is a local-first, governed workspace assistant.
 
-It helps you understand information, continue your work, and make decisions without ever taking control away from you.
+In plain language, that means:
+- you talk to Nova like an assistant
+- Nova helps you understand things, continue work, review answers, and keep important context
+- Nova does not quietly turn into an uncontrolled agent behind your back
 
-No background automation.
-No hidden memory.
-No surprises.
+If you only remember one line, make it this:
 
-Just intelligence, under your control.
+`Nova helps deeply without silently taking control.`
 
-## What Nova Helps With
-- Research: Ask deeper questions than search alone.
-- Explain: Understand a file, page, result, or something on your screen.
-- Continue: Pick up a project or thread where you left off.
-- Save: Preserve only the facts or decisions you explicitly choose.
-- Control: Use simple governed system actions when they are allowed.
+## What Nova Feels Like To Use
+For a user, Nova is meant to feel like:
+- a calm chat and voice assistant
+- a project continuity layer
+- a memory system you can inspect
+- a trust and control dashboard
+- a bounded research and review partner
+
+It is not meant to feel like:
+- a hidden background monitor
+- a silent automation engine
+- a black-box memory system
+- an assistant that keeps widening its own authority
+
+## The Fastest Mental Model
+Nova has four big roles:
+
+1. Conversation
+- chat, voice, follow-ups, explanations
+
+2. Memory and continuity
+- explicit memory, project threads, operational remembrance
+
+3. Trust and governance
+- permissions, policies, review, visibility, guarded actions
+
+4. Bounded agent help
+- narrow OpenClaw worker flows, manual runs, scheduled briefings, bounded review loops
+
+## A Good First Session
+A strong first-use path is:
+
+1. `explain this`
+- use Nova's fastest understanding flow
+
+2. `trust center`
+- see the trust and control layer directly
+
+3. `continue my project`
+- feel the continuity layer instead of starting from zero
+
+4. `second opinion and final answer`
+- see Nova's bounded review loop in one step
 
 ## What Makes Nova Different
-Most AI products are trying to do more on their own.
+Most AI products are built like this:
+- answer first
+- action second
+- control and visibility later
 
-Nova is built around a different rule:
-- intelligence may help broadly
-- authority stays bounded
-- effectful actions remain governed
-- visible actions remain inspectable
-- saved memory remains explicit
+Nova is built in the opposite order:
+- trust first
+- visibility first
+- authority boundaries first
+- then memory, review, and agent help on top
 
-That is what makes Nova feel calmer, clearer, and easier to trust.
+That is why Nova often feels calmer and more deliberate.
 
-## A Simple Moment
-You:
-`Explain this error`
+## What Nova Can Already Do
+Today, Nova can already help with:
+- research and answer-first search
+- explanation of files, code, reports, and screen context
+- project continuity and thread recall
+- explicit governed memory and memory export
+- bounded assistive noticing
+- governed second-opinion review and followthrough
+- manual and narrow scheduled home-agent tasks
+- visible Trust, Settings, and connection status
 
-Nova:
-Breaks it down, explains the likely cause, and tells you what to try next.
+## What Nova Is Still Growing Into
+Nova is real now, but it is still growing.
 
-You:
-`Save this as my fix`
+Important things still maturing include:
+- broader connectors
+- more polished onboarding and setup
+- deeper OpenClaw execution work
+- stronger packaging for non-technical users
+- more complete cross-system awareness over time
 
-Now it is part of your workflow because you chose to keep it.
+## What To Read Next
+If you want the user explanation, continue with:
+- `02_HOW_NOVA_WORKS.md`
+- `03_WHAT_NOVA_CAN_DO.md`
+- `06_SAFETY_AND_TRUST.md`
+- `07_CURRENT_STATE.md`
 
-## How To Start
-Try one of these:
-- `news`
-- `explain this`
-- `continue my project`
-- `trust center`
-- `workspace board`
-
-If you want the product-facing versions of Nova's message, also read:
-- `25_NOVA_PRODUCT_MESSAGING_VARIANTS_2026-03-26.md`
-
-If you want the practical local install and startup path, also read:
-- `26_LOCAL_SETUP_AND_STARTUP.md`
-
-## What Nova Is Not
-Nova is not:
-- a hidden background monitor
-- a self-starting autonomous agent
-- a silent persistence system
-- a black-box action engine
+If you want the system picture, continue with:
+- `21_VISUAL_ARCHITECTURE_MAP.md`
+- `28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27.md`
 
 ## The Short Version
-Nova helps you understand, continue, preserve, and decide without giving up control.
+Nova is a governed AI workspace that helps you understand, continue, remember, review, and decide while keeping you in control.
