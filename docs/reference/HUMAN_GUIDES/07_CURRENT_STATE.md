@@ -157,6 +157,13 @@ The most recent product-consolidation regression pass on 2026-03-26 also confirm
 - the OpenClaw home-agent API, runtime store, runner, strict-preflight layer, delivery inbox flow, personality bridge, and diagnostics truth layer passed focused coverage
 - the runtime auditor and generated runtime docs were revalidated after the modularized router/runtime extraction and the new home-agent surfaces landed
 
+The most recent key-skill hardening and speech-runtime pass on 2026-03-27 also confirmed:
+- weather, news, and calendar hardening passed focused regression coverage
+- the broader key-skill bundle passed with weather, news, calendar, web search, news intelligence, screen analysis, TTS, STT, voice-agent, and bounded general-chat coverage
+- TTS now records rendered vs failed speech more truthfully in the ledger
+- voice status now includes speech-input readiness details
+- the local runtime on this machine reported Piper ready, bundled ffmpeg ready, and the local Vosk model present
+
 The main remaining voice caveat is still real-device confirmation:
 - TTS executor, runtime fallback, and mediator-path tests are passing
 - voice status and voice check surfaces are now visible in-product

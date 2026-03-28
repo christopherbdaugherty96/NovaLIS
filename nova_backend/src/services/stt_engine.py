@@ -45,6 +45,43 @@ def get_vosk_model():
     return _vosk_model
 
 
+def _stt_converter_status() -> tuple[str, str]:
+    ffmpeg_path = _resolve_ffmpeg()
+    if not ffmpeg_path:
+        return "unavailable", "ffmpeg is not installed or bundled."
+    return "ready", f"ffmpeg ready from {Path(ffmpeg_path).name}."
+
+
+def _stt_model_status() -> tuple[str, str]:
+    if not VOSK_MODEL_PATH.exists():
+        return "unavailable", f"Vosk model is missing: {VOSK_MODEL_PATH.name}."
+    return "ready", f"Vosk model ready: {VOSK_MODEL_PATH.name}."
+
+
+def inspect_stt_runtime() -> dict[str, str]:
+    converter_status, converter_note = _stt_converter_status()
+    model_status, model_note = _stt_model_status()
+    if converter_status == "ready" and model_status == "ready":
+        status = "ready"
+    elif converter_status == "ready" or model_status == "ready":
+        status = "degraded"
+    else:
+        status = "unavailable"
+    summary_parts = [
+        f"Speech input {status}.",
+        converter_note,
+        model_note,
+    ]
+    return {
+        "status": status,
+        "summary": " ".join(part for part in summary_parts if part).strip(),
+        "converter_status": converter_status,
+        "converter_note": converter_note,
+        "model_status": model_status,
+        "model_note": model_note,
+    }
+
+
 # --------------------------------------------------
 # ffmpeg detection (PATH first, then bundled search)
 # --------------------------------------------------
@@ -131,6 +168,10 @@ async def transcribe_bytes(audio_bytes: bytes, filename: str | None) -> str:
 
     if ffmpeg_path is None:
         log.warning("ffmpeg not found (PATH or bundled); STT disabled for this request.")
+        return ""
+
+    if not VOSK_MODEL_PATH.exists():
+        log.warning("Vosk model not found; STT disabled for this request.")
         return ""
 
     with tempfile.TemporaryDirectory() as tmpdir:

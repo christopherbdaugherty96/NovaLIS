@@ -2773,6 +2773,16 @@ def _render_voice_runtime_message(snapshot: dict[str, Any], *, check_mode: bool)
         f"Fallback engine: {str(payload.get('fallback_engine') or 'pyttsx3')} "
         f"({str(payload.get('fallback_status') or 'unknown')})"
     )
+    if str(payload.get("stt_status") or "").strip():
+        lines.append(f"Speech input: {str(payload.get('stt_status') or '').strip()}")
+    if str(payload.get("stt_converter_status") or "").strip():
+        lines.append(
+            f"Speech input converter: {str(payload.get('stt_converter_status') or '').strip()}"
+        )
+    if str(payload.get("stt_model_status") or "").strip():
+        lines.append(
+            f"Speech input model: {str(payload.get('stt_model_status') or '').strip()}"
+        )
     if str(payload.get("last_engine") or "").strip():
         lines.append(f"Last runtime engine: {str(payload.get('last_engine') or '').strip()}")
     if str(payload.get("last_attempt_status") or "").strip():
@@ -2781,6 +2791,10 @@ def _render_voice_runtime_message(snapshot: dict[str, Any], *, check_mode: bool)
         lines.append(f"Last attempt: {str(payload.get('last_attempt_at') or '').strip()}")
     if str(payload.get("last_error") or "").strip():
         lines.append(f"Last error: {str(payload.get('last_error') or '').strip()}")
+    if str(payload.get("stt_converter_note") or "").strip():
+        lines.append(f"Speech input note: {str(payload.get('stt_converter_note') or '').strip()}")
+    if str(payload.get("stt_model_note") or "").strip():
+        lines.append(f"Model note: {str(payload.get('stt_model_note') or '').strip()}")
     if check_mode:
         lines.extend(
             [
