@@ -43,14 +43,22 @@ def test_execute_tts_prefers_piper_renderer_when_available(monkeypatch):
 
 
 def test_execute_tts_returns_failure_when_engine_raises(monkeypatch):
+    events = []
+
     def broken_speak(_text):
         raise RuntimeError("engine failed")
 
     monkeypatch.setattr("src.executors.tts_executor.try_render_tts", lambda _text: False)
     monkeypatch.setattr(TTSEngine, "speak", broken_speak)
+    monkeypatch.setattr(
+        "src.executors.tts_executor.LedgerWriter",
+        lambda: type("LedgerStub", (), {"log_event": staticmethod(lambda event, meta: events.append((event, dict(meta))))})(),
+    )
 
     req = ActionRequest(request_id="r3", capability_id=18, params={"text": "Hello"})
     result = execute_tts(req)
 
     assert result.success is False
     assert "couldn't speak" in result.message.lower()
+    assert events
+    assert events[-1][0] == "SPEECH_RENDER_FAILED"

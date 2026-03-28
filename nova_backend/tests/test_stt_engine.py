@@ -49,6 +49,36 @@ def test_transcribe_bytes_returns_empty_on_ffmpeg_timeout(monkeypatch):
     assert out == ""
 
 
+def test_inspect_stt_runtime_reports_ready_when_converter_and_model_exist(monkeypatch):
+    from src.services import stt_engine
+
+    monkeypatch.setattr(stt_engine, "_stt_converter_status", lambda: ("ready", "ffmpeg ready."))
+    monkeypatch.setattr(stt_engine, "_stt_model_status", lambda: ("ready", "Vosk model ready."))
+
+    snapshot = stt_engine.inspect_stt_runtime()
+
+    assert snapshot["status"] == "ready"
+    assert snapshot["converter_status"] == "ready"
+    assert snapshot["model_status"] == "ready"
+    assert "Speech input ready." in snapshot["summary"]
+
+
+def test_stt_router_returns_generic_error_when_transcriber_raises(monkeypatch):
+    from src.routers import stt as stt_router
+
+    async def _broken_transcribe(*_args, **_kwargs):
+        raise RuntimeError("boom")
+
+    monkeypatch.setattr(stt_router, "transcribe_bytes", _broken_transcribe)
+
+    upload = UploadFile(file=io.BytesIO(b"voice"), filename="speech.webm")
+    response = asyncio.run(stt_router.stt_transcribe(upload))
+
+    data = json.loads(response.body.decode("utf-8"))
+    assert data["text"] == ""
+    assert "couldn't process" in data["error"].lower()
+
+
 def test_stt_router_rejects_oversized_audio():
     from src.routers.stt import STT_MAX_UPLOAD_BYTES, stt_transcribe
 

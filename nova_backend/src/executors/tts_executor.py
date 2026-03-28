@@ -89,6 +89,7 @@ def execute_tts(req, action_result_cls=ActionResult) -> ActionResult:
             data={
                 "spoken_text": speak_text,
                 "character_count": len(speak_text),
+                "engine": "piper" if rendered else "pyttsx3",
             },
             request_id=req.request_id,
         )
@@ -99,6 +100,19 @@ def execute_tts(req, action_result_cls=ActionResult) -> ActionResult:
             error=str(error),
             spoken_text=text,
         )
+        try:
+            metadata = {
+                "request_id": req.request_id,
+                "character_count": len(text),
+                "source": "capability_18",
+                "engine": "runtime",
+                "error": str(error),
+            }
+            if session_id:
+                metadata["session_id"] = session_id
+            LedgerWriter().log_event("SPEECH_RENDER_FAILED", metadata)
+        except Exception:
+            log.debug("Unexpected speech failure ledger error in capability_18 path", exc_info=True)
         log.error("TTS failed: %s", error)
         return action_result_cls.failure(
             "I couldn't speak that. Please try again.",

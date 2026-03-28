@@ -238,9 +238,23 @@ def inspect_voice_runtime() -> dict[str, str]:
     preferred_status, preferred_note = _voice_preferred_engine_status()
     fallback_status, fallback_note = _voice_fallback_engine_status()
     snapshot = speech_state.snapshot()
+    try:
+        from src.services.stt_engine import inspect_stt_runtime
+
+        stt_snapshot = inspect_stt_runtime()
+    except Exception:
+        stt_snapshot = {
+            "status": "unknown",
+            "summary": "Speech input runtime could not be inspected.",
+            "model_status": "unknown",
+            "model_note": "Speech input runtime could not be inspected.",
+            "converter_status": "unknown",
+            "converter_note": "Speech input runtime could not be inspected.",
+        }
     summary_parts = [
         f"Preferred engine {preferred_status}.",
         f"Fallback engine {fallback_status}.",
+        f"Speech input {str(stt_snapshot.get('status') or 'unknown')}.",
     ]
     last_engine = str(snapshot.get("last_engine") or "").strip()
     last_status = str(snapshot.get("last_attempt_status") or "").strip()
@@ -264,6 +278,12 @@ def inspect_voice_runtime() -> dict[str, str]:
         "fallback_engine": "pyttsx3",
         "fallback_status": fallback_status,
         "fallback_note": fallback_note,
+        "stt_status": str(stt_snapshot.get("status") or ""),
+        "stt_summary": str(stt_snapshot.get("summary") or ""),
+        "stt_model_status": str(stt_snapshot.get("model_status") or ""),
+        "stt_model_note": str(stt_snapshot.get("model_note") or ""),
+        "stt_converter_status": str(stt_snapshot.get("converter_status") or ""),
+        "stt_converter_note": str(stt_snapshot.get("converter_note") or ""),
         "last_engine": str(snapshot.get("last_engine") or ""),
         "last_attempt_status": str(snapshot.get("last_attempt_status") or ""),
         "last_attempt_at": str(snapshot.get("last_attempt_at") or ""),
@@ -272,59 +292,98 @@ def inspect_voice_runtime() -> dict[str, str]:
     }
 
 
+def _log_speech_event(event_type: str, *, speak_text: str, engine: str, source: str, error: str = "") -> None:
+    try:
+        payload: Dict[str, Any] = {
+            "character_count": len(speak_text),
+            "source": source,
+            "engine": engine,
+        }
+        if error:
+            payload["error"] = error
+        LedgerWriter().log_event(event_type, payload)
+    except LedgerWriteFailed:
+        logger.debug("%s ledger write failed", event_type)
+    except Exception:
+        logger.debug("Unexpected speech ledger error", exc_info=True)
+
+
 def nova_speak(text: str) -> None:
     """Default runtime speech path with profile-based rendering (non-blocking)."""
     speak_text = (text or "").strip()
     if not speak_text:
         return
     speech_state.record_attempt(engine="pending", status="queued", spoken_text=speak_text)
-    try:
-        LedgerWriter().log_event(
-            "SPEECH_RENDERED",
-            {
-                "character_count": len(speak_text),
-                "source": "nova_speak",
-            },
-        )
-    except LedgerWriteFailed:
-        # Speech rendering is best-effort and should not raise to callers.
-        logger.debug("SPEECH_RENDERED ledger write failed")
-    except Exception:
-        logger.debug("Unexpected speech ledger error", exc_info=True)
 
     def _render_with_fallback() -> None:
         rendered = SpeechRenderer().render(speak_text)
         if rendered:
             speech_state.record_attempt(engine="piper", status="rendered", spoken_text=speak_text)
+            _log_speech_event(
+                "SPEECH_RENDERED",
+                speak_text=speak_text,
+                engine="piper",
+                source="nova_speak",
+            )
             return
         try:
             tts_executor = importlib.import_module("src.executors.tts_executor")
             engine_cls = getattr(tts_executor, "TTSEngine", None)
             if engine_cls is None:
+                error = "Fallback TTSEngine is unavailable."
                 speech_state.record_attempt(
                     engine="runtime",
                     status="failed",
-                    error="Fallback TTSEngine is unavailable.",
+                    error=error,
                     spoken_text=speak_text,
+                )
+                _log_speech_event(
+                    "SPEECH_RENDER_FAILED",
+                    speak_text=speak_text,
+                    engine="runtime",
+                    source="nova_speak",
+                    error=error,
                 )
                 return
             speak_fn = getattr(engine_cls, "speak", None)
             if callable(speak_fn):
                 speak_fn(speak_text)
                 speech_state.record_attempt(engine="pyttsx3", status="rendered", spoken_text=speak_text)
+                _log_speech_event(
+                    "SPEECH_RENDERED",
+                    speak_text=speak_text,
+                    engine="pyttsx3",
+                    source="nova_speak",
+                )
             else:
+                error = "Fallback TTSEngine.speak is unavailable."
                 speech_state.record_attempt(
                     engine="runtime",
                     status="failed",
-                    error="Fallback TTSEngine.speak is unavailable.",
+                    error=error,
                     spoken_text=speak_text,
                 )
+                _log_speech_event(
+                    "SPEECH_RENDER_FAILED",
+                    speak_text=speak_text,
+                    engine="runtime",
+                    source="nova_speak",
+                    error=error,
+                )
         except Exception:
+            error = "Fallback speech render failed."
             speech_state.record_attempt(
                 engine="runtime",
                 status="failed",
-                error="Fallback speech render failed.",
+                error=error,
                 spoken_text=speak_text,
+            )
+            _log_speech_event(
+                "SPEECH_RENDER_FAILED",
+                speak_text=speak_text,
+                engine="runtime",
+                source="nova_speak",
+                error=error,
             )
             logger.debug("Fallback speech render failed", exc_info=True)
 

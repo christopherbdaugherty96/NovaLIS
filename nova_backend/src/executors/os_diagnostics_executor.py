@@ -19,6 +19,30 @@ from src.usage.provider_usage_store import provider_usage_store
 
 class OSDiagnosticsExecutor:
     @staticmethod
+    def _voice_status_details() -> tuple[str, str]:
+        try:
+            from src.voice.tts_engine import inspect_voice_runtime
+
+            snapshot = inspect_voice_runtime()
+        except Exception:
+            return "unknown", "Voice runtime could not be inspected. Wake word remains disabled."
+
+        preferred_status = str(snapshot.get("preferred_status") or "unknown").strip().lower()
+        stt_status = str(snapshot.get("stt_status") or "unknown").strip().lower()
+        if preferred_status == "ready" and stt_status == "ready":
+            overall = "ready"
+        elif preferred_status in {"ready", "degraded"} or stt_status in {"ready", "degraded"}:
+            overall = "degraded"
+        else:
+            overall = "unavailable"
+        note = str(snapshot.get("summary") or "Voice runtime status is unavailable.").strip()
+        if note:
+            note = f"{note} Wake word remains disabled."
+        else:
+            note = "Wake word remains disabled."
+        return overall, note
+
+    @staticmethod
     def _enabled_capability_entries() -> list[dict[str, object]]:
         registry_path = Path(__file__).resolve().parents[1] / "config" / "registry.json"
         try:
@@ -1275,6 +1299,7 @@ class OSDiagnosticsExecutor:
         reasoning_runtime = self._external_reasoning_status_details()
         bridge_runtime = self._bridge_status_details()
         connection_runtime = self._connection_status_details()
+        voice_status, voice_note = self._voice_status_details()
         system_reasons = self._system_reasons(
             model_availability=model_availability,
             model_note=model_note,
@@ -1338,8 +1363,8 @@ class OSDiagnosticsExecutor:
             "bridge_summary": str(bridge_runtime.get("summary") or "").strip(),
             "connection_runtime": connection_runtime,
             "connection_summary": str(connection_runtime.get("summary") or "").strip(),
-            "voice_status": "ready",
-            "voice_note": "Push-to-talk and TTS are available. Wake word remains disabled.",
+            "voice_status": voice_status,
+            "voice_note": voice_note,
             "wake_word_status": "disabled",
             "memory_status": memory_status,
             "memory_total_count": memory_total_count,
