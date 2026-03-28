@@ -1,5 +1,5 @@
 # Nova + OpenClaw Home Agent — Master Reference
-Updated: 2026-03-27
+Updated: 2026-03-28
 Status: Current design truth + runtime-aligned implementation baseline
 Purpose: Hold the single most useful, current, and repo-grounded picture of how Nova and OpenClaw fit together today
 
@@ -267,7 +267,7 @@ These rules are non-negotiable.
 1. Nova remains the visible voice.
 2. OpenClaw stays inside Nova governance.
 3. Manual home-agent runs are not proof of broad execution authority.
-4. No background scheduler is live until explicitly designed, implemented, and audited.
+4. No background scheduler beyond the explicit narrow briefing scheduler carve-out is live until explicitly designed, implemented, and audited.
 5. The home-agent surface must stay truthful about what is ready now versus planned later.
 6. Worker results must go through Nova-owned presentation.
 7. Outbound HTTP still belongs under Nova's governed network rules.
@@ -275,11 +275,11 @@ These rules are non-negotiable.
 
 Current governance note:
 - `test_no_background_screen_monitoring.py` now scans `src/openclaw/`
-- that is correct for the current foundation stage because no scheduler is live yet
-- any future scheduler carve-out must be explicit, narrow, and documented
+- that is correct for the current foundation stage because only the explicit narrow briefing scheduler carve-out is live
+- any wider scheduler carve-out must remain explicit, narrow, and documented
 
 ## 8. Delivery Model
-Current delivery behavior is already richer than a placeholder, but still manual.
+Current delivery behavior is already richer than a placeholder and now spans manual plus narrow scheduled delivery.
 
 Live now:
 - named briefing templates can use delivery modes
@@ -290,9 +290,9 @@ Live now:
   - `inbox_check` -> `widget`
 
 Current truth:
-- delivery modes control presentation channels for manual runs
-- they do not imply proactive scheduled delivery
-- surface-first delivery now includes a persistent delivery inbox for widget/hybrid runs
+- delivery modes control presentation channels for manual runs and the explicit narrow scheduled briefing lane
+- they do not imply broad proactive background automation
+- surface-first delivery now includes a persistent delivery inbox for widget/hybrid runs and scheduled deliveries
 
 Longer-term desired model:
 - named briefings can feel like Nova check-ins

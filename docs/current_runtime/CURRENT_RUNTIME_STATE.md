@@ -17,7 +17,7 @@ Manual edits: NOT PERMITTED
 | Phase 5 | ACTIVE | Governed memory, continuity, tone, scheduling, and pattern-review surfaces active; closure state tracked in Phase-5 proof packet |
 | Phase 6 | COMPLETE | Trust loop, policy review, capability authority map, and manual policy executor gate are complete; delegated trigger runtime remains disabled by design |
 | Phase 7 | COMPLETE | Governed external reasoning is complete: answer-first research surfaces, explicit second-opinion capability, provider transparency, actionable Settings controls, and advisory-only trust explanation are active |
-| Phase 8 | ACTIVE | Manual strict preflight is active. Scheduled home-agent runtime is available behind explicit settings control; local-first metered OpenAI fallback for narrow task reports is live; broader envelope-governed execution still remains deferred |
+| Phase 8 | ACTIVE | Manual strict preflight is active. Scheduled home-agent runtime is available behind explicit settings control; local-first metered OpenAI fallback for narrow task reports and bounded assistive noticing are live; broader envelope-governed execution still remains deferred |
 
 ## Runtime Governance Spine
 
@@ -128,6 +128,10 @@ Status: Manual briefing templates, delivery controls, and operator surface activ
 Metered OpenAI Task-Report Lane
 Location: src/providers/openai_responses_lane.py
 Status: Local-first narrow fallback for OpenClaw task reports only
+
+Assistive Noticing
+Location: src/working_context/assistive_noticing.py
+Status: Bounded suggestion-only notices with handled state and Trust review active
 
 Voice System
 Location: src/voice

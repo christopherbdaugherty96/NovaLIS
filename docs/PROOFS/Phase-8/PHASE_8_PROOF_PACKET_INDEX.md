@@ -8,6 +8,7 @@ Status: Current proof index
 - `docs/PROOFS/Phase-8/PHASE_8_LOCAL_FIRST_OPENAI_ROUTING_AND_VISIBILITY_RUNTIME_SLICE_2026-03-27.md`
 - `docs/PROOFS/Phase-8/PHASE_8_SYSTEM_MAP_AND_METERED_OPENAI_TASK_REPORT_RUNTIME_SLICE_2026-03-27.md`
 - `docs/PROOFS/Phase-8/PHASE_8_DEDICATED_VERIFICATION_AND_PROOF_ALIGNMENT_2026-03-28.md`
+- `docs/PROOFS/Phase-8/PHASE_8_FULL_DESIGN_REVIEW_AND_RUNTIME_ALIGNMENT_2026-03-28.md`
 
 ## Adjacent Phase-8 companion slices
 - `docs/PROOFS/Phase-8/PHASE_8_OPENCLAW_REMOTE_BOUNDARY_AND_SETUP_READINESS_RUNTIME_SLICE_2026-03-27.md`
@@ -48,8 +49,8 @@ Run these commands from `nova_backend/`.
 - `python ..\scripts\check_frontend_mirror_sync.py`
 
 ## Latest Verification Snapshot (2026-03-28)
-- phase8 dedicated verification package: `17 passed`
-- OpenClaw / agent API / runtime-auditor bundle: `61 passed`
+- phase8 dedicated verification package: `20 passed`
+- OpenClaw / agent API / runtime-auditor bundle: `62 passed`
 - dashboard continuity / Trust widget bundle: `24 passed`
 - runtime documentation drift check: passed
 - frontend mirror parity check: passed
