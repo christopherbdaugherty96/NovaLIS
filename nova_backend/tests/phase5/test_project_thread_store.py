@@ -122,3 +122,20 @@ def test_project_thread_store_detail_snapshot():
     assert "Container cannot resolve module path." in detail["latest_blocker"]
     assert "Inspect PYTHONPATH before rebuild." in detail["latest_decision"]
     assert detail["recent_next_actions"]
+
+
+def test_project_thread_store_reset_clears_threads_and_logs_event():
+    ledger = _FakeLedger()
+    store = ProjectThreadStore(session_id="sess-reset-threads", ledger=ledger)
+    store.ensure_thread("Deployment Issue", goal="Ship stable deployment.")
+    store.attach_update(thread_name="Deployment Issue", summary="Tracked blocker.", category="blocker")
+
+    assert store.has_threads() is True
+    assert store.active_thread_name() == "Deployment Issue"
+
+    store.reset()
+
+    assert store.has_threads() is False
+    assert store.active_thread_name() == ""
+    assert store.list_summaries() == []
+    assert "PROJECT_THREADS_RESET" in [name for name, _ in ledger.events]

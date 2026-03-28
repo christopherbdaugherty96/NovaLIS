@@ -866,6 +866,61 @@ def test_workspace_home_command_returns_widget_and_summary(monkeypatch):
     assert any(msg.get("type") == "workspace_home" for msg in ws.sent_messages)
 
 
+def test_operational_context_command_returns_widget_and_summary(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(
+        brain_server,
+        "_build_trust_review_snapshot",
+        lambda: {
+            "recent_runtime_activity": [{"title": "Workspace refresh", "detail": "Context updated"}],
+            "blocked_conditions": [{"label": "Autonomy", "status": "disabled", "reason": "Invocation-bound"}],
+        },
+    )
+
+    ws = _ScriptedWebSocket(["create thread Deployment Issue", "operational context"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Operational Context" in msg for msg in chat_messages)
+    assert any(msg.get("type") == "operational_context" for msg in ws.sent_messages)
+
+
+def test_reset_operational_context_clears_session_continuity_without_touching_memory(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(
+        brain_server,
+        "_build_trust_review_snapshot",
+        lambda: {
+            "trust_review_summary": "Recent actions stay visible here.",
+            "recent_runtime_activity": [{"title": "Continuity reset", "detail": "Session continuity cleared"}],
+            "blocked_conditions": [{"label": "Autonomy", "status": "disabled", "reason": "Invocation-bound"}],
+        },
+    )
+
+    ws = _ScriptedWebSocket(["create thread Deployment Issue", "reset operational context"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Operational context reset." in msg for msg in chat_messages)
+    assert any("Durable governed memory was preserved." in msg for msg in chat_messages)
+    assert any(msg.get("type") == "operational_context" for msg in ws.sent_messages)
+    assert any(msg.get("type") == "workspace_home" for msg in ws.sent_messages)
+    assert any(msg.get("type") == "thread_map" for msg in ws.sent_messages)
+    assert any(msg.get("type") == "trust_status" for msg in ws.sent_messages)
+
+
 def test_save_this_uses_last_response_and_routes_to_governed_memory(monkeypatch):
     from src.actions.action_result import ActionResult
 

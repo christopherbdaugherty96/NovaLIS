@@ -1,5 +1,5 @@
 # Project Continuity and Memory
-Updated: 2026-03-25
+Updated: 2026-03-27
 
 ## Why This Part Matters
 A lot of AI systems can answer one prompt well.
@@ -11,6 +11,7 @@ Nova now supports five closely related ideas:
 - working context
 - project continuity threads
 - governed memory
+- operational remembrance visibility
 - workspace home
 - calm scheduling
 - opt-in pattern review
@@ -190,7 +191,32 @@ Important boundary:
 - it is a visibility and next-step surface
 - all recommended actions still route through the normal governed command path
 
-## 10. The Big Difference Between Context, Threads, Memory, and Workspace Home
+## 10. Operational Context
+Nova now also exposes operational remembrance more directly.
+
+This surface is for session continuity, not durable user memory.
+
+It can show things like:
+- current goal
+- current step
+- active thread
+- active topic
+- selected file
+- recent continuity anchors
+
+You can access it with:
+- `operational context`
+- `continuity status`
+
+You can also clear it explicitly with:
+- `reset operational context`
+
+Important boundary:
+- reset clears session continuity
+- reset does not delete governed personal memory
+- this is inspectable continuity, not hidden autonomy
+
+## 11. The Big Difference Between Context, Threads, Memory, Workspace Home, and Operational Context
 The easiest way to understand them is this:
 
 Working context:
@@ -205,9 +231,12 @@ Governed memory:
 Workspace Home:
 - the calmer product surface that brings those pieces together into one place
 
+Operational Context:
+- the explicit review/reset surface for session continuity itself
+
 Together, these four layers let Nova feel more coherent without becoming hidden or uncontrolled.
 
-## 11. Calm Scheduling
+## 12. Calm Scheduling
 Phase 5 also includes explicit scheduling for daily briefs and reminders.
 
 This is not meant to make Nova proactive in a hidden way.
@@ -231,7 +260,7 @@ Important boundary:
 - schedules are cancellable
 - scheduled items do not auto-run actions on the user's behalf
 
-## 12. Pattern Review
+## 13. Pattern Review
 Phase 5 also includes an explicit pattern-review layer for ongoing work.
 
 This is not hidden behavior.

@@ -16,8 +16,10 @@ def test_dashboard_renders_trust_center_page_from_runtime_state():
     assert "function setRuntimePermission(permission, enabled)" in source
     assert 'safeWSSend({ text: "trust center", silent_widget_refresh: true });' in source
     assert 'safeWSSend({ text: "system status", silent_widget_refresh: true });' in source
+    assert 'safeWSSend({ text: "operational context", silent_widget_refresh: true });' in source
     assert "renderTrustCenterPage();" in source
     assert "trust-center-voice-grid" in source
+    assert "trust-center-operational-grid" in source
     assert "trust-center-reasoning-grid" in source
     assert "trust-center-bridge-grid" in source
     assert "Estimated tokens today" in source
@@ -42,6 +44,8 @@ def test_trust_page_includes_recent_actions_and_runtime_health_surfaces():
     assert 'id="trust-center-blocked-detail"' in source
     assert 'id="trust-center-health-summary"' in source
     assert 'id="trust-center-health-grid"' in source
+    assert 'id="trust-center-operational-summary"' in source
+    assert 'id="trust-center-operational-grid"' in source
     assert 'id="trust-center-voice-summary"' in source
     assert 'id="trust-center-voice-grid"' in source
     assert 'id="trust-center-reasoning-summary"' in source
@@ -61,3 +65,5 @@ def test_trust_page_includes_recent_actions_and_runtime_health_surfaces():
     assert 'id="btn-trust-center-bridge-status"' in source
     assert 'id="btn-trust-center-voice-check"' in source
     assert 'id="btn-trust-center-settings"' in source
+    assert 'id="btn-operational-context-refresh"' in source
+    assert 'id="btn-operational-context-reset"' in source
