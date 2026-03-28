@@ -112,6 +112,9 @@ Current TTS regression note:
 Current governed memory experience and context packet:
 - `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
 
+Current memory, remembrance, and assistive-noticing architecture packet:
+- `docs/design/Phase 5/PHASE_5_MEMORY_REMEMBRANCE_AND_ASSISTIVE_NOTICING_ARCHITECTURE_2026-03-27.md`
+
 Current governed crypto connector and trading packet:
 - `docs/design/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
 
