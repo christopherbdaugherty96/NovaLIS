@@ -27,3 +27,13 @@ def test_conversation_personality_agent_rewrites_fallback_more_naturally():
     lowered = out.lower()
     assert "didn't quite catch that" in lowered
     assert "what can you do" in lowered
+
+
+def test_conversation_personality_agent_softens_review_lane_failure_language():
+    agent = ConversationPersonalityAgent()
+
+    out = agent.present(
+        "Governed second opinion is unavailable right now because the analysis lane is blocked or unavailable."
+    )
+
+    assert out == "Governed second opinion is unavailable right now because the analysis lane is not ready."

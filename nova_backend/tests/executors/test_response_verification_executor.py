@@ -144,6 +144,36 @@ def test_response_verification_supports_second_opinion_mode(monkeypatch):
     assert result.success is True
     assert "DeepSeek Second Opinion" in result.message
     assert "Agreement Level: Medium (0.65)" in result.message
+    assert "Bottom line:" in result.message
+    assert "Main gap: the answer needs a clearer caveat" in result.message
     assert result.data["verification_mode"] == "second_opinion"
+    assert result.data["verification_summary_line"].startswith("Bottom line:")
+    assert result.data["top_issue"] == "the answer needs a clearer caveat"
     assert result.data["follow_up_prompts"][0] == "ask Nova to revise the answer"
     assert result.speakable_text.startswith("DeepSeek second opinion ready.")
+
+
+def test_response_verification_normalizes_markdownish_structured_output(monkeypatch):
+    from src.executors import response_verification_executor as mod
+
+    monkeypatch.setattr(
+        mod.DeepSeekBridge,
+        "analyze",
+        lambda self, user_message, context, suggested_max_tokens=800, **_kwargs: (
+            "```markdown\n"
+            "**Accuracy** - medium\n"
+            "**Potential Issues** - the answer needs a clearer caveat\n"
+            "**Suggested Corrections** - explain the uncertainty in one sentence\n"
+            "**Confidence** - high\n"
+            "```"
+        ),
+    )
+
+    result = mod.ResponseVerificationExecutor().execute(
+        _request({"text": "A draft answer that needs review", "review_mode": "second_opinion"})
+    )
+
+    assert result.success is True
+    assert "Accuracy: medium" in result.data["verification_text"]
+    assert "Potential Issues:" in result.data["verification_text"]
+    assert result.data["top_issue"] == "the answer needs a clearer caveat"

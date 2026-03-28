@@ -36,6 +36,9 @@ def test_external_reasoning_returns_governed_second_opinion(monkeypatch):
                 "verification_recommended": True,
                 "issue_count": 1,
                 "correction_count": 1,
+                "verification_summary_line": "Bottom line: The review partly agrees with Nova's answer but found a meaningful caveat.",
+                "top_issue": "the answer needs a clearer caveat",
+                "top_correction": "explain the uncertainty in one sentence",
                 "follow_up_prompts": [
                     "ask Nova to revise the answer",
                     "summarize the gaps only",
@@ -54,6 +57,9 @@ def test_external_reasoning_returns_governed_second_opinion(monkeypatch):
                 "verification_recommended": True,
                 "issue_count": 1,
                 "correction_count": 1,
+                "verification_summary_line": "Bottom line: The review partly agrees with Nova's answer but found a meaningful caveat.",
+                "top_issue": "the answer needs a clearer caveat",
+                "top_correction": "explain the uncertainty in one sentence",
                 "follow_up_prompts": [
                     "ask Nova to revise the answer",
                     "summarize the gaps only",
@@ -72,7 +78,10 @@ def test_external_reasoning_returns_governed_second_opinion(monkeypatch):
     assert result.success is True
     assert "Governed Second Opinion" in result.message
     assert "Provider: DeepSeek" in result.message
+    assert "Bottom line:" in result.message
+    assert "Main gap: the answer needs a clearer caveat" in result.message
     assert result.structured_data["reasoning_provider"] == "DeepSeek"
     assert result.structured_data["reasoning_authority"] == "analysis_only"
     assert result.structured_data["reasoning_confidence_label"] == "High"
+    assert result.structured_data["reasoning_summary_line"].startswith("Bottom line:")
     assert result.speakable_text.startswith("Second opinion ready.")
