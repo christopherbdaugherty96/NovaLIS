@@ -43,6 +43,7 @@ class Capability:
     risk_level: str             # "low", "confirm", "high"
     data_exfiltration: bool
     enabled: bool               # runtime gate, separate from status
+    description: str = ""
     authority_scope: str = "suggest"
     authority_class: str = "read_only_local"
     requires_confirmation: bool = False

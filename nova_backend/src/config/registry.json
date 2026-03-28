@@ -171,7 +171,8 @@
       "authority_class": "read_only_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Provides a same-thread governed second-opinion lane that can critique an answer without gaining execution authority."
     },
     {
       "id": 32,
@@ -288,7 +289,8 @@
       "authority_class": "read_only_network",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Loads a weather snapshot and widget with a short summary, setup truth, and suggested next actions."
     },
     {
       "id": 56,
@@ -301,7 +303,8 @@
       "authority_class": "read_only_network",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Loads the current news snapshot and headline cache used by the News page and follow-up summary flows."
     },
     {
       "id": 57,
@@ -314,7 +317,8 @@
       "authority_class": "read_only_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Loads a calendar or agenda snapshot with connection truth, source label, and compact schedule guidance."
     },
     {
       "id": 58,
@@ -327,7 +331,8 @@
       "authority_class": "read_only_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Captures a request-time screen snapshot for later explanation without creating any background capture loop."
     },
     {
       "id": 59,
@@ -340,7 +345,8 @@
       "authority_class": "read_only_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Runs OCR and visual analysis on an explicit screen capture and returns a bounded explanation of what was found."
     },
     {
       "id": 60,
@@ -353,7 +359,8 @@
       "authority_class": "read_only_local",
       "requires_confirmation": false,
       "reversible": true,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Routes an explicit explain request to the best read-only explainer path for screen, page, or selected file context."
     },
     {
       "id": 61,
@@ -366,7 +373,8 @@
       "authority_class": "persistent_change",
       "requires_confirmation": false,
       "reversible": false,
-      "external_effect": false
+      "external_effect": false,
+      "description": "Saves, lists, edits, locks, defers, exports, and deletes explicit governed memory items and thread-linked memory."
     }
   ],
   "retired_ids": []

@@ -1,19 +1,26 @@
 # Phase 7 Proof Packet Index
-Updated: 2026-03-26
+Updated: 2026-03-27
 Status: Current proof index
 
 ## Current canonical Phase-7 completion packet
+- `docs/PROOFS/Phase-7/PHASE_7_PRODUCT_FOUNDATION_RUNTIME_SLICE_2026-03-25.md`
 - `docs/PROOFS/Phase-7/PHASE_7_COMPLETION_AND_REASONING_TRANSPARENCY_RUNTIME_SLICE_2026-03-26.md`
-- `docs/PROOFS/Phase-7/PHASE_7_GOVERNED_REMOTE_BRIDGE_RUNTIME_SLICE_2026-03-26.md`
 - `docs/PROOFS/Phase-7/PHASE_7_SETTINGS_RUNTIME_PERMISSIONS_SLICE_2026-03-26.md`
 - `docs/PROOFS/Phase-7/PHASE_7_PRODUCT_ENTRY_AND_USAGE_VISIBILITY_RUNTIME_SLICE_2026-03-26.md`
+- `docs/PROOFS/Phase-7/PHASE_7_DEDICATED_VERIFICATION_AND_PROOF_ALIGNMENT_2026-03-27.md`
+
+## Adjacent late-Phase-7 / pre-Phase-8 access and foundation slices
+- `docs/PROOFS/Phase-7/PHASE_7_GOVERNED_REMOTE_BRIDGE_RUNTIME_SLICE_2026-03-26.md`
 - `docs/PROOFS/Phase-7/PHASE_7_RUNTIME_ROUTING_CLEANUP_2026-03-26.md`
 - `docs/PROOFS/Phase-7/PHASE_7_RUNTIME_ENTRYPOINT_MODULARIZATION_2026-03-26.md`
 - `docs/PROOFS/Phase-7/PHASE_7_FRONTEND_ORIENTATION_AND_FEEDBACK_RUNTIME_SLICE_2026-03-26.md`
 - `docs/PROOFS/Phase-7/PHASE_7_OPENCLAW_HOME_AGENT_FOUNDATION_RUNTIME_SLICE_2026-03-26.md`
 
-## Earlier bounded Phase-7 foundation packet
+## Historical Note
+The first bounded product-foundation slice remains:
 - `docs/PROOFS/Phase-7/PHASE_7_PRODUCT_FOUNDATION_RUNTIME_SLICE_2026-03-25.md`
+
+It is still part of the canonical packet above because answer-first search and news grounding remain part of the final Phase-7 story.
 
 ## Scope captured across the current packets
 - answer-first governed web search responses with sources on demand
@@ -24,6 +31,7 @@ Status: Current proof index
 - actionable setup-mode and governed runtime-permission controls in Settings
 - advisory-only explanation of the reasoning lane
 - TTS executor preference for the stronger local renderer before fallback
+- a phase7 dedicated verification package for the bounded reasoning lane
 - token-gated governed remote bridge for read/reasoning access
 - Trust and Settings visibility for provider, connection, and bridge state
 - a separate landing-preview page for product messaging review
@@ -44,9 +52,31 @@ Status: Current proof index
 - delivery-mode controls for named briefings vs. quiet review work
 - Trust and Settings visibility for the manual OpenClaw home-agent foundation
 
+Interpretation note:
+- the canonical Phase-7 core is still the bounded governed external-reasoning lane
+- remote bridge and manual home-agent foundations are real adjacent slices, but they should not be read as redefining the Phase-7 finish line
+
 ## Read with
 - `docs/design/Phase 7/PHASE_7_DOCUMENT_MAP.md`
 - `docs/design/Phase 7/PHASE_7_DEEPSEEK_SECOND_OPINION_PLAN.md`
+- `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
 - `docs/design/NOVA_WEBSEARCH_ANSWER_AND_REASONING_PLAN_2026-03-21.md`
 - `docs/design/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
 - `docs/design/NOVA_TTS_REGRESSION_NOTE_2026-03-21.md`
+
+## Verification Commands (Current)
+Run these commands from `nova_backend/`.
+
+- `python -m pytest tests\phase7 -q`
+- `python -m pytest tests\executors\test_external_reasoning_executor.py tests\conversation\test_deepseek_bridge.py tests\conversation\test_provider_usage_store.py tests\test_runtime_settings_api.py tests\test_openclaw_bridge_api.py tests\test_runtime_auditor.py -q`
+- `python -m pytest tests\phase45\test_dashboard_phase7_chat_controls.py tests\phase45\test_dashboard_trust_center_widget.py tests\phase45\test_brain_server_trust_status.py tests\phase45\test_dashboard_onboarding_widget.py -q`
+- `python -m py_compile src\audit\runtime_auditor.py src\executors\external_reasoning_executor.py src\usage\provider_usage_store.py`
+- `python ..\scripts\generate_runtime_docs.py`
+- `python ..\scripts\check_runtime_doc_drift.py`
+- `python ..\scripts\check_frontend_mirror_sync.py`
+
+## Latest Verification Snapshot (2026-03-27)
+- phase7 dedicated verification package: `7 passed`
+- external-reasoning / bridge / usage / trust-surface bundle: `33 passed`
+- runtime documentation drift check: passed
+- frontend mirror parity check: passed

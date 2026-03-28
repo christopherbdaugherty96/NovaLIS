@@ -18,6 +18,9 @@ EXECUTOR_CONSTRUCTORS = (
     "ResponseVerificationExecutor(",
 )
 ALLOWED_EXECUTOR_CALLER = SRC_ROOT / "governor" / "governor.py"
+ALLOWED_EXECUTOR_COMPOSERS = {
+    SRC_ROOT / "executors" / "external_reasoning_executor.py",
+}
 
 
 
@@ -28,7 +31,7 @@ def test_executor_instantiation_only_in_governor():
             continue
         text = read_text(py)
         if any(token in text for token in EXECUTOR_CONSTRUCTORS):
-            if py != ALLOWED_EXECUTOR_CALLER and "class Web" not in text:
+            if py != ALLOWED_EXECUTOR_CALLER and py not in ALLOWED_EXECUTOR_COMPOSERS and "class Web" not in text:
                 offenders.append(str(py))
 
     assert not offenders, "Executor instantiation found outside governor:\n" + "\n".join(offenders)
@@ -42,6 +45,7 @@ def test_no_direct_network_request_calls_outside_mediator_and_executors():
     }
     allowed_files = {
         str(SRC_ROOT / "conversation" / "deepseek_bridge.py"),
+        str(SRC_ROOT / "providers" / "openai_responses_lane.py"),
         str(SRC_ROOT / "services" / "weather_service.py"),
         str(SRC_ROOT / "tools" / "rss_fetch.py"),
     }

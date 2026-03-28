@@ -50,12 +50,21 @@ Phase 6 is still not:
 - allowed to widen beyond the Governor path
 
 ## Verification Snapshot
+Run these commands from `nova_backend/`.
+
 - `python -m pytest tests\phase6 -q`
 - `python -m pytest tests\phase45\test_dashboard_policy_center_widget.py tests\phase45\test_dashboard_trust_review_widget.py tests\phase45\test_system_status_reporting_contract.py tests\phase45\test_policy_center_surface.py tests\executors\test_local_control_executors.py tests\test_runtime_auditor.py -q`
 - `python -m pytest tests\adversarial\test_governor_bypass.py tests\adversarial\test_no_direct_network_imports_outside_network_mediator.py tests\governance\test_no_direct_ollama_usage.py tests\governance\test_network_governance_boundaries.py tests\governance\test_model_network_mediator_thread_safety.py -q`
-- `node --check nova_backend/static/dashboard.js`
-- `python scripts/check_frontend_mirror_sync.py`
-- `python scripts/check_runtime_doc_drift.py`
+- `node --check static/dashboard.js`
+- `python ..\scripts\check_frontend_mirror_sync.py`
+- `python ..\scripts\check_runtime_doc_drift.py`
+
+## Latest Verification Refresh (2026-03-27)
+- phase6 focused suite: `21 passed`
+- trust/policy/runtime support bundle: `31 passed`
+- governance-boundary bundle: `8 passed`
+- runtime documentation drift check: passed
+- frontend mirror parity check: passed
 
 ## Current Honest Summary
 Phase 6 is complete in runtime as a review-oriented delegated-policy and trust-alignment package.

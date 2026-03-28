@@ -13,7 +13,7 @@ def test_chat_input_exposes_deepseek_second_opinion_button():
     dashboard_source = DASHBOARD_PATH.read_text(encoding="utf-8")
 
     assert 'id="deepseek-btn"' in index_source
-    assert 'DeepSeek second opinion' in index_source
+    assert "Second opinion" in index_source
     assert "function requestDeepSeekSecondOpinion()" in dashboard_source
-    assert 'appendChatMessage("user", "DeepSeek second opinion")' in dashboard_source
+    assert 'appendChatMessage("user", "Second opinion")' in dashboard_source
     assert 'safeWSSend({ text: "second opinion", invocation_source: "deepseek_button" })' in dashboard_source
