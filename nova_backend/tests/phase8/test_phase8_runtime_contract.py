@@ -15,6 +15,7 @@ def test_phase8_runtime_truth_reports_active_narrow_foundation():
     assert "| Phase 8 | ACTIVE |" in content
     assert "Manual strict preflight is active." in content
     assert "Scheduled home-agent runtime is available behind explicit settings control" in content
+    assert "bounded assistive noticing are live" in content
     assert "broader envelope-governed execution still remains deferred" in content
 
 
@@ -31,3 +32,10 @@ def test_phase8_runtime_capability_table_no_longer_uses_placeholder_descriptions
     content = RUNTIME_STATE_PATH.read_text(encoding="utf-8")
 
     assert "Governed runtime capability" not in content
+
+
+def test_phase8_runtime_systems_call_out_assistive_noticing_surface():
+    content = RUNTIME_STATE_PATH.read_text(encoding="utf-8")
+
+    assert "Assistive Noticing" in content
+    assert "src/working_context/assistive_noticing.py" in content

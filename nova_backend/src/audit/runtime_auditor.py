@@ -51,6 +51,7 @@ OPENCLAW_AGENT_PERSONALITY_BRIDGE_PATH = PROJECT_ROOT / "nova_backend" / "src" /
 OPENCLAW_STRICT_PREFLIGHT_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" / "strict_preflight.py"
 OPENCLAW_AGENT_SCHEDULER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" / "agent_scheduler.py"
 OPENAI_RESPONSES_LANE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "providers" / "openai_responses_lane.py"
+ASSISTIVE_NOTICING_PATH = PROJECT_ROOT / "nova_backend" / "src" / "working_context" / "assistive_noticing.py"
 
 GOVERNANCE_MATRIX_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX.md"
 SKILL_SURFACE_MAP_PATH = RUNTIME_DOC_DIR / "SKILL_SURFACE_MAP.md"
@@ -1296,7 +1297,8 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     if phase_8_status == "ACTIVE":
         phase_8_note = (
             "Manual strict preflight is active. Scheduled home-agent runtime is available behind explicit settings control; "
-            "local-first metered OpenAI fallback for narrow task reports is live; broader envelope-governed execution still remains deferred"
+            "local-first metered OpenAI fallback for narrow task reports and bounded assistive noticing are live; "
+            "broader envelope-governed execution still remains deferred"
         )
     elif phase_8_status == "FOUNDATION":
         preflight_note = "Manual strict preflight is active. " if OPENCLAW_STRICT_PREFLIGHT_PATH.exists() else ""
@@ -1451,6 +1453,16 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
                     "",
                 ]
                 if OPENAI_RESPONSES_LANE_PATH.exists()
+                else []
+            ),
+            *(
+                [
+                    "Assistive Noticing",
+                    "Location: src/working_context/assistive_noticing.py",
+                    "Status: Bounded suggestion-only notices with handled state and Trust review active",
+                    "",
+                ]
+                if ASSISTIVE_NOTICING_PATH.exists()
                 else []
             ),
             "Voice System",

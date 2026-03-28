@@ -15,6 +15,7 @@ The following Phase-8 foundation slices are now live in runtime/proof:
 
 Current proof packet:
 - `docs/PROOFS/Phase-8/PHASE_8_PROOF_PACKET_INDEX.md`
+- latest full design review refresh: `docs/PROOFS/Phase-8/PHASE_8_FULL_DESIGN_REVIEW_AND_RUNTIME_ALIGNMENT_2026-03-28.md`
 
 Current dedicated verification package:
 - `nova_backend/tests/phase8/`

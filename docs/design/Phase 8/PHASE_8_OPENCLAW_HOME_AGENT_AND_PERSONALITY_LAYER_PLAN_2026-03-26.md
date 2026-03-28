@@ -1,6 +1,6 @@
 # Phase 8 OpenClaw Home Agent And Nova Personality Layer Plan
-Updated: 2026-03-26
-Status: Current design direction and implementation plan
+Updated: 2026-03-28
+Status: Current design direction and runtime-aligned implementation companion
 Purpose: Define how OpenClaw becomes a useful home worker inside Nova without breaking Nova's trust model, token discipline, or user-facing identity
 
 ## Current Truth
@@ -10,14 +10,17 @@ What is live now:
 - token-gated remote bridge access through `/api/openclaw/bridge/message`
 - read, review, and reasoning only
 - a manual OpenClaw operator surface with named briefing templates
-- manual run of `morning_brief` and `evening_digest`
+- manual run of `morning_brief`, `evening_digest`, and the read-only `market_watch` template
 - delivery-mode controls for named briefings and quiet-review tasks
 - a persistent delivery inbox for surface-first agent results
 - strict manual preflight before a manual home-agent envelope can run
+- a narrow scheduled briefing lane behind explicit runtime settings control
 - Nova-owned task-result presentation through the OpenClaw personality bridge
+- local-first metered OpenAI fallback for narrow task-report summarization only
 
 What is still not live:
-- no background scheduler
+- no broad autonomous scheduling beyond the explicit narrow briefing scheduler
+- no quiet-hours or rate-limit suppression for scheduled runs yet
 - no full TaskEnvelope execution path through GovernorMediator
 - no broad envelope authority
 - no file, network, or device automation through OpenClaw beyond the existing Nova runtime surfaces
@@ -25,8 +28,9 @@ What is still not live:
 What this means:
 - Nova can already be reached remotely through a governed bridge
 - Nova can now present manual worker-style briefing results through a visible operator surface
-- Nova cannot yet run OpenClaw as a scheduled or broadly autonomous household worker
-- Phase 8 is at a truthful foundation stage, not a complete execution stage
+- Nova can now run narrow scheduled briefing templates when the scheduler setting is enabled
+- Nova still cannot run OpenClaw as a broadly autonomous household worker
+- Phase 8 is at a truthful foundation-plus-scheduler stage, not a complete execution stage
 
 ## Product Direction
 Nova should feel like the household intelligence layer.
@@ -89,6 +93,7 @@ Initial delivery categories:
 - `morning_brief`: chat + widget
 - `evening_digest`: chat + widget
 - `inbox_check`: widget only
+- `market_watch`: widget only
 - future low-importance review tasks: widget only by default
 
 ## Token Discipline
@@ -123,8 +128,8 @@ The local LLM remains acceptable for:
 - short comparisons
 - one-pass task reports
 
-## Foundation Components To Build First
-Before governed external execution is widened, Nova should gain these OpenClaw foundations:
+## Foundation Components Built First
+Before governed external execution is widened, Nova now has these first OpenClaw foundations in place:
 
 ### 1. TaskEnvelope foundation
 OpenClaw tasks should be represented as bounded envelopes with:
@@ -162,23 +167,26 @@ Nova needs a visible operator surface for:
 - recent runs
 - what remains planned but not live
 
-### 5. Manual-run foundation before scheduling
-The first real execution path should be:
+### 5. Manual-run foundation before widened scheduling
+The first real execution path needed to be:
 - local
 - low-risk
 - read-heavy
 - manually invoked
 - preflight-validated against a strict manual tool and budget policy
 
-This earns the operator surface before background scheduling is introduced.
+This earned the operator surface before the explicit narrow briefing scheduler carve-out was introduced.
 
-## Initial Foundation Scope
-The first safe runtime slice should support:
+## Current Foundation Scope
+The current safe runtime slice supports:
 - manual run of `morning_brief`
 - manual run of `evening_digest`
+- manual run of read-only `market_watch`
 - visible template delivery mode
-- recent-run log
+- recent-run log and delivery inbox
 - Nova-owned result presentation
+- narrow scheduled briefing runs behind explicit runtime settings control
+- narrow metered OpenAI fallback for task-report summarization only
 
 This slice should not claim:
 - autonomous background execution
@@ -204,11 +212,14 @@ The new home-agent layer should appear in the same visible trust surfaces Nova a
 Settings should show:
 - whether home-agent features are enabled
 - how delivery mode is set for each template
+- whether the narrow scheduler is enabled
+- whether the metered OpenAI fallback is available or paused
 - which parts are still local-only foundation work
 
 Trust or diagnostics surfaces should be able to show:
 - whether the bridge is live
 - whether home-agent manual runs are available
+- whether narrow scheduled briefing runs are enabled
 - what the latest run did
 - whether any LLM summary pass was used
 
