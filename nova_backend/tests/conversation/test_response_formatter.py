@@ -20,6 +20,17 @@ def test_format_payload_builds_speakable_and_summary_for_structured_text():
     assert "speakable_text" in payload
 
 
+def test_format_payload_keeps_plain_numbered_option_lists_unwrapped():
+    from src.conversation.response_formatter import ResponseFormatter
+
+    payload = ResponseFormatter.format_payload(
+        "1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center"
+    )
+
+    assert payload["user_message"].startswith("1. Minimal operator dashboard")
+    assert not payload["user_message"].startswith("Summary:")
+
+
 def test_format_payload_keeps_explicit_bottom_line_when_present():
     from src.conversation.response_formatter import ResponseFormatter
 

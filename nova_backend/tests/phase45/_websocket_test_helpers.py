@@ -6,9 +6,15 @@ from fastapi import WebSocketDisconnect
 
 
 class _ScriptedWebSocket:
-    def __init__(self, messages: list[object]) -> None:
+    def __init__(self, messages: list[object], *, headers: dict[str, str] | None = None) -> None:
         self._messages = list(messages)
         self.sent_messages: list[dict] = []
+        self.headers = {
+            "host": "testserver",
+            "origin": "http://testserver",
+        }
+        if headers:
+            self.headers.update({str(key): str(value) for key, value in headers.items()})
 
     async def accept(self) -> None:
         return None

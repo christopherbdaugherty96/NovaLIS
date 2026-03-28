@@ -202,6 +202,10 @@ class GeneralChatSkill(BaseSkill):
     }
     _LIST_ITEM_RE = re.compile(r"^\s*(?:[-*]|\d+[.)])\s+(.*\S)\s*$")
     _INLINE_NUMBERED_RE = re.compile(r"(?:^|\s)(\d+)[.)]\s+([^:]+?)(?=(?:\s+\d+[.)]\s+)|$)")
+    _SUMMARY_PREFIX_RE = re.compile(
+        r"^(?:summary|bottom line|main point|core answer|key takeaway|recommendation)\s*:\s*",
+        re.IGNORECASE,
+    )
     _VAGUE_OPTION_REFERENCE_RE = re.compile(
         r"\b(?:go with|pick|choose|take)\s+(?:that|this)\b"
         r"|\b(?:that|this)\s+(?:one|option|idea)\b"
@@ -756,7 +760,8 @@ class GeneralChatSkill(BaseSkill):
 
         options: list[str] = []
         for line in raw.splitlines():
-            match = cls._LIST_ITEM_RE.match(line)
+            normalized_line = cls._SUMMARY_PREFIX_RE.sub("", str(line or "").strip())
+            match = cls._LIST_ITEM_RE.match(normalized_line)
             if not match:
                 continue
             item = re.sub(r"\s+", " ", match.group(1)).strip(" .-")
@@ -764,14 +769,23 @@ class GeneralChatSkill(BaseSkill):
                 options.append(item)
 
         if options:
-            return options[:4]
+            deduped: list[str] = []
+            for item in options:
+                if item and item not in deduped:
+                    deduped.append(item)
+            return deduped[:4]
 
-        inline_matches = cls._INLINE_NUMBERED_RE.findall(raw.replace("\n", " "))
+        inline_source = cls._SUMMARY_PREFIX_RE.sub("", raw.replace("\n", " "))
+        inline_matches = cls._INLINE_NUMBERED_RE.findall(inline_source)
         for _, item in inline_matches:
             normalized = re.sub(r"\s+", " ", str(item or "")).strip(" .-")
             if normalized:
                 options.append(normalized)
-        return options[:4]
+        deduped: list[str] = []
+        for item in options:
+            if item and item not in deduped:
+                deduped.append(item)
+        return deduped[:4]
 
     @classmethod
     def _reference_target_index(cls, query: str) -> int | None:

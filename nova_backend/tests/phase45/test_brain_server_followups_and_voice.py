@@ -232,6 +232,20 @@ def test_weak_semantic_anchor_returns_short_clarification_in_websocket_path(monk
     )
 
 
+def test_summary_prefixed_option_lists_still_preserve_first_option():
+    from src.skills.general_chat import GeneralChatSkill
+
+    options = GeneralChatSkill._extract_prior_options(
+        "Summary: 1. Minimal operator dashboard\n\n1. Minimal operator dashboard\n2. Research-first workspace\n3. Ambient command center"
+    )
+
+    assert options == [
+        "Minimal operator dashboard",
+        "Research-first workspace",
+        "Ambient command center",
+    ]
+
+
 def test_rewrite_followup_uses_prior_answer_hint(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
