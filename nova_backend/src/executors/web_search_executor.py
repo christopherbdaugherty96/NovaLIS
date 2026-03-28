@@ -546,8 +546,9 @@ class WebSearchExecutor:
             )
 
         report_sections = [
+            f"Bottom line: {researched_summary}",
+            "",
             f'Search answer for "{query}"',
-            researched_summary,
             "",
             f"Confidence: {confidence_label}",
             f"Source reading: reviewed {len(source_packets)} page{'s' if len(source_packets) != 1 else ''} via {provider_label}.",

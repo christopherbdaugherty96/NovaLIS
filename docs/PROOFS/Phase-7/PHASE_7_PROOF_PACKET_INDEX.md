@@ -1,5 +1,5 @@
 # Phase 7 Proof Packet Index
-Updated: 2026-03-27
+Updated: 2026-03-28
 Status: Current proof index
 
 ## Current canonical Phase-7 completion packet
@@ -9,6 +9,7 @@ Status: Current proof index
 - `docs/PROOFS/Phase-7/PHASE_7_PRODUCT_ENTRY_AND_USAGE_VISIBILITY_RUNTIME_SLICE_2026-03-26.md`
 - `docs/PROOFS/Phase-7/PHASE_7_DEDICATED_VERIFICATION_AND_PROOF_ALIGNMENT_2026-03-27.md`
 - `docs/PROOFS/Phase-7/PHASE_7_CONVERSATION_VOICE_AND_SECOND_OPINION_PRESENTATION_REFINEMENT_2026-03-28.md`
+- `docs/PROOFS/Phase-7/PHASE_7_REASONING_SURFACE_AND_LONG_FORM_PRESENTATION_REFINEMENT_2026-03-28.md`
 
 ## Adjacent late-Phase-7 / pre-Phase-8 access and foundation slices
 - `docs/PROOFS/Phase-7/PHASE_7_GOVERNED_REMOTE_BRIDGE_RUNTIME_SLICE_2026-03-26.md`
@@ -33,6 +34,8 @@ It is still part of the canonical packet above because answer-first search and n
 - advisory-only explanation of the reasoning lane
 - clearer second-opinion review summaries with bottom-line, main-gap, and best-correction signals
 - calmer voice summaries for structured review output instead of reading the full audit scaffold aloud
+- Trust and Settings reasoning panels that now expose bottom-line, main-gap, and best-correction review signals directly
+- stronger executive-summary shaping for long-form general-chat, search, and news outputs
 - TTS executor preference for the stronger local renderer before fallback
 - a phase7 dedicated verification package for the bounded reasoning lane
 - token-gated governed remote bridge for read/reasoning access
@@ -78,8 +81,10 @@ Run these commands from `nova_backend/`.
 - `python ..\scripts\check_runtime_doc_drift.py`
 - `python ..\scripts\check_frontend_mirror_sync.py`
 
-## Latest Verification Snapshot (2026-03-27)
+## Latest Verification Snapshot (2026-03-28)
 - phase7 dedicated verification package: `7 passed`
 - external-reasoning / bridge / usage / trust-surface bundle: `33 passed`
+- reasoning-surface / general-chat / web-search / news-presentation bundle: `75 passed`
+- broader conversation / voice / second-opinion regression bundle: `18 passed`
 - runtime documentation drift check: passed
 - frontend mirror parity check: passed

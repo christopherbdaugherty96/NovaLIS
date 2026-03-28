@@ -22,6 +22,15 @@ class ResponseFormatter:
 
     URL_PATTERN = re.compile(r"https?://\S+", re.IGNORECASE)
     PATH_PATTERN = re.compile(r"(?:\b[A-Za-z]:\\[^\s]+|/(?:[^\s/]+/)+[^\s]*)")
+    _EXPLICIT_SUMMARY_PREFIXES = (
+        "bottom line:",
+        "summary:",
+        "main point:",
+        "core answer:",
+        "key takeaway:",
+        "recommendation:",
+    )
+    _HEADING_PATTERN = re.compile(r"^[A-Z0-9][A-Z0-9\s:.\-\"'/()]{5,}$")
 
     @staticmethod
     def format(text: str, mode: str = "casual") -> str:
@@ -56,11 +65,20 @@ class ResponseFormatter:
         if cls._needs_executive_summary(user_message):
             executive = cls._build_executive_summary(user_message)
             if executive:
-                user_message = f"{executive}\n\n{user_message}" if executive.lower() not in user_message.lower() else user_message
+                user_message = (
+                    f"{executive}\n\n{user_message}"
+                    if executive.lower() not in user_message.lower()
+                    else user_message
+                )
 
         raw_speakable = (speakable_text or user_message).strip()
         data["speakable_text"] = cls.to_speakable_text(raw_speakable)
-        return {"user_message": user_message, "speakable_text": data["speakable_text"], "structured_data": data.get("structured_data", {}), "data": data}
+        return {
+            "user_message": user_message,
+            "speakable_text": data["speakable_text"],
+            "structured_data": data.get("structured_data", {}),
+            "data": data,
+        }
 
     @staticmethod
     def to_speakable_text(text: str) -> str:
@@ -97,13 +115,25 @@ class ResponseFormatter:
         add_ons = []
 
         if allow_clarification:
-            add_ons.append(NovaStyleContract.initiative_tail(mode, "clarify") or CLARIFY_PROMPTS["brief_or_deep"])
+            add_ons.append(
+                NovaStyleContract.initiative_tail(mode, "clarify")
+                or CLARIFY_PROMPTS["brief_or_deep"]
+            )
         elif allow_branch_suggestion and allow_depth_prompt:
-            add_ons.append(NovaStyleContract.initiative_tail(mode, "combined") or NovaStyleContract.initiative_tail("casual", "combined"))
+            add_ons.append(
+                NovaStyleContract.initiative_tail(mode, "combined")
+                or NovaStyleContract.initiative_tail("casual", "combined")
+            )
         elif allow_branch_suggestion:
-            add_ons.append(NovaStyleContract.initiative_tail(mode, "branch") or NovaStyleContract.initiative_tail("casual", "branch"))
+            add_ons.append(
+                NovaStyleContract.initiative_tail(mode, "branch")
+                or NovaStyleContract.initiative_tail("casual", "branch")
+            )
         elif allow_depth_prompt:
-            add_ons.append(NovaStyleContract.initiative_tail(mode, "depth") or NovaStyleContract.initiative_tail("casual", "depth"))
+            add_ons.append(
+                NovaStyleContract.initiative_tail(mode, "depth")
+                or NovaStyleContract.initiative_tail("casual", "depth")
+            )
 
         if add_ons:
             text = f"{text}\n\n" + "\n".join(add_ons[:1])
@@ -133,13 +163,67 @@ class ResponseFormatter:
         sentence_count = len([s for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()])
         return sentence_count >= 4
 
-    @staticmethod
-    def _build_executive_summary(text: str) -> str:
+    @classmethod
+    def _build_executive_summary(cls, text: str) -> str:
         lines = [line.strip(" -•") for line in text.splitlines() if line.strip()]
         if not lines:
             return ""
-        first = lines[0]
-        first = re.sub(r"\s+", " ", first).strip()
+        explicit = cls._explicit_summary_line(lines)
+        if explicit:
+            return explicit
+        first = cls._first_informative_line(lines)
+        if not first:
+            return ""
         if len(first) > 120:
             first = first[:117].rstrip() + "..."
         return f"Summary: {first}"
+
+    @classmethod
+    def _explicit_summary_line(cls, lines: list[str]) -> str:
+        for line in lines:
+            normalized = re.sub(r"\s+", " ", line).strip()
+            lowered = normalized.lower()
+            if any(lowered.startswith(prefix) for prefix in cls._EXPLICIT_SUMMARY_PREFIXES):
+                return normalized
+
+        for idx, raw_line in enumerate(lines):
+            normalized = re.sub(r"\s+", " ", raw_line).strip()
+            lowered = normalized.lower()
+            if lowered in {"top headlines", "key developments", "signals to watch"}:
+                follow_up = cls._first_bullet_like_line(lines[idx + 1 :])
+                if follow_up:
+                    return f"Summary: {follow_up}"
+        return ""
+
+    @classmethod
+    def _first_informative_line(cls, lines: list[str]) -> str:
+        for line in lines:
+            normalized = re.sub(r"\s+", " ", line).strip()
+            if not normalized:
+                continue
+            if normalized.lower() in {"top headlines", "key developments", "signals to watch"}:
+                continue
+            if cls._looks_like_heading(normalized):
+                continue
+            return normalized
+        return re.sub(r"\s+", " ", lines[0]).strip() if lines else ""
+
+    @staticmethod
+    def _first_bullet_like_line(lines: list[str]) -> str:
+        for line in lines:
+            normalized = re.sub(r"\s+", " ", line).strip(" -•")
+            if not normalized:
+                continue
+            normalized = re.sub(r"^\d+[.)]?\s+", "", normalized).strip()
+            if normalized:
+                return normalized
+        return ""
+
+    @classmethod
+    def _looks_like_heading(cls, line: str) -> bool:
+        normalized = re.sub(r"\s+", " ", line).strip()
+        if not normalized:
+            return False
+        if cls._HEADING_PATTERN.match(normalized) and normalized.upper() == normalized:
+            return True
+        return normalized.endswith(("BRIEF", "SUMMARY")) and normalized == normalized.upper()

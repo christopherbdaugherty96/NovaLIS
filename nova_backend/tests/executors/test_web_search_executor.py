@@ -75,6 +75,7 @@ def test_successful_search_returns_results(executor, mock_network, sample_reques
     result = executor.execute(sample_request)
 
     assert result.success
+    assert result.message.startswith("Bottom line:")
     assert 'Search answer for "test query"' in result.message
     assert "Confidence:" in result.message
     assert "Show sources" in result.message

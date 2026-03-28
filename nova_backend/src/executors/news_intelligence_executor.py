@@ -98,6 +98,55 @@ class NewsIntelligenceExecutor:
             return clean
         return clean[: limit - 3].rstrip() + "..."
 
+    @staticmethod
+    def _strip_lead_label(text: str) -> str:
+        clean = re.sub(r"\s+", " ", str(text or "").strip()).strip()
+        clean = re.sub(
+            r"^(?:bottom line|summary|main point|key takeaway|headline|article summary|story summary)\s*:\s*",
+            "",
+            clean,
+            flags=re.IGNORECASE,
+        )
+        return clean.strip(" -")
+
+    @classmethod
+    def _extract_bottom_line(cls, text: str) -> str:
+        raw = str(text or "").strip()
+        if not raw:
+            return ""
+
+        explicit = re.search(
+            r"(?im)^(?:bottom line|summary|main point|key takeaway)\s*:\s*(.+)$",
+            raw,
+        )
+        if explicit:
+            return cls._strip_lead_label(explicit.group(1))
+
+        for line in raw.splitlines():
+            normalized = cls._strip_lead_label(line)
+            if not normalized:
+                continue
+            lowered = normalized.lower()
+            if lowered in {"top headlines", "key developments", "signals to watch"}:
+                continue
+            if re.match(r"^[A-Z0-9][A-Z0-9\s:.\-\"'/()]{5,}$", normalized) and normalized.upper() == normalized:
+                continue
+            return normalized
+        return ""
+
+    @classmethod
+    def _prepend_bottom_line(cls, report_text: str, fallback_text: str = "") -> str:
+        raw = str(report_text or "").strip()
+        if not raw:
+            return raw
+        if re.match(r"(?im)^bottom line:", raw):
+            return raw
+
+        candidate = cls._extract_bottom_line(raw) or cls._strip_lead_label(fallback_text)
+        if not candidate:
+            return raw
+        return f"Bottom line: {candidate}\n\n{raw}"
+
     def _ok_result(
         self,
         message: str,
@@ -642,7 +691,13 @@ class NewsIntelligenceExecutor:
                 f"Coverage: {', '.join(coverage) if coverage else 'General'}",
             ]
         )
-        return "\n".join(lines), all_sources
+        report = "\n".join(lines)
+        lead = ""
+        if clusters:
+            first_summary = str(clusters[0].get("summary") or "").strip()
+            if first_summary:
+                lead = first_summary
+        return self._prepend_bottom_line(report, lead), all_sources
 
     def _expand_cluster(self, clusters: list[dict[str, Any]], story_id: int) -> ActionResult:
         idx = int(story_id) - 1
@@ -670,8 +725,9 @@ class NewsIntelligenceExecutor:
             lines.append(f"- {item.get('title','Unknown')} ({item.get('source','Unknown')})")
         lines.append("")
         lines.append(f"Sources: {', '.join(sources) if sources else 'Unknown'}")
+        report = self._prepend_bottom_line("\n".join(lines), summary or implication)
         return self._ok_result(
-            "\n".join(lines),
+            report,
             data={"sources": sources, "story_id": story_id},
             speakable_text=f"Story {story_id}. {self._speakable_preview(summary or implication, limit=170)}",
         )
@@ -913,7 +969,9 @@ class NewsIntelligenceExecutor:
         related_text = self._render_related_comparison_section(selected, related_pairs)
         if related_text:
             lines.append(related_text)
-        return "\n".join(lines), related_pairs
+        report = "\n".join(lines)
+        lead = summaries[0] if summaries else ""
+        return self._prepend_bottom_line(report, lead), related_pairs
 
     def _compare_headline_indices(
         self,
@@ -1117,8 +1175,9 @@ class NewsIntelligenceExecutor:
             },
             "story_index": story_index,
         }
+        report = self._prepend_bottom_line("\n".join(lines).strip(), normalized)
         return self._ok_result(
-            "\n".join(lines).strip(),
+            report,
             data=payload,
             request_id=request.request_id,
             speakable_text=f"Story page summary ready for story {story_index}. {self._speakable_preview(normalized, limit=170)}",
@@ -1433,13 +1492,14 @@ class NewsIntelligenceExecutor:
             session_id=session_id,
             timeout_seconds=self._bounded_timeout(deadline, BRIEF_ANALYSIS_TIMEOUT_SECONDS),
         )
-        brief = self.renderer.render_brief(
+        brief_core = self.renderer.render_brief(
             source,
             analysis_text=analysis,
             developing_stories=developing_stories,
         )
+        brief = self._prepend_bottom_line(brief_core, analysis)
         if degraded_note:
-            brief = f"{degraded_note}\n\n{brief}"
+            brief = f"{brief}\n\n{degraded_note}"
 
         prior = (request.params or {}).get("topic_history")
         prior_map = prior if isinstance(prior, dict) else {}

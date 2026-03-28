@@ -4821,6 +4821,7 @@ function renderTrustCenterPage() {
       : {};
     reasoningSummary.textContent = [
       String(reasoning.summary || "").trim(),
+      String(reasoning.reasoning_summary_line || "").trim(),
       String(reasoning.last_used || "").trim() && `Last used: ${String(reasoning.last_used || "").trim()}`,
       String(reasoning.usage_budget_state_label || "").trim() && `Usage: ${String(reasoning.usage_budget_state_label || "").trim()}`,
     ].filter(Boolean).join(" · ") || "Governed second-opinion status will appear here after the next trust refresh.";
@@ -4833,6 +4834,9 @@ function renderTrustCenterPage() {
       ["Mode", String(reasoning.mode || "second_opinion").trim() || "second_opinion"],
       ["Availability", String(reasoning.status || "Unknown").trim() || "Unknown"],
       ["Last outcome", String(reasoning.last_outcome || "Not recorded").trim() || "Not recorded"],
+      ["Bottom line", String(reasoning.reasoning_summary_line || "Not recorded").trim() || "Not recorded"],
+      ["Main gap", String(reasoning.top_issue || "No major gap recorded").trim() || "No major gap recorded"],
+      ["Best correction", String(reasoning.top_correction || "No specific correction recorded").trim() || "No specific correction recorded"],
       ["Estimated tokens today", `${Number(reasoning.usage_estimated_total_tokens || 0).toLocaleString()} ${String(reasoning.usage_measurement_label || "estimated tokens").toLowerCase()}`],
       ["Budget state", String(reasoning.usage_budget_state_label || "Normal").trim() || "Normal"],
       ["Budget remaining", `${Number(reasoning.usage_budget_remaining_tokens || 0).toLocaleString()} tokens`],
@@ -7862,6 +7866,7 @@ function renderSettingsPage() {
       : {};
     reasoningSummary.textContent = [
       String(reasoning.summary || "").trim() || "Second opinions stay advisory-only and visible when used.",
+      String(reasoning.reasoning_summary_line || "").trim(),
       String(reasoning.settings_permission || "").trim() ? `Settings: ${String(reasoning.settings_permission || "").trim()}` : "",
       String(reasoning.switching_note || "").trim(),
       String(reasoning.usage_budget_state_label || "").trim() ? `Usage: ${String(reasoning.usage_budget_state_label || "").trim()}` : "",
@@ -7875,6 +7880,9 @@ function renderSettingsPage() {
       ["Availability", String(reasoning.status_label || reasoning.status || "Unknown").trim() || "Unknown"],
       ["Settings permission", String(reasoning.settings_permission || "enabled").trim() || "enabled"],
       ["Last used", String(reasoning.last_used || "Not used yet").trim() || "Not used yet"],
+      ["Bottom line", String(reasoning.reasoning_summary_line || "Not recorded").trim() || "Not recorded"],
+      ["Main gap", String(reasoning.top_issue || "No major gap recorded").trim() || "No major gap recorded"],
+      ["Best correction", String(reasoning.top_correction || "No specific correction recorded").trim() || "No specific correction recorded"],
       ["Estimated tokens today", `${Number(reasoning.usage_estimated_total_tokens || 0).toLocaleString()} ${String(reasoning.usage_measurement_label || "estimated tokens").toLowerCase()}`],
       ["Budget state", String(reasoning.usage_budget_state_label || "Normal").trim() || "Normal"],
       ["Budget remaining", `${Number(reasoning.usage_budget_remaining_tokens || 0).toLocaleString()} tokens`],

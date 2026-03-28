@@ -47,6 +47,7 @@ That means Nova already has:
 - answer-first search with sources on demand
 - in-place news summaries on the News page
 - a governed external reasoning lane with same-thread second-opinion review, provider visibility, and advisory-only boundaries
+- Trust and Settings reasoning panels that surface the second-opinion bottom line, main gap, and best correction directly
 - estimated governed reasoning-usage visibility in Trust and Settings
 - a local-first OpenAI operating model documented inside Phase 8, with runtime settings for an optional metered OpenAI lane, preferred model, daily token budget, and a narrow OpenClaw task-report fallback
 - a token-gated governed remote bridge for read/reasoning access from OpenClaw-style remote clients
@@ -85,6 +86,7 @@ These parts are already meaningfully real:
 - explicit scheduled updates through the Home-page schedule surface
 - explicit pattern review through the Home-page pattern queue
 - source-grounded news brief and per-article summary flows
+- long-form general-chat, search, and news answers that now lead more consistently with a useful summary line
 - answer-first search with hidden-by-default sources
 - governed same-thread external reasoning review with Trust and Settings transparency
 - local project summary, architecture report, project overview, and structure-map flows

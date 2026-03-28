@@ -58,6 +58,7 @@ def test_intelligence_brief_updates_topic_map(monkeypatch):
     executor = mod.NewsIntelligenceExecutor()
     result = executor.execute_brief(_request(50, {"headlines": headlines, "topic_history": {"ai": 1}}))
     assert result.success is True
+    assert result.message.startswith("Bottom line:")
     assert "NOVA INTELLIGENCE BRIEF" in result.message
     assert isinstance(result.data, dict)
     assert result.speakable_text.startswith("Daily intelligence brief ready.")
@@ -146,6 +147,7 @@ def test_summary_filters_by_source(monkeypatch):
         _request(49, {"selection": "source", "source_query": "abc", "headlines": headlines})
     )
     assert result.success is True
+    assert result.message.startswith("Bottom line:")
     assert "Source: ABC News" in result.message
 
 
@@ -201,6 +203,7 @@ def test_summary_filters_by_category(monkeypatch):
         )
     )
     assert result.success is True
+    assert result.message.startswith("Bottom line:")
     assert "CATEGORY SUMMARY - Tech News" in result.message
     assert "Video: https://video.example.com/tech-1.mp4" in result.message
 
@@ -255,6 +258,7 @@ def test_summary_all_includes_related_story_comparison(monkeypatch):
     executor = mod.NewsIntelligenceExecutor()
     result = executor.execute_summary(_request(49, {"selection": "all", "headlines": headlines}))
     assert result.success is True
+    assert result.message.startswith("Bottom line:")
     assert "HEADLINE-BY-HEADLINE SUMMARY" in result.message
     assert "Story 1" in result.message
     assert "RELATED STORY COMPARISON" in result.message
@@ -308,6 +312,7 @@ def test_story_page_summary_reads_article_page(monkeypatch):
         _request(49, {"action": "story_page_summary", "story_index": 1, "headlines": headlines})
     )
     assert result.success is True
+    assert result.message.startswith("Bottom line:")
     assert "STORY PAGE SUMMARY - Story 1" in result.message
     assert "Reference: https://example.com/a" in result.message
     assert isinstance(result.data, dict)

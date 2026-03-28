@@ -1484,7 +1484,8 @@ class GeneralChatSkill(BaseSkill):
                 explicit_depth=explicit_depth,
                 presentation_preference=presentation_preference,
             )
-            text = self.formatter.format(text, mode=mode)
+            payload = self.formatter.format_payload(text, mode=mode)
+            text = payload["user_message"]
             conversation_context = self._next_conversation_context(
                 query=normalized_query,
                 response_text=text,
@@ -1501,6 +1502,8 @@ class GeneralChatSkill(BaseSkill):
                     "mode": mode,
                     "style": shaped_style.value,
                     "tone_profile": tone_profile,
+                    "speakable_text": payload["speakable_text"],
+                    "structured_data": payload["structured_data"],
                     "conversation_context": conversation_context.to_dict(),
                 },
                 widget_data=None,
