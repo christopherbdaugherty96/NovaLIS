@@ -310,6 +310,14 @@ MEMORY_LIST_FRIENDLY_RE = re.compile(
     r"^\s*(?:show|list)\s+(?:my\s+|saved\s+)?memories\s*$",
     re.IGNORECASE,
 )
+MEMORY_RECENT_RE = re.compile(
+    r"^\s*(?:recent\s+memories|recent\s+memory|memory\s+recent)\s*$",
+    re.IGNORECASE,
+)
+MEMORY_SEARCH_RE = re.compile(
+    r"^\s*(?:memory\s+search|search\s+(?:my\s+)?memories?\s+for|find\s+(?:my\s+)?memories?\s+for|find\s+in\s+(?:my\s+)?memory)\s+(?P<query>.+?)\s*$",
+    re.IGNORECASE,
+)
 MEMORY_RECALL_FRIENDLY_RE = re.compile(
     r"^\s*(?:what\s+do\s+you\s+remember|show\s+what\s+you\s+remember|what(?:'s| is)\s+in\s+(?:my\s+)?memory)\s*$",
     re.IGNORECASE,
@@ -742,7 +750,15 @@ class GovernorMediator:
 
         m = SEARCH_RE.match(t)
         if m:
-            return _invocation_if_enabled(16, {"query": m.group("q").strip()})
+            search_query = m.group("q").strip()
+            lowered_query = search_query.lower()
+            if lowered_query.startswith(("memories for ", "memory for ", "memory ", "memories ")):
+                memory_query = re.sub(r"^(?:my\s+)?memories?\s+for\s+", "", search_query, flags=re.IGNORECASE)
+                memory_query = re.sub(r"^(?:my\s+)?memories?\s+", "", memory_query, flags=re.IGNORECASE)
+                memory_query = re.sub(r"^memory\s+", "", memory_query, flags=re.IGNORECASE).strip()
+                if memory_query:
+                    return _invocation_if_enabled(61, {"action": "search", "query": memory_query})
+            return _invocation_if_enabled(16, {"query": search_query})
 
         m = OPEN_FOLDER_RE.match(t)
         if m:
@@ -996,6 +1012,13 @@ class GovernorMediator:
         if MEMORY_LIST_FRIENDLY_RE.match(t):
             return _invocation_if_enabled(61, {"action": "list"})
 
+        if MEMORY_RECENT_RE.match(t):
+            return _invocation_if_enabled(61, {"action": "recent"})
+
+        m = MEMORY_SEARCH_RE.match(t)
+        if m:
+            return _invocation_if_enabled(61, {"action": "search", "query": m.group("query").strip()})
+
         if MEMORY_RECALL_FRIENDLY_RE.match(t):
             return _invocation_if_enabled(61, {"action": "overview"})
 
@@ -1168,7 +1191,8 @@ class GovernorMediator:
                 "track": (52, "What topic should I track?"),
                 "memory": (
                     61,
-                    "Try 'memory overview', 'what do you remember', 'save this', 'remember this: <text>', "
+                    "Try 'memory overview', 'what do you remember', 'recent memories', "
+                    "'search memories for <topic>', 'save this', 'remember this: <text>', "
                     "'list memories', 'memory show <id>', or 'memory export'.",
                 ),
             }

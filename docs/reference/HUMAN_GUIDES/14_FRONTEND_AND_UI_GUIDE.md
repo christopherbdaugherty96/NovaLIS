@@ -57,6 +57,7 @@ It handles things like:
 - remote bridge and connection-status surfaces
 - policy review rendering
 - memory review and item actions
+- memory recency review and lineage visibility
 - workspace-board rendering
 - structure-map rendering
 - intro and settings rendering
@@ -101,6 +102,7 @@ The frontend can present:
 - visible push-to-talk state changes
 - timeout-backed snapshot fallbacks with a direct calendar-to-Settings action
 - inline confirmation before state-changing memory actions are sent
+- a dedicated Recent memory action on the Memory page
 
 More specifically, the current dashboard can now show:
 - Home-page operator health
@@ -110,6 +112,7 @@ More specifically, the current dashboard can now show:
 - Home-page Workspace Home assistive-notices section
 - Home-page and Trust-page assistive notice cards with dismiss and mark-resolved controls
 - Memory Center list and item detail
+- Memory Center recent-memory access and richer supersede-lineage detail for edited items
 - top-level navigation between Chat, Home, News, Workspace, Memory, Policies, Trust, Settings, and Intro
 - top-level navigation between Chat, Home, News, Agent, Workspace, Memory, Policies, Trust, Settings, and Intro
 - header page context and runtime connection state

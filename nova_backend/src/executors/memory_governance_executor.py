@@ -22,6 +22,10 @@ class MemoryGovernanceExecutor:
         try:
             if action in {"overview", "status", "review"}:
                 return self._overview(request, store)
+            if action == "recent":
+                return self._recent(request, params, store)
+            if action == "search":
+                return self._search(request, params, store)
             if action == "save":
                 return self._save(request, params, store)
             if action == "save_thread_snapshot":
@@ -128,10 +132,13 @@ class MemoryGovernanceExecutor:
                 thread_name = str(thread.get("thread_name") or thread.get("thread_key") or "Unnamed thread").strip()
                 thread_count = int(thread.get("memory_count") or 0)
                 latest_title = str(thread.get("latest_title") or "").strip()
+                latest_decision = str(thread.get("latest_decision") or "").strip()
                 if latest_title:
                     lines.append(f"- {thread_name}: {thread_count} items | latest '{latest_title}'")
                 else:
                     lines.append(f"- {thread_name}: {thread_count} items")
+                if latest_decision:
+                    lines.append(f"  Latest decision: {latest_decision}")
             lines.append("")
 
         if recent_items:
@@ -151,6 +158,8 @@ class MemoryGovernanceExecutor:
                 "",
                 "Try next:",
                 "- memory list",
+                "- recent memories",
+                "- search memories for <topic>",
                 "- memory show <id>",
                 "- memory save <title>: <content>",
             ]
@@ -162,6 +171,8 @@ class MemoryGovernanceExecutor:
 
         follow_up_prompts = [
             "memory list",
+            "recent memories",
+            "search memories for <topic>",
             "memory show <id>",
             "memory save <title>: <content>",
         ]
@@ -203,6 +214,7 @@ class MemoryGovernanceExecutor:
                 "memory_export": payload,
                 "follow_up_prompts": [
                     "memory overview",
+                    "recent memories",
                     "list memories",
                     "show that memory",
                 ],
@@ -272,7 +284,7 @@ class MemoryGovernanceExecutor:
             f"Tier: {item['tier']} | Scope: {item['scope']} | Source: {item.get('source')}\n\n"
             f"Try next:\n"
             f"- memory show {item['id']}\n"
-            f"- list memories\n"
+            f"- recent memories\n"
             f"- memory lock {item['id']}"
         )
         return ActionResult.ok(
@@ -281,7 +293,7 @@ class MemoryGovernanceExecutor:
                 "memory_item": item,
                 "follow_up_prompts": [
                     f"memory show {item['id']}",
-                    "list memories",
+                    "recent memories",
                     f"memory lock {item['id']}",
                 ],
             },
@@ -334,6 +346,8 @@ class MemoryGovernanceExecutor:
             [
                 "",
                 "Try next:",
+                "- recent memories",
+                "- search memories for <topic>",
                 "- memory show <id>",
                 "- edit memory <id>: <updated text>",
                 "- delete memory <id>",
@@ -344,6 +358,8 @@ class MemoryGovernanceExecutor:
             data={
                 "memory_items": items,
                 "follow_up_prompts": [
+                    "recent memories",
+                    "search memories for <topic>",
                     "memory show <id>",
                     "edit memory <id>: <updated text>",
                     "delete memory <id>",
@@ -370,19 +386,35 @@ class MemoryGovernanceExecutor:
         tags_line = f"Tags: {tags}\n" if tags else ""
         source_line = f"Source: {str(item.get('source') or 'explicit_user_save')}\n"
         status_line = f"Status: {str(item.get('status') or item.get('tier') or 'active')}\n"
+        created_line = f"Created: {str(item.get('created_at') or '')}\n"
+        updated_line = f"Updated: {str(item.get('updated_at') or '')}\n"
+        version_line = f"Version: {int(item.get('version') or 1)}\n"
+        lock_meta = dict(item.get("lock") or {})
+        lineage_parts: list[str] = []
+        supersedes = [str(value).strip() for value in list(lock_meta.get("supersedes") or []) if str(value).strip()]
+        if supersedes:
+            lineage_parts.append(f"Supersedes {', '.join(supersedes)}")
+        superseded_by = str(lock_meta.get("superseded_by") or "").strip()
+        if superseded_by:
+            lineage_parts.append(f"Superseded by {superseded_by}")
+        lineage_line = f"Lineage: {' | '.join(lineage_parts)}\n" if lineage_parts else ""
         message = (
             f"{item['id']} ({item['tier']})\n"
             f"Title: {item['title']}\n"
             f"Scope: {item['scope']}\n"
             f"{status_line}"
             f"{source_line}\n"
+            f"{created_line}"
+            f"{updated_line}"
+            f"{version_line}"
             f"{thread_line}"
             f"{tags_line}"
+            f"{lineage_line}"
             f"{item['body']}\n\n"
             f"Try next:\n"
             f"- edit memory {item['id']}: <updated text>\n"
             f"- delete memory {item['id']}\n"
-            f"- memory lock {item['id']}"
+            f"- recent memories"
         )
         return ActionResult.ok(
             message=message,
@@ -391,7 +423,7 @@ class MemoryGovernanceExecutor:
                 "follow_up_prompts": [
                     f"edit memory {item['id']}: <updated text>",
                     f"delete memory {item['id']}",
-                    f"memory lock {item['id']}",
+                    "recent memories",
                 ],
             },
             request_id=request.request_id,
@@ -492,11 +524,100 @@ class MemoryGovernanceExecutor:
         return ActionResult.ok(
             message=(
                 f"Updated memory with replacement item {replacement['id']}.\n"
-                f"Try next:\n- memory show {replacement['id']}\n- list memories\n- memory unlock {replacement['id']}"
+                f"Try next:\n- memory show {replacement['id']}\n- recent memories\n- memory unlock {replacement['id']}"
             ),
             data={"memory_item": replacement},
             request_id=request.request_id,
             authority_class="persistent_change",
+            external_effect=False,
+            reversible=True,
+        )
+
+    def _recent(self, request, params: dict[str, Any], store: GovernedMemoryStore) -> ActionResult:
+        scope = str(params.get("scope") or "").strip().lower()
+        thread_name = str(params.get("thread_name") or "").strip()
+        thread_key = str(params.get("thread_key") or "").strip()
+        items = store.list_recent_items(limit=8, scope=scope, thread_name=thread_name, thread_key=thread_key)
+        self._log(
+            "MEMORY_RECENT_VIEWED",
+            {
+                "scope_filter": scope,
+                "thread_key_filter": thread_key,
+                "count": len(items),
+            },
+        )
+        if not items:
+            return ActionResult.ok(
+                message="No recent memory items are available for that filter.",
+                data={"memory_items": []},
+                request_id=request.request_id,
+                authority_class="read_only",
+                external_effect=False,
+                reversible=True,
+            )
+        lines = [f"Recent Memory ({len(items)})"]
+        for item in items:
+            links = dict(item.get("links") or {})
+            thread_segment = ""
+            thread_name_value = str(links.get("project_thread_name") or "").strip()
+            if thread_name_value:
+                thread_segment = f" | thread:{thread_name_value}"
+            preview = str(item.get("content_display") or item.get("title") or "").strip()
+            lines.append(f"- {item.get('id')} | {item.get('tier')} | {preview}{thread_segment}")
+        lines.extend(["", "Try next:", "- memory show <id>", "- search memories for <topic>", "- memory overview"])
+        return ActionResult.ok(
+            message="\n".join(lines),
+            data={
+                "memory_items": items,
+                "follow_up_prompts": ["memory show <id>", "search memories for <topic>", "memory overview"],
+            },
+            request_id=request.request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+        )
+
+    def _search(self, request, params: dict[str, Any], store: GovernedMemoryStore) -> ActionResult:
+        query = str(params.get("query") or "").strip()
+        thread_name = str(params.get("thread_name") or "").strip()
+        thread_key = str(params.get("thread_key") or "").strip()
+        if not query:
+            raise ValueError("Please tell me what memory topic to search for.")
+        items = store.find_relevant_items(query, thread_name=thread_name, thread_key=thread_key, limit=5)
+        self._log(
+            "MEMORY_SEARCH_VIEWED",
+            {
+                "query": query,
+                "thread_key_filter": thread_key,
+                "count": len(items),
+            },
+        )
+        if not items:
+            return ActionResult.ok(
+                message="I could not find a strong governed memory match for that search yet.",
+                data={"memory_items": []},
+                request_id=request.request_id,
+                authority_class="read_only",
+                external_effect=False,
+                reversible=True,
+            )
+        lines = [f"Memory Search Matches ({len(items)})", f"Query: {query}", ""]
+        for item in items:
+            links = dict(item.get("links") or {})
+            thread_name_value = str(links.get("project_thread_name") or "").strip()
+            preview = str(item.get("content_display") or item.get("title") or "").strip()
+            score = int(item.get("match_score") or 0)
+            suffix = f" | thread:{thread_name_value}" if thread_name_value else ""
+            lines.append(f"- {item.get('id')} | score {score} | {preview}{suffix}")
+        lines.extend(["", "Try next:", "- memory show <id>", "- recent memories", "- memory overview"])
+        return ActionResult.ok(
+            message="\n".join(lines),
+            data={
+                "memory_items": items,
+                "follow_up_prompts": ["memory show <id>", "recent memories", "memory overview"],
+            },
+            request_id=request.request_id,
+            authority_class="read_only",
             external_effect=False,
             reversible=True,
         )

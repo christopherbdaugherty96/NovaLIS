@@ -112,6 +112,11 @@ def _extract_decision_snippet(value: Any) -> str:
     return _clean_text(lines[0], limit=180)
 
 
+def _item_is_superseded(item: dict[str, Any]) -> bool:
+    lock_meta = dict(item.get("lock") or {})
+    return bool(str(lock_meta.get("superseded_by") or "").strip())
+
+
 class GovernedMemoryStore:
     """Persistent, explicit memory filing store for Phase-5 operations."""
 
@@ -302,6 +307,7 @@ class GovernedMemoryStore:
         tier_counts = {"active": 0, "locked": 0, "deferred": 0}
         scope_counts = {"project": 0, "ops": 0, "nova_core": 0}
         linked_threads: dict[str, dict[str, Any]] = {}
+        thread_decision_ts: dict[str, str] = {}
 
         for item in ordered:
             tier = str(item.get("tier") or "").strip().lower()
@@ -335,6 +341,14 @@ class GovernedMemoryStore:
                 entry["last_memory_updated_at"] = updated_at
                 entry["latest_title"] = str(item.get("title") or "").strip()
                 entry["latest_tier"] = str(item.get("tier") or "").strip().lower()
+                entry["latest_source"] = str(item.get("source") or "").strip()
+
+            tags = [str(tag).strip().lower() for tag in list(item.get("tags") or [])]
+            title = str(item.get("title") or "").strip().lower()
+            is_decision = "decision" in tags or title.startswith("decision:")
+            if is_decision and updated_at >= str(thread_decision_ts.get(thread_key) or ""):
+                thread_decision_ts[thread_key] = updated_at
+                entry["latest_decision"] = _extract_decision_snippet(item.get("body"))
 
         safe_recent_limit = max(1, min(int(recent_limit or 5), 10))
         safe_thread_limit = max(1, min(int(thread_limit or 5), 10))
@@ -347,6 +361,8 @@ class GovernedMemoryStore:
                 "scope": str(item.get("scope") or ""),
                 "updated_at": str(item.get("updated_at") or ""),
                 "thread_name": str(dict(item.get("links") or {}).get("project_thread_name") or ""),
+                "source": str(item.get("source") or ""),
+                "version": int(item.get("version") or 1),
             }
             for item in ordered[:safe_recent_limit]
         ]
@@ -366,6 +382,10 @@ class GovernedMemoryStore:
             "scope_counts": scope_counts,
             "recent_items": recent_items,
             "linked_threads": top_threads,
+            "inspectability_note": (
+                "Memory remains explicit, inspectable, and revocable. "
+                "Recent, linked, and superseded items stay visible without turning into silent autosave."
+            ),
         }
 
     def export_payload(self, *, include_deleted: bool = False) -> dict[str, Any]:
@@ -382,6 +402,9 @@ class GovernedMemoryStore:
             "schema_version": self.SCHEMA_VERSION,
             "exported_at": _utc_now(),
             "item_count": len(items),
+            "active_item_count": len([item for item in items if str(item.get("tier") or "").strip().lower() == "active"]),
+            "locked_item_count": len([item for item in items if str(item.get("tier") or "").strip().lower() == "locked"]),
+            "deferred_item_count": len([item for item in items if str(item.get("tier") or "").strip().lower() == "deferred"]),
             "includes_deleted": bool(include_deleted),
             "items": items,
         }
@@ -410,6 +433,44 @@ class GovernedMemoryStore:
             if item is None or bool(item.get("deleted")):
                 return None
             return dict(item)
+
+    def list_recent_items(
+        self,
+        *,
+        limit: int = 10,
+        scope: str = "",
+        thread_name: str = "",
+        thread_key: str = "",
+        include_superseded: bool = False,
+    ) -> list[dict[str, Any]]:
+        scope_filter = str(scope or "").strip().lower()
+        thread_name_filter = _normalize_thread_name(thread_name)
+        thread_key_filter = _normalize_thread_key(thread_key or thread_name)
+        with self._lock:
+            state = self._read_state()
+            items = [dict(item) for item in list(state.get("items") or []) if not bool(item.get("deleted"))]
+
+        filtered: list[dict[str, Any]] = []
+        for item in items:
+            tier = str(item.get("tier") or "").strip().lower()
+            if tier not in {"active", "locked", "deferred"}:
+                continue
+            if not include_superseded and _item_is_superseded(item):
+                continue
+            if scope_filter and str(item.get("scope") or "").strip().lower() != scope_filter:
+                continue
+            if thread_name_filter or thread_key_filter:
+                if not self._matches_thread_link(
+                    item,
+                    thread_name_filter=thread_name_filter,
+                    thread_key_filter=thread_key_filter,
+                ):
+                    continue
+            filtered.append(item)
+
+        filtered.sort(key=lambda row: str(row.get("updated_at") or ""), reverse=True)
+        safe_limit = max(1, min(int(limit or 10), 20))
+        return filtered[:safe_limit]
 
     def lock_item(self, item_id: str) -> dict[str, Any]:
         return self._mutate_tier(item_id=item_id, tier="locked", lock_state=True)
@@ -525,6 +586,8 @@ class GovernedMemoryStore:
         for item in items:
             if not bool(item.get("user_visible", True)):
                 continue
+            if _item_is_superseded(item):
+                continue
             tier = str(item.get("tier") or "").strip().lower()
             if tier not in {"active", "locked"}:
                 continue
@@ -542,6 +605,15 @@ class GovernedMemoryStore:
             elif thread_name_filter and item_thread_name == thread_name_filter:
                 score += 6
 
+            lowered_query = str(query or "").strip().lower()
+            if lowered_query:
+                if lowered_query in title:
+                    score += 8
+                if lowered_query in item_thread_name or lowered_query in item_thread_key:
+                    score += 7
+                if lowered_query in body:
+                    score += 4
+
             for token in tokens:
                 if token in title:
                     score += 5
@@ -552,10 +624,13 @@ class GovernedMemoryStore:
                 if token in body:
                     score += 2
 
+            if tier == "active":
+                score += 2
+
             if score <= 0:
                 continue
 
-            ranked.append((score, str(item.get("updated_at") or ""), item))
+            ranked.append((score, str(item.get("updated_at") or ""), {**item, "match_score": score}))
 
         ranked.sort(key=lambda row: (row[0], row[1]), reverse=True)
         safe_limit = max(1, min(int(limit or 3), 10))

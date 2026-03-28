@@ -3129,6 +3129,7 @@ function renderMemoryOverviewWidget(data = {}) {
       const name = String((thread && thread.thread_name) || "").trim();
       const count = Number((thread && thread.memory_count) || 0);
       const latestTitle = String((thread && thread.latest_title) || "").trim();
+      const latestDecision = String((thread && thread.latest_decision) || "").trim();
       const updatedAt = formatThreadTimestamp(thread && thread.last_memory_updated_at);
       if (!name) return;
       const row = document.createElement("div");
@@ -3143,6 +3144,7 @@ function renderMemoryOverviewWidget(data = {}) {
       const meta = document.createElement("span");
       meta.className = "memory-overview-meta";
       let metaText = latestTitle ? `Latest: ${latestTitle}` : "No recent title available.";
+      if (latestDecision) metaText += ` · Decision: ${latestDecision}`;
       if (updatedAt) metaText += ` · ${updatedAt}`;
       meta.textContent = metaText;
       row.appendChild(meta);
@@ -9157,6 +9159,11 @@ window.addEventListener("DOMContentLoaded", () => {
   const memoryListBtn = $("btn-memory-list");
   if (memoryListBtn) memoryListBtn.addEventListener("click", () => {
     sendSilentMemoryCommand("list memories");
+  });
+
+  const memoryRecentBtn = $("btn-memory-recent");
+  if (memoryRecentBtn) memoryRecentBtn.addEventListener("click", () => {
+    sendSilentMemoryCommand("recent memories");
   });
 
   const memoryThreadsBtn = $("btn-memory-threads");
