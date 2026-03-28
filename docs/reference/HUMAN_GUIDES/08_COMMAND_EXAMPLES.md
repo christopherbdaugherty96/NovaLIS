@@ -114,6 +114,7 @@ Examples:
 - `project home`
 - `operational context`
 - `continuity status`
+- `assistive notices`
 - `reset operational context`
 
 ## 8. Trust Review
@@ -126,6 +127,7 @@ Examples:
 Use these when you want to understand:
 - what Nova did recently
 - what is currently blocked
+- what bounded assistive suggestions are active
 - what mode Nova is in
 - whether anything external happened recently
 - which reasoning provider and route were used for a second opinion
@@ -165,6 +167,17 @@ Examples:
 
 Dashboard note:
 - Nova now exposes a dedicated Memory page for reviewing durable memory, linked threads, recent items, and governed export.
+
+## 10.1 Assistive Noticing
+Examples:
+- `assistive notices`
+- `assistive status`
+- `helpfulness status`
+
+Use these when you want to:
+- review bounded suggestions without leaving the governed flow
+- understand why Nova thinks a blocker or repeated issue is worth attention
+- inspect the current noticing layer without enabling silent autonomy
 
 ## 11. Agent Surface
 There is now also a dedicated `Agent` page in the dashboard.

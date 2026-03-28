@@ -122,6 +122,11 @@ let operationalContextState = {
   snapshot: {},
   lastHydratedAt: 0,
 };
+let assistiveNoticeState = {
+  summary: "Assistive notices will appear here when Nova can offer bounded help without taking silent action.",
+  snapshot: {},
+  lastHydratedAt: 0,
+};
 let projectVisualizerState = {
   summary: "Open the structure map to see the repo as a human-friendly system view.",
   snapshot: {},
@@ -169,6 +174,12 @@ let settingsRuntimeState = {
     summary: "Metered usage budget will appear here after the next refresh.",
   },
   usageBudgetCards: [],
+  assistivePolicy: {
+    assistive_notice_mode: "suggestive",
+    assistive_notice_mode_label: "Suggestive",
+    summary: "Suggestive. Notice, ask, then assist should remain the governing sequence.",
+  },
+  assistivePolicyCards: [],
   history: [],
   updatedAt: "",
   lastHydratedAt: 0,
@@ -809,6 +820,13 @@ function requestOperationalContextRefresh(force = false) {
   safeWSSend({ text: "operational context", silent_widget_refresh: true });
 }
 
+function requestAssistiveNoticesRefresh(force = false) {
+  const now = Date.now();
+  if (!force && now - Number(assistiveNoticeState.lastHydratedAt || 0) < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
+  assistiveNoticeState.lastHydratedAt = now;
+  safeWSSend({ text: "assistive notices", silent_widget_refresh: true });
+}
+
 function requestProjectStructureMapRefresh(force = false) {
   const now = Date.now();
   if (!force && now - Number(projectVisualizerState.lastHydratedAt || 0) < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
@@ -881,6 +899,12 @@ function applyRuntimeSettingsPayload(data) {
     : { ...settingsRuntimeState.usageBudget };
   settingsRuntimeState.usageBudgetCards = Array.isArray(payload.usage_budget_cards)
     ? payload.usage_budget_cards.map((item) => ({ ...item }))
+    : [];
+  settingsRuntimeState.assistivePolicy = (payload.assistive_policy && typeof payload.assistive_policy === "object")
+    ? { ...payload.assistive_policy }
+    : { ...settingsRuntimeState.assistivePolicy };
+  settingsRuntimeState.assistivePolicyCards = Array.isArray(payload.assistive_policy_cards)
+    ? payload.assistive_policy_cards.map((item) => ({ ...item }))
     : [];
   settingsRuntimeState.history = Array.isArray(payload.history) ? payload.history.map((item) => ({ ...item })) : [];
   settingsRuntimeState.summary = String(payload.summary || "").trim() || "Runtime settings loaded.";
@@ -1194,6 +1218,24 @@ async function setRuntimeUsageBudget(dailyMeteredTokenBudget, warningRatio = nul
     renderSettingsPage();
   } catch (_err) {
     reportSettingsError("I couldn't update the metered usage budget right now.");
+  }
+}
+
+async function setAssistiveNoticeMode(mode) {
+  try {
+    const res = await fetch(`${API_BASE}/api/settings/runtime/assistive-mode`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ assistive_notice_mode: mode }),
+    });
+    if (!res.ok) throw new Error("assistive_mode_update_failed");
+    const data = await res.json();
+    applyRuntimeSettingsPayload(data);
+    renderTrustCenterPage();
+    renderSettingsPage();
+    requestAssistiveNoticesRefresh(true);
+  } catch (_err) {
+    reportSettingsError("I couldn't update assistive noticing mode right now.");
   }
 }
 
@@ -2485,6 +2527,136 @@ function renderOperationalContextWidget(data = {}) {
       trustGrid.appendChild(blocked);
     }
   }
+}
+
+function renderAssistiveNoticesWidget(data = {}) {
+  if (data && typeof data === "object" && Object.keys(data).length) {
+    assistiveNoticeState.snapshot = { ...assistiveNoticeState.snapshot, ...data };
+    assistiveNoticeState.summary = String(data.summary || assistiveNoticeState.summary).trim() || assistiveNoticeState.summary;
+    assistiveNoticeState.lastHydratedAt = Date.now();
+  }
+
+  const snapshot = assistiveNoticeState.snapshot || {};
+  const notices = Array.isArray(snapshot.notices) ? snapshot.notices : [];
+  const recommendedActions = Array.isArray(snapshot.recommended_actions) ? snapshot.recommended_actions : [];
+  const governanceNote = String(snapshot.governance_note || "").trim()
+    || "Notice, ask, then assist remains the governing rule.";
+
+  const renderNoticeList = (host, { emptyCopy, includeActions = true } = {}) => {
+    if (!host) return;
+    clear(host);
+
+    const summary = document.createElement("div");
+    summary.className = "workspace-home-doc-copy";
+    summary.textContent = assistiveNoticeState.summary || "Assistive notices will appear here after the next refresh.";
+    host.appendChild(summary);
+
+    const note = document.createElement("div");
+    note.className = "workspace-home-doc-copy";
+    note.textContent = governanceNote;
+    host.appendChild(note);
+
+    if (!notices.length) {
+      const empty = document.createElement("div");
+      empty.className = "workspace-home-empty";
+      empty.textContent = emptyCopy;
+      host.appendChild(empty);
+    } else {
+      notices.slice(0, 4).forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "workspace-home-focus settings-permission-card";
+
+        const title = document.createElement("div");
+        title.className = "workspace-home-focus-title";
+        title.textContent = String(item.title || "Assistive notice").trim() || "Assistive notice";
+        card.appendChild(title);
+
+        const meta = document.createElement("div");
+        meta.className = "workspace-home-focus-meta";
+        meta.textContent = [
+          String(item.risk_level || "low").trim().toUpperCase(),
+          item.requires_permission ? "Ask first" : "Visible only",
+        ].filter(Boolean).join(" · ");
+        card.appendChild(meta);
+
+        const body = document.createElement("div");
+        body.className = "workspace-home-focus-copy";
+        body.textContent = String(item.summary || "").trim() || "A bounded assistive notice is active.";
+        card.appendChild(body);
+
+        const whyNow = String(item.why_now || "").trim();
+        if (whyNow) {
+          const why = document.createElement("div");
+          why.className = "workspace-home-focus-copy";
+          why.textContent = `Why now: ${whyNow}`;
+          card.appendChild(why);
+        }
+
+        const actions = Array.isArray(item.suggested_actions) ? item.suggested_actions : [];
+        if (includeActions && actions.length) {
+          const actionRow = document.createElement("div");
+          actionRow.className = "workspace-board-actions-toolbar";
+          actions.slice(0, 3).forEach((action) => {
+            const btn = document.createElement("button");
+            btn.type = "button";
+            btn.textContent = String(action.label || "Open").trim() || "Open";
+            btn.addEventListener("click", () => {
+              const command = String(action.command || "").trim();
+              if (!command) return;
+              setActivePage("chat");
+              injectUserText(command, "text");
+            });
+            actionRow.appendChild(btn);
+          });
+          card.appendChild(actionRow);
+        }
+
+        host.appendChild(card);
+      });
+    }
+
+    if (includeActions && recommendedActions.length) {
+      const actionRow = document.createElement("div");
+      actionRow.className = "workspace-home-actions";
+      recommendedActions.slice(0, 4).forEach((item) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "assistant-action-btn";
+        btn.textContent = String(item.label || "Run").trim() || "Run";
+        btn.addEventListener("click", () => {
+          const command = String(item.command || "").trim();
+          if (!command) return;
+          setActivePage("chat");
+          injectUserText(command, "text");
+        });
+        actionRow.appendChild(btn);
+      });
+      host.appendChild(actionRow);
+    }
+  };
+
+  renderNoticeList(
+    $("workspace-home-assistive"),
+    {
+      emptyCopy: "No bounded assistive notices are active right now.",
+      includeActions: true,
+    },
+  );
+
+  const trustSummary = $("trust-center-assistive-summary");
+  if (trustSummary) {
+    trustSummary.textContent = [
+      assistiveNoticeState.summary,
+      String(snapshot.assistive_notice_mode_label || "").trim() ? `Mode: ${String(snapshot.assistive_notice_mode_label || "").trim()}` : "",
+    ].filter(Boolean).join(" · ") || "Assistive notices will appear here after the next refresh.";
+  }
+  renderNoticeList(
+    $("trust-center-assistive-list"),
+    {
+      emptyCopy: "No bounded assistive notices are active right now.",
+      includeActions: true,
+    },
+  );
 }
 
 function populateThreadDetailSurface(prefix, data = {}) {
@@ -5414,6 +5586,9 @@ function isOperationalMessage(text) {
     msg.includes("opened path:") ||
     msg.includes("system diagnostics") ||
     msg.includes("system status") ||
+    msg.includes("operational context") ||
+    msg.includes("assistive notices") ||
+    msg.includes("trust center") ||
     msg.includes("volume ")
   );
 }
@@ -6589,6 +6764,7 @@ function hydrateDashboardWidgets() {
   safeWSSend({ text: "show threads", silent_widget_refresh: true });
   safeWSSend({ text: "workspace home", silent_widget_refresh: true });
   safeWSSend({ text: "operational context", silent_widget_refresh: true });
+  safeWSSend({ text: "assistive notices", silent_widget_refresh: true });
   safeWSSend({ text: "show structure map", silent_widget_refresh: true });
   safeWSSend({ text: "trust center", silent_widget_refresh: true });
   safeWSSend({ text: "policy overview", silent_widget_refresh: true });
@@ -6679,6 +6855,9 @@ function connectWebSocket() {
         break;
       case "operational_context":
         renderOperationalContextWidget(msg);
+        break;
+      case "assistive_notices":
+        renderAssistiveNoticesWidget(msg);
         break;
       case "project_structure_map":
         renderProjectStructureMapWidget(msg);
@@ -7415,6 +7594,8 @@ function renderSettingsPage() {
   const voiceGrid = $("settings-voice-grid");
   const reasoningSummary = $("settings-reasoning-summary");
   const reasoningGrid = $("settings-reasoning-grid");
+  const assistiveSummary = $("settings-assistive-summary");
+  const assistiveGrid = $("settings-assistive-grid");
   const aiRoutingSummary = $("settings-ai-routing-summary");
   const aiRoutingGrid = $("settings-ai-routing-grid");
   const connectionSummary = $("settings-connection-summary");
@@ -7613,6 +7794,56 @@ function renderSettingsPage() {
     ].forEach(([label, value]) => {
       reasoningGrid.appendChild(createOverviewChip(label, value));
     });
+  }
+
+  if (assistiveSummary && assistiveGrid) {
+    const assistivePolicy = (settingsRuntimeState.assistivePolicy && typeof settingsRuntimeState.assistivePolicy === "object")
+      ? settingsRuntimeState.assistivePolicy
+      : {};
+    assistiveSummary.textContent = [
+      String(assistivePolicy.summary || "").trim() || "Assistive noticing policy will appear here after the next settings refresh.",
+      "Notice, ask, then assist.",
+    ].filter(Boolean).join(" · ");
+
+    clear(assistiveGrid);
+    const cards = Array.isArray(settingsRuntimeState.assistivePolicyCards) ? settingsRuntimeState.assistivePolicyCards : [];
+    if (!cards.length) {
+      assistiveGrid.appendChild(createOverviewChip("Assistive noticing", "Loading"));
+    } else {
+      cards.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "workspace-home-focus settings-permission-card";
+
+        const title = document.createElement("div");
+        title.className = "workspace-home-focus-title";
+        title.textContent = String(item.label || "Assistive noticing").trim() || "Assistive noticing";
+        card.appendChild(title);
+
+        const status = document.createElement("div");
+        status.className = "workspace-home-focus-meta";
+        status.textContent = String(item.value_label || item.value || "").trim() || "Configured";
+        card.appendChild(status);
+
+        const copy = document.createElement("div");
+        copy.className = "workspace-home-focus-copy";
+        copy.textContent = String(item.description || "").trim() || "Bounded assistive noticing policy.";
+        card.appendChild(copy);
+
+        const actionRow = document.createElement("div");
+        actionRow.className = "workspace-board-actions-toolbar";
+        const options = Array.isArray(item.options) ? item.options : [];
+        options.slice(0, 4).forEach((option) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.textContent = String(option.label || option.value || "Set").trim() || "Set";
+          btn.addEventListener("click", () => setAssistiveNoticeMode(option.value));
+          actionRow.appendChild(btn);
+        });
+        card.appendChild(actionRow);
+
+        assistiveGrid.appendChild(card);
+      });
+    }
   }
 
   if (aiRoutingSummary && aiRoutingGrid) {
@@ -8094,6 +8325,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderTrustPanel();
   renderWorkspaceHomeWidget({});
   renderProjectStructureMapWidget({});
+  renderAssistiveNoticesWidget({});
   renderOpenClawDeliveryWidget();
   renderWorkspaceBoardPage();
   renderOpenClawAgentPage();
@@ -8345,6 +8577,16 @@ window.addEventListener("DOMContentLoaded", () => {
       setActivePage("chat");
       injectUserText("reset operational context", "text");
     });
+  }
+
+  const assistiveRefreshBtn = $("btn-assistive-notices-refresh");
+  if (assistiveRefreshBtn) {
+    assistiveRefreshBtn.addEventListener("click", () => requestAssistiveNoticesRefresh(true));
+  }
+
+  const assistiveOpenSettingsBtn = $("btn-assistive-open-settings");
+  if (assistiveOpenSettingsBtn) {
+    assistiveOpenSettingsBtn.addEventListener("click", () => setActivePage("settings"));
   }
 
   const settingsOpenIntroBtn = $("btn-settings-open-intro");

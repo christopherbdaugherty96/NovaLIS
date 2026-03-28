@@ -12,6 +12,7 @@ Nova now supports five closely related ideas:
 - project continuity threads
 - governed memory
 - operational remembrance visibility
+- bounded assistive noticing
 - workspace home
 - calm scheduling
 - opt-in pattern review
@@ -211,12 +212,35 @@ You can access it with:
 You can also clear it explicitly with:
 - `reset operational context`
 
+You can also review the current noticing layer explicitly with:
+- `assistive notices`
+
 Important boundary:
 - reset clears session continuity
 - reset does not delete governed personal memory
 - this is inspectable continuity, not hidden autonomy
 
-## 11. The Big Difference Between Context, Threads, Memory, Workspace Home, and Operational Context
+## 11. Assistive Notices
+Nova now has a first bounded assistive-noticing slice.
+
+This slice is intentionally narrow:
+- visible in Home and Trust
+- visible in Settings through an assistive-noticing mode control
+- available explicitly through `assistive notices`
+- limited to observations and suggestions
+
+Right now, Nova can surface things like:
+- a blocker without a next step
+- repeated runtime issues
+- ongoing work without a continuity anchor yet
+
+Important boundary:
+- this is still `notice -> ask -> assist`
+- Nova does not silently act from these notices
+- Nova does not silently save memory because of them
+- Silent mode suppresses unsolicited notice surfacing
+
+## 12. The Big Difference Between Context, Threads, Memory, Workspace Home, and Operational Context
 The easiest way to understand them is this:
 
 Working context:

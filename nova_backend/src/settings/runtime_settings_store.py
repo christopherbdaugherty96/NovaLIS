@@ -14,12 +14,13 @@ def _utc_now() -> str:
 class RuntimeSettingsStore:
     """Persistent runtime settings for governed product surfaces."""
 
-    SCHEMA_VERSION = "1.2"
+    SCHEMA_VERSION = "1.3"
     DEFAULT_SETUP_MODE = "local"
     DEFAULT_PROVIDER_ROUTING_MODE = "local_first"
     DEFAULT_OPENAI_MODEL = "gpt-5.4-mini"
     DEFAULT_DAILY_METERED_TOKEN_BUDGET = 4000
     DEFAULT_WARNING_RATIO = 0.8
+    DEFAULT_ASSISTIVE_NOTICE_MODE = "suggestive"
     SETUP_MODE_DEFINITIONS = {
         "local": {
             "label": "Local Mode",
@@ -66,6 +67,28 @@ class RuntimeSettingsStore:
         "gpt-5.4-nano": {
             "label": "GPT-5.4 nano",
             "description": "Use only for the cheapest simple metered tasks. For coding and planning, mini remains the better default.",
+        },
+    }
+    ASSISTIVE_NOTICE_MODE_DEFINITIONS = {
+        "silent": {
+            "label": "Silent",
+            "badge": "No unsolicited cues",
+            "description": "Nova should not surface assistive notices unless you explicitly open them.",
+        },
+        "suggestive": {
+            "label": "Suggestive (Recommended)",
+            "badge": "Low-friction help",
+            "description": "Nova may surface low-risk repeated-friction notices and save suggestions, but it should still ask before helping.",
+        },
+        "workflow_assist": {
+            "label": "Workflow Assist",
+            "badge": "Continuity-forward",
+            "description": "Nova may surface stronger continuity and blocker guidance for ongoing work, while still staying visible and revocable.",
+        },
+        "high_awareness": {
+            "label": "High Awareness",
+            "badge": "Maximum noticing",
+            "description": "Nova may surface the widest bounded noticing set, but it should still remain governed, non-manipulative, and non-autonomous.",
         },
     }
     PERMISSION_DEFINITIONS = {
@@ -248,6 +271,33 @@ class RuntimeSettingsStore:
             self._write_state(state)
             return self._build_snapshot(state)
 
+    def assistive_notice_mode(self) -> str:
+        with self._lock:
+            state = self._read_state()
+        return self._normalize_assistive_notice_mode(
+            str(state.get("assistive_notice_mode") or self.DEFAULT_ASSISTIVE_NOTICE_MODE)
+        )
+
+    def set_assistive_notice_mode(self, mode: str, *, source: str = "user") -> dict[str, Any]:
+        normalized = self._require_assistive_notice_mode(mode)
+        with self._lock:
+            state = self._read_state()
+            old_mode = self._normalize_assistive_notice_mode(
+                str(state.get("assistive_notice_mode") or self.DEFAULT_ASSISTIVE_NOTICE_MODE)
+            )
+            state["assistive_notice_mode"] = normalized
+            state["updated_at"] = _utc_now()
+            self._append_history(
+                state,
+                action="set_assistive_notice_mode",
+                target="assistive_notice_mode",
+                old_value=old_mode,
+                new_value=normalized,
+                source=source,
+            )
+            self._write_state(state)
+            return self._build_snapshot(state)
+
     def reset_recommended_defaults(self, *, source: str = "user") -> dict[str, Any]:
         with self._lock:
             state = self._read_state()
@@ -303,6 +353,10 @@ class RuntimeSettingsStore:
             str(state.get("preferred_openai_model") or self.DEFAULT_OPENAI_MODEL)
         )
         preferred_openai_definition = self.OPENAI_MODEL_DEFINITIONS[preferred_openai_model]
+        assistive_notice_mode = self._normalize_assistive_notice_mode(
+            str(state.get("assistive_notice_mode") or self.DEFAULT_ASSISTIVE_NOTICE_MODE)
+        )
+        assistive_notice_definition = self.ASSISTIVE_NOTICE_MODE_DEFINITIONS[assistive_notice_mode]
         daily_budget = max(
             1,
             int(state.get("daily_metered_token_budget") or self.DEFAULT_DAILY_METERED_TOKEN_BUDGET),
@@ -389,6 +443,24 @@ class RuntimeSettingsStore:
                 ],
             },
         ]
+        assistive_policy_cards = [
+            {
+                "id": "assistive_notice_mode",
+                "label": "Assistive noticing mode",
+                "value": assistive_notice_mode,
+                "value_label": assistive_notice_definition["label"],
+                "badge": assistive_notice_definition["badge"],
+                "description": assistive_notice_definition["description"],
+                "action_kind": "assistive_notice_mode",
+                "options": [
+                    {
+                        "label": definition["label"],
+                        "value": name,
+                    }
+                    for name, definition in self.ASSISTIVE_NOTICE_MODE_DEFINITIONS.items()
+                ],
+            }
+        ]
 
         history = list(state.get("history") or [])
         return {
@@ -425,6 +497,17 @@ class RuntimeSettingsStore:
                 ),
             },
             "usage_budget_cards": usage_budget_cards,
+            "assistive_policy": {
+                "assistive_notice_mode": assistive_notice_mode,
+                "assistive_notice_mode_label": assistive_notice_definition["label"],
+                "assistive_notice_mode_badge": assistive_notice_definition["badge"],
+                "assistive_notice_mode_description": assistive_notice_definition["description"],
+                "summary": (
+                    f"{assistive_notice_definition['label']}. "
+                    "Notice, ask, then assist should remain the governing sequence."
+                ),
+            },
+            "assistive_policy_cards": assistive_policy_cards,
             "permissions": permissions,
             "permission_cards": permission_cards,
             "permission_enabled_count": enabled_count,
@@ -491,6 +574,7 @@ class RuntimeSettingsStore:
             "setup_mode": self.DEFAULT_SETUP_MODE,
             "provider_routing_mode": self.DEFAULT_PROVIDER_ROUTING_MODE,
             "preferred_openai_model": self.DEFAULT_OPENAI_MODEL,
+            "assistive_notice_mode": self.DEFAULT_ASSISTIVE_NOTICE_MODE,
             "daily_metered_token_budget": self.DEFAULT_DAILY_METERED_TOKEN_BUDGET,
             "warning_ratio": self.DEFAULT_WARNING_RATIO,
             "permissions": {
@@ -516,6 +600,9 @@ class RuntimeSettingsStore:
         )
         state["preferred_openai_model"] = self._normalize_openai_model(
             str(state.get("preferred_openai_model") or self.DEFAULT_OPENAI_MODEL)
+        )
+        state["assistive_notice_mode"] = self._normalize_assistive_notice_mode(
+            str(state.get("assistive_notice_mode") or self.DEFAULT_ASSISTIVE_NOTICE_MODE)
         )
         state["daily_metered_token_budget"] = max(
             1,
@@ -549,6 +636,12 @@ class RuntimeSettingsStore:
             return self.DEFAULT_OPENAI_MODEL
         return normalized
 
+    def _normalize_assistive_notice_mode(self, mode: str) -> str:
+        normalized = str(mode or "").strip().lower()
+        if normalized not in self.ASSISTIVE_NOTICE_MODE_DEFINITIONS:
+            return self.DEFAULT_ASSISTIVE_NOTICE_MODE
+        return normalized
+
     def _require_provider_routing_mode(self, mode: str) -> str:
         normalized = str(mode or "").strip().lower()
         if normalized not in self.PROVIDER_ROUTING_DEFINITIONS:
@@ -559,6 +652,12 @@ class RuntimeSettingsStore:
         normalized = str(model or "").strip().lower()
         if normalized not in self.OPENAI_MODEL_DEFINITIONS:
             raise ValueError(f"Unsupported OpenAI model preference: {model}")
+        return normalized
+
+    def _require_assistive_notice_mode(self, mode: str) -> str:
+        normalized = str(mode or "").strip().lower()
+        if normalized not in self.ASSISTIVE_NOTICE_MODE_DEFINITIONS:
+            raise ValueError(f"Unsupported assistive notice mode: {mode}")
         return normalized
 
     def _normalize_warning_ratio(self, value: Any) -> float:

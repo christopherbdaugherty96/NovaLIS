@@ -40,6 +40,7 @@ def test_runtime_settings_api_reports_defaults(monkeypatch, tmp_path):
     assert payload["settings"]["permissions"]["metered_openai_enabled"] is False
     assert payload["settings"]["provider_policy"]["routing_mode"] == "local_first"
     assert payload["settings"]["usage_budget"]["daily_metered_token_budget"] == 4000
+    assert payload["settings"]["assistive_policy"]["assistive_notice_mode"] == "suggestive"
 
 
 def test_runtime_settings_setup_mode_update_changes_snapshot(monkeypatch, tmp_path):
@@ -111,6 +112,20 @@ def test_runtime_settings_usage_budget_update_changes_snapshot(monkeypatch, tmp_
     assert payload["settings"]["usage_budget"]["daily_metered_token_budget"] == 12000
     assert payload["settings"]["usage_budget"]["warning_ratio"] == 0.9
     assert payload["openai"]["daily_budget_tokens"] == 12000
+
+
+def test_runtime_settings_assistive_mode_update_changes_snapshot(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+
+    client = TestClient(brain_server.app)
+    response = client.post(
+        "/api/settings/runtime/assistive-mode",
+        json={"assistive_notice_mode": "workflow_assist"},
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["settings"]["assistive_policy"]["assistive_notice_mode"] == "workflow_assist"
 
 
 def test_external_reasoning_respects_runtime_permission(monkeypatch, tmp_path):
