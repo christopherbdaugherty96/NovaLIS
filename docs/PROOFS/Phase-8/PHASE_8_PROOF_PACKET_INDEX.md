@@ -9,6 +9,7 @@ Status: Current proof index
 - `docs/PROOFS/Phase-8/PHASE_8_SYSTEM_MAP_AND_METERED_OPENAI_TASK_REPORT_RUNTIME_SLICE_2026-03-27.md`
 - `docs/PROOFS/Phase-8/PHASE_8_DEDICATED_VERIFICATION_AND_PROOF_ALIGNMENT_2026-03-28.md`
 - `docs/PROOFS/Phase-8/PHASE_8_FULL_DESIGN_REVIEW_AND_RUNTIME_ALIGNMENT_2026-03-28.md`
+- `docs/PROOFS/Phase-8/PHASE_8_5_SCHEDULER_POLICY_SUPPRESSION_AND_END_TO_END_VALIDATION_2026-03-28.md`
 
 ## Adjacent Phase-8 companion slices
 - `docs/PROOFS/Phase-8/PHASE_8_OPENCLAW_REMOTE_BOUNDARY_AND_SETUP_READINESS_RUNTIME_SLICE_2026-03-27.md`
@@ -20,8 +21,10 @@ Status: Current proof index
 - manual OpenClaw home-agent foundation with delivery inbox and operator-visible review
 - strict manual preflight before a home-agent task can run
 - narrow scheduler behavior behind explicit settings control
+- quiet-hours and rate-limit suppression for the narrow scheduler
 - local-first metered OpenAI fallback for narrow task-report summarization only
 - current system-map and end-to-end explanation packet for Nova and OpenClaw
+- project-level end-to-end validation checklist for core Nova journeys
 - remote boundary and setup-readiness truth for the governed bridge and agent inputs
 - bounded assistive noticing with cooling windows, handled state, and Trust review surfaces
 

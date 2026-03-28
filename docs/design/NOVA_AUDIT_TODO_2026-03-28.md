@@ -12,8 +12,9 @@ It covers:
 - stale governance and verification tests
 
 ## Remaining Open Priorities
-After the current hardening and cleanup passes, the main remaining item from this packet is:
-- item 7: Windows media-control command semantics
+After the current hardening and cleanup passes, there are no remaining open items in this packet on `main`.
+
+The follow-on work from here is broader product validation and platform polish rather than unresolved audit debt.
 
 ## Recommended Execution Order
 1. Fix externally reachable security issues.
@@ -122,7 +123,7 @@ After the current hardening and cleanup passes, the main remaining item from thi
   - docs and runtime metadata match the intended product contract for saved captures
 
 ### 7. Fix Windows media-control command semantics
-- Status: open
+- Status: closed on `main`
 - Risk: `unmute`, `pause`, and `resume` do not do what they claim on Windows.
 - Evidence:
   - `nova_backend/src/system_control/system_control_executor.py`

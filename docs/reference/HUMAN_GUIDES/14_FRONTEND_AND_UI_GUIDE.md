@@ -138,6 +138,7 @@ More specifically, the current dashboard can now show:
 - Agent page runtime cards, template availability state, delivery-mode controls, per-template schedule controls, ready-for-review inbox state, and recent run history
 - Agent page setup/readiness review for the local summarizer, weather, calendar, remote bridge, and scheduler so the user can see what is optional versus currently ready
 - Agent page narrow scheduled briefing controls that stay visible and pausable instead of acting like hidden automation
+- Agent page schedule metadata that now surfaces quiet-hours and rate-limit hold reasons when policy suppresses a due scheduled run
 - Agent page summary language that now frames OpenClaw as Nova's visible worker layer rather than an autonomous system
 - richer long-form report rendering for `INTELLIGENCE BRIEF` and `DETAILED STORY ANALYSIS` surfaces, with the lead takeaway visible earlier in the chat card
 

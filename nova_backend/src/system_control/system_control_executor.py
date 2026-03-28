@@ -281,10 +281,13 @@ class SystemControlExecutor:
                 if command == "down":
                     return self._send_windows_volume_key(self.VK_VOLUME_DOWN, presses=2)
                 if command == "mute":
-                    return self._send_windows_volume_key(self.VK_VOLUME_MUTE, presses=1)
+                    # Windows exposes a generic toggle key here; fail closed until
+                    # a state-aware mute implementation exists.
+                    return False
                 if command == "unmute":
-                    # Windows media key is a toggle; send one keypress to unmute.
-                    return self._send_windows_volume_key(self.VK_VOLUME_MUTE, presses=1)
+                    # Windows media key is a toggle; fail closed until
+                    # unmute can be implemented explicitly.
+                    return False
                 if command == "set" and level is not None:
                     bounded = self._clamp_percent(level)
                     # Coarse deterministic set: drive down to floor, then step up.
@@ -326,7 +329,10 @@ class SystemControlExecutor:
                 return self._run_applescript('tell application "System Events" to key code 16')
 
             if system == "Windows":
-                return self._send_windows_volume_key(self.VK_MEDIA_PLAY_PAUSE, presses=1)
+                # Windows only exposes a generic play/pause toggle through this
+                # path. Fail closed instead of pretending play, pause, and resume
+                # are explicit commands.
+                return False
 
             return False
         except Exception:

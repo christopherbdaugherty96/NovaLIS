@@ -820,11 +820,14 @@ def _known_runtime_gaps() -> list[str]:
                 ("OpenClaw proactive scheduling (Phase 8.5)", (OPENCLAW_DIR / "agent_scheduler.py").exists()),
                 (
                     "OpenClaw scheduler quiet-hours suppression",
-                    False,
+                    "Held by quiet hours" in _safe_read(OPENCLAW_AGENT_RUNTIME_STORE_PATH)
+                    and "delivery_policy_decision"
+                    in _safe_read(PROJECT_ROOT / "nova_backend" / "src" / "tasks" / "notification_schedule_store.py"),
                 ),
                 (
                     "OpenClaw scheduler rate limiting",
-                    False,
+                    "Held by rate limit" in _safe_read(OPENCLAW_AGENT_RUNTIME_STORE_PATH)
+                    and "deliveries_last_hour_override" in _safe_read(OPENCLAW_AGENT_SCHEDULER_PATH),
                 ),
                 (
                     "Full Phase-8 governed envelope execution",
@@ -865,7 +868,7 @@ def _design_runtime_divergences(registry: dict[str, Any]) -> list[str]:
     if phase_8_status == "FOUNDATION":
         divergences.append(
             "Phase 8 canonical governed automation remains only partially realized at runtime: "
-            "manual OpenClaw home-agent foundations are live, but scheduled delivery and full "
+            "manual OpenClaw home-agent foundations are live, but the narrow scheduler and full "
             "envelope-governed execution are still deferred."
         )
 
@@ -1296,8 +1299,8 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         phase_7_note = "Governed external reasoning remains design-only"
     if phase_8_status == "ACTIVE":
         phase_8_note = (
-            "Manual strict preflight is active. Scheduled home-agent runtime is available behind explicit settings control; "
-            "local-first metered OpenAI fallback for narrow task reports and bounded assistive noticing are live; "
+            "Manual strict preflight is active. Scheduled home-agent runtime is available behind explicit settings control, "
+            "with quiet-hours suppression, rate limiting, local-first metered OpenAI fallback for narrow task reports, and bounded assistive noticing live; "
             "broader envelope-governed execution still remains deferred"
         )
     elif phase_8_status == "FOUNDATION":

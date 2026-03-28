@@ -315,10 +315,11 @@ Live now:
 - scheduler design packet
 - narrow scheduled delivery behind explicit runtime settings control
 - operator-visible schedule enable/pause and next-run visibility
+- quiet-hours and rate-limit suppression through the shared notification policy layer
+- held-slot retry once policy clears
 - precise governance carve-out for the scheduler location
 
 Still ahead inside the same lane:
-- operator-visible rate limiting and quiet-hours suppression
 - richer proactive notification UX beyond the current delivery inbox plus chat-surface model
 
 ### Full canonical Phase 8 execution
@@ -339,8 +340,6 @@ Later work:
 The major remaining gaps are:
 - no full strict Phase-8 execution substrate
   - impact: operator surface exists before full governed execution architecture
-- no quiet-hours or rate-limit suppression for scheduled runs yet
-  - impact: narrow scheduling is live, but the broader operator controls for suppression are still incomplete
 - no richer proactive notification push beyond chat/inbox
   - impact: delivery is visible and timed now, but still intentionally narrow
 - `inbox_check` is visible but not connected
@@ -407,9 +406,9 @@ The next highest-value follow-through is:
 2. keep the Phase 8 planning docs truthful
    - the home-agent and personality-layer packet must describe the live narrow scheduler honestly, not collapse it into “full automation”
 
-3. finish the remaining narrow scheduler controls before widening anything
-   - add quiet-hours and rate-limit suppression
-   - keep the carve-out precise and auditable
+3. keep the completed narrow scheduler controls precise before widening anything
+   - keep quiet-hours and rate-limit suppression tied to the shared policy layer
+   - validate held-slot retry and operator-visible reasons before expanding beyond briefings
 
 Bottom line:
 - Nova now has a real manual OpenClaw home-agent foundation

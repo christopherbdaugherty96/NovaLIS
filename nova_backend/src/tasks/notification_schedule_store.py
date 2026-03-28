@@ -167,6 +167,44 @@ class NotificationScheduleStore:
             state = self._read_state()
             return self._build_policy_snapshot(state, now=current)
 
+    def delivery_policy_decision(
+        self,
+        *,
+        now: datetime | None = None,
+        deliveries_last_hour_override: int | None = None,
+    ) -> dict[str, Any]:
+        current = (now or _utc_now()).astimezone(timezone.utc)
+        with self._lock:
+            state = self._read_state()
+            policy = self._build_policy_snapshot(state, now=current)
+
+        deliveries_last_hour = (
+            max(0, int(deliveries_last_hour_override))
+            if deliveries_last_hour_override is not None
+            else int(policy.get("deliveries_last_hour") or 0)
+        )
+        max_per_hour = int(policy.get("max_deliveries_per_hour") or 1)
+        if bool(policy.get("quiet_hours_enabled")) and self._in_quiet_hours(current, policy):
+            return {
+                "allowed": False,
+                "reason": "quiet_hours",
+                "note": f"Held until quiet hours end ({policy.get('quiet_hours_label')}).",
+                "policy": dict(policy),
+            }
+        if deliveries_last_hour >= max_per_hour:
+            return {
+                "allowed": False,
+                "reason": "rate_limit",
+                "note": f"Held by rate limit ({max_per_hour} per hour).",
+                "policy": dict(policy),
+            }
+        return {
+            "allowed": True,
+            "reason": "allowed",
+            "note": "Delivery permitted by current notification policy.",
+            "policy": dict(policy),
+        }
+
     def cancel_schedule(self, schedule_id: str) -> dict[str, Any]:
         with self._lock:
             state = self._read_state()

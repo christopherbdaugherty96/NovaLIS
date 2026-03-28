@@ -7,6 +7,7 @@ from typing import Any, Callable
 from src.openclaw.agent_runner import OpenClawAgentRunner, openclaw_agent_runner
 from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore, openclaw_agent_runtime_store
 from src.settings.runtime_settings_store import RuntimeSettingsStore, runtime_settings_store
+from src.tasks.notification_schedule_store import NotificationScheduleStore
 
 
 LedgerLogger = Callable[[str, dict[str, Any]], None]
@@ -23,11 +24,13 @@ class OpenClawAgentScheduler:
         store: OpenClawAgentRuntimeStore | None = None,
         runner: OpenClawAgentRunner | None = None,
         settings: RuntimeSettingsStore | None = None,
+        notification_policy_store: NotificationScheduleStore | None = None,
         ledger_logger: LedgerLogger | None = None,
     ) -> None:
         self._store = store or openclaw_agent_runtime_store
         self._runner = runner or openclaw_agent_runner
         self._settings = settings or runtime_settings_store
+        self._notification_policy_store = notification_policy_store or NotificationScheduleStore()
         self._ledger_logger = ledger_logger
         self._task: asyncio.Task | None = None
 
@@ -57,17 +60,53 @@ class OpenClawAgentScheduler:
         if not self._settings.is_permission_enabled("home_agent_scheduler_enabled"):
             return []
 
-        claims = self._store.claim_due_scheduled_templates(now=now)
         completed: list[dict[str, Any]] = []
-        for claim in claims:
+        due_templates = self._store.due_scheduled_templates(now=now)
+        deliveries_last_hour = self._store.scheduled_delivery_count_last_hour(now=now)
+
+        for claim in due_templates:
             template_id = str(claim.get("template_id") or "").strip()
+            slot_key = str(claim.get("slot_key") or "").strip()
             if not template_id:
+                continue
+            policy_decision = self._notification_policy_store.delivery_policy_decision(
+                now=now,
+                deliveries_last_hour_override=deliveries_last_hour,
+            )
+            if not bool(policy_decision.get("allowed")):
+                reason = str(policy_decision.get("reason") or "").strip()
+                note = str(policy_decision.get("note") or "").strip()
+                already_suppressed = (
+                    str(claim.get("last_suppression_window") or "").strip() == slot_key
+                    and str(claim.get("last_suppression_reason") or "").strip() == reason
+                )
+                if not already_suppressed:
+                    self._store.record_schedule_suppression(
+                        template_id,
+                        slot_key=slot_key,
+                        reason=reason,
+                        note=note,
+                        now=now,
+                    )
+                    self._log(
+                        "OPENCLAW_AGENT_SCHEDULE_SUPPRESSED",
+                        {
+                            "template_id": template_id,
+                            "slot_key": slot_key,
+                            "reason": reason,
+                            "note": note,
+                            "deliveries_last_hour": deliveries_last_hour,
+                            "source": "agent_scheduler",
+                        },
+                    )
+                continue
+            if not self._store.claim_scheduled_template(template_id, slot_key):
                 continue
             self._log(
                 "OPENCLAW_AGENT_SCHEDULE_TRIGGERED",
                 {
                     "template_id": template_id,
-                    "slot_key": str(claim.get("slot_key") or "").strip(),
+                    "slot_key": slot_key,
                     "source": "agent_scheduler",
                 },
             )
@@ -88,6 +127,7 @@ class OpenClawAgentScheduler:
                         "source": "agent_scheduler",
                     },
                 )
+                deliveries_last_hour += 1
                 completed.append(result)
             except Exception as exc:
                 self._store.record_scheduled_run_outcome(

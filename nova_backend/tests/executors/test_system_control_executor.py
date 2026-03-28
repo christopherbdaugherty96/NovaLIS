@@ -30,3 +30,51 @@ def test_open_path_returns_true_when_linux_xdg_open_succeeds(monkeypatch):
     )
 
     assert executor.open_path(allowed) is True
+
+
+def test_windows_volume_up_remains_supported(monkeypatch):
+    executor = SystemControlExecutor()
+    calls: list[tuple[int, int]] = []
+
+    monkeypatch.setattr("src.system_control.system_control_executor.platform.system", lambda: "Windows")
+    monkeypatch.setattr(
+        SystemControlExecutor,
+        "_send_windows_volume_key",
+        classmethod(lambda cls, vk_code, presses=1: calls.append((vk_code, presses)) or True),
+    )
+
+    assert executor.set_volume("up") is True
+    assert calls == [(SystemControlExecutor.VK_VOLUME_UP, 2)]
+
+
+def test_windows_explicit_mute_commands_fail_closed(monkeypatch):
+    executor = SystemControlExecutor()
+    calls: list[tuple[int, int]] = []
+
+    monkeypatch.setattr("src.system_control.system_control_executor.platform.system", lambda: "Windows")
+    monkeypatch.setattr(
+        SystemControlExecutor,
+        "_send_windows_volume_key",
+        classmethod(lambda cls, vk_code, presses=1: calls.append((vk_code, presses)) or True),
+    )
+
+    assert executor.set_volume("mute") is False
+    assert executor.set_volume("unmute") is False
+    assert calls == []
+
+
+def test_windows_explicit_media_commands_fail_closed(monkeypatch):
+    executor = SystemControlExecutor()
+    calls: list[tuple[int, int]] = []
+
+    monkeypatch.setattr("src.system_control.system_control_executor.platform.system", lambda: "Windows")
+    monkeypatch.setattr(
+        SystemControlExecutor,
+        "_send_windows_volume_key",
+        classmethod(lambda cls, vk_code, presses=1: calls.append((vk_code, presses)) or True),
+    )
+
+    assert executor.control_media("play") is False
+    assert executor.control_media("pause") is False
+    assert executor.control_media("resume") is False
+    assert calls == []

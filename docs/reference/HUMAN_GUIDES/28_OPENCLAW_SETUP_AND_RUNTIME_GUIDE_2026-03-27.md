@@ -161,6 +161,7 @@ Important OpenAI truth:
 
 A scheduled run looks similar, except:
 - `agent_scheduler.py` claims the due template window
+- before a due run starts, the shared notification policy can hold it for quiet hours or hourly rate limits
 - the run is triggered as `scheduler`
 - the outcome is recorded back into the template's schedule state
 

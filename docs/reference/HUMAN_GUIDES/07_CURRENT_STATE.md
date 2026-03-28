@@ -53,6 +53,7 @@ That means Nova already has:
 - a local-first OpenAI operating model documented inside Phase 8, with runtime settings for an optional metered OpenAI lane, preferred model, daily token budget, and a narrow OpenClaw task-report fallback
 - a token-gated governed remote bridge for read/reasoning access from OpenClaw-style remote clients
 - a manual OpenClaw home-agent foundation with a dedicated Agent page, manual briefing templates, delivery controls, a delivery inbox, strict manual preflight, and Nova-owned presentation
+- a narrow OpenClaw scheduler that now shares quiet-hours and rate-limit policy with the reminder layer, surfaces held reasons on the Agent page, and retries held slots once policy clears
 - a clearer OpenClaw setup/readiness layer that shows what the home-agent surface needs, what is optional, and what is paused
 - improved voice auto-speak routing with runtime fallback at the speech layer
 - a dedicated conversation personality layer and a dedicated voice presentation layer for smoother replies
@@ -146,6 +147,7 @@ A careful plain-language description of the current system is:
 - governed external execution beyond the narrow home-agent scheduler remains planned, not runtime-authorized
 - governed remote bridge access is now live, but it remains read/reasoning-only and token-gated
 - the OpenClaw home-agent foundation is now live as a manual operator surface, and a narrow scheduled briefing lane is now live behind explicit settings control
+- a practical end-to-end validation checklist now exists for startup, chat, memory, voice, Trust, and Agent journeys before any broader autonomy widening
 
 ## What Makes The Current State Special
 Nova already combines things that usually live in separate products:

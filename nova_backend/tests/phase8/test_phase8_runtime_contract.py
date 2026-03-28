@@ -15,7 +15,9 @@ def test_phase8_runtime_truth_reports_active_narrow_foundation():
     assert "| Phase 8 | ACTIVE |" in content
     assert "Manual strict preflight is active." in content
     assert "Scheduled home-agent runtime is available behind explicit settings control" in content
-    assert "bounded assistive noticing are live" in content
+    assert "quiet-hours suppression" in content
+    assert "rate limiting" in content
+    assert "bounded assistive noticing live" in content
     assert "broader envelope-governed execution still remains deferred" in content
 
 

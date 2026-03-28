@@ -15,12 +15,13 @@ What is live now:
 - a persistent delivery inbox for surface-first agent results
 - strict manual preflight before a manual home-agent envelope can run
 - a narrow scheduled briefing lane behind explicit runtime settings control
+- quiet-hours and hourly rate-limit suppression for that narrow scheduled lane
+- retry of a held scheduled slot once policy clears
 - Nova-owned task-result presentation through the OpenClaw personality bridge
 - local-first metered OpenAI fallback for narrow task-report summarization only
 
 What is still not live:
 - no broad autonomous scheduling beyond the explicit narrow briefing scheduler
-- no quiet-hours or rate-limit suppression for scheduled runs yet
 - no full TaskEnvelope execution path through GovernorMediator
 - no broad envelope authority
 - no file, network, or device automation through OpenClaw beyond the existing Nova runtime surfaces

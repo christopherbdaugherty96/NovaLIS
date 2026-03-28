@@ -8,6 +8,7 @@ from fastapi.testclient import TestClient
 from src import brain_server
 from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
 from src.settings.runtime_settings_store import RuntimeSettingsStore
+from src.tasks.notification_schedule_store import NotificationScheduleStore
 
 
 def _install_runtime_settings_store(monkeypatch, tmp_path: Path):
@@ -32,9 +33,16 @@ def _install_agent_store(monkeypatch, tmp_path: Path):
     return store
 
 
+def _install_notification_schedule_store(monkeypatch, tmp_path: Path):
+    store = NotificationScheduleStore(tmp_path / "notification_schedules.json")
+    monkeypatch.setattr(brain_server, "NotificationScheduleStore", lambda: store)
+    return store
+
+
 def test_openclaw_agent_status_reports_foundation(monkeypatch, tmp_path):
     _install_runtime_settings_store(monkeypatch, tmp_path)
     _install_agent_store(monkeypatch, tmp_path)
+    _install_notification_schedule_store(monkeypatch, tmp_path)
     monkeypatch.delenv("WEATHER_API_KEY", raising=False)
     monkeypatch.delenv("NOVA_OPENCLAW_BRIDGE_TOKEN", raising=False)
     monkeypatch.delenv("NOVA_BRIDGE_TOKEN", raising=False)
@@ -62,6 +70,7 @@ def test_openclaw_agent_status_reports_foundation(monkeypatch, tmp_path):
 def test_openclaw_agent_status_reports_connected_setup_inputs(monkeypatch, tmp_path):
     settings_store = _install_runtime_settings_store(monkeypatch, tmp_path)
     _install_agent_store(monkeypatch, tmp_path)
+    _install_notification_schedule_store(monkeypatch, tmp_path)
     calendar_path = tmp_path / "calendar.ics"
     calendar_path.write_text("BEGIN:VCALENDAR\nEND:VCALENDAR\n", encoding="utf-8")
     monkeypatch.setenv("WEATHER_API_KEY", "weather-key")
@@ -86,6 +95,7 @@ def test_openclaw_agent_status_reports_connected_setup_inputs(monkeypatch, tmp_p
 def test_openclaw_agent_run_respects_settings_permission(monkeypatch, tmp_path):
     settings_store = _install_runtime_settings_store(monkeypatch, tmp_path)
     _install_agent_store(monkeypatch, tmp_path)
+    _install_notification_schedule_store(monkeypatch, tmp_path)
     settings_store.set_permission("home_agent_enabled", False, source="test")
 
     client = TestClient(brain_server.app)
@@ -98,6 +108,7 @@ def test_openclaw_agent_run_respects_settings_permission(monkeypatch, tmp_path):
 def test_openclaw_agent_run_returns_manual_brief(monkeypatch, tmp_path):
     _install_runtime_settings_store(monkeypatch, tmp_path)
     agent_store = _install_agent_store(monkeypatch, tmp_path)
+    _install_notification_schedule_store(monkeypatch, tmp_path)
 
     class _FakeRunner:
         async def run_template(self, template_id: str, *, triggered_by: str = "dashboard"):
@@ -146,6 +157,7 @@ def test_openclaw_agent_run_returns_manual_brief(monkeypatch, tmp_path):
 def test_openclaw_agent_schedule_can_be_staged_while_scheduler_is_paused(monkeypatch, tmp_path):
     _install_runtime_settings_store(monkeypatch, tmp_path)
     _install_agent_store(monkeypatch, tmp_path)
+    _install_notification_schedule_store(monkeypatch, tmp_path)
 
     client = TestClient(brain_server.app)
     response = client.post(
@@ -164,6 +176,7 @@ def test_openclaw_agent_schedule_can_be_staged_while_scheduler_is_paused(monkeyp
 def test_openclaw_agent_schedule_rejects_template_that_is_not_schedule_ready(monkeypatch, tmp_path):
     _install_runtime_settings_store(monkeypatch, tmp_path)
     _install_agent_store(monkeypatch, tmp_path)
+    _install_notification_schedule_store(monkeypatch, tmp_path)
 
     client = TestClient(brain_server.app)
     response = client.post(
@@ -178,6 +191,7 @@ def test_openclaw_agent_schedule_rejects_template_that_is_not_schedule_ready(mon
 def test_openclaw_agent_dismisses_delivery_item(monkeypatch, tmp_path):
     _install_runtime_settings_store(monkeypatch, tmp_path)
     agent_store = _install_agent_store(monkeypatch, tmp_path)
+    _install_notification_schedule_store(monkeypatch, tmp_path)
     run = agent_store.record_run(
         {
             "envelope_id": "ENV-123",
@@ -198,3 +212,25 @@ def test_openclaw_agent_dismisses_delivery_item(monkeypatch, tmp_path):
     payload = response.json()
     assert payload["agent"]["delivery_ready_count"] == 0
     assert run["template_id"] == "morning_brief"
+
+
+def test_openclaw_agent_status_includes_scheduler_policy_summary(monkeypatch, tmp_path):
+    settings_store = _install_runtime_settings_store(monkeypatch, tmp_path)
+    _install_agent_store(monkeypatch, tmp_path)
+    notification_store = _install_notification_schedule_store(monkeypatch, tmp_path)
+    settings_store.set_permission("home_agent_scheduler_enabled", True, source="test")
+    notification_store.update_policy(
+        quiet_hours_enabled=True,
+        quiet_hours_start="22:00",
+        quiet_hours_end="07:00",
+        max_deliveries_per_hour=1,
+    )
+
+    client = TestClient(brain_server.app)
+    response = client.get("/api/openclaw/agent/status")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert "Quiet hours:" in payload["agent"]["schedule_summary"]
+    scheduler_card = next(item for item in payload["agent"]["setup"]["source_cards"] if item["id"] == "scheduler")
+    assert "Rate limit: 1 per hour." in scheduler_card["summary"]
