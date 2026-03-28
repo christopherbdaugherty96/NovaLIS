@@ -315,11 +315,15 @@ def test_assistive_notices_command_returns_widget_and_summary(monkeypatch):
             "governance_note": "Notice, ask, then assist.",
             "notices": [
                 {
+                    "id": "blocked_without_next_step::nova_runtime",
+                    "type": "blocked_without_next_step",
                     "title": "A blocker is recorded without a next step",
                     "summary": "Nova Runtime is blocked on: Runtime truth drift",
                     "why_now": "Nova can see a blocker, but there is no follow-up step recorded yet.",
                     "risk_level": "low",
                     "requires_permission": True,
+                    "dismiss_command": "dismiss assistive notice blocked_without_next_step::nova_runtime",
+                    "resolve_command": "resolve assistive notice blocked_without_next_step::nova_runtime",
                 }
             ],
             "recommended_actions": [{"label": "Trust center", "command": "trust center"}],
@@ -358,11 +362,15 @@ def test_silent_assistive_notice_refresh_updates_widget_without_chat_noise(monke
             "governance_note": "Notice, ask, then assist.",
             "notices": [
                 {
+                    "id": "repeated_runtime_issue",
+                    "type": "repeated_runtime_issue",
                     "title": "Recent runtime issues are repeating",
                     "summary": "Action needs attention, Action needs attention",
                     "why_now": "Calendar unavailable",
                     "risk_level": "low",
                     "requires_permission": False,
+                    "dismiss_command": "dismiss assistive notice repeated_runtime_issue",
+                    "resolve_command": "resolve assistive notice repeated_runtime_issue",
                 }
             ],
             "recommended_actions": [{"label": "System status", "command": "system status"}],
@@ -381,6 +389,102 @@ def test_silent_assistive_notice_refresh_updates_widget_without_chat_noise(monke
     assert not any("Assistive Notices" in msg for msg in chat_messages)
     assert any(msg.get("type") == "assistive_notices" for msg in ws.sent_messages)
     assert int(observed_state["session_state"].get("turn_count") or 0) == 0
+
+
+def test_dismiss_assistive_notice_updates_state_and_reports_confirmation(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["assistive notices", "dismiss assistive notice repeated_runtime_issue"])
+
+    async def _fake_send_assistive_notices_widget(_ws, session_state, project_threads, *, explicit_request=False):
+        payload = {
+            "type": "assistive_notices",
+            "summary": "1 assistive notice is worth a quick review.",
+            "governance_note": "Notice, ask, then assist.",
+            "notices": [],
+            "recommended_actions": [{"label": "Assistive notices", "command": "assistive notices"}],
+        }
+        if not session_state.get("assistive_notice_state", {}).get("items", {}).get("repeated_runtime_issue"):
+            payload["notices"] = [
+                {
+                    "id": "repeated_runtime_issue",
+                    "type": "repeated_runtime_issue",
+                    "title": "Recent runtime issues are repeating",
+                    "summary": "Action needs attention, Action needs attention",
+                    "why_now": "Calendar unavailable",
+                    "risk_level": "low",
+                    "requires_permission": False,
+                    "dismiss_command": "dismiss assistive notice repeated_runtime_issue",
+                    "resolve_command": "resolve assistive notice repeated_runtime_issue",
+                }
+            ]
+        else:
+            payload["summary"] = "No active assistive notices are surfaced right now. 1 handled notice remains hidden until conditions change."
+        session_state["last_assistive_notices"] = payload
+        await brain_server.ws_send(_ws, payload)
+        return payload
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.send_assistive_notices_widget",
+        side_effect=_fake_send_assistive_notices_widget,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("dismissed for this continuity window" in msg for msg in chat_messages)
+    assert any(msg.get("type") == "assistive_notices" for msg in ws.sent_messages)
+
+
+def test_resolve_assistive_notice_updates_state_and_reports_confirmation(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["assistive notices", "resolve assistive notice repeated_runtime_issue"])
+
+    async def _fake_send_assistive_notices_widget(_ws, session_state, project_threads, *, explicit_request=False):
+        payload = {
+            "type": "assistive_notices",
+            "summary": "1 assistive notice is worth a quick review.",
+            "governance_note": "Notice, ask, then assist.",
+            "notices": [],
+            "recommended_actions": [{"label": "Assistive notices", "command": "assistive notices"}],
+        }
+        if not session_state.get("assistive_notice_state", {}).get("items", {}).get("repeated_runtime_issue"):
+            payload["notices"] = [
+                {
+                    "id": "repeated_runtime_issue",
+                    "type": "repeated_runtime_issue",
+                    "title": "Recent runtime issues are repeating",
+                    "summary": "Action needs attention, Action needs attention",
+                    "why_now": "Calendar unavailable",
+                    "risk_level": "low",
+                    "requires_permission": False,
+                    "dismiss_command": "dismiss assistive notice repeated_runtime_issue",
+                    "resolve_command": "resolve assistive notice repeated_runtime_issue",
+                }
+            ]
+        else:
+            payload["summary"] = "No active assistive notices are surfaced right now. 1 handled notice remains hidden until conditions change."
+        session_state["last_assistive_notices"] = payload
+        await brain_server.ws_send(_ws, payload)
+        return payload
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.send_assistive_notices_widget",
+        side_effect=_fake_send_assistive_notices_widget,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("marked resolved for this continuity window" in msg for msg in chat_messages)
+    assert any(msg.get("type") == "assistive_notices" for msg in ws.sent_messages)
 
 
 def test_save_this_uses_last_response_and_routes_to_governed_memory(monkeypatch):

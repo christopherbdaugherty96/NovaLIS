@@ -173,11 +173,14 @@ Examples:
 - `assistive notices`
 - `assistive status`
 - `helpfulness status`
+- `dismiss assistive notice repeated_runtime_issue`
+- `resolve assistive notice repeated_runtime_issue`
 
 Use these when you want to:
 - review bounded suggestions without leaving the governed flow
 - understand why Nova thinks a blocker or repeated issue is worth attention
 - inspect the current noticing layer without enabling silent autonomy
+- clear a surfaced notice for the current continuity window once you have already handled it
 
 ## 11. Agent Surface
 There is now also a dedicated `Agent` page in the dashboard.

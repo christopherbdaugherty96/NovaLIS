@@ -105,6 +105,7 @@ More specifically, the current dashboard can now show:
 - Home-page Workspace Home
 - Home-page Workspace Home operational-context section
 - Home-page Workspace Home assistive-notices section
+- Home-page and Trust-page assistive notice cards with dismiss and mark-resolved controls
 - Memory Center list and item detail
 - top-level navigation between Chat, Home, News, Workspace, Memory, Policies, Trust, Settings, and Intro
 - top-level navigation between Chat, Home, News, Agent, Workspace, Memory, Policies, Trust, Settings, and Intro
@@ -117,6 +118,7 @@ More specifically, the current dashboard can now show:
 - Trust page recent governed actions, blocked conditions, drill-down, and capability visibility
 - Trust page operational-context panel with refresh/reset controls
 - Trust page assistive-notices panel with refresh and direct Settings path
+- Trust page assistive-notices panel now also shows when notices are cooling down or already handled
 - Trust page reasoning-transparency section with provider, route, mode, authority, and last outcome
 - Policy Review Center draft overview, selected-draft detail, simulation review, and one-shot manual run review
 - Settings page setup-mode selection, runtime permission controls, reasoning transparency, and voice confidence review

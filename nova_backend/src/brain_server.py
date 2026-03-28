@@ -63,7 +63,9 @@ from src.working_context.operational_remembrance import (
     render_operational_context_message,
 )
 from src.working_context.assistive_noticing import (
+    apply_assistive_notice_feedback,
     build_assistive_notices_widget,
+    record_auto_surfaced_notices,
     render_assistive_notices_message,
 )
 from src.tasks.notification_schedule_store import NotificationScheduleStore
@@ -342,6 +344,14 @@ OPERATIONAL_CONTEXT_RE = re.compile(
 )
 ASSISTIVE_NOTICES_RE = re.compile(
     r"^\s*(?:show\s+)?(?:assistive\s+notices|assistive\s+status|helpfulness\s+status)\s*$",
+    re.IGNORECASE,
+)
+DISMISS_ASSISTIVE_NOTICE_RE = re.compile(
+    r"^\s*dismiss\s+assistive\s+notice\s+(.+?)\s*$",
+    re.IGNORECASE,
+)
+RESOLVE_ASSISTIVE_NOTICE_RE = re.compile(
+    r"^\s*resolve\s+assistive\s+notice\s+(.+?)\s*$",
     re.IGNORECASE,
 )
 RESET_OPERATIONAL_CONTEXT_RE = re.compile(
@@ -1696,6 +1706,7 @@ def _reset_operational_session_state(
     session_state["last_memory_context"] = []
     session_state["last_operational_context"] = {}
     session_state["last_assistive_notices"] = {}
+    session_state["assistive_notice_state"] = {"items": {}}
     session_state["general_chat_context"] = []
     session_state["general_chat_summary"] = {}
     session_state["conversation_context"] = {}
@@ -4247,6 +4258,11 @@ async def send_assistive_notices_widget(
         assistive_notice_mode=runtime_settings_store.assistive_notice_mode(),
         explicit_request=explicit_request,
     )
+    if not explicit_request and int(payload.get("notice_count") or 0) > 0:
+        session_state["assistive_notice_state"] = record_auto_surfaced_notices(
+            session_state.get("assistive_notice_state"),
+            notices=list(payload.get("notices") or []),
+        )
     session_state["last_assistive_notices"] = payload
     if explicit_request:
         _log_ledger_event(
@@ -4270,6 +4286,26 @@ async def send_assistive_notices_widget(
         )
     await ws_send(ws, payload)
     return payload
+
+
+def apply_assistive_notice_state_update(
+    session_state: dict[str, Any],
+    *,
+    notice_id: str,
+    status: str,
+) -> tuple[bool, dict[str, Any] | None]:
+    notice_id_clean = str(notice_id or "").strip()
+    payload = dict(session_state.get("last_assistive_notices") or {})
+    notices = [dict(item or {}) for item in list(payload.get("notices") or []) if isinstance(item, dict)]
+    match = next((item for item in notices if str(item.get("id") or "").strip() == notice_id_clean), None)
+    if match is None:
+        return False, None
+    session_state["assistive_notice_state"] = apply_assistive_notice_feedback(
+        session_state.get("assistive_notice_state"),
+        notice=match,
+        status=status,
+    )
+    return True, match
 
 
 async def send_thread_detail_widget(

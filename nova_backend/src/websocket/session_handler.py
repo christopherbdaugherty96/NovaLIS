@@ -57,9 +57,12 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     WORKSPACE_BOARD_RE = deps.WORKSPACE_BOARD_RE
     OPERATIONAL_CONTEXT_RE = deps.OPERATIONAL_CONTEXT_RE
     ASSISTIVE_NOTICES_RE = deps.ASSISTIVE_NOTICES_RE
+    DISMISS_ASSISTIVE_NOTICE_RE = deps.DISMISS_ASSISTIVE_NOTICE_RE
+    RESOLVE_ASSISTIVE_NOTICE_RE = deps.RESOLVE_ASSISTIVE_NOTICE_RE
     RESET_OPERATIONAL_CONTEXT_RE = deps.RESET_OPERATIONAL_CONTEXT_RE
     send_operational_context_widget = deps.send_operational_context_widget
     send_assistive_notices_widget = deps.send_assistive_notices_widget
+    apply_assistive_notice_state_update = deps.apply_assistive_notice_state_update
     _render_operational_context_message = deps.render_operational_context_message
     _render_assistive_notices_message = deps.render_assistive_notices_message
     _reset_operational_session_state = deps._reset_operational_session_state
@@ -240,6 +243,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         "last_policy_run": {},
         "last_workspace_home": {},
         "last_operational_context": {},
+        "last_assistive_notices": {},
+        "assistive_notice_state": {"items": {}},
         "last_project_structure_map": {},
         "last_thread_detail": {},
         "last_memory_context": [],
@@ -721,6 +726,92 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     await _complete_immediate_turn(
                         _render_assistive_notices_message(notices_widget),
                         suggested_actions=list(notices_widget.get("recommended_actions") or []),
+                        tone_domain="continuity",
+                    )
+                continue
+
+            dismiss_assistive_match = DISMISS_ASSISTIVE_NOTICE_RE.match(command_text)
+            if dismiss_assistive_match:
+                notice_id = str(dismiss_assistive_match.group(1) or "").strip()
+                updated, notice = apply_assistive_notice_state_update(
+                    session_state,
+                    notice_id=notice_id,
+                    status="dismissed",
+                )
+                await send_assistive_notices_widget(
+                    ws,
+                    session_state,
+                    project_threads,
+                    explicit_request=True,
+                )
+                if not updated:
+                    await _complete_immediate_turn(
+                        "I couldn't find that active assistive notice. Open Assistive Notices first, then dismiss it from the current list.",
+                        suggested_actions=[
+                            {"label": "Assistive notices", "command": "assistive notices"},
+                            {"label": "Operational context", "command": "operational context"},
+                        ],
+                        tone_domain="continuity",
+                    )
+                else:
+                    deps._log_ledger_event(
+                        RUNTIME_GOVERNOR,
+                        "ASSISTIVE_NOTICE_DISMISSED",
+                        {
+                            "notice_id": str(notice.get("id") or ""),
+                            "notice_type": str(notice.get("type") or ""),
+                            "session_id": str(session_state.get("session_id") or ""),
+                        },
+                    )
+                    await _complete_immediate_turn(
+                        "Assistive notice dismissed for this continuity window. Nova will keep it hidden unless the underlying condition changes.",
+                        suggested_actions=[
+                            {"label": "Assistive notices", "command": "assistive notices"},
+                            {"label": "Operational context", "command": "operational context"},
+                        ],
+                        tone_domain="continuity",
+                    )
+                continue
+
+            resolve_assistive_match = RESOLVE_ASSISTIVE_NOTICE_RE.match(command_text)
+            if resolve_assistive_match:
+                notice_id = str(resolve_assistive_match.group(1) or "").strip()
+                updated, notice = apply_assistive_notice_state_update(
+                    session_state,
+                    notice_id=notice_id,
+                    status="resolved",
+                )
+                await send_assistive_notices_widget(
+                    ws,
+                    session_state,
+                    project_threads,
+                    explicit_request=True,
+                )
+                if not updated:
+                    await _complete_immediate_turn(
+                        "I couldn't find that active assistive notice. Open Assistive Notices first, then resolve it from the current list.",
+                        suggested_actions=[
+                            {"label": "Assistive notices", "command": "assistive notices"},
+                            {"label": "Operational context", "command": "operational context"},
+                        ],
+                        tone_domain="continuity",
+                    )
+                else:
+                    deps._log_ledger_event(
+                        RUNTIME_GOVERNOR,
+                        "ASSISTIVE_NOTICE_RESOLVED",
+                        {
+                            "notice_id": str(notice.get("id") or ""),
+                            "notice_type": str(notice.get("type") or ""),
+                            "session_id": str(session_state.get("session_id") or ""),
+                        },
+                    )
+                    await _complete_immediate_turn(
+                        "Assistive notice marked resolved for this continuity window. If the condition returns, Nova may surface it again.",
+                        suggested_actions=[
+                            {"label": "Assistive notices", "command": "assistive notices"},
+                            {"label": "Workspace home", "command": "workspace home"},
+                        ],
                         tone_domain="continuity",
                     )
                 continue
