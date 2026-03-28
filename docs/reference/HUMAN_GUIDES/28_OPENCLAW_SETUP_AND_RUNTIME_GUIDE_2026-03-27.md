@@ -69,6 +69,7 @@ The Agent page also now shows setup/readiness for:
 - local summarizer status
 - weather provider status
 - calendar source status
+- optional OpenAI metered lane status
 - remote bridge status
 - scheduler status
 
@@ -79,6 +80,7 @@ The key permissions are:
 - `remote_bridge_enabled`
 - `home_agent_enabled`
 - `home_agent_scheduler_enabled`
+- `metered_openai_enabled`
 
 What they mean:
 - `remote_bridge_enabled`
@@ -87,6 +89,8 @@ What they mean:
   - allows the local home-agent templates to run
 - `home_agent_scheduler_enabled`
   - allows the narrow scheduled briefing lane to run at its planned times
+- `metered_openai_enabled`
+  - allows Nova to use the optional OpenAI metered lane when local-first routing policy and future task routes choose it
 
 ## Environment Values That Matter
 ### Optional remote bridge token
@@ -111,6 +115,14 @@ If it is missing:
 If it is missing:
 - the home-agent foundation still works
 - calendar snapshots stay optional and disconnected
+
+### Optional OpenAI key
+- `OPENAI_API_KEY`
+
+If it is missing:
+- Nova stays local-first
+- OpenAI stays unavailable as a metered lane
+- the Agent and Settings surfaces will show that it is optional and not configured
 
 ### Local model route
 OpenClaw prefers Nova's local model route for final summarization.

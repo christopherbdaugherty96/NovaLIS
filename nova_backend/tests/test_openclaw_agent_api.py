@@ -60,13 +60,15 @@ def test_openclaw_agent_status_reports_foundation(monkeypatch, tmp_path):
 
 
 def test_openclaw_agent_status_reports_connected_setup_inputs(monkeypatch, tmp_path):
-    _install_runtime_settings_store(monkeypatch, tmp_path)
+    settings_store = _install_runtime_settings_store(monkeypatch, tmp_path)
     _install_agent_store(monkeypatch, tmp_path)
     calendar_path = tmp_path / "calendar.ics"
     calendar_path.write_text("BEGIN:VCALENDAR\nEND:VCALENDAR\n", encoding="utf-8")
     monkeypatch.setenv("WEATHER_API_KEY", "weather-key")
+    monkeypatch.setenv("OPENAI_API_KEY", "openai-key")
     monkeypatch.setenv("NOVA_OPENCLAW_BRIDGE_TOKEN", "bridge-token")
     monkeypatch.setenv("NOVA_CALENDAR_ICS_PATH", str(calendar_path))
+    settings_store.set_permission("metered_openai_enabled", True, source="test")
 
     client = TestClient(brain_server.app)
     response = client.get("/api/openclaw/agent/status")
@@ -77,6 +79,7 @@ def test_openclaw_agent_status_reports_connected_setup_inputs(monkeypatch, tmp_p
     assert setup["weather_provider_configured"] is True
     assert setup["calendar_connected"] is True
     assert setup["remote_bridge_token_configured"] is True
+    assert any(item["label"] == "OpenAI lane" and item["status_label"] == "Available" for item in setup["source_cards"])
     assert any(item["label"] == "Calendar source" and item["status_label"] == "Ready" for item in setup["source_cards"])
 
 

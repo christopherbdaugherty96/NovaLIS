@@ -25,7 +25,7 @@ def _estimate_tokens(text: str) -> int:
 class ProviderUsageStore:
     """Tracks governed provider-usage awareness without pretending to know exact billing."""
 
-    SCHEMA_VERSION = "1.0"
+    SCHEMA_VERSION = "1.1"
     DEFAULT_DAILY_TOKEN_BUDGET = 12000
     DEFAULT_WARNING_RATIO = 0.8
 
@@ -59,6 +59,23 @@ class ProviderUsageStore:
                 self._write_state(state)
             return self._build_snapshot(state)
 
+    def configure_budget(
+        self,
+        *,
+        daily_token_budget: int | None = None,
+        warning_ratio: float | None = None,
+    ) -> dict[str, Any]:
+        with self._lock:
+            if daily_token_budget is not None:
+                self._daily_budget = max(1, int(daily_token_budget))
+            if warning_ratio is not None:
+                ratio = float(warning_ratio)
+                self._warning_ratio = min(0.95, max(0.1, ratio))
+            state = self._read_state()
+            state["updated_at"] = _utc_now()
+            self._write_state(state)
+            return self._build_snapshot(state)
+
     def record_reasoning_event(
         self,
         *,
@@ -70,6 +87,10 @@ class ProviderUsageStore:
         model_label: str = "",
         request_id: str = "",
         exact_usage_available: bool = False,
+        exact_input_tokens: int | None = None,
+        exact_output_tokens: int | None = None,
+        exact_total_tokens: int | None = None,
+        estimated_cost_usd: float | None = None,
     ) -> dict[str, Any]:
         with self._lock:
             state = self._read_state()
@@ -78,10 +99,24 @@ class ProviderUsageStore:
             input_tokens = _estimate_tokens(prompt_text)
             output_tokens = _estimate_tokens(response_text)
             total_tokens = input_tokens + output_tokens
+            exact_input = max(0, int(exact_input_tokens or 0))
+            exact_output = max(0, int(exact_output_tokens or 0))
+            exact_total = max(0, int(exact_total_tokens or 0))
+            if exact_total <= 0 and (exact_input > 0 or exact_output > 0):
+                exact_total = exact_input + exact_output
+            exact_usage_measured = bool(exact_usage_available or exact_total > 0)
+            cost_value = max(0.0, float(estimated_cost_usd or 0.0))
+
             daily["event_count"] = int(daily.get("event_count") or 0) + 1
             daily["estimated_input_tokens"] = int(daily.get("estimated_input_tokens") or 0) + input_tokens
             daily["estimated_output_tokens"] = int(daily.get("estimated_output_tokens") or 0) + output_tokens
             daily["estimated_total_tokens"] = int(daily.get("estimated_total_tokens") or 0) + total_tokens
+            if exact_usage_measured:
+                daily["exact_input_tokens"] = int(daily.get("exact_input_tokens") or 0) + exact_input
+                daily["exact_output_tokens"] = int(daily.get("exact_output_tokens") or 0) + exact_output
+                daily["exact_total_tokens"] = int(daily.get("exact_total_tokens") or 0) + exact_total
+            if cost_value > 0:
+                daily["estimated_cost_usd"] = round(float(daily.get("estimated_cost_usd") or 0.0) + cost_value, 6)
             daily["last_event_at"] = _utc_now()
             state["daily"] = daily
 
@@ -98,7 +133,11 @@ class ProviderUsageStore:
                     "estimated_input_tokens": input_tokens,
                     "estimated_output_tokens": output_tokens,
                     "estimated_total_tokens": total_tokens,
-                    "usage_measurement": "exact" if exact_usage_available else "estimated",
+                    "exact_input_tokens": exact_input if exact_usage_measured else 0,
+                    "exact_output_tokens": exact_output if exact_usage_measured else 0,
+                    "exact_total_tokens": exact_total if exact_usage_measured else 0,
+                    "estimated_cost_usd": cost_value,
+                    "usage_measurement": "exact" if exact_usage_measured else "estimated",
                 },
             )
             state["recent_events"] = events[:20]
@@ -109,7 +148,9 @@ class ProviderUsageStore:
     def _build_snapshot(self, state: dict[str, Any]) -> dict[str, Any]:
         daily = dict(state.get("daily") or {})
         used = int(daily.get("estimated_total_tokens") or 0)
+        exact_total = int(daily.get("exact_total_tokens") or 0)
         event_count = int(daily.get("event_count") or 0)
+        estimated_cost_usd = round(float(daily.get("estimated_cost_usd") or 0.0), 6)
         warning_threshold = int(round(self._daily_budget * self._warning_ratio))
         remaining = max(0, self._daily_budget - used)
 
@@ -134,6 +175,14 @@ class ProviderUsageStore:
                 f"{'s' if event_count != 1 else ''} today, about {used:,} estimated tokens total. "
                 f"Budget state: {budget_state_label}."
             )
+            if estimated_cost_usd > 0:
+                summary = f"{summary} Estimated cost so far: ${estimated_cost_usd:.4f}."
+
+        cost_tracking_label = (
+            "Estimated cost visibility is live for supported providers"
+            if estimated_cost_usd > 0
+            else "Exact cost tracking is not live yet"
+        )
 
         return {
             "schema_version": self.SCHEMA_VERSION,
@@ -143,8 +192,12 @@ class ProviderUsageStore:
             "estimated_input_tokens": int(daily.get("estimated_input_tokens") or 0),
             "estimated_output_tokens": int(daily.get("estimated_output_tokens") or 0),
             "estimated_total_tokens": used,
+            "exact_input_tokens": int(daily.get("exact_input_tokens") or 0),
+            "exact_output_tokens": int(daily.get("exact_output_tokens") or 0),
+            "exact_total_tokens": exact_total,
+            "estimated_cost_usd": estimated_cost_usd,
             "measurement_label": "Estimated tokens",
-            "cost_tracking_label": "Exact cost tracking is not live yet",
+            "cost_tracking_label": cost_tracking_label,
             "budget_tokens": self._daily_budget,
             "warning_threshold_tokens": warning_threshold,
             "budget_remaining_tokens": remaining,
@@ -164,6 +217,10 @@ class ProviderUsageStore:
                 "estimated_input_tokens": 0,
                 "estimated_output_tokens": 0,
                 "estimated_total_tokens": 0,
+                "exact_input_tokens": 0,
+                "exact_output_tokens": 0,
+                "exact_total_tokens": 0,
+                "estimated_cost_usd": 0.0,
                 "last_event_at": "",
             },
             "recent_events": [],
@@ -180,6 +237,10 @@ class ProviderUsageStore:
             "estimated_input_tokens": 0,
             "estimated_output_tokens": 0,
             "estimated_total_tokens": 0,
+            "exact_input_tokens": 0,
+            "exact_output_tokens": 0,
+            "exact_total_tokens": 0,
+            "estimated_cost_usd": 0.0,
             "last_event_at": "",
         }
         state["updated_at"] = _utc_now()

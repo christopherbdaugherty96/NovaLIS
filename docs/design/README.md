@@ -75,6 +75,18 @@ Current Phase-8 home-agent and Nova personality-layer packet:
 Current Phase-8.5 scheduler and proactive delivery packet:
 - `docs/design/Phase 8/PHASE_8_5_SCHEDULER_AND_PROACTIVE_DELIVERY_PLAN_2026-03-27.md`
 
+Current OpenAI local-first operating model packet:
+- `docs/design/Phase 8/OPENAI_AGENT_OPERATING_MODEL_2026-03-27.md`
+
+Current OpenAI provider routing and budget policy packet:
+- `docs/design/Phase 8/OPENAI_PROVIDER_ROUTING_AND_BUDGET_POLICY_2026-03-27.md`
+
+Current OpenAI usage visibility packet:
+- `docs/design/Phase 8/OPENAI_USAGE_VISIBILITY_SPEC_2026-03-27.md`
+
+Current trading-mode guardrails packet:
+- `docs/design/Phase 8/TRADING_MODE_GUARDRAILS_2026-03-27.md`
+
 Current Phase-8 preserved raw source notes:
 - `docs/design/Phase 8/openclaw.txt`
 - `docs/design/Phase 8/node design.txt`

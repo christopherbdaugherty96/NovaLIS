@@ -146,8 +146,24 @@ let settingsRuntimeState = {
     remote_bridge_enabled: true,
     home_agent_enabled: true,
     home_agent_scheduler_enabled: false,
+    metered_openai_enabled: false,
   },
   permissionCards: [],
+  providerPolicy: {
+    routing_mode: "local_first",
+    routing_mode_label: "Local-first (Recommended)",
+    preferred_openai_model: "gpt-5-mini",
+    preferred_openai_model_label: "GPT-5 mini",
+    metered_openai_enabled: false,
+    summary: "Nova stays local-first by default. Metered providers should stay explicit and budgeted.",
+  },
+  providerPolicyCards: [],
+  usageBudget: {
+    daily_metered_token_budget: 4000,
+    warning_ratio: 0.8,
+    summary: "Metered usage budget will appear here after the next refresh.",
+  },
+  usageBudgetCards: [],
   history: [],
   updatedAt: "",
   lastHydratedAt: 0,
@@ -787,9 +803,27 @@ function applyRuntimeSettingsPayload(data) {
   settingsRuntimeState.setupModeDescription = String(payload.setup_mode_description || getSetupModeMeta(setupMode).copy).trim() || getSetupModeMeta(setupMode).copy;
   settingsRuntimeState.permissions = (payload.permissions && typeof payload.permissions === "object")
     ? { ...payload.permissions }
-    : { external_reasoning_enabled: true, remote_bridge_enabled: true, home_agent_enabled: true };
+    : {
+      external_reasoning_enabled: true,
+      remote_bridge_enabled: true,
+      home_agent_enabled: true,
+      home_agent_scheduler_enabled: false,
+      metered_openai_enabled: false,
+    };
   settingsRuntimeState.permissionCards = Array.isArray(payload.permission_cards)
     ? payload.permission_cards.map((item) => ({ ...item }))
+    : [];
+  settingsRuntimeState.providerPolicy = (payload.provider_policy && typeof payload.provider_policy === "object")
+    ? { ...payload.provider_policy }
+    : { ...settingsRuntimeState.providerPolicy };
+  settingsRuntimeState.providerPolicyCards = Array.isArray(payload.provider_policy_cards)
+    ? payload.provider_policy_cards.map((item) => ({ ...item }))
+    : [];
+  settingsRuntimeState.usageBudget = (payload.usage_budget && typeof payload.usage_budget === "object")
+    ? { ...payload.usage_budget }
+    : { ...settingsRuntimeState.usageBudget };
+  settingsRuntimeState.usageBudgetCards = Array.isArray(payload.usage_budget_cards)
+    ? payload.usage_budget_cards.map((item) => ({ ...item }))
     : [];
   settingsRuntimeState.history = Array.isArray(payload.history) ? payload.history.map((item) => ({ ...item })) : [];
   settingsRuntimeState.summary = String(payload.summary || "").trim() || "Runtime settings loaded.";
@@ -1061,6 +1095,44 @@ async function setRuntimePermission(permission, enabled) {
     renderSettingsPage();
   } catch (_err) {
     reportSettingsError("I couldn't update that setting right now. Nova kept the previous permission.");
+  }
+}
+
+async function setRuntimeProviderPolicy(patch = {}) {
+  try {
+    const res = await fetch(`${API_BASE}/api/settings/runtime/provider-policy`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(patch || {}),
+    });
+    if (!res.ok) throw new Error("runtime_provider_policy_update_failed");
+    const data = await res.json();
+    applyRuntimeSettingsPayload(data);
+    renderTrustCenterPage();
+    renderSettingsPage();
+  } catch (_err) {
+    reportSettingsError("I couldn't update the local-first AI routing policy right now.");
+  }
+}
+
+async function setRuntimeUsageBudget(dailyMeteredTokenBudget, warningRatio = null) {
+  try {
+    const payload = { daily_metered_token_budget: Number(dailyMeteredTokenBudget || 0) };
+    if (warningRatio !== null && warningRatio !== undefined) {
+      payload.warning_ratio = Number(warningRatio);
+    }
+    const res = await fetch(`${API_BASE}/api/settings/runtime/usage-budget`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    if (!res.ok) throw new Error("runtime_usage_budget_update_failed");
+    const data = await res.json();
+    applyRuntimeSettingsPayload(data);
+    renderTrustCenterPage();
+    renderSettingsPage();
+  } catch (_err) {
+    reportSettingsError("I couldn't update the metered usage budget right now.");
   }
 }
 
@@ -7082,6 +7154,8 @@ function renderSettingsPage() {
   const voiceGrid = $("settings-voice-grid");
   const reasoningSummary = $("settings-reasoning-summary");
   const reasoningGrid = $("settings-reasoning-grid");
+  const aiRoutingSummary = $("settings-ai-routing-summary");
+  const aiRoutingGrid = $("settings-ai-routing-grid");
   const connectionSummary = $("settings-connection-summary");
   const connectionGrid = $("settings-connection-grid");
   const setupMode = getSetupMode();
@@ -7280,6 +7354,73 @@ function renderSettingsPage() {
     });
   }
 
+  if (aiRoutingSummary && aiRoutingGrid) {
+    const providerPolicy = (settingsRuntimeState.providerPolicy && typeof settingsRuntimeState.providerPolicy === "object")
+      ? settingsRuntimeState.providerPolicy
+      : {};
+    const usageBudget = (settingsRuntimeState.usageBudget && typeof settingsRuntimeState.usageBudget === "object")
+      ? settingsRuntimeState.usageBudget
+      : {};
+    aiRoutingSummary.textContent = [
+      String(providerPolicy.summary || "").trim() || "Nova should stay local-first by default.",
+      String(usageBudget.summary || "").trim(),
+    ].filter(Boolean).join(" · ");
+
+    clear(aiRoutingGrid);
+    const cards = []
+      .concat(Array.isArray(settingsRuntimeState.providerPolicyCards) ? settingsRuntimeState.providerPolicyCards : [])
+      .concat(Array.isArray(settingsRuntimeState.usageBudgetCards) ? settingsRuntimeState.usageBudgetCards : []);
+
+    if (!cards.length) {
+      aiRoutingGrid.appendChild(createOverviewChip("AI routing", "Loading"));
+    } else {
+      cards.forEach((item) => {
+        const card = document.createElement("div");
+        card.className = "workspace-home-focus settings-permission-card";
+
+        const title = document.createElement("div");
+        title.className = "workspace-home-focus-title";
+        title.textContent = String(item.label || "Policy").trim() || "Policy";
+        card.appendChild(title);
+
+        const status = document.createElement("div");
+        status.className = "workspace-home-focus-meta";
+        status.textContent = String(item.value_label || item.value || "").trim() || "Configured";
+        card.appendChild(status);
+
+        const copy = document.createElement("div");
+        copy.className = "workspace-home-focus-copy";
+        copy.textContent = String(item.description || "").trim() || "Local-first AI policy.";
+        card.appendChild(copy);
+
+        const actionRow = document.createElement("div");
+        actionRow.className = "workspace-board-actions-toolbar";
+        const options = Array.isArray(item.options) ? item.options : [];
+        options.slice(0, 3).forEach((option) => {
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.textContent = String(option.label || option.value || "Set").trim() || "Set";
+          btn.addEventListener("click", () => {
+            const actionKind = String(item.action_kind || "").trim();
+            if (actionKind === "routing_mode") {
+              setRuntimeProviderPolicy({ routing_mode: option.value });
+            } else if (actionKind === "preferred_openai_model") {
+              setRuntimeProviderPolicy({ preferred_openai_model: option.value });
+            } else if (actionKind === "daily_metered_token_budget") {
+              setRuntimeUsageBudget(option.value, usageBudget.warning_ratio);
+            } else if (actionKind === "warning_ratio") {
+              setRuntimeUsageBudget(usageBudget.daily_metered_token_budget, option.value);
+            }
+          });
+          actionRow.appendChild(btn);
+        });
+        card.appendChild(actionRow);
+
+        aiRoutingGrid.appendChild(card);
+      });
+    }
+  }
+
   if (connectionSummary && connectionGrid) {
     const connections = (trustReviewState.connectionRuntime && typeof trustReviewState.connectionRuntime === "object")
       ? trustReviewState.connectionRuntime
@@ -7290,7 +7431,7 @@ function renderSettingsPage() {
     ].filter(Boolean).join(" · ");
 
     clear(connectionGrid);
-    (Array.isArray(connections.items) ? connections.items : []).slice(0, 8).forEach((item) => {
+    (Array.isArray(connections.items) ? connections.items : []).slice(0, 12).forEach((item) => {
       const label = String(item.label || "Connection").trim() || "Connection";
       const value = String(item.value || "Unknown").trim() || "Unknown";
       const note = String(item.note || "").trim();
