@@ -122,8 +122,25 @@ The scripts help with local startup, but they do not replace:
 Once Nova is running:
 1. open the dashboard
 2. read the Introduction page
-3. try `explain this`
-4. open `Trust`
-5. open `Settings`
+3. use the in-app Setup Readiness checklist on Intro or Settings
+4. try `explain this`
+5. open `Trust`
+6. open `Settings`
 
 That gives the clearest picture of what Nova can already do today.
+
+## What The In-App Setup Surfaces Now Show
+The dashboard itself now carries more of the setup burden instead of leaving it only in docs.
+
+The Intro and Settings pages now show:
+- current setup mode
+- runtime connection readiness
+- local model route readiness
+- recommended voice-check status
+- optional-provider and bridge status
+- the next best setup action for the current device
+
+That means a user should be able to tell:
+- what is required right now
+- what is only recommended
+- what can stay optional until later

@@ -1,5 +1,5 @@
 # Frontend and UI Guide
-Updated: 2026-03-27
+Updated: 2026-03-28
 
 ## Purpose
 This guide explains Nova's frontend in plain language.
@@ -60,6 +60,7 @@ It handles things like:
 - workspace-board rendering
 - structure-map rendering
 - intro and settings rendering
+- setup-readiness rendering for first-run and settings flows
 - home-agent operator rendering
 - first-run guidance
 - follow-up actions
@@ -88,11 +89,13 @@ The frontend can present:
 - a dedicated Introduction page
 - a separate landing-preview page
 - a dedicated Settings page
+- a live setup-readiness checklist on Intro and Settings
 - thread map and thread detail
 - continuity and memory actions
 - follow-up prompts
 - screen/perception results
 - a first-run guide for non-technical users
+- startup-help copy for users who are stuck on `Connecting`
 - a stronger first-run magic-moment prompt centered on `explain this`
 - a clearer text-bearing thinking bar while Nova is working
 - visible push-to-talk state changes
@@ -123,7 +126,9 @@ More specifically, the current dashboard can now show:
 - Trust page now includes a handled-notices review list for the current continuity window
 - Trust page reasoning-transparency section with provider, route, mode, authority, and last outcome
 - Policy Review Center draft overview, selected-draft detail, simulation review, and one-shot manual run review
+- Intro page setup-readiness checklist with direct connection-status and voice-check actions
 - Settings page setup-mode selection, runtime permission controls, reasoning transparency, and voice confidence review
+- Settings page setup checklist with current next-step guidance for the active device/runtime
 - Settings page local-first AI routing controls, optional OpenAI lane visibility, and metered budget controls
 - Settings page assistive-noticing mode controls
 - Settings page provider, connection, bridge-status, and settings-history review

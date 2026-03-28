@@ -13,11 +13,16 @@ def test_dashboard_boots_first_run_guide_with_product_surfaces():
 
     assert "function showFirstRunGuide(force = false)" in source
     assert "function showFirstRunGuideIfNeeded()" in source
+    assert "function getSetupReadinessItems()" in source
+    assert "function buildSetupReadinessSummary(items = [])" in source
+    assert "function getSetupNextStepCopy(items = [])" in source
+    assert "function renderSetupReadinessGrid(host, items = [])" in source
     assert "function renderIntroPage()" in source
     assert "function renderSettingsPage()" in source
     assert "showFirstRunGuideIfNeeded();" in source
     assert "Open Introduction" in source
     assert "Open Settings" in source
+    assert "Connection Status" in source
     assert "Open Workspace" in source
     assert "Open Trust" in source
     assert "understand, continue, and organize your work" in source
@@ -43,9 +48,19 @@ def test_intro_and_settings_pages_include_getting_started_and_control_surfaces()
     assert 'id="header-connection-chip"' in source
     assert 'id="page-intro"' in source
     assert 'id="intro-current-mode-badge"' in source
+    assert 'id="intro-checklist-summary"' in source
+    assert 'id="intro-checklist-grid"' in source
+    assert 'id="intro-next-step-copy"' in source
+    assert 'id="btn-intro-refresh-setup"' in source
+    assert 'id="btn-intro-open-connections"' in source
+    assert 'id="btn-intro-voice-check"' in source
+    assert 'id="btn-intro-open-home-ready"' in source
     assert 'id="btn-intro-open-settings"' in source
     assert 'id="btn-intro-open-landing"' in source
     assert 'id="page-settings"' in source
+    assert 'id="settings-setup-summary"' in source
+    assert 'id="settings-setup-grid"' in source
+    assert 'id="settings-setup-next-step"' in source
     assert 'id="settings-mode-cards"' in source
     assert 'id="settings-permission-summary"' in source
     assert 'id="settings-permission-grid"' in source

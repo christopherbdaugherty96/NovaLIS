@@ -659,6 +659,216 @@ function createOverviewChip(label, value) {
   return chip;
 }
 
+function getConnectionRuntimeItem(label) {
+  const connections = (trustReviewState.connectionRuntime && typeof trustReviewState.connectionRuntime === "object")
+    ? trustReviewState.connectionRuntime
+    : {};
+  const items = Array.isArray(connections.items) ? connections.items : [];
+  const target = String(label || "").trim().toLowerCase();
+  return items.find((item) => String(item && item.label || "").trim().toLowerCase() === target) || null;
+}
+
+function getSetupReadinessItems() {
+  const wsReady = !!(ws && ws.readyState === WebSocket.OPEN);
+  const headerConnection = getHeaderConnectionPresentation();
+  const currentMode = getSetupModeMeta();
+  const localModelItem = getConnectionRuntimeItem("Local model route");
+  const localModelValue = String(localModelItem && localModelItem.value || "").trim()
+    || (settingsRuntimeState.loaded ? "Awaiting trust refresh" : "Checking");
+  const localModelNote = String(localModelItem && localModelItem.note || "").trim()
+    || "Nova will keep deterministic local actions available even while it checks deeper model readiness.";
+  const localModelLower = localModelValue.toLowerCase();
+  const localModelReady = ["available", "ready"].some((token) => localModelLower.includes(token));
+
+  const voice = (trustReviewState.voiceRuntime && typeof trustReviewState.voiceRuntime === "object")
+    ? trustReviewState.voiceRuntime
+    : {};
+  const voiceLastAttempt = String(voice.last_attempt_status || "").trim();
+  const voicePreferredStatus = String(voice.preferred_status || "").trim().toLowerCase();
+  const voiceInputStatus = String(voice.stt_status || "").trim().toLowerCase();
+  const voiceChecked = !!voiceLastAttempt && voiceLastAttempt.toLowerCase() !== "no voice check yet";
+  const voiceReady = voiceChecked && (voicePreferredStatus === "ready" || voiceInputStatus === "ready");
+  const voiceStatusLabel = voiceChecked
+    ? (voiceReady ? "Checked" : voiceLastAttempt)
+    : "Check recommended";
+  const voiceCopy = voiceChecked
+    ? (
+      String(voice.summary || "").trim()
+      || "Voice runtime has been inspected on this device."
+    )
+    : "Run one voice check to confirm audible output on this device. This is recommended, not required.";
+
+  const connections = (trustReviewState.connectionRuntime && typeof trustReviewState.connectionRuntime === "object")
+    ? trustReviewState.connectionRuntime
+    : {};
+  const providerCount = Number(connections.configured_provider_count || 0);
+  const openaiRuntime = (connections.openai_runtime && typeof connections.openai_runtime === "object")
+    ? connections.openai_runtime
+    : {};
+  const bridgeRuntime = (trustReviewState.bridgeRuntime && typeof trustReviewState.bridgeRuntime === "object")
+    ? trustReviewState.bridgeRuntime
+    : {};
+  const agentRuntime = (connections.agent_runtime && typeof connections.agent_runtime === "object")
+    ? connections.agent_runtime
+    : ((openClawAgentState.snapshot && typeof openClawAgentState.snapshot === "object") ? openClawAgentState.snapshot : {});
+
+  return [
+    {
+      key: "runtime_connection",
+      group: "Required now",
+      title: "Runtime connection",
+      status: wsReady ? "Connected" : headerConnection.label,
+      tone: wsReady ? "ready" : "attention",
+      ready: wsReady,
+      copy: wsReady
+        ? "The dashboard is connected to the local Nova runtime."
+        : "Nova is still connecting. If the header stays stuck here, restart the local runtime and refresh the dashboard.",
+    },
+    {
+      key: "local_model_route",
+      group: "Required now",
+      title: "Local model route",
+      status: localModelValue,
+      tone: localModelReady ? "ready" : "attention",
+      ready: localModelReady,
+      copy: localModelNote,
+    },
+    {
+      key: "setup_mode",
+      group: "Required now",
+      title: "Setup mode",
+      status: currentMode.label,
+      tone: "ready",
+      ready: true,
+      copy: currentMode.copy,
+    },
+    {
+      key: "voice_check",
+      group: "Recommended",
+      title: "Voice check",
+      status: voiceStatusLabel,
+      tone: voiceReady ? "ready" : "attention",
+      ready: voiceReady,
+      copy: voiceCopy,
+    },
+    {
+      key: "provider_keys",
+      group: "Optional later",
+      title: "Provider keys",
+      status: providerCount ? `${providerCount} configured` : "Optional",
+      tone: providerCount ? "optional-ready" : "optional",
+      ready: true,
+      copy: providerCount
+        ? "Environment-based provider detection is live now. In-app key entry still arrives later."
+        : (
+          String(openaiRuntime.summary || "").trim()
+          || "Nova can stay fully local. Add provider keys later only if you want optional cloud lanes."
+        ),
+    },
+    {
+      key: "remote_bridge",
+      group: "Optional later",
+      title: "Remote bridge",
+      status: String(bridgeRuntime.status_label || "Optional").trim() || "Optional",
+      tone: bridgeRuntime.enabled ? "optional-ready" : "optional",
+      ready: true,
+      copy: String(bridgeRuntime.summary || "").trim()
+        || "The remote bridge is optional and remains token-gated even when enabled.",
+    },
+    {
+      key: "home_agent",
+      group: "Optional later",
+      title: "Home agent",
+      status: String(agentRuntime.status_label || "Foundation live").trim() || "Foundation live",
+      tone: settingsRuntimeState.permissions && settingsRuntimeState.permissions.home_agent_enabled
+        ? "optional-ready"
+        : "optional",
+      ready: true,
+      copy: String(agentRuntime.summary || "").trim()
+        || "OpenClaw stays inside Nova's governed operator surface and is not required for basic chat use.",
+    },
+  ];
+}
+
+function buildSetupReadinessSummary(items = []) {
+  const rows = Array.isArray(items) ? items : [];
+  const required = rows.filter((item) => item.group === "Required now");
+  const requiredReadyCount = required.filter((item) => item.ready).length;
+  const recommended = rows.filter((item) => item.group === "Recommended");
+  const recommendedReadyCount = recommended.filter((item) => item.ready).length;
+  return [
+    `${requiredReadyCount} of ${required.length || 0} required checks are ready.`,
+    recommended.length
+      ? `${recommendedReadyCount} of ${recommended.length} recommended checks are complete.`
+      : "",
+    "Optional extras can stay unconfigured until you actually want them.",
+  ].filter(Boolean).join(" ");
+}
+
+function getSetupNextStepCopy(items = []) {
+  const rows = Array.isArray(items) ? items : [];
+  const byKey = Object.fromEntries(rows.map((item) => [item.key, item]));
+  if (!byKey.runtime_connection || !byKey.runtime_connection.ready) {
+    return "Next step: wait for Nova to connect. If the header keeps showing Connecting, restart the local runtime with the startup script for your platform and refresh the dashboard.";
+  }
+  if (!byKey.local_model_route || !byKey.local_model_route.ready) {
+    return "Next step: open Trust or Settings and review the local model route. Nova can still do deterministic local work, but deeper reasoning stays limited until the route is healthy.";
+  }
+  if (!byKey.voice_check || !byKey.voice_check.ready) {
+    return "Next step: run one voice check. It confirms spoken output on this device, but it is optional if you prefer text-only use.";
+  }
+  return "Next step: you are ready to use Nova normally. Start with explain this, then open Home, Workspace, or Trust when you want more continuity and visibility.";
+}
+
+function createSetupReadinessCard(item) {
+  const card = document.createElement("div");
+  card.className = "workspace-spotlight-card setup-readiness-card";
+  if (item && item.tone) {
+    card.classList.add(`setup-readiness-${String(item.tone).trim()}`);
+  }
+
+  const title = document.createElement("div");
+  title.className = "workspace-spotlight-title";
+  title.textContent = String(item && item.title || "Setup item").trim() || "Setup item";
+  card.appendChild(title);
+
+  const meta = document.createElement("div");
+  meta.className = "setup-readiness-meta";
+
+  const group = document.createElement("span");
+  group.className = "settings-mode-badge";
+  group.textContent = String(item && item.group || "Setup").trim() || "Setup";
+  meta.appendChild(group);
+
+  const status = document.createElement("span");
+  status.className = "setup-readiness-status";
+  if (item && item.tone) {
+    status.classList.add(`setup-readiness-status-${String(item.tone).trim()}`);
+  }
+  status.textContent = String(item && item.status || "Checking").trim() || "Checking";
+  meta.appendChild(status);
+
+  card.appendChild(meta);
+
+  const copy = document.createElement("div");
+  copy.className = "workspace-spotlight-copy";
+  copy.textContent = String(item && item.copy || "").trim() || "Setup detail.";
+  card.appendChild(copy);
+
+  return card;
+}
+
+function renderSetupReadinessGrid(host, items = []) {
+  if (!host) return;
+  clear(host);
+  const rows = Array.isArray(items) ? items : [];
+  if (!rows.length) {
+    host.appendChild(createOverviewChip("Setup", "Loading"));
+    return;
+  }
+  rows.forEach((item) => host.appendChild(createSetupReadinessCard(item)));
+}
+
 function describeMemoryFilter(filters = {}) {
   const tier = String(filters.tier || "").trim().toLowerCase();
   const scope = String(filters.scope || "").trim().toLowerCase();
@@ -1030,6 +1240,7 @@ async function requestOpenClawAgentRefresh(force = false) {
     applyOpenClawAgentPayload(data);
     renderOpenClawDeliveryWidget();
     renderOpenClawAgentPage();
+    renderIntroPage();
     renderSettingsPage();
     renderTrustCenterPage();
   } catch (_err) {
@@ -4182,6 +4393,8 @@ function renderOperatorHealthWidget(data = {}) {
   }
 
   renderHeaderStatus(activePageState);
+  renderIntroPage();
+  renderSettingsPage();
   renderTrustCenterPage();
 }
 
@@ -6950,6 +7163,8 @@ function connectWebSocket() {
 
   ws.onopen = () => {
     renderHeaderStatus(activePageState);
+    renderIntroPage();
+    renderSettingsPage();
     refreshPrivacyPanel();
     hydrateDashboardWidgets();
     startWidgetAutoRefresh();
@@ -7102,6 +7317,8 @@ function connectWebSocket() {
     setThinkingBar(false);
     stopWidgetAutoRefresh();
     renderHeaderStatus(activePageState);
+    renderIntroPage();
+    renderSettingsPage();
     if (ackResetTimer) {
       clearTimeout(ackResetTimer);
       ackResetTimer = null;
@@ -7304,6 +7521,11 @@ function showFirstRunGuide(force = false) {
   intro.textContent = "Nova helps you understand, continue, and organize your work without ever taking control away from you.";
   card.appendChild(intro);
 
+  const readinessSummary = document.createElement("p");
+  readinessSummary.className = "first-run-note";
+  readinessSummary.textContent = buildSetupReadinessSummary(getSetupReadinessItems());
+  card.appendChild(readinessSummary);
+
   const pillars = document.createElement("div");
   pillars.className = "first-run-pillars";
   [
@@ -7377,6 +7599,14 @@ function showFirstRunGuide(force = false) {
       },
     },
     {
+      label: "Connection Status",
+      fn: () => {
+        setActivePage("settings");
+        safeWSSend({ text: "connection status", silent_widget_refresh: true });
+        requestSettingsRuntimeRefresh(true);
+      },
+    },
+    {
       label: "Open Workspace",
       fn: () => {
         setActivePage("workspace");
@@ -7427,9 +7657,16 @@ function showFirstRunGuideIfNeeded() {
 function renderIntroPage() {
   const modeBadge = $("intro-current-mode-badge");
   const modeCopy = $("intro-current-mode-copy");
+  const checklistSummary = $("intro-checklist-summary");
+  const checklistGrid = $("intro-checklist-grid");
+  const nextStepCopy = $("intro-next-step-copy");
   const currentMode = getSetupModeMeta();
+  const checklistItems = getSetupReadinessItems();
   if (modeBadge) modeBadge.textContent = currentMode.badge;
   if (modeCopy) modeCopy.textContent = `Current setup: ${currentMode.label}. ${currentMode.copy}`;
+  if (checklistSummary) checklistSummary.textContent = buildSetupReadinessSummary(checklistItems);
+  renderSetupReadinessGrid(checklistGrid, checklistItems);
+  if (nextStepCopy) nextStepCopy.textContent = getSetupNextStepCopy(checklistItems);
 }
 
 function renderOpenClawDeliveryFeed(host, items = [], emptyText = "No agent deliveries are waiting right now.") {
@@ -7744,6 +7981,9 @@ function renderOpenClawAgentPage() {
 function renderSettingsPage() {
   const modeHost = $("settings-mode-cards");
   const modeSummary = $("settings-current-mode-summary");
+  const setupSummary = $("settings-setup-summary");
+  const setupGrid = $("settings-setup-grid");
+  const setupNextStep = $("settings-setup-next-step");
   const permissionSummary = $("settings-permission-summary");
   const permissionGrid = $("settings-permission-grid");
   const historyHost = $("settings-history-list");
@@ -7759,9 +7999,18 @@ function renderSettingsPage() {
   const connectionGrid = $("settings-connection-grid");
   const setupMode = getSetupMode();
   const currentMode = getSetupModeMeta(setupMode);
+  const checklistItems = getSetupReadinessItems();
 
   if (modeSummary) {
     modeSummary.textContent = `${currentMode.label}. ${currentMode.copy}`;
+  }
+
+  if (setupSummary) {
+    setupSummary.textContent = buildSetupReadinessSummary(checklistItems);
+  }
+  renderSetupReadinessGrid(setupGrid, checklistItems);
+  if (setupNextStep) {
+    setupNextStep.textContent = getSetupNextStepCopy(checklistItems);
   }
 
   if (modeHost) {
@@ -8649,6 +8898,41 @@ window.addEventListener("DOMContentLoaded", () => {
 
   const introSettingsBtn = $("btn-intro-open-settings");
   if (introSettingsBtn) introSettingsBtn.addEventListener("click", () => setActivePage("settings"));
+
+  const introRefreshSetupBtn = $("btn-intro-refresh-setup");
+  if (introRefreshSetupBtn) {
+    introRefreshSetupBtn.addEventListener("click", () => {
+      requestSettingsRuntimeRefresh(true);
+      requestOpenClawAgentRefresh(true);
+      safeWSSend({ text: "system status", silent_widget_refresh: true });
+      safeWSSend({ text: "connection status", silent_widget_refresh: true });
+    });
+  }
+
+  const introOpenConnectionsBtn = $("btn-intro-open-connections");
+  if (introOpenConnectionsBtn) {
+    introOpenConnectionsBtn.addEventListener("click", () => {
+      setActivePage("settings");
+      safeWSSend({ text: "connection status", silent_widget_refresh: true });
+      requestSettingsRuntimeRefresh(true);
+    });
+  }
+
+  const introVoiceCheckBtn = $("btn-intro-voice-check");
+  if (introVoiceCheckBtn) {
+    introVoiceCheckBtn.addEventListener("click", () => {
+      setActivePage("chat");
+      injectUserText("voice check", "text");
+    });
+  }
+
+  const introOpenHomeReadyBtn = $("btn-intro-open-home-ready");
+  if (introOpenHomeReadyBtn) {
+    introOpenHomeReadyBtn.addEventListener("click", () => {
+      localStorage.setItem(STORAGE_KEYS.firstRunDone, "1");
+      setActivePage("home");
+    });
+  }
 
   const introLandingBtn = $("btn-intro-open-landing");
   if (introLandingBtn) introLandingBtn.addEventListener("click", () => {
