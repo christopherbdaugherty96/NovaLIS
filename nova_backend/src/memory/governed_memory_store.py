@@ -366,6 +366,24 @@ class GovernedMemoryStore:
             "linked_threads": top_threads,
         }
 
+    def export_payload(self, *, include_deleted: bool = False) -> dict[str, Any]:
+        with self._lock:
+            state = self._read_state()
+            items = [dict(item) for item in list(state.get("items") or [])]
+
+        if not include_deleted:
+            items = [item for item in items if not bool(item.get("deleted"))]
+
+        items = sorted(items, key=lambda row: str(row.get("updated_at") or ""), reverse=True)
+        return {
+            "export_version": 1,
+            "schema_version": self.SCHEMA_VERSION,
+            "exported_at": _utc_now(),
+            "item_count": len(items),
+            "includes_deleted": bool(include_deleted),
+            "items": items,
+        }
+
     def _matches_thread_link(
         self,
         item: dict[str, Any],

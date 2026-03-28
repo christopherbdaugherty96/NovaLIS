@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any
 
 from src.actions.action_result import ActionResult
@@ -43,6 +44,8 @@ class MemoryGovernanceExecutor:
                 return self._list(request, params, store)
             if action == "show":
                 return self._show(request, params, store)
+            if action == "export":
+                return self._export(request, store)
             if action == "lock":
                 return self._lock(request, params, store)
             if action == "defer":
@@ -172,6 +175,37 @@ class MemoryGovernanceExecutor:
             data={
                 "memory_overview": overview,
                 "follow_up_prompts": follow_up_prompts,
+            },
+            request_id=request.request_id,
+            authority_class="read_only",
+            external_effect=False,
+            reversible=True,
+        )
+
+    def _export(self, request, store: GovernedMemoryStore) -> ActionResult:
+        payload = store.export_payload()
+        item_count = int(payload.get("item_count") or 0)
+        exported_at = str(payload.get("exported_at") or datetime.now(timezone.utc).isoformat())
+        self._log(
+            "MEMORY_EXPORT_REQUESTED",
+            {
+                "item_count": item_count,
+                "exported_at": exported_at,
+                "includes_deleted": bool(payload.get("includes_deleted")),
+            },
+        )
+        return ActionResult.ok(
+            message=(
+                f"Prepared memory export with {item_count} item{'s' if item_count != 1 else ''}.\n"
+                "Use the Memory page export control to download the full JSON snapshot."
+            ),
+            data={
+                "memory_export": payload,
+                "follow_up_prompts": [
+                    "memory overview",
+                    "list memories",
+                    "show that memory",
+                ],
             },
             request_id=request.request_id,
             authority_class="read_only",

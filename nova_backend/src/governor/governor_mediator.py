@@ -310,8 +310,16 @@ MEMORY_LIST_FRIENDLY_RE = re.compile(
     r"^\s*(?:show|list)\s+(?:my\s+|saved\s+)?memories\s*$",
     re.IGNORECASE,
 )
+MEMORY_RECALL_FRIENDLY_RE = re.compile(
+    r"^\s*(?:what\s+do\s+you\s+remember|show\s+what\s+you\s+remember|what(?:'s| is)\s+in\s+(?:my\s+)?memory)\s*$",
+    re.IGNORECASE,
+)
 MEMORY_SHOW_FRIENDLY_RE = re.compile(
     r"^\s*(?:show|open)\s+(?:that|last|recent)\s+memory\s*$",
+    re.IGNORECASE,
+)
+MEMORY_EXPORT_RE = re.compile(
+    r"^\s*(?:memory\s+export|export\s+(?:my\s+)?memory|download\s+(?:my\s+)?memory)\s*$",
     re.IGNORECASE,
 )
 MEMORY_SHOW_RE = re.compile(
@@ -336,6 +344,10 @@ MEMORY_DELETE_RE = re.compile(
 )
 MEMORY_DELETE_FRIENDLY_RE = re.compile(
     r"^\s*(?:delete|remove)\s+(?:(?:that|last|recent)\s+memory|memory\s+(?P<item_id>[A-Za-z0-9\-_]+))(?:\s+(?P<confirm>confirm(?:ed)?))?\s*$",
+    re.IGNORECASE,
+)
+MEMORY_FORGET_THIS_RE = re.compile(
+    r"^\s*forget\s+(?P<item_ref>this|that|last|recent)(?:\s+memory)?(?:\s+(?P<confirm>confirm(?:ed)?))?\s*$",
     re.IGNORECASE,
 )
 MEMORY_SUPERSEDE_RE = re.compile(
@@ -984,8 +996,14 @@ class GovernorMediator:
         if MEMORY_LIST_FRIENDLY_RE.match(t):
             return _invocation_if_enabled(61, {"action": "list"})
 
+        if MEMORY_RECALL_FRIENDLY_RE.match(t):
+            return _invocation_if_enabled(61, {"action": "overview"})
+
         if MEMORY_SHOW_FRIENDLY_RE.match(t):
             return _invocation_if_enabled(61, {"action": "show", "item_id": "last"})
+
+        if MEMORY_EXPORT_RE.match(t):
+            return _invocation_if_enabled(61, {"action": "export"})
 
         m = MEMORY_SHOW_RE.match(t)
         if m:
@@ -1028,6 +1046,17 @@ class GovernorMediator:
                 {
                     "action": "delete",
                     "item_id": (m.group("item_id") or "last").strip(),
+                    "confirmed": bool((m.group("confirm") or "").strip()),
+                },
+            )
+
+        m = MEMORY_FORGET_THIS_RE.match(t)
+        if m:
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "delete",
+                    "item_id": m.group("item_ref").strip().lower(),
                     "confirmed": bool((m.group("confirm") or "").strip()),
                 },
             )
@@ -1139,7 +1168,8 @@ class GovernorMediator:
                 "track": (52, "What topic should I track?"),
                 "memory": (
                     61,
-                    "Try 'memory overview', 'save this', 'remember this: <text>', 'list memories', or 'memory show <id>'.",
+                    "Try 'memory overview', 'what do you remember', 'save this', 'remember this: <text>', "
+                    "'list memories', 'memory show <id>', or 'memory export'.",
                 ),
             }
             cap_id, message = prompts.get(verb, (16, "Could you clarify that request?"))
