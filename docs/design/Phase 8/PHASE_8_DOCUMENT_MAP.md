@@ -5,6 +5,7 @@ Purpose: Keep the canonical OpenClaw direction, supporting execution plan, and r
 
 ## Read This First
 - `docs/design/Phase 8/NOVA_OPENCLAW_HOME_AGENT_MASTER_REFERENCE_2026-03-27.md`
+- `docs/design/Phase 8/NOVA_SYSTEM_MAP_CURRENT_AND_FUTURE_2026-03-27.md`
 
 This is the current repo-grounded Phase-8 reference.
 Read it first when you need to know:
@@ -46,6 +47,12 @@ The OpenAI documents define the metered-provider side of that same system:
 - Nova remains local-first by default
 - token and cost awareness are part of the trust model
 - trading research can arrive earlier than live autonomous trading
+
+The system-map document is the fastest plain-language bridge between the repo and the product model:
+- current system diagram
+- future target system diagram
+- current end-to-end flow
+- future end-to-end target
 
 ## Raw Source Inputs Preserved
 - `docs/design/Phase 8/openclaw.txt`

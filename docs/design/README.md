@@ -66,6 +66,9 @@ Current Phase-8 canonical OpenClaw automation spec:
 Current Phase-8 master reference:
 - `docs/design/Phase 8/NOVA_OPENCLAW_HOME_AGENT_MASTER_REFERENCE_2026-03-27.md`
 
+Current Nova system map (current and future):
+- `docs/design/Phase 8/NOVA_SYSTEM_MAP_CURRENT_AND_FUTURE_2026-03-27.md`
+
 Current Phase-8 supporting OpenClaw execution packet:
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
 

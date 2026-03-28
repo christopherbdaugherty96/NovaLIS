@@ -64,7 +64,7 @@ Files and roles:
   - forces worker results back through Nova-owned presentation
 - `agent_runner.py`
   - manual low-token briefing runner
-  - currently supports named briefing-style collection and one-pass summary behavior
+  - currently supports named briefing-style collection, local-first summary behavior, and a narrow metered OpenAI fallback for task reports
 - `strict_preflight.py`
   - strict manual-foundation preflight gate
   - validates allowed tools, max steps, max duration, and allowed trigger source before the runner starts
@@ -105,6 +105,10 @@ The runtime store currently ships with:
 - `inbox_check`
   - visible but not runnable yet
   - future quiet-review connector path
+- `market_watch`
+  - manual run available
+  - read-only market research only
+  - no buy, sell, or broker authority
 
 ### Live UI surfaces
 Frontend pages and controls are live in:
@@ -129,7 +133,9 @@ What the user can do now:
 ### Live settings and trust integration
 - `home_agent_enabled` is a real runtime permission in `runtime_settings_store.py`
 - `home_agent_scheduler_enabled` is a real runtime permission in `runtime_settings_store.py`
+- `metered_openai_enabled` is a real runtime permission in `runtime_settings_store.py`
 - OpenClaw home-agent status appears in diagnostics via `os_diagnostics_executor.py`
+- local-first OpenAI routing, budget policy, and a narrow OpenClaw task-report fallback are live in diagnostics and settings
 - strict manual preflight status appears in diagnostics and runtime truth
 - the runtime auditor already recognizes the home-agent foundation as a live runtime system
 
@@ -148,7 +154,7 @@ Current repo-backed coverage includes:
 These items are not live and should not be described as runtime behavior.
 
 Not live:
-- APScheduler or cron-driven execution
+- broad autonomous scheduling beyond the shipped narrow briefing scheduler
 - full GovernorMediator TaskEnvelope execution path
 - Data Minimization Engine from the canonical Phase-8 automation spec
 - dedicated Governor Interceptor from the canonical Phase-8 automation spec

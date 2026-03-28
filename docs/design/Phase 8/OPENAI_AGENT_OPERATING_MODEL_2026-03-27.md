@@ -107,6 +107,10 @@ The current runtime should think in these modes:
 - allows OpenAI to act as a metered fallback for hard tasks
 - only valid once budget and visibility controls are in place
 
+Current live boundary:
+- the first shipped budgeted fallback is narrow
+- it is currently limited to OpenClaw task-report summarization after local summarization fails
+
 ## OpenAI Use Cases In Nova
 ### Coding mode
 Use OpenAI for:
@@ -162,6 +166,10 @@ This operating model is grounded to the current runtime seams:
   - `nova_backend/src/executors/os_diagnostics_executor.py`
 - OpenClaw setup visibility:
   - `nova_backend/src/api/openclaw_agent_api.py`
+- narrow OpenAI task-report lane:
+  - `nova_backend/src/providers/openai_responses_lane.py`
+- OpenClaw fallback integration:
+  - `nova_backend/src/openclaw/agent_runner.py`
 
 This means the repo now has a place to express:
 - local-first routing preference
@@ -170,6 +178,7 @@ This means the repo now has a place to express:
 - metered token budget
 - warning threshold
 - recent provider usage visibility
+- a narrow live OpenClaw fallback that can use the metered lane when policy allows it
 
 ## Non-Negotiable Invariants
 OpenAI inside Nova must not violate:

@@ -55,15 +55,17 @@ Live endpoints:
 - `POST /api/openclaw/agent/delivery/{delivery_id}/dismiss`
 
 ## What The Agent Page Actually Uses
-The Agent page is built around three live templates:
+The Agent page is built around four live templates:
 - `morning_brief`
 - `evening_digest`
 - `inbox_check`
+- `market_watch`
 
 Current truth:
 - `morning_brief` is runnable now
 - `evening_digest` is runnable now
 - `inbox_check` is visible but not connected yet
+- `market_watch` is runnable now as read-only market research only
 
 The Agent page also now shows setup/readiness for:
 - local summarizer status
@@ -140,9 +142,16 @@ A normal manual run looks like this:
 5. `strict_preflight.py` checks the envelope against the current strict foundation rules
 6. the runner gathers weather, calendar, news, and schedule context
 7. one local summary pass may happen at the end
-8. `agent_personality_bridge.py` rewrites the result into Nova's voice
-9. the run is recorded in the runtime store
-10. the result appears in chat, surface delivery, or both depending on the template's delivery mode
+8. if the local summarizer is unavailable and routing mode is set to `budgeted_fallback`, Nova may use the narrow OpenAI metered lane for one task-report pass
+9. `agent_personality_bridge.py` rewrites the result into Nova's voice
+10. the run is recorded in the runtime store together with usage visibility data
+11. the result appears in chat, surface delivery, or both depending on the template's delivery mode
+
+Important OpenAI truth:
+- OpenAI is never the first route for these home-agent runs
+- the local summarizer stays first
+- the OpenAI lane is a narrow fallback only
+- the chat and delivery surfaces now show whether a run stayed local or used metered tokens
 
 A scheduled run looks similar, except:
 - `agent_scheduler.py` claims the due template window
@@ -189,7 +198,7 @@ OpenClaw inside Nova is already real, but it is intentionally narrow.
 
 Today it is:
 - a governed remote bridge for remote-safe read/reasoning requests
-- a local home-agent foundation for briefings, delivery, and a narrow scheduler
+- a local home-agent foundation for briefings, delivery, a narrow scheduler, and a local-first metered OpenAI fallback for task reports
 
 It is not yet:
 - a broad autonomous worker with full execution authority

@@ -152,8 +152,8 @@ let settingsRuntimeState = {
   providerPolicy: {
     routing_mode: "local_first",
     routing_mode_label: "Local-first (Recommended)",
-    preferred_openai_model: "gpt-5-mini",
-    preferred_openai_model_label: "GPT-5 mini",
+    preferred_openai_model: "gpt-5.4-mini",
+    preferred_openai_model_label: "GPT-5.4 mini",
     metered_openai_enabled: false,
     summary: "Nova stays local-first by default. Metered providers should stay explicit and budgeted.",
   },
@@ -921,8 +921,11 @@ function syncOpenClawDeliveryChatSurface(items, { initialLoad = false } = {}) {
       ? item.delivery_channels
       : {};
     const message = String(item && (item.presented_message || item.summary) || "").trim();
+    const usageMeta = (item && item.usage_meta && typeof item.usage_meta === "object")
+      ? item.usage_meta
+      : null;
     if (delivery.chat && message) {
-      appendChatMessage("assistant", message, null, "Scheduled brief");
+      appendChatMessage("assistant", message, null, "Scheduled brief", null, usageMeta);
     }
   });
 }
@@ -1029,8 +1032,9 @@ async function runOpenClawAgentTemplate(templateId) {
     renderTrustCenterPage();
     const run = (data && data.run && typeof data.run === "object") ? data.run : {};
     const delivery = (run.delivery_channels && typeof run.delivery_channels === "object") ? run.delivery_channels : {};
+    const usageMeta = (run.usage_meta && typeof run.usage_meta === "object") ? run.usage_meta : null;
     if (delivery.chat && String(run.presented_message || "").trim()) {
-      appendChatMessage("assistant", String(run.presented_message || "").trim(), null, "Task report");
+      appendChatMessage("assistant", String(run.presented_message || "").trim(), null, "Task report", null, usageMeta);
     } else if (delivery.widget) {
       appendChatMessage("assistant", "That run is ready in the Agent delivery inbox.", null, "Agent");
     }
@@ -4649,6 +4653,80 @@ function appendTrustStrip(container, text, confidenceLabel = "") {
   container.appendChild(strip);
 }
 
+function appendUsageStrip(container, usageMeta) {
+  const meta = (usageMeta && typeof usageMeta === "object") ? usageMeta : null;
+  if (!meta) return;
+
+  const summary = String(meta.summary || "").trim();
+  const routeLabel = String(meta.route_label || "").trim();
+  const modelLabel = String(meta.model_label || "").trim();
+  const budgetLabel = String(meta.budget_state_label || "").trim();
+  const estimatedCost = Number(meta.estimated_cost_usd || 0);
+  const exactTokens = Number(meta.exact_total_tokens || 0);
+  const estimatedTokens = Number(meta.estimated_total_tokens || 0);
+
+  if (!summary && !routeLabel && !modelLabel) return;
+
+  const strip = document.createElement("div");
+  strip.className = "message-usage-strip";
+
+  if (summary) {
+    const copy = document.createElement("div");
+    copy.className = "message-usage-summary";
+    copy.textContent = summary;
+    strip.appendChild(copy);
+  }
+
+  const chips = document.createElement("div");
+  chips.className = "message-usage-chips";
+
+  if (routeLabel) {
+    const routeChip = document.createElement("span");
+    routeChip.className = `usage-badge ${meta.metered ? "usage-badge-metered" : "usage-badge-local"}`;
+    routeChip.textContent = routeLabel;
+    chips.appendChild(routeChip);
+  }
+
+  if (modelLabel) {
+    const modelChip = document.createElement("span");
+    modelChip.className = "usage-badge";
+    modelChip.textContent = modelLabel;
+    chips.appendChild(modelChip);
+  }
+
+  if (exactTokens > 0) {
+    const tokenChip = document.createElement("span");
+    tokenChip.className = "usage-badge";
+    tokenChip.textContent = `${exactTokens.toLocaleString()} exact tokens`;
+    chips.appendChild(tokenChip);
+  } else if (estimatedTokens > 0) {
+    const tokenChip = document.createElement("span");
+    tokenChip.className = "usage-badge";
+    tokenChip.textContent = `${estimatedTokens.toLocaleString()} est. tokens`;
+    chips.appendChild(tokenChip);
+  }
+
+  if (estimatedCost > 0) {
+    const costChip = document.createElement("span");
+    costChip.className = "usage-badge usage-badge-metered";
+    costChip.textContent = `$${estimatedCost.toFixed(4)}`;
+    chips.appendChild(costChip);
+  }
+
+  if (budgetLabel) {
+    const budgetChip = document.createElement("span");
+    budgetChip.className = "usage-badge";
+    budgetChip.textContent = budgetLabel;
+    chips.appendChild(budgetChip);
+  }
+
+  if (chips.children.length > 0) {
+    strip.appendChild(chips);
+  }
+
+  container.appendChild(strip);
+}
+
 function shouldCollapseMessage(text) {
   const raw = String(text || "");
   if (!raw.trim()) return false;
@@ -5332,7 +5410,7 @@ function appendAssistantActions(parent, text, suggestedActions = null) {
   }
 }
 
-function appendChatMessage(role, text, messageId = null, confidence = "", suggestedActions = null) {
+function appendChatMessage(role, text, messageId = null, confidence = "", suggestedActions = null, usageMeta = null) {
   const chat = $("chat-log");
   if (!chat) return;
 
@@ -5387,6 +5465,7 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
   }
   if (role === "assistant") {
     appendTrustStrip(div, msgText, confidence);
+    appendUsageStrip(div, usageMeta);
   }
 
   if (role === "assistant" && messageId) {

@@ -53,13 +53,14 @@ The metered default should bias toward lower cost first.
 
 Recommended preference order:
 
-1. `gpt-5-mini`
+1. `gpt-5.4-mini`
 - default coding and planning lane
 - lower token burn
 - best first-choice metered model
 
-2. `gpt-5.1-codex`
-- code-focused alternative for coding-heavy work
+2. `gpt-5.4-nano`
+- cheapest simple metered lane
+- use for lightweight classification or routing only, not harder coding passes
 
 3. `gpt-5.4`
 - reserved for harder architecture/debugging passes

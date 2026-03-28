@@ -877,13 +877,17 @@ class OSDiagnosticsExecutor:
         permissions = dict(settings_snapshot.get("permissions") or {})
         provider_policy = dict(settings_snapshot.get("provider_policy") or {})
         usage_budget = dict(settings_snapshot.get("usage_budget") or {})
+        provider_usage_store.configure_budget(
+            daily_token_budget=int(usage_budget.get("daily_metered_token_budget") or 4000),
+            warning_ratio=float(usage_budget.get("warning_ratio") or 0.8),
+        )
         usage_snapshot = provider_usage_store.snapshot()
 
         api_key_configured = bool(str(os.getenv("OPENAI_API_KEY", "") or "").strip())
         permission_enabled = bool(permissions.get("metered_openai_enabled"))
         routing_mode = str(provider_policy.get("routing_mode") or "local_first").strip() or "local_first"
         routing_label = str(provider_policy.get("routing_mode_label") or "Local-first").strip() or "Local-first"
-        preferred_model = str(provider_policy.get("preferred_openai_model") or "gpt-5-mini").strip() or "gpt-5-mini"
+        preferred_model = str(provider_policy.get("preferred_openai_model") or "gpt-5.4-mini").strip() or "gpt-5.4-mini"
         preferred_model_label = str(
             provider_policy.get("preferred_openai_model_label") or preferred_model
         ).strip() or preferred_model
@@ -892,7 +896,14 @@ class OSDiagnosticsExecutor:
             usage_snapshot.get("budget_state_label") or "Normal"
         ).strip() or "Normal"
 
-        if api_key_configured and permission_enabled:
+        if api_key_configured and permission_enabled and budget_state_label == "Budget reached":
+            status = "limited"
+            status_label = "Budget reached"
+            summary = (
+                f"OpenAI is configured, but today's metered budget has been reached. Nova stays local-first until the budget resets "
+                f"or you raise the daily limit."
+            )
+        elif api_key_configured and permission_enabled:
             status = "available"
             status_label = "Available"
             summary = (

@@ -28,6 +28,7 @@ async def test_agent_runner_records_manual_brief_without_network(monkeypatch, tm
     assert result["presented_message"].startswith("Here's your morning.")
     assert result["strict_preflight"]["allowed"] is True
     assert result["estimated_total_tokens"] > 0
+    assert result["usage_meta"]["route"] == "local_model"
     assert store.snapshot()["recent_runs"][0]["template_id"] == "morning_brief"
 
 
@@ -61,3 +62,50 @@ async def test_agent_runner_blocks_manual_template_that_fails_strict_preflight(m
 
     with pytest.raises(RuntimeError, match="strict home-agent preflight"):
         await runner.run_template("unsafe_task", triggered_by="agent_page")
+
+
+@pytest.mark.asyncio
+async def test_agent_runner_uses_metered_openai_fallback_when_local_summary_is_unavailable(monkeypatch, tmp_path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+
+    class _FakeOpenAILane:
+        def plan_for_openclaw_fallback(self):
+            return {"allowed": True, "preferred_model": "gpt-5.4-mini"}
+
+        def summarize_task_report(self, **_kwargs):
+            return {
+                "text": "OpenAI produced the final task report.",
+                "usage_meta": {
+                    "route": "openai_metered",
+                    "route_label": "OpenAI metered lane",
+                    "provider_label": "OpenAI",
+                    "model_label": "gpt-5.4-mini",
+                    "metered": True,
+                    "local_only": False,
+                    "exact_total_tokens": 180,
+                    "estimated_cost_usd": 0.0009,
+                    "budget_state_label": "Normal",
+                    "summary": "Morning Brief used OpenAI gpt-5.4-mini.",
+                },
+            }
+
+    runner = OpenClawAgentRunner(store=store, openai_lane=_FakeOpenAILane())
+
+    async def _fake_collect(_template_id):
+        return {
+            "weather_summary": "62 degrees and clear.",
+            "calendar_summary": "10:00 AM standup.",
+            "news_summary": "Two technology stories are worth watching.",
+            "headline_titles": ["Headline one", "Headline two"],
+            "schedule_summary": "0 due | 2 upcoming",
+            "source_notes": {"weather": "available", "calendar": "available", "news": "available"},
+        }
+
+    monkeypatch.setattr(runner, "_collect_payload", _fake_collect)
+    monkeypatch.setattr(runner, "_summarize_with_local_model", lambda _template, _prompt: "")
+
+    result = await runner.run_template("morning_brief", triggered_by="test")
+
+    assert result["summary"] == "OpenAI produced the final task report."
+    assert result["usage_meta"]["route"] == "openai_metered"
+    assert store.snapshot()["recent_runs"][0]["usage_meta"]["route"] == "openai_metered"

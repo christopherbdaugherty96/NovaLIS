@@ -14,10 +14,10 @@ def _utc_now() -> str:
 class RuntimeSettingsStore:
     """Persistent runtime settings for governed product surfaces."""
 
-    SCHEMA_VERSION = "1.1"
+    SCHEMA_VERSION = "1.2"
     DEFAULT_SETUP_MODE = "local"
     DEFAULT_PROVIDER_ROUTING_MODE = "local_first"
-    DEFAULT_OPENAI_MODEL = "gpt-5-mini"
+    DEFAULT_OPENAI_MODEL = "gpt-5.4-mini"
     DEFAULT_DAILY_METERED_TOKEN_BUDGET = 4000
     DEFAULT_WARNING_RATIO = 0.8
     SETUP_MODE_DEFINITIONS = {
@@ -55,17 +55,17 @@ class RuntimeSettingsStore:
         },
     }
     OPENAI_MODEL_DEFINITIONS = {
-        "gpt-5-mini": {
-            "label": "GPT-5 mini",
+        "gpt-5.4-mini": {
+            "label": "GPT-5.4 mini",
             "description": "Recommended for low-token coding and planning work.",
         },
         "gpt-5.4": {
             "label": "GPT-5.4",
             "description": "Use for harder architecture or debugging passes when quality matters more than cost.",
         },
-        "gpt-5.1-codex": {
-            "label": "GPT-5.1 Codex",
-            "description": "Good fit for coding-heavy agent tasks when you want a metered code-focused lane.",
+        "gpt-5.4-nano": {
+            "label": "GPT-5.4 nano",
+            "description": "Use only for the cheapest simple metered tasks. For coding and planning, mini remains the better default.",
         },
     }
     PERMISSION_DEFINITIONS = {
