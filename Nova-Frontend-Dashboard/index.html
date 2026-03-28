@@ -440,10 +440,10 @@
               <div class="home-launch-kicker">Agent</div>
               <h3>OpenClaw Home Agent</h3>
             </div>
-            <span class="confidence-badge">Manual foundation only</span>
+            <span class="confidence-badge">Visible and bounded</span>
           </div>
           <p id="agent-page-summary" class="workspace-board-section-copy">
-            OpenClaw home-agent foundations are loading.
+            OpenClaw is Nova's worker layer for manual, reviewable runs. It stays visible, bounded, and permission-first.
           </p>
           <div class="workspace-board-actions-toolbar">
             <button id="btn-agent-refresh" type="button">Refresh agent</button>
@@ -457,7 +457,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Runtime</div>
-              <p class="workspace-board-section-copy">What is live now, what is still planned, and how the home-agent surface is currently bounded.</p>
+              <p class="workspace-board-section-copy">What this worker layer can do today, what still stays manual, and what is intentionally later.</p>
             </div>
           </div>
           <div id="agent-runtime-grid" class="trust-center-health-grid"></div>
@@ -467,7 +467,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Setup and Readiness</div>
-              <p id="agent-setup-summary" class="workspace-board-section-copy">OpenClaw setup details will appear here after the next agent refresh.</p>
+              <p id="agent-setup-summary" class="workspace-board-section-copy">See what is ready on this device, what is optional, and what still needs setup.</p>
             </div>
           </div>
           <div id="agent-setup-grid" class="trust-center-health-grid"></div>
@@ -477,7 +477,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Templates and Delivery</div>
-              <p id="agent-delivery-summary" class="workspace-board-section-copy">Named briefings can surface in chat. Quiet review tasks stay surface-first.</p>
+              <p id="agent-delivery-summary" class="workspace-board-section-copy">Choose what can run, how results show up, and whether they stay in chat or on the page.</p>
             </div>
           </div>
           <div id="agent-template-list" class="agent-template-list"></div>
@@ -487,7 +487,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Ready For Review</div>
-              <p id="agent-inbox-summary" class="workspace-board-section-copy">Completed agent runs that still have a surface delivery waiting for review appear here.</p>
+              <p id="agent-inbox-summary" class="workspace-board-section-copy">Completed runs that still need your attention appear here before they fade into history.</p>
             </div>
           </div>
           <div id="agent-inbox-list" class="trust-section trust-center-list"></div>
@@ -497,7 +497,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Recent Runs</div>
-              <p id="agent-run-summary" class="workspace-board-section-copy">Run a manual template to see operator history here.</p>
+              <p id="agent-run-summary" class="workspace-board-section-copy">A short history of recent runs so you can see what happened, when, and how it was delivered.</p>
             </div>
           </div>
           <div id="agent-run-list" class="trust-section trust-center-list"></div>
@@ -622,7 +622,7 @@
             </div>
             <span class="confidence-badge">Visible and inspectable</span>
           </div>
-          <p id="trust-center-summary">Trust Center keeps recent governed actions, blocked conditions, runtime health, and capability state in one place.</p>
+          <p id="trust-center-summary">Trust Center shows what Nova did, what it refused, what left the device, and what may need your attention.</p>
           <div class="workspace-board-actions-toolbar">
             <button id="btn-trust-center-refresh" type="button">Refresh trust</button>
             <button id="btn-trust-center-system" type="button">System status</button>
@@ -640,7 +640,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Operating State</div>
-              <p class="workspace-board-section-copy">A plain-language view of what mode Nova is in and whether anything external happened recently.</p>
+              <p class="workspace-board-section-copy">A quick answer to whether Nova stayed local, called anything external, or hit a problem.</p>
             </div>
           </div>
           <div class="trust-center-metrics">
@@ -655,7 +655,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Recent Governed Actions</div>
-              <p class="workspace-board-section-copy">What Nova did recently and why it happened.</p>
+              <p class="workspace-board-section-copy">Review the latest actions, why they ran, and what effect they had.</p>
             </div>
           </div>
           <div id="trust-center-activity" class="trust-section trust-center-list"></div>
@@ -666,7 +666,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Blocked Conditions</div>
-              <p class="workspace-board-section-copy">Places where Nova stayed inside a boundary instead of pushing through it.</p>
+              <p class="workspace-board-section-copy">See where Nova stopped instead of guessing or pushing past a boundary.</p>
             </div>
           </div>
           <div id="trust-center-blocked" class="trust-section trust-center-list"></div>
@@ -687,7 +687,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Operational Context</div>
-              <p id="trust-center-operational-summary" class="workspace-board-section-copy">Session continuity will appear here after the next refresh.</p>
+              <p id="trust-center-operational-summary" class="workspace-board-section-copy">Session continuity will appear here so you can see what Nova is carrying forward right now.</p>
             </div>
             <div class="workspace-board-actions-toolbar">
               <button id="btn-operational-context-refresh" type="button">Refresh continuity</button>
@@ -701,7 +701,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Assistive Notices</div>
-              <p id="trust-center-assistive-summary" class="workspace-board-section-copy">Bounded assistive notices will appear here after the next refresh.</p>
+              <p id="trust-center-assistive-summary" class="workspace-board-section-copy">Bounded suggestions will appear here. They stay visible, optional, and non-automatic.</p>
             </div>
             <div class="workspace-board-actions-toolbar">
               <button id="btn-assistive-notices-refresh" type="button">Refresh notices</button>
@@ -712,7 +712,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Handled Notices</div>
-              <p class="workspace-board-section-copy">Dismissed and resolved notices for the current continuity window appear here.</p>
+              <p class="workspace-board-section-copy">Dismissed and resolved notices stay here for the current session so you can see what was already handled.</p>
             </div>
           </div>
           <div id="trust-center-assistive-handled" class="trust-section trust-center-list"></div>
@@ -722,7 +722,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Voice Runtime</div>
-              <p id="trust-center-voice-summary" class="workspace-board-section-copy">Voice runtime status will appear here after the next trust refresh.</p>
+              <p id="trust-center-voice-summary" class="workspace-board-section-copy">See whether listening and spoken replies are actually ready on this device.</p>
             </div>
           </div>
           <div id="trust-center-voice-grid" class="trust-center-health-grid"></div>
@@ -732,7 +732,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Reasoning Transparency</div>
-              <p id="trust-center-reasoning-summary" class="workspace-board-section-copy">Governed second-opinion status will appear here after the next trust refresh.</p>
+              <p id="trust-center-reasoning-summary" class="workspace-board-section-copy">See when Nova used a second opinion, what it was for, and the main takeaway.</p>
             </div>
           </div>
           <div id="trust-center-reasoning-grid" class="trust-center-health-grid"></div>
@@ -742,7 +742,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Remote Bridge</div>
-              <p id="trust-center-bridge-summary" class="workspace-board-section-copy">Remote bridge status will appear here after the next trust refresh.</p>
+              <p id="trust-center-bridge-summary" class="workspace-board-section-copy">See whether remote access is off, ready, or intentionally paused.</p>
             </div>
           </div>
           <div id="trust-center-bridge-grid" class="trust-center-health-grid"></div>
@@ -752,7 +752,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Policy Delegation Map</div>
-              <p id="trust-center-policy-summary" class="workspace-board-section-copy">Loading which capabilities are safe now, later, or explicit-only.</p>
+              <p id="trust-center-policy-summary" class="workspace-board-section-copy">See which governed actions are safe now, manual-only, or intentionally later.</p>
             </div>
           </div>
           <div class="trust-center-metrics">
@@ -766,7 +766,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Live Capability Surface</div>
-              <p id="trust-center-capability-summary" class="workspace-board-section-copy">Loading live capabilities...</p>
+              <p id="trust-center-capability-summary" class="workspace-board-section-copy">A readable map of what Nova can actually do right now.</p>
             </div>
           </div>
           <div id="trust-center-capability-groups" class="trust-center-capability-groups"></div>
@@ -875,7 +875,7 @@
           </div>
           <div id="settings-reasoning-grid" class="trust-center-health-grid"></div>
           <p class="first-run-note">
-            Provider switching and richer connector setup arrive later. Today, Nova keeps second opinions inside one governed review lane.
+            Today, second opinions stay inside one governed review lane. Richer provider setup can come later without hiding cost or authority.
           </p>
         </div>
 
@@ -908,13 +908,13 @@
         <div class="widget page-card trust-center-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Providers, Connectors, and Remote Bridge</div>
-              <p id="settings-connection-summary" class="workspace-board-section-copy">Connection and provider status will appear here after the next trust refresh.</p>
+              <div class="workspace-home-section-title">Connections, Providers, and Remote Bridge</div>
+              <p id="settings-connection-summary" class="workspace-board-section-copy">Connection details will appear here after the next refresh.</p>
             </div>
           </div>
           <div id="settings-connection-grid" class="trust-center-health-grid"></div>
           <p class="first-run-note">
-            These surfaces are visible now so you can understand what is connected. Full provider and connector setup arrives later and should stay explicit and governed.
+            What is connected now is visible here. Most provider keys and connector logins are still configured manually today, and that setup should remain explicit and governed.
           </p>
         </div>
       </section>

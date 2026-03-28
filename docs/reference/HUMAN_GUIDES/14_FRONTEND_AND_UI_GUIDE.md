@@ -125,6 +125,7 @@ More specifically, the current dashboard can now show:
 - Trust page assistive-notices panel now also shows when notices are cooling down or already handled
 - Trust page now includes a handled-notices review list for the current continuity window
 - Trust page reasoning-transparency section with provider, route, mode, authority, and last outcome
+- Trust page language that now leads with user questions: what happened, what was blocked, what left the device, and what needs attention
 - Policy Review Center draft overview, selected-draft detail, simulation review, and one-shot manual run review
 - Intro page setup-readiness checklist with direct connection-status and voice-check actions
 - Settings page setup-mode selection, runtime permission controls, reasoning transparency, and voice confidence review
@@ -132,10 +133,12 @@ More specifically, the current dashboard can now show:
 - Settings page local-first AI routing controls, optional OpenAI lane visibility, and metered budget controls
 - Settings page assistive-noticing mode controls
 - Settings page provider, connection, bridge-status, and settings-history review
+- Settings page connection guidance that now distinguishes what is configurable today from what still remains manual setup
 - Trust page remote-bridge review
 - Agent page runtime cards, template availability state, delivery-mode controls, per-template schedule controls, ready-for-review inbox state, and recent run history
 - Agent page setup/readiness review for the local summarizer, weather, calendar, remote bridge, and scheduler so the user can see what is optional versus currently ready
 - Agent page narrow scheduled briefing controls that stay visible and pausable instead of acting like hidden automation
+- Agent page summary language that now frames OpenClaw as Nova's visible worker layer rather than an autonomous system
 - richer long-form report rendering for `INTELLIGENCE BRIEF` and `DETAILED STORY ANALYSIS` surfaces, with the lead takeaway visible earlier in the chat card
 
 ## What The Frontend Is Not Supposed To Become
