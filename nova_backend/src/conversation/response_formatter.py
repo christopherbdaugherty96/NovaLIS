@@ -158,6 +158,8 @@ class ResponseFormatter:
 
     @staticmethod
     def _needs_executive_summary(text: str) -> bool:
+        if ResponseFormatter._looks_like_plain_numbered_option_list(text):
+            return False
         if "\n" in text:
             return True
         sentence_count = len([s for s in re.split(r"(?<=[.!?])\s+", text) if s.strip()])
@@ -227,3 +229,16 @@ class ResponseFormatter:
         if cls._HEADING_PATTERN.match(normalized) and normalized.upper() == normalized:
             return True
         return normalized.endswith(("BRIEF", "SUMMARY")) and normalized == normalized.upper()
+
+    @staticmethod
+    def _looks_like_plain_numbered_option_list(text: str) -> bool:
+        lines = [line.strip() for line in str(text or "").splitlines() if line.strip()]
+        if len(lines) < 2:
+            return False
+        numbered = 0
+        for line in lines:
+            if re.match(r"^\d+[.)]\s+\S", line):
+                numbered += 1
+                continue
+            return False
+        return numbered >= 2

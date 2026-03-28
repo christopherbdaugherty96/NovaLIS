@@ -11,5 +11,5 @@ def test_landing_page_route_returns_product_preview():
     response = client.get("/landing")
 
     assert response.status_code == 200
-    assert "Your Personal Intelligence System" in response.text
-    assert "Understand. Continue. Decide." in response.text
+    assert "Local-first AI, under your control." in response.text
+    assert "Nova is a governed workspace assistant" in response.text
