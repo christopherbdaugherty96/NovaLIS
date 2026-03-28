@@ -24,6 +24,9 @@ Current repo-grounded UX improvement packet:
 Current corrected repo-audit and remediation packet:
 - `docs/design/NOVA_CORRECTED_REPO_AUDIT_AND_REMEDIATION_2026-03-26.md`
 
+Current audit TODO backlog:
+- `docs/design/NOVA_AUDIT_TODO_2026-03-28.md`
+
 Current bounded conversational planning packet:
 - `docs/design/CONVERSATIONAL_CORE_PHASE_PLAN_2026-03-19.md`
 
