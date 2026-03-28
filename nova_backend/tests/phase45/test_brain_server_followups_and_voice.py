@@ -325,6 +325,157 @@ def test_deepseek_button_builds_bounded_second_opinion_context(monkeypatch):
     assert "Nova: A GPU accelerates the math used in many AI workloads." in review_text
 
 
+def test_second_opinion_followthrough_generates_nova_final_answer(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        assert capability_id == 62
+        return ActionResult.ok(
+            (
+                "Governed Second Opinion\n"
+                "Bottom line: The review partly agrees with Nova's answer but found a meaningful caveat."
+            ),
+            data={
+                "reasoning_mode": "second_opinion",
+                "reasoning_text": (
+                    "Accuracy: medium\nPotential Issues:\n- the answer needs a clearer caveat\n"
+                    "Suggested Corrections:\n- explain the uncertainty in one sentence\nConfidence: high"
+                ),
+                "reasoning_summary_line": (
+                    "Bottom line: The review partly agrees with Nova's answer but found a meaningful caveat."
+                ),
+                "reasoning_accuracy_label": "Medium",
+                "reasoning_confidence_label": "High",
+                "top_issue": "the answer needs a clearer caveat",
+                "top_correction": "explain the uncertainty in one sentence",
+                "reasoning_recommended": True,
+            },
+            structured_data={
+                "reasoning_mode": "second_opinion",
+                "reasoning_text": (
+                    "Accuracy: medium\nPotential Issues:\n- the answer needs a clearer caveat\n"
+                    "Suggested Corrections:\n- explain the uncertainty in one sentence\nConfidence: high"
+                ),
+                "reasoning_summary_line": (
+                    "Bottom line: The review partly agrees with Nova's answer but found a meaningful caveat."
+                ),
+                "reasoning_accuracy_label": "Medium",
+                "reasoning_confidence_label": "High",
+                "top_issue": "the answer needs a clearer caveat",
+                "top_correction": "explain the uncertainty in one sentence",
+                "reasoning_recommended": True,
+            },
+            request_id="reason-1",
+        )
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _fake_invoke_governed_capability)
+
+    review_prompts: list[str] = []
+
+    def _fake_review_generate(prompt: str, **kwargs):
+        review_prompts.append(prompt)
+        return (
+            "Bottom line: GPUs matter because they accelerate the parallel math used in many AI workloads, "
+            "but the exact gain depends on the model and hardware."
+        )
+
+    with patch(
+        "src.skills.general_chat.generate_chat",
+        return_value="A GPU helps by accelerating parallel math for graphics and AI workloads.",
+    ), patch("src.conversation.review_followthrough.generate_chat", side_effect=_fake_review_generate):
+        ws = _ScriptedWebSocket(
+            [
+                "What is a GPU?",
+                {"type": "chat", "text": "second opinion", "invocation_source": "deepseek_button"},
+                "nova final answer",
+            ]
+        )
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any(
+        "Bottom line: GPUs matter because they accelerate the parallel math used in many AI workloads"
+        in msg
+        for msg in chat_messages
+    )
+    assert review_prompts
+    assert "Original user question:\nWhat is a GPU?" in review_prompts[-1]
+    assert "Original Nova answer:\nA GPU helps by accelerating parallel math for graphics and AI workloads." in review_prompts[-1]
+    assert "Main gap: the answer needs a clearer caveat" in review_prompts[-1]
+    assert "Best correction: explain the uncertainty in one sentence" in review_prompts[-1]
+
+
+def test_second_opinion_followthrough_can_summarize_gaps_and_restore_original_answer(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        assert capability_id == 62
+        return ActionResult.ok(
+            "Governed Second Opinion\nBottom line: The review partly agrees with Nova's answer but found a meaningful caveat.",
+            data={
+                "reasoning_mode": "second_opinion",
+                "reasoning_text": (
+                    "Accuracy: medium\nPotential Issues:\n- the answer needs a clearer caveat\n"
+                    "Suggested Corrections:\n- explain the uncertainty in one sentence\nConfidence: high"
+                ),
+                "reasoning_summary_line": (
+                    "Bottom line: The review partly agrees with Nova's answer but found a meaningful caveat."
+                ),
+                "reasoning_accuracy_label": "Medium",
+                "reasoning_confidence_label": "High",
+                "top_issue": "the answer needs a clearer caveat",
+                "top_correction": "explain the uncertainty in one sentence",
+                "reasoning_recommended": True,
+            },
+            structured_data={
+                "reasoning_mode": "second_opinion",
+                "reasoning_text": (
+                    "Accuracy: medium\nPotential Issues:\n- the answer needs a clearer caveat\n"
+                    "Suggested Corrections:\n- explain the uncertainty in one sentence\nConfidence: high"
+                ),
+                "reasoning_summary_line": (
+                    "Bottom line: The review partly agrees with Nova's answer but found a meaningful caveat."
+                ),
+                "reasoning_accuracy_label": "Medium",
+                "reasoning_confidence_label": "High",
+                "top_issue": "the answer needs a clearer caveat",
+                "top_correction": "explain the uncertainty in one sentence",
+                "reasoning_recommended": True,
+            },
+            request_id="reason-2",
+        )
+
+    monkeypatch.setattr(brain_server, "invoke_governed_capability", _fake_invoke_governed_capability)
+
+    with patch(
+        "src.skills.general_chat.generate_chat",
+        return_value="A GPU helps by accelerating parallel math for graphics and AI workloads.",
+    ):
+        ws = _ScriptedWebSocket(
+            [
+                "What is a GPU?",
+                {"type": "chat", "text": "second opinion", "invocation_source": "deepseek_button"},
+                "summarize the gaps only",
+                "return to Nova's original answer",
+            ]
+        )
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Main gap: the answer needs a clearer caveat" in msg for msg in chat_messages)
+    assert any("Best correction: explain the uncertainty in one sentence" in msg for msg in chat_messages)
+    assert any("Bottom line: Here is Nova's original answer before the review." in msg for msg in chat_messages)
+    assert any("A GPU helps by accelerating parallel math for graphics and AI workloads." in msg for msg in chat_messages)
+
+
 def test_trust_center_command_returns_summary_and_status_widget(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,

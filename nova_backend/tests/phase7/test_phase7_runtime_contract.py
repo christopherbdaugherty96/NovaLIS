@@ -52,7 +52,7 @@ def test_phase7_external_reasoning_executor_stays_advisory_only(monkeypatch):
                 "verification_recommended": False,
                 "issue_count": 0,
                 "correction_count": 0,
-                "follow_up_prompts": ["return to Nova's original answer"],
+                "follow_up_prompts": ["nova final answer", "return to Nova's original answer"],
             },
             speakable_text="DeepSeek second opinion ready.",
             request_id=request.request_id,

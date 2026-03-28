@@ -49,6 +49,12 @@ from src.voice.tts_engine import (
     stop_speaking,
 )
 from src.conversation.clarify_prompts import CLARIFY_PROMPTS
+from src.conversation.review_followthrough import (
+    build_review_followthrough_snapshot,
+    build_revised_answer_from_review,
+    render_original_answer,
+    summarize_review_gaps,
+)
 from src.conversation.response_formatter import ResponseFormatter
 from src.build_phase import BUILD_PHASE, PHASE_4_2_ENABLED
 from src.executors.os_diagnostics_executor import OSDiagnosticsExecutor

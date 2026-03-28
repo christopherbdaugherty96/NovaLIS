@@ -91,6 +91,7 @@ These parts are already meaningfully real:
 - analysis documents, intelligence briefs, and story-tracker views that now surface their lead takeaway earlier
 - answer-first search with hidden-by-default sources
 - governed same-thread external reasoning review with Trust and Settings transparency
+- same-session review followthrough so Nova can take a bounded second-opinion report and then give a final revised answer, summarize the gaps, or restore the original answer inside the same session
 - local project summary, architecture report, project overview, and structure-map flows
 - user-facing Introduction and Settings pages that explain Nova and now let users change setup mode and pause or re-enable governed reasoning and remote bridge access
 - a stronger first-run magic-moment prompt centered on `explain this`
@@ -191,7 +192,7 @@ The main remaining voice caveat is still real-device confirmation:
 ## The Best Honest Description Right Now
 If someone asked what Nova is today, a strong honest answer would be:
 
-Nova is a governed personal intelligence workspace that can research, explain, help with your computer, follow ongoing project threads in the current session, preserve explicit memory across sessions, use relevant saved memory in bounded ways, use a governed external reasoning lane for second-opinion review, surface trust, workspace, onboarding, and manual home-agent tools, and still keep the user in control.
+Nova is a governed personal intelligence workspace that can research, explain, help with your computer, follow ongoing project threads in the current session, preserve explicit memory across sessions, use relevant saved memory in bounded ways, use a governed external reasoning lane for second-opinion review, let Nova answer again from that review inside the same session, surface trust, workspace, onboarding, and manual home-agent tools, and still keep the user in control.
 
 ## If You Need The Official Runtime Truth
 Use:
