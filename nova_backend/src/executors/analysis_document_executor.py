@@ -172,6 +172,7 @@ class AnalysisDocumentExecutor:
         message = (
             f"Analysis document created: Doc {next_id}\n"
             f"Title: {title}\n\n"
+            f"Bottom line: {summary}\n\n"
             f"Summary:\n{summary}\n\n"
             f"Sections detected: {section_count}\n\n"
             f"Try next:\n"
@@ -213,11 +214,13 @@ class AnalysisDocumentExecutor:
 
         sections = list(doc.get("sections") or [])
         section_titles = ", ".join(str(s.get("title") or f"Section {s.get('number')}") for s in sections[:5])
+        summary = str(doc.get("summary") or "").strip()
         message = (
             f"Document Summary - Doc {doc['id']}\n"
             f"Title: {doc.get('title', 'Untitled')}\n"
             f"Topic: {doc.get('topic', 'Unknown')}\n\n"
-            f"{doc.get('summary', '')}\n\n"
+            f"Bottom line: {summary}\n\n"
+            f"{summary}\n\n"
             f"Sections: {section_titles or 'No structured sections found.'}\n\n"
             f"Try next:\n"
             f"- explain section 1 of doc {doc['id']}\n"
@@ -301,10 +304,12 @@ class AnalysisDocumentExecutor:
         explained = self._safety.sanitize(raw)
         if not explained or self._analysis_unavailable(explained):
             explained = self._first_text_snippet(section_text, limit=420)
+        bottom_line = self._first_text_snippet(explained, limit=180)
 
         message = (
             f"Section Explanation - Doc {doc['id']} Section {section_number}\n"
             f"Title: {section.get('title', f'Section {section_number}')}\n\n"
+            f"Bottom line: {bottom_line}\n\n"
             f"{explained}\n\n"
             f"Try next:\n"
             f"- summarize doc {doc['id']}\n"

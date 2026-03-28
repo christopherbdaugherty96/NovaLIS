@@ -23,10 +23,18 @@ class VoiceExperienceAgent:
     _INITIATIVE_SPLIT_RE = re.compile(r"\n\n(?:If useful, I can|If you want, I can)\b", re.IGNORECASE)
     _TRY_NEXT_SPLIT_RE = re.compile(r"\n\nTry next:\s*", re.IGNORECASE)
     _RECOMMENDED_ACTIONS_SPLIT_RE = re.compile(r"\n\n(?:Recommended actions|Recommended next steps):\s*", re.IGNORECASE)
+    _BOTTOM_LINE_RE = re.compile(r"Bottom line:\s*(.+?)(?:(?<=\.)\s|$)", re.IGNORECASE)
     _SUMMARY_RE = re.compile(r"Summary:\s*(.+?)(?:(?<=\.)\s|$)", re.IGNORECASE)
     _SENTENCE_RE = re.compile(r"(?<=[.!?])\s+")
     _SECOND_OPINION_HEADINGS = ("Governed Second Opinion", "DeepSeek Second Opinion")
+    _STRUCTURED_REPORT_HEADINGS = (
+        "INTELLIGENCE BRIEF",
+        "NOVA INTELLIGENCE BRIEF",
+        "NOVA MULTI-SOURCE REPORT",
+        "DETAILED STORY ANALYSIS",
+    )
     _REVIEW_LINE_PATTERNS = {
+        "bottom_line": re.compile(r"(?im)^Bottom line:\s*(.+)$"),
         "agreement": re.compile(r"(?im)^(?:Agreement Level|Claim Reliability):\s*(.+)$"),
         "confidence": re.compile(r"(?im)^(?:Review Confidence|Report Confidence):\s*(.+)$"),
         "main_gap": re.compile(r"(?im)^Main gap:\s*(.+)$"),
@@ -61,6 +69,9 @@ class VoiceExperienceAgent:
         review_summary = self._extract_structured_review_summary(raw)
         if review_summary:
             return review_summary
+        report_summary = self._extract_structured_report_summary(raw)
+        if report_summary:
+            return report_summary
 
         speakable = ResponseFormatter.to_speakable_text(raw)
         if not speakable:
@@ -101,6 +112,7 @@ class VoiceExperienceAgent:
         if not is_second_opinion and not clean.startswith("Verification Report"):
             return ""
 
+        bottom_line = self._extract_review_line(clean, "bottom_line")
         agreement = self._extract_review_line(clean, "agreement")
         confidence = self._extract_review_line(clean, "confidence")
         main_gap = self._extract_review_line(clean, "main_gap")
@@ -108,6 +120,8 @@ class VoiceExperienceAgent:
         recommendation = self._extract_review_line(clean, "recommendation")
 
         parts = ["Second opinion ready." if is_second_opinion else "Verification ready."]
+        if bottom_line:
+            parts.append(f"Bottom line: {bottom_line}.")
         if agreement:
             label = "Agreement level" if is_second_opinion else "Claim reliability"
             parts.append(f"{label} {agreement}.")
@@ -133,6 +147,50 @@ class VoiceExperienceAgent:
             return ""
         return value
 
+    def _extract_structured_report_summary(self, text: str) -> str:
+        clean = str(text or "").strip()
+        if not clean:
+            return ""
+
+        heading = clean.splitlines()[0].strip() if clean.splitlines() else ""
+        is_structured_report = (
+            heading in self._STRUCTURED_REPORT_HEADINGS
+            or heading.startswith("Analysis document created")
+            or heading.startswith("Document Summary - Doc")
+            or heading.startswith("Section Explanation - Doc")
+            or heading.startswith("STORY TRACKER - ")
+        )
+        if not is_structured_report:
+            return ""
+
+        bottom_line = self._extract_first_match(clean, self._BOTTOM_LINE_RE)
+        if not bottom_line:
+            bottom_line = self._extract_first_match(clean, self._SUMMARY_RE)
+        if not bottom_line:
+            return ""
+
+        if heading.startswith("Analysis document created"):
+            prefix = "Analysis document ready."
+        elif heading.startswith("Document Summary - Doc"):
+            prefix = "Document summary ready."
+        elif heading.startswith("Section Explanation - Doc"):
+            prefix = "Section explanation ready."
+        elif heading.startswith("STORY TRACKER - "):
+            prefix = "Story tracker update ready."
+        elif heading == "DETAILED STORY ANALYSIS":
+            prefix = "Detailed story analysis ready."
+        else:
+            prefix = "Report ready."
+        return f"{prefix} {bottom_line}. I also put the full answer on screen."
+
+    @staticmethod
+    def _extract_first_match(text: str, pattern: re.Pattern[str]) -> str:
+        match = pattern.search(text)
+        if not match:
+            return ""
+        value = ResponseFormatter.to_speakable_text(match.group(1))
+        return value.strip(" .")
+
     def _should_summarize_for_voice(self, text: str) -> bool:
         if "\n" in text:
             return True
@@ -140,6 +198,12 @@ class VoiceExperienceAgent:
         return len(sentences) >= 4 or len(text) > 260
 
     def _summarize_for_voice(self, text: str) -> str:
+        bottom_line_match = self._BOTTOM_LINE_RE.search(text)
+        if bottom_line_match:
+            summary = ResponseFormatter.to_speakable_text(bottom_line_match.group(1))
+            if summary:
+                return summary
+
         summary_match = self._SUMMARY_RE.search(text)
         if summary_match:
             summary = ResponseFormatter.to_speakable_text(summary_match.group(1))

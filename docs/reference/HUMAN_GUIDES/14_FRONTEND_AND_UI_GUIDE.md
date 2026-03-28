@@ -112,6 +112,7 @@ More specifically, the current dashboard can now show:
 - header page context and runtime connection state
 - News-page in-card summaries
 - bounded second-opinion controls
+- assistant chat summary cards for bottom-line, main-gap, and best-correction signals
 - Workspace page project board
 - Workspace page selected-project drill-down and recent decisions
 - Structure Map for local-project visualization with structured graph output
@@ -130,6 +131,7 @@ More specifically, the current dashboard can now show:
 - Agent page runtime cards, template availability state, delivery-mode controls, per-template schedule controls, ready-for-review inbox state, and recent run history
 - Agent page setup/readiness review for the local summarizer, weather, calendar, remote bridge, and scheduler so the user can see what is optional versus currently ready
 - Agent page narrow scheduled briefing controls that stay visible and pausable instead of acting like hidden automation
+- richer long-form report rendering for `INTELLIGENCE BRIEF` and `DETAILED STORY ANALYSIS` surfaces, with the lead takeaway visible earlier in the chat card
 
 ## What The Frontend Is Not Supposed To Become
 Nova's frontend is not supposed to become a hidden authority layer.

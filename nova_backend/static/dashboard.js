@@ -5169,6 +5169,60 @@ function appendUsageStrip(container, usageMeta) {
   container.appendChild(strip);
 }
 
+function extractMessageHighlights(text) {
+  const raw = String(text || "").trim();
+  if (!raw) return null;
+
+  const readLine = (pattern) => {
+    const match = raw.match(pattern);
+    return match ? String(match[1] || "").trim() : "";
+  };
+
+  const bottomLine =
+    readLine(/^Bottom line:\s*(.+)$/im) ||
+    readLine(/^Summary:\s*(.+)$/im) ||
+    readLine(/^Main point:\s*(.+)$/im) ||
+    readLine(/^Key takeaway:\s*(.+)$/im);
+  const mainGap = readLine(/^Main gap:\s*(.+)$/im);
+  const bestCorrection = readLine(/^Best correction:\s*(.+)$/im);
+
+  if (!bottomLine && !mainGap && !bestCorrection) return null;
+  return { bottomLine, mainGap, bestCorrection };
+}
+
+function renderMessageHighlights(container, highlights) {
+  if (!container || !highlights) return;
+
+  const rows = [
+    ["Bottom line", highlights.bottomLine],
+    ["Main gap", highlights.mainGap],
+    ["Best correction", highlights.bestCorrection],
+  ].filter(([, value]) => String(value || "").trim());
+  if (!rows.length) return;
+
+  const card = document.createElement("div");
+  card.className = "message-highlight-card";
+
+  rows.forEach(([label, value]) => {
+    const row = document.createElement("div");
+    row.className = "message-highlight-row";
+
+    const labelNode = document.createElement("div");
+    labelNode.className = "message-highlight-label";
+    labelNode.textContent = label;
+    row.appendChild(labelNode);
+
+    const valueNode = document.createElement("div");
+    valueNode.className = "message-highlight-value";
+    valueNode.textContent = String(value || "").trim();
+    row.appendChild(valueNode);
+
+    card.appendChild(row);
+  });
+
+  container.appendChild(card);
+}
+
 function shouldCollapseMessage(text) {
   const raw = String(text || "");
   if (!raw.trim()) return false;
@@ -5258,6 +5312,8 @@ function parseStructuredReport(text) {
   if (!raw) return null;
 
   const isReport =
+    raw.startsWith("INTELLIGENCE BRIEF") ||
+    raw.startsWith("DETAILED STORY ANALYSIS") ||
     raw.startsWith("NOVA MULTI-SOURCE REPORT") ||
     raw.startsWith("NOVA INTELLIGENCE BRIEF");
   if (!isReport) return null;
@@ -5272,11 +5328,14 @@ function parseStructuredReport(text) {
     "Key Findings",
     "Supporting Sources",
     "Contradictions",
+    "Open Questions",
     "Strategic Snapshot",
     "Top Findings",
     "Cross-Story Insight",
     "Cross-Story Insights",
     "Sources",
+    "Signals to Watch",
+    "Timeline",
     "Confidence",
     "Source Credibility",
     "Confidence Factors",
@@ -5869,6 +5928,11 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
 
   const div = document.createElement("div");
   div.className = `chat-${role}`;
+
+  const highlights = role === "assistant" ? extractMessageHighlights(msgText) : null;
+  if (highlights) {
+    renderMessageHighlights(div, highlights);
+  }
 
   const dailyBrief = role === "assistant" ? parseDailyBriefV2(msgText) : null;
   const structured = role === "assistant" ? parseStructuredReport(msgText) : null;

@@ -55,6 +55,7 @@ That means Nova already has:
 - a clearer OpenClaw setup/readiness layer that shows what the home-agent surface needs, what is optional, and what is paused
 - improved voice auto-speak routing with runtime fallback at the speech layer
 - a dedicated conversation personality layer and a dedicated voice presentation layer for smoother replies
+- report, document, and story-tracker outputs that now lead more consistently with a visible bottom line in both chat and voice
 - a cleaner live chat runtime with bounded general-chat fallback extracted out of the old skill-registry path
 - a thinner app entrypoint with the websocket session loop and the main HTTP route families extracted into focused modules
 - dashboard support for all of the above
@@ -87,6 +88,7 @@ These parts are already meaningfully real:
 - explicit pattern review through the Home-page pattern queue
 - source-grounded news brief and per-article summary flows
 - long-form general-chat, search, and news answers that now lead more consistently with a useful summary line
+- analysis documents, intelligence briefs, and story-tracker views that now surface their lead takeaway earlier
 - answer-first search with hidden-by-default sources
 - governed same-thread external reasoning review with Trust and Settings transparency
 - local project summary, architecture report, project overview, and structure-map flows
@@ -104,6 +106,7 @@ These parts are already meaningfully real:
 - a dedicated Agent page setup/readiness surface for the local summarizer, weather, calendar, remote bridge, and scheduler
 - Settings and Trust visibility for local-first AI routing, OpenAI lane readiness, and metered budget state
 - a narrow metered OpenAI fallback that can summarize OpenClaw task reports when routing mode allows it and the local summarizer is unavailable
+- assistant chat cards that now surface bottom-line, main-gap, and best-correction review signals directly inside the conversation
 
 ## What Is Still Maturing
 These parts are active but still evolving:

@@ -10,6 +10,17 @@ class IntelligenceBriefRenderer:
     """Deterministic formatting for invocation-bound intelligence briefing output."""
 
     @staticmethod
+    def _bottom_line(text: str, *, fallback: str = "", limit: int = 220) -> str:
+        clean = re.sub(r"\s+", " ", str(text or "").strip())
+        if not clean:
+            clean = re.sub(r"\s+", " ", str(fallback or "").strip())
+        if not clean:
+            clean = "No concise bottom line is available yet."
+        if len(clean) <= limit:
+            return clean
+        return clean[: limit - 3].rstrip() + "..."
+
+    @staticmethod
     def _derive_signal(text: str) -> str:
         lowered = (text or "").lower()
         if any(k in lowered for k in ("conflict", "tension", "sanction", "war")):
@@ -198,6 +209,7 @@ class IntelligenceBriefRenderer:
             return "No news data available."
 
         ts = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+        strategic_snapshot = self._strategic_snapshot(headlines)
         lines = [
             "NOVA INTELLIGENCE BRIEF",
             "Daily Situation Overview",
@@ -205,9 +217,11 @@ class IntelligenceBriefRenderer:
             f"Generated: {ts}",
             f"Stories analyzed: {len(headlines[:9])}",
             "",
+            f"Bottom line: {self._bottom_line(analysis_text, fallback=strategic_snapshot)}",
+            "",
             "Strategic Snapshot",
             "------------------",
-            self._strategic_snapshot(headlines),
+            strategic_snapshot,
             "",
             "Cross-Story Insights",
             "--------------------",
@@ -297,6 +311,7 @@ class IntelligenceBriefRenderer:
         source = (headline.get("source") or "Unknown").strip()
         url = (headline.get("url") or "").strip()
         summary = (headline.get("summary") or "").strip()
+        context = analysis_text.strip() or summary or "Limited detail is available from the selected headline."
 
         lines = [
             "DETAILED STORY ANALYSIS",
@@ -309,9 +324,10 @@ class IntelligenceBriefRenderer:
 
         seed = f"{title}. {analysis_text or summary}"
         importance, confidence = self._importance_confidence(seed, source)
-        context = analysis_text.strip() or summary or "Limited detail is available from the selected headline."
         lines.extend(
             [
+                "",
+                f"Bottom line: {self._bottom_line(context, fallback=self._derive_signal(seed))}",
                 "",
                 "Summary",
                 context,
@@ -357,6 +373,8 @@ class IntelligenceBriefRenderer:
             "NOVA MULTI-SOURCE REPORT",
             "------------------------",
             f"Query: {query_text}",
+            "",
+            f"Bottom line: {self._bottom_line(analysis_text, fallback=selected_findings[0])}",
             "",
             "Strategic Snapshot",
             self._strategic_snapshot([{"title": item, "summary": item} for item in selected_findings]),
@@ -414,6 +432,8 @@ class IntelligenceBriefRenderer:
         lines = [
             "INTELLIGENCE BRIEF",
             f"Topic: {clean_topic}",
+            "",
+            f"Bottom line: {self._bottom_line(clean_summary)}",
             "",
             "Summary",
             "-------",
