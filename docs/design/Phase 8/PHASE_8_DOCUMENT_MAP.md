@@ -24,6 +24,7 @@ If there is tension about the eventual strict automation model, this document wi
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_HOME_AGENT_AND_PERSONALITY_LAYER_PLAN_2026-03-26.md`
 - `docs/design/Phase 8/PHASE_8_5_SCHEDULER_AND_PROACTIVE_DELIVERY_PLAN_2026-03-27.md`
+- `docs/design/Phase 8/PHASE_8_ADVANCED_GOVERNOR_LAYER_ARCHITECTURE_2026-03-27.md`
 - `docs/design/Phase 8/OPENAI_AGENT_OPERATING_MODEL_2026-03-27.md`
 - `docs/design/Phase 8/OPENAI_PROVIDER_ROUTING_AND_BUDGET_POLICY_2026-03-27.md`
 - `docs/design/Phase 8/OPENAI_USAGE_VISIBILITY_SPEC_2026-03-27.md`
@@ -53,6 +54,13 @@ The system-map document is the fastest plain-language bridge between the repo an
 - future target system diagram
 - current end-to-end flow
 - future end-to-end target
+
+The advanced governor-layer packet defines the future trust-monitoring and anomaly-detection architecture:
+- device trust
+- trust scoring
+- anomaly detection
+- dynamic policy suggestions
+- stronger zero-trust interpretation for external systems
 
 ## Raw Source Inputs Preserved
 - `docs/design/Phase 8/openclaw.txt`

@@ -78,6 +78,9 @@ Current Phase-8 home-agent and Nova personality-layer packet:
 Current Phase-8.5 scheduler and proactive delivery packet:
 - `docs/design/Phase 8/PHASE_8_5_SCHEDULER_AND_PROACTIVE_DELIVERY_PLAN_2026-03-27.md`
 
+Current advanced Governor-layer architecture packet:
+- `docs/design/Phase 8/PHASE_8_ADVANCED_GOVERNOR_LAYER_ARCHITECTURE_2026-03-27.md`
+
 Current OpenAI local-first operating model packet:
 - `docs/design/Phase 8/OPENAI_AGENT_OPERATING_MODEL_2026-03-27.md`
 
