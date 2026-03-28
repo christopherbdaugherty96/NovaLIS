@@ -97,6 +97,7 @@ Phase 8 should not be read as authorization for:
 - hidden background automation loops
 
 ## Cross-Phase Inputs
+- `docs/design/Phase 5/PHASE_5_MEMORY_REMEMBRANCE_AND_ASSISTIVE_NOTICING_ARCHITECTURE_2026-03-27.md`
 - `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 - `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
 - `docs/design/NOVA_GOVERNED_INTELLIGENCE_EXECUTION_DIRECTION_2026-03-21.md`
@@ -117,6 +118,11 @@ In Phase 8, read them with this boundary:
 - web search remains read-only
 - reasoning output can support action previews
 - reasoning output never becomes execution authority or approval authority
+
+The memory / remembrance / assistive-noticing packet matters here because:
+- user personal memory remains a Phase-5 governed memory concern
+- operational remembrance becomes trust-visible in later layers
+- assistive noticing and suggestive help should be treated as bounded later-phase behavior, not backported into Phase-5 runtime by accident
 
 The same interpretation applies to broader agent-roadmap packets:
 - read-only connectors can arrive earlier
