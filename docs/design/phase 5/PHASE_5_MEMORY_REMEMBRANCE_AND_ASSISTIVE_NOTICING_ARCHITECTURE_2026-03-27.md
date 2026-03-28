@@ -31,13 +31,14 @@ The current repo already has meaningful foundations:
 - session-scoped working context and project/thread continuity
 - visible operational-context review in Home and Trust
 - explicit `reset operational context` support for clearing session continuity without deleting durable governed memory
+- a first bounded assistive-notices surface in Home, Trust, Settings, and explicit command review
 - bounded relevant-memory use in chat
 - opt-in pattern review
 - trust and recent-activity visibility
 
 The current repo does not yet have the full target model:
-- no broad assistive noticing layer
-- no user-facing helpfulness modes
+- no broad assistive-noticing layer
+- no chat-interruptive or manipulative helpfulness behavior
 - no mature policy engine for suggestive help frequency and categories
 - no wide autonomous support-action layer
 

@@ -107,6 +107,31 @@ def build_settings_router(deps) -> APIRouter:
         )
         return _runtime_settings_payload(deps, snapshot)
 
+    @router.post("/api/settings/runtime/assistive-mode")
+    async def set_runtime_assistive_mode(payload: dict[str, Any]):
+        mode = str(payload.get("assistive_notice_mode") or "").strip()
+        if not mode:
+            raise HTTPException(status_code=400, detail="assistive_notice_mode is required.")
+        try:
+            snapshot = deps.runtime_settings_store.set_assistive_notice_mode(
+                mode,
+                source="settings_page",
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        deps._log_ledger_event(
+            deps.RUNTIME_GOVERNOR,
+            "RUNTIME_SETTINGS_UPDATED",
+            {
+                "action": "set_assistive_notice_mode",
+                "assistive_notice_mode": str(
+                    dict(snapshot.get("assistive_policy") or {}).get("assistive_notice_mode") or ""
+                ),
+                "source": "settings_page",
+            },
+        )
+        return _runtime_settings_payload(deps, snapshot)
+
     @router.post("/api/settings/runtime/usage-budget")
     async def set_runtime_usage_budget(payload: dict[str, Any]):
         if "daily_metered_token_budget" not in payload:

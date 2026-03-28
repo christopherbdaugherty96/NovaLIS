@@ -104,6 +104,7 @@ More specifically, the current dashboard can now show:
 - Home-page trust review
 - Home-page Workspace Home
 - Home-page Workspace Home operational-context section
+- Home-page Workspace Home assistive-notices section
 - Memory Center list and item detail
 - top-level navigation between Chat, Home, News, Workspace, Memory, Policies, Trust, Settings, and Intro
 - top-level navigation between Chat, Home, News, Agent, Workspace, Memory, Policies, Trust, Settings, and Intro
@@ -115,10 +116,12 @@ More specifically, the current dashboard can now show:
 - Structure Map for local-project visualization with structured graph output
 - Trust page recent governed actions, blocked conditions, drill-down, and capability visibility
 - Trust page operational-context panel with refresh/reset controls
+- Trust page assistive-notices panel with refresh and direct Settings path
 - Trust page reasoning-transparency section with provider, route, mode, authority, and last outcome
 - Policy Review Center draft overview, selected-draft detail, simulation review, and one-shot manual run review
 - Settings page setup-mode selection, runtime permission controls, reasoning transparency, and voice confidence review
 - Settings page local-first AI routing controls, optional OpenAI lane visibility, and metered budget controls
+- Settings page assistive-noticing mode controls
 - Settings page provider, connection, bridge-status, and settings-history review
 - Trust page remote-bridge review
 - Agent page runtime cards, template availability state, delivery-mode controls, per-template schedule controls, ready-for-review inbox state, and recent run history

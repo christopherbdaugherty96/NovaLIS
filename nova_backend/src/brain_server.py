@@ -62,6 +62,10 @@ from src.working_context.operational_remembrance import (
     build_operational_context_widget,
     render_operational_context_message,
 )
+from src.working_context.assistive_noticing import (
+    build_assistive_notices_widget,
+    render_assistive_notices_message,
+)
 from src.tasks.notification_schedule_store import NotificationScheduleStore
 from src.openclaw.agent_runner import openclaw_agent_runner
 from src.openclaw.agent_runtime_store import openclaw_agent_runtime_store
@@ -334,6 +338,10 @@ WORKSPACE_BOARD_RE = re.compile(
 )
 OPERATIONAL_CONTEXT_RE = re.compile(
     r"^\s*(?:show\s+)?(?:operational\s+context|continuity\s+status|session\s+continuity)\s*$",
+    re.IGNORECASE,
+)
+ASSISTIVE_NOTICES_RE = re.compile(
+    r"^\s*(?:show\s+)?(?:assistive\s+notices|assistive\s+status|helpfulness\s+status)\s*$",
     re.IGNORECASE,
 )
 RESET_OPERATIONAL_CONTEXT_RE = re.compile(
@@ -1687,6 +1695,7 @@ def _reset_operational_session_state(
     session_state["last_thread_detail"] = {}
     session_state["last_memory_context"] = []
     session_state["last_operational_context"] = {}
+    session_state["last_assistive_notices"] = {}
     session_state["general_chat_context"] = []
     session_state["general_chat_summary"] = {}
     session_state["conversation_context"] = {}
@@ -4218,6 +4227,47 @@ async def send_operational_context_widget(
             "turn_count": int(session_state.get("turn_count") or 0),
         },
     )
+    await ws_send(ws, payload)
+    return payload
+
+
+async def send_assistive_notices_widget(
+    ws: WebSocket,
+    session_state: dict,
+    project_threads: ProjectThreadStore,
+    *,
+    explicit_request: bool = False,
+    log_surface: bool = False,
+) -> dict[str, Any]:
+    payload = build_assistive_notices_widget(
+        session_state=session_state,
+        working_context_snapshot=dict(session_state.get("working_context") or {}),
+        project_threads=project_threads,
+        trust_snapshot=_build_trust_review_snapshot(),
+        assistive_notice_mode=runtime_settings_store.assistive_notice_mode(),
+        explicit_request=explicit_request,
+    )
+    session_state["last_assistive_notices"] = payload
+    if explicit_request:
+        _log_ledger_event(
+            RUNTIME_GOVERNOR,
+            "ASSISTIVE_NOTICE_VIEWED",
+            {
+                "session_id": str(session_state.get("session_id") or ""),
+                "assistive_notice_mode": str(payload.get("assistive_notice_mode") or ""),
+                "notice_count": int(payload.get("notice_count") or 0),
+            },
+        )
+    elif log_surface and int(payload.get("notice_count") or 0) > 0:
+        _log_ledger_event(
+            RUNTIME_GOVERNOR,
+            "ASSISTIVE_NOTICE_SURFACED",
+            {
+                "session_id": str(session_state.get("session_id") or ""),
+                "assistive_notice_mode": str(payload.get("assistive_notice_mode") or ""),
+                "notice_count": int(payload.get("notice_count") or 0),
+            },
+        )
     await ws_send(ws, payload)
     return payload
 

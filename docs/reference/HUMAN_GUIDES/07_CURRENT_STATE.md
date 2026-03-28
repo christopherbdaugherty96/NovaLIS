@@ -26,6 +26,7 @@ That means Nova already has:
 - dedicated Memory Center list/detail page surface
 - a calmer Workspace Home surface on the Home page
 - a visible operational-context surface for session continuity review and reset
+- a bounded assistive-notices surface in Home and Trust, with visible settings control and no silent execution
 - a dedicated Workspace page with a broader project board
 - a dedicated Trust page with recent actions and blocked-condition review
 - a dedicated Policies page for draft review, delegation-readiness review, simulation, and one-shot manual runs
@@ -79,6 +80,7 @@ These parts are already meaningfully real:
 - natural `save this` / `remember this` flows and bounded relevant-memory recall
 - natural `what do you remember`, `memory export`, and confirmation-backed `forget this` flows
 - explicit `reset operational context` that clears session continuity without deleting durable memory
+- explicit `assistive notices` review with bounded suggestion-only output
 - manual tone settings through the response-style surface
 - explicit scheduled updates through the Home-page schedule surface
 - explicit pattern review through the Home-page pattern queue

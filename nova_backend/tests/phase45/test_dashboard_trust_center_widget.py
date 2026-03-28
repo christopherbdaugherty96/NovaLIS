@@ -20,11 +20,13 @@ def test_dashboard_renders_trust_center_page_from_runtime_state():
     assert "renderTrustCenterPage();" in source
     assert "trust-center-voice-grid" in source
     assert "trust-center-operational-grid" in source
+    assert "trust-center-assistive-list" in source
     assert "trust-center-reasoning-grid" in source
     assert "trust-center-bridge-grid" in source
     assert "Estimated tokens today" in source
     assert "Budget state" in source
     assert "settings-reasoning-grid" in source
+    assert "settings-assistive-grid" in source
     assert "settings-connection-grid" in source
     assert '"trust"' in source
 
@@ -46,6 +48,8 @@ def test_trust_page_includes_recent_actions_and_runtime_health_surfaces():
     assert 'id="trust-center-health-grid"' in source
     assert 'id="trust-center-operational-summary"' in source
     assert 'id="trust-center-operational-grid"' in source
+    assert 'id="trust-center-assistive-summary"' in source
+    assert 'id="trust-center-assistive-list"' in source
     assert 'id="trust-center-voice-summary"' in source
     assert 'id="trust-center-voice-grid"' in source
     assert 'id="trust-center-reasoning-summary"' in source
@@ -56,6 +60,8 @@ def test_trust_page_includes_recent_actions_and_runtime_health_surfaces():
     assert 'id="trust-center-capability-groups"' in source
     assert 'id="settings-reasoning-summary"' in source
     assert 'id="settings-reasoning-grid"' in source
+    assert 'id="settings-assistive-summary"' in source
+    assert 'id="settings-assistive-grid"' in source
     assert 'id="settings-connection-summary"' in source
     assert 'id="settings-connection-grid"' in source
     assert 'id="btn-trust-center-refresh"' in source
@@ -67,3 +73,5 @@ def test_trust_page_includes_recent_actions_and_runtime_health_surfaces():
     assert 'id="btn-trust-center-settings"' in source
     assert 'id="btn-operational-context-refresh"' in source
     assert 'id="btn-operational-context-reset"' in source
+    assert 'id="btn-assistive-notices-refresh"' in source
+    assert 'id="btn-assistive-open-settings"' in source

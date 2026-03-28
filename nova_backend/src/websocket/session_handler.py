@@ -56,9 +56,12 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     _render_workspace_home_message = deps._render_workspace_home_message
     WORKSPACE_BOARD_RE = deps.WORKSPACE_BOARD_RE
     OPERATIONAL_CONTEXT_RE = deps.OPERATIONAL_CONTEXT_RE
+    ASSISTIVE_NOTICES_RE = deps.ASSISTIVE_NOTICES_RE
     RESET_OPERATIONAL_CONTEXT_RE = deps.RESET_OPERATIONAL_CONTEXT_RE
     send_operational_context_widget = deps.send_operational_context_widget
+    send_assistive_notices_widget = deps.send_assistive_notices_widget
     _render_operational_context_message = deps.render_operational_context_message
+    _render_assistive_notices_message = deps.render_assistive_notices_message
     _reset_operational_session_state = deps._reset_operational_session_state
     send_thread_map_widget = deps.send_thread_map_widget
     send_thread_detail_widget = deps.send_thread_detail_widget
@@ -591,6 +594,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             if WORKSPACE_HOME_RE.match(command_text):
                 workspace_widget = await send_workspace_home_widget(ws, session_state, project_threads)
+                await send_assistive_notices_widget(ws, session_state, project_threads, explicit_request=False)
                 if silent_widget_refresh:
                     await _complete_silent_widget_refresh()
                 else:
@@ -603,6 +607,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             if OPERATIONAL_CONTEXT_RE.match(command_text):
                 operational_widget = await send_operational_context_widget(ws, session_state, project_threads)
+                await send_assistive_notices_widget(ws, session_state, project_threads, explicit_request=False)
                 if silent_widget_refresh:
                     await _complete_silent_widget_refresh()
                 else:
@@ -631,6 +636,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     },
                 )
                 await send_operational_context_widget(ws, session_state, project_threads)
+                await send_assistive_notices_widget(ws, session_state, project_threads, explicit_request=False)
                 await send_workspace_home_widget(ws, session_state, project_threads)
                 await send_thread_map_widget(ws, project_threads, session_state)
                 await send_trust_status(ws, session_state["trust_status"])
@@ -676,6 +682,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     if resolved_path:
                         session_state["last_project_structure_map"] = dict(structure_widget or {})
                     await ws_send(ws, structure_widget)
+                await send_assistive_notices_widget(ws, session_state, project_threads, explicit_request=False)
                 if silent_widget_refresh:
                     await _complete_silent_widget_refresh()
                 else:
@@ -687,6 +694,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             if TRUST_CENTER_RE.match(command_text):
                 await send_trust_status(ws, session_state["trust_status"])
+                await send_assistive_notices_widget(ws, session_state, project_threads, explicit_request=False)
                 if silent_widget_refresh:
                     await _complete_silent_widget_refresh()
                 else:
@@ -697,6 +705,23 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         trust_message,
                         suggested_actions=trust_suggestions,
                         tone_domain="system",
+                )
+                continue
+
+            if ASSISTIVE_NOTICES_RE.match(command_text):
+                notices_widget = await send_assistive_notices_widget(
+                    ws,
+                    session_state,
+                    project_threads,
+                    explicit_request=not silent_widget_refresh,
+                )
+                if silent_widget_refresh:
+                    await _complete_silent_widget_refresh()
+                else:
+                    await _complete_immediate_turn(
+                        _render_assistive_notices_message(notices_widget),
+                        suggested_actions=list(notices_widget.get("recommended_actions") or []),
+                        tone_domain="continuity",
                     )
                 continue
 

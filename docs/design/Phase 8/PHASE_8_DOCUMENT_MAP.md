@@ -124,6 +124,12 @@ The memory / remembrance / assistive-noticing packet matters here because:
 - operational remembrance becomes trust-visible in later layers
 - assistive noticing and suggestive help should be treated as bounded later-phase behavior, not backported into Phase-5 runtime by accident
 
+The first live assistive-noticing slice should be read that way too:
+- bounded visible notices are now live
+- the current slice is suggestion-only
+- Home, Trust, Settings, and explicit command review are the intended surfaces
+- policy-bound assist actions remain later work
+
 The same interpretation applies to broader agent-roadmap packets:
 - read-only connectors can arrive earlier
 - write-capable connectors, app control, and action-capable schedules belong here
