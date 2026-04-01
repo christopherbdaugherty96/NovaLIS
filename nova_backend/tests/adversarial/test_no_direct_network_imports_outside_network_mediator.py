@@ -19,6 +19,10 @@ ALLOWED_NETWORK_IMPORT_FILES = {
     SRC_ROOT / "llm" / "llm_manager.py",
     SRC_ROOT / "llm" / "llm_manager_vlock.py",
     SRC_ROOT / "llm" / "model_network_mediator.py",
+    # local_request_guard.py uses urllib.parse solely for URL host extraction in the
+    # DNS rebinding guard. It makes no outbound network calls — urllib.parse is a
+    # standard-library string parser, not a network client.
+    SRC_ROOT / "utils" / "local_request_guard.py",
 }
 
 

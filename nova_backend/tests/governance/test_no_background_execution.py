@@ -12,6 +12,10 @@ GOVERNOR_ROOT = SRC_ROOT / "governor"
 ALLOWED_CREATE_TASK_FILES = {
     SRC_ROOT / "audio_manager.py",
     SRC_ROOT / "audio" / "audio_task_runner.py",  # updated from audio_worker.py
+    # Phase 8: The OpenClaw agent scheduler runs a bounded poll loop via create_task.
+    # It is the only background execution surface and is controlled by explicit runtime
+    # permission flags (home_agent_enabled, home_agent_scheduler_enabled).
+    SRC_ROOT / "openclaw" / "agent_scheduler.py",
 }
 
 

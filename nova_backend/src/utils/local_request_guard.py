@@ -81,7 +81,8 @@ def require_local_http_request(request: Request) -> None:
 
 
 def describe_websocket_rebinding_violation(ws: WebSocket) -> str | None:
+    headers = getattr(ws, "headers", {}) or {}
     return describe_request_rebinding_violation(
-        ws.headers.get("host"),
-        ws.headers.get("origin"),
+        headers.get("host"),
+        headers.get("origin"),
     )

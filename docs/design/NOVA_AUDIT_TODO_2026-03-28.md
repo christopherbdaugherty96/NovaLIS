@@ -1,5 +1,5 @@
 # NOVA Audit TODO
-Updated: 2026-03-28
+Updated: 2026-03-30
 
 ## Purpose
 This document converts the 2026-03-28 end-to-end audit into an actionable remediation backlog.
@@ -12,9 +12,23 @@ It covers:
 - stale governance and verification tests
 
 ## Remaining Open Priorities
-After the current hardening and cleanup passes, there are no remaining open items in this packet on `main`.
+The 2026-03-28 audit items are all closed on `main`.
 
-The follow-on work from here is broader product validation and platform polish rather than unresolved audit debt.
+The 2026-03-30 follow-on pass added and closed these additional items:
+
+| # | Item | Status |
+|---|---|---|
+| A | `inbox_check` payload gap in `agent_runner._collect_payload()` | Closed — explicit guard added |
+| B | `confirmation_gate.set_pending()` dead placeholder code | Closed — removed; `.backup` file deleted |
+| C | Two personality systems undocumented | Closed — guide 30 added |
+| D | Calendar ICS setup not surfaced in UI | Closed — note in Settings connections + Intro readiness checklist |
+| E | Cloud setup modes (BYOK/managed) led nowhere | Closed — "not yet available" note on each card |
+| F | `workspace_api.py` and `audit_api.py` had no tests | Closed — test files added |
+| G | Registry `phase` field still said "4" while build is Phase 8 | Closed — updated to "8" in registry.json and capability_registry.py |
+| H | 6 governance/adversarial tests failing due to stale path assertions | Closed — tests updated to reflect refactored code locations |
+| I | Screen capture invokes immediately with no consent step | Closed — `prefill: true` added so command lands in input box first |
+
+The follow-on work from here is broader product validation and platform polish.
 
 ## Recommended Execution Order
 1. Fix externally reachable security issues.
@@ -235,6 +249,51 @@ The follow-on work from here is broader product validation and platform polish r
   - add checks that generated docs stay aligned with current runtime branch logic
 - Validation target:
   - incorrect runtime-doc content causes test failure
+
+## Phase 8–9 Additions (2026-04-01)
+
+### 15. Cap 63 dual-surface design: dashboard Run Now vs governed invocation path
+- Status: documented — intentional dual surface, deferred convergence
+- Context: cap 63 `openclaw_execute` was wired in Phase 8 as the canonical governed path
+  for home-agent template runs. However, the dashboard "Run now" button (`POST /api/openclaw/agent/templates/{id}/run`)
+  also exists as a direct FastAPI route that bypasses the governor entirely.
+- Evidence:
+  - `nova_backend/src/executors/openclaw_execute_executor.py` — governed path (cap 63)
+  - `nova_backend/src/api/openclaw_agent_api.py` — direct API route
+  - `nova_backend/src/governor/governor_mediator.py` — governs chat-driven invocation via cap 63
+- Current behavior:
+  - Chat-driven ("run morning brief", "run template X") → GovernorMediator → cap 63 → governed execution
+  - Dashboard "Run now" button → direct API route → `openclaw_agent_runner.run_template()` directly
+  - Both paths write run records to `OpenClawAgentRuntimeStore`
+- Design rationale for keeping dual surface:
+  - Dashboard runs are user-initiated from within the UI and carry no escalation risk above manual user input
+  - The direct route is simpler for the UI and avoids coupling dashboard interaction to WebSocket timing
+  - The governed path (cap 63) is the correct path for automated/delegated runs and chat commands
+- Deferred convergence work:
+  - If automated/delegated dashboard runs are needed in future, they should route through cap 63
+  - Add a `triggered_by: "dashboard_direct"` audit tag to the direct API route to keep both paths distinguishable in logs
+  - Consider adding budget gate check to the direct route when Phase 9 token awareness matures
+
+### 16. Phase 9 Token Awareness — implemented and deferred items
+- Status: Phase 9 live as of 2026-04-01
+- Implemented:
+  - Budget gate in `governor.py`: hard refusal for cap IDs {16, 48, 49, 50, 55, 56, 63} when `budget_state == "limit"`
+  - Budget snapshot in `result.data`: `budget_state`, `budget_remaining_tokens`, `budget_state_label`, `budget_warning`
+    attached to all network-cap results from `governor._execute()`
+  - WebSocket `token_budget_update` event: emitted by `session_handler` after any governed invocation
+    that returns `budget_state` in its payload; renders token budget bar in the dashboard
+  - `GET /api/token/budget` endpoint: returns live `provider_usage_store.snapshot()` for UI polling
+  - Frontend token-budget-bar: hidden by default; appears in amber for `warning`, red for `limit`
+  - 10-test suite: `tests/phase9/test_token_awareness.py`
+- Deferred:
+  - "Warning before usage" confirmation dialog: the governor allows execution at `warning` state but
+    annotates the result; a pre-action prompt before budget-gated caps would require a new
+    confirmation flow in `session_handler`
+  - Per-action token count display: `ActionResult.data` carries `budget_*` fields but not exact
+    per-action token deltas; exact token counting requires propagating usage from the LLM call layer
+    through the executor return value, which is currently async across executor → governor → brain_server
+  - Email connector live implementation: `src/connectors/email_connector.py` stub is in place;
+    a real IMAP/Gmail/Outlook implementation is deferred to Phase 10
 
 ## Notes For The First Remediation Pass
 - Start by fixing the DNS rebinding hole before any metadata or docs cleanup.

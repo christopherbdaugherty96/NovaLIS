@@ -46,3 +46,6 @@ nova_backend/src/data/
 # Temporary audio
 *.wav
 *.m4a
+
+# Environment secrets - NEVER commit this
+nova_backend/.env

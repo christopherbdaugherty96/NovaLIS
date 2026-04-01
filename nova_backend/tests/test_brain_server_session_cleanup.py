@@ -15,6 +15,7 @@ from src.conversation.session_router import GateResult
 class _DisconnectingWebSocket:
     def __init__(self) -> None:
         self.sent_messages: list[dict] = []
+        self.headers = {"host": "testserver", "origin": "http://testserver"}
 
     async def accept(self) -> None:
         return None
@@ -30,6 +31,7 @@ class _ScriptedWebSocket:
     def __init__(self, messages: list[str]) -> None:
         self._messages = list(messages)
         self.sent_messages: list[dict] = []
+        self.headers = {"host": "testserver", "origin": "http://testserver"}
 
     async def accept(self) -> None:
         return None
