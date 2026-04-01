@@ -33,7 +33,11 @@ CAPABILITY_TIMEOUT_OVERRIDES = {
     31: 90.0,  # Response verification may need local-model cold-start time.
     62: 90.0,  # Governed external reasoning review may need local-model cold-start time.
     54: 150.0,  # Analysis documents need more time for local-model long-form generation.
+    63: 45.0,  # Home-agent templates may need network round-trips across multiple sources.
 }
+
+# Capabilities that consume external tokens and are subject to daily budget enforcement.
+_BUDGET_GATED_CAP_IDS: frozenset[int] = frozenset({16, 48, 49, 50, 55, 56, 63})
 
 
 class Governor:
@@ -232,6 +236,10 @@ class Governor:
                 capability_id=capability_id,
             )
 
+        budget_block = self._check_network_budget(capability_id)
+        if budget_block is not None:
+            return budget_block
+
         if self._queue.has_pending():
             return self._normalize_action_result(
                 ActionResult.failure("I couldn't do that right now."),
@@ -290,6 +298,19 @@ class Governor:
                 capability_id=req.capability_id,
                 request_id=req.request_id,
             )
+            if req.capability_id in _BUDGET_GATED_CAP_IDS:
+                try:
+                    from src.usage.provider_usage_store import provider_usage_store
+
+                    snap = provider_usage_store.snapshot()
+                    if result.data is None:
+                        result.data = {}
+                    result.data["budget_state"] = str(snap.get("budget_state") or "normal")
+                    result.data["budget_remaining_tokens"] = int(snap.get("budget_remaining_tokens") or 0)
+                    result.data["budget_state_label"] = str(snap.get("budget_state_label") or "Normal")
+                    result.data["budget_warning"] = str(snap.get("budget_state") or "normal") == "warning"
+                except Exception:
+                    pass
             self._execute_boundary.enforce_memory_limits()
             self._execute_boundary.enforce_cpu_limits()
 
@@ -417,6 +438,31 @@ class Governor:
             return str(self.capability_topology.get(capability_id).authority_class)
         except Exception:
             return None
+
+    def _check_network_budget(self, capability_id: int) -> ActionResult | None:
+        """Return a refusal if the daily token budget is exhausted for budget-gated caps."""
+        if capability_id not in _BUDGET_GATED_CAP_IDS:
+            return None
+        try:
+            from src.usage.provider_usage_store import provider_usage_store
+
+            snapshot = provider_usage_store.snapshot()
+            if str(snapshot.get("budget_state") or "normal") == "limit":
+                return self._normalize_action_result(
+                    ActionResult.refusal(
+                        "Daily token budget reached. This action requires external tokens. "
+                        "Reset the budget in Settings → Usage or wait until tomorrow.",
+                        data={
+                            "budget_state": "limit",
+                            "budget_remaining_tokens": int(snapshot.get("budget_remaining_tokens") or 0),
+                            "budget_state_label": str(snapshot.get("budget_state_label") or "Budget reached"),
+                        },
+                    ),
+                    capability_id=capability_id,
+                )
+        except Exception:
+            pass
+        return None
 
     def _normalize_action_result(
         self,
@@ -566,6 +612,11 @@ class Governor:
             from src.executors.response_verification_executor import ResponseVerificationExecutor
 
             return ResponseVerificationExecutor().execute(req)
+
+        elif req.capability_id == 63:
+            from src.executors.openclaw_execute_executor import OpenClawExecuteExecutor
+
+            return OpenClawExecuteExecutor().execute(req)
 
         return ActionResult.refusal(
             "Execution path not implemented yet.",

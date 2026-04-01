@@ -5,7 +5,7 @@ Deterministic generated tree diagram derived from allowlisted runtime sources.
 ```mermaid
 graph TD
   Runtime[Phase-4 Runtime]
-  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62]]
+  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63]]
   Runtime --> Disabled[Disabled IDs: []]
   Runtime --> Gov[Governor Guards]
   Gov --> EG[execution_gate: True]
@@ -62,6 +62,8 @@ graph TD
   C61 --> C61A[authority=persistent_change, risk=low, confirm=False, reversible=False, external=False, network=False, surface=Governor -> Executor]
   Caps --> C62[62:external_reasoning_review]
   C62 --> C62A[authority=read_only_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  Caps --> C63[63:openclaw_execute]
+  C63 --> C63A[authority=read_only_network, risk=low, confirm=False, reversible=True, external=True, network=True, surface=Governor -> NetworkMediator]
   Runtime --> Routes[Skill Routes]
   Routes --> R54_analysis_document[analysis_document -> capability 54]
   Routes --> R21_brightness[brightness -> capability 21]
@@ -95,7 +97,7 @@ graph TD
 
 ```text
 Runtime
-|- Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62]
+|- Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63]
 |- Disabled IDs: []
 |- Governor Guards
 |  |- execution_gate: True
@@ -128,6 +130,7 @@ Runtime
 |  |- 60 explain_anything (authority=read_only_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |  |- 61 memory_governance (authority=persistent_change, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |  |- 62 external_reasoning_review (authority=read_only_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 63 openclaw_execute (authority=read_only_network, risk=low, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
 |- Skill -> capability routes
 |  |- analysis_document -> 54
 |  |- brightness -> 21

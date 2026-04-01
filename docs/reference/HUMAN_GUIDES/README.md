@@ -1,5 +1,5 @@
 ﻿# Nova Human Guides
-Updated: 2026-03-26
+Updated: 2026-03-30
 Status: Explanatory guide set
 
 ## What These Documents Are
@@ -56,6 +56,7 @@ Runtime truth lives in:
 27. `27_KEY_SKILL_RELIABILITY_MATRIX_2026-03-27.md`
 28. `28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27.md`
 29. `29_END_TO_END_VALIDATION_CHECKLIST_2026-03-28.md`
+30. `30_PERSONALITY_SYSTEM_ARCHITECTURE.md`
 
 ## Quick Summary
 Nova is a governed personal intelligence system.

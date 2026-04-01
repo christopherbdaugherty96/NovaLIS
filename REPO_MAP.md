@@ -75,13 +75,15 @@ Nova's docs are intentionally separated by role:
 
 If you are reviewing the backend, this is the fastest useful order:
 
-1. `nova_backend/src/brain_server.py`
-2. `nova_backend/src/governor/`
-3. `nova_backend/src/executors/`
-4. `nova_backend/src/conversation/`
-5. `nova_backend/src/working_context/`
-6. `nova_backend/src/memory/`
-7. `nova_backend/src/personality/`
+1. `nova_backend/src/brain_server.py` — app assembly, middleware, lifespan, singleton wiring
+2. `nova_backend/src/websocket/session_handler.py` — live session loop, all command routing, governor invocation
+3. `nova_backend/src/governor/` — authority spine: mediator, governor, registry, execute boundary, network mediator
+4. `nova_backend/src/executors/` — capability workers (one per capability ID)
+5. `nova_backend/src/conversation/` — routing, deepseek bridge, general chat runtime, safety filter
+6. `nova_backend/src/working_context/` — session continuity, assistive noticing, operational remembrance
+7. `nova_backend/src/memory/` — governed memory store and recall
+8. `nova_backend/src/personality/` — two-layer voice system (see guide 30 for the distinction)
+9. `nova_backend/src/openclaw/` — Phase 8 home-agent runner, scheduler, preflight, personality bridge
 
 ## Frontend Orientation
 
