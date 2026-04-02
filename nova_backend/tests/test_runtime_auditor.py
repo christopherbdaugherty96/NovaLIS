@@ -170,6 +170,23 @@ def test_render_current_runtime_state_mentions_openclaw_home_agent_foundation(mo
     assert "Manual briefing templates, delivery controls, and operator surface active" in rendered
 
 
+def test_render_current_runtime_state_mentions_connector_package_foundation(monkeypatch):
+    import src.audit.runtime_auditor as ra
+
+    registry = {"capabilities": []}
+    monkeypatch.setattr(
+        ra,
+        "_connector_package_foundation_summary",
+        lambda: {"present": True, "active_count": 2, "package_ids": ["ics_calendar", "rss_news"]},
+    )
+
+    rendered = ra.render_current_runtime_state_markdown({"discrepancies": []}, registry)
+
+    assert "Governed Connector Package Foundation" in rendered
+    assert "2 active package manifests" in rendered
+    assert "ics_calendar, rss_news" in rendered
+
+
 def test_phase8_status_tracks_foundation_slice(monkeypatch, tmp_path):
     import src.audit.runtime_auditor as ra
 

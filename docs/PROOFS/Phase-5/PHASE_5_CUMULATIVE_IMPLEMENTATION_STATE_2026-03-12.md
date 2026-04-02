@@ -287,7 +287,7 @@ Phase-5 runtime slices are active, but full Phase-5 closure remains gated until 
 
 ## Quick Reference
 - Index: `PHASE_5_PROOF_PACKET_INDEX.md`
-- Design map: `docs/design/phase 5/PHASE_5_DOCUMENT_MAP.md`
+- Design map: `docs/design/Phase 5/PHASE_5_DOCUMENT_MAP.md`
 - Runtime state: `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 - Runtime-doc proof: `docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12.md`
 

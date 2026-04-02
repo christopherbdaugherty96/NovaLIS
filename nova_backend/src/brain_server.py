@@ -28,6 +28,7 @@ from fastapi.staticfiles import StaticFiles
 
 from src.api.audit_api import build_audit_router
 from src.api.bridge_api import build_bridge_router
+from src.api.live_screen_api import build_live_screen_router
 from src.api.memory_api import build_memory_router
 from src.api.openclaw_agent_api import build_openclaw_agent_router
 from src.api.settings_api import build_settings_router
@@ -115,7 +116,11 @@ async def _lifespan(_app: FastAPI):
     openclaw_agent_scheduler._ledger_logger = (
         lambda event_type, metadata: _log_ledger_event(RUNTIME_GOVERNOR, event_type, metadata)
     )
-    await openclaw_agent_scheduler.start()
+    scheduler_allowed = runtime_settings_store.is_permission_enabled(
+        "home_agent_enabled"
+    ) and runtime_settings_store.is_permission_enabled("home_agent_scheduler_enabled")
+    if scheduler_allowed:
+        await openclaw_agent_scheduler.start()
     try:
         yield
     finally:
@@ -153,6 +158,7 @@ if STATIC_DIR.exists():
 # Routers
 # -------------------------------------------------
 app.include_router(stt_router)
+app.include_router(build_live_screen_router())
 app.include_router(build_workspace_router(sys.modules[__name__]))
 
 # -------------------------------------------------

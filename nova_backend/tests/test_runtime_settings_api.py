@@ -24,6 +24,25 @@ def _install_runtime_settings_store(monkeypatch, tmp_path):
     return store
 
 
+class _FakeScheduler:
+    def __init__(self) -> None:
+        self.start_calls = 0
+        self.stop_calls = 0
+        self._ledger_logger = None
+
+    async def start(self) -> None:
+        self.start_calls += 1
+
+    async def stop(self) -> None:
+        self.stop_calls += 1
+
+
+def _install_fake_scheduler(monkeypatch) -> _FakeScheduler:
+    scheduler = _FakeScheduler()
+    monkeypatch.setattr(brain_server, "openclaw_agent_scheduler", scheduler)
+    return scheduler
+
+
 def test_runtime_settings_api_reports_defaults(monkeypatch, tmp_path):
     _install_runtime_settings_store(monkeypatch, tmp_path)
 
@@ -94,6 +113,72 @@ def test_runtime_settings_can_pause_remote_bridge(monkeypatch, tmp_path):
     )
     assert bridge_response.status_code == 403
     assert "paused in settings" in bridge_response.json()["detail"].lower()
+
+
+def test_runtime_settings_permission_updates_sync_openclaw_scheduler(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+    scheduler = _install_fake_scheduler(monkeypatch)
+    monkeypatch.setattr(
+        brain_server,
+        "write_current_runtime_state_snapshot",
+        lambda: tmp_path / "CURRENT_RUNTIME_STATE.md",
+    )
+
+    with TestClient(brain_server.app) as client:
+        enable_response = client.post(
+            "/api/settings/runtime/permissions",
+            json={"permission": "home_agent_scheduler_enabled", "enabled": True},
+        )
+
+        assert enable_response.status_code == 200
+        assert enable_response.json()["settings"]["permissions"]["home_agent_scheduler_enabled"] is True
+        assert scheduler.start_calls == 1
+        assert scheduler.stop_calls == 0
+
+        disable_response = client.post(
+            "/api/settings/runtime/permissions",
+            json={"permission": "home_agent_scheduler_enabled", "enabled": False},
+        )
+
+        assert disable_response.status_code == 200
+        assert disable_response.json()["settings"]["permissions"]["home_agent_scheduler_enabled"] is False
+        assert scheduler.start_calls == 1
+        assert scheduler.stop_calls == 1
+
+
+def test_runtime_settings_lifespan_keeps_scheduler_dormant_until_enabled(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+    scheduler = _install_fake_scheduler(monkeypatch)
+    monkeypatch.setattr(
+        brain_server,
+        "write_current_runtime_state_snapshot",
+        lambda: tmp_path / "CURRENT_RUNTIME_STATE.md",
+    )
+
+    with TestClient(brain_server.app):
+        assert scheduler.start_calls == 0
+        assert scheduler.stop_calls == 0
+
+    assert scheduler.start_calls == 0
+    assert scheduler.stop_calls == 1
+
+
+def test_runtime_settings_lifespan_starts_scheduler_after_explicit_enable(monkeypatch, tmp_path):
+    store = _install_runtime_settings_store(monkeypatch, tmp_path)
+    store.set_permission("home_agent_scheduler_enabled", True, source="test")
+    scheduler = _install_fake_scheduler(monkeypatch)
+    monkeypatch.setattr(
+        brain_server,
+        "write_current_runtime_state_snapshot",
+        lambda: tmp_path / "CURRENT_RUNTIME_STATE.md",
+    )
+
+    with TestClient(brain_server.app):
+        assert scheduler.start_calls == 1
+        assert scheduler.stop_calls == 0
+
+    assert scheduler.start_calls == 1
+    assert scheduler.stop_calls == 1
 
 
 def test_runtime_settings_provider_policy_update_changes_snapshot(monkeypatch, tmp_path):

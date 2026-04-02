@@ -184,9 +184,42 @@ let settingsRuntimeState = {
   updatedAt: "",
   lastHydratedAt: 0,
 };
+let workflowFocusState = {
+  goal: "Start with something simple like \"Build me a landing page for my business.\"",
+  status: "Ready",
+  copy: "Tell Nova the outcome you want, and it will turn that into the next steps.",
+  now: "Nova is ready to turn your idea into a workflow.",
+  next: "You can start broad. Nova will draft, explain, and pause when a choice matters.",
+  lastUserInput: "",
+  awaitingResponse: false,
+};
+let liveHelpState = {
+  active: false,
+  starting: false,
+  processing: false,
+  screenStream: null,
+  audioStream: null,
+  audioRecorder: null,
+  cycleTimer: null,
+  stopTimer: null,
+  videoEl: null,
+  canvasEl: null,
+  status: "Off",
+  copy: "Start live screen help when you want Nova to follow one shared screen and listen for \"Hey Nova\" during that session.",
+  screenLabel: "No screen shared yet.",
+  voiceLabel: 'Waiting to start. When live help is on, say "Hey Nova" before a request.',
+  lastHeard: "Nothing heard yet.",
+  lastResult: "No live explanation yet.",
+  lastCommandSignature: "",
+  lastCommandAt: 0,
+  firstAnalysisDone: false,
+  pendingInitialCommand: "",
+  lastAnalysis: null,
+};
 
 const API_BASE = `${window.location.protocol}//${window.location.host}`;
 const WS_BASE = `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`;
+const HEY_NOVA_WAKE_WORD = "Hey Nova";
 const STORAGE_KEYS = {
   firstRunDone: "nova_first_run_done",
   quickActions: "nova_quick_actions",
@@ -194,6 +227,7 @@ const STORAGE_KEYS = {
   uiLargeText: "nova_ui_large_text",
   uiHighContrast: "nova_ui_high_contrast",
   uiCompactDensity: "nova_ui_compact_density",
+  voiceWakeWordEnabled: "nova_voice_wake_word_enabled",
   activePage: "nova_active_page",
   morningExpanded: "nova_morning_expanded",
   setupMode: "nova_setup_mode",
@@ -229,22 +263,21 @@ const MORNING_FALLBACK_TIMEOUT_MS = 4500;
 
 const QUICK_ACTIONS_BY_PAGE = {
   chat: [
-    { id: "chat_brief", label: "Today's brief", command: "daily brief" },
-    { id: "chat_weather", label: "Weather", command: "weather" },
-    { id: "chat_search", label: "Search web", command: "search latest technology news" },
+    { id: "chat_plan_goal", label: "Plan this goal", command: "help me do this" },
+    { id: "chat_build_page", label: "Build a page", command: "build me a landing page for my business" },
+    { id: "chat_research", label: "Research a topic", command: "research latest technology news" },
+    { id: "chat_explain", label: "Explain what I'm seeing", command: "explain this" },
+    { id: "chat_brief", label: "Plan my day", command: "daily brief" },
+    { id: "chat_threads", label: "Continue a project", command: "show threads" },
+    { id: "chat_thread_status", label: "Check project status", command: "project status this" },
+    { id: "chat_thread_memory", label: "Review project memory", command: "memory list thread this" },
+    { id: "chat_memory_overview", label: "Review saved memory", command: "memory overview" },
+    { id: "chat_schedules", label: "Review reminders", command: "show schedules" },
+    { id: "chat_patterns", label: "Review patterns", command: "pattern status" },
     { id: "chat_system", label: "System status", command: "system status" },
-    { id: "chat_explain", label: "Explain this", command: "explain this" },
-    { id: "chat_help_this", label: "Help me do this", command: "help me do this" },
-    { id: "chat_threads", label: "Show threads", command: "show threads" },
-    { id: "chat_thread_status", label: "Project status", command: "project status this" },
-    { id: "chat_most_blocked", label: "Most blocked", command: "which project is most blocked right now" },
-    { id: "chat_thread_memory", label: "Thread memory", command: "memory list thread this" },
-    { id: "chat_memory_overview", label: "Memory overview", command: "memory overview" },
     { id: "chat_tone", label: "Tone settings", command: "tone status" },
-    { id: "chat_schedules", label: "Schedules", command: "show schedules" },
-    { id: "chat_patterns", label: "Pattern review", command: "pattern status" },
-    { id: "chat_doc_create", label: "New analysis doc", command: "create analysis report on global technology policy updates" },
-    { id: "chat_doc_list", label: "List analysis docs", command: "list analysis docs" },
+    { id: "chat_doc_create", label: "Create analysis doc", command: "create analysis report on global technology policy updates" },
+    { id: "chat_doc_list", label: "Open analysis docs", command: "list analysis docs" },
   ],
   news: [
     { id: "news_get", label: "Get headlines", command: "news", stayOnPage: true },
@@ -322,12 +355,15 @@ const QUICK_ACTIONS_BY_PAGE = {
 };
 
 const COMMAND_SUGGESTIONS = [
-  "morning brief",
+  "build me a landing page for my business",
+  "help me turn this idea into a plan",
+  "plan my day",
+  "research latest technology news",
   "summarize all headlines",
   "summary of article 1",
-    "summarize politics news",
-    "summarize global news",
-    "summarize crypto news",
+  "summarize politics news",
+  "summarize global news",
+  "summarize crypto news",
   "explain this",
   "help me do this",
   "show threads",
@@ -501,7 +537,7 @@ function buildNewsItemSnippet(item) {
     if (normalizedSummary && normalizedSummary !== normalizedTitle) return summary;
   }
   if (!title) return "No synopsis available for this headline.";
-  return `Open the source summary for webpage-level context beyond the headline.`;
+  return "Open this story if you want the fuller explanation behind the headline.";
 }
 
 function normalizePageKey(page) {
@@ -578,9 +614,13 @@ function setPTTButtonState(state = "idle") {
   btn.classList.remove("mic-idle", "mic-recording", "mic-sending", "mic-error");
   btn.classList.add(`mic-${safeState}`);
 
+  const wakeWordHint = isHeyNovaWakeWordEnabled()
+    ? `Press to record. Say "${HEY_NOVA_WAKE_WORD}" followed by your request.`
+    : "Press to record a short voice question.";
+
   const labels = {
-    idle: { text: "Talk", title: "Press to record a short voice question" },
-    recording: { text: "Listening", title: "Nova is listening. Press again to stop." },
+    idle: { text: "Talk", title: wakeWordHint },
+    recording: { text: "Listening", title: `Nova is listening. Start with "${HEY_NOVA_WAKE_WORD}" and press again to stop.` },
     sending: { text: "Sending", title: "Sending your voice request to Nova" },
     error: { text: "Mic issue", title: "Voice input is unavailable right now" },
   };
@@ -595,6 +635,640 @@ function flashPTTError() {
   setTimeout(() => {
     if (!mediaRecorder) setPTTButtonState("idle");
   }, 1600);
+}
+
+function isHeyNovaWakeWordEnabled() {
+  return localStorage.getItem(STORAGE_KEYS.voiceWakeWordEnabled) !== "0";
+}
+
+function setHeyNovaWakeWordEnabled(enabled) {
+  localStorage.setItem(STORAGE_KEYS.voiceWakeWordEnabled, enabled ? "1" : "0");
+  setPTTButtonState("idle");
+  renderSettingsPage();
+  refreshPrivacyPanel();
+}
+
+function normalizeHeyNovaWakeWordTranscript(text) {
+  const transcript = String(text || "").trim();
+  if (!transcript) {
+    return { transcript: "", matched: false, command: "" };
+  }
+  if (!isHeyNovaWakeWordEnabled()) {
+    return { transcript, matched: true, command: transcript };
+  }
+
+  const wakeWordPrefix = /^\s*(?:hey|hi|okay|ok)[\s,.\-!?:;]*nova\b[\s,.\-!?:;]*/i;
+  if (!wakeWordPrefix.test(transcript)) {
+    return { transcript, matched: false, command: "" };
+  }
+
+  let command = transcript.replace(wakeWordPrefix, "").trim();
+  command = command.replace(/^(can you|could you|please|would you)\s+/i, "").trim();
+  command = command.replace(/\s+/g, " ").trim();
+  return { transcript, matched: true, command };
+}
+
+function normalizeLiveHelpCommand(command) {
+  let clean = String(command || "").trim().toLowerCase();
+  if (!clean) return "";
+  clean = clean.replace(/\b(this screen|this page|this tab|this)\b/g, "this page");
+  clean = clean.replace(/\bwhat am i seeing\b/g, "what am i looking at");
+  clean = clean.replace(/\bread this\b/g, "read the important part");
+  clean = clean.replace(/\bsummarize this\b/g, "summarize this page");
+  clean = clean.replace(/\s+/g, " ").trim();
+  return clean;
+}
+
+function getLiveHelpPromptSuggestions() {
+  if (!liveHelpState.active) {
+    return [
+      { label: "Explain this page", command: "explain this page" },
+      { label: "What matters here?", command: "what matters most here" },
+      { label: "What should I click?", command: "what should i click next" },
+    ];
+  }
+  const analysis = (liveHelpState.lastAnalysis && typeof liveHelpState.lastAnalysis === "object")
+    ? liveHelpState.lastAnalysis
+    : {};
+  const prompts = Array.isArray(analysis.follow_up_prompts) ? analysis.follow_up_prompts : [];
+  const fallback = [
+    "explain this page",
+    "what matters most here",
+    "what should i click next",
+    "read the important part",
+  ];
+  const merged = [...prompts, ...fallback];
+  const seen = new Set();
+  return merged
+    .map((item) => String(item || "").trim())
+    .filter((item) => item && !seen.has(item) && seen.add(item))
+    .slice(0, 4)
+    .map((item) => ({
+      label: item.charAt(0).toUpperCase() + item.slice(1),
+      command: item,
+    }));
+}
+
+function getPreferredAudioRecorderOptions() {
+  if (!window.MediaRecorder || typeof MediaRecorder.isTypeSupported !== "function") return null;
+  const options = {};
+  if (MediaRecorder.isTypeSupported("audio/webm;codecs=pcm")) options.mimeType = "audio/webm;codecs=pcm";
+  else if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) options.mimeType = "audio/webm;codecs=opus";
+  else if (MediaRecorder.isTypeSupported("audio/webm")) options.mimeType = "audio/webm";
+  return options.mimeType ? options : null;
+}
+
+function renderLiveHelpWidget() {
+  const badge = $("live-help-status-badge");
+  const copy = $("live-help-copy");
+  const trustNote = $("live-help-trust-note");
+  const screen = $("live-help-screen-value");
+  const voice = $("live-help-voice-value");
+  const heard = $("live-help-last-heard-value");
+  const result = $("live-help-last-result-value");
+  const promptHost = $("live-help-prompt-actions");
+  const startBtn = $("btn-live-help-start");
+  const explainBtn = $("btn-live-help-explain");
+  const stopBtn = $("btn-live-help-stop");
+
+  if (badge) {
+    badge.textContent = liveHelpState.status;
+    badge.classList.toggle("live-help-active", liveHelpState.active);
+  }
+  if (copy) copy.textContent = liveHelpState.copy;
+  if (trustNote) {
+    trustNote.textContent = liveHelpState.active
+      ? `Nova is only following ${liveHelpState.screenLabel}. End screen sharing or press Stop live help to stop immediately.`
+      : 'Nova only follows the screen you choose to share, only during this session, and stops as soon as you stop it or end screen sharing.';
+  }
+  if (screen) screen.textContent = liveHelpState.screenLabel;
+  if (voice) voice.textContent = liveHelpState.voiceLabel;
+  if (heard) heard.textContent = liveHelpState.lastHeard;
+  if (result) result.textContent = liveHelpState.lastResult;
+  if (promptHost) {
+    clear(promptHost);
+    getLiveHelpPromptSuggestions().forEach((item) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "live-help-prompt-btn";
+      button.textContent = item.label;
+      button.disabled = liveHelpState.processing || liveHelpState.starting;
+      button.addEventListener("click", () => {
+        if (liveHelpState.active) {
+          requestLiveHelpAnalysis(item.command, { echoUserMessage: false, updateFocus: true });
+          return;
+        }
+        startLiveHelpSession(item.command);
+      });
+      promptHost.appendChild(button);
+    });
+  }
+  if (startBtn) {
+    startBtn.disabled = liveHelpState.active || liveHelpState.starting;
+    startBtn.textContent = liveHelpState.starting ? "Starting..." : "Start live help";
+  }
+  if (explainBtn) {
+    explainBtn.disabled = !liveHelpState.active || liveHelpState.processing;
+  }
+  if (stopBtn) {
+    stopBtn.disabled = !liveHelpState.active && !liveHelpState.starting;
+  }
+}
+
+function syncWorkflowFocusWithLiveHelp(status, nowText, nextText, copyText = "") {
+  workflowFocusState.goal = "Understand the shared screen";
+  workflowFocusState.status = status || "Live help";
+  workflowFocusState.copy = copyText || 'Nova is staying with the shared screen and keeping the next step easy to follow.';
+  workflowFocusState.now = compactWorkflowText(nowText, "Following the shared screen.");
+  workflowFocusState.next = compactWorkflowText(
+    nextText,
+    `Say "${HEY_NOVA_WAKE_WORD}" and ask naturally when you want another explanation.`,
+  );
+  workflowFocusState.lastUserInput = "understand the shared screen";
+  workflowFocusState.awaitingResponse = false;
+  renderWorkflowFocusWidget();
+}
+
+function tryRouteLiveHelpCommand(text, options = {}) {
+  if (!liveHelpState.active) return false;
+  const clean = normalizeLiveHelpCommand(text);
+  if (!clean || !isLiveHelpExplainCommand(clean)) return false;
+  requestLiveHelpAnalysis(clean, options);
+  return true;
+}
+
+function resetLiveHelpRuntimeState() {
+  if (liveHelpState.cycleTimer) {
+    clearTimeout(liveHelpState.cycleTimer);
+    liveHelpState.cycleTimer = null;
+  }
+  if (liveHelpState.stopTimer) {
+    clearTimeout(liveHelpState.stopTimer);
+    liveHelpState.stopTimer = null;
+  }
+  if (liveHelpState.audioRecorder && liveHelpState.audioRecorder.state === "recording") {
+    try {
+      liveHelpState.audioRecorder.stop();
+    } catch (_) {}
+  }
+  liveHelpState.audioRecorder = null;
+  if (liveHelpState.screenStream) {
+    liveHelpState.screenStream.getTracks().forEach((track) => track.stop());
+  }
+  if (liveHelpState.audioStream) {
+    liveHelpState.audioStream.getTracks().forEach((track) => track.stop());
+  }
+  if (liveHelpState.videoEl) {
+    try {
+      liveHelpState.videoEl.pause();
+    } catch (_) {}
+    liveHelpState.videoEl.srcObject = null;
+  }
+  liveHelpState.active = false;
+  liveHelpState.starting = false;
+  liveHelpState.processing = false;
+  liveHelpState.screenStream = null;
+  liveHelpState.audioStream = null;
+  liveHelpState.videoEl = null;
+  liveHelpState.canvasEl = null;
+  liveHelpState.screenLabel = "No screen shared yet.";
+  liveHelpState.voiceLabel = `Waiting to start. When live help is on, say "${HEY_NOVA_WAKE_WORD}" before a request.`;
+  liveHelpState.firstAnalysisDone = false;
+  liveHelpState.pendingInitialCommand = "";
+  liveHelpState.lastAnalysis = null;
+  liveHelpState.lastResult = "No live explanation yet.";
+  liveHelpState.lastHeard = "Nothing heard yet.";
+}
+
+function stopLiveHelpSession(reason = "", announce = true) {
+  const wasActive = liveHelpState.active || liveHelpState.starting;
+  resetLiveHelpRuntimeState();
+  liveHelpState.status = "Off";
+  liveHelpState.copy = "Live screen help is off. Start a session when you want Nova to follow one shared screen and listen for \"Hey Nova\".";
+  syncWorkflowFocusWithLiveHelp(
+    "Ready",
+    "Live screen help is off.",
+    "You can keep going in chat or start live help again when you want Nova to stay with a screen.",
+    "Nova returned to normal chat mode.",
+  );
+  renderLiveHelpWidget();
+  if (wasActive && announce) {
+    appendChatMessage(
+      "assistant",
+      reason || "Live screen help stopped. Nova is no longer watching the shared screen or listening for wake-word requests.",
+      null,
+      "Live screen help",
+    );
+  }
+}
+
+function rememberLiveHelpCommand(command) {
+  const normalized = String(command || "").trim().toLowerCase();
+  if (!normalized) return false;
+  const now = Date.now();
+  if (
+    normalized === liveHelpState.lastCommandSignature &&
+    now - Number(liveHelpState.lastCommandAt || 0) < 5000
+  ) {
+    return true;
+  }
+  liveHelpState.lastCommandSignature = normalized;
+  liveHelpState.lastCommandAt = now;
+  return false;
+}
+
+function isLiveHelpExplainCommand(command) {
+  const clean = String(command || "").trim().toLowerCase();
+  if (!clean) return false;
+  return [
+    "explain this",
+    "explain this page",
+    "explain this screen",
+    "what am i looking at",
+    "what is this page",
+    "what matters most here",
+    "read the important part",
+    "summarize this page",
+    "analyze this",
+    "analyze this page",
+    "analyze this screen",
+    "help me do this",
+    "what should i click",
+    "what should i do next",
+  ].some((pattern) => clean.includes(pattern));
+}
+
+async function transcribeRecordedAudioBlob(blob, filename = "speech.webm") {
+  const form = new FormData();
+  form.append("audio", blob, filename);
+
+  const res = await fetch(`${API_BASE}/stt/transcribe`, { method: "POST", body: form });
+  let data = {};
+  try {
+    data = await res.json();
+  } catch (_) {
+    data = {};
+  }
+  return {
+    ok: res.ok,
+    transcript: String(data.text || "").trim(),
+    error: String(data.error || "").trim(),
+  };
+}
+
+async function captureLiveHelpFrame() {
+  if (!liveHelpState.active || !liveHelpState.videoEl || !liveHelpState.canvasEl) return null;
+  const video = liveHelpState.videoEl;
+  const canvas = liveHelpState.canvasEl;
+  const track = liveHelpState.screenStream && liveHelpState.screenStream.getVideoTracks
+    ? liveHelpState.screenStream.getVideoTracks()[0]
+    : null;
+
+  if (!video.videoWidth || !video.videoHeight) {
+    await new Promise((resolve) => setTimeout(resolve, 200));
+  }
+  if (!video.videoWidth || !video.videoHeight) return null;
+
+  const maxWidth = 1600;
+  const scale = video.videoWidth > maxWidth ? maxWidth / video.videoWidth : 1;
+  canvas.width = Math.max(1, Math.round(video.videoWidth * scale));
+  canvas.height = Math.max(1, Math.round(video.videoHeight * scale));
+  const ctx = canvas.getContext("2d");
+  if (!ctx) return null;
+  ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png"));
+  if (!blob) return null;
+  return {
+    blob,
+    filename: "live-screen-help.png",
+    sourceLabel: String((track && track.label) || "Shared screen").trim(),
+  };
+}
+
+async function requestLiveHelpAnalysis(command, options = {}) {
+  const clean = normalizeLiveHelpCommand(command);
+  if (!clean || !liveHelpState.active) return;
+  const {
+    echoUserMessage = true,
+    updateFocus = true,
+  } = (options && typeof options === "object") ? options : {};
+
+  if (echoUserMessage) {
+    appendChatMessage("user", clean);
+  }
+  liveHelpState.processing = true;
+  liveHelpState.status = "Explaining";
+  liveHelpState.copy = "Nova is looking at the shared screen now.";
+  liveHelpState.voiceLabel = "Processing your live help request.";
+  if (updateFocus) {
+    syncWorkflowFocusWithLiveHelp(
+      "Live help",
+      "Looking at the shared screen now.",
+      "Nova will pull out what matters and the best next move.",
+    );
+  }
+  renderLiveHelpWidget();
+
+  try {
+    const capture = await captureLiveHelpFrame();
+    if (!capture) {
+      throw new Error("I couldn't capture the shared screen frame.");
+    }
+
+    const form = new FormData();
+    form.append("image", capture.blob, capture.filename);
+    form.append("query", clean);
+    form.append("source_label", capture.sourceLabel);
+
+    const res = await fetch(`${API_BASE}/api/live-screen/analyze`, { method: "POST", body: form });
+    let data = {};
+    try {
+      data = await res.json();
+    } catch (_) {
+      data = {};
+    }
+
+    if (!res.ok) {
+      throw new Error(String(data.detail || "I couldn't analyze the shared screen right now."));
+    }
+
+    const summary = String(data.summary || "").trim() || "Live screen help is ready.";
+    const nextSteps = Array.isArray(data.next_steps) ? data.next_steps : [];
+    const ocrText = String(data.ocr_text || "").trim();
+    const whatMatters = String(data.what_matters || "").trim();
+    const keyActions = Array.isArray(data.key_actions) ? data.key_actions : [];
+    const detailLines = [summary];
+    if (whatMatters) {
+      detailLines.push("", `What matters: ${whatMatters}`);
+    }
+    if (keyActions.length) {
+      detailLines.push("", `Visible actions: ${keyActions.join(", ")}`);
+    }
+    if (ocrText) {
+      detailLines.push("", `Readable text: ${ocrText.length > 240 ? `${ocrText.slice(0, 237).trim()}...` : ocrText}`);
+    }
+    if (nextSteps.length) {
+      detailLines.push("", "Suggested next steps:");
+      nextSteps.slice(0, 4).forEach((step) => detailLines.push(`- ${String(step || "").trim()}`));
+    }
+    appendChatMessage("assistant", detailLines.join("\n"), null, "Live screen help");
+    renderScreenAnalysisInsight({ summary, next_steps: nextSteps });
+    liveHelpState.lastAnalysis = {
+      ...data,
+      summary,
+      next_steps: nextSteps,
+      what_matters: whatMatters,
+      key_actions: keyActions,
+    };
+    liveHelpState.lastResult = summary;
+    liveHelpState.firstAnalysisDone = true;
+    liveHelpState.status = "Live";
+    liveHelpState.copy = `Shared screen help is active. Say "${HEY_NOVA_WAKE_WORD}" when you want another explanation.`;
+    liveHelpState.voiceLabel = `Watching the shared screen. Waiting for "${HEY_NOVA_WAKE_WORD}".`;
+    if (updateFocus) {
+      syncWorkflowFocusWithLiveHelp(
+        "Live help",
+        summary,
+        nextSteps[0] || `Say "${HEY_NOVA_WAKE_WORD}" and ask what to do next.`,
+      );
+    }
+  } catch (error) {
+    const message = String((error && error.message) || "I couldn't analyze the shared screen right now.");
+    appendChatMessage("assistant", message, null, "Live screen help");
+    liveHelpState.status = "Live";
+    liveHelpState.copy = message;
+    liveHelpState.voiceLabel = `Watching the shared screen. Waiting for "${HEY_NOVA_WAKE_WORD}".`;
+    if (updateFocus) {
+      syncWorkflowFocusWithLiveHelp(
+        "Needs adjustment",
+        message,
+        "Try asking again, narrowing the question, or using one of the prompt chips.",
+        "Live screen help is still active, but the last explanation needs another pass.",
+      );
+    }
+  } finally {
+    liveHelpState.processing = false;
+    renderLiveHelpWidget();
+  }
+}
+
+async function handleLiveHelpTranscript(transcript) {
+  const clean = String(transcript || "").trim();
+  if (!clean) {
+    liveHelpState.voiceLabel = `Listening quietly. Say "${HEY_NOVA_WAKE_WORD}" when you need help.`;
+    renderLiveHelpWidget();
+    return;
+  }
+
+  liveHelpState.lastHeard = clean;
+  const wakeWordState = normalizeHeyNovaWakeWordTranscript(clean);
+  if (!wakeWordState.matched) {
+    liveHelpState.voiceLabel = `Shared screen is live. Start with "${HEY_NOVA_WAKE_WORD}" when you want help.`;
+    renderLiveHelpWidget();
+    return;
+  }
+
+  if (!wakeWordState.command) {
+    liveHelpState.voiceLabel = `I'm here. Say "${HEY_NOVA_WAKE_WORD}" followed by what you want.`;
+    renderLiveHelpWidget();
+    return;
+  }
+
+  const normalizedCommand = normalizeLiveHelpCommand(wakeWordState.command);
+  if (rememberLiveHelpCommand(normalizedCommand)) {
+    liveHelpState.voiceLabel = "That sounded like the same request again, so I left the last result in place.";
+    renderLiveHelpWidget();
+    return;
+  }
+
+  if (isLiveHelpExplainCommand(normalizedCommand)) {
+    await requestLiveHelpAnalysis(normalizedCommand);
+    return;
+  }
+
+  injectUserText(normalizedCommand, "voice");
+  liveHelpState.voiceLabel = `Sent "${normalizedCommand}" to Nova.`;
+  renderLiveHelpWidget();
+}
+
+function scheduleLiveHelpCycle(delayMs = 250) {
+  if (!liveHelpState.active) return;
+  if (liveHelpState.cycleTimer) clearTimeout(liveHelpState.cycleTimer);
+  liveHelpState.cycleTimer = setTimeout(() => {
+    startLiveHelpAudioCycle();
+  }, delayMs);
+}
+
+async function startLiveHelpAudioCycle() {
+  if (!liveHelpState.active || liveHelpState.processing || liveHelpState.audioRecorder || !liveHelpState.audioStream) {
+    return;
+  }
+
+  const options = getPreferredAudioRecorderOptions();
+  if (!options) {
+    stopLiveHelpSession("This browser cannot keep a live help voice session running on this device.");
+    return;
+  }
+
+  const chunks = [];
+  const recorder = new MediaRecorder(liveHelpState.audioStream, options);
+  liveHelpState.audioRecorder = recorder;
+  liveHelpState.status = "Listening";
+  liveHelpState.voiceLabel = `Listening for "${HEY_NOVA_WAKE_WORD}".`;
+  renderLiveHelpWidget();
+
+  recorder.ondataavailable = (event) => {
+    if (event.data.size > 0) {
+      chunks.push(event.data);
+    }
+  };
+
+  recorder.onstop = async () => {
+    const mimeType = recorder.mimeType || "audio/webm";
+    liveHelpState.audioRecorder = null;
+    if (!liveHelpState.active) return;
+
+    if (!chunks.length) {
+      liveHelpState.status = "Live";
+      liveHelpState.voiceLabel = `Watching the shared screen. Waiting for "${HEY_NOVA_WAKE_WORD}".`;
+      renderLiveHelpWidget();
+      scheduleLiveHelpCycle(400);
+      return;
+    }
+
+    liveHelpState.processing = true;
+    liveHelpState.status = "Processing";
+    liveHelpState.voiceLabel = "Checking what you said.";
+    renderLiveHelpWidget();
+
+    try {
+      const blob = new Blob(chunks, { type: mimeType });
+      const result = await transcribeRecordedAudioBlob(blob, "live-help.webm");
+      if (!result.ok) {
+        liveHelpState.voiceLabel = "I couldn't process that live help recording.";
+      } else if (result.error) {
+        liveHelpState.voiceLabel = result.error;
+      } else {
+        await handleLiveHelpTranscript(result.transcript);
+      }
+    } catch (_) {
+      liveHelpState.voiceLabel = "I couldn't process that live help recording.";
+    } finally {
+      liveHelpState.processing = false;
+      if (liveHelpState.active) {
+        liveHelpState.status = "Live";
+        if (!String(liveHelpState.voiceLabel || "").trim()) {
+          liveHelpState.voiceLabel = `Watching the shared screen. Waiting for "${HEY_NOVA_WAKE_WORD}".`;
+        }
+        renderLiveHelpWidget();
+        scheduleLiveHelpCycle(350);
+      }
+    }
+  };
+
+  recorder.start(250);
+  liveHelpState.stopTimer = setTimeout(() => {
+    if (recorder.state === "recording") {
+      recorder.stop();
+    }
+  }, 3200);
+}
+
+async function startLiveHelpSession(initialCommand = "explain this page") {
+  if (liveHelpState.active || liveHelpState.starting) return;
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia || !navigator.mediaDevices.getUserMedia) {
+    appendChatMessage("assistant", "Live screen help is unavailable in this browser on this device.", null, "Live screen help");
+    return;
+  }
+  if (mediaRecorder && mediaRecorder.state === "recording") {
+    stopSTT();
+  }
+
+  liveHelpState.starting = true;
+  liveHelpState.status = "Starting";
+  liveHelpState.copy = "Choose the screen or tab you want Nova to follow, then approve your microphone.";
+  liveHelpState.voiceLabel = "Waiting for your permissions.";
+  liveHelpState.pendingInitialCommand = normalizeLiveHelpCommand(initialCommand || "explain this page");
+  syncWorkflowFocusWithLiveHelp(
+    "Starting live help",
+    "Preparing a shared-screen help session.",
+    "Choose a screen or tab, then Nova will explain it automatically.",
+  );
+  renderLiveHelpWidget();
+
+  let screenStream = null;
+  let audioStream = null;
+  try {
+    screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: false });
+    audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+
+    const video = document.createElement("video");
+    video.setAttribute("playsinline", "true");
+    video.muted = true;
+    video.srcObject = screenStream;
+    await video.play();
+
+    const canvas = document.createElement("canvas");
+    const videoTrack = screenStream.getVideoTracks()[0] || null;
+    if (videoTrack) {
+      videoTrack.onended = () => stopLiveHelpSession("Screen sharing ended, so live help stopped too.");
+    }
+
+    liveHelpState.active = true;
+    liveHelpState.starting = false;
+    liveHelpState.screenStream = screenStream;
+    liveHelpState.audioStream = audioStream;
+    liveHelpState.videoEl = video;
+    liveHelpState.canvasEl = canvas;
+    liveHelpState.status = "Live";
+    liveHelpState.copy = `Live screen help is on. Say "${HEY_NOVA_WAKE_WORD}" when you want Nova to explain or guide what is on the shared screen.`;
+    liveHelpState.screenLabel = String((videoTrack && videoTrack.label) || "Shared screen").trim();
+    liveHelpState.voiceLabel = `Watching the shared screen. Waiting for "${HEY_NOVA_WAKE_WORD}".`;
+    syncWorkflowFocusWithLiveHelp(
+      "Live help",
+      `Following ${liveHelpState.screenLabel}.`,
+      "Nova will start with a first explanation automatically, then stay ready for follow-up help.",
+    );
+    renderLiveHelpWidget();
+    appendChatMessage(
+      "assistant",
+      `Live screen help is on for ${liveHelpState.screenLabel}. Nova will only follow this shared screen during this session, and you can stop it any time. I'll start by explaining what is on the page so you don't need to ask twice.`,
+      null,
+      "Live screen help",
+    );
+    scheduleLiveHelpCycle(250);
+    setTimeout(() => {
+      if (liveHelpState.active && !liveHelpState.processing && !liveHelpState.firstAnalysisDone) {
+        requestLiveHelpAnalysis(
+          liveHelpState.pendingInitialCommand || "explain this page",
+          { echoUserMessage: false, updateFocus: true },
+        );
+      }
+    }, 450);
+  } catch (_) {
+    if (screenStream) screenStream.getTracks().forEach((track) => track.stop());
+    if (audioStream) audioStream.getTracks().forEach((track) => track.stop());
+    liveHelpState.starting = false;
+    liveHelpState.active = false;
+    liveHelpState.status = "Off";
+    liveHelpState.copy = "Live screen help did not start. Try again and approve both screen sharing and microphone access.";
+    liveHelpState.screenLabel = "No screen shared yet.";
+    liveHelpState.voiceLabel = "Permission was denied or canceled.";
+    syncWorkflowFocusWithLiveHelp(
+      "Needs adjustment",
+      "Live screen help did not start.",
+      "Try again and approve both screen sharing and microphone access.",
+      "Nova needs your permissions before it can stay with a screen.",
+    );
+    renderLiveHelpWidget();
+    appendChatMessage(
+      "assistant",
+      "Live screen help did not start. Make sure you approve both screen sharing and microphone access.",
+      null,
+      "Live screen help",
+    );
+  }
 }
 
 function startMorningFallbackTimer() {
@@ -818,6 +1492,367 @@ function getSetupNextStepCopy(items = []) {
     return "Next step: run one voice check. It confirms spoken output on this device, but it is optional if you prefer text-only use.";
   }
   return "Next step: you are ready to use Nova normally. Start with explain this, then open Home, Workspace, or Trust when you want more continuity and visibility.";
+}
+
+function getIntroFirstSuccessItems(items = []) {
+  const rows = Array.isArray(items) ? items : [];
+  const byKey = Object.fromEntries(rows.map((item) => [item.key, item]));
+  const runtimeReady = !!(byKey.runtime_connection && byKey.runtime_connection.ready);
+  const localReady = !!(byKey.local_model_route && byKey.local_model_route.ready);
+  const voiceReady = !!(byKey.voice_check && byKey.voice_check.ready);
+
+  if (!runtimeReady) {
+    return {
+      summary: "Nova is still connecting, so the best first move is getting the local runtime healthy. Once that is ready, the rest of the product gets much easier to explore.",
+      items: [
+        {
+          title: "Refresh setup",
+          badge: "Best next move",
+          copy: "Check runtime, connection status, and readiness again without leaving this page.",
+          actionLabel: "Refresh",
+          action: () => {
+            requestSettingsRuntimeRefresh(true);
+            safeWSSend({ text: "connection status", silent_widget_refresh: true });
+            renderIntroPage();
+          },
+        },
+        {
+          title: "Open Settings",
+          badge: "If it stays stuck",
+          copy: "Settings is the quickest place to review connection and setup-mode health in one place.",
+          actionLabel: "Open Settings",
+          action: () => {
+            setActivePage("settings");
+            requestSettingsRuntimeRefresh(true);
+            safeWSSend({ text: "connection status", silent_widget_refresh: true });
+          },
+        },
+        {
+          title: "Read startup help",
+          badge: "Local recovery",
+          copy: "If the header keeps showing Connecting, use the startup steps below and refresh the dashboard.",
+          actionLabel: "Show help",
+          action: () => {
+            showFirstRunGuide(true);
+          },
+        },
+      ],
+    };
+  }
+
+  if (!localReady) {
+    return {
+      summary: "Nova is connected, but the deeper local model route still needs attention. You can still use lighter help while you review the local route and trust status.",
+      items: [
+        {
+          title: "Try Explain This",
+          badge: "Works now",
+          copy: "This is the easiest way to feel Nova help immediately without needing every optional surface ready.",
+          actionLabel: "Explain this",
+          action: () => {
+            setActivePage("chat");
+            injectUserText("explain this", "text");
+          },
+        },
+        {
+          title: "Open Trust",
+          badge: "Review route health",
+          copy: "Trust shows what is healthy, what is blocked, and what Nova is keeping bounded right now.",
+          actionLabel: "Open Trust",
+          action: () => {
+            setActivePage("trust");
+            safeWSSend({ text: "trust center", silent_widget_refresh: true });
+            safeWSSend({ text: "system status", silent_widget_refresh: true });
+          },
+        },
+        {
+          title: "Review Settings",
+          badge: "Fix readiness",
+          copy: "Open Settings to inspect the local model route, provider posture, and current operating mode.",
+          actionLabel: "Open Settings",
+          action: () => {
+            setActivePage("settings");
+            requestSettingsRuntimeRefresh(true);
+          },
+        },
+      ],
+    };
+  }
+
+  const summary = voiceReady
+    ? "Nova is ready for normal everyday use on this device. Start with one outcome you care about and let Nova turn it into the next steps."
+    : "Nova is ready for normal everyday use on this device. Voice can wait. Text-only use is fully fine while you get your first win.";
+
+  return {
+    summary,
+    items: [
+      {
+        title: "Explain anything",
+        badge: "Fastest first win",
+        copy: "Use this for an error, a page, a file, or something on your screen when you want the cause and next move.",
+        actionLabel: "Explain this",
+        action: () => {
+          setActivePage("chat");
+          injectUserText("explain this", "text");
+        },
+      },
+      {
+        title: "Research a topic",
+        badge: "Good everyday move",
+        copy: "Ask Nova to research something real and pull back a grounded answer with sources and follow-up ideas.",
+        actionLabel: "Research",
+        action: () => {
+          setActivePage("chat");
+          injectUserText("research latest technology news", "text");
+        },
+      },
+      {
+        title: "Continue a project",
+        badge: "Continuity",
+        copy: "If you already have work in motion, Nova can help you pick it back up instead of starting from scratch.",
+        actionLabel: "Show threads",
+        action: () => {
+          setActivePage("chat");
+          injectUserText("show threads", "text");
+        },
+      },
+      {
+        title: "Plan your day",
+        badge: voiceReady ? "Ready now" : "Text-only is fine",
+        copy: "Use a brief when you want Nova to pull together the day, key context, and the next thing worth doing.",
+        actionLabel: "Daily brief",
+        action: () => {
+          setActivePage("chat");
+          injectUserText("daily brief", "text");
+        },
+      },
+    ],
+  };
+}
+
+function createIntroFirstSuccessCard(item = {}) {
+  const card = document.createElement("button");
+  card.type = "button";
+  card.className = "workspace-spotlight-card intro-success-card";
+
+  const title = document.createElement("div");
+  title.className = "workspace-spotlight-title";
+  title.textContent = String(item.title || "Starter action").trim() || "Starter action";
+  card.appendChild(title);
+
+  if (String(item.badge || "").trim()) {
+    const badge = document.createElement("span");
+    badge.className = "settings-mode-badge";
+    badge.textContent = String(item.badge || "").trim();
+    card.appendChild(badge);
+  }
+
+  const copy = document.createElement("div");
+  copy.className = "workspace-spotlight-copy";
+  copy.textContent = String(item.copy || "").trim() || "A good next move.";
+  card.appendChild(copy);
+
+  const actionLabel = document.createElement("div");
+  actionLabel.className = "intro-success-action";
+  actionLabel.textContent = String(item.actionLabel || "Open").trim() || "Open";
+  card.appendChild(actionLabel);
+
+  if (typeof item.action === "function") {
+    card.addEventListener("click", item.action);
+  }
+  return card;
+}
+
+function renderIntroFirstSuccessGrid(host, payload = {}) {
+  if (!host) return;
+  clear(host);
+  const items = Array.isArray(payload.items) ? payload.items : [];
+  if (!items.length) {
+    host.appendChild(createOverviewChip("Starter flow", "Loading"));
+    return;
+  }
+  items.forEach((item) => host.appendChild(createIntroFirstSuccessCard(item)));
+}
+
+function getHomeLaunchActions(items = []) {
+  const starterItems = Array.isArray(items) ? items.slice(0, 4) : [];
+  const mapped = starterItems.map((item) => ({
+    label: String(item.actionLabel || item.title || "Open").trim() || "Open",
+    action: typeof item.action === "function" ? item.action : () => {},
+    emphasis: true,
+  }));
+
+  mapped.push(
+    {
+      label: "Open workspace",
+      action: () => setActivePage("workspace"),
+    },
+    {
+      label: "Open trust",
+      action: () => {
+        setActivePage("trust");
+        safeWSSend({ text: "trust center", silent_widget_refresh: true });
+        safeWSSend({ text: "system status", silent_widget_refresh: true });
+      },
+    },
+    {
+      label: "Open agent",
+      action: () => setActivePage("agent"),
+    },
+  );
+
+  return mapped;
+}
+
+function renderHomeLaunchWidget() {
+  const summary = $("home-launch-summary");
+  const actionsHost = $("home-launch-actions");
+  const starter = getIntroFirstSuccessItems(getSetupReadinessItems());
+
+  if (summary) {
+    summary.textContent = String(starter.summary || "").trim()
+      || "Nova is ready for briefings, explain-anything, research, and project continuity.";
+  }
+
+  if (!actionsHost) return;
+  clear(actionsHost);
+  getHomeLaunchActions(starter.items).forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    if (item.emphasis) button.className = "assistant-action-btn";
+    button.textContent = item.label;
+    button.addEventListener("click", item.action);
+    actionsHost.appendChild(button);
+  });
+}
+
+function openWorkspaceThread(threadName) {
+  const clean = String(threadName || "").trim();
+  if (!clean) return;
+  setActivePage("workspace");
+  requestWorkspaceThreadDetail(clean);
+}
+
+function continueWorkspaceThread(threadName) {
+  const clean = String(threadName || "").trim();
+  if (!clean) return;
+  setActivePage("chat");
+  injectUserText(`continue my ${clean}`, "text");
+}
+
+function getContinuityThreads(limit = 3) {
+  const workspace = workspaceHomeState.snapshot || {};
+  const focus = (workspace && typeof workspace.focus_thread === "object") ? workspace.focus_thread : {};
+  const selectedThread = (threadMapState.detail && typeof threadMapState.detail.thread === "object")
+    ? threadMapState.detail.thread
+    : {};
+  const recentThreads = Array.isArray(workspace.recent_threads) ? workspace.recent_threads : [];
+  const mappedThreads = Array.isArray(threadMapState.threads) ? threadMapState.threads : [];
+  const seen = new Set();
+  const rows = [];
+
+  [focus, selectedThread, ...mappedThreads, ...recentThreads].forEach((thread) => {
+    const name = String(thread && thread.name || "").trim();
+    if (!name) return;
+    const key = name.toLowerCase();
+    if (seen.has(key)) return;
+    seen.add(key);
+    rows.push({ ...(thread || {}), name });
+  });
+
+  return rows.slice(0, limit);
+}
+
+function describeContinuityThread(thread = {}) {
+  const parts = [];
+  const goal = String(thread.goal || "").trim();
+  const blocker = String(thread.latest_blocker || "").trim();
+  const nextAction = String(thread.latest_next_action || "").trim();
+  const health = String(thread.health_state || "").trim();
+  const memoryCount = Number(thread.memory_count || 0);
+
+  if (goal) parts.push(goal);
+  if (blocker) parts.push(`Blocked on ${blocker}`);
+  else if (nextAction) parts.push(`Next: ${nextAction}`);
+  if (health) parts.push(`Health ${health.toUpperCase()}`);
+  if (Number.isFinite(memoryCount) && memoryCount > 0) parts.push(`${memoryCount} memory item${memoryCount === 1 ? "" : "s"}`);
+
+  return parts.join(" · ") || "Ready to continue.";
+}
+
+function createContinuityResumeCard(thread = {}, label = "Resume") {
+  const card = document.createElement("button");
+  card.type = "button";
+  card.className = "workspace-spotlight-card workspace-resume-card";
+
+  const title = document.createElement("div");
+  title.className = "workspace-spotlight-title";
+  title.textContent = String(thread.name || "Project thread").trim() || "Project thread";
+  card.appendChild(title);
+
+  const badge = document.createElement("span");
+  badge.className = "settings-mode-badge";
+  badge.textContent = label;
+  card.appendChild(badge);
+
+  const copy = document.createElement("div");
+  copy.className = "workspace-spotlight-copy";
+  copy.textContent = describeContinuityThread(thread);
+  card.appendChild(copy);
+
+  const action = document.createElement("div");
+  action.className = "intro-success-action";
+  action.textContent = "Open in workspace";
+  card.appendChild(action);
+
+  card.addEventListener("click", () => openWorkspaceThread(thread.name));
+  return card;
+}
+
+function renderFocusActionRow(host, thread = {}, options = {}) {
+  if (!host) return;
+  clear(host);
+  const name = String(thread.name || "").trim();
+  if (!name) return;
+
+  const actions = [
+    {
+      label: options.primaryLabel || "Resume in chat",
+      fn: () => continueWorkspaceThread(name),
+      emphasis: true,
+    },
+    {
+      label: "Open workspace",
+      fn: () => openWorkspaceThread(name),
+    },
+    {
+      label: "Project status",
+      fn: () => {
+        setActivePage("chat");
+        injectUserText(`project status ${name}`, "text");
+      },
+    },
+  ];
+
+  const memoryCount = Number(thread.memory_count || 0);
+  if (Number.isFinite(memoryCount) && memoryCount > 0) {
+    actions.push({
+      label: "Review memory",
+      fn: () => {
+        setActivePage("chat");
+        injectUserText(`memory list thread ${name}`, "text");
+      },
+    });
+  }
+
+  actions.forEach((item) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    if (item.emphasis) button.className = "assistant-action-btn";
+    button.textContent = item.label;
+    button.addEventListener("click", item.fn);
+    host.appendChild(button);
+  });
 }
 
 function createSetupReadinessCard(item) {
@@ -1154,6 +2189,7 @@ async function requestSettingsRuntimeRefresh(force = false) {
     const data = await res.json();
     applyRuntimeSettingsPayload(data);
     renderIntroPage();
+    renderHomeLaunchWidget();
     renderTrustCenterPage();
     renderSettingsPage();
   } catch (_err) {
@@ -1769,9 +2805,145 @@ function setThinkingBar(visible) {
 function loadingHintForInput(text) {
   const q = (text || "").toLowerCase();
   if (q.includes("search") || q.includes("look up") || q.includes("research")) return "Checking online sources";
-  if (q.includes("morning") || q.includes("brief")) return "Preparing your brief";
+  if (q.includes("morning") || q.includes("brief") || q.includes("plan my day")) return "Preparing your brief";
   if (q.includes("explain this") || q.includes("what is this") || q.includes("analyze this") || q.includes("screenshot")) return "Analyzing visible context";
-  return "Nova is thinking...";
+  if (q.includes("build") || q.includes("create") || q.includes("make") || q.includes("website") || q.includes("landing page")) return "Turning your idea into a build plan";
+  if (q.includes("help me") || q.includes("plan")) return "Turning your goal into the next steps";
+  return "Turning your request into the next step";
+}
+
+function compactWorkflowText(text, fallback = "") {
+  const clean = String(text || "").replace(/\s+/g, " ").trim();
+  if (!clean) return fallback;
+  if (clean.length <= 150) return clean;
+  return `${clean.slice(0, 147).trimEnd()}...`;
+}
+
+function extractWorkflowSentence(text, fallback = "") {
+  const clean = String(text || "").replace(/\s+/g, " ").trim();
+  if (!clean) return fallback;
+  const match = clean.match(/(.+?[.!?])(?:\s|$)/);
+  return compactWorkflowText(match ? match[1] : clean, fallback);
+}
+
+function workflowRequiresHighApproval(text) {
+  const q = String(text || "").toLowerCase();
+  return [
+    "pay",
+    "purchase",
+    "buy",
+    "checkout",
+    "card",
+    "wire",
+    "send email",
+    "email this",
+    "publish",
+    "post this",
+    "sign in",
+    "log in",
+    "login",
+    "domain",
+  ].some((token) => q.includes(token));
+}
+
+function nextWorkflowHintForInput(text) {
+  const q = String(text || "").toLowerCase();
+  if (workflowRequiresHighApproval(q)) {
+    return "Expect a clear approval checkpoint before Nova touches logins, publishing, or money.";
+  }
+  if (q.includes("build") || q.includes("create") || q.includes("make") || q.includes("website") || q.includes("page")) {
+    return "Nova should draft the structure first, then help you refine it before the bigger build steps.";
+  }
+  if (q.includes("research") || q.includes("search") || q.includes("look up")) {
+    return "Nova should bring back sources, a summary, and a suggested next move.";
+  }
+  if (q.includes("explain")) {
+    return "Nova should explain what it sees first, then help you decide the next action.";
+  }
+  return "Nova should either give you the result, ask one useful follow-up, or show the next checkpoint.";
+}
+
+function workflowStatusForGoal(text) {
+  const q = String(text || "").toLowerCase();
+  if (!q) return "Ready";
+  if (q.includes("build") || q.includes("create") || q.includes("make")) return "Planning";
+  if (q.includes("research") || q.includes("search") || q.includes("look up")) return "Researching";
+  if (q.includes("explain") || q.includes("analyze")) return "Reviewing";
+  return "In progress";
+}
+
+function renderWorkflowFocusWidget() {
+  const badge = $("workflow-focus-status-badge");
+  const copy = $("workflow-focus-copy");
+  const goal = $("workflow-focus-goal");
+  const now = $("workflow-focus-now");
+  const next = $("workflow-focus-next");
+  const showStepsBtn = $("btn-workflow-show-steps");
+
+  if (badge) badge.textContent = workflowFocusState.status || "Ready";
+  if (copy) copy.textContent = workflowFocusState.copy || "Tell Nova the outcome you want, and it will turn that into the next steps.";
+  if (goal) goal.textContent = workflowFocusState.goal || "Start with something simple like \"Build me a landing page for my business.\"";
+  if (now) now.textContent = workflowFocusState.now || "Nova is ready to turn your idea into a workflow.";
+  if (next) next.textContent = workflowFocusState.next || "You can start broad. Nova will draft, explain, and pause when a choice matters.";
+  if (showStepsBtn) showStepsBtn.disabled = !String(workflowFocusState.lastUserInput || "").trim();
+}
+
+function resetWorkflowFocusState() {
+  workflowFocusState = {
+    goal: "Start with something simple like \"Build me a landing page for my business.\"",
+    status: "Ready",
+    copy: "Tell Nova the outcome you want, and it will turn that into the next steps.",
+    now: "Nova is ready to turn your idea into a workflow.",
+    next: "You can start broad. Nova will draft, explain, and pause when a choice matters.",
+    lastUserInput: "",
+    awaitingResponse: false,
+  };
+  renderWorkflowFocusWidget();
+}
+
+function updateWorkflowFocusFromUserInput(text) {
+  const clean = String(text || "").trim();
+  if (!clean) return;
+  workflowFocusState.goal = compactWorkflowText(clean, workflowFocusState.goal);
+  workflowFocusState.status = workflowStatusForGoal(clean);
+  workflowFocusState.copy = "Nova is treating your last request as the current focus and will keep the next step visible.";
+  workflowFocusState.now = compactWorkflowText(loadingHintForInput(clean), "Turning your request into the next step");
+  workflowFocusState.next = nextWorkflowHintForInput(clean);
+  workflowFocusState.lastUserInput = clean;
+  workflowFocusState.awaitingResponse = true;
+  renderWorkflowFocusWidget();
+}
+
+function updateWorkflowFocusProgress(text) {
+  const clean = compactWorkflowText(text, "");
+  if (!clean) return;
+  workflowFocusState.now = clean;
+  if (workflowFocusState.awaitingResponse && workflowFocusState.status === "Ready") {
+    workflowFocusState.status = "In progress";
+  }
+  renderWorkflowFocusWidget();
+}
+
+function updateWorkflowFocusFromAssistant(text) {
+  const clean = String(text || "").trim();
+  if (!clean) return;
+  workflowFocusState.status = "Ready for review";
+  workflowFocusState.copy = "Nova finished the current step. You can refine it, move forward, or switch goals at any time.";
+  workflowFocusState.now = extractWorkflowSentence(clean, "Nova finished the current step.");
+  workflowFocusState.next = workflowRequiresHighApproval(workflowFocusState.lastUserInput)
+    ? "If the next step affects logins, publishing, or money, Nova should pause for a fresh approval."
+    : "Ask for edits, a deeper pass, or the next step when you are ready.";
+  workflowFocusState.awaitingResponse = false;
+  renderWorkflowFocusWidget();
+}
+
+function updateWorkflowFocusFromError(message) {
+  workflowFocusState.status = "Needs adjustment";
+  workflowFocusState.copy = "The current step hit a snag, but the goal is still in focus.";
+  workflowFocusState.now = compactWorkflowText(message, "Something went wrong with the current step.");
+  workflowFocusState.next = "Try rephrasing the goal, trimming the request, or asking Nova for a smaller next step.";
+  workflowFocusState.awaitingResponse = false;
+  renderWorkflowFocusWidget();
 }
 
 function safeWSSend(message) {
@@ -2059,10 +3231,11 @@ function renderWorkspaceHomeWidget(data = {}) {
 
   const summary = $("workspace-home-summary");
   const focusHost = $("workspace-home-focus");
+  const resumeHost = $("workspace-home-resume");
   const gridHost = $("workspace-home-grid");
   const docsHost = $("workspace-home-docs");
   const actionsHost = $("workspace-home-actions");
-  if (!summary || !focusHost || !gridHost || !docsHost || !actionsHost) return;
+  if (!summary || !focusHost || !resumeHost || !gridHost || !docsHost || !actionsHost) return;
 
   const snapshot = workspaceHomeState.snapshot || {};
   const focus = (snapshot && typeof snapshot.focus_thread === "object") ? snapshot.focus_thread : {};
@@ -2072,15 +3245,20 @@ function renderWorkspaceHomeWidget(data = {}) {
   const blockedConditions = Array.isArray(snapshot.blocked_conditions) ? snapshot.blocked_conditions : [];
   const recommendedActions = Array.isArray(snapshot.recommended_actions) ? snapshot.recommended_actions : [];
   const recentThreads = Array.isArray(snapshot.recent_threads) ? snapshot.recent_threads : [];
+  const continuityThreads = getContinuityThreads(3);
 
-  summary.textContent = workspaceHomeState.summary || "Workspace home is preparing your latest project context.";
+  const focusName = String(focus.name || "").trim();
+  const focusNext = String(focus.latest_next_action || "").trim();
+  const focusBlocker = String(focus.latest_blocker || "").trim();
+  summary.textContent = focusName
+    ? `Resume ${focusName}${focusBlocker ? `, which is currently blocked by ${focusBlocker}` : focusNext ? ` with the next step ${focusNext}` : ""}.`
+    : (workspaceHomeState.summary || "Workspace home is preparing your latest project context.");
 
   clear(focusHost);
-  const focusName = String(focus.name || "").trim();
   if (focusName) {
     const title = document.createElement("div");
     title.className = "workspace-home-focus-title";
-    title.textContent = focusName;
+    title.textContent = `Resume ${focusName}`;
     focusHost.appendChild(title);
 
     const meta = document.createElement("div");
@@ -2125,11 +3303,29 @@ function renderWorkspaceHomeWidget(data = {}) {
       decisionRow.textContent = `Latest decision: ${latestDecision}`;
       focusHost.appendChild(decisionRow);
     }
+
+    const focusActions = document.createElement("div");
+    focusActions.className = "workspace-focus-actions";
+    renderFocusActionRow(focusActions, focus, { primaryLabel: "Resume now" });
+    focusHost.appendChild(focusActions);
   } else {
     const empty = document.createElement("div");
     empty.className = "workspace-home-empty";
-    empty.textContent = "No focus project yet. Start with a repo summary, create a thread, or save a work update into memory.";
+    empty.textContent = "No focus project yet. Start with a repo summary, continue a saved thread, or save a work update into memory.";
     focusHost.appendChild(empty);
+  }
+
+  clear(resumeHost);
+  if (!continuityThreads.length) {
+    const empty = document.createElement("div");
+    empty.className = "workspace-home-empty";
+    empty.textContent = "Recent project threads will appear here once Nova has something worth resuming.";
+    resumeHost.appendChild(empty);
+  } else {
+    continuityThreads.forEach((thread, index) => {
+      const label = index === 0 ? "Best resume" : "Recent thread";
+      resumeHost.appendChild(createContinuityResumeCard(thread, label));
+    });
   }
 
   clear(gridHost);
@@ -2245,7 +3441,7 @@ function renderWorkspaceHomeWidget(data = {}) {
   const actions = recommendedActions.length
     ? recommendedActions
     : [
-        { label: "Show threads", command: "show threads" },
+        { label: focusName ? "Resume focus thread" : "Show threads", command: focusName ? `continue my ${focusName}` : "show threads" },
         { label: "Memory overview", command: "memory overview" },
         { label: "List analysis docs", command: "list analysis docs" },
       ];
@@ -2426,12 +3622,13 @@ function renderProjectStructureMapWidget(data = {}) {
 function renderWorkspaceBoardPage() {
   const summary = $("workspace-board-summary");
   const focusHost = $("workspace-board-focus");
+  const focusActionsHost = $("workspace-board-focus-actions");
   const statsHost = $("workspace-board-stats");
   const threadHost = $("workspace-board-threads");
   const decisionHost = $("workspace-board-decisions");
   const feedHost = $("workspace-board-feed");
   const actionsHost = $("workspace-board-actions");
-  if (!summary || !focusHost || !statsHost || !threadHost || !feedHost || !actionsHost) return;
+  if (!summary || !focusHost || !focusActionsHost || !statsHost || !threadHost || !feedHost || !actionsHost) return;
 
   const workspace = workspaceHomeState.snapshot || {};
   const focus = (workspace && typeof workspace.focus_thread === "object") ? workspace.focus_thread : {};
@@ -2446,29 +3643,38 @@ function renderWorkspaceBoardPage() {
   const recentDocs = Array.isArray(workspace.recent_documents) ? workspace.recent_documents : [];
   const recentMemory = Array.isArray(workspace.recent_memory_items) ? workspace.recent_memory_items : [];
   const recentDecisions = Array.isArray(workspace.recent_decisions_feed) ? workspace.recent_decisions_feed : [];
+  const focusName = String(focus.name || "").trim();
 
-  summary.textContent = workspaceHomeState.summary || "Workspace Board keeps project continuity, memory, and reports in one view.";
+  summary.textContent = focusName
+    ? `Workspace is centered on ${focusName}${String(focus.latest_next_action || "").trim() ? ` so you can move on the next step quickly.` : "."}`
+    : (workspaceHomeState.summary || "Workspace Board keeps project continuity, memory, and reports in one view.");
 
   clear(focusHost);
-  const focusName = String(focus.name || "").trim();
+  clear(focusActionsHost);
   if (!focusName) {
     const empty = document.createElement("div");
     empty.className = "workspace-home-empty";
     empty.textContent = "No focus project yet. Start with a repo summary, a thread, or a structure map.";
     focusHost.appendChild(empty);
   } else {
+    const title = document.createElement("div");
+    title.className = "workspace-home-focus-title";
+    title.textContent = `Resume ${focusName}`;
+    focusHost.appendChild(title);
+
     [
-      `Focus project: ${focusName}`,
       String(focus.goal || "").trim() ? `Goal: ${String(focus.goal || "").trim()}` : "",
       String(focus.health_state || "").trim() ? `Health: ${String(focus.health_state || "").trim().toUpperCase()}` : "",
       String(focus.latest_blocker || "").trim() ? `Current blocker: ${String(focus.latest_blocker || "").trim()}` : "",
       String(focus.latest_next_action || "").trim() ? `Next step: ${String(focus.latest_next_action || "").trim()}` : "",
-    ].filter(Boolean).forEach((line, index) => {
+    ].filter(Boolean).forEach((line) => {
       const row = document.createElement("div");
-      row.className = index === 0 ? "workspace-home-focus-title" : "workspace-home-focus-copy";
+      row.className = "workspace-home-focus-copy";
       row.textContent = line;
       focusHost.appendChild(row);
     });
+
+    renderFocusActionRow(focusActionsHost, focus, { primaryLabel: "Continue in chat" });
   }
 
   clear(statsHost);
@@ -2509,12 +3715,7 @@ function renderWorkspaceBoardPage() {
 
       const copy = document.createElement("div");
       copy.className = "workspace-spotlight-copy";
-      const parts = [
-        String(thread.goal || "").trim(),
-        String(thread.health_state || "").trim() ? `Health ${String(thread.health_state || "").trim().toUpperCase()}` : "",
-        Number.isFinite(Number(thread.memory_count || 0)) ? `Memory ${Number(thread.memory_count || 0)}` : "",
-      ].filter(Boolean);
-      copy.textContent = parts.join(" · ") || "Open in chat for thread detail.";
+      copy.textContent = describeContinuityThread(thread) || "Open in workspace for thread detail.";
       card.appendChild(copy);
 
       threadHost.appendChild(card);
@@ -5015,8 +6216,10 @@ function renderTrustCenterPage() {
     const voice = (trustReviewState.voiceRuntime && typeof trustReviewState.voiceRuntime === "object")
       ? trustReviewState.voiceRuntime
       : {};
+    const wakeWordEnabled = isHeyNovaWakeWordEnabled();
     voiceSummary.textContent = [
       String(voice.summary || "").trim(),
+      wakeWordEnabled ? `Wake word on: "${HEY_NOVA_WAKE_WORD}"` : "Wake word off",
       String(voice.last_status || voice.last_attempt_status || "").trim(),
     ].filter(Boolean).join(" · ") || "Voice status will appear here after the next trust refresh.";
 
@@ -5028,6 +6231,7 @@ function renderTrustCenterPage() {
       ["Fallback status", String(voice.fallback_status || "Unknown").trim() || "Unknown"],
       ["Last attempt", String(voice.last_attempt_status || "No voice check yet").trim() || "No voice check yet"],
       ["Last engine", String(voice.last_engine || "None").trim() || "None"],
+      ["Wake word", wakeWordEnabled ? `${HEY_NOVA_WAKE_WORD} required` : "Wake word off"],
     ].forEach(([label, value]) => {
       voiceGrid.appendChild(createOverviewChip(label, value));
     });
@@ -5257,7 +6461,7 @@ function renderQuickActions() {
   const copy = document.querySelector(".hints-copy");
   if (copy) {
     const hintText = {
-      chat: "Starter prompts for everyday chat and explain mode.",
+      chat: "Outcome-first examples for goals, drafts, research, and follow-through.",
       news: "News actions for summaries, comparisons, and context checks.",
       intro: "Use Intro to understand how Nova works before you start leaning on it.",
       home: "Status checks, explain actions, and project continuity threads.",
@@ -5971,21 +7175,23 @@ function deriveSuggestedActions(text) {
 
   if (msg.includes("not sure what you'd like me to do") || msg.includes("could you clarify")) {
     return [
+      { label: "Start simple", command: "Help me start with one simple step." },
       { label: "Today's brief", command: "daily brief" },
-      { label: "Weather", command: "weather" },
       { label: "Open documents", command: "open documents" },
     ];
   }
 
   if (msg.includes("intelligence brief") || msg.includes("daily situation overview") || msg.includes("executive brief")) {
     return [
-      { label: "Summarize in bullets", command: "summarize this brief in 3 bullets" },
-      { label: "Expand story 1", command: "expand story 1" },
+      { label: "What matters most?", command: "What matters most from your last response?" },
+      { label: "3 bullet version", command: "Summarize your last response in 3 bullets." },
+      { label: "Best next step", command: "Based on your last response, what should I do next?" },
     ];
   }
 
   if (msg.includes("weather")) {
     return [
+      { label: "Do I need anything?", command: "Based on the weather, what do I need to know before I go out?" },
       { label: "Forecast", command: "show weather forecast" },
       { label: "Today's brief", command: "daily brief" },
     ];
@@ -5993,8 +7199,17 @@ function deriveSuggestedActions(text) {
 
   if (msg.includes("news") || msg.includes("headline")) {
     return [
-      { label: "Summarize all", command: "summarize all headlines" },
+      { label: "What matters most?", command: "What matters most from these headlines?" },
+      { label: "Quick brief", command: "summarize all headlines in plain language" },
       { label: "Today's brief", command: "daily brief" },
+    ];
+  }
+
+  if (msg.includes("research") || msg.includes("search") || msg.includes("sources") || msg.includes("coverage")) {
+    return [
+      { label: "Explain simply", command: "Explain your last response in plain language." },
+      { label: "What matters most?", command: "What matters most from your last response?" },
+      { label: "Best next step", command: "What should I do next based on your last response?" },
     ];
   }
 
@@ -6107,13 +7322,33 @@ function appendAssistantActions(parent, text, suggestedActions = null) {
   row.className = "assistant-actions";
   let added = 0;
 
-  if (message.length > 320) {
-    const shortBtn = document.createElement("button");
-    shortBtn.type = "button";
-    shortBtn.className = "assistant-action-btn";
-    shortBtn.textContent = "Shorter";
-    shortBtn.addEventListener("click", () => injectUserText("Please give a shorter version of your last response.", "text"));
-    row.appendChild(shortBtn);
+  if (message.length > 220) {
+    const simpleBtn = document.createElement("button");
+    simpleBtn.type = "button";
+    simpleBtn.className = "assistant-action-btn";
+    simpleBtn.textContent = "Explain simply";
+    simpleBtn.addEventListener("click", () => injectUserText("Explain your last response in plain language.", "text"));
+    row.appendChild(simpleBtn);
+    added += 1;
+  }
+
+  if (message.length > 180 || /plan|option|recommend|important|summary|brief/i.test(message)) {
+    const whatMattersBtn = document.createElement("button");
+    whatMattersBtn.type = "button";
+    whatMattersBtn.className = "assistant-action-btn";
+    whatMattersBtn.textContent = "What matters most?";
+    whatMattersBtn.addEventListener("click", () => injectUserText("What matters most from your last response?", "text"));
+    row.appendChild(whatMattersBtn);
+    added += 1;
+  }
+
+  if (/goal|step|plan|workflow|next|should|could|option/i.test(message)) {
+    const nextStepBtn = document.createElement("button");
+    nextStepBtn.type = "button";
+    nextStepBtn.className = "assistant-action-btn";
+    nextStepBtn.textContent = "Best next step";
+    nextStepBtn.addEventListener("click", () => injectUserText("What should I do next based on your last response?", "text"));
+    row.appendChild(nextStepBtn);
     added += 1;
   }
 
@@ -6136,10 +7371,11 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
   const chat = $("chat-log");
   if (!chat) return;
 
-  const msgText = String(text || "");
+  let msgText = String(text || "");
   if (role === "assistant" && msgText.trim() === "Hello. How can I help?") {
+    msgText = "Tell me what you're trying to get done, and I'll help with the next step.";
     const firstAssistant = chat.querySelector(".chat-assistant span");
-    if (firstAssistant && firstAssistant.textContent.trim() === "Hello. How can I help?") {
+    if (firstAssistant && firstAssistant.textContent.trim() === msgText) {
       return;
     }
   }
@@ -6213,6 +7449,7 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
   if (role === "assistant") {
     addMessageUtilities(div, msgText);
     appendAssistantActions(div, text || "", suggestedActions);
+    updateWorkflowFocusFromAssistant(msgText);
   }
 
   chat.appendChild(div);
@@ -6375,7 +7612,7 @@ function openPatternReview() {
 function updateNewsSummary(summaryText) {
   const summary = $("news-summary");
   if (!summary) return;
-  summary.textContent = (summaryText || "").trim() || "Headlines loaded. Use source-grounded brief or article summaries when you want webpage-level context.";
+  summary.textContent = (summaryText || "").trim() || "Headlines are ready. Start with the first story or ask Nova for a quick brief.";
 }
 
 function renderInlineNewsSummary(text, { pending = false, compact = false } = {}) {
@@ -6388,12 +7625,12 @@ function renderInlineNewsSummary(text, { pending = false, compact = false } = {}
 
   const title = document.createElement("div");
   title.className = "news-inline-summary-title";
-  title.textContent = pending ? "Working on this summary..." : "Source-grounded summary";
+  title.textContent = pending ? "Working on a quick take..." : "Quick take";
   panel.appendChild(title);
 
   const body = document.createElement("div");
   body.className = "news-inline-summary-body";
-  body.textContent = pending ? "Nova is reading the source and preparing an inline summary for this card." : clean;
+  body.textContent = pending ? "Nova is reading this story and turning it into a plain-language summary." : clean;
   panel.appendChild(body);
   return panel;
 }
@@ -6485,17 +7722,17 @@ function renderNewsCategoryPage(categoryKey, bucket) {
   const summarizeCategoryBtn = document.createElement("button");
   summarizeCategoryBtn.type = "button";
   summarizeCategoryBtn.className = "assistant-action-btn";
-  summarizeCategoryBtn.textContent = "Summarize here";
+  summarizeCategoryBtn.textContent = "Quick take";
   summarizeCategoryBtn.addEventListener("click", () => {
     latestNewsSummaryState.pendingCategories[categoryKey] = true;
     renderNewsCategoryPage(categoryKey, bucket);
-    requestInlineAssistantAction(`summarize ${categoryKey} news`, `Reading ${titleText} and preparing an inline summary.`, "news_surface");
+    requestInlineAssistantAction(`summarize ${categoryKey} news`, `Reading ${titleText} and pulling out what matters most.`, "news_surface");
   });
   categoryActions.appendChild(summarizeCategoryBtn);
   const researchCategoryBtn = document.createElement("button");
   researchCategoryBtn.type = "button";
   researchCategoryBtn.className = "assistant-action-btn";
-  researchCategoryBtn.textContent = "Research topic";
+  researchCategoryBtn.textContent = "See wider coverage";
   researchCategoryBtn.addEventListener("click", () => {
     setActivePage("chat");
     injectUserText(`research latest ${titleText}`, "text");
@@ -6539,12 +7776,12 @@ function renderNewsCategoryPage(categoryKey, bucket) {
     openSource.href = item.url;
     openSource.target = "_blank";
     openSource.rel = "noopener noreferrer";
-    openSource.textContent = "Open source";
+    openSource.textContent = "Open story";
     actions.appendChild(openSource);
     const summarizeArticleBtn = document.createElement("button");
     summarizeArticleBtn.type = "button";
     summarizeArticleBtn.className = "assistant-action-btn";
-    summarizeArticleBtn.textContent = "Research coverage";
+    summarizeArticleBtn.textContent = "See wider coverage";
     summarizeArticleBtn.addEventListener("click", () => {
       const topic = String(item.title || "").trim();
       if (!topic) return;
@@ -6678,11 +7915,21 @@ function renderNewsWidget(items, summaryText = "", categories = null) {
   visibleItems.forEach((item, index) => {
     const storyIndex = index + 1;
     const li = document.createElement("li");
+    if (index === 0) li.classList.add("news-item-primary");
+
+    const titleRow = document.createElement("div");
+    titleRow.className = "news-item-title-row";
+    if (index === 0) {
+      const kicker = document.createElement("span");
+      kicker.className = "news-story-kicker";
+      kicker.textContent = "Start here";
+      titleRow.appendChild(kicker);
+    }
 
     const badge = document.createElement("span");
     badge.className = "citation-index";
     badge.textContent = `[${storyIndex}]`;
-    li.appendChild(badge);
+    titleRow.appendChild(badge);
 
     const a = document.createElement("a");
     a.href = item.url;
@@ -6690,7 +7937,8 @@ function renderNewsWidget(items, summaryText = "", categories = null) {
     a.textContent = item.title || "Untitled story";
     a.target = "_blank";
     a.rel = "noopener noreferrer";
-    li.appendChild(a);
+    titleRow.appendChild(a);
+    li.appendChild(titleRow);
 
     const summary = document.createElement("p");
     summary.className = "news-item-summary";
@@ -6722,18 +7970,18 @@ function renderNewsWidget(items, summaryText = "", categories = null) {
     const summarizeBtn = document.createElement("button");
     summarizeBtn.type = "button";
     summarizeBtn.className = "assistant-action-btn";
-    summarizeBtn.textContent = "Summarize here";
+    summarizeBtn.textContent = "Quick take";
     summarizeBtn.addEventListener("click", () => {
       latestNewsSummaryState.pendingStories[storyIndex] = true;
       renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "", latestNewsCategories);
-      requestInlineAssistantAction(`summary of article ${storyIndex}`, `Reading article ${storyIndex} and preparing an inline summary.`, "news_surface");
+      requestInlineAssistantAction(`summary of article ${storyIndex}`, `Reading story ${storyIndex} and pulling out the key points.`, "news_surface");
     });
     row.appendChild(summarizeBtn);
 
     const compareBtn = document.createElement("button");
     compareBtn.type = "button";
     compareBtn.className = "assistant-action-btn";
-    compareBtn.textContent = "Research this";
+    compareBtn.textContent = "See wider coverage";
     compareBtn.addEventListener("click", () => {
       const topic = String(item.title || "").trim();
       if (!topic) return;
@@ -6802,14 +8050,52 @@ function renderSearchWidget(data) {
       appendConfidenceBadge(meta, `${Number(data.latency_seconds).toFixed(1)}s`);
     }
     header.appendChild(meta);
-
-    if (data && data.summary) {
-      const summary = document.createElement("p");
-      summary.className = "search-widget-summary";
-      summary.textContent = String(data.summary);
-      header.appendChild(summary);
-    }
     container.appendChild(header);
+
+    const focusTopic = queryText || String(results[0]?.title || "").trim();
+    const summaryText = String((data && data.summary) || "").trim();
+    const quickAnswer = document.createElement("div");
+    quickAnswer.className = "search-quick-answer";
+
+    const quickAnswerTitle = document.createElement("div");
+    quickAnswerTitle.className = "search-quick-answer-title";
+    quickAnswerTitle.textContent = "Quick answer";
+    quickAnswer.appendChild(quickAnswerTitle);
+
+    const quickAnswerBody = document.createElement("p");
+    quickAnswerBody.className = "search-widget-summary";
+    quickAnswerBody.textContent = summaryText || `I found ${results.length} place${results.length === 1 ? "" : "s"} to start. Open the first result if you want the fastest overview.`;
+    quickAnswer.appendChild(quickAnswerBody);
+
+    if (results[0]) {
+      const quickAnswerMeta = document.createElement("p");
+      quickAnswerMeta.className = "search-quick-answer-meta";
+      const bestTitle = String(results[0].title || "the first result").trim();
+      const bestSource = extractDomain(results[0].url) || "the web";
+      quickAnswerMeta.textContent = `Best place to start: ${bestTitle} from ${bestSource}.`;
+      quickAnswer.appendChild(quickAnswerMeta);
+    }
+    container.appendChild(quickAnswer);
+
+    if (focusTopic) {
+      const guideActions = document.createElement("div");
+      guideActions.className = "search-widget-actions search-widget-actions-primary";
+
+      [
+        { label: "Explain simply", prompt: `Explain ${focusTopic} in plain language.` },
+        { label: "What matters most?", prompt: `What matters most about ${focusTopic} right now?` },
+        { label: "Best next step", prompt: `What should I do next if I want to understand ${focusTopic}?` },
+      ].forEach((item) => {
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "assistant-action-btn";
+        btn.textContent = item.label;
+        btn.addEventListener("click", () => injectUserText(item.prompt, "text"));
+        guideActions.appendChild(btn);
+      });
+
+      container.appendChild(guideActions);
+    }
 
     const sourcesSection = document.createElement("div");
     sourcesSection.className = "search-sources-section";
@@ -6820,7 +8106,7 @@ function renderSearchWidget(data) {
     const sourcesToggle = document.createElement("button");
     sourcesToggle.type = "button";
     sourcesToggle.className = "assistant-action-btn";
-    sourcesToggle.textContent = `Show sources (${results.length})`;
+    sourcesToggle.textContent = `See where this came from (${results.length})`;
     sourcesToggle.setAttribute("aria-expanded", "false");
     sourcesToggleRow.appendChild(sourcesToggle);
 
@@ -6832,15 +8118,23 @@ function renderSearchWidget(data) {
       const expanded = sourceList.hidden;
       sourceList.hidden = !expanded;
       sourcesToggle.setAttribute("aria-expanded", expanded ? "true" : "false");
-      sourcesToggle.textContent = expanded ? "Hide sources" : `Show sources (${results.length})`;
+      sourcesToggle.textContent = expanded ? "Hide sources" : `See where this came from (${results.length})`;
     });
 
     results.forEach((item, index) => {
       const div = document.createElement("div");
       div.className = "search-result";
+      if (index === 0) div.classList.add("search-result-primary");
 
       const titleRow = document.createElement("div");
       titleRow.className = "search-result-title";
+
+      if (index === 0) {
+        const startBadge = document.createElement("span");
+        startBadge.className = "search-start-badge";
+        startBadge.textContent = "Start here";
+        titleRow.appendChild(startBadge);
+      }
 
       const idx = document.createElement("span");
       idx.className = "citation-index";
@@ -6876,21 +8170,27 @@ function renderSearchWidget(data) {
       const actions = document.createElement("div");
       actions.className = "search-result-actions";
 
-      const summarizeBtn = document.createElement("button");
-      summarizeBtn.type = "button";
-      summarizeBtn.className = "assistant-action-btn";
-      summarizeBtn.textContent = "Research this topic";
-      summarizeBtn.addEventListener("click", () => injectUserText(`research ${item.title}`, "text"));
-      actions.appendChild(summarizeBtn);
+      const openBtn = document.createElement("a");
+      openBtn.className = "assistant-action-btn";
+      openBtn.href = item.url;
+      openBtn.target = "_blank";
+      openBtn.rel = "noopener noreferrer";
+      openBtn.textContent = "Open story";
+      actions.appendChild(openBtn);
 
-      if (index === 0 && results.length > 1) {
-        const compareBtn = document.createElement("button");
-        compareBtn.type = "button";
-        compareBtn.className = "assistant-action-btn";
-        compareBtn.textContent = "Brief this topic";
-        compareBtn.addEventListener("click", () => injectUserText(`create an intelligence brief on ${queryText || item.title}`, "text"));
-        actions.appendChild(compareBtn);
-      }
+      const quickTakeBtn = document.createElement("button");
+      quickTakeBtn.type = "button";
+      quickTakeBtn.className = "assistant-action-btn";
+      quickTakeBtn.textContent = "Quick take";
+      quickTakeBtn.addEventListener("click", () => injectUserText(`Give me a quick take on ${item.title}.`, "text"));
+      actions.appendChild(quickTakeBtn);
+
+      const compareBtn = document.createElement("button");
+      compareBtn.type = "button";
+      compareBtn.className = "assistant-action-btn";
+      compareBtn.textContent = "See wider coverage";
+      compareBtn.addEventListener("click", () => injectUserText(`research latest coverage of ${queryText || item.title}`, "text"));
+      actions.appendChild(compareBtn);
       div.appendChild(actions);
       sourceList.appendChild(div);
     });
@@ -6902,6 +8202,10 @@ function renderSearchWidget(data) {
     if (suggested.length) {
       const actionRow = document.createElement("div");
       actionRow.className = "search-widget-actions";
+      const actionLabel = document.createElement("span");
+      actionLabel.className = "search-widget-actions-label";
+      actionLabel.textContent = "More ways to ask:";
+      actionRow.appendChild(actionLabel);
       suggested.slice(0, 3).forEach((item) => {
         const label = String((item && item.label) || "").trim();
         const prompt = String((item && item.prompt) || "").trim();
@@ -6965,32 +8269,42 @@ function tryHandleLocalPageCommand(text) {
 function injectUserText(text, channel = "text") {
   const clean = (text || "").trim();
   if (!clean) return;
+  if (tryRouteLiveHelpCommand(clean, { echoUserMessage: true, updateFocus: true })) return;
   if (channel === "text" && tryHandleLocalPageCommand(clean)) return;
 
   appendChatMessage("user", clean);
   waitingForAssistant = true;
-  setLoadingHint(loadingHintForInput(clean));
+  const loadingHint = loadingHintForInput(clean);
+  setLoadingHint(loadingHint);
   setThinkingBar(true);
+  updateWorkflowFocusFromUserInput(clean);
+  updateWorkflowFocusProgress(loadingHint);
 
   if (!safeWSSend({ text: clean, channel })) {
     waitingForAssistant = false;
     setThinkingBar(false);
     appendChatMessage("assistant", "Connection is not ready yet. Please wait a second and try again.", null, "System status");
+    updateWorkflowFocusFromError("Connection is not ready yet. Please wait a second and try again.");
   }
 }
 
 function requestInlineAssistantAction(text, statusText = "", invocationSource = "ui_surface") {
   const clean = String(text || "").trim();
   if (!clean) return false;
+  if (tryRouteLiveHelpCommand(clean, { echoUserMessage: false, updateFocus: true })) return true;
 
   waitingForAssistant = true;
-  setLoadingHint(statusText || loadingHintForInput(clean));
+  const loadingHint = statusText || loadingHintForInput(clean);
+  setLoadingHint(loadingHint);
   setThinkingBar(true);
+  updateWorkflowFocusFromUserInput(clean);
+  updateWorkflowFocusProgress(loadingHint);
 
   if (!safeWSSend({ text: clean, invocation_source: invocationSource })) {
     waitingForAssistant = false;
     setThinkingBar(false);
     appendChatMessage("assistant", "Connection is not ready yet. Please wait a second and try again.", null, "System status");
+    updateWorkflowFocusFromError("Connection is not ready yet. Please wait a second and try again.");
     return false;
   }
 
@@ -7002,15 +8316,27 @@ function requestDeepSeekSecondOpinion() {
   waitingForAssistant = true;
   setLoadingHint("Checking a second opinion on the recent exchange...");
   setThinkingBar(true);
+  updateWorkflowFocusFromUserInput("Second opinion on the recent exchange");
+  updateWorkflowFocusProgress("Checking a second opinion on the recent exchange...");
 
   if (!safeWSSend({ text: "second opinion", invocation_source: "deepseek_button" })) {
     waitingForAssistant = false;
     setThinkingBar(false);
     appendChatMessage("assistant", "Connection is not ready yet. Please wait a second and try again.", null, "System status");
+    updateWorkflowFocusFromError("Connection is not ready yet. Please wait a second and try again.");
   }
 }
 
 async function startSTT() {
+  if (liveHelpState.active || liveHelpState.starting) {
+    appendChatMessage(
+      "assistant",
+      "Live screen help is already listening for \"Hey Nova.\" Stop live help first if you want to use the regular Talk button instead.",
+      null,
+      "Voice input",
+    );
+    return;
+  }
   if (mediaRecorder) return;
   if (!navigator.mediaDevices || !window.MediaRecorder) {
     flashPTTError();
@@ -7026,12 +8352,9 @@ async function startSTT() {
 
   setOrbStatus("LISTENING");
   setPTTButtonState("recording");
-  const options = {};
-  if (MediaRecorder.isTypeSupported("audio/webm;codecs=pcm")) options.mimeType = "audio/webm;codecs=pcm";
-  else if (MediaRecorder.isTypeSupported("audio/webm;codecs=opus")) options.mimeType = "audio/webm;codecs=opus";
-  else if (MediaRecorder.isTypeSupported("audio/webm")) options.mimeType = "audio/webm";
+  const options = getPreferredAudioRecorderOptions();
 
-  if (!options.mimeType) {
+  if (!options || !options.mimeType) {
     stream.getTracks().forEach((t) => t.stop());
     setOrbStatus("READY");
     flashPTTError();
@@ -7059,18 +8382,9 @@ async function startSTT() {
 
     try {
       const blob = new Blob(chunks, { type: mediaRecorder.mimeType });
-      const form = new FormData();
-      form.append("audio", blob, "speech.webm");
+      const result = await transcribeRecordedAudioBlob(blob, "speech.webm");
 
-      const res = await fetch(`${API_BASE}/stt/transcribe`, { method: "POST", body: form });
-      let data = {};
-      try {
-        data = await res.json();
-      } catch (_) {
-        data = {};
-      }
-
-      if (!res.ok) {
+      if (!result.ok) {
         appendChatMessage(
           "assistant",
           "I couldn't process that recording. Please try again.",
@@ -7081,15 +8395,34 @@ async function startSTT() {
         return;
       }
 
-      if (data.error) {
-        appendChatMessage("assistant", String(data.error), null, "Voice input");
+      if (result.error) {
+        appendChatMessage("assistant", String(result.error), null, "Voice input");
         flashPTTError();
         return;
       }
 
-      const transcript = String(data.text || "").trim();
+      const transcript = String(result.transcript || "").trim();
       if (transcript) {
-        injectUserText(transcript, "voice");
+        const wakeWordState = normalizeHeyNovaWakeWordTranscript(transcript);
+        if (!wakeWordState.matched) {
+          appendChatMessage(
+            "assistant",
+            `I heard "${transcript}", but voice requests currently start with "${HEY_NOVA_WAKE_WORD}". Try again and say "${HEY_NOVA_WAKE_WORD}" first.`,
+            null,
+            "Voice input",
+          );
+          return;
+        }
+        if (!wakeWordState.command) {
+          appendChatMessage(
+            "assistant",
+            `I'm here. Say "${HEY_NOVA_WAKE_WORD}" followed by what you want, like "${HEY_NOVA_WAKE_WORD}, explain this screen."`,
+            null,
+            "Voice input",
+          );
+          return;
+        }
+        injectUserText(wakeWordState.command, "voice");
       } else {
         appendChatMessage(
           "assistant",
@@ -7169,6 +8502,7 @@ function connectWebSocket() {
   ws.onopen = () => {
     renderHeaderStatus(activePageState);
     renderIntroPage();
+    renderHomeLaunchWidget();
     renderSettingsPage();
     refreshPrivacyPanel();
     hydrateDashboardWidgets();
@@ -7207,6 +8541,7 @@ function connectWebSocket() {
       case "system":
         morningState.system = formatSystemSummary(msg.data || {}, msg.summary || "System status ready.");
         renderMorningPanel();
+        renderHomeLaunchWidget();
         renderOperatorHealthWidget(msg.data || {});
         renderCapabilitySurfaceWidget(msg.data || {});
         renderTrustPanel(msg.data || {});
@@ -7293,6 +8628,7 @@ function connectWebSocket() {
           if (Number.isFinite(Number(msg.data.consecutive_failures))) {
             trustState.consecutiveFailures = Math.max(0, Number(msg.data.consecutive_failures));
           }
+          renderHomeLaunchWidget();
           renderTrustPanel(msg.data || {});
           renderTrustCenterPage();
         }
@@ -7301,6 +8637,11 @@ function connectWebSocket() {
         waitingForAssistant = false;
         setLoadingHint("");
         setThinkingBar(false);
+        if (workflowFocusState.awaitingResponse) {
+          workflowFocusState.status = "Ready";
+          workflowFocusState.awaitingResponse = false;
+          renderWorkflowFocusWidget();
+        }
         break;
       case "thought":
         if (pendingThoughtMessageId && msg.message_id === pendingThoughtMessageId) {
@@ -7313,6 +8654,7 @@ function connectWebSocket() {
         waitingForAssistant = false;
         setThinkingBar(false);
         appendChatMessage("assistant", translateError(msg.code, msg.message), null, "System status");
+        updateWorkflowFocusFromError(translateError(msg.code, msg.message));
         break;
     }
   };
@@ -7528,8 +8870,33 @@ function showFirstRunGuide(force = false) {
 
   const readinessSummary = document.createElement("p");
   readinessSummary.className = "first-run-note";
-  readinessSummary.textContent = buildSetupReadinessSummary(getSetupReadinessItems());
+  const checklistItems = getSetupReadinessItems();
+  const firstSuccess = getIntroFirstSuccessItems(checklistItems);
+  readinessSummary.textContent = buildSetupReadinessSummary(checklistItems);
   card.appendChild(readinessSummary);
+
+  const successIntro = document.createElement("p");
+  successIntro.className = "first-run-intro";
+  successIntro.textContent = String(firstSuccess.summary || "").trim()
+    || "Start with one useful outcome. Nova will help with the rest without making you learn the system first.";
+  card.appendChild(successIntro);
+
+  const successGrid = document.createElement("div");
+  successGrid.className = "intro-success-grid";
+  (Array.isArray(firstSuccess.items) ? firstSuccess.items : []).slice(0, 3).forEach((item) => {
+    const cardBtn = createIntroFirstSuccessCard({
+      ...item,
+      action: () => {
+        if (typeof item.action === "function") item.action();
+        overlay.style.display = "none";
+        localStorage.setItem(STORAGE_KEYS.firstRunDone, "1");
+      },
+    });
+    successGrid.appendChild(cardBtn);
+  });
+  if (successGrid.childElementCount) {
+    card.appendChild(successGrid);
+  }
 
   const pillars = document.createElement("div");
   pillars.className = "first-run-pillars";
@@ -7558,10 +8925,10 @@ function showFirstRunGuide(force = false) {
   const steps = document.createElement("ol");
   steps.className = "help-list";
   [
-    "Open Introduction to see what Nova is, what it can do, and how it stays under your control.",
-    "Open Settings to choose Local Mode now or save a future cloud preference for later.",
-    "Open Workspace to continue projects, review recent decisions, and see the structure map in one place.",
-    "Try simple commands like \"news\", \"explain this\", or \"continue my project\".",
+    "Start with one practical outcome instead of trying to learn the whole system first.",
+    "Use Introduction and Home when you want the easiest launch path.",
+    "Use Workspace when you want continuity and ongoing project context.",
+    "Use Trust and Settings when you want to inspect what is ready, what is blocked, and why.",
     "Use explicit phrases like \"remember this\" only when you want durable memory.",
   ].forEach((label) => {
     const li = document.createElement("li");
@@ -7624,10 +8991,9 @@ function showFirstRunGuide(force = false) {
       },
     },
     {
-      label: "Try Explain This",
+      label: "Start Here",
       fn: () => {
-        setActivePage("chat");
-        injectUserText("explain this", "text");
+        setActivePage("home");
       },
     },
   ].forEach((item) => {
@@ -7665,13 +9031,19 @@ function renderIntroPage() {
   const checklistSummary = $("intro-checklist-summary");
   const checklistGrid = $("intro-checklist-grid");
   const nextStepCopy = $("intro-next-step-copy");
+  const firstSuccessCopy = $("intro-first-success-copy");
+  const firstSuccessGrid = $("intro-first-success-grid");
   const currentMode = getSetupModeMeta();
   const checklistItems = getSetupReadinessItems();
+  const firstSuccess = getIntroFirstSuccessItems(checklistItems);
   if (modeBadge) modeBadge.textContent = currentMode.badge;
   if (modeCopy) modeCopy.textContent = `Current setup: ${currentMode.label}. ${currentMode.copy}`;
   if (checklistSummary) checklistSummary.textContent = buildSetupReadinessSummary(checklistItems);
   renderSetupReadinessGrid(checklistGrid, checklistItems);
   if (nextStepCopy) nextStepCopy.textContent = getSetupNextStepCopy(checklistItems);
+  if (firstSuccessCopy) firstSuccessCopy.textContent = String(firstSuccess.summary || "").trim() || "Nova is checking the easiest high-value move for this device.";
+  renderIntroFirstSuccessGrid(firstSuccessGrid, firstSuccess);
+  renderHomeLaunchWidget();
 }
 
 function renderOpenClawDeliveryFeed(host, items = [], emptyText = "No agent deliveries are waiting right now.") {
@@ -8186,8 +9558,10 @@ function renderSettingsPage() {
     const voice = (trustReviewState.voiceRuntime && typeof trustReviewState.voiceRuntime === "object")
       ? trustReviewState.voiceRuntime
       : {};
+    const wakeWordEnabled = isHeyNovaWakeWordEnabled();
     voiceSummary.textContent = [
       String(voice.summary || "").trim() || "Run Voice Check to confirm spoken output on this device.",
+      wakeWordEnabled ? `Wake word on: "${HEY_NOVA_WAKE_WORD}"` : "Wake word off",
       String(voice.last_attempt_status || "").trim(),
       String(voice.last_engine || "").trim(),
     ].filter(Boolean).join(" · ");
@@ -8200,9 +9574,41 @@ function renderSettingsPage() {
       ["Fallback status", String(voice.fallback_status || "Unknown").trim() || "Unknown"],
       ["Last attempt", String(voice.last_attempt_status || "No voice check yet").trim() || "No voice check yet"],
       ["Last engine", String(voice.last_engine || "None").trim() || "None"],
+      ["Wake word", wakeWordEnabled ? `${HEY_NOVA_WAKE_WORD} required` : "Wake word off"],
     ].forEach(([label, value]) => {
       voiceGrid.appendChild(createOverviewChip(label, value));
     });
+
+    const wakeWordCard = document.createElement("div");
+    wakeWordCard.className = "workspace-home-focus settings-permission-card";
+
+    const wakeWordTitle = document.createElement("div");
+    wakeWordTitle.className = "workspace-home-focus-title";
+    wakeWordTitle.textContent = "Wake word";
+    wakeWordCard.appendChild(wakeWordTitle);
+
+    const wakeWordStatus = document.createElement("div");
+    wakeWordStatus.className = "workspace-home-focus-meta";
+    wakeWordStatus.textContent = wakeWordEnabled ? `${HEY_NOVA_WAKE_WORD} required` : "Off";
+    wakeWordCard.appendChild(wakeWordStatus);
+
+    const wakeWordCopy = document.createElement("div");
+    wakeWordCopy.className = "workspace-home-focus-copy";
+    wakeWordCopy.textContent = wakeWordEnabled
+      ? `Voice recordings only send a request after Nova hears "${HEY_NOVA_WAKE_WORD}", which helps prevent accidental triggers.`
+      : "Voice recordings send whatever you say. Turn the wake word back on if you want an extra spoken guardrail.";
+    wakeWordCard.appendChild(wakeWordCopy);
+
+    const wakeWordActions = document.createElement("div");
+    wakeWordActions.className = "workspace-board-actions-toolbar";
+    const wakeWordToggleBtn = document.createElement("button");
+    wakeWordToggleBtn.type = "button";
+    wakeWordToggleBtn.textContent = wakeWordEnabled ? "Turn off wake word" : `Require ${HEY_NOVA_WAKE_WORD}`;
+    wakeWordToggleBtn.addEventListener("click", () => setHeyNovaWakeWordEnabled(!wakeWordEnabled));
+    wakeWordActions.appendChild(wakeWordToggleBtn);
+    wakeWordCard.appendChild(wakeWordActions);
+
+    voiceGrid.appendChild(wakeWordCard);
   }
 
   if (reasoningSummary && reasoningGrid) {
@@ -8493,7 +9899,9 @@ function showHelpModal() {
 
 async function refreshPrivacyPanel() {
   const items = {
-    listening: "Off (only when you press mic)",
+    listening: isHeyNovaWakeWordEnabled()
+      ? `Off in the background (only when you press mic, then say "${HEY_NOVA_WAKE_WORD}")`
+      : "Off in the background (only when you press mic)",
     background: "Off",
     network: "Only when asked",
     execution: "Governed",
@@ -8759,6 +10167,9 @@ window.addEventListener("DOMContentLoaded", () => {
   setPTTButtonState("idle");
   ensureDatalist();
   renderMorningPanel();
+  renderWorkflowFocusWidget();
+  renderLiveHelpWidget();
+  renderHomeLaunchWidget();
   renderHeaderStatus("chat");
   renderContextInsight("");
   renderThreadMapWidget({});
@@ -8794,6 +10205,7 @@ window.addEventListener("DOMContentLoaded", () => {
     if (!document.hidden) hydrateDashboardWidgets();
   });
   window.addEventListener("focus", hydrateDashboardWidgets);
+  window.addEventListener("beforeunload", () => stopLiveHelpSession("", false));
   ensureSingleWelcomeMessage();
   showFirstRunGuideIfNeeded();
 
@@ -8809,6 +10221,32 @@ window.addEventListener("DOMContentLoaded", () => {
       if (e.key === "Enter") sendChat();
     });
   }
+
+  const workflowRefineBtn = $("btn-workflow-refine");
+  if (workflowRefineBtn) workflowRefineBtn.addEventListener("click", () => {
+    const chatInput = $("chat-input");
+    if (!chatInput) return;
+    chatInput.focus();
+    chatInput.value = workflowFocusState.lastUserInput || "";
+    chatInput.select();
+  });
+
+  const workflowShowStepsBtn = $("btn-workflow-show-steps");
+  if (workflowShowStepsBtn) workflowShowStepsBtn.addEventListener("click", () => {
+    const focus = String(workflowFocusState.lastUserInput || "").trim();
+    if (!focus) return;
+    injectUserText(`Turn this into a step-by-step plan and keep the checkpoints clear: ${focus}`, "text");
+  });
+
+  const workflowResetBtn = $("btn-workflow-reset");
+  if (workflowResetBtn) workflowResetBtn.addEventListener("click", () => {
+    resetWorkflowFocusState();
+    const chatInput = $("chat-input");
+    if (chatInput) {
+      chatInput.focus();
+      chatInput.value = "";
+    }
+  });
 
   const newsBtn = $("btn-news");
   if (newsBtn) newsBtn.addEventListener("click", () => safeWSSend({ text: "news" }));
@@ -8844,38 +10282,6 @@ window.addEventListener("DOMContentLoaded", () => {
     newsExpandBtn.addEventListener("click", () => {
       newsExpanded = !newsExpanded;
       renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "", latestNewsCategories);
-    });
-  }
-
-  const homeBriefBtn = $("btn-home-brief");
-  if (homeBriefBtn) {
-    homeBriefBtn.addEventListener("click", () => {
-      setActivePage("chat");
-      injectUserText("morning brief", "text");
-    });
-  }
-
-  const homeExplainBtn = $("btn-home-explain");
-  if (homeExplainBtn) {
-    homeExplainBtn.addEventListener("click", () => {
-      setActivePage("chat");
-      injectUserText("explain this", "text");
-    });
-  }
-
-  const homeResearchBtn = $("btn-home-research");
-  if (homeResearchBtn) {
-    homeResearchBtn.addEventListener("click", () => {
-      setActivePage("chat");
-      injectUserText("research latest technology policy updates", "text");
-    });
-  }
-
-  const homeContinueProjectBtn = $("btn-home-continue-project");
-  if (homeContinueProjectBtn) {
-    homeContinueProjectBtn.addEventListener("click", () => {
-      setActivePage("chat");
-      injectUserText("show threads", "text");
     });
   }
 
@@ -8916,12 +10322,6 @@ window.addEventListener("DOMContentLoaded", () => {
       injectUserText("system status", "text");
     });
   }
-
-  const homeWorkspacePageBtn = $("btn-home-workspace-page");
-  if (homeWorkspacePageBtn) homeWorkspacePageBtn.addEventListener("click", () => setActivePage("workspace"));
-
-  const homeTrustPageBtn = $("btn-home-trust-page");
-  if (homeTrustPageBtn) homeTrustPageBtn.addEventListener("click", () => setActivePage("trust"));
 
   const introHomeBtn = $("btn-intro-open-home");
   if (introHomeBtn) introHomeBtn.addEventListener("click", () => setActivePage("home"));
@@ -9116,9 +10516,6 @@ window.addEventListener("DOMContentLoaded", () => {
     setActivePage("chat");
     injectUserText("voice check", "text");
   });
-
-  const homeAgentPageBtn = $("btn-home-agent-page");
-  if (homeAgentPageBtn) homeAgentPageBtn.addEventListener("click", () => setActivePage("agent"));
 
   const agentRefreshBtn = $("btn-agent-refresh");
   if (agentRefreshBtn) agentRefreshBtn.addEventListener("click", () => requestOpenClawAgentRefresh(true));
@@ -9348,4 +10745,20 @@ window.addEventListener("DOMContentLoaded", () => {
       else stopSTT();
     });
   }
+
+  const liveHelpStartBtn = $("btn-live-help-start");
+  if (liveHelpStartBtn) liveHelpStartBtn.addEventListener("click", () => {
+    startLiveHelpSession();
+  });
+
+  const liveHelpExplainBtn = $("btn-live-help-explain");
+  if (liveHelpExplainBtn) liveHelpExplainBtn.addEventListener("click", () => {
+    if (!liveHelpState.active) return;
+    requestLiveHelpAnalysis("explain this page", { echoUserMessage: false, updateFocus: true });
+  });
+
+  const liveHelpStopBtn = $("btn-live-help-stop");
+  if (liveHelpStopBtn) liveHelpStopBtn.addEventListener("click", () => {
+    stopLiveHelpSession();
+  });
 });

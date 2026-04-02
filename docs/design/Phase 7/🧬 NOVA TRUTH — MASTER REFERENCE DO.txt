@@ -635,7 +635,7 @@ Q1: Dual STT systems — stt_engine.py (active Vosk) vs stt_manager.py (legacy W
 
 Q2: Nova-Frontend-Dashboard/ vs nova_backend/static/ duplication. One canonical source; archive the other.
 
-Q3: Deep Thought v1.1 and v1.2 docs live alongside ratified v1.3 in docs/design/Phase 4/. Archive v1.1 and v1.2.
+Q3: Deep Thought v1.1 and v1.2 docs live alongside ratified v1.3 in `docs/design/Phase 4/`. Archive v1.1 and v1.2 into `docs/design/archive(phase 4)/`.
 
 Q4: RUNTIME_TRUTH.md contains both Phase 3 and Phase 4 content. Superseded by this document.
 

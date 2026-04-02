@@ -15,6 +15,22 @@ def _sync_usage_budget(settings_snapshot: dict[str, Any]) -> None:
     )
 
 
+async def _sync_openclaw_scheduler_state(deps, settings_snapshot: dict[str, Any]) -> None:
+    scheduler = getattr(deps, "openclaw_agent_scheduler", None)
+    if scheduler is None:
+        return
+
+    permissions = dict(settings_snapshot.get("permissions") or {})
+    should_run = bool(permissions.get("home_agent_enabled")) and bool(
+        permissions.get("home_agent_scheduler_enabled")
+    )
+
+    if should_run:
+        await scheduler.start()
+        return
+    await scheduler.stop()
+
+
 def _runtime_settings_payload(deps, settings_snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
     snapshot = dict(settings_snapshot or deps.runtime_settings_store.snapshot())
     _sync_usage_budget(snapshot)
@@ -43,6 +59,7 @@ def build_settings_router(deps) -> APIRouter:
             snapshot = deps.runtime_settings_store.set_setup_mode(mode, source="settings_page")
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+        await _sync_openclaw_scheduler_state(deps, snapshot)
         deps._log_ledger_event(
             deps.RUNTIME_GOVERNOR,
             "RUNTIME_SETTINGS_UPDATED",
@@ -69,6 +86,7 @@ def build_settings_router(deps) -> APIRouter:
             )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+        await _sync_openclaw_scheduler_state(deps, snapshot)
         deps._log_ledger_event(
             deps.RUNTIME_GOVERNOR,
             "RUNTIME_SETTINGS_UPDATED",
@@ -163,6 +181,7 @@ def build_settings_router(deps) -> APIRouter:
     async def reset_runtime_settings():
         snapshot = deps.runtime_settings_store.reset_recommended_defaults(source="settings_page")
         _sync_usage_budget(snapshot)
+        await _sync_openclaw_scheduler_state(deps, snapshot)
         deps._log_ledger_event(
             deps.RUNTIME_GOVERNOR,
             "RUNTIME_SETTINGS_UPDATED",

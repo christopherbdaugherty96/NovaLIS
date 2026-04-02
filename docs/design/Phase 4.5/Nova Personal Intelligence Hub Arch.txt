@@ -788,7 +788,7 @@ Document Status: Phase 5.0 Architecture Specification
 Governance Status: Extended but maintained
 Risk Level: Medium (new complexity, same governance)
 Recommendation: ✅ Proceed with phased implementation
-Storage: /docs/canon/hub/personal-intelligence-hub.md
+Storage: /docs/design/Phase 4.5/Nova Personal Intelligence Hub Arch.txt
 
 
 

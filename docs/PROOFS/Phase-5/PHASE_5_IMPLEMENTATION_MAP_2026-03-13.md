@@ -27,7 +27,7 @@ Thread continuity in the current package is session-scoped. Durable cross-sessio
 | Declarative identity/preferences | `docs/design/Phase 5/📄 Phase 5 Roadmap.txt (corrected).txt` | Deferred to Phase 6 candidate track | No separate canonical design and not part of the ratified current package |
 | Persistent cross-session thread substrate / restoration layer | `docs/PROOFS/Phase-6/PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md` | Deferred to Phase 6 candidate track | Current runtime intentionally keeps threads session-scoped; durable continuity is handled through governed memory |
 | Delegated autonomy | `docs/design/Phase 5/Delegated Autonomy.txt` | Future-direction only | Explicitly outside the current trust-facing Phase-5 runtime package |
-| Consolidated APIs | `docs/design/Phase 5/Consolidated API's.txt` | Future-direction only | Integration planning reference, not a required closure track |
+| Consolidated APIs | the consolidated API planning note in `docs/design/Phase 5/` | Future-direction only | Integration planning reference, not a required closure track |
 
 ## Runtime Documentation Entry Points
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`

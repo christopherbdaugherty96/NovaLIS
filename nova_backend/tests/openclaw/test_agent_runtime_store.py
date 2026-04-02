@@ -90,3 +90,18 @@ def test_agent_runtime_store_records_scheduled_run_outcome(tmp_path: Path):
     morning = next(item for item in snapshot["templates"] if item["id"] == "morning_brief")
     assert morning["last_scheduled_outcome"] == "completed"
     assert morning["last_scheduled_note"] == "Scheduled run completed."
+
+
+def test_agent_runtime_store_skips_stale_same_day_schedule_windows(tmp_path: Path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    store.set_template_schedule_enabled("morning_brief", True)
+    late_evening = datetime.now().astimezone().replace(hour=18, minute=0, second=0, microsecond=0)
+
+    due = store.due_scheduled_templates(now=late_evening)
+    snapshot = store.snapshot()
+
+    assert due == []
+    morning = next(item for item in snapshot["templates"] if item["id"] == "morning_brief")
+    assert morning["schedule_enabled"] is True
+    assert morning["schedule_status"] == "Scheduled"
+    assert morning["next_run_at"]

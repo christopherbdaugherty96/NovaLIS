@@ -946,6 +946,6 @@ Verification:
 ---
 
 Document Status: 🔒 LOCKED (Canonical Architecture Specification)
-Storage Path: /docs/canon/agents/orthogonal-cognition-stack.md
+Storage Path: /docs/design/Phase 4.2/Nova Orthogonal Cognition Stack.txt
 Next Review: Phase 4.3 unlock request only
 Implementation Authority: Phase 4.2 Governance Board

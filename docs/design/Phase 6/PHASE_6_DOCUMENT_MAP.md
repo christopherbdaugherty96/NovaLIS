@@ -10,6 +10,8 @@ Purpose: Classify the Phase-6 document set by authority and implementation order
 - `docs/design/Phase 6/PHASE_6_CAPABILITY_TOPOLOGY_SYSTEM_SPEC.md`
 - `docs/design/Phase 6/PHASE_6_SOVEREIGNTY_ALIGNMENT_AND_TRUST_LOOP_PLAN.md`
 - `docs/design/Phase 6/PHASE_6_ENGINEERING_CHECKLIST_2026-03-18.md`
+- `docs/design/Phase 6/NOVA_GROUNDED_CURRENT_STATUS_AND_NEXT_ROADMAP_2026-04-02.md`
+- `docs/design/Phase 6/NOVA_DOCS_CODE_ALIGNMENT_AUDIT_2026-04-02.md`
 
 These documents define the current ordered roadmap and the core Phase-6 policy substrate:
 - what a lawful delegated policy is
@@ -17,6 +19,7 @@ These documents define the current ordered roadmap and the core Phase-6 policy s
 - how capabilities must be classified before broad trigger expansion
 - what trust-alignment work must be completed before external-provider or external-executor integrations are allowed
 - what the concrete implementation checklist is for closing the Phase-6 trust and reality gaps
+- how the next grounded roadmap stages should sequence learning without skipping ahead to hidden adaptive behavior
 
 These core documents now also have live review-oriented foundations reflected in runtime.
 Use the proof packet and current runtime docs to distinguish:
@@ -43,8 +46,8 @@ These supporting specs define:
 ## Core Cross-Phase Inputs
 - `docs/PROOFS/Phase-5/PHASE_5_CLOSED_ACT_2026-03-13.md`
 - `docs/PROOFS/Phase-6/PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
-- `docs/design/phase 5/Delegated Autonomy.txt`
-- `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
+- `docs/design/Phase 5/Delegated Autonomy.txt`
+- `docs/design/Phase 6/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 
 These define the handoff boundary, the philosophical model for delegated autonomy, and the current sovereignty-platform realignment across future phases.
 
@@ -65,7 +68,7 @@ These may be useful during the Phase-6 era, but they are not part of the minimum
 ## Future-Phase / Pull-Forward Safety Inputs
 - the autonomy-tiers and evolution document in this folder
 - the constitutional-enforcement document in this folder
-- `docs/design/Phase 6/Firewall & Ledger Specification.txt`
+- the Firewall and Ledger specification in this folder
 
 These are primarily Phase-9/10+ design materials or pull-forward safety dependencies.
 They should not be read as the first implementation order for the Phase-6 core package.
