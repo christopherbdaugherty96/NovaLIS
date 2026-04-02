@@ -12,7 +12,7 @@ Use instead:
 - `PHASE_5_PROOF_PACKET_INDEX.md`
 
 ## Input
-- `docs/design/phase 5/MEMORY GOVERNANCE.md`
+- `docs/design/Phase 5/MEMORY GOVERNANCE.md`
 
 ## Candidate Rules
 1. Memory is a filing system, not a learning system.

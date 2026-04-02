@@ -149,7 +149,7 @@ This file should **NOT** be canonical anymore.
 Rename it to something like:
 
 ```
-docs/proofs/PHASE_3_5_GOVERNOR_ENFORCEMENT_AUDIT_AND_EXECUTION_LOG.md
+docs/PROOFS/phase 3.5-4/PHASE_3_5_GOVERNOR_ENFORCEMENT_AUDIT_AND_EXECUTION_LOG.md
 ```
 
 Purpose:
@@ -174,7 +174,7 @@ No code. No diffs. No narrative.
 Example name:
 
 ```
-docs/canon/PHASE_3_5_GOVERNOR_ENFORCEMENT_LOCK.md
+docs/PROOFS/phase 3.5-4/PHASE_3_5_GOVERNOR_ENFORCEMENT_AUDIT_AND_EXECUTION_LOG.md
 ```
 
 This should be **~2–3 pages max**, not 30.
@@ -598,7 +598,7 @@ GOV-001 → GOV-002 → GOV-003 → GOV-004 → GOV-005
 
 ### **Step 1: Lock This Document**
 ```bash
-git add docs/canonical/PHASE_3_5_GOVERNOR_ENFORCEMENT_LOCK.md
+git add "docs/PROOFS/phase 3.5-4/PHASE_3_5_GOVERNOR_ENFORCEMENT_AUDIT_AND_EXECUTION_LOG.md"
 git commit -m "CANONICAL LOCK: Phase 3.5 Governor Enforcement Baseline
 
 - 5 contract mismatches identified
@@ -1075,7 +1075,7 @@ GOV-001 → GOV-002 → GOV-003 → GOV-004 → GOV-005
 
 ### **Step 1: Lock This Document**
 ```bash
-git add docs/canonical/PHASE_3_5_GOVERNOR_ENFORCEMENT_LOCK.md
+git add "docs/PROOFS/phase 3.5-4/PHASE_3_5_GOVERNOR_ENFORCEMENT_AUDIT_AND_EXECUTION_LOG.md"
 git commit -m "CANONICAL LOCK: Phase 3.5 Governor Enforcement Baseline
 
 - 5 contract mismatches identified

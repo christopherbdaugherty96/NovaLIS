@@ -275,12 +275,15 @@ class Governor:
             )
 
     def _execute(self, req: ActionRequest) -> ActionResult:
+        entered_execution = False
         self._queue.set_pending(req.request_id)
-        self._execute_boundary.enter_execution()
-        start_time = time.monotonic()
-        timeout_seconds = self._execution_timeout_seconds(req.capability_id)
 
         try:
+            self._execute_boundary.enter_execution()
+            entered_execution = True
+            start_time = time.monotonic()
+            timeout_seconds = self._execution_timeout_seconds(req.capability_id)
+
             if req.capability_id == 16:
                 query = req.params.get("query")
                 if query:
@@ -426,7 +429,8 @@ class Governor:
                 request_id=req.request_id,
             )
         finally:
-            self._execute_boundary.exit_execution()
+            if entered_execution:
+                self._execute_boundary.exit_execution()
             self._queue.clear()
 
     @staticmethod
@@ -464,6 +468,12 @@ class Governor:
             pass
         return None
 
+    def _topology_entry_for(self, capability_id: int):
+        try:
+            return self.capability_topology.get(capability_id)
+        except Exception:
+            return None
+
     def _normalize_action_result(
         self,
         result: ActionResult,
@@ -471,10 +481,13 @@ class Governor:
         capability_id: int,
         request_id: str | None = None,
     ) -> ActionResult:
+        topology_entry = self._topology_entry_for(capability_id)
         return result.normalize(
             request_id=request_id,
             capability_id=capability_id,
-            authority_class=self._authority_class_for(capability_id),
+            authority_class=str(getattr(topology_entry, "authority_class", "")) if topology_entry else None,
+            external_effect=bool(getattr(topology_entry, "external_effect")) if topology_entry and hasattr(topology_entry, "external_effect") else None,
+            reversible=bool(getattr(topology_entry, "reversible")) if topology_entry and hasattr(topology_entry, "reversible") else None,
         )
 
     def allow_notification_delivery(self, metadata: Dict[str, Any]) -> tuple[bool, str]:

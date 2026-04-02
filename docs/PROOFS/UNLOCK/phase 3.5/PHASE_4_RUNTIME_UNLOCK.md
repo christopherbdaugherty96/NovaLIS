@@ -33,7 +33,7 @@ Phase-4 runtime may only be enabled if all conditions below are satisfied.
 
 Required:
 
-docs/PROOFS/governance-tests/reports/
+docs/PROOFS/phase 3.5-4/governance-tests/reports/
 
 
 Criteria:

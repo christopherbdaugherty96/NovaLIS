@@ -28,7 +28,8 @@ The live backend runtime.
 This is where the governor path, executors, cognition, voice, memory, and tests live.
 
 ### `Nova-Frontend-Dashboard/`
-A mirrored frontend copy used to keep the dashboard surface synchronized.
+A historical mirror copy of the frontend.
+The runtime-served canonical frontend lives in `nova_backend/static/`.
 
 ### `scripts/`
 Utility scripts for runtime docs, checks, and other project maintenance tasks.

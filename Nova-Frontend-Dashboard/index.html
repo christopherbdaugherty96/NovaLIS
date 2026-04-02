@@ -60,6 +60,38 @@
           </div>
         </div>
 
+        <section id="workflow-focus-widget" class="widget page-card workflow-focus-widget" aria-live="polite">
+          <div class="workflow-focus-header">
+            <div>
+              <div class="home-launch-kicker">Workflow Focus</div>
+              <h3>What are we getting done?</h3>
+            </div>
+            <span id="workflow-focus-status-badge" class="confidence-badge">Ready</span>
+          </div>
+          <p id="workflow-focus-copy" class="workflow-focus-copy">
+            Tell Nova the outcome you want, and it will turn that into the next steps.
+          </p>
+          <div class="workflow-focus-grid">
+            <div class="workflow-focus-card">
+              <div class="workflow-focus-label">Goal</div>
+              <div id="workflow-focus-goal" class="workflow-focus-value">Start with something simple like "Build me a landing page for my business."</div>
+            </div>
+            <div class="workflow-focus-card">
+              <div class="workflow-focus-label">Now</div>
+              <div id="workflow-focus-now" class="workflow-focus-value">Nova is ready to turn your idea into a workflow.</div>
+            </div>
+            <div class="workflow-focus-card">
+              <div class="workflow-focus-label">Next</div>
+              <div id="workflow-focus-next" class="workflow-focus-value">You can start broad. Nova will draft, explain, and pause when a choice matters.</div>
+            </div>
+          </div>
+          <div class="workflow-focus-actions">
+            <button id="btn-workflow-refine" type="button" class="assistant-action-btn">Refine goal</button>
+            <button id="btn-workflow-show-steps" type="button" class="assistant-action-btn">Show steps</button>
+            <button id="btn-workflow-reset" type="button" class="assistant-action-btn">Reset focus</button>
+          </div>
+        </section>
+
         <section class="chat-stage">
           <div class="panel conversation">
             <div id="chat-log" class="chat-log" aria-live="polite"></div>
@@ -83,12 +115,57 @@
           <div id="quick-actions" class="quick-actions" aria-label="Quick actions" hidden></div>
         </section>
 
+        <section id="live-help-widget" class="widget page-card live-help-widget" aria-live="polite">
+          <div class="live-help-header">
+            <div>
+              <div class="home-launch-kicker">Live Screen Help</div>
+              <h3>Let Nova stay with this screen</h3>
+            </div>
+            <span id="live-help-status-badge" class="confidence-badge">Off</span>
+          </div>
+          <p id="live-help-copy" class="workflow-focus-copy">
+            Start live screen help when you want Nova to follow one shared screen and listen for "Hey Nova" during that session.
+          </p>
+          <p id="live-help-trust-note" class="live-help-trust-note">
+            Nova only follows the screen you choose to share, only during this session, and stops as soon as you stop it or end screen sharing.
+          </p>
+          <div class="live-help-steps" aria-label="How live help works">
+            <div class="live-help-step">1. Share one screen or tab</div>
+            <div class="live-help-step">2. Say "Hey Nova" and ask naturally</div>
+            <div class="live-help-step">3. Stop any time</div>
+          </div>
+          <div class="workflow-focus-grid">
+            <div class="workflow-focus-card">
+              <div class="workflow-focus-label">Shared Screen</div>
+              <div id="live-help-screen-value" class="workflow-focus-value">No screen shared yet.</div>
+            </div>
+            <div class="workflow-focus-card">
+              <div class="workflow-focus-label">Voice</div>
+              <div id="live-help-voice-value" class="workflow-focus-value">Waiting to start. When live help is on, say "Hey Nova" before a request.</div>
+            </div>
+            <div class="workflow-focus-card">
+              <div class="workflow-focus-label">Last Heard</div>
+              <div id="live-help-last-heard-value" class="workflow-focus-value">Nothing heard yet.</div>
+            </div>
+            <div class="workflow-focus-card">
+              <div class="workflow-focus-label">Last Help</div>
+              <div id="live-help-last-result-value" class="workflow-focus-value">No live explanation yet.</div>
+            </div>
+          </div>
+          <div id="live-help-prompt-actions" class="live-help-prompt-actions" aria-label="Live help examples"></div>
+          <div class="workflow-focus-actions">
+            <button id="btn-live-help-start" type="button" class="assistant-action-btn">Start live help</button>
+            <button id="btn-live-help-explain" type="button" class="assistant-action-btn">Explain current view</button>
+            <button id="btn-live-help-stop" type="button" class="assistant-action-btn">Stop live help</button>
+          </div>
+        </section>
+
         <div class="chat-input">
           <div id="thinking-bar" class="thinking-bar" style="display:none" role="status" aria-live="polite"></div>
-          <input id="chat-input" type="text" placeholder="Ask Nova anything..." title="Type a message and press Enter to send." autocomplete="off" spellcheck="false" />
+          <input id="chat-input" type="text" placeholder="What are you trying to get done? Example: build me a landing page for my business." title="Type a goal or message and press Enter to send." autocomplete="off" spellcheck="false" />
           <button id="deepseek-btn" type="button" aria-label="Ask for a second opinion" title="Ask for a second opinion on the latest message">Second opinion</button>
           <button id="send-btn" type="button" title="Send message (Enter)">Send</button>
-          <button id="ptt-btn" type="button" aria-label="Push to talk" title="Press to record a short voice question">Talk</button>
+          <button id="ptt-btn" type="button" aria-label="Push to talk" title="Press to record. Say &quot;Hey Nova&quot; followed by your request.">Talk</button>
         </div>
       </section>
 
@@ -101,20 +178,20 @@
                 <h3>Top News</h3>
                 <span class="news-page-subtle">Live briefing</span>
               </div>
-              <p id="news-summary" class="news-summary news-summary-header">Load headlines, then use source-grounded briefings or article summaries when you want more than headline context.</p>
+              <p id="news-summary" class="news-summary news-summary-header">Load headlines, then ask Nova for a quick brief or a quick take on any story.</p>
             </div>
             <div class="news-search-card">
-              <label class="news-search-label" for="news-search-input">Search coverage</label>
+              <label class="news-search-label" for="news-search-input">Research a topic</label>
               <div class="news-search-shell">
                 <input id="news-search-input" type="text" placeholder="Search a topic, company, issue, or event..." autocomplete="off" spellcheck="false" />
                 <button id="btn-news-search" type="button">Search</button>
               </div>
-              <p class="news-search-note">Search runs as research and reads best in Chat.</p>
+              <p class="news-search-note">Search opens in Chat with a simpler overview and next steps.</p>
             </div>
           </div>
           <div class="news-actions">
             <button id="btn-news" type="button">Get headlines</button>
-            <button id="btn-news-summary" type="button">Source-grounded brief</button>
+            <button id="btn-news-summary" type="button">Quick brief</button>
             <button id="btn-news-refresh" type="button">Refresh channels</button>
             <button id="btn-news-expand" type="button" aria-pressed="false" style="display:none">Expand details</button>
           </div>
@@ -205,17 +282,12 @@
         <div class="widget page-card intro-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">What You Can Do</div>
-              <p class="workspace-board-section-copy">Start simple. Nova becomes useful fast.</p>
+              <div class="workspace-home-section-title">Best First Move</div>
+              <p id="intro-first-success-copy" class="workspace-board-section-copy">Nova is checking the easiest high-value move for this device.</p>
             </div>
           </div>
-          <ul class="help-list">
-            <li>Research: Ask deeper questions than search alone.</li>
-            <li>Explain: Understand a file, page, result, or something on your screen.</li>
-            <li>Continue: Pick up a project or thread where you left off.</li>
-            <li>Save: Preserve only the facts or decisions you explicitly choose.</li>
-            <li>Control: Use simple governed system actions when they are explicitly allowed.</li>
-          </ul>
+          <div id="intro-first-success-grid" class="intro-success-grid"></div>
+          <p class="first-run-note">Start with one useful outcome. Nova will help with the rest without making you learn the whole system first.</p>
         </div>
 
         <div class="widget page-card intro-panel" aria-live="polite">
@@ -323,15 +395,7 @@
             <span class="confidence-badge">Open Nova and move</span>
           </div>
           <p id="home-launch-summary">Nova is ready for briefings, explain-anything, research, and project continuity.</p>
-          <div class="home-launch-actions">
-            <button id="btn-home-brief" type="button">Morning brief</button>
-            <button id="btn-home-explain" type="button">Explain this</button>
-            <button id="btn-home-research" type="button">Research topic</button>
-            <button id="btn-home-continue-project" type="button">Continue project</button>
-            <button id="btn-home-agent-page" type="button">Open agent</button>
-            <button id="btn-home-workspace-page" type="button">Open workspace</button>
-            <button id="btn-home-trust-page" type="button">Open trust</button>
-          </div>
+          <div id="home-launch-actions" class="home-launch-actions"></div>
         </div>
         <div id="workspace-home-widget" class="widget page-card workspace-home-widget" aria-live="polite">
           <div class="workspace-home-header">
@@ -343,6 +407,10 @@
           </div>
           <p id="workspace-home-summary">Workspace home is preparing your latest project context.</p>
           <div id="workspace-home-focus" class="workspace-home-focus"></div>
+          <div class="workspace-home-section">
+            <div class="workspace-home-section-title">Resume Work</div>
+            <div id="workspace-home-resume" class="workspace-resume-grid"></div>
+          </div>
           <div id="workspace-home-grid" class="workspace-home-grid"></div>
           <div class="workspace-home-section">
             <div class="workspace-home-section-title">Recent reports and memory</div>
@@ -530,6 +598,7 @@
             </div>
           </div>
           <div id="workspace-board-focus" class="workspace-home-focus"></div>
+          <div id="workspace-board-focus-actions" class="workspace-home-actions"></div>
           <div id="workspace-board-stats" class="workspace-board-stats"></div>
         </div>
 
@@ -863,6 +932,9 @@
           <div id="settings-voice-grid" class="trust-center-health-grid"></div>
           <p class="first-run-note">
             Voice Check plays a short spoken confirmation phrase and then reports which engine handled the attempt.
+          </p>
+          <p class="first-run-note">
+            Voice input can now require the wake phrase <code>Hey Nova</code> before a request is sent.
           </p>
         </div>
 

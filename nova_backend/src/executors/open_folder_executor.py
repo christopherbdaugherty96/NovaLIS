@@ -40,8 +40,8 @@ class OpenFolderExecutor:
                 message=f"Opened {item_label}: {candidate}",
                 data={"path": str(candidate), "opened_kind": item_label},
                 request_id=request.request_id,
-                authority_class="local_effect",
-                external_effect=True,
+                authority_class="reversible_local",
+                external_effect=False,
                 reversible=True,
             )
 
@@ -62,7 +62,7 @@ class OpenFolderExecutor:
             message=f"Opened your {target} folder: {folder}",
             data={"path": str(folder), "opened_kind": "folder"},
             request_id=request.request_id,
-            authority_class="local_effect",
-            external_effect=True,
+            authority_class="reversible_local",
+            external_effect=False,
             reversible=True,
         )
