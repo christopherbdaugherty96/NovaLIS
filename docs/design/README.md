@@ -38,6 +38,19 @@ Everything else should live inside:
 
 ## Current Phase Layout
 
+### New Design Docs (2026-04-02 session — pending phase folder assignment)
+
+Root-level planning docs added this session:
+- `docs/design/NOVA_MASTER_ROADMAP_2026-04-02.md` — master prioritized backlog P0–P3
+- `docs/design/NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md` — intelligence tiers, provider routing
+- `docs/design/NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md` — profile setup, connection cards
+- `docs/design/NOVA_MEMORY_TIERS_DESIGN.md` — rolling + permanent memory tiers
+- `docs/design/NOVA_AUTOMATIONS_DESIGN.md` — templates, triggers, RSS, email triage, file watch
+- `docs/design/NOVA_TRADING_CONNECTOR_DESIGN.md` — governed auto-trading, Alpaca, cap 64
+
+These should be moved into appropriate phase folders (Phase 9/10/11) once the phase folder
+structure settles. Until then they live at root level.
+
 ### Phase 3.5
 Path:
 - `docs/design/Phase 3.5/`
