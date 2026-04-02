@@ -68,8 +68,8 @@ These documents remain useful as design history, but they are not the current au
 - the tonal calibration visibility design document in `docs/design/Phase 5/`
 - the corrected Phase-5 roadmap document in `docs/design/Phase 5/`
 - `docs/design/Phase 5/Delegated Autonomy.txt`
-- `docs/design/Phase 5/Consolidated API's.txt`
-- `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
+- the consolidated API planning note in `docs/design/Phase 5/`
+- `docs/design/Phase 5/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
 
 ## Deferred-to-Phase-6 Note
 Tracks intentionally not added to the closed Phase-5 package are indexed here:

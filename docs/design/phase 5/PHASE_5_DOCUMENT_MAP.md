@@ -14,14 +14,23 @@ These documents define the original trust-facing Phase-5 package:
 - project continuity and working context
 - tone, scheduling, and pattern-review boundaries
 
+The corrected roadmap in this folder should be read as:
+- the preferred historical roadmap reference
+- clearer than the deprecated `# ... PHASE 5 ROADMAP` placeholder that was archived during the 2026-04-02 second-pass cleanup
+- still subordinate to runtime truth and proof packets for what is live now
+
+Archived placeholder location:
+- `docs/design/archive/redundant_placeholders_2026-04-02/`
+
 ## Supporting Design Layer
 - tonal calibration scope design document in `docs/design/Phase 5/`
 - tonal calibration visibility design document in `docs/design/Phase 5/`
 - `docs/design/Phase 5/PHASE_5_MEMORY_REMEMBRANCE_AND_ASSISTIVE_NOTICING_ARCHITECTURE_2026-03-27.md`
-- `docs/design/NOVA_CROSS_SYSTEM_MEMORY_AND_GOVERNED_AWARENESS_DIRECTION_2026-03-27.md`
-- `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
-- `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
-- `docs/design/NOVA_LOCAL_PROJECT_VISUAL_EXPLAINER_PLAN_2026-03-21.md`
+- `docs/design/Phase 5/NOVA_CROSS_SYSTEM_MEMORY_AND_GOVERNED_AWARENESS_DIRECTION_2026-03-27.md`
+- `docs/design/Phase 5/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
+- `docs/design/Phase 5/NOVA_GOVERNED_LEARNING_LADDER_2026-04-02.md`
+- `docs/design/Phase 9/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
+- `docs/design/Phase 4.5/NOVA_LOCAL_PROJECT_VISUAL_EXPLAINER_PLAN_2026-03-21.md`
 
 These supporting documents explain how the Phase-5 runtime evolved into a more legible product layer for normal users.
 The memory / remembrance / assistive-noticing architecture packet should be read as:
@@ -34,11 +43,25 @@ The cross-system memory / governed-awareness direction packet adds the broader p
 - Nova's target is stateful continuity across the user's environment
 - memory, awareness, and help must stay governed instead of silently adaptive
 
+The governed learning ladder packet should be read as:
+- Phase-5 anchored for explicit preference learning
+- later continuity-aware workflow habit learning only after connectors and routines are real
+- not a license for hidden adaptive behavior
+
+The tonal calibration notes in this folder should be read this way:
+- tone shaping is a trust-visible design question, not hidden adaptation
+- global vs per-domain tone is a product choice with governance consequences
+- inspectability and override matter more than clever adaptation
+
 ## Future / Adjacent Direction
 - `docs/design/Phase 5/Delegated Autonomy.txt`
-- `docs/design/Phase 5/Consolidated API's.txt`
+- the consolidated API planning note in this folder
 
 These remain adjacent planning inputs, not active runtime authority.
+
+Interpret them this way:
+- `Delegated Autonomy.txt` is a long-range philosophy packet, not a Phase-5 implementation order
+- `Consolidated API's.txt` is a broad integration inventory, not a current approved connector plan
 
 ## Runtime-Implemented Phase-5 Proof Artifacts
 - `docs/PROOFS/Phase-5/PHASE_5_MEMORY_RUNTIME_SLICE_2026-03-11.md`

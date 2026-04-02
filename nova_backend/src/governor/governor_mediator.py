@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
+import os
+import platform
 import re
-import json
 import threading
 from time import monotonic
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Optional, Dict, Any, Union
 
 PENDING_CLARIFICATION_TTL_SECONDS = 60.0
@@ -19,6 +19,7 @@ ENABLED_CAP_CACHE_TTL_SECONDS = 5.0
 _pending_clarification: Dict[str, tuple[int, float]] = {}
 _enabled_capability_ids_cache: frozenset[int] | None = None
 _enabled_capability_ids_cache_at = 0.0
+_enabled_capability_ids_cache_profile = ""
 _state_lock = threading.RLock()
 
 
@@ -59,31 +60,37 @@ def _set_pending_clarification(session_id: str | None, capability_id: int) -> No
 def _load_enabled_capability_ids() -> frozenset[int]:
     global _enabled_capability_ids_cache
     global _enabled_capability_ids_cache_at
+    global _enabled_capability_ids_cache_profile
     now = monotonic()
+    current_profile = str(os.getenv("NOVA_RUNTIME_PROFILE") or "").strip() or "default"
     with _state_lock:
         if (
             _enabled_capability_ids_cache is not None
             and (now - _enabled_capability_ids_cache_at) <= ENABLED_CAP_CACHE_TTL_SECONDS
+            and _enabled_capability_ids_cache_profile == current_profile
         ):
             return _enabled_capability_ids_cache
 
-    registry_path = Path(__file__).resolve().parents[1] / "config" / "registry.json"
     try:
-        payload = json.loads(registry_path.read_text(encoding="utf-8"))
+        from src.governor.capability_registry import CapabilityRegistry
+
+        registry = CapabilityRegistry()
     except Exception:
         with _state_lock:
             _enabled_capability_ids_cache = frozenset()
             _enabled_capability_ids_cache_at = now
+            _enabled_capability_ids_cache_profile = current_profile
             return _enabled_capability_ids_cache
 
     enabled_ids = frozenset(
-        int(item.get("id"))
-        for item in payload.get("capabilities", [])
-        if item.get("enabled") is True and item.get("id") is not None
+        int(cap.id)
+        for cap in registry.all_capabilities()
+        if registry.is_enabled(cap.id)
     )
     with _state_lock:
         _enabled_capability_ids_cache = enabled_ids
         _enabled_capability_ids_cache_at = now
+        _enabled_capability_ids_cache_profile = current_profile
         return enabled_ids
 
 
@@ -91,6 +98,38 @@ def _invocation_if_enabled(capability_id: int, params: Dict[str, Any]) -> Invoca
     if capability_id in _load_enabled_capability_ids():
         return Invocation(capability_id=capability_id, params=params)
     return None
+
+
+def _platform_supports_volume_action(action: str) -> bool:
+    command = (action or "").strip().lower()
+    system = platform.system()
+    if command in {"up", "down", "set"}:
+        return system in {"Linux", "Darwin", "Windows"}
+    if command in {"mute", "unmute"}:
+        return system in {"Linux", "Darwin"}
+    return False
+
+
+def _platform_supports_media_action(action: str) -> bool:
+    command = (action or "").strip().lower()
+    if command not in {"play", "pause", "resume"}:
+        return False
+    return platform.system() in {"Linux", "Darwin"}
+
+
+def _normalize_spoken_request(text: str) -> str:
+    normalized = re.sub(
+        r"^\s*(?:hey|hi|okay|ok)[\s,.\-!?:;]*nova\b[\s,.\-!?:;]*",
+        "",
+        str(text or ""),
+        flags=re.IGNORECASE,
+    )
+    normalized = re.sub(r"^\s*(?:can|could|would|will|do)\s+you\s+", "", normalized, flags=re.IGNORECASE)
+    normalized = re.sub(r"^\s*please\s+", "", normalized, flags=re.IGNORECASE)
+    normalized = re.sub(r"\s+please\s*$", "", normalized, flags=re.IGNORECASE)
+    normalized = re.sub(r"\b(\d{1,3})\s*(?:percent|%)\b", r"\1", normalized, flags=re.IGNORECASE)
+    normalized = re.sub(r"\s+", " ", normalized).strip()
+    return normalized
 
 SEARCH_RE = re.compile(r"^\s*(search(?: for)?|look up)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
 SOURCE_RELIABILITY_RE = re.compile(
@@ -122,44 +161,55 @@ QUESTION_PREFIX_RE = re.compile(
     re.IGNORECASE,
 )
 OPEN_RE = re.compile(r"^\s*open\s+(?P<name>\w+)\s*$", re.IGNORECASE)
+OPEN_WEBSITE_RE = re.compile(
+    r"^\s*(?:open|go to|take me to)\s+(?:the\s+)?(?:website|site|webpage)\s+(?P<target>.+?)\s*$",
+    re.IGNORECASE,
+)
 OPEN_NAME_RE = re.compile(r"^\s*open\s+(?P<target>[A-Za-z0-9_.\- ]+)\s*$", re.IGNORECASE)
 OPEN_SOURCE_INDEX_RE = re.compile(r"^\s*open\s+(?:source|result)\s+(?P<idx>\d{1,2})\s*$", re.IGNORECASE)
 PREVIEW_SOURCE_INDEX_RE = re.compile(r"^\s*preview\s+(?:source|result)\s+(?P<idx>\d{1,2})\s*$", re.IGNORECASE)
 PREVIEW_WEBSITE_RE = re.compile(r"^\s*preview\s+(?P<target>[A-Za-z0-9_.\- ]+)\s*$", re.IGNORECASE)
 OPEN_FOLDER_RE = re.compile(r"^\s*open\s+(?P<folder>documents|downloads|desktop|pictures)\s*$", re.IGNORECASE)
+OPEN_FOLDER_FRIENDLY_RE = re.compile(
+    r"^\s*open\s+(?:my\s+)?(?P<folder>documents|downloads|desktop|pictures)(?:\s+folder)?\s*$",
+    re.IGNORECASE,
+)
 OPEN_FILE_RE = re.compile(r"^\s*open\s+(?:file|document)\s+(?P<path>.+?)\s*$", re.IGNORECASE)
 SET_VOLUME_RE = re.compile(r"^\s*set\s+volume(?:\s+to)?\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 VOLUME_VALUE_RE = re.compile(r"^\s*volume\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
-SET_BRIGHTNESS_RE = re.compile(r"^\s*set\s+brightness(?:\s+to)?\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
+SET_BRIGHTNESS_RE = re.compile(r"^\s*set\s+(?:screen\s+)?brightness(?:\s+to)?\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 BRIGHTNESS_VALUE_RE = re.compile(r"^\s*brightness\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 WEATHER_RE = re.compile(
-    r"^\s*(?:weather|weather update|current weather|weather forecast|what(?:'s| is) (?:the )?weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|forecast(?: today| tomorrow)?)\s*$",
+    r"^\s*(?:weather|weather update|current weather|weather forecast|show me the weather|tell me the weather|how(?:'s| is) the weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|what(?:'s| is) (?:the )?weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|forecast(?: today| tomorrow)?)\s*$",
     re.IGNORECASE,
 )
 NEWS_RE = re.compile(
-    r"^\s*(?:news|headlines|latest news|top news|news update|what(?:'s| is) (?:the )?news(?: today| now)?)\s*$",
+    r"^\s*(?:news|headlines|latest news|top news|news update|catch me up on the news|what(?:'s| is) going on in the news|what(?:'s| is) (?:the )?news(?: today| now)?)\s*$",
     re.IGNORECASE,
 )
 CALENDAR_RE = re.compile(
-    r"^\s*(?:calendar|calendar update|agenda|schedule|todays schedule|today's schedule|todays calendar|today's calendar|what(?:'s| is) on (?:my )?calendar(?: today)?)\s*$",
+    r"^\s*(?:calendar|calendar update|agenda|schedule|what do i have today|what(?:'s| is) on today|todays schedule|today's schedule|todays calendar|today's calendar|what(?:'s| is) on (?:my )?calendar(?: today)?|what(?:'s| is) on (?:my )?schedule(?: today)?)\s*$",
     re.IGNORECASE,
 )
 SYSTEM_RE = re.compile(
-    r"^\s*(?:system|system check|system status|what(?:'s| is) (?:the )?system status)\s*$",
+    r"^\s*(?:system|system check|system status|how(?:'s| is) the system doing|how(?:'s| is) nova doing|what(?:'s| is) (?:the )?system status)\s*$",
     re.IGNORECASE,
 )
 SCREEN_CAPTURE_RE = re.compile(
-    r"^\s*(?:take\s+(?:a\s+)?screenshot|capture\s+(?:the\s+)?screen|capture\s+this\s+screen)\s*$",
+    r"^\s*(?:take\s+(?:a\s+)?screenshot|capture\s+(?:the\s+)?screen|capture\s+this\s+screen|grab\s+(?:the\s+)?screen)\s*$",
     re.IGNORECASE,
 )
 SCREEN_ANALYSIS_RE = re.compile(
-    r"^\s*(?:analy[sz]e\s+(?:the\s+)?screen|analy[sz]e\s+this\s+screen|explain\s+this\s+screen)\s*$",
+    r"^\s*(?:analy[sz]e\s+(?:the\s+)?screen|analy[sz]e\s+this\s+screen|explain\s+this\s+screen|help\s+me\s+understand\s+this\s+screen|read\s+this\s+screen)\s*$",
     re.IGNORECASE,
 )
 EXPLAIN_ANYTHING_RE = re.compile(
     r"^\s*(?:"
     r"what(?:'s| is)\s+(?:this|this\s+error|this\s+page|this\s+chart)"
     r"|what\s+(?:am\s+i|i(?:'m| am))\s+looking\s+at"
+    r"|look\s+at\s+this"
+    r"|read\s+this\s+page"
+    r"|help\s+me\s+understand\s+this"
     r"|explain\s+(?:this|what\s+i\s+am\s+looking\s+at|what\s+i'm\s+looking\s+at|this\s+error|this\s+chart|this\s+page)"
     r"|analy[sz]e\s+this"
     r"|view\s+(?:the\s+|this\s+)?screen"
@@ -209,6 +259,7 @@ TOPIC_MAP_RE = re.compile(
     re.IGNORECASE,
 )
 TRACK_STORY_RE = re.compile(r"^\s*track\s+story\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
+FOLLOW_STORY_RE = re.compile(r"^\s*(?:follow|keep\s+following)\s+(?:story\s+)?(?P<topic>.+?)\s*$", re.IGNORECASE)
 UPDATE_STORY_RE = re.compile(r"^\s*update\s+story\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
 SHOW_STORY_RE = re.compile(r"^\s*show\s+story\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
 COMPARE_STORY_RE = re.compile(
@@ -219,7 +270,7 @@ COMPARE_STORIES_RE = re.compile(
     r"^\s*compare\s+stories\s+(?P<left>.+?)\s+and\s+(?P<right>.+?)\s*$",
     re.IGNORECASE,
 )
-STOP_TRACKING_RE = re.compile(r"^\s*stop\s+tracking\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
+STOP_TRACKING_RE = re.compile(r"^\s*(?:stop\s+tracking|stop\s+following)\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
 UPDATE_TRACKED_STORIES_RE = re.compile(r"^\s*update\s+tracked\s+stories\s*$", re.IGNORECASE)
 BRIEF_WITH_TRACKING_RE = re.compile(r"^\s*brief\s+with\s+story\s+tracking\s*$", re.IGNORECASE)
 LINK_STORY_RE = re.compile(
@@ -267,19 +318,26 @@ SECOND_OPINION_RE = re.compile(
     re.IGNORECASE,
 )
 DOC_CREATE_RE = re.compile(
-    r"^\s*(?:write|create|generate)\s+(?:a\s+)?(?:detailed\s+)?(?:analysis(?:\s+report)?|report|document)\s+(?:on|about)\s+(?P<topic>.+?)\s*$",
+    r"^\s*(?:write|create|generate|make)\s+(?:a\s+)?(?:detailed\s+)?(?:analysis(?:\s+report)?|report|document|write[- ]?up)\s+(?:on|about)\s+(?P<topic>.+?)\s*$",
     re.IGNORECASE,
 )
 DOC_SUMMARIZE_RE = re.compile(
-    r"^\s*summarize\s+doc(?:ument)?\s+(?P<doc_id>\d+)\s*$",
+    r"^\s*(?:summarize|sum\s+up)\s+doc(?:ument)?\s+(?P<doc_id>\d+)\s*$",
     re.IGNORECASE,
 )
 DOC_EXPLAIN_SECTION_RE = re.compile(
-    r"^\s*explain\s+section\s+(?P<section>\d+)(?:\s+of\s+doc(?:ument)?\s+(?P<doc_id>\d+))?\s*$",
+    r"^\s*(?:explain|walk\s+me\s+through)\s+section\s+(?P<section>\d+)(?:\s+of\s+doc(?:ument)?\s+(?P<doc_id>\d+))?\s*$",
     re.IGNORECASE,
 )
 DOC_LIST_RE = re.compile(
-    r"^\s*(?:list|show)\s+(?:analysis\s+)?docs?(?:uments)?\s*$",
+    r"^\s*(?:"
+    r"(?:list|show)\s+(?:my\s+)?(?:(?:analysis\s+)?docs?(?:uments)?|analysis\s+reports?)"
+    r"|open\s+(?:my\s+)?(?:analysis\s+docs?(?:uments)?|analysis\s+reports?)"
+    r")\s*$",
+    re.IGNORECASE,
+)
+MEMORY_SAVE_FRIENDLY_RE = re.compile(
+    r"^\s*(?:remember|save)\s+this(?:\s+in\s+memory)?\s*:\s*(?P<body>.+?)\s*$",
     re.IGNORECASE,
 )
 MEMORY_SAVE_RE = re.compile(
@@ -307,7 +365,7 @@ MEMORY_LIST_RE = re.compile(
     re.IGNORECASE,
 )
 MEMORY_LIST_FRIENDLY_RE = re.compile(
-    r"^\s*(?:show|list)\s+(?:my\s+|saved\s+)?memories\s*$",
+    r"^\s*(?:show|list)\s+(?:me\s+)?(?:my\s+|saved\s+)?memories\s*$|^\s*what\s+have\s+you\s+saved\s*$",
     re.IGNORECASE,
 )
 MEMORY_RECENT_RE = re.compile(
@@ -652,6 +710,7 @@ class GovernorMediator:
         )
         if not preserve_terminal_punctuation:
             t = re.sub(r"[.?!]+$", "", t)
+        t = _normalize_spoken_request(t)
         if not t:
                return None
 
@@ -768,7 +827,10 @@ class GovernorMediator:
                     return _invocation_if_enabled(61, {"action": "search", "query": memory_query})
             return _invocation_if_enabled(16, {"query": search_query})
 
-        m = OPEN_FOLDER_RE.match(t)
+        if DOC_LIST_RE.match(t):
+            return _invocation_if_enabled(54, {"action": "list"})
+
+        m = OPEN_FOLDER_RE.match(t) or OPEN_FOLDER_FRIENDLY_RE.match(t)
         if m:
             return _invocation_if_enabled(22, {"target": m.group("folder").strip().lower()})
 
@@ -783,6 +845,12 @@ class GovernorMediator:
         m = PREVIEW_SOURCE_INDEX_RE.match(t)
         if m:
             return _invocation_if_enabled(17, {"source_index": int(m.group("idx")), "preview": True})
+
+        m = OPEN_WEBSITE_RE.match(t)
+        if m:
+            target = _normalize_web_target(m.group("target"))
+            if target:
+                return _invocation_if_enabled(17, {"target": target.lower()})
 
         m = OPEN_RE.match(t)
         if m:
@@ -821,16 +889,32 @@ class GovernorMediator:
                 ),
             )
 
-        if re.match(r"^\s*(speak that|read that|say it)\s*$", t, re.IGNORECASE):
+        if re.match(r"^\s*(speak that|read that|say it|read this out loud|say this out loud|read that to me)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(18, {})
 
-        if re.match(r"^\s*volume\s+up\s*$", t, re.IGNORECASE):
+        if re.match(r"^\s*(?:volume\s+up|turn(?: the)? volume up|make it louder|make the volume louder)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(19, {"action": "up"})
-        if re.match(r"^\s*volume\s+down\s*$", t, re.IGNORECASE):
+        if re.match(r"^\s*(?:volume\s+down|turn(?: the)? volume down|make it quieter|make the volume quieter|make it softer)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(19, {"action": "down"})
         if re.match(r"^\s*(?:mute|mute volume|volume mute)\s*$", t, re.IGNORECASE):
+            if not _platform_supports_volume_action("mute"):
+                return Clarification(
+                    capability_id=19,
+                    message=(
+                        "Explicit mute is not available on this device yet. "
+                        "Try volume up, volume down, or set volume to a level."
+                    ),
+                )
             return _invocation_if_enabled(19, {"action": "mute"})
         if re.match(r"^\s*(?:unmute|unmute volume|volume unmute)\s*$", t, re.IGNORECASE):
+            if not _platform_supports_volume_action("unmute"):
+                return Clarification(
+                    capability_id=19,
+                    message=(
+                        "Explicit unmute is not available on this device yet. "
+                        "Try volume up, volume down, or set volume to a level."
+                    ),
+                )
             return _invocation_if_enabled(19, {"action": "unmute"})
 
         m = SET_VOLUME_RE.match(t)
@@ -840,9 +924,9 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(19, {"action": "set", "level": int(m.group("level"))})
 
-        if re.match(r"^\s*brightness\s+up\s*$", t, re.IGNORECASE):
+        if re.match(r"^\s*(?:brightness\s+up|turn(?: the)? brightness up|make(?: the screen)? brighter)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(21, {"action": "up"})
-        if re.match(r"^\s*brightness\s+down\s*$", t, re.IGNORECASE):
+        if re.match(r"^\s*(?:brightness\s+down|turn(?: the)? brightness down|make(?: the screen)? dimmer)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(21, {"action": "down"})
         if re.match(r"^\s*(?:increase|raise)\s+brightness\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(21, {"action": "up"})
@@ -857,6 +941,11 @@ class GovernorMediator:
             return _invocation_if_enabled(21, {"action": "set", "level": int(m.group("level"))})
 
         if re.match(r"^\s*(play|pause|resume)\s*$", t, re.IGNORECASE):
+            if not _platform_supports_media_action(t.lower()):
+                return Clarification(
+                    capability_id=20,
+                    message="Explicit play, pause, and resume are not available on this device yet.",
+                )
             return _invocation_if_enabled(20, {"action": t.lower()})
 
         if INTEL_BRIEF_RE.match(t):
@@ -905,6 +994,10 @@ class GovernorMediator:
             return _invocation_if_enabled(51, {})
 
         m = TRACK_STORY_RE.match(t)
+        if m:
+            return _invocation_if_enabled(52, {"action": "track", "topic": m.group("topic").strip()})
+
+        m = FOLLOW_STORY_RE.match(t)
         if m:
             return _invocation_if_enabled(52, {"action": "track", "topic": m.group("topic").strip()})
 
@@ -997,6 +1090,19 @@ class GovernorMediator:
 
         if MEMORY_OVERVIEW_RE.match(t):
             return _invocation_if_enabled(61, {"action": "overview"})
+
+        m = MEMORY_SAVE_FRIENDLY_RE.match(t)
+        if m:
+            body = m.group("body").strip()
+            title = body.split(":")[0].strip()[:80] or "Saved memory"
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "save",
+                    "title": title,
+                    "body": body,
+                },
+            )
 
         m = MEMORY_SAVE_RE.match(t)
         if m:
@@ -1200,16 +1306,16 @@ class GovernorMediator:
         if m:
             verb = (m.group("verb") or "").strip().lower()
             prompts: dict[str, tuple[int, str]] = {
-                "open": (17, "What should I open? You can say 'open website github' or 'open documents'."),
-                "search": (16, "What should I search for?"),
-                "research": (48, "What topic should I research?"),
-                "summarize": (49, "What should I summarize?"),
-                "compare": (53, "What should I compare?"),
-                "track": (52, "What topic should I track?"),
+                "open": (17, "What should I open? Try 'open the github website', 'open my downloads folder', or 'open file notes.txt'."),
+                "search": (16, "What should I search for? Try something like 'search for latest Michigan weather' or 'look up local tax deadline'."),
+                "research": (48, "What topic should I research? You can ask naturally, like 'research AI regulation trends'."),
+                "summarize": (49, "What should I summarize? Try 'summarize today's news' or 'summarize doc 2'."),
+                "compare": (53, "What should I compare? Try 'compare stories AI regulation and chip exports'."),
+                "track": (52, "What topic should I track? Try 'follow story AI regulation'."),
                 "memory": (
                     61,
                     "Try 'memory overview', 'what do you remember', 'recent memories', "
-                    "'search memories for <topic>', 'save this', 'remember this: <text>', "
+                    "'search memories for <topic>', 'remember this: <text>', "
                     "'list memories', 'memory show <id>', or 'memory export'.",
                 ),
             }

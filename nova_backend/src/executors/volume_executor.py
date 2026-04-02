@@ -17,10 +17,21 @@ class VolumeExecutor:
         level = params.get("level")
         common_meta = {
             "request_id": request.request_id,
-            "authority_class": "local_effect",
-            "external_effect": True,
+            "authority_class": "reversible_local",
+            "external_effect": False,
             "reversible": True,
         }
+
+        if action and not self.system_control.supports_explicit_volume_action(action):
+            if action in {"mute", "unmute"}:
+                return ActionResult.failure(
+                    "Explicit mute and unmute are not available on this device yet. Try volume up, volume down, or set volume to a level.",
+                    **common_meta,
+                )
+            return ActionResult.failure(
+                "That volume command is not available on this device right now.",
+                **common_meta,
+            )
 
         if action in {"up", "down"}:
             applied = self._apply_volume(action, None)

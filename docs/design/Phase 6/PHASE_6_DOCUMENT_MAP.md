@@ -10,6 +10,10 @@ Purpose: Classify the Phase-6 document set by authority and implementation order
 - `docs/design/Phase 6/PHASE_6_CAPABILITY_TOPOLOGY_SYSTEM_SPEC.md`
 - `docs/design/Phase 6/PHASE_6_SOVEREIGNTY_ALIGNMENT_AND_TRUST_LOOP_PLAN.md`
 - `docs/design/Phase 6/PHASE_6_ENGINEERING_CHECKLIST_2026-03-18.md`
+- `docs/design/Phase 6/NOVA_GROUNDED_CURRENT_STATUS_AND_NEXT_ROADMAP_2026-04-02.md`
+- `docs/design/Phase 6/NOVA_CURRENT_PHASE_GROUNDING_AND_FIRST_PRIORITY_TODO_2026-04-02.md`
+- `docs/design/Phase 6/NOVA_DOCS_CODE_ALIGNMENT_AUDIT_2026-04-02.md`
+- `docs/design/Phase 6/NOVA_LOCAL_FIRST_INTELLIGENCE_ARCHITECTURE_AND_MODEL_ROUTING_TODO_2026-04-02.md`
 
 These documents define the current ordered roadmap and the core Phase-6 policy substrate:
 - what a lawful delegated policy is
@@ -17,12 +21,31 @@ These documents define the current ordered roadmap and the core Phase-6 policy s
 - how capabilities must be classified before broad trigger expansion
 - what trust-alignment work must be completed before external-provider or external-executor integrations are allowed
 - what the concrete implementation checklist is for closing the Phase-6 trust and reality gaps
+- how the next grounded roadmap stages should sequence learning without skipping ahead to hidden adaptive behavior
+- how to answer the practical "what phase are we actually in?" question without overstating later-phase progress
+- how Nova's final intelligence structure should settle into a local-first governed hybrid instead of fragmented provider logic
 
 These core documents now also have live review-oriented foundations reflected in runtime.
 Use the proof packet and current runtime docs to distinguish:
 - what is design law
 - what is live now
 - what remains intentionally deferred
+
+## Grounded Audit And Cleanup Packets
+- `docs/design/Phase 6/NOVA_AUDIT_TODO_2026-03-28.md`
+- `docs/design/Phase 6/NOVA_CORRECTED_REPO_AUDIT_AND_REMEDIATION_2026-03-26.md`
+- `docs/design/Phase 6/NOVA_DOCS_ALIGNMENT_AND_ARCHIVE_AUDIT_2026-04-02.md`
+- `docs/design/Phase 6/NOVA_DOCS_CODE_ALIGNMENT_AUDIT_2026-04-02.md`
+- `docs/design/Phase 6/NOVA_HONEST_ASSESSMENT_AND_NEXT_TODO_2026-03-21.md`
+- `docs/design/Phase 6/NOVA_PRODUCT_MESSAGING_HARDENING_AND_APPLICATION_PLAN_2026-03-26.md`
+
+These packets matter because they ground the phase in:
+- real repository state
+- docs truth vs code truth
+- product-facing clarity
+- remediation order instead of abstract architecture alone
+
+They are not the canonical Phase-6 policy core, but they are some of the most useful repo-grounding inputs in this folder.
 
 ## Core Supporting Surface Specs
 - `docs/design/Phase 6/PHASE_6_POLICY_SIMULATION_SURFACE_SPEC.md`
@@ -43,8 +66,8 @@ These supporting specs define:
 ## Core Cross-Phase Inputs
 - `docs/PROOFS/Phase-5/PHASE_5_CLOSED_ACT_2026-03-13.md`
 - `docs/PROOFS/Phase-6/PHASE_6_DEFERRED_FROM_PHASE_5_2026-03-13.md`
-- `docs/design/phase 5/Delegated Autonomy.txt`
-- `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
+- `docs/design/Phase 5/Delegated Autonomy.txt`
+- `docs/design/Phase 6/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 
 These define the handoff boundary, the philosophical model for delegated autonomy, and the current sovereignty-platform realignment across future phases.
 
@@ -62,13 +85,29 @@ These define the handoff boundary, the philosophical model for delegated autonom
 
 These may be useful during the Phase-6 era, but they are not part of the minimum delegated-autonomy core.
 
+This optional layer really contains three different classes:
+- productization and packaging notes
+- local AI appliance and deployment direction
+- optional infrastructure explorations like self-hosted search indexing
+
+They should be read as:
+- useful strategic planning
+- not the first implementation ladder
+
 ## Future-Phase / Pull-Forward Safety Inputs
 - the autonomy-tiers and evolution document in this folder
 - the constitutional-enforcement document in this folder
-- `docs/design/Phase 6/Firewall & Ledger Specification.txt`
+- the Firewall and Ledger specification in this folder
 
 These are primarily Phase-9/10+ design materials or pull-forward safety dependencies.
 They should not be read as the first implementation order for the Phase-6 core package.
+
+This includes duplicate or parallel formulations of the same later safety concerns:
+- mutation or evolution control
+- firewall and ledger extensions
+- constitutional enforcement layers
+
+Preserve them for theory continuity, but do not confuse them with the current Phase-6 shipping core.
 
 ## Historical / Superseded
 - the older legacy Phase-6 roadmap document in this folder

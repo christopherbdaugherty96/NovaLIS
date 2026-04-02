@@ -1,3 +1,8 @@
+import json
+import platform
+from pathlib import Path
+
+
 def test_volume_media_brightness_parsing():
     from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
 
@@ -6,9 +11,13 @@ def test_volume_media_brightness_parsing():
     assert inv.capability_id == 19
 
     inv = GovernorMediator.parse_governed_invocation("pause")
-    assert isinstance(inv, Invocation)
-    assert inv.capability_id == 20
-    assert inv.params["action"] == "pause"
+    if platform.system() == "Windows":
+        assert isinstance(inv, Clarification)
+        assert "not available on this device yet" in inv.message.lower()
+    else:
+        assert isinstance(inv, Invocation)
+        assert inv.capability_id == 20
+        assert inv.params["action"] == "pause"
 
     inv = GovernorMediator.parse_governed_invocation("set brightness 70")
     assert isinstance(inv, Invocation)
@@ -35,14 +44,22 @@ def test_volume_media_brightness_parsing():
     assert inv.params["level"] == 33
 
     inv = GovernorMediator.parse_governed_invocation("mute volume")
-    assert isinstance(inv, Invocation)
-    assert inv.capability_id == 19
-    assert inv.params["action"] == "mute"
+    if platform.system() == "Windows":
+        assert isinstance(inv, Clarification)
+        assert "not available on this device yet" in inv.message.lower()
+    else:
+        assert isinstance(inv, Invocation)
+        assert inv.capability_id == 19
+        assert inv.params["action"] == "mute"
 
     inv = GovernorMediator.parse_governed_invocation("unmute")
-    assert isinstance(inv, Invocation)
-    assert inv.capability_id == 19
-    assert inv.params["action"] == "unmute"
+    if platform.system() == "Windows":
+        assert isinstance(inv, Clarification)
+        assert "not available on this device yet" in inv.message.lower()
+    else:
+        assert isinstance(inv, Invocation)
+        assert inv.capability_id == 19
+        assert inv.params["action"] == "unmute"
 
     inv = GovernorMediator.parse_governed_invocation("brightness 35")
     assert isinstance(inv, Invocation)
@@ -78,7 +95,6 @@ def test_volume_media_brightness_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 17
     assert inv.params["source_index"] == 2
-
     inv = GovernorMediator.parse_governed_invocation("preview source 1")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 17
@@ -497,6 +513,178 @@ def test_news_intelligence_parsing():
     assert inv.params["doc_id"] == 2
 
 
+def test_governor_mediator_accepts_more_natural_capability_phrases():
+    from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
+
+    inv = GovernorMediator.parse_governed_invocation("Hey Nova, can you show me the weather please?")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 55
+
+    inv = GovernorMediator.parse_governed_invocation("catch me up on the news")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 56
+
+    inv = GovernorMediator.parse_governed_invocation("what do I have today")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 57
+
+    inv = GovernorMediator.parse_governed_invocation("how is Nova doing")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 32
+
+    inv = GovernorMediator.parse_governed_invocation("open my downloads folder")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 22
+    assert inv.params["target"] == "downloads"
+
+    inv = GovernorMediator.parse_governed_invocation("go to the website github")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 17
+    assert inv.params["target"] == "github"
+
+    inv = GovernorMediator.parse_governed_invocation("read this out loud")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 18
+
+    inv = GovernorMediator.parse_governed_invocation("make it louder")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 19
+    assert inv.params["action"] == "up"
+
+    inv = GovernorMediator.parse_governed_invocation("set volume to 45 percent")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 19
+    assert inv.params["action"] == "set"
+    assert inv.params["level"] == 45
+
+    inv = GovernorMediator.parse_governed_invocation("make the screen dimmer")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 21
+    assert inv.params["action"] == "down"
+
+    inv = GovernorMediator.parse_governed_invocation("set screen brightness to 60 percent")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 21
+    assert inv.params["action"] == "set"
+    assert inv.params["level"] == 60
+
+    inv = GovernorMediator.parse_governed_invocation("look at this")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 60
+
+    inv = GovernorMediator.parse_governed_invocation("help me understand this")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 60
+
+    inv = GovernorMediator.parse_governed_invocation("make a write-up about AI geopolitics")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 54
+    assert inv.params["action"] == "create"
+
+    inv = GovernorMediator.parse_governed_invocation("sum up doc 2")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 54
+    assert inv.params["action"] == "summarize_doc"
+
+    inv = GovernorMediator.parse_governed_invocation("walk me through section 3 of doc 2")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 54
+    assert inv.params["action"] == "explain_section"
+
+    inv = GovernorMediator.parse_governed_invocation("open my analysis reports")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 54
+    assert inv.params["action"] == "list"
+
+    inv = GovernorMediator.parse_governed_invocation("remember this: client prefers warm tone and short headlines")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 61
+    assert inv.params["action"] == "save"
+    assert "client prefers warm tone" in inv.params["body"].lower()
+
+    inv = GovernorMediator.parse_governed_invocation("what have you saved")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 61
+    assert inv.params["action"] == "list"
+
+    inv = GovernorMediator.parse_governed_invocation("follow AI regulation")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 52
+    assert inv.params["action"] == "track"
+
+    inv = GovernorMediator.parse_governed_invocation("stop following AI regulation")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 52
+    assert inv.params["action"] == "stop"
+
+    clar = GovernorMediator.parse_governed_invocation("open")
+    assert isinstance(clar, Clarification)
+    assert "github website" in clar.message.lower()
+
+
+def test_governor_mediator_uses_capability_registry_profile_overrides(monkeypatch, tmp_path: Path):
+    from src.governor import capability_registry as capability_registry_module
+    from src.governor import governor_mediator as governor_mediator_module
+
+    registry_path = tmp_path / "registry.json"
+    registry_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "1.0",
+                "phase": "4",
+                "profiles": {
+                    "default": {"groups": [], "enabled_overrides": {}},
+                    "local-control": {"groups": [], "enabled_overrides": {"22": True}},
+                },
+                "capability_groups": {},
+                "capabilities": [
+                    {
+                        "id": 22,
+                        "name": "Open Local Path",
+                        "status": "active",
+                        "phase_introduced": "4",
+                        "risk_level": "low",
+                        "data_exfiltration": False,
+                        "enabled": False,
+                        "description": "Open a local path.",
+                        "authority_scope": "suggest",
+                        "authority_class": "read_only_local",
+                        "requires_confirmation": False,
+                        "reversible": True,
+                        "external_effect": False,
+                    }
+                ],
+            }
+        ),
+        encoding="utf-8",
+    )
+
+    monkeypatch.setattr(capability_registry_module, "REGISTRY_PATH", registry_path)
+    monkeypatch.setattr(
+        capability_registry_module.CapabilityRegistry,
+        "_emit_profile_lifecycle_events",
+        lambda self: None,
+    )
+
+    governor_mediator_module._enabled_capability_ids_cache = None
+    governor_mediator_module._enabled_capability_ids_cache_at = 0.0
+    governor_mediator_module._enabled_capability_ids_cache_profile = ""
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "default")
+
+    assert governor_mediator_module.GovernorMediator.parse_governed_invocation("open Nova-Project") is None
+
+    governor_mediator_module._enabled_capability_ids_cache = None
+    governor_mediator_module._enabled_capability_ids_cache_at = 0.0
+    governor_mediator_module._enabled_capability_ids_cache_profile = ""
+    monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "local-control")
+
+    invocation = governor_mediator_module.GovernorMediator.parse_governed_invocation("open Nova-Project")
+
+    assert isinstance(invocation, governor_mediator_module.Invocation)
+    assert invocation.capability_id == 22
+    assert invocation.params["path"] == "Nova-Project"
+
+
 def test_search_clarification_roundtrip_by_session():
     from src.governor.governor_mediator import GovernorMediator, Invocation, Clarification
 
@@ -511,3 +699,33 @@ def test_search_clarification_roundtrip_by_session():
     assert isinstance(second, Invocation)
     assert second.capability_id == 16
     assert second.params["query"] == "latest weather in Detroit"
+
+
+def test_mediator_explains_unsupported_windows_media_and_mute(monkeypatch):
+    from src.governor.governor_mediator import GovernorMediator, Clarification
+
+    monkeypatch.setattr("src.governor.governor_mediator.platform.system", lambda: "Windows")
+
+    mute = GovernorMediator.parse_governed_invocation("mute")
+    assert isinstance(mute, Clarification)
+    assert "not available on this device yet" in mute.message.lower()
+
+    pause = GovernorMediator.parse_governed_invocation("pause")
+    assert isinstance(pause, Clarification)
+    assert "not available on this device yet" in pause.message.lower()
+
+
+def test_mediator_keeps_supported_volume_and_media_actions_on_supported_platforms(monkeypatch):
+    from src.governor.governor_mediator import GovernorMediator, Invocation
+
+    monkeypatch.setattr("src.governor.governor_mediator.platform.system", lambda: "Linux")
+
+    mute = GovernorMediator.parse_governed_invocation("mute volume")
+    assert isinstance(mute, Invocation)
+    assert mute.capability_id == 19
+    assert mute.params["action"] == "mute"
+
+    pause = GovernorMediator.parse_governed_invocation("pause")
+    assert isinstance(pause, Invocation)
+    assert pause.capability_id == 20
+    assert pause.params["action"] == "pause"

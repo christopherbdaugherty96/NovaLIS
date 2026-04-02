@@ -1,190 +1,297 @@
 # Design Documentation Index
 
-Read this first: `docs/design/DESIGN_AUTHORITY.md`
+Read this first:
+- `docs/design/DESIGN_AUTHORITY.md`
 
-Purpose:
-- `docs/design/` contains intended architecture and phase direction.
-- It does not define runtime behavior.
-- Cross-phase planning realignments should be captured in explicit planning packets rather than overwriting runtime truth.
+## Purpose
 
-Canonical runtime truth:
+`docs/design/` is the design-intent layer for Nova.
+
+It contains:
+- future architecture direction
+- phase roadmaps
+- product-shaping packets
+- backlog notes
+- historical design material
+
+It does not define live runtime behavior.
+
+For runtime truth, always defer to:
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+- `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
 - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
-- `docs/PROOFS/`
+- verified proof packets in `docs/PROOFS/`
 
-Current cross-phase planning packet:
-- `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
+## Root-Level Rule
 
-Current product-messaging hardening packet:
-- `docs/design/NOVA_PRODUCT_MESSAGING_HARDENING_AND_APPLICATION_PLAN_2026-03-26.md`
+The top level of `docs/design/` is now intentionally minimal.
 
-Current repo-grounded UX improvement packet:
-- `docs/design/NOVA_USER_EXPERIENCE_IMPROVEMENT_PLAN_2026-03-26.md`
+Only these root files should remain:
+- `docs/design/README.md`
+- `docs/design/DESIGN_AUTHORITY.md`
 
-Current corrected repo-audit and remediation packet:
-- `docs/design/NOVA_CORRECTED_REPO_AUDIT_AND_REMEDIATION_2026-03-26.md`
+Everything else should live inside:
+- a phase folder
+- `IDEAS/`
+- `archive/`
+- `archive(phase 4)/`
 
-Current audit TODO backlog:
-- `docs/design/NOVA_AUDIT_TODO_2026-03-28.md`
+## Current Phase Layout
 
-Current master roadmap (all planned work, prioritized):
-- `docs/design/NOVA_MASTER_ROADMAP_2026-04-02.md`
+### New Design Docs (2026-04-02 session — pending phase folder assignment)
 
-Current agent-node architecture honest assessment:
-- `docs/design/NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md`
+Root-level planning docs added this session:
+- `docs/design/NOVA_MASTER_ROADMAP_2026-04-02.md` — master prioritized backlog P0–P3
+- `docs/design/NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md` — intelligence tiers, provider routing
+- `docs/design/NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md` — profile setup, connection cards
+- `docs/design/NOVA_MEMORY_TIERS_DESIGN.md` — rolling + permanent memory tiers
+- `docs/design/NOVA_AUTOMATIONS_DESIGN.md` — templates, triggers, RSS, email triage, file watch
+- `docs/design/NOVA_TRADING_CONNECTOR_DESIGN.md` — governed auto-trading, Alpaca, cap 64
 
-Current setup UI redesign — user profile, connections, identity:
-- `docs/design/NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md`
+These should be moved into appropriate phase folders (Phase 9/10/11) once the phase folder
+structure settles. Until then they live at root level.
 
-Current memory tier system design — rolling + permanent:
-- `docs/design/NOVA_MEMORY_TIERS_DESIGN.md`
+### Phase 3.5
+Path:
+- `docs/design/Phase 3.5/`
 
-Current automations design — templates, triggers, RSS, email triage, file watch:
-- `docs/design/NOVA_AUTOMATIONS_DESIGN.md`
+Focus:
+- sealed governance foundations
+- fast governance architecture
+- deferred explainability patterns
+- repository authority correction references
 
-Current trading connector design — governed auto-trading with pre-paid card limits:
-- `docs/design/NOVA_TRADING_CONNECTOR_DESIGN.md`
+Start with:
+- `docs/design/Phase 3.5/PHASE_3_5_DOCUMENT_MAP.md`
 
-Current bounded conversational planning packet:
-- `docs/design/CONVERSATIONAL_CORE_PHASE_PLAN_2026-03-19.md`
+### Phase 4
+Path:
+- `docs/design/Phase 4/`
 
-Current conversational-flow and silent-governor planning packet:
-- `docs/design/CONVERSATIONAL_FLOW_AND_SILENT_GOVERNOR_PLAN_2026-03-21.md`
+Focus:
+- core identity
+- deep thought / DeepSeek framing
+- early conversational mode and constitutional framing
 
-Current conversational competitiveness roadmap:
-- `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
+Start with:
+- `docs/design/Phase 4/PHASE_4_DOCUMENT_MAP.md`
 
-Current governed intelligence execution direction packet:
-- `docs/design/NOVA_GOVERNED_INTELLIGENCE_EXECUTION_DIRECTION_2026-03-21.md`
+### Phase 4.2
+Path:
+- `docs/design/Phase 4.2/`
 
-Current next-level robust agent roadmap:
-- `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
+Focus:
+- orthogonal cognition stack
+- presence doctrine
+- runtime-alignment notes for the cognition layer
 
-Current continuous Nova Agent-OS vision and trust roadmap:
-- `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
+Start with:
+- `docs/design/Phase 4.2/PHASE_4_2_DOCUMENT_MAP.md`
 
-Current cross-system memory and governed-awareness direction packet:
-- `docs/design/NOVA_CROSS_SYSTEM_MEMORY_AND_GOVERNED_AWARENESS_DIRECTION_2026-03-27.md`
+### Phase 4.5
+Path:
+- `docs/design/Phase 4.5/`
 
-Current honest assessment and next-todo note:
-- `docs/design/NOVA_HONEST_ASSESSMENT_AND_NEXT_TODO_2026-03-21.md`
+Focus:
+- UI and orb direction
+- speech and input naturalness
+- assistant utility audits
+- user-facing experience improvements
+- structure-map and visual explainer work
 
-Current future naming note:
-- `docs/design/NOVA_FUTURE_NAMING_NOTE_GHOVLIS_2026-03-21.md`
+Key moved packets:
+- `docs/design/Phase 4.5/NOVA_USER_EXPERIENCE_IMPROVEMENT_PLAN_2026-03-26.md`
+- `docs/design/Phase 4.5/NOVA_USER_FRIENDLINESS_TODO_2026-04-02.md`
+- `docs/design/Phase 4.5/NOVA_STYLE_LAYER_PLAN_2026-03-20.md`
 
-Current Phase-7 DeepSeek second-opinion companion packet:
-- `docs/design/Phase 7/PHASE_7_DEEPSEEK_SECOND_OPINION_PLAN.md`
+Start with:
+- `docs/design/Phase 4.5/PHASE_4_5_DOCUMENT_MAP.md`
 
-Current Phase-7 provider usage and budget visibility packet:
-- `docs/design/Phase 7/PHASE_7_PROVIDER_USAGE_AND_BUDGET_VISIBILITY_PLAN_2026-03-26.md`
+### Phase 5
+Path:
+- `docs/design/Phase 5/`
 
-Current Phase-7 proof packet:
-- `docs/PROOFS/Phase-7/PHASE_7_PROOF_PACKET_INDEX.md`
+Focus:
+- memory governance
+- remembrance
+- working context
+- tone and assistive noticing
+- continuity and governed awareness
+- preference learning as the first bounded learning layer
 
-Current Phase-6 proof packet:
-- `docs/PROOFS/Phase-6/PHASE_6_PROOF_PACKET_INDEX.md`
+Start with:
+- `docs/design/Phase 5/PHASE_5_DOCUMENT_MAP.md`
 
-Current Phase-8 canonical OpenClaw automation spec:
-- `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
+### Phase 6
+Path:
+- `docs/design/Phase 6/`
 
-Current Phase-8 master reference:
-- `docs/design/Phase 8/NOVA_OPENCLAW_HOME_AGENT_MASTER_REFERENCE_2026-03-27.md`
+Focus:
+- trust loop completion
+- policy executor and simulation surfaces
+- capability topology
+- productization and packaging
+- repo audit and remediation
+- sovereignty-alignment realignment
+- local-first intelligence architecture and provider-routing consolidation
 
-Current Nova system map (current and future):
-- `docs/design/Phase 8/NOVA_SYSTEM_MAP_CURRENT_AND_FUTURE_2026-03-27.md`
+Key moved packets:
+- `docs/design/Phase 6/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
+- `docs/design/Phase 6/NOVA_CORRECTED_REPO_AUDIT_AND_REMEDIATION_2026-03-26.md`
+- `docs/design/Phase 6/NOVA_AUDIT_TODO_2026-03-28.md`
+- `docs/design/Phase 6/NOVA_CURRENT_PHASE_GROUNDING_AND_FIRST_PRIORITY_TODO_2026-04-02.md`
 
-Current Phase-8 supporting OpenClaw execution packet:
-- `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
+Start with:
+- `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`
 
-Current Phase-8 home-agent and Nova personality-layer packet:
-- `docs/design/Phase 8/PHASE_8_OPENCLAW_HOME_AGENT_AND_PERSONALITY_LAYER_PLAN_2026-03-26.md`
+### Phase 7
+Path:
+- `docs/design/Phase 7/`
 
-Current Phase-8.5 scheduler and proactive delivery packet:
-- `docs/design/Phase 8/PHASE_8_5_SCHEDULER_AND_PROACTIVE_DELIVERY_PLAN_2026-03-27.md`
+Focus:
+- governed external reasoning
+- second-opinion flows
+- conversational competitiveness
+- web-search and news reasoning improvements
+- silent-governor conversational behavior
 
-Current advanced Governor-layer architecture packet:
-- `docs/design/Phase 8/PHASE_8_ADVANCED_GOVERNOR_LAYER_ARCHITECTURE_2026-03-27.md`
+Key moved packets:
+- `docs/design/Phase 7/CONVERSATIONAL_CORE_PHASE_PLAN_2026-03-19.md`
+- `docs/design/Phase 7/NOVA_WEBSEARCH_ANSWER_AND_REASONING_PLAN_2026-03-21.md`
+- `docs/design/Phase 7/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
 
-Current OpenAI local-first operating model packet:
-- `docs/design/Phase 8/OPENAI_AGENT_OPERATING_MODEL_2026-03-27.md`
+Start with:
+- `docs/design/Phase 7/PHASE_7_DOCUMENT_MAP.md`
 
-Current OpenAI provider routing and budget policy packet:
-- `docs/design/Phase 8/OPENAI_PROVIDER_ROUTING_AND_BUDGET_POLICY_2026-03-27.md`
+### Phase 8
+Path:
+- `docs/design/Phase 8/`
 
-Current OpenAI usage visibility packet:
-- `docs/design/Phase 8/OPENAI_USAGE_VISIBILITY_SPEC_2026-03-27.md`
+Focus:
+- governed execution
+- OpenClaw home-agent architecture
+- OpenAI provider routing for bounded task-report flows
+- visible operator expansion direction
+- execution widening under trust controls
+- trading guardrails and crypto connector planning
 
-Current trading-mode guardrails packet:
-- `docs/design/Phase 8/TRADING_MODE_GUARDRAILS_2026-03-27.md`
+Key moved packets:
+- `docs/design/Phase 8/NOVA_GOVERNED_VISIBLE_OPERATOR_MODE_TODO_2026-04-02.md`
+- `docs/design/Phase 8/NOVA_GOVERNED_REACH_EXPANSION_AND_OPENCLAW_COMPARISON_2026-04-02.md`
+- `docs/design/Phase 8/NOVA_OPENCLAW_END_TO_END_EXPANSION_MASTER_TODO_2026-04-02.md`
 
-Current Phase-8 preserved raw source notes:
-- `docs/design/Phase 8/openclaw.txt`
-- `docs/design/Phase 8/node design.txt`
+Start with:
+- `docs/design/Phase 8/PHASE_8_DOCUMENT_MAP.md`
 
-Current news experience and reasoning improvement packet:
-- `docs/design/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
+### Phase 8.5
+Path:
+- `docs/design/Phase 8.5/`
 
-Current web-search answer and reasoning improvement packet:
-- `docs/design/NOVA_WEBSEARCH_ANSWER_AND_REASONING_PLAN_2026-03-21.md`
+Focus:
+- scheduler and proactive delivery direction
+- bounded proactive behavior under explicit settings control
+- later bounded proactive learning after earlier trust and usability layers are earned
 
-Current chatbox helper-buttons cleanup note:
-- `docs/design/NOVA_CHATBOX_HELPER_BUTTONS_CLEANUP_NOTE_2026-03-21.md`
+Start with:
+- `docs/design/Phase 8.5/PHASE_8_5_DOCUMENT_MAP.md`
 
-Current TTS regression note:
-- `docs/design/NOVA_TTS_REGRESSION_NOTE_2026-03-21.md`
+### Phase 9
+Path:
+- `docs/design/Phase 9/`
 
-Current governed memory experience and context packet:
-- `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
+Focus:
+- governed node architecture
+- multi-system coherence
+- more continuous agent-system vision under trust constraints
+- governed capability-growth proposals under explicit human approval
 
-Current memory, remembrance, and assistive-noticing architecture packet:
-- `docs/design/Phase 5/PHASE_5_MEMORY_REMEMBRANCE_AND_ASSISTIVE_NOTICING_ARCHITECTURE_2026-03-27.md`
+Key moved packets:
+- `docs/design/Phase 9/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
+- `docs/design/Phase 9/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
 
-Current governed crypto connector and trading packet:
-- `docs/design/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
+Start with:
+- `docs/design/Phase 9/PHASE_9_DOCUMENT_MAP.md`
 
-Current local-project visual explainer packet:
-- `docs/design/NOVA_LOCAL_PROJECT_VISUAL_EXPLAINER_PLAN_2026-03-21.md`
+### Phase 10
+Path:
+- `docs/design/Phase 10/`
 
-Current bounded style planning packet:
-- `docs/design/NOVA_STYLE_LAYER_PLAN_2026-03-20.md`
+Focus:
+- long-horizon autonomy and mutation-control direction
+- reviewable adaptation and stronger containment-proof thinking
 
-Current bounded speech/input naturalness planning packet:
-- `docs/design/SPEECH_AND_INPUT_NATURALNESS_PLAN_2026-03-20.md`
+Note:
+- this phase is intentionally thin and is fed mostly by earlier-phase inputs plus adjacent Phase-9 autonomy theory
 
-Current user-observed assistant utility and UI audit packet:
-- `docs/design/NOVA_ASSISTANT_UTILITY_AND_UI_AUDIT_2026-03-20.md`
+Start with:
+- `docs/design/Phase 10/PHASE_10_DOCUMENT_MAP.md`
 
-Current user-observed local project and assistant utility audit packet:
-- `docs/design/NOVA_LOCAL_PROJECT_AND_ASSISTANT_UTILITY_AUDIT_2026-03-20.md`
+### Phase 11
+Path:
+- `docs/design/Phase 11/`
 
-Current conversational/style baseline on `main`:
-- `39b3d20` - Speech & Input Naturalness Stage 1-2 checkpoint
-- `d0a80c3` - Nova Style Layer Stage 2 checkpoint
+Focus:
+- future operator-model expansion
+- home-assistant product truth and experience shaping
+- governed creator and business lanes
+- self-development mode
+- future naming/product-lane direction
 
-Current recommended next-step posture:
-- Workspace Home, Workspace page, Trust page, first-run onboarding, Introduction page, Settings page, and Structure Map stage 2 are now live in the current repository state
-- trust-center drill-down, onboarding stage 2, and workspace stage 3 are now live
-- Phase-6 trust, policy review, and capability-authority surfaces are now complete in the current repository state, but trigger runtime remains disabled
-- Phase-7 governed external reasoning is now complete in the current repository state
-- a manual OpenClaw home-agent foundation is now live in the current repository state as an operator surface, not a Phase-8 execution path
-- Settings stage 2 provider/bridge/runtime-permission controls are now live in the current repository state
-- the immediate remaining live-runtime voice caveat is final device-confidence validation for spoken output
-- the current highest-value next product-foundation target is final voice device-confidence validation, then Phase-8 strict execution foundations that build on the manual home-agent surface
-- keep execution widening narrower than the UI/access bridge at first
-- richer project/workspace persistence and connector rollout should follow closely behind
-- prefer disciplined core-layer implementation over broad new expansion
+Interpretation:
+- read the home-assistant product truth first
+- read the idea-to-workflow operator model second
+- treat the remaining packets as future-lane expansions under that calmer core identity
 
-Canonical design phase folders:
-- `Phase 4`
-- `Phase 4.2`
-- `Phase 4.5`
-- `phase 5`
-- `Phase 6`
-- `Phase 7`
-- `Phase 8`
-- `Phase 9`
-- `Phase 10`
+Key moved packets:
+- `docs/design/Phase 11/NOVA_HOME_ASSISTANT_PRODUCT_TRUTH_2026-04-02.md`
+- `docs/design/Phase 11/NOVA_IDEA_TO_WORKFLOW_OPERATOR_MODEL_TODO_2026-04-02.md`
 
-Historical/superseded:
-- `archive(phase 4)` (legacy)
-- `archive` (new consolidation target)
+Start with:
+- `docs/design/Phase 11/PHASE_11_DOCUMENT_MAP.md`
+
+## Special Folders
+
+### IDEAS
+Path:
+- `docs/design/IDEAS/`
+
+Use for:
+- raw idea capture
+- not-yet-phased concepts
+
+### archive
+Path:
+- `docs/design/archive/`
+
+Use for:
+- superseded design artifacts
+- deprecated packets no longer treated as current
+- archived redundant placeholder files that no longer need to clutter active phase folders
+
+### archive(phase 4)
+Path:
+- `docs/design/archive(phase 4)/`
+
+Use for:
+- legacy Phase 4 material preserved separately from the newer consolidated archive
+
+## Recommended Reading Order
+
+If you want the fastest useful orientation:
+
+1. `docs/design/DESIGN_AUTHORITY.md`
+2. relevant phase document map
+3. the phase packet you care about
+4. compare against `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+
+Every active phase folder should now be entered through its document map first.
+
+## Short Version
+
+Use `docs/design/` for:
+- intended direction
+- phase planning
+- backlog notes
+
+Use runtime docs for:
+- what Nova can actually do today

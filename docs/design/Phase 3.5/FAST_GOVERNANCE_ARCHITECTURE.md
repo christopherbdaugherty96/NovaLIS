@@ -454,5 +454,5 @@ Verification:
 ---
 
 Document Status: 🔒 LOCKED (Canonical Architecture Pattern)
-Storage Path: /docs/canon/governance/fast-governance-architecture.md
+Storage Path: /docs/design/Phase 3.5/FAST_GOVERNANCE_ARCHITECTURE.md
 Next Review: Only on Phase 4.1 unlock request

@@ -131,6 +131,6 @@ Current runtime result:
 - complete
 
 ## Related Inputs
-- `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
+- `docs/design/Phase 6/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 - `docs/design/Phase 6/PHASE_6_SOVEREIGNTY_ALIGNMENT_AND_TRUST_LOOP_PLAN.md`
 - `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`

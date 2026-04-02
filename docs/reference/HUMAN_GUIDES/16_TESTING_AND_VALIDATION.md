@@ -60,6 +60,7 @@ Examples include:
 - frontend mirror sync checks
 
 These checks matter because Nova treats documentation as part of the system's legibility and trust surface.
+For frontend review, the runtime-served canonical UI is `nova_backend/static/`; the mirror check exists to detect when `Nova-Frontend-Dashboard/` drifts from it.
 
 ## The Big Idea
 Nova's testing philosophy is not just:

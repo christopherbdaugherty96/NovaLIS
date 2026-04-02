@@ -126,7 +126,7 @@ This is a UI safeguard before the governed command is dispatched.
 - `Nova-Frontend-Dashboard/style.phase1.css`
 
 ### Docs/tests
-- `docs/design/NOVA_USER_EXPERIENCE_IMPROVEMENT_PLAN_2026-03-26.md`
+- `docs/design/Phase 4.5/NOVA_USER_EXPERIENCE_IMPROVEMENT_PLAN_2026-03-26.md`
 - `nova_backend/tests/phase45/test_dashboard_onboarding_widget.py`
 
 ---
