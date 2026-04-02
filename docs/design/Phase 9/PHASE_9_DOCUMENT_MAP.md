@@ -9,17 +9,27 @@ Purpose: Separate the governed-node roadmap from older autonomy and mutation the
 This is the current Phase-9 planning core for Nova as a governed node and sovereignty platform.
 It now also carries the bounded future concept of governed capability growth, where Nova may coordinate proposed capability additions under explicit human approval without gaining self-expansion authority.
 
+## Same-Folder Companion Vision Packets
+- `docs/design/Phase 9/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
+- `docs/design/Phase 9/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
+
+Read these as broad system-vision companions to the governed-node plan:
+- the robust-agent roadmap captures missing product-system layers such as projects, connectors, evals, trust center, and context management
+- the continuous-agent-OS roadmap captures the larger "one identity, many governed subsystems" vision across work, home, memory, connectors, and background availability
+
+They are valuable because they explain why Phase 9 is more than infrastructure.
+They still do not authorize hidden autonomy or current runtime claims.
+
 ## Adjacent / Historical Research
-- the autonomy and mutation control design document in this folder
+- `docs/design/Phase 9/📘Nova Autonomy & Mutation Control.txt`
 
 This document remains valuable long-range theory for autonomy tiers and mutation governance, but it is broader than the immediate governed-node plan.
+It should be read as Phase-9/10-plus constitutional theory, not as near-term implementation order.
 
 ## Cross-Phase Inputs
 - `docs/design/Phase 6/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 - `docs/design/Phase 7/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
 - `docs/design/Phase 7/NOVA_GOVERNED_INTELLIGENCE_EXECUTION_DIRECTION_2026-03-21.md`
-- `docs/design/Phase 9/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
-- `docs/design/Phase 9/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
 - `docs/design/Phase 5/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
 - `docs/design/Phase 8/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
 - `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
@@ -66,6 +76,11 @@ The continuous Agent-OS vision packet should be read this way in Phase 9:
 - this is where Nova becomes a truly continuous node across devices and surfaces
 - cross-client project continuity, shared schedules, shared memory behavior, and one trust model belong here
 - continuity does not equal hidden autonomy
+
+The autonomy and mutation control essay should be read this way in Phase 9:
+- it is the strongest preserved theory for autonomy tiers, mutation classes, and kill-switch boundaries
+- it matters more as constitutional safety framing than as immediate implementation order
+- Phase 9 may borrow its boundary logic without inheriting its entire timing or scope
 
 The governed intelligence execution direction packet should be read this way in Phase 9:
 - Nova should preserve one governed reasoning-and-action contract across clients and surfaces

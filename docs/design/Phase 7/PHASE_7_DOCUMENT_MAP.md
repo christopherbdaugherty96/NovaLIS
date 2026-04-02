@@ -44,6 +44,9 @@ Current Phase-7 crypto reasoning companion input:
 Current governed intelligence execution direction companion input:
 - `docs/design/Phase 7/NOVA_GOVERNED_INTELLIGENCE_EXECUTION_DIRECTION_2026-03-21.md`
 
+Current broader conversation-quality companion input:
+- `docs/design/Phase 7/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
+
 This companion packet captures one specific product shape inside that same phase:
 - DeepSeek as a governed second-opinion reasoning source inside the same Nova chat box
 - Nova remaining the primary voice
@@ -105,11 +108,24 @@ Interpretation note:
 
 ## Adjacent / Historical Phase-7-Era Research
 - the older Phase-7 architecture document in this folder
-- the older intelligence-capacity thesis document in this folder
-- the remaining constitutional, presence, and autonomy essays in this folder
+- the intelligence-capacity thesis in this folder
+- the remaining constitutional, presence, memory, and autonomy essays in this folder
+- summary-review or audit condensation notes in this folder
 
 These documents remain valuable research inputs, but they should not be read as the current implementation order for the next Phase-7 package.
 Many of them describe broader presence and background-cognition ideas that are beyond the immediate governed external-reasoning track.
+
+During the 2026-04-02 second-pass cleanup, the tiny deprecated predecessor note for the intelligence-capacity thesis was moved to:
+- `docs/design/archive/redundant_placeholders_2026-04-02/`
+
+Important preserved themes in this adjacent layer:
+- house or household intelligence framing
+- influence-containment vs execution-containment theory
+- learning-from-correction and self-amendment theory
+- continuous awareness and envelope-based autonomy theory
+- memory architecture beyond current explicit-memory runtime
+
+Those themes are useful, but they are future-facing and should not be back-read into current Phase-7 runtime completion.
 
 ## Cross-Phase Inputs
 - `docs/design/Phase 6/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`

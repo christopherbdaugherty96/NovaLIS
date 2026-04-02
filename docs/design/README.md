@@ -60,6 +60,9 @@ Focus:
 - deep thought / DeepSeek framing
 - early conversational mode and constitutional framing
 
+Start with:
+- `docs/design/Phase 4/PHASE_4_DOCUMENT_MAP.md`
+
 ### Phase 4.2
 Path:
 - `docs/design/Phase 4.2/`
@@ -68,6 +71,9 @@ Focus:
 - orthogonal cognition stack
 - presence doctrine
 - runtime-alignment notes for the cognition layer
+
+Start with:
+- `docs/design/Phase 4.2/PHASE_4_2_DOCUMENT_MAP.md`
 
 ### Phase 4.5
 Path:
@@ -84,6 +90,9 @@ Key moved packets:
 - `docs/design/Phase 4.5/NOVA_USER_EXPERIENCE_IMPROVEMENT_PLAN_2026-03-26.md`
 - `docs/design/Phase 4.5/NOVA_USER_FRIENDLINESS_TODO_2026-04-02.md`
 - `docs/design/Phase 4.5/NOVA_STYLE_LAYER_PLAN_2026-03-20.md`
+
+Start with:
+- `docs/design/Phase 4.5/PHASE_4_5_DOCUMENT_MAP.md`
 
 ### Phase 5
 Path:
@@ -111,11 +120,13 @@ Focus:
 - productization and packaging
 - repo audit and remediation
 - sovereignty-alignment realignment
+- local-first intelligence architecture and provider-routing consolidation
 
 Key moved packets:
 - `docs/design/Phase 6/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 - `docs/design/Phase 6/NOVA_CORRECTED_REPO_AUDIT_AND_REMEDIATION_2026-03-26.md`
 - `docs/design/Phase 6/NOVA_AUDIT_TODO_2026-03-28.md`
+- `docs/design/Phase 6/NOVA_CURRENT_PHASE_GROUNDING_AND_FIRST_PRIORITY_TODO_2026-04-02.md`
 
 Start with:
 - `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`
@@ -179,6 +190,7 @@ Focus:
 - governed node architecture
 - multi-system coherence
 - more continuous agent-system vision under trust constraints
+- governed capability-growth proposals under explicit human approval
 
 Key moved packets:
 - `docs/design/Phase 9/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
@@ -193,6 +205,10 @@ Path:
 
 Focus:
 - long-horizon autonomy and mutation-control direction
+- reviewable adaptation and stronger containment-proof thinking
+
+Note:
+- this phase is intentionally thin and is fed mostly by earlier-phase inputs plus adjacent Phase-9 autonomy theory
 
 Start with:
 - `docs/design/Phase 10/PHASE_10_DOCUMENT_MAP.md`
@@ -207,6 +223,11 @@ Focus:
 - governed creator and business lanes
 - self-development mode
 - future naming/product-lane direction
+
+Interpretation:
+- read the home-assistant product truth first
+- read the idea-to-workflow operator model second
+- treat the remaining packets as future-lane expansions under that calmer core identity
 
 Key moved packets:
 - `docs/design/Phase 11/NOVA_HOME_ASSISTANT_PRODUCT_TRUTH_2026-04-02.md`
@@ -232,6 +253,7 @@ Path:
 Use for:
 - superseded design artifacts
 - deprecated packets no longer treated as current
+- archived redundant placeholder files that no longer need to clutter active phase folders
 
 ### archive(phase 4)
 Path:
@@ -248,6 +270,8 @@ If you want the fastest useful orientation:
 2. relevant phase document map
 3. the phase packet you care about
 4. compare against `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+
+Every active phase folder should now be entered through its document map first.
 
 ## Short Version
 
