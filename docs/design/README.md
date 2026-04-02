@@ -27,6 +27,9 @@ Current corrected repo-audit and remediation packet:
 Current audit TODO backlog:
 - `docs/design/NOVA_AUDIT_TODO_2026-03-28.md`
 
+Current master roadmap (all planned work, prioritized):
+- `docs/design/NOVA_MASTER_ROADMAP_2026-04-02.md`
+
 Current agent-node architecture honest assessment:
 - `docs/design/NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md`
 
