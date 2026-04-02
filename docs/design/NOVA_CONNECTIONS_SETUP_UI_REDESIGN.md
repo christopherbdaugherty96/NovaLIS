@@ -1,4 +1,4 @@
-# Nova — Connections & Setup UI Redesign
+# Nova — Setup UI Redesign: User Profile + Connections
 Status: PLANNED — not yet started
 Updated: 2026-04-02
 
@@ -6,15 +6,196 @@ Updated: 2026-04-02
 
 ## Goal
 
-Replace the current read-only connection status grid with a fully interactive setup experience.
-Users should be able to connect, test, and disconnect every provider entirely from within Nova's UI —
-no manual `.env` editing required.
+Build a proper first-run and ongoing setup experience covering two areas:
 
-Add an email identity field as the anchor for provider detection and future OAuth flows.
+1. **User Profile** — who the user is, what they want to be called, how they want Nova to behave
+2. **Connections** — connect, test, and disconnect every provider from within Nova's UI, no manual `.env` editing
 
 ---
 
-## Current State (what exists now)
+## PART A — User Profile & Preferences
+
+### What This Is
+
+A personal setup section where the user tells Nova who they are and how they want to be treated.
+This feeds directly into Nova's personality layer, memory system, and response style.
+
+---
+
+### Zone A1 — Identity
+
+```
+┌──────────────────────────────────────────────────┐
+│  About You                                        │
+│                                                   │
+│  Your name                                        │
+│  ┌────────────────────────────────────────────┐  │
+│  │  Chris                                     │  │
+│  └────────────────────────────────────────────┘  │
+│                                                   │
+│  What Nova calls you  (nickname / leave blank)    │
+│  ┌────────────────────────────────────────────┐  │
+│  │  e.g. "Boss", "C", leave blank for name   │  │
+│  └────────────────────────────────────────────┘  │
+│                                                   │
+│  Email  (used to detect connected services)       │
+│  ┌────────────────────────────────────────────┐  │
+│  │  email@example.com                   [✓]   │  │
+│  └────────────────────────────────────────────┘  │
+└──────────────────────────────────────────────────┘
+```
+
+**Fields:**
+- `name` — user's real name or preferred name. Nova uses this in greetings and memory.
+- `nickname` — optional. If set, Nova uses this instead of name in conversation (e.g. "Hey Boss").
+  If blank, falls back to name.
+- `email` — identity anchor for provider detection and future OAuth (see Part B).
+
+**Storage:** persisted to backend settings store AND written into Nova's governed memory store as a permanent
+first-class memory entry. This means Nova carries name, nickname, and email as active context in every
+conversation — not just as a config value the backend reads, but as something Nova actually "knows" about
+the user the same way she knows anything she has been told to remember.
+
+**Memory write on save:**
+- When the user saves their profile, the backend writes a governed memory record with a reserved key
+  (e.g. `user_identity`) into `governed_memory_store`.
+- This record is loaded at session start alongside other memory and injected into Nova's working context.
+- Result: Nova greets the user by name/nickname naturally, references their preferences without being told,
+  and treats the user rules as persistent known context rather than a one-time instruction.
+
+---
+
+### Zone A2 — Preferences
+
+Light preference toggles that shape Nova's default behavior without needing to edit governance docs.
+
+```
+┌──────────────────────────────────────────────────┐
+│  Preferences                                      │
+│                                                   │
+│  Response style                                   │
+│  ◉ Concise   ○ Balanced   ○ Detailed             │
+│                                                   │
+│  Morning brief                                    │
+│  ◉ On   ○ Off      Time: [ 08:00 ]               │
+│                                                   │
+│  Proactive suggestions                            │
+│  ◉ On   ○ Off                                    │
+│                                                   │
+│  Use my name in responses                         │
+│  ◉ Yes  ○ No                                     │
+│                                                   │
+└──────────────────────────────────────────────────┘
+```
+
+**Preference fields (expandable — add more as needed):**
+- `response_style` — "concise" | "balanced" | "detailed". Injects a style hint into the system prompt.
+- `morning_brief_enabled` + `morning_brief_time` — surfaces to the scheduler (already exists in Nova).
+- `proactive_suggestions` — whether Nova offers follow-up suggestions after responses.
+- `use_name_in_responses` — whether Nova addresses the user by name/nickname in conversation.
+
+---
+
+### Zone A3 — User Rules
+
+A free-text area where the user writes their own rules for how Nova should behave.
+These are appended to the system prompt or personality layer as user-defined constraints.
+
+```
+┌──────────────────────────────────────────────────┐
+│  Your Rules for Nova                              │
+│                                                   │
+│  Write anything you always want Nova to do,      │
+│  avoid, or remember about how you work.           │
+│                                                   │
+│  ┌────────────────────────────────────────────┐  │
+│  │  - Always give me bullet points first      │  │
+│  │  - Don't ask clarifying questions if       │  │
+│  │    you can make a reasonable assumption    │  │
+│  │  - I prefer metric units                  │  │
+│  │  - Don't use filler phrases like          │  │
+│  │    "Certainly!" or "Great question!"      │  │
+│  │                                            │  │
+│  │  (free text, one rule per line)            │  │
+│  └────────────────────────────────────────────┘  │
+│                              [Save rules]         │
+└──────────────────────────────────────────────────┘
+```
+
+**Behavior:**
+- Rules are stored in the settings store as a raw string.
+- At runtime, the personality/prompt builder prepends these rules to the system prompt.
+- Rules are user-owned — Nova cannot override them through normal operation.
+- Governor does NOT gate these — they are user expression, not a governed capability.
+- Character limit: suggested 2000 chars to prevent prompt bloat.
+
+---
+
+### Backend Work for Part A
+
+| Method | Path | Purpose |
+|---|---|---|
+| `GET` | `/api/settings/profile` | Return current name, nickname, email, preferences, rules |
+| `POST` | `/api/settings/profile` | Save name, nickname, email |
+| `POST` | `/api/settings/preferences` | Save preference toggles |
+| `POST` | `/api/settings/rules` | Save user rules string |
+
+Storage: extend the existing settings store (or create `user_profile_store.py`) AND write a protected
+`user_identity` record into `governed_memory_store` on every profile save. The memory store is the
+runtime source of truth; the settings store is the persistence/edit layer.
+
+Runtime injection: the personality/prompt builder reads these at conversation start and injects:
+- Nickname/name into the greeting and memory layer
+- Response style hint into the system prompt prefix
+- User rules block into the system prompt (after governance rules, before conversation)
+
+**Core memory integration (key design decision):**
+Profile data does not live only in a settings file — it is written into Nova's governed memory store
+so Nova carries this knowledge as active conversational context, not just background config.
+
+Memory record structure (written on profile save):
+```json
+{
+  "key": "user_identity",
+  "type": "core",
+  "content": {
+    "name": "Chris",
+    "nickname": "Boss",
+    "email": "...",
+    "response_style": "concise",
+    "use_name": true,
+    "rules": "- Always give bullet points first\n- Prefer metric units"
+  },
+  "protected": true,
+  "source": "user_profile_setup"
+}
+```
+
+- `protected: true` means Nova cannot overwrite or forget this via normal `remember` / `forget` commands
+- The record is always loaded first in the memory recall stack — highest priority context
+- If the user updates their profile in settings, the memory record is updated in place (same key)
+- The rules field in memory is what Nova actually sees at prompt time — not a separate config path
+
+---
+
+### Open Questions for Part A
+
+- [ ] Should "user rules" be shown to Nova as hard constraints (prefixed "You MUST...") or soft preferences?
+- [ ] Should nickname/name already be surfaced somewhere in Nova's existing personality system — or is this entirely new?
+- [ ] What is the character/line limit for user rules before prompt injection becomes a problem?
+- [ ] Should preferences like response_style also be changeable mid-conversation via chat command (e.g. "be more concise")?
+- [ ] Should there be a "reset to defaults" button for preferences?
+- [ ] Should the profile section be part of the main Settings page or a separate first-run onboarding page?
+- [ ] How does the `user_identity` memory record interact with Nova's existing memory recall — does it always load first, or is it injected directly into the system prompt regardless of recall?
+- [ ] Should Nova be able to suggest updates to the profile ("I noticed you always prefer bullet points — want me to save that as a rule?") or is the profile strictly user-edited only?
+
+---
+
+---
+
+## PART B — Connections & Provider Setup
+
+### Current State (what exists now)
 
 - `#settings-connection-grid` — read-only chip grid, populated from `trustReviewState.connectionRuntime`
 - `#intro-checklist-grid` — setup readiness checklist (also read-only)
@@ -32,9 +213,9 @@ Relevant files:
 
 ---
 
-## Proposed Design
+### Proposed Design
 
-### Zone 1 — Identity (Email)
+#### Zone 1 — Identity (Email)
 
 A single email input at the top of the setup/connections page.
 
@@ -60,7 +241,7 @@ A single email input at the top of the setup/connections page.
 
 ---
 
-### Zone 2 — Provider Connection Cards
+#### Zone 2 — Provider Connection Cards
 
 Each provider gets a card. Cards replace the current read-only chip grid.
 
@@ -108,7 +289,7 @@ Each provider gets a card. Cards replace the current read-only chip grid.
 
 ---
 
-### Zone 3 — Disconnect All / Reset
+#### Zone 3 — Disconnect All / Reset
 
 At the bottom of the connections page, a governed reset option.
 
@@ -129,7 +310,7 @@ At the bottom of the connections page, a governed reset option.
 
 ---
 
-## Backend Work Required
+### Backend Work Required (Part B)
 
 New API endpoints needed in `nova_backend/src/api/settings_api.py`:
 
@@ -151,7 +332,7 @@ Health check logic per provider:
 
 ---
 
-## Frontend Work Required
+### Frontend Work Required (Part B)
 
 - Replace `#settings-connection-grid` chip rendering with card component renderer
 - Add identity email input above the card grid
@@ -163,7 +344,7 @@ Health check logic per provider:
 
 ---
 
-## What Does NOT Change
+### What Does NOT Change (Part B)
 
 - Keys are never stored in localStorage or sent to any third party
 - All governed capability paths still go through the Governor — connecting a key in the UI does not bypass governance
@@ -172,7 +353,7 @@ Health check logic per provider:
 
 ---
 
-## Open Questions / Things to Add
+### Open Questions / Things to Add (Part B)
 
 - [ ] Should the UI support OAuth flows (Google sign-in button) for Gmail/Calendar, or key-only for now?
 - [ ] Where exactly does the email field live — Settings page only, or also on the intro/onboarding panel?
