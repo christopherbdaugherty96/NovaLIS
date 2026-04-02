@@ -14,8 +14,8 @@ class BrightnessExecutor:
         level = params.get("level")
         common_meta = {
             "request_id": request.request_id,
-            "authority_class": "local_effect",
-            "external_effect": True,
+            "authority_class": "reversible_local",
+            "external_effect": False,
             "reversible": True,
         }
 

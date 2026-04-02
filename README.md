@@ -1,119 +1,233 @@
-﻿# NOVA
+# NOVA
 
-Nova is a governed personal intelligence workspace.
+Nova is a governed home assistant and personal intelligence workspace.
 
-It is built to help with:
-- research and explanation
-- daily information snapshots
-- screen and file understanding
-- ongoing project continuity
-- explicit governed memory
-- bounded local computer help
+It is designed to help people think, research, understand screens and files, continue real work, and preserve useful context without turning into a hidden autonomous agent.
 
-Nova is not meant to be a hidden autonomous agent.
-Its core principle is simple:
+Core rule:
 
 `Intelligence may expand. Authority may not expand without explicit unlock.`
 
-## What Nova Feels Like
+## What Nova Is
 
-In everyday use, Nova is meant to feel like:
+Nova is meant to feel like:
+- a calm home assistant on your computer
 - a calm intelligence layer on your computer
-- a system that can explain what you are looking at
-- a system that can help you continue real work
-- a system that can preserve important context without silent persistence
+- a workspace for understanding information
+- a system that can continue project context across sessions
+- a governed assistant that stays inspectable and interruptible
 
-Examples of the kind of help Nova is designed to provide:
-- explain a page, error, chart, or screen
-- summarize current news and go deeper on a selected story
-- show weather, calendar, and system summaries
-- continue a project thread and surface blockers or next steps
-- save an important decision into governed memory
+Nova helps with:
+- answer-first web research
+- news headlines, summaries, and deeper story follow-up
+- weather, calendar, and daily brief surfaces
+- screen capture and screen explanation on explicit request
+- file and folder opening through governed local routes
+- ongoing thread continuity and governed memory
+- read-only second-opinion review
+- bounded local computer help
 
-## Read This First
+Nova is not meant to be:
+- a hidden always-on agent
+- a silent background automation loop
+- an unbounded browser bot
+- a system that expands its own authority without explicit approval
 
-If you want the plain-language explanation of the project, start here:
+## What Is Live Today
 
-- `docs/reference/HUMAN_GUIDES/README.md`
+According to the current runtime authority docs, Nova currently includes:
+- governed web search
+- answer and response verification
+- multi-source reporting
+- headline summary and intelligence brief flows
+- topic/story tracking surfaces
+- analysis documents
+- weather, news, and calendar snapshots
+- screen capture and screen analysis
+- explain-anything routing
+- governed memory controls
+- external reasoning review
+- active dashboard, voice, and websocket surfaces
 
-That guide set explains:
-- what Nova is
-- how Nova works
-- what Nova can do
-- how voice, screen, context, continuity, and memory fit together
-- what is live today vs what is still planned
+Nova also has an OpenClaw home-agent foundation live as a bounded operator surface:
+- manual briefing templates
+- delivery controls
+- explicit settings-gated scheduling
+- strict preflight and rate-limited task reporting
 
-## Runtime Authority
+What is not broadly live yet:
+- full governed envelope execution
+- broad autonomous browser/action control
+- full calendar integration
 
-For all runtime behavior, capability status, and execution authority truth, see:
+For exact runtime truth, always defer to:
 
-`docs/current_runtime/CURRENT_RUNTIME_STATE.md`
-
-Use these alongside it:
+- `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 - `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
 - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
 
-If any explanatory or historical document conflicts with runtime truth, `docs/current_runtime/CURRENT_RUNTIME_STATE.md` is authoritative.
+## Why Nova Is Different
 
-## Documentation Map
+Nova's main differentiator is not raw automation breadth.
 
-Nova's docs are intentionally separated into different roles:
+It is the separation between intelligence and authority.
 
-- Human guides:
-  - `docs/reference/HUMAN_GUIDES/`
-  - plain-language explanation for people
+Nova is being built so that it can:
+- reason more deeply
+- remember more usefully
+- explain more clearly
+- help more fluidly
 
-- Runtime truth:
-  - `docs/current_runtime/`
-  - generated and runtime-aligned operational truth
+without silently becoming more empowered.
 
-- Proof packets:
-  - `docs/PROOFS/`
-  - evidence for what has been implemented and verified
+That separation runs through the project:
+- Governor-mediated execution
+- capability registry control
+- enforced network mediation
+- append-only ledger logging
+- explicit memory controls
+- visible trust and settings surfaces
 
-- Design docs:
-  - `docs/design/`
-  - design intent, future plans, and phase concepts
+## Start Here
 
-- Canonical governance:
-  - `docs/canonical/`
-  - constitutional and governance source material
+If you want the fastest path to understanding the project, use this order:
 
-## High-Level Project State
-
-At a high level, Nova now has:
-- active governed execution
-- active cognitive/reporting systems
-- active perception and screen explanation
-- active project continuity surfaces
-- active governed memory slices
-
-That means Nova is already more than a chat interface.
-It is becoming a workspace for understanding information, continuing work, and preserving important context under user control.
-
-## Repository Orientation
-
-Main surfaces:
-- `nova_backend/src/`
-- `nova_backend/tests/`
-- `nova_backend/static/`
-- `Nova-Frontend-Dashboard/`
-- `docs/`
-
-If you are reviewing or onboarding, a good order is:
 1. `docs/reference/HUMAN_GUIDES/README.md`
 2. `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 3. `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
-4. `nova_backend/src/brain_server.py`
-5. `nova_backend/src/governor/`
+4. `docs/canonical/CANONICAL_DOCUMENT_MAP.md`
+5. `REPO_MAP.md`
+
+That gives you:
+- the plain-language explanation first
+- the live runtime truth second
+- the governance layer after that
+- the codebase map last
+
+## Documentation Map
+
+Nova's documentation is intentionally split by role.
+
+### Human guides
+- `docs/reference/HUMAN_GUIDES/`
+- plain-language onboarding and product understanding
+
+### Runtime truth
+- `docs/current_runtime/`
+- generated, runtime-aligned authority and implementation truth
+
+### Proof packets
+- `docs/PROOFS/`
+- implementation and validation evidence
+
+### Design docs
+- `docs/design/`
+- future direction, backlog, architecture packets, and planning docs
+
+### Canonical governance
+- `docs/canonical/`
+- constitutional and governance source material
+
+If any design or explanatory doc conflicts with runtime truth, runtime truth wins.
+
+## Repository Orientation
+
+Main repository surfaces:
+- `nova_backend/src/`
+- `nova_backend/tests/`
+- `nova_backend/static/`
+- `Nova-Frontend-Dashboard/` (historical mirror copy; `nova_backend/static/` is the runtime-served canonical frontend)
+- `docs/`
+
+If you are reviewing the backend first, a strong starting order is:
+
+1. `nova_backend/src/brain_server.py`
+2. `nova_backend/src/governor/`
+3. `nova_backend/src/conversation/`
+4. `nova_backend/src/openclaw/`
+5. `nova_backend/src/working_context/`
+6. `nova_backend/src/memory/`
+
+If you are reviewing the user experience first, start with:
+
+1. `nova_backend/static/index.html`
+2. `nova_backend/static/dashboard.js`
+3. `nova_backend/static/style.phase1.css`
+4. `nova_backend/static/orb.js`
+
+## Current Product Direction
+
+Nova is moving toward a stronger home-assistant operator model:
+- a helpful home-assistant presence first
+- outcome-first interaction
+- better project continuity
+- answer-first research
+- more fluid non-technical UX
+- governed reach expansion
+- visible operator surfaces instead of hidden autonomy
+
+The current product truth is:
+
+- Governor = law
+- Nova = presence
+
+That means Nova should feel calm, personal, and easy to use, while the strict governance stays underneath rather than dominating the user experience.
+
+The project is intentionally trying to expand usefulness without abandoning its trust model.
+
+That means the roadmap favors:
+- governed connectors
+- visible operator mode
+- bounded proactive automation
+- clearer approval surfaces
+
+instead of:
+- unsafe plugin sprawl
+- silent authority expansion
+- background self-directed behavior
 
 ## Safety Posture
 
-Nova is designed around a few non-negotiable ideas:
+Nova is built around a few non-negotiable rules:
 - no hidden autonomy
-- no background execution loops
 - no silent authority expansion
-- no direct execution from cognitive reasoning
-- explicit user action for persistence and real-world effects
+- no ungoverned network path
+- no direct execution from cognitive reasoning alone
+- no silent persistence for important memory or action surfaces
+- no background execution outside explicit bounded carve-outs
 
-Nova is strongest when it is clear, inspectable, and helpful.
+Nova is strongest when it is:
+- clear
+- reviewable
+- trustworthy
+- helpful to non-technical users
+
+## Current Best Reading Paths
+
+### If you want the plain-English product story
+- `docs/reference/HUMAN_GUIDES/README.md`
+
+### If you want the exact live runtime state
+- `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+
+### If you want the future roadmap and backlog
+- `docs/design/README.md`
+
+### If you want the current product truth for where Nova is headed
+- `docs/design/Phase 11/NOVA_HOME_ASSISTANT_PRODUCT_TRUTH_2026-04-02.md`
+
+### If you want the most grounded current-status and next-step roadmap
+- `docs/design/Phase 6/NOVA_GROUNDED_CURRENT_STATUS_AND_NEXT_ROADMAP_2026-04-02.md`
+
+### If you want the codebase map
+- `REPO_MAP.md`
+
+## Short Version
+
+Nova is not trying to be "an agent that can do everything."
+
+It is trying to become a governed workspace that helps people:
+- understand what is going on
+- keep moving on real work
+- carry useful context forward
+- use bounded intelligence without losing control

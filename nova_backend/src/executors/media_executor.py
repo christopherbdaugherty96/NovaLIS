@@ -10,10 +10,23 @@ class MediaExecutor:
 
     def execute(self, request) -> ActionResult:
         action = (request.params or {}).get("action", "").strip().lower()
+        common_meta = {
+            "request_id": request.request_id,
+            "authority_class": "reversible_local",
+            "external_effect": False,
+            "reversible": True,
+        }
         if action not in {"play", "pause", "resume"}:
             return ActionResult.failure(
                 "Invalid media command. Try: play, pause, or resume.",
                 request_id=request.request_id,
+            )
+
+        if not self.system_control.supports_explicit_media_action(action):
+            return ActionResult.failure(
+                "Explicit play, pause, and resume are not available on this device yet.",
+                data={"action": action},
+                **common_meta,
             )
 
         applied = self.system_control.control_media(action)
@@ -21,10 +34,7 @@ class MediaExecutor:
             return ActionResult.failure(
                 f"I couldn't {action} media playback on this device right now.",
                 data={"action": action},
-                request_id=request.request_id,
-                authority_class="local_effect",
-                external_effect=True,
-                reversible=True,
+                **common_meta,
             )
 
         if action == "play":
@@ -37,8 +47,5 @@ class MediaExecutor:
         return ActionResult.ok(
             message=msg,
             data={"action": action},
-            request_id=request.request_id,
-            authority_class="local_effect",
-            external_effect=True,
-            reversible=True,
+            **common_meta,
         )

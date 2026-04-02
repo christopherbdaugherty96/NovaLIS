@@ -163,7 +163,7 @@ Suggested files:
 - `nova_backend/tests/governance/test_wake_word_non_authorizing.py`
 
 Optional future docs:
-- `docs/PROOFS/Phase-6/PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_SLICE_<date>.md`
+- a future wake-word runtime slice in the `docs/PROOFS/Phase-6/` folder
   - only after implementation actually lands
 
 ## Suggested Test Targets

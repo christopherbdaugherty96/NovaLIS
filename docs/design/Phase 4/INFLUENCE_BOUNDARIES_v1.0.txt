@@ -1,0 +1,37 @@
+# Influence Boundaries v1.0
+
+Status: Historical placeholder
+Authority: Non-authoritative design note
+Purpose: Preserve legacy references that expect an influence-boundaries document in the Phase 4 design set.
+
+## Current Meaning
+
+This repo does not contain a fully ratified standalone Influence Boundaries packet from the original Phase 4 planning era.
+
+This placeholder exists so older design and audit notes that reference:
+- `docs/design/Phase 4/INFLUENCE_BOUNDARIES_v1.0.txt`
+
+resolve to a real document instead of a dead path.
+
+## Intended Principle
+
+The referenced idea was the boundary that Nova may:
+- analyze
+- explain
+- summarize
+- surface uncertainty
+
+but may not:
+- manipulate
+- persuade
+- optimize user behavior through framing
+- silently steer decisions
+
+## Interpretation Rule
+
+Use this file only as a historical reference anchor.
+
+For current authority, defer to:
+- `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+- `docs/design/DESIGN_AUTHORITY.md`
+- active phase maps and current corrected design packets

@@ -1,0 +1,42 @@
+{
+  "schema_version": "1.0",
+  "packages": [
+    {
+      "id": "ics_calendar",
+      "label": "ICS Calendar Snapshot",
+      "status": "active",
+      "integration_mode": "local_file",
+      "authority_class": "read_only_local",
+      "requires_explicit_enable": false,
+      "uses_official_api": false,
+      "credential_mode": "local_file",
+      "capability_ids": [
+        57
+      ],
+      "module_paths": [
+        "src/skills/calendar.py"
+      ],
+      "description": "Local snapshot calendar surface backed by an operator-provided .ics file path."
+    },
+    {
+      "id": "rss_news",
+      "label": "RSS News Feeds",
+      "status": "active",
+      "integration_mode": "read_only_feed",
+      "authority_class": "read_only_network",
+      "requires_explicit_enable": false,
+      "uses_official_api": false,
+      "credential_mode": "none",
+      "capability_ids": [
+        49,
+        50,
+        56
+      ],
+      "module_paths": [
+        "src/skills/news.py",
+        "src/executors/news_intelligence_executor.py"
+      ],
+      "description": "Read-only headline and intelligence surfaces backed by configured RSS/news feed aggregation rather than direct account control."
+    }
+  ]
+}

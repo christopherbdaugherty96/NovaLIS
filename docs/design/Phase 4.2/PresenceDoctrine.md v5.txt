@@ -773,4 +773,4 @@ Before any Presence Layer output:
 **Version:** 5.2  
 **Ratified:** [Current Date]  
 **Supersedes:** All prior Presence Doctrine versions  
-**Storage Path:** `/docs/canon/presence-doctrine-v5.2.md`
+**Storage Path:** `/docs/design/Phase 4.2/PresenceDoctrine.md v5.txt`

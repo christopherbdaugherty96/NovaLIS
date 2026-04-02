@@ -195,6 +195,8 @@ class ActionResult:
         request_id: Optional[str] = None,
         capability_id: Optional[int] = None,
         authority_class: Optional[str] = None,
+        external_effect: Optional[bool] = None,
+        reversible: Optional[bool] = None,
         ledger_ref: Optional[str] = None,
         status: Optional[str] = None,
         outcome_reason: Optional[str] = None,
@@ -206,6 +208,10 @@ class ActionResult:
             self.capability_id = int(self.capability_id)
         if authority_class:
             self.authority_class = str(authority_class).strip() or self.authority_class
+        if external_effect is not None:
+            self.external_effect = bool(external_effect)
+        if reversible is not None:
+            self.reversible = bool(reversible)
         self.ledger_ref = str(ledger_ref or self.ledger_ref or "").strip() or None
         self.status = self._normalized_status(status or self.status, success=self.success)
         if outcome_reason is not None:

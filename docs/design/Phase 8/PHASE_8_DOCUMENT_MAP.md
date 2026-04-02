@@ -40,12 +40,15 @@ If there is tension about the eventual strict automation model, this document wi
 ## Supporting Phase-8 Implementation Context
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_HOME_AGENT_AND_PERSONALITY_LAYER_PLAN_2026-03-26.md`
-- `docs/design/Phase 8/PHASE_8_5_SCHEDULER_AND_PROACTIVE_DELIVERY_PLAN_2026-03-27.md`
 - `docs/design/Phase 8/PHASE_8_ADVANCED_GOVERNOR_LAYER_ARCHITECTURE_2026-03-27.md`
 - `docs/design/Phase 8/OPENAI_AGENT_OPERATING_MODEL_2026-03-27.md`
 - `docs/design/Phase 8/OPENAI_PROVIDER_ROUTING_AND_BUDGET_POLICY_2026-03-27.md`
 - `docs/design/Phase 8/OPENAI_USAGE_VISIBILITY_SPEC_2026-03-27.md`
 - `docs/design/Phase 8/TRADING_MODE_GUARDRAILS_2026-03-27.md`
+- `docs/design/Phase 8/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
+- `docs/design/Phase 8/NOVA_GOVERNED_REACH_EXPANSION_AND_OPENCLAW_COMPARISON_2026-04-02.md`
+- `docs/design/Phase 8/NOVA_GOVERNED_VISIBLE_OPERATOR_MODE_TODO_2026-04-02.md`
+- `docs/design/Phase 8/NOVA_OPENCLAW_END_TO_END_EXPANSION_MASTER_TODO_2026-04-02.md`
 
 This remains useful as a narrower implementation-planning packet.
 It should now be read as supporting context beneath the canonical Phase-8 spec above.
@@ -79,12 +82,25 @@ The advanced governor-layer packet defines the future trust-monitoring and anoma
 - dynamic policy suggestions
 - stronger zero-trust interpretation for external systems
 
+The crypto and trading packets should be read as a tightly bounded side-track inside Phase 8:
+- market research and read-only connector work can arrive earlier
+- paper-trading and approval-gated execution are later
+- live autonomous trading is not authorized by the existence of these packets
+
+The reach-expansion, visible-operator, and end-to-end expansion packets are future backlog companions:
+- they explain how Nova can widen governed reach without copying unsafe OpenClaw breadth
+- they are roadmap-shaping packets, not proof that broader browser or connector execution is already live
+
 ## Raw Source Inputs Preserved
 - `docs/design/Phase 8/openclaw.txt`
 - `docs/design/Phase 8/node design.txt`
 
 These notes remain valuable because they capture the originating product and hardening intent.
 They are preserved as source material, but they are not the final authority over the formal canonical spec.
+
+Read them this way:
+- `openclaw.txt` preserves the harder execution and containment intuition behind the worker model
+- `node design.txt` preserves the user-facing "explain what I am looking at" product instinct that later feeds screen-help and visible-operator work
 
 ## Phase-8 Shipping Line
 Current live Phase-8 truth is narrower than the full canonical shipping line.
@@ -115,15 +131,15 @@ Phase 8 should not be read as authorization for:
 
 ## Cross-Phase Inputs
 - `docs/design/Phase 5/PHASE_5_MEMORY_REMEMBRANCE_AND_ASSISTIVE_NOTICING_ARCHITECTURE_2026-03-27.md`
-- `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
-- `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
-- `docs/design/NOVA_GOVERNED_INTELLIGENCE_EXECUTION_DIRECTION_2026-03-21.md`
-- `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
-- `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
-- `docs/design/NOVA_CROSS_SYSTEM_MEMORY_AND_GOVERNED_AWARENESS_DIRECTION_2026-03-27.md`
-- `docs/design/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
-- `docs/design/NOVA_WEBSEARCH_ANSWER_AND_REASONING_PLAN_2026-03-21.md`
-- `docs/design/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
+- `docs/design/Phase 6/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
+- `docs/design/Phase 7/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
+- `docs/design/Phase 7/NOVA_GOVERNED_INTELLIGENCE_EXECUTION_DIRECTION_2026-03-21.md`
+- `docs/design/Phase 9/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
+- `docs/design/Phase 9/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
+- `docs/design/Phase 5/NOVA_CROSS_SYSTEM_MEMORY_AND_GOVERNED_AWARENESS_DIRECTION_2026-03-27.md`
+- `docs/design/Phase 7/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
+- `docs/design/Phase 7/NOVA_WEBSEARCH_ANSWER_AND_REASONING_PLAN_2026-03-21.md`
+- `docs/design/Phase 8/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
 - `docs/design/Phase 6/PHASE_6_SOVEREIGNTY_ALIGNMENT_AND_TRUST_LOOP_PLAN.md`
 - `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
@@ -170,6 +186,6 @@ When reading the Phase-8 folder:
 - use the canonical governed automation spec next for the eventual strict automation model
 - use the governed execution plan second
 - use the home-agent and personality-layer plan as the practical product-direction companion
-- use the Phase-8.5 scheduler packet for the shipped narrow scheduler and the remaining proactive-delivery guardrails
+- use the Phase-8.5 scheduler packet in `docs/design/Phase 8.5/` for the shipped narrow scheduler and the remaining proactive-delivery guardrails
 - use `openclaw.txt` and `node design.txt` as preserved raw source inputs
 - do not treat the existence of a Phase-8 folder as proof that the full canonical Phase-8 automation model is live in runtime

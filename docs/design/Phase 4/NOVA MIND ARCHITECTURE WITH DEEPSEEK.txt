@@ -58,7 +58,7 @@ Week 3-4: API Governance Framework
 Key Principle: JSON schemas as executable constraints
 
 ```
-docs/specs/schemas/
+proposed schema directory (not present in the current repo)
 ├── worker_memo.schema.json                 # Phase 4.2 worker outputs
 ├── orchestrator_output.schema.json         # Phase 4.2 aggregation  
 ├── decision_transcript.schema.json         # Phase 4.1 transparency

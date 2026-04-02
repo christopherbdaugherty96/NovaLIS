@@ -52,6 +52,8 @@ OPENCLAW_STRICT_PREFLIGHT_PATH = PROJECT_ROOT / "nova_backend" / "src" / "opencl
 OPENCLAW_AGENT_SCHEDULER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" / "agent_scheduler.py"
 OPENAI_RESPONSES_LANE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "providers" / "openai_responses_lane.py"
 ASSISTIVE_NOTICING_PATH = PROJECT_ROOT / "nova_backend" / "src" / "working_context" / "assistive_noticing.py"
+CONNECTOR_PACKAGE_REGISTRY_PATH = PROJECT_ROOT / "nova_backend" / "src" / "connectors" / "package_registry.py"
+CONNECTOR_PACKAGES_PATH = PROJECT_ROOT / "nova_backend" / "src" / "config" / "connector_packages.json"
 
 GOVERNANCE_MATRIX_PATH = RUNTIME_DOC_DIR / "GOVERNANCE_MATRIX.md"
 SKILL_SURFACE_MAP_PATH = RUNTIME_DOC_DIR / "SKILL_SURFACE_MAP.md"
@@ -70,6 +72,7 @@ OPENCLAW_DIR = PROJECT_ROOT / "nova_backend" / "src" / "openclaw"
 PROVIDERS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "providers"
 TASKS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "tasks"
 WEBSOCKET_DIR = PROJECT_ROOT / "nova_backend" / "src" / "websocket"
+CONNECTORS_DIR = PROJECT_ROOT / "nova_backend" / "src" / "connectors"
 
 
 def _build_allowlisted_paths() -> frozenset[Path]:
@@ -102,6 +105,8 @@ def _build_allowlisted_paths() -> frozenset[Path]:
         OPENCLAW_STRICT_PREFLIGHT_PATH,
         OPENCLAW_AGENT_SCHEDULER_PATH,
         OPENAI_RESPONSES_LANE_PATH,
+        CONNECTOR_PACKAGE_REGISTRY_PATH,
+        CONNECTOR_PACKAGES_PATH,
     }
     paths.update(SKILLS_DIR.glob("*.py"))
     paths.update(EXECUTORS_DIR.glob("*.py"))
@@ -114,6 +119,7 @@ def _build_allowlisted_paths() -> frozenset[Path]:
     paths.update(PROVIDERS_DIR.glob("*.py"))
     paths.update(TASKS_DIR.glob("*.py"))
     paths.update(WEBSOCKET_DIR.glob("*.py"))
+    paths.update(CONNECTORS_DIR.glob("*.py"))
     return frozenset(paths)
 
 
@@ -703,6 +709,22 @@ def _openclaw_home_agent_foundation_present() -> bool:
     )
 
 
+def _connector_package_foundation_summary() -> dict[str, Any]:
+    try:
+        from src.connectors.package_registry import ConnectorPackageRegistry
+
+        registry = ConnectorPackageRegistry()
+    except Exception:
+        return {"present": False, "active_count": 0, "package_ids": []}
+
+    active_packages = registry.active_packages()
+    return {
+        "present": bool(active_packages),
+        "active_count": len(active_packages),
+        "package_ids": [package.id for package in active_packages],
+    }
+
+
 def _phase_8_status() -> str:
     if not _openclaw_home_agent_foundation_present():
         return "DESIGN"
@@ -1239,6 +1261,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     enforcement = _governor_enforcement_summary()
     bridge_surface_present = _governed_remote_bridge_present()
     openclaw_home_agent_present = _openclaw_home_agent_foundation_present()
+    connector_package_summary = _connector_package_foundation_summary()
     fingerprint = _runtime_fingerprint(enabled_ids)
     known_gaps = _known_runtime_gaps()
     design_divergences = _design_runtime_divergences(registry)
@@ -1456,6 +1479,18 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
                     "",
                 ]
                 if OPENAI_RESPONSES_LANE_PATH.exists()
+                else []
+            ),
+            *(
+                [
+                    "Governed Connector Package Foundation",
+                    "Location: src/connectors/package_registry.py + src/config/connector_packages.json",
+                    "Status: "
+                    + f"{connector_package_summary['active_count']} active package manifests "
+                    + f"({', '.join(connector_package_summary['package_ids'])}) present as a governed connector rollout foundation",
+                    "",
+                ]
+                if connector_package_summary["present"]
                 else []
             ),
             *(

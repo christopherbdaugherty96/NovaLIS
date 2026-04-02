@@ -78,6 +78,65 @@ Pipeline:
 4. STT transcription
 5. `brain_server` request dispatch through Governor path
 
+Recommended next-step commands:
+- `Hey Nova, what is this?`
+- `Hey Nova, explain this screen`
+- `Hey Nova, look at this`
+- `Hey Nova, stay with me on this screen`
+
+The first three should remain snapshot-style explicit perception commands.
+
+The fourth should be treated as a request for a higher-trust live help session, not as a synonym for ambient monitoring.
+
+## 4.5) Recommended Next Step - Wake Word To Live Screen Help
+
+The next product step after invocation-bound snapshots should be:
+
+- local wake word
+- short command capture
+- explicit offer to start a live screen-help session
+
+This keeps the experience more natural for non-technical users without quietly turning Nova into a background watcher.
+
+Recommended flow:
+1. user says `Hey Nova, look at this`
+2. Nova captures the short command
+3. Nova either:
+   - performs one snapshot-based explanation immediately
+   - or offers `Start live help for this screen?`
+4. if the user accepts, Nova enters a temporary live screen-help session
+5. session state stays visible and revocable at all times
+
+Important distinction:
+- wake word may stay available as a local entry path
+- live screen view must still require explicit session start
+- no screen observation should begin just because the wake word engine is running
+
+## 4.6) Evolution Path - Snapshot First, Live Session Second
+
+The safest product evolution is:
+
+### Stage 1 - Snapshot help
+- one explicit request
+- one capture
+- one explanation
+
+### Stage 2 - Repeated on-demand snapshot help
+- multiple explicit requests in one active conversation
+- user asks `what about this?` or `look again`
+- still no continuous viewing
+
+### Stage 3 - Session-scoped live screen help
+- user explicitly starts a live help session
+- Nova can observe the active screen continuously for that session only
+- Nova can keep giving step-by-step help without making the user recapture every moment
+- the session expires, can be paused, and can be stopped instantly
+
+That is the right path if the goal is:
+- less friction
+- more natural help
+- preserved governance
+
 ## 5) Screenshot and Context Capture Strategy
 
 Preferred default:
@@ -199,6 +258,7 @@ Validation goals:
 4. Add wake-word entrypoint for invocation flow.
 5. Add dashboard controls and response UX.
 6. Add governance tests and failure-mode tests.
+7. Add explicit handoff from wake-word invocation into temporary live screen-help sessions.
 
 ## 13) Definition of Done
 

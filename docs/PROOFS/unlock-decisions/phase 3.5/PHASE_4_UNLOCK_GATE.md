@@ -91,7 +91,7 @@ Required evidence:
 
 Location:
 
-docs/PROOFS/governance-tests/reports/
+docs/PROOFS/phase 3.5-4/governance-tests/reports/
 
 
 Must include:

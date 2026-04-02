@@ -56,6 +56,14 @@ def _display_clock_label(clock_value: str) -> str:
     return f"{display_hour}:{minute:02d} {period} local"
 
 
+MAX_SCHEDULE_LATENESS = timedelta(hours=2)
+
+
+def _is_stale_scheduled_slot(slot_local: datetime, *, now: datetime | None = None) -> bool:
+    current = (now or _local_now()).astimezone()
+    return current - slot_local > MAX_SCHEDULE_LATENESS
+
+
 class OpenClawAgentRuntimeStore:
     """Persistent operator-facing store for OpenClaw home-agent foundations."""
 
@@ -348,6 +356,8 @@ class OpenClawAgentRuntimeStore:
                     continue
                 slot_local = _local_due_slot(str(item.get("schedule_clock_local") or "").strip(), now=current)
                 if slot_local is None or current < slot_local:
+                    continue
+                if _is_stale_scheduled_slot(slot_local, now=current):
                     continue
                 slot_key = slot_local.astimezone(timezone.utc).isoformat()
                 if str(item.get("last_scheduled_window") or "").strip() == slot_key:
@@ -678,6 +688,8 @@ class OpenClawAgentRuntimeStore:
             next_run_local = slot_local + timedelta(days=1)
         elif last_suppression_window == slot_key and last_suppression_reason:
             return "", last_suppression_note or "Held until policy allows", self._suppression_status_label(last_suppression_reason)
+        elif _is_stale_scheduled_slot(slot_local, now=now_local):
+            next_run_local = slot_local + timedelta(days=1)
         else:
             next_run_local = slot_local
 

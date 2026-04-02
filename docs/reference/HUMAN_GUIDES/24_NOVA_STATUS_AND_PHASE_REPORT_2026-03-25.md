@@ -458,6 +458,10 @@ The latest product-consolidation regression pass on `2026-03-26` also confirmed:
 - frontend mirror sync check: passed
 - runtime doc drift check: passed
 
+Historical note:
+- this verification line reflects the `2026-03-26` pass recorded in this report
+- for the current repo state, always re-run the sync check and treat `nova_backend/static/` as the canonical frontend if the mirror has drifted
+
 ## What The Last Stretch Changed For Non-Technical Users
 For someone who is not technical, the recent work means Nova is easier to use because:
 - search answers more directly

@@ -555,4 +555,4 @@ Before moving to Phase 2, prove these failure cases:
 
 **Document Version:** 3.0  
 **Next Steps:** Begin Phase 1 implementation as described.  
-**Canonical Location:** `/nova/docs/design/governed-automation-spec.md`
+**Canonical Location:** `/docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
