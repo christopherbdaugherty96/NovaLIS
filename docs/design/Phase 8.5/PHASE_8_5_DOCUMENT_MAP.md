@@ -22,6 +22,15 @@ This folder should contain the narrow design layer for:
 
 - `docs/design/Phase 8.5/PHASE_8_5_SCHEDULER_AND_PROACTIVE_DELIVERY_PLAN_2026-03-27.md`
 
+This document should be read in two layers:
+- as the design reference for the already-shipped narrow scheduler baseline
+- as the remaining widening guardrail for any later proactive-delivery growth
+
+It is not permission for:
+- broad always-on automation
+- hidden connector polling
+- silent proactive behavior outside explicit settings and visible surfaces
+
 ## Cross-Phase Link
 
 Read this folder alongside:

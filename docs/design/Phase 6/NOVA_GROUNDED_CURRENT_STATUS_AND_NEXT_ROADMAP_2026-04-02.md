@@ -23,6 +23,13 @@ This packet exists to keep the project grounded in:
 - actual missing layers
 - a sane implementation order
 
+Companion grounding packet:
+- `docs/design/Phase 6/NOVA_CURRENT_PHASE_GROUNDING_AND_FIRST_PRIORITY_TODO_2026-04-02.md`
+
+Use that packet when the practical question is:
+- what phase is Nova actually in right now?
+- what should count as the first priority before widening scope further?
+
 ## Current Grounded Status
 
 As of the current runtime truth:
@@ -184,7 +191,19 @@ Still worth finishing:
 - action explanation clarity
 - docs grounding and stale-link cleanup
 
-### 5. No learning layer is live yet, and that is correct for now
+### 5. Intelligence structure still needs final consolidation
+Nova already has the ingredients for a good local-first assistant, but the provider-routing story is still split across:
+- local model language
+- external reasoning language
+- settings terminology
+- narrow feature-specific fallback logic
+
+The next architecture truth should be:
+- local-first daily intelligence
+- governed cloud review or fallback
+- one execution law regardless of model source
+
+### 6. No learning layer is live yet, and that is correct for now
 Nova should not rush into adaptive behavior before the current assistant is stable, inspectable, and easy to correct.
 
 That means:
@@ -222,6 +241,9 @@ Why:
 - this keeps the front door trustworthy
 - it reduces friction for non-technical users
 
+In parallel:
+- lock the final local-first intelligence structure so later connector and operator work builds on stable routing truth
+
 ## Stage 2 - Widen safe usefulness through connectors
 Goal:
 - make Nova more useful in everyday life without weakening governance
@@ -241,6 +263,9 @@ Rules:
 Why:
 - this is the most obvious practical usefulness gap in the current runtime
 - it also creates the first meaningful signal for later bounded learning
+
+Related architecture packet:
+- `docs/design/Phase 6/NOVA_LOCAL_FIRST_INTELLIGENCE_ARCHITECTURE_AND_MODEL_ROUTING_TODO_2026-04-02.md`
 
 ## Stage 2.5 - Add explicit preference learning
 Goal:

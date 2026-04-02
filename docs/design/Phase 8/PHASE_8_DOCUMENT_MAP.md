@@ -45,6 +45,7 @@ If there is tension about the eventual strict automation model, this document wi
 - `docs/design/Phase 8/OPENAI_PROVIDER_ROUTING_AND_BUDGET_POLICY_2026-03-27.md`
 - `docs/design/Phase 8/OPENAI_USAGE_VISIBILITY_SPEC_2026-03-27.md`
 - `docs/design/Phase 8/TRADING_MODE_GUARDRAILS_2026-03-27.md`
+- `docs/design/Phase 8/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
 - `docs/design/Phase 8/NOVA_GOVERNED_REACH_EXPANSION_AND_OPENCLAW_COMPARISON_2026-04-02.md`
 - `docs/design/Phase 8/NOVA_GOVERNED_VISIBLE_OPERATOR_MODE_TODO_2026-04-02.md`
 - `docs/design/Phase 8/NOVA_OPENCLAW_END_TO_END_EXPANSION_MASTER_TODO_2026-04-02.md`
@@ -81,12 +82,25 @@ The advanced governor-layer packet defines the future trust-monitoring and anoma
 - dynamic policy suggestions
 - stronger zero-trust interpretation for external systems
 
+The crypto and trading packets should be read as a tightly bounded side-track inside Phase 8:
+- market research and read-only connector work can arrive earlier
+- paper-trading and approval-gated execution are later
+- live autonomous trading is not authorized by the existence of these packets
+
+The reach-expansion, visible-operator, and end-to-end expansion packets are future backlog companions:
+- they explain how Nova can widen governed reach without copying unsafe OpenClaw breadth
+- they are roadmap-shaping packets, not proof that broader browser or connector execution is already live
+
 ## Raw Source Inputs Preserved
 - `docs/design/Phase 8/openclaw.txt`
 - `docs/design/Phase 8/node design.txt`
 
 These notes remain valuable because they capture the originating product and hardening intent.
 They are preserved as source material, but they are not the final authority over the formal canonical spec.
+
+Read them this way:
+- `openclaw.txt` preserves the harder execution and containment intuition behind the worker model
+- `node design.txt` preserves the user-facing "explain what I am looking at" product instinct that later feeds screen-help and visible-operator work
 
 ## Phase-8 Shipping Line
 Current live Phase-8 truth is narrower than the full canonical shipping line.

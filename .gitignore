@@ -30,6 +30,7 @@ venv/
 # IDE
 .vscode/
 .idea/
+.obsidian/
 
 # OS
 .DS_Store
@@ -46,6 +47,12 @@ nova_backend/src/data/
 # Temporary audio
 *.wav
 *.m4a
+
+# Local workspace artifacts
+.claude/
+New-Audit-and-Issues.md
+Untitled.canvas
+nova_backend/Untitled.base
 
 # Environment secrets - NEVER commit this
 nova_backend/.env

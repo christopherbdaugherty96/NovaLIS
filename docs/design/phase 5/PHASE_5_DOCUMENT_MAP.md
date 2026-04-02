@@ -14,6 +14,14 @@ These documents define the original trust-facing Phase-5 package:
 - project continuity and working context
 - tone, scheduling, and pattern-review boundaries
 
+The corrected roadmap in this folder should be read as:
+- the preferred historical roadmap reference
+- clearer than the deprecated `# ... PHASE 5 ROADMAP` placeholder that was archived during the 2026-04-02 second-pass cleanup
+- still subordinate to runtime truth and proof packets for what is live now
+
+Archived placeholder location:
+- `docs/design/archive/redundant_placeholders_2026-04-02/`
+
 ## Supporting Design Layer
 - tonal calibration scope design document in `docs/design/Phase 5/`
 - tonal calibration visibility design document in `docs/design/Phase 5/`
@@ -40,11 +48,20 @@ The governed learning ladder packet should be read as:
 - later continuity-aware workflow habit learning only after connectors and routines are real
 - not a license for hidden adaptive behavior
 
+The tonal calibration notes in this folder should be read this way:
+- tone shaping is a trust-visible design question, not hidden adaptation
+- global vs per-domain tone is a product choice with governance consequences
+- inspectability and override matter more than clever adaptation
+
 ## Future / Adjacent Direction
 - `docs/design/Phase 5/Delegated Autonomy.txt`
 - the consolidated API planning note in this folder
 
 These remain adjacent planning inputs, not active runtime authority.
+
+Interpret them this way:
+- `Delegated Autonomy.txt` is a long-range philosophy packet, not a Phase-5 implementation order
+- `Consolidated API's.txt` is a broad integration inventory, not a current approved connector plan
 
 ## Runtime-Implemented Phase-5 Proof Artifacts
 - `docs/PROOFS/Phase-5/PHASE_5_MEMORY_RUNTIME_SLICE_2026-03-11.md`
