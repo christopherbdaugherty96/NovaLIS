@@ -27,6 +27,21 @@ Current corrected repo-audit and remediation packet:
 Current audit TODO backlog:
 - `docs/design/NOVA_AUDIT_TODO_2026-03-28.md`
 
+Current agent-node architecture honest assessment:
+- `docs/design/NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md`
+
+Current setup UI redesign — user profile, connections, identity:
+- `docs/design/NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md`
+
+Current memory tier system design — rolling + permanent:
+- `docs/design/NOVA_MEMORY_TIERS_DESIGN.md`
+
+Current automations design — templates, triggers, RSS, email triage, file watch:
+- `docs/design/NOVA_AUTOMATIONS_DESIGN.md`
+
+Current trading connector design — governed auto-trading with pre-paid card limits:
+- `docs/design/NOVA_TRADING_CONNECTOR_DESIGN.md`
+
 Current bounded conversational planning packet:
 - `docs/design/CONVERSATIONAL_CORE_PHASE_PLAN_2026-03-19.md`
 
