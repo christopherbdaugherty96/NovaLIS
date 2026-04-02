@@ -18,10 +18,11 @@ These documents define the original trust-facing Phase-5 package:
 - tonal calibration scope design document in `docs/design/Phase 5/`
 - tonal calibration visibility design document in `docs/design/Phase 5/`
 - `docs/design/Phase 5/PHASE_5_MEMORY_REMEMBRANCE_AND_ASSISTIVE_NOTICING_ARCHITECTURE_2026-03-27.md`
-- `docs/design/NOVA_CROSS_SYSTEM_MEMORY_AND_GOVERNED_AWARENESS_DIRECTION_2026-03-27.md`
-- `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
-- `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
-- `docs/design/NOVA_LOCAL_PROJECT_VISUAL_EXPLAINER_PLAN_2026-03-21.md`
+- `docs/design/Phase 5/NOVA_CROSS_SYSTEM_MEMORY_AND_GOVERNED_AWARENESS_DIRECTION_2026-03-27.md`
+- `docs/design/Phase 5/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
+- `docs/design/Phase 5/NOVA_GOVERNED_LEARNING_LADDER_2026-04-02.md`
+- `docs/design/Phase 9/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
+- `docs/design/Phase 4.5/NOVA_LOCAL_PROJECT_VISUAL_EXPLAINER_PLAN_2026-03-21.md`
 
 These supporting documents explain how the Phase-5 runtime evolved into a more legible product layer for normal users.
 The memory / remembrance / assistive-noticing architecture packet should be read as:
@@ -34,9 +35,14 @@ The cross-system memory / governed-awareness direction packet adds the broader p
 - Nova's target is stateful continuity across the user's environment
 - memory, awareness, and help must stay governed instead of silently adaptive
 
+The governed learning ladder packet should be read as:
+- Phase-5 anchored for explicit preference learning
+- later continuity-aware workflow habit learning only after connectors and routines are real
+- not a license for hidden adaptive behavior
+
 ## Future / Adjacent Direction
 - `docs/design/Phase 5/Delegated Autonomy.txt`
-- `docs/design/Phase 5/Consolidated API's.txt`
+- the consolidated API planning note in this folder
 
 These remain adjacent planning inputs, not active runtime authority.
 

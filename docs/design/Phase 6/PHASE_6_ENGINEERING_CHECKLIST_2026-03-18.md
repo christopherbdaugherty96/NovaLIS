@@ -747,7 +747,7 @@ Phase 6 should not hand off to Phase 7 until:
 
 ## Related Inputs
 - `docs/design/Phase 6/PHASE_6_SOVEREIGNTY_ALIGNMENT_AND_TRUST_LOOP_PLAN.md`
-- `docs/design/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
+- `docs/design/Phase 6/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 - `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
 - `docs/design/Phase 8/node design.txt`

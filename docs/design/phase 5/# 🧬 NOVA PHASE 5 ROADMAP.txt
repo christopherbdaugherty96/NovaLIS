@@ -3,7 +3,7 @@
 This file is superseded.
 
 Use canonical file:
-- `docs/design/phase 5/📄 Phase 5 Roadmap.txt (corrected).txt`
+- `docs/design/Phase 5/📄 Phase 5 Roadmap.txt (corrected).txt`
 
 Authority reminder:
 - Runtime behavior is defined by `docs/current_runtime/CURRENT_RUNTIME_STATE.md`.

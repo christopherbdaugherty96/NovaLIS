@@ -401,3 +401,86 @@ def test_governor_blocked_execution_message_names_the_action(monkeypatch):
     assert result.success is False
     assert "open folder" in result.message.lower()
     assert "can't execute it right now" in result.message.lower()
+
+
+def test_governor_clears_pending_queue_when_enter_execution_raises(monkeypatch):
+    from src.governor.governor import Governor
+
+    gov = Governor()
+
+    class FakeRegistry:
+        def get(self, capability_id):
+            return types.SimpleNamespace(name="volume_up_down")
+
+        def is_enabled(self, capability_id):
+            return True
+
+    gov._registry = FakeRegistry()
+    monkeypatch.setattr(
+        gov._execute_boundary,
+        "enter_execution",
+        lambda: (_ for _ in ()).throw(MemoryError("pre-entry cap exceeded")),
+    )
+
+    result = gov.handle_governed_invocation(19, {"action": "up"})
+
+    assert result.success is False
+    assert gov._queue.has_pending() is False
+
+
+def test_governor_normalizes_effect_metadata_from_topology(monkeypatch):
+    from src.actions.action_result import ActionResult
+    from src.governor.governor import Governor
+
+    gov = Governor()
+
+    class FakeRegistry:
+        def get(self, capability_id):
+            return types.SimpleNamespace(name="open_file_folder")
+
+        def is_enabled(self, capability_id):
+            return True
+
+    class FakeLedger:
+        def __init__(self):
+            self.events = []
+
+        def log_event(self, event_type, metadata):
+            self.events.append((event_type, metadata))
+
+    gov._registry = FakeRegistry()
+    gov._ledger = FakeLedger()
+    gov._capability_topology = types.SimpleNamespace(
+        get=lambda _capability_id: types.SimpleNamespace(
+            authority_class="reversible_local",
+            requires_confirmation=True,
+            external_effect=False,
+            reversible=True,
+        )
+    )
+
+    monkeypatch.setattr(
+        gov,
+        "_dispatch_capability",
+        lambda req: ActionResult.ok(
+            "Opened folder",
+            request_id=req.request_id,
+            authority_class="local_effect",
+            external_effect=True,
+            reversible=False,
+        ),
+    )
+
+    result = gov.handle_governed_invocation(22, {"path": r"C:\Nova-Project", "confirmed": True})
+
+    assert result.success is True
+    assert result.authority_class == "reversible_local"
+    assert result.external_effect is False
+    assert result.reversible is True
+
+    completed = [meta for event, meta in gov._ledger.events if event == "ACTION_COMPLETED"]
+    assert completed
+    payload = completed[-1]
+    assert payload["authority_class"] == "reversible_local"
+    assert payload["external_effect"] is False
+    assert payload["reversible"] is True

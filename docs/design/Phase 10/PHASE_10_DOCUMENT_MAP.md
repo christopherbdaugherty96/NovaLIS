@@ -4,12 +4,12 @@ Status: Current design map
 Purpose: Separate long-horizon reviewable learning direction from older speculative Phase-10 text
 
 ## Current Phase-10 Reference Inputs
-- `docs/design/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
-- `docs/design/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
-- `docs/design/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
-- `docs/design/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
-- `docs/design/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
-- `docs/design/NOVA_GOVERNED_INTELLIGENCE_EXECUTION_DIRECTION_2026-03-21.md`
+- `docs/design/Phase 9/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
+- `docs/design/Phase 9/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
+- `docs/design/Phase 5/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
+- `docs/design/Phase 7/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
+- `docs/design/Phase 8/NOVA_GOVERNED_CRYPTO_CONNECTOR_AND_TRADING_PLAN_2026-03-21.md`
+- `docs/design/Phase 7/NOVA_GOVERNED_INTELLIGENCE_EXECUTION_DIRECTION_2026-03-21.md`
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
 
 These documents are the clearest current inputs for what should belong in Phase 10:
