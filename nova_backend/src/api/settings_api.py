@@ -174,4 +174,9 @@ def build_settings_router(deps) -> APIRouter:
         )
         return _runtime_settings_payload(deps, snapshot)
 
+    @router.get("/api/token/budget")
+    async def get_token_budget():
+        """Current daily token budget snapshot for UI polling."""
+        return provider_usage_store.snapshot()
+
     return router

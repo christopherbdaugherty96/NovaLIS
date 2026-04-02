@@ -175,6 +175,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     _derive_recommendation_reason = deps._derive_recommendation_reason
     _tone_domain_for_capability = deps._tone_domain_for_capability
     resolve_speakable_text = deps.resolve_speakable_text
+    send_token_budget_update = deps.send_token_budget_update
     Clarification = deps.Clarification
     record_correction = deps.record_correction
     run_general_chat_fallback = deps.run_general_chat_fallback
@@ -3180,6 +3181,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 action_result = await invoke_governed_capability(governor, capability_id, params)
                 action_message = _action_result_message(action_result)
                 action_payload = _action_result_payload(action_result)
+                if isinstance(action_payload, dict) and "budget_state" in action_payload:
+                    await send_token_budget_update(ws, action_result)
                 track_topic_hint = ""
                 if capability_id == 50 and params.get("action") == "track_cluster":
                     if isinstance(action_payload, dict):

@@ -717,6 +717,47 @@ body {
   gap: 12px;
 }
 
+.openclaw-agent-card--unavailable {
+  opacity: 0.55;
+  pointer-events: auto;
+}
+
+.token-budget-bar {
+  grid-column: 1 / -1;
+  width: 100%;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 12px;
+  border-radius: 10px;
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
+
+.token-budget-bar--warning {
+  border: 1px solid rgba(255, 196, 80, 0.35);
+  background: linear-gradient(180deg, rgba(60, 40, 5, 0.82) 0%, rgba(35, 22, 3, 0.92) 100%);
+  color: #ffd580;
+}
+
+.token-budget-bar--warning::before {
+  content: "⚠";
+  font-size: 0.85rem;
+}
+
+.token-budget-bar--limit {
+  border: 1px solid rgba(255, 100, 80, 0.38);
+  background: linear-gradient(180deg, rgba(60, 10, 5, 0.88) 0%, rgba(35, 5, 3, 0.94) 100%);
+  color: #ff9980;
+}
+
+.token-budget-bar--limit::before {
+  content: "⛔";
+  font-size: 0.85rem;
+}
+
 .workspace-board-hero-header,
 .workspace-board-section-header {
   display: flex;

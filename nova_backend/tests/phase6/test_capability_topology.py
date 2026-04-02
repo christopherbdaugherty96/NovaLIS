@@ -50,7 +50,7 @@ def test_topology_blocks_network_and_persistent_classes_from_current_limit():
 def test_topology_fails_closed_when_registry_authority_metadata_drifts(monkeypatch, tmp_path):
     registry_data = {
         "schema_version": "1.0",
-        "phase": "4",
+        "phase": "8",
         "capability_groups": {},
         "profiles": {"default": {"groups": [], "enabled_overrides": {}}},
         "capabilities": [

@@ -3,6 +3,12 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 BRAIN_SERVER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "brain_server.py"
+SESSION_HANDLER_PATH = PROJECT_ROOT / "nova_backend" / "src" / "websocket" / "session_handler.py"
+
+
+def _combined_source() -> str:
+    """Return source from brain_server.py + session_handler.py for structural checks."""
+    return BRAIN_SERVER_PATH.read_text(encoding="utf-8") + "\n" + SESSION_HANDLER_PATH.read_text(encoding="utf-8")
 
 
 def test_brain_server_wires_explicit_phase42_invocation_path():
@@ -13,12 +19,12 @@ def test_brain_server_wires_explicit_phase42_invocation_path():
 
 
 def test_brain_server_arms_deep_mode_for_phase42_path():
-    source = BRAIN_SERVER_PATH.read_text(encoding="utf-8")
+    source = _combined_source()
     assert "personality_agent.arm_deep_mode()" in source
 
 
 def test_phase42_path_preserves_raw_personality_outputs():
-    source = BRAIN_SERVER_PATH.read_text(encoding="utf-8")
+    source = _combined_source()
     assert "phase42_message, apply_personality=False" in source
 
 

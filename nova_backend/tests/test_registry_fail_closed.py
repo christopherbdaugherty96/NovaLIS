@@ -80,7 +80,7 @@ def test_registry_unknown_group_fails_closed(monkeypatch, tmp_path):
 
     bad_registry = {
         "schema_version": "1.0",
-        "phase": "4",
+        "phase": "8",
         "capability_groups": {},
         "profiles": {"default": {"groups": ["missing_group"], "enabled_overrides": {}}},
         "capabilities": [_capability_entry(22, "open_file_folder", risk_level="confirm", enabled=False, authority_class="reversible_local", requires_confirmation=True)],
@@ -102,7 +102,7 @@ def test_registry_group_with_unknown_capability_id_fails_closed(monkeypatch, tmp
 
     bad_registry = {
         "schema_version": "1.0",
-        "phase": "4",
+        "phase": "8",
         "capability_groups": {"local_control": [999]},
         "profiles": {"default": {"groups": ["local_control"], "enabled_overrides": {}}},
         "capabilities": [_capability_entry(22, "open_file_folder", risk_level="confirm", enabled=False, authority_class="reversible_local", requires_confirmation=True)],
@@ -122,7 +122,7 @@ def test_registry_override_can_enable_without_group(monkeypatch, tmp_path):
 
     registry_data = {
         "schema_version": "1.0",
-        "phase": "4",
+        "phase": "8",
         "capability_groups": {"local_control": [22]},
         "profiles": {
             "default": {"groups": [], "enabled_overrides": {}},
@@ -145,7 +145,7 @@ def test_registry_defaults_authority_scope_from_risk(monkeypatch, tmp_path):
 
     registry_data = {
         "schema_version": "1.0",
-        "phase": "4",
+        "phase": "8",
         "capability_groups": {},
         "profiles": {"default": {"groups": [], "enabled_overrides": {}}},
         "capabilities": [
@@ -171,7 +171,7 @@ def test_registry_invalid_authority_scope_fails_closed(monkeypatch, tmp_path):
 
     bad_registry = {
         "schema_version": "1.0",
-        "phase": "4",
+        "phase": "8",
         "capability_groups": {},
         "profiles": {"default": {"groups": [], "enabled_overrides": {}}},
         "capabilities": [
@@ -198,7 +198,7 @@ def test_registry_active_capability_missing_governance_metadata_fails_closed(mon
 
     bad_registry = {
         "schema_version": "1.0",
-        "phase": "4",
+        "phase": "8",
         "capability_groups": {},
         "profiles": {"default": {"groups": [], "enabled_overrides": {}}},
         "capabilities": [

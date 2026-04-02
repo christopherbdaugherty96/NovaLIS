@@ -266,7 +266,7 @@ const QUICK_ACTIONS_BY_PAGE = {
     { id: "home_weather", label: "Weather", command: "weather", switchToPage: "chat" },
     { id: "home_agent", label: "Home agent", command: "bridge status", switchToPage: "agent", stayOnPage: true },
     { id: "home_explain", label: "Explain this", command: "explain this", switchToPage: "chat" },
-    { id: "home_capture", label: "Analyze screen", command: "analyze this screen", switchToPage: "chat" },
+    { id: "home_capture", label: "Analyze screen", command: "analyze this screen", switchToPage: "chat", prefill: true },
     { id: "home_threads", label: "Show threads", command: "show threads", switchToPage: "chat" },
     { id: "home_thread_status", label: "Project status", command: "project status this", switchToPage: "chat" },
     { id: "home_most_blocked", label: "Most blocked", command: "which project is most blocked right now", switchToPage: "chat" },
@@ -786,6 +786,21 @@ function getSetupReadinessItems() {
       ready: true,
       copy: String(agentRuntime.summary || "").trim()
         || "OpenClaw stays inside Nova's governed operator surface and is not required for basic chat use.",
+    },
+    {
+      key: "calendar",
+      group: "Optional later",
+      title: "Calendar",
+      status: (connections.calendar_connected || (openClawAgentState.snapshot && openClawAgentState.snapshot.setup && openClawAgentState.snapshot.setup.calendar_connected))
+        ? "Connected"
+        : "Not connected",
+      tone: (connections.calendar_connected || (openClawAgentState.snapshot && openClawAgentState.snapshot.setup && openClawAgentState.snapshot.setup.calendar_connected))
+        ? "optional-ready"
+        : "optional",
+      ready: true,
+      copy: (connections.calendar_connected || (openClawAgentState.snapshot && openClawAgentState.snapshot.setup && openClawAgentState.snapshot.setup.calendar_connected))
+        ? "Calendar is connected and available to morning brief and evening digest."
+        : "Calendar is optional. To connect: set the NOVA_CALENDAR_ICS_PATH environment variable to your local .ics file path before starting Nova. Most calendar apps can export a local ICS file.",
     },
   ];
 }
@@ -1764,6 +1779,31 @@ function setThinkingBar(visible) {
   if (!bar) return;
   bar.style.display = visible ? "flex" : "none";
   bar.setAttribute("aria-hidden", visible ? "false" : "true");
+}
+
+function renderTokenBudgetBar(data) {
+  const bar = $("token-budget-bar");
+  if (!bar) return;
+  const budgetState = String(data.budget_state || "normal").trim();
+  const remaining = Number(data.budget_remaining_tokens || 0);
+  const label = String(data.budget_state_label || "").trim();
+
+  if (budgetState === "limit") {
+    bar.className = "token-budget-bar token-budget-bar--limit";
+    bar.textContent = `Token budget reached — network actions paused. Reset in Settings → Usage.`;
+    bar.style.display = "flex";
+    bar.setAttribute("aria-hidden", "false");
+  } else if (budgetState === "warning") {
+    bar.className = "token-budget-bar token-budget-bar--warning";
+    bar.textContent = `Token budget low — ${remaining.toLocaleString()} tokens remaining today.`;
+    bar.style.display = "flex";
+    bar.setAttribute("aria-hidden", "false");
+  } else {
+    bar.style.display = "none";
+    bar.setAttribute("aria-hidden", "true");
+    bar.className = "token-budget-bar";
+    bar.textContent = "";
+  }
 }
 
 function loadingHintForInput(text) {
@@ -7284,6 +7324,11 @@ function connectWebSocket() {
       case "ack":
         handleVoiceAck(msg.message || "");
         break;
+      case "token_budget_update":
+        if (msg.data && typeof msg.data === "object") {
+          renderTokenBudgetBar(msg.data);
+        }
+        break;
       case "trust_status":
         if (msg.data && typeof msg.data === "object") {
           trustState.mode = msg.data.mode || trustState.mode;
@@ -7872,7 +7917,8 @@ function renderOpenClawAgentPage() {
     } else {
       templates.forEach((template) => {
         const card = document.createElement("div");
-        card.className = "widget page-card trust-center-panel openclaw-agent-card";
+        card.className = "widget page-card trust-center-panel openclaw-agent-card"
+          + (!template.manual_run_available ? " openclaw-agent-card--unavailable" : "");
 
         const titleRow = document.createElement("div");
         titleRow.className = "workspace-board-section-header";
@@ -7930,6 +7976,9 @@ function renderOpenClawAgentPage() {
         runBtn.type = "button";
         runBtn.textContent = "Run now";
         runBtn.disabled = !permissionEnabled || !template.manual_run_available;
+        if (!template.manual_run_available) {
+          runBtn.title = String(template.availability_reason || "This template requires a connector that is not yet available.").trim();
+        }
         runBtn.addEventListener("click", () => runOpenClawAgentTemplate(String(template.id || "").trim()));
         actions.appendChild(runBtn);
 
@@ -8059,12 +8108,14 @@ function renderSettingsPage() {
         title: "Bring Your Own API Key",
         badge: "Manual cloud",
         copy: "Lets you bring your own provider later while keeping cost visibility and local control.",
+        availabilityNote: "Setup flow not yet available. You can save this as your preference now.",
       },
       {
         id: "managed_cloud",
         title: "Managed Cloud Access",
         badge: "Later guided setup",
         copy: "The easiest long-term setup path. Keep this as a saved preference until the full managed flow is live.",
+        availabilityNote: "Setup flow not yet available. You can save this as your preference now.",
       },
     ].forEach((entry) => {
       const card = document.createElement("button");
@@ -8087,6 +8138,13 @@ function renderSettingsPage() {
       copy.className = "settings-mode-copy";
       copy.textContent = entry.copy;
       card.appendChild(copy);
+
+      if (entry.availabilityNote) {
+        const availNote = document.createElement("div");
+        availNote.className = "first-run-note";
+        availNote.textContent = entry.availabilityNote;
+        card.appendChild(availNote);
+      }
 
       modeHost.appendChild(card);
     });
@@ -8385,6 +8443,11 @@ function renderSettingsPage() {
     if (!Array.isArray(connections.items) || !connections.items.length) {
       connectionGrid.appendChild(createOverviewChip("Connection status", "Awaiting trust refresh"));
     }
+
+    const calendarNote = document.createElement("div");
+    calendarNote.className = "first-run-note";
+    calendarNote.textContent = "Calendar: Nova reads a local .ics file. Set the NOVA_CALENDAR_ICS_PATH environment variable to the full path of your calendar file before starting Nova. Most calendar apps can export or sync a local ICS file.";
+    connectionGrid.appendChild(calendarNote);
   }
 }
 

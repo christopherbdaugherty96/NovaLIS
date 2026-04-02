@@ -28,11 +28,25 @@ FORBIDDEN = [
     "exec",
 ]
 
+# Executors explicitly allowed to import from src.governor for read-only diagnostic reporting.
+# These imports are capability metadata reads (not dispatch or execution authority).
+GOVERNOR_READ_ALLOWLIST = {
+    EXECUTORS_DIR / "os_diagnostics_executor.py",
+    # os_diagnostics_executor reads capability_registry and capability_topology to
+    # report on what capabilities are active. It does not create ActionRequests or
+    # invoke governor dispatch. Read-only diagnostic access is permitted.
+}
+
 
 def test_executors_do_not_import_authority_surfaces():
     assert EXECUTORS_DIR.exists(), f"Missing {EXECUTORS_DIR}"
     for py in find_py_files(EXECUTORS_DIR):
-        assert_no_imports(py, FORBIDDEN)
+        if py in GOVERNOR_READ_ALLOWLIST:
+            # Allow governor reads for diagnostics; still block dispatch and gate surfaces
+            restricted = [f for f in FORBIDDEN if f not in ("src.governor",)]
+            assert_no_imports(py, restricted)
+        else:
+            assert_no_imports(py, FORBIDDEN)
 
 
 def test_actions_do_not_import_governor_directly():

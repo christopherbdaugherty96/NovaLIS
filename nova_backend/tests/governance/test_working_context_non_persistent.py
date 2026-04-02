@@ -32,8 +32,14 @@ def test_working_context_modules_do_not_write_persistent_storage_or_spawn_thread
 
 
 def test_brain_server_contains_working_context_session_state():
+    # brain_server.py declares WorkingContextStore and the "working_context" session key.
+    # The live session wiring (including working_context.for_explain()) was extracted to
+    # session_handler.py as part of the route-extraction refactor. Both files are checked.
     brain_server_path = PROJECT_ROOT / "src" / "brain_server.py"
-    source = brain_server_path.read_text(encoding="utf-8", errors="replace")
-    assert "WorkingContextStore" in source
-    assert '"working_context"' in source
-    assert "working_context.for_explain()" in source
+    session_handler_path = PROJECT_ROOT / "src" / "websocket" / "session_handler.py"
+    brain_source = brain_server_path.read_text(encoding="utf-8", errors="replace")
+    session_source = session_handler_path.read_text(encoding="utf-8", errors="replace")
+    assert "WorkingContextStore" in brain_source
+    assert '"working_context"' in brain_source
+    # for_explain() is called in the session handler where explain capability params are enriched
+    assert "working_context.for_explain()" in session_source

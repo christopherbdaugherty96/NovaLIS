@@ -1,5 +1,5 @@
 @echo off
-setlocal enableextensions
+setlocal enabledelayedexpansion enableextensions
 
 set "ROOT_DIR=%~dp0"
 set "BACKEND_DIR=%ROOT_DIR%nova_backend"
@@ -16,6 +16,21 @@ if not exist "%BACKEND_DIR%" (
 
 if not exist "%PID_DIR%" (
   mkdir "%PID_DIR%" >nul 2>&1
+)
+
+rem -- Load .env if present (skip comments and blank lines) --
+if exist "%BACKEND_DIR%\.env" (
+  echo [Nova] Loading environment from .env...
+  for /f "usebackq eol=# tokens=1,* delims==" %%A in ("%BACKEND_DIR%\.env") do (
+    set "ENVKEY=%%A"
+    set "ENVVAL=%%B"
+    if defined ENVKEY if defined ENVVAL (
+      set "ENVKEY=!ENVKEY: =!"
+      if not "!ENVKEY!"=="" (
+        set "!ENVKEY!=!ENVVAL!"
+      )
+    )
+  )
 )
 
 set "PYTHON_EXE=%BACKEND_DIR%\venv\Scripts\python.exe"
@@ -37,11 +52,11 @@ if exist "%PID_FILE%" (
         "} " ^
         "if ($ready) { exit 0 } else { exit 5 }"
       if not errorlevel 1 (
-        echo [Nova] Backend already running ^(PID %NOVA_PID%^).
+        echo [Nova] Backend already running (PID %NOVA_PID%).
         start "" "%DASHBOARD_URL%"
         exit /b 0
       )
-      echo [Nova] Existing backend process ^(PID %NOVA_PID%^) is running but not ready at %DASHBOARD_URL%/phase-status.
+      echo [Nova] Existing backend process (PID %NOVA_PID%) is running but not ready.
       echo [Nova] Check logs:
       echo [Nova]   stdout: %OUT_LOG%
       echo [Nova]   stderr: %ERR_LOG%
@@ -52,7 +67,7 @@ if exist "%PID_FILE%" (
 
 echo [Nova] Starting backend...
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
-  "$p = Start-Process -FilePath '%PYTHON_EXE%' -ArgumentList '-m','uvicorn','src.brain_server:app','--host','127.0.0.1','--port','8000' -WorkingDirectory '%BACKEND_DIR%' -RedirectStandardOutput '%OUT_LOG%' -RedirectStandardError '%ERR_LOG%' -PassThru; Set-Content -Path '%PID_FILE%' -Value $p.Id"
+  "$p = Start-Process -FilePath '%PYTHON_EXE%' -ArgumentList '-m','uvicorn','src.brain_server:app','--host','127.0.0.1','--port','8000' -WorkingDirectory '%BACKEND_DIR%' -RedirectStandardOutput '%OUT_LOG%' -RedirectStandardError '%ERR_LOG%' -PassThru -WindowStyle Hidden; Set-Content -Path '%PID_FILE%' -Value $p.Id"
 
 if errorlevel 1 (
   echo [Nova] Failed to start backend.
@@ -84,6 +99,7 @@ if not "%START_STATUS%"=="0" (
 )
 
 echo [Nova] Backend started.
-echo [Nova] Dashboard: %DASHBOARD_URL%
+echo [Nova] Dashboard:       %DASHBOARD_URL%
+echo [Nova] Bridge endpoint: http://127.0.0.1:8000/api/openclaw/bridge/message
 start "" "%DASHBOARD_URL%"
 exit /b 0
