@@ -26,8 +26,21 @@ Nova's `governed_memory_store` already has a three-tier system:
 | `locked` | Important, protected | Yes |
 | `deferred` | Archived, out of sight | No |
 
-There is **no TTL or automatic expiry** today. Items persist until explicitly deleted.
-There is **no rolling purge** — the store grows indefinitely.
+**Actual record fields confirmed via code audit 2026-04-02:**
+`id`, `title`, `body`, `content_raw`, `content_display`, `tier`, `status`, `version`,
+`scope`, `source`, `session_id`, `user_visible`, `created_at`, `updated_at`,
+`deleted`, `deleted_at`, `tags`, `links`, `lock` (is_locked, unlock_policy, supersedes, superseded_by)
+
+**Fields that do NOT yet exist and must be added:**
+- `recall_count` — recency currently tracked via `updated_at` only
+- `last_recalled_at` — not present
+
+**Actions that do NOT yet exist:**
+- `promote` — tier changes use existing `lock_item()` / `unlock_item()` / `defer_item()` mutations;
+  a dedicated `promote` alias action needs to be added to `memory_governance_executor.py`
+
+There is **no TTL or automatic expiry** today. Items soft-delete via `deleted: true` flag only.
+There is **no rolling purge** — the store grows indefinitely until explicit user action.
 
 The recall system (`_select_relevant_memory_context` in `brain_server.py`) loads up to 3
 relevant items per query via relevance scoring. It does not distinguish between "just said
