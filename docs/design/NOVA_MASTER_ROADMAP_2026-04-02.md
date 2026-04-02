@@ -20,51 +20,61 @@ Status tags: `[ ]` not started · `[~]` in progress · `[x]` done
 
 ## P0 — Intelligence Layer (Do This First)
 
-The current ceiling: every conversation goes through `gemma2:2b` (2 billion parameters).
-The cloud lane exists but is not wired to conversation. This is the single biggest unlock.
+**Code audit findings (2026-04-02):**
+- `ConversationRouter` + `ComplexityHeuristics` ALREADY EXIST in `src/conversation/`
+  — they route conversation MODES (casual/analysis/action) and flag escalation candidates
+  — `should_escalate=True` currently triggers DeepSeek second-opinion review only
+  — they do NOT route to different LLM providers for the primary response
+- Every conversation still calls `llm_manager.generate()` → Ollama local regardless
+- `openai_responses_lane.py` API_URL is hardcoded to OpenAI; no base URL config
+- `MODEL_PROVIDER` env var only recognizes `ollama`, `local_file`, `dummy`
+
+The ceiling: every primary response goes through `gemma2:2b`. The routing infrastructure
+exists for modes but not for providers. This is the single biggest unlock.
 
 ### 0.1 — Add DeepSeek V3 as Tier 2 Provider
 Design doc: `NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md`
 
 - [ ] Add `DEEPSEEK_API_KEY` and `DEEPSEEK_BASE_URL=https://api.deepseek.com/v1` to `.env.example`
-- [ ] Make `openai_responses_lane.py` accept a configurable base URL (not hardcoded to OpenAI)
+- [ ] Make `openai_responses_lane.py` accept configurable base URL via env var (not hardcoded)
 - [ ] Add `MODEL_PROVIDER=deepseek` as a recognized routing option in `nova_config.py`
 - [ ] Add DeepSeek pricing constants to `provider_usage_store`
 - [ ] Test: conversation routed to DeepSeek V3, response returns, budget tracked
 
 **Why first:** OpenAI-compatible API — one URL change away. ~$0.07/1M tokens.
-Nearly free intelligence upgrade with minimal code change.
 
 ---
 
-### 0.2 — Wire Conversation Loop to Provider Routing
+### 0.2 — Wire Provider Routing into Conversation Loop
 Design doc: `NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md`
 
-Currently `general_chat.py` always calls `llm_manager.generate()` (local Ollama).
-The routing logic in `runtime_settings_store.py` exists but is never consulted for conversation.
+`ConversationRouter` and `ComplexityHeuristics` already exist — reuse them.
+The missing piece: when `should_escalate=True` or `complexity_score` is high,
+route the PRIMARY response to DeepSeek/OpenAI instead of only triggering second-opinion.
 
-- [ ] Build a `conversation_router.py` that checks routing mode before calling local model
-- [ ] Add a complexity classifier (heuristic: query length + question words + topic signals)
-      → simple queries stay local · complex queries route to Tier 2 (DeepSeek) or Tier 3 (OpenAI)
-- [ ] Wire `general_chat.py` / `run_general_chat_fallback()` to call conversation router
+- [x] `conversation_router.py` exists — routes modes, detects escalation candidates
+- [x] `complexity_heuristics.py` exists — scores query complexity (0.0–1.0)
+- [ ] Extend `ConversationRouter` or add a new `ProviderRouter` that maps escalation
+      signal → provider tier selection (local / deepseek / openai)
+- [ ] Wire provider selection into `run_general_chat_fallback()` in `brain_server.py`
 - [ ] Update `MODEL_PROVIDER` env var to recognize `"auto"` properly
-- [ ] Budget gate applies to cloud tier calls (Phase 9 gate already exists — just extend it)
+- [ ] Budget gate applies to cloud tier calls (Phase 9 gate already exists — extend it)
 - [ ] Test: simple question → local · complex question → DeepSeek · agent task → OpenAI
 
 **Tiered routing target:**
 ```
-Tier 1 — local gemma2:2b      free, private, instant   simple queries
-Tier 2 — DeepSeek V3 API      ~$0.07/1M tokens         complex reasoning
+Tier 1 — local gemma2:2b      free, private, instant   simple (complexity < 0.4)
+Tier 2 — DeepSeek V3 API      ~$0.07/1M tokens         complex (complexity >= 0.4)
 Tier 3 — OpenAI GPT-4o-mini   ~$0.15/1M tokens         agent/OpenClaw tasks
 Tier 4 — OpenAI GPT-4o        ~$2.50/1M tokens         heavy analysis (on-demand only)
 ```
 
 ---
 
-### 0.3 — Update BUILD_PHASE to 9
-- [ ] Set `BUILD_PHASE = 9` in `nova_backend/src/build_phase.py`
-- [ ] Update `registry.json` phase field to match
-- [ ] Update any runtime docs that reference current phase
+### 0.3 — BUILD_PHASE and Phase Tracking
+- [x] `BUILD_PHASE = 9` set in `nova_backend/src/build_phase.py` (done 2026-04-02)
+- [ ] Update `registry.json` — set `phase_introduced` on any Phase 9 caps
+- [ ] Update runtime docs that still reference Phase 8
 
 ---
 
@@ -102,17 +112,28 @@ Design doc: `NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md`
 Design doc: `NOVA_MEMORY_TIERS_DESIGN.md`
 
 ### 1.3 — Rolling Memory with Auto-Purge
-- [ ] Add `recall_count` and `last_recalled_at` fields to memory record schema
+**Code audit note:** `recall_count` and `last_recalled_at` do NOT exist yet.
+Current recency is tracked via `updated_at` only. Use that for purge ordering.
+No `purge_old_active()` method exists — items soft-delete via `deleted: true` flag.
+
+- [ ] Add `recall_count` (int) and `last_recalled_at` (ISO timestamp) fields to memory record schema
+      in `governed_memory_store.py` — default to 0 / null, increment on each recall hit
 - [ ] Add `purge_old_active()` method to `governed_memory_store.py`
-      (purge oldest active items when count > 100, spare recently-recalled items)
+      (soft-delete oldest active items by `created_at` when count > limit,
+      spare items where `last_recalled_at` is within last 7 days)
 - [ ] Call `purge_old_active()` at session start in `brain_server.py`
+- [ ] Increment `recall_count` + set `last_recalled_at` in `find_relevant_items()`
+      when items are returned
 - [ ] Expose `ROLLING_MEMORY_LIMIT` as a configurable setting (default 100)
 
 ### 1.4 — Permanent Memory (always injected)
+**Code audit note:** `_select_relevant_memory_context` exists in `brain_server.py` line ~380.
+No `promote` action exists yet — use `lock_item()` under the hood, expose as `promote` alias.
+
 - [ ] Update `_select_relevant_memory_context()` in `brain_server.py`:
-      always load ALL locked items + top 5 scored active items per query
-- [ ] Add `promote` action to `memory_governance_executor.py`
-      (moves active item to locked tier)
+      always load ALL locked (permanent) items first + top 5 scored active items per query
+- [ ] Add `promote` action alias to `memory_governance_executor.py`
+      (calls existing `lock_item()` internally — just a named alias for user clarity)
 - [ ] Backend: `POST /api/memory/{id}/promote` endpoint
 - [ ] Backend: `DELETE /api/memory/rolling/clear` endpoint
 
