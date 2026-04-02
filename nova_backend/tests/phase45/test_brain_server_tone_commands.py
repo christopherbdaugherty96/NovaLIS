@@ -14,6 +14,7 @@ class _ScriptedWebSocket:
     def __init__(self, messages: list[str]) -> None:
         self._messages = list(messages)
         self.sent_messages: list[dict] = []
+        self.headers = {"host": "testserver", "origin": "http://testserver"}
 
     async def accept(self) -> None:
         return None

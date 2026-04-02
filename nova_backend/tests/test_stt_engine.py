@@ -15,7 +15,7 @@ def test_safe_upload_filename_strips_paths():
     assert stt_engine._safe_upload_filename(r"C:\\temp\\voice.wav") == "voice.wav"
 
 
-def test_transcribe_bytes_sanitizes_uploaded_filename(monkeypatch):
+def test_transcribe_bytes_sanitizes_uploaded_filename(monkeypatch, tmp_path):
     from src.services import stt_engine
 
     captured = {}
@@ -27,6 +27,8 @@ def test_transcribe_bytes_sanitizes_uploaded_filename(monkeypatch):
     monkeypatch.setattr(stt_engine, "_resolve_ffmpeg", lambda: "ffmpeg")
     monkeypatch.setattr(stt_engine.subprocess, "run", fake_run)
     monkeypatch.setattr(stt_engine, "_vosk_transcribe_wav_sync", lambda _wav: "hello")
+    # Patch VOSK_MODEL_PATH to an existing directory so the guard passes.
+    monkeypatch.setattr(stt_engine, "VOSK_MODEL_PATH", tmp_path)
 
     out = asyncio.run(stt_engine.transcribe_bytes(b"audio-bytes", r"C:\temp\evil.webm"))
 

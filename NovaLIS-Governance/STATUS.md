@@ -1,6 +1,6 @@
 # NOVA Governance Status
 
-Updated: 2026-03-26
+Updated: 2026-03-30
 Status: Current runtime governance summary
 Scope: Reflective status of the live repository state
 
@@ -76,23 +76,27 @@ This is the live runtime invariant for governed action.
 ## Intentionally Disabled or Not Yet Live
 
 These remain intentionally unavailable as live runtime truth:
-- wake word runtime
+- wake word runtime (requirements file exists; no runtime module)
 - delegated trigger runtime
 - background policy execution
 - autonomous agent execution
-- OpenClaw external execution
-- Phase 8 envelope-driven automation
+- OpenClaw full envelope execution (manual foundation is live; broad envelope deferred)
+- inbox_check template (visible in agent store; email connector not yet available)
+- Cloud provider onboarding (BYOK / managed_cloud modes are selectable as preferences; onboarding flow not yet implemented)
 
-## Important Clarification About Legacy Surfaces
+## Important Clarification About Code Structure
 
-The repository still contains some older conversational routing surfaces in `brain_server.py`.
+The session routing loop has been extracted from `brain_server.py` into `src/websocket/session_handler.py`. `brain_server.py` now handles app assembly, middleware, singleton wiring, and the WebSocket endpoint registration. All live command routing, governor invocation, and session state management lives in `session_handler.py`.
 
-Current interpretation:
-- governed execution goes through the Governor path
-- some legacy non-execution conversational fallback logic still exists
-- that is architectural debt, not a second execution authority path
+`brain_server.py` remains large due to inline payload-building helper functions (~35 identified). These are candidates for future extraction but are not architectural risk.
 
-This should be cleaned up over time so Nova's declared architecture and entrypoint code stay simpler and easier to audit.
+## Personality Layer
+
+Nova has two personality components that coexist:
+- `personality/core.py` — Phase 4.2 multi-agent deep cognition (prefix-triggered: `phase 4.2:` / `orthogonal:`)
+- `personality/conversation_personality_agent.py` — Phase 8 Nova voice layer (default path for all normal turns and OpenClaw result presentation)
+
+See `docs/reference/HUMAN_GUIDES/30_PERSONALITY_SYSTEM_ARCHITECTURE.md` for the full explanation.
 
 ## Operational Truth
 

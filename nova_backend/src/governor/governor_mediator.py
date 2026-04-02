@@ -371,6 +371,14 @@ COMMAND_ONLY_RE = re.compile(
     r"^\s*(?P<verb>open|search|research|summarize|compare|track|memory)\s*$",
     re.IGNORECASE,
 )
+RUN_TEMPLATE_RE = re.compile(
+    r"^\s*(?:run|execute|start|trigger)\s+(?:home[\s\-]?agent\s+)?(?:template\s+)?(?P<template_id>[A-Za-z0-9_\-]{1,64})\s*$",
+    re.IGNORECASE,
+)
+MORNING_BRIEF_RE = re.compile(
+    r"^\s*(?:run|give me|show me|start)?\s*(?:the\s+)?morning\s+brief(?:\s+template)?\s*$",
+    re.IGNORECASE,
+)
 
 _NUMBER_WORDS = {
     "one": "1",
@@ -1109,6 +1117,15 @@ class GovernorMediator:
                     "confirmed": bool((m.group("confirm") or "").strip()),
                 },
             )
+
+        if MORNING_BRIEF_RE.match(t):
+            return _invocation_if_enabled(63, {"template_id": "morning_brief", "triggered_by": "user_command"})
+
+        m = RUN_TEMPLATE_RE.match(t)
+        if m:
+            template_id = (m.group("template_id") or "").strip().lower()
+            if template_id not in {"open", "search", "research", "summarize", "compare", "track", "memory"}:
+                return _invocation_if_enabled(63, {"template_id": template_id, "triggered_by": "user_command"})
 
         m = COMPARE_STORY_RE.match(t)
         if m:

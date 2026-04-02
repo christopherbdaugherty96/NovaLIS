@@ -9,7 +9,7 @@ from typing import Dict
 from src.governor.exceptions import CapabilityRegistryError
 
 REGISTRY_PATH = Path(__file__).resolve().parents[1] / "config" / "registry.json"
-EXPECTED_PHASE = "4"
+EXPECTED_PHASE = "8"
 RUNTIME_PROFILE_ENV = "NOVA_RUNTIME_PROFILE"
 DEFAULT_RUNTIME_PROFILE = "default"
 ALLOWED_AUTHORITY_SCOPES = {"observe", "suggest", "confirm", "automatic"}

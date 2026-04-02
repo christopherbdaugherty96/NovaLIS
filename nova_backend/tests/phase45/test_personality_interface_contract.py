@@ -10,4 +10,6 @@ def test_brain_server_wires_interface_personality_agent_for_chat_messages():
 
     assert "from src.personality.interface_agent import PersonalityInterfaceAgent" in source
     assert "interface_personality_agent = PersonalityInterfaceAgent()" in source
-    assert "presented = interface_personality_agent.present(presented, domain=tone_domain)" in source
+    # ConversationPersonalityAgent wraps interface_personality_agent and calls .present() internally.
+    assert "conversation_personality_agent = ConversationPersonalityAgent(interface_agent=interface_personality_agent)" in source
+    assert "conversation_personality_agent.present(presented, domain=tone_domain)" in source

@@ -278,6 +278,16 @@ _TOPOLOGY_OVERRIDES: dict[int, dict[str, Any]] = {
         "delegation_class": "local_action",
         "envelope_notes": "Governed memory remains explicitly user-directed and non-delegatable.",
     },
+    63: {
+        "authority_class": "read_only_network",
+        "policy_delegatable": False,
+        "reversible": True,
+        "persistent_change": False,
+        "external_effect": True,
+        "requires_network_mediator": True,
+        "delegation_class": "observational",
+        "envelope_notes": "Home-agent templates are read-only network runs. External effect is True because results are delivered to the agent inbox. Not policy-delegatable in the current phase.",
+    },
 }
 
 

@@ -144,6 +144,15 @@ class OpenClawAgentRunner:
         }
 
     async def _collect_payload(self, template_id: str) -> dict[str, Any]:
+        if template_id == "inbox_check":
+            # inbox_check has no payload collector. The email connector is not yet available.
+            # This template is intentionally not runnable (manual_run_available: False).
+            # run_template() enforces that guard before reaching here, but this explicit
+            # check prevents silent fallthrough to the morning_brief collector if that
+            # guard is ever bypassed in tests or future code paths.
+            raise RuntimeError(
+                "inbox_check cannot be run yet. The email connector is not part of the active runtime."
+            )
         if template_id == "evening_digest":
             return await self._collect_evening_digest_payload()
         if template_id == "market_watch":

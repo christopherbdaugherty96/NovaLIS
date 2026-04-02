@@ -1,12 +1,15 @@
 {
   "schema_version": "1.0",
-  "phase": "4",
+  "phase": "8",
   "capability_groups": {
     "speech_output": [
       18
     ],
     "local_control": [
       22
+    ],
+    "home_agent": [
+      63
     ],
     "intelligence": [
       16,
@@ -42,7 +45,8 @@
         "local_control",
         "speech_output",
         "intelligence",
-        "diagnostics"
+        "diagnostics",
+        "home_agent"
       ],
       "enabled_overrides": {}
     },
@@ -50,7 +54,8 @@
       "groups": [
         "intelligence",
         "speech_output",
-        "diagnostics"
+        "diagnostics",
+        "home_agent"
       ],
       "enabled_overrides": {}
     }
@@ -391,6 +396,20 @@
       "reversible": false,
       "external_effect": false,
       "description": "Saves, lists, edits, locks, defers, exports, and deletes explicit governed memory items and thread-linked memory."
+    },
+    {
+      "id": 63,
+      "name": "openclaw_execute",
+      "status": "active",
+      "phase_introduced": "8",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": true,
+      "authority_class": "read_only_network",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": true,
+      "description": "Phase 8 canonical governed execution surface for OpenClaw home-agent templates. Runs a named read-only template through the governed network path and returns a structured result widget."
     }
   ],
   "retired_ids": []

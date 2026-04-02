@@ -9,16 +9,20 @@ from src import brain_server
 from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
 from src.settings.runtime_settings_store import RuntimeSettingsStore
 from src.tasks.notification_schedule_store import NotificationScheduleStore
+from src.usage.provider_usage_store import ProviderUsageStore
 
 
 def _install_runtime_settings_store(monkeypatch, tmp_path: Path):
     store = RuntimeSettingsStore(tmp_path / "runtime_settings.json")
+    # Fresh usage store with generous budget so tests don't fail due to cross-test token accumulation.
+    usage_store = ProviderUsageStore(tmp_path / "provider_usage.json", daily_token_budget=1_000_000)
 
     settings_module = importlib.import_module("src.settings.runtime_settings_store")
     diagnostics_module = importlib.import_module("src.executors.os_diagnostics_executor")
 
     monkeypatch.setattr(settings_module, "runtime_settings_store", store)
     monkeypatch.setattr(diagnostics_module, "runtime_settings_store", store)
+    monkeypatch.setattr(diagnostics_module, "provider_usage_store", usage_store)
     monkeypatch.setattr(brain_server, "runtime_settings_store", store)
     return store
 
