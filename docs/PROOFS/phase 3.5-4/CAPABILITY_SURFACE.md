@@ -1,7 +1,7 @@
 
 ---
 
-# docs/proofs/CAPABILITY_SURFACE.md
+# docs/PROOFS/phase 3.5-4/CAPABILITY_SURFACE.md
 
 ```
 # CAPABILITY_SURFACE.md

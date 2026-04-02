@@ -23,8 +23,13 @@ The runtime-served frontend lives in:
 - `nova_backend/static/orb.js`
 - `nova_backend/static/style.phase1.css`
 
-There is also a mirrored copy in:
+There is also a historical mirror copy in:
 - `Nova-Frontend-Dashboard/`
+
+Current repo rule:
+- `nova_backend/static/` is the runtime-served canonical frontend
+- `Nova-Frontend-Dashboard/` is useful for comparison, but it may drift
+- if `scripts/check_frontend_mirror_sync.py` fails, trust `nova_backend/static/`
 
 There is now also a product-facing landing preview at:
 - `nova_backend/static/landing.html`

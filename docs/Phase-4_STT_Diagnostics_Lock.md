@@ -1,10 +1,10 @@
-Below is a **canonical “Save & Lock” document** you can place in:
+Below is the preserved **Phase-4 "Save & Lock" diagnostic document** at:
 
 ```
-docs/CANONICAL/Phase-4_STT_Diagnostics_Lock.md
+docs/Phase-4_STT_Diagnostics_Lock.md
 ```
 
-This captures only **confirmed facts**, no speculation, and preserves Phase-4 discipline.
+It captures only **confirmed facts**, no speculation, and preserves Phase-4 diagnostic discipline.
 
 ---
 

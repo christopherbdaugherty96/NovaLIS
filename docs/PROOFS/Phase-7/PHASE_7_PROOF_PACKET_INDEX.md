@@ -75,9 +75,9 @@ Interpretation note:
 - `docs/design/Phase 7/PHASE_7_DOCUMENT_MAP.md`
 - `docs/design/Phase 7/PHASE_7_DEEPSEEK_SECOND_OPINION_PLAN.md`
 - `docs/design/Phase 7/PHASE_7_GOVERNED_EXTERNAL_REASONING_PLAN.md`
-- `docs/design/NOVA_WEBSEARCH_ANSWER_AND_REASONING_PLAN_2026-03-21.md`
-- `docs/design/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
-- `docs/design/NOVA_TTS_REGRESSION_NOTE_2026-03-21.md`
+- `docs/design/Phase 7/NOVA_WEBSEARCH_ANSWER_AND_REASONING_PLAN_2026-03-21.md`
+- `docs/design/Phase 7/NOVA_NEWS_EXPERIENCE_AND_REASONING_PLAN_2026-03-21.md`
+- `docs/design/Phase 4.5/NOVA_TTS_REGRESSION_NOTE_2026-03-21.md`
 
 ## Verification Commands (Current)
 Run these commands from `nova_backend/`.

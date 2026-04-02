@@ -4,7 +4,7 @@ Status: RATIFIED
 Scope: Formal ratification of the governed memory model and its active runtime slice.
 
 ## Ratified Inputs
-- `docs/design/phase 5/MEMORY GOVERNANCE.md`
+- `docs/design/Phase 5/MEMORY GOVERNANCE.md`
 - `docs/PROOFS/Phase-5/MEMORY_GOVERNANCE_RATIFICATION_ACT_2026-03-09.md`
 - `docs/PROOFS/Phase-5/PHASE_5_MEMORY_RUNTIME_SLICE_2026-03-11.md`
 - `docs/PROOFS/Phase-5/PHASE_5_THREAD_MEMORY_BRIDGE_RUNTIME_SLICE_2026-03-12.md`

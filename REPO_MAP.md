@@ -66,7 +66,9 @@ Nova's docs are intentionally separated by role:
   - runtime-served frontend assets
 
 - `Nova-Frontend-Dashboard/`
-  - mirrored frontend surface that should stay aligned with `nova_backend/static/`
+  - historical mirror copy of the frontend
+  - useful for comparison, but `nova_backend/static/` is the runtime-served canonical frontend
+  - if `scripts/check_frontend_mirror_sync.py` reports drift, trust `nova_backend/static/`
 
 - `docs/`
   - runtime truth, proofs, design docs, human guides, and governance material

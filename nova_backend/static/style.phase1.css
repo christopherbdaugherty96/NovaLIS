@@ -517,6 +517,146 @@ body {
   gap: 10px;
 }
 
+.workflow-focus-widget {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(143, 218, 255, 0.2);
+  background: linear-gradient(160deg, rgba(16, 34, 58, 0.92) 0%, rgba(8, 19, 36, 0.94) 100%);
+}
+
+.live-help-widget {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(143, 218, 255, 0.24);
+  background: linear-gradient(160deg, rgba(10, 35, 58, 0.92) 0%, rgba(6, 19, 36, 0.96) 100%);
+}
+
+.live-help-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.live-help-trust-note {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(143, 218, 255, 0.18);
+  background: rgba(120, 211, 255, 0.07);
+  color: #d7e8ff;
+  font-size: 0.84rem;
+  line-height: 1.45;
+}
+
+.live-help-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.live-help-step {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(175, 198, 230, 0.16);
+  background: rgba(255, 255, 255, 0.04);
+  color: #e4efff;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.live-help-prompt-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.live-help-prompt-btn {
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(143, 218, 255, 0.22);
+  background: rgba(104, 177, 255, 0.08);
+  color: #edf5ff;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.live-help-prompt-btn:hover {
+  border-color: rgba(143, 218, 255, 0.4);
+  background: rgba(104, 177, 255, 0.16);
+}
+
+.live-help-prompt-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.confidence-badge.live-help-active {
+  border-color: rgba(132, 249, 196, 0.36);
+  background: rgba(55, 142, 103, 0.22);
+  color: #d7fff1;
+}
+
+.workflow-focus-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.workflow-focus-copy {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.45;
+  color: #d6e6fb;
+}
+
+.workflow-focus-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.workflow-focus-card {
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(175, 198, 230, 0.18);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.workflow-focus-label {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9dbde0;
+}
+
+.workflow-focus-value {
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: #edf5ff;
+}
+
+.workflow-focus-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.workflow-focus-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .page-news {
   display: grid;
   grid-template-columns: minmax(0, 1fr);
@@ -627,6 +767,13 @@ body {
   gap: 10px;
 }
 
+.workspace-resume-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+
 .workspace-home-stat {
   padding: 12px 13px;
   display: grid;
@@ -671,6 +818,17 @@ body {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
+}
+
+.workspace-focus-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+.workspace-resume-card {
+  align-content: start;
 }
 
 .page-intro,
@@ -776,6 +934,19 @@ button.workspace-spotlight-card.active {
   background: rgba(23, 48, 81, 0.74);
 }
 
+.intro-success-card {
+  align-content: start;
+}
+
+.intro-success-action {
+  margin-top: 4px;
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #8fdcff;
+}
+
 .intro-flow-line {
   padding: 12px 14px;
   border: 1px solid rgba(168, 201, 242, 0.18);
@@ -791,6 +962,12 @@ button.workspace-spotlight-card.active {
 .settings-mode-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.intro-success-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -1307,11 +1484,58 @@ button.workspace-spotlight-card.active {
   line-height: 1.4;
 }
 
+.search-quick-answer {
+  display: grid;
+  gap: 6px;
+  padding: 10px 11px;
+  border: 1px solid rgba(143, 218, 255, 0.2);
+  border-radius: 12px;
+  background: linear-gradient(160deg, rgba(17, 38, 66, 0.84) 0%, rgba(10, 23, 42, 0.92) 100%);
+}
+
+.search-quick-answer-title,
+.search-widget-actions-label,
+.search-start-badge,
+.news-story-kicker {
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.search-quick-answer-title,
+.search-widget-actions-label {
+  color: #8fdcff;
+}
+
+.search-quick-answer-meta {
+  margin: 0;
+  color: #dcecff;
+  font-size: 0.76rem;
+  line-height: 1.4;
+}
+
 .search-result-title {
   display: flex;
   flex-wrap: wrap;
   gap: 6px;
   align-items: center;
+}
+
+.search-result-primary {
+  border-color: rgba(143, 218, 255, 0.32);
+  background: rgba(143, 218, 255, 0.08);
+}
+
+.search-start-badge,
+.news-story-kicker {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 8px;
+  border-radius: 999px;
+  background: rgba(143, 218, 255, 0.14);
+  border: 1px solid rgba(143, 218, 255, 0.24);
+  color: #d8f2ff;
 }
 
 .search-result-snippet {
@@ -1341,6 +1565,11 @@ button.workspace-spotlight-card.active {
 .search-widget-actions {
   padding-top: 4px;
   border-top: 1px solid rgba(175, 198, 230, 0.2);
+}
+
+.search-widget-actions-primary {
+  padding-top: 0;
+  border-top: 0;
 }
 
 .search-result a,
@@ -1621,6 +1850,18 @@ button.workspace-spotlight-card.active {
   color: #d5e6ff;
   font-size: 0.8rem;
   line-height: 1.4;
+}
+
+.news-item-primary {
+  border-color: rgba(143, 218, 255, 0.28);
+  background: linear-gradient(180deg, rgba(143, 218, 255, 0.07) 0%, rgba(104, 177, 255, 0.02) 100%);
+}
+
+.news-item-title-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
 }
 
 .news-item-meta {
@@ -3720,11 +3961,16 @@ button.workspace-spotlight-card.active {
     grid-template-columns: minmax(0, 1fr);
   }
 
+  .workspace-resume-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .first-run-pillars {
     grid-template-columns: minmax(0, 1fr);
   }
 
   .intro-setup-grid,
+  .intro-success-grid,
   .settings-mode-grid {
     grid-template-columns: minmax(0, 1fr);
   }
@@ -3786,6 +4032,10 @@ button.workspace-spotlight-card.active {
     grid-template-rows: auto minmax(300px, 1fr) auto auto;
   }
 
+  .workflow-focus-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
   .page-view {
     height: auto;
     overflow: visible;
@@ -3812,6 +4062,10 @@ button.workspace-spotlight-card.active {
   .dashboard {
     padding: 10px;
     gap: 10px;
+  }
+
+  .live-help-steps {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .news-search-shell {

@@ -148,6 +148,23 @@ class SystemControlExecutor:
     def _clamp_percent(value: int) -> int:
         return max(0, min(int(value), 100))
 
+    @staticmethod
+    def supports_explicit_volume_action(action: str) -> bool:
+        command = (action or "").strip().lower()
+        system = platform.system()
+        if command in {"up", "down", "set"}:
+            return system in {"Linux", "Darwin", "Windows"}
+        if command in {"mute", "unmute"}:
+            return system in {"Linux", "Darwin"}
+        return False
+
+    @staticmethod
+    def supports_explicit_media_action(action: str) -> bool:
+        command = (action or "").strip().lower()
+        if command not in {"play", "pause", "resume"}:
+            return False
+        return platform.system() in {"Linux", "Darwin"}
+
     @classmethod
     def _set_volume_linux(cls, action: str, level: int | None = None) -> bool:
         if action == "set" and level is not None:

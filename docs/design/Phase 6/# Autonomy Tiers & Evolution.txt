@@ -254,7 +254,7 @@ All three identified workstreams are necessary, but they have a **dependency ord
    - Implement runtime mutation guard.  
    - Integrate with Evolution Kill Switch.  
    - Ensure rollback capability and full Ledger audit.  
-   - **Design doc:** `docs/design/GOVERNOR_MUTATION_FIREWALL.md`
+   - **Design doc:** the constitutional-enforcement document in this folder
 
 2. **Concurrently draft:**
    - `AUTONOMY_TIERS.md` â€“ full tier specification, including UI rules, failure modes, and constitutional boundaries.  

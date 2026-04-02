@@ -32,3 +32,21 @@ def test_vision_analyzer_provides_python_download_guidance_for_windows():
     assert result.get("signals", {}).get("diagnostic") == "python_download_guidance"
     assert result.get("next_steps")
 
+
+def test_vision_analyzer_summarizes_general_landing_page_context():
+    analyzer = VisionAnalyzer()
+    result = analyzer.analyze(
+        image_path="capture.png",
+        ocr_text="Mobile Bar Booking Pricing Contact Book Now Learn More",
+        context_snapshot={
+            "browser": {"page_title": "Insight Mobile Bar", "url": "https://example.com"},
+            "system": {"os": "Windows 11"},
+        },
+        user_query="what matters most here",
+    )
+
+    assert result.get("page_kind") == "landing_page"
+    assert "what matters here" in result["summary"].lower()
+    assert result.get("key_actions")
+    assert result.get("next_steps")
+    assert result.get("follow_up_prompts")

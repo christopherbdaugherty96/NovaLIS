@@ -422,7 +422,7 @@ I recommend: keep this in `conversation/mode_router.py`, not mediator.
 
 After you implement, update/add:
 
-* `docs/PROOFS/Phase-4/CONVERSATION_MODE_ROUTER_PROOF.md`
+* `docs/PROOFS/Phase-4/CONVERSATION_NON_AUTHORIZING_PROOF.md`
 
   * prove no new authority expansion
   * show grep results: no executor imports in conversation layer
