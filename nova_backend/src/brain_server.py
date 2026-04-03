@@ -31,6 +31,7 @@ from src.api.bridge_api import build_bridge_router
 from src.api.live_screen_api import build_live_screen_router
 from src.api.memory_api import build_memory_router
 from src.api.openclaw_agent_api import build_openclaw_agent_router
+from src.api.profile_api import build_profile_router
 from src.api.settings_api import build_settings_router
 from src.api.workspace_api import build_workspace_router
 from src.conversation.general_chat_runtime import (
@@ -2878,6 +2879,7 @@ app.include_router(build_audit_router(sys.modules[__name__]))
 app.include_router(build_bridge_router(sys.modules[__name__]))
 app.include_router(build_memory_router(sys.modules[__name__]))
 app.include_router(build_openclaw_agent_router(sys.modules[__name__]))
+app.include_router(build_profile_router(sys.modules[__name__]))
 app.include_router(build_settings_router(sys.modules[__name__]))
 
 # -------------------------------------------------

@@ -4167,3 +4167,158 @@ button.workspace-spotlight-card.active {
     align-items: flex-start;
   }
 }
+
+/* ============================================================
+   PROFILE PANEL
+   ============================================================ */
+
+.profile-panel {
+  padding: 20px 24px 24px;
+}
+
+.profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+.profile-field-row {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.profile-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary, #b0b0c0);
+  letter-spacing: 0.01em;
+}
+
+.profile-label-hint {
+  font-weight: 400;
+  color: var(--text-muted, #7a7a9a);
+  font-size: 12px;
+}
+
+.profile-input {
+  background: var(--input-bg, #1a1a2e);
+  border: 1px solid var(--border-subtle, #2e2e4a);
+  border-radius: 8px;
+  color: var(--text-primary, #e0e0f0);
+  font-size: 14px;
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color 0.15s;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.profile-input:focus {
+  border-color: var(--accent-blue, #4a9eff);
+}
+
+.profile-divider {
+  height: 1px;
+  background: var(--border-subtle, #2e2e4a);
+  margin: 8px 0;
+}
+
+/* Preferences grid — label / control pairs */
+.profile-prefs-grid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 10px 16px;
+  margin-top: 10px;
+}
+
+.profile-radio-group {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.profile-radio-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-primary, #e0e0f0);
+  cursor: pointer;
+}
+
+.profile-radio-label input[type="radio"] {
+  accent-color: var(--accent-blue, #4a9eff);
+  width: 15px;
+  height: 15px;
+  cursor: pointer;
+}
+
+.profile-toggle {
+  justify-self: end;
+}
+
+/* Rules textarea */
+.profile-rules-textarea {
+  background: var(--input-bg, #1a1a2e);
+  border: 1px solid var(--border-subtle, #2e2e4a);
+  border-radius: 8px;
+  color: var(--text-primary, #e0e0f0);
+  font-size: 13px;
+  font-family: inherit;
+  line-height: 1.5;
+  padding: 10px 12px;
+  resize: vertical;
+  width: 100%;
+  box-sizing: border-box;
+  outline: none;
+  transition: border-color 0.15s;
+  margin-top: 8px;
+}
+
+.profile-rules-textarea:focus {
+  border-color: var(--accent-blue, #4a9eff);
+}
+
+/* Status feedback line */
+.profile-status {
+  font-size: 12px;
+  margin-left: 8px;
+  opacity: 0;
+  transition: opacity 0.2s;
+  vertical-align: middle;
+}
+
+.profile-status.visible {
+  opacity: 1;
+}
+
+.profile-status.ok {
+  color: var(--status-green, #4caf7d);
+}
+
+.profile-status.err {
+  color: var(--status-red, #e05c5c);
+}
+
+/* Save-row layout (button + status inline) */
+.profile-form .btn-row,
+.profile-prefs-grid .btn-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  grid-column: 1 / -1;
+  margin-top: 4px;
+}
+
+@media (max-width: 560px) {
+  .profile-prefs-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-toggle {
+    justify-self: start;
+  }
+}
