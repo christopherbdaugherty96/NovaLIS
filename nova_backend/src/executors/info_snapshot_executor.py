@@ -59,6 +59,8 @@ def _follow_up_prompts(capability_id: int) -> list[str]:
         ]
     return [
         "today's schedule",
+        "tomorrow's schedule",
+        "upcoming events",
         "morning brief",
         "system status",
     ]
@@ -95,7 +97,7 @@ def _build_snapshot_message(capability_id: int, widget: dict[str, Any], fallback
     lines = [summary or fallback]
     if events:
         lines.append(f"Upcoming events loaded: {len(events)}")
-    lines.append("Try next: today's schedule, morning brief, or system status.")
+    lines.append("Try next: today's schedule, tomorrow's schedule, what's coming up, or morning brief.")
     return "\n".join(lines)
 
 

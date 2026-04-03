@@ -39,6 +39,21 @@ That means:
 - the action and operator layer is only at the beginning of Phase 8
 - the user-friendliness and home-assistant feel still need more Phase-4.5 completion work
 
+## What This Does Not Mean
+
+Closing the remaining Phase-4.5 polish does not mean Nova must then "close Phase 5, then Phase 6, then Phase 7" in sequence.
+
+The phase truth is overlapping, not waterfall:
+- Phase 5 is already effectively closed as a trust-facing runtime layer
+- Phase 6 is already complete in the repo
+- Phase 7 is already complete in the repo
+- Phase 8 is the live unfinished frontier
+
+So the practical build posture is:
+- finish the last manual Phase-4.5 closeout honestly
+- keep building primarily inside Phase 8
+- treat later Phase-9 planning as future work until Phase-8 closure is stronger
+
 ## What Nova Already Has
 
 Nova already has a real runtime with:
@@ -51,6 +66,10 @@ Nova already has a real runtime with:
 - trust and settings surfaces
 - bounded external reasoning review
 - live dashboard, websocket, and voice layers
+- shipped user profile and connection-card setup surfaces
+- stronger onboarding and readiness flow
+- structured morning brief delivery across chat and OpenClaw
+- visible OpenClaw run state on Home and Agent surfaces
 
 Nova also already has:
 - a real Governor spine
@@ -76,6 +95,7 @@ The main runtime gaps remain:
 - proper calendar integration
 - full Phase-8 governed envelope execution
 - final user-facing polish on the still-partial Phase-4.5 layer
+- manual live-device validation of the newest voice, onboarding, and run-state surfaces
 
 ## First Priority Truth
 
@@ -84,25 +104,26 @@ The first near-term priority should not be:
 - Phase 10 adaptation theory
 - more future-lane sprawl
 
-The first priority should be:
+The first priority should now be:
 
 `Finish the current product foundation before widening Nova further.`
 
 That means locking attention on three things:
-1. finish Phase-4.5 polish where the product still feels partial
-2. finish the highest-value practical usefulness gap through real connectors
+1. finish the remaining manual Phase-4.5 closeout work where the product still feels partial
+2. finish the highest-value practical usefulness gap through real connectors, especially calendar
 3. finish the missing full Phase-8 governed execution foundation
 
 ## The Correct Next Order
 
 ### Priority 1 - Finish product-foundation polish
-This is the true first priority.
+This is now a narrow closeout priority, not a broad rebuild.
 
 Do next:
 - live-device TTS confidence validation
 - real manual feel-pass on the updated UX
-- setup and readiness clarity cleanup
+- setup and readiness clarity cleanup where copy still feels diagnostic instead of assistant-like
 - screen-help smoothness and first-use success
+- validate that profile, connection cards, intro flow, morning brief, and active run state feel like one product
 - continued reduction of technical wording in user-facing surfaces
 
 Reason:
@@ -111,7 +132,7 @@ Reason:
 
 ### Priority 2 - Widen safe usefulness through connectors
 Best first connector:
-- real calendar integration
+- real calendar integration beyond the current ICS-backed snapshot baseline
 
 Then:
 - one or two other high-value read-heavy connectors
@@ -124,6 +145,7 @@ Reason:
 This means:
 - move beyond only the narrow OpenClaw home-agent foundation
 - complete the broader safe execution layer
+- add pause / resume and richer visible run-state controls
 - preserve explicit budgets, previews, stop controls, and trust visibility
 
 Reason:
@@ -141,6 +163,6 @@ This grounding should block the following mistakes:
 
 If a single sentence is needed for roadmap grounding, use this:
 
-`Nova stands on a strong Phase-5-through-7 runtime base, with Phase 8 started but not finished, and Phase-4.5 polish still needing completion.`
+`Nova stands on a strong Phase-5-through-7 runtime base, with Phase 4.5 mostly closed in product surfaces, Phase-8 usefulness materially improved, and full Phase-8 execution still unfinished.`
 
 That is the current truth the roadmap should optimize around.

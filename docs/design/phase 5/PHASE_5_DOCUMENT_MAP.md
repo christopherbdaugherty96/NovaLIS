@@ -1,13 +1,13 @@
 # Phase 5 Document Map
 
-Updated: 2026-03-27
+Updated: 2026-04-03
 Status: Current design and proof map
 Purpose: Classify the closed Phase-5 package plus the later runtime-aligned expansions that are now part of Nova's active product surface.
 
 ## Canonical Phase-5 Design Core
-- the corrected Phase-5 roadmap document in `docs/design/Phase 5/`
-- `docs/design/Phase 5/MEMORY GOVERNANCE.md`
-- `docs/design/Phase 5/NOVA_WORKING_CONTEXT_ENGINE.md`
+- the corrected Phase-5 roadmap document in `docs/design/phase 5/`
+- `docs/design/phase 5/MEMORY GOVERNANCE.md`
+- `docs/design/phase 5/NOVA_WORKING_CONTEXT_ENGINE.md`
 
 These documents define the original trust-facing Phase-5 package:
 - explicit governed memory
@@ -23,12 +23,13 @@ Archived placeholder location:
 - `docs/design/archive/redundant_placeholders_2026-04-02/`
 
 ## Supporting Design Layer
-- tonal calibration scope design document in `docs/design/Phase 5/`
-- tonal calibration visibility design document in `docs/design/Phase 5/`
-- `docs/design/Phase 5/PHASE_5_MEMORY_REMEMBRANCE_AND_ASSISTIVE_NOTICING_ARCHITECTURE_2026-03-27.md`
-- `docs/design/Phase 5/NOVA_CROSS_SYSTEM_MEMORY_AND_GOVERNED_AWARENESS_DIRECTION_2026-03-27.md`
-- `docs/design/Phase 5/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
-- `docs/design/Phase 5/NOVA_GOVERNED_LEARNING_LADDER_2026-04-02.md`
+- tonal calibration scope design document in `docs/design/phase 5/`
+- tonal calibration visibility design document in `docs/design/phase 5/`
+- `docs/design/phase 5/PHASE_5_MEMORY_REMEMBRANCE_AND_ASSISTIVE_NOTICING_ARCHITECTURE_2026-03-27.md`
+- `docs/design/phase 5/NOVA_CROSS_SYSTEM_MEMORY_AND_GOVERNED_AWARENESS_DIRECTION_2026-03-27.md`
+- `docs/design/phase 5/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
+- `docs/design/phase 5/NOVA_GOVERNED_LEARNING_LADDER_2026-04-02.md`
+- `docs/design/phase 5/NOVA_MEMORY_TIERS_DESIGN.md`
 - `docs/design/Phase 9/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
 - `docs/design/Phase 4.5/NOVA_LOCAL_PROJECT_VISUAL_EXPLAINER_PLAN_2026-03-21.md`
 
@@ -47,6 +48,11 @@ The governed learning ladder packet should be read as:
 - Phase-5 anchored for explicit preference learning
 - later continuity-aware workflow habit learning only after connectors and routines are real
 - not a license for hidden adaptive behavior
+
+The memory tiers design packet should be read this way:
+- as a later refinement layer on top of the already-shipped governed memory base
+- as the canonical place for rolling vs permanent memory direction
+- as future-facing until purge, promotion, and tier UX behavior are fully implemented in runtime
 
 The tonal calibration notes in this folder should be read this way:
 - tone shaping is a trust-visible design question, not hidden adaptation

@@ -47,6 +47,10 @@ The live product already includes:
 - trust and settings surfaces
 - bounded external reasoning review
 - active dashboard, websocket, and voice layers
+- user profile and connection-card setup surfaces
+- stronger onboarding/readiness flow
+- structured morning brief delivery across chat and OpenClaw
+- visible OpenClaw run state across Home and Agent
 
 ### Nova already has a real trust spine
 The strongest thing in the system remains the separation between:
@@ -91,6 +95,20 @@ Recent work has made Nova significantly more understandable:
 But the runtime itself still marks Phase 4.5 as partial.
 
 That is the right current description.
+
+The grounded nuance now is:
+- most of the product-surface work has landed
+- the remaining gap is manual polish and validation, not missing whole systems
+
+Another important nuance:
+- Nova does not advance through the remaining work as a simple Phase-4.5 -> Phase-5 -> Phase-6 -> Phase-7 ladder
+- Phase 5 is already effectively closed in proof
+- Phase 6 is already complete
+- Phase 7 is already complete
+- Phase 8 is the real active build phase now
+
+That means the current job is not to reopen old finished layers.
+It is to finish the final truth-and-validation closeout around Phase 4.5 while continuing the real build frontier in Phase 8.
 
 ### The docs are better organized now
 The design docs have been reorganized into phase folders.
@@ -190,6 +208,7 @@ Still worth finishing:
 - device-confidence validation for spoken output
 - setup/readiness clarity
 - action explanation clarity
+- validate the newest active-run and morning-brief surfaces in real use
 - docs grounding and stale-link cleanup
 
 ### 5. Intelligence structure still needs final consolidation
@@ -372,13 +391,13 @@ What should be done next, in order?
 
 The best answer is:
 
-1. finish docs cleanup and current-status grounding
-2. finish current UX/runtime polish, especially TTS and manual UI feel
-3. ship the first real connector slice, preferably calendar
+1. finish the remaining manual UX/runtime polish, especially TTS and real-device feel
+2. ship the first real connector slice, preferably calendar
+3. finish fuller Phase-8 governed execution foundations, especially pause/resume and richer run controls
 4. add Layer 1 preference learning
 5. keep improving live screen help and daily-use flow
-6. continue into fuller Phase-8 governed execution foundations
-7. only later add workflow habit learning and bounded proactive learning
+6. only later add workflow habit learning and bounded proactive learning
+7. keep docs/runtime grounding current as these slices land
 
 Interaction rule across all of the above:
 - Governor for law
