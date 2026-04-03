@@ -69,17 +69,20 @@ class OpenClawAgentRunner:
         started_at = _utc_now_iso()
         payload = await self._collect_payload(template_id)
         prompt = self._build_summary_prompt(template, payload)
+        fallback = self._fallback_summary(template_id, payload)
         usage_meta: dict[str, Any] = {}
         summary_model = ""
         summary_route = "deterministic_fallback"
+        summarized = ""
 
-        summarized = self._summarize_with_local_model(template, prompt)
-        if summarized:
-            summary_model = "Local summarizer"
-            summary_route = "local_model"
-            usage_meta = self._local_usage_meta(prompt=prompt, summary=summarized)
+        if template_id != "morning_brief":
+            summarized = self._summarize_with_local_model(template, prompt)
+            if summarized:
+                summary_model = "Local summarizer"
+                summary_route = "local_model"
+                usage_meta = self._local_usage_meta(prompt=prompt, summary=summarized)
 
-        if not summarized:
+        if template_id != "morning_brief" and not summarized:
             openai_result = self._summarize_with_metered_openai(template, prompt)
             if openai_result:
                 summarized = str(openai_result.get("text") or "").strip()
@@ -87,7 +90,6 @@ class OpenClawAgentRunner:
                 summary_model = str(usage_meta.get("model_label") or "OpenAI").strip() or "OpenAI"
                 summary_route = "openai_metered"
 
-        fallback = self._fallback_summary(template_id, payload)
         raw_summary = summarized or fallback
         if not usage_meta:
             usage_meta = self._fallback_usage_meta(
@@ -328,6 +330,7 @@ class OpenClawAgentRunner:
                 _wline += f" in {_wloc}"
             if _wfcast:
                 _wline += f". {_wfcast}"
+            _wline = _wline.replace("Â°F", "°F")
             lines.append(f"Weather: {_wline}")
         else:
             weather_summary = str(payload.get("weather_summary") or "").strip()
@@ -490,6 +493,7 @@ class OpenClawAgentRunner:
             _weather_line += "."
             if _fcast:
                 _weather_line += f" {_fcast}"
+            _weather_line = _weather_line.replace("Â°F", "°F")
         else:
             _weather_line = str(payload.get("weather_summary") or "Weather unavailable.").strip()
 
