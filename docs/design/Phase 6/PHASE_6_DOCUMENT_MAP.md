@@ -14,6 +14,7 @@ Purpose: Classify the Phase-6 document set by authority and implementation order
 - `docs/design/Phase 6/NOVA_CURRENT_PHASE_GROUNDING_AND_FIRST_PRIORITY_TODO_2026-04-02.md`
 - `docs/design/Phase 6/NOVA_DOCS_CODE_ALIGNMENT_AUDIT_2026-04-02.md`
 - `docs/design/Phase 6/NOVA_LOCAL_FIRST_INTELLIGENCE_ARCHITECTURE_AND_MODEL_ROUTING_TODO_2026-04-02.md`
+- `docs/design/Phase 6/NOVA_GEMMA_4_LOCAL_BRAIN_STRATEGY_2026-04-02.md`
 
 These documents define the current ordered roadmap and the core Phase-6 policy substrate:
 - what a lawful delegated policy is
@@ -24,6 +25,7 @@ These documents define the current ordered roadmap and the core Phase-6 policy s
 - how the next grounded roadmap stages should sequence learning without skipping ahead to hidden adaptive behavior
 - how to answer the practical "what phase are we actually in?" question without overstating later-phase progress
 - how Nova's final intelligence structure should settle into a local-first governed hybrid instead of fragmented provider logic
+- how Gemma 4 should be understood as a local-brain candidate inside Nova's architecture rather than as a replacement for governance or execution law
 
 These core documents now also have live review-oriented foundations reflected in runtime.
 Use the proof packet and current runtime docs to distinguish:

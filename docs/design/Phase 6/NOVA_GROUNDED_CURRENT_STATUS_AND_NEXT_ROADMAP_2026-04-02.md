@@ -236,6 +236,11 @@ Do next:
 - manual browser feel-pass on the updated UX
 - tighten first-run/setup/readiness language where needed
 - verify the latest user-friendliness surfaces against real use
+- apply the new interaction doctrine:
+  - strict on risk
+  - soft on flow
+  - fewer low-risk interruptions
+  - clearer meaningful checkpoints
 
 Why:
 - this keeps the front door trustworthy
@@ -308,6 +313,7 @@ Do next:
 - action preview / run status surfaces
 - stronger stop/pause/failure UX
 - connector-package rollout through governed packaging
+- tier-aware interaction behavior so visible operator work feels fluid at low risk and strict only at real boundaries
 
 Why:
 - this is the bridge from "good intelligence workspace"
@@ -372,6 +378,10 @@ The best answer is:
 5. keep improving live screen help and daily-use flow
 6. continue into fuller Phase-8 governed execution foundations
 7. only later add workflow habit learning and bounded proactive learning
+
+Interaction rule across all of the above:
+- Governor for law
+- Nova for flow
 
 ## What Should Not Be Done Next
 

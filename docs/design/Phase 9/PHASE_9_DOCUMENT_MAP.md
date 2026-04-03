@@ -15,6 +15,11 @@ Purpose: Separate the governed-node roadmap from older autonomy and mutation the
   (local → cloud API → node protocol). Key recommendation: promote
   openai_responses_lane.py to primary for complex tasks.
 
+- `docs/design/Phase 9/NOVA_GOVERNED_MASS_NODE_OPERATOR_SYSTEM_2026-04-02.md`
+  Full capability-expansion packet framing Nova as a governed mass-node wrapper.
+  Defines capability classes, node control, envelope autonomy, visible operator mode,
+  and the rule that intelligence may expand while execution remains governed.
+
 ## Canonical Phase-9 Planning Core
 - `docs/design/Phase 9/PHASE_9_GOVERNED_NODE_PLAN.md`
 
@@ -31,6 +36,11 @@ Read these as broad system-vision companions to the governed-node plan:
 
 They are valuable because they explain why Phase 9 is more than infrastructure.
 They still do not authorize hidden autonomy or current runtime claims.
+
+This same packet should be read as a Phase-9 companion vision note:
+- it captures the explicit control-layer model where Nova governs multiple execution nodes
+- it widens capability language without authorizing hidden autonomy
+- it is still subordinate to earlier-phase governance and current runtime truth
 
 ## Adjacent / Historical Research
 - `docs/design/Phase 9/📘Nova Autonomy & Mutation Control.txt`
