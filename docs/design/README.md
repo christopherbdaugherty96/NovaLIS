@@ -136,6 +136,7 @@ Key moved packets:
 - `docs/design/Phase 6/NOVA_CORRECTED_REPO_AUDIT_AND_REMEDIATION_2026-03-26.md`
 - `docs/design/Phase 6/NOVA_AUDIT_TODO_2026-03-28.md`
 - `docs/design/Phase 6/NOVA_CURRENT_PHASE_GROUNDING_AND_FIRST_PRIORITY_TODO_2026-04-02.md`
+- `docs/design/Phase 6/NOVA_GEMMA_4_LOCAL_BRAIN_STRATEGY_2026-04-02.md`
 
 Start with:
 - `docs/design/Phase 6/PHASE_6_DOCUMENT_MAP.md`
@@ -204,6 +205,7 @@ Focus:
 Key moved packets:
 - `docs/design/Phase 9/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
 - `docs/design/Phase 9/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
+- `docs/design/Phase 9/NOVA_GOVERNED_MASS_NODE_OPERATOR_SYSTEM_2026-04-02.md`
 
 Start with:
 - `docs/design/Phase 9/PHASE_9_DOCUMENT_MAP.md`
@@ -240,6 +242,7 @@ Interpretation:
 
 Key moved packets:
 - `docs/design/Phase 11/NOVA_HOME_ASSISTANT_PRODUCT_TRUTH_2026-04-02.md`
+- `docs/design/Phase 11/NOVA_INTERACTION_MODEL_V1_STRICT_ON_RISK_SOFT_ON_FLOW_2026-04-02.md`
 - `docs/design/Phase 11/NOVA_IDEA_TO_WORKFLOW_OPERATOR_MODEL_TODO_2026-04-02.md`
 
 Start with:

@@ -42,6 +42,10 @@ Short form:
 
 `Nova = presence`
 
+Interaction doctrine:
+
+`strict on risk, soft on flow`
+
 ## Product Experience Rule
 
 Nova should feel:
@@ -71,6 +75,10 @@ That strictness exists to keep:
 - authority growth controlled
 
 But users should not have to feel the Governor in every interaction.
+
+The interaction rule is:
+- strict when the action crosses a real risk boundary
+- soft and fluid through normal low-risk conversation and workflow progress
 
 The user-facing truth should be:
 - Nova helps first
@@ -103,6 +111,9 @@ Primary behaviors:
 - help me finish this
 - break this into steps
 - show me the next useful move
+- fill in the boring parts for me
+- help me complete forms and application flows
+- help me draft emails and messages before I send them
 
 ### 3. Gentle Proactive Help
 
@@ -124,12 +135,18 @@ Examples:
 - browser/operator help
 - bounded workflow execution
 - guided multi-step tasks
+- credential-assisted sign-in help
+- form-fill assistance
+- draft-then-approve outbound communication
 
 Rules:
 - visible session
 - easy stop
 - clear current action
 - strong approval for risky steps
+
+Additional rule:
+- Nova should complete as much low-risk work as it can before it asks the user for the one missing detail or final approval
 
 ### 5. Trust Underneath, Not In The User's Face
 
@@ -223,6 +240,8 @@ Priority order:
 - Gmail integration
 - task and note continuity
 - visible operator/browser help
+- form-fill and sign-in assistance
+- draft/review/send message workflows
 - calmer suggestion and follow-through loops
 - preference learning after the earlier foundations are stable
 

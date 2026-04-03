@@ -197,6 +197,49 @@ But the safe version should still require:
 
 This must not turn into open-ended autonomous access to every account on the machine.
 
+### Sign-in assistance pattern
+
+The best user-friendly sign-in flow should be:
+1. Nova identifies the sign-in page and relevant fields
+2. Nova fills allowed known identifiers such as username or email
+3. Nova pauses for password, MFA, or other sensitive identity proof when needed
+4. Nova completes the visible sign-in flow only inside the approved session
+
+This keeps the experience fluid without turning Nova into a hidden credential actor.
+
+## Form-Fill Assistance
+
+This is one of the highest-value operator features for everyday users.
+
+Nova should be able to:
+- detect the visible fields on a page
+- fill known low-risk profile information
+- ask for missing details in plain language
+- highlight what is still incomplete
+- summarize what is about to be submitted
+
+Nova should not:
+- guess high-risk facts
+- submit silent final forms
+- fill legal or financial declarations without confirmation
+
+### Safe field classes
+
+Good early-fill candidates:
+- name
+- email
+- phone
+- address
+- company or project basics
+- routine repetitive text fields
+
+Guarded fields:
+- financial numbers
+- government identifiers
+- legal attestations
+- compliance disclosures
+- anything where a wrong value creates real harm
+
 ## Beneficial Automation Ideas
 High-value automations in this mode could include:
 - guided onboarding flows
@@ -205,6 +248,9 @@ High-value automations in this mode could include:
 - support tooling walkthroughs
 - creator workflow assistance
 - email triage and draft preparation
+- form-fill assistance
+- sign-in support
+- job application and submission preparation
 - routine research and filing flows
 - app setup and environment configuration
 

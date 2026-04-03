@@ -91,6 +91,15 @@ The reach-expansion, visible-operator, and end-to-end expansion packets are futu
 - they explain how Nova can widen governed reach without copying unsafe OpenClaw breadth
 - they are roadmap-shaping packets, not proof that broader browser or connector execution is already live
 
+The visible-operator packet should now also be read alongside:
+- `docs/design/Phase 11/NOVA_INTERACTION_MODEL_V1_STRICT_ON_RISK_SOFT_ON_FLOW_2026-04-02.md`
+
+That interaction doctrine matters here because:
+- Phase 8 should stay strict in law while becoming friendlier in flow
+- visible operator work should bundle low-risk actions instead of prompting constantly
+- checkpoints should land on meaningful outcomes, not every micro-step
+- hard governance should stay concentrated at real risk boundaries
+
 ## Raw Source Inputs Preserved
 - `docs/design/Phase 8/openclaw.txt`
 - `docs/design/Phase 8/node design.txt`

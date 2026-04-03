@@ -26,6 +26,7 @@ Important boundary:
   dollar budget gate mirroring Phase 9 token gate, user trading rules enforced
   by Governor, paper mode default, full audit ledger.
 
+- `docs/design/Phase 11/NOVA_INTERACTION_MODEL_V1_STRICT_ON_RISK_SOFT_ON_FLOW_2026-04-02.md`
 - `docs/design/Phase 11/NOVA_GOVERNED_CREATOR_BRAND_AUTOMATION_TODO_2026-04-02.md`
 - `docs/design/Phase 11/NOVA_GOVERNED_OPERATOR_REVENUE_LANES_AND_TRADING_POSTURE_TODO_2026-04-02.md`
 - `docs/design/Phase 11/NOVA_GOVERNED_SELF_DEVELOPMENT_MODE_TODO_2026-04-02.md`
@@ -43,6 +44,7 @@ Use the folder in layers:
 This is the best top-level expression of where Nova is trying to go as a calm home assistant with a strict invisible safety spine.
 
 ### 2. Interaction model next
+- `docs/design/Phase 11/NOVA_INTERACTION_MODEL_V1_STRICT_ON_RISK_SOFT_ON_FLOW_2026-04-02.md`
 - `docs/design/Phase 11/NOVA_IDEA_TO_WORKFLOW_OPERATOR_MODEL_TODO_2026-04-02.md`
 
 This explains how the user experience should actually feel:
@@ -50,6 +52,7 @@ This explains how the user experience should actually feel:
 - workflow-shaped
 - low-friction
 - approval-aware without feeling bureaucratic
+- strict on risk and soft on flow
 
 ### 3. Specific future lanes after that
 - creator and brand operation
@@ -62,8 +65,9 @@ These are lane-specific backlogs, not equal-priority truths.
 ## Suggested Reading Order
 
 1. `docs/design/Phase 11/NOVA_HOME_ASSISTANT_PRODUCT_TRUTH_2026-04-02.md`
-2. `docs/design/Phase 11/NOVA_IDEA_TO_WORKFLOW_OPERATOR_MODEL_TODO_2026-04-02.md`
-3. the specific operator-lane backlog packet you care about
+2. `docs/design/Phase 11/NOVA_INTERACTION_MODEL_V1_STRICT_ON_RISK_SOFT_ON_FLOW_2026-04-02.md`
+3. `docs/design/Phase 11/NOVA_IDEA_TO_WORKFLOW_OPERATOR_MODEL_TODO_2026-04-02.md`
+4. the specific operator-lane backlog packet you care about
 
 Use the naming note last.
 
@@ -71,6 +75,7 @@ Use the naming note last.
 
 Read the Phase-11 folder this way:
 - the home-assistant truth packet sets tone and direction
+- the interaction doctrine defines the flow-versus-risk contract
 - the operator-model packet explains the user-friendly workflow shape
 - the remaining packets are future-lane expansions that should stay subordinate to that calmer core identity
 - nothing in this folder overrides current runtime truth or earlier-phase governance constraints
