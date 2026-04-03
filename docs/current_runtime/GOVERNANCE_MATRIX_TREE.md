@@ -73,7 +73,6 @@ graph TD
   Routes --> R62_external_reasoning_review[external_reasoning_review -> capability 62]
   Routes --> R49_headline_summary[headline_summary -> capability 49]
   Routes --> R50_intelligence_brief[intelligence_brief -> capability 50]
-  Routes --> R20_media[media -> capability 20]
   Routes --> R61_memory_governance[memory_governance -> capability 61]
   Routes --> R56_news_snapshot[news_snapshot -> capability 56]
   Routes --> R22_open_folder[open_folder -> capability 22]
@@ -140,7 +139,6 @@ Runtime
 |  |- external_reasoning_review -> 62
 |  |- headline_summary -> 49
 |  |- intelligence_brief -> 50
-|  |- media -> 20
 |  |- memory_governance -> 61
 |  |- news_snapshot -> 56
 |  |- open_folder -> 22

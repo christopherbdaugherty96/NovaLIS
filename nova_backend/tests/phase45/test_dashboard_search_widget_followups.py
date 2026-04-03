@@ -10,9 +10,8 @@ DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
 def test_search_widget_buttons_use_supported_topic_followups():
     source = DASHBOARD_PATH.read_text(encoding="utf-8")
 
-    assert 'summarizeBtn.textContent = "Research this topic";' in source
-    assert 'injectUserText(`research ${item.title}`, "text")' in source
-    assert 'compareBtn.textContent = "Brief this topic";' in source
-    assert 'injectUserText(`create an intelligence brief on ${queryText || item.title}`, "text")' in source
+    assert 'summarizeBtn.textContent = "Quick take";' in source
+    assert 'compareBtn.textContent = "See wider coverage";' in source
+    assert 'injectUserText(`research latest coverage of ${topic}`, "text")' in source
     assert "summarize this result:" not in source
     assert 'injectUserText("compare the top 3 search results", "text")' not in source

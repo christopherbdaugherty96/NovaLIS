@@ -1746,51 +1746,115 @@ function getIntroFirstSuccessItems(items = []) {
     ? `You're set up${profile.displayName ? `, ${profile.displayName}` : ""}. Nova is ready for normal everyday use on this device. Start with one outcome you care about and let Nova turn it into the next steps.`
     : `You're set up${profile.displayName ? `, ${profile.displayName}` : ""}. Voice can wait. Text-only use is fully fine while you get your first win.`;
 
-  return {
-    summary,
-    items: [
-      {
-        title: "Explain anything",
-        badge: "Fastest first win",
-        copy: "Use this for an error, a page, a file, or something on your screen when you want the cause and next move.",
-        actionLabel: "Explain this",
-        action: () => {
-          setActivePage("chat");
-          injectUserText("explain this", "text");
-        },
+  // Build connection-aware items based on which providers are healthy
+  const providers = Array.isArray(_connectionsData) ? _connectionsData : [];
+  const byProvider = Object.fromEntries(providers.map((p) => [p.id, p]));
+  const liveItems = [];
+
+  const weatherLive = byProvider.weather && byProvider.weather.connected;
+  const calendarLive = byProvider.calendar && byProvider.calendar.connected;
+  const newsLive = (byProvider.news && byProvider.news.connected) || (byProvider.brave && byProvider.brave.connected);
+  const openaiLive = byProvider.openai && byProvider.openai.connected;
+
+  if (weatherLive && calendarLive) {
+    liveItems.push({
+      title: "Morning brief",
+      badge: "Full brief",
+      copy: "Weather, calendar events, and top news in one daily summary — pulled fresh from your connected sources.",
+      actionLabel: "Morning brief",
+      action: () => {
+        setActivePage("chat");
+        injectUserText("morning brief", "text");
       },
-      {
-        title: "Research a topic",
-        badge: "Good everyday move",
-        copy: "Ask Nova to research something real and pull back a grounded answer with sources and follow-up ideas.",
-        actionLabel: "Research",
-        action: () => {
-          setActivePage("chat");
-          injectUserText("research latest technology news", "text");
-        },
+    });
+  }
+  if (calendarLive) {
+    liveItems.push({
+      title: "My schedule today",
+      badge: "Calendar live",
+      copy: "See what's on your calendar today from your linked ICS file.",
+      actionLabel: "Today's schedule",
+      action: () => {
+        setActivePage("chat");
+        injectUserText("today's schedule", "text");
       },
-      {
-        title: "Continue a project",
-        badge: "Continuity",
-        copy: "If you already have work in motion, Nova can help you pick it back up instead of starting from scratch.",
-        actionLabel: "Show threads",
-        action: () => {
-          setActivePage("chat");
-          injectUserText("show threads", "text");
-        },
+    });
+  }
+  if (weatherLive && !calendarLive) {
+    liveItems.push({
+      title: "Today's weather",
+      badge: "Live",
+      copy: "Current conditions and forecast from your connected weather provider.",
+      actionLabel: "Weather",
+      action: () => {
+        setActivePage("chat");
+        injectUserText("weather", "text");
       },
-      {
-        title: "Plan your day",
-        badge: voiceReady ? "Ready now" : "Text-only is fine",
-        copy: "Use a brief when you want Nova to pull together the day, key context, and the next thing worth doing.",
-        actionLabel: "Daily brief",
-        action: () => {
-          setActivePage("chat");
-          injectUserText("daily brief", "text");
-        },
+    });
+  }
+  if (newsLive) {
+    liveItems.push({
+      title: "Today's news",
+      badge: "Live",
+      copy: "Top headlines from your connected news source.",
+      actionLabel: "Today's news",
+      action: () => {
+        setActivePage("chat");
+        injectUserText("today's news", "text");
       },
-    ],
-  };
+    });
+  }
+  if (openaiLive) {
+    liveItems.push({
+      title: "Deep research",
+      badge: "Cloud",
+      copy: "Ask for a grounded, reasoned answer on any topic with OpenAI cloud assist.",
+      actionLabel: "Research",
+      action: () => {
+        setActivePage("chat");
+        injectUserText("research ", "text");
+      },
+    });
+  }
+
+  // Core items always available as fallbacks
+  const coreItems = [
+    {
+      title: "Explain anything",
+      badge: "Always available",
+      copy: "Paste an error, share a file, or describe something on screen — Nova gives you the cause and next move.",
+      actionLabel: "Explain this",
+      action: () => {
+        setActivePage("chat");
+        injectUserText("explain this", "text");
+      },
+    },
+    {
+      title: "Continue a project",
+      badge: "Continuity",
+      copy: "If you already have work in motion, Nova can help you pick it back up instead of starting from scratch.",
+      actionLabel: "Show threads",
+      action: () => {
+        setActivePage("chat");
+        injectUserText("show threads", "text");
+      },
+    },
+    {
+      title: "Research a topic",
+      badge: "Local reasoning",
+      copy: "Ask Nova to research something and return a grounded answer with sources and follow-up ideas.",
+      actionLabel: "Research",
+      action: () => {
+        setActivePage("chat");
+        injectUserText("research latest technology news", "text");
+      },
+    },
+  ];
+
+  // Connection-aware items first, then core to fill up to 4 slots
+  const allItems = [...liveItems, ...coreItems].slice(0, 4);
+
+  return { summary, items: allItems };
 }
 
 function createIntroFirstSuccessCard(item = {}) {

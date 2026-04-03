@@ -188,7 +188,7 @@ NEWS_RE = re.compile(
     re.IGNORECASE,
 )
 CALENDAR_RE = re.compile(
-    r"^\s*(?:calendar|calendar update|agenda|schedule|what do i have today|what(?:'s| is) on today|todays schedule|today's schedule|todays calendar|today's calendar|what(?:'s| is) on (?:my )?calendar(?: today)?|what(?:'s| is) on (?:my )?schedule(?: today)?)\s*$",
+    r"^\s*(?:calendar|calendar update|agenda|schedule|my calendar|show my calendar|my schedule|show my schedule|what do i have today|what(?:'s| is) on today|todays schedule|today's schedule|todays calendar|today's calendar|what(?:'s| is) on (?:my )?calendar(?: today)?|what(?:'s| is) on (?:my )?schedule(?: today)?)\s*$",
     re.IGNORECASE,
 )
 SYSTEM_RE = re.compile(

@@ -10,7 +10,7 @@ DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
 def test_brief_labeled_shortcuts_use_daily_brief_command():
     source = DASHBOARD_PATH.read_text(encoding="utf-8")
 
-    assert '{ id: "chat_brief", label: "Today\'s brief", command: "daily brief" }' in source
+    assert '{ id: "chat_brief", label: "Plan my day", command: "daily brief" }' in source
     assert '{ id: "news_brief", label: "Daily brief", command: "daily brief", stayOnPage: true }' in source
     assert '{ label: "Today\'s brief", command: "daily brief" }' in source
 
