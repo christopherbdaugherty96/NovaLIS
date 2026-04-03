@@ -189,3 +189,103 @@ class TestPostRules:
         client.post("/api/profile/rules", json={"rules": "Be direct"})
         data = client.get("/api/profile").json()
         assert data["rules"] == "Be direct"
+
+
+# ---------------------------------------------------------------------------
+# Memory-write integration — exercises the real _write_identity_to_memory path
+# (no stub; proves the identity record lands in governed_memory_store as locked)
+# ---------------------------------------------------------------------------
+
+class TestMemoryWriteIntegration:
+    """These tests do NOT stub _write_identity_to_memory.
+
+    They wire the real GovernedMemoryStore (backed by a temp file) and verify
+    that a POST to /api/profile/identity:
+      1. Does not raise (no TypeError from bad kwargs)
+      2. Writes exactly one user_profile_setup record to the memory store
+      3. That record is promoted to the locked (permanent) tier
+      4. The record body contains the saved name
+      5. A second save replaces the old record (no duplicates)
+
+    Isolation technique: GovernedMemoryStore() is imported inside
+    _write_identity_to_memory's function body via
+    `from src.memory.governed_memory_store import GovernedMemoryStore`.
+    Monkeypatching the attribute on that source module redirects the
+    local import to our temp-backed instance.
+    """
+
+    @pytest.fixture()
+    def real_app(self, tmp_path, monkeypatch):
+        from src.memory.governed_memory_store import GovernedMemoryStore
+
+        profile_path = tmp_path / "user_profile.json"
+        memory_path = tmp_path / "memory.json"
+
+        profile_store = UserProfileStore(path=profile_path)
+        memory_store = GovernedMemoryStore(path=memory_path)
+
+        # Patch the profile singleton used by the real _write_identity_to_memory
+        monkeypatch.setattr("src.api.profile_api.user_profile_store", profile_store)
+        monkeypatch.setattr("src.profiles.user_profile_store.user_profile_store", profile_store)
+
+        # Redirect GovernedMemoryStore() inside _write_identity_to_memory to our
+        # temp instance.  The local import `from src.memory.governed_memory_store
+        # import GovernedMemoryStore` resolves from the module's namespace, so
+        # patching the class there intercepts it.
+        monkeypatch.setattr(
+            "src.memory.governed_memory_store.GovernedMemoryStore",
+            lambda: memory_store,
+        )
+
+        deps = MagicMock()
+        deps.RUNTIME_GOVERNOR = "test-governor"
+        deps._log_ledger_event = MagicMock()
+
+        # Do NOT stub _write_identity_to_memory — let the real path run
+        fast_app = FastAPI()
+        fast_app.include_router(build_profile_router(deps))
+
+        return fast_app, memory_store
+
+    def test_identity_save_does_not_raise(self, real_app):
+        app, _ = real_app
+        client = TestClient(app)
+        res = client.post("/api/profile/identity", json={"name": "Chris"})
+        assert res.status_code == 200
+
+    def test_identity_save_writes_memory_record(self, real_app):
+        app, mem = real_app
+        client = TestClient(app)
+        client.post("/api/profile/identity", json={"name": "Chris"})
+        items = mem.list_items()
+        profile_records = [i for i in items if i.get("source") == "user_profile_setup"]
+        assert len(profile_records) == 1
+
+    def test_identity_record_is_locked_tier(self, real_app):
+        app, mem = real_app
+        client = TestClient(app)
+        client.post("/api/profile/identity", json={"name": "Chris"})
+        items = mem.list_items()
+        profile_records = [i for i in items if i.get("source") == "user_profile_setup"]
+        assert profile_records[0]["tier"] == "locked"
+
+    def test_identity_record_body_contains_name(self, real_app):
+        app, mem = real_app
+        client = TestClient(app)
+        client.post("/api/profile/identity", json={"name": "Chris"})
+        items = mem.list_items()
+        record = next(i for i in items if i.get("source") == "user_profile_setup")
+        assert "Chris" in record["body"]
+
+    def test_second_save_replaces_first_record(self, real_app):
+        """Saving twice must not leave two active user_profile_setup records."""
+        app, mem = real_app
+        client = TestClient(app)
+        client.post("/api/profile/identity", json={"name": "Chris"})
+        client.post("/api/profile/identity", json={"name": "Christopher"})
+        active_records = [
+            i for i in mem.list_items()
+            if i.get("source") == "user_profile_setup" and not i.get("deleted")
+        ]
+        assert len(active_records) == 1
+        assert "Christopher" in active_records[0]["body"]
