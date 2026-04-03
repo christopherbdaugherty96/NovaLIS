@@ -12,7 +12,17 @@ async def test_agent_runner_records_manual_brief_without_network(monkeypatch, tm
     async def _fake_collect(_template_id):
         return {
             "weather_summary": "62 degrees and clear.",
+            "weather_detail": {
+                "temp": "62",
+                "condition": "clear",
+                "location": "Seattle",
+                "forecast": "Cool through the afternoon.",
+            },
             "calendar_summary": "10:00 AM standup.",
+            "calendar_events": [
+                {"time": "10:00 AM", "title": "Standup"},
+                {"time": "1:30 PM", "title": "Planning review"},
+            ],
             "news_summary": "Two technology stories are worth watching.",
             "headline_titles": ["Headline one", "Headline two"],
             "schedule_summary": "0 due | 2 upcoming",
@@ -20,15 +30,27 @@ async def test_agent_runner_records_manual_brief_without_network(monkeypatch, tm
         }
 
     monkeypatch.setattr(runner, "_collect_payload", _fake_collect)
-    monkeypatch.setattr(runner, "_summarize_with_local_model", lambda _template, _prompt: "62 degrees and clear with one meeting at 10.")
+    local_calls = {"count": 0}
+
+    def _fake_local_summary(_template, _prompt):
+        local_calls["count"] += 1
+        return "This should not be used for morning brief."
+
+    monkeypatch.setattr(runner, "_summarize_with_local_model", _fake_local_summary)
 
     result = await runner.run_template("morning_brief", triggered_by="test")
 
     assert result["delivery_channels"] == {"widget": True, "chat": True}
     assert result["presented_message"].startswith("Here's your morning.")
     assert result["strict_preflight"]["allowed"] is True
-    assert result["estimated_total_tokens"] > 0
-    assert result["usage_meta"]["route"] == "local_model"
+    assert local_calls["count"] == 0
+    assert result["summary"].startswith("Morning Brief")
+    assert "Weather: 62°F, clear in Seattle. Cool through the afternoon." in result["summary"]
+    assert "Schedule:\n  10:00 AM" in result["summary"]
+    assert "Headline one" in result["summary"]
+    assert result["estimated_total_tokens"] == 0
+    assert result["usage_meta"]["route"] == "deterministic_fallback"
+    assert result["llm_summary_used"] is False
     assert store.snapshot()["recent_runs"][0]["template_id"] == "morning_brief"
 
 
@@ -67,12 +89,14 @@ async def test_agent_runner_blocks_manual_template_that_fails_strict_preflight(m
 @pytest.mark.asyncio
 async def test_agent_runner_uses_metered_openai_fallback_when_local_summary_is_unavailable(monkeypatch, tmp_path):
     store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    openai_calls = {"count": 0}
 
     class _FakeOpenAILane:
         def plan_for_openclaw_fallback(self):
             return {"allowed": True, "preferred_model": "gpt-5.4-mini"}
 
         def summarize_task_report(self, **_kwargs):
+            openai_calls["count"] += 1
             return {
                 "text": "OpenAI produced the final task report.",
                 "usage_meta": {
@@ -106,6 +130,8 @@ async def test_agent_runner_uses_metered_openai_fallback_when_local_summary_is_u
 
     result = await runner.run_template("morning_brief", triggered_by="test")
 
-    assert result["summary"] == "OpenAI produced the final task report."
-    assert result["usage_meta"]["route"] == "openai_metered"
-    assert store.snapshot()["recent_runs"][0]["usage_meta"]["route"] == "openai_metered"
+    assert openai_calls["count"] == 0
+    assert result["summary"].startswith("Morning Brief")
+    assert result["usage_meta"]["route"] == "deterministic_fallback"
+    assert result["llm_summary_used"] is False
+    assert store.snapshot()["recent_runs"][0]["usage_meta"]["route"] == "deterministic_fallback"
