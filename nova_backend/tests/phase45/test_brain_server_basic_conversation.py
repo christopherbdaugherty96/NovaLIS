@@ -151,7 +151,12 @@ def test_what_can_you_do_with_question_mark_stays_on_capability_path(monkeypatch
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Nova Capabilities" in msg for msg in chat_messages)
+    assert any("Nova Capabilities Right Now" in msg for msg in chat_messages)
+    assert any("Local-first everyday help is ready" in msg for msg in chat_messages)
+    assert any("Verification and review" in msg for msg in chat_messages)
+    assert any("Story tracking" in msg for msg in chat_messages)
+    assert any("Screen help" in msg for msg in chat_messages)
+    assert any("Memory and continuity" in msg for msg in chat_messages)
 
 
 def test_bridge_status_returns_remote_bridge_summary_without_model_call(monkeypatch):
@@ -229,7 +234,7 @@ def test_tell_me_what_you_can_do_uses_friendlier_capability_help(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Everyday utility" in msg for msg in chat_messages)
+    assert any("Good things to try next:" in msg for msg in chat_messages)
     assert any("Audit this repo" in str(item) for item in ws.sent_messages if item.get("type") == "chat")
 
 
@@ -246,7 +251,7 @@ def test_help_typo_variant_still_uses_capability_help(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Nova Capabilities" in msg for msg in chat_messages)
+    assert any("Nova Capabilities Right Now" in msg for msg in chat_messages)
 
 
 def test_help_double_o_typo_variant_still_uses_capability_help(monkeypatch):
@@ -262,7 +267,70 @@ def test_help_double_o_typo_variant_still_uses_capability_help(monkeypatch):
         asyncio.run(brain_server.websocket_endpoint(ws))
 
     chat_messages = _chat_messages(ws)
-    assert any("Nova Capabilities" in msg for msg in chat_messages)
+    assert any("Nova Capabilities Right Now" in msg for msg in chat_messages)
+
+
+def test_capability_help_explains_local_first_when_no_live_sources(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(brain_server.connections_store, "snapshot", lambda: [])
+    monkeypatch.setattr(
+        brain_server.openclaw_agent_runtime_store,
+        "snapshot",
+        lambda: {"active_run": None, "active_run_summary": "No home-agent runs are active right now."},
+    )
+
+    ws = _ScriptedWebSocket(["what can you do"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("No live sources are connected yet" in msg for msg in chat_messages)
+    assert any("I'll stay local-first" in msg for msg in chat_messages)
+
+
+def test_capability_help_uses_live_setup_state_for_actions(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+    monkeypatch.setattr(
+        brain_server.connections_store,
+        "snapshot",
+        lambda: [
+            {"id": "weather", "label": "Weather (Visual Crossing)", "connected": True},
+            {"id": "calendar", "label": "Calendar (ICS file)", "connected": True},
+            {"id": "news", "label": "News (NewsAPI)", "connected": True},
+            {"id": "brave", "label": "Brave Search", "connected": False},
+            {"id": "openai", "label": "OpenAI / GPT-4o", "connected": True},
+        ],
+    )
+    monkeypatch.setattr(
+        brain_server.openclaw_agent_runtime_store,
+        "snapshot",
+        lambda: {
+            "active_run": {"template_id": "morning_brief", "title": "Morning Brief"},
+            "active_run_summary": "Morning Brief is running now through the manual OpenClaw lane.",
+        },
+    )
+
+    ws = _ScriptedWebSocket(["what can you do"])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = _chat_messages(ws)
+    assert any("Connected live sources: Weather (Visual Crossing), Calendar (ICS file), News (NewsAPI), OpenAI / GPT-4o." in msg for msg in chat_messages)
+    assert any("proper morning brief" in msg for msg in chat_messages)
+    assert any("Morning Brief is running now through the manual OpenClaw lane." in msg for msg in chat_messages)
+    chat_payloads = [item for item in ws.sent_messages if item.get("type") == "chat"]
+    assert any(action.get("command") == "openclaw status" for item in chat_payloads for action in item.get("suggested_actions", []))
+    assert any(action.get("command") == "morning brief" for item in chat_payloads for action in item.get("suggested_actions", []))
 
 
 def test_what_time_is_it_returns_local_time_without_model_call(monkeypatch):

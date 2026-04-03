@@ -35,6 +35,7 @@ from src.api.openclaw_agent_api import build_openclaw_agent_router
 from src.api.profile_api import build_profile_router
 from src.api.settings_api import build_settings_router
 from src.api.workspace_api import build_workspace_router
+from src.connections.connections_store import connections_store
 from src.conversation.general_chat_runtime import (
     build_general_chat_skill,
     resolve_pending_escalation_reply,
@@ -1489,21 +1490,130 @@ def _format_local_schedule_time(value: datetime | None) -> str:
     return re.sub(r"(?<=\s)0(\d:)", r"\1", rendered)
 
 
+def _capability_help_runtime_snapshot() -> tuple[dict[str, dict[str, Any]], dict[str, Any]]:
+    try:
+        provider_items = connections_store.snapshot()
+    except Exception:
+        provider_items = []
+    providers = {
+        str(item.get("id") or "").strip(): dict(item)
+        for item in list(provider_items or [])
+        if isinstance(item, dict) and str(item.get("id") or "").strip()
+    }
+    try:
+        runtime = dict(openclaw_agent_runtime_store.snapshot() or {})
+    except Exception:
+        runtime = {}
+    return providers, runtime
+
+
+def _capability_help_actions() -> list[dict[str, str]]:
+    providers, runtime = _capability_help_runtime_snapshot()
+    actions: list[dict[str, str]] = []
+
+    weather_live = bool((providers.get("weather") or {}).get("connected"))
+    calendar_live = bool((providers.get("calendar") or {}).get("connected"))
+    news_live = bool((providers.get("news") or {}).get("connected") or (providers.get("brave") or {}).get("connected"))
+    active_run = dict(runtime.get("active_run") or {})
+
+    def _add(label: str, command: str) -> None:
+        if any(str(item.get("command") or "").strip().lower() == command.strip().lower() for item in actions):
+            return
+        actions.append({"label": label, "command": command})
+
+    if active_run:
+        _add("Check active run", "openclaw status")
+    if weather_live and calendar_live:
+        _add("Morning brief", "morning brief")
+    if calendar_live:
+        _add("Today's schedule", "today's schedule")
+    if news_live:
+        _add("Today's news", "today's news")
+    if weather_live and len(actions) < 4:
+        _add("Today's weather", "weather")
+    if len(actions) < 4:
+        _add("Explain this", "explain this")
+    if len(actions) < 4:
+        _add("Audit this repo", "audit this repo")
+    return actions[:4]
+
+
 def _capability_help_message() -> str:
-    return (
-        "Nova Capabilities\n\n"
-        "Here are the main things I can help with right now:\n"
-        "- Everyday utility: what time is it, weather, System Diagnostics, system status\n"
-        "- Research and News: today's news, daily brief, search for <topic>, summarize all headlines\n"
-        "- Web Search: search for <topic>, open <url>, research <topic>\n"
-        "- Local controls: open documents, open downloads, volume up, brightness down\n"
-        "- Document Analysis: explain this, help me do this, create analysis report on <topic>\n"
-        "- Reports: create analysis report on <topic>, project status, pattern status\n"
-        "- Local project understanding: audit this repo, summarize this repo, explain this repo\n"
-        "- Project continuity: create thread <name>, continue my <name>, project status <name>\n"
-        "- Memory and patterns: save this, what do you remember, list memories, memory export, memory show <id>, pattern status\n\n"
-        "If you want, ask about a category like local controls, project work, or news."
+    providers, runtime = _capability_help_runtime_snapshot()
+    active_run_summary = str(runtime.get("active_run_summary") or "No home-agent runs are active right now.").strip()
+
+    weather_live = bool((providers.get("weather") or {}).get("connected"))
+    calendar_live = bool((providers.get("calendar") or {}).get("connected"))
+    news_live = bool((providers.get("news") or {}).get("connected"))
+    brave_live = bool((providers.get("brave") or {}).get("connected"))
+    openai_live = bool((providers.get("openai") or {}).get("connected"))
+
+    connected_labels: list[str] = []
+    for provider_id in ("weather", "calendar", "news", "brave", "openai", "bridge"):
+        item = providers.get(provider_id) or {}
+        if bool(item.get("connected")):
+            connected_labels.append(str(item.get("label") or provider_id).strip())
+
+    lines = [
+        "Nova Capabilities Right Now",
+        "",
+        "Here's what is actually live on this device right now:",
+        "- Local-first everyday help is ready: explain things, help with project work, save memory, open local folders, and check system status.",
+        "- Research and reporting: I can search the web, summarize headlines, build intelligence briefs, and create multi-source reports.",
+        "- Verification and review: I can verify an answer or run a governed second-opinion pass without turning that into action.",
+        "- Story tracking: I can follow a topic over time, refresh it, compare shifts, and show relationship views for tracked stories.",
+        "- Analysis and explanation: I can create analysis docs, explain a page or file, and help you understand what you're looking at.",
+        "- Screen help: I can capture the current screen on request, inspect it, and walk through what matters on it.",
+        "- Memory and continuity: I can save, list, edit, lock, defer, export, and reuse governed memory and project context.",
+        "- Local device help: I can open websites or allowed folders, read text aloud, and adjust volume, media, brightness, and system status.",
+    ]
+
+    if connected_labels:
+        lines.append(f"- Connected live sources: {', '.join(connected_labels)}.")
+    else:
+        lines.append("- No live sources are connected yet, so I'll stay local-first until you add weather, news, calendar, or cloud reasoning in Settings.")
+
+    if weather_live and calendar_live:
+        lines.append("- Best daily-use flow: I can give you a proper morning brief with weather, schedule, and headline context.")
+    elif calendar_live:
+        lines.append("- Calendar is live, so I can answer things like today's schedule, tomorrow's schedule, and what's coming up.")
+    elif weather_live:
+        lines.append("- Weather is live, so I can give you forecast-aware check-ins and fold that into briefings.")
+    elif news_live or brave_live:
+        lines.append("- News and search are live, so I can help with current events, topic research, and answer-first news summaries.")
+    else:
+        lines.append("- Even without extra connections, I'm still useful for explanation, writing, memory, project continuity, and local device help.")
+
+    if openai_live:
+        lines.append("- Cloud reasoning is connected when you want it, but I still stay local-first by default.")
+
+    lines.extend(
+        [
+            f"- OpenClaw status: {active_run_summary}",
+            "",
+            "Good things to try next:",
+        ]
     )
+
+    suggestions = _capability_help_actions()
+    if suggestions:
+        for item in suggestions:
+            lines.append(f"- {item['command']}")
+    else:
+        lines.extend(
+            [
+                "- explain this",
+                "- weather",
+                "- today's news",
+                "- audit this repo",
+            ]
+        )
+
+    lines.append("")
+    lines.append(
+        "If you want, ask about a specific lane like research, verification, story tracking, screen help, memory, local controls, or OpenClaw."
+    )
+    return "\n".join(lines)
 
 
 def _render_local_time_message() -> str:
