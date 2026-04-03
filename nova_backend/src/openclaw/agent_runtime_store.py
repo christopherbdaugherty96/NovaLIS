@@ -67,7 +67,7 @@ def _is_stale_scheduled_slot(slot_local: datetime, *, now: datetime | None = Non
 class OpenClawAgentRuntimeStore:
     """Persistent operator-facing store for OpenClaw home-agent foundations."""
 
-    SCHEMA_VERSION = "1.3"
+    SCHEMA_VERSION = "1.4"
     DEFAULT_TEMPLATES = (
         {
             "id": "morning_brief",
@@ -202,6 +202,7 @@ class OpenClawAgentRuntimeStore:
         with self._lock:
             state = self._read_state()
         templates = self._normalized_templates(state.get("templates"))
+        active_run = self._normalize_active_run(state.get("active_run"))
         recent_runs = list(state.get("recent_runs") or [])[:12]
         delivery_inbox = [
             item
@@ -237,6 +238,8 @@ class OpenClawAgentRuntimeStore:
             "template_count": len(templates),
             "manual_run_count": runnable,
             "scheduled_enabled_count": scheduled_enabled,
+            "active_run": active_run,
+            "active_run_summary": self._active_run_summary(active_run),
             "templates": templates,
             "recent_runs": recent_runs,
             "delivery_ready_count": delivery_ready_count,
@@ -320,6 +323,28 @@ class OpenClawAgentRuntimeStore:
             state["updated_at"] = _utc_now_iso()
             self._write_state(state)
         return dict(entry)
+
+    def set_active_run(self, payload: dict[str, Any]) -> dict[str, Any]:
+        entry = self._normalize_active_run(payload)
+        with self._lock:
+            state = self._read_state()
+            state["active_run"] = entry
+            state["updated_at"] = _utc_now_iso()
+            self._write_state(state)
+        return dict(entry)
+
+    def clear_active_run(self, envelope_id: str | None = None) -> None:
+        target = str(envelope_id or "").strip()
+        with self._lock:
+            state = self._read_state()
+            active_run = self._normalize_active_run(state.get("active_run"))
+            if not active_run:
+                return
+            if target and str(active_run.get("envelope_id") or "").strip() != target:
+                return
+            state["active_run"] = None
+            state["updated_at"] = _utc_now_iso()
+            self._write_state(state)
 
     def dismiss_delivery(self, delivery_id: str) -> dict[str, Any]:
         target = str(delivery_id or "").strip()
@@ -518,6 +543,7 @@ class OpenClawAgentRuntimeStore:
         return {
             "schema_version": self.SCHEMA_VERSION,
             "templates": [dict(item) for item in self.DEFAULT_TEMPLATES],
+            "active_run": None,
             "recent_runs": [],
             "delivery_inbox": [],
             "updated_at": _utc_now_iso(),
@@ -532,6 +558,7 @@ class OpenClawAgentRuntimeStore:
             payload = self._default_state()
         payload.setdefault("schema_version", self.SCHEMA_VERSION)
         payload["templates"] = self._normalized_templates(payload.get("templates"))
+        payload["active_run"] = self._normalize_active_run(payload.get("active_run"))
         payload["recent_runs"] = [self._normalize_run(item) for item in list(payload.get("recent_runs") or [])]
         payload["delivery_inbox"] = [
             self._normalize_delivery_item(item)
@@ -544,6 +571,7 @@ class OpenClawAgentRuntimeStore:
         normalized = {
             "schema_version": self.SCHEMA_VERSION,
             "templates": self._normalized_templates(state.get("templates")),
+            "active_run": self._normalize_active_run(state.get("active_run")),
             "recent_runs": [self._normalize_run(item) for item in list(state.get("recent_runs") or [])],
             "delivery_inbox": [
                 self._normalize_delivery_item(item)
@@ -616,6 +644,37 @@ class OpenClawAgentRuntimeStore:
             "strict_preflight": dict(raw.get("strict_preflight") or {}),
             "usage_meta": dict(raw.get("usage_meta") or {}),
         }
+
+    def _normalize_active_run(self, value: Any) -> dict[str, Any] | None:
+        if not value:
+            return None
+        raw = dict(value or {})
+        envelope_id = str(raw.get("envelope_id") or "").strip()
+        if not envelope_id:
+            return None
+        return {
+            "envelope_id": envelope_id,
+            "template_id": str(raw.get("template_id") or "").strip(),
+            "title": str(raw.get("title") or "").strip() or "Run",
+            "status": str(raw.get("status") or "").strip() or "running",
+            "status_label": str(raw.get("status_label") or "").strip() or "Running now",
+            "triggered_by": str(raw.get("triggered_by") or "").strip() or "dashboard",
+            "delivery_mode": str(raw.get("delivery_mode") or "").strip() or "widget",
+            "delivery_channels": {
+                "widget": bool(dict(raw.get("delivery_channels") or {}).get("widget")),
+                "chat": bool(dict(raw.get("delivery_channels") or {}).get("chat")),
+            },
+            "started_at": str(raw.get("started_at") or _utc_now_iso()),
+            "summary": str(raw.get("summary") or "").strip(),
+        }
+
+    def _active_run_summary(self, active_run: dict[str, Any] | None) -> str:
+        if not active_run:
+            return "No home-agent runs are active right now."
+        title = str(active_run.get("title") or "Task").strip() or "Task"
+        triggered_by = str(active_run.get("triggered_by") or "").strip()
+        source = "scheduled" if triggered_by == "scheduler" else "manual"
+        return f"{title} is running now through the {source} OpenClaw lane."
 
     def _build_delivery_item(self, run_entry: dict[str, Any]) -> dict[str, Any]:
         return self._normalize_delivery_item(

@@ -67,54 +67,87 @@ class OpenClawAgentRunner:
         if not strict_preflight.allowed:
             raise RuntimeError(strict_preflight.reason)
         started_at = _utc_now_iso()
-        payload = await self._collect_payload(template_id)
-        prompt = self._build_summary_prompt(template, payload)
-        fallback = self._fallback_summary(template_id, payload)
-        usage_meta: dict[str, Any] = {}
-        summary_model = ""
-        summary_route = "deterministic_fallback"
-        summarized = ""
-
-        if template_id != "morning_brief":
-            summarized = self._summarize_with_local_model(template, prompt)
-            if summarized:
-                summary_model = "Local summarizer"
-                summary_route = "local_model"
-                usage_meta = self._local_usage_meta(prompt=prompt, summary=summarized)
-
-        if template_id != "morning_brief" and not summarized:
-            openai_result = self._summarize_with_metered_openai(template, prompt)
-            if openai_result:
-                summarized = str(openai_result.get("text") or "").strip()
-                usage_meta = dict(openai_result.get("usage_meta") or {})
-                summary_model = str(usage_meta.get("model_label") or "OpenAI").strip() or "OpenAI"
-                summary_route = "openai_metered"
-
-        raw_summary = summarized or fallback
-        if not usage_meta:
-            usage_meta = self._fallback_usage_meta(
-                template=template,
-                prompt=prompt,
-                summary=raw_summary,
-                openai_attempted=not bool(summarized),
-            )
-        presented_message = self._personality_bridge.present_result(envelope, raw_summary)
         channels = delivery_channels(template_id, template.get("delivery_mode"))
-        completed_at = _utc_now_iso()
-
-        run_record = self._store.record_run(
+        self._store.set_active_run(
             {
                 "envelope_id": envelope.id,
                 "template_id": template_id,
                 "title": str(template.get("title") or "").strip(),
-                "status": "completed",
+                "status": "running",
+                "status_label": "Running now",
                 "triggered_by": triggered_by,
                 "delivery_mode": str(template.get("delivery_mode") or "widget").strip(),
                 "delivery_channels": channels,
-                "presented_message": presented_message,
-                "summary": raw_summary,
                 "started_at": started_at,
-                "completed_at": completed_at,
+                "summary": "Collecting sources and preparing a governed briefing.",
+            }
+        )
+        try:
+            payload = await self._collect_payload(template_id)
+            prompt = self._build_summary_prompt(template, payload)
+            fallback = self._fallback_summary(template_id, payload)
+            usage_meta: dict[str, Any] = {}
+            summary_model = ""
+            summary_route = "deterministic_fallback"
+            summarized = ""
+
+            if template_id != "morning_brief":
+                summarized = self._summarize_with_local_model(template, prompt)
+                if summarized:
+                    summary_model = "Local summarizer"
+                    summary_route = "local_model"
+                    usage_meta = self._local_usage_meta(prompt=prompt, summary=summarized)
+
+            if template_id != "morning_brief" and not summarized:
+                openai_result = self._summarize_with_metered_openai(template, prompt)
+                if openai_result:
+                    summarized = str(openai_result.get("text") or "").strip()
+                    usage_meta = dict(openai_result.get("usage_meta") or {})
+                    summary_model = str(usage_meta.get("model_label") or "OpenAI").strip() or "OpenAI"
+                    summary_route = "openai_metered"
+
+            raw_summary = summarized or fallback
+            if not usage_meta:
+                usage_meta = self._fallback_usage_meta(
+                    template=template,
+                    prompt=prompt,
+                    summary=raw_summary,
+                    openai_attempted=not bool(summarized),
+                )
+            presented_message = self._personality_bridge.present_result(envelope, raw_summary)
+            completed_at = _utc_now_iso()
+
+            run_record = self._store.record_run(
+                {
+                    "envelope_id": envelope.id,
+                    "template_id": template_id,
+                    "title": str(template.get("title") or "").strip(),
+                    "status": "completed",
+                    "triggered_by": triggered_by,
+                    "delivery_mode": str(template.get("delivery_mode") or "widget").strip(),
+                    "delivery_channels": channels,
+                    "presented_message": presented_message,
+                    "summary": raw_summary,
+                    "started_at": started_at,
+                    "completed_at": completed_at,
+                    "llm_summary_used": bool(summarized),
+                    "estimated_input_tokens": _estimate_tokens(prompt) if summarized else 0,
+                    "estimated_output_tokens": _estimate_tokens(summarized) if summarized else 0,
+                    "estimated_total_tokens": (_estimate_tokens(prompt) + _estimate_tokens(summarized)) if summarized else 0,
+                    "summary_route": summary_route,
+                    "summary_model": summary_model,
+                    "source_notes": dict(payload.get("source_notes") or {}),
+                    "strict_preflight": strict_preflight.to_dict(),
+                    "usage_meta": usage_meta,
+                }
+            )
+
+            return {
+                "envelope": envelope.to_dict(),
+                "template": template,
+                "summary": raw_summary,
+                "presented_message": presented_message,
+                "delivery_channels": channels,
                 "llm_summary_used": bool(summarized),
                 "estimated_input_tokens": _estimate_tokens(prompt) if summarized else 0,
                 "estimated_output_tokens": _estimate_tokens(summarized) if summarized else 0,
@@ -124,26 +157,10 @@ class OpenClawAgentRunner:
                 "source_notes": dict(payload.get("source_notes") or {}),
                 "strict_preflight": strict_preflight.to_dict(),
                 "usage_meta": usage_meta,
+                "run_record": run_record,
             }
-        )
-
-        return {
-            "envelope": envelope.to_dict(),
-            "template": template,
-            "summary": raw_summary,
-            "presented_message": presented_message,
-            "delivery_channels": channels,
-            "llm_summary_used": bool(summarized),
-            "estimated_input_tokens": _estimate_tokens(prompt) if summarized else 0,
-            "estimated_output_tokens": _estimate_tokens(summarized) if summarized else 0,
-            "estimated_total_tokens": (_estimate_tokens(prompt) + _estimate_tokens(summarized)) if summarized else 0,
-            "summary_route": summary_route,
-            "summary_model": summary_model,
-            "source_notes": dict(payload.get("source_notes") or {}),
-            "strict_preflight": strict_preflight.to_dict(),
-            "usage_meta": usage_meta,
-            "run_record": run_record,
-        }
+        finally:
+            self._store.clear_active_run(envelope.id)
 
     async def _collect_payload(self, template_id: str) -> dict[str, Any]:
         if template_id == "inbox_check":
