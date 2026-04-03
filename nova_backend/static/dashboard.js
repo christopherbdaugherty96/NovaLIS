@@ -1346,6 +1346,7 @@ function getSetupReadinessItems() {
   const wsReady = !!(ws && ws.readyState === WebSocket.OPEN);
   const headerConnection = getHeaderConnectionPresentation();
   const currentMode = getSetupModeMeta();
+  const profile = getProfileSetupState();
   const localModelItem = getConnectionRuntimeItem("Local model route");
   const localModelValue = String(localModelItem && localModelItem.value || "").trim()
     || (settingsRuntimeState.loaded ? "Awaiting trust refresh" : "Checking");
@@ -1401,6 +1402,17 @@ function getSetupReadinessItems() {
   const calendarNeedsAttention = !!(calendarProvider && calendarProvider.has_key && !calendarProvider.connected);
 
   return [
+    {
+      key: "profile_identity",
+      group: "Required now",
+      title: "Your profile",
+      status: profile.hasIdentity ? "Saved" : "Set your name",
+      tone: profile.hasIdentity ? "ready" : "attention",
+      ready: profile.hasIdentity,
+      copy: profile.hasIdentity
+        ? `Nova knows who you are${profile.displayName ? ` as ${profile.displayName}` : ""} and can address you naturally from the start.`
+        : "Open Settings and add your name first. That gives Nova a better default voice, memory context, and onboarding flow.",
+    },
     {
       key: "runtime_connection",
       group: "Required now",
@@ -1511,11 +1523,39 @@ function buildSetupReadinessSummary(items = []) {
   const requiredReadyCount = required.filter((item) => item.ready).length;
   const recommended = rows.filter((item) => item.group === "Recommended");
   const recommendedReadyCount = recommended.filter((item) => item.ready).length;
+  const byKey = Object.fromEntries(rows.map((item) => [item.key, item]));
+  const profileReady = !!(byKey.profile_identity && byKey.profile_identity.ready);
+  const healthyConnections = getConnectionHealthyCount();
+  if (profileReady && healthyConnections > 0) {
+    return [
+      "You are set up for a strong start.",
+      `${healthyConnections} connection${healthyConnections === 1 ? "" : "s"} ${healthyConnections === 1 ? "is" : "are"} healthy.`,
+      recommended.length
+        ? `${recommendedReadyCount} of ${recommended.length} recommended checks are complete.`
+        : "",
+    ].filter(Boolean).join(" ");
+  }
+  if (!profileReady) {
+    return [
+      "Start by telling Nova your name.",
+      `${requiredReadyCount} of ${required.length || 0} setup checks are already ready on this device.`,
+      "After that, add a connection only if you want live data or optional cloud help.",
+    ].filter(Boolean).join(" ");
+  }
+  if (healthyConnections === 0) {
+    return [
+      "Your profile is saved.",
+      "Add one healthy connection for live data, or stay fully local and keep going.",
+      recommended.length
+        ? `${recommendedReadyCount} of ${recommended.length} recommended checks are complete.`
+        : "",
+    ].filter(Boolean).join(" ");
+  }
   return [
-    `${requiredReadyCount} of ${required.length || 0} required checks are ready.`,
-    recommended.length
-      ? `${recommendedReadyCount} of ${recommended.length} recommended checks are complete.`
-      : "",
+      `${requiredReadyCount} of ${required.length || 0} required checks are ready.`,
+      recommended.length
+        ? `${recommendedReadyCount} of ${recommended.length} recommended checks are complete.`
+        : "",
     "Optional extras can stay unconfigured until you actually want them.",
   ].filter(Boolean).join(" ");
 }
@@ -1523,24 +1563,70 @@ function buildSetupReadinessSummary(items = []) {
 function getSetupNextStepCopy(items = []) {
   const rows = Array.isArray(items) ? items : [];
   const byKey = Object.fromEntries(rows.map((item) => [item.key, item]));
+  const healthyConnections = getConnectionHealthyCount();
+  if (!byKey.profile_identity || !byKey.profile_identity.ready) {
+    return "Start here: open Settings, add your name in Profile, and save it. That gives Nova the right way to address you and makes the rest of setup feel more personal.";
+  }
   if (!byKey.runtime_connection || !byKey.runtime_connection.ready) {
     return "Next step: wait for Nova to connect. If the header keeps showing Connecting, restart the local runtime with the startup script for your platform and refresh the dashboard.";
   }
   if (!byKey.local_model_route || !byKey.local_model_route.ready) {
     return "Next step: open Trust or Settings and review the local model route. Nova can still do deterministic local work, but deeper reasoning stays limited until the route is healthy.";
   }
+  if (healthyConnections === 0) {
+    return "Next step: open Connections in Settings and add one useful source like weather, news, or your calendar. Nova can stay local-only, but one healthy connection makes daily use much nicer.";
+  }
   if (!byKey.voice_check || !byKey.voice_check.ready) {
     return "Next step: run one voice check. It confirms spoken output on this device, but it is optional if you prefer text-only use.";
   }
-  return "Next step: you are ready to use Nova normally. Start with explain this, then open Home, Workspace, or Trust when you want more continuity and visibility.";
+  return "You are ready. Start with explain this, daily brief, or one real task in chat, then open Home, Workspace, or Trust when you want more continuity and visibility.";
 }
 
 function getIntroFirstSuccessItems(items = []) {
   const rows = Array.isArray(items) ? items : [];
   const byKey = Object.fromEntries(rows.map((item) => [item.key, item]));
+  const profile = getProfileSetupState();
   const runtimeReady = !!(byKey.runtime_connection && byKey.runtime_connection.ready);
   const localReady = !!(byKey.local_model_route && byKey.local_model_route.ready);
   const voiceReady = !!(byKey.voice_check && byKey.voice_check.ready);
+  const healthyConnections = getConnectionHealthyCount();
+
+  if (!profile.hasIdentity) {
+    return {
+      summary: "Start with one human step: tell Nova your name. Once that is saved, the rest of onboarding becomes much easier to follow.",
+      items: [
+        {
+          title: "Set your name",
+          badge: "Start here",
+          copy: "Open Profile in Settings, save your name, and give Nova the basics it needs to address you naturally.",
+          actionLabel: "Open Profile",
+          action: () => {
+            setActivePage("settings");
+            loadProfileData();
+          },
+        },
+        {
+          title: "Stay local for now",
+          badge: "Optional",
+          copy: "You do not need any API keys to begin. Nova can still help locally while you finish setup at your own pace.",
+          actionLabel: "Open Home",
+          action: () => {
+            setActivePage("home");
+          },
+        },
+        {
+          title: "See what changes later",
+          badge: "Next after profile",
+          copy: "After your name is saved, the next useful step is adding one healthy connection for weather, news, calendar, or cloud reasoning.",
+          actionLabel: "Open Connections",
+          action: () => {
+            setActivePage("settings");
+            loadConnectionsData();
+          },
+        },
+      ],
+    };
+  }
 
   if (!runtimeReady) {
     return {
@@ -1617,12 +1703,48 @@ function getIntroFirstSuccessItems(items = []) {
           },
         },
       ],
+      };
+  }
+
+  if (healthyConnections === 0) {
+    return {
+      summary: `Nice start${profile.displayName ? `, ${profile.displayName}` : ""}. Your profile is saved. The next high-value step is adding one healthy connection so Nova can help with live weather, news, calendar, or cloud reasoning when you want it.`,
+      items: [
+        {
+          title: "Add one connection",
+          badge: "Best next move",
+          copy: "Open Connections and add the one source you will actually use first. Weather, news, and calendar are usually the easiest wins.",
+          actionLabel: "Open Connections",
+          action: () => {
+            setActivePage("settings");
+            loadConnectionsData();
+          },
+        },
+        {
+          title: "Try local chat anyway",
+          badge: "Works now",
+          copy: "You do not have to wait. Nova can already explain, brainstorm, draft, and help locally without any added provider.",
+          actionLabel: "Open Chat",
+          action: () => {
+            setActivePage("chat");
+          },
+        },
+        {
+          title: "See your setup path",
+          badge: "Why this matters",
+          copy: "Settings shows which providers are healthy, optional, or still worth leaving alone for now.",
+          actionLabel: "Open Settings",
+          action: () => {
+            setActivePage("settings");
+          },
+        },
+      ],
     };
   }
 
   const summary = voiceReady
-    ? "Nova is ready for normal everyday use on this device. Start with one outcome you care about and let Nova turn it into the next steps."
-    : "Nova is ready for normal everyday use on this device. Voice can wait. Text-only use is fully fine while you get your first win.";
+    ? `You're set up${profile.displayName ? `, ${profile.displayName}` : ""}. Nova is ready for normal everyday use on this device. Start with one outcome you care about and let Nova turn it into the next steps.`
+    : `You're set up${profile.displayName ? `, ${profile.displayName}` : ""}. Voice can wait. Text-only use is fully fine while you get your first win.`;
 
   return {
     summary,
@@ -8841,6 +8963,7 @@ function setActivePage(page) {
   if (target === "intro") {
     requestSettingsRuntimeRefresh();
     renderIntroPage();
+    loadProfileData();
     loadConnectionsData();
   }
   if (target === "settings") {
@@ -8887,6 +9010,11 @@ function getConnectionCardStats() {
     connectedCount: connected.length,
     failedCount: failed.length,
   };
+}
+
+function getConnectionHealthyCount() {
+  const stats = getConnectionCardStats();
+  return stats.loaded ? stats.connectedCount : 0;
 }
 
 function buildConnectionsSummaryCopy() {
@@ -9218,6 +9346,26 @@ function setupConnectionCardHandlers() {
 // ============================================================
 
 let _profileLoaded = false;
+let _profileSnapshot = {
+  name: "",
+  nickname: "",
+  email: "",
+  display_name: "",
+  is_set_up: false,
+  preferences: {},
+};
+
+function getProfileSetupState() {
+  const snapshot = (_profileSnapshot && typeof _profileSnapshot === "object") ? _profileSnapshot : {};
+  const displayName = String(snapshot.display_name || snapshot.nickname || snapshot.name || "").trim();
+  const hasIdentity = Boolean(snapshot.is_set_up) || Boolean(displayName);
+  return {
+    hasIdentity,
+    displayName,
+    name: String(snapshot.name || "").trim(),
+    email: String(snapshot.email || "").trim(),
+  };
+}
 
 function _profileStatus(id, msg, type) {
   const el = $(id);
@@ -9235,6 +9383,13 @@ async function loadProfileData() {
     const res = await fetch("/api/profile");
     if (!res.ok) return;
     const data = await res.json();
+    _profileSnapshot = (data && typeof data === "object")
+      ? {
+          ..._profileSnapshot,
+          ...data,
+          preferences: (data.preferences && typeof data.preferences === "object") ? data.preferences : {},
+        }
+      : { ..._profileSnapshot };
 
     const nameEl = $("profile-name");
     const nicknameEl = $("profile-nickname");
@@ -9266,6 +9421,8 @@ async function loadProfileData() {
     }
 
     _profileLoaded = true;
+    renderIntroPage();
+    renderHomeLaunchWidget();
   } catch (_) {
     // silently ignore — profile panel will just show empty
   }
@@ -9295,6 +9452,13 @@ async function saveProfileIdentity() {
         ? `Hi, ${data.display_name}. You can update your details below at any time.`
         : "Tell Nova who you are so it can address you correctly and follow your preferences.";
     }
+    _profileSnapshot = {
+      ..._profileSnapshot,
+      ...data,
+      preferences: (data.preferences && typeof data.preferences === "object") ? data.preferences : (_profileSnapshot.preferences || {}),
+    };
+    renderIntroPage();
+    renderHomeLaunchWidget();
   } catch (_) {
     _profileStatus("profile-identity-status", "Network error", "err");
   }
@@ -9603,15 +9767,23 @@ function renderIntroPage() {
   const nextStepCopy = $("intro-next-step-copy");
   const firstSuccessCopy = $("intro-first-success-copy");
   const firstSuccessGrid = $("intro-first-success-grid");
+  const settingsBtn = $("btn-intro-open-settings");
+  const connectionsBtn = $("btn-intro-open-connections");
+  const openHomeBtn = $("btn-intro-open-home-ready");
   const currentMode = getSetupModeMeta();
   const checklistItems = getSetupReadinessItems();
   const firstSuccess = getIntroFirstSuccessItems(checklistItems);
+  const profile = getProfileSetupState();
+  const healthyConnections = getConnectionHealthyCount();
   if (modeBadge) modeBadge.textContent = currentMode.badge;
   if (modeCopy) modeCopy.textContent = `Current setup: ${currentMode.label}. ${currentMode.copy}`;
   if (checklistSummary) checklistSummary.textContent = buildSetupReadinessSummary(checklistItems);
   renderSetupReadinessGrid(checklistGrid, checklistItems);
   if (nextStepCopy) nextStepCopy.textContent = getSetupNextStepCopy(checklistItems);
   if (firstSuccessCopy) firstSuccessCopy.textContent = String(firstSuccess.summary || "").trim() || "Nova is checking the easiest high-value move for this device.";
+  if (settingsBtn) settingsBtn.textContent = profile.hasIdentity ? "Open Settings" : "Set your name";
+  if (connectionsBtn) connectionsBtn.textContent = healthyConnections > 0 ? "Manage connections" : "Add a connection";
+  if (openHomeBtn) openHomeBtn.textContent = (profile.hasIdentity && healthyConnections > 0) ? "You're ready — open Home" : "Open Home anyway";
   renderIntroFirstSuccessGrid(firstSuccessGrid, firstSuccess);
   renderHomeLaunchWidget();
 }
