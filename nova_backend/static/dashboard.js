@@ -8820,6 +8820,7 @@ function setActivePage(page) {
     safeWSSend({ text: "system status", silent_widget_refresh: true });
     requestSettingsRuntimeRefresh(true);
     renderSettingsPage();
+    loadProfileData();
   }
 
   if (latestNewsItems.length > 0) {
@@ -8827,6 +8828,143 @@ function setActivePage(page) {
   } else {
     setNewsExpandButton();
   }
+}
+
+// ============================================================
+// USER PROFILE — load, populate, save
+// ============================================================
+
+let _profileLoaded = false;
+
+function _profileStatus(id, msg, type) {
+  const el = $(id);
+  if (!el) return;
+  el.textContent = msg;
+  el.className = "profile-status visible " + (type || "ok");
+  clearTimeout(el._fadeTimer);
+  el._fadeTimer = setTimeout(() => {
+    el.classList.remove("visible");
+  }, 3500);
+}
+
+async function loadProfileData() {
+  try {
+    const res = await fetch("/api/profile");
+    if (!res.ok) return;
+    const data = await res.json();
+
+    const nameEl = $("profile-name");
+    const nicknameEl = $("profile-nickname");
+    const emailEl = $("profile-email");
+    const rulesEl = $("profile-rules");
+    const useNameEl = $("profile-pref-use-name");
+    const proactiveEl = $("profile-pref-proactive");
+
+    if (nameEl) nameEl.value = data.name || "";
+    if (nicknameEl) nicknameEl.value = data.nickname || "";
+    if (emailEl) emailEl.value = data.email || "";
+    if (rulesEl) rulesEl.value = data.rules || "";
+
+    const prefs = data.preferences || {};
+    if (useNameEl) useNameEl.checked = prefs.use_name_in_responses !== false;
+    if (proactiveEl) proactiveEl.checked = prefs.proactive_suggestions !== false;
+
+    const style = (prefs.response_style || "balanced").trim().toLowerCase();
+    document.querySelectorAll('input[name="response-style"]').forEach((radio) => {
+      radio.checked = radio.value === style;
+    });
+
+    // Update profile summary if name is set
+    const summary = $("profile-summary");
+    if (summary && data.display_name) {
+      summary.textContent = `Hi, ${data.display_name}. You can update your details below at any time.`;
+    }
+
+    _profileLoaded = true;
+  } catch (_) {
+    // silently ignore — profile panel will just show empty
+  }
+}
+
+async function saveProfileIdentity() {
+  const name = ($("profile-name") || {}).value || "";
+  const nickname = ($("profile-nickname") || {}).value || "";
+  const email = ($("profile-email") || {}).value || "";
+
+  try {
+    const res = await fetch("/api/profile/identity", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, nickname, email }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      _profileStatus("profile-identity-status", data.detail || "Save failed", "err");
+      return;
+    }
+    _profileStatus("profile-identity-status", "Saved ✓", "ok");
+    // Refresh summary line
+    const summary = $("profile-summary");
+    if (summary && data.display_name) {
+      summary.textContent = `Hi, ${data.display_name}. You can update your details below at any time.`;
+    }
+  } catch (_) {
+    _profileStatus("profile-identity-status", "Network error", "err");
+  }
+}
+
+async function saveProfilePreferences() {
+  const styleRadio = document.querySelector('input[name="response-style"]:checked');
+  const response_style = styleRadio ? styleRadio.value : "balanced";
+  const use_name_in_responses = ($("profile-pref-use-name") || {}).checked !== false;
+  const proactive_suggestions = ($("profile-pref-proactive") || {}).checked !== false;
+
+  try {
+    const res = await fetch("/api/profile/preferences", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ response_style, use_name_in_responses, proactive_suggestions }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      _profileStatus("profile-prefs-status", data.detail || "Save failed", "err");
+      return;
+    }
+    _profileStatus("profile-prefs-status", "Saved ✓", "ok");
+  } catch (_) {
+    _profileStatus("profile-prefs-status", "Network error", "err");
+  }
+}
+
+async function saveProfileRules() {
+  const rules = ($("profile-rules") || {}).value || "";
+
+  try {
+    const res = await fetch("/api/profile/rules", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ rules }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      _profileStatus("profile-rules-status", data.detail || "Save failed", "err");
+      return;
+    }
+    _profileStatus("profile-rules-status", "Saved ✓", "ok");
+  } catch (_) {
+    _profileStatus("profile-rules-status", "Network error", "err");
+  }
+}
+
+function setupProfileHandlers() {
+  const saveIdentityBtn = $("btn-profile-save-identity");
+  if (saveIdentityBtn) saveIdentityBtn.addEventListener("click", saveProfileIdentity);
+
+  const savePrefsBtn = $("btn-profile-save-prefs");
+  if (savePrefsBtn) savePrefsBtn.addEventListener("click", saveProfilePreferences);
+
+  const saveRulesBtn = $("btn-profile-save-rules");
+  if (saveRulesBtn) saveRulesBtn.addEventListener("click", saveProfileRules);
 }
 
 function setupPageNavigation() {
@@ -10262,6 +10400,7 @@ window.addEventListener("DOMContentLoaded", () => {
   renderCommandDiscovery();
   setupMorningWidgetToggle();
   setupPageNavigation();
+  setupProfileHandlers();
   connectWebSocket();
   startMorningFallbackTimer();
   document.addEventListener("visibilitychange", () => {

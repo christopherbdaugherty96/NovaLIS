@@ -844,6 +844,75 @@
       </section>
 
       <section id="page-settings" class="page-view page-settings" hidden>
+
+        <!-- ── User Profile ───────────────────────────────────────────── -->
+        <div class="widget page-card trust-center-panel" id="profile-panel">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Your Profile</div>
+              <p id="profile-summary" class="workspace-board-section-copy">Tell Nova who you are so it can address you correctly and follow your preferences.</p>
+            </div>
+          </div>
+
+          <div class="profile-form">
+            <div class="profile-field-row">
+              <label class="profile-label" for="profile-name">Your name</label>
+              <input id="profile-name" class="profile-input" type="text" maxlength="80" placeholder="e.g. Chris" autocomplete="off" />
+            </div>
+            <div class="profile-field-row">
+              <label class="profile-label" for="profile-nickname">What Nova calls you <span class="profile-label-hint">(optional)</span></label>
+              <input id="profile-nickname" class="profile-input" type="text" maxlength="40" placeholder='e.g. "Boss", leave blank to use your name' autocomplete="off" />
+            </div>
+            <div class="profile-field-row">
+              <label class="profile-label" for="profile-email">Email <span class="profile-label-hint">(used to detect connected services)</span></label>
+              <input id="profile-email" class="profile-input" type="email" maxlength="120" placeholder="email@example.com" autocomplete="off" />
+            </div>
+            <div class="workspace-board-actions-toolbar" style="margin-top:0.5rem">
+              <button id="btn-profile-save-identity" type="button">Save</button>
+              <span id="profile-identity-status" class="profile-status" aria-live="polite"></span>
+            </div>
+          </div>
+
+          <div class="profile-divider"></div>
+
+          <div class="workspace-home-section-title" style="font-size:0.85rem;margin-bottom:0.75rem">Preferences</div>
+          <div class="profile-prefs-grid">
+            <label class="profile-label">Response style</label>
+            <div class="profile-radio-group" role="radiogroup" aria-label="Response style">
+              <label class="profile-radio-label"><input type="radio" name="response-style" value="concise" /> Concise</label>
+              <label class="profile-radio-label"><input type="radio" name="response-style" value="balanced" checked /> Balanced</label>
+              <label class="profile-radio-label"><input type="radio" name="response-style" value="detailed" /> Detailed</label>
+            </div>
+
+            <label class="profile-label">Use my name in responses</label>
+            <label class="toggle-item profile-toggle">
+              <input id="profile-pref-use-name" type="checkbox" checked />
+              <span>On</span>
+            </label>
+
+            <label class="profile-label">Proactive suggestions</label>
+            <label class="toggle-item profile-toggle">
+              <input id="profile-pref-proactive" type="checkbox" checked />
+              <span>On</span>
+            </label>
+          </div>
+          <div class="workspace-board-actions-toolbar" style="margin-top:0.75rem">
+            <button id="btn-profile-save-prefs" type="button">Save preferences</button>
+            <span id="profile-prefs-status" class="profile-status" aria-live="polite"></span>
+          </div>
+
+          <div class="profile-divider"></div>
+
+          <div class="workspace-home-section-title" style="font-size:0.85rem;margin-bottom:0.5rem">Your rules for Nova</div>
+          <p class="workspace-board-section-copy" style="margin-bottom:0.5rem">Write anything you always want Nova to do, avoid, or remember about how you work. One rule per line.</p>
+          <textarea id="profile-rules" class="profile-rules-textarea" maxlength="2000" rows="6" placeholder="- Always give me bullet points first&#10;- Prefer metric units&#10;- Don't use filler phrases like &quot;Certainly!&quot;"></textarea>
+          <div class="workspace-board-actions-toolbar" style="margin-top:0.5rem">
+            <button id="btn-profile-save-rules" type="button">Save rules</button>
+            <span id="profile-rules-status" class="profile-status" aria-live="polite"></span>
+          </div>
+        </div>
+        <!-- ── /User Profile ───────────────────────────────────────────── -->
+
         <div class="widget page-card intro-hero" aria-live="polite">
           <div class="workspace-board-hero-header">
             <div>
