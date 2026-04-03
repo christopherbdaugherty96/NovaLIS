@@ -10,6 +10,7 @@ async def test_agent_runner_records_manual_brief_without_network(monkeypatch, tm
     runner = OpenClawAgentRunner(store=store)
 
     async def _fake_collect(_template_id):
+        assert store.snapshot()["active_run"]["template_id"] == "morning_brief"
         return {
             "weather_summary": "62 degrees and clear.",
             "weather_detail": {
@@ -52,6 +53,7 @@ async def test_agent_runner_records_manual_brief_without_network(monkeypatch, tm
     assert result["usage_meta"]["route"] == "deterministic_fallback"
     assert result["llm_summary_used"] is False
     assert store.snapshot()["recent_runs"][0]["template_id"] == "morning_brief"
+    assert store.snapshot()["active_run"] is None
 
 
 @pytest.mark.asyncio
@@ -135,3 +137,20 @@ async def test_agent_runner_uses_metered_openai_fallback_when_local_summary_is_u
     assert result["usage_meta"]["route"] == "deterministic_fallback"
     assert result["llm_summary_used"] is False
     assert store.snapshot()["recent_runs"][0]["usage_meta"]["route"] == "deterministic_fallback"
+
+
+@pytest.mark.asyncio
+async def test_agent_runner_clears_active_run_after_failure(monkeypatch, tmp_path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    runner = OpenClawAgentRunner(store=store)
+
+    async def _boom(_template_id):
+        assert store.snapshot()["active_run"]["template_id"] == "morning_brief"
+        raise RuntimeError("collector failed")
+
+    monkeypatch.setattr(runner, "_collect_payload", _boom)
+
+    with pytest.raises(RuntimeError, match="collector failed"):
+        await runner.run_template("morning_brief", triggered_by="test")
+
+    assert store.snapshot()["active_run"] is None

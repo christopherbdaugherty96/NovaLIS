@@ -26,6 +26,35 @@ def test_agent_runtime_store_updates_delivery_mode(tmp_path: Path):
     assert morning["delivery_mode"] == "chat"
 
 
+def test_agent_runtime_store_tracks_active_run(tmp_path: Path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+
+    store.set_active_run(
+        {
+            "envelope_id": "ENV-RUN-1",
+            "template_id": "morning_brief",
+            "title": "Morning Brief",
+            "triggered_by": "agent_page",
+            "delivery_mode": "hybrid",
+            "delivery_channels": {"widget": True, "chat": True},
+            "started_at": "2026-04-03T11:00:00+00:00",
+            "summary": "Collecting sources.",
+        }
+    )
+
+    snapshot = store.snapshot()
+
+    assert snapshot["active_run"]["envelope_id"] == "ENV-RUN-1"
+    assert snapshot["active_run"]["template_id"] == "morning_brief"
+    assert snapshot["active_run_summary"] == "Morning Brief is running now through the manual OpenClaw lane."
+
+    store.clear_active_run("ENV-RUN-1")
+
+    cleared = store.snapshot()
+    assert cleared["active_run"] is None
+    assert cleared["active_run_summary"] == "No home-agent runs are active right now."
+
+
 def test_agent_runtime_store_records_surface_delivery_and_dismisses_it(tmp_path: Path):
     store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
 

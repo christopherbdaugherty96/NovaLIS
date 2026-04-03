@@ -138,6 +138,7 @@ let openClawAgentState = {
   summary: "Loading home-agent foundations...",
   snapshot: {},
   templates: [],
+  activeRun: null,
   deliveryInbox: [],
   recentRuns: [],
   lastHydratedAt: 0,
@@ -526,6 +527,29 @@ function formatThreadTimestamp(value) {
     hour: "numeric",
     minute: "2-digit",
   });
+}
+
+function formatOpenClawRunTimestamp(value) {
+  return formatThreadTimestamp(value) || "Unknown time";
+}
+
+function getOpenClawActiveRun() {
+  const activeRun = openClawAgentState.activeRun;
+  return activeRun && typeof activeRun === "object" ? activeRun : null;
+}
+
+function buildOpenClawActiveRunSummary(activeRun) {
+  if (!activeRun) return "No home-agent runs are active right now.";
+  const startedLabel = formatOpenClawRunTimestamp(activeRun.started_at);
+  const channels = [];
+  if (activeRun.delivery_channels && activeRun.delivery_channels.chat) channels.push("chat");
+  if (activeRun.delivery_channels && activeRun.delivery_channels.widget) channels.push("surface");
+  const source = String(activeRun.triggered_by || "").trim() === "scheduler" ? "scheduled" : "manual";
+  return [
+    `${String(activeRun.title || "Run").trim() || "Run"} is running now.`,
+    `${source} start ${startedLabel}`,
+    channels.length ? `delivery: ${channels.join(" + ")}` : "",
+  ].filter(Boolean).join(" · ");
 }
 
 function buildNewsItemSnippet(item) {
@@ -2437,6 +2461,9 @@ function applyOpenClawAgentPayload(data) {
   openClawAgentState.summary = String(payload.summary || "").trim() || "OpenClaw is Nova's worker layer for manual, reviewable runs.";
   openClawAgentState.snapshot = { ...payload };
   openClawAgentState.templates = Array.isArray(payload.templates) ? payload.templates.map((item) => ({ ...item })) : [];
+  openClawAgentState.activeRun = (payload.active_run && typeof payload.active_run === "object")
+    ? { ...payload.active_run }
+    : null;
   openClawAgentState.deliveryInbox = Array.isArray(payload.delivery_inbox) ? payload.delivery_inbox.map((item) => ({ ...item })) : [];
   openClawAgentState.recentRuns = Array.isArray(payload.recent_runs) ? payload.recent_runs.map((item) => ({ ...item })) : [];
   openClawAgentState.lastHydratedAt = Date.now();
@@ -2571,6 +2598,26 @@ async function setOpenClawAgentScheduleEnabled(templateId, enabled) {
 }
 
 async function runOpenClawAgentTemplate(templateId) {
+  const template = (Array.isArray(openClawAgentState.templates) ? openClawAgentState.templates : [])
+    .find((item) => String(item && item.id || "").trim() === String(templateId || "").trim());
+  openClawAgentState.activeRun = {
+    envelope_id: `optimistic-${Date.now()}`,
+    template_id: String(templateId || "").trim(),
+    title: String((template && template.title) || "Run").trim() || "Run",
+    status: "running",
+    status_label: "Starting now",
+    triggered_by: "agent_page",
+    delivery_mode: String((template && template.delivery_mode) || "widget").trim() || "widget",
+    delivery_channels: template && template.delivery_mode === "chat"
+      ? { chat: true, widget: false }
+      : template && template.delivery_mode === "hybrid"
+        ? { chat: true, widget: true }
+        : { chat: false, widget: true },
+    started_at: new Date().toISOString(),
+    summary: "Collecting sources and preparing a governed briefing.",
+  };
+  renderOpenClawDeliveryWidget();
+  renderOpenClawAgentPage();
   try {
     const res = await fetch(`${API_BASE}/api/openclaw/agent/templates/${encodeURIComponent(templateId)}/run`, {
       method: "POST",
@@ -2596,6 +2643,9 @@ async function runOpenClawAgentTemplate(templateId) {
       appendChatMessage("assistant", "That run is ready in the Agent delivery inbox.", null, "Agent");
     }
   } catch (_err) {
+    openClawAgentState.activeRun = null;
+    renderOpenClawDeliveryWidget();
+    renderOpenClawAgentPage();
     appendChatMessage("assistant", "I couldn't run that home-agent template right now.", null, "Agent");
   }
 }
@@ -9927,9 +9977,12 @@ function renderOpenClawDeliveryWidget() {
     ? openClawAgentState.snapshot
     : {};
   const items = Array.isArray(openClawAgentState.deliveryInbox) ? openClawAgentState.deliveryInbox : [];
+  const activeRun = getOpenClawActiveRun();
 
   if (summary) {
-    summary.textContent = String(snapshot.delivery_summary || "").trim() || "No agent deliveries are waiting right now.";
+    summary.textContent = activeRun
+      ? buildOpenClawActiveRunSummary(activeRun)
+      : (String(snapshot.delivery_summary || "").trim() || "No agent deliveries are waiting right now.");
   }
   renderOpenClawDeliveryFeed(host, items, "No home-agent deliveries are waiting right now.");
 }
@@ -9948,6 +10001,7 @@ function renderOpenClawAgentPage() {
   const snapshot = (openClawAgentState.snapshot && typeof openClawAgentState.snapshot === "object")
     ? openClawAgentState.snapshot
     : {};
+  const activeRun = getOpenClawActiveRun();
   const setup = (snapshot.setup && typeof snapshot.setup === "object")
     ? snapshot.setup
     : {};
@@ -9963,6 +10017,7 @@ function renderOpenClawAgentPage() {
           ? `${runnableCount} template${runnableCount === 1 ? "" : "s"} can run now.`
           : "Home Agent is on, but no templates are runnable yet.")
         : "Turn on Home Agent in Settings to run templates.",
+      activeRun ? buildOpenClawActiveRunSummary(activeRun) : "",
       schedulerPermissionEnabled
         ? "The narrow scheduler is available where a template is ready for it."
         : "Scheduling stays paused until you enable it in Settings.",
@@ -9978,6 +10033,7 @@ function renderOpenClawAgentPage() {
       ["How it runs", permissionEnabled ? (schedulerPermissionEnabled ? "Manual foundation + narrow scheduler" : "Manual foundation only") : "Paused in Settings"],
       ["Templates", `${Number(snapshot.template_count || 0)} total`],
       ["Manual runs ready", `${Number(snapshot.manual_run_count || 0)} ready`],
+      ["Running now", activeRun ? (String(activeRun.title || "Run").trim() || "Run") : "None"],
       ["Safety boundary", String(snapshot.strict_foundation_label || "Manual preflight active").trim() || "Manual preflight active"],
       ["Deliveries ready", `${Number(snapshot.delivery_ready_count || 0)} waiting`],
       ["How results appear", "Named tasks can land in chat; quiet tasks stay surface-first"],
@@ -10000,6 +10056,7 @@ function renderOpenClawAgentPage() {
     if (!setup.local_model_ready) guidanceBits.push("The local summarizer is not ready yet.");
     if (!setup.weather_provider_configured) guidanceBits.push("Weather is optional and not configured.");
     if (!setup.calendar_connected) guidanceBits.push("Calendar is optional and not connected.");
+    if (activeRun) guidanceBits.push(`${String(activeRun.title || "Run").trim() || "Run"} is currently running.`);
     setupSummary.textContent = [
       String(setup.summary || "").trim(),
       guidanceBits.join(" "),
@@ -10108,9 +10165,11 @@ function renderOpenClawAgentPage() {
         const runBtn = document.createElement("button");
         runBtn.type = "button";
         runBtn.textContent = "Run now";
-        runBtn.disabled = !permissionEnabled || !template.manual_run_available;
+        runBtn.disabled = !permissionEnabled || !template.manual_run_available || !!activeRun;
         if (!template.manual_run_available) {
           runBtn.title = String(template.availability_reason || "This template requires a connector that is not yet available.").trim();
+        } else if (activeRun) {
+          runBtn.title = "Wait for the current home-agent run to finish before starting another one.";
         }
         runBtn.addEventListener("click", () => runOpenClawAgentTemplate(String(template.id || "").trim()));
         actions.appendChild(runBtn);
@@ -10148,18 +10207,42 @@ function renderOpenClawAgentPage() {
 
   if (runSummary) {
     const recentRuns = Array.isArray(openClawAgentState.recentRuns) ? openClawAgentState.recentRuns : [];
-    runSummary.textContent = recentRuns.length
-      ? `Showing the latest ${recentRuns.length} home-agent runs so you can confirm what happened and how each result was delivered.`
-      : "No home-agent runs are recorded yet. Start with a manual briefing template.";
+    runSummary.textContent = activeRun
+      ? `${buildOpenClawActiveRunSummary(activeRun)} Recent history stays just below so you can compare the live run against completed ones.`
+      : recentRuns.length
+        ? `Showing the latest ${recentRuns.length} home-agent runs so you can confirm what happened and how each result was delivered.`
+        : "No home-agent runs are recorded yet. Start with a manual briefing template.";
   }
 
   if (runList) {
     clear(runList);
     const recentRuns = Array.isArray(openClawAgentState.recentRuns) ? openClawAgentState.recentRuns : [];
+    if (activeRun) {
+      const activeItem = document.createElement("div");
+      activeItem.className = "trust-center-activity-item";
+      const activeTitle = document.createElement("strong");
+      activeTitle.textContent = `${String(activeRun.title || "Run").trim() || "Run"} (Running now)`;
+      const activeMeta = document.createElement("div");
+      activeMeta.textContent = [
+        formatOpenClawRunTimestamp(activeRun.started_at),
+        String(activeRun.triggered_by || "").trim() === "scheduler" ? "scheduled" : "manual",
+        String(activeRun.status_label || "Running now").trim() || "Running now",
+      ].filter(Boolean).join(" · ");
+      const activeBody = document.createElement("p");
+      activeBody.className = "workspace-board-section-copy";
+      activeBody.textContent = String(activeRun.summary || "Collecting sources and preparing a governed briefing.").trim()
+        || "Collecting sources and preparing a governed briefing.";
+      activeItem.appendChild(activeTitle);
+      activeItem.appendChild(activeMeta);
+      activeItem.appendChild(activeBody);
+      runList.appendChild(activeItem);
+    }
     if (!recentRuns.length) {
       const empty = document.createElement("div");
       empty.className = "memory-detail-empty";
-      empty.textContent = "Run a manual briefing template to see operator history here.";
+      empty.textContent = activeRun
+        ? "The current run is visible above. Completed history will appear here after it finishes."
+        : "Run a manual briefing template to see operator history here.";
       runList.appendChild(empty);
     } else {
       recentRuns.forEach((run) => {
