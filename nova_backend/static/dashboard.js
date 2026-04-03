@@ -1372,19 +1372,33 @@ function getSetupReadinessItems() {
     )
     : "Run one voice check to confirm audible output on this device. This is recommended, not required.";
 
-  const connections = (trustReviewState.connectionRuntime && typeof trustReviewState.connectionRuntime === "object")
+  const legacyConnections = (trustReviewState.connectionRuntime && typeof trustReviewState.connectionRuntime === "object")
     ? trustReviewState.connectionRuntime
     : {};
-  const providerCount = Number(connections.configured_provider_count || 0);
-  const openaiRuntime = (connections.openai_runtime && typeof connections.openai_runtime === "object")
-    ? connections.openai_runtime
+  const connectionStats = getConnectionCardStats();
+  const providerCount = connectionStats.loaded
+    ? connectionStats.savedCount
+    : Number(legacyConnections.configured_provider_count || 0);
+  const connectedProviderCount = connectionStats.loaded
+    ? connectionStats.connectedCount
+    : providerCount;
+  const failedProviderCount = connectionStats.loaded
+    ? connectionStats.failedCount
+    : 0;
+  const openaiRuntime = (legacyConnections.openai_runtime && typeof legacyConnections.openai_runtime === "object")
+    ? legacyConnections.openai_runtime
     : {};
   const bridgeRuntime = (trustReviewState.bridgeRuntime && typeof trustReviewState.bridgeRuntime === "object")
     ? trustReviewState.bridgeRuntime
     : {};
-  const agentRuntime = (connections.agent_runtime && typeof connections.agent_runtime === "object")
-    ? connections.agent_runtime
+  const agentRuntime = (legacyConnections.agent_runtime && typeof legacyConnections.agent_runtime === "object")
+    ? legacyConnections.agent_runtime
     : ((openClawAgentState.snapshot && typeof openClawAgentState.snapshot === "object") ? openClawAgentState.snapshot : {});
+  const calendarProvider = getConnectionCardProvider("calendar");
+  const calendarConnected = calendarProvider
+    ? calendarProvider.connected === true
+    : !!(legacyConnections.calendar_connected || (openClawAgentState.snapshot && openClawAgentState.snapshot.setup && openClawAgentState.snapshot.setup.calendar_connected));
+  const calendarNeedsAttention = !!(calendarProvider && calendarProvider.has_key && !calendarProvider.connected);
 
   return [
     {
@@ -1428,15 +1442,21 @@ function getSetupReadinessItems() {
     {
       key: "provider_keys",
       group: "Optional later",
-      title: "Provider keys",
-      status: providerCount ? `${providerCount} configured` : "Optional",
-      tone: providerCount ? "optional-ready" : "optional",
+      title: "Connections",
+      status: providerCount
+        ? (failedProviderCount ? `${connectedProviderCount}/${providerCount} healthy` : `${providerCount} configured`)
+        : "Optional",
+      tone: failedProviderCount ? "attention" : providerCount ? "optional-ready" : "optional",
       ready: true,
       copy: providerCount
-        ? "Environment-based provider detection is live now. In-app key entry still arrives later."
+        ? (
+          failedProviderCount
+            ? `${connectedProviderCount} saved connection${connectedProviderCount === 1 ? "" : "s"} ${connectedProviderCount === 1 ? "is" : "are"} healthy and ${failedProviderCount} need attention in Settings.`
+            : "In-app connection cards are live now. You can review, test, and disconnect providers from Settings."
+        )
         : (
           String(openaiRuntime.summary || "").trim()
-          || "Nova can stay fully local. Add provider keys later only if you want optional cloud lanes."
+          || "Nova can stay fully local. Add connections later only if you want optional cloud lanes or live data."
         ),
     },
     {
@@ -1465,16 +1485,22 @@ function getSetupReadinessItems() {
       key: "calendar",
       group: "Optional later",
       title: "Calendar",
-      status: (connections.calendar_connected || (openClawAgentState.snapshot && openClawAgentState.snapshot.setup && openClawAgentState.snapshot.setup.calendar_connected))
+      status: calendarConnected
         ? "Connected"
-        : "Not connected",
-      tone: (connections.calendar_connected || (openClawAgentState.snapshot && openClawAgentState.snapshot.setup && openClawAgentState.snapshot.setup.calendar_connected))
+        : calendarNeedsAttention
+          ? "Needs attention"
+          : "Not connected",
+      tone: calendarConnected
         ? "optional-ready"
-        : "optional",
+        : calendarNeedsAttention
+          ? "attention"
+          : "optional",
       ready: true,
-      copy: (connections.calendar_connected || (openClawAgentState.snapshot && openClawAgentState.snapshot.setup && openClawAgentState.snapshot.setup.calendar_connected))
-        ? "Calendar is connected and available to morning brief and evening digest."
-        : "Calendar is optional. To connect: set the NOVA_CALENDAR_ICS_PATH environment variable to your local .ics file path before starting Nova. Most calendar apps can export a local ICS file.",
+      copy: calendarConnected
+        ? (String((calendarProvider && calendarProvider.health_detail) || "").trim() || "Calendar is connected and available to morning brief and evening digest.")
+        : calendarNeedsAttention
+          ? (String(calendarProvider.health_detail || "").trim() || "Calendar path is saved but needs attention in Settings.")
+          : "Calendar is optional. Add your local .ics file path in the Connections cards when you want schedule-aware briefs.",
     },
   ];
 }
@@ -8546,6 +8572,7 @@ function connectWebSocket() {
     renderSettingsPage();
     refreshPrivacyPanel();
     hydrateDashboardWidgets();
+    loadConnectionsData();
     startWidgetAutoRefresh();
     startMorningFallbackTimer();
   };
@@ -8814,6 +8841,7 @@ function setActivePage(page) {
   if (target === "intro") {
     requestSettingsRuntimeRefresh();
     renderIntroPage();
+    loadConnectionsData();
   }
   if (target === "settings") {
     safeWSSend({ text: "trust center", silent_widget_refresh: true });
@@ -8837,12 +8865,53 @@ function setActivePage(page) {
 
 let _connectionsData = [];   // last fetched snapshot from GET /api/settings/connections
 
+function getConnectionCardProviders() {
+  return Array.isArray(_connectionsData) ? _connectionsData : [];
+}
+
+function getConnectionCardProvider(providerId) {
+  const target = String(providerId || "").trim().toLowerCase();
+  if (!target) return null;
+  return getConnectionCardProviders().find((provider) => String(provider && provider.id || "").trim().toLowerCase() === target) || null;
+}
+
+function getConnectionCardStats() {
+  const providers = getConnectionCardProviders();
+  const saved = providers.filter((provider) => provider && provider.has_key === true);
+  const connected = saved.filter((provider) => provider && provider.connected === true);
+  const failed = saved.filter((provider) => provider && provider.connected !== true);
+  return {
+    loaded: providers.length > 0,
+    totalProviders: providers.length,
+    savedCount: saved.length,
+    connectedCount: connected.length,
+    failedCount: failed.length,
+  };
+}
+
+function buildConnectionsSummaryCopy() {
+  const stats = getConnectionCardStats();
+  if (!stats.loaded) {
+    return "Connect your API keys so Nova can access web search, news, weather, and cloud reasoning. All keys stay on this device.";
+  }
+  if (!stats.savedCount) {
+    return "Nova is ready to stay local-first. Add connections only when you want live search, weather, news, calendar, or cloud reasoning.";
+  }
+  if (stats.failedCount) {
+    return `${stats.connectedCount} connection${stats.connectedCount === 1 ? "" : "s"} healthy and ${stats.failedCount} need attention. Open a card below to test, fix, or disconnect it.`;
+  }
+  return `${stats.connectedCount} connection${stats.connectedCount === 1 ? "" : "s"} healthy. These connections stay on this device and can be reviewed or disconnected any time.`;
+}
+
 async function loadConnectionsData() {
   try {
     const res = await fetch("/api/settings/connections");
     if (!res.ok) return;
     _connectionsData = await res.json();
     renderConnectionCards();
+    renderIntroPage();
+    renderSettingsPage();
+    renderHomeLaunchWidget();
   } catch (_) {
     // silently ignore — cards will stay empty until next load
   }
@@ -8850,6 +8919,10 @@ async function loadConnectionsData() {
 
 function renderConnectionCards() {
   const grid = $("connection-cards-grid");
+  const summary = $("connections-summary");
+  if (summary) {
+    summary.textContent = buildConnectionsSummaryCopy();
+  }
   if (!grid) return;
   clear(grid);
 
@@ -9900,8 +9973,6 @@ function renderSettingsPage() {
   const assistiveGrid = $("settings-assistive-grid");
   const aiRoutingSummary = $("settings-ai-routing-summary");
   const aiRoutingGrid = $("settings-ai-routing-grid");
-  const connectionSummary = $("settings-connection-summary");
-  const connectionGrid = $("settings-connection-grid");
   const setupMode = getSetupMode();
   const currentMode = getSetupModeMeta(setupMode);
   const checklistItems = getSetupReadinessItems();
@@ -10271,42 +10342,6 @@ function renderSettingsPage() {
     }
   }
 
-  if (connectionSummary && connectionGrid) {
-    const connections = (trustReviewState.connectionRuntime && typeof trustReviewState.connectionRuntime === "object")
-      ? trustReviewState.connectionRuntime
-      : {};
-    const connectionBits = [String(connections.summary || "").trim()];
-    if (Array.isArray(connections.items) && connections.items.length) {
-      connectionBits.push("What is configured now is visible here.");
-    } else {
-      connectionBits.push("Refresh Connection Status to see what this device is ready to use.");
-    }
-    connectionBits.push("Most provider keys and connector logins are still configured manually today.");
-    connectionSummary.textContent = connectionBits.filter(Boolean).join(" ");
-
-    clear(connectionGrid);
-    (Array.isArray(connections.items) ? connections.items : []).slice(0, 12).forEach((item) => {
-      const label = String(item.label || "Connection").trim() || "Connection";
-      const value = String(item.value || "Unknown").trim() || "Unknown";
-      const note = String(item.note || "").trim();
-      connectionGrid.appendChild(createOverviewChip(label, value));
-      if (note) {
-        const noteEl = document.createElement("div");
-        noteEl.className = "first-run-note";
-        noteEl.textContent = note;
-        connectionGrid.appendChild(noteEl);
-      }
-    });
-
-    if (!Array.isArray(connections.items) || !connections.items.length) {
-      connectionGrid.appendChild(createOverviewChip("Connection status", "Awaiting trust refresh"));
-    }
-
-    const calendarNote = document.createElement("div");
-    calendarNote.className = "first-run-note";
-    calendarNote.textContent = "Calendar: Nova reads a local .ics file. Set the NOVA_CALENDAR_ICS_PATH environment variable to the full path of your calendar file before starting Nova. Most calendar apps can export or sync a local ICS file.";
-    connectionGrid.appendChild(calendarNote);
-  }
 }
 
 function renderCommandDiscovery() {
@@ -10859,6 +10894,7 @@ window.addEventListener("DOMContentLoaded", () => {
       requestOpenClawAgentRefresh(true);
       safeWSSend({ text: "system status", silent_widget_refresh: true });
       safeWSSend({ text: "connection status", silent_widget_refresh: true });
+      loadConnectionsData();
     });
   }
 
@@ -10868,6 +10904,7 @@ window.addEventListener("DOMContentLoaded", () => {
       setActivePage("settings");
       safeWSSend({ text: "connection status", silent_widget_refresh: true });
       requestSettingsRuntimeRefresh(true);
+      loadConnectionsData();
     });
   }
 
@@ -11004,6 +11041,7 @@ window.addEventListener("DOMContentLoaded", () => {
     safeWSSend({ text: "connection status", silent_widget_refresh: true });
     requestSettingsRuntimeRefresh(true);
     renderSettingsPage();
+    loadConnectionsData();
   });
 
   const settingsRefreshRuntimeBtn = $("btn-settings-refresh-runtime");

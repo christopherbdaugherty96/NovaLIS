@@ -85,6 +85,7 @@ Recent work has made Nova significantly more understandable:
 - clearer start surfaces
 - better continuity entry points
 - friendlier search and news language
+- shipped user profile + in-app connection cards
 - stronger docs and onboarding framing
 
 But the runtime itself still marks Phase 4.5 as partial.
