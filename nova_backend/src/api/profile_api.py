@@ -122,6 +122,8 @@ def build_profile_router(deps: Any) -> APIRouter:
 def _write_identity_to_memory() -> None:
     """Write (or overwrite) the protected user_identity memory record.
 
+    save_item() creates an active-tier record; lock_item() promotes it to the
+    locked (permanent) tier so Nova always injects it as conversational context.
     Errors are swallowed — profile saves must not fail because of memory issues.
     """
     try:
@@ -129,25 +131,21 @@ def _write_identity_to_memory() -> None:
         record = user_profile_store.as_memory_record()
         store = GovernedMemoryStore()
 
-        # Check if a user_identity record already exists — if so, supersede it
+        # Check if a user_identity record already exists — if so, soft-delete it
         existing = store.find_relevant_items("user_identity", limit=5)
-        existing_id = None
         for item in existing:
             if item.get("source") == "user_profile_setup":
-                existing_id = item.get("id")
+                store.delete_item(item["id"], confirmed=True)
                 break
 
-        if existing_id:
-            # Soft-delete the old one and save fresh
-            store.delete_item(existing_id, confirmed=True)
-
-        store.save_item(
+        # Save fresh active record then immediately lock it to the permanent tier
+        saved = store.save_item(
             title=record["title"],
             body=record["body"],
             scope=record["scope"],
             source=record["source"],
             tags=["identity", "profile", "user"],
-            lock_after_save=True,
         )
+        store.lock_item(saved["id"])
     except Exception:
         pass

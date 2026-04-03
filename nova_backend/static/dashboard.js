@@ -8874,10 +8874,12 @@ async function loadProfileData() {
       radio.checked = radio.value === style;
     });
 
-    // Update profile summary if name is set
+    // Update profile summary — always overwrite so stale name doesn't linger
     const summary = $("profile-summary");
-    if (summary && data.display_name) {
-      summary.textContent = `Hi, ${data.display_name}. You can update your details below at any time.`;
+    if (summary) {
+      summary.textContent = data.display_name
+        ? `Hi, ${data.display_name}. You can update your details below at any time.`
+        : "Tell Nova who you are so it can address you correctly and follow your preferences.";
     }
 
     _profileLoaded = true;
@@ -8903,10 +8905,12 @@ async function saveProfileIdentity() {
       return;
     }
     _profileStatus("profile-identity-status", "Saved ✓", "ok");
-    // Refresh summary line
+    // Always refresh summary so clearing a name resets to default text
     const summary = $("profile-summary");
-    if (summary && data.display_name) {
-      summary.textContent = `Hi, ${data.display_name}. You can update your details below at any time.`;
+    if (summary) {
+      summary.textContent = data.display_name
+        ? `Hi, ${data.display_name}. You can update your details below at any time.`
+        : "Tell Nova who you are so it can address you correctly and follow your preferences.";
     }
   } catch (_) {
     _profileStatus("profile-identity-status", "Network error", "err");
