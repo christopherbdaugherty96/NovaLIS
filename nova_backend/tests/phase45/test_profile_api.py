@@ -289,3 +289,43 @@ class TestMemoryWriteIntegration:
         ]
         assert len(active_records) == 1
         assert "Christopher" in active_records[0]["body"]
+
+    def test_all_duplicates_purged_not_just_first(self, real_app):
+        """Saving with pre-existing duplicates must leave exactly one active record.
+
+        Simulates a corrupted state by directly writing two user_profile_setup
+        records to the store before any API call, then verifying that a single
+        save clears both and leaves exactly one locked record.
+        """
+        app, mem = real_app
+
+        # Manually inject two stale duplicates directly into the store
+        r1 = mem.save_item(
+            title="User identity — stale-a",
+            body="User name: OldName1",
+            scope="nova_core",
+            source="user_profile_setup",
+            tags=["identity"],
+        )
+        mem.lock_item(r1["id"])
+
+        r2 = mem.save_item(
+            title="User identity — stale-b",
+            body="User name: OldName2",
+            scope="nova_core",
+            source="user_profile_setup",
+            tags=["identity"],
+        )
+        mem.lock_item(r2["id"])
+
+        # Now a real save should wipe both and write exactly one fresh record
+        client = TestClient(app)
+        client.post("/api/profile/identity", json={"name": "Chris"})
+
+        active_records = [
+            i for i in mem.list_items()
+            if i.get("source") == "user_profile_setup" and not i.get("deleted")
+        ]
+        assert len(active_records) == 1
+        assert "Chris" in active_records[0]["body"]
+        assert active_records[0]["tier"] == "locked"

@@ -131,12 +131,13 @@ def _write_identity_to_memory() -> None:
         record = user_profile_store.as_memory_record()
         store = GovernedMemoryStore()
 
-        # Check if a user_identity record already exists — if so, soft-delete it
-        existing = store.find_relevant_items("user_identity", limit=5)
+        # Delete ALL surviving user_profile_setup records before writing fresh.
+        # Using limit=20 to handle any corruption scenario where multiple copies
+        # accumulated; every matching record is removed, not just the first.
+        existing = store.find_relevant_items("user_identity", limit=20)
         for item in existing:
             if item.get("source") == "user_profile_setup":
                 store.delete_item(item["id"], confirmed=True)
-                break
 
         # Save fresh active record then immediately lock it to the permanent tier
         saved = store.save_item(
