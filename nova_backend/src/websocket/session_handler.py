@@ -700,12 +700,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if CAPABILITY_HELP_RE.match(command_text):
                 await _complete_immediate_turn(
                     _capability_help_message(),
-                    suggested_actions=[
-                        {"label": "System status", "command": "system status"},
-                        {"label": "Today's news", "command": "today's news"},
-                        {"label": "Audit this repo", "command": "audit this repo"},
-                        {"label": "Open documents", "command": "open documents"},
-                    ],
+                    suggested_actions=deps._capability_help_actions(),
                 )
                 continue
 
