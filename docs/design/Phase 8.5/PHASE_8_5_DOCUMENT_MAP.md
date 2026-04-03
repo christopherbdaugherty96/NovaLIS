@@ -22,6 +22,12 @@ This folder should contain the narrow design layer for:
 
 - `docs/design/Phase 8.5/PHASE_8_5_SCHEDULER_AND_PROACTIVE_DELIVERY_PLAN_2026-03-27.md`
 
+- `docs/design/Phase 8.5/NOVA_AUTOMATIONS_DESIGN.md`
+  Planned automation expansion: user-created templates, extended recurrence
+  (weekdays/weekly/N-hour), RSS research digest, email triage, meeting prep,
+  file watch/document ingest, and webhook trigger. Built on existing
+  OpenClawAgentRunner — only trigger detection is new.
+
 This document should be read in two layers:
 - as the design reference for the already-shipped narrow scheduler baseline
 - as the remaining widening guardrail for any later proactive-delivery growth

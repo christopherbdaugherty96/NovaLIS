@@ -206,14 +206,14 @@ A new or expanded Memory section in the dashboard showing both tiers:
 
 | Component | Work |
 |---|---|
-| `governed_memory_store.py` | Add `recall_count` and `last_recalled_at` fields to track recall frequency for purge scoring |
-| `governed_memory_store.py` | Add `purge_old_active()` method implementing the purge algorithm |
-| `memory_governance_executor.py` | Add `promote` action: moves `active` item to `locked` tier (permanent) |
-| `brain_server.py` | Update `_select_relevant_memory_context()` to always load locked items + scored active items separately |
-| `brain_server.py` | Call `purge_old_active()` at session start |
-| `settings_api.py` | Expose `ROLLING_MEMORY_LIMIT` as a configurable setting |
-| `memory_api.py` | New endpoint: `POST /api/memory/{id}/promote` — promote to permanent |
-| `memory_api.py` | New endpoint: `DELETE /api/memory/rolling/clear` — clear all active items |
+| `nova_backend/src/memory/governed_memory_store.py` | Add `recall_count` and `last_recalled_at` fields to track recall frequency for purge scoring |
+| `nova_backend/src/memory/governed_memory_store.py` | Add `purge_old_active()` method implementing the purge algorithm |
+| `nova_backend/src/executors/memory_governance_executor.py` | Add `promote` action alias: calls existing `lock_item()` internally |
+| `nova_backend/src/brain_server.py` | Update `_select_relevant_memory_context()` (~line 380) to always load locked items + scored active items separately |
+| `nova_backend/src/brain_server.py` | Call `purge_old_active()` at session start |
+| `nova_backend/src/api/settings_api.py` | Expose `ROLLING_MEMORY_LIMIT` as a configurable setting |
+| `nova_backend/src/api/memory_api.py` | New endpoint: `POST /api/memory/{id}/promote` — promote to permanent |
+| `nova_backend/src/api/memory_api.py` | New endpoint: `DELETE /api/memory/rolling/clear` — clear all active items |
 
 ---
 

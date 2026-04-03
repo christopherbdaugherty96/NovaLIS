@@ -3,6 +3,18 @@ Updated: 2026-03-25
 Status: Current design map
 Purpose: Separate the governed-node roadmap from older autonomy and mutation theory artifacts
 
+## 2026-04-02 Planning Additions
+
+- `docs/design/Phase 9/NOVA_MASTER_ROADMAP_2026-04-02.md`
+  Current prioritized P0–P3 backlog. The single most current planning reference.
+  Covers intelligence tiers, profile setup, memory tiers, automations, and trading.
+
+- `docs/design/Phase 9/NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md`
+  Honest assessment of Nova's current position vs true agent/node capability.
+  Covers GPU ceiling, provider routing options, and three-phase roadmap
+  (local → cloud API → node protocol). Key recommendation: promote
+  openai_responses_lane.py to primary for complex tasks.
+
 ## Canonical Phase-9 Planning Core
 - `docs/design/Phase 9/PHASE_9_GOVERNED_NODE_PLAN.md`
 
