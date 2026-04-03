@@ -43,7 +43,7 @@ Everything else should live inside:
 - `docs/design/Phase 9/NOVA_MASTER_ROADMAP_2026-04-02.md` — master prioritized backlog P0–P3
 - `docs/design/Phase 9/NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md` — intelligence tiers, provider routing
 - `docs/design/Phase 4.5/NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md` — profile setup, connection cards
-- `docs/design/Phase 5/NOVA_MEMORY_TIERS_DESIGN.md` — rolling + permanent memory tiers
+- `docs/design/phase 5/NOVA_MEMORY_TIERS_DESIGN.md` — rolling + permanent memory tiers
 - `docs/design/Phase 8.5/NOVA_AUTOMATIONS_DESIGN.md` — templates, triggers, RSS, email triage, file watch
 - `docs/design/Phase 11/NOVA_TRADING_CONNECTOR_DESIGN.md` — governed auto-trading, Alpaca, cap 64
 
@@ -105,7 +105,7 @@ Start with:
 
 ### Phase 5
 Path:
-- `docs/design/Phase 5/`
+- `docs/design/phase 5/`
 
 Focus:
 - memory governance
@@ -116,7 +116,7 @@ Focus:
 - preference learning as the first bounded learning layer
 
 Start with:
-- `docs/design/Phase 5/PHASE_5_DOCUMENT_MAP.md`
+- `docs/design/phase 5/PHASE_5_DOCUMENT_MAP.md`
 
 ### Phase 6
 Path:
