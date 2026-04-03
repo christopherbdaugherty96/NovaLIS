@@ -143,6 +143,26 @@ def test_volume_media_brightness_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 57
 
+    inv = GovernorMediator.parse_governed_invocation("tomorrow's schedule")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 57
+
+    inv = GovernorMediator.parse_governed_invocation("what do i have tomorrow")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 57
+
+    inv = GovernorMediator.parse_governed_invocation("upcoming events")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 57
+
+    inv = GovernorMediator.parse_governed_invocation("what's coming up")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 57
+
+    inv = GovernorMediator.parse_governed_invocation("agenda for tomorrow")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 57
+
     inv = GovernorMediator.parse_governed_invocation("take a screenshot")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 58

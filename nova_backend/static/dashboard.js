@@ -1796,7 +1796,7 @@ function getIntroFirstSuccessItems(items = []) {
     liveItems.push({
       title: "My schedule today",
       badge: "Calendar live",
-      copy: "See what's on your calendar today from your linked ICS file.",
+      copy: "Check today's calendar without leaving Nova. If you just want the quick version, this is the easiest place to start.",
       actionLabel: "Today's schedule",
       action: () => {
         setActivePage("chat");

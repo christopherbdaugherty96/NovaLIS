@@ -1,294 +1,243 @@
 # Nova — Master Roadmap
-Updated: 2026-04-02
-Status: Living document — add to this as new work is identified
+Updated: 2026-04-03
+Status: Living document
+Purpose: Keep one honest prioritized backlog that reflects what is already shipped, what is next, and what should stay future work
 
-This is the single prioritized backlog for everything planned but not yet built.
-Each item links to its full design doc where one exists.
-
----
-
-## How to Read This
-
-- **P0** — Do this next. High value, unblocks other things.
-- **P1** — Do this soon. Core product improvement.
-- **P2** — Do this when P1 is done. Good features, not urgent.
-- **P3** — Future. Good ideas, complex, not yet scoped.
-
-Status tags: `[ ]` not started · `[~]` in progress · `[x]` done
+This is the single planning backlog for work that still remains.
+It should not re-list already shipped slices as if they are still untouched.
 
 ---
 
-## Corrected execution order (grounded 2026-04-02)
+## How To Read This
 
-Previous order had a contradiction: Phase 9 intelligence work was landing before
-Phase 8 was closed. Corrected sequence:
+- `P0` — do next
+- `P1` — do soon after P0
+- `P2` — important, but not blocking the current product line
+- `P3` — future expansion
+
+Status tags:
+- `[ ]` not started
+- `[~]` in progress or partially landed
+- `[x]` shipped baseline
+
+Runtime truth still wins over this design packet.
+
+---
+
+## Grounded Current Position
+
+Nova is currently:
+- Phase 7 complete in the bounded reasoning sense
+- Phase 8 active, with meaningful usefulness and operator-foundation work already landed
+- Phase 4.5 still partial, but now mostly in manual polish territory instead of missing major UI systems
+
+Recently shipped:
+- `[x]` user profile surface and governed identity-memory write
+- `[x]` connection cards with save/test/disconnect/reset flows
+- `[x]` improved intro/setup onboarding flow
+- `[x]` structured morning brief across chat and OpenClaw
+- `[x]` connection-aware starter usefulness cards
+- `[x]` visible OpenClaw active run state on Home and Agent surfaces
+
+That means the current next work is not “start from zero.”
+It is:
+- close the last Phase-4.5 polish gap
+- finish Phase-8 usefulness through real connectors
+- then close Phase 8 properly before Phase-9 intelligence expansion becomes the main code focus
+
+---
+
+## Corrected Execution Order
 
 ```
-Stage 1 — Phase 4.5 closeout      user profile, connection cards, setup flow
-Stage 2 — Phase 8 usefulness      real calendar connector, morning brief quality
-Stage 3 — Phase 8 closure         envelope execution, visible run state, pause/resume
-Stage 4 — Phase 9 intelligence    DeepSeek tier, provider routing, memory tiers
+Stage 1 — Phase 4.5 closeout
+  manual polish, live-device validation, final setup/readiness cleanup
+
+Stage 2 — Phase 8 usefulness
+  real calendar integration, stronger daily-assistant usefulness
+
+Stage 3 — Phase 8 closure
+  envelope execution, pause/resume, richer run controls
+
+Stage 4 — Phase 9 intelligence
+  DeepSeek tier, provider routing, memory-tier evolution
 ```
 
-Phase 9 code should not become the main focus until Phase 8 is actually closed.
+Phase 9 should not become the main implementation track until Stage 3 is more complete.
 
 ---
 
-## P0 — Phase 4.5 Closeout (Do This First)
+## P0 — Finish The Current Product Foundation
 
-**Code audit findings (2026-04-02):**
-- `ConversationRouter` + `ComplexityHeuristics` ALREADY EXIST in `src/conversation/`
-  — they route conversation MODES (casual/analysis/action) and flag escalation candidates
-  — `should_escalate=True` currently triggers DeepSeek second-opinion review only
-  — they do NOT route to different LLM providers for the primary response
-- Every conversation still calls `llm_manager.generate()` → Ollama local regardless
-- `openai_responses_lane.py` API_URL is hardcoded to OpenAI; no base URL config
-- `MODEL_PROVIDER` env var only recognizes `ollama`, `local_file`, `dummy`
+### 0.1 — Last Phase-4.5 Closeout Work
+Design docs:
+- `docs/design/Phase 4.5/NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md`
+- `docs/design/Phase 4.5/NOVA_USER_FRIENDLINESS_TODO_2026-04-02.md`
 
-The ceiling: every primary response goes through `gemma2:2b`. The routing infrastructure
-exists for modes but not for providers. This is the single biggest unlock.
+- `[x]` profile baseline shipped
+- `[x]` connection-card baseline shipped
+- `[x]` intro/setup baseline shipped
+- `[ ]` run a real manual UX pass across Intro, Home, Agent, Settings, live-help, and voice
+- `[ ]` validate local TTS confidence on real hardware
+- `[ ]` tighten any remaining setup/readiness copy that still feels diagnostic instead of assistant-like
 
-### 0.1 — Add DeepSeek V3 as Tier 2 Provider
-Design doc: `NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md`
+### 0.2 — Finish Phase-8 Usefulness
+Design docs:
+- `docs/design/Phase 8/PHASE_8_DOCUMENT_MAP.md`
+- `docs/design/Phase 8/NOVA_OPENCLAW_HOME_AGENT_MASTER_REFERENCE_2026-03-27.md`
 
-- [ ] Add `DEEPSEEK_API_KEY` and `DEEPSEEK_BASE_URL=https://api.deepseek.com/v1` to `.env.example`
-- [ ] Make `openai_responses_lane.py` accept configurable base URL via env var (not hardcoded)
-- [ ] Add `MODEL_PROVIDER=deepseek` as a recognized routing option in `nova_config.py`
-- [ ] Add DeepSeek pricing constants to `provider_usage_store`
-- [ ] Test: conversation routed to DeepSeek V3, response returns, budget tracked
+- `[x]` structured morning brief baseline shipped
+- `[x]` connection-aware home usefulness starters shipped
+- `[ ]` real calendar integration beyond the current ICS-backed snapshot baseline
+- `[ ]` better in-chat answer to “what can you do right now?” based on live setup state
+- `[ ]` continue improving daily assistant quality without widening authority
 
-**Why first:** OpenAI-compatible API — one URL change away. ~$0.07/1M tokens.
+### 0.3 — Finish Phase-8 Closure
+Design docs:
+- `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
+- `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
 
----
-
-### 0.2 — Wire Provider Routing into Conversation Loop
-Design doc: `NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md`
-
-`ConversationRouter` and `ComplexityHeuristics` already exist — reuse them.
-The missing piece: when `should_escalate=True` or `complexity_score` is high,
-route the PRIMARY response to DeepSeek/OpenAI instead of only triggering second-opinion.
-
-- [x] `conversation_router.py` exists — routes modes, detects escalation candidates
-- [x] `complexity_heuristics.py` exists — scores query complexity (0.0–1.0)
-- [ ] Extend `ConversationRouter` or add a new `ProviderRouter` that maps escalation
-      signal → provider tier selection (local / deepseek / openai)
-- [ ] Wire provider selection into `run_general_chat_fallback()` in `brain_server.py`
-- [ ] Update `MODEL_PROVIDER` env var to recognize `"auto"` properly
-- [ ] Budget gate applies to cloud tier calls (Phase 9 gate already exists — extend it)
-- [ ] Test: simple question → local · complex question → DeepSeek · agent task → OpenAI
-
-**Tiered routing target:**
-```
-Tier 1 — local gemma2:2b      free, private, instant   simple (complexity < 0.4)
-Tier 2 — DeepSeek V3 API      ~$0.07/1M tokens         complex (complexity >= 0.4)
-Tier 3 — OpenAI GPT-4o-mini   ~$0.15/1M tokens         agent/OpenClaw tasks
-Tier 4 — OpenAI GPT-4o        ~$2.50/1M tokens         heavy analysis (on-demand only)
-```
+- `[x]` visible run-state baseline shipped
+- `[ ]` pause / resume controls for governed runs
+- `[ ]` richer interruption, failure, and stop-state UX
+- `[ ]` full envelope execution foundations with explicit budgets and previews
+- `[ ]` shared run visibility across the intended Nova surfaces
 
 ---
 
-### 0.3 — BUILD_PHASE and Phase Tracking
-- [x] `BUILD_PHASE = 9` set in `nova_backend/src/build_phase.py` (done 2026-04-02)
-- [ ] Update `registry.json` — set `phase_introduced` on any Phase 9 caps
-- [ ] Update runtime docs that still reference Phase 8
+## P1 — Memory, Automation, And Personalization Follow-Through
+
+### 1.1 — Memory Tier Evolution
+Design doc:
+- `docs/design/phase 5/NOVA_MEMORY_TIERS_DESIGN.md`
+
+- `[ ]` rolling-memory purge behavior
+- `[ ]` permanent-memory promotion UX
+- `[ ]` inspectable memory-tier surfaces that stay easy to understand
+- `[ ]` keep all memory evolution explicit and governed
+
+### 1.2 — User-Created Automations
+Design doc:
+- `docs/design/Phase 8.5/NOVA_AUTOMATIONS_DESIGN.md`
+
+- `[ ]` custom template creation
+- `[ ]` extended recurrence options
+- `[ ]` RSS / research digest template
+- `[ ]` keep all automation widening inside explicit settings and visible surfaces
+
+### 1.3 — Preference Learning First
+Design doc:
+- `docs/design/phase 5/NOVA_GOVERNED_LEARNING_LADDER_2026-04-02.md`
+
+- `[ ]` tone and response-style preference learning
+- `[ ]` summary-shape preference learning
+- `[ ]` editable and resettable learned preferences
+- `[ ]` no hidden initiative or silent workflow creation
 
 ---
 
-## P1 — Setup & Profile
+## P2 — Connector And Communication Expansion
 
-Design doc: `NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md`
+### 2.1 — Email And Calendar Workflows
+Design docs:
+- `docs/design/Phase 8.5/NOVA_AUTOMATIONS_DESIGN.md`
+- `docs/design/Phase 11/NOVA_IDEA_TO_WORKFLOW_OPERATOR_MODEL_TODO_2026-04-02.md`
 
-### 1.1 — User Profile Setup
-- [ ] Backend: `GET /api/settings/profile` + `POST /api/settings/profile`
-- [ ] Backend: `POST /api/settings/preferences` (response style, morning brief, proactive suggestions)
-- [ ] Backend: `POST /api/settings/rules` (user rules free-text)
-- [ ] On save: write protected `user_identity` record to `governed_memory_store`
-      (name, nickname, email, preferences, rules stored as permanent memory)
-- [ ] Frontend: profile form — name, nickname, email fields
-- [ ] Frontend: preferences panel — response style picker, toggles
-- [ ] Frontend: user rules textarea with save button
+- `[ ]` email connector implementation
+- `[ ]` meeting-prep workflow
+- `[ ]` document ingest / file-watch workflow
+- `[ ]` job application and communication operator flows
 
-### 1.2 — Connection Cards (replace read-only grid)
-- [ ] Backend: `GET /api/settings/connections` — status per provider
-- [ ] Backend: `POST /api/settings/connections/{provider}/key` — save + health check
-- [ ] Backend: `DELETE /api/settings/connections/{provider}` — clear key
-- [ ] Backend: `DELETE /api/settings/connections/all` — reset all (with confirmation)
-- [ ] Backend: `POST /api/settings/identity/email` — save identity email
-- [ ] Frontend: replace `#settings-connection-grid` chips with interactive cards
-- [ ] Frontend: three card states — connected (green) / key needed (amber) / not set up (grey)
-- [ ] Frontend: inline key entry + Save & Test per card
-- [ ] Frontend: Disconnect button per connected card
-- [ ] Frontend: Disconnect All zone at bottom with confirmation step
-- [ ] Frontend: email field at top with provider auto-detection logic
+### 2.2 — Better Everyday Operator Workflows
+Design docs:
+- `docs/design/Phase 8/NOVA_GOVERNED_VISIBLE_OPERATOR_MODE_TODO_2026-04-02.md`
+- `docs/design/Phase 11/NOVA_INTERACTION_MODEL_V1_STRICT_ON_RISK_SOFT_ON_FLOW_2026-04-02.md`
+
+- `[ ]` safer form-fill assistance
+- `[ ]` sign-in assistance with hard credential boundaries
+- `[ ]` “handle this for me” low-risk workflow shaping
+- `[ ]` one-checkpoint-per-meaningful-outcome behavior
 
 ---
 
-## P1 — Memory Tiers
+## P2 — Trading And Financial Assistant Work
 
-Design doc: `NOVA_MEMORY_TIERS_DESIGN.md`
+### 2.3 — Trading Connector Direction
+Design docs:
+- `docs/design/Phase 11/NOVA_TRADING_CONNECTOR_DESIGN.md`
+- `docs/design/Phase 8/TRADING_MODE_GUARDRAILS_2026-03-27.md`
 
-### 1.3 — Rolling Memory with Auto-Purge
-**Code audit note:** `recall_count` and `last_recalled_at` do NOT exist yet.
-Current recency is tracked via `updated_at` only. Use that for purge ordering.
-No `purge_old_active()` method exists — items soft-delete via `deleted: true` flag.
+- `[ ]` connector base classes and budget store
+- `[ ]` paper-trading-first path
+- `[ ]` portfolio / watchlist / market-research surfaces
+- `[ ]` no live autonomous trading until much later guarded phases
 
-- [ ] Add `recall_count` (int) and `last_recalled_at` (ISO timestamp) fields to memory record schema
-      in `governed_memory_store.py` — default to 0 / null, increment on each recall hit
-- [ ] Add `purge_old_active()` method to `governed_memory_store.py`
-      (soft-delete oldest active items by `created_at` when count > limit,
-      spare items where `last_recalled_at` is within last 7 days)
-- [ ] Call `purge_old_active()` at session start in `brain_server.py`
-- [ ] Increment `recall_count` + set `last_recalled_at` in `find_relevant_items()`
-      when items are returned
-- [ ] Expose `ROLLING_MEMORY_LIMIT` as a configurable setting (default 100)
+### 2.4 — Personal Finance Intelligence
+Design docs:
+- `docs/design/Phase 11/NOVA_HOME_ASSISTANT_PRODUCT_TRUTH_2026-04-02.md`
+- `docs/design/Phase 11/NOVA_IDEA_TO_WORKFLOW_OPERATOR_MODEL_TODO_2026-04-02.md`
 
-### 1.4 — Permanent Memory (always injected)
-**Code audit note:** `_select_relevant_memory_context` exists in `brain_server.py` line ~380.
-No `promote` action exists yet — use `lock_item()` under the hood, expose as `promote` alias.
-
-- [ ] Update `_select_relevant_memory_context()` in `brain_server.py`:
-      always load ALL locked (permanent) items first + top 5 scored active items per query
-- [ ] Add `promote` action alias to `memory_governance_executor.py`
-      (calls existing `lock_item()` internally — just a named alias for user clarity)
-- [ ] Backend: `POST /api/memory/{id}/promote` endpoint
-- [ ] Backend: `DELETE /api/memory/rolling/clear` endpoint
-
-### 1.5 — Memory Panel UI
-- [ ] Frontend: "Saved Memories" section — shows locked items, always visible
-- [ ] Frontend: "Session Memory" section — shows active items with count (42 / 100)
-- [ ] Frontend: promote-to-permanent button per rolling memory card
-- [ ] Frontend: Clear All session memory button (with confirmation)
-- [ ] Frontend: Add permanent memory free-text form
+- `[ ]` spending insight
+- `[ ]` subscription detection
+- `[ ]` budgeting suggestions
+- `[ ]` keep this in the analysis/help lane before any transaction flow
 
 ---
 
-## P1 — Automations
+## P3 — Phase-9 Intelligence Work
 
-Design doc: `NOVA_AUTOMATIONS_DESIGN.md`
+### 3.1 — DeepSeek V3 As Tier-2 Provider
+Design docs:
+- `docs/design/Phase 9/NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md`
+- `docs/design/Phase 6/NOVA_LOCAL_FIRST_INTELLIGENCE_ARCHITECTURE_AND_MODEL_ROUTING_TODO_2026-04-02.md`
 
-### 1.6 — User-Created Templates
-- [ ] `POST /api/openclaw/agent/templates` — save custom template
-- [ ] `DELETE /api/openclaw/agent/templates/{id}` — remove custom template
-- [ ] Frontend: template builder form (name, step picker, schedule, delivery mode)
-- [ ] Persist custom templates in `agent_runtime.json` alongside defaults
+- `[ ]` add DeepSeek base URL and API-key support
+- `[ ]` add provider pricing / budget visibility
+- `[ ]` keep Nova local-first by default
 
-### 1.7 — Extended Recurrence
-- [ ] Extend recurrence field in `notification_schedule_store.py`:
-      `"weekdays"`, `"weekends"`, `"weekly:monday"`, `"every_2h"`, `"every_4h"`
-- [ ] Update `due_scheduled_templates()` in `agent_scheduler.py` to evaluate new patterns
-- [ ] Frontend: recurrence picker (human-readable, not cron syntax)
+### 3.2 — Provider Routing In Conversation
+- `[x]` conversation router exists
+- `[x]` complexity heuristics exist
+- `[ ]` route primary responses across local / DeepSeek / OpenAI tiers
+- `[ ]` keep routing visible, bounded, and budget-aware
 
-### 1.8 — RSS / Research Digest Template
-- [ ] `nova_backend/src/openclaw/feed_store.py` — RSS URL list store
-- [ ] New executor step: `rss_fetch` — fetch and parse RSS feeds
-- [ ] New OpenClaw template: `research_digest`
-      (fetch → filter last 24h → score relevance → summarize top N → deliver)
-- [ ] Frontend: feed list manager in Settings (add/remove RSS URLs)
-
----
-
-## P2 — Email & Calendar Automations
-
-Design doc: `NOVA_AUTOMATIONS_DESIGN.md`
-
-### 2.1 — IMAP Email Connector
-- [ ] `nova_backend/src/connectors/imap_email_connector.py`
-      (concrete implementation of existing `email_connector.py` stub)
-- [ ] Env vars: `NOVA_EMAIL_PROVIDER`, `NOVA_EMAIL_HOST`, `NOVA_EMAIL_PORT`,
-      `NOVA_EMAIL_USER`, `NOVA_EMAIL_SECRET`
-- [ ] New trigger type: `on_email_received` in scheduler (IMAP poll every 5–10 min)
-- [ ] New template: `email_triage`
-      (fetch → classify urgent/actionable/noise → route urgent to chat, batch others to widget)
-
-### 2.2 — Meeting Prep Automation
-- [ ] New trigger type: `on_calendar_event_upcoming` (check for events starting in N min)
-- [ ] New template: `meeting_prep`
-      (fetch event → search memory for context → summarize → deliver widget card)
-
-### 2.3 — File Watch / Document Ingest
-- [ ] `nova_backend/src/tasks/file_watcher.py` — Python watchdog-based file watcher
-- [ ] New trigger type: `on_file_created` in configured watch directory
-- [ ] New template: `document_ingest`
-      (detect file → extract text → summarize → save to permanent memory)
-- [ ] Env var: `NOVA_WATCH_DIR`
-- [ ] Frontend: watch directory picker in Settings
+### 3.3 — Memory And Continuity Coherence
+- `[ ]` stronger memory coherence across surfaces
+- `[ ]` later workflow-habit learning after preference learning is stable
+- `[ ]` bounded proactive learning only after scheduler and routines are earned
 
 ---
 
-## P2 — Trading Connector
+## P3 — Node / Mass-Node / Operator Expansion
 
-Design doc: `NOVA_TRADING_CONNECTOR_DESIGN.md`
+Design docs:
+- `docs/design/Phase 9/NOVA_GOVERNED_MASS_NODE_OPERATOR_SYSTEM_2026-04-02.md`
+- `docs/design/Phase 9/PHASE_9_GOVERNED_NODE_PLAN.md`
 
-### 2.4 — Alpaca Paper Trading (Phase 1)
-- [ ] `src/connectors/trading_connector.py` — abstract base class
-- [ ] `src/connectors/alpaca_trading_connector.py` — Alpaca Markets implementation
-- [ ] `src/tasks/trading_rules_store.py` — user trading rules + dollar limits store
-- [ ] `src/usage/trading_budget_store.py` — dollar budget gate (mirrors token budget gate)
-- [ ] Cap 64: `src/executors/trade_executor.py`
-      (rules check → API call → ledger write)
-- [ ] New OpenClaw template: `market_trader`
-      (fetch price → fetch news signal → LLM signal score → governor rules check → execute)
-- [ ] Env vars: `TRADING_PAPER_MODE=true`, `ALPACA_API_KEY`, `ALPACA_API_SECRET`,
-      `TRADING_ACCOUNT_FLOOR`, `TRADING_DAILY_SPEND_LIMIT`, `TRADING_SINGLE_TRADE_MAX`,
-      `TRADING_MAX_TRADES_PER_DAY`, `TRADING_ALLOWED_ASSETS`
-- [ ] Frontend: trading widget card (balance, P&L, last trade, signal, pause button)
-- [ ] Update `.env.example` with all trading vars
-
-### 2.5 — Coinbase Crypto Connector (Phase 2)
-- [ ] `src/connectors/coinbase_trading_connector.py`
-- [ ] Env vars: `COINBASE_API_KEY`, `COINBASE_API_SECRET`
-- [ ] Sandbox mode support
-
-### 2.6 — Live Trading Opt-In Flow
-- [ ] UI confirmation flow to flip `TRADING_PAPER_MODE=false`
-      (requires explicit multi-step confirmation, not just an env change)
+- `[ ]` webhook trigger path
+- `[ ]` multi-node protocol and trust handshake
+- `[ ]` bounded cross-node execution
+- `[ ]` keep Nova as the governing layer, not just another worker
 
 ---
 
-## P3 — Agent / Node Architecture
+## Open Questions
 
-Design doc: `NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md`
-
-### 3.1 — Webhook Trigger
-- [ ] Governed endpoint: `POST /api/webhooks/trigger`
-- [ ] New trigger type: `on_webhook`
-- [ ] Auth: shared secret token per webhook source
-- [ ] Governor handles external effect gate
-
-### 3.2 — Two-Model Pipeline per Template Step
-- [ ] Add `model_preference` field per template step
-      (`"local"` | `"deepseek"` | `"openai"` | `"auto"`)
-- [ ] Conversation router respects per-step preference
-
-### 3.3 — Node Protocol (Phase 10+)
-- [ ] WebSocket → REST bridge for external callers
-- [ ] Node discovery protocol
-- [ ] Governor-to-governor trust handshake between Nova instances
+- `[ ]` When should rolling memories be suggested for permanent promotion?
+- `[ ]` Should calendar remain ICS-first until a stronger official connector is earned?
+- `[ ]` How much of “what can you do?” should be dynamic in chat versus Home surfaces?
+- `[ ]` When should Phase 4.5 be declared fully closed in runtime docs?
+- `[ ]` What is the exact minimum Phase-8 closure bar before Phase-9 provider routing becomes the main focus?
 
 ---
 
-## Open Items — Add As You Think of Them
-
-- [ ] Should Nova suggest promoting rolling memories to permanent automatically?
-- [ ] Should trading P&L summary appear in the evening digest template?
-- [ ] Should there be a "explain your last trade" chat command from the ledger?
-- [ ] Should the DeepSeek routing note data-goes-to-China in the UI like OpenAI keys do?
-- [ ] Should user rules be changeable mid-conversation via chat ("be more concise")?
-- [ ] Should connection card health checks run on a schedule (not just on save)?
-- [ ] Live trading mode: should it require a UI confirmation step beyond flipping the env var?
-- [ ] Max drawdown rule for trading: pause if account drops X% from peak?
-
----
-
-## Design Docs Index
+## Design Doc Index
 
 | Doc | Topic |
-|---|---|
-| `NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md` | Intelligence tiers, provider routing, node roadmap |
-| `NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md` | Setup page, user profile, connection cards |
-| `NOVA_MEMORY_TIERS_DESIGN.md` | Rolling memory, permanent memory, purge logic |
-| `NOVA_AUTOMATIONS_DESIGN.md` | Templates, triggers, RSS, email triage, file watch |
-| `NOVA_TRADING_CONNECTOR_DESIGN.md` | Auto-trading, Alpaca, rules gate, dollar budget |
-| `NOVA_AUDIT_TODO_2026-03-28.md` | Code-level audit remediation backlog |
-
----
+| --- | --- |
+| `NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md` | intelligence tiers, provider routing, node roadmap |
+| `NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md` | setup page, profile, connection cards |
+| `NOVA_MEMORY_TIERS_DESIGN.md` | rolling memory, permanent memory, purge logic |
+| `NOVA_AUTOMATIONS_DESIGN.md` | templates, triggers, digest, email triage, file watch |
+| `NOVA_TRADING_CONNECTOR_DESIGN.md` | governed trading connector direction |
+| `NOVA_GROUNDED_CURRENT_STATUS_AND_NEXT_ROADMAP_2026-04-02.md` | current grounded ordering and phase truth |

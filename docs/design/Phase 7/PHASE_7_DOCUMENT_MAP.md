@@ -1,5 +1,5 @@
 # Phase 7 Document Map
-Updated: 2026-03-28
+Updated: 2026-04-03
 Status: Current design map with Phase-7 runtime now complete in the governed external-reasoning lane
 Purpose: Separate the near-term Phase-7 external-reasoning plan from older autonomy-presence exploration documents
 
@@ -47,6 +47,10 @@ Current governed intelligence execution direction companion input:
 Current broader conversation-quality companion input:
 - `docs/design/Phase 7/NOVA_CONVERSATIONAL_COMPETITIVENESS_ROADMAP_2026-03-21.md`
 
+Current conversation-shaping companion inputs:
+- `docs/design/Phase 7/CONVERSATIONAL_CORE_PHASE_PLAN_2026-03-19.md`
+- `docs/design/Phase 7/CONVERSATIONAL_FLOW_AND_SILENT_GOVERNOR_PLAN_2026-03-21.md`
+
 This companion packet captures one specific product shape inside that same phase:
 - DeepSeek as a governed second-opinion reasoning source inside the same Nova chat box
 - Nova remaining the primary voice
@@ -92,6 +96,11 @@ The governed intelligence execution direction packet should be read this way in 
   - stronger structured intelligence for harder research/search/news questions
   - cost-aware reasoning routing that still preserves the intelligence-authority boundary
 - it does not authorize action autonomy
+
+The conversation-shaping packets should be read this way in Phase 7:
+- they explain how Nova should feel more fluid without weakening governance
+- they are the closest design companions to later interaction-doctrine work
+- they should not be mistaken for authorization for hidden background behavior
 
 ## Phase-7 Completion Note
 Phase 7 is now complete in the current repo in the bounded sense defined by the canonical plan:

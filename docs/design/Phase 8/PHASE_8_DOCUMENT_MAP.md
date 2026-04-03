@@ -1,5 +1,5 @@
 # Phase 8 Document Map
-Updated: 2026-03-28
+Updated: 2026-04-03
 Status: Current design map
 Purpose: Keep the canonical OpenClaw direction, supporting execution plan, and raw source notes clearly separated
 
@@ -8,6 +8,9 @@ The following Phase-8 foundation slices are now live in runtime/proof:
 - manual OpenClaw home-agent foundation
 - manual briefing templates with operator-visible delivery controls
 - persistent delivery inbox and Agent page review surface
+- structured morning brief delivery across chat and OpenClaw scheduled/manual surfaces
+- connection-aware Home / starter usefulness surface for briefing, schedule, weather, news, and research entry points
+- visible active run state for OpenClaw manual runs across the Agent page and Home delivery surface
 - strict manual preflight before home-agent runs
 - narrow scheduled briefing runtime behind explicit settings control
 - local-first metered OpenAI fallback for narrow task reports
@@ -120,6 +123,9 @@ Live now:
 - narrow scheduled briefing lane behind explicit settings control
 - delivery-mode controls
 - operator-facing Agent page
+- structured morning brief presentation
+- visible active run state
+- connection-aware home/operator starter surfaces
 - Nova-owned task-result presentation
 
 Full canonical Phase-8-safe scope still includes:
