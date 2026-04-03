@@ -1047,18 +1047,36 @@
           </p>
         </div>
 
-        <div class="widget page-card trust-center-panel" aria-live="polite">
+        <!-- ── Connection Cards ───────────────────────────────────────── -->
+        <div class="widget page-card trust-center-panel" id="connections-panel">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Connections, Providers, and Remote Bridge</div>
-              <p id="settings-connection-summary" class="workspace-board-section-copy">Connection details will appear here after the next refresh.</p>
+              <div class="workspace-home-section-title">Connections &amp; Providers</div>
+              <p id="connections-summary" class="workspace-board-section-copy">Connect your API keys so Nova can access web search, news, weather, and cloud reasoning. All keys stay on this device.</p>
+            </div>
+            <button id="btn-connections-refresh" type="button" class="confidence-badge" style="cursor:pointer">Refresh status</button>
+          </div>
+
+          <!-- Card grid — populated by dashboard.js -->
+          <div id="connection-cards-grid" class="connection-cards-grid" aria-live="polite"></div>
+
+          <!-- Disconnect All zone -->
+          <div class="connection-reset-zone" id="connection-reset-zone">
+            <div class="connection-reset-header">
+              <span class="connection-reset-title">⚠ Reset All Connections</span>
+              <p class="connection-reset-copy">Removes all stored provider keys and resets Nova to local-only mode. You will need to re-enter your keys to restore cloud capabilities.</p>
+            </div>
+            <div id="connection-reset-confirm" class="connection-reset-confirm" hidden>
+              <span class="connection-reset-warn">This will disconnect all providers immediately.</span>
+              <button id="btn-reset-confirm" type="button" class="connection-reset-btn-danger">Yes, disconnect all</button>
+              <button id="btn-reset-cancel" type="button">Cancel</button>
+            </div>
+            <div id="connection-reset-trigger" class="connection-reset-trigger">
+              <button id="btn-reset-all" type="button" class="connection-reset-btn-ghost">Reset all connections</button>
             </div>
           </div>
-          <div id="settings-connection-grid" class="trust-center-health-grid"></div>
-          <p class="first-run-note">
-            What is connected now is visible here. Most provider keys and connector logins are still configured manually today, and that setup should remain explicit and governed.
-          </p>
         </div>
+        <!-- ── /Connection Cards ──────────────────────────────────────── -->
       </section>
 
       <section id="page-policy" class="page-view page-policy" hidden>

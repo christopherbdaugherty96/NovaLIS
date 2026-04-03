@@ -28,6 +28,7 @@ from fastapi.staticfiles import StaticFiles
 
 from src.api.audit_api import build_audit_router
 from src.api.bridge_api import build_bridge_router
+from src.api.connections_api import build_connections_router
 from src.api.live_screen_api import build_live_screen_router
 from src.api.memory_api import build_memory_router
 from src.api.openclaw_agent_api import build_openclaw_agent_router
@@ -2877,6 +2878,7 @@ async def send_pattern_review_widget(
 # -------------------------------------------------
 app.include_router(build_audit_router(sys.modules[__name__]))
 app.include_router(build_bridge_router(sys.modules[__name__]))
+app.include_router(build_connections_router())
 app.include_router(build_memory_router(sys.modules[__name__]))
 app.include_router(build_openclaw_agent_router(sys.modules[__name__]))
 app.include_router(build_profile_router(sys.modules[__name__]))

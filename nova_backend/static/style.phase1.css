@@ -4322,3 +4322,234 @@ button.workspace-spotlight-card.active {
     justify-self: start;
   }
 }
+
+/* ============================================================
+   CONNECTION CARDS
+   ============================================================ */
+
+.connection-cards-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 14px;
+  margin-top: 16px;
+}
+
+/* Base card */
+.conn-card {
+  border-radius: 10px;
+  border: 1px solid var(--border-subtle, #2e2e4a);
+  background: var(--card-bg, #12121e);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: border-color 0.15s;
+  position: relative;
+}
+
+/* State-specific border tints */
+.conn-card--connected  { border-color: var(--status-green, #4caf7d); }
+.conn-card--needed     { border-color: var(--accent-amber, #e0a84c); }
+.conn-card--setup      { border-color: var(--border-subtle, #2e2e4a); }
+
+/* Card header row */
+.conn-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.conn-card-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: var(--border-subtle, #555);
+}
+.conn-card--connected  .conn-card-dot { background: var(--status-green, #4caf7d); }
+.conn-card--needed     .conn-card-dot { background: var(--accent-amber, #e0a84c); }
+.conn-card--setup      .conn-card-dot { background: var(--text-muted, #666); }
+
+.conn-card-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary, #e0e0f0);
+  flex: 1;
+}
+
+.conn-card-state-badge {
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+.conn-card--connected .conn-card-state-badge {
+  background: rgba(76, 175, 125, 0.15);
+  color: var(--status-green, #4caf7d);
+}
+.conn-card--needed .conn-card-state-badge {
+  background: rgba(224, 168, 76, 0.12);
+  color: var(--accent-amber, #e0a84c);
+}
+.conn-card--setup .conn-card-state-badge {
+  background: rgba(255,255,255,0.05);
+  color: var(--text-muted, #888);
+}
+
+/* Description */
+.conn-card-desc {
+  font-size: 12px;
+  color: var(--text-secondary, #a0a0b0);
+  line-height: 1.4;
+}
+
+/* Key hint line */
+.conn-card-hint {
+  font-size: 11px;
+  color: var(--text-muted, #777);
+  font-family: monospace;
+}
+
+/* Health feedback line */
+.conn-card-health {
+  font-size: 12px;
+  min-height: 16px;
+  transition: opacity 0.2s;
+}
+.conn-card-health.ok  { color: var(--status-green, #4caf7d); }
+.conn-card-health.err { color: var(--status-red, #e05c5c); }
+.conn-card-health.checking { color: var(--text-muted, #888); }
+
+/* Key entry area (expands when user clicks Connect or key is missing) */
+.conn-card-input-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.conn-card-input {
+  flex: 1;
+  background: var(--input-bg, #1a1a2e);
+  border: 1px solid var(--border-subtle, #2e2e4a);
+  border-radius: 6px;
+  color: var(--text-primary, #e0e0f0);
+  font-size: 13px;
+  padding: 6px 10px;
+  outline: none;
+  transition: border-color 0.15s;
+  min-width: 0;
+}
+.conn-card-input:focus { border-color: var(--accent-blue, #4a9eff); }
+
+/* Action row */
+.conn-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.conn-card-btn {
+  font-size: 12px;
+  padding: 5px 12px;
+  border-radius: 6px;
+  border: 1px solid var(--border-subtle, #3a3a5a);
+  background: transparent;
+  color: var(--text-primary, #e0e0f0);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.conn-card-btn:hover { background: rgba(255,255,255,0.06); }
+
+.conn-card-btn--primary {
+  background: var(--accent-blue, #4a9eff);
+  border-color: var(--accent-blue, #4a9eff);
+  color: #fff;
+}
+.conn-card-btn--primary:hover { opacity: 0.88; }
+
+.conn-card-btn--danger {
+  border-color: var(--status-red, #e05c5c);
+  color: var(--status-red, #e05c5c);
+}
+.conn-card-btn--danger:hover { background: rgba(224,92,92,0.08); }
+
+/* Privacy note */
+.conn-card-privacy {
+  font-size: 11px;
+  color: var(--text-muted, #666);
+  margin-top: 2px;
+}
+
+/* ── Reset All zone ───────────────────────────────────────── */
+
+.connection-reset-zone {
+  margin-top: 24px;
+  border: 1px solid rgba(224,92,92,0.2);
+  border-radius: 10px;
+  padding: 16px;
+  background: rgba(224,92,92,0.04);
+}
+
+.connection-reset-header {
+  margin-bottom: 10px;
+}
+
+.connection-reset-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--status-red, #e05c5c);
+}
+
+.connection-reset-copy {
+  font-size: 12px;
+  color: var(--text-secondary, #a0a0b0);
+  margin-top: 4px;
+  line-height: 1.45;
+}
+
+.connection-reset-confirm {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 8px;
+}
+
+.connection-reset-warn {
+  font-size: 12px;
+  color: var(--status-red, #e05c5c);
+  flex: 1;
+}
+
+.connection-reset-btn-danger {
+  font-size: 12px;
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid var(--status-red, #e05c5c);
+  background: var(--status-red, #e05c5c);
+  color: #fff;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+.connection-reset-btn-danger:hover { opacity: 0.85; }
+
+.connection-reset-btn-ghost {
+  font-size: 12px;
+  padding: 5px 14px;
+  border-radius: 6px;
+  border: 1px solid rgba(224,92,92,0.4);
+  background: transparent;
+  color: var(--status-red, #e05c5c);
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.connection-reset-btn-ghost:hover { background: rgba(224,92,92,0.08); }
+
+@media (max-width: 560px) {
+  .connection-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
