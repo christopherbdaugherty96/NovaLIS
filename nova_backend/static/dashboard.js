@@ -8821,12 +8821,322 @@ function setActivePage(page) {
     requestSettingsRuntimeRefresh(true);
     renderSettingsPage();
     loadProfileData();
+    loadConnectionsData();
   }
 
   if (latestNewsItems.length > 0) {
     renderNewsWidget(latestNewsItems, $("news-summary")?.textContent || "", latestNewsCategories);
   } else {
     setNewsExpandButton();
+  }
+}
+
+// ============================================================
+// CONNECTION CARDS — load, render, save, test, disconnect
+// ============================================================
+
+let _connectionsData = [];   // last fetched snapshot from GET /api/settings/connections
+
+async function loadConnectionsData() {
+  try {
+    const res = await fetch("/api/settings/connections");
+    if (!res.ok) return;
+    _connectionsData = await res.json();
+    renderConnectionCards();
+  } catch (_) {
+    // silently ignore — cards will stay empty until next load
+  }
+}
+
+function renderConnectionCards() {
+  const grid = $("connection-cards-grid");
+  if (!grid) return;
+  clear(grid);
+
+  if (!Array.isArray(_connectionsData) || _connectionsData.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "workspace-board-section-copy";
+    empty.textContent = "Connection status unavailable — server not responding.";
+    grid.appendChild(empty);
+    return;
+  }
+
+  _connectionsData.forEach((provider) => {
+    grid.appendChild(_buildConnectionCard(provider));
+  });
+}
+
+function _buildConnectionCard(provider) {
+  const isConnected = provider.connected === true;
+  const hasKey = provider.has_key === true;
+  const needsKey = !isConnected;
+
+  const stateClass = isConnected ? "conn-card--connected" : hasKey ? "conn-card--needed" : "conn-card--setup";
+  const stateLabel = isConnected ? "Connected" : hasKey ? "Key saved" : "Not set up";
+
+  const card = document.createElement("div");
+  card.className = `conn-card ${stateClass}`;
+  card.dataset.providerId = provider.id;
+
+  // Header
+  const header = document.createElement("div");
+  header.className = "conn-card-header";
+
+  const dot = document.createElement("span");
+  dot.className = "conn-card-dot";
+
+  const label = document.createElement("span");
+  label.className = "conn-card-label";
+  label.textContent = provider.label;
+
+  const badge = document.createElement("span");
+  badge.className = "conn-card-state-badge";
+  badge.textContent = stateLabel;
+
+  header.appendChild(dot);
+  header.appendChild(label);
+  header.appendChild(badge);
+  card.appendChild(header);
+
+  // Description
+  if (provider.description) {
+    const desc = document.createElement("p");
+    desc.className = "conn-card-desc";
+    desc.textContent = provider.description;
+    card.appendChild(desc);
+  }
+
+  // Key hint (connected only)
+  if (isConnected && provider.key_hint) {
+    const hint = document.createElement("div");
+    hint.className = "conn-card-hint";
+    hint.textContent = `Key: ${provider.key_hint}`;
+    card.appendChild(hint);
+  }
+
+  // Health status line
+  const health = document.createElement("div");
+  health.className = "conn-card-health" + (isConnected ? " ok" : "");
+  health.dataset.healthEl = "1";
+  if (isConnected && provider.health_detail) {
+    health.textContent = provider.health_detail;
+  } else if (hasKey && !isConnected && provider.health_detail) {
+    health.className = "conn-card-health err";
+    health.textContent = provider.health_detail;
+  }
+  card.appendChild(health);
+
+  // Key input area (shown for non-connected cards, or toggled by Connect button)
+  const inputSection = document.createElement("div");
+  inputSection.dataset.inputSection = "1";
+  inputSection.hidden = isConnected;  // connected cards start with input hidden
+
+  const inputRow = document.createElement("div");
+  inputRow.className = "conn-card-input-row";
+
+  const inputType = provider.kind === "api_key" ? "password" : "text";
+  const keyInput = document.createElement("input");
+  keyInput.type = inputType;
+  keyInput.className = "conn-card-input";
+  keyInput.placeholder = provider.placeholder || "Paste key…";
+  keyInput.setAttribute("autocomplete", "off");
+  keyInput.dataset.keyInput = "1";
+  inputRow.appendChild(keyInput);
+  inputSection.appendChild(inputRow);
+
+  if (provider.privacy_note) {
+    const privacy = document.createElement("p");
+    privacy.className = "conn-card-privacy";
+    privacy.textContent = provider.privacy_note;
+    inputSection.appendChild(privacy);
+  }
+
+  card.appendChild(inputSection);
+
+  // Actions
+  const actions = document.createElement("div");
+  actions.className = "conn-card-actions";
+
+  if (isConnected) {
+    // Test button
+    const testBtn = document.createElement("button");
+    testBtn.type = "button";
+    testBtn.className = "conn-card-btn";
+    testBtn.textContent = "Test connection";
+    testBtn.addEventListener("click", () => _testConnection(card, provider.id));
+    actions.appendChild(testBtn);
+
+    // Disconnect button
+    const disconnectBtn = document.createElement("button");
+    disconnectBtn.type = "button";
+    disconnectBtn.className = "conn-card-btn conn-card-btn--danger";
+    disconnectBtn.textContent = "Disconnect";
+    disconnectBtn.addEventListener("click", () => _disconnectProvider(provider.id));
+    actions.appendChild(disconnectBtn);
+  } else if (hasKey) {
+    // Key exists but health failed — show re-save + test
+    const saveBtn = document.createElement("button");
+    saveBtn.type = "button";
+    saveBtn.className = "conn-card-btn conn-card-btn--primary";
+    saveBtn.textContent = "Save & Test";
+    saveBtn.addEventListener("click", () => _saveAndTest(card, provider.id, keyInput));
+    actions.appendChild(saveBtn);
+
+    const disconnectBtn = document.createElement("button");
+    disconnectBtn.type = "button";
+    disconnectBtn.className = "conn-card-btn conn-card-btn--danger";
+    disconnectBtn.textContent = "Disconnect";
+    disconnectBtn.addEventListener("click", () => _disconnectProvider(provider.id));
+    actions.appendChild(disconnectBtn);
+  } else {
+    // Not set up — show Connect toggle
+    const connectBtn = document.createElement("button");
+    connectBtn.type = "button";
+    connectBtn.className = "conn-card-btn conn-card-btn--primary";
+    connectBtn.textContent = "Connect";
+    connectBtn.dataset.connectToggle = "1";
+    connectBtn.addEventListener("click", () => {
+      inputSection.hidden = false;
+      connectBtn.hidden = true;
+
+      const saveBtn = document.createElement("button");
+      saveBtn.type = "button";
+      saveBtn.className = "conn-card-btn conn-card-btn--primary";
+      saveBtn.textContent = "Save & Test";
+      saveBtn.addEventListener("click", () => _saveAndTest(card, provider.id, keyInput));
+      actions.appendChild(saveBtn);
+
+      const cancelBtn = document.createElement("button");
+      cancelBtn.type = "button";
+      cancelBtn.className = "conn-card-btn";
+      cancelBtn.textContent = "Cancel";
+      cancelBtn.addEventListener("click", () => {
+        inputSection.hidden = true;
+        connectBtn.hidden = false;
+        saveBtn.remove();
+        cancelBtn.remove();
+        keyInput.value = "";
+        _setCardHealth(card, "", "");
+      });
+      actions.appendChild(cancelBtn);
+
+      keyInput.focus();
+    });
+    actions.appendChild(connectBtn);
+  }
+
+  card.appendChild(actions);
+  return card;
+}
+
+function _setCardHealth(card, msg, type) {
+  const el = card.querySelector("[data-health-el]");
+  if (!el) return;
+  el.className = "conn-card-health" + (type ? " " + type : "");
+  el.textContent = msg;
+}
+
+async function _saveAndTest(card, providerId, keyInput) {
+  const key = keyInput.value.trim();
+  if (!key) {
+    _setCardHealth(card, "Please enter a key first.", "err");
+    return;
+  }
+
+  _setCardHealth(card, "Saving and testing…", "checking");
+
+  try {
+    const res = await fetch(`/api/settings/connections/${providerId}/key`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ key }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      _setCardHealth(card, data.detail || "Save failed", "err");
+      return;
+    }
+    if (data.ok) {
+      _setCardHealth(card, data.detail || "Connected.", "ok");
+      // Refresh all cards so state reflects the new connection
+      await loadConnectionsData();
+    } else {
+      _setCardHealth(card, data.detail || "Key saved but health check failed.", "err");
+    }
+  } catch (_) {
+    _setCardHealth(card, "Network error — could not reach server.", "err");
+  }
+}
+
+async function _testConnection(card, providerId) {
+  _setCardHealth(card, "Testing…", "checking");
+  try {
+    const res = await fetch(`/api/settings/connections/${providerId}/test`, {
+      method: "POST",
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      _setCardHealth(card, data.detail || "Test failed", "err");
+      return;
+    }
+    _setCardHealth(card, data.detail || (data.ok ? "Connected." : "Check failed."), data.ok ? "ok" : "err");
+  } catch (_) {
+    _setCardHealth(card, "Network error.", "err");
+  }
+}
+
+async function _disconnectProvider(providerId) {
+  try {
+    const res = await fetch(`/api/settings/connections/${providerId}`, { method: "DELETE" });
+    if (res.ok) {
+      await loadConnectionsData();
+    }
+  } catch (_) {
+    // silently ignore
+  }
+}
+
+function setupConnectionCardHandlers() {
+  const refreshBtn = $("btn-connections-refresh");
+  if (refreshBtn) refreshBtn.addEventListener("click", loadConnectionsData);
+
+  const resetAllBtn = $("btn-reset-all");
+  const resetTrigger = $("connection-reset-trigger");
+  const resetConfirm = $("connection-reset-confirm");
+
+  if (resetAllBtn) {
+    resetAllBtn.addEventListener("click", () => {
+      if (resetTrigger) resetTrigger.hidden = true;
+      if (resetConfirm) resetConfirm.hidden = false;
+    });
+  }
+
+  const resetCancelBtn = $("btn-reset-cancel");
+  if (resetCancelBtn) {
+    resetCancelBtn.addEventListener("click", () => {
+      if (resetTrigger) resetTrigger.hidden = false;
+      if (resetConfirm) resetConfirm.hidden = true;
+    });
+  }
+
+  const resetConfirmBtn = $("btn-reset-confirm");
+  if (resetConfirmBtn) {
+    resetConfirmBtn.addEventListener("click", async () => {
+      try {
+        const res = await fetch("/api/settings/connections/all", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ confirmed: true }),
+        });
+        if (res.ok) {
+          if (resetTrigger) resetTrigger.hidden = false;
+          if (resetConfirm) resetConfirm.hidden = true;
+          await loadConnectionsData();
+        }
+      } catch (_) {
+        // silently ignore
+      }
+    });
   }
 }
 
@@ -10405,6 +10715,7 @@ window.addEventListener("DOMContentLoaded", () => {
   setupMorningWidgetToggle();
   setupPageNavigation();
   setupProfileHandlers();
+  setupConnectionCardHandlers();
   connectWebSocket();
   startMorningFallbackTimer();
   document.addEventListener("visibilitychange", () => {
