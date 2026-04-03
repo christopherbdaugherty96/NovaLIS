@@ -166,13 +166,17 @@ class OpenClawAgentRunner:
         schedules = NotificationScheduleStore().summarize()
 
         weather_summary = self._weather_summary(weather_result)
+        weather_detail = self._weather_detail(weather_result)
         calendar_summary = self._calendar_summary(calendar_result)
+        calendar_events = self._calendar_events(calendar_result)
         news_summary = self._news_summary(news_result)
         headlines = self._headline_list(news_result)
 
         return {
             "weather_summary": weather_summary,
+            "weather_detail": weather_detail,
             "calendar_summary": calendar_summary,
+            "calendar_events": calendar_events,
             "news_summary": news_summary,
             "headline_titles": headlines,
             "schedule_summary": str(schedules.get("summary") or "").strip(),
@@ -274,6 +278,36 @@ class OpenClawAgentRunner:
             if str(item.get("title") or "").strip()
         ]
 
+    @staticmethod
+    def _weather_detail(result: Any | None) -> dict[str, str]:
+        """Extract temp, condition, location, forecast from weather widget data."""
+        if not result:
+            return {}
+        widget_data = dict(getattr(result, "widget_data", {}) or {})
+        data = dict(widget_data.get("data") or {})
+        return {
+            "temp": str(data.get("temperature") or "").strip(),
+            "condition": str(data.get("condition") or "").strip(),
+            "location": str(data.get("location") or "").strip(),
+            "forecast": str(data.get("forecast") or "").strip(),
+        }
+
+    @staticmethod
+    def _calendar_events(result: Any | None) -> list[dict[str, str]]:
+        """Extract individual today events from calendar widget."""
+        if not result:
+            return []
+        widget_data = dict(getattr(result, "widget_data", {}) or {})
+        events = list(widget_data.get("events") or [])
+        return [
+            {
+                "title": str(ev.get("title") or "").strip(),
+                "time": str(ev.get("time") or "").strip(),
+            }
+            for ev in events[:5]
+            if str(ev.get("title") or "").strip()
+        ]
+
     def _build_summary_prompt(self, template: dict[str, Any], payload: dict[str, Any]) -> str:
         title = str(template.get("title") or "Briefing").strip()
         lines = [
@@ -282,7 +316,37 @@ class OpenClawAgentRunner:
             "Lead with the useful thing.",
             "Do not mention internal tools, workers, or envelopes.",
         ]
-        for key in ("weather_summary", "calendar_summary", "news_summary", "market_summary", "schedule_summary"):
+        # Weather — prefer structured detail over summary text
+        weather_detail = dict(payload.get("weather_detail") or {})
+        if weather_detail.get("temp") and weather_detail.get("condition"):
+            _wtemp = weather_detail["temp"]
+            _wcond = weather_detail["condition"]
+            _wloc = weather_detail.get("location") or ""
+            _wfcast = weather_detail.get("forecast") or ""
+            _wline = f"{_wtemp}°F, {_wcond}"
+            if _wloc:
+                _wline += f" in {_wloc}"
+            if _wfcast:
+                _wline += f". {_wfcast}"
+            lines.append(f"Weather: {_wline}")
+        else:
+            weather_summary = str(payload.get("weather_summary") or "").strip()
+            if weather_summary:
+                lines.append(f"Weather Summary: {weather_summary}")
+        # Calendar — prefer individual events over summary text
+        cal_events = list(payload.get("calendar_events") or [])
+        if cal_events:
+            event_strs = [
+                f"{ev.get('time', '')} {ev.get('title', '')}".strip()
+                for ev in cal_events
+            ]
+            lines.append("Today's schedule: " + "; ".join(event_strs))
+        else:
+            calendar_summary = str(payload.get("calendar_summary") or "").strip()
+            if calendar_summary:
+                lines.append(f"Calendar Summary: {calendar_summary}")
+        # News, market, schedules
+        for key in ("news_summary", "market_summary", "schedule_summary"):
             value = str(payload.get(key) or "").strip()
             if value:
                 lines.append(f"{key.replace('_', ' ').title()}: {value}")
@@ -409,14 +473,58 @@ class OpenClawAgentRunner:
                 parts.append(f"Scheduled updates: {schedule_summary}.")
             return " ".join(part for part in parts if part).strip() or "Evening digest is ready."
 
-        parts = [
-            str(payload.get("weather_summary") or "").strip(),
-            str(payload.get("calendar_summary") or "").strip(),
-            str(payload.get("news_summary") or "").strip(),
+        # Structured morning brief — matches the chat-command brief format
+        _now = datetime.now()
+        _day_str = f"{_now.strftime('%A, %B')} {_now.day}"
+        _time_str = _now.strftime("%I:%M %p").lstrip("0")
+
+        weather_detail = dict(payload.get("weather_detail") or {})
+        _temp = weather_detail.get("temp") or ""
+        _cond = weather_detail.get("condition") or ""
+        _loc = weather_detail.get("location") or ""
+        _fcast = weather_detail.get("forecast") or ""
+        if _temp and _cond:
+            _weather_line = f"{_temp}°F, {_cond}"
+            if _loc:
+                _weather_line += f" in {_loc}"
+            _weather_line += "."
+            if _fcast:
+                _weather_line += f" {_fcast}"
+        else:
+            _weather_line = str(payload.get("weather_summary") or "Weather unavailable.").strip()
+
+        _cal_events = list(payload.get("calendar_events") or [])
+        if _cal_events:
+            _event_lines = "\n".join(
+                f"  {ev.get('time', ''):<12}{ev.get('title', '')}"
+                for ev in _cal_events
+            )
+            _cal_section = f"Schedule:\n{_event_lines}"
+        else:
+            _cal_section = f"Schedule: {str(payload.get('calendar_summary') or 'No events today.').strip()}"
+
+        _headlines = [
+            str(h).strip()
+            for h in list(payload.get("headline_titles") or [])
+            if str(h).strip()
         ]
+
+        _parts = [f"Morning Brief — {_day_str} at {_time_str}", ""]
+        _parts.append(f"Weather: {_weather_line}")
+        _parts.append("")
+        _parts.append(_cal_section)
+        if _headlines:
+            _parts.append("")
+            _parts.append("News: " + _headlines[0])
+            for _h in _headlines[1:]:
+                _parts.append(f"  Also: {_h}")
+        elif payload.get("news_summary") and "unavailable" not in str(payload.get("news_summary") or "").lower():
+            _parts.append("")
+            _parts.append(f"News: {payload['news_summary']}")
         if schedule_summary:
-            parts.append(f"Scheduled updates: {schedule_summary}.")
-        return " ".join(part for part in parts if part).strip() or "Morning brief is ready."
+            _parts.append("")
+            _parts.append(f"Schedules: {schedule_summary}")
+        return "\n".join(_parts)
 
 
 openclaw_agent_runner = OpenClawAgentRunner(store=openclaw_agent_runtime_store)
