@@ -2963,13 +2963,75 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     else:
                         calendar_line = calendar_result.message
 
-                morning_brief = (
-                    "Executive Brief\n"
-                    f"- Weather: {weather_summary}\n"
-                    f"- System: {system_line}\n"
-                    f"- News: {news_summary}\n"
-                    f"- Calendar: {calendar_line}"
-                )
+                # Build structured morning brief
+                from datetime import datetime as _dt
+                _now = _dt.now()
+                _day_str = f"{_now.strftime('%A, %B')} {_now.day}"
+                _time_str = _now.strftime("%I:%M %p").lstrip("0")
+
+                # Richer weather line from widget data
+                _weather_widget_data: dict = {}
+                if weather_result is not None and weather_result.success and isinstance(weather_result.data, dict):
+                    _w_widget = weather_result.data.get("widget") or {}
+                    if isinstance(_w_widget, dict):
+                        _weather_widget_data = dict(_w_widget.get("data") or {})
+                _temp = str(_weather_widget_data.get("temperature") or "").strip()
+                _cond = str(_weather_widget_data.get("condition") or "").strip()
+                _loc = str(_weather_widget_data.get("location") or "").strip()
+                _fcast = str(_weather_widget_data.get("forecast") or "").strip()
+                if _temp and _cond:
+                    _weather_line = f"{_temp}°F, {_cond}"
+                    if _loc:
+                        _weather_line += f" in {_loc}"
+                    _weather_line += "."
+                    if _fcast:
+                        _weather_line += f" {_fcast}"
+                    _weather_line = _weather_line.replace("Â°F", "°F")
+                else:
+                    _weather_line = weather_summary
+
+                # Calendar section — list events individually when available
+                _cal_events = list(session_state.get("last_calendar_events") or [])
+                if _cal_events:
+                    _event_lines = "\n".join(
+                        f"  {str(ev.get('time') or '').strip():<12}{str(ev.get('title') or '').strip()}"
+                        for ev in _cal_events[:5]
+                    )
+                    _cal_section = f"Schedule:\n{_event_lines}"
+                else:
+                    _cal_section = f"Schedule: {calendar_line}"
+
+                # Top headlines from news cache
+                _news_cache = list(session_state.get("news_cache") or [])
+                _headlines = [
+                    str(item.get("title") or "").strip()
+                    for item in _news_cache[:3]
+                    if isinstance(item, dict) and str(item.get("title") or "").strip()
+                ]
+
+                # Compose brief
+                _parts = [f"Morning Brief — {_day_str} at {_time_str}", ""]
+                _parts.append(f"Weather: {_weather_line}")
+                _parts.append("")
+                _parts.append(_cal_section)
+                if _headlines:
+                    _parts.append("")
+                    _parts.append("News: " + _headlines[0])
+                    for _h in _headlines[1:]:
+                        _parts.append(f"  Also: {_h}")
+                elif (
+                    news_summary
+                    and "unavailable" not in news_summary.lower()
+                    and "no headline" not in news_summary.lower()
+                ):
+                    _parts.append("")
+                    _parts.append(f"News: {news_summary}")
+                _sys_ok = any(w in system_line.lower() for w in ("nominal", "healthy", "ok"))
+                if not _sys_ok:
+                    _parts.append("")
+                    _parts.append(f"System: {system_line}")
+
+                morning_brief = "\n".join(_parts)
                 await send_chat_message(ws, morning_brief, tone_domain="daily")
                 await send_chat_done(ws)
                 continue
