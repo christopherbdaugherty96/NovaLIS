@@ -28,6 +28,12 @@ These are the clearest high-value guides for current interpretation.
 
 ## Current High-Value Product Inputs
 
+- `docs/design/Phase 4.5/NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md`
+  Setup page redesign: user profile (name, nickname, email, rules), interactive
+  provider connection cards (3 states: connected/key-needed/not-set-up),
+  inline save-and-test flow, per-card disconnect, and disconnect-all reset.
+  Profile save writes a protected user_identity record to governed_memory_store.
+
 - `docs/design/Phase 4.5/NOVA_USER_FRIENDLINESS_TODO_2026-04-02.md`
 - `docs/design/Phase 4.5/NOVA_USER_EXPERIENCE_IMPROVEMENT_PLAN_2026-03-26.md`
 - `docs/design/Phase 4.5/NOVA_WAKE_WORD_SCREEN_CONTEXT_IMPLEMENTATION.md`

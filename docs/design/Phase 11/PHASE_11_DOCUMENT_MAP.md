@@ -21,6 +21,11 @@ Important boundary:
 
 ## Current Documents
 
+- `docs/design/Phase 11/NOVA_TRADING_CONNECTOR_DESIGN.md`
+  Governed auto-trading design: Alpaca Markets + Coinbase connectors, cap 64,
+  dollar budget gate mirroring Phase 9 token gate, user trading rules enforced
+  by Governor, paper mode default, full audit ledger.
+
 - `docs/design/Phase 11/NOVA_GOVERNED_CREATOR_BRAND_AUTOMATION_TODO_2026-04-02.md`
 - `docs/design/Phase 11/NOVA_GOVERNED_OPERATOR_REVENUE_LANES_AND_TRADING_POSTURE_TODO_2026-04-02.md`
 - `docs/design/Phase 11/NOVA_GOVERNED_SELF_DEVELOPMENT_MODE_TODO_2026-04-02.md`
