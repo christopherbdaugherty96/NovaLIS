@@ -18,7 +18,23 @@ Status tags: `[ ]` not started · `[~]` in progress · `[x]` done
 
 ---
 
-## P0 — Intelligence Layer (Do This First)
+## Corrected execution order (grounded 2026-04-02)
+
+Previous order had a contradiction: Phase 9 intelligence work was landing before
+Phase 8 was closed. Corrected sequence:
+
+```
+Stage 1 — Phase 4.5 closeout      user profile, connection cards, setup flow
+Stage 2 — Phase 8 usefulness      real calendar connector, morning brief quality
+Stage 3 — Phase 8 closure         envelope execution, visible run state, pause/resume
+Stage 4 — Phase 9 intelligence    DeepSeek tier, provider routing, memory tiers
+```
+
+Phase 9 code should not become the main focus until Phase 8 is actually closed.
+
+---
+
+## P0 — Phase 4.5 Closeout (Do This First)
 
 **Code audit findings (2026-04-02):**
 - `ConversationRouter` + `ComplexityHeuristics` ALREADY EXIST in `src/conversation/`
