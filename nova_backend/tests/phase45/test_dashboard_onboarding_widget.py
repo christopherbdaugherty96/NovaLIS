@@ -33,11 +33,13 @@ def test_dashboard_boots_first_run_guide_with_product_surfaces():
     assert 'showFirstRunGuide(true)' in source
 
 
-def test_home_page_includes_workspace_and_trust_launch_buttons():
+def test_home_page_includes_workspace_and_trust_surfaces():
     source = INDEX_PATH.read_text(encoding="utf-8")
 
-    assert 'id="btn-home-workspace-page"' in source
-    assert 'id="btn-home-trust-page"' in source
+    assert 'id="workspace-home-widget"' in source
+    assert 'id="trust-panel"' in source
+    assert 'id="btn-home-system-status"' in source
+    assert 'id="btn-home-memory-page"' in source
 
 
 def test_intro_and_settings_pages_include_getting_started_and_control_surfaces():
@@ -67,8 +69,10 @@ def test_intro_and_settings_pages_include_getting_started_and_control_surfaces()
     assert 'id="settings-history-list"' in source
     assert 'id="settings-voice-summary"' in source
     assert 'id="settings-voice-grid"' in source
-    assert 'id="settings-connection-summary"' in source
-    assert 'id="settings-connection-grid"' in source
+    assert 'id="connections-summary"' in source
+    assert 'id="connection-cards-grid"' in source
+    assert 'id="btn-connections-refresh"' in source
+    assert 'id="btn-reset-all"' in source
     assert 'id="btn-settings-open-connections"' in source
     assert 'id="btn-settings-refresh-runtime"' in source
     assert 'id="btn-settings-reset-defaults"' in source
@@ -80,7 +84,7 @@ def test_chat_and_memory_surfaces_include_new_feedback_and_guardrails():
     source = INDEX_PATH.read_text(encoding="utf-8")
 
     assert 'id="thinking-bar"' in source
-    assert 'title="Type a message and press Enter to send."' in source
+    assert 'title="Type a goal or message and press Enter to send."' in source
     assert 'Second opinion' in source
     assert 'id="btn-morning-calendar-connect"' in source
     assert 'id="memory-inline-confirmation"' in source

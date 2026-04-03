@@ -1,10 +1,27 @@
 # Nova — Setup UI Redesign: User Profile + Connections
 Status: PLANNED — not yet started
 Updated: 2026-04-02
+Effective status: profile and connection cards are shipped; remaining work is setup/readiness polish
 
 ---
 
 ## Goal
+
+## Grounded Shipping Note
+
+The original redesign packet was written before implementation. As of 2026-04-02:
+
+- the User Profile surface is live in Settings
+- profile saves persist locally and write a protected `user_identity` memory record
+- the Connections surface is live as interactive in-app cards
+- users can save, test, disconnect, and reset provider connections from the UI
+- connection cards now replace the old read-only provider chip model
+
+What remains open from this redesign is not the card system itself. The remaining Phase 4.5 polish gap is:
+
+- making the Intro / readiness flow reflect the live connection-card state cleanly
+- tightening setup copy so Nova feels guided instead of half-manual
+- finishing the broader first-run setup feel around the shipped profile plus connection surfaces
 
 Build a proper first-run and ongoing setup experience covering two areas:
 

@@ -177,6 +177,7 @@ This slice is meant to make Nova feel less like a command console and more like 
 
 ### Stage 2. Setup feel
 
+- shipped foundation: user profile + in-app connection cards
 - setup readiness explanation cleanup
 - stronger connector readiness guidance
 - better "what you can do right now" panel
