@@ -880,6 +880,21 @@ body {
   pointer-events: auto;
 }
 
+.openclaw-run-item--running strong {
+  opacity: 0.6;
+  animation: thinkingPulse 1.25s ease-in-out infinite;
+}
+
+.openclaw-run-item--failed strong {
+  opacity: 0.75;
+}
+
+.openclaw-btn--running {
+  opacity: 0.6;
+  animation: thinkingPulse 1.25s ease-in-out infinite;
+  pointer-events: none;
+}
+
 .token-budget-bar {
   grid-column: 1 / -1;
   width: 100%;

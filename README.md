@@ -48,6 +48,12 @@ According to the current runtime authority docs, Nova currently includes:
 - governed memory controls
 - external reasoning review
 - active dashboard, voice, and websocket surfaces
+- shipped user profile and connection-card setup surfaces
+- guided onboarding and readiness flow
+- structured morning brief delivery across chat and OpenClaw
+- visible OpenClaw active-run state
+- setup-aware "what can you do right now?" capability guidance
+- richer calendar guidance for today, tomorrow, and upcoming views
 
 Nova also has an OpenClaw home-agent foundation live as a bounded operator surface:
 - manual briefing templates
@@ -58,7 +64,8 @@ Nova also has an OpenClaw home-agent foundation live as a bounded operator surfa
 What is not broadly live yet:
 - full governed envelope execution
 - broad autonomous browser/action control
-- full calendar integration
+- full connector-rich calendar integration
+- pause/resume and fuller visible run controls across the broader execution layer
 
 For exact runtime truth, always defer to:
 
@@ -223,6 +230,12 @@ Nova is strongest when it is:
 - `REPO_MAP.md`
 
 ## Short Version
+
+Nova is currently best understood as:
+- a calm local-first home assistant on your computer
+- a governed intelligence workspace
+- a read-heavy research, explanation, and continuity system
+- a narrow but real operator surface through OpenClaw
 
 Nova is not trying to be "an agent that can do everything."
 

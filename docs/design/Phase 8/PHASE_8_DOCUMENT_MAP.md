@@ -10,6 +10,8 @@ The following Phase-8 foundation slices are now live in runtime/proof:
 - persistent delivery inbox and Agent page review surface
 - structured morning brief delivery across chat and OpenClaw scheduled/manual surfaces
 - connection-aware Home / starter usefulness surface for briefing, schedule, weather, news, and research entry points
+- setup-aware "what can you do right now?" capability guidance tied to live connections and active-run truth
+- richer calendar guidance for today, tomorrow, and upcoming views
 - visible active run state for OpenClaw manual runs across the Agent page and Home delivery surface
 - strict manual preflight before home-agent runs
 - narrow scheduled briefing runtime behind explicit settings control
@@ -126,6 +128,7 @@ Live now:
 - structured morning brief presentation
 - visible active run state
 - connection-aware home/operator starter surfaces
+- setup-aware capability discoverability in chat and UI
 - Nova-owned task-result presentation
 
 Full canonical Phase-8-safe scope still includes:

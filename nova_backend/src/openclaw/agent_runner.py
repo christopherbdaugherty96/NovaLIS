@@ -159,6 +159,25 @@ class OpenClawAgentRunner:
                 "usage_meta": usage_meta,
                 "run_record": run_record,
             }
+        except Exception as exc:
+            self._store.record_run(
+                {
+                    "envelope_id": envelope.id,
+                    "template_id": template_id,
+                    "title": str(template.get("title") or "").strip(),
+                    "status": "failed",
+                    "triggered_by": triggered_by,
+                    "delivery_mode": str(template.get("delivery_mode") or "widget").strip(),
+                    "delivery_channels": {"widget": False, "chat": False},
+                    "presented_message": "",
+                    "summary": f"Run failed: {str(exc)[:120]}",
+                    "started_at": started_at,
+                    "completed_at": _utc_now_iso(),
+                    "llm_summary_used": False,
+                    "strict_preflight": strict_preflight.to_dict(),
+                }
+            )
+            raise
         finally:
             self._store.clear_active_run(envelope.id)
 

@@ -147,8 +147,23 @@ The live system includes:
 - governed memory and continuity
 - voice and dashboard UI
 - bounded OpenClaw home-agent surfaces
+- shipped user profile and connection-card setup surfaces
+- guided onboarding and readiness flow
+- structured morning brief delivery across chat and OpenClaw
+- visible OpenClaw active-run state
+- setup-aware capability guidance that adapts to connected sources
 
 But Nova is still intentionally narrower than broad unsafe agent systems.
+
+The most honest current product description is:
+- a calm local-first home assistant on your computer
+- a governed intelligence workspace
+- a narrow but real operator surface
+
+The main unfinished layers are still:
+- full connector-rich calendar integration
+- pause/resume and fuller visible run controls
+- full governed envelope execution
 
 The product direction now being emphasized in design truth is:
 - Nova should feel like a calm home assistant

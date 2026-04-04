@@ -70,6 +70,8 @@ Nova already has a real runtime with:
 - stronger onboarding and readiness flow
 - structured morning brief delivery across chat and OpenClaw
 - visible OpenClaw run state on Home and Agent surfaces
+- setup-aware "what can you do right now?" guidance tied to live connections
+- richer calendar views for today, tomorrow, and upcoming guidance
 
 Nova also already has:
 - a real Governor spine
@@ -111,7 +113,7 @@ The first priority should now be:
 That means locking attention on three things:
 1. finish the remaining manual Phase-4.5 closeout work where the product still feels partial
 2. finish the highest-value practical usefulness gap through real connectors, especially calendar
-3. finish the missing full Phase-8 governed execution foundation
+3. finish the missing full Phase-8 governed execution foundation, especially pause/resume and richer visible run controls
 
 ## The Correct Next Order
 
@@ -123,7 +125,7 @@ Do next:
 - real manual feel-pass on the updated UX
 - setup and readiness clarity cleanup where copy still feels diagnostic instead of assistant-like
 - screen-help smoothness and first-use success
-- validate that profile, connection cards, intro flow, morning brief, and active run state feel like one product
+- validate that profile, connection cards, intro flow, morning brief, active run state, and capability guidance feel like one product
 - continued reduction of technical wording in user-facing surfaces
 
 Reason:

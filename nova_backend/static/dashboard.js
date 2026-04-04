@@ -10164,9 +10164,12 @@ function renderOpenClawAgentPage() {
 
         const runBtn = document.createElement("button");
         runBtn.type = "button";
-        runBtn.textContent = "Run now";
+        const isThisTemplateRunning = !!activeRun && String(activeRun.template_id || "").trim() === String(template.id || "").trim();
+        runBtn.textContent = isThisTemplateRunning ? "Running\u2026" : "Run now";
         runBtn.disabled = !permissionEnabled || !template.manual_run_available || !!activeRun;
-        if (!template.manual_run_available) {
+        if (isThisTemplateRunning) {
+          runBtn.classList.add("openclaw-btn--running");
+        } else if (!template.manual_run_available) {
           runBtn.title = String(template.availability_reason || "This template requires a connector that is not yet available.").trim();
         } else if (activeRun) {
           runBtn.title = "Wait for the current home-agent run to finish before starting another one.";
@@ -10219,7 +10222,7 @@ function renderOpenClawAgentPage() {
     const recentRuns = Array.isArray(openClawAgentState.recentRuns) ? openClawAgentState.recentRuns : [];
     if (activeRun) {
       const activeItem = document.createElement("div");
-      activeItem.className = "trust-center-activity-item";
+      activeItem.className = "trust-center-activity-item openclaw-run-item--running";
       const activeTitle = document.createElement("strong");
       activeTitle.textContent = `${String(activeRun.title || "Run").trim() || "Run"} (Running now)`;
       const activeMeta = document.createElement("div");
@@ -10246,8 +10249,10 @@ function renderOpenClawAgentPage() {
       runList.appendChild(empty);
     } else {
       recentRuns.forEach((run) => {
+        const runStatus = String(run.status || "completed").trim();
+        const isFailed = runStatus === "failed";
         const item = document.createElement("div");
-        item.className = "trust-center-activity-item";
+        item.className = "trust-center-activity-item" + (isFailed ? " openclaw-run-item--failed" : "");
         const title = document.createElement("strong");
         title.textContent = String(run.title || "Run").trim() || "Run";
         const meta = document.createElement("div");
@@ -10260,12 +10265,12 @@ function renderOpenClawAgentPage() {
         meta.textContent = [
           startedLabel,
           String(run.triggered_by || "").trim() === "scheduler" ? "scheduled" : "",
-          `${Number(run.estimated_total_tokens || 0).toLocaleString()} estimated tokens`,
-          channels.length ? `delivery: ${channels.join(" + ")}` : "",
+          isFailed ? "failed" : (Number(run.estimated_total_tokens || 0) > 0 ? `${Number(run.estimated_total_tokens || 0).toLocaleString()} estimated tokens` : ""),
+          channels.length && !isFailed ? `delivery: ${channels.join(" + ")}` : "",
         ].filter(Boolean).join(" · ");
         const body = document.createElement("p");
         body.className = "workspace-board-section-copy";
-        body.textContent = String(run.presented_message || run.summary || "").trim() || "Run recorded.";
+        body.textContent = String(run.presented_message || run.summary || "").trim() || (isFailed ? "Run did not complete." : "Run recorded.");
         item.appendChild(title);
         item.appendChild(meta);
         item.appendChild(body);
