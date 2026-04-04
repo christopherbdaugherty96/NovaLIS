@@ -333,6 +333,34 @@ class OpenClawAgentRuntimeStore:
             self._write_state(state)
         return dict(entry)
 
+    def request_cancel_active_run(self, envelope_id: str | None = None) -> bool:
+        """Mark the active run as cancel-requested. Returns True if the flag was set."""
+        target = str(envelope_id or "").strip()
+        with self._lock:
+            state = self._read_state()
+            active_run = self._normalize_active_run(state.get("active_run"))
+            if not active_run:
+                return False
+            if target and str(active_run.get("envelope_id") or "").strip() != target:
+                return False
+            active_run["cancel_requested"] = True
+            active_run["status_label"] = "Cancelling\u2026"
+            state["active_run"] = active_run
+            state["updated_at"] = _utc_now_iso()
+            self._write_state(state)
+        return True
+
+    def is_cancel_requested(self, envelope_id: str) -> bool:
+        target = str(envelope_id or "").strip()
+        with self._lock:
+            state = self._read_state()
+            active_run = self._normalize_active_run(state.get("active_run"))
+        if not active_run:
+            return False
+        if target and str(active_run.get("envelope_id") or "").strip() != target:
+            return False
+        return bool(active_run.get("cancel_requested"))
+
     def clear_active_run(self, envelope_id: str | None = None) -> None:
         target = str(envelope_id or "").strip()
         with self._lock:
@@ -666,6 +694,7 @@ class OpenClawAgentRuntimeStore:
             },
             "started_at": str(raw.get("started_at") or _utc_now_iso()),
             "summary": str(raw.get("summary") or "").strip(),
+            "cancel_requested": bool(raw.get("cancel_requested")),
         }
 
     def _active_run_summary(self, active_run: dict[str, Any] | None) -> str:

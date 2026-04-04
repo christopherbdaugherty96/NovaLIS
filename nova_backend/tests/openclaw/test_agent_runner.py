@@ -1,6 +1,6 @@
 import pytest
 
-from src.openclaw.agent_runner import OpenClawAgentRunner
+from src.openclaw.agent_runner import OpenClawAgentRunner, RunCancelledError
 from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
 
 
@@ -175,3 +175,67 @@ async def test_agent_runner_records_failed_run_in_recent_runs(monkeypatch, tmp_p
     assert recent[0]["template_id"] == "morning_brief"
     assert "network timeout" in recent[0]["summary"]
     assert store.snapshot()["active_run"] is None
+
+
+@pytest.mark.asyncio
+async def test_cancel_at_collect_checkpoint_records_cancelled_run(monkeypatch, tmp_path):
+    """Cancel requested before collect returns → RunCancelledError, status: cancelled."""
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    runner = OpenClawAgentRunner(store=store)
+
+    async def _collect_then_request_cancel(template_id):
+        # Signal cancel while "collecting" (simulates user clicking Cancel)
+        store.request_cancel_active_run()
+        return {
+            "weather_summary": "",
+            "weather_detail": {},
+            "calendar_summary": "",
+            "calendar_events": [],
+            "news_summary": "",
+            "headline_titles": [],
+            "schedule_summary": "",
+            "source_notes": {},
+        }
+
+    monkeypatch.setattr(runner, "_collect_payload", _collect_then_request_cancel)
+
+    with pytest.raises(RunCancelledError):
+        await runner.run_template("morning_brief", triggered_by="test")
+
+    recent = store.snapshot()["recent_runs"]
+    assert len(recent) == 1
+    assert recent[0]["status"] == "cancelled"
+    assert recent[0]["template_id"] == "morning_brief"
+    assert store.snapshot()["active_run"] is None
+
+
+def test_request_cancel_active_run_returns_false_when_no_active_run(tmp_path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    assert store.request_cancel_active_run() is False
+
+
+def test_is_cancel_requested_false_when_no_active_run(tmp_path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    assert store.is_cancel_requested("any-id") is False
+
+
+def test_request_cancel_active_run_sets_flag(tmp_path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    store.set_active_run({
+        "envelope_id": "env-001",
+        "template_id": "morning_brief",
+        "title": "Morning Brief",
+        "status": "running",
+        "triggered_by": "test",
+        "delivery_mode": "widget",
+        "delivery_channels": {"widget": True, "chat": False},
+        "started_at": "2026-04-03T07:00:00+00:00",
+        "summary": "Collecting sources.",
+    })
+    assert store.is_cancel_requested("env-001") is False
+    result = store.request_cancel_active_run("env-001")
+    assert result is True
+    assert store.is_cancel_requested("env-001") is True
+    active = store.snapshot()["active_run"]
+    assert active["cancel_requested"] is True
+    assert active["status_label"] == "Cancelling\u2026"

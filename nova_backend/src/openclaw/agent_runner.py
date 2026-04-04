@@ -27,6 +27,10 @@ def _utc_now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
+class RunCancelledError(RuntimeError):
+    """Raised when a cancel request is detected at a checkpoint."""
+
+
 def _estimate_tokens(text: str) -> int:
     raw = str(text or "").strip()
     if not raw:
@@ -84,6 +88,7 @@ class OpenClawAgentRunner:
         )
         try:
             payload = await self._collect_payload(template_id)
+            self._check_cancel(envelope.id)
             prompt = self._build_summary_prompt(template, payload)
             fallback = self._fallback_summary(template_id, payload)
             usage_meta: dict[str, Any] = {}
@@ -106,6 +111,7 @@ class OpenClawAgentRunner:
                     summary_model = str(usage_meta.get("model_label") or "OpenAI").strip() or "OpenAI"
                     summary_route = "openai_metered"
 
+            self._check_cancel(envelope.id)
             raw_summary = summarized or fallback
             if not usage_meta:
                 usage_meta = self._fallback_usage_meta(
@@ -159,6 +165,25 @@ class OpenClawAgentRunner:
                 "usage_meta": usage_meta,
                 "run_record": run_record,
             }
+        except RunCancelledError:
+            self._store.record_run(
+                {
+                    "envelope_id": envelope.id,
+                    "template_id": template_id,
+                    "title": str(template.get("title") or "").strip(),
+                    "status": "cancelled",
+                    "triggered_by": triggered_by,
+                    "delivery_mode": str(template.get("delivery_mode") or "widget").strip(),
+                    "delivery_channels": {"widget": False, "chat": False},
+                    "presented_message": "",
+                    "summary": "Run was cancelled before it completed.",
+                    "started_at": started_at,
+                    "completed_at": _utc_now_iso(),
+                    "llm_summary_used": False,
+                    "strict_preflight": strict_preflight.to_dict(),
+                }
+            )
+            raise
         except Exception as exc:
             self._store.record_run(
                 {
@@ -180,6 +205,10 @@ class OpenClawAgentRunner:
             raise
         finally:
             self._store.clear_active_run(envelope.id)
+
+    def _check_cancel(self, envelope_id: str) -> None:
+        if self._store.is_cancel_requested(envelope_id):
+            raise RunCancelledError("Run cancelled by user request.")
 
     async def _collect_payload(self, template_id: str) -> dict[str, Any]:
         if template_id == "inbox_check":

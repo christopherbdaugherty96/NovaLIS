@@ -316,6 +316,18 @@ def build_openclaw_agent_router(deps) -> APIRouter:
             **_agent_status_payload(deps),
         }
 
+    @router.post("/api/openclaw/agent/runs/cancel")
+    async def cancel_openclaw_active_run():
+        cancelled = deps.openclaw_agent_runtime_store.request_cancel_active_run()
+        if not cancelled:
+            raise HTTPException(status_code=409, detail="No active home-agent run to cancel.")
+        deps._log_ledger_event(
+            deps.RUNTIME_GOVERNOR,
+            "OPENCLAW_AGENT_RUN_CANCEL_REQUESTED",
+            {"source": "agent_page"},
+        )
+        return _agent_status_payload(deps)
+
     @router.post("/api/openclaw/agent/delivery/{delivery_id}/dismiss")
     async def dismiss_openclaw_agent_delivery(delivery_id: str):
         try:
