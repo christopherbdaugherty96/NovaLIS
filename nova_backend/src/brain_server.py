@@ -18,6 +18,7 @@ import re
 import sys
 import uuid
 import asyncio
+import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Any, Optional
@@ -3331,8 +3332,12 @@ async def send_widget_message(
 
 async def send_trust_status(ws: WebSocket, trust_status: dict) -> None:
     payload = normalize_trust_status(trust_status)
-    payload.update(_build_trust_review_snapshot())
+    cached_snapshot = _get_cached_trust_review_snapshot()
+    if cached_snapshot:
+        payload.update(cached_snapshot)
     await ws_send(ws, {"type": "trust_status", "data": payload})
+    if not cached_snapshot:
+        await _maybe_send_trust_review_snapshot(ws, trust_status)
 
 
 async def send_token_budget_update(ws: WebSocket, action_result: object | None = None) -> None:
@@ -3401,6 +3406,45 @@ def _build_trust_review_snapshot() -> dict[str, object]:
         "bridge_runtime": bridge_runtime,
         "connection_runtime": connection_runtime,
     }
+
+
+_TRUST_REVIEW_CACHE: dict[str, object] = {}
+_TRUST_REVIEW_CACHE_TS = 0.0
+_TRUST_REVIEW_CACHE_TTL_SECONDS = 15.0
+_TRUST_REVIEW_CACHE_LOCK = asyncio.Lock()
+
+
+def _get_cached_trust_review_snapshot() -> dict[str, object]:
+    if not _TRUST_REVIEW_CACHE:
+        return {}
+    age = time.monotonic() - _TRUST_REVIEW_CACHE_TS
+    if age > _TRUST_REVIEW_CACHE_TTL_SECONDS:
+        return {}
+    return dict(_TRUST_REVIEW_CACHE)
+
+
+async def _maybe_send_trust_review_snapshot(ws: WebSocket, trust_status: dict) -> None:
+    async def _refresh_and_push() -> None:
+        global _TRUST_REVIEW_CACHE_TS, _TRUST_REVIEW_CACHE
+        async with _TRUST_REVIEW_CACHE_LOCK:
+            cached = _get_cached_trust_review_snapshot()
+            if cached:
+                snapshot = cached
+            else:
+                snapshot = await asyncio.to_thread(_build_trust_review_snapshot)
+                if snapshot:
+                    _TRUST_REVIEW_CACHE = dict(snapshot)
+                    _TRUST_REVIEW_CACHE_TS = time.monotonic()
+        if not snapshot:
+            return
+        payload = normalize_trust_status(trust_status)
+        payload.update(snapshot)
+        try:
+            await ws_send(ws, {"type": "trust_status", "data": payload})
+        except Exception:
+            return
+
+    asyncio.create_task(_refresh_and_push())
 
 
 def _render_bridge_status_message(snapshot: dict[str, Any]) -> tuple[str, list[dict[str, str]]]:
