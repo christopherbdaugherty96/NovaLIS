@@ -811,8 +811,17 @@ def _phase_45_status() -> str:
         or "offline-safe mode" in dashboard_src.lower()
     )
     calendar_present = _calendar_integration_present()
+    all_surfaces_live = (
+        has_morning_panel
+        and has_morning_state
+        and trust_panel_present
+        and failure_ladder_present
+        and calendar_present
+    )
 
-    if has_morning_panel and has_morning_state and trust_panel_present and failure_ladder_present and calendar_present:
+    if all_surfaces_live and BUILD_PHASE >= 5:
+        return "COMPLETE"
+    if all_surfaces_live:
         return "ACTIVE"
     if has_morning_panel and has_morning_state:
         return "PARTIAL"
@@ -1283,7 +1292,9 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         if phase_42_status == "ACTIVE"
         else "Orthogonal cognition stack not enabled in runtime"
     )
-    if phase_45_status == "ACTIVE":
+    if phase_45_status == "COMPLETE":
+        phase_45_note = "UX, trust, failure ladder, and calendar surfaces complete and sealed"
+    elif phase_45_status == "ACTIVE":
         phase_45_note = "UX trust, failure ladder, and calendar surfaces implemented"
     elif phase_45_status == "PARTIAL":
         phase_45_note = "UX elements present but incomplete"
