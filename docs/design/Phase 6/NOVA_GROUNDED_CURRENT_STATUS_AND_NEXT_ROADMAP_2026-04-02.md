@@ -51,6 +51,8 @@ The live product already includes:
 - stronger onboarding/readiness flow
 - structured morning brief delivery across chat and OpenClaw
 - visible OpenClaw run state across Home and Agent
+- setup-aware capability guidance that reflects live connections and current run state
+- richer calendar answers for today, tomorrow, and upcoming views
 
 ### Nova already has a real trust spine
 The strongest thing in the system remains the separation between:
@@ -394,8 +396,8 @@ The best answer is:
 1. finish the remaining manual UX/runtime polish, especially TTS and real-device feel
 2. ship the first real connector slice, preferably calendar
 3. finish fuller Phase-8 governed execution foundations, especially pause/resume and richer run controls
-4. add Layer 1 preference learning
-5. keep improving live screen help and daily-use flow
+4. keep improving live screen help and daily-use flow
+5. add Layer 1 preference learning
 6. only later add workflow habit learning and bounded proactive learning
 7. keep docs/runtime grounding current as these slices land
 

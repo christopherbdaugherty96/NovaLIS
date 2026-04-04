@@ -294,3 +294,8 @@ Use `docs/design/` for:
 
 Use runtime docs for:
 - what Nova can actually do today
+
+Current grounding note:
+- Nova stands on a strong Phase-5-through-7 base
+- the live unfinished frontier is still Phase 8
+- Phase 4.5 is now mostly a validation and truth-closeout track rather than the main build lane

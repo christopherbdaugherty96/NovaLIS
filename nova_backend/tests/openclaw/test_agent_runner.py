@@ -154,3 +154,24 @@ async def test_agent_runner_clears_active_run_after_failure(monkeypatch, tmp_pat
         await runner.run_template("morning_brief", triggered_by="test")
 
     assert store.snapshot()["active_run"] is None
+
+
+@pytest.mark.asyncio
+async def test_agent_runner_records_failed_run_in_recent_runs(monkeypatch, tmp_path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    runner = OpenClawAgentRunner(store=store)
+
+    async def _boom(_template_id):
+        raise RuntimeError("network timeout")
+
+    monkeypatch.setattr(runner, "_collect_payload", _boom)
+
+    with pytest.raises(RuntimeError):
+        await runner.run_template("morning_brief", triggered_by="test")
+
+    recent = store.snapshot()["recent_runs"]
+    assert len(recent) == 1
+    assert recent[0]["status"] == "failed"
+    assert recent[0]["template_id"] == "morning_brief"
+    assert "network timeout" in recent[0]["summary"]
+    assert store.snapshot()["active_run"] is None
