@@ -270,9 +270,19 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
         "conversation_context": {},
     }
 
+    initial_trust_refresh_task: asyncio.Task[None] | None = None
+
     await send_chat_message(ws, "Hello. How can I help?")
-    await send_trust_status(ws, session_state["trust_status"])
     await send_chat_done(ws)
+
+    async def _send_initial_trust_status() -> None:
+        await asyncio.sleep(0.2)
+        try:
+            await send_trust_status(ws, session_state["trust_status"])
+        except Exception:
+            return
+
+    initial_trust_refresh_task = asyncio.create_task(_send_initial_trust_status())
 
     async def _complete_immediate_turn(
         message: str,
@@ -3791,5 +3801,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     except WebSocketDisconnect:
         log.info("WebSocket disconnected")
     finally:
+        if initial_trust_refresh_task and not initial_trust_refresh_task.done():
+            initial_trust_refresh_task.cancel()
         thought_store.clear_session(session_id)
         GovernorMediator.clear_session(session_id)

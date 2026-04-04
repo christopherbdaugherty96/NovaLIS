@@ -30,6 +30,7 @@ let ackResetTimer = null;
 let lastWidgetHydrationAt = 0;
 let widgetRefreshTimer = null;
 let morningFallbackTimer = null;
+let startupHydrationTimers = [];
 let morningState = {
   weather: "Loading...",
   news: "Loading...",
@@ -639,7 +640,7 @@ function setPTTButtonState(state = "idle") {
   btn.classList.add(`mic-${safeState}`);
 
   const wakeWordHint = isHeyNovaWakeWordEnabled()
-    ? `Press to record. Say "${HEY_NOVA_WAKE_WORD}" followed by your request.`
+    ? `Press to record and speak normally. Saying "${HEY_NOVA_WAKE_WORD}" is optional here, but still used during live help.`
     : "Press to record a short voice question.";
 
   const labels = {
@@ -6542,7 +6543,7 @@ function renderTrustCenterPage() {
     const wakeWordEnabled = isHeyNovaWakeWordEnabled();
     voiceSummary.textContent = [
       String(voice.summary || "").trim(),
-      wakeWordEnabled ? `Wake word on: "${HEY_NOVA_WAKE_WORD}"` : "Wake word off",
+      wakeWordEnabled ? `Wake word available: "${HEY_NOVA_WAKE_WORD}"` : "Wake word off",
       String(voice.last_status || voice.last_attempt_status || "").trim(),
     ].filter(Boolean).join(" · ") || "Voice status will appear here after the next trust refresh.";
 
@@ -6554,7 +6555,7 @@ function renderTrustCenterPage() {
       ["Fallback status", String(voice.fallback_status || "Unknown").trim() || "Unknown"],
       ["Last attempt", String(voice.last_attempt_status || "No voice check yet").trim() || "No voice check yet"],
       ["Last engine", String(voice.last_engine || "None").trim() || "None"],
-      ["Wake word", wakeWordEnabled ? `${HEY_NOVA_WAKE_WORD} required` : "Wake word off"],
+      ["Wake word", wakeWordEnabled ? `${HEY_NOVA_WAKE_WORD} available for live help` : "Wake word off"],
     ].forEach(([label, value]) => {
       voiceGrid.appendChild(createOverviewChip(label, value));
     });
@@ -8727,25 +8728,26 @@ async function startSTT() {
       const transcript = String(result.transcript || "").trim();
       if (transcript) {
         const wakeWordState = normalizeHeyNovaWakeWordTranscript(transcript);
-        if (!wakeWordState.matched) {
+        if (wakeWordState.matched && !wakeWordState.command) {
           appendChatMessage(
             "assistant",
-            `I heard "${transcript}", but voice requests currently start with "${HEY_NOVA_WAKE_WORD}". Try again and say "${HEY_NOVA_WAKE_WORD}" first.`,
+            `I'm here. Say "${HEY_NOVA_WAKE_WORD}" followed by what you want, or just press Talk again and say the request directly.`,
             null,
             "Voice input",
           );
           return;
         }
-        if (!wakeWordState.command) {
+        const spokenCommand = String(wakeWordState.matched ? (wakeWordState.command || "") : transcript).trim();
+        if (!spokenCommand) {
           appendChatMessage(
             "assistant",
-            `I'm here. Say "${HEY_NOVA_WAKE_WORD}" followed by what you want, like "${HEY_NOVA_WAKE_WORD}, explain this screen."`,
+            "I didn't catch the request clearly. Try again and say it in one short phrase.",
             null,
             "Voice input",
           );
           return;
         }
-        injectUserText(wakeWordState.command, "voice");
+        injectUserText(spokenCommand, "voice");
       } else {
         appendChatMessage(
           "assistant",
@@ -8780,6 +8782,60 @@ function stopSTT() {
     setPTTButtonState("sending");
     mediaRecorder.stop();
   }
+}
+
+function clearStartupHydrationTimers() {
+  startupHydrationTimers.forEach((timer) => clearTimeout(timer));
+  startupHydrationTimers = [];
+}
+
+function queueStartupHydration(delayMs, task) {
+  const timer = setTimeout(() => {
+    startupHydrationTimers = startupHydrationTimers.filter((entry) => entry !== timer);
+    if (!ws || ws.readyState !== WebSocket.OPEN) return;
+    try {
+      task();
+    } catch (_) {
+      // Startup hydration should never block chat readiness.
+    }
+  }, delayMs);
+  startupHydrationTimers.push(timer);
+}
+
+function scheduleStartupHydration() {
+  clearStartupHydrationTimers();
+
+  queueStartupHydration(250, () => {
+    safeWSSend({ text: "weather", silent_widget_refresh: true });
+    safeWSSend({ text: "calendar", silent_widget_refresh: true });
+  });
+
+  queueStartupHydration(800, () => {
+    safeWSSend({ text: "news", silent_widget_refresh: true });
+    loadConnectionsData();
+  });
+
+  queueStartupHydration(1600, () => {
+    requestOpenClawAgentRefresh(true);
+    requestSettingsRuntimeRefresh(true);
+    refreshPrivacyPanel();
+  });
+
+  queueStartupHydration(2600, () => {
+    safeWSSend({ text: "system status", silent_widget_refresh: true });
+    safeWSSend({ text: "workspace home", silent_widget_refresh: true });
+    safeWSSend({ text: "operational context", silent_widget_refresh: true });
+  });
+
+  queueStartupHydration(3600, () => {
+    safeWSSend({ text: "assistive notices", silent_widget_refresh: true });
+    safeWSSend({ text: "show structure map", silent_widget_refresh: true });
+    safeWSSend({ text: "trust center", silent_widget_refresh: true });
+    safeWSSend({ text: "policy overview", silent_widget_refresh: true });
+    safeWSSend({ text: "tone status", silent_widget_refresh: true });
+    safeWSSend({ text: "notification status", silent_widget_refresh: true });
+    safeWSSend({ text: "pattern status", silent_widget_refresh: true });
+  });
 }
 
 function hydrateDashboardWidgets() {
@@ -8823,15 +8879,14 @@ function connectWebSocket() {
   renderHeaderStatus(activePageState);
 
   ws.onopen = () => {
+    clearStartupHydrationTimers();
     renderHeaderStatus(activePageState);
     renderIntroPage();
     renderHomeLaunchWidget();
     renderSettingsPage();
-    refreshPrivacyPanel();
-    hydrateDashboardWidgets();
-    loadConnectionsData();
     startWidgetAutoRefresh();
     startMorningFallbackTimer();
+    scheduleStartupHydration();
   };
 
   ws.onmessage = (e) => {
@@ -8991,6 +9046,7 @@ function connectWebSocket() {
   ws.onclose = () => {
     waitingForAssistant = false;
     setThinkingBar(false);
+    clearStartupHydrationTimers();
     stopWidgetAutoRefresh();
     renderHeaderStatus(activePageState);
     renderIntroPage();
@@ -10506,7 +10562,7 @@ function renderSettingsPage() {
     const wakeWordEnabled = isHeyNovaWakeWordEnabled();
     voiceSummary.textContent = [
       String(voice.summary || "").trim() || "Run Voice Check to confirm spoken output on this device.",
-      wakeWordEnabled ? `Wake word on: "${HEY_NOVA_WAKE_WORD}"` : "Wake word off",
+      wakeWordEnabled ? `Wake word available: "${HEY_NOVA_WAKE_WORD}"` : "Wake word off",
       String(voice.last_attempt_status || "").trim(),
       String(voice.last_engine || "").trim(),
     ].filter(Boolean).join(" · ");
@@ -10519,7 +10575,7 @@ function renderSettingsPage() {
       ["Fallback status", String(voice.fallback_status || "Unknown").trim() || "Unknown"],
       ["Last attempt", String(voice.last_attempt_status || "No voice check yet").trim() || "No voice check yet"],
       ["Last engine", String(voice.last_engine || "None").trim() || "None"],
-      ["Wake word", wakeWordEnabled ? `${HEY_NOVA_WAKE_WORD} required` : "Wake word off"],
+      ["Wake word", wakeWordEnabled ? `${HEY_NOVA_WAKE_WORD} available for live help` : "Wake word off"],
     ].forEach(([label, value]) => {
       voiceGrid.appendChild(createOverviewChip(label, value));
     });
@@ -10534,21 +10590,21 @@ function renderSettingsPage() {
 
     const wakeWordStatus = document.createElement("div");
     wakeWordStatus.className = "workspace-home-focus-meta";
-    wakeWordStatus.textContent = wakeWordEnabled ? `${HEY_NOVA_WAKE_WORD} required` : "Off";
+    wakeWordStatus.textContent = wakeWordEnabled ? `${HEY_NOVA_WAKE_WORD} available during live help` : "Off";
     wakeWordCard.appendChild(wakeWordStatus);
 
     const wakeWordCopy = document.createElement("div");
     wakeWordCopy.className = "workspace-home-focus-copy";
     wakeWordCopy.textContent = wakeWordEnabled
-      ? `Voice recordings only send a request after Nova hears "${HEY_NOVA_WAKE_WORD}", which helps prevent accidental triggers.`
-      : "Voice recordings send whatever you say. Turn the wake word back on if you want an extra spoken guardrail.";
+      ? `Talk button recordings send your spoken request directly. "${HEY_NOVA_WAKE_WORD}" is still useful during live help when Nova is staying with a shared screen.`
+      : "Talk button recordings send whatever you say. Turn the wake word back on if you want live-help sessions to wait for a spoken guardrail.";
     wakeWordCard.appendChild(wakeWordCopy);
 
     const wakeWordActions = document.createElement("div");
     wakeWordActions.className = "workspace-board-actions-toolbar";
     const wakeWordToggleBtn = document.createElement("button");
     wakeWordToggleBtn.type = "button";
-    wakeWordToggleBtn.textContent = wakeWordEnabled ? "Turn off wake word" : `Require ${HEY_NOVA_WAKE_WORD}`;
+    wakeWordToggleBtn.textContent = wakeWordEnabled ? "Turn off live-help wake word" : `Enable ${HEY_NOVA_WAKE_WORD} for live help`;
     wakeWordToggleBtn.addEventListener("click", () => setHeyNovaWakeWordEnabled(!wakeWordEnabled));
     wakeWordActions.appendChild(wakeWordToggleBtn);
     wakeWordCard.appendChild(wakeWordActions);
@@ -11104,8 +11160,6 @@ window.addEventListener("DOMContentLoaded", () => {
   renderTrustCenterPage();
   renderIntroPage();
   renderSettingsPage();
-  requestSettingsRuntimeRefresh(true);
-  requestOpenClawAgentRefresh(true);
   renderIntelligenceBriefWidget();
   renderPersonalLayerWidget();
   renderQuickActions();
