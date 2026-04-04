@@ -594,18 +594,23 @@ def _phase_42_status() -> str:
 def _calendar_integration_present() -> bool:
     skill_registry_src = _safe_read(SKILL_REGISTRY_PATH).lower()
     governor_src = _safe_read(GOVERNOR_PATH).lower()
+    # The calendar widget send lives in session_handler.py, not brain_server.py
+    session_handler_src = _safe_read(SESSION_HANDLER_PATH)
     brain_src = _safe_read(BRAIN_SERVER_PATH).lower()
     dashboard_src = _safe_read(STATIC_DASHBOARD_PATH).lower()
     index_src = _safe_read(STATIC_INDEX_PATH).lower()
     parsed = GovernorMediator.parse_governed_invocation("calendar", session_id="audit-runtime")
     mediated_calendar = isinstance(parsed, Invocation) and parsed.capability_id == 57
-    brain_calendar_wired = 'send_widget_message(ws, "calendar"' in brain_src and "last_calendar_summary" in brain_src
+    calendar_widget_wired = (
+        'send_widget_message(ws, "calendar"' in session_handler_src
+        and "last_calendar_summary" in brain_src
+    )
 
     return (
         "calendarskill" in skill_registry_src
         and mediated_calendar
         and "req.capability_id == 57" in governor_src
-        and brain_calendar_wired
+        and calendar_widget_wired
         and 'case "calendar"' in dashboard_src
         and "morningstate.calendar" in dashboard_src
         and "coming soon" not in index_src
