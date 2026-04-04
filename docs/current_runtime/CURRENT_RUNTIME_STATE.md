@@ -13,7 +13,7 @@ Manual edits: NOT PERMITTED
 | Phase 3.5 | COMPLETE | Governance baseline sealed |
 | Phase 4 | ACTIVE | Governed execution runtime |
 | Phase 4.2 | ACTIVE | Orthogonal cognition stack enabled via explicit invocation path |
-| Phase 4.5 | ACTIVE | UX trust, failure ladder, and calendar surfaces implemented |
+| Phase 4.5 | COMPLETE | UX, trust, failure ladder, and calendar surfaces complete and sealed |
 | Phase 5 | ACTIVE | Governed memory, continuity, tone, scheduling, and pattern-review surfaces active; closure state tracked in Phase-5 proof packet |
 | Phase 6 | COMPLETE | Trust loop, policy review, capability authority map, and manual policy executor gate are complete; delegated trigger runtime remains disabled by design |
 | Phase 7 | COMPLETE | Governed external reasoning is complete: answer-first research surfaces, explicit second-opinion capability, provider transparency, actionable Settings controls, and advisory-only trust explanation are active |
@@ -183,7 +183,6 @@ Operational / QA Follow-Through
 
 ## Runtime Truth Discrepancies
 
-- [hard_fail] ENABLED_ID_SET_MISMATCH: Enabled capability ID set differs between docs/current_runtime/CURRENT_RUNTIME_STATE.md and registry.json.
 - [hard_fail] ENABLED_CAPABILITY_MISSING_MEDIATOR_ROUTE: One or more enabled capabilities are not matched by known mediator routes.
 
 ## Design Runtime Divergences
