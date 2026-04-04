@@ -2650,6 +2650,27 @@ async function runOpenClawAgentTemplate(templateId) {
   }
 }
 
+async function cancelOpenClawActiveRun() {
+  try {
+    const res = await fetch(`${API_BASE}/api/openclaw/agent/runs/cancel`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      const detail = String((data && data.detail) || "No active run to cancel.").trim();
+      appendChatMessage("assistant", detail, null, "Agent");
+      return;
+    }
+    applyOpenClawAgentPayload(data);
+    renderOpenClawDeliveryWidget();
+    renderOpenClawAgentPage();
+    appendChatMessage("assistant", "Cancel requested. The run will stop at the next checkpoint.", null, "Agent");
+  } catch (_err) {
+    appendChatMessage("assistant", "I couldn't cancel the active run right now.", null, "Agent");
+  }
+}
+
 async function dismissOpenClawDelivery(deliveryId) {
   try {
     const res = await fetch(`${API_BASE}/api/openclaw/agent/delivery/${encodeURIComponent(deliveryId)}/dismiss`, {
@@ -10165,10 +10186,11 @@ function renderOpenClawAgentPage() {
         const runBtn = document.createElement("button");
         runBtn.type = "button";
         const isThisTemplateRunning = !!activeRun && String(activeRun.template_id || "").trim() === String(template.id || "").trim();
-        runBtn.textContent = isThisTemplateRunning ? "Running\u2026" : "Run now";
+        const cancelRequested = isThisTemplateRunning && !!(activeRun && activeRun.cancel_requested);
+        runBtn.textContent = cancelRequested ? "Cancelling\u2026" : (isThisTemplateRunning ? "Running\u2026" : "Run now");
         runBtn.disabled = !permissionEnabled || !template.manual_run_available || !!activeRun;
         if (isThisTemplateRunning) {
-          runBtn.classList.add("openclaw-btn--running");
+          runBtn.classList.add(cancelRequested ? "openclaw-btn--cancelling" : "openclaw-btn--running");
         } else if (!template.manual_run_available) {
           runBtn.title = String(template.availability_reason || "This template requires a connector that is not yet available.").trim();
         } else if (activeRun) {
@@ -10221,10 +10243,14 @@ function renderOpenClawAgentPage() {
     clear(runList);
     const recentRuns = Array.isArray(openClawAgentState.recentRuns) ? openClawAgentState.recentRuns : [];
     if (activeRun) {
+      const cancelRequested = !!(activeRun.cancel_requested);
       const activeItem = document.createElement("div");
-      activeItem.className = "trust-center-activity-item openclaw-run-item--running";
+      activeItem.className = "trust-center-activity-item"
+        + (cancelRequested ? " openclaw-run-item--cancelling" : " openclaw-run-item--running");
       const activeTitle = document.createElement("strong");
-      activeTitle.textContent = `${String(activeRun.title || "Run").trim() || "Run"} (Running now)`;
+      activeTitle.textContent = cancelRequested
+        ? `${String(activeRun.title || "Run").trim() || "Run"} (Cancelling\u2026)`
+        : `${String(activeRun.title || "Run").trim() || "Run"} (Running now)`;
       const activeMeta = document.createElement("div");
       activeMeta.textContent = [
         formatOpenClawRunTimestamp(activeRun.started_at),
@@ -10233,11 +10259,25 @@ function renderOpenClawAgentPage() {
       ].filter(Boolean).join(" · ");
       const activeBody = document.createElement("p");
       activeBody.className = "workspace-board-section-copy";
-      activeBody.textContent = String(activeRun.summary || "Collecting sources and preparing a governed briefing.").trim()
-        || "Collecting sources and preparing a governed briefing.";
+      activeBody.textContent = cancelRequested
+        ? "Cancel requested — the run will stop at the next safe checkpoint."
+        : (String(activeRun.summary || "Collecting sources and preparing a governed briefing.").trim()
+          || "Collecting sources and preparing a governed briefing.");
+      const activeActions = document.createElement("div");
+      activeActions.className = "workspace-board-actions-toolbar";
+      const cancelBtn = document.createElement("button");
+      cancelBtn.type = "button";
+      cancelBtn.textContent = cancelRequested ? "Cancelling\u2026" : "Cancel run";
+      cancelBtn.disabled = cancelRequested;
+      if (!cancelRequested) {
+        cancelBtn.classList.add("openclaw-btn--cancel");
+        cancelBtn.addEventListener("click", () => cancelOpenClawActiveRun());
+      }
+      activeActions.appendChild(cancelBtn);
       activeItem.appendChild(activeTitle);
       activeItem.appendChild(activeMeta);
       activeItem.appendChild(activeBody);
+      activeItem.appendChild(activeActions);
       runList.appendChild(activeItem);
     }
     if (!recentRuns.length) {

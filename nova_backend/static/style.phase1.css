@@ -885,6 +885,10 @@ body {
   animation: thinkingPulse 1.25s ease-in-out infinite;
 }
 
+.openclaw-run-item--cancelling strong {
+  opacity: 0.5;
+}
+
 .openclaw-run-item--failed strong {
   opacity: 0.75;
 }
@@ -893,6 +897,15 @@ body {
   opacity: 0.6;
   animation: thinkingPulse 1.25s ease-in-out infinite;
   pointer-events: none;
+}
+
+.openclaw-btn--cancelling {
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+.openclaw-btn--cancel {
+  opacity: 0.85;
 }
 
 .token-budget-bar {
