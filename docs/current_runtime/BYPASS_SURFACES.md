@@ -8,7 +8,7 @@ Read-only truth report of detectable bypass indicators from allowlisted runtime 
 
 ## requests/network usage outside NetworkMediator
 
-- None detected.
+- nova_backend/src/api/connections_api.py
 
 ## Executor callable paths outside governor
 
@@ -23,6 +23,7 @@ Read-only truth report of detectable bypass indicators from allowlisted runtime 
 - nova_backend/src/executors/multi_source_reporting_executor.py
 - nova_backend/src/executors/news_intelligence_executor.py
 - nova_backend/src/executors/open_folder_executor.py
+- nova_backend/src/executors/openclaw_execute_executor.py
 - nova_backend/src/executors/os_diagnostics_executor.py
 - nova_backend/src/executors/response_verification_executor.py
 - nova_backend/src/executors/screen_analysis_executor.py
