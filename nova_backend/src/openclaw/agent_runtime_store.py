@@ -282,15 +282,15 @@ class OpenClawAgentRuntimeStore:
             "status": "foundation",
             "status_label": "Foundation live",
             "summary": (
-                "Manual home-agent briefing runs and the narrow scheduled briefing lane are available now. "
-                "Wider envelope-governed execution still arrives later."
+                "Home Agent can run manual briefings now, and scheduled briefings are available when you turn them on. "
+                "Broader governed task execution still comes later."
             ),
             "delivery_model_summary": (
-                "Named briefings can surface in chat and the operator surface. "
-                "Quiet review tasks stay surface-first."
+                "Briefings can appear in chat, on the page, or both. "
+                "Quieter review items stay on the page first."
             ),
             "personality_summary": (
-                "Nova owns the voice. OpenClaw stays behind the scenes and results come back through Nova's presentation layer."
+                "Nova stays front and center. Home Agent works quietly in the background and hands results back through Nova."
             ),
             "schedule_summary": (
                 f"{scheduled_enabled} scheduled template{'s' if scheduled_enabled != 1 else ''} enabled."
@@ -799,9 +799,9 @@ class OpenClawAgentRuntimeStore:
             return "No home-agent runs are active right now."
         title = str(active_run.get("title") or "Task").strip() or "Task"
         triggered_by = str(active_run.get("triggered_by") or "").strip()
-        source = "scheduled" if triggered_by == "scheduler" else "manual"
+        source = "schedule" if triggered_by == "scheduler" else "Run now"
         status = str(active_run.get("status_label") or "Running now").strip() or "Running now"
-        return f"{title} is {status.lower()} through the {source} OpenClaw lane."
+        return f"{title} is {status.lower()} from the {source} flow."
 
     def _build_delivery_item(self, run_entry: dict[str, Any]) -> dict[str, Any]:
         return self._normalize_delivery_item(

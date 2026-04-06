@@ -72,16 +72,16 @@ async def test_agent_runner_records_manual_brief_without_network(monkeypatch, tm
     assert result["usage_meta"]["route"] == "deterministic_fallback"
     assert result["llm_summary_used"] is False
     assert "weather.visualcrossing.com" in result["envelope"]["allowed_hostnames"]
-    assert result["run_record"]["scope_summary"].startswith("Tools:")
-    assert result["run_record"]["budget_summary"].startswith("Up to 6 steps")
+    assert result["run_record"]["scope_summary"].startswith("Uses ")
+    assert result["run_record"]["budget_summary"].startswith("Can take up to 6 steps")
     assert result["budget_usage"]["metering_mode"] == "measured_narrow_lane"
     assert result["budget_usage"]["steps_used"] == 5
     assert result["budget_usage"]["files_touched_used"] == 1
     assert result["budget_usage"]["network_calls_used"] == 5
     assert result["budget_usage"]["bytes_read_used"] > 0
-    assert "Measured usage:" in result["budget_usage"]["summary"]
+    assert "Used so far:" in result["budget_usage"]["summary"]
     assert store.snapshot()["recent_runs"][0]["template_id"] == "morning_brief"
-    assert store.snapshot()["recent_runs"][0]["budget_summary"].startswith("Up to 6 steps")
+    assert store.snapshot()["recent_runs"][0]["budget_summary"].startswith("Can take up to 6 steps")
     assert store.snapshot()["recent_runs"][0]["budget_usage"]["network_calls_used"] == 5
     assert store.snapshot()["active_run"] is None
 
@@ -297,8 +297,8 @@ def test_request_cancel_active_run_sets_flag(tmp_path):
         "started_at": "2026-04-03T07:00:00+00:00",
         "summary": "Collecting sources.",
         "scope_summary": "Tools: weather.",
-        "budget_summary": "Up to 6 steps.",
-        "budget_usage": {"summary": "Estimated usage: 1/6 steps."},
+        "budget_summary": "Can take up to 6 steps.",
+        "budget_usage": {"summary": "Used so far: 1/6 steps."},
     })
     assert store.is_cancel_requested("env-001") is False
     result = store.request_cancel_active_run("env-001")
@@ -307,5 +307,5 @@ def test_request_cancel_active_run_sets_flag(tmp_path):
     active = store.snapshot()["active_run"]
     assert active["cancel_requested"] is True
     assert active["status_label"] == "Cancelling\u2026"
-    assert active["budget_summary"] == "Up to 6 steps."
-    assert active["budget_usage"]["summary"] == "Estimated usage: 1/6 steps."
+    assert active["budget_summary"] == "Can take up to 6 steps."
+    assert active["budget_usage"]["summary"] == "Used so far: 1/6 steps."

@@ -117,9 +117,9 @@ class RunBudgetMeter:
             "metering_mode": "measured_narrow_lane",
             "duration_s": round(duration_seconds, 2),
             "summary": (
-                f"Measured usage: {int(self.steps_used)}/{int(self.envelope.max_steps)} steps, "
-                f"{int(self.network_calls_used)}/{int(self.envelope.max_network_calls)} network calls, "
-                f"{int(self.files_touched_used)}/{int(self.envelope.max_files_touched)} file touches, "
+                f"Used so far: {int(self.steps_used)}/{int(self.envelope.max_steps)} steps, "
+                f"{int(self.network_calls_used)}/{int(self.envelope.max_network_calls)} web requests, "
+                f"{int(self.files_touched_used)}/{int(self.envelope.max_files_touched)} local files, "
                 f"{int(self.bytes_read_used)}/{int(self.envelope.max_bytes_read)} bytes read."
             ),
         }
@@ -206,7 +206,7 @@ class OpenClawAgentRunner:
                 "delivery_mode": str(template.get("delivery_mode") or "widget").strip(),
                 "delivery_channels": channels,
                 "started_at": started_at,
-                "summary": "Collecting sources and preparing a governed briefing.",
+                "summary": "Gathering what this task needs and preparing your result.",
                 "scope_summary": scope_summary,
                 "budget_summary": budget_summary,
                 "budget_usage": budget_meter.snapshot(),
@@ -216,7 +216,7 @@ class OpenClawAgentRunner:
             self._update_run_progress(
                 envelope,
                 status_label="Collecting sources",
-                summary="Collecting governed inputs for this run.",
+                summary="Gathering the approved information for this task.",
             )
             payload = await self._collect_payload(template_id)
             self._check_cancel(envelope.id)
@@ -230,7 +230,7 @@ class OpenClawAgentRunner:
             self._update_run_progress(
                 envelope,
                 status_label="Summarizing",
-                summary="Turning the collected inputs into a calm governed result.",
+                summary="Turning the collected information into a clear result.",
             )
 
             if template_id != "morning_brief":
@@ -260,7 +260,7 @@ class OpenClawAgentRunner:
             self._update_run_progress(
                 envelope,
                 status_label="Delivering",
-                summary="Presenting the final governed result through Nova.",
+                summary="Handing the finished result back through Nova.",
             )
             presented_message = self._personality_bridge.present_result(envelope, raw_summary)
             completed_at = _utc_now_iso()
@@ -326,7 +326,7 @@ class OpenClawAgentRunner:
                     "delivery_mode": str(template.get("delivery_mode") or "widget").strip(),
                     "delivery_channels": {"widget": False, "chat": False},
                     "presented_message": "",
-                    "summary": "Run was cancelled before it completed.",
+                    "summary": "This task was cancelled before it finished.",
                     "started_at": started_at,
                     "completed_at": _utc_now_iso(),
                     "llm_summary_used": False,

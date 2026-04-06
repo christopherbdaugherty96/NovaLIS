@@ -100,15 +100,15 @@ class TaskEnvelope:
             hostnames = ", ".join(self.allowed_hostnames[:4])
             if len(self.allowed_hostnames) > 4:
                 hostnames += f", +{len(self.allowed_hostnames) - 4} more"
-            return f"Tools: {tools}. Network scope: {hostnames}."
-        return f"Tools: {tools}. No external hostnames approved."
+            return f"Uses {tools}. Can only reach: {hostnames}."
+        return f"Uses {tools}. No external websites are allowed."
 
     def budget_summary(self) -> str:
         return (
-            f"Up to {int(self.max_steps)} steps, "
-            f"{int(self.max_network_calls)} network call{'s' if int(self.max_network_calls) != 1 else ''}, "
-            f"{int(self.max_files_touched)} file touch{'es' if int(self.max_files_touched) != 1 else ''}, "
-            f"{int(self.max_duration_s)} seconds max."
+            f"Can take up to {int(self.max_steps)} step{'s' if int(self.max_steps) != 1 else ''}, "
+            f"make up to {int(self.max_network_calls)} web request{'s' if int(self.max_network_calls) != 1 else ''}, "
+            f"read up to {int(self.max_files_touched)} local file{'s' if int(self.max_files_touched) != 1 else ''}, "
+            f"and runs for up to {int(self.max_duration_s)} seconds."
         )
 
     def preview_dict(self) -> dict[str, Any]:
