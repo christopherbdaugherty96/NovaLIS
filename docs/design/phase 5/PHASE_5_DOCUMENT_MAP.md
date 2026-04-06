@@ -1,6 +1,6 @@
 # Phase 5 Document Map
 
-Updated: 2026-04-03
+Updated: 2026-04-05
 Status: Current design and proof map
 Purpose: Classify the closed Phase-5 package plus the later runtime-aligned expansions that are now part of Nova's active product surface.
 
@@ -60,7 +60,7 @@ The tonal calibration notes in this folder should be read this way:
 - inspectability and override matter more than clever adaptation
 
 ## Future / Adjacent Direction
-- `docs/design/Phase 5/Delegated Autonomy.txt`
+- `docs/design/phase 5/Delegated Autonomy.txt`
 - the consolidated API planning note in this folder
 
 These remain adjacent planning inputs, not active runtime authority.

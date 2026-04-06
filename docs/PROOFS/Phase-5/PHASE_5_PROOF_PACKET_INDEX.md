@@ -1,5 +1,5 @@
 # Phase-5 Proof Packet Index
-Updated: 2026-03-27
+Updated: 2026-04-05
 Status: CLOSED for the current trust-facing Phase-5 package, with later runtime-aligned memory additions recorded below
 Purpose: Canonical index of Phase-5 design inputs, ratification artifacts, implemented runtime slices, and deferred follow-on tracks.
 
@@ -61,15 +61,15 @@ These documents remain useful as design history, but they are not the current au
 - `docs/PROOFS/Phase-4.5/PHASE_4_5_TO_PHASE_5_READINESS_NOTES_2026-03-09.md`
 
 ## Design Inputs
-- `docs/design/Phase 5/MEMORY GOVERNANCE.md`
-- `docs/design/Phase 5/NOVA_WORKING_CONTEXT_ENGINE.md`
-- `docs/design/Phase 5/PHASE_5_DOCUMENT_MAP.md`
-- the tonal calibration scope design document in `docs/design/Phase 5/`
-- the tonal calibration visibility design document in `docs/design/Phase 5/`
-- the corrected Phase-5 roadmap document in `docs/design/Phase 5/`
-- `docs/design/Phase 5/Delegated Autonomy.txt`
-- the consolidated API planning note in `docs/design/Phase 5/`
-- `docs/design/Phase 5/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
+- `docs/design/phase 5/MEMORY GOVERNANCE.md`
+- `docs/design/phase 5/NOVA_WORKING_CONTEXT_ENGINE.md`
+- `docs/design/phase 5/PHASE_5_DOCUMENT_MAP.md`
+- the tonal calibration scope design document in `docs/design/phase 5/`
+- the tonal calibration visibility design document in `docs/design/phase 5/`
+- the corrected Phase-5 roadmap document in `docs/design/phase 5/`
+- `docs/design/phase 5/Delegated Autonomy.txt`
+- the consolidated API planning note in `docs/design/phase 5/`
+- `docs/design/phase 5/NOVA_GOVERNED_MEMORY_EXPERIENCE_AND_CONTEXT_PLAN_2026-03-21.md`
 
 ## Deferred-to-Phase-6 Note
 Tracks intentionally not added to the closed Phase-5 package are indexed here:
@@ -115,6 +115,7 @@ Run these commands from `nova_backend/`.
 - phase5 memory/continuity support bundle: `25 passed`
 - full active-capability sequential audit: all `23` active governed capabilities passed targeted verification
 - active-capability residual caveat: capability `18` (`speak_text`) now has a stronger runtime fallback path and passing code-path verification, but still needs live device spoken-output validation
+- focused `tests\\phase5 -q` rerun on 2026-04-05: `52 passed`
 - runtime documentation drift check: passed
 - dashboard script syntax check: passed
 - frontend mirror sync check: passed

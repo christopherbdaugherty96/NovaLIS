@@ -618,14 +618,64 @@ def _calendar_integration_present() -> bool:
 
 
 def _phase_5_status(registry: dict[str, Any]) -> str:
+    dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
+    index_src = _safe_read(STATIC_INDEX_PATH)
+    brain_src = _safe_read(BRAIN_SERVER_PATH)
+    session_handler_src = _safe_read(SESSION_HANDLER_PATH)
+    command_runtime_src = "\n".join((brain_src, session_handler_src))
     enabled_ids = set(_enabled_registry_ids(registry))
-    memory_runtime_present = (
-        (PROJECT_ROOT / "nova_backend" / "src" / "memory" / "governed_memory_store.py").exists()
-        and (PROJECT_ROOT / "nova_backend" / "src" / "working_context" / "project_threads.py").exists()
+    phase_5_foundation_present = all(
+        path.exists()
+        for path in (
+            PROJECT_ROOT / "nova_backend" / "src" / "memory" / "governed_memory_store.py",
+            PROJECT_ROOT / "nova_backend" / "src" / "working_context" / "project_threads.py",
+            PROJECT_ROOT / "nova_backend" / "src" / "personality" / "tone_profile_store.py",
+            PROJECT_ROOT / "nova_backend" / "src" / "tasks" / "notification_schedule_store.py",
+            PROJECT_ROOT / "nova_backend" / "src" / "patterns" / "pattern_review_store.py",
+        )
     )
     memory_capability_enabled = 61 in enabled_ids
+    memory_surface_present = (
+        all(token in command_runtime_src for token in ("memory overview", "list memories", "memory show"))
+        and "renderMemoryOverviewWidget" in dashboard_src
+        and 'id="page-memory"' in index_src
+    )
+    continuity_surface_present = (
+        "workspace home" in command_runtime_src
+        and "renderWorkspaceHomeWidget" in dashboard_src
+        and 'id="page-home"' in index_src
+    )
+    tone_surface_present = (
+        "TONE_STATUS_COMMANDS" in command_runtime_src
+        and "send_tone_profile_widget" in command_runtime_src
+        and "showToneModal" in dashboard_src
+        and "ToneProfileStore" in brain_src
+    )
+    scheduling_surface_present = (
+        "show schedules" in command_runtime_src
+        and "showScheduleModal" in dashboard_src
+        and "NotificationScheduleStore" in brain_src
+    )
+    pattern_review_surface_present = (
+        all(token in command_runtime_src for token in ("pattern status", "review patterns"))
+        and "renderPatternReviewWidget" in dashboard_src
+        and "PatternReviewStore" in brain_src
+    )
+    full_package_live = all(
+        (
+            phase_5_foundation_present,
+            memory_capability_enabled,
+            memory_surface_present,
+            continuity_surface_present,
+            tone_surface_present,
+            scheduling_surface_present,
+            pattern_review_surface_present,
+        )
+    )
 
-    if BUILD_PHASE >= 5 and memory_runtime_present and memory_capability_enabled:
+    if BUILD_PHASE >= 6 and full_package_live:
+        return "COMPLETE"
+    if BUILD_PHASE >= 5 and phase_5_foundation_present and memory_capability_enabled:
         return "ACTIVE"
     if BUILD_PHASE >= 5 or memory_capability_enabled:
         return "PARTIAL"
@@ -1300,7 +1350,12 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         phase_45_note = "UX elements present but incomplete"
     else:
         phase_45_note = "Experience layer remains design-only"
-    if phase_5_status == "ACTIVE":
+    if phase_5_status == "COMPLETE":
+        phase_5_note = (
+            "Governed memory, continuity, tone, scheduling, and pattern-review "
+            "surfaces are complete and sealed"
+        )
+    elif phase_5_status == "ACTIVE":
         phase_5_note = (
             "Governed memory, continuity, tone, scheduling, and pattern-review "
             "surfaces active; closure state tracked in Phase-5 proof packet"
