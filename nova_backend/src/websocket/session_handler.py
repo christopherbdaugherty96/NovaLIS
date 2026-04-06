@@ -3800,6 +3800,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
     except WebSocketDisconnect:
         log.info("WebSocket disconnected")
+    except Exception:
+        log.exception("WS receive loop crashed — session will close")
     finally:
         if initial_trust_refresh_task and not initial_trust_refresh_task.done():
             initial_trust_refresh_task.cancel()

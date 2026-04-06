@@ -31,6 +31,8 @@ let lastWidgetHydrationAt = 0;
 let widgetRefreshTimer = null;
 let morningFallbackTimer = null;
 let startupHydrationTimers = [];
+let wsReconnectTimer = null;
+let queuedUserMessages = [];
 let morningState = {
   weather: "Loading...",
   news: "Loading...",
@@ -3270,8 +3272,15 @@ function updateWorkflowFocusFromError(message) {
   renderWorkflowFocusWidget();
 }
 
-function safeWSSend(message) {
-  if (!ws || ws.readyState !== WebSocket.OPEN) return false;
+function safeWSSend(message, options = {}) {
+  const queueIfUnavailable = Boolean(options && options.queueIfUnavailable);
+  if (!ws || ws.readyState !== WebSocket.OPEN) {
+    if (queueIfUnavailable && message && typeof message === "object" && !Array.isArray(message)) {
+      queueUserMessageForReconnect(message);
+      scheduleWebSocketReconnect();
+    }
+    return false;
+  }
   const payload = (message && typeof message === "object" && !Array.isArray(message)) ? { ...message } : message;
   if (payload && typeof payload === "object" && !Array.isArray(payload) && typeof payload.text === "string") {
     const channel = String(payload.channel || "text").toLowerCase();
@@ -3280,7 +3289,15 @@ function safeWSSend(message) {
       payload.invocation_source = payload.channel === "voice" ? "voice" : "ui";
     }
   }
-  ws.send(JSON.stringify(payload));
+  try {
+    ws.send(JSON.stringify(payload));
+  } catch (_) {
+    if (queueIfUnavailable && payload && typeof payload === "object" && !Array.isArray(payload)) {
+      queueUserMessageForReconnect(payload);
+      scheduleWebSocketReconnect();
+    }
+    return false;
+  }
   return true;
 }
 
@@ -8604,11 +8621,13 @@ function injectUserText(text, channel = "text") {
   updateWorkflowFocusFromUserInput(clean);
   updateWorkflowFocusProgress(loadingHint);
 
-  if (!safeWSSend({ text: clean, channel })) {
-    waitingForAssistant = false;
-    setThinkingBar(false);
-    appendChatMessage("assistant", "Connection is not ready yet. Please wait a second and try again.", null, "System status");
-    updateWorkflowFocusFromError("Connection is not ready yet. Please wait a second and try again.");
+  if (!safeWSSend({ text: clean, channel }, { queueIfUnavailable: true })) {
+    appendChatMessage(
+      "assistant",
+      "Connection is waking back up. I queued your message and will send it as soon as Nova reconnects.",
+      null,
+      "System status",
+    );
   }
 }
 
@@ -8624,11 +8643,13 @@ function requestInlineAssistantAction(text, statusText = "", invocationSource = 
   updateWorkflowFocusFromUserInput(clean);
   updateWorkflowFocusProgress(loadingHint);
 
-  if (!safeWSSend({ text: clean, invocation_source: invocationSource })) {
-    waitingForAssistant = false;
-    setThinkingBar(false);
-    appendChatMessage("assistant", "Connection is not ready yet. Please wait a second and try again.", null, "System status");
-    updateWorkflowFocusFromError("Connection is not ready yet. Please wait a second and try again.");
+  if (!safeWSSend({ text: clean, invocation_source: invocationSource }, { queueIfUnavailable: true })) {
+    appendChatMessage(
+      "assistant",
+      "Connection is waking back up. I queued that request and will send it as soon as Nova reconnects.",
+      null,
+      "System status",
+    );
     return false;
   }
 
@@ -8643,11 +8664,13 @@ function requestDeepSeekSecondOpinion() {
   updateWorkflowFocusFromUserInput("Second opinion on the recent exchange");
   updateWorkflowFocusProgress("Checking a second opinion on the recent exchange...");
 
-  if (!safeWSSend({ text: "second opinion", invocation_source: "deepseek_button" })) {
-    waitingForAssistant = false;
-    setThinkingBar(false);
-    appendChatMessage("assistant", "Connection is not ready yet. Please wait a second and try again.", null, "System status");
-    updateWorkflowFocusFromError("Connection is not ready yet. Please wait a second and try again.");
+  if (!safeWSSend({ text: "second opinion", invocation_source: "deepseek_button" }, { queueIfUnavailable: true })) {
+    appendChatMessage(
+      "assistant",
+      "Connection is waking back up. I queued the second-opinion request and will send it as soon as Nova reconnects.",
+      null,
+      "System status",
+    );
   }
 }
 
@@ -8789,6 +8812,39 @@ function clearStartupHydrationTimers() {
   startupHydrationTimers = [];
 }
 
+function clearWebSocketReconnectTimer() {
+  if (!wsReconnectTimer) return;
+  clearTimeout(wsReconnectTimer);
+  wsReconnectTimer = null;
+}
+
+function scheduleWebSocketReconnect(delayMs = 250) {
+  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+  if (wsReconnectTimer) return;
+  wsReconnectTimer = setTimeout(() => {
+    wsReconnectTimer = null;
+    connectWebSocket();
+  }, delayMs);
+}
+
+function queueUserMessageForReconnect(message) {
+  const payload = (message && typeof message === "object" && !Array.isArray(message)) ? { ...message } : null;
+  if (!payload) return;
+  queuedUserMessages.push(payload);
+  if (queuedUserMessages.length > 8) {
+    queuedUserMessages = queuedUserMessages.slice(-8);
+  }
+}
+
+function flushQueuedUserMessages() {
+  if (!ws || ws.readyState !== WebSocket.OPEN || queuedUserMessages.length === 0) return;
+  const pending = queuedUserMessages.slice();
+  queuedUserMessages = [];
+  pending.forEach((payload) => {
+    safeWSSend(payload);
+  });
+}
+
 function queueStartupHydration(delayMs, task) {
   const timer = setTimeout(() => {
     startupHydrationTimers = startupHydrationTimers.filter((entry) => entry !== timer);
@@ -8875,11 +8931,14 @@ function stopWidgetAutoRefresh() {
 }
 
 function connectWebSocket() {
+  if (ws && (ws.readyState === WebSocket.OPEN || ws.readyState === WebSocket.CONNECTING)) return;
+  clearWebSocketReconnectTimer();
   ws = new WebSocket(`${WS_BASE}/ws`);
   renderHeaderStatus(activePageState);
 
   ws.onopen = () => {
     clearStartupHydrationTimers();
+    flushQueuedUserMessages();
     renderHeaderStatus(activePageState);
     renderIntroPage();
     renderHomeLaunchWidget();
@@ -9055,7 +9114,13 @@ function connectWebSocket() {
       clearTimeout(ackResetTimer);
       ackResetTimer = null;
     }
-    setTimeout(connectWebSocket, 2000);
+    scheduleWebSocketReconnect(1200);
+  };
+
+  ws.onerror = () => {
+    // onerror always precedes onclose — onclose will schedule reconnect.
+    // Just surface a brief console note so browser devtools show the failure.
+    console.warn("[Nova] WebSocket error — connection will close and reconnect.");
   };
 }
 
@@ -9728,6 +9793,38 @@ function sendChat() {
   if (!input) return;
   injectUserText(input.value, "text");
   input.value = "";
+}
+
+function setupPrimaryChatControls() {
+  const sendBtn = $("send-btn");
+  if (sendBtn && sendBtn.dataset.bound !== "1") {
+    sendBtn.dataset.bound = "1";
+    sendBtn.addEventListener("click", sendChat);
+  }
+
+  const deepSeekBtn = $("deepseek-btn");
+  if (deepSeekBtn && deepSeekBtn.dataset.bound !== "1") {
+    deepSeekBtn.dataset.bound = "1";
+    deepSeekBtn.addEventListener("click", requestDeepSeekSecondOpinion);
+  }
+
+  const input = $("chat-input");
+  if (input && input.dataset.bound !== "1") {
+    input.dataset.bound = "1";
+    input.addEventListener("keydown", (e) => {
+      if (e.key === "Enter") sendChat();
+    });
+  }
+
+  const micBtn = $("ptt-btn");
+  if (micBtn && micBtn.dataset.bound !== "1") {
+    micBtn.dataset.bound = "1";
+    micBtn.addEventListener("click", () => {
+      const isRecording = mediaRecorder && mediaRecorder.state === "recording";
+      if (!isRecording) startSTT();
+      else stopSTT();
+    });
+  }
 }
 
 function ensureDatalist() {
@@ -11136,6 +11233,8 @@ window.addEventListener("DOMContentLoaded", () => {
   setOrbStatus("READY");
   setPTTButtonState("idle");
   ensureDatalist();
+  setupPrimaryChatControls();
+  connectWebSocket();
   renderMorningPanel();
   renderWorkflowFocusWidget();
   renderLiveHelpWidget();
@@ -11169,7 +11268,6 @@ window.addEventListener("DOMContentLoaded", () => {
   setupPageNavigation();
   setupProfileHandlers();
   setupConnectionCardHandlers();
-  connectWebSocket();
   startMorningFallbackTimer();
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) hydrateDashboardWidgets();
@@ -11178,19 +11276,6 @@ window.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("beforeunload", () => stopLiveHelpSession("", false));
   ensureSingleWelcomeMessage();
   showFirstRunGuideIfNeeded();
-
-  const sendBtn = $("send-btn");
-  if (sendBtn) sendBtn.addEventListener("click", sendChat);
-
-  const deepSeekBtn = $("deepseek-btn");
-  if (deepSeekBtn) deepSeekBtn.addEventListener("click", requestDeepSeekSecondOpinion);
-
-  const input = $("chat-input");
-  if (input) {
-    input.addEventListener("keydown", (e) => {
-      if (e.key === "Enter") sendChat();
-    });
-  }
 
   const workflowRefineBtn = $("btn-workflow-refine");
   if (workflowRefineBtn) workflowRefineBtn.addEventListener("click", () => {
@@ -11709,15 +11794,6 @@ window.addEventListener("DOMContentLoaded", () => {
   if (policyOpenSettingsBtn) policyOpenSettingsBtn.addEventListener("click", () => {
     setActivePage("settings");
   });
-
-  const micBtn = $("ptt-btn");
-  if (micBtn) {
-    micBtn.addEventListener("click", () => {
-      const isRecording = mediaRecorder && mediaRecorder.state === "recording";
-      if (!isRecording) startSTT();
-      else stopSTT();
-    });
-  }
 
   const liveHelpStartBtn = $("btn-live-help-start");
   if (liveHelpStartBtn) liveHelpStartBtn.addEventListener("click", () => {
