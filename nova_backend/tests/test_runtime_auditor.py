@@ -71,7 +71,8 @@ def test_calendar_detector_matches_live_runtime_path(monkeypatch):
     contents = {
         ra.SKILL_REGISTRY_PATH: "from src.skills.calendar import CalendarSkill\nskills = [CalendarSkill()]",
         ra.GOVERNOR_PATH: "elif req.capability_id == 57:\n    return self._handle_calendar(req)",
-        ra.BRAIN_SERVER_PATH: 'session_state["last_calendar_summary"] = ""\nawait send_widget_message(ws, "calendar", message, widget)',
+        ra.BRAIN_SERVER_PATH: 'session_state["last_calendar_summary"] = ""',
+        ra.SESSION_HANDLER_PATH: 'await send_widget_message(ws, "calendar", message, widget)',
         ra.STATIC_DASHBOARD_PATH: 'case "calendar":\nmorningState.calendar = payload;',
         ra.STATIC_INDEX_PATH: '<section id="morning-calendar"></section>',
     }
@@ -86,7 +87,7 @@ def test_calendar_detector_matches_live_runtime_path(monkeypatch):
     assert ra._calendar_integration_present() is True
 
 
-def test_phase5_status_tracks_active_runtime_slice():
+def test_phase5_status_tracks_complete_runtime_slice():
     import src.audit.runtime_auditor as ra
 
     registry = {
@@ -95,10 +96,10 @@ def test_phase5_status_tracks_active_runtime_slice():
         ]
     }
 
-    assert ra._phase_5_status(registry) == "ACTIVE"
+    assert ra._phase_5_status(registry) == "COMPLETE"
 
 
-def test_render_current_runtime_state_uses_phase5_package_note():
+def test_render_current_runtime_state_uses_phase5_complete_note():
     import src.audit.runtime_auditor as ra
 
     registry = {
@@ -109,8 +110,7 @@ def test_render_current_runtime_state_uses_phase5_package_note():
 
     rendered = ra.render_current_runtime_state_markdown({"discrepancies": []}, registry)
 
-    assert "Governed memory, continuity, tone, scheduling, and pattern-review surfaces active" in rendered
-    assert "full closure remains gated" not in rendered
+    assert "Governed memory, continuity, tone, scheduling, and pattern-review surfaces are complete and sealed" in rendered
 
 
 def test_render_current_runtime_state_mentions_remote_bridge_when_present(monkeypatch):

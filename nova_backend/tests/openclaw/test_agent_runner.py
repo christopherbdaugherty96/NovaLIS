@@ -8,9 +8,28 @@ from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
 async def test_agent_runner_records_manual_brief_without_network(monkeypatch, tmp_path):
     store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
     runner = OpenClawAgentRunner(store=store)
+    calendar_file = tmp_path / "calendar.ics"
+    calendar_file.write_text("BEGIN:VCALENDAR\nEND:VCALENDAR\n", encoding="utf-8")
 
     async def _fake_collect(_template_id):
         assert store.snapshot()["active_run"]["template_id"] == "morning_brief"
+        meter = runner._active_budget_meter
+        assert meter is not None
+        meter.record_step("Collecting weather")
+        meter.record_network_call("https://weather.visualcrossing.com/forecast")
+        meter.record_network_bytes({"temperature": 62, "condition": "clear"})
+        meter.record_step("Collecting calendar")
+        meter.record_file_read(calendar_file)
+        meter.record_step("Collecting news")
+        for url in (
+            "https://www.reuters.com/rssFeed/topNews",
+            "https://feeds.apnews.com/apnews/topnews",
+            "https://feeds.npr.org/1001/rss.xml",
+            "https://feeds.bbci.co.uk/news/rss.xml",
+        ):
+            meter.record_network_call(url)
+            meter.record_network_bytes({"headline": "Loaded"})
+        meter.record_step("Reviewing reminders")
         return {
             "weather_summary": "62 degrees and clear.",
             "weather_detail": {
@@ -55,12 +74,15 @@ async def test_agent_runner_records_manual_brief_without_network(monkeypatch, tm
     assert "weather.visualcrossing.com" in result["envelope"]["allowed_hostnames"]
     assert result["run_record"]["scope_summary"].startswith("Tools:")
     assert result["run_record"]["budget_summary"].startswith("Up to 6 steps")
+    assert result["budget_usage"]["metering_mode"] == "measured_narrow_lane"
     assert result["budget_usage"]["steps_used"] == 5
-    assert result["budget_usage"]["files_touched_estimated"] == 1
-    assert "Estimated usage:" in result["budget_usage"]["summary"]
+    assert result["budget_usage"]["files_touched_used"] == 1
+    assert result["budget_usage"]["network_calls_used"] == 5
+    assert result["budget_usage"]["bytes_read_used"] > 0
+    assert "Measured usage:" in result["budget_usage"]["summary"]
     assert store.snapshot()["recent_runs"][0]["template_id"] == "morning_brief"
     assert store.snapshot()["recent_runs"][0]["budget_summary"].startswith("Up to 6 steps")
-    assert store.snapshot()["recent_runs"][0]["budget_usage"]["network_calls_estimated"] == 5
+    assert store.snapshot()["recent_runs"][0]["budget_usage"]["network_calls_used"] == 5
     assert store.snapshot()["active_run"] is None
 
 
@@ -183,6 +205,41 @@ async def test_agent_runner_records_failed_run_in_recent_runs(monkeypatch, tmp_p
     assert recent[0]["template_id"] == "morning_brief"
     assert "network timeout" in recent[0]["summary"]
     assert store.snapshot()["active_run"] is None
+
+
+@pytest.mark.asyncio
+async def test_agent_runner_fails_when_run_exceeds_envelope_network_budget(monkeypatch, tmp_path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    runner = OpenClawAgentRunner(store=store)
+
+    async def _over_budget(_template_id):
+        meter = runner._active_budget_meter
+        assert meter is not None
+        meter.record_step("Collecting news")
+        for _ in range(12):
+            meter.record_network_call("https://feeds.npr.org/1001/rss.xml")
+            meter.record_network_bytes({"headline": "Loaded"})
+        return {
+            "weather_summary": "",
+            "weather_detail": {},
+            "calendar_summary": "",
+            "calendar_events": [],
+            "news_summary": "",
+            "headline_titles": [],
+            "schedule_summary": "",
+            "source_notes": {},
+        }
+
+    monkeypatch.setattr(runner, "_collect_payload", _over_budget)
+
+    with pytest.raises(RuntimeError, match="network call budget"):
+        await runner.run_template("morning_brief", triggered_by="test")
+
+    recent = store.snapshot()["recent_runs"]
+    assert len(recent) == 1
+    assert recent[0]["status"] == "failed"
+    assert "network call budget" in recent[0]["summary"]
+    assert recent[0]["budget_usage"]["network_calls_used"] == 12
 
 
 @pytest.mark.asyncio

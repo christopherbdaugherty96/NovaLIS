@@ -1483,7 +1483,8 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     if phase_8_status == "ACTIVE":
         phase_8_note = (
             "Manual strict preflight is active. Scheduled home-agent runtime is available behind explicit settings control, "
-            "with quiet-hours suppression, rate limiting, local-first metered OpenAI fallback for narrow task reports, and bounded assistive noticing live; "
+            "with quiet-hours suppression, rate limiting, explicit envelope preview, measured narrow-lane run usage visibility, "
+            "local-first metered OpenAI fallback for narrow task reports, and bounded assistive noticing live; "
             "broader envelope-governed execution still remains deferred"
         )
     elif phase_8_status == "FOUNDATION":

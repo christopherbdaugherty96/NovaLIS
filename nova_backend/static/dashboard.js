@@ -548,8 +548,9 @@ function buildOpenClawActiveRunSummary(activeRun) {
   if (activeRun.delivery_channels && activeRun.delivery_channels.chat) channels.push("chat");
   if (activeRun.delivery_channels && activeRun.delivery_channels.widget) channels.push("surface");
   const source = String(activeRun.triggered_by || "").trim() === "scheduler" ? "scheduled" : "manual";
+  const statusLabel = String(activeRun.status_label || "Running now").trim() || "Running now";
   return [
-    `${String(activeRun.title || "Run").trim() || "Run"} is running now.`,
+    `${String(activeRun.title || "Run").trim() || "Run"} is ${statusLabel.toLowerCase()}.`,
     `${source} start ${startedLabel}`,
     channels.length ? `delivery: ${channels.join(" + ")}` : "",
   ].filter(Boolean).join(" · ");

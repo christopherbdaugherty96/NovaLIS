@@ -1,5 +1,5 @@
 # Phase 8 Proof Packet Index
-Updated: 2026-03-28
+Updated: 2026-04-05
 Status: Current proof index
 
 ## Current canonical live Phase-8 foundation packet
@@ -20,6 +20,8 @@ Status: Current proof index
 ## Scope captured across the current packets
 - manual OpenClaw home-agent foundation with delivery inbox and operator-visible review
 - strict manual preflight before a home-agent task can run
+- explicit TaskEnvelope scope and budget preview on runnable templates
+- measured narrow-lane usage surfaced on active and completed runs
 - narrow scheduler behavior behind explicit settings control
 - quiet-hours and rate-limit suppression for the narrow scheduler
 - local-first metered OpenAI fallback for narrow task-report summarization only

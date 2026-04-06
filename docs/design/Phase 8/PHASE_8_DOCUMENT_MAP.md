@@ -1,5 +1,5 @@
 # Phase 8 Document Map
-Updated: 2026-04-03
+Updated: 2026-04-05
 Status: Current design map
 Purpose: Keep the canonical OpenClaw direction, supporting execution plan, and raw source notes clearly separated
 
@@ -13,7 +13,10 @@ The following Phase-8 foundation slices are now live in runtime/proof:
 - setup-aware "what can you do right now?" capability guidance tied to live connections and active-run truth
 - richer calendar guidance for today, tomorrow, and upcoming views
 - visible active run state for OpenClaw manual runs across the Agent page and Home delivery surface
+- stage-aware active run progress for collection, summarization, and delivery
 - strict manual preflight before home-agent runs
+- explicit envelope preview with scoped hostnames and declared budgets
+- measured narrow-lane run usage surfaced in active-run and recent-run history
 - narrow scheduled briefing runtime behind explicit settings control
 - local-first metered OpenAI fallback for narrow task reports
 - bounded assistive noticing with rate limiting, handled state, and Trust review
@@ -127,6 +130,8 @@ Live now:
 - operator-facing Agent page
 - structured morning brief presentation
 - visible active run state
+- stage-aware active run progress
+- explicit envelope preview and narrow-lane usage visibility
 - connection-aware home/operator starter surfaces
 - setup-aware capability discoverability in chat and UI
 - Nova-owned task-result presentation
