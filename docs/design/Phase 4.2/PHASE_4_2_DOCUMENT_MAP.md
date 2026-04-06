@@ -1,7 +1,8 @@
 # Phase 4.2 Document Map
 
+Updated: 2026-04-05
 Status:
-- orthogonal cognition and presence-reference layer
+- closed orthogonal cognition and presence-reference layer
 
 ## Purpose
 
@@ -45,3 +46,4 @@ When reading the Phase-4.2 folder:
 - treat the cognition stack and presence doctrine as the strongest enduring references
 - use the corrected roadmap as historical framing support
 - defer to later phase maps and runtime docs for what actually shipped
+- the canonical runtime Phase-4.2 package is sealed; this folder is authoritative as design history, not as an open implementation backlog

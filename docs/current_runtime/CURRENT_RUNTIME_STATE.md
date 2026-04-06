@@ -11,8 +11,8 @@ Manual edits: NOT PERMITTED
 | Phase | Status | Notes |
 | --- | --- | --- |
 | Phase 3.5 | COMPLETE | Governance baseline sealed |
-| Phase 4 | ACTIVE | Governed execution runtime |
-| Phase 4.2 | ACTIVE | Orthogonal cognition stack enabled via explicit invocation path |
+| Phase 4 | COMPLETE | Governed execution spine, mediation, queueing, ledger, and boundary controls are complete and sealed |
+| Phase 4.2 | COMPLETE | Orthogonal cognition stack, deep-mode arming, and report surfaces are complete and sealed |
 | Phase 4.5 | COMPLETE | UX, trust, failure ladder, and calendar surfaces complete and sealed |
 | Phase 5 | COMPLETE | Governed memory, continuity, tone, scheduling, and pattern-review surfaces are complete and sealed |
 | Phase 6 | COMPLETE | Trust loop, policy review, capability authority map, and manual policy executor gate are complete; delegated trigger runtime remains disabled by design |
