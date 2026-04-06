@@ -455,6 +455,28 @@ class OpenClawAgentRuntimeStore:
             state["updated_at"] = _utc_now_iso()
             self._write_state(state)
 
+    def has_active_run(self) -> bool:
+        """Return True if an active run is present (not yet cleared)."""
+        with self._lock:
+            state = self._read_state()
+        return self._normalize_active_run(state.get("active_run")) is not None
+
+    def recover_interrupted_runs(self) -> None:
+        """Mark any active run left over from a previous session as interrupted."""
+        with self._lock:
+            state = self._read_state()
+            active_run = self._normalize_active_run(state.get("active_run"))
+            if not active_run:
+                return
+            active_run["status_label"] = "Interrupted"
+            active_run["cancel_requested"] = True
+            recent = list(state.get("recent_runs") or [])
+            recent.insert(0, {**active_run, "outcome": "interrupted"})
+            state["recent_runs"] = recent[:12]
+            state["active_run"] = None
+            state["updated_at"] = _utc_now_iso()
+            self._write_state(state)
+
     def dismiss_delivery(self, delivery_id: str) -> dict[str, Any]:
         target = str(delivery_id or "").strip()
         if not target:

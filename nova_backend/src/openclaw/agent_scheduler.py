@@ -10,7 +10,13 @@ from src.settings.runtime_settings_store import RuntimeSettingsStore, runtime_se
 from src.tasks.notification_schedule_store import NotificationScheduleStore
 
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 LedgerLogger = Callable[[str, dict[str, Any]], None]
+
+RUN_TIMEOUT_SECONDS = 150.0
 
 
 class OpenClawAgentScheduler:
@@ -41,7 +47,15 @@ class OpenClawAgentScheduler:
     async def start(self) -> None:
         if self.running:
             return
+        self._recover_interrupted_runs()
         self._task = asyncio.create_task(self._run_loop(), name="nova_openclaw_agent_scheduler")
+
+    def _recover_interrupted_runs(self) -> None:
+        """Mark any runs left in 'running' state as interrupted on startup."""
+        try:
+            self._store.recover_interrupted_runs()
+        except Exception:
+            pass
 
     async def stop(self) -> None:
         task = self._task
@@ -111,7 +125,10 @@ class OpenClawAgentScheduler:
                 },
             )
             try:
-                result = await self._runner.run_template(template_id, triggered_by="scheduler")
+                result = await asyncio.wait_for(
+                    self._runner.run_template(template_id, triggered_by="scheduler"),
+                    timeout=RUN_TIMEOUT_SECONDS,
+                )
                 self._store.record_scheduled_run_outcome(
                     template_id,
                     outcome="completed",
@@ -148,7 +165,12 @@ class OpenClawAgentScheduler:
 
     async def _run_loop(self) -> None:
         while True:
-            await self.tick()
+            try:
+                await self.tick()
+            except asyncio.CancelledError:
+                raise
+            except Exception as exc:
+                logger.error("Scheduler tick failed: %s", exc)
             await asyncio.sleep(self.POLL_SECONDS)
 
     def _log(self, event_type: str, metadata: dict[str, Any]) -> None:
