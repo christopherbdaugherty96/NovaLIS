@@ -57,6 +57,7 @@ If there is tension about the eventual strict automation model, this document wi
 - `docs/design/Phase 8/NOVA_GOVERNED_REACH_EXPANSION_AND_OPENCLAW_COMPARISON_2026-04-02.md`
 - `docs/design/Phase 8/NOVA_GOVERNED_VISIBLE_OPERATOR_MODE_TODO_2026-04-02.md`
 - `docs/design/Phase 8/NOVA_OPENCLAW_END_TO_END_EXPANSION_MASTER_TODO_2026-04-02.md`
+- `docs/design/Phase 8/NOVA_PHASE_8_USER_OPERABILITY_AND_RUN_SYSTEM_AUDIT_2026-04-05.md`
 
 This remains useful as a narrower implementation-planning packet.
 It should now be read as supporting context beneath the canonical Phase-8 spec above.
@@ -98,6 +99,12 @@ The crypto and trading packets should be read as a tightly bounded side-track in
 The reach-expansion, visible-operator, and end-to-end expansion packets are future backlog companions:
 - they explain how Nova can widen governed reach without copying unsafe OpenClaw breadth
 - they are roadmap-shaping packets, not proof that broader browser or connector execution is already live
+
+The user-operability audit should be read as the product-clarity companion for the same backlog:
+- it focuses on the gap between a powerful operator system and a usable operator product
+- it argues that run visibility, focus, checkpoint UX, and failure clarity are still core Phase-8 concerns
+- it should shape the remaining run-system work, not be treated as a separate cosmetic-only note
+- it also proposes a concrete first-class run object, a three-mode UI contract, and proof implications for future Phase-8 validation
 
 The visible-operator packet should now also be read alongside:
 - `docs/design/Phase 11/NOVA_INTERACTION_MODEL_V1_STRICT_ON_RISK_SOFT_ON_FLOW_2026-04-02.md`

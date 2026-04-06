@@ -96,12 +96,17 @@ Design docs:
 Design docs:
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
+- `docs/design/Phase 8/NOVA_PHASE_8_USER_OPERABILITY_AND_RUN_SYSTEM_AUDIT_2026-04-05.md`
 
 - `[x]` visible run-state baseline shipped
 - `[ ]` pause / resume controls for governed runs
 - `[ ]` richer interruption, failure, and stop-state UX
 - `[ ]` full envelope execution foundations with explicit budgets and previews
 - `[ ]` shared run visibility across the intended Nova surfaces
+- `[ ]` first-class run object and clearer run timeline across the main operator surfaces
+- `[ ]` stronger checkpoint UX for meaningful outward-facing outcomes
+- `[ ]` lower-noise focus mode so one active task dominates instead of competing with every panel
+- `[ ]` WebSocket hardening for heartbeat, reconnect debounce, and single-connection stability
 
 ---
 
