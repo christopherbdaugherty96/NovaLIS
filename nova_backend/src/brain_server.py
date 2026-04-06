@@ -3426,15 +3426,19 @@ def _get_cached_trust_review_snapshot() -> dict[str, object]:
 async def _maybe_send_trust_review_snapshot(ws: WebSocket, trust_status: dict) -> None:
     async def _refresh_and_push() -> None:
         global _TRUST_REVIEW_CACHE_TS, _TRUST_REVIEW_CACHE
-        async with _TRUST_REVIEW_CACHE_LOCK:
-            cached = _get_cached_trust_review_snapshot()
-            if cached:
-                snapshot = cached
-            else:
-                snapshot = await asyncio.to_thread(_build_trust_review_snapshot)
-                if snapshot:
-                    _TRUST_REVIEW_CACHE = dict(snapshot)
-                    _TRUST_REVIEW_CACHE_TS = time.monotonic()
+        snapshot: dict[str, object] = {}
+        try:
+            async with _TRUST_REVIEW_CACHE_LOCK:
+                cached = _get_cached_trust_review_snapshot()
+                if cached:
+                    snapshot = cached
+                else:
+                    snapshot = await asyncio.to_thread(_build_trust_review_snapshot)
+                    if snapshot:
+                        _TRUST_REVIEW_CACHE = dict(snapshot)
+                        _TRUST_REVIEW_CACHE_TS = time.monotonic()
+        except Exception:
+            return
         if not snapshot:
             return
         payload = normalize_trust_status(trust_status)
@@ -3516,11 +3520,16 @@ async def invoke_governed_capability(
     capability_id: int,
     params: dict,
 ) -> object:
-    return await asyncio.to_thread(
-        governor.handle_governed_invocation,
-        capability_id,
-        params,
-    )
+    try:
+        return await asyncio.to_thread(
+            governor.handle_governed_invocation,
+            capability_id,
+            params,
+        )
+    except Exception:
+        log.exception("Governed capability %s raised unexpectedly — returning failure result", capability_id)
+        from src.actions.action_result import ActionResult as _ActionResult
+        return _ActionResult(success=False, message="An internal error occurred while running that capability.")
 
 
 async def invoke_governed_text_command(
