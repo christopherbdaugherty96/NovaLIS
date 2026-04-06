@@ -284,6 +284,11 @@ def build_openclaw_agent_router(deps) -> APIRouter:
                 status_code=403,
                 detail="OpenClaw home-agent foundations are paused in Settings. Re-enable them before running a template.",
             )
+        if deps.openclaw_agent_runtime_store.has_active_run():
+            raise HTTPException(
+                status_code=409,
+                detail="A home-agent run is already in progress. Wait for it to complete or cancel it first.",
+            )
         try:
             result = await deps.openclaw_agent_runner.run_template(
                 template_id,

@@ -79,19 +79,25 @@ def evaluate_manual_envelope(envelope: TaskEnvelope) -> StrictPreflightDecision:
         violations.append("unsupported_tools:" + ", ".join(sorted(unsupported_tools)))
     if any(tool in {"weather", "news"} for tool in tools) and not list(envelope.allowed_hostnames or []):
         violations.append("allowed_hostnames_missing")
-    if int(envelope.max_steps or 0) > MANUAL_FOUNDATION_MAX_STEPS:
-        violations.append(f"max_steps_exceeds_{MANUAL_FOUNDATION_MAX_STEPS}")
-    if int(envelope.max_duration_s or 0) > MANUAL_FOUNDATION_MAX_DURATION_S:
-        violations.append(f"max_duration_exceeds_{MANUAL_FOUNDATION_MAX_DURATION_S}")
-    if int(envelope.max_network_calls or 0) > MANUAL_FOUNDATION_MAX_NETWORK_CALLS:
-        violations.append(f"max_network_calls_exceeds_{MANUAL_FOUNDATION_MAX_NETWORK_CALLS}")
-    if int(envelope.max_files_touched or 0) > MANUAL_FOUNDATION_MAX_FILES_TOUCHED:
-        violations.append(f"max_files_touched_exceeds_{MANUAL_FOUNDATION_MAX_FILES_TOUCHED}")
-    if int(envelope.max_bytes_read or 0) > MANUAL_FOUNDATION_MAX_BYTES_READ:
-        violations.append(f"max_bytes_read_exceeds_{MANUAL_FOUNDATION_MAX_BYTES_READ}")
-    if int(envelope.max_bytes_written or 0) > MANUAL_FOUNDATION_MAX_BYTES_WRITTEN:
-        violations.append("manual_foundation_disallows_writes")
-    if str(envelope.triggered_by or "").strip() not in MANUAL_FOUNDATION_ALLOWED_TRIGGERS:
+    budget_checks = [
+        ("max_steps", envelope.max_steps, MANUAL_FOUNDATION_MAX_STEPS),
+        ("max_duration_s", envelope.max_duration_s, MANUAL_FOUNDATION_MAX_DURATION_S),
+        ("max_network_calls", envelope.max_network_calls, MANUAL_FOUNDATION_MAX_NETWORK_CALLS),
+        ("max_files_touched", envelope.max_files_touched, MANUAL_FOUNDATION_MAX_FILES_TOUCHED),
+        ("max_bytes_read", envelope.max_bytes_read, MANUAL_FOUNDATION_MAX_BYTES_READ),
+        ("max_bytes_written", envelope.max_bytes_written, MANUAL_FOUNDATION_MAX_BYTES_WRITTEN),
+    ]
+    for label, value, limit in budget_checks:
+        if value is None or int(value) < 0:
+            violations.append(f"{label}_invalid")
+        elif label == "max_bytes_written" and int(value) > limit:
+            violations.append("manual_foundation_disallows_writes")
+        elif int(value) > limit:
+            violations.append(f"{label}_exceeds_{limit}")
+    triggered_by = str(envelope.triggered_by or "").strip()
+    if not triggered_by:
+        violations.append("trigger_missing")
+    elif triggered_by not in MANUAL_FOUNDATION_ALLOWED_TRIGGERS:
         violations.append("trigger_not_allowed")
 
     reason = "Manual envelope accepted by strict home-agent preflight."
