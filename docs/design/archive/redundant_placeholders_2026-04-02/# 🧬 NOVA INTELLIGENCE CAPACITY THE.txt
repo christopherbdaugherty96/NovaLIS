@@ -3,7 +3,7 @@
 This file is superseded.
 
 Use canonical file:
-- `docs/design/Phase 7/# 🧬 NOVA INTELLIGENCE CAPACITY1.2.txt`
+- `docs/design/Phase 10/# 🧬 NOVA INTELLIGENCE CAPACITY1.2.txt`
 
 Authority reminder:
 - Runtime behavior is defined by `docs/current_runtime/CURRENT_RUNTIME_STATE.md`.

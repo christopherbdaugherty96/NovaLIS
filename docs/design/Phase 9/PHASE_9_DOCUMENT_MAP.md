@@ -1,5 +1,5 @@
 # Phase 9 Document Map
-Updated: 2026-03-25
+Updated: 2026-04-05
 Status: Current design map
 Purpose: Separate the governed-node roadmap from older autonomy and mutation theory artifacts
 
@@ -41,6 +41,19 @@ This same packet should be read as a Phase-9 companion vision note:
 - it captures the explicit control-layer model where Nova governs multiple execution nodes
 - it widens capability language without authorizing hidden autonomy
 - it is still subordinate to earlier-phase governance and current runtime truth
+
+## Relocated Architectural Companions (moved here on 2026-04-05)
+- `docs/design/Phase 9/# 🧬 NOVA PHASE 7 ARCHITECTURE.txt`
+- `docs/design/Phase 9/CONTINUOUS AWARENESS & PRESENCE.txt`
+- `docs/design/Phase 9/NOVA MULTI-AGENT GOVERNANCE FRAMEWORK.txt`
+- `docs/design/Phase 9/# 🧬 NOVA MEMORY ARCHITECTURE USER.txt`
+
+These were moved here from Phase 7 because they describe later continuous-presence, node-scale cognition, and cross-surface memory architecture that belong after the bounded external-reasoning phase.
+
+Read them this way:
+- they are future-node and continuity architecture companions
+- they do not redefine Phase 7
+- they still do not authorize hidden autonomy or present-runtime claims
 
 ## Adjacent / Historical Research
 - `docs/design/Phase 9/📘Nova Autonomy & Mutation Control.txt`
@@ -98,6 +111,11 @@ The continuous Agent-OS vision packet should be read this way in Phase 9:
 - this is where Nova becomes a truly continuous node across devices and surfaces
 - cross-client project continuity, shared schedules, shared memory behavior, and one trust model belong here
 - continuity does not equal hidden autonomy
+
+The relocated Phase-7 architecture and awareness packets should be read this way in Phase 9:
+- they capture the first serious continuous-presence and proposal-first system models
+- they belong here as future-node architecture companions
+- they still remain subordinate to the canonical governed-node plan
 
 The autonomy and mutation control essay should be read this way in Phase 9:
 - it is the strongest preserved theory for autonomy tiers, mutation classes, and kill-switch boundaries

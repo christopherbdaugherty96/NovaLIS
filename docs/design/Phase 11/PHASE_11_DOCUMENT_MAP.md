@@ -34,6 +34,16 @@ Important boundary:
 - `docs/design/Phase 11/NOVA_HOME_ASSISTANT_PRODUCT_TRUTH_2026-04-02.md`
 - `docs/design/Phase 11/NOVA_FUTURE_NAMING_NOTE_GHOVLIS_2026-03-21.md`
 
+## Relocated Long-Horizon Product And Presence Companions (moved here on 2026-04-05)
+
+- `docs/design/Phase 11/# 🧬 NOVA — HOUSE INTELLIGENCE MODE.txt`
+- `docs/design/Phase 11/# 🧭 NOVA AS A GOVERNED INTELLIGENT.txt`
+- `docs/design/Phase 11/# 🧭 NOVA END‑STATE VISION.txt`
+- `docs/design/Phase 11/GOVERNED AGENT WITH BUTLER PRESENCE.txt`
+- `docs/design/Phase 11/# Deepseek's Orb(2nd orb).txt`
+
+These were moved here from earlier folders because they are future product-shaping and presence-identity packets, not current implementation order for Phase 6 or Phase 7.
+
 ## How To Read This Folder
 
 Use the folder in layers:
@@ -59,6 +69,7 @@ This explains how the user experience should actually feel:
 - business and revenue/operator positioning
 - governed self-development
 - future naming notes
+- older presence and end-state vision companions
 
 These are lane-specific backlogs, not equal-priority truths.
 
@@ -69,7 +80,7 @@ These are lane-specific backlogs, not equal-priority truths.
 3. `docs/design/Phase 11/NOVA_IDEA_TO_WORKFLOW_OPERATOR_MODEL_TODO_2026-04-02.md`
 4. the specific operator-lane backlog packet you care about
 
-Use the naming note last.
+Use the naming note and the older relocated presence/end-state companions last.
 
 ## Folder Interpretation Rule
 
@@ -78,6 +89,7 @@ Read the Phase-11 folder this way:
 - the interaction doctrine defines the flow-versus-risk contract
 - the operator-model packet explains the user-friendly workflow shape
 - the remaining packets are future-lane expansions that should stay subordinate to that calmer core identity
+- the relocated older presence/end-state packets are companion vision material, not current runtime claims
 - nothing in this folder overrides current runtime truth or earlier-phase governance constraints
 
 ## Folder Hygiene Note

@@ -1,5 +1,5 @@
 # Phase 7 Document Map
-Updated: 2026-04-03
+Updated: 2026-04-05
 Status: Current design map with Phase-7 runtime now complete in the governed external-reasoning lane
 Purpose: Separate the near-term Phase-7 external-reasoning plan from older autonomy-presence exploration documents
 
@@ -115,26 +115,43 @@ Interpretation note:
 - the late remote-bridge and manual home-agent slices are real runtime work
 - they should be read as adjacent late-Phase-7 / pre-Phase-8 foundations, not as a redefinition of the canonical Phase-7 core
 
-## Adjacent / Historical Phase-7-Era Research
-- the older Phase-7 architecture document in this folder
-- the intelligence-capacity thesis in this folder
-- the remaining constitutional, presence, memory, and autonomy essays in this folder
-- summary-review or audit condensation notes in this folder
+## Relocated Future-Phase Planning (2026-04-05)
+The following documents were moved out of the Phase-7 folder because they describe later continuous-presence, autonomy-theory, or end-state product direction rather than the bounded external-reasoning package.
 
-These documents remain valuable research inputs, but they should not be read as the current implementation order for the next Phase-7 package.
-Many of them describe broader presence and background-cognition ideas that are beyond the immediate governed external-reasoning track.
+Moved to Phase 9:
+- `docs/design/Phase 9/# 🧬 NOVA PHASE 7 ARCHITECTURE.txt`
+- `docs/design/Phase 9/CONTINUOUS AWARENESS & PRESENCE.txt`
+- `docs/design/Phase 9/NOVA MULTI-AGENT GOVERNANCE FRAMEWORK.txt`
+- `docs/design/Phase 9/# 🧬 NOVA MEMORY ARCHITECTURE USER.txt`
+
+Moved to Phase 10:
+- `docs/design/Phase 10/# 🧬 CONSTITUTIONAL AMENDMENT AUTON.txt`
+- `docs/design/Phase 10/# 🧬 CONSTITUTIONAL FRAMEWORK LEARN.txt`
+- `docs/design/Phase 10/# 🧬 NOVA INTELLIGENCE CAPACITY1.2.txt`
+- `docs/design/Phase 10/# 🧭 CONSTITUTIONAL INTERPRETATION.txt`
+- `docs/design/Phase 10/# 🧭 THE NATURE OF AUTONOMOUS ACTIO.txt`
+- `docs/design/Phase 10/ON THE LIMITS OF CONTAINMENT.txt`
+
+Moved to Phase 11:
+- `docs/design/Phase 11/# 🧬 NOVA — HOUSE INTELLIGENCE MODE.txt`
+- `docs/design/Phase 11/# 🧭 NOVA AS A GOVERNED INTELLIGENT.txt`
+- `docs/design/Phase 11/# 🧭 NOVA END‑STATE VISION.txt`
+- `docs/design/Phase 11/GOVERNED AGENT WITH BUTLER PRESENCE.txt`
+
+Read those relocated packets as future-phase planning only.
+They are no longer part of the active Phase-7 folder on purpose.
+
+## Adjacent / Historical Phase-7-Era Research
+- `docs/design/Phase 7/# Deep Review of the Nova Constitut.txt`
+- `docs/design/Phase 7/summary audit.txt`
+- `docs/design/Phase 7/websearch improvments..txt`
+- `docs/design/Phase 7/🧬 NOVA TRUTH — MASTER REFERENCE DO.txt`
+- `docs/design/Phase 7/NOVA-PI-BUILD-PHASE7.txt`
+
+These documents remain valuable historical or review inputs, but they should not be read as the current implementation order for the bounded Phase-7 package.
 
 During the 2026-04-02 second-pass cleanup, the tiny deprecated predecessor note for the intelligence-capacity thesis was moved to:
 - `docs/design/archive/redundant_placeholders_2026-04-02/`
-
-Important preserved themes in this adjacent layer:
-- house or household intelligence framing
-- influence-containment vs execution-containment theory
-- learning-from-correction and self-amendment theory
-- continuous awareness and envelope-based autonomy theory
-- memory architecture beyond current explicit-memory runtime
-
-Those themes are useful, but they are future-facing and should not be back-read into current Phase-7 runtime completion.
 
 ## Cross-Phase Inputs
 - `docs/design/Phase 6/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
@@ -149,5 +166,5 @@ Those themes are useful, but they are future-facing and should not be back-read 
 ## Interpretation Rule
 When reading the Phase-7 folder:
 - use the governed external reasoning plan first
-- use the older autonomy/presence docs as exploratory future context only
-- do not treat older Phase-7 autonomy language as runtime authorization
+- use the relocated Phase-9/10/11 packets only when you intentionally need future planning context
+- do not treat any relocated autonomy, presence, or end-state language as runtime authorization

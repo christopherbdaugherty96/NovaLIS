@@ -73,10 +73,12 @@ graph TD
   Routes --> R62_external_reasoning_review[external_reasoning_review -> capability 62]
   Routes --> R49_headline_summary[headline_summary -> capability 49]
   Routes --> R50_intelligence_brief[intelligence_brief -> capability 50]
+  Routes --> R20_media[media -> capability 20]
   Routes --> R61_memory_governance[memory_governance -> capability 61]
   Routes --> R56_news_snapshot[news_snapshot -> capability 56]
   Routes --> R22_open_folder[open_folder -> capability 22]
   Routes --> R17_open_website[open_website -> capability 17]
+  Routes --> R63_openclaw_execute[openclaw_execute -> capability 63]
   Routes --> R49_report[report -> capability 49]
   Routes --> R31_response_verification[response_verification -> capability 31]
   Routes --> R59_screen_analysis[screen_analysis -> capability 59]
@@ -139,10 +141,12 @@ Runtime
 |  |- external_reasoning_review -> 62
 |  |- headline_summary -> 49
 |  |- intelligence_brief -> 50
+|  |- media -> 20
 |  |- memory_governance -> 61
 |  |- news_snapshot -> 56
 |  |- open_folder -> 22
 |  |- open_website -> 17
+|  |- openclaw_execute -> 63
 |  |- report -> 49
 |  |- response_verification -> 31
 |  |- screen_analysis -> 59

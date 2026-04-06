@@ -72,6 +72,8 @@ class OpenClawAgentRunner:
             raise RuntimeError(strict_preflight.reason)
         started_at = _utc_now_iso()
         channels = delivery_channels(template_id, template.get("delivery_mode"))
+        scope_summary = envelope.scope_summary()
+        budget_summary = envelope.budget_summary()
         self._store.set_active_run(
             {
                 "envelope_id": envelope.id,
@@ -84,11 +86,15 @@ class OpenClawAgentRunner:
                 "delivery_channels": channels,
                 "started_at": started_at,
                 "summary": "Collecting sources and preparing a governed briefing.",
+                "scope_summary": scope_summary,
+                "budget_summary": budget_summary,
+                "budget_usage": {},
             }
         )
         try:
             payload = await self._collect_payload(template_id)
             self._check_cancel(envelope.id)
+            budget_usage = self._estimate_budget_usage(template_id, envelope, payload)
             prompt = self._build_summary_prompt(template, payload)
             fallback = self._fallback_summary(template_id, payload)
             usage_meta: dict[str, Any] = {}
@@ -142,6 +148,9 @@ class OpenClawAgentRunner:
                     "estimated_total_tokens": (_estimate_tokens(prompt) + _estimate_tokens(summarized)) if summarized else 0,
                     "summary_route": summary_route,
                     "summary_model": summary_model,
+                    "scope_summary": scope_summary,
+                    "budget_summary": budget_summary,
+                    "budget_usage": budget_usage,
                     "source_notes": dict(payload.get("source_notes") or {}),
                     "strict_preflight": strict_preflight.to_dict(),
                     "usage_meta": usage_meta,
@@ -163,6 +172,9 @@ class OpenClawAgentRunner:
                 "source_notes": dict(payload.get("source_notes") or {}),
                 "strict_preflight": strict_preflight.to_dict(),
                 "usage_meta": usage_meta,
+                "scope_summary": scope_summary,
+                "budget_summary": budget_summary,
+                "budget_usage": budget_usage,
                 "run_record": run_record,
             }
         except RunCancelledError:
@@ -180,6 +192,9 @@ class OpenClawAgentRunner:
                     "started_at": started_at,
                     "completed_at": _utc_now_iso(),
                     "llm_summary_used": False,
+                    "scope_summary": scope_summary,
+                    "budget_summary": budget_summary,
+                    "budget_usage": {},
                     "strict_preflight": strict_preflight.to_dict(),
                 }
             )
@@ -199,6 +214,9 @@ class OpenClawAgentRunner:
                     "started_at": started_at,
                     "completed_at": _utc_now_iso(),
                     "llm_summary_used": False,
+                    "scope_summary": scope_summary,
+                    "budget_summary": budget_summary,
+                    "budget_usage": {},
                     "strict_preflight": strict_preflight.to_dict(),
                 }
             )
@@ -594,6 +612,60 @@ class OpenClawAgentRunner:
             _parts.append("")
             _parts.append(f"Schedules: {schedule_summary}")
         return "\n".join(_parts)
+
+    def _estimate_budget_usage(
+        self,
+        template_id: str,
+        envelope: TaskEnvelope,
+        payload: dict[str, Any],
+    ) -> dict[str, Any]:
+        source_notes = dict(payload.get("source_notes") or {})
+        uses_weather = "weather" in envelope.tools_allowed
+        uses_calendar = "calendar" in envelope.tools_allowed
+        uses_news = "news" in envelope.tools_allowed
+        uses_schedules = "schedules" in envelope.tools_allowed
+        uses_summarize = "summarize" in envelope.tools_allowed
+
+        steps_used = sum(
+            1
+            for flag in (uses_weather, uses_calendar, uses_news, uses_schedules, uses_summarize)
+            if flag
+        )
+        network_calls_estimated = 0
+        if uses_weather:
+            network_calls_estimated += 1
+        if uses_news:
+            network_calls_estimated += 3 if template_id == "market_watch" else 4
+        files_touched_estimated = (
+            1 if uses_calendar and str(source_notes.get("calendar") or "").strip() == "available" else 0
+        )
+        bytes_read_estimated = 0
+        if uses_weather:
+            bytes_read_estimated += 25_000
+        if uses_news:
+            bytes_read_estimated += 220_000 if template_id == "market_watch" else 350_000
+        if files_touched_estimated:
+            bytes_read_estimated += 25_000
+
+        return {
+            "steps_used": steps_used,
+            "steps_budget": int(envelope.max_steps),
+            "network_calls_estimated": network_calls_estimated,
+            "network_calls_budget": int(envelope.max_network_calls),
+            "files_touched_estimated": files_touched_estimated,
+            "files_touched_budget": int(envelope.max_files_touched),
+            "bytes_read_estimated": bytes_read_estimated,
+            "bytes_read_budget": int(envelope.max_bytes_read),
+            "bytes_written_estimated": 0,
+            "bytes_written_budget": int(envelope.max_bytes_written),
+            "metering_mode": "estimated",
+            "summary": (
+                f"Estimated usage: {steps_used}/{int(envelope.max_steps)} steps, "
+                f"{network_calls_estimated}/{int(envelope.max_network_calls)} network calls, "
+                f"{files_touched_estimated}/{int(envelope.max_files_touched)} file touches. "
+                "Byte usage is estimated for now."
+            ),
+        }
 
 
 openclaw_agent_runner = OpenClawAgentRunner(store=openclaw_agent_runtime_store)
