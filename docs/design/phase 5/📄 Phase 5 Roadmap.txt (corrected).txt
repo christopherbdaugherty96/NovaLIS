@@ -129,12 +129,11 @@ Phase-5 runtime is active as a governed personal-intelligence layer for the curr
 ## References (Repository Paths)
 
 - `docs/canonical/NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.9.txt`
-- `docs/design/Phase 5/MEMORY GOVERNANCE.md`
+- `docs/design/phase 5/MEMORY GOVERNANCE.md`
 - `docs/design/Phase 4.2/PresenceDoctrine.md v5.txt`
 - `docs/design/Phase 4.2/Nova Orthogonal Cognition Stack.txt`
 - Tonal Calibration Scope design document (in `docs/design/phase 5`, file starts with `#` and includes `Tonal Calibration Scope`).
 - Tonal Calibration Visibility design document (in `docs/design/phase 5`, file starts with `#` and includes `Tonal Calibration Visibility`).
-- `docs/design/Phase 5/Delegated Autonomy.txt`
+- `docs/design/phase 5/Delegated Autonomy.txt`
 - the consolidated API planning note in this folder
-- `docs/design/Phase 5/NOVA_WORKING_CONTEXT_ENGINE.md`
-
+- `docs/design/phase 5/NOVA_WORKING_CONTEXT_ENGINE.md`
