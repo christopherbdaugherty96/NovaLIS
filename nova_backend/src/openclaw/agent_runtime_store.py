@@ -11,6 +11,7 @@ from src.openclaw.agent_personality_bridge import (
     normalize_delivery_mode,
 )
 from src.openclaw.strict_preflight import strict_foundation_snapshot
+from src.openclaw.task_envelope import TaskEnvelope
 from src.utils.persistent_state import shared_path_lock, write_json_atomic
 
 
@@ -86,6 +87,15 @@ class OpenClawAgentRuntimeStore:
                 "abcnews.go.com",
                 "feeds.foxnews.com",
                 "rss.cnn.com",
+                "www.aljazeera.com",
+                "www.politico.com",
+                "moxie.foxnews.com",
+                "www.theverge.com",
+                "feeds.arstechnica.com",
+                "techcrunch.com",
+                "feeds.content.dowjones.io",
+                "www.coindesk.com",
+                "www.cnbc.com",
             ],
             "delivery_mode": DEFAULT_DELIVERY_MODE_BY_TEMPLATE["morning_brief"],
             "schedule_label": "Planned daily trigger at 7:00 AM",
@@ -128,6 +138,15 @@ class OpenClawAgentRuntimeStore:
                 "abcnews.go.com",
                 "feeds.foxnews.com",
                 "rss.cnn.com",
+                "www.aljazeera.com",
+                "www.politico.com",
+                "moxie.foxnews.com",
+                "www.theverge.com",
+                "feeds.arstechnica.com",
+                "techcrunch.com",
+                "feeds.content.dowjones.io",
+                "www.coindesk.com",
+                "www.cnbc.com",
             ],
             "delivery_mode": DEFAULT_DELIVERY_MODE_BY_TEMPLATE["evening_digest"],
             "schedule_label": "Planned daily trigger at 8:00 PM",
@@ -377,6 +396,23 @@ class OpenClawAgentRuntimeStore:
             state["updated_at"] = _utc_now_iso()
             self._write_state(state)
         return dict(entry)
+
+    def update_active_run(self, envelope_id: str, payload: dict[str, Any]) -> dict[str, Any] | None:
+        target = str(envelope_id or "").strip()
+        if not target:
+            return None
+        with self._lock:
+            state = self._read_state()
+            active_run = self._normalize_active_run(state.get("active_run"))
+            if not active_run or str(active_run.get("envelope_id") or "").strip() != target:
+                return None
+            merged = dict(active_run)
+            for key, value in dict(payload or {}).items():
+                merged[key] = value
+            state["active_run"] = self._normalize_active_run(merged)
+            state["updated_at"] = _utc_now_iso()
+            self._write_state(state)
+            return dict(state["active_run"] or {})
 
     def request_cancel_active_run(self, envelope_id: str | None = None) -> bool:
         """Mark the active run as cancel-requested. Returns True if the flag was set."""
@@ -764,7 +800,8 @@ class OpenClawAgentRuntimeStore:
         title = str(active_run.get("title") or "Task").strip() or "Task"
         triggered_by = str(active_run.get("triggered_by") or "").strip()
         source = "scheduled" if triggered_by == "scheduler" else "manual"
-        return f"{title} is running now through the {source} OpenClaw lane."
+        status = str(active_run.get("status_label") or "Running now").strip() or "Running now"
+        return f"{title} is {status.lower()} through the {source} OpenClaw lane."
 
     def _build_delivery_item(self, run_entry: dict[str, Any]) -> dict[str, Any]:
         return self._normalize_delivery_item(
@@ -786,33 +823,30 @@ class OpenClawAgentRuntimeStore:
         )
 
     def _template_envelope_preview(self, template: dict[str, Any]) -> dict[str, Any]:
-        hostnames = [str(host).strip() for host in list(template.get("allowed_hostnames") or []) if str(host).strip()]
-        tools = [str(tool).strip() for tool in list(template.get("tools_allowed") or []) if str(tool).strip()]
-        scope_summary = (
-            f"Tools: {', '.join(tools)}. Network scope: {', '.join(hostnames[:4])}"
-            + (f", +{len(hostnames) - 4} more." if len(hostnames) > 4 else ".")
-            if hostnames
-            else f"Tools: {', '.join(tools) if tools else 'no tools'}. No external hostnames approved."
+        envelope = TaskEnvelope(
+            id="ENV-PREVIEW",
+            title=str(template.get("title") or "OpenClaw Task").strip(),
+            template_id=str(template.get("id") or "").strip(),
+            tools_allowed=[
+                str(tool).strip()
+                for tool in list(template.get("tools_allowed") or [])
+                if str(tool).strip()
+            ],
+            allowed_hostnames=[
+                str(host).strip()
+                for host in list(template.get("allowed_hostnames") or [])
+                if str(host).strip()
+            ],
+            max_steps=max(0, int(template.get("max_steps") or 0)),
+            max_duration_s=max(0, int(template.get("max_duration_s") or 0)),
+            max_network_calls=max(0, int(template.get("max_network_calls") or 0)),
+            max_files_touched=max(0, int(template.get("max_files_touched") or 0)),
+            max_bytes_read=max(0, int(template.get("max_bytes_read") or 0)),
+            max_bytes_written=max(0, int(template.get("max_bytes_written") or 0)),
+            triggered_by="preview",
+            delivery_mode=str(template.get("delivery_mode") or "widget").strip() or "widget",
         )
-        budget_summary = (
-            f"Up to {int(template.get('max_steps') or 0)} steps, "
-            f"{int(template.get('max_network_calls') or 0)} network call{'s' if int(template.get('max_network_calls') or 0) != 1 else ''}, "
-            f"{int(template.get('max_files_touched') or 0)} file touch{'es' if int(template.get('max_files_touched') or 0) != 1 else ''}, "
-            f"{int(template.get('max_duration_s') or 0)} seconds max."
-        )
-        return {
-            "tools_allowed": tools,
-            "allowed_hostnames": hostnames,
-            "max_steps": int(template.get("max_steps") or 0),
-            "max_duration_s": int(template.get("max_duration_s") or 0),
-            "max_network_calls": int(template.get("max_network_calls") or 0),
-            "max_files_touched": int(template.get("max_files_touched") or 0),
-            "max_bytes_read": int(template.get("max_bytes_read") or 0),
-            "max_bytes_written": int(template.get("max_bytes_written") or 0),
-            "read_only": int(template.get("max_bytes_written") or 0) == 0,
-            "scope_summary": scope_summary,
-            "budget_summary": budget_summary,
-        }
+        return envelope.preview_dict()
 
     def _normalize_delivery_item(self, value: Any) -> dict[str, Any]:
         raw = dict(value or {})

@@ -1,10 +1,14 @@
 from __future__ import annotations
 
 import asyncio
+import json
+import time
+from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
 
 from src.llm import llm_gateway
+from src.governor.network_mediator import NetworkMediator
 from src.openclaw.agent_personality_bridge import (
     OpenClawAgentPersonalityBridge,
     delivery_channels,
@@ -38,6 +42,118 @@ def _estimate_tokens(text: str) -> int:
     return max(1, round(len(raw) / 4))
 
 
+@dataclass
+class RunBudgetMeter:
+    envelope: TaskEnvelope
+    started_monotonic: float = field(default_factory=time.monotonic)
+    steps_used: int = 0
+    network_calls_used: int = 0
+    files_touched_used: int = 0
+    bytes_read_used: int = 0
+    bytes_written_used: int = 0
+    stage_label: str = "Starting now"
+    notes: list[str] = field(default_factory=list)
+
+    def set_stage(self, label: str) -> None:
+        self.stage_label = str(label or "").strip() or self.stage_label
+
+    def _raise_if_over_budget(self, key: str, used: int, budget: int) -> None:
+        if int(budget) >= 0 and int(used) > int(budget):
+            raise RuntimeError(f"Run exceeded envelope {key} budget ({used}/{budget}).")
+
+    def record_step(self, label: str) -> None:
+        self.set_stage(label)
+        self.steps_used += 1
+        self._raise_if_over_budget("step", self.steps_used, int(self.envelope.max_steps))
+
+    def record_network_call(self, url: str) -> None:
+        if not self.envelope.url_allowed(url):
+            raise RuntimeError(f"Run attempted network access outside the envelope: {url}")
+        self.network_calls_used += 1
+        self._raise_if_over_budget(
+            "network call",
+            self.network_calls_used,
+            int(self.envelope.max_network_calls),
+        )
+
+    def record_network_bytes(self, payload: Any) -> None:
+        self.bytes_read_used += _payload_size_bytes(payload)
+        self._raise_if_over_budget(
+            "bytes read",
+            self.bytes_read_used,
+            int(self.envelope.max_bytes_read),
+        )
+
+    def record_file_read(self, path: Any) -> None:
+        self.files_touched_used += 1
+        self._raise_if_over_budget(
+            "file touch",
+            self.files_touched_used,
+            int(self.envelope.max_files_touched),
+        )
+        try:
+            self.bytes_read_used += max(0, int(path.stat().st_size))
+        except Exception:
+            pass
+        self._raise_if_over_budget(
+            "bytes read",
+            self.bytes_read_used,
+            int(self.envelope.max_bytes_read),
+        )
+
+    def snapshot(self) -> dict[str, Any]:
+        duration_seconds = max(0.0, time.monotonic() - self.started_monotonic)
+        return {
+            "steps_used": int(self.steps_used),
+            "steps_budget": int(self.envelope.max_steps),
+            "network_calls_used": int(self.network_calls_used),
+            "network_calls_budget": int(self.envelope.max_network_calls),
+            "files_touched_used": int(self.files_touched_used),
+            "files_touched_budget": int(self.envelope.max_files_touched),
+            "bytes_read_used": int(self.bytes_read_used),
+            "bytes_read_budget": int(self.envelope.max_bytes_read),
+            "bytes_written_used": int(self.bytes_written_used),
+            "bytes_written_budget": int(self.envelope.max_bytes_written),
+            "metering_mode": "measured_narrow_lane",
+            "duration_s": round(duration_seconds, 2),
+            "summary": (
+                f"Measured usage: {int(self.steps_used)}/{int(self.envelope.max_steps)} steps, "
+                f"{int(self.network_calls_used)}/{int(self.envelope.max_network_calls)} network calls, "
+                f"{int(self.files_touched_used)}/{int(self.envelope.max_files_touched)} file touches, "
+                f"{int(self.bytes_read_used)}/{int(self.envelope.max_bytes_read)} bytes read."
+            ),
+        }
+
+
+class MeteredNetworkProxy:
+    def __init__(self, *, delegate: NetworkMediator | None, meter: RunBudgetMeter) -> None:
+        self._delegate = delegate or NetworkMediator()
+        self._meter = meter
+
+    def request(self, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        url = str(kwargs.get("url") or "").strip()
+        self._meter.record_network_call(url)
+        response = self._delegate.request(*args, **kwargs)
+        if kwargs.get("as_json", True):
+            self._meter.record_network_bytes(response.get("data"))
+        else:
+            self._meter.record_network_bytes(response.get("text"))
+        return response
+
+
+def _payload_size_bytes(payload: Any) -> int:
+    if payload is None:
+        return 0
+    if isinstance(payload, bytes):
+        return len(payload)
+    if isinstance(payload, str):
+        return len(payload.encode("utf-8", errors="ignore"))
+    try:
+        return len(json.dumps(payload, ensure_ascii=False, sort_keys=True).encode("utf-8"))
+    except Exception:
+        return len(str(payload).encode("utf-8", errors="ignore"))
+
+
 class OpenClawAgentRunner:
     """Manual first foundation for low-token home-agent briefing runs."""
 
@@ -58,6 +174,8 @@ class OpenClawAgentRunner:
         self._network = network
         self._personality_bridge = OpenClawAgentPersonalityBridge(presenter=presenter)
         self._openai_lane = openai_lane or OpenAIResponsesLane(network=network)
+        self._active_budget_meter: RunBudgetMeter | None = None
+        self._active_envelope: TaskEnvelope | None = None
 
     async def run_template(self, template_id: str, *, triggered_by: str = "dashboard") -> dict[str, Any]:
         template = self._store.get_template(template_id)
@@ -74,6 +192,9 @@ class OpenClawAgentRunner:
         channels = delivery_channels(template_id, template.get("delivery_mode"))
         scope_summary = envelope.scope_summary()
         budget_summary = envelope.budget_summary()
+        budget_meter = RunBudgetMeter(envelope)
+        self._active_budget_meter = budget_meter
+        self._active_envelope = envelope
         self._store.set_active_run(
             {
                 "envelope_id": envelope.id,
@@ -88,19 +209,29 @@ class OpenClawAgentRunner:
                 "summary": "Collecting sources and preparing a governed briefing.",
                 "scope_summary": scope_summary,
                 "budget_summary": budget_summary,
-                "budget_usage": {},
+                "budget_usage": budget_meter.snapshot(),
             }
         )
         try:
+            self._update_run_progress(
+                envelope,
+                status_label="Collecting sources",
+                summary="Collecting governed inputs for this run.",
+            )
             payload = await self._collect_payload(template_id)
             self._check_cancel(envelope.id)
-            budget_usage = self._estimate_budget_usage(template_id, envelope, payload)
             prompt = self._build_summary_prompt(template, payload)
             fallback = self._fallback_summary(template_id, payload)
             usage_meta: dict[str, Any] = {}
             summary_model = ""
             summary_route = "deterministic_fallback"
             summarized = ""
+            budget_meter.record_step("Summarizing")
+            self._update_run_progress(
+                envelope,
+                status_label="Summarizing",
+                summary="Turning the collected inputs into a calm governed result.",
+            )
 
             if template_id != "morning_brief":
                 summarized = self._summarize_with_local_model(template, prompt)
@@ -126,8 +257,14 @@ class OpenClawAgentRunner:
                     summary=raw_summary,
                     openai_attempted=not bool(summarized),
                 )
+            self._update_run_progress(
+                envelope,
+                status_label="Delivering",
+                summary="Presenting the final governed result through Nova.",
+            )
             presented_message = self._personality_bridge.present_result(envelope, raw_summary)
             completed_at = _utc_now_iso()
+            budget_usage = budget_meter.snapshot()
 
             run_record = self._store.record_run(
                 {
@@ -178,6 +315,7 @@ class OpenClawAgentRunner:
                 "run_record": run_record,
             }
         except RunCancelledError:
+            budget_usage = budget_meter.snapshot()
             self._store.record_run(
                 {
                     "envelope_id": envelope.id,
@@ -194,12 +332,13 @@ class OpenClawAgentRunner:
                     "llm_summary_used": False,
                     "scope_summary": scope_summary,
                     "budget_summary": budget_summary,
-                    "budget_usage": {},
+                    "budget_usage": budget_usage,
                     "strict_preflight": strict_preflight.to_dict(),
                 }
             )
             raise
         except Exception as exc:
+            budget_usage = budget_meter.snapshot()
             self._store.record_run(
                 {
                     "envelope_id": envelope.id,
@@ -216,17 +355,45 @@ class OpenClawAgentRunner:
                     "llm_summary_used": False,
                     "scope_summary": scope_summary,
                     "budget_summary": budget_summary,
-                    "budget_usage": {},
+                    "budget_usage": budget_usage,
                     "strict_preflight": strict_preflight.to_dict(),
                 }
             )
             raise
         finally:
+            self._active_budget_meter = None
+            self._active_envelope = None
             self._store.clear_active_run(envelope.id)
 
     def _check_cancel(self, envelope_id: str) -> None:
         if self._store.is_cancel_requested(envelope_id):
             raise RunCancelledError("Run cancelled by user request.")
+
+    def _update_run_progress(
+        self,
+        envelope: TaskEnvelope,
+        *,
+        status_label: str,
+        summary: str,
+    ) -> None:
+        meter = self._active_budget_meter
+        if meter:
+            meter.set_stage(status_label)
+        self._store.update_active_run(
+            envelope.id,
+            {
+                "status": "running",
+                "status_label": str(status_label or "Running now").strip() or "Running now",
+                "summary": str(summary or "").strip(),
+                "budget_usage": meter.snapshot() if meter else {},
+            },
+        )
+
+    def _network_for_run(self) -> Any:
+        meter = self._active_budget_meter
+        if not meter:
+            return self._network
+        return MeteredNetworkProxy(delegate=self._network, meter=meter)
 
     async def _collect_payload(self, template_id: str) -> dict[str, Any]:
         if template_id == "inbox_check":
@@ -245,9 +412,32 @@ class OpenClawAgentRunner:
         return await self._collect_morning_brief_payload()
 
     async def _collect_morning_brief_payload(self) -> dict[str, Any]:
-        weather_result = await self._call_skill(WeatherSkill(network=self._network), "weather", self.WEATHER_TIMEOUT_SECONDS)
-        calendar_result = await self._call_skill(CalendarSkill(), "calendar", self.CALENDAR_TIMEOUT_SECONDS)
-        news_result = await self._call_skill(NewsSkill(network=self._network), "news", self.NEWS_TIMEOUT_SECONDS)
+        weather_result = await self._call_skill(
+            WeatherSkill(network=self._network_for_run()),
+            "weather",
+            self.WEATHER_TIMEOUT_SECONDS,
+            stage_label="Collecting weather",
+        )
+        calendar_result = await self._call_skill(
+            CalendarSkill(),
+            "calendar",
+            self.CALENDAR_TIMEOUT_SECONDS,
+            stage_label="Collecting calendar",
+        )
+        news_result = await self._call_skill(
+            NewsSkill(network=self._network_for_run()),
+            "news",
+            self.NEWS_TIMEOUT_SECONDS,
+            stage_label="Collecting news",
+        )
+        if self._active_budget_meter:
+            self._active_budget_meter.record_step("Reviewing reminders")
+        if self._active_envelope:
+            self._update_run_progress(
+                self._active_envelope,
+                status_label="Reviewing reminders",
+                summary="Checking local schedules and assembling the governed briefing.",
+            )
         schedules = NotificationScheduleStore().summarize()
 
         weather_summary = self._weather_summary(weather_result)
@@ -274,8 +464,26 @@ class OpenClawAgentRunner:
         }
 
     async def _collect_evening_digest_payload(self) -> dict[str, Any]:
-        calendar_result = await self._call_skill(CalendarSkill(), "calendar", self.CALENDAR_TIMEOUT_SECONDS)
-        news_result = await self._call_skill(NewsSkill(network=self._network), "news", self.NEWS_TIMEOUT_SECONDS)
+        calendar_result = await self._call_skill(
+            CalendarSkill(),
+            "calendar",
+            self.CALENDAR_TIMEOUT_SECONDS,
+            stage_label="Collecting calendar",
+        )
+        news_result = await self._call_skill(
+            NewsSkill(network=self._network_for_run()),
+            "news",
+            self.NEWS_TIMEOUT_SECONDS,
+            stage_label="Collecting news",
+        )
+        if self._active_budget_meter:
+            self._active_budget_meter.record_step("Reviewing reminders")
+        if self._active_envelope:
+            self._update_run_progress(
+                self._active_envelope,
+                status_label="Reviewing reminders",
+                summary="Checking local schedules and assembling the governed digest.",
+            )
         schedules = NotificationScheduleStore().summarize()
 
         calendar_summary = self._calendar_summary(calendar_result)
@@ -295,17 +503,31 @@ class OpenClawAgentRunner:
         }
 
     async def _collect_market_watch_payload(self) -> dict[str, Any]:
-        news_result = await self._call_skill(NewsSkill(network=self._network), "market news", self.NEWS_TIMEOUT_SECONDS)
-        widget_data = dict(getattr(news_result, "widget_data", {}) or {})
-        categories = dict(widget_data.get("categories") or {})
-        crypto_bucket = dict(categories.get("crypto") or {})
-        market_summary = str(
-            crypto_bucket.get("summary")
-            or widget_data.get("summary")
-            or getattr(news_result, "message", "")
-            or ""
-        ).strip() or "Market research is unavailable right now."
-        items = list(crypto_bucket.get("items") or widget_data.get("items") or [])
+        meter = self._active_budget_meter
+        envelope = self._active_envelope
+        if meter:
+            meter.record_step("Collecting market news")
+        if envelope:
+            self._update_run_progress(
+                envelope,
+                status_label="Collecting market news",
+                summary="Reading the bounded market-news sources for this run.",
+            )
+
+        skill = NewsSkill(network=self._network_for_run())
+        crypto_group = next(
+            (group for group in list(skill.CATEGORY_GROUPS) if str(group.get("key") or "").strip() == "crypto"),
+            {},
+        )
+        sources = list(crypto_group.get("sources") or [])
+        try:
+            items = await skill._fetch_many(
+                sources,
+                semaphore=asyncio.Semaphore(skill.MAX_CONCURRENT_FEEDS),
+            )
+        except Exception:
+            items = []
+        market_summary = skill._summarize_headlines(items)
         headlines = [
             str(item.get("title") or "").strip()
             for item in items[:3]
@@ -320,11 +542,39 @@ class OpenClawAgentRunner:
             },
         }
 
-    async def _call_skill(self, skill: Any, query: str, timeout_seconds: float) -> Any | None:
+    async def _call_skill(
+        self,
+        skill: Any,
+        query: str,
+        timeout_seconds: float,
+        *,
+        stage_label: str,
+    ) -> Any | None:
+        envelope = self._active_envelope
+        meter = self._active_budget_meter
+        if meter:
+            meter.record_step(stage_label)
+        if envelope:
+            self._update_run_progress(
+                envelope,
+                status_label=stage_label,
+                summary=f"{stage_label}.",
+            )
         try:
-            return await asyncio.wait_for(skill.handle(query), timeout=timeout_seconds)
+            result = await asyncio.wait_for(skill.handle(query), timeout=timeout_seconds)
         except Exception:
             return None
+        self._record_skill_side_effects(skill, result)
+        return result
+
+    def _record_skill_side_effects(self, skill: Any, result: Any | None) -> None:
+        meter = self._active_budget_meter
+        if not meter:
+            return
+        if isinstance(skill, CalendarSkill):
+            calendar_path = CalendarSkill._calendar_path()
+            if calendar_path is not None:
+                meter.record_file_read(calendar_path)
 
     @staticmethod
     def _weather_summary(result: Any | None) -> str:
@@ -413,7 +663,6 @@ class OpenClawAgentRunner:
                 _wline += f" in {_wloc}"
             if _wfcast:
                 _wline += f". {_wfcast}"
-            _wline = _wline.replace("Â°F", "°F")
             lines.append(f"Weather: {_wline}")
         else:
             weather_summary = str(payload.get("weather_summary") or "").strip()
@@ -576,7 +825,6 @@ class OpenClawAgentRunner:
             _weather_line += "."
             if _fcast:
                 _weather_line += f" {_fcast}"
-            _weather_line = _weather_line.replace("Â°F", "°F")
         else:
             _weather_line = str(payload.get("weather_summary") or "Weather unavailable.").strip()
 
@@ -612,60 +860,5 @@ class OpenClawAgentRunner:
             _parts.append("")
             _parts.append(f"Schedules: {schedule_summary}")
         return "\n".join(_parts)
-
-    def _estimate_budget_usage(
-        self,
-        template_id: str,
-        envelope: TaskEnvelope,
-        payload: dict[str, Any],
-    ) -> dict[str, Any]:
-        source_notes = dict(payload.get("source_notes") or {})
-        uses_weather = "weather" in envelope.tools_allowed
-        uses_calendar = "calendar" in envelope.tools_allowed
-        uses_news = "news" in envelope.tools_allowed
-        uses_schedules = "schedules" in envelope.tools_allowed
-        uses_summarize = "summarize" in envelope.tools_allowed
-
-        steps_used = sum(
-            1
-            for flag in (uses_weather, uses_calendar, uses_news, uses_schedules, uses_summarize)
-            if flag
-        )
-        network_calls_estimated = 0
-        if uses_weather:
-            network_calls_estimated += 1
-        if uses_news:
-            network_calls_estimated += 3 if template_id == "market_watch" else 4
-        files_touched_estimated = (
-            1 if uses_calendar and str(source_notes.get("calendar") or "").strip() == "available" else 0
-        )
-        bytes_read_estimated = 0
-        if uses_weather:
-            bytes_read_estimated += 25_000
-        if uses_news:
-            bytes_read_estimated += 220_000 if template_id == "market_watch" else 350_000
-        if files_touched_estimated:
-            bytes_read_estimated += 25_000
-
-        return {
-            "steps_used": steps_used,
-            "steps_budget": int(envelope.max_steps),
-            "network_calls_estimated": network_calls_estimated,
-            "network_calls_budget": int(envelope.max_network_calls),
-            "files_touched_estimated": files_touched_estimated,
-            "files_touched_budget": int(envelope.max_files_touched),
-            "bytes_read_estimated": bytes_read_estimated,
-            "bytes_read_budget": int(envelope.max_bytes_read),
-            "bytes_written_estimated": 0,
-            "bytes_written_budget": int(envelope.max_bytes_written),
-            "metering_mode": "estimated",
-            "summary": (
-                f"Estimated usage: {steps_used}/{int(envelope.max_steps)} steps, "
-                f"{network_calls_estimated}/{int(envelope.max_network_calls)} network calls, "
-                f"{files_touched_estimated}/{int(envelope.max_files_touched)} file touches. "
-                "Byte usage is estimated for now."
-            ),
-        }
-
 
 openclaw_agent_runner = OpenClawAgentRunner(store=openclaw_agent_runtime_store)

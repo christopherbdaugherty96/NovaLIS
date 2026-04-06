@@ -60,6 +60,21 @@ def test_agent_runtime_store_tracks_active_run(tmp_path: Path):
     assert snapshot["active_run"]["budget_usage"]["summary"] == "Estimated usage: 2/6 steps."
     assert snapshot["active_run_summary"] == "Morning Brief is running now through the manual OpenClaw lane."
 
+    updated = store.update_active_run(
+        "ENV-RUN-1",
+        {
+            "status_label": "Summarizing",
+            "summary": "Turning collected inputs into the final result.",
+            "budget_usage": {"summary": "Measured usage: 3/6 steps."},
+        },
+    )
+
+    assert updated is not None
+    snapshot = store.snapshot()
+    assert snapshot["active_run"]["status_label"] == "Summarizing"
+    assert snapshot["active_run"]["budget_usage"]["summary"] == "Measured usage: 3/6 steps."
+    assert snapshot["active_run_summary"] == "Morning Brief is summarizing through the manual OpenClaw lane."
+
     store.clear_active_run("ENV-RUN-1")
 
     cleared = store.snapshot()

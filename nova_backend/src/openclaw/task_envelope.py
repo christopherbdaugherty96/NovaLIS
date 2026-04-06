@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
 from typing import Any
+from urllib.parse import urlparse
 from uuid import uuid4
 
 
@@ -13,6 +14,16 @@ def _utc_now_iso() -> str:
 def _new_envelope_id() -> str:
     stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
     return f"ENV-{stamp}-{uuid4().hex[:6].upper()}"
+
+
+def _normalize_unique_strings(values: list[Any] | None) -> list[str]:
+    cleaned: list[str] = []
+    for item in list(values or []):
+        text = str(item or "").strip()
+        if not text or text in cleaned:
+            continue
+        cleaned.append(text)
+    return cleaned
 
 
 @dataclass
@@ -46,16 +57,8 @@ class TaskEnvelope:
             id=_new_envelope_id(),
             title=str(template.get("title") or "OpenClaw Task").strip(),
             template_id=str(template.get("id") or "").strip(),
-            tools_allowed=[
-                str(item).strip()
-                for item in list(template.get("tools_allowed") or [])
-                if item is not None and str(item).strip()
-            ],
-            allowed_hostnames=[
-                str(item).strip()
-                for item in list(template.get("allowed_hostnames") or [])
-                if item is not None and str(item).strip()
-            ],
+            tools_allowed=_normalize_unique_strings(list(template.get("tools_allowed") or [])),
+            allowed_hostnames=_normalize_unique_strings(list(template.get("allowed_hostnames") or [])),
             max_steps=max(1, int(template.get("max_steps") or 1)),
             max_duration_s=max(15, int(template.get("max_duration_s") or 60)),
             max_network_calls=max(0, int(template.get("max_network_calls") or 0)),
@@ -122,3 +125,21 @@ class TaskEnvelope:
             "budget_summary": self.budget_summary(),
             "read_only": int(self.max_bytes_written) == 0,
         }
+
+    def hostname_allowed(self, hostname: str) -> bool:
+        target = str(hostname or "").strip().lower()
+        if not target:
+            return False
+        allowed = [
+            str(item or "").strip().lower()
+            for item in list(self.allowed_hostnames or [])
+            if str(item or "").strip()
+        ]
+        return any(target == item or target.endswith(f".{item}") for item in allowed)
+
+    def url_allowed(self, url: str) -> bool:
+        try:
+            hostname = str(urlparse(str(url or "").strip()).hostname or "").strip().lower()
+        except Exception:
+            return False
+        return self.hostname_allowed(hostname)

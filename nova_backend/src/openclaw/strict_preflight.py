@@ -77,6 +77,8 @@ def evaluate_manual_envelope(envelope: TaskEnvelope) -> StrictPreflightDecision:
         violations.append("tools_missing")
     if unsupported_tools:
         violations.append("unsupported_tools:" + ", ".join(sorted(unsupported_tools)))
+    if any(tool in {"weather", "news"} for tool in tools) and not list(envelope.allowed_hostnames or []):
+        violations.append("allowed_hostnames_missing")
     if int(envelope.max_steps or 0) > MANUAL_FOUNDATION_MAX_STEPS:
         violations.append(f"max_steps_exceeds_{MANUAL_FOUNDATION_MAX_STEPS}")
     if int(envelope.max_duration_s or 0) > MANUAL_FOUNDATION_MAX_DURATION_S:
@@ -84,7 +86,7 @@ def evaluate_manual_envelope(envelope: TaskEnvelope) -> StrictPreflightDecision:
     if int(envelope.max_network_calls or 0) > MANUAL_FOUNDATION_MAX_NETWORK_CALLS:
         violations.append(f"max_network_calls_exceeds_{MANUAL_FOUNDATION_MAX_NETWORK_CALLS}")
     if int(envelope.max_files_touched or 0) > MANUAL_FOUNDATION_MAX_FILES_TOUCHED:
-        violations.append("manual_foundation_disallows_file_touch")
+        violations.append(f"max_files_touched_exceeds_{MANUAL_FOUNDATION_MAX_FILES_TOUCHED}")
     if int(envelope.max_bytes_read or 0) > MANUAL_FOUNDATION_MAX_BYTES_READ:
         violations.append(f"max_bytes_read_exceeds_{MANUAL_FOUNDATION_MAX_BYTES_READ}")
     if int(envelope.max_bytes_written or 0) > MANUAL_FOUNDATION_MAX_BYTES_WRITTEN:
