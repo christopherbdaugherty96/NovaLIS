@@ -20,7 +20,7 @@ def test_agent_runtime_store_bootstraps_templates(tmp_path: Path):
     assert morning["envelope_preview"]["max_files_touched"] == 1
     assert morning["envelope_preview"]["read_only"] is True
     assert "weather.visualcrossing.com" in morning["envelope_preview"]["allowed_hostnames"]
-    assert "Network scope:" in morning["envelope_preview"]["scope_summary"]
+    assert "Can only reach:" in morning["envelope_preview"]["scope_summary"]
 
 
 def test_agent_runtime_store_updates_delivery_mode(tmp_path: Path):
@@ -46,8 +46,8 @@ def test_agent_runtime_store_tracks_active_run(tmp_path: Path):
             "started_at": "2026-04-03T11:00:00+00:00",
             "summary": "Collecting sources.",
             "scope_summary": "Tools: weather, calendar.",
-            "budget_summary": "Up to 6 steps.",
-            "budget_usage": {"summary": "Estimated usage: 2/6 steps."},
+            "budget_summary": "Can take up to 6 steps.",
+            "budget_usage": {"summary": "Used so far: 2/6 steps."},
         }
     )
 
@@ -56,24 +56,24 @@ def test_agent_runtime_store_tracks_active_run(tmp_path: Path):
     assert snapshot["active_run"]["envelope_id"] == "ENV-RUN-1"
     assert snapshot["active_run"]["template_id"] == "morning_brief"
     assert snapshot["active_run"]["scope_summary"] == "Tools: weather, calendar."
-    assert snapshot["active_run"]["budget_summary"] == "Up to 6 steps."
-    assert snapshot["active_run"]["budget_usage"]["summary"] == "Estimated usage: 2/6 steps."
-    assert snapshot["active_run_summary"] == "Morning Brief is running now through the manual OpenClaw lane."
+    assert snapshot["active_run"]["budget_summary"] == "Can take up to 6 steps."
+    assert snapshot["active_run"]["budget_usage"]["summary"] == "Used so far: 2/6 steps."
+    assert snapshot["active_run_summary"] == "Morning Brief is running now from the Run now flow."
 
     updated = store.update_active_run(
         "ENV-RUN-1",
         {
             "status_label": "Summarizing",
             "summary": "Turning collected inputs into the final result.",
-            "budget_usage": {"summary": "Measured usage: 3/6 steps."},
+            "budget_usage": {"summary": "Used so far: 3/6 steps."},
         },
     )
 
     assert updated is not None
     snapshot = store.snapshot()
     assert snapshot["active_run"]["status_label"] == "Summarizing"
-    assert snapshot["active_run"]["budget_usage"]["summary"] == "Measured usage: 3/6 steps."
-    assert snapshot["active_run_summary"] == "Morning Brief is summarizing through the manual OpenClaw lane."
+    assert snapshot["active_run"]["budget_usage"]["summary"] == "Used so far: 3/6 steps."
+    assert snapshot["active_run_summary"] == "Morning Brief is summarizing from the Run now flow."
 
     store.clear_active_run("ENV-RUN-1")
 

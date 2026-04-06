@@ -546,13 +546,13 @@ function buildOpenClawActiveRunSummary(activeRun) {
   const startedLabel = formatOpenClawRunTimestamp(activeRun.started_at);
   const channels = [];
   if (activeRun.delivery_channels && activeRun.delivery_channels.chat) channels.push("chat");
-  if (activeRun.delivery_channels && activeRun.delivery_channels.widget) channels.push("surface");
-  const source = String(activeRun.triggered_by || "").trim() === "scheduler" ? "scheduled" : "manual";
+  if (activeRun.delivery_channels && activeRun.delivery_channels.widget) channels.push("page");
+  const source = formatOpenClawTriggerLabel(activeRun.triggered_by);
   const statusLabel = String(activeRun.status_label || "Running now").trim() || "Running now";
   return [
     `${String(activeRun.title || "Run").trim() || "Run"} is ${statusLabel.toLowerCase()}.`,
-    `${source} start ${startedLabel}`,
-    channels.length ? `delivery: ${channels.join(" + ")}` : "",
+    `${source} ${startedLabel}`,
+    channels.length ? `shows in ${channels.join(" + ")}` : "",
   ].filter(Boolean).join(" · ");
 }
 
@@ -574,6 +574,17 @@ function buildOpenClawBudgetLines(preview) {
 function buildOpenClawBudgetUsageLine(usage) {
   const data = (usage && typeof usage === "object") ? usage : {};
   return String(data.summary || "").trim();
+}
+
+function formatOpenClawDeliveryModeLabel(mode) {
+  const value = String(mode || "").trim().toLowerCase();
+  if (value === "hybrid") return "chat + page";
+  if (value === "chat") return "chat only";
+  return "page only";
+}
+
+function formatOpenClawTriggerLabel(triggeredBy) {
+  return String(triggeredBy || "").trim() === "scheduler" ? "scheduled" : "started manually";
 }
 
 function buildNewsItemSnippet(item) {
@@ -2482,7 +2493,7 @@ function applyOpenClawAgentPayload(data) {
     ? data.agent
     : (data && typeof data === "object" ? data : {});
   openClawAgentState.loaded = true;
-  openClawAgentState.summary = String(payload.summary || "").trim() || "OpenClaw is Nova's worker layer for manual, reviewable runs.";
+  openClawAgentState.summary = String(payload.summary || "").trim() || "Home Agent helps Nova run manual tasks you can review and stop.";
   openClawAgentState.snapshot = { ...payload };
   openClawAgentState.templates = Array.isArray(payload.templates) ? payload.templates.map((item) => ({ ...item })) : [];
   openClawAgentState.activeRun = (payload.active_run && typeof payload.active_run === "object")
@@ -2638,7 +2649,7 @@ async function runOpenClawAgentTemplate(templateId) {
         ? { chat: true, widget: true }
         : { chat: false, widget: true },
     started_at: new Date().toISOString(),
-    summary: "Collecting sources and preparing a governed briefing.",
+    summary: "Gathering what this task needs and preparing your result.",
   };
   renderOpenClawDeliveryWidget();
   renderOpenClawAgentPage();
@@ -10122,12 +10133,12 @@ function renderOpenClawDeliveryFeed(host, items = [], emptyText = "No agent deli
       : "Unknown time";
     const channels = [];
     if (item.delivery_channels && item.delivery_channels.chat) channels.push("chat");
-    if (item.delivery_channels && item.delivery_channels.widget) channels.push("surface");
+    if (item.delivery_channels && item.delivery_channels.widget) channels.push("page");
     meta.textContent = [
       createdLabel,
-      String(item.triggered_by || "").trim() === "scheduler" ? "scheduled" : "",
-      channels.length ? `delivery: ${channels.join(" + ")}` : "",
-      String(item.delivery_mode || "").trim() || "widget",
+      formatOpenClawTriggerLabel(item.triggered_by),
+      channels.length ? `shown in ${channels.join(" + ")}` : "",
+      formatOpenClawDeliveryModeLabel(item.delivery_mode),
     ].filter(Boolean).join(" · ");
 
     const body = document.createElement("p");
@@ -10206,7 +10217,7 @@ function renderOpenClawAgentPage() {
   if (summary) {
     const runnableCount = Array.isArray(setup.runnable_template_ids) ? setup.runnable_template_ids.length : 0;
     const summaryBits = [
-      String(openClawAgentState.summary || "").trim() || "OpenClaw is Nova's worker layer for manual, reviewable runs.",
+      String(openClawAgentState.summary || "").trim() || "Home Agent helps Nova run manual tasks you can review and stop.",
       permissionEnabled
         ? (runnableCount
           ? `${runnableCount} template${runnableCount === 1 ? "" : "s"} can run now.`
@@ -10225,13 +10236,13 @@ function renderOpenClawAgentPage() {
     clear(runtimeGrid);
     [
       ["Status", String(snapshot.status_label || "Foundation live").trim() || "Foundation live"],
-      ["How it runs", permissionEnabled ? (schedulerPermissionEnabled ? "Manual foundation + narrow scheduler" : "Manual foundation only") : "Paused in Settings"],
+      ["How it runs", permissionEnabled ? (schedulerPermissionEnabled ? "Run now + scheduled briefings" : "Run now only") : "Paused in Settings"],
       ["Templates", `${Number(snapshot.template_count || 0)} total`],
-      ["Manual runs ready", `${Number(snapshot.manual_run_count || 0)} ready`],
-      ["Running now", activeRun ? (String(activeRun.title || "Run").trim() || "Run") : "None"],
-      ["Safety boundary", String(snapshot.strict_foundation_label || "Manual preflight active").trim() || "Manual preflight active"],
+      ["Ready to run", `${Number(snapshot.manual_run_count || 0)} ready`],
+      ["Current task", activeRun ? (String(activeRun.title || "Run").trim() || "Run") : "None"],
+      ["Safety checks", String(snapshot.strict_foundation_label || "Manual preflight active").trim() || "Manual preflight active"],
       ["Deliveries ready", `${Number(snapshot.delivery_ready_count || 0)} waiting`],
-      ["How results appear", "Named tasks can land in chat; quiet tasks stay surface-first"],
+      ["How results appear", "Results can show up in chat, on this page, or both"],
       ["Background schedule", String(snapshot.scheduler_status_label || (schedulerPermissionEnabled ? "Enabled" : "Paused")).trim() || "Paused"],
       ["Schedules", String(snapshot.schedule_summary || "No template schedules enabled yet").trim() || "No template schedules enabled yet"],
     ].forEach(([label, value]) => {
@@ -10259,9 +10270,9 @@ function renderOpenClawAgentPage() {
     clear(setupGrid);
     [
       ["Overall readiness", String(setup.status_label || "Unknown").trim() || "Unknown"],
-      ["Manual runs ready", `${Array.isArray(setup.runnable_template_ids) ? setup.runnable_template_ids.length : 0} template(s)`],
-      ["Can be scheduled", `${Array.isArray(setup.schedule_ready_template_ids) ? setup.schedule_ready_template_ids.length : 0} template(s)`],
-      ["Local summary lane", setup.local_model_ready ? "Ready" : "Fallback mode"],
+      ["Ready to run", `${Array.isArray(setup.runnable_template_ids) ? setup.runnable_template_ids.length : 0} template(s)`],
+      ["Schedule-ready", `${Array.isArray(setup.schedule_ready_template_ids) ? setup.schedule_ready_template_ids.length : 0} template(s)`],
+      ["Local summarizer", setup.local_model_ready ? "Ready" : "Fallback mode"],
       ["Weather source", setup.weather_provider_configured ? "Configured" : "Optional"],
       ["Calendar source", setup.calendar_connected ? "Connected" : "Optional"],
       ["Remote access", setup.remote_bridge_enabled ? "Enabled" : (setup.remote_bridge_token_configured ? "Paused" : "Not configured")],
@@ -10313,7 +10324,7 @@ function renderOpenClawAgentPage() {
         title.textContent = String(template.title || "Template").trim() || "Template";
         const copy = document.createElement("p");
         copy.className = "workspace-board-section-copy";
-        copy.textContent = String(template.description || "").trim() || "Operator template.";
+        copy.textContent = String(template.description || "").trim() || "Saved task.";
         titleWrap.appendChild(title);
         titleWrap.appendChild(copy);
         titleRow.appendChild(titleWrap);
@@ -10327,7 +10338,7 @@ function renderOpenClawAgentPage() {
         [
           ["Category", String(template.category || "Task").trim() || "Task"],
           ["Availability", String(template.availability_label || "Unknown").trim() || "Unknown"],
-          ["Delivery", String(template.delivery_mode || "widget").trim() || "widget"],
+          ["Delivery", formatOpenClawDeliveryModeLabel(template.delivery_mode)],
           ["Schedule", displayedScheduleStatus],
         ].forEach(([label, value]) => chipRow.appendChild(createOverviewChip(label, value)));
         card.appendChild(chipRow);
@@ -10358,16 +10369,16 @@ function renderOpenClawAgentPage() {
         const previewCopy = document.createElement("p");
         previewCopy.className = "first-run-note";
         previewCopy.textContent = buildOpenClawBudgetLines(envelopePreview).join(" ")
-          || "Budget and scope preview will appear here when this template is ready.";
+          || "This task will show its safety limits here when it is ready.";
         card.appendChild(previewCopy);
 
         const previewChips = document.createElement("div");
         previewChips.className = "memory-detail-chip-row";
         [
           ["Steps", String(envelopePreview.max_steps || template.max_steps || 0)],
-          ["Network calls", String(envelopePreview.max_network_calls || template.max_network_calls || 0)],
-          ["Files touched", String(envelopePreview.max_files_touched || template.max_files_touched || 0)],
-          ["Writes", Number(envelopePreview.max_bytes_written || template.max_bytes_written || 0) > 0 ? "Allowed" : "Blocked"],
+          ["Web requests", String(envelopePreview.max_network_calls || template.max_network_calls || 0)],
+          ["Local files", String(envelopePreview.max_files_touched || template.max_files_touched || 0)],
+          ["Can make changes", Number(envelopePreview.max_bytes_written || template.max_bytes_written || 0) > 0 ? "Yes" : "No"],
         ].forEach(([label, value]) => previewChips.appendChild(createOverviewChip(label, value)));
         card.appendChild(previewChips);
 
@@ -10407,7 +10418,7 @@ function renderOpenClawAgentPage() {
         ["widget", "chat", "hybrid"].forEach((mode) => {
           const btn = document.createElement("button");
           btn.type = "button";
-          btn.textContent = mode === "hybrid" ? "Chat + surface" : mode === "chat" ? "Chat only" : "Surface only";
+          btn.textContent = mode === "hybrid" ? "Chat + page" : mode === "chat" ? "Chat only" : "Page only";
           if (String(template.delivery_mode || "").trim() === mode) {
             btn.classList.add("assistant-action-btn");
           }
@@ -10445,15 +10456,15 @@ function renderOpenClawAgentPage() {
       const activeMeta = document.createElement("div");
       activeMeta.textContent = [
         formatOpenClawRunTimestamp(activeRun.started_at),
-        String(activeRun.triggered_by || "").trim() === "scheduler" ? "scheduled" : "manual",
+        formatOpenClawTriggerLabel(activeRun.triggered_by),
         String(activeRun.status_label || "Running now").trim() || "Running now",
       ].filter(Boolean).join(" · ");
       const activeBody = document.createElement("p");
       activeBody.className = "workspace-board-section-copy";
       activeBody.textContent = cancelRequested
         ? "Cancel requested — the run will stop at the next safe checkpoint."
-        : (String(activeRun.summary || "Collecting sources and preparing a governed briefing.").trim()
-          || "Collecting sources and preparing a governed briefing.");
+        : (String(activeRun.summary || "Gathering what it needs and preparing your result.").trim()
+          || "Gathering what it needs and preparing your result.");
       const activeBudget = document.createElement("div");
       activeBudget.className = "memory-detail-empty";
       activeBudget.textContent = [
@@ -10490,8 +10501,11 @@ function renderOpenClawAgentPage() {
       recentRuns.forEach((run) => {
         const runStatus = String(run.status || "completed").trim();
         const isFailed = runStatus === "failed";
+        const isCancelled = runStatus === "cancelled";
         const item = document.createElement("div");
-        item.className = "trust-center-activity-item" + (isFailed ? " openclaw-run-item--failed" : "");
+        item.className = "trust-center-activity-item"
+          + (isFailed ? " openclaw-run-item--failed" : "")
+          + (isCancelled ? " openclaw-run-item--cancelled" : "");
         const title = document.createElement("strong");
         title.textContent = String(run.title || "Run").trim() || "Run";
         const meta = document.createElement("div");
@@ -10500,16 +10514,17 @@ function renderOpenClawAgentPage() {
           : "Unknown time";
         const channels = [];
         if (run.delivery_channels && run.delivery_channels.chat) channels.push("chat");
-        if (run.delivery_channels && run.delivery_channels.widget) channels.push("surface");
+        if (run.delivery_channels && run.delivery_channels.widget) channels.push("page");
         meta.textContent = [
           startedLabel,
-          String(run.triggered_by || "").trim() === "scheduler" ? "scheduled" : "",
-          isFailed ? "failed" : (Number(run.estimated_total_tokens || 0) > 0 ? `${Number(run.estimated_total_tokens || 0).toLocaleString()} estimated tokens` : ""),
-          channels.length && !isFailed ? `delivery: ${channels.join(" + ")}` : "",
+          formatOpenClawTriggerLabel(run.triggered_by),
+          isFailed ? "failed" : (isCancelled ? "cancelled" : (Number(run.estimated_total_tokens || 0) > 0 ? `${Number(run.estimated_total_tokens || 0).toLocaleString()} estimated tokens` : "")),
+          channels.length && !isFailed && !isCancelled ? `shown in ${channels.join(" + ")}` : "",
         ].filter(Boolean).join(" · ");
         const body = document.createElement("p");
         body.className = "workspace-board-section-copy";
-        body.textContent = String(run.presented_message || run.summary || "").trim() || (isFailed ? "Run did not complete." : "Run recorded.");
+        body.textContent = String(run.presented_message || run.summary || "").trim()
+          || (isFailed ? "This task did not complete." : (isCancelled ? "This task was cancelled before it finished." : "This task finished and was recorded."));
         const budget = document.createElement("div");
         budget.className = "memory-detail-empty";
         budget.textContent = [
