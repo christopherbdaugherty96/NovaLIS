@@ -1,5 +1,5 @@
 # Phase-4.2 Proof Packet Index
-Date: 2026-03-11
+Date: 2026-04-05
 Commit Base: 591296c
 Status: Closed (Revalidated)
 Purpose: Canonical proof packet entry for Phase-4.2 closure after final authority hardening and runtime re-certification.
@@ -40,6 +40,8 @@ Purpose: Canonical proof packet entry for Phase-4.2 closure after final authorit
 - Phase-4.2 suite: `17 passed`
 - Runtime documentation drift check passed
 - Frontend mirror sync check passed
+- Focused rerun on 2026-04-05: `19 passed` across `tests/test_phase4_runtime_active.py` and `tests/phase42`
+- Current runtime truth now reports `Phase 4.2 | COMPLETE`
 
 ## Current Assessment
 - Phase-4.2 runtime path remains active and invocation-bound.

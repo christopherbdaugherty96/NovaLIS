@@ -1,7 +1,8 @@
 # Phase 4 Document Map
 
+Updated: 2026-04-05
 Status:
-- foundational identity and early cognition-reference layer
+- closed foundational governance and identity-reference layer
 
 ## Purpose
 
@@ -69,6 +70,7 @@ They should not be treated as current implementation order by themselves.
 - Phase 4.2 carries the orthogonal cognition and presence refinement layer.
 - Phase 4.5 carries the user-facing utility, speech, and product-feel layer.
 - Runtime truth now lives in `docs/current_runtime/`, not in these early Phase-4 notes.
+- The canonical runtime Phase-4 package is sealed; this folder should be read primarily as design history plus enduring identity/governance reference.
 
 ## Interpretation Rule
 

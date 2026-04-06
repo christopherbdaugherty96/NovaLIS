@@ -570,15 +570,92 @@ def _runtime_profile_context(registry: dict[str, Any]) -> dict[str, Any]:
     return {"profile": selected, "groups": [str(g) for g in groups], "known": True}
 
 
+def _phase_4_status(registry: dict[str, Any]) -> str:
+    brain_src = _safe_read(BRAIN_SERVER_PATH)
+    session_handler_src = _safe_read(SESSION_HANDLER_PATH)
+    governor_src = _safe_read(GOVERNOR_PATH)
+    enabled_ids = set(_enabled_registry_ids(registry))
+    required_ids = {16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54}
+
+    foundation_present = all(
+        path.exists()
+        for path in (
+            GOVERNOR_PATH,
+            GOVERNOR_MEDIATOR_PATH,
+            NETWORK_MEDIATOR_PATH,
+            EXECUTE_BOUNDARY_PATH,
+            PROJECT_ROOT / "nova_backend" / "src" / "governor" / "single_action_queue.py",
+            PROJECT_ROOT / "nova_backend" / "src" / "governor" / "capability_registry.py",
+            LEDGER_WRITER_PATH,
+        )
+    )
+    execution_spine_wired = all(
+        token in governor_src
+        for token in ("ExecuteBoundary", "SingleActionQueue", "NetworkMediator", "LedgerWriter")
+    )
+    invocation_runtime_wired = (
+        "GovernorMediator.parse_governed_invocation" in session_handler_src
+        and "GovernorMediator.mediate" in session_handler_src
+        and "handle_governed_invocation" in brain_src
+    )
+    capability_surface_complete = required_ids.issubset(enabled_ids)
+    full_package_live = all(
+        (
+            foundation_present,
+            execution_spine_wired,
+            invocation_runtime_wired,
+            capability_surface_complete,
+            GOVERNED_ACTIONS_ENABLED is True,
+        )
+    )
+
+    if BUILD_PHASE >= 5 and full_package_live:
+        return "COMPLETE"
+    if foundation_present and invocation_runtime_wired and GOVERNED_ACTIONS_ENABLED is True:
+        return "ACTIVE"
+    if foundation_present or GOVERNED_ACTIONS_ENABLED is True:
+        return "PARTIAL"
+    return "DESIGN"
+
+
 def _phase_42_status() -> str:
+    dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
+    session_handler_src = _safe_read(SESSION_HANDLER_PATH)
     agents_present = (PROJECT_ROOT / "nova_backend" / "src" / "agents").exists()
     personality_present = (PROJECT_ROOT / "nova_backend" / "src" / "personality").exists()
     validation_present = (PROJECT_ROOT / "nova_backend" / "src" / "validation").exists()
     brain_src = _safe_read(BRAIN_SERVER_PATH)
     build_src = _safe_read(BUILD_PHASE_PATH)
     compile_gate_present = "PHASE_4_2_ENABLED" in build_src
-    runtime_wired = "PersonalityAgent" in brain_src and "_extract_phase42_query" in brain_src
+    runtime_wired = all(
+        token in "\n".join((brain_src, session_handler_src))
+        for token in (
+            "PersonalityAgent",
+            "_extract_phase42_query",
+            "_build_phase42_agents",
+            "personality_agent.arm_deep_mode()",
+            "phase42_message, apply_personality=False",
+        )
+    )
+    report_surface_present = (
+        "renderIntelligenceBriefWidget" in dashboard_src
+        and "Follow-up analysis" in dashboard_src
+        and "phase42: follow up on this report with deeper analysis" in dashboard_src
+    )
+    full_package_live = all(
+        (
+            agents_present,
+            personality_present,
+            validation_present,
+            compile_gate_present,
+            runtime_wired,
+            report_surface_present,
+            PHASE_4_2_ENABLED,
+        )
+    )
 
+    if BUILD_PHASE >= 5 and full_package_live:
+        return "COMPLETE"
     if (
         agents_present
         and personality_present
@@ -927,7 +1004,7 @@ def _known_runtime_gaps() -> list[str]:
 def _design_runtime_divergences(registry: dict[str, Any]) -> list[str]:
     divergences: list[str] = []
 
-    if _phase_42_status() != "ACTIVE":
+    if _phase_42_status() not in {"ACTIVE", "COMPLETE"}:
         divergences.append(
             "Phase 4.2 orthogonal cognition stack is still design-only or not fully wired at runtime."
         )
@@ -1330,6 +1407,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     known_gaps = _known_runtime_gaps()
     design_divergences = _design_runtime_divergences(registry)
     profile_context = _runtime_profile_context(registry)
+    phase_4_status = _phase_4_status(registry)
     phase_42_status = _phase_42_status()
     phase_45_status = _phase_45_status()
     phase_5_status = _phase_5_status(registry)
@@ -1337,8 +1415,18 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     phase_7_status = _phase_7_status(registry)
     phase_8_status = _phase_8_status()
 
+    if phase_4_status == "COMPLETE":
+        phase_4_note = "Governed execution spine, mediation, queueing, ledger, and boundary controls are complete and sealed"
+    elif phase_4_status == "ACTIVE":
+        phase_4_note = "Governed execution runtime"
+    elif phase_4_status == "PARTIAL":
+        phase_4_note = "Governed execution foundations present but not fully sealed"
+    else:
+        phase_4_note = "Governed execution remains design-only"
     phase_42_note = (
-        "Orthogonal cognition stack enabled via explicit invocation path"
+        "Orthogonal cognition stack, deep-mode arming, and report surfaces are complete and sealed"
+        if phase_42_status == "COMPLETE"
+        else "Orthogonal cognition stack enabled via explicit invocation path"
         if phase_42_status == "ACTIVE"
         else "Orthogonal cognition stack not enabled in runtime"
     )
@@ -1444,7 +1532,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         "| Phase | Status | Notes |",
         "| --- | --- | --- |",
         "| Phase 3.5 | COMPLETE | Governance baseline sealed |",
-        "| Phase 4 | ACTIVE | Governed execution runtime |",
+        f"| Phase 4 | {phase_4_status} | {phase_4_note} |",
         f"| Phase 4.2 | {phase_42_status} | {phase_42_note} |",
         f"| Phase 4.5 | {phase_45_status} | {phase_45_note} |",
         f"| Phase 5 | {phase_5_status} | {phase_5_note} |",
