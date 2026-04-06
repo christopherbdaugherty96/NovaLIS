@@ -49,7 +49,7 @@ class LLMManager:
 
     def __init__(
         self,
-        model: str = "phi3:mini",
+        model: str = "gemma4:e4b",
         base_url: str = "http://localhost:11434",
     ):
         self.model = model

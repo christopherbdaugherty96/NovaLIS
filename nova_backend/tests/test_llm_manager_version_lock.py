@@ -16,7 +16,7 @@ class _FakeNetwork:
 
 def _build_manager(network: _FakeNetwork) -> mod.LLMManager:
     manager = object.__new__(mod.LLMManager)
-    manager.model = "phi3:mini"
+    manager.model = "gemma4:e4b"
     manager.base_url = "http://localhost:11434"
     manager.timeout = 30
     manager.system_prompt = "test system prompt"
@@ -39,10 +39,10 @@ def test_get_model_digest_falls_back_to_tags_when_show_omits_digest():
     manager = _build_manager(
         _FakeNetwork(
             [
-                ModelResponse(status_code=200, data={"model_info": {"general.architecture": "phi3"}}),
+                ModelResponse(status_code=200, data={"model_info": {"general.architecture": "gemma4"}}),
                 ModelResponse(
                     status_code=200,
-                    data={"models": [{"name": "phi3:mini", "digest": "sha256:trusted"}]},
+                    data={"models": [{"name": "gemma4:e4b", "digest": "sha256:trusted"}]},
                 ),
             ]
         )
@@ -81,7 +81,7 @@ def test_check_model_version_accepts_trusted_hash_from_tags_fallback(tmp_path, m
                 ModelResponse(status_code=200, data={"license": "MIT", "model_info": {}}),
                 ModelResponse(
                     status_code=200,
-                    data={"models": [{"name": "phi3:mini", "digest": trusted_digest}]},
+                    data={"models": [{"name": "gemma4:e4b", "digest": trusted_digest}]},
                 ),
             ]
         )
