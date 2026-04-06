@@ -13,10 +13,12 @@ Deterministic surface map for skills, conversation modules, and governor capabil
 | external_reasoning_review | src/governor/governor_mediator.py | governor_capability | no | none | 62 |
 | headline_summary | src/governor/governor_mediator.py | governor_capability | yes | none | 49 |
 | intelligence_brief | src/governor/governor_mediator.py | governor_capability | yes | none | 50 |
+| media | src/governor/governor_mediator.py | governor_capability | no | none | 20 |
 | memory_governance | src/governor/governor_mediator.py | governor_capability | no | none | 61 |
 | news_snapshot | src/governor/governor_mediator.py | governor_capability | yes | none | 56 |
 | open_folder | src/governor/governor_mediator.py | governor_capability | no | none | 22 |
 | open_website | src/governor/governor_mediator.py | governor_capability | no | none | 17 |
+| openclaw_execute | src/governor/governor_mediator.py | governor_capability | no | none | 63 |
 | report | src/governor/governor_mediator.py | governor_capability | yes | none | 49 |
 | response_verification | src/governor/governor_mediator.py | governor_capability | no | none | 31 |
 | screen_analysis | src/governor/governor_mediator.py | governor_capability | no | none | 59 |

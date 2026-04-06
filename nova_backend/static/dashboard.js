@@ -555,6 +555,26 @@ function buildOpenClawActiveRunSummary(activeRun) {
   ].filter(Boolean).join(" · ");
 }
 
+function getOpenClawEnvelopePreview(template) {
+  const preview = (template && typeof template.envelope_preview === "object")
+    ? template.envelope_preview
+    : {};
+  return preview && typeof preview === "object" ? preview : {};
+}
+
+function buildOpenClawBudgetLines(preview) {
+  const data = (preview && typeof preview === "object") ? preview : {};
+  const lines = [];
+  if (String(data.scope_summary || "").trim()) lines.push(String(data.scope_summary || "").trim());
+  if (String(data.budget_summary || "").trim()) lines.push(String(data.budget_summary || "").trim());
+  return lines;
+}
+
+function buildOpenClawBudgetUsageLine(usage) {
+  const data = (usage && typeof usage === "object") ? usage : {};
+  return String(data.summary || "").trim();
+}
+
 function buildNewsItemSnippet(item) {
   const summary = String(item?.summary || "").trim();
   const title = String(item?.title || "").trim();
@@ -10333,6 +10353,23 @@ function renderOpenClawAgentPage() {
         });
         card.appendChild(tools);
 
+        const envelopePreview = getOpenClawEnvelopePreview(template);
+        const previewCopy = document.createElement("p");
+        previewCopy.className = "first-run-note";
+        previewCopy.textContent = buildOpenClawBudgetLines(envelopePreview).join(" ")
+          || "Budget and scope preview will appear here when this template is ready.";
+        card.appendChild(previewCopy);
+
+        const previewChips = document.createElement("div");
+        previewChips.className = "memory-detail-chip-row";
+        [
+          ["Steps", String(envelopePreview.max_steps || template.max_steps || 0)],
+          ["Network calls", String(envelopePreview.max_network_calls || template.max_network_calls || 0)],
+          ["Files touched", String(envelopePreview.max_files_touched || template.max_files_touched || 0)],
+          ["Writes", Number(envelopePreview.max_bytes_written || template.max_bytes_written || 0) > 0 ? "Allowed" : "Blocked"],
+        ].forEach(([label, value]) => previewChips.appendChild(createOverviewChip(label, value)));
+        card.appendChild(previewChips);
+
         const actions = document.createElement("div");
         actions.className = "workspace-board-actions-toolbar";
 
@@ -10416,6 +10453,13 @@ function renderOpenClawAgentPage() {
         ? "Cancel requested — the run will stop at the next safe checkpoint."
         : (String(activeRun.summary || "Collecting sources and preparing a governed briefing.").trim()
           || "Collecting sources and preparing a governed briefing.");
+      const activeBudget = document.createElement("div");
+      activeBudget.className = "memory-detail-empty";
+      activeBudget.textContent = [
+        String(activeRun.scope_summary || "").trim(),
+        String(activeRun.budget_summary || "").trim(),
+        buildOpenClawBudgetUsageLine(activeRun.budget_usage),
+      ].filter(Boolean).join(" ");
       const activeActions = document.createElement("div");
       activeActions.className = "workspace-board-actions-toolbar";
       const cancelBtn = document.createElement("button");
@@ -10430,6 +10474,7 @@ function renderOpenClawAgentPage() {
       activeItem.appendChild(activeTitle);
       activeItem.appendChild(activeMeta);
       activeItem.appendChild(activeBody);
+      if (activeBudget.textContent) activeItem.appendChild(activeBudget);
       activeItem.appendChild(activeActions);
       runList.appendChild(activeItem);
     }
@@ -10464,9 +10509,17 @@ function renderOpenClawAgentPage() {
         const body = document.createElement("p");
         body.className = "workspace-board-section-copy";
         body.textContent = String(run.presented_message || run.summary || "").trim() || (isFailed ? "Run did not complete." : "Run recorded.");
+        const budget = document.createElement("div");
+        budget.className = "memory-detail-empty";
+        budget.textContent = [
+          String(run.scope_summary || "").trim(),
+          String(run.budget_summary || "").trim(),
+          buildOpenClawBudgetUsageLine(run.budget_usage),
+        ].filter(Boolean).join(" ");
         item.appendChild(title);
         item.appendChild(meta);
         item.appendChild(body);
+        if (budget.textContent) item.appendChild(budget);
         runList.appendChild(item);
       });
     }

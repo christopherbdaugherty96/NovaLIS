@@ -1,5 +1,5 @@
 # Phase 6 Document Map
-Updated: 2026-03-28
+Updated: 2026-04-05
 Status: Current design map
 Purpose: Classify the Phase-6 document set by authority and implementation order.
 
@@ -83,7 +83,6 @@ These define the handoff boundary, the philosophical model for delegated autonom
 - `docs/design/Phase 6/PHASE_6_EARLY_LAUNCH_LEGAL_AND_BUSINESS_READINESS.md`
 - `docs/PROOFS/Phase-6/PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN.md`
 - the self-hosted search-index option document in this folder
-- `docs/design/Phase 6/# Deepseek's Orb(2nd orb).txt`
 
 These may be useful during the Phase-6 era, but they are not part of the minimum delegated-autonomy core.
 
@@ -96,15 +95,21 @@ They should be read as:
 - useful strategic planning
 - not the first implementation ladder
 
-## Future-Phase / Pull-Forward Safety Inputs
-- the autonomy-tiers and evolution document in this folder
-- the constitutional-enforcement document in this folder
-- the Firewall and Ledger specification in this folder
+## Relocated Future-Facing Inputs (2026-04-05)
+The following packets were moved out of the Phase-6 folder because they are not part of the ordered Phase-6 trust-core ladder:
 
-These are primarily Phase-9/10+ design materials or pull-forward safety dependencies.
-They should not be read as the first implementation order for the Phase-6 core package.
+- `docs/design/Phase 10/# Autonomy Tiers & Evolution.txt`
+- `docs/design/Phase 10/# 📘 Nova Constitutional Enforcemen.txt`
+- `docs/design/Phase 10/Firewall & Ledger Specification.txt`
+- `docs/design/Phase 11/# Deepseek's Orb(2nd orb).txt`
 
-This includes duplicate or parallel formulations of the same later safety concerns:
+Read them this way:
+- the Phase-10 packets are long-horizon autonomy, mutation, and enforcement theory
+- the Phase-11 orb packet is future product-surface shaping, not a Phase-6 trust-core dependency
+
+These materials remain valuable, but they should not be back-read into the current Phase-6 shipping core.
+
+This future-facing layer still covers the same themes:
 - mutation or evolution control
 - firewall and ledger extensions
 - constitutional enforcement layers
@@ -126,4 +131,4 @@ When reading the Phase-6 folder:
 - use the Phase-6 proof packet to determine what is actually live in runtime
 - use the Phase-5 closed act and Phase-6 deferral note for boundary clarity
 - treat optional UX/infrastructure experiments as non-core
-- treat mutation/evolution documents as future-phase or explicitly pull-forward only
+- treat relocated mutation/evolution/enforcement documents as future-phase theory, not as active Phase-6 sequencing

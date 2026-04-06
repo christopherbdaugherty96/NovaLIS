@@ -15,6 +15,12 @@ def test_agent_runtime_store_bootstraps_templates(tmp_path: Path):
     assert snapshot["strict_foundation_label"] == "Manual preflight active"
     assert any(item["id"] == "morning_brief" for item in snapshot["templates"])
     assert any(item["id"] == "market_watch" for item in snapshot["templates"])
+    morning = next(item for item in snapshot["templates"] if item["id"] == "morning_brief")
+    assert morning["envelope_preview"]["max_network_calls"] == 11
+    assert morning["envelope_preview"]["max_files_touched"] == 1
+    assert morning["envelope_preview"]["read_only"] is True
+    assert "weather.visualcrossing.com" in morning["envelope_preview"]["allowed_hostnames"]
+    assert "Network scope:" in morning["envelope_preview"]["scope_summary"]
 
 
 def test_agent_runtime_store_updates_delivery_mode(tmp_path: Path):
@@ -39,6 +45,9 @@ def test_agent_runtime_store_tracks_active_run(tmp_path: Path):
             "delivery_channels": {"widget": True, "chat": True},
             "started_at": "2026-04-03T11:00:00+00:00",
             "summary": "Collecting sources.",
+            "scope_summary": "Tools: weather, calendar.",
+            "budget_summary": "Up to 6 steps.",
+            "budget_usage": {"summary": "Estimated usage: 2/6 steps."},
         }
     )
 
@@ -46,6 +55,9 @@ def test_agent_runtime_store_tracks_active_run(tmp_path: Path):
 
     assert snapshot["active_run"]["envelope_id"] == "ENV-RUN-1"
     assert snapshot["active_run"]["template_id"] == "morning_brief"
+    assert snapshot["active_run"]["scope_summary"] == "Tools: weather, calendar."
+    assert snapshot["active_run"]["budget_summary"] == "Up to 6 steps."
+    assert snapshot["active_run"]["budget_usage"]["summary"] == "Estimated usage: 2/6 steps."
     assert snapshot["active_run_summary"] == "Morning Brief is running now through the manual OpenClaw lane."
 
     store.clear_active_run("ENV-RUN-1")

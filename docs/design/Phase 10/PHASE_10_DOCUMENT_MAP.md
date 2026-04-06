@@ -1,7 +1,27 @@
 # Phase 10 Document Map
-Updated: 2026-03-25
+Updated: 2026-04-05
 Status: Current design map
 Purpose: Separate long-horizon reviewable learning direction from older speculative Phase-10 text
+
+## Relocated Long-Horizon Theory Packets (moved here on 2026-04-05)
+- `docs/design/Phase 10/# Autonomy Tiers & Evolution.txt`
+- `docs/design/Phase 10/# 📘 Nova Constitutional Enforcemen.txt`
+- `docs/design/Phase 10/Firewall & Ledger Specification.txt`
+- `docs/design/Phase 10/# 🧬 CONSTITUTIONAL AMENDMENT AUTON.txt`
+- `docs/design/Phase 10/# 🧬 CONSTITUTIONAL FRAMEWORK LEARN.txt`
+- `docs/design/Phase 10/# 🧬 NOVA INTELLIGENCE CAPACITY1.2.txt`
+- `docs/design/Phase 10/# 🧭 CONSTITUTIONAL INTERPRETATION.txt`
+- `docs/design/Phase 10/# 🧭 THE NATURE OF AUTONOMOUS ACTIO.txt`
+- `docs/design/Phase 10/ON THE LIMITS OF CONTAINMENT.txt`
+
+These packets were previously scattered across Phase 6 and Phase 7 even though they are long-horizon theory for:
+- reviewable adaptation
+- mutation control
+- influence containment
+- constitutional interpretation
+- future autonomy tiers
+
+They belong here because they are not current runtime sequencing documents.
 
 ## Current Phase-10 Reference Inputs
 - `docs/design/Phase 9/NOVA_NEXT_LEVEL_ROBUST_AGENT_ROADMAP_2026-03-21.md`
@@ -53,6 +73,7 @@ It should remain:
 
 In practice, that means:
 - most concrete substance still lives in earlier-phase packets and the Phase-9 autonomy theory
+- the newly relocated theory packets above now live here on purpose instead of being scattered through earlier-phase folders
 - Phase 10 should not fill up with ordinary roadmap clutter just because it is "later"
 
 It should not become a dumping ground for ordinary UX or connector work.

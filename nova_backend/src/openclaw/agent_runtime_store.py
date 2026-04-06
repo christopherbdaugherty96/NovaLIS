@@ -75,6 +75,18 @@ class OpenClawAgentRuntimeStore:
             "category": "Named briefing",
             "description": "Collect weather, calendar, news, and schedule context into one calm morning report.",
             "tools_allowed": ["weather", "calendar", "news", "schedules", "summarize"],
+            "allowed_hostnames": [
+                "weather.visualcrossing.com",
+                "www.reuters.com",
+                "apnews.com",
+                "feeds.apnews.com",
+                "feeds.npr.org",
+                "feeds.bbci.co.uk",
+                "www.pbs.org",
+                "abcnews.go.com",
+                "feeds.foxnews.com",
+                "rss.cnn.com",
+            ],
             "delivery_mode": DEFAULT_DELIVERY_MODE_BY_TEMPLATE["morning_brief"],
             "schedule_label": "Planned daily trigger at 7:00 AM",
             "schedule_clock_local": "07:00",
@@ -95,6 +107,10 @@ class OpenClawAgentRuntimeStore:
             "availability_reason": "Manual run is live. Scheduled background execution stays opt-in.",
             "max_steps": 6,
             "max_duration_s": 90,
+            "max_network_calls": 11,
+            "max_files_touched": 1,
+            "max_bytes_read": 1_200_000,
+            "max_bytes_written": 0,
         },
         {
             "id": "evening_digest",
@@ -102,6 +118,17 @@ class OpenClawAgentRuntimeStore:
             "category": "Named briefing",
             "description": "Summarize the rest of the day, outstanding schedules, and headline movement in one compact report.",
             "tools_allowed": ["calendar", "news", "schedules", "summarize"],
+            "allowed_hostnames": [
+                "www.reuters.com",
+                "apnews.com",
+                "feeds.apnews.com",
+                "feeds.npr.org",
+                "feeds.bbci.co.uk",
+                "www.pbs.org",
+                "abcnews.go.com",
+                "feeds.foxnews.com",
+                "rss.cnn.com",
+            ],
             "delivery_mode": DEFAULT_DELIVERY_MODE_BY_TEMPLATE["evening_digest"],
             "schedule_label": "Planned daily trigger at 8:00 PM",
             "schedule_clock_local": "20:00",
@@ -122,6 +149,10 @@ class OpenClawAgentRuntimeStore:
             "availability_reason": "Manual run is live. Scheduled background execution stays opt-in.",
             "max_steps": 5,
             "max_duration_s": 90,
+            "max_network_calls": 10,
+            "max_files_touched": 1,
+            "max_bytes_read": 1_000_000,
+            "max_bytes_written": 0,
         },
         {
             "id": "inbox_check",
@@ -129,6 +160,7 @@ class OpenClawAgentRuntimeStore:
             "category": "Quiet review",
             "description": "Future quiet review task for inbox triage and email pull-forward work.",
             "tools_allowed": ["email_read", "summarize"],
+            "allowed_hostnames": [],
             "delivery_mode": DEFAULT_DELIVERY_MODE_BY_TEMPLATE["inbox_check"],
             "schedule_label": "Planned every 30 minutes",
             "schedule_clock_local": "",
@@ -149,6 +181,10 @@ class OpenClawAgentRuntimeStore:
             "availability_reason": "Email review is part of the longer OpenClaw path and is not connected yet.",
             "max_steps": 8,
             "max_duration_s": 120,
+            "max_network_calls": 0,
+            "max_files_touched": 0,
+            "max_bytes_read": 0,
+            "max_bytes_written": 0,
         },
         {
             "id": "market_watch",
@@ -156,6 +192,11 @@ class OpenClawAgentRuntimeStore:
             "category": "Research-only",
             "description": "Read-only market and crypto news watch. Research only; no buy, sell, or broker actions.",
             "tools_allowed": ["news", "summarize"],
+            "allowed_hostnames": [
+                "www.coindesk.com",
+                "www.cnbc.com",
+                "feeds.content.dowjones.io",
+            ],
             "delivery_mode": "widget",
             "schedule_label": "Manual research only",
             "schedule_clock_local": "",
@@ -176,6 +217,10 @@ class OpenClawAgentRuntimeStore:
             "availability_reason": "Read-only market research is allowed. Paper trading and live order execution still stay disabled.",
             "max_steps": 4,
             "max_duration_s": 90,
+            "max_network_calls": 4,
+            "max_files_touched": 0,
+            "max_bytes_read": 700000,
+            "max_bytes_written": 0,
         },
     )
 
@@ -627,8 +672,17 @@ class OpenClawAgentRuntimeStore:
                 for tool in list(merged.get("tools_allowed") or [])
                 if tool is not None and str(tool).strip()
             ]
+            merged["allowed_hostnames"] = [
+                str(host).strip()
+                for host in list(merged.get("allowed_hostnames") or [])
+                if host is not None and str(host).strip()
+            ]
             merged["manual_run_available"] = bool(merged.get("manual_run_available"))
             merged["schedule_enabled"] = bool(merged.get("schedule_enabled"))
+            merged["max_network_calls"] = max(0, int(merged.get("max_network_calls") or 0))
+            merged["max_files_touched"] = max(0, int(merged.get("max_files_touched") or 0))
+            merged["max_bytes_read"] = max(0, int(merged.get("max_bytes_read") or 0))
+            merged["max_bytes_written"] = max(0, int(merged.get("max_bytes_written") or 0))
             merged["schedule_clock_local"] = str(merged.get("schedule_clock_local") or "").strip()
             merged["last_scheduled_window"] = str(merged.get("last_scheduled_window") or "").strip()
             merged["last_scheduled_run_at"] = str(merged.get("last_scheduled_run_at") or "").strip()
@@ -642,6 +696,7 @@ class OpenClawAgentRuntimeStore:
             merged["next_run_at"] = next_run_at
             merged["next_run_label"] = next_run_label
             merged["schedule_status"] = schedule_status
+            merged["envelope_preview"] = self._template_envelope_preview(merged)
             templates.append(merged)
         return templates
 
@@ -668,6 +723,9 @@ class OpenClawAgentRuntimeStore:
             "estimated_total_tokens": int(raw.get("estimated_total_tokens") or 0),
             "summary_route": str(raw.get("summary_route") or "").strip(),
             "summary_model": str(raw.get("summary_model") or "").strip(),
+            "scope_summary": str(raw.get("scope_summary") or "").strip(),
+            "budget_summary": str(raw.get("budget_summary") or "").strip(),
+            "budget_usage": dict(raw.get("budget_usage") or {}),
             "source_notes": dict(raw.get("source_notes") or {}),
             "strict_preflight": dict(raw.get("strict_preflight") or {}),
             "usage_meta": dict(raw.get("usage_meta") or {}),
@@ -694,6 +752,9 @@ class OpenClawAgentRuntimeStore:
             },
             "started_at": str(raw.get("started_at") or _utc_now_iso()),
             "summary": str(raw.get("summary") or "").strip(),
+            "scope_summary": str(raw.get("scope_summary") or "").strip(),
+            "budget_summary": str(raw.get("budget_summary") or "").strip(),
+            "budget_usage": dict(raw.get("budget_usage") or {}),
             "cancel_requested": bool(raw.get("cancel_requested")),
         }
 
@@ -723,6 +784,35 @@ class OpenClawAgentRuntimeStore:
                 "usage_meta": dict(run_entry.get("usage_meta") or {}),
             }
         )
+
+    def _template_envelope_preview(self, template: dict[str, Any]) -> dict[str, Any]:
+        hostnames = [str(host).strip() for host in list(template.get("allowed_hostnames") or []) if str(host).strip()]
+        tools = [str(tool).strip() for tool in list(template.get("tools_allowed") or []) if str(tool).strip()]
+        scope_summary = (
+            f"Tools: {', '.join(tools)}. Network scope: {', '.join(hostnames[:4])}"
+            + (f", +{len(hostnames) - 4} more." if len(hostnames) > 4 else ".")
+            if hostnames
+            else f"Tools: {', '.join(tools) if tools else 'no tools'}. No external hostnames approved."
+        )
+        budget_summary = (
+            f"Up to {int(template.get('max_steps') or 0)} steps, "
+            f"{int(template.get('max_network_calls') or 0)} network call{'s' if int(template.get('max_network_calls') or 0) != 1 else ''}, "
+            f"{int(template.get('max_files_touched') or 0)} file touch{'es' if int(template.get('max_files_touched') or 0) != 1 else ''}, "
+            f"{int(template.get('max_duration_s') or 0)} seconds max."
+        )
+        return {
+            "tools_allowed": tools,
+            "allowed_hostnames": hostnames,
+            "max_steps": int(template.get("max_steps") or 0),
+            "max_duration_s": int(template.get("max_duration_s") or 0),
+            "max_network_calls": int(template.get("max_network_calls") or 0),
+            "max_files_touched": int(template.get("max_files_touched") or 0),
+            "max_bytes_read": int(template.get("max_bytes_read") or 0),
+            "max_bytes_written": int(template.get("max_bytes_written") or 0),
+            "read_only": int(template.get("max_bytes_written") or 0) == 0,
+            "scope_summary": scope_summary,
+            "budget_summary": budget_summary,
+        }
 
     def _normalize_delivery_item(self, value: Any) -> dict[str, Any]:
         raw = dict(value or {})

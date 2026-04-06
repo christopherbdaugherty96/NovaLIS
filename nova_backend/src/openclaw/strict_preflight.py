@@ -21,6 +21,10 @@ MANUAL_FOUNDATION_ALLOWED_TOOLS = frozenset(
 )
 MANUAL_FOUNDATION_MAX_STEPS = 8
 MANUAL_FOUNDATION_MAX_DURATION_S = 120
+MANUAL_FOUNDATION_MAX_NETWORK_CALLS = 12
+MANUAL_FOUNDATION_MAX_FILES_TOUCHED = 2
+MANUAL_FOUNDATION_MAX_BYTES_READ = 2_000_000
+MANUAL_FOUNDATION_MAX_BYTES_WRITTEN = 0
 MANUAL_FOUNDATION_ALLOWED_TRIGGERS = frozenset({"agent_page", "dashboard", "scheduler", "test", "user"})
 
 
@@ -33,6 +37,10 @@ class StrictPreflightDecision:
     allowed_tools: list[str]
     max_steps: int
     max_duration_s: int
+    max_network_calls: int
+    max_files_touched: int
+    max_bytes_read: int
+    max_bytes_written: int
     allowed_triggers: list[str]
 
     def to_dict(self) -> dict[str, object]:
@@ -47,6 +55,10 @@ def strict_foundation_snapshot() -> dict[str, object]:
         "allowed_tools": sorted(MANUAL_FOUNDATION_ALLOWED_TOOLS),
         "max_steps": MANUAL_FOUNDATION_MAX_STEPS,
         "max_duration_s": MANUAL_FOUNDATION_MAX_DURATION_S,
+        "max_network_calls": MANUAL_FOUNDATION_MAX_NETWORK_CALLS,
+        "max_files_touched": MANUAL_FOUNDATION_MAX_FILES_TOUCHED,
+        "max_bytes_read": MANUAL_FOUNDATION_MAX_BYTES_READ,
+        "max_bytes_written": MANUAL_FOUNDATION_MAX_BYTES_WRITTEN,
         "allowed_triggers": sorted(MANUAL_FOUNDATION_ALLOWED_TRIGGERS),
     }
 
@@ -69,6 +81,14 @@ def evaluate_manual_envelope(envelope: TaskEnvelope) -> StrictPreflightDecision:
         violations.append(f"max_steps_exceeds_{MANUAL_FOUNDATION_MAX_STEPS}")
     if int(envelope.max_duration_s or 0) > MANUAL_FOUNDATION_MAX_DURATION_S:
         violations.append(f"max_duration_exceeds_{MANUAL_FOUNDATION_MAX_DURATION_S}")
+    if int(envelope.max_network_calls or 0) > MANUAL_FOUNDATION_MAX_NETWORK_CALLS:
+        violations.append(f"max_network_calls_exceeds_{MANUAL_FOUNDATION_MAX_NETWORK_CALLS}")
+    if int(envelope.max_files_touched or 0) > MANUAL_FOUNDATION_MAX_FILES_TOUCHED:
+        violations.append("manual_foundation_disallows_file_touch")
+    if int(envelope.max_bytes_read or 0) > MANUAL_FOUNDATION_MAX_BYTES_READ:
+        violations.append(f"max_bytes_read_exceeds_{MANUAL_FOUNDATION_MAX_BYTES_READ}")
+    if int(envelope.max_bytes_written or 0) > MANUAL_FOUNDATION_MAX_BYTES_WRITTEN:
+        violations.append("manual_foundation_disallows_writes")
     if str(envelope.triggered_by or "").strip() not in MANUAL_FOUNDATION_ALLOWED_TRIGGERS:
         violations.append("trigger_not_allowed")
 
@@ -84,5 +104,9 @@ def evaluate_manual_envelope(envelope: TaskEnvelope) -> StrictPreflightDecision:
         allowed_tools=sorted(MANUAL_FOUNDATION_ALLOWED_TOOLS),
         max_steps=MANUAL_FOUNDATION_MAX_STEPS,
         max_duration_s=MANUAL_FOUNDATION_MAX_DURATION_S,
+        max_network_calls=MANUAL_FOUNDATION_MAX_NETWORK_CALLS,
+        max_files_touched=MANUAL_FOUNDATION_MAX_FILES_TOUCHED,
+        max_bytes_read=MANUAL_FOUNDATION_MAX_BYTES_READ,
+        max_bytes_written=MANUAL_FOUNDATION_MAX_BYTES_WRITTEN,
         allowed_triggers=sorted(MANUAL_FOUNDATION_ALLOWED_TRIGGERS),
     )

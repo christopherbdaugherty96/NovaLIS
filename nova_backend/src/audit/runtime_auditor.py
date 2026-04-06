@@ -161,6 +161,7 @@ MEDIATOR_TRIGGER_PROBES: dict[str, str] = {
     "show topic memory map": "topic_memory_map",
     "verify this": "response_verification",
     "second opinion": "external_reasoning_review",
+    "morning brief": "openclaw_execute",
     "summarize doc 2": "analysis_document",
     "update story ai regulation": "story_tracker_update",
     "show story ai regulation": "story_tracker_view",
@@ -251,7 +252,7 @@ def _mediator_surface_map() -> dict[str, Any]:
 
     for phrase, group in MEDIATOR_TRIGGER_PROBES.items():
         parsed = GovernorMediator.parse_governed_invocation(phrase, session_id="audit-runtime")
-        cap_id = parsed.capability_id if isinstance(parsed, Invocation) else None
+        cap_id = getattr(parsed, "capability_id", None)
         if cap_id is not None:
             capability_ids.add(cap_id)
         entries.append(

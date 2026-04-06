@@ -130,6 +130,7 @@ Focus:
 - repo audit and remediation
 - sovereignty-alignment realignment
 - local-first intelligence architecture and provider-routing consolidation
+- with long-horizon autonomy/enforcement theory now relocated to later phases
 
 Key moved packets:
 - `docs/design/Phase 6/NOVA_SOVEREIGNTY_PLATFORM_PHASE_REALIGNMENT_2026-03-18.md`
@@ -151,6 +152,7 @@ Focus:
 - conversational competitiveness
 - web-search and news reasoning improvements
 - silent-governor conversational behavior
+- with continuous-presence, autonomy-theory, and end-state product packets relocated to Phases 9-11
 
 Key moved packets:
 - `docs/design/Phase 7/CONVERSATIONAL_CORE_PHASE_PLAN_2026-03-19.md`
@@ -201,6 +203,7 @@ Focus:
 - multi-system coherence
 - more continuous agent-system vision under trust constraints
 - governed capability-growth proposals under explicit human approval
+- newly relocated continuous-presence and node-architecture companions from old Phase 7
 
 Key moved packets:
 - `docs/design/Phase 9/NOVA_CONTINUOUS_AGENT_OS_VISION_AND_TRUST_ROADMAP_2026-03-21.md`
@@ -217,6 +220,7 @@ Path:
 Focus:
 - long-horizon autonomy and mutation-control direction
 - reviewable adaptation and stronger containment-proof thinking
+- now also the home for relocated autonomy, containment, and constitutional-enforcement theory from old Phase 6 and Phase 7
 
 Note:
 - this phase is intentionally thin and is fed mostly by earlier-phase inputs plus adjacent Phase-9 autonomy theory
@@ -234,6 +238,7 @@ Focus:
 - governed creator and business lanes
 - self-development mode
 - future naming/product-lane direction
+- plus relocated end-state, house-intelligence, butler-presence, and future orb product-shaping packets
 
 Interpretation:
 - read the home-assistant product truth first

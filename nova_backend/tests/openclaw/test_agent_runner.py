@@ -52,7 +52,15 @@ async def test_agent_runner_records_manual_brief_without_network(monkeypatch, tm
     assert result["estimated_total_tokens"] == 0
     assert result["usage_meta"]["route"] == "deterministic_fallback"
     assert result["llm_summary_used"] is False
+    assert "weather.visualcrossing.com" in result["envelope"]["allowed_hostnames"]
+    assert result["run_record"]["scope_summary"].startswith("Tools:")
+    assert result["run_record"]["budget_summary"].startswith("Up to 6 steps")
+    assert result["budget_usage"]["steps_used"] == 5
+    assert result["budget_usage"]["files_touched_estimated"] == 1
+    assert "Estimated usage:" in result["budget_usage"]["summary"]
     assert store.snapshot()["recent_runs"][0]["template_id"] == "morning_brief"
+    assert store.snapshot()["recent_runs"][0]["budget_summary"].startswith("Up to 6 steps")
+    assert store.snapshot()["recent_runs"][0]["budget_usage"]["network_calls_estimated"] == 5
     assert store.snapshot()["active_run"] is None
 
 
@@ -231,6 +239,9 @@ def test_request_cancel_active_run_sets_flag(tmp_path):
         "delivery_channels": {"widget": True, "chat": False},
         "started_at": "2026-04-03T07:00:00+00:00",
         "summary": "Collecting sources.",
+        "scope_summary": "Tools: weather.",
+        "budget_summary": "Up to 6 steps.",
+        "budget_usage": {"summary": "Estimated usage: 1/6 steps."},
     })
     assert store.is_cancel_requested("env-001") is False
     result = store.request_cancel_active_run("env-001")
@@ -239,3 +250,5 @@ def test_request_cancel_active_run_sets_flag(tmp_path):
     active = store.snapshot()["active_run"]
     assert active["cancel_requested"] is True
     assert active["status_label"] == "Cancelling\u2026"
+    assert active["budget_summary"] == "Up to 6 steps."
+    assert active["budget_usage"]["summary"] == "Estimated usage: 1/6 steps."
