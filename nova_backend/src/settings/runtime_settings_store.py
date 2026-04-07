@@ -22,6 +22,8 @@ class RuntimeSettingsStore:
     DEFAULT_DAILY_METERED_TOKEN_BUDGET = 4000
     DEFAULT_WARNING_RATIO = 0.8
     DEFAULT_ASSISTIVE_NOTICE_MODE = "suggestive"
+    DEFAULT_MAX_SCHEDULED_RUNS_PER_DAY = 8
+    DEFAULT_DELIVERY_INBOX_MAX_AGE_HOURS = 72
     SETUP_MODE_DEFINITIONS = {
         "local": {
             "label": "Local Mode",
@@ -579,6 +581,8 @@ class RuntimeSettingsStore:
             "assistive_notice_mode": self.DEFAULT_ASSISTIVE_NOTICE_MODE,
             "daily_metered_token_budget": self.DEFAULT_DAILY_METERED_TOKEN_BUDGET,
             "warning_ratio": self.DEFAULT_WARNING_RATIO,
+            "max_scheduled_runs_per_day": self.DEFAULT_MAX_SCHEDULED_RUNS_PER_DAY,
+            "delivery_inbox_max_age_hours": self.DEFAULT_DELIVERY_INBOX_MAX_AGE_HOURS,
             "permissions": {
                 name: self._permission_default(name)
                 for name in self.PERMISSION_DEFINITIONS

@@ -157,12 +157,14 @@ class OpenAIResponsesLane:
         )
         return {
             "text": text,
+            "request_id": str(request_id or "").strip(),
             "usage_meta": self._usage_meta(
                 model=model,
                 task_label=task_label,
                 usage=usage,
                 estimated_cost_usd=estimated_cost_usd,
                 usage_snapshot=usage_snapshot,
+                request_id=request_id,
             ),
         }
 
@@ -233,6 +235,7 @@ class OpenAIResponsesLane:
         usage: dict[str, Any],
         estimated_cost_usd: float,
         usage_snapshot: dict[str, Any],
+        request_id: str = "",
     ) -> dict[str, Any]:
         total_tokens = int(usage.get("total_tokens") or 0)
         measurement_label = "Exact tokens" if bool(usage.get("exact_usage_available")) else "Estimated tokens"
@@ -265,5 +268,7 @@ class OpenAIResponsesLane:
             "estimated_cost_usd": estimated_cost_usd,
             "budget_state": str(usage_snapshot.get("budget_state") or "normal").strip() or "normal",
             "budget_state_label": str(usage_snapshot.get("budget_state_label") or "Normal").strip() or "Normal",
+            "budget_warning_triggered": str(usage_snapshot.get("budget_state") or "").strip() == "warning",
+            "request_id": str(request_id or "").strip(),
             "summary": summary,
         }
