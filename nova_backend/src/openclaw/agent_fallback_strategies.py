@@ -1,0 +1,1 @@
+# Graceful degradation with multi-level fallbacks
