@@ -77,6 +77,10 @@ class OpenClawAgentScheduler:
         completed: list[dict[str, Any]] = []
         due_templates = self._store.due_scheduled_templates(now=now)
         deliveries_last_hour = self._store.scheduled_delivery_count_last_hour(now=now)
+        deliveries_today = self._store.scheduled_delivery_count_today(now=now)
+        max_daily = int(self._settings.snapshot().get("max_scheduled_runs_per_day") or 8)
+        if deliveries_today >= max_daily:
+            return completed
 
         for claim in due_templates:
             template_id = str(claim.get("template_id") or "").strip()
