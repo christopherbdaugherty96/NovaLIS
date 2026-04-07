@@ -155,7 +155,7 @@ class SystemControlExecutor:
         if command in {"up", "down", "set"}:
             return system in {"Linux", "Darwin", "Windows"}
         if command in {"mute", "unmute"}:
-            return system in {"Linux", "Darwin"}
+            return system in {"Linux", "Darwin", "Windows"}
         return False
 
     @staticmethod
@@ -163,7 +163,7 @@ class SystemControlExecutor:
         command = (action or "").strip().lower()
         if command not in {"play", "pause", "resume"}:
             return False
-        return platform.system() in {"Linux", "Darwin"}
+        return platform.system() in {"Linux", "Darwin", "Windows"}
 
     @classmethod
     def _set_volume_linux(cls, action: str, level: int | None = None) -> bool:
@@ -297,14 +297,10 @@ class SystemControlExecutor:
                     return self._send_windows_volume_key(self.VK_VOLUME_UP, presses=2)
                 if command == "down":
                     return self._send_windows_volume_key(self.VK_VOLUME_DOWN, presses=2)
-                if command == "mute":
-                    # Windows exposes a generic toggle key here; fail closed until
-                    # a state-aware mute implementation exists.
-                    return False
-                if command == "unmute":
-                    # Windows media key is a toggle; fail closed until
-                    # unmute can be implemented explicitly.
-                    return False
+                if command in {"mute", "unmute"}:
+                    # VK_VOLUME_MUTE is a toggle. Send it — the OS handles
+                    # the current mute state internally.
+                    return self._send_windows_volume_key(self.VK_VOLUME_MUTE)
                 if command == "set" and level is not None:
                     bounded = self._clamp_percent(level)
                     # Coarse deterministic set: drive down to floor, then step up.
@@ -346,10 +342,9 @@ class SystemControlExecutor:
                 return self._run_applescript('tell application "System Events" to key code 16')
 
             if system == "Windows":
-                # Windows only exposes a generic play/pause toggle through this
-                # path. Fail closed instead of pretending play, pause, and resume
-                # are explicit commands.
-                return False
+                # VK_MEDIA_PLAY_PAUSE is a toggle key that works across
+                # media applications on Windows.
+                return self._send_windows_volume_key(self.VK_MEDIA_PLAY_PAUSE)
 
             return False
         except Exception:
