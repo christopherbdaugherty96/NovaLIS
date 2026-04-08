@@ -22,6 +22,7 @@ from src.openclaw.per_tool_budget import PerToolBudgetTracker, ToolBudgetConfig
 from src.openclaw.robust_executor import RetryConfig, RobustExecutor
 from src.openclaw.strict_preflight import evaluate_manual_envelope
 from src.openclaw.task_envelope import TaskEnvelope
+from src.openclaw.thinking_loop import ThinkingLoop
 from src.openclaw.tool_registry import get_tool_registry
 from src.personality.conversation_personality_agent import ConversationPersonalityAgent
 from src.providers.openai_responses_lane import OpenAIResponsesLane, OpenAIResponsesLaneError
@@ -953,5 +954,93 @@ class OpenClawAgentRunner:
             _parts.append("")
             _parts.append(f"Schedules: {schedule_summary}")
         return "\n".join(_parts)
+
+    # ------------------------------------------------------------------
+    # Goal-based execution (ThinkingLoop path)
+    # ------------------------------------------------------------------
+
+    async def run_goal(self, goal: str, *, triggered_by: str = "user") -> dict[str, Any]:
+        """Run a freeform goal through the LLM-guided thinking loop.
+
+        Unlike run_template() which executes a fixed template, this accepts
+        any natural language goal and lets the ThinkingLoop reason about
+        which tools to use and in what order.
+
+        Returns the full execution record from ThinkingLoop.run() plus
+        a presentable summary.
+        """
+        if not (goal or "").strip():
+            raise ValueError("Goal cannot be empty")
+
+        t0 = time.monotonic()
+
+        loop = ThinkingLoop(
+            registry=self._tool_registry,
+            executor=self._robust_executor,
+            network=self._network,
+        )
+
+        result = await loop.run(goal.strip())
+
+        # Record execution stats to memory
+        for thought in result.get("thoughts", []):
+            for tool_name in thought.selected_tools:
+                tool_result = thought.results.get(tool_name)
+                self._execution_memory.record(
+                    tool_name=tool_name,
+                    task_type="goal",
+                    success=tool_result is not None and not (
+                        isinstance(tool_result, dict) and tool_result.get("error")
+                    ),
+                    duration_seconds=thought.duration_seconds,
+                )
+                self._per_tool_budget.record_call(
+                    tool_name,
+                    duration_seconds=thought.duration_seconds,
+                    success=tool_result is not None,
+                )
+
+        # Build a presentable summary from the last successful thought
+        summary = self._summarize_goal_result(goal, result)
+
+        total_duration = time.monotonic() - t0
+
+        return {
+            "goal": goal,
+            "triggered_by": triggered_by,
+            "success": result.get("success", False),
+            "steps": result.get("steps", 0),
+            "summary": summary,
+            "thoughts": result.get("thoughts", []),
+            "total_duration_seconds": round(total_duration, 3),
+            "per_tool_budget": self._per_tool_budget.snapshot(),
+        }
+
+    @staticmethod
+    def _summarize_goal_result(goal: str, result: dict[str, Any]) -> str:
+        """Extract a human-readable summary from thinking loop results."""
+        thoughts = result.get("thoughts", [])
+        if not thoughts:
+            return f"I wasn't able to make progress on: {goal}"
+
+        # Collect successful results
+        summaries: list[str] = []
+        for thought in thoughts:
+            for tool_name, tool_result in thought.results.items():
+                if tool_result is None:
+                    continue
+                if isinstance(tool_result, dict) and tool_result.get("error"):
+                    continue
+                msg = getattr(tool_result, "message", None)
+                if msg:
+                    summaries.append(str(msg).strip())
+
+        if summaries:
+            return " ".join(summaries[:3])
+
+        if result.get("success"):
+            return f"Completed goal: {goal}"
+        return f"Attempted but could not fully complete: {goal}"
+
 
 openclaw_agent_runner = OpenClawAgentRunner(store=openclaw_agent_runtime_store)

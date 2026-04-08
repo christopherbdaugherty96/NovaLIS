@@ -29,7 +29,15 @@ def test_legacy_web_search_tool_is_sealed_non_network_shim():
 
 
 def test_legacy_web_search_skill_files_are_removed_from_live_runtime():
-    assert not (SRC_ROOT / "skills" / "web_search.py").exists()
+    # web_search.py now exists as a governed skill routing through WebSearchExecutor
+    # (capability 16 via NetworkMediator). Verify it does NOT bypass the mediator.
+    if (SRC_ROOT / "skills" / "web_search.py").exists():
+        source = _read(SRC_ROOT / "skills" / "web_search.py")
+        # Must NOT import requests directly or use DDGS
+        assert "import requests" not in source
+        assert "from ddgs import DDGS" not in source
+        # Must route through the governed executor
+        assert "WebSearchExecutor" in source
     assert not (SRC_ROOT / "skills" / "web_search_skill.py").exists()
 
 
