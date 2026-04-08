@@ -21,6 +21,8 @@ def _build_manager(network: _FakeNetwork) -> mod.LLMManager:
     manager.timeout = 30
     manager.system_prompt = "test system prompt"
     manager._network = network
+    manager.fallback_model = ""
+    manager._using_fallback = False
     manager.failure_count = 0
     manager.circuit_open_until = 0
     manager.default_options = {

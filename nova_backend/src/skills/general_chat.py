@@ -18,6 +18,8 @@ from src.conversation.safety_filter import SafetyFilter
 from src.conversation.deepseek_safety_wrapper import DeepSeekSafetyWrapper
 from src.governor.network_mediator import NetworkMediator
 from src.llm.llm_gateway import generate_chat
+from src.memory.user_memory_store import UserMemoryStore, user_memory_store
+from src.memory.nova_self_memory_store import NovaSelfMemoryStore, nova_self_memory_store
 from src.personality.nova_style_contract import NovaStyleContract
 from src.personality.tone_profile_store import ToneProfileStore
 
@@ -78,16 +80,26 @@ class GeneralChatSkill(BaseSkill):
     BASE_CONTRACT = (
         "You are Nova, a friendly personal assistant.\n"
         "\n"
-        "How to communicate:\n"
-        "- Be warm, natural, and genuinely helpful.\n"
-        "- Talk like a knowledgeable friend — approachable and real.\n"
-        "- Give complete, useful answers. Don't be unnecessarily brief.\n"
-        "- Match the user's energy and tone.\n"
-        "- It's okay to be conversational and show personality.\n"
-        "- Answer directly. Expand when it genuinely helps.\n"
+        "Core personality:\n"
+        "- Warm, direct, and genuinely helpful.\n"
+        "- Like a capable, thoughtful friend — not a corporate assistant.\n"
+        "- Lightly witty when the moment calls for it, never forced.\n"
+        "- Curious about what the user is working on.\n"
+        "\n"
+        "Communication:\n"
+        "- Give complete, useful answers. Don't cut yourself short.\n"
+        "- Use natural, conversational language with good flow.\n"
+        "- Match the user's energy — casual when they're casual, focused when they need depth.\n"
+        "- If you know things about the user from the memory context below, "
+        "weave them in naturally — do not announce that you are recalling memory.\n"
+        "- Do not introduce yourself unless explicitly asked.\n"
+        "- Do not claim capabilities you do not have.\n"
+        "- Do not mention being an AI, virtual assistant, or similar.\n"
         "- If the request is unclear, ask a quick clarification.\n"
-        "- Don't claim capabilities you don't have.\n"
-        "- Don't introduce yourself unless asked.\n"
+        "\n"
+        "For greetings and casual conversation:\n"
+        "- Respond warmly and naturally, not with a template.\n"
+        "- Keep it brief but genuine.\n"
     )
 
     TONE_BLOCKS: Dict[str, str] = {
@@ -264,11 +276,31 @@ class GeneralChatSkill(BaseSkill):
         (re.compile(r"\b(?:go with|pick|choose|take)\s+(?:the\s+)?(?:last|final)\b|\b(?:the|that)\s+(?:last|final)\b", re.IGNORECASE), -1),
     )
 
+    # Auto-memory extraction patterns: (regex, category, key_name)
+    _MEMORY_PATTERNS: tuple[tuple[re.Pattern, str, str], ...] = (
+        (re.compile(r"\bmy name is (\w[\w ]{0,30})", re.I), "personal", "name"),
+        (re.compile(r"\bcall me (\w[\w ]{0,20})", re.I), "personal", "preferred_name"),
+        (re.compile(r"\bi (?:really )?(?:like|love|enjoy) (.{3,60}?)(?:\.|,|!|$)", re.I), "preferences", "likes"),
+        (re.compile(r"\bi (?:really )?(?:dislike|hate|don'?t like) (.{3,60}?)(?:\.|,|!|$)", re.I), "preferences", "dislikes"),
+        (re.compile(r"\bi (?:work|am working) (?:at|for|on) (.{3,60}?)(?:\.|,|!|$)", re.I), "work", "employer"),
+        (re.compile(r"\bi(?:'m| am) a (.{3,40}?)(?:\.|,|!|$)", re.I), "work", "role"),
+        (re.compile(r"\bi prefer (.{3,60}?)(?:\.|,|!|$)", re.I), "preferences", "preference"),
+        (re.compile(r"\bmy birthday is (.{3,30}?)(?:\.|,|!|$)", re.I), "important_dates", "birthday"),
+        (re.compile(r"\bmy (?:wife|husband|partner|spouse)(?:'s| is| name is)? (\w[\w ]{1,20})", re.I), "relationships", "partner"),
+    )
+    # False-positive blocklist for auto-extraction
+    _MEMORY_EXTRACT_BLOCKLIST = frozenset({
+        "that", "this", "it", "the way", "how", "what", "when",
+        "to", "the idea", "the concept", "the approach",
+    })
+
     def __init__(
         self,
         policy_config: Optional[dict] = None,
         network: NetworkMediator | None = None,
         tone_store: ToneProfileStore | None = None,
+        user_memory: UserMemoryStore | None = None,
+        nova_memory: NovaSelfMemoryStore | None = None,
     ):
         self.heuristics = ComplexityHeuristics()
         self.policy = EscalationPolicy(policy_config)
@@ -278,6 +310,8 @@ class GeneralChatSkill(BaseSkill):
         self.style_router = ResponseStyleRouter()
         self.formatter = ResponseFormatter()
         self._tone_store = tone_store or ToneProfileStore()
+        self._user_memory = user_memory or user_memory_store
+        self._nova_memory = nova_memory or nova_self_memory_store
 
     def can_handle(self, query: str) -> bool:
         q = InputNormalizer.normalize(query).lower().strip(".?!")
@@ -317,6 +351,23 @@ class GeneralChatSkill(BaseSkill):
             return "balanced"
         return profile
 
+    def _build_memory_context(self) -> str:
+        """Build a compact memory context block for prompt injection."""
+        parts: list[str] = []
+        try:
+            user_ctx = self._user_memory.render_context_block(max_chars=300)
+            if user_ctx:
+                parts.append(f"What you know about the user:\n{user_ctx}")
+        except Exception:
+            pass
+        try:
+            relationship_ctx = self._nova_memory.get_relationship_context(max_chars=150)
+            if relationship_ctx:
+                parts.append(f"Relationship context:\n{relationship_ctx}")
+        except Exception:
+            pass
+        return "\n\n".join(parts)
+
     def _build_system_prompt(
         self,
         mode: str,
@@ -324,6 +375,7 @@ class GeneralChatSkill(BaseSkill):
         tone_profile: str = "balanced",
         presentation_preference: str = "",
         last_answer_kind: str = "",
+        memory_context: str = "",
     ) -> str:
         mode_block = NovaStyleContract.chat_mode_guidance(mode)
         tone_block = self.TONE_BLOCKS.get(tone_profile, self.TONE_BLOCKS["balanced"])
@@ -343,6 +395,8 @@ class GeneralChatSkill(BaseSkill):
         blocks = [self.BASE_CONTRACT, tone_block, mode_block, style_block]
         if presentation_block:
             blocks.append(presentation_block)
+        if memory_context:
+            blocks.append(memory_context)
         return "\n\n".join(block.strip() for block in blocks if block.strip())
 
     def _resolve_max_tokens(
@@ -596,9 +650,10 @@ class GeneralChatSkill(BaseSkill):
         if not canonical:
             return None
 
+        # Greetings now flow through the LLM for warm, contextual responses.
+        # Only thanks and status queries get deterministic fast paths.
         response = (
-            self._GREETING_RESPONSES.get(canonical)
-            or self._THANKS_RESPONSES.get(canonical)
+            self._THANKS_RESPONSES.get(canonical)
             or self._STATUS_RESPONSES.get(canonical)
         )
         if not response:
@@ -1450,12 +1505,14 @@ class GeneralChatSkill(BaseSkill):
             explicit_depth=explicit_depth,
         )
         shaped_style = self._presentation_style(style, presentation_preference=presentation_preference)
+        memory_context = self._build_memory_context()
         system_prompt = self._build_system_prompt(
             mode,
             shaped_style,
             tone_profile=tone_profile,
             presentation_preference=presentation_preference,
             last_answer_kind=prior_conversation.last_answer_kind,
+            memory_context=memory_context,
         )
         max_tokens = self._resolve_max_tokens(
             mode,
@@ -1480,7 +1537,7 @@ class GeneralChatSkill(BaseSkill):
                 session_id=session_id,
                 system_prompt=system_prompt,
                 max_tokens=max_tokens,
-                temperature=0.7,
+                temperature=0.7 if mode == "casual" else 0.5,
             )
             text = self._sanitize_response(text or "")
             if not text:
@@ -1505,6 +1562,9 @@ class GeneralChatSkill(BaseSkill):
                 tone_profile=tone_profile,
             )
 
+            # Fire-and-forget memory extraction from the user's query
+            self._extract_and_save_memories(normalized_query)
+
             return SkillResult(
                 success=True,
                 message=text,
@@ -1521,6 +1581,29 @@ class GeneralChatSkill(BaseSkill):
             )
         except Exception:
             return None
+
+    def _extract_and_save_memories(self, query: str) -> None:
+        """Detect personal info in the user's message and save to user memory."""
+        try:
+            for pattern, category, key_name in self._MEMORY_PATTERNS:
+                match = pattern.search(query)
+                if not match:
+                    continue
+                value = match.group(1).strip().rstrip(".,!?")
+                if not value or len(value) < 2:
+                    continue
+                if value.lower() in self._MEMORY_EXTRACT_BLOCKLIST:
+                    continue
+                self._user_memory.save(
+                    category,
+                    key_name,
+                    value,
+                    context=query[:200],
+                    source="observed",
+                    confidence=0.85,
+                )
+        except Exception:
+            pass
 
     async def handle(self, query: str, context: Optional[list] = None, session_state: Optional[dict] = None) -> SkillResult | None:
         social = self._local_social_result(query)

@@ -16,6 +16,7 @@ from typing import Optional, Dict, Any
 from src.ledger.writer import LedgerWriter
 from src.governor.exceptions import LedgerWriteFailed
 from src.llm.model_network_mediator import ModelNetworkMediator, ModelNetworkMediatorError
+from src.nova_config import OLLAMA_MODEL, OLLAMA_FALLBACK_MODEL, OLLAMA_URL
 from .system_prompt import SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
@@ -55,11 +56,13 @@ class LLMManager:
 
     def __init__(
         self,
-        model: str = "gemma4:e4b",
-        base_url: str = "http://localhost:11434",
+        model: str | None = None,
+        fallback_model: str | None = None,
+        base_url: str | None = None,
     ):
-        self.model = model
-        self.base_url = base_url
+        self.model = str(model or OLLAMA_MODEL or "gemma4:e4b").strip()
+        self.fallback_model = str(fallback_model or OLLAMA_FALLBACK_MODEL or "").strip()
+        self.base_url = str(base_url or OLLAMA_URL or "http://localhost:11434").strip()
         self.timeout = 30
         self.system_prompt = SYSTEM_PROMPT
         self._network = ModelNetworkMediator()

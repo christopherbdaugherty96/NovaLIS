@@ -339,6 +339,7 @@ def build_assistive_notices_widget(
     trust_snapshot: dict[str, Any] | None = None,
     assistive_notice_mode: str = "suggestive",
     explicit_request: bool = False,
+    permission_granted: bool = True,
 ) -> dict[str, Any]:
     state = dict(session_state or {})
     working_context = dict(working_context_snapshot or state.get("working_context") or {})
@@ -388,7 +389,9 @@ def build_assistive_notices_widget(
     candidate_notices = [
         _decorate_notice(item)
         for item in notices
-        if isinstance(item, dict) and _clean(item.get("type")) in allowed_types
+        if isinstance(item, dict)
+        and _clean(item.get("type")) in allowed_types
+        and (permission_granted or not item.get("requires_permission"))
     ]
 
     notice_state = _normalize_notice_state(state.get("assistive_notice_state"))
