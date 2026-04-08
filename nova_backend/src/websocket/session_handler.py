@@ -272,7 +272,19 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
     initial_trust_refresh_task: asyncio.Task[None] | None = None
 
-    await send_chat_message(ws, "Hello. How can I help?")
+    # Check for version lock and surface it clearly at session start
+    _startup_notice = ""
+    try:
+        from src.llm.llm_gateway import is_model_update_pending
+        if is_model_update_pending():
+            _startup_notice = (
+                "\n\n⚠️ Local model inference is currently locked pending confirmation. "
+                "A model or prompt change was detected. Say **confirm model update** to re-enable."
+            )
+    except Exception:
+        pass
+
+    await send_chat_message(ws, f"Hey — what are you working on?{_startup_notice}")
     await send_chat_done(ws)
 
     async def _send_initial_trust_status() -> None:

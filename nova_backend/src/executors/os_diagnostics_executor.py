@@ -557,6 +557,8 @@ class OSDiagnosticsExecutor:
         try:
             from src.llm.llm_manager import llm_manager
 
+            active_model = str(getattr(llm_manager, "active_model", llm_manager.model))
+            using_fallback = bool(getattr(llm_manager, "_using_fallback", False))
             endpoint_available = bool(llm_manager.health_check())
             inference_blocked = bool(getattr(llm_manager, "inference_blocked", False))
 
@@ -564,28 +566,36 @@ class OSDiagnosticsExecutor:
                 if endpoint_available:
                     return (
                         "blocked",
-                        "Local model is reachable, but inference is locked pending explicit confirmation.",
+                        f"Local model ({active_model}) is reachable, but inference is locked pending explicit confirmation.",
                         "Run 'confirm model update' to re-enable local inference.",
                         False,
                     )
                 return (
                     "blocked",
-                    "Local inference is locked pending explicit confirmation, and the model endpoint is not currently reachable.",
+                    f"Local inference is locked pending explicit confirmation, and the model endpoint ({active_model}) is not currently reachable.",
                     "Start the local model service, then run 'confirm model update'.",
                     False,
+                )
+
+            if using_fallback:
+                return (
+                    "fallback",
+                    f"Local model ({active_model}) is running on the fallback model after primary failures.",
+                    "Check the primary model and restart if available.",
+                    True,
                 )
 
             if endpoint_available:
                 return (
                     "available",
-                    "Local model endpoint is reachable and inference is enabled.",
+                    f"Local model ({active_model}) is reachable and inference is enabled.",
                     "",
                     True,
                 )
 
             return (
                 "unavailable",
-                "Local model endpoint did not respond or the configured model is missing.",
+                f"Local model endpoint ({active_model}) did not respond or the configured model is missing.",
                 "Start the local model service and verify the configured model is installed.",
                 False,
             )
