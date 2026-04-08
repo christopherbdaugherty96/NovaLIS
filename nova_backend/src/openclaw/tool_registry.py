@@ -116,6 +116,7 @@ class ToolRegistry:
 def _bootstrap() -> ToolRegistry:
     """Create and populate the global tool registry."""
     from src.skills.calendar import CalendarSkill
+    from src.skills.executor_adapter import ExecutorSkillAdapter
     from src.skills.news import NewsSkill
     from src.skills.system import SystemSkill
     from src.skills.weather import WeatherSkill
@@ -190,6 +191,121 @@ def _bootstrap() -> ToolRegistry:
             timeout_seconds=10.0,
             cost_per_call=0.0,
             is_network_tool=True,
+        ),
+    )
+
+    # ------------------------------------------------------------------
+    # Executor-backed tools (via generic adapter)
+    # ------------------------------------------------------------------
+
+    def _volume_factory(**_: Any) -> ExecutorSkillAdapter:
+        from src.executors.volume_executor import VolumeExecutor
+        return ExecutorSkillAdapter(
+            name="volume",
+            description="Control system volume",
+            executor_factory=VolumeExecutor,
+            capability_id=19,
+            param_extractor=lambda q: {"command": q},
+        )
+
+    registry.register(
+        "volume",
+        _volume_factory,
+        ToolMetadata(
+            name="volume",
+            description="Control system volume (up, down, mute, set level)",
+            category="mutation",
+            tags=("volume", "sound", "audio", "mute", "loud", "quiet"),
+            timeout_seconds=3.0,
+        ),
+    )
+
+    def _brightness_factory(**_: Any) -> ExecutorSkillAdapter:
+        from src.executors.brightness_executor import BrightnessExecutor
+        return ExecutorSkillAdapter(
+            name="brightness",
+            description="Control screen brightness",
+            executor_factory=BrightnessExecutor,
+            capability_id=21,
+            param_extractor=lambda q: {"command": q},
+        )
+
+    registry.register(
+        "brightness",
+        _brightness_factory,
+        ToolMetadata(
+            name="brightness",
+            description="Control screen brightness (up, down, set level)",
+            category="mutation",
+            tags=("brightness", "screen", "dim", "bright", "display"),
+            timeout_seconds=3.0,
+        ),
+    )
+
+    def _media_factory(**_: Any) -> ExecutorSkillAdapter:
+        from src.executors.media_executor import MediaExecutor
+        return ExecutorSkillAdapter(
+            name="media",
+            description="Control media playback",
+            executor_factory=MediaExecutor,
+            capability_id=20,
+            param_extractor=lambda q: {"command": q},
+        )
+
+    registry.register(
+        "media",
+        _media_factory,
+        ToolMetadata(
+            name="media",
+            description="Control media playback (play, pause, skip, previous)",
+            category="mutation",
+            tags=("media", "music", "play", "pause", "skip", "next", "previous", "song"),
+            timeout_seconds=3.0,
+        ),
+    )
+
+    def _webpage_factory(**_: Any) -> ExecutorSkillAdapter:
+        from src.executors.webpage_launch_executor import WebpageLaunchExecutor
+        from src.ledger.writer import LedgerWriter
+        return ExecutorSkillAdapter(
+            name="open_webpage",
+            description="Open a webpage in the default browser",
+            executor_factory=lambda: WebpageLaunchExecutor(LedgerWriter()),
+            capability_id=17,
+            param_extractor=lambda q: {"url": q},
+        )
+
+    registry.register(
+        "open_webpage",
+        _webpage_factory,
+        ToolMetadata(
+            name="open_webpage",
+            description="Open a URL in the default browser",
+            category="mutation",
+            tags=("open", "webpage", "browser", "url", "website", "launch"),
+            timeout_seconds=5.0,
+        ),
+    )
+
+    def _screen_capture_factory(**_: Any) -> ExecutorSkillAdapter:
+        from src.executors.screen_capture_executor import ScreenCaptureExecutor
+        return ExecutorSkillAdapter(
+            name="screen_capture",
+            description="Take a screenshot of the current screen",
+            executor_factory=lambda: ScreenCaptureExecutor(),
+            capability_id=58,
+            param_extractor=lambda q: {"command": q},
+        )
+
+    registry.register(
+        "screen_capture",
+        _screen_capture_factory,
+        ToolMetadata(
+            name="screen_capture",
+            description="Take a screenshot of the current screen",
+            category="collection",
+            tags=("screenshot", "screen", "capture", "photo", "snap"),
+            timeout_seconds=5.0,
         ),
     )
 

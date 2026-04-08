@@ -324,3 +324,198 @@ async def test_param_extraction_failure_uses_defaults():
     assert result["steps"] == 1
     # Should have used TOOL_PARAMETER_DEFAULTS fallback
     assert result["thoughts"][0].parameters["weather"] == {"location": "auto"}
+
+
+# ------------------------------------------------------------------
+# LLM synthesis
+# ------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_run_includes_synthesis():
+    """run() result should include a 'synthesis' key."""
+    loop = _make_loop()
+
+    llm_responses = iter([
+        "Fetch the current weather.",
+        '["weather"]',
+        '{"location": "auto"}',
+        "yes",
+        "It's sunny and warm today.",  # synthesis
+    ])
+
+    def mock_generate_chat(prompt, **kwargs):
+        return next(llm_responses)
+
+    with patch("src.openclaw.thinking_loop.llm_gateway") as mock_gw:
+        mock_gw.generate_chat = mock_generate_chat
+        result = await loop.run("What's the weather?")
+
+    assert "synthesis" in result
+    assert result["synthesis"]  # non-empty
+
+
+@pytest.mark.asyncio
+async def test_synthesis_fallback_on_llm_failure():
+    """If LLM synthesis fails, should fall back to static join."""
+    loop = _make_loop()
+
+    call_idx = 0
+
+    def mock_generate_chat(prompt, **kwargs):
+        nonlocal call_idx
+        call_idx += 1
+        if "What should be done next" in prompt:
+            return "Fetch weather"
+        if "Which tools" in prompt:
+            return '["weather"]'
+        if "What parameters" in prompt:
+            return '{"location": "auto"}'
+        if "Has the goal been achieved" in prompt:
+            return "yes"
+        if "Write a concise" in prompt:
+            raise RuntimeError("LLM unavailable")
+        return ""
+
+    with patch("src.openclaw.thinking_loop.llm_gateway") as mock_gw:
+        mock_gw.generate_chat = mock_generate_chat
+        result = await loop.run("Get weather")
+
+    # Should have a synthesis (static fallback) and not crash
+    assert "synthesis" in result
+
+
+# ------------------------------------------------------------------
+# Failed tools filtering
+# ------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_failed_tools_excluded_from_selection():
+    """Tools that failed in a previous step should not be re-selected."""
+    # Register a tool that always returns None (failure)
+    reg = ToolRegistry()
+    reg.register(
+        "broken",
+        lambda **kw: _FakeSkill(None),
+        ToolMetadata(name="broken", description="Broken", category="collection",
+                     tags=("broken",), timeout_seconds=1.0),
+    )
+    reg.register(
+        "weather",
+        lambda **kw: _FakeSkill("sunny"),
+        ToolMetadata(name="weather", description="Weather", category="collection",
+                     tags=("weather",), timeout_seconds=5.0, is_network_tool=True),
+    )
+    loop = ThinkingLoop(
+        registry=reg,
+        executor=RobustExecutor(retry_config=RetryConfig(max_retries=0)),
+    )
+
+    step = 0
+
+    def mock_generate_chat(prompt, **kwargs):
+        nonlocal step
+        step += 1
+        if "What should be done next" in prompt:
+            return "Try tools"
+        if "Which tools" in prompt:
+            if "Do NOT select" in prompt and "broken" in prompt:
+                return '["weather"]'  # LLM avoids broken tool
+            return '["broken"]'  # First time, selects broken
+        if "What parameters" in prompt:
+            return '{}'
+        if "Has the goal been achieved" in prompt:
+            return "yes"
+        if "Write a concise" in prompt:
+            return "Done"
+        return ""
+
+    with patch("src.openclaw.thinking_loop.llm_gateway") as mock_gw:
+        mock_gw.generate_chat = mock_generate_chat
+        result = await loop.run("Test failure filtering")
+
+    assert result["steps"] >= 1
+
+
+# ------------------------------------------------------------------
+# Progress callback
+# ------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_progress_callback_called():
+    """Progress callback should fire after each step."""
+    loop = _make_loop()
+    progress_calls = []
+
+    def on_progress(step_num, status, tools):
+        progress_calls.append((step_num, status, tools))
+
+    loop.set_progress_callback(on_progress)
+
+    llm_responses = iter([
+        "Fetch weather",
+        '["weather"]',
+        '{"location": "auto"}',
+        "yes",
+        "Sunny weather today.",
+    ])
+
+    def mock_generate_chat(prompt, **kwargs):
+        return next(llm_responses)
+
+    with patch("src.openclaw.thinking_loop.llm_gateway") as mock_gw:
+        mock_gw.generate_chat = mock_generate_chat
+        await loop.run("Get weather")
+
+    assert len(progress_calls) == 1
+    assert progress_calls[0][0] == 1  # step_num
+    assert progress_calls[0][2] == ["weather"]  # tools
+
+
+# ------------------------------------------------------------------
+# ExecutionMemory integration
+# ------------------------------------------------------------------
+
+@pytest.mark.asyncio
+async def test_optimal_order_used_when_memory_provided():
+    """When execution_memory is set, tools should be reordered."""
+    from src.openclaw.execution_memory import ExecutionMemory
+    import tempfile, os
+
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
+        f.write(b"[]")
+        path = f.name
+
+    try:
+        mem = ExecutionMemory(path=path)
+        # Record: news is very reliable, weather is unreliable
+        for _ in range(5):
+            mem.record("news", "goal", success=True, duration_seconds=0.1)
+            mem.record("weather", "goal", success=False, duration_seconds=1.0)
+
+        loop = ThinkingLoop(
+            registry=_make_registry(),
+            executor=RobustExecutor(retry_config=RetryConfig(max_retries=0)),
+            execution_memory=mem,
+        )
+
+        llm_responses = iter([
+            "Fetch weather and news",
+            '["weather", "news"]',
+            '{}',
+            '{}',
+            "yes",
+            "Weather and news.",
+        ])
+
+        def mock_generate_chat(prompt, **kwargs):
+            return next(llm_responses)
+
+        with patch("src.openclaw.thinking_loop.llm_gateway") as mock_gw:
+            mock_gw.generate_chat = mock_generate_chat
+            result = await loop.run("Get weather and news")
+
+        # news should come first (higher reliability)
+        if result["steps"] >= 1:
+            assert result["thoughts"][0].selected_tools[0] == "news"
+    finally:
+        os.unlink(path)

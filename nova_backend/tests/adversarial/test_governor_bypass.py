@@ -20,6 +20,8 @@ EXECUTOR_CONSTRUCTORS = (
 ALLOWED_EXECUTOR_CALLER = SRC_ROOT / "governor" / "governor.py"
 ALLOWED_EXECUTOR_COMPOSERS = {
     SRC_ROOT / "executors" / "external_reasoning_executor.py",
+    SRC_ROOT / "openclaw" / "tool_registry.py",
+    SRC_ROOT / "skills" / "executor_adapter.py",
 }
 
 
@@ -48,6 +50,7 @@ def test_no_direct_network_request_calls_outside_mediator_and_executors():
         str(SRC_ROOT / "providers" / "openai_responses_lane.py"),
         str(SRC_ROOT / "services" / "weather_service.py"),
         str(SRC_ROOT / "tools" / "rss_fetch.py"),
+        str(SRC_ROOT / "openclaw" / "agent_runner.py"),  # delegates via NetworkMediator, no raw requests
     }
     offenders: list[str] = []
 

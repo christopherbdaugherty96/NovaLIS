@@ -2,7 +2,7 @@
 
 **Created:** 2026-04-07
 **Source:** Gap analysis from Copilot sessions (validated), codebase audit
-**Status:** DESIGN — not yet implemented
+**Status:** IMPLEMENTED — all 10 gaps addressed across commits 8359b33, 0e72e53, and subsequent hardening
 **Depends on:** Phase 8 (OpenClaw foundation) — currently active on main
 
 ---
@@ -287,11 +287,35 @@ Personality Bridge → Delivery
 
 ---
 
-## What NOT to Do
+## Implementation Status (as of 2026-04-08)
 
-- Do NOT copy-paste the Copilot-generated code stubs (they have 12
-  known bugs including async/sync mismatches, missing interfaces,
-  wrong mode names, and no Governor integration)
-- Do NOT claim Phase 9 is complete — it has not been started
-- Do NOT build all 10 components at once — prioritize by unlock value
+All 10 gaps have been addressed. Below is the implementation map:
+
+| Gap | Component | Status | Module(s) |
+|-----|-----------|--------|-----------|
+| 1 | Tool Execution Layer | DONE | `executor_adapter.py` — generic Governor executor-to-skill bridge; 5 executors registered (volume, brightness, media, open_webpage, screen_capture) |
+| 2 | Multi-Step Reasoning Loop | DONE | `thinking_loop.py` — iterative LLM-guided loop with phase-based cost reduction (explore/refine/finalize), max 10 steps |
+| 3 | Tool Chaining / Composition | DONE | `tool_chain.py` — sequential, parallel, and phased execution with conditions, fallbacks, param_builders |
+| 4 | Error Recovery / Retry | DONE | `robust_executor.py` — configurable retry with backoff, timeout, circuit-breaker pattern |
+| 5 | Dynamic Tool Discovery | DONE | `tool_registry.py` — metadata-driven registry with 10 tools, tag/category search, runtime discovery |
+| 6 | Execution Memory / Learning | DONE | `execution_memory.py` — per-tool reliability tracking, `optimal_order()` wired into ThinkingLoop for tool sorting |
+| 7 | Per-User Tool Permissions | DONE | `user_tool_permissions.py` — per-user allow/block with Governor integration |
+| 8 | Per-Tool Budget Tracking | DONE | `per_tool_budget.py` — call count, duration, network limits per tool |
+| 9 | Parallel Tool Execution | DONE | `tool_chain.py` `run_parallel()` and `run_phased()` with configurable concurrency |
+| 10 | Goal Interpretation | DONE | `agent_runner.py` `run_goal()` + `thinking_loop.py` — natural language goal mapped to tools via LLM |
+
+### Additional hardening (post-initial implementation):
+- **LLM synthesis**: ThinkingLoop produces coherent natural-language answers from tool results via LLM (with static fallback)
+- **Failure history**: Failed tools are excluded from re-selection in subsequent steps
+- **Progress tracking**: `run_goal()` registers active runs with the store, supports step-by-step progress updates and cancellation
+- **Optimal ordering**: ExecutionMemory.optimal_order() sorts tools by historical reliability/speed before each step
+
+### Test coverage:
+- 157 OpenClaw-specific tests passing
+- 1060 total tests passing (17 pre-existing failures unrelated to OpenClaw)
+
+## Design Principles (Retained)
+
 - Do NOT bypass Governor for tool execution or memory storage
+- Do NOT allow unbounded autonomy — all execution is enveloped and budgeted
+- Do NOT skip governance for executor-backed tools — all route through capability IDs

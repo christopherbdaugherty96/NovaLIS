@@ -978,9 +978,50 @@ class OpenClawAgentRunner:
             registry=self._tool_registry,
             executor=self._robust_executor,
             network=self._network,
+            execution_memory=self._execution_memory,
         )
 
-        result = await loop.run(goal.strip())
+        # Track active run for progress/cancellation
+        goal_id = f"goal_{int(t0 * 1000)}"
+        self._store.set_active_run({
+            "envelope_id": goal_id,
+            "template_id": "goal",
+            "title": goal[:80],
+            "status": "running",
+            "status_label": "Thinking",
+            "triggered_by": triggered_by,
+            "delivery_mode": "widget",
+            "delivery_channels": ["widget"],
+            "started_at": _utc_now_iso(),
+            "summary": f"Working on: {goal}",
+        })
+
+        def _on_step_progress(step_num: int, status: str, tools: list[str]) -> None:
+            if self._store.is_cancel_requested(goal_id):
+                raise RunCancelledError("Goal cancelled by user request.")
+            self._store.update_active_run(goal_id, {
+                "status_label": f"Step {step_num}: {', '.join(tools)}",
+                "summary": f"Step {step_num}/{loop.MAX_STEPS} — {status}",
+            })
+
+        loop.set_progress_callback(_on_step_progress)
+
+        try:
+            result = await loop.run(goal.strip())
+        except RunCancelledError:
+            self._store.clear_active_run(goal_id)
+            return {
+                "goal": goal,
+                "triggered_by": triggered_by,
+                "success": False,
+                "steps": len(loop.thoughts),
+                "summary": "Goal was cancelled before completion.",
+                "thoughts": loop.thoughts,
+                "total_duration_seconds": round(time.monotonic() - t0, 3),
+                "cancelled": True,
+            }
+        finally:
+            self._store.clear_active_run(goal_id)
 
         # Record execution stats to memory
         for thought in result.get("thoughts", []):
@@ -1000,8 +1041,8 @@ class OpenClawAgentRunner:
                     success=tool_result is not None,
                 )
 
-        # Build a presentable summary from the last successful thought
-        summary = self._summarize_goal_result(goal, result)
+        # Use LLM synthesis if available, fall back to static extraction
+        summary = result.get("synthesis") or self._summarize_goal_result(goal, result)
 
         total_duration = time.monotonic() - t0
 

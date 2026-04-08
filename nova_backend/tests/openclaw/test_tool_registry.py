@@ -83,10 +83,14 @@ def test_tool_names_returns_registered():
 def test_bootstrap_registry_has_all_skills():
     """The global registry should bootstrap with all registered skills."""
     reg = get_tool_registry()
-    for name in ("weather", "calendar", "news", "system", "web_search"):
+    expected = (
+        "weather", "calendar", "news", "system", "web_search",
+        "volume", "brightness", "media", "open_webpage", "screen_capture",
+    )
+    for name in expected:
         assert reg.has(name), f"Missing tool: {name}"
-    assert len(reg.tool_names) >= 5
-    # Verify we can create instances
+    assert len(reg.tool_names) >= 10
+    # Verify we can create instances for non-hardware tools
     for name in ("weather", "calendar", "system", "web_search"):
         instance = reg.create(name)
         assert instance is not None, f"Failed to create: {name}"
