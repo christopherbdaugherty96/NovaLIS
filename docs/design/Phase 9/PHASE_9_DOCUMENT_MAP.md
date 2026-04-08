@@ -1,5 +1,5 @@
 # Phase 9 Document Map
-Updated: 2026-04-05
+Updated: 2026-04-07
 Status: Current design map
 Purpose: Separate the governed-node roadmap from older autonomy and mutation theory artifacts
 
@@ -126,6 +126,23 @@ The governed intelligence execution direction packet should be read this way in 
 - Nova should preserve one governed reasoning-and-action contract across clients and surfaces
 - continuity of system identity should not become self-starting execution
 - trust, predictability, and visible capability boundaries remain more important than generic agent behavior
+
+## 2026-04-07 Copilot Audit + Intelligence Layer Spec
+
+- `docs/design/Phase 9/COPILOT_SESSION_AUDIT_2026-04-07.md`
+  Truth audit of GitHub Copilot sessions. Separates valid gap analysis
+  (12 system gaps + 10 OpenClaw intelligence gaps) from fabricated
+  implementation claims ("Phase 9 COMPLETE" with non-existent commits
+  and files). Use the analysis; discard the completion claims.
+
+- `docs/design/Phase 9/PHASE_9_OPENCLAW_INTELLIGENCE_LAYER_SPEC.md`
+  Specification for the 10 missing OpenClaw components needed for full
+  agent capability. Derived from validated Copilot analysis and codebase
+  audit. Covers: tool registry, thinking loop, tool chaining, error
+  recovery, execution memory, parallel execution, per-user permissions,
+  per-tool budgets, and NLU goal interpretation. Includes design
+  constraints (sync LLM gateway, Governor authority, bounded execution).
+  Status: DESIGN — not yet implemented.
 
 ## Interpretation Rule
 When reading the Phase-9 folder:

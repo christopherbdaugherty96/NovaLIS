@@ -17,8 +17,12 @@ from src.openclaw.agent_runtime_store import (
     OpenClawAgentRuntimeStore,
     openclaw_agent_runtime_store,
 )
+from src.openclaw.execution_memory import ExecutionMemory
+from src.openclaw.per_tool_budget import PerToolBudgetTracker, ToolBudgetConfig
+from src.openclaw.robust_executor import RetryConfig, RobustExecutor
 from src.openclaw.strict_preflight import evaluate_manual_envelope
 from src.openclaw.task_envelope import TaskEnvelope
+from src.openclaw.tool_registry import get_tool_registry
 from src.personality.conversation_personality_agent import ConversationPersonalityAgent
 from src.providers.openai_responses_lane import OpenAIResponsesLane, OpenAIResponsesLaneError
 from src.skills.calendar import CalendarSkill
@@ -169,6 +173,7 @@ class OpenClawAgentRunner:
         network: Any = None,
         presenter: ConversationPersonalityAgent | None = None,
         openai_lane: OpenAIResponsesLane | None = None,
+        execution_memory: ExecutionMemory | None = None,
     ) -> None:
         self._store = store or openclaw_agent_runtime_store
         self._network = network
@@ -176,6 +181,10 @@ class OpenClawAgentRunner:
         self._openai_lane = openai_lane or OpenAIResponsesLane(network=network)
         self._active_budget_meter: RunBudgetMeter | None = None
         self._active_envelope: TaskEnvelope | None = None
+        self._robust_executor = RobustExecutor(retry_config=RetryConfig(max_retries=1))
+        self._execution_memory = execution_memory or ExecutionMemory()
+        self._tool_registry = get_tool_registry()
+        self._per_tool_budget = PerToolBudgetTracker()
 
     async def run_template(self, template_id: str, *, triggered_by: str = "dashboard") -> dict[str, Any]:
         template = self._store.get_template(template_id)
@@ -265,6 +274,7 @@ class OpenClawAgentRunner:
             presented_message = self._personality_bridge.present_result(envelope, raw_summary)
             completed_at = _utc_now_iso()
             budget_usage = budget_meter.snapshot()
+            budget_usage["per_tool"] = self._per_tool_budget.snapshot()
 
             run_record = self._store.record_run(
                 {
@@ -412,24 +422,104 @@ class OpenClawAgentRunner:
         return await self._collect_morning_brief_payload()
 
     async def _collect_morning_brief_payload(self) -> dict[str, Any]:
-        weather_result = await self._call_skill(
-            WeatherSkill(network=self._network_for_run()),
-            "weather",
-            self.WEATHER_TIMEOUT_SECONDS,
-            stage_label="Collecting weather",
+        network = self._network_for_run()
+        meter = self._active_budget_meter
+        envelope = self._active_envelope
+
+        # Record budget steps for all three skills up front
+        for label in ("Collecting weather", "Collecting calendar", "Collecting news"):
+            if meter:
+                meter.record_step(label)
+
+        if envelope:
+            self._update_run_progress(
+                envelope,
+                status_label="Collecting sources",
+                summary="Gathering weather, calendar, and news in parallel.",
+            )
+
+        # Build parallel call list using the tool registry
+        calls = [
+            {
+                "skill": self._tool_registry.create("weather", network=network),
+                "query": "weather",
+                "timeout": self.WEATHER_TIMEOUT_SECONDS,
+                "tool_name": "weather",
+                "is_network_tool": True,
+            },
+            {
+                "skill": self._tool_registry.create("calendar"),
+                "query": "calendar",
+                "timeout": self.CALENDAR_TIMEOUT_SECONDS,
+                "tool_name": "calendar",
+                "is_network_tool": False,
+            },
+            {
+                "skill": self._tool_registry.create("news", network=network),
+                "query": "news",
+                "timeout": self.NEWS_TIMEOUT_SECONDS,
+                "tool_name": "news",
+                "is_network_tool": True,
+            },
+        ]
+
+        budget_remaining = None
+        if meter:
+            budget_remaining = max(
+                0,
+                int(meter.envelope.max_network_calls) - int(meter.network_calls_used),
+            )
+
+        results = await self._robust_executor.call_many_parallel(
+            calls,
+            max_concurrent=3,
+            budget_network_remaining=budget_remaining,
         )
-        calendar_result = await self._call_skill(
-            CalendarSkill(),
-            "calendar",
-            self.CALENDAR_TIMEOUT_SECONDS,
-            stage_label="Collecting calendar",
-        )
-        news_result = await self._call_skill(
-            NewsSkill(network=self._network_for_run()),
-            "news",
-            self.NEWS_TIMEOUT_SECONDS,
-            stage_label="Collecting news",
-        )
+
+        weather_result = results.get("weather")
+        calendar_result = results.get("calendar")
+        news_result = results.get("news")
+
+        # Record side-effects for metering
+        if weather_result and meter:
+            meter.record_network_call("https://weather.visualcrossing.com/forecast")
+            meter.record_network_bytes(weather_result)
+        if calendar_result:
+            self._record_skill_side_effects(CalendarSkill(), calendar_result)
+        if news_result and meter:
+            # News typically hits multiple RSS feeds
+            for _url in ("https://www.reuters.com/rssFeed",
+                         "https://feeds.apnews.com/apnews",
+                         "https://feeds.npr.org/1001/rss.xml",
+                         "https://feeds.bbci.co.uk/news/rss.xml"):
+                try:
+                    meter.record_network_call(_url)
+                except RuntimeError:
+                    break  # budget exceeded
+
+        # Record to execution memory and per-tool budget
+        for tool_name, result in results.items():
+            rec = next(
+                (r for r in self._robust_executor.call_log
+                 if r.tool_name == tool_name),
+                None,
+            )
+            duration = rec.duration_seconds if rec else 0.0
+            success = result is not None
+            self._execution_memory.record(
+                tool_name=tool_name,
+                task_type="morning_brief",
+                success=success,
+                duration_seconds=duration,
+                error=rec.error if rec and not rec.success else None,
+            )
+            is_net = tool_name in ("weather", "news")
+            self._per_tool_budget.record_call(
+                tool_name,
+                duration_seconds=duration,
+                success=success,
+                network_calls=1 if (is_net and success) else 0,
+            )
         if self._active_budget_meter:
             self._active_budget_meter.record_step("Reviewing reminders")
         if self._active_envelope:
@@ -560,11 +650,14 @@ class OpenClawAgentRunner:
                 status_label=stage_label,
                 summary=f"{stage_label}.",
             )
-        try:
-            result = await asyncio.wait_for(skill.handle(query), timeout=timeout_seconds)
-        except Exception:
-            return None
-        self._record_skill_side_effects(skill, result)
+        result = await self._robust_executor.call_skill(
+            skill,
+            query,
+            timeout_seconds=timeout_seconds,
+            tool_name=stage_label,
+        )
+        if result is not None:
+            self._record_skill_side_effects(skill, result)
         return result
 
     def _record_skill_side_effects(self, skill: Any, result: Any | None) -> None:
