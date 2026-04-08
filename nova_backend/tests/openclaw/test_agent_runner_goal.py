@@ -11,6 +11,10 @@ def _make_runner():
     """Create a runner with mocked dependencies."""
     store = MagicMock()
     store.get_template = MagicMock(return_value=None)
+    store.set_active_run = MagicMock()
+    store.update_active_run = MagicMock()
+    store.clear_active_run = MagicMock()
+    store.is_cancel_requested = MagicMock(return_value=False)
     return OpenClawAgentRunner(store=store, network=None)
 
 
