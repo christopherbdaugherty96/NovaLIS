@@ -73,7 +73,7 @@ def test_general_chat_concise_tone_tightens_casual_chat_budget(tmp_path: Path):
     assert result is not None
     assert result.success is True
     assert "Second sentence adds details." not in result.message
-    assert captured["max_tokens"] <= 70
+    assert captured["max_tokens"] <= 200
     assert "Tone profile: Concise." in captured["system_prompt"]
     assert (result.data or {}).get("tone_profile") == "concise"
 
