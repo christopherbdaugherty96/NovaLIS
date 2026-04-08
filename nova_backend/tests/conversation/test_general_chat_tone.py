@@ -78,16 +78,23 @@ def test_general_chat_concise_tone_tightens_casual_chat_budget(tmp_path: Path):
     assert (result.data or {}).get("tone_profile") == "concise"
 
 
-def test_general_chat_uses_deterministic_local_greeting_without_model_call():
+def test_general_chat_routes_greetings_through_llm_for_warm_response():
     skill = GeneralChatSkill()
+    captured = {}
 
-    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+    def _fake_generate_chat(_prompt: str, **kwargs):
+        captured.update(kwargs)
+        return "Hey! What are you working on today?"
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=_fake_generate_chat):
         result = asyncio.run(skill.handle("hello", context=[], session_state={}))
 
     assert result is not None
     assert result.success is True
-    assert result.message == "Hello. How can I help?"
-    assert (result.data or {}).get("structured_data", {}).get("deterministic_social") is True
+    # Greeting now goes through the LLM with personality, not a canned response
+    assert "deterministic_social" not in (result.data or {}).get("structured_data", {})
+    # Casual mode should use warmer temperature
+    assert captured.get("temperature", 0) >= 0.4
 
 
 def test_general_chat_uses_deterministic_local_thanks_without_model_call():

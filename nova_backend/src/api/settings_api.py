@@ -198,4 +198,38 @@ def build_settings_router(deps) -> APIRouter:
         """Current daily token budget snapshot for UI polling."""
         return provider_usage_store.snapshot()
 
+    @router.get("/api/settings/model/status")
+    async def get_model_status():
+        """Return current LLM model status including fallback state."""
+        from src.llm.llm_gateway import model_status_snapshot
+        status = model_status_snapshot()
+        model_status, model_note, model_hint, model_ready = (
+            deps.OSDiagnosticsExecutor._model_status_details()
+        )
+        return {
+            **status,
+            "status": model_status,
+            "note": model_note,
+            "hint": model_hint,
+            "ready": model_ready,
+        }
+
+    @router.post("/api/settings/model/confirm")
+    async def confirm_model_update_api():
+        """REST endpoint to confirm a pending model update (alternative to chat command)."""
+        from src.llm.llm_gateway import (
+            confirm_model_update as confirm_llm,
+            is_model_update_pending,
+        )
+        if not is_model_update_pending():
+            return {"confirmed": False, "reason": "No model update is pending."}
+        confirmed = confirm_llm()
+        if confirmed:
+            deps._log_ledger_event(
+                deps.RUNTIME_GOVERNOR,
+                "MODEL_UPDATE_CONFIRMED",
+                {"source": "settings_api"},
+            )
+        return {"confirmed": confirmed}
+
     return router

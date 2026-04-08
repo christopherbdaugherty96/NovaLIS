@@ -381,8 +381,11 @@ class OpenClawAgentRuntimeStore:
             recent_runs.insert(0, entry)
             state["recent_runs"] = recent_runs[:20]
             delivery_inbox = [self._normalize_delivery_item(item) for item in list(state.get("delivery_inbox") or [])]
+            delivery_inbox = self._prune_stale_deliveries(delivery_inbox)
             if bool(dict(entry.get("delivery_channels") or {}).get("widget")) or str(entry.get("triggered_by") or "").strip() == "scheduler":
-                delivery_inbox.insert(0, self._build_delivery_item(entry))
+                new_item = self._build_delivery_item(entry)
+                if not self._is_duplicate_delivery(new_item, delivery_inbox):
+                    delivery_inbox.insert(0, new_item)
             state["delivery_inbox"] = delivery_inbox[:20]
             state["updated_at"] = _utc_now_iso()
             self._write_state(state)
@@ -451,6 +454,28 @@ class OpenClawAgentRuntimeStore:
                 return
             if target and str(active_run.get("envelope_id") or "").strip() != target:
                 return
+            state["active_run"] = None
+            state["updated_at"] = _utc_now_iso()
+            self._write_state(state)
+
+    def has_active_run(self) -> bool:
+        """Return True if an active run is present (not yet cleared)."""
+        with self._lock:
+            state = self._read_state()
+        return self._normalize_active_run(state.get("active_run")) is not None
+
+    def recover_interrupted_runs(self) -> None:
+        """Mark any active run left over from a previous session as interrupted."""
+        with self._lock:
+            state = self._read_state()
+            active_run = self._normalize_active_run(state.get("active_run"))
+            if not active_run:
+                return
+            active_run["status_label"] = "Interrupted"
+            active_run["cancel_requested"] = True
+            recent = list(state.get("recent_runs") or [])
+            recent.insert(0, {**active_run, "outcome": "interrupted"})
+            state["recent_runs"] = recent[:12]
             state["active_run"] = None
             state["updated_at"] = _utc_now_iso()
             self._write_state(state)
@@ -609,6 +634,32 @@ class OpenClawAgentRuntimeStore:
             else:
                 completed = completed.astimezone(timezone.utc)
             if completed >= window_start:
+                count += 1
+        return count
+
+    def scheduled_delivery_count_today(self, *, now: datetime | None = None) -> int:
+        """Count completed scheduler-triggered runs in the current calendar day (local time)."""
+        current = (now or _local_now()).astimezone()
+        day_start = current.replace(hour=0, minute=0, second=0, microsecond=0)
+        with self._lock:
+            state = self._read_state()
+        count = 0
+        for item in list(state.get("recent_runs") or []):
+            row = self._normalize_run(item)
+            if str(row.get("triggered_by") or "").strip() != "scheduler":
+                continue
+            if str(row.get("status") or "").strip().lower() != "completed":
+                continue
+            completed_at = str(row.get("completed_at") or "").strip()
+            try:
+                completed = datetime.fromisoformat(completed_at)
+            except Exception:
+                continue
+            if completed.tzinfo is None:
+                completed = completed.replace(tzinfo=current.tzinfo)
+            else:
+                completed = completed.astimezone(current.tzinfo)
+            if completed >= day_start:
                 count += 1
         return count
 
@@ -802,6 +853,52 @@ class OpenClawAgentRuntimeStore:
         source = "schedule" if triggered_by == "scheduler" else "Run now"
         status = str(active_run.get("status_label") or "Running now").strip() or "Running now"
         return f"{title} is {status.lower()} from the {source} flow."
+
+    @staticmethod
+    def _prune_stale_deliveries(
+        inbox: list[dict[str, Any]],
+        *,
+        max_age_hours: int = 72,
+    ) -> list[dict[str, Any]]:
+        """Remove dismissed items older than max_age_hours."""
+        from src.settings.runtime_settings_store import runtime_settings_store
+        try:
+            max_age_hours = int(runtime_settings_store.snapshot().get("delivery_inbox_max_age_hours") or max_age_hours)
+        except Exception:
+            pass
+        cutoff = datetime.now(timezone.utc) - timedelta(hours=max(1, max_age_hours))
+        pruned: list[dict[str, Any]] = []
+        for item in inbox:
+            status = str(item.get("status") or "ready").strip()
+            if status == "dismissed":
+                dismissed_at = str(item.get("dismissed_at") or "").strip()
+                if dismissed_at:
+                    try:
+                        ts = datetime.fromisoformat(dismissed_at)
+                        if ts.tzinfo is None:
+                            ts = ts.replace(tzinfo=timezone.utc)
+                        if ts < cutoff:
+                            continue
+                    except Exception:
+                        pass
+            pruned.append(item)
+        return pruned
+
+    @staticmethod
+    def _is_duplicate_delivery(
+        new_item: dict[str, Any],
+        inbox: list[dict[str, Any]],
+    ) -> bool:
+        """Return True if inbox already has a ready item for the same envelope."""
+        envelope_id = str(new_item.get("envelope_id") or "").strip()
+        if not envelope_id:
+            return False
+        for existing in inbox:
+            if str(existing.get("status") or "").strip() != "ready":
+                continue
+            if str(existing.get("envelope_id") or "").strip() == envelope_id:
+                return True
+        return False
 
     def _build_delivery_item(self, run_entry: dict[str, Any]) -> dict[str, Any]:
         return self._normalize_delivery_item(
