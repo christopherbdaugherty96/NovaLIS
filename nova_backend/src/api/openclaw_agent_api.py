@@ -316,6 +316,40 @@ def build_openclaw_agent_router(deps) -> APIRouter:
             **_agent_status_payload(deps),
         }
 
+    @router.post("/api/openclaw/agent/goal")
+    async def run_openclaw_agent_goal(payload: dict[str, Any]):
+        """Run a freeform goal through the LLM-guided thinking loop."""
+        goal = str(payload.get("goal") or "").strip()
+        if not goal:
+            raise HTTPException(status_code=400, detail="goal is required.")
+        if not deps.runtime_settings_store.is_permission_enabled("home_agent_enabled"):
+            raise HTTPException(
+                status_code=403,
+                detail="OpenClaw home-agent foundations are paused in Settings.",
+            )
+        try:
+            result = await deps.openclaw_agent_runner.run_goal(
+                goal,
+                triggered_by="agent_page",
+            )
+        except Exception as exc:
+            raise HTTPException(status_code=500, detail=str(exc)[:200]) from exc
+
+        deps._log_ledger_event(
+            deps.RUNTIME_GOVERNOR,
+            "OPENCLAW_AGENT_GOAL_COMPLETED",
+            {
+                "goal": goal[:200],
+                "success": bool(result.get("success")),
+                "steps": int(result.get("steps") or 0),
+                "source": "agent_page",
+            },
+        )
+        return {
+            "ok": True,
+            "result": result,
+        }
+
     @router.post("/api/openclaw/agent/runs/cancel")
     async def cancel_openclaw_active_run():
         cancelled = deps.openclaw_agent_runtime_store.request_cancel_active_run()

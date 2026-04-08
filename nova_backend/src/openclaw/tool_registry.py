@@ -117,7 +117,9 @@ def _bootstrap() -> ToolRegistry:
     """Create and populate the global tool registry."""
     from src.skills.calendar import CalendarSkill
     from src.skills.news import NewsSkill
+    from src.skills.system import SystemSkill
     from src.skills.weather import WeatherSkill
+    from src.skills.web_search import WebSearchSkill
 
     registry = ToolRegistry()
 
@@ -157,6 +159,34 @@ def _bootstrap() -> ToolRegistry:
             description="Fetch latest news headlines from RSS feeds",
             category="collection",
             tags=("news", "headlines", "stories", "current"),
+            timeout_seconds=10.0,
+            cost_per_call=0.0,
+            is_network_tool=True,
+        ),
+    )
+
+    registry.register(
+        "system",
+        lambda: SystemSkill(),
+        ToolMetadata(
+            name="system",
+            description="System status, uptime, current time and date",
+            category="control",
+            tags=("system", "status", "time", "date", "uptime", "health"),
+            timeout_seconds=2.0,
+            cost_per_call=0.0,
+            is_network_tool=False,
+        ),
+    )
+
+    registry.register(
+        "web_search",
+        lambda network=None: WebSearchSkill(network=network),
+        ToolMetadata(
+            name="web_search",
+            description="Search the web for information using Brave Search or DuckDuckGo",
+            category="collection",
+            tags=("search", "web", "lookup", "find", "google", "research"),
             timeout_seconds=10.0,
             cost_per_call=0.0,
             is_network_tool=True,
