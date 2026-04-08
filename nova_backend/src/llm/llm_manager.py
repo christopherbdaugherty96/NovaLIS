@@ -10,6 +10,7 @@ from typing import Optional, Dict, Any
 from src.ledger.writer import LedgerWriter
 from src.governor.exceptions import LedgerWriteFailed
 from src.llm.model_network_mediator import ModelNetworkMediator, ModelNetworkMediatorError
+from src.nova_config import OLLAMA_MODEL, OLLAMA_FALLBACK_MODEL, OLLAMA_URL
 from .system_prompt import SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
@@ -47,13 +48,17 @@ class LLMManager:
     - Blocks inference on version mismatch
     """
 
+    FALLBACK_THRESHOLD = 5
+
     def __init__(
         self,
-        model: str = "gemma4:e4b",
-        base_url: str = "http://localhost:11434",
+        model: str | None = None,
+        fallback_model: str | None = None,
+        base_url: str | None = None,
     ):
-        self.model = model
-        self.base_url = base_url
+        self.model = str(model or OLLAMA_MODEL or "gemma4:e4b").strip()
+        self.fallback_model = str(fallback_model or OLLAMA_FALLBACK_MODEL or "").strip()
+        self.base_url = str(base_url or OLLAMA_URL or "http://localhost:11434").strip()
         self.timeout = 30
         self.system_prompt = SYSTEM_PROMPT
         self._network = ModelNetworkMediator()
@@ -61,6 +66,7 @@ class LLMManager:
         # Circuit breaker state
         self.failure_count = 0
         self.circuit_open_until = 0
+        self._using_fallback = False
 
         # Stable inference parameters (these become part of the version hash)
         self.default_options = {
@@ -75,6 +81,44 @@ class LLMManager:
         # Version lock state
         self.inference_blocked = False
         self._check_model_version()
+
+    @property
+    def active_model(self) -> str:
+        if self._using_fallback and self.fallback_model:
+            return self.fallback_model
+        return self.model
+
+    def try_recover_primary(self) -> bool:
+        """Attempt to switch back to the primary model after fallback."""
+        if not self._using_fallback:
+            return True
+        try:
+            response = self._network.request_json(
+                method="GET",
+                url=f"{self.base_url.rstrip('/')}/api/tags",
+                timeout=5,
+            )
+            models = response.data.get("models", [])
+            if any(self.model in m.get("name", "") for m in models):
+                self._using_fallback = False
+                self.failure_count = 0
+                logger.info("Recovered to primary model %s.", self.model)
+                return True
+        except Exception:
+            pass
+        return False
+
+    def status_snapshot(self) -> dict:
+        """Return current model status for diagnostics."""
+        return {
+            "primary_model": self.model,
+            "fallback_model": self.fallback_model or None,
+            "active_model": self.active_model,
+            "using_fallback": self._using_fallback,
+            "inference_blocked": self.inference_blocked,
+            "failure_count": self.failure_count,
+            "circuit_open": time.time() < self.circuit_open_until,
+        }
 
     # ----- Version lock helpers -------------------------------------------------
 
@@ -215,6 +259,12 @@ class LLMManager:
 
     def _record_failure(self):
         self.failure_count += 1
+        if not self._using_fallback and self.fallback_model and self.failure_count >= self.FALLBACK_THRESHOLD:
+            self._using_fallback = True
+            self.failure_count = 0
+            self.circuit_open_until = 0
+            logger.warning("Switched to fallback model %s after %d failures.", self.fallback_model, self.FALLBACK_THRESHOLD)
+            return
         if self.failure_count >= 3:
             self.circuit_open_until = time.time() + 30
             logger.warning("Circuit breaker opened. Will retry after 30 seconds.")
@@ -265,7 +315,7 @@ class LLMManager:
                 method="POST",
                 url=f"{self.base_url.rstrip('/')}/api/chat",
                 json_payload={
-                    "model": self.model,
+                    "model": self.active_model,
                     "messages": messages,
                     "stream": False,
                     "options": options,
@@ -298,11 +348,11 @@ class LLMManager:
             )
             if response.status_code == 200:
                 models = response.data.get("models", [])
-                return any(self.model in m.get("name", "") for m in models)
+                return any(self.active_model in m.get("name", "") for m in models)
         except Exception:
             pass
         return False
 
 
-# Singleton instance (preserved)
+# Singleton instance — reads OLLAMA_MODEL / OLLAMA_FALLBACK_MODEL / OLLAMA_URL from nova_config
 llm_manager = LLMManager()

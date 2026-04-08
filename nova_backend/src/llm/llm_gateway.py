@@ -19,6 +19,11 @@ def confirm_model_update() -> bool:
     return was_blocked and not bool(getattr(llm_manager, "inference_blocked", False))
 
 
+def model_status_snapshot() -> dict:
+    """Return current model status for diagnostics (active/fallback/blocked)."""
+    return llm_manager.status_snapshot()
+
+
 def generate_chat(
     prompt: str,
     *,
