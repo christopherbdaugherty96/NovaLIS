@@ -76,21 +76,18 @@ class GeneralChatSkill(BaseSkill):
     description = "General chat (LLM advisory only)"
 
     BASE_CONTRACT = (
-        "You are Nova.\n"
+        "You are Nova, a friendly personal assistant.\n"
         "\n"
-        "Core constraints:\n"
-        "- Sound calm, grounded, and collaborative.\n"
-        "- Use direct, human language with natural flow.\n"
-        "- Be warm without theatrical enthusiasm.\n"
-        "- No emotional simulation. No therapy tone. No flattery.\n"
-        "- No marketing language. No brand voice.\n"
-        "- Do not introduce yourself unless explicitly asked.\n"
-        "- Do not describe what Nova is unless explicitly asked.\n"
-        "- Do not claim capabilities you do not have.\n"
-        "- Do not mention being a 'virtual assistant' or similar.\n"
-        "- Answer directly. Add detail only when it helps or the user asks for it.\n"
-        "- When giving instructions, address the user directly with 'you'.\n"
-        "- If the request is unclear, ask ONE brief clarification question.\n"
+        "How to communicate:\n"
+        "- Be warm, natural, and genuinely helpful.\n"
+        "- Talk like a knowledgeable friend — approachable and real.\n"
+        "- Give complete, useful answers. Don't be unnecessarily brief.\n"
+        "- Match the user's energy and tone.\n"
+        "- It's okay to be conversational and show personality.\n"
+        "- Answer directly. Expand when it genuinely helps.\n"
+        "- If the request is unclear, ask a quick clarification.\n"
+        "- Don't claim capabilities you don't have.\n"
+        "- Don't introduce yourself unless asked.\n"
     )
 
     TONE_BLOCKS: Dict[str, str] = {
@@ -120,18 +117,17 @@ class GeneralChatSkill(BaseSkill):
     }
 
     MAX_TOKENS: Dict[str, int] = {
-        "casual": 150,
-        "brainstorming": 500,
-        "implementation": 400,
-        "analytical": 600,
+        "casual": 400,
+        "brainstorming": 600,
+        "implementation": 600,
+        "analytical": 800,
     }
 
     _BANNED_PATTERNS: Tuple[Tuple[re.Pattern, str], ...] = (
         (re.compile(r"\b(as an ai|as a language model)\b", re.IGNORECASE), ""),
         (re.compile(r"\b(i am|i'm)\s+(a\s+)?virtual assistant\b", re.IGNORECASE), ""),
-        (re.compile(r"\b(i am|i'm)\s+here\s+to\s+help\b", re.IGNORECASE), ""),
         (re.compile(r"\bhow can i assist\??\b", re.IGNORECASE), ""),
-        (re.compile(r"\!+", re.IGNORECASE), "."),
+        (re.compile(r"\!{3,}", re.IGNORECASE), "!"),  # Only strip excessive exclamation marks
     )
     _GEO_KEYWORDS = ("war", "ukraine", "russia", "gaza", "israel", "conflict", "ceasefire")
     _REFUSAL_HINTS = (
@@ -359,13 +355,13 @@ class GeneralChatSkill(BaseSkill):
     ) -> int:
         max_tokens = self.MAX_TOKENS.get(mode, self.MAX_TOKENS["casual"])
         if not explicit_depth and mode == "casual":
-            max_tokens = min(max_tokens, 90)
+            max_tokens = min(max_tokens, 300)
 
         preference = str(presentation_preference or "").strip().lower()
         if preference in {"shorter", "direct"}:
-            max_tokens = min(max_tokens, 80 if mode == "casual" else 220)
+            max_tokens = min(max_tokens, 200 if mode == "casual" else 350)
         elif preference in {"simpler", "reworded"}:
-            max_tokens = min(max_tokens, 140 if mode == "casual" else 280)
+            max_tokens = min(max_tokens, 250 if mode == "casual" else 400)
         elif preference == "technical":
             max_tokens = min(max_tokens + 80, 700)
         elif preference == "detailed":
@@ -373,8 +369,8 @@ class GeneralChatSkill(BaseSkill):
 
         if tone_profile == "concise":
             if not explicit_depth and mode == "casual":
-                return min(max_tokens, 70)
-            return max(120, int(max_tokens * 0.75))
+                return min(max_tokens, 200)
+            return max(200, int(max_tokens * 0.80))
 
         if tone_profile == "detailed":
             expanded = max_tokens + (120 if mode == "casual" else 180)
@@ -1484,7 +1480,7 @@ class GeneralChatSkill(BaseSkill):
                 session_id=session_id,
                 system_prompt=system_prompt,
                 max_tokens=max_tokens,
-                temperature=0.3,
+                temperature=0.7,
             )
             text = self._sanitize_response(text or "")
             if not text:

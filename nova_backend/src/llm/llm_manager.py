@@ -64,12 +64,12 @@ class LLMManager:
 
         # Stable inference parameters (these become part of the version hash)
         self.default_options = {
-            "temperature": 0.4,
-            "num_predict": 256,
-            "num_ctx": 4096,
-            "top_k": 40,
+            "temperature": 0.7,
+            "num_predict": 512,
+            "num_ctx": 32768,
+            "top_k": 50,
             "repeat_penalty": 1.1,
-            "stop": ["\n\n", "User:", "Human:"],
+            "stop": ["User:", "Human:"],
         }
 
         # Version lock state
