@@ -1,0 +1,1 @@
+# Parameter extraction system with templates, validation, type coercion, and defaults
