@@ -1,0 +1,1 @@
+# Complete thinking loop with phase-based termination
