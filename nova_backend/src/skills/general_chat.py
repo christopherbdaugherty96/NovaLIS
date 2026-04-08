@@ -354,6 +354,16 @@ class GeneralChatSkill(BaseSkill):
     def _build_memory_context(self) -> str:
         """Build a compact memory context block for prompt injection."""
         parts: list[str] = []
+
+        # Self-awareness: what Nova is, what it can do, what's active
+        try:
+            from src.identity.nova_self_awareness import build_self_awareness_block
+            awareness = build_self_awareness_block()
+            if awareness:
+                parts.append(awareness)
+        except Exception:
+            pass
+
         try:
             user_ctx = self._user_memory.render_context_block(max_chars=300)
             if user_ctx:
