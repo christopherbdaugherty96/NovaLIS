@@ -28,6 +28,9 @@ ALLOWED_NETWORK_IMPORT_FILES = {
     # These are connectivity validators, not intelligence or data-collection calls, and do
     # not pass through the governor network budget.
     SRC_ROOT / "api" / "connections_api.py",
+    # task_envelope.py uses urllib.parse solely for hostname extraction in url_allowed().
+    # It is a pure string parser — no outbound network calls.
+    SRC_ROOT / "openclaw" / "task_envelope.py",
 }
 
 
