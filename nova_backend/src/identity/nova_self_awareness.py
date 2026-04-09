@@ -17,6 +17,10 @@ logger = logging.getLogger(__name__)
 
 _boot_time = time.monotonic()
 
+# Cache: rebuild at most once per 60 seconds
+_cache: dict[str, Any] = {"block": "", "expires": 0.0}
+_CACHE_TTL = 60.0
+
 
 def build_self_awareness_block() -> str:
     """Build a compact self-awareness context block for system prompt injection.
@@ -24,7 +28,13 @@ def build_self_awareness_block() -> str:
     Returns a multi-line string describing Nova's current state, capabilities,
     tools, connections, and model info. Designed to be appended to the system
     prompt so the LLM has accurate self-knowledge.
+
+    Cached for 60s to avoid rebuilding on every message.
     """
+    now = time.monotonic()
+    if _cache["block"] and now < _cache["expires"]:
+        return _cache["block"]
+
     sections: list[str] = []
 
     # --- Identity ---
@@ -50,7 +60,10 @@ def build_self_awareness_block() -> str:
     if status_block:
         sections.append(status_block)
 
-    return "\n\n".join(sections)
+    result = "\n\n".join(sections)
+    _cache["block"] = result
+    _cache["expires"] = now + _CACHE_TTL
+    return result
 
 
 def _identity_block() -> str:
@@ -89,11 +102,11 @@ def _capabilities_block() -> str:
 
     for cap in active:
         name = cap.name.replace("_", " ").title()
-        desc = cap.description[:80] if cap.description else ""
+        desc = cap.description[:150] if cap.description else ""
         entry = f"{name}: {desc}" if desc else name
 
         cid = cap.id
-        if cid in (16, 48, 49, 50, 51, 52, 53, 55, 56):
+        if cid in (16, 48, 49, 50, 51, 52, 53, 55, 56, 57):
             groups["Information & Research"].append(entry)
         elif cid in (17, 18, 19, 20, 21, 22):
             groups["Device Control"].append(entry)
@@ -101,6 +114,8 @@ def _capabilities_block() -> str:
             groups["Analysis & Intelligence"].append(entry)
         elif cid in (61,):
             groups["Memory & Continuity"].append(entry)
+        elif cid in (63,):
+            groups.setdefault("Automation", []).append(entry)
         elif cid in (32,):
             groups["System"].append(entry)
         else:
