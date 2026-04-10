@@ -16,6 +16,10 @@ ALLOWED_CREATE_TASK_FILES = {
     # It is the only background execution surface and is controlled by explicit runtime
     # permission flags (home_agent_enabled, home_agent_scheduler_enabled).
     SRC_ROOT / "openclaw" / "agent_scheduler.py",
+    # brain_server.py and session_handler.py use create_task for async WebSocket
+    # message handling — these are I/O dispatch tasks, not autonomous background work.
+    SRC_ROOT / "brain_server.py",
+    SRC_ROOT / "websocket" / "session_handler.py",
 }
 
 

@@ -14,6 +14,14 @@ Goal:
 ACTION_REQUEST_CTOR = "ActionRequest("
 GOVERNOR_FILE = SRC_ROOT / "governor" / "governor.py"
 
+# Files that legitimately construct ActionRequest outside governor.py.
+# executor_adapter.py is the OpenClaw→Governor bridge: it wraps executor calls
+# in ActionRequest so they flow through the standard governed execution path.
+ALLOWED_ACTION_REQUEST_FILES = {
+    GOVERNOR_FILE,
+    SRC_ROOT / "skills" / "executor_adapter.py",
+}
+
 
 def _is_exempt(path: Path) -> bool:
     parts = {p.lower() for p in path.parts}
@@ -31,7 +39,7 @@ def test_action_request_constructed_only_in_governor_py():
     offenders = []
     for py in all_py:
         text = read_text(py)
-        if ACTION_REQUEST_CTOR in text and py != GOVERNOR_FILE:
+        if ACTION_REQUEST_CTOR in text and py not in ALLOWED_ACTION_REQUEST_FILES:
             offenders.append(py)
 
     assert not offenders, "ActionRequest constructor used outside governor.py:\n" + "\n".join(

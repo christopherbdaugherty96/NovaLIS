@@ -321,6 +321,7 @@ def test_governor_uses_extended_timeout_for_news_summary(monkeypatch):
     gov._registry = FakeRegistry()
     gov._ledger = FakeLedger()
 
+    monkeypatch.setattr(gov, "_check_network_budget", lambda cap_id: None)
     monkeypatch.setattr(
         gov,
         "_dispatch_capability",
@@ -363,6 +364,7 @@ def test_governor_uses_extended_timeout_for_daily_brief(monkeypatch):
     gov._registry = FakeRegistry()
     gov._ledger = FakeLedger()
 
+    monkeypatch.setattr(gov, "_check_network_budget", lambda cap_id: None)
     monkeypatch.setattr(
         gov,
         "_dispatch_capability",

@@ -39,11 +39,19 @@ def _assert_thresholds(profile: StressProfile, analytics: dict) -> None:
     assert compliance_rate >= profile.structured_report_schema_rate_min
 
 
-def test_cognitive_stress_light_profile():
+def test_cognitive_stress_light_profile(monkeypatch):
+    monkeypatch.setattr(
+        "src.governor.governor.Governor._check_network_budget",
+        lambda self, cap_id: None,
+    )
     analytics = _run_profile(LIGHT_PROFILE, seed=42)
     _assert_thresholds(LIGHT_PROFILE, analytics)
 
 
-def test_cognitive_stress_adversarial_profile():
+def test_cognitive_stress_adversarial_profile(monkeypatch):
+    monkeypatch.setattr(
+        "src.governor.governor.Governor._check_network_budget",
+        lambda self, cap_id: None,
+    )
     analytics = _run_profile(ADVERSARIAL_PROFILE, seed=77)
     _assert_thresholds(ADVERSARIAL_PROFILE, analytics)

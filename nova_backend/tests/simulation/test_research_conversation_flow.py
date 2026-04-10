@@ -3,7 +3,14 @@ from __future__ import annotations
 from .conversation_simulator import run_simulation
 
 
-def test_research_conversation_flow():
+def test_research_conversation_flow(monkeypatch):
+    # Bypass token budget so the test can exercise the full conversation flow
+    # regardless of daily budget state.
+    monkeypatch.setattr(
+        "src.governor.governor.Governor._check_network_budget",
+        lambda self, cap_id: None,
+    )
+
     script = [
         "hello nova",
         "research AI regulation",
