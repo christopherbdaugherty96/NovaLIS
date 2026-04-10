@@ -136,13 +136,13 @@ The governed intelligence execution direction packet should be read this way in 
   and files). Use the analysis; discard the completion claims.
 
 - `docs/design/Phase 9/PHASE_9_OPENCLAW_INTELLIGENCE_LAYER_SPEC.md`
-  Specification for the 10 missing OpenClaw components needed for full
-  agent capability. Derived from validated Copilot analysis and codebase
-  audit. Covers: tool registry, thinking loop, tool chaining, error
-  recovery, execution memory, parallel execution, per-user permissions,
-  per-tool budgets, and NLU goal interpretation. Includes design
-  constraints (sync LLM gateway, Governor authority, bounded execution).
-  Status: DESIGN — not yet implemented.
+  Specification and implementation record for the 10 OpenClaw intelligence
+  components. Derived from validated Copilot analysis and codebase audit.
+  Covers: tool registry, thinking loop, tool chaining, error recovery,
+  execution memory, parallel execution, per-user permissions, per-tool
+  budgets, and NLU goal interpretation. Includes design constraints
+  (sync LLM gateway, Governor authority, bounded execution).
+  Status: IMPLEMENTED — all 10 gaps addressed, 1082 tests passing.
 
 ## Interpretation Rule
 When reading the Phase-9 folder:

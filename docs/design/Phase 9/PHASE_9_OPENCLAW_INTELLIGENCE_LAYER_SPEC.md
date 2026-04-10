@@ -311,8 +311,8 @@ All 10 gaps have been addressed. Below is the implementation map:
 - **Optimal ordering**: ExecutionMemory.optimal_order() sorts tools by historical reliability/speed before each step
 
 ### Test coverage:
-- 157 OpenClaw-specific tests passing
-- 1060 total tests passing (17 pre-existing failures unrelated to OpenClaw)
+- 165 OpenClaw-specific tests passing
+- 1082 total tests passing, 0 failures
 
 ## Design Principles (Retained)
 
