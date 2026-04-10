@@ -1,5 +1,5 @@
 # NOVA Runtime Capability Reference
-Updated: 2026-03-26
+Updated: 2026-04-09
 Status: Active
 Scope: Human-readable explanation of the current runtime capability surface
 
@@ -48,6 +48,7 @@ Interpretation rule:
 | 60 | `explain_anything` | Perception | 4.5 | Routes an explicit "what is this?" request to the best read-only explainer path: current screen, current page, or selected file. | `explain this`, `what is this?`, `which one should I download?` | Read-only perception + analysis |
 | 61 | `memory_governance` | Governed persistence | 5 | Saves, lists, shows, locks, defers, unlocks, deletes, or supersedes explicit memory items, including thread-linked memory. | `memory save ...`, `memory list`, `memory show ...`, `memory lock ...` | Persistent local write |
 | 62 | `external_reasoning_review` | Governed reasoning | 7 | Gives Nova a same-thread governed second-opinion lane that can critique or strengthen an answer without gaining any execution authority. Trust and Settings surfaces explain the provider, route, and advisory boundary when it is used. | `second opinion`, `deepseek second opinion`, `review this answer` | Read-only analysis |
+| 63 | `openclaw_execute` | Governed automation | 8 | Runs a named OpenClaw template through the governed network path with explicit envelope preview, budget meters, and result delivery. Phase 9 adds goal-based execution via the thinking loop. | `run morning brief`, `daily brief` | Governed read-only execution |
 
 ## Capability Notes By Category
 
@@ -72,6 +73,24 @@ Interpretation rule:
 - `61` is the first active Phase-5 governed persistence slice.
 - It is explicit, inspectable, reversible where appropriate, and tied to ledger events.
 - Thread-linked memory is supported through the project continuity workflow.
+
+### OpenClaw intelligence layer (Phase 9)
+- The OpenClaw agent intelligence layer adds goal-based execution on top of the Phase 8 template pipeline.
+- A 10-tool dynamic registry (`src/openclaw/tool_registry.py`) exposes skills and executor-backed tools to an iterative thinking loop (`src/openclaw/thinking_loop.py`).
+- The thinking loop uses LLM-guided reasoning to select tools, generate parameters, evaluate results, and produce synthesized natural-language answers.
+- Executor-backed mutation tools (volume, brightness, media, webpage, screen capture) route through the Governor via `ExecutorSkillAdapter`.
+- Execution memory tracks per-tool reliability and speed for optimal ordering.
+- Error recovery uses configurable retry with backoff and circuit-breaker patterns.
+
+### Self-awareness
+- Nova has a dynamic self-awareness block (`src/identity/nova_self_awareness.py`) injected into every system prompt.
+- It gives the LLM real-time knowledge of Nova's active capabilities, tools, connected services, and runtime status.
+- This means Nova can accurately answer "what can you do?" from live system state, not a static description.
+
+### LLM and personality
+- Default local model: Gemma 4 (`gemma4:e4b`) with 32K context window.
+- Personality: warm, direct, lightly witty — "a capable, thoughtful friend, not a corporate assistant."
+- System prompt hierarchy: `system_prompt.py` (single source of truth) → `general_chat.py BASE_CONTRACT` (rich conversational prompt) → self-awareness block + memory context (dynamic per-request).
 
 ## Active Supporting Runtime Surfaces (No Separate Capability ID)
 
