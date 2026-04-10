@@ -13,7 +13,7 @@ def test_websocket_open_hydrates_dashboard_widgets():
     match = re.search(r"ws\.onopen\s*=\s*\(\)\s*=>\s*\{(?P<body>.*?)\};", source, flags=re.DOTALL)
     assert match is not None
     body = match.group("body")
-    assert "hydrateDashboardWidgets()" in body
+    assert "scheduleStartupHydration()" in body
 
 
 def test_dashboard_starts_widget_auto_refresh_scheduler():

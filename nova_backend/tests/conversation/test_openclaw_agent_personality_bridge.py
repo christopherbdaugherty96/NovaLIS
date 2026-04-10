@@ -11,8 +11,13 @@ def test_openclaw_agent_bridge_formats_morning_brief_through_nova_voice():
         title="Morning Brief",
         template_id="morning_brief",
         tools_allowed=["weather", "calendar", "news"],
+        allowed_hostnames=[],
         max_steps=4,
         max_duration_s=90,
+        max_network_calls=0,
+        max_files_touched=0,
+        max_bytes_read=0,
+        max_bytes_written=0,
     )
 
     out = OpenClawAgentPersonalityBridge().present_result(

@@ -17,6 +17,10 @@ class FakeNetworkMediator:
 
 
 def test_single_request_has_single_action_attempt(monkeypatch):
+    monkeypatch.setattr(
+        "src.governor.governor.Governor._check_network_budget",
+        lambda self, cap_id: None,
+    )
     from src.governor.governor_mediator import GovernorMediator
     from src.governor.governor import Governor
 

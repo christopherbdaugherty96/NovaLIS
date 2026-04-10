@@ -8,27 +8,25 @@ from src.executors.open_folder_executor import OpenFolderExecutor
 from src.executors.volume_executor import VolumeExecutor
 
 
-def test_volume_executor_reports_platform_specific_unsupported_mute(monkeypatch):
+def test_volume_executor_handles_mute_on_windows(monkeypatch):
     executor = VolumeExecutor()
     monkeypatch.setattr("src.system_control.system_control_executor.platform.system", lambda: "Windows")
 
     result = executor.execute(ActionRequest(capability_id=19, params={"action": "mute"}))
 
-    assert result.success is False
-    assert "not available on this device yet" in result.message.lower()
+    assert result.success is True
     assert result.authority_class == "reversible_local"
     assert result.external_effect is False
     assert result.reversible is True
 
 
-def test_media_executor_reports_platform_specific_unsupported_action(monkeypatch):
+def test_media_executor_handles_pause_on_windows(monkeypatch):
     executor = MediaExecutor()
     monkeypatch.setattr("src.system_control.system_control_executor.platform.system", lambda: "Windows")
 
     result = executor.execute(ActionRequest(capability_id=20, params={"action": "pause"}))
 
-    assert result.success is False
-    assert "not available on this device yet" in result.message.lower()
+    assert result.success is True
     assert result.authority_class == "reversible_local"
     assert result.external_effect is False
     assert result.reversible is True

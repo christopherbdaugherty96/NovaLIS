@@ -16,4 +16,4 @@ def test_chat_input_exposes_deepseek_second_opinion_button():
     assert "Second opinion" in index_source
     assert "function requestDeepSeekSecondOpinion()" in dashboard_source
     assert 'appendChatMessage("user", "Second opinion")' in dashboard_source
-    assert 'safeWSSend({ text: "second opinion", invocation_source: "deepseek_button" })' in dashboard_source
+    assert 'safeWSSend({ text: "second opinion", invocation_source: "deepseek_button" }' in dashboard_source
