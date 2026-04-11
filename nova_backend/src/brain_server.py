@@ -1,9 +1,9 @@
 # src/brain_server.py
 
 """
-NovaLIS Brain Server â€” Phase 4 Staging
-- Sessionâ€‘aware mediator
-- Dataclassâ€‘based invocation handling
+NovaLIS Brain Server - Phase 4 Staging
+- Session-aware mediator
+- Dataclass-based invocation handling
 - Governor mediation
 - Bounded general-chat fallback isolated
 """
@@ -199,7 +199,7 @@ app.include_router(build_live_screen_router())
 app.include_router(build_workspace_router(sys.modules[__name__]))
 
 # -------------------------------------------------
-# Phaseâ€‘4 Staging Components
+# Phase 4 Staging Components
 # -------------------------------------------------
 thought_store = ThoughtStore(ttl=300)
 conversation_heuristics = ComplexityHeuristics()

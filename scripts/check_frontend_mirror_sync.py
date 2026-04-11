@@ -7,7 +7,12 @@ PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
 PAIRS = (
     (PROJECT_ROOT / "nova_backend" / "static" / "index.html", PROJECT_ROOT / "Nova-Frontend-Dashboard" / "index.html"),
+    (PROJECT_ROOT / "nova_backend" / "static" / "dashboard-config.js", PROJECT_ROOT / "Nova-Frontend-Dashboard" / "dashboard-config.js"),
+    (PROJECT_ROOT / "nova_backend" / "static" / "dashboard-workspace.js", PROJECT_ROOT / "Nova-Frontend-Dashboard" / "dashboard-workspace.js"),
+    (PROJECT_ROOT / "nova_backend" / "static" / "dashboard-control-center.js", PROJECT_ROOT / "Nova-Frontend-Dashboard" / "dashboard-control-center.js"),
+    (PROJECT_ROOT / "nova_backend" / "static" / "dashboard-chat-news.js", PROJECT_ROOT / "Nova-Frontend-Dashboard" / "dashboard-chat-news.js"),
     (PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js", PROJECT_ROOT / "Nova-Frontend-Dashboard" / "dashboard.js"),
+    (PROJECT_ROOT / "nova_backend" / "static" / "dashboard-surfaces.css", PROJECT_ROOT / "Nova-Frontend-Dashboard" / "dashboard-surfaces.css"),
     (PROJECT_ROOT / "nova_backend" / "static" / "style.phase1.css", PROJECT_ROOT / "Nova-Frontend-Dashboard" / "style.phase1.css"),
     (PROJECT_ROOT / "nova_backend" / "static" / "orb.js", PROJECT_ROOT / "Nova-Frontend-Dashboard" / "orb.js"),
 )

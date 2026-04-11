@@ -1,4 +1,7 @@
-# agent_state_store.py
+"""Legacy placeholder module kept for repo continuity.
 
-# Code for agent state store
-# Fixes GAP 10
+This file is not part of Nova's active runtime. OpenClaw's active persisted
+state lives in ``nova_backend/src/openclaw/agent_runtime_store.py``.
+"""
+
+__all__: list[str] = []

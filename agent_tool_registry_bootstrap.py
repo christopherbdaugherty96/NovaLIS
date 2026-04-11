@@ -1,4 +1,7 @@
-# agent_tool_registry_bootstrap.py
+"""Legacy placeholder module kept for repo continuity.
 
-# Code for agent tool registry bootstrap
-# Fixes GAP 4
+This file is not part of Nova's active runtime. OpenClaw's active tool
+registry lives in ``nova_backend/src/openclaw/tool_registry.py``.
+"""
+
+__all__: list[str] = []

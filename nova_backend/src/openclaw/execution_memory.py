@@ -15,7 +15,13 @@ from typing import Any
 
 logger = logging.getLogger(__name__)
 
-_DEFAULT_PATH = Path("nova_data/openclaw/execution_memory.json")
+_DEFAULT_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "data"
+    / "nova_state"
+    / "openclaw"
+    / "execution_memory.json"
+)
 
 
 @dataclass

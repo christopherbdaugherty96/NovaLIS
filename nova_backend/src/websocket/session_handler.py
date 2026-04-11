@@ -1592,7 +1592,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     await send_chat_done(ws)
                     continue
 
-            # --- Phaseâ€‘2 immediate commands ---
+            # --- Phase 2 immediate commands ---
             if lowered == "stop":
                 speech_state.stop()
                 stop_speaking()
@@ -3104,7 +3104,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 else mediated_text
             )
 
-            # --- Phaseâ€‘4 governed invocation detection ---
+            # --- Phase 4 governed invocation detection ---
             inv_result = GovernorMediator.parse_governed_invocation(governed_parse_text, session_id=session_id)
             if inv_result is None and lowered in {"more", "tell me more", "more please"}:
                 try:
@@ -3623,7 +3623,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
                 await send_chat_done(ws)
 
-                # Autoâ€‘speak for voice input (only if not a TTS invocation)
+                # Auto-speak for voice input (only if not a TTS invocation)
                 if (session_state.get("last_input_channel") == "voice"
                         and action_result.success
                         and capability_id != 18):
@@ -3645,7 +3645,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 session_state["turn_count"] += 1
                 continue
 
-            # --- inv_result is None â€“ proceed to Phaseâ€‘3.5 handling ---
+            # --- inv_result is None; proceed to Phase 3.5 handling ---
 
             # --- Quick Corrections ---
             if mediated_text.startswith("Correction:"):
@@ -3773,7 +3773,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
                 await send_chat_done(ws)
 
-                # Autoâ€‘speak for voice input
+                # Auto-speak for voice input
                 if (session_state.get("last_input_channel") == "voice"
                         and getattr(skill_result, "success", True)):   # assume success if not present
                     _maybe_auto_speak_for_voice_turn(

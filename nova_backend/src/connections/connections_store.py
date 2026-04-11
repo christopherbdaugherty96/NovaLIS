@@ -68,7 +68,7 @@ PROVIDER_REGISTRY: dict[str, dict[str, Any]] = {
         "kind": "file_path",
         "placeholder": "C:\\Users\\You\\calendar.ics",
         "privacy_note": "Stays on this device — no data leaves locally.",
-        "caps": ["56"],
+        "caps": ["57"],
     },
     "bridge": {
         "label": "Remote Bridge Token",

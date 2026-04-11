@@ -1,4 +1,7 @@
-# agent_thinking_loop.py
+"""Legacy placeholder module kept for repo continuity.
 
-# Code for agent thinking loop with phase-based termination
-# Fixes GAP 12
+This file is not part of Nova's active runtime. OpenClaw's active reasoning
+loop lives in ``nova_backend/src/openclaw/thinking_loop.py``.
+"""
+
+__all__: list[str] = []

@@ -43,18 +43,19 @@ Current interpretation:
 - `nova_backend/src/personality/tone_profile_store.py`
 - `nova_backend/src/personality/interface_agent.py`
 - `nova_backend/src/brain_server.py`
-- `nova_backend/static/dashboard.js`
+- `nova_backend/static/dashboard-control-center.js`
 
 ### Scheduling
 - `nova_backend/src/tasks/notification_schedule_store.py`
 - `nova_backend/src/governor/governor.py`
 - `nova_backend/src/brain_server.py`
 - `nova_backend/src/ledger/event_types.py`
+- `nova_backend/static/dashboard-control-center.js`
 
 ### Pattern review
 - `nova_backend/src/patterns/pattern_review_store.py`
 - `nova_backend/src/brain_server.py`
-- `nova_backend/static/dashboard.js`
+- `nova_backend/static/dashboard-control-center.js`
 
 ## Runtime Boundary
 All action-capable behavior still flows through the same authority path:

@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nova</title>
   <link rel="stylesheet" href="/static/style.phase1.css" />
+  <link rel="stylesheet" href="/static/dashboard-surfaces.css" />
 </head>
 <body>
   <div class="orb-container" id="orb-container" aria-hidden="true">
@@ -162,6 +163,7 @@
 
         <div class="chat-input">
           <div id="thinking-bar" class="thinking-bar" style="display:none" role="status" aria-live="polite"></div>
+          <div id="token-budget-bar" class="token-budget-bar" style="display:none" role="status" aria-live="polite"></div>
           <input id="chat-input" type="text" placeholder="What are you trying to get done? Example: build me a landing page for my business." title="Type a goal or message and press Enter to send." autocomplete="off" spellcheck="false" />
           <button id="deepseek-btn" type="button" aria-label="Ask for a second opinion" title="Ask for a second opinion on the latest message">Second opinion</button>
           <button id="send-btn" type="button" title="Send message (Enter)">Send</button>
@@ -233,7 +235,7 @@
       </section>
 
       <section id="page-intro" class="page-view page-intro" hidden>
-        <div class="widget page-card intro-hero" aria-live="polite">
+        <div class="widget page-card intro-hero settings-hero" aria-live="polite">
           <div class="workspace-board-hero-header">
             <div>
               <div class="home-launch-kicker">Introduction</div>
@@ -263,8 +265,8 @@
         <div class="widget page-card intro-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Setup Readiness</div>
-              <p id="intro-checklist-summary" class="workspace-board-section-copy">Loading the current setup path and readiness checks.</p>
+              <div class="workspace-home-section-title">What To Set Up First</div>
+              <p id="intro-checklist-summary" class="workspace-board-section-copy">Loading the few setup steps that matter most on this device.</p>
             </div>
           </div>
           <div id="intro-checklist-grid" class="settings-mode-grid"></div>
@@ -283,7 +285,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Best First Move</div>
-              <p id="intro-first-success-copy" class="workspace-board-section-copy">Nova is checking the easiest high-value move for this device.</p>
+              <p id="intro-first-success-copy" class="workspace-board-section-copy">Nova is checking the easiest useful first move for this device.</p>
             </div>
           </div>
           <div id="intro-first-success-grid" class="intro-success-grid"></div>
@@ -322,7 +324,7 @@
           </div>
           <div class="intro-flow-line">You: "Explain this error" -> Nova: cause + next step -> You: "Save this as my fix"</div>
           <p class="workspace-board-section-copy">
-            Nova helps with the answer, and it only preserves something when you explicitly ask it to. That is the loop: Understand -> Continue -> Preserve -> Decide.
+            Nova helps with the answer, and it only preserves something when you explicitly ask it to. That is the loop: understand, continue, preserve, decide.
           </p>
         </div>
 
@@ -353,11 +355,11 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">If Setup Gets Stuck</div>
-              <p class="workspace-board-section-copy">Nova should be usable without hunting through the repo. These are the core local recovery steps.</p>
+              <p class="workspace-board-section-copy">You should not need to hunt through the repo to recover. These are the core local recovery steps.</p>
             </div>
           </div>
           <ul class="help-list">
-            <li>If the header stays on <code>Connecting</code>, restart Nova locally and refresh the dashboard.</li>
+            <li>If the header stays on <code>Connecting</code>, restart Nova locally, wait a moment, and refresh the dashboard.</li>
             <li>Windows startup: <code>start_nova.bat</code> to start and <code>stop_nova.bat</code> to stop.</li>
             <li>macOS/Linux startup: <code>./start_nova.sh</code> to start and <code>./stop_nova.sh</code> to stop.</li>
             <li>Local mode should still work without provider keys, bridge tokens, or connector setup.</li>
@@ -369,12 +371,12 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Start Here</div>
-              <p class="workspace-board-section-copy">You can be useful in a minute.</p>
+              <p class="workspace-board-section-copy">You can get value in a minute.</p>
             </div>
           </div>
           <ul class="help-list">
             <li>Start with <code>news</code>, <code>explain this</code>, or <code>continue my project</code>.</li>
-            <li>Open Settings any time to change setup mode, permissions, accessibility, or voice preferences.</li>
+            <li>Open Settings any time to review setup mode, permissions, accessibility, or voice preferences.</li>
             <li>Open Workspace when you want your ongoing work, recent decisions, and structure map together.</li>
             <li>Open Trust when you want to see what happened, what stayed blocked, and why.</li>
             <li>Nova does not act, save, or spend without your request.</li>
@@ -394,7 +396,7 @@
             </div>
             <span class="confidence-badge">Open Nova and move</span>
           </div>
-          <p id="home-launch-summary">Nova is ready for briefings, explain-anything, research, and project continuity.</p>
+          <p id="home-launch-summary">Nova is ready for briefings, explain-anything help, research, and project continuity.</p>
           <div id="home-launch-actions" class="home-launch-actions"></div>
         </div>
         <div id="workspace-home-widget" class="widget page-card workspace-home-widget" aria-live="polite">
@@ -441,7 +443,7 @@
           <p id="capability-surface-summary">Loading live capabilities...</p>
           <div id="capability-surface-groups" class="capability-surface-groups"></div>
           <p id="capability-surface-note" class="capability-surface-note">
-            Only currently enabled, Governor-approved capabilities appear here.
+            Only the capabilities Nova can actually use right now appear here.
           </p>
         </div>
         <div id="agent-delivery-widget" class="widget page-card trust-center-panel" aria-live="polite">
@@ -511,21 +513,21 @@
             <span class="confidence-badge">Visible and bounded</span>
           </div>
           <p id="agent-page-summary" class="workspace-board-section-copy">
-            OpenClaw is Nova's worker layer for manual, reviewable runs. It stays visible, bounded, and permission-first.
+            Home Agent helps Nova run manual tasks you can review and stop. It stays visible, bounded, and permission-first.
           </p>
           <div class="workspace-board-actions-toolbar">
             <button id="btn-agent-refresh" type="button">Refresh agent</button>
-            <button id="btn-agent-open-settings" type="button">Open settings</button>
-            <button id="btn-agent-open-trust" type="button">Open trust</button>
-            <button id="btn-agent-open-home" type="button">Open home</button>
+            <button id="btn-agent-open-settings" type="button">Open Settings</button>
+            <button id="btn-agent-open-trust" type="button">Open Trust</button>
+            <button id="btn-agent-open-home" type="button">Open Home</button>
           </div>
         </div>
 
-        <div class="widget page-card trust-center-panel" aria-live="polite">
+        <div class="widget page-card trust-center-panel settings-checklist-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Runtime</div>
-              <p class="workspace-board-section-copy">What this worker layer can do today, what still stays manual, and what is intentionally later.</p>
+            <p class="workspace-board-section-copy">What Home Agent can help with today, what still stays manual, and what is intentionally later.</p>
             </div>
           </div>
           <div id="agent-runtime-grid" class="trust-center-health-grid"></div>
@@ -545,7 +547,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Templates and Delivery</div>
-              <p id="agent-delivery-summary" class="workspace-board-section-copy">Choose what can run, how results show up, and whether they stay in chat or on the page.</p>
+              <p id="agent-delivery-summary" class="workspace-board-section-copy">Choose what can run, how results arrive, and whether they stay in chat or on the page.</p>
             </div>
           </div>
           <div id="agent-template-list" class="agent-template-list"></div>
@@ -843,6 +845,75 @@
       </section>
 
       <section id="page-settings" class="page-view page-settings" hidden>
+
+        <!-- ── User Profile ───────────────────────────────────────────── -->
+        <div class="widget page-card trust-center-panel settings-profile-panel" id="profile-panel">
+          <div class="workspace-board-section-header">
+            <div>
+              <div class="workspace-home-section-title">Your Profile</div>
+              <p id="profile-summary" class="workspace-board-section-copy">Tell Nova who you are so it can address you correctly and follow your preferences.</p>
+            </div>
+          </div>
+
+          <div class="profile-form">
+            <div class="profile-field-row">
+              <label class="profile-label" for="profile-name">Your name</label>
+              <input id="profile-name" class="profile-input" type="text" maxlength="80" placeholder="e.g. Chris" autocomplete="off" />
+            </div>
+            <div class="profile-field-row">
+              <label class="profile-label" for="profile-nickname">What Nova calls you <span class="profile-label-hint">(optional)</span></label>
+              <input id="profile-nickname" class="profile-input" type="text" maxlength="40" placeholder='e.g. "Boss", leave blank to use your name' autocomplete="off" />
+            </div>
+            <div class="profile-field-row">
+              <label class="profile-label" for="profile-email">Email <span class="profile-label-hint">(used to detect connected services)</span></label>
+              <input id="profile-email" class="profile-input" type="email" maxlength="120" placeholder="email@example.com" autocomplete="off" />
+            </div>
+            <div class="workspace-board-actions-toolbar" style="margin-top:0.5rem">
+              <button id="btn-profile-save-identity" type="button">Save</button>
+              <span id="profile-identity-status" class="profile-status" aria-live="polite"></span>
+            </div>
+          </div>
+
+          <div class="profile-divider"></div>
+
+          <div class="workspace-home-section-title" style="font-size:0.85rem;margin-bottom:0.75rem">Preferences</div>
+          <div class="profile-prefs-grid">
+            <label class="profile-label">Response style</label>
+            <div class="profile-radio-group" role="radiogroup" aria-label="Response style">
+              <label class="profile-radio-label"><input type="radio" name="response-style" value="concise" /> Concise</label>
+              <label class="profile-radio-label"><input type="radio" name="response-style" value="balanced" checked /> Balanced</label>
+              <label class="profile-radio-label"><input type="radio" name="response-style" value="detailed" /> Detailed</label>
+            </div>
+
+            <label class="profile-label">Use my name in responses</label>
+            <label class="toggle-item profile-toggle">
+              <input id="profile-pref-use-name" type="checkbox" checked />
+              <span>On</span>
+            </label>
+
+            <label class="profile-label">Proactive suggestions</label>
+            <label class="toggle-item profile-toggle">
+              <input id="profile-pref-proactive" type="checkbox" checked />
+              <span>On</span>
+            </label>
+          </div>
+          <div class="workspace-board-actions-toolbar" style="margin-top:0.75rem">
+            <button id="btn-profile-save-prefs" type="button">Save preferences</button>
+            <span id="profile-prefs-status" class="profile-status" aria-live="polite"></span>
+          </div>
+
+          <div class="profile-divider"></div>
+
+          <div class="workspace-home-section-title" style="font-size:0.85rem;margin-bottom:0.5rem">Your rules for Nova</div>
+          <p class="workspace-board-section-copy" style="margin-bottom:0.5rem">Write anything you always want Nova to do, avoid, or remember about how you work. One rule per line.</p>
+          <textarea id="profile-rules" class="profile-rules-textarea" maxlength="2000" rows="6" placeholder="- Always give me bullet points first&#10;- Prefer metric units&#10;- Don't use filler phrases like &quot;Certainly!&quot;"></textarea>
+          <div class="workspace-board-actions-toolbar" style="margin-top:0.5rem">
+            <button id="btn-profile-save-rules" type="button">Save rules</button>
+            <span id="profile-rules-status" class="profile-status" aria-live="polite"></span>
+          </div>
+        </div>
+        <!-- ── /User Profile ───────────────────────────────────────────── -->
+
         <div class="widget page-card intro-hero" aria-live="polite">
           <div class="workspace-board-hero-header">
             <div>
@@ -851,19 +922,19 @@
             </div>
             <span class="confidence-badge">Local settings</span>
           </div>
-          <p id="settings-current-mode-summary" class="workspace-board-section-copy">
+              <p id="settings-current-mode-summary" class="workspace-board-section-copy">
             Local Mode. Nova stays local-first, private, and cost-free by default.
           </p>
           <div class="workspace-board-actions-toolbar">
-            <button id="btn-settings-open-intro" type="button">Open introduction</button>
-            <button id="btn-settings-open-home" type="button">Open home</button>
-            <button id="btn-settings-open-trust" type="button">Open trust</button>
-            <button id="btn-settings-open-agent" type="button">Open agent</button>
-            <button id="btn-settings-open-connections" type="button">Connection status</button>
-            <button id="btn-settings-refresh-runtime" type="button">Refresh runtime</button>
-            <button id="btn-settings-reset-defaults" type="button">Restore recommended defaults</button>
-            <button id="btn-settings-voice-status" type="button">Voice status</button>
-            <button id="btn-settings-voice-check" type="button">Run voice check</button>
+            <button id="btn-settings-open-intro" type="button">Open Introduction</button>
+            <button id="btn-settings-open-home" type="button">Open Home</button>
+            <button id="btn-settings-open-trust" type="button">Open Trust</button>
+            <button id="btn-settings-open-agent" type="button">Open Agent</button>
+            <button id="btn-settings-open-connections" type="button">Connection Status</button>
+            <button id="btn-settings-refresh-runtime" type="button">Refresh Runtime</button>
+            <button id="btn-settings-reset-defaults" type="button">Restore Recommended Defaults</button>
+            <button id="btn-settings-voice-status" type="button">Voice Status</button>
+            <button id="btn-settings-voice-check" type="button">Run Voice Check</button>
           </div>
         </div>
 
@@ -871,7 +942,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Setup Checklist</div>
-              <p id="settings-setup-summary" class="workspace-board-section-copy">Loading the current readiness checks for this device.</p>
+              <p id="settings-setup-summary" class="workspace-board-section-copy">Loading the setup checks that matter for this device.</p>
             </div>
           </div>
           <div id="settings-setup-grid" class="settings-mode-grid"></div>
@@ -900,7 +971,7 @@
           <div id="settings-permission-grid" class="settings-mode-grid"></div>
           <div id="settings-history-list" class="trust-center-list"></div>
           <p class="first-run-note">
-            These controls are live now. They change whether governed second opinions, the metered OpenAI lane, the remote bridge, and the home-agent foundation are available at runtime.
+            These controls are live now. They decide whether governed second opinions, the metered OpenAI lane, the remote bridge, and the home-agent foundation are available at runtime.
           </p>
         </div>
 
@@ -917,8 +988,8 @@
             <label class="toggle-item"><input id="settings-toggle-compact-density" type="checkbox" /> <span>Compact density</span></label>
           </div>
           <div class="workspace-board-actions-toolbar">
-            <button id="btn-settings-open-privacy" type="button">Privacy details</button>
-            <button id="btn-settings-open-accessibility" type="button">Accessibility modal</button>
+            <button id="btn-settings-open-privacy" type="button">Privacy Details</button>
+            <button id="btn-settings-open-accessibility" type="button">Accessibility Help</button>
           </div>
         </div>
 
@@ -926,7 +997,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Voice Confidence</div>
-              <p id="settings-voice-summary" class="workspace-board-section-copy">Run Voice Check to confirm spoken output on this device.</p>
+              <p id="settings-voice-summary" class="workspace-board-section-copy">Run Voice Check when you want to confirm spoken output on this device.</p>
             </div>
           </div>
           <div id="settings-voice-grid" class="trust-center-health-grid"></div>
@@ -977,18 +1048,36 @@
           </p>
         </div>
 
-        <div class="widget page-card trust-center-panel" aria-live="polite">
+        <!-- ── Connection Cards ───────────────────────────────────────── -->
+        <div class="widget page-card trust-center-panel" id="connections-panel">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Connections, Providers, and Remote Bridge</div>
-              <p id="settings-connection-summary" class="workspace-board-section-copy">Connection details will appear here after the next refresh.</p>
+              <div class="workspace-home-section-title">Connections &amp; Providers</div>
+              <p id="connections-summary" class="workspace-board-section-copy">Add only the services you actually want Nova to use for live search, news, weather, calendar, or optional cloud reasoning. All keys stay on this device.</p>
+            </div>
+            <button id="btn-connections-refresh" type="button" class="confidence-badge" style="cursor:pointer">Refresh status</button>
+          </div>
+
+          <!-- Card grid — populated by dashboard.js -->
+          <div id="connection-cards-grid" class="connection-cards-grid" aria-live="polite"></div>
+
+          <!-- Disconnect All zone -->
+          <div class="connection-reset-zone" id="connection-reset-zone">
+            <div class="connection-reset-header">
+              <span class="connection-reset-title">⚠ Reset All Connections</span>
+              <p class="connection-reset-copy">Removes all stored provider keys and resets Nova to local-only mode. You will need to re-enter your keys to restore cloud capabilities.</p>
+            </div>
+            <div id="connection-reset-confirm" class="connection-reset-confirm" hidden>
+              <span class="connection-reset-warn">This will disconnect all providers immediately.</span>
+              <button id="btn-reset-confirm" type="button" class="connection-reset-btn-danger">Yes, disconnect all</button>
+              <button id="btn-reset-cancel" type="button">Cancel</button>
+            </div>
+            <div id="connection-reset-trigger" class="connection-reset-trigger">
+              <button id="btn-reset-all" type="button" class="connection-reset-btn-ghost">Reset all connections</button>
             </div>
           </div>
-          <div id="settings-connection-grid" class="trust-center-health-grid"></div>
-          <p class="first-run-note">
-            What is connected now is visible here. Most provider keys and connector logins are still configured manually today, and that setup should remain explicit and governed.
-          </p>
         </div>
+        <!-- ── /Connection Cards ──────────────────────────────────────── -->
       </section>
 
       <section id="page-policy" class="page-view page-policy" hidden>
@@ -1177,6 +1266,10 @@
   </div>
 
   <script src="/static/orb.js"></script>
+  <script src="/static/dashboard-config.js"></script>
+  <script src="/static/dashboard-workspace.js"></script>
+  <script src="/static/dashboard-control-center.js"></script>
   <script src="/static/dashboard.js"></script>
+  <script src="/static/dashboard-chat-news.js"></script>
 </body>
 </html>

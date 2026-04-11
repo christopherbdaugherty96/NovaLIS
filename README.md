@@ -143,7 +143,8 @@ Main repository surfaces:
 - `nova_backend/src/`
 - `nova_backend/tests/`
 - `nova_backend/static/`
-- `Nova-Frontend-Dashboard/` (historical mirror copy; `nova_backend/static/` is the runtime-served canonical frontend)
+- `Nova-Frontend-Dashboard/` (maintained mirror copy; `nova_backend/static/` is the runtime-served canonical frontend)
+- `nova_backend/src/data/nova_state/` (local runtime state such as connections, settings, memory, and OpenClaw state)
 - `docs/`
 
 If you are reviewing the backend first, a strong starting order is:
@@ -158,9 +159,14 @@ If you are reviewing the backend first, a strong starting order is:
 If you are reviewing the user experience first, start with:
 
 1. `nova_backend/static/index.html`
-2. `nova_backend/static/dashboard.js`
-3. `nova_backend/static/style.phase1.css`
-4. `nova_backend/static/orb.js`
+2. `nova_backend/static/dashboard-config.js`
+3. `nova_backend/static/dashboard-workspace.js`
+4. `nova_backend/static/dashboard-control-center.js`
+5. `nova_backend/static/dashboard-chat-news.js`
+6. `nova_backend/static/dashboard.js`
+7. `nova_backend/static/style.phase1.css`
+8. `nova_backend/static/dashboard-surfaces.css`
+9. `nova_backend/static/orb.js`
 
 ## Current Product Direction
 
