@@ -1,5 +1,5 @@
 # Frontend and UI Guide
-Updated: 2026-03-28
+Updated: 2026-04-10
 
 ## Purpose
 This guide explains Nova's frontend in plain language.
@@ -19,17 +19,26 @@ Its job is to:
 ## Main Runtime Frontend Files
 The runtime-served frontend lives in:
 - `nova_backend/static/index.html`
+- `nova_backend/static/dashboard-config.js`
+- `nova_backend/static/dashboard-workspace.js`
+- `nova_backend/static/dashboard-control-center.js`
+- `nova_backend/static/dashboard-chat-news.js`
 - `nova_backend/static/dashboard.js`
 - `nova_backend/static/orb.js`
 - `nova_backend/static/style.phase1.css`
+- `nova_backend/static/dashboard-surfaces.css`
 
-There is also a historical mirror copy in:
+There is also a maintained mirror copy in:
 - `Nova-Frontend-Dashboard/`
 
 Current repo rule:
 - `nova_backend/static/` is the runtime-served canonical frontend
-- `Nova-Frontend-Dashboard/` is useful for comparison, but it may drift
-- if `scripts/check_frontend_mirror_sync.py` fails, trust `nova_backend/static/`
+- `Nova-Frontend-Dashboard/` is a maintained mirror and should stay matched
+- if `scripts/check_frontend_mirror_sync.py` fails, fix the mirror drift immediately
+
+Current planning references for frontend cleanup and productization:
+- `docs/design/Phase 4.5/NOVA_FRONTEND_FOUNDATION_AND_USABILITY_ROADMAP_2026-04-10.md`
+- `docs/design/Phase 6/NOVA_SYSTEM_AUDIT_AND_PRODUCTIZATION_GAPS_2026-04-10.md`
 
 There is now also a product-facing landing preview at:
 - `nova_backend/static/landing.html`
@@ -71,14 +80,59 @@ It handles things like:
 - first-run guidance
 - follow-up actions
 
+### `dashboard-config.js`
+Shared static frontend config for:
+- API and websocket base wiring
+- page labels and navigation metadata
+- quick-action sets by page
+- command suggestions and help examples
+- command-discovery groupings
+
+This file exists to shrink the main dashboard surface without changing runtime behavior.
+
+### `dashboard-workspace.js`
+Shared Home and Workspace surface logic for:
+- continuity helpers and thread resume actions
+- workspace refresh requests
+- thread map and thread detail rendering
+- Workspace Home, Workspace Board, structure-map, operational-context, and assistive-notice rendering
+
+This file exists to peel the workspace-facing product surfaces out of the main dashboard runtime.
+
+### `dashboard-control-center.js`
+Shared control-center logic for:
+- policy review and policy readiness surfaces
+- tone, schedule, and pattern-review surfaces
+- operator health, capability visibility, and Trust Center rendering
+- Home Agent delivery, run-state, and template surfaces
+- runtime Settings rendering and settings-update helpers
+
+This file exists to peel the operational review and settings product surfaces out of the main dashboard runtime.
+
+### `dashboard-chat-news.js`
+Shared interaction logic for:
+- chat rendering and chat-adjacent helpers
+- news, weather, and search surfaces
+- modal interactions and startup/help flows
+- cross-surface UI actions that are product-facing but not part of the control-center or workspace modules
+
+This file exists to peel the conversational and discovery-heavy UI surfaces out of the main dashboard runtime.
+
 ### `orb.js`
 The orb presence layer.
 It is meant to create a sense of calm presence, not a hidden semantic signal.
 
 ### `style.phase1.css`
-The main styling layer for the dashboard and orb surface.
-It now also styles the dedicated Workspace, Trust, Intro, and Settings pages and the first-run guide.
+The base styling layer for the dashboard shell, orb, accessibility, and responsive behavior.
 The separate landing-preview page uses its own embedded product-preview styling.
+
+### `dashboard-surfaces.css`
+The product-surface styling layer for:
+- Home and Workspace pages
+- Agent, Trust, Policy, Memory, and Settings pages
+- chat, news, weather, search, and modal interaction surfaces
+
+This file exists to reduce cross-surface CSS coupling and make page-level UI work easier to maintain.
 
 ## What The Frontend Shows Today
 The frontend can present:

@@ -72,7 +72,23 @@ Generated runtime docs live under:
 
 These are the operational truth surfaces that describe what the live system currently exposes.
 
-## 7. Why This Separation Matters
+## 7. OpenClaw Runtime State
+OpenClaw stores its local persistent runtime state under:
+- `nova_backend/src/data/nova_state/openclaw/`
+
+Examples:
+- `agent_runtime.json`
+- `execution_memory.json`
+
+What `execution_memory.json` is for:
+- local execution-history telemetry
+- tool reliability tracking
+- duration history
+- better future tool ordering and fallback decisions
+
+This is runtime state, not source code and not governed long-term user memory.
+
+## 8. Why This Separation Matters
 The separation between these storage types is important.
 It prevents Nova from blurring together:
 - temporary task context

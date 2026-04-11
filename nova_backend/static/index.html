@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Nova</title>
   <link rel="stylesheet" href="/static/style.phase1.css" />
+  <link rel="stylesheet" href="/static/dashboard-surfaces.css" />
 </head>
 <body>
   <div class="orb-container" id="orb-container" aria-hidden="true">
@@ -234,7 +235,7 @@
       </section>
 
       <section id="page-intro" class="page-view page-intro" hidden>
-        <div class="widget page-card intro-hero" aria-live="polite">
+        <div class="widget page-card intro-hero settings-hero" aria-live="polite">
           <div class="workspace-board-hero-header">
             <div>
               <div class="home-launch-kicker">Introduction</div>
@@ -264,8 +265,8 @@
         <div class="widget page-card intro-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Setup Readiness</div>
-              <p id="intro-checklist-summary" class="workspace-board-section-copy">Loading the current setup path and readiness checks.</p>
+              <div class="workspace-home-section-title">What To Set Up First</div>
+              <p id="intro-checklist-summary" class="workspace-board-section-copy">Loading the few setup steps that matter most on this device.</p>
             </div>
           </div>
           <div id="intro-checklist-grid" class="settings-mode-grid"></div>
@@ -284,7 +285,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Best First Move</div>
-              <p id="intro-first-success-copy" class="workspace-board-section-copy">Nova is checking the easiest high-value move for this device.</p>
+              <p id="intro-first-success-copy" class="workspace-board-section-copy">Nova is checking the easiest useful first move for this device.</p>
             </div>
           </div>
           <div id="intro-first-success-grid" class="intro-success-grid"></div>
@@ -323,7 +324,7 @@
           </div>
           <div class="intro-flow-line">You: "Explain this error" -> Nova: cause + next step -> You: "Save this as my fix"</div>
           <p class="workspace-board-section-copy">
-            Nova helps with the answer, and it only preserves something when you explicitly ask it to. That is the loop: Understand -> Continue -> Preserve -> Decide.
+            Nova helps with the answer, and it only preserves something when you explicitly ask it to. That is the loop: understand, continue, preserve, decide.
           </p>
         </div>
 
@@ -354,11 +355,11 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">If Setup Gets Stuck</div>
-              <p class="workspace-board-section-copy">Nova should be usable without hunting through the repo. These are the core local recovery steps.</p>
+              <p class="workspace-board-section-copy">You should not need to hunt through the repo to recover. These are the core local recovery steps.</p>
             </div>
           </div>
           <ul class="help-list">
-            <li>If the header stays on <code>Connecting</code>, restart Nova locally and refresh the dashboard.</li>
+            <li>If the header stays on <code>Connecting</code>, restart Nova locally, wait a moment, and refresh the dashboard.</li>
             <li>Windows startup: <code>start_nova.bat</code> to start and <code>stop_nova.bat</code> to stop.</li>
             <li>macOS/Linux startup: <code>./start_nova.sh</code> to start and <code>./stop_nova.sh</code> to stop.</li>
             <li>Local mode should still work without provider keys, bridge tokens, or connector setup.</li>
@@ -370,12 +371,12 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Start Here</div>
-              <p class="workspace-board-section-copy">You can be useful in a minute.</p>
+              <p class="workspace-board-section-copy">You can get value in a minute.</p>
             </div>
           </div>
           <ul class="help-list">
             <li>Start with <code>news</code>, <code>explain this</code>, or <code>continue my project</code>.</li>
-            <li>Open Settings any time to change setup mode, permissions, accessibility, or voice preferences.</li>
+            <li>Open Settings any time to review setup mode, permissions, accessibility, or voice preferences.</li>
             <li>Open Workspace when you want your ongoing work, recent decisions, and structure map together.</li>
             <li>Open Trust when you want to see what happened, what stayed blocked, and why.</li>
             <li>Nova does not act, save, or spend without your request.</li>
@@ -395,7 +396,7 @@
             </div>
             <span class="confidence-badge">Open Nova and move</span>
           </div>
-          <p id="home-launch-summary">Nova is ready for briefings, explain-anything, research, and project continuity.</p>
+          <p id="home-launch-summary">Nova is ready for briefings, explain-anything help, research, and project continuity.</p>
           <div id="home-launch-actions" class="home-launch-actions"></div>
         </div>
         <div id="workspace-home-widget" class="widget page-card workspace-home-widget" aria-live="polite">
@@ -442,7 +443,7 @@
           <p id="capability-surface-summary">Loading live capabilities...</p>
           <div id="capability-surface-groups" class="capability-surface-groups"></div>
           <p id="capability-surface-note" class="capability-surface-note">
-            Only currently enabled, Governor-approved capabilities appear here.
+            Only the capabilities Nova can actually use right now appear here.
           </p>
         </div>
         <div id="agent-delivery-widget" class="widget page-card trust-center-panel" aria-live="polite">
@@ -516,17 +517,17 @@
           </p>
           <div class="workspace-board-actions-toolbar">
             <button id="btn-agent-refresh" type="button">Refresh agent</button>
-            <button id="btn-agent-open-settings" type="button">Open settings</button>
-            <button id="btn-agent-open-trust" type="button">Open trust</button>
-            <button id="btn-agent-open-home" type="button">Open home</button>
+            <button id="btn-agent-open-settings" type="button">Open Settings</button>
+            <button id="btn-agent-open-trust" type="button">Open Trust</button>
+            <button id="btn-agent-open-home" type="button">Open Home</button>
           </div>
         </div>
 
-        <div class="widget page-card trust-center-panel" aria-live="polite">
+        <div class="widget page-card trust-center-panel settings-checklist-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Runtime</div>
-            <p class="workspace-board-section-copy">What Home Agent can do today, what still stays manual, and what is intentionally later.</p>
+            <p class="workspace-board-section-copy">What Home Agent can help with today, what still stays manual, and what is intentionally later.</p>
             </div>
           </div>
           <div id="agent-runtime-grid" class="trust-center-health-grid"></div>
@@ -546,7 +547,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Templates and Delivery</div>
-              <p id="agent-delivery-summary" class="workspace-board-section-copy">Choose what can run, how results show up, and whether they stay in chat or on the page.</p>
+              <p id="agent-delivery-summary" class="workspace-board-section-copy">Choose what can run, how results arrive, and whether they stay in chat or on the page.</p>
             </div>
           </div>
           <div id="agent-template-list" class="agent-template-list"></div>
@@ -846,7 +847,7 @@
       <section id="page-settings" class="page-view page-settings" hidden>
 
         <!-- ── User Profile ───────────────────────────────────────────── -->
-        <div class="widget page-card trust-center-panel" id="profile-panel">
+        <div class="widget page-card trust-center-panel settings-profile-panel" id="profile-panel">
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Your Profile</div>
@@ -921,19 +922,19 @@
             </div>
             <span class="confidence-badge">Local settings</span>
           </div>
-          <p id="settings-current-mode-summary" class="workspace-board-section-copy">
+              <p id="settings-current-mode-summary" class="workspace-board-section-copy">
             Local Mode. Nova stays local-first, private, and cost-free by default.
           </p>
           <div class="workspace-board-actions-toolbar">
-            <button id="btn-settings-open-intro" type="button">Open introduction</button>
-            <button id="btn-settings-open-home" type="button">Open home</button>
-            <button id="btn-settings-open-trust" type="button">Open trust</button>
-            <button id="btn-settings-open-agent" type="button">Open agent</button>
-            <button id="btn-settings-open-connections" type="button">Connection status</button>
-            <button id="btn-settings-refresh-runtime" type="button">Refresh runtime</button>
-            <button id="btn-settings-reset-defaults" type="button">Restore recommended defaults</button>
-            <button id="btn-settings-voice-status" type="button">Voice status</button>
-            <button id="btn-settings-voice-check" type="button">Run voice check</button>
+            <button id="btn-settings-open-intro" type="button">Open Introduction</button>
+            <button id="btn-settings-open-home" type="button">Open Home</button>
+            <button id="btn-settings-open-trust" type="button">Open Trust</button>
+            <button id="btn-settings-open-agent" type="button">Open Agent</button>
+            <button id="btn-settings-open-connections" type="button">Connection Status</button>
+            <button id="btn-settings-refresh-runtime" type="button">Refresh Runtime</button>
+            <button id="btn-settings-reset-defaults" type="button">Restore Recommended Defaults</button>
+            <button id="btn-settings-voice-status" type="button">Voice Status</button>
+            <button id="btn-settings-voice-check" type="button">Run Voice Check</button>
           </div>
         </div>
 
@@ -941,7 +942,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Setup Checklist</div>
-              <p id="settings-setup-summary" class="workspace-board-section-copy">Loading the current readiness checks for this device.</p>
+              <p id="settings-setup-summary" class="workspace-board-section-copy">Loading the setup checks that matter for this device.</p>
             </div>
           </div>
           <div id="settings-setup-grid" class="settings-mode-grid"></div>
@@ -970,7 +971,7 @@
           <div id="settings-permission-grid" class="settings-mode-grid"></div>
           <div id="settings-history-list" class="trust-center-list"></div>
           <p class="first-run-note">
-            These controls are live now. They change whether governed second opinions, the metered OpenAI lane, the remote bridge, and the home-agent foundation are available at runtime.
+            These controls are live now. They decide whether governed second opinions, the metered OpenAI lane, the remote bridge, and the home-agent foundation are available at runtime.
           </p>
         </div>
 
@@ -987,8 +988,8 @@
             <label class="toggle-item"><input id="settings-toggle-compact-density" type="checkbox" /> <span>Compact density</span></label>
           </div>
           <div class="workspace-board-actions-toolbar">
-            <button id="btn-settings-open-privacy" type="button">Privacy details</button>
-            <button id="btn-settings-open-accessibility" type="button">Accessibility modal</button>
+            <button id="btn-settings-open-privacy" type="button">Privacy Details</button>
+            <button id="btn-settings-open-accessibility" type="button">Accessibility Help</button>
           </div>
         </div>
 
@@ -996,7 +997,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Voice Confidence</div>
-              <p id="settings-voice-summary" class="workspace-board-section-copy">Run Voice Check to confirm spoken output on this device.</p>
+              <p id="settings-voice-summary" class="workspace-board-section-copy">Run Voice Check when you want to confirm spoken output on this device.</p>
             </div>
           </div>
           <div id="settings-voice-grid" class="trust-center-health-grid"></div>
@@ -1052,7 +1053,7 @@
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Connections &amp; Providers</div>
-              <p id="connections-summary" class="workspace-board-section-copy">Connect your API keys so Nova can access web search, news, weather, and cloud reasoning. All keys stay on this device.</p>
+              <p id="connections-summary" class="workspace-board-section-copy">Add only the services you actually want Nova to use for live search, news, weather, calendar, or optional cloud reasoning. All keys stay on this device.</p>
             </div>
             <button id="btn-connections-refresh" type="button" class="confidence-badge" style="cursor:pointer">Refresh status</button>
           </div>
@@ -1265,6 +1266,10 @@
   </div>
 
   <script src="/static/orb.js"></script>
+  <script src="/static/dashboard-config.js"></script>
+  <script src="/static/dashboard-workspace.js"></script>
+  <script src="/static/dashboard-control-center.js"></script>
   <script src="/static/dashboard.js"></script>
+  <script src="/static/dashboard-chat-news.js"></script>
 </body>
 </html>

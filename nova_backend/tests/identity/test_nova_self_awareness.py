@@ -44,3 +44,30 @@ def test_full_block_does_not_crash_on_missing_dependencies():
     block = build_self_awareness_block()
     assert isinstance(block, str)
     assert len(block) > 0
+
+
+def test_full_block_refreshes_volatile_sections_each_call(monkeypatch):
+    state = {"connected": True}
+
+    monkeypatch.setattr(
+        "src.identity.nova_self_awareness._stable_sections",
+        lambda: ["WHO YOU ARE RIGHT NOW:\nYou are Nova."],
+    )
+    monkeypatch.setattr(
+        "src.identity.nova_self_awareness._status_block",
+        lambda: "YOUR CURRENT STATUS:\n  - Model status: ready",
+    )
+
+    def fake_connections():
+        status = "connected" if state["connected"] else "disconnected"
+        return f"YOUR CONNECTIONS:\n  - Brave Search: {status}"
+
+    monkeypatch.setattr("src.identity.nova_self_awareness._connections_block", fake_connections)
+
+    block_one = build_self_awareness_block()
+    assert "Brave Search: connected" in block_one
+
+    state["connected"] = False
+    block_two = build_self_awareness_block()
+    assert "Brave Search: disconnected" in block_two
+    assert block_one != block_two

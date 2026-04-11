@@ -1,4 +1,7 @@
-# agent_execution_memory.py
+"""Legacy placeholder module kept for repo continuity.
 
-# Refactored agent execution memory for Governor integration
-# Fixes GAP 7
+This file is not part of Nova's active runtime. OpenClaw's live execution
+memory implementation lives in ``nova_backend/src/openclaw/execution_memory.py``.
+"""
+
+__all__: list[str] = []

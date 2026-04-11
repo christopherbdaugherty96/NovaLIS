@@ -52,7 +52,11 @@ nova_backend/src/data/
 .claude/
 New-Audit-and-Issues.md
 Untitled.canvas
+Untitled*.canvas
+Untitled*.base
+Untitled.base
 nova_backend/Untitled.base
+nova_data/
 
 # Environment secrets - NEVER commit this
 nova_backend/.env

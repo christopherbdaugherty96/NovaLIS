@@ -1,3 +1,7 @@
-# agent_orchestrator.py
+"""Legacy placeholder module kept for repo continuity.
 
-# Code for agent orchestrator with all Phase 3 improvements
+This file is not part of Nova's active runtime. The governed orchestrator used
+by Nova lives in ``nova_backend/src/governor/agent_orchestrator.py``.
+"""
+
+__all__: list[str] = []

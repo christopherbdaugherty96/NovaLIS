@@ -1,4 +1,7 @@
-# agent_tool_chaining.py
+"""Legacy placeholder module kept for repo continuity.
 
-# Code for agent tool chaining with budget-aware parallel execution
-# Fixes GAP 9
+This file is not part of Nova's active runtime. OpenClaw's active tool-chain
+logic lives in ``nova_backend/src/openclaw/tool_chain.py``.
+"""
+
+__all__: list[str] = []

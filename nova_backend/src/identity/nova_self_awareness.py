@@ -17,8 +17,8 @@ logger = logging.getLogger(__name__)
 
 _boot_time = time.monotonic()
 
-# Cache: rebuild at most once per 60 seconds
-_cache: dict[str, Any] = {"block": "", "expires": 0.0}
+# Cache only the stable/expensive sections so volatile runtime truth stays fresh.
+_static_cache: dict[str, Any] = {"sections": None, "expires": 0.0}
 _CACHE_TTL = 60.0
 
 
@@ -29,26 +29,10 @@ def build_self_awareness_block() -> str:
     tools, connections, and model info. Designed to be appended to the system
     prompt so the LLM has accurate self-knowledge.
 
-    Cached for 60s to avoid rebuilding on every message.
+    Stable capability and tool sections are cached briefly, but volatile
+    runtime state is rebuilt every call so this stays truthful.
     """
-    now = time.monotonic()
-    if _cache["block"] and now < _cache["expires"]:
-        return _cache["block"]
-
-    sections: list[str] = []
-
-    # --- Identity ---
-    sections.append(_identity_block())
-
-    # --- Active capabilities ---
-    cap_block = _capabilities_block()
-    if cap_block:
-        sections.append(cap_block)
-
-    # --- Tool registry (OpenClaw agent tools) ---
-    tools_block = _tools_block()
-    if tools_block:
-        sections.append(tools_block)
+    sections = _stable_sections()
 
     # --- Connected services ---
     connections_block = _connections_block()
@@ -60,10 +44,29 @@ def build_self_awareness_block() -> str:
     if status_block:
         sections.append(status_block)
 
-    result = "\n\n".join(sections)
-    _cache["block"] = result
-    _cache["expires"] = now + _CACHE_TTL
-    return result
+    return "\n\n".join(sections)
+
+
+def _stable_sections() -> list[str]:
+    """Return cached stable sections that do not need per-message refresh."""
+    now = time.monotonic()
+    cached_sections = _static_cache.get("sections")
+    if cached_sections and now < float(_static_cache.get("expires") or 0.0):
+        return list(cached_sections)
+
+    sections: list[str] = [_identity_block()]
+
+    cap_block = _capabilities_block()
+    if cap_block:
+        sections.append(cap_block)
+
+    tools_block = _tools_block()
+    if tools_block:
+        sections.append(tools_block)
+
+    _static_cache["sections"] = tuple(sections)
+    _static_cache["expires"] = now + _CACHE_TTL
+    return list(sections)
 
 
 def _identity_block() -> str:
@@ -156,8 +159,8 @@ def _tools_block() -> str:
 def _connections_block() -> str:
     """Show which external services are connected."""
     try:
-        from src.connections.connections_store import ConnectionsStore
-        store = ConnectionsStore()
+        from src.connections.connections_store import connections_store
+        store = connections_store
         providers = store.snapshot()
     except Exception as exc:
         logger.debug("Could not load connections: %s", exc)
@@ -212,11 +215,11 @@ def _status_block() -> str:
 
     # Runtime settings
     try:
-        from src.settings.runtime_settings_store import RuntimeSettingsStore
-        settings = RuntimeSettingsStore()
-        home_agent = settings.is_enabled("home_agent_enabled")
-        scheduler = settings.is_enabled("home_agent_scheduler_enabled")
-        external = settings.is_enabled("external_reasoning_enabled")
+        from src.settings.runtime_settings_store import runtime_settings_store
+        settings = runtime_settings_store
+        home_agent = settings.is_permission_enabled("home_agent_enabled")
+        scheduler = settings.is_permission_enabled("home_agent_scheduler_enabled")
+        external = settings.is_permission_enabled("external_reasoning_enabled")
         lines.append(f"  - Home agent: {'active' if home_agent else 'off'}")
         lines.append(f"  - Scheduled tasks: {'active' if scheduler else 'off'}")
         lines.append(f"  - External reasoning: {'available' if external else 'off'}")
