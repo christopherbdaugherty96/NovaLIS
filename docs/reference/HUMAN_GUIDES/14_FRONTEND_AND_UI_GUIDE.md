@@ -38,6 +38,7 @@ Current repo rule:
 
 Current planning references for frontend cleanup and productization:
 - `docs/design/Phase 4.5/NOVA_FRONTEND_FOUNDATION_AND_USABILITY_ROADMAP_2026-04-10.md`
+- `docs/design/Phase 4.5/NOVA_USABILITY_NEXT_STEPS_ROADMAP_2026-04-10.md`
 - `docs/design/Phase 6/NOVA_SYSTEM_AUDIT_AND_PRODUCTIZATION_GAPS_2026-04-10.md`
 
 There is now also a product-facing landing preview at:
@@ -164,9 +165,10 @@ The frontend can present:
 - a dedicated Recent memory action on the Memory page
 
 More specifically, the current dashboard can now show:
-- Home-page operator health
-- Home-page trust review
 - Home-page Workspace Home
+- Home-page launch area that now stays clearly primary over review surfaces
+- Home-page Workspace Home that now favors one focus lane, fewer resume cards, and quieter support actions
+- Home-page capability review as the main secondary lane instead of multiple competing admin-style panels
 - Home-page Workspace Home operational-context section
 - Home-page Workspace Home assistive-notices section
 - Home-page and Trust-page assistive notice cards with dismiss and mark-resolved controls
@@ -189,7 +191,9 @@ More specifically, the current dashboard can now show:
 - Trust page reasoning-transparency section with provider, route, mode, authority, and last outcome
 - Trust page language that now leads with user questions: what happened, what was blocked, what left the device, and what needs attention
 - Policy Review Center draft overview, selected-draft detail, simulation review, and one-shot manual run review
-- Intro page setup-readiness checklist with direct connection-status and voice-check actions
+- Intro page setup-readiness checklist with direct connection-status and Home actions
+- Intro page setup flow that now keeps the main first steps tighter and more obviously optional where appropriate
+- Intro page that now removes most duplicate explainer sections in favor of guided setup plus first useful action
 - Settings page setup-mode selection, runtime permission controls, reasoning transparency, and voice confidence review
 - Settings page setup checklist with current next-step guidance for the active device/runtime
 - Settings page local-first AI routing controls, optional OpenAI lane visibility, and metered budget controls
@@ -223,3 +227,8 @@ The frontend is where Nova starts to feel like:
 - a calm intelligence layer
 
 The newer Workspace, Agent, Trust, Policies, Memory, Intro, Settings, and first-run surfaces are especially important because they make Nova feel less like a command console and more like a product a normal person can return to every day.
+
+Current note:
+- the low-risk Phase 4.5 usability pass is now effectively complete
+- the stronger within-frontend structural simplification pass has also landed
+- any future redesign question is now about whether to go beyond the current static frontend architecture

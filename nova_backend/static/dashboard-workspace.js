@@ -14,7 +14,7 @@ function continueWorkspaceThread(threadName) {
   injectUserText(`continue my ${clean}`, "text");
 }
 
-function getContinuityThreads(limit = 3) {
+function getContinuityThreads(limit = 2) {
   const workspace = workspaceHomeState.snapshot || {};
   const focus = (workspace && typeof workspace.focus_thread === "object") ? workspace.focus_thread : {};
   const selectedThread = (threadMapState.detail && typeof threadMapState.detail.thread === "object")
@@ -99,25 +99,7 @@ function renderFocusActionRow(host, thread = {}, options = {}) {
       label: "Open workspace",
       fn: () => openWorkspaceThread(name),
     },
-    {
-      label: "Project status",
-      fn: () => {
-        setActivePage("chat");
-        injectUserText(`project status ${name}`, "text");
-      },
-    },
   ];
-
-  const memoryCount = Number(thread.memory_count || 0);
-  if (Number.isFinite(memoryCount) && memoryCount > 0) {
-    actions.push({
-      label: "Review memory",
-      fn: () => {
-        setActivePage("chat");
-        injectUserText(`memory list thread ${name}`, "text");
-      },
-    });
-  }
 
   actions.forEach((item) => {
     const button = document.createElement("button");
@@ -383,7 +365,7 @@ function renderWorkspaceHomeWidget(data = {}) {
   const blockedConditions = Array.isArray(snapshot.blocked_conditions) ? snapshot.blocked_conditions : [];
   const recommendedActions = Array.isArray(snapshot.recommended_actions) ? snapshot.recommended_actions : [];
   const recentThreads = Array.isArray(snapshot.recent_threads) ? snapshot.recent_threads : [];
-  const continuityThreads = getContinuityThreads(3);
+  const continuityThreads = getContinuityThreads(2);
 
   const focusName = String(focus.name || "").trim();
   const focusNext = String(focus.latest_next_action || "").trim();
@@ -469,14 +451,14 @@ function renderWorkspaceHomeWidget(data = {}) {
   clear(gridHost);
   [
     {
-      title: "Project Threads",
+      title: "Threads",
       value: `${Number(snapshot.thread_count || 0)}`,
       copy: recentThreads.length
         ? recentThreads.slice(0, 2).map((item) => String(item.name || "").trim()).filter(Boolean).join(" | ")
         : "No project threads yet.",
     },
     {
-      title: "Project Memory",
+      title: "Memory",
       value: `${Number(snapshot.project_memory_total || 0)}`,
       copy: `${Number(snapshot.memory_total || 0)} total durable item${Number(snapshot.memory_total || 0) === 1 ? "" : "s"}`,
     },
@@ -488,7 +470,7 @@ function renderWorkspaceHomeWidget(data = {}) {
         : "No analysis docs in this session yet.",
     },
     {
-      title: "Recent Actions",
+      title: "Recent Activity",
       value: `${recentActivity.length}`,
       copy: recentActivity.length
         ? recentActivity.slice(0, 2).map((item) => String(item.title || "Runtime event").trim()).join(" | ")
@@ -518,7 +500,7 @@ function renderWorkspaceHomeWidget(data = {}) {
 
   clear(docsHost);
   if (recentDocs.length) {
-    recentDocs.forEach((doc) => {
+    recentDocs.slice(0, 2).forEach((doc) => {
       const row = document.createElement("button");
       row.type = "button";
       row.className = "workspace-home-doc";
@@ -540,7 +522,7 @@ function renderWorkspaceHomeWidget(data = {}) {
       docsHost.appendChild(row);
     });
   } else if (recentMemory.length) {
-    recentMemory.forEach((item) => {
+    recentMemory.slice(0, 2).forEach((item) => {
       const row = document.createElement("button");
       row.type = "button";
       row.className = "workspace-home-doc";
@@ -577,11 +559,10 @@ function renderWorkspaceHomeWidget(data = {}) {
 
   clear(actionsHost);
   const actions = recommendedActions.length
-    ? recommendedActions
+    ? recommendedActions.slice(0, 2)
     : [
-        { label: focusName ? "Resume focus thread" : "Show threads", command: focusName ? `continue my ${focusName}` : "show threads" },
+        { label: focusName ? "Resume focus thread" : "Open threads", command: focusName ? `continue my ${focusName}` : "show threads" },
         { label: "Memory overview", command: "memory overview" },
-        { label: "List analysis docs", command: "list analysis docs" },
       ];
   actions.forEach((item) => {
     const button = document.createElement("button");

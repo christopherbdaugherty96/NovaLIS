@@ -74,15 +74,20 @@ Design docs:
 - `docs/design/Phase 4.5/NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md`
 - `docs/design/Phase 4.5/NOVA_USER_FRIENDLINESS_TODO_2026-04-02.md`
 - `docs/design/Phase 4.5/NOVA_FRONTEND_FOUNDATION_AND_USABILITY_ROADMAP_2026-04-10.md`
+- `docs/design/Phase 4.5/NOVA_USABILITY_NEXT_STEPS_ROADMAP_2026-04-10.md`
 
 - `[x]` profile baseline shipped
 - `[x]` connection-card baseline shipped
 - `[x]` intro/setup baseline shipped
 - `[x]` settle the canonical frontend source-of-truth model, keep `nova_backend/static/` canonical, and keep the maintained mirror synced through the expanded guard
 - `[~]` split the current dashboard surface into clearer maintainable frontend slices
+- `[x]` simplify Home into one primary workflow with calmer secondary review surfaces
+- `[x]` turn Intro + Settings into a more guided setup path with a stronger first-win sequence
+- `[x]` apply the stronger Home/Intro structural simplification pass inside the current static frontend
 - `[ ]` run a real manual UX pass across Intro, Home, Agent, Settings, live-help, and voice
 - `[ ]` validate local TTS confidence on real hardware
 - `[ ]` tighten any remaining setup/readiness copy that still feels diagnostic instead of assistant-like
+- `[ ]` review whether any redesign beyond the current static-frontend structure is still worth the cost
 
 ### 0.2 - Finish Phase-8 Usefulness
 Design docs:
@@ -234,7 +239,7 @@ Design docs:
 - `[ ]` When should rolling memories be suggested for permanent promotion?
 - `[ ]` Should calendar remain ICS-first until a stronger official connector is earned?
 - `[ ]` How much of "what can you do?" should be dynamic in chat versus Home surfaces?
-- `[ ]` When should Phase 4.5 be declared fully closed in runtime docs?
+- `[x]` Phase 4.5 low-risk usability closeout is complete; only stronger structural redesign choices remain for review
 - `[ ]` What is the exact minimum Phase-8 closure bar before Phase-9 provider routing becomes the main focus?
 - `[ ]` Should `Nova-Frontend-Dashboard/` remain a maintained mirror, or should the repo collapse to one canonical frontend path?
 

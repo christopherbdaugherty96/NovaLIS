@@ -12,39 +12,104 @@
 }
 
 .home-launch-widget {
-  grid-column: span 12;
+  grid-column: span 5;
   display: grid;
   gap: 10px;
   border: 1px solid rgba(143, 218, 255, 0.26);
   background:
     radial-gradient(circle at top right, rgba(88, 182, 255, 0.16), transparent 38%),
     linear-gradient(180deg, rgba(17, 38, 66, 0.92) 0%, rgba(11, 25, 44, 0.94) 100%);
+  align-content: start;
+  order: 1;
 }
 
 .workspace-home-widget {
-  grid-column: span 8;
+  grid-column: span 7;
   display: grid;
   gap: 12px;
+  order: 1;
+}
+
+.home-launch-note {
+  max-width: 72ch;
+  color: rgba(216, 230, 248, 0.74);
 }
 
 .operator-health-widget,
-.capability-surface-widget,
 .trust-panel {
   grid-column: span 4;
   display: grid;
   gap: 8px;
 }
 
-.thread-map-widget {
-  grid-column: span 7;
+.capability-surface-widget {
+  grid-column: span 12;
   display: grid;
   gap: 8px;
+  order: 2;
+}
+
+.thread-map-widget {
+  grid-column: span 12;
+  display: grid;
+  gap: 8px;
+  order: 3;
 }
 
 .personal-layer-widget {
   grid-column: span 5;
   display: grid;
   gap: 10px;
+}
+
+.home-review-panel {
+  border: 1px solid rgba(168, 201, 242, 0.16);
+  background: linear-gradient(180deg, rgba(14, 31, 56, 0.62) 0%, rgba(10, 23, 40, 0.78) 100%);
+  order: 3;
+}
+
+.home-review-panel h3 {
+  margin: 0;
+  color: rgba(236, 244, 255, 0.94);
+}
+
+.home-review-panel p {
+  color: rgba(208, 223, 243, 0.8);
+}
+
+.home-secondary-panel {
+  border: 1px solid rgba(168, 201, 242, 0.14);
+  background: linear-gradient(180deg, rgba(12, 27, 47, 0.72) 0%, rgba(9, 21, 38, 0.82) 100%);
+  gap: 7px;
+}
+
+.home-secondary-panel h3 {
+  margin: 0;
+  color: rgba(232, 241, 252, 0.92);
+  font-size: 1rem;
+}
+
+.home-secondary-panel p {
+  color: rgba(205, 221, 242, 0.78);
+}
+
+.operator-health-widget.home-secondary-panel,
+.capability-surface-widget.home-secondary-panel,
+.trust-panel.home-secondary-panel,
+.personal-layer-widget.home-secondary-panel {
+  order: 4;
+}
+
+.home-secondary-panel .assistant-action-btn,
+.home-secondary-panel button,
+.home-review-panel .assistant-action-btn,
+.home-review-panel button {
+  font-size: 0.74rem;
+}
+
+.home-secondary-panel .confidence-badge,
+.home-review-panel .confidence-badge {
+  opacity: 0.86;
 }
 
 .workspace-home-header,
@@ -107,7 +172,7 @@
 
 .workspace-resume-grid {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
   margin-top: 8px;
 }
@@ -152,6 +217,10 @@
   font-weight: 700;
 }
 
+.capability-surface-widget .capability-surface-groups {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
 .workspace-home-actions {
   display: flex;
   flex-wrap: wrap;
@@ -163,6 +232,50 @@
   flex-wrap: wrap;
   gap: 8px;
   margin-top: 4px;
+}
+
+.workspace-home-widget .workspace-home-actions button:not(.assistant-action-btn),
+.workspace-home-widget .workspace-focus-actions button:not(.assistant-action-btn) {
+  border-color: rgba(168, 201, 242, 0.14);
+  background: rgba(12, 27, 47, 0.48);
+  color: rgba(213, 229, 248, 0.82);
+}
+
+.workspace-home-widget .workspace-home-actions button:not(.assistant-action-btn):hover,
+.workspace-home-widget .workspace-home-actions button:not(.assistant-action-btn):focus-visible,
+.workspace-home-widget .workspace-focus-actions button:not(.assistant-action-btn):hover,
+.workspace-home-widget .workspace-focus-actions button:not(.assistant-action-btn):focus-visible {
+  border-color: rgba(143, 218, 255, 0.22);
+  background: rgba(17, 38, 66, 0.64);
+  color: rgba(236, 244, 255, 0.92);
+}
+
+@media (max-width: 1180px) {
+  .home-launch-widget,
+  .workspace-home-widget,
+  .capability-surface-widget,
+  .thread-map-widget {
+    grid-column: span 12;
+  }
+
+  .capability-surface-widget .capability-surface-groups {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .workspace-home-grid,
+  .workspace-resume-grid,
+  .capability-surface-widget .capability-surface-groups {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .home-launch-widget,
+  .workspace-home-widget,
+  .capability-surface-widget,
+  .thread-map-widget {
+    grid-column: span 12;
+  }
 }
 
 .workspace-resume-card {

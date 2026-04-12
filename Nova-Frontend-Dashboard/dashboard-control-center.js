@@ -510,29 +510,29 @@ function renderPersonalLayerWidget() {
     : 0;
 
   summary.textContent = [
-    memoryOverviewState.summary || "Memory is ready for explicit saves.",
-    toneState.summary || "Tone is balanced.",
-  ].filter(Boolean).slice(0, 2).join(" ");
+    memoryTotal > 0 ? `${memoryTotal} memory item${memoryTotal === 1 ? "" : "s"} saved.` : "No durable memory saved yet.",
+    dueCount > 0 ? `${dueCount} schedule${dueCount === 1 ? "" : "s"} due now.` : "Nothing urgent is due.",
+  ].filter(Boolean).join(" ");
 
   clear(grid);
   [
     {
       title: "Memory",
-      copy: memoryOverviewState.summary || "No durable memory saved yet.",
+      copy: memoryTotal > 0 ? "Your saved memory is there when you want continuity." : "Memory stays empty until you explicitly save something.",
       chips: [`${memoryTotal} durable item${memoryTotal === 1 ? "" : "s"}`],
       action: () => setActivePage("memory"),
       actionLabel: "Open page",
     },
     {
       title: "Tone",
-      copy: toneState.summary || "Global tone: balanced.",
+      copy: "Tone and response style stay easy to review and adjust.",
       chips: [String((toneState.snapshot && toneState.snapshot.global_profile_label) || "Balanced")],
       action: () => showToneModal(),
       actionLabel: "Settings",
     },
     {
       title: "Schedules",
-      copy: notificationState.summary || "No schedules yet.",
+      copy: dueCount > 0 ? "You have reminders waiting for review." : "Schedules stay quiet until something needs attention.",
       chips: [
         dueCount > 0 ? `${dueCount} due now` : "No items due",
         upcomingCount > 0 ? `${upcomingCount} upcoming` : "No upcoming",
@@ -542,7 +542,9 @@ function renderPersonalLayerWidget() {
     },
     {
       title: "Pattern Review",
-      copy: patternReviewState.summary || "Pattern review is off.",
+      copy: Boolean(patternReviewState.snapshot && patternReviewState.snapshot.opt_in_enabled)
+        ? "Pattern review is on, but it stays advisory."
+        : "Pattern review stays off unless you opt in.",
       chips: [
         Boolean(patternReviewState.snapshot && patternReviewState.snapshot.opt_in_enabled) ? "Opted in" : "Opted out",
         patternCount > 0 ? `${patternCount} proposal${patternCount === 1 ? "" : "s"}` : "No proposals",
@@ -2099,24 +2101,20 @@ function renderOperatorHealthWidget(data = {}) {
   const gridHost = $("operator-health-grid");
   const locksHost = $("operator-health-locks");
   const reasonsHost = $("operator-health-reasons");
-  if (summary) summary.textContent = operatorHealthState.summary;
+  if (summary) {
+    const governor = String(data.governor_status || "Unknown").trim() || "Unknown";
+    const boundary = String(data.execution_boundary_status || "Unknown").trim() || "Unknown";
+    const model = String(data.model_availability || "Unknown").trim() || "Unknown";
+    summary.textContent = `Governor ${governor} · Boundary ${boundary} · Model ${model}`;
+  }
 
   if (gridHost) {
     clear(gridHost);
     const rows = [
-      ["Phase", String(data.phase_display || `Phase ${data.build_phase || "unknown"}`).trim() || "Unknown"],
       ["Governor", String(data.governor_status || "Unknown").trim() || "Unknown"],
-      ["Execution Boundary", String(data.execution_boundary_status || "Unknown").trim() || "Unknown"],
+      ["Boundary", String(data.execution_boundary_status || "Unknown").trim() || "Unknown"],
       ["Model", String(data.model_availability || "Unknown").trim() || "Unknown"],
-      ["Network Mediator", String(data.network_mediator_status || "Unknown").trim() || "Unknown"],
       ["Voice", String(data.voice_status || "Unknown").trim() || "Unknown"],
-      ["Memory", String(data.memory_summary || data.memory_status || "Unknown").trim() || "Unknown"],
-      [
-        "Policies",
-        `Drafts ${Math.max(0, Number(data.policy_draft_count) || 0)} · Sims ${Math.max(0, Number(data.policy_simulation_count) || 0)} · Runs ${Math.max(0, Number(data.policy_manual_run_count) || 0)}`
-      ],
-      ["Ledger", `${String(data.ledger_integrity || "Unknown").trim() || "Unknown"} · ${Math.max(0, Number(data.ledger_entries_today) || 0)} today`],
-      ["Locks", `${Math.max(0, Number(data.locks_active_count) || 0)} active`],
     ];
 
     rows.forEach(([labelText, valueText]) => {
@@ -2153,7 +2151,7 @@ function renderOperatorHealthWidget(data = {}) {
     } else {
       const list = document.createElement("div");
       list.className = "operator-health-list";
-      items.forEach((item) => {
+      items.slice(0, 2).forEach((item) => {
         const row = document.createElement("div");
         row.className = "operator-health-item";
 
@@ -2189,7 +2187,7 @@ function renderOperatorHealthWidget(data = {}) {
     } else {
       const list = document.createElement("div");
       list.className = "operator-health-list";
-      items.forEach((item) => {
+      items.slice(0, 1).forEach((item) => {
         const row = document.createElement("div");
         row.className = "operator-health-item";
 
@@ -2221,7 +2219,12 @@ function renderCapabilitySurfaceWidget(data = {}) {
 
   const summary = $("capability-surface-summary");
   const groupsHost = $("capability-surface-groups");
-  if (summary) summary.textContent = capabilityDiscoveryState.summary;
+  if (summary) {
+    const groupsCount = Array.isArray(data.available_capability_surface) ? data.available_capability_surface.length : 0;
+    summary.textContent = groupsCount
+      ? `${groupsCount} capability group${groupsCount === 1 ? "" : "s"} are available right now.`
+      : "Capabilities will appear here when Nova is ready to use them.";
+  }
   if (!groupsHost) return;
 
   clear(groupsHost);
@@ -2234,7 +2237,7 @@ function renderCapabilitySurfaceWidget(data = {}) {
     return;
   }
 
-  groups.forEach((group) => {
+  groups.slice(0, 3).forEach((group) => {
     const card = document.createElement("section");
     card.className = "capability-surface-group";
 
@@ -2258,7 +2261,7 @@ function renderCapabilitySurfaceWidget(data = {}) {
       const actionsHost = document.createElement("div");
       actionsHost.className = "capability-surface-actions";
 
-      items.forEach((item) => {
+      items.slice(0, 3).forEach((item) => {
         const labelText = String(item.action || "").trim();
         const promptText = String(item.prompt || "").trim();
         if (!labelText) return;
@@ -2357,7 +2360,15 @@ function renderTrustPanel(data = {}) {
   if (lastCall) lastCall.textContent = trustState.lastExternalCall;
   if (egress) egress.textContent = trustState.dataEgress;
   if (failure) failure.textContent = trustState.failureState;
-  if (summary) summary.textContent = trustReviewState.summary;
+  if (summary) {
+    const activityCount = trustReviewState.activity.length;
+    const blockedCount = trustReviewState.blocked.length;
+    summary.textContent = [
+      trustState.mode || "Local-only",
+      blockedCount > 0 ? `${blockedCount} boundary${blockedCount === 1 ? "" : "issues"} active` : "No active boundary issues",
+      activityCount > 0 ? `${activityCount} recent event${activityCount === 1 ? "" : "s"}` : "No recent events",
+    ].filter(Boolean).join(" · ");
+  }
 
   if (activityHost) {
     clear(activityHost);
@@ -2374,7 +2385,7 @@ function renderTrustPanel(data = {}) {
     } else {
       const list = document.createElement("div");
       list.className = "trust-activity-list";
-      trustReviewState.activity.slice(0, 6).forEach((item) => {
+      trustReviewState.activity.slice(0, 3).forEach((item) => {
         const row = document.createElement("div");
         row.className = "trust-activity-item";
         const outcome = String(item.outcome || "").trim().toLowerCase() || "info";
@@ -2457,7 +2468,7 @@ function renderTrustPanel(data = {}) {
     } else {
       const list = document.createElement("div");
       list.className = "trust-activity-list";
-      trustReviewState.blocked.slice(0, 3).forEach((item) => {
+      trustReviewState.blocked.slice(0, 2).forEach((item) => {
         const row = document.createElement("div");
         row.className = "trust-activity-item";
 

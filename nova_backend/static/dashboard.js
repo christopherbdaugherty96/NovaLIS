@@ -1657,7 +1657,7 @@ function getIntroFirstSuccessItems(items = []) {
   ];
 
   // Connection-aware items first, then core to fill up to 4 slots
-  const allItems = [...liveItems, ...coreItems].slice(0, 4);
+  const allItems = [...liveItems, ...coreItems].slice(0, 3);
 
   return { summary, items: allItems };
 }
@@ -1707,7 +1707,7 @@ function renderIntroFirstSuccessGrid(host, payload = {}) {
 }
 
 function getHomeLaunchActions(items = []) {
-  const starterItems = Array.isArray(items) ? items.slice(0, 4) : [];
+  const starterItems = Array.isArray(items) ? items.slice(0, 2) : [];
   const mapped = starterItems.map((item) => ({
     label: String(item.actionLabel || item.title || "Open").trim() || "Open",
     action: typeof item.action === "function" ? item.action : () => {},
@@ -1716,20 +1716,12 @@ function getHomeLaunchActions(items = []) {
 
   mapped.push(
     {
-      label: "Open workspace",
+      label: "Open Workspace",
       action: () => setActivePage("workspace"),
     },
     {
-      label: "Open trust",
-      action: () => {
-        setActivePage("trust");
-        safeWSSend({ text: "trust center", silent_widget_refresh: true });
-        safeWSSend({ text: "system status", silent_widget_refresh: true });
-      },
-    },
-    {
-      label: "Open agent",
-      action: () => setActivePage("agent"),
+      label: "Open Settings",
+      action: () => setActivePage("settings"),
     },
   );
 
