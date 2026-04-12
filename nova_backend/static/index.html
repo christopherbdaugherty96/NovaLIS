@@ -254,18 +254,16 @@
           </p>
           <div class="workspace-board-actions-toolbar">
             <button id="btn-intro-open-home" type="button">Open Home</button>
-            <button id="btn-intro-open-workspace" type="button">Open Workspace</button>
-            <button id="btn-intro-open-trust" type="button">Open Trust</button>
             <button id="btn-intro-open-settings" type="button">Open Settings</button>
             <button id="btn-intro-daily-brief" type="button">Try Explain This</button>
             <button id="btn-intro-open-landing" type="button">Open Landing Preview</button>
           </div>
         </div>
 
-        <div class="widget page-card intro-panel" aria-live="polite">
+        <div class="widget page-card intro-panel settings-checklist-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">What To Set Up First</div>
+              <div class="workspace-home-section-title">Guided Setup</div>
               <p id="intro-checklist-summary" class="workspace-board-section-copy">Loading the few setup steps that matter most on this device.</p>
             </div>
           </div>
@@ -276,15 +274,14 @@
           <div class="workspace-board-actions-toolbar">
             <button id="btn-intro-refresh-setup" type="button">Refresh setup</button>
             <button id="btn-intro-open-connections" type="button">Connection status</button>
-            <button id="btn-intro-voice-check" type="button">Run voice check</button>
             <button id="btn-intro-open-home-ready" type="button">Open Home</button>
           </div>
         </div>
 
-        <div class="widget page-card intro-panel" aria-live="polite">
+        <div class="widget page-card intro-panel settings-profile-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Best First Move</div>
+              <div class="workspace-home-section-title">Your First Useful Move</div>
               <p id="intro-first-success-copy" class="workspace-board-section-copy">Nova is checking the easiest useful first move for this device.</p>
             </div>
           </div>
@@ -295,44 +292,8 @@
         <div class="widget page-card intro-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Why Nova Feels Different</div>
-              <p class="workspace-board-section-copy">Nova is powerful because it stays bounded and visible.</p>
-            </div>
-          </div>
-          <div class="first-run-pillars">
-            <div class="first-run-pillar">
-              <div class="first-run-pillar-title">It Waits For You</div>
-              <div class="first-run-pillar-copy">Nothing runs unless you ask for it or approve it.</div>
-            </div>
-            <div class="first-run-pillar">
-              <div class="first-run-pillar-title">It Shows Its Work</div>
-              <div class="first-run-pillar-copy">You can inspect actions, sources, settings, and recent activity.</div>
-            </div>
-            <div class="first-run-pillar">
-              <div class="first-run-pillar-title">It Stays Bounded</div>
-              <div class="first-run-pillar-copy">Nova can reason broadly without quietly turning into an autonomous agent.</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="widget page-card intro-panel" aria-live="polite">
-          <div class="workspace-board-section-header">
-            <div>
-              <div class="workspace-home-section-title">A Simple Moment</div>
-              <p class="workspace-board-section-copy">Here is what Nova feels like in practice.</p>
-            </div>
-          </div>
-          <div class="intro-flow-line">You: "Explain this error" -> Nova: cause + next step -> You: "Save this as my fix"</div>
-          <p class="workspace-board-section-copy">
-            Nova helps with the answer, and it only preserves something when you explicitly ask it to. That is the loop: understand, continue, preserve, decide.
-          </p>
-        </div>
-
-        <div class="widget page-card intro-panel" aria-live="polite">
-          <div class="workspace-board-section-header">
-            <div>
               <div class="workspace-home-section-title">Setup Paths</div>
-              <p class="workspace-board-section-copy">Start with what you need now. Everything else can stay optional until you want it.</p>
+              <p class="workspace-board-section-copy">Choose the smallest path that gets Nova useful on this device. Everything else can stay optional until later.</p>
             </div>
           </div>
           <div class="intro-setup-grid">
@@ -354,6 +315,30 @@
         <div class="widget page-card intro-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
+              <div class="workspace-home-section-title">What Makes Nova Feel Different</div>
+              <p class="workspace-board-section-copy">The product stays powerful by staying visible, bounded, and reviewable.</p>
+            </div>
+          </div>
+          <div class="first-run-pillars">
+            <div class="first-run-pillar">
+              <div class="first-run-pillar-title">It Waits For You</div>
+              <div class="first-run-pillar-copy">Nothing runs unless you ask for it or approve it.</div>
+            </div>
+            <div class="first-run-pillar">
+              <div class="first-run-pillar-title">It Shows Its Work</div>
+              <div class="first-run-pillar-copy">You can inspect actions, sources, settings, and recent activity.</div>
+            </div>
+            <div class="first-run-pillar">
+              <div class="first-run-pillar-title">It Stays Bounded</div>
+              <div class="first-run-pillar-copy">Nova can reason broadly without quietly turning into an autonomous agent.</div>
+            </div>
+          </div>
+          <div class="intro-flow-line">You: "Explain this error" -> Nova: cause + next step -> You: "Save this as my fix"</div>
+        </div>
+
+        <div class="widget page-card intro-panel" aria-live="polite">
+          <div class="workspace-board-section-header">
+            <div>
               <div class="workspace-home-section-title">If Setup Gets Stuck</div>
               <p class="workspace-board-section-copy">You should not need to hunt through the repo to recover. These are the core local recovery steps.</p>
             </div>
@@ -366,38 +351,20 @@
             <li>Voice check is recommended for comfort, but not required to start using Nova.</li>
           </ul>
         </div>
-
-        <div class="widget page-card intro-panel" aria-live="polite">
-          <div class="workspace-board-section-header">
-            <div>
-              <div class="workspace-home-section-title">Start Here</div>
-              <p class="workspace-board-section-copy">You can get value in a minute.</p>
-            </div>
-          </div>
-          <ul class="help-list">
-            <li>Start with <code>news</code>, <code>explain this</code>, or <code>continue my project</code>.</li>
-            <li>Open Settings any time to review setup mode, permissions, accessibility, or voice preferences.</li>
-            <li>Open Workspace when you want your ongoing work, recent decisions, and structure map together.</li>
-            <li>Open Trust when you want to see what happened, what stayed blocked, and why.</li>
-            <li>Nova does not act, save, or spend without your request.</li>
-          </ul>
-          <p class="first-run-note">
-            Intelligence can grow. Control stays with you.
-          </p>
-        </div>
       </section>
 
       <section id="page-home" class="page-view page-home" hidden>
         <div id="home-launch-widget" class="widget page-card home-launch-widget" aria-live="polite">
           <div class="home-launch-header">
             <div>
-              <div class="home-launch-kicker">Daily Utility</div>
+              <div class="home-launch-kicker">Today With Nova</div>
               <h3>Start Here</h3>
             </div>
             <span class="confidence-badge">Open Nova and move</span>
           </div>
           <p id="home-launch-summary">Nova is ready for briefings, explain-anything help, research, and project continuity.</p>
           <div id="home-launch-actions" class="home-launch-actions"></div>
+          <p class="first-run-note home-launch-note">Start with one useful outcome, then let the review surfaces stay in the background until you need them.</p>
         </div>
         <div id="workspace-home-widget" class="widget page-card workspace-home-widget" aria-live="polite">
           <div class="workspace-home-header">
@@ -415,7 +382,7 @@
           </div>
           <div id="workspace-home-grid" class="workspace-home-grid"></div>
           <div class="workspace-home-section">
-            <div class="workspace-home-section-title">Recent reports and memory</div>
+            <div class="workspace-home-section-title">Recent context</div>
             <div id="workspace-home-docs" class="workspace-home-docs"></div>
           </div>
           <div class="workspace-home-section">
@@ -428,49 +395,17 @@
           </div>
           <div id="workspace-home-actions" class="workspace-home-actions"></div>
         </div>
-        <div id="operator-health-widget" class="widget page-card operator-health-widget" aria-live="polite">
-          <h3>Nova Health</h3>
-          <p id="operator-health-summary">Loading runtime health...</p>
-          <div id="operator-health-grid" class="operator-health-grid"></div>
-          <div id="operator-health-locks" class="operator-health-section"></div>
-          <div id="operator-health-reasons" class="operator-health-section"></div>
-          <div class="operator-health-actions">
-            <button id="btn-home-system-status" type="button">System status</button>
-          </div>
-        </div>
-        <div id="capability-surface-widget" class="widget page-card capability-surface-widget" aria-live="polite">
+        <div id="capability-surface-widget" class="widget page-card capability-surface-widget home-secondary-panel" aria-live="polite">
           <h3>What Nova Can Do Right Now</h3>
           <p id="capability-surface-summary">Loading live capabilities...</p>
           <div id="capability-surface-groups" class="capability-surface-groups"></div>
           <p id="capability-surface-note" class="capability-surface-note">
-            Only the capabilities Nova can actually use right now appear here.
+            This stays limited to what Nova can actually use right now.
           </p>
         </div>
-        <div id="agent-delivery-widget" class="widget page-card trust-center-panel" aria-live="polite">
-          <div class="workspace-board-section-header">
-            <div>
-              <div class="home-launch-kicker">Agent Delivery</div>
-              <h3>Ready For Review</h3>
-            </div>
-            <button id="btn-home-open-agent-delivery" type="button" class="assistant-action-btn">Open agent</button>
-          </div>
-          <p id="agent-delivery-home-summary">No agent deliveries are waiting right now.</p>
-          <div id="agent-delivery-list" class="trust-section trust-center-list"></div>
-        </div>
-        <div id="trust-panel" class="widget page-card trust-panel" aria-live="polite">
-          <h3>Trust Panel</h3>
-          <p id="trust-summary">Live review of recent actions and network activity will appear here.</p>
-          <div class="trust-row"><strong>Mode:</strong> <span id="trust-mode">Local-only</span></div>
-          <div class="trust-row"><strong>Last external call:</strong> <span id="trust-last-call">None</span></div>
-          <div class="trust-row"><strong>Data egress:</strong> <span id="trust-egress">Read-only requests only</span></div>
-          <div class="trust-row"><strong>Failure state:</strong> <span id="trust-failure">Normal</span></div>
-          <div id="trust-recent-activity" class="trust-section"></div>
-          <div id="trust-blocked" class="trust-section"></div>
-          <p id="trust-note" class="trust-note">Recent items come from ledger-backed runtime events.</p>
-        </div>
-        <div id="thread-map-widget" class="widget page-card thread-map-widget" aria-live="polite">
+        <div id="thread-map-widget" class="widget page-card thread-map-widget home-review-panel" aria-live="polite">
           <h3>Project Threads</h3>
-          <p id="thread-map-summary">No project threads yet. Save work updates to start continuity.</p>
+          <p id="thread-map-summary">When you want deeper continuity, this is where active threads, blockers, and next steps stay connected.</p>
           <ul id="thread-map-list" class="thread-map-list"></ul>
           <div id="thread-detail-panel" class="thread-detail-panel" hidden>
             <h4 id="thread-detail-title" class="thread-detail-title">Thread Detail</h4>
@@ -482,23 +417,7 @@
             <div id="thread-detail-memory" class="thread-detail-memory"></div>
           </div>
           <div class="thread-map-actions">
-            <button id="btn-home-threads" type="button">Show threads</button>
-          </div>
-        </div>
-        <div id="personal-layer-widget" class="widget page-card personal-layer-widget" aria-live="polite">
-          <div class="personal-layer-header">
-            <div>
-              <div class="home-launch-kicker">Personal Layer</div>
-              <h3>Memory, Style, Schedules</h3>
-            </div>
-            <button id="btn-home-memory-page" type="button" class="assistant-action-btn">Open memory page</button>
-          </div>
-          <p id="personal-layer-summary">Memory, tone, schedules, and pattern review will appear here as one compact status layer.</p>
-          <div id="personal-layer-grid" class="personal-layer-grid"></div>
-          <div class="personal-layer-actions">
-            <button id="btn-home-tone-status" type="button">Tone settings</button>
-            <button id="btn-home-schedules" type="button">Schedules</button>
-            <button id="btn-home-pattern-status" type="button">Pattern review</button>
+            <button id="btn-home-threads" type="button">Open threads</button>
           </div>
         </div>
       </section>
@@ -523,7 +442,7 @@
           </div>
         </div>
 
-        <div class="widget page-card trust-center-panel settings-checklist-panel" aria-live="polite">
+        <div class="widget page-card trust-center-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
               <div class="workspace-home-section-title">Runtime</div>

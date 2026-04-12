@@ -2392,7 +2392,14 @@ function setActivePage(page) {
   Object.entries(pages).forEach(([name, el]) => {
     if (!el) return;
     el.hidden = name !== target;
+    if (name === target) {
+      el.scrollTop = 0;
+    }
   });
+
+  const main = document.querySelector(".main");
+  if (main) main.scrollTop = 0;
+  window.scrollTo({ top: 0, left: 0, behavior: "auto" });
 
   document.querySelectorAll(".header-menu-page-btn, .primary-nav-btn").forEach((btn) => {
     const active = btn.dataset.page === target;
@@ -3663,45 +3670,53 @@ function injectHeaderMenus() {
 }
 
 window.addEventListener("DOMContentLoaded", () => {
+  const safeInit = (label, fn) => {
+    try {
+      fn();
+    } catch (error) {
+      console.error(`[nova-bootstrap] ${label} failed`, error);
+    }
+  };
+
   applyAccessibilityFromStorage();
   injectPrimaryNav();
   injectHeaderMenus();
+  setupPageNavigation();
   setOrbStatus("READY");
   setPTTButtonState("idle");
   ensureDatalist();
   setupPrimaryChatControls();
-  connectWebSocket();
-  renderMorningPanel();
-  renderWorkflowFocusWidget();
-  renderLiveHelpWidget();
-  renderHomeLaunchWidget();
-  renderHeaderStatus("chat");
-  renderContextInsight("");
-  renderThreadMapWidget({});
-  renderMemoryOverviewWidget({});
-  renderToneOverviewWidget({});
-  renderNotificationOverviewWidget({});
-  renderPatternReviewWidget({});
-  renderOperatorHealthWidget({});
-  renderCapabilitySurfaceWidget({});
-  renderTrustPanel();
-  renderWorkspaceHomeWidget({});
-  renderProjectStructureMapWidget({});
-  renderAssistiveNoticesWidget({});
-  renderOpenClawDeliveryWidget();
-  renderWorkspaceBoardPage();
-  renderOpenClawAgentPage();
-  renderPolicyCenterPage();
-  renderTrustCenterPage();
-  renderIntroPage();
-  renderSettingsPage();
-  renderIntelligenceBriefWidget();
-  renderPersonalLayerWidget();
-  renderQuickActions();
-  setupHintsPanelToggle();
-  renderCommandDiscovery();
-  setupMorningWidgetToggle();
-  setupPageNavigation();
+  safeInit("connectWebSocket", () => connectWebSocket());
+  safeInit("renderMorningPanel", () => renderMorningPanel());
+  safeInit("renderWorkflowFocusWidget", () => renderWorkflowFocusWidget());
+  safeInit("renderLiveHelpWidget", () => renderLiveHelpWidget());
+  safeInit("renderHomeLaunchWidget", () => renderHomeLaunchWidget());
+  safeInit("renderHeaderStatus", () => renderHeaderStatus("chat"));
+  safeInit("renderContextInsight", () => renderContextInsight(""));
+  safeInit("renderThreadMapWidget", () => renderThreadMapWidget({}));
+  safeInit("renderMemoryOverviewWidget", () => renderMemoryOverviewWidget({}));
+  safeInit("renderToneOverviewWidget", () => renderToneOverviewWidget({}));
+  safeInit("renderNotificationOverviewWidget", () => renderNotificationOverviewWidget({}));
+  safeInit("renderPatternReviewWidget", () => renderPatternReviewWidget({}));
+  safeInit("renderOperatorHealthWidget", () => renderOperatorHealthWidget({}));
+  safeInit("renderCapabilitySurfaceWidget", () => renderCapabilitySurfaceWidget({}));
+  safeInit("renderTrustPanel", () => renderTrustPanel());
+  safeInit("renderWorkspaceHomeWidget", () => renderWorkspaceHomeWidget({}));
+  safeInit("renderProjectStructureMapWidget", () => renderProjectStructureMapWidget({}));
+  safeInit("renderAssistiveNoticesWidget", () => renderAssistiveNoticesWidget({}));
+  safeInit("renderOpenClawDeliveryWidget", () => renderOpenClawDeliveryWidget());
+  safeInit("renderWorkspaceBoardPage", () => renderWorkspaceBoardPage());
+  safeInit("renderOpenClawAgentPage", () => renderOpenClawAgentPage());
+  safeInit("renderPolicyCenterPage", () => renderPolicyCenterPage());
+  safeInit("renderTrustCenterPage", () => renderTrustCenterPage());
+  safeInit("renderIntroPage", () => renderIntroPage());
+  safeInit("renderSettingsPage", () => renderSettingsPage());
+  safeInit("renderIntelligenceBriefWidget", () => renderIntelligenceBriefWidget());
+  safeInit("renderPersonalLayerWidget", () => renderPersonalLayerWidget());
+  safeInit("renderQuickActions", () => renderQuickActions());
+  safeInit("setupHintsPanelToggle", () => setupHintsPanelToggle());
+  safeInit("renderCommandDiscovery", () => renderCommandDiscovery());
+  safeInit("setupMorningWidgetToggle", () => setupMorningWidgetToggle());
   setupProfileHandlers();
   setupConnectionCardHandlers();
   startMorningFallbackTimer();
@@ -3782,12 +3797,6 @@ window.addEventListener("DOMContentLoaded", () => {
     injectUserText("show threads", "text");
   });
 
-  const homeMemoryPageBtn = $("btn-home-memory-page");
-  if (homeMemoryPageBtn) homeMemoryPageBtn.addEventListener("click", () => setActivePage("memory"));
-
-  const homeOpenAgentDeliveryBtn = $("btn-home-open-agent-delivery");
-  if (homeOpenAgentDeliveryBtn) homeOpenAgentDeliveryBtn.addEventListener("click", () => setActivePage("agent"));
-
   const homeToneStatusBtn = $("btn-home-tone-status");
   if (homeToneStatusBtn) {
     homeToneStatusBtn.addEventListener("click", () => showToneModal());
@@ -3806,22 +3815,8 @@ window.addEventListener("DOMContentLoaded", () => {
     });
   }
 
-  const homeSystemStatusBtn = $("btn-home-system-status");
-  if (homeSystemStatusBtn) {
-    homeSystemStatusBtn.addEventListener("click", () => {
-      setActivePage("chat");
-      injectUserText("system status", "text");
-    });
-  }
-
   const introHomeBtn = $("btn-intro-open-home");
   if (introHomeBtn) introHomeBtn.addEventListener("click", () => setActivePage("home"));
-
-  const introWorkspaceBtn = $("btn-intro-open-workspace");
-  if (introWorkspaceBtn) introWorkspaceBtn.addEventListener("click", () => setActivePage("workspace"));
-
-  const introTrustBtn = $("btn-intro-open-trust");
-  if (introTrustBtn) introTrustBtn.addEventListener("click", () => setActivePage("trust"));
 
   const introSettingsBtn = $("btn-intro-open-settings");
   if (introSettingsBtn) introSettingsBtn.addEventListener("click", () => setActivePage("settings"));
@@ -3844,14 +3839,6 @@ window.addEventListener("DOMContentLoaded", () => {
       safeWSSend({ text: "connection status", silent_widget_refresh: true });
       requestSettingsRuntimeRefresh(true);
       loadConnectionsData();
-    });
-  }
-
-  const introVoiceCheckBtn = $("btn-intro-voice-check");
-  if (introVoiceCheckBtn) {
-    introVoiceCheckBtn.addEventListener("click", () => {
-      setActivePage("chat");
-      injectUserText("voice check", "text");
     });
   }
 

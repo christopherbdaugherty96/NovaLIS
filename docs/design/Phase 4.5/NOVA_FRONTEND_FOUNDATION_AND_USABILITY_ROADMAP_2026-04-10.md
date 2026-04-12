@@ -281,12 +281,14 @@ Read this roadmap alongside:
 - `docs/reference/HUMAN_GUIDES/14_FRONTEND_AND_UI_GUIDE.md`
 - `docs/design/Phase 4.5/NOVA_USER_FRIENDLINESS_TODO_2026-04-02.md`
 - `docs/design/Phase 4.5/NOVA_USER_EXPERIENCE_IMPROVEMENT_PLAN_2026-03-26.md`
+- `docs/design/Phase 4.5/NOVA_USABILITY_NEXT_STEPS_ROADMAP_2026-04-10.md`
 - `docs/design/Phase 8/NOVA_PHASE_8_USER_OPERABILITY_AND_RUN_SYSTEM_AUDIT_2026-04-05.md`
 - `docs/design/Phase 6/NOVA_SYSTEM_AUDIT_AND_PRODUCTIZATION_GAPS_2026-04-10.md`
 
 Interpretation:
 - the human guide explains what the frontend is
 - the earlier Phase 4.5 packets explain the friendliness direction
+- the next-steps roadmap captures the post-stabilization usability queue
 - the Phase 8 packet explains operator/run clarity
 - this roadmap turns those ideas into a current implementation order
 

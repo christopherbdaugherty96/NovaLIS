@@ -116,7 +116,7 @@ window.NOVA_DASHBOARD_CONFIG = {
       { id: "trust_system", label: "System status", command: "system status", switchToPage: "chat" },
       { id: "trust_memory", label: "Memory overview", command: "memory overview", switchToPage: "memory" },
       { id: "trust_agent", label: "Agent", command: "bridge status", switchToPage: "agent", stayOnPage: true },
-      { id: "trust_workspace", label: "Workspace home", command: "workspace home", switchToPage: "chat" },
+      { id: "trust_workspace", label: "Open Home", command: "workspace home", switchToPage: "home", stayOnPage: true },
       { id: "trust_policies", label: "Policies", command: "policy overview", switchToPage: "policy", stayOnPage: true },
       { id: "trust_bridge", label: "Bridge status", command: "bridge status", stayOnPage: true },
       { id: "trust_settings", label: "Settings", command: "voice status", switchToPage: "settings", stayOnPage: true },
