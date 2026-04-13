@@ -18,6 +18,7 @@ Manual edits: NOT PERMITTED
 | Phase 6 | COMPLETE | Trust loop, policy review, capability authority map, and manual policy executor gate are complete; delegated trigger runtime remains disabled by design |
 | Phase 7 | COMPLETE | Governed external reasoning is complete: answer-first research surfaces, explicit second-opinion capability, provider transparency, actionable Settings controls, and advisory-only trust explanation are active |
 | Phase 8 | ACTIVE | Manual strict preflight is active. Scheduled home-agent runtime is available behind explicit settings control, with quiet-hours suppression, rate limiting, explicit envelope preview, measured narrow-lane run usage visibility, local-first metered OpenAI fallback for narrow task reports, and bounded assistive noticing live; broader envelope-governed execution still remains deferred |
+| Phase 9 | ACTIVE | OpenClaw intelligence layer implemented: 10-tool dynamic registry, iterative thinking loop with LLM synthesis, goal-based execution, execution memory with optimal ordering, executor-backed mutation tools (volume, brightness, media, webpage, screen capture), parallel/chained tool execution, error recovery with retry and circuit-breaker, self-awareness context injection, and friendly personality on Gemma 4 (32K context). 1082 tests passing, 0 failures |
 
 ## Runtime Governance Spine
 

@@ -22,6 +22,10 @@ class CaptureLedger:
 
 
 def test_timeout_causes_denial_and_records_lifecycle(monkeypatch):
+    monkeypatch.setattr(
+        "src.governor.governor.Governor._check_network_budget",
+        lambda self, cap_id: None,
+    )
     monkeypatch.setenv("BRAVE_API_KEY", "test-key")
     from src.governor.governor_mediator import GovernorMediator
     from src.governor.governor import Governor

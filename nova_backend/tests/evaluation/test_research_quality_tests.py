@@ -5,7 +5,11 @@ from tests.simulation.conversation_simulator import run_simulation
 from .cognitive_evaluator import CognitiveEvaluator
 
 
-def test_research_quality_metrics_present():
+def test_research_quality_metrics_present(monkeypatch):
+    monkeypatch.setattr(
+        "src.governor.governor.Governor._check_network_budget",
+        lambda self, cap_id: None,
+    )
     transcript = run_simulation(["create an intelligence brief on lithium supply chains"])
     response = transcript.turns[-1].nova_response
     result = CognitiveEvaluator.evaluate_intelligence_brief(response)

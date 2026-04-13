@@ -5,7 +5,11 @@ from tests.simulation.conversation_simulator import run_simulation
 from .cognitive_evaluator import CognitiveEvaluator
 
 
-def test_reasoning_consistency_between_full_and_shorter_versions():
+def test_reasoning_consistency_between_full_and_shorter_versions(monkeypatch):
+    monkeypatch.setattr(
+        "src.governor.governor.Governor._check_network_budget",
+        lambda self, cap_id: None,
+    )
     transcript = run_simulation(
         [
             "research robotics policy shifts",

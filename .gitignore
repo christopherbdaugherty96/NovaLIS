@@ -43,6 +43,7 @@ nova_backend/test.wav
 # Runtime state
 nova_backend/memory/
 nova_backend/src/data/
+nova_backend/nova_data/
 
 # Temporary audio
 *.wav

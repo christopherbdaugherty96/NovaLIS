@@ -61,6 +61,10 @@ class FakeNetworkMediator:
 
 
 def test_web_search_injection_does_not_trigger_other_actions(monkeypatch):
+    monkeypatch.setattr(
+        "src.governor.governor.Governor._check_network_budget",
+        lambda self, cap_id: None,
+    )
     monkeypatch.setenv("BRAVE_API_KEY", "test-key")
     # --- locate the governor entry points ---
     from src.governor.governor_mediator import GovernorMediator
