@@ -131,6 +131,11 @@ Nova's documentation is intentionally split by role.
 - `docs/design/`
 - future direction, backlog, architecture packets, and planning docs
 
+### Tracked automations
+- `automations/`
+- tracked project-owned Codex automation definitions and memory snapshots
+- lets GitHub carry the same automation prompt/config history that exists in the local Codex setup
+
 ### Canonical governance
 - `docs/canonical/`
 - constitutional and governance source material

@@ -73,6 +73,10 @@ Nova's docs are intentionally separated by role:
 - `docs/`
   - runtime truth, proofs, design docs, human guides, and governance material
 
+- `automations/`
+  - tracked Codex automation definitions and memory snapshots that should stay reviewable in GitHub
+  - active local runtime copies still live under `$CODEX_HOME/automations/`
+
 ## Backend Orientation
 
 If you are reviewing the backend, this is the fastest useful order:
@@ -91,14 +95,24 @@ If you are reviewing the backend, this is the fastest useful order:
 
 If you are reviewing the user experience surface, start here:
 
-1. `nova_backend/static/dashboard.js`
-2. `nova_backend/static/orb.js`
-3. `nova_backend/static/style.phase1.css`
-4. `nova_backend/static/index.html`
+1. `nova_backend/static/index.html`
+2. `nova_backend/static/dashboard-config.js`
+3. `nova_backend/static/dashboard.js`
+4. `nova_backend/static/dashboard-workspace.js`
+5. `nova_backend/static/dashboard-control-center.js`
+6. `nova_backend/static/dashboard-chat-news.js`
+7. `nova_backend/static/style.phase1.css`
+8. `nova_backend/static/dashboard-surfaces.css`
+9. `nova_backend/static/orb.js`
 
 Then compare with:
 
 - `Nova-Frontend-Dashboard/`
+
+Review note:
+- the live frontend is now a modular static bundle
+- do not review it as if `dashboard.js` alone were the whole UI
+- dashboard-focused tests should use `nova_backend/tests/_dashboard_bundle.py`
 
 ## Review Guardrails
 
