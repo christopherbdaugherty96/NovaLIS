@@ -37,6 +37,12 @@ BRIDGE_API_PATH = PROJECT_ROOT / "nova_backend" / "src" / "api" / "bridge_api.py
 SETTINGS_API_PATH = PROJECT_ROOT / "nova_backend" / "src" / "api" / "settings_api.py"
 OPENCLAW_AGENT_API_PATH = PROJECT_ROOT / "nova_backend" / "src" / "api" / "openclaw_agent_api.py"
 STATIC_DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
+STATIC_DASHBOARD_MODULAR_PATHS = [
+    PROJECT_ROOT / "nova_backend" / "static" / "dashboard-chat-news.js",
+    PROJECT_ROOT / "nova_backend" / "static" / "dashboard-control-center.js",
+    PROJECT_ROOT / "nova_backend" / "static" / "dashboard-workspace.js",
+    PROJECT_ROOT / "nova_backend" / "static" / "dashboard-config.js",
+]
 STATIC_INDEX_PATH = PROJECT_ROOT / "nova_backend" / "static" / "index.html"
 BUILD_PHASE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "build_phase.py"
 ATOMIC_POLICY_STORE_PATH = PROJECT_ROOT / "nova_backend" / "src" / "policies" / "atomic_policy_store.py"
@@ -97,6 +103,7 @@ def _build_allowlisted_paths() -> frozenset[Path]:
         SETTINGS_API_PATH,
         OPENCLAW_AGENT_API_PATH,
         STATIC_DASHBOARD_PATH,
+        *STATIC_DASHBOARD_MODULAR_PATHS,
         STATIC_INDEX_PATH,
         BUILD_PHASE_PATH,
         OPENCLAW_AGENT_RUNTIME_STORE_PATH,
@@ -183,6 +190,15 @@ def _safe_read(path: Path) -> str:
     if not path.exists():
         return ""
     return path.read_text(encoding="utf-8")
+
+
+def _safe_read_all_dashboard() -> str:
+    """Read dashboard.js and all modular split files into a single string."""
+    parts = [_safe_read(STATIC_DASHBOARD_PATH)]
+    for p in STATIC_DASHBOARD_MODULAR_PATHS:
+        if p in ALLOWED_READ_PATHS:
+            parts.append(_safe_read(p))
+    return "\n".join(parts)
 
 
 def _stable_hash_bytes(path: Path) -> bytes:
@@ -620,7 +636,7 @@ def _phase_4_status(registry: dict[str, Any]) -> str:
 
 
 def _phase_42_status() -> str:
-    dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
+    dashboard_src = _safe_read_all_dashboard()
     session_handler_src = _safe_read(SESSION_HANDLER_PATH)
     agents_present = (PROJECT_ROOT / "nova_backend" / "src" / "agents").exists()
     personality_present = (PROJECT_ROOT / "nova_backend" / "src" / "personality").exists()
@@ -675,7 +691,7 @@ def _calendar_integration_present() -> bool:
     # The calendar widget send lives in session_handler.py, not brain_server.py
     session_handler_src = _safe_read(SESSION_HANDLER_PATH)
     brain_src = _safe_read(BRAIN_SERVER_PATH).lower()
-    dashboard_src = _safe_read(STATIC_DASHBOARD_PATH).lower()
+    dashboard_src = _safe_read_all_dashboard().lower()
     index_src = _safe_read(STATIC_INDEX_PATH).lower()
     parsed = GovernorMediator.parse_governed_invocation("calendar", session_id="audit-runtime")
     mediated_calendar = isinstance(parsed, Invocation) and parsed.capability_id == 57
@@ -696,7 +712,7 @@ def _calendar_integration_present() -> bool:
 
 
 def _phase_5_status(registry: dict[str, Any]) -> str:
-    dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
+    dashboard_src = _safe_read_all_dashboard()
     index_src = _safe_read(STATIC_INDEX_PATH)
     brain_src = _safe_read(BRAIN_SERVER_PATH)
     session_handler_src = _safe_read(SESSION_HANDLER_PATH)
@@ -761,7 +777,7 @@ def _phase_5_status(registry: dict[str, Any]) -> str:
 
 
 def _phase_6_status() -> str:
-    dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
+    dashboard_src = _safe_read_all_dashboard()
     index_src = _safe_read(STATIC_INDEX_PATH)
     brain_src = _safe_read(BRAIN_SERVER_PATH)
     session_handler_src = _safe_read(SESSION_HANDLER_PATH)
@@ -827,7 +843,7 @@ def _governed_remote_bridge_present() -> bool:
 
 
 def _openclaw_home_agent_foundation_present() -> bool:
-    dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
+    dashboard_src = _safe_read_all_dashboard()
     index_src = _safe_read(STATIC_INDEX_PATH)
     agent_api_src = _safe_read(OPENCLAW_AGENT_API_PATH)
     return (
@@ -868,7 +884,7 @@ def _phase_8_status() -> str:
 
 def _phase_7_status(registry: dict[str, Any]) -> str:
     enabled_ids = set(_enabled_registry_ids(registry))
-    dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
+    dashboard_src = _safe_read_all_dashboard()
     index_src = _safe_read(STATIC_INDEX_PATH)
     governor_src = _safe_read(GOVERNOR_PATH)
     mediator_src = _safe_read(GOVERNOR_MEDIATOR_PATH)
@@ -928,7 +944,7 @@ def _phase_7_status(registry: dict[str, Any]) -> str:
 
 def _phase_45_status() -> str:
     """Derive coarse runtime status for Phase 4.5 UX surface."""
-    dashboard_src = _safe_read(STATIC_DASHBOARD_PATH)
+    dashboard_src = _safe_read_all_dashboard()
     index_src = _safe_read(STATIC_INDEX_PATH)
     has_morning_panel = "Morning Dashboard" in index_src or "morning-widget" in index_src
     has_morning_state = "morningState" in dashboard_src
@@ -957,14 +973,15 @@ def _phase_45_status() -> str:
 
 
 def _known_runtime_gaps() -> list[str]:
+    dashboard_lower = _safe_read_all_dashboard().lower()
     trust_panel_present = (
-        "trust panel" in _safe_read(STATIC_DASHBOARD_PATH).lower()
+        "trust panel" in dashboard_lower
         or "trust-panel" in _safe_read(STATIC_INDEX_PATH).lower()
     )
     failure_ladder_present = (
         "failure_ladder" in _safe_read(BRAIN_SERVER_PATH).lower()
-        or "failurestate" in _safe_read(STATIC_DASHBOARD_PATH).lower()
-        or "offline-safe mode" in _safe_read(STATIC_DASHBOARD_PATH).lower()
+        or "failurestate" in dashboard_lower
+        or "offline-safe mode" in dashboard_lower
     )
     checks: list[tuple[str, bool]] = [
         (
@@ -1016,7 +1033,7 @@ def _design_runtime_divergences(registry: dict[str, Any]) -> list[str]:
         )
 
     trust_panel_present = (
-        "trust panel" in _safe_read(STATIC_DASHBOARD_PATH).lower()
+        "trust panel" in _safe_read_all_dashboard().lower()
         or "trust-panel" in _safe_read(STATIC_INDEX_PATH).lower()
     )
     if not trust_panel_present:
