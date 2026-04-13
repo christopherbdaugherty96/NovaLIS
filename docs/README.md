@@ -35,6 +35,9 @@ This sequence gives you:
 Location:
 - `docs/reference/HUMAN_GUIDES/`
 
+Related inactive reference packets:
+- `docs/reference/inactive/`
+
 Use this when you want:
 - a plain-language explanation of Nova
 - a product overview
@@ -43,6 +46,8 @@ Use this when you want:
 
 These docs are explanatory.
 They do not authorize runtime behavior.
+
+Inactive reference packets in `docs/reference/inactive/` are preserved standards and checklists that are not active Nova-wide rules unless explicitly adopted later.
 
 ### 2. Runtime truth
 Location:
