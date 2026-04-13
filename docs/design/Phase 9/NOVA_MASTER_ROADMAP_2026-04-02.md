@@ -1,5 +1,5 @@
-# Nova — Master Roadmap
-Updated: 2026-04-03
+# Nova - Master Roadmap
+Updated: 2026-04-10
 Status: Living document
 Purpose: Keep one honest prioritized backlog that reflects what is already shipped, what is next, and what should stay future work
 
@@ -10,10 +10,10 @@ It should not re-list already shipped slices as if they are still untouched.
 
 ## How To Read This
 
-- `P0` — do next
-- `P1` — do soon after P0
-- `P2` — important, but not blocking the current product line
-- `P3` — future expansion
+- `P0` - do next
+- `P1` - do soon after P0
+- `P2` - important, but not blocking the current product line
+- `P3` - future expansion
 
 Status tags:
 - `[ ]` not started
@@ -39,7 +39,7 @@ Recently shipped:
 - `[x]` connection-aware starter usefulness cards
 - `[x]` visible OpenClaw active run state on Home and Agent surfaces
 
-That means the current next work is not “start from zero.”
+That means the current next work is not "start from zero."
 It is:
 - close the last Phase-4.5 polish gap
 - finish Phase-8 usefulness through real connectors
@@ -50,16 +50,16 @@ It is:
 ## Corrected Execution Order
 
 ```
-Stage 1 — Phase 4.5 closeout
+Stage 1 - Phase 4.5 closeout
   manual polish, live-device validation, final setup/readiness cleanup
 
-Stage 2 — Phase 8 usefulness
+Stage 2 - Phase 8 usefulness
   real calendar integration, stronger daily-assistant usefulness
 
-Stage 3 — Phase 8 closure
+Stage 3 - Phase 8 closure
   envelope execution, pause/resume, richer run controls
 
-Stage 4 — Phase 9 intelligence
+Stage 4 - Phase 9 intelligence
   DeepSeek tier, provider routing, memory-tier evolution
 ```
 
@@ -67,21 +67,29 @@ Phase 9 should not become the main implementation track until Stage 3 is more co
 
 ---
 
-## P0 — Finish The Current Product Foundation
+## P0 - Finish The Current Product Foundation
 
-### 0.1 — Last Phase-4.5 Closeout Work
+### 0.1 - Last Phase-4.5 Closeout Work
 Design docs:
 - `docs/design/Phase 4.5/NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md`
 - `docs/design/Phase 4.5/NOVA_USER_FRIENDLINESS_TODO_2026-04-02.md`
+- `docs/design/Phase 4.5/NOVA_FRONTEND_FOUNDATION_AND_USABILITY_ROADMAP_2026-04-10.md`
+- `docs/design/Phase 4.5/NOVA_USABILITY_NEXT_STEPS_ROADMAP_2026-04-10.md`
 
 - `[x]` profile baseline shipped
 - `[x]` connection-card baseline shipped
 - `[x]` intro/setup baseline shipped
+- `[x]` settle the canonical frontend source-of-truth model, keep `nova_backend/static/` canonical, and keep the maintained mirror synced through the expanded guard
+- `[~]` split the current dashboard surface into clearer maintainable frontend slices
+- `[x]` simplify Home into one primary workflow with calmer secondary review surfaces
+- `[x]` turn Intro + Settings into a more guided setup path with a stronger first-win sequence
+- `[x]` apply the stronger Home/Intro structural simplification pass inside the current static frontend
 - `[ ]` run a real manual UX pass across Intro, Home, Agent, Settings, live-help, and voice
 - `[ ]` validate local TTS confidence on real hardware
 - `[ ]` tighten any remaining setup/readiness copy that still feels diagnostic instead of assistant-like
+- `[ ]` review whether any redesign beyond the current static-frontend structure is still worth the cost
 
-### 0.2 — Finish Phase-8 Usefulness
+### 0.2 - Finish Phase-8 Usefulness
 Design docs:
 - `docs/design/Phase 8/PHASE_8_DOCUMENT_MAP.md`
 - `docs/design/Phase 8/NOVA_OPENCLAW_HOME_AGENT_MASTER_REFERENCE_2026-03-27.md`
@@ -89,10 +97,10 @@ Design docs:
 - `[x]` structured morning brief baseline shipped
 - `[x]` connection-aware home usefulness starters shipped
 - `[ ]` real calendar integration beyond the current ICS-backed snapshot baseline
-- `[ ]` better in-chat answer to “what can you do right now?” based on live setup state
+- `[ ]` better in-chat answer to "what can you do right now?" based on live setup state
 - `[ ]` continue improving daily assistant quality without widening authority
 
-### 0.3 — Finish Phase-8 Closure
+### 0.3 - Finish Phase-8 Closure
 Design docs:
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25.md`
 - `docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN.md`
@@ -110,9 +118,9 @@ Design docs:
 
 ---
 
-## P1 — Memory, Automation, And Personalization Follow-Through
+## P1 - Memory, Automation, And Personalization Follow-Through
 
-### 1.1 — Memory Tier Evolution
+### 1.1 - Memory Tier Evolution
 Design doc:
 - `docs/design/phase 5/NOVA_MEMORY_TIERS_DESIGN.md`
 
@@ -121,7 +129,7 @@ Design doc:
 - `[ ]` inspectable memory-tier surfaces that stay easy to understand
 - `[ ]` keep all memory evolution explicit and governed
 
-### 1.2 — User-Created Automations
+### 1.2 - User-Created Automations
 Design doc:
 - `docs/design/Phase 8.5/NOVA_AUTOMATIONS_DESIGN.md`
 
@@ -130,7 +138,7 @@ Design doc:
 - `[ ]` RSS / research digest template
 - `[ ]` keep all automation widening inside explicit settings and visible surfaces
 
-### 1.3 — Preference Learning First
+### 1.3 - Preference Learning First
 Design doc:
 - `docs/design/phase 5/NOVA_GOVERNED_LEARNING_LADDER_2026-04-02.md`
 
@@ -141,9 +149,9 @@ Design doc:
 
 ---
 
-## P2 — Connector And Communication Expansion
+## P2 - Connector And Communication Expansion
 
-### 2.1 — Email And Calendar Workflows
+### 2.1 - Email And Calendar Workflows
 Design docs:
 - `docs/design/Phase 8.5/NOVA_AUTOMATIONS_DESIGN.md`
 - `docs/design/Phase 11/NOVA_IDEA_TO_WORKFLOW_OPERATOR_MODEL_TODO_2026-04-02.md`
@@ -153,21 +161,21 @@ Design docs:
 - `[ ]` document ingest / file-watch workflow
 - `[ ]` job application and communication operator flows
 
-### 2.2 — Better Everyday Operator Workflows
+### 2.2 - Better Everyday Operator Workflows
 Design docs:
 - `docs/design/Phase 8/NOVA_GOVERNED_VISIBLE_OPERATOR_MODE_TODO_2026-04-02.md`
 - `docs/design/Phase 11/NOVA_INTERACTION_MODEL_V1_STRICT_ON_RISK_SOFT_ON_FLOW_2026-04-02.md`
 
 - `[ ]` safer form-fill assistance
 - `[ ]` sign-in assistance with hard credential boundaries
-- `[ ]` “handle this for me” low-risk workflow shaping
+- `[ ]` "handle this for me" low-risk workflow shaping
 - `[ ]` one-checkpoint-per-meaningful-outcome behavior
 
 ---
 
-## P2 — Trading And Financial Assistant Work
+## P2 - Trading And Financial Assistant Work
 
-### 2.3 — Trading Connector Direction
+### 2.3 - Trading Connector Direction
 Design docs:
 - `docs/design/Phase 11/NOVA_TRADING_CONNECTOR_DESIGN.md`
 - `docs/design/Phase 8/TRADING_MODE_GUARDRAILS_2026-03-27.md`
@@ -177,7 +185,7 @@ Design docs:
 - `[ ]` portfolio / watchlist / market-research surfaces
 - `[ ]` no live autonomous trading until much later guarded phases
 
-### 2.4 — Personal Finance Intelligence
+### 2.4 - Personal Finance Intelligence
 Design docs:
 - `docs/design/Phase 11/NOVA_HOME_ASSISTANT_PRODUCT_TRUTH_2026-04-02.md`
 - `docs/design/Phase 11/NOVA_IDEA_TO_WORKFLOW_OPERATOR_MODEL_TODO_2026-04-02.md`
@@ -189,9 +197,9 @@ Design docs:
 
 ---
 
-## P3 — Phase-9 Intelligence Work
+## P3 - Phase-9 Intelligence Work
 
-### 3.1 — DeepSeek V3 As Tier-2 Provider
+### 3.1 - DeepSeek V3 As Tier-2 Provider
 Design docs:
 - `docs/design/Phase 9/NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md`
 - `docs/design/Phase 6/NOVA_LOCAL_FIRST_INTELLIGENCE_ARCHITECTURE_AND_MODEL_ROUTING_TODO_2026-04-02.md`
@@ -200,20 +208,20 @@ Design docs:
 - `[ ]` add provider pricing / budget visibility
 - `[ ]` keep Nova local-first by default
 
-### 3.2 — Provider Routing In Conversation
+### 3.2 - Provider Routing In Conversation
 - `[x]` conversation router exists
 - `[x]` complexity heuristics exist
 - `[ ]` route primary responses across local / DeepSeek / OpenAI tiers
 - `[ ]` keep routing visible, bounded, and budget-aware
 
-### 3.3 — Memory And Continuity Coherence
+### 3.3 - Memory And Continuity Coherence
 - `[ ]` stronger memory coherence across surfaces
 - `[ ]` later workflow-habit learning after preference learning is stable
 - `[ ]` bounded proactive learning only after scheduler and routines are earned
 
 ---
 
-## P3 — Node / Mass-Node / Operator Expansion
+## P3 - Node / Mass-Node / Operator Expansion
 
 Design docs:
 - `docs/design/Phase 9/NOVA_GOVERNED_MASS_NODE_OPERATOR_SYSTEM_2026-04-02.md`
@@ -230,9 +238,10 @@ Design docs:
 
 - `[ ]` When should rolling memories be suggested for permanent promotion?
 - `[ ]` Should calendar remain ICS-first until a stronger official connector is earned?
-- `[ ]` How much of “what can you do?” should be dynamic in chat versus Home surfaces?
-- `[ ]` When should Phase 4.5 be declared fully closed in runtime docs?
+- `[ ]` How much of "what can you do?" should be dynamic in chat versus Home surfaces?
+- `[x]` Phase 4.5 low-risk usability closeout is complete; only stronger structural redesign choices remain for review
 - `[ ]` What is the exact minimum Phase-8 closure bar before Phase-9 provider routing becomes the main focus?
+- `[ ]` Should `Nova-Frontend-Dashboard/` remain a maintained mirror, or should the repo collapse to one canonical frontend path?
 
 ---
 

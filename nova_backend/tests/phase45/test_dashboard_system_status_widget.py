@@ -1,12 +1,8 @@
-from pathlib import Path
-
-
-PROJECT_ROOT = Path(__file__).resolve().parents[3]
-DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
+from tests._dashboard_bundle import load_dashboard_runtime_js
 
 
 def test_system_summary_surfaces_blocked_model_state():
-    source = DASHBOARD_PATH.read_text(encoding="utf-8")
+    source = load_dashboard_runtime_js()
 
     assert "model_availability" in source
     assert "model_ready" in source

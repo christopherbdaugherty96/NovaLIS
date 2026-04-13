@@ -13,6 +13,7 @@ The docs are intentionally split by authority level so people can quickly tell:
 If you are new to Nova, use this reading order:
 
 1. `docs/reference/HUMAN_GUIDES/README.md`
+2. `docs/reference/HUMAN_GUIDES/14_FRONTEND_AND_UI_GUIDE.md`
 2. `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 3. `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
 4. `docs/current_runtime/RUNTIME_FINGERPRINT.md`
@@ -26,6 +27,7 @@ If you want the current product truth for what Nova is becoming, read:
 
 This sequence gives you:
 - the human explanation first
+- the product/frontend shape early
 - the live runtime truth second
 - the deeper planning backlog after that
 
@@ -35,6 +37,9 @@ This sequence gives you:
 Location:
 - `docs/reference/HUMAN_GUIDES/`
 
+Related inactive reference packets:
+- `docs/reference/inactive/`
+
 Use this when you want:
 - a plain-language explanation of Nova
 - a product overview
@@ -43,6 +48,8 @@ Use this when you want:
 
 These docs are explanatory.
 They do not authorize runtime behavior.
+
+Inactive reference packets in `docs/reference/inactive/` are preserved standards and checklists that are not active Nova-wide rules unless explicitly adopted later.
 
 ### 2. Runtime truth
 Location:

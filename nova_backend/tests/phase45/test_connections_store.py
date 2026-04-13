@@ -39,6 +39,9 @@ class TestRegistry:
         for pid, meta in PROVIDER_REGISTRY.items():
             assert meta["kind"] in valid, f"{pid} has invalid kind {meta['kind']!r}"
 
+    def test_calendar_provider_points_to_calendar_snapshot_capability(self):
+        assert PROVIDER_REGISTRY["calendar"]["caps"] == ["57"]
+
 
 # ---------------------------------------------------------------------------
 # Key masking helper

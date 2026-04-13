@@ -43,18 +43,37 @@ Current interpretation:
 - `nova_backend/src/personality/tone_profile_store.py`
 - `nova_backend/src/personality/interface_agent.py`
 - `nova_backend/src/brain_server.py`
-- `nova_backend/static/dashboard.js`
+- `nova_backend/static/dashboard-control-center.js`
 
 ### Scheduling
 - `nova_backend/src/tasks/notification_schedule_store.py`
 - `nova_backend/src/governor/governor.py`
 - `nova_backend/src/brain_server.py`
 - `nova_backend/src/ledger/event_types.py`
+- `nova_backend/static/dashboard-control-center.js`
 
 ### Pattern review
 - `nova_backend/src/patterns/pattern_review_store.py`
 - `nova_backend/src/brain_server.py`
+- `nova_backend/static/dashboard-control-center.js`
+
+### Frontend delivery note
+The user-facing Phase-5 review surfaces no longer live in a single dashboard file.
+
+Current active runtime frontend bundle for these surfaces includes:
+- `nova_backend/static/index.html`
 - `nova_backend/static/dashboard.js`
+- `nova_backend/static/dashboard-control-center.js`
+- `nova_backend/static/dashboard-chat-news.js`
+- `nova_backend/static/style.phase1.css`
+- `nova_backend/static/dashboard-surfaces.css`
+
+Current verification rule:
+- `nova_backend/static/` is the canonical runtime-served frontend
+- `Nova-Frontend-Dashboard/` remains a maintained mirror
+- `scripts/check_frontend_navigation_smoke.py` validates the served navigation/button/script contract
+- `scripts/check_frontend_mirror_sync.py` validates canonical-vs-mirror drift
+- `nova_backend/tests/_dashboard_bundle.py` is the shared helper for dashboard bundle tests
 
 ## Runtime Boundary
 All action-capable behavior still flows through the same authority path:

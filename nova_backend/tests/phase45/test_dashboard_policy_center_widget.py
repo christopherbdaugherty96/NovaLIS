@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._dashboard_bundle import load_dashboard_runtime_js
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
 INDEX_PATH = PROJECT_ROOT / "nova_backend" / "static" / "index.html"
 
 
 def test_dashboard_renders_policy_center_page_and_widget_flow():
-    source = DASHBOARD_PATH.read_text(encoding="utf-8")
+    source = load_dashboard_runtime_js()
 
     assert "function requestPolicyOverviewRefresh(force = false)" in source
     assert "function requestPolicyDetail(policyId)" in source

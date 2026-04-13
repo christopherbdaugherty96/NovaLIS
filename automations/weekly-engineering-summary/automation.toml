@@ -1,0 +1,44 @@
+version = 1
+id = "weekly-engineering-summary"
+name = "Weekly engineering summary"
+prompt = """
+Synthesize a weekly engineering update for the current workspace.
+
+Use evidence in this order:
+1. Local git history since the last run
+2. `pull_requests/` artifacts in the workspace
+3. `docs/current_runtime/` and other active runtime/docs artifacts
+4. rollout, deployment, incident, or postmortem files if they exist
+5. review artifacts or comments if they exist locally
+
+Grounding rules:
+- Do not invent events.
+- Do not infer PR metadata from commits alone.
+- Keep PRs, commits, rollouts, incidents, and reviews clearly separated.
+- If PR number, title, reviewer, merge state, rollout record, or incident ID is missing, say that briefly and directly.
+- Prefer concrete references such as commit SHA, PR #, incident ID, rollout note, doc path, or file path.
+- If there is no evidence for a section, say so in one short sentence.
+- Be explicit about whether something is confirmed from local evidence versus unavailable.
+
+Output sections in this order:
+1. Executive summary
+2. PRs
+3. Rollouts
+4. Incidents
+5. Reviews
+6. Repo activity not tied to confirmed PR metadata
+7. Risks / Missing data
+
+Style rules:
+- Write for a real weekly update that someone could send internally.
+- Keep it concise but concrete.
+- Avoid filler and avoid turning uncertainty into narrative.
+"""
+status = "ACTIVE"
+rrule = "RRULE:FREQ=WEEKLY;BYHOUR=10;BYMINUTE=0;BYDAY=MO"
+execution_environment = "worktree"
+model = "gpt-5.4"
+reasoning_effort = "medium"
+cwds = ["C:\\Nova-Project"]
+created_at = 1773900094104
+updated_at = 1776122580000
