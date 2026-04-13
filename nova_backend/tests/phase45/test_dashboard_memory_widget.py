@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._dashboard_bundle import load_dashboard_runtime_js
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
 INDEX_PATH = PROJECT_ROOT / "nova_backend" / "static" / "index.html"
 
 
 def test_dashboard_handles_memory_overview_widget_and_hydration():
-    source = DASHBOARD_PATH.read_text(encoding="utf-8")
+    source = load_dashboard_runtime_js()
 
     assert 'case "memory_overview":' in source
     assert 'case "memory_list":' in source
@@ -47,5 +48,5 @@ def test_dashboard_includes_dedicated_memory_page_and_home_summary():
     assert 'id="btn-memory-overview"' in source
     assert 'id="btn-memory-list"' in source
     assert 'id="btn-memory-recent"' in source
-    assert 'id="personal-layer-widget"' in source
-    assert 'id="btn-home-memory-page"' in source
+    assert 'id="home-launch-widget"' in source
+    assert 'id="home-launch-actions"' in source

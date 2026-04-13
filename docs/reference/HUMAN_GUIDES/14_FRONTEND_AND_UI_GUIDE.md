@@ -1,5 +1,5 @@
 # Frontend and UI Guide
-Updated: 2026-03-28
+Updated: 2026-04-10
 
 ## Purpose
 This guide explains Nova's frontend in plain language.
@@ -19,17 +19,39 @@ Its job is to:
 ## Main Runtime Frontend Files
 The runtime-served frontend lives in:
 - `nova_backend/static/index.html`
+- `nova_backend/static/dashboard-config.js`
 - `nova_backend/static/dashboard.js`
+- `nova_backend/static/dashboard-workspace.js`
+- `nova_backend/static/dashboard-control-center.js`
+- `nova_backend/static/dashboard-chat-news.js`
 - `nova_backend/static/orb.js`
 - `nova_backend/static/style.phase1.css`
+- `nova_backend/static/dashboard-surfaces.css`
 
-There is also a historical mirror copy in:
+There is also a maintained mirror copy in:
 - `Nova-Frontend-Dashboard/`
 
 Current repo rule:
 - `nova_backend/static/` is the runtime-served canonical frontend
-- `Nova-Frontend-Dashboard/` is useful for comparison, but it may drift
-- if `scripts/check_frontend_mirror_sync.py` fails, trust `nova_backend/static/`
+- `Nova-Frontend-Dashboard/` is a maintained mirror and should stay matched
+- if `scripts/check_frontend_mirror_sync.py` fails, fix the mirror drift immediately
+
+Current architecture rule:
+- the frontend is intentionally modular now
+- `dashboard.js` is the shared shell/state layer, not the whole app by itself
+- `dashboard-workspace.js`, `dashboard-control-center.js`, and `dashboard-chat-news.js` are part of the live runtime bundle and should be treated as first-class frontend entry surfaces
+- `style.phase1.css` and `dashboard-surfaces.css` together define the live runtime styling contract
+- test and review work should validate the bundled runtime surface, not assume a single-file dashboard
+
+Current verification rule:
+- `scripts/check_frontend_navigation_smoke.py` protects page availability, button coverage, script bundle order, and navigation behavior
+- `scripts/check_frontend_mirror_sync.py` protects canonical frontend vs mirror drift
+- `nova_backend/tests/_dashboard_bundle.py` is the shared test helper for reading the live modular frontend bundle
+
+Current planning references for frontend cleanup and productization:
+- `docs/design/Phase 4.5/NOVA_FRONTEND_FOUNDATION_AND_USABILITY_ROADMAP_2026-04-10.md`
+- `docs/design/Phase 4.5/NOVA_USABILITY_NEXT_STEPS_ROADMAP_2026-04-10.md`
+- `docs/design/Phase 6/NOVA_SYSTEM_AUDIT_AND_PRODUCTIZATION_GAPS_2026-04-10.md`
 
 There is now also a product-facing landing preview at:
 - `nova_backend/static/landing.html`
@@ -51,34 +73,69 @@ It now defines the major user-facing views:
 - Settings
 
 ### `dashboard.js`
-The most important frontend logic file.
+The shared frontend shell and state layer.
 It handles things like:
 - websocket interaction
-- rendering chat and widgets
-- thread map and thread detail behavior
-- trust and system-status surfaces
+- core shared state
 - persistent navigation and header page/runtime status
-- reasoning transparency surfaces
-- remote bridge and connection-status surfaces
-- policy review rendering
 - memory review and item actions
-- memory recency review and lineage visibility
-- workspace-board rendering
-- structure-map rendering
-- intro and settings rendering
-- setup-readiness rendering for first-run and settings flows
-- home-agent operator rendering
-- first-run guidance
-- follow-up actions
+- shared helpers used by the modular product surfaces
+
+It is important, but it is no longer sufficient to read this file alone if you want frontend truth.
+
+### `dashboard-config.js`
+Shared static frontend config for:
+- API and websocket base wiring
+- page labels and navigation metadata
+- quick-action sets by page
+- command suggestions and help examples
+- command-discovery groupings
+
+This file exists to shrink the main dashboard surface without changing runtime behavior.
+
+### `dashboard-workspace.js`
+Shared Home and Workspace surface logic for:
+- continuity helpers and thread resume actions
+- workspace refresh requests
+- thread map and thread detail rendering
+- Workspace Home, Workspace Board, structure-map, operational-context, and assistive-notice rendering
+
+This file is part of the live runtime bundle, not a sidecar or experimental split.
+
+### `dashboard-control-center.js`
+Shared control-center logic for:
+- policy review and policy readiness surfaces
+- tone, schedule, and pattern-review surfaces
+- operator health, capability visibility, and Trust Center rendering
+- Home Agent delivery, run-state, and template surfaces
+- runtime Settings rendering and settings-update helpers
+
+This file is part of the live runtime bundle, not a sidecar or experimental split.
+
+### `dashboard-chat-news.js`
+Shared interaction logic for:
+- chat rendering and chat-adjacent helpers
+- news, weather, and search surfaces
+- modal interactions and startup/help flows
+- cross-surface UI actions that are product-facing but not part of the control-center or workspace modules
+
+This file is part of the live runtime bundle, not a sidecar or experimental split.
 
 ### `orb.js`
 The orb presence layer.
 It is meant to create a sense of calm presence, not a hidden semantic signal.
 
 ### `style.phase1.css`
-The main styling layer for the dashboard and orb surface.
-It now also styles the dedicated Workspace, Trust, Intro, and Settings pages and the first-run guide.
+The base styling layer for the dashboard shell, orb, accessibility, and responsive behavior.
 The separate landing-preview page uses its own embedded product-preview styling.
+
+### `dashboard-surfaces.css`
+The product-surface styling layer for:
+- Home and Workspace pages
+- Agent, Trust, Policy, Memory, and Settings pages
+- chat, news, weather, search, and modal interaction surfaces
+
+This file exists to reduce cross-surface CSS coupling and make page-level UI work easier to maintain.
 
 ## What The Frontend Shows Today
 The frontend can present:
@@ -110,9 +167,10 @@ The frontend can present:
 - a dedicated Recent memory action on the Memory page
 
 More specifically, the current dashboard can now show:
-- Home-page operator health
-- Home-page trust review
 - Home-page Workspace Home
+- Home-page launch area that now stays clearly primary over review surfaces
+- Home-page Workspace Home that now favors one focus lane, fewer resume cards, and quieter support actions
+- Home-page capability review as the main secondary lane instead of multiple competing admin-style panels
 - Home-page Workspace Home operational-context section
 - Home-page Workspace Home assistive-notices section
 - Home-page and Trust-page assistive notice cards with dismiss and mark-resolved controls
@@ -135,7 +193,9 @@ More specifically, the current dashboard can now show:
 - Trust page reasoning-transparency section with provider, route, mode, authority, and last outcome
 - Trust page language that now leads with user questions: what happened, what was blocked, what left the device, and what needs attention
 - Policy Review Center draft overview, selected-draft detail, simulation review, and one-shot manual run review
-- Intro page setup-readiness checklist with direct connection-status and voice-check actions
+- Intro page setup-readiness checklist with direct connection-status and Home actions
+- Intro page setup flow that now keeps the main first steps tighter and more obviously optional where appropriate
+- Intro page that now removes most duplicate explainer sections in favor of guided setup plus first useful action
 - Settings page setup-mode selection, runtime permission controls, reasoning transparency, and voice confidence review
 - Settings page setup checklist with current next-step guidance for the active device/runtime
 - Settings page local-first AI routing controls, optional OpenAI lane visibility, and metered budget controls
@@ -169,3 +229,9 @@ The frontend is where Nova starts to feel like:
 - a calm intelligence layer
 
 The newer Workspace, Agent, Trust, Policies, Memory, Intro, Settings, and first-run surfaces are especially important because they make Nova feel less like a command console and more like a product a normal person can return to every day.
+
+Current note:
+- the low-risk Phase 4.5 usability pass is now effectively complete
+- the stronger within-frontend structural simplification pass has also landed
+- the safer maintenance posture is now to preserve the modular runtime bundle and update tests/docs around it, rather than pushing behavior back into one large dashboard file
+- any future redesign question is now about whether to go beyond the current static frontend architecture

@@ -38,6 +38,7 @@ Use the proof packet and current runtime docs to distinguish:
 - `docs/design/Phase 6/NOVA_CORRECTED_REPO_AUDIT_AND_REMEDIATION_2026-03-26.md`
 - `docs/design/Phase 6/NOVA_DOCS_ALIGNMENT_AND_ARCHIVE_AUDIT_2026-04-02.md`
 - `docs/design/Phase 6/NOVA_DOCS_CODE_ALIGNMENT_AUDIT_2026-04-02.md`
+- `docs/design/Phase 6/NOVA_SYSTEM_AUDIT_AND_PRODUCTIZATION_GAPS_2026-04-10.md`
 - `docs/design/Phase 6/NOVA_HONEST_ASSESSMENT_AND_NEXT_TODO_2026-03-21.md`
 - `docs/design/Phase 6/NOVA_PRODUCT_MESSAGING_HARDENING_AND_APPLICATION_PLAN_2026-03-26.md`
 
@@ -45,6 +46,7 @@ These packets matter because they ground the phase in:
 - real repository state
 - docs truth vs code truth
 - product-facing clarity
+- current productization and contributor-friction gaps
 - remediation order instead of abstract architecture alone
 
 They are not the canonical Phase-6 policy core, but they are some of the most useful repo-grounding inputs in this folder.

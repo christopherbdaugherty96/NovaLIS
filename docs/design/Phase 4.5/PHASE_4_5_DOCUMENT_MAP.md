@@ -36,6 +36,7 @@ These are the clearest high-value guides for current interpretation.
   Grounded status: profile and connection cards are now shipped; the remaining
   Phase 4.5 gap is setup/readiness polish around those live surfaces.
 
+- `docs/design/Phase 4.5/NOVA_FRONTEND_FOUNDATION_AND_USABILITY_ROADMAP_2026-04-10.md`
 - `docs/design/Phase 4.5/NOVA_USER_FRIENDLINESS_TODO_2026-04-02.md`
 - `docs/design/Phase 4.5/NOVA_USER_EXPERIENCE_IMPROVEMENT_PLAN_2026-03-26.md`
 - `docs/design/Phase 4.5/NOVA_WAKE_WORD_SCREEN_CONTEXT_IMPLEMENTATION.md`

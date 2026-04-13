@@ -40,6 +40,10 @@ Everything else should live inside:
 
 ### 2026-04-02 Session Design Docs (now in phase folders)
 
+- `docs/design/Phase 6/NOVA_SYSTEM_AUDIT_AND_PRODUCTIZATION_GAPS_2026-04-10.md` - current corrected repo/productization audit
+- `docs/design/Phase 4.5/NOVA_FRONTEND_FOUNDATION_AND_USABILITY_ROADMAP_2026-04-10.md` - current frontend cleanup and usability roadmap
+- `docs/design/Phase 4.5/NOVA_USABILITY_NEXT_STEPS_ROADMAP_2026-04-10.md` - current usability-next-steps roadmap
+- `docs/design/Phase 4.5/NOVA_USABILITY_NEXT_STEPS_ROADMAP_2026-04-10.md` - current usability-next-steps roadmap
 - `docs/design/Phase 9/NOVA_MASTER_ROADMAP_2026-04-02.md` — master prioritized backlog P0–P3
 - `docs/design/Phase 9/NOVA_AGENT_NODE_ARCHITECTURE_2026-04-01.md` — intelligence tiers, provider routing
 - `docs/design/Phase 4.5/NOVA_CONNECTIONS_SETUP_UI_REDESIGN.md` — profile setup, connection cards
