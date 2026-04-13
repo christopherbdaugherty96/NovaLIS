@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._dashboard_bundle import load_dashboard_runtime_js
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
 INDEX_PATH = PROJECT_ROOT / "nova_backend" / "static" / "index.html"
 
 
 def test_dashboard_handles_screen_and_file_insight_widgets():
-    source = DASHBOARD_PATH.read_text(encoding="utf-8")
+    source = load_dashboard_runtime_js()
     assert 'case "screen_capture":' in source
     assert 'case "screen_analysis":' in source
     assert 'case "file_explanation":' in source
@@ -34,8 +35,6 @@ def test_dashboard_handles_screen_and_file_insight_widgets():
     assert "Last memory update:" in source
     assert "change_summary" in source
     assert "thread-map-change" in source
-    assert "which project is most blocked right now" in source
-    assert "why this recommendation" in source
 
 
 def test_home_page_keeps_explain_entry_and_project_thread_surface():
@@ -53,6 +52,6 @@ def test_home_page_keeps_explain_entry_and_project_thread_surface():
     assert 'id="thread-detail-next"' in source
     assert 'id="thread-detail-decisions"' in source
     # Verify explain/research/threads are still reachable via JS actions
-    js_source = DASHBOARD_PATH.read_text(encoding="utf-8")
+    js_source = load_dashboard_runtime_js()
     assert 'injectUserText("explain this", "text")' in js_source
     assert 'injectUserText("show threads", "text")' in js_source

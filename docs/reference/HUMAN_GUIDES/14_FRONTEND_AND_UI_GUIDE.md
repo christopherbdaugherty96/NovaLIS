@@ -20,10 +20,10 @@ Its job is to:
 The runtime-served frontend lives in:
 - `nova_backend/static/index.html`
 - `nova_backend/static/dashboard-config.js`
+- `nova_backend/static/dashboard.js`
 - `nova_backend/static/dashboard-workspace.js`
 - `nova_backend/static/dashboard-control-center.js`
 - `nova_backend/static/dashboard-chat-news.js`
-- `nova_backend/static/dashboard.js`
 - `nova_backend/static/orb.js`
 - `nova_backend/static/style.phase1.css`
 - `nova_backend/static/dashboard-surfaces.css`
@@ -35,6 +35,18 @@ Current repo rule:
 - `nova_backend/static/` is the runtime-served canonical frontend
 - `Nova-Frontend-Dashboard/` is a maintained mirror and should stay matched
 - if `scripts/check_frontend_mirror_sync.py` fails, fix the mirror drift immediately
+
+Current architecture rule:
+- the frontend is intentionally modular now
+- `dashboard.js` is the shared shell/state layer, not the whole app by itself
+- `dashboard-workspace.js`, `dashboard-control-center.js`, and `dashboard-chat-news.js` are part of the live runtime bundle and should be treated as first-class frontend entry surfaces
+- `style.phase1.css` and `dashboard-surfaces.css` together define the live runtime styling contract
+- test and review work should validate the bundled runtime surface, not assume a single-file dashboard
+
+Current verification rule:
+- `scripts/check_frontend_navigation_smoke.py` protects page availability, button coverage, script bundle order, and navigation behavior
+- `scripts/check_frontend_mirror_sync.py` protects canonical frontend vs mirror drift
+- `nova_backend/tests/_dashboard_bundle.py` is the shared test helper for reading the live modular frontend bundle
 
 Current planning references for frontend cleanup and productization:
 - `docs/design/Phase 4.5/NOVA_FRONTEND_FOUNDATION_AND_USABILITY_ROADMAP_2026-04-10.md`
@@ -61,25 +73,15 @@ It now defines the major user-facing views:
 - Settings
 
 ### `dashboard.js`
-The most important frontend logic file.
+The shared frontend shell and state layer.
 It handles things like:
 - websocket interaction
-- rendering chat and widgets
-- thread map and thread detail behavior
-- trust and system-status surfaces
+- core shared state
 - persistent navigation and header page/runtime status
-- reasoning transparency surfaces
-- remote bridge and connection-status surfaces
-- policy review rendering
 - memory review and item actions
-- memory recency review and lineage visibility
-- workspace-board rendering
-- structure-map rendering
-- intro and settings rendering
-- setup-readiness rendering for first-run and settings flows
-- home-agent operator rendering
-- first-run guidance
-- follow-up actions
+- shared helpers used by the modular product surfaces
+
+It is important, but it is no longer sufficient to read this file alone if you want frontend truth.
 
 ### `dashboard-config.js`
 Shared static frontend config for:
@@ -98,7 +100,7 @@ Shared Home and Workspace surface logic for:
 - thread map and thread detail rendering
 - Workspace Home, Workspace Board, structure-map, operational-context, and assistive-notice rendering
 
-This file exists to peel the workspace-facing product surfaces out of the main dashboard runtime.
+This file is part of the live runtime bundle, not a sidecar or experimental split.
 
 ### `dashboard-control-center.js`
 Shared control-center logic for:
@@ -108,7 +110,7 @@ Shared control-center logic for:
 - Home Agent delivery, run-state, and template surfaces
 - runtime Settings rendering and settings-update helpers
 
-This file exists to peel the operational review and settings product surfaces out of the main dashboard runtime.
+This file is part of the live runtime bundle, not a sidecar or experimental split.
 
 ### `dashboard-chat-news.js`
 Shared interaction logic for:
@@ -117,7 +119,7 @@ Shared interaction logic for:
 - modal interactions and startup/help flows
 - cross-surface UI actions that are product-facing but not part of the control-center or workspace modules
 
-This file exists to peel the conversational and discovery-heavy UI surfaces out of the main dashboard runtime.
+This file is part of the live runtime bundle, not a sidecar or experimental split.
 
 ### `orb.js`
 The orb presence layer.
@@ -231,4 +233,5 @@ The newer Workspace, Agent, Trust, Policies, Memory, Intro, Settings, and first-
 Current note:
 - the low-risk Phase 4.5 usability pass is now effectively complete
 - the stronger within-frontend structural simplification pass has also landed
+- the safer maintenance posture is now to preserve the modular runtime bundle and update tests/docs around it, rather than pushing behavior back into one large dashboard file
 - any future redesign question is now about whether to go beyond the current static frontend architecture

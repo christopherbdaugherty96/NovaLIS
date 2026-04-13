@@ -150,6 +150,7 @@ Status: Active
 Dashboard UI
 Location: static/
 Status: Active
+Note: The live dashboard is now served as a modular static bundle centered on `index.html`, `dashboard-config.js`, `dashboard.js`, `dashboard-workspace.js`, `dashboard-control-center.js`, `dashboard-chat-news.js`, `style.phase1.css`, and `dashboard-surfaces.css`. `nova_backend/static/` is canonical; `Nova-Frontend-Dashboard/` is a maintained mirror.
 
 ## Known Runtime Gaps
 

@@ -22,6 +22,10 @@ def extract_page_sections(html: str) -> set[str]:
     return set(re.findall(r'<section id="page-([a-z]+)"', html))
 
 
+def extract_script_srcs(html: str) -> list[str]:
+    return re.findall(r'<script[^>]*src="([^"]+)"', html)
+
+
 def extract_primary_nav_pages(js: str) -> list[str]:
     match = re.search(r"PRIMARY_NAV_ITEMS:\s*\[(.*?)\],\s*MORNING_FALLBACK_TIMEOUT_MS", js, re.S)
     if not match:
@@ -52,6 +56,7 @@ def main() -> None:
 
     ids = extract_button_ids(html)
     page_sections = extract_page_sections(html)
+    script_srcs = extract_script_srcs(html)
     nav_pages = extract_primary_nav_pages(config_js)
     lookups = extract_dom_lookups(all_static_js)
     switch_targets = extract_quick_action_switch_targets(config_js)
@@ -110,6 +115,23 @@ def main() -> None:
 
     if 'id="primary-nav-strip"' not in html:
         raise AssertionError("Missing primary-nav-strip container in index.html")
+
+    required_script_srcs = [
+        "/static/orb.js",
+        "/static/dashboard-config.js",
+        "/static/dashboard-workspace.js",
+        "/static/dashboard-control-center.js",
+        "/static/dashboard.js",
+        "/static/dashboard-chat-news.js",
+    ]
+    missing_script_srcs = [src for src in required_script_srcs if src not in script_srcs]
+    if missing_script_srcs:
+        raise AssertionError(f"Missing required frontend script tags in index.html: {missing_script_srcs}")
+    script_positions = [script_srcs.index(src) for src in required_script_srcs]
+    if script_positions != sorted(script_positions):
+        raise AssertionError(
+            "Frontend script tags are out of order in index.html. Expected modular runtime load order was not preserved."
+        )
 
     # Critical page-switch behavior should keep navigation feeling correct.
     assert_contains(

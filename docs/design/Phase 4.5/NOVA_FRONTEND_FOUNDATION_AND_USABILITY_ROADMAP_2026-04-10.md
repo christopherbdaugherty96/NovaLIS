@@ -63,6 +63,8 @@ Current note:
 - documentation and roadmap alignment for this source-of-truth problem have now been added
 - the live frontend and maintained mirror are back in sync
 - the first structural split is now in place across dedicated served modules and a separate surface stylesheet
+- the modular runtime bundle is now the maintained frontend architecture, not a temporary halfway state
+- shared dashboard bundle tests and stronger navigation smoke coverage now validate the modular frontend directly
 
 This roadmap assumes the following product rule:
 
@@ -161,6 +163,11 @@ Success bar:
 - one obvious frontend edit path
 - no confusion about what is actually live
 
+Current state:
+- effectively complete for the current static frontend architecture
+- `nova_backend/static/` is the canonical live frontend in docs, checks, and current contributor guidance
+- `Nova-Frontend-Dashboard/` remains a maintained mirror rather than a co-equal edit target
+
 ## Stage 2 - Stabilize Frontend Developer Ergonomics
 
 Primary goal:
@@ -190,6 +197,11 @@ Recommended first split targets:
 
 Success bar:
 - a contributor can change one major surface without spelunking the whole dashboard
+
+Current state:
+- meaningfully underway
+- the first runtime split is live and the test layer now reads the bundled frontend instead of assuming `dashboard.js` is the whole app
+- the next ergonomic step is to keep older active docs and future tests aligned with the modular bundle contract
 
 ## Stage 3 - Strengthen Everyday User Flow
 
@@ -242,12 +254,18 @@ The immediate requirement is not full framework-scale frontend testing.
 It is:
 - enough repeatable validation to keep the frontend from quietly drifting into confusion again
 
+Current state:
+- started and already paying off
+- navigation smoke now validates page presence, button coverage, critical navigation behavior, and script bundle order
+- mirror sync validates the maintained duplicate frontend copy
+- dashboard tests now use a shared modular bundle helper instead of stale single-file assumptions
+
 ## Exact Priorities
 
 ### P0 - Do Next
-- settle the `nova_backend/static/` vs `Nova-Frontend-Dashboard/` source-of-truth problem
-- update docs to remove ambiguity for frontend edits
-- begin splitting the current dashboard logic into clearer surface-based files or modules
+- keep `nova_backend/static/` vs `Nova-Frontend-Dashboard/` source-of-truth guidance explicit in active docs
+- keep active docs and tests aligned with the modular frontend bundle
+- continue splitting remaining cross-surface responsibilities out of `dashboard.js` only when it clearly reduces maintenance risk
 
 ### P1 - Do Soon After
 - reduce Home, Agent, and Settings noise

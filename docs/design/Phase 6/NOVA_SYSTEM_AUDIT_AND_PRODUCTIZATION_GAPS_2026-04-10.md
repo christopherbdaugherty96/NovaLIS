@@ -50,6 +50,8 @@ Immediate remediation already applied during this audit pass:
 - mojibake in high-visibility files such as `brain_server.py` and `session_handler.py` comments was cleaned
 - the frontend mirror was resynced and the sync check was extended to cover the new split JS/CSS files
 - the runtime frontend was split beyond `dashboard.js` into smaller served modules and a separate surface stylesheet
+- dashboard-focused tests now read the live modular frontend bundle through a shared helper instead of stale single-file assumptions
+- navigation smoke now also validates required script-tag presence and modular bundle load order
 
 This means Nova is not in a "nothing is real" state.
 
@@ -118,6 +120,7 @@ The current sync guard covers:
 Current remaining risk:
 - older audit/design packets still describe the mirror as drifting or the frontend as mostly single-file
 - contributors can still get mixed signals if they read stale design notes before the human guides
+- future contributors can still regress toward single-file assumptions if new tests/docs are written without using the modular bundle contract
 
 This is one of the biggest current productization gaps because it creates a practical contributor failure mode:
 - someone edits the wrong frontend surface
@@ -125,6 +128,10 @@ This is one of the biggest current productization gaps because it creates a prac
 - the repo begins to carry two frontend stories at once
 
 This is still a source-of-truth problem when docs lag behind reality, even though the code-level drift is currently closed.
+
+Current correction:
+- active human-guide and top-level docs now describe the modular frontend as the maintained runtime architecture
+- the remaining doc debt is mostly in older historical packets, not in the main active guidance path
 
 ### 2. Root-level test execution is improved, but verification ergonomics still need to stay explicit
 
@@ -266,6 +273,7 @@ What is now limiting it is more productization-shaped:
 - keep the frontend source-of-truth model explicit and stop active docs from reintroducing mirror confusion
 - keep root-level test execution reliable and explicit in contributor docs and CI
 - decide whether legacy placeholder modules should be archived, deleted, or retained as clearly quarantined compatibility stubs
+- keep the modular frontend bundle contract explicit in tests and smoke checks so future cleanup does not regress back into hidden single-file assumptions
 
 ### P1
 - keep tightening `.gitignore` and local-artifact handling as new artifact names appear

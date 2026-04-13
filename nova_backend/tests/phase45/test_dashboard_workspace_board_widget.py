@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._dashboard_bundle import load_dashboard_runtime_js
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
 INDEX_PATH = PROJECT_ROOT / "nova_backend" / "static" / "index.html"
 
 
 def test_dashboard_renders_workspace_board_and_structure_map():
-    source = DASHBOARD_PATH.read_text(encoding="utf-8")
+    source = load_dashboard_runtime_js()
 
     assert "function requestProjectStructureMapRefresh(force = false)" in source
     assert "function requestWorkspaceThreadDetail(threadName)" in source
@@ -18,7 +19,7 @@ def test_dashboard_renders_workspace_board_and_structure_map():
     assert "function renderWorkspaceBoardPage()" in source
     assert "populateThreadDetailSurface(\"workspace-thread-detail\", data);" in source
     assert 'setActivePage("workspace")' in source
-    assert '"workspace board"' in source
+    assert 'label: "Workspace board"' in source
 
 
 def test_workspace_page_includes_board_and_structure_map_surfaces():
