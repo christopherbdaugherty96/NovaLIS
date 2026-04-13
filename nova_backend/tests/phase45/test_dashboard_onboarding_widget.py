@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._dashboard_bundle import load_dashboard_runtime_js
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
 INDEX_PATH = PROJECT_ROOT / "nova_backend" / "static" / "index.html"
 
 
 def test_dashboard_boots_first_run_guide_with_product_surfaces():
-    source = DASHBOARD_PATH.read_text(encoding="utf-8")
+    source = load_dashboard_runtime_js()
 
     assert "function showFirstRunGuide(force = false)" in source
     assert "function showFirstRunGuideIfNeeded()" in source
@@ -37,9 +38,9 @@ def test_home_page_includes_workspace_and_trust_surfaces():
     source = INDEX_PATH.read_text(encoding="utf-8")
 
     assert 'id="workspace-home-widget"' in source
-    assert 'id="trust-panel"' in source
-    assert 'id="btn-home-system-status"' in source
-    assert 'id="btn-home-memory-page"' in source
+    assert 'id="capability-surface-widget"' in source
+    assert 'id="thread-map-widget"' in source
+    assert 'id="btn-home-threads"' in source
 
 
 def test_intro_and_settings_pages_include_getting_started_and_control_surfaces():
@@ -55,9 +56,10 @@ def test_intro_and_settings_pages_include_getting_started_and_control_surfaces()
     assert 'id="intro-next-step-copy"' in source
     assert 'id="btn-intro-refresh-setup"' in source
     assert 'id="btn-intro-open-connections"' in source
-    assert 'id="btn-intro-voice-check"' in source
+    assert 'id="btn-intro-open-home"' in source
     assert 'id="btn-intro-open-home-ready"' in source
     assert 'id="btn-intro-open-settings"' in source
+    assert 'id="btn-intro-daily-brief"' in source
     assert 'id="btn-intro-open-landing"' in source
     assert 'id="page-settings"' in source
     assert 'id="settings-setup-summary"' in source

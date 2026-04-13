@@ -13,6 +13,7 @@ The docs are intentionally split by authority level so people can quickly tell:
 If you are new to Nova, use this reading order:
 
 1. `docs/reference/HUMAN_GUIDES/README.md`
+2. `docs/reference/HUMAN_GUIDES/14_FRONTEND_AND_UI_GUIDE.md`
 2. `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 3. `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
 4. `docs/current_runtime/RUNTIME_FINGERPRINT.md`
@@ -26,6 +27,7 @@ If you want the current product truth for what Nova is becoming, read:
 
 This sequence gives you:
 - the human explanation first
+- the product/frontend shape early
 - the live runtime truth second
 - the deeper planning backlog after that
 

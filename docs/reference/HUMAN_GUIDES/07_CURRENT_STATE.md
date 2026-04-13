@@ -64,6 +64,7 @@ That means Nova already has:
 - a thinner app entrypoint with the websocket session loop and the main HTTP route families extracted into focused modules
 - dashboard support for all of the above
 - stronger first-run orientation, clearer live processing feedback, clearer mic-state feedback, and safer inline memory-action checks
+- a modular runtime frontend bundle with shared shell/state, workspace, control-center, and chat/news layers that now serves as the maintained frontend architecture
 
 ## What Feels Mature Already
 These parts are already meaningfully real:
@@ -185,6 +186,7 @@ The most recent product-consolidation regression pass on 2026-03-26 also confirm
 - the live runtime routing cleanup for general-chat fallback and deeper-analysis confirmation passed focused coverage
 - the OpenClaw home-agent API, runtime store, runner, strict-preflight layer, delivery inbox flow, personality bridge, and diagnostics truth layer passed focused coverage
 - the runtime auditor and generated runtime docs were revalidated after the modularized router/runtime extraction and the new home-agent surfaces landed
+- the frontend verification layer now also validates the modular runtime bundle directly instead of assuming a single-file dashboard surface
 
 The most recent key-skill hardening and speech-runtime pass on 2026-03-27 also confirmed:
 - weather, news, and calendar hardening passed focused regression coverage

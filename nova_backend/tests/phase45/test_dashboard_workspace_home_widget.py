@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._dashboard_bundle import load_dashboard_runtime_js
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
 INDEX_PATH = PROJECT_ROOT / "nova_backend" / "static" / "index.html"
 
 
 def test_dashboard_handles_workspace_home_widget_and_hydration():
-    source = DASHBOARD_PATH.read_text(encoding="utf-8")
+    source = load_dashboard_runtime_js()
 
     assert "let workspaceHomeState" in source
     assert "let operationalContextState" in source
@@ -32,7 +33,7 @@ def test_dashboard_handles_workspace_home_widget_and_hydration():
     assert '"Dismiss"' in source
     assert '"Mark resolved"' in source
     assert 'requestWorkspaceHomeRefresh(true);' in source
-    assert 'renderWorkspaceHomeWidget({});' in source
+    assert 'safeInit("renderWorkspaceHomeWidget", () => renderWorkspaceHomeWidget({}));' in source
 
 
 def test_home_page_includes_workspace_home_surface():

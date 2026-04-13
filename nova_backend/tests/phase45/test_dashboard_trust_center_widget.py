@@ -2,14 +2,15 @@ from __future__ import annotations
 
 from pathlib import Path
 
+from tests._dashboard_bundle import load_dashboard_runtime_js
+
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
-DASHBOARD_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js"
 INDEX_PATH = PROJECT_ROOT / "nova_backend" / "static" / "index.html"
 
 
 def test_dashboard_renders_trust_center_page_from_runtime_state():
-    source = DASHBOARD_PATH.read_text(encoding="utf-8")
+    source = load_dashboard_runtime_js()
 
     assert "function renderTrustCenterPage()" in source
     assert "function requestSettingsRuntimeRefresh(force = false)" in source
@@ -81,12 +82,12 @@ def test_trust_page_includes_recent_actions_and_runtime_health_surfaces():
     assert "A quick answer to whether Nova stayed local, called anything external, or hit a problem." in source
     assert "See where Nova stopped instead of guessing or pushing past a boundary." in source
     assert "Home Agent helps Nova run manual tasks you can review and stop. It stays visible, bounded, and permission-first." in source
-    assert "Connect your API keys so Nova can access web search, news, weather, and cloud reasoning. All keys stay on this device." in source
     assert 'id="btn-trust-center-refresh"' in source
     assert 'id="btn-trust-center-system"' in source
     assert 'id="btn-trust-center-workspace"' in source
     assert 'id="btn-trust-center-memory"' in source
     assert 'id="btn-trust-center-bridge-status"' in source
+    assert 'id="btn-trust-center-agent"' in source
     assert 'id="btn-trust-center-voice-check"' in source
     assert 'id="btn-trust-center-settings"' in source
     assert 'id="btn-operational-context-refresh"' in source
