@@ -15,43 +15,52 @@ class _WebSocket:
 
 
 def test_send_trust_status_includes_trust_review_snapshot(monkeypatch):
+    snapshot = {
+        "trust_review_summary": "Recent governed actions are visible.",
+        "recent_runtime_activity": [
+            {
+                "title": "Explain anything",
+                "kind": "local",
+                "detail": "Screen analysis completed",
+                "timestamp": "2026-03-18 09:45",
+                "request_id": "req-screen-123",
+                "ledger_ref": "L88",
+            }
+        ],
+        "blocked_conditions": [
+            {
+                "label": "Autonomy",
+                "status": "disabled",
+                "reason": "Nova remains invocation-bound.",
+            }
+        ],
+        "reasoning_runtime": {
+            "summary": "Governed second opinion is available.",
+            "provider_label": "DeepSeek",
+            "route_label": "Governed second-opinion lane",
+        },
+        "bridge_runtime": {
+            "summary": "OpenClaw bridge is enabled.",
+            "status_label": "Enabled",
+            "scope": "Read and reasoning only",
+        },
+        "connection_runtime": {
+            "summary": "Connection status is visible.",
+            "configured_provider_count": 1,
+        },
+    }
+
     monkeypatch.setattr(
         brain_server,
         "_build_trust_review_snapshot",
-        lambda: {
-            "trust_review_summary": "Recent governed actions are visible.",
-            "recent_runtime_activity": [
-                {
-                    "title": "Explain anything",
-                    "kind": "local",
-                    "detail": "Screen analysis completed",
-                    "timestamp": "2026-03-18 09:45",
-                    "request_id": "req-screen-123",
-                    "ledger_ref": "L88",
-                }
-            ],
-            "blocked_conditions": [
-                {
-                    "label": "Autonomy",
-                    "status": "disabled",
-                    "reason": "Nova remains invocation-bound.",
-                }
-            ],
-            "reasoning_runtime": {
-                "summary": "Governed second opinion is available.",
-                "provider_label": "DeepSeek",
-                "route_label": "Governed second-opinion lane",
-            },
-            "bridge_runtime": {
-                "summary": "OpenClaw bridge is enabled.",
-                "status_label": "Enabled",
-                "scope": "Read and reasoning only",
-            },
-            "connection_runtime": {
-                "summary": "Connection status is visible.",
-                "configured_provider_count": 1,
-            },
-        },
+        lambda: snapshot,
+    )
+    # Warm the cache path so the snapshot is included in the first (synchronous) send
+    # rather than the fire-and-forget background task.
+    monkeypatch.setattr(
+        brain_server,
+        "_get_cached_trust_review_snapshot",
+        lambda: dict(snapshot),
     )
 
     ws = _WebSocket()

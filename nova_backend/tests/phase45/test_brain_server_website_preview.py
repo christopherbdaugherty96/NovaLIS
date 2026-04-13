@@ -6,7 +6,11 @@ import json
 from tests.test_brain_server_session_cleanup import _ScriptedWebSocket
 
 
-def test_preview_source_surfaces_preview_widget_instead_of_confirmation_prompt():
+def test_preview_source_surfaces_preview_widget_instead_of_confirmation_prompt(monkeypatch):
+    monkeypatch.setattr(
+        "src.governor.governor.Governor._check_network_budget",
+        lambda self, cap_id: None,
+    )
     from src import brain_server
 
     async def _run() -> list[dict]:

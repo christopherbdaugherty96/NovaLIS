@@ -659,7 +659,7 @@ def test_governor_mediator_uses_capability_registry_profile_overrides(monkeypatc
         json.dumps(
             {
                 "schema_version": "1.0",
-                "phase": "4",
+                "phase": "8",
                 "profiles": {
                     "default": {"groups": [], "enabled_overrides": {}},
                     "local-control": {"groups": [], "enabled_overrides": {"22": True}},
@@ -699,18 +699,18 @@ def test_governor_mediator_uses_capability_registry_profile_overrides(monkeypatc
     governor_mediator_module._enabled_capability_ids_cache_profile = ""
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "default")
 
-    assert governor_mediator_module.GovernorMediator.parse_governed_invocation("open Nova-Project") is None
+    assert governor_mediator_module.GovernorMediator.parse_governed_invocation("open documents") is None
 
     governor_mediator_module._enabled_capability_ids_cache = None
     governor_mediator_module._enabled_capability_ids_cache_at = 0.0
     governor_mediator_module._enabled_capability_ids_cache_profile = ""
     monkeypatch.setenv("NOVA_RUNTIME_PROFILE", "local-control")
 
-    invocation = governor_mediator_module.GovernorMediator.parse_governed_invocation("open Nova-Project")
+    invocation = governor_mediator_module.GovernorMediator.parse_governed_invocation("open documents")
 
     assert isinstance(invocation, governor_mediator_module.Invocation)
     assert invocation.capability_id == 22
-    assert invocation.params["path"] == "Nova-Project"
+    assert invocation.params["target"] == "documents"
 
 
 def test_search_clarification_roundtrip_by_session():
