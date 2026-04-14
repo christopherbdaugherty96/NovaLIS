@@ -126,7 +126,7 @@ function applyOpenClawAgentPayload(data) {
     ? data.agent
     : (data && typeof data === "object" ? data : {});
   openClawAgentState.loaded = true;
-  openClawAgentState.summary = String(payload.summary || "").trim() || "Home Agent helps Nova run manual tasks you can review and stop.";
+  openClawAgentState.summary = String(payload.summary || "").trim() || "Nova can run tasks you review and approve before they take effect.";
   openClawAgentState.snapshot = { ...payload };
   openClawAgentState.templates = Array.isArray(payload.templates) ? payload.templates.map((item) => ({ ...item })) : [];
   openClawAgentState.activeRun = (payload.active_run && typeof payload.active_run === "object")
@@ -203,7 +203,7 @@ async function requestOpenClawAgentRefresh(force = false) {
     renderTrustCenterPage();
   } catch (_err) {
     if (!openClawAgentState.loaded) {
-      openClawAgentState.summary = "OpenClaw home-agent status is unavailable right now.";
+      openClawAgentState.summary = "Agent status is unavailable right now. Try refreshing in a moment.";
     }
   } finally {
     openClawAgentState.loading = false;
@@ -253,7 +253,7 @@ async function setOpenClawAgentScheduleEnabled(templateId, enabled) {
         "assistant",
         schedulerReady
           ? "Schedule enabled. Nova will run that template at its planned local time."
-          : "Schedule saved. Turn on the home-agent scheduler in Settings when you want timed runs to start.",
+          : "Schedule saved. Turn on the scheduler in Settings when you want timed runs to start.",
         null,
         "Agent"
       );
@@ -2095,7 +2095,7 @@ function setupMorningWidgetToggle() {
 
 function renderOperatorHealthWidget(data = {}) {
   operatorHealthState.snapshot = (data && typeof data === "object") ? { ...data } : {};
-  operatorHealthState.summary = String((data && data.operator_health_summary) || "Loading runtime health...").trim();
+  operatorHealthState.summary = String((data && data.operator_health_summary) || "Loading system health...").trim();
 
   const summary = $("operator-health-summary");
   const gridHost = $("operator-health-grid");
@@ -2403,7 +2403,7 @@ function renderTrustPanel(data = {}) {
 
         const title = document.createElement("div");
         title.className = "trust-activity-title";
-        title.textContent = String(item.title || "Runtime event").trim() || "Runtime event";
+        title.textContent = String(item.title || "Action").trim() || "Action";
         titleRow.appendChild(title);
         row.appendChild(titleRow);
 
@@ -2560,7 +2560,7 @@ function renderTrustCenterPage() {
 
       const title = document.createElement("div");
       title.className = "trust-activity-title";
-      title.textContent = String(item.title || "Runtime event").trim() || "Runtime event";
+      title.textContent = String(item.title || "Action").trim() || "Action";
       row.appendChild(title);
 
       const meta = document.createElement("div");
@@ -2568,7 +2568,7 @@ function renderTrustCenterPage() {
       meta.textContent = [
         String(item.kind || "").trim(),
         String(item.timestamp || "").trim(),
-      ].filter(Boolean).join(" · ") || "Ledger-backed runtime activity";
+      ].filter(Boolean).join(" · ") || "Recent activity";
       row.appendChild(meta);
 
       const detail = String(item.detail || "").trim();
@@ -2610,7 +2610,7 @@ function renderTrustCenterPage() {
         reasoningRows.push(["Reasoning note", String(selected.reasoning_governance_note || "").trim()]);
       }
       const detailRows = [
-        ["Title", String(selected.title || "Runtime event").trim() || "Runtime event"],
+        ["Title", String(selected.title || "Action").trim() || "Action"],
         ["Kind", String(selected.kind || "system").trim() || "system"],
         ["Status", String(selected.status || "unknown").trim() || "unknown"],
         ["When", String(selected.timestamp || "Unknown").trim() || "Unknown"],
@@ -3174,12 +3174,12 @@ function renderOpenClawAgentPage() {
   if (summary) {
     const runnableCount = Array.isArray(setup.runnable_template_ids) ? setup.runnable_template_ids.length : 0;
     const summaryBits = [
-      String(openClawAgentState.summary || "").trim() || "Home Agent helps Nova run manual tasks you can review and stop.",
+      String(openClawAgentState.summary || "").trim() || "Nova can run tasks you review and approve before they take effect.",
       permissionEnabled
         ? (runnableCount
-          ? `${runnableCount} template${runnableCount === 1 ? "" : "s"} can run now.`
-          : "Home Agent is on, but no templates are runnable yet.")
-        : "Turn on Home Agent in Settings to run templates.",
+          ? `${runnableCount} task${runnableCount === 1 ? "" : "s"} available to run.`
+          : "Agent is on, but no tasks are ready yet.")
+        : "Turn on the Agent in Settings to start running tasks.",
       activeRun ? buildOpenClawActiveRunSummary(activeRun) : "",
       schedulerPermissionEnabled
         ? "The narrow scheduler is available where a template is ready for it."
@@ -3210,11 +3210,11 @@ function renderOpenClawAgentPage() {
   if (setupSummary && setupGrid) {
     const guidanceBits = [];
     if (!permissionEnabled) {
-      guidanceBits.push("Home Agent is paused in Settings.");
+      guidanceBits.push("Agent is paused in Settings.");
     } else if (Array.isArray(setup.runnable_template_ids) && setup.runnable_template_ids.length) {
-      guidanceBits.push(`${setup.runnable_template_ids.length} template${setup.runnable_template_ids.length === 1 ? "" : "s"} can run right now.`);
+      guidanceBits.push(`${setup.runnable_template_ids.length} task${setup.runnable_template_ids.length === 1 ? "" : "s"} can run right now.`);
     } else {
-      guidanceBits.push("No templates are runnable on this device yet.");
+      guidanceBits.push("No tasks are ready to run on this device yet.");
     }
     if (!setup.local_model_ready) guidanceBits.push("The local summarizer is not ready yet.");
     if (!setup.weather_provider_configured) guidanceBits.push("Weather is optional and not configured.");
@@ -3223,7 +3223,7 @@ function renderOpenClawAgentPage() {
     setupSummary.textContent = [
       String(setup.summary || "").trim(),
       guidanceBits.join(" "),
-    ].filter(Boolean).join(" ") || "OpenClaw setup details will appear here after the next agent refresh.";
+    ].filter(Boolean).join(" ") || "Setup details will appear here after the next refresh.";
     clear(setupGrid);
     [
       ["Overall readiness", String(setup.status_label || "Unknown").trim() || "Unknown"],
@@ -3265,7 +3265,7 @@ function renderOpenClawAgentPage() {
     if (!templates.length) {
       const empty = document.createElement("div");
       empty.className = "memory-detail-empty";
-      empty.textContent = "No home-agent templates are available yet.";
+      empty.textContent = "No tasks are available yet.";
       templateList.appendChild(empty);
     } else {
       templates.forEach((template) => {
