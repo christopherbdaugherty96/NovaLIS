@@ -11,6 +11,9 @@ Use it when you want a grounded answer to:
 - where optional OpenAI routing fits
 - what is current versus future
 
+If you want the deeper end-to-end request flow with a more explicit process diagram, also read:
+- `32_NOVA_SYSTEM_PROCESS_AND_EXPLAINABILITY_GUIDE.md`
+
 This is an explanatory guide, not runtime law.
 If this guide ever conflicts with live runtime behavior, the runtime truth docs win.
 

@@ -7,10 +7,11 @@ Purpose: clear navigation map for engineers, reviewers, and future collaborators
 If you are new to the project, use this order:
 
 1. `docs/reference/HUMAN_GUIDES/README.md`
-2. `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
-3. `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
-4. `docs/current_runtime/RUNTIME_FINGERPRINT.md`
-5. `docs/canonical/CANONICAL_DOCUMENT_MAP.md`
+2. `docs/reference/HUMAN_GUIDES/32_NOVA_SYSTEM_PROCESS_AND_EXPLAINABILITY_GUIDE.md`
+3. `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+4. `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
+5. `docs/current_runtime/RUNTIME_FINGERPRINT.md`
+6. `docs/canonical/CANONICAL_DOCUMENT_MAP.md`
 
 This sequence gives you:
 - the human explanation first
