@@ -8,6 +8,41 @@ Core rule:
 
 `Intelligence may expand. Authority may not expand without explicit unlock.`
 
+## System Diagram
+
+```mermaid
+flowchart TD
+    USER["User"] --> UI["Nova UI<br/>Chat / Home / Workspace / Trust / Settings / Agent"]
+    UI --> SESSION["Live runtime session<br/>brain_server.py + websocket/session_handler.py"]
+
+    SESSION --> ROUTER["Request routing"]
+
+    ROUTER --> EXPLAIN["Explanation path<br/>chat / screen help / summaries / workspace answers"]
+    ROUTER --> GOVERNED["Governed action path<br/>GovernorMediator -> Governor -> registry -> boundary -> executor"]
+    ROUTER --> MEMORY["Memory and continuity path<br/>working context / project threads / governed memory"]
+    ROUTER --> REVIEW["Bounded review path<br/>second opinion / answer refinement"]
+    ROUTER --> OPENCLAW["Bounded worker path<br/>manual tasks / scheduler / delivery inbox"]
+
+    GOVERNED --> LEDGER["Ledger + Trust visibility"]
+    GOVERNED --> EXEC["Executors and skills"]
+    OPENCLAW --> PREFLIGHT["Task envelope + strict preflight"]
+    PREFLIGHT --> DELIVERY["Visible delivery<br/>chat / widget / inbox"]
+
+    EXEC --> PRESENT["Nova presentation layer"]
+    MEMORY --> PRESENT
+    REVIEW --> PRESENT
+    DELIVERY --> PRESENT
+    EXPLAIN --> PRESENT
+
+    PRESENT --> UI
+```
+
+In plain terms:
+- Nova routes each request into the right lane instead of treating everything like the same kind of task
+- real actions stay behind Governor controls
+- memory stays explicit and inspectable
+- OpenClaw stays inside a bounded worker role instead of becoming a hidden authority center
+
 ## What Nova Is
 
 Nova is meant to feel like:
@@ -32,6 +67,25 @@ Nova is not meant to be:
 - a silent background automation loop
 - an unbounded browser bot
 - a system that expands its own authority without explicit approval
+
+## How Nova Works
+
+The simplest mental model is:
+
+1. you ask Nova for help
+2. Nova decides whether this is explanation, governed action, memory/continuity, review, or a bounded OpenClaw task
+3. if a real action is needed, it must pass the Governor path
+4. Nova returns the result through one visible user-facing surface
+
+That separation is the whole point.
+
+Nova is intentionally designed so it can become:
+- more useful
+- better at reasoning
+- better at carrying work forward
+- better at reviewing and summarizing
+
+without quietly becoming more powerful than the user intended.
 
 ## What Is Live Today
 
@@ -60,6 +114,7 @@ Nova also has an OpenClaw home-agent foundation live as a bounded operator surfa
 - delivery controls
 - explicit settings-gated scheduling
 - strict preflight and rate-limited task reporting
+- read-only local project analysis through `project_snapshot`
 
 What is not broadly live yet:
 - full governed envelope execution
@@ -100,16 +155,34 @@ That separation runs through the project:
 If you want the fastest path to understanding the project, use this order:
 
 1. `docs/reference/HUMAN_GUIDES/README.md`
-2. `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
-3. `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
-4. `docs/canonical/CANONICAL_DOCUMENT_MAP.md`
-5. `REPO_MAP.md`
+2. `docs/reference/HUMAN_GUIDES/32_NOVA_SYSTEM_PROCESS_AND_EXPLAINABILITY_GUIDE.md`
+3. `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+4. `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
+5. `docs/canonical/CANONICAL_DOCUMENT_MAP.md`
+6. `REPO_MAP.md`
 
 That gives you:
 - the plain-language explanation first
+- the end-to-end system explanation next
 - the live runtime truth second
 - the governance layer after that
 - the codebase map last
+
+## Best README Reading Paths
+
+If you want:
+
+- the plain-English system walkthrough:
+  `docs/reference/HUMAN_GUIDES/32_NOVA_SYSTEM_PROCESS_AND_EXPLAINABILITY_GUIDE.md`
+
+- the current runtime truth:
+  `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+
+- the current usability remediation work:
+  `docs/design/Phase 4.5/NOVA_UX_FRICTION_REMEDIATION_ROADMAP_2026-04-14.md`
+
+- the local code-operator direction:
+  `docs/design/Phase 8/NOVA_LOCAL_CODE_OPERATOR_ROADMAP_2026-04-13.md`
 
 ## Documentation Map
 
