@@ -29,6 +29,10 @@ That means OpenClaw in Nova today is mostly:
 - a bounded worker for calm reports
 - not a broad autonomous execution platform
 
+The next robust widening step should be:
+- a read-only local project analyst inside the Agent page
+- not immediate write-capable coding automation
+
 ## Core Mental Model
 The clean mental model must remain:
 - OpenClaw is the worker
@@ -87,6 +91,11 @@ The full end-to-end build breaks into eight workstreams:
 6. trust and operator surfaces
 7. multi-worker orchestration layer
 8. proof, eval, and adversarial validation layer
+
+Before those larger widening layers, a practical shipping bridge should land first:
+- local code-operator read-only analysis for the current workspace
+- bounded repo summary, architecture orientation, and next-step suggestion output
+- local-first Gemma summarization with deterministic fallback
 
 ## 1. Governed Connector Layer
 This is the highest-value expansion area.

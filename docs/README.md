@@ -21,6 +21,7 @@ If you are new to Nova, use this reading order:
 
 If you want the most grounded current-status and next-step view after that, read:
 - `docs/design/Phase 6/NOVA_GROUNDED_CURRENT_STATUS_AND_NEXT_ROADMAP_2026-04-02.md`
+- `docs/design/Phase 8/NOVA_LOCAL_CODE_OPERATOR_ROADMAP_2026-04-13.md`
 
 If you want the current product truth for what Nova is becoming, read:
 - `docs/design/Phase 11/NOVA_HOME_ASSISTANT_PRODUCT_TRUTH_2026-04-02.md`
@@ -176,6 +177,7 @@ The product direction now being emphasized in design truth is:
 - Nova should feel like a calm home assistant
 - the Governor should remain strict underneath
 - the user experience should become simpler, softer, and less system-shaped
+- local coding help should grow through a governed OpenClaw operator lane, starting with read-only project analysis before any approval-gated write flow
 
 Important current gaps still called out in runtime truth include:
 - full calendar integration

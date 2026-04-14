@@ -10,17 +10,22 @@ def test_agent_runtime_store_bootstraps_templates(tmp_path: Path):
     snapshot = store.snapshot()
 
     assert snapshot["status"] == "foundation"
-    assert snapshot["template_count"] >= 3
+    assert snapshot["template_count"] >= 4
     assert snapshot["delivery_ready_count"] == 0
     assert snapshot["strict_foundation_label"] == "Manual preflight active"
     assert any(item["id"] == "morning_brief" for item in snapshot["templates"])
     assert any(item["id"] == "market_watch" for item in snapshot["templates"])
+    assert any(item["id"] == "project_snapshot" for item in snapshot["templates"])
     morning = next(item for item in snapshot["templates"] if item["id"] == "morning_brief")
     assert morning["envelope_preview"]["max_network_calls"] == 11
     assert morning["envelope_preview"]["max_files_touched"] == 1
     assert morning["envelope_preview"]["read_only"] is True
     assert "weather.visualcrossing.com" in morning["envelope_preview"]["allowed_hostnames"]
     assert "Can only reach:" in morning["envelope_preview"]["scope_summary"]
+    project_snapshot = next(item for item in snapshot["templates"] if item["id"] == "project_snapshot")
+    assert project_snapshot["envelope_preview"]["max_network_calls"] == 0
+    assert project_snapshot["envelope_preview"]["max_files_touched"] == 2
+    assert project_snapshot["envelope_preview"]["read_only"] is True
 
 
 def test_agent_runtime_store_updates_delivery_mode(tmp_path: Path):

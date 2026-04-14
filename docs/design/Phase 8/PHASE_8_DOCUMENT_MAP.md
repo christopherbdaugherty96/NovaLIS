@@ -57,6 +57,7 @@ If there is tension about the eventual strict automation model, this document wi
 - `docs/design/Phase 8/NOVA_GOVERNED_REACH_EXPANSION_AND_OPENCLAW_COMPARISON_2026-04-02.md`
 - `docs/design/Phase 8/NOVA_GOVERNED_VISIBLE_OPERATOR_MODE_TODO_2026-04-02.md`
 - `docs/design/Phase 8/NOVA_OPENCLAW_END_TO_END_EXPANSION_MASTER_TODO_2026-04-02.md`
+- `docs/design/Phase 8/NOVA_LOCAL_CODE_OPERATOR_ROADMAP_2026-04-13.md`
 - `docs/design/Phase 8/NOVA_PHASE_8_USER_OPERABILITY_AND_RUN_SYSTEM_AUDIT_2026-04-05.md`
 
 This remains useful as a narrower implementation-planning packet.
@@ -105,6 +106,12 @@ The user-operability audit should be read as the product-clarity companion for t
 - it argues that run visibility, focus, checkpoint UX, and failure clarity are still core Phase-8 concerns
 - it should shape the remaining run-system work, not be treated as a separate cosmetic-only note
 - it also proposes a concrete first-class run object, a three-mode UI contract, and proof implications for future Phase-8 validation
+
+The local-code-operator roadmap should be read as the ordered coding-work companion:
+- it keeps Nova's future coding help inside the same governed OpenClaw lane
+- it defines read-only project analysis as the first safe shipping step
+- it keeps patch proposal, approval-gated apply, and verify-and-repair as later earned layers
+- it explicitly rejects unrestricted hidden repo mutation as the implementation strategy
 
 The visible-operator packet should now also be read alongside:
 - `docs/design/Phase 11/NOVA_INTERACTION_MODEL_V1_STRICT_ON_RISK_SOFT_ON_FLOW_2026-04-02.md`

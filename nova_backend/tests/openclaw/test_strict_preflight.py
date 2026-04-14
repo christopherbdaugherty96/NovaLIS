@@ -8,6 +8,7 @@ def test_strict_foundation_snapshot_reports_current_limits():
     assert snapshot["status"] == "active"
     assert snapshot["label"] == "Manual preflight active"
     assert "weather" in snapshot["allowed_tools"]
+    assert "project_read" in snapshot["allowed_tools"]
 
 
 def test_evaluate_manual_envelope_accepts_supported_brief():
@@ -74,3 +75,25 @@ def test_evaluate_manual_envelope_requires_hostnames_for_networked_tools():
 
     assert decision.allowed is False
     assert "allowed_hostnames_missing" in decision.violations
+
+
+def test_evaluate_manual_envelope_accepts_read_only_project_snapshot():
+    envelope = TaskEnvelope(
+        id="ENV-PROJECT",
+        title="Project Snapshot",
+        template_id="project_snapshot",
+        tools_allowed=["project_read", "summarize"],
+        allowed_hostnames=[],
+        max_steps=4,
+        max_duration_s=75,
+        max_network_calls=0,
+        max_files_touched=2,
+        max_bytes_read=500000,
+        max_bytes_written=0,
+        triggered_by="agent_page",
+    )
+
+    decision = evaluate_manual_envelope(envelope)
+
+    assert decision.allowed is True
+    assert decision.violations == []

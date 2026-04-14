@@ -55,17 +55,19 @@ Live endpoints:
 - `POST /api/openclaw/agent/delivery/{delivery_id}/dismiss`
 
 ## What The Agent Page Actually Uses
-The Agent page is built around four live templates:
+The Agent page is built around these live or near-live templates:
 - `morning_brief`
 - `evening_digest`
 - `inbox_check`
 - `market_watch`
+- `project_snapshot`
 
 Current truth:
 - `morning_brief` is runnable now
 - `evening_digest` is runnable now
 - `inbox_check` is visible but not connected yet
 - `market_watch` is runnable now as read-only market research only
+- `project_snapshot` is the first safe coding-operator step: a read-only local workspace analysis run
 
 The Agent page also now shows setup/readiness for:
 - local summarizer status
@@ -199,13 +201,14 @@ Still deferred:
 - richer connectors
 - full canonical Phase-8 execution path
 - broader operator controls for later action-level work
+- approval-gated patch application for future coding-operator work
 
 ## Best Honest Summary
 OpenClaw inside Nova is already real, but it is intentionally narrow.
 
 Today it is:
 - a governed remote bridge for remote-safe read/reasoning requests
-- a local home-agent foundation for briefings, delivery, a narrow scheduler, and a local-first metered OpenAI fallback for task reports
+- a local home-agent foundation for briefings, delivery, a narrow scheduler, a read-only project-analysis lane, and a local-first metered OpenAI fallback for task reports
 
 It is not yet:
 - a broad autonomous worker with full execution authority

@@ -182,6 +182,7 @@ Key moved packets:
 - `docs/design/Phase 8/NOVA_GOVERNED_VISIBLE_OPERATOR_MODE_TODO_2026-04-02.md`
 - `docs/design/Phase 8/NOVA_GOVERNED_REACH_EXPANSION_AND_OPENCLAW_COMPARISON_2026-04-02.md`
 - `docs/design/Phase 8/NOVA_OPENCLAW_END_TO_END_EXPANSION_MASTER_TODO_2026-04-02.md`
+- `docs/design/Phase 8/NOVA_LOCAL_CODE_OPERATOR_ROADMAP_2026-04-13.md` - governed local coding-operator roadmap through OpenClaw + Gemma
 
 Start with:
 - `docs/design/Phase 8/PHASE_8_DOCUMENT_MAP.md`

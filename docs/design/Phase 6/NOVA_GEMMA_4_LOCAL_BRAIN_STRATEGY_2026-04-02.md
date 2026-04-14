@@ -101,6 +101,7 @@ That means Gemma should help with:
 - form-help reasoning
 - lightweight planning
 - general local assistance
+- read-only project analysis and coding-plan drafts for Nova's future local code-operator lane
 
 It should not be treated as the same thing as:
 - the Governor
@@ -216,6 +217,8 @@ Execution should always depend on:
 - "Turn my notes into a cleaner outline"
 - "Help me fill this form"
 - "Give me the next three steps"
+- "Summarize this repo"
+- "Review this project and suggest the safest next cleanup"
 
 ### Good external-review tasks
 
