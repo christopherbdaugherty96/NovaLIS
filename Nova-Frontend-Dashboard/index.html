@@ -369,12 +369,12 @@
         <div id="workspace-home-widget" class="widget page-card workspace-home-widget" aria-live="polite">
           <div class="workspace-home-header">
             <div>
-              <div class="home-launch-kicker">Workspace Home</div>
+              <div class="home-launch-kicker">Home Focus</div>
               <h3>Current Focus</h3>
             </div>
             <button id="btn-workspace-home-refresh" type="button" class="assistant-action-btn">Refresh</button>
           </div>
-          <p id="workspace-home-summary">Workspace home is preparing your latest project context.</p>
+          <p id="workspace-home-summary">Home is preparing the work you are most likely to want next.</p>
           <div id="workspace-home-focus" class="workspace-home-focus"></div>
           <div class="workspace-home-section">
             <div class="workspace-home-section-title">Resume Work</div>
@@ -502,7 +502,7 @@
             </div>
             <span class="confidence-badge">Continuity, not clutter</span>
           </div>
-          <p id="workspace-board-summary">Workspace Board brings together the current project, recent memory, reports, and the structure map in one calm view.</p>
+          <p id="workspace-board-summary">Workspace brings together your active work, saved notes, reports, and the structure map in one calmer project view.</p>
           <div class="workspace-board-actions-toolbar">
             <button id="btn-workspace-board-refresh" type="button">Refresh board</button>
             <button id="btn-workspace-board-threads" type="button">Show threads</button>
@@ -741,12 +741,12 @@
         <div class="widget page-card trust-center-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Policy Delegation Map</div>
-              <p id="trust-center-policy-summary" class="workspace-board-section-copy">See which governed actions are safe now, manual-only, or intentionally later.</p>
+              <div class="workspace-home-section-title">Rules And Limits</div>
+              <p id="trust-center-policy-summary" class="workspace-board-section-copy">See which kinds of actions Nova can help with now, which need review, and which stay off-limits.</p>
             </div>
           </div>
           <div class="trust-center-metrics">
-            <div class="trust-row"><strong>Current delegated limit:</strong> <span id="trust-center-policy-limit">Unknown</span></div>
+            <div class="trust-row"><strong>Current review limit:</strong> <span id="trust-center-policy-limit">Unknown</span></div>
           </div>
           <div id="trust-center-policy-groups" class="trust-center-capability-groups"></div>
           <div id="trust-center-policy-detail" class="operator-health-grid"></div>
@@ -1003,20 +1003,20 @@
         <div class="widget page-card workspace-board-hero" aria-live="polite">
           <div class="workspace-board-hero-header">
             <div>
-              <div class="home-launch-kicker">Policies</div>
-              <h3>Policy Review Center</h3>
+              <div class="home-launch-kicker">Rules</div>
+              <h3>Reviewable Rules</h3>
             </div>
             <span class="confidence-badge">Manual review only</span>
           </div>
           <p id="policy-center-summary" class="workspace-board-section-copy">
-            Policy drafts stay disabled until you explicitly review them. Nova does not run them in the background.
+            These rule drafts stay off until you review them. Nova does not run them in the background.
           </p>
           <div class="workspace-board-actions-toolbar">
-            <button id="btn-policy-refresh" type="button">Refresh drafts</button>
-            <button id="btn-policy-create-calendar" type="button">Create calendar draft</button>
-            <button id="btn-policy-create-weather" type="button">Create weather draft</button>
-            <button id="btn-policy-create-status" type="button">Create system-status draft</button>
-            <button id="btn-policy-capability-map" type="button">What policies can run</button>
+            <button id="btn-policy-refresh" type="button">Refresh rules</button>
+            <button id="btn-policy-create-calendar" type="button">Create calendar rule</button>
+            <button id="btn-policy-create-weather" type="button">Create weather rule</button>
+            <button id="btn-policy-create-status" type="button">Create system-status rule</button>
+            <button id="btn-policy-capability-map" type="button">What rules can help with</button>
             <button id="btn-policy-open-trust" type="button">Open trust</button>
             <button id="btn-policy-open-settings" type="button">Open settings</button>
           </div>
@@ -1025,8 +1025,8 @@
         <div class="widget page-card trust-center-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Draft Snapshot</div>
-              <p class="workspace-board-section-copy">A quick count of what is ready to inspect, simulate, or review-run once.</p>
+              <div class="workspace-home-section-title">Rule Snapshot</div>
+              <p class="workspace-board-section-copy">A quick count of what is ready to inspect, preview, or try once with review.</p>
             </div>
           </div>
           <div id="policy-center-stats" class="workspace-home-grid"></div>
@@ -1035,12 +1035,12 @@
         <div class="widget page-card trust-center-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Delegation Readiness</div>
-              <p id="policy-center-readiness-summary" class="workspace-board-section-copy">Loading which capabilities are safe now, later, or explicit-only.</p>
+              <div class="workspace-home-section-title">What Nova Can Help With</div>
+              <p id="policy-center-readiness-summary" class="workspace-board-section-copy">Loading which actions are okay now, which need review, and which stay for later.</p>
             </div>
           </div>
           <div class="trust-center-metrics">
-            <div class="trust-row"><strong>Current delegated limit:</strong> <span id="policy-center-readiness-limit">Unknown</span></div>
+            <div class="trust-row"><strong>Current review limit:</strong> <span id="policy-center-readiness-limit">Unknown</span></div>
           </div>
           <div id="policy-center-readiness" class="trust-center-capability-groups"></div>
         </div>
@@ -1048,8 +1048,8 @@
         <div class="widget page-card trust-center-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Policy Drafts</div>
-              <p class="workspace-board-section-copy">Each draft stays disabled until you explicitly inspect and act on it.</p>
+              <div class="workspace-home-section-title">Rule Drafts</div>
+              <p class="workspace-board-section-copy">Each draft stays off until you inspect it and choose what to do.</p>
             </div>
           </div>
           <div id="policy-center-list" class="trust-section trust-center-list"></div>
@@ -1058,8 +1058,8 @@
         <div class="widget page-card trust-center-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Selected Draft</div>
-              <p class="workspace-board-section-copy">Trigger, action, envelope, and any validator warnings appear here.</p>
+              <div class="workspace-home-section-title">Selected Rule</div>
+              <p class="workspace-board-section-copy">The trigger, action, limits, and any warnings appear here.</p>
             </div>
           </div>
           <div id="policy-center-detail" class="workspace-home-focus"></div>
@@ -1068,8 +1068,8 @@
         <div class="widget page-card trust-center-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">Simulation</div>
-              <p class="workspace-board-section-copy">Simulation shows how the Governor would classify the policy without enabling trigger execution.</p>
+              <div class="workspace-home-section-title">Preview</div>
+              <p class="workspace-board-section-copy">Preview shows how Nova would classify the rule without turning it on.</p>
             </div>
           </div>
           <div id="policy-center-simulation" class="workspace-home-focus"></div>
@@ -1078,8 +1078,8 @@
         <div class="widget page-card trust-center-panel" aria-live="polite">
           <div class="workspace-board-section-header">
             <div>
-              <div class="workspace-home-section-title">One-Shot Manual Run</div>
-              <p class="workspace-board-section-copy">Manual review runs stay invocation-bound and use the same governed path as any other allowed action.</p>
+              <div class="workspace-home-section-title">Try Once With Review</div>
+              <p class="workspace-board-section-copy">One-time reviewed runs stay manual and use the same governed path as any other allowed action.</p>
             </div>
           </div>
           <div id="policy-center-run" class="workspace-home-focus"></div>

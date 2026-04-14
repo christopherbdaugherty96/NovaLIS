@@ -372,7 +372,7 @@ function renderWorkspaceHomeWidget(data = {}) {
   const focusBlocker = String(focus.latest_blocker || "").trim();
   summary.textContent = focusName
     ? `Resume ${focusName}${focusBlocker ? `, which is currently blocked by ${focusBlocker}` : focusNext ? ` with the next step ${focusNext}` : ""}.`
-    : (workspaceHomeState.summary || "Workspace home is preparing your latest project context.");
+    : (workspaceHomeState.summary || "Home is preparing the work you are most likely to want next.");
 
   clear(focusHost);
   if (focusName) {
@@ -431,7 +431,7 @@ function renderWorkspaceHomeWidget(data = {}) {
   } else {
     const empty = document.createElement("div");
     empty.className = "workspace-home-empty";
-    empty.textContent = "No focus project yet. Start with a repo summary, continue a saved thread, or save a work update into memory.";
+    empty.textContent = "No focus project yet. Start with a repo summary, continue a saved project, or save notes from what you are doing.";
     focusHost.appendChild(empty);
   }
 
@@ -455,12 +455,12 @@ function renderWorkspaceHomeWidget(data = {}) {
       value: `${Number(snapshot.thread_count || 0)}`,
       copy: recentThreads.length
         ? recentThreads.slice(0, 2).map((item) => String(item.name || "").trim()).filter(Boolean).join(" | ")
-        : "No project threads yet.",
+        : "No saved projects yet.",
     },
     {
-      title: "Memory",
+      title: "Saved notes",
       value: `${Number(snapshot.project_memory_total || 0)}`,
-      copy: `${Number(snapshot.memory_total || 0)} total durable item${Number(snapshot.memory_total || 0) === 1 ? "" : "s"}`,
+      copy: `${Number(snapshot.memory_total || 0)} saved item${Number(snapshot.memory_total || 0) === 1 ? "" : "s"} total`,
     },
     {
       title: "Reports",
@@ -766,7 +766,7 @@ function renderWorkspaceBoardPage() {
 
   summary.textContent = focusName
     ? `Workspace is centered on ${focusName}${String(focus.latest_next_action || "").trim() ? ` so you can move on the next step quickly.` : "."}`
-    : (workspaceHomeState.summary || "Workspace Board keeps project continuity, memory, and reports in one view.");
+    : (workspaceHomeState.summary || "Workspace keeps your active work, saved notes, and reports in one view.");
 
   clear(focusHost);
   clear(focusActionsHost);
@@ -782,8 +782,8 @@ function renderWorkspaceBoardPage() {
     focusHost.appendChild(title);
 
     [
-      String(focus.goal || "").trim() ? `Goal: ${String(focus.goal || "").trim()}` : "",
-      String(focus.health_state || "").trim() ? `Health: ${String(focus.health_state || "").trim().toUpperCase()}` : "",
+      String(focus.goal || "").trim() ? `${String(focus.goal || "").trim()}` : "",
+      String(focus.health_state || "").trim() ? `Status: ${String(focus.health_state || "").trim().toUpperCase()}` : "",
       String(focus.latest_blocker || "").trim() ? `Current blocker: ${String(focus.latest_blocker || "").trim()}` : "",
       String(focus.latest_next_action || "").trim() ? `Next step: ${String(focus.latest_next_action || "").trim()}` : "",
     ].filter(Boolean).forEach((line) => {
@@ -799,7 +799,7 @@ function renderWorkspaceBoardPage() {
   clear(statsHost);
   [
     ["Threads", `${Number(workspace.thread_count || threads.length || 0)}`],
-    ["Project memory", `${Number(workspace.project_memory_total || 0)}`],
+    ["Saved notes", `${Number(workspace.project_memory_total || 0)}`],
     ["Recent reports", `${recentDocs.length}`],
     ["Visual map", Array.isArray(structure.tree_lines) && structure.tree_lines.length ? "Ready" : "Not loaded"],
   ].forEach(([label, value]) => {
@@ -810,7 +810,7 @@ function renderWorkspaceBoardPage() {
   if (!threads.length) {
     const empty = document.createElement("div");
     empty.className = "workspace-home-empty";
-    empty.textContent = "Project threads will appear here after you start saving work into a thread.";
+      empty.textContent = "Saved projects will appear here after Nova has something worth helping you continue.";
     threadHost.appendChild(empty);
   } else {
     threads.slice(0, 4).forEach((thread) => {
@@ -846,7 +846,7 @@ function renderWorkspaceBoardPage() {
     if (!recentDecisions.length) {
       const empty = document.createElement("div");
       empty.className = "workspace-home-empty";
-      empty.textContent = "Recent project decisions will appear here as threads mature.";
+      empty.textContent = "Recent decisions will appear here as your work takes shape.";
       decisionHost.appendChild(empty);
     } else {
       recentDecisions.slice(0, 6).forEach((item) => {
@@ -1379,4 +1379,3 @@ function renderThreadDetailWidget(data = {}) {
   populateThreadDetailSurface("workspace-thread-detail", data);
   renderWorkspaceBoardPage();
 }
-

@@ -82,3 +82,20 @@ These can coexist, but the boundaries are too visible too early. The main user p
 6. P2-D: Workspace language (outcome framing)
 7. P2-A, P2-C, P2-E: Progressive disclosure (larger UX work)
 8. P3-B: Label consistency audit
+
+## Applied So Far
+
+Completed in the current remediation sequence:
+- P1-A: live-help copy now frames the feature more conservatively and honestly
+- P1-B: command discovery now leads with outcome-first language instead of Nova syntax
+- P1-C: startup recovery now escalates from wait -> refresh -> backend check -> full restart
+- P2-B: advanced runtime settings now default to a safer not-yet-ready state until runtime truth loads
+- P3-A: OpenClaw capability wording now reflects both governed-network and bounded local-read paths
+- P2-D: Workspace language now centers ongoing work, saved notes, and next steps instead of internal thread/memory jargon
+- P2-E / P3-B partial: Policies, Trust rule messaging, and Home/Workspace overlap have been softened toward calmer user-facing language
+
+Still best left for later:
+- deeper top-level navigation simplification
+- stronger progressive disclosure for admin-style surfaces
+- fuller Home vs Workspace structural simplification beyond wording
+- a final whole-product label consistency pass across every page

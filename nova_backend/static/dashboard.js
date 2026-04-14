@@ -58,7 +58,7 @@ let memoryCenterState = {
   lastHydratedAt: 0,
 };
 let policyCenterState = {
-  summary: "No policy drafts yet. Create one explicitly when you want to prepare a delegated policy.",
+  summary: "No rules yet. Create one when you want Nova to prepare a reviewed helper rule.",
   overview: {},
   items: [],
   selectedId: "",
@@ -116,7 +116,7 @@ let threadMapState = {
   detail: null,
 };
 let workspaceHomeState = {
-  summary: "Workspace home is preparing your latest project context.",
+  summary: "Home is preparing the work you are most likely to want next.",
   snapshot: {},
   lastHydratedAt: 0,
 };
