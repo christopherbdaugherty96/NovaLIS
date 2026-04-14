@@ -48,7 +48,7 @@ Interpretation rule:
 | 60 | `explain_anything` | Perception | 4.5 | Routes an explicit "what is this?" request to the best read-only explainer path: current screen, current page, or selected file. | `explain this`, `what is this?`, `which one should I download?` | Read-only perception + analysis |
 | 61 | `memory_governance` | Governed persistence | 5 | Saves, lists, shows, locks, defers, unlocks, deletes, or supersedes explicit memory items, including thread-linked memory. | `memory save ...`, `memory list`, `memory show ...`, `memory lock ...` | Persistent local write |
 | 62 | `external_reasoning_review` | Governed reasoning | 7 | Gives Nova a same-thread governed second-opinion lane that can critique or strengthen an answer without gaining any execution authority. Trust and Settings surfaces explain the provider, route, and advisory boundary when it is used. | `second opinion`, `deepseek second opinion`, `review this answer` | Read-only analysis |
-| 63 | `openclaw_execute` | Governed automation | 8 | Runs a named OpenClaw template through the governed network path with explicit envelope preview, budget meters, and result delivery. Phase 9 adds goal-based execution via the thinking loop. | `run morning brief`, `daily brief` | Governed read-only execution |
+| 63 | `openclaw_execute` | Governed automation | 8 | Runs a named read-only OpenClaw template through a bounded template lane with explicit envelope preview, budget meters, and result delivery. Depending on the template, the run may stay local or use governed network reads. Phase 9 adds goal-based execution via the thinking loop. | `run morning brief`, `daily brief`, `run project snapshot` | Governed read-only execution |
 
 ## Capability Notes By Category
 
@@ -81,6 +81,8 @@ Interpretation rule:
 - Executor-backed mutation tools (volume, brightness, media, webpage, screen capture) route through the Governor via `ExecutorSkillAdapter`.
 - Execution memory tracks per-tool reliability and speed for optimal ordering.
 - Error recovery uses configurable retry with backoff and circuit-breaker patterns.
+- The current default template inventory includes `morning_brief`, `evening_digest`, `market_watch`, `project_snapshot`, and the not-yet-connected `inbox_check`.
+- `project_snapshot` is the current read-only local project-analysis slice. It uses bounded local file reads rather than governed outbound network access.
 
 ### Self-awareness
 - Nova has a dynamic self-awareness block (`src/identity/nova_self_awareness.py`) injected into every system prompt.

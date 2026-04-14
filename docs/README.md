@@ -14,14 +14,17 @@ If you are new to Nova, use this reading order:
 
 1. `docs/reference/HUMAN_GUIDES/README.md`
 2. `docs/reference/HUMAN_GUIDES/14_FRONTEND_AND_UI_GUIDE.md`
-2. `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
-3. `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
-4. `docs/current_runtime/RUNTIME_FINGERPRINT.md`
-5. `docs/design/README.md`
+3. `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+4. `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
+5. `docs/current_runtime/RUNTIME_FINGERPRINT.md`
+6. `docs/design/README.md`
 
 If you want the most grounded current-status and next-step view after that, read:
 - `docs/design/Phase 6/NOVA_GROUNDED_CURRENT_STATUS_AND_NEXT_ROADMAP_2026-04-02.md`
 - `docs/design/Phase 8/NOVA_LOCAL_CODE_OPERATOR_ROADMAP_2026-04-13.md`
+
+If you want the best plain-language system walkthrough with diagrams, read:
+- `docs/reference/HUMAN_GUIDES/32_NOVA_SYSTEM_PROCESS_AND_EXPLAINABILITY_GUIDE.md`
 
 If you want the current product truth for what Nova is becoming, read:
 - `docs/design/Phase 11/NOVA_HOME_ASSISTANT_PRODUCT_TRUTH_2026-04-02.md`
