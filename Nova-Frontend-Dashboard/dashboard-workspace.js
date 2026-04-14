@@ -48,7 +48,7 @@ function describeContinuityThread(thread = {}) {
   if (goal) parts.push(goal);
   if (blocker) parts.push(`Blocked on ${blocker}`);
   else if (nextAction) parts.push(`Next: ${nextAction}`);
-  if (health) parts.push(`Health ${health.toUpperCase()}`);
+  if (health) parts.push(`Status: ${health.toUpperCase()}`);
   if (Number.isFinite(memoryCount) && memoryCount > 0) parts.push(`${memoryCount} memory item${memoryCount === 1 ? "" : "s"}`);
 
   return parts.join(" | ") || "Ready to continue.";
@@ -149,7 +149,7 @@ function renderThreadMapWidget(data = {}) {
 
   if (summary) {
     if (!threads.length) {
-      summary.textContent = "No project threads yet. Save work updates to start continuity.";
+      summary.textContent = "No projects yet. Start working on something and Nova will keep track.";
     } else if (active) {
       summary.textContent = `Active thread: ${active}`;
     } else {
@@ -184,7 +184,7 @@ function renderThreadMapWidget(data = {}) {
     const memoryBadge = document.createElement("button");
     memoryBadge.type = "button";
     memoryBadge.className = "thread-memory-badge";
-    memoryBadge.textContent = `Memory: ${memoryCount}`;
+    memoryBadge.textContent = `${memoryCount} saved`;
     memoryBadge.addEventListener("click", () => injectUserText(`memory list thread ${name}`, "text"));
     heading.appendChild(memoryBadge);
 
@@ -202,9 +202,9 @@ function renderThreadMapWidget(data = {}) {
     const meta = document.createElement("div");
     meta.className = "thread-map-meta";
     if (goal) {
-      meta.textContent = `${goal} | health ${healthState || "AT-RISK"} | artifacts ${artifactCount} | blockers ${blockerCount}`;
+      meta.textContent = `${goal}${blockerCount ? ` | ${blockerCount} blocker${blockerCount === 1 ? "" : "s"}` : ""}`;
     } else {
-      meta.textContent = `health ${healthState || "AT-RISK"} | artifacts ${artifactCount} | blockers ${blockerCount}`;
+      meta.textContent = `${healthState || "Needs attention"}${blockerCount ? ` | ${blockerCount} blocker${blockerCount === 1 ? "" : "s"}` : ""}`;
     }
     li.appendChild(meta);
     if (healthReason) {
@@ -296,7 +296,7 @@ function renderThreadMapWidget(data = {}) {
 
     const attachBtn = document.createElement("button");
     attachBtn.type = "button";
-    attachBtn.textContent = "Attach latest";
+    attachBtn.textContent = "Save latest here";
     attachBtn.addEventListener("click", () => injectUserText(`save this as part of ${name}`, "text"));
     actions.appendChild(attachBtn);
 
@@ -308,13 +308,13 @@ function renderThreadMapWidget(data = {}) {
 
     const saveMemoryBtn = document.createElement("button");
     saveMemoryBtn.type = "button";
-    saveMemoryBtn.textContent = "Save memory";
+    saveMemoryBtn.textContent = "Save notes";
     saveMemoryBtn.addEventListener("click", () => injectUserText(`memory save thread ${name}`, "text"));
     actions.appendChild(saveMemoryBtn);
 
     const listMemoryBtn = document.createElement("button");
     listMemoryBtn.type = "button";
-    listMemoryBtn.textContent = `List memory (${memoryCount})`;
+    listMemoryBtn.textContent = `View saved (${memoryCount})`;
     listMemoryBtn.addEventListener("click", () => injectUserText(`memory list thread ${name}`, "text"));
     actions.appendChild(listMemoryBtn);
 
@@ -387,8 +387,8 @@ function renderWorkspaceHomeWidget(data = {}) {
     const goal = String(focus.goal || "").trim();
     const healthState = String(focus.health_state || "").trim().toUpperCase();
     if (goal) metaParts.push(goal);
-    if (healthState) metaParts.push(`Health ${healthState}`);
-    if (Number.isFinite(Number(focus.memory_count || 0))) metaParts.push(`Memory ${Number(focus.memory_count || 0)}`);
+    if (healthState) metaParts.push(`Status: ${healthState}`);
+    if (Number.isFinite(Number(focus.memory_count || 0)) && Number(focus.memory_count || 0) > 0) metaParts.push(`${Number(focus.memory_count || 0)} saved`);
     meta.textContent = metaParts.join(" | ");
     focusHost.appendChild(meta);
 
