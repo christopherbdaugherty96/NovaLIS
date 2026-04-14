@@ -157,8 +157,8 @@ let settingsRuntimeState = {
   setupModeDescription: "Nova stays local-first, private, and cost-free by default.",
   permissions: {
     external_reasoning_enabled: false,
-    remote_bridge_enabled: true,
-    home_agent_enabled: true,
+    remote_bridge_enabled: false,
+    home_agent_enabled: false,
     home_agent_scheduler_enabled: false,
     metered_openai_enabled: false,
   },
