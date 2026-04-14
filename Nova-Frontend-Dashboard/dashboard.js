@@ -156,9 +156,9 @@ let settingsRuntimeState = {
   setupModeBadge: "Offline-first",
   setupModeDescription: "Nova stays local-first, private, and cost-free by default.",
   permissions: {
-    external_reasoning_enabled: true,
-    remote_bridge_enabled: true,
-    home_agent_enabled: true,
+    external_reasoning_enabled: false,
+    remote_bridge_enabled: false,
+    home_agent_enabled: false,
     home_agent_scheduler_enabled: false,
     metered_openai_enabled: false,
   },
@@ -829,7 +829,7 @@ async function requestLiveHelpAnalysis(command, options = {}) {
     liveHelpState.lastResult = summary;
     liveHelpState.firstAnalysisDone = true;
     liveHelpState.status = "Live";
-    liveHelpState.copy = `Shared screen help is active. Say "${HEY_NOVA_WAKE_WORD}" when you want another explanation.`;
+    liveHelpState.copy = `Screen help is active. Say "${HEY_NOVA_WAKE_WORD}" to ask a follow-up question.`;
     liveHelpState.voiceLabel = `Watching the shared screen. Waiting for "${HEY_NOVA_WAKE_WORD}".`;
     if (updateFocus) {
       syncWorkflowFocusWithLiveHelp(
@@ -1027,7 +1027,7 @@ async function startLiveHelpSession(initialCommand = "explain this page") {
     liveHelpState.videoEl = video;
     liveHelpState.canvasEl = canvas;
     liveHelpState.status = "Live";
-    liveHelpState.copy = `Live screen help is on. Say "${HEY_NOVA_WAKE_WORD}" when you want Nova to explain or guide what is on the shared screen.`;
+    liveHelpState.copy = `Screen help is on. Say "${HEY_NOVA_WAKE_WORD}" to ask about what is on screen.`;
     liveHelpState.screenLabel = String((videoTrack && videoTrack.label) || "Shared screen").trim();
     liveHelpState.voiceLabel = `Watching the shared screen. Waiting for "${HEY_NOVA_WAKE_WORD}".`;
     syncWorkflowFocusWithLiveHelp(
@@ -1891,7 +1891,7 @@ function sendSilentMemoryCommand(text) {
   const clean = String(text || "").trim();
   if (!clean) return false;
   if (!safeWSSend({ text: clean, silent_widget_refresh: true })) {
-    appendChatMessage("assistant", "Connection is not ready yet. Please wait a second and try again.", null, "System status");
+    appendChatMessage("assistant", "Still connecting — wait a moment and try again. If this keeps happening, try refreshing the page.", null, "System status");
     return false;
   }
   return true;
