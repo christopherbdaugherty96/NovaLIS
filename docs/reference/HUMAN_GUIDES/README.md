@@ -57,6 +57,7 @@ Runtime truth lives in:
 28. `28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27.md`
 29. `29_END_TO_END_VALIDATION_CHECKLIST_2026-03-28.md`
 30. `30_PERSONALITY_SYSTEM_ARCHITECTURE.md`
+31. `31_LOCAL_CODE_OPERATOR_AND_PROJECT_ANALYSIS.md`
 
 ## Quick Summary
 Nova is a governed personal intelligence system.

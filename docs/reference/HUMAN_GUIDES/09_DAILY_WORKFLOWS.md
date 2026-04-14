@@ -258,6 +258,26 @@ Nova is strongest today when you use it for:
 - research
 - ongoing work continuity
 - explicit memory preservation
+
+## 13. Project Review Workflow
+
+### Goal
+Use Nova as a governed project reviewer before asking it to change code.
+
+### A simple flow
+1. Start with a local understanding pass:
+   - `summarize this repo`
+   - `audit this repo`
+   - `create analysis report on Nova architecture`
+2. Use the Agent page project-analysis lane when available:
+   - run `Project Snapshot`
+3. Continue with the smallest safe next step:
+   - ask for the biggest gap
+   - ask for the safest improvement
+   - ask for a patch proposal later when that lane is live
+
+### What this feels like
+Nova should first help you understand the project clearly, then later help you change it safely.
 - explicit scheduled support for daily routines
 - explicit review of repeated work patterns
 - bounded local assistance

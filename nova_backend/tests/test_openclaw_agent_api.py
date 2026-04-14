@@ -66,6 +66,7 @@ def test_openclaw_agent_status_reports_foundation(monkeypatch, tmp_path):
     assert payload["agent"]["setup"]["calendar_connected"] is False
     assert payload["agent"]["setup"]["remote_bridge_token_configured"] is False
     assert "morning_brief" in payload["agent"]["setup"]["runnable_template_ids"]
+    assert "project_snapshot" in payload["agent"]["setup"]["runnable_template_ids"]
     assert "inbox_check" in [item["id"] for item in payload["agent"]["setup"]["blocked_templates"]]
     assert payload["settings"]["permissions"]["home_agent_enabled"] is True
     assert payload["settings"]["permissions"]["home_agent_scheduler_enabled"] is False

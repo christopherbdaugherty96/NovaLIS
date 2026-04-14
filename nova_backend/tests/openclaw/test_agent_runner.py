@@ -96,6 +96,50 @@ async def test_agent_runner_rejects_template_that_is_not_ready(tmp_path):
 
 
 @pytest.mark.asyncio
+async def test_agent_runner_builds_read_only_project_snapshot(monkeypatch, tmp_path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    runner = OpenClawAgentRunner(store=store)
+
+    project_root = tmp_path / "workspace"
+    project_root.mkdir()
+    (project_root / "README.md").write_text(
+        "# Example Project\n\nExample Project is a governed workspace for local review and operator flows.\n",
+        encoding="utf-8",
+    )
+    (project_root / "REPO_MAP.md").write_text(
+        "# Repo Map\n\nThe repo is centered on docs, backend runtime, and frontend surfaces.\n",
+        encoding="utf-8",
+    )
+    (project_root / "docs").mkdir()
+    (project_root / "docs" / "reference").mkdir(parents=True)
+    (project_root / "docs" / "reference" / "HUMAN_GUIDES").mkdir()
+    (project_root / "docs" / "current_runtime").mkdir(parents=True)
+    (project_root / "docs" / "design").mkdir(parents=True)
+    (project_root / "docs" / "PROOFS").mkdir(parents=True)
+    (project_root / "nova_backend").mkdir()
+    (project_root / "scripts").mkdir()
+
+    monkeypatch.setattr(runner, "_project_root", lambda: project_root)
+    openai_calls = {"count": 0}
+
+    def _fake_openai(_template, _prompt):
+        openai_calls["count"] += 1
+        return {"text": "should not be used"}
+
+    monkeypatch.setattr(runner, "_summarize_with_metered_openai", _fake_openai)
+
+    result = await runner.run_template("project_snapshot", triggered_by="test")
+
+    assert result["usage_meta"]["route"] in {"local_model", "deterministic_fallback"}
+    assert openai_calls["count"] == 0
+    assert "Project Snapshot:" in result["summary"] or "Example Project" in result["summary"]
+    assert result["envelope"]["template_id"] == "project_snapshot"
+    assert result["budget_usage"]["network_calls_used"] == 0
+    assert result["budget_usage"]["files_touched_used"] == 2
+    assert store.snapshot()["recent_runs"][0]["template_id"] == "project_snapshot"
+
+
+@pytest.mark.asyncio
 async def test_agent_runner_blocks_manual_template_that_fails_strict_preflight(monkeypatch, tmp_path):
     store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
     runner = OpenClawAgentRunner(store=store)

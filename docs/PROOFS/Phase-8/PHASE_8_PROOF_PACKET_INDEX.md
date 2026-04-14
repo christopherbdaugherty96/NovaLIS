@@ -16,6 +16,7 @@ Status: Current proof index
 - `docs/PROOFS/Phase-8/PHASE_8_BOUNDED_ASSISTIVE_NOTICING_RUNTIME_SLICE_2026-03-27.md`
 - `docs/PROOFS/Phase-8/PHASE_8_ASSISTIVE_NOTICE_RATE_LIMITING_AND_HANDLING_RUNTIME_SLICE_2026-03-27.md`
 - `docs/PROOFS/Phase-8/PHASE_8_ASSISTIVE_NOTICE_HISTORY_AND_TYPE_COOLDOWNS_RUNTIME_SLICE_2026-03-27.md`
+- `docs/PROOFS/Phase-8/PHASE_8_PROJECT_SNAPSHOT_OPERATOR_SLICE_2026-04-13.md`
 
 ## Scope captured across the current packets
 - manual OpenClaw home-agent foundation with delivery inbox and operator-visible review
@@ -29,6 +30,7 @@ Status: Current proof index
 - project-level end-to-end validation checklist for core Nova journeys
 - remote boundary and setup-readiness truth for the governed bridge and agent inputs
 - bounded assistive noticing with cooling windows, handled state, and Trust review surfaces
+- first coding-oriented OpenClaw expansion through a bounded read-only Project Snapshot template for local workspace analysis
 
 Interpretation note:
 - the canonical live Phase-8 core is still the narrow home-agent foundation plus its scheduler, metered-reporting fallback, and dedicated verification package
@@ -60,6 +62,10 @@ Run these commands from `nova_backend/`.
 - dashboard continuity / Trust widget bundle: `24 passed`
 - runtime documentation drift check: passed
 - frontend mirror parity check: passed
+
+## Additional Verification Snapshot (2026-04-13)
+- project snapshot OpenClaw slice: `33 passed`
+- OpenClaw project-snapshot source files compile cleanly
 
 ## Notes
 - Do not read this folder as proof that full canonical Phase-8 automation is complete.

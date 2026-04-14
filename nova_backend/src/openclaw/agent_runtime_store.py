@@ -68,7 +68,7 @@ def _is_stale_scheduled_slot(slot_local: datetime, *, now: datetime | None = Non
 class OpenClawAgentRuntimeStore:
     """Persistent operator-facing store for OpenClaw home-agent foundations."""
 
-    SCHEMA_VERSION = "1.4"
+    SCHEMA_VERSION = "1.5"
     DEFAULT_TEMPLATES = (
         {
             "id": "morning_brief",
@@ -239,6 +239,38 @@ class OpenClawAgentRuntimeStore:
             "max_network_calls": 4,
             "max_files_touched": 0,
             "max_bytes_read": 700000,
+            "max_bytes_written": 0,
+        },
+        {
+            "id": "project_snapshot",
+            "title": "Project Snapshot",
+            "category": "Project analyst",
+            "description": "Read-only local workspace review that summarizes the current project, surfaces, and safest next improvements.",
+            "tools_allowed": ["project_read", "summarize"],
+            "allowed_hostnames": [],
+            "delivery_mode": "widget",
+            "schedule_label": "Manual workspace review",
+            "schedule_clock_local": "",
+            "schedule_enabled": False,
+            "schedule_status": "Manual only",
+            "next_run_at": "",
+            "next_run_label": "Manual only",
+            "last_scheduled_window": "",
+            "last_scheduled_run_at": "",
+            "last_scheduled_outcome": "",
+            "last_scheduled_note": "",
+            "last_suppression_window": "",
+            "last_suppressed_at": "",
+            "last_suppression_reason": "",
+            "last_suppression_note": "",
+            "manual_run_available": True,
+            "availability_label": "Read-only",
+            "availability_reason": "Project Snapshot can review the current workspace in a bounded read-only pass. Patch proposal and apply come later.",
+            "max_steps": 4,
+            "max_duration_s": 75,
+            "max_network_calls": 0,
+            "max_files_touched": 2,
+            "max_bytes_read": 500000,
             "max_bytes_written": 0,
         },
     )

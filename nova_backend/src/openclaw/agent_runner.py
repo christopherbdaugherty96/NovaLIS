@@ -5,6 +5,7 @@ import json
 import time
 from dataclasses import dataclass, field
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 
 from src.llm import llm_gateway
@@ -249,7 +250,7 @@ class OpenClawAgentRunner:
                     summary_route = "local_model"
                     usage_meta = self._local_usage_meta(prompt=prompt, summary=summarized)
 
-            if template_id != "morning_brief" and not summarized:
+            if template_id not in {"morning_brief", "project_snapshot"} and not summarized:
                 openai_result = self._summarize_with_metered_openai(template, prompt)
                 if openai_result:
                     summarized = str(openai_result.get("text") or "").strip()
@@ -419,7 +420,92 @@ class OpenClawAgentRunner:
             return await self._collect_evening_digest_payload()
         if template_id == "market_watch":
             return await self._collect_market_watch_payload()
+        if template_id == "project_snapshot":
+            return await self._collect_project_snapshot_payload()
         return await self._collect_morning_brief_payload()
+
+    async def _collect_project_snapshot_payload(self) -> dict[str, Any]:
+        meter = self._active_budget_meter
+        envelope = self._active_envelope
+        root = self._project_root()
+        readme_path = root / "README.md"
+        repo_map_path = root / "REPO_MAP.md"
+
+        if meter:
+            meter.record_step("Reading project overview")
+        if envelope:
+            self._update_run_progress(
+                envelope,
+                status_label="Reading project overview",
+                summary="Reading the current workspace overview and repo map.",
+            )
+
+        readme_text = ""
+        repo_map_text = ""
+        if readme_path.exists():
+            if meter:
+                meter.record_file_read(readme_path)
+            readme_text = readme_path.read_text(encoding="utf-8", errors="ignore")
+        if repo_map_path.exists():
+            if meter:
+                meter.record_file_read(repo_map_path)
+            repo_map_text = repo_map_path.read_text(encoding="utf-8", errors="ignore")
+
+        if meter:
+            meter.record_step("Mapping project surfaces")
+        if envelope:
+            self._update_run_progress(
+                envelope,
+                status_label="Mapping project surfaces",
+                summary="Reviewing the major folders and user-facing surfaces in the workspace.",
+            )
+
+        top_folders = [
+            item.name
+            for item in sorted(root.iterdir(), key=lambda entry: entry.name.lower())
+            if item.is_dir() and not item.name.startswith(".")
+        ][:8]
+        top_files = [
+            item.name
+            for item in sorted(root.iterdir(), key=lambda entry: entry.name.lower())
+            if item.is_file() and not item.name.startswith(".")
+        ][:8]
+        docs_surfaces = [
+            label
+            for label, path in (
+                ("Human guides", root / "docs" / "reference" / "HUMAN_GUIDES"),
+                ("Runtime truth", root / "docs" / "current_runtime"),
+                ("Design roadmap", root / "docs" / "design"),
+                ("Proof packets", root / "docs" / "PROOFS"),
+            )
+            if path.exists()
+        ]
+
+        if meter:
+            meter.record_step("Preparing snapshot")
+        if envelope:
+            self._update_run_progress(
+                envelope,
+                status_label="Preparing snapshot",
+                summary="Turning the workspace review into a bounded project snapshot.",
+            )
+
+        return {
+            "project_name": root.name,
+            "target_path": str(root),
+            "project_summary": self._extract_first_paragraph(readme_text)
+            or "The current workspace is available, but the README summary is limited.",
+            "repo_orientation": self._extract_first_paragraph(repo_map_text),
+            "top_folders": top_folders,
+            "top_files": top_files,
+            "docs_surfaces": docs_surfaces,
+            "source_notes": {
+                "workspace": "available",
+                "readme": "available" if readme_text else "limited",
+                "repo_map": "available" if repo_map_text else "limited",
+                "docs": "available" if docs_surfaces else "limited",
+            },
+        }
 
     async def _collect_morning_brief_payload(self) -> dict[str, Any]:
         network = self._network_for_run()
@@ -737,6 +823,33 @@ class OpenClawAgentRunner:
         ]
 
     def _build_summary_prompt(self, template: dict[str, Any], payload: dict[str, Any]) -> str:
+        template_id = str(template.get("id") or "").strip()
+        if template_id == "project_snapshot":
+            lines = [
+                "Create a calm Nova read-only project snapshot.",
+                "Keep it to 4-6 sentences.",
+                "Lead with what the project appears to be.",
+                "Name the most important visible surfaces.",
+                "End with the safest next improvement or review direction.",
+                "Do not claim hidden certainty or mention internal workers or envelopes.",
+                f"Project: {str(payload.get('project_name') or '').strip()}",
+                f"Path: {str(payload.get('target_path') or '').strip()}",
+                f"Project summary: {str(payload.get('project_summary') or '').strip()}",
+            ]
+            repo_orientation = str(payload.get("repo_orientation") or "").strip()
+            if repo_orientation:
+                lines.append(f"Repo orientation: {repo_orientation}")
+            top_folders = [str(item).strip() for item in list(payload.get("top_folders") or []) if str(item).strip()]
+            if top_folders:
+                lines.append("Top folders: " + ", ".join(top_folders[:6]))
+            docs_surfaces = [str(item).strip() for item in list(payload.get("docs_surfaces") or []) if str(item).strip()]
+            if docs_surfaces:
+                lines.append("Doc layers: " + ", ".join(docs_surfaces[:4]))
+            top_files = [str(item).strip() for item in list(payload.get("top_files") or []) if str(item).strip()]
+            if top_files:
+                lines.append("Key files: " + ", ".join(top_files[:6]))
+            return "\n".join(lines).strip()
+
         title = str(template.get("title") or "Briefing").strip()
         lines = [
             f"Create a calm Nova task report for '{title}'.",
@@ -886,6 +999,29 @@ class OpenClawAgentRunner:
         }
 
     def _fallback_summary(self, template_id: str, payload: dict[str, Any]) -> str:
+        if template_id == "project_snapshot":
+            project_name = str(payload.get("project_name") or "This workspace").strip() or "This workspace"
+            project_summary = str(payload.get("project_summary") or "").strip()
+            repo_orientation = str(payload.get("repo_orientation") or "").strip()
+            top_folders = [str(item).strip() for item in list(payload.get("top_folders") or []) if str(item).strip()]
+            docs_surfaces = [str(item).strip() for item in list(payload.get("docs_surfaces") or []) if str(item).strip()]
+            lines = [f"Project Snapshot: {project_name}"]
+            if project_summary:
+                lines.extend(["", project_summary])
+            if repo_orientation:
+                lines.extend(["", f"Repo orientation: {repo_orientation}"])
+            if top_folders:
+                lines.extend(["", "Main surfaces: " + ", ".join(top_folders[:6])])
+            if docs_surfaces:
+                lines.append("Docs layers: " + ", ".join(docs_surfaces[:4]))
+            lines.extend(
+                [
+                    "",
+                    "Suggested next step: review the biggest gap or request the safest focused improvement before any write-capable flow is added.",
+                ]
+            )
+            return "\n".join(lines).strip()
+
         if template_id == "market_watch":
             parts = [
                 str(payload.get("market_summary") or "").strip(),
@@ -953,6 +1089,41 @@ class OpenClawAgentRunner:
             _parts.append("")
             _parts.append(f"Schedules: {schedule_summary}")
         return "\n".join(_parts)
+
+    @staticmethod
+    def _project_root() -> Path:
+        return Path(__file__).resolve().parents[3]
+
+    @staticmethod
+    def _extract_first_paragraph(text: str) -> str:
+        paragraphs: list[str] = []
+        current: list[str] = []
+        for raw_line in str(text or "").splitlines():
+            line = str(raw_line or "").strip()
+            if not line:
+                if current:
+                    paragraphs.append(" ".join(current).strip())
+                    current = []
+                continue
+            if line.startswith("#") or line.startswith("- ") or line.startswith("* "):
+                if current:
+                    paragraphs.append(" ".join(current).strip())
+                    current = []
+                continue
+            if "." in line:
+                prefix, _rest = line.split(".", 1)
+                if prefix.isdigit():
+                    if current:
+                        paragraphs.append(" ".join(current).strip())
+                        current = []
+                    continue
+            current.append(line)
+        if current:
+            paragraphs.append(" ".join(current).strip())
+        for paragraph in paragraphs:
+            if paragraph:
+                return paragraph
+        return ""
 
     # ------------------------------------------------------------------
     # Goal-based execution (ThinkingLoop path)

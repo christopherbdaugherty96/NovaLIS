@@ -14,6 +14,7 @@ MANUAL_FOUNDATION_ALLOWED_TOOLS = frozenset(
     {
         "calendar",
         "news",
+        "project_read",
         "schedules",
         "summarize",
         "weather",

@@ -15,6 +15,7 @@ Nova's active capability surface now covers these big areas:
 - visible policy review surfaces for disabled delegated drafts
 - token-gated remote bridge access for read/reasoning requests
 - a manual home-agent operator surface for briefing templates and delivery review
+- an emerging local code-operator path that starts with read-only project analysis through the Agent page
 
 ## 1. Research and Information Work
 Nova can:
@@ -222,6 +223,7 @@ Nova can locally:
 - give a local project overview
 - create a local architecture report
 - show a human-facing Structure Map for the repo
+- move toward a governed Agent-page project snapshot flow that can explain the current workspace before any future patching work
 
 Examples:
 - `audit this repo`
@@ -238,6 +240,7 @@ The biggest examples are:
 - full in-app provider key entry and richer connector management beyond the current runtime-permission controls
 - deeper project/workspace system work
 - richer visualizer stages beyond the current structured graph view
+- approval-gated patch proposal and apply flows for the future local code operator
 - delegated trigger runtime for policies
 
 ## 10. Response Style Control

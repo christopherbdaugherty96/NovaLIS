@@ -55,6 +55,7 @@ That means Nova already has:
 - a local-first OpenAI operating model documented inside Phase 8, with runtime settings for an optional metered OpenAI lane, preferred model, daily token budget, and a narrow OpenClaw task-report fallback
 - a token-gated governed remote bridge for read/reasoning access from OpenClaw-style remote clients
 - a manual OpenClaw home-agent foundation with a dedicated Agent page, manual briefing templates, delivery controls, a delivery inbox, strict manual preflight, and Nova-owned presentation
+- the beginning of a local code-operator direction where OpenClaw is also the future governed lane for read-only project analysis before any patching authority is added
 - a narrow OpenClaw scheduler that now shares quiet-hours and rate-limit policy with the reminder layer, surfaces held reasons on the Agent page, and retries held slots once policy clears
 - a clearer OpenClaw setup/readiness layer that shows what the home-agent surface needs, what is optional, and what is paused
 - improved voice auto-speak routing with runtime fallback at the speech layer
@@ -131,6 +132,7 @@ These parts are active but still evolving:
 - final device-confidence confirmation for audible TTS output
 - deeper Phase-6 policy review ergonomics beyond the current manual-review center
 - future Phase-8 execution work beyond the now-live governed remote bridge and manual home-agent foundation
+- read-only Agent-page project analysis as the first coding-operator slice before patch proposal and approval-gated write work
 
 ## What Is Planned But Not Fully Live Yet
 Some highly important ideas are still planned or partially scaffolded rather than fully live.
@@ -151,6 +153,7 @@ A careful plain-language description of the current system is:
 - governed external execution beyond the narrow home-agent scheduler remains planned, not runtime-authorized
 - governed remote bridge access is now live, but it remains read/reasoning-only and token-gated
 - the OpenClaw home-agent foundation is now live as a manual operator surface, and a narrow scheduled briefing lane is now live behind explicit settings control
+- the next strong coding-oriented widening step is a read-only Project Snapshot lane, not unrestricted repo mutation
 - a practical end-to-end validation checklist now exists for startup, chat, memory, voice, Trust, and Agent journeys before any broader autonomy widening
 
 ## What Makes The Current State Special
