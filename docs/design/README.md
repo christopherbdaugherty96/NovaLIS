@@ -38,6 +38,9 @@ Everything else should live inside:
 
 ## Current Phase Layout
 
+Current high-value roadmap additions:
+- `docs/design/Phase 4.5/NOVA_UX_FRICTION_REMEDIATION_ROADMAP_2026-04-14.md` - friction audit and remediation order for everyday human usage
+
 ### 2026-04-02 Session Design Docs (now in phase folders)
 
 - `docs/design/Phase 6/NOVA_SYSTEM_AUDIT_AND_PRODUCTIZATION_GAPS_2026-04-10.md` - current corrected repo/productization audit
