@@ -22,7 +22,7 @@ window.NOVA_DASHBOARD_CONFIG = {
     agent: "Agent",
     workspace: "Workspace",
     memory: "Memory",
-    policy: "Policies",
+    policy: "Rules",
     trust: "Trust",
     settings: "Settings",
   },
@@ -33,7 +33,7 @@ window.NOVA_DASHBOARD_CONFIG = {
     { page: "news", label: "News" },
     { page: "workspace", label: "Workspace" },
     { page: "memory", label: "Memory" },
-    { page: "policy", label: "Policies" },
+    { page: "policy", label: "Rules" },
     { page: "trust", label: "Trust" },
     { page: "settings", label: "Settings" },
     { page: "intro", label: "Intro" },
@@ -87,7 +87,7 @@ window.NOVA_DASHBOARD_CONFIG = {
       { id: "home_patterns", label: "Pattern review", command: "pattern status", switchToPage: "chat" },
     ],
     workspace: [
-      { id: "workspace_board", label: "Workspace board", command: "workspace board", stayOnPage: true },
+      { id: "workspace_board", label: "Open workspace", command: "workspace board", stayOnPage: true },
       { id: "workspace_threads", label: "Show threads", command: "show threads", switchToPage: "chat" },
       { id: "workspace_status", label: "Project status", command: "project status this", switchToPage: "chat" },
       { id: "workspace_visual", label: "Structure map", command: "show structure map", stayOnPage: true },
@@ -106,9 +106,9 @@ window.NOVA_DASHBOARD_CONFIG = {
       { id: "memory_page_save", label: "Save decision", command: "memory save decision for deployment issue: verify next step", switchToPage: "chat" },
     ],
     policy: [
-      { id: "policy_page_overview", label: "Refresh drafts", command: "policy overview", stayOnPage: true },
-      { id: "policy_page_calendar", label: "Create calendar draft", command: "policy create weekday calendar snapshot at 8:00 am", stayOnPage: true },
-      { id: "policy_page_weather", label: "Create weather draft", command: "policy create daily weather snapshot at 7:30 am", stayOnPage: true },
+      { id: "policy_page_overview", label: "Refresh rules", command: "policy overview", stayOnPage: true },
+      { id: "policy_page_calendar", label: "Create calendar rule", command: "policy create weekday calendar snapshot at 8:00 am", stayOnPage: true },
+      { id: "policy_page_weather", label: "Create weather rule", command: "policy create daily weather snapshot at 7:30 am", stayOnPage: true },
       { id: "policy_page_trust", label: "Trust center", command: "trust center", switchToPage: "trust", stayOnPage: true },
     ],
     trust: [
@@ -117,7 +117,7 @@ window.NOVA_DASHBOARD_CONFIG = {
       { id: "trust_memory", label: "Memory overview", command: "memory overview", switchToPage: "memory" },
       { id: "trust_agent", label: "Agent", command: "bridge status", switchToPage: "agent", stayOnPage: true },
       { id: "trust_workspace", label: "Open Home", command: "workspace home", switchToPage: "home", stayOnPage: true },
-      { id: "trust_policies", label: "Policies", command: "policy overview", switchToPage: "policy", stayOnPage: true },
+      { id: "trust_policies", label: "Rules", command: "policy overview", switchToPage: "policy", stayOnPage: true },
       { id: "trust_bridge", label: "Bridge status", command: "bridge status", stayOnPage: true },
       { id: "trust_settings", label: "Settings", command: "voice status", switchToPage: "settings", stayOnPage: true },
     ],
@@ -127,7 +127,7 @@ window.NOVA_DASHBOARD_CONFIG = {
       { id: "settings_agent", label: "Agent", command: "bridge status", switchToPage: "agent", stayOnPage: true },
       { id: "settings_connections", label: "Connections", command: "connection status", stayOnPage: true },
       { id: "settings_trust", label: "Trust center", command: "trust center", switchToPage: "trust", stayOnPage: true },
-      { id: "settings_policies", label: "Policies", command: "policy overview", switchToPage: "policy", stayOnPage: true },
+      { id: "settings_policies", label: "Rules", command: "policy overview", switchToPage: "policy", stayOnPage: true },
       { id: "settings_intro", label: "Introduction", switchToPage: "intro", command: "workspace home", stayOnPage: true },
     ],
   },
@@ -239,4 +239,3 @@ window.NOVA_DASHBOARD_CONFIG = {
   WIDGET_HYDRATE_MIN_INTERVAL_MS: 15000,
   WIDGET_AUTO_REFRESH_INTERVAL_MS: 5 * 60 * 1000,
 };
-

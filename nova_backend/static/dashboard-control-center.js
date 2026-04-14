@@ -2713,13 +2713,13 @@ function renderTrustCenterPage() {
   }
 
   const readiness = getPolicyReadinessBuckets(trustReviewState.policyReadiness);
-  policySummary.textContent = readiness.summary || "Capability delegation rules will appear here after the next trust refresh.";
+  policySummary.textContent = readiness.summary || "What Nova can help with will appear here after the next trust refresh.";
   policyLimit.textContent = readiness.currentLimit;
   clear(policyGroups);
   [
-    { label: "Safe now", items: readiness.safeNow },
+    { label: "Okay now", items: readiness.safeNow },
     { label: "Later", items: readiness.allowedLater },
-    { label: "Explicit only", items: readiness.manualOnly },
+    { label: "Needs review", items: readiness.manualOnly },
   ].forEach((group) => {
     const card = document.createElement("div");
     card.className = "workspace-spotlight-card";
@@ -2764,15 +2764,15 @@ function renderTrustCenterPage() {
   if (!policySelected) {
     const empty = document.createElement("div");
     empty.className = "trust-empty";
-    empty.textContent = "Delegation rules will appear here after the next runtime refresh.";
+    empty.textContent = "Rule guidance will appear here after the next runtime refresh.";
     policyDetail.appendChild(empty);
   } else {
     [
       ["Capability", String(policySelected.name || policySelected.capability_id || "Unknown").trim() || "Unknown"],
-      ["Authority class", String(policySelected.authority_class || "unknown").trim() || "unknown"],
-      ["Delegation class", String(policySelected.delegation_class || "observational").trim() || "observational"],
-      ["Policy-delegatable", String(policySelected.policy_delegatable || "no").trim() || "no"],
-      ["Within current limit", String(policySelected.within_current_limit || "no").trim() || "no"],
+      ["Authority level", String(policySelected.authority_class || "unknown").trim() || "unknown"],
+      ["Review class", String(policySelected.delegation_class || "observational").trim() || "observational"],
+      ["Can be used in rules", String(policySelected.policy_delegatable || "no").trim() || "no"],
+      ["Allowed right now", String(policySelected.within_current_limit || "no").trim() || "no"],
       ["Network required", String(policySelected.network_required || "no").trim() || "no"],
       ["Persistent change", String(policySelected.persistent_change || "no").trim() || "no"],
       ["External effect", String(policySelected.external_effect || "no").trim() || "no"],
