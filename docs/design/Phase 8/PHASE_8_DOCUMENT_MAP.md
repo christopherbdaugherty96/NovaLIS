@@ -58,6 +58,7 @@ If there is tension about the eventual strict automation model, this document wi
 - `docs/design/Phase 8/NOVA_GOVERNED_VISIBLE_OPERATOR_MODE_TODO_2026-04-02.md`
 - `docs/design/Phase 8/NOVA_OPENCLAW_END_TO_END_EXPANSION_MASTER_TODO_2026-04-02.md`
 - `docs/design/Phase 8/NOVA_LOCAL_CODE_OPERATOR_ROADMAP_2026-04-13.md`
+- `docs/design/Phase 8/NOVA_OPENCLAW_INTEGRATION_STANDARD_2026-04-14.md`
 - `docs/design/Phase 8/NOVA_PHASE_8_USER_OPERABILITY_AND_RUN_SYSTEM_AUDIT_2026-04-05.md`
 
 This remains useful as a narrower implementation-planning packet.

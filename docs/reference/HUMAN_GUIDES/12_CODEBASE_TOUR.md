@@ -47,6 +47,7 @@ This includes governance tests, executor tests, and phase-specific tests.
 ### `static/`
 The runtime-served frontend files.
 This is the browser UI Nova actually uses at runtime.
+The frontend is modular: `dashboard.js` (shared shell/state), `dashboard-chat-news.js`, `dashboard-control-center.js`, `dashboard-workspace.js`, `dashboard-config.js`, `style.phase1.css`, and `dashboard-surfaces.css`.
 
 ### `models/`
 Local model-related assets or configuration surfaces.

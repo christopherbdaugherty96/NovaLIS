@@ -882,6 +882,30 @@ def _phase_8_status() -> str:
     return "FOUNDATION"
 
 
+def _phase_9_status(registry: dict[str, Any]) -> str:
+    enabled_ids = set(_enabled_registry_ids(registry))
+    openclaw_dir = PROJECT_ROOT / "nova_backend" / "src" / "openclaw"
+    identity_dir = PROJECT_ROOT / "nova_backend" / "src" / "identity"
+    thinking_loop_present = (openclaw_dir / "agent_thinking_loop.py").exists()
+    tool_registry_present = (openclaw_dir / "agent_tool_registry_bootstrap.py").exists()
+    execution_memory_present = (openclaw_dir / "agent_execution_memory.py").exists()
+    personality_bridge_present = OPENCLAW_AGENT_PERSONALITY_BRIDGE_PATH.exists()
+    self_awareness_present = (identity_dir / "nova_self_awareness.py").exists()
+    capability_63_enabled = 63 in enabled_ids
+    foundation = all((
+        thinking_loop_present,
+        tool_registry_present,
+        execution_memory_present,
+        personality_bridge_present,
+        self_awareness_present,
+    ))
+    if foundation and capability_63_enabled:
+        return "ACTIVE"
+    if foundation:
+        return "PARTIAL"
+    return "DESIGN"
+
+
 def _phase_7_status(registry: dict[str, Any]) -> str:
     enabled_ids = set(_enabled_registry_ids(registry))
     dashboard_src = _safe_read_all_dashboard()
@@ -1283,6 +1307,46 @@ def render_skill_surface_map_markdown() -> str:
             f"| {row.get('name', '')} | {row.get('module', '')} | {row.get('surface_type', '')} | {row.get('network_usage', 'unknown')} | {row.get('model_usage', 'unknown')} | {row.get('capability_id', '')} |"
         )
 
+    # OpenClaw tool registry section
+    tool_registry_path = PROJECT_ROOT / "nova_backend" / "src" / "openclaw" / "tool_registry.py"
+    if tool_registry_path.exists():
+        lines.extend([
+            "",
+            "## OpenClaw Tool Registry (Phase 9 Intelligence Layer)",
+            "",
+            "The OpenClaw agent intelligence layer has its own tool registry (`src/openclaw/tool_registry.py`) that exposes tools to the thinking loop for goal-based execution. These tools are discoverable at runtime by tag and category.",
+            "",
+            "| tool_name | module | category | network | capability_id |",
+            "| --- | --- | --- | --- | --- |",
+            "| weather | src/skills/weather.py | collection | yes | — |",
+            "| calendar | src/skills/calendar.py | collection | no | — |",
+            "| news | src/skills/news.py | collection | yes | — |",
+            "| system | src/skills/system.py | control | no | — |",
+            "| web_search | src/skills/web_search.py | collection | yes | — |",
+            "| volume | src/skills/executor_adapter.py → VolumeExecutor | mutation | no | 19 |",
+            "| brightness | src/skills/executor_adapter.py → BrightnessExecutor | mutation | no | 21 |",
+            "| media | src/skills/executor_adapter.py → MediaExecutor | mutation | no | 20 |",
+            "| open_webpage | src/skills/executor_adapter.py → WebpageLaunchExecutor | mutation | no | 17 |",
+            "| screen_capture | src/skills/executor_adapter.py → ScreenCaptureExecutor | collection | no | 58 |",
+        ])
+
+    # Self-awareness section
+    self_awareness_path = PROJECT_ROOT / "nova_backend" / "src" / "identity" / "nova_self_awareness.py"
+    if self_awareness_path.exists():
+        lines.extend([
+            "",
+            "## Self-Awareness (Phase 9)",
+            "",
+            "Nova has a dynamic self-awareness context block (`src/identity/nova_self_awareness.py`) injected into every system prompt. It reports:",
+            "- Identity and personality",
+            "- Active Governor capabilities (grouped by function)",
+            "- OpenClaw tool registry contents",
+            "- Connected/disconnected external services",
+            "- Runtime status (platform, uptime, model health, home agent, scheduler)",
+            "",
+            "Cached for 60 seconds. Approximately 866 tokens (2.7% of 32K context window).",
+        ])
+
     lines.extend(
         [
             "",
@@ -1432,6 +1496,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     phase_6_status = _phase_6_status()
     phase_7_status = _phase_7_status(registry)
     phase_8_status = _phase_8_status()
+    phase_9_status = _phase_9_status(registry)
 
     if phase_4_status == "COMPLETE":
         phase_4_note = "Governed execution spine, mediation, queueing, ledger, and boundary controls are complete and sealed"
@@ -1514,6 +1579,18 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
     else:
         phase_8_note = "Phase-8 home-agent and governed external execution remain design-only"
 
+    if phase_9_status == "ACTIVE":
+        phase_9_note = (
+            "OpenClaw intelligence layer implemented: 10-tool dynamic registry, iterative thinking loop with LLM synthesis, "
+            "goal-based execution, execution memory with optimal ordering, executor-backed mutation tools, "
+            "parallel/chained tool execution, error recovery with retry and circuit-breaker, "
+            "self-awareness context injection, and friendly personality on Gemma 4 (32K context)"
+        )
+    elif phase_9_status == "PARTIAL":
+        phase_9_note = "OpenClaw intelligence foundation present but capability 63 not enabled"
+    else:
+        phase_9_note = "OpenClaw intelligence layer remains design-only"
+
     governor_modules = [
         "src/governor/governor.py",
         "src/governor/governor_mediator.py",
@@ -1558,6 +1635,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         f"| Phase 6 | {phase_6_status} | {phase_6_note} |",
         f"| Phase 7 | {phase_7_status} | {phase_7_note} |",
         f"| Phase 8 | {phase_8_status} | {phase_8_note} |",
+        f"| Phase 9 | {phase_9_status} | {phase_9_note} |",
         "",
         "## Runtime Governance Spine",
         "",
@@ -1690,7 +1768,7 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
             "Status: Active",
             "",
             "Dashboard UI",
-            "Location: static/",
+            "Location: static/ (modular bundle: dashboard.js, dashboard-chat-news.js, dashboard-control-center.js, dashboard-workspace.js, dashboard-config.js)",
             "Status: Active",
             "",
             "## Known Runtime Gaps",
