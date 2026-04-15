@@ -29,7 +29,6 @@ with a live grep. Do not refactor against a stale line number.
 | **Frontend duplication** | `Nova-Frontend-Dashboard/` vs `nova_backend/static/` | Changes must be made twice; source of UI drift. |
 | **Scattered action logic** | `nova_backend/src/actions/` and `nova_backend/src/agents/` | Unclear where to add `send_email_draft` (Tier 2.1). Note: `api/routes/` cited in earlier drafts does **not** exist; API files are flat under `nova_backend/src/api/`. |
 | **No module entry point** | `brain_server.py` has no `def main()` and no `if __name__ == "__main__":` block | Blocks the naive `nova-start = "nova_backend.brain_server:main"` pyproject entry; a small `main()` wrapper is a prerequisite to Tier 1.4. |
-| **Potential: fail-silent memory search** | Claimed in earlier audits; **not re-located** in current `brain_server.py` | If real, erodes trust during first-use. Re-grep for the exact block before scheduling a fix. |
 
 ---
 
