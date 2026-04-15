@@ -34,6 +34,19 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[.gitignore|.gitignore]]
   summary: ----------------------------
 
+## 4-15-26 NEW ROADMAP (6)
+
+- [doc] [[4-15-26 NEW ROADMAP/BackLog|BackLog]]
+- [doc] [[4-15-26 NEW ROADMAP/CHANGELOG|CHANGELOG]]
+- [doc] [[4-15-26 NEW ROADMAP/DEEP_CODE_AUDIT|Nova – Deep Code-Level Audit & Execution Brief (2026-04-15)]]
+  summary: Status: FROZEN – TACTICAL COMPANION TO MASTERROADMAP.md
+- [doc] [[4-15-26 NEW ROADMAP/MasterRoadMap|Nova – Final Definitive Audit, Roadmap & Operating System (2026-04-15)]]
+  summary: Status: This document is frozen. It is the single source of truth for Nova's current state and long-term plan. The next step is execution, n...
+- [doc] [[4-15-26 NEW ROADMAP/Now|NOW.md – Current Sprint (Week 1-4)]]
+  summary: Sprint Goal: Non‑developer installs and runs Nova in 5 minutes.
+- [doc] [[4-15-26 NEW ROADMAP/review.txt|review]]
+  summary: Given the request context, I'm performing a deep audit of the provided planning and audit artifacts (DEEPCODEAUDIT.md, MASTERROADMAP.md, and...
+
 ## _MOCs (11)
 
 - [doc] [[_MOCs/BY_PHASE|Follow the build phase by phase]]
@@ -80,7 +93,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (561)
+## docs (563)
 
 - [doc] [[docs/# 📘 NOVA — Governed Web Intelligen.txt|📘 NOVA — Governed Web Intelligence Specification]]
   summary: Document ID: NOVA-PHASE4-WEB-INTELLIGENCE-v1.0
@@ -711,6 +724,10 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Read this first:
 - [doc] [[docs/Engineering Session Status|NovaLIS — Engineering Session Status]]
   summary: Date: 2026-02-23
+- [doc] [[docs/future/BUSINESS_OPTIONS|Monetization Strategy & Future Business Options]]
+  summary: Status: Strategy Inventory (Not Current Priority)
+- [doc] [[docs/future/Soft Launch-help search.txt|Soft Launch-help search]]
+  summary: Question: when should i ask for help?
 - [doc] [[docs/GOVERNANCE/authority expansion.txt|🔓 PHASE-4 ADMISSION GATE — CONSTITUTIONAL CHECKLIST - docs/GOVERNANCE]]
   summary: Perfect. Below is everything you asked for, delivered cleanly and verbatim, with no scope creep and no Phase-3.5 reopening.
 - [code] [[docs/GOVERNANCE/governor_mediation.py|governor_mediation - docs/GOVERNANCE]]
@@ -2314,7 +2331,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 ## README.md (1)
 
 - [doc] [[README|NOVA]]
-  summary: Nova is a governed home assistant and personal intelligence workspace.
+  summary: Nova is a governed home assistant and personal intelligence workspace stack.
 
 ## REPO_MAP.md (1)
 

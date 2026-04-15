@@ -1944,7 +1944,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/UNLOCK/phase 4/PHASE_4_UNLOCK_ACT.md.txt|PHASE_4_UNLOCK_ACT.md - UNLOCK/phase 4]] - Phase 4
   summary: PHASE4UNLOCKACT.md
 
-## Reference (69 docs, 9 code)
+## Reference (77 docs, 9 code)
 
 - [asset] [[nova_backend/.env.example|.env.example]]
 - [code] [[.gitattributes|.gitattributes]]
@@ -1963,6 +1963,16 @@ concern is reflected across docs, code and tests.
   summary: @echo off
 - [code] [[stop_nova.sh|stop_nova - .]]
   summary: set -euo pipefail
+- [doc] [[4-15-26 NEW ROADMAP/BackLog|BackLog]]
+- [doc] [[4-15-26 NEW ROADMAP/CHANGELOG|CHANGELOG]]
+- [doc] [[4-15-26 NEW ROADMAP/DEEP_CODE_AUDIT|Nova – Deep Code-Level Audit & Execution Brief (2026-04-15)]]
+  summary: Status: FROZEN – TACTICAL COMPANION TO MASTERROADMAP.md
+- [doc] [[4-15-26 NEW ROADMAP/MasterRoadMap|Nova – Final Definitive Audit, Roadmap & Operating System (2026-04-15)]]
+  summary: Status: This document is frozen. It is the single source of truth for Nova's current state and long-term plan. The next step is execution, n...
+- [doc] [[4-15-26 NEW ROADMAP/Now|NOW.md – Current Sprint (Week 1-4)]]
+  summary: Sprint Goal: Non‑developer installs and runs Nova in 5 minutes.
+- [doc] [[4-15-26 NEW ROADMAP/review.txt|review]]
+  summary: Given the request context, I'm performing a deep audit of the provided planning and audit artifacts (DEEPCODEAUDIT.md, MASTERROADMAP.md, and...
 - [doc] [[_MOCs/BY_PHASE|Follow the build phase by phase]]
   summary: Docs and code grouped by project phase, inferred from folder and file
 - [doc] [[_MOCs/BY_TOPIC|Browse by theme]]
@@ -1997,6 +2007,10 @@ concern is reflected across docs, code and tests.
   summary: Version: 1.0
 - [doc] [[docs/Engineering Session Status|NovaLIS — Engineering Session Status]]
   summary: Date: 2026-02-23
+- [doc] [[docs/future/BUSINESS_OPTIONS|Monetization Strategy & Future Business Options]]
+  summary: Status: Strategy Inventory (Not Current Priority)
+- [doc] [[docs/future/Soft Launch-help search.txt|Soft Launch-help search]]
+  summary: Question: when should i ask for help?
 - [doc] [[docs/Governed Web Intelligence (Capability 16 + 48 Integration.txt|Governed Web Intelligence (Capability 16 + 48 Integration]]
   summary: To implement the capabilities described in the two specification documents, you will need to update or create several files in your codebase...
 - [doc] [[docs/Governed Webpage Launch Capability Specification.txt|📘 NOVA — Governed Webpage Launch Capability Specification]]
@@ -2096,7 +2110,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[pull_requests/47|Ready for Review]]
   summary: This pull request is now ready for review.
 - [doc] [[README|NOVA]]
-  summary: Nova is a governed home assistant and personal intelligence workspace.
+  summary: Nova is a governed home assistant and personal intelligence workspace stack.
 - [doc] [[REPO_MAP|REPO_MAP]]
   summary: ﻿# REPOMAP - Nova
 - [doc] [[SECURITY|SECURITY]]
