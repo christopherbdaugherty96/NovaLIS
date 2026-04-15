@@ -188,6 +188,11 @@ If you want:
 
 Nova's documentation is intentionally split by role.
 
+Nova also supports a repo-root Obsidian overlay for mixed docs-and-code navigation:
+- open `C:\Nova-Project` as the vault root
+- start with `_MOCs/HOME.md`
+- re-run `python scripts/generate_runtime_docs.py` to refresh runtime docs and the overlay together
+
 ### Human guides
 - `docs/reference/HUMAN_GUIDES/`
 - plain-language onboarding and product understanding
