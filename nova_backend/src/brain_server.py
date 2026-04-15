@@ -3569,3 +3569,28 @@ async def _run_bridge_messages(messages: list[dict[str, Any]]) -> list[dict[str,
     from src.api.bridge_api import _run_bridge_messages as _bridge_runner
 
     return await _bridge_runner(websocket_endpoint, messages)
+
+
+# -------------------------------------------------
+# Console entry point (pyproject `nova-start`)
+# -------------------------------------------------
+def main() -> None:
+    """Launch the Nova FastAPI app via uvicorn.
+
+    Mirrors the invocation in ``start_nova.bat`` / ``start_nova.sh``
+    (``python -m uvicorn src.brain_server:app --host 127.0.0.1 --port 8000``).
+    This wrapper exists so the ``nova-start`` console script declared in
+    ``pyproject.toml`` has a resolvable target. Keep it thin: no side effects
+    beyond starting the server so imports of this module stay cheap.
+    """
+    import os
+
+    import uvicorn
+
+    host = os.environ.get("NOVA_HOST", "127.0.0.1")
+    port = int(os.environ.get("NOVA_PORT", "8000"))
+    uvicorn.run("src.brain_server:app", host=host, port=port)
+
+
+if __name__ == "__main__":
+    main()

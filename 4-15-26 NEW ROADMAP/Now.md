@@ -71,7 +71,9 @@
 ## This Week's Focus (Week 1)
 
 ### Must
-- [ ] **Task 1.4:** `pyproject.toml`
+- [ ] **Task 1.0 (preflight):** Establish a clean baseline before any Tier 1 edits land. Run `python scripts/generate_runtime_docs.py --check` and `pytest nova_backend/tests/` on the current checkout. If drift check or tests are red, fix that first. 20 minutes of work; saves days of mis-attributed regressions later.
+- [ ] **Task 1.4a (prerequisite to 1.4):** Add `def main()` wrapper in `nova_backend/src/brain_server.py` so the `nova-start` entry point will resolve.
+- [ ] **Task 1.4:** `pyproject.toml` + CI (depends on 1.4a)
 
 ### Should
 - [ ] **Task 1.1:** Windows installer scaffolding
