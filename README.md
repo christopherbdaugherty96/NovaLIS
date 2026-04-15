@@ -1,6 +1,6 @@
 # NOVA
 
-Nova is a governed home assistant and personal intelligence workspace.
+Nova is a governed home assistant and personal intelligence workspace stack.
 
 It is designed to help people think, research, understand screens and files, continue real work, and preserve useful context without turning into a hidden autonomous agent.
 
