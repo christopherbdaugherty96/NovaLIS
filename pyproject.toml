@@ -1,0 +1,88 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "novalis"
+version = "0.1.0"
+description = "Nova — governed local assistant with memory and transparent execution."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [{ name = "Christopher Daugherty" }]
+keywords = ["assistant", "local-first", "governed", "fastapi"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Environment :: Console",
+    "Intended Audience :: End Users/Desktop",
+    "License :: Other/Proprietary License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+# Pinned to match nova_backend/requirements.txt so `pip install -e .`
+# produces the same runtime as start_nova.bat/sh. When requirements.txt
+# changes, update this list in the same commit.
+dependencies = [
+    "fastapi==0.127.0",
+    "uvicorn[standard]==0.40.0",
+    "httpx==0.28.1",
+    "websockets==15.0.1",
+    "psutil==7.1.3",
+    "pydantic==2.12.5",
+    "python-multipart==0.0.21",
+    "aiofiles==25.1.0",
+    "sounddevice==0.5.3",
+    "numpy==2.2.6",
+    "vosk==0.3.45",
+    "pyttsx3==2.99",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.23",
+    "ruff>=0.6",
+]
+
+[project.urls]
+Repository = "https://github.com/christopherbdaugherty96/NovaLIS"
+Issues = "https://github.com/christopherbdaugherty96/NovaLIS/issues"
+
+[project.scripts]
+# Requires def main() in nova_backend/src/brain_server.py (Task 1.4a, landed).
+# Import path is "src.brain_server" because nova_backend/src/ is the
+# package root used by all internal "from src.X import Y" imports.
+# Renaming to a proper "novalis" namespace is a Tier 3 refactor, not Tier 1.
+nova-start = "src.brain_server:main"
+
+[tool.setuptools]
+# The code treats nova_backend/src as the top-level package root.
+# Map "" -> nova_backend so `import src.xxx` keeps working after install,
+# matching the runtime layout used by start_nova.bat/sh (CWD=nova_backend,
+# invocation `python -m uvicorn src.brain_server:app`).
+package-dir = { "" = "nova_backend" }
+
+[tool.setuptools.packages.find]
+where = ["nova_backend"]
+include = ["src*"]
+exclude = ["tests*", "scripts*"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+extend-exclude = ["Nova-Frontend-Dashboard", "docs", "_MOCs"]
+
+[tool.ruff.lint]
+# Start conservative; tighten in later sprints. CI uses this config.
+select = ["E", "F", "W", "I"]
+ignore = [
+    "E501",  # line length — handled by formatter, not worth blocking CI
+    "E402",  # module-level imports not at top — common in FastAPI bootstrap
+]
+
+[tool.pytest.ini_options]
+testpaths = ["nova_backend/tests"]
+asyncio_mode = "auto"

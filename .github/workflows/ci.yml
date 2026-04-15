@@ -1,0 +1,50 @@
+name: CI
+
+# Tier 1.4 basic CI: lint the Python source and run the pytest suite on
+# every push / PR. Keep lightweight — deeper checks (runtime-doc drift,
+# governance) live in their own workflows so a single failure doesn't
+# mask the others.
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install package + dev extras
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Verify nova-start entry point resolves
+        # Smoke test: importing the target shouldn't error. We do not
+        # launch uvicorn in CI — just confirm the console_script is wired
+        # to something callable.
+        run: |
+          python -c "from src.brain_server import main; assert callable(main)"
+
+      - name: Ruff lint
+        run: |
+          ruff check nova_backend/src
+
+      - name: Pytest (backend)
+        env:
+          PYTHONPATH: nova_backend
+        run: |
+          pytest nova_backend/tests -q --maxfail=5
