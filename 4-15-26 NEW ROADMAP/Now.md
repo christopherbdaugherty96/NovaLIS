@@ -44,15 +44,17 @@
 ---
 
 ### 1.4 Add `pyproject.toml` + CI
+- [ ] **Prerequisite:** Add a `def main()` wrapper in `nova_backend/src/brain_server.py` (or a thin `nova_backend/__main__.py`) — the file currently has no `main()` and no `if __name__ == "__main__":`, so a naive `nova-start = "nova_backend.brain_server:main"` entry point will fail to resolve.
 - [ ] Create `pyproject.toml` with dependencies and entry point `nova-start`
 - [ ] Add `.github/workflows/ci.yml` for basic linting and test run
 
 **Acceptance:**  
+- [ ] `python -m nova_backend.brain_server` (or equivalent) launches the app before the pyproject entry is wired
 - [ ] `pip install -e .` works in a clean virtual environment  
 - [ ] `nova-start` command launches the application
 
-**Files:** `pyproject.toml`, `.github/workflows/ci.yml`  
-**Estimate:** 100 lines
+**Files:** `nova_backend/src/brain_server.py` (add `main()`), `pyproject.toml`, `.github/workflows/ci.yml`  
+**Estimate:** 120 lines
 
 ---
 

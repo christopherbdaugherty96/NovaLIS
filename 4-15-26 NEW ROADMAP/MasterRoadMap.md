@@ -1,6 +1,3 @@
-`MASTER_ROADMAP.md`.
-
-```markdown
 # Nova – Final Definitive Audit, Roadmap & Operating System (2026-04-15)
 
 **Status:** This document is **frozen**. It is the single source of truth for Nova's current state and long-term plan. The next step is execution, not further planning. Use `NOW.md` for active work and `BACKLOG.md` for future ideas.
@@ -17,12 +14,12 @@ A thorough second pass compared the merged document against all source inputs an
 
 Nova is **real, architecturally coherent, and trust‑first**:
 - Live governed execution spine (`GovernorMediator → CapabilityRegistry → ExecuteBoundary → NetworkMediator → LedgerWriter`)
-- 26 read‑only capabilities (web search, news, weather, calendar snapshot, memory, second‑opinion, etc.)
+- 26 live capabilities — 20 read-only (research, news, weather/calendar snapshot, memory review, second-opinion, etc.) and 6 local-device controls (open website, speak, volume, media, brightness, open file/folder). **Zero external-write capabilities** (no email send, no calendar write, no file content writes).
 - Memory layer with confirmation, append‑only ledger, runtime‑doc drift check
 - 234 test files vs 247 source files (~1:1) – real discipline
 
 **But Nova is not yet a product.**  
-A stranger cannot install and use it without developer skills. The UI feels like a cockpit (10‑item nav, 7 widgets before first message, token budget bar). Despite "operator" language, **every live capability is read‑only** – no email, no calendar write, no file edits, no real‑world action.
+A stranger cannot install and use it without developer skills. The UI feels like a cockpit (10‑item nav, 7 widgets before first message, token budget bar). Despite "operator" language, **no live capability writes to an external system** — what exists is read-only surfaces plus local-device controls. No email send, no calendar write, no file edits, no real-world action beyond the local machine.
 
 **Documentation truthfulness is mixed:** core architecture docs are honest; product‑level promises ("calm presence", "operator", "voice live") are **not yet fulfilled** by the code.
 
@@ -41,7 +38,7 @@ This document provides a verified gap analysis and a tiered, actionable roadmap.
 | Memory layer | Full CRUD with confirmation | ✅ End‑to‑end |
 | Second‑opinion review | Advisory lane without execution authority | ✅ Differentiator |
 | Test coverage | 234 test files | ✅ Real discipline |
-| 26 capabilities | All read‑only | ✅ Live but read‑only |
+| 26 capabilities | 20 read + 6 local-device controls; zero external writes | ✅ Live, but no external mutation lane |
 | Two hot‑path files | `brain_server.py` (3571 lines), `session_handler.py` (3821 lines) | ⚠️ Refactor debt |
 | Frontend duplication | Two frontend trees | ⚠️ Maintenance hazard |
 | Docs sprawl | 120 design docs across 12 phase folders | ⚠️ Drag multiplier |
@@ -54,7 +51,7 @@ This document provides a verified gap analysis and a tiered, actionable roadmap.
 ## 2. Critical Gaps (Ranked by Impact)
 
 1. **No installer** – non‑developer cannot try Nova.
-2. **All capabilities read‑only** – "operator" label unearned.
+2. **No external-write capability** — "operator" label unearned (Nova has local-device controls but no way to send, create, or change anything outside the machine).
 3. **UI overload** – feels like a cockpit, not calm.
 4. **Two oversized hot‑path files** – refactor debt.
 5. **Frontend duplication** – maintenance hazard.
@@ -324,15 +321,16 @@ Work from `NOW.md`. Update it weekly. Move completed items to `CHANGELOG.md` or 
 | 4.x | Issue templates, security policy, storage pruning, beta program docs, positioning copy | 400 |
 
 **Total new code (excluding refactor): ~3650 lines.**  
-**Total refactor: ~2000 lines (deletions + moves).**  
-Achievable in 16–18 weeks by a disciplined solo developer (or 12–14 weeks with two).
+**Total refactor: ~2000 lines (deletions + moves).**
+
+**Cadence note:** Section 8.2 sets sustainable pace at 2–4 focused hours/week.
+5650 lines of production-grade code (installer, dual-provider OAuth, backup,
+uninstaller, resource limiter, migrations, accessibility) at that cadence is
+optimistic. Realistic envelope is 24–32 weeks at 2–4 hrs/week, or 16–18 weeks
+at 5–8 hrs/week. Pick the cadence; the timeline follows. Do not treat the
+16–18 week figure as a commitment under Section 8.2's low-energy rule.
 
 ---
 
 *Audit completed and verified against live repository 2026-04-15.*  
 *This document is now frozen. Next step: create `NOW.md` and start Tier 1.*
-```
-
----
-
-**This is the final version.** 
