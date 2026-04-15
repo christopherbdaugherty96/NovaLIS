@@ -193,6 +193,62 @@ def test_main_writes_all_overlay_outputs(overlay):
         assert (repo / ".obsidian" / config_name).exists()
 
 
+def test_home_uses_outcome_first_language(overlay):
+    """HOME should lead with a guided-paths CTA and explain the graph — not
+    just dump a flat list of internal MOC names. This guards the polish pass
+    so future edits don't slip back into jargon-first landings."""
+    module, repo, _docs = overlay
+    module.main()
+
+    home = (repo / "_MOCs" / "HOME.md").read_text(encoding="utf-8")
+    # Primary CTA first.
+    assert "## New here? Start here" in home
+    assert "Guided entry points" in home
+    # Outcome-first section headings, not internal nouns.
+    assert "## Browse the repo" in home
+    assert "## Read the code" in home
+    # Color legend explains what graph dots mean.
+    assert "## How to read the graph" in home
+    assert "Same-color dots" in home
+    # Counts table demoted below the legend.
+    assert home.index("## How to read the graph") < home.index("## By the numbers")
+
+
+def test_user_paths_uses_question_headings_with_guidance(overlay):
+    """USER_PATHS should read like a FAQ — questions a real user would ask,
+    each with a one-line hint about when to use that section."""
+    module, repo, _docs = overlay
+    module.main()
+
+    user_paths = (repo / "_MOCs" / "USER_PATHS.md").read_text(encoding="utf-8")
+    assert "# Guided paths" in user_paths
+    assert "## I'm new — what is Nova?" in user_paths
+    assert "## What is actually running right now?" in user_paths
+    assert "## I want to read the code" in user_paths
+    assert "## Is this thing trustworthy?" in user_paths
+    # A 1-line italic hint follows each heading.
+    assert "_Start here for a plain-language picture" in user_paths
+
+
+def test_package_init_titles_are_human_readable(overlay):
+    """`__init__.py` files should show as `src/<package>` in file lists,
+    not the raw stem `__init__` with a disambiguation suffix."""
+    module, repo, _docs = overlay
+    # The base fixture doesn't include __init__.py under governor; add one
+    # so this test isolates title-rendering behavior.
+    (repo / "nova_backend" / "src" / "governor" / "__init__.py").write_text(
+        "", encoding="utf-8"
+    )
+    notes = module.scan_notes()
+
+    governor_init = next(
+        n for n in notes
+        if n.rel.as_posix() == "nova_backend/src/governor/__init__.py"
+    )
+    # Parent path form, nova_backend/ prefix stripped for readability.
+    assert governor_init.title == "src/governor"
+
+
 def test_test_map_always_written_even_when_no_pairs(overlay):
     """HOME and USER_PATHS link unconditionally to TEST_MAP — the file must exist
     so the wikilink resolves even when a trimmed vault produces zero pairs."""

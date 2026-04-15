@@ -8,30 +8,46 @@ tags:
 
 # Nova Vault Home
 
-This repository root is the canonical Obsidian vault overlay for Nova.
-Docs and code are indexed together so the graph can show connected areas
-with the same category color.
+You're looking at the Nova repository opened as an Obsidian vault.
+Docs and code sit in the same graph; files sharing a concern share a color.
+Sources are never edited — this overlay just builds navigation on top.
 
-## Jump in
+## New here? Start here
 
-- [[_MOCs/USER_PATHS|Best paths for real users]]
-- [[_MOCs/REPO_BY_FOLDER|Repo by folder]]
-- [[_MOCs/BY_PHASE|By phase]]
-- [[_MOCs/BY_TOPIC|By topic]]
-- [[_MOCs/BY_TYPE|By category]]
-- [[_MOCs/CODE_BY_LAYER|Code by layer]]
-- [[_MOCs/CODE_MODULES|Code modules]]
-- [[_MOCs/CODE_IMPORTS|Code import graph]]
-- [[_MOCs/TEST_MAP|Test map]]
-- [[_MOCs/RECENT|Recently updated]]
+- [[_MOCs/USER_PATHS|Guided entry points — the fewest clicks to what you need]]
 
-## How color coordination works
+## Browse the repo
 
-- Files with the same concern area share a graph color even when one is docs and the other is code.
-- Category MOCs are the strongest view for what is connected.
-- Topic MOCs are lighter guidance and intentionally narrower than category colors.
+- [[_MOCs/REPO_BY_FOLDER|Walk the tree — same layout as GitHub]]
+- [[_MOCs/RECENT|See what changed most recently]]
+- [[_MOCs/BY_PHASE|Follow the build phase by phase]]
+- [[_MOCs/BY_TOPIC|Browse by cross-cutting theme]]
+- [[_MOCs/BY_TYPE|Group everything by category (strongest connected view)]]
 
-## Category totals
+## Read the code
+
+- [[_MOCs/CODE_BY_LAYER|Source by runtime layer]]
+- [[_MOCs/CODE_MODULES|Dive into a module — files, imports, importers, tests]]
+- [[_MOCs/CODE_IMPORTS|Follow imports between modules]]
+- [[_MOCs/TEST_MAP|Find the test for a source file]]
+
+## How to read the graph
+
+- Open the graph view (`Ctrl+G`). Same-color dots are connected by concern, not just folder.
+- Hover any file in the graph to preview; click to open.
+- Color legend:
+    - Phases
+    - Governance
+    - Runtime and ops
+    - Frontend
+    - Tests
+    - Scripts and tools
+    - Design specs
+    - Proofs
+    - Reference
+    - Archive
+
+## By the numbers
 
 | Category | Docs | Code |
 |---|---:|---:|
@@ -39,11 +55,11 @@ with the same category color.
 | Governance | 20 | 17 |
 | Runtime and ops | 20 | 239 |
 | Frontend | 0 | 23 |
-| Tests | 5 | 264 |
-| Scripts and tools | 3 | 18 |
+| Tests | 5 | 265 |
+| Scripts and tools | 3 | 19 |
 | Design specs | 4 | 0 |
 | Proofs | 175 | 6 |
 | Reference | 69 | 9 |
 | Archive | 107 | 10 |
 
-_Indexed 575 docs and 586 non-doc files._
+_Indexed 575 docs and 588 non-doc files._
