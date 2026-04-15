@@ -1,0 +1,330 @@
+I have enough grounding now to write the audit. I read:
+
+- `README.md`, Phase 4.5 `NOVA_UX_FRICTION_REMEDIATION_ROADMAP_2026-04-14.md`, Phase 4.5 `NOVA_USABILITY_NEXT_STEPS_ROADMAP_2026-04-10.md`, Phase 6 `NOVA_GROUNDED_CURRENT_STATUS_AND_NEXT_ROADMAP_2026-04-02.md`, Phase 6 `NOVA_SYSTEM_AUDIT_AND_PRODUCTIZATION_GAPS_2026-04-10.md`, Phase 11 `NOVA_HOME_ASSISTANT_PRODUCT_TRUTH_2026-04-02.md`
+- `docs/reference/HUMAN_GUIDES/07_CURRENT_STATE.md`, `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
+- `nova_backend/static/index.html` (first 200 lines), `dashboard-config.js` nav + quick actions
+- Repo root layout, file sizes, phase-folder count, design-doc count, test/source ratio, git state
+
+---
+
+# Nova — Whole-Program Truth Audit (2026-04-15)
+
+Scope: Nova as a real-world product, not as a vision packet. Seven lenses: technical auditor, product strategist, UX critic, security/governance reviewer, first-time user, power user, future buyer/adopter/operator. Tree is clean on `main`, so this is the shipped state.
+
+---
+
+## A. Executive Reality Check
+
+Nova is not a demo. It has a live FastAPI runtime (`src.brain_server:app`), a working governance spine (`GovernorMediator → CapabilityRegistry → ExecuteBoundary → NetworkMediator → LedgerWriter`), 26 live capabilities, 234 test files against 247 source files (~1:1), a modular frontend, and an OpenClaw home-agent foundation actually plumbed into the UI. The backend/governance half of the claim holds up under inspection.
+
+What Nova is **not** yet:
+- **A product a stranger can install and use.** There is no `pyproject.toml`, no `setup.py`, no `package.json`, no Dockerfile, no installer, no binary. The distribution artifact is "git clone + `pip install -r requirements.txt` + `start_nova.bat`." That is not a product; that is a developer environment.
+- **A calm home assistant.** Your own Phase 11 product-truth packet says Nova should feel like "a calm presence on your computer." The shipped Chat page currently loads 7 widgets/panels before the first message (Dashboard Snapshot, Workflow Focus, chat log, search widget, Quick Hints, Live Help, chat input with Second-Opinion button). The primary nav is 10 items deep. That is a cockpit, not a calm presence.
+- **Reach-capable.** 26 capabilities sounds like a lot until you read them: `governed_web_search`, `open_website`, `open_file_folder`, `speak_text`, `volume_up_down`, `brightness_control`, 5 news capabilities, 2 snapshot capabilities (weather/calendar/screen), memory, external reasoning review, and one OpenClaw entry (`openclaw_execute`, id 63). **Every capability is read, open, summarize, or explain.** There is no `send_email`, no `create_calendar_event`, no `write_file`, no `edit_document`. The system can *see and describe* the world; it cannot *change* it.
+
+The mismatch between "trust model" and "usefulness ceiling" is the core product story. Your own grounded-status packet says this explicitly: *"Nova's trust model is ahead of its real-world reach."* That diagnosis is correct. The audit below is mostly about what that means in practice.
+
+**One-line verdict:** Nova is a credible governed-intelligence workspace prototype with an honest spine, a UI that still leaks engineering language, a vision backlog 3–5x larger than its execution cadence, and zero distribution story. It is closer to "convincing internal tool" than "shippable product."
+
+---
+
+## B. What Is Already Strong
+
+These are real and defensible — don't weaken them by chasing the gaps below too hard.
+
+1. **Governance spine is not theater.** `governor_mediator.py`, `capability_registry.py`, `execute_boundary/`, `network_mediator.py`, `ledger/writer.py` are all live and enforced. The ledger is append-only; the network mediator gates outbound HTTP; the boundary is the last gate before execution. This architecture is the one genuinely hard thing in the repo and it works.
+2. **Runtime-doc generation closes the loop.** `scripts/generate_runtime_docs.py` produces `CURRENT_RUNTIME_STATE.md` with a deterministic fingerprint; a drift check catches divergence. Very few projects this size maintain this discipline. Keep it.
+3. **Governed memory works end-to-end.** Save, list, edit, lock, defer, export, delete — all with confirmation where it matters. The `what do you remember` / `forget this` natural-language bindings are good UX on top of a boring, correct primitive.
+4. **External reasoning (second-opinion) lane is a quiet win.** A same-thread review path that critiques an answer *without gaining execution authority* is exactly the right shape for a governed agent. The distinction of "advisory-only" is a real product boundary, not marketing language.
+5. **Test coverage discipline is real.** 234 test files is not a vanity number — runtime auditor, governance matrix, Phase 4/5/6/7/8/9 runtime contracts, frontend sync guard, landing page, workspace/OpenClaw APIs, etc. The Phase 4.5 Obsidian polish tests I just added fit the house pattern.
+6. **Recent UX wording pass actually landed.** P1-A (live-help is now "experimental"), P1-B (outcome-first quick actions on most pages), P1-C (escalating "stuck on Connecting" guidance), P2-B (safe-default settings until runtime truth loads), P2-D (workspace language humanized), P3-A (capability 63 wording fixed). Work was specific, surgical, and shipped. That cadence is the baseline to preserve.
+7. **Workflow Focus widget on Chat.** "What are we getting done?" with Goal / Now / Next cards (`index.html:64–94`) is the right product metaphor and the right copy. This is what the rest of the UI should converge toward.
+
+---
+
+## C. Critical Gaps (ranked)
+
+Severity rubric: **Critical** = blocks real-world use or trust today. **High** = adoption-limiting within 3 months. **Medium** = slows growth but not blocking. **Low** = polish.
+
+### C.1 [CRITICAL] No installation story for non-developers
+
+Root has `start_nova.bat`, `start_nova.sh`, `stop_nova.bat`, `stop_nova.sh`, and no packaged artifact. README directs readers to `nova_backend/requirements.txt` + `python -m src.brain_server`. This is fine for you; it is a full stop for everyone else.
+
+- No signed installer (.msi, .dmg, .AppImage, .deb)
+- No Dockerfile or compose file
+- No pinned Python-version manifest contract for users (pyproject, poetry, uv)
+- `models/` in `nova_backend/` implies there are model weights to fetch and the README does not tell a first-timer how or where (Gemma 4 is mentioned but as strategy, not as "do this command")
+- `.env.example` exists but the README lands a user on 6 different recommended reading paths before any "get it running" path
+
+**Why critical:** A product whose first reported state is stuck on "Connecting" (your own P1-C fix admits this) with recovery described as "restart Nova locally" cannot be used by anyone who does not already know the codebase. Every other gap below is downstream of this one.
+
+**Fix:** Pick one distribution shape — my recommendation is a Windows + macOS signed installer that bundles Python, model fetch on first launch, and auto-starts `brain_server` as a background service with a tray icon. Either that or make `docker compose up` actually work. Until then, the audience is zero.
+
+### C.2 [CRITICAL] Every live capability is read-only; "operator" framing is unearned
+
+`CURRENT_RUNTIME_STATE.md` lines 59–83 list 26 active capabilities. Grep them: 11 read (`governed_web_search`, `news_snapshot`, `headline_summary`, `intelligence_brief`, `topic_memory_map`, `story_tracker_view`, `weather_snapshot`, `calendar_snapshot`, `screen_capture`, `screen_analysis`, `explain_anything`), 5 local-device controls on your own machine (`open_website`, `speak_text`, `volume_up_down`, `media_play_pause`, `brightness_control`, `open_file_folder`), 4 bookkeeping (`response_verification`, `os_diagnostics`, `multi_source_reporting`, `story_tracker_update`), 3 memory/review (`memory_governance`, `external_reasoning_review`, `analysis_document`), 1 bounded OpenClaw lane (`openclaw_execute` — "read-only template").
+
+There is no `create_calendar_event`, no `send_email`, no `send_message`, no `write_file`, no `edit_document`, no `fill_form_and_submit`, no `purchase`, no `transfer_money`, no `schedule_meeting`. The Phase 11 product-truth packet promises "credential-assisted sign-in help," "form-fill assistance," "draft-then-approve outbound communication" — **none of these are live capabilities**. The word "operator" in the UI (and in dashboard-control-center.js `Agent` labels) is not backed by shipped authority.
+
+**Why critical:** This is the largest gap between how Nova talks about itself and what it can actually do. For a first-time user, the delta between "bounded operator" copy and "it only reads and summarizes" reality *is* the trust break.
+
+**Fix options (pick one, don't fake the others):**
+- (a) **Drop the operator framing** until it is real. Re-skin the Agent page as "Briefings and reviews." Ship operator language alongside the first real `send_email` capability.
+- (b) **Ship ONE real mutation capability**, end-to-end, with governor approval UX, within 4–6 weeks. Highest leverage pick: `send_email_draft` (create draft in Gmail/Outlook, user reviews, user sends). That single capability would turn the operator story from aspiration into foundation.
+
+Do not ship both options badly. The existing grounded-status packet already told you this ("operator flows should feel visible and friendly, not technical"); the audit-layer confirmation is: until a mutation ships, the operator page should not exist in its current form.
+
+### C.3 [HIGH] The UI still leaks internal nouns despite the recent polish pass
+
+Evidence in shipped code, not in a design packet:
+
+- `dashboard-config.js:36` — primary nav labels the Policies page **"Rules"** (good, a recent win), but the page id is still `"policy"`. Inconsistency bites later: search/deeplinks reference `policy`, users say "Rules."
+- `dashboard-config.js:53` — Chat quick action `chat_patterns` → label `"Review patterns"` → command `"pattern status"`. "Pattern" is internal. A real user says "show me what I've been doing" or "what do you think I should do next," not "pattern status."
+- `dashboard-config.js:54` — `chat_system` → command `"system status"`. Plain user says "is Nova okay?" not "system status."
+- `dashboard-config.js:51` — `chat_thread_memory` → command `"memory list thread this"`. This is a config statement, not a request a human would make.
+- `dashboard-config.js:70` — `intro_trust` → "Open Trust" → command `"trust center"`. "Trust Center" is vestigial enterprise-y language.
+- `index.html:165` — the `thinking-bar` and `token-budget-bar` both appear in the main chat input container. Token budget is a developer concept, not a user concept.
+- `CURRENT_RUNTIME_STATE.md:82` — capability 62 is "`external_reasoning_review` — governed second-opinion lane that can critique an answer without gaining execution authority." The UI button (`index.html:168`) correctly just says "Second opinion." Good. But `Trust` and `Settings` panels still surface "provider transparency," "advisory-only boundaries," "estimated governed reasoning-usage visibility" — all internal.
+
+Your own memory note (`feedback_ux_direction.md`): *"Nova's next gains are in simplification, not expansion; reduce internal nouns, use outcome-first language."* The roadmap (`NOVA_UX_FRICTION_REMEDIATION_ROADMAP_2026-04-14.md`) flags P3-B "inconsistent product language" as **still open**. The quick-action labels are where the polish pass visibly stopped.
+
+**Fix:** One more grep pass on `dashboard-config.js`, `index.html`, `dashboard-control-center.js`, and the Trust/Settings JS. Rules: no feature the user sees should be named after its implementation. "Patterns" → "Things you keep working on." "Tone settings" → "How Nova talks." "Trust Center" → "What Nova can do and why."
+
+### C.4 [HIGH] Design backlog dwarfs execution cadence
+
+`docs/design/` has **120 markdown files** spread across **12 phase folders** (3.5, 4, 4.2, 4.5, 5, 6, 7, 8, 8.5, 9, 10, 11) plus a stale `Phase-9` hyphen-variant folder and `archive/`, `archive(phase 4)/`, `IDEAS/`. The Obsidian overlay I just shipped has to work hard to normalize `Phase 9` vs `Phase-9` — that's a symptom.
+
+Phase sequencing is also non-monotonic in the runtime:
+- `CURRENT_RUNTIME_STATE.md:14–22`: 3.5 COMPLETE, 4 COMPLETE, 4.2 COMPLETE, **4.5 PARTIAL**, 5 COMPLETE, 6 COMPLETE, 7 COMPLETE, 8 ACTIVE, 9 ACTIVE.
+
+You have an unfinished 4.5 with 5, 6, and 7 sealed on top of it. That is not an impossible state, but it *is* a warning sign that "phase" has decoupled from "product version" and become a tagging scheme. The Phase 6 grounded-status packet itself admits this: *"Nova does not advance through the remaining work as a simple 4.5 → 5 → 6 → 7 ladder."*
+
+The productive implication: **phases are costing more in docs drag than they earn in clarity.** Every phase gets a `PHASE_N_DOCUMENT_MAP.md`, several roadmap packets, several "TODO" packets, and cross-references. When you change direction, two or three packets per phase need to be rewritten.
+
+**Fix:** Freeze the phase taxonomy. Stop opening new phase folders. Move to a flat `docs/decisions/` (ADR-style) for forward-looking work and a flat `docs/retired/` for historical context. Keep `docs/current_runtime/` as the one live-truth source (you already do this; lean on it harder). Your HUMAN_GUIDES (33 of them) are the real durable product story; design phases are increasingly archaeology.
+
+### C.5 [HIGH] Onboarding has too many front doors
+
+The README offers at least 6 "recommended reading paths" plus 5 starter prompts plus the HUMAN_GUIDES index plus CURRENT_RUNTIME_STATE. The new USER_PATHS.md (which I just shipped) is meant to *fix* this — and it's good — but it's an overlay, not a replacement. The README is still the first impression for anyone hitting GitHub.
+
+New-user reality: land on the GitHub page → see "governed home assistant and personal intelligence workspace" → scroll a long README → see a Mermaid diagram → see a live/not-live list → see 6 reading paths → give up. There is no 90-second path from "I'm curious" to "I'm using it." The failure mode is not bad writing; it's that the README is *reference material pretending to be a landing page*.
+
+**Fix:** Move the README into three files: (1) a 40-line landing README that names the product, shows one screenshot or gif, gives exactly one install command, and links to four docs; (2) `docs/INTRODUCTION.md` for the "what is this really" essay; (3) `docs/ARCHITECTURE.md` for the current diagram. The existing README body becomes INTRODUCTION.
+
+### C.6 [MEDIUM] Monolith pressure in the hot-path files
+
+```
+nova_backend/src/websocket/session_handler.py   3821 lines
+nova_backend/src/brain_server.py                3571 lines
+nova_backend/static/dashboard.js                2107 lines
+nova_backend/static/index.html                  1194 lines
+```
+
+`session_handler.py` at 3821 lines is the worst. Every new feature that needs to talk to the UI grows it. This is where future refactors will stall first. The Phase 6 productization audit partly addressed the frontend split (`dashboard-workspace.js`, `dashboard-control-center.js`, `dashboard-chat-news.js`) but did not tackle the backend equivalents.
+
+**Fix:** Break `session_handler.py` along routing-lane boundaries (Explain, Governed, Memory, Review, OpenClaw — your own mental model from README); break `brain_server.py` along HTTP route families (the Phase 6 packet claims this is done — confirm it at line count, not at filename count). Don't do this before C.1–C.5; it's a refactor tax, not a user win.
+
+### C.7 [MEDIUM] Repo-root hygiene signals under-discipline
+
+Right now the repo root contains: `Untitled.canvas`, `Untitled 1.canvas`, `Untitled 2.canvas`, `Untitled.base`, `test2.wav`, `New-Audit-and-Issues.md`. `nova_backend/` root has `Untitled.base`, `input.m4a`, `test.wav`. These are either debugging artifacts or Obsidian accidents that the gitignore didn't catch.
+
+For a project that takes governance seriously, dropping `Untitled.canvas` in the project root is the kind of visual noise that makes a first-time observer question how careful the rest of the codebase is. The Phase 6 productization audit flagged exactly this in April; the fact that they're still present means `.gitignore` is chasing names rather than patterns.
+
+**Fix:** Add `Untitled*`, `*.canvas`, `*.base`, `*.wav` (except an explicitly curated test fixture in `tests/fixtures/`), `*.m4a` to `.gitignore`. Then delete the existing tracked ones. 10-minute job.
+
+### C.8 [MEDIUM] Two frontend trees still exist
+
+`nova_backend/static/` = canonical served. `Nova-Frontend-Dashboard/` = mirror. The Phase 6 packet says the sync guard now covers 8 files; it also admits *"contributors can still regress toward single-file assumptions if new tests/docs are written without using the modular bundle contract."* Two trees is one tree too many. The mirror doesn't ship to users. Every future frontend change is a split-attention tax.
+
+**Fix:** Delete `Nova-Frontend-Dashboard/` or make it a git submodule/symlink. If it exists for packaging a standalone Electron target later, put it behind that plan, not as a permanent parallel tree.
+
+### C.9 [LOW] Capability ID numbering has gaps that imply churn
+
+IDs in the live registry: 16, 17, 18, 19, 20, 21, 22, **gap**, 31, 32, **gap**, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63. The gaps are real — older IDs were retired. That's honest, but the UI surfaces capability IDs nowhere, and the capability-authority map users see doesn't benefit from them either. The gaps are a maintainability cost and a signal that the registry is a secondary source of truth.
+
+**Fix:** None urgent. But when you next regenerate the registry from source, consider renumbering contiguously or switching to string IDs (`governed_web_search` *is* the ID — why also have `16`?).
+
+---
+
+## D. Product-Layer Gaps
+
+These are missing **product features**, not architecture gaps.
+
+| Gap | Current state | Why it matters |
+|---|---|---|
+| **No write-path connectors** | `calendar_snapshot` (read). No Gmail. No Google Calendar write. No Outlook. No Slack. No iMessage. | A calendar that only reads is a calendar viewer. Users expect "schedule a meeting with X next Tuesday" to work. |
+| **No real email draft → send** | External reasoning can critique drafts. Nova cannot open a mail client with a prepared draft, let alone send. | The Phase 11 product-truth packet explicitly promises this; the registry doesn't. |
+| **No file writes** | `open_file_folder` opens a path. No write capability anywhere. | "Help me finish this doc" isn't possible; "tell me about this doc" is. |
+| **No scheduled-run visibility for user** | OpenClaw has a scheduler (quiet-hours, rate-limit) per runtime docs. User-facing surface shows a template list, not a "Nova will run X at Y tomorrow" calendar view. | Users should see the next 3 things the agent is going to do, in plain English, with a "skip" button. |
+| **No "undo last thing Nova did" button** | Ledger is append-only. There is no user-visible rewind on state Nova changed. | Mostly moot today (no mutations), but will become day-one UX the moment C.2 ships. |
+| **No mobile or remote surface** | Runtime is local FastAPI + browser. OpenClaw remote bridge is token-gated for read-only. | "I'm away from my desk" is a null experience. |
+| **No export / portability of memory** | `memory export` command exists. No user-facing download button. | A user cannot easily leave with their data; that undermines the "sovereignty" framing. |
+| **Weather/news quality is commodity** | `weather_snapshot`, `news_snapshot` backed by generic sources. | Every assistant has these. They are not the reason anyone picks Nova. |
+| **No identity across devices** | Single local instance; no account, no device sync. | You cannot use Nova on your laptop and then check on it from your phone. |
+
+The blunt read: your strongest differentiators (governed spine, memory, second-opinion review) are all inside the "intelligence workspace" bucket. Your weakest surfaces are the everyday ones users already have five alternatives for. A product wins by being the best at *one thing a user does daily*. Nova is currently the best at *explaining itself*. That is not daily.
+
+---
+
+## E. UX / Adoption Gaps
+
+### E.1 Primary nav is still 10 items
+
+`dashboard-config.js:29–40`:
+```
+Chat, Home, Agent, News, Workspace, Memory, Rules, Trust, Settings, Intro
+```
+
+Your own Phase 4.5 friction roadmap flagged this as P2-A three weeks ago. It is the single biggest at-a-glance signal that Nova is a dashboard first and an assistant second. Compare: ChatGPT's nav is "New chat" + recent + settings. Claude.ai's nav is "New chat" + projects + settings. Gemini similar. Nova has 10.
+
+**Diagnosis:** Every phase added a page. No phase retired one. Intro sits at the *end* of the list (good? bad? ambiguous — new users don't know it's a first-run surface).
+
+**Fix:**
+- Collapse to 4 top-level: **Chat**, **Home**, **News**, **Settings**.
+- Move Memory, Rules, Trust, Workspace, Agent, Intro under a single "More" menu.
+- Intro should be a *modal/overlay that auto-opens first time*, not a nav entry.
+- Workspace should probably just be *more views of Home*, not its own top-level — Phase 4.5 usability roadmap literally says this.
+
+### E.2 Chat page pre-message cognitive load
+
+Count what a user sees before typing anything (`index.html:50–171`):
+1. Dashboard Snapshot widget (weather/news/system/calendar)
+2. Workflow Focus widget (Goal/Now/Next cards, 3 action buttons)
+3. Chat log (empty)
+4. Search widget
+5. Quick Hints panel ("Need ideas?")
+6. Live Screen Help widget ("experimental") with 4 cards, trust note, 3 buttons, 3-step explainer
+7. Chat input with Talk + Send + Second-Opinion buttons, thinking bar, token-budget bar
+
+Seven widgets. Three buttons beside "Send." The empty state is louder than ChatGPT's loaded state.
+
+**Fix:** Only Workflow Focus + chat input should render before the first message. Everything else — hints, live help, snapshot — belongs under a single "/" command or the Home page, or as collapsed expansion panels.
+
+### E.3 "Connecting" as a first impression
+
+`index.html:26–28` — the header connection chip starts life in `status-connecting` with label "Connecting." P1-C added recovery guidance *inside* the UI when it gets stuck, which is good. But the status chip is the *first thing* a user sees every launch, and for several seconds it just says "Connecting." There is no welcome, no "getting your workspace ready." The first impression is always loading-state.
+
+**Fix:** Replace "Connecting" with an animated "Nova is warming up…" (or similar) for the first 2 seconds; escalate to explicit recovery only if it stalls. Your brain shouldn't register "something might be broken" every single launch.
+
+### E.4 Trust page is administrative, not reassuring
+
+Confirmed by your own Phase 4.5 P1 language: *"Trust should feel reassuring instead of administrative."* The Trust page today (from `dashboard-control-center.js` and CURRENT_RUNTIME_STATE labels) surfaces: recent ledger activity, runtime health, capability-group visibility, blocked-condition drill-down, voice runtime review, provider/connection state, remote-bridge visibility.
+
+That is not a reassurance surface. That is a compliance dashboard with a "Trust" label on it. A reassurance surface answers "Is Nova going to do something weird?" with one sentence and a green dot. The current Trust page answers "Show me the audit trail" with 6 subpanels.
+
+**Fix:** Invert the Trust page. Top should be a single line: *"Nova is staying inside your boundaries. Nothing unexpected today."* Below that, a single "See what Nova did" link opens the current Trust page content. Same data, inverted hierarchy.
+
+### E.5 Intro is buried
+
+`dashboard-config.js:39` — Intro is the **10th** nav entry, after Settings. For a first-time user, their first-run flow lives at the end of the list. P1 usability packet flags this; still live.
+
+**Fix:** Intro should not be a nav entry at all. Auto-open it on first launch, dismiss it on second launch, put a "Show intro again" link inside Settings.
+
+### E.6 Voice is promised, not proven
+
+README says voice layer is live. Phase 4.5 roadmap says voice confidence validation on real devices is still outstanding. Phase 11 product truth asks for voice to be "a comfort feature." index.html has a "Talk" push-to-talk button and a voice state value in Live Help. But there is no evidence in the tests or runtime docs that voice works reliably across device configurations — the grounded-status packet lists "final live-device TTS confidence validation" as Stage 1 work *still to do.*
+
+**Fix:** Either demote voice to "Early preview" in the UI until tested on ≥3 hardware configurations, or actually test it and ship a test report. Do not ship copy that says "Say 'Hey Nova'" on a feature whose reliability you haven't verified end-to-end.
+
+### E.7 The "magic moment" is unclear
+
+New user: what is the single prompt that will make them say "oh, I get it"?
+
+README suggests `explain this`. `intro_magic` in quick actions also suggests `explain this` with switchToPage chat. That's fine, but it only works if the user is already on a page with content to explain, which a first-timer on Nova is not.
+
+A better first-success flow candidate: "tell me what happened in tech news today" → governed web search + headline summary → well-formatted answer with sources. This leans into Nova's actual strength (governed research + answer-first summaries) and does not require screen capture setup.
+
+**Fix:** Make `explain this` *not* the suggested first move. Make a newsy or planning prompt the first move. Every other suggestion becomes evidence after the first win.
+
+---
+
+## F. Architecture / Codebase Gaps
+
+### F.1 Routing lanes are a mental model, not a code structure
+
+The README's 5-lane diagram (Explain / Governed / Memory / Review / OpenClaw) is the product's cleanest self-description. The code does not match that shape. `session_handler.py` at 3821 lines routes to many of these but is one file. `brain_server.py` at 3571 lines mixes HTTP concerns. There's no `src/routing/` with 5 lane modules.
+
+**Fix (not urgent):** When you next need to touch routing, extract each lane as its own module. This will take the session_handler monolith down significantly and make the product story legible in code.
+
+### F.2 `nova_backend/src/skills/` is thin
+
+Contents: `calendar.py`, `executor_adapter.py`, `general_chat.py`, `news.py`, `system.py`, `weather.py`, `web_search.py`. Six skills. Yet the capability registry has 26 capabilities. The mapping between the two is implicit, which means the "What Nova Can Do Right Now" panel (mentioned in `07_CURRENT_STATE.md`) has to compute this relationship at runtime.
+
+**Fix:** One source of truth. Either skills own capabilities (and the registry derives), or the registry owns capabilities (and the skills layer is just a dispatch convention). Today it's neither.
+
+### F.3 Providers layer is split vocabulary
+
+Phase 6 grounded-status packet admits: *"the provider-routing story is still split across local model language, external reasoning language, settings terminology, and narrow feature-specific fallback logic."* I didn't dig into `src/providers/` but the packet's self-diagnosis is specific enough to trust. One model-routing path, one name, one place to change.
+
+### F.4 No CI-enforced "product surface" test
+
+You have runtime-auditor tests, governance matrix tests, drift-check tests — all architectural. What you don't have is an end-to-end "new-user loads the app, sees these specific words, clicks this button, sees this outcome" smoke test that runs in CI. Pure frontend + session smoke.
+
+Playwright (or similar) against `nova_backend/static/` with a stubbed brain_server would catch every P1/P2/P3 regression in the friction roadmap automatically. Right now those regressions get caught only when you or I notice them in Obsidian and write a guard test after the fact (exactly what I did for the MOC copy).
+
+**Fix:** Add Playwright. Write 5 tests: first-run shows Intro; Chat renders Workflow Focus widget; "system status" returns within 3s; Second-opinion button is visible; Trust page starts with reassurance line. Pin these as the product-surface contract.
+
+### F.5 `Nova-Orb-Raspberry-Pi/` is a third unrelated project in the tree
+
+Root-level sibling directory. Unclear whether it ships, whether it's stubbed, whether it's a future plan. If it's a separate project, it should be a separate repo. If it's a dev rig, it should be in `tools/`. Today it's visual noise in the tree and one more thing to explain to a contributor.
+
+---
+
+## G. Real-World Operator Readiness
+
+Lens: what happens when someone who is not you tries to use Nova for one week.
+
+| Scenario | Ready? | Why |
+|---|---|---|
+| Install on a fresh Windows machine | **No** | No installer, no packaged Python, no model-fetch script they can run blind |
+| Install on fresh macOS | **No** | Ditto, plus `.bat` only, no signed `.pkg`/.app |
+| Install on Linux | **Partial** | `start_nova.sh` works for a dev; no systemd unit, no `.deb` |
+| Use as daily news briefer | **Yes** | Headline summary + intelligence brief is shipped and works |
+| Use to ask about screen content | **Partial** | Works when screen share works — i.e., not reliably |
+| Use voice in the kitchen | **No** | Push-to-talk only (button click), no wake-word outside live-help beta |
+| Replace a personal assistant for one day | **No** | Cannot send email, cannot create calendar events, cannot take any action a human wouldn't trivially do themselves |
+| Survive a restart without user confusion | **Partial** | "Connecting" state is still the first impression; recovery guidance is now in-product but the bar is still "user tolerates it" not "user doesn't notice" |
+| Give a honest impression of its capabilities | **Getting there** | The UX friction pass fixed the worst overpromises; operator framing is still ahead of operator reality (C.2) |
+| Export their data and leave | **Partial** | `memory export` command exists; no UI button, no "download everything" |
+| Understand what just happened when Nova did something | **Yes** | Ledger is strong, second-opinion lane is strong, this is Nova's best trait |
+
+**Composite verdict:** Nova can be a useful daily *reading and summarizing* companion for someone who can already run a Python backend. It is not yet usable as a general assistant by anyone else, and it cannot yet do anything a 30-second manual action wouldn't beat.
+
+---
+
+## H. Top 10 Next Moves (ordered)
+
+Deliberately tight. Each is a 2–6 week slice, not a phase.
+
+1. **Ship one installer.** Windows-signed `.exe` that bundles Python 3.11, runs `brain_server` as a service, opens `http://localhost:PORT` in the default browser. Model fetch on first run with progress. Without this, nothing else in this list matters for adoption.
+2. **Ship one real mutation capability.** `send_email_draft` end-to-end (Google + Microsoft OAuth → compose draft → user reviews in Nova → user presses "Send" → Nova calls API). Keep the draft in the mail provider, not in Nova. This validates the governor → approval UX pattern for every future mutation.
+3. **Collapse primary nav to 4 items.** Chat, Home, News, Settings. Everything else under "More" or in-context. Friction roadmap P2-A, finally.
+4. **Make Chat empty state show only Workflow Focus + input.** Move all other widgets behind a command or a "+"-style expansion. Friction roadmap P2-C, finally.
+5. **Invert the Trust page.** Single reassurance line at top, details collapsed below. Friction roadmap P3-B descendent.
+6. **Add a Playwright product-surface suite.** 5 tests, pinned in CI, block PR merges on regression. This is what guards points 3–5 from backsliding.
+7. **README split.** 40-line landing + `docs/INTRODUCTION.md` (the essay) + `docs/ARCHITECTURE.md` (the diagram). Stop asking first-time visitors to read 6 paths.
+8. **Freeze phase folders.** Move new forward-looking work to `docs/decisions/NNNN-title.md` (ADR style). Move historical packets to `docs/retired/`. Phase 12 should never exist.
+9. **Label voice "Early preview"** across UI until a 3-device reliability report lands. Then remove the label if it passes.
+10. **Delete or submodule `Nova-Frontend-Dashboard/`.** One frontend tree.
+
+Order discipline: (1) unlocks everyone else getting to try Nova. (2) unlocks the operator story. (3)–(5) are the UX polish the product truth packet already committed to. (6) protects all of the above. (7)–(10) are the cleanup that lets a stranger trust what they see.
+
+Not on this list (deliberately): new phases, new connectors beyond email, learning layers, trading lanes, creator operator. All of those are premature until (1) and (2) ship.
+
+---
+
+## I. Bottom-Line Verdict
+
+**Nova is real, honest, and earnestly built. It is not yet a product.**
+
+What's real: a governed-execution spine that is architecturally rare and actually enforced; a live FastAPI runtime with 26 read-surface capabilities; a memory layer with correct primitives; a governed second-opinion lane; a test suite and runtime-doc discipline that outclass most projects this age; a design corpus that is intellectually serious.
+
+What's missing: an installer; any real mutation capability; a UI that doesn't outpace the backend's actual authority; a product surface that a non-developer can trust in under 90 seconds; a phase model that isn't a tagging scheme; a way to leave (export) and come back (mobile/sync).
+
+The Phase 11 product truth packet already identified the correct north star: *"Nova is trying to become a calm home assistant with a strict invisible spine."* Today the spine is visible and the assistant is not calm. The remaining work is not more architecture. It is **fewer features, louder trust, quieter controls, one distribution artifact, and one real action.**
+
+If I had to bet: the gap between current-Nova and "shippable to 100 non-developers" is 2–3 months of disciplined, narrow execution. The gap between current-Nova and "competitive with ChatGPT/Claude for everyday use" is 9–18 months and is not the right target. The gap between current-Nova and "the credible governed local assistant for people who care about that" is bridgeable within this year — but only if the operator story ships, the installer ships, and the design backlog stops growing.
+
+The project's biggest threat is not any single gap above. It is **cadence mismatch**: design writes faster than execution. Every week that produces a new phase packet but no user-visible mutation tightens that trap. The fix is structural, not motivational — kill the phase folders, freeze scope, ship one installer and one mutation, and the rest of the picture rearranges.
+
+**One-sentence exit:** Nova's trust model is the best thing in this repo and nobody can use it yet; close that gap before doing anything else.
