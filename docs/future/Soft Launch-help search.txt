@@ -1,0 +1,99 @@
+Question: when should i ask for help?
+
+This is a pivotal question, and it cuts to the heart of execution discipline versus community building. The honest answer is nuanced, but I'll give you a clear, actionable framework.
+
+## The Short Answer
+
+**Yes, but not yet.** Showcasing Nova right now—before the installer works—would be a strategic mistake. However, **lurking and learning** in AI agent communities should start immediately.
+
+Here's the detailed breakdown:
+
+### Phase 1: Now (During Tier 1 Execution) – Lurk, Don't Launch
+
+| Action | Recommendation | Rationale |
+| :--- | :--- | :--- |
+| **Post Nova on Show HN / Reddit / Discord** | **Absolutely not.** | The first impression is the installer. If a curious developer clones the repo and can't run it in 5 minutes, they bounce and never return. You only get one launch. |
+| **Ask for code contributions** | **Hold.** | Until `pyproject.toml` and the refactor (Tier 3) are done, onboarding a contributor is a full-time job. The codebase is too idiosyncratic right now. |
+| **Join AI agent communities** | **Yes, immediately.** | Start listening. Understand the language, the pain points, the key players. This is market research. |
+
+**Specific communities to join *quietly* this week:**
+
+1.  **Discord:** LangChain, AutoGPT, Open Interpreter, AnythingLLM.
+2.  **Reddit:** r/LocalLLaMA, r/selfhosted, r/privacy.
+3.  **GitHub:** Watch projects like `OpenInterpreter`, `SWE-agent`, `LaVague`, `CrewAI`.
+
+**Your only job in these communities right now:** Read every thread about "safety," "governance," "permissions," and "auditability." Every time someone complains about an agent going rogue or lacking transparency, you save that thread. That is your future marketing copy.
+
+---
+
+### Phase 2: After Tier 1 Completion (Installer Works) – Soft Launch
+
+**Goal:** Get 5-10 developers to successfully install and use Nova without hand-holding.
+
+| Action | Recommendation | Rationale |
+| :--- | :--- | :--- |
+| **Post in r/LocalLLaMA** | **Yes, as a "developer preview."** | This community values local-first, privacy-respecting tools. They will forgive rough edges if the core idea is compelling. |
+| **Share on relevant Discords** | **Yes, in `#showcase` channels.** | Frame it as: *"Nova: A local-first AI workspace with governed execution. Looking for early feedback on the installer."* |
+| **Ask for code contributions** | **Only for documentation and bug reports.** | Do not accept feature PRs yet. The roadmap is frozen. |
+
+**Sample post for Phase 2:**
+> *"I built Nova, a local-first AI assistant that separates 'thinking' from 'doing' so you can audit every action before it happens. It's still early (developer preview), but the installer should work on Windows/macOS. I'd love feedback on whether it runs cleanly for you."*
+
+---
+
+### Phase 3: After Tier 2 Completion (One Real Mutation) – Public Launch
+
+**Goal:** Show Nova doing something genuinely useful that no other local tool does *safely*.
+
+This is when you can confidently say: *"Nova can draft emails, but you see and approve the draft before it's sent. Here's the audit trail."*
+
+**Target communities for Phase 3:**
+- **Hacker News (Show HN):** The governance angle is catnip for HN.
+- **r/privacy:** The local-first, audit-trail story is a perfect fit.
+- **Security-focused Discords/Slacks:** Compliance officers and security engineers will get it immediately.
+
+---
+
+### Phase 4: After Tier 3 (Refactor Complete) – Accept Contributions
+
+Only after the codebase is modularized should you actively solicit pull requests. Until then, contributions create more work than they save.
+
+---
+
+## The One Exception: A "Design Partner"
+
+If you can find **one** person who:
+- Understands the vision of governed AI
+- Is technical enough to install from source *today*
+- Is willing to give detailed, patient feedback
+
+...then you should absolutely share Nova with them privately right now. This is not about promotion; it's about having a single external user to keep you honest.
+
+---
+
+## The Risk You Must Avoid
+
+The greatest danger to Nova is not obscurity. It's **premature community management**.
+
+If you post Nova tomorrow and 50 people show up with:
+- "Why doesn't it work on Linux?"
+- "Can you add RAG?"
+- "I got a Python error, help?"
+
+...you will spend the next two weeks doing tech support instead of building the installer. That kills the project.
+
+**The roadmap is clear. The installer is the gate. Build the gate first.**
+
+---
+
+## Final Verdict
+
+| Timeframe | Action |
+| :--- | :--- |
+| **This week** | Join 3 Discord servers. Read, don't post. Save every complaint about AI safety. |
+| **After `pyproject.toml` works** | Share privately with 1-2 trusted developers. |
+| **After Tier 1 complete** | Post in r/LocalLLaMA and Discord `#showcase` channels. |
+| **After Tier 2 complete** | Launch on Hacker News and r/privacy. |
+| **After Tier 3 complete** | Actively solicit contributions. |
+
+You have the discipline to follow this. The roadmap proves it. Now go finish Task 1.4.
