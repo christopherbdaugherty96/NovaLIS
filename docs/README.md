@@ -8,6 +8,21 @@ The docs are intentionally split by authority level so people can quickly tell:
 - what is proven
 - what is authoritative for the live runtime
 
+## Obsidian Overlay
+
+Nova also supports an Obsidian overlay at the repository root.
+
+Use:
+- `C:\Nova-Project` as the Obsidian vault root
+- `_MOCs/` as the generated entry point
+- `scripts/generate_runtime_docs.py` to refresh runtime docs and the overlay together
+
+The important rule is:
+- source docs and source code stay untouched
+- the overlay is generated on top for navigation, graph colors, and map-of-content notes
+
+This lets docs and code appear in the same Obsidian graph, grouped by concern area.
+
 ## Start Here
 
 If you are new to Nova, use this reading order:

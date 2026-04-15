@@ -1,4 +1,4 @@
-﻿# Canon Pointer
+# Canon Pointer
 
 Canonical governance contracts currently live in:
 - `docs/canonical/`
