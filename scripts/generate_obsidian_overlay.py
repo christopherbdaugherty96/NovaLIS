@@ -391,8 +391,26 @@ def scan_notes() -> list[NoteRef]:
             )
         )
     notes.sort(key=lambda note: note.rel.as_posix().lower())
+    _polish_package_titles(notes)
     _disambiguate_titles(notes)
     return notes
+
+
+def _polish_package_titles(notes: list[NoteRef]) -> None:
+    """Give every `__init__.py` a human label instead of the stem "__init__".
+
+    Before: lists showed `__init__ - src/audit` (disambiguation suffix).
+    After: `src/audit` — the label is the dotted package path, which is what a
+    reader actually wants to see when scanning a file list.
+    """
+    for note in notes:
+        if note.path.name != "__init__.py":
+            continue
+        parts = list(note.rel.parent.parts)
+        if parts[:1] == ["nova_backend"]:
+            parts = parts[1:]
+        if parts:
+            note.title = "/".join(parts)
 
 
 def _disambiguate_titles(notes: list[NoteRef]) -> None:
@@ -448,34 +466,46 @@ def write_home(notes: list[NoteRef]) -> None:
         "",
         "# Nova Vault Home",
         "",
-        "This repository root is the canonical Obsidian vault overlay for Nova.",
-        "Docs and code are indexed together so the graph can show connected areas",
-        "with the same category color.",
+        "You're looking at the Nova repository opened as an Obsidian vault.",
+        "Docs and code sit in the same graph; files sharing a concern share a color.",
+        "Sources are never edited — this overlay just builds navigation on top.",
         "",
-        "## Jump in",
+        "## New here? Start here",
         "",
-        "- [[_MOCs/USER_PATHS|Best paths for real users]]",
-        "- [[_MOCs/REPO_BY_FOLDER|Repo by folder]]",
-        "- [[_MOCs/BY_PHASE|By phase]]",
-        "- [[_MOCs/BY_TOPIC|By topic]]",
-        "- [[_MOCs/BY_TYPE|By category]]",
-        "- [[_MOCs/CODE_BY_LAYER|Code by layer]]",
-        "- [[_MOCs/CODE_MODULES|Code modules]]",
-        "- [[_MOCs/CODE_IMPORTS|Code import graph]]",
-        "- [[_MOCs/TEST_MAP|Test map]]",
-        "- [[_MOCs/RECENT|Recently updated]]",
+        "- [[_MOCs/USER_PATHS|Guided entry points — the fewest clicks to what you need]]",
         "",
-        "## How color coordination works",
+        "## Browse the repo",
         "",
-        "- Files with the same concern area share a graph color even when one is docs and the other is code.",
-        "- Category MOCs are the strongest view for what is connected.",
-        "- Topic MOCs are lighter guidance and intentionally narrower than category colors.",
+        "- [[_MOCs/REPO_BY_FOLDER|Walk the tree — same layout as GitHub]]",
+        "- [[_MOCs/RECENT|See what changed most recently]]",
+        "- [[_MOCs/BY_PHASE|Follow the build phase by phase]]",
+        "- [[_MOCs/BY_TOPIC|Browse by cross-cutting theme]]",
+        "- [[_MOCs/BY_TYPE|Group everything by category (strongest connected view)]]",
         "",
-        "## Category totals",
+        "## Read the code",
         "",
-        "| Category | Docs | Code |",
-        "|---|---:|---:|",
+        "- [[_MOCs/CODE_BY_LAYER|Source by runtime layer]]",
+        "- [[_MOCs/CODE_MODULES|Dive into a module — files, imports, importers, tests]]",
+        "- [[_MOCs/CODE_IMPORTS|Follow imports between modules]]",
+        "- [[_MOCs/TEST_MAP|Find the test for a source file]]",
+        "",
+        "## How to read the graph",
+        "",
+        "- Open the graph view (`Ctrl+G`). Same-color dots are connected by concern, not just folder.",
+        "- Hover any file in the graph to preview; click to open.",
+        "- Color legend:",
     ]
+    for category in CATEGORY_ORDER:
+        lines.append(f"    - {CATEGORY_LABELS[category]}")
+    lines.extend(
+        [
+            "",
+            "## By the numbers",
+            "",
+            "| Category | Docs | Code |",
+            "|---|---:|---:|",
+        ]
+    )
     for category in CATEGORY_ORDER:
         lines.append(
             f"| {CATEGORY_LABELS[category]} | {doc_counts[category]} | {code_counts[category]} |"
@@ -491,59 +521,91 @@ def write_home(notes: list[NoteRef]) -> None:
 
 
 def write_user_paths(notes: list[NoteRef]) -> None:
-    """Section-oriented entry points. Each heading gets only its own bullets."""
-    sections: list[tuple[str, list[tuple[str, str]]]] = [
-        ("Understand Nova quickly", [
-            ("README", "README"),
-            ("Human Guides README", "docs/reference/HUMAN_GUIDES/README"),
-            ("System process and explainability guide",
-             "docs/reference/HUMAN_GUIDES/32_NOVA_SYSTEM_PROCESS_AND_EXPLAINABILITY_GUIDE"),
-            ("Current runtime state", "docs/current_runtime/CURRENT_RUNTIME_STATE"),
-        ]),
-        ("Find the live truth", [
-            ("Current runtime state", "docs/current_runtime/CURRENT_RUNTIME_STATE"),
-            ("Runtime capability reference", "docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE"),
-            ("Runtime fingerprint", "docs/current_runtime/RUNTIME_FINGERPRINT"),
-        ]),
-        ("Follow the product and UX work", [
-            ("Current state", "docs/reference/HUMAN_GUIDES/07_CURRENT_STATE"),
-            ("Frontend and UI guide", "docs/reference/HUMAN_GUIDES/14_FRONTEND_AND_UI_GUIDE"),
-            ("UX friction remediation roadmap",
-             "docs/design/Phase 4.5/NOVA_UX_FRICTION_REMEDIATION_ROADMAP_2026-04-14"),
-        ]),
-        ("Understand OpenClaw and operator work", [
-            ("OpenClaw setup and runtime guide",
-             "docs/reference/HUMAN_GUIDES/28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27"),
-            ("Local code operator and project analysis",
-             "docs/reference/HUMAN_GUIDES/31_LOCAL_CODE_OPERATOR_AND_PROJECT_ANALYSIS"),
-            ("Nova-OpenClaw integration standard",
-             "docs/design/Phase 8/NOVA_OPENCLAW_INTEGRATION_STANDARD_2026-04-14"),
-            ("Local code operator roadmap",
-             "docs/design/Phase 8/NOVA_LOCAL_CODE_OPERATOR_ROADMAP_2026-04-13"),
-        ]),
-        ("Explore the codebase", [
-            ("Repo map", "REPO_MAP"),
-            ("Code by layer", "_MOCs/CODE_BY_LAYER"),
-            ("Code modules (per-package index)", "_MOCs/CODE_MODULES"),
-            ("Code import graph", "_MOCs/CODE_IMPORTS"),
-            ("Test map (test <-> source pairing)", "_MOCs/TEST_MAP"),
-            ("Codebase tour", "docs/reference/HUMAN_GUIDES/12_CODEBASE_TOUR"),
-        ]),
-        ("Review trust and governance", [
-            ("Governance matrix", "docs/current_runtime/GOVERNANCE_MATRIX"),
-            ("Bypass surfaces", "docs/current_runtime/BYPASS_SURFACES"),
-            ("Canonical document map", "docs/canonical/CANONICAL_DOCUMENT_MAP"),
-        ]),
+    """Section-oriented entry points.
+
+    Each heading is a question a real user would ask; the line below says when
+    to use that section. Outcome-first phrasing, no internal jargon in headers.
+    """
+    sections: list[tuple[str, str, list[tuple[str, str]]]] = [
+        (
+            "I'm new — what is Nova?",
+            "Start here for a plain-language picture of the system and how it behaves.",
+            [
+                ("README", "README"),
+                ("Human Guides README", "docs/reference/HUMAN_GUIDES/README"),
+                ("System process and explainability guide",
+                 "docs/reference/HUMAN_GUIDES/32_NOVA_SYSTEM_PROCESS_AND_EXPLAINABILITY_GUIDE"),
+                ("Current runtime state", "docs/current_runtime/CURRENT_RUNTIME_STATE"),
+            ],
+        ),
+        (
+            "What is actually running right now?",
+            "Live-truth snapshots — what the runtime auditor sees today.",
+            [
+                ("Current runtime state", "docs/current_runtime/CURRENT_RUNTIME_STATE"),
+                ("Runtime capability reference", "docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE"),
+                ("Runtime fingerprint", "docs/current_runtime/RUNTIME_FINGERPRINT"),
+            ],
+        ),
+        (
+            "What's happening on the product and UX side?",
+            "Recent UX direction, current-state report, and the friction roadmap.",
+            [
+                ("Current state", "docs/reference/HUMAN_GUIDES/07_CURRENT_STATE"),
+                ("Frontend and UI guide", "docs/reference/HUMAN_GUIDES/14_FRONTEND_AND_UI_GUIDE"),
+                ("UX friction remediation roadmap",
+                 "docs/design/Phase 4.5/NOVA_UX_FRICTION_REMEDIATION_ROADMAP_2026-04-14"),
+            ],
+        ),
+        (
+            "How does OpenClaw and the operator work?",
+            "Setup, the integration standard, and the local code operator roadmap.",
+            [
+                ("OpenClaw setup and runtime guide",
+                 "docs/reference/HUMAN_GUIDES/28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27"),
+                ("Local code operator and project analysis",
+                 "docs/reference/HUMAN_GUIDES/31_LOCAL_CODE_OPERATOR_AND_PROJECT_ANALYSIS"),
+                ("Nova-OpenClaw integration standard",
+                 "docs/design/Phase 8/NOVA_OPENCLAW_INTEGRATION_STANDARD_2026-04-14"),
+                ("Local code operator roadmap",
+                 "docs/design/Phase 8/NOVA_LOCAL_CODE_OPERATOR_ROADMAP_2026-04-13"),
+            ],
+        ),
+        (
+            "I want to read the code",
+            "Several lenses — whole-tree browse, per-module detail, import graph, test ↔ source.",
+            [
+                ("Repo map", "REPO_MAP"),
+                ("Source by runtime layer", "_MOCs/CODE_BY_LAYER"),
+                ("Dive into a module", "_MOCs/CODE_MODULES"),
+                ("Follow imports between modules", "_MOCs/CODE_IMPORTS"),
+                ("Find the test for a source file", "_MOCs/TEST_MAP"),
+                ("Codebase tour", "docs/reference/HUMAN_GUIDES/12_CODEBASE_TOUR"),
+            ],
+        ),
+        (
+            "Is this thing trustworthy?",
+            "Governance matrix, bypass surfaces, and the canonical contract map.",
+            [
+                ("Governance matrix", "docs/current_runtime/GOVERNANCE_MATRIX"),
+                ("Bypass surfaces", "docs/current_runtime/BYPASS_SURFACES"),
+                ("Canonical document map", "docs/canonical/CANONICAL_DOCUMENT_MAP"),
+            ],
+        ),
     ]
 
     lines = [
         *_frontmatter(["moc", "nova", "user-paths"]),
         GENERATED_MARKER, "",
-        "# Best paths for real users", "",
-        "Use this page when you want guided entry points instead of the full repo map.", "",
+        "# Guided paths", "",
+        "Pick the question that sounds like yours. Each section is a hand-picked",
+        "reading list — a few links, not the whole tree. For the full repo, go to",
+        "[[_MOCs/HOME|Vault home]] or [[_MOCs/REPO_BY_FOLDER|Repo by folder]].", "",
     ]
-    for heading, items in sections:
+    for heading, intro, items in sections:
         lines.append(f"## {heading}")
+        lines.append("")
+        lines.append(f"_{intro}_")
         lines.append("")
         section_lines: list[str] = []
         for label, target in items:
@@ -555,12 +617,12 @@ def write_user_paths(notes: list[NoteRef]) -> None:
             lines.append("_No linked entries resolved for this section._")
         lines.append("")
 
-    lines.append("## Use the vault well")
+    lines.append("## Tips for using this vault")
     lines.append("")
-    lines.append("- Start with this page or [[_MOCs/HOME|Vault home]].")
-    lines.append("- Use [[_MOCs/BY_TYPE|By category]] for the clearest connected view.")
-    lines.append("- Use [[_MOCs/BY_TOPIC|By topic]] for lighter cross-cutting themes.")
-    lines.append("- Use [[_MOCs/RECENT|Recently updated]] when you want what changed most recently.")
+    lines.append("- Open the graph (`Ctrl+G`) — same-color dots are connected by concern.")
+    lines.append("- [[_MOCs/BY_TYPE|By category]] is the strongest connected view.")
+    lines.append("- [[_MOCs/BY_TOPIC|By topic]] is lighter, cross-cutting guidance.")
+    lines.append("- [[_MOCs/RECENT|Recently updated]] shows what changed most recently across docs and code.")
     lines.append("")
     _write(MOC_DIR / "USER_PATHS.md", "\n".join(lines))
 
@@ -575,9 +637,10 @@ def write_repo_by_folder(notes: list[NoteRef]) -> None:
         *_frontmatter(["moc", "nova", "repo"]),
         GENERATED_MARKER,
         "",
-        "# Repo by folder",
+        "# Walk the repo by folder",
         "",
-        "This is the full tracked repository grouped by top-level folder so the Obsidian vault matches GitHub.",
+        "Every tracked file in the repository, grouped by top-level folder — the",
+        "same layout you'd see on GitHub. Use this when you want the whole map.",
         "",
     ]
     for folder in sorted(buckets, key=str.lower):
@@ -605,9 +668,10 @@ def write_by_phase(notes: list[NoteRef]) -> None:
         *_frontmatter(["moc", "nova", "by-phase"]),
         GENERATED_MARKER,
         "",
-        "# By phase",
+        "# Follow the build phase by phase",
         "",
-        "Docs and code grouped by phase labels inferred from their paths or filenames.",
+        "Docs and code grouped by project phase, inferred from folder and file",
+        "names. Use this to see what shipped (or is planned) for each phase.",
         "",
     ]
     for phase in sorted(by_phase, key=phase_sort_key):
@@ -628,13 +692,11 @@ def write_by_topic(notes: list[NoteRef]) -> None:
         *_frontmatter(["moc", "nova", "by-topic"]),
         GENERATED_MARKER,
         "",
-        "# By topic",
+        "# Browse by theme",
         "",
-        "A file can appear under multiple topics when its path or contents match",
-        "multiple concern areas.",
-        "This view is lighter than category grouping and works best after",
-        "starting from [[_MOCs/USER_PATHS|Best paths for real users]] or [[_MOCs/BY_TYPE|By category]].",
-        "For the full tracked GitHub repository layout, use [[_MOCs/REPO_BY_FOLDER|Repo by folder]].",
+        "A lighter, cross-cutting view than categories — a file can appear under",
+        "multiple themes when its path or contents match several concerns.",
+        "Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category]].",
         "",
     ]
     for topic in TOPIC_KEYWORDS:
@@ -657,9 +719,11 @@ def write_by_type(notes: list[NoteRef]) -> None:
         *_frontmatter(["moc", "nova", "by-category"]),
         GENERATED_MARKER,
         "",
-        "# By category",
+        "# Group everything by category",
         "",
-        "Docs and code in the same concern area share the same graph color group.",
+        "The strongest connected view: docs and code in the same concern area",
+        "share the same graph color group. Use this when you want to see how a",
+        "concern is reflected across docs, code and tests.",
         "",
     ]
     for category in CATEGORY_ORDER:
@@ -708,9 +772,11 @@ def write_code_by_layer(notes: list[NoteRef]) -> None:
         *_frontmatter(["moc", "nova", "code"]),
         GENERATED_MARKER,
         "",
-        "# Code by layer",
+        "# Read source by runtime layer",
         "",
-        "Code files grouped by the major repo layers used to build Nova.",
+        "Every code file grouped by the major repo layers — backend runtime,",
+        "tests, frontend, scripts, governance companion, workspace support.",
+        "Use this to orient yourself before diving into a specific module.",
         "",
     ]
     for label, predicate in layers:
@@ -912,11 +978,11 @@ def write_code_modules(
         *_frontmatter(["moc", "nova", "code", "modules"]),
         GENERATED_MARKER,
         "",
-        "# Code modules (nova_backend/src)",
+        "# Dive into a module",
         "",
-        "One section per top-level module under `nova_backend/src/`. Each section lists",
-        "its files, the internal modules it imports, the modules that import it, and",
-        "tests or docs that match by name or topic.",
+        "One section per top-level module under `nova_backend/src/`. Each section",
+        "shows the module's files, what it imports, what imports it, and the",
+        "tests that pair by filename — so you can see the whole blast radius.",
         "",
     ]
 
@@ -957,10 +1023,12 @@ def write_code_modules(
         if out_modules:
             lines.append("### Imports from")
             lines.append("")
+            # Wikilinks already embed the path, so skip the `(src.foo.bar)`
+            # suffix that used to clutter every line.
             for module_path in sorted(out_modules):
                 target = by_module.get(module_path)
                 if target:
-                    lines.append(f"- {_wikilink(target)} (`{module_path}`)")
+                    lines.append(f"- {_wikilink(target)}")
             lines.append("")
 
         # Imports in — which other internal modules reach into this one.
@@ -1032,11 +1100,11 @@ def write_code_imports(
         *_frontmatter(["moc", "nova", "code", "imports"]),
         GENERATED_MARKER,
         "",
-        "# Code import graph",
+        "# Follow imports between modules",
         "",
-        "Top-level `nova_backend/src/` modules and their inter-module import edges.",
-        "Obsidian treats each bullet as a link, so the graph view shows real code",
-        "connectivity — not just shared folders.",
+        "Each top-level `nova_backend/src/` module and the other modules it pulls",
+        "in. Every bullet is a clickable wikilink, so the graph view shows real",
+        "code connectivity — not just shared folders.",
         "",
     ]
     for importer in sorted(module_edges.keys(), key=lambda s: s.lower()):
@@ -1049,10 +1117,12 @@ def write_code_imports(
             # Prefer the module's __init__.py if present; otherwise pick any
             # file under that top-level module so the edge is still clickable.
             # Module keys use the `src.X` form (we stripped nova_backend.
-            # earlier), so the fallback prefix must match.
+            # earlier), so the fallback prefix must match. After the
+            # __init__ title polish the wikilink already reads as e.g.
+            # "src/audit", so no suffix needed to identify the module.
             target_init = by_module.get(f"src.{target}")
             if target_init:
-                lines.append(f"- {_wikilink(target_init)} — `{target}`")
+                lines.append(f"- {_wikilink(target_init)}")
                 continue
             any_note = next(
                 (
@@ -1063,7 +1133,7 @@ def write_code_imports(
                 None,
             )
             if any_note:
-                lines.append(f"- {_wikilink(any_note)} — `{target}`")
+                lines.append(f"- {_wikilink(any_note)} (in `{target}`)")
             else:
                 lines.append(f"- `{target}`")
         lines.append("")
@@ -1085,10 +1155,10 @@ def write_test_map(
         *_frontmatter(["moc", "nova", "tests"]),
         GENERATED_MARKER,
         "",
-        "# Test map",
+        "# Find the test for a source file",
         "",
-        "Heuristic pairing of `nova_backend/tests/test_<name>.py` to the source",
-        "file with a matching stem. Useful for jumping between a test and the",
+        "Every `nova_backend/tests/test_<name>.py` paired with the source file",
+        "whose filename stem matches. Useful for jumping between a test and the",
         "code it exercises. `__init__.py`, conftest and helper modules are",
         "intentionally skipped so the map stays focused on real test ↔ source links.",
         "",
@@ -1125,9 +1195,10 @@ def write_recent(notes: list[NoteRef], limit: int = 80) -> None:
         *_frontmatter(["moc", "nova", "recent"]),
         GENERATED_MARKER,
         "",
-        f"# Recently updated (top {limit})",
+        f"# What changed most recently (top {limit})",
         "",
-        "Ordered by filesystem modification time across docs and code.",
+        "Docs and code ordered by filesystem modification time, newest first.",
+        "Use this to catch up on what's been touched lately.",
         "",
     ]
     for note in newest:
@@ -1215,19 +1286,21 @@ def write_obsidian_config() -> None:
     }
     (VAULT_CONFIG_DIR / "graph.json").write_text(json.dumps(graph, indent=2), encoding="utf-8")
 
+    # Star order = reading order a new user should try first.
+    # Guided paths and Home come before any internal browsing MOC.
     starred = {
         "items": [
-            {"type": "file", "title": "Home", "path": "_MOCs/HOME.md"},
-            {"type": "file", "title": "Best paths", "path": "_MOCs/USER_PATHS.md"},
-            {"type": "file", "title": "Repo by folder", "path": "_MOCs/REPO_BY_FOLDER.md"},
-            {"type": "file", "title": "By phase", "path": "_MOCs/BY_PHASE.md"},
-            {"type": "file", "title": "By topic", "path": "_MOCs/BY_TOPIC.md"},
-            {"type": "file", "title": "By category", "path": "_MOCs/BY_TYPE.md"},
-            {"type": "file", "title": "Code by layer", "path": "_MOCs/CODE_BY_LAYER.md"},
-            {"type": "file", "title": "Code modules", "path": "_MOCs/CODE_MODULES.md"},
-            {"type": "file", "title": "Code import graph", "path": "_MOCs/CODE_IMPORTS.md"},
-            {"type": "file", "title": "Test map", "path": "_MOCs/TEST_MAP.md"},
-            {"type": "file", "title": "Recent", "path": "_MOCs/RECENT.md"},
+            {"type": "file", "title": "Guided paths (start here)", "path": "_MOCs/USER_PATHS.md"},
+            {"type": "file", "title": "Vault home", "path": "_MOCs/HOME.md"},
+            {"type": "file", "title": "Dive into a module", "path": "_MOCs/CODE_MODULES.md"},
+            {"type": "file", "title": "Follow imports between modules", "path": "_MOCs/CODE_IMPORTS.md"},
+            {"type": "file", "title": "Find the test for a source file", "path": "_MOCs/TEST_MAP.md"},
+            {"type": "file", "title": "Source by runtime layer", "path": "_MOCs/CODE_BY_LAYER.md"},
+            {"type": "file", "title": "Group by category", "path": "_MOCs/BY_TYPE.md"},
+            {"type": "file", "title": "Browse by theme", "path": "_MOCs/BY_TOPIC.md"},
+            {"type": "file", "title": "Follow by phase", "path": "_MOCs/BY_PHASE.md"},
+            {"type": "file", "title": "Walk the repo by folder", "path": "_MOCs/REPO_BY_FOLDER.md"},
+            {"type": "file", "title": "What changed recently", "path": "_MOCs/RECENT.md"},
         ]
     }
     (VAULT_CONFIG_DIR / "starred.json").write_text(json.dumps(starred, indent=2), encoding="utf-8")
