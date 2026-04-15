@@ -314,7 +314,7 @@ function renderThreadMapWidget(data = {}) {
 
     const listMemoryBtn = document.createElement("button");
     listMemoryBtn.type = "button";
-    listMemoryBtn.textContent = `View saved (${memoryCount})`;
+    listMemoryBtn.textContent = `List memory (${memoryCount})`;
     listMemoryBtn.addEventListener("click", () => injectUserText(`memory list thread ${name}`, "text"));
     actions.appendChild(listMemoryBtn);
 

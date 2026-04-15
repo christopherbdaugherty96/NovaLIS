@@ -126,7 +126,7 @@ function applyOpenClawAgentPayload(data) {
     ? data.agent
     : (data && typeof data === "object" ? data : {});
   openClawAgentState.loaded = true;
-  openClawAgentState.summary = String(payload.summary || "").trim() || "Nova can run tasks you review and approve before they take effect.";
+  openClawAgentState.summary = String(payload.summary || "").trim() || "Home Agent helps Nova run manual tasks you can review and stop.";
   openClawAgentState.snapshot = { ...payload };
   openClawAgentState.templates = Array.isArray(payload.templates) ? payload.templates.map((item) => ({ ...item })) : [];
   openClawAgentState.activeRun = (payload.active_run && typeof payload.active_run === "object")
@@ -3174,7 +3174,7 @@ function renderOpenClawAgentPage() {
   if (summary) {
     const runnableCount = Array.isArray(setup.runnable_template_ids) ? setup.runnable_template_ids.length : 0;
     const summaryBits = [
-      String(openClawAgentState.summary || "").trim() || "Nova can run tasks you review and approve before they take effect.",
+      String(openClawAgentState.summary || "").trim() || "Home Agent helps Nova run manual tasks you can review and stop.",
       permissionEnabled
         ? (runnableCount
           ? `${runnableCount} task${runnableCount === 1 ? "" : "s"} available to run.`
