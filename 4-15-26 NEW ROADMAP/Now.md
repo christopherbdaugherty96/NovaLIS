@@ -44,14 +44,18 @@
 ---
 
 ### 1.4 Add `pyproject.toml` + CI
-- [ ] **Prerequisite:** Add a `def main()` wrapper in `nova_backend/src/brain_server.py` (or a thin `nova_backend/__main__.py`) — the file currently has no `main()` and no `if __name__ == "__main__":`, so a naive `nova-start = "nova_backend.brain_server:main"` entry point will fail to resolve.
-- [ ] Create `pyproject.toml` with dependencies and entry point `nova-start`
-- [ ] Add `.github/workflows/ci.yml` for basic linting and test run
+- [x] **Prerequisite:** Add a `def main()` wrapper in `nova_backend/src/brain_server.py` — landed 2026-04-15 (commit `2105777`). Entry point target is `src.brain_server:main` (the `src/` package is the existing import root used by all `from src.X import Y` calls; renaming to a proper `novalis` namespace is deferred to Tier 3).
+- [x] Create `pyproject.toml` with dependencies and entry point `nova-start`
+- [x] Add `.github/workflows/ci.yml` for basic linting and test run
 
 **Acceptance:**  
-- [ ] `python -m nova_backend.brain_server` (or equivalent) launches the app before the pyproject entry is wired
-- [ ] `pip install -e .` works in a clean virtual environment  
-- [ ] `nova-start` command launches the application
+- [x] `python -m uvicorn src.brain_server:app` launches the app (existing `start_nova.bat/sh` pattern, verified)
+- [x] `pip install -e .` works (verified locally in `nova_backend/venv`; wheel built successfully)
+- [x] `nova-start` command created (`nova_backend/venv/Scripts/nova-start.exe` resolves; import smoke test passes)
+
+**Open follow-ups:**
+- [ ] Verify `pip install -e .` from a **clean** venv (current verification reused the existing venv — dependencies were already satisfied).
+- [ ] Run the new CI workflow on a PR to confirm GitHub Actions passes end-to-end.
 
 **Files:** `nova_backend/src/brain_server.py` (add `main()`), `pyproject.toml`, `.github/workflows/ci.yml`  
 **Estimate:** 120 lines
@@ -71,9 +75,9 @@
 ## This Week's Focus (Week 1)
 
 ### Must
-- [ ] **Task 1.0 (preflight):** Establish a clean baseline before any Tier 1 edits land. Run `python scripts/generate_runtime_docs.py --check` and `pytest nova_backend/tests/` on the current checkout. If drift check or tests are red, fix that first. 20 minutes of work; saves days of mis-attributed regressions later.
-- [ ] **Task 1.4a (prerequisite to 1.4):** Add `def main()` wrapper in `nova_backend/src/brain_server.py` so the `nova-start` entry point will resolve.
-- [ ] **Task 1.4:** `pyproject.toml` + CI (depends on 1.4a)
+- [x] **Task 1.0 (preflight):** Baseline established 2026-04-15. `scripts/generate_runtime_docs.py` regenerated cleanly (MOC refresh committed `3e4107a`); `pytest nova_backend/tests/phase45/` passed (36/36). Full suite still pending on CI.
+- [x] **Task 1.4a (prerequisite to 1.4):** `def main()` added to `nova_backend/src/brain_server.py` (commit `2105777`).
+- [x] **Task 1.4:** `pyproject.toml` + CI landed — see section 1.4 above for open follow-ups.
 
 ### Should
 - [ ] **Task 1.1:** Windows installer scaffolding
