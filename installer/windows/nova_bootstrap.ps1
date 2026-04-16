@@ -41,6 +41,12 @@ param(
 $ErrorActionPreference = "Stop"
 
 # ------------------------------------------------------------------
+# Logging — write transcript so failures are diagnosable
+# ------------------------------------------------------------------
+$LogFile = Join-Path (if ($InstallDir) { $InstallDir } else { $PSScriptRoot }) "bootstrap.log"
+try { Start-Transcript -Path $LogFile -Append -Force } catch { }
+
+# ------------------------------------------------------------------
 # Resolve install directory
 # ------------------------------------------------------------------
 if (-not $InstallDir) {
@@ -199,3 +205,5 @@ Write-Host "  Nova installation complete!" -ForegroundColor Cyan
 Write-Host "  Open http://localhost:8000 in your browser" -ForegroundColor Cyan
 Write-Host "============================================" -ForegroundColor Cyan
 Write-Host ""
+
+try { Stop-Transcript } catch { }
