@@ -6,6 +6,8 @@
   <title>Nova</title>
   <link rel="stylesheet" href="/static/style.phase1.css" />
   <link rel="stylesheet" href="/static/dashboard-surfaces.css" />
+  <!-- Task 1.3: first-run simplified UI. Loaded last so it can override. -->
+  <link rel="stylesheet" href="/static/dashboard-simplified.css" />
 </head>
 <body>
   <div class="orb-container" id="orb-container" aria-hidden="true">
@@ -1190,5 +1192,7 @@
   <script src="/static/dashboard-control-center.js"></script>
   <script src="/static/dashboard.js"></script>
   <script src="/static/dashboard-chat-news.js"></script>
+  <!-- Task 1.3: must load after dashboard scripts so header is in place. -->
+  <script src="/static/dashboard-simplified.js"></script>
 </body>
 </html>

@@ -1,0 +1,162 @@
+
+---
+
+# NovaLIS Portfolio Upgrade Plan
+
+**Status:** Actionable Execution Checklist  
+**Core Diagnosis:** *The gap is not skill. The gap is packaging.*  
+**Goal:** Transform a strong architectural project into an undeniable portfolio asset in under one week.
+
+---
+
+## I. The Honest Baseline
+
+**What NovaLIS Is (Truth):**
+- A serious evolving systems project with above-average architectural ambition.
+- Real implementation depth (governance, memory, multiple runtime surfaces).
+- Tests and CI exist (though not prominently surfaced).
+- Documentation is exceptional in depth, but poor for first contact.
+
+**What NovaLIS Is Not:**
+- A finished commercial product.
+- A junior toy repo.
+- A project optimized for quick external validation.
+
+**The Portfolio Problem:**
+> *This project fails the 30-second scan test. A hiring manager or recruiter will click away before discovering the architectural sophistication because the immediate value is invisible.*
+
+---
+
+## II. The Missing Pieces (Complete Inventory)
+
+| # | Gap | Why It Matters | Fix Priority |
+| :--- | :--- | :--- | :--- |
+| 1 | **No immediate "Aha" moment** | Reviewers scan, they don't read. | **CRITICAL** |
+| 2 | **High install friction** | If they can't try it quickly, they won't try it at all. | **CRITICAL** |
+| 3 | **No single completed hero capability** | Broad platform story without a finished anchor feels unfinished. | **CRITICAL** |
+| 4 | **Invisible test/CI evidence** | Tests that aren't seen don't count. | HIGH |
+| 5 | **No clear "Why Not X?" justification** | Reviewer assumes reinventing the wheel. | HIGH |
+| 6 | **No runtime stability proof** | Promises without evidence are just promises. | MEDIUM |
+
+---
+
+## III. Priority Execution Order (48-Hour Plan)
+
+### Day 1 (Focus: Capture Visible Value)
+
+| Task | Time | Deliverable |
+| :--- | :--- | :--- |
+| **Select ONE hero capability** | 1 hour | Decide: Governed file organizer, email draft assistant, or daily briefing flow. |
+| **Complete that workflow** | 4-6 hours | Make it work end-to-end with a clean, demonstrable result. |
+| **Record a 30-second demo** | 30 min | GIF or video showing the hero capability in action (terminal + output). |
+| **Capture a dashboard/ledger screenshot** | 15 min | Visual proof of governance/audit in action. |
+
+### Day 2 (Focus: Repackage the README)
+
+| Task | Time | Deliverable |
+| :--- | :--- | :--- |
+| **Rewrite README top-half** | 2 hours | Follow the structure in Section IV below. |
+| **Add Quickstart (3-5 copy-paste steps)** | 1 hour | Test on a fresh machine or Docker container. |
+| **Add CI/Test badges** | 30 min | Surface existing test coverage prominently. |
+| **Write short "Why Nova?" section** | 30 min | One sentence + tiny comparison table. |
+| **Push live** | 5 min | Deploy updated README and demo assets. |
+
+---
+
+## IV. New README Structure (For First Contact)
+
+```text
+# NovaLIS: Governed AI Assistant with an Audit Trail
+
+[![Tests](https://github.com/.../actions/workflows/test.yml/badge.svg)](link)
+[![License](...)](...)
+
+## 🎥 See It in Action (30 Seconds)
+> [GIF or video link showing: User asks to organize Downloads → Governor reviews → Action executes → Ledger updated]
+
+## ⚡ Quickstart (Get Running in 5 Minutes)
+```bash
+git clone ...
+cd NovaLIS
+./setup.sh          # Creates venv, installs deps, prompts for API keys
+python -m nova run --demo
+```
+
+## 🦸 Hero Capability: Governed File Organizer
+- **Before:** Messy Downloads folder with 50+ files.
+- **Command:** `nova organize ~/Downloads --rules safety_rules.yaml`
+- **After:** Files sorted into folders; `.dmg` and `.app` files quarantined pending approval.
+- **Why This Matters:** The governor **prevents** accidental execution of untrusted downloads.
+
+## 🤔 Why NovaLIS? (Not LangChain / AutoGen)
+| Framework | Orchestrates | Governs |
+| :--- | :--- | :--- |
+| LangChain | ✅ | ❌ |
+| AutoGen | ✅ | ❌ |
+| **NovaLIS** | ✅ | ✅ (Explicit approval, audit trail) |
+
+> *LangGraph orchestrates agents. NovaLIS governs them.*
+
+## 🧠 Architecture (The 10-Second Version)
+[Simple diagram showing User → Governor → Capability Registry → Worker → Ledger]
+[Link to full architecture docs]
+
+## 🧪 Stability & Testing
+- Governance rejection path: **100% test coverage** ([view tests](link))
+- CI passes on every commit.
+- Sample 7-day runtime ledger: [view example](link)
+
+## 🗺️ Roadmap
+[Link to project board or issues]
+```
+
+---
+
+## V. Refinements from the Executive Verdict
+
+**1. Hero Capability Before Perfect Installer**
+- A working, visible workflow shown in a demo **outweighs** a flawless bootstrap script for portfolio impact.
+- If forced to choose: Demo + Hero > Perfect Installer.
+
+**2. Keep "Why Nova?" Extremely Short**
+- One sentence.
+- One tiny comparison table.
+- One concrete safety example.
+
+**3. Use Curated Evidence, Not Raw Evidence**
+- Screenshot of dashboard.
+- Short, redacted ledger snippet.
+- **Avoid** walls of raw logs.
+
+**4. Don't Over-Engineer the README Rewrite**
+- Version 1 live quickly.
+- Polish iteratively later.
+
+---
+
+## VI. The Truth This Plan Protects
+
+**You do not need to improve Nova nearly as much as you need to improve how quickly people can understand that Nova is already impressive.**
+
+The architecture is real. The governance model is real. The tests are real. The ambition is real.
+
+**The only thing missing is a front door that invites people in immediately.**
+
+---
+
+## VII. Success Metric
+
+**After this 48-hour plan, a first-time visitor should be able to answer these questions in under 30 seconds:**
+
+1. What does this do? *(Seen in GIF)*
+2. How do I run it? *(Seen in Quickstart)*
+3. Why should I care? *(Seen in Hero Capability)*
+4. Is this production-grade thinking? *(Seen in badges and "Why Nova?")*
+
+If the answer to all four is **yes**, the portfolio upgrade is complete.
+
+---
+
+**Final One-Sentence Truth:**
+
+> *The fastest way to level up NovaLIS as a portfolio piece is not deeper architecture—it's making undeniable value visible in the first 30 seconds.*

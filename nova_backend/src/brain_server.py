@@ -188,6 +188,13 @@ STATIC_DIR = BASE_DIR / "static"
 INDEX_HTML = STATIC_DIR / "index.html"
 LANDING_HTML = STATIC_DIR / "landing.html"
 
+LANDING_DIR = STATIC_DIR / "landing"
+
+if LANDING_DIR.exists():
+    # Task 1.5: serve the waitlist landing page at /landing (must mount
+    # before /static so the more-specific prefix wins).
+    app.mount("/landing", StaticFiles(directory=LANDING_DIR, html=True), name="landing")
+
 if STATIC_DIR.exists():
     app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 

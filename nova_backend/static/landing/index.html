@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nova — Your Local Intelligence System</title>
+    <meta
+      name="description"
+      content="Nova is a private, offline-capable AI assistant that runs entirely on your own computer. Governed, auditable, and yours."
+    />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="page">
+      <section class="hero">
+        <h1>Nova</h1>
+        <p class="tagline">Your Local Intelligence System.</p>
+        <p class="subtagline">Private. Offline-capable. Governed by you.</p>
+
+        <ul class="bullets">
+          <li><strong>Runs locally.</strong> Your conversations, memory, and files stay on your machine.</li>
+          <li><strong>No cloud required.</strong> Core features work offline.</li>
+          <li><strong>Every action is audited.</strong> An append-only ledger records what Nova did and why.</li>
+        </ul>
+
+        <div class="screenshot-placeholder" aria-hidden="true">
+          <pre>
+ +--------------------------------------------------+
+ |  Nova                                            |
+ |  Chat  •  Memory  •  Trust                       |
+ |--------------------------------------------------|
+ |  &gt; Tell me the news                              |
+ |                                                  |
+ |  Nova: Here are the top stories from today...    |
+ +--------------------------------------------------+
+          </pre>
+        </div>
+
+        <form id="waitlist-form" class="waitlist" novalidate>
+          <label for="waitlist-email" class="visually-hidden">Email address</label>
+          <input
+            id="waitlist-email"
+            name="email"
+            type="email"
+            placeholder="you@example.com"
+            autocomplete="email"
+            required
+          />
+          <button type="submit" id="waitlist-submit">Join waitlist</button>
+          <p class="fineprint">
+            We'll email you when the Windows installer is ready. No spam, no sharing.
+          </p>
+          <p id="waitlist-status" class="status" role="status" aria-live="polite"></p>
+        </form>
+      </section>
+
+      <footer class="footer">
+        <p>
+          Nova is open-source and under active development.
+          <a href="https://github.com/christopherbdaugherty96/NovaLIS">See the code on GitHub →</a>
+        </p>
+      </footer>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>

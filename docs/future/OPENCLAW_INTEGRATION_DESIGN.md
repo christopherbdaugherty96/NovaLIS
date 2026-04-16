@@ -1,0 +1,193 @@
+# OpenClaw Integration Design (Future)
+
+**Status:** Draft — Not yet implemented
+**Target:** After Nova Tier 1 (installer, landing page, basic mutations) is stable
+**Location:** Future design inventory — not part of active roadmap
+
+## Strategic Context (Why This Document Exists)
+
+Nova's governance architecture (ledger, capability registry, governor mediator,
+execution boundaries) is its durable advantage. This document explores how to
+**extend** that advantage to richer subsystems like messaging, scheduling, and
+plugins — without reinventing Nova's identity.
+
+The key distinction:
+
+> **OpenClaw currently exists in a bounded governed lane with limited scope;
+> future plans expand that lane into richer subsystems.**
+
+This expansion is **optional**. Nova can succeed without it. But if user demand
+and product stability justify the investment, this document provides a safe,
+phased path.
+
+## 0. Disclaimer: Not Core to Nova
+
+> OpenClaw integration is an **optional expansion**, not required for Nova's
+> core value proposition.
+> Nova can succeed without it. This document exists to capture the idea
+> safely — not to commit to it.
+
+## 1. Objective
+
+Add OpenClaw's messaging, scheduling, and skill ecosystem to Nova **without
+losing governance**. OpenClaw becomes a **governed subsystem** — every action
+it takes must pass through Nova's `GovernorMediator`, be logged to the ledger,
+and respect the capability registry.
+
+## 2. Core Principle
+
+> **Nova governs. OpenClaw executes.**
+
+- OpenClaw runs as a **bounded worker** (an extension of Nova's existing
+  OpenClaw lane, fully integrated).
+- All OpenClaw tool calls are intercepted and validated by Nova before
+  execution.
+- Nova's ledger records every OpenClaw action.
+- The capability registry is the single source of truth for allowed actions.
+
+## 3. Architecture Overview
+
+```
+User → Nova UI / (future) Messaging Apps
+                ↓
+         Nova GovernorMediator  ← (audit ledger, capability checks)
+                ↓
+    ┌───────────┴───────────┐
+    ↓                       ↓
+Nova native actions    OpenClaw Gateway
+(existing 26 caps)     (sandboxed container)
+                            ↓
+                  OpenClaw agents + skills
+                  (messaging, cron, plugins)
+```
+
+## 4. Phased Implementation Plan
+
+### Phase 1 — Embed OpenClaw as a Governed Subprocess (Proof of Concept)
+
+- Add `openclaw_worker.py` to manage OpenClaw gateway as a subprocess.
+- Create a single governed action: `call_openclaw(prompt)`.
+- Log each OpenClaw tool call to Nova's ledger.
+- **No messaging, no scheduler, no plugins yet.**
+
+**Success metrics for Phase 1:**
+- One governed OpenClaw task runs reliably
+- Ledger entries are visible and correct
+- No bypass of `GovernorMediator` is possible
+- Setup time from clean install is ≤ 10 minutes
+
+### Phase 2 — Messaging Channels (WhatsApp, Telegram, etc.)
+
+- Configure OpenClaw channels to forward messages to Nova's webhook.
+- Add allowlist UI: who can message Nova.
+- Log every incoming/outgoing message.
+- Govern which commands are allowed from messaging (e.g., block
+  `open_website` from SMS).
+
+### Phase 3 — Proactive Execution (Scheduler)
+
+- Add APScheduler to Nova (not inside OpenClaw).
+- User defines scheduled tasks via Nova UI → stored in capability registry
+  with cron expression.
+- Scheduler triggers → GovernorMediator checks → logs to ledger → executes
+  action (may call OpenClaw).
+- User can revoke scheduled tasks at any time.
+
+### Phase 4 — Plugin Ecosystem (ClawHub Skills)
+
+- Load OpenClaw skills but wrap each tool call to go through Nova's governor.
+- Skill installation requires user approval of requested capabilities (like
+  phone permissions).
+- Skills run in a restricted subprocess or container.
+
+### Phase 5 — Sandboxing (Docker / container runtime)
+
+- Run OpenClaw gateway inside a container (Docker, podman, or similar) with:
+  - No host network (only to Nova's API)
+  - Read-only rootfs
+  - CPU/memory limits
+- Nova communicates via local socket/HTTP.
+- **Container runtime guidance:** Provide guided setup for a container runtime
+  (e.g., Docker Desktop, podman, or Orbstack) rather than bundling it
+  directly. Bundle only if licensing and user experience clearly permit.
+
+## 5. Governance Preservation Guarantees
+
+| Feature | How Nova Enforces |
+|---------|-------------------|
+| Every external action | Must call `/api/gov/check` before execution |
+| Audit trail | All OpenClaw actions written to append-only ledger |
+| Capability control | `CapabilityRegistry` is the sole source of truth |
+| Mutation isolation | Only `ExecuteBoundary` can change local state |
+
+## 6. Abort Integration If (Kill Switch)
+
+This integration should be **halted or rolled back** if:
+
+- Users don't actually request messaging or scheduling features after Tier 1
+  is live
+- Phase 1 adds significant complexity without clear user value
+- Maintenance burden (upstream OpenClaw changes) outweighs benefits
+- Security confidence in the integration drops below Nova's baseline
+- The integration starts to distort Nova's core identity or roadmap priorities
+
+The kill switch protects against sunk-cost and scope creep.
+
+## 7. Minimal Viable Experiment (Before Full Integration)
+
+To validate the pattern without building everything:
+
+1. Manually install OpenClaw on the same machine.
+2. Add a Nova action `call_openclaw` that sends a prompt to OpenClaw's API.
+3. Govern it: log to ledger, check capability.
+4. Send a WhatsApp message to OpenClaw, have OpenClaw call back to Nova's
+   governor for each tool use.
+
+**Estimated effort:** 2–4 hours.
+
+## 8. When to Start This Work
+
+**Do not start until:**
+
+- ✅ Nova has a working Windows/macOS installer (Task 1.1)
+- ✅ Nova has a clean first-run UX (Task 1.3)
+- ✅ Nova has at least one real mutation (e.g., email draft) working and
+  governed
+- ✅ The public landing page and waitlist are live (Task 1.5)
+
+**Then start with Phase 1 only.** Re-evaluate after Phase 1 proves useful.
+
+## 9. Risks & Mitigations
+
+| Risk | Mitigation |
+|------|-------------|
+| OpenClaw installation complexity | Provide guided container runtime setup; consider bundling only if clearly beneficial |
+| OpenClaw is fast-moving upstream | Pin a known-good version; avoid tight coupling |
+| Single maintainer overload | Keep integration minimal; defer full ecosystem |
+| Security holes in OpenClaw skills | Run skills in separate container; require capability approval |
+
+## 10. Success Criteria for Full Integration
+
+- A user can message Nova on WhatsApp: "remind me to water plants at 5 PM"
+- Nova logs the request, schedules it, and sends the reminder via WhatsApp
+- Every step is visible in the ledger and can be revoked by the user
+- No action occurs without passing through `GovernorMediator`
+
+## 11. Trade-offs Acknowledged
+
+Nova's governance model offers superior safety and auditability, but at a cost:
+
+- **Slower feature velocity** — each new capability requires registry updates,
+  ledger wiring, and governor mediation.
+- **Higher developer overhead** — more code to write and maintain per action.
+- **Delayed ecosystem growth** — plugins and skills require explicit approval
+  paths.
+
+These are **intentional trade-offs**, not flaws. They align with Nova's
+mission of trust-first personal intelligence.
+
+---
+
+*This document is a design target, not a commitment. It will be revisited
+when Nova's core roadmap (Tier 1) is complete and the project has sufficient
+stability and user feedback to justify the investment.*
