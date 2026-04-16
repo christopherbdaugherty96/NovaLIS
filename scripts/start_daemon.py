@@ -74,17 +74,12 @@ def _ensure_ollama() -> None:
 
 def _find_nova_command() -> list[str]:
     """Return the command list to start Nova."""
-    # Prefer the installed console script
-    nova_start = "nova-start"
-    try:
-        subprocess.run(
-            [nova_start, "--help"],
-            capture_output=True,
-            timeout=5,
-        )
+    import shutil
+
+    # Prefer the installed console script (don't invoke it — just check PATH)
+    nova_start = shutil.which("nova-start")
+    if nova_start is not None:
         return [nova_start]
-    except (FileNotFoundError, subprocess.TimeoutExpired):
-        pass
 
     # Fallback: uvicorn from the nova_backend directory
     backend_dir = Path(__file__).resolve().parents[1] / "nova_backend"

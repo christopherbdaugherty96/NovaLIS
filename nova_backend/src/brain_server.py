@@ -186,8 +186,6 @@ from pathlib import Path
 BASE_DIR = Path(__file__).resolve().parents[1]   # nova_backend/
 STATIC_DIR = BASE_DIR / "static"
 INDEX_HTML = STATIC_DIR / "index.html"
-LANDING_HTML = STATIC_DIR / "landing.html"
-
 LANDING_DIR = STATIC_DIR / "landing"
 
 if LANDING_DIR.exists():

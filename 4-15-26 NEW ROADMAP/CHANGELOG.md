@@ -8,6 +8,7 @@ and cite the commit hash(es) that delivered the work.
 ## 2026-04-16 — Task 1.1: Windows installer scaffolding
 
 ### Task 1.1 — Windows installer (scaffolding DONE, validation pending)
+- Commit: `53557cc`
 - `installer/windows/nova_setup.iss` — Inno Setup 6 script. Copies source
   tree, runs bootstrap, creates Start Menu + desktop shortcuts, registers
   uninstaller. Outputs `dist/NovaSetup-0.1.0.exe`.
@@ -27,7 +28,7 @@ and cite the commit hash(es) that delivered the work.
 
 ---
 
-## 2026-04-16 — Tier 1 tasks 1.2, 1.3, 1.5 + doc additions
+## 2026-04-16 — Tier 1 tasks 1.2, 1.3, 1.5 + doc additions (Commit: `7ad7e26`)
 
 ### Task 1.2 — README rewrite + INTRODUCTION + ARCHITECTURE (DONE)
 - Rewrote `README.md` from 335-line technical doc to ~45-line non-technical
@@ -74,7 +75,7 @@ and cite the commit hash(es) that delivered the work.
 ## 2026-04-15 — Tier 1 foundation work
 
 ### Task 1.4 — `pyproject.toml` + CI (DONE)
-- Commits: `<pending>` (this change)
+- Commit: `0593b62`
 - Added root `pyproject.toml` with:
   - `novalis` package, Python ≥ 3.10, dependencies pinned to match
     `nova_backend/requirements.txt`.

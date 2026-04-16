@@ -79,6 +79,14 @@ body.nova-simplified #thread-map-widget {
   display: none !important;
 }
 
+/* When the user explicitly navigates to the News page, show its content
+   even in simplified mode — otherwise the page is empty and confusing.
+   The data-nova-page attribute is set by dashboard-simplified.js via a
+   MutationObserver watching page visibility. */
+body.nova-simplified[data-nova-page="news"] #news-widget {
+  display: block !important;
+}
+
 /* Hide the token budget bar (roadmap 1.3 specifically calls this out). */
 body.nova-simplified .token-budget,
 body.nova-simplified .token-budget-bar,

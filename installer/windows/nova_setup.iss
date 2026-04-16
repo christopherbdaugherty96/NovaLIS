@@ -73,7 +73,7 @@ Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription:
 ; Run the bootstrap script after files are copied.
 ; -ExecutionPolicy Bypass is needed because the user may not have run
 ; Set-ExecutionPolicy previously. The bootstrap is local, signed by us.
-Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\installer\windows\nova_bootstrap.ps1"" -InstallDir ""{app}"""; StatusMsg: "Setting up Nova (Python, Ollama, model)..."; Flags: runhidden waituntilterminated
+Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\installer\windows\nova_bootstrap.ps1"" -InstallDir ""{app}"" -NonInteractive"; StatusMsg: "Setting up Nova (Python, Ollama, model)..."; Flags: runhidden waituntilterminated
 ; Offer to launch Nova after install
 Filename: "{app}\nova_backend\venv\Scripts\python.exe"; Parameters: """{app}\scripts\start_daemon.py"""; Description: "Launch Nova now"; Flags: postinstall nowait skipifsilent
 
