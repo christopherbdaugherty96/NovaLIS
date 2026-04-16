@@ -51,7 +51,7 @@ must pass through this spine.** There is no back door.
 
 ## Capability inventory (today)
 
-Nova ships **26 live capabilities**:
+Nova ships **26 live capabilities** (as of April 2026):
 
 - **20 read-only**: chat, research, news, weather and calendar
   snapshots, memory review, second-opinion review, and a dozen more
@@ -117,11 +117,11 @@ claims in the generated docs cannot.
 ## Development workflow
 
 ```bash
-# Install editable (Tier 1.4)
+# Install editable
 pip install -e ".[dev]"
 
 # Run locally
-nova-start                   # or: python -m uvicorn src.brain_server:app
+nova-start                   # or: cd nova_backend && python -m uvicorn src.brain_server:app
 
 # Tests
 pytest nova_backend/tests

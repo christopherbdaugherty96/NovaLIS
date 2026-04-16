@@ -75,10 +75,28 @@
     }
   }
 
+  function trackActivePage() {
+    // Watch which page is visible so CSS can selectively un-hide widgets
+    // (e.g. show #news-widget when the user navigates to News).
+    // Pages are sections like #page-news whose `hidden` attribute toggles.
+    var observer = new MutationObserver(function () {
+      var pages = document.querySelectorAll('[id^="page-"]');
+      for (var i = 0; i < pages.length; i++) {
+        if (!pages[i].hidden) {
+          document.body.setAttribute('data-nova-page', pages[i].id.replace('page-', ''));
+          return;
+        }
+      }
+    });
+    var main = document.querySelector('.main') || document.body;
+    observer.observe(main, { attributes: true, subtree: true, attributeFilter: ['hidden'] });
+  }
+
   function init() {
     var simplified = readPref();
     applyPref(simplified);
     mountControls();
+    trackActivePage();
     // Re-apply once more in case dashboard.js re-renders the header
     // after mount. Cheap insurance.
     setTimeout(function () { applyPref(document.body.classList.contains(SIMPLIFIED_CLASS)); }, 500);

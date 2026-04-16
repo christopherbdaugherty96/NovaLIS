@@ -41,6 +41,7 @@ See [`4-15-26 NEW ROADMAP/MasterRoadMap.md`](4-15-26%20NEW%20ROADMAP/MasterRoadM
 
 - [Introduction → what Nova is and why it exists](docs/INTRODUCTION.md)
 - [Architecture → how the governance spine works](docs/ARCHITECTURE.md)
+- [Landing page / waitlist](http://localhost:8000/landing) (run Nova first, or see `nova_backend/static/landing/`)
 - [Contributing](CONTRIBUTING.md)
 - [Security policy](SECURITY.md)
 

@@ -26,11 +26,16 @@
 
 .PARAMETER NoLaunch
     Don't start Nova after installation.
+
+.PARAMETER NonInteractive
+    Auto-accept all prompts (used when called from the Inno Setup
+    installer with runhidden — Read-Host would hang in a hidden window).
 #>
 param(
     [string]$InstallDir = "",
     [switch]$SkipModel,
-    [switch]$NoLaunch
+    [switch]$NoLaunch,
+    [switch]$NonInteractive
 )
 
 $ErrorActionPreference = "Stop"
@@ -76,7 +81,7 @@ foreach ($candidate in @("python", "python3", "py")) {
 
 if (-not $pythonCmd) {
     Write-Host "       Python >= 3.10 not found." -ForegroundColor Red
-    $install = Read-Host "       Install Python via winget? (Y/n)"
+    if ($NonInteractive) { $install = "Y" } else { $install = Read-Host "       Install Python via winget? (Y/n)" }
     if ($install -ne "n") {
         winget install Python.Python.3.12 --accept-source-agreements --accept-package-agreements
         $pythonCmd = "python"
@@ -101,7 +106,7 @@ try {
 
 if (-not $ollamaFound) {
     Write-Host "       Ollama not found." -ForegroundColor Red
-    $install = Read-Host "       Install Ollama via winget? (Y/n)"
+    if ($NonInteractive) { $install = "Y" } else { $install = Read-Host "       Install Ollama via winget? (Y/n)" }
     if ($install -ne "n") {
         winget install Ollama.Ollama --accept-source-agreements --accept-package-agreements
         Write-Host "       Ollama installed." -ForegroundColor Green
