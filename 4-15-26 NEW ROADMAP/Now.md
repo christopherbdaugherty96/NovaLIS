@@ -22,24 +22,28 @@
 ---
 
 ### 1.2 Simplify README + GitHub metadata
-- [ ] Rewrite README for non‑technical user (60‑second install promise)
-- [ ] Remove outdated claims ("operator", "calm presence", "voice live")
-- [ ] Add badges, clear screenshot, quickstart section
-- [ ] Update repo description and tags
+- [x] Rewrite README for non‑technical user (~45 lines, quickstart, roadmap links)
+- [x] Remove outdated claims ("operator", "calm presence", "voice live")
+- [x] Create `docs/INTRODUCTION.md` (governance philosophy, non‑technical)
+- [x] Create `docs/ARCHITECTURE.md` (technical deep dive, governance spine, capability inventory)
+- [ ] Add badges (blocked: CI billing lock on GitHub Actions)
+- [ ] Add screenshot or demo GIF
+- [ ] Update repo description and tags on GitHub
 
 **Files:** `README.md`, `docs/INTRODUCTION.md`, `docs/ARCHITECTURE.md`  
-**Estimate:** 200 lines
+**Estimate:** 200 lines — **landed ~250 lines across 3 files**
 
 ---
 
 ### 1.3 Reduce UI overload
-- [ ] Collapse navigation sidebar by default
-- [ ] Hide non‑essential widgets from home view
-- [ ] Remove token budget bar from main UI
-- [ ] Simplify first‑run experience (default prompt: "Tell me the news")
+- [x] Collapse navigation behind hamburger toggle by default (`dashboard-simplified.css` + `dashboard-simplified.js`)
+- [x] Hide non‑essential widgets (weather, morning, search, hints, live-help, news, brief, home-launch, workspace-home, capability-surface, thread-map) behind `nova-simplified` body class
+- [x] Hide token budget bar from main UI
+- [x] Simplify first‑run experience (`FIRST_RUN_DEFAULT_PROMPT: "Tell me the news"` in config)
+- [x] "Show full UI" toggle persists to localStorage so power users keep the old layout
 
-**Files:** `nova_backend/static/index.html`, `nova_backend/static/dashboard-config.js`  
-**Estimate:** 150 lines
+**Files:** `nova_backend/static/index.html`, `nova_backend/static/dashboard-config.js`, `nova_backend/static/dashboard-simplified.css` (new), `nova_backend/static/dashboard-simplified.js` (new)  
+**Estimate:** 150 lines — **landed ~180 lines across 4 files**
 
 ---
 
@@ -63,12 +67,16 @@
 ---
 
 ### 1.5 Minimal distribution landing page
-- [ ] Create simple HTML landing page with email waitlist form
-- [ ] Host on GitHub Pages or similar free service
-- [ ] Add link from README and repo
+- [x] Create landing page (`nova_backend/static/landing/index.html`) with hero, bullets, ASCII screenshot placeholder, email waitlist form
+- [x] CSS (`styles.css`) — dark-first, responsive, respects `prefers-color-scheme: light`
+- [x] Form submission via Formspree (`script.js`) — graceful fallback when endpoint not yet configured
+- [x] Mounted at `/landing` in `brain_server.py` via `StaticFiles(html=True)`
+- [x] Link from README
+- [ ] **Activate waitlist:** sign up at formspree.io, replace `REPLACE_WITH_REAL_ID` in `script.js`
+- [ ] (Optional) Host on GitHub Pages or custom domain for public access
 
-**Files:** `landing/index.html` (or separate repo)  
-**Estimate:** 100 lines
+**Files:** `nova_backend/static/landing/index.html`, `nova_backend/static/landing/styles.css`, `nova_backend/static/landing/script.js`, `nova_backend/src/brain_server.py`  
+**Estimate:** 100 lines — **landed ~280 lines across 4 files**
 
 ---
 
@@ -80,21 +88,32 @@
 - [x] **Task 1.4:** `pyproject.toml` + CI landed — see section 1.4 above for open follow-ups.
 
 ### Should
-- [ ] **Task 1.1:** Windows installer scaffolding
+- [x] **Task 1.2:** README rewritten, INTRODUCTION.md + ARCHITECTURE.md created
+- [x] **Task 1.3:** UI simplified — nav collapsed, widgets hidden, token bar hidden, default prompt set
+- [x] **Task 1.5:** Landing page with waitlist form deployed at `/landing`
 
-### Could
-- [ ] **Task 1.2:** README first pass
+### Remaining
+- [ ] **Task 1.1:** Windows installer (next up)
+- [ ] Activate Formspree endpoint for landing page waitlist
+- [ ] Add CI badges to README (blocked: GitHub Actions billing lock)
+- [ ] Add screenshot / demo GIF to README
 
 ---
 
 ## Done This Week
-- [ ] (Move completed tasks here at week end)
+- [x] Task 1.0 — Preflight baseline (pytest 36/36, MOC refresh)
+- [x] Task 1.4a — `def main()` wrapper in brain_server.py
+- [x] Task 1.4 — `pyproject.toml` + CI workflow
+- [x] Task 1.2 — README rewrite + INTRODUCTION.md + ARCHITECTURE.md
+- [x] Task 1.3 — UI simplified (collapsed nav, hidden widgets, token bar removed, default prompt)
+- [x] Task 1.5 — Landing page with waitlist form at `/landing`
+- [x] Deep audit cleanup — removed unverified memory claim
 
 ---
 
 ## Blockers / Dependencies
 
-- None yet.
+- **GitHub Actions billing lock** — CI workflow exists but has not run. All three triggered workflows (CI, Governance Check, Fingerprint Clean) failed with "account is locked due to a billing issue." Resolve account status to unblock CI badges and automated testing.
 
 ---
 

@@ -1,0 +1,87 @@
+/*
+ * Task 1.3 — UI overload reduction (first-run simplified mode).
+ *
+ * When <body> carries the `nova-simplified` class, non-essential widgets
+ * are hidden and the primary nav collapses behind a hamburger toggle.
+ * The class is applied by dashboard-simplified.js unless the user has
+ * explicitly opted out via the "Show full UI" toggle (persisted to
+ * localStorage under `nova.simplified`).
+ *
+ * Design intent: first-run users see chat + minimal chrome only. Power
+ * users can toggle the full dashboard back on in one click.
+ *
+ * Reversible — deleting this file and the matching JS restores the
+ * previous behaviour exactly.
+ */
+
+/* Hamburger toggle button (always present; always clickable) */
+.nova-nav-toggle {
+  display: none;
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  margin-right: 8px;
+}
+.nova-nav-toggle:hover { background: rgba(255, 255, 255, 0.08); }
+
+.nova-ui-toggle {
+  background: transparent;
+  color: inherit;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.7;
+}
+.nova-ui-toggle:hover { opacity: 1; }
+
+/* Simplified mode: everything below here is off by default and only
+   activates when the body class is present. */
+body.nova-simplified .nova-nav-toggle { display: inline-flex; align-items: center; }
+
+/* Collapse the primary nav behind the hamburger */
+body.nova-simplified #primary-nav-strip {
+  display: none;
+}
+body.nova-simplified.nova-nav-open #primary-nav-strip {
+  display: flex;
+  position: absolute;
+  top: 64px;
+  left: 16px;
+  background: rgba(18, 18, 22, 0.96);
+  padding: 8px;
+  border-radius: 8px;
+  z-index: 1000;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+
+/* Hide non-essential widgets on first render. Chat, connection chip,
+   brand block, and orb remain visible. Explicit allow-list keeps future
+   widgets hidden by default — safer than an exclusion list. */
+body.nova-simplified #weather-widget,
+body.nova-simplified #morning-widget,
+body.nova-simplified #workflow-focus-widget,
+body.nova-simplified #search-widget,
+body.nova-simplified #hints-panel,
+body.nova-simplified #live-help-widget,
+body.nova-simplified #news-widget,
+body.nova-simplified #brief-widget,
+body.nova-simplified #home-launch-widget,
+body.nova-simplified #workspace-home-widget,
+body.nova-simplified #capability-surface-widget,
+body.nova-simplified #thread-map-widget {
+  display: none !important;
+}
+
+/* Hide the token budget bar (roadmap 1.3 specifically calls this out). */
+body.nova-simplified .token-budget,
+body.nova-simplified .token-budget-bar,
+body.nova-simplified [data-role="token-budget"] {
+  display: none !important;
+}
