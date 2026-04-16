@@ -38,15 +38,14 @@ def test_governance_docs_generation(tmp_path, monkeypatch):
         assert anchor in content
 
     skill_map = (runtime_dir / "SKILL_SURFACE_MAP.md").read_text(encoding="utf-8")
-    assert "src/skills/web_search.py" not in skill_map
     assert "src/skills/web_search_skill.py" not in skill_map
-    assert "intentionally omitted from this live runtime map" in skill_map
     for module in (
         "src/skills/system.py",
         "src/skills/calendar.py",
         "src/skills/weather.py",
         "src/skills/news.py",
         "src/skills/general_chat.py",
+        "src/skills/web_search.py",
     ):
         assert module in skill_map
 

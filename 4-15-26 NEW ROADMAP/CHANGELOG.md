@@ -5,6 +5,19 @@ and cite the commit hash(es) that delivered the work.
 
 ---
 
+## 2026-04-16 — Test suite fixes (Commit: `pending`)
+- Fixed `workspace_api.py` `/landing` route: replaced removed `LANDING_HTML`
+  reference with `LANDING_DIR / "index.html"`.
+- Updated `test_landing_page.py` assertions to match rewritten README copy
+  ("private, offline-capable AI assistant" vs old "Local-first AI").
+- Updated `test_runtime_governance_docs.py`: `web_search.py` is now correctly
+  included in the SKILL_SURFACE_MAP (runtime auditor added it; test was stale).
+- Updated `test_brain_server_basic_conversation.py`: codebase summary assertion
+  now matches new README paragraph ("private, offline-capable AI assistant").
+- Result: full test suite 1100/1100 passing (previously 5 failures).
+
+---
+
 ## 2026-04-16 — Second-pass review and fixes (Commit: `96244bc`)
 - Created `nova_backend/static/favicon.ico` (16x16 "N" glyph) — unblocks
   Inno Setup .exe compilation.
