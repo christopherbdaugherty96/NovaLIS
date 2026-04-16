@@ -84,6 +84,10 @@ if (-not $pythonCmd) {
     if ($NonInteractive) { $install = "Y" } else { $install = Read-Host "       Install Python via winget? (Y/n)" }
     if ($install -ne "n") {
         winget install Python.Python.3.12 --accept-source-agreements --accept-package-agreements
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "       ERROR: Python installation failed (exit code $LASTEXITCODE)." -ForegroundColor Red
+            exit 1
+        }
         $pythonCmd = "python"
         Write-Host "       Python installed. You may need to restart this script." -ForegroundColor Yellow
     } else {
@@ -109,7 +113,12 @@ if (-not $ollamaFound) {
     if ($NonInteractive) { $install = "Y" } else { $install = Read-Host "       Install Ollama via winget? (Y/n)" }
     if ($install -ne "n") {
         winget install Ollama.Ollama --accept-source-agreements --accept-package-agreements
-        Write-Host "       Ollama installed." -ForegroundColor Green
+        if ($LASTEXITCODE -ne 0) {
+            Write-Host "       WARNING: Ollama installation failed (exit code $LASTEXITCODE)." -ForegroundColor Yellow
+            Write-Host "       LLM features will not work until Ollama is installed manually." -ForegroundColor Yellow
+        } else {
+            Write-Host "       Ollama installed." -ForegroundColor Green
+        }
     } else {
         Write-Host "       WARNING: Without Ollama, Nova's LLM features won't work." -ForegroundColor Yellow
     }

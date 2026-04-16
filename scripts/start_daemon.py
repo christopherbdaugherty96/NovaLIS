@@ -47,11 +47,14 @@ def _is_running() -> bool:
         return False
 
 
+OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
+
+
 def _ensure_ollama() -> None:
     """Start Ollama serve if it's installed but not running."""
     try:
         import urllib.request
-        urllib.request.urlopen("http://127.0.0.1:11434/api/tags", timeout=3)
+        urllib.request.urlopen(f"{OLLAMA_URL}/api/tags", timeout=3)
         return  # already running
     except Exception:
         pass

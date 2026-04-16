@@ -14,7 +14,7 @@ A thorough second pass compared the merged document against all source inputs an
 
 Nova is **real, architecturally coherent, and trust‑first**:
 - Live governed execution spine (`GovernorMediator → CapabilityRegistry → ExecuteBoundary → NetworkMediator → LedgerWriter`)
-- 26 live capabilities — 20 read-only (research, news, weather/calendar snapshot, memory review, second-opinion, etc.) and 6 local-device controls (open website, speak, volume, media, brightness, open file/folder). **Zero external-write capabilities** (no email send, no calendar write, no file content writes).
+- 25 live capabilities — 16 read-only (9 local + 7 network: research, news, weather/calendar snapshot, memory review, second-opinion, screen analysis, etc.), 6 local-device controls (open website, speak, volume, media, brightness, open file/folder), and 3 persistent-change (screen capture, story tracker, memory governance). **Zero external-effect capabilities** (no email send, no calendar write, no outbound mutations).
 - Memory layer with confirmation, append‑only ledger, runtime‑doc drift check
 - 234 test files vs 247 source files (~1:1) – real discipline
 
@@ -38,7 +38,7 @@ This document provides a verified gap analysis and a tiered, actionable roadmap.
 | Memory layer | Full CRUD with confirmation | ✅ End‑to‑end |
 | Second‑opinion review | Advisory lane without execution authority | ✅ Differentiator |
 | Test coverage | 234 test files | ✅ Real discipline |
-| 26 capabilities | 20 read + 6 local-device controls; zero external writes | ✅ Live, but no external mutation lane |
+| 25 capabilities | 16 read-only + 6 local-device + 3 persistent-change; zero external effects | ✅ Live, but no external mutation lane |
 | Two hot‑path files | `brain_server.py` (3571 lines), `session_handler.py` (3821 lines) | ⚠️ Refactor debt |
 | Frontend duplication | Two frontend trees | ⚠️ Maintenance hazard |
 | Docs sprawl | 120 design docs across 12 phase folders | ⚠️ Drag multiplier |
@@ -67,7 +67,7 @@ This document provides a verified gap analysis and a tiered, actionable roadmap.
 
 ## 3. Documentation Truthfulness (Code vs. Docs)
 
-✅ **Honest:** governed path, 26 read‑only capabilities, append‑only ledger, test count, memory layer.
+✅ **Honest:** governed path, 25 capabilities (16 read-only, 6 local-device, 3 persistent-change), append‑only ledger, test count, memory layer.
 
 ⚠️ **Overstated:** "calm presence" (UI is busy), "operator" (no mutations), "voice live" (preview), installation instructions (missing model fetch).
 
@@ -154,7 +154,7 @@ This document provides a verified gap analysis and a tiered, actionable roadmap.
 - Governor boundaries intact
 - Runtime truth docs authoritative
 - Memory user‑controlled
-- Existing 26 capabilities continue to work
+- Existing 25 capabilities continue to work
 
 ### D. Retention Loop
 - Default: morning news briefing + intelligence brief on Home page.

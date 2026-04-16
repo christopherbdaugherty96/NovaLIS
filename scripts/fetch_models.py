@@ -45,12 +45,15 @@ def _model_present(model: str) -> bool:
             timeout=30,
         )
         # `ollama list` output has model names in the first column.
+        # Each line looks like: "gemma4:e4b    3.4 GB    2 days ago"
         for line in result.stdout.splitlines():
-            # Each line looks like: "gemma4:e4b    3.4 GB    2 days ago"
-            if line.strip().startswith(model.split(":")[0]):
-                tag = model.split(":")[-1] if ":" in model else "latest"
-                if tag in line:
-                    return True
+            first_col = line.split()[0] if line.strip() else ""
+            # Exact match on "name:tag" in the first column.
+            if first_col == model:
+                return True
+            # Also match when tag is "latest" and column shows just the name.
+            if ":" not in model and first_col.split(":")[0] == model:
+                return True
         return False
     except (FileNotFoundError, subprocess.TimeoutExpired):
         return False
