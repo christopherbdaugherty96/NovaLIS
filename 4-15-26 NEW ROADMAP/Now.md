@@ -86,7 +86,7 @@
 ## This Week's Focus (Week 1)
 
 ### Must
-- [x] **Task 1.0 (preflight):** Baseline established 2026-04-15. `scripts/generate_runtime_docs.py` regenerated cleanly (MOC refresh committed `3e4107a`); `pytest nova_backend/tests/phase45/` passed (36/36). Full suite still pending on CI.
+- [x] **Task 1.0 (preflight):** Baseline established 2026-04-15. `scripts/generate_runtime_docs.py` regenerated cleanly (MOC refresh committed `3e4107a`); `pytest nova_backend/tests/phase45/` passed (36/36). Full suite 1100/1100 passing locally (CI still blocked by billing lock).
 - [x] **Task 1.4a (prerequisite to 1.4):** `def main()` added to `nova_backend/src/brain_server.py` (commit `2105777`).
 - [x] **Task 1.4:** `pyproject.toml` + CI landed — see section 1.4 above for open follow-ups.
 
@@ -115,6 +115,7 @@
 - [x] Deep audit cleanup — removed unverified memory claim
 - [x] Doc reorganization — renamed/relocated user docs into docs/future/ and docs/archive/
 - [x] Second-pass review — 3 must-fix (favicon, bootstrap hang, start_daemon probe), 5 should-fix, 1 cosmetic — all applied (`96244bc`)
+- [x] Test suite fixes — 5 stale test assertions updated (workspace_api LANDING_HTML→LANDING_DIR, landing page copy, skill map web_search, codebase summary README text); full suite 1100/1100 green
 
 ---
 

@@ -15,8 +15,9 @@ def build_workspace_router(deps) -> APIRouter:
 
     @router.get("/landing")
     async def landing():
-        if deps.LANDING_HTML.exists():
-            return FileResponse(deps.LANDING_HTML)
-        return {"error": "static/landing.html not found"}
+        landing_index = deps.LANDING_DIR / "index.html"
+        if landing_index.exists():
+            return FileResponse(landing_index)
+        return {"error": "static/landing/index.html not found"}
 
     return router

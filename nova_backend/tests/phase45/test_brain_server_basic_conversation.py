@@ -552,7 +552,7 @@ def test_what_does_this_codebase_do_returns_grounded_repo_summary(monkeypatch):
 
     chat_messages = _chat_messages(ws)
     assert any("Local codebase summary" in msg for msg in chat_messages)
-    assert any("personal intelligence workspace" in msg.lower() for msg in chat_messages)
+    assert any("private, offline-capable ai assistant" in msg.lower() for msg in chat_messages)
     assert all("Project summary: #" not in msg for msg in chat_messages)
     assert all("\ufeff" not in msg for msg in chat_messages)
 
