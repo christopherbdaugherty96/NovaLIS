@@ -5,7 +5,18 @@ and cite the commit hash(es) that delivered the work.
 
 ---
 
-## 2026-04-16 — Test suite fixes (Commit: `pending`)
+## 2026-04-16 — Third-pass review and hardening (Commit: `pending`)
+- Corrected capability count: 25 (not 26) across `ARCHITECTURE.md` and
+  `MasterRoadMap.md`. Breakdown: 16 read-only + 6 local-device + 3
+  persistent-change, zero external effects.
+- `start_daemon.py`: Ollama health check now respects `OLLAMA_URL` env var
+  instead of hardcoding `127.0.0.1:11434`.
+- `fetch_models.py`: replaced substring tag match with exact first-column
+  match to avoid false positives on partial model names.
+- `nova_bootstrap.ps1`: added `$LASTEXITCODE` checks after `winget install`
+  calls — Python failure now exits early, Ollama failure warns explicitly.
+
+## 2026-04-16 — Test suite fixes (Commit: `7f3c574`)
 - Fixed `workspace_api.py` `/landing` route: replaced removed `LANDING_HTML`
   reference with `LANDING_DIR / "index.html"`.
 - Updated `test_landing_page.py` assertions to match rewritten README copy

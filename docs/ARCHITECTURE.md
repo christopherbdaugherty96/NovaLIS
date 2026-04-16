@@ -51,11 +51,11 @@ must pass through this spine.** There is no back door.
 
 ## Capability inventory (today)
 
-Nova ships **26 live capabilities** (as of April 2026):
+Nova ships **25 live capabilities** (as of April 2026):
 
-- **20 read-only**: chat, research, news, weather and calendar
-  snapshots, memory review, second-opinion review, and a dozen more
-  read-only surfaces.
+- **16 read-only** (9 local + 7 network): chat, research, news,
+  weather and calendar snapshots, memory review, second-opinion review,
+  screen analysis, and more.
 - **6 local-device controls**: open website, speak text, set volume,
   next/previous media, set brightness, open file/folder.
 - **0 external writes**: no email send, no calendar write, no file
