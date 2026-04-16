@@ -5,7 +5,7 @@ and cite the commit hash(es) that delivered the work.
 
 ---
 
-## 2026-04-16 — Third-pass review and hardening (Commit: `pending`)
+## 2026-04-16 — Third-pass review and hardening (Commit: `8c9e6f2`)
 - Corrected capability count: 25 (not 26) across `ARCHITECTURE.md` and
   `MasterRoadMap.md`. Breakdown: 16 read-only + 6 local-device + 3
   persistent-change, zero external effects.
