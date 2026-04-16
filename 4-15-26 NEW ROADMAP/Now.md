@@ -11,13 +11,16 @@
 ## Active Tasks (Tier 1)
 
 ### 1.1 One‑click installer
-- [ ] Windows `.exe` installer (Inno Setup or similar)
-- [ ] macOS `.app` bundle or `.pkg`
-- [ ] Model fetch script bundled with installer
-- [ ] Start daemon/service after installation
+- [x] Windows `.exe` installer via Inno Setup (`installer/windows/nova_setup.iss`)
+- [x] PowerShell bootstrap script (`installer/windows/nova_bootstrap.ps1`) — handles Python, Ollama, venv, pip install, model pull, Start Menu shortcut
+- [x] Model fetch script (`scripts/fetch_models.py`) — checks Ollama, pulls default model (`gemma4:e4b`), idempotent
+- [x] Daemon start script (`scripts/start_daemon.py`) — ensures Ollama serve, launches Nova background, waits for health, opens browser
+- [ ] macOS `.app` bundle or `.pkg` (deferred — validate Windows first)
+- [ ] **Test on clean Windows VM** (acceptance criteria: double-click → Nova running in ≤5 min, no terminal)
+- [ ] Build and publish `NovaSetup-0.1.0.exe` to GitHub Releases
 
-**Files:** `installer/windows/*.iss`, `scripts/fetch_models.py`, `scripts/start_daemon.py`  
-**Estimate:** 400 lines
+**Files:** `installer/windows/nova_setup.iss`, `installer/windows/nova_bootstrap.ps1`, `scripts/fetch_models.py`, `scripts/start_daemon.py`, `installer/README.md`  
+**Estimate:** 400 lines — **landed ~500 lines across 5 files**
 
 ---
 
@@ -93,7 +96,8 @@
 - [x] **Task 1.5:** Landing page with waitlist form deployed at `/landing`
 
 ### Remaining
-- [ ] **Task 1.1:** Windows installer (next up)
+- [x] **Task 1.1:** Windows installer scaffolding shipped — Inno Setup .iss, bootstrap PS1, fetch_models.py, start_daemon.py
+- [ ] **Task 1.1 validation:** Build .exe with Inno Setup Compiler and test on clean Windows VM
 - [ ] Activate Formspree endpoint for landing page waitlist
 - [ ] Add CI badges to README (blocked: GitHub Actions billing lock)
 - [ ] Add screenshot / demo GIF to README
@@ -107,7 +111,9 @@
 - [x] Task 1.2 — README rewrite + INTRODUCTION.md + ARCHITECTURE.md
 - [x] Task 1.3 — UI simplified (collapsed nav, hidden widgets, token bar removed, default prompt)
 - [x] Task 1.5 — Landing page with waitlist form at `/landing`
+- [x] Task 1.1 — Windows installer scaffolding (Inno Setup + bootstrap + scripts)
 - [x] Deep audit cleanup — removed unverified memory claim
+- [x] Doc reorganization — renamed/relocated user docs into docs/future/ and docs/archive/
 
 ---
 

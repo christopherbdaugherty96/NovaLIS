@@ -5,6 +5,28 @@ and cite the commit hash(es) that delivered the work.
 
 ---
 
+## 2026-04-16 — Task 1.1: Windows installer scaffolding
+
+### Task 1.1 — Windows installer (scaffolding DONE, validation pending)
+- `installer/windows/nova_setup.iss` — Inno Setup 6 script. Copies source
+  tree, runs bootstrap, creates Start Menu + desktop shortcuts, registers
+  uninstaller. Outputs `dist/NovaSetup-0.1.0.exe`.
+- `installer/windows/nova_bootstrap.ps1` — PowerShell script called by the
+  installer (or standalone). Checks Python ≥3.10 and Ollama (offers winget
+  install if missing), creates venv, runs `pip install -e .`, pulls default
+  model, creates Start Menu shortcut, launches Nova.
+- `scripts/fetch_models.py` — checks if the default Ollama model
+  (`gemma4:e4b`) is present; pulls it if not. Idempotent.
+- `scripts/start_daemon.py` — ensures Ollama is running, launches Nova as
+  a background process (no console window on Windows), waits for health
+  endpoint, opens browser.
+- `installer/README.md` — user-facing install instructions (exe, bootstrap,
+  manual).
+- Pending: build actual .exe with Inno Setup Compiler, test on clean
+  Windows VM (the Tier 1 acceptance criteria).
+
+---
+
 ## 2026-04-16 — Tier 1 tasks 1.2, 1.3, 1.5 + doc additions
 
 ### Task 1.2 — README rewrite + INTRODUCTION + ARCHITECTURE (DONE)
