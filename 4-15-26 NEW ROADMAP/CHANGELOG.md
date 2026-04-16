@@ -5,6 +5,20 @@ and cite the commit hash(es) that delivered the work.
 
 ---
 
+## 2026-04-16 — Second-pass review and fixes (Commit: `96244bc`)
+- Created `nova_backend/static/favicon.ico` (16x16 "N" glyph) — unblocks
+  Inno Setup .exe compilation.
+- Added `-NonInteractive` switch to bootstrap; `.iss` now passes it so
+  `Read-Host` cannot hang in a hidden window.
+- Replaced `nova-start --help` probe in `start_daemon.py` with
+  `shutil.which()` — prevents accidental server start during detection.
+- Fixed CHANGELOG placeholder commit hashes; added landing page link to
+  README; fixed `ARCHITECTURE.md` uvicorn command; removed dead
+  `LANDING_HTML` constant; added News page support in simplified mode
+  via `MutationObserver`.
+
+---
+
 ## 2026-04-16 — Task 1.1: Windows installer scaffolding
 
 ### Task 1.1 — Windows installer (scaffolding DONE, validation pending)

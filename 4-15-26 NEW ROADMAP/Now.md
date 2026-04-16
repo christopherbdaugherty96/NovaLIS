@@ -2,7 +2,7 @@
 
 **Sprint Goal:** Non‑developer installs and runs Nova in 5 minutes.
 
-**Status:** IN PROGRESS  
+**Status:** SCAFFOLDING COMPLETE — awaiting .exe build + clean-VM validation  
 **Start Date:** 2026-04-15  
 **Target End:** 2026-05-13 (4 weeks)
 
@@ -114,6 +114,7 @@
 - [x] Task 1.1 — Windows installer scaffolding (Inno Setup + bootstrap + scripts)
 - [x] Deep audit cleanup — removed unverified memory claim
 - [x] Doc reorganization — renamed/relocated user docs into docs/future/ and docs/archive/
+- [x] Second-pass review — 3 must-fix (favicon, bootstrap hang, start_daemon probe), 5 should-fix, 1 cosmetic — all applied (`96244bc`)
 
 ---
 
