@@ -2,7 +2,7 @@
 
 **Sprint Goal:** Non‑developer installs and runs Nova in 5 minutes.
 
-**Status:** SCAFFOLDING COMPLETE — awaiting .exe build + clean-VM validation  
+**Status:** INSTALLER BUILT — `dist/NovaSetup-0.1.0.exe` (214 MB) compiled successfully. Awaiting clean-VM validation.  
 **Start Date:** 2026-04-15  
 **Target End:** 2026-05-13 (4 weeks)
 
@@ -97,7 +97,8 @@
 
 ### Remaining
 - [x] **Task 1.1:** Windows installer scaffolding shipped — Inno Setup .iss, bootstrap PS1, fetch_models.py, start_daemon.py
-- [ ] **Task 1.1 validation:** Build .exe with Inno Setup Compiler and test on clean Windows VM
+- [x] **Task 1.1 build:** `dist/NovaSetup-0.1.0.exe` compiled (214 MB, Inno Setup 6.7.1)
+- [ ] **Task 1.1 validation:** Test installer on clean Windows VM (acceptance: double-click → Nova running ≤5 min)
 - [ ] Activate Formspree endpoint for landing page waitlist
 - [ ] Add CI badges to README (blocked: GitHub Actions billing lock)
 - [ ] Add screenshot / demo GIF to README

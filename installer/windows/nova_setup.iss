@@ -32,7 +32,6 @@ Compression=lzma2
 SolidCompression=yes
 ; Require 64-bit Windows
 ArchitecturesAllowed=x64compatible
-ArchitecturesInstallMode=x64compatible
 ; Don't require admin unless the user picks Program Files
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
@@ -79,7 +78,7 @@ Filename: "{app}\nova_backend\venv\Scripts\python.exe"; Parameters: """{app}\scr
 
 [UninstallRun]
 ; Stop Nova before uninstalling
-Filename: "{app}\stop_nova.bat"; Flags: runhidden waituntilterminated
+Filename: "{app}\stop_nova.bat"; RunOnceId: "StopNova"; Flags: runhidden waituntilterminated
 
 [UninstallDelete]
 ; Clean up the venv and caches that weren't in the original install
