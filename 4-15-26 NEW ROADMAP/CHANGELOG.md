@@ -5,6 +5,25 @@ and cite the commit hash(es) that delivered the work.
 
 ---
 
+## 2026-04-17 — Tier 2.1: send_email_draft capability (cap 64)
+
+- Added `EMAIL_DRAFT_CREATED`, `EMAIL_DRAFT_FAILED`, `EMAIL_DRAFT_OPENED` to `event_types.py`
+- Added cap 64 + `communication` group to `registry.json`
+- Created `src/executors/send_email_draft_executor.py`:
+  - Composes email body via local LLM (`generate_chat`), falls back to placeholder
+  - Builds RFC 6068 `mailto:` URI with `urllib.parse`
+  - Opens system mail client: `os.startfile` (Windows), `open` (macOS), `xdg-open` (Linux)
+  - Logs `EMAIL_DRAFT_CREATED` / `EMAIL_DRAFT_FAILED` to ledger
+  - Returns `ActionResult` with `authority_class="persistent_change"`, `external_effect=True`, `reversible=False`
+  - Nova never transmits email — user reviews and sends manually
+- `governor_mediator.py`: added `SEND_EMAIL_DRAFT_RE` + `EMAIL_SHORTHAND_RE` with
+  negative-lookahead recipient parsing to cleanly split `to` from `subject`
+- `governor.py`: added `elif req.capability_id == 64:` dispatch + 60 s timeout override
+- 35 new tests: 16 executor unit tests, 19 routing tests — all pass
+- Full suite: 1135/1135 passing
+
+---
+
 ## 2026-04-16 — Installer iterations + VM testing (Commits: `32c9ff8`, `329f115`, `781c11c`, `71aa736`)
 - Fixed `ArchitecturesInstallMode` — removed unsupported directive, added `RunOnceId`
 - Switched to `{commonpf64}` install path (forces `C:\Program Files`, not x86)

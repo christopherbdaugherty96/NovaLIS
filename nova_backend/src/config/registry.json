@@ -11,6 +11,9 @@
     "home_agent": [
       63
     ],
+    "communication": [
+      64
+    ],
     "intelligence": [
       16,
       31,
@@ -410,6 +413,20 @@
       "reversible": true,
       "external_effect": true,
       "description": "Phase 8 canonical governed execution surface for OpenClaw home-agent templates. Runs a named read-only template through either the governed network path or a bounded local-read path and returns a structured result widget."
+    },
+    {
+      "id": 64,
+      "name": "send_email_draft",
+      "status": "active",
+      "phase_introduced": "8",
+      "risk_level": "confirm",
+      "data_exfiltration": true,
+      "enabled": true,
+      "authority_class": "persistent_change",
+      "requires_confirmation": true,
+      "reversible": false,
+      "external_effect": true,
+      "description": "Composes an email draft using the local LLM and opens it in the system mail client (mailto:). The user reviews and sends manually — Nova never transmits email autonomously. Requires explicit user confirmation before opening the mail client."
     }
   ],
   "retired_ids": []

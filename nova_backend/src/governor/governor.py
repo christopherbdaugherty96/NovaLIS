@@ -34,6 +34,7 @@ CAPABILITY_TIMEOUT_OVERRIDES = {
     62: 90.0,  # Governed external reasoning review may need local-model cold-start time.
     54: 150.0,  # Analysis documents need more time for local-model long-form generation.
     63: 45.0,  # Home-agent templates may need network round-trips across multiple sources.
+    64: 60.0,  # Email draft composes body via local LLM — allow cold-start time.
 }
 
 # Capabilities that consume external tokens and are subject to daily budget enforcement.
@@ -630,6 +631,11 @@ class Governor:
             from src.executors.openclaw_execute_executor import OpenClawExecuteExecutor
 
             return OpenClawExecuteExecutor().execute(req)
+
+        elif req.capability_id == 64:
+            from src.executors.send_email_draft_executor import SendEmailDraftExecutor
+
+            return SendEmailDraftExecutor(ledger=self.ledger).execute(req)
 
         return ActionResult.refusal(
             "Execution path not implemented yet.",
