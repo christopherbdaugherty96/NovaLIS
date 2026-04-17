@@ -2,7 +2,7 @@
 
 **Sprint Goal:** Non‑developer installs and runs Nova in 5 minutes.
 
-**Status:** INSTALLER BUILT — `dist/NovaSetup-0.1.0.exe` (214 MB) compiled successfully. Awaiting clean-VM validation.  
+**Status:** INSTALLER PAUSED — VM validation in progress but deferred. Pivoting to Tier 2 capability work. Installer will be validated when returning to Tier 1 close-out.
 **Start Date:** 2026-04-15  
 **Target End:** 2026-05-13 (4 weeks)
 
@@ -16,8 +16,8 @@
 - [x] Model fetch script (`scripts/fetch_models.py`) — checks Ollama, pulls default model (`gemma4:e4b`), idempotent
 - [x] Daemon start script (`scripts/start_daemon.py`) — ensures Ollama serve, launches Nova background, waits for health, opens browser
 - [ ] macOS `.app` bundle or `.pkg` (deferred — validate Windows first)
-- [ ] **Test on clean Windows VM** (acceptance criteria: double-click → Nova running in ≤5 min, no terminal)
-- [ ] Build and publish `NovaSetup-0.1.0.exe` to GitHub Releases
+- [~] **Test on clean Windows VM** — PAUSED. Installer compiled (239 MB, commit `71aa736`), uploaded to GitHub Releases `v0.1.0-test`. VM created in VirtualBox, Windows 11 ISO loaded. Stopped at SmartScreen warning (click "More info → Run anyway"). Bootstrap runs hidden; logs to `{app}\bootstrap.log`. Known issue: Nova app opens then closes — likely Ollama not running or model not pulled. **Resume here:** check `C:\Program Files\Nova\bootstrap.log` on VM for exact failure point.
+- [x] Published `NovaSetup-0.1.0.exe` to GitHub Releases (`v0.1.0-test`)
 
 **Files:** `installer/windows/nova_setup.iss`, `installer/windows/nova_bootstrap.ps1`, `scripts/fetch_models.py`, `scripts/start_daemon.py`, `installer/README.md`  
 **Estimate:** 400 lines — **landed ~500 lines across 5 files**

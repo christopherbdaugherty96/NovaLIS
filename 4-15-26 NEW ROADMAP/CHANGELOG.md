@@ -5,6 +5,21 @@ and cite the commit hash(es) that delivered the work.
 
 ---
 
+## 2026-04-16 — Installer iterations + VM testing (Commits: `32c9ff8`, `329f115`, `781c11c`, `71aa736`)
+- Fixed `ArchitecturesInstallMode` — removed unsupported directive, added `RunOnceId`
+- Switched to `{commonpf64}` install path (forces `C:\Program Files`, not x86)
+- Added `PrivilegesRequired=admin`
+- Bootstrap now logs via `Start-Transcript` → `{app}\bootstrap.log`
+- Post-install launch now conditional — only offered if venv creation succeeded
+- Bundled `python-3.12.8-amd64.exe` (26 MB) inside installer — zero prerequisites
+- Published `NovaSetup-0.1.0.exe` (239 MB) to GitHub Releases `v0.1.0-test`
+- VM test: SmartScreen bypassed, installer ran, bootstrap completed, but Nova
+  app closes immediately — root cause unknown (bootstrap.log not yet retrieved).
+- **Status: PAUSED** — pivoting to Tier 2 capability work. Resume by checking
+  `C:\Program Files\Nova\bootstrap.log` on VM.
+
+---
+
 ## 2026-04-16 — Third-pass review and hardening (Commit: `8c9e6f2`)
 - Corrected capability count: 25 (not 26) across `ARCHITECTURE.md` and
   `MasterRoadMap.md`. Breakdown: 16 read-only + 6 local-device + 3
