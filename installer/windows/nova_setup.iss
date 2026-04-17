@@ -24,17 +24,16 @@ AppName=Nova
 AppVersion=0.1.0
 AppPublisher=Christopher Daugherty
 AppPublisherURL=https://github.com/christopherbdaugherty96/NovaLIS
-DefaultDirName={autopf}\Nova
+DefaultDirName={commonpf64}\Nova
 DefaultGroupName=Nova
 OutputDir=..\..\dist
 OutputBaseFilename=NovaSetup-0.1.0
 Compression=lzma2
 SolidCompression=yes
-; Require 64-bit Windows — ensures {autopf} resolves to Program Files (not x86)
+; Require 64-bit Windows
 ArchitecturesAllowed=x64compatible
-; Don't require admin unless the user picks Program Files
-PrivilegesRequired=lowest
-PrivilegesRequiredOverridesAllowed=dialog
+; Require admin — writing to Program Files needs elevation
+PrivilegesRequired=admin
 ; Uninstall
 UninstallDisplayName=Nova
 UninstallDisplayIcon={app}\nova_backend\static\favicon.ico

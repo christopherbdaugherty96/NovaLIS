@@ -87,6 +87,14 @@ foreach ($candidate in @("python", "python3", "py")) {
 
 if (-not $pythonCmd) {
     Write-Host "       Python >= 3.10 not found." -ForegroundColor Red
+    # Check if winget is available
+    $wingetAvailable = $false
+    try { $null = Get-Command winget -ErrorAction Stop; $wingetAvailable = $true } catch { }
+    if (-not $wingetAvailable) {
+        Write-Host "       ERROR: Python is required but winget is not available to install it." -ForegroundColor Red
+        Write-Host "       Please install Python 3.10+ from https://python.org and re-run this script." -ForegroundColor Red
+        exit 1
+    }
     if ($NonInteractive) { $install = "Y" } else { $install = Read-Host "       Install Python via winget? (Y/n)" }
     if ($install -ne "n") {
         winget install Python.Python.3.12 --accept-source-agreements --accept-package-agreements
@@ -94,8 +102,27 @@ if (-not $pythonCmd) {
             Write-Host "       ERROR: Python installation failed (exit code $LASTEXITCODE)." -ForegroundColor Red
             exit 1
         }
-        $pythonCmd = "python"
-        Write-Host "       Python installed. You may need to restart this script." -ForegroundColor Yellow
+        # Refresh PATH so we can find the newly installed Python
+        $env:Path = [System.Environment]::GetEnvironmentVariable("Path", "Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path", "User")
+        $pythonCmd = $null
+        foreach ($candidate in @("python", "python3", "py")) {
+            try {
+                $ver = & $candidate --version 2>&1
+                if ($ver -match "Python 3\.(\d+)") {
+                    $minor = [int]$Matches[1]
+                    if ($minor -ge 10) {
+                        $pythonCmd = $candidate
+                        Write-Host "       Python installed and found: $ver" -ForegroundColor Green
+                        break
+                    }
+                }
+            } catch { }
+        }
+        if (-not $pythonCmd) {
+            Write-Host "       ERROR: Python was installed but could not be found on PATH." -ForegroundColor Red
+            Write-Host "       Try closing and reopening PowerShell, then re-run this script." -ForegroundColor Red
+            exit 1
+        }
     } else {
         Write-Host "       ERROR: Python is required. Install from https://python.org" -ForegroundColor Red
         exit 1
