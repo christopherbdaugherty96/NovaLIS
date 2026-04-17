@@ -57,6 +57,8 @@ Source: "..\..\start_nova.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "..\..\stop_nova.bat"; DestDir: "{app}"; Flags: ignoreversion
 ; Include the bootstrap script itself
 Source: "nova_bootstrap.ps1"; DestDir: "{app}\installer\windows"; Flags: ignoreversion
+; Bundled Python installer — used by bootstrap if Python is not found
+Source: "deps\python-3.12.8-amd64.exe"; DestDir: "{app}\installer\windows\deps"; Flags: ignoreversion
 
 [Icons]
 ; Shortcuts use start_daemon.py via system python as fallback — the script
