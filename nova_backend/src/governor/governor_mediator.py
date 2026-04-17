@@ -437,6 +437,19 @@ MORNING_BRIEF_RE = re.compile(
     r"^\s*(?:run|give me|show me|start)?\s*(?:the\s+)?morning\s+brief(?:\s+template)?\s*$",
     re.IGNORECASE,
 )
+SEND_EMAIL_DRAFT_RE = re.compile(
+    # verb + "email/e-mail"
+    r"^\s*(?:draft|compose|write|prepare)\s+(?:me\s+)?(?:an?\s+)?e?-?mail\b"
+    # optional "to <recipient>" — stops before keyword prepositions via negative lookahead
+    r"(?:\s+to\s+(?P<to>[^\s]+(?:\s+(?!(?:about|regarding|re:|with\s+subject|subject)\b)[^\s]+)*))?"
+    # optional "about / regarding / subject: <topic>"
+    r"(?:\s+(?:about|regarding|re:|with\s+subject|subject[:\s]+)\s+(?P<subject>.+?))?\s*$",
+    re.IGNORECASE,
+)
+EMAIL_SHORTHAND_RE = re.compile(
+    r"^\s*email\s+(?P<to>[A-Za-z0-9._%+\-@][\w._%+\-@]*)(?:\s+about\s+(?P<subject>.+?))?\s*$",
+    re.IGNORECASE,
+)
 
 _NUMBER_WORDS = {
     "one": "1",
@@ -1221,6 +1234,34 @@ class GovernorMediator:
                     "new_title": "",
                     "new_body": m.group("body").strip(),
                     "confirmed": bool((m.group("confirm") or "").strip()),
+                },
+            )
+
+        m = SEND_EMAIL_DRAFT_RE.match(t)
+        if m:
+            to = (m.group("to") or "").strip()
+            subject = (m.group("subject") or "").strip()
+            return _invocation_if_enabled(
+                64,
+                {
+                    "to": to,
+                    "subject": subject,
+                    "body_intent": subject or t,
+                    "session_id": session_id or "",
+                },
+            )
+
+        m = EMAIL_SHORTHAND_RE.match(t)
+        if m:
+            to = (m.group("to") or "").strip()
+            subject = (m.group("subject") or "").strip()
+            return _invocation_if_enabled(
+                64,
+                {
+                    "to": to,
+                    "subject": subject,
+                    "body_intent": subject or t,
+                    "session_id": session_id or "",
                 },
             )
 
