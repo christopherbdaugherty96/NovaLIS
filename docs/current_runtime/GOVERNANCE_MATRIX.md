@@ -29,6 +29,7 @@ Deterministic capability governance matrix derived from allowlisted runtime sour
 | 61 | memory_governance | True | active | 5 | low | False | persistent_change | False | False | False | False | Governor -> Executor | True | True | True | True | True |
 | 62 | external_reasoning_review | True | active | 7 | low | False | read_only_local | False | True | False | False | Governor -> Executor | True | True | True | True | True |
 | 63 | openclaw_execute | True | active | 8 | low | False | read_only_network | False | True | True | True | Governor -> NetworkMediator | True | True | True | True | True |
+| 64 | send_email_draft | True | active | 8 | confirm | True | persistent_change | True | False | True | False | Governor -> Executor | True | True | True | True | True |
 
 ## Derivation notes
 
