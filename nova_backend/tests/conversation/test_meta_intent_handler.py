@@ -252,7 +252,15 @@ class TestOutOfScope:
     def test_recognized(self, text):
         result = _handle(text)
         assert result is not None
-        assert "can't do that" in result or "not" in result.lower()
+        # New specific messages use "yet", "can't", "isn't" rather than the
+        # old generic "can't do that" or bare "not".
+        assert (
+            "can't do that" in result
+            or "not" in result.lower()
+            or "yet" in result.lower()
+            or "can't" in result.lower()
+            or "isn't" in result.lower()
+        )
 
     def test_response_redirects(self):
         result = _handle("can you book a flight")
