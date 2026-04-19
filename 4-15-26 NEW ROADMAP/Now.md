@@ -144,6 +144,36 @@
 
 ---
 
+## Next Steps
+
+1. **Cap 64 live signoff**
+- [ ] Run the live checklist end-to-end
+- [ ] Complete live signoff
+- [ ] Close the capability lock in `docs/capability_verification/STATUS.md`
+- [ ] Re-verify runtime truth after signoff
+
+2. **Installer validation**
+- [ ] Resume clean Windows VM validation
+- [ ] Check `C:\Program Files\Nova\bootstrap.log` for the current failure point
+- [ ] Verify "double-click to Nova running" against the 5-minute goal
+- [ ] Record signoff once installer acceptance passes
+
+3. **Demo / portfolio packaging**
+- [ ] Add screenshot or demo GIF to README
+- [ ] Add CI badges once GitHub billing lock is resolved
+- [ ] Update GitHub repo description and tags
+
+4. **Hero workflow**
+- [ ] Verify first-use flow is clear from install -> launch -> first successful action
+- [ ] Tighten any friction in the landing page / README / first prompt path
+- [ ] Record signoff once the first-run path feels demo-ready
+
+5. **Next bounded capability**
+- [ ] Choose the next small governed capability only after cap 64 and installer signoff are complete
+- [ ] Define acceptance, verification, and lock criteria before implementation starts
+
+---
+
 ## Notes
 
 - **Do not** start refactoring `brain_server.py` or `session_handler.py`. That is Tier 3 work.
