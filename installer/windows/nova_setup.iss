@@ -74,7 +74,10 @@ Name: "desktopicon"; Description: "Create a desktop shortcut"; GroupDescription:
 [Run]
 ; Run the bootstrap script after files are copied.
 ; Log output to a file so failures are diagnosable even when runhidden.
-Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\installer\windows\nova_bootstrap.ps1"" -InstallDir ""{app}"" -NonInteractive -NoLaunch *> ""{app}\bootstrap.log"""; StatusMsg: "Setting up Nova (Python, Ollama, model)..."; Flags: runhidden waituntilterminated
+; Note: logging is handled inside the script via Start-Transcript → {app}\bootstrap.log
+; Do NOT add shell-redirect operators here — Inno Setup uses CreateProcess, not CMD,
+; so *> would be passed as a literal argument to PowerShell and break parameter binding.
+Filename: "powershell.exe"; Parameters: "-ExecutionPolicy Bypass -File ""{app}\installer\windows\nova_bootstrap.ps1"" -InstallDir ""{app}"" -NonInteractive -NoLaunch -SkipShortcut"; StatusMsg: "Setting up Nova (Python, Ollama, model)..."; Flags: runhidden waituntilterminated
 
 [UninstallRun]
 ; Stop Nova before uninstalling

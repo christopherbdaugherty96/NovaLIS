@@ -35,7 +35,13 @@ param(
     [string]$InstallDir = "",
     [switch]$SkipModel,
     [switch]$NoLaunch,
-    [switch]$NonInteractive
+    [switch]$NonInteractive,
+    # When called from the Inno Setup installer, pass -SkipShortcut so the
+    # bootstrap does not create a Start Menu shortcut — the [Icons] section
+    # in nova_setup.iss owns shortcut creation for the installer path.
+    # When run standalone (developer / repair), the bootstrap creates the
+    # shortcut itself since the .iss [Icons] section is not involved.
+    [switch]$SkipShortcut
 )
 
 $ErrorActionPreference = "Stop"
@@ -216,7 +222,9 @@ if (-not (Test-Path $VenvPython)) {
 # ------------------------------------------------------------------
 Write-Host "[4/6] Installing Nova (pip install -e .)..." -ForegroundColor Yellow
 
-Invoke-ExternalStep -Description "pip upgrade" -Command { & $VenvPython -m pip install --upgrade pip --quiet 2>&1 | Out-Null }
+# Note: use *> $null rather than 2>&1 | Out-Null — piping to Out-Null resets
+# $LASTEXITCODE to 0 even on failure, masking pip errors inside Invoke-ExternalStep.
+Invoke-ExternalStep -Description "pip upgrade" -Command { & $VenvPython -m pip install --upgrade pip --quiet *> $null }
 Invoke-ExternalStep -Description "Nova install (pip install -e .)" -Command { & $VenvPython -m pip install -e $InstallDir --quiet }
 Write-Host "       Nova installed." -ForegroundColor Green
 
@@ -238,26 +246,34 @@ if (-not $SkipModel) {
 }
 
 # ------------------------------------------------------------------
-# Step 6: Start Menu shortcut
+# Step 6: Start Menu shortcut (standalone path only)
 # ------------------------------------------------------------------
-Write-Host "[6/6] Creating Start Menu shortcut..." -ForegroundColor Yellow
+# When called from nova_setup.iss the installer's [Icons] section owns
+# shortcut creation via Inno Setup's common Start Menu ({group}).
+# Skip here to avoid duplicate entries and wrong-profile placement
+# ($env:APPDATA can point to the admin profile under UAC elevation).
+if ($SkipShortcut) {
+    Write-Host "[6/6] Skipping Start Menu shortcut (managed by installer)." -ForegroundColor Yellow
+} else {
+    Write-Host "[6/6] Creating Start Menu shortcut..." -ForegroundColor Yellow
 
-$startMenuDir = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Nova"
-if (-not (Test-Path $startMenuDir)) {
-    New-Item -ItemType Directory -Path $startMenuDir -Force | Out-Null
+    $startMenuDir = Join-Path $env:APPDATA "Microsoft\Windows\Start Menu\Programs\Nova"
+    if (-not (Test-Path $startMenuDir)) {
+        New-Item -ItemType Directory -Path $startMenuDir -Force | Out-Null
+    }
+
+    $shortcutPath = Join-Path $startMenuDir "Nova.lnk"
+    $shell = New-Object -ComObject WScript.Shell
+    $shortcut = $shell.CreateShortcut($shortcutPath)
+    $shortcut.TargetPath = $VenvPython
+    $shortcut.Arguments = "`"$(Join-Path $InstallDir 'scripts\start_daemon.py')`""
+    $shortcut.WorkingDirectory = $InstallDir
+    $shortcut.Description = "Launch Nova — Your Local Intelligence System"
+    $shortcut.IconLocation = "$InstallDir\nova_backend\static\favicon.ico,0"
+    $shortcut.Save()
+
+    Write-Host "       Shortcut created: $shortcutPath" -ForegroundColor Green
 }
-
-$shortcutPath = Join-Path $startMenuDir "Nova.lnk"
-$shell = New-Object -ComObject WScript.Shell
-$shortcut = $shell.CreateShortcut($shortcutPath)
-$shortcut.TargetPath = $VenvPython
-$shortcut.Arguments = "`"$(Join-Path $InstallDir 'scripts\start_daemon.py')`""
-$shortcut.WorkingDirectory = $InstallDir
-$shortcut.Description = "Launch Nova — Your Local Intelligence System"
-$shortcut.IconLocation = "$InstallDir\nova_backend\static\favicon.ico,0"
-$shortcut.Save()
-
-Write-Host "       Shortcut created: $shortcutPath" -ForegroundColor Green
 
 # ------------------------------------------------------------------
 # Launch

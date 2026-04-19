@@ -7,7 +7,8 @@
 1. Download `NovaSetup-0.1.0.exe` from [GitHub Releases](https://github.com/christopherbdaugherty96/NovaLIS/releases).
 2. Double-click to run. Follow the wizard.
 3. The installer handles Python, Ollama, model download, and shortcuts.
-4. If Nova opens and then closes, inspect `C:\Program Files\Nova\bootstrap.log` for the failing step and rerun the installer after fixing that dependency.
+4. If setup fails, inspect `C:\Program Files\Nova\bootstrap.log` for the failing step and rerun the installer after fixing that dependency.
+5. If Nova starts but then immediately closes, inspect `C:\Program Files\Nova\scripts\pids\nova.log` for the server startup error.
 
 ### Option B: Run the bootstrap script directly (for developers)
 
