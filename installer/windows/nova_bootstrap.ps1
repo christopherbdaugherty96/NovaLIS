@@ -40,6 +40,31 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+function Invoke-ExternalStep {
+    param(
+        [Parameter(Mandatory = $true)]
+        [string]$Description,
+        [Parameter(Mandatory = $true)]
+        [scriptblock]$Command,
+        [switch]$AllowFailure
+    )
+
+    & $Command
+    $exitCode = $LASTEXITCODE
+    if ($null -eq $exitCode) {
+        $exitCode = 0
+    }
+
+    if ($exitCode -ne 0) {
+        if ($AllowFailure) {
+            Write-Host "       WARNING: $Description failed (exit code $exitCode)." -ForegroundColor Yellow
+        } else {
+            Write-Host "       ERROR: $Description failed (exit code $exitCode)." -ForegroundColor Red
+            exit $exitCode
+        }
+    }
+}
+
 # ------------------------------------------------------------------
 # Logging — write transcript so failures are diagnosable
 # ------------------------------------------------------------------
@@ -180,7 +205,7 @@ if (-not $ollamaFound) {
 Write-Host "[3/6] Setting up Python virtual environment..." -ForegroundColor Yellow
 
 if (-not (Test-Path $VenvPython)) {
-    & $pythonCmd -m venv $VenvDir
+    Invoke-ExternalStep -Description "virtual environment creation" -Command { & $pythonCmd -m venv $VenvDir }
     Write-Host "       Created venv at $VenvDir" -ForegroundColor Green
 } else {
     Write-Host "       Venv already exists." -ForegroundColor Green
@@ -191,8 +216,8 @@ if (-not (Test-Path $VenvPython)) {
 # ------------------------------------------------------------------
 Write-Host "[4/6] Installing Nova (pip install -e .)..." -ForegroundColor Yellow
 
-& $VenvPython -m pip install --upgrade pip --quiet 2>&1 | Out-Null
-& $VenvPython -m pip install -e $InstallDir --quiet
+Invoke-ExternalStep -Description "pip upgrade" -Command { & $VenvPython -m pip install --upgrade pip --quiet 2>&1 | Out-Null }
+Invoke-ExternalStep -Description "Nova install (pip install -e .)" -Command { & $VenvPython -m pip install -e $InstallDir --quiet }
 Write-Host "       Nova installed." -ForegroundColor Green
 
 # Verify entry point
@@ -207,7 +232,7 @@ if (Test-Path $NovaStart) {
 # ------------------------------------------------------------------
 if (-not $SkipModel) {
     Write-Host "[5/6] Pulling default Ollama model..." -ForegroundColor Yellow
-    & $VenvPython (Join-Path $InstallDir "scripts\fetch_models.py")
+    Invoke-ExternalStep -Description "default model pull" -Command { & $VenvPython (Join-Path $InstallDir "scripts\fetch_models.py") } -AllowFailure
 } else {
     Write-Host "[5/6] Skipping model pull (--SkipModel)." -ForegroundColor Yellow
 }
@@ -240,7 +265,7 @@ Write-Host "       Shortcut created: $shortcutPath" -ForegroundColor Green
 if (-not $NoLaunch) {
     Write-Host ""
     Write-Host "Starting Nova..." -ForegroundColor Cyan
-    & $VenvPython (Join-Path $InstallDir "scripts\start_daemon.py")
+    Invoke-ExternalStep -Description "Nova startup" -Command { & $VenvPython (Join-Path $InstallDir "scripts\start_daemon.py") }
 }
 
 Write-Host ""

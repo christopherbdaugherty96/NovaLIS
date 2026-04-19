@@ -5,6 +5,23 @@ and cite the commit hash(es) that delivered the work.
 
 ---
 
+## 2026-04-18 - Installer diagnostics hardening + next-step documentation
+
+- Local diagnostic pass confirmed `python scripts/fetch_models.py` succeeds on the dev machine
+- Local diagnostic pass confirmed `python scripts/start_daemon.py --no-browser` reaches a healthy Nova server on the dev machine
+- Hardened `installer/windows/nova_bootstrap.ps1` so external steps no longer fail silently:
+  - venv creation now exits on failure
+  - `pip install -e .` now exits on failure
+  - Nova startup now exits on failure
+  - model pull now records a warning with the real exit code
+- Hardened `scripts/start_daemon.py` so it reports when the Nova process exits before the health endpoint comes up
+- Updated `Now.md` with a progress block that separates:
+  - what was completed locally
+  - what remains blocked
+  - what explicitly needs a second pass on the Windows VM and during manual cap 64 live signoff
+
+---
+
 ## 2026-04-17 — Tier 2.1: send_email_draft capability (cap 64)
 
 - Added `EMAIL_DRAFT_CREATED`, `EMAIL_DRAFT_FAILED`, `EMAIL_DRAFT_OPENED` to `event_types.py`

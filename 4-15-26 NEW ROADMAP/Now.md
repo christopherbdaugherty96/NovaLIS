@@ -38,6 +38,29 @@
 
 ---
 
+## Progress Update (2026-04-18)
+
+### Done
+
+- Local diagnostic pass completed for installer support surfaces
+- `python scripts/fetch_models.py` succeeds locally
+- `python scripts/start_daemon.py --no-browser` succeeds locally
+- `installer/windows/nova_bootstrap.ps1` now fails fast on venv, pip install, and Nova startup errors instead of silently continuing
+- `scripts/start_daemon.py` now reports when the Nova process exits before the health check succeeds
+
+### Issues
+
+- `C:\Program Files\Nova\bootstrap.log` is not available from this machine, so the original VM failure point is still unknown
+- Cap 64 live signoff remains manual and still requires a configured mail client plus trust-page verification
+
+### Needs Second Pass
+
+- Re-run the Windows installer on the clean VM and capture the improved bootstrap/startup diagnostics
+- Retrieve and inspect `C:\Program Files\Nova\bootstrap.log` from the VM after the next installer run
+- Complete the cap 64 live checklist and signoff on a machine with Nova running and a configured mail client
+
+---
+
 ## Active Tasks
 
 ### Cap 64
