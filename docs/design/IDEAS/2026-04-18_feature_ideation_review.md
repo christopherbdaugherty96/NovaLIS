@@ -1,7 +1,10 @@
 # Nova Feature Ideation Review — 2026-04-18
 
-This is a **review and prioritization** of a feature ideation pass.
-It separates good ideas from good *next* moves.
+This is a **good ideation document**, but I'd separate **good ideas** from **good next moves**.
+
+---
+
+## My Honest Review
 
 ---
 
@@ -11,7 +14,9 @@ It separates good ideas from good *next* moves.
 
 **Verdict: Good**
 
-Fits Nova well.
+Fits Nova very well.
+
+Why:
 
 - Aligns with transparency
 - Surfaces trust
@@ -19,7 +24,7 @@ Fits Nova well.
 - Gives users visible control
 - Makes Nova feel like a real product
 
-Consistent with the governance model. Surfaces what's running, what's on, what's off.
+This is consistent with the governance model.
 
 ---
 
@@ -27,13 +32,15 @@ Consistent with the governance model. Surfaces what's running, what's on, what's
 
 **Verdict: Very Good**
 
+Why:
+
 - Practical daily use case
 - Easy to understand
 - High perceived value
 - Strengthens assistant identity
 - Not risky if invocation-based
 
-Could become one of Nova's first obvious consumer-useful features.
+This could become one of Nova's first obvious consumer-useful features.
 
 ---
 
@@ -41,8 +48,9 @@ Could become one of Nova's first obvious consumer-useful features.
 
 **Verdict: Strong**
 
-Specific failures > generic failures. Always worth doing.
-No governance concerns. Pure UX improvement.
+Always worth doing.
+
+Specific failures > generic failures.
 
 ---
 
@@ -50,17 +58,19 @@ No governance concerns. Pure UX improvement.
 
 **Verdict: Good**
 
-Useful if subtle. Examples:
+Useful if subtle.
+
+Examples:
 
 - `Searching…`
 - `Drafting…`
 - `Listening…`
 
-Improves trust and perceived responsiveness without adding complexity.
+This improves trust and perceived responsiveness.
 
 ---
 
-## Ideas to Be Careful With
+## Ideas I'd Be Careful With
 
 ### 5. Proactive Daily Briefings
 
@@ -68,12 +78,14 @@ Improves trust and perceived responsiveness without adding complexity.
 
 Good eventually. Not now.
 
+Why:
+
 - Requires scheduling trust
 - Notifications can annoy users
 - Increases complexity fast
 - Needs preference controls
 
-Build after core usefulness is strong and repeatable.
+Do later after core usefulness is strong.
 
 ---
 
@@ -81,7 +93,9 @@ Build after core usefulness is strong and repeatable.
 
 **Verdict: Low Priority**
 
-Can become spammy or gimmicky fast. Nova should feel calm, not like onboarding software trying to retain users.
+Can become spammy or gimmicky fast.
+
+Nova should feel calm, not like onboarding software trying to retain users.
 
 ---
 
@@ -89,28 +103,29 @@ Can become spammy or gimmicky fast. Nova should feel calm, not like onboarding s
 
 **Verdict: Keep restrained**
 
-Memory = useful. Fake personality = dangerous drift.
+Memory = useful.
+Fake personality = dangerous drift.
 
 Nova should become more helpful, not more performative.
 
 ---
 
-## Ideas That Need Heavy Governance Before Touching
+## Ideas That Need Heavy Governance
 
 ### 8. Autonomous Web Agents
 
 **Verdict: Future phase only**
 
-Very powerful. Not a next step. Requires:
+Very powerful, but not a "next step."
+
+That is later-stage capability with:
 
 - Approval flows
-- Retry handling
+- Retries
 - Cost controls
 - Failure handling
-- Visibility into what ran
+- Visibility
 - Security boundaries
-
-Do not attempt until Nova's trust model is mature and well-tested.
 
 ---
 
@@ -118,14 +133,17 @@ Do not attempt until Nova's trust model is mature and well-tested.
 
 **Verdict: Controlled future feature**
 
-Useful eventually. Dangerous if silent.
+Useful eventually, but dangerous if silent.
 
-Must be explicit: *"Would you like me to remember this preference?"*
+Must be explicit:
+
+> "Would you like me to remember this preference?"
+
 Never hidden behavior changes.
 
 ---
 
-## What to Build Next (Real Priority Order)
+## What I'd Recommend Next for Nova (Real Priority)
 
 ### Immediate Best 3
 
@@ -133,7 +151,7 @@ Never hidden behavior changes.
 2. **Take Notes Mode** — real daily utility
 3. **Better error and status messaging** — makes everything feel better
 
-### What Not to Build Right Now
+### What I Would NOT Do Right Now
 
 - Autonomous workflows
 - Proactive notifications
@@ -156,7 +174,9 @@ Not complexity.
 
 ---
 
-## Recommended Build Order
+## If It Were Me
+
+I'd build in this order:
 
 1. Take Notes
 2. Cockpit Dashboard
@@ -168,4 +188,4 @@ Not complexity.
 
 ## One Sentence Truth
 
-**Nova's next win should be practical usefulness and visible trust — not more autonomous complexity.**
+**This document has several strong ideas, but Nova's next win should be practical usefulness and visible trust — not more autonomous complexity.**
