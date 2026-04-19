@@ -110,6 +110,24 @@ _GREETING_RE = re.compile(
     re.IGNORECASE,
 )
 
+_IDENTITY_RE = re.compile(
+    r"^\s*(?:"
+    r"(?:who|what)\s+(?:are\s+you|is\s+nova)"
+    r"|what(?:'?s|\s+is)\s+nova"
+    r"|(?:tell|explain)\s+(?:me\s+)?(?:about\s+)?(?:yourself|nova|what\s+you\s+are)"
+    r"|(?:describe|explain)\s+(?:yourself|nova)"
+    r"|who\s+(?:made|built|created|designed|developed|owns?|runs?)\s+(?:you|nova|this)"
+    r"|(?:who\s+is|who'?s)\s+(?:behind|responsible\s+for)\s+(?:you|nova|this)"
+    r"|where\s+(?:do\s+you|did\s+you)\s+come\s+from"
+    r"|are\s+you\s+an?\s+ai"
+    r"|what\s+kind\s+of\s+(?:ai|assistant|program|software|app)\s+(?:are\s+you|is\s+(?:nova|this))"
+    r"|(?:is|are)\s+(?:nova|you)\s+(?:open\s*source|free|private|local)"
+    r"|how\s+(?:does\s+nova|do\s+you)\s+work"
+    r"|(?:nova\s+)?(?:about|info|information)(?:\s+nova)?"
+    r")\s*[.?!]*\s*$",
+    re.IGNORECASE,
+)
+
 _WHAT_CAN_YOU_DO_RE = re.compile(
     r"^\s*(?:"
     r"what\s+can\s+(?:you|nova)\s+do"
@@ -120,10 +138,8 @@ _WHAT_CAN_YOU_DO_RE = re.compile(
     r"|(?:help|commands|options|menu)"
     r"|what\s+(?:can\s+i\s+(?:ask|do)|(?:should|could)\s+i\s+(?:ask|say|try))"
     r"|(?:show|tell)\s+me\s+what\s+(?:you|nova)\s+can\s+do"
-    # natural non-tech phrasings (also caught by PHRASE_NORMALIZATION but kept here as safety net)
     r"|what\s+are\s+you\s+good\s+at"
     r"|what\s+do\s+you\s+(?:do|know)"
-    r"|(?:who|what)\s+(?:are\s+you|is\s+nova)"
     r"|(?:can|could)\s+you\s+help(?:\s+me)?"
     r"|(?:i\s+need|i\s+want)\s+(?:some\s+)?help"
     r"|help\s+me"
@@ -228,6 +244,24 @@ def _all_caps_by_group() -> dict[str, list[tuple[str, bool]]]:
 # Response builders
 # ---------------------------------------------------------------------------
 
+def _build_identity() -> str:
+    return (
+        "I'm Nova — a personal AI assistant built to run entirely on your own computer.\n\n"
+        "Nova was created by Christopher Daugherty. The idea behind it is simple: "
+        "you should have an AI that works for you, not one that sends your data somewhere else "
+        "or does things without you knowing.\n\n"
+        "Here's what makes Nova different:\n"
+        "  - Everything runs locally on your machine — no cloud, no third-party servers\n"
+        "  - Every action Nova takes is logged so you can always see what it did and why\n"
+        "  - Nova only does things it has been specifically set up and verified to do\n"
+        "  - You stay in control — Nova asks before anything important happens\n\n"
+        "Right now Nova can help with things like the news, weather, email drafts, "
+        "searching the web, controlling your computer, and keeping notes.\n\n"
+        "Say \"what can you do\" to see the full list, "
+        "or just tell me what you need and I'll let you know if I can help."
+    )
+
+
 def _build_greeting() -> str:
     return "Hey! What can I help you with?"
 
@@ -314,6 +348,9 @@ class MetaIntentHandler:
 
         if _GREETING_RE.match(t):
             return _build_greeting()
+
+        if _IDENTITY_RE.match(t):
+            return _build_identity()
 
         if _WHAT_CAN_YOU_DO_RE.match(t):
             return _build_what_can_you_do()
