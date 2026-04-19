@@ -15,6 +15,7 @@ and cite the commit hash(es) that delivered the work.
   - Nova startup now exits on failure
   - model pull now records a warning with the real exit code
 - Hardened `scripts/start_daemon.py` so it reports when the Nova process exits before the health endpoint comes up
+- Updated `installer/windows/nova_setup.iss` so the installer runs bootstrap with `-NoLaunch`; setup now prepares Nova first and uses one explicit post-install launch path instead of two competing launch paths
 - Updated `Now.md` with a progress block that separates:
   - what was completed locally
   - what remains blocked
