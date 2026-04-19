@@ -5,7 +5,9 @@ Handles conversational meta-intents that don't require an LLM call.
 
 Covers:
   - Greetings          "hello", "hi", "hey", "good morning" …
+  - Identity           "who are you", "who made you", "what is nova" …
   - What can you do    "what can you do", "list capabilities", "help" …
+  - Category help      "what can you do with email", "help with research" …
   - Out of scope       "can you send a text?", "why can't you book flights?" …
   - Phase / status     "what phase are you in", "what tier is this?" …
   - What's planned     "what's coming next", "what's on the roadmap?" …
@@ -13,9 +15,9 @@ Covers:
 Usage::
 
     handler = MetaIntentHandler()
-    response = handler.handle(user_text)
+    response = handler.handle(user_text, session_state=session_state)
     if response is not None:
-        # send response, skip LLM
+        # send response — no LLM call needed
         ...
 
 Returns ``None`` when the text doesn't match any meta-intent so the caller
@@ -29,7 +31,7 @@ from pathlib import Path
 from typing import Optional
 
 # ---------------------------------------------------------------------------
-# Registry path (relative to this file's package root)
+# Registry path
 # ---------------------------------------------------------------------------
 _SRC_DIR = Path(__file__).resolve().parent.parent
 _REGISTRY_PATH = _SRC_DIR / "config" / "registry.json"
@@ -57,15 +59,17 @@ _PLANNED = (
 # Human-readable group labels
 # ---------------------------------------------------------------------------
 _GROUP_LABELS: dict[str, str] = {
-    "intelligence":   "Research and information",
-    "local_control":  "Computer and local control",
-    "speech_output":  "Voice output",
-    "communication":  "Email and communication",
-    "diagnostics":    "System diagnostics",
-    "home_agent":     "Home agent",
+    "intelligence":  "Research and information",
+    "local_control": "Computer and local control",
+    "speech_output": "Voice output",
+    "communication": "Email and communication",
+    "diagnostics":   "System diagnostics",
+    "home_agent":    "Home agent",
 }
 
-# Short user-facing labels per capability name (overrides raw snake_case name)
+# ---------------------------------------------------------------------------
+# Plain-English capability labels (short name, used in full list)
+# ---------------------------------------------------------------------------
 _CAP_LABELS: dict[str, str] = {
     "governed_web_search":       "Web search",
     "open_website":              "Open a website",
@@ -86,14 +90,200 @@ _CAP_LABELS: dict[str, str] = {
     "analysis_document":         "Analysis document",
     "weather_snapshot":          "Weather",
     "news_snapshot":             "News snapshot",
-    "calendar_snapshot":         "Calendar snapshot",
+    "calendar_snapshot":         "Calendar",
     "screen_capture":            "Screenshot",
     "screen_analysis":           "Screen analysis",
     "explain_anything":          "Explain what you're looking at",
-    "memory_governance":         "Governed memory",
+    "memory_governance":         "Memory",
     "openclaw_execute":          "Morning brief / home agent",
-    "send_email_draft":          "Email draft (opens in your mail client)",
+    "send_email_draft":          "Email draft",
 }
+
+# ---------------------------------------------------------------------------
+# Plain-English capability descriptions (one sentence, conversational)
+# ---------------------------------------------------------------------------
+_CAP_DESCRIPTIONS: dict[str, str] = {
+    "governed_web_search": (
+        "I can search the web and give you a summary of what I find."
+    ),
+    "open_website": (
+        "I can open any website in your browser."
+    ),
+    "speak_text": (
+        "I can read text out loud on your computer."
+    ),
+    "open_file_folder": (
+        "I can open files and folders on your computer — I'll ask you to confirm first."
+    ),
+    "volume_up_down": (
+        "I can turn the volume up, down, or mute it completely."
+    ),
+    "media_play_pause": (
+        "I can play, pause, or skip media on your computer."
+    ),
+    "brightness_control": (
+        "I can make your screen brighter or dimmer."
+    ),
+    "response_verification": (
+        "I can check my own answer and flag anything that looks off."
+    ),
+    "external_reasoning_review": (
+        "I can get a second opinion on something I said, from a separate model."
+    ),
+    "os_diagnostics": (
+        "I can show you how your system is doing — models loaded, connections, status."
+    ),
+    "multi_source_reporting": (
+        "I can pull information from multiple sources and write up a structured report."
+    ),
+    "headline_summary": (
+        "I can summarize a headline or dig into a specific article."
+    ),
+    "intelligence_brief": (
+        "I can put together a short briefing on a topic from today's news."
+    ),
+    "topic_memory_map": (
+        "I can show you what topics are dominating the news right now."
+    ),
+    "story_tracker_update": (
+        "I can start tracking a news story so you can follow it over time."
+    ),
+    "story_tracker_view": (
+        "I can show you how a story has developed since you started tracking it."
+    ),
+    "analysis_document": (
+        "I can write up a structured analysis document on any topic you give me."
+    ),
+    "weather_snapshot": (
+        "I can check the current weather or the forecast."
+    ),
+    "news_snapshot": (
+        "I can pull today's headlines for you."
+    ),
+    "calendar_snapshot": (
+        "I can check what's on your calendar today."
+    ),
+    "screen_capture": (
+        "I can take a screenshot of your screen."
+    ),
+    "screen_analysis": (
+        "I can look at your screen and describe what's on it."
+    ),
+    "explain_anything": (
+        "I can explain whatever you're looking at — a page, a document, an app."
+    ),
+    "memory_governance": (
+        "I can remember things you tell me and bring them up later when they're useful."
+    ),
+    "openclaw_execute": (
+        "I can run a morning brief or home agent template."
+    ),
+    "send_email_draft": (
+        "I can draft an email and open it in your mail app — you decide whether to send."
+    ),
+}
+
+# ---------------------------------------------------------------------------
+# Category keyword mapping for "what can you do with X"
+# ---------------------------------------------------------------------------
+_CATEGORY_KEYWORDS: dict[str, str] = {
+    # communication
+    "email":         "communication",
+    "mail":          "communication",
+    "draft":         "communication",
+    "compose":       "communication",
+    # research / intelligence
+    "research":      "intelligence",
+    "news":          "intelligence",
+    "search":        "intelligence",
+    "web":           "intelligence",
+    "weather":       "intelligence",
+    "calendar":      "intelligence",
+    "memory":        "intelligence",
+    "remember":      "intelligence",
+    "headline":      "intelligence",
+    "brief":         "intelligence",
+    "report":        "intelligence",
+    "article":       "intelligence",
+    "story":         "intelligence",
+    "track":         "intelligence",
+    "screen":        "intelligence",
+    "explain":       "intelligence",
+    "analyze":       "intelligence",
+    "analysis":      "intelligence",
+    # local control
+    "computer":      "local_control",
+    "volume":        "local_control",
+    "brightness":    "local_control",
+    "file":          "local_control",
+    "folder":        "local_control",
+    "website":       "local_control",
+    "browser":       "local_control",
+    "open":          "local_control",
+    "media":         "local_control",
+    "music":         "local_control",
+    "play":          "local_control",
+    "pause":         "local_control",
+    # voice
+    "voice":         "speech_output",
+    "speak":         "speech_output",
+    "aloud":         "speech_output",
+    "read out":      "speech_output",
+    "tts":           "speech_output",
+    # diagnostics
+    "system":        "diagnostics",
+    "status":        "diagnostics",
+    "health":        "diagnostics",
+    "diagnostics":   "diagnostics",
+    # home agent
+    "agent":         "home_agent",
+    "morning":       "home_agent",
+    "template":      "home_agent",
+}
+
+# Known "not built yet" keyword sets — used to give specific out-of-scope messages
+_NOT_BUILT_CATEGORIES: list[tuple[frozenset[str], str]] = [
+    (
+        frozenset({"twitter", "instagram", "facebook", "post", "tweet", "tiktok",
+                   "social media", "linkedin", "reddit"}),
+        "Posting to social media isn't something I'm set up for yet."
+    ),
+    (
+        frozenset({"book", "reserve", "reservation", "hotel", "flight",
+                   "restaurant", "uber", "lyft", "appointment"}),
+        "I can't book or reserve things yet."
+    ),
+    (
+        frozenset({"text", "sms", "whatsapp", "imessage", "telegram",
+                   "signal", "dm", "direct message"}),
+        "I can't send text messages or chat through other apps yet."
+    ),
+    (
+        frozenset({"call", "phone call", "facetime", "video call", "zoom",
+                   "ring", "dial"}),
+        "Making calls isn't something I can do yet."
+    ),
+    (
+        frozenset({"order", "buy", "purchase", "amazon", "shopping",
+                   "checkout", "cart"}),
+        "I can't place orders or make purchases yet."
+    ),
+    (
+        frozenset({"transfer money", "pay", "venmo", "paypal", "bank",
+                   "wire", "invoice"}),
+        "I can't handle payments or banking yet."
+    ),
+    (
+        frozenset({"write to file", "edit file", "delete file", "create file",
+                   "save file", "modify file"}),
+        "I can't write or edit files directly yet."
+    ),
+    (
+        frozenset({"send email", "send the email", "send it"}),
+        "I can draft an email and open it for you — but I can't send it on my own. "
+        "You stay in control of what goes out."
+    ),
+]
 
 # ---------------------------------------------------------------------------
 # Intent patterns
@@ -149,6 +339,16 @@ _WHAT_CAN_YOU_DO_RE = re.compile(
     re.IGNORECASE,
 )
 
+_CATEGORY_HELP_RE = re.compile(
+    r"^\s*(?:"
+    r"what\s+can\s+(?:you|nova)\s+do\s+(?:with|for|about|on|around)\s+(?P<topic>\w[\w\s]*?)"
+    r"|(?:help|assist)\s+(?:me\s+)?(?:with|for)\s+(?P<topic2>\w[\w\s]*?)"
+    r"|(?:show|tell)\s+me\s+(?:what\s+you\s+can\s+do\s+(?:with|for)\s+)?(?P<topic3>\w[\w\s]*?)\s+(?:help|capabilities?|options?)"
+    r"|(?P<topic4>\w[\w\s]*?)\s+(?:capabilities?|features?|options?|help)"
+    r")\s*[.?!]*\s*$",
+    re.IGNORECASE,
+)
+
 _OUT_OF_SCOPE_RE = re.compile(
     r"^\s*(?:"
     r"(?:can|could|will|would|does|is)\s+(?:you|nova)\s+(?:be\s+able\s+to\s+)?"
@@ -199,45 +399,128 @@ def _load_registry() -> dict:
     return _registry_cache
 
 
-def _all_caps_by_group() -> dict[str, list[tuple[str, bool]]]:
+def _all_caps_by_group() -> dict[str, list[tuple[str, bool, str, bool]]]:
     """
-    Return {group_label: [(cap_label, is_active), ...]} for ALL capabilities,
-    active or not, so Nova can give a complete honest picture.
+    Return {group_label: [(label, is_active, cap_name, requires_confirmation), ...]}
+    for ALL capabilities so responses can show status, descriptions, and confirmation notes.
     """
     reg = _load_registry()
-    caps_by_id: dict[int, dict] = {
-        int(c["id"]): c
-        for c in reg.get("capabilities", [])
-    }
+    caps_by_id: dict[int, dict] = {int(c["id"]): c for c in reg.get("capabilities", [])}
     groups: dict[str, list[int]] = reg.get("capability_groups", {})
 
-    result: dict[str, list[tuple[str, bool]]] = {}
+    result: dict[str, list[tuple[str, bool, str, bool]]] = {}
     seen: set[int] = set()
 
     for group_key, cap_ids in groups.items():
         label = _GROUP_LABELS.get(group_key, group_key.replace("_", " ").title())
-        entries: list[tuple[str, bool]] = []
+        entries: list[tuple[str, bool, str, bool]] = []
         for cid in cap_ids:
             if cid in caps_by_id and cid not in seen:
                 seen.add(cid)
                 cap = caps_by_id[cid]
                 name = cap.get("name", "")
                 is_active = bool(cap.get("enabled")) and cap.get("status") == "active"
-                entries.append((_CAP_LABELS.get(name, name.replace("_", " ").title()), is_active))
+                needs_confirm = bool(cap.get("requires_confirmation"))
+                entries.append((_CAP_LABELS.get(name, name.replace("_", " ").title()),
+                                 is_active, name, needs_confirm))
         if entries:
             result[label] = entries
 
-    # Anything not in a named group
-    ungrouped: list[tuple[str, bool]] = []
+    ungrouped: list[tuple[str, bool, str, bool]] = []
     for cid, cap in caps_by_id.items():
         if cid not in seen:
             name = cap.get("name", "")
             is_active = bool(cap.get("enabled")) and cap.get("status") == "active"
-            ungrouped.append((_CAP_LABELS.get(name, name.replace("_", " ").title()), is_active))
+            needs_confirm = bool(cap.get("requires_confirmation"))
+            ungrouped.append((_CAP_LABELS.get(name, name.replace("_", " ").title()),
+                               is_active, name, needs_confirm))
     if ungrouped:
         result.setdefault("Other", []).extend(ungrouped)
 
     return result
+
+
+def _caps_for_group_key(group_key: str) -> list[tuple[str, bool, str, bool]]:
+    """Return the capability entries for a specific group key."""
+    reg = _load_registry()
+    caps_by_id: dict[int, dict] = {int(c["id"]): c for c in reg.get("capabilities", [])}
+    cap_ids: list[int] = reg.get("capability_groups", {}).get(group_key, [])
+
+    entries: list[tuple[str, bool, str, bool]] = []
+    for cid in cap_ids:
+        if cid in caps_by_id:
+            cap = caps_by_id[cid]
+            name = cap.get("name", "")
+            is_active = bool(cap.get("enabled")) and cap.get("status") == "active"
+            needs_confirm = bool(cap.get("requires_confirmation"))
+            entries.append((_CAP_LABELS.get(name, name.replace("_", " ").title()),
+                             is_active, name, needs_confirm))
+    return entries
+
+
+def _resolve_category_topic(text: str) -> Optional[str]:
+    """Return the registry group key that best matches the topic in a category query."""
+    t = text.lower()
+    for keyword, group_key in _CATEGORY_KEYWORDS.items():
+        if keyword in t:
+            return group_key
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Out-of-scope classifier
+# ---------------------------------------------------------------------------
+
+def _classify_out_of_scope(text: str) -> str:
+    """
+    Distinguish between four cases so the response is specific, not generic.
+    """
+    t = text.lower()
+
+    # Case 1: matches a known "not built yet" category
+    for keywords, specific_msg in _NOT_BUILT_CATEGORIES:
+        if any(kw in t for kw in keywords):
+            return (
+                f"{specific_msg}\n\n"
+                "Nova only adds new abilities after they've been fully tested and verified — "
+                "so you always know exactly what it can and can't do.\n\n"
+                'Say "what can you do" to see what\'s ready, '
+                'or "what\'s coming next" to see what\'s being worked on.'
+            )
+
+    # Case 2: matches a disabled (off) capability in the registry
+    reg = _load_registry()
+    for cap in reg.get("capabilities", []):
+        name = cap.get("name", "").replace("_", " ")
+        label = _CAP_LABELS.get(cap.get("name", ""), "").lower()
+        if (name in t or label in t) and not (
+            bool(cap.get("enabled")) and cap.get("status") == "active"
+        ):
+            return (
+                f"That's actually a Nova capability, but it's turned off right now.\n\n"
+                "It's available in the code but not currently active. "
+                "A future update may enable it.\n\n"
+                'Say "what can you do" to see everything that\'s on right now.'
+            )
+
+    # Case 3: matches an active capability that requires confirmation
+    for cap in reg.get("capabilities", []):
+        name = cap.get("name", "").replace("_", " ")
+        label = _CAP_LABELS.get(cap.get("name", ""), "").lower()
+        if (name in t or label in t) and bool(cap.get("requires_confirmation")):
+            return (
+                "I can do that — but I'll need you to confirm before I go ahead.\n\n"
+                "Just ask me directly and I'll walk you through it."
+            )
+
+    # Case 4: unclear what they're asking
+    return (
+        "I'm not quite sure what you're asking me to do.\n\n"
+        "If you want me to do something specific, just describe it in plain words — "
+        "for example: \"check the news\", \"draft an email to my boss\", "
+        "\"what's the weather\", or \"open my downloads folder\".\n\n"
+        'Say "what can you do" to see the full list.'
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -247,22 +530,30 @@ def _all_caps_by_group() -> dict[str, list[tuple[str, bool]]]:
 def _build_identity() -> str:
     return (
         "I'm Nova — a personal AI assistant built to run entirely on your own computer.\n\n"
-        "Nova was created by Christopher Daugherty. The idea behind it is simple: "
+        "Nova was created by Christopher Daugherty. The idea is simple: "
         "you should have an AI that works for you, not one that sends your data somewhere else "
         "or does things without you knowing.\n\n"
-        "Here's what makes Nova different:\n"
-        "  - Everything runs locally on your machine — no cloud, no third-party servers\n"
-        "  - Every action Nova takes is logged so you can always see what it did and why\n"
-        "  - Nova only does things it has been specifically set up and verified to do\n"
-        "  - You stay in control — Nova asks before anything important happens\n\n"
-        "Right now Nova can help with things like the news, weather, email drafts, "
-        "searching the web, controlling your computer, and keeping notes.\n\n"
-        "Say \"what can you do\" to see the full list, "
-        "or just tell me what you need and I'll let you know if I can help."
+        "What makes Nova different:\n"
+        "  - Everything runs on your machine — no cloud, no third-party servers\n"
+        "  - Every action is logged so you can always see what happened and why\n"
+        "  - Nova only does things it's been specifically built and tested to do\n"
+        "  - You stay in control — it asks before anything important happens\n\n"
+        "Right now Nova is in an early stage. It can answer questions, search the web, "
+        "check the news and weather, draft emails, control parts of your computer, "
+        "and remember things you tell it. It's not yet set up for broader actions "
+        "like sending messages or managing workflows on its own.\n\n"
+        'Say "what can you do" to see the full list, '
+        'or just tell me what you need.'
     )
 
 
-def _build_greeting() -> str:
+def _build_greeting(*, first_time: bool = False) -> str:
+    if first_time:
+        return (
+            "Hey! I'm Nova — your local AI assistant. "
+            "What can I help you with? "
+            '(Say "what can you do" if you want to see everything I\'m able to do.)'
+        )
     return "Hey! What can I help you with?"
 
 
@@ -274,47 +565,67 @@ def _build_what_can_you_do() -> str:
             "controlling your computer, and more. Just tell me what you need."
         )
 
-    active_total = sum(1 for entries in groups.values() for _, active in entries if active)
-    inactive_total = sum(1 for entries in groups.values() for _, active in entries if not active)
-    total = active_total + inactive_total
+    active_total = sum(1 for entries in groups.values() for _, active, _, _ in entries if active)
+    inactive_total = sum(1 for entries in groups.values() for _, active, _, _ in entries if not active)
 
     lines: list[str] = [
-        f"Here's everything I know about — {active_total} things are ready to use"
-        + (f", {inactive_total} are turned off right now" if inactive_total else "")
+        f"Here's everything I can do — {active_total} things are ready to use"
+        + (f", {inactive_total} are currently off" if inactive_total else "")
         + ":",
         "",
     ]
 
     for group_label, entries in groups.items():
         lines.append(f"{group_label}:")
-        for cap_label, is_active in entries:
+        for cap_label, is_active, cap_name, needs_confirm in entries:
             marker = "[on] " if is_active else "[off]"
-            lines.append(f"  {marker}  {cap_label}")
+            confirm_note = "  (asks for confirmation)" if needs_confirm and is_active else ""
+            lines.append(f"  {marker}  {cap_label}{confirm_note}")
         lines.append("")
 
     lines.append(
-        "Just say what you want to do — no special commands needed.\n"
-        'Ask "what\'s coming next" if you want to see what\'s in the works.'
+        "Just say what you want — no special commands needed.\n"
+        'Ask "what can you do with email" or "what can you do for research" '
+        'to get a plain-English explanation of any area.'
     )
     return "\n".join(lines).strip()
 
 
-def _build_out_of_scope(text: str) -> str:
-    return (
-        "I can't do that one yet.\n\n"
-        "Nova only does things it's been specifically set up and tested for — "
-        "that way you always know exactly what it can and can't touch.\n\n"
-        "Things like booking, texting, or posting to social media aren't in the current version.\n\n"
-        'Say "what can you do" to see everything that\'s available right now, '
-        'or "what\'s coming next" to see what\'s being worked on.'
-    )
+def _build_category_help(group_key: str, topic_word: str) -> str:
+    group_label = _GROUP_LABELS.get(group_key, group_key.replace("_", " ").title())
+    entries = _caps_for_group_key(group_key)
+
+    if not entries:
+        return (
+            f"I don't have anything specifically for \"{topic_word}\" right now.\n\n"
+            'Say "what can you do" to see the full list.'
+        )
+
+    lines: list[str] = [f"Here's what I can do in the {group_label} area:\n"]
+    for cap_label, is_active, cap_name, needs_confirm in entries:
+        desc = _CAP_DESCRIPTIONS.get(cap_name, f"({cap_label})")
+        if not is_active:
+            lines.append(f"  [off]  {cap_label} — not active right now")
+        elif needs_confirm:
+            lines.append(f"  [on]   {cap_label} — {desc} (I'll ask you to confirm first)")
+        else:
+            lines.append(f"  [on]   {cap_label} — {desc}")
+
+    lines.append("")
+    lines.append("Just say what you want and I'll take care of it.")
+    return "\n".join(lines).strip()
 
 
 def _build_phase_status() -> str:
     return (
-        f"Nova is in {_CURRENT_TIER} right now — the goal is {_CURRENT_TIER_GOAL}.\n\n"
-        f"{_CURRENT_STATUS}\n\n"
-        f"Up next: {_NEXT_UP}"
+        f"Nova is in an early stage right now — {_CURRENT_TIER}.\n\n"
+        f"What that means in plain terms: I can answer questions, search the web, "
+        f"check news and weather, draft emails, control parts of your computer, "
+        f"and remember things you tell me. "
+        f"I'm not yet set up for broader actions like sending messages, "
+        f"booking things, or managing full workflows on my own.\n\n"
+        f"What just shipped: {_CURRENT_STATUS}\n\n"
+        f"What's coming next: {_NEXT_UP}"
     )
 
 
@@ -333,24 +644,42 @@ def _build_whats_planned() -> str:
 
 class MetaIntentHandler:
     """
-    Matches a small set of conversational meta-intents and returns a
-    deterministic response — no LLM call required.
+    Matches conversational meta-intents and returns a plain-English response
+    with no LLM call. Returns ``None`` if the text doesn't match.
 
-    Returns ``None`` if the text doesn't match any meta-intent.
+    Pass ``session_state`` to enable context-aware responses (e.g. first-time
+    greeting vs. returning user).
     """
 
-    def handle(self, text: str) -> Optional[str]:
+    def handle(
+        self,
+        text: str,
+        session_state: Optional[dict] = None,
+    ) -> Optional[str]:
         """Return a response string or None."""
-        # Normalise curly/smart apostrophes so regexes can use plain '
         t = text.strip().replace("\u2019", "'").replace("\u2018", "'")
         if not t:
             return None
 
+        turn_count: int = int((session_state or {}).get("turn_count", 1))
+
         if _GREETING_RE.match(t):
-            return _build_greeting()
+            return _build_greeting(first_time=(turn_count == 0))
 
         if _IDENTITY_RE.match(t):
             return _build_identity()
+
+        # Category help — "what can you do with email" — checked before generic capability
+        m = _CATEGORY_HELP_RE.match(t)
+        if m:
+            topic = (
+                m.group("topic") or m.group("topic2") or
+                m.group("topic3") or m.group("topic4") or ""
+            ).strip()
+            group_key = _resolve_category_topic(t)
+            if group_key:
+                return _build_category_help(group_key, topic)
+            # topic word found but no matching group — fall through to generic list
 
         if _WHAT_CAN_YOU_DO_RE.match(t):
             return _build_what_can_you_do()
@@ -362,6 +691,6 @@ class MetaIntentHandler:
             return _build_whats_planned()
 
         if _OUT_OF_SCOPE_RE.match(t):
-            return _build_out_of_scope(t)
+            return _classify_out_of_scope(t)
 
         return None

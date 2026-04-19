@@ -3658,7 +3658,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             # --- Meta-intent fast path (greetings, capability queries, phase/roadmap) ---
             from src.conversation.meta_intent_handler import MetaIntentHandler as _MetaIntentHandler
-            _meta_response = _MetaIntentHandler().handle(mediated_text)
+            _meta_response = _MetaIntentHandler().handle(mediated_text, session_state=session_state)
             if _meta_response is not None:
                 session_state["last_response"] = _meta_response
                 await send_chat_message(ws, _meta_response)
