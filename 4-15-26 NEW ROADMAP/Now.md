@@ -2,7 +2,7 @@
 
 **Sprint Goal:** Non‑developer installs and runs Nova in 5 minutes.
 
-**Status:** INSTALLER PAUSED — Tier 2 capability work in progress. Installer will be validated when returning to Tier 1 close-out.
+**Status:** INSTALLER PAUSED — cap 64 is implemented through P4, while installer validation and cap 64 live signoff remain open. Installer will be validated when returning to Tier 1 close-out.
 **Start Date:** 2026-04-15  
 **Target End:** 2026-05-13 (4 weeks)
 
@@ -10,7 +10,7 @@
 
 ## Active Tasks (Tier 2)
 
-### 2.1 send_email_draft — cap 64 (DONE — 2026-04-17)
+### 2.1 send_email_draft — cap 64 (IMPLEMENTED — 2026-04-17; P5/LIVE LOCK PENDING)
 - [x] `src/ledger/event_types.py` — `EMAIL_DRAFT_CREATED`, `EMAIL_DRAFT_FAILED`, `EMAIL_DRAFT_OPENED`
 - [x] `src/config/registry.json` — cap 64 entry + `communication` group
 - [x] `src/executors/send_email_draft_executor.py` — full executor (LLM body gen, mailto:, OS open, ledger)
@@ -19,6 +19,8 @@
 - [x] `tests/executors/test_send_email_draft_executor.py` — 16 unit tests (isolation, LLM fallback, mailto, ledger, governance fields)
 - [x] `tests/test_send_email_draft_routing.py` — 19 routing tests (positive/negative/params)
 - Full test suite: 1135/1135 passing
+
+**Remaining for cap 64:** live checklist, live signoff, and lock closure in `docs/capability_verification/STATUS.md`.
 
 **Files:** `src/ledger/event_types.py`, `src/config/registry.json`, `src/executors/send_email_draft_executor.py`, `src/governor/governor_mediator.py`, `src/governor/governor.py`, `tests/executors/test_send_email_draft_executor.py`, `tests/test_send_email_draft_routing.py`
 

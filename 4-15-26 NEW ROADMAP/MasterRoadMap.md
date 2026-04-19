@@ -1,6 +1,6 @@
 # Nova – Final Definitive Audit, Roadmap & Operating System (2026-04-15)
 
-**Status:** This document is **frozen**. It is the single source of truth for Nova's current state and long-term plan. The next step is execution, not further planning. Use `NOW.md` for active work and `BACKLOG.md` for future ideas.
+**Status:** This document is **frozen**. It is the strategic baseline and long-term plan captured on 2026-04-15, not the authoritative live-state document after that date. Use `Now.md` for active work, `docs/current_runtime/` for runtime truth, and `BackLog.md` for future ideas.
 
 ---
 
@@ -12,14 +12,19 @@ A thorough second pass compared the merged document against all source inputs an
 
 ## Executive Summary
 
+> **Historical current-state baseline**
+> The current-state claims in this section reflect the repository as audited on 2026-04-15.
+> Later implementation work may have changed capability counts, packaging status, and live mutation support.
+> For live status, see `Now.md`, `docs/current_runtime/`, and current capability verification docs.
+
 Nova is **real, architecturally coherent, and trust‑first**:
 - Live governed execution spine (`GovernorMediator → CapabilityRegistry → ExecuteBoundary → NetworkMediator → LedgerWriter`)
-- 25 live capabilities — 16 read-only (9 local + 7 network: research, news, weather/calendar snapshot, memory review, second-opinion, screen analysis, etc.), 6 local-device controls (open website, speak, volume, media, brightness, open file/folder), and 3 persistent-change (screen capture, story tracker, memory governance). **Zero external-effect capabilities** (no email send, no calendar write, no outbound mutations).
+- 25 live capabilities — 16 read-only (9 local + 7 network: research, news, weather/calendar snapshot, memory review, second-opinion, screen analysis, etc.), 6 local-device controls (open website, speak, volume, media, brightness, open file/folder), and 3 persistent-change (screen capture, story tracker, memory governance). **Zero external-effect capabilities at audit time** (no email send, no calendar write, no outbound mutations).
 - Memory layer with confirmation, append‑only ledger, runtime‑doc drift check
 - 234 test files vs 247 source files (~1:1) – real discipline
 
 **But Nova is not yet a product.**  
-A stranger cannot install and use it without developer skills. The UI feels like a cockpit (10‑item nav, 7 widgets before first message, token budget bar). Despite "operator" language, **no live capability writes to an external system** — what exists is read-only surfaces plus local-device controls. No email send, no calendar write, no file edits, no real-world action beyond the local machine.
+A stranger cannot install and use it without developer skills. The UI feels like a cockpit (10‑item nav, 7 widgets before first message, token budget bar). Despite "operator" language, **no live capability wrote to an external system at audit time** — what existed was read-only surfaces plus local-device controls. No email send, no calendar write, no file edits, no real-world action beyond the local machine.
 
 **Documentation truthfulness is mixed:** core architecture docs are honest; product‑level promises ("calm presence", "operator", "voice live") are **not yet fulfilled** by the code.
 
@@ -42,7 +47,7 @@ This document provides a verified gap analysis and a tiered, actionable roadmap.
 | Two hot‑path files | `brain_server.py` (3571 lines), `session_handler.py` (3821 lines) | ⚠️ Refactor debt |
 | Frontend duplication | Two frontend trees | ⚠️ Maintenance hazard |
 | Docs sprawl | 120 design docs across 12 phase folders | ⚠️ Drag multiplier |
-| Installer / CI / pyproject.toml | **Not present** | ❌ Critical gap |
+| Installer / CI / pyproject.toml | **Not present at audit time** | ❌ Critical gap |
 | OAuth / mutation | **Not present** | ❌ Critical gap |
 | Backup / uninstaller / offline | **Not present** | ❌ Gap |
 
@@ -51,7 +56,7 @@ This document provides a verified gap analysis and a tiered, actionable roadmap.
 ## 2. Critical Gaps (Ranked by Impact)
 
 1. **No installer** – non‑developer cannot try Nova.
-2. **No external-write capability** — "operator" label unearned (Nova has local-device controls but no way to send, create, or change anything outside the machine).
+2. **No external-write capability at audit time** — "operator" label unearned (Nova had local-device controls but no way to send, create, or change anything outside the machine).
 3. **UI overload** – feels like a cockpit, not calm.
 4. **Two oversized hot‑path files** – refactor debt.
 5. **Frontend duplication** – maintenance hazard.
@@ -98,7 +103,7 @@ This document provides a verified gap analysis and a tiered, actionable roadmap.
 ### Tier 2 – Product Breakthrough (Week 5‑8)
 *Goal: Nova can complete one real‑world action daily.*
 
-- 2.1 Ship `send_email_draft` (Google + Microsoft OAuth)
+- 2.1 Ship `send_email_draft` (goal at audit time: one real outbound action)
 - 2.2 Fix read‑only ceiling messaging (banner, rename "Agent" page)
 - 2.3 Sharpen first‑use "magic moment" (default prompt to news)
 
@@ -188,8 +193,8 @@ Pause 1 week to answer: Are users returning? What do they request most? Is email
 | Unbounded storage growth | Medium | Tier 4 adds pruning policy. |
 
 **Dependencies:**
-- Tier 1 must complete before Tier 2.
-- Tier 2 email requires OAuth library.
+- Tier 1 was intended to complete before Tier 2. If execution overlaps, `Now.md` becomes the controlling document for sequencing.
+- Tier 2 email originally assumed an OAuth library; later implementations may choose a narrower draft-only path first.
 - Tier 2.5 backup requires stable serialisation format.
 - Tier 3 refactors require full test suite.
 - Tier 4 depends on having a user base.
@@ -216,7 +221,7 @@ This roadmap is comprehensive. The biggest risk now is **over‑planning and los
 
 ### 8.1 Change Control & Scope Discipline
 - **No new Tier added** until current sprint is closed and reviewed.
-- **New ideas go to `BACKLOG.md`**, not the active plan.
+- **New ideas go to `BackLog.md`**, not the active plan.
 - **Weekly review only** – no mid‑week scope creep.
 - **Emergency exceptions** require written justification (e.g., critical security flaw, breaking change in dependency).
 
@@ -269,17 +274,17 @@ When you collect emails (waitlist) or have a website:
 - **License attributions:** Ensure all third‑party libraries are credited (automated tools can help).
 - **Export compliance:** If you bundle a model with the installer, include a note about its origin and license.
 
-These are not urgent for Tier 1, but add to `BACKLOG.md` for Tier 2.5 completion.
+These are not urgent for Tier 1, but add to `BackLog.md` for Tier 2.5 completion.
 
 ---
 
 ## 9. The Only Three Files You Need Now
 
-1. **`MASTER_ROADMAP.md`** – this document, frozen.
-2. **`NOW.md`** – only the current sprint's tasks.
-3. **`BACKLOG.md`** – all future ideas, captured but not active.
+1. **`MasterRoadMap.md`** – this document, frozen.
+2. **`Now.md`** – only the current sprint's tasks.
+3. **`BackLog.md`** – all future ideas, captured but not active.
 
-Work from `NOW.md`. Update it weekly. Move completed items to `CHANGELOG.md` or delete them.
+Work from `Now.md`. Update it weekly. Move completed items to `CHANGELOG.md` or delete them.
 
 ---
 
@@ -305,7 +310,7 @@ Work from `NOW.md`. Update it weekly. Move completed items to `CHANGELOG.md` or 
 | 1.3 | `index.html`, `dashboard-config.js` | 150 |
 | 1.4 | `pyproject.toml`, `.github/workflows/ci.yml` | 100 |
 | 1.5 | Landing page (HTML/CSS) | 100 |
-| 2.1 | `email_draft.py`, `oauth_flow.py`, `email_compose.html`, integration test | 800 |
+| 2.1 | `send_email_draft` implementation, draft-open flow, integration test | 800 |
 | 2.2 | `dashboard-control-center.js`, `CURRENT_RUNTIME_STATE.md` | 50 |
 | 2.3 | `index.html` (first prompt), `intro` page tour | 100 |
 | 2.5.1 | `connection_monitor.py`, UI offline badge | 200 |
@@ -333,4 +338,4 @@ at 5–8 hrs/week. Pick the cadence; the timeline follows. Do not treat the
 ---
 
 *Audit completed and verified against live repository 2026-04-15.*  
-*This document is now frozen. Next step: create `NOW.md` and start Tier 1.*
+*This document is now frozen. Next step: create `Now.md` and start Tier 1.*

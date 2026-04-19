@@ -1,8 +1,14 @@
 # Nova – Deep Code-Level Audit & Execution Brief (2026-04-15)
 
-**Status:** FROZEN – TACTICAL COMPANION TO `MASTER_ROADMAP.md`
+**Status:** FROZEN – TACTICAL COMPANION TO `MasterRoadMap.md`
 **Role:** Engineering hotspot map. Guidance for Tier 3 refactors.
 **Warning:** Do not use this document to expand Tier 1 scope. Installer first.
+
+> **Historical tactical audit**
+> This document records the code-level audit as of 2026-04-15.
+> Some Tier 1 and Tier 2 gaps noted below were resolved later, including packaging/entry-point work and send_email_draft.
+> Use Now.md and current runtime/capability docs for live status before treating any item here as still open.
+
 
 ---
 
@@ -25,10 +31,10 @@ with a live grep. Do not refactor against a stale line number.
 | :--- | :--- | :--- |
 | **Hot-path monolith: brain_server** | `nova_backend/src/brain_server.py` (3571 lines) | Every new HTTP route or intent adds weight to one file; review fatigue is real. |
 | **Hot-path monolith: session_handler** | `nova_backend/src/websocket/session_handler.py` (3821 lines) | High regression risk; changes to one lane can break another. |
-| **Missing Python packaging** | Root directory has no `pyproject.toml` / `setup.py` | Prevents `pip install`; blocks clean installer creation. |
+| **Missing Python packaging** | Root directory had no `pyproject.toml` / `setup.py` at audit time | Prevented `pip install`; blocked clean installer creation until later packaging work. |
 | **Frontend duplication** | `Nova-Frontend-Dashboard/` vs `nova_backend/static/` | Changes must be made twice; source of UI drift. |
-| **Scattered action logic** | `nova_backend/src/actions/` and `nova_backend/src/agents/` | Unclear where to add `send_email_draft` (Tier 2.1). Note: `api/routes/` cited in earlier drafts does **not** exist; API files are flat under `nova_backend/src/api/`. |
-| **No module entry point** | `brain_server.py` has no `def main()` and no `if __name__ == "__main__":` block | Blocks the naive `nova-start = "nova_backend.brain_server:main"` pyproject entry; a small `main()` wrapper is a prerequisite to Tier 1.4. |
+| **Scattered action logic** | `nova_backend/src/actions/` and `nova_backend/src/agents/` | It was unclear at audit time where to add `send_email_draft` (Tier 2.1). Note: `api/routes/` cited in earlier drafts does **not** exist; API files are flat under `nova_backend/src/api/`. |
+| **No module entry point** | `brain_server.py` lacked `def main()` and an entry block at audit time | Blocked the naive `nova-start = "nova_backend.brain_server:main"` pyproject entry until later entry-point work landed. |
 
 ---
 
@@ -54,10 +60,10 @@ with a live grep. Do not refactor against a stale line number.
 
 3. **Action registry standardization**
    - Pick one canonical path (proposal: `nova_backend/src/actions/governed/`)
-     for all new mutation capabilities so Tier 2.1 (`send_email_draft`)
-     lands in one predictable place.
+     for all new mutation capabilities so future mutation work lands in one
+     predictable place.
 
-### 2.2 Minimal `pyproject.toml` Skeleton (Tier 1.4 Requirement)
+### 2.2 Minimal `pyproject.toml` Skeleton (Tier 1.4 Requirement at audit time)
 
 Prerequisite: add a `main()` wrapper in `brain_server.py` (or a thin
 `nova_backend/__main__.py`) before the entry-point line below will resolve.
