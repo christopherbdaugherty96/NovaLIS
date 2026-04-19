@@ -4,17 +4,11 @@
 **Audience:** Christopher Daugherty / Core development
 **Last reviewed:** 2026-04-19
 
-> *The smartest thing Claude can do for Nova right now is stop acting like a coder
-> and start acting like your first thousand users.*
-
 ---
 
 ## Core Principle
 
-Stress Nova like a real product, not admire it like a codebase.
-
-At this stage, simulations expose what users would actually feel.
-That is more valuable than building new features.
+> Stress Nova like a real product, not admire it like a codebase.
 
 ---
 
@@ -35,14 +29,21 @@ Return only concrete failures, risks, and fixes.
 No praise unless tied to evidence.
 ```
 
-**Important:** Tell Claude explicitly: *Do not compliment. Be adversarial, practical, and specific.*
-That gets better results than open-ended review.
+---
+
+## Important Rule
+
+Tell Claude:
+
+> Do not compliment. Be adversarial, practical, and specific.
+
+That gets better results.
 
 ---
 
-## 10 Simulations (Priority Order)
+## 10 Simulations
 
-### 1. Clean Install Smoke Test — TOP PRIORITY
+### 1. Clean Install Smoke Test — Top Priority
 
 Simulate a first-time user path from zero:
 
@@ -54,7 +55,7 @@ Simulate a first-time user path from zero:
 - Verify backend responds
 - Verify no missing env vars crash startup
 
-**Why:** Directly blocks productization. Nothing else matters if install fails.
+**Why:** This directly helps productization.
 
 **Prompt:**
 ```
@@ -64,7 +65,26 @@ Identify every step that would confuse or fail for a new user.
 
 ---
 
-### 2. Conversation Quality Simulation
+### 2. Capability Regression Sweep
+
+For every registered capability, test four paths:
+
+1. Success path — launches correctly
+2. Rejection path — rejected when disabled
+3. Bad input path — handles malformed input safely
+4. Logging path — ledger events written correctly
+
+**Why:** This validates the governance promise.
+
+**Prompt:**
+```
+Enumerate all Nova capabilities and run a regression pass:
+success path, rejection path, malformed input path, logging path.
+```
+
+---
+
+### 3. Conversation Quality Simulation
 
 Simulate normal users talking to Nova:
 
@@ -74,37 +94,16 @@ Simulate normal users talking to Nova:
 - Unsupported requests
 - Rude users
 - Vague requests
-- Follow-up questions that reference earlier context
+- Follow-up questions
 
-Check whether responses feel natural and clear. Flag awkward phrasing,
-repetition, dead ends, and confusion.
+Check whether responses feel natural and clear.
 
-**Why:** You want Nova to feel like a real assistant, not a demo.
+**Why:** You said you want Nova to feel like a real assistant.
 
 **Prompt:**
 ```
 Simulate 100 realistic user conversations with Nova and identify
 weak responses, awkward phrasing, repetition, or confusion.
-```
-
----
-
-### 3. Capability Regression Sweep
-
-For every registered capability, test four paths:
-
-1. Success path — launches correctly
-2. Rejection path — rejected when disabled
-3. Bad input path — handles malformed input safely
-4. Logging path — ledger events written correctly
-
-**Why:** Validates the governance promise. If any capability fails silently
-or logs incorrectly, the audit trail is broken.
-
-**Prompt:**
-```
-Enumerate all Nova capabilities and run a regression pass:
-success path, rejection path, malformed input path, logging path.
 ```
 
 ---
@@ -115,28 +114,28 @@ Simulate failure scenarios:
 
 - Python missing
 - Ollama missing
-- Model download fails mid-pull
-- Port 8000 already in use
+- Model download fails
+- Port in use
 - Internet unavailable
-- Permissions denied on install directory
+- Permissions denied
 
 Check whether errors are understandable to a non-technical user.
 
-**Why:** Every scenario above is a real thing that happens on real machines.
+**Why:** Huge for shipping.
 
 ---
 
-### 5. Portfolio Scan Test
+### 5. Performance and Latency Test
 
-Have Claude act as a recruiter or hiring manager:
+Measure:
 
-- Open the repo for 30 seconds
-- What stands out?
-- What's confusing?
-- Why would they leave?
+- Cold startup time
+- Response time
+- Capability execution time
+- Memory usage
+- Repeated conversation speed
 
-**Why:** The README is the front door. This test exposes whether the
-value lands in the first 30 seconds.
+**Why:** Slow products feel broken.
 
 ---
 
@@ -150,40 +149,38 @@ Try to break the rules:
 - Attempt hidden tool invocation
 - Submit conflicting intents
 
-**Why:** This is Nova's core identity. If governance can be bypassed,
-the entire trust model is hollow.
+**Why:** This validates Nova's core identity.
 
 ---
 
-### 7. Long Session Memory Simulation
+### 7. UI / Dashboard Review
+
+Have Claude review the frontend as a product:
+
+- Clarity of layout
+- Visual hierarchy
+- Confusion points
+- Dead or misleading buttons
+- Poor information grouping
+- Trust surfaces — does it feel safe and transparent?
+
+---
+
+### 8. Long Session Memory Simulation
 
 Run extended conversations:
 
 - 50+ turns
 - Topic changes mid-session
-- References like "that thing you said earlier" or "the one from before"
-- Saved memory retrieval after several turns
+- References like "that one" or "what you said earlier"
+- Saved memory retrieval
 - Context decay — does Nova lose track?
 
 **Why:** Shows whether Nova feels continuous or like a stateless chatbot.
 
 ---
 
-### 8. Performance and Latency Test
-
-Measure:
-
-- Cold startup time
-- Response time (first token)
-- Capability execution time
-- Memory usage under sustained load
-- Repeated conversation speed
-
-**Why:** Slow products feel broken regardless of their features.
-
----
-
-### 9. Real Business Use-Case Simulations
+### 9. Real User Use-Case Simulations
 
 Run scenarios grounded in actual intended use cases.
 
@@ -201,21 +198,18 @@ Run scenarios grounded in actual intended use cases.
 - Set a reminder
 - Ask for help with a topic over several turns
 
-**Why:** Proves Nova works in the specific contexts it's being built for,
-not just synthetic QA cases.
-
 ---
 
-### 10. UI / Dashboard Review
+### 10. Portfolio Scan Test
 
-Have Claude review the frontend as a product:
+Have Claude act as a recruiter or hiring manager:
 
-- Clarity of layout
-- Visual hierarchy
-- Confusion points
-- Dead or misleading buttons
-- Poor information grouping
-- Trust surfaces — does it feel safe and transparent?
+- Open the repo for 30 seconds
+- What stands out?
+- What's confusing?
+- Why would they leave?
+
+**Why:** This can massively help the README.
 
 ---
 
@@ -223,32 +217,26 @@ Have Claude review the frontend as a product:
 
 ### This Week
 
-| # | Simulation |
-| :--- | :--- |
-| 1 | Clean install smoke test |
-| 2 | Conversation quality simulation |
-| 3 | Capability regression sweep |
+1. Clean install smoke test
+2. Conversation quality simulation
+3. Capability regression sweep
 
-### Next Pass
+### Next
 
-| # | Simulation |
-| :--- | :--- |
-| 4 | Installer failure injection |
-| 5 | Portfolio scan test |
-| 6 | Long-session memory test |
+4. Installer failure injection
+5. Portfolio scan test
+6. Long-session memory test
 
-### Later
+---
 
-| # | Simulation |
-| :--- | :--- |
-| 7 | Trust and governance audit |
-| 8 | Performance and latency test |
-| 9 | Real business use-case simulations |
-| 10 | UI / dashboard review |
+## My Honest View
+
+At this stage, simulations may be **more valuable than building new features**,
+because they expose what users would actually feel.
 
 ---
 
 ## One Sentence Truth
 
-**At this stage, simulations may be more valuable than building new features —
-because they expose what users would actually feel.**
+**The smartest thing Claude can do for Nova right now is stop acting like a coder
+and start acting like your first thousand users.**
