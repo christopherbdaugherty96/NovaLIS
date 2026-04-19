@@ -98,9 +98,7 @@ class InputNormalizer:
         (r"^\s*(?:can|could) you help(?: me)?\s*[.?!]*$", "what can you do"),
         (r"^\s*(?:i need|i want)\s+(?:some\s+)?help\s*[.?!]*$", "what can you do"),
         (r"^\s*help me\s*[.?!]*$", "what can you do"),
-        (r"^\s*(?:who|what) are you\s*[.?!]*$", "what can you do"),
-        (r"^\s*(?:who|what) is nova\s*[.?!]*$", "what can you do"),
-        (r"^\s*what(?:'s| is) nova\s*[.?!]*$", "what can you do"),
+        # Note: "who are you", "what is nova" are handled by the identity intent — not normalized here
         (r"^\s*(?:show|list|tell me)\s+(?:your\s+)?(?:skills|features|options|commands|menu)\s*[.?!]*$", "what can you do"),
         (r"^\s*what(?:'s| is)\s+(?:available|possible)\s*[.?!]*$", "what can you do"),
         (r"^\s*(?:how do i|how can i)\s+use\s+(?:you|nova|this)\s*[.?!]*$", "what can you do"),

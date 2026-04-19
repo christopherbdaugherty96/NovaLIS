@@ -77,6 +77,73 @@ class TestGreetings:
 # What can you do
 # ---------------------------------------------------------------------------
 
+class TestIdentity:
+    @pytest.mark.parametrize("text", [
+        "who are you",
+        "what are you",
+        "what is nova",
+        "what's nova",
+        "tell me about yourself",
+        "tell me about nova",
+        "explain nova",
+        "describe yourself",
+        "who made you",
+        "who built you",
+        "who created you",
+        "who created nova",
+        "who designed you",
+        "who owns you",
+        "who runs nova",
+        "who is behind nova",
+        "where do you come from",
+        "are you an ai",
+        "are you a ai",
+        "what kind of ai are you",
+        "what kind of assistant is nova",
+        "is nova open source",
+        "is nova private",
+        "how does nova work",
+        "how do you work",
+        "about nova",
+        "nova info",
+    ])
+    def test_recognized(self, text):
+        result = _handle(text)
+        assert result is not None, f"Expected identity response for {text!r}"
+
+    def test_mentions_creator(self):
+        result = _handle("who made you")
+        assert result is not None
+        assert "Christopher Daugherty" in result
+
+    def test_mentions_local(self):
+        result = _handle("what is nova")
+        assert result is not None
+        assert "local" in result.lower() or "your" in result.lower()
+
+    def test_mentions_privacy(self):
+        result = _handle("is nova private")
+        assert result is not None
+        assert "cloud" in result.lower() or "data" in result.lower() or "private" in result.lower()
+
+    def test_ends_with_next_step(self):
+        result = _handle("tell me about yourself")
+        assert result is not None
+        assert "what can you do" in result.lower() or "tell me" in result.lower()
+
+    def test_does_not_conflict_with_capabilities(self):
+        # "what can you do" should still go to capability handler, not identity
+        result_identity = _handle("who are you")
+        result_caps = _handle("what can you do")
+        assert result_identity != result_caps
+
+    def test_does_not_conflict_with_greeting(self):
+        # "hi" should still be a greeting, not identity
+        result_greeting = _handle("hi")
+        result_identity = _handle("who are you")
+        assert result_greeting != result_identity
+
+
 class TestWhatCanYouDo:
     @pytest.mark.parametrize("text", [
         "what can you do",
