@@ -1575,6 +1575,9 @@ class GeneralChatSkill(BaseSkill):
             # Fire-and-forget memory extraction from the user's query
             self._extract_and_save_memories(normalized_query)
 
+            # Record topic so Nova builds awareness of what it engages with
+            self._record_query_topic(normalized_query)
+
             return SkillResult(
                 success=True,
                 message=text,
@@ -1612,6 +1615,20 @@ class GeneralChatSkill(BaseSkill):
                     source="observed",
                     confidence=0.85,
                 )
+        except Exception:
+            pass
+
+    def _record_query_topic(self, query: str) -> None:
+        """Record the topic of this query in Nova's self-memory for relationship awareness."""
+        try:
+            # Use the first 5 meaningful words as the topic label
+            stopwords = {"a", "an", "and", "are", "can", "could", "do", "does", "for",
+                         "how", "i", "in", "is", "it", "me", "my", "of", "please",
+                         "the", "to", "what", "when", "where", "who", "will", "with", "you"}
+            words = [w.strip("?.,!") for w in query.lower().split() if w.strip("?.,!") not in stopwords]
+            topic = " ".join(words[:5]).strip()
+            if topic and len(topic) >= 3:
+                self._nova_memory.record_topic(topic)
         except Exception:
             pass
 
