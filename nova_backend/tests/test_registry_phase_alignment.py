@@ -34,4 +34,4 @@ def test_registry_loads_without_phase_error():
 
     registry = CapabilityRegistry()
     caps = registry.all_capabilities()
-    assert len(caps) == 25
+    assert len(caps) == 26
