@@ -4,8 +4,9 @@ Phase-3.5 Staged Governed Memory — Quick Corrections
 
 Properties:
 - Explicit invocation only ("Correction:")
-- Append-only
-- No reads
+- Append-only writes via record_correction()
+- load_unconsumed() reads corrections not yet injected into a session
+- mark_all_consumed() rewrites the log marking all entries consumed
 - No inference
 - No automatic behavior changes
 - Auditable and reversible
@@ -16,7 +17,7 @@ from __future__ import annotations
 import json
 from datetime import datetime
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List
 
 
 # Location is explicit and inspectable
@@ -45,3 +46,69 @@ def record_correction(content: str) -> Dict[str, str]:
         f.write(json.dumps(entry, ensure_ascii=False) + "\n")
 
     return entry
+
+
+def load_unconsumed(limit: int = 10) -> List[str]:
+    """
+    Return the content strings of unconsumed corrections (oldest-first).
+
+    Corrections are unconsumed when ``consumed`` is False. Call
+    ``mark_all_consumed()`` after loading to prevent re-injection on
+    the next session.
+
+    Returns an empty list if the file does not exist or cannot be read.
+    """
+    if not _CORRECTIONS_PATH.exists():
+        return []
+    results: List[str] = []
+    try:
+        lines = _CORRECTIONS_PATH.read_text(encoding="utf-8").splitlines()
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if not entry.get("consumed", True):
+                content = str(entry.get("content") or "").strip()
+                if content:
+                    results.append(content)
+                if len(results) >= limit:
+                    break
+    except Exception:
+        return []
+    return results
+
+
+def mark_all_consumed() -> None:
+    """
+    Rewrite the corrections log marking every entry as consumed.
+
+    Safe to call even if the file does not exist or is empty.
+    """
+    if not _CORRECTIONS_PATH.exists():
+        return
+    try:
+        lines = _CORRECTIONS_PATH.read_text(encoding="utf-8").splitlines()
+        updated: List[str] = []
+        changed = False
+        for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+                if not entry.get("consumed", True):
+                    entry["consumed"] = True
+                    changed = True
+                updated.append(json.dumps(entry, ensure_ascii=False))
+            except json.JSONDecodeError:
+                updated.append(line)  # preserve malformed lines as-is
+        if changed:
+            _CORRECTIONS_PATH.write_text(
+                "\n".join(updated) + "\n", encoding="utf-8"
+            )
+    except Exception:
+        pass

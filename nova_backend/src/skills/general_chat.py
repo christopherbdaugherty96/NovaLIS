@@ -775,6 +775,16 @@ class GeneralChatSkill(BaseSkill):
                 if thread_name:
                     label += f" (thread: {thread_name})"
                 hints.append(f"{label}: {content}")
+        # Inject unconsumed user corrections from previous sessions.
+        # Only injected once per session — cleared from session_state after first use.
+        pending_corrections = list(state.get("pending_corrections") or [])
+        if pending_corrections:
+            for corr in pending_corrections[:3]:
+                corr_text = str(corr or "").strip()
+                if corr_text:
+                    hints.append(f"User previously corrected Nova: {corr_text}")
+            state.pop("pending_corrections", None)
+
         rewrite_hint = self._build_rewrite_hint(normalized_query, context=context)
         if rewrite_hint:
             hints.append(rewrite_hint)

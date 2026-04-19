@@ -272,6 +272,17 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
     initial_trust_refresh_task: asyncio.Task[None] | None = None
 
+    # Load any unconsumed user corrections from previous sessions and make
+    # them available for context injection in the first few turns.
+    try:
+        from src.memory.quick_corrections import load_unconsumed, mark_all_consumed
+        _pending = load_unconsumed(limit=5)
+        if _pending:
+            session_state["pending_corrections"] = _pending
+            mark_all_consumed()
+    except Exception:
+        pass
+
     # Check for version lock and surface it clearly at session start
     _startup_notice = ""
     try:
@@ -3830,3 +3841,32 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             initial_trust_refresh_task.cancel()
         thought_store.clear_session(session_id)
         GovernorMediator.clear_session(session_id)
+
+        # Write session summary to Nova's self-memory if at least 3 turns happened.
+        # Gives Nova cross-session continuity without storing raw conversation history.
+        try:
+            _turns = int(session_state.get("turn_count") or 0)
+            if _turns >= 3:
+                from src.memory.nova_self_memory_store import nova_self_memory_store as _nsm
+                _topic = str(session_state.get("active_topic") or "").strip()
+                _thread = str(session_state.get("project_thread_active") or "").strip()
+
+                # Build a compact summary from what's in session state
+                _parts: list[str] = [f"{_turns}-turn session"]
+                if _thread:
+                    _parts.append(f"project thread: {_thread}")
+                if _topic and _topic != _thread:
+                    _parts.append(f"topic: {_topic}")
+                _last = str(session_state.get("last_response") or "").strip()
+                if _last:
+                    _excerpt = _last[:120].rstrip()
+                    if len(_last) > 120:
+                        _excerpt += "..."
+                    _parts.append(f"last response: {_excerpt}")
+
+                _nsm.record_session_summary(
+                    ". ".join(_parts),
+                    turn_count=_turns,
+                )
+        except Exception:
+            pass
