@@ -238,7 +238,7 @@ Nova's self-knowledge about the relationship with this specific user. Three sub-
 
 ### Key Methods
 
-#### Write methods (currently never called in conversation flow)
+#### Write methods
 
 | Method | Description |
 |---|---|
@@ -264,15 +264,15 @@ Nova's self-knowledge about the relationship with this specific user. Three sub-
 `memory_api.py` (lines 106–112):
 - Exposes insights, summaries, and topics via `GET /api/memory/nova`
 
-### ⚠️ Gap: Write Path Is Dead
+### Write path — wired (2026-04-19)
 
-`record_insight()`, `record_session_summary()`, and `record_topic()` are **never called anywhere in the conversation flow**. The relationship context block Nova reads back from is always empty unless entries were manually injected.
+All three write methods are now called in conversation flow:
 
-**Fix applied (2026-04-18):** `record_topic()` is now called after each successful `_run_local_model()` response, using the first 5 words of the normalized query as the topic. See implementation in `general_chat.py`.
+**`record_topic()`** — called after every successful response in `_run_local_model()`. Takes the first 5 stopword-filtered words of the user query as the topic string. Implemented via `_record_query_topic()` in `general_chat.py`.
 
-**Remaining work:**
-- `record_insight()` — needs LLM post-processing to detect relationship signals, or a curated heuristic pass
-- `record_session_summary()` — needs a session-end hook (WebSocket disconnect or timeout)
+**`record_insight()`** — called after every successful response via `_extract_relationship_signals()` in `general_chat.py`. Runs conservative regex patterns against user messages shorter than 200 chars. Detects explicit preference/feedback signals only (length, formatting, directness, caveats, examples). Maps matches to normalized insight strings so deduplication works. One insight per query maximum.
+
+**`record_session_summary()`** — called in the `finally` block of `session_handler.py` (WebSocket disconnect). Only fires if the session had >= 3 turns. Builds a compact text summary from `session_state`: turn count, active project thread, topic, last response excerpt.
 
 ---
 
@@ -300,16 +300,15 @@ Append-only log of corrections the user gave Nova mid-conversation. Each line is
 
 `record_correction(original, correction, turn)` — appends a record. Always writes `"consumed": false`.
 
-### ⚠️ Gap: No Consumer
+### Consumer wired (2026-04-19)
 
-Nothing reads this file. The `consumed: false` flag implies a planned consumer that would apply corrections as fine-tuning signal or re-inject them into future prompts — but that consumer was never built.
+The file now has a complete read/write/consume cycle:
 
-**Current status:** Data is logged but silently discarded. Not a runtime error, but the feature provides zero value.
+- **`record_correction(content)`** — unchanged, appends with `consumed: false`
+- **`load_unconsumed(limit)`** — reads entries where `consumed` is False, returns content strings
+- **`mark_all_consumed()`** — rewrites the log marking all entries consumed
 
-**Options:**
-1. Build the consumer: on session start, inject recent uncorrected items as context hints
-2. Expose via API: surface in the memory dashboard for user review
-3. Remove: delete the file and the call sites if the feature is not prioritized
+At session init in `session_handler.py`, `load_unconsumed(limit=5)` fetches any pending corrections, stores them in `session_state["pending_corrections"]`, then calls `mark_all_consumed()`. In `_build_conversational_prompt()` in `general_chat.py`, pending corrections are injected as `"User previously corrected Nova: ..."` hints and then cleared from session_state so they only appear on the first turn of that session.
 
 ---
 
@@ -342,8 +341,30 @@ general_chat.py: _extract_and_save_memories(query)
   → regex match → UserMemoryStore.save() if personal info detected
         │
         ▼
-general_chat.py: record_topic(query)  ← ADDED 2026-04-18
-  → NovaSelfMemoryStore.record_topic() if response succeeded
+general_chat.py: _record_query_topic(query)
+  → NovaSelfMemoryStore.record_topic() with first 5 words of query
+        │
+        ▼
+general_chat.py: _extract_relationship_signals(query)
+  → conservative regex → NovaSelfMemoryStore.record_insight() if feedback signal detected
+        │
+        ▼
+session end (WebSocket disconnect)
+        │
+        ▼
+session_handler.py finally block
+  → NovaSelfMemoryStore.record_session_summary() if turn_count >= 3
+```
+
+**Session start (corrections):**
+```
+session_handler.py: session init
+  → load_unconsumed() → session_state["pending_corrections"]
+  → mark_all_consumed()
+
+Turn 1: _build_conversational_prompt()
+  → injects pending_corrections as hints
+  → clears session_state["pending_corrections"]
 ```
 
 ---
@@ -369,21 +390,19 @@ Both `GovernedMemoryStore` and `UserMemoryStore` use the same safe write pattern
 - Governed memory retrieval per turn (keyword-scored, up to 3 items)
 - User memory extraction from conversation (regex patterns)
 - User memory injection into system prompt
-- Relationship context injection (reads OK; empty because writes are dead)
+- Relationship context injection — insights now accumulate from conversation
+- Session summaries written on disconnect (>= 3 turns)
+- Topic patterns accumulate every turn
+- Quick corrections injected at next session start, then marked consumed
 - All memory dashboard API endpoints
 - Atomic writes across all three stores
 
-### Not Working
-- Nova relationship insights never accumulate (`record_insight` never called)
-- Session summaries never written (`record_session_summary` never called)
-- Topic patterns accumulate after 2026-04-18 fix — was dead before
-- Quick corrections log is written but never consumed
-
 ### Known Limitations
 - Governed memory search is keyword-only — no semantic similarity
-- `NovaSelfMemoryStore` dedup uses substring match (overly broad — "POS" would match "Positioning")
+- `NovaSelfMemoryStore` dedup uses substring match (can miss near-duplicates)
 - No governed memory deduplication on save (unlike `UserMemoryStore`)
 - Thread snapshot/decision actions in `memory_governance_executor.py` are stubbed
+- Relationship insight extraction is regex-only — won't catch signals in non-standard phrasing
 
 ---
 
@@ -395,11 +414,12 @@ nova_backend/src/
 │   ├── governed_memory_store.py    # GovernedMemoryStore class
 │   ├── user_memory_store.py        # UserMemoryStore class
 │   ├── nova_self_memory_store.py   # NovaSelfMemoryStore class
-│   └── quick_corrections.py        # record_correction() only
+│   └── quick_corrections.py        # record/load_unconsumed/mark_all_consumed
 ├── api/
 │   └── memory_api.py               # REST endpoints for all stores
 ├── skills/
-│   └── general_chat.py             # _build_memory_context(), _extract_and_save_memories()
+│   └── general_chat.py             # _build_memory_context(), _extract_and_save_memories(),
+│                                   # _record_query_topic(), _extract_relationship_signals()
 └── brain_server.py                 # _select_relevant_memory_context()
 
 nova_backend/src/data/nova_state/memory/

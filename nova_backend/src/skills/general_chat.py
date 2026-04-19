@@ -294,6 +294,38 @@ class GeneralChatSkill(BaseSkill):
         "to", "the idea", "the concept", "the approach",
     })
 
+    # Conservative relationship insight patterns.
+    # Each tuple: (regex, normalized_insight_string)
+    # Only explicit, high-confidence feedback signals — not inferred.
+    # Insights are normalized so substring deduplication in record_insight() works.
+    _INSIGHT_PATTERNS: tuple[tuple[re.Pattern, str], ...] = (
+        # Length / verbosity preferences
+        (re.compile(r"\bkeep\s+it\s+(short|brief|concise|quick)\b", re.I), "User prefers concise responses"),
+        (re.compile(r"\b(too\s+long|too\s+verbose|too\s+wordy)\b", re.I), "User prefers concise responses"),
+        (re.compile(r"\bless\s+(detail|explanation|text|words)\b", re.I), "User prefers concise responses"),
+        (re.compile(r"\bshorter\s+(please|answer|response)?\b", re.I), "User prefers concise responses"),
+        (re.compile(r"\bmore\s+detail(s|ed)?\b", re.I), "User wants more detailed responses"),
+        (re.compile(r"\bmore\s+(depth|thorough|comprehensive)\b", re.I), "User wants more detailed responses"),
+        # Formatting preferences
+        (re.compile(r"\b(don.t|no|stop)\s+use\s+bullet\s*points?\b", re.I), "User prefers prose over bullet points"),
+        (re.compile(r"\bstop\s+using\s+bullet\s*points?\b", re.I), "User prefers prose over bullet points"),
+        (re.compile(r"\bno\s+bullet\s*points?\b", re.I), "User prefers prose over bullet points"),
+        (re.compile(r"\buse\s+bullet\s*points?\b", re.I), "User prefers bullet point formatting"),
+        (re.compile(r"\buse\s+(?:a\s+)?list\b", re.I), "User prefers bullet point formatting"),
+        # Directness preferences
+        (re.compile(r"\bmore\s+direct(ly)?\b", re.I), "User prefers direct answers without preamble"),
+        (re.compile(r"\bget\s+to\s+the\s+point\b", re.I), "User prefers direct answers without preamble"),
+        (re.compile(r"\bskip\s+the\s+(intro|introduction|preamble|setup)\b", re.I), "User prefers direct answers without preamble"),
+        (re.compile(r"\bjust\s+answer\s+the\s+question\b", re.I), "User prefers direct answers without preamble"),
+        # Caveats / disclaimers
+        (re.compile(r"\bskip\s+the\s+(disclaimer|caveats?|warnings?)\b", re.I), "User dislikes excessive caveats"),
+        (re.compile(r"\bstop\s+(adding|with|the)\s+(disclaimer|caveats?|warnings?)\b", re.I), "User dislikes excessive caveats"),
+        (re.compile(r"\b(don.t|no)\s+(say|add|include)\s+(?:\w+\s+){0,2}caveats?\b", re.I), "User dislikes excessive caveats"),
+        # Examples
+        (re.compile(r"\bgive\s+(?:me\s+)?(?:an?\s+)?example\b", re.I), "User finds examples helpful"),
+        (re.compile(r"\bmore\s+examples?\b", re.I), "User finds examples helpful"),
+    )
+
     def __init__(
         self,
         policy_config: Optional[dict] = None,
@@ -1588,6 +1620,9 @@ class GeneralChatSkill(BaseSkill):
             # Record topic so Nova builds awareness of what it engages with
             self._record_query_topic(normalized_query)
 
+            # Detect explicit preference/feedback signals and record as relationship insights
+            self._extract_relationship_signals(normalized_query)
+
             return SkillResult(
                 success=True,
                 message=text,
@@ -1639,6 +1674,35 @@ class GeneralChatSkill(BaseSkill):
             topic = " ".join(words[:5]).strip()
             if topic and len(topic) >= 3:
                 self._nova_memory.record_topic(topic)
+        except Exception:
+            pass
+
+    def _extract_relationship_signals(self, query: str) -> None:
+        """Detect explicit user preference or feedback signals and record as relationship insights.
+
+        Only runs on short messages (< 200 chars) that look like feedback rather than
+        task requests. Conservative — uses explicit regex patterns only, never infers.
+        One insight per query to avoid noisy accumulation.
+        """
+        try:
+            q = str(query or "").strip()
+            # Only process short messages — longer ones are usually task requests
+            if not q or len(q) > 200:
+                return
+            # Require at least one feedback-signal word to avoid processing task queries
+            _feedback_anchors = (
+                "keep", "less", "more", "shorter", "longer", "brief", "verbose",
+                "detail", "direct", "point", "bullet", "list", "example",
+                "skip", "stop", "don't", "dont", "caveat", "disclaimer",
+                "too long", "too short", "too wordy",
+            )
+            q_lower = q.lower()
+            if not any(anchor in q_lower for anchor in _feedback_anchors):
+                return
+            for pattern, insight in self._INSIGHT_PATTERNS:
+                if pattern.search(q):
+                    self._nova_memory.record_insight(insight, source="observed")
+                    return  # one insight per query
         except Exception:
             pass
 
