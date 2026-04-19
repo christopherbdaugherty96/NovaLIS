@@ -1688,9 +1688,14 @@ class GeneralChatSkill(BaseSkill):
                 "use", "want", "was", "were", "what", "when", "where", "who",
                 "will", "with", "work", "would", "you",
             }
-            words = [w.strip("?.,!") for w in query.lower().split() if w.strip("?.,!") not in stopwords]
+            words = [w.strip("?.,!:-") for w in query.lower().split()
+                     if w.strip("?.,!:-") and w.strip("?.,!:-") not in stopwords]
+            # Require at least 2 meaningful words — single-word affirmations
+            # ("thanks", "sure", "yep") produce noise in topic patterns.
+            if len(words) < 2:
+                return
             topic = " ".join(words[:5]).strip()
-            if topic and len(topic) >= 3:
+            if topic:
                 self._nova_memory.record_topic(topic)
         except Exception:
             pass
@@ -1732,7 +1737,7 @@ class GeneralChatSkill(BaseSkill):
                 "for this", "this one", "just this", "this time", "in this case",
                 "for now", "right now", "here", "in this response",
             )
-            if any(q in q_lower for q in _one_off_qualifiers):
+            if any(qualifier in q_lower for qualifier in _one_off_qualifiers):
                 return
 
             for pattern, insight in self._INSIGHT_PATTERNS:

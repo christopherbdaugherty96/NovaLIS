@@ -276,7 +276,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     # them available for context injection in the first few turns.
     try:
         from src.memory.quick_corrections import load_unconsumed, mark_all_consumed
-        _pending = load_unconsumed(limit=5)
+        # Load more than the injection cap (3 in general_chat) so that
+        # mark_all_consumed() does not silently drop corrections that were
+        # loaded but not injected due to the per-turn cap.
+        _pending = load_unconsumed(limit=10)
         if _pending:
             session_state["pending_corrections"] = _pending
             mark_all_consumed()
