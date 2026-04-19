@@ -1,4 +1,8 @@
 ﻿# NovaLIS Phase-4 / Phase-7 Design-to-Code Comparison
+> **Historical reference only**
+> This document reflects Nova's state at the time it was written and is **not** the authoritative current status.
+> For live state, see `docs/current_runtime/` and current capability verification docs.
+
 **Date:** 2026-03-03  
 **Scope:** Compare design intent in `docs/design/Phase 4/`, `docs/design/Phase 4.2/`, `docs/design/Phase 4.5/`, and `docs/design/Phase 7/` against mechanically reachable runtime code in `nova_backend/src/`.
 

@@ -1,4 +1,8 @@
 # Nova Status And Phase Report
+> **Historical reference only**
+> This document reflects Nova's state at the time it was written and is **not** the authoritative current status.
+> For live state, see `docs/current_runtime/` and current capability verification docs.
+
 Updated: 2026-03-26
 Audience: People reviewing Nova from the outside
 Purpose: Give one clear view of where Nova is today, what is live in runtime, what was completed most recently, what phase each major area belongs to, and what still comes next.

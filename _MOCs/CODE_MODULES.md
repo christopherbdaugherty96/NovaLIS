@@ -42,7 +42,7 @@ tests that pair by filename — so you can see the whole blast radius.
 - [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
 - [[nova_backend/src/executors/response_verification_executor.py|response_verification_executor]]
-- _…and 29 more_
+- _…and 31 more_
 
 ## `agents` (11 files)
 
@@ -311,6 +311,7 @@ _Runtime audit utilities for NovaLIS._
 
 ### Imported by
 
+- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api]]
 - [[nova_backend/tests/phase5/test_thread_change_summary.py|test_thread_change_summary]]
 
 ## `build_phase` (1 files)
@@ -450,7 +451,7 @@ ___all__ = ["ContextSnapshotService"]_
 - [[nova_backend/src/executors/screen_capture_executor.py|screen_capture_executor]]
 - [[nova_backend/tests/phase45/test_context_snapshot_contract.py|test_context_snapshot_contract]]
 
-## `conversation` (16 files)
+## `conversation` (17 files)
 
 _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 
@@ -473,6 +474,8 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
     - PolicyDecision = Literal["ALLOW_ANALYSIS_ONLY", "DENY", "ASK_USER"]
 - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
     - Helpers for keeping general-chat fallback behavior out of the websocket monolith.
+- [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
+    - meta_intent_handler.py
 - [[nova_backend/src/conversation/prompts.py|prompts]]
     - SYSTEM_PROMPT = (
 - [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
@@ -509,6 +512,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/src/skills/general_chat.py|general_chat]]
 - [[nova_backend/src/voice/tts_engine.py|tts_engine]]
 - [[nova_backend/src/voice/voice_agent.py|voice_agent]]
+- [[nova_backend/src/websocket/session_handler.py|session_handler]]
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
 - [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
@@ -516,8 +520,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/tests/conversation/test_deepseek_usage_visibility.py|test_deepseek_usage_visibility]]
 - [[nova_backend/tests/conversation/test_escalation_policy.py|test_escalation_policy]]
 - [[nova_backend/tests/conversation/test_general_chat_runtime.py|test_general_chat_runtime]]
-- [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
-- _…and 13 more_
+- _…and 15 more_
 
 ### Tests
 
@@ -528,6 +531,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/tests/conversation/test_deepseek_safety_wrapper.py|test_deepseek_safety_wrapper]]
 - [[nova_backend/tests/conversation/test_escalation_policy.py|test_escalation_policy]]
 - [[nova_backend/tests/conversation/test_general_chat_runtime.py|test_general_chat_runtime]]
+- [[nova_backend/tests/conversation/test_meta_intent_handler.py|test_meta_intent_handler]]
 - [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
 - [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
 - [[nova_backend/tests/conversation/test_safety_filter.py|test_safety_filter]]
@@ -548,7 +552,7 @@ _Debug utilities package._
 
 - [[nova_backend/tests/simulation/conversation_simulator.py|conversation_simulator]]
 
-## `executors` (21 files)
+## `executors` (22 files)
 
 ### Files
 
@@ -583,6 +587,8 @@ _Debug utilities package._
     - class ScreenAnalysisExecutor:
 - [[nova_backend/src/executors/screen_capture_executor.py|screen_capture_executor]]
     - class ScreenCaptureExecutor:
+- [[nova_backend/src/executors/send_email_draft_executor.py|send_email_draft_executor]]
+    - Send Email Draft Executor — cap 64 (send_email_draft)
 - [[nova_backend/src/executors/story_tracker_executor.py|story_tracker_executor]]
     - PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/src/executors/tts_executor.py|tts_executor]]
@@ -623,6 +629,7 @@ _Debug utilities package._
 - [[nova_backend/src/rendering/speech_formatter.py|speech_formatter]]
 - [[nova_backend/src/settings/runtime_settings_store.py|runtime_settings_store]]
 - [[nova_backend/src/skills/calendar.py|calendar]]
+- [[nova_backend/src/skills/general_chat.py|general_chat]]
 - [[nova_backend/src/skills/news.py|news]]
 - [[nova_backend/src/skills/weather.py|weather]]
 - [[nova_backend/src/speech_state.py|speech_state]]
@@ -651,7 +658,7 @@ _Debug utilities package._
 - [[nova_backend/tests/executors/test_multi_source_reporting_executor.py|test_multi_source_reporting_executor]]
 - [[nova_backend/tests/executors/test_news_intelligence_executor.py|test_news_intelligence_executor]]
 - [[nova_backend/tests/executors/test_open_folder_executor.py|test_open_folder_executor - tests/executors]]
-- _…and 18 more_
+- _…and 19 more_
 
 ### Tests
 
@@ -664,6 +671,7 @@ _Debug utilities package._
 - [[nova_backend/tests/executors/test_open_folder_executor.py|test_open_folder_executor - tests/executors]]
 - [[nova_backend/tests/executors/test_response_verification_executor.py|test_response_verification_executor]]
 - [[nova_backend/tests/executors/test_screen_analysis_executor.py|test_screen_analysis_executor]]
+- [[nova_backend/tests/executors/test_send_email_draft_executor.py|test_send_email_draft_executor]]
 - [[nova_backend/tests/executors/test_story_tracker_executor.py|test_story_tracker_executor]]
 - [[nova_backend/tests/executors/test_tts_executor.py|test_tts_executor]]
 - [[nova_backend/tests/executors/test_web_search_executor.py|test_web_search_executor]]
@@ -741,6 +749,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/executors/response_verification_executor.py|response_verification_executor]]
 - [[nova_backend/src/executors/screen_analysis_executor.py|screen_analysis_executor]]
 - [[nova_backend/src/executors/screen_capture_executor.py|screen_capture_executor]]
+- [[nova_backend/src/executors/send_email_draft_executor.py|send_email_draft_executor]]
 - [[nova_backend/src/executors/story_tracker_executor.py|story_tracker_executor]]
 - [[nova_backend/src/executors/tts_executor.py|tts_executor]]
 - [[nova_backend/src/executors/volume_executor.py|volume_executor]]
@@ -768,7 +777,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/personality/core.py|core]]
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
 - [[nova_backend/src/services/weather_service.py|weather_service]]
-- _…and 45 more_
+- _…and 48 more_
 
 ### Tests
 
@@ -825,6 +834,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
 - [[nova_backend/src/executors/screen_analysis_executor.py|screen_analysis_executor]]
 - [[nova_backend/src/executors/screen_capture_executor.py|screen_capture_executor]]
+- [[nova_backend/src/executors/send_email_draft_executor.py|send_email_draft_executor]]
 - [[nova_backend/src/executors/tts_executor.py|tts_executor]]
 - [[nova_backend/src/executors/webpage_launch_executor.py|webpage_launch_executor]]
 - [[nova_backend/src/governor/capability_registry.py|capability_registry]]
@@ -832,8 +842,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/governor/network_mediator.py|network_mediator]]
 - [[nova_backend/src/llm/llm_manager.py|llm_manager]]
 - [[nova_backend/src/llm/llm_manager_vlock.py|llm_manager_vlock]]
-- [[nova_backend/src/llm/model_network_mediator.py|model_network_mediator]]
-- _…and 10 more_
+- _…and 11 more_
 
 ## `llm` (6 files)
 
@@ -1404,6 +1413,7 @@ _NovaLIS Backend Package_
 - [[nova_backend/src/api/openclaw_agent_api.py|openclaw_agent_api]]
 - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
 - [[nova_backend/src/executors/info_snapshot_executor.py|info_snapshot_executor]]
+- [[nova_backend/src/executors/send_email_draft_executor.py|send_email_draft_executor]]
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/src/openclaw/tool_registry.py|tool_registry]]
 - [[nova_backend/src/skill_registry.py|skill_registry]]
@@ -1415,7 +1425,7 @@ _NovaLIS Backend Package_
 - [[nova_backend/tests/phase45/test_brain_server_followups_and_voice.py|test_brain_server_followups_and_voice]]
 - [[nova_backend/tests/test_calendar_skill.py|test_calendar_skill]]
 - [[nova_backend/tests/test_news_skill.py|test_news_skill]]
-- [[nova_backend/tests/test_weather_skill.py|test_weather_skill]]
+- _…and 1 more_
 
 ### Tests
 
@@ -1700,6 +1710,7 @@ _Websocket session runtime modules._
 - [[nova_backend/src/agents/deep_audit.py|deep_audit]]
 - [[nova_backend/src/agents/memory.py|memory - src/agents]]
 - [[nova_backend/src/build_phase.py|build_phase]]
+- [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
 - [[nova_backend/src/llm/llm_gateway.py|llm_gateway]]
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]]
 - [[nova_backend/src/utils/local_request_guard.py|local_request_guard]]

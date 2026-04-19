@@ -326,6 +326,7 @@ Imports from:
 
 - [[nova_backend/src/agents/__init__.py|src/agents]]
 - [[nova_backend/src/build_phase.py|build_phase]]
+- [[nova_backend/src/conversation/__init__.py|src/conversation]]
 - [[nova_backend/src/llm/inference_wrapper.py|inference_wrapper]] (in `llm`)
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]] (in `memory`)
 - [[nova_backend/src/utils/content_extractor.py|content_extractor]] (in `utils`)

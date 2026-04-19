@@ -173,6 +173,7 @@ MEDIATOR_TRIGGER_PROBES: dict[str, str] = {
     "update story ai regulation": "story_tracker_update",
     "show story ai regulation": "story_tracker_view",
     "memory list": "memory_governance",
+    "draft an email to john@example.com about the quarterly review": "send_email_draft",
 }
 
 

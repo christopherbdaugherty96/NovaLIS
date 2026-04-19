@@ -1,4 +1,8 @@
 # NovaLIS — Engineering Session Status
+> **Historical reference only**
+> This document reflects Nova's state at the time it was written and is **not** the authoritative current status.
+> For live state, see `docs/current_runtime/` and current capability verification docs.
+
 **Date:** 2026-02-23
 **Branch:** `main`
 **Head Commit:** [`770897f`](https://github.com/christopherbdaugherty96/NovaLIS/commit/770897fe66a987627009f3e5a6aa2ca1e4471d29)

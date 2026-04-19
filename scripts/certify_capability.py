@@ -52,6 +52,14 @@ _BOLD = "\033[1m"
 _RESET = "\033[0m"
 
 
+def _stdout_supports_unicode() -> bool:
+    encoding = str(getattr(sys.stdout, "encoding", "") or "").lower()
+    return "utf" in encoding or encoding == "cp65001"
+
+
+_USE_UNICODE_GLYPHS = _stdout_supports_unicode()
+
+
 # ---------------------------------------------------------------------------
 # Lock file I/O
 # ---------------------------------------------------------------------------
@@ -105,6 +113,18 @@ def _lock_icon(locked: bool) -> str:
     return f"{_GREEN}[LOCKED]{_RESET}" if locked else f"{_YELLOW}[open]{_RESET}"
 
 
+def _phase_status_glyph(status: str) -> str:
+    if _USE_UNICODE_GLYPHS:
+        return "✅" if status == "pass" else ("⏳" if status == "pending" else "🚫")
+    return "OK" if status == "pass" else (".." if status == "pending" else "NO")
+
+
+def _lock_glyph(locked: bool) -> str:
+    if _USE_UNICODE_GLYPHS:
+        return "🔒" if locked else "🔓"
+    return "LOCK" if locked else "OPEN"
+
+
 # ---------------------------------------------------------------------------
 # Commands
 # ---------------------------------------------------------------------------
@@ -134,11 +154,11 @@ def cmd_status(args) -> None:
         locked = entry.get("locked", False)
 
         def _s(st: str) -> str:
-            return ("✅" if st == "pass" else ("⏳" if st == "pending" else "🚫")).ljust(4)
+            return _phase_status_glyph(st).ljust(4)
 
         print(
             f"  {cap_id:<6} {entry['name']:<30} {_s(p1):<12} {_s(p2):<12} {_s(p3):<12} "
-            f"{_s(p4):<12} {_s(p5):<12} {'🔒' if locked else '🔓'}"
+            f"{_s(p4):<12} {_s(p5):<12} {_lock_glyph(locked)}"
         )
 
     total = len(caps)
@@ -287,7 +307,8 @@ def cmd_lock(args) -> None:
     entry["external_effect"] = entry.get("external_effect", False)
     entry["reversible"] = entry.get("reversible", True)
     _save(data)
-    print(f"\n  {_BOLD}{_GREEN}🔒 Cap {cap_id} ({entry['name']}) is now LOCKED.{_RESET}")
+    lock_prefix = "🔒" if _USE_UNICODE_GLYPHS else "[LOCKED]"
+    print(f"\n  {_BOLD}{_GREEN}{lock_prefix} Cap {cap_id} ({entry['name']}) is now LOCKED.{_RESET}")
     print("  Regression guard is active. All CI runs will enforce this capability.\n")
 
 
@@ -309,7 +330,7 @@ def cmd_unlock(args) -> None:
     entry["_unlock_reason"] = f"{date.today().isoformat()}: {reason}"
     _save(data)
     print(
-        f"\n  {_YELLOW}🔓 Cap {cap_id} ({entry['name']}) unlocked.{_RESET}\n"
+        f"\n  {_YELLOW}{'🔓' if _USE_UNICODE_GLYPHS else '[OPEN]'} Cap {cap_id} ({entry['name']}) unlocked.{_RESET}\n"
         f"  Reason: {reason}\n"
         "  Complete your changes then run live-signoff and lock again.\n"
     )
