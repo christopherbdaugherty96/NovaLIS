@@ -133,6 +133,7 @@ These parts are active but still evolving:
 - deeper Phase-6 policy review ergonomics beyond the current manual-review center
 - future Phase-8 execution work beyond the now-live governed remote bridge and manual home-agent foundation
 - read-only Agent-page project analysis as the first coding-operator slice before patch proposal and approval-gated write work
+- live sign-off and lock of cap 64 (send_email_draft) — P1-P4 passed; P5 awaits user walkthrough
 
 ## What Is Planned But Not Fully Live Yet
 Some highly important ideas are still planned or partially scaffolded rather than fully live.
@@ -202,6 +203,25 @@ The main remaining voice caveat is still real-device confirmation:
 - TTS executor, runtime fallback, and mediator-path tests are passing
 - voice status and voice check surfaces are now visible in-product
 - real-device spoken output still needs final hardware confidence validation
+
+## Capability Verification Framework (2026-04-17)
+Nova now has a formal 6-phase capability verification system covering all 26 live capabilities.
+
+Each capability tracks:
+- P1 Unit — executor isolated with all deps mocked
+- P2 Routing — GovernorMediator routing verified
+- P3 Integration — full Governor spine verified
+- P4 API — HTTP/WebSocket API shape verified
+- P5 Live — manual live test signed off by user
+- P6 Lock — CI regression guard active
+
+Capability 64 (send_email_draft) is the first external-write capability. It passed P1 through P4 in the April 2026 build. P5 live sign-off is pending user walkthrough of the live checklist.
+
+Once all phases pass, a capability is locked. Locked capabilities are enforced by a regression guard that runs on every CI invocation — if governance fields change without an explicit unlock, the guard fails the build.
+
+The lock state lives in: `nova_backend/src/config/capability_locks.json`
+The regression guard lives in: `nova_backend/tests/certification/test_lock_regression_guard.py`
+CLI tool: `python scripts/certify_capability.py status`
 
 ## The Best Honest Description Right Now
 If someone asked what Nova is today, a strong honest answer would be:

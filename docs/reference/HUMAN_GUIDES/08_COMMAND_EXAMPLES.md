@@ -102,6 +102,18 @@ Useful voice confidence commands:
 - `voice status`
 - `voice check`
 
+## 6.5 Email Drafting
+Nova can prepare an email draft and open it in your mail client.
+You will be asked to confirm before anything opens.
+
+Examples:
+- `draft an email to john@example.com about the quarterly review`
+- `compose an email to the team about Friday's meeting`
+- `write an email to sarah@company.com about the project update`
+- `email alex@example.com about the deployment schedule`
+
+Note: Nova opens the draft — it never sends on your behalf.
+
 ## 7. Project Continuity And Workspace
 Examples:
 - `create thread deployment issue`

@@ -72,6 +72,30 @@ Examples:
 - `set brightness to 70`
 - `system status`
 
+## 2.5 Email Drafting (Governed External Write)
+Nova can compose a draft email and open it in your system mail client.
+
+It does not send email on its own — it opens the draft so you can review, edit, and decide.
+You will always see a confirmation prompt before anything opens.
+
+Nova can:
+- compose an email body using the local LLM
+- open the draft in your default mail client via mailto:
+- include a recipient, subject, and body
+- fall back to a structured template if the LLM is unavailable
+
+Examples:
+- `draft an email to john@example.com about the quarterly review`
+- `compose an email to the team about Friday's meeting`
+- `write an email to sarah@company.com about the project update`
+- `email alex@example.com about the deployment schedule`
+
+Governance note:
+- This is Nova's first external-write capability.
+- It requires your explicit confirmation before opening the mail client.
+- Nova cannot send email — it can only prepare and open a draft.
+- The action is logged in the ledger under EMAIL_DRAFT_CREATED.
+
 ## 3. Snapshots and Daily Surfaces
 Nova can load quick information views for:
 - weather
@@ -295,5 +319,6 @@ Today Nova can already:
 - expose trust and workspace state more clearly
 - help with the current screen
 - help with the local computer in bounded ways
+- draft emails for review
 
 That is enough for Nova to behave more like a personal intelligence workspace than a simple assistant.
