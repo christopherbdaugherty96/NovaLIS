@@ -47,6 +47,7 @@
 - `python scripts/start_daemon.py --no-browser` succeeds locally
 - `installer/windows/nova_bootstrap.ps1` now fails fast on venv, pip install, and Nova startup errors instead of silently continuing
 - `scripts/start_daemon.py` now reports when the Nova process exits before the health check succeeds
+- `installer/windows/nova_setup.iss` now runs bootstrap with `-NoLaunch`, so the installer owns the single post-install launch path instead of competing with the bootstrap script
 
 ### Issues
 
