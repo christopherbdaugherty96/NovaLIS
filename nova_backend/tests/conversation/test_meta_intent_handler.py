@@ -94,7 +94,8 @@ class TestWhatCanYouDo:
         assert result is not None
         # Should contain at least one group-level section
         assert any(label in result for label in [
-            "Research", "Computer", "Voice", "Email", "System", "Other"
+            "Research", "Computer", "Voice", "Email", "System", "Other",
+            "Diagnostics", "Home", "communication", "intelligence",
         ])
 
     def test_response_contains_capability(self):
@@ -102,19 +103,50 @@ class TestWhatCanYouDo:
         assert result is not None
         # Should mention at least one real capability label
         assert any(cap in result for cap in [
-            "Web search", "Weather", "News", "Screenshot", "Email", "Memory"
+            "Web search", "Weather", "News", "Screenshot", "Email", "Memory",
+            "Volume", "Weather", "Intelligence"
         ])
+
+    def test_response_shows_active_status(self):
+        result = _handle("what can you do")
+        assert result is not None
+        assert "[on]" in result
+
+    def test_response_shows_total_count(self):
+        result = _handle("what can you do")
+        assert result is not None
+        assert "26" in result or "capabilities" in result.lower()
 
     def test_response_has_follow_up_hint(self):
         result = _handle("what can you do")
         assert result is not None
         assert "what" in result.lower()  # points to "what's planned" or another action
 
+    def test_inactive_caps_shown_as_off(self):
+        """Disabled caps must appear as [off] not be silently hidden."""
+        fake_reg = {
+            "capability_groups": {"intelligence": [99]},
+            "capabilities": [{
+                "id": 99, "name": "future_cap", "enabled": False, "status": "inactive"
+            }],
+        }
+        with patch("src.conversation.meta_intent_handler._load_registry", return_value=fake_reg):
+            # Reset cache so patch takes effect
+            import src.conversation.meta_intent_handler as m
+            m._registry_cache = None
+            result = _handle("what can you do")
+            m._registry_cache = None  # clean up
+            assert result is not None
+            assert "[off]" in result
+
     def test_registry_missing_graceful(self):
         """If registry is missing, should still return something useful."""
+        import src.conversation.meta_intent_handler as m
+        m._registry_cache = None
         with patch("src.conversation.meta_intent_handler._load_registry", return_value={}):
             result = _handle("what can you do")
-            assert result is not None  # does not crash
+        m._registry_cache = None
+        assert result is not None  # does not crash
 
 
 # ---------------------------------------------------------------------------

@@ -172,36 +172,41 @@ def _load_registry() -> dict:
     return _registry_cache
 
 
-def _enabled_caps_by_group() -> dict[str, list[str]]:
-    """Return {group_label: [cap_label, ...]} for all enabled capabilities."""
+def _all_caps_by_group() -> dict[str, list[tuple[str, bool]]]:
+    """
+    Return {group_label: [(cap_label, is_active), ...]} for ALL capabilities,
+    active or not, so Nova can give a complete honest picture.
+    """
     reg = _load_registry()
     caps_by_id: dict[int, dict] = {
         int(c["id"]): c
         for c in reg.get("capabilities", [])
-        if c.get("enabled") and c.get("status") == "active"
     }
     groups: dict[str, list[int]] = reg.get("capability_groups", {})
 
-    result: dict[str, list[str]] = {}
+    result: dict[str, list[tuple[str, bool]]] = {}
     seen: set[int] = set()
 
     for group_key, cap_ids in groups.items():
         label = _GROUP_LABELS.get(group_key, group_key.replace("_", " ").title())
-        entries: list[str] = []
+        entries: list[tuple[str, bool]] = []
         for cid in cap_ids:
             if cid in caps_by_id and cid not in seen:
                 seen.add(cid)
-                name = caps_by_id[cid].get("name", "")
-                entries.append(_CAP_LABELS.get(name, name.replace("_", " ").title()))
+                cap = caps_by_id[cid]
+                name = cap.get("name", "")
+                is_active = bool(cap.get("enabled")) and cap.get("status") == "active"
+                entries.append((_CAP_LABELS.get(name, name.replace("_", " ").title()), is_active))
         if entries:
             result[label] = entries
 
-    # Anything not in a group
-    ungrouped: list[str] = []
+    # Anything not in a named group
+    ungrouped: list[tuple[str, bool]] = []
     for cid, cap in caps_by_id.items():
         if cid not in seen:
             name = cap.get("name", "")
-            ungrouped.append(_CAP_LABELS.get(name, name.replace("_", " ").title()))
+            is_active = bool(cap.get("enabled")) and cap.get("status") == "active"
+            ungrouped.append((_CAP_LABELS.get(name, name.replace("_", " ").title()), is_active))
     if ungrouped:
         result.setdefault("Other", []).extend(ungrouped)
 
@@ -217,16 +222,34 @@ def _build_greeting() -> str:
 
 
 def _build_what_can_you_do() -> str:
-    groups = _enabled_caps_by_group()
-    lines: list[str] = ["Here's what I can do right now:\n"]
-    for group_label, caps in groups.items():
+    groups = _all_caps_by_group()
+    if not groups:
+        return (
+            "I have 26 governed capabilities across research, local control, "
+            "email drafting, memory, and more. Type a request to get started."
+        )
+
+    active_total = sum(1 for entries in groups.values() for _, active in entries if active)
+    inactive_total = sum(1 for entries in groups.values() for _, active in entries if not active)
+    total = active_total + inactive_total
+
+    lines: list[str] = [
+        f"Nova has {total} capabilities. "
+        f"{active_total} are active now"
+        + (f", {inactive_total} are not yet active." if inactive_total else "."),
+        "",
+    ]
+
+    for group_label, entries in groups.items():
         lines.append(f"{group_label}:")
-        for cap in caps:
-            lines.append(f"  - {cap}")
+        for cap_label, is_active in entries:
+            status = "on" if is_active else "off"
+            lines.append(f"  [{status}]  {cap_label}")
         lines.append("")
+
     lines.append(
-        'Type "what\'s planned" to see what\'s coming next, '
-        'or just ask me to do something directly.'
+        'Ask me anything on the [on] list directly. '
+        'Type "what\'s planned" to see what\'s coming next.'
     )
     return "\n".join(lines).strip()
 
