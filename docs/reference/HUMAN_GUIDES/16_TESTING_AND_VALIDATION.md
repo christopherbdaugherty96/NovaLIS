@@ -1,5 +1,5 @@
-﻿# Testing and Validation Guide
-Updated: 2026-03-13
+# Testing and Validation Guide
+Updated: 2026-04-18
 
 ## Purpose
 This guide explains how Nova's testing and validation system is organized.
@@ -42,6 +42,17 @@ Tests that try to catch violations or edge cases in higher-risk behavior.
 ### `rendering/`
 Tests that focus on the structure and presentation of output.
 
+### `certification/`
+Formal per-capability certification tests organized into phases.
+
+This folder holds the 6-phase verification system for all 26 live capabilities.
+It is explained in full in Guide 33: `33_CAPABILITY_VERIFICATION_GUIDE.md`.
+
+The key file that runs on every CI invocation is:
+- `certification/test_lock_regression_guard.py`
+
+This guard enforces that once a capability is locked, its governance fields cannot silently change.
+
 ## What Nova's Tests Are Trying To Protect
 Nova's tests help protect things like:
 - no hidden autonomy
@@ -51,6 +62,7 @@ Nova's tests help protect things like:
 - proper continuity behavior
 - explicit memory operations
 - stable perception behavior
+- locked capability governance fields
 
 ## Runtime Doc Checks
 Nova also includes script-based checks that help keep runtime documentation aligned.
@@ -62,11 +74,30 @@ Examples include:
 These checks matter because Nova treats documentation as part of the system's legibility and trust surface.
 For frontend review, the runtime-served canonical UI is `nova_backend/static/`; the mirror check exists to detect when `Nova-Frontend-Dashboard/` drifts from it.
 
+## Capability Certification CLI
+Nova ships a CLI tool for managing capability certification:
+
+```
+python scripts/certify_capability.py status              # show all capabilities
+python scripts/certify_capability.py status 64           # show one capability
+python scripts/certify_capability.py advance 64 p3_integration
+python scripts/certify_capability.py live-signoff 64 --notes "all tests pass"
+python scripts/certify_capability.py lock 64
+python scripts/certify_capability.py unlock 64 --reason "breaking change"
+python scripts/certify_capability.py check-tests 64
+```
+
+Phases that can be advanced via CLI: p1_unit, p2_routing, p3_integration, p4_api
+Phase 5 requires manual live testing by the user before sign-off.
+Phase 6 (lock) requires all 5 earlier phases to pass.
+
 ## The Big Idea
 Nova's testing philosophy is not just:
 - does the feature work?
 
 It is also:
 - does the feature stay inside Nova's rules?
+- has a human verified it end-to-end?
+- is regression prevention active?
 
 That is why the test system matters so much to the whole project.

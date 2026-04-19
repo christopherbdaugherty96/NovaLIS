@@ -51,15 +51,17 @@ must pass through this spine.** There is no back door.
 
 ## Capability inventory (today)
 
-Nova ships **25 live capabilities** (as of April 2026):
+Nova ships **26 live capabilities** (as of April 2026):
 
 - **16 read-only** (9 local + 7 network): chat, research, news,
   weather and calendar snapshots, memory review, second-opinion review,
   screen analysis, and more.
 - **6 local-device controls**: open website, speak text, set volume,
   next/previous media, set brightness, open file/folder.
-- **0 external writes**: no email send, no calendar write, no file
-  content writes, no API-key-based mutation of any third-party service.
+- **1 governed external write**: email drafting (cap 64). Nova opens a mailto: draft
+  in the system mail client — the user always sends. Nova cannot send autonomously.
+  Requires explicit confirmation. No calendar write, no file content writes, no
+  API-key-based mutation of any third-party service.
 
 The canonical inventory is regenerated from the code by
 `scripts/generate_runtime_docs.py`; see
@@ -129,6 +131,26 @@ pytest nova_backend/tests
 # Regenerate runtime docs (run before committing code changes)
 python scripts/generate_runtime_docs.py
 ```
+
+## Capability verification
+
+Nova ships a 6-phase capability verification system that ensures every
+governed capability is tested end-to-end before being locked.
+
+```
+python scripts/certify_capability.py status        # overview of all 26 caps
+python scripts/certify_capability.py advance 64 p4_api
+python scripts/certify_capability.py live-signoff 64
+python scripts/certify_capability.py lock 64
+```
+
+Lock state lives in `nova_backend/src/config/capability_locks.json`.
+The regression guard at `nova_backend/tests/certification/test_lock_regression_guard.py`
+runs automatically on every `pytest` invocation and blocks if a locked capability's
+governance fields have silently changed.
+
+See [`33_CAPABILITY_VERIFICATION_GUIDE.md`](reference/HUMAN_GUIDES/33_CAPABILITY_VERIFICATION_GUIDE.md)
+for the full plain-language explanation.
 
 ## Known hot-path files
 
