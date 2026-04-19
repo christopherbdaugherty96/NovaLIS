@@ -101,9 +101,11 @@ _CAP_LABELS: dict[str, str] = {
 
 _GREETING_RE = re.compile(
     r"^\s*(?:"
-    r"(?:hey|hi|hello|howdy|greetings|yo|sup|hiya)[\s,!.]*(?:nova|there|friend)?[!.]*"
+    r"(?:hey|hi|hello|howdy|greetings|yo|sup|hiya|heya|helo|hii|heyy)"
+    r"[\s,!.]*(?:nova|there|friend|buddy)?[!.]*"
     r"|good\s+(?:morning|afternoon|evening|day)[\s,!.]*(?:nova)?"
     r"|morning|afternoon|evening"
+    r"|(?:what(?:'?s|\s+is)\s+up|wassup|wazzup|sup\s+nova)"
     r")\s*$",
     re.IGNORECASE,
 )
@@ -118,6 +120,15 @@ _WHAT_CAN_YOU_DO_RE = re.compile(
     r"|(?:help|commands|options|menu)"
     r"|what\s+(?:can\s+i\s+(?:ask|do)|(?:should|could)\s+i\s+(?:ask|say|try))"
     r"|(?:show|tell)\s+me\s+what\s+(?:you|nova)\s+can\s+do"
+    # natural non-tech phrasings (also caught by PHRASE_NORMALIZATION but kept here as safety net)
+    r"|what\s+are\s+you\s+good\s+at"
+    r"|what\s+do\s+you\s+(?:do|know)"
+    r"|(?:who|what)\s+(?:are\s+you|is\s+nova)"
+    r"|(?:can|could)\s+you\s+help(?:\s+me)?"
+    r"|(?:i\s+need|i\s+want)\s+(?:some\s+)?help"
+    r"|help\s+me"
+    r"|(?:get\s+started|where\s+do\s+i\s+start|how\s+(?:do\s+i|can\s+i)\s+(?:use|start)(?:\s+(?:you|nova|this))?)"
+    r"|what(?:'?s|\s+is)\s+(?:available|possible)"
     r")\s*[.?!]*\s*$",
     re.IGNORECASE,
 )
@@ -218,15 +229,15 @@ def _all_caps_by_group() -> dict[str, list[tuple[str, bool]]]:
 # ---------------------------------------------------------------------------
 
 def _build_greeting() -> str:
-    return "Hello. How can I help?"
+    return "Hey! What can I help you with?"
 
 
 def _build_what_can_you_do() -> str:
     groups = _all_caps_by_group()
     if not groups:
         return (
-            "I have 26 governed capabilities across research, local control, "
-            "email drafting, memory, and more. Type a request to get started."
+            "I can help with things like checking the news, drafting emails, "
+            "controlling your computer, and more. Just tell me what you need."
         )
 
     active_total = sum(1 for entries in groups.values() for _, active in entries if active)
@@ -234,55 +245,51 @@ def _build_what_can_you_do() -> str:
     total = active_total + inactive_total
 
     lines: list[str] = [
-        f"Nova has {total} capabilities. "
-        f"{active_total} are active now"
-        + (f", {inactive_total} are not yet active." if inactive_total else "."),
+        f"Here's everything I know about — {active_total} things are ready to use"
+        + (f", {inactive_total} are turned off right now" if inactive_total else "")
+        + ":",
         "",
     ]
 
     for group_label, entries in groups.items():
         lines.append(f"{group_label}:")
         for cap_label, is_active in entries:
-            status = "on" if is_active else "off"
-            lines.append(f"  [{status}]  {cap_label}")
+            marker = "[on] " if is_active else "[off]"
+            lines.append(f"  {marker}  {cap_label}")
         lines.append("")
 
     lines.append(
-        'Ask me anything on the [on] list directly. '
-        'Type "what\'s planned" to see what\'s coming next.'
+        "Just say what you want to do — no special commands needed.\n"
+        'Ask "what\'s coming next" if you want to see what\'s in the works.'
     )
     return "\n".join(lines).strip()
 
 
 def _build_out_of_scope(text: str) -> str:
-    # Try to pull out what they were asking about
-    snip = text.strip().rstrip(".?!")
-    if len(snip) > 80:
-        snip = snip[:77] + "..."
     return (
-        f"That's not something I can do yet.\n\n"
-        f"Nova is designed to stay inside a defined set of governed capabilities "
-        f"and expand only when each new one is fully verified. "
-        f"If you're asking about something like sending messages, booking, "
-        f"or writing files — those aren't available in the current build.\n\n"
-        f'Type "what can you do" to see what is available today, '
-        f'or "what\'s planned" to see what\'s coming next.'
+        "I can't do that one yet.\n\n"
+        "Nova only does things it's been specifically set up and tested for — "
+        "that way you always know exactly what it can and can't touch.\n\n"
+        "Things like booking, texting, or posting to social media aren't in the current version.\n\n"
+        'Say "what can you do" to see everything that\'s available right now, '
+        'or "what\'s coming next" to see what\'s being worked on.'
     )
 
 
 def _build_phase_status() -> str:
     return (
-        f"Nova is currently in {_CURRENT_TIER} — {_CURRENT_TIER_GOAL}.\n\n"
+        f"Nova is in {_CURRENT_TIER} right now — the goal is {_CURRENT_TIER_GOAL}.\n\n"
         f"{_CURRENT_STATUS}\n\n"
-        f"Next up: {_NEXT_UP}"
+        f"Up next: {_NEXT_UP}"
     )
 
 
 def _build_whats_planned() -> str:
     return (
-        f"Current focus ({_CURRENT_TIER}): {_CURRENT_STATUS}\n\n"
-        f"Next: {_NEXT_UP}\n\n"
-        f"{_PLANNED}"
+        f"Here's where things stand:\n\n"
+        f"Right now ({_CURRENT_TIER}): {_CURRENT_STATUS}\n\n"
+        f"Coming next: {_NEXT_UP}\n\n"
+        f"Further out: {_PLANNED}"
     )
 
 
