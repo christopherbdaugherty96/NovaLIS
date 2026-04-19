@@ -8,6 +8,36 @@
 
 ---
 
+## Current Reality
+
+- Cap 64: implemented through P4, pending live checklist, signoff, and lock closure
+- Installer: compiled and published, but clean Windows VM validation is still blocked on the current bootstrap failure
+- CI: workflow exists, but GitHub Actions is blocked by account billing lock
+- Landing page: deployed, but Formspree waitlist activation is still pending
+- Immediate priority: cap 64 signoff, installer VM validation, waitlist activation, and demo-ready README assets
+
+---
+
+## Active Blockers
+
+- Cap 64 live checklist is not yet complete
+- Clean Windows VM installer validation is paused pending `C:\Program Files\Nova\bootstrap.log` review
+- GitHub Actions billing lock is preventing CI verification and README badges
+- Formspree endpoint has not been activated for the waitlist flow
+
+---
+
+## This Week
+
+- [ ] Run the cap 64 live checklist end-to-end
+- [ ] Inspect `C:\Program Files\Nova\bootstrap.log`
+- [ ] Complete clean Windows VM installer validation
+- [ ] Activate Formspree for the landing page waitlist
+- [ ] Add a screenshot or demo GIF to README
+- [ ] Add CI badges after the GitHub billing issue is resolved
+
+---
+
 ## Active Tasks (Tier 2)
 
 ### 2.1 send_email_draft — cap 64 (IMPLEMENTED — 2026-04-17; P5/LIVE LOCK PENDING)
