@@ -15,13 +15,20 @@ Properties:
 from __future__ import annotations
 
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List
 
 
-# Location is explicit and inspectable
-_CORRECTIONS_PATH = Path("memory/quick_corrections.jsonl")
+# Absolute path anchored to this file — consistent regardless of CWD.
+# Matches the pattern used by all other Nova memory stores.
+_CORRECTIONS_PATH = (
+    Path(__file__).resolve().parents[1]
+    / "data"
+    / "nova_state"
+    / "memory"
+    / "quick_corrections.jsonl"
+)
 
 
 def record_correction(content: str) -> Dict[str, str]:
@@ -34,7 +41,7 @@ def record_correction(content: str) -> Dict[str, str]:
 
     entry = {
         "type": "user_correction",
-        "timestamp": datetime.utcnow().isoformat() + "Z",
+        "timestamp": datetime.now(timezone.utc).isoformat(),
         "content": content.strip(),
         "source": "explicit_user_correction",
         "consumed": False,
