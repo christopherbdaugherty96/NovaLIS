@@ -34,7 +34,7 @@ HOST = os.environ.get("NOVA_HOST", "127.0.0.1")
 PORT = int(os.environ.get("NOVA_PORT", "8000"))
 BASE_URL = f"http://{HOST}:{PORT}"
 HEALTH_ENDPOINT = f"{BASE_URL}/phase-status"
-STARTUP_TIMEOUT = 30  # seconds
+STARTUP_TIMEOUT = int(os.environ.get("NOVA_STARTUP_TIMEOUT", "90"))  # seconds
 
 
 def _is_running() -> bool:
@@ -69,8 +69,15 @@ def _ensure_ollama() -> None:
             stderr=subprocess.DEVNULL,
             creationflags=creation_flags,
         )
-        print("[Nova] Started Ollama in background.")
-        time.sleep(2)  # give it a moment to bind
+        print("[Nova] Started Ollama in background — waiting for it to be ready...")
+        # Poll the Ollama health endpoint instead of sleeping a fixed amount.
+        # Ollama typically binds within 1-3 seconds but can be slower on first run.
+        for _ in range(30):
+            try:
+                urllib.request.urlopen(f"{OLLAMA_URL}/api/tags", timeout=1)
+                break  # Ollama is up
+            except Exception:
+                time.sleep(0.5)
     except FileNotFoundError:
         print("[Nova] WARNING: Ollama not found. LLM features will be unavailable.")
 
@@ -107,14 +114,23 @@ def start_nova(open_browser: bool = True) -> int:
     cmd = _find_nova_command()
     print(f"[Nova] Starting: {' '.join(cmd)}")
 
+    # Log Nova's stdout + stderr so startup failures are diagnosable.
+    # The log file lives next to start_daemon.py's sibling pids/ directory,
+    # matching where start_nova.bat puts its logs.
+    _pids_dir = Path(__file__).resolve().parent / "pids"
+    _pids_dir.mkdir(exist_ok=True)
+    _nova_log = _pids_dir / "nova.log"
+    print(f"[Nova] Server output → {_nova_log}")
+    _log_fh = open(_nova_log, "a")
+
     creation_flags = 0
     if platform.system() == "Windows":
         creation_flags = subprocess.CREATE_NO_WINDOW  # type: ignore[attr-defined]
 
     proc = subprocess.Popen(
         cmd,
-        stdout=subprocess.DEVNULL,
-        stderr=subprocess.DEVNULL,
+        stdout=_log_fh,
+        stderr=_log_fh,
         creationflags=creation_flags,
     )
 
@@ -123,6 +139,7 @@ def start_nova(open_browser: bool = True) -> int:
     while time.time() - start < STARTUP_TIMEOUT:
         if _is_running():
             print(f"[Nova] Running at {BASE_URL} (PID {proc.pid})")
+            _log_fh.close()
             if open_browser:
                 webbrowser.open(BASE_URL)
             return 0
@@ -130,16 +147,20 @@ def start_nova(open_browser: bool = True) -> int:
         if exit_code is not None:
             print(
                 f"[Nova] ERROR: Nova process exited before health check succeeded "
-                f"(PID {proc.pid}, exit code {exit_code}).",
+                f"(PID {proc.pid}, exit code {exit_code}).\n"
+                f"[Nova] Check {_nova_log} for details.",
                 file=sys.stderr,
             )
+            _log_fh.close()
             return 1
         time.sleep(1)
 
     print(
-        f"[Nova] ERROR: Server did not respond within {STARTUP_TIMEOUT}s.",
+        f"[Nova] ERROR: Server did not respond within {STARTUP_TIMEOUT}s.\n"
+        f"[Nova] Check {_nova_log} for details.",
         file=sys.stderr,
     )
+    _log_fh.close()
     return 1
 
 
