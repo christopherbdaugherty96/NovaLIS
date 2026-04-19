@@ -358,7 +358,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PHASE_4_RUNTIME_TRUTH|PHASE-4 RUNTIME TRUTH SNAPSHOT (HISTORICAL)]] - Phase 4
   summary: Snapshot date: 2026-03-03
 
-## Governance (20 docs, 17 code)
+## Governance (13 docs, 17 code)
 
 - [code] [[docs/GOVERNANCE/governor_mediation.py|governor_mediation - docs/GOVERNANCE]]
   summary: NOVALIS GOVERNOR MEDIATION LAYER
@@ -396,20 +396,6 @@ concern is reflected across docs, code and tests.
   summary: Backward-compatible re-export for older imports.
 - [doc] [[docs/canon/README|Canon Pointer]]
   summary: Canonical governance contracts currently live in:
-- [doc] [[docs/CANONICAL/archive-phase4/# 🧬 NOVA PHASE 4 ROADMAP(updated).txt|ðŸ§¬ NOVA PHASE 4 ROADMAP (Final â€“ Staging Active)]] - Phase 4
-  summary: ﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
-- [doc] [[docs/CANONICAL/archive-phase4/full code audit 2-19-26.txt|ðŸ” Deep Audit & Review â€” `christopherbdaugherty96/NovaLIS`]]
-  summary: ﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
-- [doc] [[docs/CANONICAL/archive-phase4/NOVA-PHASE4-ACTION-PLAN-v1.0.txt|ðŸ§¬ PHASE 4 â€“ EXECUTION UNLOCK: FINAL ACTION PLAN]] - Phase 4
-  summary: ﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
-- [doc] [[docs/CANONICAL/archive-phase4/PHASE4_CONSTITUTIONAL_MISMATCH_AUDIT|Nova Phase-4 Constitutional Mismatch Audit + Unified Runtime Spec v1.0]] - Phase 4
-  summary: ﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
-- [doc] [[docs/CANONICAL/archive-phase4/PHASE_4_FREEZE|PHASE 4 FREEZE DECLARATION (CANONICAL)]] - Phase 4
-  summary: ﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
-- [doc] [[docs/CANONICAL/archive-phase4/PHASE_4_FREEZE1|ðŸ§Š NOVA PHASE-4 FREEZE]] - Phase 4
-  summary: ﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
-- [doc] [[docs/CANONICAL/archive-phase4/PHASE_4_REVIEW_PACKET|Phase 4 Review Packet]] - Phase 4
-  summary: ﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
 - [doc] [[docs/CANONICAL/CANONICAL_DOCUMENT_MAP|CANONICAL_DOCUMENT_MAP]]
   summary: ﻿# Canonical Document Map
 - [doc] [[docs/CANONICAL/NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.9.txt|NOVA COMPLETE CONSTITUTIONAL BLUEPRINT v1.9]]
@@ -435,7 +421,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
   summary: Updated: 2026-03-30
 
-## Runtime and ops (20 docs, 239 code)
+## Runtime and ops (20 docs, 242 code)
 
 - [code] [[nova_backend/src/__init__.py|src]]
 - [code] [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -545,6 +531,8 @@ concern is reflected across docs, code and tests.
   summary: CognitiveModule,
 - [code] [[nova_backend/src/cognition/modules/verification_module.py|verification_module]]
   summary: CognitiveModule,
+- [code] [[nova_backend/src/config/capability_locks.json|capability_locks]]
+  summary: schema_version": "1.0",
 - [code] [[nova_backend/src/config/connector_packages.json|connector_packages]]
   summary: schema_version": "1.0",
 - [code] [[nova_backend/src/config/registry.json|registry]]
@@ -586,6 +574,8 @@ concern is reflected across docs, code and tests.
   summary: PolicyDecision = Literal["ALLOW_ANALYSIS_ONLY", "DENY", "ASK_USER"]
 - [code] [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
   summary: Helpers for keeping general-chat fallback behavior out of the websocket monolith.
+- [code] [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
+  summary: meta_intent_handler.py
 - [code] [[nova_backend/src/conversation/prompts.py|prompts]]
   summary: SYSTEM_PROMPT = (
 - [code] [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
@@ -635,6 +625,8 @@ concern is reflected across docs, code and tests.
   summary: class ScreenAnalysisExecutor:
 - [code] [[nova_backend/src/executors/screen_capture_executor.py|screen_capture_executor]]
   summary: class ScreenCaptureExecutor:
+- [code] [[nova_backend/src/executors/send_email_draft_executor.py|send_email_draft_executor]]
+  summary: Send Email Draft Executor — cap 64 (send_email_draft)
 - [code] [[nova_backend/src/executors/story_tracker_executor.py|story_tracker_executor]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/src/executors/tts_executor.py|tts_executor]]
@@ -907,7 +899,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: b2d0d780b179d7356dc0310007148246353b1d31d9e36e10695ef7d2d24efab7
+  summary: Runtime Fingerprint: 6efd8c6cbade289db710c6ec6b5ee803378a83686427af6faad7f8e48266c613
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -925,7 +917,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 024619b40c950502d23c1945a18c58fa0104b705919861b89672ae7235749b25
+  summary: - runtimesurfacehash: 39cef802bb2245ef650eec9916d259e1681d146edb6842797f808d79f0cda677
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -944,9 +936,10 @@ concern is reflected across docs, code and tests.
 - [doc] [[nova_backend/src/requirements.txt|Compatibility shim for existing workflow paths.]]
   summary: -r ../requirements.txt
 
-## Frontend (0 docs, 23 code)
+## Frontend (0 docs, 29 code)
 
 - [asset] [[Nova-Frontend-Dashboard/assets/orb-canonical.png|orb-canonical.png]]
+- [asset] [[nova_backend/static/favicon.ico|favicon.ico]]
 - [code] [[Nova-Frontend-Dashboard/dashboard-chat-news.js|dashboard-chat-news - Nova-Frontend-Dashboard]]
   summary: Nova Dashboard - Chat, News, And Interaction Surfaces */
 - [code] [[Nova-Frontend-Dashboard/dashboard-config.js|dashboard-config - Nova-Frontend-Dashboard]]
@@ -977,6 +970,10 @@ concern is reflected across docs, code and tests.
   summary: window.NOVA_DASHBOARD_CONFIG = {
 - [code] [[nova_backend/static/dashboard-control-center.js|dashboard-control-center - nova_backend/static]]
   summary: Nova Dashboard - Control Center Surfaces */
+- [code] [[nova_backend/static/dashboard-simplified.css|dashboard-simplified - nova_backend/static]]
+  summary: Task 1.3 — UI overload reduction (first-run simplified mode).
+- [code] [[nova_backend/static/dashboard-simplified.js|dashboard-simplified - nova_backend/static]]
+  summary: Task 1.3 — UI overload reduction runtime.
 - [code] [[nova_backend/static/dashboard-surfaces.css|dashboard-surfaces - nova_backend/static]]
   summary: Nova Dashboard - Product Surface Styles */
 - [code] [[nova_backend/static/dashboard-workspace.js|dashboard-workspace - nova_backend/static]]
@@ -987,12 +984,18 @@ concern is reflected across docs, code and tests.
   summary: <!DOCTYPE html>
 - [code] [[nova_backend/static/landing.html|landing - nova_backend/static]]
   summary: <!DOCTYPE html>
+- [code] [[nova_backend/static/landing/index.html|index - static/landing]]
+  summary: <!DOCTYPE html>
+- [code] [[nova_backend/static/landing/script.js|script]]
+  summary: Nova landing page — waitlist submission (Task 1.5).
+- [code] [[nova_backend/static/landing/styles.css|styles]]
+  summary: Nova landing page — Task 1.5.
 - [code] [[nova_backend/static/orb.js|orb - nova_backend/static]]
   summary: (function () {
 - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
   summary: :root {
 
-## Tests (5 docs, 265 code)
+## Tests (5 docs, 276 code)
 
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1026,6 +1029,20 @@ concern is reflected across docs, code and tests.
   summary: Goal:
 - [code] [[nova_backend/tests/adversarial/test_tts_spine_integrity.py|test_tts_spine_integrity]]
   summary: def test_tts_engine_speak_only_called_in_tts_executor():
+- [code] [[nova_backend/tests/certification/__init__.py|tests/certification]]
+- [code] [[nova_backend/tests/certification/cap_64_send_email_draft/__init__.py|tests/certification/cap_64_send_email_draft]]
+- [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p1_unit.py|test_p1_unit]]
+  summary: Phase 1 — Unit certification for capability 64 (send_email_draft).
+- [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p2_routing.py|test_p2_routing]]
+  summary: Phase 2 — Routing certification for capability 64 (send_email_draft).
+- [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p3_integration.py|test_p3_integration]]
+  summary: Phase 3 — Integration certification for capability 64 (send_email_draft).
+- [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api]]
+  summary: Phase 4 — API certification for capability 64 (send_email_draft).
+- [code] [[nova_backend/tests/certification/conftest.py|conftest - tests/certification]]
+  summary: Shared fixtures and helpers for capability certification tests.
+- [code] [[nova_backend/tests/certification/test_lock_regression_guard.py|test_lock_regression_guard]]
+  summary: Capability Lock Regression Guard
 - [code] [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
   summary: def test_clarify_prompts_are_single_question_and_deterministic():
 - [code] [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
@@ -1048,6 +1065,8 @@ concern is reflected across docs, code and tests.
   summary: resolve_pending_escalation_reply,
 - [code] [[nova_backend/tests/conversation/test_general_chat_tone.py|test_general_chat_tone]]
   summary: def test_general_chat_depth_hint_detection():
+- [code] [[nova_backend/tests/conversation/test_meta_intent_handler.py|test_meta_intent_handler]]
+  summary: Unit tests for MetaIntentHandler.
 - [code] [[nova_backend/tests/conversation/test_openclaw_agent_personality_bridge.py|test_openclaw_agent_personality_bridge]]
   summary: OpenClawAgentPersonalityBridge,
 - [code] [[nova_backend/tests/conversation/test_personality_interface_agent.py|test_personality_interface_agent]]
@@ -1104,6 +1123,8 @@ concern is reflected across docs, code and tests.
   summary: ﻿from __future__ import annotations
 - [code] [[nova_backend/tests/executors/test_screen_analysis_executor.py|test_screen_analysis_executor]]
   summary: def _request(params: dict):
+- [code] [[nova_backend/tests/executors/test_send_email_draft_executor.py|test_send_email_draft_executor]]
+  summary: Unit tests for SendEmailDraftExecutor (capability 64 — send_email_draft).
 - [code] [[nova_backend/tests/executors/test_story_tracker_executor.py|test_story_tracker_executor]]
   summary: def _req(capability_id: int, params: dict):
 - [code] [[nova_backend/tests/executors/test_system_control_executor.py|test_system_control_executor - tests/executors]]
@@ -1499,6 +1520,8 @@ concern is reflected across docs, code and tests.
   summary: def test_current_runtime_state_path_is_docs_current_runtime():
 - [code] [[nova_backend/tests/test_runtime_settings_api.py|test_runtime_settings_api]]
   summary: def _install_runtime_settings_store(monkeypatch, tmp_path):
+- [code] [[nova_backend/tests/test_send_email_draft_routing.py|test_send_email_draft_routing]]
+  summary: Tests for GovernorMediator routing of capability 64 (send_email_draft).
 - [code] [[nova_backend/tests/test_single_action_queue.py|test_single_action_queue]]
   summary: def test_single_action_queue_blocks_concurrent():
 - [code] [[nova_backend/tests/test_stt_engine.py|test_stt_engine]]
@@ -1530,13 +1553,15 @@ concern is reflected across docs, code and tests.
 - [doc] [[verification/README_verification|**README_verification.md** - verification]]
   summary: Purpose: Verify constitutional compliance without expanding capability
 
-## Scripts and tools (3 docs, 19 code)
+## Scripts and tools (3 docs, 23 code)
 
 - [asset] [[scripts/pids/backend.pid|backend.pid]]
 - [asset] [[scripts/pids/frontend.pid|frontend.pid]]
 - [asset] [[scripts/pids/nova_backend.err.log|nova_backend.err.log]]
 - [asset] [[scripts/pids/nova_backend.out.log|nova_backend.out.log]]
 - [asset] [[scripts/pids/nova_backend.pid|nova_backend.pid]]
+- [code] [[.github/workflows/ci.yml|ci]]
+  summary: name: CI
 - [code] [[.github/workflows/fingerprint-clean-main-pr.yml|fingerprint-clean-main-pr]]
   summary: name: Fingerprint Clean (Main PR)
 - [code] [[.github/workflows/governance-check.yml|governance-check]]
@@ -1551,12 +1576,16 @@ concern is reflected across docs, code and tests.
   summary: version = 1
 - [code] [[docs/tools/check_quarantine.ps1|check_quarantine]]
   summary: ﻿Write-Host "=== Legacy Brain Isolation Check ===" -ForegroundColor Cyan
+- [code] [[scripts/certify_capability.py|certify_capability]]
+  summary: certify_capability.py — Capability Verification CLI
 - [code] [[scripts/check_frontend_mirror_sync.py|check_frontend_mirror_sync]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[1]
 - [code] [[scripts/check_frontend_navigation_smoke.py|check_frontend_navigation_smoke]]
   summary: ROOT = Path(__file__).resolve().parent.parent
 - [code] [[scripts/check_runtime_doc_drift.py|check_runtime_doc_drift]]
   summary: ROOT = Path(__file__).resolve().parents[1]
+- [code] [[scripts/fetch_models.py|fetch_models]]
+  summary: Fetch the default Ollama model for Nova.
 - [code] [[scripts/generate_obsidian_overlay.py|generate_obsidian_overlay]]
   summary: Generate an Obsidian overlay for the Nova repository.
 - [code] [[scripts/generate_runtime_docs.py|generate_runtime_docs]]
@@ -1565,6 +1594,8 @@ concern is reflected across docs, code and tests.
   summary: ﻿Write-Host "=== Phase 3.5 Constitutional Gates ===" -ForegroundColor Cyan
 - [code] [[scripts/run_capability_audit.ps1|run_capability_audit]]
   summary: $ErrorActionPreference = "Stop
+- [code] [[scripts/start_daemon.py|start_daemon]]
+  summary: Start (or verify) the Nova backend as a background process.
 - [doc] [[automations/README|Automations]]
   summary: This folder tracks project-owned automation definitions that should live in GitHub and stay reviewable with the rest of Nova.
 - [doc] [[automations/weekly-engineering-summary/memory|memory - automations/weekly-engineering-summary]]
@@ -1572,12 +1603,18 @@ concern is reflected across docs, code and tests.
 - [doc] [[automations/weekly-engineering-summary/README|Weekly Engineering Summary]]
   summary: This folder mirrors the active local Codex automation:
 
-## Design specs (4 docs, 0 code)
+## Design specs (7 docs, 0 code)
 
+- [doc] [[docs/design/ARCHITECTURAL_POSITIONING|Nova Architectural Positioning]]
+  summary: Status: Reference — kept current
 - [doc] [[docs/design/DESIGN_AUTHORITY|DESIGN_AUTHORITY]]
   summary: ﻿# DESIGN AUTHORITY
+- [doc] [[docs/design/IDEAS/2026-04-18_feature_ideation_review|Nova Feature Ideation Review — 2026-04-18]]
+  summary: This is a good ideation document, but I'd separate good ideas from good next moves.
 - [doc] [[docs/design/IDEAS/ideas.txt|ideas]]
   summary: ideas:
+- [doc] [[docs/design/IDEAS/TECHNICAL_PATTERNS_REVIEW|Technical Patterns Review — What to Adopt, What to Defer]]
+  summary: Status: Design reference — updated as decisions are made
 - [doc] [[docs/design/IDEAS/TIME_TEST_GOVERNOR_REFERENCE|TIME_TEST_GOVERNOR_REFERENCE]]
   summary: REFERENCE IMPLEMENTATION — NOT CANONICAL
 - [doc] [[docs/design/README|Design Documentation Index]]
@@ -1944,7 +1981,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/UNLOCK/phase 4/PHASE_4_UNLOCK_ACT.md.txt|PHASE_4_UNLOCK_ACT.md - UNLOCK/phase 4]] - Phase 4
   summary: PHASE4UNLOCKACT.md
 
-## Reference (77 docs, 9 code)
+## Reference (115 docs, 12 code)
 
 - [asset] [[nova_backend/.env.example|.env.example]]
 - [code] [[.gitattributes|.gitattributes]]
@@ -1953,8 +1990,14 @@ concern is reflected across docs, code and tests.
   summary: ----------------------------
 - [code] [[conftest.py|conftest - .]]
   summary: Root pytest bootstrap for repo-level test execution.
+- [code] [[installer/windows/nova_bootstrap.ps1|nova_bootstrap]]
+  summary: .SYNOPSIS
+- [code] [[installer/windows/nova_setup.iss|nova_setup]]
+  summary: ; Nova Windows Installer — Inno Setup Script
 - [code] [[LICENSE|LICENSE]]
-  summary: ﻿Copyright 2026 Christopher Daugherty
+  summary: Business Source License 1.1
+- [code] [[pyproject.toml|pyproject]]
+  summary: [build-system]
 - [code] [[start_nova.bat|start_nova - .]]
   summary: @echo off
 - [code] [[start_nova.sh|start_nova - .]]
@@ -1964,7 +2007,8 @@ concern is reflected across docs, code and tests.
 - [code] [[stop_nova.sh|stop_nova - .]]
   summary: set -euo pipefail
 - [doc] [[4-15-26 NEW ROADMAP/BackLog|BackLog]]
-- [doc] [[4-15-26 NEW ROADMAP/CHANGELOG|CHANGELOG]]
+- [doc] [[4-15-26 NEW ROADMAP/CHANGELOG|Nova — Roadmap Execution Changelog]]
+  summary: Rolling log of completed roadmap tasks. Newest at top. Keep entries short
 - [doc] [[4-15-26 NEW ROADMAP/DEEP_CODE_AUDIT|Nova – Deep Code-Level Audit & Execution Brief (2026-04-15)]]
   summary: Status: FROZEN – TACTICAL COMPANION TO MASTERROADMAP.md
 - [doc] [[4-15-26 NEW ROADMAP/MasterRoadMap|Nova – Final Definitive Audit, Roadmap & Operating System (2026-04-15)]]
@@ -2001,14 +2045,84 @@ concern is reflected across docs, code and tests.
   summary: Document ID: NOVA-PHASE4-WEB-INTELLIGENCE-v1.0
 - [doc] [[docs/# 🧬 NOVA TRUTH — MASTER REFERENCE.txt|🧬 NOVA TRUTH — MASTER REFERENCE DOCUMENT v2.0]]
   summary: Document ID: NOVA-TRUTH-COPILOT-AUDIT-v2.0
+- [doc] [[docs/ARCHITECTURE|Nova Architecture]]
+  summary: Technical overview of Nova's runtime. Companion to
 - [doc] [[docs/Audio conversion proof|🔒 SAVE & LOCK — STT Windows Subprocess Stabilization]]
   summary: Audio conversion proof
+- [doc] [[docs/capability_verification/FRAMEWORK|Nova — Capability Verification Framework]]
+  summary: Updated: 2026-04-17
+- [doc] [[docs/capability_verification/live_checklists/cap_16_governed_web_search|Live Test Checklist — Cap 16: governed_web_search]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlynetwork)
+- [doc] [[docs/capability_verification/live_checklists/cap_17_open_website|Live Test Checklist — Cap 17: open_website]]
+  summary: Phase 5 of 6 · Priority: Medium (reversiblelocal)
+- [doc] [[docs/capability_verification/live_checklists/cap_18_speak_text|Live Test Checklist — Cap 18: speak_text]]
+  summary: Phase 5 of 6 · Priority: Medium (reversiblelocal)
+- [doc] [[docs/capability_verification/live_checklists/cap_19_volume_up_down|Live Test Checklist — Cap 19: volume_up_down]]
+  summary: Phase 5 of 6 · Priority: Medium (reversiblelocal)
+- [doc] [[docs/capability_verification/live_checklists/cap_20_media_play_pause|Live Test Checklist — Cap 20: media_play_pause]]
+  summary: Phase 5 of 6 · Priority: Medium (reversiblelocal)
+- [doc] [[docs/capability_verification/live_checklists/cap_21_brightness_control|Live Test Checklist — Cap 21: brightness_control]]
+  summary: Phase 5 of 6 · Priority: Medium (reversiblelocal)
+- [doc] [[docs/capability_verification/live_checklists/cap_22_open_file_folder|Live Test Checklist — Cap 22: open_file_folder]]
+  summary: Phase 5 of 6 · Priority: Medium-High (reversiblelocal, requiresconfirmation)
+- [doc] [[docs/capability_verification/live_checklists/cap_31_response_verification|Live Test Checklist — Cap 31: response_verification]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlylocal)
+- [doc] [[docs/capability_verification/live_checklists/cap_32_os_diagnostics|Live Test Checklist — Cap 32: os_diagnostics]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlylocal)
+- [doc] [[docs/capability_verification/live_checklists/cap_48_multi_source_reporting|Live Test Checklist — Cap 48: multi_source_reporting]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlynetwork)
+- [doc] [[docs/capability_verification/live_checklists/cap_49_headline_summary|Live Test Checklist — Cap 49: headline_summary]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlynetwork)
+- [doc] [[docs/capability_verification/live_checklists/cap_50_intelligence_brief|Live Test Checklist — Cap 50: intelligence_brief]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlynetwork)
+- [doc] [[docs/capability_verification/live_checklists/cap_51_topic_memory_map|Live Test Checklist — Cap 51: topic_memory_map]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlylocal)
+- [doc] [[docs/capability_verification/live_checklists/cap_52_story_tracker_update|Live Test Checklist — Cap 52: story_tracker_update]]
+  summary: Phase 5 of 6 · Priority: High (persistentchange)
+- [doc] [[docs/capability_verification/live_checklists/cap_53_story_tracker_view|Live Test Checklist — Cap 53: story_tracker_view]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlylocal)
+- [doc] [[docs/capability_verification/live_checklists/cap_54_analysis_document|Live Test Checklist — Cap 54: analysis_document]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlylocal)
+- [doc] [[docs/capability_verification/live_checklists/cap_55_weather_snapshot|Live Test Checklist — Cap 55: weather_snapshot]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlynetwork)
+- [doc] [[docs/capability_verification/live_checklists/cap_56_news_snapshot|Live Test Checklist — Cap 56: news_snapshot]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlynetwork)
+- [doc] [[docs/capability_verification/live_checklists/cap_57_calendar_snapshot|Live Test Checklist — Cap 57: calendar_snapshot]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlylocal)
+- [doc] [[docs/capability_verification/live_checklists/cap_58_screen_capture|Live Test Checklist — Cap 58: screen_capture]]
+  summary: Phase 5 of 6 · Priority: High (persistentchange — stores screenshot file)
+- [doc] [[docs/capability_verification/live_checklists/cap_59_screen_analysis|Live Test Checklist — Cap 59: screen_analysis]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlylocal)
+- [doc] [[docs/capability_verification/live_checklists/cap_60_explain_anything|Live Test Checklist — Cap 60: explain_anything]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlylocal)
+- [doc] [[docs/capability_verification/live_checklists/cap_61_memory_governance|Live Test Checklist — Cap 61: memory_governance]]
+  summary: Phase 5 of 6 · Priority: HIGH (persistentchange — user data)
+- [doc] [[docs/capability_verification/live_checklists/cap_62_external_reasoning_review|Live Test Checklist — Cap 62: external_reasoning_review]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlylocal)
+- [doc] [[docs/capability_verification/live_checklists/cap_63_openclaw_execute|Live Test Checklist — Cap 63: openclaw_execute]]
+  summary: Phase 5 of 6 · Priority: Medium (readonlynetwork)
+- [doc] [[docs/capability_verification/live_checklists/cap_64_send_email_draft|Live Test Checklist — Cap 64: send_email_draft]]
+  summary: Phase 5 of 6 · Priority: HIGH (externaleffect=True, persistentchange)
+- [doc] [[docs/capability_verification/live_checklists/README|Live Test Checklists]]
+  summary: This folder contains one checklist per capability. You run through the
+- [doc] [[docs/capability_verification/STATUS|Nova — Capability Verification Status]]
+  summary: Updated: 2026-04-17
 - [doc] [[docs/COPILOT_DOC_SCOPE|COPILOT DOCUMENTATION DIRECTIVE]]
   summary: Version: 1.0
 - [doc] [[docs/Engineering Session Status|NovaLIS — Engineering Session Status]]
   summary: Date: 2026-02-23
+- [doc] [[docs/future/2026-04-15_architecture_assessment_portfolio_plan.txt|2026-04-15_architecture_assessment_portfolio_plan]]
+  summary: NovaLIS: Complete Architecture Assessment & Portfolio Transformation Plan
+- [doc] [[docs/future/2026-04-15_portfolio_transformation_vision.txt|Gap Why It Matters Fix Priority]]
+  summary: Here is the final, streamlined document focused entirely on actionable execution and strategic vision—without architecture grading or school...
+- [doc] [[docs/future/2026-04-15_portfolio_upgrade_plan.txt|NovaLIS Portfolio Upgrade Plan]]
+  summary: What NovaLIS Is (Truth):
 - [doc] [[docs/future/BUSINESS_OPTIONS|Monetization Strategy & Future Business Options]]
   summary: Status: Strategy Inventory (Not Current Priority)
+- [doc] [[docs/future/NOVA_STRATEGIC_VISION|Nova Strategic Vision — Governed Receptionist & Business OS]]
+  summary: Status: Long-term direction (not current priority)
+- [doc] [[docs/future/OPENCLAW_INTEGRATION_DESIGN|OpenClaw Integration Design (Future) - docs/future]]
+  summary: Status: Draft — Not yet implemented
 - [doc] [[docs/future/Soft Launch-help search.txt|Soft Launch-help search]]
   summary: Question: when should i ask for help?
 - [doc] [[docs/Governed Web Intelligence (Capability 16 + 48 Integration.txt|Governed Web Intelligence (Capability 16 + 48 Integration]]
@@ -2017,6 +2131,8 @@ concern is reflected across docs, code and tests.
   summary: This document defines how Nova may open web pages in a governed, explicit, and non-autonomous manner.
 - [doc] [[docs/Governor Bypass Proof Document.txt|Governor Bypass Proof Document]]
   summary: Governor Bypass Proof Document
+- [doc] [[docs/INTRODUCTION|Introduction to Nova]]
+  summary: Nova is a local, governed intelligence system. It helps you think,
 - [doc] [[docs/Master Capability Matrix|Master Capability Matrix]]
   summary: ﻿# Nova Master Capability Matrix
 - [doc] [[docs/NOVA TRUTH — MASTER REFERENCE DOCUMENT v3.0.txt|NOVA TRUTH — MASTER REFERENCE DOCUMENT v3.0]]
@@ -2059,14 +2175,14 @@ concern is reflected across docs, code and tests.
   summary: Updated: 2026-04-10
 - [doc] [[docs/reference/HUMAN_GUIDES/15_DATA_STATE_AND_STORAGE|15_DATA_STATE_AND_STORAGE]]
   summary: ﻿# Data, State, and Storage
-- [doc] [[docs/reference/HUMAN_GUIDES/16_TESTING_AND_VALIDATION|16_TESTING_AND_VALIDATION]]
-  summary: ﻿# Testing and Validation Guide
+- [doc] [[docs/reference/HUMAN_GUIDES/16_TESTING_AND_VALIDATION|Testing and Validation Guide]]
+  summary: Updated: 2026-04-18
 - [doc] [[docs/reference/HUMAN_GUIDES/17_DOCUMENTATION_AND_PHASE_SYSTEM|17_DOCUMENTATION_AND_PHASE_SYSTEM]]
   summary: ﻿# Documentation and Phase System
 - [doc] [[docs/reference/HUMAN_GUIDES/18_SOURCE_DIRECTORY_GUIDE|18_SOURCE_DIRECTORY_GUIDE]]
   summary: ﻿# Source Directory Guide
-- [doc] [[docs/reference/HUMAN_GUIDES/19_TEST_SUITE_DIRECTORY_GUIDE|19_TEST_SUITE_DIRECTORY_GUIDE]]
-  summary: ﻿# Test Suite Directory Guide
+- [doc] [[docs/reference/HUMAN_GUIDES/19_TEST_SUITE_DIRECTORY_GUIDE|Test Suite Directory Guide]]
+  summary: Updated: 2026-04-18
 - [doc] [[docs/reference/HUMAN_GUIDES/20_PHASE_5_EXPLAINED|Phase 5 Explained]] - Phase 5
   summary: Updated: 2026-03-13
 - [doc] [[docs/reference/HUMAN_GUIDES/21_VISUAL_ARCHITECTURE_MAP|Visual Architecture Map]]
@@ -2093,6 +2209,8 @@ concern is reflected across docs, code and tests.
   summary: Updated: 2026-04-13
 - [doc] [[docs/reference/HUMAN_GUIDES/32_NOVA_SYSTEM_PROCESS_AND_EXPLAINABILITY_GUIDE|Nova System Process And Explainability Guide]]
   summary: Updated: 2026-04-13
+- [doc] [[docs/reference/HUMAN_GUIDES/33_CAPABILITY_VERIFICATION_GUIDE|Capability Verification Guide]]
+  summary: Guide 33 of the Human Guides series
 - [doc] [[docs/reference/HUMAN_GUIDES/README|README - reference/HUMAN_GUIDES]]
   summary: ﻿# Nova Human Guides
 - [doc] [[docs/reference/inactive/HYDROGEN_OXYGEN_STOREFRONT_BUILD_RULESET_INACTIVE_2026-04-12|Hydrogen And Oxygen Storefront Build Rules]]
@@ -2103,20 +2221,22 @@ concern is reflected across docs, code and tests.
   summary: issue fix audit. use to make corrections.
 - [doc] [[docs/ui_backend_contract|UI-Backend Contract Documentation]]
   summary: This document outlines the contract between the UI and backend services.
+- [doc] [[installer/README|Nova Installer]]
+  summary: 1. Download NovaSetup-0.1.0.exe from [GitHub Releases](https://github.com/christopherbdaugherty96/NovaLIS/releases).
 - [doc] [[nova_backend/requirements-optional-wakeword.txt|requirements-optional-wakeword]]
   summary: -r requirements.txt
 - [doc] [[nova_backend/requirements.txt|requirements]]
   summary: fastapi==0.127.0
 - [doc] [[pull_requests/47|Ready for Review]]
   summary: This pull request is now ready for review.
-- [doc] [[README|NOVA]]
-  summary: Nova is a governed home assistant and personal intelligence workspace stack.
+- [doc] [[README|Nova — Your Local Intelligence System]]
+  summary: Nova is a private, offline-capable AI assistant that runs entirely on your own computer.
 - [doc] [[REPO_MAP|REPO_MAP]]
   summary: ﻿# REPOMAP - Nova
 - [doc] [[SECURITY|SECURITY]]
   summary: ﻿# Security Policy
 
-## Archive (107 docs, 10 code)
+## Archive (115 docs, 10 code)
 
 - [code] [[docs/archive/phase 1/dashboard-P1.js|dashboard-P1]] - Phase 1
   summary: (function () {
@@ -2138,12 +2258,10 @@ concern is reflected across docs, code and tests.
   summary: .TyagGW_tableContainer{--thread-content-width:min(calc(100cqw - 2*var(--thread-content-margin,0)),var(--thread-content-max-width));--thread-...
 - [code] [[docs/archive/phase 4/audio_manager.py|audio_manager]] - Phase 4
   summary: ===============================================================
-- [doc] [[docs/archive/# Nova Phase‑4 Integration — Final.txt|Nova Phase‑4 Integration — Final Audited Document]]
-  summary: This document contains the final corrected versions of all files required for Phase‑4 integration, following a mechanical audit and restorat...
-- [doc] [[docs/archive/# ✅ Phase 4 Roadmap v2.0 — Audit Pa.txt|✅ Phase 4 Roadmap v2.0 — Audit Passed, Clarifications Added]] - Phase 4
-  summary: Your structural audit is correct and the document is now even stronger.
 - [doc] [[docs/archive/NOVA COMPLETE CONSTITUTIONAL BLUEPRINT 1.8|🧬 NOVA COMPLETE CONSTITUTIONAL BLUEPRINT - docs/archive]]
   summary: Document ID: NOVA-CANONICAL-FINAL-v1.8
+- [doc] [[docs/archive/openclaw_integration_draft.txt|OpenClaw Integration Design (Future) - docs/archive]]
+  summary: Status: Draft – Not yet implemented
 - [doc] [[docs/archive/phase 2/# 🎨 Nova Frontend Dashboard — Tech.txt|🎨 Nova Frontend Dashboard — Technical Overview]] - Phase 2
   summary: Defines the layout:
 - [doc] [[docs/archive/phase 2/# 🏗️ Nova System Architecture.txt|🏗️ Nova System Architecture]] - Phase 2
@@ -2246,6 +2364,10 @@ concern is reflected across docs, code and tests.
   summary: Perfect. I’ll do both, cleanly and canon-safe.
 - [doc] [[docs/archive/phase 3/Truth phase 3ish.txt|Truth phase 3ish]] - Phase 3
   summary: Below is a new, detailed, canon-tight Truth Doc + Phase Roadmap that merges all prior locked phases, adds everything you confirmed in this c...
+- [doc] [[docs/archive/phase 4/# Nova Phase‑4 Integration — Final.txt|Nova Phase‑4 Integration — Final Audited Document]] - Phase 4
+  summary: This document contains the final corrected versions of all files required for Phase‑4 integration, following a mechanical audit and restorat...
+- [doc] [[docs/archive/phase 4/# ✅ Phase 4 Roadmap v2.0 — Audit Pa.txt|✅ Phase 4 Roadmap v2.0 — Audit Passed, Clarifications Added]] - Phase 4
+  summary: Your structural audit is correct and the document is now even stronger.
 - [doc] [[docs/archive/phase 4/# 🧬 NOVA COMPLETE CONSTITUTIONAL 1.4.txt|🧬 NOVA COMPLETE CONSTITUTIONAL BLUEPRINT - archive/phase 4]] - Phase 4
   summary: Document ID: NOVA-CANONICAL-FINAL-v1.4
 - [doc] [[docs/archive/phase 4/# 🧬 NOVA COMPLETE CONSTITUTIONAL 1.5.txt|🧬 NOVA COMPLETE CONSTITUTIONAL BLUEPRINT - archive/phase 4]] - Phase 4
@@ -2260,6 +2382,20 @@ concern is reflected across docs, code and tests.
   summary: ------------------------------------------------
 - [doc] [[docs/archive/phase 4/(needs update)Deep_Think_SPEC|(needs update)Deep_Think_SPEC]] - Phase 4
   summary: Yes — and I’ll draft it now as a one-page Phase-4 spec that matches the constitution, uses “orchestration layer” language, and treats the sp...
+- [doc] [[docs/archive/phase 4/archive-phase4/# 🧬 NOVA PHASE 4 ROADMAP(updated).txt|ðŸ§¬ NOVA PHASE 4 ROADMAP (Final â€“ Staging Active)]] - Phase 4
+  summary: ﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
+- [doc] [[docs/archive/phase 4/archive-phase4/full code audit 2-19-26.txt|ðŸ” Deep Audit & Review â€” `christopherbdaugherty96/NovaLIS`]] - Phase 4
+  summary: ﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
+- [doc] [[docs/archive/phase 4/archive-phase4/NOVA-PHASE4-ACTION-PLAN-v1.0.txt|ðŸ§¬ PHASE 4 â€“ EXECUTION UNLOCK: FINAL ACTION PLAN]] - Phase 4
+  summary: ﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
+- [doc] [[docs/archive/phase 4/archive-phase4/PHASE4_CONSTITUTIONAL_MISMATCH_AUDIT|Nova Phase-4 Constitutional Mismatch Audit + Unified Runtime Spec v1.0]] - Phase 4
+  summary: ﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
+- [doc] [[docs/archive/phase 4/archive-phase4/PHASE_4_FREEZE|PHASE 4 FREEZE DECLARATION (CANONICAL)]] - Phase 4
+  summary: ﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
+- [doc] [[docs/archive/phase 4/archive-phase4/PHASE_4_FREEZE1|ðŸ§Š NOVA PHASE-4 FREEZE]] - Phase 4
+  summary: ﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
+- [doc] [[docs/archive/phase 4/archive-phase4/PHASE_4_REVIEW_PACKET|Phase 4 Review Packet]] - Phase 4
+  summary: ﻿> STATUS (2026-03-12): HISTORICAL PHASE-4 ARTIFACT
 - [doc] [[docs/archive/phase 4/ARCHIVED ROADMAP-PHASE-4-CANONICAL|🧾 **PHASE-4-CANONICAL.md - FINAL CONSTITUTIONAL LOCK** - archive/phase 4]] - Phase 4
   summary: ------------------------------------------------
 - [doc] [[docs/archive/phase 4/Below is a complete, integration-re.txt|🔒 NOVA — PHASE 4 READINESS & FINALIZATION REQUIREMENTS]] - Phase 4

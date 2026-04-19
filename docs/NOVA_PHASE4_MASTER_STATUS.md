@@ -1,4 +1,8 @@
 ﻿# NovaLIS -- Phase 4 Master Status Document
+> **Historical reference only**
+> This document reflects Nova's state at the time it was written and is **not** the authoritative current status.
+> For live state, see `docs/current_runtime/` and current capability verification docs.
+
 **Date:** 2026-02-24
 **Phase:** 4 -- Staging (Cap16 Active)
 **Head Commit:** `7e9ccc5` -- `fix(stt): correct async ffmpeg subprocess with communicate() and error capture`

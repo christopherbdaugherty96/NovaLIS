@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (249)
+## Backend runtime (252)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -122,6 +122,8 @@ Use this to orient yourself before diving into a specific module.
   summary: CognitiveModule,
 - [[nova_backend/src/cognition/modules/verification_module.py|verification_module]]
   summary: CognitiveModule,
+- [[nova_backend/src/config/capability_locks.json|capability_locks]]
+  summary: schema_version": "1.0",
 - [[nova_backend/src/config/connector_packages.json|connector_packages]]
   summary: schema_version": "1.0",
 - [[nova_backend/src/config/registry.json|registry]]
@@ -163,6 +165,8 @@ Use this to orient yourself before diving into a specific module.
   summary: PolicyDecision = Literal["ALLOW_ANALYSIS_ONLY", "DENY", "ASK_USER"]
 - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
   summary: Helpers for keeping general-chat fallback behavior out of the websocket monolith.
+- [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
+  summary: meta_intent_handler.py
 - [[nova_backend/src/conversation/prompts.py|prompts]]
   summary: SYSTEM_PROMPT = (
 - [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
@@ -212,6 +216,8 @@ Use this to orient yourself before diving into a specific module.
   summary: class ScreenAnalysisExecutor:
 - [[nova_backend/src/executors/screen_capture_executor.py|screen_capture_executor]]
   summary: class ScreenCaptureExecutor:
+- [[nova_backend/src/executors/send_email_draft_executor.py|send_email_draft_executor]]
+  summary: Send Email Draft Executor — cap 64 (send_email_draft)
 - [[nova_backend/src/executors/story_tracker_executor.py|story_tracker_executor]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/src/executors/tts_executor.py|tts_executor]]
@@ -502,7 +508,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (265)
+## Tests and verification (276)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -536,6 +542,20 @@ Use this to orient yourself before diving into a specific module.
   summary: Goal:
 - [[nova_backend/tests/adversarial/test_tts_spine_integrity.py|test_tts_spine_integrity]]
   summary: def test_tts_engine_speak_only_called_in_tts_executor():
+- [[nova_backend/tests/certification/__init__.py|tests/certification]]
+- [[nova_backend/tests/certification/cap_64_send_email_draft/__init__.py|tests/certification/cap_64_send_email_draft]]
+- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p1_unit.py|test_p1_unit]]
+  summary: Phase 1 — Unit certification for capability 64 (send_email_draft).
+- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p2_routing.py|test_p2_routing]]
+  summary: Phase 2 — Routing certification for capability 64 (send_email_draft).
+- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p3_integration.py|test_p3_integration]]
+  summary: Phase 3 — Integration certification for capability 64 (send_email_draft).
+- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api]]
+  summary: Phase 4 — API certification for capability 64 (send_email_draft).
+- [[nova_backend/tests/certification/conftest.py|conftest - tests/certification]]
+  summary: Shared fixtures and helpers for capability certification tests.
+- [[nova_backend/tests/certification/test_lock_regression_guard.py|test_lock_regression_guard]]
+  summary: Capability Lock Regression Guard
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
   summary: def test_clarify_prompts_are_single_question_and_deterministic():
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
@@ -558,6 +578,8 @@ Use this to orient yourself before diving into a specific module.
   summary: resolve_pending_escalation_reply,
 - [[nova_backend/tests/conversation/test_general_chat_tone.py|test_general_chat_tone]]
   summary: def test_general_chat_depth_hint_detection():
+- [[nova_backend/tests/conversation/test_meta_intent_handler.py|test_meta_intent_handler]]
+  summary: Unit tests for MetaIntentHandler.
 - [[nova_backend/tests/conversation/test_openclaw_agent_personality_bridge.py|test_openclaw_agent_personality_bridge]]
   summary: OpenClawAgentPersonalityBridge,
 - [[nova_backend/tests/conversation/test_personality_interface_agent.py|test_personality_interface_agent]]
@@ -614,6 +636,8 @@ Use this to orient yourself before diving into a specific module.
   summary: ﻿from __future__ import annotations
 - [[nova_backend/tests/executors/test_screen_analysis_executor.py|test_screen_analysis_executor]]
   summary: def _request(params: dict):
+- [[nova_backend/tests/executors/test_send_email_draft_executor.py|test_send_email_draft_executor]]
+  summary: Unit tests for SendEmailDraftExecutor (capability 64 — send_email_draft).
 - [[nova_backend/tests/executors/test_story_tracker_executor.py|test_story_tracker_executor]]
   summary: def _req(capability_id: int, params: dict):
 - [[nova_backend/tests/executors/test_system_control_executor.py|test_system_control_executor - tests/executors]]
@@ -1009,6 +1033,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_current_runtime_state_path_is_docs_current_runtime():
 - [[nova_backend/tests/test_runtime_settings_api.py|test_runtime_settings_api]]
   summary: def _install_runtime_settings_store(monkeypatch, tmp_path):
+- [[nova_backend/tests/test_send_email_draft_routing.py|test_send_email_draft_routing]]
+  summary: Tests for GovernorMediator routing of capability 64 (send_email_draft).
 - [[nova_backend/tests/test_single_action_queue.py|test_single_action_queue]]
   summary: def test_single_action_queue_blocks_concurrent():
 - [[nova_backend/tests/test_stt_engine.py|test_stt_engine]]
@@ -1030,7 +1056,7 @@ Use this to orient yourself before diving into a specific module.
 - [[verification/governor_proof.py|governor_proof]]
   summary: ﻿"""Governor Mediation Proof - Phase 3.5 Verification
 
-## Frontend (10)
+## Frontend (16)
 
 - [[nova_backend/static/dashboard-chat-news.js|dashboard-chat-news - nova_backend/static]]
   summary: Nova Dashboard - Chat, News, And Interaction Surfaces */
@@ -1038,16 +1064,27 @@ Use this to orient yourself before diving into a specific module.
   summary: window.NOVA_DASHBOARD_CONFIG = {
 - [[nova_backend/static/dashboard-control-center.js|dashboard-control-center - nova_backend/static]]
   summary: Nova Dashboard - Control Center Surfaces */
+- [[nova_backend/static/dashboard-simplified.css|dashboard-simplified - nova_backend/static]]
+  summary: Task 1.3 — UI overload reduction (first-run simplified mode).
+- [[nova_backend/static/dashboard-simplified.js|dashboard-simplified - nova_backend/static]]
+  summary: Task 1.3 — UI overload reduction runtime.
 - [[nova_backend/static/dashboard-surfaces.css|dashboard-surfaces - nova_backend/static]]
   summary: Nova Dashboard - Product Surface Styles */
 - [[nova_backend/static/dashboard-workspace.js|dashboard-workspace - nova_backend/static]]
   summary: Nova Dashboard - Workspace And Continuity Surfaces */
 - [[nova_backend/static/dashboard.js|dashboard - nova_backend/static]]
   summary: ﻿/* Nova Dashboard - User-Friendly Runtime UX */
+- [[nova_backend/static/favicon.ico|favicon.ico]]
 - [[nova_backend/static/index.html|index - nova_backend/static]]
   summary: <!DOCTYPE html>
 - [[nova_backend/static/landing.html|landing - nova_backend/static]]
   summary: <!DOCTYPE html>
+- [[nova_backend/static/landing/index.html|index - static/landing]]
+  summary: <!DOCTYPE html>
+- [[nova_backend/static/landing/script.js|script]]
+  summary: Nova landing page — waitlist submission (Task 1.5).
+- [[nova_backend/static/landing/styles.css|styles]]
+  summary: Nova landing page — Task 1.5.
 - [[nova_backend/static/orb.js|orb - nova_backend/static]]
   summary: (function () {
 - [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]]
@@ -1081,8 +1118,10 @@ Use this to orient yourself before diving into a specific module.
 - [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## Scripts and automations (18)
+## Scripts and automations (22)
 
+- [[.github/workflows/ci.yml|ci]]
+  summary: name: CI
 - [[.github/workflows/fingerprint-clean-main-pr.yml|fingerprint-clean-main-pr]]
   summary: name: Fingerprint Clean (Main PR)
 - [[.github/workflows/governance-check.yml|governance-check]]
@@ -1095,12 +1134,16 @@ Use this to orient yourself before diving into a specific module.
   summary: name: Runtime Docs
 - [[automations/weekly-engineering-summary/automation.toml|automation]]
   summary: version = 1
+- [[scripts/certify_capability.py|certify_capability]]
+  summary: certify_capability.py — Capability Verification CLI
 - [[scripts/check_frontend_mirror_sync.py|check_frontend_mirror_sync]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[1]
 - [[scripts/check_frontend_navigation_smoke.py|check_frontend_navigation_smoke]]
   summary: ROOT = Path(__file__).resolve().parent.parent
 - [[scripts/check_runtime_doc_drift.py|check_runtime_doc_drift]]
   summary: ROOT = Path(__file__).resolve().parents[1]
+- [[scripts/fetch_models.py|fetch_models]]
+  summary: Fetch the default Ollama model for Nova.
 - [[scripts/generate_obsidian_overlay.py|generate_obsidian_overlay]]
   summary: Generate an Obsidian overlay for the Nova repository.
 - [[scripts/generate_runtime_docs.py|generate_runtime_docs]]
@@ -1114,6 +1157,8 @@ Use this to orient yourself before diving into a specific module.
 - [[scripts/pids/nova_backend.pid|nova_backend.pid]]
 - [[scripts/run_capability_audit.ps1|run_capability_audit]]
   summary: $ErrorActionPreference = "Stop
+- [[scripts/start_daemon.py|start_daemon]]
+  summary: Start (or verify) the Nova backend as a background process.
 
 ## Governance companion repo (8)
 
@@ -1134,7 +1179,7 @@ Use this to orient yourself before diving into a specific module.
 - [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
   summary: Updated: 2026-03-30
 
-## Workspace and repo support (10)
+## Workspace and repo support (11)
 
 - [[.gitattributes|.gitattributes]]
   summary: text=auto
@@ -1143,11 +1188,13 @@ Use this to orient yourself before diving into a specific module.
 - [[conftest.py|conftest - .]]
   summary: Root pytest bootstrap for repo-level test execution.
 - [[LICENSE|LICENSE]]
-  summary: ﻿Copyright 2026 Christopher Daugherty
+  summary: Business Source License 1.1
 - [[nova_workspace/story_tracker/story_iran_war.json|story_iran_war]]
   summary: story_id": "story_iran_war",
 - [[nova_workspace/story_tracker/tracked_topics.json|tracked_topics]]
   summary: topics": [
+- [[pyproject.toml|pyproject]]
+  summary: [build-system]
 - [[start_nova.bat|start_nova - .]]
   summary: @echo off
 - [[start_nova.sh|start_nova - .]]

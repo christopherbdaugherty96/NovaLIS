@@ -52,14 +52,14 @@ Sources are never edited — this overlay just builds navigation on top.
 | Category | Docs | Code |
 |---|---:|---:|
 | Phases | 172 | 0 |
-| Governance | 20 | 17 |
-| Runtime and ops | 20 | 239 |
-| Frontend | 0 | 23 |
-| Tests | 5 | 265 |
-| Scripts and tools | 3 | 19 |
-| Design specs | 4 | 0 |
+| Governance | 13 | 17 |
+| Runtime and ops | 20 | 242 |
+| Frontend | 0 | 29 |
+| Tests | 5 | 276 |
+| Scripts and tools | 3 | 23 |
+| Design specs | 7 | 0 |
 | Proofs | 175 | 6 |
-| Reference | 77 | 9 |
-| Archive | 107 | 10 |
+| Reference | 115 | 12 |
+| Archive | 115 | 10 |
 
-_Indexed 583 docs and 588 non-doc files._
+_Indexed 625 docs and 615 non-doc files._
