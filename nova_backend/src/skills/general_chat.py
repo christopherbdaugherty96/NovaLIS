@@ -296,15 +296,22 @@ class GeneralChatSkill(BaseSkill):
 
     # Conservative relationship insight patterns.
     # Each tuple: (regex, normalized_insight_string)
-    # Only explicit, high-confidence feedback signals — not inferred.
-    # Insights are normalized so substring deduplication in record_insight() works.
+    # Rules:
+    # - Only explicit, high-confidence feedback signals — not inferred
+    # - Insights are normalized so substring dedup in record_insight() works
+    # - "more detail about X" and "give me an example of X" are task requests,
+    #   not general preferences — excluded to avoid false positives
+    # - One-off / context-qualified signals ("for this", "just this time") are
+    #   filtered before patterns run (see _extract_relationship_signals guard)
     _INSIGHT_PATTERNS: tuple[tuple[re.Pattern, str], ...] = (
         # Length / verbosity preferences
         (re.compile(r"\bkeep\s+it\s+(short|brief|concise|quick)\b", re.I), "User prefers concise responses"),
         (re.compile(r"\b(too\s+long|too\s+verbose|too\s+wordy)\b", re.I), "User prefers concise responses"),
         (re.compile(r"\bless\s+(detail|explanation|text|words)\b", re.I), "User prefers concise responses"),
         (re.compile(r"\bshorter\s+(please|answer|response)?\b", re.I), "User prefers concise responses"),
-        (re.compile(r"\bmore\s+detail(s|ed)?\b", re.I), "User wants more detailed responses"),
+        # "more detail" only when NOT followed by "about/on/for/of/regarding" — those
+        # are topic requests ("more detail about the timeline"), not style preferences.
+        (re.compile(r"\bmore\s+detail(s|ed)?(?!\s+(?:about|on|for|of|regarding)\b)", re.I), "User wants more detailed responses"),
         (re.compile(r"\bmore\s+(depth|thorough|comprehensive)\b", re.I), "User wants more detailed responses"),
         # Formatting preferences
         (re.compile(r"\b(don.t|no|stop)\s+use\s+bullet\s*points?\b", re.I), "User prefers prose over bullet points"),
@@ -321,9 +328,11 @@ class GeneralChatSkill(BaseSkill):
         (re.compile(r"\bskip\s+the\s+(disclaimer|caveats?|warnings?)\b", re.I), "User dislikes excessive caveats"),
         (re.compile(r"\bstop\s+(adding|with|the)\s+(disclaimer|caveats?|warnings?)\b", re.I), "User dislikes excessive caveats"),
         (re.compile(r"\b(don.t|no)\s+(say|add|include)\s+(?:\w+\s+){0,2}caveats?\b", re.I), "User dislikes excessive caveats"),
-        # Examples
-        (re.compile(r"\bgive\s+(?:me\s+)?(?:an?\s+)?example\b", re.I), "User finds examples helpful"),
-        (re.compile(r"\bmore\s+examples?\b", re.I), "User finds examples helpful"),
+        # Examples — only general preference expressions, not task-specific requests.
+        # "give me an example of X" is a task; "I find examples helpful" is a preference.
+        (re.compile(r"\bi\s+(like|find|appreciate)\s+(?:\w+\s+){0,3}examples?\b", re.I), "User finds examples helpful"),
+        (re.compile(r"\bexamples?\s+(help|are\s+helpful|make\s+it\s+clearer)\b", re.I), "User finds examples helpful"),
+        (re.compile(r"\balways\s+(?:include|add|give)\s+(?:an?\s+)?example\b", re.I), "User finds examples helpful"),
     )
 
     def __init__(
@@ -1666,10 +1675,19 @@ class GeneralChatSkill(BaseSkill):
     def _record_query_topic(self, query: str) -> None:
         """Record the topic of this query in Nova's self-memory for relationship awareness."""
         try:
-            # Use the first 5 meaningful words as the topic label
-            stopwords = {"a", "an", "and", "are", "can", "could", "do", "does", "for",
-                         "how", "i", "in", "is", "it", "me", "my", "of", "please",
-                         "the", "to", "what", "when", "where", "who", "will", "with", "you"}
+            # Broad stopword set to produce meaningful topic labels.
+            # Common articles, prepositions, conjunctions, and high-frequency
+            # verbs that carry no domain signal are excluded.
+            stopwords = {
+                "a", "about", "an", "and", "are", "ask", "asked", "be", "been",
+                "being", "can", "could", "did", "do", "does", "for", "get", "give",
+                "got", "had", "has", "have", "help", "how", "i", "if", "in", "is",
+                "it", "just", "know", "let", "like", "make", "me", "my", "need",
+                "of", "ok", "okay", "on", "or", "please", "put", "say", "see",
+                "set", "show", "take", "tell", "the", "think", "to", "try", "up",
+                "use", "want", "was", "were", "what", "when", "where", "who",
+                "will", "with", "work", "would", "you",
+            }
             words = [w.strip("?.,!") for w in query.lower().split() if w.strip("?.,!") not in stopwords]
             topic = " ".join(words[:5]).strip()
             if topic and len(topic) >= 3:
@@ -1680,25 +1698,43 @@ class GeneralChatSkill(BaseSkill):
     def _extract_relationship_signals(self, query: str) -> None:
         """Detect explicit user preference or feedback signals and record as relationship insights.
 
-        Only runs on short messages (< 200 chars) that look like feedback rather than
-        task requests. Conservative — uses explicit regex patterns only, never infers.
-        One insight per query to avoid noisy accumulation.
+        Only runs on short messages (< 200 chars) that look like general feedback
+        rather than task requests. Conservative — explicit regex patterns only, never
+        infers. One insight per query to avoid noisy accumulation.
+
+        Guards applied in order:
+        1. Length — > 200 chars skipped (likely a task request, not meta-feedback)
+        2. Anchor check — must contain a known feedback signal word
+        3. Context qualifier check — skip if message is one-off/task-specific
+        4. Pattern match — one insight recorded on first match, then stop
         """
         try:
             q = str(query or "").strip()
-            # Only process short messages — longer ones are usually task requests
             if not q or len(q) > 200:
                 return
-            # Require at least one feedback-signal word to avoid processing task queries
+
+            q_lower = q.lower()
+
+            # Guard 1: require at least one feedback-signal word
             _feedback_anchors = (
                 "keep", "less", "more", "shorter", "longer", "brief", "verbose",
-                "detail", "direct", "point", "bullet", "list", "example",
+                "detail", "direct", "to the point", "bullet", "list", "example",
                 "skip", "stop", "don't", "dont", "caveat", "disclaimer",
-                "too long", "too short", "too wordy",
+                "too long", "too wordy",
             )
-            q_lower = q.lower()
             if not any(anchor in q_lower for anchor in _feedback_anchors):
                 return
+
+            # Guard 2: skip messages that qualify a one-off or task-specific request.
+            # These indicate the user wants a specific response changed, not a permanent
+            # style adjustment — e.g. "use bullet points for this one".
+            _one_off_qualifiers = (
+                "for this", "this one", "just this", "this time", "in this case",
+                "for now", "right now", "here", "in this response",
+            )
+            if any(q in q_lower for q in _one_off_qualifiers):
+                return
+
             for pattern, insight in self._INSIGHT_PATTERNS:
                 if pattern.search(q):
                     self._nova_memory.record_insight(insight, source="observed")

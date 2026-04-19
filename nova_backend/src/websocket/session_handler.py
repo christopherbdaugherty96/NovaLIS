@@ -3844,25 +3844,34 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
         # Write session summary to Nova's self-memory if at least 3 turns happened.
         # Gives Nova cross-session continuity without storing raw conversation history.
+        # Summary is intentionally compact and topic-focused — not a transcript excerpt.
         try:
             _turns = int(session_state.get("turn_count") or 0)
             if _turns >= 3:
                 from src.memory.nova_self_memory_store import nova_self_memory_store as _nsm
-                _topic = str(session_state.get("active_topic") or "").strip()
                 _thread = str(session_state.get("project_thread_active") or "").strip()
+                _topic = str(session_state.get("active_topic") or "").strip()
 
-                # Build a compact summary from what's in session state
+                # Prefer conversation_context topic over session-level active_topic
+                # (it is more granular and reflects the final turn's subject)
+                _conv = dict(session_state.get("conversation_context") or {})
+                _conv_topic = str(_conv.get("topic") or "").strip()
+                if _conv_topic and _conv_topic != _thread:
+                    _topic = _conv_topic
+
                 _parts: list[str] = [f"{_turns}-turn session"]
                 if _thread:
                     _parts.append(f"project thread: {_thread}")
-                if _topic and _topic != _thread:
+                if _topic and _topic.lower() != _thread.lower():
                     _parts.append(f"topic: {_topic}")
-                _last = str(session_state.get("last_response") or "").strip()
-                if _last:
-                    _excerpt = _last[:120].rstrip()
-                    if len(_last) > 120:
-                        _excerpt += "..."
-                    _parts.append(f"last response: {_excerpt}")
+
+                # Include the user's last stated goal if one was tracked
+                _goal = str(_conv.get("user_goal") or "").strip()
+                if _goal:
+                    _goal_excerpt = _goal[:100].rstrip()
+                    if len(_goal) > 100:
+                        _goal_excerpt += "..."
+                    _parts.append(f"user goal: {_goal_excerpt}")
 
                 _nsm.record_session_summary(
                     ". ".join(_parts),
