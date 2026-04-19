@@ -7,12 +7,17 @@
 1. Download `NovaSetup-0.1.0.exe` from [GitHub Releases](https://github.com/christopherbdaugherty96/NovaLIS/releases).
 2. Double-click to run. Follow the wizard.
 3. The installer handles Python, Ollama, model download, and shortcuts.
+4. If Nova opens and then closes, inspect `C:\Program Files\Nova\bootstrap.log` for the failing step and rerun the installer after fixing that dependency.
 
 ### Option B: Run the bootstrap script directly (for developers)
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File installer\windows\nova_bootstrap.ps1
 ```
+
+The bootstrap script now exits with explicit errors for failed venv creation,
+`pip install -e .`, and Nova startup, so `bootstrap.log` should show the exact
+step that failed.
 
 ### Building the .exe from source
 

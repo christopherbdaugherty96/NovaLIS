@@ -126,6 +126,14 @@ def start_nova(open_browser: bool = True) -> int:
             if open_browser:
                 webbrowser.open(BASE_URL)
             return 0
+        exit_code = proc.poll()
+        if exit_code is not None:
+            print(
+                f"[Nova] ERROR: Nova process exited before health check succeeded "
+                f"(PID {proc.pid}, exit code {exit_code}).",
+                file=sys.stderr,
+            )
+            return 1
         time.sleep(1)
 
     print(
