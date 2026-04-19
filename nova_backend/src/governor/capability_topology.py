@@ -288,6 +288,16 @@ _TOPOLOGY_OVERRIDES: dict[int, dict[str, Any]] = {
         "delegation_class": "observational",
         "envelope_notes": "Home-agent templates are read-only network runs. External effect is True because results are delivered to the agent inbox. Not policy-delegatable in the current phase.",
     },
+    64: {
+        "authority_class": "persistent_change",
+        "policy_delegatable": False,
+        "reversible": False,
+        "persistent_change": True,
+        "external_effect": True,
+        "requires_network_mediator": False,
+        "delegation_class": "local_action",
+        "envelope_notes": "Opens system mail client via mailto: URI with a pre-composed draft. External effect is True because the system mail client is invoked. Not delegatable — requires explicit user confirmation and involves data exfiltration risk.",
+    },
 }
 
 
