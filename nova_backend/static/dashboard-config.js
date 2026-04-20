@@ -1,6 +1,6 @@
 window.NOVA_DASHBOARD_CONFIG = {
   // Task 1.3: default first-run prompt pushed toward a quick "magic moment".
-  FIRST_RUN_DEFAULT_PROMPT: "Tell me the news",
+  FIRST_RUN_DEFAULT_PROMPT: "daily brief",
   API_BASE: `${window.location.protocol}//${window.location.host}`,
   WS_BASE: `${window.location.protocol === "https:" ? "wss" : "ws"}://${window.location.host}`,
   HEY_NOVA_WAKE_WORD: "Hey Nova",

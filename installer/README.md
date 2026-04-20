@@ -9,6 +9,7 @@
 3. The installer handles Python, Ollama, model download, and shortcuts.
 4. If setup fails, inspect `C:\Program Files\Nova\bootstrap.log` for the failing step and rerun the installer after fixing that dependency.
 5. If Nova starts but then immediately closes, inspect `C:\Program Files\Nova\scripts\pids\nova.log` for the server startup error.
+6. On a successful first launch, wait up to 90 seconds for local services to start, then try `daily brief`, `news`, or `system status`.
 
 ### Option B: Run the bootstrap script directly (for developers)
 
