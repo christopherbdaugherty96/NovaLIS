@@ -31,6 +31,10 @@ This is where the governor path, executors, cognition, voice, memory, and tests 
 A maintained mirror copy of the frontend.
 The runtime-served canonical frontend lives in `nova_backend/static/`.
 
+### `installer/`
+Windows installer assets, bootstrap script, and end-user install documentation.
+The installer is built but still in validation — not yet closed for non-developer use.
+
 ### `scripts/`
 Utility scripts for runtime docs, checks, and other project maintenance tasks.
 
@@ -64,12 +68,16 @@ The source tree is organized by responsibility.
 Some of the most important directories are:
 - `governor/`
 - `executors/`
+- `api/`
 - `conversation/`
 - `skills/`
+- `openclaw/`
 - `working_context/`
 - `memory/`
 - `perception/`
 - `personality/`
+- `providers/`
+- `websocket/`
 - `ledger/`
 - `rendering/`
 - `voice/`
