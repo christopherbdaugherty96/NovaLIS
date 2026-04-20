@@ -12,6 +12,8 @@ At a high level, the current state is:
 - Phase 5 trust-facing runtime package is active and formally closed for the current repository state, with later runtime-aligned expansions landed on top of it
 - Phase 6 is now complete in runtime as a review-oriented delegated-policy, trust-loop, and capability-authority package
 - Phase 7 is now complete in runtime as a governed external-reasoning package
+- Phase 8 is ACTIVE: manual strict preflight live, scheduled home-agent runtime available behind explicit settings control, with quiet-hours suppression, rate limiting, and bounded assistive noticing; broader envelope-governed execution still remains deferred
+- Phase 9 is ACTIVE: OpenClaw intelligence layer implemented with a 10-tool dynamic registry, iterative thinking loop with LLM synthesis, goal-based execution, execution memory, parallel/chained tool execution, error recovery, and self-awareness context injection running on Gemma 4
 
 That means Nova already has:
 - governed execution
@@ -144,7 +146,7 @@ Examples include:
 - richer provider switching and setup beyond the current bounded governed reasoning lane
 - richer provider/connector setup beyond the current visible status plus runtime-permission surface
 - richer project/workspace system foundations beyond Workspace Home, Workspace Board, and the current selected-project drill-down
-- Phase-8 governed external execution / OpenClaw
+- broader Phase-8 envelope-governed execution beyond the now-live narrow home-agent lane
 
 A careful plain-language description of the current system is:
 - voice input exists
