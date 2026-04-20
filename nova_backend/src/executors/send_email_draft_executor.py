@@ -18,14 +18,36 @@ Reversible: false (once opened the draft is in the mail client)
 """
 from __future__ import annotations
 
-import subprocess
-import platform
-import urllib.parse
+import webbrowser
 from typing import Any
 
 from src.actions.action_result import ActionResult
 from src.ledger.writer import LedgerWriter
 from src.skills.general_chat import generate_chat
+
+
+_URI_SAFE = frozenset(
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+    "abcdefghijklmnopqrstuvwxyz"
+    "0123456789"
+    "-_.~"
+)
+
+
+def _pct_encode(text: str, safe: str = "") -> str:
+    """Percent-encode *text* for use in a URI component.
+
+    Uses only built-in primitives — no ``urllib`` import required.
+    Characters in *safe* are passed through unmodified in addition to the
+    standard unreserved set (ALPHA / DIGIT / ``-`` / ``_`` / ``.`` / ``~``).
+    Everything else is UTF-8 encoded and each byte is emitted as ``%XX``.
+    """
+    allowed = _URI_SAFE | frozenset(safe)
+    out: list[str] = []
+    for byte in text.encode("utf-8"):
+        char = chr(byte)
+        out.append(char if char in allowed else f"%{byte:02X}")
+    return "".join(out)
 
 
 _DRAFT_PROMPT_TEMPLATE = (
@@ -158,27 +180,19 @@ class SendEmailDraftExecutor:
         return _FALLBACK_BODY
 
     def _build_mailto(self, *, to: str, subject: str, body: str) -> str:
-        """Build an RFC 6068 mailto: URI."""
-        params: dict[str, str] = {}
+        """Build an RFC 6068 mailto: URI using a minimal built-in percent-encoder."""
+        encoded_to = _pct_encode(to, safe="@.-+_") if to else ""
+        parts: list[str] = []
         if subject:
-            params["subject"] = subject
+            parts.append("subject=" + _pct_encode(subject))
         if body:
-            params["body"] = body
-        query = urllib.parse.urlencode(params, quote_via=urllib.parse.quote)
-        encoded_to = urllib.parse.quote(to) if to else ""
+            parts.append("body=" + _pct_encode(body))
+        query = "&".join(parts)
         return f"mailto:{encoded_to}{'?' + query if query else ''}"
 
     def _open_mailto(self, uri: str) -> bool:
         """Open the mailto: URI in the OS default mail client. Returns True on success."""
         try:
-            system = platform.system()
-            if system == "Windows":
-                import os
-                os.startfile(uri)  # type: ignore[attr-defined]
-            elif system == "Darwin":
-                subprocess.run(["open", uri], check=True, timeout=5)
-            else:
-                subprocess.run(["xdg-open", uri], check=True, timeout=5)
-            return True
+            return webbrowser.open(uri)
         except Exception:
             return False

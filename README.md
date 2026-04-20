@@ -12,15 +12,15 @@ is logged to a local, append-only ledger so you can always see what it did and w
 
 | Tier | Goal | Status |
 |---|---|---|
-| **Tier 1** — Try-ability | One-click installer + simplified UI + CI | ✅ Done |
-| **Tier 2** — First real-world action | Email draft end-to-end (cap 64) | ✅ Done — awaiting live sign-off |
+| **Tier 1** – Try-ability | One-click installer + simplified UI + CI | In validation – Windows installer test pass still open |
+| **Tier 2** – First real-world action | Email draft end-to-end (cap 64) | Implemented – awaiting live sign-off and lock |
 | **Tier 2.5** — Reliability & ownership | Backup, restore, uninstaller, offline mode | Next |
 | **Tier 3** — Long-term health | Refactor hot-path files, remove frontend duplication | Planned |
 | **Tier 4** — Ecosystem | Distribution, support, security lifecycle, beta program | Planned |
 
 **What just shipped (Tier 2.1):** Email draft — Nova composes an email body, opens it in your mail client, and waits for you to send. Nova never sends on your behalf.
 
-**What's next:** Live sign-off and lock of cap 64 → then Tier 2.5 reliability work (backup, uninstaller, offline awareness).
+**What's next:** Windows installer validation, live sign-off and lock of cap 64, then Tier 2.5 reliability work (backup, uninstaller, offline awareness).
 
 ---
 
@@ -157,6 +157,23 @@ nova-start
 
 A **Windows installer** (`NovaSetup-0.1.0.exe`) is available in [GitHub Releases](../../releases).
 macOS package is planned for Tier 2.5.
+
+### First 60 seconds
+
+When Nova opens successfully:
+
+1. wait up to 90 seconds on the first launch while local services come up
+2. your browser should open to `http://localhost:8000`
+3. try one of these first:
+   - `daily brief`
+   - `news`
+   - `system status`
+   - `draft an email to test@example.com about the weekly update`
+
+If the Windows installer path fails:
+
+- check `C:\Program Files\Nova\bootstrap.log` for setup failures
+- check `C:\Program Files\Nova\scripts\pids\nova.log` for server startup failures after install
 
 ---
 

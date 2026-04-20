@@ -128,7 +128,12 @@ begin
     else
     begin
       // Bootstrap succeeded — offer to launch
-      if MsgBox('Nova is ready! Would you like to launch it now?', mbConfirmation, MB_YESNO) = IDYES then
+      if MsgBox('Nova is ready! Would you like to launch it now?' + #13#10#13#10 +
+                'The first launch can take up to 90 seconds while local services start.' + #13#10 +
+                'If the browser does not open or Nova closes, check:' + #13#10 +
+                ExpandConstant('{app}\bootstrap.log') + #13#10 +
+                ExpandConstant('{app}\scripts\pids\nova.log'),
+                mbConfirmation, MB_YESNO) = IDYES then
       begin
         Exec(VenvPython, '"' + ExpandConstant('{app}\scripts\start_daemon.py') + '"',
              ExpandConstant('{app}'), SW_HIDE, ewNoWait, ResultCode);
