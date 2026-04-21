@@ -41,10 +41,12 @@ Nova's Shopify capabilities are explicitly separated into modular tiers. Each ti
 | 5 | Marketing | Draft and schedule content | Yes — before any publish |
 | 6 | Goal Refinement | Surface strategic pivots | Yes — governed check-in |
 
-Two cross-cutting capabilities sit across all tiers:
+Four cross-cutting capabilities sit across all tiers:
 
 - **Anomaly Detection** — passive monitoring that can trigger alerts at any tier level
 - **Feedback Loop** — outcome tracking that follows every Tier 2 recommendation through Tier 4 execution
+- **Competitive Intelligence** — read-only market awareness using Nova's existing governed research lane, separate from Shopify Admin API
+- **SOP / Playbook Engine** — persisted, named, user-approved sequences of Tier 2 recommendations that can be re-triggered as governed workflows
 
 These tiers must remain modular. Expanding one tier must not silently expand another.
 
@@ -161,6 +163,22 @@ Nova connects to the Shopify Admin API in read-only mode and generates structure
 - Supporting data and breakdown visible on request
 - Source label showing which Shopify API surface and endpoint produced each data point
 - Fetch timestamp on every report — you always know how fresh the data is
+
+### KPI Command Center (daily executive brief)
+The KPI Command Center is a composed Tier 1 output — not a new capability, but a structured view that aggregates signals from across all active capability 65 reports into a single daily cockpit surface.
+
+What it shows:
+- **Revenue today** vs yesterday and the rolling 7-day average
+- **Conversion rate** current vs baseline
+- **Top SKU** by revenue and by units today
+- **Low inventory** — products below configured restock threshold
+- **Traffic anomalies** — any signals from the anomaly detection layer since last review
+- **Pending approvals** — count and summary of Tier 2 recommendations awaiting your decision
+- **Last social performance** — engagement summary for the most recent published content
+
+The Command Center is the recommended daily entry point for Nova's Shopify operator mode. You open it, scan the bottom line, and decide whether to drill into a specific signal or let Nova surface the highest-priority recommendation for your attention. It does not take any action — it is a governed status surface, nothing more.
+
+The brief can be delivered on a schedule (same scheduler infrastructure as existing reminder and briefing lanes) or on demand. All fetches are logged.
 
 ### Third-party app data boundary
 Shopify's Admin API surfaces only data that lives inside Shopify's platform. Data held in third-party apps — email lists in Klaviyo, subscription data in Recharge, loyalty points in LoyaltyLion, review data in Yotpo — is not accessible through the Shopify Admin API. Nova's Tier 1 reporting covers Shopify-native data only. If you want Nova to surface third-party app data, those platforms need their own governed connector entries and their own OAuth authorizations. Nova must never present a reporting gap as if the data does not exist — if a signal is outside the Shopify Admin API surface, Nova labels that boundary explicitly.
@@ -445,6 +463,84 @@ The feedback loop tracks whether Nova's recommendations are actually working. It
 
 ---
 
+## Cross-Cutting: Competitive Intelligence
+
+Competitive intelligence is not a Shopify-connected capability — it uses Nova's existing governed web research lane (capabilities 16 and 48) to monitor publicly visible competitor signals. It does not touch Shopify Admin API and does not require additional OAuth.
+
+### What Nova monitors
+- Competitor product pricing on their public storefront pages
+- New product launches or catalog changes detected through storefront crawls and review platform signals
+- Trending product signals in the relevant category from public review and aggregator sources
+- Ad creative changes where visible through public ad libraries (Meta Ad Library, TikTok Creative Center)
+- Review theme analysis — what customers are saying about competitors at scale (sentiment, recurring complaints, top praise)
+- Platform-level pricing trends for the categories you operate in
+
+### What Nova does not do
+- Nova does not access non-public competitor data — no login-required areas, no API scraping, no private channels
+- Nova does not fabricate competitive insight — if public signal is thin, Nova says so rather than inventing a narrative
+- Nova does not make competitor claims without sourcing — every competitive observation includes the source and the date of the observation
+
+### Output format
+- Regular competitive brief (on schedule or on demand): what changed, what is trending, where you appear to be priced above or below the market
+- Source-labeled: every data point shows where it came from
+- Bottom line first: the one most actionable signal for your category this week
+
+### Connection to Tier 2
+When a competitive signal suggests a response — a competitor dropped price, a category trend is emerging — Nova can link the competitive brief directly to a Tier 2 recommendation. Example: "Competitor X reduced price on [product category] by 12% this week. Based on your current pricing and margin data, here is a governed recommendation if you want to respond." The recommendation requires the same explicit approval as any other Tier 2 proposal.
+
+### Authority boundary
+- All competitive intelligence is read-only web research
+- Nova does not interact with competitor platforms in any way that could be construed as automated access
+- Competitive briefs are logged as governed research outputs
+
+### Planned capability
+Capability 75 — shopify_competitive_intel — registered as a governed research output using the existing research infrastructure. No write authority. Depends on Nova's existing web research capabilities (16, 48) passing live sign-off first.
+
+---
+
+## Cross-Cutting: SOP / Playbook Engine
+
+A playbook is a named, persisted, user-approved sequence of Tier 2 recommendations that can be re-triggered as a governed workflow. It is not automation — every individual action in a playbook still requires your per-action approval at execution time. The playbook is a way to avoid rediscovering the same sequence of decisions every time a known situation recurs.
+
+### What a playbook is
+A playbook captures a decision pattern you have already approved and executed successfully. Instead of Nova re-deriving the full recommendation set each time, you can invoke the playbook by name and Nova pre-loads the sequence of proposals for your review and approval.
+
+Example playbooks:
+- **New product launch** — check inventory readiness, draft 3 social posts in launch format, flag low-stock threshold, propose homepage feature slot
+- **Weekly marketing review** — pull last 7 days of social performance, pull Shopify traffic and conversion data, surface top 3 recommendations for the coming week
+- **Monthly catalog cleanup** — flag products with zero sales in 90 days, surface restock recommendations for top performers, propose draft/archive decisions for slow-movers
+- **Promotion recovery** — if a promotion is underperforming vs projection, surface the deviation and propose three adjustment paths
+
+### How playbooks connect to Phase 6 policy infrastructure
+Playbooks are not a separate architecture — they are Shopify-domain policy templates built on top of Nova's existing Phase 6 delegated policy layer. A playbook is defined as a named policy with a set of governed steps. Each step maps to an existing Shopify capability (reporting, recommendation, or execution). The policy layer handles the sequencing; the existing per-action approval model handles execution authority.
+
+This means playbooks inherit all Phase 6 governance properties: they are visible in the Policy Review Center, auditable, reviewable before they run, and never self-modifying.
+
+### Playbook lifecycle
+1. **Define** — you describe a recurring situation and the response you want Nova to prepare
+2. **Nova drafts** — Nova proposes the playbook as an ordered sequence of capability invocations with the parameters for each step
+3. **You review and approve the template** — you approve, adjust, or reject the playbook definition before it is saved
+4. **Playbook is persisted** — saved to governed memory (playbook domain) and visible in the Policy Review Center
+5. **Trigger** — you invoke the playbook by name; Nova runs the sequence in order, surfacing each step's recommendation for your per-step approval before moving to the next
+6. **Outcome is logged** — the full run is logged: which steps were approved, which were adjusted, which were skipped
+
+### What playbooks are not
+- Playbooks are not cron jobs that run without you — you must explicitly invoke them
+- Playbooks are not autonomous execution sequences — each step still requires per-action approval
+- Playbooks do not self-update based on outcomes — if a playbook needs to change, you update it through the same define-review-approve cycle
+- Playbooks do not run in parallel or queue themselves
+
+### Authority boundary
+- Playbook definition and editing requires explicit approval for every change to the template
+- Playbook invocation is always user-initiated
+- Each step in a running playbook presents its recommendation for approval before proceeding
+- Playbooks are visible, editable, and deletable from the Policy Review Center at any time
+
+### Planned capability
+Capability 76 — shopify_playbook — registered as a policy-layer capability. No write authority of its own — write actions flow through the existing capability 69 (shopify_execute) and 71 (shopify_social_publish) approval paths. Must not be registered until Phase 6 policy infrastructure and Tier 2 recommendation capability (67) have both passed P5 live sign-off.
+
+---
+
 ## Transparency Requirements
 
 Every Nova action in this integration must meet Nova's standard transparency requirements:
@@ -477,6 +573,8 @@ Numeric IDs will be assigned sequentially at registration time, starting from th
 | 72 | shopify_feedback_loop | Cross | No | Outcome tracking and recommendation quality rating |
 | 73 | shopify_goal_refinement | 6 | No | Strategic check-in surface |
 | 74 | shopify_email_campaign | 5 ext | Yes | Governed email draft and send (Klaviyo/Shopify Email) — high-consequence gate |
+| 75 | shopify_competitive_intel | Cross | No | Governed web research for competitor pricing, product, and ad signals |
+| 76 | shopify_playbook | Cross | No | Named policy-layer workflows; execution flows through caps 69 and 71 |
 
 Each capability follows the standard P1-P6 verification path before being marked live:
 - P1 Unit, P2 Routing, P3 Integration, P4 API, P5 Live sign-off, P6 Lock
@@ -536,6 +634,20 @@ This design is intentionally scoped to Shopify first. As Nova's connector layer 
 
 Each new platform connection must go through the same governed connector process: explicit OAuth or API key setup, minimum-required scopes, explicit permissions surfaced in Trust and Settings, and full logging.
 
+### The broader pattern
+
+Shopify is the first domain this design addresses. But the pattern — authority tiers, read-before-write, per-action approval, feedback loop, playbook engine, competitive awareness, goal refinement — is not Shopify-specific. It is a **governed business operator layer**.
+
+The same pattern applies to:
+- **Amazon seller operations** — inventory, pricing, ad spend, A+ content proposals
+- **Local business ops** — appointment scheduling, review monitoring, local ad management
+- **Service businesses** — proposal drafting, project status reporting, client communication approvals
+- **Multi-channel commerce** — unified cross-platform performance view with per-platform execution authority
+
+What makes this pattern work is that it does not try to automate business judgment. It structures business judgment: surface the data, propose the action, require the approval, log the outcome. Nova becomes more useful over time not by accumulating more autonomy but by accumulating more context — a better read of your store, your patterns, and your decisions.
+
+That is the architecture to protect.
+
 ---
 
 ## Human Skill Development
@@ -573,5 +685,8 @@ When this is built, the right order is:
 13. **Webhook enhancement** — inbound webhook endpoint on the governed bridge, Shopify webhook subscription management, faster anomaly detection latency.
 14. **Email marketing extension** — Tier 5 email capability (Klaviyo, Mailchimp, or Shopify Email), governed draft and send approval with high-consequence confirmation gate.
 15. **Multi-platform expansion** — additional social and commerce connectors through the same governed model, each following the full P1-P6 process.
+16. **Competitive intelligence** — governed web research lane for competitor monitoring (capability 75). Depends on existing research capabilities (16, 48) being live and stable. Can begin in parallel with Tier 4/5 execution work since it uses no Shopify Admin API write paths.
+17. **SOP / Playbook Engine** — Shopify-domain policy templates on the Phase 6 policy layer (capability 76). Must not begin until Phase 6 policy infrastructure, capability 67 (recommendation), and at least one write-capable capability (69 or 71) have passed P5 live sign-off. A playbook that cannot reach execution has no meaningful test surface.
+18. **KPI Command Center** — composed daily brief surface aggregating signals from capabilities 65, 66, and 72. No new capability required. Implement as a report template within capability 65 once reporting, anomaly, and feedback loop capabilities are all live.
 
 No step in this sequence should be skipped to move faster. Each step builds the trust foundation for the next. Write-capable capabilities (69, 71) must not be registered until the read-only capabilities they depend on have passed P5 live sign-off against a development store.
