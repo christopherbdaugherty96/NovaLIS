@@ -30,6 +30,8 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, Optional
 
+from src.utils.persistent_state import runtime_root
+
 # ==================== VERSION ====================
 
 __version__ = "1.0.0"
@@ -39,10 +41,11 @@ __description__ = "Local Intelligence System"
 # ==================== PATHS ====================
 
 BASE_DIR = Path(__file__).resolve().parent
-DATA_DIR = BASE_DIR / "data"
-LOG_DIR = BASE_DIR / "logs"
-MODELS_DIR = BASE_DIR / "models"
-MEMORY_DIR = BASE_DIR / "memory"
+RUNTIME_ROOT = runtime_root(__file__)
+DATA_DIR = RUNTIME_ROOT / "data"
+LOG_DIR = RUNTIME_ROOT / "logs"
+MODELS_DIR = RUNTIME_ROOT / "models"
+MEMORY_DIR = RUNTIME_ROOT / "memory"
 
 for d in (DATA_DIR, LOG_DIR, MODELS_DIR, MEMORY_DIR):
     d.mkdir(parents=True, exist_ok=True)

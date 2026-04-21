@@ -44,7 +44,7 @@ Five components, in order, gate every real action:
    network access, this mediator records the outbound request and can
    refuse based on policy.
 5. **`LedgerWriter`** — appends an immutable event to
-   `nova_data/ledger/` describing what happened.
+   the active runtime-state ledger describing what happened.
 
 **Everything interesting in Nova is implemented as a capability that
 must pass through this spine.** There is no back door.
@@ -86,9 +86,28 @@ The ledger is an **append-only** record of every governed action:
 
 - Event type, timestamp, capability name, input arguments (redacted if
   sensitive), output summary, and the policy decisions that allowed it.
-- Stored locally under `nova_data/ledger/`.
+- Stored locally at the active runtime root under `data/ledger.jsonl`.
 - Exposed in the Trust page UI.
 - Never rewritten. Corrections are new entries, not edits.
+
+## Runtime state and installed-code separation
+
+Nova treats installed code and changing runtime state as separate concerns.
+This is especially important on Windows, where `C:\Program Files` is protected.
+
+Mutable runtime state is resolved through `src.utils.persistent_state`:
+
+- If Nova runs from a writable checkout, such as `C:\Nova-Project`, runtime
+  state can stay with that checkout.
+- If Nova runs from a protected install path, such as `C:\Program Files\Nova`,
+  runtime state falls back to `%LOCALAPPDATA%\Nova`.
+- `NOVA_RUNTIME_DIR` can override the runtime root for tests or controlled
+  deployments.
+
+The runtime-state surface includes the ledger, model version lock, settings,
+memory, usage tracking, profiles, policies, OpenClaw runtime state,
+notifications, and captures. Installer validation should prove that these files
+are not written into the protected install directory.
 
 ## Runtime-doc drift check
 
@@ -134,8 +153,12 @@ python scripts/generate_runtime_docs.py
 
 ## Capability verification
 
-Nova ships a 6-phase capability verification system that ensures every
-governed capability is tested end-to-end before being locked.
+Nova ships a 6-phase capability verification system and shared lock
+infrastructure for all 26 governed capabilities. In the current
+repository state, that framework is live for every capability, but only
+capability 64 (`send_email_draft`) has progressed through automated
+certification so far; the others still show pending phases in
+`capability_locks.json`. No capability is locked yet.
 
 ```
 python scripts/certify_capability.py status        # overview of all 26 caps

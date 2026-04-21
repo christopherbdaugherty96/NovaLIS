@@ -1,5 +1,5 @@
 # Current State
-Updated: 2026-03-28
+Updated: 2026-04-20
 
 ## Where Nova Is Today
 Nova is no longer just a design project.
@@ -10,10 +10,10 @@ At a high level, the current state is:
 - Phase 4.2 cognitive/reporting layer is active
 - Phase 4.5 perception and UX surfaces are partially active
 - Phase 5 trust-facing runtime package is active and formally closed for the current repository state, with later runtime-aligned expansions landed on top of it
-- Phase 6 is now complete in runtime as a review-oriented delegated-policy, trust-loop, and capability-authority package
-- Phase 7 is now complete in runtime as a governed external-reasoning package
-- Phase 8 is ACTIVE: manual strict preflight live, scheduled home-agent runtime available behind explicit settings control, with quiet-hours suppression, rate limiting, and bounded assistive noticing; broader envelope-governed execution still remains deferred
-- Phase 9 is ACTIVE: OpenClaw intelligence layer implemented with a 10-tool dynamic registry, iterative thinking loop with LLM synthesis, goal-based execution, execution memory, parallel/chained tool execution, error recovery, and self-awareness context injection running on Gemma 4
+- Phase 6 is complete in runtime as a review-oriented delegated-policy, trust-loop, and capability-authority package
+- Phase 7 is complete in runtime as a governed external-reasoning package
+- Phase 8 is active as a narrow governed OpenClaw and home-agent runtime surface, while broader envelope-governed execution remains deferred
+- Phase 9 is active as the current OpenClaw intelligence layer inside Nova
 
 That means Nova already has:
 - governed execution
@@ -36,6 +36,7 @@ That means Nova already has:
 - a separate landing-preview page for product messaging review
 - a visible primary navigation strip and a header page/connection status surface
 - a pinned base dependency file and cross-platform startup scripts
+- corrected Windows runtime-state routing so protected installs use `%LOCALAPPDATA%\Nova` for mutable state instead of trying to write inside `C:\Program Files\Nova`
 - a first-run onboarding guide for non-technical users
 - Intro and Settings setup-readiness checklists with current next-step guidance and in-product startup help
 - a visible local-project Structure Map surface with structured graph output
@@ -54,7 +55,7 @@ That means Nova already has:
 - a governed external reasoning lane with same-thread second-opinion review, provider visibility, and advisory-only boundaries
 - Trust and Settings reasoning panels that surface the second-opinion bottom line, main gap, and best correction directly
 - estimated governed reasoning-usage visibility in Trust and Settings
-- a local-first OpenAI operating model documented inside Phase 8, with runtime settings for an optional metered OpenAI lane, preferred model, daily token budget, and a narrow OpenClaw task-report fallback
+- a local-first OpenAI operating model with runtime settings for an optional metered OpenAI lane, preferred model, daily token budget, and a narrow OpenClaw task-report fallback
 - a token-gated governed remote bridge for read/reasoning access from OpenClaw-style remote clients
 - a manual OpenClaw home-agent foundation with a dedicated Agent page, manual briefing templates, delivery controls, a delivery inbox, strict manual preflight, and Nova-owned presentation
 - the beginning of a local code-operator direction where OpenClaw is also the future governed lane for read-only project analysis before any patching authority is added
@@ -133,9 +134,10 @@ These parts are active but still evolving:
 - stronger local-project visualization beyond the current stage-2 structure map
 - final device-confidence confirmation for audible TTS output
 - deeper Phase-6 policy review ergonomics beyond the current manual-review center
-- future Phase-8 execution work beyond the now-live governed remote bridge and manual home-agent foundation
+- broader envelope-governed execution beyond the now-live governed remote bridge, active `openclaw_execute` lane, and manual home-agent foundation
 - read-only Agent-page project analysis as the first coding-operator slice before patch proposal and approval-gated write work
-- live sign-off and lock of cap 64 (send_email_draft) — P1-P4 passed; P5 awaits user walkthrough
+- live sign-off and lock of cap 64 (send_email_draft) - P1-P4 passed; P5 awaits user walkthrough
+- rebuilt installer validation after the runtime-state fix is applied to the packaged Windows app
 
 ## What Is Planned But Not Fully Live Yet
 Some highly important ideas are still planned or partially scaffolded rather than fully live.
@@ -146,14 +148,16 @@ Examples include:
 - richer provider switching and setup beyond the current bounded governed reasoning lane
 - richer provider/connector setup beyond the current visible status plus runtime-permission surface
 - richer project/workspace system foundations beyond Workspace Home, Workspace Board, and the current selected-project drill-down
-- broader Phase-8 envelope-governed execution beyond the now-live narrow home-agent lane
+- broader envelope-governed execution beyond the current narrow OpenClaw lane
+- approval-gated patch proposal and apply flows for later coding-operator work
 
 A careful plain-language description of the current system is:
 - voice input exists
 - voice output is improved in code, auto-speaks voice-origin turns more reliably, trims long spoken replies more intelligently, and still depends on local device/audio validation
 - wake word is planned
 - wake word is optional and not part of the default install
-- governed external execution beyond the narrow home-agent scheduler remains planned, not runtime-authorized
+- the narrow governed OpenClaw lane is live in runtime today through the remote bridge, manual home-agent foundation, scheduler carve-out, and active `openclaw_execute` capability
+- broader envelope-governed execution beyond that narrow lane remains deferred
 - governed remote bridge access is now live, but it remains read/reasoning-only and token-gated
 - the OpenClaw home-agent foundation is now live as a manual operator surface, and a narrow scheduled briefing lane is now live behind explicit settings control
 - the next strong coding-oriented widening step is a read-only Project Snapshot lane, not unrestricted repo mutation
@@ -207,23 +211,59 @@ The main remaining voice caveat is still real-device confirmation:
 - real-device spoken output still needs final hardware confidence validation
 
 ## Capability Verification Framework (2026-04-17)
-Nova now has a formal 6-phase capability verification system covering all 26 live capabilities.
+Nova now has a formal 6-phase capability verification framework wired across all 26 live capabilities through the shared lock file, CLI, live-checklist path, and regression guard.
+
+What is true right now:
+- all 26 live capabilities have lock-file entries and can be advanced through the same certification flow
+- only capability 64 (`send_email_draft`) has actually been advanced through P1-P4 so far
+- no capability is locked yet in the current repository state
 
 Each capability tracks:
-- P1 Unit — executor isolated with all deps mocked
-- P2 Routing — GovernorMediator routing verified
-- P3 Integration — full Governor spine verified
-- P4 API — HTTP/WebSocket API shape verified
-- P5 Live — manual live test signed off by user
-- P6 Lock — CI regression guard active
+- P1 Unit - executor isolated with all deps mocked
+- P2 Routing - GovernorMediator routing verified
+- P3 Integration - full Governor spine verified
+- P4 API - HTTP/WebSocket API shape verified
+- P5 Live - manual live test signed off by user
+- P6 Lock - CI regression guard active
 
 Capability 64 (send_email_draft) is the first external-write capability. It passed P1 through P4 in the April 2026 build. P5 live sign-off is pending user walkthrough of the live checklist.
 
-Once all phases pass, a capability is locked. Locked capabilities are enforced by a regression guard that runs on every CI invocation — if governance fields change without an explicit unlock, the guard fails the build.
+Once all phases pass, a capability is locked. Locked capabilities are enforced by a regression guard that runs on every CI invocation - if governance fields change without an explicit unlock, the guard fails the build.
 
 The lock state lives in: `nova_backend/src/config/capability_locks.json`
 The regression guard lives in: `nova_backend/tests/certification/test_lock_regression_guard.py`
 CLI tool: `python scripts/certify_capability.py status`
+
+## Windows Runtime-State Fix (2026-04-20)
+Nova's Windows install path uncovered an important runtime-state issue:
+
+- the old installed app attempted to write changing state inside `C:\Program Files\Nova`
+- Windows blocks normal user writes there
+- that broke ledger writes, model-lock persistence, and other saved state
+- an empty or stale model hash could keep local inference blocked after restart
+
+The source runtime now routes mutable state through `src.utils.persistent_state`.
+
+Current intended behavior:
+- writable repo checkout: use the checkout runtime state
+- protected install path: use `%LOCALAPPDATA%\Nova`
+- explicit override: use `NOVA_RUNTIME_DIR`
+
+The affected state includes:
+- ledger
+- model version lock
+- runtime settings
+- memory
+- usage tracking
+- profiles
+- policies
+- notifications
+- OpenClaw runtime stores
+- captures
+
+The repo-run build has been validated with this fix. The remaining packaging
+gap is to rebuild and reinstall the Windows installer so `C:\Program Files\Nova`
+receives the corrected code.
 
 ## The Best Honest Description Right Now
 If someone asked what Nova is today, a strong honest answer would be:

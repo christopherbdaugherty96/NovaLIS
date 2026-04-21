@@ -1,5 +1,5 @@
 ﻿# Codebase Tour
-Updated: 2026-03-13
+Updated: 2026-04-20
 
 ## Purpose
 This guide explains the shape of the repository in plain language.
@@ -22,6 +22,10 @@ This includes:
 - design docs
 - proof packets
 - canonical governance material
+
+### `installer/`
+The Windows installer path, bootstrap script, and packaging assets.
+This is real repo surface today, but installer validation is still open rather than fully closed.
 
 ### `nova_backend/`
 The live backend runtime.
@@ -66,18 +70,19 @@ Persistent memory storage area related to governed memory.
 The source tree is organized by responsibility.
 
 Some of the most important directories are:
+- `api/`
 - `governor/`
 - `executors/`
-- `api/`
 - `conversation/`
-- `skills/`
 - `openclaw/`
+- `settings/`
+- `skills/`
+- `websocket/`
 - `working_context/`
 - `memory/`
 - `perception/`
 - `personality/`
 - `providers/`
-- `websocket/`
 - `ledger/`
 - `rendering/`
 - `voice/`
@@ -87,12 +92,14 @@ If you want the quickest useful understanding of the codebase, a good order is:
 1. human guides
 2. runtime truth docs
 3. `brain_server.py`
-4. `src/governor/`
-5. `src/executors/`
-6. `src/working_context/`
-7. `src/memory/`
-8. `src/personality/`
-9. tests
+4. `src/websocket/`
+5. `src/governor/`
+6. `src/executors/`
+7. `src/openclaw/`
+8. `src/working_context/`
+9. `src/memory/`
+10. `src/personality/`
+11. tests
 
 ## What This Repository Is Trying To Be
 The repo is not organized like a simple chat app.

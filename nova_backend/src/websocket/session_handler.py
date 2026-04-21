@@ -3331,8 +3331,10 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         session_state["last_calendar_summary"] = str(widget.get("summary") or "")
                         session_state["last_calendar_events"] = list(widget.get("events") or [])
                     analysis_docs = action_payload.get("analysis_documents")
+                    analysis_documents_changed = False
                     if isinstance(analysis_docs, list):
                         session_state["analysis_documents"] = analysis_docs
+                        analysis_documents_changed = True
                     if capability_id == 61:
                         memory_item = action_payload.get("memory_item")
                         if isinstance(memory_item, dict):
@@ -3397,6 +3399,16 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     if "document_id" in action_payload:
                         session_state["last_analysis_doc_id"] = action_payload.get("document_id")
                         working_context.set_open_report_id(action_payload.get("document_id"))
+
+                    # Analysis documents are surfaced in workspace and continuity panels,
+                    # so refresh those widgets as soon as the governed document state changes.
+                    if (
+                        action_result.success
+                        and capability_id == 54
+                        and (analysis_documents_changed or "document_id" in action_payload)
+                    ):
+                        await send_workspace_home_widget(ws, session_state, project_threads)
+                        await send_operational_context_widget(ws, session_state, project_threads)
 
                 if capability_id == 22 and action_result.success:
                     opened_path = str(params.get("path") or "").strip()

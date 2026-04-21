@@ -546,6 +546,13 @@ class MultiSourceReportingExecutor:
             }
             for i in results[:5]
         ]
+        enriched_structured_brief = {
+            **structured_brief,
+            "search_provider": provider,
+            "contract_status": contract_status,
+            "validation_status": validation_status,
+            "fallback_reason": fallback_reason,
+        }
         payload = {
             "widget": {
                 "type": "search",
@@ -557,16 +564,11 @@ class MultiSourceReportingExecutor:
                     "researched_summary": structured_brief.get("summary") or reporting_result.summary,
                     "source_pages_read": 0,
                     "analysis_focus": analysis_focus or None,
+                    "structured_brief": enriched_structured_brief,
                     "results": widget_results,
                 },
             },
-            "structured_brief": {
-                **structured_brief,
-                "search_provider": provider,
-                "contract_status": contract_status,
-                "validation_status": validation_status,
-                "fallback_reason": fallback_reason,
-            },
+            "structured_brief": enriched_structured_brief,
         }
         return ActionResult.ok(
             message=message,

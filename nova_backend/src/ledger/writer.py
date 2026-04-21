@@ -8,8 +8,9 @@ from typing import Dict, Any
 
 from src.governor.exceptions import LedgerWriteFailed
 from src.ledger.event_types import EVENT_TYPES
+from src.utils.persistent_state import runtime_path
 
-LEDGER_PATH = Path(__file__).resolve().parents[1] / "data" / "ledger.jsonl"
+LEDGER_PATH = runtime_path(__file__, "data", "ledger.jsonl")
 
 
 class LedgerWriter:

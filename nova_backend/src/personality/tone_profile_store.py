@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from src.utils.persistent_state import shared_path_lock, write_json_atomic
+from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 
 def _utc_now() -> str:
@@ -45,11 +45,7 @@ class ToneProfileStore:
 
     def __init__(self, path: str | Path | None = None) -> None:
         default_path = (
-            Path(__file__).resolve().parents[1]
-            / "data"
-            / "nova_state"
-            / "personality"
-            / "tone_profile.json"
+            runtime_path(__file__, "data", "nova_state", "personality", "tone_profile.json")
         )
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)

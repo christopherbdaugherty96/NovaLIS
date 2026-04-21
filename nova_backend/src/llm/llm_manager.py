@@ -11,12 +11,13 @@ from src.ledger.writer import LedgerWriter
 from src.governor.exceptions import LedgerWriteFailed
 from src.llm.model_network_mediator import ModelNetworkMediator, ModelNetworkMediatorError
 from src.nova_config import OLLAMA_MODEL, OLLAMA_FALLBACK_MODEL, OLLAMA_URL
+from src.utils.persistent_state import runtime_path
 from .system_prompt import SYSTEM_PROMPT
 
 logger = logging.getLogger(__name__)
 
 # Paths for version lock
-MODEL_HASH_FILE = Path(__file__).resolve().parents[1] / "models" / "current_model_hash.txt"
+MODEL_HASH_FILE = runtime_path(__file__, "models", "current_model_hash.txt")
 WRAPPER_PATH = Path(__file__).parent / "inference_wrapper.py"
 
 

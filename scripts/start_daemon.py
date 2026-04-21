@@ -35,6 +35,8 @@ PORT = int(os.environ.get("NOVA_PORT", "8000"))
 BASE_URL = f"http://{HOST}:{PORT}"
 HEALTH_ENDPOINT = f"{BASE_URL}/phase-status"
 STARTUP_TIMEOUT = int(os.environ.get("NOVA_STARTUP_TIMEOUT", "90"))  # seconds
+PID_DIR = Path(__file__).resolve().parent / "pids"
+PID_FILE = PID_DIR / "nova_backend.pid"
 
 
 def _is_running() -> bool:
@@ -117,10 +119,9 @@ def start_nova(open_browser: bool = True) -> int:
     # Log Nova's stdout + stderr so startup failures are diagnosable.
     # The log file lives next to start_daemon.py's sibling pids/ directory,
     # matching where start_nova.bat puts its logs.
-    _pids_dir = Path(__file__).resolve().parent / "pids"
-    _pids_dir.mkdir(exist_ok=True)
-    _nova_log = _pids_dir / "nova.log"
-    print(f"[Nova] Server output → {_nova_log}")
+    PID_DIR.mkdir(exist_ok=True)
+    _nova_log = PID_DIR / "nova.log"
+    print(f"[Nova] Server output -> {_nova_log}")
     _log_fh = open(_nova_log, "a")
 
     creation_flags = 0
@@ -139,6 +140,7 @@ def start_nova(open_browser: bool = True) -> int:
     while time.time() - start < STARTUP_TIMEOUT:
         if _is_running():
             print(f"[Nova] Running at {BASE_URL} (PID {proc.pid})")
+            PID_FILE.write_text(str(proc.pid), encoding="utf-8")
             _log_fh.close()
             if open_browser:
                 webbrowser.open(BASE_URL)
@@ -151,6 +153,10 @@ def start_nova(open_browser: bool = True) -> int:
                 f"[Nova] Check {_nova_log} for details.",
                 file=sys.stderr,
             )
+            try:
+                PID_FILE.unlink()
+            except FileNotFoundError:
+                pass
             _log_fh.close()
             return 1
         time.sleep(1)
@@ -160,6 +166,10 @@ def start_nova(open_browser: bool = True) -> int:
         f"[Nova] Check {_nova_log} for details.",
         file=sys.stderr,
     )
+    try:
+        PID_FILE.unlink()
+    except FileNotFoundError:
+        pass
     _log_fh.close()
     return 1
 

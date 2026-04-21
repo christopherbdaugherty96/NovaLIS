@@ -5,8 +5,9 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Mapping
 
+from src.utils.persistent_state import runtime_path
 
-DEFAULT_CAPTURE_DIR = Path(__file__).resolve().parents[1] / "data" / "captures"
+DEFAULT_CAPTURE_DIR = runtime_path(__file__, "data", "captures")
 
 
 class ScreenCaptureEngine:

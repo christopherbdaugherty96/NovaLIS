@@ -6,7 +6,7 @@ from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
-from src.utils.persistent_state import shared_path_lock, write_json_atomic
+from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 _MEMORY_SEARCH_STOPWORDS = {
     "a",
@@ -125,7 +125,7 @@ class GovernedMemoryStore:
     ALLOWED_SCOPES = {"nova_core", "project", "ops"}
 
     def __init__(self, path: str | Path | None = None) -> None:
-        default_path = Path(__file__).resolve().parents[1] / "data" / "nova_state" / "memory" / "items.json"
+        default_path = runtime_path(__file__, "data", "nova_state", "memory", "items.json")
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)
         with self._lock:

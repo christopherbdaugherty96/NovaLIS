@@ -1,5 +1,5 @@
 # Start Here
-Updated: 2026-03-28
+Updated: 2026-04-20
 
 ## What Nova Is
 Nova is a local-first, governed workspace assistant.
@@ -84,6 +84,7 @@ Today, Nova can already help with:
 - explicit governed memory and memory export
 - bounded assistive noticing
 - governed second-opinion review and followthrough
+- draft emails for review in your mail client
 - manual and narrow scheduled home-agent tasks
 - visible Trust, Settings, and connection status
 
@@ -94,7 +95,7 @@ Important things still maturing include:
 - broader connectors
 - more polished connector entry and non-technical setup
 - deeper OpenClaw execution work
-- stronger packaging for non-technical users
+- installer validation and stronger packaging for non-technical users
 - more complete cross-system awareness over time
 
 ## What To Read Next

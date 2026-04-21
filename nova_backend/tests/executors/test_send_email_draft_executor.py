@@ -107,7 +107,8 @@ def test_generate_body_falls_back_when_llm_returns_empty():
 def test_build_mailto_with_all_fields():
     ex = _make_executor()
     uri = ex._build_mailto(to="bob@example.com", subject="Test", body="Hello Bob")
-    assert uri.startswith("mailto:bob%40example.com")
+    # RFC 6068: '@' is safe in the mailto recipient — must not be percent-encoded.
+    assert uri.startswith("mailto:bob@example.com")
     assert "subject=Test" in uri
     assert "body=Hello+Bob" in uri or "body=Hello%20Bob" in uri
 
@@ -115,7 +116,7 @@ def test_build_mailto_with_all_fields():
 def test_build_mailto_recipient_only():
     ex = _make_executor()
     uri = ex._build_mailto(to="carol@example.com", subject="", body="")
-    assert uri == "mailto:carol%40example.com"
+    assert uri == "mailto:carol@example.com"
 
 
 def test_build_mailto_no_recipient():

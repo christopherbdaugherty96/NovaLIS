@@ -21,11 +21,45 @@ The bootstrap script now exits with explicit errors for failed venv creation,
 `pip install -e .`, and Nova startup, so `bootstrap.log` should show the exact
 step that failed.
 
+### Runtime state location
+
+Nova stores changing runtime state outside the protected installer directory.
+
+When Nova runs from a writable source checkout, such as `C:\Nova-Project`,
+runtime state stays with that checkout. When Nova runs from a protected Windows
+install location, such as `C:\Program Files\Nova`, runtime state is written to:
+
+```text
+%LOCALAPPDATA%\Nova
+```
+
+This includes the ledger, model version lock, settings, memory state, usage
+tracking, profiles, policies, OpenClaw runtime state, notifications, and screen
+captures. Installer validation should confirm that the installed app does not
+attempt to write mutable state into `C:\Program Files\Nova`.
+
+### Installer validation checklist
+
+After installing or rebuilding the Windows package:
+
+1. Start Nova from the shortcut or `start_nova.bat`.
+2. Confirm `http://127.0.0.1:8000/phase-status` responds.
+3. Open Settings and confirm the local model reports as available.
+4. If prompted, confirm the model update and restart Nova.
+5. Confirm `current_model_hash.txt` is written under `%LOCALAPPDATA%\Nova\models`.
+6. Trigger a governed action or status check and confirm `ledger.jsonl` is written under `%LOCALAPPDATA%\Nova\data`.
+7. Save a memory or setting, restart Nova, and confirm it persists.
+8. Check `scripts\pids\nova.log` for startup errors.
+
 ### Building the .exe from source
 
 1. Install [Inno Setup 6+](https://jrsoftware.org/isinfo.php).
 2. Open `installer/windows/nova_setup.iss` in the Inno Setup Compiler.
 3. Press Ctrl+F9. The output lands in `dist/NovaSetup-0.1.0.exe`.
+
+Important: the existing `dist\NovaSetup-0.1.0.exe` may predate source changes.
+After runtime-state or startup changes, rebuild the installer before treating
+the packaged app as fixed.
 
 ## macOS
 

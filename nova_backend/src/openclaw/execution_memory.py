@@ -13,15 +13,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
+from src.utils.persistent_state import runtime_path
+
 logger = logging.getLogger(__name__)
 
-_DEFAULT_PATH = (
-    Path(__file__).resolve().parents[1]
-    / "data"
-    / "nova_state"
-    / "openclaw"
-    / "execution_memory.json"
-)
+_DEFAULT_PATH = runtime_path(__file__, "data", "nova_state", "openclaw", "execution_memory.json")
 
 
 @dataclass
