@@ -95,7 +95,7 @@ tracked in a persistent store.
 
 #### New modules
 
-**`nova_backend/src/openclaw/envelope_factory.py`** — stateless constructor
+**`nova_backend/src/openclaw/envelope_factory.py`** — constructor (holds no instance state; all state lives in EnvelopeStore)
 
 Responsibilities:
 - Accept a template name, user context, and optional overrides
@@ -110,12 +110,32 @@ Responsibilities:
 **`nova_backend/src/openclaw/envelope_store.py`** — lifecycle store
 
 Responsibilities:
-- Maintain a store (file-backed, using Nova's governed memory layer — not Redis, which is
-  not in Nova's stack) mapping envelope_id → EnvelopeRecord
+- Maintain a store (file-backed as JSON under `nova_backend/memory/` — the same
+  governed memory root used by other runtime persistence surfaces; not Redis, which
+  is not in Nova's stack) mapping envelope_id → EnvelopeRecord
 - Provide atomic status transitions: issued → running → completed/cancelled/expired
 - Enforce single-use: mark_used() prevents an envelope from being run twice
 - TTL enforcement: expires_at = created_at + configurable window (default 5 minutes)
 - get_envelope() returns None if expired or invalidated — never stale data
+
+#### EnvelopeStatus enum
+
+```python
+from enum import Enum
+
+class EnvelopeStatus(str, Enum):
+    ISSUED = "issued"
+    RUNNING = "running"
+    AWAITING_APPROVAL = "awaiting_approval"
+    COMPLETED = "completed"
+    CANCELLED = "cancelled"
+    EXPIRED = "expired"
+```
+
+TTL expiration note: an envelope in `AWAITING_APPROVAL` state must not be marked
+`EXPIRED` while it is actively waiting for a user decision. TTL enforcement in
+`get_envelope()` skips expiry if `status == AWAITING_APPROVAL`. Once the user
+approves or denies, the envelope resumes normal TTL tracking.
 
 #### EnvelopeRecord structure
 
@@ -177,7 +197,13 @@ GovernorMediator at runtime, with a structured approval record.
 
 #### New data model: OpenClawProposedAction
 
-Add to **`nova_backend/src/openclaw/models.py`** (create if not present):
+`nova_backend/src/openclaw/models.py` does not currently exist and must be created.
+Note: `agent_tool_executor.py` and `agent_orchestrator.py` in the same directory are
+both legacy placeholder stubs — their docstrings explicitly state this. The active
+execution path is `robust_executor.py` and `agent_runner.py`. Phase 2 modifications
+target `robust_executor.py` for tool-call interception, not the legacy placeholders.
+
+Add to **`nova_backend/src/openclaw/models.py`** (new file):
 
 ```python
 from pydantic import BaseModel
@@ -222,33 +248,74 @@ class OpenClawProposedAction(BaseModel):
 - `file_change` → "Authority Lane: File Change (Writes Allowed)"
 - `local_setting` → "Authority Lane: Local Setting (No Durable Effect)"
 
-#### Modification to agent_runner.py
+#### Extending ToolMetadata for classification
 
-- Remove local calls to `user_tool_permissions.check_permission()` from the execution path
-- For any tool invocation classified as DURABLE_MUTATION or EXTERNAL_WRITE:
-  1. Construct an OpenClawProposedAction
+`ToolMetadata` in `src/openclaw/tool_registry.py` already has a `category` field
+with values `"collection"`, `"mutation"`, `"control"`. This is the correct place to
+anchor ActionType classification — extend ToolMetadata rather than build a parallel
+system in the runner.
+
+Add to `ToolMetadata`:
+```python
+action_type: ActionType = ActionType.READ           # governance classification
+user_visible_category: UserVisibleCategory = UserVisibleCategory.READ
+capability_id: int | None = None                    # links to Nova capability registry
+reversible: bool = True
+```
+
+Classification is then a property of the tool registration, not a runtime heuristic.
+Example registrations:
+- `web_search` → `action_type=READ`, `capability_id=16`
+- `write_file` → `action_type=DURABLE_MUTATION`, `user_visible_category=FILE_CHANGE`, `reversible=False`
+- `http_post` → `action_type=EXTERNAL_WRITE`, `user_visible_category=NETWORK_SEND`, `capability_id=63`
+
+The tool-to-capability_id mapping lives in the registration call, not in the approval
+endpoint. The endpoint receives `capability_id` directly from the `OpenClawProposedAction`
+— no derivation needed at approval time.
+
+#### Modification to robust_executor.py (not agent_runner.py)
+
+The intercept point is `robust_executor.py` — this is where individual tool calls
+actually execute. `agent_runner.py` orchestrates the loop; `robust_executor.py` fires
+the calls. The approval gate belongs at the tool-call boundary in `robust_executor.py`.
+
+- For any tool whose `action_type` is DURABLE_MUTATION or EXTERNAL_WRITE:
+  1. Construct an OpenClawProposedAction from the tool's ToolMetadata and call payload
   2. POST it to `/openclaw/approve-action`
-  3. Block tool execution until a decision is returned
-  4. If `requires_approval=True` and decision is `pending`, enter suspension (see below)
-
-Tool classification heuristic:
-- READ: `read_file`, `list_directory`, `search`, `grep`
-- LOCAL_MUTATION: `set_volume`, `adjust_brightness`, `play_media`
-- DURABLE_MUTATION: `write_file`, `delete_file`, `move_file`
-- EXTERNAL_WRITE: `http_post`, `shopify_update_product`, `send_email`
+  3. Block the tool call until a decision is returned
+  4. If decision is `pending`, enter suspension (see below)
+- READ and LOCAL_MUTATION tools proceed without an approval call (AUTO_ALLOWED)
 
 #### New endpoint: `/openclaw/approve-action`
 
 Add to **`nova_backend/src/api/openclaw_agent_api.py`** (or new
 `nova_backend/src/api/openclaw_approval_api.py`):
-- Accepts OpenClawProposedAction
-- Forwards to GovernorMediator.evaluate() with capability_id derived from tool_name
-  and authority_class
-- Returns one of:
-  - `{"decision": "allow", "approval_state": "auto_allowed"}`
-  - `{"decision": "deny", "reason": "..."}`
-  - `{"decision": "pending", "suspension_token": "..."}` — user must confirm
-- Ledger logs the proposal and the final outcome
+
+- Accepts `OpenClawProposedAction`
+- Performs the following checks in order:
+  1. **Capability enabled check** — call `_load_enabled_capability_ids()` from
+     `src/governor/governor_mediator.py` (already exported). If the proposed action's
+     `capability_id` is not in the enabled set, return deny immediately.
+  2. **Risk level check** — load the capability entry from the registry
+     (`src/config/registry.json`). If `risk_level == "confirm"` or
+     `requires_confirmation == true`, return `pending` — user must explicitly approve.
+  3. **Authority class check** — if the capability's `authority_class` is
+     `persistent_change` or `external_effect == true`, and the envelope's
+     `max_bytes_written == 0`, deny immediately (envelope did not authorize writes).
+  4. If all checks pass, return `allow`.
+
+Note: `GovernorMediator` does not have an `evaluate()` method. Its public interface is
+`mediate()` (text passthrough) and `parse_governed_invocation()` (conversation routing).
+The capability checks above use the internal registry functions directly — this is the
+correct path until a formal `evaluate(capability_id)` method is added to
+`GovernorMediator` as part of this hardening work.
+
+Returns:
+- `{"decision": "allow", "approval_state": "auto_allowed"}`
+- `{"decision": "deny", "reason": "capability_disabled | write_not_authorized | ..."}`
+- `{"decision": "pending", "suspension_token": "..."}` — requires user confirmation
+
+Ledger logs both the proposal and the final outcome as separate events.
 
 #### Suspension and resume pattern
 
@@ -287,8 +354,12 @@ Superseded by: GovernorMediator + issued Envelope (Rank 1).
 ```
 
 Files to annotate: `strict_preflight.py`, `user_tool_permissions.py`,
-`agent_scheduler.py`, `bridge_api.py`, `agent_runner.py`, and the new
-`envelope_factory.py`.
+`agent_scheduler.py`, `bridge_api.py`, `agent_runner.py`, `robust_executor.py`,
+and the new `envelope_factory.py`.
+
+Note: `agent_orchestrator.py` and `agent_tool_executor.py` are legacy placeholder
+stubs with empty `__all__` lists — their docstrings already document this. Do not
+annotate them; they are not part of the active execution path.
 
 ---
 
@@ -309,12 +380,18 @@ EnvelopeRecord metadata.
 
 ### Authority Divergence Ledger Event
 
-During the transition period (Phase 2 parallel run), log to
-`src/ledger/event_types.py`:
+During the transition period (Phase 2 parallel run), add the following event types
+to `src/ledger/event_types.py`:
 
 ```python
-# New event type to add
-AUTHORITY_DIVERGENCE = "authority_divergence"
+# New event types to add
+RUN_ISSUED = "run_issued"                          # emitted by EnvelopeFactory on issuance
+DEPRECATED_DIRECT_RUN = "deprecated_direct_run"   # emitted when old direct path is used
+ACTION_PROPOSED = "action_proposed"                # emitted when OpenClawProposedAction is sent
+ACTION_APPROVED = "action_approved"                # emitted on allow decision
+ACTION_DENIED = "action_denied"                    # emitted on deny decision
+ACTION_PENDING = "action_pending"                  # emitted when user confirmation needed
+AUTHORITY_DIVERGENCE = "authority_divergence"      # emitted when old/new decisions differ
 ```
 
 Log when old and new decisions differ:
@@ -378,8 +455,9 @@ Prerequisites: all 244 existing test files passing before any change begins.
 | 4 | Build Run Permit card (read-only preview) in control-center JS | `nova_backend/static/dashboard-control-center.js` | UI toggle |
 | 5 | Migrate `agent_scheduler.py` → envelope issuance; parallel path with divergence logging | `src/openclaw/agent_scheduler.py` | Flag `NOVA_FEATURE_SCHEDULER_ENVELOPE` |
 | 6 | Migrate `bridge_api.py` → envelope issuance | `src/api/bridge_api.py` | Flag `NOVA_FEATURE_BRIDGE_ENVELOPE` |
+| 6a | Migrate manual Agent-page run path → envelope issuance (third invocation channel alongside scheduler and bridge) | `src/api/openclaw_agent_api.py` | Flag `NOVA_FEATURE_MANUAL_ENVELOPE` |
 | 7 | Add `/openclaw/approve-action` endpoint (passthrough allow — no behavior change yet) | `src/api/openclaw_agent_api.py` | Flag `NOVA_FEATURE_APPROVAL_ENDPOINT` |
-| 8 | Modify `agent_runner.py` to emit `OpenClawProposedAction` for durable/external writes; parallel-run old check, log divergence | `src/openclaw/agent_runner.py` | Flag `NOVA_FEATURE_APPROVAL_FLOW` |
+| 8 | Modify `robust_executor.py` to emit `OpenClawProposedAction` for durable/external writes; parallel-run old check, log divergence | `src/openclaw/robust_executor.py` | Flag `NOVA_FEATURE_APPROVAL_FLOW` |
 | 9 | Implement suspension/resume pattern in runner and store | `src/openclaw/envelope_store.py`, `agent_runner.py` | Store suspended state in EnvelopeRecord |
 | 10 | Switch approval flow to authoritative; remove `user_tool_permissions` from execution path | `src/openclaw/agent_runner.py` | Flag `NOVA_FEATURE_AUTHORITATIVE_APPROVAL` |
 | 11 | Update UI to show live approval prompts and trace | `nova_backend/static/dashboard-control-center.js` | UI toggle |
