@@ -243,6 +243,78 @@ def test_workspace_home_command_returns_widget_and_summary(monkeypatch):
     assert any(msg.get("type") == "workspace_home" for msg in ws.sent_messages)
 
 
+def test_analysis_document_flow_refreshes_workspace_and_operational_widgets(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket(["create analysis report on AI geopolitics"])
+    refresh_calls = {"workspace": 0, "operational": 0}
+
+    async def _fake_invoke_governed_capability(_governor, capability_id, params):
+        assert capability_id == 54
+        return ActionResult.ok(
+            "Analysis document created: Doc 1",
+            data={
+                "analysis_documents": [
+                    {
+                        "id": 1,
+                        "title": "AI geopolitics",
+                        "topic": "AI geopolitics",
+                        "summary": "Export controls and compute alliances are tightening.",
+                    }
+                ],
+                "document_id": 1,
+                "document_title": "AI geopolitics",
+                "document_summary": "Export controls and compute alliances are tightening.",
+            },
+            request_id="analysis-doc-test",
+        )
+
+    async def _fake_send_workspace_home_widget(_ws, session_state, project_threads):
+        refresh_calls["workspace"] += 1
+        payload = {
+            "type": "workspace_home",
+            "summary": "Active workspace: AI geopolitics.",
+            "recent_documents": list(session_state.get("analysis_documents") or []),
+        }
+        session_state["last_workspace_home"] = payload
+        await brain_server.ws_send(_ws, payload)
+        return payload
+
+    async def _fake_send_operational_context_widget(_ws, session_state, project_threads):
+        refresh_calls["operational"] += 1
+        payload = {
+            "type": "operational_context",
+            "summary": "Operational context refreshed.",
+            "open_report_id": session_state.get("last_analysis_doc_id"),
+        }
+        session_state["last_operational_context"] = payload
+        await brain_server.ws_send(_ws, payload)
+        return payload
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")), patch(
+        "src.brain_server.invoke_governed_capability",
+        side_effect=_fake_invoke_governed_capability,
+    ), patch(
+        "src.brain_server.send_workspace_home_widget",
+        side_effect=_fake_send_workspace_home_widget,
+    ), patch(
+        "src.brain_server.send_operational_context_widget",
+        side_effect=_fake_send_operational_context_widget,
+    ):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    sent_types = [msg.get("type") for msg in ws.sent_messages]
+    assert refresh_calls["workspace"] == 1
+    assert refresh_calls["operational"] == 1
+    assert "workspace_home" in sent_types
+    assert "operational_context" in sent_types
+    assert any(msg.get("type") == "chat" and "Analysis document created" in msg.get("message", "") for msg in ws.sent_messages)
+
+
 def test_operational_context_command_returns_widget_and_summary(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,

@@ -1,5 +1,5 @@
 # What Nova Can Do
-Updated: 2026-03-26
+Updated: 2026-04-20
 
 ## Overview
 Nova's active capability surface now covers these big areas:
@@ -40,12 +40,6 @@ Examples:
 - `summarize headline 3`
 - `summary of article 1`
 - `today's news`
-- `summarize politics news`
-- `summarize global news`
-- `summarize local news`
-- `summarize tech news`
-- `summarize crypto news`
-- `more on story 1`
 - `daily brief`
 - `verify this`
 - `second opinion`
@@ -75,7 +69,7 @@ Examples:
 ## 2.5 Email Drafting (Governed External Write)
 Nova can compose a draft email and open it in your system mail client.
 
-It does not send email on its own — it opens the draft so you can review, edit, and decide.
+It does not send email on its own - it opens the draft so you can review, edit, and decide.
 You will always see a confirmation prompt before anything opens.
 
 Nova can:
@@ -93,8 +87,8 @@ Examples:
 Governance note:
 - This is Nova's first external-write capability.
 - It requires your explicit confirmation before opening the mail client.
-- Nova cannot send email — it can only prepare and open a draft.
-- The action is logged in the ledger under EMAIL_DRAFT_CREATED.
+- Nova cannot send email - it can only prepare and open a draft.
+- The action is logged in the ledger under `EMAIL_DRAFT_CREATED`.
 
 ## 3. Snapshots and Daily Surfaces
 Nova can load quick information views for:
@@ -118,9 +112,6 @@ Examples:
 - `workspace home`
 - `workspace board`
 - `trust center`
-
-UI note:
-- the Agent page is available from Nova's top navigation for manual home-agent brief runs and delivery control
 
 ## 4. Voice, Screen, and Explain Mode
 Nova can:
@@ -224,13 +215,11 @@ It can:
 - review manual home-agent briefing templates, delivery modes, and recent runs
 
 Examples:
-- `open /landing in the browser`
 - `intro`
 - `settings`
 - `trust center`
 - `policy center`
 - `policy overview`
-- `policy create weekday system status at 8:00 am`
 - `trust status`
 - `bridge status`
 - `connection status`
@@ -295,8 +284,9 @@ Examples:
 
 Important boundary:
 - schedules are created only when the user asks
-- scheduled items do not auto-run actions
-- the manual home-agent foundation does not yet schedule or auto-run briefing templates in the background
+- scheduled items do not auto-run arbitrary actions
+- the narrow home-agent scheduler only runs explicitly configured briefing templates under visible settings and policy controls
+- Nova does not turn ordinary chat into hidden background automation
 
 ## 12. Pattern Review
 Nova can help review repeated patterns across threads and durable memory, but only if you explicitly opt in first.

@@ -175,6 +175,17 @@ If the Windows installer path fails:
 - check `C:\Program Files\Nova\bootstrap.log` for setup failures
 - check `C:\Program Files\Nova\scripts\pids\nova.log` for server startup failures after install
 
+### Runtime state on Windows
+
+Nova separates installed code from changing local state.
+
+- Repo/dev run from a writable checkout, such as `C:\Nova-Project`: runtime state can stay with the checkout.
+- Installed run from `C:\Program Files\Nova`: runtime state must be written under `%LOCALAPPDATA%\Nova`.
+
+Mutable files include the ledger, model lock, settings, memory, usage tracking,
+profiles, policies, OpenClaw runtime state, notifications, and captures. This
+prevents Windows permission failures in protected install locations.
+
 ---
 
 ## What's planned

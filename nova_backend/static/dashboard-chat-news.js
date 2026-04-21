@@ -359,6 +359,77 @@ function collectReportSources(report) {
   return Array.from(new Set(rows)).slice(0, 12);
 }
 
+function buildStructuredReportFromBrief(brief = {}) {
+  if (!brief || typeof brief !== "object") return null;
+
+  const topic = String(brief.topic || "").trim();
+  const summary = String(brief.summary || "").trim();
+  const keyFindings = Array.isArray(brief.key_findings) ? brief.key_findings : [];
+  const supportingSources = Array.isArray(brief.supporting_sources) ? brief.supporting_sources : [];
+  const contradictions = Array.isArray(brief.contradictions) ? brief.contradictions : [];
+  const sourceCredibility = Array.isArray(brief.source_credibility) ? brief.source_credibility : [];
+  const confidenceFactors = brief.confidence_factors && typeof brief.confidence_factors === "object"
+    ? brief.confidence_factors
+    : {};
+  const counterAnalysis = String(brief.counter_analysis || "").trim();
+  const confidence = Number(brief.confidence);
+  const contractStatus = String(brief.contract_status || "").trim();
+  const validationStatus = String(brief.validation_status || "").trim();
+  const fallbackReason = String(brief.fallback_reason || "").trim();
+  const sections = [];
+
+  const pushSection = (heading, rows) => {
+    const normalizedRows = Array.isArray(rows)
+      ? rows.map((row) => String(row || "").trim()).filter(Boolean)
+      : [];
+    if (!normalizedRows.length) return;
+    sections.push({ heading, rows: normalizedRows });
+  };
+
+  pushSection("Summary", summary ? [summary] : []);
+  pushSection("Key Findings", keyFindings);
+  pushSection("Supporting Sources", supportingSources);
+  pushSection("Contradictions", contradictions);
+  pushSection(
+    "Confidence",
+    Number.isFinite(confidence) ? [`Confidence score: ${confidence.toFixed(2)}`] : [],
+  );
+  pushSection(
+    "Source Credibility",
+    sourceCredibility.map((row) => {
+      const source = String(row && row.source || "").trim();
+      const classification = String(row && row.classification || "unknown").trim() || "unknown";
+      const score = Number(row && row.score);
+      const scoreLabel = Number.isFinite(score) ? ` (${score.toFixed(2)})` : "";
+      return `${source || "Unknown source"}: ${classification}${scoreLabel}`;
+    }),
+  );
+  pushSection(
+    "Confidence Factors",
+    Object.entries(confidenceFactors).map(([label, value]) => {
+      const cleanLabel = String(label || "").replace(/_/g, " ").trim();
+      const numeric = Number(value);
+      const valueLabel = Number.isFinite(numeric) ? numeric.toFixed(2) : String(value || "").trim();
+      return `${cleanLabel}: ${valueLabel}`;
+    }),
+  );
+  pushSection("Counter Analysis", counterAnalysis ? [counterAnalysis] : []);
+  pushSection(
+    "Validation Status",
+    [
+      contractStatus ? `Contract status: ${contractStatus}` : "",
+      validationStatus ? `Validation status: ${validationStatus}` : "",
+      fallbackReason ? `Fallback reason: ${fallbackReason}` : "",
+    ],
+  );
+
+  if (!sections.length) return null;
+  return {
+    title: topic ? `NOVA INTELLIGENCE BRIEF: ${topic}` : "NOVA INTELLIGENCE BRIEF",
+    sections,
+  };
+}
+
 function parseDailyBriefV2(text) {
   const raw = String(text || "").trim();
   if (!raw.startsWith("NOVA DAILY INTELLIGENCE BRIEF")) return null;
@@ -1581,11 +1652,13 @@ function renderNewsWidget(items, summaryText = "", categories = null) {
 function renderSearchWidget(data) {
   const container = $("search-widget");
   const results = Array.isArray(data && data.results) ? data.results : [];
+  const structuredBrief = data && typeof data.structured_brief === "object" ? data.structured_brief : null;
+  const structuredReport = buildStructuredReportFromBrief(structuredBrief);
   if (container) {
     clear(container);
     container.classList.remove("active");
 
-    if (!results.length) {
+    if (!results.length && !structuredReport) {
       return;
     }
 
@@ -1612,30 +1685,34 @@ function renderSearchWidget(data) {
     header.appendChild(meta);
     container.appendChild(header);
 
-    const focusTopic = queryText || String(results[0]?.title || "").trim();
-    const summaryText = String((data && data.summary) || "").trim();
-    const quickAnswer = document.createElement("div");
-    quickAnswer.className = "search-quick-answer";
+    const focusTopic = queryText || String(results[0]?.title || structuredBrief?.topic || "").trim();
+    const summaryText = String((data && data.summary) || structuredBrief?.summary || "").trim();
+    if (structuredReport) {
+      renderStructuredReport(container, structuredReport);
+    } else {
+      const quickAnswer = document.createElement("div");
+      quickAnswer.className = "search-quick-answer";
 
-    const quickAnswerTitle = document.createElement("div");
-    quickAnswerTitle.className = "search-quick-answer-title";
-    quickAnswerTitle.textContent = "Quick answer";
-    quickAnswer.appendChild(quickAnswerTitle);
+      const quickAnswerTitle = document.createElement("div");
+      quickAnswerTitle.className = "search-quick-answer-title";
+      quickAnswerTitle.textContent = "Quick answer";
+      quickAnswer.appendChild(quickAnswerTitle);
 
-    const quickAnswerBody = document.createElement("p");
-    quickAnswerBody.className = "search-widget-summary";
-    quickAnswerBody.textContent = summaryText || `I found ${results.length} place${results.length === 1 ? "" : "s"} to start. Open the first result if you want the fastest overview.`;
-    quickAnswer.appendChild(quickAnswerBody);
+      const quickAnswerBody = document.createElement("p");
+      quickAnswerBody.className = "search-widget-summary";
+      quickAnswerBody.textContent = summaryText || `I found ${results.length} place${results.length === 1 ? "" : "s"} to start. Open the first result if you want the fastest overview.`;
+      quickAnswer.appendChild(quickAnswerBody);
 
-    if (results[0]) {
-      const quickAnswerMeta = document.createElement("p");
-      quickAnswerMeta.className = "search-quick-answer-meta";
-      const bestTitle = String(results[0].title || "the first result").trim();
-      const bestSource = extractDomain(results[0].url) || "the web";
-      quickAnswerMeta.textContent = `Best place to start: ${bestTitle} from ${bestSource}.`;
-      quickAnswer.appendChild(quickAnswerMeta);
+      if (results[0]) {
+        const quickAnswerMeta = document.createElement("p");
+        quickAnswerMeta.className = "search-quick-answer-meta";
+        const bestTitle = String(results[0].title || "the first result").trim();
+        const bestSource = extractDomain(results[0].url) || "the web";
+        quickAnswerMeta.textContent = `Best place to start: ${bestTitle} from ${bestSource}.`;
+        quickAnswer.appendChild(quickAnswerMeta);
+      }
+      container.appendChild(quickAnswer);
     }
-    container.appendChild(quickAnswer);
 
     if (focusTopic) {
       const guideActions = document.createElement("div");
@@ -1657,106 +1734,108 @@ function renderSearchWidget(data) {
       container.appendChild(guideActions);
     }
 
-    const sourcesSection = document.createElement("div");
-    sourcesSection.className = "search-sources-section";
+    if (results.length) {
+      const sourcesSection = document.createElement("div");
+      sourcesSection.className = "search-sources-section";
 
-    const sourcesToggleRow = document.createElement("div");
-    sourcesToggleRow.className = "search-widget-actions";
+      const sourcesToggleRow = document.createElement("div");
+      sourcesToggleRow.className = "search-widget-actions";
 
-    const sourcesToggle = document.createElement("button");
-    sourcesToggle.type = "button";
-    sourcesToggle.className = "assistant-action-btn";
-    sourcesToggle.textContent = `See where this came from (${results.length})`;
-    sourcesToggle.setAttribute("aria-expanded", "false");
-    sourcesToggleRow.appendChild(sourcesToggle);
+      const sourcesToggle = document.createElement("button");
+      sourcesToggle.type = "button";
+      sourcesToggle.className = "assistant-action-btn";
+      sourcesToggle.textContent = `See where this came from (${results.length})`;
+      sourcesToggle.setAttribute("aria-expanded", "false");
+      sourcesToggleRow.appendChild(sourcesToggle);
 
-    const sourceList = document.createElement("div");
-    sourceList.className = "search-sources-list";
-    sourceList.hidden = true;
+      const sourceList = document.createElement("div");
+      sourceList.className = "search-sources-list";
+      sourceList.hidden = true;
 
-    sourcesToggle.addEventListener("click", () => {
-      const expanded = sourceList.hidden;
-      sourceList.hidden = !expanded;
-      sourcesToggle.setAttribute("aria-expanded", expanded ? "true" : "false");
-      sourcesToggle.textContent = expanded ? "Hide sources" : `See where this came from (${results.length})`;
-    });
+      sourcesToggle.addEventListener("click", () => {
+        const expanded = sourceList.hidden;
+        sourceList.hidden = !expanded;
+        sourcesToggle.setAttribute("aria-expanded", expanded ? "true" : "false");
+        sourcesToggle.textContent = expanded ? "Hide sources" : `See where this came from (${results.length})`;
+      });
 
-    results.forEach((item, index) => {
-      const div = document.createElement("div");
-      div.className = "search-result";
-      if (index === 0) div.classList.add("search-result-primary");
+      results.forEach((item, index) => {
+        const div = document.createElement("div");
+        div.className = "search-result";
+        if (index === 0) div.classList.add("search-result-primary");
 
-      const titleRow = document.createElement("div");
-      titleRow.className = "search-result-title";
+        const titleRow = document.createElement("div");
+        titleRow.className = "search-result-title";
 
-      if (index === 0) {
-        const startBadge = document.createElement("span");
-        startBadge.className = "search-start-badge";
-        startBadge.textContent = "Start here";
-        titleRow.appendChild(startBadge);
-      }
+        if (index === 0) {
+          const startBadge = document.createElement("span");
+          startBadge.className = "search-start-badge";
+          startBadge.textContent = "Start here";
+          titleRow.appendChild(startBadge);
+        }
 
-      const idx = document.createElement("span");
-      idx.className = "citation-index";
-      idx.textContent = `[${index + 1}]`;
-      titleRow.appendChild(idx);
+        const idx = document.createElement("span");
+        idx.className = "citation-index";
+        idx.textContent = `[${index + 1}]`;
+        titleRow.appendChild(idx);
 
-      const a = document.createElement("a");
-      a.href = item.url;
-      a.textContent = item.title;
-      a.target = "_blank";
-      a.rel = "noopener noreferrer";
-      titleRow.appendChild(a);
+        const a = document.createElement("a");
+        a.href = item.url;
+        a.textContent = item.title;
+        a.target = "_blank";
+        a.rel = "noopener noreferrer";
+        titleRow.appendChild(a);
 
-      const domain = extractDomain(item.url);
-      if (domain) {
-        const domainBadge = document.createElement("span");
-        domainBadge.className = "domain-badge";
-        domainBadge.textContent = domain;
-        titleRow.appendChild(domainBadge);
-      }
+        const domain = extractDomain(item.url);
+        if (domain) {
+          const domainBadge = document.createElement("span");
+          domainBadge.className = "domain-badge";
+          domainBadge.textContent = domain;
+          titleRow.appendChild(domainBadge);
+        }
 
-      appendConfidenceBadge(titleRow, "Web result");
-      div.appendChild(titleRow);
+        appendConfidenceBadge(titleRow, "Web result");
+        div.appendChild(titleRow);
 
-      const snippet = String(item.snippet || "").trim();
-      if (snippet) {
-        const snippetEl = document.createElement("p");
-        snippetEl.className = "search-result-snippet";
-        snippetEl.textContent = snippet;
-        div.appendChild(snippetEl);
-      }
+        const snippet = String(item.snippet || "").trim();
+        if (snippet) {
+          const snippetEl = document.createElement("p");
+          snippetEl.className = "search-result-snippet";
+          snippetEl.textContent = snippet;
+          div.appendChild(snippetEl);
+        }
 
-      const actions = document.createElement("div");
-      actions.className = "search-result-actions";
+        const actions = document.createElement("div");
+        actions.className = "search-result-actions";
 
-      const openBtn = document.createElement("a");
-      openBtn.className = "assistant-action-btn";
-      openBtn.href = item.url;
-      openBtn.target = "_blank";
-      openBtn.rel = "noopener noreferrer";
-      openBtn.textContent = "Open story";
-      actions.appendChild(openBtn);
+        const openBtn = document.createElement("a");
+        openBtn.className = "assistant-action-btn";
+        openBtn.href = item.url;
+        openBtn.target = "_blank";
+        openBtn.rel = "noopener noreferrer";
+        openBtn.textContent = "Open story";
+        actions.appendChild(openBtn);
 
-      const quickTakeBtn = document.createElement("button");
-      quickTakeBtn.type = "button";
-      quickTakeBtn.className = "assistant-action-btn";
-      quickTakeBtn.textContent = "Quick take";
-      quickTakeBtn.addEventListener("click", () => injectUserText(`Give me a quick take on ${item.title}.`, "text"));
-      actions.appendChild(quickTakeBtn);
+        const quickTakeBtn = document.createElement("button");
+        quickTakeBtn.type = "button";
+        quickTakeBtn.className = "assistant-action-btn";
+        quickTakeBtn.textContent = "Quick take";
+        quickTakeBtn.addEventListener("click", () => injectUserText(`Give me a quick take on ${item.title}.`, "text"));
+        actions.appendChild(quickTakeBtn);
 
-      const compareBtn = document.createElement("button");
-      compareBtn.type = "button";
-      compareBtn.className = "assistant-action-btn";
-      compareBtn.textContent = "See wider coverage";
-      compareBtn.addEventListener("click", () => injectUserText(`research latest coverage of ${queryText || item.title}`, "text"));
-      actions.appendChild(compareBtn);
-      div.appendChild(actions);
-      sourceList.appendChild(div);
-    });
-    sourcesSection.appendChild(sourcesToggleRow);
-    sourcesSection.appendChild(sourceList);
-    container.appendChild(sourcesSection);
+        const compareBtn = document.createElement("button");
+        compareBtn.type = "button";
+        compareBtn.className = "assistant-action-btn";
+        compareBtn.textContent = "See wider coverage";
+        compareBtn.addEventListener("click", () => injectUserText(`research latest coverage of ${queryText || item.title}`, "text"));
+        actions.appendChild(compareBtn);
+        div.appendChild(actions);
+        sourceList.appendChild(div);
+      });
+      sourcesSection.appendChild(sourcesToggleRow);
+      sourcesSection.appendChild(sourceList);
+      container.appendChild(sourcesSection);
+    }
 
     const suggested = Array.isArray(data && data.suggested_actions) ? data.suggested_actions : [];
     if (suggested.length) {

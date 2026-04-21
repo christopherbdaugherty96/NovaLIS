@@ -16,19 +16,13 @@ from __future__ import annotations
 
 import json
 from datetime import datetime, timezone
-from pathlib import Path
 from typing import Dict, List
 
+from src.utils.persistent_state import runtime_path
 
 # Absolute path anchored to this file — consistent regardless of CWD.
 # Matches the pattern used by all other Nova memory stores.
-_CORRECTIONS_PATH = (
-    Path(__file__).resolve().parents[1]
-    / "data"
-    / "nova_state"
-    / "memory"
-    / "quick_corrections.jsonl"
-)
+_CORRECTIONS_PATH = runtime_path(__file__, "data", "nova_state", "memory", "quick_corrections.jsonl")
 
 
 def record_correction(content: str) -> Dict[str, str]:

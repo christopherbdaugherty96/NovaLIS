@@ -1,5 +1,5 @@
 ﻿# Source Directory Guide
-Updated: 2026-03-13
+Updated: 2026-04-20
 
 ## Purpose
 This guide explains the top-level directories inside `nova_backend/src/`.
@@ -14,11 +14,11 @@ Core request/result objects used across governed execution.
 ### `agents/`
 Agent-related structures and older or supporting agent-layer code.
 
-### `api/`
-HTTP API route modules: bridge API, OpenClaw agent API, and related endpoint surfaces.
-
 ### `archive_quarantine/`
 Quarantined or set-aside code that is not part of the primary clean runtime path.
+
+### `api/`
+Focused HTTP route families such as audit, bridge, memory, settings, and OpenClaw agent routes.
 
 ### `audio/`
 Audio-related support surfaces outside the newer `voice/` layer.
@@ -37,10 +37,10 @@ Structured cognitive/reporting layer used for deeper analysis outputs.
 Configuration files, including capability registry data.
 
 ### `connections/`
-Connection management and connection-state support surfaces.
+Connection-state support surfaces used by runtime readiness and provider visibility.
 
 ### `connectors/`
-Connector package implementations and the governed connector rollout foundation.
+Connector-facing runtime support code.
 
 ### `context/`
 Request-time environment/context snapshot services.
@@ -78,7 +78,7 @@ Governed memory storage and memory-related runtime logic.
 Model-related local runtime support.
 
 ### `openclaw/`
-OpenClaw home-agent integration logic: runners, runtime store, personality bridge, and diagnostics.
+The OpenClaw worker layer inside Nova: runtime store, runner, scheduler, preflight, execution memory, and personality bridge.
 
 ### `patterns/`
 Pattern analysis and pattern-queue support surfaces.
@@ -90,10 +90,10 @@ Screen capture, OCR, cursor-region logic, and explain-anything support modules.
 Presentation discipline layer for how Nova speaks and presents itself.
 
 ### `policies/`
-Policy management, policy-review surfaces, and delegated trigger policy structures.
+Policy definitions and delegated-policy support surfaces.
 
 ### `profiles/`
-Runtime profile management and profile-switching surfaces.
+Profile-related support surfaces.
 
 ### `prompts/`
 Prompt-related assets and support text used by analysis paths.
@@ -111,7 +111,7 @@ Request or service routing helpers outside the main conversation path.
 Support services used by higher-level runtime behavior.
 
 ### `settings/`
-Runtime settings store, settings API surfaces, and user-facing settings management.
+Runtime settings, permissions, routing preferences, and setup-state storage.
 
 ### `skills/`
 Deterministic and conversational skill handlers such as weather, news, calendar, and general chat.
@@ -129,7 +129,7 @@ Auxiliary runtime tools and helper modules.
 Trust and governance support layers.
 
 ### `usage/`
-Usage tracking and metered-budget accounting surfaces.
+Usage, metering, and related transparency support surfaces.
 
 ### `utils/`
 Shared helper functions used across the runtime.
@@ -141,7 +141,7 @@ Validation pipelines and boundary checks.
 Speech-to-text and text-to-speech runtime support.
 
 ### `websocket/`
-WebSocket session handler and real-time connection management.
+The websocket session loop and chat-session support surfaces used by the live runtime.
 
 ### `working_context/`
 Session-scoped task understanding, project continuity, and thread-related logic.
@@ -149,17 +149,17 @@ Session-scoped task understanding, project continuity, and thread-related logic.
 ## How To Use This Guide
 If you know what kind of thing you are looking for, use this simple mapping:
 - execution authority -> `governor/`
-- concrete capability behavior -> `executors/`
 - HTTP routes and API surfaces -> `api/`
+- concrete capability behavior -> `executors/`
 - conversation handling -> `conversation/` and `skills/`
-- OpenClaw home-agent logic -> `openclaw/`
+- OpenClaw worker layer -> `openclaw/`
 - screen/context behavior -> `context/` and `perception/`
 - continuity and project state -> `working_context/`
 - durable memory -> `memory/`
 - provider routing and AI lane -> `providers/`
 - connector packages -> `connectors/`
 - policy review -> `policies/`
-- settings and runtime controls -> `settings/`
-- real-time session handling -> `websocket/`
+- runtime settings and permissions -> `settings/`
+- live session handling -> `websocket/`
 - UI-facing formatting -> `rendering/` and `personality/`
 - validation and safety checks -> `validation/`, `audit/`, and tests

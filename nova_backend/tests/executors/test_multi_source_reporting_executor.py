@@ -52,11 +52,13 @@ def test_multi_source_report_structured_output(monkeypatch):
     assert widget_data.get("result_count") == 3
     assert widget_data.get("summary")
     assert isinstance(widget_data.get("results"), list)
+    assert isinstance(widget_data.get("structured_brief"), dict)
     assert "snippet" in widget_data["results"][0]
     assert isinstance(result.data.get("structured_brief"), dict)
     assert result.data["structured_brief"].get("contract_status") == "pass"
     assert result.data["structured_brief"].get("validation_status") == "pass"
     brief = result.data["structured_brief"]
+    assert widget_data["structured_brief"] == brief
     assert isinstance(brief.get("source_credibility"), list)
     assert isinstance(brief.get("confidence_factors"), dict)
     assert 0.0 <= float(brief.get("confidence", 0.0)) <= 1.0

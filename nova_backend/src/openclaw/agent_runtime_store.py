@@ -12,7 +12,7 @@ from src.openclaw.agent_personality_bridge import (
 )
 from src.openclaw.strict_preflight import strict_foundation_snapshot
 from src.openclaw.task_envelope import TaskEnvelope
-from src.utils.persistent_state import shared_path_lock, write_json_atomic
+from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 
 def _utc_now_iso() -> str:
@@ -277,11 +277,7 @@ class OpenClawAgentRuntimeStore:
 
     def __init__(self, path: str | Path | None = None) -> None:
         default_path = (
-            Path(__file__).resolve().parents[1]
-            / "data"
-            / "nova_state"
-            / "openclaw"
-            / "agent_runtime.json"
+            runtime_path(__file__, "data", "nova_state", "openclaw", "agent_runtime.json")
         )
         self._path = Path(path) if path else default_path
         self._lock = shared_path_lock(self._path)

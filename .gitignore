@@ -44,6 +44,10 @@ nova_backend/test.wav
 nova_backend/memory/
 nova_backend/src/data/
 nova_backend/nova_data/
+nova_backend/src/models/current_model_hash.txt
+scripts/pids/
+scripts/pids/*.pid
+scripts/pids/*.log
 
 # Temporary audio
 *.wav

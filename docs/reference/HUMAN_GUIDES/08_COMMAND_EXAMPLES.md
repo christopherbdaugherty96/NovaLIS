@@ -206,7 +206,8 @@ Use it when you want to:
 
 Important boundary:
 - this is a manual operator surface today
-- scheduled/background OpenClaw execution is still not live
+- a narrow scheduled briefing lane is live behind explicit settings and policy controls
+- Nova still does not turn ordinary chat into hidden background automation
 
 ## 12. Local Project Understanding
 Examples:
