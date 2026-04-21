@@ -1,7 +1,7 @@
 # Nova Shopify Governed Operator Design
 Date: 2026-04-20
 Status: Future design — not yet implemented
-Source: Voice brainstorm session, three-pass review + second-pass improvement
+Source: Voice brainstorm session, three-pass review + third-pass improvement
 
 ## Purpose
 
@@ -71,6 +71,9 @@ Access model: separate OAuth flow with Customer Account API scopes only.
 
 These three surfaces are separate connections, separately logged, and separately permissioned. Nova must never route an Admin API concern through the Storefront API or vice versa.
 
+### GraphQL vs REST
+Shopify is actively deprecating its REST Admin API in favor of GraphQL. Nova's Shopify integration uses the **GraphQL Admin API as primary**. REST endpoints are only used where a GraphQL equivalent does not yet exist for the required operation. All GraphQL queries follow the conventions in the Hydrogen build ruleset: `#graphql` tagged literals, `as const`, `@inContext(...)` for market-aware queries, fragment reuse over copy-pasted field selections.
+
 See also: `docs/future/HYDROGEN_OXYGEN_STOREFRONT_BUILD_RULESET_2026-04-12.md` for the same API separation principle applied to Hydrogen storefront build work.
 
 ---
@@ -78,6 +81,11 @@ See also: `docs/future/HYDROGEN_OXYGEN_STOREFRONT_BUILD_RULESET_2026-04-12.md` f
 ## Authentication and Connection Model
 
 Nova's Shopify connection uses OAuth 2.0 through the Shopify Admin API authorization flow.
+
+### Development store first
+Before Nova's Tier 4 execution is ever tested against a live store, it must first be validated against a Shopify development store. Shopify provides free development stores through the Partner program that are functionally identical to live stores but carry no real inventory or customer data risk.
+
+The implementation sequence enforces this: Tier 4 execution does not pass P5 live sign-off until it has been exercised end-to-end against a development store with all write flows confirmed working correctly.
 
 ### Setup flow
 1. User initiates connection through Nova's Settings or Agent page
@@ -96,6 +104,10 @@ Nova's Shopify connection uses OAuth 2.0 through the Shopify Admin API authoriza
 - Tokens are stored through the governed identity layer, never in plain config
 - Token validity is checked before every API call
 - Expired or revoked tokens surface as a visible connection error in Trust/Settings — Nova does not silently fail
+- If a token is revoked mid-session during an active operation, Nova surfaces the revocation immediately, halts any pending executions, and does not attempt to complete them with stale credentials
+
+### Future: Shopify Partner app model
+This design assumes single-merchant access (your store). If Nova is later offered as a tool for multiple merchants, it would need to be a Shopify Partner app using the Partner OAuth flow with per-merchant token management. That is a different auth architecture and a separate design decision — noted here so the single-merchant model does not accidentally foreclose it.
 
 ---
 
@@ -141,6 +153,7 @@ Nova connects to the Shopify Admin API in read-only mode and generates structure
 - Inventory signals: low-stock alerts, out-of-stock detection, velocity-based restock suggestions
 - Customer behavior: repeat purchase rates, new vs returning split, cohort snapshots
 - Order health: fulfillment rate, return rate, dispute signals
+- Market-aware reporting: if Shopify Markets is active on your store, reports can be scoped to a specific market or region — Nova uses `@inContext(country:, language:)` on market-sensitive queries and labels all outputs with the market context used
 
 ### Output format
 - Structured report with a visible bottom line first
@@ -176,6 +189,9 @@ Nova proposes specific actions based on its intelligence read. It does not execu
 
 ### Approval expiry
 An approved recommendation does not remain valid forever. If the underlying conditions change materially before execution (e.g., the product was already restocked by another team member, or the promotion window passed), Nova must re-check conditions before executing and surface any mismatch for your review. Nova does not execute a stale approval against changed conditions.
+
+### Pending approval persistence
+Approved recommendations that have not yet been executed are persisted across session boundaries — they survive Nova restarting or the session ending. On next session start, Nova surfaces any pending approvals for your review before proceeding. You can confirm, adjust, or rescind them. Nova does not silently execute a pending approval that was made in a prior session without surfacing it first in the new session.
 
 ### Authority boundary
 - No action is taken without your explicit approval
@@ -238,8 +254,13 @@ Before executing, Nova re-checks that the conditions at approval time still hold
 - Nova does not retry automatically — it surfaces the failure and waits for your instruction
 - Partial failures (e.g., a batch update where some items succeed and some fail) are reported item by item — Nova does not present a partial success as full success
 
+### Rollback and undo
+After a Tier 4 execution completes, Nova retains a governed record of the exact change made (the before state and the after state where the API surfaces this). If you want to reverse an executed action, Nova can propose a reversal as a new Tier 2 recommendation — the same approval flow applies in reverse. Nova does not undo autonomously.
+
+For actions where Shopify does not expose a direct API reversal (e.g., a sent notification), Nova surfaces that constraint explicitly and does not suggest a rollback path it cannot deliver.
+
 ### Authority boundary
-- Nova cannot execute anything not explicitly approved in the current session
+- Nova cannot execute anything not explicitly approved in the current session or a persisted pending approval confirmed in the current session
 - Nova cannot chain executions without returning to you between each one
 - Write API scopes must be explicitly activated by the user before any Tier 4 execution is possible — they are not on by default
 
@@ -279,6 +300,14 @@ Brand voice is stored in governed memory, is visible and editable at any time, a
 - All drafts are presented for your review before any scheduling or publishing
 - Drafts include Nova's reasoning: why this product, why this angle, why now
 
+### Image and media handling
+Social posts require imagery. Nova's approach:
+- Nova pulls existing product images from the Shopify Admin API (product media, variant images, collection images) and attaches them as candidates to the draft for your selection
+- Nova does not generate images autonomously — image selection or creation is your decision
+- If no suitable Shopify product image exists, Nova flags the gap in the draft and prompts you to supply an image before the post can be published
+- Video and Reel content: Nova can draft the script and caption, but video production remains outside Nova's scope — it surfaces the draft alongside a note that video asset creation is required
+- All media attached to a post is logged with the post record
+
 ### Content calendar
 - Nova maintains a governed content calendar
 - It suggests timing based on engagement pattern analysis from your past content and platform-level signals
@@ -304,11 +333,15 @@ Brand voice is stored in governed memory, is visible and editable at any time, a
 - Nova does not publish autonomously
 - Every publish action is logged: content, platform, time, approval reference
 
+### Email marketing extension
+Email marketing (Klaviyo, Mailchimp, Shopify Email) is a planned Tier 5 extension, not part of the initial social media scope. When added, it follows the same model: Nova drafts campaigns tied to Shopify data signals, you approve content and send timing, Nova executes the send only on explicit per-send approval. Email sends are irreversible once dispatched — the approval gate for email is therefore treated as high-consequence and will require an explicit confirmation step beyond the standard approval flow.
+
 ### Authority boundary
 - Nova does not post, comment, reply, or boost without explicit per-action approval
 - Draft generation is output only and requires no approval
 - Publishing requires explicit per-post approval — no scheduled batch publish without per-post review
 - Nova does not engage with comments or direct messages without explicit instruction
+- Nova does not select or attach media without presenting the selection to you first
 
 ---
 
@@ -362,6 +395,11 @@ Anomaly detection is not a separate tier — it is a monitoring layer that runs 
 - Default thresholds are conservative — Nova alerts less rather than more until you calibrate them
 - Threshold changes are logged
 
+### Shopify webhooks (enhancement path)
+Polling alone is slow for anomaly detection — a traffic spike or sudden out-of-stock event can happen between fetch cycles. The enhancement path is Shopify webhook subscriptions: Shopify pushes event notifications to Nova's governed bridge endpoint when defined events occur (orders created, inventory updated, product status changed, etc.).
+
+Webhooks are not part of the initial implementation — they require an inbound endpoint that is reachable from Shopify's servers, which adds infrastructure requirements. They are listed here as the planned improvement to anomaly detection latency once the base polling model is proven.
+
 ### Authority boundary
 - Alerts are output only
 - Nova does not take any action in response to an anomaly without your explicit approval
@@ -403,23 +441,26 @@ Every Nova action in this integration must meet Nova's standard transparency req
 
 This integration will require new governed capability entries in Nova's capability registry.
 
-Planned new capabilities (to be formally registered and locked through the existing P1-P6 verification process):
+Planned new capabilities (to be formally registered and locked through the existing P1-P6 verification process).
 
-| Capability Name | Tier | Write | Notes |
-| --- | --- | --- | --- |
-| shopify_intelligence_report | 1 | No | Read-only Admin API report generation |
-| shopify_anomaly_alert | Cross | No | Anomaly monitoring and alert surface |
-| shopify_recommendation | 2 | No | Proposal generation, no execution |
-| shopify_simulate | 3 | No | Scenario modeling, output only |
-| shopify_execute | 4 | Yes | Governed write actions, per-action approval |
-| shopify_social_draft | 5 | No | Content draft generation |
-| shopify_social_publish | 5 | Yes | Governed posting, per-post approval |
-| shopify_goal_refinement | 6 | No | Strategic check-in surface |
+Numeric IDs will be assigned sequentially at registration time, starting from the next available ID after the current highest (64). The table uses placeholder IDs for planning purposes.
+
+| Planned ID | Capability Name | Tier | Write | Notes |
+| --- | --- | --- | --- | --- |
+| 65 | shopify_intelligence_report | 1 | No | Read-only Admin API report generation |
+| 66 | shopify_anomaly_alert | Cross | No | Anomaly monitoring and alert surface |
+| 67 | shopify_recommendation | 2 | No | Proposal generation, no execution |
+| 68 | shopify_simulate | 3 | No | Scenario modeling, output only |
+| 69 | shopify_execute | 4 | Yes | Governed write actions, per-action approval |
+| 70 | shopify_social_draft | 5 | No | Content draft generation |
+| 71 | shopify_social_publish | 5 | Yes | Governed posting, per-post approval |
+| 72 | shopify_feedback_loop | Cross | No | Outcome tracking and recommendation quality rating |
+| 73 | shopify_goal_refinement | 6 | No | Strategic check-in surface |
 
 Each capability follows the standard P1-P6 verification path before being marked live:
 - P1 Unit, P2 Routing, P3 Integration, P4 API, P5 Live sign-off, P6 Lock
 
-Write capabilities (shopify_execute, shopify_social_publish) require explicit user activation before their scopes are requested from Shopify OAuth.
+Write capabilities (shopify_execute, shopify_social_publish) require explicit user activation before their scopes are requested from Shopify OAuth. These capabilities must not be registered until the read-only capabilities they depend on (65, 66, 67) have passed P5 live sign-off.
 
 ---
 
@@ -490,16 +531,20 @@ You should become a better Shopify operator because Nova is surfacing better dat
 
 When this is built, the right order is:
 
-1. **Shopify OAuth connection** — Admin API read-only scopes, token storage through `src/identity/`, connection state in Trust/Settings
-2. **Connector package registration** — extend `src/connectors/package_registry.py` and `src/config/connector_packages.json` with the Shopify connector manifest
-3. **Reporting surface** — on-demand sales, product, traffic, and inventory reports via Admin API; Tier 1 capability registered and P1-P4 verified
-4. **Anomaly detection** — configurable threshold monitoring, alert surface in Agent page
-5. **Recommendation engine** — governed proposals with explicit approval flow, Tier 2 capability registered
-6. **Scenario simulation** — forecast modeling tied to historical Admin API data, Tier 3 capability registered
-7. **Execution lane** — Shopify Admin API write path, write OAuth scopes added as optional activation, per-action approval UI, Tier 4 capability registered and P5 sign-off required before live
-8. **Social marketing layer** — brand voice config, draft generation, content calendar, per-post publish approval, Tier 5 capabilities registered
-9. **Feedback loop** — outcome tracking and recommendation quality rating surface
-10. **Goal refinement sessions** — governed strategic check-ins on a user-set schedule, Tier 6 capability registered
-11. **Multi-platform expansion** — additional connectors through the same governed model, each following the full P1-P6 process
+1. **Connector package manifest** — define the Shopify connector entry in `src/config/connector_packages.json`: connector ID, display name, required scopes per tier, API surfaces, rate limit model, webhook support flag. This must exist before OAuth can be implemented because the manifest defines what scopes to request.
+2. **Connector package registration** — register the manifest in `src/connectors/package_registry.py` so Nova's connector infrastructure recognizes it.
+3. **Shopify OAuth connection** — Admin API read-only scopes only, token storage through `src/identity/`, connection state surfaced in Trust and Settings pages alongside existing connectors.
+4. **Development store validation** — connect to a Shopify development store and confirm the read-only API surface works end-to-end before any further development.
+5. **Reporting surface** — on-demand sales, product, traffic, inventory, and market-aware reports via GraphQL Admin API; capability 65 registered and P1-P4 verified.
+6. **Anomaly detection** — configurable threshold monitoring, alert surface in Agent page; capability 66 registered. Polling model first, webhooks as a later enhancement.
+7. **Recommendation engine** — governed proposals with explicit approval flow, pending approval persistence across sessions; capability 67 registered.
+8. **Scenario simulation** — forecast modeling tied to historical GraphQL Admin API data; capability 68 registered.
+9. **Execution lane** — GraphQL Admin API write path via NetworkMediator, write OAuth scopes added as optional activation, pre-execution condition check, rollback record, per-action approval UI; capability 69 registered. P5 sign-off against development store required before any live store activation.
+10. **Social marketing layer** — brand voice configuration, product image pull from Shopify media, draft generation, content calendar, image gap flagging, per-post publish approval; capabilities 70 and 71 registered.
+11. **Feedback loop** — outcome tracking, recommendation quality rating surface, track record audit view; capability 72 registered.
+12. **Goal refinement sessions** — governed strategic check-ins on a user-set schedule; capability 73 registered.
+13. **Webhook enhancement** — inbound webhook endpoint on the governed bridge, Shopify webhook subscription management, faster anomaly detection latency.
+14. **Email marketing extension** — Tier 5 email capability (Klaviyo, Mailchimp, or Shopify Email), governed draft and send approval with high-consequence confirmation gate.
+15. **Multi-platform expansion** — additional social and commerce connectors through the same governed model, each following the full P1-P6 process.
 
-No step in this sequence should be skipped to move faster. Each step builds the trust foundation for the next. Write-capable tiers (4 and 5) must not be activated until the read-only tiers they depend on have passed P5 live sign-off.
+No step in this sequence should be skipped to move faster. Each step builds the trust foundation for the next. Write-capable capabilities (69, 71) must not be registered until the read-only capabilities they depend on have passed P5 live sign-off against a development store.
