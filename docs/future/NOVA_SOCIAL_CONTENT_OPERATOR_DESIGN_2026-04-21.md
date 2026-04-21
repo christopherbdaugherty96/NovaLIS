@@ -223,8 +223,9 @@ data. Each angle is sourced and timestamped.
 
 ### Drafting Module
 
-Combines `ResearchBrief` + `BrandToneProfile` + `ContentMemoryStore` (Section 5) to
-generate `ContentPackages` via cap 78 (social_content_package).
+Combines `ResearchBrief` + `BrandToneProfile` + the social content memory store
+(Section 5 — `ContentMemoryEntry` SQLite records) to generate `ContentPackages`
+via cap 78 (social_content_package).
 
 Uses a structured LLM prompt with a strict output schema so the result can be
 parsed directly into a `ContentPackage` object without free-form cleanup.
@@ -269,6 +270,12 @@ Nova Content Queue — 2026-04-21
 ────────────────────────────────────────────────────────
 ```
 
+**Reject behavior:** A rejected `ContentPackage` is archived (not deleted) and logged
+to the ledger with the rejection reason if provided. The hook, topic, and format used
+are noted in the memory store as a weak signal — not a hard negative, since Phase 1
+rejection may reflect quality issues rather than platform performance. The package
+record is retained for review; it is never silently dropped.
+
 No publishing happens in Phase 1. This phase is purely for validating content quality,
 hook consistency, and ICP alignment before any platform connection is made.
 
@@ -288,7 +295,9 @@ already bundled in the Nova runtime (`nova_backend/tools/`).
   Human records. Nova handles subtitle generation (.srt) and any overlay text.
 - **Template B** — Stock footage + text overlays: Nova queries Pexels/Pixabay API
   for relevant clips using the `shot_list` from the ContentPackage, generates subtitle
-  file, assembles via FFmpeg.
+  file, assembles via FFmpeg. **Note:** Pexels and Pixabay require API keys. Neither
+  is in `connector_packages.json` yet — Sprint 4 must add the key configuration before
+  this template is usable. Both offer free tiers with no OAuth requirement.
 - **Template C** — Screen recording: Nova generates a Loom-style script for walking
   through a Shopify dashboard; human records the screen capture.
 
@@ -351,7 +360,7 @@ class ContentMemoryEntry(BaseModel):
     # Nova's learning
     effectiveness_score: float = 0.5  # 0.0 to 1.0; starts neutral, updated via analytics
     last_used_at: datetime
-    usage_count: int
+    usage_count: int = 0
     notes: Optional[str] = None        # Human annotation — always surfaces to user
 ```
 
@@ -400,6 +409,13 @@ YouTube OAuth is a separate connector from Shopify OAuth. Setup:
 3. User authenticates and approves in Google
 4. Token stored through the governed identity layer (`nova_backend/src/identity/`)
 5. Connection state surfaced in Trust and Settings alongside other connector states
+
+**YouTube Data API quota:** The default quota is 10,000 units/day. Each `videos.insert`
+call costs 1,600 units — meaning the free quota allows approximately 6 uploads per day.
+Analytics reads (`videos.list`) cost 1–3 units each and are not a concern at this scale.
+If volume exceeds 6 uploads/day, request a quota increase through Google Cloud Console
+before enabling more frequent publishing. This constraint should be surfaced to the user
+during YouTube connector setup.
 
 **X (Twitter) note:** X posting requires a paid Basic tier API subscription or higher.
 This cost must be surfaced to the user before X publishing is enabled — Nova cannot
@@ -610,10 +626,10 @@ available yet, UTM links can be tracked manually until one of the two paths is l
 
 | Sprint | Deliverable | Success Metric |
 | --- | --- | --- |
-| 1 | Lock niche, ICP, and `BrandToneProfile`. Build cap 77 research module that populates `ContentResearchSource` and `ResearchBrief`. | One research brief generated daily |
+| 1 | Lock niche, ICP, and `BrandToneProfile`. Register caps 77–82 in `registry.json` and `capability_locks.json` (P1 prerequisite). Build cap 77 research module that populates `ContentResearchSource` and `ResearchBrief`. | One research brief generated daily; caps 77–82 visible in registry |
 | 2 | Build `ContentPackage` generation prompt with `offer_type`, `target_audience`, `conversion_goal` (cap 78). Create queue UI in Agent page. | 5 quality drafts per day |
 | 3 | Implement `ContentMemoryEntry` SQLite store (`social_content_memory.db`). Add memory queries to generation prompts. | Memory patterns visible alongside every draft |
-| 4 | Build template-based video rendering (FFmpeg + stock footage via Pexels API). | One video rendered per approved draft |
+| 4 | Build template-based video rendering (FFmpeg + stock footage via Pexels API). Add Pexels API key configuration. | One video rendered per approved draft |
 | 5 | Register YouTube connector in `connector_packages.json`. Integrate YouTube OAuth. Add publish approval gate (cap 79). UTM parameters populated at publish. | One post published to YouTube Shorts with explicit approval |
 | 6 | Add Shopify analytics integration for UTM conversion attribution (reuses cap 65). Revenue per post visible in Revenue Dashboard. | Revenue per post visible; attribution does not require GA4 |
 | 7 | Build comment fetching and few-shot classification (cap 81 — social_reply_assist). Create reply draft inbox with SAFE_QUESTION / POSITIVE / NEGATIVE / SPAM lanes. | 10 reply drafts reviewed daily |
