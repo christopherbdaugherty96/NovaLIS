@@ -147,12 +147,20 @@ class BrandToneProfile(BaseModel):
     target_icp: str             # e.g. "new Shopify consultants 0-2 years"
 
 
+class ResearchBrief(BaseModel):
+    """Daily output of the research module — 3–5 content angles with supporting data."""
+    date: datetime
+    niche: str
+    icp: str
+    angles: List["ContentResearchSource"]  # Each angle is a sourced, timestamped insight
+
+
 class ContentResearchSource(BaseModel):
     """A piece of trend or competitor intelligence used to generate content ideas."""
-    source_url: Optional[str]
+    source_url: Optional[str] = None
     platform: Platform
     insight: str
-    engagement_metric: Optional[int]    # likes, views, etc.
+    engagement_metric: Optional[int] = None    # likes, views, etc.
     captured_at: datetime
 
 
@@ -189,7 +197,6 @@ class ContentPackage(BaseModel):
     # State
     published: bool = False
     publish_url: Optional[str] = None
-    publish_capability_id: int = 79     # cap 79 — social_publish
 ```
 
 `offer_type`, `target_audience`, and `conversion_goal` are required fields, not
@@ -339,16 +346,16 @@ class ContentMemoryEntry(BaseModel):
     pattern: str                # e.g. "question hook", "list format", "urgency CTA"
 
     # Performance data (populated after analytics fetch)
-    impressions: Optional[int]
-    engagement_rate: Optional[float]
-    click_through_rate: Optional[float]
-    conversion_count: Optional[int]     # Leads or sales attributed via UTM
+    impressions: Optional[int] = None
+    engagement_rate: Optional[float] = None
+    click_through_rate: Optional[float] = None
+    conversion_count: Optional[int] = None     # Leads or sales attributed via UTM
 
     # Nova's learning
     effectiveness_score: float  # 0.0 to 1.0, updated via analytics pull
     last_used_at: datetime
     usage_count: int
-    notes: Optional[str]        # Human annotation — always surfaces to user
+    notes: Optional[str] = None        # Human annotation — always surfaces to user
 ```
 
 ### Usage in Generation
@@ -377,6 +384,15 @@ to the user first.
 
 **Platform choice:** YouTube Shorts first — owned channel, reliable API, less
 aggressive anti-automation policy than TikTok for initial validation.
+
+### Connector Registration
+
+Each social platform requires a dedicated connector entry in
+`nova_backend/src/config/connector_packages.json` before OAuth can be initiated.
+YouTube Shorts is the first platform; subsequent platforms (Instagram, TikTok, X)
+each require their own connector package entry following the same pattern. Write
+capabilities (cap 79, cap 82) must not be registered until the corresponding
+read capabilities (77, 78, 80) have passed P5 live sign-off.
 
 ### Social Platform Authentication
 
@@ -555,6 +571,8 @@ Every Nova action in this integration meets Nova's standard transparency require
   data chain, not just the output
 - **Memory visible:** When memory influences a draft, the specific patterns used are
   shown alongside the draft
+- **UTM visible:** Before publishing, Nova shows the exact UTM parameters that will
+  be appended to every link in the post — the user sees what will be tracked
 - **Boundary visible:** Nova states when it cannot act without approval (publish, reply)
 - **Log visible:** Every research fetch, draft, publish action, analytics pull, and
   memory update is in the ledger and reviewable from the Trust page
@@ -577,10 +595,12 @@ When both operators are active, they share data surfaces:
   viral post) can trigger a social content recommendation — the cross-cutting
   anomaly detection layer in the Shopify operator feeds into the social content queue
 
-The implementation sequence for the social operator should not begin Phase 3
-(publishing) until cap 65 (shopify_intelligence_report) has passed P5 live sign-off.
-Publishing social content without the ability to measure Shopify conversion would
-make revenue attribution dependent on GA4 alone.
+The implementation sequence for the social operator can proceed to Phase 3
+(publishing) independently of the Shopify operator. However, revenue attribution
+before cap 65 (shopify_intelligence_report) is live will depend on GA4 alone.
+If the Shopify operator is already at P5, prefer the Shopify analytics path — it
+reuses existing infrastructure and avoids the GA4 OAuth dependency. If neither is
+available yet, UTM links can be tracked manually until one of the two paths is live.
 
 ---
 
@@ -594,7 +614,7 @@ make revenue attribution dependent on GA4 alone.
 | 4 | Build template-based video rendering (FFmpeg + stock footage via Pexels API). | One video rendered per approved draft |
 | 5 | Integrate YouTube OAuth (governed connector entry). Add publish approval gate (cap 79). UTM parameters populated at publish. | One post published to YouTube Shorts with explicit approval |
 | 6 | Add Shopify analytics integration for UTM conversion attribution (reuses cap 65). Revenue per post visible in dashboard. | Revenue attribution visible without GA4 dependency |
-| 7 | Build comment fetching (cap 80) and few-shot classification. Create reply draft inbox (cap 81). | 10 reply drafts reviewed daily |
+| 7 | Build comment fetching and few-shot classification (cap 81 — social_reply_assist). Create reply draft inbox. Analytics engagement pull (cap 80) feeds effectiveness_score updates. | 10 reply drafts reviewed daily |
 | 8 | Close analytics loop: fetch performance data (cap 80), update `ContentMemoryEntry` effectiveness scores. | Memory scores update automatically after analytics stabilize |
 
 No step should be skipped to move faster. Phase 3 (publishing) should not begin
