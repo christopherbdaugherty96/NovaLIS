@@ -38,6 +38,33 @@
 
 ---
 
+## Progress Update (2026-04-21)
+
+### Done
+
+- `runtime_root()` now walks up to find `src/` by landmark instead of using `parents[1]` — all stores (memory, patterns, policies, connections, etc.) now resolve to the same directory regardless of call depth; `persistent_state.py` utility added
+- `start_nova.bat` simplified to delegate entirely to `start_daemon.py`; `start_daemon.py` now owns health-check logic
+- Startup contract test updated to validate `start_daemon.py` directly
+- Mailto test assertions corrected for RFC 6068 (@ literal in recipients)
+- Gitignore now covers PID files, model hash, and `nova.log`
+- Dashboard chat/news JS reworked for cleaner report widget rendering
+- Social content operator design doc created (`docs/future/NOVA_SOCIAL_CONTENT_OPERATOR_DESIGN_2026-04-21.md`) — caps 77–82, four-pass reviewed, Pydantic models validated, governance spine wired, YouTube quota noted (10k units/day = ~6 uploads/day free tier)
+- OpenClaw governance hardening plan finalized (`docs/future/NOVA_OPENCLAW_GOVERNANCE_HARDENING_2026-04-21.md`) — four-phase plan: EnvelopeFactory, approval gate, authority headers, run trace
+- `NovaLIS-Governance/STATUS.md` updated: Phase 8+9 marked ACTIVE, cap count corrected to 26, next-layer posture updated
+
+### Issues
+
+- `C:\Program Files\Nova\bootstrap.log` is not available from this machine, so the original VM failure point is still unknown
+- Cap 64 live signoff remains manual and still requires a configured mail client plus trust-page verification
+
+### Needs Second Pass
+
+- Re-run the Windows installer on the clean VM and capture the improved bootstrap/startup diagnostics
+- Retrieve and inspect `C:\Program Files\Nova\bootstrap.log` from the VM after the next installer run
+- Complete the cap 64 live checklist and signoff on a machine with Nova running and a configured mail client
+
+---
+
 ## Progress Update (2026-04-18)
 
 ### Done
@@ -100,11 +127,30 @@
 
 ---
 
+### OpenClaw Governance Hardening (Steps 1–4, zero behavioral impact)
+
+Design doc: `docs/future/NOVA_OPENCLAW_GOVERNANCE_HARDENING_2026-04-21.md`
+
+These steps have zero behavioral impact and can run in parallel with the cap 64 / installer work.
+Steps 5+ (approval endpoint, robust_executor.py changes) must NOT begin until steps 1–4 are merged and verified.
+Shopify Tier 4 (write caps) must NOT be activated until steps 1–7 are complete.
+
+- [x] Step 0: Design doc complete and reviewed
+- [x] Step 1a: `nova_backend/src/openclaw/models.py` — `OpenClawProposedAction`, `ActionType`, `ApprovalState`, `UserVisibleCategory`
+- [x] Step 1b: Hardening event types added to `nova_backend/src/ledger/event_types.py` — `RUN_ISSUED`, `DEPRECATED_DIRECT_RUN`, `ACTION_PROPOSED`, `ACTION_APPROVED`, `ACTION_DENIED`, `ACTION_PENDING`, `AUTHORITY_DIVERGENCE`
+- [x] Step 2: `nova_backend/src/openclaw/envelope_factory.py` — stateless constructor, authority snapshot, feature-flagged
+- [x] Step 3: `nova_backend/src/openclaw/envelope_store.py` — file-backed lifecycle store, TTL, status machine, single-use enforcement
+- [ ] Step 4: Run Permit card in `dashboard-control-center.js` (UI-only preview, no behavior change)
+- [ ] Steps 5–7: Approval endpoint + robust_executor.py intercept + suspension pattern (deferred until Steps 1–4 verified)
+
+---
+
 ## Notes
 
 - Do not start refactoring `brain_server.py` or `session_handler.py`. That is Tier 3 work.
 - Docker fallback is allowed only if the native installer path is blocked; it does not replace the Tier 1 goal.
 - Test every task completion on a clean Windows VM.
+- OpenClaw hardening Steps 5+ are blocked until Steps 1–4 show zero divergence in logs.
 
 ---
 
