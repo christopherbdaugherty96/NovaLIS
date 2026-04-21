@@ -3,6 +3,20 @@ Date: 2026-04-20
 Status: Future design — not yet implemented
 Source: Voice brainstorm session, three-pass review + final-pass improvement
 
+## Architecture in Three Layers
+
+Before the details: the full design resolves into three layers. Every section below belongs to one of them.
+
+| Layer | What it does | Capabilities |
+| --- | --- | --- |
+| **Intelligence** | Read, research, monitor, report | 65, 66, 72, 75, KPI brief |
+| **Decisions** | Recommend, simulate, refine goals | 67, 68, 73 |
+| **Operations** | Execute, publish, play back | 69, 70, 71, 74, 76 |
+
+Intelligence flows into Decisions. Decisions flow into Operations. Operations feed back into Intelligence through the Feedback Loop. Nova can be used at any layer independently — you do not have to activate Operations to benefit from Intelligence.
+
+---
+
 ## Purpose
 
 This document defines the full governed integration design for Nova operating as a Shopify storefront operator. It covers read-only intelligence, human-gated action execution, proactive anomaly detection, scenario simulation, social media marketing support, long-term goal refinement, and multi-platform expansion.
@@ -176,7 +190,18 @@ What it shows:
 - **Pending approvals** — count and summary of Tier 2 recommendations awaiting your decision
 - **Last social performance** — engagement summary for the most recent published content
 
-The Command Center is the recommended daily entry point for Nova's Shopify operator mode. You open it, scan the bottom line, and decide whether to drill into a specific signal or let Nova surface the highest-priority recommendation for your attention. It does not take any action — it is a governed status surface, nothing more.
+Each signal area carries a visible status state:
+
+| State | Meaning |
+| --- | --- |
+| **Healthy** | Within normal range, no action indicated |
+| **Watch** | Moving outside normal range but not yet at threshold |
+| **Action Needed** | Threshold crossed — Nova has surfaced a Tier 2 recommendation |
+| **Pending Approval** | A recommendation has been approved and is awaiting execution |
+
+The status model makes the brief decision-oriented rather than just data-oriented. Opening the Command Center answers one question first: is anything actually requiring my attention right now?
+
+The Command Center is the recommended daily entry point for Nova's Shopify operator mode. You open it, scan the status column, drill into anything marked Watch or above, and either approve the surfaced recommendation or dismiss it with a reason. It does not take any action — it is a governed status surface, nothing more.
 
 The brief can be delivered on a schedule (same scheduler infrastructure as existing reminder and briefing lanes) or on demand. All fetches are logged.
 
@@ -467,13 +492,20 @@ The feedback loop tracks whether Nova's recommendations are actually working. It
 
 Competitive intelligence is not a Shopify-connected capability — it uses Nova's existing governed web research lane (capabilities 16 and 48) to monitor publicly visible competitor signals. It does not touch Shopify Admin API and does not require additional OAuth.
 
-### What Nova monitors
-- Competitor product pricing on their public storefront pages
-- New product launches or catalog changes detected through storefront crawls and review platform signals
-- Trending product signals in the relevant category from public review and aggregator sources
-- Ad creative changes where visible through public ad libraries (Meta Ad Library, TikTok Creative Center)
-- Review theme analysis — what customers are saying about competitors at scale (sentiment, recurring complaints, top praise)
-- Platform-level pricing trends for the categories you operate in
+### Signal categories
+Competitive signals are split into five independently configurable categories. You enable only the ones that matter for your operation.
+
+**Pricing changes** — competitor product pricing on public storefront pages. Nova detects price cuts, price increases, and bundle/threshold changes. Surfaced as: changed from X to Y on [date], source.
+
+**New products** — catalog additions or launches detected through public storefront crawls and press/review signals. Surfaced as: new product detected in [category] on [date].
+
+**Review sentiment** — what customers say about competitors at scale. Recurring complaints, top praise themes, rating trends. Surfaced as: sentiment shift detected — [theme] appearing more frequently since [date].
+
+**Ad and creative changes** — changes in ad creative or copy visible through public ad libraries (Meta Ad Library, TikTok Creative Center). Surfaced as: new ad creative detected in [category], [date].
+
+**Promotions** — public discount events, seasonal sales, referral programs, and threshold-based offers. Surfaced as: promotion detected — [description], active since [date].
+
+Each category has its own monitoring frequency setting and can be enabled or disabled independently. Nova does not conflate signal types — a pricing change report does not include review sentiment unless you request the combined view.
 
 ### What Nova does not do
 - Nova does not access non-public competitor data — no login-required areas, no API scraping, no private channels
@@ -504,6 +536,18 @@ A playbook is a named, persisted, user-approved sequence of Tier 2 recommendatio
 
 ### What a playbook is
 A playbook captures a decision pattern you have already approved and executed successfully. Instead of Nova re-deriving the full recommendation set each time, you can invoke the playbook by name and Nova pre-loads the sequence of proposals for your review and approval.
+
+Each playbook surfaces the following metadata before you trigger it:
+
+| Field | What it shows |
+| --- | --- |
+| **Steps** | The ordered list of capabilities this playbook invokes, viewable before running |
+| **Estimated approvals** | How many per-step approval prompts to expect |
+| **Estimated time** | Approximate time to complete if all steps are approved (based on prior runs) |
+| **Last run** | Date, how many steps were approved vs skipped vs adjusted |
+| **Last outcome** | The bottom-line result of the most recent run |
+
+Playbook templates are fully editable. Editing a template triggers the same define-review-approve cycle as creating one — a change to a template is not silent.
 
 Example playbooks:
 - **New product launch** — check inventory readiness, draft 3 social posts in launch format, flag low-stock threshold, propose homepage feature slot
