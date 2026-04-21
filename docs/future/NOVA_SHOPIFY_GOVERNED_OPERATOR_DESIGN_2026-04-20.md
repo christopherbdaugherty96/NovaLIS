@@ -1,7 +1,7 @@
 # Nova Shopify Governed Operator Design
 Date: 2026-04-20
-Status: Future design — not yet implemented
-Source: Voice brainstorm session, three-pass review + final-pass improvement
+Status: Implementation started — connector interface stub complete; registry and executor work in progress
+Source: Voice brainstorm session — seven improvement passes
 
 ## Architecture in Three Layers
 
@@ -9,7 +9,7 @@ Before the details: the full design resolves into three layers. Every section be
 
 | Layer | What it does | Capabilities |
 | --- | --- | --- |
-| **Intelligence** | Read, research, monitor, report | 65, 66, 72, 75, KPI brief |
+| **Intelligence** | Read, research, monitor, report | 65, 66, 72, 75 (KPI brief is a composed view of 65+66+72) |
 | **Decisions** | Recommend, simulate, refine goals | 67, 68, 73 |
 | **Operations** | Execute, publish, play back | 69, 70, 71, 74, 76 |
 
@@ -112,9 +112,24 @@ The implementation sequence enforces this: Tier 4 execution does not pass P5 liv
 6. Connection state is surfaced in Nova's Trust and Settings pages alongside other connection states
 
 ### Scope management
-- Tier 1 (reporting) requires read-only Admin API scopes only
-- Tier 4 (execution) requires write scopes — these are only requested when Tier 4 is explicitly activated by the user, not at initial connection
-- Scope expansion must be re-authorized through Shopify OAuth — Nova cannot silently expand its own permissions
+Tier 1 (reporting) requires the following read-only Admin API scopes:
+- `read_orders` — order history, revenue, fulfillment, returns
+- `read_products` — product catalog, variants, inventory levels
+- `read_inventory` — inventory quantities across locations
+- `read_analytics` — Shopify analytics data (sessions, conversion, funnel)
+- `read_price_rules` — existing discount and promotion rules
+- `read_shipping` — shipping profile and rate configuration
+
+Tier 4 (execution) adds write scopes — only requested when Tier 4 is explicitly activated by the user:
+- `write_products` — product and variant updates
+- `write_inventory` — inventory quantity adjustments
+- `write_price_rules`, `write_discounts` — promotion and discount creation/modification
+- `write_shipping` — shipping rule changes
+
+Scope expansion must be re-authorized through Shopify OAuth — Nova cannot silently expand its own permissions. The user sees the scope list at each authorization step.
+
+### API version
+Nova pins to a specific Shopify Admin API version (e.g. `2025-04`) rather than using `latest` or `unstable`. The pinned version is updated intentionally, not automatically — an API version bump is a deliberate change that must be tested. The active version is surfaced in the connector's health check output so it is visible in Trust and Settings. When Shopify deprecates a version, Nova surfaces a visible upgrade prompt before the cutoff date — it does not silently fail when a deprecated version is removed.
 
 ### Token handling
 - Tokens are stored through the governed identity layer, never in plain config
@@ -172,6 +187,26 @@ Nova connects to the Shopify Admin API in read-only mode and generates structure
 - Order health: fulfillment rate, return rate, dispute signals
 - Market-aware reporting: if Shopify Markets is active on your store, reports can be scoped to a specific market or region — Nova uses `@inContext(country:, language:)` on market-sensitive queries and labels all outputs with the market context used
 
+### Reporting periods
+All Tier 1 report requests accept a `period` parameter scoped to one of four windows:
+- `today` — current calendar day
+- `last_7_days` — rolling 7-day window
+- `last_30_days` — rolling 30-day window
+- `last_90_days` — rolling 90-day window
+
+Default is `last_7_days`. Period is shown on every report output so you know the window the data covers.
+
+### Connector data contract
+The Tier 1 connector interface produces a `ShopifyStoreSnapshot` — the primary data structure for capability 65 and the KPI Command Center brief. It contains:
+- `shop_domain` and `shop_name` — store identity
+- `orders` — `ShopifyOrderSummary`: order count, total revenue, currency, average order value, period label, fetch timestamp
+- `products` — `ShopifyProductSummary`: total, active, draft, out-of-stock count, low-stock count, fetch timestamp
+- `market_context` — populated when `@inContext` was applied to the query (e.g. `"US/en"`)
+- `fetched_at` — ISO 8601 UTC timestamp for the full snapshot
+- `error` — non-empty if the fetch partially failed; Nova surfaces this rather than presenting incomplete data as complete
+
+The interface lives in `src/connectors/shopify_connector.py`. This stub is the implementation contract — executors and the API layer build against it.
+
 ### Output format
 - Structured report with a visible bottom line first
 - Supporting data and breakdown visible on request
@@ -203,7 +238,9 @@ The status model makes the brief decision-oriented rather than just data-oriente
 
 The Command Center is the recommended daily entry point for Nova's Shopify operator mode. You open it, scan the status column, drill into anything marked Watch or above, and either approve the surfaced recommendation or dismiss it with a reason. It does not take any action — it is a governed status surface, nothing more.
 
-The brief can be delivered on a schedule (same scheduler infrastructure as existing reminder and briefing lanes) or on demand. All fetches are logged.
+The brief lives in the Agent page as a dedicated Shopify operator card — the same surface used for OpenClaw home-agent briefings. This keeps all governed operator outputs in one place. The brief can be delivered on a schedule (same scheduler infrastructure as existing reminder and briefing lanes) or on demand. All fetches are logged.
+
+The connection health state shown in the brief (connected / disconnected / token expired / scope mismatch) comes from the connector's `health_check()` method, which returns `ok`, `label`, and `shop` at minimum. A stale or revoked token surfaces as a visible error on the brief card, not a silent empty report.
 
 ### Third-party app data boundary
 Shopify's Admin API surfaces only data that lives inside Shopify's platform. Data held in third-party apps — email lists in Klaviyo, subscription data in Recharge, loyalty points in LoyaltyLion, review data in Yotpo — is not accessible through the Shopify Admin API. Nova's Tier 1 reporting covers Shopify-native data only. If you want Nova to surface third-party app data, those platforms need their own governed connector entries and their own OAuth authorizations. Nova must never present a reporting gap as if the data does not exist — if a signal is outside the Shopify Admin API surface, Nova labels that boundary explicitly.
@@ -310,6 +347,9 @@ Before executing, Nova re-checks that the conditions at approval time still hold
 After a Tier 4 execution completes, Nova retains a governed record of the exact change made (the before state and the after state where the API surfaces this). If you want to reverse an executed action, Nova can propose a reversal as a new Tier 2 recommendation — the same approval flow applies in reverse. Nova does not undo autonomously.
 
 For actions where Shopify does not expose a direct API reversal (e.g., a sent notification), Nova surfaces that constraint explicitly and does not suggest a rollback path it cannot deliver.
+
+### Shopify Flow boundary
+Shopify has a native automation platform called Shopify Flow. Nova does not interact with, trigger, or modify Shopify Flow workflows. If a Tier 4 execution action would overlap with an active Shopify Flow trigger for the same resource (e.g., both Nova and a Flow rule would respond to an inventory threshold event), Nova must surface that potential conflict at recommendation time and require explicit confirmation before proceeding. Nova does not suppress or disable Shopify Flow behaviors — it operates alongside them and makes any overlap visible to you.
 
 ### Authority boundary
 - Nova cannot execute anything not explicitly approved in the current session or a persisted pending approval confirmed in the current session
@@ -601,9 +641,7 @@ Every Nova action in this integration must meet Nova's standard transparency req
 
 This integration will require new governed capability entries in Nova's capability registry.
 
-Planned new capabilities (to be formally registered and locked through the existing P1-P6 verification process).
-
-Numeric IDs will be assigned sequentially at registration time, starting from the next available ID after the current highest (64). The table uses placeholder IDs for planning purposes.
+Planned new capabilities — IDs 65–76 are assigned sequentially from the current highest registered capability (64). IDs are now fixed; the connector stub for capability 65 is the first concrete artifact. Each capability must pass the full P1-P6 verification process before being marked live.
 
 | Planned ID | Capability Name | Tier | Write | Notes |
 | --- | --- | --- | --- | --- |
@@ -624,9 +662,6 @@ Each capability follows the standard P1-P6 verification path before being marked
 - P1 Unit, P2 Routing, P3 Integration, P4 API, P5 Live sign-off, P6 Lock
 
 Write capabilities (shopify_execute, shopify_social_publish, shopify_email_campaign) require explicit user activation before their scopes are requested from Shopify or platform OAuth. These capabilities must not be registered until the read-only capabilities they depend on (65, 66, 67) have passed P5 live sign-off.
-
-### Scope boundary: Shopify Flow
-Shopify has a native automation platform called Shopify Flow. Nova does not interact with, trigger, or modify Shopify Flow workflows. Shopify Flow operates on Shopify's side and is outside Nova's execution scope in this design. If a Tier 4 execution action would overlap with an active Shopify Flow trigger for the same resource (e.g., both Nova and a Flow rule would respond to an inventory threshold), Nova must surface that potential conflict at recommendation time and require explicit confirmation that the intended action is non-conflicting. Nova does not suppress or disable Shopify Flow behaviors.
 
 ### Single-store scope
 This design assumes Nova is connected to a single Shopify store. Multi-store operation — where a user operates multiple independent Shopify stores — is not addressed in this design and would require a materially different connector architecture: separate OAuth tokens and separate connector instances per store, with explicit per-store context in every API call and every report. If multi-store support is required in the future, it must be designed as a separate extension rather than retrofitted into the single-store model described here.
@@ -714,9 +749,9 @@ You should become a better Shopify operator because Nova is surfacing better dat
 
 When this is built, the right order is:
 
-1. **Connector package manifest** — define the Shopify connector entry in `src/config/connector_packages.json`: connector ID, display name, required scopes per tier, API surfaces, rate limit model, webhook support flag. This must exist before OAuth can be implemented because the manifest defines what scopes to request.
-2. **Connector package registration** — register the manifest in `src/connectors/package_registry.py` so Nova's connector infrastructure recognizes it.
-3. **Shopify OAuth connection** — Admin API read-only scopes only, token storage through `src/identity/`, connection state surfaced in Trust and Settings pages alongside existing connectors.
+1. **Connector interface stub** ✓ — `src/connectors/shopify_connector.py` defines the `ShopifyConnector` abstract base, data contracts (`ShopifyStoreSnapshot`, `ShopifyOrderSummary`, `ShopifyProductSummary`), error type, and singleton registry. This is the implementation contract that executors and the API layer build against.
+2. **Capability 65 registration** — add `shopify_intelligence_report` to `src/config/registry.json` (status: design) and `src/config/capability_locks.json` (all phases pending). Also add the connector entry to `src/config/connector_packages.json` pointing to the stub.
+3. **Shopify OAuth connection** — Admin API read-only scopes only (see Scope management for the specific scope list), token storage through `src/identity/`, connection state surfaced in Trust and Settings pages alongside existing connectors.
 4. **Development store validation** — connect to a Shopify development store and confirm the read-only API surface works end-to-end before any further development.
 5. **Reporting surface** — on-demand sales, product, traffic, inventory, and market-aware reports via GraphQL Admin API; capability 65 registered and P1-P4 verified.
 6. **Anomaly detection** — configurable threshold monitoring, alert surface in Agent page; capability 66 registered. Polling model first, webhooks as a later enhancement.
