@@ -1,7 +1,7 @@
 # Nova Shopify Governed Operator Design
 Date: 2026-04-20
 Status: Future design — not yet implemented
-Source: Voice brainstorm session, three-pass review + third-pass improvement
+Source: Voice brainstorm session, three-pass review + final-pass improvement
 
 ## Purpose
 
@@ -131,9 +131,10 @@ Every report surface shows when the data was last fetched. Nova does not present
 
 ## Rate Limiting
 
-Shopify Admin API enforces rate limits (REST: leaky bucket; GraphQL: cost-based). Nova must respect these.
+Shopify Admin API enforces rate limits (GraphQL: cost-based query budget; REST: leaky bucket — legacy only). Nova must respect these.
 
 ### How Nova handles rate limits
+- GraphQL calls track their cost against the query budget before sending — expensive queries are split rather than sent and rejected
 - API calls are paced through the governed network path — not fired in parallel without cost accounting
 - If a rate limit is hit, Nova surfaces it as a visible operational notice, not a silent failure
 - Nova does not retry rate-limited calls automatically — it reports the limit and waits for your signal
@@ -149,7 +150,7 @@ Nova connects to the Shopify Admin API in read-only mode and generates structure
 ### Capabilities
 - Sales reports: revenue, units sold, order volume, average order value over configurable time windows
 - Top products: best-sellers by revenue, by units, by margin where available
-- Traffic analytics: sessions, conversion rate, bounce signals, drop-off points in the funnel
+- Traffic analytics: sessions, conversion rate, bounce signals, drop-off points in the funnel — sourced from Shopify's native analytics; note that Shopify's traffic analytics do not capture UTM-level attribution with the same fidelity as GA4 or Meta Pixel — if you use those tools, they are the more accurate source for paid-channel attribution
 - Inventory signals: low-stock alerts, out-of-stock detection, velocity-based restock suggestions
 - Customer behavior: repeat purchase rates, new vs returning split, cohort snapshots
 - Order health: fulfillment rate, return rate, dispute signals
@@ -160,6 +161,9 @@ Nova connects to the Shopify Admin API in read-only mode and generates structure
 - Supporting data and breakdown visible on request
 - Source label showing which Shopify API surface and endpoint produced each data point
 - Fetch timestamp on every report — you always know how fresh the data is
+
+### Third-party app data boundary
+Shopify's Admin API surfaces only data that lives inside Shopify's platform. Data held in third-party apps — email lists in Klaviyo, subscription data in Recharge, loyalty points in LoyaltyLion, review data in Yotpo — is not accessible through the Shopify Admin API. Nova's Tier 1 reporting covers Shopify-native data only. If you want Nova to surface third-party app data, those platforms need their own governed connector entries and their own OAuth authorizations. Nova must never present a reporting gap as if the data does not exist — if a signal is outside the Shopify Admin API surface, Nova labels that boundary explicitly.
 
 ### Authority boundary
 - Read only — no write, no mutation, no cart or order modification
@@ -187,11 +191,16 @@ Nova proposes specific actions based on its intelligence read. It does not execu
 4. If approved, the recommendation enters a pending execution state in Tier 4
 5. If rejected, the rejection is logged with your reason if you provide one
 
+### What "adjust" means
+Adjusting a recommendation means changing one or more of its parameters before approving it — for example, changing a proposed 20% discount to 15%, or narrowing the scope from sitewide to a single collection. Nova surfaces the adjustable parameters for the specific recommendation type and accepts your change. An adjusted recommendation is treated as a new proposal: Nova re-presents the full adjusted version and requires a fresh explicit approval before it enters a pending execution state. Adjusted recommendations are logged with both the original Nova proposal and your modified version so the record is clear.
+
+Nova defines the adjustable parameters for each recommendation type at implementation time — they are not open-ended. Parameters that Nova cannot safely validate the impact of are not exposed as adjustable inputs without a Tier 3 simulation.
+
 ### Approval expiry
 An approved recommendation does not remain valid forever. If the underlying conditions change materially before execution (e.g., the product was already restocked by another team member, or the promotion window passed), Nova must re-check conditions before executing and surface any mismatch for your review. Nova does not execute a stale approval against changed conditions.
 
 ### Pending approval persistence
-Approved recommendations that have not yet been executed are persisted across session boundaries — they survive Nova restarting or the session ending. On next session start, Nova surfaces any pending approvals for your review before proceeding. You can confirm, adjust, or rescind them. Nova does not silently execute a pending approval that was made in a prior session without surfacing it first in the new session.
+Approved recommendations that have not yet been executed are persisted across session boundaries — they survive Nova restarting or the session ending. Pending approvals are stored in Nova's governed memory layer (a dedicated `shopify_pending_approvals` memory domain, not general memory) so they are visible, inspectable, and manageable from the Memory page. On next session start, Nova surfaces any pending approvals for your review before proceeding. You can confirm, adjust, or rescind them. Nova does not silently execute a pending approval that was made in a prior session without surfacing it first in the new session.
 
 ### Authority boundary
 - No action is taken without your explicit approval
@@ -281,6 +290,17 @@ Nova supports your social and marketing operation as a governed content and camp
 
 Additional platforms follow the same governed connector model as they are added.
 
+### Social platform authentication model
+Each social platform is a separate OAuth connection with its own governed connector entry. None of them share the Shopify OAuth token. Platform-specific requirements:
+
+- **Instagram / Facebook**: Requires a Meta Business account and a Facebook Page linked to an Instagram Professional account. OAuth is through Meta's Graph API. Write access (publishing) requires the `pages_manage_posts` and `instagram_content_publish` permissions — these are not granted at initial connection and must be explicitly activated when Tier 5 publishing is enabled. Meta's API review process may require Nova's publishing surface to be submitted for app review before it can post on behalf of your account.
+- **TikTok**: Requires a TikTok for Business account. OAuth is through the TikTok Marketing API. The publishing API is available for verified business accounts but has tighter rate limits than Meta. TikTok's API terms restrict certain content categories — these constraints must be surfaced to you in the draft review, not filtered silently.
+- **X (Twitter)**: The write-capable X API (posting) is currently behind X's paid Basic tier or higher. This is a cost that the implementation must surface clearly — Nova's X publishing capability cannot be enabled without a paid X API subscription. Read-only access (engagement metrics) is available on the free tier.
+- **Pinterest**: Requires a Pinterest Business account. OAuth is through the Pinterest API v5. Organic pin publishing is available on the business tier.
+- **LinkedIn**: Requires a LinkedIn Company Page. OAuth is through LinkedIn's Marketing API. Organic posting requires the `w_organization_social` scope.
+
+Every social connection state (connected, disconnected, scope mismatch, API tier insufficient) is surfaced in Nova's Trust and Settings pages alongside the Shopify connection state. None of these platforms can be used for publishing without explicit per-platform activation by you.
+
 ### Brand voice configuration
 Before Nova can draft any content, brand voice must be configured. This is not assumed.
 
@@ -334,7 +354,7 @@ Social posts require imagery. Nova's approach:
 - Every publish action is logged: content, platform, time, approval reference
 
 ### Email marketing extension
-Email marketing (Klaviyo, Mailchimp, Shopify Email) is a planned Tier 5 extension, not part of the initial social media scope. When added, it follows the same model: Nova drafts campaigns tied to Shopify data signals, you approve content and send timing, Nova executes the send only on explicit per-send approval. Email sends are irreversible once dispatched — the approval gate for email is therefore treated as high-consequence and will require an explicit confirmation step beyond the standard approval flow.
+Email marketing (Klaviyo, Mailchimp, Shopify Email) is a planned Tier 5 extension (capability 74 — shopify_email_campaign), not part of the initial social media scope. When added, it follows the same model: Nova drafts campaigns tied to Shopify data signals, you approve content and send timing, Nova executes the send only on explicit per-send approval. Email sends are irreversible once dispatched — the approval gate for email is therefore treated as high-consequence and will require an explicit confirmation step beyond the standard approval flow. Klaviyo and Mailchimp data (subscriber lists, campaign history, open rates) are not accessible through the Shopify Admin API — they require their own governed connector entries and separate API authorizations.
 
 ### Authority boundary
 - Nova does not post, comment, reply, or boost without explicit per-action approval
@@ -456,11 +476,18 @@ Numeric IDs will be assigned sequentially at registration time, starting from th
 | 71 | shopify_social_publish | 5 | Yes | Governed posting, per-post approval |
 | 72 | shopify_feedback_loop | Cross | No | Outcome tracking and recommendation quality rating |
 | 73 | shopify_goal_refinement | 6 | No | Strategic check-in surface |
+| 74 | shopify_email_campaign | 5 ext | Yes | Governed email draft and send (Klaviyo/Shopify Email) — high-consequence gate |
 
 Each capability follows the standard P1-P6 verification path before being marked live:
 - P1 Unit, P2 Routing, P3 Integration, P4 API, P5 Live sign-off, P6 Lock
 
-Write capabilities (shopify_execute, shopify_social_publish) require explicit user activation before their scopes are requested from Shopify OAuth. These capabilities must not be registered until the read-only capabilities they depend on (65, 66, 67) have passed P5 live sign-off.
+Write capabilities (shopify_execute, shopify_social_publish, shopify_email_campaign) require explicit user activation before their scopes are requested from Shopify or platform OAuth. These capabilities must not be registered until the read-only capabilities they depend on (65, 66, 67) have passed P5 live sign-off.
+
+### Scope boundary: Shopify Flow
+Shopify has a native automation platform called Shopify Flow. Nova does not interact with, trigger, or modify Shopify Flow workflows. Shopify Flow operates on Shopify's side and is outside Nova's execution scope in this design. If a Tier 4 execution action would overlap with an active Shopify Flow trigger for the same resource (e.g., both Nova and a Flow rule would respond to an inventory threshold), Nova must surface that potential conflict at recommendation time and require explicit confirmation that the intended action is non-conflicting. Nova does not suppress or disable Shopify Flow behaviors.
+
+### Single-store scope
+This design assumes Nova is connected to a single Shopify store. Multi-store operation — where a user operates multiple independent Shopify stores — is not addressed in this design and would require a materially different connector architecture: separate OAuth tokens and separate connector instances per store, with explicit per-store context in every API call and every report. If multi-store support is required in the future, it must be designed as a separate extension rather than retrofitted into the single-store model described here.
 
 ---
 
