@@ -14,6 +14,7 @@ This module can be imported freely even when the flag is off.
 """
 from __future__ import annotations
 
+import json
 import os
 from dataclasses import asdict, dataclass, field
 from datetime import datetime, timezone
@@ -25,7 +26,8 @@ from src.utils.persistent_state import runtime_path, shared_path_lock, write_jso
 
 
 _STORE_FILENAME = "openclaw_envelopes.json"
-_MAX_COMPLETED_RECORDS = 200  # keep rolling window; prevent unbounded growth
+_MAX_COMPLETED_RECORDS = 200   # rolling window for terminal records
+_MAX_ACTIVE_RECORDS = 50       # cap for non-terminal records; prevents unbounded growth on pathological bursts
 
 
 def _utc_now() -> datetime:
@@ -118,11 +120,20 @@ class EnvelopeStore:
 
     Usage:
         store = EnvelopeStore()
-        store.register(issued_envelope)         # after EnvelopeFactory.issue()
-        store.transition(id, "running")         # before agent_runner starts
-        store.mark_used(id)                     # single-use enforcement
-        record = store.get(id)                  # None if expired or not found
-        store.transition(id, "completed")       # after run finishes
+        issued = factory.issue(template=t, channel="manual", triggered_by="dashboard")
+        store.register(                         # after EnvelopeFactory.issue()
+            envelope_id=issued.envelope_id,
+            envelope_data=issued.envelope.to_dict(),
+            issuing_channel=issued.issuing_channel,
+            settings_hash=issued.settings_hash,
+            feature_flags_snapshot=issued.feature_flags_snapshot,
+            issued_at=issued.issued_at,
+            expires_at=issued.expires_at,
+        )
+        store.transition(str(issued.envelope_id), "running")   # before agent_runner starts
+        store.mark_used(str(issued.envelope_id))               # single-use enforcement
+        record = store.get(str(issued.envelope_id))            # None if expired or not found
+        store.transition(str(issued.envelope_id), "completed") # after run finishes
     """
 
     def __init__(self, store_path: Optional[Path] = None) -> None:
@@ -177,6 +188,7 @@ class EnvelopeStore:
             record = self._hydrate(raw)
             if record.is_expired() and not EnvelopeStatus.is_terminal(record.status):
                 record = self._expire_in_place(state, eid, record)
+                self._save(state)
                 raise EnvelopeStoreError(
                     f"Envelope {eid} has expired (was {record.status}). Cannot transition to {to_status}."
                 )
@@ -269,16 +281,14 @@ class EnvelopeStore:
 
     def _load(self) -> dict[str, Any]:
         try:
-            return dict(
-                __import__("json").loads(self._path.read_text(encoding="utf-8"))
-            )
+            return dict(json.loads(self._path.read_text(encoding="utf-8")))
         except FileNotFoundError:
             return {}
         except Exception:
             return {}
 
     def _save(self, state: dict[str, Any]) -> None:
-        # Prune oldest terminal records if we exceed the cap
+        # Prune oldest terminal records if we exceed the rolling window cap
         terminal = [
             (eid, raw)
             for eid, raw in state.items()
@@ -288,6 +298,19 @@ class EnvelopeStore:
             terminal.sort(key=lambda item: str(item[1].get("updated_at") or ""))
             for eid, _ in terminal[: len(terminal) - _MAX_COMPLETED_RECORDS]:
                 state.pop(eid, None)
+
+        # Prune oldest non-terminal records on pathological bursts (e.g., bug creating
+        # many envelopes that never complete). Preserves newest by updated_at.
+        active = [
+            (eid, raw)
+            for eid, raw in state.items()
+            if not EnvelopeStatus.is_terminal(raw.get("status", ""))
+        ]
+        if len(active) > _MAX_ACTIVE_RECORDS:
+            active.sort(key=lambda item: str(item[1].get("updated_at") or ""))
+            for eid, _ in active[: len(active) - _MAX_ACTIVE_RECORDS]:
+                state.pop(eid, None)
+
         write_json_atomic(self._path, state)
 
     def _expire_in_place(

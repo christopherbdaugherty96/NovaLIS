@@ -20,6 +20,7 @@ from typing import Any
 from uuid import UUID, uuid4
 
 from src.openclaw.task_envelope import TaskEnvelope
+from src.openclaw.user_tool_permissions import UserToolPermissions, default_profile
 
 
 _FEATURE_FLAG_ENV = "NOVA_FEATURE_ENVELOPE_FACTORY"
@@ -89,8 +90,15 @@ class EnvelopeFactory:
         self,
         *,
         runtime_settings: Any = None,
+        tool_permissions: UserToolPermissions | None = None,
     ) -> None:
         self._runtime_settings = runtime_settings
+        # tool_permissions is a policy input used to narrow allowed_tools before envelope
+        # construction. If None, the template's own tools_allowed list is used unfiltered.
+        # Note: when runtime_settings is None, _check_home_agent_enabled() is skipped
+        # (no gate applied). This is intentional for tests but production callers must
+        # always inject runtime_settings.
+        self._tool_permissions = tool_permissions or UserToolPermissions()
 
     def issue(
         self,
@@ -119,6 +127,10 @@ class EnvelopeFactory:
         channel = self._validate_channel(channel)
         triggered_by = self._validate_trigger(channel, triggered_by)
         self._validate_template(template)
+
+        # Apply user profile narrowing: filter allowed_tools to those the profile permits.
+        # This is a policy input — it cannot expand the template's tool set, only restrict it.
+        template = self._apply_profile_narrowing(template)
 
         envelope = TaskEnvelope.from_template(template, triggered_by=triggered_by)
         envelope_id = uuid4()
@@ -193,6 +205,23 @@ class EnvelopeFactory:
             raise EnvelopeFactoryError("Template is missing required field 'id'.")
         if not title:
             raise EnvelopeFactoryError(f"Template '{template_id}' is missing required field 'title'.")
+
+    def _apply_profile_narrowing(self, template: dict[str, Any]) -> dict[str, Any]:
+        """Return a copy of the template with tools_allowed filtered through the user profile.
+
+        This is the only place user_tool_permissions is called. It is a policy input
+        at envelope construction time — not a runtime authority during execution.
+        Cannot add tools not already in the template's tools_allowed list.
+        """
+        profile = default_profile("default")
+        self._tool_permissions.load_profile(profile)
+        original_tools = list(template.get("tools_allowed") or [])
+        narrowed = self._tool_permissions.allowed_tools("default", original_tools)
+        if narrowed == original_tools:
+            return template
+        narrowed_template = dict(template)
+        narrowed_template["tools_allowed"] = narrowed
+        return narrowed_template
 
     def _settings_hash(self) -> str:
         if self._runtime_settings is None:
