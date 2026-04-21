@@ -1,11 +1,14 @@
 """
-Authority Rank: 2 — Approval Gate data models
-Role: Defines the structured contract for OpenClaw proposed actions and their
-      approval lifecycle. Used by EnvelopeFactory, EnvelopeStore, robust_executor.py,
-      and the /openclaw/approve-action endpoint.
-Superseded by: GovernorMediator + issued Envelope (Rank 1).
+Governance data models for OpenClaw proposed actions and approval lifecycle.
 
-These models are data-only — no execution logic lives here.
+These are data-only definitions — no execution authority, no runtime logic.
+They are consumed by:
+  - EnvelopeFactory (Rank 1): attaches ActionType to envelope metadata
+  - robust_executor.py (Step 8): creates OpenClawProposedAction before firing
+    any DURABLE_MUTATION or EXTERNAL_WRITE tool
+  - /openclaw/approve-action endpoint (Step 7): receives and decides on proposals
+  - EnvelopeStore: stores proposed actions in run_metadata for audit
+
 Feature flag: NOVA_FEATURE_ENVELOPE_FACTORY (default false) gates behavioral use;
 these classes can be imported freely even when the flag is off.
 """

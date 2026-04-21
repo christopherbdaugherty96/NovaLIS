@@ -153,6 +153,16 @@ class TestEnvelopeStoreTTL:
         raw = json.loads((tmp_path / "envelopes.json").read_text())
         assert raw[eid]["status"] == EnvelopeStatus.EXPIRED
 
+    def test_transition_on_expired_saves_expiry_to_disk(self, tmp_path):
+        """Regression: transition() must persist EXPIRED status before raising."""
+        store = _make_store(tmp_path)
+        eid = _register(store, ttl_seconds=-1)
+        with pytest.raises(EnvelopeStoreError):
+            store.transition(eid, EnvelopeStatus.RUNNING)
+        raw = json.loads((tmp_path / "envelopes.json").read_text())
+        assert raw[eid]["status"] == EnvelopeStatus.EXPIRED
+        assert raw[eid]["invalidated_reason"] == "ttl_expired"
+
     def test_awaiting_approval_does_not_expire(self, tmp_path):
         store = _make_store(tmp_path)
         eid = _register(store, ttl_seconds=300)
