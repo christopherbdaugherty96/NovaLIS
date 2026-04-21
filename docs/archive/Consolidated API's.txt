@@ -1,0 +1,285 @@
+# NovaLIS – Consolidated API & Integration Registry
+
+Archive document. Originally consolidated from *Strategic API Integration.txt* and
+*API Roadmap.txt* (neither file is in the repository — this document is the surviving
+output). Last substantively corrected: 2026-04-21.
+
+The active connector registry is `nova_backend/src/config/connector_packages.json`.
+The Shopify and social platform integrations designed in 2026-04 are documented in
+`docs/future/NOVA_SHOPIFY_GOVERNED_OPERATOR_DESIGN_2026-04-20.md` and are not yet
+registered in the connector package registry.
+
+Runtime status labels used below:
+  ACTIVE   — implemented and live in the current runtime
+  STUB     — interface defined, not yet connected to a real provider
+  PLANNED  — documented target, not yet implemented
+  ARCHIVE  — listed here for reference; not a current implementation target
+
+---
+
+## Weather & Environment
+
+- **Open-Meteo** – Free global weather API, no key required. Current conditions and
+  forecasts. PLANNED (likely first-choice for Tier 1 weather read given no auth
+  requirement).
+- **WeatherAPI** – Free tier: current weather, forecast, astronomy, air quality.
+  PLANNED — alternative if richer forecast detail is needed.
+- **QWeather (HeWeather)** – Free global weather data with API key. ARCHIVE — less
+  commonly used than Open-Meteo for a free-first integration.
+- **Storm Glass** – Marine and coastal weather data. PLANNED — niche use case,
+  relevant only if location-specific maritime data is needed.
+- **OpenUV** – Free UV index and related environmental data. PLANNED.
+- **Pirate Weather** – Free, privacy-focused Dark Sky alternative. PLANNED.
+
+Note: The active weather skill (`nova_backend/src/skills/weather.py`) is wired to
+a specific provider at runtime. Confirm the active provider in that file before
+treating any entry above as live.
+
+---
+
+## News & Structured Content
+
+- **RSS/Atom Feeds** – ACTIVE. The active news connector (`connector: rss_news`,
+  capabilities 49, 50, 56) uses configured RSS/Atom feed aggregation, not a
+  third-party news API. This is the live read path.
+- **NewsData.io** – Global news headlines with filtering, ~200 requests/day free.
+  PLANNED — API-based alternative or complement to RSS if broader source coverage
+  is needed.
+- **Currents API** – News headlines, ~600 free requests/day. PLANNED — secondary
+  option for multi-source verification layer.
+- **Guardian API** – Unlimited free access to The Guardian content. PLANNED.
+- **New York Times API** – Free article access (registration required). PLANNED.
+- **Wikipedia API** – Unlimited free, structured encyclopedia content. PLANNED —
+  high value for factual grounding in research outputs.
+- **OpenAlex** – Free scholarly metadata for academic and research content. PLANNED.
+
+---
+
+## Finance & Market Data
+
+- **CoinGecko API** – Free cryptocurrency prices and market data; many endpoints
+  require no authentication. PLANNED.
+- **ExchangeRate-API / Open Exchange Rates** – Currency conversion, free tier.
+  PLANNED.
+- **Finnhub.io** – Real-time stock market data and indicators, free tier. PLANNED.
+- **Alpha Vantage** – Stock, FX, and crypto data (5 calls/min free). ARCHIVE —
+  superseded as a first-choice option by Finnhub for free-tier coverage; still
+  viable as a fallback.
+
+Note: Financial data is read-only intelligence. Financial execution (purchasing,
+trading, order placement) is permanently excluded — see Excluded section.
+
+---
+
+## Notifications & Messaging
+
+- **Pushover** – Push notifications, paid after trial (one-time purchase per
+  platform). PLANNED — governed notification delivery.
+- **ntfy.sh** – Simple, free push notifications via HTTP webhooks. PLANNED —
+  preferred over Pushover for a fully free path; self-hostable.
+
+---
+
+## Calendar & Email
+
+- **ICS Calendar Snapshot** – ACTIVE. Local .ics file-based calendar connector
+  (`connector: ics_calendar`, capability 57). Read-only snapshot; no live sync.
+- **CalDAV** – Open calendar standard (Nextcloud, Fastmail, etc.). PLANNED —
+  live sync alternative to the static ICS snapshot.
+- **Google Calendar API** – Free, OAuth2. PLANNED — governed read or
+  write-with-approval path.
+- **Microsoft Graph Calendar** – Outlook/Office 365 scheduling. PLANNED.
+- **Gmail API / IMAP** – Email read path. STUB — `src/connectors/email_connector.py`
+  defines the interface contract but is not yet connected to a real provider.
+  Intended as user-invoked read-only summaries, never autonomous monitoring.
+
+---
+
+## Cloud Storage & File Management
+
+- **Google Drive API** – 15 GB free, governed file operations (read/append; delete
+  requires explicit approval). PLANNED.
+- **Dropbox API** – Basic free tier, governed file operations with reversibility
+  check before destructive actions. PLANNED.
+
+---
+
+## Search & Fact Checking
+
+- **Web search** – ACTIVE. Capabilities 16 and 48 provide Nova's live governed
+  web search path. The specific search provider is configured at runtime.
+- **DuckDuckGo Instant Answer API** – Free, lightweight structured quick answers.
+  PLANNED — useful for entity lookups, not full-text search. Note: DuckDuckGo has
+  de-emphasized this API over time; confirm availability before building against it.
+- **Wolfram Alpha** – Computational knowledge and structured answers (limited free
+  tier, paid for volume). PLANNED — high value for numerical and scientific queries.
+
+---
+
+## AI / NLP & Reasoning
+
+- **Claude API (Anthropic)** – ACTIVE. Nova's primary external reasoning lane
+  (capability 62) uses the governed AI provider path. Pay-per-token; no free tier
+  for API access.
+- **OpenAI API** – ACTIVE (narrow). A governed optional metered OpenAI lane exists
+  for the OpenClaw task-report fallback path when the local summarizer is
+  unavailable. Pay-per-token; no free tier for API access.
+- **DeepSeek API** – Multi-perspective reasoning, no autonomy. ARCHIVE — note:
+  DeepSeek is a Chinese-hosted service. Data sovereignty and privacy implications
+  must be formally evaluated before use in any production path that passes user or
+  store data. Not currently integrated.
+- **Hugging Face Inference API** – Free inference on community models (rate-limited).
+  PLANNED — useful for specialized NLP tasks where a community model is appropriate.
+- **Jina AI** – Web content extraction and document processing (Jina Reader API:
+  r.jina.ai). PLANNED — useful for governed web content extraction as a complement
+  to web search. The original document-processing product line has evolved
+  significantly; evaluate the current API surface before building against it.
+- **AssemblyAI** – Cloud-based audio transcription and analysis, free tier.
+  PLANNED — cloud complement to local STT (Vosk). Evaluate against local-first
+  preference; only appropriate where local STT quality is insufficient.
+
+---
+
+## Utility & Enrichment
+
+- **AbstractAPI Utilities** – Geolocation, email validation, phone lookup, etc.
+  (free tier per category). PLANNED — useful for data enrichment in governed flows.
+- **REST Countries API** – Country info (population, codes, currencies, flags),
+  no authentication required. PLANNED — lightweight reference data.
+
+Note: "Free Public APIs Directory" was previously listed here. Removed — it is a
+website reference, not an API, and does not belong in an integration registry.
+
+---
+
+## Commerce & Social Platforms (2026-04 design)
+
+These are not yet registered in the connector package registry. Full design is in
+`docs/future/NOVA_SHOPIFY_GOVERNED_OPERATOR_DESIGN_2026-04-20.md`.
+
+- **Shopify Admin API (GraphQL)** – STUB. `src/connectors/shopify_connector.py`
+  defines the interface contract. Capabilities 65–73 designed. OAuth read-only
+  scopes first; write scopes only on explicit Tier 4 activation.
+- **Meta Graph API (Instagram/Facebook)** – PLANNED. Requires Meta Business account,
+  Facebook Page linked to Instagram Professional account. Publishing requires app
+  review by Meta before it can post on your behalf.
+- **TikTok Marketing API** – PLANNED. Requires TikTok for Business account.
+  Publishing API available for verified business accounts.
+- **X (Twitter) API v2** – PLANNED. Write access (posting) requires X paid Basic
+  tier or higher — surface this cost to the user before enabling publishing.
+- **Pinterest API v5** – PLANNED. Requires Pinterest Business account.
+- **LinkedIn Marketing API** – PLANNED. Requires LinkedIn Company Page. Organic
+  posting requires `w_organization_social` scope.
+- **Klaviyo / Shopify Email** – PLANNED. Capability 74 (shopify_email_campaign).
+  Email sends are irreversible — high-consequence approval gate required.
+- **Walmart API / Amazon Product Advertising API** – ARCHIVE. Listed in original
+  registry for product lookup. Not a current implementation target; Amazon's API
+  requires an active Associates account.
+
+---
+
+## Home Automation (Local APIs)
+
+All entries in this section are PLANNED. None are active in the current runtime.
+No home_automation directory exists in nova_backend/src/ yet.
+
+- **Home Assistant API** – Unified local control for smart devices over LAN.
+- **MQTT Broker** – Local IoT messaging protocol.
+- **Philips Hue (local API)** – Smart lighting control over LAN.
+- **TP-Link Kasa (local API)** – Smart plugs and switches.
+- **Shelly (local API)** – IoT devices via LAN.
+
+All home automation execution must follow the standard governed approval model:
+no device state changes without explicit per-action user confirmation.
+
+---
+
+## Media & Entertainment
+
+- **TMDB (The Movie Database)** – Free movie and TV metadata. PLANNED.
+- **YouTube Data API** – Video metadata and search (free tier, quota limited).
+  PLANNED.
+- **Plex API** – Local media server control. PLANNED.
+- **Jellyfin API** – Open-source local media server. PLANNED.
+- **Spotify Web API** – ARCHIVE. Spotify significantly restricted API access for
+  new third-party apps in 2024, removing playback control and several data
+  endpoints for apps that are not approved partners. Evaluate current API terms
+  carefully before building against it.
+
+---
+
+## Location & Transit
+
+- **OpenRouteService** – Free routing, directions, geocoding (non-commercial use).
+  PLANNED.
+- **GTFS / City Transit APIs** – Public transit schedule and route data, query-only.
+  PLANNED.
+
+---
+
+## Local Integrations (Active in Runtime)
+
+These are not web APIs — they are local libraries and OS interfaces.
+
+### Speech & Audio
+- **Piper TTS** – ACTIVE. Primary local text-to-speech engine. Bundled in runtime.
+- **OS TTS fallback** – ACTIVE. System TTS used when Piper is unavailable.
+- **Vosk** – ACTIVE. Primary local speech-to-text engine. Local model present in
+  runtime. No internet required.
+- **Local Whisper** – PLANNED. Higher-accuracy local STT alternative to Vosk for
+  longer-form transcription.
+
+Note: Coqui TTS and Coqui STT were listed in the original document. Both projects
+have been discontinued. Do not build against them.
+
+### System & File
+- **psutil** – System monitoring (CPU, memory, disk, process info). ACTIVE.
+- **GPUtil** – GPU monitoring. PLANNED.
+- **Speedtest CLI** – Network speed testing. PLANNED.
+
+### OCR & Document Processing
+- **Tesseract OCR** – Local optical character recognition, user-invoked only.
+  PLANNED.
+
+### Bluetooth
+- **OS-level Bluetooth API** – List paired devices, connect/disconnect on explicit
+  user confirmation. PLANNED.
+
+---
+
+## Permanently Excluded
+
+The following are never permitted under Nova's governance model, regardless of
+API availability or free tier:
+
+- **Autonomous agents or desktop copilots** with their own execution authority
+- **Passive background observers** — always-on screen surveillance, microphone
+  monitoring, or keyboard/mouse logging without explicit per-session user activation.
+  Note: user-invoked screen capture for explain-anything is permitted and active;
+  the exclusion is passive always-on surveillance, not governed on-demand capture.
+- **Smart-home automation loops** that execute without per-action approval
+- **Financial execution APIs** — purchasing, trading, order placement, payment
+  processing without a human completing the final transaction
+- **Any AI service with unrestricted execution authority** over Nova's governed
+  actions
+- **Multi-governor systems** — no second authority layer that can override Nova's
+  governor spine
+
+---
+
+## What Has Changed Since This Was Written
+
+This document predates the connector package framework, the capability P1-P6
+verification process, and the Phase 8/9 runtime. Key divergences to be aware of:
+
+1. Phase references (Phase 2/3/4.1) throughout the original are stale. Nova is
+   now at Phase 8 (ACTIVE) and Phase 9 (ACTIVE).
+2. The "locked registry" claim at the bottom of the original is no longer accurate.
+   New capabilities and connectors are added through the P1-P6 verification process
+   and the connector package framework, not through a separate lock mechanism.
+3. Shopify (caps 65-76) and all social platform connectors are entirely new and
+   were not in the original document.
+4. The email connector stub now exists in the codebase even though no provider
+   is wired yet.
+5. Coqui TTS and Coqui STT have been discontinued since the original was written.
+6. Spotify's API access for third-party apps was significantly restricted in 2024.
