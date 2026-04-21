@@ -437,6 +437,14 @@ MORNING_BRIEF_RE = re.compile(
     r"^\s*(?:run|give me|show me|start)?\s*(?:the\s+)?morning\s+brief(?:\s+template)?\s*$",
     re.IGNORECASE,
 )
+SHOPIFY_REPORT_RE = re.compile(
+    r"^\s*(?:shopify\s+(?:report|stats|status|intelligence|summary|snapshot|brief|overview|store)"
+    r"|(?:store|shop)\s+(?:report|stats|status|intelligence|summary|snapshot)"
+    r"|(?:show|get|fetch|pull)\s+(?:my\s+)?shopify\s+(?:data|metrics|orders?|products?|store)"
+    r"|how(?:'s|\s+is)\s+(?:my\s+)?(?:shopify\s+)?store\s+doing"
+    r")\b.*$",
+    re.IGNORECASE,
+)
 SEND_EMAIL_DRAFT_RE = re.compile(
     # verb + "email/e-mail"
     r"^\s*(?:draft|compose|write|prepare)\s+(?:me\s+)?(?:an?\s+)?e?-?mail\b"
@@ -1236,6 +1244,22 @@ class GovernorMediator:
                     "confirmed": bool((m.group("confirm") or "").strip()),
                 },
             )
+
+        if SHOPIFY_REPORT_RE.match(t):
+            period = "last_7_days"
+            for candidate in ("last_30_days", "last 30 days", "30 days", "month"):
+                if candidate in t.lower():
+                    period = "last_30_days"
+                    break
+            for candidate in ("today", "daily"):
+                if candidate in t.lower():
+                    period = "today"
+                    break
+            for candidate in ("last_90_days", "last 90 days", "90 days", "quarter"):
+                if candidate in t.lower():
+                    period = "last_90_days"
+                    break
+            return _invocation_if_enabled(65, {"period": period})
 
         m = SEND_EMAIL_DRAFT_RE.match(t)
         if m:

@@ -29,6 +29,7 @@ Read-only truth report of detectable bypass indicators from allowlisted runtime 
 - nova_backend/src/executors/screen_analysis_executor.py
 - nova_backend/src/executors/screen_capture_executor.py
 - nova_backend/src/executors/send_email_draft_executor.py
+- nova_backend/src/executors/shopify_intelligence_report_executor.py
 - nova_backend/src/executors/story_tracker_executor.py
 - nova_backend/src/executors/tts_executor.py
 - nova_backend/src/executors/volume_executor.py

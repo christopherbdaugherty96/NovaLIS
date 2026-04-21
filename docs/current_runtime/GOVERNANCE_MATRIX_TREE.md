@@ -5,7 +5,7 @@ Deterministic generated tree diagram derived from allowlisted runtime sources.
 ```mermaid
 graph TD
   Runtime[Phase-4 Runtime]
-  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64]]
+  Runtime --> Enabled[Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]]
   Runtime --> Disabled[Disabled IDs: []]
   Runtime --> Gov[Governor Guards]
   Gov --> EG[execution_gate: True]
@@ -66,6 +66,8 @@ graph TD
   C63 --> C63A[authority=read_only_network, risk=low, confirm=False, reversible=True, external=True, network=True, surface=Governor -> NetworkMediator]
   Caps --> C64[64:send_email_draft]
   C64 --> C64A[authority=persistent_change, risk=confirm, confirm=True, reversible=False, external=True, network=False, surface=Governor -> Executor]
+  Caps --> C65[65:shopify_intelligence_report]
+  C65 --> C65A[authority=read_only_network, risk=low, confirm=False, reversible=True, external=True, network=True, surface=Governor -> NetworkMediator]
   Runtime --> Routes[Skill Routes]
   Routes --> R54_analysis_document[analysis_document -> capability 54]
   Routes --> R21_brightness[brightness -> capability 21]
@@ -101,7 +103,7 @@ graph TD
 
 ```text
 Runtime
-|- Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64]
+|- Enabled IDs: [16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]
 |- Disabled IDs: []
 |- Governor Guards
 |  |- execution_gate: True
@@ -136,6 +138,7 @@ Runtime
 |  |- 62 external_reasoning_review (authority=read_only_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
 |  |- 63 openclaw_execute (authority=read_only_network, risk=low, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
 |  |- 64 send_email_draft (authority=persistent_change, risk=confirm, network=False, exfil=True, confirm=True, surface=Governor -> Executor)
+|  |- 65 shopify_intelligence_report (authority=read_only_network, risk=low, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
 |- Skill -> capability routes
 |  |- analysis_document -> 54
 |  |- brightness -> 21

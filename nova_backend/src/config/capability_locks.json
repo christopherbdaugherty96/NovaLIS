@@ -919,6 +919,41 @@
       },
       "locked": false,
       "locked_date": null
+    },
+    "65": {
+      "name": "shopify_intelligence_report",
+      "authority_class": "read_only_network",
+      "risk_level": "low",
+      "external_effect": true,
+      "reversible": true,
+      "p1_unit": {
+        "status": "pending",
+        "date": null,
+        "test_file": null
+      },
+      "p2_routing": {
+        "status": "pending",
+        "date": null,
+        "test_file": null
+      },
+      "p3_integration": {
+        "status": "pending",
+        "date": null,
+        "test_file": null
+      },
+      "p4_api": {
+        "status": "pending",
+        "date": null,
+        "test_file": null
+      },
+      "p5_live": {
+        "status": "pending",
+        "date": null,
+        "signed_off_by": null,
+        "notes": null
+      },
+      "locked": false,
+      "locked_date": null
     }
   }
 }

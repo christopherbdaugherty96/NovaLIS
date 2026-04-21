@@ -37,6 +37,28 @@
         "src/executors/news_intelligence_executor.py"
       ],
       "description": "Read-only headline and intelligence surfaces backed by configured RSS/news feed aggregation rather than direct account control."
+    },
+    {
+      "id": "shopify",
+      "label": "Shopify Store Intelligence",
+      "status": "active",
+      "integration_mode": "official_api",
+      "authority_class": "read_only_network",
+      "requires_explicit_enable": true,
+      "uses_official_api": true,
+      "credential_mode": "api_key",
+      "capability_ids": [
+        65
+      ],
+      "module_paths": [
+        "src/connectors/shopify_connector.py",
+        "src/executors/shopify_intelligence_report_executor.py"
+      ],
+      "env_vars_required": [
+        "NOVA_SHOPIFY_SHOP_DOMAIN",
+        "NOVA_SHOPIFY_ACCESS_TOKEN"
+      ],
+      "description": "Tier 1 read-only Shopify store intelligence via the Shopify GraphQL Admin API. Fetches order metrics, product catalog, and inventory status. No write scopes. Credentials held in env vars for dev; governed identity layer recommended for production."
     }
   ]
 }

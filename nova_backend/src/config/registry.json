@@ -430,6 +430,20 @@
       "reversible": false,
       "external_effect": true,
       "description": "Composes an email draft using the local LLM and opens it in the system mail client (mailto:). The user reviews and sends manually — Nova never transmits email autonomously. Requires explicit user confirmation before opening the mail client."
+    },
+    {
+      "id": 65,
+      "name": "shopify_intelligence_report",
+      "status": "active",
+      "phase_introduced": "9",
+      "risk_level": "low",
+      "data_exfiltration": false,
+      "enabled": true,
+      "authority_class": "read_only_network",
+      "requires_confirmation": false,
+      "reversible": true,
+      "external_effect": true,
+      "description": "Tier 1 read-only Shopify store intelligence. Fetches governed order metrics, product catalog summary, and inventory status via the Shopify GraphQL Admin API. No write operations. Requires NOVA_SHOPIFY_SHOP_DOMAIN and NOVA_SHOPIFY_ACCESS_TOKEN."
     }
   ],
   "retired_ids": []
