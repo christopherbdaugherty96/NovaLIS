@@ -3,8 +3,8 @@ Date: 2026-04-21
 Status: Future design — not yet implemented
 Source: Operator design session, converted and corrected 2026-04-21
 Phase alignment: Builds on Shopify operator foundation (caps 65–76). Social capabilities
-planned as caps 77–82. Requires Shopify connector (cap 65) at minimum for niche-aligned
-content pulling product and store data.
+planned as caps 77–82. Operates independently; cap 65 (shopify_intelligence_report) is
+preferred for product data and conversion attribution but is not a hard prerequisite.
 
 Related: `docs/future/NOVA_SHOPIFY_GOVERNED_OPERATOR_DESIGN_2026-04-20.md`
 
@@ -60,15 +60,12 @@ Planned capabilities (77–82), assigned sequentially after the Shopify operator
 | 78 | social_content_package | read_only_local | No | Draft generation — output only, no external effect |
 | 79 | social_publish | external_effect | Yes | Per-post approval required; irreversible once sent |
 | 80 | social_analytics_fetch | read_only_network | No | Platform engagement and conversion data |
-| 81 | social_reply_assist | read_only_local | No | Reply draft generation — output only |
+| 81 | social_reply_assist | read_only_network | No | Fetch comments from platform API, classify, draft replies — output only |
 | 82 | social_reply_publish | external_effect | Yes | Per-reply approval required; irreversible once sent |
 
 Write capabilities (79, 82) require explicit per-platform OAuth activation before
 their scopes are requested. They must not be registered until cap 78 (drafting) has
 passed P5 live sign-off.
-
-Note: capability_id=84 appears in earlier source material. That ID is not assigned.
-The correct IDs for social publishing are 79 (post) and 82 (reply) as defined above.
 
 ---
 
@@ -147,21 +144,21 @@ class BrandToneProfile(BaseModel):
     target_icp: str             # e.g. "new Shopify consultants 0-2 years"
 
 
+class ContentResearchSource(BaseModel):
+    """A piece of trend or competitor intelligence used to generate content ideas."""
+    source_url: Optional[str] = None
+    platform: Platform          # Platform where the trend/insight was spotted
+    insight: str
+    engagement_metric: Optional[int] = None    # likes, views, etc.
+    captured_at: datetime
+
+
 class ResearchBrief(BaseModel):
     """Daily output of the research module — 3–5 content angles with supporting data."""
     date: datetime
     niche: str
     icp: str
-    angles: List["ContentResearchSource"]  # Each angle is a sourced, timestamped insight
-
-
-class ContentResearchSource(BaseModel):
-    """A piece of trend or competitor intelligence used to generate content ideas."""
-    source_url: Optional[str] = None
-    platform: Platform
-    insight: str
-    engagement_metric: Optional[int] = None    # likes, views, etc.
-    captured_at: datetime
+    angles: List[ContentResearchSource]  # Each angle is a sourced, timestamped insight
 
 
 class ContentPackage(BaseModel):
@@ -263,7 +260,7 @@ Nova Content Queue — 2026-04-21
 1. Hook: "Why your Shopify store has traffic but no sales"
    ICP: New Shopify founders | Goal: email_signup | Offer: lead_magnet
    Script: ... [expand]
-   [Approve for Production]  [Edit]  [Reject]
+   [Approve]  [Edit]  [Reject]
 ────────────────────────────────────────────────────────
 2. Hook: "The one app every new store needs"
    ICP: New Shopify founders | Goal: link_click | Offer: affiliate
@@ -318,8 +315,8 @@ For B2B niches like Shopify growth, real human voiceovers build trust faster tha
 AI-generated audio. Nova's role:
 - Generate the script
 - Provide a teleprompter view in the dashboard
-- Auto-edit silence gaps using Descript API or similar (governed approval before
-  any audio file is modified)
+- Propose silence gap edits using Descript API or similar — presents proposed
+  edits for user review before any audio file is modified
 
 ---
 
@@ -352,7 +349,7 @@ class ContentMemoryEntry(BaseModel):
     conversion_count: Optional[int] = None     # Leads or sales attributed via UTM
 
     # Nova's learning
-    effectiveness_score: float  # 0.0 to 1.0, updated via analytics pull
+    effectiveness_score: float = 0.5  # 0.0 to 1.0; starts neutral, updated via analytics
     last_used_at: datetime
     usage_count: int
     notes: Optional[str] = None        # Human annotation — always surfaces to user
@@ -401,7 +398,7 @@ YouTube OAuth is a separate connector from Shopify OAuth. Setup:
 2. Nova presents the OAuth authorization URL with the minimum required scopes
    (`youtube.upload` for publishing, `youtube.readonly` for analytics)
 3. User authenticates and approves in Google
-4. Token stored through the governed identity layer (`src/identity/`)
+4. Token stored through the governed identity layer (`nova_backend/src/identity/`)
 5. Connection state surfaced in Trust and Settings alongside other connector states
 
 **X (Twitter) note:** X posting requires a paid Basic tier API subscription or higher.
@@ -444,7 +441,8 @@ To prevent approval fatigue, introduce only after Phase 5 validation:
 - **Trusted Template:** A `ContentPackage` derived from a proven template can be
   auto-published if:
   - It matches a pre-approved pattern (e.g. daily Shopify tip format)
-  - It has a risk_score below threshold
+  - It has a computed `risk_score` below threshold (risk_score is not in the current
+    `ContentPackage` model — must be added or computed at evaluation time in Phase 5+)
   - It is within a volume cap (max 1 auto-post per day)
 
 These are governed lanes, not open sluices. Every auto-action still passes through
@@ -465,7 +463,7 @@ These are populated in `ContentPackage` at publish time:
 ```
 utm_source=nova_content
 utm_medium=social
-utm_campaign=shorts_{date}
+utm_campaign={platform}_{date}
 utm_content={content_package_id}
 ```
 
@@ -502,12 +500,16 @@ patterns it used — so you can see what to repeat.
 
 ### Analytics Feedback Loop
 
+Analytics fetch is user-initiated, not scheduled. Nova does not poll platforms
+autonomously. The user triggers cap 80 from the Revenue Dashboard ("Refresh Analytics")
+or the content queue row for a specific post.
+
 After each post's analytics stabilize (3–7 days post-publish):
-1. Nova fetches platform engagement data via cap 80 (social_analytics_fetch)
-2. Nova compares actual performance against the ContentPackage's predicted
-   conversion_goal
-3. Nova updates `ContentMemoryEntry.effectiveness_score` for each pattern used
-4. The update is shown to the user — not silent
+1. User triggers analytics refresh — Nova fetches platform engagement data via cap 80 (social_analytics_fetch)
+2. Nova compares actual performance against the ContentPackage's `conversion_goal`
+3. Nova proposes `ContentMemoryEntry.effectiveness_score` updates for each pattern used,
+   displayed to the user before any write occurs
+4. User confirms — scores are written to `social_content_memory` domain and logged
 
 This closes the loop: research → draft → publish → measure → memory → better draft.
 
@@ -521,7 +523,7 @@ not justified at this stage):
 | --- | --- |
 | SAFE_QUESTION (e.g. "What app is that?") | Draft templated reply with link (cap 81) |
 | POSITIVE | Draft friendly acknowledgment reply (cap 81) |
-| NEGATIVE | Flag for human — never draft a reply, never auto-publish |
+| NEGATIVE | Surfaced in reply inbox with NEGATIVE label — no reply drafted, no action taken |
 | SPAM | Suggest deletion — requires explicit approval before any action |
 
 Reply drafts are presented in a review inbox on the Agent page. Cap 82
@@ -608,14 +610,14 @@ available yet, UTM links can be tracked manually until one of the two paths is l
 
 | Sprint | Deliverable | Success Metric |
 | --- | --- | --- |
-| 1 | Lock niche, ICP, and `BrandToneProfile`. Build `ContentResearchSource` scraper (cap 77). | One research brief generated daily |
-| 2 | Build `ContentPackage` generation prompt with `offer_type`, `target_audience`, `conversion_goal`. Create queue UI in Agent page. | 5 quality drafts per day |
-| 3 | Implement `ContentMemoryStore` (SQLite). Add memory queries to generation prompts. | Memory patterns visible alongside every draft |
+| 1 | Lock niche, ICP, and `BrandToneProfile`. Build cap 77 research module that populates `ContentResearchSource` and `ResearchBrief`. | One research brief generated daily |
+| 2 | Build `ContentPackage` generation prompt with `offer_type`, `target_audience`, `conversion_goal` (cap 78). Create queue UI in Agent page. | 5 quality drafts per day |
+| 3 | Implement `ContentMemoryEntry` SQLite store (`social_content_memory.db`). Add memory queries to generation prompts. | Memory patterns visible alongside every draft |
 | 4 | Build template-based video rendering (FFmpeg + stock footage via Pexels API). | One video rendered per approved draft |
-| 5 | Integrate YouTube OAuth (governed connector entry). Add publish approval gate (cap 79). UTM parameters populated at publish. | One post published to YouTube Shorts with explicit approval |
-| 6 | Add Shopify analytics integration for UTM conversion attribution (reuses cap 65). Revenue per post visible in dashboard. | Revenue attribution visible without GA4 dependency |
-| 7 | Build comment fetching and few-shot classification (cap 81 — social_reply_assist). Create reply draft inbox. Analytics engagement pull (cap 80) feeds effectiveness_score updates. | 10 reply drafts reviewed daily |
-| 8 | Close analytics loop: fetch performance data (cap 80), update `ContentMemoryEntry` effectiveness scores. | Memory scores update automatically after analytics stabilize |
+| 5 | Register YouTube connector in `connector_packages.json`. Integrate YouTube OAuth. Add publish approval gate (cap 79). UTM parameters populated at publish. | One post published to YouTube Shorts with explicit approval |
+| 6 | Add Shopify analytics integration for UTM conversion attribution (reuses cap 65). Revenue per post visible in Revenue Dashboard. | Revenue per post visible; attribution does not require GA4 |
+| 7 | Build comment fetching and few-shot classification (cap 81 — social_reply_assist). Create reply draft inbox with SAFE_QUESTION / POSITIVE / NEGATIVE / SPAM lanes. | 10 reply drafts reviewed daily |
+| 8 | Close analytics loop: user-triggered analytics refresh (cap 80), proposed `effectiveness_score` updates shown before write, confirmed scores logged. | Memory scores update after user confirmation |
 
 No step should be skipped to move faster. Phase 3 (publishing) should not begin
 until Phase 1 (draft quality) and Phase 2 (media pipeline) are both validated.
