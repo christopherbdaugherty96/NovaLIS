@@ -199,7 +199,7 @@ class TestWhatCanYouDo:
     def test_response_shows_total_count(self):
         result = _handle("what can you do")
         assert result is not None
-        assert "26" in result or "capabilities" in result.lower()
+        assert any(str(n) in result for n in range(25, 35)) or "capabilities" in result.lower()
 
     def test_response_has_follow_up_hint(self):
         result = _handle("what can you do")

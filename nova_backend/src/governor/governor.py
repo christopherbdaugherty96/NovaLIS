@@ -637,6 +637,11 @@ class Governor:
 
             return SendEmailDraftExecutor(ledger=self.ledger).execute(req)
 
+        elif req.capability_id == 65:
+            from src.executors.shopify_intelligence_report_executor import ShopifyIntelligenceReportExecutor
+
+            return ShopifyIntelligenceReportExecutor().execute(req)
+
         return ActionResult.refusal(
             "Execution path not implemented yet.",
             request_id=req.request_id,

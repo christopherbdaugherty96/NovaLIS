@@ -3323,11 +3323,22 @@ function renderOpenClawAgentPage() {
         card.appendChild(tools);
 
         const envelopePreview = getOpenClawEnvelopePreview(template);
-        const previewCopy = document.createElement("p");
-        previewCopy.className = "first-run-note";
-        previewCopy.textContent = buildOpenClawBudgetLines(envelopePreview).join(" ")
-          || "This task will show its safety limits here when it is ready.";
-        card.appendChild(previewCopy);
+
+        // Run Permit: authority lane, allowed domains, budget caps
+        const permitLabel = document.createElement("p");
+        permitLabel.className = "first-run-note";
+        permitLabel.textContent = "Run permit";
+        card.appendChild(permitLabel);
+
+        const writesAllowed = Number(envelopePreview.max_bytes_written || template.max_bytes_written || 0) > 0;
+        const permitLaneChips = document.createElement("div");
+        permitLaneChips.className = "memory-detail-chip-row";
+        permitLaneChips.appendChild(createOverviewChip("Authority", writesAllowed ? "Writes allowed" : "Read-only"));
+        (Array.isArray(template.allowed_hostnames) ? template.allowed_hostnames : []).forEach((host) => {
+          const h = String(host || "").trim();
+          if (h) permitLaneChips.appendChild(createOverviewChip("Domain", h));
+        });
+        card.appendChild(permitLaneChips);
 
         const previewChips = document.createElement("div");
         previewChips.className = "memory-detail-chip-row";
@@ -3335,7 +3346,6 @@ function renderOpenClawAgentPage() {
           ["Steps", String(envelopePreview.max_steps || template.max_steps || 0)],
           ["Web requests", String(envelopePreview.max_network_calls || template.max_network_calls || 0)],
           ["Local files", String(envelopePreview.max_files_touched || template.max_files_touched || 0)],
-          ["Can make changes", Number(envelopePreview.max_bytes_written || template.max_bytes_written || 0) > 0 ? "Yes" : "No"],
         ].forEach(([label, value]) => previewChips.appendChild(createOverviewChip(label, value)));
         card.appendChild(previewChips);
 

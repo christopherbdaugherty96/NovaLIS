@@ -5,8 +5,51 @@ from typing import Any
 
 from fastapi import APIRouter, HTTPException
 
+from src.openclaw.envelope_factory import EnvelopeFactory, EnvelopeFactoryError, _FEATURE_FLAG_ENV
+from src.openclaw.envelope_store import EnvelopeStore
 from src.skills.calendar import CalendarSkill
 from src.tasks.notification_schedule_store import NotificationScheduleStore
+
+
+def _issue_envelope_if_enabled(
+    deps,
+    *,
+    template: dict[str, Any],
+    channel: str,
+    triggered_by: str,
+    source: str,
+) -> None:
+    """Issue an envelope through the factory when the feature flag is on.
+
+    When the flag is off, log OPENCLAW_DEPRECATED_DIRECT_RUN so divergence
+    is visible in the ledger during the transition period.
+    """
+    feature_on = os.getenv(_FEATURE_FLAG_ENV, "").strip().lower() in {"1", "true", "yes"}
+    if feature_on:
+        factory = EnvelopeFactory(runtime_settings=deps.runtime_settings_store)
+        issued = factory.issue(template=template, channel=channel, triggered_by=triggered_by)
+        store = EnvelopeStore()
+        store.register(
+            envelope_id=issued.envelope_id,
+            envelope_data=issued.envelope.to_dict(),
+            issuing_channel=issued.issuing_channel,
+            settings_hash=issued.settings_hash,
+            feature_flags_snapshot=issued.feature_flags_snapshot,
+            issued_at=issued.issued_at,
+            expires_at=issued.expires_at,
+        )
+        deps._log_ledger_event(deps.RUNTIME_GOVERNOR, "OPENCLAW_RUN_ISSUED", issued.ledger_event)
+    else:
+        deps._log_ledger_event(
+            deps.RUNTIME_GOVERNOR,
+            "OPENCLAW_DEPRECATED_DIRECT_RUN",
+            {
+                "template_id": str(template.get("id") or "").strip(),
+                "channel": channel,
+                "triggered_by": triggered_by,
+                "source": source,
+            },
+        )
 
 
 def _notification_policy_snapshot(deps) -> dict[str, Any]:
@@ -289,6 +332,19 @@ def build_openclaw_agent_router(deps) -> APIRouter:
                 status_code=409,
                 detail="A home-agent run is already in progress. Wait for it to complete or cancel it first.",
             )
+        template = deps.openclaw_agent_runtime_store.get_template(template_id)
+        if template is None:
+            raise HTTPException(status_code=404, detail="Unknown OpenClaw template.")
+        try:
+            _issue_envelope_if_enabled(
+                deps,
+                template=template,
+                channel="manual",
+                triggered_by="agent_page",
+                source="openclaw_agent_api",
+            )
+        except EnvelopeFactoryError as exc:
+            raise HTTPException(status_code=403, detail=str(exc)) from exc
         try:
             result = await deps.openclaw_agent_runner.run_template(
                 template_id,
@@ -383,5 +439,56 @@ def build_openclaw_agent_router(deps) -> APIRouter:
             },
         )
         return _agent_status_payload(deps, snapshot)
+
+    @router.post("/api/openclaw/approve-action")
+    async def approve_openclaw_action(payload: dict[str, Any]):
+        """
+        Step 7 — action approval gate (passthrough phase).
+
+        Receives an OpenClawProposedAction, logs it to the ledger, and
+        returns auto-allow for all actions. Future phases will add real
+        human-in-the-loop suspension and decision flow here.
+        """
+        run_id = str(payload.get("run_id") or "").strip()
+        step_id = str(payload.get("step_id") or "").strip()
+        tool_name = str(payload.get("tool_name") or "").strip()
+        action_type = str(payload.get("action_type") or "").strip()
+        if not run_id or not tool_name:
+            raise HTTPException(status_code=400, detail="run_id and tool_name are required.")
+
+        deps._log_ledger_event(
+            deps.RUNTIME_GOVERNOR,
+            "OPENCLAW_ACTION_PROPOSED",
+            {
+                "run_id": run_id,
+                "step_id": step_id,
+                "tool_name": tool_name,
+                "action_type": action_type,
+                "authority_class": str(payload.get("authority_class") or "").strip(),
+                "user_visible_category": str(payload.get("user_visible_category") or "").strip(),
+                "reversible": bool(payload.get("reversible", True)),
+                "source": "approve_action_endpoint",
+            },
+        )
+        deps._log_ledger_event(
+            deps.RUNTIME_GOVERNOR,
+            "OPENCLAW_ACTION_APPROVED",
+            {
+                "run_id": run_id,
+                "step_id": step_id,
+                "tool_name": tool_name,
+                "action_type": action_type,
+                "decision": "auto_allowed",
+                "source": "approve_action_endpoint",
+            },
+        )
+        return {
+            "ok": True,
+            "decision": "allow",
+            "approval_state": "auto_allowed",
+            "run_id": run_id,
+            "step_id": step_id,
+            "tool_name": tool_name,
+        }
 
     return router

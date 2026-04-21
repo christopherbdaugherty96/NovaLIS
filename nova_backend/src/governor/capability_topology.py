@@ -298,6 +298,16 @@ _TOPOLOGY_OVERRIDES: dict[int, dict[str, Any]] = {
         "delegation_class": "local_action",
         "envelope_notes": "Opens system mail client via mailto: URI with a pre-composed draft. External effect is True because the system mail client is invoked. Not delegatable — requires explicit user confirmation and involves data exfiltration risk.",
     },
+    65: {
+        "authority_class": "read_only_network",
+        "policy_delegatable": False,
+        "reversible": True,
+        "persistent_change": False,
+        "external_effect": True,
+        "requires_network_mediator": True,
+        "delegation_class": "observational",
+        "envelope_notes": "Tier 1 read-only Shopify store intelligence. External effect is True because it calls the Shopify GraphQL Admin API. Not delegatable in the current phase — requires explicit connector configuration.",
+    },
 }
 
 

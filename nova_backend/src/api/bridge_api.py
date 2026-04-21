@@ -11,6 +11,9 @@ from fastapi import APIRouter, Header, HTTPException, WebSocketDisconnect
 from src.governor.governor_mediator import Clarification, Invocation, GovernorMediator
 
 
+# Step 6 note: bridge is a conversational gateway, not a template runner.
+# When bridge-triggered template runs are added, call EnvelopeFactory.issue()
+# here with channel="bridge", triggered_by="bridge" before dispatching the run.
 BRIDGE_ALLOWED_CAPABILITY_IDS = frozenset(
     {
         16,  # governed_web_search
