@@ -97,5 +97,13 @@ EVENT_TYPES = frozenset(
         "EMAIL_DRAFT_CREATED",
         "EMAIL_DRAFT_FAILED",
         "EMAIL_DRAFT_OPENED",
+        # OpenClaw governance hardening — envelope lifecycle and approval gate
+        "OPENCLAW_RUN_ISSUED",          # EnvelopeFactory issued a new envelope
+        "OPENCLAW_DEPRECATED_DIRECT_RUN",  # old direct-invocation path used (transition period)
+        "OPENCLAW_ACTION_PROPOSED",     # OpenClawProposedAction submitted to approval gate
+        "OPENCLAW_ACTION_APPROVED",     # approval gate returned allow
+        "OPENCLAW_ACTION_DENIED",       # approval gate returned deny
+        "OPENCLAW_ACTION_PENDING",      # user confirmation required; run suspended
+        "OPENCLAW_AUTHORITY_DIVERGENCE",  # old and new approval decisions disagree (transition audit)
     }
 )
