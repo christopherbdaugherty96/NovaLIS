@@ -246,12 +246,18 @@ from datetime import datetime, timedelta, timezone
 
 _API_VERSION = "2024-04"
 
-_STORE_INFO_QUERY = """
-query StoreInfo($outOfStockQuery: String!, $lowStockQuery: String!) {
+_SHOP_QUERY = """
+{
   shop { name }
   allProducts: productsCount { count }
   activeProducts: productsCount(query: "status:active") { count }
   draftProducts: productsCount(query: "status:draft") { count }
+}
+"""
+
+# Separate query so an unsupported inventory filter never takes down shop/product counts.
+_INVENTORY_QUERY = """
+query Inventory($outOfStockQuery: String!, $lowStockQuery: String!) {
   outOfStockVariants: productVariants(first: 250, query: $outOfStockQuery) {
     edges { node { id } }
     pageInfo { hasNextPage }
@@ -374,26 +380,33 @@ class HttpShopifyConnector(ShopifyConnector):
         order_query = _period_to_order_query(period)
         error_parts: list[str] = []
 
-        # --- store info + inventory counts ---
-        store_data: dict[str, Any] = {}
+        # --- shop info + product counts ---
+        shop_data: dict[str, Any] = {}
         try:
-            store_data = await self._gql(
-                _STORE_INFO_QUERY,
+            shop_data = await self._gql(_SHOP_QUERY)
+        except ShopifyConnectorError as exc:
+            error_parts.append(f"store info: {exc}")
+
+        shop_name = str((shop_data.get("shop") or {}).get("name") or self._shop_domain)
+        total_products = int((shop_data.get("allProducts") or {}).get("count") or 0)
+        active_products = int((shop_data.get("activeProducts") or {}).get("count") or 0)
+        draft_products = int((shop_data.get("draftProducts") or {}).get("count") or 0)
+
+        # --- inventory counts (separate query so a filter failure is isolated) ---
+        inv_data: dict[str, Any] = {}
+        try:
+            inv_data = await self._gql(
+                _INVENTORY_QUERY,
                 variables={
                     "outOfStockQuery": "inventory_quantity:<=0",
                     "lowStockQuery": f"inventory_quantity:<={low_stock_threshold}",
                 },
             )
         except ShopifyConnectorError as exc:
-            error_parts.append(f"store info: {exc}")
+            error_parts.append(f"inventory: {exc}")
 
-        shop_name = str((store_data.get("shop") or {}).get("name") or self._shop_domain)
-        total_products = int((store_data.get("allProducts") or {}).get("count") or 0)
-        active_products = int((store_data.get("activeProducts") or {}).get("count") or 0)
-        draft_products = int((store_data.get("draftProducts") or {}).get("count") or 0)
-
-        oos_node = store_data.get("outOfStockVariants") or {}
-        ls_node = store_data.get("lowStockVariants") or {}
+        oos_node = inv_data.get("outOfStockVariants") or {}
+        ls_node = inv_data.get("lowStockVariants") or {}
         out_of_stock_count = len(oos_node.get("edges") or [])
         if (oos_node.get("pageInfo") or {}).get("hasNextPage"):
             error_parts.append("out-of-stock count truncated at 250 variants")
