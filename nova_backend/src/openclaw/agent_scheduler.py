@@ -81,9 +81,42 @@ class OpenClawAgentScheduler:
                 continue
             policy_decision = self._notification_policy_store.delivery_policy_decision(now=now, deliveries_last_hour_override=deliveries_last_hour)
             if not bool(policy_decision.get("allowed")):
+                reason = str(policy_decision.get("reason") or "").strip()
+                note = str(policy_decision.get("note") or "").strip()
+                already_suppressed = (
+                    str(claim.get("last_suppression_window") or "").strip() == slot_key
+                    and str(claim.get("last_suppression_reason") or "").strip() == reason
+                )
+                if not already_suppressed:
+                    self._store.record_schedule_suppression(
+                        template_id,
+                        slot_key=slot_key,
+                        reason=reason,
+                        note=note,
+                        now=now,
+                    )
+                    self._log(
+                        "OPENCLAW_AGENT_SCHEDULE_SUPPRESSED",
+                        {
+                            "template_id": template_id,
+                            "slot_key": slot_key,
+                            "reason": reason,
+                            "note": note,
+                            "deliveries_last_hour": deliveries_last_hour,
+                            "source": "agent_scheduler",
+                        },
+                    )
                 continue
             if not self._store.claim_scheduled_template(template_id, slot_key):
                 continue
+            self._log(
+                "OPENCLAW_AGENT_SCHEDULE_TRIGGERED",
+                {
+                    "template_id": template_id,
+                    "slot_key": slot_key,
+                    "source": "agent_scheduler",
+                },
+            )
             template = self._store.get_template(template_id)
             if template is None:
                 try:
@@ -103,9 +136,29 @@ class OpenClawAgentScheduler:
                     self._store.record_scheduled_run_outcome(template_id, outcome="failed", note=f"envelope_factory_refused: {exc}", now=now)
                     self._log("OPENCLAW_AGENT_SCHEDULE_FAILED", {"template_id": template_id, "error": f"envelope_factory_refused: {exc}", "source": "agent_scheduler"})
                     continue
+            else:
+                self._log(
+                    "OPENCLAW_DEPRECATED_DIRECT_RUN",
+                    {
+                        "template_id": template_id,
+                        "channel": "scheduler",
+                        "triggered_by": "scheduler",
+                        "source": "agent_scheduler",
+                    },
+                )
             try:
                 result = await asyncio.wait_for(self._runner.run_template(template_id, triggered_by="scheduler"), timeout=RUN_TIMEOUT_SECONDS)
                 self._store.record_scheduled_run_outcome(template_id, outcome="completed", note="Scheduled run completed.", now=now)
+                self._log(
+                    "OPENCLAW_AGENT_SCHEDULE_COMPLETED",
+                    {
+                        "template_id": template_id,
+                        "envelope_id": str(dict(result.get("envelope") or {}).get("id") or "").strip(),
+                        "estimated_total_tokens": int(result.get("estimated_total_tokens") or 0),
+                        "source": "agent_scheduler",
+                    },
+                )
+                deliveries_last_hour += 1
                 completed.append(result)
             except Exception as exc:
                 self._store.record_scheduled_run_outcome(template_id, outcome="failed", note=str(exc), now=now)

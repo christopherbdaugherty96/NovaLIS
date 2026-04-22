@@ -4,12 +4,19 @@ import asyncio
 from datetime import datetime
 from unittest.mock import patch
 
+from fastapi import WebSocketDisconnect
+
 from src import brain_server
 from src.actions.action_result import ActionResult
 from src.base_skill import SkillResult
 from src.conversation.session_router import GateResult
 
 from tests.phase45._websocket_test_helpers import _ScriptedWebSocket, _chat_messages
+
+
+class _DisconnectOnGreetingWebSocket(_ScriptedWebSocket):
+    async def send_text(self, payload: str) -> None:
+        raise WebSocketDisconnect(code=1006)
 
 def test_hello_uses_deterministic_local_response(monkeypatch):
     monkeypatch.setattr(
@@ -26,6 +33,18 @@ def test_hello_uses_deterministic_local_response(monkeypatch):
     chat_messages = _chat_messages(ws)
     # Startup greeting is now warmer — check it contains something reasonable
     assert any("working on" in msg.lower() or "hello" in msg.lower() or "hey" in msg.lower() for msg in chat_messages)
+
+
+def test_disconnect_during_startup_greeting_does_not_raise(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _DisconnectOnGreetingWebSocket([])
+
+    asyncio.run(brain_server.websocket_endpoint(ws))
 
 
 def test_say_again_alias_repeats_last_spoken_text_without_model_call(monkeypatch):

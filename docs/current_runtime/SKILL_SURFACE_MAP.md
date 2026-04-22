@@ -25,6 +25,7 @@ Deterministic surface map for skills, conversation modules, and governor capabil
 | screen_capture | src/governor/governor_mediator.py | governor_capability | no | none | 58 |
 | search | src/governor/governor_mediator.py | governor_capability | yes | none | 48 |
 | send_email_draft | src/governor/governor_mediator.py | governor_capability | no | none | 64 |
+| shopify_intelligence_report | src/governor/governor_mediator.py | governor_capability | no | none | 65 |
 | speak | src/governor/governor_mediator.py | governor_capability | no | none | 18 |
 | story_tracker_update | src/governor/governor_mediator.py | governor_capability | no | none | 52 |
 | story_tracker_view | src/governor/governor_mediator.py | governor_capability | no | none | 53 |

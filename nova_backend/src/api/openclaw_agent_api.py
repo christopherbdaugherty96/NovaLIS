@@ -397,11 +397,18 @@ def build_openclaw_agent_router(deps) -> APIRouter:
                 status_code=403,
                 detail="OpenClaw home-agent foundations are paused in Settings.",
             )
+        if deps.openclaw_agent_runtime_store.has_active_run():
+            raise HTTPException(
+                status_code=409,
+                detail="A home-agent run is already in progress. Wait for it to complete or cancel it first.",
+            )
         try:
             result = await deps.openclaw_agent_runner.run_goal(
                 goal,
                 triggered_by="agent_page",
             )
+        except RuntimeError as exc:
+            raise HTTPException(status_code=409, detail=str(exc)[:200]) from exc
         except Exception as exc:
             raise HTTPException(status_code=500, detail=str(exc)[:200]) from exc
 
@@ -418,6 +425,7 @@ def build_openclaw_agent_router(deps) -> APIRouter:
         return {
             "ok": True,
             "result": result,
+            **_agent_status_payload(deps),
         }
 
     @router.post("/api/openclaw/agent/runs/cancel")

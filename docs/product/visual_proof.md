@@ -27,4 +27,3 @@ The trust surface exposes recent action state, policy posture, and governance st
 ![Nova structured report output](assets/report-output.png)
 
 The report view demonstrates how Nova presents structured findings, source notes, confidence context, and route/model badges in the chat surface.
-
