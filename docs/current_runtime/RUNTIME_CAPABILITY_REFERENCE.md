@@ -1,5 +1,5 @@
 # NOVA Runtime Capability Reference
-Updated: 2026-04-21
+Updated: 2026-04-22
 Status: Active
 Scope: Human-readable explanation of the current runtime capability surface
 
@@ -49,6 +49,8 @@ Interpretation rule:
 | 61 | `memory_governance` | Governed persistence | 5 | Saves, lists, shows, locks, defers, unlocks, deletes, or supersedes explicit memory items, including thread-linked memory. | `memory save ...`, `memory list`, `memory show ...`, `memory lock ...` | Persistent local write |
 | 62 | `external_reasoning_review` | Governed reasoning | 7 | Gives Nova a same-thread governed second-opinion lane that can critique or strengthen an answer without gaining any execution authority. Trust and Settings surfaces explain the provider, route, and advisory boundary when it is used. | `second opinion`, `deepseek second opinion`, `review this answer` | Read-only analysis |
 | 63 | `openclaw_execute` | Governed automation | 8 | Runs a named read-only OpenClaw template through a bounded template lane with explicit envelope preview, budget meters, and result delivery. Depending on the template, the run may stay local or use governed network reads. Phase 9 adds goal-based execution via the thinking loop. | `run morning brief`, `daily brief`, `run project snapshot` | Governed read-only execution |
+| 64 | `send_email_draft` | Communication | 8 | Composes an email draft using the local LLM and opens it in the system mail client through a manual-review flow. Nova never transmits email autonomously and requires explicit confirmation before opening the mail client. | `draft an email to...`, `compose an email to...`, `email john@example.com about...` | Local draft handoff |
+| 65 | `shopify_intelligence_report` | Commerce intelligence | 9 | Fetches governed read-only Shopify store metrics, product summary, and inventory status through the Shopify GraphQL Admin API. Requires configured Shopify credentials and performs no write operations. | `shopify report`, `shopify stats`, `show my shopify store`, `how is my store doing` | Read-only network |
 
 ## Capability Notes By Category
 
@@ -58,6 +60,7 @@ Interpretation rule:
 - `62` is advisory-only. It stays in the same thread, surfaces provider transparency, and cannot widen Nova's authority or trigger actions.
 - `52` and `53` support longer-running story tracking instead of one-shot summaries.
 - `54` keeps analysis documents session-scoped unless the user explicitly saves them elsewhere.
+- `65` adds read-only Shopify business intelligence but does not widen Nova into commerce writes.
 
 ### Local device and navigation
 - Capabilities `17`, `19`, `20`, `21`, and `22` create local effects, but they remain invocation-bound and Governor-mediated.
@@ -73,6 +76,11 @@ Interpretation rule:
 - `61` is the first active Phase-5 governed persistence slice.
 - It is explicit, inspectable, reversible where appropriate, and tied to ledger events.
 - Thread-linked memory is supported through the project continuity workflow.
+
+### Communication handoff
+- `64` is a controlled handoff surface, not an autonomous email sender.
+- Nova drafts the content, then opens it in the system mail client for the user to review and send manually.
+- Because opening the mail client has an external-effect handoff, it remains confirmation-backed.
 
 ### OpenClaw intelligence layer (Phase 9)
 - The OpenClaw agent intelligence layer adds goal-based execution on top of the Phase 8 template pipeline.
