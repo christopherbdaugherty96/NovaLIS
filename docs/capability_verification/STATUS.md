@@ -1,5 +1,5 @@
 # Nova - Capability Verification Status
-Updated: 2026-04-18
+Updated: 2026-04-21
 
 > **Live status:** `python scripts/certify_capability.py status`
 > **Framework:** [FRAMEWORK.md](FRAMEWORK.md)
@@ -59,6 +59,7 @@ Updated: 2026-04-18
 | 62 | external_reasoning_review | pending | pending | pending | pending | pending | open | Medium |
 | 63 | openclaw_execute | pending | pending | pending | pending | pending | open | Medium |
 | 64 | send_email_draft | pass | pass | pass | pass | pending | open | **Highest** |
+| 65 | shopify_intelligence_report | pass | pass | pending | pending | pending | open | High |
 
 ---
 
