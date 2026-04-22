@@ -51,6 +51,9 @@
 - Social content operator design doc created (`docs/future/NOVA_SOCIAL_CONTENT_OPERATOR_DESIGN_2026-04-21.md`) — caps 77–82, four-pass reviewed, Pydantic models validated, governance spine wired, YouTube quota noted (10k units/day = ~6 uploads/day free tier)
 - OpenClaw governance hardening plan finalized (`docs/future/NOVA_OPENCLAW_GOVERNANCE_HARDENING_2026-04-21.md`) — four-phase plan: EnvelopeFactory, approval gate, authority headers, run trace
 - `NovaLIS-Governance/STATUS.md` updated: Phase 8+9 marked ACTIVE, cap count corrected to 26, next-layer posture updated
+- OpenClaw governance hardening Steps 1–7 complete (EnvelopeFactory, EnvelopeStore, approval endpoint, Run Permit UI, feature-flagged wiring at all three entry points; bug fixes: null-template guard in scheduler, orphan-envelope prevention)
+- Cap 65 (shopify_intelligence_report) wired end-to-end: executor, routing, topology override, registry, capability_locks, connector_packages, P1+P2 tests (51 passing); HttpShopifyConnector implemented with GraphQL Admin API calls routed through NetworkMediator; bootstrapped at startup from env vars
+- Docs updated: NovaLIS-Governance/STATUS.md, Now.md, docs/capability_verification/STATUS.md — all reflect 27 active caps
 
 ### Issues
 
@@ -140,8 +143,10 @@ Shopify Tier 4 (write caps) must NOT be activated until steps 1–7 are complete
 - [x] Step 1b: Hardening event types added to `nova_backend/src/ledger/event_types.py` — `RUN_ISSUED`, `DEPRECATED_DIRECT_RUN`, `ACTION_PROPOSED`, `ACTION_APPROVED`, `ACTION_DENIED`, `ACTION_PENDING`, `AUTHORITY_DIVERGENCE`
 - [x] Step 2: `nova_backend/src/openclaw/envelope_factory.py` — stateless constructor, authority snapshot, feature-flagged
 - [x] Step 3: `nova_backend/src/openclaw/envelope_store.py` — file-backed lifecycle store, TTL, status machine, single-use enforcement
-- [ ] Step 4: Run Permit card in `dashboard-control-center.js` (UI-only preview, no behavior change)
-- [ ] Steps 5–7: Approval endpoint + robust_executor.py intercept + suspension pattern (deferred until Steps 1–4 verified)
+- [x] Step 4: Run Permit card in `dashboard-control-center.js` — Authority lane, domain chips, budget chips
+- [x] Steps 5–6: EnvelopeFactory wired at all three entry points (manual API, scheduler, bridge comment) behind `NOVA_FEATURE_ENVELOPE_FACTORY` flag; orphan-prevention pre-check added
+- [x] Step 7: `/api/openclaw/approve-action` passthrough endpoint added
+- **Next**: Monitor `OPENCLAW_DEPRECATED_DIRECT_RUN` ledger counts, then flip `NOVA_FEATURE_ENVELOPE_FACTORY=true`
 
 ---
 

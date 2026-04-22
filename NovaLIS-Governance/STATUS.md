@@ -1,6 +1,6 @@
 # NOVA Governance Status
 
-Updated: 2026-04-21
+Updated: 2026-04-21 (second pass)
 Status: Current runtime governance summary
 Scope: Reflective status of the live repository state
 
@@ -52,10 +52,10 @@ Nova does not:
 
 Current active governed capability IDs:
 
-`[16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64]`
+`[16, 17, 18, 19, 20, 21, 22, 31, 32, 48, 49, 50, 51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64, 65]`
 
 Capability count:
-- 26 active governed capabilities
+- 27 active governed capabilities
 
 High-level categories:
 - research and web intelligence
@@ -67,6 +67,7 @@ High-level categories:
 - governed external reasoning review
 - OpenClaw home-agent execution (cap 63)
 - email draft composition (cap 64) — external_effect, confirmation-gated, user sends manually
+- Shopify store intelligence (cap 65) — read-only, external_effect, requires NOVA_SHOPIFY_SHOP_DOMAIN + NOVA_SHOPIFY_ACCESS_TOKEN
 
 ## Required Execution Path
 
@@ -86,7 +87,7 @@ These remain intentionally unavailable as live runtime truth:
 - OpenClaw broad envelope-governed execution (manual foundation is live; full envelope issuance path deferred — governance hardening plan in `docs/future/NOVA_OPENCLAW_GOVERNANCE_HARDENING_2026-04-21.md`)
 - inbox_check template (visible in agent store; email connector not yet available)
 - Cloud provider onboarding (BYOK / managed_cloud modes are selectable as preferences; onboarding flow not yet implemented)
-- Shopify operator (caps 65–76): connector stub present; executor, registry entry, and connector_packages entry not yet implemented
+- Shopify operator (caps 66–76): write capabilities deferred; Tier 4 (write) activation gated on Steps 5–7 of OpenClaw hardening
 - Social content operator (caps 77–82): design complete (`docs/future/NOVA_SOCIAL_CONTENT_OPERATOR_DESIGN_2026-04-21.md`); zero code
 
 ## Important Clarification About Code Structure
@@ -120,11 +121,10 @@ Immediate (active sprint):
 - Installer clean-VM validation (Windows) — paused at bootstrap.log; resume when available
 
 Next major architecture milestone:
-- OpenClaw governance hardening (Steps 1–4, zero behavioral impact): `EnvelopeFactory`, `EnvelopeStore`, `OpenClawProposedAction` model, authority-rank headers — see `docs/future/NOVA_OPENCLAW_GOVERNANCE_HARDENING_2026-04-21.md`
-- Steps 5–7 (approval endpoint, approval flow in robust_executor.py) must complete before Shopify Tier 4 (write) is activated
+- OpenClaw governance hardening Steps 1–7 are complete (EnvelopeFactory, EnvelopeStore, approval endpoint, Run Permit UI card, feature-flagged wiring at all three entry points). Feature flag `NOVA_FEATURE_ENVELOPE_FACTORY` remains off; flip to `true` after monitoring `OPENCLAW_DEPRECATED_DIRECT_RUN` ledger counts.
 
-After hardening Steps 1–7:
-- Shopify Tier 1 cap 65 (shopify_intelligence_report) — read-only; connector stub already present
+After enabling envelope factory:
+- Shopify Tier 4 (write caps 66–76) — gated on Steps 5–7 verified in prod
 - Social content caps 77–78 (research + draft; no publish) — reuses existing web search lane
 
 Ongoing:
@@ -137,12 +137,13 @@ Nova is no longer a Cap-16 staging runtime.
 
 It is now a governed local intelligence and home-agent system with:
 - active Phases 4 through 9
-- 26 active governed capabilities
+- 27 active governed capabilities
 - explicit settings and trust surfaces
 - governed memory and continuity
 - advisory-only external reasoning
-- manual OpenClaw home-agent execution with strict preflight
+- manual OpenClaw home-agent execution with strict preflight (envelope governance hardening Steps 1–7 complete)
 - email draft (cap 64) as the first external-effect capability — confirmation-gated, user sends
+- Shopify store intelligence (cap 65) — Tier 1 read-only, wired end-to-end, requires credentials in env
 
 And it still intentionally refuses:
 - autonomy

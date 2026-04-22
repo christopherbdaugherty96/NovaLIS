@@ -85,6 +85,7 @@ from src.tasks.notification_schedule_store import NotificationScheduleStore
 from src.openclaw.agent_runner import openclaw_agent_runner
 from src.openclaw.agent_runtime_store import openclaw_agent_runtime_store
 from src.openclaw.agent_scheduler import openclaw_agent_scheduler
+from src.connectors.shopify_connector import bootstrap_shopify_connector
 from src.utils.local_request_guard import describe_http_rebinding_violation
 from src.personality.conversation_personality_agent import ConversationPersonalityAgent
 from src.personality.interface_agent import PersonalityInterfaceAgent
@@ -150,6 +151,10 @@ async def _lifespan(_app: FastAPI):
         log.info("Runtime snapshot refreshed at startup: %s", output_path)
     except Exception:
         log.exception("Failed to refresh runtime snapshot on startup")
+    try:
+        bootstrap_shopify_connector()
+    except Exception:
+        log.exception("Failed to bootstrap Shopify connector")
     openclaw_agent_scheduler._ledger_logger = (
         lambda event_type, metadata: _log_ledger_event(RUNTIME_GOVERNOR, event_type, metadata)
     )
