@@ -1,0 +1,15 @@
+{
+  "name": "long_conversation_recovery_after_failure",
+  "category": "long_conversations",
+  "script": [
+    "search for latest AI news",
+    "that failed, use news instead",
+    "summarize all headlines",
+    "show topic memory map",
+    "shorter version"
+  ],
+  "expect": {
+    "capability_sequence": [16, 56, 49, 51],
+    "max_error_turns": 1
+  }
+}

@@ -51,15 +51,15 @@ Sources are never edited — this overlay just builds navigation on top.
 
 | Category | Docs | Code |
 |---|---:|---:|
-| Phases | 172 | 0 |
-| Governance | 13 | 17 |
-| Runtime and ops | 20 | 242 |
+| Phases | 166 | 0 |
+| Governance | 8 | 12 |
+| Runtime and ops | 19 | 247 |
 | Frontend | 0 | 29 |
-| Tests | 5 | 276 |
+| Tests | 5 | 285 |
 | Scripts and tools | 3 | 23 |
-| Design specs | 7 | 0 |
-| Proofs | 175 | 6 |
-| Reference | 115 | 12 |
-| Archive | 115 | 10 |
+| Design specs | 12 | 0 |
+| Proofs | 176 | 6 |
+| Reference | 113 | 12 |
+| Archive | 138 | 15 |
 
-_Indexed 625 docs and 615 non-doc files._
+_Indexed 640 docs and 629 non-doc files._

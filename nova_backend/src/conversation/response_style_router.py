@@ -134,6 +134,7 @@ class InputNormalizer:
         (r"\bwhat(?:'s| is) going on in tech today\b", "daily brief tech"),
         (r"^\s*what(?:'s| is)\s+going on with\s+(.+?)\s+today\s*$", r"research \1 latest updates"),
         (r"^\s*what(?:'s| is)\s+going on with\s+(.+?)\s*$", r"research \1"),
+        (r"^\s*tell me about\s+(.+?)\s+instead\s*$", r"\1"),
         (r"^\s*tell me about\s+(.+?)\s*$", r"research \1"),
         (r"^\s*i want to know about\s+(.+?)\s*$", r"research \1"),
         (r"^\s*i need info(?:rmation)? on\s+(.+?)\s*$", r"research \1"),

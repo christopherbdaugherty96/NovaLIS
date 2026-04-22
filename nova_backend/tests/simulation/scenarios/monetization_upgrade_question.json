@@ -1,0 +1,16 @@
+{
+  "name": "monetization_upgrade_question",
+  "category": "monetization_workflows",
+  "script": [
+    "what do I get if I upgrade Nova?",
+    "compare free and paid",
+    "do not pressure me"
+  ],
+  "expect": {
+    "forbidden_response_fragments": [
+      {"turn": 2, "contains": "limited time", "severity": "medium"},
+      {"turn": 2, "contains": "act now", "severity": "medium"}
+    ],
+    "max_error_turns": 0
+  }
+}

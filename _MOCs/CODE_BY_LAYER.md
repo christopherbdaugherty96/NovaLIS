@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (252)
+## Backend runtime (257)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -49,7 +49,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/api/audit_api.py|audit_api]]
   summary: def build_audit_router(deps) -> APIRouter:
 - [[nova_backend/src/api/bridge_api.py|bridge_api]]
-  summary: BRIDGE_ALLOWED_CAPABILITY_IDS = frozenset(
+  summary: Step 6 note: bridge is a conversational gateway, not a template runner.
 - [[nova_backend/src/api/connections_api.py|connections_api]]
   summary: Connection cards API.
 - [[nova_backend/src/api/live_screen_api.py|live_screen_api]]
@@ -57,7 +57,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/api/memory_api.py|memory_api]]
   summary: def build_memory_router(deps) -> APIRouter:
 - [[nova_backend/src/api/openclaw_agent_api.py|openclaw_agent_api]]
-  summary: def _notification_policy_snapshot(deps) -> dict[str, Any]:
+  summary: def _issue_envelope_if_enabled(
 - [[nova_backend/src/api/profile_api.py|profile_api]]
   summary: def build_profile_router(deps: Any) -> APIRouter:
 - [[nova_backend/src/api/settings_api.py|settings_api]]
@@ -137,6 +137,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Email Connector — interface stub for inbox_check (Phase 8+).
 - [[nova_backend/src/connectors/package_registry.py|package_registry]]
   summary: CONNECTOR_PACKAGES_PATH = Path(__file__).resolve().parents[1] / "config" / "connector_packages.json
+- [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
+  summary: Shopify Connector — interface stub for Shopify Admin API integration.
 - [[nova_backend/src/context/__init__.py|src/context]]
   summary: __all__ = ["ContextSnapshotService"]
 - [[nova_backend/src/context/active_window.py|active_window]]
@@ -218,6 +220,8 @@ Use this to orient yourself before diving into a specific module.
   summary: class ScreenCaptureExecutor:
 - [[nova_backend/src/executors/send_email_draft_executor.py|send_email_draft_executor]]
   summary: Send Email Draft Executor — cap 64 (send_email_draft)
+- [[nova_backend/src/executors/shopify_intelligence_report_executor.py|shopify_intelligence_report_executor]]
+  summary: Shopify Intelligence Report Executor — cap 65 (shopify_intelligence_report)
 - [[nova_backend/src/executors/story_tracker_executor.py|story_tracker_executor]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/src/executors/tts_executor.py|tts_executor]]
@@ -263,7 +267,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/ledger/reader.py|reader]]
   summary: class LedgerAnalyzer:
 - [[nova_backend/src/ledger/writer.py|writer]]
-  summary: LEDGER_PATH = Path(__file__).resolve().parents[1] / "data" / "ledger.jsonl
+  summary: LEDGER_PATH = runtime_path(__file__, "data", "ledger.jsonl")
 - [[nova_backend/src/llm/inference_wrapper.py|inference_wrapper]]
   summary: This file contains the actual low‑level inference call.
 - [[nova_backend/src/llm/llm_gateway.py|llm_gateway]]
@@ -316,8 +320,14 @@ Use this to orient yourself before diving into a specific module.
   summary: Legacy placeholder kept to document a retired module name.
 - [[nova_backend/src/openclaw/agent_tool_registry_bootstrap.py|agent_tool_registry_bootstrap]]
   summary: Legacy placeholder kept to document a retired module name.
+- [[nova_backend/src/openclaw/envelope_factory.py|envelope_factory]]
+  summary: Authority Rank: 1 (co-equal with GovernorMediator) — Envelope Issuer
+- [[nova_backend/src/openclaw/envelope_store.py|envelope_store]]
+  summary: Authority Rank: 1 (co-equal with GovernorMediator) — Envelope Lifecycle Store
 - [[nova_backend/src/openclaw/execution_memory.py|execution_memory]]
   summary: Execution memory for OpenClaw — learn from past runs.
+- [[nova_backend/src/openclaw/models.py|models]]
+  summary: Governance data models for OpenClaw proposed actions and approval lifecycle.
 - [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
   summary: Per-tool budget tracking for OpenClaw.
 - [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
@@ -346,7 +356,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/perception/ocr_pipeline.py|ocr_pipeline]]
   summary: class OCRPipeline:
 - [[nova_backend/src/perception/screen_capture.py|screen_capture]]
-  summary: DEFAULT_CAPTURE_DIR = Path(__file__).resolve().parents[1] / "data" / "captures
+  summary: DEFAULT_CAPTURE_DIR = runtime_path(__file__, "data", "captures")
 - [[nova_backend/src/perception/vision_analyzer.py|vision_analyzer]]
   summary: class VisionAnalyzer:
 - [[nova_backend/src/personality/__init__.py|src/personality]]
@@ -508,7 +518,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (276)
+## Tests and verification (285)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -586,6 +596,10 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_personality_interface_agent_removes_system_tokens():
 - [[nova_backend/tests/conversation/test_provider_usage_store.py|test_provider_usage_store]]
   summary: def test_provider_usage_store_records_estimated_reasoning_usage(tmp_path):
+- [[nova_backend/tests/conversation/test_quick_corrections.py|test_quick_corrections]]
+  summary: Tests for quick_corrections.py — record, load, and mark consumed.
+- [[nova_backend/tests/conversation/test_relationship_insight_extractor.py|test_relationship_insight_extractor]]
+  summary: Tests for GeneralChatSkill._extract_relationship_signals().
 - [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
   summary: def test_formatter_normalizes_punctuation_and_spacing():
 - [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
@@ -638,6 +652,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def _request(params: dict):
 - [[nova_backend/tests/executors/test_send_email_draft_executor.py|test_send_email_draft_executor]]
   summary: Unit tests for SendEmailDraftExecutor (capability 64 — send_email_draft).
+- [[nova_backend/tests/executors/test_shopify_intelligence_report_executor.py|test_shopify_intelligence_report_executor]]
+  summary: Unit tests for ShopifyIntelligenceReportExecutor (capability 65 — P1).
 - [[nova_backend/tests/executors/test_story_tracker_executor.py|test_story_tracker_executor]]
   summary: def _req(capability_id: int, params: dict):
 - [[nova_backend/tests/executors/test_system_control_executor.py|test_system_control_executor - tests/executors]]
@@ -711,6 +727,10 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_agent_runtime_store_bootstraps_templates(tmp_path: Path):
 - [[nova_backend/tests/openclaw/test_agent_scheduler.py|test_agent_scheduler]]
   summary: @pytest.mark.asyncio
+- [[nova_backend/tests/openclaw/test_envelope_factory.py|test_envelope_factory]]
+  summary: Unit tests for EnvelopeFactory (hardening Step 2).
+- [[nova_backend/tests/openclaw/test_envelope_store.py|test_envelope_store]]
+  summary: Unit tests for EnvelopeStore (hardening Step 3).
 - [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
   summary: @pytest.fixture
 - [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
@@ -719,6 +739,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def _install_stores(monkeypatch, tmp_path):
 - [[nova_backend/tests/openclaw/test_openclaw_execute_executor.py|test_openclaw_execute_executor]]
   summary: End-to-end tests for OpenClawExecuteExecutor (cap 63).
+- [[nova_backend/tests/openclaw/test_openclaw_models.py|test_openclaw_models]]
+  summary: Unit tests for OpenClaw governance models (hardening Step 1).
 - [[nova_backend/tests/openclaw/test_per_tool_budget.py|test_per_tool_budget]]
   summary: PerToolBudgetExceeded,
 - [[nova_backend/tests/openclaw/test_phase3_robustness.py|test_phase3_robustness]]
@@ -819,6 +841,8 @@ Use this to orient yourself before diving into a specific module.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/tests/phase45/test_dashboard_search_widget_followups.py|test_dashboard_search_widget_followups]]
   summary: def test_search_widget_buttons_use_supported_topic_followups():
+- [[nova_backend/tests/phase45/test_dashboard_structured_report_widget.py|test_dashboard_structured_report_widget]]
+  summary: def test_dashboard_search_widget_renders_structured_report_payloads():
 - [[nova_backend/tests/phase45/test_dashboard_system_status_widget.py|test_dashboard_system_status_widget]]
   summary: def test_system_summary_surfaces_blocked_model_state():
 - [[nova_backend/tests/phase45/test_dashboard_tone_widget.py|test_dashboard_tone_widget]]
@@ -1017,6 +1041,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def _install_runtime_settings_store(monkeypatch, tmp_path: Path):
 - [[nova_backend/tests/test_openclaw_bridge_api.py|test_openclaw_bridge_api]]
   summary: def test_openclaw_bridge_status_reports_disabled_when_token_missing(monkeypatch):
+- [[nova_backend/tests/test_persistent_state_runtime_paths.py|test_persistent_state_runtime_paths]]
+  summary: def test_runtime_root_prefers_local_appdata_when_package_root_is_not_writable(tmp_path, monkeypatch):
 - [[nova_backend/tests/test_phase4_design_gate.py|test_phase4_design_gate]]
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[2]
 - [[nova_backend/tests/test_phase4_runtime_active.py|test_phase4_runtime_active]]
@@ -1035,6 +1061,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def _install_runtime_settings_store(monkeypatch, tmp_path):
 - [[nova_backend/tests/test_send_email_draft_routing.py|test_send_email_draft_routing]]
   summary: Tests for GovernorMediator routing of capability 64 (send_email_draft).
+- [[nova_backend/tests/test_shopify_intelligence_report_routing.py|test_shopify_intelligence_report_routing]]
+  summary: Tests for GovernorMediator routing of capability 65 (shopify_intelligence_report).
 - [[nova_backend/tests/test_single_action_queue.py|test_single_action_queue]]
   summary: def test_single_action_queue_blocks_concurrent():
 - [[nova_backend/tests/test_stt_engine.py|test_stt_engine]]
@@ -1177,7 +1205,7 @@ Use this to orient yourself before diving into a specific module.
 - [[NovaLIS-Governance/RUNTIME_TRUTH|Runtime Truth]]
   summary: NovaLIS - Mechanical Runtime Specification
 - [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
-  summary: Updated: 2026-03-30
+  summary: Updated: 2026-04-21
 
 ## Workspace and repo support (11)
 

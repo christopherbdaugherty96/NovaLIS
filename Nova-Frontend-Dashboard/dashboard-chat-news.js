@@ -2264,6 +2264,9 @@ function connectWebSocket() {
       case "pattern_review":
         renderPatternReviewWidget(msg);
         break;
+      case "run_status":
+        applyOpenClawRunStatusEvent(msg.data || {});
+        break;
       case "chat":
         appendChatMessage(
           "assistant",

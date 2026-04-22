@@ -13,7 +13,7 @@ whose filename stem matches. Useful for jumping between a test and the
 code it exercises. `__init__.py`, conftest and helper modules are
 intentionally skipped so the map stays focused on real test ↔ source links.
 
-Paired tests: 84
+Paired tests: 88
 
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
     - tests → [[nova_backend/src/conversation/clarify_prompts.py|clarify_prompts]]
@@ -35,6 +35,8 @@ Paired tests: 84
     - tests → [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
 - [[nova_backend/tests/conversation/test_provider_usage_store.py|test_provider_usage_store]]
     - tests → [[nova_backend/src/usage/provider_usage_store.py|provider_usage_store]]
+- [[nova_backend/tests/conversation/test_quick_corrections.py|test_quick_corrections]]
+    - tests → [[nova_backend/src/memory/quick_corrections.py|quick_corrections]]
 - [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
     - tests → [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
 - [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
@@ -67,6 +69,8 @@ Paired tests: 84
     - tests → [[nova_backend/src/executors/screen_analysis_executor.py|screen_analysis_executor]]
 - [[nova_backend/tests/executors/test_send_email_draft_executor.py|test_send_email_draft_executor]]
     - tests → [[nova_backend/src/executors/send_email_draft_executor.py|send_email_draft_executor]]
+- [[nova_backend/tests/executors/test_shopify_intelligence_report_executor.py|test_shopify_intelligence_report_executor]]
+    - tests → [[nova_backend/src/executors/shopify_intelligence_report_executor.py|shopify_intelligence_report_executor]]
 - [[nova_backend/tests/executors/test_story_tracker_executor.py|test_story_tracker_executor]]
     - tests → [[nova_backend/src/executors/story_tracker_executor.py|story_tracker_executor]]
 - [[nova_backend/tests/executors/test_system_control_executor.py|test_system_control_executor - tests/executors]]
@@ -87,6 +91,10 @@ Paired tests: 84
     - tests → [[nova_backend/src/openclaw/agent_runtime_store.py|agent_runtime_store]]
 - [[nova_backend/tests/openclaw/test_agent_scheduler.py|test_agent_scheduler]]
     - tests → [[nova_backend/src/openclaw/agent_scheduler.py|agent_scheduler]]
+- [[nova_backend/tests/openclaw/test_envelope_factory.py|test_envelope_factory]]
+    - tests → [[nova_backend/src/openclaw/envelope_factory.py|envelope_factory]]
+- [[nova_backend/tests/openclaw/test_envelope_store.py|test_envelope_store]]
+    - tests → [[nova_backend/src/openclaw/envelope_store.py|envelope_store]]
 - [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
     - tests → [[nova_backend/src/openclaw/execution_memory.py|execution_memory]]
 - [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]

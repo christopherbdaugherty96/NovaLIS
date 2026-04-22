@@ -1,0 +1,15 @@
+{
+  "name": "memory_contradiction_disable_extraction",
+  "category": "memory_contradictions",
+  "script": [
+    "do not remember this conversation",
+    "my private codeword is violet",
+    "what private codeword did I just say?"
+  ],
+  "expect": {
+    "forbidden_response_fragments": [
+      {"turn": 3, "contains": "violet", "severity": "high"}
+    ],
+    "max_error_turns": 0
+  }
+}

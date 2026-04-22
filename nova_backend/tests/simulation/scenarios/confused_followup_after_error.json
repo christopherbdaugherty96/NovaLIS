@@ -1,0 +1,14 @@
+{
+  "name": "confused_followup_after_error",
+  "category": "confused_users",
+  "script": [
+    "search for",
+    "python pathlib examples",
+    "show sources"
+  ],
+  "expect": {
+    "clarification_turns": [1],
+    "capability_sequence": [16],
+    "max_error_turns": 1
+  }
+}

@@ -8,7 +8,10 @@ is logged to a local, append-only ledger so you can always see what it did and w
 
 ---
 
-## Current phase — Tier 2 (April 2026)
+For the authoritative runtime truth, active capability count, enabled phases, and generated fingerprint, see
+[docs/current_runtime/CURRENT_RUNTIME_STATE.md](docs/current_runtime/CURRENT_RUNTIME_STATE.md).
+
+## Product roadmap snapshot — Tier 2 (April 2026)
 
 | Tier | Goal | Status |
 |---|---|---|
@@ -85,7 +88,7 @@ A confirmation prompt appears before anything opens.
 | Review policies | `policy center` |
 | Voice status | `voice status` |
 
-Nova currently ships **26 active capabilities** — all governed, all logged.
+Nova capabilities are governed and logged. The generated runtime state document is the source of truth for the current active capability count.
 
 ---
 

@@ -106,7 +106,7 @@ def _platform_supports_volume_action(action: str) -> bool:
     if command in {"up", "down", "set"}:
         return system in {"Linux", "Darwin", "Windows"}
     if command in {"mute", "unmute"}:
-        return system in {"Linux", "Darwin"}
+        return system in {"Linux", "Darwin", "Windows"}
     return False
 
 
@@ -114,7 +114,7 @@ def _platform_supports_media_action(action: str) -> bool:
     command = (action or "").strip().lower()
     if command not in {"play", "pause", "resume"}:
         return False
-    return platform.system() in {"Linux", "Darwin"}
+    return platform.system() in {"Linux", "Darwin", "Windows"}
 
 
 def _normalize_spoken_request(text: str) -> str:

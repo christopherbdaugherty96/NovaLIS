@@ -21,6 +21,7 @@ from src.openclaw.agent_runtime_store import (
 from src.openclaw.execution_memory import ExecutionMemory
 from src.openclaw.per_tool_budget import PerToolBudgetTracker
 from src.openclaw.robust_executor import RetryConfig, RobustExecutor
+from src.openclaw.run_state_machine import RUN_CANCELLED, RUN_FAILED, RUN_SUCCEEDED
 from src.openclaw.strict_preflight import evaluate_manual_envelope
 from src.openclaw.task_envelope import TaskEnvelope
 from src.openclaw.thinking_loop import ThinkingLoop
@@ -1161,7 +1162,7 @@ class OpenClawAgentRunner:
             "status_label": "Thinking",
             "triggered_by": triggered_by,
             "delivery_mode": "widget",
-            "delivery_channels": ["widget"],
+            "delivery_channels": {"widget": True, "chat": False},
             "started_at": _utc_now_iso(),
             "summary": f"Working on: {goal}",
         })
@@ -1179,7 +1180,14 @@ class OpenClawAgentRunner:
         try:
             result = await loop.run(goal.strip())
         except RunCancelledError:
-            self._store.clear_active_run(goal_id)
+            self._store.finish_active_run(
+                goal_id,
+                status=RUN_CANCELLED,
+                payload={
+                    "status_label": "Cancelled",
+                    "summary": "Goal was cancelled before completion.",
+                },
+            )
             return {
                 "goal": goal,
                 "triggered_by": triggered_by,
@@ -1190,8 +1198,16 @@ class OpenClawAgentRunner:
                 "total_duration_seconds": round(time.monotonic() - t0, 3),
                 "cancelled": True,
             }
-        finally:
-            self._store.clear_active_run(goal_id)
+        except Exception as exc:
+            self._store.finish_active_run(
+                goal_id,
+                status=RUN_FAILED,
+                payload={
+                    "status_label": "Failed",
+                    "summary": f"Goal failed: {str(exc)[:120]}",
+                },
+            )
+            raise
 
         # Record execution stats to memory
         for thought in result.get("thoughts", []):
@@ -1215,6 +1231,14 @@ class OpenClawAgentRunner:
         summary = result.get("synthesis") or self._summarize_goal_result(goal, result)
 
         total_duration = time.monotonic() - t0
+        self._store.finish_active_run(
+            goal_id,
+            status=RUN_SUCCEEDED if result.get("success", False) else RUN_FAILED,
+            payload={
+                "status_label": "Succeeded" if result.get("success", False) else "Failed",
+                "summary": summary,
+            },
+        )
 
         return {
             "goal": goal,

@@ -42,7 +42,7 @@ tests that pair by filename — so you can see the whole blast radius.
 - [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
 - [[nova_backend/src/executors/response_verification_executor.py|response_verification_executor]]
-- _…and 31 more_
+- _…and 33 more_
 
 ## `agents` (11 files)
 
@@ -96,7 +96,7 @@ _Focused FastAPI route modules for Nova runtime surfaces._
 - [[nova_backend/src/api/audit_api.py|audit_api]]
     - def build_audit_router(deps) -> APIRouter:
 - [[nova_backend/src/api/bridge_api.py|bridge_api]]
-    - BRIDGE_ALLOWED_CAPABILITY_IDS = frozenset(
+    - Step 6 note: bridge is a conversational gateway, not a template runner.
 - [[nova_backend/src/api/connections_api.py|connections_api]]
     - Connection cards API.
 - [[nova_backend/src/api/live_screen_api.py|live_screen_api]]
@@ -104,7 +104,7 @@ _Focused FastAPI route modules for Nova runtime surfaces._
 - [[nova_backend/src/api/memory_api.py|memory_api]]
     - def build_memory_router(deps) -> APIRouter:
 - [[nova_backend/src/api/openclaw_agent_api.py|openclaw_agent_api]]
-    - def _notification_policy_snapshot(deps) -> dict[str, Any]:
+    - def _issue_envelope_if_enabled(
 - [[nova_backend/src/api/profile_api.py|profile_api]]
     - def build_profile_router(deps: Any) -> APIRouter:
 - [[nova_backend/src/api/settings_api.py|settings_api]]
@@ -122,6 +122,8 @@ _Focused FastAPI route modules for Nova runtime surfaces._
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]]
 - [[nova_backend/src/memory/nova_self_memory_store.py|nova_self_memory_store]]
 - [[nova_backend/src/memory/user_memory_store.py|user_memory_store]]
+- [[nova_backend/src/openclaw/envelope_factory.py|envelope_factory]]
+- [[nova_backend/src/openclaw/envelope_store.py|envelope_store]]
 - [[nova_backend/src/perception/ocr_pipeline.py|ocr_pipeline]]
 - [[nova_backend/src/perception/vision_analyzer.py|vision_analyzer]]
 - [[nova_backend/src/profiles/user_profile_store.py|user_profile_store]]
@@ -403,7 +405,7 @@ _CognitiveModule,_
 
 - [[nova_backend/tests/phase45/test_connections_store.py|test_connections_store]]
 
-## `connectors` (3 files)
+## `connectors` (4 files)
 
 ___all__ = ["ConnectorPackage", "ConnectorPackageRegistry"]_
 
@@ -414,6 +416,8 @@ ___all__ = ["ConnectorPackage", "ConnectorPackageRegistry"]_
     - Email Connector — interface stub for inbox_check (Phase 8+).
 - [[nova_backend/src/connectors/package_registry.py|package_registry]]
     - CONNECTOR_PACKAGES_PATH = Path(__file__).resolve().parents[1] / "config" / "connector_packages.json
+- [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
+    - Shopify Connector — interface stub for Shopify Admin API integration.
 
 ### Imports from
 
@@ -422,6 +426,8 @@ ___all__ = ["ConnectorPackage", "ConnectorPackageRegistry"]_
 ### Imported by
 
 - [[nova_backend/src/audit/runtime_auditor.py|runtime_auditor]]
+- [[nova_backend/src/executors/shopify_intelligence_report_executor.py|shopify_intelligence_report_executor]]
+- [[nova_backend/tests/executors/test_shopify_intelligence_report_executor.py|test_shopify_intelligence_report_executor]]
 - [[nova_backend/tests/test_connector_package_registry.py|test_connector_package_registry]]
 
 ## `context` (5 files)
@@ -552,7 +558,7 @@ _Debug utilities package._
 
 - [[nova_backend/tests/simulation/conversation_simulator.py|conversation_simulator]]
 
-## `executors` (22 files)
+## `executors` (23 files)
 
 ### Files
 
@@ -589,6 +595,8 @@ _Debug utilities package._
     - class ScreenCaptureExecutor:
 - [[nova_backend/src/executors/send_email_draft_executor.py|send_email_draft_executor]]
     - Send Email Draft Executor — cap 64 (send_email_draft)
+- [[nova_backend/src/executors/shopify_intelligence_report_executor.py|shopify_intelligence_report_executor]]
+    - Shopify Intelligence Report Executor — cap 65 (shopify_intelligence_report)
 - [[nova_backend/src/executors/story_tracker_executor.py|story_tracker_executor]]
     - PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/src/executors/tts_executor.py|tts_executor]]
@@ -607,6 +615,7 @@ _Debug utilities package._
 - [[nova_backend/src/cognition/cognitive_layer_contract.py|cognitive_layer_contract]]
 - [[nova_backend/src/cognition/intelligence_report_contract.py|intelligence_report_contract]]
 - [[nova_backend/src/cognition/modules/__init__.py|src/cognition/modules]]
+- [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
 - [[nova_backend/src/context/context_snapshot_service.py|context_snapshot_service]]
 - [[nova_backend/src/conversation/deepseek_bridge.py|deepseek_bridge]]
 - [[nova_backend/src/conversation/deepseek_safety_wrapper.py|deepseek_safety_wrapper]]
@@ -658,7 +667,7 @@ _Debug utilities package._
 - [[nova_backend/tests/executors/test_multi_source_reporting_executor.py|test_multi_source_reporting_executor]]
 - [[nova_backend/tests/executors/test_news_intelligence_executor.py|test_news_intelligence_executor]]
 - [[nova_backend/tests/executors/test_open_folder_executor.py|test_open_folder_executor - tests/executors]]
-- _…and 19 more_
+- _…and 20 more_
 
 ### Tests
 
@@ -672,6 +681,7 @@ _Debug utilities package._
 - [[nova_backend/tests/executors/test_response_verification_executor.py|test_response_verification_executor]]
 - [[nova_backend/tests/executors/test_screen_analysis_executor.py|test_screen_analysis_executor]]
 - [[nova_backend/tests/executors/test_send_email_draft_executor.py|test_send_email_draft_executor]]
+- [[nova_backend/tests/executors/test_shopify_intelligence_report_executor.py|test_shopify_intelligence_report_executor]]
 - [[nova_backend/tests/executors/test_story_tracker_executor.py|test_story_tracker_executor]]
 - [[nova_backend/tests/executors/test_tts_executor.py|test_tts_executor]]
 - [[nova_backend/tests/executors/test_web_search_executor.py|test_web_search_executor]]
@@ -750,6 +760,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/executors/screen_analysis_executor.py|screen_analysis_executor]]
 - [[nova_backend/src/executors/screen_capture_executor.py|screen_capture_executor]]
 - [[nova_backend/src/executors/send_email_draft_executor.py|send_email_draft_executor]]
+- [[nova_backend/src/executors/shopify_intelligence_report_executor.py|shopify_intelligence_report_executor]]
 - [[nova_backend/src/executors/story_tracker_executor.py|story_tracker_executor]]
 - [[nova_backend/src/executors/tts_executor.py|tts_executor]]
 - [[nova_backend/src/executors/volume_executor.py|volume_executor]]
@@ -777,7 +788,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/personality/core.py|core]]
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
 - [[nova_backend/src/services/weather_service.py|weather_service]]
-- _…and 48 more_
+- _…and 49 more_
 
 ### Tests
 
@@ -819,11 +830,12 @@ _ExecuteBoundary,_
 - [[nova_backend/src/ledger/reader.py|reader]]
     - class LedgerAnalyzer:
 - [[nova_backend/src/ledger/writer.py|writer]]
-    - LEDGER_PATH = Path(__file__).resolve().parents[1] / "data" / "ledger.jsonl
+    - LEDGER_PATH = runtime_path(__file__, "data", "ledger.jsonl")
 
 ### Imports from
 
 - [[nova_backend/src/governor/exceptions.py|exceptions]]
+- [[nova_backend/src/utils/persistent_state.py|persistent_state]]
 
 ### Imported by
 
@@ -866,6 +878,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/governor/exceptions.py|exceptions]]
 - [[nova_backend/src/ledger/writer.py|writer]]
 - [[nova_backend/src/nova_config.py|nova_config]]
+- [[nova_backend/src/utils/persistent_state.py|persistent_state]]
 
 ### Imported by
 
@@ -911,6 +924,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
 - [[nova_backend/src/skills/general_chat.py|general_chat]]
 - [[nova_backend/src/websocket/session_handler.py|session_handler]]
+- [[nova_backend/tests/conversation/test_quick_corrections.py|test_quick_corrections]]
 - [[nova_backend/tests/phase45/test_profile_api.py|test_profile_api]]
 - [[nova_backend/tests/phase5/test_memory_governance_executor.py|test_memory_governance_executor]]
 - [[nova_backend/tests/test_governed_memory_store.py|test_governed_memory_store]]
@@ -918,6 +932,7 @@ _ExecuteBoundary,_
 
 ### Tests
 
+- [[nova_backend/tests/conversation/test_quick_corrections.py|test_quick_corrections]]
 - [[nova_backend/tests/test_governed_memory_store.py|test_governed_memory_store]]
 
 ## `nova_config` (1 files)
@@ -930,6 +945,7 @@ _ExecuteBoundary,_
 ### Imports from
 
 - [[nova_backend/src/llm/system_prompt.py|system_prompt]]
+- [[nova_backend/src/utils/persistent_state.py|persistent_state]]
 
 ### Imported by
 
@@ -943,7 +959,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/nova_protocol.py|nova_protocol]]
     - Nova Message Protocol v1 (NMPv1)
 
-## `openclaw` (23 files)
+## `openclaw` (26 files)
 
 _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
 
@@ -976,8 +992,14 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
     - Legacy placeholder kept to document a retired module name.
 - [[nova_backend/src/openclaw/agent_tool_registry_bootstrap.py|agent_tool_registry_bootstrap]]
     - Legacy placeholder kept to document a retired module name.
+- [[nova_backend/src/openclaw/envelope_factory.py|envelope_factory]]
+    - Authority Rank: 1 (co-equal with GovernorMediator) — Envelope Issuer
+- [[nova_backend/src/openclaw/envelope_store.py|envelope_store]]
+    - Authority Rank: 1 (co-equal with GovernorMediator) — Envelope Lifecycle Store
 - [[nova_backend/src/openclaw/execution_memory.py|execution_memory]]
     - Execution memory for OpenClaw — learn from past runs.
+- [[nova_backend/src/openclaw/models.py|models]]
+    - Governance data models for OpenClaw proposed actions and approval lifecycle.
 - [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
     - Per-tool budget tracking for OpenClaw.
 - [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
@@ -992,8 +1014,7 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
     - Tool chaining and composition for OpenClaw.
 - [[nova_backend/src/openclaw/tool_registry.py|tool_registry]]
     - Dynamic tool registry for OpenClaw agent intelligence layer.
-- [[nova_backend/src/openclaw/user_tool_permissions.py|user_tool_permissions]]
-    - Per-user tool permission layer for OpenClaw.
+- _…and 1 more_
 
 ### Imports from
 
@@ -1018,28 +1039,30 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
 
 ### Imported by
 
+- [[nova_backend/src/api/openclaw_agent_api.py|openclaw_agent_api]]
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
 - [[nova_backend/src/identity/nova_self_awareness.py|nova_self_awareness]]
+- [[nova_backend/src/websocket/session_handler.py|session_handler]]
 - [[nova_backend/tests/conversation/test_openclaw_agent_personality_bridge.py|test_openclaw_agent_personality_bridge]]
 - [[nova_backend/tests/openclaw/test_agent_runner.py|test_agent_runner]]
 - [[nova_backend/tests/openclaw/test_agent_runner_goal.py|test_agent_runner_goal]]
 - [[nova_backend/tests/openclaw/test_agent_runner_inbox_check_guard.py|test_agent_runner_inbox_check_guard]]
 - [[nova_backend/tests/openclaw/test_agent_runtime_store.py|test_agent_runtime_store]]
 - [[nova_backend/tests/openclaw/test_agent_scheduler.py|test_agent_scheduler]]
+- [[nova_backend/tests/openclaw/test_envelope_factory.py|test_envelope_factory]]
+- [[nova_backend/tests/openclaw/test_envelope_store.py|test_envelope_store]]
 - [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
-- [[nova_backend/tests/openclaw/test_per_tool_budget.py|test_per_tool_budget]]
-- [[nova_backend/tests/openclaw/test_robust_executor.py|test_robust_executor]]
-- [[nova_backend/tests/openclaw/test_strict_preflight.py|test_strict_preflight]]
-- [[nova_backend/tests/openclaw/test_task_envelope.py|test_task_envelope]]
-- _…and 6 more_
+- _…and 11 more_
 
 ### Tests
 
 - [[nova_backend/tests/openclaw/test_agent_runner.py|test_agent_runner]]
 - [[nova_backend/tests/openclaw/test_agent_runtime_store.py|test_agent_runtime_store]]
 - [[nova_backend/tests/openclaw/test_agent_scheduler.py|test_agent_scheduler]]
+- [[nova_backend/tests/openclaw/test_envelope_factory.py|test_envelope_factory]]
+- [[nova_backend/tests/openclaw/test_envelope_store.py|test_envelope_store]]
 - [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
 - [[nova_backend/tests/openclaw/test_per_tool_budget.py|test_per_tool_budget]]
 - [[nova_backend/tests/openclaw/test_robust_executor.py|test_robust_executor]]
@@ -1086,9 +1109,13 @@ ___all__ = [_
 - [[nova_backend/src/perception/ocr_pipeline.py|ocr_pipeline]]
     - class OCRPipeline:
 - [[nova_backend/src/perception/screen_capture.py|screen_capture]]
-    - DEFAULT_CAPTURE_DIR = Path(__file__).resolve().parents[1] / "data" / "captures
+    - DEFAULT_CAPTURE_DIR = runtime_path(__file__, "data", "captures")
 - [[nova_backend/src/perception/vision_analyzer.py|vision_analyzer]]
     - class VisionAnalyzer:
+
+### Imports from
+
+- [[nova_backend/src/utils/persistent_state.py|persistent_state]]
 
 ### Imported by
 
@@ -1419,13 +1446,13 @@ _NovaLIS Backend Package_
 - [[nova_backend/src/skill_registry.py|skill_registry]]
 - [[nova_backend/tests/conversation/test_general_chat_deep_thought.py|test_general_chat_deep_thought]]
 - [[nova_backend/tests/conversation/test_general_chat_tone.py|test_general_chat_tone]]
+- [[nova_backend/tests/conversation/test_relationship_insight_extractor.py|test_relationship_insight_extractor]]
 - [[nova_backend/tests/governance/test_skills_use_network_mediator_only.py|test_skills_use_network_mediator_only]]
 - [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
 - [[nova_backend/tests/openclaw/test_web_search_skill.py|test_web_search_skill]]
 - [[nova_backend/tests/phase45/test_brain_server_followups_and_voice.py|test_brain_server_followups_and_voice]]
 - [[nova_backend/tests/test_calendar_skill.py|test_calendar_skill]]
-- [[nova_backend/tests/test_news_skill.py|test_news_skill]]
-- _…and 1 more_
+- _…and 2 more_
 
 ### Tests
 
@@ -1614,16 +1641,16 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 - [[nova_backend/src/executors/web_search_executor.py|web_search_executor]]
 - [[nova_backend/src/executors/webpage_launch_executor.py|webpage_launch_executor]]
 - [[nova_backend/src/governor/web_target_planner.py|web_target_planner - src/governor]]
+- [[nova_backend/src/ledger/writer.py|writer]]
+- [[nova_backend/src/llm/llm_manager.py|llm_manager]]
+- [[nova_backend/src/llm/llm_manager_vlock.py|llm_manager_vlock]]
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]]
 - [[nova_backend/src/memory/nova_self_memory_store.py|nova_self_memory_store]]
+- [[nova_backend/src/memory/quick_corrections.py|quick_corrections]]
 - [[nova_backend/src/memory/user_memory_store.py|user_memory_store]]
+- [[nova_backend/src/nova_config.py|nova_config]]
 - [[nova_backend/src/openclaw/agent_runtime_store.py|agent_runtime_store]]
-- [[nova_backend/src/patterns/pattern_review_store.py|pattern_review_store - src/patterns]]
-- [[nova_backend/src/personality/tone_profile_store.py|tone_profile_store]]
-- [[nova_backend/src/policies/atomic_policy_store.py|atomic_policy_store]]
-- [[nova_backend/src/profiles/user_profile_store.py|user_profile_store]]
-- [[nova_backend/src/settings/runtime_settings_store.py|runtime_settings_store]]
-- _…and 3 more_
+- _…and 11 more_
 
 ## `validation` (6 files)
 
@@ -1713,6 +1740,9 @@ _Websocket session runtime modules._
 - [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
 - [[nova_backend/src/llm/llm_gateway.py|llm_gateway]]
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]]
+- [[nova_backend/src/memory/nova_self_memory_store.py|nova_self_memory_store]]
+- [[nova_backend/src/memory/quick_corrections.py|quick_corrections]]
+- [[nova_backend/src/openclaw/__init__.py|src/openclaw]]
 - [[nova_backend/src/utils/local_request_guard.py|local_request_guard]]
 
 ### Imported by

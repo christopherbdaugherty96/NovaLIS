@@ -1,0 +1,13 @@
+{
+  "name": "confused_ambiguous_music",
+  "category": "confused_users",
+  "script": [
+    "music",
+    "no I mean tell me about music theory",
+    "make it simpler"
+  ],
+  "expect": {
+    "clarification_turns": [1],
+    "max_error_turns": 0
+  }
+}

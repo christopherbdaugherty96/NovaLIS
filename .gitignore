@@ -71,3 +71,6 @@ nova_backend/.env
 build/
 dist/
 *.egg
+
+# Generated simulation trial artifacts
+nova_backend/tests/simulation/reports/

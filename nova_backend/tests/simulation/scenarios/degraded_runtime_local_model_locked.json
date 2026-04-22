@@ -1,0 +1,16 @@
+{
+  "name": "degraded_runtime_local_model_locked",
+  "category": "failed_providers",
+  "script": [
+    "why are you not answering deeply?",
+    "show runtime status",
+    "what should I do next?"
+  ],
+  "expect": {
+    "capability_sequence": [32],
+    "required_response_fragments": [
+      {"turn": 3, "contains": "retry", "severity": "low"}
+    ],
+    "max_error_turns": 1
+  }
+}

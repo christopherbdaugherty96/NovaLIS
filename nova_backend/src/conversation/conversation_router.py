@@ -33,6 +33,19 @@ class ConversationRouter:
         re.compile(r"\bthat file\b", re.IGNORECASE),
         re.compile(r"\bthat folder\b", re.IGNORECASE),
     )
+    MEDIA_PLAY_INTENT_RE = re.compile(
+        r"\b(?:play|start|put on)\b.{0,32}\b(?:music|song|songs|something)\b"
+        r"|\b(?:need|want)\s+(?:some\s+)?music\b",
+        re.IGNORECASE,
+    )
+    MEDIA_PAUSE_INTENT_RE = re.compile(r"\b(?:pause|stop)\s+(?:it|music|playback|song)\b", re.IGNORECASE)
+    MUSIC_TOPIC_RE = re.compile(r"^\s*music[\s.?!]*$", re.IGNORECASE)
+    FOLDER_CLARIFICATION_RE = re.compile(r"^\s*(?:the\s+)?(documents|downloads)(?:\s+folder)?\s*$", re.IGNORECASE)
+    SPECIFIC_OPEN_FOLDER_RE = re.compile(
+        r"^\s*be\s+specific\s*:\s*open\s+(?P<folder>documents|downloads|desktop|pictures)\s*$",
+        re.IGNORECASE,
+    )
+    VAGUE_ACTION_RE = re.compile(r"^\s*(?:do|handle|run)\s+(?:the\s+)?(?:thing|stuff|task)\s*$", re.IGNORECASE)
 
     MICRO_ACK = {
         ConversationMode.ANALYSIS: "Okay. Let me think that through.",
@@ -138,6 +151,15 @@ class ConversationRouter:
         needs_clarification = False
         clarification = ""
         resolved_text = text
+        if not lowered:
+            needs_clarification = True
+            clarification = (
+                "I might have misheard that. "
+                "Did you want me to search the web, open something, or show today's brief?"
+            )
+        elif cls.VAGUE_ACTION_RE.match(lowered):
+            needs_clarification = True
+            clarification = "What thing should I do? For example: open documents, search the web, or show today's brief."
         if any(p.search(text) for p in cls.REFERENCE_PATTERNS):
             last_object = str(state.get("last_object") or "").strip()
             if last_object:
@@ -150,6 +172,34 @@ class ConversationRouter:
             else:
                 needs_clarification = True
                 clarification = "Which file or folder do you mean?"
+        folder_match = cls.FOLDER_CLARIFICATION_RE.match(lowered)
+        if (
+            folder_match
+            and not needs_clarification
+            and "which file or folder" in str(state.get("last_response") or "").lower()
+        ):
+            resolved_text = f"open {folder_match.group(1).lower()}"
+            intent_family = "task"
+            mode = ConversationMode.ACTION
+        specific_folder_match = cls.SPECIFIC_OPEN_FOLDER_RE.match(lowered)
+        if specific_folder_match and not needs_clarification:
+            resolved_text = f"open {specific_folder_match.group('folder').lower()}"
+            intent_family = "task"
+            mode = ConversationMode.ACTION
+        if cls.MUSIC_TOPIC_RE.match(text) and not needs_clarification:
+            needs_clarification = True
+            clarification = "Did you want me to play music, or talk about music?"
+        elif cls.MEDIA_PLAY_INTENT_RE.search(text) and not needs_clarification:
+            resolved_text = "play"
+            intent_family = "task"
+            mode = ConversationMode.ACTION
+        elif cls.MEDIA_PAUSE_INTENT_RE.search(text) and not needs_clarification:
+            resolved_text = "pause"
+            intent_family = "task"
+            mode = ConversationMode.ACTION
+        if cls._looks_overloaded(lowered) and not needs_clarification:
+            needs_clarification = True
+            clarification = "That includes a few different actions. Which one should I do first?"
         if continuation_detected and not state.get("last_response"):
             needs_clarification = True
             clarification = "What should I continue from?"
@@ -287,3 +337,11 @@ class ConversationRouter:
         if cls.ORDINAL_REFERENCE_RE.search(lowered):
             return True
         return len(lowered.split()) <= 3
+
+    @classmethod
+    def _looks_overloaded(cls, lowered: str) -> bool:
+        command_hits = 0
+        for prefix in cls.COMMAND_PREFIXES:
+            if re.search(rf"(?<!\w){re.escape(prefix)}(?!\w)", lowered):
+                command_hits += 1
+        return command_hits >= 3

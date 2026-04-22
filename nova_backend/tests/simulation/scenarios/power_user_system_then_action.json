@@ -1,0 +1,14 @@
+{
+  "name": "power_user_system_then_action",
+  "category": "power_users",
+  "script": [
+    "system status",
+    "set volume 35",
+    "mute volume",
+    "unmute volume"
+  ],
+  "expect": {
+    "capability_sequence": [32, 19, 19, 19],
+    "max_error_turns": 0
+  }
+}

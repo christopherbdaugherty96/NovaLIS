@@ -1,0 +1,12 @@
+{
+  "name": "failed_provider_calendar_degrades",
+  "category": "failed_providers",
+  "script": [
+    "calendar today",
+    "summarize what you can see"
+  ],
+  "expect": {
+    "capability_sequence": [57],
+    "max_error_turns": 1
+  }
+}

@@ -2,6 +2,7 @@ from datetime import datetime
 from pathlib import Path
 
 from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
+from src.openclaw.run_state_machine import run_event_hub
 
 
 def test_agent_runtime_store_bootstraps_templates(tmp_path: Path):
@@ -85,6 +86,76 @@ def test_agent_runtime_store_tracks_active_run(tmp_path: Path):
     cleared = store.snapshot()
     assert cleared["active_run"] is None
     assert cleared["active_run_summary"] == "No home-agent runs are active right now."
+
+
+def test_agent_runtime_store_exposes_single_running_query(tmp_path: Path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+
+    assert store.running_now() is None
+    store.set_active_run(
+        {
+            "envelope_id": "ENV-RUNNING",
+            "template_id": "project_snapshot",
+            "title": "Project Snapshot",
+            "status": "running",
+        }
+    )
+
+    running = store.running_now()
+    assert running is not None
+    assert running["envelope_id"] == "ENV-RUNNING"
+    assert store.has_active_run() is True
+
+
+def test_agent_runtime_store_finishes_active_run_with_terminal_status(tmp_path: Path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    store.set_active_run(
+        {
+            "envelope_id": "ENV-FINISH",
+            "template_id": "goal",
+            "title": "Goal",
+            "delivery_channels": ["widget"],
+        }
+    )
+
+    finished = store.finish_active_run(
+        "ENV-FINISH",
+        status="succeeded",
+        payload={"summary": "Done."},
+    )
+
+    assert finished is not None
+    assert finished["status"] == "succeeded"
+    assert finished["summary"] == "Done."
+    assert store.running_now() is None
+    assert store.snapshot()["active_run"] is None
+
+
+def test_agent_runtime_store_emits_run_status_events(tmp_path: Path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    queue = run_event_hub.subscribe()
+    try:
+        store.set_active_run({"envelope_id": "ENV-EVENT", "template_id": "morning_brief"})
+        started = queue.get_nowait()
+        assert started["event"] == "run_status_changed"
+        assert started["status"] == "running"
+        assert started["run"]["envelope_id"] == "ENV-EVENT"
+
+        store.record_run(
+            {
+                "envelope_id": "ENV-EVENT",
+                "template_id": "morning_brief",
+                "title": "Morning Brief",
+                "status": "completed",
+            }
+        )
+        completed = queue.get_nowait()
+        assert completed["event"] == "run_status_changed"
+        assert completed["status"] == "succeeded"
+        assert completed["run"]["run_state"] == "succeeded"
+        assert completed["run"]["status"] == "completed"
+    finally:
+        run_event_hub.unsubscribe(queue)
 
 
 def test_agent_runtime_store_records_surface_delivery_and_dismisses_it(tmp_path: Path):

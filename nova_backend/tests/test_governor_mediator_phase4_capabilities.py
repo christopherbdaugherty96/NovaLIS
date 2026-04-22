@@ -11,13 +11,9 @@ def test_volume_media_brightness_parsing():
     assert inv.capability_id == 19
 
     inv = GovernorMediator.parse_governed_invocation("pause")
-    if platform.system() == "Windows":
-        assert isinstance(inv, Clarification)
-        assert "not available on this device yet" in inv.message.lower()
-    else:
-        assert isinstance(inv, Invocation)
-        assert inv.capability_id == 20
-        assert inv.params["action"] == "pause"
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 20
+    assert inv.params["action"] == "pause"
 
     inv = GovernorMediator.parse_governed_invocation("set brightness 70")
     assert isinstance(inv, Invocation)
@@ -44,22 +40,14 @@ def test_volume_media_brightness_parsing():
     assert inv.params["level"] == 33
 
     inv = GovernorMediator.parse_governed_invocation("mute volume")
-    if platform.system() == "Windows":
-        assert isinstance(inv, Clarification)
-        assert "not available on this device yet" in inv.message.lower()
-    else:
-        assert isinstance(inv, Invocation)
-        assert inv.capability_id == 19
-        assert inv.params["action"] == "mute"
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 19
+    assert inv.params["action"] == "mute"
 
     inv = GovernorMediator.parse_governed_invocation("unmute")
-    if platform.system() == "Windows":
-        assert isinstance(inv, Clarification)
-        assert "not available on this device yet" in inv.message.lower()
-    else:
-        assert isinstance(inv, Invocation)
-        assert inv.capability_id == 19
-        assert inv.params["action"] == "unmute"
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 19
+    assert inv.params["action"] == "unmute"
 
     inv = GovernorMediator.parse_governed_invocation("brightness 35")
     assert isinstance(inv, Invocation)
@@ -729,18 +717,18 @@ def test_search_clarification_roundtrip_by_session():
     assert second.params["query"] == "latest weather in Detroit"
 
 
-def test_mediator_explains_unsupported_windows_media_and_mute(monkeypatch):
-    from src.governor.governor_mediator import GovernorMediator, Clarification
+def test_mediator_allows_windows_media_and_mute(monkeypatch):
+    from src.governor.governor_mediator import GovernorMediator, Invocation
 
     monkeypatch.setattr("src.governor.governor_mediator.platform.system", lambda: "Windows")
 
     mute = GovernorMediator.parse_governed_invocation("mute")
-    assert isinstance(mute, Clarification)
-    assert "not available on this device yet" in mute.message.lower()
+    assert isinstance(mute, Invocation)
+    assert mute.capability_id == 19
 
     pause = GovernorMediator.parse_governed_invocation("pause")
-    assert isinstance(pause, Clarification)
-    assert "not available on this device yet" in pause.message.lower()
+    assert isinstance(pause, Invocation)
+    assert pause.capability_id == 20
 
 
 def test_mediator_keeps_supported_volume_and_media_actions_on_supported_platforms(monkeypatch):

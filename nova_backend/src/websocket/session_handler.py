@@ -8,6 +8,7 @@ from typing import Any
 
 from fastapi import WebSocket, WebSocketDisconnect
 
+from src.openclaw.run_state_machine import run_event_hub
 from src.utils.local_request_guard import describe_websocket_rebinding_violation
 
 
@@ -271,6 +272,13 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     }
 
     initial_trust_refresh_task: asyncio.Task[None] | None = None
+    run_event_queue = run_event_hub.subscribe()
+    run_event_relay_task: asyncio.Task[None] | None = None
+
+    async def _relay_run_status_events() -> None:
+        while True:
+            event = await run_event_queue.get()
+            await ws_send(ws, {"type": "run_status", "data": event})
 
     # Load any unconsumed user corrections from previous sessions and make
     # them available for context injection in the first few turns.
@@ -309,6 +317,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             return
 
     initial_trust_refresh_task = asyncio.create_task(_send_initial_trust_status())
+    run_event_relay_task = asyncio.create_task(_relay_run_status_events())
 
     async def _complete_immediate_turn(
         message: str,
@@ -3854,6 +3863,9 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     finally:
         if initial_trust_refresh_task and not initial_trust_refresh_task.done():
             initial_trust_refresh_task.cancel()
+        if run_event_relay_task and not run_event_relay_task.done():
+            run_event_relay_task.cancel()
+        run_event_hub.unsubscribe(run_event_queue)
         thought_store.clear_session(session_id)
         GovernorMediator.clear_session(session_id)
 

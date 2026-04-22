@@ -1,0 +1,14 @@
+{
+  "name": "bad_prompt_empty_intent",
+  "category": "bad_prompts",
+  "script": [
+    "???",
+    "do the thing",
+    "be specific: open documents"
+  ],
+  "expect": {
+    "clarification_turns": [1, 2],
+    "capability_sequence": [22],
+    "max_error_turns": 1
+  }
+}

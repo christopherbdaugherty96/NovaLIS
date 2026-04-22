@@ -1,0 +1,13 @@
+{
+  "name": "tool_misuse_weather_as_news",
+  "category": "tool_misuse",
+  "script": [
+    "weather",
+    "no, news about weather disasters",
+    "show sources"
+  ],
+  "expect": {
+    "capability_sequence": [55, 56],
+    "max_error_turns": 1
+  }
+}

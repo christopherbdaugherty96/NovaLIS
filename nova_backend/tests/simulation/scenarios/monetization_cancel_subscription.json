@@ -1,0 +1,17 @@
+{
+  "name": "monetization_cancel_subscription",
+  "category": "monetization_workflows",
+  "script": [
+    "cancel my subscription",
+    "will I lose my memories?",
+    "export my data first"
+  ],
+  "expect": {
+    "required_response_fragments": [
+      {"turn": 1, "contains": "cancel", "severity": "medium"},
+      {"turn": 2, "contains": "memories", "severity": "medium"},
+      {"turn": 3, "contains": "export", "severity": "medium"}
+    ],
+    "max_error_turns": 0
+  }
+}

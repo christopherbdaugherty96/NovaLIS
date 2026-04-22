@@ -244,11 +244,15 @@ def _agent_setup_snapshot(deps, agent_snapshot: dict[str, Any]) -> dict[str, Any
 
 def _agent_status_payload(deps, snapshot: dict[str, Any] | None = None) -> dict[str, Any]:
     agent_snapshot = dict(snapshot or deps.openclaw_agent_runtime_store.snapshot())
+    running_now = None
+    if hasattr(deps.openclaw_agent_runtime_store, "running_now"):
+        running_now = deps.openclaw_agent_runtime_store.running_now()
     scheduler_enabled = deps.runtime_settings_store.is_permission_enabled("home_agent_scheduler_enabled")
     scheduler_policy = _notification_policy_snapshot(deps)
     agent_snapshot["scheduler_permission_enabled"] = scheduler_enabled
     agent_snapshot["scheduler_status_label"] = "Enabled" if scheduler_enabled else "Paused"
     agent_snapshot["schedule_policy"] = scheduler_policy
+    agent_snapshot["running_now"] = running_now
     if scheduler_enabled:
         schedule_summary = str(agent_snapshot.get("schedule_summary") or "").strip()
         policy_summary = str(scheduler_policy.get("summary") or "").strip()
