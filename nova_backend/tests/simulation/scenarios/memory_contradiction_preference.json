@@ -1,0 +1,15 @@
+{
+  "name": "memory_contradiction_preference",
+  "category": "memory_contradictions",
+  "script": [
+    "remember I prefer terse answers",
+    "actually I want detailed answers for architecture work",
+    "how should you answer architecture questions for me?"
+  ],
+  "expect": {
+    "required_response_fragments": [
+      {"turn": 3, "contains": "detailed", "severity": "high"}
+    ],
+    "max_error_turns": 0
+  }
+}

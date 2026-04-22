@@ -1,0 +1,16 @@
+{
+  "name": "cancellation_briefing",
+  "category": "cancellations",
+  "script": [
+    "daily brief",
+    "stop",
+    "actually show news"
+  ],
+  "expect": {
+    "capability_sequence": [50, 56],
+    "required_response_fragments": [
+      {"turn": 2, "contains": "stop", "severity": "medium"}
+    ],
+    "max_error_turns": 1
+  }
+}

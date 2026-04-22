@@ -1,0 +1,19 @@
+{
+  "name": "memory_contradiction_location",
+  "category": "memory_contradictions",
+  "script": [
+    "remember I live in Portland",
+    "actually I moved to Seattle",
+    "where do I live?"
+  ],
+  "expect": {
+    "required_response_fragments": [
+      {"turn": 2, "contains": "Seattle", "severity": "high"},
+      {"turn": 3, "contains": "Seattle", "severity": "high"}
+    ],
+    "forbidden_response_fragments": [
+      {"turn": 3, "contains": "Portland", "severity": "high"}
+    ],
+    "max_error_turns": 0
+  }
+}

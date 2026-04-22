@@ -60,6 +60,7 @@ def test_openclaw_agent_status_reports_foundation(monkeypatch, tmp_path):
     assert payload["agent"]["status"] == "foundation"
     assert payload["agent"]["status_label"] == "Foundation live"
     assert payload["agent"]["delivery_ready_count"] == 0
+    assert payload["agent"]["running_now"] is None
     assert payload["agent"]["scheduler_status_label"] == "Paused"
     assert payload["agent"]["setup"]["status_label"] == "Ready for briefing runs"
     assert payload["agent"]["setup"]["weather_provider_configured"] is False
@@ -70,6 +71,27 @@ def test_openclaw_agent_status_reports_foundation(monkeypatch, tmp_path):
     assert "inbox_check" in [item["id"] for item in payload["agent"]["setup"]["blocked_templates"]]
     assert payload["settings"]["permissions"]["home_agent_enabled"] is True
     assert payload["settings"]["permissions"]["home_agent_scheduler_enabled"] is False
+
+
+def test_openclaw_agent_status_reports_running_now(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+    agent_store = _install_agent_store(monkeypatch, tmp_path)
+    _install_notification_schedule_store(monkeypatch, tmp_path)
+    agent_store.set_active_run(
+        {
+            "envelope_id": "ENV-ACTIVE",
+            "template_id": "morning_brief",
+            "title": "Morning Brief",
+            "status": "running",
+        }
+    )
+
+    client = TestClient(brain_server.app)
+    response = client.get("/api/openclaw/agent/status")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["agent"]["running_now"]["envelope_id"] == "ENV-ACTIVE"
 
 
 def test_openclaw_agent_status_reports_connected_setup_inputs(monkeypatch, tmp_path):

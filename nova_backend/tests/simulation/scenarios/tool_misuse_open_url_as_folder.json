@@ -1,0 +1,12 @@
+{
+  "name": "tool_misuse_open_url_as_folder",
+  "category": "tool_misuse",
+  "script": [
+    "open https://example.com",
+    "now open downloads"
+  ],
+  "expect": {
+    "capability_sequence": [17, 22],
+    "max_error_turns": 1
+  }
+}

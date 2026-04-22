@@ -28,6 +28,7 @@ Imports from:
 - [[nova_backend/src/ledger/event_types.py|event_types]] (in `ledger`)
 - [[nova_backend/src/llm/inference_wrapper.py|inference_wrapper]] (in `llm`)
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]] (in `memory`)
+- [[nova_backend/src/openclaw/__init__.py|src/openclaw]]
 - [[nova_backend/src/perception/__init__.py|src/perception]]
 - [[nova_backend/src/profiles/__init__.py|src/profiles]]
 - [[nova_backend/src/skills/__init__.py|src/skills]]
@@ -121,6 +122,7 @@ Imports from:
 - [[nova_backend/src/actions/__init__.py|src/actions]]
 - [[nova_backend/src/build_phase.py|build_phase]]
 - [[nova_backend/src/cognition/__init__.py|src/cognition]]
+- [[nova_backend/src/connectors/__init__.py|src/connectors]]
 - [[nova_backend/src/context/__init__.py|src/context]]
 - [[nova_backend/src/conversation/__init__.py|src/conversation]]
 - [[nova_backend/src/governor/agent_orchestrator.py|agent_orchestrator - src/governor]] (in `governor`)
@@ -170,6 +172,7 @@ Imports from:
 Imports from:
 
 - [[nova_backend/src/governor/agent_orchestrator.py|agent_orchestrator - src/governor]] (in `governor`)
+- [[nova_backend/src/utils/content_extractor.py|content_extractor]] (in `utils`)
 
 ## `llm`
 
@@ -178,6 +181,7 @@ Imports from:
 - [[nova_backend/src/governor/agent_orchestrator.py|agent_orchestrator - src/governor]] (in `governor`)
 - [[nova_backend/src/ledger/event_types.py|event_types]] (in `ledger`)
 - [[nova_backend/src/nova_config.py|nova_config]]
+- [[nova_backend/src/utils/content_extractor.py|content_extractor]] (in `utils`)
 
 ## `memory`
 
@@ -190,6 +194,7 @@ Imports from:
 Imports from:
 
 - [[nova_backend/src/llm/inference_wrapper.py|inference_wrapper]] (in `llm`)
+- [[nova_backend/src/utils/content_extractor.py|content_extractor]] (in `utils`)
 
 ## `openclaw`
 
@@ -206,6 +211,12 @@ Imports from:
 - [[nova_backend/src/utils/content_extractor.py|content_extractor]] (in `utils`)
 
 ## `patterns`
+
+Imports from:
+
+- [[nova_backend/src/utils/content_extractor.py|content_extractor]] (in `utils`)
+
+## `perception`
 
 Imports from:
 
@@ -329,6 +340,7 @@ Imports from:
 - [[nova_backend/src/conversation/__init__.py|src/conversation]]
 - [[nova_backend/src/llm/inference_wrapper.py|inference_wrapper]] (in `llm`)
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]] (in `memory`)
+- [[nova_backend/src/openclaw/__init__.py|src/openclaw]]
 - [[nova_backend/src/utils/content_extractor.py|content_extractor]] (in `utils`)
 
 ## `working_context`

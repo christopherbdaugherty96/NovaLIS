@@ -1,0 +1,14 @@
+{
+  "name": "power_user_news_to_topic_map",
+  "category": "power_users",
+  "script": [
+    "news",
+    "summarize all headlines",
+    "show topic memory map",
+    "open source 2"
+  ],
+  "expect": {
+    "capability_sequence": [56, 49, 51, 17],
+    "max_error_turns": 1
+  }
+}

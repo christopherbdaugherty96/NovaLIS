@@ -14,6 +14,58 @@ def test_router_requests_clarification_without_context():
     assert out.clarification_prompt == "Which file or folder do you mean?"
 
 
+def test_router_clarifies_bare_music_intent():
+    out = ConversationRouter.route("Music.")
+    assert out.needs_clarification is True
+    assert "play music" in (out.clarification_prompt or "")
+
+
+def test_router_normalizes_music_play_intent():
+    out = ConversationRouter.route("I need music while I work")
+    assert out.needs_clarification is False
+    assert out.mode.value == "action"
+    assert out.resolved_text == "play"
+
+
+def test_router_normalizes_pause_it_to_media_pause():
+    out = ConversationRouter.route("pause it", {"last_response": "Playback started.", "last_intent_family": "task"})
+    assert out.needs_clarification is False
+    assert out.mode.value == "action"
+    assert out.resolved_text == "pause"
+
+
+def test_router_clarifies_overloaded_command():
+    out = ConversationRouter.route("open documents search the web summarize news set volume 20")
+    assert out.needs_clarification is True
+    assert "Which one should I do first" in (out.clarification_prompt or "")
+
+
+def test_router_resolves_folder_answer_after_clarification():
+    out = ConversationRouter.route("the documents folder", {"last_response": "Which file or folder do you mean?"})
+    assert out.needs_clarification is False
+    assert out.mode.value == "action"
+    assert out.resolved_text == "open documents"
+
+
+def test_router_clarifies_empty_noise():
+    out = ConversationRouter.route("???")
+    assert out.needs_clarification is True
+    assert "misheard" in (out.clarification_prompt or "")
+
+
+def test_router_clarifies_vague_action():
+    out = ConversationRouter.route("do the thing")
+    assert out.needs_clarification is True
+    assert "What thing" in (out.clarification_prompt or "")
+
+
+def test_router_resolves_be_specific_folder_prefix():
+    out = ConversationRouter.route("Be specific: open documents.")
+    assert out.needs_clarification is False
+    assert out.mode.value == "action"
+    assert out.resolved_text == "open documents"
+
+
 def test_router_resolves_reference_with_context():
     out = ConversationRouter.route("open that folder", {"last_object": "downloads", "last_response": "ok"})
     assert out.needs_clarification is False

@@ -12,6 +12,15 @@ from src.openclaw.agent_personality_bridge import (
 )
 from src.openclaw.strict_preflight import strict_foundation_snapshot
 from src.openclaw.task_envelope import TaskEnvelope
+from src.openclaw.run_state_machine import (
+    RUN_FAILED,
+    RUN_RUNNING,
+    RUN_SUCCEEDED,
+    RunStateEvent,
+    normalize_run_status,
+    run_event_hub,
+    run_state_machine,
+)
 from src.utils.persistent_state import runtime_path, shared_path_lock, write_json_atomic
 
 
@@ -403,6 +412,11 @@ class OpenClawAgentRuntimeStore:
 
     def record_run(self, payload: dict[str, Any]) -> dict[str, Any]:
         entry = self._normalize_run(dict(payload or {}))
+        terminal_status = normalize_run_status(entry.get("status"))
+        if terminal_status == RUN_RUNNING:
+            terminal_status = RUN_SUCCEEDED
+        event_run = dict(entry)
+        event_run["run_state"] = terminal_status
         with self._lock:
             state = self._read_state()
             recent_runs = list(state.get("recent_runs") or [])
@@ -417,15 +431,27 @@ class OpenClawAgentRuntimeStore:
             state["delivery_inbox"] = delivery_inbox[:20]
             state["updated_at"] = _utc_now_iso()
             self._write_state(state)
+        self._emit_run_event(
+            RunStateEvent(
+                event="run_status_changed",
+                run=event_run,
+                previous_status=RUN_RUNNING,
+                status=terminal_status,
+                emitted_at=_utc_now_iso(),
+            )
+        )
         return dict(entry)
 
     def set_active_run(self, payload: dict[str, Any]) -> dict[str, Any]:
         entry = self._normalize_active_run(payload)
+        _active, event = run_state_machine.transition(None, entry, next_status=entry.get("status") if entry else RUN_RUNNING)
+        entry = self._normalize_active_run(_active)
         with self._lock:
             state = self._read_state()
             state["active_run"] = entry
             state["updated_at"] = _utc_now_iso()
             self._write_state(state)
+        self._emit_run_event(event)
         return dict(entry)
 
     def update_active_run(self, envelope_id: str, payload: dict[str, Any]) -> dict[str, Any] | None:
@@ -440,10 +466,14 @@ class OpenClawAgentRuntimeStore:
             merged = dict(active_run)
             for key, value in dict(payload or {}).items():
                 merged[key] = value
-            state["active_run"] = self._normalize_active_run(merged)
+            next_status = str(merged.get("status") or active_run.get("status") or RUN_RUNNING)
+            transitioned, event = run_state_machine.transition(active_run, merged, next_status=next_status)
+            state["active_run"] = self._normalize_active_run(transitioned)
             state["updated_at"] = _utc_now_iso()
             self._write_state(state)
-            return dict(state["active_run"] or {})
+            updated = dict(state["active_run"] or {})
+        self._emit_run_event(event)
+        return updated
 
     def request_cancel_active_run(self, envelope_id: str | None = None) -> bool:
         """Mark the active run as cancel-requested. Returns True if the flag was set."""
@@ -457,9 +487,19 @@ class OpenClawAgentRuntimeStore:
                 return False
             active_run["cancel_requested"] = True
             active_run["status_label"] = "Cancelling\u2026"
+            active_run["status"] = RUN_RUNNING
             state["active_run"] = active_run
             state["updated_at"] = _utc_now_iso()
             self._write_state(state)
+        self._emit_run_event(
+            RunStateEvent(
+                event="run_cancel_requested",
+                run=active_run,
+                previous_status=RUN_RUNNING,
+                status=RUN_RUNNING,
+                emitted_at=_utc_now_iso(),
+            )
+        )
         return True
 
     def is_cancel_requested(self, envelope_id: str) -> bool:
@@ -485,12 +525,55 @@ class OpenClawAgentRuntimeStore:
             state["active_run"] = None
             state["updated_at"] = _utc_now_iso()
             self._write_state(state)
+        self._emit_run_event(
+            {
+                "event": "run_cleared",
+                "run": active_run,
+                "previous_status": normalize_run_status(active_run.get("status")),
+                "status": "",
+                "emitted_at": _utc_now_iso(),
+            }
+        )
+
+    def finish_active_run(
+        self,
+        envelope_id: str,
+        *,
+        status: str,
+        payload: dict[str, Any] | None = None,
+    ) -> dict[str, Any] | None:
+        """Transition an active run into a terminal state, clear it, and emit the event."""
+        target = str(envelope_id or "").strip()
+        if not target:
+            return None
+        with self._lock:
+            state = self._read_state()
+            active_run = self._normalize_active_run(state.get("active_run"))
+            if not active_run or str(active_run.get("envelope_id") or "").strip() != target:
+                return None
+            terminal_run, event = run_state_machine.transition(
+                active_run,
+                dict(payload or {}),
+                next_status=status,
+            )
+            finished = dict(event.run or {})
+            state["active_run"] = self._normalize_active_run(terminal_run)
+            state["updated_at"] = _utc_now_iso()
+            self._write_state(state)
+        self._emit_run_event(event)
+        return finished
 
     def has_active_run(self) -> bool:
         """Return True if an active run is present (not yet cleared)."""
         with self._lock:
             state = self._read_state()
-        return self._normalize_active_run(state.get("active_run")) is not None
+        return run_state_machine.running_now(state) is not None
+
+    def running_now(self) -> dict[str, Any] | None:
+        """Return the single current active run, if one is pending or running."""
+        with self._lock:
+            state = self._read_state()
+        return run_state_machine.running_now(state)
 
     def recover_interrupted_runs(self) -> None:
         """Mark any active run left over from a previous session as interrupted."""
@@ -501,12 +584,22 @@ class OpenClawAgentRuntimeStore:
                 return
             active_run["status_label"] = "Interrupted"
             active_run["cancel_requested"] = True
+            active_run["status"] = RUN_FAILED
             recent = list(state.get("recent_runs") or [])
-            recent.insert(0, {**active_run, "outcome": "interrupted"})
+            recent.insert(0, {**active_run, "outcome": "interrupted", "summary": "Run interrupted before completion."})
             state["recent_runs"] = recent[:12]
             state["active_run"] = None
             state["updated_at"] = _utc_now_iso()
             self._write_state(state)
+        self._emit_run_event(
+            RunStateEvent(
+                event="run_status_changed",
+                run=active_run,
+                previous_status=RUN_RUNNING,
+                status=RUN_FAILED,
+                emitted_at=_utc_now_iso(),
+            )
+        )
 
     def dismiss_delivery(self, delivery_id: str) -> dict[str, Any]:
         target = str(delivery_id or "").strip()
@@ -825,8 +918,8 @@ class OpenClawAgentRuntimeStore:
             "triggered_by": str(raw.get("triggered_by") or "").strip() or "dashboard",
             "delivery_mode": str(raw.get("delivery_mode") or "").strip() or "widget",
             "delivery_channels": {
-                "widget": bool(dict(raw.get("delivery_channels") or {}).get("widget")),
-                "chat": bool(dict(raw.get("delivery_channels") or {}).get("chat")),
+                "widget": bool(self._normalize_delivery_channels(raw.get("delivery_channels")).get("widget")),
+                "chat": bool(self._normalize_delivery_channels(raw.get("delivery_channels")).get("chat")),
             },
             "presented_message": str(raw.get("presented_message") or "").strip(),
             "summary": str(raw.get("summary") or "").strip(),
@@ -862,8 +955,8 @@ class OpenClawAgentRuntimeStore:
             "triggered_by": str(raw.get("triggered_by") or "").strip() or "dashboard",
             "delivery_mode": str(raw.get("delivery_mode") or "").strip() or "widget",
             "delivery_channels": {
-                "widget": bool(dict(raw.get("delivery_channels") or {}).get("widget")),
-                "chat": bool(dict(raw.get("delivery_channels") or {}).get("chat")),
+                "widget": bool(self._normalize_delivery_channels(raw.get("delivery_channels")).get("widget")),
+                "chat": bool(self._normalize_delivery_channels(raw.get("delivery_channels")).get("chat")),
             },
             "started_at": str(raw.get("started_at") or _utc_now_iso()),
             "summary": str(raw.get("summary") or "").strip(),
@@ -984,8 +1077,8 @@ class OpenClawAgentRuntimeStore:
             "summary": str(raw.get("summary") or "").strip(),
             "delivery_mode": str(raw.get("delivery_mode") or "").strip() or "widget",
             "delivery_channels": {
-                "widget": bool(dict(raw.get("delivery_channels") or {}).get("widget")),
-                "chat": bool(dict(raw.get("delivery_channels") or {}).get("chat")),
+                "widget": bool(self._normalize_delivery_channels(raw.get("delivery_channels")).get("widget")),
+                "chat": bool(self._normalize_delivery_channels(raw.get("delivery_channels")).get("chat")),
             },
             "triggered_by": str(raw.get("triggered_by") or "").strip() or "dashboard",
             "created_at": str(raw.get("created_at") or _utc_now_iso()),
@@ -997,6 +1090,26 @@ class OpenClawAgentRuntimeStore:
     def _new_delivery_id(self) -> str:
         stamp = datetime.now(timezone.utc).strftime("%Y%m%d-%H%M%S")
         return f"DEL-{stamp}-{uuid4().hex[:4].upper()}"
+
+    @staticmethod
+    def _normalize_delivery_channels(value: Any) -> dict[str, bool]:
+        if isinstance(value, dict):
+            raw = value
+        elif isinstance(value, (list, tuple, set)):
+            raw = {str(item).strip(): True for item in value if str(item).strip()}
+        else:
+            raw = {}
+        return {
+            "widget": bool(raw.get("widget")),
+            "chat": bool(raw.get("chat")),
+        }
+
+    @staticmethod
+    def _emit_run_event(event: RunStateEvent | dict[str, Any]) -> None:
+        try:
+            run_event_hub.emit(event)
+        except Exception:
+            pass
 
     def _schedule_runtime_fields(self, template: dict[str, Any]) -> tuple[str, str, str]:
         if not bool(template.get("manual_run_available")):

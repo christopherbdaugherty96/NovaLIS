@@ -1,0 +1,15 @@
+{
+  "name": "failed_provider_web_search_degrades",
+  "category": "failed_providers",
+  "script": [
+    "search for latest python release",
+    "try a local answer instead"
+  ],
+  "expect": {
+    "capability_sequence": [16],
+    "required_response_fragments": [
+      {"turn": 1, "contains": "can't execute", "severity": "medium"}
+    ],
+    "max_error_turns": 1
+  }
+}

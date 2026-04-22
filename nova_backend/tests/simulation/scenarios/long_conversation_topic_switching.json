@@ -1,0 +1,20 @@
+{
+  "name": "long_conversation_topic_switching",
+  "category": "long_conversations",
+  "script": [
+    "hello nova",
+    "research battery storage",
+    "shorter version",
+    "news",
+    "summarize all headlines",
+    "set volume 25",
+    "open documents",
+    "show sources",
+    "what were we talking about before news?",
+    "make that concise"
+  ],
+  "expect": {
+    "capability_sequence": [48, 56, 49, 19, 22],
+    "max_error_turns": 2
+  }
+}

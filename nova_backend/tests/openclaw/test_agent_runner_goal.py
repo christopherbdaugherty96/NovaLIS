@@ -5,6 +5,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from src.openclaw.agent_runner import OpenClawAgentRunner
+from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
+from src.openclaw.run_state_machine import run_event_hub
 
 
 def _make_runner():
@@ -14,6 +16,7 @@ def _make_runner():
     store.set_active_run = MagicMock()
     store.update_active_run = MagicMock()
     store.clear_active_run = MagicMock()
+    store.finish_active_run = MagicMock()
     store.is_cancel_requested = MagicMock(return_value=False)
     return OpenClawAgentRunner(store=store, network=None)
 
@@ -78,3 +81,36 @@ async def test_run_goal_records_execution_memory():
 
     stats = runner._execution_memory.stats("system")
     assert stats.get("total_calls", 0) >= 1
+
+
+@pytest.mark.asyncio
+async def test_run_goal_finishes_active_run_with_terminal_event(tmp_path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    runner = OpenClawAgentRunner(store=store, network=None)
+    queue = run_event_hub.subscribe()
+
+    def mock_generate_chat(prompt, **kwargs):
+        if "What should be done next" in prompt:
+            return "Get system status"
+        if "Which tools" in prompt:
+            return '["system"]'
+        if "What parameters" in prompt:
+            return '{}'
+        if "Has the goal been achieved" in prompt:
+            return "yes"
+        return ""
+
+    try:
+        with patch("src.openclaw.thinking_loop.llm_gateway") as mock_gw:
+            mock_gw.generate_chat = mock_generate_chat
+            result = await runner.run_goal("System health check")
+
+        assert result["success"] is True
+        assert store.snapshot()["active_run"] is None
+        events = []
+        while not queue.empty():
+            events.append(queue.get_nowait())
+        assert any(event["status"] == "running" for event in events)
+        assert any(event["status"] == "succeeded" for event in events)
+    finally:
+        run_event_hub.unsubscribe(queue)

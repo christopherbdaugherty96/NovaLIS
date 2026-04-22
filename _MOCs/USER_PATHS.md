@@ -63,7 +63,6 @@ _Governance matrix, bypass surfaces, and the canonical contract map._
 
 - [[docs/current_runtime/GOVERNANCE_MATRIX|Governance matrix]]
 - [[docs/current_runtime/BYPASS_SURFACES|Bypass surfaces]]
-- [[docs/canonical/CANONICAL_DOCUMENT_MAP|Canonical document map]]
 
 ## Tips for using this vault
 

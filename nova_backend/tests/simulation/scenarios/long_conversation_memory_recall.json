@@ -1,0 +1,20 @@
+{
+  "name": "long_conversation_memory_recall",
+  "category": "long_conversations",
+  "script": [
+    "remember my launch project is Nova",
+    "research local agents",
+    "shorter",
+    "system status",
+    "news",
+    "what is my launch project?",
+    "save that as part of Nova",
+    "continue my Nova thread"
+  ],
+  "expect": {
+    "required_response_fragments": [
+      {"turn": 6, "contains": "Nova", "severity": "high"}
+    ],
+    "max_error_turns": 2
+  }
+}

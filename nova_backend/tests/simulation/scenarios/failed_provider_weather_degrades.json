@@ -1,0 +1,12 @@
+{
+  "name": "failed_provider_weather_degrades",
+  "category": "failed_providers",
+  "script": [
+    "weather in Seattle",
+    "what can you tell me without live weather?"
+  ],
+  "expect": {
+    "capability_sequence": [55],
+    "max_error_turns": 1
+  }
+}

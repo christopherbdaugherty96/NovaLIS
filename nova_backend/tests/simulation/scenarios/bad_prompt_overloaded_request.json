@@ -1,0 +1,12 @@
+{
+  "name": "bad_prompt_overloaded_request",
+  "category": "bad_prompts",
+  "script": [
+    "open documents search the web summarize news set volume 20 and remember I moved",
+    "what are you going to do first?"
+  ],
+  "expect": {
+    "clarification_turns": [1],
+    "max_error_turns": 0
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "name": "power_user_multi_step_research",
+  "category": "power_users",
+  "script": [
+    "research local-first AI assistants",
+    "summarize that",
+    "show sources for your last response",
+    "open source 1"
+  ],
+  "expect": {
+    "capability_sequence": [48, 17],
+    "max_error_turns": 1
+  }
+}

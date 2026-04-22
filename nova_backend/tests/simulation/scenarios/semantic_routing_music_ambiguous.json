@@ -1,0 +1,13 @@
+{
+  "name": "semantic_routing_music_ambiguous",
+  "category": "semantic_routing",
+  "script": [
+    "I need music while I work",
+    "not a lecture, play something",
+    "pause it"
+  ],
+  "expect": {
+    "capability_sequence": [20, 20, 20],
+    "max_error_turns": 1
+  }
+}
