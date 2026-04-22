@@ -133,6 +133,12 @@ class OpenClawAgentScheduler:
             )
             template = self._store.get_template(template_id)
             if template is None:
+                self._store.record_scheduled_run_outcome(
+                    template_id,
+                    outcome="failed",
+                    note="template_not_found: store returned None",
+                    now=now,
+                )
                 self._log(
                     "OPENCLAW_AGENT_SCHEDULE_FAILED",
                     {
@@ -162,6 +168,12 @@ class OpenClawAgentScheduler:
                     )
                     self._log("OPENCLAW_RUN_ISSUED", issued.ledger_event)
                 except EnvelopeFactoryError as exc:
+                    self._store.record_scheduled_run_outcome(
+                        template_id,
+                        outcome="failed",
+                        note=f"envelope_factory_refused: {exc}",
+                        now=now,
+                    )
                     self._log(
                         "OPENCLAW_AGENT_SCHEDULE_FAILED",
                         {
