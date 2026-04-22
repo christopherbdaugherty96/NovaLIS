@@ -306,8 +306,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     except Exception:
         pass
 
-    await send_chat_message(ws, f"Hey — what are you working on?{_startup_notice}")
-    await send_chat_done(ws)
+    try:
+        await send_chat_message(ws, f"Hey — what are you working on?{_startup_notice}")
+        await send_chat_done(ws)
+    except WebSocketDisconnect:
+        log.info("WebSocket disconnected during startup greeting")
+        run_event_hub.unsubscribe(run_event_queue)
+        thought_store.clear_session(session_id)
+        GovernorMediator.clear_session(session_id)
+        return
 
     async def _send_initial_trust_status() -> None:
         await asyncio.sleep(0.2)

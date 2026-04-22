@@ -188,7 +188,11 @@ class OpenClawAgentRunner:
         self._tool_registry = get_tool_registry()
         self._per_tool_budget = PerToolBudgetTracker()
 
+    def _reset_per_tool_budget(self) -> None:
+        self._per_tool_budget = PerToolBudgetTracker()
+
     async def run_template(self, template_id: str, *, triggered_by: str = "dashboard") -> dict[str, Any]:
+        self._reset_per_tool_budget()
         template = self._store.get_template(template_id)
         if template is None:
             raise KeyError(template_id)
@@ -1143,7 +1147,9 @@ class OpenClawAgentRunner:
         if not (goal or "").strip():
             raise ValueError("Goal cannot be empty")
 
+        self._reset_per_tool_budget()
         t0 = time.monotonic()
+        started_at = _utc_now_iso()
 
         loop = ThinkingLoop(
             registry=self._tool_registry,
@@ -1163,7 +1169,7 @@ class OpenClawAgentRunner:
             "triggered_by": triggered_by,
             "delivery_mode": "widget",
             "delivery_channels": {"widget": True, "chat": False},
-            "started_at": _utc_now_iso(),
+            "started_at": started_at,
             "summary": f"Working on: {goal}",
         })
 
@@ -1172,7 +1178,7 @@ class OpenClawAgentRunner:
                 raise RunCancelledError("Goal cancelled by user request.")
             self._store.update_active_run(goal_id, {
                 "status_label": f"Step {step_num}: {', '.join(tools)}",
-                "summary": f"Step {step_num}/{loop.MAX_STEPS} — {status}",
+                "summary": f"Step {step_num}/{loop.MAX_STEPS} - {status}",
             })
 
         loop.set_progress_callback(_on_step_progress)
@@ -1180,32 +1186,88 @@ class OpenClawAgentRunner:
         try:
             result = await loop.run(goal.strip())
         except RunCancelledError:
+            total_duration = time.monotonic() - t0
+            summary = "Goal was cancelled before completion."
+            completed_at = _utc_now_iso()
+            per_tool_budget = self._per_tool_budget.snapshot()
             self._store.finish_active_run(
                 goal_id,
                 status=RUN_CANCELLED,
                 payload={
                     "status_label": "Cancelled",
-                    "summary": "Goal was cancelled before completion.",
+                    "summary": summary,
                 },
+            )
+            run_record = self._store.record_run(
+                {
+                    "envelope_id": goal_id,
+                    "template_id": "goal",
+                    "title": goal[:80],
+                    "status": "cancelled",
+                    "triggered_by": triggered_by,
+                    "delivery_mode": "widget",
+                    "delivery_channels": {"widget": False, "chat": False},
+                    "presented_message": summary,
+                    "summary": summary,
+                    "started_at": started_at,
+                    "completed_at": completed_at,
+                    "llm_summary_used": False,
+                    "budget_usage": {"per_tool": per_tool_budget},
+                    "usage_meta": {
+                        "route": "thinking_loop",
+                        "route_label": "OpenClaw thinking loop",
+                        "local_only": True,
+                    },
+                }
             )
             return {
                 "goal": goal,
                 "triggered_by": triggered_by,
                 "success": False,
                 "steps": len(loop.thoughts),
-                "summary": "Goal was cancelled before completion.",
+                "summary": summary,
                 "thoughts": loop.thoughts,
-                "total_duration_seconds": round(time.monotonic() - t0, 3),
+                "total_duration_seconds": round(total_duration, 3),
+                "per_tool_budget": per_tool_budget,
+                "run_record": run_record,
                 "cancelled": True,
             }
         except Exception as exc:
+            total_duration = time.monotonic() - t0
+            summary = f"Goal failed: {str(exc)[:120]}"
+            completed_at = _utc_now_iso()
+            per_tool_budget = self._per_tool_budget.snapshot()
             self._store.finish_active_run(
                 goal_id,
                 status=RUN_FAILED,
                 payload={
                     "status_label": "Failed",
-                    "summary": f"Goal failed: {str(exc)[:120]}",
+                    "summary": summary,
                 },
+            )
+            self._store.record_run(
+                {
+                    "envelope_id": goal_id,
+                    "template_id": "goal",
+                    "title": goal[:80],
+                    "status": "failed",
+                    "triggered_by": triggered_by,
+                    "delivery_mode": "widget",
+                    "delivery_channels": {"widget": False, "chat": False},
+                    "presented_message": summary,
+                    "summary": summary,
+                    "started_at": started_at,
+                    "completed_at": completed_at,
+                    "llm_summary_used": False,
+                    "budget_usage": {"per_tool": per_tool_budget},
+                    "usage_meta": {
+                        "route": "thinking_loop",
+                        "route_label": "OpenClaw thinking loop",
+                        "local_only": True,
+                    },
+                    "error": str(exc)[:500],
+                    "total_duration_seconds": round(total_duration, 3),
+                }
             )
             raise
 
@@ -1231,13 +1293,39 @@ class OpenClawAgentRunner:
         summary = result.get("synthesis") or self._summarize_goal_result(goal, result)
 
         total_duration = time.monotonic() - t0
+        completed_at = _utc_now_iso()
+        status = RUN_SUCCEEDED if result.get("success", False) else RUN_FAILED
+        status_label = "Succeeded" if result.get("success", False) else "Failed"
+        per_tool_budget = self._per_tool_budget.snapshot()
         self._store.finish_active_run(
             goal_id,
-            status=RUN_SUCCEEDED if result.get("success", False) else RUN_FAILED,
+            status=status,
             payload={
-                "status_label": "Succeeded" if result.get("success", False) else "Failed",
+                "status_label": status_label,
                 "summary": summary,
             },
+        )
+        run_record = self._store.record_run(
+            {
+                "envelope_id": goal_id,
+                "template_id": "goal",
+                "title": goal[:80],
+                "status": "completed" if result.get("success", False) else "failed",
+                "triggered_by": triggered_by,
+                "delivery_mode": "widget",
+                "delivery_channels": {"widget": True, "chat": False},
+                "presented_message": summary,
+                "summary": summary,
+                "started_at": started_at,
+                "completed_at": completed_at,
+                "llm_summary_used": bool(result.get("synthesis")),
+                "budget_usage": {"per_tool": per_tool_budget},
+                "usage_meta": {
+                    "route": "thinking_loop",
+                    "route_label": "OpenClaw thinking loop",
+                    "local_only": True,
+                },
+            }
         )
 
         return {
@@ -1248,7 +1336,8 @@ class OpenClawAgentRunner:
             "summary": summary,
             "thoughts": result.get("thoughts", []),
             "total_duration_seconds": round(total_duration, 3),
-            "per_tool_budget": self._per_tool_budget.snapshot(),
+            "per_tool_budget": per_tool_budget,
+            "run_record": run_record,
         }
 
     @staticmethod

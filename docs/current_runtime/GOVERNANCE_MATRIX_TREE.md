@@ -89,6 +89,7 @@ graph TD
   Routes --> R58_screen_capture[screen_capture -> capability 58]
   Routes --> R48_search[search -> capability 48]
   Routes --> R64_send_email_draft[send_email_draft -> capability 64]
+  Routes --> R65_shopify_intelligence_report[shopify_intelligence_report -> capability 65]
   Routes --> R18_speak[speak -> capability 18]
   Routes --> R52_story_tracker_update[story_tracker_update -> capability 52]
   Routes --> R53_story_tracker_view[story_tracker_view -> capability 53]
@@ -160,6 +161,7 @@ Runtime
 |  |- screen_capture -> 58
 |  |- search -> 48
 |  |- send_email_draft -> 64
+|  |- shopify_intelligence_report -> 65
 |  |- speak -> 18
 |  |- story_tracker_update -> 52
 |  |- story_tracker_view -> 53

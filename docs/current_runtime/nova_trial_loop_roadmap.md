@@ -3,20 +3,20 @@
 Version: 1.1
 Date: 2026-04-21
 Status: Active execution plan
-Proposed destination: `docs/current_runtime/nova_trial_loop_roadmap.md` or `docs/future/nova_trial_loop_roadmap.md`
+Location: `docs/current_runtime/nova_trial_loop_roadmap.md`
 Related artifacts:
 
 - Scenario library: `nova_backend/tests/simulation/scenarios/`
 - Trial runner: `nova_backend/tests/simulation/nova_trial_runner.py`
-- Latest generated report: `nova_backend/tests/simulation/reports/latest_trial_report.md`
+- Generated reports: `nova_backend/tests/simulation/reports/latest_trial_report.md` (local artifact, gitignored)
 
 Non-goal: This roadmap should not become a feature wishlist. It should stay tied to measured Trial Loop gaps.
 
 ## Baseline
 
-Baseline report:
+Baseline summary:
 
-- Generated report: `nova_backend/tests/simulation/reports/latest_trial_report.md`
+- Report artifact: local generated report, intentionally not committed
 - Generated at: 2026-04-21T22:07:39.435200+00:00
 - Scenario count: 36
 - Passed: 3
@@ -27,6 +27,12 @@ Baseline report:
 - Gap categories: routing=15, response_quality=14, execution=11, clarification=4, safety=3
 
 This document should be updated after each sprint with a fresh report timestamp and the new rollup numbers. Do not treat the baseline as timeless.
+
+Regenerate the local report with:
+
+```powershell
+python -m nova_backend.tests.simulation.nova_trial_runner
+```
 
 ## Executive Summary
 
@@ -158,7 +164,6 @@ The Trial Loop is Nova's practice field. The baseline is intentionally uncomfort
 
 ## First Commit Slice
 
-1. Move this roadmap to the chosen docs location.
-2. Add a short command block showing how to run the Trial Loop.
-3. Keep generated reports ignored; commit scenarios and evaluator code, not report artifacts.
-4. Re-run the Trial Loop after each sprint and update the trend table.
+1. Keep generated reports ignored; commit scenarios and evaluator code, not report artifacts.
+2. Re-run the Trial Loop after each sprint and update the trend table.
+3. Add new scenarios for each fixed gap so regressions stay visible.

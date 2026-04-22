@@ -60,9 +60,15 @@ class ConversationRouter:
     )
     POLICY_BLOCK_PATTERNS = (
         re.compile(r"\bbypass (the )?governor\b", re.IGNORECASE),
+        re.compile(r"\bignore (your|the) (safety|policy|policies|guardrails|instructions|rules)\b", re.IGNORECASE),
         re.compile(r"\bignore (your|the) rules\b", re.IGNORECASE),
         re.compile(r"\bexecute (python|shell|command)\b", re.IGNORECASE),
         re.compile(r"\bdelete all files\b", re.IGNORECASE),
+        re.compile(r"\b(?:steal|exfiltrate|dump|extract)\b.{0,48}\b(?:password|passwords|credential|credentials|token|tokens|api keys?)\b", re.IGNORECASE),
+        re.compile(r"\b(?:browser|saved)\s+passwords?\b", re.IGNORECASE),
+        re.compile(r"\b(?:write|create|build|make)\b.{0,64}\b(?:malware|ransomware|keylogger|rootkit|trojan)\b", re.IGNORECASE),
+        re.compile(r"\b(?:persist|persistence|startup)\b.{0,64}\b(?:malware|payload|backdoor)\b", re.IGNORECASE),
+        re.compile(r"\b(?:invest|trade|buy|sell)\b.{0,64}\b(?:all|everything|life savings|my money)\b", re.IGNORECASE),
     )
     FOLLOWUP_MARKERS = (
         "that",

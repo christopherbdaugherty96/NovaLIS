@@ -152,6 +152,23 @@ function applyOpenClawAgentPayload(data) {
   syncOpenClawDeliveryChatSurface(openClawAgentState.deliveryInbox, { initialLoad: !wasLoaded });
 }
 
+function applyOpenClawRunStatusEvent(event) {
+  const payload = event && typeof event === "object" ? event : {};
+  const run = payload.run && typeof payload.run === "object" ? { ...payload.run } : null;
+  const status = String(payload.status || "").trim().toLowerCase();
+  const eventName = String(payload.event || "").trim();
+
+  if (eventName === "run_cleared" || ["succeeded", "failed", "cancelled"].includes(status)) {
+    openClawAgentState.activeRun = null;
+    requestOpenClawAgentRefresh(true);
+  } else if (run && ["pending", "running"].includes(status)) {
+    openClawAgentState.activeRun = run;
+  }
+
+  renderOpenClawDeliveryWidget();
+  renderOpenClawAgentPage();
+}
+
 function syncOpenClawDeliveryChatSurface(items, { initialLoad = false } = {}) {
   const rows = Array.isArray(items) ? items : [];
   if (initialLoad) {
