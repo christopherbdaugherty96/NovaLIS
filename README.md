@@ -26,6 +26,8 @@ That makes Nova less flashy in the wrong places and more trustworthy where it ma
 
 ## What Nova Can Do Today
 
+![Nova dashboard home](docs/product/assets/dashboard-home.png)
+
 ### Research and Information
 
 | Task | Example |
@@ -121,6 +123,7 @@ Start here:
 - [Docs index](docs/INDEX.md)
 - [Quickstart](QUICKSTART.md)
 - [Use cases](USE_CASES.md)
+- [Visual proof](docs/product/visual_proof.md)
 - [Runtime state](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
 - [Architecture](docs/reference/ARCHITECTURE.md)
 - [Human guides](docs/reference/HUMAN_GUIDES/)

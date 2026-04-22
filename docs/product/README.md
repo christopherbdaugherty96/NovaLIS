@@ -7,6 +7,7 @@ Current entry points:
 - [README](../../README.md)
 - [Quickstart](../../QUICKSTART.md)
 - [Use cases](../../USE_CASES.md)
+- [Visual proof](visual_proof.md)
 - [Docs index](../INDEX.md)
 
 Avoid copying exact runtime counts here. Link to [current runtime state](../current_runtime/CURRENT_RUNTIME_STATE.md) instead.

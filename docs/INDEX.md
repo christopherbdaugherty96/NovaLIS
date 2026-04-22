@@ -9,6 +9,7 @@ Use this page to find the right document quickly. Runtime truth stays in generat
 - [README](../README.md) - public overview and positioning.
 - [Quickstart](../QUICKSTART.md) - install, start, and first commands.
 - [Use cases](../USE_CASES.md) - practical workflows Nova can support.
+- [Visual proof](product/visual_proof.md) - dashboard, trust, and report screenshots.
 - [Introduction](reference/INTRODUCTION.md) - plain-language project introduction.
 
 ---
