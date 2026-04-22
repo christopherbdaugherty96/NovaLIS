@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (257)
+## Backend runtime (258)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -138,7 +138,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/connectors/package_registry.py|package_registry]]
   summary: CONNECTOR_PACKAGES_PATH = Path(__file__).resolve().parents[1] / "config" / "connector_packages.json
 - [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
-  summary: Shopify Connector — interface stub for Shopify Admin API integration.
+  summary: Shopify Connector - governed Shopify Admin API integration.
 - [[nova_backend/src/context/__init__.py|src/context]]
   summary: __all__ = ["ContextSnapshotService"]
 - [[nova_backend/src/context/active_window.py|active_window]]
@@ -332,6 +332,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Per-tool budget tracking for OpenClaw.
 - [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
   summary: Robust tool execution for OpenClaw — retry, fallback, parallel, and metering.
+- [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
+  summary: RUN_PENDING = "pending
 - [[nova_backend/src/openclaw/strict_preflight.py|strict_preflight]]
   summary: STRICT_FOUNDATION_LABEL = "Manual preflight active
 - [[nova_backend/src/openclaw/task_envelope.py|task_envelope]]
@@ -518,7 +520,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (285)
+## Tests and verification (322)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -566,6 +568,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Shared fixtures and helpers for capability certification tests.
 - [[nova_backend/tests/certification/test_lock_regression_guard.py|test_lock_regression_guard]]
   summary: Capability Lock Regression Guard
+- [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
+  summary: def test_http_shopify_connector_uses_configured_api_version():
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
   summary: def test_clarify_prompts_are_single_question_and_deterministic():
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
@@ -747,6 +751,8 @@ Use this to orient yourself before diving into a specific module.
   summary: Phase 3 comprehensive test suite
 - [[nova_backend/tests/openclaw/test_robust_executor.py|test_robust_executor]]
   summary: class _FakeSkill:
+- [[nova_backend/tests/openclaw/test_run_state_machine.py|test_run_state_machine]]
+  summary: RUN_CANCELLED,
 - [[nova_backend/tests/openclaw/test_strict_preflight.py|test_strict_preflight]]
   summary: def test_strict_foundation_snapshot_reports_current_limits():
 - [[nova_backend/tests/openclaw/test_task_envelope.py|test_task_envelope]]
@@ -957,14 +963,80 @@ Use this to orient yourself before diving into a specific module.
   summary: def load_script(path: str | Path) -> list[str]:
 - [[nova_backend/tests/simulation/conversation_simulator.py|conversation_simulator]]
   summary: SHORTEN_ALIASES = {
+- [[nova_backend/tests/simulation/nova_trial_runner.py|nova_trial_runner]]
+  summary: if __package__ in {None, ""}:
+- [[nova_backend/tests/simulation/scenarios/bad_prompt_empty_intent.json|bad_prompt_empty_intent]]
+  summary: name": "bad_prompt_empty_intent",
+- [[nova_backend/tests/simulation/scenarios/bad_prompt_overloaded_request.json|bad_prompt_overloaded_request]]
+  summary: name": "bad_prompt_overloaded_request",
+- [[nova_backend/tests/simulation/scenarios/bad_prompt_prompt_injection.json|bad_prompt_prompt_injection]]
+  summary: name": "bad_prompt_prompt_injection",
+- [[nova_backend/tests/simulation/scenarios/cancellation_briefing.json|cancellation_briefing]]
+  summary: name": "cancellation_briefing",
+- [[nova_backend/tests/simulation/scenarios/cancellation_local_action.json|cancellation_local_action]]
+  summary: name": "cancellation_local_action",
+- [[nova_backend/tests/simulation/scenarios/cancellation_research_midflow.json|cancellation_research_midflow]]
+  summary: name": "cancellation_research_midflow",
+- [[nova_backend/tests/simulation/scenarios/confused_ambiguous_music.json|confused_ambiguous_music]]
+  summary: name": "confused_ambiguous_music",
+- [[nova_backend/tests/simulation/scenarios/confused_followup_after_error.json|confused_followup_after_error]]
+  summary: name": "confused_followup_after_error",
+- [[nova_backend/tests/simulation/scenarios/confused_open_it_without_context.json|confused_open_it_without_context]]
+  summary: name": "confused_open_it_without_context",
+- [[nova_backend/tests/simulation/scenarios/degraded_runtime_local_model_locked.json|degraded_runtime_local_model_locked]]
+  summary: name": "degraded_runtime_local_model_locked",
 - [[nova_backend/tests/simulation/scenarios/developer_debugging_workflow.json|developer_debugging_workflow]]
   summary: name": "developer_debugging_workflow",
+- [[nova_backend/tests/simulation/scenarios/failed_provider_calendar_degrades.json|failed_provider_calendar_degrades]]
+  summary: name": "failed_provider_calendar_degrades",
+- [[nova_backend/tests/simulation/scenarios/failed_provider_weather_degrades.json|failed_provider_weather_degrades]]
+  summary: name": "failed_provider_weather_degrades",
+- [[nova_backend/tests/simulation/scenarios/failed_provider_web_search_degrades.json|failed_provider_web_search_degrades]]
+  summary: name": "failed_provider_web_search_degrades",
+- [[nova_backend/tests/simulation/scenarios/long_conversation_memory_recall.json|long_conversation_memory_recall]]
+  summary: name": "long_conversation_memory_recall",
+- [[nova_backend/tests/simulation/scenarios/long_conversation_recovery_after_failure.json|long_conversation_recovery_after_failure]]
+  summary: name": "long_conversation_recovery_after_failure",
+- [[nova_backend/tests/simulation/scenarios/long_conversation_topic_switching.json|long_conversation_topic_switching]]
+  summary: name": "long_conversation_topic_switching",
+- [[nova_backend/tests/simulation/scenarios/memory_contradiction_disable_extraction.json|memory_contradiction_disable_extraction]]
+  summary: name": "memory_contradiction_disable_extraction",
+- [[nova_backend/tests/simulation/scenarios/memory_contradiction_location.json|memory_contradiction_location]]
+  summary: name": "memory_contradiction_location",
+- [[nova_backend/tests/simulation/scenarios/memory_contradiction_preference.json|memory_contradiction_preference]]
+  summary: name": "memory_contradiction_preference",
+- [[nova_backend/tests/simulation/scenarios/monetization_cancel_subscription.json|monetization_cancel_subscription]]
+  summary: name": "monetization_cancel_subscription",
+- [[nova_backend/tests/simulation/scenarios/monetization_payment_failure.json|monetization_payment_failure]]
+  summary: name": "monetization_payment_failure",
+- [[nova_backend/tests/simulation/scenarios/monetization_upgrade_question.json|monetization_upgrade_question]]
+  summary: name": "monetization_upgrade_question",
 - [[nova_backend/tests/simulation/scenarios/news_briefing_workflow.json|news_briefing_workflow]]
   summary: name": "news_briefing_workflow",
+- [[nova_backend/tests/simulation/scenarios/power_user_multi_step_research.json|power_user_multi_step_research]]
+  summary: name": "power_user_multi_step_research",
+- [[nova_backend/tests/simulation/scenarios/power_user_news_to_topic_map.json|power_user_news_to_topic_map]]
+  summary: name": "power_user_news_to_topic_map",
+- [[nova_backend/tests/simulation/scenarios/power_user_system_then_action.json|power_user_system_then_action]]
+  summary: name": "power_user_system_then_action",
 - [[nova_backend/tests/simulation/scenarios/research_analyst_workflow.json|research_analyst_workflow]]
   summary: name": "research_analyst_workflow",
+- [[nova_backend/tests/simulation/scenarios/semantic_routing_music_ambiguous.json|semantic_routing_music_ambiguous]]
+  summary: name": "semantic_routing_music_ambiguous",
 - [[nova_backend/tests/simulation/scenarios/system_diagnostic_workflow.json|system_diagnostic_workflow]]
   summary: name": "system_diagnostic_workflow",
+- [[nova_backend/tests/simulation/scenarios/tool_misuse_open_url_as_folder.json|tool_misuse_open_url_as_folder]]
+  summary: name": "tool_misuse_open_url_as_folder",
+- [[nova_backend/tests/simulation/scenarios/tool_misuse_play_music_vs_discuss_music.json|tool_misuse_play_music_vs_discuss_music]]
+  summary: name": "tool_misuse_play_music_vs_discuss_music",
+- [[nova_backend/tests/simulation/scenarios/tool_misuse_weather_as_news.json|tool_misuse_weather_as_news]]
+  summary: name": "tool_misuse_weather_as_news",
+- [[nova_backend/tests/simulation/scenarios/unsafe_request_credential_theft.json|unsafe_request_credential_theft]]
+  summary: name": "unsafe_request_credential_theft",
+- [[nova_backend/tests/simulation/scenarios/unsafe_request_financial_trade.json|unsafe_request_financial_trade]]
+  summary: name": "unsafe_request_financial_trade",
+- [[nova_backend/tests/simulation/scenarios/unsafe_request_malware.json|unsafe_request_malware]]
+  summary: name": "unsafe_request_malware",
 - [[nova_backend/tests/simulation/stress/__init__.py|tests/simulation/stress]]
   summary: Cognitive stress testing package marker.
 - [[nova_backend/tests/simulation/stress/stress_generator.py|stress_generator]]
@@ -981,12 +1053,16 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_cognitive_trace_layer_is_opt_in_and_structured():
 - [[nova_backend/tests/simulation/test_governor_safety_simulation.py|test_governor_safety_simulation]]
   summary: def test_governor_safety_simulation():
+- [[nova_backend/tests/simulation/test_nova_trial_runner.py|test_nova_trial_runner]]
+  summary: def test_trial_evaluator_reports_capability_sequence_gap():
 - [[nova_backend/tests/simulation/test_research_conversation_flow.py|test_research_conversation_flow]]
   summary: def test_research_conversation_flow(monkeypatch):
 - [[nova_backend/tests/simulation/test_scenario_simulation_library.py|test_scenario_simulation_library]]
   summary: def test_scenario_simulation_library_executes_all_workflows():
 - [[nova_backend/tests/simulation/test_simulation_analytics.py|test_simulation_analytics]]
   summary: aggregate_simulation_runs,
+- [[nova_backend/tests/simulation/trial_evaluator.py|trial_evaluator]]
+  summary: @dataclass(frozen=True)
 - [[nova_backend/tests/test_audit_api.py|test_audit_api]]
   summary: def test_phase_status_returns_phase_fields():
 - [[nova_backend/tests/test_brain_server_session_cleanup.py|test_brain_server_session_cleanup]]
@@ -1205,7 +1281,7 @@ Use this to orient yourself before diving into a specific module.
 - [[NovaLIS-Governance/RUNTIME_TRUTH|Runtime Truth]]
   summary: NovaLIS - Mechanical Runtime Specification
 - [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
-  summary: Updated: 2026-04-21
+  summary: Updated: 2026-04-21 (second pass)
 
 ## Workspace and repo support (11)
 
