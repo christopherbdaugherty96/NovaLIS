@@ -2,6 +2,8 @@
 
 NovaLIS is strongest when a task benefits from AI reasoning plus visible boundaries around action.
 
+For screenshots of the dashboard, trust surface, and structured report output, see [docs/product/visual_proof.md](docs/product/visual_proof.md).
+
 ---
 
 ## 1. Daily Situation Brief
@@ -24,6 +26,8 @@ Why Nova is useful here:
 
 ## 2. Research With Guardrails
 
+![Nova structured report output](docs/product/assets/report-output.png)
+
 Ask:
 
 ```text
@@ -41,6 +45,8 @@ Why Nova is useful here:
 ---
 
 ## 3. Local Desk Assistant
+
+![Nova dashboard home](docs/product/assets/dashboard-home.png)
 
 Ask:
 
