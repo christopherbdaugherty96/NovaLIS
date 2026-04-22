@@ -4,7 +4,7 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from src.openclaw.agent_runner import OpenClawAgentRunner
+from src.openclaw.agent_runner import OpenClawAgentRunner, RunCancelledError
 from src.openclaw.agent_runtime_store import OpenClawAgentRuntimeStore
 from src.openclaw.run_state_machine import run_event_hub
 
@@ -107,6 +107,9 @@ async def test_run_goal_finishes_active_run_with_terminal_event(tmp_path):
 
         assert result["success"] is True
         assert store.snapshot()["active_run"] is None
+        assert store.snapshot()["recent_runs"][0]["template_id"] == "goal"
+        assert store.snapshot()["delivery_ready_count"] == 1
+        assert result["run_record"]["template_id"] == "goal"
         events = []
         while not queue.empty():
             events.append(queue.get_nowait())
@@ -114,3 +117,65 @@ async def test_run_goal_finishes_active_run_with_terminal_event(tmp_path):
         assert any(event["status"] == "succeeded" for event in events)
     finally:
         run_event_hub.unsubscribe(queue)
+
+
+@pytest.mark.asyncio
+async def test_run_goal_records_cancelled_run(tmp_path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    runner = OpenClawAgentRunner(store=store, network=None)
+
+    with patch(
+        "src.openclaw.agent_runner.ThinkingLoop.run",
+        side_effect=RunCancelledError("Goal cancelled by user request."),
+    ):
+        result = await runner.run_goal("Cancel this goal")
+
+    snapshot = store.snapshot()
+    assert result["cancelled"] is True
+    assert result["run_record"]["status"] == "cancelled"
+    assert snapshot["active_run"] is None
+    assert snapshot["recent_runs"][0]["status"] == "cancelled"
+    assert snapshot["delivery_ready_count"] == 0
+
+
+@pytest.mark.asyncio
+async def test_run_goal_records_failed_run(tmp_path):
+    store = OpenClawAgentRuntimeStore(tmp_path / "agent_runtime.json")
+    runner = OpenClawAgentRunner(store=store, network=None)
+
+    with patch(
+        "src.openclaw.agent_runner.ThinkingLoop.run",
+        side_effect=RuntimeError("provider unavailable"),
+    ):
+        with pytest.raises(RuntimeError, match="provider unavailable"):
+            await runner.run_goal("Fail this goal")
+
+    snapshot = store.snapshot()
+    assert snapshot["active_run"] is None
+    assert snapshot["recent_runs"][0]["status"] == "failed"
+    assert "provider unavailable" in snapshot["recent_runs"][0]["summary"]
+    assert snapshot["delivery_ready_count"] == 0
+
+
+@pytest.mark.asyncio
+async def test_run_goal_per_tool_budget_resets_between_runs():
+    runner = _make_runner()
+
+    def mock_generate_chat(prompt, **kwargs):
+        if "What should be done next" in prompt:
+            return "Get system status"
+        if "Which tools" in prompt:
+            return '["system"]'
+        if "What parameters" in prompt:
+            return '{}'
+        if "Has the goal been achieved" in prompt:
+            return "yes"
+        return ""
+
+    with patch("src.openclaw.thinking_loop.llm_gateway") as mock_gw:
+        mock_gw.generate_chat = mock_generate_chat
+        first = await runner.run_goal("System health check")
+        second = await runner.run_goal("System health check again")
+
+    assert first["per_tool_budget"]["per_tool"]["system"]["calls"] == 1
+    assert second["per_tool_budget"]["per_tool"]["system"]["calls"] == 1

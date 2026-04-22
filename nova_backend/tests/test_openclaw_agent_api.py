@@ -132,6 +132,26 @@ def test_openclaw_agent_run_respects_settings_permission(monkeypatch, tmp_path):
     assert "paused in settings" in response.json()["detail"].lower()
 
 
+def test_openclaw_agent_goal_rejects_when_run_is_active(monkeypatch, tmp_path):
+    _install_runtime_settings_store(monkeypatch, tmp_path)
+    agent_store = _install_agent_store(monkeypatch, tmp_path)
+    _install_notification_schedule_store(monkeypatch, tmp_path)
+    agent_store.set_active_run(
+        {
+            "envelope_id": "ENV-ACTIVE",
+            "template_id": "morning_brief",
+            "title": "Morning Brief",
+            "status": "running",
+        }
+    )
+
+    client = TestClient(brain_server.app)
+    response = client.post("/api/openclaw/agent/goal", json={"goal": "summarize the workspace"})
+
+    assert response.status_code == 409
+    assert "already in progress" in response.json()["detail"].lower()
+
+
 def test_openclaw_agent_run_returns_manual_brief(monkeypatch, tmp_path):
     _install_runtime_settings_store(monkeypatch, tmp_path)
     agent_store = _install_agent_store(monkeypatch, tmp_path)
