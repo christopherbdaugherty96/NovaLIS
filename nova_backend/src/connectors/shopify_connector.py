@@ -313,7 +313,12 @@ class HttpShopifyConnector(ShopifyConnector):
     """
 
     def __init__(self, shop_domain: str, access_token: str) -> None:
-        self._shop_domain = shop_domain.strip().lower().rstrip("/")
+        domain = shop_domain.strip().lower().rstrip("/")
+        for prefix in ("https://", "http://"):
+            if domain.startswith(prefix):
+                domain = domain[len(prefix):]
+                break
+        self._shop_domain = domain
         self._access_token = access_token.strip()
 
     @property
@@ -364,7 +369,8 @@ class HttpShopifyConnector(ShopifyConnector):
         body = resp.get("data") or {}
         if isinstance(body, dict) and body.get("errors"):
             errs = body["errors"]
-            msg = (errs[0].get("message") if isinstance(errs, list) and errs else str(errs))
+            first = errs[0] if isinstance(errs, list) and errs else None
+            msg = (first.get("message") if isinstance(first, dict) else str(first or errs))
             raise ShopifyConnectorError(f"GraphQL error: {msg}")
 
         return (body.get("data") or {}) if isinstance(body, dict) else {}
