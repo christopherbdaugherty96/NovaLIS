@@ -1,227 +1,106 @@
-# Nova Consolidated Deep Audit — 2026-04-22
+# Nova Consolidated Deep Audit — 2026-04-22 (Second Pass)
 
 ## Purpose
-This document consolidates the full ChatGPT review session covering Nova's most recent visible work, architecture trajectory, regression risks, and strategic next steps.
+This second pass replaces broad impressions with grounded repository checks. The goal was to verify whether major docs align with visible runtime truth, registry state, and current architecture surfaces.
 
 ## Executive Summary
-Nova has crossed from experimental project into real platform territory. The architecture is substantive, the governance model remains recognizable, and recent work shows serious engineering effort. The dominant challenge has shifted from feature scarcity to complexity management.
+Nova continues to look like a serious governed AI platform. The stronger story after a deeper pass is not just feature growth — it is that Nova now has enough moving parts that documentation accuracy and truth-source discipline are mission critical.
 
-**Bottom line:** Nova looks stronger, more real, and more capable than earlier phases—but future success depends on controlling coordination debt, reducing oversized merges, and preserving runtime truth discipline.
-
----
-
-# Core Findings
-
-## 1. Architecture Is Real
-Recent work demonstrates a functioning multi-layer system rather than isolated experiments. The reviewed repo state shows coordinated subsystems including:
-- Governed execution routing
-- Capability registry surfaces
-n- Runtime auditor / truth docs
-- Frontend dashboard modules
-- Simulation and trial systems
-- OpenClaw integration
-- Token visibility systems
-- Structured reporting surfaces
-- Extensive automated tests
-
-Nova now behaves like a software platform that requires lifecycle management, not just feature additions.
-
-## 2. Governance Identity Still Intact
-The strongest philosophical signal is continuity of Nova's original principle:
-
-> Intelligence and authority remain structurally separated.
-
-Recent capability work still appears routed through:
-- capability IDs
-- governor mediation
-- execution boundaries
-- explicit invocation patterns
-- audit/test surfaces
-
-This is strategically important because many growing AI projects lose their safety model as they expand.
-
-## 3. Primary Risk Has Changed
-The dominant risk is no longer “can Nova do more?” It is now:
-- Can Nova scale cleanly?
-- Can changes remain reviewable?
-- Can truth sources stay synchronized?
-- Can regressions be isolated quickly?
-- Can subsystems evolve without causing stabilization waves?
+## Confirmed Strengths
+- Real capability registry with explicit IDs and metadata.
+- Generated runtime truth surfaces.
+- Governor-mediated execution model remains central.
+- Broad feature surface spanning local control, research, memory, perception, reporting, and OpenClaw integration.
+- Evidence of active operational discipline through audits and runtime docs.
 
 ---
 
-# Deep Review of Highest-Risk Areas
+# Grounded Findings: Docs vs Code
 
-# A. OpenClaw Execution Path
-## What Looks Strong
-The OpenClaw lane appears integrated through the governance stack rather than bypassing it. Review signals indicated:
-- cap 63 governed execution surface
-- registry presence
-- mediated dispatch
-- executor pathing
-- timeout policy
-- tests
+## 1. Capability Reference Was Behind Runtime Truth (Fixed)
+During review, `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md` documented active capabilities only through `63`, while `CURRENT_RUNTIME_STATE.md` and `registry.json` showed `64` and `65` enabled.
 
-This suggests OpenClaw is being absorbed into Nova's constitutional model rather than operating as a rogue subsystem.
+### Correction Applied
+The reference doc has now been updated to include:
+- `64` send_email_draft
+- `65` shopify_intelligence_report
 
-## Main Risk: Dual Surfaces
-There appear to be two conceptual paths:
-1. Canonical chat path → Governor → Capability → Executor
-2. Direct UI path → API route → Runner
+This was a real documentation drift issue and is now corrected.
 
-Even if intentional, dual paths can later create:
-- inconsistent logs
-- budget mismatches
-- policy drift
-- trust confusion
-- duplicated maintenance burden
+## 2. Internal Phase Signal Tension Still Exists
+Visible source states:
+- `build_phase.py` sets `BUILD_PHASE = 8`
+- comments inside that file state Phase 9 was prep work, not live runtime truth
+- `CURRENT_RUNTIME_STATE.md` reports Phase 9 as ACTIVE
 
-## Recommendation
-Converge all OpenClaw execution to one canonical governor-mediated route over time.
+### Meaning
+This may be intentional (build gate vs runtime capability reality), but without an explicit explanation it reads as contradictory.
 
----
+### Recommended Fix
+Add one canonical note explaining:
+- Build phase = compile/runtime gate ceiling
+- Runtime phase status = observed live feature state
 
-# B. Token Budget / Cost Visibility Layer
-## Why It Matters
-This is one of the strongest product-oriented additions. Instead of hiding cost usage, Nova appears to surface it through:
-- budget gates
-- usage metadata
-- dashboard bars
-- warnings / limits
-- websocket updates
+If that is the intended model, document it once clearly.
 
-That aligns with Nova's trust-first identity.
+## 3. Runtime Auditor Reports a Hard Fail
+The generated runtime truth currently includes:
+- `ENABLED_CAPABILITY_MISSING_MEDIATOR_ROUTE`
 
-## Why It Is Delicate
-This feature crosses multiple layers:
-- governor behavior
-- payload shape
-- websocket events
-- frontend rendering
-- tests
+### Interpretation
+This could mean either:
+1. A real enabled capability lacks invocation routing, or
+2. The auditor probe table is incomplete.
 
-Cross-cutting systems are valuable but fragile.
+Because routing patterns exist for newer capabilities, this should be treated as a priority truth-system issue. If the auditor is wrong, trust suffers. If it is right, execution coverage is incomplete.
 
-## Highest Priority Validation
-Verify live runtime behavior end-to-end:
-1. governed network action runs
-2. usage changes
-3. websocket update fires
-4. dashboard bar updates immediately
-5. warnings/limits render correctly
-
-## Recommendation
-Treat token governance as a first-class subsystem with its own tests and observability.
+## Recommended Fix
+Resolve the discrepancy and regenerate runtime docs so the truth layer returns clean PASS/WARN states based on verified conditions.
 
 ---
 
-# C. brain_server Refactor → Modular Session Architecture
-## Strongest Long-Term Engineering Move
-Recent work indicated decomposition of monolithic orchestration into focused modules such as:
-- session_handler.py
-- intent_patterns.py
-- path_resolver.py
+# Architecture Assessment
 
-This is healthy and likely necessary.
+## Governance Identity Still Present
+The repo still appears anchored to its defining principle:
 
-## What It Revealed
-Follow-up stabilization work suggests surrounding tests/docs/auditors had assumptions tied to old file locations.
+> Intelligence and authority are separated.
 
-That means the weakness was not the refactor itself—it was distributed assumptions about architecture.
+That remains Nova's strongest differentiator.
 
-## Recommendation
-Continue modularization while reducing location-sensitive invariants in tests and auditors.
+## Complexity Is the New Main Challenge
+The primary risk is no longer missing features. It is now:
+- drift between docs and runtime
+n- multiple truth sources
+- expanding coordination cost
+- cross-cutting regressions
+- onboarding difficulty for future contributors
 
----
-
-# Runtime Truth Discipline
-A standout strength of Nova is the attempt to keep docs synchronized with runtime reality through generated references, capability maps, and current-state documents.
-
-## Why This Is Valuable
-Most repos drift into:
-- docs = intentions
-- code = reality
-
-Nova appears to be trying to close that gap.
-
-## Caution
-When runtime docs update inside broad feature PRs, it can become harder to know whether docs are certifying reality or simply moving with merges.
-
-## Recommendation
-Keep generated truth surfaces, but validate them independently from feature merges where possible.
+## OpenClaw Path Remains Strategic
+OpenClaw appears integrated as a governed lane rather than an uncontrolled sidecar. That is the right direction, but execution routes should stay unified and auditable.
 
 ---
 
-# Testing Culture
-Recent review signals repeatedly showed large passing test counts and explicit failure repair passes.
-
-## Meaning
-Tests appear to be functioning as integration alarms, not decoration.
-
-## Recommendation
-Continue heavy test investment, especially around:
-- cross-subsystem regressions
-- token budget UX
-- execution path consistency
-- generated runtime docs drift
-- refactor safety nets
-
----
-
-# Strategic Risks Going Forward
-
-## 1. Oversized Merge Batches
-Multiple truth domains changing together increases debugging cost.
-
-**Recommendation:** smaller, sharper PRs separated by concern.
-
-## 2. Dual Truth Sources
-If docs/tests/code disagree, operator trust suffers.
-
-**Recommendation:** preserve a single generated runtime truth pipeline.
-
-## 3. Dual Execution Paths
-Same feature through multiple routes invites drift.
-
-**Recommendation:** converge to canonical governed execution.
-
-## 4. Coupling Through Cross-Cutting Systems
-Budgeting, auditing, and orchestration touch everything.
-
-**Recommendation:** formal interfaces + dedicated tests.
-
----
-
-# What Looks Most Promising
-
-## Architecture Maturity
-Nova no longer looks like disconnected experiments.
-
-## Governance Identity
-The repo still appears meaningfully defined by bounded authority and visible execution.
-
-## Product Potential
-Features like token visibility, governed automation, structured reports, and runtime transparency increase user trust and real-world usability.
-
----
-
-# Priority Next Steps
+# Highest Priority Next Steps
 
 ## Immediate Priority 1
-Live audit token budget UX behavior.
+Fix the runtime auditor hard-fail discrepancy and regenerate truth docs.
 
 ## Immediate Priority 2
-Unify OpenClaw execution routes.
+Create a one-page explanation of phase semantics (Build Phase vs Runtime Active Phase).
 
 ## Immediate Priority 3
-Continue modularization of legacy mega-files.
+Keep human-readable capability references synchronized whenever registry IDs change.
 
 ## Immediate Priority 4
-Reduce merge scope and separate refactor vs feature vs docs vs tests.
+Continue reducing oversized merges that combine architecture, docs, tests, and product changes in one sweep.
+
+## Immediate Priority 5
+Maintain a single operator-facing source of truth for what is live now.
 
 ---
 
 # Final Verdict
-Nova looks less like a fragile experiment and more like a real governed AI platform.
+Nova looks materially more advanced than an experimental side project.
 
-Its next challenge is not inventing more capability—it is mastering complexity while preserving the trust model that makes it different.
+The next maturity milestone is not another large feature drop. It is operational coherence: ensuring every doc, truth surface, registry entry, and runtime signal says the same thing.
