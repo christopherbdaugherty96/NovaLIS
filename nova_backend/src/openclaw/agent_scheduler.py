@@ -133,12 +133,15 @@ class OpenClawAgentScheduler:
             )
             template = self._store.get_template(template_id)
             if template is None:
-                self._store.record_scheduled_run_outcome(
-                    template_id,
-                    outcome="failed",
-                    note="template_not_found: store returned None",
-                    now=now,
-                )
+                try:
+                    self._store.record_scheduled_run_outcome(
+                        template_id,
+                        outcome="failed",
+                        note="template_not_found: store returned None",
+                        now=now,
+                    )
+                except Exception:
+                    pass
                 self._log(
                     "OPENCLAW_AGENT_SCHEDULE_FAILED",
                     {
