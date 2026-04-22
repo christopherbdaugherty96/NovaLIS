@@ -1,6 +1,6 @@
 # Nova OpenClaw Governance Hardening Plan
 Date: 2026-04-21
-Status: Future design — not yet implemented
+Status: Steps 1–7 complete and landed (2026-04-21); Steps 8–12 remain future design
 Source: Architectural review session, corrected and re-homed 2026-04-21
 Phase alignment: Phase 8.x hardening (strengthens the existing home-agent lane without
 expanding its authority) or Phase 10 if treated as a major governance upgrade milestone.

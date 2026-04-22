@@ -1,5 +1,5 @@
 # NOVA Runtime Capability Reference
-Updated: 2026-04-09
+Updated: 2026-04-21
 Status: Active
 Scope: Human-readable explanation of the current runtime capability surface
 
