@@ -205,7 +205,7 @@ class TimeTestGovernor:
         # 6. Tool-specific Parameter Validation
         tool_config = self.allowed_tools[tool]
         if tool_config["validation_function"]:
-            param_result = tool_config["validation_function"](request.get("params", {}))
+            param_result = tool_config["validation_function"] (request.get("params", {}))
             if not param_result.valid:
                 return self._create_rejection(
                     start_time,
@@ -237,7 +237,7 @@ class TimeTestGovernor:
             decision = GovernorDecision(
                 decision=Decision.ALLOWED,
                 reason=None,
-                rule_chain="schema-001→hash-002→phase-003→rule-004→tool-005→param-006",
+                rule_chain="schema-001->hash-002->phase-003->rule-004->tool-005->param-006",
                 processing_time_ms=(time.time() - start_time) * 1000,
                 request_hash=stt_hash,
                 result_hash=result_hash,

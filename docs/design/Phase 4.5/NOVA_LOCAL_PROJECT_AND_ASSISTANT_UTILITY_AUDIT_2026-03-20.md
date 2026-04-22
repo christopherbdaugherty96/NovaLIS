@@ -318,7 +318,7 @@ Boundary:
 
 ## Relationship To Earlier Audit Packet
 This packet complements, rather than replaces:
-- [NOVA_ASSISTANT_UTILITY_AND_UI_AUDIT_2026-03-20.md](C:\Nova-Project\docs\design\NOVA_ASSISTANT_UTILITY_AND_UI_AUDIT_2026-03-20.md)
+- [NOVA_ASSISTANT_UTILITY_AND_UI_AUDIT_2026-03-20.md](NOVA_ASSISTANT_UTILITY_AND_UI_AUDIT_2026-03-20.md)
 
 The earlier packet emphasized:
 - action side ahead of assistant side
