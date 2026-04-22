@@ -13,8 +13,10 @@ whose filename stem matches. Useful for jumping between a test and the
 code it exercises. `__init__.py`, conftest and helper modules are
 intentionally skipped so the map stays focused on real test ↔ source links.
 
-Paired tests: 88
+Paired tests: 90
 
+- [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
+    - tests → [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
     - tests → [[nova_backend/src/conversation/clarify_prompts.py|clarify_prompts]]
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
@@ -107,6 +109,8 @@ Paired tests: 88
     - tests → [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
 - [[nova_backend/tests/openclaw/test_robust_executor.py|test_robust_executor]]
     - tests → [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
+- [[nova_backend/tests/openclaw/test_run_state_machine.py|test_run_state_machine]]
+    - tests → [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
 - [[nova_backend/tests/openclaw/test_strict_preflight.py|test_strict_preflight]]
     - tests → [[nova_backend/src/openclaw/strict_preflight.py|strict_preflight]]
 - [[nova_backend/tests/openclaw/test_task_envelope.py|test_task_envelope]]

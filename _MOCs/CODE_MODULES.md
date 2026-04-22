@@ -269,6 +269,7 @@ _Runtime audit utilities for NovaLIS._
 - [[nova_backend/src/audit/runtime_auditor.py|runtime_auditor]]
 - [[nova_backend/src/build_phase.py|build_phase]]
 - [[nova_backend/src/connections/connections_store.py|connections_store]]
+- [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
 - [[nova_backend/src/conversation/clarify_prompts.py|clarify_prompts]]
 - [[nova_backend/src/conversation/complexity_heuristics.py|complexity_heuristics]]
 - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
@@ -417,18 +418,25 @@ ___all__ = ["ConnectorPackage", "ConnectorPackageRegistry"]_
 - [[nova_backend/src/connectors/package_registry.py|package_registry]]
     - CONNECTOR_PACKAGES_PATH = Path(__file__).resolve().parents[1] / "config" / "connector_packages.json
 - [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
-    - Shopify Connector — interface stub for Shopify Admin API integration.
+    - Shopify Connector - governed Shopify Admin API integration.
 
 ### Imports from
 
 - [[nova_backend/src/governor/exceptions.py|exceptions]]
+- [[nova_backend/src/governor/network_mediator.py|network_mediator]]
 
 ### Imported by
 
 - [[nova_backend/src/audit/runtime_auditor.py|runtime_auditor]]
+- [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/src/executors/shopify_intelligence_report_executor.py|shopify_intelligence_report_executor]]
+- [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
 - [[nova_backend/tests/executors/test_shopify_intelligence_report_executor.py|test_shopify_intelligence_report_executor]]
 - [[nova_backend/tests/test_connector_package_registry.py|test_connector_package_registry]]
+
+### Tests
+
+- [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
 
 ## `context` (5 files)
 
@@ -778,6 +786,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/audit/runtime_auditor.py|runtime_auditor]]
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/src/connectors/package_registry.py|package_registry]]
+- [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
 - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
 - [[nova_backend/src/identity/nova_self_awareness.py|nova_self_awareness]]
@@ -787,8 +796,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/src/personality/core.py|core]]
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
-- [[nova_backend/src/services/weather_service.py|weather_service]]
-- _…and 49 more_
+- _…and 50 more_
 
 ### Tests
 
@@ -895,8 +903,9 @@ _ExecuteBoundary,_
 - [[nova_backend/src/websocket/session_handler.py|session_handler]]
 - [[nova_backend/tests/executors/test_local_control_executors.py|test_local_control_executors]]
 - [[nova_backend/tests/governance/test_model_network_mediator_thread_safety.py|test_model_network_mediator_thread_safety]]
+- [[nova_backend/tests/simulation/nova_trial_runner.py|nova_trial_runner]]
 - [[nova_backend/tests/test_llm_manager_version_lock.py|test_llm_manager_version_lock]]
-- [[nova_backend/tests/test_network_model_speech_correlation.py|test_network_model_speech_correlation]]
+- _…and 1 more_
 
 ## `memory` (4 files)
 
@@ -959,7 +968,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/nova_protocol.py|nova_protocol]]
     - Nova Message Protocol v1 (NMPv1)
 
-## `openclaw` (26 files)
+## `openclaw` (27 files)
 
 _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
 
@@ -1004,6 +1013,8 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
     - Per-tool budget tracking for OpenClaw.
 - [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
     - Robust tool execution for OpenClaw — retry, fallback, parallel, and metering.
+- [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
+    - RUN_PENDING = "pending
 - [[nova_backend/src/openclaw/strict_preflight.py|strict_preflight]]
     - STRICT_FOUNDATION_LABEL = "Manual preflight active
 - [[nova_backend/src/openclaw/task_envelope.py|task_envelope]]
@@ -1012,9 +1023,7 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
     - Multi-step agent thinking loop for OpenClaw.
 - [[nova_backend/src/openclaw/tool_chain.py|tool_chain]]
     - Tool chaining and composition for OpenClaw.
-- [[nova_backend/src/openclaw/tool_registry.py|tool_registry]]
-    - Dynamic tool registry for OpenClaw agent intelligence layer.
-- _…and 1 more_
+- _…and 2 more_
 
 ### Imports from
 
@@ -1054,7 +1063,7 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
 - [[nova_backend/tests/openclaw/test_envelope_factory.py|test_envelope_factory]]
 - [[nova_backend/tests/openclaw/test_envelope_store.py|test_envelope_store]]
 - [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
-- _…and 11 more_
+- _…and 12 more_
 
 ### Tests
 
@@ -1066,6 +1075,7 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
 - [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
 - [[nova_backend/tests/openclaw/test_per_tool_budget.py|test_per_tool_budget]]
 - [[nova_backend/tests/openclaw/test_robust_executor.py|test_robust_executor]]
+- [[nova_backend/tests/openclaw/test_run_state_machine.py|test_run_state_machine]]
 - [[nova_backend/tests/openclaw/test_strict_preflight.py|test_strict_preflight]]
 - [[nova_backend/tests/openclaw/test_task_envelope.py|test_task_envelope]]
 - [[nova_backend/tests/openclaw/test_thinking_loop.py|test_thinking_loop]]
@@ -1606,6 +1616,7 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 - [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
 - [[nova_backend/tests/phase7/test_phase7_runtime_contract.py|test_phase7_runtime_contract]]
 - [[nova_backend/tests/phase9/test_token_awareness.py|test_token_awareness]]
+- [[nova_backend/tests/simulation/nova_trial_runner.py|nova_trial_runner]]
 - [[nova_backend/tests/test_openclaw_agent_api.py|test_openclaw_agent_api]]
 
 ### Tests
@@ -1742,7 +1753,7 @@ _Websocket session runtime modules._
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]]
 - [[nova_backend/src/memory/nova_self_memory_store.py|nova_self_memory_store]]
 - [[nova_backend/src/memory/quick_corrections.py|quick_corrections]]
-- [[nova_backend/src/openclaw/__init__.py|src/openclaw]]
+- [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
 - [[nova_backend/src/utils/local_request_guard.py|local_request_guard]]
 
 ### Imported by
