@@ -132,46 +132,55 @@ class OpenClawAgentScheduler:
                 },
             )
             template = self._store.get_template(template_id)
-            if template is not None:
-                feature_on = os.getenv(_FEATURE_FLAG_ENV, "").strip().lower() in {"1", "true", "yes"}
-                if feature_on:
-                    try:
-                        factory = EnvelopeFactory(runtime_settings=self._settings)
-                        issued = factory.issue(
-                            template=template,
-                            channel="scheduler",
-                            triggered_by="scheduler",
-                        )
-                        EnvelopeStore().register(
-                            envelope_id=issued.envelope_id,
-                            envelope_data=issued.envelope.to_dict(),
-                            issuing_channel=issued.issuing_channel,
-                            settings_hash=issued.settings_hash,
-                            feature_flags_snapshot=issued.feature_flags_snapshot,
-                            issued_at=issued.issued_at,
-                            expires_at=issued.expires_at,
-                        )
-                        self._log("OPENCLAW_RUN_ISSUED", issued.ledger_event)
-                    except EnvelopeFactoryError as exc:
-                        self._log(
-                            "OPENCLAW_AGENT_SCHEDULE_FAILED",
-                            {
-                                "template_id": template_id,
-                                "error": f"envelope_factory_refused: {exc}",
-                                "source": "agent_scheduler",
-                            },
-                        )
-                        continue
-                else:
+            if template is None:
+                self._log(
+                    "OPENCLAW_AGENT_SCHEDULE_FAILED",
+                    {
+                        "template_id": template_id,
+                        "error": "template_not_found: store returned None",
+                        "source": "agent_scheduler",
+                    },
+                )
+                continue
+            feature_on = os.getenv(_FEATURE_FLAG_ENV, "").strip().lower() in {"1", "true", "yes"}
+            if feature_on:
+                try:
+                    factory = EnvelopeFactory(runtime_settings=self._settings)
+                    issued = factory.issue(
+                        template=template,
+                        channel="scheduler",
+                        triggered_by="scheduler",
+                    )
+                    EnvelopeStore().register(
+                        envelope_id=issued.envelope_id,
+                        envelope_data=issued.envelope.to_dict(),
+                        issuing_channel=issued.issuing_channel,
+                        settings_hash=issued.settings_hash,
+                        feature_flags_snapshot=issued.feature_flags_snapshot,
+                        issued_at=issued.issued_at,
+                        expires_at=issued.expires_at,
+                    )
+                    self._log("OPENCLAW_RUN_ISSUED", issued.ledger_event)
+                except EnvelopeFactoryError as exc:
                     self._log(
-                        "OPENCLAW_DEPRECATED_DIRECT_RUN",
+                        "OPENCLAW_AGENT_SCHEDULE_FAILED",
                         {
                             "template_id": template_id,
-                            "channel": "scheduler",
-                            "triggered_by": "scheduler",
+                            "error": f"envelope_factory_refused: {exc}",
                             "source": "agent_scheduler",
                         },
                     )
+                    continue
+            else:
+                self._log(
+                    "OPENCLAW_DEPRECATED_DIRECT_RUN",
+                    {
+                        "template_id": template_id,
+                        "channel": "scheduler",
+                        "triggered_by": "scheduler",
+                        "source": "agent_scheduler",
+                    },
+                )
             try:
                 result = await asyncio.wait_for(
                     self._runner.run_template(template_id, triggered_by="scheduler"),

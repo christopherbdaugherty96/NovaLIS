@@ -335,6 +335,11 @@ def build_openclaw_agent_router(deps) -> APIRouter:
         template = deps.openclaw_agent_runtime_store.get_template(template_id)
         if template is None:
             raise HTTPException(status_code=404, detail="Unknown OpenClaw template.")
+        if not bool(template.get("manual_run_available")):
+            raise HTTPException(
+                status_code=409,
+                detail=str(template.get("availability_reason") or "This template is not ready yet.").strip(),
+            )
         try:
             _issue_envelope_if_enabled(
                 deps,
