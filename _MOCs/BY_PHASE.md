@@ -29,7 +29,7 @@ names. Use this to see what shipped (or is planned) for each phase.
 - [doc] [[docs/archive/phase 2/ARCHITECT_CONTRACTold|ARCHITECT_CONTRACTold]]
 - [doc] [[docs/archive/phase 2/RoadMap01-02-2026.txt|Nova / NovaLIS]]
 - [doc] [[docs/archive/phase 2/NOVA_TRUTH_v3.0_CANONICAL|NOVA: CANONICAL TRUTH DOCUMENT (RECONCILED v3.0) - archive/phase 2]]
-- [doc] [[docs/archive/phase 2/README.md.txt|NovaLIS]]
+- [doc] [[docs/archive/phase 2/README.md.txt|NovaLIS - archive/phase 2]]
 - [doc] [[docs/archive/phase 2/Phase 2.1 and up final road map 12-25-25.txt|NovaLIS — Canonical Project Roadmap & Status]]
 - [doc] [[docs/archive/phase 2/Phase-2-TODO-marker-file.txt|Phase-2-TODO-marker-file]]
 - [doc] [[docs/archive/phase 2/Phase2Locks.readme.md.txt|Phase2Locks.readme.md]]
