@@ -1246,19 +1246,15 @@ class GovernorMediator:
             )
 
         if SHOPIFY_REPORT_RE.match(t):
-            period = "last_7_days"
-            for candidate in ("last_30_days", "last 30 days", "30 days", "month"):
-                if candidate in t.lower():
-                    period = "last_30_days"
-                    break
-            for candidate in ("today", "daily"):
-                if candidate in t.lower():
-                    period = "today"
-                    break
-            for candidate in ("last_90_days", "last 90 days", "90 days", "quarter"):
-                if candidate in t.lower():
-                    period = "last_90_days"
-                    break
+            tl = t.lower()
+            if any(c in tl for c in ("today", "daily")):
+                period = "today"
+            elif any(c in tl for c in ("last_90_days", "last 90 days", "90 days", "quarter")):
+                period = "last_90_days"
+            elif any(c in tl for c in ("last_30_days", "last 30 days", "30 days", "month")):
+                period = "last_30_days"
+            else:
+                period = "last_7_days"
             return _invocation_if_enabled(65, {"period": period})
 
         m = SEND_EMAIL_DRAFT_RE.match(t)

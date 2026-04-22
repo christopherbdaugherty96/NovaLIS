@@ -233,3 +233,261 @@ def is_shopify_connected() -> bool:
         return bool(connector.is_configured)
     except Exception:
         return False
+
+
+# ---------------------------------------------------------------------------
+# HTTP implementation
+# ---------------------------------------------------------------------------
+
+import asyncio
+import os
+from datetime import datetime, timedelta, timezone
+
+
+_API_VERSION = "2024-04"
+
+_SHOP_QUERY = """
+{
+  shop { name }
+  allProducts: productsCount { count }
+  activeProducts: productsCount(query: "status:active") { count }
+  draftProducts: productsCount(query: "status:draft") { count }
+}
+"""
+
+# Separate query so an unsupported inventory filter never takes down shop/product counts.
+_INVENTORY_QUERY = """
+query Inventory($outOfStockQuery: String!, $lowStockQuery: String!) {
+  outOfStockVariants: productVariants(first: 250, query: $outOfStockQuery) {
+    edges { node { id } }
+    pageInfo { hasNextPage }
+  }
+  lowStockVariants: productVariants(first: 250, query: $lowStockQuery) {
+    edges { node { id } }
+    pageInfo { hasNextPage }
+  }
+}
+"""
+
+_ORDERS_QUERY = """
+query Orders($q: String!) {
+  orders(first: 250, query: $q) {
+    edges {
+      node {
+        totalPriceSet {
+          shopMoney { amount currencyCode }
+        }
+      }
+    }
+    pageInfo { hasNextPage }
+  }
+}
+"""
+
+_HEALTH_QUERY = "{ shop { name } }"
+
+
+def _period_to_order_query(period: str) -> str:
+    now = datetime.now(timezone.utc)
+    if period == "today":
+        start = now.replace(hour=0, minute=0, second=0, microsecond=0)
+    elif period == "last_90_days":
+        start = now - timedelta(days=90)
+    elif period == "last_30_days":
+        start = now - timedelta(days=30)
+    else:
+        start = now - timedelta(days=7)
+    return f"created_at:>={start.strftime('%Y-%m-%dT%H:%M:%SZ')}"
+
+
+def _fmt_currency(amount: float) -> str:
+    return f"{amount:,.2f}"
+
+
+class HttpShopifyConnector(ShopifyConnector):
+    """
+    Live Shopify Admin GraphQL API connector.
+
+    Routes all network I/O through NetworkMediator (cap 65). Token is never
+    logged. Raise ShopifyConnectorError for any recoverable failure.
+    """
+
+    def __init__(self, shop_domain: str, access_token: str) -> None:
+        domain = shop_domain.strip().lower().rstrip("/")
+        for prefix in ("https://", "http://"):
+            if domain.startswith(prefix):
+                domain = domain[len(prefix):]
+                break
+        self._shop_domain = domain
+        self._access_token = access_token.strip()
+
+    @property
+    def shop_domain(self) -> str:
+        return self._shop_domain
+
+    @property
+    def is_configured(self) -> bool:
+        return bool(self._shop_domain and self._access_token)
+
+    def _url(self) -> str:
+        return f"https://{self._shop_domain}/admin/api/{_API_VERSION}/graphql.json"
+
+    def _headers(self) -> dict[str, str]:
+        return {
+            "X-Shopify-Access-Token": self._access_token,
+            "Content-Type": "application/json",
+            "User-Agent": "Nova/1.0 (+https://local.nova)",
+        }
+
+    async def _gql(self, query: str, variables: dict[str, Any] | None = None) -> dict[str, Any]:
+        from src.governor.network_mediator import NetworkMediator, NetworkMediatorError
+
+        mediator = NetworkMediator()
+        try:
+            resp = await asyncio.to_thread(
+                mediator.request,
+                capability_id=65,
+                method="POST",
+                url=self._url(),
+                json_payload={"query": query, "variables": variables or {}},
+                headers=self._headers(),
+                as_json=True,
+            )
+        except NetworkMediatorError as exc:
+            raise ShopifyConnectorError(f"Network error reaching Shopify: {exc}") from exc
+
+        status = resp.get("status_code", 200)
+        if status == 401:
+            raise ShopifyConnectorError("Shopify access token is invalid or revoked.")
+        if status == 403:
+            raise ShopifyConnectorError("Shopify API permission denied — check token scopes.")
+        if status == 429:
+            raise ShopifyConnectorError("Shopify API rate limit hit. Try again shortly.")
+        if status >= 400:
+            raise ShopifyConnectorError(f"Shopify API returned HTTP {status}.")
+
+        body = resp.get("data") or {}
+        if isinstance(body, dict) and body.get("errors"):
+            errs = body["errors"]
+            first = errs[0] if isinstance(errs, list) and errs else None
+            msg = (first.get("message") if isinstance(first, dict) else str(first or errs))
+            raise ShopifyConnectorError(f"GraphQL error: {msg}")
+
+        return (body.get("data") or {}) if isinstance(body, dict) else {}
+
+    async def fetch_store_snapshot(
+        self,
+        *,
+        period: str = "last_7_days",
+        market_context: str = "",
+        low_stock_threshold: int = 5,
+    ) -> ShopifyStoreSnapshot:
+        fetched_at = datetime.now(timezone.utc).isoformat()
+        order_query = _period_to_order_query(period)
+        error_parts: list[str] = []
+
+        # --- shop info + product counts ---
+        shop_data: dict[str, Any] = {}
+        try:
+            shop_data = await self._gql(_SHOP_QUERY)
+        except ShopifyConnectorError as exc:
+            error_parts.append(f"store info: {exc}")
+
+        shop_name = str((shop_data.get("shop") or {}).get("name") or self._shop_domain)
+        total_products = int((shop_data.get("allProducts") or {}).get("count") or 0)
+        active_products = int((shop_data.get("activeProducts") or {}).get("count") or 0)
+        draft_products = int((shop_data.get("draftProducts") or {}).get("count") or 0)
+
+        # --- inventory counts (separate query so a filter failure is isolated) ---
+        inv_data: dict[str, Any] = {}
+        try:
+            inv_data = await self._gql(
+                _INVENTORY_QUERY,
+                variables={
+                    "outOfStockQuery": "inventory_quantity:<=0",
+                    "lowStockQuery": f"inventory_quantity:<={low_stock_threshold}",
+                },
+            )
+        except ShopifyConnectorError as exc:
+            error_parts.append(f"inventory: {exc}")
+
+        oos_node = inv_data.get("outOfStockVariants") or {}
+        ls_node = inv_data.get("lowStockVariants") or {}
+        out_of_stock_count = len(oos_node.get("edges") or [])
+        if (oos_node.get("pageInfo") or {}).get("hasNextPage"):
+            error_parts.append("out-of-stock count truncated at 250 variants")
+        low_stock_count = len(ls_node.get("edges") or [])
+        if (ls_node.get("pageInfo") or {}).get("hasNextPage"):
+            error_parts.append("low-stock count truncated at 250 variants")
+
+        # --- order aggregation ---
+        order_data: dict[str, Any] = {}
+        try:
+            order_data = await self._gql(_ORDERS_QUERY, variables={"q": order_query})
+        except ShopifyConnectorError as exc:
+            error_parts.append(f"orders: {exc}")
+
+        orders_node = order_data.get("orders") or {}
+        edges = orders_node.get("edges") or []
+        if (orders_node.get("pageInfo") or {}).get("hasNextPage"):
+            error_parts.append("order count truncated at 250 orders")
+
+        order_count = len(edges)
+        currency = "USD"
+        total_revenue = 0.0
+        for edge in edges:
+            money = ((edge.get("node") or {}).get("totalPriceSet") or {}).get("shopMoney") or {}
+            try:
+                total_revenue += float(money.get("amount") or 0)
+            except (TypeError, ValueError):
+                pass
+            if money.get("currencyCode"):
+                currency = str(money["currencyCode"])
+
+        avg_order_value = (total_revenue / order_count) if order_count else 0.0
+
+        products = ShopifyProductSummary(
+            total_products=total_products,
+            active_products=active_products,
+            draft_products=draft_products,
+            out_of_stock_count=out_of_stock_count,
+            low_stock_count=low_stock_count,
+            fetched_at=fetched_at,
+        )
+        orders = ShopifyOrderSummary(
+            order_count=order_count,
+            total_revenue=_fmt_currency(total_revenue),
+            currency=currency,
+            average_order_value=_fmt_currency(avg_order_value),
+            period_label=period,
+            fetched_at=fetched_at,
+        )
+        return ShopifyStoreSnapshot(
+            shop_domain=self._shop_domain,
+            shop_name=shop_name,
+            orders=orders,
+            products=products,
+            fetched_at=fetched_at,
+            market_context=market_context,
+            error="; ".join(error_parts),
+        )
+
+    async def health_check(self) -> dict[str, Any]:
+        try:
+            data = await self._gql(_HEALTH_QUERY)
+            name = str((data.get("shop") or {}).get("name") or self._shop_domain)
+            return {"ok": True, "label": "Connected", "shop": name}
+        except ShopifyConnectorError as exc:
+            return {"ok": False, "label": str(exc), "shop": self._shop_domain}
+
+
+# ---------------------------------------------------------------------------
+# Bootstrap helper — call once at startup
+# ---------------------------------------------------------------------------
+
+def bootstrap_shopify_connector() -> None:
+    """Register HttpShopifyConnector from env vars if both are set."""
+    domain = os.getenv("NOVA_SHOPIFY_SHOP_DOMAIN", "").strip()
+    token = os.getenv("NOVA_SHOPIFY_ACCESS_TOKEN", "").strip()
+    if domain and token:
+        set_shopify_connector(HttpShopifyConnector(domain, token))

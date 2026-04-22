@@ -1,6 +1,6 @@
 # Nova Shopify Governed Operator Design
 Date: 2026-04-20
-Status: Implementation started — connector interface stub complete; registry and executor work in progress
+Status: Cap 65 (Tier 1 read-only) complete and live — executor, routing, topology, registry, HttpShopifyConnector all landed (2026-04-21); caps 66–76 (write) remain future design, gated on NOVA_FEATURE_ENVELOPE_FACTORY going live
 Source: Voice brainstorm session — seven improvement passes
 
 ## Architecture in Three Layers
