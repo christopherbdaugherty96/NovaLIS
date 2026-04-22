@@ -1,1 +1,32 @@
-REPLACE_WITH_BRANCH_CONTENT
+{
+  "schema_version": "1.0",
+  "updated": "2026-04-22",
+  "phase_descriptions": {
+    "p1_unit": "Executor tested in isolation",
+    "p2_routing": "Mediator routes correctly",
+    "p3_integration": "Full governor spine",
+    "p4_api": "API surface verified",
+    "p5_live": "Live verified",
+    "locked": "All phases passed"
+  },
+  "capabilities": {
+    "64": {
+      "name": "send_email_draft",
+      "p1_unit": {"status":"pass"},
+      "p2_routing": {"status":"pass"},
+      "p3_integration": {"status":"pass"},
+      "p4_api": {"status":"pass"},
+      "p5_live": {"status":"pending"},
+      "locked": false
+    },
+    "65": {
+      "name": "shopify_intelligence_report",
+      "p1_unit": {"status":"pass"},
+      "p2_routing": {"status":"pass"},
+      "p3_integration": {"status":"pending"},
+      "p4_api": {"status":"pending"},
+      "p5_live": {"status":"pending"},
+      "locked": false
+    }
+  }
+}
