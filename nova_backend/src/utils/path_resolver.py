@@ -355,6 +355,7 @@ def _render_local_codebase_summary(path: Path) -> tuple[str, list[dict[str, str]
         "Local codebase summary",
         f"Target: {target}",
         "",
+        "Plain-language orientation: NovaLIS is a private, offline-capable AI assistant with governed execution gates.",
         f"Project summary: {project_summary}",
     ]
     if repo_map_summary:

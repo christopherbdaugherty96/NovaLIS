@@ -15,3 +15,8 @@ def test_mediator_mapped_ids_subset_of_registry_enabled_ids():
     registry_enabled = set(_enabled_registry_ids(_load_registry()))
     mapped = set(_mediator_surface_map()["mapped_capability_ids"])
     assert mapped <= registry_enabled
+
+
+def test_runtime_auditor_maps_shopify_capability_65():
+    mapped = set(_mediator_surface_map()["mapped_capability_ids"])
+    assert 65 in mapped

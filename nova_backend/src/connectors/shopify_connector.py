@@ -1,17 +1,15 @@
 # src/connectors/shopify_connector.py
 """
-Shopify Connector — interface stub for Shopify Admin API integration.
+Shopify Connector - governed Shopify Admin API integration.
 
-This module defines the protocol that a Shopify store integration must implement
-to enable governed reporting (capability 65: shopify_intelligence_report) and
-future Shopify operator capabilities (66-76).
+This module defines the protocol and live env-backed HTTP connector used by
+governed reporting (capability 65: shopify_intelligence_report) and future
+Shopify operator capabilities (66-76).
 
-Status: STUB — not yet connected.
-The interface is defined here so the governed connector layer, capability registry,
-and future executor can be wired correctly. Actual HTTP calls to the Shopify
-GraphQL Admin API are not yet implemented.
+Status: LIVE when NOVA_SHOPIFY_SHOP_DOMAIN and NOVA_SHOPIFY_ACCESS_TOKEN are
+configured. Network I/O is routed through the governor's NetworkMediator.
 
-Implementation requirements for a real connector:
+Implementation requirements for a connector:
   1. Subclass or duck-type `ShopifyConnector`.
   2. Register the instance via `set_shopify_connector(instance)` at startup.
   3. Never store credentials in plain text in the repo.
@@ -21,30 +19,23 @@ Implementation requirements for a real connector:
   5. Use the Shopify GraphQL Admin API as primary. REST is legacy-only.
   6. All returned dataclasses must be serialisable to JSON via .as_dict().
 
-Environment variables expected by a real implementation:
-  NOVA_SHOPIFY_SHOP_DOMAIN   — e.g. "mystore.myshopify.com"
-  NOVA_SHOPIFY_ACCESS_TOKEN  — OAuth access token from Shopify Admin API
-                               (stored via governed identity layer, not plain env
-                               in production — env var is the dev/bootstrap path)
+Environment variables:
+  NOVA_SHOPIFY_SHOP_DOMAIN   - e.g. "mystore.myshopify.com"
+  NOVA_SHOPIFY_ACCESS_TOKEN  - OAuth access token from Shopify Admin API
+  NOVA_SHOPIFY_API_VERSION   - optional Admin API version, defaults to 2026-04
 
 Authentication note:
   This connector uses OAuth 2.0 through the Shopify Admin API authorization flow.
   Read-only scopes (Tier 1) are requested at initial connection.
   Write scopes (Tier 4) must not be present until explicitly activated by the user.
   Token validity must be checked before every API call.
-  Expired or revoked tokens must surface as a visible connection error — never fail
-  silently.
+  Expired or revoked tokens must surface as a visible connection error.
 
 Dev store requirement:
   Tier 4 (write) paths must be validated against a Shopify development store before
   any live store activation. The P5 live sign-off for write capabilities is gated on
   this validation passing end-to-end.
 
-GraphQL conventions:
-  All queries use #graphql tagged literals, `as const`, and @inContext(country:,
-  language:) for market-aware queries where applicable. Fragment reuse is preferred
-  over copy-pasted field selections. See also:
-  docs/future/HYDROGEN_OXYGEN_STOREFRONT_BUILD_RULESET_2026-04-12.md
 """
 from __future__ import annotations
 
@@ -191,7 +182,7 @@ class ShopifyConnector:
         Return a dict with at minimum: {'ok': bool, 'label': str, 'shop': str}.
 
         Used by the Trust and Settings pages to show connector readiness.
-        Must check token validity as part of the health check — a token that
+        Must check token validity as part of the health check - a token that
         has been revoked since last session must surface ok=False here.
         """
         raise NotImplementedError
@@ -241,10 +232,23 @@ def is_shopify_connected() -> bool:
 
 import asyncio
 import os
+import re
 from datetime import datetime, timedelta, timezone
 
 
-_API_VERSION = "2024-04"
+_DEFAULT_API_VERSION = "2026-04"
+_API_VERSION_RE = re.compile(r"^\d{4}-\d{2}$")
+
+
+def _normalize_api_version(value: str | None) -> str:
+    raw = str(value or "").strip()
+    if not raw:
+        return _DEFAULT_API_VERSION
+    if raw == "unstable" or _API_VERSION_RE.fullmatch(raw):
+        return raw
+    raise ShopifyConnectorError(
+        "Invalid Shopify API version. Use YYYY-MM, for example 2026-04."
+    )
 
 _SHOP_QUERY = """
 {
@@ -312,7 +316,7 @@ class HttpShopifyConnector(ShopifyConnector):
     logged. Raise ShopifyConnectorError for any recoverable failure.
     """
 
-    def __init__(self, shop_domain: str, access_token: str) -> None:
+    def __init__(self, shop_domain: str, access_token: str, *, api_version: str | None = None) -> None:
         domain = shop_domain.strip().lower().rstrip("/")
         for prefix in ("https://", "http://"):
             if domain.startswith(prefix):
@@ -320,6 +324,7 @@ class HttpShopifyConnector(ShopifyConnector):
                 break
         self._shop_domain = domain
         self._access_token = access_token.strip()
+        self._api_version = _normalize_api_version(api_version or os.getenv("NOVA_SHOPIFY_API_VERSION"))
 
     @property
     def shop_domain(self) -> str:
@@ -330,7 +335,7 @@ class HttpShopifyConnector(ShopifyConnector):
         return bool(self._shop_domain and self._access_token)
 
     def _url(self) -> str:
-        return f"https://{self._shop_domain}/admin/api/{_API_VERSION}/graphql.json"
+        return f"https://{self._shop_domain}/admin/api/{self._api_version}/graphql.json"
 
     def _headers(self) -> dict[str, str]:
         return {
@@ -360,7 +365,7 @@ class HttpShopifyConnector(ShopifyConnector):
         if status == 401:
             raise ShopifyConnectorError("Shopify access token is invalid or revoked.")
         if status == 403:
-            raise ShopifyConnectorError("Shopify API permission denied — check token scopes.")
+            raise ShopifyConnectorError("Shopify API permission denied - check token scopes.")
         if status == 429:
             raise ShopifyConnectorError("Shopify API rate limit hit. Try again shortly.")
         if status >= 400:
@@ -391,7 +396,7 @@ class HttpShopifyConnector(ShopifyConnector):
         try:
             shop_data = await self._gql(_SHOP_QUERY)
         except ShopifyConnectorError as exc:
-            error_parts.append(f"store info: {exc}")
+            raise ShopifyConnectorError(f"store info: {exc}") from exc
 
         shop_name = str((shop_data.get("shop") or {}).get("name") or self._shop_domain)
         total_products = int((shop_data.get("allProducts") or {}).get("count") or 0)
@@ -426,6 +431,10 @@ class HttpShopifyConnector(ShopifyConnector):
             order_data = await self._gql(_ORDERS_QUERY, variables={"q": order_query})
         except ShopifyConnectorError as exc:
             error_parts.append(f"orders: {exc}")
+
+        if not inv_data and not order_data:
+            joined = "; ".join(error_parts) or "all Shopify reads failed"
+            raise ShopifyConnectorError(joined)
 
         orders_node = order_data.get("orders") or {}
         edges = orders_node.get("edges") or []
@@ -482,12 +491,13 @@ class HttpShopifyConnector(ShopifyConnector):
 
 
 # ---------------------------------------------------------------------------
-# Bootstrap helper — call once at startup
+# Bootstrap helper - call once at startup
 # ---------------------------------------------------------------------------
 
 def bootstrap_shopify_connector() -> None:
     """Register HttpShopifyConnector from env vars if both are set."""
     domain = os.getenv("NOVA_SHOPIFY_SHOP_DOMAIN", "").strip()
     token = os.getenv("NOVA_SHOPIFY_ACCESS_TOKEN", "").strip()
+    api_version = os.getenv("NOVA_SHOPIFY_API_VERSION", "").strip()
     if domain and token:
-        set_shopify_connector(HttpShopifyConnector(domain, token))
+        set_shopify_connector(HttpShopifyConnector(domain, token, api_version=api_version))

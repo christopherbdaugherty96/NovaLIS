@@ -944,8 +944,8 @@ function renderWorkspaceBoardPage() {
     actionsHost.appendChild(button);
   });
 
-  const operationalContext = (snapshot && typeof snapshot.operational_context === "object")
-    ? snapshot.operational_context
+  const operationalContext = (workspace && typeof workspace.operational_context === "object")
+    ? workspace.operational_context
     : {};
   renderOperationalContextWidget(operationalContext);
 }

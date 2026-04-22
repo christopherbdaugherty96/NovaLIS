@@ -140,6 +140,13 @@ class TestShopifySuccessPath:
             result = ShopifyIntelligenceReportExecutor().execute(_req())
         assert "42" in result.message
 
+    def test_message_uses_plain_separator(self):
+        with self._patch_with_snapshot(_make_snapshot()):
+            result = ShopifyIntelligenceReportExecutor().execute(_req())
+        assert " - last 7 days:" in result.message
+        assert "Â·" not in result.message
+        assert "·" not in result.message
+
     def test_widget_type_correct(self):
         with self._patch_with_snapshot(_make_snapshot()):
             result = ShopifyIntelligenceReportExecutor().execute(_req())

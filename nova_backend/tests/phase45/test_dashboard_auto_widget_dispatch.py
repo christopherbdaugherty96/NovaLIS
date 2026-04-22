@@ -37,3 +37,9 @@ def test_dashboard_hydration_dispatch_includes_ui_invocation_source():
     source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
     assert 'function requestInlineAssistantAction(text, statusText = "", invocationSource = "ui_surface")' in source
     assert 'safeWSSend({ text: clean, invocation_source: invocationSource }, { queueIfUnavailable: true })' in source
+
+
+def test_dashboard_handles_run_status_websocket_events():
+    source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
+    assert 'case "run_status":' in source
+    assert "applyOpenClawRunStatusEvent(msg.data || {})" in source

@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "updated": "2026-04-22",
+  "updated": "2026-04-17",
   "phase_descriptions": {
     "p1_unit": "Executor tested in isolation — validate, execute, ledger events, ActionResult governance fields",
     "p2_routing": "GovernorMediator routes correctly — right cap_id, right params, no false positives",
@@ -928,12 +928,12 @@
       "reversible": true,
       "p1_unit": {
         "status": "pass",
-        "date": "2026-04-21",
+        "date": "2026-04-22",
         "test_file": "tests/executors/test_shopify_intelligence_report_executor.py"
       },
       "p2_routing": {
         "status": "pass",
-        "date": "2026-04-21",
+        "date": "2026-04-22",
         "test_file": "tests/test_shopify_intelligence_report_routing.py"
       },
       "p3_integration": {

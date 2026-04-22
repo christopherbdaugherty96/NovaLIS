@@ -20,6 +20,8 @@ def test_dashboard_renders_workspace_board_and_structure_map():
     assert "populateThreadDetailSurface(\"workspace-thread-detail\", data);" in source
     assert 'setActivePage("workspace")' in source
     assert 'label: "Workspace board"' in source
+    assert "workspace.operational_context" in source
+    assert "snapshot.operational_context" not in source
 
 
 def test_workspace_page_includes_board_and_structure_map_surfaces():

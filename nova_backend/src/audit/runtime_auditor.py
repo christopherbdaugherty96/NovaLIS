@@ -174,6 +174,7 @@ MEDIATOR_TRIGGER_PROBES: dict[str, str] = {
     "show story ai regulation": "story_tracker_view",
     "memory list": "memory_governance",
     "draft an email to john@example.com about the quarterly review": "send_email_draft",
+    "shopify report": "shopify_intelligence_report",
 }
 
 

@@ -98,7 +98,7 @@ class ShopifyIntelligenceReportExecutor:
         products = snapshot_dict.get("products", {})
 
         message = (
-            f"Shopify store '{snapshot.shop_name}' · {period.replace('_', ' ')}: "
+            f"Shopify store '{snapshot.shop_name}' - {period.replace('_', ' ')}: "
             f"{orders.get('order_count', 0)} orders, "
             f"{orders.get('currency', '')} {orders.get('total_revenue', '0')} revenue, "
             f"{products.get('active_products', 0)} active products."
