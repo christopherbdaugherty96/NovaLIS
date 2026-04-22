@@ -17,7 +17,6 @@ a Shopify dev store.
 from __future__ import annotations
 
 import asyncio
-from datetime import datetime, timezone
 from typing import Any
 
 from src.actions.action_result import ActionResult
@@ -32,10 +31,6 @@ _CAPABILITY_ID = 65
 _AUTHORITY_CLASS = "read_only_network"
 
 _VALID_PERIODS = frozenset({"today", "last_7_days", "last_30_days", "last_90_days"})
-
-
-def _utc_now_iso() -> str:
-    return datetime.now(timezone.utc).isoformat()
 
 
 class ShopifyIntelligenceReportExecutor:
