@@ -1,271 +1,154 @@
-# Nova — Your Local Intelligence System
+# NovaLIS
 
-Nova is a **private, offline-capable AI assistant that runs entirely on your own computer.**
-No cloud, no data harvesting, no background processes you didn't ask for.
+NovaLIS is a governed local AI system that separates intelligence from execution.
 
-Every action Nova takes passes through a single auditable authority spine — and every action
-is logged to a local, append-only ledger so you can always see what it did and why.
+It is built for people who want a useful assistant without surrendering visibility or control. Nova can reason, summarize, operate bounded local actions, draft messages, and run governed operator workflows, but real actions pass through explicit capability gates, policy checks, and audit logging.
 
----
+> Intelligence may expand. Authority may not expand without an explicit unlock.
 
-For the authoritative runtime truth, active capability count, enabled phases, and generated fingerprint, see
-[docs/current_runtime/CURRENT_RUNTIME_STATE.md](docs/current_runtime/CURRENT_RUNTIME_STATE.md).
-
-## Product roadmap snapshot — Tier 2 (April 2026)
-
-| Tier | Goal | Status |
-|---|---|---|
-| **Tier 1** – Try-ability | One-click installer + simplified UI + CI | In validation – Windows installer test pass still open |
-| **Tier 2** – First real-world action | Email draft end-to-end (cap 64) | Implemented – awaiting live sign-off and lock |
-| **Tier 2.5** — Reliability & ownership | Backup, restore, uninstaller, offline mode | Next |
-| **Tier 3** — Long-term health | Refactor hot-path files, remove frontend duplication | Planned |
-| **Tier 4** — Ecosystem | Distribution, support, security lifecycle, beta program | Planned |
-
-**What just shipped (Tier 2.1):** Email draft — Nova composes an email body, opens it in your mail client, and waits for you to send. Nova never sends on your behalf.
-
-**What's next:** Windows installer validation, live sign-off and lock of cap 64, then Tier 2.5 reliability work (backup, uninstaller, offline awareness).
+For the authoritative runtime truth, active capability count, enabled phases, and generated fingerprint, see [docs/current_runtime/CURRENT_RUNTIME_STATE.md](docs/current_runtime/CURRENT_RUNTIME_STATE.md).
 
 ---
 
-## What Nova can do today
+## Why It Exists
 
-### Research and information
-| What | How to ask |
-|---|---|
+Most AI assistants blend conversation, tool use, and execution into one opaque surface. NovaLIS treats those as separate responsibilities:
+
+- conversation can explain, plan, and present
+- capabilities define what the system is allowed to do
+- governance checks whether an action is permitted
+- the ledger records what happened and why
+- the user keeps final authority over sensitive actions
+
+That makes Nova less flashy in the wrong places and more trustworthy where it matters.
+
+---
+
+## What Nova Can Do Today
+
+### Research and Information
+
+| Task | Example |
+| --- | --- |
 | Search the web | `search for local AI tools` |
-| Today's news | `news`, `headlines`, `daily brief` |
-| Deep news summaries | `summarize headline 2`, `more on story 1` |
-| Multi-source report | `intelligence brief` |
-| Track a story over time | `track story EU AI Act` |
-| Weather | `weather`, `forecast` |
-| Calendar snapshot | `calendar`, `today's schedule` |
-| Second opinion on an answer | `second opinion` |
-| Verify a statement | `verify this` |
+| Get news | `news`, `headlines`, `daily brief` |
+| Summarize stories | `summarize headline 2`, `more on story 1` |
+| Build reports | `intelligence brief`, `research battery technology` |
+| Track stories | `track story EU AI Act` |
+| Weather and calendar snapshots | `weather`, `calendar`, `today's schedule` |
+| Verify or review an answer | `verify this`, `second opinion` |
 
-### Computer and local control
-| What | How to ask |
-|---|---|
+### Local Control
+
+| Task | Example |
+| --- | --- |
 | Open a website | `open github` |
 | Open a file or folder | `open downloads` |
-| Volume | `volume up`, `mute`, `set volume to 50` |
-| Brightness | `brightness down`, `set brightness to 65` |
-| Media playback | `pause`, `next track` |
-| System status | `system status`, `system check` |
+| Control volume | `volume up`, `mute`, `set volume to 50` |
+| Control brightness | `brightness down`, `set brightness to 65` |
+| Control media playback | `play`, `pause`, `resume` |
+| Check system state | `system status`, `system check` |
 | Read text aloud | `read that out loud`, `speak that` |
 
-### Email drafting *(first external write — cap 64)*
-| What | How to ask |
-|---|---|
-| Draft an email | `draft an email to john@example.com about the quarterly review` |
-| Compose with subject | `compose an email to the team about Friday's meeting` |
-| Quick email | `email alex@example.com about the deployment schedule` |
+### Governed Workflows
 
-Nova opens the draft in your mail client. You review and decide whether to send.
-A confirmation prompt appears before anything opens.
-
-### Screen and explain
-| What | How to ask |
-|---|---|
-| Take a screenshot | `take a screenshot` |
-| Explain what's on screen | `explain this screen`, `what am I looking at?` |
-| Analyze a region | `analyze this screen` |
-
-### Memory and continuity
-| What | How to ask |
-|---|---|
-| Save something | `remember this: client prefers morning calls` |
-| Review memory | `what do you remember`, `memory overview` |
-| Search memory | `search memories for deployment` |
-| Forget something | `forget this` |
-| Project threads | `create thread deployment issue`, `continue my project` |
-| Workspace board | `workspace board` |
-
-### Trust and visibility
-| What | How to ask |
-|---|---|
-| See recent actions | `trust center` |
-| See what's blocked | `trust status` |
-| Review policies | `policy center` |
-| Voice status | `voice status` |
-
-Nova capabilities are governed and logged. The generated runtime state document is the source of truth for the current active capability count.
+| Task | What happens |
+| --- | --- |
+| Email drafting | Nova writes a draft and opens your mail client; you review and send manually. |
+| Screen explanation | Nova analyzes an explicit screenshot or screen request; no background capture loop is created. |
+| Memory governance | You can save, search, edit, export, lock, defer, and delete governed memory. |
+| OpenClaw runs | Agent-style workflows run through bounded templates, state tracking, delivery controls, and runtime limits. |
+| Connector reports | Connector-backed intelligence reports remain governed and read-only unless explicitly unlocked. |
 
 ---
 
-## How it works
+## Why It Is Different
 
-Nova's core design rule:
+- **Governance-first:** every real action flows through the capability and policy spine.
+- **Local-first:** core use is designed around local runtime and user-controlled state.
+- **Auditable:** governed actions are written to an append-only local ledger.
+- **Bounded:** capabilities are registered, enabled, tested, and inspectable.
+- **Honest about runtime state:** generated docs describe what is actually active.
+- **Built for operators:** Nova emphasizes repeatable workflows, status visibility, and failure awareness.
 
-> **Intelligence may expand. Authority may not expand without an explicit unlock.**
+---
 
-Every real action flows through a five-component governance spine before it executes:
+## Quick Start
+
+See [QUICKSTART.md](QUICKSTART.md) for the full first-run path.
+
+Short version for a development checkout:
+
+```bash
+git clone https://github.com/christopherbdaugherty96/NovaLIS.git
+cd NovaLIS
+pip install -e .
+nova-start
+```
+
+Then open `http://localhost:8000` and try:
+
+- `system status`
+- `daily brief`
+- `open downloads`
+- `draft an email to test@example.com about the weekly update`
+
+---
+
+## How The Governance Spine Works
 
 ```mermaid
 flowchart TD
-    U["User"] --> UI["Nova UI\nChat / Home / Memory / Trust / Settings / Agent"]
-    UI --> APP["Nova runtime\napp assembly + websocket session handling"]
-
-    APP --> CONV["Conversation layer\nchat / voice / follow-ups / presentation"]
-    APP --> GOV["Governance and trust\npermissions / policy / confirmation / diagnostics"]
-    APP --> MEM["Memory and continuity\nexplicit memory / project threads / operational context / assistive notices"]
-
-    GOV --> CAPS["Capabilities and bounded lanes"]
-    CAPS --> LOCAL["Local tools and skills\nweather / news / calendar / screen / system / memory / email draft"]
-    CAPS --> REVIEW["Bounded review lane\nsecond opinion / final answer follow-through"]
-    CAPS --> OPENCLAW["OpenClaw home-agent foundation\nmanual templates / narrow scheduler / delivery inbox"]
-    CAPS --> OPENAI["Optional metered OpenAI lane\nvisible / budgeted / local-first fallback"]
-
-    LOCAL --> PRESENT["Nova-owned presentation layer"]
-    REVIEW --> PRESENT
-    OPENCLAW --> PRESENT
-    OPENAI --> PRESENT
-
-    PRESENT --> UI
-    GOV --> LEDGER["Ledger / Trust / usage visibility"]
+    U["User"] --> UI["Nova UI"]
+    UI --> CONV["Conversation layer"]
+    UI --> GOV["GovernorMediator"]
+    GOV --> REG["CapabilityRegistry"]
+    REG --> BOUNDARY["ExecuteBoundary"]
+    BOUNDARY --> NET["NetworkMediator when needed"]
+    BOUNDARY --> EXEC["Executor"]
+    EXEC --> LEDGER["LedgerWriter"]
+    LEDGER --> UI
 ```
 
-The **conversation path never acts** — it only explains and presents.
-Only the **governed capability path** can execute a real action, and only after passing through:
-
-1. **GovernorMediator** — recognises the intent and checks policy
-2. **CapabilityRegistry** — ensures the intent maps to a registered, enabled capability
-3. **ExecuteBoundary** — enforces resource limits, confirmation state, and argument shape
-4. **NetworkMediator** — gates any outbound network call by policy
-5. **LedgerWriter** — appends an immutable event to the local audit log
-
-There is no back door.
+The conversation path can explain and present. The governed capability path is the only path that can execute real actions.
 
 ---
 
-## Quick start
+## Documentation
 
-> **Prerequisites:** [Python 3.10+](https://python.org) and [Ollama](https://ollama.com) installed.
+Start here:
 
-```bash
-# 1. Pull a model
-ollama pull gemma4:e4b
+- [Docs index](docs/INDEX.md)
+- [Quickstart](QUICKSTART.md)
+- [Use cases](USE_CASES.md)
+- [Runtime state](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
+- [Architecture](docs/reference/ARCHITECTURE.md)
+- [Human guides](docs/reference/HUMAN_GUIDES/)
+- [Repo improvement action plan](docs/future/repo_improvement_action_plan.md)
 
-# 2. Clone
-git clone https://github.com/YOUR_USERNAME/Nova-Project.git
-cd Nova-Project
-
-# 3. Install
-pip install -e .
-
-# 4. Run
-nova-start
-
-# 5. Open your browser at http://localhost:8000
-```
-
-A **Windows installer** (`NovaSetup-0.1.0.exe`) is available in [GitHub Releases](../../releases).
-macOS package is planned for Tier 2.5.
-
-### First 60 seconds
-
-When Nova opens successfully:
-
-1. wait up to 90 seconds on the first launch while local services come up
-2. your browser should open to `http://localhost:8000`
-3. try one of these first:
-   - `daily brief`
-   - `news`
-   - `system status`
-   - `draft an email to test@example.com about the weekly update`
-
-If the Windows installer path fails:
-
-- check `C:\Program Files\Nova\bootstrap.log` for setup failures
-- check `C:\Program Files\Nova\scripts\pids\nova.log` for server startup failures after install
-
-### Runtime state on Windows
-
-Nova separates installed code from changing local state.
-
-- Repo/dev run from a writable checkout, such as `C:\Nova-Project`: runtime state can stay with the checkout.
-- Installed run from `C:\Program Files\Nova`: runtime state must be written under `%LOCALAPPDATA%\Nova`.
-
-Mutable files include the ledger, model lock, settings, memory, usage tracking,
-profiles, policies, OpenClaw runtime state, notifications, and captures. This
-prevents Windows permission failures in protected install locations.
+For roadmap details, see [4-15-26 NEW ROADMAP/Now.md](4-15-26%20NEW%20ROADMAP/Now.md) and [4-15-26 NEW ROADMAP/MasterRoadMap.md](4-15-26%20NEW%20ROADMAP/MasterRoadMap.md).
 
 ---
 
-## What's planned
+## Project Status
 
-### Next — Tier 2.5 (Reliability & Ownership)
-- Backup and restore (full system state)
-- Uninstaller
-- Offline capability awareness
-- Log export (sanitised)
-- Resource limits (CPU, memory, time)
-- Privacy modes and transparency dashboard
+Nova is early software with a serious governance model. It is actively evolving across runtime reliability, routing quality, memory governance, operator workflows, connector support, and public documentation.
 
-### Later — Tier 3 (Long-term health)
-- Refactor the two large runtime files (`brain_server.py`, `session_handler.py`)
-- Remove frontend duplication
-- Reduce docs sprawl
-
-### Later — Tier 4 (Ecosystem)
-- Distribution channel (GitHub Releases + landing page)
-- User support model (issue templates, in-app report)
-- Security maintenance policy
-- Storage lifecycle policy
-- Beta program and success metrics
-- macOS `.app` bundle
-
-See [`MasterRoadMap.md`](4-15-26%20NEW%20ROADMAP/MasterRoadMap.md) for the full tiered plan with acceptance criteria.
-
----
-
-## Learn more
-
-### For everyone
-| Document | What it covers |
-|---|---|
-| [Introduction](docs/INTRODUCTION.md) | What Nova is, why it exists, the privacy model |
-| [Human Guides →](docs/reference/HUMAN_GUIDES/) | 33 plain-language guides covering everything |
-| [What Nova can do (guide 03)](docs/reference/HUMAN_GUIDES/03_WHAT_NOVA_CAN_DO.md) | Full capability list with examples |
-| [Command examples (guide 08)](docs/reference/HUMAN_GUIDES/08_COMMAND_EXAMPLES.md) | Natural phrases that work |
-| [Safety and Trust (guide 06)](docs/reference/HUMAN_GUIDES/06_SAFETY_AND_TRUST.md) | Governance, memory, and the ledger |
-
-### For developers
-| Document | What it covers |
-|---|---|
-| [Architecture](docs/ARCHITECTURE.md) | Governance spine, capability inventory, ledger, drift-check tooling |
-| [Capability Verification (guide 33)](docs/reference/HUMAN_GUIDES/33_CAPABILITY_VERIFICATION_GUIDE.md) | 6-phase verification system, lock mechanism, regression guard |
-| [MasterRoadMap](4-15-26%20NEW%20ROADMAP/MasterRoadMap.md) | Full multi-tier plan with acceptance criteria |
-| [Now.md](4-15-26%20NEW%20ROADMAP/Now.md) | Current sprint — what's active right now |
-| [CHANGELOG](4-15-26%20NEW%20ROADMAP/CHANGELOG.md) | Rolling log of shipped work |
-
----
-
-## Why Nova
-
-- **Your data stays yours** — everything runs on your machine; nothing leaves unless you ask
-- **Works without internet** — core chat and device controls need no network
-- **Every action is auditable** — the append-only ledger records what happened and why
-- **You stay in control** — Nova drafts emails; you send them. Nova reads your screen; you decide what to do next.
+Use generated runtime docs rather than README claims when you need exact current counts, enabled capability IDs, or fingerprint hashes.
 
 ---
 
 ## License
 
-Nova is **source-available**, not open-source.
+Nova is source-available, not open-source.
 
-The code is visible so you can read it, understand it, audit the governance spine, and contribute — but it is not freely available for commercial reuse, redistribution, or building a competing product.
+The code is visible so you can read it, understand it, audit the governance spine, and contribute, but it is not freely available for commercial reuse, redistribution, or building a competing product.
 
-Nova is released under the [Business Source License 1.1 (BUSL-1.1)](LICENSE). Under this license:
+Nova is released under the [Business Source License 1.1](LICENSE). Under this license:
 
-- **You can** read the code, run it locally for personal use, and contribute via pull requests
-- **You can** inspect the governance and safety model — transparency is part of the design
-- **You cannot** use this code to build or operate a competing commercial product or service
-- **You cannot** redistribute or sublicense it without permission
+- you can read the code, run it locally for personal use, and contribute via pull requests
+- you can inspect the governance and safety model
+- you cannot use this code to build or operate a competing commercial product or service
+- you cannot redistribute or sublicense it without permission
 
-On **2030-04-18** the license converts automatically to [Apache 2.0](https://www.apache.org/licenses/LICENSE-2.0) — fully open at that point.
-
-This is a deliberate choice. It lets Nova be transparent and open to collaboration without giving up the ability to build something sustainable. If you are interested in a commercial arrangement before that date, reach out directly.
-
----
-
-*Nova is early software. It is honest about what it can and cannot do, and it is built for people who want real control over their own assistant.*
+On 2030-04-18 the license converts automatically to Apache 2.0.
