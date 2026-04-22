@@ -58,6 +58,7 @@ Imports from:
 - [[nova_backend/src/audit/__init__.py|src/audit]]
 - [[nova_backend/src/build_phase.py|build_phase]]
 - [[nova_backend/src/connections/__init__.py|src/connections]]
+- [[nova_backend/src/connectors/__init__.py|src/connectors]]
 - [[nova_backend/src/conversation/__init__.py|src/conversation]]
 - [[nova_backend/src/executors/__init__.py|src/executors]]
 - [[nova_backend/src/governor/agent_orchestrator.py|agent_orchestrator - src/governor]] (in `governor`)
