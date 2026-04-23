@@ -99,7 +99,7 @@ Nova functions internally to organize, coordinate, and improve operations. Nova 
 
 ## Nova within Pour Social
 - lead intake
-n- quote drafts
+- quote drafts
 - staffing schedules
 - event checklists
 - reminders
