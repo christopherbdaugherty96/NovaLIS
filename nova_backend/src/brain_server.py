@@ -19,6 +19,7 @@ import sys
 import uuid
 import asyncio
 import time
+from contextvars import ContextVar
 from contextlib import asynccontextmanager
 from datetime import datetime, timedelta
 from typing import Any, Optional
@@ -26,6 +27,16 @@ from typing import Any, Optional
 from fastapi import FastAPI, Request, WebSocket
 from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
+
+_current_ws_turn_id: ContextVar[str] = ContextVar("current_ws_turn_id", default="")
+
+
+def set_current_ws_turn_id(turn_id: str):
+    return _current_ws_turn_id.set(str(turn_id or "").strip())
+
+
+def reset_current_ws_turn_id(token) -> None:
+    _current_ws_turn_id.reset(token)
 
 from src.api.audit_api import build_audit_router
 from src.api.bridge_api import build_bridge_router
@@ -3284,6 +3295,7 @@ async def send_chat_message(
     ws: WebSocket,
     text: str,
     message_id: Optional[str] = None,
+    turn_id: Optional[str] = None,
     confidence: Optional[str] = None,
     suggested_actions: Optional[list[dict[str, str]]] = None,
     apply_personality: bool = True,
@@ -3295,6 +3307,9 @@ async def send_chat_message(
     if not presented and text:
         presented = str(text).strip()
     payload = {"type": "chat", "message": presented}
+    resolved_turn_id = str(turn_id or _current_ws_turn_id.get() or "").strip()
+    if resolved_turn_id:
+        payload["turn_id"] = resolved_turn_id
     if message_id is not None:
         payload["message_id"] = message_id
     if confidence:
@@ -3304,8 +3319,12 @@ async def send_chat_message(
     await ws_send(ws, payload)
     return presented
 
-async def send_chat_done(ws: WebSocket) -> None:
-    await ws_send(ws, {"type": "chat_done"})
+async def send_chat_done(ws: WebSocket, turn_id: Optional[str] = None) -> None:
+    payload = {"type": "chat_done"}
+    resolved_turn_id = str(turn_id or _current_ws_turn_id.get() or "").strip()
+    if resolved_turn_id:
+        payload["turn_id"] = resolved_turn_id
+    await ws_send(ws, payload)
 
 async def send_widget_message(
     ws: WebSocket,

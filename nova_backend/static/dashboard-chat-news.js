@@ -1003,6 +1003,13 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
   if (!chat) return;
 
   let msgText = String(text || "");
+  if (role === "assistant") {
+    const turnKey = `${activeManualTurnId || "ambient"}:${msgText.trim()}`;
+    if (turnKey && turnKey === lastAssistantTurnKey) return;
+    lastAssistantTurnKey = turnKey;
+  } else {
+    lastAssistantTurnKey = "";
+  }
   if (role === "assistant" && msgText.trim() === "Hello. How can I help?") {
     msgText = "Tell me what you're trying to get done, and I'll help with the next step.";
     const firstAssistant = chat.querySelector(".chat-assistant span");
@@ -1914,6 +1921,8 @@ function injectUserText(text, channel = "text") {
   manualTurnInFlight = true;
   manualTurnAssistantSeen = false;
   manualTurnStartedAt = Date.now();
+  manualTurnCounter += 1;
+  activeManualTurnId = `ui-turn-${manualTurnStartedAt}-${manualTurnCounter}`;
   suppressWidgetHydrationUntil = manualTurnStartedAt + 30000;
   clearStartupHydrationTimers();
   stopWidgetAutoRefresh();
@@ -1926,7 +1935,7 @@ function injectUserText(text, channel = "text") {
   updateWorkflowFocusFromUserInput(clean);
   updateWorkflowFocusProgress(loadingHint);
 
-  if (!safeWSSend({ text: clean, channel }, { queueIfUnavailable: true })) {
+  if (!safeWSSend({ text: clean, channel, turn_id: activeManualTurnId }, { queueIfUnavailable: true })) {
     appendChatMessage(
       "assistant",
       "Connection is waking back up. I queued your message and will send it as soon as Nova reconnects.",
@@ -2355,6 +2364,7 @@ function connectWebSocket() {
         applyOpenClawRunStatusEvent(msg.data || {});
         break;
       case "chat":
+        if (manualTurnInFlight && msg.turn_id && msg.turn_id !== activeManualTurnId) break;
         if (manualTurnInFlight) manualTurnAssistantSeen = true;
         appendChatMessage(
           "assistant",
@@ -2387,15 +2397,18 @@ function connectWebSocket() {
         }
         break;
       case "chat_done":
+        if (manualTurnInFlight && msg.turn_id && msg.turn_id !== activeManualTurnId) break;
         if (manualTurnInFlight && !manualTurnAssistantSeen) {
           if (Date.now() - manualTurnStartedAt < 60000) break;
           manualTurnInFlight = false;
           manualTurnStartedAt = 0;
+          activeManualTurnId = "";
         }
         if (manualTurnInFlight && manualTurnAssistantSeen) {
           manualTurnInFlight = false;
           manualTurnAssistantSeen = false;
           manualTurnStartedAt = 0;
+          activeManualTurnId = "";
           startWidgetAutoRefresh();
         }
         waitingForAssistant = false;
@@ -2418,6 +2431,7 @@ function connectWebSocket() {
         manualTurnInFlight = false;
         manualTurnAssistantSeen = false;
         manualTurnStartedAt = 0;
+        activeManualTurnId = "";
         waitingForAssistant = false;
         setThinkingBar(false);
         appendChatMessage("assistant", translateError(msg.code, msg.message), null, "System status");
@@ -2430,6 +2444,7 @@ function connectWebSocket() {
     manualTurnInFlight = false;
     manualTurnAssistantSeen = false;
     manualTurnStartedAt = 0;
+    activeManualTurnId = "";
     waitingForAssistant = false;
     setThinkingBar(false);
     clearStartupHydrationTimers();
