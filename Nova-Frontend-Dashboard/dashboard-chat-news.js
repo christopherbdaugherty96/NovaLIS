@@ -932,8 +932,8 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
   if (!chat) return;
 
   let msgText = String(text || "");
-  if (role === "assistant") {
-    const turnKey = `${activeManualTurnId || "ambient"}:${msgText.trim()}`;
+  if (role === "assistant" && activeManualTurnId) {
+    const turnKey = `${activeManualTurnId}:${msgText.trim()}`;
     if (turnKey && turnKey === lastAssistantTurnKey) return;
     lastAssistantTurnKey = turnKey;
   } else {

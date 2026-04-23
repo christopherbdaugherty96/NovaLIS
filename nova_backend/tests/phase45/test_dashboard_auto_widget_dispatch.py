@@ -90,5 +90,6 @@ def test_dashboard_dedupes_repeated_assistant_text_within_turn():
     state_source = (PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js").read_text(encoding="utf-8")
 
     assert "let lastAssistantTurnKey = \"\";" in state_source
-    assert "const turnKey = `${activeManualTurnId || \"ambient\"}:${msgText.trim()}`;" in source
+    assert "role === \"assistant\" && activeManualTurnId" in source
+    assert "const turnKey = `${activeManualTurnId}:${msgText.trim()}`;" in source
     assert "if (turnKey && turnKey === lastAssistantTurnKey) return;" in source

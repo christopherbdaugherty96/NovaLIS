@@ -28,7 +28,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     send_trust_status = deps.send_trust_status
     send_chat_done = deps.send_chat_done
     set_current_ws_turn_id = getattr(deps, "set_current_ws_turn_id", None)
-    reset_current_ws_turn_id = getattr(deps, "reset_current_ws_turn_id", None)
     GovernorMediator = deps.GovernorMediator
     WS_INPUT_MAX_BYTES = deps.WS_INPUT_MAX_BYTES
     ws_send = deps.ws_send
