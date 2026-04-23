@@ -184,7 +184,7 @@ WEATHER_RE = re.compile(
     re.IGNORECASE,
 )
 NEWS_RE = re.compile(
-    r"^\s*(?:news|headlines|latest news|top news|news update|catch me up on the news|what(?:'s| is) going on in the news|what(?:'s| is) (?:the )?news(?: today| now)?)\s*$",
+    r"^\s*(?:news|headlines|(?:latest|current|recent|top)\s+headlines|latest news|top news|news update|catch me up on the news|what(?:'s| is) going on in the news|what(?:'s| is) (?:the )?news(?: today| now)?)\s*$",
     re.IGNORECASE,
 )
 CALENDAR_RE = re.compile(

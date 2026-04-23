@@ -53,7 +53,7 @@ def _append_unique_result(results: list[dict], seen: set[str], payload: dict) ->
     seen.add(key)
     results.append(
         {
-            "title": title,
+            "title": _clean_text(title),
             "url": url,
             "summary": _clean_text(payload.get("summary") or ""),
             "published": str(payload.get("published") or "").strip(),
