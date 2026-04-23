@@ -31,6 +31,26 @@ def test_fetch_rss_headlines_parses_summary_and_published(monkeypatch):
     assert items[0]["video_url"] == ""
 
 
+def test_fetch_rss_headlines_unescapes_title_entities(monkeypatch):
+    xml = (
+        "<rss><channel>"
+        "<item>"
+        "<title>Tesla increased spending &#8212; here&#8217;s why</title>"
+        "<link>https://example.com/story</link>"
+        "</item>"
+        "</channel></rss>"
+    )
+
+    def _fake_request(self, capability_id, method, url, json_payload=None, params=None, headers=None, **kwargs):
+        return {"status_code": 200, "text": xml}
+
+    monkeypatch.setattr(NetworkMediator, "request", _fake_request)
+    items = asyncio.run(fetch_rss_headlines("https://example.com/rss"))
+
+    assert items[0]["title"] == "Tesla increased spending — here’s why"
+    assert "&#" not in items[0]["title"]
+
+
 def test_fetch_rss_headlines_atom_prefers_alternate_link(monkeypatch):
     atom = (
         '<feed xmlns="http://www.w3.org/2005/Atom">'
