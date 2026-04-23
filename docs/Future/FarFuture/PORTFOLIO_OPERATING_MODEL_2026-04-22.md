@@ -18,16 +18,42 @@ Primary focus:
 - capital allocation
 - final decisions
 
-### Revenue Engines
-- Pour Social
-- Website LLC
-- Future Ventures
+### Revenue Engines (Priority Order)
+1. Website LLC (Primary First Focus)
+2. Pour Social (Secondary Expansion Engine)
+3. Future Ventures
 
 ### Intelligence Layer
 Nova operates as the internal management platform across the portfolio.
 
-## Revenue Engines
-## Pour Social
+## Primary Engine — Website LLC
+Website creation, digital presence, lead generation, and client systems business.
+
+Why first:
+- easiest to start
+- fastest path to revenue
+- strong margins
+- low overhead
+- scalable systems business
+- can operate while maintaining a job
+- builds network and referrals
+- can fund later ventures
+
+Core model:
+- websites for local businesses
+- lead-generation assets
+- conversion-focused landing pages
+- maintenance retainers
+- future automation / CRM services
+
+Revenue paths:
+- one-time builds
+- monthly retainers
+- redesign packages
+- SEO / optimization upsells
+- consulting
+
+## Secondary Engine — Pour Social
 Event bar staffing & beverage experience company.
 
 Core model:
@@ -44,22 +70,11 @@ Revenue paths:
 - planning fees
 - recurring venue / planner partnerships
 
-## Website LLC
-Website creation, digital presence, lead generation, and client systems business.
-
-Core model:
-- websites for local businesses
-- lead-generation assets
-- conversion-focused landing pages
-- maintenance retainers
-- future automation / CRM services
-
-Revenue paths:
-- one-time builds
-- monthly retainers
-- redesign packages
-- SEO / optimization upsells
-- consulting
+Role in portfolio:
+- second growth engine
+- cash-flow diversification
+- local brand expansion
+- future multi-city opportunity
 
 ## Future Ventures
 Additional businesses launched over time under the same operating framework.
@@ -68,18 +83,6 @@ Rule: new ventures should either generate revenue, create leverage, or strengthe
 
 ## Nova Role
 Nova functions internally to organize, coordinate, and improve operations. Nova is not required to be the public-facing brand. Nova can quietly run internal workflows while customer brands remain simple and clear.
-
-## Nova within Pour Social
-- lead intake
-- quote drafts
-- staffing schedules
-- event checklists
-- reminders
-- inventory planning
-- SOP storage
-- dashboards
-- follow-up messaging
-- metrics and profitability tracking
 
 ## Nova within Website LLC
 - client pipeline
@@ -92,6 +95,19 @@ Nova functions internally to organize, coordinate, and improve operations. Nova 
 - project management
 - recurring task reminders
 - operations dashboard
+- lead follow-up systems
+
+## Nova within Pour Social
+- lead intake
+n- quote drafts
+- staffing schedules
+- event checklists
+- reminders
+- inventory planning
+- SOP storage
+- dashboards
+- follow-up messaging
+- metrics and profitability tracking
 
 ## Nova Across the Portfolio
 - command center dashboard
@@ -102,13 +118,15 @@ Nova functions internally to organize, coordinate, and improve operations. Nova 
 - priority management
 - documentation memory
 - cross-business analytics
+- opportunity pipeline view
 
 ## Strategic Direction
-1. Multi-city staffing brand potential.
-2. Semi-passive operator model through systems and delegated labor.
-3. Shared back-end systems across brands.
-4. Future ventures added over time.
-5. Strong owner leverage: less dependence on direct labor.
+1. Build Website LLC into the first dependable revenue engine.
+2. Use systems and profits to expand Pour Social.
+3. Operate as a semi-passive owner through systems and delegated labor.
+4. Share back-end systems across brands.
+5. Add future ventures over time.
+6. Increase owner leverage and reduce dependence on direct labor.
 
 ## Separation Principle
 Separate public brands. Unified back-end systems.
@@ -124,18 +142,19 @@ Operations may share tooling, dashboards, processes, automations, and Nova workf
 - track margins and cash flow
 - build systems before adding complexity
 - launch small, improve fast
+- focus on highest leverage opportunities first
 
 ## Execution Phases
 ### Phase 1
-Manual systems + Nova assistance.
-Launch offers, validate demand, close early customers.
+Website LLC primary push.
+Launch offers, validate demand, close early customers, build recurring revenue.
 
 ### Phase 2
 Selective automation + centralized dashboards.
-Reduce repetitive admin work.
+Use Nova to reduce repetitive admin work.
 
 ### Phase 3
-Unified operating layer across businesses.
+Expand Pour Social with stronger systems.
 Shared metrics, shared workflows, stronger delegation.
 
 ### Phase 4
