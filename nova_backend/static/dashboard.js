@@ -33,6 +33,10 @@ let morningFallbackTimer = null;
 let startupHydrationTimers = [];
 let wsReconnectTimer = null;
 let queuedUserMessages = [];
+let manualTurnInFlight = false;
+let manualTurnAssistantSeen = false;
+let manualTurnStartedAt = 0;
+let suppressWidgetHydrationUntil = 0;
 let morningState = {
   weather: "Loading...",
   news: "Loading...",

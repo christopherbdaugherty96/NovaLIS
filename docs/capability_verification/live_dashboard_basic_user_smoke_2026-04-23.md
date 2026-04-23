@@ -72,6 +72,55 @@ Second-pass conclusion:
 
 The concrete input path works, so the primary problem is not that Chat cannot send messages. The remaining first-user issue is response coherence: background/system responses and delayed assistant frames can attach to the wrong visible turn, while some normal user commands receive no visible answer.
 
+## Third Pass Fixes Applied
+
+Implemented dashboard turn-discipline improvements in both dashboard source and served static files:
+
+- Manual user chat turns now mark `manualTurnInFlight`.
+- Startup hydration timers are cleared when a manual user turn starts.
+- Widget auto-refresh is stopped during a manual user turn.
+- Silent widget refresh sends are suppressed while a manual turn is active or while the assistant is still answering.
+- `chat_done` no longer clears the active manual turn until an assistant `chat` frame has arrived, unless the turn has exceeded the safety timeout.
+- The chat input blocks overlapping manual sends with a visible loading hint instead of firing another WebSocket turn while Nova is still answering.
+
+Files touched:
+
+- `Nova-Frontend-Dashboard/dashboard.js`
+- `Nova-Frontend-Dashboard/dashboard-control-center.js`
+- `Nova-Frontend-Dashboard/dashboard-chat-news.js`
+- `nova_backend/static/dashboard.js`
+- `nova_backend/static/dashboard-control-center.js`
+- `nova_backend/static/dashboard-chat-news.js`
+- `nova_backend/tests/phase45/test_dashboard_auto_widget_dispatch.py`
+
+Focused tests added:
+
+- Dashboard pauses widget hydration during a manual chat turn.
+- Dashboard does not clear a manual turn until an assistant reply arrives.
+- Dashboard blocks overlapping manual chat sends.
+
+Third-pass live result:
+
+Status: IMPROVED / PARTIAL
+
+The clean Chat pass loaded directly into Chat without using the `System status` quick action as the entry point. Browser console, page errors, and local HTTP errors were clean.
+
+Observed improvements:
+
+- `what can you do?` now produced the capabilities answer in the same visible turn.
+- `open documents` now produced the expected governed confirmation prompt in the same visible turn.
+- The dashboard can block the next manual send while the current assistant turn is still active, preventing obvious user-side turn overlap.
+
+Remaining issues:
+
+- `hello` produced repeated identical assistant responses in one turn.
+- `what is this app for?` sometimes exceeded the test timeout, then its answer appeared on the next attempted prompt. The frontend guard prevented the next prompt from being sent, but this still feels like a delayed-turn UX issue.
+- `can you help me search the web?` was not actually sent in the clean third pass because the previous delayed turn was still active; the typed prompt was blocked by the new guard. This is safer than mis-threading the turn, but the UI should make that blocked state more obvious and preserve the unsent draft.
+
+Third-pass conclusion:
+
+The dashboard no longer appears to lose the basic local-action path for `open documents`, and the capabilities path for `what can you do?` is materially better. The remaining gap is deeper turn correlation and backend/general-chat latency: Nova needs request IDs or explicit turn IDs so the frontend can bind assistant frames and `chat_done` to the exact user turn that produced them.
+
 ## Passing Checks
 
 - `/` returned 200 and loaded the dashboard.
