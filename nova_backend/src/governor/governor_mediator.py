@@ -742,7 +742,7 @@ class GovernorMediator:
             cap_id, _created_at = pending
             if cap_id == 16:
                 alt = GovernorMediator.parse_governed_invocation(t, session_id=None)
-                if isinstance(alt, Invocation) and alt.capability_id != 16:
+                if isinstance(alt, Invocation):
                     return alt
                 if isinstance(alt, Clarification):
                     return alt
