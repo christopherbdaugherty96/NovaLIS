@@ -1,35 +1,53 @@
-# TODO — Portfolio Priority Switch (2026-04-22)
+# Website LLC — Primary First Revenue Engine
 
 ## Decision
-Shift immediate primary business focus from Shopify-centered expansion to Website LLC as the first and main revenue engine.
+Website LLC is the first and main revenue engine in the portfolio.
 
-This is a sequencing change, not a deletion of the Shopify vision.
+This is a sequencing decision, not a deletion of the broader portfolio vision.
 
-## Why This Switch Is Being Made
-Website LLC currently appears to offer the strongest near-term path for:
+## Why This Comes First
+Website LLC currently offers the strongest near-term path because it creates the clearest route to:
 - faster revenue
 - lower startup friction
 - lower technical overhead
 - easier customer acquisition
 - service packages that can be sold now
-- scalable systems that can later become repeatable offers
-- ability to operate while still employed
-- funding future ventures later
+- repeatable fulfillment systems
+- operation while still employed
+- future cash flow that can help fund later expansion
 
-## Core Strategic Interpretation
-The main idea is not to abandon multi-business portfolio building.
-The main idea is to choose the easiest and most profitable first engine before expanding into more complex lanes.
+## Strategic Interpretation
+The goal is not to abandon multi-business portfolio building.
+The goal is to begin with the clearest and most practical first engine.
 
-Website LLC is the first engine.
-Shopify remains a future lane.
+Website LLC comes first.
 Pour Social remains a secondary business lane.
-Nova remains the internal management layer across all of them.
+Shopify remains a future lane.
+Nova remains the internal intelligence and management layer across the portfolio.
 
-## Updated Priority Order
-1. Website LLC — primary focus now
-2. Pour Social — secondary expansion engine
-3. Shopify capabilities inside Nova — future expansion lane
-4. Additional ventures later
+## What Website LLC Is
+Website LLC is the public-facing service business built to help local businesses improve their online presence through:
+- clean websites
+- clearer positioning
+- stronger customer trust
+- practical lead and contact flow
+- optional ongoing support
+
+## Core Offer
+- website design and launch
+- service and brand positioning
+- lead capture setup
+- simple customer contact flow
+- optional updates and support
+
+## Delivery Model
+1. discovery and business review
+2. scope and offer selection
+3. deposit and onboarding
+4. website build
+5. revision pass
+6. launch
+7. optional ongoing support
 
 ## What This Means for Nova
 Nova should continue supporting business operations internally, but immediate product energy should favor workflows that help Website LLC first.
@@ -56,12 +74,18 @@ Keep it documented as:
 - possible later internal ecommerce lane
 - optional later Nova operator surface if justified by traction
 
-## What Success Looks Like
+## Role in the Portfolio
+Website LLC is the first dependable service engine.
+Its job is to create proof, cash flow, and a repeatable operating lane while the broader portfolio continues to develop.
+
+## Success Standard
 This switch is successful if Website LLC becomes:
 - the first dependable revenue engine
-- a source of recurring income
+- a repeatable service business
+- a source of proof and cash flow
 - a source of local business relationships
-- a funding source for future Nova and business expansion
+- a practical operating lane supported by Nova
+- the business that funds the next stage of the portfolio
 
 ## Reminder to Future Self
 Do not drift back into building complex systems before proving the first revenue engine.
