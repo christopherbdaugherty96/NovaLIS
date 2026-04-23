@@ -1654,7 +1654,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await send_chat_done(ws)
                 continue
 
-            if lowered in {"show sources", "show sources for your last response", "sources"}:
+            if lowered in {
+                "show sources",
+                "show sources for your last response",
+                "sources",
+                "where did you get that",
+                "where did you get that?",
+                "where'd you get that",
+                "where'd you get that?",
+            }:
                 last_sources = list(session_state.get("last_sources") or [])
                 if not last_sources:
                     await send_chat_message(

@@ -184,7 +184,7 @@ WEATHER_RE = re.compile(
     re.IGNORECASE,
 )
 NEWS_RE = re.compile(
-    r"^\s*(?:news|headlines|(?:latest|current|recent|top)\s+headlines|latest news|top news|news update|catch me up on the news|what(?:'s| is) going on in the news|what(?:'s| is) (?:the )?news(?: today| now)?)\s*$",
+    r"^\s*(?:news|headlines|(?:latest|current|recent|top)\s+headlines|latest news|top news|news update|catch me up on the news|what(?:'s| is) going on in the news|what(?:'s| is) (?:the )?news(?: today| now)?|what\s+are\s+(?:today'?s|the\s+latest|the\s+current|the\s+top)\s+headlines)\s*$",
     re.IGNORECASE,
 )
 CALENDAR_RE = re.compile(
@@ -303,10 +303,28 @@ STORY_PAGE_SUMMARY_ALT_RE = re.compile(
     r"(?:summary|details?|more)(?:\s+please)?\s*$",
     re.IGNORECASE,
 )
+ORDINAL_STORY_PAGE_SUMMARY_RE = re.compile(
+    r"^\s*(?:tell\s+me\s+more\s+about|more\s+on|details?\s+(?:on|about)|summarize|summary\s+of)\s+"
+    r"(?:the\s+)?(?P<ordinal>first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)\s+"
+    r"(?:story|headline|article)\s*$",
+    re.IGNORECASE,
+)
 TRACK_STORY_INDEX_RE = re.compile(
     r"^\s*track\s+story\s+(?P<idx>\d{1,2})\s*$",
     re.IGNORECASE,
 )
+ORDINAL_WORD_TO_INDEX = {
+    "first": 1,
+    "second": 2,
+    "third": 3,
+    "fourth": 4,
+    "fifth": 5,
+    "sixth": 6,
+    "seventh": 7,
+    "eighth": 8,
+    "ninth": 9,
+    "tenth": 10,
+}
 VERIFY_RE = re.compile(
     r"^\s*(?:verify|double\s+check|fact\s*check|validate(?:\s+sources?)?)"
     r"(?:\s+(?P<text>.+?))?\s*$",
@@ -999,6 +1017,18 @@ class GovernorMediator:
                     "story_index": int(m.group("idx")),
                 },
             )
+
+        m = ORDINAL_STORY_PAGE_SUMMARY_RE.match(t)
+        if m:
+            story_index = ORDINAL_WORD_TO_INDEX.get(str(m.group("ordinal") or "").strip().lower())
+            if story_index:
+                return _invocation_if_enabled(
+                    49,
+                    {
+                        "action": "story_page_summary",
+                        "story_index": story_index,
+                    },
+                )
 
         m = COMPARE_STORY_INDEX_RE.match(t)
         if m:

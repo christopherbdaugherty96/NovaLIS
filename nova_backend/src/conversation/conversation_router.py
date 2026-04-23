@@ -21,6 +21,9 @@ class ConversationRouter:
         "compare",
         "volume",
         "brightness",
+        "memory",
+        "remember",
+        "forget",
         "play",
         "pause",
     )
@@ -46,6 +49,11 @@ class ConversationRouter:
         re.IGNORECASE,
     )
     VAGUE_ACTION_RE = re.compile(r"^\s*(?:do|handle|run)\s+(?:the\s+)?(?:thing|stuff|task)\s*$", re.IGNORECASE)
+    MEMORY_COMMAND_RE = re.compile(
+        r"^\s*(?:memory\b|remember\b|forget\b|list\s+memories\b|recent\s+memories\b|what\s+do\s+you\s+remember\b)",
+        re.IGNORECASE,
+    )
+    SESSION_CONTEXT_RE = re.compile(r"\b(?:this|current|our)\s+session\b", re.IGNORECASE)
 
     MICRO_ACK = {
         ConversationMode.ANALYSIS: "Okay. Let me think that through.",
@@ -106,7 +114,7 @@ class ConversationRouter:
         "another thing",
     )
     RESEARCH_HINTS = ("research", "look into", "look up", "investigate", "analyze", "analysis")
-    TASK_HINTS = ("open", "run", "check", "show", "set", "play", "pause", "search")
+    TASK_HINTS = ("open", "run", "check", "show", "set", "play", "pause", "search", "memory", "remember", "forget")
     WORK_HINTS = ("debug", "fix", "implement", "step by step", "plan", "design", "refactor")
     OVERRIDE_MODE_MAP = {
         "brainstorm mode": ConversationMode.BRAINSTORM,
@@ -264,6 +272,8 @@ class ConversationRouter:
             return "casual"
         if "how are you" in lowered:
             return "casual"
+        if cls.MEMORY_COMMAND_RE.match(lowered):
+            return "task"
         if continuation_detected:
             return "followup"
         if "?" in text or any(h in lowered.split() for h in cls.QUESTION_HINTS):
@@ -334,6 +344,10 @@ class ConversationRouter:
         if not lowered:
             return False
         if any(marker in lowered for marker in cls.CONTEXT_RESET_MARKERS):
+            return False
+        if cls.MEMORY_COMMAND_RE.match(lowered):
+            return False
+        if cls.SESSION_CONTEXT_RE.search(lowered):
             return False
         has_context = bool(state.get("last_response")) or bool(state.get("last_object"))
         if not has_context:

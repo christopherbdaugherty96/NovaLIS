@@ -201,6 +201,37 @@ def test_websocket_echoes_client_turn_id_on_chat_and_done(monkeypatch):
     assert any(msg.get("type") == "chat_done" for msg in correlated)
 
 
+def test_send_widget_message_echoes_current_turn_id():
+    ws = _ScriptedWebSocket([])
+    token = brain_server.set_current_ws_turn_id("ui-turn-widget-1")
+
+    try:
+        asyncio.run(
+            brain_server.send_widget_message(
+                ws,
+                "news",
+                "Latest headlines loaded.",
+                {
+                    "items": [{"title": "Story 1"}],
+                    "summary": "Loaded 1 headline.",
+                    "categories": {"world": [{"title": "Story 1"}]},
+                },
+            )
+        )
+    finally:
+        brain_server._current_ws_turn_id.reset(token)
+
+    assert ws.sent_messages == [
+        {
+            "type": "news",
+            "items": [{"title": "Story 1"}],
+            "summary": "Loaded 1 headline.",
+            "categories": {"world": [{"title": "Story 1"}]},
+            "turn_id": "ui-turn-widget-1",
+        }
+    ]
+
+
 def test_bridge_status_returns_remote_bridge_summary_without_model_call(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,

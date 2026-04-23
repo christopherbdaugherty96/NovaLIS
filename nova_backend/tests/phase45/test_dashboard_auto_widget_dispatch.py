@@ -63,6 +63,8 @@ def test_dashboard_does_not_clear_manual_turn_until_assistant_reply_arrives():
     source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
 
     assert "if (manualTurnInFlight) manualTurnAssistantSeen = true;" in source
+    assert "function widgetMessageMatchesActiveManualTurn(msg)" in source
+    assert "if (widgetMessageMatchesActiveManualTurn(msg)) manualTurnAssistantSeen = true;" in source
     assert "if (manualTurnInFlight && !manualTurnAssistantSeen)" in source
     assert "Date.now() - manualTurnStartedAt < 60000" in source
     assert "startWidgetAutoRefresh();" in source

@@ -157,3 +157,33 @@ def test_router_resets_manual_mode_override():
     out = ConversationRouter.route("reset mode", {"session_mode_override": "analysis"})
     assert out.override_cleared is True
     assert out.override_mode == "default"
+
+
+def test_router_keeps_memory_commands_out_of_followup_mode_with_prior_context():
+    state = {
+        "last_response": "Previous dashboard startup response.",
+        "last_intent_family": "task",
+    }
+
+    for prompt in ["memory overview", "memory list", "remember this: prefers concise replies", "forget this"]:
+        out = ConversationRouter.route(prompt, state)
+        assert out.mode.value == "action", prompt
+        assert out.intent_family == "task", prompt
+        assert out.continuation_detected is False, prompt
+        assert out.needs_clarification is False, prompt
+
+
+def test_router_keeps_session_context_statements_out_of_followup_mode():
+    state = {
+        "last_response": "Previous dashboard startup response.",
+        "last_intent_family": "task",
+    }
+
+    out = ConversationRouter.route(
+        "For this session only, the verification codename is RIVERGLASS.",
+        state,
+    )
+
+    assert out.continuation_detected is False
+    assert out.needs_clarification is False
+    assert out.mode.value != "action"
