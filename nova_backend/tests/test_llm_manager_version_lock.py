@@ -166,3 +166,35 @@ def test_fallback_retry_uses_smaller_context_window():
     assert captured_options[0]["num_ctx"] == 32768
     assert captured_options[1]["num_ctx"] == 4096
     assert captured_options[1]["num_predict"] == 384
+
+
+def test_try_recover_primary_requires_chat_probe_success():
+    class _PrimaryStillFailsNetwork:
+        def request_json(self, **kwargs):
+            assert kwargs["json_payload"]["model"] == "gemma4:e4b"
+            raise ModelNetworkMediatorError("model requires more system memory")
+
+    manager = _build_manager(_PrimaryStillFailsNetwork())
+    manager.fallback_model = "gemma2:2b"
+    manager._using_fallback = True
+
+    assert manager.try_recover_primary() is False
+    assert manager.active_model == "gemma2:2b"
+
+
+def test_try_recover_primary_switches_back_after_chat_probe_success():
+    captured = {}
+
+    class _PrimaryRecoveredNetwork:
+        def request_json(self, **kwargs):
+            captured.update(kwargs)
+            return ModelResponse(status_code=200, data={"message": {"content": "ok"}})
+
+    manager = _build_manager(_PrimaryRecoveredNetwork())
+    manager.fallback_model = "gemma2:2b"
+    manager._using_fallback = True
+
+    assert manager.try_recover_primary() is True
+    assert manager.active_model == "gemma4:e4b"
+    assert captured["json_payload"]["options"]["num_predict"] == 1
+    assert captured["json_payload"]["options"]["num_ctx"] == 512

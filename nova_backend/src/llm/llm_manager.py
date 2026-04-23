@@ -94,19 +94,27 @@ class LLMManager:
         if not self._using_fallback:
             return True
         try:
-            response = self._network.request_json(
-                method="GET",
-                url=f"{self.base_url.rstrip('/')}/api/tags",
-                timeout=5,
+            self._network.request_json(
+                method="POST",
+                url=f"{self.base_url.rstrip('/')}/api/chat",
+                json_payload={
+                    "model": self.model,
+                    "messages": [{"role": "user", "content": "OK"}],
+                    "stream": False,
+                    "options": {
+                        "temperature": 0.0,
+                        "num_predict": 1,
+                        "num_ctx": 512,
+                    },
+                },
+                timeout=10,
             )
-            models = response.data.get("models", [])
-            if any(self.model in m.get("name", "") for m in models):
-                self._using_fallback = False
-                self.failure_count = 0
-                logger.info("Recovered to primary model %s.", self.model)
-                return True
-        except Exception:
-            pass
+            self._using_fallback = False
+            self.failure_count = 0
+            logger.info("Recovered to primary model %s.", self.model)
+            return True
+        except Exception as error:
+            logger.info("Primary model %s is still not runnable: %s", self.model, error)
         return False
 
     def status_snapshot(self) -> dict:
