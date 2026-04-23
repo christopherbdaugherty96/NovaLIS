@@ -29,6 +29,7 @@ Pull the local model expected by your runtime configuration:
 
 ```bash
 ollama pull gemma4:e4b
+ollama pull gemma2:2b
 ```
 
 ---

@@ -1,7 +1,7 @@
 from pathlib import Path
 
 import src.llm.llm_manager as mod
-from src.llm.model_network_mediator import ModelResponse
+from src.llm.model_network_mediator import ModelNetworkMediatorError, ModelResponse
 
 
 class _FakeNetwork:
@@ -117,3 +117,52 @@ def test_generate_uses_explicit_timeout_override():
 
     assert result == "Structured analysis is available."
     assert captured.get("timeout") == 90.0
+
+
+def test_generate_retries_with_fallback_after_primary_network_failure():
+    captured_models = []
+
+    class _PrimaryFailsNetwork:
+        def request_json(self, **kwargs):
+            captured_models.append(kwargs["json_payload"]["model"])
+            if len(captured_models) == 1:
+                raise ModelNetworkMediatorError("model requires more system memory")
+            return ModelResponse(
+                status_code=200,
+                data={"message": {"content": "A GPU is a processor for parallel work."}},
+            )
+
+    manager = _build_manager(_PrimaryFailsNetwork())
+    manager.fallback_model = "gemma2:2b"
+
+    result = manager.generate("what is a GPU?", request_id="fallback-proof")
+
+    assert result == "A GPU is a processor for parallel work."
+    assert captured_models == ["gemma4:e4b", "gemma2:2b"]
+    assert manager.active_model == "gemma2:2b"
+    assert manager.failure_count == 0
+    assert manager.circuit_open_until == 0
+
+
+def test_fallback_retry_uses_smaller_context_window():
+    captured_options = []
+
+    class _PrimaryFailsNetwork:
+        def request_json(self, **kwargs):
+            captured_options.append(dict(kwargs["json_payload"]["options"]))
+            if len(captured_options) == 1:
+                raise ModelNetworkMediatorError("model requires more system memory")
+            return ModelResponse(
+                status_code=200,
+                data={"message": {"content": "fallback ok"}},
+            )
+
+    manager = _build_manager(_PrimaryFailsNetwork())
+    manager.fallback_model = "gemma2:2b"
+    manager.default_options["num_ctx"] = 32768
+    manager.default_options["num_predict"] = 512
+
+    assert manager.generate("explain local AI") == "fallback ok"
+    assert captured_options[0]["num_ctx"] == 32768
+    assert captured_options[1]["num_ctx"] == 4096
+    assert captured_options[1]["num_predict"] == 384

@@ -10,7 +10,7 @@ from typing import Optional, Dict, Any
 from src.ledger.writer import LedgerWriter
 from src.governor.exceptions import LedgerWriteFailed
 from src.llm.model_network_mediator import ModelNetworkMediator, ModelNetworkMediatorError
-from src.nova_config import OLLAMA_MODEL, OLLAMA_FALLBACK_MODEL, OLLAMA_URL
+from src.nova_config import OLLAMA_MODEL, OLLAMA_FALLBACK_MODEL, OLLAMA_TIMEOUT, OLLAMA_URL
 from src.utils.persistent_state import runtime_path
 from .system_prompt import SYSTEM_PROMPT
 
@@ -60,7 +60,7 @@ class LLMManager:
         self.model = str(model or OLLAMA_MODEL or "gemma4:e4b").strip()
         self.fallback_model = str(fallback_model or OLLAMA_FALLBACK_MODEL or "").strip()
         self.base_url = str(base_url or OLLAMA_URL or "http://localhost:11434").strip()
-        self.timeout = 30
+        self.timeout = OLLAMA_TIMEOUT
         self.system_prompt = SYSTEM_PROMPT
         self._network = ModelNetworkMediator()
 
@@ -332,6 +332,40 @@ class LLMManager:
 
         except ModelNetworkMediatorError as error:
             logger.error("Model network call failed: %s", error)
+            if not self._using_fallback and self.fallback_model:
+                primary_model = self.model
+                self._using_fallback = True
+                self.failure_count = 0
+                self.circuit_open_until = 0
+                logger.warning(
+                    "Primary model %s failed; retrying with fallback model %s.",
+                    primary_model,
+                    self.fallback_model,
+                )
+                try:
+                    fallback_options = dict(options)
+                    fallback_options["num_ctx"] = min(int(fallback_options.get("num_ctx", 4096)), 4096)
+                    fallback_options["num_predict"] = min(int(fallback_options.get("num_predict", 384)), 384)
+                    response = self._network.request_json(
+                        method="POST",
+                        url=f"{self.base_url.rstrip('/')}/api/chat",
+                        json_payload={
+                            "model": self.active_model,
+                            "messages": messages,
+                            "stream": False,
+                            "options": fallback_options,
+                        },
+                        timeout=request_timeout,
+                        request_id=request_id,
+                        session_id=session_id,
+                    )
+                    result = ((response.data.get("message") or {}).get("content") or "").strip() or None
+                    self.failure_count = 0
+                    return result
+                except ModelNetworkMediatorError as fallback_error:
+                    logger.error("Fallback model network call failed: %s", fallback_error)
+                except Exception as fallback_exception:
+                    logger.error("Fallback LLM error: %s", fallback_exception)
             self._record_failure()
         except Exception as e:
             logger.error(f"LLM error: {e}")
