@@ -680,6 +680,65 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     )
                     continue
 
+            pending_governed_confirm = session_state.get("pending_governed_confirm")
+            if pending_governed_confirm:
+                confirm_decision = SessionRouter.route_pending_web_confirmation(raw_text)
+                if confirm_decision.action == "confirm":
+                    capability_id = int(pending_governed_confirm.get("capability_id") or 0)
+                    params = dict(pending_governed_confirm.get("params") or {})
+                    params["confirmed"] = True
+                    params.setdefault("session_id", session_id)
+                    action_result = await invoke_governed_capability(governor, capability_id, params)
+                    session_state["pending_governed_confirm"] = None
+                    outgoing_message = _structure_long_message(_action_result_message(action_result))
+                    if outgoing_message:
+                        session_state["last_response"] = outgoing_message
+                    await send_chat_message(ws, outgoing_message)
+                    await send_chat_done(ws)
+                    continue
+                if confirm_decision.action == "cancel":
+                    session_state["pending_governed_confirm"] = None
+                    await send_chat_message(ws, "Cancelled pending action.")
+                    await send_chat_done(ws)
+                    continue
+                await send_chat_message(
+                    ws,
+                    "I still have a confirmation pending. Reply 'yes' to proceed or 'no' to cancel.",
+                )
+                await send_chat_done(ws)
+                continue
+
+            pending_web_open = session_state.get("pending_web_open")
+            if pending_web_open:
+                web_decision = SessionRouter.route_pending_web_confirmation(raw_text)
+                if web_decision.action == "confirm":
+                    action_result = await invoke_governed_capability(
+                        governor,
+                        17,
+                        {**pending_web_open, "confirmed": True, "session_id": session_id},
+                    )
+                    session_state["pending_web_open"] = None
+                    action_payload = _action_result_payload(action_result)
+                    outgoing_message = _structure_long_message(_action_result_message(action_result))
+                    if action_result.success and isinstance(action_payload, dict):
+                        opened_domain = str(action_payload.get("opened_domain") or "").strip()
+                        if opened_domain:
+                            session_state["last_sources"] = [opened_domain]
+                    await send_chat_message(ws, outgoing_message)
+                    await send_chat_done(ws)
+                    continue
+                if web_decision.action == "cancel":
+                    session_state["pending_web_open"] = None
+                    await send_chat_message(ws, "Cancelled website open request.")
+                    await send_chat_done(ws)
+                    continue
+                await send_chat_message(
+                    ws,
+                    "I still have your website open request pending. Reply 'yes' to open or 'no' to cancel.",
+                )
+                await send_chat_done(ws)
+                continue
+
             route_context = SessionRouter.normalize_and_route(raw_text, session_state)
             if route_context.is_empty:
                 await _complete_immediate_turn(SessionRouter.ready_prompt(), remember_response=False)
@@ -1507,65 +1566,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 session_state["deep_mode_armed"] = False
                 session_state["pending_escalation"] = None
                 await send_chat_message(ws, "Deep analysis canceled.")
-                await send_chat_done(ws)
-                continue
-
-            pending_web_open = session_state.get("pending_web_open")
-            pending_governed_confirm = session_state.get("pending_governed_confirm")
-            if pending_governed_confirm:
-                confirm_decision = SessionRouter.route_pending_web_confirmation(lowered)
-                if confirm_decision.action == "confirm":
-                    capability_id = int(pending_governed_confirm.get("capability_id") or 0)
-                    params = dict(pending_governed_confirm.get("params") or {})
-                    params["confirmed"] = True
-                    params.setdefault("session_id", session_id)
-                    action_result = await invoke_governed_capability(governor, capability_id, params)
-                    session_state["pending_governed_confirm"] = None
-                    outgoing_message = _structure_long_message(_action_result_message(action_result))
-                    if outgoing_message:
-                        session_state["last_response"] = outgoing_message
-                    await send_chat_message(ws, outgoing_message)
-                    await send_chat_done(ws)
-                    continue
-                if confirm_decision.action == "cancel":
-                    session_state["pending_governed_confirm"] = None
-                    await send_chat_message(ws, "Cancelled pending action.")
-                    await send_chat_done(ws)
-                    continue
-                await send_chat_message(
-                    ws,
-                    "I still have a confirmation pending. Reply 'yes' to proceed or 'no' to cancel.",
-                )
-                await send_chat_done(ws)
-                continue
-
-            if pending_web_open:
-                web_decision = SessionRouter.route_pending_web_confirmation(lowered)
-                if web_decision.action == "confirm":
-                    action_result = await invoke_governed_capability(
-                        governor,
-                        17,
-                        {**pending_web_open, "confirmed": True, "session_id": session_id},
-                    )
-                    session_state["pending_web_open"] = None
-                    action_payload = _action_result_payload(action_result)
-                    outgoing_message = _structure_long_message(_action_result_message(action_result))
-                    if action_result.success and isinstance(action_payload, dict):
-                        opened_domain = str(action_payload.get("opened_domain") or "").strip()
-                        if opened_domain:
-                            session_state["last_sources"] = [opened_domain]
-                    await send_chat_message(ws, outgoing_message)
-                    await send_chat_done(ws)
-                    continue
-                if web_decision.action == "cancel":
-                    session_state["pending_web_open"] = None
-                    await send_chat_message(ws, "Cancelled website open request.")
-                    await send_chat_done(ws)
-                    continue
-                await send_chat_message(
-                    ws,
-                    "I still have your website open request pending. Reply 'yes' to open or 'no' to cancel.",
-                )
                 await send_chat_done(ws)
                 continue
 

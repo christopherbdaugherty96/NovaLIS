@@ -100,6 +100,42 @@ def test_open_file_folder_requires_confirmation_before_dispatch(monkeypatch):
     assert params.get("confirmed") is True
 
 
+def test_pending_file_folder_confirmation_yes_bypasses_normal_gates(monkeypatch):
+    calls: list[tuple[int, dict]] = []
+
+    def _fake_parse(text: str, session_id: str | None = None):
+        if "open documents" in text.strip().lower():
+            return Invocation(capability_id=22, params={"target": "documents"})
+        return None
+
+    def _fake_handle(capability_id: int, params: dict):
+        calls.append((capability_id, dict(params)))
+        return ActionResult.ok("Opened documents.", request_id="req-confirm-yes")
+
+    monkeypatch.setattr(
+        GovernorMediator,
+        "parse_governed_invocation",
+        staticmethod(_fake_parse),
+    )
+    monkeypatch.setattr(
+        brain_server.RUNTIME_GOVERNOR,
+        "handle_governed_invocation",
+        _fake_handle,
+    )
+
+    ws = _ScriptedWebSocket(["open documents", "yes"])
+    asyncio.run(brain_server.websocket_endpoint(ws))
+
+    chat_messages = [
+        str(msg.get("message") or "")
+        for msg in ws.sent_messages
+        if msg.get("type") == "chat"
+    ]
+    assert calls, "Expected yes to confirm the pending folder-open action."
+    assert any("Opened documents." in message for message in chat_messages)
+    assert not any("What should I continue from" in message for message in chat_messages)
+
+
 def test_response_verification_chat_surface_prefers_accuracy_label(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,
