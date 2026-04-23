@@ -5,7 +5,6 @@ Do not try to show everything.
 Show the strongest, clearest, most believable value.
 
 ## Showcase Script (5 Minutes)
-
 ### Minute 1 — What Nova Is
 Nova is a governed local AI system designed to separate intelligence from execution.
 
@@ -22,7 +21,7 @@ Show one practical capability that feels valuable.
 Summarize why this approach is different: useful AI with visible limits and user control.
 
 ## Strong Demo Prompts
-- Give me a quick brief on today’s important developments.
+- Give me a quick brief on today's important developments.
 - Help me think through this decision.
 - Summarize this clearly.
 - Show me what actions are currently enabled.
@@ -36,6 +35,7 @@ Summarize why this approach is different: useful AI with visible limits and user
 - short explanations
 - no feature overload
 - answer follow-up questions simply
+- stop on the strongest moment rather than overextending
 
 ## Trust Walkthrough
 Show:
@@ -43,6 +43,8 @@ Show:
 - runtime truth
 - controlled actions
 - explainable boundaries
+- user authority over sensitive actions
 
 ## Pass Condition
 The viewer should understand the value without needing technical background.
+The viewer should want to see more.
