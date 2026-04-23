@@ -1970,6 +1970,12 @@ function requestInlineAssistantAction(text, statusText = "", invocationSource = 
   return true;
 }
 
+function widgetMessageMatchesActiveManualTurn(msg) {
+  if (!manualTurnInFlight || !activeManualTurnId || !msg || !msg.turn_id) return false;
+  if (msg.turn_id !== activeManualTurnId) return false;
+  return ["weather", "news", "news_summary", "intelligence_brief", "search", "calendar"].includes(msg.type);
+}
+
 function requestDeepSeekSecondOpinion() {
   appendChatMessage("user", "Second opinion");
   waitingForAssistant = true;
@@ -2267,6 +2273,8 @@ function connectWebSocket() {
     let msg;
     try { msg = JSON.parse(e.data); }
     catch { return; }
+
+    if (widgetMessageMatchesActiveManualTurn(msg)) manualTurnAssistantSeen = true;
 
     switch (msg.type) {
       case "weather":

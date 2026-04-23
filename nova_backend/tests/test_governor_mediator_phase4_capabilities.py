@@ -127,6 +127,10 @@ def test_volume_media_brightness_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 56
 
+    inv = GovernorMediator.parse_governed_invocation("what are today's headlines")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 56
+
     inv = GovernorMediator.parse_governed_invocation("calendar")
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 57
@@ -309,6 +313,12 @@ def test_news_intelligence_parsing():
     assert isinstance(inv, Invocation)
     assert inv.capability_id == 49
     assert inv.params["indices"] == [1, 4]
+
+    inv = GovernorMediator.parse_governed_invocation("tell me more about the second story")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 49
+    assert inv.params["action"] == "story_page_summary"
+    assert inv.params["story_index"] == 2
 
     inv = GovernorMediator.parse_governed_invocation("summarize all headlines")
     assert isinstance(inv, Invocation)

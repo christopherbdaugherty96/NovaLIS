@@ -3328,30 +3328,33 @@ async def send_widget_message(
     text: str,
     data: Optional[dict] = None
 ) -> None:
+    resolved_turn_id = str(_current_ws_turn_id.get() or "").strip()
     if msg_type == "news" and isinstance(data, dict) and "items" in data:
-        await ws_send(
-            ws,
-            {
-                "type": "news",
-                "items": data.get("items", []),
-                "summary": data.get("summary", ""),
-                "categories": data.get("categories", {}),
-            },
-        )
+        payload = {
+            "type": "news",
+            "items": data.get("items", []),
+            "summary": data.get("summary", ""),
+            "categories": data.get("categories", {}),
+        }
+        if resolved_turn_id:
+            payload["turn_id"] = resolved_turn_id
+        await ws_send(ws, payload)
         return
     if msg_type == "calendar" and isinstance(data, dict):
-        await ws_send(
-            ws,
-            {
-                "type": "calendar",
-                "summary": data.get("summary", ""),
-                "events": data.get("events", []),
-            },
-        )
+        payload = {
+            "type": "calendar",
+            "summary": data.get("summary", ""),
+            "events": data.get("events", []),
+        }
+        if resolved_turn_id:
+            payload["turn_id"] = resolved_turn_id
+        await ws_send(ws, payload)
         return
     payload = {"type": msg_type, "message": text}
     if msg_type == "weather" and isinstance(data, dict):
         payload["data"] = data
+    if resolved_turn_id:
+        payload["turn_id"] = resolved_turn_id
     await ws_send(ws, payload)
 
 
