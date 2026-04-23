@@ -806,6 +806,16 @@ function updateWorkflowFocusFromError(message) {
 
 function safeWSSend(message, options = {}) {
   const queueIfUnavailable = Boolean(options && options.queueIfUnavailable);
+  const payload = (message && typeof message === "object" && !Array.isArray(message)) ? { ...message } : message;
+  if (
+    payload
+    && typeof payload === "object"
+    && !Array.isArray(payload)
+    && payload.silent_widget_refresh
+    && (manualTurnInFlight || waitingForAssistant || Date.now() < suppressWidgetHydrationUntil)
+  ) {
+    return false;
+  }
   if (!ws || ws.readyState !== WebSocket.OPEN) {
     if (queueIfUnavailable && message && typeof message === "object" && !Array.isArray(message)) {
       queueUserMessageForReconnect(message);
@@ -813,7 +823,6 @@ function safeWSSend(message, options = {}) {
     }
     return false;
   }
-  const payload = (message && typeof message === "object" && !Array.isArray(message)) ? { ...message } : message;
   if (payload && typeof payload === "object" && !Array.isArray(payload) && typeof payload.text === "string") {
     const channel = String(payload.channel || "text").toLowerCase();
     payload.channel = channel === "voice" ? "voice" : "text";

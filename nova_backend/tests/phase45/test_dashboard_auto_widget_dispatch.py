@@ -43,3 +43,33 @@ def test_dashboard_handles_run_status_websocket_events():
     source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
     assert 'case "run_status":' in source
     assert "applyOpenClawRunStatusEvent(msg.data || {})" in source
+
+
+def test_dashboard_pauses_widget_hydration_during_manual_chat_turn():
+    source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
+
+    assert "let manualTurnInFlight = false;" in (PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js").read_text(
+        encoding="utf-8"
+    )
+    assert "if (manualTurnInFlight || waitingForAssistant || now < suppressWidgetHydrationUntil) return;" in source
+    assert "payload.silent_widget_refresh" in (PROJECT_ROOT / "nova_backend" / "static" / "dashboard-control-center.js").read_text(
+        encoding="utf-8"
+    )
+    assert "clearStartupHydrationTimers();" in source
+    assert "stopWidgetAutoRefresh();" in source
+
+
+def test_dashboard_does_not_clear_manual_turn_until_assistant_reply_arrives():
+    source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
+
+    assert "if (manualTurnInFlight) manualTurnAssistantSeen = true;" in source
+    assert "if (manualTurnInFlight && !manualTurnAssistantSeen)" in source
+    assert "Date.now() - manualTurnStartedAt < 60000" in source
+    assert "startWidgetAutoRefresh();" in source
+
+
+def test_dashboard_blocks_overlapping_manual_chat_sends():
+    source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
+
+    assert "if (waitingForAssistant || manualTurnInFlight)" in source
+    assert "Nova is still answering. Give this turn a moment before sending another." in source

@@ -1832,6 +1832,13 @@ function injectUserText(text, channel = "text") {
   if (tryRouteLiveHelpCommand(clean, { echoUserMessage: true, updateFocus: true })) return;
   if (channel === "text" && tryHandleLocalPageCommand(clean)) return;
 
+  manualTurnInFlight = true;
+  manualTurnAssistantSeen = false;
+  manualTurnStartedAt = Date.now();
+  suppressWidgetHydrationUntil = manualTurnStartedAt + 30000;
+  clearStartupHydrationTimers();
+  stopWidgetAutoRefresh();
+
   appendChatMessage("user", clean);
   waitingForAssistant = true;
   const loadingHint = loadingHintForInput(clean);
@@ -2115,6 +2122,7 @@ function scheduleStartupHydration() {
 
 function hydrateDashboardWidgets() {
   const now = Date.now();
+  if (manualTurnInFlight || waitingForAssistant || now < suppressWidgetHydrationUntil) return;
   if (now - lastWidgetHydrationAt < WIDGET_HYDRATE_MIN_INTERVAL_MS) return;
   lastWidgetHydrationAt = now;
 
@@ -2268,6 +2276,7 @@ function connectWebSocket() {
         applyOpenClawRunStatusEvent(msg.data || {});
         break;
       case "chat":
+        if (manualTurnInFlight) manualTurnAssistantSeen = true;
         appendChatMessage(
           "assistant",
           msg.message,
@@ -2299,6 +2308,17 @@ function connectWebSocket() {
         }
         break;
       case "chat_done":
+        if (manualTurnInFlight && !manualTurnAssistantSeen) {
+          if (Date.now() - manualTurnStartedAt < 60000) break;
+          manualTurnInFlight = false;
+          manualTurnStartedAt = 0;
+        }
+        if (manualTurnInFlight && manualTurnAssistantSeen) {
+          manualTurnInFlight = false;
+          manualTurnAssistantSeen = false;
+          manualTurnStartedAt = 0;
+          startWidgetAutoRefresh();
+        }
         waitingForAssistant = false;
         setLoadingHint("");
         setThinkingBar(false);
@@ -2316,6 +2336,9 @@ function connectWebSocket() {
         }
         break;
       case "error":
+        manualTurnInFlight = false;
+        manualTurnAssistantSeen = false;
+        manualTurnStartedAt = 0;
         waitingForAssistant = false;
         setThinkingBar(false);
         appendChatMessage("assistant", translateError(msg.code, msg.message), null, "System status");
@@ -2325,6 +2348,9 @@ function connectWebSocket() {
   };
 
   ws.onclose = () => {
+    manualTurnInFlight = false;
+    manualTurnAssistantSeen = false;
+    manualTurnStartedAt = 0;
     waitingForAssistant = false;
     setThinkingBar(false);
     clearStartupHydrationTimers();
@@ -3020,6 +3046,12 @@ function setupPageNavigation() {
 function sendChat() {
   const input = $("chat-input");
   if (!input) return;
+  if (waitingForAssistant || manualTurnInFlight) {
+    setLoadingHint("Nova is still answering. Give this turn a moment before sending another.");
+    setThinkingBar(true);
+    input.focus();
+    return;
+  }
   injectUserText(input.value, "text");
   input.value = "";
 }
