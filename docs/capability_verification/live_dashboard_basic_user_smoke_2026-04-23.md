@@ -35,6 +35,43 @@ Status: PARTIAL
 
 The dashboard loads without browser console errors or failed local HTTP requests, and the first-run introduction can be entered through the modal. However, the Chat dashboard path has a serious first-user UX issue: after entering Chat, the frontend sends a large burst of silent widget refresh WebSocket messages, and ordinary user questions can be delayed, visually displaced, or not rendered with assistant answers in the visible transcript.
 
+## Second Pass Result
+
+Status: PARTIAL
+
+Second pass was run after confirming the local model lock and waiting for the background WebSocket stream to quiet before sending ordinary user questions through the visible dashboard input.
+
+Confirmed passing behavior:
+
+- Dashboard loaded successfully.
+- First-run `Open Home` worked when scoped to the modal.
+- `ACTIONS` menu opened.
+- `System status` opened the Chat surface.
+- `#chat-input`, `SEND`, and `TALK` were visible.
+- Browser console reported no runtime errors.
+- Local HTTP responses produced no 400/500 errors during the tested path.
+- User messages were sent through the dashboard WebSocket path.
+
+Second-pass prompts:
+
+- `hello`
+- `what can you do?`
+- `what is this app for?`
+- `can you help me search the web?`
+- `open documents`
+
+Observed behavior:
+
+- `hello` sent successfully and the transcript received assistant output.
+- `what can you do?` sent successfully but did not produce a new visible assistant answer within the timeout. A capabilities answer arrived during the next turn instead.
+- `what is this app for?` sent successfully and produced assistant output, including a delayed capabilities response.
+- `can you help me search the web?` sent successfully but received a generic conversational answer instead of clear web-search guidance.
+- `open documents` sent successfully but received no WebSocket response during the timeout.
+
+Second-pass conclusion:
+
+The concrete input path works, so the primary problem is not that Chat cannot send messages. The remaining first-user issue is response coherence: background/system responses and delayed assistant frames can attach to the wrong visible turn, while some normal user commands receive no visible answer.
+
 ## Passing Checks
 
 - `/` returned 200 and loaded the dashboard.
