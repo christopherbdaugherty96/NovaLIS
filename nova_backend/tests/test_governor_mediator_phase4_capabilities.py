@@ -724,6 +724,20 @@ def test_search_clarification_roundtrip_by_session():
     assert second.capability_id == 16
     assert second.params["query"] == "latest weather in Detroit"
 
+    session_id = "unit-session-search-clarification-prefixed"
+    GovernorMediator.clear_session(session_id)
+
+    first = GovernorMediator.parse_governed_invocation("search", session_id=session_id)
+    assert isinstance(first, Clarification)
+
+    second = GovernorMediator.parse_governed_invocation(
+        "search for OpenAI GPT-5.4 release notes",
+        session_id=session_id,
+    )
+    assert isinstance(second, Invocation)
+    assert second.capability_id == 16
+    assert second.params["query"] == "OpenAI GPT-5.4 release notes"
+
 
 def test_mediator_allows_windows_media_and_mute(monkeypatch):
     from src.governor.governor_mediator import GovernorMediator, Invocation
