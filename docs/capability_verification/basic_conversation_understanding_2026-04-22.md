@@ -26,7 +26,7 @@ python -m pytest nova_backend/tests/conversation nova_backend/tests/test_general
 Result:
 
 ```text
-341 passed in 56.02s
+343 passed in 28.97s
 ```
 
 Coverage confirmed by automated tests:
@@ -96,7 +96,7 @@ The deterministic conversation shell is healthy, and open-ended understanding no
 2. Added immediate fallback retry when the primary Ollama chat call fails.
 3. Scoped fallback generation to a smaller context/prediction budget.
 4. Updated Quickstart to install both the primary model and fallback model.
-5. Added unit coverage for immediate fallback retry and fallback context clamping.
+5. Added unit coverage for immediate fallback retry, fallback context clamping, and primary recovery validation.
 
 ## Remaining Follow-Up
 
