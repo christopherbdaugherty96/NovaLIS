@@ -24,15 +24,16 @@ POST /api/settings/model/confirm
 
 ## Result
 
-Status: PARTIAL
+Status: PASS after correction
 
-The basic conversation shell, local controls, and explicit governed memory save/recall path worked. The main issue is confirmation UX: Nova tells users to reply `yes`, but `yes` did not execute the pending folder-open action. `confirm` did.
+The basic conversation shell, local controls, and explicit governed memory save/recall path worked. The confirmation UX issue found in the first pass has been corrected: `yes` now executes a pending folder-open action as prompted.
 
 ## Passing Probes
 
 - `hello` returned a warm greeting.
 - `what can you do?` returned the live capability surface.
 - `open documents` correctly asked for confirmation before opening a local folder.
+- `yes` after `open documents` opened `C:\Users\Chris\Documents` after the correction.
 - `confirm` after `open documents` opened `C:\Users\Chris\Documents`.
 - `turn brightness up` and `turn brightness down` returned successful local-control responses.
 - `turn volume down` and `turn volume up` returned successful local-control responses.
@@ -44,10 +45,11 @@ The basic conversation shell, local controls, and explicit governed memory save/
 
 ## Issues Found
 
-1. Confirmation prompt mismatch:
+1. Confirmation prompt mismatch - corrected:
    - Prompt: `Open documents? This action needs confirmation. Reply 'yes' to proceed or 'no' to cancel.`
-   - Actual: `yes` did not proceed. It returned `Gotcha. What should I continue from?`
-   - Actual working command: `confirm`.
+   - First-pass actual: `yes` did not proceed. It returned `Gotcha. What should I continue from?`
+   - Corrected actual: `yes` opened `C:\Users\Chris\Documents`.
+   - `confirm` still works.
 
 2. Pending confirmation blocks unrelated requests:
    - After `open documents`, follow-up prompts like `turn brightness up`, `turn volume down`, memory save, and memory recall were all intercepted by the pending confirmation state until it was cleared.
@@ -70,7 +72,33 @@ The basic conversation shell, local controls, and explicit governed memory save/
 
 ## Recommended Next Fix
 
-Fix confirmation handling so `yes` and `no` behave exactly as the confirmation prompt says, or change the prompt to advertise `confirm`/`cancel`. The better product behavior is to support both:
+Keep confirmation handling covered in regression tests so pending action replies are consumed before normal clarification/follow-up routing. Supported confirmation/cancel words should remain:
 
 - yes / confirm / proceed
 - no / cancel / stop
+
+## Correction Verification
+
+Applied correction:
+
+- Pending governed action and website-open confirmations are handled before normal conversation routing.
+- Added regression coverage for `open documents` followed by `yes` without bypassing normal gates.
+
+Verification:
+
+```powershell
+python -m pytest nova_backend/tests/conversation nova_backend/tests/test_general_chat_behavior.py nova_backend/tests/phase45/test_brain_server_basic_conversation.py nova_backend/tests/test_brain_server_session_cleanup.py -q
+```
+
+Result:
+
+```text
+340 passed in 27.82s
+```
+
+Live smoke:
+
+```text
+open documents -> Open documents? This action needs confirmation. Reply 'yes' to proceed or 'no' to cancel.
+yes -> Okay. Opened your documents folder: C:\Users\Chris\Documents
+```
