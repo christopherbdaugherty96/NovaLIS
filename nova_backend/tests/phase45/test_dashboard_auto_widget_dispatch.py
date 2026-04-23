@@ -73,3 +73,22 @@ def test_dashboard_blocks_overlapping_manual_chat_sends():
 
     assert "if (waitingForAssistant || manualTurnInFlight)" in source
     assert "Nova is still answering. Give this turn a moment before sending another." in source
+
+
+def test_dashboard_sends_and_filters_manual_turn_ids():
+    source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
+    state_source = (PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js").read_text(encoding="utf-8")
+
+    assert "let activeManualTurnId = \"\";" in state_source
+    assert "activeManualTurnId = `ui-turn-${manualTurnStartedAt}-${manualTurnCounter}`;" in source
+    assert "turn_id: activeManualTurnId" in source
+    assert "msg.turn_id && msg.turn_id !== activeManualTurnId" in source
+
+
+def test_dashboard_dedupes_repeated_assistant_text_within_turn():
+    source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
+    state_source = (PROJECT_ROOT / "nova_backend" / "static" / "dashboard.js").read_text(encoding="utf-8")
+
+    assert "let lastAssistantTurnKey = \"\";" in state_source
+    assert "const turnKey = `${activeManualTurnId || \"ambient\"}:${msgText.trim()}`;" in source
+    assert "if (turnKey && turnKey === lastAssistantTurnKey) return;" in source

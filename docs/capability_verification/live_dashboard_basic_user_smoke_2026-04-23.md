@@ -121,6 +121,63 @@ Third-pass conclusion:
 
 The dashboard no longer appears to lose the basic local-action path for `open documents`, and the capabilities path for `what can you do?` is materially better. The remaining gap is deeper turn correlation and backend/general-chat latency: Nova needs request IDs or explicit turn IDs so the frontend can bind assistant frames and `chat_done` to the exact user turn that produced them.
 
+## Fourth Pass Fixes Applied
+
+Implemented explicit WebSocket turn correlation:
+
+- Dashboard manual sends now include a `turn_id`.
+- Backend chat helpers now echo the active turn id on `chat` and `chat_done` frames.
+- Backend session handling sets a per-message turn context from the client `turn_id`, or generates a server turn id when the client does not provide one.
+- Dashboard ignores `chat` and `chat_done` frames for other turn ids while a manual user turn is active.
+- Dashboard deduplicates repeated identical assistant text within a turn.
+
+Files touched:
+
+- `nova_backend/src/brain_server.py`
+- `nova_backend/src/websocket/session_handler.py`
+- `Nova-Frontend-Dashboard/dashboard.js`
+- `Nova-Frontend-Dashboard/dashboard-chat-news.js`
+- `nova_backend/static/dashboard.js`
+- `nova_backend/static/dashboard-chat-news.js`
+- `nova_backend/tests/phase45/test_brain_server_basic_conversation.py`
+- `nova_backend/tests/phase45/test_dashboard_auto_widget_dispatch.py`
+
+Focused tests added:
+
+- Backend echoes client `turn_id` on `chat` and `chat_done`.
+- Dashboard sends and filters manual turn ids.
+- Dashboard deduplicates repeated assistant text within a turn.
+
+Fourth-pass live result:
+
+Status: IMPROVED
+
+The clean Chat pass loaded directly into Chat and sent the same basic prompts:
+
+- `hello`
+- `what can you do?`
+- `what is this app for?`
+- `can you help me search the web?`
+- `open documents`
+
+Observed behavior:
+
+- All five prompts sent exactly one user WebSocket frame.
+- All five prompts produced visible assistant output in the same user turn.
+- `what can you do?` returned the capabilities answer in-turn.
+- `what is this app for?` returned an explanatory answer in-turn.
+- `can you help me search the web?` returned a search clarification in-turn.
+- `open documents` returned the governed confirmation prompt in-turn.
+- Browser console, page errors, and local HTTP errors were clean.
+
+Remaining observation:
+
+- Background or previously scheduled responses can still arrive with server-generated turn ids, but the dashboard now filters them during active manual turns. The next deeper backend improvement would be reducing those extra background chat frames at the source, especially for generic `hello`-style fallback responses.
+
+Fourth-pass conclusion:
+
+The original first-user failure mode is materially improved. Basic chat, capability discovery, search clarification, and local-action confirmation now stay visually attached to the user turn that triggered them.
+
 ## Passing Checks
 
 - `/` returned 200 and loaded the dashboard.

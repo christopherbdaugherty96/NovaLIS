@@ -27,6 +27,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     send_chat_message = deps.send_chat_message
     send_trust_status = deps.send_trust_status
     send_chat_done = deps.send_chat_done
+    set_current_ws_turn_id = getattr(deps, "set_current_ws_turn_id", None)
+    reset_current_ws_turn_id = getattr(deps, "reset_current_ws_turn_id", None)
     GovernorMediator = deps.GovernorMediator
     WS_INPUT_MAX_BYTES = deps.WS_INPUT_MAX_BYTES
     ws_send = deps.ws_send
@@ -649,6 +651,12 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if not raw_text:
                 await _complete_immediate_turn(CLARIFY_PROMPTS["ready_prompt"], remember_response=False)
                 continue
+
+            incoming_turn_id = str(msg.get("turn_id") or msg.get("request_id") or "").strip()
+            if not incoming_turn_id:
+                incoming_turn_id = f"ws-turn-{uuid.uuid4().hex}"
+            if callable(set_current_ws_turn_id):
+                set_current_ws_turn_id(incoming_turn_id)
 
             session_state["last_input_channel"] = channel
             interpreted_confirmation_consumed = False

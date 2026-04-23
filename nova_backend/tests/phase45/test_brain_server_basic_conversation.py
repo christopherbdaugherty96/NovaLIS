@@ -179,6 +179,28 @@ def test_what_can_you_do_with_question_mark_stays_on_capability_path(monkeypatch
     assert any("Memory and continuity" in msg for msg in chat_messages)
 
 
+def test_websocket_echoes_client_turn_id_on_chat_and_done(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.SessionRouter,
+        "evaluate_gate",
+        staticmethod(lambda *args, **kwargs: GateResult(handled=False)),
+    )
+
+    ws = _ScriptedWebSocket([{"type": "chat", "text": "what can you do?", "turn_id": "ui-turn-test-1"}])
+
+    with patch("src.skills.general_chat.generate_chat", side_effect=AssertionError("model should not run")):
+        asyncio.run(brain_server.websocket_endpoint(ws))
+
+    correlated = [
+        msg
+        for msg in ws.sent_messages
+        if msg.get("turn_id") == "ui-turn-test-1"
+    ]
+
+    assert any(msg.get("type") == "chat" and "Nova Capabilities Right Now" in msg.get("message", "") for msg in correlated)
+    assert any(msg.get("type") == "chat_done" for msg in correlated)
+
+
 def test_bridge_status_returns_remote_bridge_summary_without_model_call(monkeypatch):
     monkeypatch.setattr(
         brain_server.SessionRouter,

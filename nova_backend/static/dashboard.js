@@ -36,6 +36,9 @@ let queuedUserMessages = [];
 let manualTurnInFlight = false;
 let manualTurnAssistantSeen = false;
 let manualTurnStartedAt = 0;
+let manualTurnCounter = 0;
+let activeManualTurnId = "";
+let lastAssistantTurnKey = "";
 let suppressWidgetHydrationUntil = 0;
 let morningState = {
   weather: "Loading...",
