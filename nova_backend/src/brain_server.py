@@ -34,10 +34,6 @@ _current_ws_turn_id: ContextVar[str] = ContextVar("current_ws_turn_id", default=
 def set_current_ws_turn_id(turn_id: str):
     return _current_ws_turn_id.set(str(turn_id or "").strip())
 
-
-def reset_current_ws_turn_id(token) -> None:
-    _current_ws_turn_id.reset(token)
-
 from src.api.audit_api import build_audit_router
 from src.api.bridge_api import build_bridge_router
 from src.api.connections_api import build_connections_router
