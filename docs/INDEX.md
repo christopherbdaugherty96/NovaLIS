@@ -18,6 +18,7 @@ Use this page to find the right document quickly. Runtime truth stays in generat
 
 - [NovaLIS Audit (2026-04-24)](audits/2026-04-24/NovaLIS_Audit_2026-04-24.md) - architecture, product readiness, launch assessment, and recommendations.
 - [NovaLIS Wide Final Audit (2026-04-24)](audits/2026-04-24/NovaLIS_Wide_Final_Audit_2026-04-24.md) - wider final pass covering architecture, launch readiness, contributor readiness, and strategic execution.
+- [NovaLIS Second-Pass Code Verification (2026-04-24)](audits/2026-04-24/NovaLIS_Second_Pass_Code_Verification_2026-04-24.md) - verifies prior audit claims against actual repo files and separates confirmed claims from unverified assumptions.
 - [Session Update Log (2026-04-24)](audits/2026-04-24/SESSION_UPDATE_LOG_2026-04-24.md) - traceable record of what was completed in this session and what is recommended next.
 - [User ready status](product/USER_READY_STATUS.md) - plain-language what works now vs experimental vs not yet ready.
 - [Capability maturity model](product/CAPABILITY_MATURITY.md) - better labels than enabled/disabled.
