@@ -14,16 +14,11 @@ Use this page to find the right document quickly. Runtime truth stays in generat
 
 ---
 
-## New Focus Lanes
+## Audits And Product Truth
 
-### Website LLC
-- [Execution system](business/website_llc/WEBSITE_LLC_EXECUTION_SYSTEM_2026-04-23.md) - offers, delivery, sales, and operating model.
-- [Revenue assets](business/website_llc/WEBSITE_LLC_REVENUE_ASSETS_2026-04-23.md) - outreach scripts, pricing framework, and tracking fields.
-
-### Demo Previews
-- [Preview excellence standard](product/previews/DEMO_PREVIEW_EXCELLENCE_STANDARD_2026-04-23.md) - first-impression and reliability bar.
-- [Showcase assets](product/previews/DEMO_SHOWCASE_ASSETS_2026-04-23.md) - demo script, prompts, and operator checklist.
-- [Diamond release standard](TODO/DIAMOND_PREVIEW_RELEASE_STANDARD_2026-04-23.md) - showcase-readiness gate for previews.
+- [NovaLIS Audit (2026-04-24)](audits/2026-04-24/NovaLIS_Audit_2026-04-24.md) - architecture, product readiness, launch assessment, and recommendations.
+- [User ready status](product/USER_READY_STATUS.md) - plain-language what works now vs experimental vs not yet ready.
+- [Capability maturity model](product/CAPABILITY_MATURITY.md) - better labels than enabled/disabled.
 
 ---
 
