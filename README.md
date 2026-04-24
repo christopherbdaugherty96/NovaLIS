@@ -32,6 +32,21 @@ Reasoning can improve. Real actions still require visible rules, capability chec
 
 ---
 
+## Core Specs
+- **Backend:** Python 3.10+, FastAPI, Uvicorn, WebSockets
+- **Local Models:** Ollama-compatible models with Gemma-focused runtime routes
+- **Default Local Model:** Gemma 4 route (32K context where configured)
+- **Voice Input:** Vosk + sounddevice
+- **Voice Output:** Local TTS path with speech-safe formatting
+- **Governance Spine:** GovernorMediator, CapabilityRegistry, ExecuteBoundary, NetworkMediator, Ledger
+- **Operator Layer:** OpenClaw home-agent surfaces under Nova governance
+- **Memory:** Local governed memory and continuity system
+- **UI:** Dashboard, Trust, Workspace, Agent, Settings, runtime surfaces
+- **Connectors:** RSS news, ICS calendar, Shopify, optional metered OpenAI lane
+- **Runtime Truth:** Generated state, capability reference, fingerprint docs
+
+---
+
 ## What Makes Nova Different
 - **Intelligence is not authority**
 - **Actions are governed**
