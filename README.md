@@ -2,8 +2,6 @@
 
 NovaLIS is a governed local AI system that separates **intelligence** from **execution**.
 
-**Live preview:** [NovaLIS GitHub Pages](https://christopherbdaugherty96.github.io/NovaLIS/)
-
 Nova is built for people who want a useful assistant without surrendering visibility or control. It can reason, summarize, operate bounded local actions, draft messages, and run governed operator workflows, but real actions pass through explicit capability gates, policy checks, and audit logging.
 
 > Intelligence may expand. Authority may not expand without an explicit unlock.
@@ -20,9 +18,8 @@ The system is designed to keep conversation, capability access, execution, and a
 
 ---
 
-## Live / Public Surface
+## Core References
 
-- [Live GitHub Pages preview](https://christopherbdaugherty96.github.io/NovaLIS/)
 - [Authoritative runtime state](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
 - [Docs index](docs/INDEX.md)
 - [Quickstart](QUICKSTART.md)
@@ -62,7 +59,6 @@ Nova is early software with a serious governance model. Current work is focused 
 
 - runtime reliability
 - first-use clarity
-- public preview quality
 - governed operator workflows
 - memory and continuity governance
 - connector and local-action safety
@@ -87,9 +83,7 @@ Start here:
 
 ## Project Status
 
-NovaLIS is actively evolving. The public-facing surface is being tightened so the first impression better matches the underlying runtime and governance work.
-
-This repository should be treated as an active build, not a finished product.
+NovaLIS is actively evolving. The repository should be treated as an active build, not a finished product.
 
 ---
 
