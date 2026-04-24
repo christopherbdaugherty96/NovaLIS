@@ -2,6 +2,8 @@
 
 NovaLIS is a governed local AI system that separates intelligence from execution.
 
+**Live preview:** [NovaLIS GitHub Pages](https://christopherbdaugherty96.github.io/NovaLIS/)
+
 It is built for people who want a useful assistant without surrendering visibility or control. Nova can reason, summarize, operate bounded local actions, draft messages, and run governed operator workflows, but real actions pass through explicit capability gates, policy checks, and audit logging.
 
 > Intelligence may expand. Authority may not expand without an explicit unlock.
