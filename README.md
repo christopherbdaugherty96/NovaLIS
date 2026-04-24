@@ -8,9 +8,11 @@ Nova is built for people who want a useful assistant without surrendering visibi
 
 ---
 
-## Understanding Nova:
+## Understanding Nova
 Start with the non-technical guide:
 - [Human Guides](docs/reference/HUMAN_GUIDES/README.md)
+
+The Human Guides explain Nova in plain language. Runtime truth files remain the authority for exact active status.
 
 ---
 
@@ -18,7 +20,7 @@ Start with the non-technical guide:
 Most AI tools combine reasoning and authority in one opaque system.
 
 Nova separates them.
-Reasoning can improve. Real actions still require visible rules, capability checks, and audit trails.
+Reasoning can improve while real actions still require visible rules, capability checks, and audit trails.
 
 ---
 
@@ -43,16 +45,16 @@ Reasoning can improve. Real actions still require visible rules, capability chec
 - **Memory:** Local governed memory and continuity system
 - **UI:** Dashboard, Trust, Workspace, Agent, Settings, runtime surfaces
 - **Connectors:** RSS news, ICS calendar, Shopify, optional metered OpenAI lane
-- **Runtime Truth:** Generated state, capability reference, fingerprint docs
+- **Runtime Truth:** Generated runtime state, capability reference, and fingerprint docs
 
 ---
 
 ## What Makes Nova Different
-- **Intelligence is not authority**
-- **Actions are governed**
-- **The user stays in control**
-- **The system is inspectable**
-- **Local-first matters**
+- **Intelligence is not authority** — stronger reasoning does not automatically grant stronger action power.
+- **Actions are governed** — real actions route through capability checks and execution boundaries.
+- **The user stays in control** — sensitive actions require explicit permission or remain blocked.
+- **The system is inspectable** — runtime state, capabilities, and activity are intended to be visible.
+- **Local-first matters** — Nova is designed around personal control instead of opaque cloud dependency.
 
 ---
 
@@ -83,6 +85,8 @@ Nova uses a structured certification model:
 - Daily-use polish and onboarding
 - End-to-end workflow validation
 - Production-style stability at scale
+
+For exact current status, use the generated runtime docs and capability verification status files.
 
 ---
 
