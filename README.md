@@ -8,7 +8,7 @@ Nova is built for people who want a useful assistant without surrendering visibi
 
 ---
 
-## New to Nova?
+## Understanding Nova:
 Start with the non-technical guide:
 - [Human Guides](docs/reference/HUMAN_GUIDES/README.md)
 
