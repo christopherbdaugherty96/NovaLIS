@@ -18,6 +18,31 @@ The Human Guides are written in plain language for everyday users.
 
 ---
 
+## The Core Idea
+
+Nova is not meant to be a free-running agent that quietly does whatever it wants.
+
+Nova is designed around one simple idea:
+
+**An AI can be useful and powerful without being given unlimited authority.**
+
+That means Nova can help reason, summarize, explain, organize, and prepare actions, while real actions remain routed through visible rules, capability checks, and reviewable logs.
+
+---
+
+## What Makes Nova Different
+
+Most assistants blur thinking and doing together. Nova separates them.
+
+Key points to understand:
+- **Intelligence is not authority** — reasoning can improve without automatically granting more power.
+- **Actions are governed** — real actions route through capability gates and execution boundaries.
+- **The user stays in control** — sensitive actions require explicit permission or remain blocked.
+- **The system is inspectable** — runtime state, capabilities, and activity are meant to be visible.
+- **Local-first matters** — Nova is designed around personal control instead of opaque cloud dependency.
+
+---
+
 ## What Nova Is
 
 Nova is a governance-first assistant architecture where actions stay bounded, visible, and reviewable.
