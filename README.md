@@ -9,16 +9,26 @@ Nova is built for people who want a useful assistant without surrendering visibi
 ---
 
 ## New to Nova?
+Start with the non-technical guide:
 - [Human Guides](docs/reference/HUMAN_GUIDES/README.md)
-
-The Human Guides are written in plain language for everyday users.
 
 ---
 
-## The Core Idea
-**An AI can be useful and powerful without being given unlimited authority.**
+## Why Nova Exists
+Most AI tools combine reasoning and authority in one opaque system.
 
-Nova can help reason, summarize, explain, organize, and prepare actions, while real actions remain routed through visible rules, capability checks, and reviewable logs.
+Nova separates them.
+Reasoning can improve. Real actions still require visible rules, capability checks, and audit trails.
+
+---
+
+## What Nova Can Do
+- Research and summarize information
+- Help organize projects and workflows
+- Maintain governed memory and continuity
+- Provide trust and runtime visibility
+- Support voice and assistant interactions
+- Run bounded operator workflows
 
 ---
 
@@ -32,7 +42,7 @@ Nova can help reason, summarize, explain, organize, and prepare actions, while r
 ---
 
 ## Verification & Sign-Off Status
-Nova uses a structured capability certification model:
+Nova uses a structured certification model:
 1. Unit Tests
 2. Routing Tests
 3. Integration Tests
@@ -40,27 +50,24 @@ Nova uses a structured capability certification model:
 5. Live Human Sign-Off
 6. Lock / Regression Protection
 
-### Proven Now
+### Proven in Repo
 - Governance routing and execution boundaries
 - Runtime truth generation and drift checks
-- Search, reporting, and core assistant flows
-- Memory and continuity surfaces
-- Voice foundations and UI surfaces
-- Multiple regression and validation suites across the repo
+- Search, reporting, and assistant flows
+- Memory, voice, and UI surfaces
+- Regression and validation suites
 
-### Verified Sign-Off Progress
+### Current Verified Progress
 - Capability 64 `send_email_draft`: P1-P4 passed, awaiting P5 live sign-off
-- Certification framework and lock system present in repo
-- Regression guard model documented and active in project process
+- Certification and lock framework present
+- Regression guard process documented
 
-### Still Needing Broader Validation
-- Additional capabilities advancing through full P1-P6 lock cycle
-- Cross-device install and packaging reliability
-- Real-world daily usage polish and onboarding smoothness
-- Expanded end-to-end user workflow validation
-- Broader production-style stability testing
-
-For exact current status, use generated docs and certification status files.
+### Still Being Proven
+- More capabilities completing full P1-P6 cycles
+- Installer and cross-device reliability
+- Daily-use polish and onboarding
+- End-to-end workflow validation
+- Production-style stability at scale
 
 ---
 
