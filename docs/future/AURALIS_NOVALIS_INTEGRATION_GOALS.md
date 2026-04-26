@@ -6,6 +6,8 @@ Status: Future strategy / commercial integration plan
 
 Scope: Auralis Digital as the first early business startup and commercial surface for NovaLIS. This is a staged product direction, not a claim that the integration is already implemented.
 
+Implementation note: This document describes product and business direction. It does not expand NovaLIS runtime authority by itself. Any real integration must still pass through NovaLIS governance, capability registration, execution boundaries, network mediation where applicable, and ledger visibility.
+
 ---
 
 ## Executive Summary
@@ -21,6 +23,24 @@ The simplest near-term version is:
 The long-term product direction is:
 
 > Auralis Smart Website System powered by NovaLIS: a website plus governed business intelligence backend that helps small businesses manage leads, emails, metrics, follow-ups, and customer communication without giving AI uncontrolled authority.
+
+---
+
+## Non-Goals
+
+This plan does not mean NovaLIS should immediately become a public SaaS, multi-tenant platform, or autonomous business operator.
+
+Do not treat this document as permission to:
+
+- connect NovaLIS directly to client systems without explicit design and review;
+- send emails automatically by default;
+- book appointments automatically by default;
+- publish website changes automatically by default;
+- ingest sensitive client data without a data-handling model;
+- bypass GovernorMediator, CapabilityRegistry, ExecuteBoundary, NetworkMediator, or ledger requirements;
+- market unfinished runtime capabilities as available product features.
+
+The near-term goal is staged readiness, not premature coupling.
 
 ---
 
@@ -157,6 +177,13 @@ The customer buys something simple:
 
 That gets Auralis in the door.
 
+Exit criteria:
+
+- Auralis public offer is clear;
+- intake and quote process are defined;
+- at least one demo or client-style site proves the offer;
+- launch and maintenance checklists exist.
+
 ### Stage 2: Website + Business Intake Structure
 
 The next step is not full AI. It is better structure.
@@ -188,6 +215,13 @@ Instead of a basic contact form with only name, phone, and message, use structur
 - preferred contact method;
 - notes or photos, when appropriate.
 
+Exit criteria:
+
+- structured lead payload is documented;
+- form outputs are consistent across demo sites;
+- lead notification format is readable without Nova;
+- client data fields avoid unnecessary sensitive data.
+
 ### Stage 3: Nova Business Profile
 
 For each client, Nova should eventually have a business profile.
@@ -212,6 +246,13 @@ A business profile may include:
 
 This profile gives Nova the context required to summarize, draft, and recommend accurately.
 
+Exit criteria:
+
+- business profile schema exists;
+- owner approval rules are explicit;
+- profile data can be reviewed and edited by the owner;
+- profile storage and retention expectations are documented.
+
 ### Stage 4: Nova Reads Website Inquiries
 
 When a customer submits a form, Nova receives or reads the inquiry and produces:
@@ -230,6 +271,13 @@ Example:
 
 This is useful and safe.
 
+Exit criteria:
+
+- inquiry ingestion is read-only or draft-only;
+- summaries clearly identify uncertainty and missing information;
+- no customer message is sent automatically;
+- lead handling is logged.
+
 ### Stage 5: Nova Connects to Email
 
 Email is a high-value integration, but it must be governed.
@@ -245,6 +293,13 @@ Recommended progression:
 Initial rule:
 
 > Nova drafts. Owner approves before sending.
+
+Exit criteria:
+
+- read-only and draft-only modes are tested before any send path;
+- approval language is clear;
+- sent/drafted/ignored actions are visible;
+- failures do not silently drop leads or messages.
 
 ### Stage 6: Nova Connects to Metrics
 
@@ -269,6 +324,13 @@ Example insight:
 
 This can become a monthly report or dashboard Auralis sells.
 
+Exit criteria:
+
+- metric sources are documented;
+- reports distinguish observed data from recommendations;
+- low-confidence or incomplete data is labeled;
+- no private analytics credentials are exposed.
+
 ### Stage 7: Nova Connects to Calendar / Booking
 
 Calendar should come after email and lead handling are stable.
@@ -282,6 +344,13 @@ Recommended early behavior:
 - require owner approval before confirming with the customer.
 
 Do not start with autonomous booking.
+
+Exit criteria:
+
+- calendar changes require explicit approval;
+- tentative vs. confirmed status is clear;
+- conflicts and time zones are handled visibly;
+- customer-facing confirmations are never hidden.
 
 ### Stage 8: Nova Becomes the Business Agent Layer
 
@@ -302,6 +371,13 @@ Nova helps with:
 - simple reporting.
 
 It must remain governed.
+
+Exit criteria:
+
+- each real action maps to a registered capability;
+- approval and delegation levels are documented;
+- ledger/trust visibility exists for client-facing actions;
+- recovery, pause, and failure behavior are defined.
 
 ---
 
@@ -773,6 +849,21 @@ Goal:
 Goal:
 
 - governed assistant software connected to the website, business profile, email, calendar, metrics, and approved actions.
+
+---
+
+## Decision Gates Before Public Nova-Backed Sales
+
+Before Auralis sells Nova-backed services as a real customer product, verify:
+
+- the feature exists in runtime, not only in docs;
+- the user approval path is clear;
+- the capability surface is registered and bounded;
+- outbound network/email/calendar paths use the intended mediators;
+- action logs or trust receipts are visible enough for users;
+- client data handling, retention, and deletion expectations are documented;
+- support expectations are realistic;
+- the service can fail safely without losing customer inquiries.
 
 ---
 
