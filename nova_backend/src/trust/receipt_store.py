@@ -11,10 +11,13 @@ action, or a significant state change that a user would want to know about.
 from __future__ import annotations
 
 import json
+import logging
 from pathlib import Path
 from typing import Any
 
 from src.utils.persistent_state import runtime_path
+
+_log = logging.getLogger(__name__)
 
 _LEDGER_PATH: Path = runtime_path(__file__, "data", "ledger.jsonl")
 
@@ -49,7 +52,18 @@ def get_recent_receipts(limit: int = _DEFAULT_LIMIT) -> list[dict[str, Any]]:
       - timestamp_utc (str)
       - event_type (str)
     Plus any additional metadata the governor logged with the event.
+
+    Returns [] on missing ledger, empty ledger, or any read/parse error so
+    callers (API layer, dashboard) stay functional on a fresh install.
     """
+    try:
+        return _collect_receipts(limit)
+    except Exception:
+        _log.exception("receipt_store: unexpected error reading ledger")
+        return []
+
+
+def _collect_receipts(limit: int) -> list[dict[str, Any]]:
     if not _LEDGER_PATH.exists():
         return []
 
@@ -66,6 +80,8 @@ def get_recent_receipts(limit: int = _DEFAULT_LIMIT) -> list[dict[str, Any]]:
         try:
             entry = json.loads(line)
         except json.JSONDecodeError:
+            continue
+        if not isinstance(entry, dict):
             continue
         if entry.get("event_type") in _RECEIPT_WORTHY:
             receipts.append(entry)
