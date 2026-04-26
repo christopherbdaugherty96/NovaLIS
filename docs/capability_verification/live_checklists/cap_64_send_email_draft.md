@@ -75,3 +75,31 @@ Then lock it:
 ```
 python scripts/certify_capability.py lock 64
 ```
+
+---
+
+## Troubleshooting
+
+**Mail client does not open**
+- Confirm a default mail client is registered with the OS. On Windows: Settings → Apps → Default apps → Mail.
+- If using Gmail in a browser, Chrome/Edge must be set as the default browser and Gmail must be set as the mailto handler (Chrome: Settings → Privacy and security → Site settings → Additional permissions → Protocol handlers).
+- Check the Nova console for any Python traceback. If `webbrowser.open` fails silently, set the `BROWSER` env var to a known browser path.
+
+**To: field is empty or wrong**
+- The executor encodes the recipient into the `mailto:` URI. Confirm the intent contained an email address (e.g. `to test@example.com`).
+- If `@` appears encoded as `%40`, that is correct RFC 6068 behavior — most mail clients handle it.
+
+**Body is blank or placeholder text**
+- The body is LLM-generated. A very short prompt ("email someone about something") produces a generic body. Use a more specific prompt for a meaningful body (Test 3 is designed for this).
+
+**Test 4 — Trust page not loading**
+- The Trust Panel UI is not yet built. Use `http://localhost:8000/api/trust/receipts` directly in a browser — the JSON response contains `EMAIL_DRAFT_CREATED` entries.
+- If no entries appear, run at least one email draft test first, then refresh.
+
+**Test 5 — Confirmation prompt not appearing**
+- The prompt is a UI element in the dashboard chat tab. If you are calling via the API directly (not via the chat UI), the confirmation gate works differently.
+- Use the chat tab at `http://localhost:8000` for this test.
+
+**certify_capability.py errors**
+- Run from `C:\Nova-Project` (the repo root), not from inside `nova_backend/`.
+- If the command reports phase mismatch, check `python scripts/certify_capability.py status` to see current phase state.

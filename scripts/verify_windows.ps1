@@ -20,9 +20,33 @@ function Write-Step { param($msg) Write-Host "`n==> $msg" -ForegroundColor Cyan 
 function Write-Pass { param($msg) Write-Host "    PASS: $msg" -ForegroundColor Green }
 function Write-Fail { param($msg) Write-Host "    FAIL: $msg" -ForegroundColor Red; exit 1 }
 
-Write-Step "Nova Windows Verification"
-Write-Host "  Python: $(python --version)"
-Write-Host "  Dir:    $PSScriptRoot\.."
+# --- Prerequisites ---
+Write-Step "Checking prerequisites"
+
+if (-not (Get-Command python -ErrorAction SilentlyContinue)) {
+    Write-Fail "python not found in PATH. Install Python 3.10+ and re-run."
+}
+
+$pyVersion = python -c "import sys; print(f'{sys.version_info.major}.{sys.version_info.minor}')"
+if ([version]$pyVersion -lt [version]"3.10") {
+    Write-Fail "Python $pyVersion found; 3.10+ required."
+}
+
+$repoRoot = Resolve-Path (Join-Path $PSScriptRoot "..")
+if (-not (Test-Path (Join-Path $repoRoot "pyproject.toml"))) {
+    Write-Fail "Run this script from the repo root or via 'scripts\verify_windows.ps1'. pyproject.toml not found at: $repoRoot"
+}
+
+python -c "import pytest" 2>$null
+if ($LASTEXITCODE -ne 0) {
+    Write-Fail "pytest not importable. Run: pip install -e '.[dev]' to install dev dependencies (or use -SkipInstall only after a prior install)."
+}
+
+Write-Host "  Python:  $(python --version)"
+Write-Host "  pip:     $(python -m pip --version)"
+Write-Host "  pytest:  $(python -m pytest --version)"
+Write-Host "  Dir:     $repoRoot"
+Write-Pass "prerequisites OK"
 
 # --- Install ---
 if (-not $SkipInstall) {

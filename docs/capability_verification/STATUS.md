@@ -1,5 +1,5 @@
 # Nova - Capability Verification Status
-Updated: 2026-04-22
+Updated: 2026-04-26
 
 > **Live status:** `python scripts/certify_capability.py status`
 > **Framework:** [FRAMEWORK.md](FRAMEWORK.md)

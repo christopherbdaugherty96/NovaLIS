@@ -53,6 +53,14 @@ jobs:
   # passes, and certification tests pass on the primary shipping platform.
   # Platform-specific executors (brightness, media, file system) need a live
   # Windows environment — this catches regressions that the ubuntu job cannot.
+  #
+  # The Windows job runs adversarial + certification suites only (not the full
+  # suite). Reason: tests/simulation contains a pre-existing path-resolution
+  # failure in test_nova_trial_runner that occurs when PYTHONPATH=nova_backend
+  # is set, which is required for Windows entry-point imports. This failure
+  # predates trust receipt and Cap 65 work and is unrelated to these changes.
+  # The ubuntu job runs the full suite because the simulation pathing issue
+  # does not reproduce there.
   test-windows:
     runs-on: windows-latest
     strategy:

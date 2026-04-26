@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0",
-  "updated": "2026-04-17",
+  "updated": "2026-04-26",
   "phase_descriptions": {
     "p1_unit": "Executor tested in isolation — validate, execute, ledger events, ActionResult governance fields",
     "p2_routing": "GovernorMediator routes correctly — right cap_id, right params, no false positives",

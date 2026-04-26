@@ -44,6 +44,31 @@
 
 ---
 
+## Progress Update (2026-04-26)
+
+### Done
+
+- Trust receipt backend hardened: outer `try/except Exception` in `get_recent_receipts()` prevents any ledger error from surfacing as an API 500; `isinstance(entry, dict)` guard skips non-dict JSON lines; fresh-install and corrupt-ledger both return `[]`
+- 18 direct unit tests added for `receipt_store.py` (`nova_backend/tests/trust/test_receipt_store.py`) — missing ledger, empty ledger, malformed JSON, non-dict JSON, ordering, limit, OSError, unexpected exception, all 14 receipt-worthy event types
+- Loopback guard wired at the trust router level: `APIRouter(dependencies=[Depends(require_local_http_request)])`; `/api/trust` added to `_LOCAL_ONLY_API_PREFIXES` in `local_request_guard.py` (without this the guard was a no-op for trust routes)
+- Runtime drift check was failing: README contained a bare capability name and the phrase "Runtime Fingerprint" as link text — both fixed
+- Four 2026-04-25 audit docs stranded in the worktree branch were landed on main (deep second-pass, final confirmation pass, third deep wide, fourth pass)
+- QUICKSTART.md updated: optional features table (voice, calendar, Shopify) and `NOVA_HOST`/`NOVA_PORT` env var notes
+- All stale branches cleaned up (local + remote); three claude worktrees removed; `restore/trust-receipts-cap65` deleted post-merge
+- BackLog.md updated: three completed hardening items marked done; ci.yml comment and verify_windows.ps1 prereq checks added; troubleshooting sections added to cap 64 and cap 65 live checklists
+- `capability_locks.json` `updated` date corrected; `STATUS.md` date header corrected
+
+### Verified state
+
+- 104 tests pass, 4 skipped; runtime drift check passes; `git status` clean; local main = origin/main
+
+### Still open
+
+- Cap 64 P5 live signoff (requires running Nova + configured mail client)
+- Cap 65 P5 live signoff (requires `NOVA_SHOPIFY_SHOP_DOMAIN` and `NOVA_SHOPIFY_ACCESS_TOKEN`)
+
+---
+
 ## Progress Update (2026-04-21)
 
 ### Done
