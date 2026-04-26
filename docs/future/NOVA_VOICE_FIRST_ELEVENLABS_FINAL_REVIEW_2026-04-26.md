@@ -2,10 +2,11 @@
 
 Date: 2026-04-26
 
-Status: Final review / product decision summary
+Status: Final review / product decision summary, corrected by [`NOVA_VOICE_STACK_OPERATING_MODEL_2026-04-26.md`](NOVA_VOICE_STACK_OPERATING_MODEL_2026-04-26.md)
 
 Related docs:
 
+- [`NOVA_VOICE_STACK_OPERATING_MODEL_2026-04-26.md`](NOVA_VOICE_STACK_OPERATING_MODEL_2026-04-26.md)
 - [`NOVA_VOICE_FIRST_ASSISTANT_DIRECTION.md`](NOVA_VOICE_FIRST_ASSISTANT_DIRECTION.md)
 - [`NOVA_ELEVENLABS_VOICE_INTEGRATION_PLAN.md`](NOVA_ELEVENLABS_VOICE_INTEGRATION_PLAN.md)
 - [`NOVA_ROLE_BASED_ASSISTANT_CORE_VISION.md`](NOVA_ROLE_BASED_ASSISTANT_CORE_VISION.md)
@@ -19,19 +20,21 @@ Nova’s product direction is now:
 
 > **Voice-first, text-supported, dashboard-reviewed, governed underneath.**
 
-ElevenLabs is accepted as a strong future integration candidate, but only as:
+Corrected voice-stack decision:
 
-> **An optional governed premium voice provider.**
+> **ElevenLabs should be Nova’s standard high-quality online voice experience. Local voice/text remains the offline, private, and fallback path. Gemma remains the local-first reasoning lane.**
 
-ElevenLabs should not become:
+This means ElevenLabs is no longer framed as merely an optional premium novelty.
+
+However, ElevenLabs must still not become:
 
 ```text
-Nova's default required voice engine
 Nova's authority layer
 Nova's action controller
 Nova's internal brain
 an unrestricted external agent layer
-a cloud-only dependency
+the required offline/private voice path
+the required path for sensitive content
 ```
 
 Nova remains responsible for:
@@ -45,6 +48,10 @@ network mediation
 ledger/action history
 user control
 ```
+
+Short architecture rule:
+
+> **ElevenLabs speaks. Gemma reasons. OpenClaw acts. Nova governs.**
 
 ---
 
@@ -74,8 +81,17 @@ Solo Business Assistant
 Broader expansion:
 Everyday Task Service + lightweight CRM
 
-Optional premium voice layer:
-ElevenLabs TTS/STT, governed and budgeted
+Standard online voice experience:
+ElevenLabs TTS, governed and budgeted
+
+Offline/private fallback:
+Local voice and text-only mode
+
+Local-first reasoning lane:
+Gemma
+
+Bounded worker/action layer:
+OpenClaw through Nova envelopes
 ```
 
 ---
@@ -104,7 +120,7 @@ local fallback
 ElevenLabs STT provider
 realtime transcription experiment
 voice isolator for noisy audio
-role-specific premium voices
+role-specific standard voices
 streaming playback
 usage dashboard
 website/phone intake prototype through governed Nova endpoints
@@ -178,9 +194,9 @@ Voice mode:
 - Wake word later
 - Conversation mode later
 
-Voice provider:
-- Local/private
-- Premium natural voice
+Voice experience:
+- Standard natural voice
+- Local/private voice
 - Text only
 
 Cloud voice permission:
@@ -198,8 +214,9 @@ Readout length:
 Plain-language explanation:
 
 ```text
-Local voice = more private
-Premium voice = more natural
+Standard natural voice = best sound when online
+Local/private voice = better for offline or sensitive tasks
+Text only = no spoken output
 ```
 
 ---
@@ -252,22 +269,24 @@ Use local voice or text-only for sensitive content unless the user explicitly al
 
 ## Recommended Build Order
 
-Do not build ElevenLabs first.
+Do not build voice-stack work before stabilization.
 
 Correct order:
 
 1. Recover / maintain current runtime truth and trust receipt work.
 2. Complete Cap 64 live signoff and lock.
 3. Keep existing local voice stable.
-4. Build provider abstraction.
+4. Build provider abstractions.
 5. Build push-to-talk voice MVP.
 6. Add transcript + spoken response + safety commands.
 7. Add role selection by voice.
 8. Add approval queue / action history visibility.
-9. Add ElevenLabs TTS as optional premium provider.
+9. Add ElevenLabs TTS as the standard online voice path with local fallback.
 10. Add usage budget and cloud disclosure.
-11. Add ElevenLabs STT only after the voice MVP is stable.
-12. Research ElevenAgents only after Nova’s governed voice boundary is working.
+11. Add Gemma local-first reasoning lane checks/status.
+12. Add OpenClaw task-envelope worker path.
+13. Add ElevenLabs STT only after the voice MVP is stable.
+14. Research ElevenAgents only after Nova’s governed voice boundary is working.
 
 ---
 
@@ -308,13 +327,13 @@ dashboard review
 
 Proceed with the voice-first direction.
 
-Proceed with ElevenLabs planning.
+Proceed with ElevenLabs as the standard online voice experience.
 
-Do **not** make ElevenLabs required, default, or authoritative.
+Do **not** make ElevenLabs authoritative, required for sensitive/private/offline mode, or capable of direct ungoverned actions.
 
 Best final wording:
 
-> **Nova can use ElevenLabs for premium voice quality, but Nova keeps authority, approvals, logs, and execution boundaries.**
+> **Nova can use ElevenLabs for standard high-quality online voice, but Nova keeps authority, approvals, logs, and execution boundaries.**
 
 Product rule:
 
