@@ -13,7 +13,7 @@ whose filename stem matches. Useful for jumping between a test and the
 code it exercises. `__init__.py`, conftest and helper modules are
 intentionally skipped so the map stays focused on real test ↔ source links.
 
-Paired tests: 90
+Paired tests: 91
 
 - [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
     - tests → [[nova_backend/src/connectors/shopify_connector.py|shopify_connector]]
@@ -196,3 +196,5 @@ Paired tests: 90
     - tests → [[nova_backend/src/services/weather_service.py|weather_service]]
 - [[nova_backend/tests/test_workspace_api.py|test_workspace_api]]
     - tests → [[nova_backend/src/api/workspace_api.py|workspace_api]]
+- [[nova_backend/tests/trust/test_receipt_store.py|test_receipt_store]]
+    - tests → [[nova_backend/src/trust/receipt_store.py|receipt_store]]

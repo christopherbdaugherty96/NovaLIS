@@ -33,7 +33,9 @@ Imports from:
 - [[nova_backend/src/profiles/__init__.py|src/profiles]]
 - [[nova_backend/src/skills/__init__.py|src/skills]]
 - [[nova_backend/src/tasks/__init__.py|src/tasks]]
+- [[nova_backend/src/trust/__init__.py|src/trust]]
 - [[nova_backend/src/usage/__init__.py|src/usage]]
+- [[nova_backend/src/utils/content_extractor.py|content_extractor]] (in `utils`)
 
 ## `archive_quarantine`
 
@@ -305,6 +307,12 @@ Imports from:
 Imports from:
 
 - [[nova_backend/src/governor/agent_orchestrator.py|agent_orchestrator - src/governor]] (in `governor`)
+
+## `trust`
+
+Imports from:
+
+- [[nova_backend/src/utils/content_extractor.py|content_extractor]] (in `utils`)
 
 ## `usage`
 

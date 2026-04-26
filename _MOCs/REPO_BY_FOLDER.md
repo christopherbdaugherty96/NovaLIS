@@ -36,13 +36,18 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[.gitignore|.gitignore]]
   summary: ----------------------------
 
-## 4-15-26 NEW ROADMAP (5)
+## 4-15-26 NEW ROADMAP (7)
 
-- [doc] [[4-15-26 NEW ROADMAP/BackLog|BackLog]]
+- [doc] [[4-15-26 NEW ROADMAP/BackLog|BackLog.md]]
+  summary: This file tracks follow-up work that is real, but not allowed to distract from the active close-out path in Now.md.
 - [doc] [[4-15-26 NEW ROADMAP/CHANGELOG|Nova — Roadmap Execution Changelog]]
   summary: Rolling log of completed roadmap tasks. Newest at top. Keep entries short
 - [doc] [[4-15-26 NEW ROADMAP/DEEP_CODE_AUDIT|Nova – Deep Code-Level Audit & Execution Brief (2026-04-15)]]
   summary: Status: FROZEN – TACTICAL COMPANION TO MasterRoadMap.md
+- [doc] [[4-15-26 NEW ROADMAP/HANDOFF_2026-04-26_CAP64_SIGNOFF_READY|Handoff — Cap 64 Live Signoff Ready / Session Close]]
+  summary: Date: 2026-04-26
+- [doc] [[4-15-26 NEW ROADMAP/HANDOFF_2026-04-26_TRUST_RECEIPT_RECOVERY|Handoff — Trust Receipt / Cap 65 Recovery]]
+  summary: Date: 2026-04-26
 - [doc] [[4-15-26 NEW ROADMAP/MasterRoadMap|Nova – Final Definitive Audit, Roadmap & Operating System (2026-04-15)]]
   summary: Status: This document is frozen. It is the strategic baseline and long-term plan captured on 2026-04-15, not the authoritative live-state do...
 - [doc] [[4-15-26 NEW ROADMAP/Now|NOW.md - Current Sprint (Week 1-4)]]
@@ -94,7 +99,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (669)
+## docs (679)
 
 - [doc] [[docs/architecture/README|Architecture Docs]]
   summary: This folder is for stable architecture explanations and diagrams.
@@ -438,6 +443,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Phase 5 of 6 · Priority: Medium (readonlynetwork)
 - [doc] [[docs/capability_verification/live_checklists/cap_64_send_email_draft|Live Test Checklist — Cap 64: send_email_draft]]
   summary: Phase 5 of 6 · Priority: HIGH (externaleffect=True, persistentchange)
+- [doc] [[docs/capability_verification/live_checklists/cap_65_shopify_intelligence_report|Live Test Checklist — Cap 65: shopify_intelligence_report]]
+  summary: Phase 5 of 6 · Priority: after cap 64 lock
 - [doc] [[docs/capability_verification/live_checklists/README|Live Test Checklists]]
   summary: This folder contains one checklist per capability. You run through the
 - [doc] [[docs/capability_verification/live_dashboard_basic_user_smoke_2026-04-23|Live Dashboard Basic User Smoke - 2026-04-23]]
@@ -447,11 +454,11 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/capability_verification/news_headlines_simulation_2026-04-22|News and Headlines Verification - 2026-04-22]]
   summary: Live WebSocket and automated verification for Nova's news surfaces:
 - [doc] [[docs/capability_verification/STATUS|Nova - Capability Verification Status]]
-  summary: Updated: 2026-04-25
+  summary: Updated: 2026-04-22
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: c77c97809e94ab51d766fa8e6e8d8ea2065f8a7ff0eee1548ce08472a55cb22a
+  summary: Runtime Fingerprint: 2ff5edc7edac6415a90145d7dcaf1f1a18911b4d9c056c40ed309d6b376574ea
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -475,7 +482,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 583170894d7489d5c8f16ab02be99f25632a89ff0fa1289d26b1614cc6391c4e
+  summary: - runtimesurfacehash: e610a87f955d9f5d4afc343d4fe09938a60b543f6bd90b2d61218a4b473d9fa3
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -921,6 +928,14 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Version: 2.2
 - [doc] [[docs/future/HYDROGEN_OXYGEN_STOREFRONT_BUILD_RULESET_2026-04-12|Hydrogen And Oxygen Storefront Build Rules]]
   summary: Date: 2026-04-12
+- [doc] [[docs/future/NOVA_EVERYDAY_MODE_IMPLEMENTATION_NOTES|Nova Everyday Mode Implementation Notes]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_EVERYDAY_MODE_PRODUCT_VISION|Nova Everyday Mode Product Vision]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_EVERYDAY_MODE_REVIEW_SUMMARY_2026-04-26|Nova Everyday Mode — Review Summary]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_EVERYDAY_TASK_SERVICE_EXPANSION_2026-04-26|Nova Everyday Task Service Expansion]]
+  summary: Date: 2026-04-26
 - [doc] [[docs/future/NOVA_FUTURE_TECHNICAL_CONCEPT_DRAFT_2026-04|NOVA_FUTURE_TECHNICAL_CONCEPT_DRAFT_2026-04]]
   summary: ﻿# Nova Future Technical Concept Draft
 - [doc] [[docs/future/nova_gaas_strategy|Nova End Goal - Growth As A Service For People And Operators]]
@@ -929,10 +944,20 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: Reference — kept current
 - [doc] [[docs/future/NOVA_OPENCLAW_GOVERNANCE_HARDENING_2026-04-21|Nova OpenClaw Governance Hardening Plan]]
   summary: Date: 2026-04-21
+- [doc] [[docs/future/NOVA_ROLE_BASED_ASSISTANT_CORE_VISION|Nova Role-Based Assistant Core Vision]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_ROLE_BASED_ASSISTANT_DECISION_RECORD_2026-04-26|Nova Role-Based Assistant — Product Decision Record]]
+  summary: Date: 2026-04-26
 - [doc] [[docs/future/NOVA_SHOPIFY_GOVERNED_OPERATOR_DESIGN_2026-04-20|Nova Shopify Governed Operator Design]]
   summary: Date: 2026-04-20
 - [doc] [[docs/future/NOVA_SOCIAL_CONTENT_OPERATOR_DESIGN_2026-04-21|Nova Governed Social Content Operator Design]]
   summary: Date: 2026-04-21
+- [doc] [[docs/future/NOVA_SOLO_BUSINESS_ASSISTANT_DECISION_RECORD_2026-04-26|Nova Solo Business Assistant — Product Decision Record]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_SOLO_BUSINESS_ASSISTANT_IMPLEMENTATION_NOTES|Nova Solo Business Assistant Implementation Notes]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_SOLO_BUSINESS_ASSISTANT_PRODUCT_VISION|Nova Solo Business Assistant Product Vision]]
+  summary: Date: 2026-04-26
 - [doc] [[docs/future/NOVA_STRATEGIC_VISION|Nova Strategic Vision — Governed Receptionist & Business OS]]
   summary: Status: Long-term direction (not current priority)
 - [doc] [[docs/future/OPENCLAW_INTEGRATION_DESIGN|OpenClaw Integration Design (Future) - docs/future]]
@@ -1469,7 +1494,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## nova_backend (603)
+## nova_backend (610)
 
 - [asset] [[nova_backend/.env.example|.env.example]]
 - [doc] [[nova_backend/requirements-optional-wakeword.txt|requirements-optional-wakeword]]
@@ -1524,6 +1549,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: def build_profile_router(deps: Any) -> APIRouter:
 - [code] [[nova_backend/src/api/settings_api.py|settings_api]]
   summary: def _sync_usage_budget(settings_snapshot: dict[str, Any]) -> None:
+- [code] [[nova_backend/src/api/trust_api.py|trust_api]]
+  summary: Trust receipt API — exposes recent governed action receipts.
 - [code] [[nova_backend/src/api/workspace_api.py|workspace_api]]
   summary: def build_workspace_router(deps) -> APIRouter:
 - [code] [[nova_backend/src/archive_quarantine/phase2_execution/brain_safeP1-2.5.py|brain_safeP1-2.5]]
@@ -1926,6 +1953,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: __all__ = ["FailureLadder", "FailureLadderThresholds", "normalize_trust_status"]
 - [code] [[nova_backend/src/trust/failure_ladder.py|failure_ladder]]
   summary: @dataclass(frozen=True)
+- [code] [[nova_backend/src/trust/receipt_store.py|receipt_store]]
+  summary: Minimum viable action receipt store.
 - [code] [[nova_backend/src/trust/trust_contract.py|trust_contract]]
   summary: ALLOWED_MODES = {"Local-only", "Online"}
 - [code] [[nova_backend/src/usage/__init__.py|src/usage]]
@@ -2061,10 +2090,15 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Phase 1 — Unit certification for capability 64 (send_email_draft).
 - [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p2_routing.py|test_p2_routing]]
   summary: Phase 2 — Routing certification for capability 64 (send_email_draft).
-- [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p3_integration.py|test_p3_integration]]
+- [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p3_integration.py|test_p3_integration - certification/cap_64_send_email_draft]]
   summary: Phase 3 — Integration certification for capability 64 (send_email_draft).
-- [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api]]
+- [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api - certification/cap_64_send_email_draft]]
   summary: Phase 4 — API certification for capability 64 (send_email_draft).
+- [code] [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/__init__.py|tests/certification/cap_65_shopify_intelligence_report]]
+- [code] [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p3_integration.py|test_p3_integration - certification/cap_65_shopify_intelligence_report]]
+  summary: Phase 3 — Integration certification for capability 65 (shopify_intelligence_report).
+- [code] [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
+  summary: Phase 4 — API certification for capability 65 (shopify_intelligence_report).
 - [code] [[nova_backend/tests/certification/conftest.py|conftest - tests/certification]]
   summary: Shared fixtures and helpers for capability certification tests.
 - [code] [[nova_backend/tests/certification/test_lock_regression_guard.py|test_lock_regression_guard]]
@@ -2656,6 +2690,9 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: def test_websocket_rejects_non_local_host_and_origin():
 - [code] [[nova_backend/tests/test_workspace_api.py|test_workspace_api]]
   summary: def test_root_route_returns_index_html():
+- [code] [[nova_backend/tests/trust/__init__.py|tests/trust]]
+- [code] [[nova_backend/tests/trust/test_receipt_store.py|test_receipt_store]]
+  summary: Unit tests for src/trust/receipt_store.py.
 
 ## nova_workspace (2)
 
@@ -2708,7 +2745,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[REPO_MAP|REPO_MAP]]
   summary: ﻿# REPOMAP - Nova
 
-## scripts (15)
+## scripts (16)
 
 - [code] [[scripts/certify_capability.py|certify_capability]]
   summary: certify_capability.py — Capability Verification CLI
@@ -2735,6 +2772,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: $ErrorActionPreference = "Stop
 - [code] [[scripts/start_daemon.py|start_daemon]]
   summary: Start (or verify) the Nova backend as a background process.
+- [code] [[scripts/verify_windows.ps1|verify_windows]]
+  summary: verify_windows.ps1 — Local Windows verification script
 
 ## SECURITY.md (1)
 

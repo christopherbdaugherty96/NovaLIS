@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (258)
+## Backend runtime (260)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -62,6 +62,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def build_profile_router(deps: Any) -> APIRouter:
 - [[nova_backend/src/api/settings_api.py|settings_api]]
   summary: def _sync_usage_budget(settings_snapshot: dict[str, Any]) -> None:
+- [[nova_backend/src/api/trust_api.py|trust_api]]
+  summary: Trust receipt API — exposes recent governed action receipts.
 - [[nova_backend/src/api/workspace_api.py|workspace_api]]
   summary: def build_workspace_router(deps) -> APIRouter:
 - [[nova_backend/src/archive_quarantine/phase2_execution/brain_safeP1-2.5.py|brain_safeP1-2.5]]
@@ -453,6 +455,8 @@ Use this to orient yourself before diving into a specific module.
   summary: __all__ = ["FailureLadder", "FailureLadderThresholds", "normalize_trust_status"]
 - [[nova_backend/src/trust/failure_ladder.py|failure_ladder]]
   summary: @dataclass(frozen=True)
+- [[nova_backend/src/trust/receipt_store.py|receipt_store]]
+  summary: Minimum viable action receipt store.
 - [[nova_backend/src/trust/trust_contract.py|trust_contract]]
   summary: ALLOWED_MODES = {"Local-only", "Online"}
 - [[nova_backend/src/usage/__init__.py|src/usage]]
@@ -520,7 +524,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (322)
+## Tests and verification (327)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -560,10 +564,15 @@ Use this to orient yourself before diving into a specific module.
   summary: Phase 1 — Unit certification for capability 64 (send_email_draft).
 - [[nova_backend/tests/certification/cap_64_send_email_draft/test_p2_routing.py|test_p2_routing]]
   summary: Phase 2 — Routing certification for capability 64 (send_email_draft).
-- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p3_integration.py|test_p3_integration]]
+- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p3_integration.py|test_p3_integration - certification/cap_64_send_email_draft]]
   summary: Phase 3 — Integration certification for capability 64 (send_email_draft).
-- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api]]
+- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api - certification/cap_64_send_email_draft]]
   summary: Phase 4 — API certification for capability 64 (send_email_draft).
+- [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/__init__.py|tests/certification/cap_65_shopify_intelligence_report]]
+- [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p3_integration.py|test_p3_integration - certification/cap_65_shopify_intelligence_report]]
+  summary: Phase 3 — Integration certification for capability 65 (shopify_intelligence_report).
+- [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
+  summary: Phase 4 — API certification for capability 65 (shopify_intelligence_report).
 - [[nova_backend/tests/certification/conftest.py|conftest - tests/certification]]
   summary: Shared fixtures and helpers for capability certification tests.
 - [[nova_backend/tests/certification/test_lock_regression_guard.py|test_lock_regression_guard]]
@@ -1155,6 +1164,9 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_websocket_rejects_non_local_host_and_origin():
 - [[nova_backend/tests/test_workspace_api.py|test_workspace_api]]
   summary: def test_root_route_returns_index_html():
+- [[nova_backend/tests/trust/__init__.py|tests/trust]]
+- [[nova_backend/tests/trust/test_receipt_store.py|test_receipt_store]]
+  summary: Unit tests for src/trust/receipt_store.py.
 - [[verification/check_quarantine_fixed.ps1|check_quarantine_fixed]]
   summary: ﻿Write-Host "=== Legacy Brain Isolation Check (Fixed) ===" -ForegroundColor Cyan
 - [[verification/governor_proof.py|governor_proof]]
@@ -1222,7 +1234,7 @@ Use this to orient yourself before diving into a specific module.
 - [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## Scripts and automations (22)
+## Scripts and automations (23)
 
 - [[.github/workflows/ci.yml|ci]]
   summary: name: CI
@@ -1263,6 +1275,8 @@ Use this to orient yourself before diving into a specific module.
   summary: $ErrorActionPreference = "Stop
 - [[scripts/start_daemon.py|start_daemon]]
   summary: Start (or verify) the Nova backend as a background process.
+- [[scripts/verify_windows.ps1|verify_windows]]
+  summary: verify_windows.ps1 — Local Windows verification script
 
 ## Governance companion repo (8)
 
