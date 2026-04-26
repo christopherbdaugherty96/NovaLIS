@@ -59,11 +59,11 @@ Longer explanation:
 
 ## Core Product Idea
 
-Nova should become a practical local Jarvis-style assistant, but not the fantasy version where AI controls everything.
+Nova should become a practical local assistant for real home, work, and business tasks, not a fantasy assistant where AI controls everything.
 
 Nova should be:
 
-> **Jarvis under your rules.**
+> **A useful assistant under user-defined rules.**
 
 Nova can help with real tasks, prepare work, automate safe steps, and manage workflows, but the user remains the authority.
 
@@ -125,7 +125,7 @@ The role changes the product surface, not the governance spine.
 
 ## Main Roles
 
-### 1. Home Assistant / Jarvis Mode
+### 1. Home Assistant Mode
 
 This is the home-life version of Nova.
 
@@ -166,7 +166,7 @@ I can help you:
 [Explain a bill]
 ```
 
-This is basic practical Jarvis, not uncontrolled sci-fi autonomy.
+This is a practical governed home assistant, not uncontrolled sci-fi autonomy.
 
 ---
 
@@ -868,7 +868,7 @@ only a small-business assistant
 only a browser automation tool
 only a coding assistant
 only an enterprise platform
-an unrestricted Jarvis fantasy
+an unrestricted fantasy assistant
 ```
 
 Do not let the SaaS idea erase the local-first governed identity.
