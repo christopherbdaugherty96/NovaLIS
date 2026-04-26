@@ -8,31 +8,22 @@ Context: the minimum viable trust receipt backend/API was added, but a fresh rev
 
 ### Highest Priority
 
-- [ ] Harden `receipt_store.py` for fresh-install and corrupted-ledger cases.
-  - Missing ledger file should return an empty receipt list instead of raising `FileNotFoundError`.
-  - Empty ledger should return an empty receipt list.
-  - Malformed or truncated JSONL lines should be skipped safely, with no traceback to the API caller.
-  - Unexpected filesystem errors should produce a controlled failure path.
+- [x] Harden `receipt_store.py` for fresh-install and corrupted-ledger cases. *(done 2026-04-26, commit 83c7474)*
+  - Missing ledger → `[]`; empty ledger → `[]`; malformed/non-dict JSON lines skipped; outer `try/except Exception` prevents propagation.
 
-- [ ] Add targeted unit tests for `receipt_store.py`.
-  - Missing ledger file.
-  - Empty ledger file.
-  - Receipt-worthy event filtering.
-  - Newest-first ordering.
-  - `limit` handling.
-  - Malformed/truncated JSONL line handling.
-  - Tail-read behavior across chunk boundaries, if `_read_tail_lines` remains custom logic.
+- [x] Add targeted unit tests for `receipt_store.py`. *(done 2026-04-26, commit 83c7474)*
+  - 18 tests in `nova_backend/tests/trust/test_receipt_store.py` covering all scenarios.
 
 ### Medium Priority
 
 - [ ] Add prerequisite checks to `scripts/verify_windows.ps1`.
-  - Confirm `python` is available.
+  - Confirm `python` is available before attempting any steps.
   - Confirm the command is being run from the project root or fail with a clear message.
   - Confirm `pytest` is importable or explain how to activate/create the virtual environment.
   - Print Python/pip versions for easier Windows troubleshooting.
 
-- [ ] Add a short `ci.yml` comment explaining why simulation tests are excluded from the Windows verification path.
-  - Current reason: known pre-existing simulation pathing issue, not caused by trust receipt or Cap 65 work.
+- [ ] Add a short `ci.yml` comment explaining why the Windows job runs specific suites rather than the full test suite.
+  - Current reason: known pre-existing simulation pathing issue (`test_nova_trial_runner` hardcodes a relative path that fails when `PYTHONPATH=nova_backend`). Not caused by trust receipt or Cap 65 work.
 
 - [ ] Add troubleshooting sections to the Cap 64 and Cap 65 live checklists.
   - Cap 64: missing/default mail client, mailto behavior, ledger verification, confirmation gate expectations.
@@ -40,9 +31,9 @@ Context: the minimum viable trust receipt backend/API was added, but a fresh rev
 
 ### Lower Priority / Design Follow-Up
 
-- [ ] Add router-level loopback dependency to the Trust Receipt API as defense-in-depth.
-  - The app-level local/DNS rebinding middleware is the active protection today.
-  - A router-level dependency would make the boundary explicit if the router is ever reused elsewhere.
+- [x] Add router-level loopback dependency to the Trust Receipt API as defense-in-depth. *(done 2026-04-26, commit 83c7474)*
+  - `APIRouter(dependencies=[Depends(require_local_http_request)])` applied in `trust_api.py`.
+  - `/api/trust` added to `_LOCAL_ONLY_API_PREFIXES` in `local_request_guard.py` so the guard actually fires.
 
 - [ ] Move receipt-worthy event classification out of ad hoc store logic.
   - Short-term acceptable: a named constant such as `RECEIPT_WORTHY_EVENT_TYPES`.

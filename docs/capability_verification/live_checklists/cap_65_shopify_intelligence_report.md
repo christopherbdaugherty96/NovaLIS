@@ -71,3 +71,35 @@ Then lock it:
 ```
 python scripts/certify_capability.py lock 65
 ```
+
+---
+
+## Troubleshooting
+
+**`system status` does not show "Shopify: connected"**
+- Verify `NOVA_SHOPIFY_SHOP_DOMAIN` is set to the full `.myshopify.com` domain (e.g. `mystore.myshopify.com`, not just `mystore`).
+- Verify `NOVA_SHOPIFY_ACCESS_TOKEN` starts with `shpat_` (custom app token) or `shpca_` (collaborator token).
+- Restart Nova after setting env vars — the connector bootstraps at startup.
+
+**Token scope errors in the Nova console**
+- The executor calls `read_orders` and `read_products` via GraphQL Admin API.
+- Your custom app token must have at least these two scopes. Re-generate the token in the Shopify admin if scopes are missing: Apps → Develop apps → [your app] → Configuration → Admin API access scopes.
+
+**NetworkMediator refuses the outbound call**
+- The connector uses `HttpShopifyConnector` which routes through NetworkMediator. If the call is blocked, check that `cap_65` has `external_effect=True` in the registry (it does) and that no policy is blocking outbound reads.
+- NetworkMediator errors appear in the Nova console with the prefix `NetworkMediator:`.
+
+**GraphQL errors / empty data**
+- Empty orders or products is valid for a new dev store. Populate a few test orders/products before running Test 1.
+- GraphQL errors appear in `ACTION_ATTEMPTED` ledger events. Check `http://localhost:8000/api/trust/receipts` for the raw event detail.
+
+**Test 3 — Connector not configured**
+- Unsetting `NOVA_SHOPIFY_SHOP_DOMAIN` alone may not be enough if Nova cached the connector at startup. Restart Nova after unsetting the variable.
+- The expected response is a clean `ActionResult` with `success=False` and a message like "Shopify connector not configured". No traceback should appear in the console.
+
+**Report period does not match**
+- Valid period values: `last_7_days`, `last_30_days`, `last_90_days`. An unrecognised period defaults to `last_7_days` — this is expected behavior confirmed in Test 2.
+
+**certify_capability.py errors**
+- Run from `C:\Nova-Project` (the repo root).
+- The `--notes` flag is optional; include the store domain for traceability.
