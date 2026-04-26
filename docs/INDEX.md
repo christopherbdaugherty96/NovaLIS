@@ -47,6 +47,7 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 - [Command examples](reference/HUMAN_GUIDES/08_COMMAND_EXAMPLES.md)
 - [Safety and trust](reference/HUMAN_GUIDES/06_SAFETY_AND_TRUST.md)
 - [Daily workflows](reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS.md)
+- [Nova Full Stack Direction final lock](future/NOVA_FULL_STACK_DIRECTION_FINAL_LOCK_2026-04-26.md) - short final lock for the future stack: ElevenLabs speaks, Gemma reasons, OpenClaw acts, Nova governs.
 - [Nova Voice Stack operating model](future/NOVA_VOICE_STACK_OPERATING_MODEL_2026-04-26.md) - corrected future truth/goals: Gemma reasons, ElevenLabs speaks, OpenClaw acts, Nova governs, with local voice/text fallback and staged transition after stabilization.
 - [Nova Voice-First Assistant direction](future/NOVA_VOICE_FIRST_ASSISTANT_DIRECTION.md) - future direction and TODOs for making voice the primary interface, with text as review/edit fallback and dashboard as approval/action-history control.
 - [Nova ElevenLabs Voice Integration Plan](future/NOVA_ELEVENLABS_VOICE_INTEGRATION_PLAN.md) - researched plan for optional governed ElevenLabs TTS/STT/agent capabilities, voice budgets, provider interfaces, and safety constraints.
