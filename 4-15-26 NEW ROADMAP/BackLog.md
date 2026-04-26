@@ -40,7 +40,10 @@ Context: the minimum viable trust receipt backend/API was added, but a fresh rev
 
 Context: the final future stack is now locked as **ElevenLabs speaks, Gemma reasons, OpenClaw acts, Nova governs**. Current OpenClaw code already has strong foundations, but it is still mostly governed home-agent templates plus transitional worker/tool paths. This backlog tracks what must change before OpenClaw can honestly be treated as Nova's full hands layer.
 
-Reference: `docs/audits/2026-04-26/NOVA_OPENCLAW_DOCS_TO_CODE_ALIGNMENT_AUDIT_2026-04-26.md`.
+References:
+
+- `docs/audits/2026-04-26/NOVA_OPENCLAW_DOCS_TO_CODE_ALIGNMENT_AUDIT_2026-04-26.md` — current truth and gap audit.
+- `docs/future/NOVA_OPENCLAW_HANDS_LAYER_IMPLEMENTATION_PLAN.md` — build sequence, test gates, and done-means criteria.
 
 ### Current Truth To Preserve
 
