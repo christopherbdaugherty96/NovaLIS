@@ -91,6 +91,73 @@ Do not treat OpenClaw as full hands until Nova can prove:
 
 > Nova can safely direct OpenClaw to do useful work without giving OpenClaw uncontrolled authority.
 
+## Google Account And Connector Onboarding
+
+Context: future Nova should support easy first-run Google sign-in and Google app connections, but Google access must not become hidden action authority. The guiding rule is: **Google connects data. Nova governs action.**
+
+Reference: `docs/future/NOVA_GOOGLE_ACCOUNT_AND_CONNECTOR_ONBOARDING_PLAN.md`.
+
+### Current Truth To Preserve
+
+- Google connector onboarding is a future plan, not current runtime truth.
+- First login should be identity-only: `openid`, `email`, `profile`.
+- Gmail, Calendar, Drive, and Contacts should be connected incrementally by user choice.
+- Local-only mode should remain available.
+- Google tokens/scopes grant access, not permission to act without Nova governance.
+
+### Recommended Future Build Order
+
+- [ ] Google Sign-In identity only.
+  - Create local Nova profile.
+  - Show connected apps screen.
+  - Request no Gmail/Calendar/Drive/Contacts access yet.
+
+- [ ] Connector registry and Connected Apps page.
+  - Track connector status, scopes, token status, last used/synced time, allowed actions, blocked actions, approval requirements, and disconnect/revoke support.
+
+- [ ] Calendar read-only connector first.
+  - Read today/upcoming events.
+  - Summarize schedule.
+  - No event creation/editing.
+  - Receipt says calendar was read.
+
+- [ ] Gmail read-only connector.
+  - Summarize selected inbox/thread data.
+  - Extract tasks.
+  - No sending, deleting, labels, archive, or bulk actions yet.
+
+- [ ] Gmail draft-only connector / Cap 64 alignment.
+  - Prepare reply.
+  - Ask approval to create draft.
+  - User sends manually.
+  - Receipt says draft created / not sent.
+
+- [ ] Drive and Contacts read-only connectors.
+  - Find/summarize selected files.
+  - Find contacts for draft addressing.
+  - No file/contact mutation.
+
+- [ ] Connector receipts and non-action statements.
+  - Examples: `Nova read today's calendar.`, `Nova summarized 3 email threads.`, `Nova did not send any emails.`, `Nova did not delete or modify files.`
+
+### Guardrail
+
+Do not start with:
+
+```text
+full Gmail access
+full Drive access
+send-email automation
+calendar auto-booking
+file moving/deleting
+contact editing
+bulk inbox changes
+background connector sync without explicit permission
+one-click all Google permissions
+plain token storage
+automatic connector actions without receipts
+```
+
 ## Guardrail
 
 Do not expand this into another broad audit. The active execution path remains:
@@ -100,3 +167,4 @@ Do not expand this into another broad audit. The active execution path remains:
 3. Clean Windows VM installer validation and `C:\Program Files\Nova\bootstrap.log` review.
 4. Trust receipt dashboard card after backend hardening.
 5. OpenClaw hands-layer alignment only after the trust/action-history path is stable enough to prove bounded worker execution.
+6. Google connector onboarding only after identity, connector registry, token storage, approval queue, and receipts are designed clearly enough to avoid hidden authority.
