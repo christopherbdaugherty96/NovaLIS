@@ -44,6 +44,7 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 - [Safety and trust](reference/HUMAN_GUIDES/06_SAFETY_AND_TRUST.md)
 - [Daily workflows](reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS.md)
 - [Nova Solo Business Assistant product vision](future/NOVA_SOLO_BUSINESS_ASSISTANT_PRODUCT_VISION.md) - first focused future product direction for independents and small local businesses.
+- [Nova Solo Business Assistant implementation notes](future/NOVA_SOLO_BUSINESS_ASSISTANT_IMPLEMENTATION_NOTES.md) - staged build guidance for the Solo Business Assistant MVP without overstating current runtime truth.
 - [Nova Everyday Mode product vision](future/NOVA_EVERYDAY_MODE_PRODUCT_VISION.md) - future direction for non-technical everyday users and small-business workflows.
 - [Nova Everyday Mode implementation notes](future/NOVA_EVERYDAY_MODE_IMPLEMENTATION_NOTES.md) - grounding and staged implementation notes so the vision is not confused with current runtime truth.
 - [Nova Everyday Mode review summary](future/NOVA_EVERYDAY_MODE_REVIEW_SUMMARY_2026-04-26.md) - consolidated summary of the Everyday Mode product direction, staged build order, and guardrails.
