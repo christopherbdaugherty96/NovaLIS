@@ -43,6 +43,7 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 - [Command examples](reference/HUMAN_GUIDES/08_COMMAND_EXAMPLES.md)
 - [Safety and trust](reference/HUMAN_GUIDES/06_SAFETY_AND_TRUST.md)
 - [Daily workflows](reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS.md)
+- [Nova Everyday Mode product vision](future/NOVA_EVERYDAY_MODE_PRODUCT_VISION.md) - future direction for non-technical everyday users and small-business workflows.
 
 ---
 
