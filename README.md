@@ -75,9 +75,11 @@ Nova uses a structured certification model:
 - Regression and validation suites
 
 ### Current Verified Progress
-- Capability 64 `send_email_draft`: P1-P4 passed, awaiting P5 live sign-off
+- Full P1–P4 certification on the email draft and Shopify intelligence capabilities
 - Certification and lock framework present
 - Regression guard process documented
+
+For current capability phase status, see [Capability Verification Status](docs/capability_verification/STATUS.md).
 
 ### Still Being Proven
 - More capabilities completing full P1-P6 cycles
@@ -100,7 +102,7 @@ For exact current status, use the generated runtime docs and capability verifica
 ## For Technical Users
 - [Architecture](docs/reference/ARCHITECTURE.md)
 - [Runtime Capability Reference](docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md)
-- [Runtime Fingerprint](docs/current_runtime/RUNTIME_FINGERPRINT.md)
+- [Capability Fingerprint](docs/current_runtime/RUNTIME_FINGERPRINT.md)
 
 ---
 
