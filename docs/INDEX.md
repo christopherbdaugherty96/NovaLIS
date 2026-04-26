@@ -68,8 +68,9 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 
 ## Roadmap And Planning
 
-- [Current roadmap](../4-15-26%20NEW%20ROADMAP/Now.md)
-- [Master roadmap](../4-15-26%20NEW%20ROADMAP/MasterRoadMap.md)
+- [Current roadmap](../4-15-26%20NEW%20ROADMAP/Now.md) - active blockers and current sprint path.
+- [Backlog](../4-15-26%20NEW%20ROADMAP/BackLog.md) - follow-up hardening that should not interrupt the active close-out path.
+- [Master roadmap](../4-15-26%20NEW%20ROADMAP/MasterRoadMap.md) - broader roadmap context.
 - [Repo improvement action plan](future/repo_improvement_action_plan.md)
 
 ---
