@@ -188,12 +188,12 @@ only a small-business assistant
 only a browser automation tool
 only a coding assistant
 only an enterprise platform
-an unrestricted Jarvis fantasy
+an unrestricted fantasy assistant
 ```
 
 Nova should become the practical version:
 
-> **Jarvis under your rules.**
+> **A useful assistant under user-defined rules.**
 
 ---
 
