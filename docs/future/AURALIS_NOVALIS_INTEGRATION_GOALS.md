@@ -157,8 +157,6 @@ The stronger promise is:
 
 This is the starting product.
 
-Do not overcomplicate the first sale.
-
 Offer:
 
 - starter website;
@@ -170,12 +168,6 @@ Offer:
 - basic SEO;
 - mobile optimization;
 - maintenance.
-
-The customer buys something simple:
-
-> I need a better website.
-
-That gets Auralis in the door.
 
 Exit criteria:
 
@@ -198,22 +190,6 @@ Auralis adds:
 - customer intake questions;
 - business info capture;
 - lead notification emails.
-
-This prepares the data Nova will eventually use.
-
-Nova works better when the website collects clean structured information.
-
-Instead of a basic contact form with only name, phone, and message, use structured fields such as:
-
-- name;
-- phone;
-- email;
-- service needed;
-- location or service area;
-- timeline;
-- budget range, when appropriate;
-- preferred contact method;
-- notes or photos, when appropriate.
 
 Exit criteria:
 
@@ -244,8 +220,6 @@ A business profile may include:
 - current promotions;
 - important limits.
 
-This profile gives Nova the context required to summarize, draft, and recommend accurately.
-
 Exit criteria:
 
 - business profile schema exists;
@@ -268,8 +242,6 @@ When a customer submits a form, Nova receives or reads the inquiry and produces:
 Example:
 
 > New inquiry: customer wants lawn mowing and spring cleanup in Belleville within two weeks. They included phone number but no yard size. Suggested next step: ask for address, approximate lot size, and photos. Draft reply prepared.
-
-This is useful and safe.
 
 Exit criteria:
 
@@ -318,12 +290,6 @@ Nova could eventually summarize:
 - source of leads;
 - seasonal demand.
 
-Example insight:
-
-> Most inquiries this month were for spring cleanup, but your homepage still leads with weekly mowing. Consider adding a spring cleanup call-to-action.
-
-This can become a monthly report or dashboard Auralis sells.
-
 Exit criteria:
 
 - metric sources are documented;
@@ -343,8 +309,6 @@ Recommended early behavior:
 - prepare a tentative calendar event;
 - require owner approval before confirming with the customer.
 
-Do not start with autonomous booking.
-
 Exit criteria:
 
 - calendar changes require explicit approval;
@@ -356,21 +320,7 @@ Exit criteria:
 
 This is the mature version.
 
-Nova helps with:
-
-- leads;
-- inquiries;
-- email;
-- calendar;
-- business metrics;
-- website updates;
-- content;
-- customer follow-up;
-- review requests;
-- service recommendations;
-- simple reporting.
-
-It must remain governed.
+Nova helps with leads, inquiries, email, calendar, business metrics, website updates, content, customer follow-up, review requests, service recommendations, and simple reporting.
 
 Exit criteria:
 
@@ -381,37 +331,123 @@ Exit criteria:
 
 ---
 
-## Product Concept
+## MVP Definition
 
-This could become:
+The first shippable Auralis/Nova overlap should be narrow.
 
-> Auralis Digital Website + Agent System
+### MVP Name
 
-Basic idea:
+Nova Lead Console v1.
 
-> Auralis builds the business website and connects it to a governed Nova backend that helps the owner manage inquiries, information, follow-ups, and business signals.
+### MVP Goal
 
-Possible product names:
+Turn website inquiries into structured lead summaries and response drafts without sending anything automatically.
 
-- Auralis Business Assistant;
-- Auralis Agent Layer;
-- Auralis Intelligence Backend;
-- Auralis Client Console;
-- Auralis Business OS;
-- Auralis Smart Website System;
-- Nova for Auralis;
-- Auralis powered by Nova.
+### MVP Inputs
 
-Avoid “autonomous agent” language early.
+- structured website form submission;
+- business profile;
+- service list;
+- preferred contact method;
+- owner approval rules.
 
-Better terms:
+### MVP Outputs
 
-- assistant;
-- backend;
-- dashboard;
-- workflow system;
-- approval-based agent;
-- business intelligence layer.
+- lead summary;
+- urgency level;
+- missing information;
+- suggested next step;
+- draft reply;
+- follow-up reminder suggestion;
+- visible record of what Nova did and did not do.
+
+### MVP Hard Boundaries
+
+- no autonomous email sending;
+- no autonomous booking;
+- no autonomous website publishing;
+- no sensitive-data expansion beyond required inquiry fields;
+- no client-facing claim that Nova is a full business agent.
+
+---
+
+## Capability Planning Map
+
+This section is directional. Actual capability IDs and implementation status must be checked against generated runtime truth before work begins.
+
+| Product Need | Likely Nova Surface | Status Expectation |
+| --- | --- | --- |
+| summarize website inquiry | analysis / explanation path | should start read-only |
+| draft customer reply | email draft or local draft capability | draft-only first |
+| open client website | governed website open capability | user-visible action |
+| review website metrics | future connector / reporting capability | read-only first |
+| read business email | future email connector | read-only before draft/send |
+| create email draft | existing or future draft capability | owner sends first |
+| calendar review | calendar connector | read-only before write |
+| create calendar event | future governed calendar action | approval required |
+| suggest website update | analysis document / drafting path | no publish by default |
+| publish website update | future governed deploy/publish action | high-risk, approval required |
+
+Any new Auralis-facing runtime work should be added only through registered capabilities, mediator checks, and visible logs.
+
+---
+
+## Revenue Model Direction
+
+Pricing should not be locked until the workflow is real, but the likely ladder is:
+
+### Website Build Revenue
+
+One-time project fees for:
+
+- starter site;
+- local business site;
+- redesign;
+- landing page;
+- industry-specific template site.
+
+### Maintenance Revenue
+
+Monthly support for:
+
+- content edits;
+- uptime checks;
+- minor updates;
+- form testing;
+- basic SEO upkeep;
+- monthly website review.
+
+### Nova-Backed Add-On Revenue
+
+Monthly add-on for:
+
+- lead summaries;
+- draft replies;
+- follow-up reminders;
+- monthly inquiry report;
+- basic metrics explanation;
+- later email/calendar support.
+
+### Managed Intelligence Revenue
+
+Higher tier service where Auralis reviews Nova-generated insights and sends the client a human-reviewed monthly action plan.
+
+This avoids prematurely selling unsupported automation while still creating recurring value.
+
+---
+
+## Risk Register
+
+| Risk | Why It Matters | Mitigation |
+| --- | --- | --- |
+| overpromising Nova capabilities | damages trust and creates support burden | sell websites first; label Nova features as staged |
+| hidden or uncontrolled actions | violates Nova philosophy | require approval and ledger visibility |
+| client data mishandling | business and legal risk | define collection, retention, deletion, and access rules |
+| email/calendar mistakes | can damage customer relationships | read-only/draft-only first; approval before send/book |
+| analytics misinterpretation | bad business advice | label confidence and distinguish data from recommendation |
+| support overload | small business clients need help | start with narrow MVP and managed service layer |
+| brand confusion | customers may not understand Nova | sell outcomes, not architecture |
+| technical drift from runtime truth | docs may outrun code | verify against generated runtime docs before claiming readiness |
 
 ---
 
@@ -424,8 +460,6 @@ For normal business owners:
 Stronger version:
 
 > Your website should not just sit there. It should help your business operate. Auralis starts with your website, then can connect it to a governed assistant that helps manage leads, emails, customer questions, and business insights — with you staying in control.
-
-This explains the Nova concept without technical overload.
 
 ---
 
@@ -453,88 +487,6 @@ Customer-facing language:
 - the business owner stays in control;
 - there is no hidden automation.
 
-That is how to sell the trust model.
-
----
-
-## Web Design First
-
-A small business owner may not immediately buy:
-
-> governed AI backend agent software.
-
-But they understand:
-
-> I need a website.
-
-After the website is built, they may realize:
-
-- inquiries are coming in;
-- they forget to follow up;
-- customers ask repeat questions;
-- they need quote organization;
-- they want help posting updates;
-- they want email drafts;
-- they want appointment reminders.
-
-That is when Nova becomes valuable.
-
-The sales ladder is:
-
-1. Website.
-2. Forms and intake.
-3. Lead tracking.
-4. Email support.
-5. Metrics and reporting.
-6. Assistant dashboard.
-7. Deeper Nova agent workflows.
-
----
-
-## First Nova-Linked Product
-
-The first Nova-linked Auralis product should be modest.
-
-Do not start with a full agent.
-
-Start with:
-
-### Nova Lead Console v1
-
-For a client website, collect form submissions and show:
-
-- new lead summary;
-- service requested;
-- urgency;
-- contact information;
-- suggested reply;
-- missing details;
-- follow-up status.
-
-Example:
-
-> New lead: Rob’s Lawn Care. Customer wants weekly mowing in Belleville. They prefer text contact. Missing information: yard size and start date. Suggested reply prepared. Recommended next step: ask for address and photos.
-
-That product alone is useful.
-
-Then add:
-
-### Nova Email Draft v1
-
-- read or receive inquiry emails;
-- summarize;
-- draft response;
-- require owner approval before sending.
-
-Then add:
-
-### Nova Metrics Snapshot v1
-
-- weekly summary of form submissions;
-- most common services requested;
-- unanswered leads;
-- suggested website update.
-
 ---
 
 ## Auralis Package Path
@@ -543,136 +495,23 @@ Then add:
 
 Website only.
 
-Includes:
-
-- mobile-friendly site;
-- services;
-- about;
-- contact;
-- form;
-- basic SEO.
+Includes mobile-friendly site, services, about, contact, form, and basic SEO.
 
 ### Package 2: Website + Lead System
 
-Website plus structured inquiries.
-
-Includes:
-
-- quote form;
-- lead email formatting;
-- lead tracker;
-- follow-up templates.
+Website plus structured inquiries, quote form, lead email formatting, lead tracker, and follow-up templates.
 
 ### Package 3: Website + Nova Lead Console
 
-First Nova-linked tier.
-
-Includes:
-
-- inquiry summaries;
-- lead categorization;
-- draft replies;
-- basic business profile;
-- weekly lead report.
+First Nova-linked tier with inquiry summaries, lead categorization, draft replies, business profile, and weekly lead report.
 
 ### Package 4: Nova Business Assistant
 
-Later.
-
-Includes:
-
-- email connection;
-- metrics dashboard;
-- appointment request support;
-- content suggestions;
-- follow-up reminders;
-- approval-gated actions.
+Later tier with email connection, metrics dashboard, appointment request support, content suggestions, follow-up reminders, and approval-gated actions.
 
 ### Package 5: Nova Managed Agent Layer
 
-Long-term.
-
-Includes:
-
-- deeper integrations;
-- calendar;
-- CRM-like tracking;
-- business intelligence;
-- governed workflow actions;
-- audit trail;
-- advanced automation under strict approval and policy boundaries.
-
----
-
-## Build Order
-
-### First: Structured Website Inquiry System
-
-Every Auralis client website should have strong forms that produce clean structured data.
-
-Example for lawn care:
-
-- name;
-- phone;
-- email;
-- address or service area;
-- service type;
-- property size;
-- timeline;
-- photos;
-- notes;
-- preferred contact method.
-
-Example for restaurant or catering:
-
-- name;
-- event date;
-- guest count;
-- service type;
-- location;
-- budget range;
-- food or drink needs;
-- contact information.
-
-Example for barber or salon:
-
-- name;
-- service wanted;
-- preferred date/time;
-- stylist preference;
-- phone/email;
-- notes.
-
-### Second: Business Profile Schema
-
-Nova needs business context.
-
-For each client:
-
-- business name;
-- industry;
-- services;
-- pricing notes;
-- service area;
-- hours;
-- contact preferences;
-- tone;
-- FAQs;
-- policies;
-- owner approval settings;
-- important limits.
-
-### Third: Lead Summary and Draft System
-
-When a lead comes in:
-
-- summarize;
-- classify;
-- draft response;
-- suggest next step;
-- log it.
-
-That is the first real Nova/Auralis product.
+Long-term tier with deeper integrations, calendar, CRM-like tracking, business intelligence, governed workflow actions, audit trail, and advanced automation under strict approval and policy boundaries.
 
 ---
 
@@ -706,27 +545,6 @@ First it summarizes and drafts. Later it can act with approval.
 
 ---
 
-## Website Updates
-
-Website changes are sensitive.
-
-Nova can first suggest:
-
-- headline updates;
-- seasonal calls to action;
-- FAQ additions;
-- promotion copy;
-- testimonial placement;
-- content drafts.
-
-Auralis or the client approves before anything is published.
-
-A future Auralis service could be:
-
-> Monthly website intelligence and update recommendations.
-
----
-
 ## Best Early Customer Types
 
 Start with simple service businesses, not complex regulated ones.
@@ -744,16 +562,7 @@ Good early targets:
 - mobile bartending or event vendors;
 - local restaurants with simple inquiry or catering needs.
 
-Avoid early:
-
-- medical;
-- legal;
-- finance;
-- insurance;
-- highly regulated services;
-- businesses with complex compliance requirements.
-
-Start where risk is lower and value is obvious.
+Avoid early medical, legal, finance, insurance, and other highly regulated services until governance, terms, privacy, and support practices are mature.
 
 ---
 
@@ -771,35 +580,7 @@ Mature wording:
 
 > Powered by NovaLIS, Auralis websites can connect to a governed business assistant that helps manage customer communication, reporting, and routine workflows while keeping the owner in control.
 
-Avoid early claims such as:
-
-- fully autonomous AI agent;
-- runs your business for you;
-- automatic email sending;
-- automatic booking;
-- complete business automation.
-
----
-
-## Important Boundary
-
-Avoid saying:
-
-> Nova is linked to every client website from day one.
-
-Safer and more accurate:
-
-> Auralis websites are designed to be Nova-ready.
-
-That means:
-
-- forms are structured;
-- business data is organized;
-- leads are trackable;
-- content is clean;
-- future integrations are possible.
-
-Auralis can sell web design now while preparing the backend path.
+Avoid early claims such as fully autonomous AI agent, runs your business for you, automatic email sending, automatic booking, or complete business automation.
 
 ---
 
@@ -807,48 +588,31 @@ Auralis can sell web design now while preparing the backend path.
 
 ### Phase A: Auralis Web Design
 
-Goal:
-
-- get customers;
-- build sites;
-- create proof.
+Goal: get customers, build sites, and create proof.
 
 ### Phase B: Nova-Ready Websites
 
-Goal:
-
-- every site has structured data and workflow-friendly forms.
+Goal: every site has structured data and workflow-friendly forms.
 
 ### Phase C: Auralis Lead Console
 
-Goal:
-
-- simple dashboard and reporting around inquiries.
+Goal: simple dashboard and reporting around inquiries.
 
 ### Phase D: Nova Lead Intelligence
 
-Goal:
-
-- Nova summarizes, classifies, drafts, and recommends.
+Goal: Nova summarizes, classifies, drafts, and recommends.
 
 ### Phase E: Email + Metrics
 
-Goal:
-
-- read or draft email;
-- generate weekly or monthly insights.
+Goal: read or draft email and generate weekly or monthly insights.
 
 ### Phase F: Calendar + Workflow Actions
 
-Goal:
-
-- approval-gated booking and follow-up workflows.
+Goal: approval-gated booking and follow-up workflows.
 
 ### Phase G: Full Nova Business Agent
 
-Goal:
-
-- governed assistant software connected to the website, business profile, email, calendar, metrics, and approved actions.
+Goal: governed assistant software connected to the website, business profile, email, calendar, metrics, and approved actions.
 
 ---
 
