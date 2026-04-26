@@ -937,14 +937,14 @@
         "test_file": "tests/test_shopify_intelligence_report_routing.py"
       },
       "p3_integration": {
-        "status": "pending",
-        "date": null,
-        "test_file": null
+        "status": "pass",
+        "date": "2026-04-25",
+        "test_file": "tests/certification/cap_65_shopify_intelligence_report/test_p3_integration.py"
       },
       "p4_api": {
-        "status": "pending",
-        "date": null,
-        "test_file": null
+        "status": "pass",
+        "date": "2026-04-25",
+        "test_file": "tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py"
       },
       "p5_live": {
         "status": "pending",

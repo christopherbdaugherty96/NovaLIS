@@ -140,7 +140,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/archive/phase 4/NOVA CANONICAL SYNTHESIS v5.0.txt|🧬 NOVA CANONICAL SYNTHESIS v5.0 - COMPLETE OPERATIONAL TRUTH]]
 - [doc] [[docs/design/Phase 9/NOVA MULTI-AGENT GOVERNANCE FRAMEWORK.txt|🧬 NOVA CORE INTELLIGENCE ARCHITECTURE]]
 
-## openclaw (76)
+## openclaw (77)
 
 - [code] [[nova_backend/src/openclaw/agent_execution_memory.py|agent_execution_memory]]
 - [code] [[nova_backend/src/openclaw/agent_fallback_strategies.py|agent_fallback_strategies]]
@@ -207,6 +207,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/design/Phase 8/openclaw.txt|NOVA — GOVERNED AUTOMATION & OPENCLAW INTEGRATION]]
 - [doc] [[docs/design/Phase 8/NOVA_OPENCLAW_INTEGRATION_STANDARD_2026-04-14|Nova-OpenClaw Integration Standard]]
 - [doc] [[docs/future/openclaw_sovereign_governance|NovaLIS Architectural Hardening Plan - Sovereign Governance Over OpenClaw]]
+- [doc] [[docs/audits/2026-04-25/NovaLIS_Fourth_Pass_Audit_2026-04-25|NovaLIS Fourth Pass Audit — 2026-04-25]]
 - [doc] [[docs/archive/openclaw_integration_draft.txt|OpenClaw Integration Design (Future) - docs/archive]]
 - [doc] [[docs/future/OPENCLAW_INTEGRATION_DESIGN|OpenClaw Integration Design (Future) - docs/future]]
 - [doc] [[docs/future/OPENCLAW_INTEGRATION_REVIEW|OpenClaw Integration — Engineering Review]]
@@ -313,7 +314,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/reference/HUMAN_GUIDES/05_PROJECT_CONTINUITY_AND_MEMORY|Project Continuity and Memory]]
 - [doc] [[docs/design/Phase 9/# 🧬 NOVA MEMORY ARCHITECTURE USER.txt|🧬 NOVA MEMORY ARCHITECTURE: USER MEMORY & SYSTEM MEMORY]]
 
-## ux (71)
+## ux (73)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[nova_backend/static/favicon.ico|favicon.ico]]
@@ -377,6 +378,8 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/test_workspace_api.py|test_workspace_api]]
 - [code] [[nova_workspace/story_tracker/tracked_topics.json|tracked_topics]]
 - [code] [[nova_backend/src/api/workspace_api.py|workspace_api]]
+- [doc] [[docs/capability_verification/live_dashboard_basic_user_smoke_2026-04-23|Live Dashboard Basic User Smoke - 2026-04-23]]
+- [doc] [[docs/capability_verification/live_news_headlines_2026-04-23|Live News And Headlines Verification - 2026-04-23]]
 - [doc] [[docs/design/Phase 4.5/NOVA_FRONTEND_FOUNDATION_AND_USABILITY_ROADMAP_2026-04-10|Nova Frontend Foundation And Usability Roadmap]]
 - [doc] [[docs/design/Phase 4.5/NOVA_USABILITY_NEXT_STEPS_ROADMAP_2026-04-10|Nova Usability Next Steps Roadmap]]
 - [doc] [[docs/design/Phase 4.5/NOVA_UX_FRICTION_REMEDIATION_ROADMAP_2026-04-14|Nova UX Friction Remediation Roadmap]]
@@ -444,7 +447,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (559)
+## testing (567)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -789,10 +792,14 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/COMPLETION/PHASE_3.5_COMPLETION/3.5 - Complete Mechanical Specification.txt|3.5 - Complete Mechanical Specification - COMPLETION/PHASE_3.5_COMPLETION]]
 - [doc] [[docs/PROOFS/phase 3.5-4/3.5 - Complete Mechanical Specification.txt|3.5 - Complete Mechanical Specification - PROOFS/phase 3.5-4]]
 - [doc] [[docs/PROOFS/Phase-4/ActionRequest_ActionResult_Contract_Proof|ActionRequest / ActionResult Contract Proof]]
+- [doc] [[docs/capability_verification/basic_conversation_understanding_2026-04-22|Basic Conversation and Understanding Verification - 2026-04-22]]
+- [doc] [[docs/capability_verification/basic_user_command_simulation_2026-04-22|Basic User Command Simulation - 2026-04-22]]
 - [doc] [[docs/PROOFS/Phase-4.5/CALENDAR_INTEGRATION_PROOF_2026-03-09|CALENDAR_INTEGRATION_PROOF_2026-03-09]]
+- [doc] [[docs/capability_verification/cap_16_governed_web_search_simulation_2026-04-23|Capability 16 - Governed Web Search Simulation - 2026-04-23]]
 - [doc] [[docs/PROOFS/Phase-4/Capability_16_Governed_Web_Search_Proof|Capability 16 — Governed Web Search Proof]]
 - [doc] [[docs/PROOFS/Phase-4/Capability_17_Open_Preset_Website_Proof|Capability 17 — Open Preset Website Proof]]
 - [doc] [[docs/PROOFS/Phase-4/Capability_18_Governed_TTS_Authority_Proof|Capability 18 — Governed TTS Authority Proof]]
+- [doc] [[docs/capability_verification/capability_gap_map_2026-04-23|Capability Gap Map - 2026-04-23]]
 - [doc] [[docs/PROOFS/Phase-4/Capability_Registry_Proof|Capability Registry Proof]]
 - [doc] [[docs/reference/HUMAN_GUIDES/33_CAPABILITY_VERIFICATION_GUIDE|Capability Verification Guide]]
 - [doc] [[docs/PROOFS/Phase-4/CAPABILITY_20_21_REAL_EXECUTION_PROOF_2026-03-09|CAPABILITY_20_21_REAL_EXECUTION_PROOF_2026-03-09]]
@@ -813,6 +820,8 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/phase 3.5-4/GOVERNOR_BYPASS_PROOF|GOVERNOR_BYPASS_PROOF]]
 - [doc] [[docs/PROOFS/Phase-4/GovernorMediator_Parser_Proof|GovernorMediator Parser Proof]]
 - [doc] [[docs/PROOFS/Phase-4/Ledger_Write_Integrity_Proof|Ledger Write Integrity Proof]]
+- [doc] [[docs/capability_verification/live_dashboard_basic_user_smoke_2026-04-23|Live Dashboard Basic User Smoke - 2026-04-23]]
+- [doc] [[docs/capability_verification/live_news_headlines_2026-04-23|Live News And Headlines Verification - 2026-04-23]]
 - [doc] [[docs/capability_verification/live_checklists/cap_16_governed_web_search|Live Test Checklist — Cap 16: governed_web_search]]
 - [doc] [[docs/capability_verification/live_checklists/cap_17_open_website|Live Test Checklist — Cap 17: open_website]]
 - [doc] [[docs/capability_verification/live_checklists/cap_18_speak_text|Live Test Checklist — Cap 18: speak_text]]
@@ -844,6 +853,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/Phase-4/Model_Network_Mediation_Proof|Model_Network_Mediation_Proof]]
 - [doc] [[docs/PROOFS/Phase-4/NETWORK_MEDIATION_ENFORCED|Network Mediation Enforced Proof]]
 - [doc] [[docs/PROOFS/Phase-4/Network_Mediator_Authority_Proof|Network Mediator Authority Proof]]
+- [doc] [[docs/capability_verification/news_headlines_simulation_2026-04-22|News and Headlines Verification - 2026-04-22]]
 - [doc] [[docs/PROOFS/Phase-4/No_Background_Execution_Proof|No Background Execution Proof]]
 - [doc] [[docs/PROOFS/Phase-5/NOTIFICATION_SCHEDULING_BOUNDARY_SPEC_2026-03-09|Notification Scheduling Boundary Spec]]
 - [doc] [[docs/capability_verification/STATUS|Nova - Capability Verification Status]]
@@ -852,6 +862,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/UNLOCK/phase 3.5/NOVA PHASE 3.5 SEAL ARTIFACT.txt|NOVA PHASE 3.5 SEAL ARTIFACT - UNLOCK/phase 3.5]]
 - [doc] [[docs/capability_verification/FRAMEWORK|Nova — Capability Verification Framework]]
 - [doc] [[docs/future/repo_improvement_action_plan|NovaLIS Documentation Audit and Action Plan]]
+- [doc] [[docs/audits/2026-04-24/NovaLIS_Second_Pass_Code_Verification_2026-04-24|NovaLIS Second-Pass Code Verification Audit]]
 - [doc] [[docs/PROOFS/Phase-4.5/ORB_NON_SEMANTIC_RUNTIME_PROOF_2026-03-09|ORB_NON_SEMANTIC_RUNTIME_PROOF_2026-03-09]]
 - [doc] [[docs/PROOFS/Phase-5/PATTERN_DETECTION_OPT_IN_GUARDRAILS_SPEC_2026-03-09|Pattern Detection Opt-In Guardrails Spec]]
 - [doc] [[docs/PROOFS/unlock-decisions/phase 3.5/PHASE_3.5_FROZEN_STATUS|Phase 3.5 Frozen Status Report - unlock-decisions/phase 3.5]]
@@ -983,7 +994,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/Phase-6/PHASE_6_NEXT_STEP_INDEX|PHASE_6_NEXT_STEP_INDEX]]
 - [doc] [[docs/PROOFS/Phase-6/PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN|PHASE_6_PORCUPINE_WAKE_WORD_RUNTIME_PLAN]]
 - [doc] [[nova_backend/src/archive_quarantine/phase2_tests/QUARANTINE_NOTICE|QUARANTINE_NOTICE - archive_quarantine/phase2_tests]]
-- [doc] [[docs/PROOFS/README|README - docs/PROOFS]]
+- [doc] [[docs/PROOFS/README|README]]
 - [doc] [[docs/PROOFS/Phase-4/Runtime_matrix_audit|Runtime_matrix_audit]]
 - [doc] [[docs/testing/SIMULATION_ANALYTICS|Simulation Analytics]]
 - [doc] [[docs/PROOFS/Phase-4/Governor Bypass Proof Document.txt|src/llm/inference_wrapper.py]]
@@ -1006,7 +1017,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/archive/phase 4/check-in.txt|🧬 NOVA — Phase-4 Infrastructure Completion Record]]
 - [doc] [[docs/PROOFS/Phase-4/PHASE-4 PRE-UNLOCK STRUCTURAL CERTIFICATION.txt|🧬 NOVA — PHASE-4 PRE-UNLOCK STRUCTURAL CERTIFICATION]]
 
-## architecture (279)
+## architecture (281)
 
 - [doc] [[docs/design/archive/redundant_placeholders_2026-04-02/# 🧬 NOVA INTELLIGENCE CAPACITY THE.txt|# 🧬 NOVA INTELLIGENCE CAPACITY THE]]
 - [doc] [[docs/design/archive/redundant_placeholders_2026-04-02/# 🧬 NOVA PHASE 4.2 ROADMAP.txt|# 🧬 NOVA PHASE 4.2 ROADMAP]]
@@ -1104,6 +1115,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/design/Phase 6/NOVA_GROUNDED_CURRENT_STATUS_AND_NEXT_ROADMAP_2026-04-02|Nova Grounded Current Status And Next Roadmap]]
 - [doc] [[docs/design/Phase 11/NOVA_HOME_ASSISTANT_PRODUCT_TRUTH_2026-04-02|Nova Home Assistant Product Truth]]
 - [doc] [[docs/design/Phase 6/NOVA_HONEST_ASSESSMENT_AND_NEXT_TODO_2026-03-21|Nova Honest Assessment And Next Todo]]
+- [doc] [[docs/reference/HUMAN_GUIDES/README|Nova Human Guides]]
 - [doc] [[docs/design/Phase 11/NOVA_IDEA_TO_WORKFLOW_OPERATOR_MODEL_TODO_2026-04-02|Nova Idea-To-Workflow Operator Model TODO]]
 - [doc] [[docs/design/Phase 11/NOVA_INTERACTION_MODEL_V1_STRICT_ON_RISK_SOFT_ON_FLOW_2026-04-02|Nova Interaction Model v1.0]]
 - [doc] [[docs/design/Phase 8/NOVA_LOCAL_CODE_OPERATOR_ROADMAP_2026-04-13|Nova Local Code Operator Roadmap]]
@@ -1164,6 +1176,8 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/design/Phase 8/NOVA_OPENCLAW_INTEGRATION_STANDARD_2026-04-14|Nova-OpenClaw Integration Standard]]
 - [doc] [[docs/design/Phase 7/NOVA-PI-BUILD-PHASE7.txt|NOVA-PI-BUILD-PHASE7]]
 - [doc] [[docs/design/phase 5/MEMORY GOVERNANCE|NOVA: DEEP MEMORY (Saved -> Unlock Required)]]
+- [doc] [[docs/audits/2026-04-24/NovaLIS_Audit_2026-04-24|NovaLIS Audit Report — Architecture, Product, and Launch Readiness]]
+- [doc] [[docs/audits/2026-04-24/NovaLIS_Wide_Final_Audit_2026-04-24|NovaLIS Wide Final Audit — Architecture, Runtime, Product, Launch, and Program Readiness]]
 - [doc] [[docs/design/Phase 8/OPENAI_AGENT_OPERATING_MODEL_2026-03-27|OpenAI Agent Operating Model]]
 - [doc] [[docs/design/Phase 8/OPENAI_PROVIDER_ROUTING_AND_BUDGET_POLICY_2026-03-27|OpenAI Provider Routing and Budget Policy]]
 - [doc] [[docs/design/Phase 8/OPENAI_USAGE_VISIBILITY_SPEC_2026-03-27|OpenAI Usage Visibility Spec]]
@@ -1219,7 +1233,6 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/Phase-4.5/PHASE_4_5_COMPLETION_EVIDENCE_MATRIX_2026-03-09|PHASE_4_5_COMPLETION_EVIDENCE_MATRIX_2026-03-09]]
 - [doc] [[docs/design/archive(phase 4)/primary intelligence.txt|primary intelligence]]
 - [doc] [[docs/reference/HUMAN_GUIDES/05_PROJECT_CONTINUITY_AND_MEMORY|Project Continuity and Memory]]
-- [doc] [[docs/reference/HUMAN_GUIDES/README|README - reference/HUMAN_GUIDES]]
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
 - [doc] [[docs/PROOFS/Phase-4/Runtime_matrix_audit|Runtime_matrix_audit]]
