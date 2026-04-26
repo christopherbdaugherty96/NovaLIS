@@ -48,6 +48,7 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 - [Command examples](reference/HUMAN_GUIDES/08_COMMAND_EXAMPLES.md)
 - [Safety and trust](reference/HUMAN_GUIDES/06_SAFETY_AND_TRUST.md)
 - [Daily workflows](reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS.md)
+- [Nova session reference summary](future/NOVA_SESSION_REFERENCE_SUMMARY_2026-04-26.md) - full reference summary of the 2026-04-26 planning/docs session, including current truth, future stack, OpenClaw, ElevenLabs, Gemma, Google connectors, and next execution path.
 - [OpenClaw setup and runtime guide](reference/HUMAN_GUIDES/28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27.md) - plain-language current truth: OpenClaw is active as bounded home-agent/worker foundations today and becomes Nova’s hands only after mediator, envelope, approval, and receipt hardening.
 - [Nova Google connector direction final lock](future/NOVA_GOOGLE_CONNECTOR_DIRECTION_FINAL_LOCK_2026-04-26.md) - short final lock for Google onboarding: Google connects data, Nova governs action.
 - [Nova Google account and connector onboarding plan](future/NOVA_GOOGLE_ACCOUNT_AND_CONNECTOR_ONBOARDING_PLAN.md) - identity-first Google sign-in and scoped connector plan for Calendar, Gmail, Drive, and Contacts under Nova governance.
