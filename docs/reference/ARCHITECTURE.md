@@ -82,6 +82,19 @@ Runtime state includes ledger data, model version lock, settings, memory, usage 
 
 ---
 
+## Trust Receipt API
+
+Nova exposes a read-only action receipt surface that reads the append-only ledger and returns recent governed-action events:
+
+- `GET /api/trust/receipts?limit=N` — last N receipt-worthy events (default 20, max 100), newest first
+- `GET /api/trust/receipts/summary` — quick summary for dashboard badges
+
+Receipt-worthy events include: `ACTION_COMPLETED`, `ACTION_ATTEMPTED`, `EMAIL_DRAFT_CREATED`, `OPENCLAW_ACTION_APPROVED`/`DENIED`, `SCREEN_CAPTURE_COMPLETED`, `MEMORY_ITEM_SAVED`, and related completion events.
+
+This is the backend for the Trust Panel surface. The Trust Panel dashboard UI component is not yet built; the data is available at the API layer.
+
+---
+
 ## Runtime Docs And Drift Checks
 
 Nova prevents docs drift with generated runtime docs:
