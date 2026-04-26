@@ -29,7 +29,7 @@ Updated: 2026-04-22
 
 ---
 
-## Status Table (as of 2026-04-18)
+## Status Table (as of 2026-04-25)
 
 | ID | Capability | P1 | P2 | P3 | P4 | P5 | Lock | Priority |
 |---|---|---|---|---|---|---|---|---|
@@ -59,7 +59,7 @@ Updated: 2026-04-22
 | 62 | external_reasoning_review | pending | pending | pending | pending | pending | open | Medium |
 | 63 | openclaw_execute | pending | pending | pending | pending | pending | open | Medium |
 | 64 | send_email_draft | pass | pass | pass | pass | pending | open | **Highest** |
-| 65 | shopify_intelligence_report | pass | pass | pending | pending | pending | open | High |
+| 65 | shopify_intelligence_report | pass | pass | pass | pass | pending | open | High |
 
 ---
 

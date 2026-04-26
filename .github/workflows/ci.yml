@@ -48,3 +48,45 @@ jobs:
           PYTHONPATH: nova_backend
         run: |
           pytest nova_backend/tests -q --maxfail=5
+
+  # Windows job: verifies that the entry point resolves, adversarial suite
+  # passes, and certification tests pass on the primary shipping platform.
+  # Platform-specific executors (brightness, media, file system) need a live
+  # Windows environment — this catches regressions that the ubuntu job cannot.
+  test-windows:
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.10"]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: Install package + dev extras
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e ".[dev]"
+
+      - name: Verify nova-start entry point resolves
+        run: |
+          python -c "from src.brain_server import main; assert callable(main)"
+
+      - name: Pytest — adversarial suite (Windows)
+        env:
+          PYTHONPATH: nova_backend
+        run: |
+          pytest nova_backend/tests/adversarial -q --tb=short
+
+      - name: Pytest — certification suite (Windows)
+        env:
+          PYTHONPATH: nova_backend
+        run: |
+          pytest nova_backend/tests/certification -q --tb=short --maxfail=5
