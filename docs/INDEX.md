@@ -49,6 +49,7 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 - [Daily workflows](reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS.md)
 - [Nova Voice-First Assistant direction](future/NOVA_VOICE_FIRST_ASSISTANT_DIRECTION.md) - future direction and TODOs for making voice the primary interface, with text as review/edit fallback and dashboard as approval/action-history control.
 - [Nova ElevenLabs Voice Integration Plan](future/NOVA_ELEVENLABS_VOICE_INTEGRATION_PLAN.md) - researched plan for optional governed ElevenLabs TTS/STT/agent capabilities, voice budgets, provider interfaces, and safety constraints.
+- [Nova Voice-First / ElevenLabs final review](future/NOVA_VOICE_FIRST_ELEVENLABS_FINAL_REVIEW_2026-04-26.md) - final decision summary: voice-first is core, ElevenLabs is optional/premium, and Nova keeps authority, approvals, logs, and execution boundaries.
 - [Nova Role-Based Assistant core vision](future/NOVA_ROLE_BASED_ASSISTANT_CORE_VISION.md) - umbrella future direction: home, work, everyday tasks, business roles, and governed authority under user rules.
 - [Nova Role-Based Assistant decision record](future/NOVA_ROLE_BASED_ASSISTANT_DECISION_RECORD_2026-04-26.md) - accepted umbrella product decision: Nova is a role-based governed assistant, not only a small-business or CRM product.
 - [Nova Everyday Task Service expansion](future/NOVA_EVERYDAY_TASK_SERVICE_EXPANSION_2026-04-26.md) - broader service direction for everyday digital tasks, forms, email review, basic work help, and eventual lightweight CRM.
