@@ -62,15 +62,16 @@ After the merge, three hardening items landed directly on main:
 ## Current repo state
 
 **Branch:** `main`  
-**HEAD:** `fcc8c64` — Regenerate runtime docs and fix drift check violations in README
+**HEAD:** `b1434e2` — Second-pass: sync docs and close BackLog hardening items
 
 **Recent commits:**
 ```
+b1434e2 Second-pass: sync docs and close BackLog hardening items
+8459997 Land stranded 2026-04-25 audit docs and QUICKSTART improvements
+8dc1e07 Add session-close handoff: cap 64 signoff ready
 fcc8c64 Regenerate runtime docs and fix drift check violations in README
 83c7474 Harden trust receipt store and add loopback guard
 edec11f Merge pull request #57 from restore/trust-receipts-cap65
-6b36090 Second-pass corrections — docs sync and verify_windows fix
-7aaf867 Trust receipt backend, cap 65 P3/P4, Windows CI
 ```
 
 **Certification status:**
@@ -82,8 +83,9 @@ edec11f Merge pull request #57 from restore/trust-receipts-cap65
 
 **Test suite:**
 ```
-18 receipt_store unit tests  — pass
-86 certification tests        — pass
+18 receipt_store unit tests   — pass
+104 trust + certification     — pass
+1547 full suite (excl sim)    — pass
 runtime drift check           — pass
 git status                    — clean
 ```
@@ -179,12 +181,7 @@ Same doc updates as cap 64 — STATUS.md, CAPABILITY_MATURITY.md, Now.md.
 
 Blocked at `C:\Program Files\Nova\bootstrap.log` from the target VM.
 
-Resume from:
-```
-docs/capability_verification/live_checklists/cap_64_send_email_draft.md
-```
-
-Wait — wrong file. Resume from the installer path. Specifically: re-run the Windows installer on the clean VM, capture `C:\Program Files\Nova\bootstrap.log`, inspect the failure point.
+Re-run the Windows installer on the clean VM, capture `C:\Program Files\Nova\bootstrap.log`, and inspect the failure point. The improved bootstrap diagnostics (fail-fast on venv/pip/startup errors) landed in the 2026-04-18 pass and should surface the root cause on next run.
 
 ---
 

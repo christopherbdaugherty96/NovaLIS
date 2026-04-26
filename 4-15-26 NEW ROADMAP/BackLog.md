@@ -16,18 +16,15 @@ Context: the minimum viable trust receipt backend/API was added, but a fresh rev
 
 ### Medium Priority
 
-- [ ] Add prerequisite checks to `scripts/verify_windows.ps1`.
-  - Confirm `python` is available before attempting any steps.
-  - Confirm the command is being run from the project root or fail with a clear message.
-  - Confirm `pytest` is importable or explain how to activate/create the virtual environment.
-  - Print Python/pip versions for easier Windows troubleshooting.
+- [x] Add prerequisite checks to `scripts/verify_windows.ps1`. *(done 2026-04-26, commit b1434e2)*
+  - Python ≥ 3.10 check, project-root check, pytest importable check, Python/pip/pytest version printout.
 
-- [ ] Add a short `ci.yml` comment explaining why the Windows job runs specific suites rather than the full test suite.
-  - Current reason: known pre-existing simulation pathing issue (`test_nova_trial_runner` hardcodes a relative path that fails when `PYTHONPATH=nova_backend`). Not caused by trust receipt or Cap 65 work.
+- [x] Add a short `ci.yml` comment explaining why the Windows job runs specific suites rather than the full test suite. *(done 2026-04-26, commit b1434e2)*
+  - Comment added above `test-windows:` job.
 
-- [ ] Add troubleshooting sections to the Cap 64 and Cap 65 live checklists.
-  - Cap 64: missing/default mail client, mailto behavior, ledger verification, confirmation gate expectations.
-  - Cap 65: missing Shopify domain/token, token scope failures, NetworkMediator refusal, GraphQL errors, empty store data.
+- [x] Add troubleshooting sections to the Cap 64 and Cap 65 live checklists. *(done 2026-04-26, commit b1434e2)*
+  - Cap 64: mail client setup, `@` encoding, blank body, Trust page not built, confirmation gate, certify errors.
+  - Cap 65: domain format, token scopes, NetworkMediator refusal, GraphQL/empty data, Test 3 restart, period defaults, certify errors.
 
 ### Lower Priority / Design Follow-Up
 
