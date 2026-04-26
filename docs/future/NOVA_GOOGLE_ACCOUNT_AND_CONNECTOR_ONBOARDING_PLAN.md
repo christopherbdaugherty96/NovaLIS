@@ -690,6 +690,53 @@ Nova did not delete or modify files.
 
 ---
 
+## Implementation Readiness Gates
+
+Do not start connector implementation until these gates are understood.
+
+### Gate 1 — Identity Boundary
+
+- [ ] Google Sign-In requests only identity scopes at first login.
+- [ ] Local-only mode still exists.
+- [ ] User profile creation does not imply connector access.
+- [ ] Connector setup is a separate screen/step.
+
+### Gate 2 — Connector Registry
+
+- [ ] Each connector has a status record.
+- [ ] Granted scopes are stored and visible.
+- [ ] Disconnect/revoke is supported.
+- [ ] Allowed actions, blocked actions, and approval requirements are explicit.
+
+### Gate 3 — Token Safety
+
+- [ ] Refresh tokens are encrypted or stored in OS credential storage.
+- [ ] Tokens are never logged.
+- [ ] Token refresh is auditable.
+- [ ] Expired/revoked tokens fail safely.
+
+### Gate 4 — Governance Boundary
+
+- [ ] Connector reads go through a connector mediator or equivalent boundary.
+- [ ] Draft/mutation actions create approval records.
+- [ ] Connector actions are classified as READ, DRAFT, REMOTE_MUTATION, EXTERNAL_WRITE, DESTRUCTIVE, or FINANCIAL.
+- [ ] No connector action bypasses Nova capability/governance checks.
+
+### Gate 5 — Receipts / Trust Output
+
+- [ ] Connector reads create ledger/trust events.
+- [ ] Drafts and proposed actions create receipts.
+- [ ] User-facing output includes non-action statements such as “nothing was sent” or “nothing was changed.”
+
+### Gate 6 — First Connector MVP
+
+- [ ] Calendar read-only is implemented before Gmail/Drive write scopes.
+- [ ] Calendar summary proves value without mutation.
+- [ ] Receipts show what was accessed.
+- [ ] Event creation/editing remains disabled until approval queue is ready.
+
+---
+
 ## How This Fits The Final Stack
 
 Example future flow:
