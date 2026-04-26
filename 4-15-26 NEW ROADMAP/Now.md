@@ -15,6 +15,7 @@
 - CI: workflow exists, but GitHub Actions is blocked by account billing lock
 - Landing page: deployed, but Formspree waitlist activation is still pending
 - Immediate priority: cap 64 signoff, installer VM validation, waitlist activation, and demo-ready README assets
+- Follow-up hardening that should not interrupt this close-out path is tracked in [BackLog.md](BackLog.md)
 
 ---
 
