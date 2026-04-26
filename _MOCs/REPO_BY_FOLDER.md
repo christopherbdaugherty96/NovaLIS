@@ -36,7 +36,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[.gitignore|.gitignore]]
   summary: ----------------------------
 
-## 4-15-26 NEW ROADMAP (6)
+## 4-15-26 NEW ROADMAP (5)
 
 - [doc] [[4-15-26 NEW ROADMAP/BackLog|BackLog]]
 - [doc] [[4-15-26 NEW ROADMAP/CHANGELOG|Nova — Roadmap Execution Changelog]]
@@ -47,8 +47,6 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: This document is frozen. It is the strategic baseline and long-term plan captured on 2026-04-15, not the authoritative live-state do...
 - [doc] [[4-15-26 NEW ROADMAP/Now|NOW.md - Current Sprint (Week 1-4)]]
   summary: Sprint Goal: Non-developer installs and runs Nova in 5 minutes.
-- [doc] [[4-15-26 NEW ROADMAP/review.txt|review]]
-  summary: Given the request context, I'm performing a deep audit of the provided planning and audit artifacts (DEEPCODEAUDIT.md, MASTERROADMAP.md, and...
 
 ## _MOCs (11)
 
@@ -96,7 +94,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (637)
+## docs (669)
 
 - [doc] [[docs/architecture/README|Architecture Docs]]
   summary: This folder is for stable architecture explanations and diagrams.
@@ -336,6 +334,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: 1️⃣ Drop-in File (VERBATIM, READY TO COMMIT)
 - [doc] [[docs/archive/README_GOVERNANCE|README_GOVERNANCE - docs/archive]]
   summary: \# NovaLIS Governance Vault
+- [doc] [[docs/archive/roadmap_pre_execution_review_2026-04-15.txt|roadmap_pre_execution_review_2026-04-15]]
+  summary: Given the request context, I'm performing a deep audit of the provided planning and audit artifacts (DEEPCODEAUDIT.md, MASTERROADMAP.md, and...
 - [code] [[docs/archive/root-c07b4afz.css|root-c07b4afz - docs/archive]]
   summary: ! tailwindcss v4.1.13 | MIT License | https://tailwindcss.com */
 - [doc] [[docs/archive/runtime_pointer_README|runtime_pointer_README]]
@@ -344,8 +344,46 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: @layer base{:where([data-silk~=b0]:not([data-silk~=g0])){--silk-defaults:initial;position:var(--silk-defaults,relative)}:where([data-silk~=g...
 - [code] [[docs/archive/table-components-gjyj5koo.css|table-components-gjyj5koo - docs/archive]]
   summary: .TyagGW_tableContainer{--thread-content-width:min(calc(100cqw - 2*var(--thread-content-margin,0)),var(--thread-content-max-width));--thread-...
+- [doc] [[docs/audits/2026-04-24/NovaLIS_Audit_2026-04-24|NovaLIS Audit Report — Architecture, Product, and Launch Readiness]]
+  summary: Date: 2026-04-24
+- [doc] [[docs/audits/2026-04-24/NovaLIS_Second_Pass_Code_Verification_2026-04-24|NovaLIS Second-Pass Code Verification Audit]]
+  summary: Date: 2026-04-24
+- [doc] [[docs/audits/2026-04-24/NovaLIS_Third_Final_Readonly_Audit_2026-04-24|NovaLIS Third Final Read-Only Audit]]
+  summary: Status: Review-only pass. No files deleted, moved, or renamed.
+- [doc] [[docs/audits/2026-04-24/NovaLIS_Wide_Final_Audit_2026-04-24|NovaLIS Wide Final Audit — Architecture, Runtime, Product, Launch, and Program Readiness]]
+  summary: Date: 2026-04-24
+- [doc] [[docs/audits/2026-04-24/SESSION_UPDATE_LOG_2026-04-24|Session Update Log — 2026-04-24]]
+  summary: Purpose: traceable record of documentation and audit work completed in this session.
+- [doc] [[docs/audits/2026-04-25/NovaLIS_Deep_Second_Pass_Audit_2026-04-25|NovaLIS Deep Second-Pass Audit]]
+  summary: Date: 2026-04-25
+- [doc] [[docs/audits/2026-04-25/NovaLIS_Final_Confirmation_Pass_2026-04-25|NovaLIS Final Confirmation Pass]]
+  summary: Date: 2026-04-25
+- [doc] [[docs/audits/2026-04-25/NovaLIS_Fourth_Pass_Audit_2026-04-25|NovaLIS Fourth Pass Audit — 2026-04-25]]
+  summary: Scope: Security surface, LLM version locking, OpenClaw thinking loop internals, CI platform gap, pyproject.toml dependency correctness, rema...
+- [doc] [[docs/audits/2026-04-25/NovaLIS_Third_Deep_Wide_Audit_2026-04-25|NovaLIS Third Deep Wide Audit]]
+  summary: Date: 2026-04-25
 - [doc] [[docs/audits/SESSION_DEEP_AUDIT_2026-04-22|Nova Consolidated Deep Audit — 2026-04-22 (Third Pass Reconciliation)]]
   summary: This pass reconciles the full review session against the repo's current documents, registry, and visible runtime-truth surfaces. It is inten...
+- [code] [[docs/business/website_llc/demo_hub/about-christopher.html|about-christopher]]
+  summary: <!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Christo...
+- [code] [[docs/business/website_llc/demo_hub/index.html|index - website_llc/demo_hub]]
+  summary: <!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Webs...
+- [code] [[docs/business/website_llc/demo_hub/restaurant-demo.html|restaurant-demo]]
+  summary: <!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Restaur...
+- [doc] [[docs/business/website_llc/WEBSITE_LLC_EXECUTION_SYSTEM_2026-04-23|Website LLC Execution System (2026-04-23)]]
+  summary: Turn Website LLC into a real, repeatable service business.
+- [code] [[docs/business/website_llc/website_llc_landing_page.html|website_llc_landing_page]]
+  summary: <!DOCTYPE html>
+- [doc] [[docs/business/website_llc/WEBSITE_LLC_REVENUE_ASSETS_2026-04-23|Website LLC Revenue Assets (2026-04-23)]]
+  summary: Simple assets that help turn outreach into conversations and conversations into paying clients.
+- [doc] [[docs/capability_verification/basic_conversation_understanding_2026-04-22|Basic Conversation and Understanding Verification - 2026-04-22]]
+  summary: This is a platform/runtime verification slice, not a numbered governed action capability. It covers:
+- [doc] [[docs/capability_verification/basic_user_command_simulation_2026-04-22|Basic User Command Simulation - 2026-04-22]]
+  summary: Live WebSocket simulation of first-user style commands:
+- [doc] [[docs/capability_verification/cap_16_governed_web_search_simulation_2026-04-23|Capability 16 - Governed Web Search Simulation - 2026-04-23]]
+  summary: Live WebSocket and automated verification for governedwebsearch.
+- [doc] [[docs/capability_verification/capability_gap_map_2026-04-23|Capability Gap Map - 2026-04-23]]
+  summary: - Local branch: main
 - [doc] [[docs/capability_verification/FRAMEWORK|Nova — Capability Verification Framework]]
   summary: Updated: 2026-04-17
 - [doc] [[docs/capability_verification/live_checklists/cap_16_governed_web_search|Live Test Checklist — Cap 16: governed_web_search]]
@@ -402,12 +440,18 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Phase 5 of 6 · Priority: HIGH (externaleffect=True, persistentchange)
 - [doc] [[docs/capability_verification/live_checklists/README|Live Test Checklists]]
   summary: This folder contains one checklist per capability. You run through the
+- [doc] [[docs/capability_verification/live_dashboard_basic_user_smoke_2026-04-23|Live Dashboard Basic User Smoke - 2026-04-23]]
+  summary: Basic live dashboard smoke test using Playwright against local runtime at http://127.0.0.1:8000.
+- [doc] [[docs/capability_verification/live_news_headlines_2026-04-23|Live News And Headlines Verification - 2026-04-23]]
+  summary: Live dashboard testing against the served app at http://127.0.0.1:8000/, using ordinary user-style prompts:
+- [doc] [[docs/capability_verification/news_headlines_simulation_2026-04-22|News and Headlines Verification - 2026-04-22]]
+  summary: Live WebSocket and automated verification for Nova's news surfaces:
 - [doc] [[docs/capability_verification/STATUS|Nova - Capability Verification Status]]
-  summary: Updated: 2026-04-21
+  summary: Updated: 2026-04-25
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: bfdbab6a6bd01bc2d870b1997e8b5e900f482515f1191e5e83b808f6dd460d18
+  summary: Runtime Fingerprint: c77c97809e94ab51d766fa8e6e8d8ea2065f8a7ff0eee1548ce08472a55cb22a
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -431,7 +475,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 1f8a8c93ab6f31140a27798e1cce33cc1da18d824e360432944398764ffe1f15
+  summary: - runtimesurfacehash: 583170894d7489d5c8f16ab02be99f25632a89ff0fa1289d26b1614cc6391c4e
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -871,6 +915,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Nova Commerce And Marketing Operator - Decision Note
 - [doc] [[docs/future/EXTERNAL_LANDSCAPE_NOTES_2026-04-20|External Landscape Notes]]
   summary: Status: Time-sensitive external comparison
+- [doc] [[docs/Future/FarFuture/PORTFOLIO_OPERATING_MODEL_2026-04-22|Portfolio Operating Model (2026-04-22)]]
+  summary: This document is a long-term portfolio reference only.
 - [doc] [[docs/future/governed_content_operator|Nova Governed Content Operator - Implementation Blueprint]]
   summary: Version: 2.2
 - [doc] [[docs/future/HYDROGEN_OXYGEN_STOREFRONT_BUILD_RULESET_2026-04-12|Hydrogen And Oxygen Storefront Build Rules]]
@@ -910,8 +956,16 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[docs/product/assets/report-output.png|report-output.png]]
 - [asset] [[docs/product/assets/trust-governance.png|trust-governance.png]]
+- [doc] [[docs/product/CAPABILITY_MATURITY|Capability Maturity Model]]
+  summary: Use this model to describe capabilities more honestly than a simple enabled/disabled state.
+- [doc] [[docs/product/previews/DEMO_PREVIEW_EXCELLENCE_STANDARD_2026-04-23|Demo Preview Excellence Standard (2026-04-23)]]
+  summary: A demo should not only function.
+- [doc] [[docs/product/previews/DEMO_SHOWCASE_ASSETS_2026-04-23|Demo Showcase Assets (2026-04-23)]]
+  summary: Do not try to show everything.
 - [doc] [[docs/product/README|Product Docs]]
   summary: This folder is for product-facing explanations: what Nova is, who it is for, why it matters, screenshots, comparisons, and roadmap summaries...
+- [doc] [[docs/product/USER_READY_STATUS|User Ready Status]]
+  summary: This page translates internal phase/capability status into plain-language user readiness.
 - [doc] [[docs/product/visual_proof|NovaLIS Visual Proof]]
   summary: These screenshots show current local UI surfaces captured from a running NovaLIS development instance.
 - [doc] [[docs/PROOFS/CAPABILITY_VERIFICATION_AUDIT_2026-03-25|CAPABILITY_VERIFICATION_AUDIT_2026-03-25]]
@@ -1236,7 +1290,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Updated: 2026-04-05
 - [doc] [[docs/PROOFS/Phase-8/PHASE_8_SYSTEM_MAP_AND_METERED_OPENAI_TASK_REPORT_RUNTIME_SLICE_2026-03-27|Phase 8 Proof - System Map and Metered OpenAI Task-Report Slice]]
   summary: Updated: 2026-03-27
-- [doc] [[docs/PROOFS/README|README - docs/PROOFS]]
+- [doc] [[docs/PROOFS/README|README]]
   summary: ﻿# Proofs Pointer
 - [doc] [[docs/PROOFS/unlock-decisions/phase 3.5/GOVERNOR SPINE INSTALLATION PROOF.txt|🔒 NOVA PHASE-3.5 — GOVERNOR SPINE INSTALLATION PROOF - unlock-decisions/phase 3.5]]
   summary: GOV-002 installs the Governor structural spine into the Nova runtime without unlocking execution authority.
@@ -1291,7 +1345,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/reference/HUMAN_GUIDES/06_SAFETY_AND_TRUST|06_SAFETY_AND_TRUST]]
   summary: ﻿# Safety and Trust
 - [doc] [[docs/reference/HUMAN_GUIDES/07_CURRENT_STATE|Current State]]
-  summary: Updated: 2026-04-20
+  summary: Updated: 2026-04-23
 - [doc] [[docs/reference/HUMAN_GUIDES/08_COMMAND_EXAMPLES|Command Examples]]
   summary: Updated: 2026-03-27
 - [doc] [[docs/reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS|Daily Workflows]]
@@ -1333,7 +1387,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/reference/HUMAN_GUIDES/27_KEY_SKILL_RELIABILITY_MATRIX_2026-03-27|Key Skill Reliability Matrix]]
   summary: Updated: 2026-03-27
 - [doc] [[docs/reference/HUMAN_GUIDES/28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27|OpenClaw Setup and Runtime Guide]]
-  summary: Updated: 2026-03-27
+  summary: Updated: 2026-04-23
 - [doc] [[docs/reference/HUMAN_GUIDES/29_END_TO_END_VALIDATION_CHECKLIST_2026-03-28|End-To-End Validation Checklist]]
   summary: Updated: 2026-03-28
 - [doc] [[docs/reference/HUMAN_GUIDES/30_PERSONALITY_SYSTEM_ARCHITECTURE|Nova Personality System Architecture]]
@@ -1344,8 +1398,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Updated: 2026-04-13
 - [doc] [[docs/reference/HUMAN_GUIDES/33_CAPABILITY_VERIFICATION_GUIDE|Capability Verification Guide]]
   summary: Guide 33 of the Human Guides series
-- [doc] [[docs/reference/HUMAN_GUIDES/README|README - reference/HUMAN_GUIDES]]
-  summary: ﻿# Nova Human Guides
+- [doc] [[docs/reference/HUMAN_GUIDES/README|Nova Human Guides]]
+  summary: Updated: 2026-04-23
 - [doc] [[docs/reference/inactive/README|Inactive Reference Packets]]
   summary: Updated: 2026-04-12
 - [doc] [[docs/reference/INTRODUCTION|Introduction To Nova]]
@@ -1362,6 +1416,14 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: This test harness runs scripted conversations through Nova's routed conversation stack:
 - [doc] [[docs/testing/SIMULATION_ANALYTICS|Simulation Analytics]]
   summary: Nova's simulation analytics layer is post-run only and operates entirely in test/observability scope.
+- [doc] [[docs/TODO/DIAMOND_PREVIEW_RELEASE_STANDARD_2026-04-23|Diamond Preview Release Standard (2026-04-23)]]
+  summary: Nova should not feel merely functional. It should feel premium, stable, clear, and intentionally designed.
+- [doc] [[docs/TODO/GOOGLE_CONNECT_EMAIL_OAUTH_FUTURE_2026-04-22|TODO — Google Connect / Email OAuth Integration (2026-04-22)]]
+  summary: Allow users to connect a Google account inside Nova through a familiar sign-in flow instead of manual setup.
+- [doc] [[docs/todo/NOVA_RECONCILIATION_TODO_2026-04-22|Nova Reconciliation TODO — 2026-04-22]]
+  summary: This document captures the concrete repair work identified during the full April 22 audit session.
+- [doc] [[docs/TODO/PORTFOLIO_PRIORITY_SWITCH_WEBSITE_LLC_2026-04-22|Website LLC — Primary First Revenue Engine]]
+  summary: Website LLC is the first and main revenue engine in the portfolio.
 - [code] [[docs/tools/check_quarantine.ps1|check_quarantine]]
   summary: ﻿Write-Host "=== Legacy Brain Isolation Check ===" -ForegroundColor Cyan
 
@@ -2698,6 +2760,11 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 
 - [code] [[stop_nova.sh|stop_nova - .]]
   summary: set -euo pipefail
+
+## TODO.md (1)
+
+- [doc] [[TODO|Nova TODO]]
+  summary: Updated: 2026-04-23
 
 ## USE_CASES.md (1)
 

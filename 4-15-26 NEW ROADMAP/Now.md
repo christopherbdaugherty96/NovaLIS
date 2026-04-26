@@ -30,12 +30,17 @@
 
 ## This Week
 
-- [ ] Run the cap 64 live checklist end-to-end
-- [ ] Inspect `C:\Program Files\Nova\bootstrap.log`
+- [ ] Run the cap 64 live checklist end-to-end → sign off → lock (first locked capability) — checklist at `docs/capability_verification/live_checklists/cap_64_send_email_draft.md`
+- [ ] Inspect `C:\Program Files\Nova\bootstrap.log` on the target VM (requires clean Windows VM install run)
 - [ ] Complete clean Windows VM installer validation
+- [x] Trust receipt backend — `GET /api/trust/receipts` live; reads ledger, returns last N governed action events
 - [ ] Activate Formspree for the landing page waitlist
 - [ ] Add a screenshot or demo GIF to README
 - [ ] Add CI badges after the GitHub billing issue is resolved
+- [x] Cap 65 P3 integration tests — 16 tests, all pass
+- [x] Cap 65 P4 API tests — 10 tests, all pass (includes trust receipt endpoint smoke)
+- [x] Windows CI job added to `.github/workflows/ci.yml`
+- [x] `scripts/verify_windows.ps1` — local Windows verification script (use when billing-locked)
 
 ---
 
@@ -130,6 +135,20 @@
 - Remaining: activate the Formspree endpoint and decide later whether public hosting needs a dedicated domain
 
 ---
+
+### Cap 65 (shopify_intelligence_report)
+
+- P1, P2, P3, P4 certified (P3 16 tests, P4 10 tests — all pass as of 2026-04-25)
+- Remaining: P5 live sign-off — checklist at `docs/capability_verification/live_checklists/cap_65_shopify_intelligence_report.md`
+- Requires `NOVA_SHOPIFY_SHOP_DOMAIN` and `NOVA_SHOPIFY_ACCESS_TOKEN` for live test
+- Run P5 after cap 64 is locked
+
+### Trust Backend (minimum viable action receipt)
+
+- `src/trust/receipt_store.py` — reads ledger tail, filters for receipt-worthy events, returns structured list
+- `GET /api/trust/receipts` — returns last N receipts as JSON; `GET /api/trust/receipts/summary` for badge
+- Next: add a dashboard card that pulls from `/api/trust/receipts` and renders the last 5 actions
+- The Trust Panel (full inline confirmation surface) remains future work
 
 ### OpenClaw Governance Hardening (Steps 1–4, zero behavioral impact)
 
