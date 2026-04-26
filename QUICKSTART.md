@@ -15,6 +15,17 @@ For exact runtime truth after startup, use [docs/current_runtime/CURRENT_RUNTIME
 
 Optional connector features may need additional environment variables. Core local flows should still start without those connectors.
 
+Optional features with additional requirements:
+
+| Feature | What you need |
+|---|---|
+| Voice input (STT) | Vosk model at `nova_backend/models/vosk-model-small-en-us-0.15/` |
+| Voice output (TTS) | Piper binary in PATH or at `nova_backend/tools/piper/piper.exe`; set `NOVA_PIPER_MODEL_PATH` to your `.onnx` model file |
+| Calendar snapshot | An `.ics` calendar file; configure its path via the Nova Settings connector surface |
+| Shopify intelligence | `NOVA_SHOPIFY_SHOP_DOMAIN` and `NOVA_SHOPIFY_ACCESS_TOKEN` env vars |
+
+Run `system status` after startup to see which features are active on your machine.
+
 ---
 
 ## Install
@@ -104,6 +115,12 @@ If an action is blocked:
 - check whether it needs confirmation
 - check the Trust or policy surface
 - prefer explicit wording, such as `open downloads` instead of `open it`
+
+If you need to run Nova on a non-default port or interface:
+
+- set `NOVA_HOST` to override the bind address (default: `127.0.0.1`)
+- set `NOVA_PORT` to override the port (default: `8000`)
+- Nova defaults to loopback-only; binding to a non-loopback address removes the DNS rebinding protection
 
 ---
 

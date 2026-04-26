@@ -21,6 +21,10 @@ Use this page to find the right document quickly. Runtime truth stays in generat
 - [NovaLIS Second-Pass Code Verification (2026-04-24)](audits/2026-04-24/NovaLIS_Second_Pass_Code_Verification_2026-04-24.md) - verifies prior audit claims against actual repo files and separates confirmed claims from unverified assumptions.
 - [NovaLIS Third Final Read-Only Audit (2026-04-24)](audits/2026-04-24/NovaLIS_Third_Final_Readonly_Audit_2026-04-24.md) - final non-destructive pass focused on remaining risks, onboarding clarity, and future cleanup recommendations.
 - [Session Update Log (2026-04-24)](audits/2026-04-24/SESSION_UPDATE_LOG_2026-04-24.md) - traceable record of what was completed in this session and what is recommended next.
+- [NovaLIS Deep Second-Pass Code Audit (2026-04-25)](audits/2026-04-25/NovaLIS_Deep_Second_Pass_Audit_2026-04-25.md) - code-grounded pass reading actual source files, registry JSON, trust module, test suite, installer, and roadmap; surfaces capability verification gaps and trust module stub state at time of audit.
+- [NovaLIS Final Confirmation Pass (2026-04-25)](audits/2026-04-25/NovaLIS_Final_Confirmation_Pass_2026-04-25.md) - confirms claims from prior audit passes against live repo state.
+- [NovaLIS Third Deep Wide Audit (2026-04-25)](audits/2026-04-25/NovaLIS_Third_Deep_Wide_Audit_2026-04-25.md) - wide pass covering executors, tests, voice, connectors, security, and governance surfaces.
+- [NovaLIS Fourth Pass Audit (2026-04-25)](audits/2026-04-25/NovaLIS_Fourth_Pass_Audit_2026-04-25.md) - fourth pass covering security surface, CI gaps, LLM locking, and module survey.
 - [User ready status](product/USER_READY_STATUS.md) - plain-language what works now vs experimental vs not yet ready.
 - [Capability maturity model](product/CAPABILITY_MATURITY.md) - better labels than enabled/disabled.
 

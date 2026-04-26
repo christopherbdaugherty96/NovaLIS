@@ -86,7 +86,7 @@ ___all__ = [_
 - [[nova_backend/tests/phase42/test_phase42_orchestrator_context.py|test_phase42_orchestrator_context]]
 - [[nova_backend/tests/phase42/test_phase42_runtime_lock.py|test_phase42_runtime_lock]]
 
-## `api` (10 files)
+## `api` (11 files)
 
 _Focused FastAPI route modules for Nova runtime surfaces._
 
@@ -109,6 +109,8 @@ _Focused FastAPI route modules for Nova runtime surfaces._
     - def build_profile_router(deps: Any) -> APIRouter:
 - [[nova_backend/src/api/settings_api.py|settings_api]]
     - def _sync_usage_budget(settings_snapshot: dict[str, Any]) -> None:
+- [[nova_backend/src/api/trust_api.py|trust_api]]
+    - Trust receipt API — exposes recent governed action receipts.
 - [[nova_backend/src/api/workspace_api.py|workspace_api]]
     - def build_workspace_router(deps) -> APIRouter:
 
@@ -129,7 +131,9 @@ _Focused FastAPI route modules for Nova runtime surfaces._
 - [[nova_backend/src/profiles/user_profile_store.py|user_profile_store]]
 - [[nova_backend/src/skills/calendar.py|calendar]]
 - [[nova_backend/src/tasks/notification_schedule_store.py|notification_schedule_store]]
+- [[nova_backend/src/trust/receipt_store.py|receipt_store]]
 - [[nova_backend/src/usage/provider_usage_store.py|provider_usage_store]]
+- [[nova_backend/src/utils/local_request_guard.py|local_request_guard]]
 
 ### Imported by
 
@@ -257,7 +261,6 @@ _Runtime audit utilities for NovaLIS._
 ### Imports from
 
 - [[nova_backend/src/actions/action_result.py|action_result]]
-- [[nova_backend/src/api/__init__.py|src/api]]
 - [[nova_backend/src/api/audit_api.py|audit_api]]
 - [[nova_backend/src/api/bridge_api.py|bridge_api]]
 - [[nova_backend/src/api/connections_api.py|connections_api]]
@@ -266,6 +269,7 @@ _Runtime audit utilities for NovaLIS._
 - [[nova_backend/src/api/openclaw_agent_api.py|openclaw_agent_api]]
 - [[nova_backend/src/api/profile_api.py|profile_api]]
 - [[nova_backend/src/api/settings_api.py|settings_api]]
+- [[nova_backend/src/api/trust_api.py|trust_api]]
 - [[nova_backend/src/api/workspace_api.py|workspace_api]]
 - [[nova_backend/src/audit/runtime_auditor.py|runtime_auditor]]
 - [[nova_backend/src/build_phase.py|build_phase]]
@@ -315,7 +319,8 @@ _Runtime audit utilities for NovaLIS._
 
 ### Imported by
 
-- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api]]
+- [[nova_backend/tests/certification/cap_64_send_email_draft/test_p4_api.py|test_p4_api - certification/cap_64_send_email_draft]]
+- [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
 - [[nova_backend/tests/phase5/test_thread_change_summary.py|test_thread_change_summary]]
 
 ## `build_phase` (1 files)
@@ -431,6 +436,8 @@ ___all__ = ["ConnectorPackage", "ConnectorPackageRegistry"]_
 - [[nova_backend/src/audit/runtime_auditor.py|runtime_auditor]]
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/src/executors/shopify_intelligence_report_executor.py|shopify_intelligence_report_executor]]
+- [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p3_integration.py|test_p3_integration - certification/cap_65_shopify_intelligence_report]]
+- [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
 - [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
 - [[nova_backend/tests/executors/test_shopify_intelligence_report_executor.py|test_shopify_intelligence_report_executor]]
 - [[nova_backend/tests/test_connector_package_registry.py|test_connector_package_registry]]
@@ -797,7 +804,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/src/personality/core.py|core]]
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
-- _…and 50 more_
+- _…and 51 more_
 
 ### Tests
 
@@ -1566,7 +1573,7 @@ _NovaLIS Tools Package_
 
 - [[nova_backend/tests/test_rss_fetch.py|test_rss_fetch]]
 
-## `trust` (3 files)
+## `trust` (4 files)
 
 ___all__ = ["FailureLadder", "FailureLadderThresholds", "normalize_trust_status"]_
 
@@ -1575,19 +1582,28 @@ ___all__ = ["FailureLadder", "FailureLadderThresholds", "normalize_trust_status"
 - [[nova_backend/src/trust/__init__.py|src/trust]]
 - [[nova_backend/src/trust/failure_ladder.py|failure_ladder]]
     - @dataclass(frozen=True)
+- [[nova_backend/src/trust/receipt_store.py|receipt_store]]
+    - Minimum viable action receipt store.
 - [[nova_backend/src/trust/trust_contract.py|trust_contract]]
     - ALLOWED_MODES = {"Local-only", "Online"}
 
+### Imports from
+
+- [[nova_backend/src/utils/persistent_state.py|persistent_state]]
+
 ### Imported by
 
+- [[nova_backend/src/api/trust_api.py|trust_api]]
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/tests/phase45/test_failure_ladder.py|test_failure_ladder]]
 - [[nova_backend/tests/phase45/test_trust_contract.py|test_trust_contract]]
+- [[nova_backend/tests/trust/test_receipt_store.py|test_receipt_store]]
 
 ### Tests
 
 - [[nova_backend/tests/phase45/test_failure_ladder.py|test_failure_ladder]]
 - [[nova_backend/tests/phase45/test_trust_contract.py|test_trust_contract]]
+- [[nova_backend/tests/trust/test_receipt_store.py|test_receipt_store]]
 
 ## `usage` (2 files)
 
@@ -1647,6 +1663,7 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 
 ### Imported by
 
+- [[nova_backend/src/api/trust_api.py|trust_api]]
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/src/connections/connections_store.py|connections_store]]
 - [[nova_backend/src/executors/news_intelligence_executor.py|news_intelligence_executor]]
@@ -1661,8 +1678,7 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 - [[nova_backend/src/memory/quick_corrections.py|quick_corrections]]
 - [[nova_backend/src/memory/user_memory_store.py|user_memory_store]]
 - [[nova_backend/src/nova_config.py|nova_config]]
-- [[nova_backend/src/openclaw/agent_runtime_store.py|agent_runtime_store]]
-- _…and 11 more_
+- _…and 13 more_
 
 ## `validation` (6 files)
 
