@@ -43,6 +43,7 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 - [Command examples](reference/HUMAN_GUIDES/08_COMMAND_EXAMPLES.md)
 - [Safety and trust](reference/HUMAN_GUIDES/06_SAFETY_AND_TRUST.md)
 - [Daily workflows](reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS.md)
+- [Nova Role-Based Assistant core vision](future/NOVA_ROLE_BASED_ASSISTANT_CORE_VISION.md) - umbrella future direction: home, work, everyday tasks, business roles, and governed authority under user rules.
 - [Nova Everyday Task Service expansion](future/NOVA_EVERYDAY_TASK_SERVICE_EXPANSION_2026-04-26.md) - broader service direction for everyday digital tasks, forms, email review, basic work help, and eventual lightweight CRM.
 - [Nova Solo Business Assistant product vision](future/NOVA_SOLO_BUSINESS_ASSISTANT_PRODUCT_VISION.md) - first focused future product direction for independents and small local businesses.
 - [Nova Solo Business Assistant implementation notes](future/NOVA_SOLO_BUSINESS_ASSISTANT_IMPLEMENTATION_NOTES.md) - staged build guidance for the Solo Business Assistant MVP without overstating current runtime truth.
