@@ -13,6 +13,7 @@ _ALLOWED_LOOPBACK_HOSTS = {
 _LOCAL_ONLY_API_PREFIXES = (
     "/api/memory",
     "/api/settings",
+    "/api/trust",
     "/api/workspace",
     "/api/openclaw/agent",
 )
