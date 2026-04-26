@@ -49,6 +49,7 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 - [Safety and trust](reference/HUMAN_GUIDES/06_SAFETY_AND_TRUST.md)
 - [Daily workflows](reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS.md)
 - [OpenClaw setup and runtime guide](reference/HUMAN_GUIDES/28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27.md) - plain-language current truth: OpenClaw is active as bounded home-agent/worker foundations today and becomes Nova’s hands only after mediator, envelope, approval, and receipt hardening.
+- [Nova Google account and connector onboarding plan](future/NOVA_GOOGLE_ACCOUNT_AND_CONNECTOR_ONBOARDING_PLAN.md) - identity-first Google sign-in and scoped connector plan for Calendar, Gmail, Drive, and Contacts under Nova governance.
 - [Nova OpenClaw hands-layer implementation plan](future/NOVA_OPENCLAW_HANDS_LAYER_IMPLEMENTATION_PLAN.md) - build sequence and test gates for turning current OpenClaw foundations into Nova-governed hands without uncontrolled authority.
 - [Nova Full Stack Direction final lock](future/NOVA_FULL_STACK_DIRECTION_FINAL_LOCK_2026-04-26.md) - short final lock for the future stack: ElevenLabs speaks, Gemma reasons, OpenClaw acts, Nova governs.
 - [Nova Voice Stack operating model](future/NOVA_VOICE_STACK_OPERATING_MODEL_2026-04-26.md) - corrected future truth/goals: Gemma reasons, ElevenLabs speaks, OpenClaw acts, Nova governs, with local voice/text fallback and staged transition after stabilization.
