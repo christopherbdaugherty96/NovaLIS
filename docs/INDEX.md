@@ -79,6 +79,7 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 
 - [Current roadmap](../4-15-26%20NEW%20ROADMAP/Now.md) - active blockers and current sprint path.
 - [Trust receipt recovery handoff](../4-15-26%20NEW%20ROADMAP/HANDOFF_2026-04-26_TRUST_RECEIPT_RECOVERY.md) - exact recovery steps for the stranded trust receipt / Cap 65 implementation.
+- [Cap 64 signoff ready handoff](../4-15-26%20NEW%20ROADMAP/HANDOFF_2026-04-26_CAP64_SIGNOFF_READY.md) - full session close: what landed (trust receipt hardening, runtime docs, drift fix), cap 64 P5 live checklist steps, and sequenced next steps through first role-based shell.
 - [Backlog](../4-15-26%20NEW%20ROADMAP/BackLog.md) - follow-up hardening that should not interrupt the active close-out path.
 - [Master roadmap](../4-15-26%20NEW%20ROADMAP/MasterRoadMap.md) - broader roadmap context.
 - [Repo improvement action plan](future/repo_improvement_action_plan.md)
