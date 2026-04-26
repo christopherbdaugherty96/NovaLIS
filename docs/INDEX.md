@@ -25,6 +25,7 @@ Use this page to find the right document quickly. Runtime truth stays in generat
 - [NovaLIS Final Confirmation Pass (2026-04-25)](audits/2026-04-25/NovaLIS_Final_Confirmation_Pass_2026-04-25.md) - confirms claims from prior audit passes against live repo state.
 - [NovaLIS Third Deep Wide Audit (2026-04-25)](audits/2026-04-25/NovaLIS_Third_Deep_Wide_Audit_2026-04-25.md) - wide pass covering executors, tests, voice, connectors, security, and governance surfaces.
 - [NovaLIS Fourth Pass Audit (2026-04-25)](audits/2026-04-25/NovaLIS_Fourth_Pass_Audit_2026-04-25.md) - fourth pass covering security surface, CI gaps, LLM locking, and module survey.
+- [Nova OpenClaw docs-to-code alignment audit (2026-04-26)](audits/2026-04-26/NOVA_OPENCLAW_DOCS_TO_CODE_ALIGNMENT_AUDIT_2026-04-26.md) - current OpenClaw implementation truth, future hands-layer gaps, and required changes to align with the final stack direction.
 - [User ready status](product/USER_READY_STATUS.md) - plain-language what works now vs experimental vs not yet ready.
 - [Capability maturity model](product/CAPABILITY_MATURITY.md) - better labels than enabled/disabled.
 
@@ -47,6 +48,7 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 - [Command examples](reference/HUMAN_GUIDES/08_COMMAND_EXAMPLES.md)
 - [Safety and trust](reference/HUMAN_GUIDES/06_SAFETY_AND_TRUST.md)
 - [Daily workflows](reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS.md)
+- [OpenClaw setup and runtime guide](reference/HUMAN_GUIDES/28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27.md) - plain-language current truth: OpenClaw is active as bounded home-agent/worker foundations today and becomes Nova’s hands only after mediator, envelope, approval, and receipt hardening.
 - [Nova Full Stack Direction final lock](future/NOVA_FULL_STACK_DIRECTION_FINAL_LOCK_2026-04-26.md) - short final lock for the future stack: ElevenLabs speaks, Gemma reasons, OpenClaw acts, Nova governs.
 - [Nova Voice Stack operating model](future/NOVA_VOICE_STACK_OPERATING_MODEL_2026-04-26.md) - corrected future truth/goals: Gemma reasons, ElevenLabs speaks, OpenClaw acts, Nova governs, with local voice/text fallback and staged transition after stabilization.
 - [Nova Voice-First Assistant direction](future/NOVA_VOICE_FIRST_ASSISTANT_DIRECTION.md) - future direction and TODOs for making voice the primary interface, with text as review/edit fallback and dashboard as approval/action-history control.
