@@ -82,7 +82,10 @@ _SHOPIFY_RE = re.compile(r"\b(shopify|cap\s*65)\b", re.IGNORECASE)
 _AURALIS_RE = re.compile(r"\b(auralis|website merger|websites?\s+merger|merge\s+website|nova lead console)\b", re.IGNORECASE)
 _STATUS_RE = re.compile(r"\b(current status|status|ground me|where are we|what is next|next steps?)\b", re.IGNORECASE)
 _CLAUDE_RE = re.compile(r"\b(claude|codex|prompt)\b", re.IGNORECASE)
-_MEMORY_RE = re.compile(r"\b(save|remember|memory|learn|from now on|do not do that again)\b", re.IGNORECASE)
+_MEMORY_RE = re.compile(
+    r"\b(save (this|that)?\s*(to )?memory|remember|memory|learn|from now on|do not do that again)\b",
+    re.IGNORECASE,
+)
 _DOC_RE = re.compile(r"\b(add to docs|document this|update docs|commit|repo|github)\b", re.IGNORECASE)
 _BACKGROUND_RE = re.compile(r"\b(background|while I'?m away|later|process behind the scenes)\b", re.IGNORECASE)
 _REASONING_RE = re.compile(r"\b(reason|think|analy[sz]e|summari[sz]e|review|process)\b", re.IGNORECASE)
@@ -146,7 +149,10 @@ def build_request_understanding(
             capability_status=CapabilityStatus.PAUSED,
             confidence=UnderstandingConfidence.HIGH,
             needs_clarification=False,
-            safe_next_step="State that Auralis / website merger work is paused and redirect to the active Nova path unless the owner explicitly unpauses it.",
+            safe_next_step=(
+                "State that Auralis / website merger work is paused and redirect to "
+                "the active Nova runtime stabilization path unless the owner explicitly unpauses it."
+            ),
             must_not_do=(
                 "delete existing Auralis documents",
                 "expand Auralis merger planning",
