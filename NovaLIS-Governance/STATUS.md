@@ -1,6 +1,6 @@
 # NOVA Governance Status
 
-Updated: 2026-04-21 (second pass)
+Updated: 2026-04-27
 Status: Current runtime governance summary
 Scope: Reflective status of the live repository state
 
@@ -26,7 +26,7 @@ If there is ever a conflict between this file and the runtime truth packet, the 
 | 3.5 | COMPLETE | Governance baseline sealed |
 | 4 | ACTIVE | Governed execution runtime is live |
 | 4.2 | ACTIVE | Explicit orthogonal cognition and structured analysis surfaces are live |
-| 4.5 | ACTIVE | UX trust, screen/context, and daily snapshot surfaces are live |
+| 4.5 | PARTIAL | UX trust, screen/context, and daily snapshot surfaces are live; Trust Panel dashboard card not yet built |
 | 5 | ACTIVE | Governed memory, continuity, scheduling, tone, and workspace surfaces are live |
 | 6 | COMPLETE | Trust loop, policy review, capability topology, and manual policy execution review are complete |
 | 7 | COMPLETE | Governed external reasoning, second-opinion review, provider transparency, and runtime settings controls are complete |

@@ -28,12 +28,31 @@ When both are set, start at "Prerequisites" below and run the 5 live tests.
 ---
 
 ## Prerequisites
+
+**Recommended: use a Shopify Developer store for first P5 sign-off.** Create one free at partners.shopify.com, generate a custom app with `read_orders` and `read_products` scopes.
+
+Set env vars in the shell you will start Nova from, then start Nova from that same shell session:
+
+**PowerShell:**
+```powershell
+$env:NOVA_SHOPIFY_SHOP_DOMAIN = "mystore.myshopify.com"
+$env:NOVA_SHOPIFY_ACCESS_TOKEN = "shpat_..."
+nova-start
+```
+
+**cmd.exe:**
+```cmd
+set NOVA_SHOPIFY_SHOP_DOMAIN=mystore.myshopify.com
+set NOVA_SHOPIFY_ACCESS_TOKEN=shpat_...
+nova-start
+```
+
+> Nova must be started from the same shell session after setting env vars — the connector bootstraps at startup and reads env vars once.
+
 - [ ] Nova is running at `http://localhost:8000`
 - [ ] `NOVA_SHOPIFY_SHOP_DOMAIN` is set to a real or dev store domain (e.g. `mystore.myshopify.com`)
 - [ ] `NOVA_SHOPIFY_ACCESS_TOKEN` is set to a read-only Admin API token for that store
 - [ ] Run `system status` and confirm "Shopify: connected" appears
-
-If you do not have a live Shopify store, create a free Shopify Developer store and generate a custom app with `read_orders` and `read_products` scopes.
 
 ---
 
@@ -88,12 +107,16 @@ If you do not have a live Shopify store, create a free Shopify Developer store a
 
 ## Sign-off
 
-When all 5 tests pass, run:
+> **Safety rule:** Cap 65 must not perform any Shopify writes or mutations. If any write behavior is observed during testing, stop — do not sign off or lock.
+
+> **Do not run `lock 65` until all 5 live checklist items above have passed.**
+
+When all 5 tests pass, run from the repo root:
 ```
 python scripts/certify_capability.py live-signoff 65 --notes "all tests pass, read-only confirmed on <store domain>"
 ```
 
-Then lock it:
+Then lock:
 ```
 python scripts/certify_capability.py lock 65
 ```
