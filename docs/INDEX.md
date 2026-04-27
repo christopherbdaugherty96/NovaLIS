@@ -49,6 +49,7 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 - [Safety and trust](reference/HUMAN_GUIDES/06_SAFETY_AND_TRUST.md)
 - [Daily workflows](reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS.md)
 - [OpenClaw setup and runtime guide](reference/HUMAN_GUIDES/28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27.md) - plain-language current truth: OpenClaw is active as bounded home-agent/worker foundations today and becomes Nova’s hands only after mediator, envelope, approval, and receipt hardening.
+- [Nova Request Understanding Contract](future/NOVA_REQUEST_UNDERSTANDING_CONTRACT.md) - implemented non-authorizing conversation contract that explains what Nova understood, current capability state, safe next step, and what Nova must not do.
 - [Nova Conversation Coherence Layer plan](future/NOVA_CONVERSATION_COHERENCE_LAYER_PLAN.md) - safe usability/context plan for improving intent handling, task-state awareness, paused-work awareness, response templates, governed learning, and clarity without widening action authority.
 - [Nova Governed Learning plan](future/NOVA_GOVERNED_LEARNING_PLAN.md) - future architecture rule: Nova may learn corrections, preferences, command meanings, and project glossary terms, but learning must remain visible and cannot grant authority.
 - [Nova Background Reasoning, Not Background Automation plan](future/NOVA_BACKGROUND_REASONING_NOT_AUTOMATION_PLAN.md) - future architecture rule: Nova may think, summarize, draft, and propose in the background, but must not act in the background without explicit governed approval.
