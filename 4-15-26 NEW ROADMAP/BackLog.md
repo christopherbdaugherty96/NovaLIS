@@ -2,6 +2,52 @@
 
 This file tracks follow-up work that is real, but not allowed to distract from the active close-out path in `Now.md`.
 
+## HARD PAUSE — Auralis / Website Merger Work
+
+Status: paused by owner direction on 2026-04-27.
+
+The Auralis Digital / website / NovaLIS merger and commercial-integration planning work is now intentionally paused.
+
+Do not delete the existing Auralis planning docs. They remain useful future references, but they must not drive the active Nova execution path right now.
+
+Paused scope includes:
+
+```text
+Auralis/Nova merger planning
+Auralis website-service expansion inside the NovaLIS repo
+Nova Lead Console commercial planning
+client-funnel/pricing/package expansion
+website-to-Nova integration planning
+Auralis as a near-term Nova commercial surface
+```
+
+Allowed while paused:
+
+```text
+preserve existing docs
+reference them only when explicitly asked
+avoid deleting or rewriting them
+```
+
+Blocked while paused:
+
+```text
+adding more Auralis merger docs
+expanding Auralis pricing/funnel/client docs inside NovaLIS
+shifting Claude/Codex work toward website merger strategy
+letting Auralis work displace Cap 64, trust/action-history, OpenClaw governance, or runtime stabilization
+```
+
+Current active focus returns to NovaLIS runtime stabilization:
+
+```text
+Cap 64 P5 live signoff and lock
+Cap 65 P5 live Shopify checklist and lock if still pending
+Windows installer/bootstrap validation
+trust/action-history dashboard proof
+OpenClawMediator / Business Follow-Up Brief proof after trust path is stable
+```
+
 ## Trust Receipt Backend Hardening
 
 Context: the minimum viable trust receipt backend/API was added, but a fresh review identified hardening work that should be tracked before treating the receipt system as durable. These are not known regressions; they are reliability, test, and defense-in-depth improvements.
@@ -168,3 +214,4 @@ Do not expand this into another broad audit. The active execution path remains:
 4. Trust receipt dashboard card after backend hardening.
 5. OpenClaw hands-layer alignment only after the trust/action-history path is stable enough to prove bounded worker execution.
 6. Google connector onboarding only after identity, connector registry, token storage, approval queue, and receipts are designed clearly enough to avoid hidden authority.
+7. Auralis / website merger work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it.
