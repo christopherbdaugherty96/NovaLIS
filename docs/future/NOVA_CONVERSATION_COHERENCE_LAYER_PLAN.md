@@ -31,6 +31,10 @@ Core rule:
 
 > **A better LLM makes Nova sound smarter. A better coherence layer makes Nova understand what kind of help the user needs.**
 
+Important safety rule:
+
+> **The coherence layer may shape conversation. It must never grant execution authority.**
+
 ---
 
 ## Existing Surfaces To Preserve
@@ -164,6 +168,41 @@ What should Nova explicitly not touch?
 
 ---
 
+## Critical Boundary: Coherence Is Not Authority
+
+The coherence layer must remain non-authorizing.
+
+Allowed:
+
+```text
+choose a response template
+label an answer as project status vs next-step advice
+recognize paused work
+explain current active focus
+ask a clarification question
+format a safer answer
+route general-chat style
+```
+
+Not allowed:
+
+```text
+approve an action
+bypass GovernorMediator
+bypass ExecuteBoundary
+bypass NetworkMediator
+mark a capability signoff as passed
+lock a capability
+resume paused work
+execute OpenClaw tasks
+create Google/Shopify/ElevenLabs connector authority
+change confirmation requirements
+```
+
+The LLM may help phrase the answer, but deterministic code and governed capability paths must control action authority.
+
+---
+
 ## Add Task State Awareness
 
 Nova should maintain or load a small current task state object.
@@ -192,6 +231,25 @@ Example:
 ```
 
 This should not grant execution authority. It only helps answer coherently.
+
+Do not make this task-state object a replacement for generated runtime truth. It is a conversation helper only.
+
+Recommended source options, from safest to most dynamic:
+
+```text
+1. Small Python module with conservative constants and tests.
+2. Small JSON config under config/ with strict schema and tests.
+3. Later: generated task-state artifact derived from roadmap/backlog docs.
+```
+
+Avoid initially:
+
+```text
+runtime Markdown scraping from BackLog.md or Now.md
+LLM-generated task state without review
+hidden background updates
+state that changes capability authority
+```
 
 ---
 
@@ -225,6 +283,8 @@ Good:
 Google connector onboarding is planned, not current runtime truth. The accepted future plan is identity-first Google Sign-In, then read-only Calendar before Gmail/Drive writes.
 ```
 
+Runtime-truth labels should affect explanation wording only. They must not be treated as permission gates for real actions.
+
 ---
 
 ## Add More Intent Families
@@ -254,6 +314,13 @@ Recommended approach:
 Keep ConversationMode stable.
 Add optional metadata or a lightweight classification helper.
 Use tests to confirm output behavior.
+```
+
+Possible shape:
+
+```text
+ConversationMode remains: direct / casual / work / analysis / brainstorm / action / unknown
+Coherence intent adds: project_status / next_step_advice / paused_work_reference / capability_signoff
 ```
 
 ---
@@ -360,6 +427,8 @@ If user asks about a paused area, Nova should say it is paused and ask whether t
 
 If user asks for a general Nova next step, Nova should not recommend paused work.
 
+Paused recognition should not delete, move, rewrite, or expand paused docs/code. It only changes answer selection and guardrail messaging.
+
 ---
 
 ## What Not To Do
@@ -435,6 +504,27 @@ Use the classification metadata to choose clearer formatting.
 
 Do not alter governed action routing first.
 
+Scope for first implementation:
+
+```text
+project/status questions
+next-step/Claude-direction questions
+paused-work questions
+memory-save vs docs-update disambiguation
+capability-signoff status explanations
+```
+
+Explicitly out of scope for first implementation:
+
+```text
+governed action execution changes
+OpenClaw run behavior
+Google connector logic
+ElevenLabs voice logic
+Shopify live testing
+Auralis merger planning
+```
+
 ### Step 6 — Add regression tests
 
 Prevent future drift.
@@ -457,6 +547,16 @@ Minimum test matrix:
 “Do a second pass” → continuation/follow-up path
 ```
 
+Add negative tests:
+
+```text
+Conversation coherence must not mark Cap 64 P5 passed.
+Conversation coherence must not mark Cap 65 P5 passed.
+Conversation coherence must not issue OpenClaw envelopes.
+Conversation coherence must not call Google/Shopify/ElevenLabs connectors.
+Conversation coherence must not change capability locks.
+```
+
 ---
 
 ## Done Means
@@ -471,6 +571,7 @@ paused Auralis and paused Shopify are respected
 Nova can distinguish memory-save vs repo-doc requests
 Nova can answer status/next-step questions in a consistent structure
 Nova can explain future plans without overstating current runtime truth
+negative tests prove no capability signoff/lock/action execution occurs
 ```
 
 ---
