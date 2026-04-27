@@ -8,6 +8,8 @@ from typing import Iterable
 from src.conversation.conversation_decision import ConversationDecision
 from src.conversation.conversation_router import ConversationRouter
 
+_AUTHORITY_EFFECT_NONE = "none"
+
 
 class CapabilityStatus(str, Enum):
     """User-facing ability state for a request.
@@ -61,7 +63,11 @@ class RequestUnderstanding:
     safe_next_step: str
     must_not_do: tuple[str, ...]
     notes: tuple[str, ...] = ()
-    authority_effect: str = "none"
+    authority_effect: str = _AUTHORITY_EFFECT_NONE
+
+    def __post_init__(self) -> None:
+        if self.authority_effect != _AUTHORITY_EFFECT_NONE:
+            raise ValueError("RequestUnderstanding must remain non-authorizing: authority_effect must be 'none'.")
 
 
 _DEFAULT_ACTIVE_FOCUS = (
