@@ -1,6 +1,32 @@
 # Live Test Checklist — Cap 65: shopify_intelligence_report
 Phase 5 of 6 · Priority: after cap 64 lock
 
+---
+
+## Current Status — 2026-04-27
+
+**P5: BLOCKED — Shopify credentials not present in environment.**
+
+Automated verification completed 2026-04-27:
+- P1 unit tests: 9/9 pass (`tests/executors/test_shopify_intelligence_report_executor.py`, `tests/connectors/test_shopify_connector.py`)
+- P2 routing tests: 49/49 pass (`tests/test_shopify_intelligence_report_routing.py`)
+- P3 integration tests: 16/16 pass (`tests/certification/cap_65_shopify_intelligence_report/test_p3_integration.py`)
+- P4 API tests: 10/10 pass (`tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py`)
+- Total: 84 automated tests green
+
+Safety confirmation:
+- Read-only: CONFIRMED — all GraphQL calls use `query {}` not `mutation {}`; no write/update/delete endpoints
+- NetworkMediator: CONFIRMED — `_gql()` instantiates `NetworkMediator()` and routes every Shopify call through `mediator.request()`
+- Credential guard: CONFIRMED — `is_shopify_connected()` check in executor returns clean refusal if env vars absent
+
+Missing to unblock P5:
+- `NOVA_SHOPIFY_SHOP_DOMAIN` — not set
+- `NOVA_SHOPIFY_ACCESS_TOKEN` — not set
+
+When both are set, start at "Prerequisites" below and run the 5 live tests.
+
+---
+
 ## Prerequisites
 - [ ] Nova is running at `http://localhost:8000`
 - [ ] `NOVA_SHOPIFY_SHOP_DOMAIN` is set to a real or dev store domain (e.g. `mystore.myshopify.com`)
