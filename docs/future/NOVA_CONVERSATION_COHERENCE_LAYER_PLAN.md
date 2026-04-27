@@ -8,6 +8,13 @@ Purpose: define how Nova should become more coherent, context-aware, understanda
 
 This is a planning document, not current runtime truth. Exact runtime status remains governed by `docs/current_runtime/` and live code.
 
+Related future-direction docs:
+
+```text
+docs/future/NOVA_GOVERNED_LEARNING_PLAN.md
+docs/future/NOVA_BACKGROUND_REASONING_NOT_AUTOMATION_PLAN.md
+```
+
 ---
 
 ## Executive Summary
@@ -26,6 +33,8 @@ clarification behavior
 answer templates
 tests for different question types
 ```
+
+Governed learning and background reasoning are related future directions, but they are tracked separately so this plan stays focused on conversation coherence.
 
 Core rule:
 
@@ -306,6 +315,8 @@ TROUBLESHOOTING
 CAPABILITY_SIGNOFF
 ```
 
+Durable learning/correction behavior belongs in `NOVA_GOVERNED_LEARNING_PLAN.md`; this plan only needs to distinguish when a user appears to be asking for memory, docs, status, action, or explanation.
+
 These do not all need to become new `ConversationMode` enum values. Many can be sublabels or metadata under existing modes.
 
 Recommended approach:
@@ -445,6 +456,8 @@ expand OpenClaw hands authority
 resume Auralis/Shopify work
 rewrite brain_server.py or session_handler.py broadly
 replace the conversation router wholesale
+implement governed learning storage
+implement background reasoning jobs
 ```
 
 This is a usability/context improvement only.
@@ -523,6 +536,8 @@ Google connector logic
 ElevenLabs voice logic
 Shopify live testing
 Auralis merger planning
+governed learning persistence
+background reasoning jobs
 ```
 
 ### Step 6 — Add regression tests
@@ -555,6 +570,8 @@ Conversation coherence must not mark Cap 65 P5 passed.
 Conversation coherence must not issue OpenClaw envelopes.
 Conversation coherence must not call Google/Shopify/ElevenLabs connectors.
 Conversation coherence must not change capability locks.
+Conversation coherence must not persist governed-learning memories by itself.
+Conversation coherence must not start background reasoning jobs by itself.
 ```
 
 ---
@@ -572,6 +589,7 @@ Nova can distinguish memory-save vs repo-doc requests
 Nova can answer status/next-step questions in a consistent structure
 Nova can explain future plans without overstating current runtime truth
 negative tests prove no capability signoff/lock/action execution occurs
+negative tests prove no learning persistence or background reasoning starts from coherence alone
 ```
 
 ---
@@ -581,7 +599,7 @@ negative tests prove no capability signoff/lock/action execution occurs
 After Cap 64 P5 live signoff and lock, assign Claude:
 
 ```text
-Implement the Conversation Coherence Layer as an incremental router/response improvement. Preserve existing ConversationMode behavior. Add tests first. Add paused/active task-state awareness. Add status/next-step/signoff/paused-work templates. Do not touch GovernorMediator, ExecuteBoundary, NetworkMediator, OpenClaw authority, Google connectors, ElevenLabs, Auralis, or Shopify live work.
+Implement the Conversation Coherence Layer as an incremental router/response improvement. Preserve existing ConversationMode behavior. Add tests first. Add paused/active task-state awareness. Add status/next-step/signoff/paused-work templates. Do not touch GovernorMediator, ExecuteBoundary, NetworkMediator, OpenClaw authority, Google connectors, ElevenLabs, Auralis, Shopify live work, governed learning persistence, or background reasoning jobs.
 ```
 
 ---
@@ -598,6 +616,8 @@ Best near-term order:
 1. Cap 64 P5 live signoff and lock
 2. Trust/action-history dashboard proof
 3. Conversation Coherence Layer
-4. OpenClawMediator / Business Follow-Up Brief
-5. Model/provider upgrades
+4. Governed Learning
+5. Background Reasoning, Not Background Automation
+6. OpenClawMediator / Business Follow-Up Brief
+7. Model/provider upgrades
 ```
