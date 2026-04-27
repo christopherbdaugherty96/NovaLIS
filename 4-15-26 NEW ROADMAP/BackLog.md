@@ -139,6 +139,57 @@ Reference: `docs/future/NOVA_CONVERSATION_COHERENCE_LAYER_PLAN.md`.
 
 Do not start this before Cap 64 P5 live signoff unless explicitly instructed. When started, do not replace the conversation router wholesale. Preserve existing behavior and add narrow, tested improvements.
 
+## Governed Learning
+
+Context: Nova should learn user corrections, preferences, recurring command meanings, and project context in a visible and reviewable way. Learning should improve conversation coherence, not action authority.
+
+Reference: `docs/future/NOVA_GOVERNED_LEARNING_PLAN.md`.
+
+### Current Truth To Preserve
+
+- Governed learning is a future direction, not current runtime truth.
+- Learning may shape wording, context selection, intent classification, and answer structure.
+- Learning must not change action approval, capability signoff, capability locks, GovernorMediator, ExecuteBoundary, NetworkMediator, OpenClaw authority, or connector authority.
+- All conversation/coherence learning should have `authority_effect = none`.
+
+### Recommended Future Build Order
+
+- [ ] Add learnable item categories: `USER_STYLE_PREFERENCE`, `PROJECT_GLOSSARY`, `COMMAND_MEANING`, `ACTIVE_TASK_STATE`, `PAUSED_SCOPE`, `CORRECTION`, `REJECTED_BEHAVIOR`, `ACCEPTED_RESPONSE_PATTERN`, `CAPABILITY_STATUS_HINT`, and `CONTEXT_DISAMBIGUATION_RULE`.
+- [ ] Add learning states: `PROPOSED`, `USER_CONFIRMED`, `ACTIVE`, `SUPERSEDED`, `EXPIRED`, and `REJECTED`.
+- [ ] Add visible review/delete/supersede behavior for learned items.
+- [ ] Add tests for “save to memory” vs “add to docs”, “do not call Nova Jarvis”, “second pass means review for gaps”, and “forget that rule”.
+- [ ] Add negative tests proving learning cannot mark capabilities passed, change locks, issue OpenClaw envelopes, call connectors, or change approval policy.
+
+### Guardrail
+
+Do not implement hidden self-training, background memory creation, or silent policy changes. Nova should learn how to understand the user better, not how to bypass the user.
+
+## Background Reasoning, Not Background Automation
+
+Context: Nova should eventually support background reasoning/processing while continuing to block background automation. This supports usefulness without giving Nova hidden external-world authority.
+
+Reference: `docs/future/NOVA_BACKGROUND_REASONING_NOT_AUTOMATION_PLAN.md`.
+
+### Current Truth To Preserve
+
+- Background reasoning is a future direction, not current runtime truth.
+- Nova may think, summarize, draft, analyze, and propose in the background.
+- Nova must not send, post, delete, submit, book, purchase, modify accounts/files/customer records, or execute OpenClaw tasks in the background.
+- Local-first means local control/trust anchor by default; it does not mean local-only forever.
+- Cloud reasoning may expand intelligence, but it must not expand authority.
+
+### Recommended Future Build Order
+
+- [ ] Define explicit background reasoning job types such as `ANALYSIS_ONLY`, `SUMMARY_ONLY`, `DRAFT_ONLY`, `RECOMMENDATION_ONLY`, `STATUS_REVIEW`, `LOG_REVIEW`, `DOC_REVIEW`, `REPO_REVIEW`, `FOLLOWUP_SUGGESTION`, and `PROPOSED_ACTION_PREP`.
+- [ ] Define provider lanes: `LOCAL_ONLY`, `LOCAL_FIRST_CLOUD_FALLBACK`, `CLOUD_ALLOWED`, and `CLOUD_REQUIRED_BY_USER`.
+- [ ] Add visible status for reasoning jobs: provider/lane, data included, allowed outputs, blocked outputs, cancel/stop path.
+- [ ] Add receipts and non-action statements proving nothing was sent, posted, changed, deleted, booked, purchased, or executed.
+- [ ] First proof should be `Background Project Status Review`: read-only/local-simple, produces a status card, changes nothing.
+
+### Guardrail
+
+Do not implement broad background reasoning before Cap 64 P5/signoff or trust/action-history review surfaces unless explicitly reprioritized. Background reasoning may prepare drafts and proposed actions; it must not perform background automation.
+
 ## Trust Receipt Backend Hardening
 
 Context: the minimum viable trust receipt backend/API was added, but a fresh review identified hardening work that should be tracked before treating the receipt system as durable. These are not known regressions; they are reliability, test, and defense-in-depth improvements.
@@ -304,7 +355,7 @@ Do not expand this into another broad audit. The active execution path remains:
 2. Clean Windows VM installer validation and `C:\Program Files\Nova\bootstrap.log` review.
 3. Trust receipt dashboard card after backend hardening.
 4. OpenClaw hands-layer alignment only after the trust/action-history path is stable enough to prove bounded worker execution.
-5. Conversation Coherence Layer only after Cap 64 P5 unless explicitly instructed.
+5. Conversation Coherence Layer, Governed Learning, and Background Reasoning only after Cap 64 P5 unless explicitly instructed.
 6. Google connector onboarding only after identity, connector registry, token storage, approval queue, and receipts are designed clearly enough to avoid hidden authority.
 7. Auralis / website merger work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it.
 8. Shopify / Cap 65 P5 live work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it and provides/prepares credentials.
