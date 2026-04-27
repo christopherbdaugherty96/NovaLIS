@@ -44,6 +44,40 @@
 
 ---
 
+## Progress Update (2026-04-27)
+
+### Cap 65 P5 Live Signoff Audit
+
+P5 status: **BLOCKED — Shopify credentials not present in this environment.**
+
+Automated verification completed:
+- 84 tests (P1–P4) all pass
+- P1 unit (executor + connector): 9 tests pass
+- P2 routing: 49 tests pass (19 canonical phrases, 8 period extractions, 6 negative phrases)
+- P3 integration (governor spine): 16 tests pass
+- P4 API (WebSocket + trust receipts): 10 tests pass
+
+Safety confirmed:
+- Read-only: all GraphQL calls use `query {}` only — zero mutations, zero write endpoints
+- NetworkMediator path: confirmed active in `HttpShopifyConnector._gql()`
+- Credential guard: executor returns clean `ActionResult.refusal()` when env vars absent
+
+Blocker: `NOVA_SHOPIFY_SHOP_DOMAIN` and `NOVA_SHOPIFY_ACCESS_TOKEN` not set.
+
+To unblock:
+```
+set NOVA_SHOPIFY_SHOP_DOMAIN=mystore.myshopify.com
+set NOVA_SHOPIFY_ACCESS_TOKEN=shpat_...
+nova-start
+# Then run all 5 tests in docs/capability_verification/live_checklists/cap_65_shopify_intelligence_report.md
+python scripts/certify_capability.py live-signoff 65 --notes "all tests pass, read-only confirmed on <store domain>"
+python scripts/certify_capability.py lock 65
+```
+
+Doc updates this session: live checklist updated with audit results and status block; `Now.md` updated.
+
+---
+
 ## Progress Update (2026-04-26)
 
 ### Done
