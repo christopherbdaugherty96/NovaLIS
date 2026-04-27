@@ -11,7 +11,6 @@ If you are new to the project, use this order:
 3. `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 4. `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
 5. `docs/current_runtime/RUNTIME_FINGERPRINT.md`
-6. `docs/canonical/CANONICAL_DOCUMENT_MAP.md`
 
 This sequence gives you:
 - the human explanation first

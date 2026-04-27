@@ -1,15 +1,9 @@
 # Nova TODO
-Updated: 2026-04-23
+Updated: 2026-04-27
 
-## Next Step — Product Presentation Phase
-The documentation foundation is strong. The next priority is turning Nova into something immediately understandable and compelling to new users.
+## Current Status
+See active sprint and blockers in [`4-15-26 NEW ROADMAP/Now.md`](4-15-26%20NEW%20ROADMAP/Now.md).
 
-### Priority Tasks
-1. Add README screenshots (dashboard, Trust, Workspace, voice, reports)
-2. Create a 60-second demo video
-3. Build a one-click install path
-4. Publish 3-5 clear everyday use cases
-5. Maintain a stable public demo branch
+For strategy and tier roadmap, see [`4-15-26 NEW ROADMAP/MasterRoadMap.md`](4-15-26%20NEW%20ROADMAP/MasterRoadMap.md).
 
-### Strategic Note
-Shift effort from explaining Nova to showing Nova.
+For deferred work, see [`4-15-26 NEW ROADMAP/BackLog.md`](4-15-26%20NEW%20ROADMAP/BackLog.md).

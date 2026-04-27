@@ -14,6 +14,4 @@ What to include in your report:
 - Any exploit PoC (if available)
 - Contact info (optional) for follow-up
 
-We will acknowledge receipt and respond within a reasonable timeframe. We may ask for additional information to reproduce and triage the issue.
-
-PGP key (optional): <PGP-PUBKEY-PLACEHOLDER>
+We will acknowledge receipt within 14 days and may ask for additional information to reproduce and triage the issue.

@@ -48,7 +48,6 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 - [Command examples](reference/HUMAN_GUIDES/08_COMMAND_EXAMPLES.md)
 - [Safety and trust](reference/HUMAN_GUIDES/06_SAFETY_AND_TRUST.md)
 - [Daily workflows](reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS.md)
-- [Nova session reference summary](future/NOVA_SESSION_REFERENCE_SUMMARY_2026-04-26.md) - full reference summary of the 2026-04-26 planning/docs session, including current truth, future stack, OpenClaw, ElevenLabs, Gemma, Google connectors, and next execution path.
 - [OpenClaw setup and runtime guide](reference/HUMAN_GUIDES/28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27.md) - plain-language current truth: OpenClaw is active as bounded home-agent/worker foundations today and becomes Nova’s hands only after mediator, envelope, approval, and receipt hardening.
 - [Nova Google connector direction final lock](future/NOVA_GOOGLE_CONNECTOR_DIRECTION_FINAL_LOCK_2026-04-26.md) - short final lock for Google onboarding: Google connects data, Nova governs action.
 - [Nova Google account and connector onboarding plan](future/NOVA_GOOGLE_ACCOUNT_AND_CONNECTOR_ONBOARDING_PLAN.md) - identity-first Google sign-in and scoped connector plan for Calendar, Gmail, Drive, and Contacts under Nova governance.
@@ -98,6 +97,19 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 - [Backlog](../4-15-26%20NEW%20ROADMAP/BackLog.md) - follow-up hardening that should not interrupt the active close-out path.
 - [Master roadmap](../4-15-26%20NEW%20ROADMAP/MasterRoadMap.md) - broader roadmap context.
 - [Repo improvement action plan](future/repo_improvement_action_plan.md)
+
+---
+
+## Auralis Integration
+
+Future commercial surface for NovaLIS. All docs are labeled future planning — none describe live runtime capabilities.
+
+- [Auralis and NovaLIS integration goals](Future/AURALIS_NOVALIS_INTEGRATION_GOALS.md) - staged strategy: Auralis sells websites first, Nova powers lead handling and business intelligence later.
+- [Auralis MVP execution plan](Future/AURALIS_MVP_EXECUTION_PLAN.md) - Nova Lead Console v1: website inquiries → lead summaries and draft replies, owner reviews before sending.
+- [Auralis client funnel](Future/AURALIS_CLIENT_FUNNEL.md) - prospect to signed client to retention and Nova-backed service upsell.
+- [Auralis pricing and packages](Future/AURALIS_PRICING_AND_PACKAGES.md) - tiered package structure from website-only to full Nova business agent layer.
+- [Auralis risk and policy](Future/AURALIS_RISK_AND_POLICY.md) - risk register and policy guardrails for commercial Auralis/Nova work.
+- [Auralis technical integration spec](Future/AURALIS_TECHNICAL_INTEGRATION_SPEC.md) - connector architecture, data flow, and governance requirements for Auralis-facing Nova surfaces.
 
 ---
 
