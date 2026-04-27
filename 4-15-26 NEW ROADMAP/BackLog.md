@@ -112,6 +112,33 @@ trust/action-history dashboard proof
 OpenClawMediator / Business Follow-Up Brief proof after trust path is stable
 ```
 
+## Conversation Coherence Layer
+
+Context: Nova already has a real conversation module with deterministic routing, `ConversationDecision`, response style routing, normalization, follow-up handling, and tests. The next coherence improvement should be incremental and test-backed, not a broad rewrite.
+
+Reference: `docs/future/NOVA_CONVERSATION_COHERENCE_LAYER_PLAN.md`.
+
+### Current Truth To Preserve
+
+- Existing conversation surfaces include `conversation_router.py`, `conversation_decision.py`, `response_style_router.py`, `response_formatter.py`, `session_router.py`, `general_chat_runtime.py`, `websocket/session_handler.py`, and `skills/general_chat.py`.
+- Existing tests cover conversation router, response style router, formatter, session router, and general chat runtime.
+- Coherence work must not widen GovernorMediator, ExecuteBoundary, NetworkMediator, OpenClaw, Google connector, ElevenLabs, Auralis, or Shopify authority.
+- This is a usability/context improvement, not an execution-authority project.
+
+### Recommended Future Build Order
+
+- [ ] Add tests for status/next-step/paused-work/memory-vs-doc/capability-signoff question types.
+- [ ] Add a small task-state source for active, paused, blocked, and future-only work.
+- [ ] Add runtime-truth labels such as `CURRENT_RUNTIME_TRUTH`, `PLANNED`, `PAUSED`, `BLOCKED`, and `DEFERRED`.
+- [ ] Add coherence classification metadata without exploding or rewriting `ConversationMode`.
+- [ ] Add response templates for project status, Claude/Codex direction, paused work, capability signoff, explanation, and governed action summaries.
+- [ ] Wire the layer only into general-chat/project-status paths first.
+- [ ] Add regression tests proving paused Auralis and paused Shopify are respected.
+
+### Guardrail
+
+Do not start this before Cap 64 P5 live signoff unless explicitly instructed. When started, do not replace the conversation router wholesale. Preserve existing behavior and add narrow, tested improvements.
+
 ## Trust Receipt Backend Hardening
 
 Context: the minimum viable trust receipt backend/API was added, but a fresh review identified hardening work that should be tracked before treating the receipt system as durable. These are not known regressions; they are reliability, test, and defense-in-depth improvements.
@@ -277,6 +304,7 @@ Do not expand this into another broad audit. The active execution path remains:
 2. Clean Windows VM installer validation and `C:\Program Files\Nova\bootstrap.log` review.
 3. Trust receipt dashboard card after backend hardening.
 4. OpenClaw hands-layer alignment only after the trust/action-history path is stable enough to prove bounded worker execution.
-5. Google connector onboarding only after identity, connector registry, token storage, approval queue, and receipts are designed clearly enough to avoid hidden authority.
-6. Auralis / website merger work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it.
-7. Shopify / Cap 65 P5 live work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it and provides/prepares credentials.
+5. Conversation Coherence Layer only after Cap 64 P5 unless explicitly instructed.
+6. Google connector onboarding only after identity, connector registry, token storage, approval queue, and receipts are designed clearly enough to avoid hidden authority.
+7. Auralis / website merger work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it.
+8. Shopify / Cap 65 P5 live work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it and provides/prepares credentials.
