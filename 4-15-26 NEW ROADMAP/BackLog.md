@@ -112,6 +112,38 @@ trust/action-history dashboard proof
 OpenClawMediator / Business Follow-Up Brief proof after trust path is stable
 ```
 
+## Request Understanding Contract
+
+Context: Nova now has a non-authorizing request understanding contract that closes the user-facing loop between what Nova understood, current capability state, safe next step, and what Nova must not do.
+
+Reference: `docs/future/NOVA_REQUEST_UNDERSTANDING_CONTRACT.md`.
+
+Current implementation:
+
+```text
+nova_backend/src/conversation/request_understanding.py
+nova_backend/tests/conversation/test_request_understanding.py
+```
+
+### Current Truth To Preserve
+
+- This is an implemented foundation, but not yet wired into the live response/UI path.
+- It is conversation-layer architecture only.
+- `authority_effect` must remain `none`.
+- It must not approve actions, execute capabilities, lock/sign off capabilities, resume paused work, call OpenClaw, call connectors, or change GovernorMediator / ExecuteBoundary / NetworkMediator.
+
+### Recommended Future Build Order
+
+- [ ] Run the targeted request understanding tests locally.
+- [ ] Wire `RequestUnderstanding` into the general-chat response path for clearer user-facing boundary language.
+- [ ] Surface `understood_goal`, `capability_status`, `safe_next_step`, and `must_not_do` in trust/action-history review cards.
+- [ ] Keep integration read-only/non-authorizing.
+- [ ] Add regression tests proving request understanding cannot trigger capability execution or authority changes.
+
+### Guardrail
+
+Understanding is not permission. The contract may explain and format the user-facing loop; real actions must still go through the governed execution spine.
+
 ## Conversation Coherence Layer
 
 Context: Nova already has a real conversation module with deterministic routing, `ConversationDecision`, response style routing, normalization, follow-up handling, and tests. The next coherence improvement should be incremental and test-backed, not a broad rewrite.
@@ -355,7 +387,8 @@ Do not expand this into another broad audit. The active execution path remains:
 2. Clean Windows VM installer validation and `C:\Program Files\Nova\bootstrap.log` review.
 3. Trust receipt dashboard card after backend hardening.
 4. OpenClaw hands-layer alignment only after the trust/action-history path is stable enough to prove bounded worker execution.
-5. Conversation Coherence Layer, Governed Learning, and Background Reasoning only after Cap 64 P5 unless explicitly instructed.
-6. Google connector onboarding only after identity, connector registry, token storage, approval queue, and receipts are designed clearly enough to avoid hidden authority.
-7. Auralis / website merger work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it.
-8. Shopify / Cap 65 P5 live work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it and provides/prepares credentials.
+5. Request Understanding Contract UI/general-chat integration only after Cap 64 P5 unless explicitly instructed.
+6. Conversation Coherence Layer, Governed Learning, and Background Reasoning only after Cap 64 P5 unless explicitly instructed.
+7. Google connector onboarding only after identity, connector registry, token storage, approval queue, and receipts are designed clearly enough to avoid hidden authority.
+8. Auralis / website merger work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it.
+9. Shopify / Cap 65 P5 live work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it and provides/prepares credentials.
