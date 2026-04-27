@@ -42,7 +42,71 @@ Current active focus returns to NovaLIS runtime stabilization:
 
 ```text
 Cap 64 P5 live signoff and lock
-Cap 65 P5 live Shopify checklist and lock if still pending
+Windows installer/bootstrap validation
+trust/action-history dashboard proof
+OpenClawMediator / Business Follow-Up Brief proof after trust path is stable
+```
+
+## HARD PAUSE — Shopify / Cap 65 P5 Live Work
+
+Status: paused by owner direction on 2026-04-27.
+
+Cap 65 `shopify_intelligence_report` remains implemented and verified through P4, but P5 live Shopify signoff is intentionally paused for now.
+
+Do not delete the Cap 65 implementation, tests, checklist, or blocker documentation. Preserve all completed evidence.
+
+Current preserved truth:
+
+```text
+Cap 65 P1 unit: PASS
+Cap 65 P2 routing: PASS
+Cap 65 P3 integration: PASS
+Cap 65 P4 API: PASS
+Cap 65 P5 live: BLOCKED/PAUSED — requires Shopify credentials and owner unpause
+Cap 65 P6 lock: NOT APPLIED
+```
+
+Paused scope includes:
+
+```text
+Shopify live P5 signoff
+Shopify credential setup work
+Shopify dev-store setup work
+Cap 65 P6 lock
+future Shopify write/operator planning
+Shopify commercial expansion
+```
+
+Allowed while paused:
+
+```text
+preserve existing Cap 65 code/tests/docs
+reference Cap 65 status only when explicitly asked
+keep read-only safety conclusions documented
+leave blocker status intact
+```
+
+Blocked while paused:
+
+```text
+running live Shopify P5 tests
+requesting/adding Shopify credentials
+locking Cap 65
+expanding Shopify capability scope
+adding Shopify write/mutation capabilities
+letting Shopify work displace Cap 64, trust/action-history, installer validation, or OpenClaw governance work
+```
+
+Unpause condition:
+
+```text
+Owner explicitly unpauses Shopify/Cap 65 and provides or prepares Shopify dev-store credentials.
+```
+
+Until unpaused, the active NovaLIS path is:
+
+```text
+Cap 64 P5 live signoff and lock
 Windows installer/bootstrap validation
 trust/action-history dashboard proof
 OpenClawMediator / Business Follow-Up Brief proof after trust path is stable
@@ -70,7 +134,8 @@ Context: the minimum viable trust receipt backend/API was added, but a fresh rev
 
 - [x] Add troubleshooting sections to the Cap 64 and Cap 65 live checklists. *(done 2026-04-26, commit b1434e2)*
   - Cap 64: mail client setup, `@` encoding, blank body, Trust page not built, confirmation gate, certify errors.
-  - Cap 65: domain format, token scopes, NetworkMediator refusal, GraphQL/empty data, Test 3 restart, period defaults, certify errors.
+  - Cap 65: domain format, token scopes, NetworkMediator refusal, GraphQL/empty data, Test 3 restart, period defaults.
+  - Cap 65 live P5 is now paused and must not be resumed without explicit owner unpause.
 
 ### Lower Priority / Design Follow-Up
 
@@ -209,9 +274,9 @@ automatic connector actions without receipts
 Do not expand this into another broad audit. The active execution path remains:
 
 1. Cap 64 P5 live signoff and lock.
-2. Cap 65 P5 live Shopify checklist and lock.
-3. Clean Windows VM installer validation and `C:\Program Files\Nova\bootstrap.log` review.
-4. Trust receipt dashboard card after backend hardening.
-5. OpenClaw hands-layer alignment only after the trust/action-history path is stable enough to prove bounded worker execution.
-6. Google connector onboarding only after identity, connector registry, token storage, approval queue, and receipts are designed clearly enough to avoid hidden authority.
-7. Auralis / website merger work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it.
+2. Clean Windows VM installer validation and `C:\Program Files\Nova\bootstrap.log` review.
+3. Trust receipt dashboard card after backend hardening.
+4. OpenClaw hands-layer alignment only after the trust/action-history path is stable enough to prove bounded worker execution.
+5. Google connector onboarding only after identity, connector registry, token storage, approval queue, and receipts are designed clearly enough to avoid hidden authority.
+6. Auralis / website merger work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it.
+7. Shopify / Cap 65 P5 live work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it and provides/prepares credentials.
