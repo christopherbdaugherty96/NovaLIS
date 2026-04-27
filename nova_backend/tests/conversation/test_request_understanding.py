@@ -44,8 +44,23 @@ def test_understanding_memory_save_is_not_github_docs():
     assert out.authority_effect == "none"
 
 
+def test_understanding_plain_save_without_memory_is_not_memory_request():
+    out = build_request_understanding("save the file")
+
+    assert out.request_type != "memory_or_learning_request"
+    assert out.authority_effect == "none"
+
+
 def test_understanding_docs_update_is_not_memory_only():
     out = build_request_understanding("add this to docs and commit it")
+
+    assert out.request_type == "doc_or_repo_update"
+    assert out.capability_status == CapabilityStatus.CAN_HELP_MANUALLY
+    assert "confuse docs updates with memory saves" in out.must_not_do
+
+
+def test_understanding_combined_memory_and_docs_prefers_explicit_docs_scope():
+    out = build_request_understanding("save this to memory and add it to docs")
 
     assert out.request_type == "doc_or_repo_update"
     assert out.capability_status == CapabilityStatus.CAN_HELP_MANUALLY
