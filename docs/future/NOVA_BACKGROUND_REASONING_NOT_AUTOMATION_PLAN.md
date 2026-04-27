@@ -178,6 +178,10 @@ provider_lane: local | cloud_optional | cloud_allowed
 sensitive_data_policy
 receipt_required
 user_visible_status
+max_tokens_or_cost
+expires_at
+staleness_policy
+cancel_supported
 ```
 
 ---
@@ -206,6 +210,42 @@ No provider lane should grant action authority.
 
 ---
 
+## Budgets, Expiration, And Staleness
+
+Background reasoning must be bounded.
+
+Every background reasoning job should have:
+
+```text
+maximum runtime
+maximum token/cost budget when cloud is allowed
+maximum input size or file count
+expiration time
+staleness policy
+cancel/stop path
+retry policy
+failure state
+```
+
+Reasoning outputs should not remain silently actionable forever.
+
+Examples:
+
+```text
+A repo status card may expire after the next commit or after 24 hours.
+A draft suggestion may expire when source email/thread changes.
+A project recommendation may become stale when roadmap/backlog changes.
+A proposed OpenClaw envelope must expire unless reviewed.
+```
+
+If an output is stale, Nova should say so before using it:
+
+```text
+This background review may be stale because the repo changed after it was generated. I can refresh it before you act on it.
+```
+
+---
+
 ## Visibility Requirements
 
 Background reasoning should not be invisible magic.
@@ -221,6 +261,8 @@ what the job can output
 what it cannot do
 whether any proposed actions are waiting for review
 how to cancel/stop
+whether the output is fresh or stale
+when the result expires
 ```
 
 Minimum user-facing language:
@@ -370,6 +412,7 @@ what was not done
 provider used
 local/cloud label
 cancel/clear controls
+fresh/stale/expired status
 ```
 
 This is why trust/action-history dashboard proof remains important before broad background reasoning is implemented.
@@ -387,6 +430,7 @@ reasoning job types are explicit
 provider lanes are explicit
 non-action receipts exist
 cancel/stop path exists
+budget/expiration/staleness rules exist
 ```
 
 Do not use background reasoning to:
@@ -433,6 +477,7 @@ no OpenClaw action executed
 no capability lock/signoff changed
 receipt/non-action statement generated
 cancel/stop path works
+fresh/stale/expired status is visible
 ```
 
 ---
@@ -456,6 +501,7 @@ what it produced
 what it did not do
 what waits for approval
 what provider/lane was used
+whether the output is fresh, stale, or expired
 ```
 
 ---
