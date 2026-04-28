@@ -27,7 +27,6 @@ _RECEIPT_WORTHY: frozenset[str] = frozenset(
         "ACTION_COMPLETED",
         "EMAIL_DRAFT_CREATED",
         "EMAIL_DRAFT_FAILED",
-        "EMAIL_DRAFT_OPENED",
         "OPENCLAW_ACTION_APPROVED",
         "OPENCLAW_ACTION_DENIED",
         "OPENCLAW_ACTION_PENDING",

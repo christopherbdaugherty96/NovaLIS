@@ -2573,6 +2573,7 @@ function setActivePage(page) {
   if (target === "trust") {
     safeWSSend({ text: "trust center", silent_widget_refresh: true });
     safeWSSend({ text: "system status", silent_widget_refresh: true });
+    if (typeof fetchAndRenderReceipts === "function") fetchAndRenderReceipts();
   }
   if (target === "intro") {
     requestSettingsRuntimeRefresh();
