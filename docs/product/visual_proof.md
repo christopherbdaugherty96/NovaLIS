@@ -1,8 +1,9 @@
 # NovaLIS Visual Proof
 
-These screenshots show current local UI surfaces captured from a running NovaLIS development instance.
+These screenshots show real Nova UI surfaces from a running local instance.
+They help explain what exists today without overstating unfinished areas.
 
-Exact runtime behavior can change as capabilities are enabled, disabled, or reconfigured. For current runtime truth, use [../current_runtime/CURRENT_RUNTIME_STATE.md](../current_runtime/CURRENT_RUNTIME_STATE.md).
+For exact live runtime truth, use `../current_runtime/CURRENT_RUNTIME_STATE.md`.
 
 ---
 
@@ -10,7 +11,7 @@ Exact runtime behavior can change as capabilities are enabled, disabled, or reco
 
 ![Nova dashboard home](assets/dashboard-home.png)
 
-The home/dashboard surface emphasizes current setup, launch actions, workspace continuity, capability visibility, and local-first operation.
+The main dashboard is designed to make Nova feel usable and visible: current status, quick actions, continuity, and system surfaces in one place.
 
 ---
 
@@ -18,7 +19,7 @@ The home/dashboard surface emphasizes current setup, launch actions, workspace c
 
 ![Nova trust and governance surface](assets/trust-governance.png)
 
-The trust surface exposes recent action state, policy posture, and governance status so the user can inspect what Nova is doing instead of treating actions as hidden automation.
+Nova is built around visible control. The trust surface helps users inspect actions, state, and boundaries instead of relying on hidden automation.
 
 ---
 
@@ -26,4 +27,9 @@ The trust surface exposes recent action state, policy posture, and governance st
 
 ![Nova structured report output](assets/report-output.png)
 
-The report view demonstrates how Nova presents structured findings, source notes, confidence context, and route/model badges in the chat surface.
+Nova can present research and summaries in structured formats that are easier to review, act on, and understand.
+
+---
+
+## Honest Note
+UI surfaces continue to evolve. These screenshots represent real functionality, not a final polished release.
