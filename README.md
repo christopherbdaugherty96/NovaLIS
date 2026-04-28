@@ -2,6 +2,10 @@
 
 ## The AI assistant you can actually trust.
 
+**Current Stage:** Alpha  
+**Status:** Active Build  
+**Model:** Local-first / Trust-first
+
 NovaLIS is a governed local AI system designed to help with real daily work while keeping execution under clear control.
 
 Nova separates **intelligence** from **authority**: AI can reason and assist, but important actions remain bounded, visible, and reviewable.
@@ -76,11 +80,6 @@ Nova separates them. Reasoning can improve while real actions still require visi
 
 ---
 
-## Current Status
-NovaLIS is an active build in progress.
-
-Strong governance foundations exist. Product polish, trust UI, and onboarding are still being improved.
-
 ## Current Focus
 Build the best trustworthy daily-use personal AI assistant first.
 
@@ -88,11 +87,13 @@ Long-term platform ambitions remain possible, but current work is focused on cla
 
 ---
 
-## Quick Start
+## Explore Next
 - [Quickstart](QUICKSTART.md)
 - [Use Cases](USE_CASES.md)
 - [Demo Walkthrough](docs/product/DEMO_WALKTHROUGH.md)
+- [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
 - [Docs Index](docs/INDEX.md)
+- [Changelog](CHANGELOG.md)
 - [Authoritative Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
 
 ## License
