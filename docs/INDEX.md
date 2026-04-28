@@ -9,8 +9,14 @@ Generated runtime truth files are the authority for exact live status.
 - [README](../README.md)
 - [Quickstart](../QUICKSTART.md)
 - [What Works Today](product/WHAT_WORKS_TODAY.md)
+- [Governed System Architecture](product/GOVERNED_SYSTEM_ARCHITECTURE.md)
+- [Trust Review Card Plan](product/TRUST_REVIEW_CARD_PLAN.md)
 - [Known limitations](product/KNOWN_LIMITATIONS.md)
 - [Current runtime state](current_runtime/CURRENT_RUNTIME_STATE.md)
+
+## What Nova Is
+Nova is a governed local AI runtime focused on separating reasoning from execution.
+Use the product docs above first, then use runtime truth docs for exact capability state.
 
 ## Current Work
 - [Active TODO](todo/ACTIVE_TODO.md)
@@ -22,5 +28,6 @@ Generated runtime truth files are the authority for exact live status.
 - [Governance matrix](current_runtime/GOVERNANCE_MATRIX.md)
 - [Capability verification](capability_verification/STATUS.md)
 
-## Full Library
-Deeper docs, archives, audits, and reference material remain in their existing folders.
+## Deep Library
+Deeper docs, archives, audits, historical phase materials, and reference material remain available in their existing folders.
+Prefer Start Here unless you need implementation detail or historical context.
