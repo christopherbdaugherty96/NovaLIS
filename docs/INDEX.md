@@ -6,39 +6,21 @@ Generated runtime truth files are the authority for exact live status.
 ---
 
 ## Start Here
-- [README](../README.md) - public overview
-- [What Works Today](product/WHAT_WORKS_TODAY.md) - current usable surfaces
-- [Quickstart](../QUICKSTART.md) - install and run
-- [Known limitations](product/KNOWN_LIMITATIONS.md) - honest current constraints
-- [Current runtime state](current_runtime/CURRENT_RUNTIME_STATE.md) - live truth snapshot
-- [Capability verification status](capability_verification/STATUS.md) - what is proven vs still being verified
+- [README](../README.md)
+- [Quickstart](../QUICKSTART.md)
+- [What Works Today](product/WHAT_WORKS_TODAY.md)
+- [Known limitations](product/KNOWN_LIMITATIONS.md)
+- [Current runtime state](current_runtime/CURRENT_RUNTIME_STATE.md)
 
----
-
-## New Users
-- [Try These Commands](product/TRY_THESE_COMMANDS.md)
-- [Demo walkthrough](product/DEMO_WALKTHROUGH.md)
-- [User ready status](product/USER_READY_STATUS.md)
-- [Human guides](reference/HUMAN_GUIDES/README.md)
-
-## Product Direction
-- [Why Nova](product/WHY_NOVA.md)
-- [Product Legibility](product/PRODUCT_LEGIBILITY.md)
-- [Trust Review Card Spec](product/TRUST_REVIEW_CARD_SPEC.md)
+## Current Work
+- [Active TODO](todo/ACTIVE_TODO.md)
+- [Future Roadmap](future/ROADMAP.md)
+- [Future Guide](future/README.md)
 
 ## Technical Users
 - [Architecture](reference/ARCHITECTURE.md)
 - [Governance matrix](current_runtime/GOVERNANCE_MATRIX.md)
-- [Runtime fingerprint](current_runtime/RUNTIME_FINGERPRINT.md)
-- [Full documentation map](FULL_DOCUMENTATION_MAP.md)
-
-## Planning / Direction
-- [Audit Action Plan](AUDIT_ACTION_PLAN_2026-04-28.md)
-- [Consolidated roadmap](../4-15-26%20NEW%20ROADMAP/NOVA_CONSOLIDATED_ROADMAP_2026-04-28.md)
-- [Current priority override](../4-15-26%20NEW%20ROADMAP/CURRENT_PRIORITY_OVERRIDE_2026-04-27.md)
-
----
+- [Capability verification](capability_verification/STATUS.md)
 
 ## Full Library
-All deeper audits, future plans, architecture docs, product docs, security docs, and archives remain in their existing folders.
-This index is intentionally simplified so the repo is easier to navigate first.
+Deeper docs, archives, audits, and reference material remain in their existing folders.
