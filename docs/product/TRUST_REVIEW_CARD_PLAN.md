@@ -4,11 +4,11 @@ Last reviewed: 2026-04-28
 
 ## Current Truth
 
-Nova already has an initial visible proof layer:
+Nova already has initial proof surfaces:
 
-- Action Receipts exist as the current dashboard receipt surface for governed-action outcomes.
 - `/api/trust/receipts` exposes recent receipt-worthy governed-action ledger events.
 - `/api/trust/receipts/summary` exposes a compact receipt summary.
+- Dashboard Action Receipts are the visible UI surface when available, but the API remains the direct proof source.
 - This document now describes the fuller Trust Review Card / Trust Panel direction, not a from-scratch proof surface.
 
 The remaining gap is richer user-facing review: clearer blocked reasons, confirmation-state preview, proof browsing, and a stronger demo flow.
@@ -37,9 +37,9 @@ It should explain:
 
 Current surfaces to build from:
 
-- Action Receipts in the dashboard
 - Trust Receipts API: `/api/trust/receipts`
 - Trust Receipts summary API: `/api/trust/receipts/summary`
+- Dashboard Action Receipts when available
 - Ledger-backed governed-action events
 - Capability live checklists for proof capture
 
