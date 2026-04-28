@@ -12,6 +12,8 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
 from src.base_skill import SkillResult
+from src.conversation.request_understanding import build_request_understanding
+from src.conversation.request_understanding_formatter import format_request_understanding_block
 from src.conversation.session_router import SessionRouter
 from src.governor.network_mediator import NetworkMediator
 from src.personality.tone_profile_store import ToneProfileStore
@@ -58,6 +60,11 @@ async def run_general_chat_fallback(
     chat_context = list(session_state.get("general_chat_context") or session_context)
     skill_state = dict(session_state)
     skill_state["relevant_memory_context"] = relevant_memory_context
+
+    understanding = build_request_understanding(normalized_query)
+    skill_state["request_understanding"] = understanding
+    skill_state["request_understanding_prompt_block"] = format_request_understanding_block(understanding)
+
     return await general_chat_skill.handle(normalized_query, chat_context, skill_state)
 
 

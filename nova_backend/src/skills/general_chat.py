@@ -427,6 +427,7 @@ class GeneralChatSkill(BaseSkill):
         presentation_preference: str = "",
         last_answer_kind: str = "",
         memory_context: str = "",
+        request_understanding_block: str = "",
     ) -> str:
         mode_block = NovaStyleContract.chat_mode_guidance(mode)
         tone_block = self.TONE_BLOCKS.get(tone_profile, self.TONE_BLOCKS["balanced"])
@@ -448,6 +449,8 @@ class GeneralChatSkill(BaseSkill):
             blocks.append(presentation_block)
         if memory_context:
             blocks.append(memory_context)
+        if request_understanding_block:
+            blocks.append(request_understanding_block)
         return "\n\n".join(block.strip() for block in blocks if block.strip())
 
     def _resolve_max_tokens(
@@ -1567,6 +1570,9 @@ class GeneralChatSkill(BaseSkill):
         )
         shaped_style = self._presentation_style(style, presentation_preference=presentation_preference)
         memory_context = self._build_memory_context()
+        request_understanding_block = str(
+            (session_state or {}).get("request_understanding_prompt_block") or ""
+        ).strip()
         system_prompt = self._build_system_prompt(
             mode,
             shaped_style,
@@ -1574,6 +1580,7 @@ class GeneralChatSkill(BaseSkill):
             presentation_preference=presentation_preference,
             last_answer_kind=prior_conversation.last_answer_kind,
             memory_context=memory_context,
+            request_understanding_block=request_understanding_block,
         )
         max_tokens = self._resolve_max_tokens(
             mode,
