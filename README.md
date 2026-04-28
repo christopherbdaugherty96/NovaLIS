@@ -1,5 +1,7 @@
 # NovaLIS
 
+![Alpha](https://img.shields.io/badge/stage-alpha-blue) ![Active Build](https://img.shields.io/badge/status-active_build-brightgreen) ![Local First](https://img.shields.io/badge/model-local--first-purple) ![Trust First](https://img.shields.io/badge/focus-trust--first-orange)
+
 ## The AI assistant you can actually trust.
 
 **Version:** 0.4 Alpha  
@@ -92,6 +94,7 @@ Long-term platform ambitions remain possible, but current work is focused on cla
 ## Explore Next
 - [Quickstart](QUICKSTART.md)
 - [Use Cases](USE_CASES.md)
+- [Why Nova](docs/product/WHY_NOVA.md)
 - [Demo Walkthrough](docs/product/DEMO_WALKTHROUGH.md)
 - [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
 - [Docs Index](docs/INDEX.md)
