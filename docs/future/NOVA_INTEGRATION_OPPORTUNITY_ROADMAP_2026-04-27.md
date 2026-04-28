@@ -175,6 +175,25 @@ disconnect/revoke path
 
 ---
 
+## Foundation Gates Before Any Integration Becomes Active
+
+Before any roadmap item below moves from future planning into active implementation, verify these gates:
+
+```text
+current priority override allows the work
+RequestUnderstanding trust/action visibility is complete or explicitly not required for that narrow item
+read/write scope is declared
+connector/provider status can be shown to the user
+approval requirements are defined
+receipt and non-action statement behavior is defined
+safe failure and disconnect/revoke behavior is defined
+no paused scope is accidentally resumed
+```
+
+If an integration touches external accounts, files, browser state, smart-home devices, money, customer data, email, calendar, or public posting, it must default to read-only or draft-only until approval and receipts are proven.
+
+---
+
 # 1. MCP-Style Connector Layer
 
 ## Opportunity
