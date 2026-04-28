@@ -30,6 +30,14 @@ Most AI tools optimize for capability expansion. Nova emphasizes bounded executi
 - [Media Engine Safe Implementation Roadmap](docs/future/NOVA_MEDIA_ENGINE_SAFE_IMPLEMENTATION_ROADMAP.md)
 - [Nova x Auralis Digital Website Engine](docs/future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE.md)
 
+## Core Principle
+**Intelligence is not authority.**
+
+Nova may reason, summarize, search, draft, and recommend. Real actions should remain bounded by capability checks, execution boundaries, and visible receipts.
+
+## Current Status
+Alpha build for technical users and early adopters. Real project under active development, not a finished consumer product.
+
 ## AI Workflow Note
 This project may use AI tools for planning, coding support, audits, review, and prototyping.
 
@@ -41,14 +49,6 @@ This project may use AI tools for planning, coding support, audits, review, and 
 See:
 - [AI Tooling Workflow](docs/WORKFLOW_AI_TOOLING.md)
 - [AI Tooling Boundaries](docs/AI_TOOLING_BOUNDARIES.md)
-
-## Core Principle
-**Intelligence is not authority.**
-
-Nova may reason, summarize, search, draft, and recommend. Real actions should remain bounded by capability checks, execution boundaries, and visible receipts.
-
-## Current Status
-Alpha build for technical users and early adopters. Real project under active development, not a finished consumer product.
 
 ## License
 See [LICENSE](LICENSE).
