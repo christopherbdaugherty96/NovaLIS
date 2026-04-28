@@ -313,3 +313,72 @@ def test_run_general_chat_fallback_no_capability_execution_triggered():
     assert len(skill.calls) == 1
     understanding = skill.calls[0]["session_state"]["request_understanding"]
     assert understanding.authority_effect == "none"
+
+
+# ---------------------------------------------------------------------------
+# Prompt assembly tests: prove the block reaches _build_system_prompt output
+# ---------------------------------------------------------------------------
+
+
+def _make_skill() -> "GeneralChatSkill":
+    from src.skills.general_chat import GeneralChatSkill
+    return GeneralChatSkill()
+
+
+def test_build_system_prompt_includes_understanding_block_when_provided():
+    skill = _make_skill()
+    block = (
+        "Request boundary context (system guidance — not for verbatim output):\n"
+        "Nova understands: User wants to draft an email.\n"
+        "Current capability: draft-only — no automatic sending or submission.\n"
+        "Must not: send email automatically."
+    )
+    prompt = skill._build_system_prompt("casual", request_understanding_block=block)
+
+    assert block in prompt
+    assert "send email automatically" in prompt
+
+
+def test_build_system_prompt_omits_block_when_empty():
+    skill = _make_skill()
+    prompt_without = skill._build_system_prompt("casual", request_understanding_block="")
+    prompt_with = skill._build_system_prompt("casual", request_understanding_block="BOUNDARY_SENTINEL")
+
+    assert "BOUNDARY_SENTINEL" not in prompt_without
+    assert "BOUNDARY_SENTINEL" in prompt_with
+
+
+def test_build_system_prompt_block_appears_after_base_contract():
+    skill = _make_skill()
+    block = "BOUNDARY_TEST_MARKER"
+    prompt = skill._build_system_prompt("casual", request_understanding_block=block)
+
+    base_pos = prompt.find(skill.BASE_CONTRACT[:40])
+    block_pos = prompt.find(block)
+
+    assert base_pos != -1, "BASE_CONTRACT not found in prompt"
+    assert block_pos != -1, "understanding block not found in prompt"
+    assert block_pos > base_pos, "understanding block should appear after BASE_CONTRACT"
+
+
+def test_build_system_prompt_email_understanding_block_reaches_prompt():
+    skill = _make_skill()
+    understanding = build_request_understanding("draft an email to boss@work.com about the deadline")
+    block = format_request_understanding_block(understanding)
+
+    assert block  # sanity: non-empty for email_draft_boundary
+    prompt = skill._build_system_prompt("casual", request_understanding_block=block)
+
+    assert "draft-only" in prompt
+    assert "send email automatically" in prompt
+
+
+def test_build_system_prompt_casual_greeting_empty_block_not_present():
+    skill = _make_skill()
+    understanding = build_request_understanding("hey how are you")
+    block = format_request_understanding_block(understanding)
+
+    assert block == ""  # sanity: empty for general type
+    prompt = skill._build_system_prompt("casual", request_understanding_block=block)
+
+    assert "Request boundary context" not in prompt
