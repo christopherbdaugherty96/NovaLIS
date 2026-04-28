@@ -1,18 +1,44 @@
 # Future Docs Guide
 
-**Status:** Reference guide for the `docs/future/` folder  
-**Purpose:** Explain what these documents are for, how much authority they carry, and how they relate to Nova's live project state.
+**Purpose:** Explain what future documents are for, how much authority they carry, and how they relate to Nova's live project state.
+
+## Short Version
+
+The `docs/future/` folder preserves direction.
+It does not define current truth.
+
+Use these sources in order of authority:
+1. Running code
+2. Generated runtime truth docs
+3. Active TODO / current sprint docs
+4. Future planning docs
+5. Historical archives
 
 ## Canonical Future Direction
 
 - `ROADMAP.md` — primary future direction and phased expansion path.
 
----
+## What Belongs Here
 
-## What This Folder Is
+Use this folder for:
+- long-term vision
+- optional expansions
+- connector ideas
+- future UX concepts
+- strategic bets
+- experiments not yet committed to build now
 
-The `docs/future/` folder is Nova's design reserve.
+## What Does Not Belong Here
 
-These documents preserve long-term vision, strategic options, future technical directions, and optional expansion paths. They are not the active roadmap and they are not implementation authority.
+Avoid treating this folder as:
+- live feature proof
+- implementation status
+- current sprint authority
+- release promises
 
-Live authority belongs to `Now.md`, runtime truth, capability verification, and current code.
+## Why This Matters
+
+Good future planning is useful.
+Confusing future plans with current reality damages trust.
+
+Nova should preserve ambition while staying honest about what exists now.
