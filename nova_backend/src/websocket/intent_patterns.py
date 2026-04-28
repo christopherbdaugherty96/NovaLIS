@@ -158,6 +158,13 @@ CONTINUE_THREAD_RE = re.compile(
     r"^\s*continue(?:\s+my)?\s+(?P<name>.+?)\s*$",
     re.IGNORECASE,
 )
+# Paused scopes that must not be intercepted by the thread-continuation router.
+# When the extracted thread name matches, let run_general_chat_fallback handle
+# the turn so build_request_understanding can inject the PAUSED boundary block.
+PAUSED_SCOPE_RE = re.compile(
+    r"\b(shopify|cap\s*65|auralis|website\s+merger)\b",
+    re.IGNORECASE,
+)
 SHOW_THREADS_RE = re.compile(
     r"^\s*(?:show|list)\s+(?:my\s+)?(?:project\s+)?threads?\s*$",
     re.IGNORECASE,
