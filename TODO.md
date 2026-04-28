@@ -1,9 +1,21 @@
 # Nova TODO
-Updated: 2026-04-27
+Updated: 2026-04-28
 
-## Current Status
-See active sprint and blockers in [`4-15-26 NEW ROADMAP/Now.md`](4-15-26%20NEW%20ROADMAP/Now.md).
+## Active Priority
+Improve the core assistant experience:
+- clearer understanding of requests
+- better continuity across conversations
+- visible trust and action history
+- stronger daily usefulness
+- polished onboarding and first-run clarity
 
-For strategy and tier roadmap, see [`4-15-26 NEW ROADMAP/MasterRoadMap.md`](4-15-26%20NEW%20ROADMAP/MasterRoadMap.md).
+## In Progress
+See current roadmap and handoff docs in `4-15-26 NEW ROADMAP/`
 
-For deferred work, see [`4-15-26 NEW ROADMAP/BackLog.md`](4-15-26%20NEW%20ROADMAP/BackLog.md).
+## Important Rule
+Do not confuse future platform ideas with current shipped product reality.
+
+## Supporting Docs
+- `4-15-26 NEW ROADMAP/CURRENT_PRIORITY_OVERRIDE_2026-04-27.md`
+- `4-15-26 NEW ROADMAP/NOVA_CONSOLIDATED_ROADMAP_2026-04-28.md`
+- `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
