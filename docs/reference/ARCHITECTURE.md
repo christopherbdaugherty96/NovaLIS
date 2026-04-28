@@ -51,6 +51,24 @@ The capability set includes read-only research and status surfaces, local-device
 
 ---
 
+## Conversation, Memory, And Authority
+
+Conversation context and memory can improve understanding and continuity. They do not authorize execution.
+
+Use [Conversation and Memory Model](../product/CONVERSATION_AND_MEMORY_MODEL.md) for the human-facing explanation of:
+
+- current message
+- session context
+- mode and tone
+- memory and continuity
+- ledger and Action Receipts
+- generated runtime truth
+- future plans versus current authority
+
+Memory must not bypass capability registration, confirmation requirements, execution boundaries, or ledger/receipt recording.
+
+---
+
 ## Memory Layer
 
 Memory in Nova is user-controlled:
@@ -59,6 +77,8 @@ Memory in Nova is user-controlled:
 - memories are stored locally
 - memory can be listed, searched, edited, exported, locked, deferred, and deleted through governed surfaces
 - memory use should remain visible and inspectable
+
+Memory is not an execution authority. Stored preferences or plans must not silently trigger actions.
 
 ---
 
@@ -82,7 +102,7 @@ Runtime state includes ledger data, model version lock, settings, memory, usage 
 
 ---
 
-## Trust Receipt API
+## Trust Receipt API And Action Receipts
 
 Nova exposes a read-only action receipt surface that reads the append-only ledger and returns recent governed-action events:
 
@@ -91,7 +111,7 @@ Nova exposes a read-only action receipt surface that reads the append-only ledge
 
 Receipt-worthy events include: `ACTION_COMPLETED`, `ACTION_ATTEMPTED`, `EMAIL_DRAFT_CREATED`, `OPENCLAW_ACTION_APPROVED`/`DENIED`, `SCREEN_CAPTURE_COMPLETED`, `MEMORY_ITEM_SAVED`, and related completion events.
 
-This is the backend for the Trust Panel surface. The Trust Panel dashboard UI component is not yet built; the data is available at the API layer.
+Action Receipts and the Trust Receipt API are current proof surfaces. A fuller Trust Review Card / Trust Panel experience remains future work, especially richer blocked-reason drill-down, confirmation-state preview, proof browsing, and a polished demo flow.
 
 ---
 
@@ -139,7 +159,7 @@ python scripts/certify_capability.py live-signoff 64
 python scripts/certify_capability.py lock 64
 ```
 
-See [33_CAPABILITY_VERIFICATION_GUIDE.md](HUMAN_GUIDES/33_CAPABILITY_VERIFICATION_GUIDE.md) for the plain-language explanation.
+See [33_CAPABILITY_VERIFICATION_GUIDE.md](HUMAN_GUIDES/33_CAPABILITY_VERIFICATION_GUIDE.md) for the plain-language explanation. See also [Capability Signoff Matrix](../product/CAPABILITY_SIGNOFF_MATRIX.md) and [Proof Capture Checklist](../product/PROOF_CAPTURE_CHECKLIST.md) for current human-facing proof guidance.
 
 ---
 
@@ -158,5 +178,7 @@ They should be refactored carefully, with focused tests and no unrelated behavio
 
 - [Current runtime state](../current_runtime/CURRENT_RUNTIME_STATE.md)
 - [Governance matrix](../current_runtime/GOVERNANCE_MATRIX.md)
+- [Conversation and Memory Model](../product/CONVERSATION_AND_MEMORY_MODEL.md)
+- [Capability Signoff Matrix](../product/CAPABILITY_SIGNOFF_MATRIX.md)
 - [Master roadmap](../../4-15-26%20NEW%20ROADMAP/MasterRoadMap.md)
 - [Deep code audit](../../4-15-26%20NEW%20ROADMAP/DEEP_CODE_AUDIT.md)
