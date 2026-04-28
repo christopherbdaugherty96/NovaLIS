@@ -30,7 +30,7 @@ It should not automatically expand authority.
 Before real actions run, requests should pass through governed controls such as:
 
 - capability allowlists
-n- confirmation requirements
+- confirmation requirements
 - policy checks
 - network mediation
 - execution limits
@@ -52,7 +52,7 @@ Users should not have to guess what happened.
 A mature governed system should show:
 
 - detected intent
-n- chosen capability
+- chosen capability
 - whether confirmation was required
 - what was blocked or allowed
 - result summary
