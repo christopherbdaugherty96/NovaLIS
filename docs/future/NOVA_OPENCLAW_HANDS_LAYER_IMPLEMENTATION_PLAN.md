@@ -9,6 +9,7 @@ Purpose: convert the OpenClaw docs-to-code alignment audit into an actionable bu
 Related docs:
 
 - [`../audits/2026-04-26/NOVA_OPENCLAW_DOCS_TO_CODE_ALIGNMENT_AUDIT_2026-04-26.md`](../audits/2026-04-26/NOVA_OPENCLAW_DOCS_TO_CODE_ALIGNMENT_AUDIT_2026-04-26.md)
+- [`NOVA_OPENCLAW_AUTOMATED_WORKFLOW_OPPORTUNITY_MAP_2026-04-27.md`](NOVA_OPENCLAW_AUTOMATED_WORKFLOW_OPPORTUNITY_MAP_2026-04-27.md)
 - [`NOVA_FULL_STACK_DIRECTION_FINAL_LOCK_2026-04-26.md`](NOVA_FULL_STACK_DIRECTION_FINAL_LOCK_2026-04-26.md)
 - [`NOVA_VOICE_STACK_OPERATING_MODEL_2026-04-26.md`](NOVA_VOICE_STACK_OPERATING_MODEL_2026-04-26.md)
 - [`../reference/HUMAN_GUIDES/28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27.md`](../reference/HUMAN_GUIDES/28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27.md)
@@ -58,6 +59,18 @@ ledger events
 Known current gap:
 
 > **Full Phase-8 governed envelope execution remains deferred, and the OpenClaw approval endpoint is still a transitional passthrough.**
+
+Workflow opportunity direction:
+
+```text
+Do not jump straight to broad hands. Build read-only briefs, draft-only proposals, local reversible actions after signoff, approval-required external actions, and only then real OpenClaw hands.
+```
+
+Reference:
+
+```text
+docs/future/NOVA_OPENCLAW_AUTOMATED_WORKFLOW_OPPORTUNITY_MAP_2026-04-27.md
+```
 
 ---
 
