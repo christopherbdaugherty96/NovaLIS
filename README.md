@@ -20,6 +20,14 @@ Nova separates **intelligence** from **authority**: AI can reason and assist, bu
 
 ---
 
+## Start Here
+1. Read [What Works Today](docs/product/WHAT_WORKS_TODAY.md)
+2. Follow [Quickstart](QUICKSTART.md)
+3. Review [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
+4. Check [Authoritative Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
+
+---
+
 ## Who Nova Is For Right Now
 - People who want a private daily-use AI assistant
 - Builders who want visible boundaries around actions
@@ -92,14 +100,11 @@ Long-term platform ambitions remain possible, but current work is focused on cla
 ---
 
 ## Explore Next
-- [Quickstart](QUICKSTART.md)
 - [Use Cases](USE_CASES.md)
 - [Why Nova](docs/product/WHY_NOVA.md)
 - [Demo Walkthrough](docs/product/DEMO_WALKTHROUGH.md)
-- [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
 - [Docs Index](docs/INDEX.md)
 - [Changelog](CHANGELOG.md)
-- [Authoritative Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
 
 ## License
 Nova is source-available under the Business Source License 1.1. See [LICENSE](LICENSE).
