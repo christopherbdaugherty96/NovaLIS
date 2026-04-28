@@ -65,6 +65,33 @@ docs/future/NOVA_OPENCLAW_HANDS_LAYER_IMPLEMENTATION_PLAN.md
 
 ---
 
+## Source Hygiene / Evidence Boundary
+
+This document uses public OpenClaw/community patterns as planning inputs, not as authoritative implementation truth for Nova.
+
+Use this distinction:
+
+```text
+Nova repo truth → authoritative for Nova current status.
+Official/project docs → useful for understanding OpenClaw concepts and common setup patterns.
+Community articles/workflow examples → useful for opportunity discovery.
+Security/news articles → useful risk signals that must be rechecked before public/security claims.
+```
+
+Do not copy raw public claims into README, marketing, security docs, or implementation commitments without rechecking current sources.
+
+Nova implementation truth must come from:
+
+```text
+live repo code
+generated runtime truth docs
+capability verification docs
+tests
+owner direction / priority override
+```
+
+---
+
 ## Observed Public OpenClaw Usage Patterns
 
 Public/community OpenClaw usage generally clusters around these patterns:
