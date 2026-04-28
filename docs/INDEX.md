@@ -10,6 +10,7 @@ Generated runtime truth files are the authority for exact live status.
 - [Quickstart](../QUICKSTART.md) - install and run
 - [Current runtime state](current_runtime/CURRENT_RUNTIME_STATE.md) - live truth snapshot
 - [User ready status](product/USER_READY_STATUS.md) - what works now vs experimental
+- [Known limitations](product/KNOWN_LIMITATIONS.md) - honest current constraints
 - [Capability verification status](capability_verification/STATUS.md) - what is proven vs still being verified
 
 ---
@@ -20,6 +21,7 @@ Generated runtime truth files are the authority for exact live status.
 - [Human guides](reference/HUMAN_GUIDES/README.md)
 - [What Nova can do](reference/HUMAN_GUIDES/03_WHAT_NOVA_CAN_DO.md)
 - [Daily workflows](reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS.md)
+- [Demo walkthrough](product/DEMO_WALKTHROUGH.md)
 
 ### Technical Users
 - [Architecture](reference/ARCHITECTURE.md)
