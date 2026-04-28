@@ -92,7 +92,7 @@ _MEMORY_RE = re.compile(
     r"\b(save (this|that)?\s*(to )?memory|remember|memory|learn|from now on|do not do that again)\b",
     re.IGNORECASE,
 )
-_DOC_RE = re.compile(r"\b(add to docs|document this|update docs|commit|repo|github)\b", re.IGNORECASE)
+_DOC_RE = re.compile(r"\b(add (?:it |this |that )?to docs|document this|update docs|commit|repo|github)\b", re.IGNORECASE)
 _BACKGROUND_RE = re.compile(r"\b(background|while I'?m away|later|process behind the scenes)\b", re.IGNORECASE)
 _REASONING_RE = re.compile(r"\b(reason|think|analy[sz]e|summari[sz]e|review|process)\b", re.IGNORECASE)
 _AUTOMATION_RE = re.compile(
