@@ -96,10 +96,13 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 
 ## Roadmap And Planning
 
-- [Current roadmap](../4-15-26%20NEW%20ROADMAP/Now.md) - active blockers and current sprint path.
+- [Current priority override](../4-15-26%20NEW%20ROADMAP/CURRENT_PRIORITY_OVERRIDE_2026-04-27.md) - active owner direction: RequestUnderstanding trust/action-history visibility first; Cap 64/email, Shopify, Auralis, broad OpenClaw, and local capability signoff are not active.
+- [RequestUnderstanding live verification handoff](../4-15-26%20NEW%20ROADMAP/HANDOFF_2026-04-27_REQUEST_UNDERSTANDING_LIVE_VERIFICATION.md) - code/prompt verification, partial live verification, known limitations, follow-up triggers, and the next trust/action-history card scope.
+- [Email paused / conversation next handoff](../4-15-26%20NEW%20ROADMAP/HANDOFF_2026-04-27_EMAIL_PAUSED_CONVERSATION_NEXT.md) - owner priority change pausing Cap 64 live signoff and selecting conversation/RequestUnderstanding before OpenClaw.
+- [Backlog](../4-15-26%20NEW%20ROADMAP/BackLog.md) - follow-up work aligned to the current priority override.
+- [Current roadmap](../4-15-26%20NEW%20ROADMAP/Now.md) - historical/current sprint notes; if it conflicts with the priority override, use the priority override.
 - [Trust receipt recovery handoff](../4-15-26%20NEW%20ROADMAP/HANDOFF_2026-04-26_TRUST_RECEIPT_RECOVERY.md) - exact recovery steps for the stranded trust receipt / Cap 65 implementation.
-- [Cap 64 signoff ready handoff](../4-15-26%20NEW%20ROADMAP/HANDOFF_2026-04-26_CAP64_SIGNOFF_READY.md) - full session close: what landed (trust receipt hardening, runtime docs, drift fix), cap 64 P5 live checklist steps, and sequenced next steps through first role-based shell.
-- [Backlog](../4-15-26%20NEW%20ROADMAP/BackLog.md) - follow-up hardening that should not interrupt the active close-out path.
+- [Cap 64 signoff ready handoff](../4-15-26%20NEW%20ROADMAP/HANDOFF_2026-04-26_CAP64_SIGNOFF_READY.md) - preserved historical Cap 64 close-out plan; Cap 64 P5/P6 is currently paused by owner direction.
 - [Master roadmap](../4-15-26%20NEW%20ROADMAP/MasterRoadMap.md) - broader roadmap context.
 - [Repo improvement action plan](future/repo_improvement_action_plan.md)
 
