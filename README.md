@@ -2,9 +2,11 @@
 
 ## The AI assistant you can actually trust.
 
-**Current Stage:** Alpha  
+**Version:** 0.4 Alpha  
 **Status:** Active Build  
-**Model:** Local-first / Trust-first
+**Model:** Local-first / Trust-first  
+**Last Major Update:** 2026-04-28  
+**Next Milestone:** Trust Review Card
 
 NovaLIS is a governed local AI system designed to help with real daily work while keeping execution under clear control.
 
