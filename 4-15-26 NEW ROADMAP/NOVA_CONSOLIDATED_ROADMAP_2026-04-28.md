@@ -52,6 +52,7 @@ Connector governance third.
 OpenClaw hands fourth.
 Voice polish fifth.
 Broader integrations later.
+Productization and distribution only after the trust loop is stable.
 ```
 
 Guiding rule:
@@ -730,6 +731,177 @@ docs/future/NOVA_INTEGRATION_OPPORTUNITY_ROADMAP_2026-04-27.md
 
 ---
 
+# Phase 10 — Productization And Operational Readiness
+
+Status:
+
+```text
+FUTURE / NOT THE ACTIVE TASK WHILE CONVERSATION TRUST VISIBILITY IS UNFINISHED
+```
+
+This phase carries forward the still-useful lessons from the frozen 2026-04-15 master roadmap without making installer/productization the active sprint again.
+
+## 21. Installability / Tryability
+
+Goal:
+
+```text
+A non-developer can install, launch, and get one useful response without opening a terminal.
+```
+
+Future work to preserve:
+
+```text
+one-click Windows installer validation
+macOS packaging later
+model fetch / dependency checks
+first-run diagnostics
+clean VM validation
+startup failure logs that are easy to find
+README/demo assets
+landing page / waitlist readiness
+```
+
+Current caution:
+
+```text
+Installer close-out is paused as an active sprint. Preserve the work, but do not let it displace RequestUnderstanding visibility.
+```
+
+## 22. UI Calm And First-Use Experience
+
+Goal:
+
+```text
+Nova should feel understandable and calm, not like a cockpit.
+```
+
+Future work to preserve:
+
+```text
+simpler first-use flow
+clear default useful prompt
+collapse advanced widgets/nav where needed
+plain-language capability status
+clear read-only / draft-only / approval-required labels
+avoid overstating operator behavior
+```
+
+## 23. Reliability And Ownership
+
+Goal:
+
+```text
+Nova should feel appliance-grade before broader release.
+```
+
+Future work to preserve:
+
+```text
+offline capability awareness
+backup and restore
+uninstaller
+sanitized log export
+resource limits
+version migration safety
+privacy mode / transparency controls
+storage lifecycle / pruning policy
+```
+
+## 24. Support, Security, And Distribution
+
+Goal:
+
+```text
+A user can report problems, understand privacy, receive updates, and trust maintenance.
+```
+
+Future work to preserve:
+
+```text
+GitHub issue templates
+security policy and advisory process
+dependency/security scanning
+release notes / changelog cadence
+support channel or discussion space
+basic privacy policy / terms when collecting emails
+license attribution checks
+beta feedback process
+```
+
+## 25. Product Metrics And Re-Evaluation Gates
+
+Useful KPIs from the historical roadmap to preserve:
+
+```text
+time to first successful run
+first useful response rate
+weekly retained testers
+mutation/draft success rate
+user confusion reports
+startup time
+first-response latency
+email/draft completion time once email is unpaused
+```
+
+Useful beta questions:
+
+```text
+What was confusing?
+What was valuable?
+Would you use Nova again tomorrow?
+What did you expect to happen that did not?
+What would make you recommend Nova to a friend?
+```
+
+Re-evaluation rule:
+
+```text
+After any major product-readiness milestone, pause and ask what users actually did, what confused them, and what they returned for before starting another broad track.
+```
+
+## 26. Technical Debt And Maintenance Tax
+
+Future work to preserve:
+
+```text
+split oversized hot-path files only after enough test coverage and no active trust-loop work is at risk
+remove/retire duplicate frontend surfaces only after confirming the active UI path
+reduce docs sprawl by linking to source-of-truth docs instead of duplicating runtime counts
+add accessibility baseline later
+```
+
+Guardrail:
+
+```text
+Do not start broad refactors while the current trust/action visibility work is incomplete.
+```
+
+Reference:
+
+```text
+4-15-26 NEW ROADMAP/MasterRoadMap.md
+```
+
+---
+
+# Operating Discipline Preserved From Older Roadmap
+
+These execution rules remain useful:
+
+```text
+new ideas go to BackLog.md, not the active plan
+no new active track without closing or explicitly pausing the current one
+prefer narrow completed slices over broad audits
+preserve historical evidence instead of deleting it
+update source-of-truth links instead of duplicating runtime facts
+run tests/checks before claiming implementation work is done
+```
+
+Do not use these operating rules to freeze progress. Use them to stop roadmap inflation.
+
+---
+
 # Explicitly Paused Work
 
 These stay paused unless the owner explicitly unpauses them:
@@ -744,6 +916,7 @@ broad OpenClaw execution
 background reasoning jobs
 governed learning persistence
 CRM/SaaS packaging
+installer/productization close-out as the active sprint
 ```
 
 ---
@@ -772,6 +945,7 @@ CRM/SaaS packaging
 19. GitHub/Git read-only assistant
 20. Home Assistant later
 21. Browser/computer-use sandbox later
+22. Productization / installer / support / distribution readiness after trust-loop foundations are stable
 ```
 
 This order is strategic. It is not permission to start every item now.
