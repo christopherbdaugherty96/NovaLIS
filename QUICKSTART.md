@@ -2,6 +2,14 @@
 
 Get Nova running locally and reach a first success quickly.
 
+## What You Need
+- Python 3.10+
+- Local checkout of the repo
+- Local model runtime configured for your environment
+- Windows is the primary target today
+
+Some optional features require extra setup, credentials, or operating system support.
+
 ## Fast Path
 1. Install dependencies.
 2. Start Nova.
@@ -25,3 +33,11 @@ pip install -e .
 ```bash
 nova-start
 ```
+
+Open your browser to the local dashboard after startup.
+
+## If Something Breaks
+- Confirm dependencies are installed
+- Confirm local model runtime is available
+- Review terminal logs
+- Check runtime truth docs for current status
