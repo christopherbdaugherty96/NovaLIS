@@ -25,6 +25,7 @@ Generated runtime truth files are the authority for exact live status.
 - [Architecture](reference/ARCHITECTURE.md)
 - [Governance matrix](current_runtime/GOVERNANCE_MATRIX.md)
 - [Runtime fingerprint](current_runtime/RUNTIME_FINGERPRINT.md)
+- [Full documentation map](FULL_DOCUMENTATION_MAP.md)
 
 ### Planning / Direction
 - [Consolidated roadmap](../4-15-26%20NEW%20ROADMAP/NOVA_CONSOLIDATED_ROADMAP_2026-04-28.md)
