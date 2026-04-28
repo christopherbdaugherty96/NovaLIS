@@ -1,36 +1,64 @@
 # What Works Today
 
-This page separates currently usable surfaces from setup-dependent, experimental, and unfinished areas.
+This page separates Nova's current surfaces by readiness level.
 
-## Core Assistant
+Use generated runtime docs for exact active capability truth.
+Use this page for user-facing readiness expectations.
+
+---
+
+## Proven / Core Paths
+
 | Area | Status | Notes |
 |---|---|---|
-| Chat / conversations | Works | Core assistant runtime available |
-| Research / summaries | Works | Primary daily-use flow |
-| Dashboard UI | Works | Local dashboard surfaces available |
-| Runtime truth docs | Works | Generated truth artifacts available |
+| Chat / conversations | Proven core path | Core local assistant runtime is available. |
+| Dashboard UI | Proven core path | Local dashboard surfaces exist, though polish is still evolving. |
+| Runtime truth docs | Proven core path | Generated runtime state and capability references exist. |
+| Research / summaries | Proven core path | Primary read-oriented assistant value. |
 
-## Local Actions
+---
+
+## Works With Setup / Environment Dependence
+
 | Area | Status | Notes |
 |---|---|---|
-| Basic local controls | Setup Dependent | OS and environment may affect behavior |
-| Open website | Works | Governed action path |
-| Email draft | Works | Draft/manual send model |
+| Local device controls | Setup-dependent | OS and hardware behavior may vary. |
+| Weather / news / calendar snapshots | Setup-dependent | Some surfaces depend on local config, data sources, or connector setup. |
+| Voice input/output | Setup-dependent | Requires local speech tooling and model paths. |
+| Shopify intelligence | Setup-dependent | Requires Shopify environment variables and credentials. |
 
-## Intelligence Surfaces
+---
+
+## Implemented But Still Maturing
+
 | Area | Status | Notes |
 |---|---|---|
-| Weather / news / calendar snapshots | Works | Depends on configuration where applicable |
-| Memory / continuity | Works | Active surface, evolving UX |
-| Screen capture / analysis | Experimental | Useful but still maturing |
+| Memory / continuity | Implemented, evolving UX | Useful surface, still being refined. |
+| Screen capture / analysis | Experimental | Request-time capture exists, but the experience is still maturing. |
+| Email draft | Implemented, safety-limited | Draft/manual-send model; Nova does not send autonomously. |
+| OpenClaw execution surface | Advanced / constrained | Governed, limited, not broad autonomy. |
 
-## Advanced / Future
+---
+
+## Not Yet Product-Ready
+
 | Area | Status | Notes |
 |---|---|---|
-| Trust Panel / Trust Review Card | Not Implemented | Active priority area |
-| Broad autonomous execution | Intentionally Limited | Not current product direction |
-| One-click installer | Not Implemented | Needed for broader adoption |
+| Trust Panel / Trust Review Card | Not implemented | Active priority area. |
+| One-click installer | Not implemented | Needed for broader adoption. |
+| Mainstream consumer onboarding | Not ready | Current setup expects a technical user. |
+| Broad autonomous execution | Intentionally limited | Not current product direction. |
 
-## Guidance
-If you are technical and comfortable with local setup, Nova already has meaningful value.
-If you expect consumer-grade simplicity, Nova is still in progress.
+---
+
+## What This Means
+
+Nova already has meaningful working surfaces.
+
+The current focus is no longer raw feature count.
+The focus is:
+- clarity
+- trust visibility
+- onboarding quality
+- usability
+- proof
