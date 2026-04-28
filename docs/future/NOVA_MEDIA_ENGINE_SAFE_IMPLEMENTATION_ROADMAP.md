@@ -89,7 +89,7 @@ Why first:
 
 Safe outputs:
 
-- what content performed best
+- top-performing content
 - best hooks by retention
 - products needing awareness
 - audience themes
@@ -152,7 +152,7 @@ Allowed later with:
 - budget caps
 - campaign preview
 - spend limits
-- explicit approval each launch
+- explicit approval for each launch
 
 ---
 
@@ -197,7 +197,7 @@ Build:
 - campaign angle generator
 - product FAQ extractor
 - objection detector
-- content package from product data
+- content package generation from product data
 
 Success means:
 Nova turns product data into marketing drafts.
@@ -215,7 +215,7 @@ Build:
 - follow-up content suggestions
 
 Success means:
-Nova helps understand the audience.
+Nova helps the user understand the audience.
 
 ---
 
@@ -253,6 +253,9 @@ Higher-risk actions become visible and reviewable.
 ## Phase 7 — Governed Scheduling / Publishing
 
 Build only after prior phases are solid and trust surfaces are mature.
+
+Success means:
+Nova can assist with external publishing while preserving visible user control.
 
 ---
 
