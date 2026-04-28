@@ -252,7 +252,7 @@ This can expand from websites into:
 
 - social media packages
 - local SEO
-n- lead funnels
+- lead funnels
 - branded content
 - e-commerce builds
 - client analytics dashboards
