@@ -3,6 +3,7 @@
 Get Nova running locally and try a few safe first commands.
 
 For exact live status after startup, use `docs/current_runtime/CURRENT_RUNTIME_STATE.md`.
+For detailed setup help, see `docs/reference/HUMAN_GUIDES/26_LOCAL_SETUP_AND_STARTUP.md`.
 
 ---
 
