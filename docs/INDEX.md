@@ -7,29 +7,33 @@ Generated runtime truth files are the authority for exact live status.
 
 ## Start Here
 - [README](../README.md) - public overview
+- [What Works Today](product/WHAT_WORKS_TODAY.md) - current usable surfaces
 - [Quickstart](../QUICKSTART.md) - install and run
-- [Current runtime state](current_runtime/CURRENT_RUNTIME_STATE.md) - live truth snapshot
-- [User ready status](product/USER_READY_STATUS.md) - what works now vs experimental
 - [Known limitations](product/KNOWN_LIMITATIONS.md) - honest current constraints
+- [Current runtime state](current_runtime/CURRENT_RUNTIME_STATE.md) - live truth snapshot
 - [Capability verification status](capability_verification/STATUS.md) - what is proven vs still being verified
 
 ---
 
-## Best Entry Points By Audience
-
-### New Users
-- [Human guides](reference/HUMAN_GUIDES/README.md)
-- [What Nova can do](reference/HUMAN_GUIDES/03_WHAT_NOVA_CAN_DO.md)
-- [Daily workflows](reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS.md)
+## New Users
+- [Try These Commands](product/TRY_THESE_COMMANDS.md)
 - [Demo walkthrough](product/DEMO_WALKTHROUGH.md)
+- [User ready status](product/USER_READY_STATUS.md)
+- [Human guides](reference/HUMAN_GUIDES/README.md)
 
-### Technical Users
+## Product Direction
+- [Why Nova](product/WHY_NOVA.md)
+- [Product Legibility](product/PRODUCT_LEGIBILITY.md)
+- [Trust Review Card Spec](product/TRUST_REVIEW_CARD_SPEC.md)
+
+## Technical Users
 - [Architecture](reference/ARCHITECTURE.md)
 - [Governance matrix](current_runtime/GOVERNANCE_MATRIX.md)
 - [Runtime fingerprint](current_runtime/RUNTIME_FINGERPRINT.md)
 - [Full documentation map](FULL_DOCUMENTATION_MAP.md)
 
-### Planning / Direction
+## Planning / Direction
+- [Audit Action Plan](AUDIT_ACTION_PLAN_2026-04-28.md)
 - [Consolidated roadmap](../4-15-26%20NEW%20ROADMAP/NOVA_CONSOLIDATED_ROADMAP_2026-04-28.md)
 - [Current priority override](../4-15-26%20NEW%20ROADMAP/CURRENT_PRIORITY_OVERRIDE_2026-04-27.md)
 
