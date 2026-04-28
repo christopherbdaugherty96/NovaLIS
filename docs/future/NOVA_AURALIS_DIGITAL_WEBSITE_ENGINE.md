@@ -33,12 +33,13 @@ This combines service business practicality with Nova's governance model.
 Handles:
 
 - sales
-n- client onboarding
+- client onboarding
+- proposals and pricing
 - revisions
 - relationships
-- pricing
 - delivery
 - support
+- recurring service plans
 
 ### Nova = Internal Production Engine
 
@@ -54,6 +55,7 @@ Handles:
 - mobile optimization guidance
 - trust review steps
 - reusable workflows
+- future analytics insights
 
 ---
 
@@ -74,18 +76,67 @@ These customers often need a better website but do not want to build one themsel
 
 ---
 
+## Client Intake Inputs
+
+A strong intake process should capture:
+
+- business name
+- industry
+- city / service area
+- services offered
+- pricing model if relevant
+- phone / email / contact info
+- booking link if any
+- social links
+- photos / logo
+- testimonials
+- desired style
+- competitors they like
+- primary goal (calls, leads, bookings, orders)
+
+Good intake quality improves final output quality.
+
+---
+
 ## Website Workflow
 
 1. Create client profile.
-2. Collect photos, services, contact info, goals.
+2. Collect photos, services, contact info, and goals.
 3. Select style direction.
 4. Nova proposes sitemap and sections.
 5. Nova drafts copy and page structure.
 6. Nova assembles website draft.
-7. Human reviews design quality.
+7. Human reviews design quality and conversion flow.
 8. Client requests revisions.
 9. Final approval.
 10. Publish or hand off files.
+
+---
+
+## Standard Deliverables
+
+A common package could include:
+
+- homepage
+- services page
+- about page
+- gallery
+- testimonials section
+- contact page
+- mobile navigation
+- lead form or booking CTA
+- local SEO basics
+- analytics setup guidance
+
+Premium packages could include:
+
+- blog/news section
+- multi-location pages
+- advanced animations
+- custom illustrations
+- e-commerce pages
+- email capture funnel
+- monthly updates
 
 ---
 
@@ -113,6 +164,28 @@ Possible visual features:
 - maps
 - FAQ sections
 - mobile-first layouts
+- premium spacing systems
+- strong typography hierarchy
+
+---
+
+## Build Paths
+
+Possible production paths:
+
+### Builder Path
+
+Use managed builders for speed and easy handoff.
+
+### Code Path
+
+Use modern frameworks for premium custom builds.
+
+### Hybrid Path
+
+Use templates, custom assets, and selective code enhancements.
+
+The best path depends on budget, timeline, and client needs.
 
 ---
 
@@ -129,6 +202,7 @@ Nova can safely generate:
 - contact page draft
 - SEO copy draft
 - style guide draft
+- revision suggestions
 
 Publishing domains, editing live sites automatically, or purchasing services should require explicit approval later.
 
@@ -152,6 +226,8 @@ This creates multiple revenue paths:
 - content packages
 - photo refreshes
 - booking funnel improvements
+- landing pages
+- e-commerce add-ons
 
 ---
 
@@ -162,6 +238,7 @@ This creates multiple revenue paths:
 - No client billing actions without approval.
 - No false claims in copy.
 - No hidden edits to live sites.
+- No destructive changes without backup or confirmation.
 - All external actions should be reviewable and logged.
 
 ---
@@ -179,6 +256,7 @@ This can expand from websites into:
 - branded content
 - e-commerce builds
 - client analytics dashboards
+- reputation management workflows
 
 ---
 
@@ -193,3 +271,4 @@ Not:
 - one-click magic website bot
 - fully autonomous agency
 - no-human-needed web factory
+- instant passive-income machine

@@ -79,6 +79,11 @@ For implementation detail:
 - [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
 - [Governance Matrix](docs/current_runtime/GOVERNANCE_MATRIX.md)
 
+For project workflow and how external AI tools fit without replacing Nova's runtime:
+
+- [AI Tooling Workflow](docs/WORKFLOW_AI_TOOLING.md)
+- [AI Tooling Boundaries](docs/AI_TOOLING_BOUNDARIES.md)
+
 ---
 
 ## Current Brutal Truth
