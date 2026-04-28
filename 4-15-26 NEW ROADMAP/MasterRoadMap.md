@@ -1,6 +1,17 @@
 # Nova – Final Definitive Audit, Roadmap & Operating System (2026-04-15)
 
-**Status:** This document is **frozen**. It is the strategic baseline and long-term plan captured on 2026-04-15, not the authoritative live-state document after that date. Use `Now.md` for active work, `docs/current_runtime/` for runtime truth, and `BackLog.md` for future ideas.
+**Status:** This document is **frozen**. It is the strategic baseline and long-term plan captured on 2026-04-15, not the authoritative live-state document after that date.
+
+For current roadmap truth, use these instead:
+
+```text
+4-15-26 NEW ROADMAP/CURRENT_PRIORITY_OVERRIDE_2026-04-27.md
+4-15-26 NEW ROADMAP/NOVA_CONSOLIDATED_ROADMAP_2026-04-28.md
+4-15-26 NEW ROADMAP/BackLog.md
+docs/current_runtime/
+```
+
+`Now.md` is now a superseded sprint-notes file and should not be used as the active priority source.
 
 ---
 
@@ -15,7 +26,7 @@ A thorough second pass compared the merged document against all source inputs an
 > **Historical current-state baseline**
 > The current-state claims in this section reflect the repository as audited on 2026-04-15.
 > Later implementation work may have changed capability counts, packaging status, and live mutation support.
-> For live status, see `Now.md`, `docs/current_runtime/`, and current capability verification docs.
+> For live status, see `CURRENT_PRIORITY_OVERRIDE_2026-04-27.md`, `NOVA_CONSOLIDATED_ROADMAP_2026-04-28.md`, `BackLog.md`, `docs/current_runtime/`, and current capability verification docs.
 
 Nova is **real, architecturally coherent, and trust‑first**:
 - Live governed execution spine (`GovernorMediator → CapabilityRegistry → ExecuteBoundary → NetworkMediator → LedgerWriter`)
@@ -82,9 +93,11 @@ This document provides a verified gap analysis and a tiered, actionable roadmap.
 
 ---
 
-## 4. Merged Roadmap
+## 4. Historical Merged Roadmap
 
-**Sequence principle:**
+This section is historical baseline, not the active build order. For current active sequencing, use `NOVA_CONSOLIDATED_ROADMAP_2026-04-28.md`.
+
+**Original sequence principle:**
 1. **Tier 1** – Unlock try‑ability
 2. **Tier 2** – Deliver one real mutation
 3. **Tier 2.5** – Add reliability & ownership
@@ -193,7 +206,7 @@ Pause 1 week to answer: Are users returning? What do they request most? Is email
 | Unbounded storage growth | Medium | Tier 4 adds pruning policy. |
 
 **Dependencies:**
-- Tier 1 was intended to complete before Tier 2. If execution overlaps, `Now.md` becomes the controlling document for sequencing.
+- Tier 1 was intended to complete before Tier 2. If execution overlaps, `CURRENT_PRIORITY_OVERRIDE_2026-04-27.md` becomes the controlling document for sequencing.
 - Tier 2 email originally assumed an OAuth library; later implementations may choose a narrower draft-only path first.
 - Tier 2.5 backup requires stable serialisation format.
 - Tier 3 refactors require full test suite.
@@ -211,7 +224,7 @@ Pause 1 week to answer: Are users returning? What do they request most? Is email
 - Trading or crypto capabilities
 - Business model monetisation
 
-These are distractions until Tier 1, 2, and 2.5 are done and value is proven.
+These were distractions under the 2026-04-15 plan. Later future planning docs may cover some of them, but only the current priority override decides active work.
 
 ---
 
@@ -278,13 +291,16 @@ These are not urgent for Tier 1, but add to `BackLog.md` for Tier 2.5 completion
 
 ---
 
-## 9. The Only Three Files You Need Now
+## 9. The Current Roadmap Files
 
-1. **`MasterRoadMap.md`** – this document, frozen.
-2. **`Now.md`** – only the current sprint's tasks.
-3. **`BackLog.md`** – all future ideas, captured but not active.
+Use these files now:
 
-Work from `Now.md`. Update it weekly. Move completed items to `CHANGELOG.md` or delete them.
+1. `CURRENT_PRIORITY_OVERRIDE_2026-04-27.md` — active owner priority.
+2. `NOVA_CONSOLIDATED_ROADMAP_2026-04-28.md` — clean human-readable roadmap.
+3. `BackLog.md` — paused scopes and future follow-up work.
+4. `docs/current_runtime/` — generated runtime truth.
+
+This `MasterRoadMap.md` file is frozen historical baseline, not active sprint control.
 
 ---
 
@@ -298,6 +314,8 @@ Work from `Now.md`. Update it weekly. Move completed items to `CHANGELOG.md` or 
 
 **One sentence to remember:**
 *Stop designing phases; start shipping an installer, one email draft, backup, uninstaller, offline awareness, and a support channel—then measure whether users return.*
+
+This final verdict reflects the 2026-04-15 audit baseline. Current active work is governed by the current priority override and consolidated roadmap.
 
 ---
 
@@ -338,4 +356,4 @@ at 5–8 hrs/week. Pick the cadence; the timeline follows. Do not treat the
 ---
 
 *Audit completed and verified against live repository 2026-04-15.*  
-*This document is now frozen. Next step: create `Now.md` and start Tier 1.*
+*This document is frozen historical baseline. Current active roadmap is `NOVA_CONSOLIDATED_ROADMAP_2026-04-28.md`.*
