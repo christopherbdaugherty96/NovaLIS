@@ -8,6 +8,23 @@ Purpose: capture the recommended OpenClaw workflow direction for Nova, grounded 
 
 ---
 
+## Active Priority Note
+
+This document is **not** the current active implementation task.
+
+Current active path remains:
+
+```text
+RequestUnderstanding trust/action-history review card
+→ local capability signoff matrix
+→ OpenClawMediator skeleton
+→ first read-only OpenClaw workflow proof
+```
+
+Do not use this opportunity map to skip directly into broad OpenClaw automation.
+
+---
+
 ## Executive Summary
 
 OpenClaw should become Nova's hands, but only under Nova's law.
