@@ -19,9 +19,16 @@ Try:
 - What capabilities are active?
 - Why was that action blocked?
 
+Then inspect the proof surface:
+- Open `http://localhost:8000/api/trust/receipts` after a governed action
+- Check whether a recent receipt event is visible
+- Use the dashboard Action Receipts surface when available, but treat the receipt API as the direct proof source
+
 ## Minute 4: Test Practical Action
 Try:
-- Draft an email to John about tomorrow
+- Draft an email to `test@example.com` about tomorrow
+  - Confirm only if you want to test local draft opening
+  - Close the draft without sending
 - Turn this into a checklist
 - Search the web and cite sources
 
@@ -30,8 +37,10 @@ Ask yourself:
 - Did it feel understandable?
 - Did it feel useful?
 - Did it feel controlled?
-- Would I trust it more with visible receipts?
+- Did Action Receipts or trust receipts make governed actions inspectable?
 - What friction blocked adoption?
 
 ## Reminder
 Nova should be judged on clarity, trust, and bounded usefulness — not only raw feature count.
+
+Conversation context and memory can help Nova understand. They do not authorize actions. Email draft opens a local mail client draft; Nova does not send email autonomously.
