@@ -24,6 +24,9 @@ Most AI tools optimize for capability expansion. Nova emphasizes bounded executi
 - [Screenshot Asset Plan](docs/product/SCREENSHOT_ASSET_PLAN.md)
 - [Trust UI Spec](docs/product/TRUST_UI_SPEC.md)
 
+## Future Directions
+- [Governed Media and E-Commerce Engine](docs/future/NOVA_GOVERNED_MEDIA_AND_ECOMMERCE_ENGINE.md)
+
 ## Core Principle
 **Intelligence is not authority.**
 
