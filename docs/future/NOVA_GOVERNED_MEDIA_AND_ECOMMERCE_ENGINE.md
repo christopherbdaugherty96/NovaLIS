@@ -2,7 +2,7 @@
 
 Status: future concept / product direction
 
-This document captures a possible future Nova capability family: a governed content and marketing engine for Shopify, e-commerce, social media, and niche audience-building workflows.
+This document captures a possible future Nova capability family: a governed content and marketing engine for Shopify, e-commerce, social media, sponsored product content, comment workflows, and niche audience-building.
 
 This is not a current runtime claim. It is a product and architecture direction that should be implemented only through Nova's existing governance model: capability registration, mediated network access, bounded execution, visible review, user approval for external posting, and ledgered action history.
 
@@ -10,20 +10,39 @@ This is not a current runtime claim. It is a product and architecture direction 
 
 ## Plain-English Summary
 
-Nova could eventually help a user or small business create useful marketing content across multiple profiles:
+Nova could eventually help a user, creator, Shopify store, or small business create useful marketing content across multiple governed profiles:
 
 - a Shopify or e-commerce product marketing profile
+- a sponsored-product / affiliate profile
 - a commentary / opinion profile
+- a community comments and reply-drafting profile
 - one or more personal-interest niche profiles
 - client or brand-specific profiles
 
 The goal is not spam automation or a magic passive-income machine.
 
-The goal is a governed AI growth operator that helps research ideas, draft content, assemble videos, prepare campaigns, track performance, and recommend what to do next while keeping publishing authority visible and controlled by the user.
+The goal is a governed AI growth operator that helps research ideas, draft content, assemble videos, prepare campaigns, monitor comments, track performance, and recommend what to do next while keeping publishing authority visible and controlled by the user.
 
 Nova's core principle still applies:
 
 **Intelligence may generate options. Authority must remain bounded and reviewable.**
+
+---
+
+## The Actual Product Idea
+
+This feature is best understood as a multi-profile content and commerce system.
+
+Nova should eventually let the user define different growth identities, each with separate rules and goals:
+
+1. **Store / Product Profile** - promotes Shopify or e-commerce products in useful, honest ways.
+2. **Sponsored Product Profile** - creates product sponsorship, affiliate, or review-style content with disclosure and claim review.
+3. **Commentary Profile** - builds audience through opinions, explanations, reactions, and trend commentary.
+4. **Community Comments Profile** - reads comments, finds objections/questions, drafts replies, and recommends follow-up content.
+5. **Passion / Niche Profile** - grows a channel around something the user is actually interested in.
+6. **Client Brand Profile** - supports local businesses or client stores with their own rules and approval needs.
+
+The same underlying engine can support all of these, but the profiles must remain separated so Nova does not mix brand voice, claims, products, links, or audiences without user approval.
 
 ---
 
@@ -39,10 +58,12 @@ Nova's advantage would be operating the content process under governance:
 - rate limits to avoid spam behavior
 - product-claim checks
 - platform-policy awareness
+- sponsored-content disclosure checks
 - source and asset provenance
+- comment and audience feedback memory
 - campaign memory
 - analytics-based learning
-- visible receipts for what was generated, approved, posted, or rejected
+- visible receipts for what was generated, approved, posted, replied to, or rejected
 
 This makes the concept stronger than a simple video generator. Nova would act as the control plane for marketing work, not merely the asset generator.
 
@@ -67,7 +88,24 @@ Nova could help a store owner turn product data into useful marketing assets:
 
 This should be especially useful for stores with many products, limited marketing time, or frequent promotional cycles.
 
-### 2. Commentary Profile
+### 2. Sponsored Product / Affiliate Marketing
+
+Nova could eventually help create product sponsorship and affiliate-style content while keeping claims honest and disclosures visible.
+
+Possible outputs:
+
+- sponsored product scripts
+- comparison videos
+- product review outlines
+- affiliate short-form videos
+- disclosure-safe captions
+- product benefit explainers
+- buyer objection clips
+- landing page and link-in-bio copy
+
+Important boundary: Nova should not invent personal experience, fake testimonials, fake results, or undisclosed sponsorship language. Sponsored or affiliate content should be explicitly labeled when required.
+
+### 3. Commentary Profile
 
 A commentary profile would help build audience and discussion around a theme:
 
@@ -81,7 +119,30 @@ A commentary profile would help build audience and discussion around a theme:
 
 This profile is not primarily a direct-sales engine. It is for reach, trust, audience relationship, and brand voice.
 
-### 3. Interest-Based Niche Profile
+### 4. Community Comments Profile
+
+A comments profile would help Nova understand and respond to the audience without becoming a spam bot.
+
+Safe uses:
+
+- summarize common questions
+- identify objections and confusion
+- draft reply options for user approval
+- recommend follow-up videos based on comments
+- detect repeated complaints or product concerns
+- flag risky comments that need human review
+
+Risky uses that should not be default:
+
+- auto-replying at scale
+- arguing with users
+- deleting criticism automatically
+- pretending to be the user without approval
+- pushing products into every comment thread
+
+The comments profile should start as read-only plus draft-only. It should help the user understand the audience before it ever replies publicly.
+
+### 5. Interest-Based Niche Profile
 
 A niche profile would let the user grow content around something personally interesting or strategically useful.
 
@@ -96,7 +157,7 @@ Possible examples:
 
 This matters because durable content systems usually need taste, interest, and consistency. Purely generic automated content is unlikely to build a lasting audience.
 
-### 4. Client / Small Business Marketing Profile
+### 6. Client / Small Business Marketing Profile
 
 A later version could support client-specific marketing profiles for small businesses:
 
@@ -126,9 +187,10 @@ Each profile should define:
 - visual style
 - allowed products or topics
 - banned topics or claims
-- required disclaimers
+- required disclosures
 - approval requirements
 - posting frequency
+- comment/reply policy
 - budget limits
 - asset sources
 - key performance indicators
@@ -139,7 +201,9 @@ Example profiles:
 | Profile | Purpose | Main Output | Approval Level |
 |---|---|---|---|
 | Shopify Product Profile | Sell products and educate buyers | Product demos, ads, FAQs | Required before publish |
+| Sponsored Product Profile | Promote affiliate or sponsored products honestly | Reviews, comparisons, sponsor clips | Required before publish |
 | Commentary Profile | Build trust and attention | Reactions, explainers, opinion clips | Required at first; may loosen later |
+| Community Comments Profile | Understand and respond to audience | Comment summaries, reply drafts, follow-up ideas | Required before any public reply |
 | Passion Niche Profile | Build durable audience | Shorts, stories, educational clips | Required before publish |
 | Client Brand Profile | Serve a business customer | Local marketing content | Client or owner approval required |
 
@@ -157,12 +221,12 @@ A realistic governed workflow would look like this:
 4. Nova drafts scripts, hooks, captions, thumbnails, and video plans.
 5. Nova assembles one or more draft assets through approved tools.
 6. Nova presents a review card showing what will be posted, where, why, and with what links or claims.
-7. User approves, edits, rejects, or schedules the content.
+7. User approves, edits, rejects, exports, or schedules the content.
 8. Nova posts only through an explicit publishing capability, if that capability exists and is enabled.
-9. Nova reads analytics later through read-only connector capabilities.
-10. Nova summarizes performance and updates future recommendations.
+9. Nova reads analytics and comments later through read-only connector capabilities.
+10. Nova summarizes performance, audience response, objections, and next recommendations.
 
-The MVP should stop at draft generation and review. Publishing should come later.
+The MVP should stop at draft generation, comment understanding, and review. Publishing should come later.
 
 ---
 
@@ -170,27 +234,29 @@ The MVP should stop at draft generation and review. Publishing should come later
 
 The first implementation should not try to automate every platform.
 
-The first useful version can be a **Content Studio**:
+The first useful version can be a **Governed Content Studio**:
 
 - one profile definition file or UI form
-- one Shopify product or topic input
+- one Shopify product, sponsored product, comment thread, or niche topic input
 - five content ideas
 - three hooks per idea
 - one short-form script
 - one caption
 - one thumbnail concept
-- one review summary explaining claims, risks, and next action
+- one comment/objection insight when comments are available
+- one review summary explaining claims, risks, disclosures, and next action
 
 No auto-posting is required for the MVP.
 
 A practical first user flow:
 
 1. Select a profile.
-2. Select one product or niche topic.
+2. Select one product, comment theme, or niche topic.
 3. Ask Nova for daily content ideas.
 4. Choose one idea.
 5. Nova drafts a short video package.
-6. User manually creates or posts the final content.
+6. Nova shows claims, risks, disclosures, and suggested next step.
+7. User manually edits, creates, exports, or posts the final content.
 
 This would prove value without widening execution authority.
 
@@ -206,8 +272,10 @@ A mature version could include these stages:
 - audience definition
 - allowed offers
 - banned claims
+- required disclosures
 - style guide
 - posting cadence
+- comment policy
 - approval policy
 
 ### Stage 2: Research and Opportunity Detection
@@ -216,6 +284,7 @@ A mature version could include these stages:
 - competitor scan
 - keyword and hashtag discovery
 - product demand signals
+- audience comment themes
 - seasonal campaign ideas
 - platform-specific content patterns
 
@@ -225,6 +294,7 @@ A mature version could include these stages:
 - hook variants
 - angle selection
 - claim safety review
+- disclosure review
 - content calendar draft
 - campaign grouping
 
@@ -239,6 +309,7 @@ A mature version could include these stages:
 - product demo shot list
 - email copy
 - landing page copy
+- approved reply drafts
 
 ### Stage 5: Video Assembly
 
@@ -253,17 +324,19 @@ A mature version could include these stages:
 
 - preview card
 - content claims
+- disclosures
 - destination platform
 - product links
 - estimated cost
 - platform risks
 - required user approval
 
-### Stage 7: Publishing
+### Stage 7: Publishing / Replying
 
 - scheduled publishing
 - platform upload APIs
 - manual approval gate
+- approved comment replies
 - rollback or delete guidance where possible
 - immutable ledger entry
 
@@ -277,6 +350,7 @@ A mature version could include these stages:
 - comments
 - conversions
 - revenue attribution where available
+- audience objections and questions
 - recommended next experiments
 
 ---
@@ -288,9 +362,11 @@ This feature family must not bypass Nova's governance model.
 Required governance rules:
 
 - No public posting without an explicit publishing capability.
+- No public comment replies without explicit approval at first.
 - No autonomous posting by default.
 - No paid ad spend without explicit approval and budget controls.
 - No product claims without a claim-checking pass.
+- No sponsored or affiliate content without disclosure checks.
 - No use of copyrighted assets unless the source and license are allowed.
 - No pretending that AI-generated endorsements are real customer testimonials.
 - No fake scarcity, fake reviews, fake before/after claims, or misleading medical/financial claims.
@@ -313,13 +389,16 @@ These are conceptual capability families, not current capability IDs.
 - `shopify_product_read`
 - `trend_research_read`
 - `social_analytics_read`
+- `social_comments_read`
 - `competitor_public_content_read`
 
 ### Draft-Oriented Capabilities
 
 - `content_idea_generate`
 - `marketing_script_draft`
+- `sponsored_product_script_draft`
 - `caption_draft`
+- `comment_reply_draft`
 - `thumbnail_concept_draft`
 - `campaign_plan_draft`
 - `email_promo_draft`
@@ -337,6 +416,7 @@ These should require stronger review and should not be first-stage MVP work:
 
 - `social_post_schedule`
 - `social_post_publish`
+- `social_comment_reply_publish`
 - `paid_ad_campaign_draft`
 - `paid_ad_campaign_launch`
 - `shopify_product_update`
@@ -347,15 +427,17 @@ Most early work should stay read-only or draft-only.
 
 ## Review Card Requirements
 
-Before any publishing or scheduling action, Nova should show a trust review card containing:
+Before any publishing, scheduling, or public reply action, Nova should show a trust review card containing:
 
 - profile name
 - platform destination
 - content type
 - generated title/caption/script summary
+- comment reply text, if applicable
 - product or topic being promoted
 - external links included
 - claims detected
+- disclosures required
 - asset sources
 - estimated cost
 - whether posting is immediate or scheduled
@@ -382,8 +464,9 @@ A simple profile object could include:
   "approval_required": true,
   "max_posts_per_day": 2,
   "max_daily_api_spend_usd": 5,
+  "comment_policy": "summarize_and_draft_only",
   "banned_claims": ["fake testimonials", "medical guarantees", "income guarantees"],
-  "required_checks": ["claim_review", "asset_source_review", "link_review"]
+  "required_checks": ["claim_review", "disclosure_review", "asset_source_review", "link_review"]
 }
 ```
 
@@ -400,6 +483,8 @@ A content package could include:
   "caption": "...",
   "thumbnail_prompt": "...",
   "claims": ["product saves time"],
+  "disclosures": [],
+  "comment_insights": ["buyers are asking whether the product works for small spaces"],
   "risk_level": "medium",
   "status": "draft_review_required"
 }
@@ -438,17 +523,22 @@ Social platform integrations should be separated by risk:
 - generate thumbnails
 - export drafts
 - read public trends
+- summarize comments
+- draft reply options
 
 ### Medium Risk
 
 - schedule posts
 - read analytics
 - prepare campaigns
+- queue approved replies
 
 ### High Risk
 
 - publish posts
+- publish comment replies
 - delete posts
+- delete criticism
 - respond to comments automatically
 - launch paid ads
 - spend money
@@ -480,6 +570,7 @@ Real constraints:
 - testing must be consistent
 - accounts can be limited for spam-like behavior
 - product claims can create trust and legal risk
+- comment automation can damage brand trust if it feels fake or aggressive
 
 The honest promise is increased content leverage, not guaranteed income.
 
@@ -491,13 +582,14 @@ The honest promise is increased content leverage, not guaranteed income.
 
 - define profile schema
 - define content package schema
+- define comment insight schema
 - define review card requirements
 - define governance rules
 
 ### Phase B: Draft-Only Content Studio
 
-- user selects profile and topic/product
-- Nova generates ideas, hooks, scripts, captions, thumbnail concepts
+- user selects profile and topic/product/comment theme
+- Nova generates ideas, hooks, scripts, captions, thumbnail concepts, and reply drafts where applicable
 - no posting
 - manual export only
 
@@ -507,6 +599,7 @@ The honest promise is increased content leverage, not guaranteed income.
 - generate product-specific marketing angles
 - create content packages per product
 - add claim review
+- add disclosure review for sponsored or affiliate content
 
 ### Phase D: Asset Drafting
 
@@ -516,10 +609,11 @@ The honest promise is increased content leverage, not guaranteed income.
 - video assembly through local or approved tools
 - maintain asset provenance
 
-### Phase E: Analytics Reader
+### Phase E: Comments and Analytics Reader
 
 - read platform analytics where available
-- summarize performance
+- summarize comment themes
+- identify objections and questions
 - recommend next experiments
 - store learnings per profile
 
@@ -541,6 +635,7 @@ This feature should not become:
 - an autonomous paid-ad spender
 - a platform-rule evasion tool
 - a system that posts without review by default
+- a system that argues with customers automatically
 - a misleading passive-income promise
 - a generic content farm with no profile memory or quality loop
 
@@ -557,6 +652,8 @@ Early success signals:
 - user can create a reusable profile
 - Nova generates differentiated ideas, not generic filler
 - scripts are specific to products or niche context
+- sponsored content includes disclosure awareness
+- comment themes become useful follow-up content ideas
 - content packages include claims and risk review
 - output can be exported or manually posted
 - analytics can be reviewed later
@@ -575,7 +672,8 @@ Not:
 - "AI that prints passive income"
 - "fully autonomous social media bot"
 - "hands-free viral video machine"
+- "comment spam engine"
 
 A truthful product statement would be:
 
-Nova can help plan, draft, review, and eventually govern marketing content workflows for products, e-commerce stores, niche media profiles, and small businesses while keeping external actions visible, bounded, and user-approved.
+Nova can help plan, draft, review, and eventually govern marketing content workflows for products, e-commerce stores, sponsored content, comments, niche media profiles, and small businesses while keeping external actions visible, bounded, and user-approved.
