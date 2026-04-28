@@ -88,6 +88,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     WHY_RECOMMENDATION_RE = deps.WHY_RECOMMENDATION_RE
     CREATE_THREAD_RE = deps.CREATE_THREAD_RE
     CONTINUE_THREAD_RE = deps.CONTINUE_THREAD_RE
+    PAUSED_SCOPE_RE = deps.PAUSED_SCOPE_RE
     _canonical_thread_reference = deps._canonical_thread_reference
     PROJECT_STATUS_RE = deps.PROJECT_STATUS_RE
     BIGGEST_BLOCKER_RE = deps.BIGGEST_BLOCKER_RE
@@ -1336,27 +1337,31 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 thread_name = str(continue_thread_match.group("name") or "").strip()
                 if _canonical_thread_reference(thread_name) in {"this", "it", "thread"}:
                     thread_name = project_threads.active_thread_name() or session_state.get("project_thread_active") or ""
-                found, brief = project_threads.render_brief(thread_name)
-                if found:
-                    session_state["project_thread_active"] = project_threads.active_thread_name()
-                    await send_thread_map_widget(ws, project_threads, session_state)
-                    await _complete_immediate_turn(
-                        brief,
-                        suggested_actions=[
-                            {"label": "Save this update", "command": f"save this as part of {project_threads.active_thread_name()}"},
-                            {"label": "Save thread memory", "command": f"memory save thread {project_threads.active_thread_name()}"},
-                            {"label": "List thread memory", "command": f"memory list thread {project_threads.active_thread_name()}"},
-                            {"label": "Show threads", "command": "show threads"},
-                        ],
-                    )
-                else:
-                    if not project_threads.has_threads() and decision.intent_family == "followup":
-                        pass
+                # Paused scopes must not be routed as thread continuations — fall
+                # through so run_general_chat_fallback can inject the PAUSED
+                # boundary block from build_request_understanding.
+                if not PAUSED_SCOPE_RE.search(thread_name):
+                    found, brief = project_threads.render_brief(thread_name)
+                    if found:
+                        session_state["project_thread_active"] = project_threads.active_thread_name()
+                        await send_thread_map_widget(ws, project_threads, session_state)
+                        await _complete_immediate_turn(
+                            brief,
+                            suggested_actions=[
+                                {"label": "Save this update", "command": f"save this as part of {project_threads.active_thread_name()}"},
+                                {"label": "Save thread memory", "command": f"memory save thread {project_threads.active_thread_name()}"},
+                                {"label": "List thread memory", "command": f"memory list thread {project_threads.active_thread_name()}"},
+                                {"label": "Show threads", "command": "show threads"},
+                            ],
+                        )
                     else:
-                        await _complete_immediate_turn(brief, remember_response=False)
+                        if not project_threads.has_threads() and decision.intent_family == "followup":
+                            pass
+                        else:
+                            await _complete_immediate_turn(brief, remember_response=False)
+                            continue
+                    if found:
                         continue
-                if found:
-                    continue
 
             status_thread_match = PROJECT_STATUS_RE.match(text)
             if status_thread_match:
