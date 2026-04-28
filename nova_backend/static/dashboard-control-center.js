@@ -2521,18 +2521,18 @@ function renderTrustPanel(data = {}) {
 
 // ---------------------------------------------------------------------------
 // Action receipt card — fetches /api/trust/receipts and renders to
-// #trust-center-receipts. Called after chat_done and on trust refresh.
+// #trust-center-receipts. Called after chat_done, on trust refresh,
+// and when navigating to the Trust Center page.
 // ---------------------------------------------------------------------------
 
 const _RECEIPT_LABELS = {
-  EMAIL_DRAFT_CREATED:          "Email draft created",
+  EMAIL_DRAFT_CREATED:          "Email draft opened in mail client",
   EMAIL_DRAFT_FAILED:           "Email draft failed",
-  EMAIL_DRAFT_OPENED:           "Email opened in mail client",
   ACTION_ATTEMPTED:             "Action attempted",
   ACTION_COMPLETED:             "Action completed",
   OPENCLAW_ACTION_APPROVED:     "OpenClaw action approved",
   OPENCLAW_ACTION_DENIED:       "OpenClaw action denied",
-  OPENCLAW_ACTION_PENDING:      "OpenClaw action pending approval",
+  OPENCLAW_ACTION_PENDING:      "OpenClaw action awaiting confirmation",
   OPENCLAW_AGENT_RUN_COMPLETED: "OpenClaw agent run completed",
   SCREEN_CAPTURE_COMPLETED:     "Screen capture completed",
   MEMORY_ITEM_SAVED:            "Memory item saved",
@@ -2541,23 +2541,41 @@ const _RECEIPT_LABELS = {
   POLICY_EXECUTION_BLOCKED:     "Policy blocked",
 };
 
+// Outcome keys: done / failed / blocked / pending / info (no badge)
 const _RECEIPT_OUTCOME = {
-  EMAIL_DRAFT_CREATED:          "success",
-  EMAIL_DRAFT_OPENED:           "success",
-  ACTION_COMPLETED:             "success",
-  OPENCLAW_ACTION_APPROVED:     "success",
-  OPENCLAW_AGENT_RUN_COMPLETED: "success",
-  SCREEN_CAPTURE_COMPLETED:     "success",
-  MEMORY_ITEM_SAVED:            "success",
-  POLICY_EXECUTION_COMPLETED:   "success",
-  EMAIL_DRAFT_FAILED:           "issue",
-  OPENCLAW_ACTION_DENIED:       "issue",
-  POLICY_EXECUTION_BLOCKED:     "issue",
+  EMAIL_DRAFT_CREATED:          "done",
+  ACTION_COMPLETED:             "done",
+  OPENCLAW_ACTION_APPROVED:     "done",
+  OPENCLAW_AGENT_RUN_COMPLETED: "done",
+  SCREEN_CAPTURE_COMPLETED:     "done",
+  MEMORY_ITEM_SAVED:            "done",
+  POLICY_EXECUTION_COMPLETED:   "done",
+  EMAIL_DRAFT_FAILED:           "failed",
+  OPENCLAW_ACTION_DENIED:       "blocked",
+  POLICY_EXECUTION_BLOCKED:     "blocked",
+  OPENCLAW_ACTION_PENDING:      "pending",
+};
+
+// Human-readable badge labels per outcome
+const _OUTCOME_LABEL = {
+  done:    "Done",
+  failed:  "Failed",
+  blocked: "Blocked",
+  pending: "Pending",
+};
+
+// Authority boundary / next-step note shown below the detail line
+const _RECEIPT_BOUNDARY = {
+  EMAIL_DRAFT_CREATED:     "Local draft only — review and send manually in your mail client",
+  EMAIL_DRAFT_FAILED:      "Mail client did not open — check that a default mail app is configured",
+  OPENCLAW_ACTION_PENDING: "Awaiting your confirmation to proceed",
+  OPENCLAW_ACTION_DENIED:  "Blocked by governance — no action taken",
+  POLICY_EXECUTION_BLOCKED: "Policy blocked — no action taken",
 };
 
 function _receiptDetail(r) {
   const type = String(r.event_type || "").trim();
-  if (type === "EMAIL_DRAFT_CREATED" || type === "EMAIL_DRAFT_OPENED" || type === "EMAIL_DRAFT_FAILED") {
+  if (type === "EMAIL_DRAFT_CREATED" || type === "EMAIL_DRAFT_FAILED") {
     const to      = String(r.to || r.recipient || "").trim();
     const subject = String(r.subject || "").trim();
     return [to && `To: ${to}`, subject && `Subject: ${subject}`].filter(Boolean).join("  ·  ");
@@ -2589,18 +2607,19 @@ function _renderReceiptList(receipts, host) {
   if (!receipts.length) {
     const empty = document.createElement("div");
     empty.className = "trust-empty";
-    empty.textContent = "No governed actions recorded yet this session.";
+    empty.textContent = "No governed actions recorded yet. Governed actions appear here after they run.";
     host.appendChild(empty);
     return;
   }
   const list = document.createElement("div");
   list.className = "trust-activity-list";
-  receipts.slice(0, 5).forEach((r) => {
-    const type    = String(r.event_type || "").trim();
-    const label   = _RECEIPT_LABELS[type] || type.toLowerCase().replace(/_/g, " ");
-    const detail  = _receiptDetail(r);
-    const time    = _receiptTime(r.timestamp_utc);
-    const outcome = _RECEIPT_OUTCOME[type] || "info";
+  receipts.forEach((r) => {
+    const type     = String(r.event_type || "").trim();
+    const label    = _RECEIPT_LABELS[type] || type.toLowerCase().replace(/_/g, " ");
+    const detail   = _receiptDetail(r);
+    const time     = _receiptTime(r.timestamp_utc);
+    const outcome  = _RECEIPT_OUTCOME[type] || "info";
+    const boundary = _RECEIPT_BOUNDARY[type] || "";
 
     const row = document.createElement("div");
     row.className = "trust-activity-item";
@@ -2612,7 +2631,7 @@ function _renderReceiptList(receipts, host) {
     if (outcome !== "info") {
       const badge = document.createElement("span");
       badge.className = `trust-activity-outcome trust-activity-outcome-${outcome}`;
-      badge.textContent = outcome === "issue" ? "Blocked" : "Success";
+      badge.textContent = _OUTCOME_LABEL[outcome] || outcome;
       titleRow.appendChild(badge);
     }
 
@@ -2629,6 +2648,13 @@ function _renderReceiptList(receipts, host) {
       row.appendChild(meta);
     }
 
+    if (boundary) {
+      const note = document.createElement("div");
+      note.className = "trust-receipt-note";
+      note.textContent = boundary;
+      row.appendChild(note);
+    }
+
     list.appendChild(row);
   });
   host.appendChild(list);
@@ -2637,7 +2663,7 @@ function _renderReceiptList(receipts, host) {
 function fetchAndRenderReceipts() {
   const host = $("trust-center-receipts");
   if (!host) return;
-  fetch("/api/trust/receipts?limit=5")
+  fetch("/api/trust/receipts?limit=10")
     .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
     .then((data) => {
       _renderReceiptList(Array.isArray(data.receipts) ? data.receipts : [], host);

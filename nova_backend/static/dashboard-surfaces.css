@@ -1879,20 +1879,49 @@ button.workspace-spotlight-card.active {
   text-transform: uppercase;
 }
 
-.trust-activity-outcome-success {
+.trust-activity-outcome-success,
+.trust-activity-outcome-done {
   border: 1px solid rgba(126, 216, 178, 0.32);
   background: rgba(47, 121, 92, 0.24);
   color: #b8f0d5;
 }
 
-.trust-activity-outcome-issue {
+.trust-activity-outcome-issue,
+.trust-activity-outcome-blocked {
   border: 1px solid rgba(255, 182, 131, 0.34);
   background: rgba(120, 55, 18, 0.28);
   color: #ffd1a8;
 }
 
-.trust-activity-item[data-outcome="issue"] {
+.trust-activity-outcome-failed {
+  border: 1px solid rgba(255, 140, 140, 0.36);
+  background: rgba(110, 28, 28, 0.28);
+  color: #ffbbbb;
+}
+
+.trust-activity-outcome-pending {
+  border: 1px solid rgba(140, 185, 255, 0.32);
+  background: rgba(28, 60, 110, 0.28);
+  color: #b8d4ff;
+}
+
+.trust-activity-item[data-outcome="issue"],
+.trust-activity-item[data-outcome="blocked"] {
   border-color: rgba(255, 182, 131, 0.28);
+}
+
+.trust-activity-item[data-outcome="failed"] {
+  border-color: rgba(255, 140, 140, 0.28);
+}
+
+.trust-activity-item[data-outcome="pending"] {
+  border-color: rgba(140, 185, 255, 0.22);
+}
+
+.trust-receipt-note {
+  font-size: 0.7rem;
+  color: rgba(180, 210, 255, 0.6);
+  margin-top: 1px;
 }
 
 .context-insight-steps {
