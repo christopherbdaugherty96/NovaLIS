@@ -224,9 +224,11 @@ def test_run_trial_scenarios_handles_malformed_expect_and_duplicate_names(tmp_pa
 
 def test_trial_runner_script_supports_direct_execution_imports():
     import runpy
+    from pathlib import Path
 
+    script = str(Path(__file__).parent / "nova_trial_runner.py")
     namespace = runpy.run_path(
-        "nova_backend/tests/simulation/nova_trial_runner.py",
+        script,
         run_name="nova_trial_runner_import_check",
     )
 
