@@ -3290,6 +3290,28 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     await send_chat_done(ws)
                     continue
 
+                if capability_id == 64 and not params.get("confirmed"):
+                    to = str(params.get("to") or "").strip()
+                    subject = str(params.get("subject") or "").strip()
+                    recipient_line = f"To: {to}" if to else "To: (fill in)"
+                    subject_line = f"Subject: {subject}" if subject else "Subject: (fill in)"
+                    session_state["pending_governed_confirm"] = {
+                        "capability_id": capability_id,
+                        "params": dict(params),
+                    }
+                    await send_chat_message(
+                        ws,
+                        (
+                            f"I'll draft this email and open it in your mail client:\n"
+                            f"{recipient_line}\n"
+                            f"{subject_line}\n\n"
+                            "Nova never sends email automatically — you review and send.\n"
+                            "Reply 'yes' to proceed or 'no' to cancel."
+                        ),
+                    )
+                    await send_chat_done(ws)
+                    continue
+
                 if capability_id == 17:
                     plan = plan_web_open(params)
                     if not plan.get("ok"):
