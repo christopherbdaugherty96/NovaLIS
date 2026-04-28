@@ -328,6 +328,7 @@ References:
 
 - `docs/audits/2026-04-26/NOVA_OPENCLAW_DOCS_TO_CODE_ALIGNMENT_AUDIT_2026-04-26.md` — current truth and gap audit.
 - `docs/future/NOVA_OPENCLAW_HANDS_LAYER_IMPLEMENTATION_PLAN.md` — build sequence, test gates, and done-means criteria.
+- `docs/future/NOVA_OPENCLAW_AUTOMATED_WORKFLOW_OPPORTUNITY_MAP_2026-04-27.md` — workflow ladder and opportunity map for read-only briefs, draft-only proposals, local reversible actions after signoff, approval-required external actions, and real hands later.
 
 ### Current Truth To Preserve
 
