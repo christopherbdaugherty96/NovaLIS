@@ -8,6 +8,8 @@ It distinguishes what is realistic now, what is realistic later, and what should
 
 It also recognizes that Auralis Digital already exists as a separate completed project/business asset. Nova should complement it, not duplicate it.
 
+Read this document before interpreting the broader future-direction documents. It is the scope guardrail for the media engine, website engine, and related business-roadmap ideas.
+
 ---
 
 ## Core Rule
