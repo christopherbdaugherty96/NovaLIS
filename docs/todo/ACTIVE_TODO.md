@@ -1,26 +1,32 @@
 # Active TODO — Nova
 
-**Updated:** 2026-04-28
-**Sprint goal:** Non-developer installs and runs Nova in 5 minutes.
-**Authoritative sprint detail:**
-[4-15-26 NEW ROADMAP/Now.md](../../4-15-26%20NEW%20ROADMAP/Now.md)
+**Updated:** 2026-04-28  
+**Sprint goal:** Non-developer installs and runs Nova in 5 minutes.  
+**Authority note:** This file is the public task snapshot. Exact runtime truth still comes from generated runtime docs and code.
 
----
+## Current Priorities (ordered by ROI)
 
-## Next Tasks (ordered by ROI)
+- [ ] Trust Review Card MVP — visible receipts, blocked reasons, confirmation states
+- [ ] Cap 64 P5 live signoff + lock
+- [ ] Windows installer VM validation — clean install + bootstrap.log fixes
+- [ ] README screenshot or GIF of governed action flow
+- [ ] Daily Brief MVP — schedule, priorities, reminders, recent actions
+- [ ] Memory UX flows — remember / forget / review saved memory
+- [ ] Capability signoff matrix — verified / config-needed / polish / paused
+- [ ] Dashboard home improvements — stronger daily assistant surface
+- [ ] Cap 65 P5 live signoff
+- [ ] Waitlist activation
 
-- [ ] **Cap 64 P5 live signoff + lock**
-- [ ] **Trust Review Card polish** — receipts UI, clearer states, timestamps, blocked reasons
-- [ ] **README demo asset** — screenshot or GIF of governed action flow
-- [ ] **Windows installer VM validation** — clean install + bootstrap.log root cause fixes
-- [ ] **Daily Brief MVP** — today view with schedule, priorities, reminders, recent actions
-- [ ] **Memory UX commands** — remember / forget / review saved memory flows
-- [ ] **Capability signoff matrix** — verified / config-needed / polish / paused
-- [ ] **Dashboard home improvements** — make Nova feel like a daily assistant surface
-- [ ] **Cap 65 P5 live signoff**
-- [ ] **Formspree waitlist activation**
+## Important Principle
 
----
+Current priorities favor:
+- visible trust
+- onboarding quality
+- proof of value
+- usability
+- truthful readiness
+
+Not raw feature count.
 
 ## Paused (do not start)
 
@@ -29,12 +35,10 @@
 - Google OAuth connector
 - Voice / ElevenLabs expansion
 
----
-
-## Completed This Sprint
+## Recently Completed
 
 - Docs consolidation (canonical todo/future folders)
-- Claude prompts folder added
 - RequestUnderstanding integration
 - Receipt backend groundwork
 - Governance hardening and test passes
+- Product clarity documentation pass
