@@ -17,7 +17,8 @@ Nova is currently an alpha build for technical users and early adopters. It is n
 3. Run Nova locally.
 4. Try the commands in [First 5 Minutes](docs/product/FIRST_5_MINUTES.md).
 5. Check [What Works Today](docs/product/WHAT_WORKS_TODAY.md).
-6. Check [Known Limitations](docs/product/KNOWN_LIMITATIONS.md).
+6. Read the [Conversation and Memory Model](docs/product/CONVERSATION_AND_MEMORY_MODEL.md).
+7. Check [Known Limitations](docs/product/KNOWN_LIMITATIONS.md).
 
 Use generated runtime truth docs for exact current capability status:
 
@@ -40,7 +41,7 @@ Evaluate whether it makes these things clear:
 - Whether the action is bounded or blocked
 - Whether the result is visible and reviewable
 
-The Trust Review Card / Trust Panel is still the highest-value missing proof layer. Until that exists, some governance is easier to inspect in architecture, logs, runtime docs, and code than in the user experience.
+Current truth: Nova now has Action Receipts and a Trust Receipt API for inspecting governed-action outcomes. A fuller Trust Review Card / Trust Panel remains future work, especially richer blocked-reason drill-down, confirmation-state preview, proof browsing, and a more complete demo flow.
 
 ---
 
@@ -54,7 +55,7 @@ Try these after startup:
 4. `Summarize today's news.`
 5. `Draft an email to test@example.com about tomorrow.`
 
-Some commands depend on local setup, credentials, operating system support, or connector configuration.
+Some commands depend on local setup, credentials, operating system support, or connector configuration. Email draft opens a local mail client draft for manual review; Nova does not send email autonomously.
 
 ---
 
@@ -67,8 +68,10 @@ For a first-time visitor:
 3. [First 5 Minutes](docs/product/FIRST_5_MINUTES.md)
 4. [Try These Commands](docs/product/TRY_THESE_COMMANDS.md)
 5. [What Works Today](docs/product/WHAT_WORKS_TODAY.md)
-6. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
-7. [Documentation Index](docs/INDEX.md)
+6. [Conversation and Memory Model](docs/product/CONVERSATION_AND_MEMORY_MODEL.md)
+7. [Capability Signoff Matrix](docs/product/CAPABILITY_SIGNOFF_MATRIX.md)
+8. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
+9. [Documentation Index](docs/INDEX.md)
 
 For implementation detail:
 
@@ -87,4 +90,4 @@ For project workflow and how external AI tools fit without replacing Nova's runt
 
 Nova has a serious governance thesis and real runtime structure.
 
-The current bottleneck is not more ambition. The current bottleneck is making governance instantly visible to a new user through a clear Trust Review Card, demo flow, and simpler setup path.
+The current bottleneck is not more ambition. The current bottleneck is finishing proof and onboarding around the surfaces that already exist: Action Receipts, trust receipts, Cap 64 live signoff, Cap 65 live signoff, a clearer demo flow, and a simpler setup path.

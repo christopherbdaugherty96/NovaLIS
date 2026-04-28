@@ -16,11 +16,19 @@ This page exists to set honest expectations about Nova today.
 - Optional connectors require additional setup, credentials, or external accounts.
 
 ## Current Gaps
-- The full Trust Review Card / Trust Panel UI is not complete.
+- Action Receipts and the Trust Receipts API exist, but the full Trust Review Card / Trust Panel experience is not complete.
+- Cap 64 email draft still needs human P5 live signoff before lock; Nova opens a local draft and does not send email autonomously.
+- Cap 65 Shopify intelligence still needs real credential-backed P5 live proof before lock; current Shopify support is read-only reporting.
 - One-click installer is not finished.
 - Some advanced workflows remain experimental.
 - Broad autonomous execution is intentionally limited and not the current promise.
 - Some docs may describe future direction rather than live capability state.
+
+## Authority Boundaries
+- Conversation context can help Nova understand what the user means; it does not grant permission to act.
+- Memory can support continuity; it is not an execution authority.
+- Ledger entries and Action Receipts record governed actions; they are not the same thing as memory.
+- Scheduler or background-loop concepts, where present, must stay gated, bounded, settings-controlled, and unable to bypass governance.
 
 ## Best Fit Today
 Nova is best for builders, technical early adopters, and users who value control, visibility, and local ownership more than maximum convenience.

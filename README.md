@@ -12,17 +12,23 @@ Most AI tools optimize for capability expansion. Nova emphasizes bounded executi
 ## Start Here
 1. [Start Here](START_HERE.md)
 2. [Quickstart](QUICKSTART.md)
-3. [What Works Today](docs/product/WHAT_WORKS_TODAY.md)
-4. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
-5. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
+3. [First 5 Minutes](docs/product/FIRST_5_MINUTES.md)
+4. [What Works Today](docs/product/WHAT_WORKS_TODAY.md)
+5. [Conversation and Memory Model](docs/product/CONVERSATION_AND_MEMORY_MODEL.md)
+6. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
+7. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
 
 ## Proof Layer
 - [Trust Proof Plan](docs/product/TRUST_PROOF_PLAN.md)
+- [Trust Review Card Plan](docs/product/TRUST_REVIEW_CARD_PLAN.md)
 - [See It Work](docs/product/SEE_IT_WORK.md)
 - [Trust Model](docs/product/TRUST_MODEL.md)
 - [Demo Script](docs/product/DEMO_SCRIPT.md)
 - [Screenshot Asset Plan](docs/product/SCREENSHOT_ASSET_PLAN.md)
 - [Trust UI Spec](docs/product/TRUST_UI_SPEC.md)
+- [Capability Verification Status](docs/capability_verification/STATUS.md)
+- [Capability Signoff Matrix](docs/product/CAPABILITY_SIGNOFF_MATRIX.md)
+- [Proof Capture Checklist](docs/product/PROOF_CAPTURE_CHECKLIST.md)
 
 ## Future Directions
 - [Realistic Scope and Priorities](docs/future/REALISTIC_SCOPE_AND_PRIORITIES.md)
@@ -33,7 +39,7 @@ Most AI tools optimize for capability expansion. Nova emphasizes bounded executi
 ## Core Principle
 **Intelligence is not authority.**
 
-Nova may reason, summarize, search, draft, and recommend. Real actions should remain bounded by capability checks, execution boundaries, and visible receipts.
+Nova may reason, summarize, search, draft, and recommend. Conversation context and memory can improve understanding, but they do not authorize execution. Real actions should remain bounded by capability checks, execution boundaries, confirmation where required, and visible receipts.
 
 ## Current Status
 Alpha build for technical users and early adopters. Real project under active development, not a finished consumer product.
