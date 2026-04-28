@@ -108,6 +108,14 @@ These preserve future technical ideas while keeping them subordinate to live rep
 
 - `NOVA_FUTURE_TECHNICAL_CONCEPT_DRAFT_2026-04.md`
 
+### 6. Standards and Decision Records
+
+Quality bars, sequencing decisions, and strategic direction records.
+
+- `DIAMOND_PREVIEW_RELEASE_STANDARD_2026-04-23.md` — release quality bar for any public preview
+- `PORTFOLIO_PRIORITY_SWITCH_WEBSITE_LLC_2026-04-22.md` — Website LLC as first revenue engine (sequencing decision)
+- `GOOGLE_CONNECT_EMAIL_OAUTH_FUTURE_2026-04-22.md` — Google OAuth integration design (future feature, not active)
+
 ---
 
 ## What These Docs Are Trying to Say Together
