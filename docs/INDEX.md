@@ -28,6 +28,7 @@ Use this page to find the right document quickly. Runtime truth stays in generat
 - [Nova OpenClaw docs-to-code alignment audit (2026-04-26)](audits/2026-04-26/NOVA_OPENCLAW_DOCS_TO_CODE_ALIGNMENT_AUDIT_2026-04-26.md) - current OpenClaw implementation truth, future hands-layer gaps, and required changes to align with the final stack direction.
 - [User ready status](product/USER_READY_STATUS.md) - plain-language what works now vs experimental vs not yet ready.
 - [Capability maturity model](product/CAPABILITY_MATURITY.md) - better labels than enabled/disabled.
+- [Nova release readiness checklist](product/NOVA_RELEASE_READINESS_CHECKLIST_2026-04-28.md) - future checklist for install, first run, trust visibility, capability labels, security/privacy, support, and known limitations before broader release.
 
 ---
 
@@ -51,12 +52,17 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 - [OpenClaw setup and runtime guide](reference/HUMAN_GUIDES/28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27.md) - plain-language current truth: OpenClaw is active as bounded home-agent/worker foundations today and becomes Nova’s hands only after mediator, envelope, approval, and receipt hardening.
 - [Nova Coherence, Memory, and Background Reasoning alignment map](future/NOVA_COHERENCE_MEMORY_BACKGROUND_ARCHITECTURE_ALIGNMENT.md) - umbrella alignment guide for request understanding, coherence, governed learning/memory, and background reasoning under one non-authorizing architecture.
 - [Nova Request Understanding Contract](future/NOVA_REQUEST_UNDERSTANDING_CONTRACT.md) - implemented non-authorizing conversation contract that explains what Nova understood, current capability state, safe next step, and what Nova must not do.
+- [Nova RequestUnderstanding review card done-means spec](future/NOVA_REQUEST_UNDERSTANDING_REVIEW_CARD_DONE_MEANS_2026-04-28.md) - execution-control spec for the current active task: fields, behavior, tests, live verification, and no-authority boundaries for the trust/action-history review card.
 - [Nova Conversation Coherence Layer plan](future/NOVA_CONVERSATION_COHERENCE_LAYER_PLAN.md) - safe usability/context plan for improving intent handling, task-state awareness, paused-work awareness, response templates, governed learning, and clarity without widening action authority.
 - [Nova Governed Learning plan](future/NOVA_GOVERNED_LEARNING_PLAN.md) - future architecture rule: Nova may learn corrections, preferences, command meanings, and project glossary terms, but learning must remain visible and cannot grant authority.
 - [Nova Background Reasoning, Not Background Automation plan](future/NOVA_BACKGROUND_REASONING_NOT_AUTOMATION_PLAN.md) - future architecture rule: Nova may think, summarize, draft, and propose in the background, but must not act in the background without explicit governed approval.
+- [Nova Failure Mode Playbook](future/NOVA_FAILURE_MODE_PLAYBOOK_2026-04-28.md) - future guide for safe, clear failure messages, fallbacks, and non-action statements across models, connectors, OpenClaw, MCP, voice, budgets, and sensitive-data paths.
+- [Nova User-Facing Language Guide](future/NOVA_USER_FACING_LANGUAGE_GUIDE_2026-04-28.md) - future UX/content guide for clear wording around draft-only actions, paused work, blocked actions, approvals, sensitive data, cloud use, and non-action statements.
+- [Nova Provider Budget and Usage Control Plan](future/NOVA_PROVIDER_BUDGET_AND_USAGE_CONTROL_PLAN_2026-04-28.md) - future plan for provider usage visibility and limits across ElevenLabs, cloud LLMs, Google APIs, MCP/network calls, OpenClaw runs, browser/computer-use, and background reasoning.
 - [Nova Integration Opportunity Roadmap](future/NOVA_INTEGRATION_OPPORTUNITY_ROADMAP_2026-04-27.md) - future integration roadmap covering MCP-style connectors, durable workflow checkpoints, Google Workspace, GitHub/Git, tracing, tool guardrails, governed memory retrieval, Home Assistant, browser/computer-use sandbox, and external workflow runners under Nova governance.
 - [Nova MCP Governed Connector Plan](future/NOVA_MCP_GOVERNED_CONNECTOR_PLAN_2026-04-27.md) - future plan for MCP as a governed connector layer with transport policy, token policy, risk classes, tool allowlists, prompt-injection controls, and receipts.
 - [Nova Connector Registry Plan](future/NOVA_CONNECTOR_REGISTRY_PLAN_2026-04-27.md) - future plan for a central registry of Google, GitHub, MCP, ElevenLabs, OpenClaw, Home Assistant, browser/computer-use, workflow runner, and local data connectors.
+- [Nova Connector Risk Classification Table](future/NOVA_CONNECTOR_RISK_CLASSIFICATION_TABLE_2026-04-28.md) - shared future risk table for connector/tool actions from public/private reads through draft-only, local reversible, durable mutation, external write, and safety/financial classes.
 - [Nova Approval Queue Product Plan](future/NOVA_APPROVAL_QUEUE_PRODUCT_PLAN_2026-04-27.md) - future product plan for proposed actions, approval cards, approve/deny/edit states, expirations, receipts, and non-action statements.
 - [Nova Task / Run-State Plan](future/NOVA_TASK_RUN_STATE_PLAN_2026-04-27.md) - future continuity plan for run checkpoints, token recovery, session handoffs, files changed, tests run, blockers, next steps, and do-not-touch lists.
 - [Nova Trust Spans / Trace Cards Plan](future/NOVA_TRUST_SPANS_TRACE_CARDS_PLAN_2026-04-27.md) - future trace-card model for showing decisions and evidence without exposing private chain-of-thought.
@@ -89,6 +95,13 @@ When a public doc needs current capability counts or exact enabled IDs, link her
 - [Official architecture map](reference/NOVA_OFFICIAL_ARCHITECTURE_MAP.md)
 - [Capability verification framework](capability_verification/FRAMEWORK.md)
 - [Capability verification status](capability_verification/STATUS.md)
+- [Local capability signoff matrix template](capability_verification/LOCAL_CAPABILITY_SIGNOFF_MATRIX_TEMPLATE.md) - verification template for local capabilities covering routing, confirmation behavior, manual/automated tests, success/failure evidence, ledger/trust behavior, limits, and OpenClaw reliance decision.
+
+---
+
+## Security
+
+- [Nova Integration Threat Model](security/NOVA_INTEGRATION_THREAT_MODEL_2026-04-28.md) - future security reference for MCP, Google, OpenClaw, ElevenLabs, browser/computer-use, Home Assistant, credential, prompt-injection, and connector-risk controls.
 
 ---
 
