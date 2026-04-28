@@ -164,6 +164,47 @@ Final definition:
 
 ---
 
+## Minimum Productized Slice
+
+The first productized slice should be intentionally small.
+
+Minimum useful target:
+
+```text
+A user can start Nova, ask a simple or project-status question, see what Nova understood, see whether any action happened, and understand the next safe step.
+```
+
+This slice requires:
+
+```text
+RequestUnderstanding trust/action card
+clear capability labels
+known limitations visible
+plain-language failure messages for common startup/model paths
+no paused work accidentally resumed
+no claim of release readiness
+```
+
+This slice does **not** require:
+
+```text
+Google connectors
+ElevenLabs
+OpenClaw hands
+MCP
+browser automation
+Home Assistant
+full installer polish
+business/customer workflows
+external writes
+```
+
+MVP productization rule:
+
+> **Productize the smallest honest loop first: ask → understand → answer/draft/block → show what did or did not happen.**
+
+---
+
 ## Productization Must Not Hide Governance
 
 Productization should simplify the user experience, not hide risk boundaries.
