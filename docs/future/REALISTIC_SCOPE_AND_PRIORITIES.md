@@ -56,7 +56,7 @@ Near-term scope:
 - proposal generation
 - maintenance workflows
 
-Do not require Nova runtime breakthroughs.
+This does not require Nova runtime breakthroughs.
 
 ### B. Internal Workflow Assistant
 
@@ -80,7 +80,7 @@ Reality: realistic now if tightly scoped.
 Near-term scope:
 
 - hooks
-n- scripts
+- scripts
 - captions
 - thumbnail ideas
 - content calendars
@@ -132,7 +132,7 @@ Honest scope:
 - reusable sections
 - style systems
 
-Human finishing still required.
+Human finishing is still required.
 
 ---
 
@@ -161,7 +161,7 @@ Nova should not try to become every product category at once.
 
 1. Use Auralis Digital for real revenue now.
 2. Build one Nova MVP feature only.
-3. Reinvest learning into next capability.
+3. Reinvest learning into the next capability.
 4. Expand only after one workflow works reliably.
 
 ---
@@ -171,7 +171,7 @@ Nova should not try to become every product category at once.
 Choose one:
 
 - Trust Review UI
-n- Content Studio
+- Content Studio
 - Shopify campaign generator
 - Profile system
 - Internal operations assistant
