@@ -8,6 +8,16 @@ Nova separates **intelligence** from **authority**: AI can reason and assist, bu
 
 > Intelligence may expand. Authority may not expand without an explicit unlock.
 
+![Nova dashboard home](docs/product/assets/dashboard-home.png)
+
+---
+
+## Who Nova Is For Right Now
+- People who want a private daily-use AI assistant
+- Builders who want visible boundaries around actions
+- Early adopters comfortable with local tools
+- Users who value control over hidden automation
+
 ---
 
 ## What Nova Helps With
