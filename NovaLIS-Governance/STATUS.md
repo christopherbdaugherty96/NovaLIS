@@ -1,6 +1,6 @@
 # NOVA Governance Status
 
-Updated: 2026-04-27
+Updated: 2026-04-28
 Status: Current runtime governance summary
 Scope: Reflective status of the live repository state
 
@@ -13,6 +13,7 @@ Use this file when you want the concise answer to:
 - what phase Nova is currently in
 - what capability surface is active
 - what remains intentionally disabled
+- what proof/signoff work remains open
 
 If there is ever a conflict between this file and the runtime truth packet, the runtime truth packet wins:
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
@@ -26,7 +27,7 @@ If there is ever a conflict between this file and the runtime truth packet, the 
 | 3.5 | COMPLETE | Governance baseline sealed |
 | 4 | ACTIVE | Governed execution runtime is live |
 | 4.2 | ACTIVE | Explicit orthogonal cognition and structured analysis surfaces are live |
-| 4.5 | PARTIAL | UX trust, screen/context, and daily snapshot surfaces are live; Trust Panel dashboard card not yet built |
+| 4.5 | PARTIAL | UX trust, screen/context, and daily snapshot surfaces are live; Action Receipts and trust receipt API exist; fuller Trust Panel UX remains future work |
 | 5 | ACTIVE | Governed memory, continuity, scheduling, tone, and workspace surfaces are live |
 | 6 | COMPLETE | Trust loop, policy review, capability topology, and manual policy execution review are complete |
 | 7 | COMPLETE | Governed external reasoning, second-opinion review, provider transparency, and runtime settings controls are complete |
@@ -44,9 +45,10 @@ Nova remains:
 
 Nova does not:
 - act autonomously
-- run delegated triggers in the background
+- run unapproved delegated triggers in the background
 - silently save memory
 - widen execution authority through external reasoning
+- allow memory, conversation context, or stored plans to authorize execution
 
 ## Active Governed Capability Surface
 
@@ -66,8 +68,8 @@ High-level categories:
 - governed memory and continuity
 - governed external reasoning review
 - OpenClaw home-agent execution (cap 63)
-- email draft composition (cap 64) — external_effect, confirmation-gated, user sends manually
-- Shopify store intelligence (cap 65) — read-only, external_effect, requires NOVA_SHOPIFY_SHOP_DOMAIN + NOVA_SHOPIFY_ACCESS_TOKEN
+- email draft composition (cap 64) — external_effect, confirmation-gated, opens local mail client draft; user sends manually
+- Shopify store intelligence (cap 65) — read-only, external_effect, requires `NOVA_SHOPIFY_SHOP_DOMAIN` + `NOVA_SHOPIFY_ACCESS_TOKEN`
 
 ## Required Execution Path
 
@@ -77,12 +79,23 @@ All governed capability execution must pass through:
 
 This is the live runtime invariant for governed action.
 
+## Trust Receipts And Proof Surface
+
+Current proof surfaces:
+- Action Receipts in the dashboard
+- `GET /api/trust/receipts`
+- `GET /api/trust/receipts/summary`
+- append-only ledger evidence
+- capability live checklists
+
+This is enough to inspect governed-action outcomes, but it is not the full final Trust Panel. The fuller Trust Review Card / Trust Panel remains future work: richer blocked-reason drill-down, confirmation-state preview, proof browsing, and a clearer demo flow.
+
 ## Intentionally Disabled or Not Yet Live
 
 These remain intentionally unavailable as live runtime truth:
 - wake word runtime (requirements file exists; no runtime module)
-- delegated trigger runtime
-- background policy execution
+- delegated trigger runtime as broad autonomy
+- background policy execution without explicit governance
 - autonomous agent execution
 - OpenClaw broad envelope-governed execution (manual foundation is live; full envelope issuance path deferred — governance hardening plan in `docs/future/NOVA_OPENCLAW_GOVERNANCE_HARDENING_2026-04-21.md`)
 - inbox_check template (visible in agent store; email connector not yet available)
@@ -95,6 +108,21 @@ These remain intentionally unavailable as live runtime truth:
 The session routing loop has been extracted from `brain_server.py` into `src/websocket/session_handler.py`. `brain_server.py` now handles app assembly, middleware, singleton wiring, and the WebSocket endpoint registration. All live command routing, governor invocation, and session state management lives in `session_handler.py`.
 
 `brain_server.py` remains large due to inline payload-building helper functions (~35 identified). These are candidates for future extraction but are not architectural risk.
+
+## Conversation And Memory Authority Boundary
+
+Conversation context, mode, tone, memory, and stored plans can support reasoning and continuity.
+
+They cannot:
+- authorize actions
+- bypass confirmation
+- send email
+- write to Shopify
+- run background tasks by themselves
+- override capability boundaries
+- replace ledger/receipt proof
+
+See `docs/product/CONVERSATION_AND_MEMORY_MODEL.md` for the human-facing explanation.
 
 ## Personality Layer
 
@@ -112,12 +140,16 @@ What is true right now:
 - policy review is manual-review-only
 - external reasoning is advisory-only
 - remote bridge access is bounded and token-gated
+- Action Receipts and Trust Receipt API exist
 - wake word is still planned, not live
+- Cap 64 P5 is ready for human live signoff, not complete until local proof passes
+- Cap 65 P5 is blocked on Shopify credentials and live read-only proof
 
 ## Canonical Next-Layer Posture
 
 Immediate (active sprint):
-- Cap 64 P5 live signoff + lock — highest priority; first external-effect cap to be formally locked
+- Cap 64 P5 live signoff + lock — highest priority; first external-effect cap to be formally locked after human local mail-client proof
+- Fuller Trust Review Card / Trust Panel — build on Action Receipts and Trust Receipt API, do not replace them with mock data
 - Installer clean-VM validation (Windows) — paused at bootstrap.log; resume when available
 
 Next major architecture milestone:
@@ -139,13 +171,17 @@ It is now a governed local intelligence and home-agent system with:
 - active Phases 4 through 9
 - 27 active governed capabilities
 - explicit settings and trust surfaces
+- Action Receipts and trust receipt API
 - governed memory and continuity
 - advisory-only external reasoning
 - manual OpenClaw home-agent execution with strict preflight (envelope governance hardening Steps 1–7 complete)
-- email draft (cap 64) as the first external-effect capability — confirmation-gated, user sends
+- email draft (cap 64) as the first external-effect capability — confirmation-gated, local draft only, user sends manually
 - Shopify store intelligence (cap 65) — Tier 1 read-only, wired end-to-end, requires credentials in env
 
 And it still intentionally refuses:
-- autonomy
-- background trigger execution
+- broad autonomy
+- hidden background trigger execution
+- memory-as-authority
+- email sending without human review
+- Shopify writes in the current cap 65 surface
 - broad envelope-governed external execution without unified authority plane (hardening in progress)
