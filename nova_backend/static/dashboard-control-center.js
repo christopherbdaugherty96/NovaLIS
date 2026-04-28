@@ -2519,6 +2519,134 @@ function renderTrustPanel(data = {}) {
   renderSettingsPage();
 }
 
+// ---------------------------------------------------------------------------
+// Action receipt card — fetches /api/trust/receipts and renders to
+// #trust-center-receipts. Called after chat_done and on trust refresh.
+// ---------------------------------------------------------------------------
+
+const _RECEIPT_LABELS = {
+  EMAIL_DRAFT_CREATED:          "Email draft created",
+  EMAIL_DRAFT_FAILED:           "Email draft failed",
+  EMAIL_DRAFT_OPENED:           "Email opened in mail client",
+  ACTION_ATTEMPTED:             "Action attempted",
+  ACTION_COMPLETED:             "Action completed",
+  OPENCLAW_ACTION_APPROVED:     "OpenClaw action approved",
+  OPENCLAW_ACTION_DENIED:       "OpenClaw action denied",
+  OPENCLAW_ACTION_PENDING:      "OpenClaw action pending approval",
+  OPENCLAW_AGENT_RUN_COMPLETED: "OpenClaw agent run completed",
+  SCREEN_CAPTURE_COMPLETED:     "Screen capture completed",
+  MEMORY_ITEM_SAVED:            "Memory item saved",
+  MEMORY_ITEM_DELETED:          "Memory item deleted",
+  POLICY_EXECUTION_COMPLETED:   "Policy executed",
+  POLICY_EXECUTION_BLOCKED:     "Policy blocked",
+};
+
+const _RECEIPT_OUTCOME = {
+  EMAIL_DRAFT_CREATED:          "success",
+  EMAIL_DRAFT_OPENED:           "success",
+  ACTION_COMPLETED:             "success",
+  OPENCLAW_ACTION_APPROVED:     "success",
+  OPENCLAW_AGENT_RUN_COMPLETED: "success",
+  SCREEN_CAPTURE_COMPLETED:     "success",
+  MEMORY_ITEM_SAVED:            "success",
+  POLICY_EXECUTION_COMPLETED:   "success",
+  EMAIL_DRAFT_FAILED:           "issue",
+  OPENCLAW_ACTION_DENIED:       "issue",
+  POLICY_EXECUTION_BLOCKED:     "issue",
+};
+
+function _receiptDetail(r) {
+  const type = String(r.event_type || "").trim();
+  if (type === "EMAIL_DRAFT_CREATED" || type === "EMAIL_DRAFT_OPENED" || type === "EMAIL_DRAFT_FAILED") {
+    const to      = String(r.to || r.recipient || "").trim();
+    const subject = String(r.subject || "").trim();
+    return [to && `To: ${to}`, subject && `Subject: ${subject}`].filter(Boolean).join("  ·  ");
+  }
+  if (type.startsWith("OPENCLAW_")) {
+    return String(r.action_type || r.description || r.action || "").trim();
+  }
+  if (type.startsWith("MEMORY_")) {
+    const key = String(r.key || r.content || "").trim();
+    return key.length > 60 ? key.slice(0, 57) + "…" : key;
+  }
+  if (type === "POLICY_EXECUTION_COMPLETED" || type === "POLICY_EXECUTION_BLOCKED") {
+    return String(r.policy || r.capability_id || "").trim();
+  }
+  return String(r.action || r.capability_id || "").trim();
+}
+
+function _receiptTime(ts) {
+  if (!ts) return "";
+  try {
+    return new Date(ts).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  } catch (_) {
+    return String(ts).slice(0, 16);
+  }
+}
+
+function _renderReceiptList(receipts, host) {
+  clear(host);
+  if (!receipts.length) {
+    const empty = document.createElement("div");
+    empty.className = "trust-empty";
+    empty.textContent = "No governed actions recorded yet this session.";
+    host.appendChild(empty);
+    return;
+  }
+  const list = document.createElement("div");
+  list.className = "trust-activity-list";
+  receipts.slice(0, 5).forEach((r) => {
+    const type    = String(r.event_type || "").trim();
+    const label   = _RECEIPT_LABELS[type] || type.toLowerCase().replace(/_/g, " ");
+    const detail  = _receiptDetail(r);
+    const time    = _receiptTime(r.timestamp_utc);
+    const outcome = _RECEIPT_OUTCOME[type] || "info";
+
+    const row = document.createElement("div");
+    row.className = "trust-activity-item";
+    row.dataset.outcome = outcome;
+
+    const titleRow = document.createElement("div");
+    titleRow.className = "trust-activity-title-row";
+
+    if (outcome !== "info") {
+      const badge = document.createElement("span");
+      badge.className = `trust-activity-outcome trust-activity-outcome-${outcome}`;
+      badge.textContent = outcome === "issue" ? "Blocked" : "Success";
+      titleRow.appendChild(badge);
+    }
+
+    const title = document.createElement("div");
+    title.className = "trust-activity-title";
+    title.textContent = label;
+    titleRow.appendChild(title);
+    row.appendChild(titleRow);
+
+    if (detail || time) {
+      const meta = document.createElement("div");
+      meta.className = "trust-activity-meta";
+      meta.textContent = [detail, time].filter(Boolean).join("  ·  ");
+      row.appendChild(meta);
+    }
+
+    list.appendChild(row);
+  });
+  host.appendChild(list);
+}
+
+function fetchAndRenderReceipts() {
+  const host = $("trust-center-receipts");
+  if (!host) return;
+  fetch("/api/trust/receipts?limit=5")
+    .then((res) => (res.ok ? res.json() : Promise.reject(res.status)))
+    .then((data) => {
+      _renderReceiptList(Array.isArray(data.receipts) ? data.receipts : [], host);
+    })
+    .catch(() => {
+      _renderReceiptList([], host);
+    });
+}
+
 function getPolicyReadinessBuckets(snapshot = {}) {
   const readiness = (snapshot && typeof snapshot === "object") ? snapshot : {};
   return {

@@ -2427,6 +2427,7 @@ function connectWebSocket() {
           workflowFocusState.awaitingResponse = false;
           renderWorkflowFocusWidget();
         }
+        if (typeof fetchAndRenderReceipts === "function") fetchAndRenderReceipts();
         break;
       case "thought":
         if (pendingThoughtMessageId && msg.message_id === pendingThoughtMessageId) {
@@ -3838,6 +3839,7 @@ window.addEventListener("DOMContentLoaded", () => {
   safeInit("renderOperatorHealthWidget", () => renderOperatorHealthWidget({}));
   safeInit("renderCapabilitySurfaceWidget", () => renderCapabilitySurfaceWidget({}));
   safeInit("renderTrustPanel", () => renderTrustPanel());
+  safeInit("fetchAndRenderReceipts", () => fetchAndRenderReceipts());
   safeInit("renderWorkspaceHomeWidget", () => renderWorkspaceHomeWidget({}));
   safeInit("renderProjectStructureMapWidget", () => renderProjectStructureMapWidget({}));
   safeInit("renderAssistiveNoticesWidget", () => renderAssistiveNoticesWidget({}));
@@ -4026,6 +4028,7 @@ window.addEventListener("DOMContentLoaded", () => {
     safeWSSend({ text: "trust center", silent_widget_refresh: true });
     safeWSSend({ text: "system status", silent_widget_refresh: true });
     safeWSSend({ text: "operational context", silent_widget_refresh: true });
+    if (typeof fetchAndRenderReceipts === "function") fetchAndRenderReceipts();
   });
 
   const trustCenterSystemBtn = $("btn-trust-center-system");
