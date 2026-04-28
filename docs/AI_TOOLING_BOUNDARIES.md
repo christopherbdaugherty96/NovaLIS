@@ -9,7 +9,7 @@ This file defines the boundaries for using external AI systems and generators ar
 ## Boundary Rules
 
 1. Implementation beats documentation when they conflict.
-2. Runtime truth beats stale summaries.
+2. Generated runtime truth beats stale summaries.
 3. Tests beat assumptions.
 4. Prototypes are not production systems.
 5. Mockups are not evidence of runtime capability.
@@ -34,7 +34,7 @@ This file defines the boundaries for using external AI systems and generators ar
 
 - whether a feature exists
 - whether code is secure
-n- whether a release is ready
+- whether a release is ready
 - whether a claim is truthful
 - whether an action should bypass governance
 - whether user trust has been earned
@@ -44,7 +44,15 @@ n- whether a release is ready
 
 No external assistant should be represented as equivalent to Nova's governed runtime path.
 
-The governed path exists to keep execution bounded, reviewable, and attributable.
+The governed path exists to keep execution bounded, reviewable, and attributable. External tools may help draft, review, or prototype around that path, but they must not be described as replacing it.
+
+## Prototype Boundary
+
+A prototype may show what a workflow could feel like.
+
+A prototype does not prove that Nova can execute the workflow safely, locally, or under governance.
+
+Use prototype labels when a page, mockup, or generated surface is not wired to the real runtime.
 
 ## Documentation Standard
 
@@ -56,6 +64,7 @@ When writing docs:
 - prefer clear explanations over internal jargon
 - link to evidence when possible
 - correct stale claims quickly
+- keep generated runtime facts linked to generated runtime docs instead of copying fragile values everywhere
 
 ## Public Claim Standard
 
@@ -67,6 +76,7 @@ Do not claim:
 - security guarantees not validated
 - integrations that are only conceptual
 - production maturity based only on visuals
+- governance behavior that bypasses the actual governed runtime path
 
 ## Human Responsibility
 
