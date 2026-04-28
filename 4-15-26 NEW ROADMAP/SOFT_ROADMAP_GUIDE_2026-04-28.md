@@ -34,6 +34,11 @@ Examples:
 - Clear reasons for allow / deny / confirm
 - Human-readable ledger views
 
+Success looks like:
+- User can see what Nova understood
+- User can see what action would happen
+- User can review what happened after execution
+
 ## 2. Frictionless Onboarding
 Make first use dramatically easier.
 
@@ -44,27 +49,12 @@ Examples:
 - Model setup assistant
 - Better recovery from setup failures
 
-## 3. One Killer Workflow
-Choose one repeatable use case Nova wins at.
+Success looks like:
+- Install path is clear
+- First useful result happens quickly
+- Common failures are easy to recover from
 
-Examples:
-- Trusted local executive assistant
-- Safe desktop copilot
-- Local family assistant
-- Transparent operator console
-- Research + action assistant
-
-## 4. Capability Maturity Program
-Turn capability sprawl into clear readiness states.
-
-Examples:
-- Stable
-n- Beta
-- Experimental
-- Disabled by default
-- Deprecated
-
-## 5. Simplification Pass
+## 3. Simplification Pass
 Reduce unnecessary complexity.
 
 Examples:
@@ -74,15 +64,56 @@ Examples:
 - Improve naming consistency
 - Reduce user confusion
 
+Success looks like:
+- Fewer confusing surfaces
+- Easier maintenance
+- Faster onboarding comprehension
+
+## 4. One Killer Workflow
+Choose one repeatable use case Nova wins at.
+
+Examples:
+- Trusted local executive assistant
+- Safe desktop copilot
+- Local family assistant
+- Transparent operator console
+- Research + action assistant
+
+Selection criteria:
+- Frequent need
+- Easy to demo
+- Better because of governance
+- Valuable quickly
+- Real repeat usage potential
+
+## 5. Capability Maturity Program
+Turn capability sprawl into clear readiness states.
+
+Examples:
+- Stable
+- Beta
+- Experimental
+- Disabled by default
+- Deprecated
+
 ## 6. Carefully Chosen Expansion
 Only after trust + usability improve.
 
 Examples:
 - Better connectors
-n- Scheduling improvements
+- Scheduling improvements
 - Richer memory workflows
 - Additional local tools
 - Optional advanced operators
+
+---
+
+# Not Current Priority
+- Broad connector expansion
+- Enterprise packaging
+- Mass consumer launch
+- Experimental autonomy
+- Chasing every new AI trend
 
 ---
 
