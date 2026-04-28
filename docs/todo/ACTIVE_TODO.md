@@ -6,16 +6,22 @@
 
 ## Current Priorities (ordered by ROI)
 
-- [ ] Trust Review Card MVP — visible receipts, blocked reasons, confirmation states
+- [ ] Fuller Trust Review Card / Trust Panel — richer blocked reasons, confirmation previews, receipt history, and proof browsing
 - [ ] Cap 64 P5 live signoff + lock
 - [ ] Windows installer VM validation — clean install + bootstrap.log fixes
 - [ ] README screenshot or GIF of governed action flow
 - [ ] Daily Brief MVP — schedule, priorities, reminders, recent actions
 - [ ] Memory UX flows — remember / forget / review saved memory
-- [ ] Capability signoff matrix — verified / config-needed / polish / paused
 - [ ] Dashboard home improvements — stronger daily assistant surface
 - [ ] Cap 65 P5 live signoff
 - [ ] Waitlist activation
+
+## Current Proof Queue
+
+- [ ] Run Cap 64 local mail-client proof using `docs/capability_verification/live_checklists/cap_64_send_email_draft.md`
+- [ ] Capture proof using `docs/product/PROOF_CAPTURE_CHECKLIST.md`
+- [ ] Run Cap 64 live-signoff and lock only after proof passes
+- [ ] Run Cap 65 credential-backed proof only after Shopify env vars are available
 
 ## Important Principle
 
@@ -40,5 +46,9 @@ Not raw feature count.
 - Docs consolidation (canonical todo/future folders)
 - RequestUnderstanding integration
 - Receipt backend groundwork
+- Action Receipts / Trust Receipts API groundwork
 - Governance hardening and test passes
 - Product clarity documentation pass
+- Conversation and Memory Model doc
+- Capability Signoff Matrix
+- Proof Capture Checklist
