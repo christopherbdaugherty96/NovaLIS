@@ -6,6 +6,27 @@ Status: Verification documented / next step identified
 
 ---
 
+## Executive Summary
+
+The RequestUnderstanding conversation integration is ready to move from prompt-only visibility toward a minimal trust/action-history review card.
+
+Current distinction:
+
+```text
+Code path: verified by tests.
+Prompt assembly: verified by tests.
+Live runtime freshness: verified after pull/restart.
+Live free-form LLM behavior: partially verified only.
+```
+
+The next step is visibility, not authority:
+
+```text
+Build a non-authorizing RequestUnderstanding trust/action-history review card.
+```
+
+---
+
 ## Current Truth
 
 The RequestUnderstanding conversation integration is implemented and test-proven, but live LLM behavior is only partially verified.
@@ -110,6 +131,34 @@ Reason: router intercepted before free-form LLM boundary response; runtime refus
 Meaning: safe behavior observed, but not full RequestUnderstanding-shaped LLM proof
 ```
 
+Do not overstate these as full live LLM successes. They prove safe/non-overstepping behavior, but not complete RequestUnderstanding-shaped natural-language behavior.
+
+---
+
+## Verification Classification
+
+Use this classification going forward:
+
+```text
+VERIFIED_CODE_PATH
+VERIFIED_PROMPT_ASSEMBLY
+VERIFIED_RUNTIME_REFRESH
+PARTIAL_LIVE_VERIFICATION
+BLOCKED_OLLAMA
+ROUTING_BYPASS
+NOT_YET_UI_VISIBLE
+```
+
+Current classification:
+
+```text
+RequestUnderstanding foundation: VERIFIED_CODE_PATH
+Formatter and prompt assembly: VERIFIED_PROMPT_ASSEMBLY
+Updated Nova runtime loaded: VERIFIED_RUNTIME_REFRESH
+Free-form live LLM behavior: PARTIAL_LIVE_VERIFICATION / BLOCKED_OLLAMA
+Trust/action-history visibility: NOT_YET_UI_VISIBLE
+```
+
 ---
 
 ## Known Limitations
@@ -204,6 +253,47 @@ call connectors
 persist memories
 start background jobs
 resume paused work
+```
+
+---
+
+## Recommended Next Task Scope
+
+Build the smallest useful UI/backend surface that exposes RequestUnderstanding as a review artifact.
+
+Allowed:
+
+```text
+small read-only helper or payload field
+minimal trust/action-history card
+unit tests for serialization / rendering data
+no-op result state such as not_executed when no action happened
+clear authority_effect = none display
+```
+
+Not allowed:
+
+```text
+new action execution
+new approval behavior
+capability lock/signoff changes
+OpenClaw execution
+connector calls
+memory persistence
+background jobs
+Cap 64 P5/P6
+paused Shopify/Auralis work
+```
+
+Success means a user can see:
+
+```text
+Nova understood this request as: <understood_goal>
+Capability status: <capability_status>
+Safe next step: <safe_next_step>
+Nova must not: <must_not_do>
+Authority effect: none
+Result: no action executed / draft proposed / blocked / needs clarification
 ```
 
 ---
