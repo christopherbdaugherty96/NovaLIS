@@ -28,6 +28,7 @@ Use this page to find the right document quickly. Runtime truth stays in generat
 - [Nova OpenClaw docs-to-code alignment audit (2026-04-26)](audits/2026-04-26/NOVA_OPENCLAW_DOCS_TO_CODE_ALIGNMENT_AUDIT_2026-04-26.md) - current OpenClaw implementation truth, future hands-layer gaps, and required changes to align with the final stack direction.
 - [User ready status](product/USER_READY_STATUS.md) - plain-language what works now vs experimental vs not yet ready.
 - [Capability maturity model](product/CAPABILITY_MATURITY.md) - better labels than enabled/disabled.
+- [Nova productization plan](product/NOVA_PRODUCTIZATION_PLAN_2026-04-28.md) - future plan for moving Nova toward installability, first-run clarity, user-facing trust, capability labels, support, privacy/security clarity, and release readiness without overclaiming current readiness.
 - [Nova release readiness checklist](product/NOVA_RELEASE_READINESS_CHECKLIST_2026-04-28.md) - future checklist for install, first run, trust visibility, capability labels, security/privacy, support, and known limitations before broader release.
 
 ---
