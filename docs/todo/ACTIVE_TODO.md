@@ -6,8 +6,9 @@
 
 ## Current Priorities (ordered by ROI)
 
-- [ ] Fuller Trust Review Card / Trust Panel — richer blocked reasons, confirmation previews, receipt history, and proof browsing
+- [ ] Close out local-first demo proof pass — commit/push local artifacts and runtime fixes from `docs/demo_proof/2026-04-28_user_test/` if they are still only local
 - [ ] Cap 64 P5 live signoff + lock
+- [ ] Fuller Trust Review Card / Trust Panel — richer blocked reasons, confirmation previews, receipt history, and proof browsing
 - [ ] Windows installer VM validation — clean install + bootstrap.log fixes
 - [ ] README screenshot or GIF of governed action flow
 - [ ] Daily Brief MVP — schedule, priorities, reminders, recent actions
@@ -18,6 +19,7 @@
 
 ## Current Proof Queue
 
+- [ ] Commit and push the local-first user-test artifacts if they are not already on main
 - [ ] Run Cap 64 local mail-client proof using `docs/capability_verification/live_checklists/cap_64_send_email_draft.md`
 - [ ] Capture proof using `docs/product/PROOF_CAPTURE_CHECKLIST.md`
 - [ ] Run Cap 64 live-signoff and lock only after proof passes
