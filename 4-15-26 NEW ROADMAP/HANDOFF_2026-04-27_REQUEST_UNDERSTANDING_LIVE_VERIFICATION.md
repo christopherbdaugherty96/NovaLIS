@@ -161,13 +161,34 @@ Trust/action-history visibility: NOT_YET_UI_VISIBLE
 
 ---
 
-## Known Limitations
+## Known Limitations And Follow-Up Triggers
 
 ### 1. Slow local model path
 
 `gemma4:e4b` was too slow for the live timeout on free-form LLM-dependent prompts.
 
 This is not a RequestUnderstanding code failure.
+
+Re-test trigger:
+
+```text
+Re-run the same live verification prompts when a faster local model, longer timeout, or stable cloud/provider lane is available.
+```
+
+Required re-test prompts:
+
+```text
+what should I work on next
+what is the status of Shopify work
+analyze the repo in the background while I am away
+hey how are you
+```
+
+Optional boundary prompt:
+
+```text
+draft an email to test@example.com about quarterly review
+```
 
 ### 2. Routing bypasses
 
@@ -187,13 +208,163 @@ Future narrow fix:
 If project-thread continuation cannot find a thread and the requested name matches a paused scope, return a paused-scope boundary response instead of generic thread-not-found.
 ```
 
-Do not fix this before the main live conversation path is stable unless explicitly assigned.
+Future task note:
+
+```text
+Bring bypassing routes under the same RequestUnderstanding/boundary visibility model where practical, without rewriting routing or changing execution authority.
+```
+
+Do not fix this before the main trust/action-history visibility step unless explicitly assigned.
 
 ### 3. Deep-analysis path gap
 
 The common local-model path receives RequestUnderstanding boundary context. The DeepSeek / `ALLOW_ANALYSIS_ONLY` path does not yet receive the block.
 
-This is accepted for now to avoid broad prompt/refactor work.
+Current decision:
+
+```text
+Treat DeepSeek / ALLOW_ANALYSIS_ONLY as intentionally exempt for now because it has its own analysis profile and changing it would broaden the prompt/refactor scope.
+```
+
+Future revisit trigger:
+
+```text
+Revisit only after the local-model RequestUnderstanding trust/action-history card is stable, or if analysis-mode prompts start producing boundary/authority confusion.
+```
+
+Future task note:
+
+```text
+Evaluate whether DeepSeek / ALLOW_ANALYSIS_ONLY should receive a condensed RequestUnderstanding safety summary, not the full boundary block, and add tests before any change.
+```
+
+---
+
+## Regression Coverage Notes
+
+The RequestUnderstanding tests should preserve the classification fixes discovered during this session.
+
+Regression cases to keep covered:
+
+```text
+save the file → not a memory/learning request
+save this to memory → memory_or_learning_request
+remember this → memory_or_learning_request
+save this to memory and add it to docs → doc_or_repo_update because docs were explicit
+add this to docs and commit it → doc_or_repo_update
+```
+
+If similar phrasing bugs appear, add tests before changing regex behavior.
+
+---
+
+## Cap 64 Confirmation Gate Status
+
+Current status:
+
+```text
+Cap 64 confirmation gate appears to work live.
+Cap 64 P5 live signoff remains paused.
+The live email test was boundary/confirmation evidence only, not certification.
+```
+
+What would satisfy Cap 64 P5 later, when unpaused:
+
+```text
+Owner explicitly unpauses Cap 64 P5.
+Google connector/email direction is ready enough that standalone Cap 64 signoff still makes sense or is intentionally replaced by Gmail-aligned signoff.
+Nova is running latest code.
+A mail client or connector-backed draft path is available.
+User requests a draft through normal Nova UI/WebSocket path.
+Nova shows confirmation before opening/creating the draft.
+User confirms with the accepted confirmation phrase.
+Draft opens/creates with correct recipient, subject, and body.
+No email is sent automatically.
+Trust/action-history or receipt endpoint records draft-created / not-sent evidence.
+Certification command is run only after live evidence is captured.
+P6 lock is applied only after P5 passes.
+```
+
+Until those criteria are met, do not treat the confirmation-gate check as P5 completion.
+
+---
+
+## Pause / Unpause Criteria
+
+### Email / Cap 64 P5
+
+Paused until:
+
+```text
+Google connector/email direction is clear enough to decide whether Cap 64 remains standalone, becomes Gmail-aligned draft creation, or is replaced by a connector-backed draft flow.
+```
+
+### Shopify / Cap 65
+
+Paused until:
+
+```text
+Owner explicitly unpauses Shopify/Cap 65 and provides/prepares Shopify dev-store credentials for live P5.
+```
+
+### Auralis / website merger
+
+Paused until:
+
+```text
+Owner explicitly unpauses Auralis/website merger and states it should displace current Nova runtime/conversation work.
+```
+
+---
+
+## OpenClaw Sequencing Clarification
+
+Current decision:
+
+```text
+Do not expand OpenClaw execution yet.
+```
+
+Allowed later preparatory work:
+
+```text
+OpenClawMediator skeleton only, with no new execution, no new tools, no approval bypass, and no broader hands-layer behavior.
+```
+
+This skeleton would be preparatory architecture, not hands-layer expansion.
+
+Before live OpenClaw expansion, the following gaps must be closed or explicitly accepted with tests:
+
+```text
+EnvelopeFactory must become mandatory or deprecated direct-run accounting must be complete.
+Freeform goal runs must be brought under envelope/accounting rules.
+Approval passthrough must become a real approval queue for non-read actions.
+ThinkingLoop/tool execution must become envelope-aware.
+OpenClaw run receipts and non-action statements must be visible.
+```
+
+---
+
+## Alignment With Governed Learning / Memory
+
+The umbrella alignment map covers the memory/learning boundary:
+
+```text
+docs/future/NOVA_COHERENCE_MEMORY_BACKGROUND_ARCHITECTURE_ALIGNMENT.md
+```
+
+Important memory/learning boundary:
+
+```text
+Governed learning may affect wording, context selection, intent classification, clarification behavior, project glossary recognition, and answer structure.
+Governed learning must not affect action approval, capability signoff, capability locks, GovernorMediator, ExecuteBoundary, NetworkMediator, OpenClaw authority, or connector authority.
+```
+
+All conversation/coherence learning must preserve:
+
+```text
+authority_effect = none
+```
 
 ---
 
@@ -227,6 +398,18 @@ Purpose:
 Make Nova's understanding and boundary visible even when the LLM is slow, inconsistent, or bypassed by routing.
 ```
 
+Initial design intent:
+
+```text
+Show RequestUnderstanding as a read-only review artifact in the trust/action-history surface, not as an approval control.
+```
+
+Card location:
+
+```text
+Trust/action-history UI if available; otherwise expose through the existing trust/action-history API or a read-only helper payload first.
+```
+
 Card fields should include:
 
 ```text
@@ -238,6 +421,15 @@ safe_next_step
 must_not_do
 authority_effect
 result / not executed
+```
+
+User experience:
+
+```text
+The user sees what Nova understood and what Nova must not do before or alongside any result.
+The card does not approve anything.
+The card does not execute anything.
+The card does not replace GovernorMediator, ExecuteBoundary, NetworkMediator, or receipts.
 ```
 
 The card must remain non-authorizing.
