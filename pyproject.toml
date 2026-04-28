@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "novalis"
-version = "0.1.0"
+version = "0.4.0"
 description = "Nova — governed local assistant with memory and transparent execution."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -22,9 +22,6 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
 ]
-# Pinned to match nova_backend/requirements.txt so `pip install -e .`
-# produces the same runtime as start_nova.bat/sh. When requirements.txt
-# changes, update this list in the same commit.
 dependencies = [
     "fastapi==0.127.0",
     "uvicorn[standard]==0.40.0",
@@ -52,17 +49,9 @@ Repository = "https://github.com/christopherbdaugherty96/NovaLIS"
 Issues = "https://github.com/christopherbdaugherty96/NovaLIS/issues"
 
 [project.scripts]
-# Requires def main() in nova_backend/src/brain_server.py (Task 1.4a, landed).
-# Import path is "src.brain_server" because nova_backend/src/ is the
-# package root used by all internal "from src.X import Y" imports.
-# Renaming to a proper "novalis" namespace is a Tier 3 refactor, not Tier 1.
 nova-start = "src.brain_server:main"
 
 [tool.setuptools]
-# The code treats nova_backend/src as the top-level package root.
-# Map "" -> nova_backend so `import src.xxx` keeps working after install,
-# matching the runtime layout used by start_nova.bat/sh (CWD=nova_backend,
-# invocation `python -m uvicorn src.brain_server:app`).
 package-dir = { "" = "nova_backend" }
 
 [tool.setuptools.packages.find]
@@ -76,11 +65,10 @@ target-version = "py310"
 extend-exclude = ["Nova-Frontend-Dashboard", "docs", "_MOCs"]
 
 [tool.ruff.lint]
-# Start conservative; tighten in later sprints. CI uses this config.
 select = ["E", "F", "W", "I"]
 ignore = [
-    "E501",  # line length — handled by formatter, not worth blocking CI
-    "E402",  # module-level imports not at top — common in FastAPI bootstrap
+    "E501",
+    "E402",
 ]
 
 [tool.pytest.ini_options]
