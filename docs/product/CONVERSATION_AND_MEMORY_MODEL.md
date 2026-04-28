@@ -10,7 +10,7 @@ This document explains how Nova uses conversation, context, memory, receipts, an
 - Session context helps Nova understand follow-ups inside the current interaction.
 - Mode and tone affect response style and routing behavior; they do not approve actions.
 - Memory can support continuity; it is not permission to execute.
-- Ledger entries and Action Receipts record governed actions; they are not personal memory.
+- Ledger entries and action receipts record governed actions; they are not personal memory.
 - Runtime truth describes the current system surface generated from implementation.
 - Stored plans and future docs do not run themselves.
 - Real actions still require registered capabilities, governance checks, execution boundaries, confirmation where required, and receipt/ledger evidence.
@@ -96,24 +96,25 @@ User request
 → confirmation when required
 → ExecuteBoundary / executor
 → LedgerWriter
-→ Action Receipt / trust receipt surface
+→ action receipt / trust receipt surface
 ```
 
 If a capability is not registered or not allowed, it should not execute.
 
 ---
 
-## Layer 7 — Ledger and Action Receipts
+## Layer 7 — Ledger And Receipt Surfaces
 
 The ledger records governed action events.
 
-Action Receipts and the Trust Receipts API make those events easier to inspect.
+The Trust Receipts API and action receipt surfaces make those events easier to inspect.
 
 Receipts are evidence of what happened; they are not memory instructions and they do not grant future permission.
 
 Current receipt-related truth:
-- Action Receipts exist as a visible trust surface.
 - `/api/trust/receipts` exposes recent receipt-worthy governed-action events.
+- `/api/trust/receipts/summary` exposes a compact receipt summary.
+- Dashboard Action Receipts should be treated as the visible UI surface when available; the API remains the direct proof source.
 - The fuller Trust Review Card / Trust Panel experience remains future work.
 
 ---
