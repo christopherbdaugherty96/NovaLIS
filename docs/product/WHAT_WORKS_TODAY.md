@@ -15,6 +15,7 @@ Use this page for user-facing readiness expectations.
 | Dashboard UI | Proven core path | Local dashboard surfaces exist, though polish is still evolving. |
 | Runtime truth docs | Proven core path | Generated runtime state and capability references exist. |
 | Research / summaries | Proven core path | Primary read-oriented assistant value. |
+| Trust receipts API | Proven core path | `/api/trust/receipts` exposes recent governed-action receipt events from the ledger. |
 
 ---
 
@@ -25,7 +26,7 @@ Use this page for user-facing readiness expectations.
 | Local device controls | Setup-dependent | OS and hardware behavior may vary. |
 | Weather / news / calendar snapshots | Setup-dependent | Some surfaces depend on local config, data sources, or connector setup. |
 | Voice input/output | Setup-dependent | Requires local speech tooling and model paths. |
-| Shopify intelligence | Setup-dependent | Requires Shopify environment variables and credentials. |
+| Shopify intelligence | Setup-dependent, read-only | Requires Shopify environment variables and credentials. Current implementation is read-only reporting, not store automation. |
 
 ---
 
@@ -33,10 +34,11 @@ Use this page for user-facing readiness expectations.
 
 | Area | Status | Notes |
 |---|---|---|
-| Memory / continuity | Implemented, evolving UX | Useful surface, still being refined. |
+| Memory / continuity | Implemented, evolving UX | Useful surface, still being refined. Memory supports continuity; it does not authorize execution. |
 | Screen capture / analysis | Experimental | Request-time capture exists, but the experience is still maturing. |
-| Email draft | Implemented, safety-limited | Draft/manual-send model; Nova does not send autonomously. |
+| Email draft | Implemented, safety-limited | Opens a local mail client draft through `mailto:`. Nova does not use SMTP, access inboxes, or send autonomously. |
 | OpenClaw execution surface | Advanced / constrained | Governed, limited, not broad autonomy. |
+| Action Receipts | Implemented, maturing UX | Visible receipt surface exists for governed-action outcomes. A fuller Trust Panel remains future work. |
 
 ---
 
@@ -44,10 +46,12 @@ Use this page for user-facing readiness expectations.
 
 | Area | Status | Notes |
 |---|---|---|
-| Trust Panel / Trust Review Card | Not implemented | Active priority area. |
+| Fuller Trust Panel / Trust Review Card | Partial / future work | Action Receipts and trust receipt API exist; richer blocked-reason drill-down, confirmation previews, proof browsing, and polished demo flow remain future work. |
 | One-click installer | Not implemented | Needed for broader adoption. |
 | Mainstream consumer onboarding | Not ready | Current setup expects a technical user. |
 | Broad autonomous execution | Intentionally limited | Not current product direction. |
+| Cap 64 live lock | Ready for human P5 | Automated checks are strong, but local mail-client live proof is still a human step before lock. |
+| Cap 65 live lock | Blocked on credentials | Requires real Shopify credentials and read-only live proof before lock. |
 
 ---
 
