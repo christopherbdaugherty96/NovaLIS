@@ -18,7 +18,7 @@ The correct first goal is to create useful, governed leverage in areas where mis
 Nova should first help users:
 
 - think better
-n- market faster
+- market faster
 - understand audiences
 - create drafts
 - organize campaigns
@@ -40,7 +40,7 @@ Safe outputs:
 - hooks
 - scripts
 - captions
-- thumbnails concepts
+- thumbnail concepts
 - product descriptions
 - campaign plans
 
@@ -178,7 +178,7 @@ Nova can understand which identity it is working for.
 Build:
 
 - idea generator
-n- hook generator
+- hook generator
 - script generator
 - caption generator
 - thumbnail planner
@@ -252,7 +252,7 @@ Higher-risk actions become visible and reviewable.
 
 ## Phase 7 — Governed Scheduling / Publishing
 
-Build only after prior phases are solid.
+Build only after prior phases are solid and trust surfaces are mature.
 
 ---
 
