@@ -1,6 +1,25 @@
 # Live Test Checklist — Cap 64: send_email_draft
 Phase 5 of 6 · Priority: HIGH (external_effect=True, persistent_change)
 
+---
+
+## Current Status — 2026-04-27
+
+**P5: READY TO TEST**
+
+Automated verification completed 2026-04-27:
+- P1 unit tests: 20/20 pass (`tests/executors/test_send_email_draft_executor.py`)
+- P2 routing tests: 18/18 pass (`tests/test_send_email_draft_routing.py`)
+- P3 integration tests: pass
+- P4 API tests: pass (includes WebSocket confirmation + trust receipt smoke)
+- Total: 89 automated tests green
+
+Fix applied 2026-04-27: cap 64 confirmation gate was broken — `session_handler.py` never set `pending_governed_confirm` state for cap 64, so the user's "yes" follow-up had no pending state to resume from. Fixed by adding an explicit confirmation block for cap 64 (analogous to the existing cap 22 gate). Commit `93be5ff` on main.
+
+**Confirmation word:** Type `yes` (or `confirm`, `ok`, `proceed`) — do **not** type `confirmed` (that word maps to `reprompt` in the session router).
+
+---
+
 ## Pre-conditions
 - [ ] Nova is running at `http://localhost:8000`
 - [ ] A mail client is installed and configured on your machine
@@ -15,7 +34,7 @@ Phase 5 of 6 · Priority: HIGH (external_effect=True, persistent_change)
    ```
    draft an email to test@example.com about the quarterly review
    ```
-2. Nova asks for confirmation — click **Confirm** (or type "confirmed")
+2. Nova shows a confirmation prompt — type `yes` to proceed
 3. ✅ Your mail client opens
 4. ✅ **To:** field contains `test@example.com`
 5. ✅ **Subject:** contains "quarterly review" or similar
@@ -27,7 +46,7 @@ Phase 5 of 6 · Priority: HIGH (external_effect=True, persistent_change)
 ## Test 2 — Shorthand: recipient only
 
 1. Type: `email sarah@company.com`
-2. Confirm when prompted
+2. Type `yes` when prompted
 3. ✅ Mail client opens with `sarah@company.com` in the To field
 4. ✅ No crash, no Python traceback in the Nova console
 
@@ -39,7 +58,7 @@ Phase 5 of 6 · Priority: HIGH (external_effect=True, persistent_change)
    ```
    compose an email to boss@work.com about scheduling a team meeting next week
    ```
-2. Confirm
+2. Type `yes` when prompted
 3. ✅ Mail client opens
 4. ✅ Body mentions "meeting" or "schedule" — shows LLM used the hint
 5. Close without sending
@@ -48,10 +67,11 @@ Phase 5 of 6 · Priority: HIGH (external_effect=True, persistent_change)
 
 ## Test 4 — Ledger verification
 
-1. Go to **Trust** page in Nova (`http://localhost:8000/trust`)
-2. Find the ledger section
-3. ✅ At least one `EMAIL_DRAFT_CREATED` event is logged from your tests above
-4. ✅ The event shows the recipient email address
+1. Open in a browser: `http://localhost:8000/api/trust/receipts`
+   (The Trust Panel UI is not yet built — use the API endpoint directly)
+2. ✅ Response is a JSON object with a `receipts` array
+3. ✅ At least one `EMAIL_DRAFT_CREATED` entry is present from your tests above
+4. ✅ The entry shows the recipient email address
 
 ---
 

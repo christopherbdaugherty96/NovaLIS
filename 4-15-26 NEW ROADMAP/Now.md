@@ -44,9 +44,46 @@
 
 ---
 
-## Progress Update (2026-04-27)
+## Progress Update (2026-04-27) — Cap 64 confirmation gate fix
 
-### Cap 65 P5 Live Signoff Audit
+### Done
+
+- Root-cause identified: `session_handler.py` never set `pending_governed_confirm` state for cap 64. The governor's `risk_level=confirm` check at line 222 returns a refusal when `confirmed=False`, but there was no pre-invoke check in the session handler to save pending state for cap 64's follow-up "yes". Users saw "This action requires confirmation" but typing "yes" had no effect.
+- Fix: added cap 64 block analogous to the existing cap 22 gate in `session_handler.py` (lines ~3292-3314). Shows recipient/subject in the confirmation prompt, saves `pending_governed_confirm`, then the existing `pending_governed_confirm → invoke_governed_capability(confirmed=True)` flow completes the action.
+- Correct confirmation word: `yes` (or `confirm`, `ok`, `proceed`) — `confirmed` maps to `reprompt` in `SessionRouter.route_pending_web_confirmation()`.
+- All 89 cap 64 tests pass; full suite 1564 pass, 4 skipped.
+- Pushed as commit `93be5ff` on main.
+- Cap 64 live checklist updated: status block added, "confirmed" → "yes" corrected, Test 4 points to `/api/trust/receipts` (Trust Panel UI not yet built).
+
+### Cap 64 P5 ready state
+
+P5 is now unblocked from the code side. Two environmental requirements remain:
+- Ollama must be running at `localhost:11434` (or model lock must be cleared) for LLM body generation — without it, body falls back to static placeholder text, which is acceptable for P5 testing
+- A mail client must be registered as the system `mailto:` handler
+
+To run P5:
+```
+# Start Nova
+nova-start
+
+# In Nova chat:
+draft an email to test@example.com about the quarterly review
+# → Nova shows confirmation prompt with To: and Subject:
+# → Type: yes
+# → Mail client opens; verify To/Subject/Body; close without sending
+
+# Verify ledger:
+# http://localhost:8000/api/trust/receipts
+# → should contain EMAIL_DRAFT_CREATED entry
+
+# Sign off and lock:
+python scripts/certify_capability.py live-signoff 64
+python scripts/certify_capability.py lock 64
+```
+
+---
+
+## Progress Update (2026-04-27) — Cap 65 P5 Live Signoff Audit
 
 P5 status: **BLOCKED — Shopify credentials not present in this environment.**
 
