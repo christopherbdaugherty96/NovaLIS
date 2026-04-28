@@ -90,6 +90,8 @@ Long-term platform ambitions remain possible, but current work is focused on cla
 
 ## Quick Start
 - [Quickstart](QUICKSTART.md)
+- [Use Cases](USE_CASES.md)
+- [Demo Walkthrough](docs/product/DEMO_WALKTHROUGH.md)
 - [Docs Index](docs/INDEX.md)
 - [Authoritative Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
 
