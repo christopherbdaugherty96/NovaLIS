@@ -3,9 +3,9 @@ Phase 5 of 6 · Priority: HIGH (external_effect=True, persistent_change)
 
 ---
 
-## Current Status — 2026-04-27
+## Current Status — 2026-04-28
 
-**P5: READY TO TEST**
+**P5: READY FOR HUMAN LIVE TEST — not complete, not locked.**
 
 Automated verification completed 2026-04-27:
 - P1 unit tests: 20/20 pass (`tests/executors/test_send_email_draft_executor.py`)
@@ -17,6 +17,8 @@ Automated verification completed 2026-04-27:
 Fix applied 2026-04-27: cap 64 confirmation gate was broken — `session_handler.py` never set `pending_governed_confirm` state for cap 64, so the user's "yes" follow-up had no pending state to resume from. Fixed by adding an explicit confirmation block for cap 64 (analogous to the existing cap 22 gate). Commit `93be5ff` on main.
 
 **Confirmation word:** Type `yes` (or `confirm`, `ok`, `proceed`) — do **not** type `confirmed` (that word maps to `reprompt` in the session router).
+
+**Authority boundary:** Cap 64 opens a local OS mail client draft through `mailto:`. Nova does not use SMTP, access an inbox, or send email autonomously. The human must review and send manually.
 
 ---
 
@@ -65,13 +67,14 @@ Fix applied 2026-04-27: cap 64 confirmation gate was broken — `session_handler
 
 ---
 
-## Test 4 — Ledger verification
+## Test 4 — Receipt verification
 
 1. Open in a browser: `http://localhost:8000/api/trust/receipts`
-   (The Trust Panel UI is not yet built — use the API endpoint directly)
+   - Use the dashboard Action Receipts surface when available.
+   - Treat the API endpoint as the direct proof source for signoff.
 2. ✅ Response is a JSON object with a `receipts` array
 3. ✅ At least one `EMAIL_DRAFT_CREATED` entry is present from your tests above
-4. ✅ The entry shows the recipient email address
+4. ✅ The entry shows the recipient email address or otherwise matches the test request
 
 ---
 
@@ -96,6 +99,8 @@ Then lock it:
 python scripts/certify_capability.py lock 64
 ```
 
+Do not run the lock command until the local mail-client proof and receipt verification both pass.
+
 ---
 
 ## Troubleshooting
@@ -112,8 +117,9 @@ python scripts/certify_capability.py lock 64
 **Body is blank or placeholder text**
 - The body is LLM-generated. A very short prompt ("email someone about something") produces a generic body. Use a more specific prompt for a meaningful body (Test 3 is designed for this).
 
-**Test 4 — Trust page not loading**
-- The Trust Panel UI is not yet built. Use `http://localhost:8000/api/trust/receipts` directly in a browser — the JSON response contains `EMAIL_DRAFT_CREATED` entries.
+**Test 4 — Receipt not visible**
+- Use `http://localhost:8000/api/trust/receipts` directly in a browser — the JSON response should contain `EMAIL_DRAFT_CREATED` entries after successful draft creation.
+- If the dashboard Action Receipts surface does not show the event, use the API response as the direct proof source.
 - If no entries appear, run at least one email draft test first, then refresh.
 
 **Test 5 — Confirmation prompt not appearing**
