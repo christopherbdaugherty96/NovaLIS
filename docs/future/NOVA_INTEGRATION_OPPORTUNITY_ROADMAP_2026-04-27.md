@@ -6,6 +6,17 @@ Status: Future roadmap / integration opportunity record / not current runtime tr
 
 Purpose: capture the major integration opportunities that could improve Nova over time, based on observed patterns in modern agent projects and Nova's governance-first architecture. This document is future planning only. It does not claim these integrations are implemented today.
 
+Related docs:
+
+```text
+docs/future/NOVA_COHERENCE_MEMORY_BACKGROUND_ARCHITECTURE_ALIGNMENT.md
+docs/future/NOVA_GOOGLE_ACCOUNT_AND_CONNECTOR_ONBOARDING_PLAN.md
+docs/future/NOVA_OPENCLAW_AUTOMATED_WORKFLOW_OPPORTUNITY_MAP_2026-04-27.md
+docs/future/NOVA_ELEVENLABS_VOICE_OPPORTUNITY_MAP_2026-04-27.md
+docs/future/NOVA_BACKGROUND_REASONING_NOT_AUTOMATION_PLAN.md
+4-15-26 NEW ROADMAP/CURRENT_PRIORITY_OVERRIDE_2026-04-27.md
+```
+
 ---
 
 ## Active Priority Note
@@ -24,6 +35,12 @@ RequestUnderstanding trust/action-history review card
 ```
 
 Do not use this roadmap to skip directly into broad connectors, MCP tools, external workflow runners, browser automation, smart-home control, or background automation.
+
+Important sequencing note:
+
+```text
+The build order in this document is strategic sequencing after the current trust/action visibility foundation, not permission to start all listed integrations now.
+```
 
 ---
 
@@ -883,6 +900,8 @@ These should be treated as foundation work before wide connector expansion.
 
 ## Recommended Overall Build Order
 
+This order is strategic. It is not a single sprint and not permission to work on every item now.
+
 ```text
 1. RequestUnderstanding trust/action-history card
 2. Task/run-state store
@@ -903,6 +922,8 @@ These should be treated as foundation work before wide connector expansion.
 17. n8n/external workflow runner only as governed executor, not governor
 18. Browser/computer-use sandbox only as screen-to-action review first
 ```
+
+Do not start items 2+ until the active priority override allows the next step.
 
 ---
 
