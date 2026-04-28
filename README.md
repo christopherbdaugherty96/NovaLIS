@@ -2,102 +2,48 @@
 
 ![Alpha](https://img.shields.io/badge/stage-alpha-blue) ![Active Build](https://img.shields.io/badge/status-active_build-brightgreen) ![Local First](https://img.shields.io/badge/model-local--first-purple) ![Trust First](https://img.shields.io/badge/focus-trust--first-orange)
 
-## The AI assistant you can actually trust.
+**Version 0.4 Alpha**
 
-**Version:** 0.4 Alpha  
-**Status:** Active Build  
-**Model:** Local-first / Trust-first  
-**Last Major Update:** 2026-04-28  
-**Next Milestone:** Trust Review Card
+NovaLIS is a governance-first local AI system designed to separate intelligence from execution.
 
-NovaLIS is a governed local AI system designed to help with real daily work while keeping execution under clear control.
-
-Nova separates **intelligence** from **authority**: AI can reason and assist, but important actions remain bounded, visible, and reviewable.
-
-> Intelligence may expand. Authority may not expand without an explicit unlock.
-
-![Nova dashboard home](docs/product/assets/dashboard-home.png)
-
----
-
-## Start Here
-1. Read [What Works Today](docs/product/WHAT_WORKS_TODAY.md)
-2. Follow [Quickstart](QUICKSTART.md)
-3. Review [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
-4. Check [Authoritative Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
-
----
-
-## Who Nova Is For Right Now
-- People who want a private daily-use AI assistant
-- Builders who want visible boundaries around actions
-- Early adopters comfortable with local tools
-- Users who value control over hidden automation
-
----
-
-## What Nova Helps With
-
-### Understand & Organize
-- Notes
-- Memory
-- Summaries
-- Context carryover
-
-### Help With Work
-- Research
-- Drafts
-- Planning
-- Explanations
-
-### Safe Actions
-- Approval-gated actions
-- Visible decisions
-- Action history
-- Logged execution events
-
-### Daily Utility
-- Weather
-- News
-- Calendar snapshots
-- Local tools
-
----
+Most AI systems focus on what the model can generate. Nova focuses on what the system is allowed to do, how decisions are routed, and how actions stay visible, bounded, and reviewable.
 
 ## Why Nova Exists
-Most AI tools combine reasoning and authority in one opaque system.
+Reasoning power should not automatically equal authority.
 
-Nova separates them. Reasoning can improve while real actions still require visible rules, capability checks, and audit trails.
+Nova introduces a governed execution model where actions pass through explicit controls before they run.
 
----
+## What Makes It Different
+- Capability-based authority model
+- Governed action routing
+- Local-first architecture
+- Execution boundaries
+- Reviewable action history
+- Runtime truth documentation
+- Honest limitations
 
-## Core Specs
-- **Backend:** Python 3.10+, FastAPI, Uvicorn, WebSockets
-- **Local Models:** Ollama-compatible models with Gemma-focused runtime routes
-- **Voice:** Optional local speech input/output surfaces
-- **Governance Spine:** GovernorMediator, CapabilityRegistry, ExecuteBoundary, NetworkMediator, Ledger
-- **Memory:** Local governed memory and continuity system
-- **UI:** Dashboard, Trust, Workspace, Agent, Settings, runtime surfaces
-- **Connectors:** RSS news, ICS calendar, Shopify, optional metered OpenAI lane
-- **Runtime Truth:** Generated runtime state, capability reference, and fingerprint docs
+## What Works Today
+See: [`docs/product/WHAT_WORKS_TODAY.md`](docs/product/WHAT_WORKS_TODAY.md)
 
----
+## Start Here
+1. [What Works Today](docs/product/WHAT_WORKS_TODAY.md)
+2. [Quickstart](QUICKSTART.md)
+3. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
+4. [Runtime Truth](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
 
-## What Makes Nova Different
-- **Intelligence is not authority**
-- **Actions are governed**
-- **The user stays in control**
-- **The system is inspectable**
-- **Local-first matters**
+## Try These 5 Commands
+- What works today?
+- Weather in Belleville
+- Summarize today’s news
+- Draft an email to John about tomorrow
+- Explain what Nova can do
 
----
+## Current Status
+Nova is an **alpha build** intended for technical users and early adopters.
+It is real software under active development, not a finished consumer product.
 
-## Current Focus
-Build the best trustworthy daily-use personal AI assistant first.
-
-Long-term platform ambitions remain possible, but current work is focused on clarity, trust, and usefulness.
-
----
+## Core Principle
+**Intelligence is not authority.**
 
 ## Explore Next
 - [Use Cases](USE_CASES.md)
