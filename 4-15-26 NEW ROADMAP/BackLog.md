@@ -1,6 +1,20 @@
 # BackLog.md
 
-This file tracks follow-up work that is real, but not allowed to distract from the active close-out path in `Now.md`.
+This file tracks follow-up work that is real, but not allowed to distract from the active priority override.
+
+Current priority source:
+
+```text
+4-15-26 NEW ROADMAP/CURRENT_PRIORITY_OVERRIDE_2026-04-27.md
+```
+
+Current active focus:
+
+```text
+RequestUnderstanding trust/action-history review card
+```
+
+The older Cap 64 live-signoff path is paused until Google/email connector direction is clear.
 
 ## HARD PAUSE — Auralis / Website Merger Work
 
@@ -35,16 +49,17 @@ Blocked while paused:
 adding more Auralis merger docs
 expanding Auralis pricing/funnel/client docs inside NovaLIS
 shifting Claude/Codex work toward website merger strategy
-letting Auralis work displace Cap 64, trust/action-history, OpenClaw governance, or runtime stabilization
+letting Auralis work displace RequestUnderstanding visibility, trust/action-history, local capability signoff, or runtime stabilization
 ```
 
-Current active focus returns to NovaLIS runtime stabilization:
+Current active focus returns to NovaLIS conversation/trust stabilization:
 
 ```text
-Cap 64 P5 live signoff and lock
-Windows installer/bootstrap validation
-trust/action-history dashboard proof
-OpenClawMediator / Business Follow-Up Brief proof after trust path is stable
+RequestUnderstanding trust/action-history review card
+live conversation re-check when faster model/timeout/provider lane is available
+narrow RequestUnderstanding routing-bypass fixes after the trust card
+local capability signoff matrix after conversation visibility is stable
+OpenClawMediator skeleton only after visibility and local capability limits are clearer
 ```
 
 ## HARD PAUSE — Shopify / Cap 65 P5 Live Work
@@ -94,7 +109,7 @@ requesting/adding Shopify credentials
 locking Cap 65
 expanding Shopify capability scope
 adding Shopify write/mutation capabilities
-letting Shopify work displace Cap 64, trust/action-history, installer validation, or OpenClaw governance work
+letting Shopify work displace RequestUnderstanding visibility, trust/action-history, local capability signoff, or runtime stabilization
 ```
 
 Unpause condition:
@@ -106,39 +121,86 @@ Owner explicitly unpauses Shopify/Cap 65 and provides or prepares Shopify dev-st
 Until unpaused, the active NovaLIS path is:
 
 ```text
-Cap 64 P5 live signoff and lock
-Windows installer/bootstrap validation
-trust/action-history dashboard proof
-OpenClawMediator / Business Follow-Up Brief proof after trust path is stable
+RequestUnderstanding trust/action-history review card
+live conversation re-check when faster model/timeout/provider lane is available
+narrow RequestUnderstanding routing-bypass fixes after the trust card
+local capability signoff matrix after conversation visibility is stable
+OpenClawMediator skeleton only after visibility and local capability limits are clearer
 ```
+
+## HARD PAUSE — Email / Cap 64 P5 Live Work
+
+Status: paused by owner direction on 2026-04-27.
+
+Cap 64 `send_email_draft` remains preserved as a draft-only safety pattern, but P5 live signoff and P6 lock are not the active path right now.
+
+Paused reason:
+
+```text
+Email should wait until Google connector/email direction is clear enough to decide whether Cap 64 remains standalone, becomes Gmail-aligned draft creation, or is replaced by a connector-backed draft flow.
+```
+
+Preserve:
+
+```text
+Cap 64 implementation
+Cap 64 confirmation-gate fix
+Cap 64 tests
+Cap 64 checklist updates
+Cap 64 P1-P4 evidence
+```
+
+Blocked while paused:
+
+```text
+Cap 64 P5 live checklist
+Cap 64 live signoff
+Cap 64 P6 lock
+mail-client live testing
+standalone email expansion outside Google connector alignment
+```
+
+Do not treat the live confirmation-gate check as P5 certification.
 
 ## Request Understanding Contract
 
 Context: Nova now has a non-authorizing request understanding contract that closes the user-facing loop between what Nova understood, current capability state, safe next step, and what Nova must not do.
 
-Reference: `docs/future/NOVA_REQUEST_UNDERSTANDING_CONTRACT.md`.
+References:
+
+```text
+docs/future/NOVA_REQUEST_UNDERSTANDING_CONTRACT.md
+docs/future/NOVA_COHERENCE_MEMORY_BACKGROUND_ARCHITECTURE_ALIGNMENT.md
+4-15-26 NEW ROADMAP/HANDOFF_2026-04-27_REQUEST_UNDERSTANDING_LIVE_VERIFICATION.md
+```
 
 Current implementation:
 
 ```text
 nova_backend/src/conversation/request_understanding.py
+nova_backend/src/conversation/request_understanding_formatter.py
 nova_backend/tests/conversation/test_request_understanding.py
+nova_backend/tests/conversation/test_request_understanding_formatter.py
 ```
 
 ### Current Truth To Preserve
 
-- This is an implemented foundation, but not yet wired into the live response/UI path.
-- It is conversation-layer architecture only.
+- RequestUnderstanding foundation is implemented.
+- Formatter and prompt assembly are test-proven.
+- General-chat prompt integration exists.
+- Live runtime was updated and partially verified.
+- Live free-form LLM behavior is not fully verified because of Ollama speed and some routing bypasses.
+- Trust/action-history visibility is not implemented yet.
 - `authority_effect` must remain `none`.
-- It must not approve actions, execute capabilities, lock/sign off capabilities, resume paused work, call OpenClaw, call connectors, or change GovernorMediator / ExecuteBoundary / NetworkMediator.
+- It must not approve actions, execute capabilities, lock/sign off capabilities, resume paused work, call OpenClaw, call connectors, persist memory, or change GovernorMediator / ExecuteBoundary / NetworkMediator.
 
-### Recommended Future Build Order
+### Current Active Build Order
 
-- [ ] Run the targeted request understanding tests locally.
-- [ ] Wire `RequestUnderstanding` into the general-chat response path for clearer user-facing boundary language.
-- [ ] Surface `understood_goal`, `capability_status`, `safe_next_step`, and `must_not_do` in trust/action-history review cards.
-- [ ] Keep integration read-only/non-authorizing.
-- [ ] Add regression tests proving request understanding cannot trigger capability execution or authority changes.
+- [ ] Build the minimal RequestUnderstanding trust/action-history review card.
+- [ ] Re-run live conversation checks when a faster local model, longer timeout, or stable provider lane is available.
+- [ ] Fix narrow RequestUnderstanding routing bypasses after the trust card, starting with paused-scope thread-continuation cases such as `continue Shopify`.
+- [ ] Start local capability signoff matrix after conversation visibility is stable.
+- [ ] Add OpenClawMediator skeleton only after conversation visibility and local capability limits are clearer.
 
 ### Guardrail
 
@@ -146,30 +208,31 @@ Understanding is not permission. The contract may explain and format the user-fa
 
 ## Conversation Coherence Layer
 
-Context: Nova already has a real conversation module with deterministic routing, `ConversationDecision`, response style routing, normalization, follow-up handling, and tests. The next coherence improvement should be incremental and test-backed, not a broad rewrite.
+Context: Nova already has a real conversation module with deterministic routing, `ConversationDecision`, response style routing, normalization, follow-up handling, RequestUnderstanding, formatter integration, and tests. The next coherence improvement should remain incremental and test-backed, not a broad rewrite.
 
 Reference: `docs/future/NOVA_CONVERSATION_COHERENCE_LAYER_PLAN.md`.
 
 ### Current Truth To Preserve
 
-- Existing conversation surfaces include `conversation_router.py`, `conversation_decision.py`, `response_style_router.py`, `response_formatter.py`, `session_router.py`, `general_chat_runtime.py`, `websocket/session_handler.py`, and `skills/general_chat.py`.
-- Existing tests cover conversation router, response style router, formatter, session router, and general chat runtime.
-- Coherence work must not widen GovernorMediator, ExecuteBoundary, NetworkMediator, OpenClaw, Google connector, ElevenLabs, Auralis, or Shopify authority.
-- This is a usability/context improvement, not an execution-authority project.
+- Existing conversation surfaces include `conversation_router.py`, `conversation_decision.py`, `request_understanding.py`, `request_understanding_formatter.py`, `response_style_router.py`, `response_formatter.py`, `session_router.py`, `general_chat_runtime.py`, `websocket/session_handler.py`, and `skills/general_chat.py`.
+- Existing tests cover conversation router, request understanding, request understanding formatter, response style router, formatter, session router, and general chat runtime.
+- Coherence work must not widen GovernorMediator, ExecuteBoundary, NetworkMediator, OpenClaw, Google connector, ElevenLabs, Auralis, Shopify, or Cap 64 authority.
+- This is a usability/context/visibility improvement, not an execution-authority project.
 
 ### Recommended Future Build Order
 
-- [ ] Add tests for status/next-step/paused-work/memory-vs-doc/capability-signoff question types.
-- [ ] Add a small task-state source for active, paused, blocked, and future-only work.
-- [ ] Add runtime-truth labels such as `CURRENT_RUNTIME_TRUTH`, `PLANNED`, `PAUSED`, `BLOCKED`, and `DEFERRED`.
-- [ ] Add coherence classification metadata without exploding or rewriting `ConversationMode`.
-- [ ] Add response templates for project status, Claude/Codex direction, paused work, capability signoff, explanation, and governed action summaries.
-- [ ] Wire the layer only into general-chat/project-status paths first.
-- [ ] Add regression tests proving paused Auralis and paused Shopify are respected.
+- [x] Add RequestUnderstanding contract and tests.
+- [x] Add RequestUnderstanding formatter and prompt assembly tests.
+- [x] Wire RequestUnderstanding into general-chat prompt context.
+- [ ] Surface RequestUnderstanding in trust/action-history visibility.
+- [ ] Add or refine tests for status/next-step/paused-work/memory-vs-doc/capability-signoff question types as new visibility surfaces are added.
+- [ ] Add a small task-state source for active, paused, blocked, and future-only work only if the current override/handoff docs become insufficient.
+- [ ] Add response templates for project status, Claude/Codex direction, paused work, capability signoff, explanation, and governed action summaries only where tests show gaps.
+- [ ] Add regression tests proving paused Auralis and paused Shopify are respected across bypassing routes.
 
 ### Guardrail
 
-Do not start this before Cap 64 P5 live signoff unless explicitly instructed. When started, do not replace the conversation router wholesale. Preserve existing behavior and add narrow, tested improvements.
+Do not replace the conversation router wholesale. Preserve existing behavior and add narrow, tested improvements. Do not use coherence work to start background jobs, persist governed learning, execute OpenClaw, or resume paused work.
 
 ## Governed Learning
 
@@ -220,7 +283,7 @@ Reference: `docs/future/NOVA_BACKGROUND_REASONING_NOT_AUTOMATION_PLAN.md`.
 
 ### Guardrail
 
-Do not implement broad background reasoning before Cap 64 P5/signoff or trust/action-history review surfaces unless explicitly reprioritized. Background reasoning may prepare drafts and proposed actions; it must not perform background automation.
+Do not implement broad background reasoning before RequestUnderstanding trust/action-history visibility exists unless explicitly reprioritized. Background reasoning may prepare drafts and proposed actions; it must not perform background automation.
 
 ## Trust Receipt Backend Hardening
 
@@ -312,6 +375,16 @@ Do not treat OpenClaw as full hands until Nova can prove:
 
 > Nova can safely direct OpenClaw to do useful work without giving OpenClaw uncontrolled authority.
 
+Near-term allowed OpenClaw work after conversation visibility and local capability limits are clearer:
+
+```text
+OpenClawMediator skeleton only
+no new execution
+no new tools
+no approval bypass
+no broader hands-layer behavior
+```
+
 ## Google Account And Connector Onboarding
 
 Context: future Nova should support easy first-run Google sign-in and Google app connections, but Google access must not become hidden action authority. The guiding rule is: **Google connects data. Nova governs action.**
@@ -381,14 +454,14 @@ automatic connector actions without receipts
 
 ## Guardrail
 
-Do not expand this into another broad audit. The active execution path remains:
+Do not expand this into another broad audit. The active execution path is now governed by `CURRENT_PRIORITY_OVERRIDE_2026-04-27.md` and remains:
 
-1. Cap 64 P5 live signoff and lock.
-2. Clean Windows VM installer validation and `C:\Program Files\Nova\bootstrap.log` review.
-3. Trust receipt dashboard card after backend hardening.
-4. OpenClaw hands-layer alignment only after the trust/action-history path is stable enough to prove bounded worker execution.
-5. Request Understanding Contract UI/general-chat integration only after Cap 64 P5 unless explicitly instructed.
-6. Conversation Coherence Layer, Governed Learning, and Background Reasoning only after Cap 64 P5 unless explicitly instructed.
-7. Google connector onboarding only after identity, connector registry, token storage, approval queue, and receipts are designed clearly enough to avoid hidden authority.
-8. Auralis / website merger work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it.
-9. Shopify / Cap 65 P5 live work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it and provides/prepares credentials.
+1. Build RequestUnderstanding trust/action-history review card.
+2. Re-run live conversation checks when a faster local model, longer timeout, or stable provider lane is available.
+3. Fix narrow RequestUnderstanding routing bypasses, starting with paused-scope thread-continuation cases.
+4. Start local capability signoff matrix after conversation visibility is stable.
+5. Add OpenClawMediator skeleton only after conversation visibility and local capability limits are clearer.
+6. Revisit Google connector/email direction before unpausing Cap 64 P5.
+7. Auralis / website merger work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it.
+8. Shopify / Cap 65 P5 live work is paused and must not drive active NovaLIS work until the owner explicitly unpauses it and provides/prepares credentials.
+9. Cap 64 / email P5 live signoff is paused until Google/email connector direction is clear.
