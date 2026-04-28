@@ -30,6 +30,18 @@ Most AI tools optimize for capability expansion. Nova emphasizes bounded executi
 - [Media Engine Safe Implementation Roadmap](docs/future/NOVA_MEDIA_ENGINE_SAFE_IMPLEMENTATION_ROADMAP.md)
 - [Nova x Auralis Digital Website Engine](docs/future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE.md)
 
+## AI Workflow Note
+This project may use AI tools for planning, coding support, audits, review, and prototyping.
+
+- GitHub remains the durable source of truth for code, docs, commits, and project status.
+- Runtime truth should be grounded in implementation, tests, and generated runtime artifacts.
+- Visual builders or prototype tools may help present ideas, but do not replace Nova's governed runtime.
+- AI-generated work should be reviewed before being treated as final.
+
+See:
+- [AI Tooling Workflow](docs/WORKFLOW_AI_TOOLING.md)
+- [AI Tooling Boundaries](docs/AI_TOOLING_BOUNDARIES.md)
+
 ## Core Principle
 **Intelligence is not authority.**
 
