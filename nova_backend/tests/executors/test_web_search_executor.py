@@ -77,8 +77,11 @@ def test_successful_search_returns_results(executor, mock_network, sample_reques
     assert result.success
     assert result.message.startswith("Bottom line:")
     assert 'Search answer for "test query"' in result.message
+    assert "Sources:" in result.message
+    assert "https://example.com/one" in result.message
     assert "Confidence:" in result.message
-    assert "Show sources" in result.message
+    assert "What is known:" in result.message
+    assert "What is unclear:" in result.message
     assert "Try next" in result.message
 
     widget = result.data.get("widget", {})
@@ -125,6 +128,38 @@ def test_no_results_returns_empty_widget(executor, mock_network, sample_request)
     assert widget_data["query"] == "test query"
     assert widget_data["provider"] == "Brave Search"
     assert widget_data["result_count"] == 0
+
+
+def test_low_relevance_search_admits_little_reliable_evidence(executor, mock_network, monkeypatch):
+    from src.actions.action_request import ActionRequest
+
+    monkeypatch.setattr("src.executors.web_search_executor.generate_chat", lambda *args, **kwargs: "Should not be used.")
+    request = ActionRequest(capability_id=16, params={"query": "a fake company called Zorblax Quantum Sandwich Labs"})
+    mock_network.request.return_value = {
+        "status_code": 200,
+        "data": {
+            "web": {
+                "results": [
+                    {
+                        "title": "Zorblax, we hardly knew ye",
+                        "url": "https://example.com/zorblax",
+                        "description": "A joke thread unrelated to a company.",
+                    },
+                    {
+                        "title": "Quantum AI scam discussion",
+                        "url": "https://example.com/quantum",
+                        "description": "General scam discussion.",
+                    },
+                ]
+            }
+        },
+    }
+
+    result = executor.execute(request)
+
+    assert result.success
+    assert "little reliable evidence" in result.message.lower()
+    assert "not treat the claim or entity as verified" in result.message.lower()
 
 
 def test_non_200_status_returns_failure_with_empty_widget(

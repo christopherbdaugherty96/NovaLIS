@@ -1,31 +1,35 @@
-# Active TODO — Nova
+# Active TODO - Nova
 
-**Updated:** 2026-04-28  
-**Sprint goal:** Non-developer installs and runs Nova in 5 minutes.  
+**Updated:** 2026-04-29  
+**Sprint goal:** Cap 16 web-search answer quality + conversation coherence proof.  
 **Authority note:** This file is the public task snapshot. Exact runtime truth still comes from generated runtime docs and code.
 
 ## Current Priorities (ordered by ROI)
 
-- [ ] Fuller Trust Review Card / Trust Panel — richer blocked reasons, confirmation previews, receipt history, and proof browsing
-- [ ] Cap 64 P5 live signoff + lock
-- [ ] Windows installer VM validation — clean install + bootstrap.log fixes
+- [ ] Fix Cap 16 current-search CPU-budget friction
+- [ ] Improve conversation follow-up/topic tracking for connector/governance topics
+- [ ] Tighten uncertainty wording for health/safety/current-evidence questions
+- [ ] Re-run and record the conversation + search demo flow
+- [ ] Fuller Trust Review Card / Trust Panel - richer blocked reasons, confirmation previews, receipt history, and proof browsing
+- [ ] Windows installer VM validation - clean install + bootstrap.log fixes
 - [ ] README screenshot or GIF of governed action flow
-- [ ] Daily Brief MVP — schedule, priorities, reminders, recent actions
-- [ ] Memory UX flows — remember / forget / review saved memory
-- [ ] Dashboard home improvements — stronger daily assistant surface
+- [ ] Daily Brief MVP - schedule, priorities, reminders, recent actions
+- [ ] Memory UX flows - remember / forget / review saved memory
+- [ ] Dashboard home improvements - stronger daily assistant surface
 - [ ] Cap 65 P5 live signoff
 - [ ] Waitlist activation
 
 ## Current Proof Queue
 
-- [ ] Run Cap 64 local mail-client proof using `docs/capability_verification/live_checklists/cap_64_send_email_draft.md`
-- [ ] Capture proof using `docs/product/PROOF_CAPTURE_CHECKLIST.md`
-- [ ] Run Cap 64 live-signoff and lock only after proof passes
+- [ ] Re-run `docs/demo_proof/2026-04-29_conversation_search_proof/CONVERSATION_SEARCH_REPORT.md` prompts after CPU-budget fix
+- [ ] Capture a short public conversation/search demo
+- [ ] Run Cap 64 live signoff only after conversation/search proof is stable
 - [ ] Run Cap 65 credential-backed proof only after Shopify env vars are available
 
 ## Important Principle
 
 Current priorities favor:
+- coherent everyday assistant behavior
 - visible trust
 - onboarding quality
 - proof of value
@@ -36,6 +40,7 @@ Not raw feature count.
 
 ## Paused (do not start)
 
+- Cap 64 P5 live signoff + lock
 - Solo Business Assistant shell (Tier 2)
 - Auralis merger planning
 - Google OAuth connector
@@ -43,6 +48,8 @@ Not raw feature count.
 
 ## Recently Completed
 
+- Local-first demo proof package
+- Conversation + search proof pass
 - Docs consolidation (canonical todo/future folders)
 - RequestUnderstanding integration
 - Receipt backend groundwork

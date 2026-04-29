@@ -28,6 +28,7 @@ from src.governor.single_action_queue import SingleActionQueue
 
 
 CAPABILITY_TIMEOUT_OVERRIDES = {
+    16: 20.0,  # Governed web search may need search, source reads, and bounded synthesis.
     49: 30.0,  # Headline summaries may need source reads plus local-model synthesis.
     50: 35.0,  # Daily brief generation may need clustered source reads plus synthesis.
     31: 90.0,  # Response verification may need local-model cold-start time.

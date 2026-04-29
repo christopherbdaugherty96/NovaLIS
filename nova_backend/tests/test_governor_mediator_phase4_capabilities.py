@@ -483,33 +483,56 @@ def test_news_intelligence_parsing():
 
     inv = GovernorMediator.parse_governed_invocation("what are the latest updates on ai regulation")
     assert isinstance(inv, Invocation)
-    assert inv.capability_id == 48
+    assert inv.capability_id == 16
     assert "latest updates" in inv.params["query"].lower()
 
     inv = GovernorMediator.parse_governed_invocation("show me current updates about semiconductor exports")
     assert isinstance(inv, Invocation)
-    assert inv.capability_id == 48
+    assert inv.capability_id == 16
     assert "semiconductor exports" in inv.params["query"].lower()
 
     inv = GovernorMediator.parse_governed_invocation("what is the price of bitcoin right now")
     assert isinstance(inv, Invocation)
-    assert inv.capability_id == 48
+    assert inv.capability_id == 16
     assert "bitcoin" in inv.params["query"].lower()
 
     inv = GovernorMediator.parse_governed_invocation("how is tesla stock doing today")
     assert isinstance(inv, Invocation)
-    assert inv.capability_id == 48
+    assert inv.capability_id == 16
     assert "tesla" in inv.params["query"].lower()
 
     inv = GovernorMediator.parse_governed_invocation("is sports betting legal in california")
     assert isinstance(inv, Invocation)
-    assert inv.capability_id == 48
+    assert inv.capability_id == 16
     assert "legal in california" in inv.params["query"].lower()
 
     inv = GovernorMediator.parse_governed_invocation("what are the latest SEC crypto regulation updates")
     assert isinstance(inv, Invocation)
-    assert inv.capability_id == 48
+    assert inv.capability_id == 16
     assert "regulation updates" in inv.params["query"].lower()
+
+    inv = GovernorMediator.parse_governed_invocation("find current information about Zorblax Quantum Sandwich Labs")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 16
+    assert "Zorblax Quantum Sandwich Labs" in inv.params["query"]
+
+    inv = GovernorMediator.parse_governed_invocation(
+        "Search the web and tell me what happened with electric vehicle sales recently. Cite your sources."
+    )
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 16
+    assert inv.params["query"] == "what happened with electric vehicle sales recently"
+
+    inv = GovernorMediator.parse_governed_invocation("Is this claim true: drinking coffee prevents Alzheimer's")
+    assert isinstance(inv, Invocation)
+    assert inv.capability_id == 16
+    assert "coffee prevents" in inv.params["query"].lower()
+
+    inv = GovernorMediator.parse_governed_invocation("Explain what Shopify is")
+    assert inv is None
+
+    inv = GovernorMediator.parse_governed_invocation("How would Nova use it safely?")
+    assert inv is None
 
     inv = GovernorMediator.parse_governed_invocation("is the sky blue")
     assert inv is None

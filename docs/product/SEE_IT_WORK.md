@@ -1,11 +1,13 @@
 # See It Work
 
-Last reviewed: 2026-04-28
+Last reviewed: 2026-04-29
 
 Nova is easiest to understand when you watch a request move through governance.
 
 Latest captured proof package:
 
+- [Conversation + Search Proof Report](../demo_proof/2026-04-29_conversation_search_proof/CONVERSATION_SEARCH_REPORT.md)
+- [Conversation + Search Proof Index](../demo_proof/2026-04-29_conversation_search_proof/PROOF_INDEX.md)
 - [User Test Report](../demo_proof/2026-04-28_user_test/USER_TEST_REPORT.md)
 - [Proof Index](../demo_proof/2026-04-28_user_test/PROOF_INDEX.md)
 - [Recorded Demo Flow](../demo_proof/2026-04-28_user_test/video/nova_user_test_demo_flow.webm)
@@ -41,8 +43,18 @@ The local-first demo path mostly works:
 - Cap 64 email draft reaches the confirmation boundary and clearly states that Nova does not send email.
 - Shopify missing-credentials behavior fails cleanly without write behavior.
 
+Current sprint focus:
+
+- Cap 16 web-search answer quality
+- conversation coherence
+- source citation / evidence display
+- uncertainty handling
+- follow-up/topic tracking
+
 Remaining proof work:
 
+- Fix current-search CPU-budget friction.
+- Improve follow-up coherence for connector/governance topics.
 - Run Cap 64 P5 live signoff with explicit approval to open a safe local mail-client draft, then close it without sending.
 - Make receipt rows friendlier when the ledger payload only includes capability IDs.
 - Re-record a final public demo video after Cap 64 live receipt proof is visible.
