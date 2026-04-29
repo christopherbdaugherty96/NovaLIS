@@ -30,6 +30,26 @@ Most AI tools optimize for capability expansion. Nova emphasizes bounded executi
 - [Capability Signoff Matrix](docs/product/CAPABILITY_SIGNOFF_MATRIX.md)
 - [Proof Capture Checklist](docs/product/PROOF_CAPTURE_CHECKLIST.md)
 
+## Current Demo Proof
+Latest proof package:
+
+- [2026-04-28 User Test Report](docs/demo_proof/2026-04-28_user_test/USER_TEST_REPORT.md)
+- [Proof Index](docs/demo_proof/2026-04-28_user_test/PROOF_INDEX.md)
+- [Demo Script](docs/demo_proof/2026-04-28_user_test/DEMO_SCRIPT.md)
+- [Friction Log](docs/demo_proof/2026-04-28_user_test/FRICTION_LOG.md)
+- [Screenshot Checklist](docs/demo_proof/2026-04-28_user_test/SCREENSHOT_CHECKLIST.md)
+- [Recorded Demo Flow](docs/demo_proof/2026-04-28_user_test/video/nova_user_test_demo_flow.webm)
+
+Recent local-first proof captures:
+
+![Nova local-first dashboard](docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level0_dashboard_connection_status.png)
+
+![Nova Trust receipts](docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_trust.png)
+
+![Nova memory authority boundary](docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_memory_authority.png)
+
+Current proof verdict: the local demo path mostly works, with remaining friction around Cap 64 live mail-client signoff, friendlier receipt labels, and optional connector/network degradation states.
+
 ## Future Directions
 - [Realistic Scope and Priorities](docs/future/REALISTIC_SCOPE_AND_PRIORITIES.md)
 - [Governed Media and E-Commerce Engine](docs/future/NOVA_GOVERNED_MEDIA_AND_ECOMMERCE_ENGINE.md)

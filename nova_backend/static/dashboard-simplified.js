@@ -75,21 +75,26 @@
     }
   }
 
+  function updateActivePageAttribute() {
+    var pages = document.querySelectorAll('[id^="page-"]');
+    for (var i = 0; i < pages.length; i++) {
+      if (!pages[i].hidden) {
+        document.body.setAttribute('data-nova-page', pages[i].id.replace('page-', ''));
+        return;
+      }
+    }
+  }
+
   function trackActivePage() {
     // Watch which page is visible so CSS can selectively un-hide widgets
     // (e.g. show #news-widget when the user navigates to News).
     // Pages are sections like #page-news whose `hidden` attribute toggles.
     var observer = new MutationObserver(function () {
-      var pages = document.querySelectorAll('[id^="page-"]');
-      for (var i = 0; i < pages.length; i++) {
-        if (!pages[i].hidden) {
-          document.body.setAttribute('data-nova-page', pages[i].id.replace('page-', ''));
-          return;
-        }
-      }
+      updateActivePageAttribute();
     });
     var main = document.querySelector('.main') || document.body;
     observer.observe(main, { attributes: true, subtree: true, attributeFilter: ['hidden'] });
+    updateActivePageAttribute();
   }
 
   function init() {

@@ -11,10 +11,11 @@ Usage:
 
 The script:
   1. Checks if Nova is already running on the target port.
-  2. Ensures Ollama is running (starts it if not).
-  3. Launches ``nova-start`` (or uvicorn fallback) as a background process.
-  4. Waits for the /phase-status endpoint to respond.
-  5. Opens the browser to the dashboard.
+  2. Clears an unhealthy stale Nova process if it owns the target port.
+  3. Ensures Ollama is running (starts it if not).
+  4. Launches ``nova-start`` (or uvicorn fallback) as a background process.
+  5. Waits for the /phase-status endpoint to respond.
+  6. Opens the browser to the dashboard.
 
 Exit codes:
     0 — Nova is running and reachable
@@ -37,6 +38,8 @@ HEALTH_ENDPOINT = f"{BASE_URL}/phase-status"
 STARTUP_TIMEOUT = int(os.environ.get("NOVA_STARTUP_TIMEOUT", "90"))  # seconds
 PID_DIR = Path(__file__).resolve().parent / "pids"
 PID_FILE = PID_DIR / "nova_backend.pid"
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+BACKEND_DIR = PROJECT_ROOT / "nova_backend"
 
 
 def _is_running() -> bool:
@@ -47,6 +50,85 @@ def _is_running() -> bool:
             return True
     except Exception:
         return False
+
+
+def _port_listener() -> tuple[int, str] | None:
+    """Return the PID and command line for the process listening on HOST:PORT."""
+    try:
+        import psutil
+    except Exception:
+        return None
+
+    for conn in psutil.net_connections(kind="tcp"):
+        try:
+            if not conn.laddr or conn.laddr.port != PORT:
+                continue
+            if conn.status != psutil.CONN_LISTEN or not conn.pid:
+                continue
+            proc = psutil.Process(conn.pid)
+            return conn.pid, " ".join(proc.cmdline())
+        except (psutil.Error, OSError):
+            continue
+    return None
+
+
+def _is_nova_backend_command(command_line: str) -> bool:
+    normalized = command_line.replace("\\", "/").lower()
+    backend = str(BACKEND_DIR).replace("\\", "/").lower()
+    return (
+        "uvicorn" in normalized
+        and "src.brain_server:app" in normalized
+        and backend in normalized
+    )
+
+
+def _clear_stale_nova_listener() -> bool:
+    """Stop an unhealthy Nova process that still owns the configured port.
+
+    Returns True when startup may continue. Unknown port owners are left alone
+    and reported as a startup blocker.
+    """
+    listener = _port_listener()
+    if listener is None:
+        return True
+
+    pid, command_line = listener
+    if not _is_nova_backend_command(command_line):
+        print(
+            f"[Nova] ERROR: Port {PORT} is occupied by a non-Nova process (PID {pid}).\n"
+            "[Nova] Stop that process or set NOVA_PORT before starting Nova.",
+            file=sys.stderr,
+        )
+        return False
+
+    print(f"[Nova] Found stale Nova listener on port {PORT} (PID {pid}); stopping it...")
+    try:
+        import psutil
+
+        proc = psutil.Process(pid)
+        proc.terminate()
+        try:
+            proc.wait(timeout=8)
+        except psutil.TimeoutExpired:
+            proc.kill()
+            proc.wait(timeout=5)
+    except Exception as exc:
+        print(f"[Nova] ERROR: Could not stop stale Nova process {pid}: {exc}", file=sys.stderr)
+        return False
+
+    return True
+
+
+def _current_nova_listener_pid(fallback_pid: int) -> int:
+    """Return the real listening Nova PID when wrappers spawn a child process."""
+    listener = _port_listener()
+    if listener is None:
+        return fallback_pid
+
+    pid, command_line = listener
+    if _is_nova_backend_command(command_line):
+        return pid
+    return fallback_pid
 
 
 OLLAMA_URL = os.environ.get("OLLAMA_URL", "http://127.0.0.1:11434")
@@ -94,13 +176,12 @@ def _find_nova_command() -> list[str]:
         return [nova_start]
 
     # Fallback: uvicorn from the nova_backend directory
-    backend_dir = Path(__file__).resolve().parents[1] / "nova_backend"
     return [
         sys.executable, "-m", "uvicorn",
         "src.brain_server:app",
         "--host", HOST,
         "--port", str(PORT),
-        "--app-dir", str(backend_dir),
+        "--app-dir", str(BACKEND_DIR),
     ]
 
 
@@ -110,6 +191,9 @@ def start_nova(open_browser: bool = True) -> int:
         if open_browser:
             webbrowser.open(BASE_URL)
         return 0
+
+    if not _clear_stale_nova_listener():
+        return 1
 
     _ensure_ollama()
 
@@ -139,8 +223,9 @@ def start_nova(open_browser: bool = True) -> int:
     start = time.time()
     while time.time() - start < STARTUP_TIMEOUT:
         if _is_running():
-            print(f"[Nova] Running at {BASE_URL} (PID {proc.pid})")
-            PID_FILE.write_text(str(proc.pid), encoding="utf-8")
+            running_pid = _current_nova_listener_pid(proc.pid)
+            print(f"[Nova] Running at {BASE_URL} (PID {running_pid})")
+            PID_FILE.write_text(str(running_pid), encoding="utf-8")
             _log_fh.close()
             if open_browser:
                 webbrowser.open(BASE_URL)

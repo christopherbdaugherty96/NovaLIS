@@ -382,6 +382,49 @@ _WHATS_PLANNED_RE = re.compile(
     re.IGNORECASE,
 )
 
+_LOCAL_STATUS_RE = re.compile(
+    r"^\s*(?:"
+    r"what\s+works\s+today"
+    r"|what\s+(?:actually\s+)?works(?:\s+right\s+now)?"
+    r"|what\s+can\s+nova\s+do\s+(?:today|right\s+now)"
+    r"|explain\s+what\s+nova\s+can\s+do\s+in\s+plain\s+english"
+    r"|what\s+should\s+i\s+try\s+first"
+    r"|what\s+should\s+i\s+do\s+first"
+    r"|where\s+should\s+i\s+start"
+    r")\s*[.?!]*\s*$",
+    re.IGNORECASE,
+)
+
+_MEMORY_AUTHORITY_RE = re.compile(
+    r"^\s*(?:"
+    r"can\s+memory\s+authorize\s+actions?"
+    r"|does\s+memory\s+authorize\s+actions?"
+    r"|can\s+(?:conversation|context|memory)\s+(?:approve|authorize)\s+(?:an\s+)?actions?"
+    r"|is\s+memory\s+authority"
+    r")\s*[.?!]*\s*$",
+    re.IGNORECASE,
+)
+
+_MEMORY_EXPLAIN_RE = re.compile(
+    r"^\s*(?:"
+    r"what\s+does\s+memory\s+do"
+    r"|explain\s+memory"
+    r"|how\s+does\s+memory\s+work"
+    r"|what\s+is\s+nova\s+memory"
+    r")\s*[.?!]*\s*$",
+    re.IGNORECASE,
+)
+
+_MEMORY_RECEIPTS_RE = re.compile(
+    r"^\s*(?:"
+    r"what\s+is\s+the\s+difference\s+between\s+memory\s+and\s+receipts"
+    r"|difference\s+between\s+memory\s+and\s+receipts"
+    r"|memory\s+vs\.?\s+receipts"
+    r"|receipts\s+vs\.?\s+memory"
+    r")\s*[.?!]*\s*$",
+    re.IGNORECASE,
+)
+
 # ---------------------------------------------------------------------------
 # Registry loader (cached per process)
 # ---------------------------------------------------------------------------
@@ -638,6 +681,62 @@ def _build_whats_planned() -> str:
     )
 
 
+def _build_local_status() -> str:
+    return (
+        "What works today\n\n"
+        "Nova's local baseline is the strongest thing to test first:\n"
+        "- Chat and explanation: ask plain-English questions and get local-first guidance.\n"
+        "- Dashboard navigation: use Intro, Home, Chat, Trust, Memory, Settings, News, Workspace, Agent, and Rules.\n"
+        "- Memory visibility: durable memory is explicit, inspectable, and revocable.\n"
+        "- Receipts: the Trust API shows recent governed-action receipts, and the Trust page is the visual review surface.\n"
+        "- Safe local actions: system status, response verification, explain-anything, screen help, and some reversible device controls are governed local capabilities.\n"
+        "- Email draft boundary: Nova can prepare a local mail-client draft after confirmation, but it does not send email.\n\n"
+        "What to try first\n"
+        "1. Ask: what does memory do?\n"
+        "2. Open Memory and confirm nothing durable is saved unless you explicitly save it.\n"
+        "3. Open Trust and inspect receipts.\n"
+        "4. Try a safe local action such as system status.\n\n"
+        "Budget note: this answer is a local fallback grounded in Nova's runtime truth. "
+        "If the daily model budget is exhausted, Nova should still give useful local guidance instead of dead-ending."
+    )
+
+
+def _build_memory_explanation() -> str:
+    return (
+        "Memory helps Nova keep continuity, but it is not authority.\n\n"
+        "In today's local baseline:\n"
+        "- Durable memory is saved only when you explicitly save it.\n"
+        "- You can inspect, edit, lock, defer, export, or delete memory from the Memory surface.\n"
+        "- Conversation context can help Nova understand what you mean during a session.\n"
+        "- Neither memory nor conversation context can approve real-world actions.\n\n"
+        "Real actions still need the appropriate governed capability, boundary checks, confirmation when required, and receipts when action proof is expected."
+    )
+
+
+def _build_memory_authority_boundary() -> str:
+    return (
+        "No. Memory cannot authorize actions.\n\n"
+        "Nova's rule is: intelligence is not authority. Memory can provide context, preferences, or continuity, but it cannot grant permission to send, delete, buy, write to Shopify, or take any other real action.\n\n"
+        "Authority comes from the governed action path: registered capability, current boundary, confirmation when required, visible status, and receipt/proof where expected."
+    )
+
+
+def _build_memory_receipts_difference() -> str:
+    return (
+        "Memory and receipts do different jobs.\n\n"
+        "Memory:\n"
+        "- Stores explicit user-approved context for continuity.\n"
+        "- Helps Nova remember preferences, project notes, and useful facts.\n"
+        "- Is inspectable and revocable.\n"
+        "- Does not authorize actions.\n\n"
+        "Receipts:\n"
+        "- Record what governed actions happened or were blocked.\n"
+        "- Help you review effects, failures, boundaries, and next steps.\n"
+        "- Are evidence, not permission.\n\n"
+        "Short version: memory helps Nova understand; receipts help you audit what Nova did."
+    )
+
+
 # ---------------------------------------------------------------------------
 # Public interface
 # ---------------------------------------------------------------------------
@@ -668,6 +767,18 @@ class MetaIntentHandler:
 
         if _IDENTITY_RE.match(t):
             return _build_identity()
+
+        if _LOCAL_STATUS_RE.match(t):
+            return _build_local_status()
+
+        if _MEMORY_AUTHORITY_RE.match(t):
+            return _build_memory_authority_boundary()
+
+        if _MEMORY_RECEIPTS_RE.match(t):
+            return _build_memory_receipts_difference()
+
+        if _MEMORY_EXPLAIN_RE.match(t):
+            return _build_memory_explanation()
 
         # Category help — "what can you do with email" — checked before generic capability
         m = _CATEGORY_HELP_RE.match(t)

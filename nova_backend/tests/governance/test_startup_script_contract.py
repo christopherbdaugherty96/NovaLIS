@@ -17,6 +17,9 @@ def test_startup_script_waits_for_phase_status_readiness():
     # Checks whether Nova is already running
     assert "_is_running" in source
     assert "Already running" in source
+    # Stale unhealthy Nova listeners should not leave the dashboard stuck.
+    assert "_clear_stale_nova_listener" in source
+    assert "_current_nova_listener_pid" in source
 
 
 def test_start_bat_delegates_to_daemon():
