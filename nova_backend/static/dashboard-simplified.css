@@ -87,6 +87,15 @@ body.nova-simplified[data-nova-page="news"] #news-widget {
   display: block !important;
 }
 
+/* Home is a first-run destination from Intro. Keep its local baseline
+   surfaces visible so "Open Home" never lands on an empty page. */
+body.nova-simplified[data-nova-page="home"] #home-launch-widget,
+body.nova-simplified[data-nova-page="home"] #workspace-home-widget,
+body.nova-simplified[data-nova-page="home"] #capability-surface-widget,
+body.nova-simplified[data-nova-page="home"] #thread-map-widget {
+  display: block !important;
+}
+
 /* Hide the token budget bar (roadmap 1.3 specifically calls this out). */
 body.nova-simplified .token-budget,
 body.nova-simplified .token-budget-bar,

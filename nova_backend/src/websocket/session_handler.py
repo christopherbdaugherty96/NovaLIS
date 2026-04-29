@@ -3137,6 +3137,20 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 await send_chat_done(ws)
                 continue
 
+            # --- Local meta-intent fast path before governed parsing ---
+            #
+            # Core self-description, onboarding, and memory-authority answers
+            # must remain useful even when metered/provider budgets are exhausted.
+            from src.conversation.meta_intent_handler import MetaIntentHandler as _MetaIntentHandler
+            _meta_response = _MetaIntentHandler().handle(text, session_state=session_state)
+            if _meta_response is not None:
+                session_state["last_response"] = _meta_response
+                await send_chat_message(ws, _meta_response)
+                await send_chat_done(ws)
+                _maybe_auto_speak_for_voice_turn(session_state, _meta_response)
+                session_state["turn_count"] += 1
+                continue
+
             # --- Governor mediation ---
             mediated_text = GovernorMediator.mediate(text)
             governed_parse_text = (
@@ -3741,7 +3755,6 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 continue
 
             # --- Meta-intent fast path (greetings, capability queries, phase/roadmap) ---
-            from src.conversation.meta_intent_handler import MetaIntentHandler as _MetaIntentHandler
             _meta_response = _MetaIntentHandler().handle(mediated_text, session_state=session_state)
             if _meta_response is not None:
                 session_state["last_response"] = _meta_response
