@@ -771,6 +771,14 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     remember_response=False,
                 )
                 continue
+            brain_clarifier_gate = SessionRouter.evaluate_brain_task_clarifier(text)
+            if brain_clarifier_gate.handled:
+                await _complete_immediate_turn(
+                    brain_clarifier_gate.message,
+                    remember_response=True,
+                    tone_domain="system",
+                )
+                continue
             if not decision.blocked_by_policy and not decision.needs_clarification:
                 session_state["last_intent_family"] = decision.intent_family
                 session_state["last_mode"] = decision.mode.value
