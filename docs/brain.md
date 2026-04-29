@@ -83,7 +83,13 @@ Nova Brain
 │   ├── current-evidence need
 │   └── multi-step need
 │
-├── 3. Working Memory
+├── 3. Task Clarifier
+│   ├── is the goal underspecified?
+│   ├── what is the minimum question needed?
+│   ├── what should Nova not assume?
+│   └── can Nova proceed with a bounded partial answer?
+│
+├── 4. Working Memory
 │   ├── current goal
 │   ├── known facts
 │   ├── unknowns
@@ -91,7 +97,7 @@ Nova Brain
 │   ├── current environment
 │   └── next decision
 │
-├── 4. Environment Reasoner
+├── 5. Environment Reasoner
 │   ├── local conversation?
 │   ├── local memory?
 │   ├── runtime docs?
@@ -103,14 +109,14 @@ Nova Brain
 │   ├── Shopify?
 │   └── OpenClaw?
 │
-├── 5. Authority Question
+├── 6. Authority Question
 │   ├── What boundary is being crossed?
 │   ├── Which capability grants access?
 │   ├── Is confirmation needed?
 │   ├── Is setup missing?
 │   └── What proof is required?
 │
-├── 6. Plan Builder
+├── 7. Plan Builder
 │   ├── step list
 │   ├── environment per step
 │   ├── capability per step
@@ -118,10 +124,18 @@ Nova Brain
 │   ├── fallback path
 │   └── expected receipts
 │
-├── 7. Governor Gate
+├── 8. Dry Run / Preview
+│   ├── proposed steps
+│   ├── environments that would be entered
+│   ├── capability contracts involved
+│   ├── confirmation points
+│   ├── fallback ladder
+│   └── proof expected
+│
+├── 9. Governor Gate
 │   └── existing Nova governance spine
 │
-├── 8. Execution
+├── 10. Execution
 │   ├── local answer
 │   ├── search
 │   ├── memory operation
@@ -129,14 +143,14 @@ Nova Brain
 │   ├── email draft
 │   └── connector read/write if future-enabled
 │
-├── 9. Proof
+├── 11. Proof
 │   ├── receipts
 │   ├── sources
 │   ├── screenshots
 │   ├── state change
 │   └── run timeline
 │
-└── 10. Reflection
+└── 12. Reflection
     ├── Did this satisfy the task?
     ├── What is still blocked?
     ├── What should be remembered?
@@ -149,6 +163,50 @@ This is the true brain.
 Not one model.
 
 A governed cognitive operating loop.
+
+---
+
+## Task Clarifier
+
+A stronger brain should not assume the user’s goal is clear.
+
+Before Nova chooses an environment, it should detect whether the task is ambiguous, underspecified, or missing a required constraint.
+
+The Task Clarifier should ask the smallest useful question instead of guessing.
+
+Examples:
+
+```text
+User: Find contractors and draft an email.
+Clarifier: What city or service area should I search in?
+```
+
+```text
+User: Update the Shopify product.
+Clarifier: Which product, and what field should change? Also, current Shopify support is read-only unless a future governed write capability is implemented.
+```
+
+```text
+User: Use the browser to handle this.
+Clarifier: Do you mean the isolated OpenClaw browser, or a personal signed-in browser session?
+```
+
+The Task Clarifier should produce:
+
+```text
+clarification_needed: true/false
+missing_fields
+minimum_question
+safe_partial_path
+assumptions_to_avoid
+```
+
+Rules:
+
+- Ask one concise question when a required field is missing.
+- Do not invent missing location, account, recipient, product, file, or permission context.
+- Prefer a bounded partial answer when useful.
+- Do not use clarification as a hidden execution path.
 
 ---
 
@@ -171,13 +229,17 @@ Its output should include:
 ```text
 task_type
 required_environments
+environment_options
 authority_required
 capability_needed
 confirmation_required
 setup_required
 proof_required
 allowed_status
+confidence
+risk_level
 blocker
+fallback_ladder
 next_safe_step
 ```
 
@@ -190,6 +252,20 @@ Example:
   "required_environments": [
     "web_search",
     "email_draft"
+  ],
+  "environment_options": [
+    {
+      "environment": "web_search",
+      "confidence": 0.94,
+      "risk_level": "network_read",
+      "capability_needed": "cap16_governed_web_search"
+    },
+    {
+      "environment": "email_draft",
+      "confidence": 0.88,
+      "risk_level": "external_effect_draft",
+      "capability_needed": "cap64_send_email_draft"
+    }
   ],
   "authority_required": [
     "network_read",
@@ -212,6 +288,53 @@ Example:
 
 ---
 
+## Confidence-Bracketed Environment Selection
+
+Nova should not always treat environment selection as a single hard answer.
+
+The Environment Reasoner can produce ranked environment options with confidence and risk.
+
+Example:
+
+```json
+{
+  "task": "Summarize the latest AI model releases",
+  "environment_options": [
+    {
+      "environment": "web_search",
+      "confidence": 0.96,
+      "risk_level": "network_read",
+      "reason": "The user asked for latest/current information."
+    },
+    {
+      "environment": "local_conversation",
+      "confidence": 0.28,
+      "risk_level": "none",
+      "reason": "Local explanation may help frame the answer, but current facts require search."
+    }
+  ],
+  "selected_environment": "web_search"
+}
+```
+
+This does not grant access by itself.
+
+It helps Nova explain:
+
+```text
+I need web search because the question asks for current information.
+```
+
+Or:
+
+```text
+I can answer locally first, then use web search if you want current evidence.
+```
+
+The Governor remains the authority boundary.
+
+---
+
 ## EnvironmentRequest
 
 The central object can be conceptualized as an EnvironmentRequest.
@@ -227,6 +350,9 @@ class EnvironmentRequest:
     confirmation_required: bool
     setup_required: list[str]
     proof_required: list[str]
+    confidence: float
+    risk_level: str
+    fallback_ladder: list[str]
     allowed_status: Literal[
         "allowed_now",
         "allowed_after_confirmation",
@@ -236,6 +362,45 @@ class EnvironmentRequest:
         "manual_only",
     ]
 ```
+
+### Supporting data containers
+
+Future light-code scaffolding can also include pure data containers:
+
+```python
+@dataclass
+class EnvironmentOption:
+    environment: str
+    confidence: float
+    risk_level: str
+    capability_needed: str | None
+    requires_confirmation: bool
+    reason: str
+
+
+@dataclass
+class ClarificationQuestion:
+    question: str
+    missing_fields: list[str]
+    assumptions_to_avoid: list[str]
+    safe_partial_path: str | None
+
+
+@dataclass
+class PlanStep:
+    step_id: str
+    description: str
+    environment: str
+    capability_needed: str | None
+    authority_required: str
+    confirmation_required: bool
+    proof_required: list[str]
+    fallback_step: str | None
+```
+
+These are schemas only.
+
+They should not change runtime routing until a later implementation pass.
 
 ### Normal chat
 
@@ -420,6 +585,173 @@ This gives freedom without chaos.
 
 ---
 
+## Capability Contracts
+
+Each capability should eventually have a Capability Contract.
+
+A Capability Contract states:
+
+```text
+what the capability can do
+what the capability cannot do
+required setup
+authority tier
+confirmation rules
+expected receipts
+fallback behavior
+known failure modes
+```
+
+Example:
+
+```yaml
+capability_id: 64
+name: send_email_draft
+environment: email_draft
+authority_tier: external_effect_draft
+can:
+  - open a local mail client draft through mailto
+  - prefill recipient, subject, and body
+cannot:
+  - send email
+  - access inbox
+  - use SMTP
+  - attach private files without explicit support and confirmation
+requires_setup:
+  - default mail client or browser mailto handler
+confirmation_required: true
+expected_receipts:
+  - EMAIL_DRAFT_CREATED
+  - EMAIL_DRAFT_FAILED
+fallbacks:
+  - show drafted text in chat
+  - explain how to configure a mailto handler
+  - ask user to copy/paste manually
+```
+
+Capability Contracts make the brain more intelligent without widening authority.
+
+The brain can consult the contract to know what is possible, blocked, or setup-dependent.
+
+The Governor still decides whether execution is allowed.
+
+---
+
+## Fallback Ladder
+
+When an environment is unavailable, Nova should not stop at a dead end.
+
+It should produce a fallback ladder.
+
+Example:
+
+```text
+Requested environment: openclaw_isolated_browser
+Status: blocked_missing_setup
+Fallback ladder:
+1. Explain the manual browser steps.
+2. Offer a setup checklist for OpenClaw.
+3. Prepare a non-executing plan preview.
+4. Ask the user to run the browser step manually and report back.
+```
+
+Example for Cap 16 search:
+
+```text
+Requested environment: web_search
+Status: CPU-budget or timeout friction
+Fallback ladder:
+1. Return partial source-backed results if available.
+2. State what is unclear.
+3. Offer to retry with a narrower query.
+4. Fall back to local explanation with a current-information warning.
+```
+
+Example for Cap 64 email draft:
+
+```text
+Requested environment: email_draft
+Status: local mail client unavailable
+Fallback ladder:
+1. Show the email draft in chat.
+2. Explain that Nova did not send anything.
+3. Give mail client setup instructions.
+4. Let the user copy/paste manually.
+```
+
+Fallbacks should be helpful, but they should not auto-configure tools, bypass setup, or cross environments silently.
+
+---
+
+## Dry Run / Plan Preview
+
+Before a multi-step or higher-authority task executes, Nova should be able to produce a dry run.
+
+A dry run is a non-executing plan preview.
+
+It should show:
+
+```text
+planned steps
+environments to enter
+capabilities involved
+confirmation points
+expected receipts
+fallback ladder
+what Nova will not do
+```
+
+Example:
+
+```text
+Plan preview:
+1. Use Cap 16 governed web search to find current local contractor options.
+   Proof: source URLs.
+2. Summarize candidates and explain uncertainty.
+   Proof: cited summary.
+3. Draft an email using Cap 64.
+   Confirmation required before opening local mail client.
+   Proof: EMAIL_DRAFT_CREATED if opened.
+
+Nova will not send the email.
+Nova will not use SMTP.
+Nova will not access your inbox.
+```
+
+A dry run can make Nova faster without making it more autonomous.
+
+The user sees the intended environment crossings and can approve the plan before execution.
+
+---
+
+## Governor-Safe Suggestion Buffer
+
+Nova can become more helpful by noticing repeated user-approved patterns.
+
+This should be a Suggestion Buffer, not autonomous memory execution.
+
+Example:
+
+```text
+Pattern noticed:
+User often asks for Shopify summary, then asks for an email draft.
+
+Suggestion:
+Would you like me to prepare the Shopify summary first and hold an email draft plan for review?
+```
+
+Rules:
+
+- Suggestions do not execute.
+- Suggestions do not authorize actions.
+- Suggestions must be dismissible.
+- Suggestions should be based on visible user patterns or explicit preferences.
+- Suggestions should be reviewable and deletable.
+
+This makes Nova feel adaptive while preserving the Governor boundary.
+
+---
+
 ## Memory Layers For The Brain
 
 Nova should formalize memory into layers:
@@ -431,6 +763,7 @@ Project memory
 Topic/story memory
 Archival memory
 Conversation search
+Suggestion buffer
 Receipts / ledger
 Runtime truth
 Future docs
@@ -456,6 +789,7 @@ Memory is part of the brain when it helps Nova understand:
 - current environment
 - blocker
 - next decision
+- useful suggestion to present for approval
 
 ---
 
@@ -483,6 +817,7 @@ allowed environments
 blocked environments
 proof logs
 capability profile
+suggestion patterns
 ```
 
 That lets Nova decide:
@@ -507,13 +842,18 @@ A public operational trace:
 
 ```text
 task received
+clarification checked
 environment need detected
+environment confidence ranked
 memory scopes queried
 evidence required
+capability contract consulted
 capability proposed
+dry run preview generated
 governor decision
 execution result
 receipt created
+fallback used if needed
 ```
 
 This makes the brain visible.
@@ -522,12 +862,16 @@ A user should be able to see:
 
 ```text
 What did Nova think the task was?
+Was clarification needed?
 What environment did Nova need?
+How confident was the environment choice?
 What authority was required?
 Which capability was selected?
+What capability contract applied?
 Was confirmation required?
 What happened?
 What proof exists?
+What fallback was used?
 ```
 
 ---
@@ -580,12 +924,43 @@ The best outside ideas to absorb are:
 7. OpenAI Agents SDK — tracing, guardrails, handoffs.
 8. OpenClaw / browser-use style systems — isolated browser automation with snapshots, screenshots, deterministic actions.
 9. AutoGPT Platform — modular workflow blocks.
+10. TaskWeaver — structured plan preview before executable work.
+11. Open Interpreter — execution approval prompts as a user experience pattern.
+12. BabyAGI — task prioritization, inverted into a Governor-pending queue rather than autonomous execution.
+13. NeMo Guardrails — explicit guardrails for model behavior, adapted here as environment access guardrails.
 
 Nova should become the governed host that can use all of these patterns without losing its rule:
 
 ```text
 Intelligence is not authority.
 ```
+
+---
+
+## Additional Brain Documents To Split Out Later
+
+This file is the canonical single-document Brain note.
+
+Later, when the design matures, split it into:
+
+```text
+docs/brain/README.md
+docs/brain/NOVA_BRAIN_MODEL.md
+docs/brain/TASK_ENVIRONMENT_ROUTER.md
+docs/brain/TASK_CLARIFIER_SPEC.md
+docs/brain/ENVIRONMENT_CATALOG.md
+docs/brain/AUTHORITY_PLANE.md
+docs/brain/CAPABILITY_CONTRACTS.md
+docs/brain/FALLBACK_LADDER.md
+docs/brain/DRY_RUN_AND_PREVIEW.md
+docs/brain/BRAIN_TRACE_UI_SPEC.md
+docs/brain/MEMORY_LAYERS.md
+docs/brain/PROJECT_CONTEXTS.md
+docs/brain/OPENCLAW_ENVIRONMENT_MODEL.md
+docs/brain/IMPLEMENTATION_ROADMAP.md
+```
+
+Do not split until the single document becomes hard to maintain.
 
 ---
 
@@ -618,22 +993,32 @@ nova_backend/src/brain/environment_request.py
 
 Used only for logging/debug/tests at first.
 
-### Phase 3 — Conversation proof
+### Phase 3 — Task Clarifier and confidence output
 
-For each prompt, output internal debug summary in dev mode:
+Add design/test scaffolding for:
 
 ```text
-task_type
-environment_needed
-authority_required
-route
-capability_considered
-proof_expected
+clarification_needed
+minimum_question
+environment_options
+confidence
+risk_level
 ```
 
-Do not show hidden reasoning. Show structured operational metadata.
+No execution behavior change yet.
 
-### Phase 4 — Cap 16 reliability
+### Phase 4 — Capability Contracts
+
+Create static capability contract docs or data for the highest-priority capabilities:
+
+```text
+Cap 16 governed_web_search
+Cap 64 send_email_draft
+Cap 65 shopify_intelligence_report
+Cap 63 openclaw_execute
+```
+
+### Phase 5 — Cap 16 reliability
 
 Tie Cap 16 into EnvironmentRequest:
 
@@ -641,7 +1026,22 @@ Tie Cap 16 into EnvironmentRequest:
 current info → web_search environment → Cap 16
 ```
 
-### Phase 5 — OpenClaw environment planning
+### Phase 6 — Dry Run / Plan Preview
+
+Add a non-executing preview for multi-step tasks.
+
+The preview should show:
+
+```text
+steps
+environments
+capabilities
+confirmation points
+proof expected
+fallback ladder
+```
+
+### Phase 7 — OpenClaw environment planning
 
 Before OpenClaw executes, Nova should create:
 
@@ -651,16 +1051,18 @@ EnvironmentRequest(openclaw_isolated_browser)
 
 Then Governor decides.
 
-### Phase 6 — UI
+### Phase 8 — UI
 
 Add Brain/Trace panel:
 
 ```text
 Task
+Clarification needed
 Environment needed
 Authority required
 Capability route
 Proof expected
+Fallback ladder
 Current status
 ```
 
@@ -700,6 +1102,17 @@ Am I allowed to enter it?
 What capability grants access?
 What confirmation is needed?
 What proof should exist afterward?
+```
+
+DeepSeek’s refinement adds the next layer of intelligence:
+
+```text
+What is unclear?
+What should I ask before planning?
+How confident am I about the environment choice?
+What does the capability contract allow?
+What fallback ladder exists if the environment is blocked?
+Can I show the user a dry run before execution?
 ```
 
 That is the missing middle layer between conversation and execution.
