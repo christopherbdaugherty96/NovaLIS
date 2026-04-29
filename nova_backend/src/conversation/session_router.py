@@ -7,6 +7,7 @@ from src.conversation.clarify_prompts import CLARIFY_PROMPTS
 from src.conversation.conversation_decision import ConversationDecision
 from src.conversation.conversation_router import ConversationRouter
 from src.conversation.response_style_router import InputNormalizer
+from src.brain.task_clarifier import clarify_task
 from src.personality.nova_style_contract import NovaStyleContract
 
 
@@ -131,6 +132,13 @@ class SessionRouter:
             )
 
         return GateResult(handled=False)
+
+    @staticmethod
+    def evaluate_brain_task_clarifier(text: str) -> GateResult:
+        clarification = clarify_task(text)
+        if not clarification.matched:
+            return GateResult(handled=False)
+        return GateResult(handled=True, message=clarification.response)
 
     @staticmethod
     def route_pending_web_confirmation(lowered_text: str) -> WebOpenDecision:
