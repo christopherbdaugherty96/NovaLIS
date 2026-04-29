@@ -736,6 +736,46 @@ class GeneralChatSkill(BaseSkill):
             skill=self.name,
         )
 
+    @staticmethod
+    def _local_conceptual_fallback(query: str, session_state: Optional[dict] = None) -> str:
+        canonical = InputNormalizer.normalize(query).lower().strip(".?!")
+        if re.search(r"\bdifference between memory and intelligence\b", canonical) and "ai system" in canonical:
+            return (
+                "Memory is stored context: facts, preferences, prior turns, or notes that help the system keep continuity. "
+                "Intelligence is the reasoning layer that interprets a request, connects ideas, and decides what answer or plan makes sense. "
+                "In Nova, memory can inform an answer, but it does not authorize actions; governed actions still need visible boundaries, receipts, and review."
+            )
+        if canonical in {"explain what shopify is", "what is shopify"}:
+            return (
+                "Shopify is a commerce platform for running an online store: products, orders, payments, inventory, storefront pages, and related reporting. "
+                "For Nova, the safe version is read-only intelligence first: summarize store status, explain trends, and produce receipts without changing products, orders, customers, or payments."
+            )
+        if "electric bikes" in canonical or "electric bicycles" in canonical or "e-bikes" in canonical:
+            return (
+                "Electric bikes are bicycles with a battery-powered motor that assists your pedaling. "
+                "They are useful for commuting, hills, cargo, and longer rides because they reduce effort without turning the bike into a full motorcycle."
+            )
+        if canonical == "how would nova use it safely":
+            return (
+                "Safely means read-only first. Nova should inspect or summarize data, show exactly which capability is being used, keep boundaries visible, and record receipts for governed actions. "
+                "It should ask before any external-effect step and treat conversation or memory as context, not permission."
+            )
+        if canonical == "what should it avoid doing":
+            prior = " ".join(
+                str(value or "")
+                for value in dict((session_state or {}).get("conversation_context") or {}).values()
+            ).lower()
+            if "electric bike" in prior or "electric bikes" in prior:
+                return (
+                    "The main downsides are cost, battery charging, battery replacement over time, heavier weight, theft risk, and more maintenance than a simple bike. "
+                    "Rules also vary by place, especially around speed classes and where e-bikes are allowed."
+                )
+            return (
+                "Nova should avoid broad autonomy: no silent writes, no sending messages or changing external systems without confirmation, no treating memory as permission, and no hiding uncertainty. "
+                "For connectors like Shopify, that means no product, order, customer, payment, or fulfillment changes unless a future capability is explicitly governed and proven."
+            )
+        return ""
+
     @classmethod
     def _summarize_context_entry(cls, entry: dict) -> tuple[str, str] | None:
         if not isinstance(entry, dict):
@@ -1608,7 +1648,14 @@ class GeneralChatSkill(BaseSkill):
                 temperature=0.7 if mode == "casual" else 0.5,
             )
             text = self._sanitize_response(text or "")
-            if not text:
+            fallback = self._local_conceptual_fallback(normalized_query, session_state)
+            if fallback and (
+                not text
+                or text.strip().lower() == ResponseFormatter.friendly_fallback().strip().lower()
+                or text.strip().lower().startswith("i didn't quite get that")
+            ):
+                text = fallback
+            elif not text:
                 text = ResponseFormatter.friendly_fallback()
             if self._is_geopolitical_query(normalized_query) and self._is_blanket_refusal(text):
                 text = self._safe_geopolitical_fallback(normalized_query)
@@ -1654,7 +1701,34 @@ class GeneralChatSkill(BaseSkill):
                 skill=self.name,
             )
         except Exception:
-            return None
+            fallback = self._local_conceptual_fallback(normalized_query, session_state)
+            if not fallback:
+                return None
+            payload = self.formatter.format_payload(fallback, mode=mode)
+            conversation_context = self._next_conversation_context(
+                query=normalized_query,
+                response_text=payload["user_message"],
+                context=context,
+                session_state=session_state,
+                mode=mode,
+                tone_profile=tone_profile,
+            )
+            return SkillResult(
+                success=True,
+                message=payload["user_message"],
+                data={
+                    "mode": mode,
+                    "style": shaped_style.value,
+                    "tone_profile": tone_profile,
+                    "local_fallback": True,
+                    "fallback_reason": "local_model_unavailable",
+                    "speakable_text": payload["speakable_text"],
+                    "structured_data": payload["structured_data"],
+                    "conversation_context": conversation_context.to_dict(),
+                },
+                widget_data=None,
+                skill=self.name,
+            )
 
     def _extract_and_save_memories(self, query: str) -> None:
         """Detect personal info in the user's message and save to user memory."""

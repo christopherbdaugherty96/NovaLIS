@@ -152,6 +152,14 @@ CURRENT_INFO_QUESTION_RE = re.compile(
     r"^\s*(?:what|who|when|where|why|how)\b.+\b(?:latest|current|recent|today|news|update|updates|happening|happened|price|forecast|status)\b.*\s*$",
     re.IGNORECASE,
 )
+FIND_CURRENT_INFO_RE = re.compile(
+    r"^\s*find\s+(?:current|recent|latest)\s+information\s+(?:about|on|for)\s+(?P<q>.+?)\s*$",
+    re.IGNORECASE,
+)
+CLAIM_CHECK_RE = re.compile(
+    r"^\s*(?:is\s+this\s+claim\s+true|is\s+it\s+true)\s*:?\s*(?P<q>.+?)\s*$",
+    re.IGNORECASE,
+)
 LATEST_ON_RE = re.compile(
     r"^\s*(?:give me|show me|tell me)\s+(?:the\s+)?(?:latest|current|recent)(?:\s+updates?)?\s+(?:on|about)\s+(?P<q>.+?)\s*$",
     re.IGNORECASE,
@@ -558,6 +566,22 @@ LEGAL_POLICY_TERMS = (
 
 LOCATION_HINT_RE = re.compile(r"\b(?:in|for|under)\s+[a-z][a-z\s]{2,}\b", re.IGNORECASE)
 
+EVIDENCE_SENSITIVE_HEALTH_TERMS = (
+    "alzheimer",
+    "cancer",
+    "disease",
+    "prevents",
+    "prevent",
+    "cures",
+    "cure",
+    "supplement",
+    "dosage",
+    "side effects",
+    "medicine",
+    "medical",
+    "health",
+)
+
 NEWS_CATEGORY_ALIASES: dict[str, set[str]] = {
     "global": {"global", "world", "international"},
     "politics": {
@@ -612,6 +636,20 @@ def _looks_like_time_sensitive_finance_or_policy_query(text: str) -> bool:
     return False
 
 
+def _looks_like_evidence_sensitive_health_query(text: str) -> bool:
+    raw = (text or "").strip()
+    if not raw:
+        return False
+    lowered = raw.lower()
+    if not QUESTION_PREFIX_RE.match(lowered):
+        return False
+    health_signal = any(term in lowered for term in EVIDENCE_SENSITIVE_HEALTH_TERMS)
+    safety_signal = (" safe" in f" {lowered}" or "safety" in lowered) and any(
+        term in lowered for term in ("supplement", "medicine", "medical", "drug", "dosage", "health")
+    )
+    return health_signal or safety_signal
+
+
 def _parse_headline_selection(selection_text: str) -> dict[str, Any] | None:
     raw = _normalize_number_words(selection_text or "")
     if not raw:
@@ -645,6 +683,14 @@ def _normalize_source_query(source_query: str) -> str:
     if re.fullmatch(r"(?:[A-Za-z]\s+){1,}[A-Za-z]", normalized):
         normalized = normalized.replace(" ", "")
     return normalized
+
+
+def _normalize_search_query(search_query: str) -> str:
+    normalized = re.sub(r"\s+", " ", (search_query or "").strip())
+    normalized = re.sub(r"^(?:the\s+web|online)\s+(?:and\s+)?", "", normalized, flags=re.IGNORECASE)
+    normalized = re.sub(r"^(?:tell\s+me|find|look\s+up)\s+", "", normalized, flags=re.IGNORECASE)
+    normalized = re.sub(r"\b(?:cite|include)\s+(?:your\s+)?sources?\.?$", "", normalized, flags=re.IGNORECASE)
+    return normalized.strip(" .")
 
 
 def _strip_news_summary_fillers(text: str) -> str:
@@ -839,6 +885,16 @@ class GovernorMediator:
 
         m = NATURAL_RESEARCH_RE.match(t)
         if m:
+            lower_t = t.lower()
+            if lower_t.startswith(("tell me about", "help me understand", "explain ")):
+                if not (
+                    any(term in lower_t for term in TIME_SENSITIVITY_TERMS)
+                    or any(term in lower_t for term in FINANCE_TERMS)
+                    or any(term in lower_t for term in LEGAL_POLICY_TERMS)
+                    or _looks_like_time_sensitive_finance_or_policy_query(t)
+                    or _looks_like_evidence_sensitive_health_query(t)
+                ):
+                    return None
             return _invocation_if_enabled(48, {"query": m.group("q").strip()})
 
         m = WHY_RESEARCH_RE.match(t)
@@ -847,16 +903,26 @@ class GovernorMediator:
 
         m = LATEST_ON_RE.match(t)
         if m:
-            return _invocation_if_enabled(48, {"query": m.group("q").strip()})
+            return _invocation_if_enabled(16, {"query": m.group("q").strip()})
+
+        m = FIND_CURRENT_INFO_RE.match(t)
+        if m:
+            return _invocation_if_enabled(16, {"query": m.group("q").strip()})
+
+        m = CLAIM_CHECK_RE.match(t)
+        if m:
+            return _invocation_if_enabled(16, {"query": m.group("q").strip()})
 
         if CURRENT_INFO_QUESTION_RE.match(t):
-            return _invocation_if_enabled(48, {"query": t.strip()})
+            return _invocation_if_enabled(16, {"query": t.strip()})
         if _looks_like_time_sensitive_finance_or_policy_query(t):
-            return _invocation_if_enabled(48, {"query": t.strip()})
+            return _invocation_if_enabled(16, {"query": t.strip()})
+        if _looks_like_evidence_sensitive_health_query(t):
+            return _invocation_if_enabled(16, {"query": t.strip()})
 
         m = SEARCH_RE.match(t)
         if m:
-            search_query = m.group("q").strip()
+            search_query = _normalize_search_query(m.group("q"))
             lowered_query = search_query.lower()
             if lowered_query.startswith(("memories for ", "memory for ", "memory ", "memories ")):
                 memory_query = re.sub(r"^(?:my\s+)?memories?\s+for\s+", "", search_query, flags=re.IGNORECASE)

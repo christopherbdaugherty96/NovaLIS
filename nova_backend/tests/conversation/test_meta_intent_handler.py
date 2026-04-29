@@ -30,6 +30,14 @@ def _handle(text: str) -> str | None:
     return MetaIntentHandler().handle(text)
 
 
+def test_memory_intelligence_difference_is_local_meta_answer():
+    result = _handle("What is the difference between memory and intelligence in an AI system?")
+
+    assert result is not None
+    assert "Memory is stored context" in result
+    assert "not authority" in result
+
+
 # ---------------------------------------------------------------------------
 # Greeting tests
 # ---------------------------------------------------------------------------

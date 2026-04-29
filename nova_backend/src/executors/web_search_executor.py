@@ -341,6 +341,53 @@ class WebSearchExecutor:
             return f'Based on available web snippets for "{query}": {merged}'
         return f'I found online sources for "{query}", but there was limited extractable detail to synthesize reliably.'
 
+    @staticmethod
+    def _format_visible_sources(results: list[dict], limit: int = 3) -> list[str]:
+        lines: list[str] = []
+        for item in results[:limit]:
+            title = re.sub(r"<[^>]+>", "", str(item.get("title") or "")).strip()
+            url = str(item.get("url") or "").strip()
+            if not url:
+                continue
+            label = title or url
+            lines.append(f"{len(lines) + 1}. {label} - {url}")
+        return lines
+
+    @staticmethod
+    def _distinctive_query_tokens(query: str) -> set[str]:
+        stopwords = {
+            "about",
+            "called",
+            "company",
+            "current",
+            "fake",
+            "find",
+            "information",
+            "latest",
+            "recent",
+            "tell",
+            "what",
+            "with",
+        }
+        tokens = {
+            token.lower()
+            for token in re.findall(r"[A-Za-z][A-Za-z0-9-]{3,}", str(query or ""))
+            if token.lower() not in stopwords
+        }
+        return tokens
+
+    @classmethod
+    def _looks_low_relevance(cls, query: str, results: list[dict]) -> bool:
+        tokens = cls._distinctive_query_tokens(query)
+        if len(tokens) < 3 or not results:
+            return False
+        best_overlap = 0
+        for item in results[:5]:
+            haystack = f"{item.get('title') or ''} {item.get('snippet') or ''}".lower()
+            overlap = sum(1 for token in tokens if token in haystack)
+            best_overlap = max(best_overlap, overlap)
+        return best_overlap < 2
+
     def _synthesize_researched_summary(
         self,
         *,
@@ -512,6 +559,36 @@ class WebSearchExecutor:
                 request_id=request.request_id,
             )
 
+        if self._looks_low_relevance(query, results):
+            sources = self._format_visible_sources(results)
+            message = "\n".join(
+                [
+                    f'Bottom line: I found little reliable evidence for "{query}".',
+                    "",
+                    "What is known: The search returned weak or mismatched results, so I would not treat the claim or entity as verified.",
+                    "What is unclear: The name may be misspelled, fictional, private, too new, or not covered by reliable indexed sources.",
+                    "",
+                    "Sources checked:",
+                    *(sources or ["1. No useful source links returned."]),
+                    "",
+                    "Try next",
+                    "- search with the exact website, location, or legal name",
+                    "- check source reliability for this query",
+                ]
+            )
+            return ActionResult.ok(
+                message=message,
+                data=self._search_widget(
+                    query=query,
+                    provider=used_provider,
+                    latency_seconds=time.monotonic() - started_at,
+                    results=results,
+                    researched_summary=f'I found little reliable evidence for "{query}".',
+                    source_pages_read=0,
+                ),
+                request_id=request.request_id,
+            )
+
         top_domains = []
         for result in results[:3]:
             domain = self._extract_domain(result.get("url", ""))
@@ -550,9 +627,17 @@ class WebSearchExecutor:
             "",
             f'Search answer for "{query}"',
             "",
+            "Sources:",
+            *self._format_visible_sources(results),
+            "",
             f"Confidence: {confidence_label}",
+            f"What is known: I found {len(results)} search result{'s' if len(results) != 1 else ''} and reviewed {len(source_packets)} source page{'s' if len(source_packets) != 1 else ''}.",
+            (
+                "What is unclear: Source pages were limited or not fully readable, so treat this as a starting point."
+                if len(source_packets) < min(len(results), MAX_SOURCE_READS)
+                else "What is unclear: Details may still change; use the linked sources for the latest context."
+            ),
             f"Source reading: reviewed {len(source_packets)} page{'s' if len(source_packets) != 1 else ''} via {provider_label}.",
-            "Use Show sources when you want the evidence list.",
             "",
             "Try next",
             "- show sources",

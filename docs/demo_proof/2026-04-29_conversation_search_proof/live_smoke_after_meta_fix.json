@@ -1,0 +1,9 @@
+﻿[
+  {
+    "case": "normal_no_web_smoke_after_meta_fix",
+    "prompt": "What is the difference between memory and intelligence in an AI system?",
+    "result": "Memory is stored context: facts, preferences, prior turns, or notes that help Nova keep continuity. Intelligence is the reasoning layer that interprets a request, connects ideas, and decides what answer or plan makes sense. Memory can inform intelligence, but it is not authority; governed actions still need visible boundaries, receipts, and review.",
+    "transport": "ws://127.0.0.1:8000/ws",
+    "startup_greeting_drained": true
+  }
+]

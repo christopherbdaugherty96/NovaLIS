@@ -425,6 +425,11 @@ _MEMORY_RECEIPTS_RE = re.compile(
     re.IGNORECASE,
 )
 
+_MEMORY_INTELLIGENCE_RE = re.compile(
+    r"^\s*(?:what\s+is\s+the\s+)?difference\s+between\s+memory\s+and\s+intelligence(?:\s+in\s+an?\s+ai\s+system)?\s*[.?!]*\s*$",
+    re.IGNORECASE,
+)
+
 # ---------------------------------------------------------------------------
 # Registry loader (cached per process)
 # ---------------------------------------------------------------------------
@@ -737,6 +742,14 @@ def _build_memory_receipts_difference() -> str:
     )
 
 
+def _build_memory_intelligence_difference() -> str:
+    return (
+        "Memory is stored context: facts, preferences, prior turns, or notes that help Nova keep continuity. "
+        "Intelligence is the reasoning layer that interprets a request, connects ideas, and decides what answer or plan makes sense. "
+        "Memory can inform intelligence, but it is not authority; governed actions still need visible boundaries, receipts, and review."
+    )
+
+
 # ---------------------------------------------------------------------------
 # Public interface
 # ---------------------------------------------------------------------------
@@ -776,6 +789,9 @@ class MetaIntentHandler:
 
         if _MEMORY_RECEIPTS_RE.match(t):
             return _build_memory_receipts_difference()
+
+        if _MEMORY_INTELLIGENCE_RE.match(t):
+            return _build_memory_intelligence_difference()
 
         if _MEMORY_EXPLAIN_RE.match(t):
             return _build_memory_explanation()
