@@ -4,7 +4,7 @@ Date: 2026-04-30
 
 Status: Future product / architecture plan. Not current runtime truth.
 
-Second-pass status: tightened 2026-04-30 to add explicit execution gates, social-publishing boundaries, order-processing boundaries, playbook limits, and demo criteria.
+Polish status: refined 2026-04-30 for clearer executive framing, sharper "today vs end-state" separation, reduced repetition, and stronger implementation gates.
 
 Purpose: document the intended end-state for Nova as a governed e-commerce operator and the phased path to get there.
 
@@ -24,7 +24,7 @@ Use this order when status conflicts:
 5. Future planning docs, including this document
 ```
 
-Current runtime truth at the time this document was drafted:
+Runtime truth at the time this document was drafted:
 
 ```text
 Cap 65 shopify_intelligence_report exists as Tier 1 read-only Shopify intelligence.
@@ -36,31 +36,31 @@ Full governed envelope execution, approval queue, connector registry, and social
 
 ---
 
-## End-State Vision
+## Executive Summary
 
-Nova should become a governed e-commerce operator for small businesses and online stores.
+Nova should become a governed e-commerce operating layer.
 
-The end-state is not an autonomous store bot.
-
-The end-state is:
+The goal is not to build an autonomous Shopify or social media bot. The goal is to build a business operator that can:
 
 ```text
-Nova monitors the business,
-understands store and channel signals,
-drafts front-end and back-end actions,
-proposes operating decisions,
-waits for approval where authority is required,
-executes only approved actions,
-and records receipts for what happened and what did not happen.
+read store and channel signals,
+explain what matters,
+prepare front-end and back-end work,
+recommend next actions,
+ask before changing anything,
+execute only approved steps,
+and prove what happened with receipts.
 ```
 
-Short version:
+The product promise should be:
 
 ```text
-Nova prepares and operates the workflow.
+Nova prepares the work.
 The user keeps authority.
 Receipts prove the boundary.
 ```
+
+This gives Nova a clear e-commerce lane: more useful than a dashboard, safer than broad automation.
 
 ---
 
@@ -86,6 +86,37 @@ Nova may execute only when the action is inside an approved capability, scoped t
 
 ---
 
+## Today vs End-State
+
+### What Exists Today
+
+```text
+Read-only Shopify intelligence foundation.
+Local email draft capability with manual send boundary.
+Governed OpenClaw surface, not broad hands.
+Capability contracts for selected capabilities.
+Trust/action receipt foundation.
+```
+
+### What Does Not Exist Yet
+
+```text
+TikTok / Instagram / social publishing.
+Live Shopify write authority.
+Automated order processing.
+Customer messaging authority.
+Refund / fulfillment authority.
+Approval queue as a full product surface.
+Connector registry for all business systems.
+Production social / email / ads connectors.
+```
+
+### End-State Direction
+
+Nova should eventually connect store intelligence, content preparation, operational recommendations, approval-based execution, and outcome tracking into one governed workflow.
+
+---
+
 ## Product Thesis
 
 Most e-commerce automation tools either stop at dashboards or jump too quickly into unsafe action.
@@ -93,11 +124,12 @@ Most e-commerce automation tools either stop at dashboards or jump too quickly i
 Nova should sit in the middle:
 
 ```text
-It should understand what is happening.
-It should prepare the next move.
-It should make the risk visible.
-It should ask before changing anything.
-It should prove what happened.
+understand what is happening,
+prepare the next move,
+make risk visible,
+ask before changing anything,
+act only inside permission,
+and prove the outcome.
 ```
 
 This creates a defensible product category:
@@ -116,9 +148,9 @@ An unsupervised store manager.
 
 ---
 
-## What The User Ultimately Wants Nova To Handle
+## End-State Surfaces
 
-The desired end-state includes both the front-end and back-end of e-commerce operations.
+The desired end-state includes front-end growth work, back-end store operations, and governed operating plans.
 
 ### Front-End / Growth Surface
 
@@ -179,7 +211,7 @@ These plans should be explicit, inspectable, editable, pausable, and revocable.
 
 ---
 
-## What Nova Should Not Become
+## Negative Product Boundary
 
 Nova should not become:
 
@@ -193,20 +225,19 @@ an agent with broad browser/account access
 an always-on bot that changes business state without review
 ```
 
-Blocked early behavior:
+Early blocked behavior:
 
 ```text
-auto-post to TikTok or Instagram
-auto-create discounts
-auto-change prices
-auto-update inventory
-auto-fulfill or refund orders
-auto-send customer emails
-auto-send supplier emails
-auto-buy ads or boost posts
-auto-submit forms
-auto-modify store settings
-auto-delete products or content
+auto-posting to social platforms
+auto-creating discounts
+auto-changing prices
+auto-updating inventory
+auto-fulfilling or refunding orders
+auto-sending customer or supplier emails
+auto-buying ads or boosting posts
+auto-submitting forms
+auto-modifying store settings
+auto-deleting products or content
 ```
 
 These can only become possible later as narrow, approved, capability-bound actions with explicit receipts.
