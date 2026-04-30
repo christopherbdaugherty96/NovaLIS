@@ -20,7 +20,7 @@ Most AI tools optimize for capability expansion. Nova emphasizes bounded executi
 8. [Conversation and Memory Model](docs/product/CONVERSATION_AND_MEMORY_MODEL.md)
 9. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
 10. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
-11. [Current Work Status](docs/current_runtime/CURRENT_WORK_STATUS.md)
+11. [Current Work Status](docs/status/CURRENT_WORK_STATUS.md)
 
 ## Proof Layer
 - [Trust Proof Plan](docs/product/TRUST_PROOF_PLAN.md)
@@ -63,7 +63,7 @@ Alpha build for technical users and early adopters. Real project under active de
 
 For exact generated runtime truth, use [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md).
 
-For current human-readable work continuity, including what is committed versus local/in-progress, use [Current Work Status](docs/current_runtime/CURRENT_WORK_STATUS.md).
+For current human-readable work continuity, including what is committed versus local/in-progress, use [Current Work Status](docs/status/CURRENT_WORK_STATUS.md).
 
 ## Future Directions
 - [Realistic Scope and Priorities](docs/future/REALISTIC_SCOPE_AND_PRIORITIES.md)
