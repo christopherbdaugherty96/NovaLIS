@@ -15,9 +15,11 @@ Most AI tools optimize for capability expansion. Nova emphasizes bounded executi
 3. [First 5 Minutes](docs/product/FIRST_5_MINUTES.md)
 4. [What Works Today](docs/product/WHAT_WORKS_TODAY.md)
 5. [Nova Operating Model](docs/product/NOVA_OPERATING_MODEL.md)
-6. [Conversation and Memory Model](docs/product/CONVERSATION_AND_MEMORY_MODEL.md)
-7. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
-8. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
+6. [Nova Brain](docs/brain.md)
+7. [Brain Architecture Package](docs/brain/README.md)
+8. [Conversation and Memory Model](docs/product/CONVERSATION_AND_MEMORY_MODEL.md)
+9. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
+10. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
 
 ## Proof Layer
 - [Trust Proof Plan](docs/product/TRUST_PROOF_PLAN.md)
