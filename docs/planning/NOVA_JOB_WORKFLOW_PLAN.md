@@ -115,6 +115,8 @@ A decision must never directly execute. Only an explicitly approved action may e
 8. Auralis cannot create execution payloads directly; it can only submit approval decisions and edits back to Nova.
 9. Website workflow logic must not bypass GovernorMediator, CapabilityRegistry, ExecuteBoundary, or Ledger.
 10. Sales tactics, objection handling, outreach style, and persuasive sequencing are intentionally deferred until the core job flow is complete, stable, and tested.
+11. No public-facing pricing promise should be generated without marking the price as estimate, starting price, or quote-based according to the Auralis pricing source.
+12. Client data captured in jobs should stay local and inspectable; future CRM/export behavior must be separately approved and governed.
 
 ## Email draft capability mapping requirement
 
@@ -127,6 +129,13 @@ Before coding the final execution step, verify:
 - the exact executor input expected by the email draft path
 - the return shape for a successful local draft creation
 - how failure states are represented
+
+Known runtime capability description:
+
+- Capability `64`, `send_email_draft`, composes an email draft and opens it in the system mail client through a `mailto:` URI.
+- The user must click Send manually.
+- Nova never transmits the email.
+- The capability is confirmation-gated and requires a configured mail client.
 
 The workflow must not invent a parallel email path. It must route through the existing governed email-draft capability.
 
@@ -446,6 +455,12 @@ Proposed action:
 
 Avoid scattering website-business pricing and package rules through random code.
 
+Pricing source note:
+
+- Baseline pricing is pulled from the Auralis Digital repository README as of 2026-04-30.
+- Business Growth Website ($1,500-$3,000 with AI integration) is an internal Nova proposal tier unless or until it is added to public Auralis pricing.
+- If public Auralis pricing and Nova's internal proposal tier differ, Nova must label the internal tier as an estimate or custom growth package, not a public fixed promise.
+
 Pricing baseline should follow the Auralis Digital repository unless superseded by a newer source of truth:
 
 - Website Refresh: $250
@@ -520,6 +535,48 @@ After the Website Lead workflow is proven:
    - Lead/property input -> deal viability -> questions -> outreach draft -> pipeline tracking
    - Keep legal/financial claims conservative and verification-oriented
 
+## Third-pass implementation risks and mitigations
+
+1. Capability contract drift
+   - Risk: Cap 64 behavior or payload differs from the workflow assumption.
+   - Mitigation: verify registry, executor, and certification tests before implementation; document the exact payload shape in this plan or a linked implementation note.
+
+2. Job store duplication of ledger truth
+   - Risk: job store and ledger tell different stories.
+   - Mitigation: job store is current operational state only; ledger remains append-only audit truth. Tests should verify key lifecycle events produce matching ledger records.
+
+3. Approval/version mismatch
+   - Risk: user approves one proposal but a modified payload executes.
+   - Mitigation: execution must check proposal_version and approved payload hash or equivalent immutable snapshot.
+
+4. Over-broad lead intake
+   - Risk: Nova starts making firm pricing promises from incomplete lead data.
+   - Mitigation: use `NEEDS_MORE_INFO` or estimate language when timeline, scope, integrations, content, hosting, revisions, or budget are missing.
+
+5. Public vs internal pricing mismatch
+   - Risk: Business Growth Website appears as a public fixed package before Auralis is ready.
+   - Mitigation: treat Business Growth as internal/custom proposal tier unless added to public Auralis docs.
+
+6. Hidden CRM behavior
+   - Risk: lead data becomes persistent without visible operator control.
+   - Mitigation: store local job state only, expose job inspection, and require explicit future approval for exports, syncs, or external CRM integration.
+
+7. Premature sales automation
+   - Risk: persuasion/outreach style is added before governance and test coverage are stable.
+   - Mitigation: defer sales tactics until the stable tested workflow exists.
+
+8. Follow-up background creep
+   - Risk: 48-hour follow-up becomes hidden automation.
+   - Mitigation: defer follow-up until v0 succeeds; when added, it must create an approval-gated follow-up job, not send or execute silently.
+
+9. UI authority confusion
+   - Risk: Auralis UI starts shaping executable payloads directly.
+   - Mitigation: Auralis submits approval decisions and edits only; Nova owns payload creation, proposal versioning, and execution.
+
+10. Missing operator health surface
+   - Risk: jobs fail because local mail client is not configured.
+   - Mitigation: add a preflight check for Cap 64 readiness or surface a clear failure state before marking a job executable.
+
 ## Suggested module placement
 
 To verify against live repo before implementation:
@@ -588,6 +645,7 @@ Approval tests:
 - rejected job cannot execute
 - modified approval creates updated proposal version
 - execution payload must match approved proposal version
+- approved payload snapshot/hash cannot be silently changed before execution
 
 Governance tests:
 
@@ -600,6 +658,7 @@ Ledger tests:
 - job lifecycle emits allowed events
 - unknown event type rejected
 - failed job writes failure event
+- job store status and ledger lifecycle remain consistent at key transitions
 
 Workflow tests:
 
@@ -607,9 +666,15 @@ Workflow tests:
 - location is captured when present
 - missing info is detected
 - package recommendation is deterministic
+- incomplete scope uses estimate language or NEEDS_MORE_INFO
 - approved job creates email draft capability request
 - unapproved job does not execute
 - follow-up logic is not active in v0 unless explicitly enabled later
+
+Preflight tests:
+
+- Cap 64 unavailable/configuration failure is surfaced as a clear job failure or blocked execution state
+- workflow does not mark a job completed when the local mail draft cannot be created
 
 ## Demo target
 
@@ -640,9 +705,11 @@ Workflow tests:
 - Add decision and approval contracts
 - Add proposal versioning
 - Verify actual email-draft capability contract
+- Add approved payload snapshot/hash protection or equivalent immutable execution snapshot
 - Add website lead workflow
 - Add minimal job inspection
 - Add job ledger events through allowlist discipline
+- Add Cap 64 readiness/failure preflight handling
 
 ## Do not do yet
 
