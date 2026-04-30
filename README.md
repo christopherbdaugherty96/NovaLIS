@@ -14,9 +14,10 @@ Most AI tools optimize for capability expansion. Nova emphasizes bounded executi
 2. [Quickstart](QUICKSTART.md)
 3. [First 5 Minutes](docs/product/FIRST_5_MINUTES.md)
 4. [What Works Today](docs/product/WHAT_WORKS_TODAY.md)
-5. [Conversation and Memory Model](docs/product/CONVERSATION_AND_MEMORY_MODEL.md)
-6. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
-7. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
+5. [Nova Operating Model](docs/product/NOVA_OPERATING_MODEL.md)
+6. [Conversation and Memory Model](docs/product/CONVERSATION_AND_MEMORY_MODEL.md)
+7. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
+8. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
 
 ## Proof Layer
 - [Trust Proof Plan](docs/product/TRUST_PROOF_PLAN.md)
@@ -35,6 +36,8 @@ Latest proof package:
 
 - [2026-04-29 Conversation + Search Proof](docs/demo_proof/2026-04-29_conversation_search_proof/CONVERSATION_SEARCH_REPORT.md)
 - [Conversation + Search Proof Index](docs/demo_proof/2026-04-29_conversation_search_proof/PROOF_INDEX.md)
+- [Brain Live Test Report](docs/demo_proof/brain_live_test/REPORT.md)
+- [Brain Live Test Proof Index](docs/demo_proof/brain_live_test/PROOF_INDEX.md)
 - [2026-04-28 User Test Report](docs/demo_proof/2026-04-28_user_test/USER_TEST_REPORT.md)
 - [Proof Index](docs/demo_proof/2026-04-28_user_test/PROOF_INDEX.md)
 - [Demo Script](docs/demo_proof/2026-04-28_user_test/DEMO_SCRIPT.md)
@@ -50,7 +53,7 @@ Recent local-first proof captures:
 
 ![Nova memory authority boundary](docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_memory_authority.png)
 
-Current proof verdict: the local demo path mostly works. The active sprint has pivoted from Cap 64 email signoff to Cap 16 web-search answer quality and conversation coherence. Remaining friction is now concentrated around CPU-budget handling for current searches, follow-up coherence, and clearer uncertainty behavior.
+Current proof verdict: the local demo path mostly works. The Brain Task Clarifier now handles tested ambiguity/boundary prompts, while the active sprint remains Cap 16 web-search answer quality and conversation coherence. Remaining friction is concentrated around CPU-budget handling for current searches, follow-up coherence, and clearer uncertainty behavior.
 
 ## Future Directions
 - [Realistic Scope and Priorities](docs/future/REALISTIC_SCOPE_AND_PRIORITIES.md)
@@ -79,4 +82,4 @@ See:
 - [AI Tooling Boundaries](docs/AI_TOOLING_BOUNDARIES.md)
 
 ## License
-See [LICENSE](LICENSE).
+See [LICENSE].
