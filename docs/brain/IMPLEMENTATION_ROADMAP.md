@@ -41,6 +41,9 @@ Active P1 blocker:
 
 ## Capability Expansion Guardrails (Not an Active Phase)
 
+This section is intentionally separated from the implementation phases.
+It does not define current work or upcoming milestones.
+
 This section does not define the next work to execute.
 
 It defines the conditions that must be true *before* NovaLIS expands its capability surface at any future point.
@@ -49,7 +52,10 @@ Current priority remains unchanged (see Active P1 blocker and phases above).
 
 These guardrails exist to prevent premature expansion that would weaken governance, traceability, or system integrity.
 
-If and when capability expansion is considered in the future, the following must already be true:
+This is a system constraint, not a build sequence.
+It must not be interpreted as an ordered task list.
+
+Capability expansion is only permitted when ALL of the following system conditions are already true:
 
 ```text
 1. Capability contracts are used in planning.
@@ -85,8 +91,7 @@ Rule:
 
 > Every new capability must prove the governance system works; it must not become a shortcut around it.
 
-This section is intentionally non-actionable in the current phase.
-It should not be treated as a task list or next milestone.
+This section is intentionally non-actionable in the current phase and must not influence task prioritization.
 
 ---
 
