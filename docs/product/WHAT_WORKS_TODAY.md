@@ -61,6 +61,7 @@ Latest proof packages:
 | Daily brief / operating layer | Future / not implemented | The operating model documents daily briefs, news tracking, routines, context awareness, and approved automation loops as direction, not current product readiness. |
 | Approved automation routines / envelopes | Future / not implemented | Conceptual direction only. No broad recurring automation loop should be claimed as live. |
 | Small-model full Brain runtime stack | Future / not implemented | Context Assembler, Model Router, Intention Parser, Tool Bridge, Search Synthesis, Sandbox Boundary Enforcer, and Persona Filter are documented architecture, not live runtime behavior. |
+| Google read/context connector | Future / not implemented | The Google connector model documents OAuth, Gmail read-only, Calendar read-only, and Gmail context for Cap 64 draft-only replies. It is a future read/context path, not Gmail send/write authority. |
 | Fuller Trust Panel / Trust Review Card | Partial / future work | Action Receipts and trust receipt API exist; richer blocked-reason drill-down, confirmation previews, proof browsing, and polished demo flow remain future work. |
 | One-click installer | Not implemented | Needed for broader adoption. |
 | Mainstream consumer onboarding | Not ready | Current setup expects a technical user. |
