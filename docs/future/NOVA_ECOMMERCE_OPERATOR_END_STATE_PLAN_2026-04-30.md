@@ -4,6 +4,8 @@ Date: 2026-04-30
 
 Status: Future product / architecture plan. Not current runtime truth.
 
+Second-pass status: tightened 2026-04-30 to add explicit execution gates, social-publishing boundaries, order-processing boundaries, playbook limits, and demo criteria.
+
 Purpose: document the intended end-state for Nova as a governed e-commerce operator and the phased path to get there.
 
 ---
@@ -81,6 +83,36 @@ A saved operation plan does not grant permission to execute external actions aut
 Nova may read, analyze, draft, simulate, and propose inside defined permissions.
 
 Nova may execute only when the action is inside an approved capability, scoped to an explicit request or approved playbook step, and logged with a receipt.
+
+---
+
+## Product Thesis
+
+Most e-commerce automation tools either stop at dashboards or jump too quickly into unsafe action.
+
+Nova should sit in the middle:
+
+```text
+It should understand what is happening.
+It should prepare the next move.
+It should make the risk visible.
+It should ask before changing anything.
+It should prove what happened.
+```
+
+This creates a defensible product category:
+
+```text
+A governed e-commerce operating layer.
+```
+
+Not:
+
+```text
+A chatbot for Shopify.
+A social posting bot.
+An unsupervised store manager.
+```
 
 ---
 
@@ -198,6 +230,99 @@ Every e-commerce workflow should be classified into one of these lanes.
 
 ---
 
+## Non-Negotiable Execution Gates
+
+No e-commerce write-capable action should be implemented until these gates exist or a later runtime truth document explicitly supersedes this plan.
+
+### Gate 1 — Request Understanding Visibility
+
+Nova must show what it understood before acting.
+
+Required fields:
+
+```text
+understood goal
+request type
+target system
+authority lane
+safe next step
+must not do
+confidence / uncertainty
+result or not-executed state
+```
+
+### Gate 2 — Connector Registry
+
+Every external business system must have a registered connector entry showing:
+
+```text
+provider
+connection status
+scopes
+read permissions
+write permissions
+draft permissions
+blocked actions
+approval requirements
+last use
+last error
+revoke/disconnect path
+```
+
+### Gate 3 — Approval Queue
+
+Any durable or external action must go through a queue item with:
+
+```text
+exact target system
+exact proposed change
+preview / payload
+risk level
+what will happen
+what will not happen
+expiration
+approve / deny / edit
+receipt link
+```
+
+### Gate 4 — Capability Contract
+
+Every e-commerce capability must define:
+
+```text
+can
+cannot
+required setup
+authority tier
+confirmation requirement
+expected receipts
+known failure modes
+fallbacks
+```
+
+### Gate 5 — Dev/Test Environment Proof
+
+Write-capable Shopify operations must pass first in a development store or test store.
+
+Write-capable social publishing must pass first against a sandbox/test account or non-public test surface where the platform allows it.
+
+Order/customer/refund/fulfillment workflows must begin as read/review/draft only before any write action is considered.
+
+### Gate 6 — Receipt Proof
+
+Every approved execution must produce a receipt that states:
+
+```text
+what changed
+what did not change
+who/what approved it
+which connector/capability was used
+whether the action succeeded or failed
+where to inspect the evidence
+```
+
+---
+
 ## Target End-State Workflow
 
 The full e-commerce workflow should look like this:
@@ -278,6 +403,27 @@ No customer messages sent.
 No inventory changed.
 Receipt IDs: ...
 ```
+
+---
+
+## Example Early Safe Workflow
+
+Before social publishing or Shopify writes exist, the same business value can be delivered safely.
+
+```text
+User: Run my e-commerce morning check.
+
+Nova:
+1. Fetches read-only Shopify report.
+2. Summarizes revenue, orders, AOV, active products, low stock, and out-of-stock counts.
+3. Identifies one issue or opportunity.
+4. Drafts a TikTok/Instagram campaign concept.
+5. Drafts a discount recommendation.
+6. Creates a not-yet-executable approval preview.
+7. States: no store data changed, no content posted, no customer messages sent.
+```
+
+This is the first target workflow because it proves e-commerce value without requiring dangerous authority.
 
 ---
 
@@ -553,6 +699,19 @@ Publishing rule:
 Nova can publish only the exact approved content, to the exact approved platform/account, at the exact approved time.
 ```
 
+Minimum social publish approval card:
+
+```text
+platform
+account/page/profile
+content text
+media asset
+scheduled time or immediate publish
+what will not happen
+whether comments/DMs/replies are blocked
+receipt requirement
+```
+
 Success criteria:
 
 ```text
@@ -586,6 +745,14 @@ mark internal status
 prepare fulfillment update
 send approved customer response through connector
 create approved refund only with hard approval if ever allowed
+```
+
+Order/customer hard boundary:
+
+```text
+Nova must not refund, fulfill, cancel, edit shipping, or message customers automatically.
+Customer-impacting actions require explicit approval and a clear preview.
+Refunds, payment actions, and legal/compliance-sensitive actions should remain blocked by default until a separate high-risk policy exists.
 ```
 
 Success criteria:
@@ -658,6 +825,16 @@ version
 status
 ```
 
+Playbook execution rule:
+
+```text
+A playbook can trigger read, analysis, draft, recommendation, and approval-card creation.
+A playbook cannot silently perform external writes unless a later explicitly approved narrow action lane exists.
+Changing a playbook requires user confirmation.
+Paused playbooks cannot run.
+Stale playbook approvals must be rechecked.
+```
+
 Success criteria:
 
 ```text
@@ -707,6 +884,22 @@ CRM / customer support connector
 supplier/vendor contact source
 payment/refund surfaces only after high-risk governance exists
 ```
+
+---
+
+## Connector Scope Rules
+
+Each connector should start in the lowest useful lane.
+
+```text
+Shopify: read-only first, write scopes later only after dev-store proof.
+Social platforms: draft/planning first, publish scopes later only after approval queue.
+Email platforms: draft-only first, send later only after high-consequence approval design.
+Order/fulfillment providers: read/review first, mutation later only after separate high-risk design.
+Ad platforms: read-only reporting first, spend/budget mutation blocked by default.
+```
+
+Scope expansion must be explicit. Nova must not silently request or use broader scopes because a new workflow wants them.
 
 ---
 
@@ -786,6 +979,12 @@ It shows the front-end and back-end connection.
 It demonstrates Nova's product identity.
 ```
 
+MVP demo success line:
+
+```text
+Nova found one business opportunity and prepared the work, but did not publish, discount, message, fulfill, refund, or modify anything.
+```
+
 ---
 
 ## Do Not Overstate
@@ -812,6 +1011,25 @@ Correct wording:
 Nova currently has a read-only Shopify intelligence foundation.
 Nova is being designed toward governed e-commerce operation.
 Front-end publishing and back-end store actions require future connectors, approval queue, capability signoff, and live testing.
+```
+
+---
+
+## Build Priority Note
+
+This e-commerce plan should not displace the current core Nova priority unless the owner explicitly reprioritizes it.
+
+Correct near-term order:
+
+```text
+1. RequestUnderstanding / trust-action visibility.
+2. Local capability confidence and signoff.
+3. Connector governance surfaces.
+4. Cap 65 live dev-store signoff.
+5. E-commerce command center and draft-only workflows.
+6. Approval queue.
+7. Dev-store writes.
+8. Approved live writes / social publishing later.
 ```
 
 ---
