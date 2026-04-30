@@ -337,6 +337,8 @@ If search fails, Nova should not answer current facts from stale memory as if ce
 
 Capability Contracts define what each capability can and cannot do.
 
+Current status: `src/brain/capability_contracts.py` provides a static catalog for Cap 16, Cap 64, Cap 65, and Cap 63. This catalog is not yet wired into runtime routing or Governor authorization.
+
 Priority contracts:
 
 ```text
@@ -725,18 +727,17 @@ Recommended order:
 
 ```text
 1. Fix Cap 16 search reliability.
-2. Add static Capability Contracts.
-3. Add Google connector contracts as future/static definitions.
-4. Add Context Assembler.
-5. Add Intention Parser / structured output validation.
-6. Add Search Synthesis module.
-7. Add Sandbox Boundary Enforcer.
-8. Add read-only Dry Run / Plan Preview.
-9. Add Persona / Identity Filter.
-10. Add Brain Trace metadata.
-11. Add Obsidian Presence mirror.
-12. Add optional Model Router / Tier Manager.
-13. Implement Google OAuth/Gmail/Calendar read-only only after contracts and proof plan exist.
+2. Add Google connector contracts as future/static definitions if needed.
+3. Add Context Assembler.
+4. Add Intention Parser / structured output validation.
+5. Add Search Synthesis module.
+6. Add Sandbox Boundary Enforcer.
+7. Add read-only Dry Run / Plan Preview.
+8. Add Persona / Identity Filter.
+9. Add Brain Trace metadata.
+10. Add Obsidian Presence mirror.
+11. Add optional Model Router / Tier Manager.
+12. Implement Google OAuth/Gmail/Calendar read-only only after contracts and proof plan exist.
 ```
 
 Model Router can be designed early, but it does not need to block Cap 16 or Capability Contracts.
@@ -750,6 +751,7 @@ Implemented today:
 ```text
 Task Clarifier
 EnvironmentRequest schema scaffold
+Static Capability Contract catalog for Cap 16, Cap 64, Cap 65, and Cap 63
 Brain docs
 Brain live proof
 ```
@@ -758,7 +760,7 @@ Still future:
 
 ```text
 full Task Environment Router
-static/live Capability Contracts
+runtime/live Capability Contract lookup
 Dry Run API
 Brain Trace UI
 Context Assembler

@@ -12,12 +12,14 @@ Done:
 - Brain runtime architecture doc exists.
 - Read-only `EnvironmentRequest` schema scaffold exists.
 - Task Clarifier is implemented for tested ambiguity/boundary prompts.
+- Static Capability Contract catalog exists for Cap 16, Cap 64, Cap 65, and Cap 63.
 - Brain live-test proof exists under `docs/demo_proof/brain_live_test/`.
 
 Still not done:
 
 - full Task Environment Router
 - live Capability Contract lookup
+- Capability Contract use by runtime routing/Governor
 - Dry Run / Plan Preview API
 - Brain Trace UI
 - project context engine
@@ -50,6 +52,8 @@ Active P1 blocker:
 | 6 — Cap 16 Reliability Integration | ❌ | — | — | — |
 | 7 — OpenClaw Environment Planning | ❌ | — | — | — |
 | 8 — Project Contexts / Suggestion Buffer | ❌ | — | — | — |
+
+Capability Contracts status note: the shared `CapabilityContract` dataclass exists, and a static catalog now exists in `src/brain/capability_contracts.py` for Cap 16, Cap 64, Cap 65, and Cap 63. Runtime contract lookup is not wired into the full Task Environment Router or Governor path yet.
 
 ## Phase 0 — Governor Spine Proof
 
@@ -106,9 +110,19 @@ Expected behavior:
 
 ## Phase 3 — Capability Contracts
 
-Status: design/schema only.
+Status: schema/scaffold plus static catalog.
 
-Goal: create static contracts for the highest-priority capabilities:
+Current truth:
+
+- `CapabilityContract` dataclass exists as Brain schema.
+- Static contracts exist for the highest-priority capabilities:
+  - Cap 16 governed web search
+  - Cap 64 send email draft
+  - Cap 65 Shopify intelligence report
+  - Cap 63 OpenClaw execute
+- Runtime routing/Governor lookup is not live yet.
+
+Goal: use static contracts as the next authority vocabulary for:
 
 - Cap 16 governed web search
 - Cap 64 send email draft
@@ -117,9 +131,15 @@ Goal: create static contracts for the highest-priority capabilities:
 
 Deliverables:
 
-- docs or data contracts
+- static contract catalog
 - tests that blocked actions are represented correctly
 - no duplicate hardcoded capability truth where contract lookup should be used
+
+Remaining work:
+
+- wire contracts into a future EnvironmentRequest/Dry Run builder
+- keep Governor as the execution authority
+- do not treat static contracts as permission to execute
 
 ---
 
