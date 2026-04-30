@@ -10,6 +10,8 @@ Generated runtime truth files are the authority for exact live status.
 - [Quickstart](../QUICKSTART.md)
 - [First 5 Minutes](product/FIRST_5_MINUTES.md)
 - [What Works Today](product/WHAT_WORKS_TODAY.md)
+- [Nova Operating Model](product/NOVA_OPERATING_MODEL.md)
+- [Nova Brain](brain.md)
 - [Conversation and Memory Model](product/CONVERSATION_AND_MEMORY_MODEL.md)
 - [Governed System Architecture](product/GOVERNED_SYSTEM_ARCHITECTURE.md)
 - [Trust Review Card Plan](product/TRUST_REVIEW_CARD_PLAN.md)
@@ -19,6 +21,12 @@ Generated runtime truth files are the authority for exact live status.
 ## What Nova Is
 Nova is a governed local AI runtime focused on separating reasoning from execution.
 Use the product docs above first, then use runtime truth docs for exact capability state.
+
+## Brain and Runtime Planning
+- [Nova Brain Overview](brain.md)
+- [Brain Architecture Package](brain/README.md)
+- [Brain Runtime Architecture](brain/NOVA_BRAIN_RUNTIME_ARCHITECTURE.md)
+- [Brain Implementation Roadmap](brain/IMPLEMENTATION_ROADMAP.md)
 
 ## Trust, Proof, and Signoff
 - [Trust Proof Plan](product/TRUST_PROOF_PLAN.md)
@@ -33,6 +41,12 @@ Use the product docs above first, then use runtime truth docs for exact capabili
 - [Active TODO](todo/ACTIVE_TODO.md)
 - [Future Roadmap](future/ROADMAP.md)
 - [Future Guide](future/README.md)
+
+## Future Connector and Product Directions
+- [Google Connector Model](future/NOVA_GOOGLE_CONNECTOR_MODEL.md)
+- [Nova x Auralis Digital Website Engine](future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE.md)
+- [Governed Media and E-Commerce Engine](future/NOVA_GOVERNED_MEDIA_AND_ECOMMERCE_ENGINE.md)
+- [Realistic Scope and Priorities](future/REALISTIC_SCOPE_AND_PRIORITIES.md)
 
 ## Technical Users
 - [Architecture](reference/ARCHITECTURE.md)
