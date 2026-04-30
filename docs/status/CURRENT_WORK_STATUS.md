@@ -2,31 +2,31 @@
 
 Last reviewed: 2026-04-30
 
-This document captures human-readable work continuity for the current development slice.
+This is a human-maintained continuity note for the current development slice.
 
 It is not generated runtime truth. For exact runtime fingerprint, capability count, active capabilities, and generated invariants, use [`../current_runtime/CURRENT_RUNTIME_STATE.md`](../current_runtime/CURRENT_RUNTIME_STATE.md).
 
-Generated runtime docs remain the authority when they conflict with this human-maintained status note.
+Generated runtime docs win if they conflict with this note.
 
 ---
 
-## Review Baseline
+## Current Truth
 
-At the time of this review, remote `main` was observed at commit:
+At this review baseline, remote `main` was observed at:
 
 ```text
 c8193bdc4b1fc213952d888430d8381aec1779b8
 brain: add static capability contracts
 ```
 
-That commit added the static Brain capability contract catalog and aligned Brain docs around the committed implementation truth.
+That baseline includes the Static Capability Contracts pass.
 
-Implemented at that baseline:
+Committed at that baseline:
 
 - `nova_backend/src/brain/capability_contracts.py`
 - `nova_backend/tests/brain/test_capability_contracts.py`
-- Brain docs state that static contracts exist for Cap 16, Cap 63, Cap 64, and Cap 65.
-- Brain docs state that runtime/live contract lookup is not wired into the full Task Environment Router or Governor path yet.
+- Brain docs stating that static contracts exist for Cap 16, Cap 63, Cap 64, and Cap 65.
+- Brain docs stating that runtime/live contract lookup is not wired into the full Task Environment Router or Governor path yet.
 
 Generated runtime truth at that baseline reports:
 
@@ -45,17 +45,15 @@ Generated runtime truth at that baseline reports:
 - All outbound HTTP must pass NetworkMediator.
 - Execution must be logged to the ledger.
 
-Because this file is human-maintained, re-check generated runtime docs and Git history before treating it as current after later commits.
+Re-check generated runtime docs and Git history before treating this note as current after later commits.
 
 ---
 
-## Static Capability Contracts Status
+## What Changed Recently
 
-Status: committed at the review baseline.
+Static Capability Contracts were added as a non-authorizing Brain vocabulary layer.
 
-Current static contracts:
-
-| Capability | Status | Boundary |
+| Capability | Current contract status | Boundary |
 |---|---|---|
 | Cap 16 `governed_web_search` | Static contract exists | Network-read only; cannot bypass NetworkMediator or treat stale memory as current proof. |
 | Cap 63 `openclaw_execute` | Static contract exists | Governed OpenClaw environment; confirmation required; cannot bypass Governor or silently use a personal browser session. |
@@ -64,7 +62,13 @@ Current static contracts:
 
 Important boundary:
 
-Static contracts are planning/review vocabulary. They do not authorize, route, or execute anything by themselves.
+Static contracts are planning/review vocabulary only. They do not authorize, route, or execute anything by themselves.
+
+---
+
+## Not Yet Wired
+
+The Static Capability Contracts pass does not mean the Brain has a full runtime planner.
 
 Still not wired at the review baseline:
 
@@ -88,7 +92,7 @@ A recent Codex session began a Search Synthesis slice after the static contracts
 - Brain docs were being edited to mark the module as implemented.
 - The session stopped before final drift/targeted checks and before a confirmed commit/push.
 
-Because that work was not visible on remote `main` during this review, repository docs should not claim Search Synthesis as a committed or live runtime feature until the local changes are committed and verified.
+Because that work was not visible on remote `main` during this review, repository docs should not claim Search Synthesis as committed or live until the local changes are committed and verified.
 
 Correct wording until committed:
 
@@ -109,9 +113,9 @@ Search Synthesis authorizes browsing or tool use.
 
 ## Active P1
 
-Current P1 remains Cap 16 current-information reliability.
+Cap 16 current-information reliability remains the active P1.
 
-Immediate best next step:
+Immediate next action:
 
 1. Recover the local Search Synthesis working tree.
 2. Confirm whether the local files still exist.
@@ -153,5 +157,5 @@ Do not claim these are finished unless verified against code/runtime truth:
 1. Finish and commit Search Synthesis as a narrow Cap 16 evidence-structuring module.
 2. Keep it non-authorizing and attached only to the existing governed web-search output path.
 3. Re-run drift and targeted governance checks.
-4. Then revisit docs and mark Search Synthesis implemented only after the source file and tests are committed.
-5. After that, continue with Context Assembler / Intention Parser scaffolds only if Cap 16 reliability is stable enough to support them.
+4. Mark Search Synthesis implemented only after the source file and tests are committed.
+5. Continue with Context Assembler / Intention Parser scaffolds only if Cap 16 reliability is stable enough to support them.
