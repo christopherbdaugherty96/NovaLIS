@@ -100,7 +100,7 @@ NovaLIS may help with:
 - Producing voiceover drafts
 - Creating shot lists
 - Planning animation overlays
-- Coordinating OpenClaw or desktop automation
+- Preparing future execution plans for OpenClaw or desktop automation, without claiming that execution is live
 - Tracking performance after publishing
 - Recommending what to double down on
 
