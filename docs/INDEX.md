@@ -47,6 +47,9 @@ Use the product docs above first, then use runtime truth docs for exact capabili
 ## Future Connector and Product Directions
 - [Google Connector Model](future/NOVA_GOOGLE_CONNECTOR_MODEL.md)
 - [Nova x Auralis Digital Website Engine](future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE.md)
+- [Auralis Website Coworker Workflow](future/AURALIS_WEBSITE_COWORKER_WORKFLOW.md)
+- [Auralis Mock Lead Fixtures](future/auralis_mock_leads/README.md)
+- [YouTubeLIS Tool Folder](tools/youtubelis.md)
 - [Governed Media and E-Commerce Engine](future/NOVA_GOVERNED_MEDIA_AND_ECOMMERCE_ENGINE.md)
 - [Realistic Scope and Priorities](future/REALISTIC_SCOPE_AND_PRIORITIES.md)
 

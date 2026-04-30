@@ -1,0 +1,14 @@
+{
+  "scenario_id": "mock_lawncare_belleville_001",
+  "is_mock": true,
+  "business_name": "GreenEdge Lawn Care",
+  "industry": "lawn_care",
+  "location": "Belleville, MI",
+  "service_area": ["Belleville", "Ypsilanti", "Ann Arbor"],
+  "services": ["weekly mowing", "spring cleanup", "mulch", "snow removal"],
+  "client_goal": "increase quote requests for spring cleanup",
+  "style_preference": "clean, modern, local, trustworthy",
+  "known_assets": ["logo", "3 yard photos"],
+  "missing_assets": ["testimonials", "form destination email", "pricing approach"],
+  "constraints": ["one-page MVP", "launch draft within one week"]
+}

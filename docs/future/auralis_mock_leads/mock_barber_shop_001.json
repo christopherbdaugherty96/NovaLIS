@@ -1,0 +1,13 @@
+{
+  "scenario_id": "mock_barber_shop_001",
+  "is_mock": true,
+  "business_name": "Downtown Fade Co.",
+  "industry": "barber_salon",
+  "location": "Ann Arbor, MI",
+  "services": ["haircuts", "fades", "beard trims"],
+  "client_goal": "increase bookings",
+  "style_preference": "modern, bold, urban",
+  "known_assets": ["instagram gallery"],
+  "missing_assets": ["booking system link", "pricing", "hours"],
+  "constraints": ["simple site", "fast launch"]
+}
