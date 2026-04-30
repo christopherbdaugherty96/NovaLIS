@@ -13,4 +13,4 @@ These are starting points for initial videos.
 9. This Breakthrough Might Change Small Businesses
 10. The Next Phase of AI Has Already Started
 
-Goal: pick 1–3 and execute fully.
+Goal: pick 1–3 and run them through the planning pipeline fully. Production, editing, upload, and publishing remain manual unless a future governed execution path is implemented and approved.
