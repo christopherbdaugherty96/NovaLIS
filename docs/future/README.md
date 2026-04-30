@@ -18,6 +18,15 @@ Use these sources in order of authority:
 
 - `ROADMAP.md` — primary future direction and phased expansion path.
 
+## Optional Workflow Planning
+
+These docs preserve possible workflow directions. They are not live runtime
+capability claims:
+
+- `AURALIS_WEBSITE_COWORKER_WORKFLOW.md` - future Auralis website-production coworker workflow.
+- `auralis_mock_leads/README.md` - fictional mock lead fixtures for planning-only Auralis workflow tests.
+- `../tools/youtubelis.md` - pointer to the planning-only YouTubeLIS tool folder.
+
 ## What Belongs Here
 
 Use this folder for:

@@ -1,0 +1,14 @@
+{
+  "scenario_id": "mock_mobile_detailing_ypsilanti_001",
+  "is_mock": true,
+  "business_name": "Precision Mobile Detailing",
+  "industry": "mobile_detailing",
+  "location": "Ypsilanti, MI",
+  "service_area": ["Ypsilanti", "Ann Arbor"],
+  "services": ["interior detailing", "exterior detailing", "full detail packages"],
+  "client_goal": "increase booking requests",
+  "style_preference": "premium, clean, visual",
+  "known_assets": ["before/after photos"],
+  "missing_assets": ["pricing clarity", "booking link", "contact email"],
+  "constraints": ["one-page site", "mobile-first"]
+}
