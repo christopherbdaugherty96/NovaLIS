@@ -39,6 +39,99 @@ Active P1 blocker:
 
 ---
 
+## Before Adding New Capabilities
+
+New capabilities should not be added just because a future workflow is desirable.
+
+Before NovaLIS adds new capability surface area, the Brain/Governor path should first prove that planning, authority, receipts, and failure handling are consistent.
+
+Required gates before new medium/high-risk capabilities:
+
+```text
+1. Capability contracts are used in planning.
+2. Environment requests validate against known authority tiers.
+3. Dry Run / Plan Preview exists for higher-authority tasks.
+4. Trust Flow or equivalent approval surface exists.
+5. Run lifecycle states are enforced.
+6. Receipts are consistent.
+7. Context assembly is bounded and explicit.
+8. GovernorMediator / CapabilityRegistry / ExecuteBoundary remain the only execution path.
+```
+
+Allowed before this is complete:
+
+- read-only reliability work
+- low-risk diagnostics
+- contract/schema work
+- dry-run planning
+- tests
+- UI/receipt visibility
+
+Avoid before this is complete:
+
+- new account-write capabilities
+- publishing workflows
+- purchases
+- real financial execution
+- broad OpenClaw automation
+- autonomous scheduled execution
+- new desktop actions that cannot produce receipts
+
+Rule:
+
+> Every new capability must prove the governance system works; it must not become a shortcut around it.
+
+---
+
+## Future Planning Package
+
+The long-term Brain planning package now lives under:
+
+```text
+future/brain/
+```
+
+This package is not runtime truth and is not a new implemented Brain phase. It is source material for future phases already listed in this roadmap.
+
+Current future Brain planning docs include:
+
+```text
+future/brain/README.md
+future/brain/ARCHITECTURE_MAP.md
+future/brain/PROMOTION_PATH.md
+future/brain/CONTEXT_ASSEMBLER.md
+future/brain/SIGNAL_REGISTRY.md
+future/brain/RUN_LIFECYCLE.md
+future/brain/TRUST_INTEGRATION.md
+future/brain/RECEIPT_TO_MEMORY.md
+future/brain/DOMAIN_PERMISSION_PROFILES.md
+future/brain/FINAL_POLISH_RULES.md
+```
+
+Related domain planning remains source-of-truth in:
+
+```text
+future/governed_desktop_runs/
+future/market_sandbox/
+future/youtubelis/
+```
+
+Do not treat these future docs as implemented runtime behavior. Their purpose is to keep the future Brain architecture coherent while current work remains focused on Cap 16 reliability, capability contracts, dry-run planning, and traceable governance.
+
+Mapping to existing roadmap phases:
+
+| Future planning area | Roadmap phase it informs | Notes |
+| --- | --- | --- |
+| Context assembly rules | Phase 5 — Context Assembler | Defines future context boundaries, freshness, conflicts, and exclusion rules. |
+| Signal registry | Phase 13 — Project Contexts and Suggestion Buffer | Defines controlled triggers without granting execution authority. |
+| Trust integration / Trust Flow | Phase 9 — Dry Run / Plan Preview and Phase 11 — Brain Trace UI | Defines the visible user-facing bridge from plan to approval to receipt. |
+| Run lifecycle | Phase 8 — Sandbox Boundary Enforcer and Phase 12 — OpenClaw Environment Planning | Defines lifecycle states, retry limits, terminal states, and stop conditions. |
+| Receipt-to-memory policy | Phase 13 — Project Contexts and Suggestion Buffer | Defines when receipts may become memory or learning records. |
+| Domain permission profiles | Phase 6 — Intention Parser and Phase 8 — Sandbox Boundary Enforcer | Defines cross-domain risk classification inputs. |
+| Final polish rules | Runtime Constraint section | Captures universal non-overlap rules: no hidden authority, no silent learning, no receipt-free behavior. |
+
+---
+
 ## Implementation Status
 
 | Phase | Status | Code | Tests | Runtime integration |
@@ -181,6 +274,7 @@ Rules:
 - context can improve understanding
 - context cannot authorize action
 - sensitive context should not be sent to cloud/deep reasoning lanes without governed approval
+- future planning details live in `future/brain/CONTEXT_ASSEMBLER.md` and must not be treated as implemented behavior
 
 ---
 
@@ -202,6 +296,7 @@ Rules:
 - the model may suggest intent
 - deterministic code validates intent
 - malformed output should not be guessed into action
+- future domain permission profile inputs live in `future/brain/DOMAIN_PERMISSION_PROFILES.md`
 
 ---
 
@@ -259,6 +354,7 @@ Rules:
 - outside-sandbox actions require capability checks
 - confirmations and receipts must remain visible
 - the Sandbox Boundary Enforcer must not bypass the Governor
+- future run lifecycle, auto-approval, and final-polish constraints live in `future/brain/RUN_LIFECYCLE.md`, `future/governed_desktop_runs/AUTO_APPROVAL_POLICY.md`, and `future/brain/FINAL_POLISH_RULES.md`
 
 ---
 
@@ -280,6 +376,8 @@ Deliverables:
 - what Nova will not do
 
 This phase should come after Task Clarifier, Cap 16 reliability, and initial Capability Contracts.
+
+Future Trust Flow / Trust Integration planning lives in `docs/product/TRUST_FLOW.md` and `future/brain/TRUST_INTEGRATION.md`.
 
 ---
 
@@ -320,6 +418,8 @@ Trace should show:
 - proof
 - fallback
 
+Future trust-card and receipt visibility details should align with `docs/product/TRUST_FLOW.md` and `future/brain/TRUST_INTEGRATION.md`.
+
 ---
 
 ## Phase 12 — OpenClaw Environment Planning
@@ -333,6 +433,7 @@ Rules:
 - OpenClaw is an environment, not the Brain.
 - Isolated browser should remain distinct from personal browser session.
 - No OpenClaw execution should occur from planning alone.
+- governed desktop planning details live in `future/governed_desktop_runs/` and are not runtime truth until implemented
 
 ---
 
@@ -348,6 +449,7 @@ Rules:
 - suggestions do not authorize actions
 - project context is not permission
 - memory can influence understanding but not execution authority
+- receipt-to-memory and signal-registry planning lives in `future/brain/RECEIPT_TO_MEMORY.md` and `future/brain/SIGNAL_REGISTRY.md`
 
 ---
 
@@ -391,7 +493,8 @@ Each phase must preserve:
 - receipt/proof discipline
 - no hidden execution
 - no conceptual docs treated as implemented runtime truth
+- no hidden authority, no silent learning, no receipt-free behavior
 
 ## Recommended Next Step
 
-Fix Cap 16 search reliability before building Dry Run / Plan Preview or broader Brain runtime modules.
+Fix Cap 16 search reliability before building Dry Run / Plan Preview, broader Brain runtime modules, or new medium/high-risk capabilities.
