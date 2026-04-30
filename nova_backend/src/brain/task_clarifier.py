@@ -129,10 +129,21 @@ _EMAIL_RECIPIENT_RE = re.compile(r"\b(?:to\s+[\w.+-]+@[\w.-]+\.[a-z]{2,}|to\s+[^
 _EMAIL_TOPIC_RE = re.compile(r"\b(?:about|regarding|re:|for)\s+[^.?!]{3,}\b", re.IGNORECASE)
 
 
+_QUICK_SKIP_RE = re.compile(
+    r"^\s*(?:what|how|why|when|where|who|tell\s+me|show\s+me|what's|what\s+is)\b",
+    re.IGNORECASE,
+)
+_QUICK_SKIP_KEYWORDS = frozenset(
+    ("shopify", "browser", "login", "log in", "account", "email", "openclaw", "credentials", "memory")
+)
+
+
 def clarify_task(message: str) -> TaskClarification:
     """Return a deterministic clarification/boundary response when needed."""
     text = (message or "").strip()
     if not text:
+        return TaskClarification(matched=False, response="")
+    if _QUICK_SKIP_RE.match(text) and not any(kw in text.lower() for kw in _QUICK_SKIP_KEYWORDS):
         return TaskClarification(matched=False, response="")
 
     if _EMAIL_DRAFT_COMPLETE_RE.search(text):
@@ -179,22 +190,17 @@ def clarify_task(message: str) -> TaskClarification:
             severity="info",
         )
 
-    if _SHOPIFY_WRITE_RE.search(text) and (_SHOPIFY_RE.search(text) or "product price" in text.lower()):
+    _SHOPIFY_WRITE_VERB_RE = re.compile(
+        r"\b(?:write|change|update|edit|delete|refund|fulfill|create|mutate)\b", re.IGNORECASE
+    )
+    if _SHOPIFY_RE.search(text) and (
+        _SHOPIFY_WRITE_RE.search(text) or _SHOPIFY_WRITE_VERB_RE.search(text) or "product price" in text.lower()
+    ):
         return TaskClarification(
             matched=True,
             response=SHOPIFY_WRITE_BOUNDARY,
             reason="shopify_write_blocked",
             environment_hint="shopify_write_future",
-            authority_hint="blocked_future",
-            severity="p1",
-        )
-
-    if _SHOPIFY_RE.search(text) and re.search(r"\b(?:write|change|update|edit|delete|refund|fulfill|create)\b", text, re.IGNORECASE):
-        return TaskClarification(
-            matched=True,
-            response=SHOPIFY_READ_ONLY_BOUNDARY,
-            reason="shopify_read_only_boundary",
-            environment_hint="shopify_read_only",
             authority_hint="blocked_future",
             severity="p1",
         )

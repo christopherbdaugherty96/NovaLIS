@@ -19,6 +19,7 @@ MAX_SOURCE_READS = 3
 SOURCE_READ_TIMEOUT_SECONDS = 2.5
 MAX_SOURCE_TEXT_CHARS = 2800
 SYNTHESIS_TIMEOUT_SECONDS = 4.2
+MIN_SYNTHESIS_CONTENT_CHARS = 300
 
 
 class WebSearchExecutor:
@@ -400,6 +401,10 @@ class WebSearchExecutor:
     ) -> str:
         fallback = self._research_fallback(query, results, source_packets)
         if not source_packets:
+            return fallback
+
+        total_content = sum(len(str(p.get("text") or "")) for p in source_packets)
+        if total_content < MIN_SYNTHESIS_CONTENT_CHARS:
             return fallback
 
         source_blocks = []

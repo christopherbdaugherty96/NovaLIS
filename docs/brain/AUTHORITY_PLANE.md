@@ -61,6 +61,25 @@ fallbacks
 known_failure_modes
 ```
 
+## Severity vs Authority Tier
+
+These are different concepts and must not be confused.
+
+`severity` is a UX field on `TaskClarification` (in `task_clarifier.py`). It indicates urgency:
+
+- `"p1"` — hard boundary; blocks without confirmation (account-write, browser automation, Shopify write)
+- `"info"` — soft clarification; conversation continues (memory boundary, missing email fields)
+
+`authority_tier` is a runtime field on `EnvironmentRequest` and `EnvironmentOption`. It describes execution privilege required:
+
+- `NONE` → local conversation only
+- `LOCAL_READ` / `NETWORK_READ` / `ACCOUNT_READ` → read paths
+- `EXTERNAL_EFFECT_DRAFT` → local draft with side-effect potential
+- `BROWSER_INTERACTION` / `ACCOUNT_WRITE` → governed execution lanes
+- `BLOCKED_FUTURE` → not permitted under any current capability
+
+A `p1` severity does not imply any specific `authority_tier`. A task blocked at `BLOCKED_FUTURE` may still surface as `severity="p1"` for UX, but the two fields travel through separate systems.
+
 ## Governor-Safe Rule
 
 The brain may consult the Authority Plane.
