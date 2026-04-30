@@ -66,6 +66,23 @@ Still future / not fully live:
 - full OpenClaw environment planning
 - full small-model runtime stack: Context Assembler, Model Router, Intention Parser, Search Synthesis, Sandbox Boundary Enforcer, and Persona Filter
 
+## Scope Guard For This Preview
+
+This Brain preview is documentation and planning refinement only.
+
+It does not unpause any paused product scope. It does not expand Shopify, OpenClaw, browser, email, calendar, file, account, or social publishing authority.
+
+In particular:
+
+- Cap 65 remains read-only Shopify reporting/intelligence.
+- Shopify P5 live signoff remains paused until the owner explicitly unpauses it.
+- Shopify write/operator capabilities remain future-only.
+- The Brain planning preview may describe a possible future environment or task envelope, but that description is not permission to execute.
+- A Run Preview is continuity state, not authorization state.
+- Any future execution still requires the existing governed capability path, confirmation where required, and receipts.
+
+Use this document to clarify what Nova can safely understand before action, not to widen what Nova may do.
+
 ## Brain Loop
 
 ```text
