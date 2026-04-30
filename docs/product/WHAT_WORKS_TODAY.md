@@ -46,7 +46,7 @@ Latest proof packages:
 | Area | Status | Notes |
 |---|---|---|
 | Memory / continuity | Implemented, evolving UX | Useful surface, still being refined. Memory supports continuity; it does not authorize execution. |
-| Brain architecture / schema scaffold | Implemented as scaffold | Brain docs, EnvironmentRequest schema, and Task Clarifier exist. Full Task Environment Router, Dry Run API, Brain Trace UI, live Capability Contracts, and project context engine remain future work. |
+| Brain architecture / schema scaffold | Implemented as scaffold | Brain docs, Brain runtime architecture, EnvironmentRequest schema, and Task Clarifier exist. Full Task Environment Router, Dry Run API, Brain Trace UI, live Capability Contracts, Context Assembler, Intention Parser, Search Synthesis, Sandbox Boundary Enforcer, Persona Filter, Model Router, and project context engine remain future work. |
 | Screen capture / analysis | Experimental | Request-time capture exists, but the experience is still maturing. |
 | Email draft | Implemented, safety-limited, paused | Opens a local mail client draft through `mailto:` after confirmation. Nova does not use SMTP, access inboxes, or send autonomously. Cap 64 live signoff is paused while Cap 16 conversation/search proof is the active sprint. |
 | OpenClaw execution surface | Advanced / constrained | Governed, limited, not broad autonomy. |
@@ -60,6 +60,7 @@ Latest proof packages:
 |---|---|---|
 | Daily brief / operating layer | Future / not implemented | The operating model documents daily briefs, news tracking, routines, context awareness, and approved automation loops as direction, not current product readiness. |
 | Approved automation routines / envelopes | Future / not implemented | Conceptual direction only. No broad recurring automation loop should be claimed as live. |
+| Small-model full Brain runtime stack | Future / not implemented | Context Assembler, Model Router, Intention Parser, Tool Bridge, Search Synthesis, Sandbox Boundary Enforcer, and Persona Filter are documented architecture, not live runtime behavior. |
 | Fuller Trust Panel / Trust Review Card | Partial / future work | Action Receipts and trust receipt API exist; richer blocked-reason drill-down, confirmation previews, proof browsing, and polished demo flow remain future work. |
 | One-click installer | Not implemented | Needed for broader adoption. |
 | Mainstream consumer onboarding | Not ready | Current setup expects a technical user. |
