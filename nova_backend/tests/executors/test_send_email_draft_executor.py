@@ -266,3 +266,93 @@ def test_body_intent_alias_body_is_accepted():
     # generate_chat should have been called with the body intent in the prompt
     call_args = mock_llm.call_args[0][0]
     assert any("discuss Q3 results" in str(msg) for msg in call_args)
+
+
+# ---------------------------------------------------------------------------
+# Human-authority boundary tests
+# ---------------------------------------------------------------------------
+
+def test_executor_module_does_not_import_smtplib():
+    """Cap 64 is a mailto draft path, not an autonomous email sender."""
+    import ast
+    import inspect
+
+    import src.executors.send_email_draft_executor as module
+
+    tree = ast.parse(inspect.getsource(module))
+    for node in ast.walk(tree):
+        if isinstance(node, ast.Import):
+            imported = [alias.name for alias in node.names]
+        elif isinstance(node, ast.ImportFrom):
+            imported = [node.module or ""]
+        else:
+            continue
+        assert all("smtplib" not in name for name in imported)
+
+
+def test_open_mailto_is_the_only_external_call_on_success():
+    """On success, the executor opens exactly one mailto target."""
+    ledger = _FakeLedger()
+    ex = _make_executor(ledger)
+
+    with (
+        patch("src.executors.send_email_draft_executor.generate_chat", return_value="Body"),
+        patch("src.executors.send_email_draft_executor.webbrowser") as mock_webbrowser,
+    ):
+        mock_webbrowser.open.return_value = True
+        result = ex.execute(_req({"to": "leo@example.com", "subject": "Draft test"}))
+
+    assert result.success is True
+    mock_webbrowser.open.assert_called_once()
+    opened_uri = mock_webbrowser.open.call_args[0][0]
+    assert str(opened_uri).startswith("mailto:")
+
+
+def test_success_message_says_review_not_sent():
+    """Success wording must preserve the human send boundary."""
+    ledger = _FakeLedger()
+    ex = _make_executor(ledger)
+
+    with (
+        patch("src.executors.send_email_draft_executor.generate_chat", return_value="Body"),
+        patch.object(ex, "_open_mailto", return_value=True),
+    ):
+        result = ex.execute(_req({"to": "mia@example.com", "subject": "Meeting"}))
+
+    message = result.message.lower()
+    assert "review" in message
+    assert "send when ready" in message
+    assert "sent" not in message
+    assert "delivered" not in message
+
+
+def test_ledger_event_on_success_is_draft_created_not_sent():
+    """Successful mailto open logs draft creation, never transmission."""
+    ledger = _FakeLedger()
+    ex = _make_executor(ledger)
+
+    with (
+        patch("src.executors.send_email_draft_executor.generate_chat", return_value="Body"),
+        patch.object(ex, "_open_mailto", return_value=True),
+    ):
+        ex.execute(_req({"to": "ned@example.com", "subject": "Check-in"}))
+
+    event_names = [name for name, _ in ledger.events]
+    assert "EMAIL_DRAFT_CREATED" in event_names
+    assert "EMAIL_SENT" not in event_names
+
+
+def test_open_failure_shows_draft_inline_not_silent_discard():
+    """If the mail client cannot open, the composed draft remains visible."""
+    ledger = _FakeLedger()
+    ex = _make_executor(ledger)
+
+    with (
+        patch("src.executors.send_email_draft_executor.generate_chat", return_value="The actual draft body"),
+        patch.object(ex, "_open_mailto", return_value=False),
+    ):
+        result = ex.execute(_req({"to": "olivia@example.com", "subject": "Fallback"}))
+
+    assert result.success is False
+    assert "The actual draft body" in result.message
+    assert result.data["mailto_opened"] is False
