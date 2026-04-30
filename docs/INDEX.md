@@ -17,6 +17,7 @@ Generated runtime truth files are the authority for exact live status.
 - [Trust Review Card Plan](product/TRUST_REVIEW_CARD_PLAN.md)
 - [Known limitations](product/KNOWN_LIMITATIONS.md)
 - [Current runtime state](current_runtime/CURRENT_RUNTIME_STATE.md)
+- [Current work status](status/CURRENT_WORK_STATUS.md)
 
 ## What Nova Is
 Nova is a governed local AI runtime focused on separating reasoning from execution.
@@ -38,6 +39,7 @@ Use the product docs above first, then use runtime truth docs for exact capabili
 - [Cap 65 Shopify Intelligence Live Checklist](capability_verification/live_checklists/cap_65_shopify_intelligence_report.md)
 
 ## Current Work
+- [Current Work Status](status/CURRENT_WORK_STATUS.md)
 - [Active TODO](todo/ACTIVE_TODO.md)
 - [Future Roadmap](future/ROADMAP.md)
 - [Future Guide](future/README.md)

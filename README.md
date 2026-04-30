@@ -20,6 +20,7 @@ Most AI tools optimize for capability expansion. Nova emphasizes bounded executi
 8. [Conversation and Memory Model](docs/product/CONVERSATION_AND_MEMORY_MODEL.md)
 9. [Known Limitations](docs/product/KNOWN_LIMITATIONS.md)
 10. [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
+11. [Current Work Status](docs/status/CURRENT_WORK_STATUS.md)
 
 ## Proof Layer
 - [Trust Proof Plan](docs/product/TRUST_PROOF_PLAN.md)
@@ -57,6 +58,13 @@ Recent local-first proof captures:
 
 Current proof verdict: the local demo path mostly works. The Brain Task Clarifier now handles tested ambiguity/boundary prompts, while the active sprint remains Cap 16 web-search answer quality and conversation coherence. Remaining friction is concentrated around CPU-budget handling for current searches, follow-up coherence, and clearer uncertainty behavior.
 
+## Current Status
+Alpha build for technical users and early adopters. Real project under active development, not a finished consumer product.
+
+For exact generated runtime truth, use [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md).
+
+For current human-readable work continuity, including what is committed versus local/in-progress, use [Current Work Status](docs/status/CURRENT_WORK_STATUS.md).
+
 ## Future Directions
 - [Realistic Scope and Priorities](docs/future/REALISTIC_SCOPE_AND_PRIORITIES.md)
 - [Google Connector Model](docs/future/NOVA_GOOGLE_CONNECTOR_MODEL.md)
@@ -68,9 +76,6 @@ Current proof verdict: the local demo path mostly works. The Brain Task Clarifie
 **Intelligence is not authority.**
 
 Nova may reason, summarize, search, draft, and recommend. Conversation context and memory can improve understanding, but they do not authorize execution. Real actions should remain bounded by capability checks, execution boundaries, confirmation where required, and visible receipts.
-
-## Current Status
-Alpha build for technical users and early adopters. Real project under active development, not a finished consumer product.
 
 ## AI Workflow Note
 This project may use AI tools for planning, coding support, audits, review, and prototyping.
