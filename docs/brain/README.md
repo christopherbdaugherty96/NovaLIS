@@ -47,7 +47,7 @@ Implemented today:
 Not fully implemented yet:
 
 - full Task Environment Router
-- live Capability Contract lookup
+- static/live Capability Contract system
 - Dry Run / Plan Preview API
 - Brain Trace UI
 - project context engine
