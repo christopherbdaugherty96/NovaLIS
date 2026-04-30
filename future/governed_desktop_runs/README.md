@@ -1,18 +1,36 @@
 # Governed Desktop Runs
 
-This folder documents the next governance upgrade track for NovaLIS: task-scoped desktop, browser, and OpenClaw runs.
+This folder documents the next governance upgrade track for NovaLIS: task-scoped desktop, browser, scheduled, continuous, and OpenClaw runs.
 
 This is not implemented runtime behavior yet. It does not change the current capability registry, Governor, OpenClaw execution path, or generated runtime truth. It is an immediate implementation planning track for what NovaLIS should build next before trusting broad desktop/browser workflows.
 
 ---
 
+## Document Map
+
+- `DESIGN_PLAN.md` — reality-grounded architecture comparison and implementation plan.
+- `CONTINUOUS_NOVA_MODEL.md` — how NovaLIS can become continuous without becoming uncontrolled.
+- `WORKFLOW_EXAMPLE_ELEVENLABS_SCRIPT_LOOP.md` — concrete example for a governed ElevenLabs script-to-voice workflow.
+- `README.md` — governing rules, envelope concept, safety defaults, and build order.
+
+---
+
+## Core Principle
+
+> Continuous presence is not continuous authority.
+
+NovaLIS may eventually stay active, check approved signals, prepare plans, and propose workflows, but real execution must remain task-scoped, envelope-bound, interruptible, logged, and stopped when complete.
+
+---
+
 ## Why This Needs To Move Near-Term
 
-NovaLIS is reaching the point where useful workflows may require operating across local apps, webpages, files, and external tools.
+NovaLIS is reaching the point where useful workflows may require operating across local apps, webpages, files, schedules, queues, and external tools.
 
 Examples:
 
 - OpenClaw-assisted desktop execution
+- scheduled script queue checks
 - voice generation in ElevenLabs or local voice tools
 - video/content workflow preparation
 - browser-based research and tool use
@@ -44,6 +62,8 @@ Expanded rules:
 8. NovaLIS must stop on completion, failure, timeout, user cancellation, or scope violation.
 9. Every governed run must be logged.
 10. The user must always be able to stop or revoke a run.
+11. Scheduled triggers do not equal execution approval.
+12. Continuous awareness does not grant execution authority.
 
 ---
 
@@ -58,6 +78,41 @@ The safer design is:
 > NovaLIS has temporary permission to complete one approved task envelope.
 
 This preserves broad usefulness without giving unlimited authority.
+
+---
+
+## Continuous / Scheduled Model
+
+NovaLIS may eventually run continuously in these ways:
+
+- remain available locally
+- check approved queues
+- monitor approved schedules
+- prepare plans
+- draft governed run envelopes
+- show readiness notifications
+- request approval
+
+NovaLIS should not silently execute medium/high-risk actions just because a timer fired.
+
+Important rule:
+
+> Timer trigger starts review. Approval starts execution.
+
+Example:
+
+```text
+9:00 AM
+→ Check approved script folder
+→ Find 3 scripts
+→ Build ElevenLabs voiceover envelope
+→ Show Trust Review Card
+→ Wait for approval
+→ If approved, process approved scripts only
+→ Save audio to approved folder
+→ Produce receipt
+→ Stop
+```
 
 ---
 
@@ -146,6 +201,7 @@ Examples:
 - Read visible page content
 - Navigate to an approved URL
 - Create a local draft file
+- Check an approved queue or folder
 
 Default behavior:
 
@@ -160,6 +216,7 @@ Examples:
 - Generate paid-service output when no purchase is involved
 - Edit local project files
 - Create media assets
+- Execute an approved script-to-voice loop
 
 Default behavior:
 
@@ -197,6 +254,8 @@ Until a stronger credential and public-action policy exists, these defaults shou
 6. Installing software requires final human approval.
 7. Unknown executables are blocked by default.
 8. If the executor cannot confidently determine the next action is inside the approved envelope, it must pause.
+9. Scheduled triggers may prepare plans, not silently execute medium/high-risk actions.
+10. Continuous runs must have quiet hours, rate limits, stop conditions, and receipts.
 
 ---
 
@@ -212,6 +271,7 @@ A run should pause or stop if any of these happen:
 - The executor tries to escalate from read-only to write/upload/send/publish.
 - The executor becomes uncertain about the page, app, file, or next step.
 - The user cancels or revokes permission.
+- A scheduled run tries to execute without the required approval.
 
 ---
 
@@ -233,13 +293,19 @@ Add a small evaluator that can decide:
 - Is the next action allowed?
 - Should execution pause or stop?
 
-### 3. OpenClaw Governed Run Mode
+### 3. Scheduled Trigger / Approved Signal Model
+
+Add a way to define approved queues, folders, schedules, and read-only checks.
+
+A trigger should be able to prepare a run envelope without automatically granting execution authority.
+
+### 4. OpenClaw Governed Run Mode
 
 OpenClaw should not receive vague instructions like "do this task."
 
 It should receive a constrained envelope with allowed actions, blocked actions, and stop conditions.
 
-### 4. Scope Monitor
+### 5. Scope Monitor
 
 NovaLIS needs a way to detect whether a run is still inside scope.
 
@@ -253,7 +319,7 @@ Possible checks:
 - elapsed time
 - attempted sensitive action
 
-### 5. Stop Conditions
+### 6. Stop Conditions
 
 Runs must stop automatically when:
 
@@ -265,7 +331,7 @@ Runs must stop automatically when:
 - the executor becomes uncertain
 - the active surface moves outside scope
 
-### 6. Trust Review Card
+### 7. Trust Review Card
 
 Before execution, the user should see a clear review card:
 
@@ -280,7 +346,7 @@ Before execution, the user should see a clear review card:
 
 This makes governance visible instead of hidden.
 
-### 7. Step Ledger / Run Receipt
+### 8. Step Ledger / Run Receipt
 
 Every governed run should produce an audit receipt:
 
@@ -293,7 +359,7 @@ Every governed run should produce an audit receipt:
 - result
 - stop reason
 
-### 8. Pause / Stop / Revoke Controls
+### 9. Pause / Stop / Revoke Controls
 
 The user must be able to interrupt a governed run.
 
@@ -319,7 +385,9 @@ openclaw_governed_run
 
 This should become the general governed desktop/browser executor lane.
 
-Future workflows like YouTubeLIS, Shopify operations, email drafting, research workflows, or local file organization could use this foundation later.
+Scheduled execution should be treated as a trigger model layered on top of governed envelopes, not as a separate bypass.
+
+Future workflows like YouTubeLIS, Shopify operations, email drafting, research workflows, local file organization, or ElevenLabs voice workflows could use this foundation later.
 
 ---
 
@@ -331,12 +399,13 @@ Future workflows like YouTubeLIS, Shopify operations, email drafting, research w
 4. Implement an envelope schema object in code.
 5. Implement a small envelope policy evaluator.
 6. Add a non-executing dry-run mode.
-7. Add Trust Review Card rendering for envelopes.
-8. Add ledger receipt structure.
-9. Add stop/pause/revoke state model.
-10. Only then connect a harmless OpenClaw/browser run.
-11. Test harmless tasks first.
-12. Test medium-risk tasks only after blocking, pausing, and receipts are reliable.
+7. Add scheduled trigger / approved signal design.
+8. Add Trust Review Card rendering for envelopes.
+9. Add ledger receipt structure.
+10. Add stop/pause/revoke state model.
+11. Only then connect a harmless OpenClaw/browser run.
+12. Test harmless tasks first.
+13. Test medium-risk tasks only after blocking, pausing, and receipts are reliable.
 
 ---
 
@@ -395,6 +464,8 @@ It improves:
 - desktop automation safety
 - browser automation safety
 - OpenClaw containment
+- continuous Nova readiness
+- scheduled workflow readiness
 - user trust
 - auditability
 - workflow readiness
@@ -414,6 +485,7 @@ This model does not allow:
 - uncontrolled app traversal
 - credential handling without explicit approval
 - indefinite continuation after task completion
+- timer-triggered medium/high-risk execution without approved policy
 
 ---
 
@@ -423,6 +495,7 @@ This should not be described as current runtime behavior until:
 
 - envelope schema exists in code
 - policy evaluator exists in code
+- scheduled trigger behavior is defined if scheduling is included
 - tests cover normal and adversarial cases
 - Trust Review Card or equivalent approval surface exists
 - ledger receipts exist
