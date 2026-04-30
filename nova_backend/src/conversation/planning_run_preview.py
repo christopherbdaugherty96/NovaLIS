@@ -33,6 +33,16 @@ class PlanningRunPreview:
     execution_performed: bool = False
     authorization_granted: bool = False
 
+    def __post_init__(self) -> None:
+        if not self.planning_only:
+            raise ValueError("PlanningRunPreview must remain planning-only.")
+        if self.authority_effect != "none":
+            raise ValueError("PlanningRunPreview is non-authorizing: authority_effect must be 'none'.")
+        if self.execution_performed:
+            raise ValueError("PlanningRunPreview must not record executed actions.")
+        if self.authorization_granted:
+            raise ValueError("PlanningRunPreview must not grant authorization.")
+
     def to_dict(self) -> dict[str, Any]:
         return {
             "run_id": self.run_id,
@@ -64,11 +74,9 @@ def create_planning_run_preview(
         raise ValueError("Planning run previews require non-executing, non-authorizing plans.")
 
     manager = planning_run_manager(session_state)
-    run = manager.create_run(plan)
-    if focused_run_id:
-        focused = manager.update_focus(focused_run_id)
-        if focused is not None:
-            run = focused
+    run = manager.update_focus(focused_run_id) if focused_run_id else None
+    if run is None:
+        run = manager.create_run(plan)
     preview = format_planning_run_preview(run, manager=manager, focused_run_id=run.run_id)
     session_state["planning_run_preview"] = preview.to_dict()
     session_state["last_interacted_run_id"] = manager.last_interacted_run_id
