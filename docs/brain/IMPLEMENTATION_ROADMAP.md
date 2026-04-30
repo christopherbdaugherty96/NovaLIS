@@ -39,13 +39,17 @@ Active P1 blocker:
 
 ---
 
-## Before Adding New Capabilities
+## Capability Expansion Guardrails (Not an Active Phase)
 
-New capabilities should not be added just because a future workflow is desirable.
+This section does not define the next work to execute.
 
-Before NovaLIS adds new capability surface area, the Brain/Governor path should first prove that planning, authority, receipts, and failure handling are consistent.
+It defines the conditions that must be true *before* NovaLIS expands its capability surface at any future point.
 
-Required gates before new medium/high-risk capabilities:
+Current priority remains unchanged (see Active P1 blocker and phases above).
+
+These guardrails exist to prevent premature expansion that would weaken governance, traceability, or system integrity.
+
+If and when capability expansion is considered in the future, the following must already be true:
 
 ```text
 1. Capability contracts are used in planning.
@@ -80,6 +84,9 @@ Avoid before this is complete:
 Rule:
 
 > Every new capability must prove the governance system works; it must not become a shortcut around it.
+
+This section is intentionally non-actionable in the current phase.
+It should not be treated as a task list or next milestone.
 
 ---
 
