@@ -74,3 +74,30 @@ def test_spoken_gate_message_rewrites_generic_misheard_prompt():
     assert SessionRouter._spoken_gate_message(
         "I might have misheard that. Did you want me to search the web, open something, or show today's brief?"
     ) == "Say that again? Did you want me to search the web, open something, or show today's brief?"
+
+
+# --- Topic tracking for governance/connector queries ---
+
+def test_governance_query_extracts_topic_candidate():
+    from src.websocket.intent_patterns import _extract_topic_candidate
+
+    assert _extract_topic_candidate("explain cap 64 works") == "cap 64 works"
+    assert _extract_topic_candidate("how does the governor work") == "governor work"
+    assert _extract_topic_candidate("what is cap 65") == "cap 65"
+    assert _extract_topic_candidate("describe the trust receipt model") == "trust receipt model"
+
+
+def test_explain_prefix_stripped_from_topic_candidate():
+    from src.websocket.intent_patterns import _extract_topic_candidate
+
+    candidate = _extract_topic_candidate("explain how cap 64 works")
+    assert "explain" not in candidate
+    assert "cap" in candidate
+
+
+def test_tell_me_about_prefix_stripped_from_topic_candidate():
+    from src.websocket.intent_patterns import _extract_topic_candidate
+
+    candidate = _extract_topic_candidate("tell me about the governor mediator")
+    assert "tell" not in candidate
+    assert "governor" in candidate
