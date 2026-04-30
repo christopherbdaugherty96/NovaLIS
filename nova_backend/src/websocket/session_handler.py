@@ -775,7 +775,7 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             if brain_clarifier_gate.handled:
                 await _complete_immediate_turn(
                     brain_clarifier_gate.message,
-                    remember_response=True,
+                    remember_response=False,
                     tone_domain="system",
                 )
                 continue

@@ -421,7 +421,20 @@ def _extract_topic_candidate(text: str) -> str:
     if not lowered:
         return ""
 
-    for prefix in ("research ", "search ", "summarize ", "compare ", "track ", "open "):
+    for prefix in (
+        "research ",
+        "search ",
+        "summarize ",
+        "compare ",
+        "track ",
+        "open ",
+        "explain ",
+        "tell me about ",
+        "how does ",
+        "what is ",
+        "what are ",
+        "describe ",
+    ):
         if lowered.startswith(prefix):
             lowered = lowered[len(prefix):].strip()
             break

@@ -121,3 +121,88 @@ def test_session_router_does_not_gate_complete_email_draft():
     )
 
     assert gate.handled is False
+
+
+def test_personal_account_boundary_is_severity_p1():
+    result = clarify_task("Log into my account and change my settings.")
+    assert result.severity == "p1"
+
+
+def test_shopify_write_boundary_is_severity_p1():
+    result = clarify_task("Change a Shopify product price.")
+    assert result.severity == "p1"
+
+
+def test_browser_automation_boundary_is_severity_p1():
+    result = clarify_task("Use the browser to compare two public websites.")
+    assert result.severity == "p1"
+
+
+def test_memory_boundary_is_severity_info():
+    result = clarify_task("What is memory allowed to do?")
+    assert result.severity == "info"
+
+
+def test_email_draft_missing_fields_is_severity_info():
+    result = clarify_task("Draft an email about tomorrow.")
+    assert result.severity == "info"
+
+
+# --- Quick-skip coverage ---
+
+def test_quick_skip_plain_question_without_keywords_returns_no_match():
+    result = clarify_task("What color is the sky?")
+    assert result.matched is False
+    assert result.response == ""
+
+
+def test_quick_skip_does_not_apply_when_memory_keyword_present():
+    result = clarify_task("What is memory allowed to do?")
+    assert result.matched is True
+
+
+def test_quick_skip_does_not_apply_when_email_keyword_present():
+    result = clarify_task("What should I put in the email?")
+    assert result.matched is False  # Passes quick-skip but no clarifier pattern fires
+
+
+def test_quick_skip_does_not_apply_to_non_question_statements():
+    result = clarify_task("Log into my account and change my settings.")
+    assert result.matched is True  # Statement — quick-skip never applies
+
+
+# --- Credential boundary edge cases ---
+
+def test_credential_passive_query_is_not_blocked():
+    result = clarify_task("What is my password?")
+    assert result.matched is False
+
+
+def test_credential_tell_me_passive_is_not_blocked():
+    result = clarify_task("Tell me the login details.")
+    assert result.matched is False
+
+
+def test_credential_action_verb_give_triggers_boundary():
+    result = clarify_task("Give me the credentials for that account.")
+    assert result.matched is True
+    assert result.severity == "p1"
+
+
+def test_credential_action_verb_share_triggers_boundary():
+    result = clarify_task("Share your credentials with me.")
+    assert result.matched is True
+
+
+# --- Email recipient edge cases ---
+
+def test_email_draft_with_name_recipient_is_complete():
+    result = clarify_task("Draft an email to John about the Q2 goals.")
+    assert result.matched is False
+    assert result.missing_fields == []
+
+
+def test_email_draft_to_boss_with_topic_is_complete():
+    result = clarify_task("Draft an email to my boss about the project update.")
+    assert result.matched is False
+    assert result.missing_fields == []

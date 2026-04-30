@@ -268,8 +268,8 @@ def test_search_reads_source_pages_and_uses_researched_summary(executor, mock_ne
                 }
             },
         },
-        {"status_code": 200, "text": "<html><body><article>First source details.</article></body></html>"},
-        {"status_code": 200, "text": "<html><body><article>Second source details.</article></body></html>"},
+        {"status_code": 200, "text": "<html><body><article>{}</article></body></html>".format("First source details about the topic. " * 12)},
+        {"status_code": 200, "text": "<html><body><article>{}</article></body></html>".format("Second source details confirming the findings. " * 10)},
     ]
 
     result = executor.execute(sample_request)
@@ -303,7 +303,7 @@ def test_search_synthesis_uses_bounded_gateway_timeout(executor, mock_network, s
                 }
             },
         },
-        {"status_code": 200, "text": "<html><body><article>First source details.</article></body></html>"},
+        {"status_code": 200, "text": "<html><body><article>{}</article></body></html>".format("First source details about the topic. " * 12)},
     ]
 
     result = executor.execute(sample_request)
@@ -380,3 +380,32 @@ def test_research_fallback_single_source_uses_corroborating_result_signal():
     assert "central reported development" not in lowered
     assert "only reviewed one source page" in lowered
     assert "seahawks 29-13 patriots" in lowered or "seattle seahawks" in lowered
+
+
+def test_thin_source_content_skips_llm_synthesis(executor, mock_network, sample_request, monkeypatch):
+    synthesis_called = []
+
+    def _fake_generate_chat(*args, **kwargs):
+        synthesis_called.append(True)
+        return "Should not be called."
+
+    monkeypatch.setattr("src.executors.web_search_executor.generate_chat", _fake_generate_chat)
+    mock_network.request.side_effect = [
+        {
+            "status_code": 200,
+            "data": {
+                "web": {
+                    "results": [
+                        {"title": "Short result", "url": "https://example.com/one", "description": "Brief."},
+                    ]
+                }
+            },
+        },
+        # Source page returns very little text — well under MIN_SYNTHESIS_CONTENT_CHARS
+        {"status_code": 200, "text": "<html><body><p>Thin.</p></body></html>"},
+    ]
+
+    result = executor.execute(sample_request)
+
+    assert result.success
+    assert not synthesis_called, "LLM synthesis should be skipped for thin source content"
