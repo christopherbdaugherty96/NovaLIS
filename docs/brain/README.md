@@ -23,6 +23,7 @@ Let receipts prove.
 ## What This Package Defines
 
 - Nova Brain model
+- Brain runtime architecture for small/medium local models
 - Task clarification before planning
 - Task Environment Router behavior
 - environment catalog and authority tiers
@@ -52,6 +53,7 @@ Not fully implemented yet:
 - project context engine
 - suggestion buffer runtime
 - full OpenClaw environment planning
+- full model router / context assembler / intention parser stack
 
 ## What This Package Does Not Do
 
@@ -67,11 +69,12 @@ Current runtime truth still comes from generated runtime docs and code.
 ## Recommended Reading Order
 
 1. [`NOVA_BRAIN_MODEL.md`](NOVA_BRAIN_MODEL.md)
-2. [`TASK_ENVIRONMENT_ROUTER.md`](TASK_ENVIRONMENT_ROUTER.md)
-3. [`ENVIRONMENT_CATALOG.md`](ENVIRONMENT_CATALOG.md)
-4. [`AUTHORITY_PLANE.md`](AUTHORITY_PLANE.md)
-5. [`BRAIN_TRACE_UI_SPEC.md`](BRAIN_TRACE_UI_SPEC.md)
-6. [`MEMORY_LAYERS.md`](MEMORY_LAYERS.md)
-7. [`PROJECT_CONTEXTS.md`](PROJECT_CONTEXTS.md)
-8. [`OPENCLAW_ENVIRONMENT_MODEL.md`](OPENCLAW_ENVIRONMENT_MODEL.md)
-9. [`IMPLEMENTATION_ROADMAP.md`](IMPLEMENTATION_ROADMAP.md)
+2. [`NOVA_BRAIN_RUNTIME_ARCHITECTURE.md`](NOVA_BRAIN_RUNTIME_ARCHITECTURE.md)
+3. [`TASK_ENVIRONMENT_ROUTER.md`](TASK_ENVIRONMENT_ROUTER.md)
+4. [`ENVIRONMENT_CATALOG.md`](ENVIRONMENT_CATALOG.md)
+5. [`AUTHORITY_PLANE.md`](AUTHORITY_PLANE.md)
+6. [`BRAIN_TRACE_UI_SPEC.md`](BRAIN_TRACE_UI_SPEC.md)
+7. [`MEMORY_LAYERS.md`](MEMORY_LAYERS.md)
+8. [`PROJECT_CONTEXTS.md`](PROJECT_CONTEXTS.md)
+9. [`OPENCLAW_ENVIRONMENT_MODEL.md`](OPENCLAW_ENVIRONMENT_MODEL.md)
+10. [`IMPLEMENTATION_ROADMAP.md`](IMPLEMENTATION_ROADMAP.md)
