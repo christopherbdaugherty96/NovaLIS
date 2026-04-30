@@ -61,6 +61,14 @@ async def run_general_chat_fallback(
 
     chat_context = list(session_state.get("general_chat_context") or session_context)
     skill_state = dict(session_state)
+    skill_state.pop("_planning_run_manager", None)
+    for transient_key in (
+        "task_understanding_preview",
+        "task_understanding_prompt_block",
+        "task_understanding_envelope",
+        "planning_run_preview",
+    ):
+        skill_state.pop(transient_key, None)
     skill_state["relevant_memory_context"] = relevant_memory_context
 
     understanding = build_request_understanding(normalized_query)

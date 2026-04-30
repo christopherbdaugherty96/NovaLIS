@@ -1,8 +1,12 @@
 import asyncio
+import json
+
+import pytest
 
 from src.base_skill import SkillResult
 from src.conversation.general_chat_runtime import run_general_chat_fallback
 from src.conversation.planning_run_preview import (
+    PlanningRunPreview,
     create_planning_run_preview,
     planning_run_manager,
 )
@@ -58,6 +62,28 @@ def test_create_planning_run_preview_none_plan_creates_nothing():
     assert "last_interacted_run_id" not in session_state
 
 
+def test_planning_run_preview_rejects_non_planning_values():
+    kwargs = {
+        "run_id": "run_1",
+        "title": "title",
+        "goal": "goal",
+        "status": "planning",
+        "current_step": "understand request",
+        "next_step": "build task envelope",
+        "last_interacted_run_id": "run_1",
+        "focused_run_id": "run_1",
+    }
+
+    with pytest.raises(ValueError, match="planning-only"):
+        PlanningRunPreview(**kwargs, planning_only=False)
+    with pytest.raises(ValueError, match="non-authorizing"):
+        PlanningRunPreview(**kwargs, authority_effect="approved")
+    with pytest.raises(ValueError, match="must not record executed"):
+        PlanningRunPreview(**kwargs, execution_performed=True)
+    with pytest.raises(ValueError, match="must not grant authorization"):
+        PlanningRunPreview(**kwargs, authorization_granted=True)
+
+
 def test_planning_run_preview_focus_updates_safely():
     session_state = {}
     first = build_task_understanding_preview("summarize this task", session_context={"task": "one"})
@@ -77,6 +103,29 @@ def test_planning_run_preview_focus_updates_safely():
     assert manager.last_interacted_run_id == first_preview.run_id
     assert focused.execution_performed is False
     assert focused.authorization_granted is False
+
+
+def test_existing_focused_run_does_not_create_extra_hidden_run():
+    session_state = {}
+    first = build_task_understanding_preview("summarize this task", session_context={"task": "one"})
+    second = build_task_understanding_preview("make a bounded task envelope")
+    assert first.plan is not None
+    assert second.plan is not None
+
+    first_preview = create_planning_run_preview(first.plan, session_state=session_state)
+    assert first_preview is not None
+    manager = planning_run_manager(session_state)
+    before_count = len(manager.list_runs())
+
+    focused_preview = create_planning_run_preview(
+        second.plan,
+        session_state=session_state,
+        focused_run_id=first_preview.run_id,
+    )
+
+    assert focused_preview is not None
+    assert focused_preview.run_id == first_preview.run_id
+    assert len(manager.list_runs()) == before_count
 
 
 def test_general_chat_task_like_prompt_creates_planning_run_preview():
@@ -108,6 +157,9 @@ def test_general_chat_task_like_prompt_creates_planning_run_preview():
     assert preview["authorization_granted"] is False
     assert session_state["planning_run_preview"]["run_id"] == preview["run_id"]
     assert session_state["last_interacted_run_id"] == preview["run_id"]
+    json.dumps(session_state["planning_run_preview"])
+    assert "_planning_run_manager" not in preview
+    assert "_planning_run_manager" not in passed_state
 
 
 def test_general_chat_casual_prompt_does_not_create_run():
@@ -130,6 +182,57 @@ def test_general_chat_casual_prompt_does_not_create_run():
     assert "planning_run_preview" not in passed_state
     assert "planning_run_preview" not in session_state
     assert "last_interacted_run_id" not in session_state
+
+
+def test_general_chat_casual_prompt_does_not_leak_prior_preview_to_skill_state():
+    skill = _FakeGeneralChatSkill()
+    session_state = {
+        "planning_run_preview": {"run_id": "old_run"},
+        "task_understanding_preview": object(),
+        "task_understanding_prompt_block": "old task block",
+        "task_understanding_envelope": object(),
+    }
+
+    asyncio.run(
+        run_general_chat_fallback(
+            "hey how are you",
+            general_chat_skill=skill,
+            session_state=session_state,
+            session_context=[],
+            project_threads=object(),
+            select_relevant_memory_context=_noop_memory,
+        )
+    )
+
+    passed_state = skill.calls[0]["session_state"]
+    assert "planning_run_preview" not in passed_state
+    assert passed_state["task_understanding_preview"] is None
+    assert passed_state["task_understanding_prompt_block"] == ""
+    assert "task_understanding_envelope" not in passed_state
+
+
+def test_private_run_manager_does_not_leak_to_skill_state_on_later_turn():
+    skill = _FakeGeneralChatSkill()
+    session_state = {}
+    task_preview = build_task_understanding_preview("make a bounded task envelope")
+    assert task_preview.plan is not None
+    create_planning_run_preview(task_preview.plan, session_state=session_state)
+    assert "_planning_run_manager" in session_state
+
+    asyncio.run(
+        run_general_chat_fallback(
+            "summarize this task",
+            general_chat_skill=skill,
+            session_state=session_state,
+            session_context=[],
+            project_threads=object(),
+            select_relevant_memory_context=_noop_memory,
+        )
+    )
+
+    passed_state = skill.calls[0]["session_state"]
+    assert "_planning_run_manager" not in passed_state
+    json.dumps(passed_state["planning_run_preview"])
 
 
 def test_planning_run_preview_does_not_create_execution_surface():
