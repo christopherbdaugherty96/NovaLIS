@@ -562,7 +562,11 @@ def _remember_topic(session_state: dict, text: str, intent_family: str, turn_cou
             _push_topic(session_state, active, turn_count)
         return
 
-    if intent_family not in {"research", "question", "task", "work", "analysis"}:
+    # "casual" = social turns with no subject. "brainstorm" = exploration of an
+    # already-established topic; the topic itself was set by the prior turn.
+    # "unknown" is intentionally kept — governance/connector queries ("explain
+    # cap 64 works", "describe the governor") land here and should be tracked.
+    if intent_family in {"casual", "brainstorm"}:
         return
     candidate = _extract_topic_candidate(text)
     if candidate:

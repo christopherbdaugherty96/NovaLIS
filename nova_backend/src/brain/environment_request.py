@@ -78,6 +78,10 @@ class EnvironmentOption:
     requires_confirmation: bool = False
     reason: str = ""
 
+    def __post_init__(self) -> None:
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError(f"confidence must be 0.0–1.0, got {self.confidence}")
+
 
 @dataclass(frozen=True)
 class ClarificationQuestion:
@@ -131,6 +135,10 @@ class EnvironmentRequest:
     fallback_ladder: list[str] = field(default_factory=list)
     allowed_status: AllowedStatus = AllowedStatus.DRY_RUN_ONLY
     next_safe_step: str = ""
+
+    def __post_init__(self) -> None:
+        if not 0.0 <= self.confidence <= 1.0:
+            raise ValueError(f"confidence must be 0.0–1.0, got {self.confidence}")
 
 
 @dataclass(frozen=True)
@@ -192,6 +200,69 @@ class BrainTraceEvent:
 
     def to_dict(self) -> dict[str, Any]:
         return _to_primitive(self)
+
+
+_ENVIRONMENT_MAP: dict[str, tuple[EnvironmentType, AuthorityTier, str, bool]] = {
+    # environment_hint -> (EnvironmentType, AuthorityTier, capability_needed, confirmation_required)
+    "local_conversation": (EnvironmentType.LOCAL_CONVERSATION, AuthorityTier.NONE, "", False),
+    "local_memory": (EnvironmentType.LOCAL_MEMORY, AuthorityTier.LOCAL_READ, "", False),
+    "web_search": (EnvironmentType.WEB_SEARCH, AuthorityTier.NETWORK_READ, "cap16_web_search", False),
+    "website_open": (EnvironmentType.WEBSITE_OPEN, AuthorityTier.NETWORK_READ, "", False),
+    "web_search_then_email_draft": (EnvironmentType.WEB_SEARCH, AuthorityTier.NETWORK_READ, "cap16_web_search", False),
+    "email_draft": (EnvironmentType.EMAIL_DRAFT, AuthorityTier.EXTERNAL_EFFECT_DRAFT, "cap64_send_email_draft", True),
+    "shopify_read_only": (EnvironmentType.SHOPIFY_READ_ONLY, AuthorityTier.ACCOUNT_READ, "cap65_shopify_report", False),
+    "shopify_write_future": (EnvironmentType.SHOPIFY_WRITE_FUTURE, AuthorityTier.BLOCKED_FUTURE, "", False),
+    "openclaw_isolated_browser": (EnvironmentType.OPENCLAW_ISOLATED_BROWSER, AuthorityTier.BROWSER_INTERACTION, "cap63_openclaw_execute", True),
+    "personal_browser_session": (EnvironmentType.PERSONAL_BROWSER_SESSION, AuthorityTier.ACCOUNT_WRITE, "", True),
+}
+
+_PROOF_MAP: dict[str, list[str]] = {
+    "email_draft": ["EMAIL_DRAFT_CREATED"],
+    "shopify_read_only": ["SHOPIFY_REPORT_GENERATED"],
+    "openclaw_isolated_browser": ["OPENCLAW_ACTION_PENDING"],
+}
+
+_FALLBACK_MAP: dict[str, list[str]] = {
+    "email_draft": ["show draft text in chat", "explain mailto setup", "user copies manually"],
+    "shopify_write_future": ["read-only Shopify report via Cap 65", "manual steps outline"],
+    "personal_browser_session": ["outline steps for manual execution", "dry-run plan only"],
+    "openclaw_isolated_browser": ["describe steps without automation", "dry-run plan only"],
+}
+
+
+def task_to_environment_request(
+    task_id: str,
+    message: str,
+    environment_hint: str,
+    authority_hint: str,
+    *,
+    confidence: float = 0.8,
+    risk_level: str = "medium",
+) -> EnvironmentRequest | None:
+    """Bridge Phase 1 clarification output to a Phase 4 EnvironmentRequest.
+
+    Returns None when the hint is unrecognised (caller should fall back to
+    conversational handling rather than raising).
+    """
+    if environment_hint not in _ENVIRONMENT_MAP:
+        return None
+    env_type, auth_tier, capability, confirmation = _ENVIRONMENT_MAP[environment_hint]
+    return EnvironmentRequest(
+        task_id=task_id,
+        task=message,
+        task_type=environment_hint,
+        requested_environment=env_type,
+        reason=f"task clarifier matched hint: {environment_hint}",
+        authority_required=auth_tier,
+        capability_needed=capability,
+        confirmation_required=confirmation,
+        proof_required=_PROOF_MAP.get(environment_hint, []),
+        confidence=confidence,
+        risk_level=risk_level,
+        fallback_ladder=_FALLBACK_MAP.get(environment_hint, []),
+        allowed_status=AllowedStatus.DRY_RUN_ONLY,
+        next_safe_step="clarify with user before proceeding",
+    )
 
 
 def _to_primitive(value: Any) -> Any:

@@ -37,6 +37,20 @@ Active P1 blocker:
 
 ---
 
+## Implementation Status
+
+| Phase | Status | Code | Tests | Runtime integration |
+|-------|--------|------|-------|---------------------|
+| 0 — Governor Spine Proof | ✅ | dry-run examples in `docs/demo_proof/` | — | — |
+| 1 — Task Clarifier | ✅ | `src/brain/task_clarifier.py` | `tests/brain/test_task_clarifier.py` | `session_router.py` → `session_handler.py` |
+| 2 — Environment Catalog | ✅ | `EnvironmentType` / `AuthorityTier` enums | `test_environment_request.py` | none |
+| 3 — Capability Contracts | ✅ | `CapabilityContract` dataclass | `test_environment_request.py` | none |
+| 4 — Dry Run / Plan Preview | ⚠️ partial | `BrainDryRun`, `task_to_environment_request()` | `test_environment_request.py` | none (builder exists, no routing wired) |
+| 5 — Brain Trace UI | ⚠️ schema only | `BrainTraceEvent` dataclass | `test_environment_request.py` | none |
+| 6 — Cap 16 Reliability Integration | ❌ | — | — | — |
+| 7 — OpenClaw Environment Planning | ❌ | — | — | — |
+| 8 — Project Contexts / Suggestion Buffer | ❌ | — | — | — |
+
 ## Phase 0 — Governor Spine Proof
 
 Status: partially satisfied by existing governance/proof work and Brain dry-run examples.
