@@ -43,6 +43,10 @@ The Brain is designed to make Nova more helpful and adaptive without turning int
 Current live Brain behavior:
 
 - Task Clarifier is implemented for tested ambiguous/high-boundary prompts.
+- Task Understanding / Simple Task Mode / Task Envelope exist as planning-only scaffolds.
+- General-chat fallback can carry a planning-only Task Understanding preview for task-like requests.
+- RunManager exists as an in-memory planning-only scaffold for run continuity state.
+- General-chat fallback can create a session-local planning Run Preview for task-like requests.
 - EnvironmentRequest schema exists as read-only scaffold.
 - Static Capability Contract catalog exists for Cap 16, Cap 64, Cap 65, and Cap 63.
 - Brain live-test proof exists under `docs/demo_proof/brain_live_test/`.
@@ -53,6 +57,10 @@ Still future / not fully live:
 - live Capability Contract lookup in runtime routing/Governor
 - Dry Run / Plan Preview API
 - Brain Trace UI
+- Co-Work page
+- persistent RunManager storage
+- RunManager execution integration
+- persistent Run Preview history
 - project context engine
 - suggestion buffer runtime
 - full OpenClaw environment planning

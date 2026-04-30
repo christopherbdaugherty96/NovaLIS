@@ -12,9 +12,11 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
 from src.base_skill import SkillResult
+from src.conversation.planning_run_preview import create_planning_run_preview
 from src.conversation.request_understanding import build_request_understanding
 from src.conversation.request_understanding_formatter import format_request_understanding_block
 from src.conversation.session_router import SessionRouter
+from src.conversation.task_understanding_preview import build_task_understanding_preview
 from src.governor.network_mediator import NetworkMediator
 from src.personality.tone_profile_store import ToneProfileStore
 from src.skills.general_chat import GeneralChatSkill
@@ -63,9 +65,71 @@ async def run_general_chat_fallback(
 
     understanding = build_request_understanding(normalized_query)
     skill_state["request_understanding"] = understanding
-    skill_state["request_understanding_prompt_block"] = format_request_understanding_block(understanding)
+    request_block = format_request_understanding_block(understanding)
+
+    task_preview = build_task_understanding_preview(
+        normalized_query,
+        session_context=_task_preview_session_context(skill_state, chat_context),
+        stable_memory=_task_preview_memory_context(relevant_memory_context),
+    )
+    skill_state["task_understanding_preview"] = task_preview.plan
+    skill_state["task_understanding_prompt_block"] = task_preview.prompt_block
+    if task_preview.plan is not None:
+        skill_state["task_understanding_envelope"] = task_preview.plan.envelope
+        run_preview = create_planning_run_preview(
+            task_preview.plan,
+            session_state=session_state,
+            focused_run_id=str(session_state.get("focused_run_id") or ""),
+        )
+        if run_preview is not None:
+            skill_state["planning_run_preview"] = run_preview.to_dict()
+            skill_state["last_interacted_run_id"] = run_preview.last_interacted_run_id
+            skill_state["focused_run_id"] = run_preview.focused_run_id
+
+    skill_state["request_understanding_prompt_block"] = "\n\n".join(
+        block for block in (request_block, task_preview.prompt_block) if block
+    )
 
     return await general_chat_skill.handle(normalized_query, chat_context, skill_state)
+
+
+def _task_preview_session_context(
+    session_state: dict[str, Any],
+    chat_context: list[dict[str, Any]],
+) -> dict[str, str]:
+    context: dict[str, str] = {}
+    conversation_context = dict(session_state.get("conversation_context") or {})
+    for key in ("topic", "user_goal", "open_question", "latest_recommendation"):
+        value = str(conversation_context.get(key) or "").strip()
+        if value:
+            context[key] = value
+
+    for entry in reversed(chat_context[-4:]):
+        if not isinstance(entry, dict):
+            continue
+        role = str(entry.get("role") or "").strip().lower()
+        content = str(entry.get("content") or "").strip()
+        if role in {"user", "assistant"} and content:
+            context[f"recent_{role}"] = content[:240]
+            break
+    return context
+
+
+def _task_preview_memory_context(memory_context: list[dict[str, Any]]) -> tuple[str, ...]:
+    memories: list[str] = []
+    for entry in memory_context[:3]:
+        if not isinstance(entry, dict):
+            continue
+        text = str(
+            entry.get("content")
+            or entry.get("text")
+            or entry.get("summary")
+            or entry.get("value")
+            or ""
+        ).strip()
+        if text:
+            memories.append(text[:240])
+    return tuple(memories)
 
 
 async def resolve_pending_escalation_reply(

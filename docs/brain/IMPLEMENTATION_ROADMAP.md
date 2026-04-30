@@ -12,6 +12,10 @@ Done:
 - Brain runtime architecture doc exists.
 - Read-only `EnvironmentRequest` schema scaffold exists.
 - Task Clarifier is implemented for tested ambiguity/boundary prompts.
+- Task Understanding / Simple Task Mode / Task Envelope planning-only scaffolds exist.
+- General-chat fallback can attach a planning-only Task Understanding preview for task-like requests.
+- In-memory planning-only RunManager scaffold exists.
+- General-chat fallback can create a session-local planning Run Preview for task-like requests.
 - Static Capability Contract catalog exists for Cap 16, Cap 64, Cap 65, and Cap 63.
 - Brain live-test proof exists under `docs/demo_proof/brain_live_test/`.
 
@@ -20,8 +24,14 @@ Still not done:
 - full Task Environment Router
 - live Capability Contract lookup
 - Capability Contract use by runtime routing/Governor
+- Task Understanding MVP integration beyond conversation fallback preview helper
+- Simple Task Mode integration beyond conversation fallback preview helper
+- Task Envelope MVP integration beyond conversation fallback preview helper
+- RunManager persistence, UI integration, or execution integration
+- Run Preview integration beyond session-local conversation fallback metadata
 - Dry Run / Plan Preview API
 - Brain Trace UI
+- Co-Work page
 - project context engine
 - suggestion buffer runtime
 - full OpenClaw environment planning
@@ -205,10 +215,12 @@ Mapping to existing roadmap phases:
 | 2 — Environment Catalog | ✅ | `EnvironmentType` / `AuthorityTier` enums | `test_environment_request.py` | none |
 | 3 — Capability Contracts | ✅ | `CapabilityContract` dataclass | `test_environment_request.py` | none |
 | 4 — Dry Run / Plan Preview | ⚠️ partial | `BrainDryRun`, `task_to_environment_request()` | `test_environment_request.py` | none (builder exists, no routing wired) |
-| 5 — Brain Trace UI | ⚠️ schema only | `BrainTraceEvent` dataclass | `test_environment_request.py` | none |
-| 6 — Cap 16 Reliability Integration | ❌ | — | — | — |
-| 7 — OpenClaw Environment Planning | ❌ | planning docs only | — | none |
-| 8 — Project Contexts / Suggestion Buffer | ❌ | — | — | — |
+| 5 — Task Understanding / Simple Task Mode | ✅ scaffold | `TaskUnderstanding`, `TaskEnvelope`, `SimpleTaskPlan` | `test_task_understanding.py` | conversation fallback preview helper only |
+| 6 — Planning-only RunManager / Run Preview | ✅ scaffold | `RunManager`, `Run`, `RunStep`, planning preview helper | `test_run_manager.py`, conversation preview tests | session-local conversation metadata only |
+| 7 — Brain Trace UI | ⚠️ schema only | `BrainTraceEvent` dataclass | `test_environment_request.py` | none |
+| 8 — Cap 16 Reliability Integration | ❌ | — | — | — |
+| 9 — OpenClaw Environment Planning | ❌ | planning docs only | — | none |
+| 10 — Project Contexts / Suggestion Buffer | ❌ | — | — | — |
 
 Capability Contracts status note: the shared `CapabilityContract` dataclass exists, and a static catalog now exists in `src/brain/capability_contracts.py` for Cap 16, Cap 64, Cap 65, and Cap 63. Runtime contract lookup is not wired into the full Task Environment Router or Governor path yet.
 

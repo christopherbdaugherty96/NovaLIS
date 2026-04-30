@@ -41,6 +41,10 @@ Let receipts prove.
 Implemented today:
 
 - Task Clarifier for tested ambiguity/boundary prompt classes
+- Task Understanding / Simple Task Mode / Task Envelope planning-only scaffold
+- conversation fallback helper can attach a planning-only Task Understanding preview for task-like requests
+- planning-only in-memory RunManager scaffold for run creation, listing, pause/cancel, and focus tracking
+- conversation fallback helper can create a session-local planning Run Preview for task-like requests
 - read-only EnvironmentRequest schema scaffold
 - static Capability Contract catalog for Cap 16, Cap 64, Cap 65, and Cap 63
 - Brain live proof package under `docs/demo_proof/brain_live_test/`
@@ -50,7 +54,12 @@ Not fully implemented yet:
 - full Task Environment Router
 - runtime/live Capability Contract lookup
 - Dry Run / Plan Preview API
+- full runtime routing for Task Understanding / Simple Task Mode / Task Envelope
+- persistent RunManager storage
+- RunManager integration with dashboard / Co-Work page
+- persistent Run Preview history
 - Brain Trace UI
+- Co-Work page
 - project context engine
 - suggestion buffer runtime
 - full OpenClaw environment planning
