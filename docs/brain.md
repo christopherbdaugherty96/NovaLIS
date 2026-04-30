@@ -55,6 +55,7 @@ Still future / not fully live:
 - project context engine
 - suggestion buffer runtime
 - full OpenClaw environment planning
+- full small-model runtime stack: Context Assembler, Model Router, Intention Parser, Search Synthesis, Sandbox Boundary Enforcer, and Persona Filter
 
 ## Brain Loop
 
@@ -130,6 +131,29 @@ blocker
 fallback_ladder
 next_safe_step
 ```
+
+## Runtime Brain Stack
+
+The full practical Brain should not depend on one giant local model.
+
+It should use a governed runtime stack around smaller models:
+
+```text
+Task Clarifier
+→ Context Assembler
+→ Model Router / Tier Manager
+→ local or approved reasoning model
+→ Intention Parser
+→ Tool Bridge
+→ Sandbox Boundary Enforcer
+→ Capability Contract Check
+→ Governor
+→ Execution Boundary
+→ Receipts / Proof
+→ Persona / Identity Filter
+```
+
+This stack is documented in [`docs/brain/NOVA_BRAIN_RUNTIME_ARCHITECTURE.md`](brain/NOVA_BRAIN_RUNTIME_ARCHITECTURE.md).
 
 ## EnvironmentRequest
 
@@ -232,6 +256,7 @@ Use these files for implementation guidance:
 
 - [`docs/brain/README.md`](brain/README.md)
 - [`docs/brain/NOVA_BRAIN_MODEL.md`](brain/NOVA_BRAIN_MODEL.md)
+- [`docs/brain/NOVA_BRAIN_RUNTIME_ARCHITECTURE.md`](brain/NOVA_BRAIN_RUNTIME_ARCHITECTURE.md)
 - [`docs/brain/TASK_ENVIRONMENT_ROUTER.md`](brain/TASK_ENVIRONMENT_ROUTER.md)
 - [`docs/brain/ENVIRONMENT_CATALOG.md`](brain/ENVIRONMENT_CATALOG.md)
 - [`docs/brain/AUTHORITY_PLANE.md`](brain/AUTHORITY_PLANE.md)
@@ -252,10 +277,13 @@ Best next implementation order:
 ```text
 1. Fix Cap 16 search reliability.
 2. Add live/static Capability Contracts.
-3. Implement read-only Dry Run / Plan Preview.
-4. Add Brain Trace metadata/UI.
-5. Add OpenClaw environment planning.
-6. Expand project contexts and suggestion buffer.
+3. Add Context Assembler and Intention Parser scaffolds.
+4. Add Search Synthesis for evidence handling.
+5. Add Sandbox Boundary Enforcer.
+6. Implement read-only Dry Run / Plan Preview.
+7. Add Brain Trace metadata/UI.
+8. Add OpenClaw environment planning.
+9. Expand project contexts and suggestion buffer.
 ```
 
 ## Final Framing
