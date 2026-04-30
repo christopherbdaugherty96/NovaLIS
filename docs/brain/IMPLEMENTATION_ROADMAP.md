@@ -9,6 +9,7 @@ This roadmap phases the Brain from design to runtime behavior without widening e
 Done:
 
 - Brain architecture docs exist.
+- Brain runtime architecture doc exists.
 - Read-only `EnvironmentRequest` schema scaffold exists.
 - Task Clarifier is implemented for tested ambiguity/boundary prompts.
 - Brain live-test proof exists under `docs/demo_proof/brain_live_test/`.
@@ -22,6 +23,13 @@ Still not done:
 - project context engine
 - suggestion buffer runtime
 - full OpenClaw environment planning
+- Context Assembler
+- Model Router / Tier Manager
+- Intention Parser / structured output validation
+- Tool / Function Calling Bridge
+- Search Synthesis module
+- Sandbox Boundary Enforcer
+- Persona / Identity Filter
 
 Active P1 blocker:
 
@@ -66,17 +74,19 @@ Remaining work:
 
 ---
 
-## Phase 2 — Environment Catalog Validation
+## Phase 2 — Cap 16 Reliability Integration
 
-Status: design only.
+Status: active P1.
 
-Goal: prove task plans validate against known environments and authority tiers.
+Goal: make current-information prompts reliable enough for Brain planning.
 
-Deliverables:
+Expected behavior:
 
-- schema/data file for environments
-- tests for valid/invalid environment requests
-- consistency with `ENVIRONMENT_CATALOG.md`
+- successful search returns source-backed answer
+- partial search returns partial source-backed answer
+- weak/no evidence is stated honestly
+- budget/token failure returns a bounded failure with retry/narrowing guidance
+- current-fact prompts do not fall back to stale confident memory
 
 ---
 
@@ -99,23 +109,126 @@ Deliverables:
 
 ---
 
-## Phase 4 — Cap 16 Reliability Integration
+## Phase 4 — Environment Catalog Validation
 
-Status: active P1.
+Status: design only.
 
-Goal: make current-information prompts reliable enough for Brain planning.
+Goal: prove task plans validate against known environments and authority tiers.
 
-Expected behavior:
+Deliverables:
 
-- successful search returns source-backed answer
-- partial search returns partial source-backed answer
-- weak/no evidence is stated honestly
-- budget/token failure returns a bounded failure with retry/narrowing guidance
-- current-fact prompts do not fall back to stale confident memory
+- schema/data file for environments
+- tests for valid/invalid environment requests
+- consistency with `ENVIRONMENT_CATALOG.md`
 
 ---
 
-## Phase 5 — Dry Run / Plan Preview
+## Phase 5 — Context Assembler
+
+Status: future.
+
+Goal: retrieve only the context needed for the current task.
+
+Inputs may include:
+
+- current conversation
+- project memory
+- user preferences
+- recent decisions
+- recent receipts
+- active routines
+- open loops
+- runtime truth docs
+- capability contracts
+- proof packages
+
+Rules:
+
+- context can improve understanding
+- context cannot authorize action
+- sensitive context should not be sent to cloud/deep reasoning lanes without governed approval
+
+---
+
+## Phase 6 — Intention Parser / Structured Output Validation
+
+Status: future.
+
+Goal: ensure model-suggested routes are validated before they can reach tool/capability paths.
+
+Deliverables:
+
+- structured intent schema
+- strict parser/validator
+- malformed-intent fallback to clarification
+- tests for invalid, unsafe, and incomplete intent payloads
+
+Rules:
+
+- the model may suggest intent
+- deterministic code validates intent
+- malformed output should not be guessed into action
+
+---
+
+## Phase 7 — Search Synthesis Module
+
+Status: future.
+
+Goal: turn raw search results into structured evidence before final response synthesis.
+
+Deliverables:
+
+- claims
+- source URLs
+- known/unclear fields
+- confidence/uncertainty notes
+- partial-results behavior
+- weak/no-evidence behavior
+
+This phase supports Cap 16 reliability and future Brain dry runs.
+
+---
+
+## Phase 8 — Sandbox Boundary Enforcer
+
+Status: future.
+
+Goal: enforce the boundary between internal cognition and real-world actions in code.
+
+Inside sandbox:
+
+- reason
+- summarize
+- draft
+- plan
+- retrieve memory
+- prepare dry runs
+- suggest next steps
+
+Outside sandbox:
+
+- send
+- buy
+- publish
+- submit
+- delete
+- edit account
+- write Shopify
+- run OpenClaw
+- change calendar
+- modify files
+- trigger external services
+
+Rules:
+
+- outside-sandbox actions require capability checks
+- confirmations and receipts must remain visible
+- the Sandbox Boundary Enforcer must not bypass the Governor
+
+---
+
+## Phase 9 — Dry Run / Plan Preview
 
 Status: future.
 
@@ -132,11 +245,31 @@ Deliverables:
 - fallback ladder
 - what Nova will not do
 
-This phase should come after Task Clarifier and initial Capability Contracts.
+This phase should come after Task Clarifier, Cap 16 reliability, and initial Capability Contracts.
 
 ---
 
-## Phase 6 — Brain Trace UI
+## Phase 10 — Persona / Identity Filter
+
+Status: future.
+
+Goal: ensure final responses preserve Nova's honest identity, boundary language, and user-facing clarity.
+
+Deliverables:
+
+- boundary phrase library
+- current-capability honesty checks
+- no-overclaim wording tests
+- optional small-model style pass later
+
+Rules:
+
+- Persona improves communication
+- Persona does not authorize action
+
+---
+
+## Phase 11 — Brain Trace UI
 
 Status: future.
 
@@ -155,7 +288,7 @@ Trace should show:
 
 ---
 
-## Phase 7 — OpenClaw Environment Planning
+## Phase 12 — OpenClaw Environment Planning
 
 Status: future.
 
@@ -169,7 +302,7 @@ Rules:
 
 ---
 
-## Phase 8 — Project Contexts and Suggestion Buffer
+## Phase 13 — Project Contexts and Suggestion Buffer
 
 Status: future.
 
@@ -181,6 +314,37 @@ Rules:
 - suggestions do not authorize actions
 - project context is not permission
 - memory can influence understanding but not execution authority
+
+---
+
+## Phase 14 — Model Router / Tier Manager
+
+Status: future.
+
+Goal: choose between deterministic answer, local small model, local medium model, and optional cloud/deep reasoning lane.
+
+Rules:
+
+- model routing is a privacy/governance decision, not only optimization
+- sensitive local context must not be sent to cloud/deep reasoning without approved settings or explicit confirmation
+- user should be able to choose privacy tiers such as `never_cloud` or `ask_before_cloud`
+
+Model Router can be designed early, but it should not distract from Cap 16 reliability and Capability Contracts.
+
+---
+
+## Phase 15 — Obsidian Presence Mirror
+
+Status: future.
+
+Goal: mirror Nova's activity, files in use, proof, receipts, and open loops into a controlled Obsidian presence folder.
+
+Rules:
+
+- Obsidian is a mirror, not authority
+- no approval should be inferred from notes
+- writes should be constrained to a configured `Nova_Presence/` folder
+- ledger remains proof authority
 
 ---
 
@@ -196,4 +360,4 @@ Each phase must preserve:
 
 ## Recommended Next Step
 
-Fix Cap 16 search reliability before building Dry Run / Plan Preview.
+Fix Cap 16 search reliability before building Dry Run / Plan Preview or broader Brain runtime modules.
