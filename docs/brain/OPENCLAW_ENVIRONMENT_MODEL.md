@@ -132,6 +132,25 @@ Stop: after the five prospects are opened/summarized.
 
 ---
 
+## Domain and Navigation Scope
+
+OpenClaw should stay inside the approved navigation scope.
+
+The envelope should declare one of:
+
+```text
+specific_urls
+allowed_domains
+search_query_only
+manual_user_selected_pages
+```
+
+If OpenClaw reaches an unapproved domain, redirect, popup, or embedded third-party flow, it should pause and ask for direction.
+
+Search results are not blanket permission to open unlimited pages.
+
+---
+
 ## Step-Based Execution
 
 OpenClaw work should be step-based, not free-running.
@@ -194,6 +213,11 @@ Boundary examples:
 - credential field
 - unexpected personal data exposure
 - domain outside allowed scope
+- modal requesting consent or permissions
+- CAPTCHA or bot challenge
+- file picker / OS dialog
+- download prompt
+- extension/install prompt
 
 Default behavior:
 
@@ -219,6 +243,34 @@ OpenClaw must not continue because a prior run was approved.
 
 ---
 
+## Failure Handling
+
+OpenClaw failures should be explicit and recoverable.
+
+Failure categories should include:
+
+- navigation failure
+- timeout
+- page changed unexpectedly
+- selector/action failure
+- blocked boundary reached
+- permission prompt reached
+- private data exposure
+- network failure
+- user interruption
+
+Default recovery options:
+
+- retry once if low risk
+- skip the step
+- narrow scope
+- switch to manual instructions
+- cancel run
+
+Failures must not silently widen authority or continue with guessed actions.
+
+---
+
 ## Proof Requirements
 
 - session started receipt
@@ -229,6 +281,7 @@ OpenClaw must not continue because a prior run was approved.
 - screenshot after action when appropriate
 - list of URLs visited when applicable
 - blocked-action record if OpenClaw reaches a boundary
+- failure category if a step fails
 - session closed receipt
 
 ---
@@ -257,6 +310,21 @@ It should avoid collecting:
 - unnecessary screenshots
 
 If private data appears unexpectedly, OpenClaw should pause and report the boundary instead of continuing.
+
+---
+
+## Screenshot and Evidence Hygiene
+
+Screenshots are proof, not unlimited surveillance.
+
+Screenshot capture should be:
+
+- tied to a run and step
+- minimized to what proves the action
+- avoided for sensitive/private pages unless explicitly approved
+- redacted or excluded when credentials, payments, private messages, or unrelated personal data are visible
+
+If screenshot proof conflicts with privacy, Nova should prefer a textual receipt and ask for user direction.
 
 ---
 
@@ -318,6 +386,23 @@ Do not begin with:
 - purchases
 - background loops
 - multi-app automation chains
+
+---
+
+## Test Expectations
+
+Future implementation should include tests proving:
+
+- no direct chat-to-OpenClaw path exists
+- planning output cannot invoke OpenClaw
+- OpenClaw requires a Run
+- OpenClaw requires a task envelope
+- blocked actions pause instead of execute
+- login/payment/submit/upload boundaries pause
+- unapproved domains pause
+- interruption produces a pause summary
+- receipts are emitted for start, boundary, failure, and close events
+- personal browser execution is blocked by default
 
 ---
 
