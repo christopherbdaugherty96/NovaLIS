@@ -28,6 +28,9 @@ It owns:
 - pausing/cancelling runs
 - applying steering messages
 - tracking lifecycle state
+- tracking active run focus
+- tracking last-interacted run
+- enforcing run limits
 - recording run receipts
 
 No system may:
@@ -58,7 +61,75 @@ Run
 - receipts[]
 - created_at
 - updated_at
+- last_interacted_at
+- focused_at
+- max_steps
+- max_runtime_seconds
+- loop_policy
 ```
+
+---
+
+## Active Run Context
+
+Nova should track active work context explicitly.
+
+Required concepts:
+
+```text
+active_run_id
+last_interacted_run_id
+focused_run_id
+recent_runs[]
+waiting_for_user_runs[]
+```
+
+### active_run_id
+
+The run currently doing work or being actively inspected.
+
+### last_interacted_run_id
+
+The run most recently referenced by the user or Nova.
+
+Used for follow-ups like:
+
+```text
+pause that
+make it less hype
+show me where it is
+```
+
+### focused_run_id
+
+The run selected in the Co-Work page or equivalent UI.
+
+Focus does not grant execution authority.
+
+---
+
+## Focus Switching Behavior
+
+The user may switch focus at any time.
+
+Examples:
+
+```text
+switch to the YouTube run
+show the prospecting run
+pause the current run
+go back to the Nova docs run
+```
+
+When focus changes, Nova should show:
+
+- run title
+- current status
+- current step
+- pending decisions
+- next safe action
+
+Switching focus should not resume execution automatically.
 
 ---
 
@@ -172,6 +243,7 @@ planning
 waiting_for_approval
 approved
 running
+pausing
 paused
 failed
 completed
@@ -205,11 +277,152 @@ risk_level
 status
 expected_output
 failure_behavior
+safe_pause_point
 ```
 
 Approval is step-level, not blanket permission for the whole run.
 
 A run-level approval may approve planning. It does not automatically approve every execution step.
+
+---
+
+## Interruption and Pause Behavior
+
+If the user interrupts, Nova should not ignore them.
+
+Default behavior:
+
+```text
+finish the current safe step
+pause before the next step
+summarize what happened
+show what remains
+ask for next direction
+```
+
+If the current step is unsafe to continue, Nova should stop immediately.
+
+A pause summary should include:
+
+- completed step
+- current state
+- remaining steps
+- pending approvals
+- any risk or uncertainty
+
+Examples:
+
+```text
+Paused after verifying the first two prospects. Three remain. No outreach has been done.
+```
+
+```text
+Paused before opening tabs because browser action requires approval.
+```
+
+---
+
+## Time, Step, and Resource Limits
+
+Every run should define limits before work begins.
+
+Possible limits:
+
+- max steps
+- max runtime
+- max browser tabs
+- max sources
+- max retries
+- max results
+- max cost/credits if future paid services are involved
+
+Defaults should be conservative.
+
+If a run reaches a limit, Nova should pause and summarize instead of continuing.
+
+---
+
+## Automation Loop Policy
+
+Automation loops must not start silently.
+
+Any recurring or repeated run must be:
+
+- scheduled by the user
+- explicitly initiated by the user
+- or proposed by Nova and approved by the user
+
+Recurring loops require:
+
+- visible schedule
+- clear purpose
+- run envelope
+- stop condition
+- rate limit
+- quiet hours if relevant
+- receipt or summary output
+- easy disable control
+
+Nova may propose a loop, but proposal is not approval.
+
+Examples:
+
+```text
+I can check approved AI-tool sources once a week and summarize only the top updates. Want to schedule that?
+```
+
+Blocked by default:
+
+- unapproved continuous polling
+- hidden background automation
+- autonomous publishing loops
+- autonomous trading loops
+- account-action loops
+
+---
+
+## Run Persistence
+
+Runs may begin as session-only.
+
+Future persistence should distinguish:
+
+```text
+session run
+persistent run
+scheduled run
+archived run
+```
+
+### session run
+
+Exists only during the current session unless saved.
+
+### persistent run
+
+Saved for later continuation.
+
+Requires visible state and user awareness.
+
+### scheduled run
+
+Runs at approved times or intervals.
+
+Requires explicit schedule approval.
+
+### archived run
+
+Closed for history and receipt review.
+
+Persistence does not imply execution permission.
+
+Resuming a persisted run should re-check:
+
+- current state
+- stale assumptions
+- expired approvals
+- changed capabilities
+- changed environment
 
 ---
 
