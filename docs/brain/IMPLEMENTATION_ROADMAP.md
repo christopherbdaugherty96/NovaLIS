@@ -95,6 +95,58 @@ This section is intentionally non-actionable in the current phase and must not i
 
 ---
 
+## OpenClaw Expansion Guardrails
+
+OpenClaw must remain an environment, not the Brain and not an autonomous agent.
+
+OpenClaw expansion is blocked until the control surface around it exists.
+
+Before Run-based OpenClaw execution is implemented, Nova should already have:
+
+```text
+1. Stable Task Understanding.
+2. Stable Task Envelope.
+3. Planning-only RunManager.
+4. Visible Run Preview / active run display.
+5. Pause/cancel semantics.
+6. Approval surface or Trust Flow.
+7. Receipt output path.
+8. Tests proving no direct chat-to-OpenClaw path.
+```
+
+Future OpenClaw work must follow:
+
+```text
+Brain → Run System → Governor → CapabilityRegistry → ExecuteBoundary → OpenClaw → Ledger
+```
+
+Implementation must preserve:
+
+- no direct chat-to-OpenClaw calls
+- Run and task-envelope requirement
+- step-based execution
+- domain/navigation scope
+- approval granularity
+- boundary detection
+- interruption handling
+- duplicate-action protection
+- single-focus OpenClaw execution by default
+- cleanup/session closure
+- screenshot/evidence hygiene
+- personal browser blocked by default
+
+The first safe OpenClaw slice, when prerequisites are met, should be read-only and bounded:
+
+```text
+Planning run → approved read-only OpenClaw sandbox → open/read limited public pages → summarize → stop → receipt
+```
+
+Do not start with personal browser control, login, forms, uploads, publishing, purchases, background loops, or multi-app automation chains.
+
+Detailed constraints live in `docs/brain/OPENCLAW_ENVIRONMENT_MODEL.md`.
+
+---
+
 ## Future Planning Package
 
 The long-term Brain planning package now lives under:
@@ -155,7 +207,7 @@ Mapping to existing roadmap phases:
 | 4 — Dry Run / Plan Preview | ⚠️ partial | `BrainDryRun`, `task_to_environment_request()` | `test_environment_request.py` | none (builder exists, no routing wired) |
 | 5 — Brain Trace UI | ⚠️ schema only | `BrainTraceEvent` dataclass | `test_environment_request.py` | none |
 | 6 — Cap 16 Reliability Integration | ❌ | — | — | — |
-| 7 — OpenClaw Environment Planning | ❌ | — | — | — |
+| 7 — OpenClaw Environment Planning | ❌ | planning docs only | — | none |
 | 8 — Project Contexts / Suggestion Buffer | ❌ | — | — | — |
 
 Capability Contracts status note: the shared `CapabilityContract` dataclass exists, and a static catalog now exists in `src/brain/capability_contracts.py` for Cap 16, Cap 64, Cap 65, and Cap 63. Runtime contract lookup is not wired into the full Task Environment Router or Governor path yet.
@@ -436,15 +488,18 @@ Future trust-card and receipt visibility details should align with `docs/product
 
 ## Phase 12 — OpenClaw Environment Planning
 
-Status: future.
+Status: future / planning docs only.
 
 Goal: add plan-time OpenClaw environment requests before any browser execution work.
 
 Rules:
 
 - OpenClaw is an environment, not the Brain.
+- OpenClaw is not an autonomous agent.
 - Isolated browser should remain distinct from personal browser session.
 - No OpenClaw execution should occur from planning alone.
+- Future OpenClaw execution must originate from a Run, use a task envelope, pass the governed capability path, and produce receipts.
+- OpenClaw implementation constraints live in `docs/brain/OPENCLAW_ENVIRONMENT_MODEL.md` and must not be treated as runtime behavior until implemented.
 - governed desktop planning details live in `future/governed_desktop_runs/` and are not runtime truth until implemented
 
 ---
