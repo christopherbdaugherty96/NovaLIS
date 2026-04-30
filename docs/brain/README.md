@@ -56,6 +56,33 @@ Not fully implemented yet:
 - full OpenClaw environment planning
 - full model router / context assembler / intention parser stack
 
+## OpenClaw Boundary
+
+OpenClaw is documented as a governed execution environment, not a second brain or autonomous agent.
+
+The current model requires future OpenClaw work to pass through:
+
+```text
+Brain → Run System → Governor → CapabilityRegistry → ExecuteBoundary → OpenClaw → Ledger
+```
+
+Key constraints are defined in [`OPENCLAW_ENVIRONMENT_MODEL.md`](OPENCLAW_ENVIRONMENT_MODEL.md), including:
+
+- no direct chat-to-OpenClaw path
+- Run and task-envelope requirement
+- step-based execution
+- domain/navigation scope
+- approval granularity
+- boundary detection
+- interruption handling
+- duplicate-action protection
+- concurrency limits
+- cleanup/session closure
+- screenshot/evidence hygiene
+- tests proving blocked actions pause instead of execute
+
+These are governance expectations for future implementation. They do not mean full Run-based OpenClaw execution is live today.
+
 ## What This Package Does Not Do
 
 This package does not implement runtime autonomy.
