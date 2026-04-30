@@ -36,6 +36,31 @@ OpenClaw is not:
 - the authority system
 - a free-running agent
 - a background autonomy loop
+- a substitute for user approval
+
+---
+
+## Planning vs Execution Boundary
+
+Nova may plan OpenClaw work before execution.
+
+Planning may include:
+
+- identifying whether OpenClaw is the right environment
+- drafting a task envelope
+- estimating risk
+- listing proposed steps
+- asking for approval
+
+Planning must not:
+
+- open a browser
+- click links
+- read live pages through OpenClaw
+- enter credentials
+- submit forms
+- mutate accounts
+- preserve browser state silently
 
 ---
 
@@ -133,6 +158,67 @@ A run-level approval should not become unlimited permission for all downstream b
 
 ---
 
+## Approval Granularity
+
+Approval should be proportional to risk.
+
+Low-risk read-only public browsing may be approved as a bounded batch when the task envelope is narrow.
+
+Higher-risk steps require separate approval, including:
+
+- personal browser use
+- login or credential entry
+- form submission
+- file download/upload
+- payment or checkout surfaces
+- account settings pages
+- messaging or outreach
+- publishing/uploading content
+
+If a step crosses from read-only into write/account authority, OpenClaw must pause before continuing.
+
+---
+
+## Boundary Detection
+
+OpenClaw must stop or pause when it reaches a boundary not covered by the envelope.
+
+Boundary examples:
+
+- login screen
+- checkout/payment page
+- upload button
+- send/post/submit button
+- delete/archive action
+- permission prompt
+- credential field
+- unexpected personal data exposure
+- domain outside allowed scope
+
+Default behavior:
+
+```text
+pause → summarize boundary → ask user for direction
+```
+
+---
+
+## Interruption Behavior
+
+If the user interrupts an OpenClaw run:
+
+- finish only the current safe step if appropriate
+- stop immediately if continuing is unsafe
+- pause before the next action
+- summarize current browser state
+- list completed actions
+- list remaining actions
+- show whether any approval is pending
+
+OpenClaw must not continue because a prior run was approved.
+
+---
+
 ## Proof Requirements
 
 - session started receipt
@@ -154,6 +240,23 @@ A personal browser session may contain logged-in accounts, cookies, private data
 It should require explicit user approval and strong proof.
 
 Personal browser execution should be blocked by default until a future policy explicitly permits it for a narrow, bounded use case.
+
+---
+
+## Data Handling Rule
+
+OpenClaw should minimize captured data.
+
+It should avoid collecting:
+
+- credentials
+- payment details
+- private messages
+- private account data
+- unrelated page content
+- unnecessary screenshots
+
+If private data appears unexpectedly, OpenClaw should pause and report the boundary instead of continuing.
 
 ---
 
@@ -192,6 +295,8 @@ After a governed browser task, the environment should close or be explicitly pre
 
 The default should avoid silent persistent state drift.
 
+Preserving a browser session should require a visible user choice and a reason.
+
 ---
 
 ## First Safe Integration Slice
@@ -213,6 +318,21 @@ Do not begin with:
 - purchases
 - background loops
 - multi-app automation chains
+
+---
+
+## Implementation Preconditions
+
+Before expanding OpenClaw beyond planning, Nova should have:
+
+- stable Task Understanding
+- stable Task Envelope
+- planning-only RunManager
+- visible Run Preview / active run display
+- pause/cancel semantics
+- approval surface or Trust Flow
+- receipt output path
+- tests proving no direct chat-to-OpenClaw path
 
 ---
 
