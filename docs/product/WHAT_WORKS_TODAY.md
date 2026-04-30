@@ -46,7 +46,7 @@ Latest proof packages:
 | Area | Status | Notes |
 |---|---|---|
 | Memory / continuity | Implemented, evolving UX | Useful surface, still being refined. Memory supports continuity; it does not authorize execution. |
-| Brain architecture / schema scaffold | Implemented as scaffold | Brain docs, Brain runtime architecture, EnvironmentRequest schema, and Task Clarifier exist. Full Task Environment Router, Dry Run API, Brain Trace UI, live Capability Contracts, Context Assembler, Intention Parser, Search Synthesis, Sandbox Boundary Enforcer, Persona Filter, Model Router, and project context engine remain future work. |
+| Brain architecture / schema scaffold | Implemented as scaffold | Brain docs, Brain runtime architecture, EnvironmentRequest schema, Task Clarifier, and a static Capability Contract catalog for Cap 16/63/64/65 exist. Full Task Environment Router, Dry Run API, Brain Trace UI, live runtime contract lookup, Context Assembler, Intention Parser, Search Synthesis, Sandbox Boundary Enforcer, Persona Filter, Model Router, and project context engine remain future work. |
 | Screen capture / analysis | Experimental | Request-time capture exists, but the experience is still maturing. |
 | Email draft | Implemented, safety-limited, paused | Opens a local mail client draft through `mailto:` after confirmation. Nova does not use SMTP, access inboxes, or send autonomously. Cap 64 live signoff is paused while Cap 16 conversation/search proof is the active sprint. |
 | OpenClaw execution surface | Advanced / constrained | Governed, limited, not broad autonomy. |

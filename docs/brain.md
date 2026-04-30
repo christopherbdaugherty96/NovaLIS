@@ -44,12 +44,13 @@ Current live Brain behavior:
 
 - Task Clarifier is implemented for tested ambiguous/high-boundary prompts.
 - EnvironmentRequest schema exists as read-only scaffold.
+- Static Capability Contract catalog exists for Cap 16, Cap 64, Cap 65, and Cap 63.
 - Brain live-test proof exists under `docs/demo_proof/brain_live_test/`.
 
 Still future / not fully live:
 
 - full Task Environment Router
-- live Capability Contract lookup
+- live Capability Contract lookup in runtime routing/Governor
 - Dry Run / Plan Preview API
 - Brain Trace UI
 - project context engine
@@ -165,7 +166,9 @@ It is the structured vocabulary future Brain layers can use for environment requ
 
 ## Capability Contracts
 
-Capability Contracts are planned per-capability definitions of what a capability can and cannot do.
+Capability Contracts are per-capability definitions of what a capability can and cannot do.
+
+Current status: schema plus a static catalog exists. Runtime routing and the Governor do not yet use live contract lookup.
 
 A contract should define:
 

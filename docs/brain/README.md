@@ -42,12 +42,13 @@ Implemented today:
 
 - Task Clarifier for tested ambiguity/boundary prompt classes
 - read-only EnvironmentRequest schema scaffold
+- static Capability Contract catalog for Cap 16, Cap 64, Cap 65, and Cap 63
 - Brain live proof package under `docs/demo_proof/brain_live_test/`
 
 Not fully implemented yet:
 
 - full Task Environment Router
-- static/live Capability Contract system
+- runtime/live Capability Contract lookup
 - Dry Run / Plan Preview API
 - Brain Trace UI
 - project context engine
