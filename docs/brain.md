@@ -43,6 +43,10 @@ The Brain is designed to make Nova more helpful and adaptive without turning int
 Current live Brain behavior:
 
 - Task Clarifier is implemented for tested ambiguous/high-boundary prompts.
+- Task Understanding / Simple Task Mode / Task Envelope exist as planning-only scaffolds.
+- General-chat fallback can carry a planning-only Task Understanding preview for task-like requests.
+- RunManager exists as an in-memory planning-only scaffold for run continuity state.
+- General-chat fallback can create a session-local planning Run Preview for task-like requests.
 - EnvironmentRequest schema exists as read-only scaffold.
 - Static Capability Contract catalog exists for Cap 16, Cap 64, Cap 65, and Cap 63.
 - Brain live-test proof exists under `docs/demo_proof/brain_live_test/`.
@@ -53,10 +57,31 @@ Still future / not fully live:
 - live Capability Contract lookup in runtime routing/Governor
 - Dry Run / Plan Preview API
 - Brain Trace UI
+- Co-Work page
+- persistent RunManager storage
+- RunManager execution integration
+- persistent Run Preview history
 - project context engine
 - suggestion buffer runtime
 - full OpenClaw environment planning
 - full small-model runtime stack: Context Assembler, Model Router, Intention Parser, Search Synthesis, Sandbox Boundary Enforcer, and Persona Filter
+
+## Scope Guard For This Preview
+
+This Brain preview is documentation and planning refinement only.
+
+It does not unpause any paused product scope. It does not expand Shopify, OpenClaw, browser, email, calendar, file, account, or social publishing authority.
+
+In particular:
+
+- Cap 65 remains read-only Shopify reporting/intelligence.
+- Shopify P5 live signoff remains paused until the owner explicitly unpauses it.
+- Shopify write/operator capabilities remain future-only.
+- The Brain planning preview may describe a possible future environment or task envelope, but that description is not permission to execute.
+- A Run Preview is continuity state, not authorization state.
+- Any future execution still requires the existing governed capability path, confirmation where required, and receipts.
+
+Use this document to clarify what Nova can safely understand before action, not to widen what Nova may do.
 
 ## Brain Loop
 

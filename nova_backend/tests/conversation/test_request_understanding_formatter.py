@@ -237,6 +237,9 @@ def test_run_general_chat_fallback_casual_greeting_block_is_empty():
 
     block = skill.calls[0]["session_state"]["request_understanding_prompt_block"]
     assert block == ""  # no boundary noise for casual greetings
+    assert skill.calls[0]["session_state"]["task_understanding_preview"] is None
+    assert skill.calls[0]["session_state"]["task_understanding_prompt_block"] == ""
+    assert "planning_run_preview" not in skill.calls[0]["session_state"]
 
 
 def test_run_general_chat_fallback_general_chat_block_is_empty():
@@ -313,6 +316,61 @@ def test_run_general_chat_fallback_no_capability_execution_triggered():
     assert len(skill.calls) == 1
     understanding = skill.calls[0]["session_state"]["request_understanding"]
     assert understanding.authority_effect == "none"
+
+
+def test_run_general_chat_fallback_injects_task_understanding_preview_for_task_like_request():
+    skill = _FakeGeneralChatSkill(SkillResult(success=True, message="ok", skill="general_chat"))
+
+    asyncio.run(
+        run_general_chat_fallback(
+            "summarize this task",
+            general_chat_skill=skill,
+            session_state={"conversation_context": {"user_goal": "Prepare a bounded repo plan."}},
+            session_context=[],
+            project_threads=object(),
+            select_relevant_memory_context=_noop_memory,
+        )
+    )
+
+    passed_state = skill.calls[0]["session_state"]
+    preview = passed_state["task_understanding_preview"]
+
+    assert preview is not None
+    assert preview.planning_only is True
+    assert preview.execution_performed is False
+    assert preview.authorization_granted is False
+    assert "task_understanding_envelope" in passed_state
+    assert "planning_run_preview" in passed_state
+    assert passed_state["planning_run_preview"]["status"] == "planning"
+    assert passed_state["planning_run_preview"]["current_step"]
+    assert passed_state["planning_run_preview"]["next_step"]
+    assert "Task understanding preview" in passed_state["task_understanding_prompt_block"]
+    assert "Task understanding preview" in passed_state["request_understanding_prompt_block"]
+    assert "Authority effect: none" in passed_state["request_understanding_prompt_block"]
+
+
+def test_run_general_chat_fallback_task_preview_uses_relevant_memory_as_context():
+    skill = _FakeGeneralChatSkill(SkillResult(success=True, message="ok", skill="general_chat"))
+
+    def memory_context(query, *, session_state, project_threads):
+        return [{"content": "User prefers planning-only answers before implementation."}]
+
+    asyncio.run(
+        run_general_chat_fallback(
+            "make a bounded task envelope",
+            general_chat_skill=skill,
+            session_state={},
+            session_context=[],
+            project_threads=object(),
+            select_relevant_memory_context=memory_context,
+        )
+    )
+
+    preview = skill.calls[0]["session_state"]["task_understanding_preview"]
+
+    assert preview is not None
+    assert any(item.source.value == "stable_memory" for item in preview.understanding.context_used)
+    assert preview.understanding.authorization_granted is False
 
 
 # ---------------------------------------------------------------------------
