@@ -91,10 +91,12 @@ Conceptual schema:
 {
   "task_id": "task_123",
   "run_id": "run_123",
+  "session_id": "openclaw_session_123",
   "environment": "openclaw_isolated_browser",
   "required_screenshots": ["before", "after"],
   "max_runtime_seconds": 300,
   "max_steps": 10,
+  "max_retries": 1,
   "allowed_domains": [],
   "allowed_actions": ["open_url", "read_page", "click_navigation_link"],
   "blocked_actions": ["purchase", "send", "delete", "submit_without_confirmation", "login", "enter_credentials"],
@@ -177,6 +179,27 @@ A run-level approval should not become unlimited permission for all downstream b
 
 ---
 
+## Idempotency and Duplicate Action Rule
+
+OpenClaw should avoid repeating actions when retrying or recovering.
+
+For each step, Nova should track:
+
+- step id
+- action attempted
+- target URL/domain
+- result status
+- retry count
+- whether the action is safe to repeat
+
+Read-only actions may be retried once when low risk.
+
+Write, submit, purchase, upload, delete, send, or account-mutating actions must not be retried automatically.
+
+If Nova is unsure whether an action already occurred, it must pause and ask rather than repeating it.
+
+---
+
 ## Approval Granularity
 
 Approval should be proportional to risk.
@@ -195,6 +218,25 @@ Higher-risk steps require separate approval, including:
 - publishing/uploading content
 
 If a step crosses from read-only into write/account authority, OpenClaw must pause before continuing.
+
+---
+
+## Escalation and De-Escalation
+
+OpenClaw should be able to reduce scope safely.
+
+If a task becomes riskier than expected, Nova should escalate to approval.
+
+If a task can be completed with less authority than expected, Nova should de-escalate.
+
+Examples:
+
+- Use public pages instead of a logged-in account when sufficient.
+- Produce manual instructions instead of controlling the browser.
+- Stop at a login screen and summarize what remains.
+- Convert a risky browser action into a planning-only recommendation.
+
+Escalation requires user approval. De-escalation should be preferred when it still satisfies the goal.
 
 ---
 
@@ -243,6 +285,22 @@ OpenClaw must not continue because a prior run was approved.
 
 ---
 
+## Concurrency and Focus Rule
+
+OpenClaw execution should be single-focus by default.
+
+Rules:
+
+- one active OpenClaw execution session at a time unless a future scheduler explicitly supports more
+- multiple planning runs may exist, but only one may control an OpenClaw environment
+- switching focus must not resume OpenClaw execution automatically
+- paused OpenClaw sessions must show status, last step, and next safe action
+- a stale session must be revalidated before resuming
+
+This prevents two runs from competing over the same browser/computer-use environment.
+
+---
+
 ## Failure Handling
 
 OpenClaw failures should be explicit and recoverable.
@@ -258,6 +316,9 @@ Failure categories should include:
 - private data exposure
 - network failure
 - user interruption
+- session lost
+- stale page state
+- duplicate action uncertainty
 
 Default recovery options:
 
@@ -282,7 +343,7 @@ Failures must not silently widen authority or continue with guessed actions.
 - list of URLs visited when applicable
 - blocked-action record if OpenClaw reaches a boundary
 - failure category if a step fails
-- session closed receipt
+- cleanup/session-closed receipt
 
 ---
 
@@ -325,6 +386,24 @@ Screenshot capture should be:
 - redacted or excluded when credentials, payments, private messages, or unrelated personal data are visible
 
 If screenshot proof conflicts with privacy, Nova should prefer a textual receipt and ask for user direction.
+
+---
+
+## Cleanup and Session Closure
+
+Every OpenClaw session should end with explicit cleanup.
+
+Cleanup should include:
+
+- close or preserve decision
+- final URL/state summary
+- downloaded-file summary if any downloads were approved
+- screenshot/evidence handling summary
+- receipt emitted
+
+If cleanup fails, Nova should report the failure and mark the run as needing user attention.
+
+Browser state should not persist silently after a run.
 
 ---
 
@@ -401,6 +480,9 @@ Future implementation should include tests proving:
 - login/payment/submit/upload boundaries pause
 - unapproved domains pause
 - interruption produces a pause summary
+- duplicate action uncertainty pauses rather than retries
+- stale sessions require revalidation
+- cleanup emits a receipt
 - receipts are emitted for start, boundary, failure, and close events
 - personal browser execution is blocked by default
 
