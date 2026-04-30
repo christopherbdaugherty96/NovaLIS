@@ -259,6 +259,7 @@ It should route to:
 ```text
 Task Clarifier
 governed search
+Google read-only context
 calendar read
 memory retrieval
 capability contracts
@@ -284,6 +285,8 @@ intent: email_draft
 → execution boundary
 → receipt
 ```
+
+Google read-only context should route to future scoped capabilities such as Gmail read-only and Calendar read-only. It should not imply Gmail send/write authority.
 
 ## Rule
 
@@ -343,6 +346,15 @@ Cap 65 — shopify_intelligence_report
 Cap 63 — openclaw_execute
 ```
 
+Future Google read/context contracts:
+
+```text
+google_oauth_connection
+gmail_read_only
+calendar_read_only
+gmail_context_for_email_draft
+```
+
 A contract should define:
 
 ```text
@@ -390,7 +402,54 @@ The Governor still decides.
 
 ---
 
-## 8. Sandbox Boundary Enforcer
+## 8. Google Read-Only Context
+
+Google integration should begin as a read/context path, not an action path.
+
+Future Google read-only context can support:
+
+```text
+Gmail thread search/read/link
+Gmail message summaries
+Calendar read-only summaries
+Gmail context for Cap 64 draft-only replies
+daily brief context
+meeting preparation context
+```
+
+It should not provide:
+
+```text
+Gmail send
+Gmail delete
+Gmail archive
+Gmail labels
+Calendar write
+Drive write
+silent inbox monitoring
+broad Google account control
+```
+
+Correct relationship with Cap 64:
+
+```text
+Gmail read-only supplies context.
+Cap 64 opens a local draft after confirmation.
+Human sends manually.
+```
+
+Incorrect relationship:
+
+```text
+Gmail read context exists.
+Nova sends email automatically.
+```
+
+See [`docs/future/NOVA_GOOGLE_CONNECTOR_MODEL.md`](../future/NOVA_GOOGLE_CONNECTOR_MODEL.md) for the detailed future connector model.
+
+---
+
+## 9. Sandbox Boundary Enforcer
 
 The Sandbox Boundary Enforcer is a hard-coded gate between internal cognition and real-world action.
 
@@ -441,7 +500,7 @@ The sandbox boundary should be enforced in code, not only described in docs.
 
 ---
 
-## 9. Governor
+## 10. Governor
 
 The Governor remains the authority boundary.
 
@@ -471,7 +530,7 @@ No Brain layer may bypass the Governor.
 
 ---
 
-## 10. Persona / Identity Filter
+## 11. Persona / Identity Filter
 
 The Persona layer should shape the final user-facing response.
 
@@ -505,7 +564,7 @@ Persona does not authorize action.
 
 ---
 
-## 11. Receipts / Proof Layer
+## 12. Receipts / Proof Layer
 
 Every governed action should leave proof where applicable.
 
@@ -539,7 +598,7 @@ Obsidian note → treated as proof authority
 
 ---
 
-## 12. Optional Deep Reasoning Fallback
+## 13. Optional Deep Reasoning Fallback
 
 Nova may use cloud/deep reasoning for hard tasks.
 
@@ -572,7 +631,7 @@ Cloud fallback should never silently receive private context.
 
 ---
 
-## 13. Minimal Local Brain Target
+## 14. Minimal Local Brain Target
 
 A realistic local Nova Brain can run with:
 
@@ -595,7 +654,7 @@ The intelligence comes from the system architecture, not just model size.
 
 ---
 
-## 14. Runtime Flow Examples
+## 15. Runtime Flow Examples
 
 ### Local explanation
 
@@ -618,6 +677,21 @@ User asks: What are the latest AI model releases?
 → Search Synthesis: source-backed evidence
 → Response with citations/uncertainty
 → Receipt/proof if applicable
+```
+
+### Gmail-context draft
+
+```text
+User asks: Reply to the email about the website project.
+→ Task Clarifier: no clarification needed if source is clear
+→ Environment: gmail_read_only + email_draft
+→ Capability Contracts: Gmail read-only + Cap 64
+→ Gmail read-only supplies selected thread context
+→ Cap 64 requires confirmation before opening local draft
+→ User confirms
+→ local mailto draft opens
+→ receipt written
+→ user manually sends or closes
 ```
 
 ### Email draft
@@ -645,22 +719,24 @@ User asks: Log into my account and change settings.
 
 ---
 
-## 15. Implementation Order
+## 16. Implementation Order
 
 Recommended order:
 
 ```text
 1. Fix Cap 16 search reliability.
 2. Add static Capability Contracts.
-3. Add Context Assembler.
-4. Add Intention Parser / structured output validation.
-5. Add Search Synthesis module.
-6. Add Sandbox Boundary Enforcer.
-7. Add read-only Dry Run / Plan Preview.
-8. Add Persona / Identity Filter.
-9. Add Brain Trace metadata.
-10. Add Obsidian Presence mirror.
-11. Add optional Model Router / Tier Manager.
+3. Add Google connector contracts as future/static definitions.
+4. Add Context Assembler.
+5. Add Intention Parser / structured output validation.
+6. Add Search Synthesis module.
+7. Add Sandbox Boundary Enforcer.
+8. Add read-only Dry Run / Plan Preview.
+9. Add Persona / Identity Filter.
+10. Add Brain Trace metadata.
+11. Add Obsidian Presence mirror.
+12. Add optional Model Router / Tier Manager.
+13. Implement Google OAuth/Gmail/Calendar read-only only after contracts and proof plan exist.
 ```
 
 Model Router can be designed early, but it does not need to block Cap 16 or Capability Contracts.
@@ -682,7 +758,7 @@ Still future:
 
 ```text
 full Task Environment Router
-live Capability Contracts
+static/live Capability Contracts
 Dry Run API
 Brain Trace UI
 Context Assembler
@@ -690,6 +766,7 @@ Model Router
 Search Synthesis
 Sandbox Boundary Enforcer
 Persona Filter
+Google read-only connector
 Obsidian Presence Writer
 ```
 
