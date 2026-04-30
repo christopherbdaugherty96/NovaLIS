@@ -54,6 +54,32 @@ The business layer creates practical proof of value.
 
 ---
 
+## Product Delivery Model
+
+Nova should not be limited to one delivery model.
+
+The long-term product can include:
+
+```text
+local-first personal assistant
+home/business operating layer
+small-business SaaS surface
+service-business production engine
+approved automation platform
+```
+
+The SaaS direction is important, but it is not the whole identity.
+
+Nova’s deeper identity is the governed operating layer.
+
+SaaS is one way to deliver that operating layer to small-business users who need useful AI assistance without invisible or uncontrolled execution.
+
+A local-first build can prove the governance model.
+
+A SaaS or managed service layer can later make the same model easier for nontechnical users.
+
+---
+
 ## Who Nova Is For
 
 Nova is for people who want AI help but do not want AI silently acting on their behalf.
@@ -170,6 +196,39 @@ It can suggest, explain, and prepare.
 
 It cannot approve real-world actions by itself.
 
+### Persona Sandbox Contract
+
+The Persona can move freely inside the sandbox.
+
+It may:
+
+```text
+maintain tone
+explain Nova honestly
+remember approved preferences
+adapt to user style
+notice recurring needs
+suggest helpful routines
+prepare drafts and plans
+summarize the user's day or projects
+```
+
+It may not:
+
+```text
+grant itself permission
+approve its own actions
+send messages
+buy or publish
+change live accounts
+write to external systems
+silently create recurring automations
+```
+
+The Persona should feel aware and continuous, but it remains contained.
+
+Its freedom is cognitive, not executive.
+
 ---
 
 ## Brain Layer
@@ -237,6 +296,45 @@ But memory has a hard boundary:
 A remembered preference does not give Nova permission to send, buy, publish, delete, edit, or trigger external systems.
 
 Governed actions still require capability checks, confirmation when needed, and receipts.
+
+---
+
+## Context and Awareness Layer
+
+Nova should become aware in the practical sense, not the mystical sense.
+
+Awareness means Nova can maintain useful context about:
+
+```text
+active projects
+today's priorities
+open loops
+recent decisions
+known blockers
+routines
+scheduled events
+news topics being tracked
+recent receipts/actions
+user preferences
+current capability limits
+```
+
+This awareness helps Nova answer:
+
+```text
+What matters today?
+What changed?
+What is still waiting?
+What should I remind the user about?
+What can I prepare without acting?
+What requires explicit approval?
+```
+
+Awareness should make Nova more useful and continuous.
+
+It should not become hidden surveillance or hidden authority.
+
+The user should be able to inspect, correct, disable, or delete memory/context where practical.
 
 ---
 
@@ -357,6 +455,38 @@ review path
 ```
 
 Execution happens only after the user assigns or approves the routine through the governed path.
+
+### 4. Automation Loops
+
+Later, Nova may support recurring or looped routines.
+
+Examples:
+
+```text
+morning brief every weekday
+weekly client follow-up review
+daily news/topic tracker
+calendar and reminder review
+Shopify read-only business snapshot
+project status digest
+```
+
+A loop is not the same as unchecked autonomy.
+
+Each loop should have:
+
+```text
+clear user request or assignment
+visible schedule or trigger
+allowed data sources
+allowed actions
+blocked actions
+pause/stop control
+review path
+receipt/proof trail
+```
+
+The user should be able to see what loop exists, why it exists, what it is allowed to do, and how to stop it.
 
 ---
 
