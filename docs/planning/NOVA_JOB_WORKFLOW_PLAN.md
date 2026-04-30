@@ -63,6 +63,17 @@ User / Operator
   -> Ledger
 ```
 
+## Operating context
+
+Initial business operating context:
+
+- Location: Belleville, Michigan
+- Operating mode: home-based for now
+- Business surface: Auralis Digital / website-building business
+- Initial workflow focus: local Michigan business website leads
+
+This context should influence default lead qualification and proposal language, but it must not become a hardcoded limitation. Nova should still allow other locations and remote clients when explicitly provided.
+
 ## Current gap
 
 Current Nova pattern:
@@ -91,6 +102,33 @@ Input
 Intelligence is not authority.
 
 A decision must never directly execute. Only an explicitly approved action may execute, and it must still pass through Nova's existing governed execution spine.
+
+## Implementation constraints
+
+1. Jobs may propose actions but may not execute actions directly.
+2. All capability execution must use existing Nova governed routing.
+3. Approval must be persisted before execution begins.
+4. Rejected jobs cannot execute.
+5. Modified proposals must create a new proposal version and return to pending approval.
+6. Job state is operational state; ledger remains audit truth.
+7. Follow-up jobs are deferred until the v0 website workflow succeeds end-to-end.
+8. Auralis cannot create execution payloads directly; it can only submit approval decisions and edits back to Nova.
+9. Website workflow logic must not bypass GovernorMediator, CapabilityRegistry, ExecuteBoundary, or Ledger.
+10. Sales tactics, objection handling, outreach style, and persuasive sequencing are intentionally deferred until the core job flow is complete, stable, and tested.
+
+## Email draft capability mapping requirement
+
+The website workflow must map to Nova's actual email-draft capability contract before implementation.
+
+Before coding the final execution step, verify:
+
+- the actual capability id and name for email draft creation
+- the exact request payload expected by GovernorMediator
+- the exact executor input expected by the email draft path
+- the return shape for a successful local draft creation
+- how failure states are represented
+
+The workflow must not invent a parallel email path. It must route through the existing governed email-draft capability.
 
 ## Proposed NovaJob model
 
@@ -130,6 +168,50 @@ CANCELLED
 NEEDS_MORE_INFO
 ```
 
+## Legal lifecycle transitions
+
+Nova should enforce explicit lifecycle transitions instead of allowing arbitrary status mutation.
+
+```text
+CREATED -> ANALYZED
+CREATED -> NEEDS_MORE_INFO
+
+ANALYZED -> PROPOSED
+ANALYZED -> NEEDS_MORE_INFO
+ANALYZED -> FAILED
+
+PROPOSED -> AWAITING_APPROVAL
+PROPOSED -> NEEDS_MORE_INFO
+PROPOSED -> FAILED
+
+AWAITING_APPROVAL -> APPROVED
+AWAITING_APPROVAL -> REJECTED
+AWAITING_APPROVAL -> MODIFIED
+AWAITING_APPROVAL -> EXPIRED
+
+MODIFIED -> PROPOSED
+MODIFIED -> AWAITING_APPROVAL
+
+APPROVED -> EXECUTING
+APPROVED -> CANCELLED
+
+EXECUTING -> COMPLETED
+EXECUTING -> FAILED
+
+FAILED -> CREATED only if a new retry job is created
+COMPLETED -> terminal
+CANCELLED -> terminal
+REJECTED -> terminal unless explicitly reopened as a new job
+EXPIRED -> terminal unless explicitly reopened as a new job
+```
+
+Rules:
+
+- terminal states cannot execute
+- rejected jobs cannot execute
+- modified proposals must be versioned and re-approved
+- retries should create new jobs or explicit retry records, not mutate history silently
+
 ## Decision contract
 
 ```json
@@ -151,6 +233,7 @@ This is the contract between Nova thinking and Nova execution.
 ```python
 class ApprovalRequest:
     job_id: str
+    proposal_version: int
     action_label: str
     action_summary: str
     capability_required: str
@@ -169,11 +252,29 @@ MODIFIED
 EXPIRED
 ```
 
+## Approval mutation rules
+
+Auralis may allow Approve, Edit, or Reject, but Nova owns the approval state.
+
+Rules:
+
+- Approve marks the current proposal version as approved.
+- Reject marks the job rejected and blocks execution.
+- Edit creates a new proposal version.
+- Any edited proposal must return to PENDING / AWAITING_APPROVAL before execution.
+- Approval records must include the proposal version approved.
+- Execution must verify that the approved proposal version matches the execution payload.
+
 ## Persistent job state
 
 The ledger records audit truth. A job store records current operational state.
 
 Minimum storage can start as JSON or SQLite.
+
+Decision:
+
+- Start with SQLite if dashboard querying, filtering, or history inspection is expected in the first slice.
+- JSON is acceptable only for a narrow local proof if access is serialized, tested, and not treated as the long-term store.
 
 Track:
 
@@ -184,6 +285,7 @@ Track:
 - decision
 - proposed action
 - approval state
+- proposal version
 - execution result
 - timestamps
 
@@ -213,6 +315,8 @@ This prepares Nova for multi-step work without building a large workflow engine 
 
 ## Time and follow-up rule
 
+Follow-up automation is a later step, not part of the first stabilized v0 build.
+
 Nova should eventually support bounded, explicit, inspectable follow-up jobs.
 
 Example:
@@ -228,6 +332,8 @@ Example:
 ```
 
 This must remain approval-gated.
+
+Sales tactics, outreach sequencing, objection handling, and personal sales style should be added only after the base job system, website workflow, approval handling, execution, and tests are stable.
 
 ## Operator visibility
 
@@ -277,7 +383,7 @@ Lead input
   -> email draft capability creates draft
   -> ledger logs result
   -> job status updates
-  -> optional follow-up job after 48 hours
+  -> optional follow-up job after the v0 path is stabilized
 ```
 
 Parsed lead object:
@@ -292,6 +398,7 @@ Parsed lead object:
   "budget": "",
   "contact_name": "",
   "contact_email": "",
+  "location": "",
   "missing_info": []
 }
 ```
@@ -311,13 +418,13 @@ Package recommendation:
 
 ```json
 {
-  "recommended_package": "Standard Website Build",
-  "estimated_price": "$800-$1500",
+  "recommended_package": "Standard Website",
+  "estimated_price": "$1,000+",
   "timeline": "2-3 weeks",
   "included": [
     "responsive website",
-    "up to 5 pages",
-    "contact form",
+    "core business pages",
+    "contact / quote request path",
     "basic SEO setup",
     "mobile optimization"
   ]
@@ -339,29 +446,56 @@ Proposed action:
 
 Avoid scattering website-business pricing and package rules through random code.
 
+Pricing baseline should follow the Auralis Digital repository unless superseded by a newer source of truth:
+
+- Website Refresh: $250
+- Basic Website: $500+
+- Standard Website: $1,000+
+- Premium / Custom: quote based
+- Monthly Website Retainer: $250/month
+
 Suggested config shape:
 
 ```json
 {
   "website_business": {
+    "location_context": "Belleville, Michigan / home-based local business service",
     "packages": [
       {
-        "name": "Starter Website",
-        "price_range": "$500-$800",
-        "pages": "1-3",
-        "features": ["responsive design", "contact form", "basic SEO"]
+        "name": "Website Refresh",
+        "price_range": "$250",
+        "pages": "existing-site refresh",
+        "features": ["visual cleanup", "service clarity", "mobile-readiness check", "call or quote path improvement"]
       },
       {
-        "name": "Standard Website Build",
-        "price_range": "$800-$1500",
-        "pages": "4-6",
-        "features": ["responsive design", "contact form", "basic SEO", "booking integration"]
+        "name": "Basic Website",
+        "price_range": "$500+",
+        "pages": "basic local business site",
+        "features": ["responsive design", "contact path", "basic SEO", "clear service positioning"]
+      },
+      {
+        "name": "Standard Website",
+        "price_range": "$1,000+",
+        "pages": "standard growth site",
+        "features": ["responsive design", "lead capture", "quote-request flow", "local business positioning", "conversion-focused design"]
       },
       {
         "name": "Business Growth Website",
-        "price_range": "$1500-$3000",
-        "pages": "7+",
-        "features": ["advanced integrations", "copy support", "lead capture", "analytics"]
+        "price_range": "$1,500-$3,000",
+        "pages": "larger or more advanced growth site",
+        "features": ["advanced integrations", "AI integration", "copy support", "lead capture", "analytics", "workflow or automation planning"]
+      },
+      {
+        "name": "Premium / Custom",
+        "price_range": "quote based",
+        "pages": "custom scope",
+        "features": ["custom integrations", "complex functionality", "migration or rebuild", "advanced automation", "custom support needs"]
+      },
+      {
+        "name": "Monthly Website Retainer",
+        "price_range": "$250/month",
+        "pages": "support plan",
+        "features": ["ongoing updates", "specials", "service/menu changes", "light optimization", "hosting coordination", "priority support"]
       }
     ]
   }
@@ -415,6 +549,8 @@ All execution must still go through GovernorMediator, CapabilityRegistry, Execut
 
 ## Suggested ledger events
 
+These must be added through the existing ledger event allowlist discipline. Unknown event types must continue to fail closed.
+
 ```text
 JOB_CREATED
 JOB_ANALYZED
@@ -422,6 +558,7 @@ JOB_PROPOSED
 JOB_APPROVAL_REQUESTED
 JOB_APPROVED
 JOB_REJECTED
+JOB_MODIFIED
 JOB_EXECUTION_STARTED
 JOB_EXECUTION_COMPLETED
 JOB_EXECUTION_FAILED
@@ -435,6 +572,7 @@ Job model tests:
 
 - creates valid job
 - rejects invalid status transition
+- terminal states cannot execute
 - updates timestamps
 - serializes safely
 
@@ -448,7 +586,8 @@ Approval tests:
 
 - action cannot execute without approval
 - rejected job cannot execute
-- modified approval creates updated proposal
+- modified approval creates updated proposal version
+- execution payload must match approved proposal version
 
 Governance tests:
 
@@ -465,10 +604,12 @@ Ledger tests:
 Workflow tests:
 
 - lead input produces parsed lead
+- location is captured when present
 - missing info is detected
 - package recommendation is deterministic
 - approved job creates email draft capability request
 - unapproved job does not execute
+- follow-up logic is not active in v0 unless explicitly enabled later
 
 ## Demo target
 
@@ -478,9 +619,9 @@ Workflow tests:
 
 2. Nova creates WebsiteLead job.
 
-3. Nova parses business type, pages, features, and missing info.
+3. Nova parses business type, pages, features, location if present, and missing info.
 
-4. Nova recommends Standard Website Build, $800-$1500.
+4. Nova recommends Standard Website or Business Growth Website depending on scope.
 
 5. Nova shows approval card: Draft proposal email?
 
@@ -494,11 +635,14 @@ Workflow tests:
 ## Do now
 
 - Build NovaJob v0
-- Add lifecycle and job store
+- Add lifecycle and transition enforcement
+- Add job store
 - Add decision and approval contracts
+- Add proposal versioning
+- Verify actual email-draft capability contract
 - Add website lead workflow
 - Add minimal job inspection
-- Add job ledger events
+- Add job ledger events through allowlist discipline
 
 ## Do not do yet
 
@@ -509,6 +653,7 @@ Workflow tests:
 - Full CRM
 - Full Auralis UI
 - Multiple vertical workflows at once
+- Sales tactics/personality/outreach persuasion layer before the stable tested workflow exists
 
 ## Final directive
 
