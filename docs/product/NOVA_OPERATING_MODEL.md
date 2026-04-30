@@ -271,6 +271,35 @@ The full Brain is structured reasoning before governed action.
 
 ---
 
+## Practical Small-Model Brain Runtime
+
+Nova should not need one massive local model to feel intelligent.
+
+The practical long-term Brain runtime is a governed system around smaller models:
+
+```text
+Task Clarifier
+→ Context Assembler
+→ Model Router / Tier Manager
+→ local or approved reasoning model
+→ Intention Parser
+→ Tool / Function Calling Bridge
+→ Sandbox Boundary Enforcer
+→ Capability Contract Check
+→ Governor
+→ Execution Boundary
+→ Receipts / Proof
+→ Persona / Identity Filter
+```
+
+This runtime stack is future architecture, not current full runtime behavior.
+
+Its purpose is to let Nova use local small/medium models effectively while keeping privacy, authority, and proof visible.
+
+Current implementation includes the Task Clarifier and read-only Brain schema scaffold. The Context Assembler, Model Router, Intention Parser, Tool Bridge, Search Synthesis module, Sandbox Boundary Enforcer, Persona Filter, and full live Capability Contract lookup remain future work.
+
+---
+
 ## Memory and Continuity
 
 Memory helps Nova understand the user over time.
@@ -582,12 +611,20 @@ Current strengths include:
 - Cap 64 email draft confirmation boundary
 - Cap 65 Shopify read-only direction
 - Brain architecture and schema scaffold
+- Brain runtime architecture documentation
 
 Current in-progress or incomplete areas include:
 
 - Cap 16 search reliability
 - full Brain runtime routing
 - live Capability Contracts
+- Context Assembler
+- Model Router / Tier Manager
+- Intention Parser / structured output validation
+- Tool / Function Calling Bridge
+- Search Synthesis module
+- Sandbox Boundary Enforcer
+- Persona / Identity Filter
 - Dry Run / Plan Preview API
 - Brain Trace UI
 - daily brief MVP
