@@ -1,24 +1,34 @@
 # Governed Desktop Runs
 
-This folder documents a possible future governance upgrade for NovaLIS.
+This folder documents the next governance upgrade track for NovaLIS: task-scoped desktop, browser, and OpenClaw runs.
 
-It is not implemented runtime behavior yet. It does not change the current capability registry, Governor, OpenClaw execution path, or runtime truth. It is a planning document for how NovaLIS would need to evolve before broad desktop/browser/OpenClaw workflows should be trusted.
+This is not implemented runtime behavior yet. It does not change the current capability registry, Governor, OpenClaw execution path, or generated runtime truth. It is an immediate implementation planning track for what NovaLIS should build next before trusting broad desktop/browser workflows.
 
 ---
 
-## Why This Exists
+## Why This Needs To Move Near-Term
 
-Future workflows such as YouTubeLIS, voice generation, editing support, browser operation, file organization, or app orchestration may require NovaLIS to operate across desktop surfaces and webpages.
+NovaLIS is reaching the point where useful workflows may require operating across local apps, webpages, files, and external tools.
 
-That kind of power is only acceptable if it remains governed.
+Examples:
+
+- OpenClaw-assisted desktop execution
+- voice generation in ElevenLabs or local voice tools
+- video/content workflow preparation
+- browser-based research and tool use
+- local file organization
+- small-business workflow support
+- future YouTubeLIS-style production workflows
+
+These workflows should not be added as unrestricted automation. They need a stronger execution contract first.
 
 Audit logs alone are not enough. Logging what happened after the fact does not prevent damage. NovaLIS needs enforcement before execution, visibility during execution, and audit after execution.
 
 ---
 
-## User-Decided Core Rules
+## User-Decided Core Rule
 
-The governing rule should be simple:
+The governing rule is:
 
 > NovaLIS may not act unless permission is given, may not leave the approved scope, and must stop when the task is done.
 
@@ -39,7 +49,7 @@ Expanded rules:
 
 ## Core Design Shift
 
-The future design should not be:
+The design should not be:
 
 > NovaLIS has full computer access.
 
@@ -53,10 +63,11 @@ This preserves broad usefulness without giving unlimited authority.
 
 ## Governed Run Envelope
 
-A governed run should be represented by an explicit envelope before execution.
+A governed run must be represented by an explicit envelope before execution.
 
 Required fields:
 
+- run id
 - intent
 - user goal
 - approved steps
@@ -96,8 +107,32 @@ Blocked actions:
 - Continuing after download
 
 Stop condition:
-Audio file downloaded, task fails, user cancels, timeout occurs, or scope violation is detected.
+Audio file downloaded, task fails, user cancels, timeout occurs, executor becomes uncertain, or scope violation is detected.
 ```
+
+---
+
+## Initial Envelope Shape
+
+A first implementation can start with a small JSON-like structure:
+
+```json
+{
+  "run_id": "generated_id",
+  "intent": "generate_voiceover",
+  "goal": "Generate audio for the approved script",
+  "risk_level": "medium",
+  "allowed_surfaces": ["browser", "elevenlabs.com", "downloads_folder"],
+  "allowed_actions": ["open_url", "paste_text", "click_generate", "download_file"],
+  "blocked_actions": ["purchase", "account_change", "publish", "send_message", "unrelated_browsing"],
+  "required_approvals": ["start_run", "high_risk_action", "scope_expansion"],
+  "stop_conditions": ["goal_complete", "timeout", "user_cancel", "scope_violation", "executor_uncertain"],
+  "timeout_seconds": 600,
+  "audit_level": "step_receipt"
+}
+```
+
+This does not need to be perfect in the first implementation. It needs to be strict enough to prevent vague, open-ended desktop control.
 
 ---
 
@@ -150,9 +185,37 @@ Default behavior:
 
 ---
 
-## Required Runtime Changes
+## Hard Safety Defaults
 
-Before this becomes real runtime behavior, NovaLIS would need several upgrades.
+Until a stronger credential and public-action policy exists, these defaults should apply:
+
+1. Credential entry is user-only.
+2. Public publishing requires final human approval.
+3. Purchases require final human approval.
+4. Sending messages or emails requires final human approval.
+5. Deleting files requires final human approval.
+6. Installing software requires final human approval.
+7. Unknown executables are blocked by default.
+8. If the executor cannot confidently determine the next action is inside the approved envelope, it must pause.
+
+---
+
+## Scope Violations
+
+A run should pause or stop if any of these happen:
+
+- Current URL leaves the approved domain or URL pattern.
+- Active app/window leaves the approved surface.
+- The executor attempts a blocked action.
+- The executor attempts to access files outside approved paths.
+- The executor attempts to continue after the stop condition is met.
+- The executor tries to escalate from read-only to write/upload/send/publish.
+- The executor becomes uncertain about the page, app, file, or next step.
+- The user cancels or revokes permission.
+
+---
+
+## Required Runtime Changes
 
 ### 1. Governed Run Envelope Schema
 
@@ -160,13 +223,23 @@ Create a strict schema for task-scoped execution.
 
 The schema should be machine-readable and validated before any OpenClaw or desktop action begins.
 
-### 2. OpenClaw Governed Run Mode
+### 2. Envelope Policy Evaluator
+
+Add a small evaluator that can decide:
+
+- Is this envelope valid?
+- What is the risk tier?
+- Does this require approval?
+- Is the next action allowed?
+- Should execution pause or stop?
+
+### 3. OpenClaw Governed Run Mode
 
 OpenClaw should not receive vague instructions like "do this task."
 
 It should receive a constrained envelope with allowed actions, blocked actions, and stop conditions.
 
-### 3. Scope Monitor
+### 4. Scope Monitor
 
 NovaLIS needs a way to detect whether a run is still inside scope.
 
@@ -180,7 +253,7 @@ Possible checks:
 - elapsed time
 - attempted sensitive action
 
-### 4. Stop Conditions
+### 5. Stop Conditions
 
 Runs must stop automatically when:
 
@@ -192,7 +265,7 @@ Runs must stop automatically when:
 - the executor becomes uncertain
 - the active surface moves outside scope
 
-### 5. Trust Review Card
+### 6. Trust Review Card
 
 Before execution, the user should see a clear review card:
 
@@ -201,12 +274,13 @@ Before execution, the user should see a clear review card:
 - allowed surfaces
 - blocked actions
 - risk level
-- approval required
+- approvals required
 - stop condition
+- timeout
 
 This makes governance visible instead of hidden.
 
-### 6. Step Ledger / Run Receipt
+### 7. Step Ledger / Run Receipt
 
 Every governed run should produce an audit receipt:
 
@@ -219,11 +293,11 @@ Every governed run should produce an audit receipt:
 - result
 - stop reason
 
-### 7. Pause / Stop / Revoke Controls
+### 8. Pause / Stop / Revoke Controls
 
 The user must be able to interrupt a governed run.
 
-A future UI should support:
+A UI should support:
 
 - pause
 - resume
@@ -243,15 +317,63 @@ A better first foundation is:
 openclaw_governed_run
 ```
 
-This would become the general governed desktop/browser executor lane.
+This should become the general governed desktop/browser executor lane.
 
-Future capabilities like YouTubeLIS, Shopify workflows, email drafting, research workflows, or local file organization could use this foundation later.
+Future workflows like YouTubeLIS, Shopify operations, email drafting, research workflows, or local file organization could use this foundation later.
+
+---
+
+## Immediate Build Order
+
+1. Keep this folder isolated from runtime truth until implementation begins.
+2. Add `ENVELOPE_SCHEMA.md` with exact fields, states, and validation rules.
+3. Add `TEST_PLAN.md` with adversarial and normal workflow cases.
+4. Implement an envelope schema object in code.
+5. Implement a small envelope policy evaluator.
+6. Add a non-executing dry-run mode.
+7. Add Trust Review Card rendering for envelopes.
+8. Add ledger receipt structure.
+9. Add stop/pause/revoke state model.
+10. Only then connect a harmless OpenClaw/browser run.
+11. Test harmless tasks first.
+12. Test medium-risk tasks only after blocking, pausing, and receipts are reliable.
+
+---
+
+## Minimum First Workflow
+
+The first workflow should be intentionally boring and safe.
+
+Example:
+
+```text
+Task:
+Open an approved website, read visible page title, return summary, stop.
+```
+
+Allowed:
+
+- open one approved URL
+- read visible content
+- return summary
+
+Blocked:
+
+- clicking unrelated links
+- logging in
+- downloading
+- uploading
+- sending
+- purchasing
+- continuing after summary
+
+This gives NovaLIS a safe way to validate the control loop before higher-risk workflows.
 
 ---
 
 ## Relationship to Current NovaLIS Governance
 
-This proposed model should preserve the existing NovaLIS doctrine:
+This model must preserve the existing NovaLIS doctrine:
 
 - Intelligence is not authority.
 - Reasoning may propose actions.
@@ -260,7 +382,7 @@ This proposed model should preserve the existing NovaLIS doctrine:
 - No hidden background execution.
 - No uncontrolled autonomy.
 
-This document should not override generated runtime truth documents.
+This document does not override generated runtime truth documents.
 
 ---
 
@@ -275,7 +397,7 @@ It improves:
 - OpenClaw containment
 - user trust
 - auditability
-- future workflow readiness
+- workflow readiness
 - YouTubeLIS readiness
 - small-business workflow readiness
 
@@ -295,25 +417,25 @@ This model does not allow:
 
 ---
 
-## Recommended Build Order
+## Promotion Criteria
 
-1. Keep this as a future planning document.
-2. Define the envelope schema.
-3. Add a small policy evaluator for envelopes.
-4. Add a Trust Review Card UI.
-5. Add stop/pause/revoke controls.
-6. Add OpenClaw governed run adapter.
-7. Add ledger receipt output.
-8. Test with harmless desktop/browser tasks.
-9. Only then test medium-risk workflows like ElevenLabs voice generation.
-10. Only after that consider YouTubeLIS-style workflows.
+This should not be described as current runtime behavior until:
+
+- envelope schema exists in code
+- policy evaluator exists in code
+- tests cover normal and adversarial cases
+- Trust Review Card or equivalent approval surface exists
+- ledger receipts exist
+- stop/pause/revoke controls exist
+- OpenClaw adapter respects envelopes
+- generated runtime truth reflects the implementation
 
 ---
 
 ## Current Status
 
-Planning only.
+Immediate implementation planning track.
 
-Not implemented.
+Not implemented yet.
 
 No runtime claim should say NovaLIS currently supports governed desktop runs until this is built, tested, and represented in generated runtime truth.
