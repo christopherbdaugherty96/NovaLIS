@@ -6,6 +6,7 @@ Start with [docs/INDEX.md](INDEX.md). It routes readers by goal:
 
 - product overview and first use
 - runtime truth
+- current work continuity
 - architecture and governance
 - development and testing
 - roadmap and planning
@@ -17,11 +18,14 @@ If explanatory, historical, or design docs conflict with generated runtime truth
 
 The primary runtime truth source is [current_runtime/CURRENT_RUNTIME_STATE.md](current_runtime/CURRENT_RUNTIME_STATE.md).
 
+For human-readable current work continuity, including what is committed versus local or in-progress, use [status/CURRENT_WORK_STATUS.md](status/CURRENT_WORK_STATUS.md).
+
 ## Main Doc Layers
 
 - [product](product/) - product-facing explanations and positioning.
 - [architecture](architecture/) - stable architecture entry points and diagrams.
 - [current_runtime](current_runtime/) - generated runtime truth.
+- [status](status/) - human-maintained current work continuity notes.
 - [dev](dev/) - contributor setup, testing, and implementation guidance.
 - [reference/HUMAN_GUIDES](reference/HUMAN_GUIDES/) - plain-language guide set.
 - [PROOFS](PROOFS/) - implementation evidence and proof packets.
