@@ -16,6 +16,32 @@ Interpretation Rules:
 3. Governance and phase claims in design docs are directional unless reflected in runtime truth artifacts.
 4. Deprecated design docs must contain a deprecation banner pointing to the canonical design file.
 5. Product-truth packets may define the intended user-facing direction for Nova, but they still remain design-layer authority unless promoted into runtime truth artifacts.
+6. External integrations and provider choices must follow the Free-First Principle unless runtime truth explicitly implements a different approved policy.
+
+## Free-First Principle
+
+Status: ACTIVE DESIGN POLICY; not runtime enforcement until reflected in runtime truth artifacts.
+
+Nova defaults to free, open-source, local-first, or user-owned integration paths before paid, credit-metered, or vendor-locking services.
+
+Rules:
+- Free, open-source, local-first, and user-owned options are the default recommendation and design path.
+- Paid services are non-default and must be clearly flagged before recommendation or use.
+- Free-tier services with quotas, billing setup, credits, or usage limits must be flagged as `free_tier`, not treated as fully free.
+- Unknown cost posture must be treated as `unknown_cost` and flagged until verified.
+- Nova must not silently escalate from free/local execution to paid, metered, or externally billable execution.
+- Any paid or billing-risk path must require explicit user awareness before it is positioned as the recommended path.
+
+Rationale:
+- Preserves user sovereignty.
+- Prevents hidden cost surfaces.
+- Protects local-first product positioning.
+- Keeps capability expansion aligned with visible user authority instead of vendor convenience.
+
+Design implication:
+- Future capability metadata should include cost posture such as `free`, `free_tier`, `paid`, or `unknown_cost`.
+- Governor and trust-review surfaces should expose cost posture for any integration that may create billing, quota, or lock-in risk.
+- Ledger-visible cost flagging should be added before broad paid-provider execution is treated as normal runtime behavior.
 
 Authoritative Runtime Sources:
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
