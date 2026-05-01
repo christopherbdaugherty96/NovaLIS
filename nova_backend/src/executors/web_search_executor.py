@@ -7,6 +7,7 @@ import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeoutError, as_completed
 
 from src.actions.action_result import ActionResult
+from src.brain.search_synthesis import render_evidence_notes, synthesize_search_evidence
 from src.llm.llm_gateway import generate_chat
 from src.utils.content_extractor import extract_text_from_html
 
@@ -81,6 +82,7 @@ class WebSearchExecutor:
         *,
         researched_summary: str = "",
         source_pages_read: int = 0,
+        evidence: dict | None = None,
     ) -> dict:
         return {
             "widget": {
@@ -93,6 +95,7 @@ class WebSearchExecutor:
                     "summary": researched_summary,
                     "researched_summary": researched_summary,
                     "source_pages_read": source_pages_read,
+                    "evidence": evidence or {},
                     "follow_up_prompts": self._follow_up_prompts(query),
                     "suggested_actions": self._build_suggested_actions(query),
                     "results": [],
@@ -109,6 +112,7 @@ class WebSearchExecutor:
         *,
         researched_summary: str = "",
         source_pages_read: int = 0,
+        evidence: dict | None = None,
     ) -> dict:
         widget_summary = (researched_summary or "").strip() or self._build_summary(query, results)
         return {
@@ -122,6 +126,7 @@ class WebSearchExecutor:
                     "summary": widget_summary,
                     "researched_summary": widget_summary,
                     "source_pages_read": source_pages_read,
+                    "evidence": evidence or {},
                     "follow_up_prompts": self._follow_up_prompts(query),
                     "suggested_actions": self._build_suggested_actions(query),
                     "results": results,
@@ -555,16 +560,18 @@ class WebSearchExecutor:
 
         results = self._parse_results(data)[:5]
         if not results:
+            evidence = synthesize_search_evidence(query=query, results=[])
             return ActionResult.ok(
                 message=(
                     f"{boundary_notice} I couldn't find solid results for \"{query}\".\n"
                     "Try a more specific query, a company/site name, or a shorter topic phrase."
                 ),
-                data=self._empty_widget(query=query, provider=used_provider),
+                data=self._empty_widget(query=query, provider=used_provider, evidence=evidence.to_dict()),
                 request_id=request.request_id,
             )
 
         if self._looks_low_relevance(query, results):
+            evidence = synthesize_search_evidence(query=query, results=results, low_relevance=True)
             sources = self._format_visible_sources(results)
             message = "\n".join(
                 [
@@ -590,6 +597,7 @@ class WebSearchExecutor:
                     results=results,
                     researched_summary=f'I found little reliable evidence for "{query}".',
                     source_pages_read=0,
+                    evidence=evidence.to_dict(),
                 ),
                 request_id=request.request_id,
             )
@@ -605,7 +613,6 @@ class WebSearchExecutor:
         logger.info("web_search latency=%.2fs avg=%.2fs query=%s", elapsed_seconds, avg_latency, query[:80])
 
         provider_label = self._format_provider_label(used_provider)
-        confidence_label = "Medium" if used_provider == "brave" else "Medium-Low"
         search_deadline = started_at + SEARCH_HARD_TIMEOUT_SECONDS
         source_packets = self._collect_source_packets(
             capability_id=request.capability_id,
@@ -626,6 +633,8 @@ class WebSearchExecutor:
                 session_id=session_id,
                 timeout_seconds=min(SYNTHESIS_TIMEOUT_SECONDS, remaining_synthesis_budget),
             )
+        evidence = synthesize_search_evidence(query=query, results=results, source_packets=source_packets)
+        confidence_label, known_note, unclear_note = render_evidence_notes(evidence)
 
         report_sections = [
             f"Bottom line: {researched_summary}",
@@ -636,12 +645,8 @@ class WebSearchExecutor:
             *self._format_visible_sources(results),
             "",
             f"Confidence: {confidence_label}",
-            f"What is known: I found {len(results)} search result{'s' if len(results) != 1 else ''} and reviewed {len(source_packets)} source page{'s' if len(source_packets) != 1 else ''}.",
-            (
-                "What is unclear: Source pages were limited or not fully readable, so treat this as a starting point."
-                if len(source_packets) < min(len(results), MAX_SOURCE_READS)
-                else "What is unclear: Details may still change; use the linked sources for the latest context."
-            ),
+            f"What is known: {known_note}",
+            f"What is unclear: {unclear_note}",
             f"Source reading: reviewed {len(source_packets)} page{'s' if len(source_packets) != 1 else ''} via {provider_label}.",
             "",
             "Try next",
@@ -661,6 +666,7 @@ class WebSearchExecutor:
                 results=results,
                 researched_summary=researched_summary,
                 source_pages_read=len(source_packets),
+                evidence=evidence.to_dict(),
             ),
             request_id=request.request_id,
         )
