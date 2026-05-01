@@ -19,6 +19,7 @@ At this review baseline, the alignment branch includes:
 - Free-first cost governance design docs, merged in this alignment pass.
 - Auralis and YouTubeLIS planning docs already present on `main`.
 - OpenClaw robust hardening audit added as a future implementation recommendation, not runtime truth.
+- Governed Workflow Workspace Architecture added as a product/architecture planning note for everyday workflows, independent automation, and business-owner use cases.
 
 Generated runtime truth still reports the authoritative capability inventory and governance invariants. This note should not be used as a replacement for generated runtime docs.
 
@@ -53,6 +54,7 @@ Generated runtime truth still reports the authoritative capability inventory and
 - YouTubeLIS is a planning-only tool folder. It has no upload, publish, account automation, or YouTube Studio control.
 - OpenClaw remains governed/constrained and is not broad autonomy. Future expansion must require Run/Task Envelope/Governor/receipts.
 - The OpenClaw robust hardening audit recommends mandatory EnvelopeFactory issuance, disabling or preview-gating freeform goal execution, replacing action auto-allow, centralizing execution guards, adding boundary detection, and adding run/step receipts before any browser/computer-use expansion.
+- Governed Workflow Workspace is product planning for everyday workflows, independent automation, and business-owner workflows. It does not mean workflow templates, object models, onboarding wizard, or complete personal SaaS behavior are implemented.
 
 ---
 
@@ -68,8 +70,25 @@ Immediate continuation order:
 4. Plan cost posture metadata as the next design-to-runtime step, without hard blocking first.
 5. Plan Google read-only connector foundations only after cost posture and connector governance are clear.
 6. Keep OpenClaw expansion frozen until envelope issuance, approval, execution-guard, and receipt gaps are closed.
+7. Use the governed workflow workspace plan to guide product shell, object model, workflow template, and onboarding work after proof paths are stable.
 
 Do not start new write/action capabilities from this status pass.
+
+---
+
+## Governed Workflow Workspace Direction
+
+Canonical product planning note: [`../product/GOVERNED_WORKFLOW_WORKSPACE_ARCHITECTURE.md`](../product/GOVERNED_WORKFLOW_WORKSPACE_ARCHITECTURE.md).
+
+The broadened product direction is:
+
+```text
+A governed AI workspace for everyday workflows and independent automation.
+```
+
+This includes everyday personal workflows, household/life admin workflows, creator workflows, independent contractor workflows, small business workflows, research and learning workflows, content/media workflows, local-first assistant workflows, and approved automation routines.
+
+Independent business owners remain a major use case, but not the only use case.
 
 ---
 
@@ -106,6 +125,10 @@ Do not claim these are finished unless verified against code/runtime truth:
 - OpenClaw mandatory EnvelopeFactory enforcement.
 - OpenClaw real human approval gate.
 - OpenClaw browser/computer-use readiness.
+- Governed workflow workspace runtime shell.
+- Workflow object model.
+- Workflow template system.
+- First-run workspace onboarding wizard.
 - Free-first runtime enforcement.
 - One-click consumer installer.
 
