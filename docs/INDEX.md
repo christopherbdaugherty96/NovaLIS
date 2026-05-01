@@ -40,12 +40,15 @@ Use the product docs above first, then use runtime truth docs for exact capabili
 
 ## Current Work
 - [Current Work Status](status/CURRENT_WORK_STATUS.md)
+- [Branch and Workstream Status - 2026-05-01](status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01.md)
 - [Active TODO](todo/ACTIVE_TODO.md)
 - [Future Roadmap](future/ROADMAP.md)
 - [Future Guide](future/README.md)
 
 ## Future Connector and Product Directions
 - [Google Connector Model](future/NOVA_GOOGLE_CONNECTOR_MODEL.md)
+- [Google Connector Implementation Roadmap](future/GOOGLE_CONNECTOR_IMPLEMENTATION_ROADMAP.md)
+- [Free-First Cost Governance First Steps](design/Phase%206/FREE_FIRST_COST_GOVERNANCE_FIRST_STEPS_2026-04-30.md)
 - [Nova x Auralis Digital Website Engine](future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE.md)
 - [Auralis Website Coworker Workflow](future/AURALIS_WEBSITE_COWORKER_WORKFLOW.md)
 - [Auralis Mock Lead Fixtures](future/auralis_mock_leads/README.md)

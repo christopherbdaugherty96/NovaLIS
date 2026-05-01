@@ -17,6 +17,7 @@ Done:
 - In-memory planning-only RunManager scaffold exists.
 - General-chat fallback can create a session-local planning Run Preview for task-like requests.
 - Static Capability Contract catalog exists for Cap 16, Cap 64, Cap 65, and Cap 63.
+- Search Evidence Synthesis exists as deterministic Cap 16 evidence-structuring code.
 - Brain live-test proof exists under `docs/demo_proof/brain_live_test/`.
 
 Still not done:
@@ -39,13 +40,12 @@ Still not done:
 - Model Router / Tier Manager
 - Intention Parser / structured output validation
 - Tool / Function Calling Bridge
-- Search Synthesis module
 - Sandbox Boundary Enforcer
 - Persona / Identity Filter
 
 Active P1 blocker:
 
-- Cap 16 search reliability / CPU-budget handling for current-information prompts.
+- Cap 16 current-information reliability, evidence quality, and proof re-run.
 
 ---
 
@@ -218,7 +218,7 @@ Mapping to existing roadmap phases:
 | 5 — Task Understanding / Simple Task Mode | ✅ scaffold | `TaskUnderstanding`, `TaskEnvelope`, `SimpleTaskPlan` | `test_task_understanding.py` | conversation fallback preview helper only |
 | 6 — Planning-only RunManager / Run Preview | ✅ scaffold | `RunManager`, `Run`, `RunStep`, planning preview helper | `test_run_manager.py`, conversation preview tests | session-local conversation metadata only |
 | 7 — Brain Trace UI | ⚠️ schema only | `BrainTraceEvent` dataclass | `test_environment_request.py` | none |
-| 8 — Cap 16 Reliability Integration | ❌ | — | — | — |
+| 8 — Cap 16 Reliability Integration | ⚠️ partial | `SearchEvidence`, `synthesize_search_evidence()` | `test_search_synthesis.py`, `test_web_search_evidence.py` | attached to governed web-search widget metadata |
 | 9 — OpenClaw Environment Planning | ❌ | planning docs only | — | none |
 | 10 — Project Contexts / Suggestion Buffer | ❌ | — | — | — |
 
@@ -378,7 +378,7 @@ Rules:
 
 ## Phase 7 — Search Synthesis Module
 
-Status: future.
+Status: implemented as deterministic Cap 16 evidence structuring.
 
 Goal: turn raw search results into structured evidence before final response synthesis.
 
@@ -392,6 +392,15 @@ Deliverables:
 - weak/no-evidence behavior
 
 This phase supports Cap 16 reliability and future Brain dry runs.
+
+Boundary:
+
+- does not add a capability
+- does not authorize action
+- does not bypass NetworkMediator
+- does not call OpenClaw
+- does not create a browser/file/email/calendar/account action
+- structures evidence already collected by the existing governed web-search executor
 
 ---
 

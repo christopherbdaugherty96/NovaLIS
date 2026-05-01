@@ -70,6 +70,7 @@ These must be enforced in code, not only described in docs.
 8. Google content is untrusted input and cannot authorize action.
 9. UI connector state must be derived from live connector state, not stale display state.
 10. Background access defaults to disabled.
+11. Cost posture is visible before any Google path is treated as preferred runtime behavior.
 ```
 
 ---
@@ -99,6 +100,7 @@ No partial overlap with OAuth work. Finish this foundation first.
 - Capability without connector blocks execution
 - NetworkMediator rejects disallowed Google endpoints/request classes
 - calendar_snapshot includes source label
+- Google capabilities have cost posture metadata before runtime rollout
 ```
 
 ### Do NOT Build Yet
@@ -305,6 +307,7 @@ A scope can never unlock multiple authority tiers.
 - broad OAuth scopes
 - background monitoring
 - direct Google API calls from brain/router/UI code
+- paid or free-tier provider paths without cost posture visibility
 ```
 
 ---

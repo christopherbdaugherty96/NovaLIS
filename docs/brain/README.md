@@ -47,6 +47,7 @@ Implemented today:
 - conversation fallback helper can create a session-local planning Run Preview for task-like requests
 - read-only EnvironmentRequest schema scaffold
 - static Capability Contract catalog for Cap 16, Cap 64, Cap 65, and Cap 63
+- deterministic Search Evidence Synthesis for structuring Cap 16 governed-search evidence metadata
 - Brain live proof package under `docs/demo_proof/brain_live_test/`
 
 Not fully implemented yet:
@@ -64,6 +65,8 @@ Not fully implemented yet:
 - suggestion buffer runtime
 - full OpenClaw environment planning
 - full model router / context assembler / intention parser stack
+
+Search Evidence Synthesis is not an authority path. It structures results already collected by the governed web-search executor; it does not search, browse, call OpenClaw, authorize action, or add a capability.
 
 ## OpenClaw Boundary
 
