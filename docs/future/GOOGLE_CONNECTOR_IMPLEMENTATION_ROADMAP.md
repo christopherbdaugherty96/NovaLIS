@@ -1,8 +1,10 @@
-# Google Connector Implementation RoadMAP
+# Google Connector Implementation Roadmap
 
 Status: implementation planning (aligned to GOOGLE_INTEGRATION_DESIGN_DOC)
 
 Date: 2026-04-30
+
+Fourth-pass hardening: 2026-04-30
 
 Purpose: translate the Google integration design into an executable, phase-ordered roadmap with strict safety gates.
 
@@ -21,17 +23,71 @@ Send/write later, if ever.
 
 ---
 
+## Architecture Rule
+
+The connector layer is not a feature.
+
+It is part of Nova's execution spine.
+
+Google work must never become a side-channel around governance.
+
+Correct flow:
+
+```text
+User
+→ GovernorMediator
+→ CapabilityRegistry
+→ ConnectorRegistry / Connector Check
+→ Governor
+→ ExecuteBoundary
+→ ConnectorMediator
+→ NetworkMediator
+→ Executor
+→ Ledger
+```
+
+Wrong flow:
+
+```text
+Brain / router / LLM
+→ Google API directly
+```
+
+---
+
+## Non-Negotiable Invariants
+
+These must be enforced in code, not only described in docs.
+
+```text
+1. Connector check happens before Governor approval.
+2. Scope → capability mapping is machine-enforced at runtime.
+3. ConnectorRegistry is authoritative runtime state, not helper/cache state.
+4. Missing connector, invalid token, or missing scope fails closed.
+5. NetworkMediator validates connector intent, endpoint, and request class.
+6. Cap 64 remains permanently local-only.
+7. Reads are bounded at executor level, not just prompt/UI level.
+8. Google content is untrusted input and cannot authorize action.
+9. UI connector state must be derived from live connector state, not stale display state.
+10. Background access defaults to disabled.
+```
+
+---
+
 ## Phase 8.1 — Connector Foundation (REQUIRED FIRST)
 
 Build before any OAuth or Google API work.
+
+No partial overlap with OAuth work. Finish this foundation first.
 
 ### Deliverables
 
 ```text
 - ConnectorRegistry (code + validation)
 - Scope → Capability mapping (enforced table)
-- Connector check inserted into GovernorMediator path
+- Connector check inserted into GovernorMediator path BEFORE Governor approval
 - Calendar source labeling (local | ics | google)
+- NetworkMediator connector validation hook
 ```
 
 ### Exit Criteria
@@ -41,6 +97,7 @@ Build before any OAuth or Google API work.
 - Missing/expired connector fails closed
 - Scope mismatch blocks execution
 - Capability without connector blocks execution
+- NetworkMediator rejects disallowed Google endpoints/request classes
 - calendar_snapshot includes source label
 ```
 
@@ -71,6 +128,7 @@ Build before any OAuth or Google API work.
 
 ```text
 - No app scopes requested
+- UI state is live-derived from ConnectorRegistry
 - UI accurately reflects connector state
 - Disconnect removes local token reference
 - No token values exposed anywhere
@@ -91,7 +149,7 @@ Build before any OAuth or Google API work.
 ### Exit Criteria
 
 ```text
-- Tokens never appear in logs, UI, or prompts
+- Tokens never appear in logs, UI, receipts, or prompts
 - Expired tokens block connector usage
 - Reconnect flow works cleanly
 ```
@@ -122,10 +180,11 @@ Build before any OAuth or Google API work.
 ### Exit Criteria
 
 ```text
-- All reads are bounded
+- All reads are bounded at executor level
 - No write endpoints exist
-- Unsupported actions are blocked
+- Unsupported actions are blocked before execution
 - Receipts show read-only activity
+- Prompt injection inside email/calendar content cannot trigger action
 ```
 
 ---
@@ -145,8 +204,9 @@ Build before any OAuth or Google API work.
 ### Exit Criteria
 
 ```text
-- Draft requires confirmation
+- Draft requires fresh confirmation
 - Draft is local only
+- Cap 64 never calls Gmail API
 - Receipt explicitly states "not sent"
 ```
 
@@ -164,8 +224,9 @@ Build before any OAuth or Google API work.
 ### Exit Criteria
 
 ```text
-- All reads are user-bounded or query-bounded
+- All reads are user-bounded or query-bounded at executor level
 - No mutation endpoints exist
+- Drive cannot crawl entire account by default
 ```
 
 ---
@@ -185,11 +246,15 @@ Build before any OAuth or Google API work.
 - Approval UX is strong and clear
 - Receipt system proven
 - Negative tests cover all write-deny paths
+- Stale approvals cannot be reused
+- Each write capability has a separate contract
 ```
 
 ---
 
 ## Scope → Capability Matrix (MUST IMPLEMENT)
+
+This table must be executable policy, not documentation only.
 
 ```text
 gmail.readonly → gmail_read_only ONLY
@@ -206,6 +271,12 @@ gmail.compose → gmail_api_draft_confirmed ONLY
 calendar.events → calendar_write_confirmed ONLY
 ```
 
+Hard rule:
+
+```text
+A scope can never unlock multiple authority tiers.
+```
+
 ---
 
 ## Required Tests (Minimum)
@@ -215,8 +286,12 @@ calendar.events → calendar_write_confirmed ONLY
 - Calendar write requested → blocked
 - Missing scope → blocked
 - Expired token → blocked
+- Missing connector → blocked
 - Prompt injection → ignored
 - Direct API bypass → blocked
+- NetworkMediator rejects disallowed Google endpoint/request class
+- Cap 64 cannot call Gmail API
+- UI shows expired/revoked connector accurately
 ```
 
 ---
@@ -229,6 +304,7 @@ calendar.events → calendar_write_confirmed ONLY
 - Drive mutation
 - broad OAuth scopes
 - background monitoring
+- direct Google API calls from brain/router/UI code
 ```
 
 ---
@@ -242,6 +318,7 @@ calendar.events → calendar_write_confirmed ONLY
 - Reads are useful and bounded
 - Drafts are helpful but safe
 - No hidden actions occur
+- Runtime truth and docs agree
 ```
 
 ---
