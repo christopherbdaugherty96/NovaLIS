@@ -11,6 +11,7 @@ Generated runtime truth files are the authority for exact live status.
 - [First 5 Minutes](product/FIRST_5_MINUTES.md)
 - [What Works Today](product/WHAT_WORKS_TODAY.md)
 - [Nova Operating Model](product/NOVA_OPERATING_MODEL.md)
+- [Governed Workflow Workspace Architecture](product/GOVERNED_WORKFLOW_WORKSPACE_ARCHITECTURE.md)
 - [Nova Brain](brain.md)
 - [Conversation and Memory Model](product/CONVERSATION_AND_MEMORY_MODEL.md)
 - [Governed System Architecture](product/GOVERNED_SYSTEM_ARCHITECTURE.md)
@@ -48,6 +49,7 @@ Use the product docs above first, then use runtime truth docs for exact capabili
 - [Future Guide](future/README.md)
 
 ## Future Connector and Product Directions
+- [Governed Workflow Workspace Architecture](product/GOVERNED_WORKFLOW_WORKSPACE_ARCHITECTURE.md)
 - [Google Connector Model](future/NOVA_GOOGLE_CONNECTOR_MODEL.md)
 - [Google Connector Implementation Roadmap](future/GOOGLE_CONNECTOR_IMPLEMENTATION_ROADMAP.md)
 - [Free-First Cost Governance First Steps](design/Phase%206/FREE_FIRST_COST_GOVERNANCE_FIRST_STEPS_2026-04-30.md)
