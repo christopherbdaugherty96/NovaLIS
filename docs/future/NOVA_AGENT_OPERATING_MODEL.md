@@ -52,6 +52,7 @@ Recommended hierarchy:
 
 ```text
 Owner / Human Authority
+-> Personal Personality Layer
 -> Nova Core
 -> Global Manager
 -> Domain Managers
@@ -63,23 +64,74 @@ Owner / Human Authority
 
 The human remains the final authority for risky or external actions.
 
+The Personal Personality Layer is the user's natural conversational face for Nova. It receives the feed from Nova Core and the manager/agent system, translates it into the user's preferred voice, and keeps the experience coherent. It does not hold independent execution authority.
+
 Agents reason and coordinate. Capabilities execute. The Governor authorizes. The user approves risky actions. The ledger records what happened.
+
+---
+
+## Personal Personality Layer
+
+Nova should include a personal personality layer above the operating system of agents.
+
+This layer is the user-facing companion/personality that receives structured feeds from Nova Core, Global Manager, and domain managers, then presents them in the user's preferred style.
+
+Purpose:
+
+- provide one coherent relationship surface instead of making the user talk to many agents
+- absorb feeds from all managers and agents
+- translate operational findings into natural voice/text briefings
+- remember communication preferences and tone
+- preserve continuity across personal, home, and business domains
+- decide how much detail to speak versus send to dashboard/text
+- keep Nova feeling like one assistant, not a loose collection of bots
+
+It should not:
+
+- bypass Nova Core
+- bypass the Governor
+- call tools directly
+- create hidden authority
+- override approval requirements
+- silently merge sensitive business or personal context without visibility
+
+Recommended role:
+
+```text
+The Personal Personality Layer is presentation, continuity, and relationship intelligence.
+It is not execution authority.
+```
+
+Example:
+
+```text
+Agent feeds:
+- Email/Calendar Manager: 6 emails need action, 2 scheduling conflicts
+- Auralis Manager: 3 leads, 1 launch blocker
+- Pour Social Manager: 1 quote follow-up
+- Personal Manager: appointment tomorrow morning
+
+Personal Personality Layer response:
+"You have a business-heavy day. The main thing is Auralis: three leads came in, and one project is blocked by a missing form destination. Pour Social has one quote follow-up. You also have a calendar conflict tomorrow morning. I can open the review board with drafts and scheduling options."
+```
+
+This keeps the interface personal while the underlying system stays structured and governed.
 
 ---
 
 ## Nova Core
 
-Nova Core is the primary assistant identity the user interacts with by voice or text.
+Nova Core is the primary operating identity behind the user-facing personality layer.
 
 Nova Core responsibilities:
 
-- receive voice and text input
+- receive voice and text input from the Personal Personality Layer
 - preserve owner context
 - detect intent
 - route work to the Global Manager or the right domain manager
 - request memory through governed memory surfaces
 - frame approvals clearly
-- synthesize final responses
+- synthesize final responses for the Personal Personality Layer
 - surface trust and receipt information
 
 Nova Core should not contain every business workflow directly. It should coordinate and delegate.
@@ -89,11 +141,18 @@ Example:
 ```text
 User: Nova, what needs my attention today?
 
+Personal Personality Layer:
+- receives the user request
+- passes the operational request to Nova Core
+
 Nova Core:
 - routes to Global Manager
 - requests snapshots from Personal, Email/Calendar, Auralis, Pour Social, Commerce, and Home managers
 - merges the findings into one command briefing
 - separates safe actions from approval-required actions
+
+Personal Personality Layer:
+- presents the briefing in the user's preferred tone and level of detail
 ```
 
 ---
@@ -112,6 +171,7 @@ Responsibilities:
 - produce one action board
 - identify which actions need approval
 - prevent cross-domain confusion
+- send structured feed summaries to Nova Core and the Personal Personality Layer
 
 Example:
 
@@ -149,6 +209,7 @@ Each domain manager should define:
 - checklist templates
 - reporting schema
 - approval expectations
+- feed format for the Global Manager and Personal Personality Layer
 
 Domain managers should not own raw credentials or bypass connector/capability boundaries.
 
@@ -186,6 +247,47 @@ Email/Calendar Coordination Manager
 ```
 
 Task assistants may analyze, classify, summarize, draft, and request capability calls. They do not execute actions directly.
+
+---
+
+## Agent Feed Contract
+
+Agents and managers should emit structured feeds, not only prose.
+
+This lets the Personal Personality Layer summarize across the whole system without losing governance details.
+
+Example shape:
+
+```json
+{
+  "feed_id": "auralis_daily_feed_001",
+  "source_agent": "auralis_manager",
+  "workspace": "business/auralis",
+  "summary": "Three leads need review and one project has a launch blocker.",
+  "priority": "high",
+  "items": [
+    {
+      "type": "lead",
+      "label": "GreenEdge Lawn Care",
+      "status": "needs_reply",
+      "recommended_action": "draft_intake_reply",
+      "risk_tier": 2,
+      "requires_approval": true
+    }
+  ],
+  "safe_to_speak": true,
+  "requires_dashboard_review": true
+}
+```
+
+Feed rules:
+
+- feeds should include source agent and workspace
+- feeds should include risk tiers for suggested actions
+- feeds should mark whether content is safe to speak aloud
+- feeds should mark whether dashboard review is required
+- feeds should preserve approval requirements
+- feeds should avoid leaking sensitive domain details unless the user requested them or the active context allows it
 
 ---
 
@@ -277,6 +379,7 @@ Future multi-agent behavior requires clear memory boundaries.
 Recommended memory scopes:
 
 - global/user
+- personal/personality
 - personal/home
 - business/auralis
 - business/pour_social
@@ -287,11 +390,13 @@ Recommended memory scopes:
 
 Rules:
 
+- the Personal Personality Layer may use global/user and personal/personality memory for tone and continuity
 - domain agents read their own memory by default
 - Global Manager may request cross-domain summaries
 - cross-domain memory use should be visible
 - sensitive memory should be lockable
 - business records should not silently leak into unrelated domains
+- personality memory should shape presentation, not authorize action
 
 ---
 
@@ -310,6 +415,7 @@ Examples:
 - draft internally
 - score readiness
 - detect missing information
+- personalize the briefing style
 
 No external effect.
 
@@ -382,6 +488,8 @@ Principle:
 Voice is for command, briefing, navigation, and low-risk flow.
 Text/dashboard is for review, precision, batch approvals, and receipts.
 ```
+
+The Personal Personality Layer decides how to present structured feeds over voice or text, but it must preserve the underlying action boundaries.
 
 Voice examples:
 
@@ -474,15 +582,17 @@ Execution authority should remain governed, transparent, and user-controlled.
 
 Recommended path:
 
-1. Define the agent operating model and workspace model.
+1. Define the agent operating model, Personal Personality Layer, feed contract, and workspace model.
 2. Define Google Workspace connector plan.
 3. Define Email Action Board and Batch Action Envelope.
 4. Build read-only connector capabilities first.
 5. Add domain/workspace overlays.
-6. Add draft/prepare capabilities.
-7. Add Trust Panel and batch approvals.
-8. Add bounded writes.
-9. Defer high-risk external effects until trust UX, receipts, and tests are strong.
+6. Add structured manager/agent feeds.
+7. Add the Personal Personality Layer as a presentation/continuity layer.
+8. Add draft/prepare capabilities.
+9. Add Trust Panel and batch approvals.
+10. Add bounded writes.
+11. Defer high-risk external effects until trust UX, receipts, and tests are strong.
 
 ---
 
@@ -494,6 +604,6 @@ Best framing:
 Nova is a manager of controlled assistants, not one uncontrolled autonomous agent.
 ```
 
-Each assistant has a job. Each connector has a boundary. Each capability has a risk tier. Each risky action requires approval. Each execution creates a receipt.
+The Personal Personality Layer keeps the experience human and coherent, but it does not create authority. Each assistant has a job. Each connector has a boundary. Each capability has a risk tier. Each risky action requires approval. Each execution creates a receipt.
 
 This keeps Nova powerful enough to become a personal/home/business operating system while preserving its central principle: intelligence is not authority.
