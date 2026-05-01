@@ -28,6 +28,8 @@ Use the product docs above first, then use runtime truth docs for exact capabili
 - [Brain Architecture Package](brain/README.md)
 - [Brain Runtime Architecture](brain/NOVA_BRAIN_RUNTIME_ARCHITECTURE.md)
 - [Brain Implementation Roadmap](brain/IMPLEMENTATION_ROADMAP.md)
+- [OpenClaw Environment Model](brain/OPENCLAW_ENVIRONMENT_MODEL.md)
+- [OpenClaw Robust Hardening Audit - 2026-05-01](future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md)
 
 ## Trust, Proof, and Signoff
 - [Trust Proof Plan](product/TRUST_PROOF_PLAN.md)
@@ -49,6 +51,7 @@ Use the product docs above first, then use runtime truth docs for exact capabili
 - [Google Connector Model](future/NOVA_GOOGLE_CONNECTOR_MODEL.md)
 - [Google Connector Implementation Roadmap](future/GOOGLE_CONNECTOR_IMPLEMENTATION_ROADMAP.md)
 - [Free-First Cost Governance First Steps](design/Phase%206/FREE_FIRST_COST_GOVERNANCE_FIRST_STEPS_2026-04-30.md)
+- [OpenClaw Robust Hardening Audit - 2026-05-01](future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md)
 - [Nova x Auralis Digital Website Engine](future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE.md)
 - [Auralis Website Coworker Workflow](future/AURALIS_WEBSITE_COWORKER_WORKFLOW.md)
 - [Auralis Mock Lead Fixtures](future/auralis_mock_leads/README.md)
