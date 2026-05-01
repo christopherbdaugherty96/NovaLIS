@@ -52,10 +52,10 @@ Business: Mobile bar
 Scope: 5 pages + booking
 
 Recommended package:
-Standard Website Build
+Standard Website
 
 Estimated price:
-$800-$1500
+Starting at $1,000+; final quote depends on scope.
 
 Proposed action:
 Draft proposal email
@@ -121,6 +121,8 @@ Auralis should send to Nova:
 
 - approval decisions
 - optional modifications to proposed actions
+
+Auralis must not construct executable payloads directly. Nova owns proposal creation, proposal versioning, payload snapshots, and execution routing.
 
 ## Data flow
 
