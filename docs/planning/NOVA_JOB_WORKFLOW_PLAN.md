@@ -118,6 +118,24 @@ A decision must never directly execute. Only an explicitly approved action may e
 11. No public-facing pricing promise should be generated without marking the price as estimate, starting price, or quote-based according to the Auralis pricing source.
 12. Client data captured in jobs should stay local and inspectable; future CRM/export behavior must be separately approved and governed.
 
+## Nova Jobs v0 implementation contract
+
+For the first implementation slice, keep the job system deliberately narrow.
+
+V0 rules:
+
+- Job creation is explicit only.
+- Primary command: `create website lead job: [lead text]`
+- No automatic lead detection yet.
+- No background scheduler or follow-up automation yet.
+- No CRM export, external sync, or third-party lead storage yet.
+- No sales tactics, persuasion layer, or objection-handling style yet.
+- No full Auralis UI is required for v0.
+- Job state should use SQLite for v0 unless implementation constraints force a narrower temporary proof.
+- V0 success is one complete governed path: Website Lead -> Proposal -> Approval -> Cap 64 Email Draft -> Ledger records.
+
+The v0 implementation should be small enough to test end-to-end before any additional workflow domains are added.
+
 ## Email draft capability mapping requirement
 
 The website workflow must map to Nova's actual email-draft capability contract before implementation.
@@ -221,6 +239,26 @@ Rules:
 - modified proposals must be versioned and re-approved
 - retries should create new jobs or explicit retry records, not mutate history silently
 
+## NEEDS_MORE_INFO resume behavior
+
+If required lead details are missing, Nova should set the job to `NEEDS_MORE_INFO` and store the missing fields explicitly.
+
+Resume rules:
+
+- User-provided updates are appended to the job record.
+- Nova re-runs parsing and qualification after the update.
+- If proposal-affecting fields changed, any prior proposal or approval is invalidated and a new proposal version is required.
+- If the updated information is still incomplete, the job remains `NEEDS_MORE_INFO`.
+- If the updated information is sufficient, the job resumes at `ANALYZED` or `PROPOSED`, depending on whether a new proposal can be generated safely.
+
+Example:
+
+```text
+Job needs: timeline, budget, requested features.
+User adds: timeline = 3 weeks, requested features = booking + AI chat.
+Nova updates parsed_input, re-runs recommendation, and creates a new proposal version.
+```
+
 ## Decision contract
 
 ```json
@@ -282,7 +320,7 @@ Minimum storage can start as JSON or SQLite.
 
 Decision:
 
-- Start with SQLite if dashboard querying, filtering, or history inspection is expected in the first slice.
+- Use SQLite for v0 unless implementation constraints force a narrower temporary proof.
 - JSON is acceptable only for a narrow local proof if access is serialized, tested, and not treated as the long-term store.
 
 Track:
@@ -517,6 +555,94 @@ Suggested config shape:
 }
 ```
 
+## Package recommendation rules
+
+Use deterministic rules before relying on generated judgment.
+
+```text
+Existing-site cleanup only -> Website Refresh
+Simple local presence / basic brochure site -> Basic Website
+Standard lead capture, quote request, service positioning -> Standard Website
+Booking, analytics, growth positioning, larger scope -> Standard Website or Business Growth Website
+AI integration -> Business Growth Website or Premium / Custom
+7+ pages -> Business Growth Website or Premium / Custom
+Ecommerce, complex integrations, migration, or custom automation -> Premium / Custom or NEEDS_MORE_INFO
+Unclear scope, missing timeline, unclear budget, or ambiguous integrations -> NEEDS_MORE_INFO or estimate language
+```
+
+Rules:
+
+- Never recommend a lower package when requested features clearly require a higher tier.
+- If scope is incomplete, present price as a starting estimate, not a fixed quote.
+- If AI integration is requested, do not recommend below Business Growth Website unless the request is explicitly limited to discovery/planning.
+- If pricing uncertainty exists, propose a discovery question before final proposal.
+
+## Minimum job API sketch
+
+Auralis and future UI surfaces should read from Nova rather than constructing job state themselves.
+
+Initial API shape may be local-only and implementation-specific, but should resemble:
+
+```text
+GET /jobs
+GET /jobs/{job_id}
+POST /jobs/website-lead
+POST /jobs/{job_id}/approve
+POST /jobs/{job_id}/reject
+POST /jobs/{job_id}/edit
+```
+
+Rules:
+
+- `POST /jobs/website-lead` creates a job from explicit lead text.
+- Approval routes submit decisions back to Nova; they do not execute directly.
+- Edit routes create a new proposal version.
+- Execution remains Nova-owned and governed.
+
+## Failure recovery rules
+
+Failure should produce visible job state, not silent drops.
+
+```text
+Parsing failure -> NEEDS_MORE_INFO or FAILED with retry option
+Missing required lead fields -> NEEDS_MORE_INFO
+Cap 64 unavailable / mail client not configured -> blocked execution or FAILED with clear operator message
+Approval payload mismatch -> block execution and create new proposal version
+Disabled capability -> block execution until capability is available; do not bypass
+Ledger write failure -> fail closed; do not mark job completed
+```
+
+Retry rules:
+
+- Retrying a failed job should create an explicit retry record or new job reference.
+- Terminal job history should not be silently overwritten.
+- If a retry changes proposal-affecting data, approval must reset.
+
+## Job data retention and privacy guidance
+
+V0 lead data should remain local and inspectable.
+
+Later controls should include:
+
+- delete job
+- archive job
+- redact client contact information
+- export job only by explicit user request
+- no external CRM sync without a separate approved workflow
+
+Until those controls exist, avoid accumulating unnecessary client data beyond what the website lead workflow requires.
+
+## Cap 64 preflight target
+
+For v0, preflight does not need to prove the email was sent. Nova must never send the email.
+
+Minimum readiness checks:
+
+- Can Nova construct the governed Cap 64 request payload?
+- Can the executor construct the `mailto:` draft URI?
+- Does the OS report a successful attempt to open the default mail client, or does the executor return a clear failure?
+- If local mail draft creation fails, the job must not be marked completed.
+
 ## Later workflows
 
 After the Website Lead workflow is proven:
@@ -721,6 +847,10 @@ Preflight tests:
 - Full Auralis UI
 - Multiple vertical workflows at once
 - Sales tactics/personality/outreach persuasion layer before the stable tested workflow exists
+
+## Change log
+
+- 2026-04-30: Added Nova Jobs v0 implementation contract, explicit v0 command, NEEDS_MORE_INFO resume behavior, deterministic package recommendation rules, minimum job API sketch, failure recovery rules, job data retention/privacy guidance, and Cap 64 preflight target.
 
 ## Final directive
 
