@@ -64,6 +64,11 @@ Not fully implemented yet:
 - project context engine
 - suggestion buffer runtime
 - full OpenClaw environment planning
+- OpenClaw mandatory EnvelopeFactory enforcement
+- OpenClaw real human approval gate
+- OpenClaw centralized execution guard
+- OpenClaw boundary detector for browser/computer-use expansion
+- OpenClaw run/step/boundary cleanup receipt set
 - full model router / context assembler / intention parser stack
 
 Search Evidence Synthesis is not an authority path. It structures results already collected by the governed web-search executor; it does not search, browse, call OpenClaw, authorize action, or add a capability.
@@ -93,7 +98,9 @@ Key constraints are defined in [`OPENCLAW_ENVIRONMENT_MODEL.md`](OPENCLAW_ENVIRO
 - screenshot/evidence hygiene
 - tests proving blocked actions pause instead of execute
 
-These are governance expectations for future implementation. They do not mean full Run-based OpenClaw execution is live today.
+The deeper hardening audit is tracked in [`../future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`](../future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md). It recommends making EnvelopeFactory mandatory, disabling or preview-gating freeform goal execution, replacing action auto-allow, centralizing execution guards, adding boundary detection, adding step-level receipts, and adding visible active-run approval UI before browser/computer-use expansion.
+
+These are governance expectations and implementation recommendations. They do not mean full Run-based OpenClaw execution or browser/computer-use readiness is live today.
 
 ## What This Package Does Not Do
 
@@ -117,4 +124,5 @@ Current runtime truth still comes from generated runtime docs and code.
 7. [`MEMORY_LAYERS.md`](MEMORY_LAYERS.md)
 8. [`PROJECT_CONTEXTS.md`](PROJECT_CONTEXTS.md)
 9. [`OPENCLAW_ENVIRONMENT_MODEL.md`](OPENCLAW_ENVIRONMENT_MODEL.md)
-10. [`IMPLEMENTATION_ROADMAP.md`](IMPLEMENTATION_ROADMAP.md)
+10. [`../future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`](../future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md)
+11. [`IMPLEMENTATION_ROADMAP.md`](IMPLEMENTATION_ROADMAP.md)
