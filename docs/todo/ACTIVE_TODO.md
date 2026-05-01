@@ -12,6 +12,7 @@
 - [ ] Continue doc/status cleanup where stale "local-only" or planning-as-runtime wording remains
 - [ ] Plan cost posture metadata as the next free-first implementation step
 - [ ] Plan Google read-only connector foundation after connector governance and cost posture metadata are clear
+- [ ] Prepare OpenClaw hardening pass: mandatory EnvelopeFactory, freeform-goal gate, real approval decisions, centralized execution guard, boundary detection, and receipts
 - [ ] Fuller Trust Review Card / Trust Panel - richer blocked reasons, confirmation previews, receipt history, and proof browsing
 - [ ] Windows installer VM validation - clean install + bootstrap.log fixes
 - [ ] README screenshot or GIF of governed action flow
@@ -47,7 +48,21 @@ Not raw feature count.
 - Google OAuth connector runtime work
 - Gmail/Calendar/Drive write or send capabilities
 - OpenClaw broad automation
+- OpenClaw browser/computer-use expansion until mandatory envelope issuance, real approval decisions, execution guard, boundary detection, and receipts exist
 - Voice / ElevenLabs expansion
+
+## OpenClaw Hardening Queue
+
+Canonical audit: `docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`
+
+- [ ] Make EnvelopeFactory mandatory for all OpenClaw runs
+- [ ] Block legacy direct-run paths when envelope issuance is unavailable
+- [ ] Disable or preview-gate freeform goal execution until envelope-issued
+- [ ] Replace `/api/openclaw/approve-action` auto-allow with allow / pause / block decisions
+- [ ] Add centralized OpenClaw execution guard for tools, network, files, actions, and budgets
+- [ ] Add boundary detector for login, submit, payment, upload/download, delete/archive, off-domain, personal data, and personal browser cases
+- [ ] Add run, step, action, boundary, failure, cancel, completion, and cleanup receipts
+- [ ] Add visible active-run approval UI before browser/computer-use expansion
 
 ## Recently Completed
 
@@ -55,6 +70,7 @@ Not raw feature count.
 - YouTubeLIS planning-only tool folder merged via PR #65
 - Search Evidence Synthesis merged as deterministic Cap 16 evidence structuring
 - Free-first cost governance design docs merged as planning only
+- OpenClaw robust hardening audit added as planning/recommendation doc
 - Auralis Website Coworker planning docs integrated
 - Cap 64 email draft authority-boundary tests
 - Local-first demo proof package
