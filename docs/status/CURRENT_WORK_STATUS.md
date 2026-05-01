@@ -18,6 +18,7 @@ At this review baseline, the alignment branch includes:
 - PR #66 Search Evidence Synthesis, merged in this alignment pass.
 - Free-first cost governance design docs, merged in this alignment pass.
 - Auralis and YouTubeLIS planning docs already present on `main`.
+- OpenClaw robust hardening audit added as a future implementation recommendation, not runtime truth.
 
 Generated runtime truth still reports the authoritative capability inventory and governance invariants. This note should not be used as a replacement for generated runtime docs.
 
@@ -51,6 +52,7 @@ Generated runtime truth still reports the authoritative capability inventory and
 - Auralis Website Coworker is a future business workflow / production discipline layer. It is not an autonomous website builder and has no publish, deploy, domain, DNS, or client-send authority.
 - YouTubeLIS is a planning-only tool folder. It has no upload, publish, account automation, or YouTube Studio control.
 - OpenClaw remains governed/constrained and is not broad autonomy. Future expansion must require Run/Task Envelope/Governor/receipts.
+- The OpenClaw robust hardening audit recommends mandatory EnvelopeFactory issuance, disabling or preview-gating freeform goal execution, replacing action auto-allow, centralizing execution guards, adding boundary detection, and adding run/step receipts before any browser/computer-use expansion.
 
 ---
 
@@ -65,8 +67,26 @@ Immediate continuation order:
 3. Continue doc/status cleanup as needed.
 4. Plan cost posture metadata as the next design-to-runtime step, without hard blocking first.
 5. Plan Google read-only connector foundations only after cost posture and connector governance are clear.
+6. Keep OpenClaw expansion frozen until envelope issuance, approval, execution-guard, and receipt gaps are closed.
 
 Do not start new write/action capabilities from this status pass.
+
+---
+
+## OpenClaw Hardening Priority
+
+Canonical audit note: [`../future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`](../future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md).
+
+Current recommended order:
+
+1. Make EnvelopeFactory mandatory for all OpenClaw runs.
+2. Disable or strictly envelope-gate freeform goal execution.
+3. Replace `/api/openclaw/approve-action` auto-allow with allow / pause / block decisions.
+4. Add centralized OpenClaw execution guard for tool, network, file, action, and budget checks.
+5. Add browser/computer-use boundary detection before any browser expansion.
+6. Add run, step, boundary, failure, cancel, completion, and cleanup receipts.
+7. Add visible active-run approval UI.
+8. Only then implement a read-only isolated-browser slice.
 
 ---
 
@@ -83,6 +103,9 @@ Do not claim these are finished unless verified against code/runtime truth:
 - Shopify write authority.
 - Broad autonomous execution.
 - OpenClaw Run-based execution.
+- OpenClaw mandatory EnvelopeFactory enforcement.
+- OpenClaw real human approval gate.
+- OpenClaw browser/computer-use readiness.
 - Free-first runtime enforcement.
 - One-click consumer installer.
 
