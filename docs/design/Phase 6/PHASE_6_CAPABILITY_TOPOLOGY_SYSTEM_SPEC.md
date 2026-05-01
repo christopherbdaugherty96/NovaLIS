@@ -1,7 +1,7 @@
 # Phase 6 Capability Topology System Specification
 Date: 2026-03-13
 Status: Core design spec; capability-topology foundation is now live in runtime
-Scope: Capability classification and relationship model for lawful delegated execution and long-range extensibility
+Scope: Capability classification, cost posture, and relationship model for lawful delegated execution and long-range extensibility
 
 ## Purpose
 Nova already has a capability registry.
@@ -13,6 +13,7 @@ Phase 6 needs a capability topology system that explains:
 - what risk level it carries
 - what other systems it depends on
 - whether policy delegation is allowed
+- what cost posture it carries when external providers are involved
 
 This turns Nova from a flat capability list into a governed capability model.
 
@@ -25,6 +26,8 @@ The current runtime now reflects this topology foundation in practice:
 
 This remains a conservative delegated-review substrate, not a trigger-runtime authorization.
 
+Cost posture is a design requirement until it is reflected in registry truth, generated runtime docs, and tests.
+
 ## Why This Matters Now
 Phase 6 introduces delegated execution.
 
@@ -34,6 +37,7 @@ That means Nova must be able to answer questions like:
 - which capabilities touch persistent state
 - which capabilities depend on a mediator
 - which capabilities have external effects
+- which capabilities may introduce billing, quota, credit, or vendor-lock risk
 
 Without a topology model, those rules end up scattered across code and become harder to audit as capability count grows.
 
@@ -44,6 +48,9 @@ It makes existing powers legible, classifiable, and governable.
 
 The intelligence layer may propose.
 The topology layer defines what exists and how it may be lawfully used.
+
+The cost posture layer defines whether a capability introduces billing, quota, credit, or vendor-lock risk.
+It constrains visibility and recommendation safety; it does not grant execution authority.
 
 ## Minimum Topology Fields
 Each capability entry should eventually expose at least:
@@ -58,7 +65,29 @@ Each capability entry should eventually expose at least:
 - external-effect flag
 - mediator requirements
 - major dependencies
+- cost posture
 - envelope notes
+
+## Cost Posture Field
+Each capability that touches an external provider should eventually include a cost posture classification.
+
+Recommended values:
+- `free`
+- `free_tier`
+- `paid`
+- `unknown_cost`
+
+Interpretation:
+- `free`: no known billing exposure for the intended path
+- `free_tier`: usable within limits, quotas, credits, billing setup, or rate limits
+- `paid`: requires payment, credits, a paid plan, or metered billing for intended use
+- `unknown_cost`: cost posture has not been verified yet
+
+Future Governor behavior should be conservative:
+- allow `free` capabilities under existing capability rules
+- visibly flag `free_tier`
+- require explicit user awareness before `paid` use is treated as preferred
+- block or require verification before `unknown_cost` is treated as preferred
 
 ## Suggested Example Shape
 ```json
@@ -72,7 +101,8 @@ Each capability entry should eventually expose at least:
   "reversible": true,
   "persistent_change": false,
   "external_effect": false,
-  "requires_network_mediator": true
+  "requires_network_mediator": true,
+  "cost_posture": "free_tier"
 }
 ```
 
@@ -140,12 +170,14 @@ The topology system should make it easy for the Governor to enforce rules like:
 - early delegated policies may only target authority classes explicitly allowed by the current delegated-policy envelope
 - capabilities with `external_effect = true` are excluded from early delegated slices
 - capabilities requiring confirmation are excluded unless a future lawful confirmation model exists
+- capabilities with non-free or unknown cost posture remain visible and reviewable before they become normal delegated paths
 
 Example first-slice rule:
 - `authority_class = read_only_local`
 - `policy_delegatable = true`
 - `external_effect = false`
 - `persistent_change = false`
+- `cost_posture = free`
 
 ## Example `policy_delegatable` Classifications
 The `policy_delegatable` field should be treated as an explicit Governor-facing control, not an inference.
@@ -172,6 +204,7 @@ That allows the Governor to ask:
 - is it delegatable
 - does it require mediation
 - does it require confirmation
+- what cost posture does it carry
 - what envelope constraints should apply
 - where it sits in the authority hierarchy
 
@@ -183,12 +216,16 @@ The topology system adds:
 - structure
 - authority classification
 - delegation semantics
+- cost posture
 
 The registry says:
 - what is available
 
 The topology says:
 - how it behaves in the law of the system
+
+Cost posture says:
+- whether use may introduce cost, quota, billing, or lock-in risk
 
 ## Suggested Graph View
 Nova can also treat capabilities as a relationship graph for audits and future UI surfaces.
@@ -223,6 +260,7 @@ With topology in place, Nova can eventually support cleaner questions like:
 - show capabilities that can write durable state
 - show capabilities requiring network mediation
 - show which capabilities are above the current delegated authority class
+- show which capabilities are free, free-tier, paid, or unknown-cost
 
 That improves both trust and operator legibility.
 
@@ -232,6 +270,7 @@ The topology system also helps the product side of Nova because it makes future 
 - clearer operator-health dashboards
 - more truthful policy previews
 - future simulation or dry-run surfaces
+- free-first integration recommendations without hidden billing surprises
 
 ## Suggested Repo Location
 Suggested implementation area:
@@ -241,6 +280,7 @@ Possible inputs:
 - existing registry config
 - capability metadata declarations
 - explicit policy-delegation annotations
+- explicit cost posture annotations
 
 ## Ordering Rule
 The capability topology system should come before broad trigger/runtime expansion.
@@ -253,12 +293,22 @@ Recommended order:
 5. first tiny delegated slice
 6. broader trigger expansion
 
+Cost posture should be added in the same conservative spirit:
+1. metadata
+2. validation
+3. generated docs visibility
+4. soft user-facing flag
+5. ledger visibility
+6. enforcement only after the soft path is proven
+
 ## Non-Goals
 This system is not:
 - a replacement for the capability registry
 - a visual dashboard by itself
 - a planner
 - a policy runtime
+- a pricing database
+- a payment system
 - a justification for expanding authority classes too early
 
 ## Bottom Line
@@ -269,3 +319,9 @@ It is how Nova moves from:
 
 to:
 - a constitutional capability system whose delegated behavior can be reasoned about, audited, and extended safely.
+
+Cost posture extends that model so Nova can also reason about whether a capability may create billing, quota, credit, or vendor-lock risk.
+
+In short:
+- Intelligence does not imply authority.
+- Capability does not imply cost permission.
