@@ -64,58 +64,15 @@ Owner / Human Authority
 
 The human remains the final authority for risky or external actions.
 
-The Personal Personality Layer is the user's natural conversational face for Nova. It receives the feed from Nova Core and the manager/agent system, translates it into the user's preferred voice, and keeps the experience coherent. It does not hold independent execution authority.
+The Personal Personality Layer is the user's natural conversational face for Nova. It receives feeds from Nova Core and the manager/agent system, translates them into the user's preferred voice, and keeps the experience coherent. It does not hold independent execution authority.
+
+Canonical brain/personality details live in:
+
+```text
+docs/design/brain/PERSONAL_PERSONALITY_LAYER.md
+```
 
 Agents reason and coordinate. Capabilities execute. The Governor authorizes. The user approves risky actions. The ledger records what happened.
-
----
-
-## Personal Personality Layer
-
-Nova should include a personal personality layer above the operating system of agents.
-
-This layer is the user-facing companion/personality that receives structured feeds from Nova Core, Global Manager, and domain managers, then presents them in the user's preferred style.
-
-Purpose:
-
-- provide one coherent relationship surface instead of making the user talk to many agents
-- absorb feeds from all managers and agents
-- translate operational findings into natural voice/text briefings
-- remember communication preferences and tone
-- preserve continuity across personal, home, and business domains
-- decide how much detail to speak versus send to dashboard/text
-- keep Nova feeling like one assistant, not a loose collection of bots
-
-It should not:
-
-- bypass Nova Core
-- bypass the Governor
-- call tools directly
-- create hidden authority
-- override approval requirements
-- silently merge sensitive business or personal context without visibility
-
-Recommended role:
-
-```text
-The Personal Personality Layer is presentation, continuity, and relationship intelligence.
-It is not execution authority.
-```
-
-Example:
-
-```text
-Agent feeds:
-- Email/Calendar Manager: 6 emails need action, 2 scheduling conflicts
-- Auralis Manager: 3 leads, 1 launch blocker
-- Pour Social Manager: 1 quote follow-up
-- Personal Manager: appointment tomorrow morning
-
-Personal Personality Layer response:
-"You have a business-heavy day. The main thing is Auralis: three leads came in, and one project is blocked by a missing form destination. Pour Social has one quote follow-up. You also have a calendar conflict tomorrow morning. I can open the review board with drafts and scheduling options."
-```
-
-This keeps the interface personal while the underlying system stays structured and governed.
 
 ---
 
@@ -256,31 +213,13 @@ Agents and managers should emit structured feeds, not only prose.
 
 This lets the Personal Personality Layer summarize across the whole system without losing governance details.
 
-Example shape:
+Canonical feed-consumption, personality memory, voice safety, and dashboard handoff guidance live in:
 
-```json
-{
-  "feed_id": "auralis_daily_feed_001",
-  "source_agent": "auralis_manager",
-  "workspace": "business/auralis",
-  "summary": "Three leads need review and one project has a launch blocker.",
-  "priority": "high",
-  "items": [
-    {
-      "type": "lead",
-      "label": "GreenEdge Lawn Care",
-      "status": "needs_reply",
-      "recommended_action": "draft_intake_reply",
-      "risk_tier": 2,
-      "requires_approval": true
-    }
-  ],
-  "safe_to_speak": true,
-  "requires_dashboard_review": true
-}
+```text
+docs/design/brain/PERSONAL_PERSONALITY_LAYER.md
 ```
 
-Feed rules:
+Minimum feed rules:
 
 - feeds should include source agent and workspace
 - feeds should include risk tiers for suggested actions
