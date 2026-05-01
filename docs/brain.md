@@ -49,6 +49,7 @@ Current live Brain behavior:
 - General-chat fallback can create a session-local planning Run Preview for task-like requests.
 - EnvironmentRequest schema exists as read-only scaffold.
 - Static Capability Contract catalog exists for Cap 16, Cap 64, Cap 65, and Cap 63.
+- Search Evidence Synthesis exists as deterministic Cap 16 evidence structuring for governed web-search output.
 - Brain live-test proof exists under `docs/demo_proof/brain_live_test/`.
 
 Still future / not fully live:
@@ -64,7 +65,9 @@ Still future / not fully live:
 - project context engine
 - suggestion buffer runtime
 - full OpenClaw environment planning
-- full small-model runtime stack: Context Assembler, Model Router, Intention Parser, Search Synthesis, Sandbox Boundary Enforcer, and Persona Filter
+- full small-model runtime stack: Context Assembler, Model Router, Intention Parser, Sandbox Boundary Enforcer, and Persona Filter
+
+Search Evidence Synthesis is not an authority path. It does not search, browse, call OpenClaw, add a capability, or authorize action.
 
 ## Scope Guard For This Preview
 
@@ -296,22 +299,21 @@ Use these files for implementation guidance:
 
 ## Current Priority
 
-Cap 16 search reliability remains the active P1 blocker.
+Cap 16 search reliability and evidence quality remains the active P1 blocker.
 
 The Brain can clarify and prepare structure, but current-evidence tasks still depend on a reliable governed search lane.
 
 Best next implementation order:
 
 ```text
-1. Fix Cap 16 search reliability.
+1. Re-run Cap 16 conversation/search proof after Search Evidence Synthesis.
 2. Add live/static Capability Contracts.
 3. Add Context Assembler and Intention Parser scaffolds.
-4. Add Search Synthesis for evidence handling.
-5. Add Sandbox Boundary Enforcer.
-6. Implement read-only Dry Run / Plan Preview.
-7. Add Brain Trace metadata/UI.
-8. Add OpenClaw environment planning.
-9. Expand project contexts and suggestion buffer.
+4. Add Sandbox Boundary Enforcer.
+5. Implement read-only Dry Run / Plan Preview.
+6. Add Brain Trace metadata/UI.
+7. Add OpenClaw environment planning.
+8. Expand project contexts and suggestion buffer.
 ```
 
 ## Final Framing

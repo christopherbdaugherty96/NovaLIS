@@ -1,6 +1,6 @@
 # What Works Today
 
-Last reviewed: 2026-04-29
+Last reviewed: 2026-05-01
 
 This page separates Nova's current surfaces by readiness level.
 
@@ -26,7 +26,7 @@ Latest proof packages:
 | Trust receipts UI | Proven core path with label friction | The Trust page renders Action Receipts in the local-first proof pass; some receipt rows still need friendlier names when ledger payloads only include capability IDs. |
 | Local self-description fallback | Proven core path | Core prompts such as `What works today?`, `Explain what Nova can do.`, and memory-authority questions answer from local runtime truth even when the daily metered token budget is exhausted. |
 | Task Clarifier | Proven narrow Brain behavior | Tested ambiguity/boundary prompts now clarify missing service area, personal-account/account-write boundaries, browser environment distinction, Shopify read-only limits, and memory authority limits before implying action. This is not full Brain routing. |
-| Governed web search / citations | Proven with friction | Cap 16 can answer current questions with visible source links, confidence, and known/unclear notes. One live current-search run still hit CPU-budget friction. |
+| Governed web search / citations | Proven with friction | Cap 16 can answer current questions with visible source links, confidence, and known/unclear notes. Search Evidence Synthesis now structures evidence metadata for the existing governed search path; it is not a new capability or authority path. |
 
 ---
 
@@ -46,7 +46,7 @@ Latest proof packages:
 | Area | Status | Notes |
 |---|---|---|
 | Memory / continuity | Implemented, evolving UX | Useful surface, still being refined. Memory supports continuity; it does not authorize execution. |
-| Brain architecture / schema scaffold | Implemented as scaffold | Brain docs, Brain runtime architecture, EnvironmentRequest schema, Task Clarifier, and a static Capability Contract catalog for Cap 16/63/64/65 exist. Full Task Environment Router, Dry Run API, Brain Trace UI, live runtime contract lookup, Context Assembler, Intention Parser, Search Synthesis, Sandbox Boundary Enforcer, Persona Filter, Model Router, and project context engine remain future work. |
+| Brain architecture / schema scaffold | Implemented as scaffold | Brain docs, Brain runtime architecture, EnvironmentRequest schema, Task Clarifier, Task Understanding / Task Envelope planning scaffolds, planning-only RunManager, planning Run Preview, Search Evidence Synthesis, and a static Capability Contract catalog for Cap 16/63/64/65 exist. Full Task Environment Router, Dry Run API, Brain Trace UI, live runtime contract lookup, Context Assembler, Intention Parser, Sandbox Boundary Enforcer, Persona Filter, Model Router, and project context engine remain future work. |
 | Screen capture / analysis | Experimental | Request-time capture exists, but the experience is still maturing. |
 | Email draft | Implemented, safety-limited, paused | Opens a local mail client draft through `mailto:` after confirmation. Nova does not use SMTP, access inboxes, or send autonomously. Cap 64 live signoff is paused while Cap 16 conversation/search proof is the active sprint. |
 | OpenClaw execution surface | Advanced / constrained | Governed, limited, not broad autonomy. |
@@ -60,8 +60,11 @@ Latest proof packages:
 |---|---|---|
 | Daily brief / operating layer | Future / not implemented | The operating model documents daily briefs, news tracking, routines, context awareness, and approved automation loops as direction, not current product readiness. |
 | Approved automation routines / envelopes | Future / not implemented | Conceptual direction only. No broad recurring automation loop should be claimed as live. |
-| Small-model full Brain runtime stack | Future / not implemented | Context Assembler, Model Router, Intention Parser, Tool Bridge, Search Synthesis, Sandbox Boundary Enforcer, and Persona Filter are documented architecture, not live runtime behavior. |
+| Small-model full Brain runtime stack | Future / not implemented | Context Assembler, Model Router, Intention Parser, Tool Bridge, Sandbox Boundary Enforcer, and Persona Filter are documented architecture, not live runtime behavior. Search Evidence Synthesis is implemented only as deterministic Cap 16 evidence structuring, not as a general Brain planner. |
 | Google read/context connector | Future / not implemented | The Google connector model documents OAuth, Gmail read-only, Calendar read-only, and Gmail context for Cap 64 draft-only replies. It is a future read/context path, not Gmail send/write authority. |
+| Free-first cost governance | Design planning / not runtime-enforced | Free-first policy docs describe future cost posture metadata and visibility. Runtime enforcement does not exist until registry metadata, generator output, tests, and UI/proof paths exist. |
+| Auralis Website Coworker | Future planning / not implemented | Future business workflow and production discipline layer only. No publish, deploy, domain, DNS, or client-send authority exists. |
+| YouTubeLIS | Planning-only tool folder | Content planning docs/templates only. No upload, publish, account automation, or YouTube Studio control exists. |
 | Fuller Trust Panel / Trust Review Card | Partial / future work | Action Receipts and trust receipt API exist; richer blocked-reason drill-down, confirmation previews, proof browsing, and polished demo flow remain future work. |
 | One-click installer | Not implemented | Needed for broader adoption. |
 | Mainstream consumer onboarding | Not ready | Current setup expects a technical user. |

@@ -26,6 +26,8 @@ capability claims:
 - `AURALIS_WEBSITE_COWORKER_WORKFLOW.md` - future Auralis website-production coworker workflow.
 - `auralis_mock_leads/README.md` - fictional mock lead fixtures for planning-only Auralis workflow tests.
 - `../tools/youtubelis.md` - pointer to the planning-only YouTubeLIS tool folder.
+- `GOOGLE_CONNECTOR_IMPLEMENTATION_ROADMAP.md` - future Google read/context connector roadmap; no runtime connector claim.
+- `../design/Phase 6/FREE_FIRST_COST_GOVERNANCE_FIRST_STEPS_2026-04-30.md` - free-first cost posture implementation plan; not runtime enforcement.
 
 ## What Belongs Here
 
@@ -44,6 +46,12 @@ Avoid treating this folder as:
 - implementation status
 - current sprint authority
 - release promises
+
+Examples:
+- Google connector docs are future read/context direction only; no Google OAuth, Gmail, Calendar, Drive, or Gmail-send runtime connector exists until runtime truth proves it.
+- Auralis docs are future production discipline workflows only; they do not grant publish, deploy, domain, DNS, or client-send authority.
+- YouTubeLIS docs are planning-only tool-folder material; they do not grant upload, publish, account, or background automation authority.
+- Free-first docs are design policy until registry metadata, generator output, tests, and UI/proof paths make cost posture runtime-visible.
 
 ## Why This Matters
 

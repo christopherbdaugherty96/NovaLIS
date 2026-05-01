@@ -65,12 +65,18 @@ For exact generated runtime truth, use [Current Runtime State](docs/current_runt
 
 For current human-readable work continuity, including what is committed versus local/in-progress, use [Current Work Status](docs/status/CURRENT_WORK_STATUS.md).
 
+For the 2026-05-01 branch/workstream alignment map, use [Repo Branch and Workstream Status](docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01.md).
+
 ## Future Directions
 - [Realistic Scope and Priorities](docs/future/REALISTIC_SCOPE_AND_PRIORITIES.md)
 - [Google Connector Model](docs/future/NOVA_GOOGLE_CONNECTOR_MODEL.md)
+- [Google Connector Implementation Roadmap](docs/future/GOOGLE_CONNECTOR_IMPLEMENTATION_ROADMAP.md)
+- [Free-First Cost Governance First Steps](docs/design/Phase%206/FREE_FIRST_COST_GOVERNANCE_FIRST_STEPS_2026-04-30.md)
 - [Governed Media and E-Commerce Engine](docs/future/NOVA_GOVERNED_MEDIA_AND_ECOMMERCE_ENGINE.md)
 - [Media Engine Safe Implementation Roadmap](docs/future/NOVA_MEDIA_ENGINE_SAFE_IMPLEMENTATION_ROADMAP.md)
 - [Nova x Auralis Digital Website Engine](docs/future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE.md)
+- [Auralis Website Coworker Workflow](docs/future/AURALIS_WEBSITE_COWORKER_WORKFLOW.md)
+- [YouTubeLIS Tool Folder](docs/tools/youtubelis.md)
 
 ## Core Principle
 **Intelligence is not authority.**

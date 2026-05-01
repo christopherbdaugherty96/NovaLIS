@@ -31,6 +31,8 @@ Google context must not authorize actions.
 
 Sending, deleting, archiving, labeling, calendar editing, Drive writes, account changes, or other external effects require separate governed capabilities, explicit boundaries, confirmation when needed, and receipts.
 
+Free-first cost posture also applies. Google APIs should be treated as `free_tier` or `unknown_cost` until the intended scopes, quotas, billing exposure, and setup requirements are verified and reflected in runtime-visible metadata.
+
 ---
 
 ## Why Google Read-Only Comes Before Email Sending
@@ -501,7 +503,8 @@ Cap 64 opens local mail client drafts after confirmation.
 Nova does not send email.
 Nova does not access Gmail inboxes through Cap 64.
 Nova does not use SMTP.
-Google read-only connector is not implemented yet unless separately verified in runtime truth.
+Google OAuth/Gmail/Calendar/Drive connectors are not implemented unless separately verified in runtime truth.
+Cap 64 must never call Gmail API.
 ```
 
 Future direction:
