@@ -378,6 +378,35 @@ class TestClassifyMode:
         for key in ("mode", "confidence", "signal", "contract"):
             assert key in d
 
+    def test_none_input_classified_as_unknown(self):
+        result = classify_mode(None)  # type: ignore[arg-type]
+        assert result.mode == BrainMode.UNKNOWN
+
+    def test_land_the_branch_classified_as_merge(self):
+        result = classify_mode("land the branch and close the PR")
+        assert result.mode == BrainMode.MERGE
+
+    def test_what_does_x_do_classified_as_repo_review(self):
+        result = classify_mode("what does context_pack do?")
+        assert result.mode == BrainMode.REPO_REVIEW
+
+    # --- known false-positive guards (document classifier limits) ---
+
+    def test_check_this_out_not_classified_as_repo_review(self):
+        # "check" was removed from _REPO_REVIEW_RE — too broad
+        result = classify_mode("check this out")
+        assert result.mode != BrainMode.REPO_REVIEW
+
+    def test_squash_the_bug_not_classified_as_merge(self):
+        # "squash" was removed from _MERGE_RE — "squash the bug" is not a merge operation
+        result = classify_mode("squash the bug")
+        assert result.mode != BrainMode.MERGE
+
+    def test_write_a_summary_not_classified_as_implementation(self):
+        # "write code" is the implementation signal, not bare "write"
+        result = classify_mode("write a summary of the changes")
+        assert result.mode != BrainMode.IMPLEMENTATION
+
 
 # ---------------------------------------------------------------------------
 # compose_brain_trace()

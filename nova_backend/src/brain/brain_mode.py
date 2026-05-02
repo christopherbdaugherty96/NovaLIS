@@ -21,7 +21,7 @@ Non-authorizing frozen dataclasses:
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from enum import Enum
 from typing import Any
@@ -302,18 +302,18 @@ _BRAINSTORM_RE = re.compile(
     re.IGNORECASE,
 )
 _REPO_REVIEW_RE = re.compile(
-    r"\b(review|audit|check|inspect|read the code|what does .{1,30} do|"
+    r"\b(review|audit|inspect|read the code|what does .{1,30} do|"
     r"explain (the |this )?(code|function|class|module|file)|"
     r"look at|is .{1,30} correct|does .{1,30} match)\b",
     re.IGNORECASE,
 )
 _IMPLEMENTATION_RE = re.compile(
-    r"\b(implement|build|add|create|write|fix|refactor|update|change|modify|"
+    r"\b(implement|build|add|create|write code|fix|refactor|update|change|modify|"
     r"patch|delete|remove|rename|move|replace|generate code)\b",
     re.IGNORECASE,
 )
 _MERGE_RE = re.compile(
-    r"\b(merge|pull request|PR #?\d+|ready to merge|squash|rebase|land (the |this )?branch)\b",
+    r"\b(merge|pull request|PR #?\d+|ready to merge|rebase|land (the |this )?branch)\b",
     re.IGNORECASE,
 )
 _PLANNING_RE = re.compile(
