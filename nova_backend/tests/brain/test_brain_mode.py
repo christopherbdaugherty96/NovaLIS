@@ -84,6 +84,9 @@ class TestBrainstormNeverMutatesRepo:
         mutating = [m for m, c in CONTRACTS.items() if c.may_mutate_repo]
         assert set(mutating) == {BrainMode.IMPLEMENTATION, BrainMode.MERGE}
 
+    def test_merge_may_mutate_repo(self):
+        assert get_contract(BrainMode.MERGE).may_mutate_repo is True
+
 
 # ---------------------------------------------------------------------------
 # Invariant 2 — Repo-review mode requires context before recommending
@@ -406,6 +409,13 @@ class TestClassifyMode:
         # "write code" is the implementation signal, not bare "write"
         result = classify_mode("write a summary of the changes")
         assert result.mode != BrainMode.IMPLEMENTATION
+
+    def test_very_long_input_does_not_hang(self):
+        # Regex must not catastrophically backtrack on large inputs
+        long_input = "implement " + "x " * 5000
+        result = classify_mode(long_input)
+        assert result.mode is not None
+        assert 0.0 <= result.confidence <= 1.0
 
 
 # ---------------------------------------------------------------------------

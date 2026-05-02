@@ -438,7 +438,8 @@ class BrainTrace:
     mode: BrainMode
     composed_at: str
     context_sources: tuple[str, ...]   # authority labels from ContextPack items
-    decision_notes: tuple[str, ...]    # structural decisions made (not reasoning)
+    decision_notes: tuple[str, ...]    # structural decisions only — e.g. "scope limited to X",
+                                       # "no new capabilities required"; never LLM chain-of-thought
     warnings: tuple[str, ...]          # structural concerns about the turn
 
     # Non-authorizing invariants — cannot be overridden by callers
