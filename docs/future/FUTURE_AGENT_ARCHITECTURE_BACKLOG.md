@@ -4,9 +4,11 @@ Status: future planning backlog.
 
 This document preserves future architecture ideas from the agent-stack review without expanding current implementation scope.
 
-It is not runtime truth. It does not authorize implementation. Build order still starts with the explicit memory loop and Context Pack.
+It is not runtime truth. It does not authorize implementation. Active implementation priority remains governed by current status/TODO/agent-context docs.
 
-## Current build priority
+## Future sequencing after active proof work
+
+These are future architecture dependencies to pull from after active proof work and current sprint priorities are satisfied:
 
 1. Explicit memory loop
 2. Context Pack
@@ -178,4 +180,4 @@ Do not start until OpenClaw hardening is complete.
 
 ## Rule
 
-When choosing what to build, pull from this backlog only after memory loop and Context Pack are proven.
+When choosing what to build, pull from this backlog only after current sprint priorities, active proof work, memory loop, and Context Pack foundations are satisfied.
