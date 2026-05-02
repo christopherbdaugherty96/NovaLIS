@@ -1,5 +1,5 @@
 # What Nova Can Do
-Updated: 2026-04-20
+Updated: 2026-05-02
 
 ## Overview
 Nova's active capability surface now covers these big areas:
@@ -159,30 +159,38 @@ Examples:
 - `workspace board`
 
 ## 6. Governed Memory
-Nova has active governed memory, which means it can preserve things across time under explicit user control.
+Nova has an explicit, user-initiated conversational memory loop.
+Memory is never saved silently. Every save is confirmed with a receipt.
+Memory is never used before you have had a chance to review and remove it.
 
-It can:
-- save a memory item
-- list memory items
-- show a memory item
-- lock or defer a memory item
-- unlock or delete a memory item with confirmation
-- supersede an older memory item with a newer one
-- save thread snapshots into memory
-- save thread decisions into memory
-- list memory linked to a specific thread
-- expose a dedicated Memory page for reviewing durable memory, scope distribution, linked threads, and recent items
+The implemented Stage 3 memory loop includes:
+
+- `remember [content]` — save a new memory item
+- `review memories` / `memory list` — list saved items with IDs and source labels
+- `update memory [id]: [new content]` — supersede an existing item with a newer one
+- `forget [id]` — remove an item permanently; it will not be reused
+- `why-used` / `what memory are you using` — explain which memory context is active
+  and why each item was selected
 
 Examples:
-- `save this`
 - `remember this: the client supplies alcohol`
-- `memory overview`
-- `memory list`
-- `memory show mem_...`
-- `memory lock mem_...`
-- `memory save thread deployment issue`
-- `memory save decision for deployment issue: inspect path before rebuild`
-- `memory list thread deployment issue`
+- `remember: meeting cadence is every other Tuesday`
+- `review memories`
+- `update memory MEM-20260502-061244-7794: the client now supplies only beer`
+- `forget MEM-20260502-061244-7794`
+- `why-used`
+- `what memory are you using right now`
+
+Important boundaries:
+- Nova does not save memory unless you explicitly ask it to
+- Soft-deleted items are permanently excluded from all read paths — forgotten means gone
+- Memory items saved automatically by the system (if any) are shown with their source label so
+  you can review and remove them before they influence anything
+- Memory does not authorize action — it provides context only
+
+Note: broader memory UI surfaces (dedicated Memory page, thread-linked memory, lock/defer)
+may exist in some runtime configurations but are not part of the current core memory loop.
+The commands above are the implemented and proven scope.
 
 ## 7. Trust And Workspace Visibility
 Nova now has clearer product surfaces for understanding what it is doing and where current work lives.
@@ -255,6 +263,11 @@ The biggest examples are:
 - richer visualizer stages beyond the current structured graph view
 - approval-gated patch proposal and apply flows for the future local code operator
 - delegated trigger runtime for policies
+- Context Pack injection into live prompt assembly (Stage 5 wiring — implemented but not yet
+  wired into brain_server.py prompt construction)
+- Brain mode contracts surfaced in the UI (mode classification exists as code, not yet visible
+  to the user)
+- Memory UX surfaces beyond the conversational loop (dedicated page, export, thread-linking)
 
 ## 10. Response Style Control
 Nova can expose and adjust its manual presentation tone without changing what it is allowed to do.
@@ -305,10 +318,15 @@ Today Nova can already:
 - summarize
 - inspect
 - continue project work
-- preserve governed memory
+- remember things explicitly — and forget them when asked
 - expose trust and workspace state more clearly
 - help with the current screen
 - help with the local computer in bounded ways
 - draft emails for review
 
-That is enough for Nova to behave more like a personal intelligence workspace than a simple assistant.
+The memory loop (Stage 3), context pack foundation (Stage 4), and brain mode
+contracts (Stage 5) are all implemented and proven. They are not yet fully wired
+into every surface, but the core behavior is in place and tested.
+
+That is enough for Nova to behave more like a personal intelligence workspace than a simple
+assistant — one that remembers, stays bounded, and keeps you in control.

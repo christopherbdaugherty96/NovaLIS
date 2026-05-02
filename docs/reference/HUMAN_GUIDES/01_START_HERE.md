@@ -1,5 +1,5 @@
 # Start Here
-Updated: 2026-04-20
+Updated: 2026-05-02
 
 ## What Nova Is
 Nova is a local-first, governed workspace assistant.
@@ -81,12 +81,17 @@ Today, Nova can already help with:
 - research and answer-first search
 - explanation of files, code, reports, and screen context
 - project continuity and thread recall
-- explicit governed memory and memory export
+- explicit user-initiated memory — remember, review, update, forget, and ask why something
+  was recalled (the conversational memory loop is implemented and proven)
 - bounded assistive noticing
 - governed second-opinion review and followthrough
 - draft emails for review in your mail client
 - manual and narrow scheduled home-agent tasks
 - visible Trust, Settings, and connection status
+
+The memory loop, context pack foundation, and brain mode contracts are all implemented and
+proven as of 2026-05-02. They are not yet wired into every surface, but the core behavior
+is in place and tested.
 
 ## What Nova Is Still Growing Into
 Nova is real now, but it is still growing.
@@ -96,7 +101,10 @@ Important things still maturing include:
 - more polished connector entry and non-technical setup
 - deeper OpenClaw execution work
 - installer validation and stronger packaging for non-technical users
-- more complete cross-system awareness over time
+- Context Pack wired into live prompt assembly
+- Brain mode classification surfaced in the UI
+- Memory UX beyond the conversational loop (dedicated page, export, thread-linking)
+- Daily Brief as a governed RoutineGraph (Stage 6)
 
 ## What To Read Next
 If you want the user explanation, continue with:

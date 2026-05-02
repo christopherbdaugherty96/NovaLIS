@@ -1,5 +1,5 @@
 # How Nova Works
-Updated: 2026-03-28
+Updated: 2026-05-02
 
 ## The Simple Model
 Nova is easiest to understand as four connected layers:
@@ -42,6 +42,20 @@ Important boundary:
 - continuity should stay visible and resettable
 - noticing should lead to suggestions, not hidden action
 
+### Context Pack — The Bridge Layer
+When Nova pulls from memory, search, or project state before answering, it does not
+feed raw data to the reasoning layer. It assembles a Context Pack first.
+
+The Context Pack is a bounded, labeled bridge:
+- every item carries a source label (runtime_truth, confirmed_memory, candidate_memory)
+- runtime truth always outranks memory
+- budget limits prevent runaway context growth
+- stale and conflicting items are flagged before they reach the Brain
+- the pack is frozen — it cannot execute or authorize anything
+
+Context Pack is implemented and proven (Stage 4). Live prompt assembly wiring
+is Stage 5/6 work still in progress.
+
 ## 3. Governance And Trust Layer
 This is Nova's control system.
 
@@ -77,6 +91,20 @@ Important boundary:
 - OpenClaw is the worker layer inside Nova
 - the review lane can critique and improve answers, but it cannot take actions directly
 
+### Brain Mode Contracts
+When Nova reasons about a request, it operates under a mode contract — a set of
+rules about what that mode can and cannot do.
+
+Seven modes are defined: brainstorm, repo_review, implementation, merge, planning,
+action_review, and casual.
+
+Key rule: only implementation and merge modes may mutate the repo. All other modes
+are explicitly prohibited from doing so.
+
+Each mode contract is frozen and enforced in code — not a description of intended
+behavior, but a hard boundary. Brain mode classification is implemented and proven
+(Stage 5). Surfacing the active mode in the UI is Stage 6 work still in progress.
+
 ## The Typical Request Paths
 A Nova request usually follows one of these paths.
 
@@ -89,7 +117,8 @@ Examples:
 Nova will:
 1. route local-first
 2. gather relevant context, memory, or workspace state
-3. present the answer in Nova's voice
+3. assemble a bounded Context Pack (source labels, budget limits, stale/conflict checks)
+4. present the answer in Nova's voice
 
 ### Path B: Governed action
 Examples:
