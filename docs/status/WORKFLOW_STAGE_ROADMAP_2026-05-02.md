@@ -11,10 +11,10 @@ It is not runtime truth. Exact runtime truth still comes from code and generated
 ## Current overall stage
 
 ```text
-Stage 3: Memory loop implementation — ACTIVE
+Stage 4: Context Pack implementation — ACTIVE
 ```
 
-Stage 1 (proof closeout) and Stage 2 (status update) completed 2026-05-02.
+Stages 1, 2, and 3 completed 2026-05-02.
 
 The current repo sequence is:
 
@@ -36,8 +36,8 @@ Proof closeout
 | 0 | Architecture alignment | Complete | Architecture docs merged, roadmap/index/future guide aligned | Do not continue architecture expansion |
 | 1 | Active proof closeout | **Complete** 2026-05-02 | All four proof docs verified, 1877 tests green | — |
 | 2 | Status update after proof | **Complete** 2026-05-02 | TODO/status/roadmap updated | — |
-| 3 | Memory loop | **Active** | remember/review-list/update/forget/why-used implemented with receipts and tests | Implement on branch |
-| 4 | Context Pack | Not started | source labels, authority labels, budgets, why-selected, stale/conflict warnings proven | Start only after memory loop |
+| 3 | Memory loop | **Complete** 2026-05-02 | remember/review-list/update/forget/why-used implemented with receipts and tests | — |
+| 4 | Context Pack | **Active** | source labels, authority labels, budgets, why-selected, stale/conflict warnings proven | Implement on branch |
 | 5 | Brain discipline / trace | Not started | mode contracts and safe BrainTrace exist | Start only after memory/context |
 | 6 | Routine surfaces | Not started | Daily Brief RoutineGraph v0 and workflow demos exist | Start only after memory/context/trace foundations |
 | A | Auralis manual validation | Ready for manual work | 3 mock client packs, 30 posts, 1 calendar, 1 outreach package | Run outside Nova runtime |
@@ -103,29 +103,17 @@ Exit criteria:
 
 ## Stage 3 - Memory loop implementation
 
-State: not started.
+State: **complete** 2026-05-02.
 
-Minimum scope:
-
-- remember
-- review/list
-- update
-- forget
-- why-used
-- memory receipts
-
-Required proof:
-
-- no silent autosave
-- memory is not used before confirmation
-- forgotten memory is not reused
-- memory never authorizes action
+Implemented: remember / review-list / update / forget / why-used with receipts.
+Proof: `docs/demo_proof/daily_operating_baseline/MEMORY_LOOP_PROOF.md` — PASS.
+Merged: PR #82 on 2026-05-02.
 
 ---
 
 ## Stage 4 - Context Pack implementation
 
-State: not started.
+State: **active** 2026-05-02.
 
 Minimum scope:
 
@@ -209,8 +197,8 @@ Blocked from runtime until:
 
 ## Current recommended action
 
-Do Stage 1 next.
+Stage 4 is complete. Continue to Stage 5.
 
 ```text
-Run proof manually → capture result → update status → then begin memory loop.
+Context Pack implemented and proven → begin Brain discipline / trace.
 ```

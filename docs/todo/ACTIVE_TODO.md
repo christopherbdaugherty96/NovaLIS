@@ -1,7 +1,7 @@
 # Active TODO - Nova
 
 **Updated:** 2026-05-02
-**Sprint goal:** Memory loop implementation — Stage 3 now active.
+**Sprint goal:** Brain discipline / trace — Stage 5 now active.
 **Authority note:** This file is the public task snapshot. Exact runtime truth still comes from generated runtime docs and code.
 
 ## Stepwise Execution Order
@@ -19,25 +19,24 @@
 - [x] Proof results recorded in `docs/demo_proof/daily_operating_baseline/`
 - [x] TODO and status docs updated with proof outcome
 
-### Step 3 - Memory loop implementation — ACTIVE SPRINT
+### Step 3 - Memory loop implementation — DONE
 
-### Step 3 - Memory loop implementation
+- [x] Memory full loop - remember / review-list / update / forget / why-used, without silent autosave
+- [x] Add memory receipts for create / update / forget / use
+- [x] Prove memory is not used before confirmation
+- [x] Prove forgotten memory is not reused
+- [x] Prove memory never authorizes action
+- [ ] Add Memory UX flows - remember / forget / review saved memory (post-Stage 5)
 
-- [ ] Memory full loop - remember / review-list / update / forget / why-used, without silent autosave
-- [ ] Add memory receipts for create / update / forget / use
-- [ ] Prove memory is not used before confirmation
-- [ ] Prove forgotten memory is not reused
-- [ ] Prove memory never authorizes action
-- [ ] Add Memory UX flows - remember / forget / review saved memory
+### Step 4 - Context Pack implementation — DONE
 
-### Step 4 - Context Pack implementation
+- [x] Implement Context Pack object with source labels, authority labels, budget limits,
+      why-selected metadata, and stale/conflict warnings
+- [x] Prove candidate items are not treated as confirmed
+- [x] Prove runtime truth outranks memory
+- [x] Prove Context Pack budgets are enforced
 
-- [ ] Implement Context Pack object with source labels, authority labels, budget limits, why-selected metadata, and stale/conflict warnings
-- [ ] Prove candidate items are not treated as confirmed
-- [ ] Prove runtime truth outranks memory
-- [ ] Prove Context Pack budgets are enforced
-
-### Step 5 - Brain discipline and trace
+### Step 5 - Brain discipline and trace — ACTIVE SPRINT
 
 - [ ] Add mode contracts for brainstorm, repo-review, implementation, merge, planning, and action-review
 - [ ] Add safe BrainTrace fields without exposing private chain-of-thought
@@ -54,10 +53,10 @@
 
 ## Current Priorities (ordered)
 
+- [ ] Brain mode contracts (brainstorm, repo-review, implementation, merge, planning, action-review)
+- [ ] Safe BrainTrace fields without exposing private chain-of-thought
+- [ ] Inject Context Pack into live brain_server.py prompt assembly (Stage 5 wiring)
 - [ ] Re-run Daily Brief + continuity proof manually in the local UI/API
-- [ ] Re-run and record the conversation + search demo flow with Search Evidence Synthesis active
-- [ ] Memory full loop - remember / review-list / update / forget / why-used, without silent autosave
-- [ ] Context Pack implementation planning after memory loop proof
 - [ ] Brain mode contracts and safe trace after memory/context foundations
 - [ ] Continue doc/status cleanup where stale "local-only" or planning-as-runtime wording remains
 - [ ] Plan cost posture metadata as the next free-first implementation step
@@ -142,6 +141,10 @@ Canonical audit: `docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`
 
 ## Recently Completed
 
+- Stage 4 Context Pack — bounded, labeled context bridge with source/authority labels, budget
+  enforcement, stale/conflict detection, warning cap; 67 tests green; PR merged 2026-05-02
+- Stage 3 Memory loop — remember/review/update/forget/why-used with receipts; 62 tests;
+  MEMORY_LOOP_PROOF.md PASS; PR #82 merged 2026-05-02
 - Agent stack future architecture docs, future backlog, and Auralis social content workflow pack merged and linked
 - Daily Brief continuity hardening branch - malformed input degradation, continuity fields in brief,
   deterministic next-action recommendations, proof docs, 114 brief tests
