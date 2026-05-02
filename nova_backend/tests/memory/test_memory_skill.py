@@ -43,7 +43,7 @@ def _skill(tmp_path) -> MemorySkill:
 
 
 def _run(coro):
-    return asyncio.get_event_loop().run_until_complete(coro)
+    return asyncio.run(coro)
 
 
 def _fake_user_store(entries=None):
