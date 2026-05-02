@@ -4,6 +4,12 @@ Date: 2026-04-26
 
 Status: Skeleton / future planning
 
+Related docs:
+
+- `AURALIS_NOVALIS_INTEGRATION_GOALS.md`
+- `AURALIS_MVP_EXECUTION_PLAN.md`
+- `AURALIS_RISK_AND_POLICY.md`
+
 ---
 
 ## Purpose

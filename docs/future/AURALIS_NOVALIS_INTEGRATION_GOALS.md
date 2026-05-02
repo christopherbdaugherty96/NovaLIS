@@ -491,27 +491,35 @@ Customer-facing language:
 
 ## Auralis Package Path
 
-### Package 1: Website Foundation
+### Package 1: Starter Website
 
 Website only.
 
-Includes mobile-friendly site, services, about, contact, form, and basic SEO.
+Includes mobile-friendly site, services, about, contact, contact form, and basic SEO.
 
-### Package 2: Website + Lead System
+### Package 2: Growth Website
 
-Website plus structured inquiries, quote form, lead email formatting, lead tracker, and follow-up templates.
+Website with stronger conversion and lead capture.
 
-### Package 3: Website + Nova Lead Console
+Includes everything in Starter Website plus additional pages, stronger calls to action, trust sections, gallery or testimonials, better-structured inquiry form, expanded SEO basics, and service-area language where appropriate.
 
-First Nova-linked tier with inquiry summaries, lead categorization, draft replies, business profile, and weekly lead report.
+### Package 3: Website + Lead System
 
-### Package 4: Nova Business Assistant
+Website plus a structured system for capturing and organizing inquiries.
 
-Later tier with email connection, metrics dashboard, appointment request support, content suggestions, follow-up reminders, and approval-gated actions.
+Includes Growth Website foundation plus structured quote/request form, lead notification formatting, basic lead tracker template, follow-up templates, and customer intake questions.
 
-### Package 5: Nova Managed Agent Layer
+### Package 4: Website + Nova Lead Console
 
-Long-term tier with deeper integrations, calendar, CRM-like tracking, business intelligence, governed workflow actions, audit trail, and advanced automation under strict approval and policy boundaries.
+First Nova-linked tier. Do not sell as live until Nova Lead Console exists and passes decision gates.
+
+Includes structured lead intake, business profile basics, inquiry summaries, lead categorization, missing information detection, draft replies, follow-up suggestions, weekly lead report, and visible record of what Nova drafted and did not send.
+
+### Package 5: Managed Intelligence Layer
+
+Long-term premium service tier. Do not sell as live until runtime support is verified.
+
+Includes monthly insight review, human-reviewed recommendations, content ideas, website improvement suggestions, lead trend review, follow-up improvement suggestions, and higher-touch support. Framed as a managed service, not autonomous AI operation.
 
 ---
 

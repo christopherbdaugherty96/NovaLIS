@@ -6,8 +6,13 @@ Related docs:
 
 - [`NOVA_EVERYDAY_MODE_PRODUCT_VISION.md`](NOVA_EVERYDAY_MODE_PRODUCT_VISION.md)
 - [`NOVA_EVERYDAY_MODE_IMPLEMENTATION_NOTES.md`](NOVA_EVERYDAY_MODE_IMPLEMENTATION_NOTES.md)
+- [`NOVA_ROLE_BASED_ASSISTANT_CORE_VISION.md`](NOVA_ROLE_BASED_ASSISTANT_CORE_VISION.md)
+- [`NOVA_SOLO_BUSINESS_ASSISTANT_PRODUCT_VISION.md`](NOVA_SOLO_BUSINESS_ASSISTANT_PRODUCT_VISION.md)
+- [`NOVA_SOLO_BUSINESS_ASSISTANT_DECISION_RECORD_2026-04-26.md`](NOVA_SOLO_BUSINESS_ASSISTANT_DECISION_RECORD_2026-04-26.md)
+- [`NOVA_SOLO_BUSINESS_ASSISTANT_IMPLEMENTATION_NOTES.md`](NOVA_SOLO_BUSINESS_ASSISTANT_IMPLEMENTATION_NOTES.md)
+- [`NOVA_EVERYDAY_TASK_SERVICE_EXPANSION_2026-04-26.md`](NOVA_EVERYDAY_TASK_SERVICE_EXPANSION_2026-04-26.md)
 - [`../current_runtime/CURRENT_RUNTIME_STATE.md`](../current_runtime/CURRENT_RUNTIME_STATE.md)
-- [`../../4-15-26 NEW ROADMAP/HANDOFF_2026-04-26_TRUST_RECEIPT_RECOVERY.md`](../../4-15-26%20NEW%20ROADMAP/HANDOFF_2026-04-26_TRUST_RECEIPT_RECOVERY.md)
+- [`../../4-15-26 NEW ROADMAP/HANDOFF_2026-04-26_CAP64_SIGNOFF_READY.md`](../../4-15-26%20NEW%20ROADMAP/HANDOFF_2026-04-26_CAP64_SIGNOFF_READY.md)
 
 ---
 
@@ -228,7 +233,7 @@ Current runtime truth still matters:
 - Phase 8 and Phase 9 are active.
 - Trust Panel system is still not fully implemented in runtime truth.
 - Full Phase-8 governed envelope execution remains deferred.
-- Trust receipt backend/API is not currently on `main`; it exists in stranded commit `e9c0187` with follow-up `92baccd` and must be recovered before trust receipt UI is treated as live.
+- Trust receipt backend/API is on `main` as of 2026-04-26. `GET /api/trust/receipts` and `/summary` are live; receipt store is hardened; 18 unit tests pass. The Trust Panel dashboard card is not yet built.
 
 Do not present Everyday Mode as already complete.
 
@@ -236,17 +241,14 @@ Do not present Everyday Mode as already complete.
 
 ## Correct Implementation Order
 
-The correct near-term order is:
+Trust receipt recovery is complete as of 2026-04-26. Backend is on main, hardened, and tested (18 unit tests pass).
 
-1. Recover stranded trust receipt / Cap 65 work from commit `e9c0187`.
-2. Apply follow-up correction commit `92baccd`.
-3. Verify files, certification status, and tests.
-4. Harden the trust receipt store for missing/corrupt ledger cases.
-5. Add targeted receipt-store tests.
-6. Complete Cap 64 P5 live signoff and lock.
-7. Complete Cap 65 P5 live Shopify checklist and lock.
-8. Validate the clean Windows installer path and inspect `C:\Program Files\Nova\bootstrap.log`.
-9. Start the Everyday Mode UX layer with the smallest useful non-technical flows.
+Current implementation order:
+
+1. Complete Cap 64 P5 live signoff and lock — see `HANDOFF_2026-04-26_CAP64_SIGNOFF_READY.md` Step 1.
+2. Complete Cap 65 P5 live Shopify checklist and lock — requires Shopify env vars.
+3. Validate the clean Windows installer path and inspect `C:\Program Files\Nova\bootstrap.log`.
+4. Start the Everyday Mode UX layer with the smallest useful non-technical flows.
 
 Do not skip directly to broad UI, dashboard cards, or autonomous flows before backend truth and certification are reconciled.
 

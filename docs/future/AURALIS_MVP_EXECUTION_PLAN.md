@@ -4,7 +4,10 @@ Date: 2026-04-26
 
 Status: Skeleton / future planning
 
-Related doc: `AURALIS_NOVALIS_INTEGRATION_GOALS.md`
+Related docs:
+
+- `AURALIS_NOVALIS_INTEGRATION_GOALS.md`
+- `AURALIS_TECHNICAL_INTEGRATION_SPEC.md`
 
 ---
 
@@ -136,9 +139,14 @@ A small business owner receives a website inquiry. Nova summarizes what the cust
 
 ## Open Questions
 
-- Where should lead payloads be stored first?
-- Should the first version be local-only, email-forwarded, or form-webhook based?
-- What UI should show the lead card?
+Three of these questions overlap with Open Technical Decisions in `AURALIS_TECHNICAL_INTEGRATION_SPEC.md`. Resolve shared questions there first; answers apply here.
+
+Shared with tech spec (resolve there):
+- Storage model: local-first only or hosted components?
+- First connector type: local-only, email-forwarded, or form-webhook?
+- Lead card UI surface (what UI displays trust records?)
+
+MVP-specific questions:
 - What is the minimum business profile schema?
 - What logging/trust receipt format is needed for v1?
 
@@ -146,8 +154,11 @@ A small business owner receives a website inquiry. Nova summarizes what the cust
 
 ## Next Actions
 
+Shared with tech spec (resolve there first):
 - Define lead payload schema
 - Define business profile schema
+
+MVP-specific:
 - Create 3 sample demo leads
 - Create first static lead summary test
 - Choose one demo website for first integration

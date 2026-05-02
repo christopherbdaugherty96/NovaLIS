@@ -30,7 +30,7 @@
 
 ## This Week
 
-- [ ] Run the cap 64 live checklist end-to-end → sign off → lock (first locked capability) — checklist at `docs/capability_verification/live_checklists/cap_64_send_email_draft.md`
+- [ ] Run the cap 64 live checklist end-to-end → sign off → lock (first locked capability) — checklist at `docs/capability_verification/live_checklists/cap_64_send_email_draft.md` — full pre-conditions, locking commands, and post-lock doc updates in `HANDOFF_2026-04-26_CAP64_SIGNOFF_READY.md` Step 1
 - [ ] Inspect `C:\Program Files\Nova\bootstrap.log` on the target VM (requires clean Windows VM install run)
 - [ ] Complete clean Windows VM installer validation
 - [x] Trust receipt backend — `GET /api/trust/receipts` live; reads ledger, returns last N governed action events

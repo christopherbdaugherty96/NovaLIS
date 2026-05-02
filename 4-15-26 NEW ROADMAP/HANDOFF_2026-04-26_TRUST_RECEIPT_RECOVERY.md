@@ -1,3 +1,19 @@
+> **STATUS: COMPLETED — THIS DOCUMENT IS NOW HISTORICAL**
+>
+> The recovery described in this document was completed on 2026-04-26.
+>
+> - Cherry-pick of `e9c0187` and `92baccd` succeeded.
+> - PR #57 merged into `main`.
+> - `nova_backend/src/api/trust_api.py` and `nova_backend/src/trust/receipt_store.py` are on `main`.
+> - Trust receipt store hardened; 18 unit tests pass. Loopback guard added.
+> - `main` is clean and up to date with `origin/main`.
+>
+> **Current source of truth:** `HANDOFF_2026-04-26_CAP64_SIGNOFF_READY.md`
+>
+> The content below is preserved as historical context. Do not act on it — recovery is complete.
+
+---
+
 # Handoff — Trust Receipt / Cap 65 Recovery
 
 Date: 2026-04-26

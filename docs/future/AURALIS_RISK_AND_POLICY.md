@@ -4,6 +4,13 @@ Date: 2026-04-26
 
 Status: Skeleton / future planning
 
+Related docs:
+
+- `AURALIS_NOVALIS_INTEGRATION_GOALS.md`
+- `AURALIS_PRICING_AND_PACKAGES.md`
+- `AURALIS_CLIENT_FUNNEL.md`
+- `AURALIS_TECHNICAL_INTEGRATION_SPEC.md`
+
 ---
 
 ## Purpose
@@ -60,7 +67,7 @@ To define later:
 - Website downtime
 - Integration failures
 
-Mitigation plans: TBD
+Mitigation plans: TBD — see working risk register in `AURALIS_NOVALIS_INTEGRATION_GOALS.md` for current summary-level mitigations.
 
 ---
 
@@ -72,7 +79,7 @@ Mitigation plans: TBD
 - Too much complexity too early
 - Support burden exceeds revenue
 
-Mitigation plans: TBD
+Mitigation plans: TBD — see working risk register in `AURALIS_NOVALIS_INTEGRATION_GOALS.md` for current summary-level mitigations.
 
 ---
 
