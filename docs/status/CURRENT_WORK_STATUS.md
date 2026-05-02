@@ -22,6 +22,8 @@ At this review baseline, the alignment branch includes:
 - OpenClaw robust hardening audit added as a future implementation recommendation, not runtime truth.
 - Governed Workflow Workspace Architecture added as a product/architecture planning note for everyday
   workflows, independent automation, and business-owner use cases.
+- Stage 3 Memory Loop merged 2026-05-02.
+- Stage 4 Context Pack merged 2026-05-02.
 
 Generated runtime truth still reports the authoritative capability inventory and governance invariants. This note should not be used as a replacement for generated runtime docs.
 
@@ -31,18 +33,11 @@ Generated runtime truth still reports the authoritative capability inventory and
 
 - Governance spine remains the strongest runtime truth: GovernorMediator, CapabilityRegistry, ExecuteBoundary, NetworkMediator, and ledger discipline are still the authority path.
 - Cap 16 governed web search remains the active current-information lane.
-- Search Evidence Synthesis is now implemented as a deterministic evidence-structuring module for Cap 16
-  search output. It does not add a new capability, does not authorize action, and does not bypass
-  NetworkMediator.
-- Daily Brief MVP is implemented as a deterministic, on-demand session brief (PR #68). It synthesizes
-  session state, memory, receipts, weather (live via WeatherService), calendar (local ICS via
-  CalendarSkill), and email placeholder into 11 sections. Non-authorizing frozen dataclass;
-  `execution_performed=False` and `authorization_granted=False` are enforced by `__post_init__`.
-  No new capability, no LLM calls, no Governor path.
-- Daily Brief robustness is improved on the `daily-brief-continuity-hardening` branch. It degrades
-  cleanly on malformed session, memory, receipt, weather, calendar, and email-placeholder inputs;
-  surfaces session continuity fields; and uses deterministic next-action recommendations. Proof notes
-  live under [`../demo_proof/daily_operating_baseline/`](../demo_proof/daily_operating_baseline/).
+- Search Evidence Synthesis is implemented as a deterministic evidence-structuring module for Cap 16 search output. It does not add a new capability, does not authorize action, and does not bypass NetworkMediator.
+- Daily Brief MVP is implemented as a deterministic, on-demand session brief (PR #68). It synthesizes session state, memory, receipts, weather (live via WeatherService), calendar (local ICS via CalendarSkill), and email placeholder into 11 sections. Non-authorizing frozen dataclass; `execution_performed=False` and `authorization_granted=False` are enforced by `__post_init__`. No new capability, no LLM calls, no Governor path.
+- Daily Brief robustness is improved on the `daily-brief-continuity-hardening` branch. It degrades cleanly on malformed session, memory, receipt, weather, calendar, and email-placeholder inputs; surfaces session continuity fields; and uses deterministic next-action recommendations. Proof notes live under [`../demo_proof/daily_operating_baseline/`](../demo_proof/daily_operating_baseline/).
+- Stage 3 Memory Loop is implemented as an explicit user-initiated conversational memory skill: remember / review-list / update / forget / why-used, with memory receipts. It does not silently autosave, does not authorize action, and does not register a new capability.
+- Stage 4 Context Pack is implemented as a bounded, labeled context bridge with ContextItem, ContextPackWarning, ContextPack, source labels, authority labels, budget enforcement, stale/conflict warnings, warning cap, deleted-memory filtering, legacy format output, and render_context_block. It does not authorize action and is not yet live-wired into brain prompt assembly.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. It does not use Gmail API, SMTP, inbox access, or autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes are implemented.
 
@@ -63,6 +58,7 @@ Generated runtime truth still reports the authoritative capability inventory and
 - Google connector work is future read/context connector planning. There is no Google OAuth, Gmail, Calendar, Drive, or Google account runtime connector unless generated runtime truth later proves it.
 - Free-first cost governance is now a design policy and implementation plan. Runtime enforcement does not exist until registry metadata, generator output, tests, and UI/proof paths exist.
 - Auralis Website Coworker is a future business workflow / production discipline layer. It is not an autonomous website builder and has no publish, deploy, domain, DNS, or client-send authority.
+- Auralis Social Content Workflow Pack is a future/manual validation workflow. It has no autonomous posting, ad spend, client-account access, or customer messaging authority.
 - YouTubeLIS is a planning-only tool folder. It has no upload, publish, account automation, or YouTube Studio control.
 - OpenClaw remains governed/constrained and is not broad autonomy. Future expansion must require Run/Task Envelope/Governor/receipts.
 - The OpenClaw robust hardening audit recommends mandatory EnvelopeFactory issuance, disabling or preview-gating freeform goal execution, replacing action auto-allow, centralizing execution guards, adding boundary detection, and adding run/step receipts before any browser/computer-use expansion.
@@ -77,15 +73,15 @@ All four Stage 1 proof docs verified against `main @ f82cc9c`:
 - Daily Brief: PASS — 114 tests, 1877 full suite, 6 functional degradation cases
 - Conversation Continuity: PASS — 412 tests, continuity roundtrip verified
 - Search Evidence Synthesis: PASS — 222 brain+executors tests, 3 evidence path cases
-- Memory Loop: partial — basic degradation proven; full loop is Stage 3
+- Memory Loop: partial at Stage 1; full loop completed in Stage 3
 
-Stage 2 (status update) is complete. Stage 3 (memory loop) is now the active sprint.
+Stage 2 (status update) is complete.
 
 ---
 
-## Active Sprint: Stage 3 — Memory Loop
+## Stage 3 Memory Loop — Closed 2026-05-02
 
-Minimum scope:
+Implemented:
 
 - `remember` — explicit user-initiated memory save
 - `review` / `list` — show what is saved
@@ -94,30 +90,64 @@ Minimum scope:
 - `why-used` — explain why a memory item was activated
 - memory receipts for create / update / forget / use
 
-Required invariants:
+Proof: [`../demo_proof/daily_operating_baseline/MEMORY_LOOP_PROOF.md`](../demo_proof/daily_operating_baseline/MEMORY_LOOP_PROOF.md) — PASS.
+
+Required invariants proven by the Stage 3 proof package:
 
 - no silent autosave
-- memory is not used before user confirmation
+- memory is not used before user confirmation/review
 - forgotten memory is not reused
 - memory never authorizes action
 
 ---
 
-## Active P1
+## Stage 4 Context Pack — Closed 2026-05-02
 
-Memory loop correctness and honesty is the active sprint.
+Implemented:
+
+- `ContextItem`
+- `ContextPackWarning`
+- `ContextPack`
+- `compose_context_pack()`
+- source labels and authority labels
+- budget enforcement
+- stale/conflict warnings
+- warning cap
+- deleted-memory filtering
+- legacy format output
+- `render_context_block()`
+
+Proof: [`../demo_proof/daily_operating_baseline/CONTEXT_PACK_PROOF.md`](../demo_proof/daily_operating_baseline/CONTEXT_PACK_PROOF.md) — PASS.
+
+Required invariants proven by the Stage 4 proof package:
+
+- candidate items are not treated as confirmed
+- runtime truth outranks memory
+- budgets are enforced
+- Context Pack is non-authorizing
+
+Boundary: Context Pack is implemented and proven, but live prompt wiring and Brain mode/trace behavior are Stage 5 work.
+
+---
+
+## Active Sprint: Stage 5 — Brain Discipline / Trace
+
+Active scope:
+
+- Brain mode contracts for brainstorm, repo-review, implementation, merge, planning, and action-review
+- Safe BrainTrace fields that do not expose private chain-of-thought
+- Context Pack live wiring into `brain_server.py` prompt assembly
+- Cleanup of overly broad memory/context wording during trace/context review
 
 Immediate continuation order:
 
-1. Implement memory loop (remember/review/update/forget/why-used + receipts).
-2. Prove all four memory invariants.
-3. Continue doc/status cleanup as needed.
-4. Plan cost posture metadata as the next design-to-runtime step, without hard blocking first.
-5. Plan Google read-only connector foundations only after cost posture and connector governance are clear.
-6. Keep OpenClaw expansion frozen until envelope issuance, approval, execution-guard, and receipt gaps
-   are closed.
-7. Use the governed workflow workspace plan to guide product shell, object model, workflow template,
-   and onboarding work after proof paths are stable.
+1. Add Brain mode contracts.
+2. Add safe BrainTrace fields.
+3. Wire Context Pack into live prompt assembly without authorizing action.
+4. Continue doc/status cleanup where stale "local-only" or planning-as-runtime wording remains.
+5. Plan cost posture metadata as the next design-to-runtime step, without hard blocking first.
+6. Plan Google read-only connector foundations only after cost posture and connector governance are clear.
+7. Keep OpenClaw expansion frozen until envelope issuance, approval, execution-guard, and receipt gaps are closed.
 
 Do not start new write/action capabilities from this status pass.
 
@@ -179,7 +209,9 @@ Do not claim these are finished unless verified against code/runtime truth:
 - Free-first runtime enforcement.
 - One-click consumer installer.
 - Full Daily Operating System / background routines.
-- Durable memory loop proof.
+- Context Pack live prompt wiring.
+- Brain mode contracts.
+- Safe BrainTrace.
 
 ---
 
