@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-01
+Last reviewed: 2026-05-02
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -70,15 +70,47 @@ Generated runtime truth still reports the authoritative capability inventory and
 
 ---
 
+## Stage 1 Proof — Closed 2026-05-02
+
+All four Stage 1 proof docs verified against `main @ f82cc9c`:
+
+- Daily Brief: PASS — 114 tests, 1877 full suite, 6 functional degradation cases
+- Conversation Continuity: PASS — 412 tests, continuity roundtrip verified
+- Search Evidence Synthesis: PASS — 222 brain+executors tests, 3 evidence path cases
+- Memory Loop: partial — basic degradation proven; full loop is Stage 3
+
+Stage 2 (status update) is complete. Stage 3 (memory loop) is now the active sprint.
+
+---
+
+## Active Sprint: Stage 3 — Memory Loop
+
+Minimum scope:
+
+- `remember` — explicit user-initiated memory save
+- `review` / `list` — show what is saved
+- `update` — change a saved item
+- `forget` — delete a saved item
+- `why-used` — explain why a memory item was activated
+- memory receipts for create / update / forget / use
+
+Required invariants:
+
+- no silent autosave
+- memory is not used before user confirmation
+- forgotten memory is not reused
+- memory never authorizes action
+
+---
+
 ## Active P1
 
-Cap 16 current-information reliability and evidence quality remains the active P1.
+Memory loop correctness and honesty is the active sprint.
 
 Immediate continuation order:
 
-1. Re-run and record the conversation + search proof path with Search Evidence Synthesis active.
-2. Memory loop and conversation continuity — session continuity state fields: `current_topic`,
-   `session_goal`, `mode`, `last_decision`, `open_loops`, `recent_recommendations`.
+1. Implement memory loop (remember/review/update/forget/why-used + receipts).
+2. Prove all four memory invariants.
 3. Continue doc/status cleanup as needed.
 4. Plan cost posture metadata as the next design-to-runtime step, without hard blocking first.
 5. Plan Google read-only connector foundations only after cost posture and connector governance are clear.
