@@ -1,29 +1,71 @@
 # Active TODO - Nova
 
-**Updated:** 2026-05-01
-**Sprint goal:** Re-run conversation/search proof after Daily Brief continuity hardening.
+**Updated:** 2026-05-02
+**Sprint goal:** Close active Daily Brief + conversation/search proof, then move into explicit memory loop implementation.
 **Authority note:** This file is the public task snapshot. Exact runtime truth still comes from generated runtime docs and code.
+
+## Stepwise Execution Order
+
+### Step 1 - Active proof closeout
+
+- [ ] Re-run Daily Brief + continuity proof manually in the local UI/API
+- [ ] Re-run and record the conversation + search demo flow with Search Evidence Synthesis active
+- [ ] Re-run `docs/demo_proof/2026-04-29_conversation_search_proof/CONVERSATION_SEARCH_REPORT.md` prompts after Search Evidence Synthesis merge
+- [ ] Capture a short public conversation/search demo
+
+### Step 2 - Update status after proof
+
+- [ ] Update this TODO after proof results are captured
+- [ ] Update current work/status docs with proof outcome
+- [ ] Only then promote memory loop to active implementation sprint
+
+### Step 3 - Memory loop implementation
+
+- [ ] Memory full loop - remember / review-list / update / forget / why-used, without silent autosave
+- [ ] Add memory receipts for create / update / forget / use
+- [ ] Prove memory is not used before confirmation
+- [ ] Prove forgotten memory is not reused
+- [ ] Prove memory never authorizes action
+- [ ] Add Memory UX flows - remember / forget / review saved memory
+
+### Step 4 - Context Pack implementation
+
+- [ ] Implement Context Pack object with source labels, authority labels, budget limits, why-selected metadata, and stale/conflict warnings
+- [ ] Prove candidate items are not treated as confirmed
+- [ ] Prove runtime truth outranks memory
+- [ ] Prove Context Pack budgets are enforced
+
+### Step 5 - Brain discipline and trace
+
+- [ ] Add mode contracts for brainstorm, repo-review, implementation, merge, planning, and action-review
+- [ ] Add safe BrainTrace fields without exposing private chain-of-thought
+- [ ] Improve conversation follow-up/topic tracking for connector/governance topics
+- [ ] Tighten uncertainty wording for health/safety/current-evidence questions
+
+### Step 6 - Routine and workflow surfaces
+
+- [ ] Convert Daily Brief into RoutineGraph v0 only after memory/context foundations exist
+- [ ] Capture one everyday workflow demo: plan my week from tasks, notes, calendar context, and priorities, with approval boundary and receipt
+- [ ] Capture one business workflow demo: find 5 local businesses that need better websites, draft improvement notes, and create reviewable outreach drafts
+- [ ] Define governed workflow workspace shell for everyday workflows, independent automation, and business-owner use cases
+- [ ] Draft workflow object model and workflow template schema
 
 ## Current Priorities (ordered)
 
 - [ ] Re-run Daily Brief + continuity proof manually in the local UI/API
 - [ ] Re-run and record the conversation + search demo flow with Search Evidence Synthesis active
-- [ ] Memory full loop - remember / forget / review saved memory, without silent autosave
-- [ ] Improve conversation follow-up/topic tracking for connector/governance topics
-- [ ] Tighten uncertainty wording for health/safety/current-evidence questions
+- [ ] Memory full loop - remember / review-list / update / forget / why-used, without silent autosave
+- [ ] Context Pack implementation planning after memory loop proof
+- [ ] Brain mode contracts and safe trace after memory/context foundations
 - [ ] Continue doc/status cleanup where stale "local-only" or planning-as-runtime wording remains
 - [ ] Plan cost posture metadata as the next free-first implementation step
 - [ ] Plan Google read-only connector foundation after connector governance and cost posture metadata are clear
 - [ ] Prepare OpenClaw hardening pass: mandatory EnvelopeFactory, freeform-goal gate, real approval decisions,
       centralized execution guard, boundary detection, and receipts
-- [ ] Define governed workflow workspace shell for everyday workflows, independent automation, and business-owner
-      use cases
-- [ ] Draft workflow object model and workflow template schema
 - [ ] Fuller Trust Review Card / Trust Panel - richer blocked reasons, confirmation previews, receipt history,
       and proof browsing
 - [ ] Windows installer VM validation - clean install + bootstrap.log fixes
 - [ ] README screenshot or GIF of governed action flow
-- [ ] Memory UX flows - remember / forget / review saved memory
 - [ ] Dashboard home improvements - stronger daily assistant surface
 - [ ] Cap 65 P5 live signoff
 - [ ] Waitlist activation
@@ -36,6 +78,17 @@
 - [ ] Capture one business workflow demo: find 5 local businesses that need better websites, draft improvement notes, and create reviewable outreach drafts
 - [ ] Run Cap 64 live signoff only after conversation/search proof is stable
 - [ ] Run Cap 65 credential-backed proof only after Shopify env vars are available
+
+## Auralis Manual Validation Queue
+
+Auralis Social Content Workflow Pack is planning-only until manually validated.
+
+- [ ] Pick first niche: restaurants/bars/mobile bartending or lawn care/contractors
+- [ ] Create 3 mock client packs
+- [ ] Create 30 reusable post templates
+- [ ] Create 1 content calendar
+- [ ] Create 1 outreach package using the best samples
+- [ ] Do not integrate this into Nova runtime until memory loop, Context Pack, and Routine Layer foundations are ready
 
 ## Important Principle
 
@@ -58,6 +111,7 @@ Not raw feature count.
 - OpenClaw broad automation
 - OpenClaw browser/computer-use expansion until mandatory envelope issuance, real approval decisions, execution guard, boundary detection, and receipts exist
 - Voice / ElevenLabs expansion
+- Auralis social content runtime integration before manual validation and Nova memory/context/routine foundations
 
 ## Governed Workflow Workspace Queue
 
@@ -86,6 +140,7 @@ Canonical audit: `docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`
 
 ## Recently Completed
 
+- Agent stack future architecture docs, future backlog, and Auralis social content workflow pack merged and linked
 - Daily Brief continuity hardening branch - malformed input degradation, continuity fields in brief,
   deterministic next-action recommendations, proof docs, 114 brief tests
 - Conversation continuity fields merged into `SessionConversationContext`: `mode`, `last_decision`,
