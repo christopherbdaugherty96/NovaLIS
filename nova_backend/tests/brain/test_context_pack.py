@@ -473,6 +473,24 @@ class TestStaleDetection:
         rendered = pack.render_context_block()
         assert "stale" in rendered.lower()
 
+    def test_unparseable_timestamp_emits_stale_warning(self):
+        pack = compose_context_pack(
+            "q",
+            memory_items=[_mem(updated_at="not-a-date", title="Bad ts item")],
+            max_warnings=5,
+        )
+        warn_types = [w.warning_type for w in pack.warnings]
+        assert WARN_STALE_MEMORY in warn_types
+
+    def test_unparseable_timestamp_item_is_not_flagged_stale(self):
+        # Item itself is not marked is_stale — we can't know its age
+        pack = compose_context_pack(
+            "q",
+            memory_items=[_mem(updated_at="not-a-date")],
+            max_warnings=5,
+        )
+        assert pack.items[0].is_stale is False
+
 
 # ---------------------------------------------------------------------------
 # Conflict detection
@@ -744,7 +762,7 @@ class TestEdgeCases:
                 _mem(id="b", source="auto_extracted", title="Cand B"),
             ],
         )
-        assert pack.candidate_count == min(2, DEFAULT_MAX_CANDIDATE)
+        assert pack.candidate_count == DEFAULT_MAX_CANDIDATE
 
     def test_items_are_tuple_not_list(self):
         pack = compose_context_pack("q", memory_items=[_mem()])
@@ -764,3 +782,23 @@ class TestEdgeCases:
             runtime_truth_items=[{"id": "rt1", "title": "RT", "body": "rt body"}],
         )
         assert pack.items[0].content == "rt body"
+
+    def test_max_confirmed_zero_drops_all_confirmed(self):
+        pack = compose_context_pack(
+            "q",
+            memory_items=[_mem(source="explicit_user_save", title="Confirmed item")],
+            max_confirmed=0,
+        )
+        assert len(pack.confirmed_items) == 0
+        warn_types = [w.warning_type for w in pack.warnings]
+        assert WARN_BUDGET_EXCEEDED in warn_types
+
+    def test_max_candidate_zero_drops_all_candidates(self):
+        pack = compose_context_pack(
+            "q",
+            memory_items=[_mem(source="auto_extracted", title="Candidate item")],
+            max_candidate=0,
+        )
+        assert pack.candidate_count == 0
+        warn_types = [w.warning_type for w in pack.warnings]
+        assert WARN_BUDGET_EXCEEDED in warn_types
