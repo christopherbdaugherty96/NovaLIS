@@ -123,6 +123,7 @@ Imports from:
 - [[nova_backend/src/governor/agent_orchestrator.py|agent_orchestrator - src/governor]] (in `governor`)
 - [[nova_backend/src/llm/inference_wrapper.py|inference_wrapper]] (in `llm`)
 - [[nova_backend/src/personality/__init__.py|src/personality]]
+- [[nova_backend/src/services/stt_engine.py|stt_engine]] (in `services`)
 - [[nova_backend/src/skills/__init__.py|src/skills]]
 - [[nova_backend/src/trust/__init__.py|src/trust]]
 - [[nova_backend/src/usage/__init__.py|src/usage]]

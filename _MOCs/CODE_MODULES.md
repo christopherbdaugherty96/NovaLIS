@@ -602,6 +602,8 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/src/llm/llm_gateway.py|llm_gateway]]
 - [[nova_backend/src/personality/nova_style_contract.py|nova_style_contract]]
 - [[nova_backend/src/personality/tone_profile_store.py|tone_profile_store]]
+- [[nova_backend/src/services/weather_service.py|weather_service]]
+- [[nova_backend/src/skills/calendar.py|calendar]]
 - [[nova_backend/src/skills/general_chat.py|general_chat]]
 - [[nova_backend/src/trust/receipt_store.py|receipt_store]]
 - [[nova_backend/src/usage/provider_usage_store.py|provider_usage_store]]
@@ -1434,6 +1436,7 @@ _Provider lanes for optional metered model access._
 
 ### Imported by
 
+- [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
 - [[nova_backend/src/routers/stt.py|stt]]
 - [[nova_backend/src/skills/weather.py|weather]]
 - [[nova_backend/src/voice/tts_engine.py|tts_engine]]
