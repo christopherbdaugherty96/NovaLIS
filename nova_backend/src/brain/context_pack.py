@@ -31,10 +31,12 @@ from typing import Any
 # ---------------------------------------------------------------------------
 
 SOURCE_RUNTIME_TRUTH = "runtime_truth"
-SOURCE_CURRENT_CONVERSATION = "current_conversation"
 SOURCE_CONFIRMED_MEMORY = "confirmed_memory"
 SOURCE_CANDIDATE_MEMORY = "candidate_memory"
 SOURCE_SEARCH_EVIDENCE = "search_evidence"
+
+# Reserved for future stages — not yet assigned by compose_context_pack
+SOURCE_CURRENT_CONVERSATION = "current_conversation"
 SOURCE_RECEIPT = "receipt"
 SOURCE_ASSUMPTION = "assumption"
 
@@ -45,8 +47,7 @@ SOURCE_ASSUMPTION = "assumption"
 AUTHORITY_RUNTIME_TRUTH = "runtime_truth"
 AUTHORITY_CONFIRMED_PROJECT_MEMORY = "confirmed_project_memory"
 AUTHORITY_CANDIDATE_MEMORY = "candidate_memory"
-# Reserved for Stage 5+: compose_context_pack does not currently produce assumption items;
-# callers that construct ContextItem directly (e.g. search evidence with no source) may use it.
+# Reserved for future stages — not yet assigned by compose_context_pack
 AUTHORITY_ASSUMPTION = "assumption"
 
 # Ordered from highest to lowest — used for sort key and budget priority
@@ -64,9 +65,11 @@ _AUTHORITY_RANK: dict[str, int] = {
 WARN_STALE_MEMORY = "stale_memory"
 WARN_CONFLICTING_SOURCES = "conflicting_sources"
 WARN_BUDGET_EXCEEDED = "budget_exceeded"
+WARN_TOO_MANY_WARNINGS = "too_many_warnings"
+
+# Reserved for future stages — not yet emitted by compose_context_pack
 WARN_RUNTIME_TRUTH_UNKNOWN = "runtime_truth_unknown"
 WARN_WEAK_SEARCH_EVIDENCE = "weak_search_evidence"
-WARN_TOO_MANY_WARNINGS = "too_many_warnings"
 
 # ---------------------------------------------------------------------------
 # Budget defaults  (matches CONTEXT_PACK_SPEC.md)
@@ -286,7 +289,7 @@ class ContextPack:
 # ---------------------------------------------------------------------------
 
 def compose_context_pack(
-    query: str,  # reserved for future relevance filtering (Stage 5)
+    query: str,  # reserved for future relevance ranking — currently unused
     *,
     memory_items: list[dict[str, Any]] | None = None,
     runtime_truth_items: list[dict[str, Any]] | None = None,
@@ -392,7 +395,11 @@ def compose_context_pack(
                     age_days = (now - ts).days
                     stale_reason = f"last updated {age_days} days ago"
             except (ValueError, TypeError):
-                pass
+                raw_warnings.append(ContextPackWarning(
+                    warning_type=WARN_STALE_MEMORY,
+                    item_id=str(mem.get("id") or ""),
+                    reason=f"Memory '{str(mem.get('title') or '')[:40]}' has unparseable timestamp — age unknown.",
+                ))
 
         item = ContextItem(
             id=str(mem.get("id") or ""),
