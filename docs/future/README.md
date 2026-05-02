@@ -17,6 +17,21 @@ Use these sources in order of authority:
 ## Canonical Future Direction
 
 - `ROADMAP.md` — primary future direction and phased expansion path.
+- `NOVA_AGENT_STACK_RECOMMENDATIONS.md` — future governed agent-stack architecture direction.
+
+## Brain, Memory, Learning, Routine, and Agent Stack Planning
+
+These docs define future architecture direction. They are not live runtime capability claims:
+
+- `BRAIN_HUMAN_GUIDE.md` - human-readable Brain planning guide.
+- `BRAIN_MEMORY_HUMAN_GUIDE.md` - Brain + Memory integration planning guide.
+- `NOVA_AGENT_STACK_RECOMMENDATIONS.md` - governed agent stack recommendations based on external agent/orchestration stack review.
+- `CONTEXT_PACK_SPEC.md` - planned bounded bridge between Memory/Learning/Search/Project state and Brain.
+- `LEARNING_LAYER_SPEC.md` - planned governed adaptation layer.
+- `ROUTINE_LAYER_SPEC.md` - planned routine/workflow orchestration layer.
+- `DAILY_BRIEF_ROUTINE_SPEC.md` - Daily Brief as Routine Layer surface, not Brain.
+- `GUARD_SYSTEM_SPEC.md` - planned Brain/Mode/Context/Routine/Memory/Learning/OpenClaw guard layers.
+- `TRACE_AND_OBSERVABILITY_SPEC.md` - planned safe trace and observability surfaces.
 
 ## Optional Workflow Planning
 
@@ -24,6 +39,7 @@ These docs preserve possible workflow directions. They are not live runtime
 capability claims:
 
 - `AURALIS_WEBSITE_COWORKER_WORKFLOW.md` - future Auralis website-production coworker workflow.
+- `AURALIS_LEAD_CONSOLE_V1.md` - future Auralis lead workflow planning surface.
 - `auralis_mock_leads/README.md` - fictional mock lead fixtures for planning-only Auralis workflow tests.
 - `../tools/youtubelis.md` - pointer to the planning-only YouTubeLIS tool folder.
 - `GOOGLE_CONNECTOR_IMPLEMENTATION_ROADMAP.md` - future Google read/context connector roadmap; no runtime connector claim.
@@ -48,6 +64,8 @@ Avoid treating this folder as:
 - release promises
 
 Examples:
+- Brain, Memory, Learning, Context Pack, Routine Layer, Guard, and Trace docs in this folder are future architecture direction until code, tests, generated runtime truth, and proof artifacts agree.
+- Daily Brief routine docs describe intended future framing; current runtime behavior must still be checked against code and generated docs.
 - Google connector docs are future read/context direction only; no Google OAuth, Gmail, Calendar, Drive, or Gmail-send runtime connector exists until runtime truth proves it.
 - Auralis docs are future production discipline workflows only; they do not grant publish, deploy, domain, DNS, or client-send authority.
 - YouTubeLIS docs are planning-only tool-folder material; they do not grant upload, publish, account, or background automation authority.
