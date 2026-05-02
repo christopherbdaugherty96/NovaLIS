@@ -1,8 +1,10 @@
 """Daily Brief synthesis module.
 
 Assembles a structured on-demand daily brief from session state, memory,
-and recent action receipts. Deterministic and non-authorizing: no LLM calls,
-no capability invocations, no external effects.
+recent action receipts, weather, calendar, and email data. Deterministic
+and non-authorizing: no LLM calls, no capability invocations, no external
+effects within this module. External data (weather, calendar) must be
+fetched by the caller and injected as parameters.
 """
 
 from __future__ import annotations
@@ -196,6 +198,131 @@ def _build_today_focus(
         items=tuple(items[:_MAX_ITEMS_PER_SECTION]),
         confidence=_section_confidence(items),
         source_label="session",
+    )
+
+
+def _build_weather(weather_data: dict[str, Any] | None) -> BriefSection:
+    """Build a weather section from pre-fetched WeatherService data."""
+    if not weather_data:
+        return BriefSection(
+            title="Weather",
+            items=(),
+            confidence=BriefConfidence.LOW,
+            source_label="weather",
+        )
+
+    status = str(weather_data.get("status") or "")
+    connected = bool(weather_data.get("connected"))
+
+    if not connected or status in {"not_configured", "unavailable"}:
+        hint = _clean(weather_data.get("setup_hint") or weather_data.get("message") or "", limit=120)
+        items = (hint,) if hint else ()
+        return BriefSection(
+            title="Weather",
+            items=items,
+            confidence=BriefConfidence.LOW,
+            source_label="weather",
+        )
+
+    summary = _clean(weather_data.get("summary") or "", limit=160)
+    forecast = _clean(weather_data.get("forecast") or "", limit=120)
+    alerts = [_clean(a, limit=100) for a in (weather_data.get("alerts") or []) if str(a).strip()]
+
+    items: list[str] = []
+    if summary:
+        items.append(summary)
+    if forecast and forecast not in items:
+        items.append(forecast)
+    items.extend(f"Alert: {a}" for a in alerts[:2])
+
+    return BriefSection(
+        title="Weather",
+        items=tuple(items[:_MAX_ITEMS_PER_SECTION]),
+        confidence=BriefConfidence.HIGH if items else BriefConfidence.LOW,
+        source_label="weather",
+    )
+
+
+def _build_calendar(calendar_data: dict[str, Any] | None) -> BriefSection:
+    """Build a calendar section from pre-fetched CalendarSkill data."""
+    if not calendar_data:
+        return BriefSection(
+            title="Calendar",
+            items=(),
+            confidence=BriefConfidence.LOW,
+            source_label="calendar",
+        )
+
+    connected = bool(calendar_data.get("connected"))
+    status = str(calendar_data.get("status") or "")
+
+    if not connected or status in {"not_connected", "unavailable"}:
+        hint = _clean(
+            calendar_data.get("setup_hint")
+            or "Add a local .ics file in Settings to enable calendar.",
+            limit=120,
+        )
+        return BriefSection(
+            title="Calendar",
+            items=(hint,),
+            confidence=BriefConfidence.LOW,
+            source_label="calendar",
+        )
+
+    events = list(calendar_data.get("events") or [])
+    items: list[str] = []
+    for event in events[:_MAX_ITEMS_PER_SECTION]:
+        if not isinstance(event, dict):
+            continue
+        time_label = _clean(event.get("time") or "", limit=20)
+        title = _clean(event.get("title") or "Untitled", limit=80)
+        entry = f"{time_label} — {title}" if time_label else title
+        if entry:
+            items.append(entry)
+
+    if not items:
+        scope = str(calendar_data.get("scope") or "today")
+        items = [f"Nothing on your calendar {scope}."]
+
+    return BriefSection(
+        title="Calendar",
+        items=tuple(items),
+        confidence=BriefConfidence.HIGH if events else BriefConfidence.MEDIUM,
+        source_label=_clean(calendar_data.get("source_label") or "calendar", limit=40),
+    )
+
+
+def _build_important_emails(important_emails: list[dict[str, Any]] | None) -> BriefSection:
+    """
+    Placeholder section for important emails.
+
+    Will return live data once an email connector is configured.
+    Currently returns a not-configured notice so the brief UI can show
+    the section with a setup prompt.
+    """
+    if important_emails:
+        items: list[str] = []
+        for email in important_emails[:_MAX_ITEMS_PER_SECTION]:
+            if not isinstance(email, dict):
+                continue
+            sender = _clean(email.get("sender") or "", limit=40)
+            subject = _clean(email.get("subject") or "No subject", limit=80)
+            entry = f"{sender}: {subject}" if sender else subject
+            if entry:
+                items.append(entry)
+        if items:
+            return BriefSection(
+                title="Important Emails",
+                items=tuple(items),
+                confidence=BriefConfidence.HIGH,
+                source_label="email",
+            )
+
+    return BriefSection(
+        title="Important Emails",
+        items=("Email connector not configured. Connect Gmail or IMAP in Settings.",),
+        confidence=BriefConfidence.LOW,
+        source_label="email_placeholder",
     )
 
 
@@ -406,6 +533,9 @@ def compose_daily_brief(
     memory_items: list[dict[str, Any]] | None = None,
     recent_receipts: list[dict[str, Any]] | None = None,
     working_context: dict[str, Any] | None = None,
+    weather_data: dict[str, Any] | None = None,
+    calendar_data: dict[str, Any] | None = None,
+    important_emails: list[dict[str, Any]] | None = None,
 ) -> DailyBrief:
     """
     Assemble a DailyBrief from available data sources.
@@ -413,7 +543,9 @@ def compose_daily_brief(
     All inputs are optional — returns a valid (possibly sparse) brief on
     any combination of missing data. Never raises on missing or malformed input.
 
-    Does not call LLMs, invoke capabilities, or produce external effects.
+    External data (weather_data, calendar_data, important_emails) must be
+    fetched by the caller and injected here. This function is synchronous
+    and produces no external effects.
     """
     _session = dict(session_state or {})
     _memory = list(memory_items or [])
@@ -424,6 +556,9 @@ def compose_daily_brief(
     now = _utc_now()
 
     focus = _build_today_focus(_session, _ctx)
+    weather = _build_weather(weather_data)
+    calendar = _build_calendar(calendar_data)
+    emails = _build_important_emails(important_emails)
     next_actions = _build_next_actions(_memory)
     open_loops = _build_open_loops(_memory)
     decisions = _build_recent_decisions(_memory)
@@ -434,6 +569,9 @@ def compose_daily_brief(
 
     all_sections = (
         focus,
+        weather,
+        calendar,
+        emails,
         next_actions,
         open_loops,
         decisions,
@@ -452,6 +590,10 @@ def compose_daily_brief(
         sources.append("session")
     if _ctx:
         sources.append("working_context")
+    if weather_data and weather_data.get("connected"):
+        sources.append("weather")
+    if calendar_data and calendar_data.get("connected"):
+        sources.append("calendar")
 
     confidence = _overall_confidence(list(all_sections))
     summary = _build_summary(list(all_sections), today)

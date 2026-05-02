@@ -303,6 +303,174 @@ class TestComposeDailyBrief:
 
 
 # ---------------------------------------------------------------------------
+# Weather, Calendar, Important Emails sections
+# ---------------------------------------------------------------------------
+
+class TestWeatherSection:
+    def test_live_weather_data(self):
+        weather = {
+            "connected": True,
+            "status": "ok",
+            "summary": "72 degrees F and sunny in Detroit.",
+            "forecast": "Partly cloudy later.",
+            "alerts": [],
+        }
+        brief = compose_daily_brief(weather_data=weather)
+        section = next(s for s in brief.sections if s.title == "Weather")
+        assert not section.is_empty
+        assert any("72 degrees" in item for item in section.items)
+        assert section.confidence == BriefConfidence.HIGH
+        assert section.source_label == "weather"
+
+    def test_weather_with_alert(self):
+        weather = {
+            "connected": True,
+            "status": "ok",
+            "summary": "55 F and windy.",
+            "forecast": "",
+            "alerts": ["Severe thunderstorm warning"],
+        }
+        brief = compose_daily_brief(weather_data=weather)
+        section = next(s for s in brief.sections if s.title == "Weather")
+        assert any("Alert:" in item for item in section.items)
+
+    def test_weather_not_configured(self):
+        weather = {
+            "connected": False,
+            "status": "not_configured",
+            "setup_hint": "Add WEATHER_API_KEY to enable live weather.",
+            "message": "",
+        }
+        brief = compose_daily_brief(weather_data=weather)
+        section = next(s for s in brief.sections if s.title == "Weather")
+        assert section.confidence == BriefConfidence.LOW
+        assert any("WEATHER_API_KEY" in item for item in section.items)
+
+    def test_weather_unavailable(self):
+        weather = {"connected": False, "status": "unavailable"}
+        brief = compose_daily_brief(weather_data=weather)
+        section = next(s for s in brief.sections if s.title == "Weather")
+        assert section.confidence == BriefConfidence.LOW
+
+    def test_weather_none_returns_empty_section(self):
+        brief = compose_daily_brief(weather_data=None)
+        section = next(s for s in brief.sections if s.title == "Weather")
+        assert section.is_empty
+
+    def test_weather_in_sources_when_connected(self):
+        brief = compose_daily_brief(
+            weather_data={"connected": True, "status": "ok", "summary": "Sunny."}
+        )
+        assert "weather" in brief.sources_consulted
+
+    def test_weather_not_in_sources_when_not_connected(self):
+        brief = compose_daily_brief(
+            weather_data={"connected": False, "status": "not_configured"}
+        )
+        assert "weather" not in brief.sources_consulted
+
+
+class TestCalendarSection:
+    def test_calendar_with_events(self):
+        calendar = {
+            "connected": True,
+            "status": "ok",
+            "events": [
+                {"title": "Team standup", "time": "9:00 AM"},
+                {"title": "Lunch with client", "time": "12:30 PM"},
+            ],
+            "scope": "today",
+            "source_label": "work.ics",
+            "setup_hint": "",
+        }
+        brief = compose_daily_brief(calendar_data=calendar)
+        section = next(s for s in brief.sections if s.title == "Calendar")
+        assert not section.is_empty
+        assert any("Team standup" in item for item in section.items)
+        assert any("Lunch with client" in item for item in section.items)
+        assert section.confidence == BriefConfidence.HIGH
+        assert section.source_label == "work.ics"
+
+    def test_calendar_empty_day(self):
+        calendar = {
+            "connected": True,
+            "status": "ok",
+            "events": [],
+            "scope": "today",
+            "source_label": "personal.ics",
+            "setup_hint": "",
+        }
+        brief = compose_daily_brief(calendar_data=calendar)
+        section = next(s for s in brief.sections if s.title == "Calendar")
+        assert not section.is_empty
+        assert any("Nothing on your calendar" in item for item in section.items)
+
+    def test_calendar_not_connected(self):
+        calendar = {
+            "connected": False,
+            "status": "not_connected",
+            "events": [],
+            "scope": "today",
+            "source_label": "",
+            "setup_hint": "Add a local .ics file in Settings.",
+        }
+        brief = compose_daily_brief(calendar_data=calendar)
+        section = next(s for s in brief.sections if s.title == "Calendar")
+        assert section.confidence == BriefConfidence.LOW
+        assert any(".ics" in item for item in section.items)
+
+    def test_calendar_none_returns_empty_section(self):
+        brief = compose_daily_brief(calendar_data=None)
+        section = next(s for s in brief.sections if s.title == "Calendar")
+        assert section.is_empty
+
+    def test_calendar_in_sources_when_connected(self):
+        brief = compose_daily_brief(
+            calendar_data={"connected": True, "status": "ok", "events": [], "scope": "today", "source_label": "x.ics"}
+        )
+        assert "calendar" in brief.sources_consulted
+
+    def test_calendar_not_in_sources_when_not_connected(self):
+        brief = compose_daily_brief(
+            calendar_data={"connected": False, "status": "not_connected"}
+        )
+        assert "calendar" not in brief.sources_consulted
+
+
+class TestImportantEmailsSection:
+    def test_placeholder_when_none(self):
+        brief = compose_daily_brief(important_emails=None)
+        section = next(s for s in brief.sections if s.title == "Important Emails")
+        assert not section.is_empty
+        assert section.source_label == "email_placeholder"
+        assert section.confidence == BriefConfidence.LOW
+        assert any("not configured" in item.lower() for item in section.items)
+
+    def test_placeholder_when_empty_list(self):
+        brief = compose_daily_brief(important_emails=[])
+        section = next(s for s in brief.sections if s.title == "Important Emails")
+        assert section.source_label == "email_placeholder"
+
+    def test_live_emails(self):
+        emails = [
+            {"sender": "alice@example.com", "subject": "Project update"},
+            {"sender": "bob@example.com", "subject": "Invoice due"},
+        ]
+        brief = compose_daily_brief(important_emails=emails)
+        section = next(s for s in brief.sections if s.title == "Important Emails")
+        assert section.source_label == "email"
+        assert section.confidence == BriefConfidence.HIGH
+        assert any("Project update" in item for item in section.items)
+        assert any("Invoice due" in item for item in section.items)
+
+    def test_email_cap_at_max_items(self):
+        emails = [{"sender": f"u{i}@x.com", "subject": f"Subject {i}"} for i in range(10)]
+        brief = compose_daily_brief(important_emails=emails)
+        section = next(s for s in brief.sections if s.title == "Important Emails")
+        assert len(section.items) <= 5
+
+
+# ---------------------------------------------------------------------------
 # Output adapters
 # ---------------------------------------------------------------------------
 

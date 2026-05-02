@@ -525,7 +525,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 993272b577c25b09dad521b5720f27115233075f4e9b10c392d411c93601a161
+  summary: Runtime Fingerprint: 8ce37c8c9b6a7a7752d7a5cdd6321c7d1bfffa8b4326f733e7222d0201b14ebd
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -549,7 +549,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 14b314b01edf39470943e09a6054198ec8965af7844deee6d1890c1d2f1dcff4
+  summary: - runtimesurfacehash: 4349fa7a5ddf34464408ee1f813b1ccb7b87406794bf1a29e355781dc043cf5d
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
