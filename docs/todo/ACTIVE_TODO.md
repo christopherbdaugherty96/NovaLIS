@@ -1,7 +1,7 @@
 # Active TODO - Nova
 
 **Updated:** 2026-05-02
-**Sprint goal:** Brain discipline / trace — Stage 5 now active.
+**Sprint goal:** Routine surfaces — Stage 6 now active.
 **Authority note:** This file is the public task snapshot. Exact runtime truth still comes from generated runtime docs and code.
 
 ## Stepwise Execution Order
@@ -36,12 +36,14 @@
 - [x] Prove runtime truth outranks memory
 - [x] Prove Context Pack budgets are enforced
 
-### Step 5 - Brain discipline and trace — ACTIVE SPRINT
+### Step 5 - Brain discipline and trace — DONE
 
-- [ ] Add mode contracts for brainstorm, repo-review, implementation, merge, planning, and action-review
-- [ ] Add safe BrainTrace fields without exposing private chain-of-thought
-- [ ] Improve conversation follow-up/topic tracking for connector/governance topics
-- [ ] Tighten uncertainty wording for health/safety/current-evidence questions
+- [x] Add mode contracts for brainstorm, repo-review, implementation, merge, planning, and action-review
+- [x] Add safe BrainTrace fields without exposing private chain-of-thought
+- [ ] Improve conversation follow-up/topic tracking for connector/governance topics (Stage 6)
+- [ ] Tighten uncertainty wording for health/safety/current-evidence questions (Stage 6)
+
+### Step 6 - Routine and workflow surfaces — ACTIVE SPRINT
 
 ### Step 6 - Routine and workflow surfaces
 
@@ -53,11 +55,10 @@
 
 ## Current Priorities (ordered)
 
-- [ ] Brain mode contracts (brainstorm, repo-review, implementation, merge, planning, action-review)
-- [ ] Safe BrainTrace fields without exposing private chain-of-thought
-- [ ] Inject Context Pack into live brain_server.py prompt assembly (Stage 5 wiring)
+- [ ] Convert Daily Brief into RoutineGraph v0 (Stage 6)
+- [ ] Inject Context Pack and BrainTrace into live brain_server.py prompt assembly (wiring pass)
 - [ ] Re-run Daily Brief + continuity proof manually in the local UI/API
-- [ ] Brain mode contracts and safe trace after memory/context foundations
+- [ ] Capture one everyday workflow demo: plan my week from tasks, notes, calendar context
 - [ ] Continue doc/status cleanup where stale "local-only" or planning-as-runtime wording remains
 - [ ] Plan cost posture metadata as the next free-first implementation step
 - [ ] Plan Google read-only connector foundation after connector governance and cost posture metadata are clear
@@ -141,8 +142,11 @@ Canonical audit: `docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`
 
 ## Recently Completed
 
+- Stage 5 Brain discipline — 7 mode contracts (brainstorm/repo-review/implementation/merge/
+  planning/action-review/casual) + classify_mode() + BrainTrace non-authorizing frozen
+  dataclass; 79 tests green; BRAIN_MODE_PROOF.md PASS; 2026-05-02
 - Stage 4 Context Pack — bounded, labeled context bridge with source/authority labels, budget
-  enforcement, stale/conflict detection, warning cap; 67 tests green; PR merged 2026-05-02
+  enforcement, stale/conflict detection, warning cap; 69 tests green; PR merged 2026-05-02
 - Stage 3 Memory loop — remember/review/update/forget/why-used with receipts; 62 tests;
   MEMORY_LOOP_PROOF.md PASS; PR #82 merged 2026-05-02
 - Agent stack future architecture docs, future backlog, and Auralis social content workflow pack merged and linked
