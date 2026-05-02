@@ -340,6 +340,19 @@ class TestBudgetEnforcement:
         pack = compose_context_pack("q", budget_chars=2000)
         assert pack.budget_limit == 2000
 
+    def test_budget_used_and_within_budget_accurate_at_zero_budget(self):
+        # budget_chars=0: runtime truth still gets a minimal 200-char excerpt.
+        # budget_used must reflect actual chars injected; within_budget must be False.
+        pack = compose_context_pack(
+            "q",
+            runtime_truth_items=[{"id": "rt1", "title": "RT", "content": "x" * 5000}],
+            budget_chars=0,
+        )
+        assert len(pack.runtime_truth_items) == 1
+        assert pack.runtime_truth_items[0].char_count <= 200
+        assert pack.budget_used > 0
+        assert pack.within_budget is False
+
 
 # ---------------------------------------------------------------------------
 # Invariant 4 — Non-authorizing frozen dataclass
@@ -492,16 +505,24 @@ class TestConflictDetection:
         assert WARN_CONFLICTING_SOURCES not in warn_types
 
     def test_conflict_only_within_selected_items(self):
-        # Two items with same prefix, but second is over budget so not selected
+        # Titles share the same first 40 chars:
+        # "Conflicting memory fact about the projec" (40 chars)
+        # Item b is over budget and gets dropped; conflict detection must not fire
+        # because only item a is selected.
+        shared_prefix = "Conflicting memory fact about the projec"  # exactly 40 chars
+        assert len(shared_prefix) == 40
         pack = compose_context_pack(
             "q",
             memory_items=[
-                _mem(id="a", source="explicit_user_save", title="Same prefix item", content="x" * 3990),
-                _mem(id="b", source="explicit_user_save", title="Same prefix item copy", content="more"),
+                _mem(id="a", source="explicit_user_save", title=shared_prefix + "t v1", content="x" * 3990),
+                _mem(id="b", source="explicit_user_save", title=shared_prefix + "t v2", content="y" * 20),
             ],
             budget_chars=4000,
         )
-        # b dropped due to budget — no conflict warning (only one selected)
+        # b dropped due to budget — no conflict warning (only a was selected)
+        ids_selected = [i.id for i in pack.items]
+        assert "a" in ids_selected
+        assert "b" not in ids_selected
         warn_types = [w.warning_type for w in pack.warnings]
         assert WARN_CONFLICTING_SOURCES not in warn_types
 

@@ -45,6 +45,8 @@ SOURCE_ASSUMPTION = "assumption"
 AUTHORITY_RUNTIME_TRUTH = "runtime_truth"
 AUTHORITY_CONFIRMED_PROJECT_MEMORY = "confirmed_project_memory"
 AUTHORITY_CANDIDATE_MEMORY = "candidate_memory"
+# Reserved for Stage 5+: compose_context_pack does not currently produce assumption items;
+# callers that construct ContextItem directly (e.g. search evidence with no source) may use it.
 AUTHORITY_ASSUMPTION = "assumption"
 
 # Ordered from highest to lowest — used for sort key and budget priority
@@ -284,7 +286,7 @@ class ContextPack:
 # ---------------------------------------------------------------------------
 
 def compose_context_pack(
-    query: str,
+    query: str,  # reserved for future relevance filtering (Stage 5)
     *,
     memory_items: list[dict[str, Any]] | None = None,
     runtime_truth_items: list[dict[str, Any]] | None = None,
@@ -303,6 +305,8 @@ def compose_context_pack(
 
     Budget enforcement:
       - Runtime truth items are truncated at budget_chars if too large.
+        When budget_chars=0 a minimal 200-char excerpt is kept; budget_used
+        then exceeds budget_limit and within_budget reports False accurately.
       - Memory items that exceed the remaining budget are dropped with a warning.
       - Confirmed items are always preferred over candidates when budget is tight.
 
@@ -321,6 +325,7 @@ def compose_context_pack(
     budget_remaining = max(0, budget_chars)
     now = datetime.now(timezone.utc)
     stale_cutoff = now - timedelta(days=max(0, stale_threshold_days))
+    chars_consumed = 0  # tracks actual chars added, independent of budget floor
 
     selected: list[ContextItem] = []
     raw_warnings: list[ContextPackWarning] = []
@@ -345,6 +350,7 @@ def compose_context_pack(
             scope=str(rt.get("scope") or ""),
         )
         budget_remaining = max(0, budget_remaining - item.char_count)
+        chars_consumed += item.char_count
         selected.append(item)
 
     # -- Step 2: Classify memory items into confirmed vs candidate ----------
@@ -415,6 +421,7 @@ def compose_context_pack(
             ))
             continue
         budget_remaining = max(0, budget_remaining - item.char_count)
+        chars_consumed += item.char_count
         selected.append(item)
         if item.is_stale:
             raw_warnings.append(ContextPackWarning(
@@ -440,6 +447,7 @@ def compose_context_pack(
             ))
             continue
         budget_remaining = max(0, budget_remaining - item.char_count)
+        chars_consumed += item.char_count
         selected.append(item)
         if item.is_stale:
             raw_warnings.append(ContextPackWarning(
@@ -490,7 +498,7 @@ def compose_context_pack(
     else:
         final_warnings = tuple(raw_warnings)
 
-    budget_used = max(0, budget_chars - budget_remaining)
+    budget_used = chars_consumed
 
     return ContextPack(
         items=tuple(selected),
