@@ -37,6 +37,11 @@ class SessionConversationContext:
     presentation_preference: str = ""
     last_answer_kind: str = ""
     last_options_snapshot: list[str] = field(default_factory=list)
+    # Continuity fields — maintained across turns
+    mode: str = ""
+    last_decision: str = ""
+    open_loops: list[str] = field(default_factory=list)
+    recent_recommendations: list[str] = field(default_factory=list)
 
     @classmethod
     def from_session_state(cls, session_state: Optional[dict]) -> "SessionConversationContext":
@@ -46,6 +51,10 @@ class SessionConversationContext:
 
         active_options = list(payload.get("active_options") or legacy.get("relevant_options") or [])
         last_options_snapshot = list(payload.get("last_options_snapshot") or active_options)
+        open_loops = [str(s).strip() for s in list(payload.get("open_loops") or []) if str(s).strip()]
+        recent_recommendations = [
+            str(s).strip() for s in list(payload.get("recent_recommendations") or []) if str(s).strip()
+        ]
 
         return cls(
             topic=str(payload.get("topic") or state.get("active_topic") or legacy.get("topic") or "").strip(),
@@ -57,6 +66,10 @@ class SessionConversationContext:
             presentation_preference=str(payload.get("presentation_preference") or "").strip(),
             last_answer_kind=str(payload.get("last_answer_kind") or "").strip(),
             last_options_snapshot=[str(item).strip() for item in last_options_snapshot if str(item).strip()],
+            mode=str(payload.get("mode") or "").strip(),
+            last_decision=str(payload.get("last_decision") or "").strip(),
+            open_loops=open_loops,
+            recent_recommendations=recent_recommendations,
         )
 
     def to_dict(self) -> dict[str, Any]:
@@ -70,6 +83,10 @@ class SessionConversationContext:
             "presentation_preference": self.presentation_preference,
             "last_answer_kind": self.last_answer_kind,
             "last_options_snapshot": list(self.last_options_snapshot),
+            "mode": self.mode,
+            "last_decision": self.last_decision,
+            "open_loops": list(self.open_loops),
+            "recent_recommendations": list(self.recent_recommendations),
         }
 
 
@@ -1529,6 +1546,30 @@ class GeneralChatSkill(BaseSkill):
             rewrite_target = cls._strip_initiative_tail(response_text)
         rewrite_target = cls._clip_summary_text(rewrite_target or existing.rewrite_target)
 
+        # open_loops: rolling list of unresolved questions — prepend new one, dedupe, cap at 5
+        if open_question and not topic_shift:
+            loops_seen: list[str] = []
+            for s in [open_question] + list(existing.open_loops):
+                if s not in loops_seen:
+                    loops_seen.append(s)
+            open_loops = loops_seen[:5]
+        elif topic_shift:
+            open_loops = [open_question] if open_question else []
+        else:
+            open_loops = list(existing.open_loops)
+
+        # recent_recommendations: rolling list — prepend new one, dedupe, cap at 3
+        if latest_recommendation and not topic_shift:
+            recs_seen: list[str] = []
+            for s in [latest_recommendation] + list(existing.recent_recommendations):
+                if s not in recs_seen:
+                    recs_seen.append(s)
+            recent_recommendations = recs_seen[:3]
+        elif topic_shift:
+            recent_recommendations = [latest_recommendation] if latest_recommendation else []
+        else:
+            recent_recommendations = list(existing.recent_recommendations)
+
         return SessionConversationContext(
             topic=active_topic,
             user_goal=user_goal,
@@ -1545,6 +1586,10 @@ class GeneralChatSkill(BaseSkill):
             ),
             last_answer_kind=answer_kind,
             last_options_snapshot=last_options_snapshot[: cls._SUMMARY_MAX_OPTIONS],
+            mode=str(mode or "").strip(),
+            last_decision=f"{mode}:{answer_kind}" if mode and answer_kind else str(mode or answer_kind),
+            open_loops=open_loops,
+            recent_recommendations=recent_recommendations,
         )
 
     @classmethod
