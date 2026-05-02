@@ -80,6 +80,13 @@ Imports from:
 - [[nova_backend/src/websocket/__init__.py|src/websocket]]
 - [[nova_backend/src/working_context/__init__.py|src/working_context]]
 
+## `brief`
+
+Imports from:
+
+- [[nova_backend/src/actions/__init__.py|src/actions]]
+- [[nova_backend/src/cognition/__init__.py|src/cognition]]
+
 ## `cognition`
 
 Imports from:
@@ -110,11 +117,14 @@ Imports from:
 Imports from:
 
 - [[nova_backend/src/base_skill.py|base_skill]]
+- [[nova_backend/src/brain/__init__.py|src/brain]]
+- [[nova_backend/src/brief/__init__.py|src/brief]]
 - [[nova_backend/src/cognition/__init__.py|src/cognition]]
 - [[nova_backend/src/governor/agent_orchestrator.py|agent_orchestrator - src/governor]] (in `governor`)
 - [[nova_backend/src/llm/inference_wrapper.py|inference_wrapper]] (in `llm`)
 - [[nova_backend/src/personality/__init__.py|src/personality]]
 - [[nova_backend/src/skills/__init__.py|src/skills]]
+- [[nova_backend/src/trust/__init__.py|src/trust]]
 - [[nova_backend/src/usage/__init__.py|src/usage]]
 - [[nova_backend/src/working_context/__init__.py|src/working_context]]
 
@@ -123,6 +133,7 @@ Imports from:
 Imports from:
 
 - [[nova_backend/src/actions/__init__.py|src/actions]]
+- [[nova_backend/src/brain/__init__.py|src/brain]]
 - [[nova_backend/src/build_phase.py|build_phase]]
 - [[nova_backend/src/cognition/__init__.py|src/cognition]]
 - [[nova_backend/src/connectors/__init__.py|src/connectors]]

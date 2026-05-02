@@ -12,7 +12,7 @@ The strongest connected view: docs and code in the same concern area
 share the same graph color group. Use this when you want to see how a
 concern is reflected across docs, code and tests.
 
-## Phases (166 docs, 0 code)
+## Phases (167 docs, 0 code)
 
 - [doc] [[docs/design/Phase 10/# Autonomy Tiers & Evolution.txt|Status Note - design/Phase 10]] - Phase 10
   summary: This is a future-phase autonomy/evolution reference, primarily for Phase 9/10+ planning.
@@ -182,6 +182,8 @@ concern is reflected across docs, code and tests.
   summary: Date: 2026-03-13
 - [doc] [[docs/design/Phase 6/ATOMIC_POLICY_LANGUAGE_AND_POLICY_ENVELOPE_SPEC|ATOMIC_POLICY_LANGUAGE_AND_POLICY_ENVELOPE_SPEC]] - Phase 6
   summary: ﻿# Atomic Policy Language and Policy Envelope Spec
+- [doc] [[docs/design/Phase 6/FREE_FIRST_COST_GOVERNANCE_FIRST_STEPS_2026-04-30|Free-First Cost Governance — First Implementation Steps]] - Phase 6
+  summary: Date: 2026-04-30
 - [doc] [[docs/design/Phase 6/NOVA_AUDIT_TODO_2026-03-28|NOVA Audit TODO]] - Phase 6
   summary: Updated: 2026-03-30
 - [doc] [[docs/design/Phase 6/NOVA_CORRECTED_REPO_AUDIT_AND_REMEDIATION_2026-03-26|Nova Corrected Repo Audit And Remediation]] - Phase 6
@@ -387,9 +389,9 @@ concern is reflected across docs, code and tests.
 - [doc] [[NovaLIS-Governance/RUNTIME_TRUTH|Runtime Truth]]
   summary: NovaLIS - Mechanical Runtime Specification
 - [doc] [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
-  summary: Updated: 2026-04-21 (second pass)
+  summary: Updated: 2026-04-28
 
-## Runtime and ops (22 docs, 250 code)
+## Runtime and ops (22 docs, 263 code)
 
 - [code] [[nova_backend/src/__init__.py|src]]
 - [code] [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -478,8 +480,25 @@ concern is reflected across docs, code and tests.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [code] [[nova_backend/src/base_skill.py|base_skill]]
   summary: Base skill classes and result structure for NovaLIS.
+- [code] [[nova_backend/src/brain/__init__.py|src/brain]]
+  summary: Read-only Brain scaffolding.
+- [code] [[nova_backend/src/brain/capability_contracts.py|capability_contracts]]
+  summary: Static Brain capability contract catalog.
+- [code] [[nova_backend/src/brain/environment_request.py|environment_request]]
+  summary: Read-only Brain environment planning schemas.
+- [code] [[nova_backend/src/brain/run_manager.py|run_manager]]
+  summary: Planning-only Brain run manager.
+- [code] [[nova_backend/src/brain/search_synthesis.py|search_synthesis]]
+  summary: Deterministic search evidence synthesis for Cap 16.
+- [code] [[nova_backend/src/brain/task_clarifier.py|task_clarifier]]
+  summary: Deterministic Brain task clarification and boundary wording.
+- [code] [[nova_backend/src/brain/task_understanding.py|task_understanding]]
+  summary: Planning-only Brain task understanding scaffold.
 - [code] [[nova_backend/src/brain_server.py|brain_server]]
   summary: NovaLIS Brain Server - Phase 4 Staging
+- [code] [[nova_backend/src/brief/__init__.py|src/brief]]
+- [code] [[nova_backend/src/brief/daily_brief.py|daily_brief]]
+  summary: Daily Brief synthesis module.
 - [code] [[nova_backend/src/build_phase.py|build_phase]]
   summary: Compile-time style phase gate. This constant is intentionally static in source
 - [code] [[nova_backend/src/capabilities/__init__.py|src/capabilities]]
@@ -548,8 +567,14 @@ concern is reflected across docs, code and tests.
   summary: Helpers for keeping general-chat fallback behavior out of the websocket monolith.
 - [code] [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
   summary: meta_intent_handler.py
+- [code] [[nova_backend/src/conversation/planning_run_preview.py|planning_run_preview]]
+  summary: Conversation-facing planning run preview helpers.
 - [code] [[nova_backend/src/conversation/prompts.py|prompts]]
   summary: SYSTEM_PROMPT = (
+- [code] [[nova_backend/src/conversation/request_understanding.py|request_understanding]]
+  summary: _AUTHORITY_EFFECT_NONE = "none
+- [code] [[nova_backend/src/conversation/request_understanding_formatter.py|request_understanding_formatter]]
+  summary: Convert a RequestUnderstanding into a short system-prompt boundary block.
 - [code] [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
   summary: class ResponseFormatter:
 - [code] [[nova_backend/src/conversation/response_style_router.py|response_style_router]]
@@ -560,6 +585,8 @@ concern is reflected across docs, code and tests.
   summary: class SafetyFilter:
 - [code] [[nova_backend/src/conversation/session_router.py|session_router]]
   summary: WEB_OPEN_CONFIRM_YES = {
+- [code] [[nova_backend/src/conversation/task_understanding_preview.py|task_understanding_preview]]
+  summary: Conversation-facing Task Understanding preview helpers.
 - [code] [[nova_backend/src/conversation/thought_store.py|thought_store]]
   summary: class ThoughtStore:
 - [code] [[nova_backend/src/debug/__init__.py|src/debug]]
@@ -883,7 +910,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 2ff5edc7edac6415a90145d7dcaf1f1a18911b4d9c056c40ed309d6b376574ea
+  summary: Runtime Fingerprint: 993272b577c25b09dad521b5720f27115233075f4e9b10c392d411c93601a161
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -907,7 +934,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: e610a87f955d9f5d4afc343d4fe09938a60b543f6bd90b2d61218a4b473d9fa3
+  summary: - runtimesurfacehash: 14b314b01edf39470943e09a6054198ec8965af7844deee6d1890c1d2f1dcff4
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -919,6 +946,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[nova_backend/src/archive_quarantine/phase35_execution/QUARANTINE_NOTICE|QUARANTINE_NOTICE - archive_quarantine/phase35_execution]]
   summary: ﻿# PHASE 3.5 EXECUTION QUARANTINE
 - [doc] [[nova_backend/src/models/current_model_hash.txt|current_model_hash]]
+  summary: f2acb7c0dd4b266380d8918492c949359fb272f3bc60e46b1d96d10334eebc41
 - [doc] [[nova_backend/src/requirements-optional-wakeword.txt|Compatibility shim for existing tooling paths.]]
   summary: -r ../requirements-optional-wakeword.txt
 - [doc] [[nova_backend/src/requirements.txt|Compatibility shim for existing workflow paths.]]
@@ -983,7 +1011,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
   summary: :root {
 
-## Tests (5 docs, 327 code)
+## Tests (5 docs, 341 code)
 
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1017,6 +1045,20 @@ concern is reflected across docs, code and tests.
   summary: Goal:
 - [code] [[nova_backend/tests/adversarial/test_tts_spine_integrity.py|test_tts_spine_integrity]]
   summary: def test_tts_engine_speak_only_called_in_tts_executor():
+- [code] [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
+  summary: CapabilityContractNotFound,
+- [code] [[nova_backend/tests/brain/test_environment_request.py|test_environment_request]]
+  summary: AllowedStatus,
+- [code] [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
+  summary: def _manager() -> RunManager:
+- [code] [[nova_backend/tests/brain/test_search_synthesis.py|test_search_synthesis]]
+  summary: EvidenceConfidence,
+- [code] [[nova_backend/tests/brain/test_task_clarifier.py|test_task_clarifier]]
+  summary: def _response(prompt: str) -> str:
+- [code] [[nova_backend/tests/brain/test_task_understanding.py|test_task_understanding]]
+  summary: ApprovalLevel,
+- [code] [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
+  summary: Tests for the Daily Brief synthesis module.
 - [code] [[nova_backend/tests/certification/__init__.py|tests/certification]]
 - [code] [[nova_backend/tests/certification/cap_64_send_email_draft/__init__.py|tests/certification/cap_64_send_email_draft]]
 - [code] [[nova_backend/tests/certification/cap_64_send_email_draft/test_p1_unit.py|test_p1_unit]]
@@ -1064,14 +1106,22 @@ concern is reflected across docs, code and tests.
   summary: Unit tests for MetaIntentHandler.
 - [code] [[nova_backend/tests/conversation/test_openclaw_agent_personality_bridge.py|test_openclaw_agent_personality_bridge]]
   summary: OpenClawAgentPersonalityBridge,
+- [code] [[nova_backend/tests/conversation/test_paused_scope_routing_guard.py|test_paused_scope_routing_guard]]
+  summary: Tests for the PAUSED_SCOPE_RE guard in the thread-continuation router.
 - [code] [[nova_backend/tests/conversation/test_personality_interface_agent.py|test_personality_interface_agent]]
   summary: def test_personality_interface_agent_removes_system_tokens():
+- [code] [[nova_backend/tests/conversation/test_planning_run_preview.py|test_planning_run_preview]]
+  summary: PlanningRunPreview,
 - [code] [[nova_backend/tests/conversation/test_provider_usage_store.py|test_provider_usage_store]]
   summary: def test_provider_usage_store_records_estimated_reasoning_usage(tmp_path):
 - [code] [[nova_backend/tests/conversation/test_quick_corrections.py|test_quick_corrections]]
   summary: Tests for quick_corrections.py — record, load, and mark consumed.
 - [code] [[nova_backend/tests/conversation/test_relationship_insight_extractor.py|test_relationship_insight_extractor]]
   summary: Tests for GeneralChatSkill._extract_relationship_signals().
+- [code] [[nova_backend/tests/conversation/test_request_understanding.py|test_request_understanding]]
+  summary: CapabilityStatus,
+- [code] [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
+  summary: Tests for request_understanding_formatter and its integration with
 - [code] [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
   summary: def test_formatter_normalizes_punctuation_and_spacing():
 - [code] [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
@@ -1080,6 +1130,8 @@ concern is reflected across docs, code and tests.
   summary: def test_safety_filter_appends_disclaimer_on_action_language():
 - [code] [[nova_backend/tests/conversation/test_session_router.py|test_session_router]]
   summary: def test_normalize_and_route_empty_input_flags_empty():
+- [code] [[nova_backend/tests/conversation/test_task_understanding_preview.py|test_task_understanding_preview]]
+  summary: build_task_understanding_preview,
 - [code] [[nova_backend/tests/conversation/test_thought_store.py|test_thought_store]]
   summary: def test_thought_store_expiry():
 - [code] [[nova_backend/tests/conversation/test_voice_agent.py|test_voice_agent]]
@@ -1132,6 +1184,8 @@ concern is reflected across docs, code and tests.
   summary: def test_open_path_returns_false_when_darwin_open_fails(monkeypatch):
 - [code] [[nova_backend/tests/executors/test_tts_executor.py|test_tts_executor]]
   summary: def test_execute_tts_fails_on_empty_text():
+- [code] [[nova_backend/tests/executors/test_web_search_evidence.py|test_web_search_evidence]]
+  summary: class _NoopNetwork:
 - [code] [[nova_backend/tests/executors/test_web_search_executor.py|test_web_search_executor]]
   summary: @pytest.fixture(autouse=True)
 - [code] [[nova_backend/tests/executors/test_webpage_launch_executor.py|test_webpage_launch_executor]]
@@ -1548,7 +1602,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/tests/test_execute_boundary_timeout_behavior.py|test_execute_boundary_timeout_behavior]]
   summary: def test_timeout_waits_for_worker_completion_before_returning():
 - [code] [[nova_backend/tests/test_general_chat_behavior.py|test_general_chat_behavior]]
-  summary: ﻿from src.skills.general_chat import GeneralChatSkill
+  summary: def test_general_chat_has_local_memory_intelligence_fallback():
 - [code] [[nova_backend/tests/test_governed_memory_store.py|test_governed_memory_store]]
   summary: def test_governed_memory_store_shares_lock_per_path(tmp_path):
 - [code] [[nova_backend/tests/test_governor_execution_timeout.py|test_governor_execution_timeout]]
@@ -1569,6 +1623,8 @@ concern is reflected across docs, code and tests.
   summary: class _FakeManager:
 - [code] [[nova_backend/tests/test_llm_manager_version_lock.py|test_llm_manager_version_lock]]
   summary: class _FakeNetwork:
+- [code] [[nova_backend/tests/test_local_baseline_meta_intents.py|test_local_baseline_meta_intents]]
+  summary: def test_core_status_prompt_uses_local_meta_fallback():
 - [code] [[nova_backend/tests/test_memory_api.py|test_memory_api]]
   summary: def test_memory_export_api_returns_non_deleted_items(monkeypatch, tmp_path):
 - [code] [[nova_backend/tests/test_network_mediation_enforced.py|test_network_mediation_enforced]]
@@ -1641,7 +1697,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[verification/README_verification|**README_verification.md** - verification]]
   summary: Purpose: Verify constitutional compliance without expanding capability
 
-## Scripts and tools (3 docs, 24 code)
+## Scripts and tools (4 docs, 24 code)
 
 - [asset] [[scripts/pids/backend.pid|backend.pid]]
 - [asset] [[scripts/pids/frontend.pid|frontend.pid]]
@@ -1692,9 +1748,15 @@ concern is reflected across docs, code and tests.
   summary: 2026-04-13T18:00:59.7506705-04:00
 - [doc] [[automations/weekly-engineering-summary/README|Weekly Engineering Summary]]
   summary: This folder mirrors the active local Codex automation:
+- [doc] [[docs/tools/youtubelis|YouTubeLIS Tool Folder]]
+  summary: YouTubeLIS lives at tools/youtubelis/.
 
-## Design specs (12 docs, 0 code)
+## Design specs (14 docs, 0 code)
 
+- [doc] [[docs/design/brain/AGENT_FEED_CONTRACT|Agent Feed Contract]]
+  summary: Status: future brain/system interface contract / not implemented
+- [doc] [[docs/design/brain/PERSONAL_PERSONALITY_LAYER|Personal Personality Layer - design/brain]]
+  summary: Status: future brain/personality architecture plan / not shipped runtime capability
 - [doc] [[docs/design/DESIGN_AUTHORITY|DESIGN_AUTHORITY]]
   summary: ﻿# DESIGN AUTHORITY
 - [doc] [[docs/design/IDEAS/2026-04-18_feature_ideation_review|Nova Feature Ideation Review — 2026-04-18]]
@@ -2083,8 +2145,49 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/UNLOCK/phase 4/PHASE_4_UNLOCK_ACT.md.txt|PHASE_4_UNLOCK_ACT.md - UNLOCK/phase 4]] - Phase 4
   summary: PHASE4UNLOCKACT.md
 
-## Reference (166 docs, 19 code)
+## Reference (342 docs, 71 code)
 
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/01_dashboard_home.png|01_dashboard_home.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/02_intro_setup_surface.png|02_intro_setup_surface.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/03_workspace_home.png|03_workspace_home.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/04_full_ui_dashboard.png|04_full_ui_dashboard.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/05_chat_area_before_prompt.png|05_chat_area_before_prompt.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/06_chat_what_works_today.png|06_chat_what_works_today.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/07_trust_receipts.png|07_trust_receipts.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/08_trust_after_refresh.png|08_trust_after_refresh.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/09_email_draft_attempt_chat.png|09_email_draft_attempt_chat.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/10_memory_context_boundary.png|10_memory_context_boundary.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/11_settings_setup_usage.png|11_settings_setup_usage.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level0_dashboard_connection_status.png|level0_dashboard_connection_status.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_dashboard_initial.png|level1_dashboard_initial.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_full_ui_after_toggle.png|level1_full_ui_after_toggle.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_full_ui_initial.png|level1_full_ui_initial.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_home.png|level1_home.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_intro_after_modal_close.png|level1_intro_after_modal_close.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_memory.png|level1_memory.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_chat.png|level1_surface_chat.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_home.png|level1_surface_home.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_intro.png|level1_surface_intro.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_memory.png|level1_surface_memory.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_news.png|level1_surface_news.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_policy.png|level1_surface_policy.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_settings.png|level1_surface_settings.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_trust.png|level1_surface_trust.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_workspace.png|level1_surface_workspace.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_workspace.png|level1_workspace.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_memory_authority.png|level2_memory_authority.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_1_error.png|level2_prompt_1_error.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_2_error.png|level2_prompt_2_error.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_3_error.png|level2_prompt_3_error.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_4_error.png|level2_prompt_4_error.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_5_error.png|level2_prompt_5_error.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_6_error.png|level2_prompt_6_error.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_what_works.png|level2_what_works.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level3_trust_receipts_api.png|level3_trust_receipts_api.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level3_trust_summary_api.png|level3_trust_summary_api.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level4_system_status.png|level4_system_status.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level5_cap64_confirmation_boundary.png|level5_cap64_confirmation_boundary.png]]
+- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level6_shopify_report.png|level6_shopify_report.png]]
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[docs/product/assets/report-output.png|report-output.png]]
 - [asset] [[docs/product/assets/trust-governance.png|trust-governance.png]]
@@ -2103,6 +2206,28 @@ concern is reflected across docs, code and tests.
   summary: <!DOCTYPE html><html lang='en'><head><meta charset='UTF-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Restaur...
 - [code] [[docs/business/website_llc/website_llc_landing_page.html|website_llc_landing_page]]
   summary: <!DOCTYPE html>
+- [code] [[docs/demo_proof/2026-04-28_user_test/video/nova_user_test_demo_flow.webm|nova_user_test_demo_flow]]
+  summary: Eߣ�B��B��B�B�B��webmB��B��S�g    �vM�t�M��S��I�fS���M��S��T�kS���M��S��T�gS��)M��S��
+- [code] [[docs/demo_proof/2026-04-29_conversation_search_proof/live_smoke_after_final_fixes.json|live_smoke_after_final_fixes]]
+  summary: case": "normal_no_web_smoke_after_meta_fix",
+- [code] [[docs/demo_proof/2026-04-29_conversation_search_proof/live_smoke_after_meta_fix.json|live_smoke_after_meta_fix]]
+  summary: case": "normal_no_web_smoke_after_meta_fix",
+- [code] [[docs/demo_proof/2026-04-29_conversation_search_proof/live_test_after_fixes.json|live_test_after_fixes]]
+  summary: case": "normal_no_web",
+- [code] [[docs/demo_proof/2026-04-29_conversation_search_proof/live_test_raw.json|live_test_raw]]
+  summary: case": "normal_no_web",
+- [code] [[docs/demo_proof/brain_live_test/live_brain_prompts_raw.json|live_brain_prompts_raw]]
+  summary: label": "local_explain",
+- [code] [[docs/demo_proof/brain_live_test/live_task_clarifier_followup_raw.json|live_task_clarifier_followup_raw]]
+  summary: label": "contractor_ambiguous",
+- [code] [[docs/future/Auralis-Novalis merger goals|Auralis-Novalis merger goals]]
+  summary: Yes — that is the better framing.
+- [code] [[docs/future/auralis_mock_leads/mock_barber_shop_001.json|mock_barber_shop_001]]
+  summary: scenario_id": "mock_barber_shop_001",
+- [code] [[docs/future/auralis_mock_leads/mock_lawncare_belleville_001.json|mock_lawncare_belleville_001]]
+  summary: scenario_id": "mock_lawncare_belleville_001",
+- [code] [[docs/future/auralis_mock_leads/mock_mobile_detailing_ypsilanti_001.json|mock_mobile_detailing_ypsilanti_001]]
+  summary: scenario_id": "mock_mobile_detailing_ypsilanti_001",
 - [code] [[installer/windows/nova_bootstrap.ps1|nova_bootstrap]]
   summary: .SYNOPSIS
 - [code] [[installer/windows/nova_setup.iss|nova_setup]]
@@ -2119,20 +2244,38 @@ concern is reflected across docs, code and tests.
   summary: @echo off
 - [code] [[stop_nova.sh|stop_nova - .]]
   summary: set -euo pipefail
+- [doc] [[.agent_context/brain_loop|Brain Loop Context]]
+  summary: Nova's proposed Brain loop is:
+- [doc] [[.agent_context/current_priority|Current Priority]]
+  summary: Current priority remains:
+- [doc] [[.agent_context/environments|Environment Context]]
+  summary: Nova's Brain should reason about environments before execution.
+- [doc] [[.agent_context/governance|Governance Context]]
+  summary: Core rule:
 - [doc] [[4-15-26 NEW ROADMAP/BackLog|BackLog.md]]
-  summary: This file tracks follow-up work that is real, but not allowed to distract from the active close-out path in Now.md.
+  summary: This file tracks follow-up work that is real, but not allowed to distract from the active priority override.
 - [doc] [[4-15-26 NEW ROADMAP/CHANGELOG|Nova — Roadmap Execution Changelog]]
   summary: Rolling log of completed roadmap tasks. Newest at top. Keep entries short
+- [doc] [[4-15-26 NEW ROADMAP/CURRENT_PRIORITY_OVERRIDE_2026-04-27|Current Priority Override — Conversation Focus]]
+  summary: Date: 2026-04-27
 - [doc] [[4-15-26 NEW ROADMAP/DEEP_CODE_AUDIT|Nova – Deep Code-Level Audit & Execution Brief (2026-04-15)]]
   summary: Status: FROZEN – TACTICAL COMPANION TO MasterRoadMap.md
 - [doc] [[4-15-26 NEW ROADMAP/HANDOFF_2026-04-26_CAP64_SIGNOFF_READY|Handoff — Cap 64 Live Signoff Ready / Session Close]]
   summary: Date: 2026-04-26
 - [doc] [[4-15-26 NEW ROADMAP/HANDOFF_2026-04-26_TRUST_RECEIPT_RECOVERY|Handoff — Trust Receipt / Cap 65 Recovery]]
   summary: Date: 2026-04-26
+- [doc] [[4-15-26 NEW ROADMAP/HANDOFF_2026-04-27_EMAIL_PAUSED_CONVERSATION_NEXT|Handoff — Email Paused, Conversation Coherence Next]]
+  summary: Date: 2026-04-27
+- [doc] [[4-15-26 NEW ROADMAP/HANDOFF_2026-04-27_REQUEST_UNDERSTANDING_LIVE_VERIFICATION|Handoff — RequestUnderstanding Live Verification Status]]
+  summary: Date: 2026-04-27
 - [doc] [[4-15-26 NEW ROADMAP/MasterRoadMap|Nova – Final Definitive Audit, Roadmap & Operating System (2026-04-15)]]
   summary: Status: This document is frozen. It is the strategic baseline and long-term plan captured on 2026-04-15, not the authoritative live-state do...
-- [doc] [[4-15-26 NEW ROADMAP/Now|NOW.md - Current Sprint (Week 1-4)]]
-  summary: Sprint Goal: Non-developer installs and runs Nova in 5 minutes.
+- [doc] [[4-15-26 NEW ROADMAP/NOVA_CONSOLIDATED_ROADMAP_2026-04-28|NovaLIS Consolidated Roadmap]]
+  summary: Date: 2026-04-28
+- [doc] [[4-15-26 NEW ROADMAP/Now|NOW.md — Superseded Sprint Notes]]
+  summary: Date updated: 2026-04-28
+- [doc] [[4-15-26 NEW ROADMAP/SOFT_ROADMAP_GUIDE_2026-04-28|Soft Roadmap Guide — Post Current Roadmap]]
+  summary: This document is a lightweight guide for direction after the current active roadmap is completed.
 - [doc] [[_MOCs/BY_PHASE|Follow the build phase by phase]]
   summary: Docs and code grouped by project phase, inferred from folder and file
 - [doc] [[_MOCs/BY_TOPIC|Browse by theme]]
@@ -2155,10 +2298,18 @@ concern is reflected across docs, code and tests.
   summary: Every novabackend/tests/test<name>.py paired with the source file
 - [doc] [[_MOCs/USER_PATHS|Guided paths]]
   summary: Pick the question that sounds like yours. Each section is a hand-picked
+- [doc] [[AGENTS|AGENTS.md]]
+  summary: Guidance for AI agents working on NovaLIS.
+- [doc] [[CHANGELOG|Changelog]]
+  summary: - Reworked README for clearer product identity and navigation
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
+- [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
+  summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
 - [doc] [[docs/architecture/README|Architecture Docs]]
   summary: This folder is for stable architecture explanations and diagrams.
+- [doc] [[docs/AUDIT_ACTION_PLAN_2026-04-28|Audit Action Plan — 2026-04-28]]
+  summary: Convert the latest full repo audit into a grounded improvement plan.
 - [doc] [[docs/audits/2026-04-24/NovaLIS_Audit_2026-04-24|NovaLIS Audit Report — Architecture, Product, and Launch Readiness]]
   summary: Date: 2026-04-24
 - [doc] [[docs/audits/2026-04-24/NovaLIS_Second_Pass_Code_Verification_2026-04-24|NovaLIS Second-Pass Code Verification Audit]]
@@ -2177,8 +2328,34 @@ concern is reflected across docs, code and tests.
   summary: Scope: Security surface, LLM version locking, OpenClaw thinking loop internals, CI platform gap, pyproject.toml dependency correctness, rema...
 - [doc] [[docs/audits/2026-04-25/NovaLIS_Third_Deep_Wide_Audit_2026-04-25|NovaLIS Third Deep Wide Audit]]
   summary: Date: 2026-04-25
+- [doc] [[docs/audits/2026-04-26/NOVA_OPENCLAW_DOCS_TO_CODE_ALIGNMENT_AUDIT_2026-04-26|Nova OpenClaw Docs-To-Code Alignment Audit]]
+  summary: Date: 2026-04-26
 - [doc] [[docs/audits/SESSION_DEEP_AUDIT_2026-04-22|Nova Consolidated Deep Audit — 2026-04-22 (Third Pass Reconciliation)]]
   summary: This pass reconciles the full review session against the repo's current documents, registry, and visible runtime-truth surfaces. It is inten...
+- [doc] [[docs/brain|Nova Brain]]
+  summary: This document is the canonical overview of Nova's Brain architecture.
+- [doc] [[docs/brain/AUTHORITY_PLANE|Authority Plane]]
+  summary: The Authority Plane is the conceptual map between Nova's brain and Nova's Governor.
+- [doc] [[docs/brain/BRAIN_TRACE_UI_SPEC|Brain Trace UI Spec]]
+  summary: The Brain Trace UI makes Nova's operational reasoning visible without exposing hidden chain-of-thought.
+- [doc] [[docs/brain/ENVIRONMENT_CATALOG|Environment Catalog]]
+  summary: This catalog defines the worlds Nova may reason about entering.
+- [doc] [[docs/brain/IMPLEMENTATION_ROADMAP|Brain Implementation Roadmap]]
+  summary: No fake deadlines.
+- [doc] [[docs/brain/MEMORY_LAYERS|Memory Layers]]
+  summary: Nova memory is context, not authority.
+- [doc] [[docs/brain/NOVA_BRAIN_MODEL|Nova Brain Model]]
+  summary: The Nova Brain is a governed cognitive loop.
+- [doc] [[docs/brain/NOVA_BRAIN_RUNTIME_ARCHITECTURE|Nova Brain Runtime Architecture]]
+  summary: This document defines how Nova can become a practical “full brain” without requiring a giant local model.
+- [doc] [[docs/brain/OPENCLAW_ENVIRONMENT_MODEL|OpenClaw Environment Model]]
+  summary: OpenClaw is an environment, not the brain.
+- [doc] [[docs/brain/PROJECT_CONTEXTS|Project Contexts]]
+  summary: Project Contexts let Nova reason inside the correct workspace.
+- [doc] [[docs/brain/README|Nova Brain Architecture]]
+  summary: This folder contains the detailed Brain architecture package.
+- [doc] [[docs/brain/TASK_ENVIRONMENT_ROUTER|Task Environment Router]]
+  summary: The Task Environment Router is the missing middle layer between conversation and execution.
 - [doc] [[docs/business/website_llc/WEBSITE_LLC_EXECUTION_SYSTEM_2026-04-23|Website LLC Execution System (2026-04-23)]]
   summary: Turn Website LLC into a real, repeatable service business.
 - [doc] [[docs/business/website_llc/WEBSITE_LLC_REVENUE_ASSETS_2026-04-23|Website LLC Revenue Assets (2026-04-23)]]
@@ -2253,34 +2430,122 @@ concern is reflected across docs, code and tests.
   summary: Basic live dashboard smoke test using Playwright against local runtime at http://127.0.0.1:8000.
 - [doc] [[docs/capability_verification/live_news_headlines_2026-04-23|Live News And Headlines Verification - 2026-04-23]]
   summary: Live dashboard testing against the served app at http://127.0.0.1:8000/, using ordinary user-style prompts:
+- [doc] [[docs/capability_verification/LOCAL_CAPABILITY_SIGNOFF_MATRIX_TEMPLATE|Local Capability Signoff Matrix Template]]
+  summary: Date: 2026-04-28
 - [doc] [[docs/capability_verification/news_headlines_simulation_2026-04-22|News and Headlines Verification - 2026-04-22]]
   summary: Live WebSocket and automated verification for Nova's news surfaces:
 - [doc] [[docs/capability_verification/STATUS|Nova - Capability Verification Status]]
-  summary: Updated: 2026-04-22
+  summary: Updated: 2026-04-28
+- [doc] [[docs/claude_prompts/CLAUDE_NOVA_EXPANSION_PROMPT|Claude Nova Expansion Prompt]]
+  summary: Use this prompt when improving NovaLIS in future sessions.
+- [doc] [[docs/claude_prompts/README|Claude Prompts]]
+  summary: Reusable prompts for working on NovaLIS with Claude.
+- [doc] [[docs/demo_proof/2026-04-28_user_test/DEMO_SCRIPT|Nova Demo Script - 2026-04-28 User Test]]
+  summary: Show Nova as it exists today: a governance-first local AI system where intelligence helps, but authority stays bounded, visible, and reviewa...
+- [doc] [[docs/demo_proof/2026-04-28_user_test/FRICTION_LOG|Friction Log - 2026-04-28 User Test]]
+  summary: - Evidence: /api/trust/receipts?limit=10 returned an OPENCLAWAGENTRUNCOMPLETED receipt.
+- [doc] [[docs/demo_proof/2026-04-28_user_test/PROOF_INDEX|Proof Index - 2026-04-28 User Test]]
+  summary: docs/demoproof/2026-04-28usertest/
+- [doc] [[docs/demo_proof/2026-04-28_user_test/SCREENSHOT_CHECKLIST|Screenshot Checklist - 2026-04-28 User Test]]
+  summary: All screenshots below are real captures from http://127.0.0.1:8000.
+- [doc] [[docs/demo_proof/2026-04-28_user_test/USER_TEST_REPORT|Nova User Test Report - 2026-04-28]]
+  summary: This was a hands-on proof-capture and friction-finding pass on christopherbdaugherty96/NovaLIS.
+- [doc] [[docs/demo_proof/2026-04-29_conversation_search_proof/CONVERSATION_SEARCH_REPORT|Conversation + Search Proof Pass]]
+  summary: Date: 2026-04-29
+- [doc] [[docs/demo_proof/2026-04-29_conversation_search_proof/PROOF_INDEX|Proof Index - Conversation + Search]]
+  summary: Date: 2026-04-29
+- [doc] [[docs/demo_proof/brain_dry_run_examples/EXAMPLES|Brain Dry-Run Examples - demo_proof/brain_dry_run_examples]]
+  summary: Date: 2026-04-29
+- [doc] [[docs/demo_proof/brain_dry_run_examples/PROOF_INDEX|Proof Index - Brain Dry-Run Examples]]
+  summary: Date: 2026-04-29
+- [doc] [[docs/demo_proof/brain_dry_run_examples/README|Brain Dry-Run Examples - demo_proof/brain_dry_run_examples]]
+  summary: Date: 2026-04-29
+- [doc] [[docs/demo_proof/brain_live_test/FRICTION_LOG|Brain Live Test Friction Log]]
+  summary: Date: 2026-04-29
+- [doc] [[docs/demo_proof/brain_live_test/PROOF_INDEX|Proof Index - Brain Live Test]]
+  summary: Date: 2026-04-29
+- [doc] [[docs/demo_proof/brain_live_test/REPORT|Brain Live Test Report]]
+  summary: Date: 2026-04-29
+- [doc] [[docs/demo_proof/brain_live_test/screenshots/CAPTURE_INSTRUCTIONS|Screenshot Capture Instructions]]
+  summary: Screenshots were not captured during this pass.
 - [doc] [[docs/dev/docs_qa_report|Docs QA Report]]
   summary: Generated during the public-docs cleanup pass.
 - [doc] [[docs/dev/README|Developer Docs]]
   summary: This folder is for contributor-facing setup, testing, architecture extension, and implementation guides.
+- [doc] [[docs/FULL_DOCUMENTATION_MAP|Full Documentation Map]]
+  summary: This file exists to preserve deep discoverability while keeping docs/INDEX.md simple.
 - [doc] [[docs/future/2026-04-15_architecture_assessment_portfolio_plan.txt|2026-04-15_architecture_assessment_portfolio_plan]]
   summary: NovaLIS: Complete Architecture Assessment & Portfolio Transformation Plan
 - [doc] [[docs/future/2026-04-15_portfolio_transformation_vision.txt|Gap Why It Matters Fix Priority]]
   summary: Here is the final, streamlined document focused entirely on actionable execution and strategic vision—without architecture grading or school...
 - [doc] [[docs/future/2026-04-15_portfolio_upgrade_plan.txt|NovaLIS Portfolio Upgrade Plan]]
   summary: What NovaLIS Is (Truth):
+- [doc] [[docs/future/active_screen_command_layer/README|Active Screen Command Layer]]
+  summary: Status: future design plan / not shipped runtime capability
 - [doc] [[docs/future/ARCHITECTURAL_POSITIONING|Nova Architectural Positioning]]
   summary: Status: Reference — kept current
+- [doc] [[docs/future/AURALIS_CLIENT_FUNNEL|Auralis Client Funnel]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/auralis_mock_leads/README|Auralis Mock Lead Fixture Library]]
+  summary: Status: planning/test fixtures for future workflow
+- [doc] [[docs/future/AURALIS_MVP_EXECUTION_PLAN|Auralis MVP Execution Plan]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/AURALIS_NOVALIS_INTEGRATION_GOALS|Auralis Digital and NovaLIS Integration Goals]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/AURALIS_PRICING_AND_PACKAGES|Auralis Pricing and Packages]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/AURALIS_RISK_AND_POLICY|Auralis Risk and Policy]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/AURALIS_TECHNICAL_INTEGRATION_SPEC|Auralis Technical Integration Spec]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/AURALIS_WEBSITE_COWORKER_WORKFLOW|Auralis Website Coworker Workflow]]
+  summary: Status: future business workflow / not shipped runtime capability
 - [doc] [[docs/future/BUSINESS_OPTIONS|Monetization Strategy & Future Business Options]]
   summary: Status: Strategy Inventory (Not Current Priority)
 - [doc] [[docs/future/commerce_marketing_operator_decision|commerce_marketing_operator_decision]]
   summary: Nova Commerce And Marketing Operator - Decision Note
+- [doc] [[docs/future/DIAMOND_PREVIEW_RELEASE_STANDARD_2026-04-23|Diamond Preview Release Standard (2026-04-23)]]
+  summary: Nova should not feel merely functional. It should feel premium, stable, clear, and intentionally designed.
+- [doc] [[docs/future/EMAIL_COORDINATION_BOARD|Email Coordination Board]]
+  summary: Status: future workflow design / not implemented
 - [doc] [[docs/future/EXTERNAL_LANDSCAPE_NOTES_2026-04-20|External Landscape Notes]]
   summary: Status: Time-sensitive external comparison
 - [doc] [[docs/Future/FarFuture/PORTFOLIO_OPERATING_MODEL_2026-04-22|Portfolio Operating Model (2026-04-22)]]
   summary: This document is a long-term portfolio reference only.
+- [doc] [[docs/future/GOOGLE_CONNECT_EMAIL_OAUTH_FUTURE_2026-04-22|TODO — Google Connect / Email OAuth Integration (2026-04-22)]]
+  summary: Allow users to connect a Google account inside Nova through a familiar sign-in flow instead of manual setup.
+- [doc] [[docs/future/GOOGLE_CONNECTOR_IMPLEMENTATION_ROADMAP|Google Connector Implementation Roadmap]]
+  summary: Status: implementation planning (aligned to GOOGLEINTEGRATIONDESIGNDOC)
+- [doc] [[docs/future/GOOGLE_INTEGRATION_DESIGN_DOC|Google Integration Design Doc]]
+  summary: Status: future implementation design / not implemented runtime connector
+- [doc] [[docs/future/GOOGLE_WORKSPACE_CONNECTOR_PLAN|Google Workspace Connector Plan]]
+  summary: Status: future connector design / not implemented
 - [doc] [[docs/future/governed_content_operator|Nova Governed Content Operator - Implementation Blueprint]]
   summary: Version: 2.2
 - [doc] [[docs/future/HYDROGEN_OXYGEN_STOREFRONT_BUILD_RULESET_2026-04-12|Hydrogen And Oxygen Storefront Build Rules]]
   summary: Date: 2026-04-12
+- [doc] [[docs/future/NOVA_AGENT_OPERATING_MODEL|Nova Agent Operating Model]]
+  summary: Status: future architecture plan / not shipped runtime capability
+- [doc] [[docs/future/NOVA_APPROVAL_QUEUE_PRODUCT_PLAN_2026-04-27|Nova Approval Queue Product Plan]]
+  summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE|Nova x Auralis Digital Website Engine]]
+  summary: Status: future concept / business application
+- [doc] [[docs/future/NOVA_BACKGROUND_REASONING_NOT_AUTOMATION_PLAN|Nova Background Reasoning, Not Background Automation Plan]]
+  summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_COHERENCE_MEMORY_BACKGROUND_ARCHITECTURE_ALIGNMENT|Nova Coherence, Memory, And Background Reasoning Alignment Map]]
+  summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_CONNECTOR_REGISTRY_PLAN_2026-04-27|Nova Connector Registry Plan]]
+  summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_CONNECTOR_RISK_CLASSIFICATION_TABLE_2026-04-28|Nova Connector Risk Classification Table]]
+  summary: Date: 2026-04-28
+- [doc] [[docs/future/NOVA_CONVERSATION_COHERENCE_LAYER_PLAN|Nova Conversation Coherence Layer Plan]]
+  summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_ECOMMERCE_OPERATOR_END_STATE_PLAN_2026-04-30|Nova E-Commerce Operator End-State Plan]]
+  summary: Date: 2026-04-30
+- [doc] [[docs/future/NOVA_ELEVENLABS_VOICE_INTEGRATION_PLAN|Nova ElevenLabs Voice Integration Plan]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_ELEVENLABS_VOICE_OPPORTUNITY_MAP_2026-04-27|Nova ElevenLabs Voice Opportunity Map]]
+  summary: Date: 2026-04-27
 - [doc] [[docs/future/NOVA_EVERYDAY_MODE_IMPLEMENTATION_NOTES|Nova Everyday Mode Implementation Notes]]
   summary: Date: 2026-04-26
 - [doc] [[docs/future/NOVA_EVERYDAY_MODE_PRODUCT_VISION|Nova Everyday Mode Product Vision]]
@@ -2289,17 +2554,53 @@ concern is reflected across docs, code and tests.
   summary: Date: 2026-04-26
 - [doc] [[docs/future/NOVA_EVERYDAY_TASK_SERVICE_EXPANSION_2026-04-26|Nova Everyday Task Service Expansion]]
   summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_FAILURE_MODE_PLAYBOOK_2026-04-28|Nova Failure Mode Playbook]]
+  summary: Date: 2026-04-28
+- [doc] [[docs/future/NOVA_FULL_STACK_DIRECTION_FINAL_LOCK_2026-04-26|Nova Full Stack Direction — Final Lock]]
+  summary: Date: 2026-04-26
 - [doc] [[docs/future/NOVA_FUTURE_TECHNICAL_CONCEPT_DRAFT_2026-04|NOVA_FUTURE_TECHNICAL_CONCEPT_DRAFT_2026-04]]
   summary: ﻿# Nova Future Technical Concept Draft
 - [doc] [[docs/future/nova_gaas_strategy|Nova End Goal - Growth As A Service For People And Operators]]
   summary: Status: Strategy draft
+- [doc] [[docs/future/NOVA_GOOGLE_ACCOUNT_AND_CONNECTOR_ONBOARDING_PLAN|Nova Google Account And Connector Onboarding Plan]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_GOOGLE_CONNECTOR_DIRECTION_FINAL_LOCK_2026-04-26|Nova Google Connector Direction — Final Lock]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_GOOGLE_CONNECTOR_MODEL|Nova Google Connector Model]]
+  summary: This document defines the recommended Google integration path for Nova.
+- [doc] [[docs/future/NOVA_GOVERNED_LEARNING_PLAN|Nova Governed Learning Plan]]
+  summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_GOVERNED_MEDIA_AND_ECOMMERCE_ENGINE|Nova Governed Media and E-Commerce Engine]]
+  summary: Status: future concept / product direction
+- [doc] [[docs/future/NOVA_INTEGRATION_OPPORTUNITY_ROADMAP_2026-04-27|Nova Integration Opportunity Roadmap]]
+  summary: Date: 2026-04-27
 - [doc] [[docs/future/NOVA_MARKET_POSITION|Nova Market Position]]
   summary: Status: Reference — kept current
+- [doc] [[docs/future/NOVA_MCP_GOVERNED_CONNECTOR_PLAN_2026-04-27|Nova MCP Governed Connector Plan]]
+  summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_MEDIA_ENGINE_SAFE_IMPLEMENTATION_ROADMAP|Nova Media Engine Safe Implementation Roadmap]]
+  summary: Status: future roadmap / execution order
+- [doc] [[docs/future/NOVA_OPENCLAW_AUTOMATED_WORKFLOW_OPPORTUNITY_MAP_2026-04-27|Nova OpenClaw Automated Workflow Opportunity Map]]
+  summary: Date: 2026-04-27
 - [doc] [[docs/future/NOVA_OPENCLAW_GOVERNANCE_HARDENING_2026-04-21|Nova OpenClaw Governance Hardening Plan]]
   summary: Date: 2026-04-21
+- [doc] [[docs/future/NOVA_OPENCLAW_HANDS_LAYER_IMPLEMENTATION_PLAN|Nova OpenClaw Hands-Layer Implementation Plan]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_PERSONAL_HOME_BUSINESS_OS_SUMMARY|Nova Personal/Home/Business Operating System Summary]]
+  summary: Status: full planning synthesis / not shipped runtime capability
+- [doc] [[docs/future/NOVA_PROVIDER_BUDGET_AND_USAGE_CONTROL_PLAN_2026-04-28|Nova Provider Budget And Usage Control Plan]]
+  summary: Date: 2026-04-28
+- [doc] [[docs/future/NOVA_REQUEST_UNDERSTANDING_CONTRACT|Nova Request Understanding Contract]]
+  summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_REQUEST_UNDERSTANDING_REVIEW_CARD_DONE_MEANS_2026-04-28|Nova RequestUnderstanding Review Card — Done-Means Spec]]
+  summary: Date: 2026-04-28
 - [doc] [[docs/future/NOVA_ROLE_BASED_ASSISTANT_CORE_VISION|Nova Role-Based Assistant Core Vision]]
   summary: Date: 2026-04-26
 - [doc] [[docs/future/NOVA_ROLE_BASED_ASSISTANT_DECISION_RECORD_2026-04-26|Nova Role-Based Assistant — Product Decision Record]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_SENSITIVE_DATA_ROUTING_PLAN_2026-04-27|Nova Sensitive Data Routing Plan]]
+  summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_SESSION_REFERENCE_SUMMARY_2026-04-26|Nova Session Reference Summary]]
   summary: Date: 2026-04-26
 - [doc] [[docs/future/NOVA_SHOPIFY_GOVERNED_OPERATOR_DESIGN_2026-04-20|Nova Shopify Governed Operator Design]]
   summary: Date: 2026-04-20
@@ -2313,16 +2614,38 @@ concern is reflected across docs, code and tests.
   summary: Date: 2026-04-26
 - [doc] [[docs/future/NOVA_STRATEGIC_VISION|Nova Strategic Vision — Governed Receptionist & Business OS]]
   summary: Status: Long-term direction (not current priority)
+- [doc] [[docs/future/NOVA_TASK_RUN_STATE_PLAN_2026-04-27|Nova Task / Run-State Plan]]
+  summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_TRUST_SPANS_TRACE_CARDS_PLAN_2026-04-27|Nova Trust Spans / Trace Cards Plan]]
+  summary: Date: 2026-04-27
+- [doc] [[docs/future/NOVA_USER_FACING_LANGUAGE_GUIDE_2026-04-28|Nova User-Facing Language Guide]]
+  summary: Date: 2026-04-28
+- [doc] [[docs/future/NOVA_VOICE_FIRST_ASSISTANT_DIRECTION|Nova Voice-First Assistant Direction]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_VOICE_FIRST_ELEVENLABS_FINAL_REVIEW_2026-04-26|Nova Voice-First / ElevenLabs Final Review]]
+  summary: Date: 2026-04-26
+- [doc] [[docs/future/NOVA_VOICE_STACK_OPERATING_MODEL_2026-04-26|Nova Voice Stack Operating Model]]
+  summary: Date: 2026-04-26
 - [doc] [[docs/future/OPENCLAW_INTEGRATION_DESIGN|OpenClaw Integration Design (Future) - docs/future]]
   summary: Status: Draft — Not yet implemented
 - [doc] [[docs/future/OPENCLAW_INTEGRATION_REVIEW|OpenClaw Integration — Engineering Review]]
   summary: Status: Assessment (point-in-time review)
+- [doc] [[docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01|OpenClaw Robust Hardening Audit — 2026-05-01]]
+  summary: Status: audit and implementation recommendations; not generated runtime truth
 - [doc] [[docs/future/openclaw_sovereign_governance|NovaLIS Architectural Hardening Plan - Sovereign Governance Over OpenClaw]]
   summary: Document version: 1.1
+- [doc] [[docs/future/PERSONAL_PERSONALITY_LAYER|Personal Personality Layer - docs/future]]
+  summary: Status: future architecture plan / not shipped runtime capability
+- [doc] [[docs/future/PORTFOLIO_PRIORITY_SWITCH_WEBSITE_LLC_2026-04-22|Website LLC — Primary First Revenue Engine]]
+  summary: Website LLC is the first and main revenue engine in the portfolio.
 - [doc] [[docs/future/README|Future Docs Guide]]
-  summary: Status: Reference guide for the docs/future/ folder
+  summary: Purpose: Explain what future documents are for, how much authority they carry, and how they relate to Nova's live project state.
+- [doc] [[docs/future/REALISTIC_SCOPE_AND_PRIORITIES|Realistic Scope and Priorities]]
+  summary: Status: planning guardrail / future scope control
 - [doc] [[docs/future/repo_improvement_action_plan|NovaLIS Documentation Audit and Action Plan]]
   summary: NovaLIS has evolved into a serious governance-first AI platform with unusually strong internal discipline: runtime truth docs, testing rigor...
+- [doc] [[docs/future/ROADMAP|Nova Roadmap]]
+  summary: - Re-run Cap 16 conversation/search proof after deterministic Search Evidence Synthesis
 - [doc] [[docs/future/Soft Launch-help search.txt|Soft Launch-help search]]
   summary: Question: when should i ask for help?
 - [doc] [[docs/Governed Web Intelligence (Capability 16 + 48 Integration.txt|Governed Web Intelligence (Capability 16 + 48 Integration]]
@@ -2330,24 +2653,84 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/Governed Webpage Launch Capability Specification.txt|📘 NOVA — Governed Webpage Launch Capability Specification]]
   summary: This document defines how Nova may open web pages in a governed, explicit, and non-autonomous manner.
 - [doc] [[docs/INDEX|NovaLIS Documentation Index]]
-  summary: Use this page to find the right document quickly. Runtime truth stays in generated docs; product and contributor docs should link to it rath...
+  summary: Use this page to find the right document quickly.
+- [doc] [[docs/integrations/youtubelis/README|YouTubeLIS Integration Concept]]
+  summary: YouTubeLIS is a proposed governed content-production workflow for NovaLIS.
+- [doc] [[docs/planning/NOVA_JOB_WORKFLOW_PLAN|Nova Job / Workflow Plan]]
+  summary: Status: planning document
+- [doc] [[docs/product/AURALIS_INTERFACE_PLAN|Auralis Interface Plan]]
+  summary: Status: planning document
 - [doc] [[docs/product/CAPABILITY_MATURITY|Capability Maturity Model]]
   summary: Use this model to describe capabilities more honestly than a simple enabled/disabled state.
+- [doc] [[docs/product/CAPABILITY_SIGNOFF_MATRIX|Capability Signoff Matrix]]
+  summary: Last reviewed: 2026-04-28
+- [doc] [[docs/product/COHERENCE_AUDIT_2026-04-28|Nova Coherence Audit — 2026-04-28]]
+  summary: Scope: Full repo — docs, design plans, future-vision files, memory/conversation model,
+- [doc] [[docs/product/CONVERSATION_AND_MEMORY_MODEL|Conversation and Memory Model]]
+  summary: Last reviewed: 2026-04-28
+- [doc] [[docs/product/DEMO_SCRIPT|Demo Script]]
+  summary: Last reviewed: 2026-04-28
+- [doc] [[docs/product/DEMO_WALKTHROUGH|Nova Demo Walkthrough]]
+  summary: Use this guide to quickly demonstrate what Nova is today.
+- [doc] [[docs/product/FIRST_5_MINUTES|First 5 Minutes With Nova]]
+  summary: This guide helps a new user evaluate Nova quickly.
+- [doc] [[docs/product/FIRST_RUN|First Run]]
+  summary: Use this page after installing Nova for the first time.
+- [doc] [[docs/product/FIRST_RUN_SELF_CHECK|First Run Self-Check]]
+  summary: Use this checklist after starting Nova for the first time.
+- [doc] [[docs/product/GOVERNED_SYSTEM_ARCHITECTURE|Governed System Architecture]]
+  summary: This document explains Nova in product language.
+- [doc] [[docs/product/GOVERNED_WORKFLOW_WORKSPACE_ARCHITECTURE|Governed Workflow Workspace Architecture]]
+  summary: Status: product / architecture planning note; not generated runtime truth
+- [doc] [[docs/product/KNOWN_LIMITATIONS|Known Limitations]]
+  summary: Last reviewed: 2026-04-29
+- [doc] [[docs/product/NOVA_OPERATING_MODEL|Nova Operating Model]]
+  summary: Governed AI for daily life and small-business workflows.
+- [doc] [[docs/product/NOVA_PRODUCTIZATION_PLAN_2026-04-28|Nova Productization Plan]]
+  summary: Date: 2026-04-28
+- [doc] [[docs/product/NOVA_RELEASE_READINESS_CHECKLIST_2026-04-28|Nova Release Readiness Checklist]]
+  summary: Date: 2026-04-28
 - [doc] [[docs/product/previews/DEMO_PREVIEW_EXCELLENCE_STANDARD_2026-04-23|Demo Preview Excellence Standard (2026-04-23)]]
   summary: A demo should not only function.
 - [doc] [[docs/product/previews/DEMO_SHOWCASE_ASSETS_2026-04-23|Demo Showcase Assets (2026-04-23)]]
   summary: Do not try to show everything.
+- [doc] [[docs/product/PRODUCT_LEGIBILITY|Product Legibility]]
+  summary: Nova has entered a new priority phase:
+- [doc] [[docs/product/PROOF_CAPTURE_CHECKLIST|Proof Capture Checklist]]
+  summary: Last reviewed: 2026-04-28
 - [doc] [[docs/product/README|Product Docs]]
   summary: This folder is for product-facing explanations: what Nova is, who it is for, why it matters, screenshots, comparisons, and roadmap summaries...
+- [doc] [[docs/product/SCREENSHOT_ASSET_PLAN|Screenshot Asset Plan]]
+  summary: Last reviewed: 2026-04-28
+- [doc] [[docs/product/SEE_IT_WORK|See It Work]]
+  summary: Last reviewed: 2026-04-29
+- [doc] [[docs/product/TRUST_FLOW|Trust Flow]]
+  summary: This document defines the user-facing trust flow NovaLIS should use when moving from reasoning to action.
+- [doc] [[docs/product/TRUST_MODEL|Trust Model]]
+  summary: Last reviewed: 2026-04-28
+- [doc] [[docs/product/TRUST_PROOF_PLAN|Trust Proof Plan]]
+  summary: Last reviewed: 2026-04-28
+- [doc] [[docs/product/TRUST_REVIEW_CARD_PLAN|Trust Review Card Plan]]
+  summary: Last reviewed: 2026-04-28
+- [doc] [[docs/product/TRUST_REVIEW_CARD_SPEC|Trust Review Card Spec]]
+  summary: Turn Nova's governance model into a visible user experience before or during meaningful actions.
+- [doc] [[docs/product/TRUST_UI_SPEC|Trust UI Spec]]
+  summary: Last reviewed: 2026-04-28
+- [doc] [[docs/product/TRY_THESE_COMMANDS|Try These Commands]]
+  summary: - What works today?
 - [doc] [[docs/product/USER_READY_STATUS|User Ready Status]]
-  summary: This page translates internal phase/capability status into plain-language user readiness.
+  summary: This page explains what Nova feels ready for today, what is advanced, and what is still future work.
 - [doc] [[docs/product/visual_proof|NovaLIS Visual Proof]]
-  summary: These screenshots show current local UI surfaces captured from a running NovaLIS development instance.
+  summary: These screenshots show real Nova UI surfaces from a running local instance.
+- [doc] [[docs/product/WHAT_WORKS_TODAY|What Works Today]]
+  summary: Last reviewed: 2026-05-01
+- [doc] [[docs/product/WHY_NOVA|Why Nova]]
+  summary: Nova exists because useful AI should not require unchecked authority.
 - [doc] [[docs/README|NovaLIS Docs]]
   summary: This folder is the documentation home for NovaLIS.
 - [doc] [[docs/reference/ARCHITECTURE|Nova Architecture]]
   summary: Technical overview of Nova's runtime. Companion to [INTRODUCTION.md](INTRODUCTION.md) and the generated runtime truth in [docs/currentruntim...
-- [doc] [[docs/reference/HUMAN_GUIDES/01_START_HERE|Start Here]]
+- [doc] [[docs/reference/HUMAN_GUIDES/01_START_HERE|Start Here - reference/HUMAN_GUIDES]]
   summary: Updated: 2026-04-20
 - [doc] [[docs/reference/HUMAN_GUIDES/02_HOW_NOVA_WORKS|How Nova Works]]
   summary: Updated: 2026-03-28
@@ -2402,7 +2785,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/reference/HUMAN_GUIDES/27_KEY_SKILL_RELIABILITY_MATRIX_2026-03-27|Key Skill Reliability Matrix]]
   summary: Updated: 2026-03-27
 - [doc] [[docs/reference/HUMAN_GUIDES/28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27|OpenClaw Setup and Runtime Guide]]
-  summary: Updated: 2026-04-23
+  summary: Updated: 2026-04-26
 - [doc] [[docs/reference/HUMAN_GUIDES/29_END_TO_END_VALIDATION_CHECKLIST_2026-03-28|End-To-End Validation Checklist]]
   summary: Updated: 2026-03-28
 - [doc] [[docs/reference/HUMAN_GUIDES/30_PERSONALITY_SYSTEM_ARCHITECTURE|Nova Personality System Architecture]]
@@ -2423,14 +2806,92 @@ concern is reflected across docs, code and tests.
   summary: Status: Authoritative high-level runtime map
 - [doc] [[docs/reference/VERIFIED_REPOSITORY_REVIEW_2026-04-20|Verified Repository And Active-Doc Review]]
   summary: Status: Verified repository truth only
-- [doc] [[docs/TODO/DIAMOND_PREVIEW_RELEASE_STANDARD_2026-04-23|Diamond Preview Release Standard (2026-04-23)]]
-  summary: Nova should not feel merely functional. It should feel premium, stable, clear, and intentionally designed.
-- [doc] [[docs/TODO/GOOGLE_CONNECT_EMAIL_OAUTH_FUTURE_2026-04-22|TODO — Google Connect / Email OAuth Integration (2026-04-22)]]
-  summary: Allow users to connect a Google account inside Nova through a familiar sign-in flow instead of manual setup.
-- [doc] [[docs/todo/NOVA_RECONCILIATION_TODO_2026-04-22|Nova Reconciliation TODO — 2026-04-22]]
-  summary: This document captures the concrete repair work identified during the full April 22 audit session.
-- [doc] [[docs/TODO/PORTFOLIO_PRIORITY_SWITCH_WEBSITE_LLC_2026-04-22|Website LLC — Primary First Revenue Engine]]
-  summary: Website LLC is the first and main revenue engine in the portfolio.
+- [doc] [[docs/SANITY_AUDIT_2026-04-28|Final Sanity Audit — 2026-04-28]]
+  summary: A repo-wide documentation clarity pass was completed.
+- [doc] [[docs/SECOND_PASS_OVERVIEW_2026-04-28|Second Pass Overview — 2026-04-28]]
+  summary: - Ideas moved from chat into repo memory
+- [doc] [[docs/security/NOVA_INTEGRATION_THREAT_MODEL_2026-04-28|Nova Integration Threat Model]]
+  summary: Date: 2026-04-28
+- [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
+  summary: Last reviewed: 2026-05-01
+- [doc] [[docs/status/README|Status Notes]]
+  summary: This folder contains human-maintained work-continuity notes.
+- [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
+  summary: Status: human-maintained alignment snapshot.
+- [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
+  summary: Updated: 2026-05-01
+- [doc] [[docs/todo/DOC_CLEANUP|Doc Cleanup — Nova]]
+  summary: Updated: 2026-04-28
+- [doc] [[docs/todo/README|docs/todo — Task Folder]]
+  summary: This folder holds actionable task lists only. No wishlists, no design docs, no strategy.
+- [doc] [[docs/todo/TECH_DEBT|Technical Debt — Nova]]
+  summary: Updated: 2026-04-28
+- [doc] [[docs/WORKFLOW_AI_TOOLING|AI Tooling Workflow]]
+  summary: NovaLIS may use AI-assisted tools for planning, drafting, implementation support, review, documentation, and prototype exploration.
+- [doc] [[future/brain/ADAPTIVE_KNOWLEDGE_SYSTEM|Adaptive Knowledge System]]
+  summary: This document defines how NovaLIS may become continuously informed about new tools, breakthroughs, agent systems, APIs, apps, and opportunit...
+- [doc] [[future/brain/ARCHITECTURE_MAP|Future Brain Architecture Map]]
+  summary: This document maps how future Brain-related planning folders connect without claiming current runtime behavior.
+- [doc] [[future/brain/CO_WORK_PAGE|Co-Work Page (Planning Only)]]
+  summary: Defines Nova's future primary working interface.
+- [doc] [[future/brain/CONTEXT_ASSEMBLER|Brain Context Assembler]]
+  summary: Defines how NovaLIS should assemble context for reasoning without becoming uncontrolled or bloated.
+- [doc] [[future/brain/DOMAIN_PERMISSION_PROFILES|Domain Permission Profiles]]
+  summary: Defines risk and permission models across domains.
+- [doc] [[future/brain/FINAL_POLISH_RULES|Final Polish Rules]]
+  summary: This document captures the final hardening rules for the future Brain architecture.
+- [doc] [[future/brain/governed_desktop_runs/README|Governed Desktop Runs (Brain Umbrella Reference)]]
+  summary: This is a reference mirror of the governed desktop runs planning under the brain umbrella.
+- [doc] [[future/brain/market_sandbox/README|Market Sandbox (Brain Umbrella Reference)]]
+  summary: This is a reference mirror of the market sandbox planning under the brain umbrella.
+- [doc] [[future/brain/PROMOTION_PATH|Future Brain Promotion Path]]
+  summary: This document defines how a future Brain-related idea graduates from planning into current NovaLIS runtime work.
+- [doc] [[future/brain/README|Future Brain Extensions]]
+  summary: This folder is the umbrella for future NovaLIS brain-adjacent planning that should stay separate from current runtime Brain documentation.
+- [doc] [[future/brain/RECEIPT_TO_MEMORY|Receipt to Memory Policy]]
+  summary: Defines how execution receipts may become memory or learning records.
+- [doc] [[future/brain/RESPONSE_SYSTEM|Response System (Planning Only)]]
+  summary: Defines Nova's structured response behavior.
+- [doc] [[future/brain/RUN_LIFECYCLE|Run Lifecycle]]
+  summary: Defines the full lifecycle for future governed Brain-planned runs.
+- [doc] [[future/brain/RUN_SYSTEM|Run System (Planning Only)]]
+  summary: Defines Nova's future governed run orchestration model.
+- [doc] [[future/brain/SIGNAL_REGISTRY|Signal Registry]]
+  summary: Defines approved triggers that future NovaLIS Brain systems may respond to in a controlled way.
+- [doc] [[future/brain/TASK_UNDERSTANDING_AND_ENVELOPE|Task Understanding and Envelope (Planning Only)]]
+  summary: Defines how Nova converts user intent into structured, governed tasks.
+- [doc] [[future/brain/TRUST_INTEGRATION|Trust Flow Integration]]
+  summary: Defines how signals, context, planning, and execution connect through the Trust Flow.
+- [doc] [[future/brain/youtubelis/README|YouTubeLIS (Brain Umbrella Reference)]]
+  summary: This is a reference mirror of the YouTubeLIS concept under the brain umbrella.
+- [doc] [[future/governed_desktop_runs/ACTION_CONTRACT|Action Execution Contract]]
+  summary: This document defines how individual actions inside a governed run should be structured and validated.
+- [doc] [[future/governed_desktop_runs/AUTO_APPROVAL_POLICY|Auto Approval Policy]]
+  summary: Defines when NovaLIS may act without explicit user approval.
+- [doc] [[future/governed_desktop_runs/CONTINUOUS_NOVA_MODEL|Continuous Nova Model]]
+  summary: This document explains how a future continuous NovaLIS should work without violating NovaLIS governance.
+- [doc] [[future/governed_desktop_runs/DESIGN_PLAN|Governed Desktop Runs — Reality-Grounded Design Plan]]
+  summary: This document grounds the governed desktop run proposal against the current NovaLIS architecture and defines a practical design path.
+- [doc] [[future/governed_desktop_runs/ENVELOPE_SCHEMA|Governed Run Envelope Schema]]
+  summary: This document defines the first implementation-ready shape for a governed desktop/browser/OpenClaw run envelope.
+- [doc] [[future/governed_desktop_runs/POLICY_EVALUATOR|Governed Run Policy Evaluator]]
+  summary: This document defines the first policy-evaluator logic for governed desktop/browser/OpenClaw runs.
+- [doc] [[future/governed_desktop_runs/README|Governed Desktop Runs]]
+  summary: This folder documents the next governance upgrade track for NovaLIS: task-scoped desktop, browser, scheduled, continuous, and OpenClaw runs.
+- [doc] [[future/governed_desktop_runs/STATE_MACHINE|Governed Run State Machine]]
+  summary: This document defines the state model and transitions for governed desktop/browser/OpenClaw runs.
+- [doc] [[future/governed_desktop_runs/TEST_PLAN|Governed Desktop Runs — Test Plan]]
+  summary: This document defines the minimum test coverage required before enabling governed desktop/OpenClaw execution.
+- [doc] [[future/governed_desktop_runs/WORKFLOW_EXAMPLE_ELEVENLABS_SCRIPT_LOOP|Workflow Example — ElevenLabs Script Read / Voiceover Loop]]
+  summary: This document describes how a future governed desktop run could support a script-to-voice workflow using ElevenLabs or a similar voice tool.
+- [doc] [[future/market_sandbox/LEARNING_LOOP|Market Sandbox Learning Loop]]
+  summary: This document defines the governed learning model for a future NovaLIS market sandbox.
+- [doc] [[future/market_sandbox/PAPER_WALLET|Paper Wallet]]
+  summary: Defines simulated trading behavior for the future Market Sandbox.
+- [doc] [[future/market_sandbox/README|Market Sandbox]]
+  summary: This folder documents a possible future NovaLIS market-research and paper-trading sandbox.
+- [doc] [[future/youtubelis/README|YouTubeLIS - future/youtubelis]]
+  summary: YouTubeLIS is a long-term concept folder for a possible future NovaLIS-adjacent content-production system.
 - [doc] [[installer/README|Nova Installer]]
   summary: 1. Download NovaSetup-0.1.0.exe from [GitHub Releases](https://github.com/christopherbdaugherty96/NovaLIS/releases).
 - [doc] [[nova_backend/requirements-optional-wakeword.txt|requirements-optional-wakeword]]
@@ -2440,17 +2901,33 @@ concern is reflected across docs, code and tests.
 - [doc] [[pull_requests/47|Ready for Review]]
   summary: This pull request is now ready for review.
 - [doc] [[QUICKSTART|NovaLIS Quickstart]]
-  summary: This guide gets a development checkout running and gives you a few safe first commands to verify the system.
+  summary: Get Nova running locally and reach a first success quickly.
 - [doc] [[README|NovaLIS - .]]
-  summary: NovaLIS is a governed local AI system that separates intelligence from execution.
+  summary: Version 0.4 Alpha
 - [doc] [[REPO_MAP|REPO_MAP]]
   summary: ﻿# REPOMAP - Nova
 - [doc] [[SECURITY|SECURITY]]
   summary: ﻿# Security Policy
+- [doc] [[START_HERE|Start Here - .]]
+  summary: Last reviewed: 2026-04-28
 - [doc] [[TODO|Nova TODO]]
-  summary: Updated: 2026-04-23
+  summary: Updated: 2026-04-28
+- [doc] [[tools/youtubelis/docs/CONTENT_STRATEGY|Content Strategy (YouTubeLIS)]]
+  summary: YouTubeLIS explains the most important and exciting changes in AI and technology and why they matter to real people.
+- [doc] [[tools/youtubelis/docs/FIRST_VIDEO_IDEAS|First Video Ideas (YouTubeLIS)]]
+  summary: These are starting points for initial videos.
+- [doc] [[tools/youtubelis/docs/GOVERNED_AUTOMATION|Governed Automation Model (YouTubeLIS)]]
+  summary: This document defines how YouTubeLIS should use NovaLIS and OpenClaw safely.
+- [doc] [[tools/youtubelis/docs/NOVALIS_INTEGRATION|NovaLIS Integration Model (YouTubeLIS)]]
+  summary: This document defines how YouTubeLIS should integrate with NovaLIS as a governed content operating system.
+- [doc] [[tools/youtubelis/docs/PLANNING_RUN_TEMPLATE|Planning Run Template (YouTubeLIS)]]
+  summary: This document defines the standard planning-only run format for a YouTubeLIS video.
+- [doc] [[tools/youtubelis/docs/VIDEO_PIPELINE|Video Pipeline (YouTubeLIS)]]
+  summary: This document defines the repeatable production workflow for YouTubeLIS.
+- [doc] [[tools/youtubelis/README|YouTubeLIS - tools/youtubelis]]
+  summary: YouTubeLIS is a governed YouTube content-production system for creating high-quality videos about the most important and exciting developmen...
 - [doc] [[USE_CASES|NovaLIS Use Cases]]
-  summary: NovaLIS is strongest when a task benefits from AI reasoning plus visible boundaries around action.
+  summary: Nova is strongest when you want useful AI help without losing control of real actions.
 
 ## Archive (139 docs, 15 code)
 
