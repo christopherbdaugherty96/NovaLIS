@@ -23,7 +23,6 @@ import re
 from typing import Any
 
 from src.base_skill import BaseSkill, SkillResult
-from src.executors.memory_governance_executor import MemoryGovernanceExecutor
 from src.memory.governed_memory_store import GovernedMemoryStore
 from src.memory.user_memory_store import user_memory_store
 
@@ -117,7 +116,6 @@ class MemorySkill(BaseSkill):
     ) -> None:
         self._store = store
         self._ledger = ledger
-        self._executor = MemoryGovernanceExecutor(ledger=ledger, store=store)
 
     def can_handle(self, query: str) -> bool:
         q = str(query or "").strip()
@@ -204,11 +202,11 @@ class MemorySkill(BaseSkill):
         recent = list(overview.get("recent_items") or [])
 
         if not total:
-            # Also check user memory store for any auto-extracted personal facts
+            # Also check user memory store for saved personal facts
             user_entries = user_memory_store.get_all(limit=5)
             if user_entries:
                 lines = ["No project memory items saved yet.", ""]
-                lines.append("Auto-extracted personal facts (source: auto_extracted):")
+                lines.append("Personal facts in memory:")
                 for entry in user_entries[:5]:
                     key = str(entry.get("key") or "")
                     value = str(entry.get("value") or "")
@@ -239,7 +237,7 @@ class MemorySkill(BaseSkill):
 
         if total > 5:
             lines.append(f"  ... and {total - 5} more")
-        lines.extend(["", "Say \"forget [id]\" to remove an item, or \"memory show [id]\" for details."])
+        lines.extend(["", "Say \"forget [id]\" to remove an item."])
 
         return SkillResult(
             success=True,
