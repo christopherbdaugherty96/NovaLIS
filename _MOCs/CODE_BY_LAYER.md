@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (260)
+## Backend runtime (273)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -101,8 +101,25 @@ Use this to orient yourself before diving into a specific module.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[3]
 - [[nova_backend/src/base_skill.py|base_skill]]
   summary: Base skill classes and result structure for NovaLIS.
+- [[nova_backend/src/brain/__init__.py|src/brain]]
+  summary: Read-only Brain scaffolding.
+- [[nova_backend/src/brain/capability_contracts.py|capability_contracts]]
+  summary: Static Brain capability contract catalog.
+- [[nova_backend/src/brain/environment_request.py|environment_request]]
+  summary: Read-only Brain environment planning schemas.
+- [[nova_backend/src/brain/run_manager.py|run_manager]]
+  summary: Planning-only Brain run manager.
+- [[nova_backend/src/brain/search_synthesis.py|search_synthesis]]
+  summary: Deterministic search evidence synthesis for Cap 16.
+- [[nova_backend/src/brain/task_clarifier.py|task_clarifier]]
+  summary: Deterministic Brain task clarification and boundary wording.
+- [[nova_backend/src/brain/task_understanding.py|task_understanding]]
+  summary: Planning-only Brain task understanding scaffold.
 - [[nova_backend/src/brain_server.py|brain_server]]
   summary: NovaLIS Brain Server - Phase 4 Staging
+- [[nova_backend/src/brief/__init__.py|src/brief]]
+- [[nova_backend/src/brief/daily_brief.py|daily_brief]]
+  summary: Daily Brief synthesis module.
 - [[nova_backend/src/build_phase.py|build_phase]]
   summary: Compile-time style phase gate. This constant is intentionally static in source
 - [[nova_backend/src/capabilities/__init__.py|src/capabilities]]
@@ -171,8 +188,14 @@ Use this to orient yourself before diving into a specific module.
   summary: Helpers for keeping general-chat fallback behavior out of the websocket monolith.
 - [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
   summary: meta_intent_handler.py
+- [[nova_backend/src/conversation/planning_run_preview.py|planning_run_preview]]
+  summary: Conversation-facing planning run preview helpers.
 - [[nova_backend/src/conversation/prompts.py|prompts]]
   summary: SYSTEM_PROMPT = (
+- [[nova_backend/src/conversation/request_understanding.py|request_understanding]]
+  summary: _AUTHORITY_EFFECT_NONE = "none
+- [[nova_backend/src/conversation/request_understanding_formatter.py|request_understanding_formatter]]
+  summary: Convert a RequestUnderstanding into a short system-prompt boundary block.
 - [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
   summary: class ResponseFormatter:
 - [[nova_backend/src/conversation/response_style_router.py|response_style_router]]
@@ -183,6 +206,8 @@ Use this to orient yourself before diving into a specific module.
   summary: class SafetyFilter:
 - [[nova_backend/src/conversation/session_router.py|session_router]]
   summary: WEB_OPEN_CONFIRM_YES = {
+- [[nova_backend/src/conversation/task_understanding_preview.py|task_understanding_preview]]
+  summary: Conversation-facing Task Understanding preview helpers.
 - [[nova_backend/src/conversation/thought_store.py|thought_store]]
   summary: class ThoughtStore:
 - [[nova_backend/src/debug/__init__.py|src/debug]]
@@ -524,7 +549,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (327)
+## Tests and verification (341)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -558,6 +583,20 @@ Use this to orient yourself before diving into a specific module.
   summary: Goal:
 - [[nova_backend/tests/adversarial/test_tts_spine_integrity.py|test_tts_spine_integrity]]
   summary: def test_tts_engine_speak_only_called_in_tts_executor():
+- [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
+  summary: CapabilityContractNotFound,
+- [[nova_backend/tests/brain/test_environment_request.py|test_environment_request]]
+  summary: AllowedStatus,
+- [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
+  summary: def _manager() -> RunManager:
+- [[nova_backend/tests/brain/test_search_synthesis.py|test_search_synthesis]]
+  summary: EvidenceConfidence,
+- [[nova_backend/tests/brain/test_task_clarifier.py|test_task_clarifier]]
+  summary: def _response(prompt: str) -> str:
+- [[nova_backend/tests/brain/test_task_understanding.py|test_task_understanding]]
+  summary: ApprovalLevel,
+- [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
+  summary: Tests for the Daily Brief synthesis module.
 - [[nova_backend/tests/certification/__init__.py|tests/certification]]
 - [[nova_backend/tests/certification/cap_64_send_email_draft/__init__.py|tests/certification/cap_64_send_email_draft]]
 - [[nova_backend/tests/certification/cap_64_send_email_draft/test_p1_unit.py|test_p1_unit]]
@@ -605,14 +644,22 @@ Use this to orient yourself before diving into a specific module.
   summary: Unit tests for MetaIntentHandler.
 - [[nova_backend/tests/conversation/test_openclaw_agent_personality_bridge.py|test_openclaw_agent_personality_bridge]]
   summary: OpenClawAgentPersonalityBridge,
+- [[nova_backend/tests/conversation/test_paused_scope_routing_guard.py|test_paused_scope_routing_guard]]
+  summary: Tests for the PAUSED_SCOPE_RE guard in the thread-continuation router.
 - [[nova_backend/tests/conversation/test_personality_interface_agent.py|test_personality_interface_agent]]
   summary: def test_personality_interface_agent_removes_system_tokens():
+- [[nova_backend/tests/conversation/test_planning_run_preview.py|test_planning_run_preview]]
+  summary: PlanningRunPreview,
 - [[nova_backend/tests/conversation/test_provider_usage_store.py|test_provider_usage_store]]
   summary: def test_provider_usage_store_records_estimated_reasoning_usage(tmp_path):
 - [[nova_backend/tests/conversation/test_quick_corrections.py|test_quick_corrections]]
   summary: Tests for quick_corrections.py — record, load, and mark consumed.
 - [[nova_backend/tests/conversation/test_relationship_insight_extractor.py|test_relationship_insight_extractor]]
   summary: Tests for GeneralChatSkill._extract_relationship_signals().
+- [[nova_backend/tests/conversation/test_request_understanding.py|test_request_understanding]]
+  summary: CapabilityStatus,
+- [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
+  summary: Tests for request_understanding_formatter and its integration with
 - [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
   summary: def test_formatter_normalizes_punctuation_and_spacing():
 - [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
@@ -621,6 +668,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_safety_filter_appends_disclaimer_on_action_language():
 - [[nova_backend/tests/conversation/test_session_router.py|test_session_router]]
   summary: def test_normalize_and_route_empty_input_flags_empty():
+- [[nova_backend/tests/conversation/test_task_understanding_preview.py|test_task_understanding_preview]]
+  summary: build_task_understanding_preview,
 - [[nova_backend/tests/conversation/test_thought_store.py|test_thought_store]]
   summary: def test_thought_store_expiry():
 - [[nova_backend/tests/conversation/test_voice_agent.py|test_voice_agent]]
@@ -673,6 +722,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_open_path_returns_false_when_darwin_open_fails(monkeypatch):
 - [[nova_backend/tests/executors/test_tts_executor.py|test_tts_executor]]
   summary: def test_execute_tts_fails_on_empty_text():
+- [[nova_backend/tests/executors/test_web_search_evidence.py|test_web_search_evidence]]
+  summary: class _NoopNetwork:
 - [[nova_backend/tests/executors/test_web_search_executor.py|test_web_search_executor]]
   summary: @pytest.fixture(autouse=True)
 - [[nova_backend/tests/executors/test_webpage_launch_executor.py|test_webpage_launch_executor]]
@@ -1089,7 +1140,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/test_execute_boundary_timeout_behavior.py|test_execute_boundary_timeout_behavior]]
   summary: def test_timeout_waits_for_worker_completion_before_returning():
 - [[nova_backend/tests/test_general_chat_behavior.py|test_general_chat_behavior]]
-  summary: ﻿from src.skills.general_chat import GeneralChatSkill
+  summary: def test_general_chat_has_local_memory_intelligence_fallback():
 - [[nova_backend/tests/test_governed_memory_store.py|test_governed_memory_store]]
   summary: def test_governed_memory_store_shares_lock_per_path(tmp_path):
 - [[nova_backend/tests/test_governor_execution_timeout.py|test_governor_execution_timeout]]
@@ -1110,6 +1161,8 @@ Use this to orient yourself before diving into a specific module.
   summary: class _FakeManager:
 - [[nova_backend/tests/test_llm_manager_version_lock.py|test_llm_manager_version_lock]]
   summary: class _FakeNetwork:
+- [[nova_backend/tests/test_local_baseline_meta_intents.py|test_local_baseline_meta_intents]]
+  summary: def test_core_status_prompt_uses_local_meta_fallback():
 - [[nova_backend/tests/test_memory_api.py|test_memory_api]]
   summary: def test_memory_export_api_returns_non_deleted_items(monkeypatch, tmp_path):
 - [[nova_backend/tests/test_network_mediation_enforced.py|test_network_mediation_enforced]]
@@ -1295,7 +1348,7 @@ Use this to orient yourself before diving into a specific module.
 - [[NovaLIS-Governance/RUNTIME_TRUTH|Runtime Truth]]
   summary: NovaLIS - Mechanical Runtime Specification
 - [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
-  summary: Updated: 2026-04-21 (second pass)
+  summary: Updated: 2026-04-28
 
 ## Workspace and repo support (11)
 
