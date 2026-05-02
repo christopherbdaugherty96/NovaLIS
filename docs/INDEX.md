@@ -24,11 +24,20 @@ Generated runtime truth files are the authority for exact live status.
 Nova is a governed local AI runtime focused on separating reasoning from execution.
 Use the product docs above first, then use runtime truth docs for exact capability state.
 
-## Brain and Runtime Planning
+## Brain, Memory, Learning, and Agent Stack Planning
 - [Nova Brain Overview](brain.md)
 - [Brain Architecture Package](brain/README.md)
 - [Brain Runtime Architecture](brain/NOVA_BRAIN_RUNTIME_ARCHITECTURE.md)
 - [Brain Implementation Roadmap](brain/IMPLEMENTATION_ROADMAP.md)
+- [Nova Brain Human Guide](future/BRAIN_HUMAN_GUIDE.md)
+- [Brain + Memory Human Guide](future/BRAIN_MEMORY_HUMAN_GUIDE.md)
+- [Nova Agent Stack Recommendations](future/NOVA_AGENT_STACK_RECOMMENDATIONS.md)
+- [Context Pack Specification](future/CONTEXT_PACK_SPEC.md)
+- [Learning Layer Specification](future/LEARNING_LAYER_SPEC.md)
+- [Routine Layer Specification](future/ROUTINE_LAYER_SPEC.md)
+- [Daily Brief Routine Specification](future/DAILY_BRIEF_ROUTINE_SPEC.md)
+- [Guard System Specification](future/GUARD_SYSTEM_SPEC.md)
+- [Trace and Observability Specification](future/TRACE_AND_OBSERVABILITY_SPEC.md)
 - [OpenClaw Environment Model](brain/OPENCLAW_ENVIRONMENT_MODEL.md)
 - [OpenClaw Robust Hardening Audit - 2026-05-01](future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md)
 
