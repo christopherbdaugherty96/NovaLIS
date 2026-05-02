@@ -29,6 +29,7 @@ tests that pair by filename — so you can see the whole blast radius.
 
 - [[nova_backend/src/archive_quarantine/phase2_tests/phase2_manual_tests.py|phase2_manual_tests]]
 - [[nova_backend/src/brain_server.py|brain_server]]
+- [[nova_backend/src/brief/daily_brief.py|daily_brief]]
 - [[nova_backend/src/executors/analysis_document_executor.py|analysis_document_executor]]
 - [[nova_backend/src/executors/brightness_executor.py|brightness_executor]]
 - [[nova_backend/src/executors/explain_anything_executor.py|explain_anything_executor]]
@@ -41,8 +42,7 @@ tests that pair by filename — so you can see the whole blast radius.
 - [[nova_backend/src/executors/open_folder_executor.py|open_folder_executor]]
 - [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
-- [[nova_backend/src/executors/response_verification_executor.py|response_verification_executor]]
-- _…and 33 more_
+- _…and 35 more_
 
 ## `agents` (11 files)
 
@@ -248,8 +248,53 @@ _Runtime audit utilities for NovaLIS._
 - [[nova_backend/src/skills/weather.py|weather]]
 - [[nova_backend/src/skills/web_search.py|web_search - src/skills]]
 - [[nova_backend/tests/conversation/test_general_chat_runtime.py|test_general_chat_runtime]]
+- [[nova_backend/tests/conversation/test_planning_run_preview.py|test_planning_run_preview]]
+- [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
 - [[nova_backend/tests/executors/test_info_snapshot_executor.py|test_info_snapshot_executor]]
 - [[nova_backend/tests/phase45/test_brain_server_basic_conversation.py|test_brain_server_basic_conversation]]
+
+## `brain` (7 files)
+
+_Read-only Brain scaffolding._
+
+### Files
+
+- [[nova_backend/src/brain/__init__.py|src/brain]]
+- [[nova_backend/src/brain/capability_contracts.py|capability_contracts]]
+    - Static Brain capability contract catalog.
+- [[nova_backend/src/brain/environment_request.py|environment_request]]
+    - Read-only Brain environment planning schemas.
+- [[nova_backend/src/brain/run_manager.py|run_manager]]
+    - Planning-only Brain run manager.
+- [[nova_backend/src/brain/search_synthesis.py|search_synthesis]]
+    - Deterministic search evidence synthesis for Cap 16.
+- [[nova_backend/src/brain/task_clarifier.py|task_clarifier]]
+    - Deterministic Brain task clarification and boundary wording.
+- [[nova_backend/src/brain/task_understanding.py|task_understanding]]
+    - Planning-only Brain task understanding scaffold.
+
+### Imported by
+
+- [[nova_backend/src/conversation/planning_run_preview.py|planning_run_preview]]
+- [[nova_backend/src/conversation/session_router.py|session_router]]
+- [[nova_backend/src/conversation/task_understanding_preview.py|task_understanding_preview]]
+- [[nova_backend/src/executors/web_search_executor.py|web_search_executor]]
+- [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
+- [[nova_backend/tests/brain/test_environment_request.py|test_environment_request]]
+- [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
+- [[nova_backend/tests/brain/test_search_synthesis.py|test_search_synthesis]]
+- [[nova_backend/tests/brain/test_task_clarifier.py|test_task_clarifier]]
+- [[nova_backend/tests/brain/test_task_understanding.py|test_task_understanding]]
+- [[nova_backend/tests/conversation/test_task_understanding_preview.py|test_task_understanding_preview]]
+
+### Tests
+
+- [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
+- [[nova_backend/tests/brain/test_environment_request.py|test_environment_request]]
+- [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
+- [[nova_backend/tests/brain/test_search_synthesis.py|test_search_synthesis]]
+- [[nova_backend/tests/brain/test_task_clarifier.py|test_task_clarifier]]
+- [[nova_backend/tests/brain/test_task_understanding.py|test_task_understanding]]
 
 ## `brain_server` (1 files)
 
@@ -323,6 +368,28 @@ _Runtime audit utilities for NovaLIS._
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
 - [[nova_backend/tests/phase5/test_thread_change_summary.py|test_thread_change_summary]]
 
+## `brief` (2 files)
+
+### Files
+
+- [[nova_backend/src/brief/__init__.py|src/brief]]
+- [[nova_backend/src/brief/daily_brief.py|daily_brief]]
+    - Daily Brief synthesis module.
+
+### Imports from
+
+- [[nova_backend/src/actions/action_result.py|action_result]]
+- [[nova_backend/src/cognition/cognitive_layer_contract.py|cognitive_layer_contract]]
+
+### Imported by
+
+- [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
+- [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
+
+### Tests
+
+- [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
+
 ## `build_phase` (1 files)
 
 ### Files
@@ -377,8 +444,10 @@ _CognitiveModule,_
 
 ### Imported by
 
+- [[nova_backend/src/brief/daily_brief.py|daily_brief]]
 - [[nova_backend/src/conversation/deepseek_bridge.py|deepseek_bridge]]
 - [[nova_backend/src/executors/multi_source_reporting_executor.py|multi_source_reporting_executor]]
+- [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
 - [[nova_backend/tests/governance/test_cognition_module_scaffolds.py|test_cognition_module_scaffolds]]
 - [[nova_backend/tests/governance/test_cognitive_layer_contract.py|test_cognitive_layer_contract]]
 - [[nova_backend/tests/phase42/test_intelligence_report_contract.py|test_intelligence_report_contract]]
@@ -473,7 +542,7 @@ ___all__ = ["ContextSnapshotService"]_
 - [[nova_backend/src/executors/screen_capture_executor.py|screen_capture_executor]]
 - [[nova_backend/tests/phase45/test_context_snapshot_contract.py|test_context_snapshot_contract]]
 
-## `conversation` (17 files)
+## `conversation` (21 files)
 
 _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 
@@ -498,8 +567,14 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
     - Helpers for keeping general-chat fallback behavior out of the websocket monolith.
 - [[nova_backend/src/conversation/meta_intent_handler.py|meta_intent_handler]]
     - meta_intent_handler.py
+- [[nova_backend/src/conversation/planning_run_preview.py|planning_run_preview]]
+    - Conversation-facing planning run preview helpers.
 - [[nova_backend/src/conversation/prompts.py|prompts]]
     - SYSTEM_PROMPT = (
+- [[nova_backend/src/conversation/request_understanding.py|request_understanding]]
+    - _AUTHORITY_EFFECT_NONE = "none
+- [[nova_backend/src/conversation/request_understanding_formatter.py|request_understanding_formatter]]
+    - Convert a RequestUnderstanding into a short system-prompt boundary block.
 - [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
     - class ResponseFormatter:
 - [[nova_backend/src/conversation/response_style_router.py|response_style_router]]
@@ -510,18 +585,25 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
     - class SafetyFilter:
 - [[nova_backend/src/conversation/session_router.py|session_router]]
     - WEB_OPEN_CONFIRM_YES = {
+- [[nova_backend/src/conversation/task_understanding_preview.py|task_understanding_preview]]
+    - Conversation-facing Task Understanding preview helpers.
 - [[nova_backend/src/conversation/thought_store.py|thought_store]]
     - class ThoughtStore:
 
 ### Imports from
 
 - [[nova_backend/src/base_skill.py|base_skill]]
+- [[nova_backend/src/brain/run_manager.py|run_manager]]
+- [[nova_backend/src/brain/task_clarifier.py|task_clarifier]]
+- [[nova_backend/src/brain/task_understanding.py|task_understanding]]
+- [[nova_backend/src/brief/daily_brief.py|daily_brief]]
 - [[nova_backend/src/cognition/cognitive_operation_logger.py|cognitive_operation_logger]]
 - [[nova_backend/src/governor/network_mediator.py|network_mediator]]
 - [[nova_backend/src/llm/llm_gateway.py|llm_gateway]]
 - [[nova_backend/src/personality/nova_style_contract.py|nova_style_contract]]
 - [[nova_backend/src/personality/tone_profile_store.py|tone_profile_store]]
 - [[nova_backend/src/skills/general_chat.py|general_chat]]
+- [[nova_backend/src/trust/receipt_store.py|receipt_store]]
 - [[nova_backend/src/usage/provider_usage_store.py|provider_usage_store]]
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
 
@@ -535,14 +617,14 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/src/voice/tts_engine.py|tts_engine]]
 - [[nova_backend/src/voice/voice_agent.py|voice_agent]]
 - [[nova_backend/src/websocket/session_handler.py|session_handler]]
+- [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
+- [[nova_backend/tests/brain/test_task_clarifier.py|test_task_clarifier]]
 - [[nova_backend/tests/conversation/test_clarify_prompts.py|test_clarify_prompts]]
 - [[nova_backend/tests/conversation/test_complexity_heuristics.py|test_complexity_heuristics]]
 - [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
 - [[nova_backend/tests/conversation/test_deepseek_safety_wrapper.py|test_deepseek_safety_wrapper]]
 - [[nova_backend/tests/conversation/test_deepseek_usage_visibility.py|test_deepseek_usage_visibility]]
-- [[nova_backend/tests/conversation/test_escalation_policy.py|test_escalation_policy]]
-- [[nova_backend/tests/conversation/test_general_chat_runtime.py|test_general_chat_runtime]]
-- _…and 15 more_
+- _…and 23 more_
 
 ### Tests
 
@@ -554,10 +636,14 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/tests/conversation/test_escalation_policy.py|test_escalation_policy]]
 - [[nova_backend/tests/conversation/test_general_chat_runtime.py|test_general_chat_runtime]]
 - [[nova_backend/tests/conversation/test_meta_intent_handler.py|test_meta_intent_handler]]
+- [[nova_backend/tests/conversation/test_planning_run_preview.py|test_planning_run_preview]]
+- [[nova_backend/tests/conversation/test_request_understanding.py|test_request_understanding]]
+- [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
 - [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
 - [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
 - [[nova_backend/tests/conversation/test_safety_filter.py|test_safety_filter]]
 - [[nova_backend/tests/conversation/test_session_router.py|test_session_router]]
+- [[nova_backend/tests/conversation/test_task_understanding_preview.py|test_task_understanding_preview]]
 - [[nova_backend/tests/conversation/test_thought_store.py|test_thought_store]]
 
 ## `debug` (2 files)
@@ -627,6 +713,7 @@ _Debug utilities package._
 ### Imports from
 
 - [[nova_backend/src/actions/action_result.py|action_result]]
+- [[nova_backend/src/brain/search_synthesis.py|search_synthesis]]
 - [[nova_backend/src/build_phase.py|build_phase]]
 - [[nova_backend/src/cognition/cognitive_layer_contract.py|cognitive_layer_contract]]
 - [[nova_backend/src/cognition/intelligence_report_contract.py|intelligence_report_contract]]
@@ -683,7 +770,7 @@ _Debug utilities package._
 - [[nova_backend/tests/executors/test_multi_source_reporting_executor.py|test_multi_source_reporting_executor]]
 - [[nova_backend/tests/executors/test_news_intelligence_executor.py|test_news_intelligence_executor]]
 - [[nova_backend/tests/executors/test_open_folder_executor.py|test_open_folder_executor - tests/executors]]
-- _…and 20 more_
+- _…and 21 more_
 
 ### Tests
 
@@ -804,7 +891,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/src/personality/core.py|core]]
 - [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
-- _…and 51 more_
+- _…and 52 more_
 
 ### Tests
 
@@ -1465,12 +1552,12 @@ _NovaLIS Backend Package_
 - [[nova_backend/tests/conversation/test_general_chat_deep_thought.py|test_general_chat_deep_thought]]
 - [[nova_backend/tests/conversation/test_general_chat_tone.py|test_general_chat_tone]]
 - [[nova_backend/tests/conversation/test_relationship_insight_extractor.py|test_relationship_insight_extractor]]
+- [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
 - [[nova_backend/tests/governance/test_skills_use_network_mediator_only.py|test_skills_use_network_mediator_only]]
 - [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
 - [[nova_backend/tests/openclaw/test_web_search_skill.py|test_web_search_skill]]
 - [[nova_backend/tests/phase45/test_brain_server_followups_and_voice.py|test_brain_server_followups_and_voice]]
-- [[nova_backend/tests/test_calendar_skill.py|test_calendar_skill]]
-- _…and 2 more_
+- _…and 4 more_
 
 ### Tests
 
@@ -1595,6 +1682,7 @@ ___all__ = ["FailureLadder", "FailureLadderThresholds", "normalize_trust_status"
 
 - [[nova_backend/src/api/trust_api.py|trust_api]]
 - [[nova_backend/src/brain_server.py|brain_server]]
+- [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
 - [[nova_backend/tests/phase45/test_failure_ladder.py|test_failure_ladder]]
 - [[nova_backend/tests/phase45/test_trust_contract.py|test_trust_contract]]
 - [[nova_backend/tests/trust/test_receipt_store.py|test_receipt_store]]
@@ -1777,6 +1865,8 @@ _Websocket session runtime modules._
 
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/src/utils/path_resolver.py|path_resolver]]
+- [[nova_backend/tests/conversation/test_paused_scope_routing_guard.py|test_paused_scope_routing_guard]]
+- [[nova_backend/tests/conversation/test_session_router.py|test_session_router]]
 
 ## `working_context` (11 files)
 

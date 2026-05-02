@@ -12,6 +12,11 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
 from src.base_skill import SkillResult
+from src.brief.daily_brief import (
+    brief_to_action_result,
+    compose_daily_brief,
+    is_daily_brief_request,
+)
 from src.conversation.planning_run_preview import create_planning_run_preview
 from src.conversation.request_understanding import build_request_understanding
 from src.conversation.request_understanding_formatter import format_request_understanding_block
@@ -20,6 +25,7 @@ from src.conversation.task_understanding_preview import build_task_understanding
 from src.governor.network_mediator import NetworkMediator
 from src.personality.tone_profile_store import ToneProfileStore
 from src.skills.general_chat import GeneralChatSkill
+from src.trust.receipt_store import get_recent_receipts
 from src.working_context.project_threads import ProjectThreadStore
 
 
@@ -29,6 +35,48 @@ class PendingEscalationOutcome:
     message: str = ""
     skill_result: Optional[SkillResult] = None
     context_entries: list[dict[str, str]] = field(default_factory=list)
+
+
+async def run_daily_brief_if_requested(
+    query: str,
+    *,
+    session_state: dict[str, Any],
+    project_threads: ProjectThreadStore,
+    select_relevant_memory_context: Callable[..., list[dict[str, Any]]],
+) -> Optional[SkillResult]:
+    """
+    Return a SkillResult containing a DailyBrief when the query is a brief
+    request. Returns None otherwise so the caller falls through to its normal
+    routing path.
+
+    Non-authorizing: reads session state, memory context, and recent receipts.
+    No LLM calls, no external effects, no capability invocations.
+    """
+    normalized = str(query or "").strip()
+    if not normalized or not is_daily_brief_request(normalized):
+        return None
+
+    memory_items = select_relevant_memory_context(
+        normalized,
+        session_state=session_state,
+        project_threads=project_threads,
+    )
+    recent_receipts = get_recent_receipts(limit=10)
+
+    brief = compose_daily_brief(
+        session_state=session_state,
+        memory_items=memory_items,
+        recent_receipts=recent_receipts,
+    )
+    result = brief_to_action_result(brief)
+
+    return SkillResult(
+        success=True,
+        message=result.speakable_text,
+        data=result.structured_data,
+        widget_data={"type": "daily_brief", "brief": brief.to_dict()},
+        skill="daily_brief",
+    )
 
 
 def build_general_chat_skill(

@@ -363,6 +363,7 @@ names. Use this to see what shipped (or is planned) for each phase.
 - [code] [[nova_backend/tests/phase6/test_policy_foundation_contract.py|test_policy_foundation_contract]]
 - [code] [[nova_backend/tests/phase6/test_policy_validator.py|test_policy_validator]]
 - [doc] [[docs/design/Phase 6/ATOMIC_POLICY_LANGUAGE_AND_POLICY_ENVELOPE_SPEC|ATOMIC_POLICY_LANGUAGE_AND_POLICY_ENVELOPE_SPEC]]
+- [doc] [[docs/design/Phase 6/FREE_FIRST_COST_GOVERNANCE_FIRST_STEPS_2026-04-30|Free-First Cost Governance — First Implementation Steps]]
 - [doc] [[docs/design/Phase 6/NOVA_AUDIT_TODO_2026-03-28|NOVA Audit TODO]]
 - [doc] [[docs/design/Phase 6/NOVA_CORRECTED_REPO_AUDIT_AND_REMEDIATION_2026-03-26|Nova Corrected Repo Audit And Remediation]]
 - [doc] [[docs/design/Phase 6/NOVA_CURRENT_PHASE_GROUNDING_AND_FIRST_PRIORITY_TODO_2026-04-02|Nova Current Phase Grounding And First Priority TODO]]
