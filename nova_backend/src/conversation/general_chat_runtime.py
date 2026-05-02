@@ -12,14 +12,22 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
 from src.base_skill import SkillResult
+from src.brief.daily_brief import (
+    brief_to_action_result,
+    compose_daily_brief,
+    is_daily_brief_request,
+)
+from src.skills.calendar import CalendarSkill
 from src.conversation.planning_run_preview import create_planning_run_preview
 from src.conversation.request_understanding import build_request_understanding
 from src.conversation.request_understanding_formatter import format_request_understanding_block
 from src.conversation.session_router import SessionRouter
 from src.conversation.task_understanding_preview import build_task_understanding_preview
 from src.governor.network_mediator import NetworkMediator
+from src.services.weather_service import WeatherService
 from src.personality.tone_profile_store import ToneProfileStore
 from src.skills.general_chat import GeneralChatSkill
+from src.trust.receipt_store import get_recent_receipts
 from src.working_context.project_threads import ProjectThreadStore
 
 
@@ -29,6 +37,95 @@ class PendingEscalationOutcome:
     message: str = ""
     skill_result: Optional[SkillResult] = None
     context_entries: list[dict[str, str]] = field(default_factory=list)
+
+
+async def run_daily_brief_if_requested(
+    query: str,
+    *,
+    session_state: dict[str, Any],
+    project_threads: ProjectThreadStore,
+    select_relevant_memory_context: Callable[..., list[dict[str, Any]]],
+    network: Optional[NetworkMediator] = None,
+) -> Optional[SkillResult]:
+    """
+    Return a SkillResult containing a DailyBrief when the query is a brief
+    request. Returns None otherwise so the caller falls through to its normal
+    routing path.
+
+    Fetches weather (async, falls back on failure) and calendar (local ICS,
+    sync). Memory context and recent receipts are read locally. No LLM calls,
+    no writes, no capability invocations beyond read-only data access.
+    """
+    normalized = str(query or "").strip()
+    if not normalized or not is_daily_brief_request(normalized):
+        return None
+
+    memory_items = select_relevant_memory_context(
+        normalized,
+        session_state=session_state,
+        project_threads=project_threads,
+    )
+    recent_receipts = get_recent_receipts(limit=10)
+    weather_data = await _fetch_weather_for_brief(network)
+    calendar_data = _fetch_calendar_for_brief()
+
+    brief = compose_daily_brief(
+        session_state=session_state,
+        memory_items=memory_items,
+        recent_receipts=recent_receipts,
+        weather_data=weather_data,
+        calendar_data=calendar_data,
+    )
+    result = brief_to_action_result(brief)
+
+    return SkillResult(
+        success=True,
+        message=result.speakable_text,
+        data=result.structured_data,
+        widget_data={"type": "daily_brief", "brief": brief.to_dict()},
+        skill="daily_brief",
+    )
+
+
+async def _fetch_weather_for_brief(
+    network: Optional[NetworkMediator],
+) -> Optional[dict[str, Any]]:
+    """Fetch current weather for the brief. Returns None on any failure."""
+    try:
+        service = WeatherService(network=network)
+        data = await service.get_current_weather()
+        return dict(data) if isinstance(data, dict) else None
+    except Exception:
+        return None
+
+
+def _fetch_calendar_for_brief() -> Optional[dict[str, Any]]:
+    """Read today's calendar events from the local ICS file. Returns None if not configured."""
+    try:
+        skill = CalendarSkill()
+        path = skill._calendar_path()
+        if path is None:
+            return {
+                "connected": False,
+                "status": "not_connected",
+                "events": [],
+                "setup_hint": "Add a local .ics file in Settings to enable calendar.",
+                "scope": "today",
+                "source_label": "",
+            }
+        from datetime import date
+        today = date.today()
+        events = skill._read_events_for_range(path, today, today)
+        return {
+            "connected": True,
+            "status": "ok",
+            "events": events,
+            "setup_hint": "",
+            "scope": "today",
+            "source_label": path.name,
+        }
+    except Exception:
+        return None
 
 
 def build_general_chat_skill(
