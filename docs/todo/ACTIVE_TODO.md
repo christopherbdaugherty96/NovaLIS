@@ -1,14 +1,14 @@
 # Active TODO - Nova
 
 **Updated:** 2026-05-01
-**Sprint goal:** Memory loop + conversation continuity after Daily Brief MVP merge.
+**Sprint goal:** Re-run conversation/search proof after Daily Brief continuity hardening.
 **Authority note:** This file is the public task snapshot. Exact runtime truth still comes from generated runtime docs and code.
 
 ## Current Priorities (ordered)
 
-- [ ] Memory loop and conversation continuity — wire session continuity state fields: `current_topic`,
-      `session_goal`, `mode`, `last_decision`, `open_loops`, `recent_recommendations`
+- [ ] Re-run Daily Brief + continuity proof manually in the local UI/API
 - [ ] Re-run and record the conversation + search demo flow with Search Evidence Synthesis active
+- [ ] Memory full loop - remember / forget / review saved memory, without silent autosave
 - [ ] Improve conversation follow-up/topic tracking for connector/governance topics
 - [ ] Tighten uncertainty wording for health/safety/current-evidence questions
 - [ ] Continue doc/status cleanup where stale "local-only" or planning-as-runtime wording remains
@@ -86,7 +86,11 @@ Canonical audit: `docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`
 
 ## Recently Completed
 
-- Daily Brief MVP merged via PR #68 — deterministic on-demand session brief, 11 sections, live weather +
+- Daily Brief continuity hardening branch - malformed input degradation, continuity fields in brief,
+  deterministic next-action recommendations, proof docs, 114 brief tests
+- Conversation continuity fields merged into `SessionConversationContext`: `mode`, `last_decision`,
+  `open_loops`, `recent_recommendations`
+- Daily Brief MVP merged via PR #68 - deterministic on-demand session brief, 11 sections, live weather +
   calendar, 76 tests
 - Brain Planning Preview scaffold merged via PR #64
 - YouTubeLIS planning-only tool folder merged via PR #65

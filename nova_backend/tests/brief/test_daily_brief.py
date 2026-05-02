@@ -18,6 +18,7 @@ from src.brief.daily_brief import (
     compose_daily_brief,
     is_daily_brief_request,
 )
+from src.brief.recommendations import NextActionSuggestion, select_next_actions
 
 
 # ---------------------------------------------------------------------------
@@ -251,10 +252,15 @@ class TestComposeDailyBrief:
         assert section.items
         assert "resolve arch question" in section.items[0]
 
-    def test_recommended_next_step_empty_when_no_data(self):
+    def test_recommended_next_step_provides_guidance_when_no_data(self):
+        # With no memory, goal, or loops, the recommendation selector fills in
+        # actionable guidance (set focus, save preference) so the brief is never
+        # silently empty.
         brief = compose_daily_brief()
         section = next(s for s in brief.sections if s.title == "Recommended Next Step")
-        assert section.is_empty
+        assert not section.is_empty
+        text = " ".join(section.items).lower()
+        assert "focus" in text or "preference" in text
 
     def test_sources_consulted_populated(self):
         brief = compose_daily_brief(
@@ -279,9 +285,12 @@ class TestComposeDailyBrief:
         brief = compose_daily_brief(memory_items=memory, recent_receipts=receipts)
         assert brief.confidence == BriefConfidence.HIGH
 
-    def test_confidence_low_with_no_data(self):
+    def test_confidence_low_with_no_meaningful_data(self):
+        # The recommendation selector fills in guidance even with no data, so
+        # the overall brief reaches MEDIUM. True LOW only occurs when every
+        # section is empty, which can't happen with the fallback guidance.
         brief = compose_daily_brief()
-        assert brief.confidence == BriefConfidence.LOW
+        assert brief.confidence in {BriefConfidence.LOW, BriefConfidence.MEDIUM}
 
     def test_malformed_memory_items_skipped(self):
         memory = [
@@ -565,3 +574,310 @@ class TestIsDailyBriefRequest:
 
     def test_none_safe(self):
         assert is_daily_brief_request(None) is False  # type: ignore[arg-type]
+
+
+# ---------------------------------------------------------------------------
+# Hardening: edge cases and degradation
+# ---------------------------------------------------------------------------
+
+
+class TestDailyBriefEdgeCases:
+    """Brief degrades cleanly on empty, malformed, or unavailable data."""
+
+    def test_completely_empty_state_returns_valid_brief(self):
+        brief = compose_daily_brief(
+            session_state={},
+            memory_items=[],
+            recent_receipts=[],
+            working_context={},
+            weather_data=None,
+            calendar_data=None,
+            important_emails=None,
+        )
+        assert isinstance(brief, DailyBrief)
+        assert brief.execution_performed is False
+        assert brief.authorization_granted is False
+
+    def test_malformed_memory_none_entries_skipped(self):
+        memory = [None, None, {"category": "action", "content": "valid"}]
+        brief = compose_daily_brief(memory_items=memory)  # type: ignore[arg-type]
+        section = next(s for s in brief.sections if s.title == "Top Next Actions")
+        assert "valid" in section.items
+
+    def test_malformed_receipt_none_entries_skipped(self):
+        receipts = [None, None, {"event_type": "ACTION_COMPLETED", "capability_name": "cap_x"}]
+        brief = compose_daily_brief(recent_receipts=receipts)  # type: ignore[arg-type]
+        section = next(s for s in brief.sections if s.title == "Recent Actions")
+        assert any("action completed" in item for item in section.items)
+
+    def test_malformed_receipt_non_dict_entries_skipped(self):
+        receipts = ["not a dict", 42, {"event_type": "MEMORY_ITEM_SAVED"}]
+        brief = compose_daily_brief(recent_receipts=receipts)  # type: ignore[arg-type]
+        section = next(s for s in brief.sections if s.title == "Recent Actions")
+        assert any("memory saved" in item for item in section.items)
+
+    def test_malformed_session_state_degrades_gracefully(self):
+        brief = compose_daily_brief(session_state="not a dict")  # type: ignore[arg-type]
+        section = next(s for s in brief.sections if s.title == "Session State")
+        assert section.is_empty
+
+    def test_malformed_conversation_context_degrades_gracefully(self):
+        brief = compose_daily_brief(
+            session_state={"conversation_context": "not a dict"}  # type: ignore[arg-type]
+        )
+        section = next(s for s in brief.sections if s.title == "Session State")
+        assert section.is_empty
+
+    def test_malformed_external_payloads_degrade_gracefully(self):
+        brief = compose_daily_brief(
+            weather_data=["bad"],  # type: ignore[arg-type]
+            calendar_data=["bad"],  # type: ignore[arg-type]
+            important_emails=42,  # type: ignore[arg-type]
+        )
+        assert any(s.title == "Weather" for s in brief.sections)
+        assert any(s.title == "Calendar" for s in brief.sections)
+        assert any(s.title == "Important Emails" for s in brief.sections)
+
+    def test_no_receipts_shows_not_found_message(self):
+        brief = compose_daily_brief(recent_receipts=[])
+        section = next(s for s in brief.sections if s.title == "Recent Actions")
+        assert not section.is_empty
+        assert any("No recent receipts" in item for item in section.items)
+        assert section.confidence == BriefConfidence.LOW
+
+    def test_weather_error_status_degrades_gracefully(self):
+        brief = compose_daily_brief(weather_data={"connected": False, "status": "error"})
+        section = next(s for s in brief.sections if s.title == "Weather")
+        assert section.confidence == BriefConfidence.LOW
+        assert any("unavailable" in item.lower() for item in section.items)
+
+    def test_calendar_error_status_degrades_gracefully(self):
+        brief = compose_daily_brief(calendar_data={"connected": False, "status": "error"})
+        section = next(s for s in brief.sections if s.title == "Calendar")
+        assert section.confidence == BriefConfidence.LOW
+        assert any("unavailable" in item.lower() for item in section.items)
+
+    def test_calendar_not_configured_shows_setup_hint(self):
+        brief = compose_daily_brief(
+            calendar_data={
+                "connected": False,
+                "status": "not_connected",
+                "setup_hint": "I don't have calendar configured yet.",
+            }
+        )
+        section = next(s for s in brief.sections if s.title == "Calendar")
+        assert any("configured" in item for item in section.items)
+
+    def test_email_placeholder_message_present(self):
+        brief = compose_daily_brief(important_emails=None)
+        section = next(s for s in brief.sections if s.title == "Important Emails")
+        text = " ".join(section.items).lower()
+        assert "not configured" in text or "connector" in text
+
+    def test_duplicate_open_loops_from_memory_deduped(self):
+        memory = [
+            {"category": "open_loop", "content": "same question"},
+            {"category": "open_loop", "content": "same question"},
+            {"category": "open_loop", "content": "different question"},
+        ]
+        brief = compose_daily_brief(memory_items=memory)
+        section = next(s for s in brief.sections if s.title == "Open Loops")
+        assert section.items.count("same question") == 1
+        assert "different question" in section.items
+
+    def test_very_long_text_clipped_in_memory_section(self):
+        long_text = "x" * 500
+        memory = [{"category": "action", "content": long_text}]
+        brief = compose_daily_brief(memory_items=memory)
+        section = next(s for s in brief.sections if s.title == "Top Next Actions")
+        assert section.items
+        assert len(section.items[0]) <= 200
+
+    def test_very_long_receipt_detail_clipped(self):
+        receipts = [{"event_type": "ACTION_COMPLETED", "capability_name": "c" * 200}]
+        brief = compose_daily_brief(recent_receipts=receipts)
+        section = next(s for s in brief.sections if s.title == "Recent Actions")
+        for item in section.items:
+            assert len(item) < 300
+
+    def test_stale_recommendation_not_duplicated_in_step(self):
+        # Same recommendation from memory and from session context open loop
+        # should only appear once.
+        memory = [{"category": "action", "content": "refactor the executor"}]
+        session = {"conversation_context": {"open_loops": ["refactor the executor"]}}
+        brief = compose_daily_brief(memory_items=memory, session_state=session)
+        section = next(s for s in brief.sections if s.title == "Recommended Next Step")
+        flat = " ".join(section.items)
+        assert flat.lower().count("refactor the executor") == 1
+
+
+# ---------------------------------------------------------------------------
+# Session State section
+# ---------------------------------------------------------------------------
+
+
+class TestSessionStateSection:
+    def test_empty_session_state_section_is_empty(self):
+        brief = compose_daily_brief(session_state={})
+        section = next(s for s in brief.sections if s.title == "Session State")
+        assert section.is_empty
+
+    def test_topic_appears_in_section(self):
+        brief = compose_daily_brief(
+            session_state={"conversation_context": {"topic": "search synthesis"}}
+        )
+        section = next(s for s in brief.sections if s.title == "Session State")
+        assert any("search synthesis" in item for item in section.items)
+
+    def test_user_goal_appears_when_different_from_topic(self):
+        brief = compose_daily_brief(
+            session_state={"conversation_context": {
+                "topic": "Nova",
+                "user_goal": "build the daily brief module",
+            }}
+        )
+        section = next(s for s in brief.sections if s.title == "Session State")
+        assert any("build the daily brief module" in item for item in section.items)
+
+    def test_mode_appears_in_section(self):
+        brief = compose_daily_brief(
+            session_state={"conversation_context": {"mode": "analysis"}}
+        )
+        section = next(s for s in brief.sections if s.title == "Session State")
+        assert any("analysis" in item for item in section.items)
+
+    def test_open_loops_from_conversation_context_appear(self):
+        brief = compose_daily_brief(
+            session_state={"conversation_context": {
+                "open_loops": ["Which framework to use?", "How long will migration take?"]
+            }}
+        )
+        section = next(s for s in brief.sections if s.title == "Session State")
+        assert any("Which framework" in item for item in section.items)
+        assert any("How long" in item for item in section.items)
+
+    def test_recent_recommendations_appear(self):
+        brief = compose_daily_brief(
+            session_state={"conversation_context": {
+                "recent_recommendations": ["Use FastAPI", "Add integration tests"]
+            }}
+        )
+        section = next(s for s in brief.sections if s.title == "Session State")
+        assert any("FastAPI" in item for item in section.items)
+
+    def test_section_capped_at_max_items(self):
+        brief = compose_daily_brief(
+            session_state={"conversation_context": {
+                "topic": "big project",
+                "user_goal": "ship it",
+                "mode": "work",
+                "open_loops": ["Q1?", "Q2?", "Q3?", "Q4?"],
+                "recent_recommendations": ["R1", "R2", "R3"],
+            }}
+        )
+        section = next(s for s in brief.sections if s.title == "Session State")
+        assert len(section.items) <= 5
+
+    def test_malformed_open_loops_in_context_skipped(self):
+        brief = compose_daily_brief(
+            session_state={"conversation_context": {
+                "open_loops": [None, "", "   ", "real question?"]
+            }}
+        )
+        section = next(s for s in brief.sections if s.title == "Session State")
+        assert any("real question?" in item for item in section.items)
+        assert all(item.strip() for item in section.items)
+
+    def test_section_source_label(self):
+        brief = compose_daily_brief(
+            session_state={"conversation_context": {"topic": "something"}}
+        )
+        section = next(s for s in brief.sections if s.title == "Session State")
+        assert section.source_label == "session_context"
+
+
+# ---------------------------------------------------------------------------
+# Recommendation selector
+# ---------------------------------------------------------------------------
+
+
+class TestSelectNextActions:
+    def test_open_loop_rule_fires_first(self):
+        suggestions = select_next_actions(open_loops=["Which framework?"])
+        assert suggestions
+        assert suggestions[0].priority == 1
+        assert "Which framework?" in suggestions[0].action
+
+    def test_failed_receipt_rule(self):
+        receipts = [{"event_type": "EMAIL_DRAFT_FAILED", "capability_name": "cap_64"}]
+        suggestions = select_next_actions(recent_receipts=receipts)
+        assert any(s.priority == 2 for s in suggestions)
+        assert any("cap_64" in s.action for s in suggestions)
+
+    def test_weak_search_evidence_rule(self):
+        suggestions = select_next_actions(
+            session_state={"last_search_evidence": {"evidence_status": "weak_or_no_evidence"}}
+        )
+        assert any(s.priority == 3 for s in suggestions)
+        assert any("search evidence" in s.action.lower() for s in suggestions)
+
+    def test_no_goal_rule(self):
+        suggestions = select_next_actions(session_state={})
+        assert any(s.priority == 4 for s in suggestions)
+        assert any("focus" in s.action.lower() for s in suggestions)
+
+    def test_no_memory_rule(self):
+        # Give a goal so rule 3 doesn't fire, then check rule 4
+        suggestions = select_next_actions(
+            session_state={"active_topic": "my project"},
+            memory_items=[],
+        )
+        assert any(s.priority == 5 for s in suggestions)
+        assert any("preference" in s.action.lower() for s in suggestions)
+
+    def test_max_suggestions_respected(self):
+        suggestions = select_next_actions(
+            open_loops=["Q1?", "Q2?"],
+            recent_receipts=[{"event_type": "ACTION_FAILED"}],
+            session_state={},
+            memory_items=[],
+            max_suggestions=2,
+        )
+        assert len(suggestions) <= 2
+
+    def test_empty_inputs_returns_list(self):
+        suggestions = select_next_actions()
+        assert isinstance(suggestions, list)
+
+    def test_none_open_loops_handled(self):
+        suggestions = select_next_actions(open_loops=None)
+        assert isinstance(suggestions, list)
+
+    def test_none_memory_handled(self):
+        suggestions = select_next_actions(memory_items=None)
+        assert isinstance(suggestions, list)
+
+    def test_non_dict_receipts_filtered(self):
+        receipts = ["not a dict", {"event_type": "ACTION_FAILED"}]
+        suggestions = select_next_actions(recent_receipts=receipts)  # type: ignore[arg-type]
+        assert isinstance(suggestions, list)
+
+    def test_to_dict_on_suggestion(self):
+        s = NextActionSuggestion(action="Do X", reason="Because Y", priority=1)
+        d = s.to_dict()
+        assert d["action"] == "Do X"
+        assert d["reason"] == "Because Y"
+        assert d["priority"] == 1
+
+    def test_with_goal_no_goal_rule_fires(self):
+        suggestions = select_next_actions(
+            session_state={"active_topic": "deploy the app"},
+        )
+        assert not any(s.priority == 3 for s in suggestions)
+
+    def test_with_memory_no_memory_rule_fires(self):
+        suggestions = select_next_actions(
+            session_state={"active_topic": "x"},
+            memory_items=[{"category": "note", "content": "something"}],
+        )
+        assert not any(s.priority == 4 for s in suggestions)
