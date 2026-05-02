@@ -65,6 +65,7 @@ Use the product docs above first, then use runtime truth docs for exact capabili
 - [OpenClaw Robust Hardening Audit - 2026-05-01](future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md)
 - [Nova x Auralis Digital Website Engine](future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE.md)
 - [Auralis Website Coworker Workflow](future/AURALIS_WEBSITE_COWORKER_WORKFLOW.md)
+- [Auralis Social Content Workflow Pack](future/auralis_digital/SOCIAL_CONTENT_WORKFLOW_PACK.md)
 - [Auralis Mock Lead Fixtures](future/auralis_mock_leads/README.md)
 - [YouTubeLIS Tool Folder](tools/youtubelis.md)
 - [Governed Media and E-Commerce Engine](future/NOVA_GOVERNED_MEDIA_AND_ECOMMERCE_ENGINE.md)

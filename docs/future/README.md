@@ -33,6 +33,10 @@ These docs define future architecture direction. They are not live runtime capab
 - `GUARD_SYSTEM_SPEC.md` - planned Brain/Mode/Context/Routine/Memory/Learning/OpenClaw guard layers.
 - `TRACE_AND_OBSERVABILITY_SPEC.md` - planned safe trace and observability surfaces.
 
+## Auralis Workflow Packs (Future)
+
+- `auralis_digital/SOCIAL_CONTENT_WORKFLOW_PACK.md` - governed local-business social content workflow (draft-only, no autonomous posting).
+
 ## Optional Workflow Planning
 
 These docs preserve possible workflow directions. They are not live runtime
