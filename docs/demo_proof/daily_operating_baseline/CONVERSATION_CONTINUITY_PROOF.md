@@ -1,6 +1,6 @@
 # Conversation Continuity Proof
 
-Status: partial automated proof, 2026-05-01.
+Status: **PASS** — re-verified 2026-05-02 against `main` at `f82cc9c`.
 
 ## Runtime Claim
 
@@ -27,11 +27,21 @@ Validated in tests:
 - malformed open loops are skipped
 - malformed conversation context payloads degrade without traceback
 
+Functional proof (Python calls, not test harness):
+
+```text
+PASS  mode/last_decision/open_loops/recent_recommendations roundtrip
+      through to_dict → from_session_state
+PASS  None conversation_context returns empty continuity fields (no traceback)
+PASS  from_session_state faithfully restores raw values
+      (accumulation dedup lives in _next_conversation_context, not here)
+```
+
 The broader conversation suite remained green:
 
 ```text
 python -m pytest nova_backend\tests\conversation -q
-412 passed
+412 passed  (verified 2026-05-02)
 ```
 
 ## Boundary
