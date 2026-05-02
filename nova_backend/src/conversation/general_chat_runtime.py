@@ -17,6 +17,7 @@ from src.brief.daily_brief import (
     compose_daily_brief,
     is_daily_brief_request,
 )
+from src.memory.memory_skill import MemorySkill
 from src.skills.calendar import CalendarSkill
 from src.conversation.planning_run_preview import create_planning_run_preview
 from src.conversation.request_understanding import build_request_understanding
@@ -126,6 +127,29 @@ def _fetch_calendar_for_brief() -> Optional[dict[str, Any]]:
         }
     except Exception:
         return None
+
+
+async def run_memory_skill_if_requested(
+    query: str,
+    *,
+    session_state: dict[str, Any],
+    ledger=None,
+) -> Optional[SkillResult]:
+    """
+    Intercept explicit memory operations before general-chat fallback.
+
+    Returns a SkillResult when the query is a memory intent
+    (remember / review / forget / update / why-used). Returns None otherwise.
+
+    Non-authorizing: no LLM calls, no capability invocations, no external effects.
+    """
+    normalized = str(query or "").strip()
+    if not normalized:
+        return None
+    skill = MemorySkill(ledger=ledger)
+    if not skill.can_handle(normalized):
+        return None
+    return await skill.handle(normalized, session_state=session_state)
 
 
 def build_general_chat_skill(
