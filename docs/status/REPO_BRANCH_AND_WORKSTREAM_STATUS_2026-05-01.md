@@ -32,6 +32,7 @@ Observed after `git fetch --all --prune`, before merge commits from this pass we
 
 | Item | Files / scope | Runtime claim |
 |---|---|---|
+| PR #68 Daily Brief MVP | `nova_backend/src/brief/daily_brief.py` (662 lines), `tests/brief/test_daily_brief.py` (76 tests), `general_chat_runtime.py` helpers | Deterministic on-demand session brief, 11 sections. Non-authorizing frozen dataclass. Live weather via WeatherService, calendar via CalendarSkill local ICS, email placeholder. No new capability, no LLM calls, no Governor path. |
 | PR #66 Search Evidence Synthesis | `nova_backend/src/brain/search_synthesis.py`, `nova_backend/src/executors/web_search_executor.py`, focused tests | Implemented as deterministic Cap 16 evidence structuring. No new capability, no authorization, no Governor bypass, no new external action path. |
 | Free-first integration policy docs | `docs/design/DESIGN_AUTHORITY.md`, Phase 6 cost-governance docs | Design policy only. Runtime enforcement does not exist until registry metadata, generator output, tests, and UI/proof paths exist. |
 | Human status alignment | status, todo, roadmap, Brain, product, Google, and index docs | Documentation alignment only. No generated runtime docs were manually edited. |
@@ -54,7 +55,8 @@ Observed after `git fetch --all --prune`, before merge commits from this pass we
 |---|---|---|
 | Runtime / governance | Governor-mediated runtime with 27-capability generated truth as the authoritative source | Implemented |
 | Brain planning preview | PR #64 merged; Task Understanding, Task Envelope, Simple Task Mode, RunManager, and Run Preview are planning-only | Scaffold |
-| Search Evidence Synthesis | Merged in this pass as deterministic Cap 16 evidence metadata | Implemented |
+| Daily Brief MVP | PR #68 merged; on-demand deterministic brief; 11 sections; live weather + calendar; no new capability | Implemented |
+| Search Evidence Synthesis | Merged via PR #66 as deterministic Cap 16 evidence metadata | Implemented |
 | Google connector | Future read/context connector direction; no Google OAuth/Gmail/Calendar/Drive runtime connector | Planning |
 | Free-first cost governance | Design docs merged; metadata and visibility planned | Planning |
 | Auralis website coworker | Future business workflow / production discipline layer | Planning |
@@ -80,9 +82,10 @@ Observed after `git fetch --all --prune`, before merge commits from this pass we
 
 ## Next Merge / Work Order
 
-1. Push this alignment branch to `main` after validation.
+1. Memory loop and conversation continuity — session continuity state fields.
 2. Re-run conversation/search proof against the Search Evidence Synthesis baseline.
 3. Review branch cleanup candidates and delete only with explicit user approval.
 4. Plan cost posture metadata as the next free-first runtime-visible step.
-5. Plan Google read-only connector foundation only after connector governance and cost posture boundaries are clear.
+5. Plan Google read-only connector foundation only after connector governance and cost posture boundaries
+   are clear.
 6. Do not start write/action capabilities from this cleanup pass.

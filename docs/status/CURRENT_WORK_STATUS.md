@@ -16,10 +16,12 @@ At this review baseline, the alignment branch includes:
 
 - PR #64 Brain Planning Preview scaffold, merged earlier.
 - PR #66 Search Evidence Synthesis, merged in this alignment pass.
+- PR #68 Daily Brief MVP, merged 2026-05-01.
 - Free-first cost governance design docs, merged in this alignment pass.
 - Auralis and YouTubeLIS planning docs already present on `main`.
 - OpenClaw robust hardening audit added as a future implementation recommendation, not runtime truth.
-- Governed Workflow Workspace Architecture added as a product/architecture planning note for everyday workflows, independent automation, and business-owner use cases.
+- Governed Workflow Workspace Architecture added as a product/architecture planning note for everyday
+  workflows, independent automation, and business-owner use cases.
 
 Generated runtime truth still reports the authoritative capability inventory and governance invariants. This note should not be used as a replacement for generated runtime docs.
 
@@ -29,8 +31,14 @@ Generated runtime truth still reports the authoritative capability inventory and
 
 - Governance spine remains the strongest runtime truth: GovernorMediator, CapabilityRegistry, ExecuteBoundary, NetworkMediator, and ledger discipline are still the authority path.
 - Cap 16 governed web search remains the active current-information lane.
-- Search Evidence Synthesis is now implemented as a deterministic evidence-structuring module for Cap 16 search output.
-- Search Evidence Synthesis does not add a new capability, does not authorize action, does not bypass NetworkMediator, and does not route through Governor as an authority path.
+- Search Evidence Synthesis is now implemented as a deterministic evidence-structuring module for Cap 16
+  search output. It does not add a new capability, does not authorize action, and does not bypass
+  NetworkMediator.
+- Daily Brief MVP is implemented as a deterministic, on-demand session brief (PR #68). It synthesizes
+  session state, memory, receipts, weather (live via WeatherService), calendar (local ICS via
+  CalendarSkill), and email placeholder into 11 sections. Non-authorizing frozen dataclass;
+  `execution_performed=False` and `authorization_granted=False` are enforced by `__post_init__`.
+  No new capability, no LLM calls, no Governor path.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. It does not use Gmail API, SMTP, inbox access, or autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes are implemented.
 
@@ -64,13 +72,16 @@ Cap 16 current-information reliability and evidence quality remains the active P
 
 Immediate continuation order:
 
-1. Validate Search Evidence Synthesis after merge.
-2. Re-run and record the conversation + search proof path.
+1. Re-run and record the conversation + search proof path with Search Evidence Synthesis active.
+2. Memory loop and conversation continuity — session continuity state fields: `current_topic`,
+   `session_goal`, `mode`, `last_decision`, `open_loops`, `recent_recommendations`.
 3. Continue doc/status cleanup as needed.
 4. Plan cost posture metadata as the next design-to-runtime step, without hard blocking first.
 5. Plan Google read-only connector foundations only after cost posture and connector governance are clear.
-6. Keep OpenClaw expansion frozen until envelope issuance, approval, execution-guard, and receipt gaps are closed.
-7. Use the governed workflow workspace plan to guide product shell, object model, workflow template, and onboarding work after proof paths are stable.
+6. Keep OpenClaw expansion frozen until envelope issuance, approval, execution-guard, and receipt gaps
+   are closed.
+7. Use the governed workflow workspace plan to guide product shell, object model, workflow template,
+   and onboarding work after proof paths are stable.
 
 Do not start new write/action capabilities from this status pass.
 

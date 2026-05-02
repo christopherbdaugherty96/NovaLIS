@@ -1,24 +1,28 @@
 # Active TODO - Nova
 
 **Updated:** 2026-05-01
-**Sprint goal:** Cap 16 current-information reliability + conversation/search proof.
+**Sprint goal:** Memory loop + conversation continuity after Daily Brief MVP merge.
 **Authority note:** This file is the public task snapshot. Exact runtime truth still comes from generated runtime docs and code.
 
 ## Current Priorities (ordered)
 
-- [ ] Re-run and record the conversation + search demo flow after Search Evidence Synthesis merge
+- [ ] Memory loop and conversation continuity — wire session continuity state fields: `current_topic`,
+      `session_goal`, `mode`, `last_decision`, `open_loops`, `recent_recommendations`
+- [ ] Re-run and record the conversation + search demo flow with Search Evidence Synthesis active
 - [ ] Improve conversation follow-up/topic tracking for connector/governance topics
 - [ ] Tighten uncertainty wording for health/safety/current-evidence questions
 - [ ] Continue doc/status cleanup where stale "local-only" or planning-as-runtime wording remains
 - [ ] Plan cost posture metadata as the next free-first implementation step
 - [ ] Plan Google read-only connector foundation after connector governance and cost posture metadata are clear
-- [ ] Prepare OpenClaw hardening pass: mandatory EnvelopeFactory, freeform-goal gate, real approval decisions, centralized execution guard, boundary detection, and receipts
-- [ ] Define governed workflow workspace shell for everyday workflows, independent automation, and business-owner use cases
+- [ ] Prepare OpenClaw hardening pass: mandatory EnvelopeFactory, freeform-goal gate, real approval decisions,
+      centralized execution guard, boundary detection, and receipts
+- [ ] Define governed workflow workspace shell for everyday workflows, independent automation, and business-owner
+      use cases
 - [ ] Draft workflow object model and workflow template schema
-- [ ] Fuller Trust Review Card / Trust Panel - richer blocked reasons, confirmation previews, receipt history, and proof browsing
+- [ ] Fuller Trust Review Card / Trust Panel - richer blocked reasons, confirmation previews, receipt history,
+      and proof browsing
 - [ ] Windows installer VM validation - clean install + bootstrap.log fixes
 - [ ] README screenshot or GIF of governed action flow
-- [ ] Daily Brief MVP - schedule, priorities, reminders, recent actions
 - [ ] Memory UX flows - remember / forget / review saved memory
 - [ ] Dashboard home improvements - stronger daily assistant surface
 - [ ] Cap 65 P5 live signoff
@@ -82,9 +86,11 @@ Canonical audit: `docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`
 
 ## Recently Completed
 
+- Daily Brief MVP merged via PR #68 — deterministic on-demand session brief, 11 sections, live weather +
+  calendar, 76 tests
 - Brain Planning Preview scaffold merged via PR #64
 - YouTubeLIS planning-only tool folder merged via PR #65
-- Search Evidence Synthesis merged as deterministic Cap 16 evidence structuring
+- Search Evidence Synthesis merged as deterministic Cap 16 evidence structuring via PR #66
 - Free-first cost governance design docs merged as planning only
 - OpenClaw robust hardening audit added as planning/recommendation doc
 - Governed Workflow Workspace Architecture added as product/architecture planning for everyday workflows, independent automation, and business-owner use cases
