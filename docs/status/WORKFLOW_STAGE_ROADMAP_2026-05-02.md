@@ -11,10 +11,10 @@ It is not runtime truth. Exact runtime truth still comes from code and generated
 ## Current overall stage
 
 ```text
-Stage 4: Context Pack implementation — ACTIVE
+Stage 5: Brain discipline / trace — ACTIVE
 ```
 
-Stages 1, 2, and 3 completed 2026-05-02.
+Stages 1, 2, 3, and 4 completed 2026-05-02.
 
 The current repo sequence is:
 
@@ -37,8 +37,8 @@ Proof closeout
 | 1 | Active proof closeout | **Complete** 2026-05-02 | All four proof docs verified, 1877 tests green | — |
 | 2 | Status update after proof | **Complete** 2026-05-02 | TODO/status/roadmap updated | — |
 | 3 | Memory loop | **Complete** 2026-05-02 | remember/review-list/update/forget/why-used implemented with receipts and tests | — |
-| 4 | Context Pack | **Active** | source labels, authority labels, budgets, why-selected, stale/conflict warnings proven | Implement on branch |
-| 5 | Brain discipline / trace | Not started | mode contracts and safe BrainTrace exist | Start only after memory/context |
+| 4 | Context Pack | **Complete** 2026-05-02 | source labels, authority labels, budgets, why-selected, stale/conflict warnings proven | — |
+| 5 | Brain discipline / trace | **Active** | mode contracts and safe BrainTrace exist | Implement on branch |
 | 6 | Routine surfaces | Not started | Daily Brief RoutineGraph v0 and workflow demos exist | Start only after memory/context/trace foundations |
 | A | Auralis manual validation | Ready for manual work | 3 mock client packs, 30 posts, 1 calendar, 1 outreach package | Run outside Nova runtime |
 
@@ -112,6 +112,17 @@ Merged: PR #82 on 2026-05-02.
 ---
 
 ## Stage 4 - Context Pack implementation
+
+State: **complete** 2026-05-02.
+
+Implemented: bounded, labeled context bridge with source/authority labels, budget enforcement,
+stale/conflict detection, warning cap, legacy format compatibility.
+Proof: `docs/demo_proof/daily_operating_baseline/CONTEXT_PACK_PROOF.md` — PASS.
+Merged: PR #83 on 2026-05-02.
+
+---
+
+## Stage 5 - Brain discipline / trace
 
 State: **active** 2026-05-02.
 
@@ -197,8 +208,8 @@ Blocked from runtime until:
 
 ## Current recommended action
 
-Stage 4 is complete. Continue to Stage 5.
+Stage 5 is complete. Continue to Stage 6.
 
 ```text
-Context Pack implemented and proven → begin Brain discipline / trace.
+Brain mode contracts and BrainTrace implemented and proven → begin Routine surfaces.
 ```
