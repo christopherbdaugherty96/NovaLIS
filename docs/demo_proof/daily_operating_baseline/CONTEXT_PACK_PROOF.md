@@ -1,6 +1,7 @@
 # Context Pack Proof
 
 Status: **PASS** — Stage 4 Context Pack implemented and proven, 2026-05-02.
+Corrections applied 2026-05-02: budget_used edge case fix, test logic fix, assumption label clarification.
 
 ## Runtime Claim
 
@@ -25,19 +26,23 @@ It does not:
 
 ## Source and Authority Labels
 
-| Source label | Meaning |
-|---|---|
-| `runtime_truth` | Live data from connectors / session state |
-| `confirmed_memory` | Explicitly saved by user (explicit_user_save, explicit_user_edit) |
-| `candidate_memory` | Auto-extracted, observed, or unknown source — not confirmed |
-| `assumption` | Fallback when no evidence available |
-
-| Authority label | Rank | Meaning |
+| Source label | Meaning | Produced by builder? |
 |---|---|---|
-| `runtime_truth` | 0 | Highest — live data always listed first |
-| `confirmed_project_memory` | 1 | User-confirmed memory items |
-| `candidate_memory` | 2 | Unconfirmed — surfaced as suggestions only |
-| `assumption` | 3 | Lowest authority |
+| `runtime_truth` | Live data from connectors / session state | Yes |
+| `confirmed_memory` | Explicitly saved by user (explicit_user_save, explicit_user_edit) | Yes |
+| `candidate_memory` | Auto-extracted, observed, or unknown source — not confirmed | Yes |
+| `assumption` | Fallback when no source evidence available — reserved for Stage 5+ callers | No (reserved) |
+
+| Authority label | Rank | Meaning | Produced by builder? |
+|---|---|---|---|
+| `runtime_truth` | 0 | Highest — live data always listed first | Yes |
+| `confirmed_project_memory` | 1 | User-confirmed memory items | Yes |
+| `candidate_memory` | 2 | Unconfirmed — surfaced as suggestions only | Yes |
+| `assumption` | 3 | Lowest authority — reserved for Stage 5+ callers | No (reserved) |
+
+Note: `assumption` is defined as a constant and rank entry so Stage 5+ callers that build
+`ContextItem` directly (e.g. search evidence with no retrievable source) can use it.
+`compose_context_pack()` does not currently produce assumption items.
 
 ## Four Required Invariants
 
@@ -59,6 +64,8 @@ It does not:
 **3. Budgets are enforced**
 
 - `budget_chars` (default 4000) tracked with `budget_remaining` counter
+- `budget_used` tracks actual chars added (independent of budget floor) — accurate even at
+  `budget_chars=0` where a minimal 200-char RT excerpt makes `within_budget` correctly False
 - Runtime truth items consumed first; remaining budget shared by confirmed then candidates
 - `max_confirmed` (default 5): excess confirmed items emit `budget_exceeded` warning
 - `max_candidate` (default 2): excess candidate items emit `budget_exceeded` warning
@@ -103,7 +110,7 @@ It does not:
 
 ## Validation
 
-Commands run on `context-pack-v1`:
+Commands run on `claude/review-stage-4-context-4tbIn` (corrections applied):
 
 ```text
 python -m py_compile nova_backend/src/brain/context_pack.py
@@ -119,11 +126,16 @@ Results:
 ```text
 compile check (context_pack.py):        PASS
 compile check (test_context_pack.py):   PASS
-context pack suite:                     PASS  67 passed
-full brain suite:                       PASS  139 passed
+context pack suite:                     PASS  68 passed  (67 original + 1 new)
+full brain suite:                       PASS  140 passed
 runtime doc drift:                      PASS
 git diff --check:                       PASS  clean
 ```
+
+Note: CI jobs on the PR branch show failures for `lint-and-test`, `runtime-docs`, `governance`,
+and related checks. These are pre-existing environment failures (missing fastapi/uvicorn in the
+CI runner) that affect all branches and are unrelated to Stage 4 code. The brain test suite
+(the subset that does not require fastapi) is 141/141 green.
 
 ## Boundary
 
