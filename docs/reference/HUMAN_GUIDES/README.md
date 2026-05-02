@@ -1,5 +1,5 @@
 # Nova Human Guides
-Updated: 2026-04-23
+Updated: 2026-05-02
 Status: Explanatory guide set
 
 ## What These Documents Are
@@ -12,6 +12,17 @@ Use:
 - `docs/current_runtime/CURRENT_RUNTIME_STATE.md`
 - `docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE.md`
 - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
+
+## Current Stage Note
+These guides were last aligned to the Stage 3 / 4 / 5 implementation sprint (2026-05-02).
+
+For the current implementation stage in plain language, start with:
+- `CURRENT_STAGE_GUIDE.md` (this folder) — what Stages 3–5 mean in human terms
+
+For the authoritative status, see:
+- `docs/status/CURRENT_WORK_STATUS.md`
+- `docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02.md`
+- `docs/todo/ACTIVE_TODO.md`
 
 ## Start Here
 1. `01_START_HERE.md`
