@@ -11,10 +11,10 @@ It is not runtime truth. Exact runtime truth still comes from code and generated
 ## Current overall stage
 
 ```text
-Stage 1: Active proof closeout
+Stage 3: Memory loop implementation — ACTIVE
 ```
 
-Nova is not yet in memory-loop implementation.
+Stage 1 (proof closeout) and Stage 2 (status update) completed 2026-05-02.
 
 The current repo sequence is:
 
@@ -34,9 +34,9 @@ Proof closeout
 | Stage | Name | Current state | Exit criteria | Next action |
 |---|---|---|---|---|
 | 0 | Architecture alignment | Complete | Architecture docs merged, roadmap/index/future guide aligned | Do not continue architecture expansion |
-| 1 | Active proof closeout | Active | Daily Brief proof and conversation/search proof captured | Run proof manually and record result |
-| 2 | Status update after proof | Not started | TODO/status docs updated with proof outcome | Apply after proof result exists |
-| 3 | Memory loop | Not started | remember/review-list/update/forget/why-used implemented with receipts and tests | Start only after Stage 1/2 |
+| 1 | Active proof closeout | **Complete** 2026-05-02 | All four proof docs verified, 1877 tests green | — |
+| 2 | Status update after proof | **Complete** 2026-05-02 | TODO/status/roadmap updated | — |
+| 3 | Memory loop | **Active** | remember/review-list/update/forget/why-used implemented with receipts and tests | Implement on branch |
 | 4 | Context Pack | Not started | source labels, authority labels, budgets, why-selected, stale/conflict warnings proven | Start only after memory loop |
 | 5 | Brain discipline / trace | Not started | mode contracts and safe BrainTrace exist | Start only after memory/context |
 | 6 | Routine surfaces | Not started | Daily Brief RoutineGraph v0 and workflow demos exist | Start only after memory/context/trace foundations |
