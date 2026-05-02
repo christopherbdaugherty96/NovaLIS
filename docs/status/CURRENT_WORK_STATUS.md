@@ -39,6 +39,10 @@ Generated runtime truth still reports the authoritative capability inventory and
   CalendarSkill), and email placeholder into 11 sections. Non-authorizing frozen dataclass;
   `execution_performed=False` and `authorization_granted=False` are enforced by `__post_init__`.
   No new capability, no LLM calls, no Governor path.
+- Daily Brief robustness is improved on the `daily-brief-continuity-hardening` branch. It degrades
+  cleanly on malformed session, memory, receipt, weather, calendar, and email-placeholder inputs;
+  surfaces session continuity fields; and uses deterministic next-action recommendations. Proof notes
+  live under [`../demo_proof/daily_operating_baseline/`](../demo_proof/daily_operating_baseline/).
 - Cap 64 remains confirmation-bound local `mailto:` draft only. It does not use Gmail API, SMTP, inbox access, or autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes are implemented.
 
@@ -142,6 +146,8 @@ Do not claim these are finished unless verified against code/runtime truth:
 - First-run workspace onboarding wizard.
 - Free-first runtime enforcement.
 - One-click consumer installer.
+- Full Daily Operating System / background routines.
+- Durable memory loop proof.
 
 ---
 
