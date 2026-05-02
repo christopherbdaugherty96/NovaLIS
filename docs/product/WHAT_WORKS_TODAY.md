@@ -8,6 +8,7 @@ Use generated runtime docs for exact active capability truth.
 Use this page for user-facing readiness expectations.
 
 Latest proof packages:
+- [Daily operating baseline proof](../demo_proof/daily_operating_baseline/DAILY_BRIEF_PROOF.md)
 - [2026-04-29 conversation + search proof](../demo_proof/2026-04-29_conversation_search_proof/CONVERSATION_SEARCH_REPORT.md)
 - [Brain live test report](../demo_proof/brain_live_test/REPORT.md)
 - [2026-04-28 user test](../demo_proof/2026-04-28_user_test/USER_TEST_REPORT.md)
@@ -51,6 +52,7 @@ Latest proof packages:
 | Email draft | Implemented, safety-limited, paused | Opens a local mail client draft through `mailto:` after confirmation. Nova does not use SMTP, access inboxes, or send autonomously. Cap 64 live signoff is paused while Cap 16 conversation/search proof is the active sprint. |
 | OpenClaw execution surface | Advanced / constrained | Governed, limited, not broad autonomy. |
 | Action Receipts | Implemented, maturing UX | Visible receipt surface exists for governed-action outcomes. A fuller Trust Panel remains future work. |
+| Daily Brief MVP | Implemented, maturing UX | Deterministic on-demand session brief with session, memory, receipts, weather, calendar, email placeholder, continuity fields, and deterministic next-action recommendations. No execution authority, no LLM call, no background automation. |
 
 ---
 
@@ -58,7 +60,7 @@ Latest proof packages:
 
 | Area | Status | Notes |
 |---|---|---|
-| Daily brief / operating layer | Future / not implemented | The operating model documents daily briefs, news tracking, routines, context awareness, and approved automation loops as direction, not current product readiness. |
+| Full daily operating layer | Future / not implemented | Daily Brief MVP exists, but routines, background context awareness, approved automation loops, durable memory loop proof, and full operating-system behavior remain future work. |
 | Approved automation routines / envelopes | Future / not implemented | Conceptual direction only. No broad recurring automation loop should be claimed as live. |
 | Small-model full Brain runtime stack | Future / not implemented | Context Assembler, Model Router, Intention Parser, Tool Bridge, Sandbox Boundary Enforcer, and Persona Filter are documented architecture, not live runtime behavior. Search Evidence Synthesis is implemented only as deterministic Cap 16 evidence structuring, not as a general Brain planner. |
 | Google read/context connector | Future / not implemented | The Google connector model documents OAuth, Gmail read-only, Calendar read-only, and Gmail context for Cap 64 draft-only replies. It is a future read/context path, not Gmail send/write authority. |

@@ -16,6 +16,7 @@ from enum import Enum
 from typing import Any
 
 from src.actions.action_result import ActionResult
+from src.brief.recommendations import select_next_actions
 from src.cognition.cognitive_layer_contract import (
     CognitiveMode,
     CognitiveRequest,
@@ -160,6 +161,14 @@ def _clean(value: Any, *, limit: int = 200) -> str:
     return text[:limit] if len(text) > limit else text
 
 
+def _as_dict(value: Any) -> dict[str, Any]:
+    return dict(value) if isinstance(value, dict) else {}
+
+
+def _as_list(value: Any) -> list[Any]:
+    return list(value) if isinstance(value, list) else []
+
+
 def _section_confidence(items: list[str]) -> BriefConfidence:
     if len(items) >= 3:
         return BriefConfidence.HIGH
@@ -187,9 +196,7 @@ def _build_today_focus(
     if active_app and active_app not in items:
         items.append(f"Active: {active_app}")
 
-    conv_topic = _clean(
-        (session_state.get("conversation_context") or {}).get("topic") or ""
-    )
+    conv_topic = _clean(_as_dict(session_state.get("conversation_context")).get("topic") or "")
     if conv_topic and conv_topic not in items:
         items.append(f"Topic: {conv_topic}")
 
@@ -203,7 +210,7 @@ def _build_today_focus(
 
 def _build_weather(weather_data: dict[str, Any] | None) -> BriefSection:
     """Build a weather section from pre-fetched WeatherService data."""
-    if not weather_data:
+    if not isinstance(weather_data, dict) or not weather_data:
         return BriefSection(
             title="Weather",
             items=(),
@@ -214,8 +221,10 @@ def _build_weather(weather_data: dict[str, Any] | None) -> BriefSection:
     status = str(weather_data.get("status") or "")
     connected = bool(weather_data.get("connected"))
 
-    if not connected or status in {"not_configured", "unavailable"}:
+    if not connected or status in {"not_configured", "unavailable", "error"}:
         hint = _clean(weather_data.get("setup_hint") or weather_data.get("message") or "", limit=120)
+        if not hint and status == "error":
+            hint = "Weather data is temporarily unavailable."
         items = (hint,) if hint else ()
         return BriefSection(
             title="Weather",
@@ -245,7 +254,7 @@ def _build_weather(weather_data: dict[str, Any] | None) -> BriefSection:
 
 def _build_calendar(calendar_data: dict[str, Any] | None) -> BriefSection:
     """Build a calendar section from pre-fetched CalendarSkill data."""
-    if not calendar_data:
+    if not isinstance(calendar_data, dict) or not calendar_data:
         return BriefSection(
             title="Calendar",
             items=(),
@@ -256,12 +265,18 @@ def _build_calendar(calendar_data: dict[str, Any] | None) -> BriefSection:
     connected = bool(calendar_data.get("connected"))
     status = str(calendar_data.get("status") or "")
 
-    if not connected or status in {"not_connected", "unavailable"}:
-        hint = _clean(
-            calendar_data.get("setup_hint")
-            or "Add a local .ics file in Settings to enable calendar.",
-            limit=120,
-        )
+    if not connected or status in {"not_connected", "unavailable", "error"}:
+        if status == "error":
+            hint = _clean(
+                calendar_data.get("message") or "Calendar is temporarily unavailable.",
+                limit=120,
+            )
+        else:
+            hint = _clean(
+                calendar_data.get("setup_hint")
+                or "Add a local .ics file in Settings to enable calendar.",
+                limit=120,
+            )
         return BriefSection(
             title="Calendar",
             items=(hint,),
@@ -300,9 +315,10 @@ def _build_important_emails(important_emails: list[dict[str, Any]] | None) -> Br
     Currently returns a not-configured notice so the brief UI can show
     the section with a setup prompt.
     """
-    if important_emails:
+    emails = _as_list(important_emails)
+    if emails:
         items: list[str] = []
-        for email in important_emails[:_MAX_ITEMS_PER_SECTION]:
+        for email in emails[:_MAX_ITEMS_PER_SECTION]:
             if not isinstance(email, dict):
                 continue
             sender = _clean(email.get("sender") or "", limit=40)
@@ -350,15 +366,17 @@ def _build_next_actions(memory_items: list[dict[str, Any]]) -> BriefSection:
 
 def _build_open_loops(memory_items: list[dict[str, Any]]) -> BriefSection:
     loops: list[str] = []
+    seen: set[str] = set()
     for item in memory_items:
         if not isinstance(item, dict):
             continue
         category = _clean(item.get("category") or item.get("type") or "")
         content = _clean(item.get("content") or item.get("text") or "")
-        if not content:
+        if not content or content in seen:
             continue
         if category.lower() in {"open_loop", "loop", "open", "pending", "unresolved"}:
             loops.append(content)
+            seen.add(content)
         if len(loops) >= _MAX_ITEMS_PER_SECTION:
             break
 
@@ -417,8 +435,12 @@ def _build_memory_reminders(memory_items: list[dict[str, Any]]) -> BriefSection:
 def _build_recent_receipts(recent_receipts: list[dict[str, Any]]) -> BriefSection:
     labels: list[str] = []
     for receipt in recent_receipts:
+        if not isinstance(receipt, dict):
+            continue
         event_type = str(receipt.get("event_type") or "")
         label = _RECEIPT_LABEL_MAP.get(event_type, event_type.lower().replace("_", " "))
+        if not label.strip():
+            continue
         ts = str(receipt.get("timestamp_utc") or "")
         detail = _clean(
             receipt.get("capability_name")
@@ -439,10 +461,18 @@ def _build_recent_receipts(recent_receipts: list[dict[str, Any]]) -> BriefSectio
         if len(labels) >= _MAX_ITEMS_PER_SECTION:
             break
 
+    if not labels:
+        return BriefSection(
+            title="Recent Actions",
+            items=("No recent receipts found.",),
+            confidence=BriefConfidence.LOW,
+            source_label="receipts",
+        )
+
     return BriefSection(
         title="Recent Actions",
         items=tuple(labels),
-        confidence=BriefConfidence.HIGH if labels else BriefConfidence.LOW,
+        confidence=BriefConfidence.HIGH,
         source_label="receipts",
     )
 
@@ -469,30 +499,111 @@ def _build_blocked_items(memory_items: list[dict[str, Any]]) -> BriefSection:
     )
 
 
+_ACTION_PREFIXES = ("resolve:", "continue:", "inspect failed action:", "inspect:")
+
+
+def _action_core(text: str) -> str:
+    """Strip known action prefixes so deduplication is content-based, not wording-based."""
+    lower = text.strip().lower()
+    for prefix in _ACTION_PREFIXES:
+        if lower.startswith(prefix):
+            return text[len(prefix):].strip()
+    return text.strip()
+
+
+def _build_session_state(session_state: dict[str, Any]) -> BriefSection:
+    """Surface active conversation continuity fields from session_state.
+
+    Draws from conversation_context (topic, user_goal, mode, open_loops,
+    recent_recommendations). Returns an empty section when the context is
+    absent so the brief renders cleanly without any data.
+    """
+    conv_ctx = _as_dict(session_state.get("conversation_context"))
+    items: list[str] = []
+
+    topic = _clean(conv_ctx.get("topic") or session_state.get("active_topic") or "", limit=120)
+    if topic:
+        items.append(f"Topic: {topic}")
+
+    user_goal = _clean(conv_ctx.get("user_goal") or "", limit=120)
+    if user_goal and user_goal != topic:
+        items.append(f"Goal: {user_goal}")
+
+    mode = _clean(conv_ctx.get("mode") or "", limit=40)
+    if mode:
+        items.append(f"Mode: {mode}")
+
+    conv_loops = [
+        _clean(s, limit=120)
+        for s in list(conv_ctx.get("open_loops") or [])
+        if str(s).strip()
+    ]
+    for loop in conv_loops[:3]:
+        items.append(f"Open: {loop}")
+
+    conv_recs = [
+        _clean(s, limit=120)
+        for s in list(conv_ctx.get("recent_recommendations") or [])
+        if str(s).strip()
+    ]
+    for rec in conv_recs[:2]:
+        items.append(f"Rec: {rec}")
+
+    filled = len(items)
+    confidence = (
+        BriefConfidence.HIGH if filled >= 3
+        else BriefConfidence.MEDIUM if filled >= 1
+        else BriefConfidence.LOW
+    )
+    return BriefSection(
+        title="Session State",
+        items=tuple(items[:_MAX_ITEMS_PER_SECTION]),
+        confidence=confidence,
+        source_label="session_context",
+    )
+
+
 def _build_recommended_next_step(
     next_actions: BriefSection,
     open_loops: BriefSection,
     session_state: dict[str, Any],
+    recent_receipts: list[dict[str, Any]],
+    memory_items: list[dict[str, Any]],
 ) -> BriefSection:
-    recommendation: str = ""
+    items: list[str] = []
 
-    # Priority: first open next action > first open loop > session goal
+    # Memory-based priority: first explicit next action > first memory open loop
     if next_actions.items:
-        recommendation = next_actions.items[0]
+        items.append(next_actions.items[0])
     elif open_loops.items:
-        recommendation = f"Resolve: {open_loops.items[0]}"
-    else:
-        conv_goal = _clean(
-            (session_state.get("conversation_context") or {}).get("user_goal") or ""
-        )
-        if conv_goal:
-            recommendation = f"Continue: {conv_goal}"
+        items.append(f"Resolve: {open_loops.items[0]}")
 
-    items = (recommendation,) if recommendation else ()
+    # Fill remaining slots with deterministic suggestions from continuity state
+    if len(items) < 3:
+        conv_loops = [
+            str(s).strip()
+            for s in list(_as_dict(session_state.get("conversation_context")).get("open_loops") or [])
+            if str(s).strip()
+        ]
+        suggestions = select_next_actions(
+            open_loops=conv_loops,
+            memory_items=memory_items,
+            recent_receipts=recent_receipts,
+            session_state=session_state,
+            max_suggestions=3 - len(items),
+        )
+        existing_cores = {_action_core(s).lower() for s in items}
+        for suggestion in suggestions:
+            candidate = suggestion.action
+            if _action_core(candidate).lower() not in existing_cores:
+                items.append(candidate)
+                existing_cores.add(_action_core(candidate).lower())
+
+    confidence = BriefConfidence.MEDIUM if items else BriefConfidence.LOW
     return BriefSection(
         title="Recommended Next Step",
-        items=items,
-        confidence=BriefConfidence.MEDIUM if items else BriefConfidence.LOW,
+        items=tuple(items[:3]),
+        confidence=confidence,
         source_label="synthesis",
     )
 
@@ -547,15 +658,16 @@ def compose_daily_brief(
     fetched by the caller and injected here. This function is synchronous
     and produces no external effects.
     """
-    _session = dict(session_state or {})
-    _memory = list(memory_items or [])
-    _receipts = list(recent_receipts or [])
-    _ctx = dict(working_context or {})
+    _session = _as_dict(session_state)
+    _memory = _as_list(memory_items)
+    _receipts = _as_list(recent_receipts)
+    _ctx = _as_dict(working_context)
 
     today = _today_label()
     now = _utc_now()
 
     focus = _build_today_focus(_session, _ctx)
+    session_state_section = _build_session_state(_session)
     weather = _build_weather(weather_data)
     calendar = _build_calendar(calendar_data)
     emails = _build_important_emails(important_emails)
@@ -565,10 +677,17 @@ def compose_daily_brief(
     reminders = _build_memory_reminders(_memory)
     receipts_section = _build_recent_receipts(_receipts)
     blocked = _build_blocked_items(_memory)
-    recommended = _build_recommended_next_step(next_actions, open_loops, _session)
+    recommended = _build_recommended_next_step(
+        next_actions,
+        open_loops,
+        _session,
+        _receipts,
+        _memory,
+    )
 
     all_sections = (
         focus,
+        session_state_section,
         weather,
         calendar,
         emails,
@@ -590,9 +709,9 @@ def compose_daily_brief(
         sources.append("session")
     if _ctx:
         sources.append("working_context")
-    if weather_data and weather_data.get("connected"):
+    if isinstance(weather_data, dict) and weather_data.get("connected"):
         sources.append("weather")
-    if calendar_data and calendar_data.get("connected"):
+    if isinstance(calendar_data, dict) and calendar_data.get("connected"):
         sources.append("calendar")
 
     confidence = _overall_confidence(list(all_sections))
