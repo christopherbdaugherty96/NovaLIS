@@ -11,10 +11,10 @@ It is not runtime truth. Exact runtime truth still comes from code and generated
 ## Current overall stage
 
 ```text
-Stage 5: Brain discipline / trace — ACTIVE
+Stage 6: Routine surfaces — ACTIVE
 ```
 
-Stages 1, 2, 3, and 4 completed 2026-05-02.
+Stages 1, 2, 3, 4, and 5 completed 2026-05-02.
 
 The current repo sequence is:
 
@@ -38,8 +38,8 @@ Proof closeout
 | 2 | Status update after proof | **Complete** 2026-05-02 | TODO/status/roadmap updated | — |
 | 3 | Memory loop | **Complete** 2026-05-02 | remember/review-list/update/forget/why-used implemented with receipts and tests | — |
 | 4 | Context Pack | **Complete** 2026-05-02 | source labels, authority labels, budgets, why-selected, stale/conflict warnings proven | — |
-| 5 | Brain discipline / trace | **Active** | mode contracts and safe BrainTrace exist | Implement on branch |
-| 6 | Routine surfaces | Not started | Daily Brief RoutineGraph v0 and workflow demos exist | Start only after memory/context/trace foundations |
+| 5 | Brain discipline / trace | **Complete** 2026-05-02 | mode contracts, BrainTrace, and Context Pack wiring proven | — |
+| 6 | Routine surfaces | **Active** | Daily Brief RoutineGraph v0 and workflow demos exist | Context Pack wired; begin RoutineGraph |
 | A | Auralis manual validation | Ready for manual work | 3 mock client packs, 30 posts, 1 calendar, 1 outreach package | Run outside Nova runtime |
 
 ---
@@ -122,53 +122,30 @@ Merged: PR #83 on 2026-05-02.
 
 ---
 
-## Stage 5 - Brain discipline / trace
-
-State: **active** 2026-05-02.
-
-Minimum scope:
-
-- source labels
-- authority labels
-- budget limits
-- why-selected metadata
-- stale/conflict warnings
-- runtime truth priority
-
-Required proof:
-
-- candidate items are not treated as confirmed
-- runtime truth outranks memory
-- budgets are enforced
-
----
-
 ## Stage 5 - Brain discipline and trace
 
-State: not started.
+State: **complete** 2026-05-02.
 
-Minimum scope:
+Implemented:
 
-- brainstorm mode contract
-- repo-review mode contract
-- implementation mode contract
-- merge mode contract
-- planning mode contract
-- action-review mode contract
-- safe BrainTrace fields
+- 7 mode contracts: brainstorm, repo_review, implementation, merge, planning,
+  action_review, casual
+- classify_mode() — lightweight regex classifier, no LLM call
+- BrainTrace — non-authorizing frozen dataclass; execution_performed,
+  authorization_granted, and private_reasoning_exposed always False
+- Context Pack wired into general_chat_runtime.py — raw memory items now
+  pass through compose_context_pack() before prompt assembly on every turn
+- Brain mode classified and trace recorded in session_state["last_brain_trace"]
+  on every general-chat turn
 
-Required proof:
-
-- brainstorm mode does not mutate repo
-- repo-review mode checks state before recommending
-- implementation mode stays focused
-- trace explains structure without exposing private chain-of-thought
+Proof: `docs/demo_proof/daily_operating_baseline/BRAIN_MODE_PROOF.md` — PASS.
+Merged: PRs #85, #87, #88, #89 on 2026-05-02.
 
 ---
 
 ## Stage 6 - Routine surfaces
 
-State: not started.
+State: **active** 2026-05-02.
 
 Minimum scope:
 
@@ -208,8 +185,8 @@ Blocked from runtime until:
 
 ## Current recommended action
 
-Stage 5 is complete. Continue to Stage 6.
+Stage 6 is active. Context Pack and BrainTrace are live in the prompt path.
 
 ```text
-Brain mode contracts and BrainTrace implemented and proven → begin Routine surfaces.
+Context Pack wired into general_chat_runtime → begin Daily Brief RoutineGraph v0.
 ```
