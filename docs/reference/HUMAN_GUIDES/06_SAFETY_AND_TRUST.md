@@ -1,5 +1,5 @@
 ﻿# Safety and Trust
-Updated: 2026-03-13
+Updated: 2026-05-03
 
 ## Why Nova Talks About Safety So Much
 Nova is not trying to be a reckless action agent.

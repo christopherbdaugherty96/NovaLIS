@@ -126,8 +126,12 @@ Results:
 ```text
 compile check (context_pack.py):        PASS
 compile check (test_context_pack.py):   PASS
-context pack suite:                     PASS  68 passed  (67 original + 1 new)
-full brain suite:                       PASS  140 passed
+context pack suite:                     PASS  68 passed  (67 original + 1 new, original proof run)
+full brain suite:                       PASS  140 passed (original proof run)
+
+Post-merge additions (second pass + edge case tests, 2026-05-03):
+context pack suite:                     PASS  72 passed
+full brain suite:                       PASS  231 passed
 runtime doc drift:                      PASS
 git diff --check:                       PASS  clean
 ```

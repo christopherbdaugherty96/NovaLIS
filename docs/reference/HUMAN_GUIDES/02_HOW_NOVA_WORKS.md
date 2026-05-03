@@ -53,8 +53,9 @@ The Context Pack is a bounded, labeled bridge:
 - stale and conflicting items are flagged before they reach the Brain
 - the pack is frozen — it cannot execute or authorize anything
 
-Context Pack is implemented and proven (Stage 4). Live prompt assembly wiring
-is Stage 5/6 work still in progress.
+Context Pack is implemented, proven (Stage 4), and live-wired (Stage 6). Raw
+memory items now pass through the Context Pack on every general-chat turn before
+reaching the prompt.
 
 ## 3. Governance And Trust Layer
 This is Nova's control system.
