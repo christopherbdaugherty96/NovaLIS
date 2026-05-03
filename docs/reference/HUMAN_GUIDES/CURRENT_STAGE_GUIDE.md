@@ -1,8 +1,8 @@
 # Current Stage Guide — Stages 3, 4, 5, and 6
-Updated: 2026-05-02
+Updated: 2026-05-03
 
 ## What This File Is
-A plain-language explanation of what Stages 3, 4, and 5 mean in human terms.
+A plain-language explanation of what Stages 3, 4, 5, and 6 mean in human terms.
 
 For the authoritative implementation status, see:
 - `docs/status/CURRENT_WORK_STATUS.md`
@@ -81,12 +81,16 @@ codebase.
 Only `implementation` and `merge` may mutate the repo. Every other mode is prohibited from
 doing so. This is enforced in code, not just described as intended behavior.
 
-**What is NOT yet live:**
-- Brain mode classification runs in code but is not yet surfaced in the UI.
-  You cannot yet see which mode Nova is operating in during a live conversation.
-  That UI surface is Stage 6 work.
+**What is live as of Stage 6:**
+- Brain mode is classified on every general-chat turn.
+- A safe BrainTrace is recorded in session state.
+- BrainTrace uses structural notes only; it does not expose private chain-of-thought.
 
-**Proven by:** 85 tests and `docs/demo_proof/daily_operating_baseline/BRAIN_MODE_PROOF.md`
+**What is NOT yet live:**
+- Brain mode is not yet surfaced per-turn in the UI. You cannot yet see which mode Nova is
+  operating in during a live conversation.
+
+**Proven by:** 87 tests and `docs/demo_proof/daily_operating_baseline/BRAIN_MODE_PROOF.md`
 
 ---
 
@@ -101,33 +105,34 @@ Stages 3, 4, and 5 together mean:
 3. When Nova reasons, it operates under a mode contract that says exactly what it is and is
    not allowed to do in that mode.
 
-The core infrastructure for memory, context, and mode discipline is implemented and tested.
-
-Stage 6 has begun — the first wiring is already live.
+The core infrastructure for memory, context, and mode discipline is implemented, tested, and
+wired into the general-chat runtime path.
 
 ---
 
-## Stage 6 — Routine Surfaces (Active)
+## Stage 6 — Runtime Wiring and Routine Surfaces
 
 **What it means in plain language:**
 Nova's memory, context, and mode foundations are now connected to the live prompt path.
-Stage 6 is about building the first visible routines on top of that foundation — starting
-with a governed Daily Brief and an everyday workflow demo.
+Stage 6 is about building visible routines on top of that foundation. The first routine
+surface is the Daily Brief RoutineGraph.
 
-**What is working now (Stage 6 start):**
+**What is working now:**
 - Context Pack is wired into `general_chat_runtime.py` — every general-chat turn now enforces
   budget limits, source labels, stale/conflict detection, and authority ranking before memory
   reaches the prompt
 - Brain mode is classified on every turn and a BrainTrace is recorded in session state
 - Memory items confirmed by the user (source: explicit_user_save) are preferred over
   auto-extracted candidates — every turn, not just in tests
+- Daily Brief RoutineGraph v0 exists as the first governed routine surface: 8 named blocks,
+  non-authorizing RoutineRun/RoutineReceipt records, and 60 routine tests
 
 **What is being built next:**
-- Daily Brief RoutineGraph v0 — a governed, non-authorizing daily brief backed by receipts
 - Everyday workflow demo: plan my week from tasks, notes, calendar context, and priorities,
   with an approval boundary and a receipt
+- Additional routine surfaces only after the Daily Brief RoutineGraph remains stable
 
 **What is NOT yet live:**
 - Brain mode is not yet surfaced per-turn in the UI (classified and traced internally)
-- Routine execution with real approval gates (next Stage 6 work)
+- Broad routine execution with real approval gates beyond the current Daily Brief routine slice
 - Memory UX beyond the conversational loop (dedicated page, export)
