@@ -1,5 +1,5 @@
 # What Nova Can Do
-Updated: 2026-05-02
+Updated: 2026-05-03
 
 ## Overview
 Nova's active capability surface now covers these big areas:
@@ -263,11 +263,14 @@ The biggest examples are:
 - richer visualizer stages beyond the current structured graph view
 - approval-gated patch proposal and apply flows for the future local code operator
 - delegated trigger runtime for policies
-- Context Pack injection into live prompt assembly (Stage 5 wiring — implemented but not yet
-  wired into brain_server.py prompt construction)
 - Brain mode contracts surfaced in the UI (mode classification exists as code, not yet visible
   to the user)
 - Memory UX surfaces beyond the conversational loop (dedicated page, export, thread-linking)
+
+Note:
+Context Pack injection into the general-chat runtime prompt path is already implemented
+(Stage 6). Context is now assembled through a bounded Context Pack before reaching the
+reasoning layer on every turn.
 
 ## 10. Response Style Control
 Nova can expose and adjust its manual presentation tone without changing what it is allowed to do.
@@ -325,8 +328,7 @@ Today Nova can already:
 - draft emails for review
 
 The memory loop (Stage 3), context pack foundation (Stage 4), and brain mode
-contracts (Stage 5) are all implemented and proven. They are not yet fully wired
-into every surface, but the core behavior is in place and tested.
+contracts (Stage 5) are implemented, proven, and wired into the general-chat runtime path.
 
 That is enough for Nova to behave more like a personal intelligence workspace than a simple
 assistant — one that remembers, stays bounded, and keeps you in control.
