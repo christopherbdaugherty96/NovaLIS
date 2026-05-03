@@ -1,7 +1,7 @@
 # Active TODO - Nova
 
 **Updated:** 2026-05-02
-**Sprint goal:** Routine surfaces — Stage 6 now active.
+**Sprint goal:** Stage 6 — Routine surfaces. Context Pack and BrainTrace now live in prompt path.
 **Authority note:** This file is the public task snapshot. Exact runtime truth still comes from generated runtime docs and code.
 
 ## Stepwise Execution Order
@@ -56,7 +56,7 @@
 ## Current Priorities (ordered)
 
 - [ ] Convert Daily Brief into RoutineGraph v0 (Stage 6)
-- [ ] Inject Context Pack and BrainTrace into live brain_server.py prompt assembly (wiring pass)
+- [x] Inject Context Pack and BrainTrace into live general_chat_runtime.py prompt assembly (PR #89, 2026-05-02)
 - [ ] Re-run Daily Brief + continuity proof manually in the local UI/API
 - [ ] Capture one everyday workflow demo: plan my week from tasks, notes, calendar context
 - [ ] Continue doc/status cleanup where stale "local-only" or planning-as-runtime wording remains
@@ -142,11 +142,13 @@ Canonical audit: `docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`
 
 ## Recently Completed
 
-- Stage 5 Brain discipline — 7 mode contracts (brainstorm/repo-review/implementation/merge/
-  planning/action-review/casual) + classify_mode() + BrainTrace non-authorizing frozen
-  dataclass; 79 tests green; BRAIN_MODE_PROOF.md PASS; 2026-05-02
+- Stage 6 wiring — Context Pack and BrainTrace live in general_chat_runtime.py; every
+  general-chat turn now enforces budget limits, source labels, stale/conflict detection,
+  and authority ranking; brain trace in session_state["last_brain_trace"]; PR #89 2026-05-02
+- Stage 5 Brain discipline — 7 mode contracts + classify_mode() + BrainTrace non-authorizing
+  frozen dataclass; 87 tests green; BRAIN_MODE_PROOF.md PASS; PRs #85/#88 2026-05-02
 - Stage 4 Context Pack — bounded, labeled context bridge with source/authority labels, budget
-  enforcement, stale/conflict detection, warning cap; 69 tests green; PR merged 2026-05-02
+  enforcement, stale/conflict detection, warning cap; 72 tests green; PRs #83/#87 2026-05-02
 - Stage 3 Memory loop — remember/review/update/forget/why-used with receipts; 62 tests;
   MEMORY_LOOP_PROOF.md PASS; PR #82 merged 2026-05-02
 - Agent stack future architecture docs, future backlog, and Auralis social content workflow pack merged and linked

@@ -1,4 +1,4 @@
-# Current Stage Guide — Stages 3, 4, and 5
+# Current Stage Guide — Stages 3, 4, 5, and 6
 Updated: 2026-05-02
 
 ## What This File Is
@@ -102,4 +102,31 @@ Stages 3, 4, and 5 together mean:
 
 The core infrastructure for memory, context, and mode discipline is implemented and tested.
 
-What remains is wiring those foundations into every user-facing surface — that is Stage 6.
+Stage 6 has begun — the first wiring is already live.
+
+---
+
+## Stage 6 — Routine Surfaces (Active)
+
+**What it means in plain language:**
+Nova's memory, context, and mode foundations are now connected to the live prompt path.
+Stage 6 is about building the first visible routines on top of that foundation — starting
+with a governed Daily Brief and an everyday workflow demo.
+
+**What is working now (Stage 6 start):**
+- Context Pack is wired into `general_chat_runtime.py` — every general-chat turn now enforces
+  budget limits, source labels, stale/conflict detection, and authority ranking before memory
+  reaches the prompt
+- Brain mode is classified on every turn and a BrainTrace is recorded in session state
+- Memory items confirmed by the user (source: explicit_user_save) are preferred over
+  auto-extracted candidates — every turn, not just in tests
+
+**What is being built next:**
+- Daily Brief RoutineGraph v0 — a governed, non-authorizing daily brief backed by receipts
+- Everyday workflow demo: plan my week from tasks, notes, calendar context, and priorities,
+  with an approval boundary and a receipt
+
+**What is NOT yet live:**
+- Brain mode is not yet surfaced per-turn in the UI (classified and traced internally)
+- Routine execution with real approval gates (next Stage 6 work)
+- Memory UX beyond the conversational loop (dedicated page, export)

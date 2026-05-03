@@ -37,7 +37,7 @@ Generated runtime truth still reports the authoritative capability inventory and
 - Daily Brief MVP is implemented as a deterministic, on-demand session brief (PR #68). It synthesizes session state, memory, receipts, weather (live via WeatherService), calendar (local ICS via CalendarSkill), and email placeholder into 11 sections. Non-authorizing frozen dataclass; `execution_performed=False` and `authorization_granted=False` are enforced by `__post_init__`. No new capability, no LLM calls, no Governor path.
 - Daily Brief robustness is improved on the `daily-brief-continuity-hardening` branch. It degrades cleanly on malformed session, memory, receipt, weather, calendar, and email-placeholder inputs; surfaces session continuity fields; and uses deterministic next-action recommendations. Proof notes live under [`../demo_proof/daily_operating_baseline/`](../demo_proof/daily_operating_baseline/).
 - Stage 3 Memory Loop is implemented as an explicit user-initiated conversational memory skill: remember / review-list / update / forget / why-used, with memory receipts. It does not silently autosave, does not authorize action, and does not register a new capability.
-- Stage 4 Context Pack is implemented as a bounded, labeled context bridge with ContextItem, ContextPackWarning, ContextPack, source labels, authority labels, budget enforcement, stale/conflict warnings, warning cap, deleted-memory filtering, legacy format output, and render_context_block. It does not authorize action and is not yet live-wired into brain prompt assembly.
+- Stage 4 Context Pack is implemented as a bounded, labeled context bridge with ContextItem, ContextPackWarning, ContextPack, source labels, authority labels, budget enforcement, stale/conflict warnings, warning cap, deleted-memory filtering, legacy format output, and render_context_block. It does not authorize action. As of Stage 6, it is live-wired into general_chat_runtime.py — raw memory items now pass through compose_context_pack() before prompt assembly on every general-chat turn.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. It does not use Gmail API, SMTP, inbox access, or autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes are implemented.
 
@@ -130,26 +130,42 @@ Boundary: Context Pack is implemented and proven, but live prompt wiring and Bra
 
 ---
 
-## Active Sprint: Stage 5 — Brain Discipline / Trace
+## Stage 5 — Brain Discipline / Trace — Closed 2026-05-02
+
+Implemented:
+
+- 7 mode contracts: brainstorm, repo_review, implementation, merge, planning, action_review, casual
+- classify_mode() — lightweight regex classifier, no LLM call, confidence 0.0–1.0
+- BrainTrace — non-authorizing frozen dataclass; execution_performed, authorization_granted,
+  private_reasoning_exposed always False; enforced in __post_init__
+- Context Pack wired into general_chat_runtime.py — every general-chat turn now passes raw memory
+  items through compose_context_pack() before prompt assembly; packed_context replaces
+  relevant_memory_context in skill_state; brain trace stored in session_state["last_brain_trace"]
+
+Proof: `docs/demo_proof/daily_operating_baseline/BRAIN_MODE_PROOF.md` — PASS.
+Merged: PRs #85, #87, #88, #89 — all 2026-05-02.
+
+---
+
+## Active Sprint: Stage 6 — Routine Surfaces
 
 Active scope:
 
-- Brain mode contracts for brainstorm, repo-review, implementation, merge, planning, and action-review
-- Safe BrainTrace fields that do not expose private chain-of-thought
-- Context Pack live wiring into `brain_server.py` prompt assembly
-- Cleanup of overly broad memory/context wording during trace/context review
+- Daily Brief RoutineGraph v0
+- Routine receipt
+- Everyday workflow demo: plan my week from tasks, notes, calendar context, and priorities
+- Governance boundaries for routine execution
 
 Immediate continuation order:
 
-1. Add Brain mode contracts.
-2. Add safe BrainTrace fields.
-3. Wire Context Pack into live prompt assembly without authorizing action.
-4. Continue doc/status cleanup where stale "local-only" or planning-as-runtime wording remains.
-5. Plan cost posture metadata as the next design-to-runtime step, without hard blocking first.
-6. Plan Google read-only connector foundations only after cost posture and connector governance are clear.
-7. Keep OpenClaw expansion frozen until envelope issuance, approval, execution-guard, and receipt gaps are closed.
+1. Convert Daily Brief into RoutineGraph v0 — non-authorizing, receipt-backed.
+2. Capture one everyday workflow demo with approval boundary and receipt.
+3. Continue doc/status alignment as work progresses.
+4. Plan cost posture metadata as the next free-first implementation step.
+5. Plan Google read-only connector foundations only after cost posture and connector governance are clear.
+6. Keep OpenClaw expansion frozen until envelope issuance, approval, execution-guard, and receipt gaps are closed.
 
-Do not start new write/action capabilities from this status pass.
+Do not start new write/action capabilities in this sprint.
 
 ---
 
@@ -209,9 +225,7 @@ Do not claim these are finished unless verified against code/runtime truth:
 - Free-first runtime enforcement.
 - One-click consumer installer.
 - Full Daily Operating System / background routines.
-- Context Pack live prompt wiring.
-- Brain mode contracts.
-- Safe BrainTrace.
+- Brain mode surfaced in UI (classify_mode exists in code; not yet shown per-turn in the UI).
 
 ---
 
