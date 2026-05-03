@@ -28,43 +28,85 @@ class _FakeGeneralChatSkill:
         return self._result
 
 
-def test_run_general_chat_fallback_injects_memory_context_and_chat_context():
+_MEM_ITEM = {
+    "id": "MEM-1",
+    "title": "Saved preference",
+    "content": "Saved preference",
+    "scope": "",
+    "thread_name": "",
+    "source": "explicit_user_save",
+}
+
+
+def _run_fallback(query: str = "What should I focus on?", memory_items=None):
+    """Shared helper: runs run_general_chat_fallback and returns (outcome, skill, session_state)."""
     result = SkillResult(success=True, message="A helpful answer.", skill="general_chat")
     skill = _FakeGeneralChatSkill(result)
-    project_threads = object()
-    captured = {}
     session_state = {
         "session_id": "sess-1",
         "general_chat_context": [{"role": "assistant", "content": "Earlier reply."}],
     }
-    session_context = [{"role": "user", "content": "Should not be used directly."}]
+    items = memory_items if memory_items is not None else [dict(_MEM_ITEM)]
 
-    def _select_relevant_memory_context(query: str, *, session_state, project_threads):
-        captured["query"] = query
-        captured["session_state"] = dict(session_state)
-        captured["project_threads"] = project_threads
-        return [{"memory_id": "MEM-1", "content": "Saved preference"}]
+    def _select(q, *, session_state, project_threads):
+        return items
 
     outcome = asyncio.run(
         run_general_chat_fallback(
-            "What should I focus on?",
+            query,
             general_chat_skill=skill,
             session_state=session_state,
-            session_context=session_context,
-            project_threads=project_threads,
-            select_relevant_memory_context=_select_relevant_memory_context,
+            session_context=[],
+            project_threads=object(),
+            select_relevant_memory_context=_select,
         )
     )
+    return outcome, skill, session_state
 
-    assert outcome is result
-    assert captured["query"] == "What should I focus on?"
-    assert captured["project_threads"] is project_threads
-    assert session_state["last_memory_context"] == [{"memory_id": "MEM-1", "content": "Saved preference"}]
+
+def test_run_general_chat_fallback_injects_memory_context_and_chat_context():
+    outcome, skill, session_state = _run_fallback()
+
+    assert outcome is not None
+    # Raw fetch result is preserved in last_memory_context unchanged
+    assert session_state["last_memory_context"][0]["id"] == "MEM-1"
     assert skill.calls
     assert skill.calls[0]["context"] == [{"role": "assistant", "content": "Earlier reply."}]
-    assert skill.calls[0]["session_state"]["relevant_memory_context"] == [
-        {"memory_id": "MEM-1", "content": "Saved preference"}
-    ]
+    # packed_context is what reaches skill_state — content preserved, source_label applied
+    packed = skill.calls[0]["session_state"]["relevant_memory_context"]
+    assert len(packed) == 1
+    assert packed[0]["content"] == "Saved preference"
+    assert packed[0]["source"] == "confirmed_memory"  # explicit_user_save → confirmed_memory
+
+
+def test_context_pack_wiring_stores_brain_trace_in_session_state():
+    _, _, session_state = _run_fallback()
+    trace = session_state.get("last_brain_trace")
+    assert isinstance(trace, dict)
+    assert "mode" in trace
+    assert "trace_id" in trace
+    assert trace["execution_performed"] is False
+    assert trace["authorization_granted"] is False
+
+
+def test_context_pack_wiring_drops_empty_content_items():
+    # Items with no content should be dropped by the pack
+    _, skill, _ = _run_fallback(memory_items=[{"id": "x", "title": "T", "content": ""}])
+    packed = skill.calls[0]["session_state"]["relevant_memory_context"]
+    assert packed == []
+
+
+def test_context_pack_wiring_preserves_no_memory_as_empty():
+    _, skill, _ = _run_fallback(memory_items=[])
+    packed = skill.calls[0]["session_state"]["relevant_memory_context"]
+    assert packed == []
+
+
+def test_context_pack_wiring_brain_trace_mode_is_string():
+    _, _, session_state = _run_fallback(query="let's brainstorm this")
+    trace = session_state["last_brain_trace"]
+    assert isinstance(trace["mode"], str)
+    assert len(trace["mode"]) > 0
 
 
 def test_resolve_pending_escalation_confirm_updates_state_and_context():

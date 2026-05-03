@@ -12,6 +12,8 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Optional
 
 from src.base_skill import SkillResult
+from src.brain.brain_mode import classify_mode, compose_brain_trace
+from src.brain.context_pack import compose_context_pack
 from src.brief.daily_brief import (
     brief_to_action_result,
     compose_daily_brief,
@@ -180,6 +182,37 @@ async def run_general_chat_fallback(
     )
     session_state["last_memory_context"] = relevant_memory_context
 
+    # Stage 6: pass raw memory items through Context Pack before prompt assembly.
+    # Enforces budget limits, source labels, stale/conflict detection, and authority
+    # ranking. Downstream dict structure is preserved — only the selection and labeling
+    # changes. Non-authorizing: pack cannot execute or grant authority.
+    pack = compose_context_pack(normalized_query, memory_items=relevant_memory_context)
+    packed_context: list[dict[str, Any]] = [
+        {
+            "id": item.id,
+            "title": item.title,
+            "content": item.content,
+            "scope": item.scope,
+            "thread_name": item.thread_name,
+            "source": item.source_label,
+        }
+        for item in pack.items
+    ]
+
+    # Stage 6: classify brain mode and record a non-authorizing trace for visibility.
+    # The trace is stored in session_state only — it does not affect routing or authority.
+    mode_result = classify_mode(normalized_query)
+    brain_trace = compose_brain_trace(
+        mode=mode_result.mode,
+        context_sources=[item.authority_label for item in pack.items],
+        decision_notes=[
+            f"context_items:{len(pack.items)}",
+            f"mode_confidence:{mode_result.confidence:.2f}",
+        ],
+        warnings=[w.reason for w in pack.warnings[:3]],
+    )
+    session_state["last_brain_trace"] = brain_trace.to_dict()
+
     chat_context = list(session_state.get("general_chat_context") or session_context)
     skill_state = dict(session_state)
     skill_state.pop("_planning_run_manager", None)
@@ -190,7 +223,7 @@ async def run_general_chat_fallback(
         "planning_run_preview",
     ):
         skill_state.pop(transient_key, None)
-    skill_state["relevant_memory_context"] = relevant_memory_context
+    skill_state["relevant_memory_context"] = packed_context
 
     understanding = build_request_understanding(normalized_query)
     skill_state["request_understanding"] = understanding
