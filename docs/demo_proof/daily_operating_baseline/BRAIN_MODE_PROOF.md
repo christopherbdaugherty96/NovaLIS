@@ -105,8 +105,12 @@ Results:
 ```text
 compile check (brain_mode.py):      PASS
 compile check (test_brain_mode.py): PASS
-brain mode suite:                   PASS  79 passed
-full brain suite:                   PASS  219 passed
+brain mode suite:                   PASS  79 passed  (original proof run)
+full brain suite:                   PASS  219 passed (original proof run)
+
+Post-merge additions (second pass + Stage 6 fixes, 2026-05-03):
+brain mode suite:                   PASS  87 passed
+full brain suite:                   PASS  231 passed
 runtime doc drift:                  PASS
 git diff --check:                   PASS  clean
 ```
@@ -115,7 +119,10 @@ git diff --check:                   PASS  clean
 
 This proof does not claim:
 
-- brain_server.py wired to classify mode per turn (Stage 6 integration)
-- Context Pack injected via classified mode into live prompts (Stage 6)
+- brain mode surfaced per-turn in the UI (classification runs; not yet visible to the user)
+
+Stage 6 update (2026-05-03): classify_mode() and compose_brain_trace() are now wired into
+general_chat_runtime.py. A BrainTrace is recorded in session_state["last_brain_trace"] on
+every general-chat turn. Brain mode does not gate or affect routing — trace only.
 - Routine surfaces (Stage 6)
 - BrainTrace stored persistently or surfaced in the UI (Stage 6)

@@ -48,12 +48,13 @@ any of it reaches Nova's reasoning layer.
 - Nova knows when two items conflict and will flag it rather than picking one silently
 - The pack cannot execute or authorize anything — it is read-only input to reasoning
 
-**What is NOT yet live:**
-- The Context Pack is implemented and proven, but is not yet wired into live prompt assembly.
-  That wiring is Stage 5 and 6 work. Nova's live answers do not yet fully use the Context Pack
-  pipeline every turn — that integration is still in progress.
+**What is live as of Stage 6:**
+- Context Pack is wired into `general_chat_runtime.py`. Raw memory items pass through
+  `compose_context_pack()` before reaching the prompt on every general-chat turn.
+  Budget enforcement, source labels, stale/conflict detection, and authority ranking
+  are now active.
 
-**Proven by:** 69 tests and `docs/demo_proof/daily_operating_baseline/CONTEXT_PACK_PROOF.md`
+**Proven by:** 72 tests and `docs/demo_proof/daily_operating_baseline/CONTEXT_PACK_PROOF.md`
 
 ---
 
