@@ -147,6 +147,16 @@ def test_brief_output_authorization_granted_is_false():
 # Output shape
 # ---------------------------------------------------------------------------
 
+def test_all_output_keys_present():
+    run, _ = _run_with_content()
+    expected = {
+        "session_state", "memory_items", "recent_receipts",
+        "weather_data", "calendar_data", "important_emails",
+        "daily_brief", "routine_receipt",
+    }
+    assert set(run.outputs.keys()) == expected
+
+
 def test_outputs_daily_brief_key_present():
     run, _ = run_daily_brief_routine()
     assert "daily_brief" in run.outputs

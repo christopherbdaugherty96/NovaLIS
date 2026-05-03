@@ -125,6 +125,18 @@ def test_brain_trace_not_in_skill_state():
     assert "last_brain_trace" not in skill.calls[0]["session_state"]
 
 
+def test_session_state_snapshot_taken_before_brain_trace_write():
+    # skill_state is a snapshot of session_state taken BEFORE the trace is written.
+    # If the snapshot were taken after, the trace would appear in the prompt path.
+    _, skill, session_state = _run_fallback()
+    # Trace present in session_state (written after snapshot)
+    assert "last_brain_trace" in session_state
+    # Absent from skill_state — proves snapshot was taken before the write
+    assert "last_brain_trace" not in skill.calls[0]["session_state"]
+    # Sanity: both point to different dicts
+    assert skill.calls[0]["session_state"] is not session_state
+
+
 def test_brain_trace_not_stored_when_query_empty():
     result = SkillResult(success=True, message="A.", skill="general_chat")
     skill = _FakeGeneralChatSkill(result)

@@ -166,6 +166,14 @@ def test_routine_run_to_dict_auth_fields_are_always_false():
     assert d["authorization_granted"] is False
 
 
+def test_routine_run_to_dict_outputs_is_deep_copy():
+    # Mutating to_dict() output must not affect the original
+    run = _run(outputs={"key": "value"})
+    d = run.to_dict()
+    d["outputs"]["key"] = "mutated"
+    assert run.outputs["key"] == "value"
+
+
 # ---------------------------------------------------------------------------
 # RoutineReceipt — non-authorizing invariants
 # ---------------------------------------------------------------------------
