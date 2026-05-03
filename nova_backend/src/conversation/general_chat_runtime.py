@@ -195,12 +195,13 @@ async def run_general_chat_fallback(
             "scope": item.scope,
             "thread_name": item.thread_name,
             "source": item.source_label,
+            "authority_label": item.authority_label,
         }
         for item in pack.items
     ]
 
     # Stage 6: classify brain mode and record a non-authorizing trace for visibility.
-    # The trace is stored in session_state only — it does not affect routing or authority.
+    # Stored in session_state only — does not affect routing or authority.
     mode_result = classify_mode(normalized_query)
     brain_trace = compose_brain_trace(
         mode=mode_result.mode,
@@ -211,7 +212,6 @@ async def run_general_chat_fallback(
         ],
         warnings=[w.reason for w in pack.warnings[:3]],
     )
-    session_state["last_brain_trace"] = brain_trace.to_dict()
 
     chat_context = list(session_state.get("general_chat_context") or session_context)
     skill_state = dict(session_state)
@@ -224,6 +224,10 @@ async def run_general_chat_fallback(
     ):
         skill_state.pop(transient_key, None)
     skill_state["relevant_memory_context"] = packed_context
+
+    # Write trace to session_state after skill_state snapshot — keeps diagnostic
+    # data out of the prompt assembly pipeline.
+    session_state["last_brain_trace"] = brain_trace.to_dict()
 
     understanding = build_request_understanding(normalized_query)
     skill_state["request_understanding"] = understanding
