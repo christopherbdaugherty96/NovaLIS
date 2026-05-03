@@ -161,7 +161,7 @@ Implemented:
 - `DAILY_BRIEF_GRAPH` — 8-block Daily Brief RoutineGraph definition
 - `run_daily_brief_routine()` — wraps compose_daily_brief() with named blocks, produces
   (RoutineRun, RoutineReceipt)
-- 58 tests: test_routine_graph.py (32) + test_daily_brief_routine.py (26)
+- 60 tests: test_routine_graph.py (27) + test_daily_brief_routine.py (33)
 - Merged: PR #93 2026-05-03
 
 Boundary: RoutineGraph is planning and record-keeping vocabulary. It does not add
