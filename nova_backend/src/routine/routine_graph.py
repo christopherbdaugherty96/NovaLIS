@@ -13,6 +13,7 @@ They do not:
 
 from __future__ import annotations
 
+import copy
 import uuid
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -80,6 +81,12 @@ class RoutineRun:
 
     Non-authorizing: execution_performed and authorization_granted are
     enforced False via __post_init__ and cannot be overridden by callers.
+
+    Note: `outputs` is a dict (shallow mutable). The field reference is
+    frozen (cannot be replaced), but Python does not prevent mutation of
+    the dict's contents. This is a record/snapshot — callers must not
+    mutate it after construction. to_dict() returns a deep copy so
+    serialised output is independent of the original.
     """
 
     run_id: str
@@ -105,7 +112,7 @@ class RoutineRun:
             "started_at": self.started_at,
             "completed_at": self.completed_at,
             "blocks_run": list(self.blocks_run),
-            "outputs": self.outputs,
+            "outputs": copy.deepcopy(self.outputs),
             "warnings": list(self.warnings),
             "execution_performed": False,
             "authorization_granted": False,
