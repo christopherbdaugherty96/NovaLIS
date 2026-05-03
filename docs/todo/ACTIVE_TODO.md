@@ -1,6 +1,6 @@
 # Active TODO - Nova
 
-**Updated:** 2026-05-02
+**Updated:** 2026-05-03
 **Sprint goal:** Stage 6 — Routine surfaces. Context Pack and BrainTrace now live in prompt path.
 **Authority note:** This file is the public task snapshot. Exact runtime truth still comes from generated runtime docs and code.
 
@@ -47,7 +47,9 @@
 
 ### Step 6 - Routine and workflow surfaces
 
-- [ ] Convert Daily Brief into RoutineGraph v0 only after memory/context foundations exist
+- [x] Convert Daily Brief into RoutineGraph v0 — PR #93 2026-05-03; 58 tests; RoutineBlock,
+      RoutineGraph, RoutineRun, RoutineReceipt frozen non-authorizing dataclasses;
+      run_daily_brief_routine() wraps compose_daily_brief() with named blocks + receipt
 - [ ] Capture one everyday workflow demo: plan my week from tasks, notes, calendar context, and priorities, with approval boundary and receipt
 - [ ] Capture one business workflow demo: find 5 local businesses that need better websites, draft improvement notes, and create reviewable outreach drafts
 - [ ] Define governed workflow workspace shell for everyday workflows, independent automation, and business-owner use cases
@@ -55,7 +57,7 @@
 
 ## Current Priorities (ordered)
 
-- [ ] Convert Daily Brief into RoutineGraph v0 (Stage 6)
+- [x] Convert Daily Brief into RoutineGraph v0 (PR #93, 2026-05-03)
 - [x] Inject Context Pack and BrainTrace into live general_chat_runtime.py prompt assembly (PR #89, 2026-05-02)
 - [ ] Re-run Daily Brief + continuity proof manually in the local UI/API
 - [ ] Capture one everyday workflow demo: plan my week from tasks, notes, calendar context
@@ -142,6 +144,10 @@ Canonical audit: `docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`
 
 ## Recently Completed
 
+- RoutineGraph v0 — Daily Brief as first governed routine; RoutineBlock, RoutineGraph,
+  RoutineRun, RoutineReceipt frozen non-authorizing dataclasses; run_daily_brief_routine()
+  wraps compose_daily_brief() with 8 named blocks + RoutineReceipt; 58 tests green;
+  PR #93 2026-05-03
 - Stage 6 wiring — Context Pack and BrainTrace live in general_chat_runtime.py; every
   general-chat turn now enforces budget limits, source labels, stale/conflict detection,
   and authority ranking; brain trace in session_state["last_brain_trace"]; PR #89 2026-05-02

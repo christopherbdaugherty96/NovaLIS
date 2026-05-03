@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-02
+Last reviewed: 2026-05-03
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -147,19 +147,34 @@ Merged: PRs #85, #87, #88, #89 — all 2026-05-02.
 
 ---
 
-## Active Sprint: Stage 6 — Routine Surfaces
+## Stage 6 — Routine Surfaces (Active)
 
-Active scope:
+### RoutineGraph v0 — Closed 2026-05-03
 
-- Daily Brief RoutineGraph v0
-- Routine receipt
+Implemented:
+
+- `RoutineBlock` — named step definition (frozen dataclass)
+- `RoutineGraph` — ordered sequence of blocks (frozen dataclass)
+- `RoutineRun` — record of a single execution; execution_performed=False and
+  authorization_granted=False enforced via __post_init__, not settable by callers
+- `RoutineReceipt` — non-authorizing proof artifact; same invariant enforcement
+- `DAILY_BRIEF_GRAPH` — 8-block Daily Brief RoutineGraph definition
+- `run_daily_brief_routine()` — wraps compose_daily_brief() with named blocks, produces
+  (RoutineRun, RoutineReceipt)
+- 58 tests: test_routine_graph.py (32) + test_daily_brief_routine.py (26)
+- Merged: PR #93 2026-05-03
+
+Boundary: RoutineGraph is planning and record-keeping vocabulary. It does not add
+new capabilities, does not call an LLM, and does not grant execution authority.
+
+### Remaining Active Scope:
+
 - Everyday workflow demo: plan my week from tasks, notes, calendar context, and priorities
 - Governance boundaries for routine execution
 
 Immediate continuation order:
 
-1. Convert Daily Brief into RoutineGraph v0 — non-authorizing, receipt-backed.
-2. Capture one everyday workflow demo with approval boundary and receipt.
+1. Capture one everyday workflow demo with approval boundary and receipt.
 3. Continue doc/status alignment as work progresses.
 4. Plan cost posture metadata as the next free-first implementation step.
 5. Plan Google read-only connector foundations only after cost posture and connector governance are clear.
@@ -224,7 +239,7 @@ Do not claim these are finished unless verified against code/runtime truth:
 - First-run workspace onboarding wizard.
 - Free-first runtime enforcement.
 - One-click consumer installer.
-- Full Daily Operating System / background routines.
+- Full Daily Operating System / scheduled background routines.
 - Brain mode surfaced in UI (classify_mode exists in code; not yet shown per-turn in the UI).
 
 ---
