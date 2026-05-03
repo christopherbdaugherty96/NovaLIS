@@ -109,6 +109,50 @@ def test_context_pack_wiring_brain_trace_mode_is_string():
     assert len(trace["mode"]) > 0
 
 
+def test_context_pack_wiring_packed_context_includes_authority_label():
+    _, skill, _ = _run_fallback()
+    packed = skill.calls[0]["session_state"]["relevant_memory_context"]
+    assert len(packed) == 1
+    assert "authority_label" in packed[0]
+    assert packed[0]["authority_label"] == "confirmed_project_memory"
+
+
+def test_brain_trace_not_in_skill_state():
+    # Trace must be stored on session_state only — not passed into skill_state,
+    # which flows into prompt assembly.
+    _, skill, session_state = _run_fallback()
+    assert "last_brain_trace" in session_state
+    assert "last_brain_trace" not in skill.calls[0]["session_state"]
+
+
+def test_brain_trace_not_stored_when_query_empty():
+    result = SkillResult(success=True, message="A.", skill="general_chat")
+    skill = _FakeGeneralChatSkill(result)
+    session_state: dict = {}
+
+    outcome = asyncio.run(
+        run_general_chat_fallback(
+            "",
+            general_chat_skill=skill,
+            session_state=session_state,
+            session_context=[],
+            project_threads=object(),
+            select_relevant_memory_context=lambda *a, **kw: [],
+        )
+    )
+    assert outcome is None
+    assert "last_brain_trace" not in session_state
+
+
+def test_memory_items_without_source_become_candidate():
+    item = {"id": "x", "title": "T", "content": "Some content"}  # no 'source'
+    _, skill, _ = _run_fallback(memory_items=[item])
+    packed = skill.calls[0]["session_state"]["relevant_memory_context"]
+    assert len(packed) == 1
+    assert packed[0]["source"] == "candidate_memory"
+    assert packed[0]["authority_label"] == "candidate_memory"
+
+
 def test_resolve_pending_escalation_confirm_updates_state_and_context():
     skill = _FakeGeneralChatSkill(
         SkillResult(
