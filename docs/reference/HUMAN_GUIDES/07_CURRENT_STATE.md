@@ -20,8 +20,8 @@ For the current implementation stage, see:
 | 2 | Status update after proof | Complete |
 | 3 | Memory loop | **Complete** |
 | 4 | Context Pack | **Complete** |
-| 5 | Brain discipline / trace | **Active** |
-| 6 | Routine surfaces | Not started |
+| 5 | Brain discipline / trace | **Complete** |
+| 6 | Routine surfaces | **Active** |
 
 ## What Is Implemented and Proven
 
@@ -40,15 +40,18 @@ For the current implementation stage, see:
 - Proven by 69 tests and CONTEXT_PACK_PROOF.md
 - Not yet wired into live prompt assembly — Stage 5/6 integration work
 
-**Brain mode contracts (Stage 5)**
+**Brain mode contracts and Context Pack wiring (Stage 5 + Stage 6 start)**
 - Seven modes defined: brainstorm, repo_review, implementation, merge, planning,
   action_review, casual
 - Each mode specifies can / cannot / may_mutate_repo / requires_context
 - Only implementation and merge modes may mutate the repo
 - Safe BrainTrace: records mode and structural decisions — never private reasoning
 - Lightweight classify_mode() function with no LLM call
-- Proven by 85 tests and BRAIN_MODE_PROOF.md
-- Not yet surfaced in the UI or wired into per-turn mode detection
+- Context Pack now wired into general_chat_runtime.py — raw memory items pass through
+  compose_context_pack() before prompt assembly on every general-chat turn; brain trace
+  stored in session_state["last_brain_trace"] for visibility
+- Proven by 87 tests and BRAIN_MODE_PROOF.md
+- Brain mode visible in session trace; not yet surfaced per-turn in the UI
 
 ## What Is Runtime-Capable Today
 Strong today:
@@ -63,10 +66,9 @@ Strong today:
 ## What Is Not Done Yet
 
 Important things still not complete:
-- Context Pack injection into live prompt assembly
-- Brain mode detection per turn (code exists, not yet wired)
+- Brain mode surfaced in the UI per turn (classification runs; not yet visible to the user)
 - Memory UX surfaces beyond the conversational loop
-- Daily Brief RoutineGraph v0 (Stage 6)
+- Daily Brief RoutineGraph v0 (Stage 6 — active)
 - Connector setup (Google, richer calendar/email integrations)
 - Approval-gated coding and operator flows
 
