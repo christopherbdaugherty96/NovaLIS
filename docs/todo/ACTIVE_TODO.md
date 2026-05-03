@@ -47,7 +47,7 @@
 
 ### Step 6 - Routine and workflow surfaces
 
-- [x] Convert Daily Brief into RoutineGraph v0 — PR #93 2026-05-03; 58 tests; RoutineBlock,
+- [x] Convert Daily Brief into RoutineGraph v0 — PR #93 2026-05-03; 60 tests; RoutineBlock,
       RoutineGraph, RoutineRun, RoutineReceipt frozen non-authorizing dataclasses;
       run_daily_brief_routine() wraps compose_daily_brief() with named blocks + receipt
 - [ ] Capture one everyday workflow demo: plan my week from tasks, notes, calendar context, and priorities, with approval boundary and receipt
@@ -146,7 +146,7 @@ Canonical audit: `docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`
 
 - RoutineGraph v0 — Daily Brief as first governed routine; RoutineBlock, RoutineGraph,
   RoutineRun, RoutineReceipt frozen non-authorizing dataclasses; run_daily_brief_routine()
-  wraps compose_daily_brief() with 8 named blocks + RoutineReceipt; 58 tests green;
+  wraps compose_daily_brief() with 8 named blocks + RoutineReceipt; 60 tests green;
   PR #93 2026-05-03
 - Stage 6 wiring — Context Pack and BrainTrace live in general_chat_runtime.py; every
   general-chat turn now enforces budget limits, source labels, stale/conflict detection,
