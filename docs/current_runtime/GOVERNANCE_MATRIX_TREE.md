@@ -15,59 +15,59 @@ graph TD
   Gov --> TO[timeout_guard: True]
   Runtime --> Caps[Capabilities]
   Caps --> C16[16:governed_web_search]
-  C16 --> C16A[authority=read_only_network, risk=low, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
+  C16 --> C16A[authority=read_only_network, risk=low, cost=free_tier, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
   Caps --> C17[17:open_website]
-  C17 --> C17A[authority=reversible_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  C17 --> C17A[authority=reversible_local, risk=low, cost=free, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C18[18:speak_text]
-  C18 --> C18A[authority=reversible_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Speech]
+  C18 --> C18A[authority=reversible_local, risk=low, cost=free, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Speech]
   Caps --> C19[19:volume_up_down]
-  C19 --> C19A[authority=reversible_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  C19 --> C19A[authority=reversible_local, risk=low, cost=free, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C20[20:media_play_pause]
-  C20 --> C20A[authority=reversible_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  C20 --> C20A[authority=reversible_local, risk=low, cost=free, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C21[21:brightness_control]
-  C21 --> C21A[authority=reversible_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  C21 --> C21A[authority=reversible_local, risk=low, cost=free, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C22[22:open_file_folder]
-  C22 --> C22A[authority=reversible_local, risk=confirm, confirm=True, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  C22 --> C22A[authority=reversible_local, risk=confirm, cost=free, confirm=True, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C31[31:response_verification]
-  C31 --> C31A[authority=read_only_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  C31 --> C31A[authority=read_only_local, risk=low, cost=free, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C32[32:os_diagnostics]
-  C32 --> C32A[authority=read_only_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  C32 --> C32A[authority=read_only_local, risk=low, cost=free, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C48[48:multi_source_reporting]
-  C48 --> C48A[authority=read_only_network, risk=low, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
+  C48 --> C48A[authority=read_only_network, risk=low, cost=free, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
   Caps --> C49[49:headline_summary]
-  C49 --> C49A[authority=read_only_network, risk=low, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
+  C49 --> C49A[authority=read_only_network, risk=low, cost=free, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
   Caps --> C50[50:intelligence_brief]
-  C50 --> C50A[authority=read_only_network, risk=low, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
+  C50 --> C50A[authority=read_only_network, risk=low, cost=free, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
   Caps --> C51[51:topic_memory_map]
-  C51 --> C51A[authority=read_only_local, risk=low, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
+  C51 --> C51A[authority=read_only_local, risk=low, cost=free, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
   Caps --> C52[52:story_tracker_update]
-  C52 --> C52A[authority=persistent_change, risk=low, confirm=False, reversible=False, external=False, network=False, surface=Governor -> Executor]
+  C52 --> C52A[authority=persistent_change, risk=low, cost=free, confirm=False, reversible=False, external=False, network=False, surface=Governor -> Executor]
   Caps --> C53[53:story_tracker_view]
-  C53 --> C53A[authority=read_only_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  C53 --> C53A[authority=read_only_local, risk=low, cost=free, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C54[54:analysis_document]
-  C54 --> C54A[authority=read_only_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  C54 --> C54A[authority=read_only_local, risk=low, cost=free, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C55[55:weather_snapshot]
-  C55 --> C55A[authority=read_only_network, risk=low, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
+  C55 --> C55A[authority=read_only_network, risk=low, cost=free_tier, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
   Caps --> C56[56:news_snapshot]
-  C56 --> C56A[authority=read_only_network, risk=low, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
+  C56 --> C56A[authority=read_only_network, risk=low, cost=free_tier, confirm=False, reversible=True, external=False, network=True, surface=Governor -> NetworkMediator]
   Caps --> C57[57:calendar_snapshot]
-  C57 --> C57A[authority=read_only_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  C57 --> C57A[authority=read_only_local, risk=low, cost=free, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C58[58:screen_capture]
-  C58 --> C58A[authority=persistent_change, risk=low, confirm=False, reversible=False, external=False, network=False, surface=Governor -> Executor]
+  C58 --> C58A[authority=persistent_change, risk=low, cost=free, confirm=False, reversible=False, external=False, network=False, surface=Governor -> Executor]
   Caps --> C59[59:screen_analysis]
-  C59 --> C59A[authority=read_only_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  C59 --> C59A[authority=read_only_local, risk=low, cost=free, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C60[60:explain_anything]
-  C60 --> C60A[authority=read_only_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  C60 --> C60A[authority=read_only_local, risk=low, cost=free, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C61[61:memory_governance]
-  C61 --> C61A[authority=persistent_change, risk=low, confirm=False, reversible=False, external=False, network=False, surface=Governor -> Executor]
+  C61 --> C61A[authority=persistent_change, risk=low, cost=free, confirm=False, reversible=False, external=False, network=False, surface=Governor -> Executor]
   Caps --> C62[62:external_reasoning_review]
-  C62 --> C62A[authority=read_only_local, risk=low, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
+  C62 --> C62A[authority=read_only_local, risk=low, cost=free_tier, confirm=False, reversible=True, external=False, network=False, surface=Governor -> Executor]
   Caps --> C63[63:openclaw_execute]
-  C63 --> C63A[authority=read_only_network, risk=low, confirm=False, reversible=True, external=True, network=True, surface=Governor -> NetworkMediator]
+  C63 --> C63A[authority=read_only_network, risk=low, cost=unknown_cost, confirm=False, reversible=True, external=True, network=True, surface=Governor -> NetworkMediator]
   Caps --> C64[64:send_email_draft]
-  C64 --> C64A[authority=persistent_change, risk=confirm, confirm=True, reversible=False, external=True, network=False, surface=Governor -> Executor]
+  C64 --> C64A[authority=persistent_change, risk=confirm, cost=free, confirm=True, reversible=False, external=True, network=False, surface=Governor -> Executor]
   Caps --> C65[65:shopify_intelligence_report]
-  C65 --> C65A[authority=read_only_network, risk=low, confirm=False, reversible=True, external=True, network=True, surface=Governor -> NetworkMediator]
+  C65 --> C65A[authority=read_only_network, risk=low, cost=free_tier, confirm=False, reversible=True, external=True, network=True, surface=Governor -> NetworkMediator]
   Runtime --> Routes[Skill Routes]
   Routes --> R54_analysis_document[analysis_document -> capability 54]
   Routes --> R21_brightness[brightness -> capability 21]
@@ -113,33 +113,33 @@ Runtime
 |  |- dns_rebinding_guard: True
 |  |- timeout_guard: True
 |- Capabilities
-|  |- 16 governed_web_search (authority=read_only_network, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
-|  |- 17 open_website (authority=reversible_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 18 speak_text (authority=reversible_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Speech)
-|  |- 19 volume_up_down (authority=reversible_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 20 media_play_pause (authority=reversible_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 21 brightness_control (authority=reversible_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 22 open_file_folder (authority=reversible_local, risk=confirm, network=False, exfil=False, confirm=True, surface=Governor -> Executor)
-|  |- 31 response_verification (authority=read_only_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 32 os_diagnostics (authority=read_only_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 48 multi_source_reporting (authority=read_only_network, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
-|  |- 49 headline_summary (authority=read_only_network, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
-|  |- 50 intelligence_brief (authority=read_only_network, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
-|  |- 51 topic_memory_map (authority=read_only_local, risk=low, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
-|  |- 52 story_tracker_update (authority=persistent_change, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 53 story_tracker_view (authority=read_only_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 54 analysis_document (authority=read_only_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 55 weather_snapshot (authority=read_only_network, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
-|  |- 56 news_snapshot (authority=read_only_network, risk=low, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
-|  |- 57 calendar_snapshot (authority=read_only_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 58 screen_capture (authority=persistent_change, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 59 screen_analysis (authority=read_only_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 60 explain_anything (authority=read_only_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 61 memory_governance (authority=persistent_change, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 62 external_reasoning_review (authority=read_only_local, risk=low, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
-|  |- 63 openclaw_execute (authority=read_only_network, risk=low, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
-|  |- 64 send_email_draft (authority=persistent_change, risk=confirm, network=False, exfil=True, confirm=True, surface=Governor -> Executor)
-|  |- 65 shopify_intelligence_report (authority=read_only_network, risk=low, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 16 governed_web_search (authority=read_only_network, risk=low, cost=free_tier, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 17 open_website (authority=reversible_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 18 speak_text (authority=reversible_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Speech)
+|  |- 19 volume_up_down (authority=reversible_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 20 media_play_pause (authority=reversible_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 21 brightness_control (authority=reversible_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 22 open_file_folder (authority=reversible_local, risk=confirm, cost=free, network=False, exfil=False, confirm=True, surface=Governor -> Executor)
+|  |- 31 response_verification (authority=read_only_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 32 os_diagnostics (authority=read_only_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 48 multi_source_reporting (authority=read_only_network, risk=low, cost=free, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 49 headline_summary (authority=read_only_network, risk=low, cost=free, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 50 intelligence_brief (authority=read_only_network, risk=low, cost=free, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 51 topic_memory_map (authority=read_only_local, risk=low, cost=free, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 52 story_tracker_update (authority=persistent_change, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 53 story_tracker_view (authority=read_only_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 54 analysis_document (authority=read_only_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 55 weather_snapshot (authority=read_only_network, risk=low, cost=free_tier, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 56 news_snapshot (authority=read_only_network, risk=low, cost=free_tier, network=True, exfil=True, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 57 calendar_snapshot (authority=read_only_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 58 screen_capture (authority=persistent_change, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 59 screen_analysis (authority=read_only_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 60 explain_anything (authority=read_only_local, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 61 memory_governance (authority=persistent_change, risk=low, cost=free, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 62 external_reasoning_review (authority=read_only_local, risk=low, cost=free_tier, network=False, exfil=False, confirm=False, surface=Governor -> Executor)
+|  |- 63 openclaw_execute (authority=read_only_network, risk=low, cost=unknown_cost, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
+|  |- 64 send_email_draft (authority=persistent_change, risk=confirm, cost=free, network=False, exfil=True, confirm=True, surface=Governor -> Executor)
+|  |- 65 shopify_intelligence_report (authority=read_only_network, risk=low, cost=free_tier, network=True, exfil=False, confirm=False, surface=Governor -> NetworkMediator)
 |- Skill -> capability routes
 |  |- analysis_document -> 54
 |  |- brightness -> 21

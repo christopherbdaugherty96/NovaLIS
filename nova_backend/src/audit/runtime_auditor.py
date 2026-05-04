@@ -1446,7 +1446,7 @@ def render_governance_matrix_tree_markdown(registry: dict[str, Any]) -> str:
         label = f"{row['id']}:{row['name']}"
         lines.append(f"  Caps --> C{row['id']}[{label}]")
         lines.append(
-            f"  C{row['id']} --> C{row['id']}A[authority={row['authority_class']}, risk={row['risk_level']}, confirm={row['confirmation_required']}, reversible={row['reversible']}, external={row['external_effect']}, network={row['network_access']}, surface={row['execution_surface']}]"
+            f"  C{row['id']} --> C{row['id']}A[authority={row['authority_class']}, risk={row['risk_level']}, cost={row['cost_posture']}, confirm={row['confirmation_required']}, reversible={row['reversible']}, external={row['external_effect']}, network={row['network_access']}, surface={row['execution_surface']}]"
         )
     lines.append("  Runtime --> Routes[Skill Routes]")
     for route in skill_routes:
@@ -1468,7 +1468,7 @@ def render_governance_matrix_tree_markdown(registry: dict[str, Any]) -> str:
     )
     for row in rows:
         lines.append(
-            f"|  |- {row['id']} {row['name']} (authority={row['authority_class']}, risk={row['risk_level']}, network={row['network_access']}, exfil={row['data_exfiltration']}, confirm={row['confirmation_required']}, surface={row['execution_surface']})"
+            f"|  |- {row['id']} {row['name']} (authority={row['authority_class']}, risk={row['risk_level']}, cost={row['cost_posture']}, network={row['network_access']}, exfil={row['data_exfiltration']}, confirm={row['confirmation_required']}, surface={row['execution_surface']})"
         )
     lines.append("|- Skill -> capability routes")
     for route in skill_routes:

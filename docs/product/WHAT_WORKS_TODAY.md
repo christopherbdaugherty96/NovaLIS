@@ -1,6 +1,6 @@
 # What Works Today
 
-Last reviewed: 2026-05-03
+Last reviewed: 2026-05-04
 
 This page separates Nova's current surfaces by readiness level.
 
@@ -60,7 +60,7 @@ Latest proof packages:
 | Email draft | Implemented, safety-limited, paused | Opens a local mail client draft through `mailto:` after confirmation. Nova does not use SMTP, access inboxes, call Gmail APIs, or send autonomously. Cap 64 live signoff is paused while conversation/search proof remains a priority. |
 | OpenClaw execution surface | Advanced / constrained | A governed, constrained OpenClaw surface exists. Broad browser/computer-use expansion remains frozen until envelope issuance, real approval decisions, centralized execution guard, boundary detection, and receipts are complete. |
 | Action Receipts | Implemented, maturing UX | Visible receipt surface exists for governed-action outcomes. A fuller Trust Panel remains future work. |
-| Daily Brief MVP | Implemented, maturing UX | Deterministic on-demand session brief with session, memory, receipts, weather, calendar, email placeholder, continuity fields, and deterministic next-action recommendations. No execution authority, no LLM call, no background automation. |
+| Daily Brief MVP | Implemented, maturing UX | Deterministic on-demand session brief with session, memory, receipts, weather, calendar, email placeholder, continuity fields, and deterministic next-action recommendations. No execution authority, no LLM call, no background automation. Now wrapped in RoutineGraph v0 (Stage 6, PR #93). |
 
 ---
 
@@ -73,7 +73,7 @@ Latest proof packages:
 | Governed workflow workspace shell | Future / not implemented | Workflow object model, template schema, workspace onboarding, and visible workflow shell remain future work. |
 | Small-model full Brain runtime stack | Future / not implemented | Context Assembler, Model Router, Intention Parser, Tool Bridge, Sandbox Boundary Enforcer, and Persona Filter are documented architecture, not live runtime behavior. Search Evidence Synthesis is implemented only as deterministic Cap 16 evidence structuring, not as a general Brain planner. |
 | Google read/context connector | Future / not implemented | Google connector docs describe future OAuth, Gmail read-only, Calendar read-only, Drive read-only, Contacts read-only, and Gmail context for Cap 64 draft-only replies. No Google OAuth, Gmail, Calendar, Drive, Contacts, or Gmail-send runtime connector exists. |
-| Free-first cost governance enforcement | Future / not runtime-enforced | Cost posture metadata exists and is visible in generated docs. Runtime enforcement, quota blocking, and cost approval flows do not exist yet. |
+| Free-first cost governance | Step 1 done (metadata); enforcement future | cost_posture field (free/free_tier/paid/unknown_cost) on all 27 capabilities; visible in governance matrix and runtime state doc. Runtime enforcement, quota blocking, and cost approval flows do not exist yet. |
 | Auralis Website Coworker | Future planning / not implemented | Future business workflow and production discipline layer only. No publish, deploy, domain, DNS, or client-send authority exists. |
 | YouTubeLIS | Planning-only tool folder | Content planning docs/templates only. No upload, publish, account automation, or YouTube Studio control exists. |
 | Fuller Trust Panel / Trust Review Card | Partial / future work | Action Receipts and trust receipt API exist; richer blocked-reason drill-down, confirmation previews, proof browsing, and polished demo flow remain future work. |

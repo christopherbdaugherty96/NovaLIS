@@ -513,7 +513,7 @@ def run_plan_my_week_routine(
     # Block: gather_open_loops
     blocks_run.append(BLOCK_GATHER_LOOPS.name)
     loop_items = _extract_open_loops(_memory, _session)
-    outputs[BLOCK_GATHER_LOOPS.output_label] = [l.to_dict() for l in loop_items]
+    outputs[BLOCK_GATHER_LOOPS.output_label] = [loop.to_dict() for loop in loop_items]
 
     # Block: gather_receipts
     blocks_run.append(BLOCK_GATHER_RECEIPTS.name)

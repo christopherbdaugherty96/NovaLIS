@@ -1,6 +1,6 @@
 # Daily Brief Routine Specification
 
-Status: planning.
+Status: implemented as RoutineGraph v0 (PR #93 2026-05-03); full scheduled-routine trigger is future work.
 
 ## Definition
 

@@ -1,6 +1,6 @@
 # Routine Layer Specification
 
-Status: planning
+Status: v0 implemented (RoutineGraph v0 — PR #93 2026-05-03); remaining objects and scheduling future
 
 ## Definition
 
@@ -24,15 +24,20 @@ It is separate from Brain and OpenClaw.
 
 ## Core objects
 
-- RoutineGraph
-- RoutineBlock
-- RoutineRun
-- RoutineState
-- RoutineReceipt
+| Object | Status |
+|---|---|
+| RoutineGraph | Implemented (PR #93) |
+| RoutineBlock | Implemented (PR #93) |
+| RoutineRun | Implemented (PR #93) |
+| RoutineReceipt | Implemented (PR #93) |
+| RoutineState | Not implemented — covered by RoutineRun outputs dict |
 
-## First routine
+## Implemented routines
 
-Daily Brief
+| Routine | Status |
+|---|---|
+| Daily Brief | Implemented — `run_daily_brief_routine()` wraps `compose_daily_brief()` with 8 named blocks and a RoutineReceipt (PR #93) |
+| Plan My Week | Implemented — two-phase runner with `PlanMyWeekProposal` approval boundary (PR #98) |
 
 ## Rules
 

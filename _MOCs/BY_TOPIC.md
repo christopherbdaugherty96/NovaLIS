@@ -511,7 +511,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (657)
+## testing (658)
 
 - [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/01_dashboard_home.png|01_dashboard_home.png]]
 - [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/02_intro_setup_surface.png|02_intro_setup_surface.png]]
@@ -664,6 +664,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/adversarial/test_conversation_non_authorizing.py|test_conversation_non_authorizing]]
 - [code] [[nova_backend/tests/conversation/test_conversation_personality_agent.py|test_conversation_personality_agent]]
 - [code] [[nova_backend/tests/conversation/test_conversation_router.py|test_conversation_router]]
+- [code] [[nova_backend/tests/phase6/test_cost_posture_metadata.py|test_cost_posture_metadata]]
 - [code] [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
 - [code] [[nova_backend/tests/routine/test_daily_brief_routine.py|test_daily_brief_routine]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_auto_widget_dispatch.py|test_dashboard_auto_widget_dispatch]]

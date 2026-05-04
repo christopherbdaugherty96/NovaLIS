@@ -1,5 +1,5 @@
 # NOVA Runtime Capability Reference
-Updated: 2026-04-21
+Updated: 2026-05-04
 Status: Active
 Scope: Human-readable explanation of the current runtime capability surface
 
@@ -100,6 +100,12 @@ Interpretation rule:
 
 | Surface | Status | What it does | Notes |
 | --- | --- | --- | --- |
+| Memory Loop | Active | Explicit user-initiated remember / review / update / forget / why-used conversational memory skill with memory receipts for create / update / forget / use. No silent autosave. Built on cap 61. | Stage 3 — PR #82 2026-05-02 |
+| Context Pack | Active | Bounded, labeled context bridge: ContextItem, ContextPack, compose_context_pack(). Source labels, authority labels, budget enforcement, stale/conflict warnings, deleted-memory filtering, and render_context_block(). Live-wired into general_chat_runtime.py — every general-chat turn passes memory items through compose_context_pack() before prompt assembly. | Stage 4 — PRs #83/#87 2026-05-02 |
+| Brain Mode + Trace | Active | classify_mode() lightweight classifier (no LLM call) produces a BrainMode from 7 mode contracts (brainstorm, repo_review, implementation, merge, planning, action_review, casual). BrainTrace non-authorizing frozen dataclass; execution_performed and authorization_granted always False; stored in session_state["last_brain_trace"] each turn. | Stage 5 — PRs #85/#88 2026-05-02 |
+| RoutineGraph v0 | Active | RoutineBlock, RoutineGraph, RoutineRun, RoutineReceipt non-authorizing frozen dataclasses. execution_performed and authorization_granted always False. Daily Brief and Plan My Week both run as named RoutineGraphs with RoutineReceipts. | Stage 6 — PR #93 2026-05-03 |
+| Plan My Week Routine | Active | Two-phase approval surface: run_plan_my_week_routine() produces a PlanMyWeekProposal (approval_required=True enforced); record_plan_approval() records user decision. WeeklyPlan, PlanApprovalRecord; first RoutineGraph with request_approval block. Non-authorizing throughout. | Stage 6 — PR #98 2026-05-03 |
+| Cost Posture Metadata | Active | cost_posture field (free/free_tier/paid/unknown_cost) on every Capability in the registry. Validated on load, visible in governance matrix and runtime state doc. Metadata + visibility only; no runtime enforcement. | Stage 6 step 1 — PR #99 2026-05-03 |
 | STT transcription | Active | Converts push-to-talk audio into text through local ffmpeg + Vosk and routes the transcript into the normal chat path. | Voice input surface, not a governed capability ID |
 | Interface personality agent | Active | Cleans presentation tone, strips unsafe authority-style phrasing, and keeps output readable without changing execution authority. | Presentation-only layer |
 | Tone controls | Active | Stores a global response style, per-domain overrides, recent tone-change history, and reset controls through the dashboard and chat commands. | Manual, inspectable, and non-authorizing |

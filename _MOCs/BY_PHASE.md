@@ -359,6 +359,7 @@ names. Use this to see what shipped (or is planned) for each phase.
 - [code] [[nova_backend/tests/phase6/test_action_result_contract.py|test_action_result_contract]]
 - [code] [[nova_backend/tests/phase6/test_atomic_policy_store.py|test_atomic_policy_store]]
 - [code] [[nova_backend/tests/phase6/test_capability_topology.py|test_capability_topology]]
+- [code] [[nova_backend/tests/phase6/test_cost_posture_metadata.py|test_cost_posture_metadata]]
 - [code] [[nova_backend/tests/phase6/test_policy_executor_gate.py|test_policy_executor_gate]]
 - [code] [[nova_backend/tests/phase6/test_policy_foundation_contract.py|test_policy_foundation_contract]]
 - [code] [[nova_backend/tests/phase6/test_policy_validator.py|test_policy_validator]]

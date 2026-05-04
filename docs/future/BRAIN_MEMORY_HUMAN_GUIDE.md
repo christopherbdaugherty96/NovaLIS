@@ -22,27 +22,28 @@ Memory should help Nova stay coherent, recommend better next steps, and maintain
 
 ## Current Repo Context
 
-Current daily-use foundation already includes:
+Implemented as of Stage 6 (2026-05-03):
 
-- Daily Brief MVP
+- Daily Brief MVP + RoutineGraph wrapping (PR #93)
 - Daily Brief continuity hardening
 - session conversation continuity fields
 - deterministic next-action recommendations
-- Search Evidence Synthesis
-- Brain planning preview scaffolds
-- Auralis Lead Console v1 planning isolated as future-only docs
+- Search Evidence Synthesis (PR #66)
+- Brain planning preview scaffolds (PR #64)
+- **Stage 3:** Memory Loop — remember / review / update / forget / why-used with receipts (PR #82)
+- **Stage 4:** Context Pack — compose_context_pack(), source labels, authority labels, budget
+  enforcement, stale/conflict warnings; live in general_chat_runtime.py every chat turn (PR #83, #87)
+- **Stage 5:** Brain discipline — classify_mode(), 7 mode contracts, BrainTrace (PR #85, #88)
 
-Still missing before Nova has full daily memory:
+Still future work before Nova has full daily memory:
 
-- explicit remember / review / update / forget / why-used loop
-- durable memory proof
-- Memory Retriever
-- Context Pack Builder
-- Brain consumption of bounded context packs
-- candidate memory generation
+- Memory Retriever (bounded retrieval with scope/relevance scoring)
+- Brain consumption of bounded context packs (classify_mode exists; full task routing future)
+- candidate memory generation from Brain
 - project capsules
-- memory health display
+- memory health display in Daily Brief
 - Memory Panel / review UI
+- Auralis Lead Console v1 planning isolated as future-only docs
 
 ---
 
