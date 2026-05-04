@@ -62,7 +62,12 @@ invariants. This note must not be used as a replacement for generated runtime do
 
 ## Planning-Only / Future Direction
 
-- Google connector work is future read/context connector planning. There is no Google OAuth, Gmail, Calendar, Drive, or Google account runtime connector unless generated runtime truth later proves it.
+- Google connector work is future read/context connector planning. There is no Google OAuth, Gmail,
+  Calendar, Drive, or Google account runtime connector unless generated runtime truth later proves it.
+  A foundation planning doc exists at
+  [`../future/GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03.md`](../future/GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03.md)
+  describing the 6-step sequence (schema → credential store → executor → cap registration → OAuth UI
+  → proof). Nothing in that doc is implemented.
 - Free-first cost governance is now a design policy and implementation plan. Runtime enforcement does not exist until registry metadata, generator output, tests, and UI/proof paths exist.
 - Auralis Website Coworker is a future business workflow / production discipline layer. It is not an autonomous website builder and has no publish, deploy, domain, DNS, or client-send authority.
 - Auralis Social Content Workflow Pack is a future/manual validation workflow. It has no autonomous posting, ad spend, client-account access, or customer messaging authority.
