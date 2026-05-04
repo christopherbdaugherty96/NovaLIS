@@ -386,6 +386,8 @@ def _derive_capability_governance_rows(registry: dict[str, Any]) -> list[dict[st
         else:
             execution_surface = "Governor -> Executor"
 
+        cost_posture = str(capability.get("cost_posture") or "unknown_cost").strip().lower()
+
         rows.append(
             {
                 "id": cid,
@@ -402,6 +404,7 @@ def _derive_capability_governance_rows(registry: dict[str, Any]) -> list[dict[st
                 "external_effect": bool(external_effect),
                 "network_access": network_access,
                 "execution_surface": execution_surface,
+                "cost_posture": cost_posture,
                 "execution_gate": enforce["execution_gate_enabled"],
                 "single_action_queue": enforce["single_action_queue_enforced"],
                 "ledger_allowlist": "event_type not in EVENT_TYPES" in _safe_read(LEDGER_WRITER_PATH),
@@ -1269,12 +1272,12 @@ def render_governance_matrix_markdown(registry: dict[str, Any]) -> str:
         "",
         "Deterministic capability governance matrix derived from allowlisted runtime sources.",
         "",
-        "| id | name | enabled | status | phase_introduced | risk_level | data_exfiltration | authority_class | confirmation_required | reversible | external_effect | network_access | execution_surface | execution_gate | single_action_queue | ledger_allowlist | dns_rebinding_guard | timeout_guard |",
-        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
+        "| id | name | enabled | status | phase_introduced | risk_level | cost_posture | data_exfiltration | authority_class | confirmation_required | reversible | external_effect | network_access | execution_surface | execution_gate | single_action_queue | ledger_allowlist | dns_rebinding_guard | timeout_guard |",
+        "| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |",
     ]
     for row in rows:
         lines.append(
-            "| {id} | {name} | {enabled} | {status} | {phase_introduced} | {risk_level} | {data_exfiltration} | {authority_class} | {confirmation_required} | {reversible} | {external_effect} | {network_access} | {execution_surface} | {execution_gate} | {single_action_queue} | {ledger_allowlist} | {dns_rebinding_guard} | {timeout_guard} |".format(
+            "| {id} | {name} | {enabled} | {status} | {phase_introduced} | {risk_level} | {cost_posture} | {data_exfiltration} | {authority_class} | {confirmation_required} | {reversible} | {external_effect} | {network_access} | {execution_surface} | {execution_gate} | {single_action_queue} | {ledger_allowlist} | {dns_rebinding_guard} | {timeout_guard} |".format(
                 **row
             )
         )
@@ -1695,6 +1698,29 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
         lines.append(
             f"| {row['id']} | {row['name']} | {row['status'].upper()} | {str(row['enabled'])} | {runtime_state} |"
         )
+
+    # Cost posture summary — metadata + visibility only; no runtime enforcement yet.
+    free_caps = [row for row in governance_rows if row.get("cost_posture") == "free"]
+    free_tier_caps = [row for row in governance_rows if row.get("cost_posture") == "free_tier"]
+    paid_caps = [row for row in governance_rows if row.get("cost_posture") == "paid"]
+    unknown_cost_caps = [row for row in governance_rows if row.get("cost_posture") == "unknown_cost"]
+    lines.extend(
+        [
+            "",
+            "## Cost Posture (Metadata Only)",
+            "",
+            "Cost posture is registry metadata and visibility. No runtime enforcement exists yet.",
+            "Values: free | free_tier | paid | unknown_cost",
+            "",
+            "| Cost Posture | Count | Capability IDs |",
+            "| --- | --- | --- |",
+            f"| free | {len(free_caps)} | {[row['id'] for row in free_caps]} |",
+            f"| free_tier | {len(free_tier_caps)} | {[row['id'] for row in free_tier_caps]} |",
+            f"| paid | {len(paid_caps)} | {[row['id'] for row in paid_caps]} |",
+            f"| unknown_cost | {len(unknown_cost_caps)} | {[row['id'] for row in unknown_cost_caps]} |",
+            "",
+        ]
+    )
 
     lines.extend(
         [

@@ -1,6 +1,6 @@
 # Active TODO - Nova
 
-**Updated:** 2026-05-03
+**Updated:** 2026-05-03 (cost posture pass)
 **Sprint goal:** Stage 6 — Routine surfaces. Context Pack and BrainTrace now live in prompt path.
 **Authority note:** This file is the public task snapshot. Exact runtime truth still comes from generated runtime docs and code.
 
@@ -64,8 +64,10 @@
 - [ ] Re-run Daily Brief + continuity proof manually in the local UI/API
 - [x] Capture one everyday workflow demo: plan my week (PR #98, 2026-05-03)
 - [ ] Continue doc/status cleanup where stale "local-only" or planning-as-runtime wording remains
-- [ ] Plan cost posture metadata as the next free-first implementation step
-- [ ] Plan Google read-only connector foundation after connector governance and cost posture metadata are clear
+- [x] Implement cost posture metadata — first free-first step (PR #99, 2026-05-03); `cost_posture` field
+      on Capability, all 27 registry entries annotated, governance matrix column, runtime state summary,
+      24 tests; metadata + visibility only, no enforcement
+- [ ] Plan Google read-only connector foundation after connector governance is clear
 - [ ] Prepare OpenClaw hardening pass: mandatory EnvelopeFactory, freeform-goal gate, real approval decisions,
       centralized execution guard, boundary detection, and receipts
 - [ ] Fuller Trust Review Card / Trust Panel - richer blocked reasons, confirmation previews, receipt history,
@@ -146,6 +148,10 @@ Canonical audit: `docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`
 
 ## Recently Completed
 
+- Cost posture metadata — first free-first implementation step; `cost_posture` field on Capability
+  dataclass (`free | free_tier | paid | unknown_cost`); all 27 caps annotated; validation in
+  `_load_registry`; governance matrix column; runtime state summary section; 24 tests;
+  metadata + visibility only, no enforcement; PR #99 2026-05-03
 - Plan My Week routine — everyday workflow demo with approval boundary; WeeklyPlan,
   PlanMyWeekProposal (approval_required=True enforced), PlanApprovalRecord; two-phase runner;
   PLAN_MY_WEEK_GRAPH first RoutineGraph with request_approval block; 52 tests; PR #98 2026-05-03

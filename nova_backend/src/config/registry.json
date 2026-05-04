@@ -79,6 +79,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free_tier",
       "description": "Searches current web sources through the governed network path and returns a results widget with bounded follow-up actions."
     },
     {
@@ -93,6 +94,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Opens a requested website, source URL, or article page in the default browser through the governed local route."
     },
     {
@@ -107,6 +109,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Reads text aloud through the local offline TTS path after speech-safe formatting removes raw links and system tokens."
     },
     {
@@ -121,6 +124,7 @@
       "requires_confirmation": true,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Opens allowed files or folders inside Nova-approved path roots through a confirmation-backed local navigation path."
     },
     {
@@ -135,6 +139,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Raises, lowers, mutes, unmutes, or sets system volume on the local device through the governed media-control path."
     },
     {
@@ -149,6 +154,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Starts, pauses, or resumes local media playback through platform-specific media controls on the current device."
     },
     {
@@ -163,6 +169,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Raises, lowers, or sets display brightness using platform-supported local controls on the active device."
     },
     {
@@ -177,6 +184,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Verifies text or a prior answer for likely issues, corrections, and confidence without authorizing any action."
     },
     {
@@ -191,6 +199,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free_tier",
       "description": "Provides a same-thread governed second-opinion lane that can critique an answer without gaining execution authority."
     },
     {
@@ -205,6 +214,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Reports system health, resource status, model readiness, bridge state, and active capability/runtime diagnostics."
     },
     {
@@ -219,6 +229,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Builds a structured multi-source report with findings, source credibility, counter-analysis, and decomposed confidence signals."
     },
     {
@@ -233,6 +244,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Summarizes selected headlines, compares headline clusters, and can read the linked story page when deeper detail is requested."
     },
     {
@@ -247,6 +259,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Builds a compact daily or topic intelligence brief from current headlines and related news clusters."
     },
     {
@@ -261,6 +274,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Shows a topic map of recurring themes in the latest headline set so users can see what the current news cycle clusters around."
     },
     {
@@ -275,6 +289,7 @@
       "requires_confirmation": false,
       "reversible": false,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Starts or refreshes tracked stories, links related stories, and stores new snapshots for comparison over time."
     },
     {
@@ -289,6 +304,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Shows tracked story timelines, comparisons, and relationship views for stories already being followed."
     },
     {
@@ -303,6 +319,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Creates session-scoped analysis documents, lists them, summarizes them, and explains specific sections on request."
     },
     {
@@ -317,6 +334,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free_tier",
       "description": "Loads a weather snapshot and widget with a short summary, setup truth, and suggested next actions."
     },
     {
@@ -331,6 +349,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free_tier",
       "description": "Loads the current news snapshot and headline cache used by the News page and follow-up summary flows."
     },
     {
@@ -345,6 +364,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Loads a calendar or agenda snapshot with connection truth, source label, and compact schedule guidance."
     },
     {
@@ -359,6 +379,7 @@
       "requires_confirmation": false,
       "reversible": false,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Captures and stores an explicit request-time screen snapshot for later explanation without creating any background capture loop."
     },
     {
@@ -373,6 +394,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Runs OCR and visual analysis on an explicit screen capture and returns a bounded explanation of what was found."
     },
     {
@@ -387,6 +409,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Routes an explicit explain request to the best read-only explainer path for screen, page, or selected file context."
     },
     {
@@ -401,6 +424,7 @@
       "requires_confirmation": false,
       "reversible": false,
       "external_effect": false,
+      "cost_posture": "free",
       "description": "Saves, lists, edits, locks, defers, exports, and deletes explicit governed memory items and thread-linked memory."
     },
     {
@@ -415,6 +439,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": true,
+      "cost_posture": "unknown_cost",
       "description": "Phase 8 canonical governed execution surface for OpenClaw home-agent templates. Runs a named read-only template through either the governed network path or a bounded local-read path and returns a structured result widget."
     },
     {
@@ -429,6 +454,7 @@
       "requires_confirmation": true,
       "reversible": false,
       "external_effect": true,
+      "cost_posture": "free",
       "description": "Composes an email draft using the local LLM and opens it in the system mail client (mailto:). The user reviews and sends manually — Nova never transmits email autonomously. Requires explicit user confirmation before opening the mail client."
     },
     {
@@ -443,6 +469,7 @@
       "requires_confirmation": false,
       "reversible": true,
       "external_effect": true,
+      "cost_posture": "free_tier",
       "description": "Tier 1 read-only Shopify store intelligence. Fetches governed order metrics, product catalog summary, and inventory status via the Shopify GraphQL Admin API. No write operations. Requires NOVA_SHOPIFY_SHOP_DOMAIN and NOVA_SHOPIFY_ACCESS_TOKEN."
     }
   ],
