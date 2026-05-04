@@ -10,8 +10,6 @@ Generated runtime docs and actual code win if they conflict with this note.
 
 ---
 
-## Current Truth
-
 ## Priority Lock (2026-05-04)
 
 Active development is restricted to:
