@@ -564,7 +564,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (350)
+## Tests and verification (351)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1005,6 +1005,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def _valid_result() -> PolicyValidationResult:
 - [[nova_backend/tests/phase6/test_capability_topology.py|test_capability_topology]]
   summary: def test_topology_marks_first_slice_snapshot_capabilities_as_delegatable():
+- [[nova_backend/tests/phase6/test_cost_posture_metadata.py|test_cost_posture_metadata]]
+  summary: Tests for cost posture metadata on Capability dataclass and registry.json.
 - [[nova_backend/tests/phase6/test_policy_executor_gate.py|test_policy_executor_gate]]
   summary: def _make_policy(*, capability_id: int = 57, network_allowed: bool = False) -> dict:
 - [[nova_backend/tests/phase6/test_policy_foundation_contract.py|test_policy_foundation_contract]]

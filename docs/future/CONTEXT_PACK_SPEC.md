@@ -1,8 +1,11 @@
 # Context Pack Specification
 
-Status: planning.
+Status: implemented (Stage 4, PR #83/#87, 2026-05-02); live in general_chat_runtime.py.
 
-This document defines the planned Context Pack layer for Nova. It is not implemented runtime behavior.
+This document defines the Context Pack layer for Nova. The core implementation (ContextItem, ContextPack,
+compose_context_pack(), source labels, authority labels, budget enforcement, stale/conflict warnings,
+deleted-memory filtering, render_context_block()) is implemented and live. Advanced features noted
+below (project capsules, candidate memory filtering) remain future work.
 
 ## Purpose
 

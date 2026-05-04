@@ -130,7 +130,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (881)
+## docs (882)
 
 - [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
   summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
@@ -1146,6 +1146,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: Status: implementation planning (aligned to GOOGLEINTEGRATIONDESIGNDOC)
 - [doc] [[docs/future/GOOGLE_INTEGRATION_DESIGN_DOC|Google Integration Design Doc]]
   summary: Status: future implementation design / not implemented runtime connector
+- [doc] [[docs/Future/GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03|Google Read-Only Connector Foundation]]
+  summary: Date: 2026-05-03
 - [doc] [[docs/future/GOOGLE_WORKSPACE_CONNECTOR_PLAN|Google Workspace Connector Plan]]
   summary: Status: future connector design / not implemented
 - [doc] [[docs/future/governed_content_operator|Nova Governed Content Operator - Implementation Blueprint]]
@@ -1816,7 +1818,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/security/NOVA_INTEGRATION_THREAT_MODEL_2026-04-28|Nova Integration Threat Model]]
   summary: Date: 2026-04-28
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-03
+  summary: Last reviewed: 2026-05-03 (cost posture + doc cleanup pass)
 - [doc] [[docs/status/README|Status Notes]]
   summary: This folder contains human-maintained work-continuity notes.
 - [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
@@ -1832,7 +1834,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/testing/SIMULATION_ANALYTICS|Simulation Analytics]]
   summary: Nova's simulation analytics layer is post-run only and operates entirely in test/observability scope.
 - [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
-  summary: Updated: 2026-05-03
+  summary: Updated: 2026-05-03 (cost posture pass)
 - [doc] [[docs/todo/DOC_CLEANUP|Doc Cleanup — Nova]]
   summary: Updated: 2026-04-28
 - [doc] [[docs/todo/README|docs/todo — Task Folder]]
@@ -1955,7 +1957,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [code] [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## nova_backend (654)
+## nova_backend (655)
 
 - [asset] [[nova_backend/.env.example|.env.example]]
 - [doc] [[nova_backend/requirements-optional-wakeword.txt|requirements-optional-wakeword]]
@@ -2993,6 +2995,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: def _valid_result() -> PolicyValidationResult:
 - [code] [[nova_backend/tests/phase6/test_capability_topology.py|test_capability_topology]]
   summary: def test_topology_marks_first_slice_snapshot_capabilities_as_delegatable():
+- [code] [[nova_backend/tests/phase6/test_cost_posture_metadata.py|test_cost_posture_metadata]]
+  summary: Tests for cost posture metadata on Capability dataclass and registry.json.
 - [code] [[nova_backend/tests/phase6/test_policy_executor_gate.py|test_policy_executor_gate]]
   summary: def _make_policy(*, capability_id: int = 57, network_allowed: bool = False) -> dict:
 - [code] [[nova_backend/tests/phase6/test_policy_foundation_contract.py|test_policy_foundation_contract]]

@@ -2,6 +2,13 @@
 Updated: 2026-03-14
 Status: Present in code, but not an active delegated-runtime unlock
 
+> **Context note (2026-05-04):** This document was written in March 2026 and describes the *atomic
+> policy validation / draft storage* slice that was labeled "Phase 6" at that time. Current Stage 6
+> work (2026-05-03) is different — it covers RoutineGraph v0, Plan My Week routine, and cost posture
+> metadata. See `docs/status/CURRENT_WORK_STATUS.md` and `RUNTIME_CAPABILITY_REFERENCE.md` for the
+> current Stage 6 truth. This file remains accurate for the atomic-policy foundation surface it
+> describes, but it does not represent the full current Stage 6 scope.
+
 ## What Exists
 Nova now has the first real Phase-6 foundation code in the repository:
 - atomic policy validation in the Governor

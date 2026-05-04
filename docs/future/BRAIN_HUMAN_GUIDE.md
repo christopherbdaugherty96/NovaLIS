@@ -24,23 +24,27 @@ The clean rule is:
 
 ## What the Brain Is Today
 
-Current Brain work is a real scaffold, not a complete execution brain.
+Current Brain work is a real scaffold with several live components, not a complete execution brain.
 
-Existing or recently merged direction includes:
+Implemented (as of Stage 6, 2026-05-03):
 
-- TaskUnderstanding
-- TaskEnvelope
-- SimpleTaskPlan
-- planning-only RunManager
-- Planning Run Preview
-- Task Clarifier direction
-- Search Evidence Synthesis as deterministic evidence structuring
-- conversation continuity fields
+- TaskUnderstanding, TaskEnvelope, SimpleTaskPlan — planning scaffold (PR #64)
+- planning-only RunManager, Planning Run Preview — scaffold (PR #64)
+- Task Clarifier direction — scaffold
+- Search Evidence Synthesis — deterministic Cap 16 evidence structuring (PR #66)
+- conversation continuity fields — live in SessionConversationContext
 - deterministic Daily Brief recommendations
+- **Stage 3:** Memory Loop — remember / review / update / forget / why-used with receipts (PR #82)
+- **Stage 4:** Context Pack — ContextItem, ContextPack, compose_context_pack(), source labels, authority
+  labels, budget enforcement, stale/conflict warnings; live-wired into general_chat_runtime.py (PR #83, #87)
+- **Stage 5:** Brain discipline — 7 mode contracts, classify_mode(), BrainTrace non-authorizing frozen
+  dataclass; brain trace stored in session_state["last_brain_trace"] every chat turn (PRs #85, #88)
+- **Stage 6:** RoutineGraph v0 — RoutineBlock, RoutineGraph, RoutineRun, RoutineReceipt (PR #93)
+- **Stage 6:** Plan My Week Routine — WeeklyPlan, PlanMyWeekProposal, PlanApprovalRecord (PR #98)
 
 Correct current label:
 
-> Brain = structured planning and interpretation scaffold.
+> Brain = structured planning and interpretation scaffold with live context, mode, and memory loop.
 
 Incorrect current label:
 
@@ -349,63 +353,43 @@ Non-negotiable rules:
 
 ## Build Order
 
-### Phase 1 — Keep current Brain scaffold stable
+### Phase 1 — Brain scaffold ✓ DONE (PR #64)
 
-Maintain:
+- TaskUnderstanding, TaskEnvelope, SimpleTaskPlan
+- Planning Run Preview, planning-only RunManager
 
-- TaskUnderstanding
-- TaskEnvelope
-- SimpleTaskPlan
-- Planning Run Preview
-- planning-only RunManager
+### Phase 2 — Explicit memory loop ✓ DONE (PR #82, Stage 3)
 
-No execution integration yet.
+- remember / review / update / forget / why-used
+- memory receipts
 
-### Phase 2 — Add explicit memory loop
+### Phase 3 — Context Pack Builder ✓ DONE (PR #83/#87, Stage 4)
 
-Build memory first:
+- compose_context_pack(), source labels, authority labels
+- memory budgets, stale/conflict warnings, warning cap
+- live-wired into general_chat_runtime.py
 
-- remember
-- review
-- update
-- forget
-- why-used
+### Phase 4 — Brain mode and trace ✓ DONE (PRs #85/#88, Stage 5)
 
-### Phase 3 — Add Context Pack Builder
+- 7 mode contracts, classify_mode()
+- BrainTrace non-authorizing frozen dataclass
+- brain trace stored per turn in session_state
 
-Build:
+### Phase 5 — Routine Layer ✓ DONE (PRs #93/#98, Stage 6)
 
-- MemoryRetriever
-- ContextPackBuilder
-- source labels
-- memory budgets
-- stale/conflict warnings
+- RoutineGraph v0: RoutineBlock, RoutineGraph, RoutineRun, RoutineReceipt
+- Daily Brief as RoutineGraph with 8 named blocks
+- Plan My Week with approval boundary
 
-### Phase 4 — Brain consumes Context Pack
+### Phase 6 — Candidate Memory Generation (future)
 
-Use context pack for:
+Brain may propose memory candidates. It may not confirm them.
 
-- better task understanding
-- better recommendations
-- better planning previews
-- better Daily Brief input
+### Phase 7 — Brain Trace Review Surface (future)
 
-### Phase 5 — Candidate Memory Generation
+Add richer trace/rationale visible to user.
 
-Brain may propose candidate memories.
-
-It may not confirm them.
-
-### Phase 6 — Brain Trace / Review Surface
-
-Add safe trace/rationale:
-
-- why this mode
-- why these memories
-- why this recommendation
-- why action is or is not required
-
-### Phase 7 — Governed action bridge
+### Phase 8 — Governed action bridge (future)
 
 Only after the above is stable, connect Brain plans to governed action requests.
 

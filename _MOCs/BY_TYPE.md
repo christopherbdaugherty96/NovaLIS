@@ -1026,7 +1026,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
   summary: :root {
 
-## Tests (5 docs, 350 code)
+## Tests (5 docs, 351 code)
 
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1467,6 +1467,8 @@ concern is reflected across docs, code and tests.
   summary: def _valid_result() -> PolicyValidationResult:
 - [code] [[nova_backend/tests/phase6/test_capability_topology.py|test_capability_topology]] - Phase 6
   summary: def test_topology_marks_first_slice_snapshot_capabilities_as_delegatable():
+- [code] [[nova_backend/tests/phase6/test_cost_posture_metadata.py|test_cost_posture_metadata]] - Phase 6
+  summary: Tests for cost posture metadata on Capability dataclass and registry.json.
 - [code] [[nova_backend/tests/phase6/test_policy_executor_gate.py|test_policy_executor_gate]] - Phase 6
   summary: def _make_policy(*, capability_id: int = 57, network_allowed: bool = False) -> dict:
 - [code] [[nova_backend/tests/phase6/test_policy_foundation_contract.py|test_policy_foundation_contract]] - Phase 6
@@ -2176,7 +2178,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/UNLOCK/phase 4/PHASE_4_UNLOCK_ACT.md.txt|PHASE_4_UNLOCK_ACT.md - UNLOCK/phase 4]] - Phase 4
   summary: PHASE4UNLOCKACT.md
 
-## Reference (363 docs, 71 code)
+## Reference (364 docs, 71 code)
 
 - [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/01_dashboard_home.png|01_dashboard_home.png]]
 - [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/02_intro_setup_surface.png|02_intro_setup_surface.png]]
@@ -2577,6 +2579,8 @@ concern is reflected across docs, code and tests.
   summary: Status: implementation planning (aligned to GOOGLEINTEGRATIONDESIGNDOC)
 - [doc] [[docs/future/GOOGLE_INTEGRATION_DESIGN_DOC|Google Integration Design Doc]]
   summary: Status: future implementation design / not implemented runtime connector
+- [doc] [[docs/Future/GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03|Google Read-Only Connector Foundation]]
+  summary: Date: 2026-05-03
 - [doc] [[docs/future/GOOGLE_WORKSPACE_CONNECTOR_PLAN|Google Workspace Connector Plan]]
   summary: Status: future connector design / not implemented
 - [doc] [[docs/future/governed_content_operator|Nova Governed Content Operator - Implementation Blueprint]]
@@ -2884,7 +2888,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/security/NOVA_INTEGRATION_THREAT_MODEL_2026-04-28|Nova Integration Threat Model]]
   summary: Date: 2026-04-28
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-03
+  summary: Last reviewed: 2026-05-03 (cost posture + doc cleanup pass)
 - [doc] [[docs/status/README|Status Notes]]
   summary: This folder contains human-maintained work-continuity notes.
 - [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
@@ -2892,7 +2896,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02|Workflow Stage Roadmap - 2026-05-02]]
   summary: Status: operational planning snapshot.
 - [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
-  summary: Updated: 2026-05-03
+  summary: Updated: 2026-05-03 (cost posture pass)
 - [doc] [[docs/todo/DOC_CLEANUP|Doc Cleanup — Nova]]
   summary: Updated: 2026-04-28
 - [doc] [[docs/todo/README|docs/todo — Task Folder]]

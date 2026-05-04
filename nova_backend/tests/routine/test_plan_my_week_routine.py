@@ -372,6 +372,44 @@ def test_all_three_valid_decisions_accepted():
         assert run.outputs["approval_record"]["decision"] == decision
 
 
+def test_approval_decided_at_is_nonempty():
+    _, proposal = run_plan_my_week_routine()
+    run, _ = record_plan_approval(proposal, decision="approved")
+    assert run.outputs["approval_record"]["decided_at"]
+
+
+def test_approval_receipt_blocks_run():
+    """Phase 2 receipt should record the single 'record_approval' block."""
+    _, proposal = run_plan_my_week_routine()
+    _, receipt = record_plan_approval(proposal, decision="approved")
+    assert receipt.blocks_run == ("record_approval",)
+
+
+def test_record_approval_with_content_filled_proposal():
+    """Phase 2 should correctly link to a proposal from a content-bearing run."""
+    _, proposal = _run_with_content()
+    run, receipt = record_plan_approval(proposal, decision="modified", notes="Added focus item")
+    approval = run.outputs["approval_record"]
+    assert approval["proposal_id"] == proposal.proposal_id
+    assert approval["decision"] == "modified"
+    assert approval["notes"] == "Added focus item"
+    assert approval["decided_at"]
+    assert receipt.blocks_run == ("record_approval",)
+    assert run.execution_performed is False
+    assert receipt.execution_performed is False
+
+
+def test_approval_to_dict_has_all_expected_keys():
+    _, proposal = run_plan_my_week_routine()
+    run, _ = record_plan_approval(proposal, decision="rejected")
+    approval = run.outputs["approval_record"]
+    expected_keys = {
+        "approval_id", "proposal_id", "decision",
+        "notes", "decided_at", "execution_performed", "authorization_granted",
+    }
+    assert set(approval.keys()) == expected_keys
+
+
 # ---------------------------------------------------------------------------
 # PlanApprovalRecord direct tests
 # ---------------------------------------------------------------------------
