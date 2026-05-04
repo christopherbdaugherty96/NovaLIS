@@ -1,6 +1,6 @@
 # Start Here
 
-Last reviewed: 2026-04-28
+Last reviewed: 2026-05-03
 
 This is the shortest human path through NovaLIS.
 
@@ -41,7 +41,7 @@ Evaluate whether it makes these things clear:
 - Whether the action is bounded or blocked
 - Whether the result is visible and reviewable
 
-Current truth: Nova now has Action Receipts and a Trust Receipt API for inspecting governed-action outcomes. A fuller Trust Review Card / Trust Panel remains future work, especially richer blocked-reason drill-down, confirmation-state preview, proof browsing, and a more complete demo flow.
+Nova now has Action Receipts and a Trust Receipt API for inspecting governed-action outcomes. A fuller Trust Review Card / Trust Panel remains future work.
 
 ---
 
@@ -54,8 +54,15 @@ Try these after startup:
 3. `What capabilities are active?`
 4. `Summarize today's news.`
 5. `Draft an email to test@example.com about tomorrow.`
+6. `remember: My preferred tone is concise.`
+7. `review memories`
+8. `Plan my week`
 
-Some commands depend on local setup, credentials, operating system support, or connector configuration. Email draft opens a local mail client draft for manual review; Nova does not send email autonomously.
+Notes:
+- Memory commands are explicit and receipted.
+- Plan My Week produces a proposal and records approval decisions.
+- Neither memory nor planning executes real-world actions.
+- Email draft opens a local mail client; Nova does not send email.
 
 ---
 
@@ -79,15 +86,59 @@ For implementation detail:
 - [Current Runtime State](docs/current_runtime/CURRENT_RUNTIME_STATE.md)
 - [Governance Matrix](docs/current_runtime/GOVERNANCE_MATRIX.md)
 
-For project workflow and how external AI tools fit without replacing Nova's runtime:
-
-- [AI Tooling Workflow](docs/WORKFLOW_AI_TOOLING.md)
-- [AI Tooling Boundaries](docs/AI_TOOLING_BOUNDARIES.md)
-
 ---
 
 ## Current Brutal Truth
 
-Nova has a serious governance thesis and real runtime structure.
+Nova now has a strong governed reasoning and workflow substrate:
 
-The current bottleneck is not more ambition. The current bottleneck is finishing proof and onboarding around the surfaces that already exist: Action Receipts, trust receipts, Cap 64 live signoff, Cap 65 live signoff, a clearer demo flow, and a simpler setup path.
+- explicit memory loop (receipted, user-controlled)
+- bounded Context Pack (labeled, filtered, conflict-aware)
+- Brain Mode contracts and trace (non-authorizing)
+- RoutineGraph (Daily Brief)
+- Plan My Week (proposal + approval record)
+
+However:
+
+- plans do not execute actions
+- routines do not automate workflows
+- Brain Mode is not visible in UI
+- Context Pack is mostly invisible to users
+- there is no unified workflow dashboard yet
+
+The bottleneck is no longer core architecture.
+
+The bottleneck is:
+- making the system visible
+- proving value through one clear workflow
+- improving onboarding and setup
+- strengthening trust UI and proof surfaces
+
+---
+
+## What Nova Is Right Now
+
+A governed reasoning system with structured workflows that do not yet execute real-world actions.
+
+---
+
+## What Nova Is Not Yet
+
+- not an autonomous agent
+- not a workflow automation system
+- not a polished daily-use product
+
+---
+
+## What Comes Next
+
+The next step is not more internal architecture.
+
+The next step is:
+
+> build one visible workflow that proves Nova is useful
+
+Example direction:
+- daily operator dashboard
+- plan → review → approve → follow-up flow
+- small business workflow (Auralis direction)
