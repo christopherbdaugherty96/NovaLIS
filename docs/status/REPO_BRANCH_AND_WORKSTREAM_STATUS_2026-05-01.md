@@ -61,7 +61,7 @@ Observed after `git fetch --all --prune`, before merge commits from this pass we
 | Context Pack (Stage 4) | PR #83 merged 2026-05-02; live-wired into general_chat_runtime.py; CONTEXT_PACK_PROOF.md PASS | Implemented |
 | Brain discipline / trace (Stage 5) | PRs #85/#87/#88/#89 merged 2026-05-02; 7 mode contracts, classify_mode(), BrainTrace, Context Pack wired; BRAIN_MODE_PROOF.md PASS | Implemented |
 | RoutineGraph v0 (Stage 6) | PR #93 merged 2026-05-03; RoutineBlock/RoutineGraph/RoutineRun/RoutineReceipt; DAILY_BRIEF_GRAPH; 60 tests | Implemented |
-| Plan My Week routine (Stage 6) | PR #98 merged 2026-05-03; WeeklyPlan/PlanMyWeekProposal/PlanApprovalRecord; two-phase runner; 52 tests | Implemented |
+| Plan My Week routine (Stage 6) | PR #98 merged 2026-05-03; WeeklyPlan/PlanMyWeekProposal/PlanApprovalRecord; two-phase runner; 56 tests (4 added in 2nd pass audit) | Implemented |
 | Cost posture metadata | PR #99 merged 2026-05-03; cost_posture field on all 27 caps; registry validation; governance matrix column; 24 tests; metadata only | Implemented |
 | Google connector | Future read/context connector direction; no Google OAuth/Gmail/Calendar/Drive runtime connector | Planning |
 | Free-first cost governance | Design docs merged; cost posture metadata implemented (step 1 of N); no runtime enforcement yet | Step 1 done |

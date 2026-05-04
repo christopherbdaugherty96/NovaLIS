@@ -11,12 +11,18 @@ It is not runtime truth. Exact runtime truth still comes from code and generated
 ## Current overall stage
 
 ```text
-Stage 6: Routine surfaces — ACTIVE (RoutineGraph v0 + Plan My Week done; business workflow next)
+Stage 6: Routine surfaces — PARTIAL (RoutineGraph v0 + Plan My Week + cost posture step 1 done)
+Priority lock active 2026-05-04: OpenClaw hardening sequence only
 ```
 
 Stages 1, 2, 3, 4, and 5 completed 2026-05-02.
 Stage 6 partial: RoutineGraph v0 and Plan My Week done 2026-05-03. Cost posture metadata (step 1
-of free-first) done 2026-05-03. Business workflow demo and governed workspace shell remain.
+of free-first) done 2026-05-03.
+
+Active priority lock (2026-05-04): all remaining Stage 6 work (business workflow demo, governed
+workspace shell, workflow object model) is paused. Active sequence is OpenClaw hardening —
+RequestUnderstanding review card → capability signoff matrix → OpenClawMediator skeleton →
+read-only workflow proof. See `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04.md`.
 
 The current repo sequence is:
 
@@ -41,7 +47,7 @@ Proof closeout
 | 3 | Memory loop | **Complete** 2026-05-02 | remember/review-list/update/forget/why-used implemented with receipts and tests | — |
 | 4 | Context Pack | **Complete** 2026-05-02 | source labels, authority labels, budgets, why-selected, stale/conflict warnings proven | — |
 | 5 | Brain discipline / trace | **Complete** 2026-05-02 | mode contracts, BrainTrace, and Context Pack wiring proven | — |
-| 6 | Routine surfaces | **Active** 2026-05-03 | RoutineGraph v0 + Plan My Week + cost posture step 1 done; business workflow + workspace shell remain | See Stage 6 section |
+| 6 | Routine surfaces | **Partial** 2026-05-03; **Priority lock active** 2026-05-04 | RoutineGraph v0 + Plan My Week + cost posture step 1 done; remaining items paused under OpenClaw hardening priority lock | See `ACTIVE_PRIORITY_LOCK_2026-05-04.md` |
 | A | Auralis manual validation | Ready for manual work | 3 mock client packs, 30 posts, 1 calendar, 1 outreach package | Run outside Nova runtime |
 
 ---
@@ -142,7 +148,7 @@ State: **active** 2026-05-03.
   60 tests green.
 - **Plan My Week routine** — PR #98 2026-05-03. WeeklyPlan, PlanMyWeekProposal
   (approval_required=True enforced), PlanApprovalRecord; two-phase runner; PLAN_MY_WEEK_GRAPH
-  first routine with request_approval block; 52 tests green.
+  first routine with request_approval block; 56 tests green (4 added in 2nd pass audit).
 - **Cost posture metadata (step 1)** — PR #99 2026-05-03. cost_posture field on all 27 registry
   caps; validation; governance matrix column; runtime state summary; 24 tests. Metadata + visibility
   only; no enforcement.
