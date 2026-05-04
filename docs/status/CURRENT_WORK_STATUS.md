@@ -27,16 +27,35 @@ All other workstreams are intentionally paused to prevent premature expansion be
 
 ## Implemented Runtime / Code Truth
 
-(unchanged baseline retained below)
-
-- Governance spine remains the strongest runtime truth: GovernorMediator, CapabilityRegistry, ExecuteBoundary, NetworkMediator, and ledger discipline are still the authority path.
+- Governance spine remains the strongest runtime truth: GovernorMediator, CapabilityRegistry,
+  ExecuteBoundary, NetworkMediator, and ledger discipline are still the authority path.
 - Cap 16 governed web search remains the active current-information lane.
-- Search Evidence Synthesis is implemented as a deterministic evidence-structuring module for Cap 16 search output. It does not add a new capability, does not authorize action, and does not bypass NetworkMediator.
-- Daily Brief MVP is implemented as a deterministic, on-demand session brief (PR #68). It synthesizes session state, memory, receipts, weather (live via WeatherService), calendar (local ICS via CalendarSkill), and email placeholder into 11 sections. Non-authorizing frozen dataclass; `execution_performed=False` and `authorization_granted=False` are enforced by `__post_init__`. No new capability, no LLM calls, no Governor path.
-- Stage 3 Memory Loop is implemented as an explicit user-initiated conversational memory skill.
-- Stage 4 Context Pack is implemented and live-wired into general_chat_runtime.py.
-- Cap 64 remains confirmation-bound local `mailto:` draft only.
-- Cap 65 remains read-only Shopify intelligence.
+- Search Evidence Synthesis is implemented as a deterministic evidence-structuring module for Cap 16
+  search output. It does not add a new capability, does not authorize action, does not bypass
+  NetworkMediator.
+- Daily Brief MVP is implemented as a deterministic, on-demand session brief (PR #68). It synthesizes
+  session state, memory, receipts, weather (live via WeatherService), calendar (local ICS via
+  CalendarSkill), and email placeholder into 11 sections. Non-authorizing frozen dataclass;
+  `execution_performed=False` and `authorization_granted=False` enforced by `__post_init__`.
+- **Stage 3:** Memory Loop — explicit user-initiated remember / review / update / forget / why-used
+  with receipts. No silent autosave. Memory does not authorize action. (PR #82 2026-05-02)
+- **Stage 4:** Context Pack — bounded labeled context bridge with source labels, authority labels,
+  budget enforcement, stale/conflict warnings; live-wired into general_chat_runtime.py every turn.
+  (PRs #83/#87 2026-05-02)
+- **Stage 5:** Brain Discipline / Trace — 7 mode contracts, classify_mode(), BrainTrace
+  non-authorizing frozen dataclass; stored in session_state["last_brain_trace"] each turn;
+  execution_performed and authorization_granted always False. (PRs #85/#88 2026-05-02)
+- **Stage 6:** RoutineGraph v0 — RoutineBlock, RoutineGraph, RoutineRun, RoutineReceipt
+  non-authorizing frozen dataclasses; DAILY_BRIEF_GRAPH; run_daily_brief_routine(). (PR #93 2026-05-03)
+- **Stage 6:** Plan My Week Routine — WeeklyPlan, PlanMyWeekProposal (approval_required=True
+  enforced), PlanApprovalRecord; two-phase runner; first RoutineGraph with request_approval block.
+  (PR #98 2026-05-03)
+- **Stage 6 step 1:** Cost Posture Metadata — cost_posture field (free/free_tier/paid/unknown_cost)
+  on all 27 capabilities; validated on load; visible in governance matrix and runtime state doc;
+  metadata + visibility only, no runtime enforcement. (PR #99 2026-05-03)
+- Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
+  autonomous send.
+- Cap 65 remains read-only Shopify intelligence. No Shopify writes.
 
 ---
 
