@@ -50,7 +50,9 @@
 - [x] Convert Daily Brief into RoutineGraph v0 — PR #93 2026-05-03; 60 tests; RoutineBlock,
       RoutineGraph, RoutineRun, RoutineReceipt frozen non-authorizing dataclasses;
       run_daily_brief_routine() wraps compose_daily_brief() with named blocks + receipt
-- [ ] Capture one everyday workflow demo: plan my week from tasks, notes, calendar context, and priorities, with approval boundary and receipt
+- [x] Capture one everyday workflow demo: plan my week — PR #98 2026-05-03; 52 tests;
+      WeeklyPlan, PlanMyWeekProposal (approval_required=True enforced), PlanApprovalRecord;
+      two-phase runner: run_plan_my_week_routine() proposes, record_plan_approval() records decision
 - [ ] Capture one business workflow demo: find 5 local businesses that need better websites, draft improvement notes, and create reviewable outreach drafts
 - [ ] Define governed workflow workspace shell for everyday workflows, independent automation, and business-owner use cases
 - [ ] Draft workflow object model and workflow template schema
@@ -60,7 +62,7 @@
 - [x] Convert Daily Brief into RoutineGraph v0 (PR #93, 2026-05-03)
 - [x] Inject Context Pack and BrainTrace into live general_chat_runtime.py prompt assembly (PR #89, 2026-05-02)
 - [ ] Re-run Daily Brief + continuity proof manually in the local UI/API
-- [ ] Capture one everyday workflow demo: plan my week from tasks, notes, calendar context
+- [x] Capture one everyday workflow demo: plan my week (PR #98, 2026-05-03)
 - [ ] Continue doc/status cleanup where stale "local-only" or planning-as-runtime wording remains
 - [ ] Plan cost posture metadata as the next free-first implementation step
 - [ ] Plan Google read-only connector foundation after connector governance and cost posture metadata are clear
@@ -144,6 +146,9 @@ Canonical audit: `docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`
 
 ## Recently Completed
 
+- Plan My Week routine — everyday workflow demo with approval boundary; WeeklyPlan,
+  PlanMyWeekProposal (approval_required=True enforced), PlanApprovalRecord; two-phase runner;
+  PLAN_MY_WEEK_GRAPH first RoutineGraph with request_approval block; 52 tests; PR #98 2026-05-03
 - RoutineGraph v0 — Daily Brief as first governed routine; RoutineBlock, RoutineGraph,
   RoutineRun, RoutineReceipt frozen non-authorizing dataclasses; run_daily_brief_routine()
   wraps compose_daily_brief() with 8 named blocks + RoutineReceipt; 60 tests green;
