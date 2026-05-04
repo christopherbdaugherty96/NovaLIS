@@ -67,7 +67,10 @@
 - [x] Implement cost posture metadata — first free-first step (PR #99, 2026-05-03); `cost_posture` field
       on Capability, all 27 registry entries annotated, governance matrix column, runtime state summary,
       24 tests; metadata + visibility only, no enforcement
-- [ ] Plan Google read-only connector foundation after connector governance is clear
+- [x] Plan Google read-only connector foundation — design doc written 2026-05-03;
+      `docs/future/GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03.md`;
+      Calendar → Gmail → Drive sequence; credential store prerequisite; 8 hard constraints;
+      no implementation, no OAuth, no runtime connector
 - [ ] Prepare OpenClaw hardening pass: mandatory EnvelopeFactory, freeform-goal gate, real approval decisions,
       centralized execution guard, boundary detection, and receipts
 - [ ] Fuller Trust Review Card / Trust Panel - richer blocked reasons, confirmation previews, receipt history,
@@ -148,6 +151,9 @@ Canonical audit: `docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01.md`
 
 ## Recently Completed
 
+- Google read-only connector foundation plan — `GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03.md`;
+  scope map (Calendar/Gmail/Drive/Contacts), connector package schema extension, credential store
+  design constraint, 6-step implementation sequence, 8 hard constraints; planning only
 - Cost posture metadata — first free-first implementation step; `cost_posture` field on Capability
   dataclass (`free | free_tier | paid | unknown_cost`); all 27 caps annotated; validation in
   `_load_registry`; governance matrix column; runtime state summary section; 24 tests;
