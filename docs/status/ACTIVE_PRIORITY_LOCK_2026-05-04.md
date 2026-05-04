@@ -2,6 +2,8 @@
 
 Status: active priority override.
 
+This is human-maintained priority guidance, not generated runtime truth. Generated runtime docs and actual code remain authoritative if they conflict with this lock.
+
 This document pauses all new work except the OpenClaw hardening path below.
 
 ## Only Active Sequence
