@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (273)
+## Backend runtime (281)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -103,8 +103,12 @@ Use this to orient yourself before diving into a specific module.
   summary: Base skill classes and result structure for NovaLIS.
 - [[nova_backend/src/brain/__init__.py|src/brain]]
   summary: Read-only Brain scaffolding.
+- [[nova_backend/src/brain/brain_mode.py|brain_mode]]
+  summary: Brain mode contracts and safe trace.
 - [[nova_backend/src/brain/capability_contracts.py|capability_contracts]]
   summary: Static Brain capability contract catalog.
+- [[nova_backend/src/brain/context_pack.py|context_pack]]
+  summary: Context Pack — bounded, labeled context bridge between Memory/Search/Project and Brain.
 - [[nova_backend/src/brain/environment_request.py|environment_request]]
   summary: Read-only Brain environment planning schemas.
 - [[nova_backend/src/brain/run_manager.py|run_manager]]
@@ -120,6 +124,8 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/brief/__init__.py|src/brief]]
 - [[nova_backend/src/brief/daily_brief.py|daily_brief]]
   summary: Daily Brief synthesis module.
+- [[nova_backend/src/brief/recommendations.py|recommendations]]
+  summary: Deterministic next-action recommendation selector for the Daily Brief.
 - [[nova_backend/src/build_phase.py|build_phase]]
   summary: Compile-time style phase gate. This constant is intentionally static in source
 - [[nova_backend/src/capabilities/__init__.py|src/capabilities]]
@@ -309,6 +315,8 @@ Use this to orient yourself before diving into a specific module.
   summary: SYSTEM_PROMPT = """You are Nova, a personal AI assistant who is genuinely helpful and warmly competent.
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]]
   summary: _MEMORY_SEARCH_STOPWORDS = {
+- [[nova_backend/src/memory/memory_skill.py|memory_skill]]
+  summary: Conversational memory skill for the memory loop.
 - [[nova_backend/src/memory/nova_self_memory_store.py|nova_self_memory_store]]
   summary: Nova self-memory store — Nova's own memory about the relationship and patterns.
 - [[nova_backend/src/memory/quick_corrections.py|quick_corrections]]
@@ -430,6 +438,13 @@ Use this to orient yourself before diving into a specific module.
   summary: class SpeechFormatter:
 - [[nova_backend/src/routers/stt.py|stt]]
   summary: Phase-3 STT Router (freeze-ready)
+- [[nova_backend/src/routine/__init__.py|src/routine]]
+- [[nova_backend/src/routine/daily_brief_routine.py|daily_brief_routine]]
+  summary: Daily Brief as the first governed RoutineGraph.
+- [[nova_backend/src/routine/plan_my_week_routine.py|plan_my_week_routine]]
+  summary: Plan My Week — everyday workflow demo with an explicit approval boundary.
+- [[nova_backend/src/routine/routine_graph.py|routine_graph]]
+  summary: Core RoutineGraph objects: RoutineBlock, RoutineGraph, RoutineRun, RoutineReceipt.
 - [[nova_backend/src/services/stt_engine.py|stt_engine]]
   summary: Phase-3 STT Engine (LOCAL, INPUT-ONLY, FREEZE-READY)
 - [[nova_backend/src/services/weather_service.py|weather_service]]
@@ -549,7 +564,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (341)
+## Tests and verification (350)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -583,8 +598,12 @@ Use this to orient yourself before diving into a specific module.
   summary: Goal:
 - [[nova_backend/tests/adversarial/test_tts_spine_integrity.py|test_tts_spine_integrity]]
   summary: def test_tts_engine_speak_only_called_in_tts_executor():
+- [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
+  summary: Tests for brain_mode.py — prove the four Stage 5 invariants.
 - [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
   summary: CapabilityContractNotFound,
+- [[nova_backend/tests/brain/test_context_pack.py|test_context_pack]]
+  summary: Tests for context_pack.py — prove the four Stage 4 invariants.
 - [[nova_backend/tests/brain/test_environment_request.py|test_environment_request]]
   summary: AllowedStatus,
 - [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
@@ -666,6 +685,8 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_response_style_defaults_to_direct():
 - [[nova_backend/tests/conversation/test_safety_filter.py|test_safety_filter]]
   summary: def test_safety_filter_appends_disclaimer_on_action_language():
+- [[nova_backend/tests/conversation/test_session_conversation_context.py|test_session_conversation_context]]
+  summary: Tests for SessionConversationContext — serialization, deserialization, and
 - [[nova_backend/tests/conversation/test_session_router.py|test_session_router]]
   summary: def test_normalize_and_route_empty_input_flags_empty():
 - [[nova_backend/tests/conversation/test_task_understanding_preview.py|test_task_understanding_preview]]
@@ -781,6 +802,9 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/identity/__init__.py|tests/identity]]
 - [[nova_backend/tests/identity/test_nova_self_awareness.py|test_nova_self_awareness]]
   summary: Tests for Nova self-awareness context builder.
+- [[nova_backend/tests/memory/__init__.py|tests/memory]]
+- [[nova_backend/tests/memory/test_memory_skill.py|test_memory_skill]]
+  summary: Tests for the MemorySkill memory loop.
 - [[nova_backend/tests/openclaw/test_agent_runner.py|test_agent_runner]]
   summary: @pytest.mark.asyncio
 - [[nova_backend/tests/openclaw/test_agent_runner_goal.py|test_agent_runner_goal]]
@@ -1007,6 +1031,13 @@ Use this to orient yourself before diving into a specific module.
   summary: def test_speech_formatter_adds_pause_markers_between_sentences():
 - [[nova_backend/tests/rendering/test_tts_engine.py|test_tts_engine]]
   summary: def test_nova_speak_falls_back_to_tts_executor_when_renderer_unavailable(monkeypatch):
+- [[nova_backend/tests/routine/__init__.py|tests/routine]]
+- [[nova_backend/tests/routine/test_daily_brief_routine.py|test_daily_brief_routine]]
+  summary: Tests for daily_brief_routine.py — Daily Brief as RoutineGraph v0.
+- [[nova_backend/tests/routine/test_plan_my_week_routine.py|test_plan_my_week_routine]]
+  summary: Tests for plan_my_week_routine.py — Plan My Week everyday workflow demo.
+- [[nova_backend/tests/routine/test_routine_graph.py|test_routine_graph]]
+  summary: Tests for routine_graph.py — core RoutineGraph objects.
 - [[nova_backend/tests/simulation/__init__.py|tests/simulation]]
   summary: Simulation test package marker.
 - [[nova_backend/tests/simulation/adversarial/__init__.py|tests/simulation/adversarial]]

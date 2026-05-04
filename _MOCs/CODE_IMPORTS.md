@@ -122,6 +122,7 @@ Imports from:
 - [[nova_backend/src/cognition/__init__.py|src/cognition]]
 - [[nova_backend/src/governor/agent_orchestrator.py|agent_orchestrator - src/governor]] (in `governor`)
 - [[nova_backend/src/llm/inference_wrapper.py|inference_wrapper]] (in `llm`)
+- [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]] (in `memory`)
 - [[nova_backend/src/personality/__init__.py|src/personality]]
 - [[nova_backend/src/services/stt_engine.py|stt_engine]] (in `services`)
 - [[nova_backend/src/skills/__init__.py|src/skills]]
@@ -202,6 +203,7 @@ Imports from:
 
 Imports from:
 
+- [[nova_backend/src/base_skill.py|base_skill]]
 - [[nova_backend/src/utils/content_extractor.py|content_extractor]] (in `utils`)
 
 ## `nova_config`
@@ -272,6 +274,12 @@ Imports from:
 Imports from:
 
 - [[nova_backend/src/services/stt_engine.py|stt_engine]] (in `services`)
+
+## `routine`
+
+Imports from:
+
+- [[nova_backend/src/brief/__init__.py|src/brief]]
 
 ## `services`
 

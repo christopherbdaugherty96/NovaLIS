@@ -12,7 +12,7 @@ A lighter, cross-cutting view than categories — a file can appear under
 multiple themes when its path or contents match several concerns.
 Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category]].
 
-## governance (133)
+## governance (134)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -114,6 +114,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/capability_verification/live_checklists/cap_61_memory_governance|Live Test Checklist — Cap 61: memory_governance]]
 - [doc] [[docs/PROOFS/Phase-5/MEMORY_GOVERNANCE_RATIFICATION_ACT_2026-03-09|Memory Governance Ratification Act]]
 - [doc] [[docs/design/Phase 8/PHASE_8_ADVANCED_GOVERNOR_LAYER_ARCHITECTURE_2026-03-27|Nova - Advanced Governor Layer Architecture (Phase 8)]]
+- [doc] [[docs/community/ONBOARDING|Nova Contributor Onboarding]]
 - [doc] [[docs/demo_proof/2026-04-28_user_test/DEMO_SCRIPT|Nova Demo Script - 2026-04-28 User Test]]
 - [doc] [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
 - [doc] [[docs/future/NOVA_OPENCLAW_GOVERNANCE_HARDENING_2026-04-21|Nova OpenClaw Governance Hardening Plan]]
@@ -277,7 +278,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/design/Phase 4/GOVERNED_TTS_SPEC.md.txt|🔊 NOVA — GOVERNED TEXT-TO-SPEECH (TTS) COMPLETE SPECIFICATION]]
 - [doc] [[docs/archive/Audio conversion proof|🔒 SAVE & LOCK — STT Windows Subprocess Stabilization]]
 
-## memory (72)
+## memory (79)
 
 - [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/10_memory_context_boundary.png|10_memory_context_boundary.png]]
 - [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_memory.png|level1_memory.png]]
@@ -288,6 +289,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[docs/archive/phase 3/brain_server_Phase3.py|brain_server_Phase3 - archive/phase 3]]
 - [code] [[docs/archive/phase 3.5/brain_server_Phase3.py|brain_server_Phase3 - archive/phase 3.5]]
 - [code] [[nova_backend/src/working_context/context_builder.py|context_builder]]
+- [code] [[nova_backend/src/brain/context_pack.py|context_pack]]
 - [code] [[nova_backend/src/working_context/context_pruner.py|context_pruner]]
 - [code] [[nova_backend/src/working_context/context_router.py|context_router]]
 - [code] [[nova_backend/src/working_context/context_signals.py|context_signals]]
@@ -304,6 +306,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/simulation/scenarios/memory_contradiction_location.json|memory_contradiction_location]]
 - [code] [[nova_backend/tests/simulation/scenarios/memory_contradiction_preference.json|memory_contradiction_preference]]
 - [code] [[nova_backend/src/executors/memory_governance_executor.py|memory_governance_executor]]
+- [code] [[nova_backend/src/memory/memory_skill.py|memory_skill]]
 - [code] [[nova_backend/src/memory/nova_self_memory_store.py|nova_self_memory_store]]
 - [code] [[nova_backend/src/working_context/operational_remembrance.py|operational_remembrance]]
 - [code] [[nova_backend/src/working_context/pattern_review_store.py|pattern_review_store - src/working_context]]
@@ -317,14 +320,19 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/test_governed_memory_store.py|test_governed_memory_store]]
 - [code] [[nova_backend/tests/test_memory_api.py|test_memory_api]]
 - [code] [[nova_backend/tests/phase5/test_memory_governance_executor.py|test_memory_governance_executor]]
+- [code] [[nova_backend/tests/memory/test_memory_skill.py|test_memory_skill]]
+- [code] [[nova_backend/tests/memory/__init__.py|tests/memory]]
 - [code] [[nova_backend/src/memory/user_memory_store.py|user_memory_store]]
+- [doc] [[docs/future/BRAIN_MEMORY_HUMAN_GUIDE|Brain + Memory Human Guide]]
 - [doc] [[docs/product/CONVERSATION_AND_MEMORY_MODEL|Conversation and Memory Model]]
+- [doc] [[docs/demo_proof/daily_operating_baseline/CONVERSATION_CONTINUITY_PROOF|Conversation Continuity Proof]]
 - [doc] [[docs/capability_verification/live_checklists/cap_51_topic_memory_map|Live Test Checklist — Cap 51: topic_memory_map]]
 - [doc] [[docs/capability_verification/live_checklists/cap_61_memory_governance|Live Test Checklist — Cap 61: memory_governance]]
 - [doc] [[automations/weekly-engineering-summary/memory|memory - automations/weekly-engineering-summary]]
 - [doc] [[docs/design/IDEAS/MEMORY_AUDIT_REVIEW_2026-04-19|Memory Audit + First Fix Pass — Executive Review]]
 - [doc] [[docs/PROOFS/Phase-5/MEMORY_GOVERNANCE_RATIFICATION_ACT_2026-03-09|Memory Governance Ratification Act]]
 - [doc] [[docs/brain/MEMORY_LAYERS|Memory Layers]]
+- [doc] [[docs/demo_proof/daily_operating_baseline/MEMORY_LOOP_PROOF|Memory Loop Proof]]
 - [doc] [[docs/product/COHERENCE_AUDIT_2026-04-28|Nova Coherence Audit — 2026-04-28]]
 - [doc] [[docs/future/NOVA_COHERENCE_MEMORY_BACKGROUND_ARCHITECTURE_ALIGNMENT|Nova Coherence, Memory, And Background Reasoning Alignment Map]]
 - [doc] [[docs/design/phase 5/NOVA_CROSS_SYSTEM_MEMORY_AND_GOVERNED_AWARENESS_DIRECTION_2026-03-27|Nova Cross-System Memory and Governed Awareness Direction]]
@@ -352,7 +360,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/status/README|Status Notes]]
 - [doc] [[docs/design/Phase 9/# 🧬 NOVA MEMORY ARCHITECTURE USER.txt|🧬 NOVA MEMORY ARCHITECTURE: USER MEMORY & SYSTEM MEMORY]]
 
-## ux (87)
+## ux (88)
 
 - [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/01_dashboard_home.png|01_dashboard_home.png]]
 - [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/03_workspace_home.png|03_workspace_home.png]]
@@ -429,6 +437,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/product/GOVERNED_WORKFLOW_WORKSPACE_ARCHITECTURE|Governed Workflow Workspace Architecture]]
 - [doc] [[docs/capability_verification/live_dashboard_basic_user_smoke_2026-04-23|Live Dashboard Basic User Smoke - 2026-04-23]]
 - [doc] [[docs/capability_verification/live_news_headlines_2026-04-23|Live News And Headlines Verification - 2026-04-23]]
+- [doc] [[docs/community/ONBOARDING|Nova Contributor Onboarding]]
 - [doc] [[docs/design/Phase 4.5/NOVA_FRONTEND_FOUNDATION_AND_USABILITY_ROADMAP_2026-04-10|Nova Frontend Foundation And Usability Roadmap]]
 - [doc] [[docs/future/NOVA_GOOGLE_ACCOUNT_AND_CONNECTOR_ONBOARDING_PLAN|Nova Google Account And Connector Onboarding Plan]]
 - [doc] [[docs/design/Phase 4.5/NOVA_USABILITY_NEXT_STEPS_ROADMAP_2026-04-10|Nova Usability Next Steps Roadmap]]
@@ -442,7 +451,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/brain/PROJECT_CONTEXTS|Project Contexts]]
 - [doc] [[docs/archive/phase 2/# 🎨 Nova Frontend Dashboard — Tech.txt|🎨 Nova Frontend Dashboard — Technical Overview]]
 
-## runtime (56)
+## runtime (57)
 
 - [code] [[nova_backend/src/openclaw/agent_execution_memory.py|agent_execution_memory]]
 - [code] [[nova_backend/src/openclaw/agent_fallback_strategies.py|agent_fallback_strategies]]
@@ -458,6 +467,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/src/openclaw/agent_tool_executor.py|agent_tool_executor]]
 - [code] [[nova_backend/src/openclaw/agent_tool_registry_bootstrap.py|agent_tool_registry_bootstrap]]
 - [code] [[nova_backend/src/api/bridge_api.py|bridge_api]]
+- [code] [[nova_backend/src/brain/context_pack.py|context_pack]]
 - [code] [[nova_backend/src/conversation/deepseek_bridge.py|deepseek_bridge]]
 - [code] [[nova_backend/src/openclaw/envelope_factory.py|envelope_factory]]
 - [code] [[nova_backend/src/openclaw/envelope_store.py|envelope_store]]
@@ -501,7 +511,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (648)
+## testing (657)
 
 - [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/01_dashboard_home.png|01_dashboard_home.png]]
 - [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/02_intro_setup_surface.png|02_intro_setup_surface.png]]
@@ -622,6 +632,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/phase8/test_assistive_noticing.py|test_assistive_noticing]]
 - [code] [[nova_backend/tests/phase6/test_atomic_policy_store.py|test_atomic_policy_store]]
 - [code] [[nova_backend/tests/test_audit_api.py|test_audit_api]]
+- [code] [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
 - [code] [[nova_backend/tests/phase45/test_brain_server_basic_conversation.py|test_brain_server_basic_conversation]]
 - [code] [[nova_backend/tests/phase45/test_brain_server_followups_and_voice.py|test_brain_server_followups_and_voice]]
 - [code] [[nova_backend/tests/phase45/test_brain_server_memory_and_continuity.py|test_brain_server_memory_and_continuity]]
@@ -647,12 +658,14 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/phase45/test_connections_api.py|test_connections_api]]
 - [code] [[nova_backend/tests/phase45/test_connections_store.py|test_connections_store]]
 - [code] [[nova_backend/tests/test_connector_package_registry.py|test_connector_package_registry]]
+- [code] [[nova_backend/tests/brain/test_context_pack.py|test_context_pack]]
 - [code] [[nova_backend/tests/phase42/test_context_snapshot.py|test_context_snapshot]]
 - [code] [[nova_backend/tests/phase45/test_context_snapshot_contract.py|test_context_snapshot_contract]]
 - [code] [[nova_backend/tests/adversarial/test_conversation_non_authorizing.py|test_conversation_non_authorizing]]
 - [code] [[nova_backend/tests/conversation/test_conversation_personality_agent.py|test_conversation_personality_agent]]
 - [code] [[nova_backend/tests/conversation/test_conversation_router.py|test_conversation_router]]
 - [code] [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
+- [code] [[nova_backend/tests/routine/test_daily_brief_routine.py|test_daily_brief_routine]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_auto_widget_dispatch.py|test_dashboard_auto_widget_dispatch]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_brief_shortcuts.py|test_dashboard_brief_shortcuts]]
 - [code] [[nova_backend/tests/phase45/test_dashboard_calendar_integration.py|test_dashboard_calendar_integration]]
@@ -728,6 +741,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/governance/test_mediator_registry_enforcement.py|test_mediator_registry_enforcement]]
 - [code] [[nova_backend/tests/test_memory_api.py|test_memory_api]]
 - [code] [[nova_backend/tests/phase5/test_memory_governance_executor.py|test_memory_governance_executor]]
+- [code] [[nova_backend/tests/memory/test_memory_skill.py|test_memory_skill]]
 - [code] [[nova_backend/tests/conversation/test_meta_intent_handler.py|test_meta_intent_handler]]
 - [code] [[nova_backend/tests/governance/test_model_network_mediator_thread_safety.py|test_model_network_mediator_thread_safety]]
 - [code] [[nova_backend/tests/executors/test_multi_source_reporting_executor.py|test_multi_source_reporting_executor]]
@@ -793,6 +807,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/phase7/test_phase7_runtime_contract.py|test_phase7_runtime_contract]]
 - [code] [[nova_backend/tests/phase8/test_phase8_design_gate.py|test_phase8_design_gate]]
 - [code] [[nova_backend/tests/phase8/test_phase8_runtime_contract.py|test_phase8_runtime_contract]]
+- [code] [[nova_backend/tests/routine/test_plan_my_week_routine.py|test_plan_my_week_routine]]
 - [code] [[nova_backend/tests/conversation/test_planning_run_preview.py|test_planning_run_preview]]
 - [code] [[nova_backend/tests/phase45/test_policy_center_surface.py|test_policy_center_surface]]
 - [code] [[nova_backend/tests/phase6/test_policy_executor_gate.py|test_policy_executor_gate]]
@@ -816,6 +831,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
 - [code] [[nova_backend/tests/executors/test_response_verification_executor.py|test_response_verification_executor]]
 - [code] [[nova_backend/tests/openclaw/test_robust_executor.py|test_robust_executor]]
+- [code] [[nova_backend/tests/routine/test_routine_graph.py|test_routine_graph]]
 - [code] [[nova_backend/tests/test_rss_fetch.py|test_rss_fetch]]
 - [code] [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
 - [code] [[nova_backend/tests/openclaw/test_run_state_machine.py|test_run_state_machine]]
@@ -833,6 +849,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/brain/test_search_synthesis.py|test_search_synthesis]]
 - [code] [[nova_backend/tests/executors/test_send_email_draft_executor.py|test_send_email_draft_executor]]
 - [code] [[nova_backend/tests/test_send_email_draft_routing.py|test_send_email_draft_routing]]
+- [code] [[nova_backend/tests/conversation/test_session_conversation_context.py|test_session_conversation_context]]
 - [code] [[nova_backend/tests/conversation/test_session_router.py|test_session_router]]
 - [code] [[nova_backend/tests/connectors/test_shopify_connector.py|test_shopify_connector]]
 - [code] [[nova_backend/tests/executors/test_shopify_intelligence_report_executor.py|test_shopify_intelligence_report_executor]]
@@ -889,9 +906,11 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/__init__.py|tests/certification/cap_65_shopify_intelligence_report]]
 - [code] [[nova_backend/tests/evaluation/__init__.py|tests/evaluation]]
 - [code] [[nova_backend/tests/identity/__init__.py|tests/identity]]
+- [code] [[nova_backend/tests/memory/__init__.py|tests/memory]]
 - [code] [[nova_backend/tests/phase45/__init__.py|tests/phase45]]
 - [code] [[nova_backend/tests/phase7/__init__.py|tests/phase7]]
 - [code] [[nova_backend/tests/phase9/__init__.py|tests/phase9]]
+- [code] [[nova_backend/tests/routine/__init__.py|tests/routine]]
 - [code] [[nova_backend/tests/simulation/__init__.py|tests/simulation]]
 - [code] [[nova_backend/tests/simulation/adversarial/__init__.py|tests/simulation/adversarial]]
 - [code] [[nova_backend/tests/simulation/stress/__init__.py|tests/simulation/stress]]
@@ -1152,7 +1171,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/archive/phase 4/check-in.txt|🧬 NOVA — Phase-4 Infrastructure Completion Record]]
 - [doc] [[docs/PROOFS/Phase-4/PHASE-4 PRE-UNLOCK STRUCTURAL CERTIFICATION.txt|🧬 NOVA — PHASE-4 PRE-UNLOCK STRUCTURAL CERTIFICATION]]
 
-## architecture (297)
+## architecture (302)
 
 - [doc] [[docs/design/archive/redundant_placeholders_2026-04-02/# 🧬 NOVA INTELLIGENCE CAPACITY THE.txt|# 🧬 NOVA INTELLIGENCE CAPACITY THE]]
 - [doc] [[docs/design/archive/redundant_placeholders_2026-04-02/# 🧬 NOVA PHASE 4.2 ROADMAP.txt|# 🧬 NOVA PHASE 4.2 ROADMAP]]
@@ -1177,6 +1196,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/design/Phase 6/ATOMIC_POLICY_LANGUAGE_AND_POLICY_ENVELOPE_SPEC|ATOMIC_POLICY_LANGUAGE_AND_POLICY_ENVELOPE_SPEC]]
 - [doc] [[docs/design/archive(phase 4)/audit of recent work2-10-26.txt|audit of recent work2-10-26]]
 - [doc] [[docs/reference/HUMAN_GUIDES/13_BACKEND_RUNTIME_GUIDE|Backend Runtime Guide]]
+- [doc] [[docs/future/BRAIN_MEMORY_HUMAN_GUIDE|Brain + Memory Human Guide]]
 - [doc] [[docs/design/Phase 10/PHASE 10.txt|break_attempts/INVARIANT_1_NO_AUTONOMY/attempt_001.py]]
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
 - [doc] [[docs/product/CAPABILITY_SIGNOFF_MATRIX|Capability Signoff Matrix]]
@@ -1187,6 +1207,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/design/Phase 7/CONVERSATIONAL_FLOW_AND_SILENT_GOVERNOR_PLAN_2026-03-21|Conversational Flow And Silent Governor Plan]]
 - [doc] [[docs/design/Phase 4/CONVERSATIONAL MODE.txt|CONVERSATIONAL MODE]]
 - [doc] [[docs/design/Phase 9/COPILOT_SESSION_AUDIT_2026-04-07|Copilot Session Audit — 2026-04-07]]
+- [doc] [[docs/reference/HUMAN_GUIDES/CURRENT_STAGE_GUIDE|Current Stage Guide — Stages 3, 4, 5, and 6]]
 - [doc] [[docs/reference/HUMAN_GUIDES/07_CURRENT_STATE|Current State]]
 - [doc] [[docs/reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS|Daily Workflows]]
 - [doc] [[docs/design/Phase 7/# Deep Review of the Nova Constitut.txt|Deep Review of the Nova Constitutional Architecture]]
@@ -1206,6 +1227,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/design/archive(phase 4)/Four-Phase Roadmap with Deep Audit.txt|Four-Phase Roadmap with Deep Audit]]
 - [doc] [[docs/design/Phase 6/FREE_FIRST_COST_GOVERNANCE_FIRST_STEPS_2026-04-30|Free-First Cost Governance — First Implementation Steps]]
 - [doc] [[docs/reference/HUMAN_GUIDES/14_FRONTEND_AND_UI_GUIDE|Frontend and UI Guide]]
+- [doc] [[docs/future/FUTURE_AGENT_ARCHITECTURE_BACKLOG|Future Agent Architecture Backlog]]
 - [doc] [[future/brain/ARCHITECTURE_MAP|Future Brain Architecture Map]]
 - [doc] [[docs/future/2026-04-15_portfolio_transformation_vision.txt|Gap Why It Matters Fix Priority]]
 - [doc] [[docs/current_runtime/GOVERNANCE_MATRIX|GOVERNANCE_MATRIX]]
@@ -1231,11 +1253,13 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
 - [doc] [[docs/design/Phase 9/NOVA_MASTER_ROADMAP_2026-04-02|Nova - Master Roadmap]]
 - [doc] [[docs/future/NOVA_AGENT_OPERATING_MODEL|Nova Agent Operating Model]]
+- [doc] [[docs/future/NOVA_AGENT_STACK_RECOMMENDATIONS|Nova Agent Stack Recommendations]]
 - [doc] [[docs/reference/ARCHITECTURE|Nova Architecture]]
 - [doc] [[docs/design/Phase 4.5/NOVA_ASSISTANT_UTILITY_AND_UI_AUDIT_2026-03-20|Nova Assistant Utility And UI Audit]]
 - [doc] [[docs/design/Phase 6/NOVA_AUDIT_TODO_2026-03-28|NOVA Audit TODO]]
 - [doc] [[docs/brain|Nova Brain]]
 - [doc] [[docs/brain/README|Nova Brain Architecture]]
+- [doc] [[docs/future/BRAIN_HUMAN_GUIDE|Nova Brain Human Guide]]
 - [doc] [[docs/brain/NOVA_BRAIN_RUNTIME_ARCHITECTURE|Nova Brain Runtime Architecture]]
 - [doc] [[docs/design/Phase 4.5/NOVA_CHATBOX_HELPER_BUTTONS_CLEANUP_NOTE_2026-03-21|Nova Chatbox Helper Buttons Cleanup Note]]
 - [doc] [[docs/future/NOVA_COHERENCE_MEMORY_BACKGROUND_ARCHITECTURE_ALIGNMENT|Nova Coherence, Memory, And Background Reasoning Alignment Map]]
