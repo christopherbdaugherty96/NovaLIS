@@ -30,7 +30,7 @@ deleted.
 - Nova does not act on memory — memory provides context only, not authority
 - Forgotten items are gone from all read paths immediately
 
-**Proven by:** 62 tests and `docs/demo_proof/daily_operating_baseline/MEMORY_LOOP_PROOF.md`
+**Proven by:** tests and `docs/demo_proof/daily_operating_baseline/MEMORY_LOOP_PROOF.md`
 
 ---
 
@@ -38,101 +38,72 @@ deleted.
 
 **What it means in plain language:**
 Before Nova answers a question that draws on your memory, search results, or project state,
-it now assembles a clean, labeled bundle called a Context Pack. This bundle has hard size
-limits, source labels on every item, and checks for stale or conflicting information — before
-any of it reaches Nova's reasoning layer.
+it now assembles a clean, labeled bundle called a Context Pack.
 
-**What it means for you as a user:**
-- You will not get answers that quietly mix authoritative runtime truth with old guesses
-- Nova knows which items are confirmed memory vs. candidates vs. runtime facts
-- Nova knows when two items conflict and will flag it rather than picking one silently
-- The pack cannot execute or authorize anything — it is read-only input to reasoning
-
-**What is live as of Stage 6:**
-- Context Pack is wired into `general_chat_runtime.py`. Raw memory items pass through
-  `compose_context_pack()` before reaching the prompt on every general-chat turn.
-  Budget enforcement, source labels, stale/conflict detection, and authority ranking
-  are now active.
-
-**Proven by:** 72 tests and `docs/demo_proof/daily_operating_baseline/CONTEXT_PACK_PROOF.md`
+**What is live:**
+- Context Pack is wired into `general_chat_runtime.py`
+- Budget enforcement, source labels, stale/conflict detection, and authority ranking are active
+- Context Pack cannot execute or authorize anything
 
 ---
 
 ## Stage 5 — Brain Mode Contracts
 
 **What it means in plain language:**
-Nova now operates under explicit mode contracts when it reasons. Each mode has a defined set
-of things it can do, things it cannot do, and whether it is allowed to make changes to the
-codebase.
+Nova reasons under explicit mode contracts with strict boundaries.
 
-**The seven modes:**
-
-| Mode | Purpose | May change code? |
-|------|---------|-----------------|
-| brainstorm | Explore ideas freely | No |
-| repo_review | Review and explain existing code | No |
-| implementation | Write or modify code | Yes |
-| merge | Integrate branches and close PRs | Yes |
-| planning | Plan work and structure decisions | No |
-| action_review | Review proposed or past actions | No |
-| casual | Conversational, low-stakes answers | No |
-
-**The key rule:**
-Only `implementation` and `merge` may mutate the repo. Every other mode is prohibited from
-doing so. This is enforced in code, not just described as intended behavior.
-
-**What is live as of Stage 6:**
-- Brain mode is classified on every general-chat turn.
-- A safe BrainTrace is recorded in session state.
-- BrainTrace uses structural notes only; it does not expose private chain-of-thought.
+**What is live:**
+- Brain mode is classified every turn
+- BrainTrace is recorded (non-authorizing, no chain-of-thought exposure)
 
 **What is NOT yet live:**
-- Brain mode is not yet surfaced per-turn in the UI. You cannot yet see which mode Nova is
-  operating in during a live conversation.
-
-**Proven by:** 87 tests and `docs/demo_proof/daily_operating_baseline/BRAIN_MODE_PROOF.md`
-
----
-
-## What The Three Stages Add Up To
-
-Stages 3, 4, and 5 together mean:
-
-1. Nova can remember explicit things you ask it to remember, without silent autosave or
-   hidden reuse.
-2. When Nova draws on that memory, it assembles a governed, labeled bundle first — with
-   hard limits, source labels, and stale/conflict checks.
-3. When Nova reasons, it operates under a mode contract that says exactly what it is and is
-   not allowed to do in that mode.
-
-The core infrastructure for memory, context, and mode discipline is implemented, tested, and
-wired into the general-chat runtime path.
+- Brain mode is not visible per-turn in UI
 
 ---
 
 ## Stage 6 — Runtime Wiring and Routine Surfaces
 
 **What it means in plain language:**
-Nova's memory, context, and mode foundations are now connected to the live prompt path.
-Stage 6 is about building visible routines on top of that foundation. The first routine
-surface is the Daily Brief RoutineGraph.
+The system foundation is now wired. Stage 6 introduces routines built on top of it.
 
 **What is working now:**
-- Context Pack is wired into `general_chat_runtime.py` — every general-chat turn now enforces
-  budget limits, source labels, stale/conflict detection, and authority ranking before memory
-  reaches the prompt
-- Brain mode is classified on every turn and a BrainTrace is recorded in session state
-- Memory items confirmed by the user (source: explicit_user_save) are preferred over
-  auto-extracted candidates — every turn, not just in tests
-- Daily Brief RoutineGraph v0 exists as the first governed routine surface: 8 named blocks,
-  non-authorizing RoutineRun/RoutineReceipt records, and 60 routine tests
+- Context Pack + Brain Mode are wired into runtime
+- Daily Brief RoutineGraph v0 exists (non-authorizing)
+- Plan My Week routine exists:
+  - generates a structured plan
+  - records approval decisions
+  - produces receipts
+  - does NOT execute real-world actions
 
-**What is being built next:**
-- Everyday workflow demo: plan my week from tasks, notes, calendar context, and priorities,
-  with an approval boundary and a receipt
-- Additional routine surfaces only after the Daily Brief RoutineGraph remains stable
+**What is NOT happening:**
+- No automation is triggered from routines
+- Approval does not execute tasks
 
-**What is NOT yet live:**
-- Brain mode is not yet surfaced per-turn in the UI (classified and traced internally)
-- Broad routine execution with real approval gates beyond the current Daily Brief routine slice
-- Memory UX beyond the conversational loop (dedicated page, export)
+**What comes next (corrected):**
+- Build a visible workflow layer (Daily Operator / business workflow demo)
+- Surface Brain Mode, Context Pack, and Routine outputs in UI
+- Introduce governed workflow workspace shell
+
+---
+
+## What These Stages Actually Mean
+
+You now have:
+- governed memory
+- bounded context assembly
+- structured reasoning modes
+- non-authorizing routines
+
+You do NOT yet have:
+- automated workflows
+- execution from plans
+- visible workflow UI
+- end-to-end product experience
+
+---
+
+## Reality Summary
+
+Nova is now a governed reasoning + workflow substrate.
+
+It is not yet a fully usable daily workflow product.
