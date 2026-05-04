@@ -391,7 +391,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
   summary: Updated: 2026-04-28
 
-## Runtime and ops (22 docs, 263 code)
+## Runtime and ops (22 docs, 271 code)
 
 - [code] [[nova_backend/src/__init__.py|src]]
 - [code] [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -482,8 +482,12 @@ concern is reflected across docs, code and tests.
   summary: Base skill classes and result structure for NovaLIS.
 - [code] [[nova_backend/src/brain/__init__.py|src/brain]]
   summary: Read-only Brain scaffolding.
+- [code] [[nova_backend/src/brain/brain_mode.py|brain_mode]]
+  summary: Brain mode contracts and safe trace.
 - [code] [[nova_backend/src/brain/capability_contracts.py|capability_contracts]]
   summary: Static Brain capability contract catalog.
+- [code] [[nova_backend/src/brain/context_pack.py|context_pack]]
+  summary: Context Pack — bounded, labeled context bridge between Memory/Search/Project and Brain.
 - [code] [[nova_backend/src/brain/environment_request.py|environment_request]]
   summary: Read-only Brain environment planning schemas.
 - [code] [[nova_backend/src/brain/run_manager.py|run_manager]]
@@ -499,6 +503,8 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/src/brief/__init__.py|src/brief]]
 - [code] [[nova_backend/src/brief/daily_brief.py|daily_brief]]
   summary: Daily Brief synthesis module.
+- [code] [[nova_backend/src/brief/recommendations.py|recommendations]]
+  summary: Deterministic next-action recommendation selector for the Daily Brief.
 - [code] [[nova_backend/src/build_phase.py|build_phase]]
   summary: Compile-time style phase gate. This constant is intentionally static in source
 - [code] [[nova_backend/src/capabilities/__init__.py|src/capabilities]]
@@ -664,6 +670,8 @@ concern is reflected across docs, code and tests.
   summary: SYSTEM_PROMPT = """You are Nova, a personal AI assistant who is genuinely helpful and warmly competent.
 - [code] [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]]
   summary: _MEMORY_SEARCH_STOPWORDS = {
+- [code] [[nova_backend/src/memory/memory_skill.py|memory_skill]]
+  summary: Conversational memory skill for the memory loop.
 - [code] [[nova_backend/src/memory/nova_self_memory_store.py|nova_self_memory_store]]
   summary: Nova self-memory store — Nova's own memory about the relationship and patterns.
 - [code] [[nova_backend/src/memory/quick_corrections.py|quick_corrections]]
@@ -785,6 +793,13 @@ concern is reflected across docs, code and tests.
   summary: class SpeechFormatter:
 - [code] [[nova_backend/src/routers/stt.py|stt]]
   summary: Phase-3 STT Router (freeze-ready)
+- [code] [[nova_backend/src/routine/__init__.py|src/routine]]
+- [code] [[nova_backend/src/routine/daily_brief_routine.py|daily_brief_routine]]
+  summary: Daily Brief as the first governed RoutineGraph.
+- [code] [[nova_backend/src/routine/plan_my_week_routine.py|plan_my_week_routine]]
+  summary: Plan My Week — everyday workflow demo with an explicit approval boundary.
+- [code] [[nova_backend/src/routine/routine_graph.py|routine_graph]]
+  summary: Core RoutineGraph objects: RoutineBlock, RoutineGraph, RoutineRun, RoutineReceipt.
 - [code] [[nova_backend/src/services/stt_engine.py|stt_engine]]
   summary: Phase-3 STT Engine (LOCAL, INPUT-ONLY, FREEZE-READY)
 - [code] [[nova_backend/src/services/weather_service.py|weather_service]]
@@ -910,7 +925,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 961b1d641b1e425b633897e01146875ea5b52eb70781027a91cddde8982c440b
+  summary: Runtime Fingerprint: 71e61b4108532e379134cb982a6744717553a343cb0a8cbf2da8c8f538a04572
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -934,7 +949,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 5dcbb2fa7fd897cf8c071364cc3eabb4f0eff512ac26a5d480421e70a7a338aa
+  summary: - runtimesurfacehash: 37df1cb7dc2fb3cb550545fd2a3da94282d9b027a077582c07c8b889b2391050
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1011,7 +1026,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
   summary: :root {
 
-## Tests (5 docs, 341 code)
+## Tests (5 docs, 350 code)
 
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1045,8 +1060,12 @@ concern is reflected across docs, code and tests.
   summary: Goal:
 - [code] [[nova_backend/tests/adversarial/test_tts_spine_integrity.py|test_tts_spine_integrity]]
   summary: def test_tts_engine_speak_only_called_in_tts_executor():
+- [code] [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
+  summary: Tests for brain_mode.py — prove the four Stage 5 invariants.
 - [code] [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
   summary: CapabilityContractNotFound,
+- [code] [[nova_backend/tests/brain/test_context_pack.py|test_context_pack]]
+  summary: Tests for context_pack.py — prove the four Stage 4 invariants.
 - [code] [[nova_backend/tests/brain/test_environment_request.py|test_environment_request]]
   summary: AllowedStatus,
 - [code] [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
@@ -1128,6 +1147,8 @@ concern is reflected across docs, code and tests.
   summary: def test_response_style_defaults_to_direct():
 - [code] [[nova_backend/tests/conversation/test_safety_filter.py|test_safety_filter]]
   summary: def test_safety_filter_appends_disclaimer_on_action_language():
+- [code] [[nova_backend/tests/conversation/test_session_conversation_context.py|test_session_conversation_context]]
+  summary: Tests for SessionConversationContext — serialization, deserialization, and
 - [code] [[nova_backend/tests/conversation/test_session_router.py|test_session_router]]
   summary: def test_normalize_and_route_empty_input_flags_empty():
 - [code] [[nova_backend/tests/conversation/test_task_understanding_preview.py|test_task_understanding_preview]]
@@ -1243,6 +1264,9 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/tests/identity/__init__.py|tests/identity]]
 - [code] [[nova_backend/tests/identity/test_nova_self_awareness.py|test_nova_self_awareness]]
   summary: Tests for Nova self-awareness context builder.
+- [code] [[nova_backend/tests/memory/__init__.py|tests/memory]]
+- [code] [[nova_backend/tests/memory/test_memory_skill.py|test_memory_skill]]
+  summary: Tests for the MemorySkill memory loop.
 - [code] [[nova_backend/tests/openclaw/test_agent_runner.py|test_agent_runner]]
   summary: @pytest.mark.asyncio
 - [code] [[nova_backend/tests/openclaw/test_agent_runner_goal.py|test_agent_runner_goal]]
@@ -1469,6 +1493,13 @@ concern is reflected across docs, code and tests.
   summary: def test_speech_formatter_adds_pause_markers_between_sentences():
 - [code] [[nova_backend/tests/rendering/test_tts_engine.py|test_tts_engine]]
   summary: def test_nova_speak_falls_back_to_tts_executor_when_renderer_unavailable(monkeypatch):
+- [code] [[nova_backend/tests/routine/__init__.py|tests/routine]]
+- [code] [[nova_backend/tests/routine/test_daily_brief_routine.py|test_daily_brief_routine]]
+  summary: Tests for daily_brief_routine.py — Daily Brief as RoutineGraph v0.
+- [code] [[nova_backend/tests/routine/test_plan_my_week_routine.py|test_plan_my_week_routine]]
+  summary: Tests for plan_my_week_routine.py — Plan My Week everyday workflow demo.
+- [code] [[nova_backend/tests/routine/test_routine_graph.py|test_routine_graph]]
+  summary: Tests for routine_graph.py — core RoutineGraph objects.
 - [code] [[nova_backend/tests/simulation/__init__.py|tests/simulation]]
   summary: Simulation test package marker.
 - [code] [[nova_backend/tests/simulation/adversarial/__init__.py|tests/simulation/adversarial]]
@@ -2145,7 +2176,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/UNLOCK/phase 4/PHASE_4_UNLOCK_ACT.md.txt|PHASE_4_UNLOCK_ACT.md - UNLOCK/phase 4]] - Phase 4
   summary: PHASE4UNLOCKACT.md
 
-## Reference (342 docs, 71 code)
+## Reference (363 docs, 71 code)
 
 - [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/01_dashboard_home.png|01_dashboard_home.png]]
 - [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/02_intro_setup_surface.png|02_intro_setup_surface.png]]
@@ -2440,6 +2471,8 @@ concern is reflected across docs, code and tests.
   summary: Use this prompt when improving NovaLIS in future sessions.
 - [doc] [[docs/claude_prompts/README|Claude Prompts]]
   summary: Reusable prompts for working on NovaLIS with Claude.
+- [doc] [[docs/community/ONBOARDING|Nova Contributor Onboarding]]
+  summary: NovaLIS is a governance-first local AI system.
 - [doc] [[docs/demo_proof/2026-04-28_user_test/DEMO_SCRIPT|Nova Demo Script - 2026-04-28 User Test]]
   summary: Show Nova as it exists today: a governance-first local AI system where intelligence helps, but authority stays bounded, visible, and reviewa...
 - [doc] [[docs/demo_proof/2026-04-28_user_test/FRICTION_LOG|Friction Log - 2026-04-28 User Test]]
@@ -2468,6 +2501,18 @@ concern is reflected across docs, code and tests.
   summary: Date: 2026-04-29
 - [doc] [[docs/demo_proof/brain_live_test/screenshots/CAPTURE_INSTRUCTIONS|Screenshot Capture Instructions]]
   summary: Screenshots were not captured during this pass.
+- [doc] [[docs/demo_proof/daily_operating_baseline/BRAIN_MODE_PROOF|Brain Mode Proof]]
+  summary: Status: PASS — Stage 5 brain mode contracts and trace implemented and proven, 2026-05-02.
+- [doc] [[docs/demo_proof/daily_operating_baseline/CONTEXT_PACK_PROOF|Context Pack Proof]]
+  summary: Status: PASS — Stage 4 Context Pack implemented and proven, 2026-05-02.
+- [doc] [[docs/demo_proof/daily_operating_baseline/CONVERSATION_CONTINUITY_PROOF|Conversation Continuity Proof]]
+  summary: Status: PASS — re-verified 2026-05-02 against main at f82cc9c.
+- [doc] [[docs/demo_proof/daily_operating_baseline/DAILY_BRIEF_PROOF|Daily Brief Proof]]
+  summary: Status: PASS — re-verified 2026-05-02 against main at f82cc9c.
+- [doc] [[docs/demo_proof/daily_operating_baseline/MEMORY_LOOP_PROOF|Memory Loop Proof]]
+  summary: Status: PASS — Stage 3 memory loop implemented and proven, 2026-05-02.
+- [doc] [[docs/demo_proof/daily_operating_baseline/SEARCH_FEEDBACK_PROOF|Search Feedback Proof]]
+  summary: Status: PASS — re-verified 2026-05-02 against main at f82cc9c.
 - [doc] [[docs/dev/docs_qa_report|Docs QA Report]]
   summary: Generated during the public-docs cleanup pass.
 - [doc] [[docs/dev/README|Developer Docs]]
@@ -2486,6 +2531,10 @@ concern is reflected across docs, code and tests.
   summary: Status: Reference — kept current
 - [doc] [[docs/future/AURALIS_CLIENT_FUNNEL|Auralis Client Funnel]]
   summary: Date: 2026-04-26
+- [doc] [[docs/future/auralis_digital/SOCIAL_CONTENT_WORKFLOW_PACK|Auralis Social Content Workflow Pack]]
+  summary: Status: future planning.
+- [doc] [[docs/future/AURALIS_LEAD_CONSOLE_V1|Auralis Lead Console v1]]
+  summary: Status: future planning only.
 - [doc] [[docs/future/auralis_mock_leads/README|Auralis Mock Lead Fixture Library]]
   summary: Status: planning/test fixtures for future workflow
 - [doc] [[docs/future/AURALIS_MVP_EXECUTION_PLAN|Auralis MVP Execution Plan]]
@@ -2500,10 +2549,18 @@ concern is reflected across docs, code and tests.
   summary: Date: 2026-04-26
 - [doc] [[docs/future/AURALIS_WEBSITE_COWORKER_WORKFLOW|Auralis Website Coworker Workflow]]
   summary: Status: future business workflow / not shipped runtime capability
+- [doc] [[docs/future/BRAIN_HUMAN_GUIDE|Nova Brain Human Guide]]
+  summary: Status: planning guide / human-readable architecture summary.
+- [doc] [[docs/future/BRAIN_MEMORY_HUMAN_GUIDE|Brain + Memory Human Guide]]
+  summary: Status: planning guide / human-readable architecture summary.
 - [doc] [[docs/future/BUSINESS_OPTIONS|Monetization Strategy & Future Business Options]]
   summary: Status: Strategy Inventory (Not Current Priority)
 - [doc] [[docs/future/commerce_marketing_operator_decision|commerce_marketing_operator_decision]]
   summary: Nova Commerce And Marketing Operator - Decision Note
+- [doc] [[docs/future/CONTEXT_PACK_SPEC|Context Pack Specification]]
+  summary: Status: planning.
+- [doc] [[docs/future/DAILY_BRIEF_ROUTINE_SPEC|Daily Brief Routine Specification]]
+  summary: Status: planning.
 - [doc] [[docs/future/DIAMOND_PREVIEW_RELEASE_STANDARD_2026-04-23|Diamond Preview Release Standard (2026-04-23)]]
   summary: Nova should not feel merely functional. It should feel premium, stable, clear, and intentionally designed.
 - [doc] [[docs/future/EMAIL_COORDINATION_BOARD|Email Coordination Board]]
@@ -2512,6 +2569,8 @@ concern is reflected across docs, code and tests.
   summary: Status: Time-sensitive external comparison
 - [doc] [[docs/Future/FarFuture/PORTFOLIO_OPERATING_MODEL_2026-04-22|Portfolio Operating Model (2026-04-22)]]
   summary: This document is a long-term portfolio reference only.
+- [doc] [[docs/future/FUTURE_AGENT_ARCHITECTURE_BACKLOG|Future Agent Architecture Backlog]]
+  summary: Status: future planning backlog.
 - [doc] [[docs/future/GOOGLE_CONNECT_EMAIL_OAUTH_FUTURE_2026-04-22|TODO — Google Connect / Email OAuth Integration (2026-04-22)]]
   summary: Allow users to connect a Google account inside Nova through a familiar sign-in flow instead of manual setup.
 - [doc] [[docs/future/GOOGLE_CONNECTOR_IMPLEMENTATION_ROADMAP|Google Connector Implementation Roadmap]]
@@ -2522,10 +2581,16 @@ concern is reflected across docs, code and tests.
   summary: Status: future connector design / not implemented
 - [doc] [[docs/future/governed_content_operator|Nova Governed Content Operator - Implementation Blueprint]]
   summary: Version: 2.2
+- [doc] [[docs/future/GUARD_SYSTEM_SPEC|Guard System Specification]]
+  summary: Status: planning.
 - [doc] [[docs/future/HYDROGEN_OXYGEN_STOREFRONT_BUILD_RULESET_2026-04-12|Hydrogen And Oxygen Storefront Build Rules]]
   summary: Date: 2026-04-12
+- [doc] [[docs/future/LEARNING_LAYER_SPEC|Learning Layer Specification]]
+  summary: Status: planning.
 - [doc] [[docs/future/NOVA_AGENT_OPERATING_MODEL|Nova Agent Operating Model]]
   summary: Status: future architecture plan / not shipped runtime capability
+- [doc] [[docs/future/NOVA_AGENT_STACK_RECOMMENDATIONS|Nova Agent Stack Recommendations]]
+  summary: Status: planning / architecture recommendation.
 - [doc] [[docs/future/NOVA_APPROVAL_QUEUE_PRODUCT_PLAN_2026-04-27|Nova Approval Queue Product Plan]]
   summary: Date: 2026-04-27
 - [doc] [[docs/future/NOVA_AURALIS_DIGITAL_WEBSITE_ENGINE|Nova x Auralis Digital Website Engine]]
@@ -2645,9 +2710,13 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/future/repo_improvement_action_plan|NovaLIS Documentation Audit and Action Plan]]
   summary: NovaLIS has evolved into a serious governance-first AI platform with unusually strong internal discipline: runtime truth docs, testing rigor...
 - [doc] [[docs/future/ROADMAP|Nova Roadmap]]
-  summary: - Re-run Cap 16 conversation/search proof after deterministic Search Evidence Synthesis
+  summary: Status: planning roadmap. Runtime truth still comes from code and generated runtime docs.
+- [doc] [[docs/future/ROUTINE_LAYER_SPEC|Routine Layer Specification]]
+  summary: Status: planning
 - [doc] [[docs/future/Soft Launch-help search.txt|Soft Launch-help search]]
   summary: Question: when should i ask for help?
+- [doc] [[docs/future/TRACE_AND_OBSERVABILITY_SPEC|Trace and Observability Specification]]
+  summary: Status: planning.
 - [doc] [[docs/Governed Web Intelligence (Capability 16 + 48 Integration.txt|Governed Web Intelligence (Capability 16 + 48 Integration]]
   summary: To implement the capabilities described in the two specification documents, you will need to update or create several files in your codebase...
 - [doc] [[docs/Governed Webpage Launch Capability Specification.txt|📘 NOVA — Governed Webpage Launch Capability Specification]]
@@ -2731,11 +2800,11 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/reference/ARCHITECTURE|Nova Architecture]]
   summary: Technical overview of Nova's runtime. Companion to [INTRODUCTION.md](INTRODUCTION.md) and the generated runtime truth in [docs/currentruntim...
 - [doc] [[docs/reference/HUMAN_GUIDES/01_START_HERE|Start Here - reference/HUMAN_GUIDES]]
-  summary: Updated: 2026-04-20
+  summary: Updated: 2026-05-02
 - [doc] [[docs/reference/HUMAN_GUIDES/02_HOW_NOVA_WORKS|How Nova Works]]
-  summary: Updated: 2026-03-28
+  summary: Updated: 2026-05-02
 - [doc] [[docs/reference/HUMAN_GUIDES/03_WHAT_NOVA_CAN_DO|What Nova Can Do]]
-  summary: Updated: 2026-04-20
+  summary: Updated: 2026-05-03
 - [doc] [[docs/reference/HUMAN_GUIDES/04_VOICE_SCREEN_AND_CONTEXT|Voice, Screen, and Context]]
   summary: Updated: 2026-03-26
 - [doc] [[docs/reference/HUMAN_GUIDES/05_PROJECT_CONTINUITY_AND_MEMORY|Project Continuity and Memory]]
@@ -2743,7 +2812,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/reference/HUMAN_GUIDES/06_SAFETY_AND_TRUST|06_SAFETY_AND_TRUST]]
   summary: ﻿# Safety and Trust
 - [doc] [[docs/reference/HUMAN_GUIDES/07_CURRENT_STATE|Current State]]
-  summary: Updated: 2026-04-23
+  summary: Updated: 2026-05-02
 - [doc] [[docs/reference/HUMAN_GUIDES/08_COMMAND_EXAMPLES|Command Examples]]
   summary: Updated: 2026-03-27
 - [doc] [[docs/reference/HUMAN_GUIDES/09_DAILY_WORKFLOWS|Daily Workflows]]
@@ -2796,8 +2865,10 @@ concern is reflected across docs, code and tests.
   summary: Updated: 2026-04-13
 - [doc] [[docs/reference/HUMAN_GUIDES/33_CAPABILITY_VERIFICATION_GUIDE|Capability Verification Guide]]
   summary: Guide 33 of the Human Guides series
+- [doc] [[docs/reference/HUMAN_GUIDES/CURRENT_STAGE_GUIDE|Current Stage Guide — Stages 3, 4, 5, and 6]]
+  summary: Updated: 2026-05-03
 - [doc] [[docs/reference/HUMAN_GUIDES/README|Nova Human Guides]]
-  summary: Updated: 2026-04-23
+  summary: Updated: 2026-05-02
 - [doc] [[docs/reference/inactive/README|Inactive Reference Packets]]
   summary: Updated: 2026-04-12
 - [doc] [[docs/reference/INTRODUCTION|Introduction To Nova]]
@@ -2813,13 +2884,15 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/security/NOVA_INTEGRATION_THREAT_MODEL_2026-04-28|Nova Integration Threat Model]]
   summary: Date: 2026-04-28
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-01
+  summary: Last reviewed: 2026-05-03
 - [doc] [[docs/status/README|Status Notes]]
   summary: This folder contains human-maintained work-continuity notes.
 - [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
   summary: Status: human-maintained alignment snapshot.
+- [doc] [[docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02|Workflow Stage Roadmap - 2026-05-02]]
+  summary: Status: operational planning snapshot.
 - [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
-  summary: Updated: 2026-05-01
+  summary: Updated: 2026-05-03
 - [doc] [[docs/todo/DOC_CLEANUP|Doc Cleanup — Nova]]
   summary: Updated: 2026-04-28
 - [doc] [[docs/todo/README|docs/todo — Task Folder]]

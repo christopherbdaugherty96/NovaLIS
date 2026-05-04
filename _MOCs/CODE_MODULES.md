@@ -239,6 +239,7 @@ _Runtime audit utilities for NovaLIS._
 ### Imported by
 
 - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
+- [[nova_backend/src/memory/memory_skill.py|memory_skill]]
 - [[nova_backend/src/skill_registry.py|skill_registry]]
 - [[nova_backend/src/skills/calendar.py|calendar]]
 - [[nova_backend/src/skills/executor_adapter.py|executor_adapter]]
@@ -251,17 +252,22 @@ _Runtime audit utilities for NovaLIS._
 - [[nova_backend/tests/conversation/test_planning_run_preview.py|test_planning_run_preview]]
 - [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
 - [[nova_backend/tests/executors/test_info_snapshot_executor.py|test_info_snapshot_executor]]
-- [[nova_backend/tests/phase45/test_brain_server_basic_conversation.py|test_brain_server_basic_conversation]]
+- [[nova_backend/tests/memory/test_memory_skill.py|test_memory_skill]]
+- _…and 1 more_
 
-## `brain` (7 files)
+## `brain` (9 files)
 
 _Read-only Brain scaffolding._
 
 ### Files
 
 - [[nova_backend/src/brain/__init__.py|src/brain]]
+- [[nova_backend/src/brain/brain_mode.py|brain_mode]]
+    - Brain mode contracts and safe trace.
 - [[nova_backend/src/brain/capability_contracts.py|capability_contracts]]
     - Static Brain capability contract catalog.
+- [[nova_backend/src/brain/context_pack.py|context_pack]]
+    - Context Pack — bounded, labeled context bridge between Memory/Search/Project and Brain.
 - [[nova_backend/src/brain/environment_request.py|environment_request]]
     - Read-only Brain environment planning schemas.
 - [[nova_backend/src/brain/run_manager.py|run_manager]]
@@ -275,11 +281,14 @@ _Read-only Brain scaffolding._
 
 ### Imported by
 
+- [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
 - [[nova_backend/src/conversation/planning_run_preview.py|planning_run_preview]]
 - [[nova_backend/src/conversation/session_router.py|session_router]]
 - [[nova_backend/src/conversation/task_understanding_preview.py|task_understanding_preview]]
 - [[nova_backend/src/executors/web_search_executor.py|web_search_executor]]
+- [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
 - [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
+- [[nova_backend/tests/brain/test_context_pack.py|test_context_pack]]
 - [[nova_backend/tests/brain/test_environment_request.py|test_environment_request]]
 - [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
 - [[nova_backend/tests/brain/test_search_synthesis.py|test_search_synthesis]]
@@ -289,7 +298,9 @@ _Read-only Brain scaffolding._
 
 ### Tests
 
+- [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
 - [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
+- [[nova_backend/tests/brain/test_context_pack.py|test_context_pack]]
 - [[nova_backend/tests/brain/test_environment_request.py|test_environment_request]]
 - [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
 - [[nova_backend/tests/brain/test_search_synthesis.py|test_search_synthesis]]
@@ -368,13 +379,15 @@ _Read-only Brain scaffolding._
 - [[nova_backend/tests/certification/cap_65_shopify_intelligence_report/test_p4_api.py|test_p4_api - certification/cap_65_shopify_intelligence_report]]
 - [[nova_backend/tests/phase5/test_thread_change_summary.py|test_thread_change_summary]]
 
-## `brief` (2 files)
+## `brief` (3 files)
 
 ### Files
 
 - [[nova_backend/src/brief/__init__.py|src/brief]]
 - [[nova_backend/src/brief/daily_brief.py|daily_brief]]
     - Daily Brief synthesis module.
+- [[nova_backend/src/brief/recommendations.py|recommendations]]
+    - Deterministic next-action recommendation selector for the Daily Brief.
 
 ### Imports from
 
@@ -384,6 +397,7 @@ _Read-only Brain scaffolding._
 ### Imported by
 
 - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
+- [[nova_backend/src/routine/daily_brief_routine.py|daily_brief_routine]]
 - [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
 
 ### Tests
@@ -593,6 +607,8 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 ### Imports from
 
 - [[nova_backend/src/base_skill.py|base_skill]]
+- [[nova_backend/src/brain/brain_mode.py|brain_mode]]
+- [[nova_backend/src/brain/context_pack.py|context_pack]]
 - [[nova_backend/src/brain/run_manager.py|run_manager]]
 - [[nova_backend/src/brain/task_clarifier.py|task_clarifier]]
 - [[nova_backend/src/brain/task_understanding.py|task_understanding]]
@@ -600,6 +616,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/src/cognition/cognitive_operation_logger.py|cognitive_operation_logger]]
 - [[nova_backend/src/governor/network_mediator.py|network_mediator]]
 - [[nova_backend/src/llm/llm_gateway.py|llm_gateway]]
+- [[nova_backend/src/memory/memory_skill.py|memory_skill]]
 - [[nova_backend/src/personality/nova_style_contract.py|nova_style_contract]]
 - [[nova_backend/src/personality/tone_profile_store.py|tone_profile_store]]
 - [[nova_backend/src/services/weather_service.py|weather_service]]
@@ -1004,12 +1021,14 @@ _ExecuteBoundary,_
 - [[nova_backend/tests/test_llm_manager_version_lock.py|test_llm_manager_version_lock]]
 - _…and 1 more_
 
-## `memory` (4 files)
+## `memory` (5 files)
 
 ### Files
 
 - [[nova_backend/src/memory/governed_memory_store.py|governed_memory_store]]
     - _MEMORY_SEARCH_STOPWORDS = {
+- [[nova_backend/src/memory/memory_skill.py|memory_skill]]
+    - Conversational memory skill for the memory loop.
 - [[nova_backend/src/memory/nova_self_memory_store.py|nova_self_memory_store]]
     - Nova self-memory store — Nova's own memory about the relationship and patterns.
 - [[nova_backend/src/memory/quick_corrections.py|quick_corrections]]
@@ -1019,6 +1038,7 @@ _ExecuteBoundary,_
 
 ### Imports from
 
+- [[nova_backend/src/base_skill.py|base_skill]]
 - [[nova_backend/src/utils/persistent_state.py|persistent_state]]
 
 ### Imported by
@@ -1026,11 +1046,13 @@ _ExecuteBoundary,_
 - [[nova_backend/src/api/memory_api.py|memory_api]]
 - [[nova_backend/src/api/profile_api.py|profile_api]]
 - [[nova_backend/src/brain_server.py|brain_server]]
+- [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
 - [[nova_backend/src/executors/memory_governance_executor.py|memory_governance_executor]]
 - [[nova_backend/src/executors/os_diagnostics_executor.py|os_diagnostics_executor]]
 - [[nova_backend/src/skills/general_chat.py|general_chat]]
 - [[nova_backend/src/websocket/session_handler.py|session_handler]]
 - [[nova_backend/tests/conversation/test_quick_corrections.py|test_quick_corrections]]
+- [[nova_backend/tests/memory/test_memory_skill.py|test_memory_skill]]
 - [[nova_backend/tests/phase45/test_profile_api.py|test_profile_api]]
 - [[nova_backend/tests/phase5/test_memory_governance_executor.py|test_memory_governance_executor]]
 - [[nova_backend/tests/test_governed_memory_store.py|test_governed_memory_store]]
@@ -1039,6 +1061,7 @@ _ExecuteBoundary,_
 ### Tests
 
 - [[nova_backend/tests/conversation/test_quick_corrections.py|test_quick_corrections]]
+- [[nova_backend/tests/memory/test_memory_skill.py|test_memory_skill]]
 - [[nova_backend/tests/test_governed_memory_store.py|test_governed_memory_store]]
 
 ## `nova_config` (1 files)
@@ -1420,6 +1443,34 @@ _Provider lanes for optional metered model access._
 - [[nova_backend/src/brain_server.py|brain_server]]
 - [[nova_backend/tests/test_stt_engine.py|test_stt_engine]]
 
+## `routine` (4 files)
+
+### Files
+
+- [[nova_backend/src/routine/__init__.py|src/routine]]
+- [[nova_backend/src/routine/daily_brief_routine.py|daily_brief_routine]]
+    - Daily Brief as the first governed RoutineGraph.
+- [[nova_backend/src/routine/plan_my_week_routine.py|plan_my_week_routine]]
+    - Plan My Week — everyday workflow demo with an explicit approval boundary.
+- [[nova_backend/src/routine/routine_graph.py|routine_graph]]
+    - Core RoutineGraph objects: RoutineBlock, RoutineGraph, RoutineRun, RoutineReceipt.
+
+### Imports from
+
+- [[nova_backend/src/brief/daily_brief.py|daily_brief]]
+
+### Imported by
+
+- [[nova_backend/tests/routine/test_daily_brief_routine.py|test_daily_brief_routine]]
+- [[nova_backend/tests/routine/test_plan_my_week_routine.py|test_plan_my_week_routine]]
+- [[nova_backend/tests/routine/test_routine_graph.py|test_routine_graph]]
+
+### Tests
+
+- [[nova_backend/tests/routine/test_daily_brief_routine.py|test_daily_brief_routine]]
+- [[nova_backend/tests/routine/test_plan_my_week_routine.py|test_plan_my_week_routine]]
+- [[nova_backend/tests/routine/test_routine_graph.py|test_routine_graph]]
+
 ## `services` (2 files)
 
 ### Files
@@ -1556,11 +1607,11 @@ _NovaLIS Backend Package_
 - [[nova_backend/tests/conversation/test_general_chat_tone.py|test_general_chat_tone]]
 - [[nova_backend/tests/conversation/test_relationship_insight_extractor.py|test_relationship_insight_extractor]]
 - [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
+- [[nova_backend/tests/conversation/test_session_conversation_context.py|test_session_conversation_context]]
 - [[nova_backend/tests/governance/test_skills_use_network_mediator_only.py|test_skills_use_network_mediator_only]]
 - [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
 - [[nova_backend/tests/openclaw/test_web_search_skill.py|test_web_search_skill]]
-- [[nova_backend/tests/phase45/test_brain_server_followups_and_voice.py|test_brain_server_followups_and_voice]]
-- _…and 4 more_
+- _…and 5 more_
 
 ### Tests
 

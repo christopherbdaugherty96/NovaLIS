@@ -13,10 +13,14 @@ whose filename stem matches. Useful for jumping between a test and the
 code it exercises. `__init__.py`, conftest and helper modules are
 intentionally skipped so the map stays focused on real test ↔ source links.
 
-Paired tests: 102
+Paired tests: 108
 
+- [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
+    - tests → [[nova_backend/src/brain/brain_mode.py|brain_mode]]
 - [[nova_backend/tests/brain/test_capability_contracts.py|test_capability_contracts]]
     - tests → [[nova_backend/src/brain/capability_contracts.py|capability_contracts]]
+- [[nova_backend/tests/brain/test_context_pack.py|test_context_pack]]
+    - tests → [[nova_backend/src/brain/context_pack.py|context_pack]]
 - [[nova_backend/tests/brain/test_environment_request.py|test_environment_request]]
     - tests → [[nova_backend/src/brain/environment_request.py|environment_request]]
 - [[nova_backend/tests/brain/test_run_manager.py|test_run_manager]]
@@ -109,6 +113,8 @@ Paired tests: 102
     - tests → [[nova_backend/src/cognition/cognitive_layer_contract.py|cognitive_layer_contract]]
 - [[nova_backend/tests/identity/test_nova_self_awareness.py|test_nova_self_awareness]]
     - tests → [[nova_backend/src/identity/nova_self_awareness.py|nova_self_awareness]]
+- [[nova_backend/tests/memory/test_memory_skill.py|test_memory_skill]]
+    - tests → [[nova_backend/src/memory/memory_skill.py|memory_skill]]
 - [[nova_backend/tests/openclaw/test_agent_runner.py|test_agent_runner]]
     - tests → [[nova_backend/src/openclaw/agent_runner.py|agent_runner]]
 - [[nova_backend/tests/openclaw/test_agent_runtime_store.py|test_agent_runtime_store]]
@@ -190,6 +196,12 @@ Paired tests: 102
     - tests → [[nova_backend/src/rendering/speech_formatter.py|speech_formatter]]
 - [[nova_backend/tests/rendering/test_tts_engine.py|test_tts_engine]]
     - tests → [[nova_backend/src/voice/tts_engine.py|tts_engine]]
+- [[nova_backend/tests/routine/test_daily_brief_routine.py|test_daily_brief_routine]]
+    - tests → [[nova_backend/src/routine/daily_brief_routine.py|daily_brief_routine]]
+- [[nova_backend/tests/routine/test_plan_my_week_routine.py|test_plan_my_week_routine]]
+    - tests → [[nova_backend/src/routine/plan_my_week_routine.py|plan_my_week_routine]]
+- [[nova_backend/tests/routine/test_routine_graph.py|test_routine_graph]]
+    - tests → [[nova_backend/src/routine/routine_graph.py|routine_graph]]
 - [[nova_backend/tests/test_audit_api.py|test_audit_api]]
     - tests → [[nova_backend/src/api/audit_api.py|audit_api]]
 - [[nova_backend/tests/test_confirmation_gate.py|test_confirmation_gate]]
