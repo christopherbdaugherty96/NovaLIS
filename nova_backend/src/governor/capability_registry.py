@@ -20,6 +20,13 @@ ALLOWED_AUTHORITY_CLASSES = {
     "persistent_change",
     "external_effect",
 }
+# Cost posture values (metadata + visibility only — no runtime blocking yet).
+# free         — no external API call, no quota, runs entirely on-device or from local data.
+# free_tier    — uses an external service with a free tier; may incur cost at higher volume.
+# paid         — always incurs direct cost per use (credits, metered API, or subscription).
+# unknown_cost — cost profile not yet classified; treated conservatively in cost displays.
+ALLOWED_COST_POSTURES = {"free", "free_tier", "paid", "unknown_cost"}
+DEFAULT_COST_POSTURE = "unknown_cost"
 ACTIVE_GOVERNANCE_REQUIRED_FIELDS = {
     "authority_class",
     "requires_confirmation",
@@ -49,6 +56,9 @@ class Capability:
     requires_confirmation: bool = False
     reversible: bool = True
     external_effect: bool = False
+    # Cost posture: metadata + visibility only. No runtime enforcement yet.
+    # Values: free | free_tier | paid | unknown_cost
+    cost_posture: str = "unknown_cost"
 
 
 class CapabilityRegistry:
@@ -149,6 +159,14 @@ class CapabilityRegistry:
             normalized["requires_confirmation"] = bool(normalized.get("requires_confirmation", False))
             normalized["reversible"] = bool(normalized.get("reversible", True))
             normalized["external_effect"] = bool(normalized.get("external_effect", False))
+
+            cost_posture = str(normalized.get("cost_posture", DEFAULT_COST_POSTURE)).strip().lower()
+            if cost_posture not in ALLOWED_COST_POSTURES:
+                raise CapabilityRegistryError(
+                    f"Capability {normalized['id']} has invalid cost_posture: {cost_posture!r}. "
+                    f"Allowed values: {sorted(ALLOWED_COST_POSTURES)}"
+                )
+            normalized["cost_posture"] = cost_posture
 
             cid = normalized["id"]
             if cid in capabilities:

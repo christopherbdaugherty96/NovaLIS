@@ -185,6 +185,29 @@ Implemented:
 - 52 tests
 - Merged: PR #98 2026-05-03
 
+### Cost Posture Metadata — Closed 2026-05-03
+
+Implemented (free-first implementation step 1 — metadata + visibility only):
+
+- `ALLOWED_COST_POSTURES = {"free", "free_tier", "paid", "unknown_cost"}` added to `capability_registry.py`
+- `DEFAULT_COST_POSTURE = "unknown_cost"` constant added
+- `cost_posture: str = "unknown_cost"` field added to `Capability` frozen dataclass
+- Validation in `_load_registry`: normalises to lowercase, rejects unknown values with
+  `CapabilityRegistryError`
+- Missing `cost_posture` in JSON defaults to `"unknown_cost"` (not a hard error)
+- All 27 capabilities in `registry.json` annotated with correct values:
+  - `free`: 17,18,19,20,21,22,31,32,48,49,50,51,52,53,54,57,58,59,60,61,64 (21 caps)
+  - `free_tier`: 16,55,56,62,65 (5 caps — external API, free-tier quota)
+  - `unknown_cost`: 63 (openclaw_execute — cost profile not yet classified)
+  - `paid`: none in current registry
+- `_derive_capability_governance_rows()` in `runtime_auditor.py` now includes `cost_posture`
+- `render_governance_matrix_markdown()` — `cost_posture` column added to table
+- `render_current_runtime_state_markdown()` — "Cost Posture (Metadata Only)" summary section added
+- Runtime docs regenerated: `GOVERNANCE_MATRIX.md` has the column; `CURRENT_RUNTIME_STATE.md`
+  has the summary table
+- 24 tests in `tests/phase6/test_cost_posture_metadata.py`
+- Boundary: metadata and visibility only; no runtime enforcement, no blocking, no quota checking
+
 ### Remaining Active Scope:
 
 - Governance boundaries for routine execution (workflow workspace shell, template schema)
@@ -192,10 +215,10 @@ Implemented:
 
 Immediate continuation order:
 
-1. Plan cost posture metadata as the next free-first implementation step.
-2. Continue doc/status alignment as work progresses.
-5. Plan Google read-only connector foundations only after cost posture and connector governance are clear.
-6. Keep OpenClaw expansion frozen until envelope issuance, approval, execution-guard, and receipt gaps are closed.
+1. Continue doc/status alignment as work progresses.
+2. Plan Google read-only connector foundations only after connector governance is clear.
+3. Keep OpenClaw expansion frozen until envelope issuance, approval, execution-guard, and receipt
+   gaps are closed.
 
 Do not start new write/action capabilities in this sprint.
 
