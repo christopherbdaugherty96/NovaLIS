@@ -167,16 +167,33 @@ Implemented:
 Boundary: RoutineGraph is planning and record-keeping vocabulary. It does not add
 new capabilities, does not call an LLM, and does not grant execution authority.
 
+### Plan My Week Routine — Closed 2026-05-03
+
+Implemented:
+
+- `WeeklyPlanItem` — single plan item (frozen dataclass)
+- `WeeklyPlan` — assembled plan with focus_items, tasks, calendar_events, open_loops,
+  recommended_actions; execution_performed/authorization_granted enforced False
+- `PlanMyWeekProposal` — approval boundary surface; approval_required=True enforced,
+  not settable by callers; execution_performed/authorization_granted enforced False
+- `PlanApprovalRecord` — records user decision (approved/rejected/modified); validates
+  decision; execution_performed/authorization_granted enforced False
+- `PLAN_MY_WEEK_GRAPH` — 8-block RoutineGraph; first to include request_approval block
+- `run_plan_my_week_routine()` — Phase 1: gathers data, assembles plan, surfaces proposal;
+  nothing saved or executed until user approves
+- `record_plan_approval(proposal, decision=...)` — Phase 2: records decision; non-authorizing
+- 52 tests
+- Merged: PR #98 2026-05-03
+
 ### Remaining Active Scope:
 
-- Everyday workflow demo: plan my week from tasks, notes, calendar context, and priorities
-- Governance boundaries for routine execution
+- Governance boundaries for routine execution (workflow workspace shell, template schema)
+- Brain mode surfaced in UI per turn
 
 Immediate continuation order:
 
-1. Capture one everyday workflow demo with approval boundary and receipt.
-3. Continue doc/status alignment as work progresses.
-4. Plan cost posture metadata as the next free-first implementation step.
+1. Plan cost posture metadata as the next free-first implementation step.
+2. Continue doc/status alignment as work progresses.
 5. Plan Google read-only connector foundations only after cost posture and connector governance are clear.
 6. Keep OpenClaw expansion frozen until envelope issuance, approval, execution-guard, and receipt gaps are closed.
 
