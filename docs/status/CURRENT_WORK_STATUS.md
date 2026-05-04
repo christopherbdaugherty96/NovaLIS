@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-03
+Last reviewed: 2026-05-03 (cost posture + doc cleanup pass)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -12,20 +12,27 @@ Generated runtime docs and actual code win if they conflict with this note.
 
 ## Current Truth
 
-At this review baseline, the alignment branch includes:
+At this review baseline, `main` includes:
 
-- PR #64 Brain Planning Preview scaffold, merged earlier.
-- PR #66 Search Evidence Synthesis, merged in this alignment pass.
-- PR #68 Daily Brief MVP, merged 2026-05-01.
-- Free-first cost governance design docs, merged in this alignment pass.
-- Auralis and YouTubeLIS planning docs already present on `main`.
-- OpenClaw robust hardening audit added as a future implementation recommendation, not runtime truth.
-- Governed Workflow Workspace Architecture added as a product/architecture planning note for everyday
-  workflows, independent automation, and business-owner use cases.
-- Stage 3 Memory Loop merged 2026-05-02.
-- Stage 4 Context Pack merged 2026-05-02.
+- PR #64 Brain Planning Preview scaffold — planning-only; Task Understanding, Task Envelope, Simple
+  Task Mode, RunManager, Run Preview do not execute, authorize, or bypass Governor.
+- PR #66 Search Evidence Synthesis — deterministic Cap 16 evidence structuring; no new capability.
+- PR #68 Daily Brief MVP — deterministic on-demand session brief; 11 sections; no new capability.
+- Free-first cost governance design docs — design policy only.
+- Auralis and YouTubeLIS planning docs — future-only; no runtime integration.
+- OpenClaw robust hardening audit — future implementation recommendation, not runtime truth.
+- Governed Workflow Workspace Architecture — product/architecture planning note; not runtime.
+- Stage 3 Memory Loop — PR #82 2026-05-02; remember/review/update/forget/why-used with receipts.
+- Stage 4 Context Pack — PR #83 2026-05-02; live-wired into general_chat_runtime.py.
+- Stage 5 Brain Discipline / Trace — PRs #85/#87/#88/#89 2026-05-02; 7 mode contracts,
+  classify_mode(), BrainTrace; Context Pack wired into prompt path.
+- Stage 6 RoutineGraph v0 — PR #93 2026-05-03; 60 tests.
+- Stage 6 Plan My Week routine — PR #98 2026-05-03; 52 tests.
+- Cost posture metadata (step 1) — PR #99 2026-05-03; cost_posture on all 27 caps; 24 tests;
+  metadata + visibility only, no enforcement.
 
-Generated runtime truth still reports the authoritative capability inventory and governance invariants. This note should not be used as a replacement for generated runtime docs.
+Generated runtime truth still reports the authoritative capability inventory and governance
+invariants. This note must not be used as a replacement for generated runtime docs.
 
 ---
 

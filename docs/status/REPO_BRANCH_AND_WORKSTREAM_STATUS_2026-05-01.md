@@ -54,15 +54,21 @@ Observed after `git fetch --all --prune`, before merge commits from this pass we
 | Workstream | Status | Label |
 |---|---|---|
 | Runtime / governance | Governor-mediated runtime with 27-capability generated truth as the authoritative source | Implemented |
-| Brain planning preview | PR #64 merged; Task Understanding, Task Envelope, Simple Task Mode, RunManager, and Run Preview are planning-only | Scaffold |
+| Brain planning preview | PR #64 merged; Task Understanding, Task Envelope, Simple Task Mode, RunManager, Run Preview are planning-only scaffolds | Scaffold |
 | Daily Brief MVP | PR #68 merged; on-demand deterministic brief; 11 sections; live weather + calendar; no new capability | Implemented |
 | Search Evidence Synthesis | Merged via PR #66 as deterministic Cap 16 evidence metadata | Implemented |
+| Memory loop (Stage 3) | PR #82 merged 2026-05-02; remember/review/update/forget/why-used with receipts; MEMORY_LOOP_PROOF.md PASS | Implemented |
+| Context Pack (Stage 4) | PR #83 merged 2026-05-02; live-wired into general_chat_runtime.py; CONTEXT_PACK_PROOF.md PASS | Implemented |
+| Brain discipline / trace (Stage 5) | PRs #85/#87/#88/#89 merged 2026-05-02; 7 mode contracts, classify_mode(), BrainTrace, Context Pack wired; BRAIN_MODE_PROOF.md PASS | Implemented |
+| RoutineGraph v0 (Stage 6) | PR #93 merged 2026-05-03; RoutineBlock/RoutineGraph/RoutineRun/RoutineReceipt; DAILY_BRIEF_GRAPH; 60 tests | Implemented |
+| Plan My Week routine (Stage 6) | PR #98 merged 2026-05-03; WeeklyPlan/PlanMyWeekProposal/PlanApprovalRecord; two-phase runner; 52 tests | Implemented |
+| Cost posture metadata | PR #99 merged 2026-05-03; cost_posture field on all 27 caps; registry validation; governance matrix column; 24 tests; metadata only | Implemented |
 | Google connector | Future read/context connector direction; no Google OAuth/Gmail/Calendar/Drive runtime connector | Planning |
-| Free-first cost governance | Design docs merged; metadata and visibility planned | Planning |
+| Free-first cost governance | Design docs merged; cost posture metadata implemented (step 1 of N); no runtime enforcement yet | Step 1 done |
 | Auralis website coworker | Future business workflow / production discipline layer | Planning |
 | YouTubeLIS | Planning-only tool folder and docs/templates | Planning |
 | E-commerce / operator planning | Future planning only unless runtime truth proves otherwise | Not started |
-| OpenClaw | Governed/constrained execution surface; not broad autonomy | Scaffold / constrained |
+| OpenClaw | Governed/constrained execution surface; hardening audit exists; expansion frozen until envelope/guard/receipt gaps closed | Scaffold / constrained |
 | Personality / agent model | Design discussion and docs | Planning |
 | Active screen command layer | Design discussion and docs | Planning |
 
@@ -80,12 +86,13 @@ Observed after `git fetch --all --prune`, before merge commits from this pass we
 
 ---
 
-## Next Merge / Work Order
+## Next Work Order (as of 2026-05-03)
 
-1. Memory loop and conversation continuity — session continuity state fields.
-2. Re-run conversation/search proof against the Search Evidence Synthesis baseline.
-3. Review branch cleanup candidates and delete only with explicit user approval.
-4. Plan cost posture metadata as the next free-first runtime-visible step.
-5. Plan Google read-only connector foundation only after connector governance and cost posture boundaries
-   are clear.
-6. Do not start write/action capabilities from this cleanup pass.
+Items 1–4 from the original 2026-05-01 list are complete. Current priority order:
+
+1. Doc/status cleanup — fix stale wording where planning-as-runtime or local-only language remains.
+2. Plan Google read-only connector foundation — design-only planning doc after connector governance
+   is clear; no runtime connector, no OAuth, no Gmail API access.
+3. Keep OpenClaw expansion frozen until envelope issuance, real approval decisions, centralized
+   execution guard, boundary detection, and receipts exist.
+4. Do not start new write/action capabilities in this sprint.

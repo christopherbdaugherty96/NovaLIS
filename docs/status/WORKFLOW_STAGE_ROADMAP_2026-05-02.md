@@ -11,10 +11,12 @@ It is not runtime truth. Exact runtime truth still comes from code and generated
 ## Current overall stage
 
 ```text
-Stage 6: Routine surfaces — ACTIVE
+Stage 6: Routine surfaces — ACTIVE (RoutineGraph v0 + Plan My Week done; business workflow next)
 ```
 
 Stages 1, 2, 3, 4, and 5 completed 2026-05-02.
+Stage 6 partial: RoutineGraph v0 and Plan My Week done 2026-05-03. Cost posture metadata (step 1
+of free-first) done 2026-05-03. Business workflow demo and governed workspace shell remain.
 
 The current repo sequence is:
 
@@ -33,13 +35,13 @@ Proof closeout
 
 | Stage | Name | Current state | Exit criteria | Next action |
 |---|---|---|---|---|
-| 0 | Architecture alignment | Complete | Architecture docs merged, roadmap/index/future guide aligned | Do not continue architecture expansion |
+| 0 | Architecture alignment | **Complete** | Architecture docs merged, roadmap/index/future guide aligned | Do not continue architecture expansion |
 | 1 | Active proof closeout | **Complete** 2026-05-02 | All four proof docs verified, 1877 tests green | — |
 | 2 | Status update after proof | **Complete** 2026-05-02 | TODO/status/roadmap updated | — |
 | 3 | Memory loop | **Complete** 2026-05-02 | remember/review-list/update/forget/why-used implemented with receipts and tests | — |
 | 4 | Context Pack | **Complete** 2026-05-02 | source labels, authority labels, budgets, why-selected, stale/conflict warnings proven | — |
 | 5 | Brain discipline / trace | **Complete** 2026-05-02 | mode contracts, BrainTrace, and Context Pack wiring proven | — |
-| 6 | Routine surfaces | **Active** | Daily Brief RoutineGraph v0 and workflow demos exist | Context Pack wired; begin RoutineGraph |
+| 6 | Routine surfaces | **Active** 2026-05-03 | RoutineGraph v0 + Plan My Week + cost posture step 1 done; business workflow + workspace shell remain | See Stage 6 section |
 | A | Auralis manual validation | Ready for manual work | 3 mock client packs, 30 posts, 1 calendar, 1 outreach package | Run outside Nova runtime |
 
 ---
@@ -67,37 +69,23 @@ Do not add more architecture docs unless implementation exposes a real gap.
 
 ## Stage 1 - Active proof closeout
 
-State: active.
+State: **complete** 2026-05-02.
 
-Tasks:
+All four proof docs verified at `main @ f82cc9c`:
+- Daily Brief: PASS — 114 tests, 1877 full suite, 6 functional degradation cases
+- Conversation Continuity: PASS — 412 tests, continuity roundtrip verified
+- Search Evidence Synthesis: PASS — 222 brain+executors tests, 3 evidence path cases
+- Memory Loop: PASS (full loop completed in Stage 3)
 
-- Re-run Daily Brief + continuity proof manually in local UI/API
-- Re-run conversation + search demo flow with Search Evidence Synthesis active
-- Re-run the existing conversation/search proof prompts
-- Capture short public conversation/search demo if usable
-
-Exit criteria:
-
-- pass/fail result captured
-- issues documented if failed
-- proof outcome ready to update TODO/status docs
+Manual UI/API re-run and short public demo remain optional/non-blocking.
 
 ---
 
 ## Stage 2 - Status update after proof
 
-State: not started.
+State: **complete** 2026-05-02.
 
-Tasks:
-
-- update `docs/todo/ACTIVE_TODO.md`
-- update current work/status docs if needed
-- promote memory loop only after proof outcome is known
-
-Exit criteria:
-
-- repo status reflects proof result
-- next sprint clearly says memory loop if proof passes
+Status docs updated. Stage 3 promoted after proof pass.
 
 ---
 
@@ -145,20 +133,33 @@ Merged: PRs #85, #87, #88, #89 on 2026-05-02.
 
 ## Stage 6 - Routine surfaces
 
-State: **active** 2026-05-02.
+State: **active** 2026-05-03.
 
-Minimum scope:
+### Completed in Stage 6
 
-- Daily Brief RoutineGraph v0
-- routine receipt
-- everyday workflow demo
-- business workflow demo
+- **RoutineGraph v0** — PR #93 2026-05-03. RoutineBlock, RoutineGraph, RoutineRun, RoutineReceipt
+  frozen non-authorizing dataclasses; DAILY_BRIEF_GRAPH (8 blocks); run_daily_brief_routine();
+  60 tests green.
+- **Plan My Week routine** — PR #98 2026-05-03. WeeklyPlan, PlanMyWeekProposal
+  (approval_required=True enforced), PlanApprovalRecord; two-phase runner; PLAN_MY_WEEK_GRAPH
+  first routine with request_approval block; 52 tests green.
+- **Cost posture metadata (step 1)** — PR #99 2026-05-03. cost_posture field on all 27 registry
+  caps; validation; governance matrix column; runtime state summary; 24 tests. Metadata + visibility
+  only; no enforcement.
 
-Required proof:
+### Remaining in Stage 6
 
-- Daily Brief remains non-authorizing
-- routines do not execute hidden actions
-- receipts exist for routine output
+- Business workflow demo: find 5 local businesses, draft improvement notes, create reviewable
+  outreach drafts.
+- Governed workflow workspace shell: WorkflowObject model, workflow template schema.
+- Google read-only connector foundation planning (design-only; no runtime connector).
+
+### Proof criteria (still required before Stage 6 exit)
+
+- Daily Brief remains non-authorizing through RoutineGraph — PASS (60 tests, PR #93)
+- Routines do not execute hidden actions — PASS (approval_required enforced, run/receipt
+  non-authorizing)
+- Receipts exist for routine output — PASS (RoutineReceipt returned on every run)
 
 ---
 
@@ -185,8 +186,11 @@ Blocked from runtime until:
 
 ## Current recommended action
 
-Stage 6 is active. Context Pack and BrainTrace are live in the prompt path.
+Stage 6 is active. RoutineGraph v0, Plan My Week, and cost posture metadata (step 1) are done.
 
 ```text
-Context Pack wired into general_chat_runtime → begin Daily Brief RoutineGraph v0.
+Next: business workflow demo → governed workspace shell → Google connector planning (design only).
 ```
+
+Do not start write/action capabilities in this sprint.
+Cost posture enforcement is a future step — metadata exists; no runtime blocking is implemented yet.
