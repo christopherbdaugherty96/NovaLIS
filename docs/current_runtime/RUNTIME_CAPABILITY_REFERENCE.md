@@ -98,6 +98,8 @@ Interpretation rule:
 
 ## Active Supporting Runtime Surfaces (No Separate Capability ID)
 
+Note: Task Understanding + Run Preview is active as a planning-only supporting surface for task-like general-chat fallback requests. It renders a non-authorizing Task Understanding preview, bounded Task Envelope, and session-local Run Preview state; it does not execute, authorize, call capabilities or the Governor, or persist run history. Casual chat does not receive this preview. Live proof: `docs/demo_proof/2026-05-06_planning_task_preview_proof/`.
+
 | Surface | Status | What it does | Notes |
 | --- | --- | --- | --- |
 | Memory Loop | Active | Explicit user-initiated remember / review / update / forget / why-used conversational memory skill with memory receipts for create / update / forget / use. No silent autosave. Built on cap 61. | Stage 3 — PR #82 2026-05-02 |
