@@ -1,12 +1,14 @@
 # Active Priority Lock - 2026-05-06 Runtime Truth Audit
 
-Status: active priority lock.
+Status: completed.
+
+Completed by PR #110: `docs: audit runtime truth after OpenClaw proof`.
 
 This is human-maintained priority guidance, not generated runtime truth. Generated runtime docs and actual code remain authoritative if they conflict with this lock.
 
-This lock selects a narrow verification workstream after the completed OpenClaw priority-lock chain.
+This lock selected a narrow verification workstream after the completed OpenClaw priority-lock chain.
 
-## Selected Workstream
+## Completed Workstream
 
 ```text
 Runtime truth regeneration / audit after OpenClaw proof chain
@@ -14,9 +16,9 @@ Runtime truth regeneration / audit after OpenClaw proof chain
 
 ## Purpose
 
-Verify whether generated runtime truth and human-maintained runtime docs accurately reflect the newly merged OpenClaw governance/proof surfaces.
+Verified whether generated runtime truth and human-maintained runtime docs accurately reflected the newly merged OpenClaw governance/proof surfaces.
 
-This is a verification and alignment lock, not a product expansion lock.
+This was a verification and alignment lock, not a product expansion lock.
 
 ## Required Inputs
 
@@ -31,16 +33,18 @@ This is a verification and alignment lock, not a product expansion lock.
 - `docs/current_runtime/RUNTIME_FINGERPRINT.md`
 - `docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06.md`
 
-## Allowed Work
+## Completed Actions
 
-- run the runtime auditor/generator if needed
-- compare generated runtime truth against code and proof packages
-- update generated runtime docs only through the generator path
-- update human-maintained status/todo docs if they are stale
-- add a small proof/audit package under `docs/demo_proof/` if useful
-- record any mismatch as a blocker or follow-up rather than patching truth by hand
+- runtime docs were regenerated through `scripts/generate_runtime_docs.py`
+- generated runtime truth changed through the generator path only
+- runtime fingerprint/hash alignment was updated
+- audit evidence was added under `docs/demo_proof/2026-05-06_runtime_truth_audit_after_openclaw/`
+- OpenClawMediator remained documented as non-executing
+- first read-only workflow proof remained documented as non-authorizing
+- proof-artifact over-indexing in generated MOCs was found and corrected
+- `docs/demo_proof/**/raw/*` and `docs/demo_proof/**/screenshots/*` are excluded from generated MOC indexing while proof reports remain browsable
 
-## Not Approved
+## Still Not Approved
 
 - no broad OpenClaw automation
 - no browser/computer-use expansion
@@ -53,24 +57,16 @@ This is a verification and alignment lock, not a product expansion lock.
 - no workflow automation expansion
 - no claim that OpenClaw has full governed hands
 
-## Acceptance Gate
+## Acceptance Gate Result
 
-This lock is complete only when a reviewable branch answers:
+This lock is complete.
 
-1. Do generated runtime docs need regeneration after PRs #103-#108?
-2. If regenerated, are changes generator-consistent and code-grounded?
-3. Do runtime docs distinguish active runtime surfaces from proof-only/supporting artifacts?
-4. Do docs preserve that OpenClawMediator and first read-only workflow proof do not grant execution authority?
-5. Are any discrepancies listed with exact files and recommended next action?
-
-## Expected Output
-
-A small audit/regeneration PR that either:
-
-- confirms runtime truth is already aligned, or
-- updates generated runtime truth through the generator and records why, or
-- records blockers/discrepancies without manually inflating runtime claims.
+1. Generated runtime docs needed regeneration after PRs #103-#108 for fingerprint/hash alignment.
+2. Regenerated changes were generator-consistent and code-grounded.
+3. Runtime docs and MOCs now better distinguish active runtime surfaces from proof-only/supporting artifacts.
+4. Docs preserve that OpenClawMediator and first read-only workflow proof do not grant execution authority.
+5. The discovered discrepancy, proof raw/screenshot over-indexing in generated MOCs, was recorded and fixed through generator policy.
 
 ## Boundary Rule
 
-If work is not runtime-truth audit/regeneration/alignment, it is outside this lock.
+Do not start new feature or runtime expansion from this completed lock. Select the next workstream only through a new reviewed priority lock.

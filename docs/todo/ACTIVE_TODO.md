@@ -1,34 +1,36 @@
 # Active TODO - Nova
 
-## ACTIVE PRIORITY LOCK (2026-05-06)
+## PRIORITY LOCK STATUS (2026-05-06)
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_RUNTIME_TRUTH_AUDIT.md`
 
-Updated: 2026-05-06 after OpenClaw priority-lock closeout.
+Updated: 2026-05-06 after runtime truth audit completion.
 
-Active path:
+Completed workstream:
 
 ```text
 Runtime truth regeneration / audit after OpenClaw proof chain
 ```
 
-The four-step OpenClaw priority lock is complete. The current selected workstream is a narrow runtime truth audit/regeneration pass.
+The four-step OpenClaw priority lock and the runtime truth audit/regeneration pass are complete.
+
+No new active workstream is selected.
 
 ---
 
 ## Current Next TODO
 
-Review the runtime truth regeneration / audit pass.
+Create or review the next priority lock before starting new work.
 
-Purpose:
+Current completed audit outcomes:
 
-- confirm generated runtime docs changed only through the generator path
-- confirm runtime truth changes are code-grounded and generator-consistent
-- confirm proof-only OpenClaw artifacts were not inflated into runtime authority
-- confirm raw proof evidence and screenshot folders are excluded from generated runtime/reference topical MOCs
-- review recorded diff/proof evidence before selecting another lock
+- generated runtime docs changed only through the generator path
+- runtime truth changes remained code-grounded and generator-consistent
+- proof-only OpenClaw artifacts were not inflated into runtime authority
+- raw proof evidence and screenshot folders are excluded from generated runtime/reference topical MOCs
+- runtime truth audit merged in PR #110
 
-Do not broaden OpenClaw or start product/runtime expansion under this lock.
+Do not broaden OpenClaw or start product/runtime expansion without a new reviewed priority lock.
 
 References:
 
@@ -37,10 +39,10 @@ References:
 
 ## Lock Progress
 
-Current lock:
+Completed runtime truth audit lock:
 
-- Step 1 pending:
-  - runtime truth regeneration / audit after OpenClaw proof chain is on the active audit branch
+- Step 1 complete:
+  - runtime truth regeneration / audit after OpenClaw proof chain merged in PR #110
 
 Completed previous lock:
 
