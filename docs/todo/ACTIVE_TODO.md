@@ -1,41 +1,47 @@
 # Active TODO - Nova
 
-## ACTIVE PRIORITY LOCK (2026-05-04)
+## ACTIVE PRIORITY LOCK (2026-05-06)
 
-Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04.md`
+Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_RUNTIME_TRUTH_AUDIT.md`
 
-Updated: 2026-05-06 after PR #107 merged.
+Updated: 2026-05-06 after OpenClaw priority-lock closeout.
 
-Completed lock path:
+Active path:
 
 ```text
-RequestUnderstanding trust/action-history review card
-→ local capability signoff matrix
-→ OpenClawMediator skeleton
-→ first read-only OpenClaw workflow proof
+Runtime truth regeneration / audit after OpenClaw proof chain
 ```
 
-The four-step OpenClaw priority lock is complete. No new active workstream is selected in this file.
+The four-step OpenClaw priority lock is complete. The current selected workstream is a narrow runtime truth audit/regeneration pass.
 
 ---
 
 ## Current Next TODO
 
-Create or review the next priority lock before starting new work.
+Run the runtime truth regeneration / audit pass.
 
 Purpose:
 
-- preserve a clean stopping point after the completed OpenClaw hardening sequence
-- avoid silently moving from proof work into broad automation
-- require an explicit reviewed next lock before feature/runtime expansion
+- verify generated runtime truth after PRs #103-#108
+- confirm code/proof/doc alignment for the new OpenClaw governance surfaces
+- regenerate generated runtime docs only through the generator path if needed
+- record discrepancies without manually inflating runtime claims
 
-Do not broaden OpenClaw beyond the reviewed proof path without a new priority lock.
+Do not broaden OpenClaw or start product/runtime expansion under this lock.
 
-Closeout reference:
+References:
 
+- `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_RUNTIME_TRUTH_AUDIT.md`
 - `docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06.md`
 
 ## Lock Progress
+
+Current lock:
+
+- Step 1 pending:
+  - runtime truth regeneration / audit after OpenClaw proof chain
+
+Completed previous lock:
 
 - Step 1 foundation complete:
   - planning-task preview runtime handoff proof merged in PR #103
@@ -66,19 +72,19 @@ Closeout reference:
 **Historical baseline below is retained for completed-context only. A new reviewed priority lock is required before a new active sprint starts.**
 
 **Updated:** 2026-05-03 (cost posture pass)
-**Previous sprint goal:** Stage 6 — Routine surfaces. Context Pack and BrainTrace now live in prompt path.
+**Previous sprint goal:** Stage 6 - Routine surfaces. Context Pack and BrainTrace now live in prompt path.
 **Authority note:** This file is the public task snapshot. Exact runtime truth still comes from generated runtime docs and code.
 
 ## Completed Baseline Before Priority Lock
 
-- Active proof closeout — PASS (Daily Brief, Search Evidence Synthesis, conversation continuity, prior full-suite proof)
-- Stage 3 Memory Loop — explicit remember / review-list / update / forget / why-used with receipts
-- Stage 4 Context Pack — bounded labeled context bridge with proof package
-- Stage 5 Brain discipline and BrainTrace — non-authorizing trace without private chain-of-thought exposure
-- Stage 6 RoutineGraph v0 — Daily Brief routine surface, non-authorizing
-- Plan My Week routine — proposal + approval record + receipt, non-authorizing
-- Cost posture metadata — visibility only, no runtime enforcement
-- Google read-only connector foundation plan — planning only, no OAuth/runtime connector
+- Active proof closeout - PASS (Daily Brief, Search Evidence Synthesis, conversation continuity, prior full-suite proof)
+- Stage 3 Memory Loop - explicit remember / review-list / update / forget / why-used with receipts
+- Stage 4 Context Pack - bounded labeled context bridge with proof package
+- Stage 5 Brain discipline and BrainTrace - non-authorizing trace without private chain-of-thought exposure
+- Stage 6 RoutineGraph v0 - Daily Brief routine surface, non-authorizing
+- Plan My Week routine - proposal + approval record + receipt, non-authorizing
+- Cost posture metadata - visibility only, no runtime enforcement
+- Google read-only connector foundation plan - planning only, no OAuth/runtime connector
 
 ## Previously Paused During The Completed Priority Lock
 

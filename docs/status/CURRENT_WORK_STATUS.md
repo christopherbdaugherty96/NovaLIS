@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-06 (OpenClaw priority lock completed)
+Last reviewed: 2026-05-06 (runtime truth audit lock selected)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -10,20 +10,17 @@ Generated runtime docs and actual code win if they conflict with this note.
 
 ---
 
-## Priority Lock (2026-05-04)
+## Priority Lock (2026-05-06)
 
-Completed priority lock sequence:
+Active priority lock:
 
 ```text
-RequestUnderstanding review card
-→ capability signoff matrix
-→ OpenClawMediator skeleton
-→ read-only workflow proof
+Runtime truth regeneration / audit after OpenClaw proof chain
 ```
 
-The four-step sequence is complete. No new workstream is selected until a new reviewed priority lock is created.
+The four-step OpenClaw sequence is complete. The current workstream is limited to runtime truth audit/regeneration/alignment.
 
-Current next todo: create or review the next priority lock before starting new feature/runtime work.
+Current next todo: verify whether generated runtime truth and human-maintained docs need alignment after PRs #103-#108.
 
 ---
 
@@ -39,37 +36,37 @@ Current next todo: create or review the next priority lock before starting new f
   session state, memory, receipts, weather (live via WeatherService), calendar (local ICS via
   CalendarSkill), and email placeholder into 11 sections. Non-authorizing frozen dataclass;
   `execution_performed=False` and `authorization_granted=False` enforced by `__post_init__`.
-- **Stage 3:** Memory Loop — explicit user-initiated remember / review / update / forget / why-used
+- **Stage 3:** Memory Loop - explicit user-initiated remember / review / update / forget / why-used
   with receipts. No silent autosave. Memory does not authorize action. (PR #82 2026-05-02)
-- **Stage 4:** Context Pack — bounded labeled context bridge with source labels, authority labels,
+- **Stage 4:** Context Pack - bounded labeled context bridge with source labels, authority labels,
   budget enforcement, stale/conflict warnings; live-wired into general_chat_runtime.py every turn.
   (PRs #83/#87 2026-05-02)
-- **Stage 5:** Brain Discipline / Trace — 7 mode contracts, classify_mode(), BrainTrace
+- **Stage 5:** Brain Discipline / Trace - 7 mode contracts, classify_mode(), BrainTrace
   non-authorizing frozen dataclass; stored in session_state["last_brain_trace"] each turn;
   execution_performed and authorization_granted always False. (PRs #85/#88 2026-05-02)
-- **Stage 6:** RoutineGraph v0 — RoutineBlock, RoutineGraph, RoutineRun, RoutineReceipt
+- **Stage 6:** RoutineGraph v0 - RoutineBlock, RoutineGraph, RoutineRun, RoutineReceipt
   non-authorizing frozen dataclasses; DAILY_BRIEF_GRAPH; run_daily_brief_routine(). (PR #93 2026-05-03)
-- **Stage 6:** Plan My Week Routine — WeeklyPlan, PlanMyWeekProposal (approval_required=True
+- **Stage 6:** Plan My Week Routine - WeeklyPlan, PlanMyWeekProposal (approval_required=True
   enforced), PlanApprovalRecord; two-phase runner; first RoutineGraph with request_approval block.
   (PR #98 2026-05-03)
-- **Stage 6 step 1:** Cost Posture Metadata — cost_posture field (free/free_tier/paid/unknown_cost)
+- **Stage 6 step 1:** Cost Posture Metadata - cost_posture field (free/free_tier/paid/unknown_cost)
   on all 27 capabilities; validated on load; visible in governance matrix and runtime state doc;
   metadata + visibility only, no runtime enforcement. (PR #99 2026-05-03)
-- **Priority lock step 1 foundation:** Planning-task preview runtime handoff proof merged in PR #103
-  and RequestUnderstanding review-card payload contract merged in PR #104. This establishes a
+- **Completed OpenClaw lock step 1 foundation:** Planning-task preview runtime handoff proof merged in
+  PR #103 and RequestUnderstanding review-card payload contract merged in PR #104. This establishes a
   planning-only, non-authorizing payload foundation for the future visible trust surface. No UI render,
   OpenClaw delegation, capability expansion, persistent history store, or execution authority was added.
-- **Priority lock step 2:** Local capability signoff matrix merged in PR #105. It records read-only
-  evidence and proof requirements for local/runtime surfaces before OpenClaw may rely on them; it does
-  not enable capabilities or grant OpenClaw authority.
-- **Priority lock step 3:** OpenClawMediator skeleton merged in PR #106. It adds a non-executing
-  envelope -> decision -> receipt boundary with hardened blocked-action matching, no runtime routes,
-  no OpenClaw execution, and no Governor/capability/filesystem/browser/network calls.
-- **Priority lock step 4:** First read-only OpenClaw workflow proof merged in PR #107. It proves a
-  deterministic Project Foreman Brief proof output through OpenClawMediator using caller-provided
-  sample input only, explicit allowed input scope, and receipt/non-action statements. No OpenClaw
-  execution, Governor/capability calls, Cap 63 shortcut, filesystem/browser/network action, external
-  account action, or workflow automation expansion was added.
+- **Completed OpenClaw lock step 2:** Local capability signoff matrix merged in PR #105. It records
+  read-only evidence and proof requirements for local/runtime surfaces before OpenClaw may rely on them;
+  it does not enable capabilities or grant OpenClaw authority.
+- **Completed OpenClaw lock step 3:** OpenClawMediator skeleton merged in PR #106. It adds a
+  non-executing envelope -> decision -> receipt boundary with hardened blocked-action matching, no
+  runtime routes, no OpenClaw execution, and no Governor/capability/filesystem/browser/network calls.
+- **Completed OpenClaw lock step 4:** First read-only OpenClaw workflow proof merged in PR #107. It
+  proves a deterministic Project Foreman Brief proof output through OpenClawMediator using
+  caller-provided sample input only, explicit allowed input scope, and receipt/non-action statements.
+  No OpenClaw execution, Governor/capability calls, Cap 63 shortcut, filesystem/browser/network action,
+  external account action, or workflow automation expansion was added.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -80,10 +77,10 @@ Current next todo: create or review the next priority lock before starting new f
 
 All future direction remains valid but requires a new reviewed priority lock before work starts.
 
-Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04.md`
+Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_RUNTIME_TRUTH_AUDIT.md`
 
-Closeout state:
+Current lock state:
 
-1. OpenClaw priority-lock sequence is complete.
-2. Broad OpenClaw automation, browser/computer-use, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, and Google connector expansion remain not approved.
-3. Select the next workstream only through a new reviewed priority lock.
+1. OpenClaw priority-lock sequence is complete and closed.
+2. Runtime truth regeneration / audit is the only selected next workstream.
+3. Broad OpenClaw automation, browser/computer-use, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, and Google connector expansion remain not approved.
