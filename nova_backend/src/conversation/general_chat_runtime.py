@@ -24,6 +24,7 @@ from src.skills.calendar import CalendarSkill
 from src.conversation.planning_run_preview import create_planning_run_preview
 from src.conversation.request_understanding import build_request_understanding
 from src.conversation.request_understanding_formatter import format_request_understanding_block
+from src.conversation.request_understanding_review_card import build_request_understanding_review_card
 from src.conversation.session_router import SessionRouter
 from src.conversation.task_understanding_preview import build_task_understanding_preview
 from src.governor.network_mediator import NetworkMediator
@@ -221,6 +222,7 @@ async def run_general_chat_fallback(
         "task_understanding_prompt_block",
         "task_understanding_envelope",
         "planning_run_preview",
+        "request_understanding_review_card",
     ):
         skill_state.pop(transient_key, None)
     skill_state["relevant_memory_context"] = packed_context
@@ -251,6 +253,15 @@ async def run_general_chat_fallback(
             skill_state["planning_run_preview"] = run_preview.to_dict()
             skill_state["last_interacted_run_id"] = run_preview.last_interacted_run_id
             skill_state["focused_run_id"] = run_preview.focused_run_id
+        review_card = build_request_understanding_review_card(
+            request_text=normalized_query,
+            request_understanding=understanding,
+            task_understanding_preview=task_preview.plan,
+            planning_run_preview=skill_state.get("planning_run_preview"),
+            detected_mode=mode_result.mode,
+        )
+        if review_card is not None:
+            skill_state["request_understanding_review_card"] = review_card.to_dict()
 
     skill_state["request_understanding_prompt_block"] = "\n\n".join(
         block for block in (request_block, task_preview.prompt_block) if block

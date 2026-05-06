@@ -1,0 +1,201 @@
+{
+  "captured_at": "2026-05-06T05:29:17.564742+00:00",
+  "branch": "feature/request-understanding-review-card",
+  "proof_type": "request understanding review-card payload contract",
+  "cases": [
+    {
+      "name": "task-like summary review card",
+      "query": "summarize this task",
+      "result": {
+        "success": true,
+        "skill": "general_chat"
+      },
+      "review_card_present": true,
+      "review_card": {
+        "request_text": "summarize this task",
+        "request_type": "general",
+        "detected_mode": "unknown",
+        "goal": "summarize this task",
+        "context_used": [
+          {
+            "source": "session_context",
+            "label": "user_goal",
+            "value": "Prepare a bounded review card."
+          },
+          {
+            "source": "system_limitation",
+            "label": "stable_memory",
+            "value": "No runtime memory integration was read by this planning scaffold."
+          }
+        ],
+        "constraints": [
+          "planning-only",
+          "does not execute tools or capabilities",
+          "does not authorize actions",
+          "does not bypass GovernorMediator"
+        ],
+        "assumptions": [],
+        "confidence": 0.78,
+        "clarification_needed": false,
+        "suggested_next_step": "Prepare a planning-only summary and bounded task envelope.",
+        "allowed_planning_actions": [
+          "summarize provided task/context",
+          "identify missing clarification",
+          "draft a bounded plan",
+          "create a non-executing task envelope"
+        ],
+        "blocked_execution_actions": [
+          "open browser tabs",
+          "write or modify files",
+          "use OpenClaw",
+          "send email",
+          "schedule calendar events",
+          "perform account actions",
+          "publish, trade, purchase, or submit forms",
+          "authorize capabilities"
+        ],
+        "relevant_receipts": [],
+        "relevant_action_history": [],
+        "history_status": "not_available",
+        "authority_effect": "none",
+        "execution_performed": false,
+        "authorization_granted": false,
+        "private_reasoning_exposed": false
+      },
+      "planning_run_preview_present": true,
+      "private_manager_leaked_to_skill_state": false,
+      "forbidden_action_keys_present": []
+    },
+    {
+      "name": "bounded envelope review card",
+      "query": "make a bounded task envelope",
+      "result": {
+        "success": true,
+        "skill": "general_chat"
+      },
+      "review_card_present": true,
+      "review_card": {
+        "request_text": "make a bounded task envelope",
+        "request_type": "general",
+        "detected_mode": "unknown",
+        "goal": "make a bounded task envelope",
+        "context_used": [
+          {
+            "source": "stable_memory",
+            "label": "memory_1",
+            "value": "User prefers planning-only review before implementation."
+          }
+        ],
+        "constraints": [
+          "planning-only",
+          "does not execute tools or capabilities",
+          "does not authorize actions",
+          "does not bypass GovernorMediator"
+        ],
+        "assumptions": [],
+        "confidence": 0.78,
+        "clarification_needed": false,
+        "suggested_next_step": "Prepare a planning-only summary and bounded task envelope.",
+        "allowed_planning_actions": [
+          "summarize provided task/context",
+          "identify missing clarification",
+          "draft a bounded plan",
+          "create a non-executing task envelope"
+        ],
+        "blocked_execution_actions": [
+          "open browser tabs",
+          "write or modify files",
+          "use OpenClaw",
+          "send email",
+          "schedule calendar events",
+          "perform account actions",
+          "publish, trade, purchase, or submit forms",
+          "authorize capabilities"
+        ],
+        "relevant_receipts": [],
+        "relevant_action_history": [],
+        "history_status": "not_available",
+        "authority_effect": "none",
+        "execution_performed": false,
+        "authorization_granted": false,
+        "private_reasoning_exposed": false
+      },
+      "planning_run_preview_present": true,
+      "private_manager_leaked_to_skill_state": false,
+      "forbidden_action_keys_present": []
+    },
+    {
+      "name": "ambiguous script scene-plan review card",
+      "query": "turn this script into a scene plan",
+      "result": {
+        "success": true,
+        "skill": "general_chat"
+      },
+      "review_card_present": true,
+      "review_card": {
+        "request_text": "turn this script into a scene plan",
+        "request_type": "general",
+        "detected_mode": "planning",
+        "goal": "turn this script into a scene plan",
+        "context_used": [
+          {
+            "source": "system_limitation",
+            "label": "stable_memory",
+            "value": "No runtime memory integration was read by this planning scaffold."
+          }
+        ],
+        "constraints": [
+          "planning-only",
+          "does not execute tools or capabilities",
+          "does not authorize actions",
+          "does not bypass GovernorMediator"
+        ],
+        "assumptions": [
+          "No script text was available in session context."
+        ],
+        "confidence": 0.42,
+        "clarification_needed": true,
+        "suggested_next_step": "Ask one focused clarification before making a plan.",
+        "allowed_planning_actions": [
+          "summarize provided task/context",
+          "identify missing clarification",
+          "draft a bounded plan",
+          "create a non-executing task envelope"
+        ],
+        "blocked_execution_actions": [
+          "open browser tabs",
+          "write or modify files",
+          "use OpenClaw",
+          "send email",
+          "schedule calendar events",
+          "perform account actions",
+          "publish, trade, purchase, or submit forms",
+          "authorize capabilities"
+        ],
+        "relevant_receipts": [],
+        "relevant_action_history": [],
+        "history_status": "not_available",
+        "authority_effect": "none",
+        "execution_performed": false,
+        "authorization_granted": false,
+        "private_reasoning_exposed": false
+      },
+      "planning_run_preview_present": true,
+      "private_manager_leaked_to_skill_state": false,
+      "forbidden_action_keys_present": []
+    },
+    {
+      "name": "casual greeting no review card",
+      "query": "hey how are you",
+      "result": {
+        "success": true,
+        "skill": "general_chat"
+      },
+      "review_card_present": false,
+      "review_card": null,
+      "planning_run_preview_present": false,
+      "private_manager_leaked_to_skill_state": false,
+      "forbidden_action_keys_present": []
+    }
+  ]
+}
