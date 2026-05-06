@@ -1,0 +1,454 @@
+{
+  "captured_at": "2026-05-06T05:12:59.181400+00:00",
+  "branch": "main",
+  "proof_type": "runtime helper live handoff transcript",
+  "cases": [
+    {
+      "name": "task-like summary with session context",
+      "query": "summarize this task",
+      "result": {
+        "success": true,
+        "skill": "general_chat"
+      },
+      "passed_to_general_chat": {
+        "request_understanding_type": "general",
+        "request_understanding_authority_effect": "none",
+        "task_understanding_preview": {
+          "mode": "simple_task_mode",
+          "planning_only": true,
+          "understanding": {
+            "goal": "summarize this task",
+            "context_used": [
+              {
+                "source": "session_context",
+                "label": "user_goal",
+                "value": "Prepare a bounded repo plan."
+              },
+              {
+                "source": "system_limitation",
+                "label": "stable_memory",
+                "value": "No runtime memory integration was read by this planning scaffold."
+              }
+            ],
+            "constraints": [
+              "planning-only",
+              "does not execute tools or capabilities",
+              "does not authorize actions",
+              "does not bypass GovernorMediator"
+            ],
+            "assumptions": [],
+            "confidence": 0.78,
+            "clarification_needed": false,
+            "suggested_next_step": "Prepare a planning-only summary and bounded task envelope.",
+            "authority_effect": "none",
+            "execution_performed": false,
+            "authorization_granted": false
+          },
+          "envelope": {
+            "allowed_actions": [
+              "summarize provided task/context",
+              "identify missing clarification",
+              "draft a bounded plan",
+              "create a non-executing task envelope"
+            ],
+            "blocked_actions": [
+              "open browser tabs",
+              "write or modify files",
+              "use OpenClaw",
+              "send email",
+              "schedule calendar events",
+              "perform account actions",
+              "publish, trade, purchase, or submit forms",
+              "authorize capabilities"
+            ],
+            "environment_scope": [
+              "local_conversation",
+              "provided_session_context",
+              "caller_provided_stable_memory"
+            ],
+            "step_limit": 4,
+            "approval_level": "user_review_only",
+            "stop_condition": "Stop after producing the planning artifact or when required context is missing.",
+            "failure_behavior": "Ask for clarification; do not guess, execute, or escalate to tools.",
+            "authority_effect": "none"
+          },
+          "plan_steps": [
+            "Read only the provided task/context.",
+            "Summarize the goal and constraints.",
+            "Suggest the next safe planning step."
+          ],
+          "execution_performed": false,
+          "authorization_granted": false
+        },
+        "task_understanding_prompt_block": "Task understanding preview (planning-only, non-authorizing):\nGoal: summarize this task\nContext used: session_context:user_goal; system_limitation:stable_memory\nConstraints: planning-only; does not execute tools or capabilities; does not authorize actions; does not bypass GovernorMediator\nAssumptions: none\nConfidence: 0.78\nClarification needed: false\nSuggested next step: Prepare a planning-only summary and bounded task envelope.\nAuthority effect: none. No tools, capabilities, Governor calls, OpenClaw, browser tabs, file writes, email, scheduling, or account actions.\nTask envelope:\nAllowed actions: summarize provided task/context; identify missing clarification; draft a bounded plan; create a non-executing task envelope\nBlocked actions: open browser tabs; write or modify files; use OpenClaw; send email; schedule calendar events; perform account actions; publish, trade, purchase, or submit forms; authorize capabilities\nEnvironment scope: local_conversation; provided_session_context; caller_provided_stable_memory\nStep limit: 4\nApproval level: user_review_only\nStop condition: Stop after producing the planning artifact or when required context is missing.\nFailure behavior: Ask for clarification; do not guess, execute, or escalate to tools.",
+        "task_understanding_envelope": {
+          "allowed_actions": [
+            "summarize provided task/context",
+            "identify missing clarification",
+            "draft a bounded plan",
+            "create a non-executing task envelope"
+          ],
+          "blocked_actions": [
+            "open browser tabs",
+            "write or modify files",
+            "use OpenClaw",
+            "send email",
+            "schedule calendar events",
+            "perform account actions",
+            "publish, trade, purchase, or submit forms",
+            "authorize capabilities"
+          ],
+          "environment_scope": [
+            "local_conversation",
+            "provided_session_context",
+            "caller_provided_stable_memory"
+          ],
+          "step_limit": 4,
+          "approval_level": "user_review_only",
+          "stop_condition": "Stop after producing the planning artifact or when required context is missing.",
+          "failure_behavior": "Ask for clarification; do not guess, execute, or escalate to tools.",
+          "authority_effect": "none"
+        },
+        "planning_run_preview": {
+          "run_id": "run_1f2e525227c14cfcb135eb76e78c2796",
+          "title": "summarize this task",
+          "goal": "summarize this task",
+          "status": "planning",
+          "current_step": "Read only the provided task/context.",
+          "next_step": "Summarize the goal and constraints.",
+          "last_interacted_run_id": "run_1f2e525227c14cfcb135eb76e78c2796",
+          "focused_run_id": "run_1f2e525227c14cfcb135eb76e78c2796",
+          "planning_only": true,
+          "authority_effect": "none",
+          "execution_performed": false,
+          "authorization_granted": false
+        },
+        "prompt_block": "Task understanding preview (planning-only, non-authorizing):\nGoal: summarize this task\nContext used: session_context:user_goal; system_limitation:stable_memory\nConstraints: planning-only; does not execute tools or capabilities; does not authorize actions; does not bypass GovernorMediator\nAssumptions: none\nConfidence: 0.78\nClarification needed: false\nSuggested next step: Prepare a planning-only summary and bounded task envelope.\nAuthority effect: none. No tools, capabilities, Governor calls, OpenClaw, browser tabs, file writes, email, scheduling, or account actions.\nTask envelope:\nAllowed actions: summarize provided task/context; identify missing clarification; draft a bounded plan; create a non-executing task envelope\nBlocked actions: open browser tabs; write or modify files; use OpenClaw; send email; schedule calendar events; perform account actions; publish, trade, purchase, or submit forms; authorize capabilities\nEnvironment scope: local_conversation; provided_session_context; caller_provided_stable_memory\nStep limit: 4\nApproval level: user_review_only\nStop condition: Stop after producing the planning artifact or when required context is missing.\nFailure behavior: Ask for clarification; do not guess, execute, or escalate to tools.",
+        "private_manager_leaked_to_skill_state": false
+      },
+      "live_session_state": {
+        "planning_run_preview": {
+          "run_id": "run_1f2e525227c14cfcb135eb76e78c2796",
+          "title": "summarize this task",
+          "goal": "summarize this task",
+          "status": "planning",
+          "current_step": "Read only the provided task/context.",
+          "next_step": "Summarize the goal and constraints.",
+          "last_interacted_run_id": "run_1f2e525227c14cfcb135eb76e78c2796",
+          "focused_run_id": "run_1f2e525227c14cfcb135eb76e78c2796",
+          "planning_only": true,
+          "authority_effect": "none",
+          "execution_performed": false,
+          "authorization_granted": false
+        },
+        "last_interacted_run_id": "run_1f2e525227c14cfcb135eb76e78c2796",
+        "focused_run_id": "run_1f2e525227c14cfcb135eb76e78c2796",
+        "run_manager_present_session_only": true,
+        "run_count": 1
+      }
+    },
+    {
+      "name": "bounded envelope with caller-provided memory",
+      "query": "make a bounded task envelope",
+      "result": {
+        "success": true,
+        "skill": "general_chat"
+      },
+      "passed_to_general_chat": {
+        "request_understanding_type": "general",
+        "request_understanding_authority_effect": "none",
+        "task_understanding_preview": {
+          "mode": "simple_task_mode",
+          "planning_only": true,
+          "understanding": {
+            "goal": "make a bounded task envelope",
+            "context_used": [
+              {
+                "source": "stable_memory",
+                "label": "memory_1",
+                "value": "User prefers planning-only previews before implementation."
+              }
+            ],
+            "constraints": [
+              "planning-only",
+              "does not execute tools or capabilities",
+              "does not authorize actions",
+              "does not bypass GovernorMediator"
+            ],
+            "assumptions": [],
+            "confidence": 0.78,
+            "clarification_needed": false,
+            "suggested_next_step": "Prepare a planning-only summary and bounded task envelope.",
+            "authority_effect": "none",
+            "execution_performed": false,
+            "authorization_granted": false
+          },
+          "envelope": {
+            "allowed_actions": [
+              "summarize provided task/context",
+              "identify missing clarification",
+              "draft a bounded plan",
+              "create a non-executing task envelope"
+            ],
+            "blocked_actions": [
+              "open browser tabs",
+              "write or modify files",
+              "use OpenClaw",
+              "send email",
+              "schedule calendar events",
+              "perform account actions",
+              "publish, trade, purchase, or submit forms",
+              "authorize capabilities"
+            ],
+            "environment_scope": [
+              "local_conversation",
+              "provided_session_context",
+              "caller_provided_stable_memory"
+            ],
+            "step_limit": 4,
+            "approval_level": "user_review_only",
+            "stop_condition": "Stop after producing the planning artifact or when required context is missing.",
+            "failure_behavior": "Ask for clarification; do not guess, execute, or escalate to tools.",
+            "authority_effect": "none"
+          },
+          "plan_steps": [
+            "State the planning-only scope.",
+            "List allowed and blocked actions.",
+            "Name the stop condition and failure behavior."
+          ],
+          "execution_performed": false,
+          "authorization_granted": false
+        },
+        "task_understanding_prompt_block": "Task understanding preview (planning-only, non-authorizing):\nGoal: make a bounded task envelope\nContext used: stable_memory:memory_1\nConstraints: planning-only; does not execute tools or capabilities; does not authorize actions; does not bypass GovernorMediator\nAssumptions: none\nConfidence: 0.78\nClarification needed: false\nSuggested next step: Prepare a planning-only summary and bounded task envelope.\nAuthority effect: none. No tools, capabilities, Governor calls, OpenClaw, browser tabs, file writes, email, scheduling, or account actions.\nTask envelope:\nAllowed actions: summarize provided task/context; identify missing clarification; draft a bounded plan; create a non-executing task envelope\nBlocked actions: open browser tabs; write or modify files; use OpenClaw; send email; schedule calendar events; perform account actions; publish, trade, purchase, or submit forms; authorize capabilities\nEnvironment scope: local_conversation; provided_session_context; caller_provided_stable_memory\nStep limit: 4\nApproval level: user_review_only\nStop condition: Stop after producing the planning artifact or when required context is missing.\nFailure behavior: Ask for clarification; do not guess, execute, or escalate to tools.",
+        "task_understanding_envelope": {
+          "allowed_actions": [
+            "summarize provided task/context",
+            "identify missing clarification",
+            "draft a bounded plan",
+            "create a non-executing task envelope"
+          ],
+          "blocked_actions": [
+            "open browser tabs",
+            "write or modify files",
+            "use OpenClaw",
+            "send email",
+            "schedule calendar events",
+            "perform account actions",
+            "publish, trade, purchase, or submit forms",
+            "authorize capabilities"
+          ],
+          "environment_scope": [
+            "local_conversation",
+            "provided_session_context",
+            "caller_provided_stable_memory"
+          ],
+          "step_limit": 4,
+          "approval_level": "user_review_only",
+          "stop_condition": "Stop after producing the planning artifact or when required context is missing.",
+          "failure_behavior": "Ask for clarification; do not guess, execute, or escalate to tools.",
+          "authority_effect": "none"
+        },
+        "planning_run_preview": {
+          "run_id": "run_5ca4bc0222a64dac9c5f94b01360ec49",
+          "title": "make a bounded task envelope",
+          "goal": "make a bounded task envelope",
+          "status": "planning",
+          "current_step": "State the planning-only scope.",
+          "next_step": "List allowed and blocked actions.",
+          "last_interacted_run_id": "run_5ca4bc0222a64dac9c5f94b01360ec49",
+          "focused_run_id": "run_5ca4bc0222a64dac9c5f94b01360ec49",
+          "planning_only": true,
+          "authority_effect": "none",
+          "execution_performed": false,
+          "authorization_granted": false
+        },
+        "prompt_block": "Task understanding preview (planning-only, non-authorizing):\nGoal: make a bounded task envelope\nContext used: stable_memory:memory_1\nConstraints: planning-only; does not execute tools or capabilities; does not authorize actions; does not bypass GovernorMediator\nAssumptions: none\nConfidence: 0.78\nClarification needed: false\nSuggested next step: Prepare a planning-only summary and bounded task envelope.\nAuthority effect: none. No tools, capabilities, Governor calls, OpenClaw, browser tabs, file writes, email, scheduling, or account actions.\nTask envelope:\nAllowed actions: summarize provided task/context; identify missing clarification; draft a bounded plan; create a non-executing task envelope\nBlocked actions: open browser tabs; write or modify files; use OpenClaw; send email; schedule calendar events; perform account actions; publish, trade, purchase, or submit forms; authorize capabilities\nEnvironment scope: local_conversation; provided_session_context; caller_provided_stable_memory\nStep limit: 4\nApproval level: user_review_only\nStop condition: Stop after producing the planning artifact or when required context is missing.\nFailure behavior: Ask for clarification; do not guess, execute, or escalate to tools.",
+        "private_manager_leaked_to_skill_state": false
+      },
+      "live_session_state": {
+        "planning_run_preview": {
+          "run_id": "run_5ca4bc0222a64dac9c5f94b01360ec49",
+          "title": "make a bounded task envelope",
+          "goal": "make a bounded task envelope",
+          "status": "planning",
+          "current_step": "State the planning-only scope.",
+          "next_step": "List allowed and blocked actions.",
+          "last_interacted_run_id": "run_5ca4bc0222a64dac9c5f94b01360ec49",
+          "focused_run_id": "run_5ca4bc0222a64dac9c5f94b01360ec49",
+          "planning_only": true,
+          "authority_effect": "none",
+          "execution_performed": false,
+          "authorization_granted": false
+        },
+        "last_interacted_run_id": "run_5ca4bc0222a64dac9c5f94b01360ec49",
+        "focused_run_id": "run_5ca4bc0222a64dac9c5f94b01360ec49",
+        "run_manager_present_session_only": true,
+        "run_count": 1
+      }
+    },
+    {
+      "name": "ambiguous script scene-plan request",
+      "query": "turn this script into a scene plan",
+      "result": {
+        "success": true,
+        "skill": "general_chat"
+      },
+      "passed_to_general_chat": {
+        "request_understanding_type": "general",
+        "request_understanding_authority_effect": "none",
+        "task_understanding_preview": {
+          "mode": "simple_task_mode",
+          "planning_only": true,
+          "understanding": {
+            "goal": "turn this script into a scene plan",
+            "context_used": [
+              {
+                "source": "system_limitation",
+                "label": "stable_memory",
+                "value": "No runtime memory integration was read by this planning scaffold."
+              }
+            ],
+            "constraints": [
+              "planning-only",
+              "does not execute tools or capabilities",
+              "does not authorize actions",
+              "does not bypass GovernorMediator"
+            ],
+            "assumptions": [
+              "No script text was available in session context."
+            ],
+            "confidence": 0.42,
+            "clarification_needed": true,
+            "suggested_next_step": "Ask one focused clarification before making a plan.",
+            "authority_effect": "none",
+            "execution_performed": false,
+            "authorization_granted": false
+          },
+          "envelope": {
+            "allowed_actions": [
+              "summarize provided task/context",
+              "identify missing clarification",
+              "draft a bounded plan",
+              "create a non-executing task envelope"
+            ],
+            "blocked_actions": [
+              "open browser tabs",
+              "write or modify files",
+              "use OpenClaw",
+              "send email",
+              "schedule calendar events",
+              "perform account actions",
+              "publish, trade, purchase, or submit forms",
+              "authorize capabilities"
+            ],
+            "environment_scope": [
+              "local_conversation",
+              "provided_session_context",
+              "caller_provided_stable_memory"
+            ],
+            "step_limit": 4,
+            "approval_level": "user_review_only",
+            "stop_condition": "Stop after producing the planning artifact or when required context is missing.",
+            "failure_behavior": "Ask for clarification; do not guess, execute, or escalate to tools.",
+            "authority_effect": "none"
+          },
+          "plan_steps": [
+            "Ask for the missing source material or target."
+          ],
+          "execution_performed": false,
+          "authorization_granted": false
+        },
+        "task_understanding_prompt_block": "Task understanding preview (planning-only, non-authorizing):\nGoal: turn this script into a scene plan\nContext used: system_limitation:stable_memory\nConstraints: planning-only; does not execute tools or capabilities; does not authorize actions; does not bypass GovernorMediator\nAssumptions: No script text was available in session context.\nConfidence: 0.42\nClarification needed: true\nSuggested next step: Ask one focused clarification before making a plan.\nAuthority effect: none. No tools, capabilities, Governor calls, OpenClaw, browser tabs, file writes, email, scheduling, or account actions.\nTask envelope:\nAllowed actions: summarize provided task/context; identify missing clarification; draft a bounded plan; create a non-executing task envelope\nBlocked actions: open browser tabs; write or modify files; use OpenClaw; send email; schedule calendar events; perform account actions; publish, trade, purchase, or submit forms; authorize capabilities\nEnvironment scope: local_conversation; provided_session_context; caller_provided_stable_memory\nStep limit: 4\nApproval level: user_review_only\nStop condition: Stop after producing the planning artifact or when required context is missing.\nFailure behavior: Ask for clarification; do not guess, execute, or escalate to tools.",
+        "task_understanding_envelope": {
+          "allowed_actions": [
+            "summarize provided task/context",
+            "identify missing clarification",
+            "draft a bounded plan",
+            "create a non-executing task envelope"
+          ],
+          "blocked_actions": [
+            "open browser tabs",
+            "write or modify files",
+            "use OpenClaw",
+            "send email",
+            "schedule calendar events",
+            "perform account actions",
+            "publish, trade, purchase, or submit forms",
+            "authorize capabilities"
+          ],
+          "environment_scope": [
+            "local_conversation",
+            "provided_session_context",
+            "caller_provided_stable_memory"
+          ],
+          "step_limit": 4,
+          "approval_level": "user_review_only",
+          "stop_condition": "Stop after producing the planning artifact or when required context is missing.",
+          "failure_behavior": "Ask for clarification; do not guess, execute, or escalate to tools.",
+          "authority_effect": "none"
+        },
+        "planning_run_preview": {
+          "run_id": "run_8a006c2d6ea747cf989f43cca2afa0b6",
+          "title": "turn this script into a scene plan",
+          "goal": "turn this script into a scene plan",
+          "status": "planning",
+          "current_step": "Ask for the missing source material or target.",
+          "next_step": "Ask one focused clarification before making a plan.",
+          "last_interacted_run_id": "run_8a006c2d6ea747cf989f43cca2afa0b6",
+          "focused_run_id": "run_8a006c2d6ea747cf989f43cca2afa0b6",
+          "planning_only": true,
+          "authority_effect": "none",
+          "execution_performed": false,
+          "authorization_granted": false
+        },
+        "prompt_block": "Task understanding preview (planning-only, non-authorizing):\nGoal: turn this script into a scene plan\nContext used: system_limitation:stable_memory\nConstraints: planning-only; does not execute tools or capabilities; does not authorize actions; does not bypass GovernorMediator\nAssumptions: No script text was available in session context.\nConfidence: 0.42\nClarification needed: true\nSuggested next step: Ask one focused clarification before making a plan.\nAuthority effect: none. No tools, capabilities, Governor calls, OpenClaw, browser tabs, file writes, email, scheduling, or account actions.\nTask envelope:\nAllowed actions: summarize provided task/context; identify missing clarification; draft a bounded plan; create a non-executing task envelope\nBlocked actions: open browser tabs; write or modify files; use OpenClaw; send email; schedule calendar events; perform account actions; publish, trade, purchase, or submit forms; authorize capabilities\nEnvironment scope: local_conversation; provided_session_context; caller_provided_stable_memory\nStep limit: 4\nApproval level: user_review_only\nStop condition: Stop after producing the planning artifact or when required context is missing.\nFailure behavior: Ask for clarification; do not guess, execute, or escalate to tools.",
+        "private_manager_leaked_to_skill_state": false
+      },
+      "live_session_state": {
+        "planning_run_preview": {
+          "run_id": "run_8a006c2d6ea747cf989f43cca2afa0b6",
+          "title": "turn this script into a scene plan",
+          "goal": "turn this script into a scene plan",
+          "status": "planning",
+          "current_step": "Ask for the missing source material or target.",
+          "next_step": "Ask one focused clarification before making a plan.",
+          "last_interacted_run_id": "run_8a006c2d6ea747cf989f43cca2afa0b6",
+          "focused_run_id": "run_8a006c2d6ea747cf989f43cca2afa0b6",
+          "planning_only": true,
+          "authority_effect": "none",
+          "execution_performed": false,
+          "authorization_granted": false
+        },
+        "last_interacted_run_id": "run_8a006c2d6ea747cf989f43cca2afa0b6",
+        "focused_run_id": "run_8a006c2d6ea747cf989f43cca2afa0b6",
+        "run_manager_present_session_only": true,
+        "run_count": 1
+      }
+    },
+    {
+      "name": "casual greeting no preview",
+      "query": "hey how are you",
+      "result": {
+        "success": true,
+        "skill": "general_chat"
+      },
+      "passed_to_general_chat": {
+        "request_understanding_type": "general",
+        "request_understanding_authority_effect": "none",
+        "task_understanding_preview": null,
+        "task_understanding_prompt_block": "",
+        "task_understanding_envelope": null,
+        "planning_run_preview": null,
+        "prompt_block": "",
+        "private_manager_leaked_to_skill_state": false
+      },
+      "live_session_state": {
+        "planning_run_preview": null,
+        "last_interacted_run_id": null,
+        "focused_run_id": null,
+        "run_manager_present_session_only": false,
+        "run_count": 0
+      }
+    }
+  ]
+}

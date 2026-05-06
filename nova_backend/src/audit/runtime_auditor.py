@@ -1731,6 +1731,16 @@ def render_current_runtime_state_markdown(report: dict[str, Any], registry: dict
             "Location: src/conversation",
             "Status: Active",
             "",
+            *(
+                [
+                    "Brain Planning Preview",
+                    "Location: src/brain/task_understanding.py + src/brain/run_manager.py + src/conversation/task_understanding_preview.py + src/conversation/planning_run_preview.py",
+                    "Status: Planning-only Task Understanding and session-local Run Preview scaffolds active in general-chat fallback for task-like requests; non-authorizing and non-executing",
+                    "",
+                ]
+                if (PROJECT_ROOT / "nova_backend" / "src" / "conversation" / "planning_run_preview.py").exists()
+                else []
+            ),
             "Deep Analysis Bridge",
             "Location: src/conversation/deepseek_bridge.py",
             "Status: Contained analysis-only",
