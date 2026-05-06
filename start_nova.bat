@@ -15,5 +15,5 @@ if not exist "%START_SCRIPT%" (
   exit /b 1
 )
 
-"%PYTHON_EXE%" "%START_SCRIPT%"
+"%PYTHON_EXE%" "%START_SCRIPT%" --app-window %*
 exit /b %ERRORLEVEL%

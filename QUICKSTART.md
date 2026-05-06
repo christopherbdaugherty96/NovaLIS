@@ -36,6 +36,20 @@ nova-start
 
 Open your browser to the local dashboard after startup.
 
+On Windows, you can also launch Nova like a local app:
+
+```bat
+start_nova.bat
+```
+
+This starts the backend, waits for readiness, then opens the dashboard in an app-style browser window when Edge or Chrome is available.
+
+To stop the local backend:
+
+```bat
+stop_nova.bat
+```
+
 ## If Something Breaks
 - Confirm dependencies are installed
 - Confirm local model runtime is available

@@ -185,11 +185,47 @@ def _find_nova_command() -> list[str]:
     ]
 
 
-def start_nova(open_browser: bool = True) -> int:
+def _open_dashboard(open_as_app: bool = False) -> None:
+    """Open Nova's dashboard.
+
+    On Windows, ``open_as_app`` prefers Edge/Chrome app-window mode so Nova
+    feels closer to a desktop app. Falls back to the default browser when no
+    supported browser executable is found.
+    """
+
+    if open_as_app and platform.system() == "Windows":
+        for browser in _windows_app_browser_candidates():
+            if browser.exists():
+                subprocess.Popen(
+                    [str(browser), f"--app={BASE_URL}", "--new-window"],
+                    stdout=subprocess.DEVNULL,
+                    stderr=subprocess.DEVNULL,
+                    creationflags=subprocess.CREATE_NO_WINDOW,  # type: ignore[attr-defined]
+                )
+                return
+
+    webbrowser.open(BASE_URL)
+
+
+def _windows_app_browser_candidates() -> tuple[Path, ...]:
+    program_files = Path(os.environ.get("ProgramFiles", r"C:\Program Files"))
+    program_files_x86 = Path(os.environ.get("ProgramFiles(x86)", r"C:\Program Files (x86)"))
+    local_app_data = Path(os.environ.get("LOCALAPPDATA", ""))
+    return (
+        program_files / "Microsoft" / "Edge" / "Application" / "msedge.exe",
+        program_files_x86 / "Microsoft" / "Edge" / "Application" / "msedge.exe",
+        local_app_data / "Microsoft" / "Edge" / "Application" / "msedge.exe",
+        program_files / "Google" / "Chrome" / "Application" / "chrome.exe",
+        program_files_x86 / "Google" / "Chrome" / "Application" / "chrome.exe",
+        local_app_data / "Google" / "Chrome" / "Application" / "chrome.exe",
+    )
+
+
+def start_nova(open_browser: bool = True, *, app_window: bool = False) -> int:
     if _is_running():
         print(f"[Nova] Already running at {BASE_URL}")
         if open_browser:
-            webbrowser.open(BASE_URL)
+            _open_dashboard(open_as_app=app_window)
         return 0
 
     if not _clear_stale_nova_listener():
@@ -228,7 +264,7 @@ def start_nova(open_browser: bool = True) -> int:
             PID_FILE.write_text(str(running_pid), encoding="utf-8")
             _log_fh.close()
             if open_browser:
-                webbrowser.open(BASE_URL)
+                _open_dashboard(open_as_app=app_window)
             return 0
         exit_code = proc.poll()
         if exit_code is not None:
@@ -261,7 +297,8 @@ def start_nova(open_browser: bool = True) -> int:
 
 def main() -> int:
     open_browser = "--no-browser" not in sys.argv
-    return start_nova(open_browser=open_browser)
+    app_window = "--app-window" in sys.argv or os.environ.get("NOVA_BROWSER_MODE", "").lower() == "app"
+    return start_nova(open_browser=open_browser, app_window=app_window)
 
 
 if __name__ == "__main__":
