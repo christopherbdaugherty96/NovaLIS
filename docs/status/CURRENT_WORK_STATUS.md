@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-06 (local capability signoff matrix draft started)
+Last reviewed: 2026-05-06 (OpenClawMediator skeleton branch started)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -23,7 +23,7 @@ RequestUnderstanding review card
 
 All other workstreams are intentionally paused to prevent premature expansion before execution governance boundaries are proven.
 
-Current next todo: review the local capability signoff matrix before starting OpenClawMediator work.
+Current next todo: review the OpenClawMediator skeleton before starting the first read-only OpenClaw workflow proof.
 
 ---
 
@@ -59,6 +59,9 @@ Current next todo: review the local capability signoff matrix before starting Op
   and RequestUnderstanding review-card payload contract merged in PR #104. This establishes a
   planning-only, non-authorizing payload foundation for the future visible trust surface. No UI render,
   OpenClaw delegation, capability expansion, persistent history store, or execution authority was added.
+- **Priority lock step 2:** Local capability signoff matrix merged in PR #105. It records read-only
+  evidence and proof requirements for local/runtime surfaces before OpenClaw may rely on them; it does
+  not enable capabilities or grant OpenClaw authority.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -73,6 +76,6 @@ Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04.md`
 
 Near-term sequence:
 
-1. Review `docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06.md`.
-2. Confirm pass/fail/blocked/setup-dependent capability status before any OpenClaw reliance.
-3. Only then start OpenClawMediator skeleton work.
+1. Review OpenClawMediator skeleton and proof package.
+2. Confirm it remains policy/receipt-only with no OpenClaw, Governor, capability, browser, filesystem, or network execution.
+3. Only then start the first read-only OpenClaw workflow proof.

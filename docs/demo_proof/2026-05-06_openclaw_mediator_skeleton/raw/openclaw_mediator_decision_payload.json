@@ -1,0 +1,189 @@
+{
+  "blocked_case": {
+    "decision": {
+      "allowed_preview_actions": [],
+      "authority_effect": "none",
+      "authorization_granted": false,
+      "blocked_actions": [
+        "browser_use",
+        "account_action",
+        "direct_cap63_shortcut"
+      ],
+      "blocked_reasons": [
+        "browser_use_blocked",
+        "account_action_blocked",
+        "direct_cap63_shortcut_blocked"
+      ],
+      "browser_opened": false,
+      "capabilities_called": false,
+      "decision": "blocked",
+      "execution_performed": false,
+      "filesystem_touched": false,
+      "governor_called": false,
+      "network_called": false,
+      "openclaw_called": false,
+      "preview_allowed": false,
+      "reason": "OpenClaw delegation preview is blocked by the mediator skeleton policy.",
+      "required_boundaries": [
+        "explicit allowed input scope",
+        "read-only delegation only",
+        "no browser/computer-use",
+        "no filesystem writes",
+        "no external writes",
+        "no direct Cap 63 shortcut",
+        "receipt/non-action statement"
+      ]
+    },
+    "envelope": {
+      "account_action": false,
+      "allowed_input_scope": [
+        "user_prompt_only"
+      ],
+      "browser_use": false,
+      "calendar_action": false,
+      "computer_use": false,
+      "direct_cap63_shortcut": false,
+      "email_action": false,
+      "external_write": false,
+      "filesystem_write": false,
+      "metadata": {},
+      "read_only": true,
+      "request_text": "Use openclaw_execute / Cap 63 to open a browser and click through my account.",
+      "requested_actions": [
+        "open browser",
+        "click account settings"
+      ],
+      "shopify_action": false
+    },
+    "receipt": {
+      "authority_effect": "none",
+      "authorization_granted": false,
+      "blocked_reasons": [
+        "browser_use_blocked",
+        "account_action_blocked",
+        "direct_cap63_shortcut_blocked"
+      ],
+      "decision": "blocked",
+      "did_happen": [
+        "OpenClawMediator evaluated the delegation envelope.",
+        "OpenClawMediator returned a policy decision.",
+        "OpenClawMediator constructed this non-action receipt."
+      ],
+      "did_not_happen": [
+        "OpenClaw was not executed.",
+        "No capability was called.",
+        "The Governor was not called.",
+        "No browser or computer-use action was performed.",
+        "No filesystem write was performed.",
+        "No email, calendar, Shopify, account, or external write action was performed.",
+        "No network request was made.",
+        "Cap 63 was not used as a shortcut."
+      ],
+      "execution_performed": false,
+      "non_action_statement": "This receipt records a mediator policy decision only, not OpenClaw execution.",
+      "receipt_type": "openclaw_mediator_preview",
+      "request_text": "Use openclaw_execute / Cap 63 to open a browser and click through my account.",
+      "summary": "OpenClaw preview was blocked without execution."
+    }
+  },
+  "forbidden_runtime_effects": {
+    "authorization_granted": false,
+    "browser_opened": false,
+    "capabilities_called": false,
+    "execution_performed": false,
+    "filesystem_touched": false,
+    "governor_called": false,
+    "network_called": false,
+    "openclaw_called": false
+  },
+  "preview_case": {
+    "decision": {
+      "allowed_preview_actions": [
+        "inspect caller-provided scope labels",
+        "prepare a read-only delegation preview",
+        "emit a non-action receipt"
+      ],
+      "authority_effect": "none",
+      "authorization_granted": false,
+      "blocked_actions": [
+        "browser_use",
+        "computer_use",
+        "filesystem_write",
+        "external_write",
+        "email_action",
+        "calendar_action",
+        "shopify_action",
+        "account_action",
+        "direct_cap63_shortcut"
+      ],
+      "blocked_reasons": [],
+      "browser_opened": false,
+      "capabilities_called": false,
+      "decision": "preview_allowed",
+      "execution_performed": false,
+      "filesystem_touched": false,
+      "governor_called": false,
+      "network_called": false,
+      "openclaw_called": false,
+      "preview_allowed": true,
+      "reason": "Read-only delegated preview is allowed; execution remains blocked.",
+      "required_boundaries": [
+        "explicit allowed input scope",
+        "read-only delegation only",
+        "no browser/computer-use",
+        "no filesystem writes",
+        "no external writes",
+        "no direct Cap 63 shortcut",
+        "receipt/non-action statement"
+      ]
+    },
+    "envelope": {
+      "account_action": false,
+      "allowed_input_scope": [
+        "sample_project_notes",
+        "repo_map_excerpt"
+      ],
+      "browser_use": false,
+      "calendar_action": false,
+      "computer_use": false,
+      "direct_cap63_shortcut": false,
+      "email_action": false,
+      "external_write": false,
+      "filesystem_write": false,
+      "metadata": {},
+      "read_only": true,
+      "request_text": "Prepare a read-only project snapshot preview from sample docs.",
+      "requested_actions": [
+        "summarize provided project notes"
+      ],
+      "shopify_action": false
+    },
+    "receipt": {
+      "authority_effect": "none",
+      "authorization_granted": false,
+      "blocked_reasons": [],
+      "decision": "preview_allowed",
+      "did_happen": [
+        "OpenClawMediator evaluated the delegation envelope.",
+        "OpenClawMediator returned a policy decision.",
+        "OpenClawMediator constructed this non-action receipt."
+      ],
+      "did_not_happen": [
+        "OpenClaw was not executed.",
+        "No capability was called.",
+        "The Governor was not called.",
+        "No browser or computer-use action was performed.",
+        "No filesystem write was performed.",
+        "No email, calendar, Shopify, account, or external write action was performed.",
+        "No network request was made.",
+        "Cap 63 was not used as a shortcut."
+      ],
+      "execution_performed": false,
+      "non_action_statement": "This receipt records a mediator policy decision only, not OpenClaw execution.",
+      "receipt_type": "openclaw_mediator_preview",
+      "request_text": "Prepare a read-only project snapshot preview from sample docs.",
+      "summary": "Read-only OpenClaw preview was allowed without execution."
+    }
+  },
+  "proof_scope": "OpenClawMediator skeleton policy decisions only; no execution."
+}

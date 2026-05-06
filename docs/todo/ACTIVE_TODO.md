@@ -4,7 +4,7 @@
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04.md`
 
-Updated: 2026-05-06 after PR #103 and PR #104 merged.
+Updated: 2026-05-06 after PR #105 merged.
 
 Only active path:
 
@@ -21,20 +21,22 @@ All other work is paused. If a task does not advance one of these four steps, it
 
 ## Current Next TODO
 
-Build the local capability signoff matrix.
+Build the OpenClawMediator skeleton.
 
 Purpose:
 
-- verify local/device/runtime capabilities before OpenClaw can rely on them
-- record pass/fail/blocked/setup-dependent status
-- capture platform caveats and proof requirements
-- keep the work read-only/evidence-first until the signoff matrix is reviewed
+- create one explicit OpenClaw delegation boundary
+- accept a Nova/task envelope and return a policy decision
+- allow only read-only delegated preview decisions
+- block browser/computer-use, filesystem writes, external writes, and direct Cap 63 shortcut use
+- emit receipt/non-action statements without executing OpenClaw
 
-Do not start OpenClawMediator work until the signoff matrix exists and is reviewed.
+Do not start the first read-only OpenClaw workflow proof until the mediator skeleton exists and is reviewed.
 
-Draft document target:
+Branch/proof targets:
 
-- `docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06.md`
+- `nova_backend/src/openclaw/openclaw_mediator.py`
+- `docs/demo_proof/2026-05-06_openclaw_mediator_skeleton/`
 
 ## Lock Progress
 
@@ -45,7 +47,9 @@ Draft document target:
   - minimal visible read-only UI card render
   - real receipt/action-history integration beyond `history_status: "not_available"`
 - Step 2 is now the recommended next work item:
-  - local capability signoff matrix
+- local capability signoff matrix merged in PR #105
+- Step 3 is now the recommended next work item:
+  - OpenClawMediator skeleton
 
 ---
 
