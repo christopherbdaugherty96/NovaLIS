@@ -4,9 +4,9 @@
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04.md`
 
-Updated: 2026-05-06 after PR #106 merged.
+Updated: 2026-05-06 after PR #107 merged.
 
-Only active path:
+Completed lock path:
 
 ```text
 RequestUnderstanding trust/action-history review card
@@ -15,28 +15,25 @@ RequestUnderstanding trust/action-history review card
 → first read-only OpenClaw workflow proof
 ```
 
-All other work is paused. If a task does not advance one of these four steps, it is paused.
+The four-step OpenClaw priority lock is complete. No new active workstream is selected in this file.
 
 ---
 
 ## Current Next TODO
 
-Build the first read-only OpenClaw workflow proof.
+Create or review the next priority lock before starting new work.
 
 Purpose:
 
-- prove one narrow workflow through the reviewed OpenClawMediator boundary
-- use safe caller-provided sample/local input only
-- require explicit allowed input scope
-- produce a read-only proof artifact and receipt/non-action statement
-- keep browser/computer-use, filesystem writes, external writes, direct Cap 63 shortcut use, and workflow automation blocked
+- preserve a clean stopping point after the completed OpenClaw hardening sequence
+- avoid silently moving from proof work into broad automation
+- require an explicit reviewed next lock before feature/runtime expansion
 
-Do not broaden OpenClaw beyond this proof path.
+Do not broaden OpenClaw beyond the reviewed proof path without a new priority lock.
 
-Branch/proof targets:
+Closeout reference:
 
-- `nova_backend/src/openclaw/read_only_workflow_proof.py`
-- `docs/demo_proof/2026-05-06_first_read_only_openclaw_workflow/`
+- `docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06.md`
 
 ## Lock Progress
 
@@ -50,12 +47,23 @@ Branch/proof targets:
   - local capability signoff matrix merged in PR #105
 - Step 3 complete:
   - OpenClawMediator skeleton merged in PR #106
-- Step 4 is now the recommended next work item:
-  - first read-only OpenClaw workflow proof
+- Step 4 complete:
+  - first read-only OpenClaw workflow proof merged in PR #107
+
+## Still Not Approved After Closeout
+
+- broad OpenClaw automation
+- browser/computer-use expansion
+- external writes
+- email/calendar/Shopify/account actions
+- direct Cap 63 shortcut use
+- autonomous workflow execution
+- Google connector expansion
+- claiming OpenClaw has full governed hands
 
 ---
 
-**Historical baseline below is retained for completed-context only. It is not the active sprint while the priority lock is in force.**
+**Historical baseline below is retained for completed-context only. A new reviewed priority lock is required before a new active sprint starts.**
 
 **Updated:** 2026-05-03 (cost posture pass)
 **Previous sprint goal:** Stage 6 — Routine surfaces. Context Pack and BrainTrace now live in prompt path.
@@ -72,7 +80,7 @@ Branch/proof targets:
 - Cost posture metadata — visibility only, no runtime enforcement
 - Google read-only connector foundation plan — planning only, no OAuth/runtime connector
 
-## Paused While Priority Lock Is Active
+## Previously Paused During The Completed Priority Lock
 
 - Plan My Week UI/API proof capture
 - business workflow demos

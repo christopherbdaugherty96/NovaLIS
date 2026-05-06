@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-06 (first read-only OpenClaw workflow proof branch started)
+Last reviewed: 2026-05-06 (OpenClaw priority lock completed)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -12,7 +12,7 @@ Generated runtime docs and actual code win if they conflict with this note.
 
 ## Priority Lock (2026-05-04)
 
-Active development is restricted to:
+Completed priority lock sequence:
 
 ```text
 RequestUnderstanding review card
@@ -21,9 +21,9 @@ RequestUnderstanding review card
 → read-only workflow proof
 ```
 
-All other workstreams are intentionally paused to prevent premature expansion before execution governance boundaries are proven.
+The four-step sequence is complete. No new workstream is selected until a new reviewed priority lock is created.
 
-Current next todo: review the first read-only OpenClaw workflow proof.
+Current next todo: create or review the next priority lock before starting new feature/runtime work.
 
 ---
 
@@ -65,6 +65,11 @@ Current next todo: review the first read-only OpenClaw workflow proof.
 - **Priority lock step 3:** OpenClawMediator skeleton merged in PR #106. It adds a non-executing
   envelope -> decision -> receipt boundary with hardened blocked-action matching, no runtime routes,
   no OpenClaw execution, and no Governor/capability/filesystem/browser/network calls.
+- **Priority lock step 4:** First read-only OpenClaw workflow proof merged in PR #107. It proves a
+  deterministic Project Foreman Brief proof output through OpenClawMediator using caller-provided
+  sample input only, explicit allowed input scope, and receipt/non-action statements. No OpenClaw
+  execution, Governor/capability calls, Cap 63 shortcut, filesystem/browser/network action, external
+  account action, or workflow automation expansion was added.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -73,12 +78,12 @@ Current next todo: review the first read-only OpenClaw workflow proof.
 
 ## Planning-Only / Future Direction
 
-All future direction remains valid but is currently paused under the priority lock.
+All future direction remains valid but requires a new reviewed priority lock before work starts.
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04.md`
 
-Near-term sequence:
+Closeout state:
 
-1. Review first read-only OpenClaw workflow proof and proof package.
-2. Confirm it remains sample/local, read-only, mediator-gated, and receipt-backed.
-3. Do not broaden OpenClaw beyond the reviewed proof path.
+1. OpenClaw priority-lock sequence is complete.
+2. Broad OpenClaw automation, browser/computer-use, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, and Google connector expansion remain not approved.
+3. Select the next workstream only through a new reviewed priority lock.
