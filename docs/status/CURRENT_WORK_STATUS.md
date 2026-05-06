@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-04 (priority lock applied)
+Last reviewed: 2026-05-06 (review-card payload merged; next todo set to capability signoff matrix)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -22,6 +22,8 @@ RequestUnderstanding review card
 ```
 
 All other workstreams are intentionally paused to prevent premature expansion before execution governance boundaries are proven.
+
+Current next todo: build the local capability signoff matrix before starting OpenClawMediator work.
 
 ---
 
@@ -53,6 +55,10 @@ All other workstreams are intentionally paused to prevent premature expansion be
 - **Stage 6 step 1:** Cost Posture Metadata — cost_posture field (free/free_tier/paid/unknown_cost)
   on all 27 capabilities; validated on load; visible in governance matrix and runtime state doc;
   metadata + visibility only, no runtime enforcement. (PR #99 2026-05-03)
+- **Priority lock step 1 foundation:** Planning-task preview runtime handoff proof merged in PR #103
+  and RequestUnderstanding review-card payload contract merged in PR #104. This establishes a
+  planning-only, non-authorizing payload foundation for the future visible trust surface. No UI render,
+  OpenClaw delegation, capability expansion, persistent history store, or execution authority was added.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -64,3 +70,9 @@ All other workstreams are intentionally paused to prevent premature expansion be
 All future direction remains valid but is currently paused under the priority lock.
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04.md`
+
+Near-term sequence:
+
+1. Build local capability signoff matrix.
+2. Review matrix for pass/fail/blocked/setup-dependent capability status.
+3. Only then start OpenClawMediator skeleton work.

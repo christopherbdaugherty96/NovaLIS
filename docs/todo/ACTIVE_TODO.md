@@ -4,6 +4,8 @@
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04.md`
 
+Updated: 2026-05-06 after PR #103 and PR #104 merged.
+
 Only active path:
 
 ```text
@@ -14,6 +16,32 @@ RequestUnderstanding trust/action-history review card
 ```
 
 All other work is paused. If a task does not advance one of these four steps, it is paused.
+
+---
+
+## Current Next TODO
+
+Build the local capability signoff matrix.
+
+Purpose:
+
+- verify local/device/runtime capabilities before OpenClaw can rely on them
+- record pass/fail/blocked/setup-dependent status
+- capture platform caveats and proof requirements
+- keep the work read-only/evidence-first until the signoff matrix is reviewed
+
+Do not start OpenClawMediator work until the signoff matrix exists and is reviewed.
+
+## Lock Progress
+
+- Step 1 foundation complete:
+  - planning-task preview runtime handoff proof merged in PR #103
+  - RequestUnderstanding review-card payload contract merged in PR #104
+- Step 1 remaining optional/future work:
+  - minimal visible read-only UI card render
+  - real receipt/action-history integration beyond `history_status: "not_available"`
+- Step 2 is now the recommended next work item:
+  - local capability signoff matrix
 
 ---
 
