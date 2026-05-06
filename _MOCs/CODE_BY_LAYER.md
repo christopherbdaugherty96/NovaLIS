@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers — backend runtime,
 tests, frontend, scripts, governance companion, workspace support.
 Use this to orient yourself before diving into a specific module.
 
-## Backend runtime (281)
+## Backend runtime (284)
 
 - [[nova_backend/src/__init__.py|src]]
 - [[nova_backend/src/actions/__init__.py|src/actions]]
@@ -202,6 +202,8 @@ Use this to orient yourself before diving into a specific module.
   summary: _AUTHORITY_EFFECT_NONE = "none
 - [[nova_backend/src/conversation/request_understanding_formatter.py|request_understanding_formatter]]
   summary: Convert a RequestUnderstanding into a short system-prompt boundary block.
+- [[nova_backend/src/conversation/request_understanding_review_card.py|request_understanding_review_card]]
+  summary: Request Understanding review-card payload contract.
 - [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
   summary: class ResponseFormatter:
 - [[nova_backend/src/conversation/response_style_router.py|response_style_router]]
@@ -363,8 +365,12 @@ Use this to orient yourself before diving into a specific module.
   summary: Execution memory for OpenClaw — learn from past runs.
 - [[nova_backend/src/openclaw/models.py|models]]
   summary: Governance data models for OpenClaw proposed actions and approval lifecycle.
+- [[nova_backend/src/openclaw/openclaw_mediator.py|openclaw_mediator]]
+  summary: Non-executing OpenClaw delegation mediator skeleton.
 - [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
   summary: Per-tool budget tracking for OpenClaw.
+- [[nova_backend/src/openclaw/read_only_workflow_proof.py|read_only_workflow_proof]]
+  summary: Read-only OpenClaw workflow proof adapter.
 - [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
   summary: Robust tool execution for OpenClaw — retry, fallback, parallel, and metering.
 - [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
@@ -564,7 +570,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (351)
+## Tests and verification (354)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -679,6 +685,8 @@ Use this to orient yourself before diving into a specific module.
   summary: CapabilityStatus,
 - [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
   summary: Tests for request_understanding_formatter and its integration with
+- [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
+  summary: RequestUnderstandingReviewCard,
 - [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
   summary: def test_formatter_normalizes_punctuation_and_spacing():
 - [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
@@ -823,10 +831,14 @@ Use this to orient yourself before diving into a specific module.
   summary: @pytest.fixture
 - [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
   summary: Tests for ExecutorSkillAdapter — generic executor-to-skill bridge.
+- [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
+  summary: ProjectForemanBriefInput,
 - [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
   summary: def _install_stores(monkeypatch, tmp_path):
 - [[nova_backend/tests/openclaw/test_openclaw_execute_executor.py|test_openclaw_execute_executor]]
   summary: End-to-end tests for OpenClawExecuteExecutor (cap 63).
+- [[nova_backend/tests/openclaw/test_openclaw_mediator.py|test_openclaw_mediator]]
+  summary: OpenClawDelegationEnvelope,
 - [[nova_backend/tests/openclaw/test_openclaw_models.py|test_openclaw_models]]
   summary: Unit tests for OpenClaw governance models (hardening Step 1).
 - [[nova_backend/tests/openclaw/test_per_tool_budget.py|test_per_tool_budget]]
@@ -1320,7 +1332,7 @@ Use this to orient yourself before diving into a specific module.
 - [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
   summary: ================================================================
 
-## Scripts and automations (23)
+## Scripts and automations (19)
 
 - [[.github/workflows/ci.yml|ci]]
   summary: name: CI
@@ -1352,15 +1364,12 @@ Use this to orient yourself before diving into a specific module.
   summary: PROJECT_ROOT = Path(__file__).resolve().parents[1]
 - [[scripts/phase35_gates.ps1|phase35_gates]]
   summary: ﻿Write-Host "=== Phase 3.5 Constitutional Gates ===" -ForegroundColor Cyan
-- [[scripts/pids/backend.pid|backend.pid]]
-- [[scripts/pids/frontend.pid|frontend.pid]]
-- [[scripts/pids/nova_backend.err.log|nova_backend.err.log]]
-- [[scripts/pids/nova_backend.out.log|nova_backend.out.log]]
-- [[scripts/pids/nova_backend.pid|nova_backend.pid]]
 - [[scripts/run_capability_audit.ps1|run_capability_audit]]
   summary: $ErrorActionPreference = "Stop
 - [[scripts/start_daemon.py|start_daemon]]
   summary: Start (or verify) the Nova backend as a background process.
+- [[scripts/stop_daemon.py|stop_daemon]]
+  summary: Stop the Nova backend background process safely.
 - [[scripts/verify_windows.ps1|verify_windows]]
   summary: verify_windows.ps1 — Local Windows verification script
 

@@ -53,6 +53,15 @@ SKIP_DIR_NAMES = {
     "htmlcov",
 }
 
+
+def _should_skip_source_file(rel_parts: tuple[str, ...]) -> bool:
+    parts_lower = tuple(part.lower() for part in rel_parts)
+    if len(parts_lower) >= 4 and parts_lower[:2] == ("docs", "demo_proof"):
+        if "raw" in parts_lower[2:] or "screenshots" in parts_lower[2:]:
+            return True
+    return False
+
+
 CATEGORIES: list[tuple[str, str, str, list[str]]] = [
     ("phase", "Phases", "#4F8AD8", ["path:docs/design/Phase"]),
     (
@@ -215,6 +224,8 @@ def _iter_source_files() -> Iterable[Path]:
             except ValueError:
                 continue
             if any(part in SKIP_DIR_NAMES for part in rel_parts):
+                continue
+            if _should_skip_source_file(rel_parts):
                 continue
             if path in seen:
                 continue

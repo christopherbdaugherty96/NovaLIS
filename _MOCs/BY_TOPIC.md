@@ -149,7 +149,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/archive/phase 4/NOVA CANONICAL SYNTHESIS v5.0.txt|🧬 NOVA CANONICAL SYNTHESIS v5.0 - COMPLETE OPERATIONAL TRUTH]]
 - [doc] [[docs/design/Phase 9/NOVA MULTI-AGENT GOVERNANCE FRAMEWORK.txt|🧬 NOVA CORE INTELLIGENCE ARCHITECTURE]]
 
-## openclaw (89)
+## openclaw (100)
 
 - [code] [[nova_backend/src/openclaw/agent_execution_memory.py|agent_execution_memory]]
 - [code] [[nova_backend/src/openclaw/agent_fallback_strategies.py|agent_fallback_strategies]]
@@ -170,7 +170,9 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/src/openclaw/models.py|models]]
 - [code] [[nova_backend/src/api/openclaw_agent_api.py|openclaw_agent_api]]
 - [code] [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
+- [code] [[nova_backend/src/openclaw/openclaw_mediator.py|openclaw_mediator]]
 - [code] [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
+- [code] [[nova_backend/src/openclaw/read_only_workflow_proof.py|read_only_workflow_proof]]
 - [code] [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
 - [code] [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
 - [code] [[nova_backend/src/openclaw/__init__.py|src/openclaw]]
@@ -185,11 +187,13 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/openclaw/test_envelope_store.py|test_envelope_store]]
 - [code] [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
 - [code] [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
+- [code] [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
 - [code] [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
 - [code] [[nova_backend/tests/test_openclaw_agent_api.py|test_openclaw_agent_api]]
 - [code] [[nova_backend/tests/conversation/test_openclaw_agent_personality_bridge.py|test_openclaw_agent_personality_bridge]]
 - [code] [[nova_backend/tests/test_openclaw_bridge_api.py|test_openclaw_bridge_api]]
 - [code] [[nova_backend/tests/openclaw/test_openclaw_execute_executor.py|test_openclaw_execute_executor]]
+- [code] [[nova_backend/tests/openclaw/test_openclaw_mediator.py|test_openclaw_mediator]]
 - [code] [[nova_backend/tests/openclaw/test_openclaw_models.py|test_openclaw_models]]
 - [code] [[nova_backend/tests/executors/test_os_diagnostics_openclaw_agent.py|test_os_diagnostics_openclaw_agent]]
 - [code] [[nova_backend/tests/openclaw/test_per_tool_budget.py|test_per_tool_budget]]
@@ -208,6 +212,8 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/src/openclaw/tool_registry.py|tool_registry]]
 - [code] [[nova_backend/src/openclaw/user_tool_permissions.py|user_tool_permissions]]
 - [code] [[nova_backend/src/skills/web_search.py|web_search - src/skills]]
+- [doc] [[docs/demo_proof/2026-05-06_first_read_only_openclaw_workflow/PROOF_INDEX|First Read-Only OpenClaw Workflow Proof - 2026-05-06]]
+- [doc] [[docs/demo_proof/2026-05-06_first_read_only_openclaw_workflow/REPORT|First Read-Only OpenClaw Workflow Report - 2026-05-06]]
 - [doc] [[docs/demo_proof/2026-04-28_user_test/FRICTION_LOG|Friction Log - 2026-04-28 User Test]]
 - [doc] [[tools/youtubelis/docs/GOVERNED_AUTOMATION|Governed Automation Model (YouTubeLIS)]]
 - [doc] [[future/governed_desktop_runs/README|Governed Desktop Runs]]
@@ -231,8 +237,11 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/archive/openclaw_integration_draft.txt|OpenClaw Integration Design (Future) - docs/archive]]
 - [doc] [[docs/future/OPENCLAW_INTEGRATION_DESIGN|OpenClaw Integration Design (Future) - docs/future]]
 - [doc] [[docs/future/OPENCLAW_INTEGRATION_REVIEW|OpenClaw Integration — Engineering Review]]
+- [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
 - [doc] [[docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01|OpenClaw Robust Hardening Audit — 2026-05-01]]
 - [doc] [[docs/reference/HUMAN_GUIDES/28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27|OpenClaw Setup and Runtime Guide]]
+- [doc] [[docs/demo_proof/2026-05-06_openclaw_mediator_skeleton/PROOF_INDEX|OpenClawMediator Skeleton Proof - 2026-05-06]]
+- [doc] [[docs/demo_proof/2026-05-06_openclaw_mediator_skeleton/REPORT|OpenClawMediator Skeleton Report - 2026-05-06]]
 - [doc] [[docs/PROOFS/Phase-7/PHASE_7_OPENCLAW_HOME_AGENT_FOUNDATION_RUNTIME_SLICE_2026-03-26|Phase 7 - OpenClaw Home Agent Foundation Runtime Slice]]
 - [doc] [[docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25|Phase 8 OpenClaw Canonical Governed Automation Spec]]
 - [doc] [[docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN|Phase 8 OpenClaw Governed Execution Plan]]
@@ -240,6 +249,8 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/Phase-8/PHASE_8_PROJECT_SNAPSHOT_OPERATOR_SLICE_2026-04-13|Phase 8 Project Snapshot Operator Slice]]
 - [doc] [[docs/PROOFS/Phase-8/PHASE_8_OPENCLAW_REMOTE_BOUNDARY_AND_SETUP_READINESS_RUNTIME_SLICE_2026-03-27|Phase 8 Runtime Slice � Remote Boundary and Setup Readiness]]
 - [doc] [[docs/design/Phase 9/PHASE_9_OPENCLAW_INTELLIGENCE_LAYER_SPEC|Phase 9 — OpenClaw Intelligence Layer Specification]]
+- [doc] [[docs/demo_proof/2026-05-06_runtime_truth_audit_after_openclaw/PROOF_INDEX|Runtime Truth Audit After OpenClaw Proof Chain - 2026-05-06 - demo_proof/2026-05-06_runtime_truth_audit_after_openclaw]]
+- [doc] [[docs/demo_proof/2026-05-06_runtime_truth_audit_after_openclaw/REPORT|Runtime Truth Audit After OpenClaw Proof Chain - 2026-05-06 - demo_proof/2026-05-06_runtime_truth_audit_after_openclaw]]
 
 ## voice (34)
 
@@ -278,12 +289,8 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/design/Phase 4/GOVERNED_TTS_SPEC.md.txt|🔊 NOVA — GOVERNED TEXT-TO-SPEECH (TTS) COMPLETE SPECIFICATION]]
 - [doc] [[docs/archive/Audio conversion proof|🔒 SAVE & LOCK — STT Windows Subprocess Stabilization]]
 
-## memory (79)
+## memory (75)
 
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/10_memory_context_boundary.png|10_memory_context_boundary.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_memory.png|level1_memory.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_memory.png|level1_surface_memory.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_memory_authority.png|level2_memory_authority.png]]
 - [code] [[nova_backend/src/openclaw/agent_execution_memory.py|agent_execution_memory]]
 - [code] [[nova_backend/src/working_context/assistive_noticing.py|assistive_noticing]]
 - [code] [[docs/archive/phase 3/brain_server_Phase3.py|brain_server_Phase3 - archive/phase 3]]
@@ -360,17 +367,10 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/status/README|Status Notes]]
 - [doc] [[docs/design/Phase 9/# 🧬 NOVA MEMORY ARCHITECTURE USER.txt|🧬 NOVA MEMORY ARCHITECTURE: USER MEMORY & SYSTEM MEMORY]]
 
-## ux (88)
+## ux (81)
 
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/01_dashboard_home.png|01_dashboard_home.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/03_workspace_home.png|03_workspace_home.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/04_full_ui_dashboard.png|04_full_ui_dashboard.png]]
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[nova_backend/static/favicon.ico|favicon.ico]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level0_dashboard_connection_status.png|level0_dashboard_connection_status.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_dashboard_initial.png|level1_dashboard_initial.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_workspace.png|level1_surface_workspace.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_workspace.png|level1_workspace.png]]
 - [asset] [[Nova-Frontend-Dashboard/assets/orb-canonical.png|orb-canonical.png]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
 - [code] [[Nova-Frontend-Dashboard/dashboard.js|dashboard - Nova-Frontend-Dashboard]]
@@ -451,7 +451,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/brain/PROJECT_CONTEXTS|Project Contexts]]
 - [doc] [[docs/archive/phase 2/# 🎨 Nova Frontend Dashboard — Tech.txt|🎨 Nova Frontend Dashboard — Technical Overview]]
 
-## runtime (57)
+## runtime (59)
 
 - [code] [[nova_backend/src/openclaw/agent_execution_memory.py|agent_execution_memory]]
 - [code] [[nova_backend/src/openclaw/agent_fallback_strategies.py|agent_fallback_strategies]]
@@ -473,7 +473,9 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/src/openclaw/envelope_store.py|envelope_store]]
 - [code] [[nova_backend/src/openclaw/execution_memory.py|execution_memory]]
 - [code] [[nova_backend/src/openclaw/models.py|models]]
+- [code] [[nova_backend/src/openclaw/openclaw_mediator.py|openclaw_mediator]]
 - [code] [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
+- [code] [[nova_backend/src/openclaw/read_only_workflow_proof.py|read_only_workflow_proof]]
 - [code] [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
 - [code] [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
 - [code] [[nova_backend/src/openclaw/__init__.py|src/openclaw]]
@@ -511,53 +513,12 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (658)
+## testing (619)
 
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/01_dashboard_home.png|01_dashboard_home.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/02_intro_setup_surface.png|02_intro_setup_surface.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/03_workspace_home.png|03_workspace_home.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/04_full_ui_dashboard.png|04_full_ui_dashboard.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/05_chat_area_before_prompt.png|05_chat_area_before_prompt.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/06_chat_what_works_today.png|06_chat_what_works_today.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/07_trust_receipts.png|07_trust_receipts.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/08_trust_after_refresh.png|08_trust_after_refresh.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/09_email_draft_attempt_chat.png|09_email_draft_attempt_chat.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/10_memory_context_boundary.png|10_memory_context_boundary.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/11_settings_setup_usage.png|11_settings_setup_usage.png]]
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level0_dashboard_connection_status.png|level0_dashboard_connection_status.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_dashboard_initial.png|level1_dashboard_initial.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_full_ui_after_toggle.png|level1_full_ui_after_toggle.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_full_ui_initial.png|level1_full_ui_initial.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_home.png|level1_home.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_intro_after_modal_close.png|level1_intro_after_modal_close.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_memory.png|level1_memory.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_chat.png|level1_surface_chat.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_home.png|level1_surface_home.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_intro.png|level1_surface_intro.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_memory.png|level1_surface_memory.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_news.png|level1_surface_news.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_policy.png|level1_surface_policy.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_settings.png|level1_surface_settings.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_trust.png|level1_surface_trust.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_workspace.png|level1_surface_workspace.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_workspace.png|level1_workspace.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_memory_authority.png|level2_memory_authority.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_1_error.png|level2_prompt_1_error.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_2_error.png|level2_prompt_2_error.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_3_error.png|level2_prompt_3_error.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_4_error.png|level2_prompt_4_error.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_5_error.png|level2_prompt_5_error.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_6_error.png|level2_prompt_6_error.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_what_works.png|level2_what_works.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level3_trust_receipts_api.png|level3_trust_receipts_api.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level3_trust_summary_api.png|level3_trust_summary_api.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level4_system_status.png|level4_system_status.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level5_cap64_confirmation_boundary.png|level5_cap64_confirmation_boundary.png]]
-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level6_shopify_report.png|level6_shopify_report.png]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
 - [code] [[nova_backend/tests/adversarial/_helpers.py|_helpers]]
 - [code] [[nova_backend/tests/phase45/_websocket_test_helpers.py|_websocket_test_helpers]]
@@ -711,6 +672,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/phase45/test_explain_anything_router.py|test_explain_anything_router]]
 - [code] [[nova_backend/tests/executors/test_external_reasoning_executor.py|test_external_reasoning_executor]]
 - [code] [[nova_backend/tests/phase45/test_failure_ladder.py|test_failure_ladder]]
+- [code] [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
 - [code] [[nova_backend/tests/test_general_chat_behavior.py|test_general_chat_behavior]]
 - [code] [[nova_backend/tests/conversation/test_general_chat_deep_thought.py|test_general_chat_deep_thought]]
 - [code] [[nova_backend/tests/conversation/test_general_chat_runtime.py|test_general_chat_runtime]]
@@ -775,6 +737,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/conversation/test_openclaw_agent_personality_bridge.py|test_openclaw_agent_personality_bridge]]
 - [code] [[nova_backend/tests/test_openclaw_bridge_api.py|test_openclaw_bridge_api]]
 - [code] [[nova_backend/tests/openclaw/test_openclaw_execute_executor.py|test_openclaw_execute_executor]]
+- [code] [[nova_backend/tests/openclaw/test_openclaw_mediator.py|test_openclaw_mediator]]
 - [code] [[nova_backend/tests/openclaw/test_openclaw_models.py|test_openclaw_models]]
 - [code] [[nova_backend/tests/phase5/test_operational_remembrance.py|test_operational_remembrance]]
 - [code] [[nova_backend/tests/phase45/test_orb_contract.py|test_orb_contract]]
@@ -826,6 +789,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/conversation/test_relationship_insight_extractor.py|test_relationship_insight_extractor]]
 - [code] [[nova_backend/tests/conversation/test_request_understanding.py|test_request_understanding]]
 - [code] [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
+- [code] [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
 - [code] [[nova_backend/tests/simulation/test_research_conversation_flow.py|test_research_conversation_flow]]
 - [code] [[nova_backend/tests/evaluation/test_research_quality_tests.py|test_research_quality_tests]]
 - [code] [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
@@ -1149,7 +1113,6 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[nova_backend/src/archive_quarantine/phase2_tests/QUARANTINE_NOTICE|QUARANTINE_NOTICE - archive_quarantine/phase2_tests]]
 - [doc] [[docs/PROOFS/README|README]]
 - [doc] [[docs/PROOFS/Phase-4/Runtime_matrix_audit|Runtime_matrix_audit]]
-- [doc] [[docs/demo_proof/brain_live_test/screenshots/CAPTURE_INSTRUCTIONS|Screenshot Capture Instructions]]
 - [doc] [[docs/demo_proof/2026-04-28_user_test/SCREENSHOT_CHECKLIST|Screenshot Checklist - 2026-04-28 User Test]]
 - [doc] [[docs/testing/SIMULATION_ANALYTICS|Simulation Analytics]]
 - [doc] [[docs/PROOFS/Phase-4/Governor Bypass Proof Document.txt|src/llm/inference_wrapper.py]]
@@ -1172,7 +1135,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/archive/phase 4/check-in.txt|🧬 NOVA — Phase-4 Infrastructure Completion Record]]
 - [doc] [[docs/PROOFS/Phase-4/PHASE-4 PRE-UNLOCK STRUCTURAL CERTIFICATION.txt|🧬 NOVA — PHASE-4 PRE-UNLOCK STRUCTURAL CERTIFICATION]]
 
-## architecture (302)
+## architecture (303)
 
 - [doc] [[docs/design/archive/redundant_placeholders_2026-04-02/# 🧬 NOVA INTELLIGENCE CAPACITY THE.txt|# 🧬 NOVA INTELLIGENCE CAPACITY THE]]
 - [doc] [[docs/design/archive/redundant_placeholders_2026-04-02/# 🧬 NOVA PHASE 4.2 ROADMAP.txt|# 🧬 NOVA PHASE 4.2 ROADMAP]]
@@ -1243,6 +1206,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/design/Phase 4/INFLUENCE_BOUNDARIES_v1.0.txt|Influence Boundaries v1.0]]
 - [doc] [[docs/reference/HUMAN_GUIDES/27_KEY_SKILL_RELIABILITY_MATRIX_2026-03-27|Key Skill Reliability Matrix]]
 - [doc] [[docs/design/archive(phase 4)/README|Legacy Phase 4 Archive]]
+- [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
 - [doc] [[docs/capability_verification/LOCAL_CAPABILITY_SIGNOFF_MATRIX_TEMPLATE|Local Capability Signoff Matrix Template]]
 - [doc] [[docs/reference/HUMAN_GUIDES/31_LOCAL_CODE_OPERATOR_AND_PROJECT_ANALYSIS|Local Code Operator And Project Analysis]]
 - [doc] [[docs/reference/HUMAN_GUIDES/26_LOCAL_SETUP_AND_STARTUP|Local Setup And Startup]]
