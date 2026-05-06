@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-06 (review-card payload merged; next todo set to capability signoff matrix)
+Last reviewed: 2026-05-06 (local capability signoff matrix draft started)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -23,7 +23,7 @@ RequestUnderstanding review card
 
 All other workstreams are intentionally paused to prevent premature expansion before execution governance boundaries are proven.
 
-Current next todo: build the local capability signoff matrix before starting OpenClawMediator work.
+Current next todo: review the local capability signoff matrix before starting OpenClawMediator work.
 
 ---
 
@@ -73,6 +73,6 @@ Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04.md`
 
 Near-term sequence:
 
-1. Build local capability signoff matrix.
-2. Review matrix for pass/fail/blocked/setup-dependent capability status.
+1. Review `docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06.md`.
+2. Confirm pass/fail/blocked/setup-dependent capability status before any OpenClaw reliance.
 3. Only then start OpenClawMediator skeleton work.
