@@ -6,6 +6,8 @@ This is human-maintained priority guidance, not generated runtime truth. Generat
 
 This document pauses all new work except the OpenClaw hardening path below.
 
+Last updated: 2026-05-06 after PR #103 and PR #104 merged.
+
 ## Only Active Sequence
 
 ```text
@@ -27,11 +29,17 @@ If a task does not directly advance one of the four steps above, it is paused.
    - show request understanding, boundary, risk class, and relevant action/receipt history
    - do not expose private chain-of-thought
    - do not execute, approve, or imply capability access
+   - current status: payload foundation merged
+     - planning-task preview runtime handoff proof merged in PR #103
+     - immutable RequestUnderstanding review-card payload contract merged in PR #104
+     - visible UI card render remains optional/future
+     - real receipt/action-history integration remains placeholder-only with `history_status: "not_available"`
 
 2. Local capability signoff matrix
    - verify local/device/runtime capabilities before OpenClaw can rely on them
    - record pass/fail/blocked/setup-dependent status
    - capture platform caveats and proof requirements
+   - next selected todo as of 2026-05-06
 
 3. OpenClawMediator skeleton
    - create one explicit OpenClaw delegation boundary
