@@ -4,7 +4,7 @@
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04.md`
 
-Updated: 2026-05-06 after PR #105 merged.
+Updated: 2026-05-06 after PR #106 merged.
 
 Only active path:
 
@@ -21,22 +21,22 @@ All other work is paused. If a task does not advance one of these four steps, it
 
 ## Current Next TODO
 
-Build the OpenClawMediator skeleton.
+Build the first read-only OpenClaw workflow proof.
 
 Purpose:
 
-- create one explicit OpenClaw delegation boundary
-- accept a Nova/task envelope and return a policy decision
-- allow only read-only delegated preview decisions
-- block browser/computer-use, filesystem writes, external writes, and direct Cap 63 shortcut use
-- emit receipt/non-action statements without executing OpenClaw
+- prove one narrow workflow through the reviewed OpenClawMediator boundary
+- use safe caller-provided sample/local input only
+- require explicit allowed input scope
+- produce a read-only proof artifact and receipt/non-action statement
+- keep browser/computer-use, filesystem writes, external writes, direct Cap 63 shortcut use, and workflow automation blocked
 
-Do not start the first read-only OpenClaw workflow proof until the mediator skeleton exists and is reviewed.
+Do not broaden OpenClaw beyond this proof path.
 
 Branch/proof targets:
 
-- `nova_backend/src/openclaw/openclaw_mediator.py`
-- `docs/demo_proof/2026-05-06_openclaw_mediator_skeleton/`
+- `nova_backend/src/openclaw/read_only_workflow_proof.py`
+- `docs/demo_proof/2026-05-06_first_read_only_openclaw_workflow/`
 
 ## Lock Progress
 
@@ -46,10 +46,12 @@ Branch/proof targets:
 - Step 1 remaining optional/future work:
   - minimal visible read-only UI card render
   - real receipt/action-history integration beyond `history_status: "not_available"`
-- Step 2 is now the recommended next work item:
-- local capability signoff matrix merged in PR #105
-- Step 3 is now the recommended next work item:
-  - OpenClawMediator skeleton
+- Step 2 complete:
+  - local capability signoff matrix merged in PR #105
+- Step 3 complete:
+  - OpenClawMediator skeleton merged in PR #106
+- Step 4 is now the recommended next work item:
+  - first read-only OpenClaw workflow proof
 
 ---
 

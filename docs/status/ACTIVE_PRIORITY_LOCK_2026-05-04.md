@@ -6,7 +6,7 @@ This is human-maintained priority guidance, not generated runtime truth. Generat
 
 This document pauses all new work except the OpenClaw hardening path below.
 
-Last updated: 2026-05-06 after PR #105 merged; OpenClawMediator skeleton selected next.
+Last updated: 2026-05-06 after PR #106 merged; first read-only OpenClaw workflow proof selected next.
 
 ## Only Active Sequence
 
@@ -45,12 +45,13 @@ If a task does not directly advance one of the four steps above, it is paused.
    - create one explicit OpenClaw delegation boundary
    - prepare for Nova-issued envelopes and centralized OpenClaw policy routing
    - preserve existing Cap 63 behavior unless deliberately migrated behind tests
-   - next selected todo as of 2026-05-06
+   - current status: merged in PR #106
 
 4. First read-only OpenClaw workflow proof
    - prove useful OpenClaw work in a read-only workflow
    - recommended proof: Project Foreman Brief or Business Follow-Up Brief using safe/sample/local read-only inputs
    - output must include a receipt/non-action statement showing what did and did not happen
+   - next selected todo as of 2026-05-06
 
 ## Explicitly Paused
 

@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-06 (OpenClawMediator skeleton branch started)
+Last reviewed: 2026-05-06 (first read-only OpenClaw workflow proof branch started)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -23,7 +23,7 @@ RequestUnderstanding review card
 
 All other workstreams are intentionally paused to prevent premature expansion before execution governance boundaries are proven.
 
-Current next todo: review the OpenClawMediator skeleton before starting the first read-only OpenClaw workflow proof.
+Current next todo: review the first read-only OpenClaw workflow proof.
 
 ---
 
@@ -62,6 +62,9 @@ Current next todo: review the OpenClawMediator skeleton before starting the firs
 - **Priority lock step 2:** Local capability signoff matrix merged in PR #105. It records read-only
   evidence and proof requirements for local/runtime surfaces before OpenClaw may rely on them; it does
   not enable capabilities or grant OpenClaw authority.
+- **Priority lock step 3:** OpenClawMediator skeleton merged in PR #106. It adds a non-executing
+  envelope -> decision -> receipt boundary with hardened blocked-action matching, no runtime routes,
+  no OpenClaw execution, and no Governor/capability/filesystem/browser/network calls.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -76,6 +79,6 @@ Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04.md`
 
 Near-term sequence:
 
-1. Review OpenClawMediator skeleton and proof package.
-2. Confirm it remains policy/receipt-only with no OpenClaw, Governor, capability, browser, filesystem, or network execution.
-3. Only then start the first read-only OpenClaw workflow proof.
+1. Review first read-only OpenClaw workflow proof and proof package.
+2. Confirm it remains sample/local, read-only, mediator-gated, and receipt-backed.
+3. Do not broaden OpenClaw beyond the reviewed proof path.

@@ -1,0 +1,873 @@
+{
+  "allowed_case": {
+    "authority_effect": "none",
+    "authorization_granted": false,
+    "brief": "Project Foreman Brief: NovaLIS Sample Project\n\nA local sample workspace used to prove a read-only OpenClaw mediator path.\n\nCurrent focus:\n- Keep the workflow proof read-only.\n- Preserve mediator boundaries.\n\nKnown blockers:\n- Browser/computer-use remains blocked.\n\nRecent decisions:\n- Use caller-provided sample input only.\n\nNext safe steps:\n- Review proof payload.\n- Do not start broad automation.\n\nBoundary: This proof output was rendered from caller-provided sample input only.\nNo OpenClaw execution, capability call, filesystem write, browser action, network call, or external account action occurred.",
+    "execution_performed": false,
+    "input": {
+      "allowed_input_scope": [
+        "sample_project_notes",
+        "sample_repo_map"
+      ],
+      "current_focus": [
+        "Keep the workflow proof read-only.",
+        "Preserve mediator boundaries."
+      ],
+      "known_blockers": [
+        "Browser/computer-use remains blocked."
+      ],
+      "next_safe_steps": [
+        "Review proof payload.",
+        "Do not start broad automation."
+      ],
+      "project_name": "NovaLIS Sample Project",
+      "project_summary": "A local sample workspace used to prove a read-only OpenClaw mediator path.",
+      "recent_decisions": [
+        "Use caller-provided sample input only."
+      ]
+    },
+    "mediator_decision": {
+      "allowed_preview_actions": [
+        "inspect caller-provided scope labels",
+        "prepare a read-only delegation preview",
+        "emit a non-action receipt"
+      ],
+      "authority_effect": "none",
+      "authorization_granted": false,
+      "blocked_actions": [
+        "browser_use",
+        "computer_use",
+        "filesystem_write",
+        "external_write",
+        "email_action",
+        "calendar_action",
+        "shopify_action",
+        "account_action",
+        "direct_cap63_shortcut"
+      ],
+      "blocked_reasons": [],
+      "browser_opened": false,
+      "capabilities_called": false,
+      "decision": "preview_allowed",
+      "execution_performed": false,
+      "filesystem_touched": false,
+      "governor_called": false,
+      "network_called": false,
+      "openclaw_called": false,
+      "preview_allowed": true,
+      "reason": "Read-only delegated preview is allowed; execution remains blocked.",
+      "required_boundaries": [
+        "explicit allowed input scope",
+        "read-only delegation only",
+        "no browser/computer-use",
+        "no filesystem writes",
+        "no external writes",
+        "no direct Cap 63 shortcut",
+        "receipt/non-action statement"
+      ]
+    },
+    "mediator_envelope": {
+      "account_action": false,
+      "allowed_input_scope": [
+        "sample_project_notes",
+        "sample_repo_map"
+      ],
+      "browser_use": false,
+      "calendar_action": false,
+      "computer_use": false,
+      "direct_cap63_shortcut": false,
+      "email_action": false,
+      "external_write": false,
+      "filesystem_write": false,
+      "metadata": {
+        "input_source": "caller_provided_sample",
+        "workflow_name": "Project Foreman Brief"
+      },
+      "read_only": true,
+      "request_text": "Prepare a read-only Project Foreman Brief from provided sample input.",
+      "requested_actions": [
+        "prepare project foreman brief from caller-provided sample input"
+      ],
+      "shopify_action": false
+    },
+    "mediator_receipt": {
+      "authority_effect": "none",
+      "authorization_granted": false,
+      "blocked_reasons": [],
+      "decision": "preview_allowed",
+      "did_happen": [
+        "OpenClawMediator evaluated the delegation envelope.",
+        "OpenClawMediator returned a policy decision.",
+        "OpenClawMediator constructed this non-action receipt."
+      ],
+      "did_not_happen": [
+        "OpenClaw was not executed.",
+        "No capability was called.",
+        "The Governor was not called.",
+        "No browser or computer-use action was performed.",
+        "No filesystem write was performed.",
+        "No email, calendar, Shopify, account, or external write action was performed.",
+        "No network request was made.",
+        "Cap 63 was not used as a shortcut."
+      ],
+      "execution_performed": false,
+      "non_action_statement": "This receipt records a mediator policy decision only, not OpenClaw execution.",
+      "receipt_type": "openclaw_mediator_preview",
+      "request_text": "Prepare a read-only Project Foreman Brief from provided sample input.",
+      "summary": "Read-only OpenClaw preview was allowed without execution."
+    },
+    "proof_output_rendered": true,
+    "receipt": {
+      "authority_effect": "none",
+      "authorization_granted": false,
+      "browser_opened": false,
+      "capabilities_called": false,
+      "did_happen": [
+        "OpenClawMediator evaluated the Project Foreman Brief envelope.",
+        "OpenClawMediator returned a policy decision.",
+        "A deterministic read-only proof output was rendered from caller-provided sample input.",
+        "A receipt/non-action statement was constructed."
+      ],
+      "did_not_happen": [
+        "OpenClaw was not executed.",
+        "No Governor call was made.",
+        "No capability was called.",
+        "No Cap 63 shortcut was used.",
+        "No browser or computer-use action was performed.",
+        "No filesystem write was performed.",
+        "No network request was made.",
+        "No email, calendar, Shopify, account, or external write action was performed.",
+        "No workflow automation was expanded."
+      ],
+      "execution_performed": false,
+      "filesystem_write_performed": false,
+      "governor_called": false,
+      "mediator_decision": "preview_allowed",
+      "network_called": false,
+      "non_action_statement": "This receipt records a deterministic read-only workflow proof through OpenClawMediator. It is not OpenClaw execution or authorization.",
+      "openclaw_called": false,
+      "receipt_type": "first_read_only_openclaw_workflow_proof",
+      "workflow_name": "Project Foreman Brief"
+    },
+    "workflow_name": "Project Foreman Brief"
+  },
+  "blocked_cases": {
+    "browser": {
+      "authority_effect": "none",
+      "authorization_granted": false,
+      "brief": "",
+      "execution_performed": false,
+      "input": {
+        "allowed_input_scope": [
+          "sample_project_notes",
+          "sample_repo_map"
+        ],
+        "current_focus": [
+          "Keep the workflow proof read-only.",
+          "Preserve mediator boundaries."
+        ],
+        "known_blockers": [
+          "Browser/computer-use remains blocked."
+        ],
+        "next_safe_steps": [
+          "Review proof payload.",
+          "Do not start broad automation."
+        ],
+        "project_name": "NovaLIS Sample Project",
+        "project_summary": "A local sample workspace used to prove a read-only OpenClaw mediator path.",
+        "recent_decisions": [
+          "Use caller-provided sample input only."
+        ]
+      },
+      "mediator_decision": {
+        "allowed_preview_actions": [],
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "blocked_actions": [
+          "browser_use"
+        ],
+        "blocked_reasons": [
+          "browser_use_blocked"
+        ],
+        "browser_opened": false,
+        "capabilities_called": false,
+        "decision": "blocked",
+        "execution_performed": false,
+        "filesystem_touched": false,
+        "governor_called": false,
+        "network_called": false,
+        "openclaw_called": false,
+        "preview_allowed": false,
+        "reason": "OpenClaw delegation preview is blocked by the mediator skeleton policy.",
+        "required_boundaries": [
+          "explicit allowed input scope",
+          "read-only delegation only",
+          "no browser/computer-use",
+          "no filesystem writes",
+          "no external writes",
+          "no direct Cap 63 shortcut",
+          "receipt/non-action statement"
+        ]
+      },
+      "mediator_envelope": {
+        "account_action": false,
+        "allowed_input_scope": [
+          "sample_project_notes",
+          "sample_repo_map"
+        ],
+        "browser_use": true,
+        "calendar_action": false,
+        "computer_use": false,
+        "direct_cap63_shortcut": false,
+        "email_action": false,
+        "external_write": false,
+        "filesystem_write": false,
+        "metadata": {
+          "input_source": "caller_provided_sample",
+          "workflow_name": "Project Foreman Brief"
+        },
+        "read_only": true,
+        "request_text": "Prepare a read-only Project Foreman Brief from provided sample input.",
+        "requested_actions": [
+          "prepare project foreman brief from caller-provided sample input"
+        ],
+        "shopify_action": false
+      },
+      "mediator_receipt": {
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "blocked_reasons": [
+          "browser_use_blocked"
+        ],
+        "decision": "blocked",
+        "did_happen": [
+          "OpenClawMediator evaluated the delegation envelope.",
+          "OpenClawMediator returned a policy decision.",
+          "OpenClawMediator constructed this non-action receipt."
+        ],
+        "did_not_happen": [
+          "OpenClaw was not executed.",
+          "No capability was called.",
+          "The Governor was not called.",
+          "No browser or computer-use action was performed.",
+          "No filesystem write was performed.",
+          "No email, calendar, Shopify, account, or external write action was performed.",
+          "No network request was made.",
+          "Cap 63 was not used as a shortcut."
+        ],
+        "execution_performed": false,
+        "non_action_statement": "This receipt records a mediator policy decision only, not OpenClaw execution.",
+        "receipt_type": "openclaw_mediator_preview",
+        "request_text": "Prepare a read-only Project Foreman Brief from provided sample input.",
+        "summary": "OpenClaw preview was blocked without execution."
+      },
+      "proof_output_rendered": false,
+      "receipt": {
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "browser_opened": false,
+        "capabilities_called": false,
+        "did_happen": [
+          "OpenClawMediator evaluated the Project Foreman Brief envelope.",
+          "OpenClawMediator returned a policy decision.",
+          "No proof output was rendered because the mediator blocked the envelope.",
+          "A receipt/non-action statement was constructed."
+        ],
+        "did_not_happen": [
+          "OpenClaw was not executed.",
+          "No Governor call was made.",
+          "No capability was called.",
+          "No Cap 63 shortcut was used.",
+          "No browser or computer-use action was performed.",
+          "No filesystem write was performed.",
+          "No network request was made.",
+          "No email, calendar, Shopify, account, or external write action was performed.",
+          "No workflow automation was expanded."
+        ],
+        "execution_performed": false,
+        "filesystem_write_performed": false,
+        "governor_called": false,
+        "mediator_decision": "blocked",
+        "network_called": false,
+        "non_action_statement": "This receipt records a deterministic read-only workflow proof through OpenClawMediator. It is not OpenClaw execution or authorization.",
+        "openclaw_called": false,
+        "receipt_type": "first_read_only_openclaw_workflow_proof",
+        "workflow_name": "Project Foreman Brief"
+      },
+      "workflow_name": "Project Foreman Brief"
+    },
+    "direct_cap63_shortcut": {
+      "authority_effect": "none",
+      "authorization_granted": false,
+      "brief": "",
+      "execution_performed": false,
+      "input": {
+        "allowed_input_scope": [
+          "sample_project_notes",
+          "sample_repo_map"
+        ],
+        "current_focus": [
+          "Keep the workflow proof read-only.",
+          "Preserve mediator boundaries."
+        ],
+        "known_blockers": [
+          "Browser/computer-use remains blocked."
+        ],
+        "next_safe_steps": [
+          "Review proof payload.",
+          "Do not start broad automation."
+        ],
+        "project_name": "NovaLIS Sample Project",
+        "project_summary": "A local sample workspace used to prove a read-only OpenClaw mediator path.",
+        "recent_decisions": [
+          "Use caller-provided sample input only."
+        ]
+      },
+      "mediator_decision": {
+        "allowed_preview_actions": [],
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "blocked_actions": [
+          "direct_cap63_shortcut"
+        ],
+        "blocked_reasons": [
+          "direct_cap63_shortcut_blocked"
+        ],
+        "browser_opened": false,
+        "capabilities_called": false,
+        "decision": "blocked",
+        "execution_performed": false,
+        "filesystem_touched": false,
+        "governor_called": false,
+        "network_called": false,
+        "openclaw_called": false,
+        "preview_allowed": false,
+        "reason": "OpenClaw delegation preview is blocked by the mediator skeleton policy.",
+        "required_boundaries": [
+          "explicit allowed input scope",
+          "read-only delegation only",
+          "no browser/computer-use",
+          "no filesystem writes",
+          "no external writes",
+          "no direct Cap 63 shortcut",
+          "receipt/non-action statement"
+        ]
+      },
+      "mediator_envelope": {
+        "account_action": false,
+        "allowed_input_scope": [
+          "sample_project_notes",
+          "sample_repo_map"
+        ],
+        "browser_use": false,
+        "calendar_action": false,
+        "computer_use": false,
+        "direct_cap63_shortcut": true,
+        "email_action": false,
+        "external_write": false,
+        "filesystem_write": false,
+        "metadata": {
+          "input_source": "caller_provided_sample",
+          "workflow_name": "Project Foreman Brief"
+        },
+        "read_only": true,
+        "request_text": "Prepare a read-only Project Foreman Brief from provided sample input.",
+        "requested_actions": [
+          "prepare project foreman brief from caller-provided sample input"
+        ],
+        "shopify_action": false
+      },
+      "mediator_receipt": {
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "blocked_reasons": [
+          "direct_cap63_shortcut_blocked"
+        ],
+        "decision": "blocked",
+        "did_happen": [
+          "OpenClawMediator evaluated the delegation envelope.",
+          "OpenClawMediator returned a policy decision.",
+          "OpenClawMediator constructed this non-action receipt."
+        ],
+        "did_not_happen": [
+          "OpenClaw was not executed.",
+          "No capability was called.",
+          "The Governor was not called.",
+          "No browser or computer-use action was performed.",
+          "No filesystem write was performed.",
+          "No email, calendar, Shopify, account, or external write action was performed.",
+          "No network request was made.",
+          "Cap 63 was not used as a shortcut."
+        ],
+        "execution_performed": false,
+        "non_action_statement": "This receipt records a mediator policy decision only, not OpenClaw execution.",
+        "receipt_type": "openclaw_mediator_preview",
+        "request_text": "Prepare a read-only Project Foreman Brief from provided sample input.",
+        "summary": "OpenClaw preview was blocked without execution."
+      },
+      "proof_output_rendered": false,
+      "receipt": {
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "browser_opened": false,
+        "capabilities_called": false,
+        "did_happen": [
+          "OpenClawMediator evaluated the Project Foreman Brief envelope.",
+          "OpenClawMediator returned a policy decision.",
+          "No proof output was rendered because the mediator blocked the envelope.",
+          "A receipt/non-action statement was constructed."
+        ],
+        "did_not_happen": [
+          "OpenClaw was not executed.",
+          "No Governor call was made.",
+          "No capability was called.",
+          "No Cap 63 shortcut was used.",
+          "No browser or computer-use action was performed.",
+          "No filesystem write was performed.",
+          "No network request was made.",
+          "No email, calendar, Shopify, account, or external write action was performed.",
+          "No workflow automation was expanded."
+        ],
+        "execution_performed": false,
+        "filesystem_write_performed": false,
+        "governor_called": false,
+        "mediator_decision": "blocked",
+        "network_called": false,
+        "non_action_statement": "This receipt records a deterministic read-only workflow proof through OpenClawMediator. It is not OpenClaw execution or authorization.",
+        "openclaw_called": false,
+        "receipt_type": "first_read_only_openclaw_workflow_proof",
+        "workflow_name": "Project Foreman Brief"
+      },
+      "workflow_name": "Project Foreman Brief"
+    },
+    "external_account": {
+      "authority_effect": "none",
+      "authorization_granted": false,
+      "brief": "",
+      "execution_performed": false,
+      "input": {
+        "allowed_input_scope": [
+          "sample_project_notes",
+          "sample_repo_map"
+        ],
+        "current_focus": [
+          "Keep the workflow proof read-only.",
+          "Preserve mediator boundaries."
+        ],
+        "known_blockers": [
+          "Browser/computer-use remains blocked."
+        ],
+        "next_safe_steps": [
+          "Review proof payload.",
+          "Do not start broad automation."
+        ],
+        "project_name": "NovaLIS Sample Project",
+        "project_summary": "A local sample workspace used to prove a read-only OpenClaw mediator path.",
+        "recent_decisions": [
+          "Use caller-provided sample input only."
+        ]
+      },
+      "mediator_decision": {
+        "allowed_preview_actions": [],
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "blocked_actions": [
+          "external_write",
+          "account_action"
+        ],
+        "blocked_reasons": [
+          "external_write_blocked",
+          "account_action_blocked"
+        ],
+        "browser_opened": false,
+        "capabilities_called": false,
+        "decision": "blocked",
+        "execution_performed": false,
+        "filesystem_touched": false,
+        "governor_called": false,
+        "network_called": false,
+        "openclaw_called": false,
+        "preview_allowed": false,
+        "reason": "OpenClaw delegation preview is blocked by the mediator skeleton policy.",
+        "required_boundaries": [
+          "explicit allowed input scope",
+          "read-only delegation only",
+          "no browser/computer-use",
+          "no filesystem writes",
+          "no external writes",
+          "no direct Cap 63 shortcut",
+          "receipt/non-action statement"
+        ]
+      },
+      "mediator_envelope": {
+        "account_action": true,
+        "allowed_input_scope": [
+          "sample_project_notes",
+          "sample_repo_map"
+        ],
+        "browser_use": false,
+        "calendar_action": false,
+        "computer_use": false,
+        "direct_cap63_shortcut": false,
+        "email_action": false,
+        "external_write": true,
+        "filesystem_write": false,
+        "metadata": {
+          "input_source": "caller_provided_sample",
+          "workflow_name": "Project Foreman Brief"
+        },
+        "read_only": true,
+        "request_text": "Prepare a read-only Project Foreman Brief from provided sample input.",
+        "requested_actions": [
+          "prepare project foreman brief from caller-provided sample input"
+        ],
+        "shopify_action": false
+      },
+      "mediator_receipt": {
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "blocked_reasons": [
+          "external_write_blocked",
+          "account_action_blocked"
+        ],
+        "decision": "blocked",
+        "did_happen": [
+          "OpenClawMediator evaluated the delegation envelope.",
+          "OpenClawMediator returned a policy decision.",
+          "OpenClawMediator constructed this non-action receipt."
+        ],
+        "did_not_happen": [
+          "OpenClaw was not executed.",
+          "No capability was called.",
+          "The Governor was not called.",
+          "No browser or computer-use action was performed.",
+          "No filesystem write was performed.",
+          "No email, calendar, Shopify, account, or external write action was performed.",
+          "No network request was made.",
+          "Cap 63 was not used as a shortcut."
+        ],
+        "execution_performed": false,
+        "non_action_statement": "This receipt records a mediator policy decision only, not OpenClaw execution.",
+        "receipt_type": "openclaw_mediator_preview",
+        "request_text": "Prepare a read-only Project Foreman Brief from provided sample input.",
+        "summary": "OpenClaw preview was blocked without execution."
+      },
+      "proof_output_rendered": false,
+      "receipt": {
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "browser_opened": false,
+        "capabilities_called": false,
+        "did_happen": [
+          "OpenClawMediator evaluated the Project Foreman Brief envelope.",
+          "OpenClawMediator returned a policy decision.",
+          "No proof output was rendered because the mediator blocked the envelope.",
+          "A receipt/non-action statement was constructed."
+        ],
+        "did_not_happen": [
+          "OpenClaw was not executed.",
+          "No Governor call was made.",
+          "No capability was called.",
+          "No Cap 63 shortcut was used.",
+          "No browser or computer-use action was performed.",
+          "No filesystem write was performed.",
+          "No network request was made.",
+          "No email, calendar, Shopify, account, or external write action was performed.",
+          "No workflow automation was expanded."
+        ],
+        "execution_performed": false,
+        "filesystem_write_performed": false,
+        "governor_called": false,
+        "mediator_decision": "blocked",
+        "network_called": false,
+        "non_action_statement": "This receipt records a deterministic read-only workflow proof through OpenClawMediator. It is not OpenClaw execution or authorization.",
+        "openclaw_called": false,
+        "receipt_type": "first_read_only_openclaw_workflow_proof",
+        "workflow_name": "Project Foreman Brief"
+      },
+      "workflow_name": "Project Foreman Brief"
+    },
+    "filesystem_write": {
+      "authority_effect": "none",
+      "authorization_granted": false,
+      "brief": "",
+      "execution_performed": false,
+      "input": {
+        "allowed_input_scope": [
+          "sample_project_notes",
+          "sample_repo_map"
+        ],
+        "current_focus": [
+          "Keep the workflow proof read-only.",
+          "Preserve mediator boundaries."
+        ],
+        "known_blockers": [
+          "Browser/computer-use remains blocked."
+        ],
+        "next_safe_steps": [
+          "Review proof payload.",
+          "Do not start broad automation."
+        ],
+        "project_name": "NovaLIS Sample Project",
+        "project_summary": "A local sample workspace used to prove a read-only OpenClaw mediator path.",
+        "recent_decisions": [
+          "Use caller-provided sample input only."
+        ]
+      },
+      "mediator_decision": {
+        "allowed_preview_actions": [],
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "blocked_actions": [
+          "filesystem_write"
+        ],
+        "blocked_reasons": [
+          "filesystem_write_blocked"
+        ],
+        "browser_opened": false,
+        "capabilities_called": false,
+        "decision": "blocked",
+        "execution_performed": false,
+        "filesystem_touched": false,
+        "governor_called": false,
+        "network_called": false,
+        "openclaw_called": false,
+        "preview_allowed": false,
+        "reason": "OpenClaw delegation preview is blocked by the mediator skeleton policy.",
+        "required_boundaries": [
+          "explicit allowed input scope",
+          "read-only delegation only",
+          "no browser/computer-use",
+          "no filesystem writes",
+          "no external writes",
+          "no direct Cap 63 shortcut",
+          "receipt/non-action statement"
+        ]
+      },
+      "mediator_envelope": {
+        "account_action": false,
+        "allowed_input_scope": [
+          "sample_project_notes",
+          "sample_repo_map"
+        ],
+        "browser_use": false,
+        "calendar_action": false,
+        "computer_use": false,
+        "direct_cap63_shortcut": false,
+        "email_action": false,
+        "external_write": false,
+        "filesystem_write": true,
+        "metadata": {
+          "input_source": "caller_provided_sample",
+          "workflow_name": "Project Foreman Brief"
+        },
+        "read_only": true,
+        "request_text": "Prepare a read-only Project Foreman Brief from provided sample input.",
+        "requested_actions": [
+          "prepare project foreman brief from caller-provided sample input"
+        ],
+        "shopify_action": false
+      },
+      "mediator_receipt": {
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "blocked_reasons": [
+          "filesystem_write_blocked"
+        ],
+        "decision": "blocked",
+        "did_happen": [
+          "OpenClawMediator evaluated the delegation envelope.",
+          "OpenClawMediator returned a policy decision.",
+          "OpenClawMediator constructed this non-action receipt."
+        ],
+        "did_not_happen": [
+          "OpenClaw was not executed.",
+          "No capability was called.",
+          "The Governor was not called.",
+          "No browser or computer-use action was performed.",
+          "No filesystem write was performed.",
+          "No email, calendar, Shopify, account, or external write action was performed.",
+          "No network request was made.",
+          "Cap 63 was not used as a shortcut."
+        ],
+        "execution_performed": false,
+        "non_action_statement": "This receipt records a mediator policy decision only, not OpenClaw execution.",
+        "receipt_type": "openclaw_mediator_preview",
+        "request_text": "Prepare a read-only Project Foreman Brief from provided sample input.",
+        "summary": "OpenClaw preview was blocked without execution."
+      },
+      "proof_output_rendered": false,
+      "receipt": {
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "browser_opened": false,
+        "capabilities_called": false,
+        "did_happen": [
+          "OpenClawMediator evaluated the Project Foreman Brief envelope.",
+          "OpenClawMediator returned a policy decision.",
+          "No proof output was rendered because the mediator blocked the envelope.",
+          "A receipt/non-action statement was constructed."
+        ],
+        "did_not_happen": [
+          "OpenClaw was not executed.",
+          "No Governor call was made.",
+          "No capability was called.",
+          "No Cap 63 shortcut was used.",
+          "No browser or computer-use action was performed.",
+          "No filesystem write was performed.",
+          "No network request was made.",
+          "No email, calendar, Shopify, account, or external write action was performed.",
+          "No workflow automation was expanded."
+        ],
+        "execution_performed": false,
+        "filesystem_write_performed": false,
+        "governor_called": false,
+        "mediator_decision": "blocked",
+        "network_called": false,
+        "non_action_statement": "This receipt records a deterministic read-only workflow proof through OpenClawMediator. It is not OpenClaw execution or authorization.",
+        "openclaw_called": false,
+        "receipt_type": "first_read_only_openclaw_workflow_proof",
+        "workflow_name": "Project Foreman Brief"
+      },
+      "workflow_name": "Project Foreman Brief"
+    },
+    "missing_scope": {
+      "authority_effect": "none",
+      "authorization_granted": false,
+      "brief": "",
+      "execution_performed": false,
+      "input": {
+        "allowed_input_scope": [],
+        "current_focus": [],
+        "known_blockers": [],
+        "next_safe_steps": [],
+        "project_name": "NovaLIS Sample Project",
+        "project_summary": "Sample input without allowed scope must be blocked.",
+        "recent_decisions": []
+      },
+      "mediator_decision": {
+        "allowed_preview_actions": [],
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "blocked_actions": [],
+        "blocked_reasons": [
+          "missing_allowed_input_scope"
+        ],
+        "browser_opened": false,
+        "capabilities_called": false,
+        "decision": "blocked",
+        "execution_performed": false,
+        "filesystem_touched": false,
+        "governor_called": false,
+        "network_called": false,
+        "openclaw_called": false,
+        "preview_allowed": false,
+        "reason": "OpenClaw delegation preview is blocked by the mediator skeleton policy.",
+        "required_boundaries": [
+          "explicit allowed input scope",
+          "read-only delegation only",
+          "no browser/computer-use",
+          "no filesystem writes",
+          "no external writes",
+          "no direct Cap 63 shortcut",
+          "receipt/non-action statement"
+        ]
+      },
+      "mediator_envelope": {
+        "account_action": false,
+        "allowed_input_scope": [],
+        "browser_use": false,
+        "calendar_action": false,
+        "computer_use": false,
+        "direct_cap63_shortcut": false,
+        "email_action": false,
+        "external_write": false,
+        "filesystem_write": false,
+        "metadata": {
+          "input_source": "caller_provided_sample",
+          "workflow_name": "Project Foreman Brief"
+        },
+        "read_only": true,
+        "request_text": "Prepare a read-only Project Foreman Brief from provided sample input.",
+        "requested_actions": [
+          "prepare project foreman brief from caller-provided sample input"
+        ],
+        "shopify_action": false
+      },
+      "mediator_receipt": {
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "blocked_reasons": [
+          "missing_allowed_input_scope"
+        ],
+        "decision": "blocked",
+        "did_happen": [
+          "OpenClawMediator evaluated the delegation envelope.",
+          "OpenClawMediator returned a policy decision.",
+          "OpenClawMediator constructed this non-action receipt."
+        ],
+        "did_not_happen": [
+          "OpenClaw was not executed.",
+          "No capability was called.",
+          "The Governor was not called.",
+          "No browser or computer-use action was performed.",
+          "No filesystem write was performed.",
+          "No email, calendar, Shopify, account, or external write action was performed.",
+          "No network request was made.",
+          "Cap 63 was not used as a shortcut."
+        ],
+        "execution_performed": false,
+        "non_action_statement": "This receipt records a mediator policy decision only, not OpenClaw execution.",
+        "receipt_type": "openclaw_mediator_preview",
+        "request_text": "Prepare a read-only Project Foreman Brief from provided sample input.",
+        "summary": "OpenClaw preview was blocked without execution."
+      },
+      "proof_output_rendered": false,
+      "receipt": {
+        "authority_effect": "none",
+        "authorization_granted": false,
+        "browser_opened": false,
+        "capabilities_called": false,
+        "did_happen": [
+          "OpenClawMediator evaluated the Project Foreman Brief envelope.",
+          "OpenClawMediator returned a policy decision.",
+          "No proof output was rendered because the mediator blocked the envelope.",
+          "A receipt/non-action statement was constructed."
+        ],
+        "did_not_happen": [
+          "OpenClaw was not executed.",
+          "No Governor call was made.",
+          "No capability was called.",
+          "No Cap 63 shortcut was used.",
+          "No browser or computer-use action was performed.",
+          "No filesystem write was performed.",
+          "No network request was made.",
+          "No email, calendar, Shopify, account, or external write action was performed.",
+          "No workflow automation was expanded."
+        ],
+        "execution_performed": false,
+        "filesystem_write_performed": false,
+        "governor_called": false,
+        "mediator_decision": "blocked",
+        "network_called": false,
+        "non_action_statement": "This receipt records a deterministic read-only workflow proof through OpenClawMediator. It is not OpenClaw execution or authorization.",
+        "openclaw_called": false,
+        "receipt_type": "first_read_only_openclaw_workflow_proof",
+        "workflow_name": "Project Foreman Brief"
+      },
+      "workflow_name": "Project Foreman Brief"
+    }
+  },
+  "forbidden_runtime_effects": {
+    "authorization_granted": false,
+    "browser_opened": false,
+    "capabilities_called": false,
+    "execution_performed": false,
+    "filesystem_write_performed": false,
+    "governor_called": false,
+    "network_called": false,
+    "openclaw_called": false
+  },
+  "proof_scope": "First read-only OpenClaw workflow proof through OpenClawMediator; deterministic sample input only.",
+  "workflow": "Project Foreman Brief"
+}
