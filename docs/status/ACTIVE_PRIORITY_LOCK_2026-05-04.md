@@ -6,7 +6,7 @@ This is human-maintained priority guidance, not generated runtime truth. Generat
 
 This document pauses all new work except the OpenClaw hardening path below.
 
-Last updated: 2026-05-06 after PR #103 and PR #104 merged.
+Last updated: 2026-05-06 after PR #105 merged; OpenClawMediator skeleton selected next.
 
 ## Only Active Sequence
 
@@ -39,12 +39,13 @@ If a task does not directly advance one of the four steps above, it is paused.
    - verify local/device/runtime capabilities before OpenClaw can rely on them
    - record pass/fail/blocked/setup-dependent status
    - capture platform caveats and proof requirements
-   - next selected todo as of 2026-05-06
+   - current status: merged in PR #105
 
 3. OpenClawMediator skeleton
    - create one explicit OpenClaw delegation boundary
    - prepare for Nova-issued envelopes and centralized OpenClaw policy routing
    - preserve existing Cap 63 behavior unless deliberately migrated behind tests
+   - next selected todo as of 2026-05-06
 
 4. First read-only OpenClaw workflow proof
    - prove useful OpenClaw work in a read-only workflow
