@@ -251,9 +251,9 @@ _Runtime audit utilities for NovaLIS._
 - [[nova_backend/tests/conversation/test_general_chat_runtime.py|test_general_chat_runtime]]
 - [[nova_backend/tests/conversation/test_planning_run_preview.py|test_planning_run_preview]]
 - [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
+- [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
 - [[nova_backend/tests/executors/test_info_snapshot_executor.py|test_info_snapshot_executor]]
-- [[nova_backend/tests/memory/test_memory_skill.py|test_memory_skill]]
-- _…and 1 more_
+- _…and 2 more_
 
 ## `brain` (9 files)
 
@@ -283,6 +283,7 @@ _Read-only Brain scaffolding._
 
 - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
 - [[nova_backend/src/conversation/planning_run_preview.py|planning_run_preview]]
+- [[nova_backend/src/conversation/request_understanding_review_card.py|request_understanding_review_card]]
 - [[nova_backend/src/conversation/session_router.py|session_router]]
 - [[nova_backend/src/conversation/task_understanding_preview.py|task_understanding_preview]]
 - [[nova_backend/src/executors/web_search_executor.py|web_search_executor]]
@@ -294,7 +295,8 @@ _Read-only Brain scaffolding._
 - [[nova_backend/tests/brain/test_search_synthesis.py|test_search_synthesis]]
 - [[nova_backend/tests/brain/test_task_clarifier.py|test_task_clarifier]]
 - [[nova_backend/tests/brain/test_task_understanding.py|test_task_understanding]]
-- [[nova_backend/tests/conversation/test_task_understanding_preview.py|test_task_understanding_preview]]
+- [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
+- _…and 1 more_
 
 ### Tests
 
@@ -556,7 +558,7 @@ ___all__ = ["ContextSnapshotService"]_
 - [[nova_backend/src/executors/screen_capture_executor.py|screen_capture_executor]]
 - [[nova_backend/tests/phase45/test_context_snapshot_contract.py|test_context_snapshot_contract]]
 
-## `conversation` (21 files)
+## `conversation` (22 files)
 
 _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 
@@ -589,6 +591,8 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
     - _AUTHORITY_EFFECT_NONE = "none
 - [[nova_backend/src/conversation/request_understanding_formatter.py|request_understanding_formatter]]
     - Convert a RequestUnderstanding into a short system-prompt boundary block.
+- [[nova_backend/src/conversation/request_understanding_review_card.py|request_understanding_review_card]]
+    - Request Understanding review-card payload contract.
 - [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
     - class ResponseFormatter:
 - [[nova_backend/src/conversation/response_style_router.py|response_style_router]]
@@ -643,7 +647,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
 - [[nova_backend/tests/conversation/test_deepseek_safety_wrapper.py|test_deepseek_safety_wrapper]]
 - [[nova_backend/tests/conversation/test_deepseek_usage_visibility.py|test_deepseek_usage_visibility]]
-- _…and 23 more_
+- _…and 24 more_
 
 ### Tests
 
@@ -658,6 +662,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/tests/conversation/test_planning_run_preview.py|test_planning_run_preview]]
 - [[nova_backend/tests/conversation/test_request_understanding.py|test_request_understanding]]
 - [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
+- [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
 - [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
 - [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
 - [[nova_backend/tests/conversation/test_safety_filter.py|test_safety_filter]]
@@ -1088,7 +1093,7 @@ _ExecuteBoundary,_
 - [[nova_backend/src/nova_protocol.py|nova_protocol]]
     - Nova Message Protocol v1 (NMPv1)
 
-## `openclaw` (27 files)
+## `openclaw` (29 files)
 
 _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
 
@@ -1129,8 +1134,12 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
     - Execution memory for OpenClaw — learn from past runs.
 - [[nova_backend/src/openclaw/models.py|models]]
     - Governance data models for OpenClaw proposed actions and approval lifecycle.
+- [[nova_backend/src/openclaw/openclaw_mediator.py|openclaw_mediator]]
+    - Non-executing OpenClaw delegation mediator skeleton.
 - [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
     - Per-tool budget tracking for OpenClaw.
+- [[nova_backend/src/openclaw/read_only_workflow_proof.py|read_only_workflow_proof]]
+    - Read-only OpenClaw workflow proof adapter.
 - [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
     - Robust tool execution for OpenClaw — retry, fallback, parallel, and metering.
 - [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
@@ -1139,11 +1148,7 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
     - STRICT_FOUNDATION_LABEL = "Manual preflight active
 - [[nova_backend/src/openclaw/task_envelope.py|task_envelope]]
     - def _utc_now_iso() -> str:
-- [[nova_backend/src/openclaw/thinking_loop.py|thinking_loop]]
-    - Multi-step agent thinking loop for OpenClaw.
-- [[nova_backend/src/openclaw/tool_chain.py|tool_chain]]
-    - Tool chaining and composition for OpenClaw.
-- _…and 2 more_
+- _…and 4 more_
 
 ### Imports from
 
@@ -1183,7 +1188,7 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
 - [[nova_backend/tests/openclaw/test_envelope_factory.py|test_envelope_factory]]
 - [[nova_backend/tests/openclaw/test_envelope_store.py|test_envelope_store]]
 - [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
-- _…and 12 more_
+- _…and 14 more_
 
 ### Tests
 
@@ -1193,6 +1198,7 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
 - [[nova_backend/tests/openclaw/test_envelope_factory.py|test_envelope_factory]]
 - [[nova_backend/tests/openclaw/test_envelope_store.py|test_envelope_store]]
 - [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
+- [[nova_backend/tests/openclaw/test_openclaw_mediator.py|test_openclaw_mediator]]
 - [[nova_backend/tests/openclaw/test_per_tool_budget.py|test_per_tool_budget]]
 - [[nova_backend/tests/openclaw/test_robust_executor.py|test_robust_executor]]
 - [[nova_backend/tests/openclaw/test_run_state_machine.py|test_run_state_machine]]

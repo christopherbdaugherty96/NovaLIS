@@ -1,0 +1,2 @@
+Generated runtime docs: C:\Nova-Project\docs\current_runtime\CURRENT_RUNTIME_STATE.md
+Indexed 914 docs and 730 code files. MOCs -> C:\Nova-Project\_MOCs; config -> C:\Nova-Project\.obsidian.

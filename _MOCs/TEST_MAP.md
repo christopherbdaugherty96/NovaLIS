@@ -13,7 +13,7 @@ whose filename stem matches. Useful for jumping between a test and the
 code it exercises. `__init__.py`, conftest and helper modules are
 intentionally skipped so the map stays focused on real test ↔ source links.
 
-Paired tests: 108
+Paired tests: 110
 
 - [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
     - tests → [[nova_backend/src/brain/brain_mode.py|brain_mode]]
@@ -63,6 +63,8 @@ Paired tests: 108
     - tests → [[nova_backend/src/conversation/request_understanding.py|request_understanding]]
 - [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
     - tests → [[nova_backend/src/conversation/request_understanding_formatter.py|request_understanding_formatter]]
+- [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
+    - tests → [[nova_backend/src/conversation/request_understanding_review_card.py|request_understanding_review_card]]
 - [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
     - tests → [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
 - [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
@@ -133,6 +135,8 @@ Paired tests: 108
     - tests → [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
 - [[nova_backend/tests/openclaw/test_openclaw_execute_executor.py|test_openclaw_execute_executor]]
     - tests → [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
+- [[nova_backend/tests/openclaw/test_openclaw_mediator.py|test_openclaw_mediator]]
+    - tests → [[nova_backend/src/openclaw/openclaw_mediator.py|openclaw_mediator]]
 - [[nova_backend/tests/openclaw/test_per_tool_budget.py|test_per_tool_budget]]
     - tests → [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
 - [[nova_backend/tests/openclaw/test_robust_executor.py|test_robust_executor]]

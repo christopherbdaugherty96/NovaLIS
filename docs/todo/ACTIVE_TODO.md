@@ -18,14 +18,15 @@ The four-step OpenClaw priority lock is complete. The current selected workstrea
 
 ## Current Next TODO
 
-Run the runtime truth regeneration / audit pass.
+Review the runtime truth regeneration / audit pass.
 
 Purpose:
 
-- verify generated runtime truth after PRs #103-#108
-- confirm code/proof/doc alignment for the new OpenClaw governance surfaces
-- regenerate generated runtime docs only through the generator path if needed
-- record discrepancies without manually inflating runtime claims
+- confirm generated runtime docs changed only through the generator path
+- confirm runtime truth changes are code-grounded and generator-consistent
+- confirm proof-only OpenClaw artifacts were not inflated into runtime authority
+- confirm raw proof evidence and screenshot folders are excluded from generated runtime/reference topical MOCs
+- review recorded diff/proof evidence before selecting another lock
 
 Do not broaden OpenClaw or start product/runtime expansion under this lock.
 
@@ -39,7 +40,7 @@ References:
 Current lock:
 
 - Step 1 pending:
-  - runtime truth regeneration / audit after OpenClaw proof chain
+  - runtime truth regeneration / audit after OpenClaw proof chain is on the active audit branch
 
 Completed previous lock:
 
