@@ -32,6 +32,10 @@ Purpose:
 
 Do not start OpenClawMediator work until the signoff matrix exists and is reviewed.
 
+Draft document target:
+
+- `docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06.md`
+
 ## Lock Progress
 
 - Step 1 foundation complete:
