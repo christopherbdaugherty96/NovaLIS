@@ -1,0 +1,1225 @@
+diff --git a/_MOCs/BY_TOPIC.md b/_MOCs/BY_TOPIC.md
+index e18cc35..561026c 100644
+--- a/_MOCs/BY_TOPIC.md
++++ b/_MOCs/BY_TOPIC.md
+@@ -149,7 +149,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [doc] [[docs/archive/phase 4/NOVA CANONICAL SYNTHESIS v5.0.txt|ðŸ§¬ NOVA CANONICAL SYNTHESIS v5.0 - COMPLETE OPERATIONAL TRUTH]]
+ - [doc] [[docs/design/Phase 9/NOVA MULTI-AGENT GOVERNANCE FRAMEWORK.txt|ðŸ§¬ NOVA CORE INTELLIGENCE ARCHITECTURE]]
+
+-## openclaw (89)
++## openclaw (100)
+
+ - [code] [[nova_backend/src/openclaw/agent_execution_memory.py|agent_execution_memory]]
+ - [code] [[nova_backend/src/openclaw/agent_fallback_strategies.py|agent_fallback_strategies]]
+@@ -170,7 +170,9 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [code] [[nova_backend/src/openclaw/models.py|models]]
+ - [code] [[nova_backend/src/api/openclaw_agent_api.py|openclaw_agent_api]]
+ - [code] [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
++- [code] [[nova_backend/src/openclaw/openclaw_mediator.py|openclaw_mediator]]
+ - [code] [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
++- [code] [[nova_backend/src/openclaw/read_only_workflow_proof.py|read_only_workflow_proof]]
+ - [code] [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
+ - [code] [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
+ - [code] [[nova_backend/src/openclaw/__init__.py|src/openclaw]]
+@@ -185,11 +187,13 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [code] [[nova_backend/tests/openclaw/test_envelope_store.py|test_envelope_store]]
+ - [code] [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
+ - [code] [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
++- [code] [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
+ - [code] [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
+ - [code] [[nova_backend/tests/test_openclaw_agent_api.py|test_openclaw_agent_api]]
+ - [code] [[nova_backend/tests/conversation/test_openclaw_agent_personality_bridge.py|test_openclaw_agent_personality_bridge]]
+ - [code] [[nova_backend/tests/test_openclaw_bridge_api.py|test_openclaw_bridge_api]]
+ - [code] [[nova_backend/tests/openclaw/test_openclaw_execute_executor.py|test_openclaw_execute_executor]]
++- [code] [[nova_backend/tests/openclaw/test_openclaw_mediator.py|test_openclaw_mediator]]
+ - [code] [[nova_backend/tests/openclaw/test_openclaw_models.py|test_openclaw_models]]
+ - [code] [[nova_backend/tests/executors/test_os_diagnostics_openclaw_agent.py|test_os_diagnostics_openclaw_agent]]
+ - [code] [[nova_backend/tests/openclaw/test_per_tool_budget.py|test_per_tool_budget]]
+@@ -208,6 +212,8 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [code] [[nova_backend/src/openclaw/tool_registry.py|tool_registry]]
+ - [code] [[nova_backend/src/openclaw/user_tool_permissions.py|user_tool_permissions]]
+ - [code] [[nova_backend/src/skills/web_search.py|web_search - src/skills]]
++- [doc] [[docs/demo_proof/2026-05-06_first_read_only_openclaw_workflow/PROOF_INDEX|First Read-Only OpenClaw Workflow Proof - 2026-05-06]]
++- [doc] [[docs/demo_proof/2026-05-06_first_read_only_openclaw_workflow/REPORT|First Read-Only OpenClaw Workflow Report - 2026-05-06]]
+ - [doc] [[docs/demo_proof/2026-04-28_user_test/FRICTION_LOG|Friction Log - 2026-04-28 User Test]]
+ - [doc] [[tools/youtubelis/docs/GOVERNED_AUTOMATION|Governed Automation Model (YouTubeLIS)]]
+ - [doc] [[future/governed_desktop_runs/README|Governed Desktop Runs]]
+@@ -231,8 +237,11 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [doc] [[docs/archive/openclaw_integration_draft.txt|OpenClaw Integration Design (Future) - docs/archive]]
+ - [doc] [[docs/future/OPENCLAW_INTEGRATION_DESIGN|OpenClaw Integration Design (Future) - docs/future]]
+ - [doc] [[docs/future/OPENCLAW_INTEGRATION_REVIEW|OpenClaw Integration â€” Engineering Review]]
++- [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
+ - [doc] [[docs/future/OPENCLAW_ROBUST_HARDENING_AUDIT_2026-05-01|OpenClaw Robust Hardening Audit â€” 2026-05-01]]
+ - [doc] [[docs/reference/HUMAN_GUIDES/28_OPENCLAW_SETUP_AND_RUNTIME_GUIDE_2026-03-27|OpenClaw Setup and Runtime Guide]]
++- [doc] [[docs/demo_proof/2026-05-06_openclaw_mediator_skeleton/PROOF_INDEX|OpenClawMediator Skeleton Proof - 2026-05-06]]
++- [doc] [[docs/demo_proof/2026-05-06_openclaw_mediator_skeleton/REPORT|OpenClawMediator Skeleton Report - 2026-05-06]]
+ - [doc] [[docs/PROOFS/Phase-7/PHASE_7_OPENCLAW_HOME_AGENT_FOUNDATION_RUNTIME_SLICE_2026-03-26|Phase 7 - OpenClaw Home Agent Foundation Runtime Slice]]
+ - [doc] [[docs/design/Phase 8/PHASE_8_OPENCLAW_CANONICAL_GOVERNED_AUTOMATION_SPEC_2026-03-25|Phase 8 OpenClaw Canonical Governed Automation Spec]]
+ - [doc] [[docs/design/Phase 8/PHASE_8_OPENCLAW_GOVERNED_EXECUTION_PLAN|Phase 8 OpenClaw Governed Execution Plan]]
+@@ -240,6 +249,8 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [doc] [[docs/PROOFS/Phase-8/PHASE_8_PROJECT_SNAPSHOT_OPERATOR_SLICE_2026-04-13|Phase 8 Project Snapshot Operator Slice]]
+ - [doc] [[docs/PROOFS/Phase-8/PHASE_8_OPENCLAW_REMOTE_BOUNDARY_AND_SETUP_READINESS_RUNTIME_SLICE_2026-03-27|Phase 8 Runtime Slice ï¿½ Remote Boundary and Setup Readiness]]
+ - [doc] [[docs/design/Phase 9/PHASE_9_OPENCLAW_INTELLIGENCE_LAYER_SPEC|Phase 9 â€” OpenClaw Intelligence Layer Specification]]
++- [doc] [[docs/demo_proof/2026-05-06_runtime_truth_audit_after_openclaw/PROOF_INDEX|Runtime Truth Audit After OpenClaw Proof Chain - 2026-05-06 - demo_proof/2026-05-06_runtime_truth_audit_after_openclaw]]
++- [doc] [[docs/demo_proof/2026-05-06_runtime_truth_audit_after_openclaw/REPORT|Runtime Truth Audit After OpenClaw Proof Chain - 2026-05-06 - demo_proof/2026-05-06_runtime_truth_audit_after_openclaw]]
+
+ ## voice (34)
+
+@@ -278,12 +289,8 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [doc] [[docs/design/Phase 4/GOVERNED_TTS_SPEC.md.txt|ðŸ”Š NOVA â€” GOVERNED TEXT-TO-SPEECH (TTS) COMPLETE SPECIFICATION]]
+ - [doc] [[docs/archive/Audio conversion proof|ðŸ”’ SAVE & LOCK â€” STT Windows Subprocess Stabilization]]
+
+-## memory (79)
++## memory (75)
+
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/10_memory_context_boundary.png|10_memory_context_boundary.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_memory.png|level1_memory.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_memory.png|level1_surface_memory.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_memory_authority.png|level2_memory_authority.png]]
+ - [code] [[nova_backend/src/openclaw/agent_execution_memory.py|agent_execution_memory]]
+ - [code] [[nova_backend/src/working_context/assistive_noticing.py|assistive_noticing]]
+ - [code] [[docs/archive/phase 3/brain_server_Phase3.py|brain_server_Phase3 - archive/phase 3]]
+@@ -360,17 +367,10 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [doc] [[docs/status/README|Status Notes]]
+ - [doc] [[docs/design/Phase 9/# ðŸ§¬ NOVA MEMORY ARCHITECTURE USER.txt|ðŸ§¬ NOVA MEMORY ARCHITECTURE: USER MEMORY & SYSTEM MEMORY]]
+
+-## ux (88)
++## ux (81)
+
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/01_dashboard_home.png|01_dashboard_home.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/03_workspace_home.png|03_workspace_home.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/04_full_ui_dashboard.png|04_full_ui_dashboard.png]]
+ - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
+ - [asset] [[nova_backend/static/favicon.ico|favicon.ico]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level0_dashboard_connection_status.png|level0_dashboard_connection_status.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_dashboard_initial.png|level1_dashboard_initial.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_workspace.png|level1_surface_workspace.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_workspace.png|level1_workspace.png]]
+ - [asset] [[Nova-Frontend-Dashboard/assets/orb-canonical.png|orb-canonical.png]]
+ - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
+ - [code] [[Nova-Frontend-Dashboard/dashboard.js|dashboard - Nova-Frontend-Dashboard]]
+@@ -451,7 +451,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [doc] [[docs/brain/PROJECT_CONTEXTS|Project Contexts]]
+ - [doc] [[docs/archive/phase 2/# ðŸŽ¨ Nova Frontend Dashboard â€” Tech.txt|ðŸŽ¨ Nova Frontend Dashboard â€” Technical Overview]]
+
+-## runtime (57)
++## runtime (59)
+
+ - [code] [[nova_backend/src/openclaw/agent_execution_memory.py|agent_execution_memory]]
+ - [code] [[nova_backend/src/openclaw/agent_fallback_strategies.py|agent_fallback_strategies]]
+@@ -473,7 +473,9 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [code] [[nova_backend/src/openclaw/envelope_store.py|envelope_store]]
+ - [code] [[nova_backend/src/openclaw/execution_memory.py|execution_memory]]
+ - [code] [[nova_backend/src/openclaw/models.py|models]]
++- [code] [[nova_backend/src/openclaw/openclaw_mediator.py|openclaw_mediator]]
+ - [code] [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
++- [code] [[nova_backend/src/openclaw/read_only_workflow_proof.py|read_only_workflow_proof]]
+ - [code] [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
+ - [code] [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
+ - [code] [[nova_backend/src/openclaw/__init__.py|src/openclaw]]
+@@ -511,53 +513,12 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
+ - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
+
+-## testing (658)
++## testing (619)
+
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/01_dashboard_home.png|01_dashboard_home.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/02_intro_setup_surface.png|02_intro_setup_surface.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/03_workspace_home.png|03_workspace_home.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/04_full_ui_dashboard.png|04_full_ui_dashboard.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/05_chat_area_before_prompt.png|05_chat_area_before_prompt.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/06_chat_what_works_today.png|06_chat_what_works_today.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/07_trust_receipts.png|07_trust_receipts.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/08_trust_after_refresh.png|08_trust_after_refresh.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/09_email_draft_attempt_chat.png|09_email_draft_attempt_chat.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/10_memory_context_boundary.png|10_memory_context_boundary.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/11_settings_setup_usage.png|11_settings_setup_usage.png]]
+ - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
+ - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
+ - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
+ - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level0_dashboard_connection_status.png|level0_dashboard_connection_status.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_dashboard_initial.png|level1_dashboard_initial.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_full_ui_after_toggle.png|level1_full_ui_after_toggle.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_full_ui_initial.png|level1_full_ui_initial.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_home.png|level1_home.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_intro_after_modal_close.png|level1_intro_after_modal_close.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_memory.png|level1_memory.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_chat.png|level1_surface_chat.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_home.png|level1_surface_home.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_intro.png|level1_surface_intro.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_memory.png|level1_surface_memory.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_news.png|level1_surface_news.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_policy.png|level1_surface_policy.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_settings.png|level1_surface_settings.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_trust.png|level1_surface_trust.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_workspace.png|level1_surface_workspace.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_workspace.png|level1_workspace.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_memory_authority.png|level2_memory_authority.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_1_error.png|level2_prompt_1_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_2_error.png|level2_prompt_2_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_3_error.png|level2_prompt_3_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_4_error.png|level2_prompt_4_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_5_error.png|level2_prompt_5_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_6_error.png|level2_prompt_6_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_what_works.png|level2_what_works.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level3_trust_receipts_api.png|level3_trust_receipts_api.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level3_trust_summary_api.png|level3_trust_summary_api.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level4_system_status.png|level4_system_status.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level5_cap64_confirmation_boundary.png|level5_cap64_confirmation_boundary.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level6_shopify_report.png|level6_shopify_report.png]]
+ - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
+ - [code] [[nova_backend/tests/adversarial/_helpers.py|_helpers]]
+ - [code] [[nova_backend/tests/phase45/_websocket_test_helpers.py|_websocket_test_helpers]]
+@@ -711,6 +672,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [code] [[nova_backend/tests/phase45/test_explain_anything_router.py|test_explain_anything_router]]
+ - [code] [[nova_backend/tests/executors/test_external_reasoning_executor.py|test_external_reasoning_executor]]
+ - [code] [[nova_backend/tests/phase45/test_failure_ladder.py|test_failure_ladder]]
++- [code] [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
+ - [code] [[nova_backend/tests/test_general_chat_behavior.py|test_general_chat_behavior]]
+ - [code] [[nova_backend/tests/conversation/test_general_chat_deep_thought.py|test_general_chat_deep_thought]]
+ - [code] [[nova_backend/tests/conversation/test_general_chat_runtime.py|test_general_chat_runtime]]
+@@ -775,6 +737,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [code] [[nova_backend/tests/conversation/test_openclaw_agent_personality_bridge.py|test_openclaw_agent_personality_bridge]]
+ - [code] [[nova_backend/tests/test_openclaw_bridge_api.py|test_openclaw_bridge_api]]
+ - [code] [[nova_backend/tests/openclaw/test_openclaw_execute_executor.py|test_openclaw_execute_executor]]
++- [code] [[nova_backend/tests/openclaw/test_openclaw_mediator.py|test_openclaw_mediator]]
+ - [code] [[nova_backend/tests/openclaw/test_openclaw_models.py|test_openclaw_models]]
+ - [code] [[nova_backend/tests/phase5/test_operational_remembrance.py|test_operational_remembrance]]
+ - [code] [[nova_backend/tests/phase45/test_orb_contract.py|test_orb_contract]]
+@@ -826,6 +789,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [code] [[nova_backend/tests/conversation/test_relationship_insight_extractor.py|test_relationship_insight_extractor]]
+ - [code] [[nova_backend/tests/conversation/test_request_understanding.py|test_request_understanding]]
+ - [code] [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
++- [code] [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
+ - [code] [[nova_backend/tests/simulation/test_research_conversation_flow.py|test_research_conversation_flow]]
+ - [code] [[nova_backend/tests/evaluation/test_research_quality_tests.py|test_research_quality_tests]]
+ - [code] [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
+@@ -1149,7 +1113,6 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [doc] [[nova_backend/src/archive_quarantine/phase2_tests/QUARANTINE_NOTICE|QUARANTINE_NOTICE - archive_quarantine/phase2_tests]]
+ - [doc] [[docs/PROOFS/README|README]]
+ - [doc] [[docs/PROOFS/Phase-4/Runtime_matrix_audit|Runtime_matrix_audit]]
+-- [doc] [[docs/demo_proof/brain_live_test/screenshots/CAPTURE_INSTRUCTIONS|Screenshot Capture Instructions]]
+ - [doc] [[docs/demo_proof/2026-04-28_user_test/SCREENSHOT_CHECKLIST|Screenshot Checklist - 2026-04-28 User Test]]
+ - [doc] [[docs/testing/SIMULATION_ANALYTICS|Simulation Analytics]]
+ - [doc] [[docs/PROOFS/Phase-4/Governor Bypass Proof Document.txt|src/llm/inference_wrapper.py]]
+@@ -1172,7 +1135,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [doc] [[docs/archive/phase 4/check-in.txt|ðŸ§¬ NOVA â€” Phase-4 Infrastructure Completion Record]]
+ - [doc] [[docs/PROOFS/Phase-4/PHASE-4 PRE-UNLOCK STRUCTURAL CERTIFICATION.txt|ðŸ§¬ NOVA â€” PHASE-4 PRE-UNLOCK STRUCTURAL CERTIFICATION]]
+
+-## architecture (302)
++## architecture (303)
+
+ - [doc] [[docs/design/archive/redundant_placeholders_2026-04-02/# ðŸ§¬ NOVA INTELLIGENCE CAPACITY THE.txt|# ðŸ§¬ NOVA INTELLIGENCE CAPACITY THE]]
+ - [doc] [[docs/design/archive/redundant_placeholders_2026-04-02/# ðŸ§¬ NOVA PHASE 4.2 ROADMAP.txt|# ðŸ§¬ NOVA PHASE 4.2 ROADMAP]]
+@@ -1243,6 +1206,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
+ - [doc] [[docs/design/Phase 4/INFLUENCE_BOUNDARIES_v1.0.txt|Influence Boundaries v1.0]]
+ - [doc] [[docs/reference/HUMAN_GUIDES/27_KEY_SKILL_RELIABILITY_MATRIX_2026-03-27|Key Skill Reliability Matrix]]
+ - [doc] [[docs/design/archive(phase 4)/README|Legacy Phase 4 Archive]]
++- [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
+ - [doc] [[docs/capability_verification/LOCAL_CAPABILITY_SIGNOFF_MATRIX_TEMPLATE|Local Capability Signoff Matrix Template]]
+ - [doc] [[docs/reference/HUMAN_GUIDES/31_LOCAL_CODE_OPERATOR_AND_PROJECT_ANALYSIS|Local Code Operator And Project Analysis]]
+ - [doc] [[docs/reference/HUMAN_GUIDES/26_LOCAL_SETUP_AND_STARTUP|Local Setup And Startup]]
+diff --git a/_MOCs/BY_TYPE.md b/_MOCs/BY_TYPE.md
+index 48e4ddd..9c4b475 100644
+--- a/_MOCs/BY_TYPE.md
++++ b/_MOCs/BY_TYPE.md
+@@ -391,7 +391,7 @@ concern is reflected across docs, code and tests.
+ - [doc] [[NovaLIS-Governance/STATUS|NOVA Governance Status]]
+   summary: Updated: 2026-04-28
+
+-## Runtime and ops (22 docs, 271 code)
++## Runtime and ops (22 docs, 274 code)
+
+ - [code] [[nova_backend/src/__init__.py|src]]
+ - [code] [[nova_backend/src/actions/__init__.py|src/actions]]
+@@ -581,6 +581,8 @@ concern is reflected across docs, code and tests.
+   summary: _AUTHORITY_EFFECT_NONE = "none
+ - [code] [[nova_backend/src/conversation/request_understanding_formatter.py|request_understanding_formatter]]
+   summary: Convert a RequestUnderstanding into a short system-prompt boundary block.
++- [code] [[nova_backend/src/conversation/request_understanding_review_card.py|request_understanding_review_card]]
++  summary: Request Understanding review-card payload contract.
+ - [code] [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
+   summary: class ResponseFormatter:
+ - [code] [[nova_backend/src/conversation/response_style_router.py|response_style_router]]
+@@ -718,8 +720,12 @@ concern is reflected across docs, code and tests.
+   summary: Execution memory for OpenClaw â€” learn from past runs.
+ - [code] [[nova_backend/src/openclaw/models.py|models]]
+   summary: Governance data models for OpenClaw proposed actions and approval lifecycle.
++- [code] [[nova_backend/src/openclaw/openclaw_mediator.py|openclaw_mediator]]
++  summary: Non-executing OpenClaw delegation mediator skeleton.
+ - [code] [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
+   summary: Per-tool budget tracking for OpenClaw.
++- [code] [[nova_backend/src/openclaw/read_only_workflow_proof.py|read_only_workflow_proof]]
++  summary: Read-only OpenClaw workflow proof adapter.
+ - [code] [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
+   summary: Robust tool execution for OpenClaw â€” retry, fallback, parallel, and metering.
+ - [code] [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
+@@ -925,7 +931,7 @@ concern is reflected across docs, code and tests.
+ - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
+   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
+ - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
+-  summary: Runtime Fingerprint: 71e61b4108532e379134cb982a6744717553a343cb0a8cbf2da8c8f538a04572
++  summary: Runtime Fingerprint: c23ca09716c3f565c7a64cf7ec3c5e8b7b40f4f53a48bd1f9dd36944627b2e7d
+ - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
+   summary: Date: 2026-03-12
+ - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
+@@ -945,11 +951,11 @@ concern is reflected across docs, code and tests.
+ - [doc] [[docs/current_runtime/PHASE_SEMANTICS|NOVA Phase Semantics]]
+   summary: This document explains how multiple phase markers can coexist without contradiction.
+ - [doc] [[docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE|NOVA Runtime Capability Reference]]
+-  summary: Updated: 2026-04-21
++  summary: Updated: 2026-05-04
+ - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
+   summary: Date: 2026-03-13
+ - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
+-  summary: - runtimesurfacehash: 37df1cb7dc2fb3cb550545fd2a3da94282d9b027a077582c07c8b889b2391050
++  summary: - runtimesurfacehash: 8e3219576614868d2d009c571eee333cf2e3d9877c62ef7719aa2e93d6fc35a3
+ - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
+   summary: ï»¿# Runtime Truth Addendum (Docs-Only Corrections)
+ - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
+@@ -1026,7 +1032,7 @@ concern is reflected across docs, code and tests.
+ - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
+   summary: :root {
+
+-## Tests (5 docs, 351 code)
++## Tests (5 docs, 354 code)
+
+ - [code] [[nova_backend/tests/__init__.py|tests]]
+ - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
+@@ -1141,6 +1147,8 @@ concern is reflected across docs, code and tests.
+   summary: CapabilityStatus,
+ - [code] [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
+   summary: Tests for request_understanding_formatter and its integration with
++- [code] [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
++  summary: RequestUnderstandingReviewCard,
+ - [code] [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
+   summary: def test_formatter_normalizes_punctuation_and_spacing():
+ - [code] [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
+@@ -1285,10 +1293,14 @@ concern is reflected across docs, code and tests.
+   summary: @pytest.fixture
+ - [code] [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
+   summary: Tests for ExecutorSkillAdapter â€” generic executor-to-skill bridge.
++- [code] [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
++  summary: ProjectForemanBriefInput,
+ - [code] [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
+   summary: def _install_stores(monkeypatch, tmp_path):
+ - [code] [[nova_backend/tests/openclaw/test_openclaw_execute_executor.py|test_openclaw_execute_executor]]
+   summary: End-to-end tests for OpenClawExecuteExecutor (cap 63).
++- [code] [[nova_backend/tests/openclaw/test_openclaw_mediator.py|test_openclaw_mediator]]
++  summary: OpenClawDelegationEnvelope,
+ - [code] [[nova_backend/tests/openclaw/test_openclaw_models.py|test_openclaw_models]]
+   summary: Unit tests for OpenClaw governance models (hardening Step 1).
+ - [code] [[nova_backend/tests/openclaw/test_per_tool_budget.py|test_per_tool_budget]]
+@@ -1730,13 +1742,8 @@ concern is reflected across docs, code and tests.
+ - [doc] [[verification/README_verification|**README_verification.md** - verification]]
+   summary: Purpose: Verify constitutional compliance without expanding capability
+
+-## Scripts and tools (4 docs, 24 code)
++## Scripts and tools (4 docs, 20 code)
+
+-- [asset] [[scripts/pids/backend.pid|backend.pid]]
+-- [asset] [[scripts/pids/frontend.pid|frontend.pid]]
+-- [asset] [[scripts/pids/nova_backend.err.log|nova_backend.err.log]]
+-- [asset] [[scripts/pids/nova_backend.out.log|nova_backend.out.log]]
+-- [asset] [[scripts/pids/nova_backend.pid|nova_backend.pid]]
+ - [code] [[.github/workflows/ci.yml|ci]]
+   summary: name: CI
+ - [code] [[.github/workflows/fingerprint-clean-main-pr.yml|fingerprint-clean-main-pr]]
+@@ -1773,6 +1780,8 @@ concern is reflected across docs, code and tests.
+   summary: $ErrorActionPreference = "Stop
+ - [code] [[scripts/start_daemon.py|start_daemon]]
+   summary: Start (or verify) the Nova backend as a background process.
++- [code] [[scripts/stop_daemon.py|stop_daemon]]
++  summary: Stop the Nova backend background process safely.
+ - [code] [[scripts/verify_windows.ps1|verify_windows]]
+   summary: verify_windows.ps1 â€” Local Windows verification script
+ - [doc] [[automations/README|Automations]]
+@@ -2178,49 +2187,8 @@ concern is reflected across docs, code and tests.
+ - [doc] [[docs/PROOFS/UNLOCK/phase 4/PHASE_4_UNLOCK_ACT.md.txt|PHASE_4_UNLOCK_ACT.md - UNLOCK/phase 4]] - Phase 4
+   summary: PHASE4UNLOCKACT.md
+
+-## Reference (364 docs, 71 code)
++## Reference (379 docs, 30 code)
+
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/01_dashboard_home.png|01_dashboard_home.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/02_intro_setup_surface.png|02_intro_setup_surface.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/03_workspace_home.png|03_workspace_home.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/04_full_ui_dashboard.png|04_full_ui_dashboard.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/05_chat_area_before_prompt.png|05_chat_area_before_prompt.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/06_chat_what_works_today.png|06_chat_what_works_today.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/07_trust_receipts.png|07_trust_receipts.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/08_trust_after_refresh.png|08_trust_after_refresh.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/09_email_draft_attempt_chat.png|09_email_draft_attempt_chat.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/10_memory_context_boundary.png|10_memory_context_boundary.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/11_settings_setup_usage.png|11_settings_setup_usage.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level0_dashboard_connection_status.png|level0_dashboard_connection_status.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_dashboard_initial.png|level1_dashboard_initial.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_full_ui_after_toggle.png|level1_full_ui_after_toggle.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_full_ui_initial.png|level1_full_ui_initial.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_home.png|level1_home.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_intro_after_modal_close.png|level1_intro_after_modal_close.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_memory.png|level1_memory.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_chat.png|level1_surface_chat.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_home.png|level1_surface_home.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_intro.png|level1_surface_intro.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_memory.png|level1_surface_memory.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_news.png|level1_surface_news.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_policy.png|level1_surface_policy.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_settings.png|level1_surface_settings.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_trust.png|level1_surface_trust.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_workspace.png|level1_surface_workspace.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_workspace.png|level1_workspace.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_memory_authority.png|level2_memory_authority.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_1_error.png|level2_prompt_1_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_2_error.png|level2_prompt_2_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_3_error.png|level2_prompt_3_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_4_error.png|level2_prompt_4_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_5_error.png|level2_prompt_5_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_6_error.png|level2_prompt_6_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_what_works.png|level2_what_works.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level3_trust_receipts_api.png|level3_trust_receipts_api.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level3_trust_summary_api.png|level3_trust_summary_api.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level4_system_status.png|level4_system_status.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level5_cap64_confirmation_boundary.png|level5_cap64_confirmation_boundary.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level6_shopify_report.png|level6_shopify_report.png]]
+ - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
+ - [asset] [[docs/product/assets/report-output.png|report-output.png]]
+ - [asset] [[docs/product/assets/trust-governance.png|trust-governance.png]]
+@@ -2489,6 +2457,26 @@ concern is reflected across docs, code and tests.
+   summary: Date: 2026-04-29
+ - [doc] [[docs/demo_proof/2026-04-29_conversation_search_proof/PROOF_INDEX|Proof Index - Conversation + Search]]
+   summary: Date: 2026-04-29
++- [doc] [[docs/demo_proof/2026-05-06_first_read_only_openclaw_workflow/PROOF_INDEX|First Read-Only OpenClaw Workflow Proof - 2026-05-06]]
++  summary: Status: draft / review required
++- [doc] [[docs/demo_proof/2026-05-06_first_read_only_openclaw_workflow/REPORT|First Read-Only OpenClaw Workflow Report - 2026-05-06]]
++  summary: Status: draft / review required
++- [doc] [[docs/demo_proof/2026-05-06_openclaw_mediator_skeleton/PROOF_INDEX|OpenClawMediator Skeleton Proof - 2026-05-06]]
++  summary: Status: draft / review required
++- [doc] [[docs/demo_proof/2026-05-06_openclaw_mediator_skeleton/REPORT|OpenClawMediator Skeleton Report - 2026-05-06]]
++  summary: Status: draft / review required
++- [doc] [[docs/demo_proof/2026-05-06_planning_task_preview_proof/PROOF_INDEX|Proof Index - Planning Task Preview]]
++  summary: Date: 2026-05-06
++- [doc] [[docs/demo_proof/2026-05-06_planning_task_preview_proof/REPORT|Planning Task Preview Live Proof Report]]
++  summary: Date: 2026-05-06
++- [doc] [[docs/demo_proof/2026-05-06_request_understanding_review_card/PROOF_INDEX|Proof Index - Request Understanding Review Card]]
++  summary: Date: 2026-05-06
++- [doc] [[docs/demo_proof/2026-05-06_request_understanding_review_card/REPORT|Request Understanding Review Card Proof Report]]
++  summary: Date: 2026-05-06
++- [doc] [[docs/demo_proof/2026-05-06_runtime_truth_audit_after_openclaw/PROOF_INDEX|Runtime Truth Audit After OpenClaw Proof Chain - 2026-05-06 - demo_proof/2026-05-06_runtime_truth_audit_after_openclaw]]
++  summary: Status: draft / review required
++- [doc] [[docs/demo_proof/2026-05-06_runtime_truth_audit_after_openclaw/REPORT|Runtime Truth Audit After OpenClaw Proof Chain - 2026-05-06 - demo_proof/2026-05-06_runtime_truth_audit_after_openclaw]]
++  summary: Status: draft / review required
+ - [doc] [[docs/demo_proof/brain_dry_run_examples/EXAMPLES|Brain Dry-Run Examples - demo_proof/brain_dry_run_examples]]
+   summary: Date: 2026-04-29
+ - [doc] [[docs/demo_proof/brain_dry_run_examples/PROOF_INDEX|Proof Index - Brain Dry-Run Examples]]
+@@ -2501,8 +2489,6 @@ concern is reflected across docs, code and tests.
+   summary: Date: 2026-04-29
+ - [doc] [[docs/demo_proof/brain_live_test/REPORT|Brain Live Test Report]]
+   summary: Date: 2026-04-29
+-- [doc] [[docs/demo_proof/brain_live_test/screenshots/CAPTURE_INSTRUCTIONS|Screenshot Capture Instructions]]
+-  summary: Screenshots were not captured during this pass.
+ - [doc] [[docs/demo_proof/daily_operating_baseline/BRAIN_MODE_PROOF|Brain Mode Proof]]
+   summary: Status: PASS â€” Stage 5 brain mode contracts and trace implemented and proven, 2026-05-02.
+ - [doc] [[docs/demo_proof/daily_operating_baseline/CONTEXT_PACK_PROOF|Context Pack Proof]]
+@@ -2535,6 +2521,10 @@ concern is reflected across docs, code and tests.
+   summary: Date: 2026-04-26
+ - [doc] [[docs/future/auralis_digital/SOCIAL_CONTENT_WORKFLOW_PACK|Auralis Social Content Workflow Pack]]
+   summary: Status: future planning.
++- [doc] [[docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS|Auralis Digital Client Intake OS]]
++  summary: Last updated: 2026-05-06
++- [doc] [[docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS_SECOND_PASS|Auralis Digital Client Intake OS â€” Second Pass Review]]
++  summary: Last updated: 2026-05-06
+ - [doc] [[docs/future/AURALIS_LEAD_CONSOLE_V1|Auralis Lead Console v1]]
+   summary: Status: future planning only.
+ - [doc] [[docs/future/auralis_mock_leads/README|Auralis Mock Lead Fixture Library]]
+@@ -2560,9 +2550,9 @@ concern is reflected across docs, code and tests.
+ - [doc] [[docs/future/commerce_marketing_operator_decision|commerce_marketing_operator_decision]]
+   summary: Nova Commerce And Marketing Operator - Decision Note
+ - [doc] [[docs/future/CONTEXT_PACK_SPEC|Context Pack Specification]]
+-  summary: Status: planning.
++  summary: Status: implemented (Stage 4, PR #83/#87, 2026-05-02); live in generalchatruntime.py.
+ - [doc] [[docs/future/DAILY_BRIEF_ROUTINE_SPEC|Daily Brief Routine Specification]]
+-  summary: Status: planning.
++  summary: Status: implemented as RoutineGraph v0 (PR #93 2026-05-03); full scheduled-routine trigger is future work.
+ - [doc] [[docs/future/DIAMOND_PREVIEW_RELEASE_STANDARD_2026-04-23|Diamond Preview Release Standard (2026-04-23)]]
+   summary: Nova should not feel merely functional. It should feel premium, stable, clear, and intentionally designed.
+ - [doc] [[docs/future/EMAIL_COORDINATION_BOARD|Email Coordination Board]]
+@@ -2579,7 +2569,7 @@ concern is reflected across docs, code and tests.
+   summary: Status: implementation planning (aligned to GOOGLEINTEGRATIONDESIGNDOC)
+ - [doc] [[docs/future/GOOGLE_INTEGRATION_DESIGN_DOC|Google Integration Design Doc]]
+   summary: Status: future implementation design / not implemented runtime connector
+-- [doc] [[docs/Future/GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03|Google Read-Only Connector Foundation]]
++- [doc] [[docs/future/GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03|Google Read-Only Connector Foundation]]
+   summary: Date: 2026-05-03
+ - [doc] [[docs/future/GOOGLE_WORKSPACE_CONNECTOR_PLAN|Google Workspace Connector Plan]]
+   summary: Status: future connector design / not implemented
+@@ -2716,7 +2706,7 @@ concern is reflected across docs, code and tests.
+ - [doc] [[docs/future/ROADMAP|Nova Roadmap]]
+   summary: Status: planning roadmap. Runtime truth still comes from code and generated runtime docs.
+ - [doc] [[docs/future/ROUTINE_LAYER_SPEC|Routine Layer Specification]]
+-  summary: Status: planning
++  summary: Status: v0 implemented (RoutineGraph v0 â€” PR #93 2026-05-03); remaining objects and scheduling future
+ - [doc] [[docs/future/Soft Launch-help search.txt|Soft Launch-help search]]
+   summary: Question: when should i ask for help?
+ - [doc] [[docs/future/TRACE_AND_OBSERVABILITY_SPEC|Trace and Observability Specification]]
+@@ -2796,7 +2786,7 @@ concern is reflected across docs, code and tests.
+ - [doc] [[docs/product/visual_proof|NovaLIS Visual Proof]]
+   summary: These screenshots show real Nova UI surfaces from a running local instance.
+ - [doc] [[docs/product/WHAT_WORKS_TODAY|What Works Today]]
+-  summary: Last reviewed: 2026-05-01
++  summary: Last reviewed: 2026-05-04
+ - [doc] [[docs/product/WHY_NOVA|Why Nova]]
+   summary: Nova exists because useful AI should not require unchecked authority.
+ - [doc] [[docs/README|NovaLIS Docs]]
+@@ -2887,8 +2877,16 @@ concern is reflected across docs, code and tests.
+   summary: - Ideas moved from chat into repo memory
+ - [doc] [[docs/security/NOVA_INTEGRATION_THREAT_MODEL_2026-04-28|Nova Integration Threat Model]]
+   summary: Date: 2026-04-28
++- [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04|Active Priority Lock â€” 2026-05-04]]
++  summary: Status: completed.
++- [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_RUNTIME_TRUTH_AUDIT|Active Priority Lock - 2026-05-06 Runtime Truth Audit]]
++  summary: Status: active priority lock.
+ - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
+-  summary: Last reviewed: 2026-05-03 (cost posture + doc cleanup pass)
++  summary: Last reviewed: 2026-05-06 (runtime truth audit lock selected)
++- [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
++  summary: Status: draft / review required
++- [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
++  summary: Status: complete / awaiting next reviewed priority lock
+ - [doc] [[docs/status/README|Status Notes]]
+   summary: This folder contains human-maintained work-continuity notes.
+ - [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
+@@ -2896,7 +2894,7 @@ concern is reflected across docs, code and tests.
+ - [doc] [[docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02|Workflow Stage Roadmap - 2026-05-02]]
+   summary: Status: operational planning snapshot.
+ - [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
+-  summary: Updated: 2026-05-03 (cost posture pass)
++  summary: Refer to: docs/status/ACTIVEPRIORITYLOCK2026-05-06RUNTIMETRUTHAUDIT.md
+ - [doc] [[docs/todo/DOC_CLEANUP|Doc Cleanup â€” Nova]]
+   summary: Updated: 2026-04-28
+ - [doc] [[docs/todo/README|docs/todo â€” Task Folder]]
+@@ -2986,7 +2984,7 @@ concern is reflected across docs, code and tests.
+ - [doc] [[SECURITY|SECURITY]]
+   summary: ï»¿# Security Policy
+ - [doc] [[START_HERE|Start Here - .]]
+-  summary: Last reviewed: 2026-04-28
++  summary: Last reviewed: 2026-05-03
+ - [doc] [[TODO|Nova TODO]]
+   summary: Updated: 2026-04-28
+ - [doc] [[tools/youtubelis/docs/CONTENT_STRATEGY|Content Strategy (YouTubeLIS)]]
+diff --git a/_MOCs/CODE_BY_LAYER.md b/_MOCs/CODE_BY_LAYER.md
+index f108f3f..c8f844f 100644
+--- a/_MOCs/CODE_BY_LAYER.md
++++ b/_MOCs/CODE_BY_LAYER.md
+@@ -12,7 +12,7 @@ Every code file grouped by the major repo layers â€” backend runtime,
+ tests, frontend, scripts, governance companion, workspace support.
+ Use this to orient yourself before diving into a specific module.
+
+-## Backend runtime (281)
++## Backend runtime (284)
+
+ - [[nova_backend/src/__init__.py|src]]
+ - [[nova_backend/src/actions/__init__.py|src/actions]]
+@@ -202,6 +202,8 @@ Use this to orient yourself before diving into a specific module.
+   summary: _AUTHORITY_EFFECT_NONE = "none
+ - [[nova_backend/src/conversation/request_understanding_formatter.py|request_understanding_formatter]]
+   summary: Convert a RequestUnderstanding into a short system-prompt boundary block.
++- [[nova_backend/src/conversation/request_understanding_review_card.py|request_understanding_review_card]]
++  summary: Request Understanding review-card payload contract.
+ - [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
+   summary: class ResponseFormatter:
+ - [[nova_backend/src/conversation/response_style_router.py|response_style_router]]
+@@ -363,8 +365,12 @@ Use this to orient yourself before diving into a specific module.
+   summary: Execution memory for OpenClaw â€” learn from past runs.
+ - [[nova_backend/src/openclaw/models.py|models]]
+   summary: Governance data models for OpenClaw proposed actions and approval lifecycle.
++- [[nova_backend/src/openclaw/openclaw_mediator.py|openclaw_mediator]]
++  summary: Non-executing OpenClaw delegation mediator skeleton.
+ - [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
+   summary: Per-tool budget tracking for OpenClaw.
++- [[nova_backend/src/openclaw/read_only_workflow_proof.py|read_only_workflow_proof]]
++  summary: Read-only OpenClaw workflow proof adapter.
+ - [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
+   summary: Robust tool execution for OpenClaw â€” retry, fallback, parallel, and metering.
+ - [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
+@@ -564,7 +570,7 @@ Use this to orient yourself before diving into a specific module.
+ - [[nova_backend/src/working_context/project_threads.py|project_threads]]
+   summary: def _now_iso() -> str:
+
+-## Tests and verification (351)
++## Tests and verification (354)
+
+ - [[nova_backend/tests/__init__.py|tests]]
+ - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
+@@ -679,6 +685,8 @@ Use this to orient yourself before diving into a specific module.
+   summary: CapabilityStatus,
+ - [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
+   summary: Tests for request_understanding_formatter and its integration with
++- [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
++  summary: RequestUnderstandingReviewCard,
+ - [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
+   summary: def test_formatter_normalizes_punctuation_and_spacing():
+ - [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
+@@ -823,10 +831,14 @@ Use this to orient yourself before diving into a specific module.
+   summary: @pytest.fixture
+ - [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
+   summary: Tests for ExecutorSkillAdapter â€” generic executor-to-skill bridge.
++- [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
++  summary: ProjectForemanBriefInput,
+ - [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
+   summary: def _install_stores(monkeypatch, tmp_path):
+ - [[nova_backend/tests/openclaw/test_openclaw_execute_executor.py|test_openclaw_execute_executor]]
+   summary: End-to-end tests for OpenClawExecuteExecutor (cap 63).
++- [[nova_backend/tests/openclaw/test_openclaw_mediator.py|test_openclaw_mediator]]
++  summary: OpenClawDelegationEnvelope,
+ - [[nova_backend/tests/openclaw/test_openclaw_models.py|test_openclaw_models]]
+   summary: Unit tests for OpenClaw governance models (hardening Step 1).
+ - [[nova_backend/tests/openclaw/test_per_tool_budget.py|test_per_tool_budget]]
+@@ -1320,7 +1332,7 @@ Use this to orient yourself before diving into a specific module.
+ - [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
+   summary: ================================================================
+
+-## Scripts and automations (23)
++## Scripts and automations (19)
+
+ - [[.github/workflows/ci.yml|ci]]
+   summary: name: CI
+@@ -1352,15 +1364,12 @@ Use this to orient yourself before diving into a specific module.
+   summary: PROJECT_ROOT = Path(__file__).resolve().parents[1]
+ - [[scripts/phase35_gates.ps1|phase35_gates]]
+   summary: ï»¿Write-Host "=== Phase 3.5 Constitutional Gates ===" -ForegroundColor Cyan
+-- [[scripts/pids/backend.pid|backend.pid]]
+-- [[scripts/pids/frontend.pid|frontend.pid]]
+-- [[scripts/pids/nova_backend.err.log|nova_backend.err.log]]
+-- [[scripts/pids/nova_backend.out.log|nova_backend.out.log]]
+-- [[scripts/pids/nova_backend.pid|nova_backend.pid]]
+ - [[scripts/run_capability_audit.ps1|run_capability_audit]]
+   summary: $ErrorActionPreference = "Stop
+ - [[scripts/start_daemon.py|start_daemon]]
+   summary: Start (or verify) the Nova backend as a background process.
++- [[scripts/stop_daemon.py|stop_daemon]]
++  summary: Stop the Nova backend background process safely.
+ - [[scripts/verify_windows.ps1|verify_windows]]
+   summary: verify_windows.ps1 â€” Local Windows verification script
+
+diff --git a/_MOCs/CODE_MODULES.md b/_MOCs/CODE_MODULES.md
+index a52c008..c7fed5d 100644
+--- a/_MOCs/CODE_MODULES.md
++++ b/_MOCs/CODE_MODULES.md
+@@ -251,9 +251,9 @@ _Runtime audit utilities for NovaLIS._
+ - [[nova_backend/tests/conversation/test_general_chat_runtime.py|test_general_chat_runtime]]
+ - [[nova_backend/tests/conversation/test_planning_run_preview.py|test_planning_run_preview]]
+ - [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
++- [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
+ - [[nova_backend/tests/executors/test_info_snapshot_executor.py|test_info_snapshot_executor]]
+-- [[nova_backend/tests/memory/test_memory_skill.py|test_memory_skill]]
+-- _â€¦and 1 more_
++- _â€¦and 2 more_
+
+ ## `brain` (9 files)
+
+@@ -283,6 +283,7 @@ _Read-only Brain scaffolding._
+
+ - [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
+ - [[nova_backend/src/conversation/planning_run_preview.py|planning_run_preview]]
++- [[nova_backend/src/conversation/request_understanding_review_card.py|request_understanding_review_card]]
+ - [[nova_backend/src/conversation/session_router.py|session_router]]
+ - [[nova_backend/src/conversation/task_understanding_preview.py|task_understanding_preview]]
+ - [[nova_backend/src/executors/web_search_executor.py|web_search_executor]]
+@@ -294,7 +295,8 @@ _Read-only Brain scaffolding._
+ - [[nova_backend/tests/brain/test_search_synthesis.py|test_search_synthesis]]
+ - [[nova_backend/tests/brain/test_task_clarifier.py|test_task_clarifier]]
+ - [[nova_backend/tests/brain/test_task_understanding.py|test_task_understanding]]
+-- [[nova_backend/tests/conversation/test_task_understanding_preview.py|test_task_understanding_preview]]
++- [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
++- _â€¦and 1 more_
+
+ ### Tests
+
+@@ -556,7 +558,7 @@ ___all__ = ["ContextSnapshotService"]_
+ - [[nova_backend/src/executors/screen_capture_executor.py|screen_capture_executor]]
+ - [[nova_backend/tests/phase45/test_context_snapshot_contract.py|test_context_snapshot_contract]]
+
+-## `conversation` (21 files)
++## `conversation` (22 files)
+
+ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
+
+@@ -589,6 +591,8 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
+     - _AUTHORITY_EFFECT_NONE = "none
+ - [[nova_backend/src/conversation/request_understanding_formatter.py|request_understanding_formatter]]
+     - Convert a RequestUnderstanding into a short system-prompt boundary block.
++- [[nova_backend/src/conversation/request_understanding_review_card.py|request_understanding_review_card]]
++    - Request Understanding review-card payload contract.
+ - [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
+     - class ResponseFormatter:
+ - [[nova_backend/src/conversation/response_style_router.py|response_style_router]]
+@@ -643,7 +647,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
+ - [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
+ - [[nova_backend/tests/conversation/test_deepseek_safety_wrapper.py|test_deepseek_safety_wrapper]]
+ - [[nova_backend/tests/conversation/test_deepseek_usage_visibility.py|test_deepseek_usage_visibility]]
+-- _â€¦and 23 more_
++- _â€¦and 24 more_
+
+ ### Tests
+
+@@ -658,6 +662,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
+ - [[nova_backend/tests/conversation/test_planning_run_preview.py|test_planning_run_preview]]
+ - [[nova_backend/tests/conversation/test_request_understanding.py|test_request_understanding]]
+ - [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
++- [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
+ - [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
+ - [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
+ - [[nova_backend/tests/conversation/test_safety_filter.py|test_safety_filter]]
+@@ -1088,7 +1093,7 @@ _ExecuteBoundary,_
+ - [[nova_backend/src/nova_protocol.py|nova_protocol]]
+     - Nova Message Protocol v1 (NMPv1)
+
+-## `openclaw` (27 files)
++## `openclaw` (29 files)
+
+ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
+
+@@ -1129,8 +1134,12 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
+     - Execution memory for OpenClaw â€” learn from past runs.
+ - [[nova_backend/src/openclaw/models.py|models]]
+     - Governance data models for OpenClaw proposed actions and approval lifecycle.
++- [[nova_backend/src/openclaw/openclaw_mediator.py|openclaw_mediator]]
++    - Non-executing OpenClaw delegation mediator skeleton.
+ - [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
+     - Per-tool budget tracking for OpenClaw.
++- [[nova_backend/src/openclaw/read_only_workflow_proof.py|read_only_workflow_proof]]
++    - Read-only OpenClaw workflow proof adapter.
+ - [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
+     - Robust tool execution for OpenClaw â€” retry, fallback, parallel, and metering.
+ - [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
+@@ -1139,11 +1148,7 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
+     - STRICT_FOUNDATION_LABEL = "Manual preflight active
+ - [[nova_backend/src/openclaw/task_envelope.py|task_envelope]]
+     - def _utc_now_iso() -> str:
+-- [[nova_backend/src/openclaw/thinking_loop.py|thinking_loop]]
+-    - Multi-step agent thinking loop for OpenClaw.
+-- [[nova_backend/src/openclaw/tool_chain.py|tool_chain]]
+-    - Tool chaining and composition for OpenClaw.
+-- _â€¦and 2 more_
++- _â€¦and 4 more_
+
+ ### Imports from
+
+@@ -1183,7 +1188,7 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
+ - [[nova_backend/tests/openclaw/test_envelope_factory.py|test_envelope_factory]]
+ - [[nova_backend/tests/openclaw/test_envelope_store.py|test_envelope_store]]
+ - [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
+-- _â€¦and 12 more_
++- _â€¦and 14 more_
+
+ ### Tests
+
+@@ -1193,6 +1198,7 @@ _Governed OpenClaw foundations that remain inside Nova's runtime boundaries._
+ - [[nova_backend/tests/openclaw/test_envelope_factory.py|test_envelope_factory]]
+ - [[nova_backend/tests/openclaw/test_envelope_store.py|test_envelope_store]]
+ - [[nova_backend/tests/openclaw/test_execution_memory.py|test_execution_memory]]
++- [[nova_backend/tests/openclaw/test_openclaw_mediator.py|test_openclaw_mediator]]
+ - [[nova_backend/tests/openclaw/test_per_tool_budget.py|test_per_tool_budget]]
+ - [[nova_backend/tests/openclaw/test_robust_executor.py|test_robust_executor]]
+ - [[nova_backend/tests/openclaw/test_run_state_machine.py|test_run_state_machine]]
+diff --git a/_MOCs/HOME.md b/_MOCs/HOME.md
+index 015115a..31ed9fc 100644
+--- a/_MOCs/HOME.md
++++ b/_MOCs/HOME.md
+@@ -53,13 +53,13 @@ Sources are never edited â€” this overlay just builds navigation on top.
+ |---|---:|---:|
+ | Phases | 167 | 0 |
+ | Governance | 8 | 12 |
+-| Runtime and ops | 22 | 271 |
++| Runtime and ops | 22 | 274 |
+ | Frontend | 0 | 29 |
+-| Tests | 5 | 351 |
+-| Scripts and tools | 4 | 24 |
++| Tests | 5 | 354 |
++| Scripts and tools | 4 | 20 |
+ | Design specs | 14 | 0 |
+ | Proofs | 176 | 6 |
+-| Reference | 364 | 71 |
++| Reference | 379 | 30 |
+ | Archive | 139 | 15 |
+
+-_Indexed 899 docs and 779 non-doc files._
++_Indexed 914 docs and 740 non-doc files._
+diff --git a/_MOCs/RECENT.md b/_MOCs/RECENT.md
+index c4ff435..7cfba7d 100644
+--- a/_MOCs/RECENT.md
++++ b/_MOCs/RECENT.md
+@@ -11,35 +11,79 @@ tags:
+ Docs and code ordered by filesystem modification time, newest first.
+ Use this to catch up on what's been touched lately.
+
+-- `2026-05-04` [doc] [[_MOCs/TEST_MAP|Find the test for a source file]]
+-- `2026-05-04` [doc] [[_MOCs/CODE_IMPORTS|Follow imports between modules]]
+-- `2026-05-04` [doc] [[_MOCs/CODE_MODULES|Dive into a module]]
+-- `2026-05-04` [doc] [[_MOCs/CODE_BY_LAYER|Read source by runtime layer]]
+-- `2026-05-04` [doc] [[_MOCs/BY_TYPE|Group everything by category]]
+-- `2026-05-04` [doc] [[_MOCs/BY_PHASE|Follow the build phase by phase]]
+-- `2026-05-04` [doc] [[_MOCs/BY_TOPIC|Browse by theme]]
+-- `2026-05-04` [doc] [[_MOCs/REPO_BY_FOLDER|Walk the repo by folder]]
+-- `2026-05-04` [doc] [[_MOCs/USER_PATHS|Guided paths]]
+-- `2026-05-04` [doc] [[_MOCs/HOME|Nova Vault Home]]
+-- `2026-05-04` [doc] [[docs/current_runtime/GOVERNANCE_MATRIX_TREE|GOVERNANCE_MATRIX_TREE]]
+-- `2026-05-04` [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
+-- `2026-05-04` [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
+-- `2026-05-04` [doc] [[docs/current_runtime/GOVERNANCE_MATRIX|GOVERNANCE_MATRIX]]
+-- `2026-05-04` [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
+-- `2026-05-04` [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
+-- `2026-05-04` [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
+-- `2026-05-04` [code] [[nova_backend/src/audit/runtime_auditor.py|runtime_auditor]]
++- `2026-05-06` [doc] [[_MOCs/CODE_IMPORTS|Follow imports between modules]]
++- `2026-05-06` [doc] [[_MOCs/TEST_MAP|Find the test for a source file]]
++- `2026-05-06` [doc] [[_MOCs/CODE_MODULES|Dive into a module]]
++- `2026-05-06` [doc] [[_MOCs/BY_TYPE|Group everything by category]]
++- `2026-05-06` [doc] [[_MOCs/CODE_BY_LAYER|Read source by runtime layer]]
++- `2026-05-06` [doc] [[_MOCs/BY_PHASE|Follow the build phase by phase]]
++- `2026-05-06` [doc] [[_MOCs/BY_TOPIC|Browse by theme]]
++- `2026-05-06` [doc] [[_MOCs/REPO_BY_FOLDER|Walk the repo by folder]]
++- `2026-05-06` [doc] [[_MOCs/USER_PATHS|Guided paths]]
++- `2026-05-06` [doc] [[_MOCs/HOME|Nova Vault Home]]
++- `2026-05-06` [doc] [[docs/current_runtime/GOVERNANCE_MATRIX_TREE|GOVERNANCE_MATRIX_TREE]]
++- `2026-05-06` [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
++- `2026-05-06` [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
++- `2026-05-06` [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
++- `2026-05-06` [doc] [[docs/current_runtime/GOVERNANCE_MATRIX|GOVERNANCE_MATRIX]]
++- `2026-05-06` [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
++- `2026-05-06` [doc] [[_MOCs/RECENT|What changed most recently (top 80)]]
++- `2026-05-06` [code] [[nova_backend/tests/phase45/test_obsidian_overlay_generator.py|test_obsidian_overlay_generator]]
++- `2026-05-06` [code] [[scripts/generate_obsidian_overlay.py|generate_obsidian_overlay]]
++- `2026-05-06` [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
++- `2026-05-06` [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
++- `2026-05-06` [doc] [[docs/demo_proof/2026-05-06_runtime_truth_audit_after_openclaw/REPORT|Runtime Truth Audit After OpenClaw Proof Chain - 2026-05-06 - demo_proof/2026-05-06_runtime_truth_audit_after_openclaw]]
++- `2026-05-06` [doc] [[docs/demo_proof/2026-05-06_runtime_truth_audit_after_openclaw/PROOF_INDEX|Runtime Truth Audit After OpenClaw Proof Chain - 2026-05-06 - demo_proof/2026-05-06_runtime_truth_audit_after_openclaw]]
++- `2026-05-06` [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_RUNTIME_TRUTH_AUDIT|Active Priority Lock - 2026-05-06 Runtime Truth Audit]]
++- `2026-05-06` [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
++- `2026-05-06` [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04|Active Priority Lock â€” 2026-05-04]]
++- `2026-05-06` [code] [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
++- `2026-05-06` [code] [[nova_backend/src/openclaw/read_only_workflow_proof.py|read_only_workflow_proof]]
++- `2026-05-06` [doc] [[docs/demo_proof/2026-05-06_first_read_only_openclaw_workflow/REPORT|First Read-Only OpenClaw Workflow Report - 2026-05-06]]
++- `2026-05-06` [doc] [[docs/demo_proof/2026-05-06_first_read_only_openclaw_workflow/PROOF_INDEX|First Read-Only OpenClaw Workflow Proof - 2026-05-06]]
++- `2026-05-06` [code] [[nova_backend/tests/openclaw/test_openclaw_mediator.py|test_openclaw_mediator]]
++- `2026-05-06` [code] [[nova_backend/src/openclaw/openclaw_mediator.py|openclaw_mediator]]
++- `2026-05-06` [doc] [[docs/demo_proof/2026-05-06_openclaw_mediator_skeleton/REPORT|OpenClawMediator Skeleton Report - 2026-05-06]]
++- `2026-05-06` [doc] [[docs/demo_proof/2026-05-06_openclaw_mediator_skeleton/PROOF_INDEX|OpenClawMediator Skeleton Proof - 2026-05-06]]
++- `2026-05-06` [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
++- `2026-05-06` [code] [[stop_nova.bat|stop_nova - .]]
++- `2026-05-06` [code] [[start_nova.bat|start_nova - .]]
++- `2026-05-06` [code] [[scripts/stop_daemon.py|stop_daemon]]
++- `2026-05-06` [code] [[scripts/start_daemon.py|start_daemon]]
++- `2026-05-06` [code] [[nova_backend/tests/governance/test_startup_script_contract.py|test_startup_script_contract]]
++- `2026-05-06` [doc] [[QUICKSTART|NovaLIS Quickstart]]
++- `2026-05-06` [doc] [[docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS_SECOND_PASS|Auralis Digital Client Intake OS â€” Second Pass Review]]
++- `2026-05-06` [doc] [[docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS|Auralis Digital Client Intake OS]]
++- `2026-05-06` [doc] [[docs/INDEX|NovaLIS Documentation Index]]
++- `2026-05-06` [code] [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
++- `2026-05-06` [code] [[nova_backend/src/conversation/request_understanding_review_card.py|request_understanding_review_card]]
++- `2026-05-06` [code] [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
++- `2026-05-06` [doc] [[docs/demo_proof/2026-05-06_request_understanding_review_card/REPORT|Request Understanding Review Card Proof Report]]
++- `2026-05-06` [doc] [[docs/demo_proof/2026-05-06_request_understanding_review_card/PROOF_INDEX|Proof Index - Request Understanding Review Card]]
++- `2026-05-06` [code] [[nova_backend/src/audit/runtime_auditor.py|runtime_auditor]]
++- `2026-05-06` [doc] [[docs/demo_proof/2026-05-06_planning_task_preview_proof/REPORT|Planning Task Preview Live Proof Report]]
++- `2026-05-06` [doc] [[docs/demo_proof/2026-05-06_planning_task_preview_proof/PROOF_INDEX|Proof Index - Planning Task Preview]]
++- `2026-05-06` [doc] [[docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE|NOVA Runtime Capability Reference]]
++- `2026-05-04` [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
++- `2026-05-04` [doc] [[docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02|Workflow Stage Roadmap - 2026-05-02]]
++- `2026-05-04` [doc] [[docs/product/WHAT_WORKS_TODAY|What Works Today]]
++- `2026-05-04` [doc] [[docs/product/TRY_THESE_COMMANDS|Try These Commands]]
+ - `2026-05-04` [code] [[nova_backend/tests/routine/test_plan_my_week_routine.py|test_plan_my_week_routine]]
+ - `2026-05-04` [code] [[nova_backend/src/routine/plan_my_week_routine.py|plan_my_week_routine]]
+-- `2026-05-03` [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
+-- `2026-05-03` [doc] [[docs/Future/GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03|Google Read-Only Connector Foundation]]
+-- `2026-05-03` [doc] [[docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02|Workflow Stage Roadmap - 2026-05-02]]
+-- `2026-05-03` [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
+-- `2026-05-03` [doc] [[_MOCs/RECENT|What changed most recently (top 80)]]
++- `2026-05-04` [doc] [[docs/future/ROUTINE_LAYER_SPEC|Routine Layer Specification]]
++- `2026-05-04` [doc] [[docs/future/DAILY_BRIEF_ROUTINE_SPEC|Daily Brief Routine Specification]]
++- `2026-05-04` [doc] [[docs/future/CONTEXT_PACK_SPEC|Context Pack Specification]]
++- `2026-05-04` [doc] [[docs/future/BRAIN_MEMORY_HUMAN_GUIDE|Brain + Memory Human Guide]]
++- `2026-05-04` [doc] [[docs/future/BRAIN_HUMAN_GUIDE|Nova Brain Human Guide]]
++- `2026-05-04` [doc] [[docs/current_runtime/PHASE_6_FOUNDATION_SURFACE|Phase-6 Foundation Surface]]
++- `2026-05-04` [doc] [[docs/reference/HUMAN_GUIDES/CURRENT_STAGE_GUIDE|Current Stage Guide â€” Stages 3, 4, 5, and 6]]
++- `2026-05-04` [doc] [[docs/product/FIRST_5_MINUTES|First 5 Minutes With Nova]]
++- `2026-05-04` [doc] [[docs/future/README|Future Docs Guide]]
++- `2026-05-04` [doc] [[docs/future/GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03|Google Read-Only Connector Foundation]]
++- `2026-05-04` [doc] [[START_HERE|Start Here - .]]
+ - `2026-05-03` [code] [[nova_backend/tests/phase6/test_cost_posture_metadata.py|test_cost_posture_metadata]]
+ - `2026-05-03` [code] [[nova_backend/src/config/registry.json|registry]]
+ - `2026-05-03` [code] [[nova_backend/src/governor/capability_registry.py|capability_registry]]
+-- `2026-05-03` [doc] [[docs/reference/HUMAN_GUIDES/CURRENT_STAGE_GUIDE|Current Stage Guide â€” Stages 3, 4, 5, and 6]]
+ - `2026-05-03` [doc] [[docs/reference/HUMAN_GUIDES/03_WHAT_NOVA_CAN_DO|What Nova Can Do]]
+ - `2026-05-03` [code] [[nova_backend/tests/routine/test_routine_graph.py|test_routine_graph]]
+ - `2026-05-03` [code] [[nova_backend/tests/routine/test_daily_brief_routine.py|test_daily_brief_routine]]
+@@ -47,47 +91,3 @@ Use this to catch up on what's been touched lately.
+ - `2026-05-03` [code] [[nova_backend/src/routine/routine_graph.py|routine_graph]]
+ - `2026-05-03` [code] [[nova_backend/tests/routine/__init__.py|tests/routine]]
+ - `2026-05-03` [code] [[nova_backend/src/routine/__init__.py|src/routine]]
+-- `2026-05-03` [code] [[nova_backend/src/routine/daily_brief_routine.py|daily_brief_routine]]
+-- `2026-05-03` [doc] [[docs/reference/HUMAN_GUIDES/02_HOW_NOVA_WORKS|How Nova Works]]
+-- `2026-05-03` [doc] [[docs/reference/HUMAN_GUIDES/06_SAFETY_AND_TRUST|06_SAFETY_AND_TRUST]]
+-- `2026-05-03` [doc] [[docs/demo_proof/daily_operating_baseline/CONTEXT_PACK_PROOF|Context Pack Proof]]
+-- `2026-05-03` [doc] [[docs/demo_proof/daily_operating_baseline/BRAIN_MODE_PROOF|Brain Mode Proof]]
+-- `2026-05-03` [code] [[nova_backend/src/conversation/general_chat_runtime.py|general_chat_runtime]]
+-- `2026-05-02` [doc] [[docs/reference/HUMAN_GUIDES/07_CURRENT_STATE|Current State]]
+-- `2026-05-02` [doc] [[docs/community/ONBOARDING|Nova Contributor Onboarding]]
+-- `2026-05-02` [code] [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
+-- `2026-05-02` [code] [[nova_backend/src/brain/brain_mode.py|brain_mode]]
+-- `2026-05-02` [code] [[nova_backend/tests/brain/test_context_pack.py|test_context_pack]]
+-- `2026-05-02` [code] [[nova_backend/src/brain/context_pack.py|context_pack]]
+-- `2026-05-02` [doc] [[docs/reference/HUMAN_GUIDES/README|Nova Human Guides]]
+-- `2026-05-02` [doc] [[docs/reference/HUMAN_GUIDES/01_START_HERE|Start Here - reference/HUMAN_GUIDES]]
+-- `2026-05-02` [code] [[nova_backend/tests/memory/test_memory_skill.py|test_memory_skill]]
+-- `2026-05-02` [code] [[nova_backend/tests/memory/__init__.py|tests/memory]]
+-- `2026-05-02` [code] [[nova_backend/src/memory/memory_skill.py|memory_skill]]
+-- `2026-05-02` [doc] [[docs/demo_proof/daily_operating_baseline/MEMORY_LOOP_PROOF|Memory Loop Proof]]
+-- `2026-05-02` [doc] [[docs/demo_proof/daily_operating_baseline/DAILY_BRIEF_PROOF|Daily Brief Proof]]
+-- `2026-05-02` [doc] [[docs/demo_proof/daily_operating_baseline/SEARCH_FEEDBACK_PROOF|Search Feedback Proof]]
+-- `2026-05-02` [doc] [[docs/demo_proof/daily_operating_baseline/CONVERSATION_CONTINUITY_PROOF|Conversation Continuity Proof]]
+-- `2026-05-02` [code] [[nova_backend/tests/brief/test_daily_brief.py|test_daily_brief]]
+-- `2026-05-02` [code] [[nova_backend/src/brief/recommendations.py|recommendations]]
+-- `2026-05-02` [code] [[nova_backend/src/brief/daily_brief.py|daily_brief]]
+-- `2026-05-02` [doc] [[docs/product/WHAT_WORKS_TODAY|What Works Today]]
+-- `2026-05-02` [doc] [[docs/future/auralis_digital/SOCIAL_CONTENT_WORKFLOW_PACK|Auralis Social Content Workflow Pack]]
+-- `2026-05-02` [doc] [[docs/future/TRACE_AND_OBSERVABILITY_SPEC|Trace and Observability Specification]]
+-- `2026-05-02` [doc] [[docs/future/ROUTINE_LAYER_SPEC|Routine Layer Specification]]
+-- `2026-05-02` [doc] [[docs/future/ROADMAP|Nova Roadmap]]
+-- `2026-05-02` [doc] [[docs/future/README|Future Docs Guide]]
+-- `2026-05-02` [doc] [[docs/future/NOVA_AGENT_STACK_RECOMMENDATIONS|Nova Agent Stack Recommendations]]
+-- `2026-05-02` [doc] [[docs/future/GUARD_SYSTEM_SPEC|Guard System Specification]]
+-- `2026-05-02` [doc] [[docs/future/LEARNING_LAYER_SPEC|Learning Layer Specification]]
+-- `2026-05-02` [doc] [[docs/future/FUTURE_AGENT_ARCHITECTURE_BACKLOG|Future Agent Architecture Backlog]]
+-- `2026-05-02` [doc] [[docs/future/DAILY_BRIEF_ROUTINE_SPEC|Daily Brief Routine Specification]]
+-- `2026-05-02` [doc] [[docs/future/CONTEXT_PACK_SPEC|Context Pack Specification]]
+-- `2026-05-02` [doc] [[docs/future/BRAIN_MEMORY_HUMAN_GUIDE|Brain + Memory Human Guide]]
+-- `2026-05-02` [doc] [[docs/future/BRAIN_HUMAN_GUIDE|Nova Brain Human Guide]]
+-- `2026-05-02` [doc] [[docs/future/AURALIS_LEAD_CONSOLE_V1|Auralis Lead Console v1]]
+-- `2026-05-02` [doc] [[docs/INDEX|NovaLIS Documentation Index]]
+-- `2026-05-01` [code] [[nova_backend/tests/conversation/test_session_conversation_context.py|test_session_conversation_context]]
+-- `2026-05-01` [code] [[nova_backend/src/skills/general_chat.py|general_chat]]
+-- `2026-05-01` [code] [[nova_backend/src/brief/__init__.py|src/brief]]
+-- `2026-05-01` [code] [[nova_backend/tests/executors/test_web_search_evidence.py|test_web_search_evidence]]
+diff --git a/_MOCs/REPO_BY_FOLDER.md b/_MOCs/REPO_BY_FOLDER.md
+index 88d4b9c..aaf0fc7 100644
+--- a/_MOCs/REPO_BY_FOLDER.md
++++ b/_MOCs/REPO_BY_FOLDER.md
+@@ -130,7 +130,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+ - [doc] [[CONTRIBUTING|CONTRIBUTING]]
+   summary: ï»¿# CONTRIBUTING - Nova (Governance-First Rules)
+
+-## docs (882)
++## docs (856)
+
+ - [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
+   summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
+@@ -527,7 +527,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+ - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
+   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
+ - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
+-  summary: Runtime Fingerprint: 71e61b4108532e379134cb982a6744717553a343cb0a8cbf2da8c8f538a04572
++  summary: Runtime Fingerprint: c23ca09716c3f565c7a64cf7ec3c5e8b7b40f4f53a48bd1f9dd36944627b2e7d
+ - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
+   summary: Date: 2026-03-12
+ - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
+@@ -547,11 +547,11 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+ - [doc] [[docs/current_runtime/PHASE_SEMANTICS|NOVA Phase Semantics]]
+   summary: This document explains how multiple phase markers can coexist without contradiction.
+ - [doc] [[docs/current_runtime/RUNTIME_CAPABILITY_REFERENCE|NOVA Runtime Capability Reference]]
+-  summary: Updated: 2026-04-21
++  summary: Updated: 2026-05-04
+ - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
+   summary: Date: 2026-03-13
+ - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
+-  summary: - runtimesurfacehash: 37df1cb7dc2fb3cb550545fd2a3da94282d9b027a077582c07c8b889b2391050
++  summary: - runtimesurfacehash: 8e3219576614868d2d009c571eee333cf2e3d9877c62ef7719aa2e93d6fc35a3
+ - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
+   summary: ï»¿# Runtime Truth Addendum (Docs-Only Corrections)
+ - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
+@@ -564,47 +564,6 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+   summary: docs/demoproof/2026-04-28usertest/
+ - [doc] [[docs/demo_proof/2026-04-28_user_test/SCREENSHOT_CHECKLIST|Screenshot Checklist - 2026-04-28 User Test]]
+   summary: All screenshots below are real captures from http://127.0.0.1:8000.
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/01_dashboard_home.png|01_dashboard_home.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/02_intro_setup_surface.png|02_intro_setup_surface.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/03_workspace_home.png|03_workspace_home.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/04_full_ui_dashboard.png|04_full_ui_dashboard.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/05_chat_area_before_prompt.png|05_chat_area_before_prompt.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/06_chat_what_works_today.png|06_chat_what_works_today.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/07_trust_receipts.png|07_trust_receipts.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/08_trust_after_refresh.png|08_trust_after_refresh.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/09_email_draft_attempt_chat.png|09_email_draft_attempt_chat.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/10_memory_context_boundary.png|10_memory_context_boundary.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/11_settings_setup_usage.png|11_settings_setup_usage.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level0_dashboard_connection_status.png|level0_dashboard_connection_status.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_dashboard_initial.png|level1_dashboard_initial.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_full_ui_after_toggle.png|level1_full_ui_after_toggle.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_full_ui_initial.png|level1_full_ui_initial.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_home.png|level1_home.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_intro_after_modal_close.png|level1_intro_after_modal_close.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_memory.png|level1_memory.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_chat.png|level1_surface_chat.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_home.png|level1_surface_home.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_intro.png|level1_surface_intro.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_memory.png|level1_surface_memory.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_news.png|level1_surface_news.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_policy.png|level1_surface_policy.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_settings.png|level1_surface_settings.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_trust.png|level1_surface_trust.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_surface_workspace.png|level1_surface_workspace.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level1_workspace.png|level1_workspace.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_memory_authority.png|level2_memory_authority.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_1_error.png|level2_prompt_1_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_2_error.png|level2_prompt_2_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_3_error.png|level2_prompt_3_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_4_error.png|level2_prompt_4_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_5_error.png|level2_prompt_5_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_prompt_6_error.png|level2_prompt_6_error.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level2_what_works.png|level2_what_works.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level3_trust_receipts_api.png|level3_trust_receipts_api.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level3_trust_summary_api.png|level3_trust_summary_api.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level4_system_status.png|level4_system_status.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level5_cap64_confirmation_boundary.png|level5_cap64_confirmation_boundary.png]]
+-- [asset] [[docs/demo_proof/2026-04-28_user_test/screenshots/local_first_followup/level6_shopify_report.png|level6_shopify_report.png]]
+ - [doc] [[docs/demo_proof/2026-04-28_user_test/USER_TEST_REPORT|Nova User Test Report - 2026-04-28]]
+   summary: This was a hands-on proof-capture and friction-finding pass on christopherbdaugherty96/NovaLIS.
+ - [code] [[docs/demo_proof/2026-04-28_user_test/video/nova_user_test_demo_flow.webm|nova_user_test_demo_flow]]
+@@ -621,6 +580,26 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+   summary: case": "normal_no_web",
+ - [doc] [[docs/demo_proof/2026-04-29_conversation_search_proof/PROOF_INDEX|Proof Index - Conversation + Search]]
+   summary: Date: 2026-04-29
++- [doc] [[docs/demo_proof/2026-05-06_first_read_only_openclaw_workflow/PROOF_INDEX|First Read-Only OpenClaw Workflow Proof - 2026-05-06]]
++  summary: Status: draft / review required
++- [doc] [[docs/demo_proof/2026-05-06_first_read_only_openclaw_workflow/REPORT|First Read-Only OpenClaw Workflow Report - 2026-05-06]]
++  summary: Status: draft / review required
++- [doc] [[docs/demo_proof/2026-05-06_openclaw_mediator_skeleton/PROOF_INDEX|OpenClawMediator Skeleton Proof - 2026-05-06]]
++  summary: Status: draft / review required
++- [doc] [[docs/demo_proof/2026-05-06_openclaw_mediator_skeleton/REPORT|OpenClawMediator Skeleton Report - 2026-05-06]]
++  summary: Status: draft / review required
++- [doc] [[docs/demo_proof/2026-05-06_planning_task_preview_proof/PROOF_INDEX|Proof Index - Planning Task Preview]]
++  summary: Date: 2026-05-06
++- [doc] [[docs/demo_proof/2026-05-06_planning_task_preview_proof/REPORT|Planning Task Preview Live Proof Report]]
++  summary: Date: 2026-05-06
++- [doc] [[docs/demo_proof/2026-05-06_request_understanding_review_card/PROOF_INDEX|Proof Index - Request Understanding Review Card]]
++  summary: Date: 2026-05-06
++- [doc] [[docs/demo_proof/2026-05-06_request_understanding_review_card/REPORT|Request Understanding Review Card Proof Report]]
++  summary: Date: 2026-05-06
++- [doc] [[docs/demo_proof/2026-05-06_runtime_truth_audit_after_openclaw/PROOF_INDEX|Runtime Truth Audit After OpenClaw Proof Chain - 2026-05-06 - demo_proof/2026-05-06_runtime_truth_audit_after_openclaw]]
++  summary: Status: draft / review required
++- [doc] [[docs/demo_proof/2026-05-06_runtime_truth_audit_after_openclaw/REPORT|Runtime Truth Audit After OpenClaw Proof Chain - 2026-05-06 - demo_proof/2026-05-06_runtime_truth_audit_after_openclaw]]
++  summary: Status: draft / review required
+ - [doc] [[docs/demo_proof/brain_dry_run_examples/EXAMPLES|Brain Dry-Run Examples - demo_proof/brain_dry_run_examples]]
+   summary: Date: 2026-04-29
+ - [doc] [[docs/demo_proof/brain_dry_run_examples/PROOF_INDEX|Proof Index - Brain Dry-Run Examples]]
+@@ -637,8 +616,6 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+   summary: Date: 2026-04-29
+ - [doc] [[docs/demo_proof/brain_live_test/REPORT|Brain Live Test Report]]
+   summary: Date: 2026-04-29
+-- [doc] [[docs/demo_proof/brain_live_test/screenshots/CAPTURE_INSTRUCTIONS|Screenshot Capture Instructions]]
+-  summary: Screenshots were not captured during this pass.
+ - [doc] [[docs/demo_proof/daily_operating_baseline/BRAIN_MODE_PROOF|Brain Mode Proof]]
+   summary: Status: PASS â€” Stage 5 brain mode contracts and trace implemented and proven, 2026-05-02.
+ - [doc] [[docs/demo_proof/daily_operating_baseline/CONTEXT_PACK_PROOF|Context Pack Proof]]
+@@ -1096,6 +1073,10 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+   summary: Date: 2026-04-26
+ - [doc] [[docs/future/auralis_digital/SOCIAL_CONTENT_WORKFLOW_PACK|Auralis Social Content Workflow Pack]]
+   summary: Status: future planning.
++- [doc] [[docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS|Auralis Digital Client Intake OS]]
++  summary: Last updated: 2026-05-06
++- [doc] [[docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS_SECOND_PASS|Auralis Digital Client Intake OS â€” Second Pass Review]]
++  summary: Last updated: 2026-05-06
+ - [doc] [[docs/future/AURALIS_LEAD_CONSOLE_V1|Auralis Lead Console v1]]
+   summary: Status: future planning only.
+ - [code] [[docs/future/auralis_mock_leads/mock_barber_shop_001.json|mock_barber_shop_001]]
+@@ -1127,9 +1108,9 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+ - [doc] [[docs/future/commerce_marketing_operator_decision|commerce_marketing_operator_decision]]
+   summary: Nova Commerce And Marketing Operator - Decision Note
+ - [doc] [[docs/future/CONTEXT_PACK_SPEC|Context Pack Specification]]
+-  summary: Status: planning.
++  summary: Status: implemented (Stage 4, PR #83/#87, 2026-05-02); live in generalchatruntime.py.
+ - [doc] [[docs/future/DAILY_BRIEF_ROUTINE_SPEC|Daily Brief Routine Specification]]
+-  summary: Status: planning.
++  summary: Status: implemented as RoutineGraph v0 (PR #93 2026-05-03); full scheduled-routine trigger is future work.
+ - [doc] [[docs/future/DIAMOND_PREVIEW_RELEASE_STANDARD_2026-04-23|Diamond Preview Release Standard (2026-04-23)]]
+   summary: Nova should not feel merely functional. It should feel premium, stable, clear, and intentionally designed.
+ - [doc] [[docs/future/EMAIL_COORDINATION_BOARD|Email Coordination Board]]
+@@ -1146,7 +1127,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+   summary: Status: implementation planning (aligned to GOOGLEINTEGRATIONDESIGNDOC)
+ - [doc] [[docs/future/GOOGLE_INTEGRATION_DESIGN_DOC|Google Integration Design Doc]]
+   summary: Status: future implementation design / not implemented runtime connector
+-- [doc] [[docs/Future/GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03|Google Read-Only Connector Foundation]]
++- [doc] [[docs/future/GOOGLE_READ_ONLY_CONNECTOR_FOUNDATION_2026-05-03|Google Read-Only Connector Foundation]]
+   summary: Date: 2026-05-03
+ - [doc] [[docs/future/GOOGLE_WORKSPACE_CONNECTOR_PLAN|Google Workspace Connector Plan]]
+   summary: Status: future connector design / not implemented
+@@ -1283,7 +1264,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+ - [doc] [[docs/future/ROADMAP|Nova Roadmap]]
+   summary: Status: planning roadmap. Runtime truth still comes from code and generated runtime docs.
+ - [doc] [[docs/future/ROUTINE_LAYER_SPEC|Routine Layer Specification]]
+-  summary: Status: planning
++  summary: Status: v0 implemented (RoutineGraph v0 â€” PR #93 2026-05-03); remaining objects and scheduling future
+ - [doc] [[docs/future/Soft Launch-help search.txt|Soft Launch-help search]]
+   summary: Question: when should i ask for help?
+ - [doc] [[docs/future/TRACE_AND_OBSERVABILITY_SPEC|Trace and Observability Specification]]
+@@ -1366,7 +1347,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+ - [doc] [[docs/product/visual_proof|NovaLIS Visual Proof]]
+   summary: These screenshots show real Nova UI surfaces from a running local instance.
+ - [doc] [[docs/product/WHAT_WORKS_TODAY|What Works Today]]
+-  summary: Last reviewed: 2026-05-01
++  summary: Last reviewed: 2026-05-04
+ - [doc] [[docs/product/WHY_NOVA|Why Nova]]
+   summary: Nova exists because useful AI should not require unchecked authority.
+ - [doc] [[docs/PROOFS/CAPABILITY_VERIFICATION_AUDIT_2026-03-25|CAPABILITY_VERIFICATION_AUDIT_2026-03-25]]
+@@ -1817,8 +1798,16 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+   summary: - Ideas moved from chat into repo memory
+ - [doc] [[docs/security/NOVA_INTEGRATION_THREAT_MODEL_2026-04-28|Nova Integration Threat Model]]
+   summary: Date: 2026-04-28
++- [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04|Active Priority Lock â€” 2026-05-04]]
++  summary: Status: completed.
++- [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_RUNTIME_TRUTH_AUDIT|Active Priority Lock - 2026-05-06 Runtime Truth Audit]]
++  summary: Status: active priority lock.
+ - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
+-  summary: Last reviewed: 2026-05-03 (cost posture + doc cleanup pass)
++  summary: Last reviewed: 2026-05-06 (runtime truth audit lock selected)
++- [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
++  summary: Status: draft / review required
++- [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
++  summary: Status: complete / awaiting next reviewed priority lock
+ - [doc] [[docs/status/README|Status Notes]]
+   summary: This folder contains human-maintained work-continuity notes.
+ - [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
+@@ -1834,7 +1823,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+ - [doc] [[docs/testing/SIMULATION_ANALYTICS|Simulation Analytics]]
+   summary: Nova's simulation analytics layer is post-run only and operates entirely in test/observability scope.
+ - [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
+-  summary: Updated: 2026-05-03 (cost posture pass)
++  summary: Refer to: docs/status/ACTIVEPRIORITYLOCK2026-05-06RUNTIMETRUTHAUDIT.md
+ - [doc] [[docs/todo/DOC_CLEANUP|Doc Cleanup â€” Nova]]
+   summary: Updated: 2026-04-28
+ - [doc] [[docs/todo/README|docs/todo â€” Task Folder]]
+@@ -1957,7 +1946,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+ - [code] [[Nova-Frontend-Dashboard/visuals/orb_canvas.js|orb_canvas]]
+   summary: ================================================================
+
+-## nova_backend (655)
++## nova_backend (661)
+
+ - [asset] [[nova_backend/.env.example|.env.example]]
+ - [doc] [[nova_backend/requirements-optional-wakeword.txt|requirements-optional-wakeword]]
+@@ -2158,6 +2147,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+   summary: _AUTHORITY_EFFECT_NONE = "none
+ - [code] [[nova_backend/src/conversation/request_understanding_formatter.py|request_understanding_formatter]]
+   summary: Convert a RequestUnderstanding into a short system-prompt boundary block.
++- [code] [[nova_backend/src/conversation/request_understanding_review_card.py|request_understanding_review_card]]
++  summary: Request Understanding review-card payload contract.
+ - [code] [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
+   summary: class ResponseFormatter:
+ - [code] [[nova_backend/src/conversation/response_style_router.py|response_style_router]]
+@@ -2321,8 +2312,12 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+   summary: Execution memory for OpenClaw â€” learn from past runs.
+ - [code] [[nova_backend/src/openclaw/models.py|models]]
+   summary: Governance data models for OpenClaw proposed actions and approval lifecycle.
++- [code] [[nova_backend/src/openclaw/openclaw_mediator.py|openclaw_mediator]]
++  summary: Non-executing OpenClaw delegation mediator skeleton.
+ - [code] [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
+   summary: Per-tool budget tracking for OpenClaw.
++- [code] [[nova_backend/src/openclaw/read_only_workflow_proof.py|read_only_workflow_proof]]
++  summary: Read-only OpenClaw workflow proof adapter.
+ - [code] [[nova_backend/src/openclaw/robust_executor.py|robust_executor]]
+   summary: Robust tool execution for OpenClaw â€” retry, fallback, parallel, and metering.
+ - [code] [[nova_backend/src/openclaw/run_state_machine.py|run_state_machine]]
+@@ -2669,6 +2664,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+   summary: CapabilityStatus,
+ - [code] [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
+   summary: Tests for request_understanding_formatter and its integration with
++- [code] [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
++  summary: RequestUnderstandingReviewCard,
+ - [code] [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
+   summary: def test_formatter_normalizes_punctuation_and_spacing():
+ - [code] [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
+@@ -2813,10 +2810,14 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+   summary: @pytest.fixture
+ - [code] [[nova_backend/tests/openclaw/test_executor_adapter.py|test_executor_adapter]]
+   summary: Tests for ExecutorSkillAdapter â€” generic executor-to-skill bridge.
++- [code] [[nova_backend/tests/openclaw/test_first_read_only_workflow_proof.py|test_first_read_only_workflow_proof]]
++  summary: ProjectForemanBriefInput,
+ - [code] [[nova_backend/tests/openclaw/test_openai_responses_lane.py|test_openai_responses_lane]]
+   summary: def _install_stores(monkeypatch, tmp_path):
+ - [code] [[nova_backend/tests/openclaw/test_openclaw_execute_executor.py|test_openclaw_execute_executor]]
+   summary: End-to-end tests for OpenClawExecuteExecutor (cap 63).
++- [code] [[nova_backend/tests/openclaw/test_openclaw_mediator.py|test_openclaw_mediator]]
++  summary: OpenClawDelegationEnvelope,
+ - [code] [[nova_backend/tests/openclaw/test_openclaw_models.py|test_openclaw_models]]
+   summary: Unit tests for OpenClaw governance models (hardening Step 1).
+ - [code] [[nova_backend/tests/openclaw/test_per_tool_budget.py|test_per_tool_budget]]
+@@ -3295,7 +3296,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+ - [doc] [[REPO_MAP|REPO_MAP]]
+   summary: ï»¿# REPOMAP - Nova
+
+-## scripts (16)
++## scripts (12)
+
+ - [code] [[scripts/certify_capability.py|certify_capability]]
+   summary: certify_capability.py â€” Capability Verification CLI
+@@ -3313,15 +3314,12 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+   summary: PROJECT_ROOT = Path(__file__).resolve().parents[1]
+ - [code] [[scripts/phase35_gates.ps1|phase35_gates]]
+   summary: ï»¿Write-Host "=== Phase 3.5 Constitutional Gates ===" -ForegroundColor Cyan
+-- [asset] [[scripts/pids/backend.pid|backend.pid]]
+-- [asset] [[scripts/pids/frontend.pid|frontend.pid]]
+-- [asset] [[scripts/pids/nova_backend.err.log|nova_backend.err.log]]
+-- [asset] [[scripts/pids/nova_backend.out.log|nova_backend.out.log]]
+-- [asset] [[scripts/pids/nova_backend.pid|nova_backend.pid]]
+ - [code] [[scripts/run_capability_audit.ps1|run_capability_audit]]
+   summary: $ErrorActionPreference = "Stop
+ - [code] [[scripts/start_daemon.py|start_daemon]]
+   summary: Start (or verify) the Nova backend as a background process.
++- [code] [[scripts/stop_daemon.py|stop_daemon]]
++  summary: Stop the Nova backend background process safely.
+ - [code] [[scripts/verify_windows.ps1|verify_windows]]
+   summary: verify_windows.ps1 â€” Local Windows verification script
+
+@@ -3333,7 +3331,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
+ ## START_HERE.md (1)
+
+ - [doc] [[START_HERE|Start Here - .]]
+-  summary: Last reviewed: 2026-04-28
++  summary: Last reviewed: 2026-05-03
+
+ ## start_nova.bat (1)
+
+diff --git a/_MOCs/TEST_MAP.md b/_MOCs/TEST_MAP.md
+index feda2ce..380897c 100644
+--- a/_MOCs/TEST_MAP.md
++++ b/_MOCs/TEST_MAP.md
+@@ -13,7 +13,7 @@ whose filename stem matches. Useful for jumping between a test and the
+ code it exercises. `__init__.py`, conftest and helper modules are
+ intentionally skipped so the map stays focused on real test â†” source links.
+
+-Paired tests: 108
++Paired tests: 110
+
+ - [[nova_backend/tests/brain/test_brain_mode.py|test_brain_mode]]
+     - tests â†’ [[nova_backend/src/brain/brain_mode.py|brain_mode]]
+@@ -63,6 +63,8 @@ Paired tests: 108
+     - tests â†’ [[nova_backend/src/conversation/request_understanding.py|request_understanding]]
+ - [[nova_backend/tests/conversation/test_request_understanding_formatter.py|test_request_understanding_formatter]]
+     - tests â†’ [[nova_backend/src/conversation/request_understanding_formatter.py|request_understanding_formatter]]
++- [[nova_backend/tests/conversation/test_request_understanding_review_card.py|test_request_understanding_review_card]]
++    - tests â†’ [[nova_backend/src/conversation/request_understanding_review_card.py|request_understanding_review_card]]
+ - [[nova_backend/tests/conversation/test_response_formatter.py|test_response_formatter]]
+     - tests â†’ [[nova_backend/src/conversation/response_formatter.py|response_formatter]]
+ - [[nova_backend/tests/conversation/test_response_style_router.py|test_response_style_router]]
+@@ -133,6 +135,8 @@ Paired tests: 108
+     - tests â†’ [[nova_backend/src/providers/openai_responses_lane.py|openai_responses_lane]]
+ - [[nova_backend/tests/openclaw/test_openclaw_execute_executor.py|test_openclaw_execute_executor]]
+     - tests â†’ [[nova_backend/src/executors/openclaw_execute_executor.py|openclaw_execute_executor]]
++- [[nova_backend/tests/openclaw/test_openclaw_mediator.py|test_openclaw_mediator]]
++    - tests â†’ [[nova_backend/src/openclaw/openclaw_mediator.py|openclaw_mediator]]
+ - [[nova_backend/tests/openclaw/test_per_tool_budget.py|test_per_tool_budget]]
+     - tests â†’ [[nova_backend/src/openclaw/per_tool_budget.py|per_tool_budget]]
+ - [[nova_backend/tests/openclaw/test_robust_executor.py|test_robust_executor]]

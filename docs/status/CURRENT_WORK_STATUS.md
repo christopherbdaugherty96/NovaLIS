@@ -20,7 +20,7 @@ Runtime truth regeneration / audit after OpenClaw proof chain
 
 The four-step OpenClaw sequence is complete. The current workstream is limited to runtime truth audit/regeneration/alignment.
 
-Current next todo: verify whether generated runtime truth and human-maintained docs need alignment after PRs #103-#108.
+Current next todo: review the runtime truth audit branch and confirm generated runtime docs/proof evidence before selecting another lock.
 
 ---
 
@@ -83,4 +83,6 @@ Current lock state:
 
 1. OpenClaw priority-lock sequence is complete and closed.
 2. Runtime truth regeneration / audit is the only selected next workstream.
-3. Broad OpenClaw automation, browser/computer-use, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, and Google connector expansion remain not approved.
+3. The active audit branch regenerated runtime docs through the generator path, found fingerprint/hash alignment changes only, and preserved proof/runtime authority boundaries.
+4. The audit surfaced proof-artifact over-indexing in generated MOCs; the overlay generator now excludes `docs/demo_proof/**/raw/*` and `docs/demo_proof/**/screenshots/*` from topical/runtime aggregation while keeping proof reports browsable.
+5. Broad OpenClaw automation, browser/computer-use, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, and Google connector expansion remain not approved.

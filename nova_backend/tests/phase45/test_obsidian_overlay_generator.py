@@ -33,6 +33,8 @@ def overlay(tmp_path, monkeypatch):
     (docs / "design" / "Phase 4.5").mkdir(parents=True)
     (docs / "design" / "Phase-9").mkdir(parents=True)
     (docs / "PROOFS").mkdir(parents=True)
+    (docs / "demo_proof" / "sample_proof" / "raw").mkdir(parents=True)
+    (docs / "demo_proof" / "sample_proof" / "screenshots").mkdir(parents=True)
     (docs / "GOVERNANCE").mkdir(parents=True)
     (docs / "current_runtime").mkdir(parents=True)
     (docs / "archive" / "phase 2").mkdir(parents=True)
@@ -55,6 +57,22 @@ def overlay(tmp_path, monkeypatch):
     )
     (docs / "PROOFS" / "proof_one.md").write_text(
         "# Governor Bypass Proof\n\nProof of enforcement.\n",
+        encoding="utf-8",
+    )
+    (docs / "demo_proof" / "sample_proof" / "REPORT.md").write_text(
+        "# Sample Proof Report\n\nProof summary remains browsable.\n",
+        encoding="utf-8",
+    )
+    (docs / "demo_proof" / "sample_proof" / "raw" / "payload.json").write_text(
+        '{"proof": true}\n',
+        encoding="utf-8",
+    )
+    (docs / "demo_proof" / "sample_proof" / "raw" / "focused_pytest_results.txt").write_text(
+        "1 passed\n",
+        encoding="utf-8",
+    )
+    (docs / "demo_proof" / "sample_proof" / "screenshots" / "SCREENSHOT_NOTE.md").write_text(
+        "# Screenshot Note\n\nNo screenshot required.\n",
         encoding="utf-8",
     )
     (docs / "GOVERNANCE" / "rule.md").write_text(
@@ -135,6 +153,10 @@ def test_generator_indexes_docs_and_code_with_path_categories(overlay):
 
     assert "docs/PROOFS/proof_one.md" in by_rel
     assert by_rel["docs/PROOFS/proof_one.md"].category == "proofs"
+    assert by_rel["docs/demo_proof/sample_proof/REPORT.md"].category == "reference"
+    assert "docs/demo_proof/sample_proof/raw/payload.json" not in by_rel
+    assert "docs/demo_proof/sample_proof/raw/focused_pytest_results.txt" not in by_rel
+    assert "docs/demo_proof/sample_proof/screenshots/SCREENSHOT_NOTE.md" not in by_rel
     assert by_rel["docs/GOVERNANCE/rule.md"].category == "governance"
     assert by_rel["docs/current_runtime/RUNTIME.md"].category == "runtime"
     assert by_rel["docs/archive/phase 2/old.md"].category == "archive"
