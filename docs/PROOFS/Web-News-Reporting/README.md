@@ -43,6 +43,25 @@ Active lock:
 
 ---
 
+## Required Evidence Pattern
+
+Each proof should record:
+
+- what was requested
+- what happened
+- what did not happen
+- governance boundary
+- source labels and freshness caveats
+- failure/degraded behavior
+- hallucination observations
+- prompt-injection observations when relevant
+- raw transcript or payload evidence
+- screenshot only if it proves a visible UI state
+
+Expected outcome is truthful behavior, not guaranteed success.
+
+---
+
 ## Required Boundaries
 
 The proof package must not:

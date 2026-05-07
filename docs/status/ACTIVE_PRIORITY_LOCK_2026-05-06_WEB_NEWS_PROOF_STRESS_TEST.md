@@ -39,6 +39,8 @@ No silent failures.
 
 No misleading authority.
 
+Expected outcome is truthful behavior, not guaranteed success.
+
 ---
 
 ## Capability Scope
@@ -160,6 +162,30 @@ Use Codex/Claude/reviewer systems to simulate:
 - command alias/typo handling
 - degraded-state rendering
 
+The pass condition for stress tests is honest bounded behavior: work when approved and available, clear refusal when blocked, exact setup/degraded messaging when dependencies are missing, and no implication that execution or authority occurred when it did not.
+
+---
+
+## Truthful UI Rule
+
+Nova UI must never imply:
+
+- execution occurred when it did not
+- authority was granted when it was not
+- data is live/current when stale
+- a command succeeded when degraded
+- a capability exists when setup is missing
+- a blocked action is available
+
+Standard visible states for this lock:
+
+- `working`
+- `blocked`
+- `setup-required`
+- `degraded`
+- `offline`
+- `unsupported`
+
 ---
 
 ## Explicitly Not Approved
@@ -188,8 +214,10 @@ This lock is complete only if:
 6. Codex/Claude stress-test prompts exist.
 7. Visible UI/button/command behavior is verified.
 8. Buttons/commands either work, refuse safely, or clearly explain setup/block state.
-9. No authority drift or execution expansion occurs.
-10. Runtime truth claims remain grounded.
+9. Proofs distinguish success, failure, blocked, setup-dependent, degraded, unsupported, and not-yet-tested behavior.
+10. UI/runtime/docs mismatches are recorded as blockers or follow-ups instead of papered over.
+11. No authority drift or execution expansion occurs.
+12. Runtime truth claims remain grounded.
 
 ---
 
@@ -198,3 +226,13 @@ This lock is complete only if:
 This lock exists to validate and pressure-test existing governed information/reporting and UI/command surfaces.
 
 It does not authorize broader automation or OpenClaw execution expansion.
+
+## Next After This Lock
+
+After this proof/stress-test lock closes, the recommended next reviewed workstream is:
+
+```text
+Trust Review Card MVP / Visible Non-Action Receipt Surface
+```
+
+Do not resume Trust Review Card implementation from this lock.

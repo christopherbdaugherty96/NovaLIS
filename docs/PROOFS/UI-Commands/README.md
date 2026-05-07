@@ -77,6 +77,47 @@ No command should bypass GovernorMediator for actions.
 
 ---
 
+## Verification Matrix
+
+Use this matrix shape for each UI/button/command proof pass:
+
+| Surface | Button/Command | Expected Result | Actual Result | Governance Boundary | Status | Evidence | Regression Risk |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| TBD | TBD | TBD | TBD | TBD | not-yet-tested | TBD | TBD |
+
+Allowed statuses:
+
+- `pass`
+- `fail`
+- `blocked`
+- `setup-dependent`
+- `not-yet-tested`
+- `not-applicable`
+
+---
+
+## Truthful UI Rule
+
+UI must not imply:
+
+- execution occurred when it did not
+- authority was granted when it was not
+- data is live/current when stale
+- a command succeeded when degraded
+- a capability exists when setup is missing
+- a blocked action is available
+
+Preferred visible states:
+
+- `working`
+- `blocked`
+- `setup-required`
+- `degraded`
+- `offline`
+- `unsupported`
+
+---
+
 ## Stress-Test Focus
 
 Stress tests should simulate:
