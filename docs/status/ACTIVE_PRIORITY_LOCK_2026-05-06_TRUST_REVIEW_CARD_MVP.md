@@ -1,6 +1,8 @@
 # Active Priority Lock - 2026-05-06 Trust Review Card MVP
 
-Status: active.
+Status: paused by user request.
+
+Paused by: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
 
 This is human-maintained priority guidance, not generated runtime truth.
 
@@ -8,7 +10,7 @@ Generated runtime docs and actual code remain authoritative if they conflict wit
 
 ---
 
-## Active Workstream
+## Paused Workstream
 
 ```text
 Trust Review Card MVP / Visible Non-Action Receipt Surface
@@ -16,7 +18,24 @@ Trust Review Card MVP / Visible Non-Action Receipt Surface
 
 ---
 
-## Purpose
+## Pause Reason
+
+The user requested a pause on current work to create a proof folder and stress-test plan for the governed web/news/reporting capability family:
+
+- governed web search
+- governed browser/article opening
+- headline summaries
+- headline cluster comparison
+- structured multi-source reports
+- compact intelligence briefs
+- story tracking over time
+- topic maps of headline themes
+
+No Trust Review Card implementation work should proceed until the new proof/stress-test lock is complete or explicitly superseded.
+
+---
+
+## Original Purpose
 
 Create the first visible trust/review surface for the planning-only and read-only governance work completed in the prior OpenClaw proof chain.
 
@@ -28,21 +47,7 @@ This is not an automation-expansion lock.
 
 ---
 
-## Required Inputs
-
-- PR #103 planning-task preview runtime handoff proof
-- PR #104 RequestUnderstanding review-card payload contract
-- PR #105 local capability signoff matrix
-- PR #106 OpenClawMediator skeleton
-- PR #107 first read-only OpenClaw workflow proof
-- PR #110 runtime truth regeneration / audit
-- `docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06.md`
-- `docs/status/CURRENT_WORK_STATUS.md`
-- `docs/todo/ACTIVE_TODO.md`
-
----
-
-## Allowed Scope
+## Original Allowed Scope
 
 - render a minimal read-only RequestUnderstanding review card in the UI
 - render non-action / non-authorizing status fields clearly
@@ -58,7 +63,7 @@ This is not an automation-expansion lock.
 
 ---
 
-## Explicitly Not Approved
+## Still Not Approved While Paused
 
 - no OpenClaw execution
 - no direct Cap 63 shortcut use
@@ -75,23 +80,6 @@ This is not an automation-expansion lock.
 
 ---
 
-## Acceptance Gates
+## Resume Rule
 
-This lock is complete only if:
-
-1. The visible trust/review card remains read-only.
-2. The UI cannot imply execution or authorization occurred.
-3. Receipts clearly state what did not happen.
-4. OpenClawMediator remains non-executing and non-authorizing.
-5. No new runtime authority path bypasses GovernorMediator.
-6. No broad OpenClaw automation is added.
-7. Runtime docs remain generator-grounded if updated.
-8. Final audit confirms no authority drift.
-
----
-
-## Boundary Rule
-
-Do not use this lock to start broad OpenClaw automation or workflow expansion.
-
-This lock is only for the visible trust/review surface associated with the existing planning-only and read-only proof infrastructure.
+Resume this lock only after the web/news/reporting proof/stress-test lock is complete, closed, or explicitly superseded by a reviewed priority-lock update.
