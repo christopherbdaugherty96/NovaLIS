@@ -647,7 +647,7 @@ _Conversation-layer helpers for cognitive escalation (Phase-4.2 staging)._
 - [[nova_backend/tests/conversation/test_deepseek_bridge.py|test_deepseek_bridge]]
 - [[nova_backend/tests/conversation/test_deepseek_safety_wrapper.py|test_deepseek_safety_wrapper]]
 - [[nova_backend/tests/conversation/test_deepseek_usage_visibility.py|test_deepseek_usage_visibility]]
-- _…and 24 more_
+- _…and 25 more_
 
 ### Tests
 
@@ -922,6 +922,7 @@ _ExecuteBoundary,_
 - [[nova_backend/tests/phase6/test_capability_topology.py|test_capability_topology]]
 - [[nova_backend/tests/phase6/test_policy_executor_gate.py|test_policy_executor_gate]]
 - [[nova_backend/tests/test_single_action_queue.py|test_single_action_queue]]
+- [[nova_backend/tests/utils/test_web_target_planner.py|test_web_target_planner]]
 
 ## `identity` (2 files)
 
@@ -1826,7 +1827,11 @@ ___all__ = ["ProviderUsageStore", "provider_usage_store"]_
 - [[nova_backend/src/memory/quick_corrections.py|quick_corrections]]
 - [[nova_backend/src/memory/user_memory_store.py|user_memory_store]]
 - [[nova_backend/src/nova_config.py|nova_config]]
-- _…and 13 more_
+- _…and 14 more_
+
+### Tests
+
+- [[nova_backend/tests/utils/test_web_target_planner.py|test_web_target_planner]]
 
 ## `validation` (6 files)
 
@@ -1901,7 +1906,7 @@ _Websocket session runtime modules._
 - [[nova_backend/src/websocket/intent_patterns.py|intent_patterns]]
     - Intent recognition patterns for the Nova brain server session loop.
 - [[nova_backend/src/websocket/session_handler.py|session_handler]]
-    - async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
+    - _HEADLINE_SUMMARY_RE = re.compile(
 
 ### Imports from
 
@@ -1927,6 +1932,7 @@ _Websocket session runtime modules._
 - [[nova_backend/src/utils/path_resolver.py|path_resolver]]
 - [[nova_backend/tests/conversation/test_paused_scope_routing_guard.py|test_paused_scope_routing_guard]]
 - [[nova_backend/tests/conversation/test_session_router.py|test_session_router]]
+- [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
 
 ## `working_context` (11 files)
 

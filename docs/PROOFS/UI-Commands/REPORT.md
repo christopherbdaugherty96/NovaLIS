@@ -19,6 +19,7 @@ This pass is read-only with respect to runtime authority. It does not add capabi
 
 ## Evidence
 
+- `MASTER_UI_VERIFICATION_MATRIX_2026-05-07.md`
 - `evidence/2026-05-06/raw/start_daemon_output.txt`
 - `evidence/2026-05-06/raw/browser_use_failure.txt`
 - `evidence/2026-05-06/raw/static_button_inventory.json`
@@ -86,3 +87,7 @@ Expected outcome is truthful bounded behavior, not guaranteed success.
 This pass found no evidence of unauthorized execution, external write, broad OpenClaw automation, direct Cap 63 shortcut use, or browser/computer-use expansion.
 
 It did find UI/command truthfulness gaps that should be fixed or regression-tested before broader automation work resumes.
+
+## Matrix Status
+
+The master matrix now records evidence-backed status for the high-risk visible command paths and marks screenshot/click-path coverage as blocked by Browser Use runtime setup rather than Nova runtime authority.

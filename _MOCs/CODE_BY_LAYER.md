@@ -546,7 +546,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/websocket/intent_patterns.py|intent_patterns]]
   summary: Intent recognition patterns for the Nova brain server session loop.
 - [[nova_backend/src/websocket/session_handler.py|session_handler]]
-  summary: async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
+  summary: _HEADLINE_SUMMARY_RE = re.compile(
 - [[nova_backend/src/working_context/__init__.py|src/working_context]]
   summary: build_operational_context_widget,
 - [[nova_backend/src/working_context/assistive_noticing.py|assistive_noticing]]
@@ -570,7 +570,7 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/src/working_context/project_threads.py|project_threads]]
   summary: def _now_iso() -> str:
 
-## Tests and verification (354)
+## Tests and verification (356)
 
 - [[nova_backend/tests/__init__.py|tests]]
 - [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1265,6 +1265,10 @@ Use this to orient yourself before diving into a specific module.
 - [[nova_backend/tests/trust/__init__.py|tests/trust]]
 - [[nova_backend/tests/trust/test_receipt_store.py|test_receipt_store]]
   summary: Unit tests for src/trust/receipt_store.py.
+- [[nova_backend/tests/utils/test_web_target_planner.py|test_web_target_planner]]
+  summary: def test_open_website_rejects_single_label_target_before_confirmation():
+- [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
+  summary: governance_refusal_for,
 - [[verification/check_quarantine_fixed.ps1|check_quarantine_fixed]]
   summary: ﻿Write-Host "=== Legacy Brain Isolation Check (Fixed) ===" -ForegroundColor Cyan
 - [[verification/governor_proof.py|governor_proof]]

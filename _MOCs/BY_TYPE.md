@@ -901,7 +901,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/src/websocket/intent_patterns.py|intent_patterns]]
   summary: Intent recognition patterns for the Nova brain server session loop.
 - [code] [[nova_backend/src/websocket/session_handler.py|session_handler]]
-  summary: async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
+  summary: _HEADLINE_SUMMARY_RE = re.compile(
 - [code] [[nova_backend/src/working_context/__init__.py|src/working_context]]
   summary: build_operational_context_widget,
 - [code] [[nova_backend/src/working_context/assistive_noticing.py|assistive_noticing]]
@@ -931,7 +931,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: c23ca09716c3f565c7a64cf7ec3c5e8b7b40f4f53a48bd1f9dd36944627b2e7d
+  summary: Runtime Fingerprint: 9ecf0299cc584b68011c8fcbd788a050c0c47b16e6171166b374248de42b7b72
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -955,7 +955,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 8e3219576614868d2d009c571eee333cf2e3d9877c62ef7719aa2e93d6fc35a3
+  summary: - runtimesurfacehash: f0b5b877d895517b073db3ff737e88a323401e53235beeaf39279b7c3deec6e7
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1032,7 +1032,7 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/static/style.phase1.css|style.phase1 - nova_backend/static]] - Phase 1
   summary: :root {
 
-## Tests (5 docs, 354 code)
+## Tests (5 docs, 356 code)
 
 - [code] [[nova_backend/tests/__init__.py|tests]]
 - [code] [[nova_backend/tests/_dashboard_bundle.py|_dashboard_bundle]]
@@ -1727,6 +1727,10 @@ concern is reflected across docs, code and tests.
 - [code] [[nova_backend/tests/trust/__init__.py|tests/trust]]
 - [code] [[nova_backend/tests/trust/test_receipt_store.py|test_receipt_store]]
   summary: Unit tests for src/trust/receipt_store.py.
+- [code] [[nova_backend/tests/utils/test_web_target_planner.py|test_web_target_planner]]
+  summary: def test_open_website_rejects_single_label_target_before_confirmation():
+- [code] [[nova_backend/tests/websocket/test_session_handler_proof_blockers.py|test_session_handler_proof_blockers]]
+  summary: governance_refusal_for,
 - [code] [[verification/check_quarantine_fixed.ps1|check_quarantine_fixed]]
   summary: ﻿Write-Host "=== Legacy Brain Isolation Check (Fixed) ===" -ForegroundColor Cyan
 - [code] [[verification/governor_proof.py|governor_proof]]
@@ -1824,7 +1828,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/design/ui_backend_contract|UI-Backend Contract Documentation]]
   summary: This document outlines the contract between the UI and backend services.
 
-## Proofs (176 docs, 6 code)
+## Proofs (206 docs, 16 code)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
@@ -1834,6 +1838,26 @@ concern is reflected across docs, code and tests.
   summary: Phase 3.5 Constitutional Baseline Generator
 - [code] [[docs/PROOFS/phase 3.5-4/governance-tests/governance_baseline.py|governance_baseline - phase 3.5-4/governance-tests]]
   summary: Phase 3.5 Constitutional Baseline Generator
+- [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-06/raw/static_button_inventory.json|static_button_inventory]]
+  summary: id": "btn-morning-toggle",
+- [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-06/raw/websocket_command_probe.json|websocket_command_probe]]
+  summary: id": "startup_greeting",
+- [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-06/raw/websocket_command_probe_corrected.json|websocket_command_probe_corrected]]
+  summary: id": "chat_basic",
+- [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-06/raw/websocket_command_probe_summary.json|websocket_command_probe_summary]]
+  summary: id": "chat_basic",
+- [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/ui_blocker_fix_probe.json|ui_blocker_fix_probe]]
+  summary: started_at_epoch": 1778127520.0930412,
+- [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/ui_followup_probe.json|ui_followup_probe]]
+  summary: started_at_epoch": 1778128269.2688813,
+- [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-06/raw/websocket_web_news_probe.json|websocket_web_news_probe]]
+  summary: id": "startup_greeting",
+- [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-06/raw/websocket_web_news_probe_corrected.json|websocket_web_news_probe_corrected]]
+  summary: id": "news",
+- [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/story_tracker_temp_store_proof.json|story_tracker_temp_store_proof]]
+  summary: store_root": "C:\\Users\\Chris\\AppData\\Local\\Temp\\nova_story_tracker_proof_63sqxr2b\\story_tracker",
+- [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/web_news_blocker_fix_probe.json|web_news_blocker_fix_probe]]
+  summary: started_at_epoch": 1778127522.1517382,
 - [doc] [[docs/PROOFS/CAPABILITY_VERIFICATION_AUDIT_2026-03-25|CAPABILITY_VERIFICATION_AUDIT_2026-03-25]]
   summary: ﻿# Capability Verification Audit
 - [doc] [[docs/PROOFS/COMPLETION/PHASE_3.5_COMPLETION/3.5 - Complete Mechanical Specification.txt|3.5 - Complete Mechanical Specification - COMPLETION/PHASE_3.5_COMPLETION]]
@@ -2150,6 +2174,34 @@ concern is reflected across docs, code and tests.
   summary: Updated: 2026-03-27
 - [doc] [[docs/PROOFS/README|README]]
   summary: ﻿# Proofs Pointer
+- [doc] [[docs/PROOFS/UI-Commands/BLOCKERS|UI / Commands Blockers - 2026-05-06]]
+  summary: Status: draft / review required
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-06/raw/browser_use_failure.txt|browser_use_failure]]
+  summary: ﻿Attempted in-app browser runtime through browser-client/iab. Node REPL browser setup failed before page interaction with: failed to write k...
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-06/raw/start_daemon_output.txt|start_daemon_output]]
+  summary: [Nova] Starting: C:\Program Files\Python310\python.exe -m uvicorn src.brainserver:app --host 127.0.0.1 --port 8000 --app-dir C:\Nova-Project...
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-06/raw/stop_daemon_output.txt|stop_daemon_output]]
+  summary: [Nova] Stopping backend (PID 31132)...
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/browser_screenshot_followup_attempt.txt|browser_screenshot_followup_attempt]]
+  summary: ﻿Browser screenshot proof attempt - 2026-05-07
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/focused_pytest_results.txt|focused_pytest_results - 2026-05-07/raw]]
+  summary: ��. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         ...
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/followup_combined_pytest_results.txt|followup_combined_pytest_results - 2026-05-07/raw]]
+  summary: ��. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ...
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/followup_pytest_results.txt|followup_pytest_results - 2026-05-07/raw]]
+  summary: ��. . . . . . . . . . . . . . . . . . . .                                                                                                   ...
+- [doc] [[docs/PROOFS/UI-Commands/FRICTION_LOG|UI / Commands Friction Log - 2026-05-06]]
+  summary: Status: draft / review required
+- [doc] [[docs/PROOFS/UI-Commands/MASTER_UI_VERIFICATION_MATRIX_2026-05-07|Master UI / Button / Command Verification Matrix - 2026-05-07]]
+  summary: Status: active matrix / evidence-backed partial coverage
+- [doc] [[docs/PROOFS/UI-Commands/README|UI / Buttons / Commands Proof Package]]
+  summary: Status: active proof/stress-test scaffold.
+- [doc] [[docs/PROOFS/UI-Commands/REGRESSION_RECOMMENDATIONS|UI / Commands Regression Recommendations - 2026-05-06]]
+  summary: Status: draft / review required
+- [doc] [[docs/PROOFS/UI-Commands/REPORT|UI / Commands Proof Report - 2026-05-06]]
+  summary: Status: draft / review required
+- [doc] [[docs/PROOFS/UI-Commands/VERIFICATION_MATRIX|UI / Commands Verification Matrix - 2026-05-06]]
+  summary: Status: draft / review required
 - [doc] [[docs/PROOFS/unlock-decisions/phase 3.5/GOVERNOR SPINE INSTALLATION PROOF.txt|🔒 NOVA PHASE-3.5 — GOVERNOR SPINE INSTALLATION PROOF - unlock-decisions/phase 3.5]] - Phase 3.5
   summary: GOV-002 installs the Governor structural spine into the Nova runtime without unlocking execution authority.
 - [doc] [[docs/PROOFS/unlock-decisions/phase 3.5/NOVA PHASE 3.5 SEAL ARTIFACT.txt|NOVA PHASE 3.5 SEAL ARTIFACT - unlock-decisions/phase 3.5]] - Phase 3.5
@@ -2186,8 +2238,40 @@ concern is reflected across docs, code and tests.
   summary: Nova Backend – src package
 - [doc] [[docs/PROOFS/UNLOCK/phase 4/PHASE_4_UNLOCK_ACT.md.txt|PHASE_4_UNLOCK_ACT.md - UNLOCK/phase 4]] - Phase 4
   summary: PHASE4UNLOCKACT.md
+- [doc] [[docs/PROOFS/Web-News-Reporting/adversarial_tests/PROMPT_SUITE_2026-05-07|Web / News / Reporting Adversarial Prompt Suite - 2026-05-07]]
+  summary: Status: active prompt suite / evidence-backed seed set
+- [doc] [[docs/PROOFS/Web-News-Reporting/BLOCKERS|Web / News / Reporting Blockers - 2026-05-06]]
+  summary: Status: draft / review required
+- [doc] [[docs/PROOFS/Web-News-Reporting/cases/GOVERNANCE_ADVERSARIAL_DEGRADED_PROOF_2026-05-07|Governance / Adversarial / Degraded Behavior Proof - 2026-05-07]]
+  summary: Status: pass for command evidence / screenshot blocked
+- [doc] [[docs/PROOFS/Web-News-Reporting/cases/GOVERNED_WEB_SEARCH_PROOF_2026-05-07|Governed Web Search Proof - 2026-05-07]]
+  summary: Status: pass / evidence-backed
+- [doc] [[docs/PROOFS/Web-News-Reporting/cases/HEADLINE_SUMMARY_PROOF_2026-05-07|Headline Summary Proof - 2026-05-07]]
+  summary: Status: pass / evidence-backed
+- [doc] [[docs/PROOFS/Web-News-Reporting/cases/MULTI_SOURCE_REPORTING_AND_BRIEF_PROOF_2026-05-07|Multi-Source Reporting + Intelligence Brief Proof - 2026-05-07]]
+  summary: Status: partial pass / more stress fixtures required
+- [doc] [[docs/PROOFS/Web-News-Reporting/cases/OPEN_WEBSITE_ARTICLE_BEHAVIOR_PROOF_2026-05-07|Open Website / Article Behavior Proof - 2026-05-07]]
+  summary: Status: pass for command boundary / screenshot blocked
+- [doc] [[docs/PROOFS/Web-News-Reporting/cases/TOPIC_MAP_STORY_TRACKER_PROOF_2026-05-07|Topic Map + Story Tracker Proof - 2026-05-07]]
+  summary: Status: pass / fixture hardening still needed
+- [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/focused_pytest_results.txt|focused_pytest_results - 2026-05-07/raw]]
+  summary: ��. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         ...
+- [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/followup_combined_pytest_results.txt|followup_combined_pytest_results - 2026-05-07/raw]]
+  summary: ��. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ...
+- [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/followup_pytest_results.txt|followup_pytest_results - 2026-05-07/raw]]
+  summary: ��. . . . . . . . . . . . . . . . . . . .                                                                                                   ...
+- [doc] [[docs/PROOFS/Web-News-Reporting/FRICTION_LOG|Web / News / Reporting Friction Log - 2026-05-06]]
+  summary: Status: draft / review required
+- [doc] [[docs/PROOFS/Web-News-Reporting/PROOF_LIBRARY_INDEX|Web / News / Reporting Proof Library Index - 2026-05-07]]
+  summary: Status: active evidence library / review required
+- [doc] [[docs/PROOFS/Web-News-Reporting/README|Web / News / Reporting Proof Package]]
+  summary: Status: active proof/stress-test scaffold.
+- [doc] [[docs/PROOFS/Web-News-Reporting/REGRESSION_RECOMMENDATIONS|Web / News / Reporting Regression Recommendations - 2026-05-06]]
+  summary: Status: draft / review required
+- [doc] [[docs/PROOFS/Web-News-Reporting/REPORT|Web / News / Reporting Proof Report - 2026-05-06]]
+  summary: Status: draft / review required
 
-## Reference (379 docs, 30 code)
+## Reference (384 docs, 30 code)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[docs/product/assets/report-output.png|report-output.png]]
@@ -2523,6 +2607,8 @@ concern is reflected across docs, code and tests.
   summary: Status: future planning.
 - [doc] [[docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS|Auralis Digital Client Intake OS]]
   summary: Last updated: 2026-05-06
+- [doc] [[docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS_AGREED_DECISION|Auralis Digital Client Intake OS — Agreed Decision]]
+  summary: Last updated: 2026-05-06
 - [doc] [[docs/future/AURALIS_DIGITAL_CLIENT_INTAKE_OS_SECOND_PASS|Auralis Digital Client Intake OS — Second Pass Review]]
   summary: Last updated: 2026-05-06
 - [doc] [[docs/future/AURALIS_LEAD_CONSOLE_V1|Auralis Lead Console v1]]
@@ -2707,6 +2793,8 @@ concern is reflected across docs, code and tests.
   summary: Status: planning roadmap. Runtime truth still comes from code and generated runtime docs.
 - [doc] [[docs/future/ROUTINE_LAYER_SPEC|Routine Layer Specification]]
   summary: Status: v0 implemented (RoutineGraph v0 — PR #93 2026-05-03); remaining objects and scheduling future
+- [doc] [[docs/future/SHOPIFY_DROPSHIP_VIDEO_AD_WORKFLOW_GOAL|Shopify Dropship Video Ad Workflow Goal]]
+  summary: Status: future workflow goal
 - [doc] [[docs/future/Soft Launch-help search.txt|Soft Launch-help search]]
   summary: Question: when should i ask for help?
 - [doc] [[docs/future/TRACE_AND_OBSERVABILITY_SPEC|Trace and Observability Specification]]
@@ -2880,11 +2968,15 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-04|Active Priority Lock — 2026-05-04]]
   summary: Status: completed.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_RUNTIME_TRUTH_AUDIT|Active Priority Lock - 2026-05-06 Runtime Truth Audit]]
-  summary: Status: active priority lock.
+  summary: Status: completed.
+- [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP|Active Priority Lock - 2026-05-06 Trust Review Card MVP]]
+  summary: Status: paused by user request.
+- [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST|Active Priority Lock - 2026-05-06 Web / News / Reporting + UI Proof / Stress Test]]
+  summary: Status: active.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-06 (runtime truth audit lock selected)
+  summary: Last reviewed: 2026-05-06 (Web/News/Reporting + UI/Commands proof lock active)
 - [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
-  summary: Status: draft / review required
+  summary: Status: accepted as evidence baseline for the first read-only OpenClaw proof only / not authority-granting.
 - [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
   summary: Status: complete / awaiting next reviewed priority lock
 - [doc] [[docs/status/README|Status Notes]]
@@ -2894,11 +2986,13 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02|Workflow Stage Roadmap - 2026-05-02]]
   summary: Status: operational planning snapshot.
 - [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
-  summary: Refer to: docs/status/ACTIVEPRIORITYLOCK2026-05-06RUNTIMETRUTHAUDIT.md
+  summary: Refer to: docs/status/ACTIVEPRIORITYLOCK2026-05-06WEBNEWSPROOFSTRESSTEST.md
 - [doc] [[docs/todo/DOC_CLEANUP|Doc Cleanup — Nova]]
   summary: Updated: 2026-04-28
 - [doc] [[docs/todo/README|docs/todo — Task Folder]]
   summary: This folder holds actionable task lists only. No wishlists, no design docs, no strategy.
+- [doc] [[docs/todo/SHOPIFY_SETUP_TODO|Shopify Setup TODO]]
+  summary: Status: active setup checklist for Cap 65 live signoff
 - [doc] [[docs/todo/TECH_DEBT|Technical Debt — Nova]]
   summary: Updated: 2026-04-28
 - [doc] [[docs/WORKFLOW_AI_TOOLING|AI Tooling Workflow]]
