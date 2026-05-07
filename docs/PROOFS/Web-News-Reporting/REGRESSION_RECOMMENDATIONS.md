@@ -50,7 +50,12 @@ Status: draft / review required
    - Expected: repeated terms influence topic-map weights; unrelated headline pairs are marked distinct.
    - Current coverage: `nova_backend/tests/executors/test_news_intelligence_executor.py`.
 
-8. **Article open proof**
+10. **Stale/provider/credibility fixtures**
+   - Use stale timestamps, malformed provider payloads, degraded provider status, and weak/untrusted source signals.
+   - Expected: stale labels, confidence lowering, truthful empty/degraded behavior, and conservative source credibility rows.
+   - Current coverage: `nova_backend/tests/brain/test_search_synthesis.py`, `nova_backend/tests/executors/test_web_search_executor.py`.
+
+11. **Article open proof**
    - Use a valid safe URL and cancel confirmation.
    - Assert no opening occurs before explicit confirmation.
 
@@ -95,3 +100,19 @@ Focused verification after adding contradiction/topic fixtures:
 ```
 
 Evidence: `evidence/2026-05-07/raw/stress_fixture_pytest_results.txt`.
+
+## 2026-05-07 Stale / Provider / Credibility Suite
+
+Focused verification after adding stale/provider/credibility fixtures:
+
+```text
+24 passed
+```
+
+Adjacent news/story verification:
+
+```text
+28 passed
+```
+
+Evidence: `evidence/2026-05-07/raw/stale_provider_credibility_pytest_results.txt`.
