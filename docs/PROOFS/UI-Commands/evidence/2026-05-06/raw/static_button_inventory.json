@@ -1,0 +1,560 @@
+[
+  {
+    "id": "btn-morning-toggle",
+    "text": "Show details",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-morning-calendar-connect",
+    "text": "Connect calendar",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-workflow-refine",
+    "text": "Refine goal",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-workflow-show-steps",
+    "text": "Show steps",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-workflow-reset",
+    "text": "Reset focus",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-hints-toggle",
+    "text": "Need ideas?",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-live-help-start",
+    "text": "Start live help",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-live-help-explain",
+    "text": "Explain current view",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-live-help-stop",
+    "text": "Stop live help",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "deepseek-btn",
+    "text": "Second opinion",
+    "aria_label": "Ask for a second opinion",
+    "title": "Ask for a second opinion on the latest message"
+  },
+  {
+    "id": "send-btn",
+    "text": "Send",
+    "aria_label": "",
+    "title": "Send message (Enter)"
+  },
+  {
+    "id": "ptt-btn",
+    "text": "Talk",
+    "aria_label": "Push to talk",
+    "title": "Hold to record a voice message (requires microphone permission)."
+  },
+  {
+    "id": "btn-news-search",
+    "text": "Search",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-news",
+    "text": "Get headlines",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-news-summary",
+    "text": "Quick brief",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-news-refresh",
+    "text": "Refresh channels",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-news-expand",
+    "text": "Expand details",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-intro-open-home",
+    "text": "Open Home",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-intro-open-settings",
+    "text": "Open Settings",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-intro-daily-brief",
+    "text": "Try Explain This",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-intro-open-landing",
+    "text": "Open Landing Preview",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-intro-refresh-setup",
+    "text": "Refresh setup",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-intro-open-connections",
+    "text": "Connection status",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-intro-open-home-ready",
+    "text": "Open Home",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-workspace-home-refresh",
+    "text": "Refresh",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-home-threads",
+    "text": "Open threads",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-agent-refresh",
+    "text": "Refresh agent",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-agent-open-settings",
+    "text": "Open Settings",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-agent-open-trust",
+    "text": "Open Trust",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-agent-open-home",
+    "text": "Open Home",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-workspace-board-refresh",
+    "text": "Refresh board",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-workspace-board-threads",
+    "text": "Show threads",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-workspace-board-visual",
+    "text": "Refresh structure map",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-workspace-board-architecture",
+    "text": "Architecture report",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-trust-center-refresh",
+    "text": "Refresh trust",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-trust-center-system",
+    "text": "System status",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-trust-center-workspace",
+    "text": "Open workspace",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-trust-center-memory",
+    "text": "Open memory",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-trust-center-policy-map",
+    "text": "What policies can run",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-trust-center-bridge-status",
+    "text": "Connection status",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-trust-center-agent",
+    "text": "Open agent",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-trust-center-voice-check",
+    "text": "Run voice check",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-trust-center-settings",
+    "text": "Open settings",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-operational-context-refresh",
+    "text": "Refresh continuity",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-operational-context-reset",
+    "text": "Reset continuity",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-assistive-notices-refresh",
+    "text": "Refresh notices",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-assistive-open-settings",
+    "text": "Open settings",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-profile-save-identity",
+    "text": "Save",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-profile-save-prefs",
+    "text": "Save preferences",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-profile-save-rules",
+    "text": "Save rules",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-settings-open-intro",
+    "text": "Open Introduction",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-settings-open-home",
+    "text": "Open Home",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-settings-open-trust",
+    "text": "Open Trust",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-settings-open-agent",
+    "text": "Open Agent",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-settings-open-connections",
+    "text": "Connection Status",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-settings-refresh-runtime",
+    "text": "Refresh Runtime",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-settings-reset-defaults",
+    "text": "Restore Recommended Defaults",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-settings-voice-status",
+    "text": "Voice Status",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-settings-voice-check",
+    "text": "Run Voice Check",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-settings-open-privacy",
+    "text": "Privacy Details",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-settings-open-accessibility",
+    "text": "Accessibility Help",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-connections-refresh",
+    "text": "Refresh status",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-reset-confirm",
+    "text": "Yes, disconnect all",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-reset-cancel",
+    "text": "Cancel",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-reset-all",
+    "text": "Reset all connections",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-policy-refresh",
+    "text": "Refresh rules",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-policy-create-calendar",
+    "text": "Create calendar rule",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-policy-create-weather",
+    "text": "Create weather rule",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-policy-create-status",
+    "text": "Create system-status rule",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-policy-capability-map",
+    "text": "What rules can help with",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-policy-open-trust",
+    "text": "Open trust",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-policy-open-settings",
+    "text": "Open settings",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-overview",
+    "text": "Memory overview",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-list",
+    "text": "Memory list",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-recent",
+    "text": "Recent memory",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-threads",
+    "text": "Thread-linked memory",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-export",
+    "text": "Export memory",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-refresh",
+    "text": "Refresh memory",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-review-list",
+    "text": "Review list",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-list-all",
+    "text": "All",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-list-active",
+    "text": "Active",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-list-locked",
+    "text": "Locked",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-list-deferred",
+    "text": "Deferred",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-list-current-thread",
+    "text": "Current thread",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-list-refresh-silent",
+    "text": "Refresh list",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-detail-show-chat",
+    "text": "Show in chat",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-detail-edit",
+    "text": "Prepare edit",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-detail-lock",
+    "text": "Lock",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-detail-unlock",
+    "text": "Unlock",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-detail-defer",
+    "text": "Defer",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-detail-delete",
+    "text": "Delete",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-inline-confirm",
+    "text": "Confirm",
+    "aria_label": "",
+    "title": ""
+  },
+  {
+    "id": "btn-memory-inline-cancel",
+    "text": "Cancel",
+    "aria_label": "",
+    "title": ""
+  }
+]
