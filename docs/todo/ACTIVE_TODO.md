@@ -38,6 +38,7 @@ Required proof focus:
 - confirmation prompts
 - blocked-action behavior
 - setup-required states
+- truthful UI state labels: working, blocked, setup-required, degraded, offline, unsupported
 - voice/media/system controls
 - analysis/memory/document surfaces
 
@@ -58,6 +59,8 @@ Required stress-test focus:
 - blocked-action coercion attempts
 - degraded-state rendering
 - prompt injection from article content
+
+Expected proof outcome is truthful behavior, not guaranteed success.
 
 Current completed audit outcomes:
 
