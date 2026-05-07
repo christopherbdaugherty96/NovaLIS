@@ -12,6 +12,110 @@ from src.openclaw.run_state_machine import run_event_hub
 from src.utils.local_request_guard import describe_websocket_rebinding_violation
 
 
+_HEADLINE_SUMMARY_RE = re.compile(
+    r"\b(?:summari[sz]e|summary).{0,50}\b(?:all\s+)?(?:headlines?|news)\b"
+    r"|\b(?:headlines?|news).{0,50}\b(?:summari[sz]e|summary)\b",
+    re.IGNORECASE,
+)
+
+
+def pending_confirmation_resolution_action(SessionRouter: Any, raw_text: str) -> str:
+    """Return confirm/cancel only for explicit replies to a pending confirmation."""
+    decision = SessionRouter.route_pending_web_confirmation(raw_text)
+    if decision.action in {"confirm", "cancel"}:
+        return decision.action
+
+    normalized = re.sub(r"[^\w\s']", " ", str(raw_text or "").lower())
+    normalized = " ".join(normalized.split())
+    if re.match(r"^(?:yes|yeah|yep|ok|okay|sure)\b", normalized):
+        return "confirm"
+    if re.match(r"^(?:no|cancel|stop|never mind|nevermind|don't|dont)\b", normalized):
+        return "cancel"
+    return ""
+
+
+def governance_refusal_for(text: str) -> str:
+    normalized = " ".join(str(text or "").lower().split())
+    if not normalized:
+        return ""
+
+    if re.search(r"\b(?:cap\s*63|cap63|openclaw_execute)\b", normalized):
+        return (
+            "Blocked: Nova cannot use direct Cap 63 shortcuts. "
+            "No execution was performed and no authority was granted."
+        )
+    if "governormediator" in normalized or re.search(r"\b(?:bypass|skip|ignore)\b.{0,60}\bgovernor\b", normalized):
+        return (
+            "Blocked: Nova cannot bypass GovernorMediator. "
+            "No execution was performed and no authority was granted."
+        )
+    if re.search(r"\bopenclaw\b", normalized) and re.search(
+        r"\b(?:automate|automation|execute|run|delegate|control|operate|autonomous)\b", normalized
+    ):
+        return (
+            "Blocked: broad OpenClaw automation is not approved here. "
+            "No OpenClaw execution was started and no authority was granted."
+        )
+    browser_action = re.search(
+        r"\b(?:open|launch|control|click|use|operate|automate|browse)\b.{0,50}"
+        r"\b(?:browser|computer-use|computer use|tabs?|screen control)\b",
+        normalized,
+    ) or re.search(
+        r"\b(?:browser|computer-use|computer use|tabs?)\b.{0,50}"
+        r"\b(?:open|launch|control|click|operate|automate)\b",
+        normalized,
+    )
+    if browser_action:
+        return (
+            "Blocked: browser/computer-use expansion is not approved here. "
+            "No browser action was performed and no authority was granted."
+        )
+    if re.search(r"\b(?:autonomous|background workflow|run on its own|keep running)\b", normalized):
+        return (
+            "Blocked: autonomous workflow execution is not approved here. "
+            "No workflow was started and no authority was granted."
+        )
+    if re.search(
+        r"\b(?:send|post|publish|update|delete|create|change|modify|fulfill|refund)\b.{0,80}"
+        r"\b(?:email|calendar|shopify|account|order|customer|external)\b",
+        normalized,
+    ):
+        return (
+            "Blocked: external writes are not approved here. "
+            "No email, calendar, Shopify, account, or external change was made."
+        )
+    return ""
+
+
+def is_headline_summary_request(text: str) -> bool:
+    return bool(_HEADLINE_SUMMARY_RE.search(str(text or "")))
+
+
+def render_headline_summary_from_cache(news_cache: Any) -> str:
+    items = [item for item in list(news_cache or []) if isinstance(item, dict)]
+    if not items:
+        return (
+            "No headline context is loaded yet. Load news first with \"news\", "
+            "then ask \"summarize all headlines.\""
+        )
+
+    lines = [
+        "Headline summary from loaded news context.",
+        f"Loaded headlines: {len(items)}",
+    ]
+    for index, item in enumerate(items[:6], start=1):
+        title = " ".join(str(item.get("title") or "Untitled headline").split()).strip()
+        source = " ".join(str(item.get("source") or item.get("publisher") or "").split()).strip()
+        snippet = " ".join(str(item.get("summary") or item.get("snippet") or item.get("description") or "").split()).strip()
+        source_part = f" ({source})" if source else ""
+        if snippet:
+            lines.append(f"{index}. {title}{source_part}: {snippet}")
+        else:
+            lines.append(f"{index}. {title}{source_part}")
+    lines.append("This summarized the loaded headline state only; no web search or external action was performed.")
+    return "\n".join(lines)
+
+
 async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     """Run Nova's websocket session loop using the assembled runtime module as deps."""
     log = deps.log
@@ -690,8 +794,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
 
             pending_governed_confirm = session_state.get("pending_governed_confirm")
             if pending_governed_confirm:
-                confirm_decision = SessionRouter.route_pending_web_confirmation(raw_text)
-                if confirm_decision.action == "confirm":
+                confirm_action = pending_confirmation_resolution_action(SessionRouter, raw_text)
+                if confirm_action == "confirm":
                     capability_id = int(pending_governed_confirm.get("capability_id") or 0)
                     params = dict(pending_governed_confirm.get("params") or {})
                     params["confirmed"] = True
@@ -704,22 +808,22 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     await send_chat_message(ws, outgoing_message)
                     await send_chat_done(ws)
                     continue
-                if confirm_decision.action == "cancel":
+                if confirm_action == "cancel":
                     session_state["pending_governed_confirm"] = None
                     await send_chat_message(ws, "Cancelled pending action.")
                     await send_chat_done(ws)
                     continue
+                session_state["pending_governed_confirm"] = None
                 await send_chat_message(
                     ws,
-                    "I still have a confirmation pending. Reply 'yes' to proceed or 'no' to cancel.",
+                    "Cancelled the pending action before handling your new command. "
+                    "Reply yes/no immediately after a confirmation prompt to resolve it instead.",
                 )
-                await send_chat_done(ws)
-                continue
 
             pending_web_open = session_state.get("pending_web_open")
             if pending_web_open:
-                web_decision = SessionRouter.route_pending_web_confirmation(raw_text)
-                if web_decision.action == "confirm":
+                web_action = pending_confirmation_resolution_action(SessionRouter, raw_text)
+                if web_action == "confirm":
                     action_result = await invoke_governed_capability(
                         governor,
                         17,
@@ -735,17 +839,17 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                     await send_chat_message(ws, outgoing_message)
                     await send_chat_done(ws)
                     continue
-                if web_decision.action == "cancel":
+                if web_action == "cancel":
                     session_state["pending_web_open"] = None
                     await send_chat_message(ws, "Cancelled website open request.")
                     await send_chat_done(ws)
                     continue
+                session_state["pending_web_open"] = None
                 await send_chat_message(
                     ws,
-                    "I still have your website open request pending. Reply 'yes' to open or 'no' to cancel.",
+                    "Cancelled the pending website open request before handling your new command. "
+                    "Reply yes/no immediately after an open prompt to resolve it instead.",
                 )
-                await send_chat_done(ws)
-                continue
 
             route_context = SessionRouter.normalize_and_route(raw_text, session_state)
             if route_context.is_empty:
@@ -756,6 +860,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             lowered = route_context.lowered
             decision = route_context.decision
             _prune_topic_stack(session_state, session_state["turn_count"])
+
+            governance_refusal = governance_refusal_for(text)
+            if governance_refusal:
+                await _complete_immediate_turn(
+                    governance_refusal,
+                    remember_response=False,
+                    tone_domain="system",
+                )
+                continue
 
             gate = SessionRouter.evaluate_gate(decision, session_state, session_state["turn_count"])
             if gate.handled:
@@ -838,6 +951,18 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         {"label": "System status", "command": "system status"},
                         {"label": "Today's news", "command": "today's news"},
                     ],
+                )
+                continue
+
+            if is_headline_summary_request(command_text):
+                await _complete_immediate_turn(
+                    render_headline_summary_from_cache(session_state.get("news_cache")),
+                    suggested_actions=[
+                        {"label": "Refresh news", "command": "news"},
+                        {"label": "Show sources", "command": "sources"},
+                    ],
+                    remember_response=False,
+                    tone_domain="daily",
                 )
                 continue
 

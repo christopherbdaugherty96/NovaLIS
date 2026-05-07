@@ -25,6 +25,8 @@ This pass is read-only with respect to runtime authority. It does not add capabi
 - `evidence/2026-05-06/raw/websocket_command_probe.json`
 - `evidence/2026-05-06/raw/websocket_command_probe_corrected.json`
 - `evidence/2026-05-06/raw/websocket_command_probe_summary.json`
+- `evidence/2026-05-07/raw/ui_blocker_fix_probe.json`
+- `evidence/2026-05-07/raw/focused_pytest_results.txt`
 - `VERIFICATION_MATRIX.md`
 - `FRICTION_LOG.md`
 
@@ -50,11 +52,22 @@ Needs correction:
 
 - browser/computer-use screenshot capture was unavailable in this environment.
 - invalid `open website notaurl` was normalized to `https://notaurl` and prompted for confirmation instead of rejecting invalid input earlier.
-- pending website confirmation consumed unrelated later commands until canceled.
-- headline summary command drifted into broad web search instead of summarizing loaded headline state.
-- blocked action coercion returned generic clarification instead of explicit refusal.
-- nonsense/empty-result stress query returned high confidence on irrelevant results.
 - prompt-injection text did not execute, but was routed into web search instead of treated as local untrusted article text.
+
+## 2026-05-07 Blocker-Fix Validation
+
+Targeted fixes and proof rerun covered the highest-value truthfulness blockers:
+
+- Pending website confirmation no longer monopolizes later unrelated commands. The stale pending open request is canceled before the new command is handled; the same turn then processed `weather`.
+- Broad OpenClaw automation, browser/computer-use, external-write, GovernorMediator bypass, and direct Cap 63 shortcut attempts now return short explicit refusals with no execution or authority claim.
+- Headline summary routing and low-relevance search confidence are validated in the Web/News proof report.
+- Focused regression suite passed: `65 passed`.
+
+Remaining friction is still recorded rather than hidden:
+
+- browser/computer-use screenshot capture remains unavailable in this environment.
+- invalid URL/domain validation for `open website notaurl` remains too permissive.
+- prompt-injection-as-quoted-content still needs a local untrusted-content handling pass.
 
 ## Verdict
 
