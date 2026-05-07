@@ -1,0 +1,512 @@
+{
+  "started_at_epoch": 1778127522.1517382,
+  "messages": [
+    [
+      "headline_summary_no_context",
+      "summarize all headlines in plain language"
+    ],
+    [
+      "news_load",
+      "news"
+    ],
+    [
+      "headline_summary_loaded",
+      "summarize all headlines in plain language"
+    ],
+    [
+      "nonsense_search",
+      "search qzxqzxqzx nonexistent topic with 1000 sources"
+    ],
+    [
+      "topic_map_direct",
+      "show topic map"
+    ],
+    [
+      "story_tracker_update",
+      "track story global security"
+    ],
+    [
+      "story_tracker_view",
+      "show story tracker"
+    ]
+  ],
+  "events": [
+    {
+      "type": "chat",
+      "message": "Hey \u2014 what are you working on?",
+      "turn_id": "governor_cap63_refusal"
+    },
+    {
+      "type": "chat_done",
+      "turn_id": "governor_cap63_refusal"
+    },
+    {
+      "type": "chat",
+      "message": "No headline context is loaded yet. Load news first with \"news\", then ask \"summarize all headlines.\"",
+      "turn_id": "headline_summary_no_context",
+      "suggested_actions": [
+        {
+          "label": "Refresh news",
+          "command": "news"
+        },
+        {
+          "label": "Show sources",
+          "command": "sources"
+        }
+      ]
+    },
+    {
+      "type": "chat_done",
+      "turn_id": "headline_summary_no_context"
+    },
+    {
+      "type": "chat",
+      "message": "Okay. Let me check.",
+      "turn_id": "news_load"
+    },
+    {
+      "type": "trust_status",
+      "data": {
+        "mode": "Local-only",
+        "last_external_call": "None",
+        "data_egress": "No external call in this step",
+        "failure_state": "Normal",
+        "consecutive_failures": 0
+      }
+    },
+    {
+      "type": "chat",
+      "message": "Loaded 5 sources. Theme: global security. Top focus: Secretary Howard Lutnick is questioned by House lawmakers over his Epstein ties; Hantavirus-hit cruise ship leaves Cape Verde after three evacuated; and Justice Department can keep 2020 ballots seized from Fulton County in Georgia, judge rules.\nLoaded 5 headline(s) for follow-up.\nTry next: summarize headline 1, more on story 1, or daily brief.",
+      "turn_id": "news_load"
+    },
+    {
+      "type": "news",
+      "items": [
+        {
+          "title": "Secretary Howard Lutnick is questioned by House lawmakers over his Epstein ties",
+          "url": "https://www.npr.org/2026/05/06/nx-s1-5814081/howard-lutnick-epstein-files-house-oversight-committee",
+          "source": "NPR",
+          "summary": "Lutnick said last year that he cut ties with Epstein, his former neighbor, in 2005. But the Epstein files indicate that the two kept in contact, including for a 2012 lunch on Epstein's private island.",
+          "published": "Wed, 06 May 2026 22:24:42 -0400",
+          "video_url": ""
+        },
+        {
+          "title": "Hantavirus-hit cruise ship leaves Cape Verde after three evacuated",
+          "url": "https://www.bbc.com/news/articles/c5y093d5n9ko?at_medium=RSS&at_campaign=rss",
+          "source": "BBC News",
+          "summary": "A British man is among three evacuees sent to the Netherlands after displaying symptoms while aboard the MV Hondius.",
+          "published": "Thu, 07 May 2026 03:55:13 GMT",
+          "video_url": ""
+        },
+        {
+          "title": "Justice Department can keep 2020 ballots seized from Fulton County in Georgia, judge rules",
+          "url": "https://www.pbs.org/newshour/politics/justice-department-can-keep-2020-ballots-seized-from-fulton-county-in-georgia-judge-rules",
+          "source": "PBS NewsHour",
+          "summary": "The Jan. 28 seizure by the FBI targeted the elections hub in Georgia's most populous county, which is heavily Democratic and includes most of the city of Atlanta.",
+          "published": "Wed, 06 May 2026 20:14:35 -0400",
+          "video_url": ""
+        },
+        {
+          "title": "What to know about potential US-Iran agreement",
+          "url": "https://abcnews.com/Politics/potential-us-iran-agreement/story?id=132727248",
+          "source": "ABC News",
+          "summary": "The one-page memo calls for negotiations over 30 days.",
+          "published": "Wed, 06 May 2026 21:04:10 -0400",
+          "video_url": ""
+        },
+        {
+          "title": "MLB television ratings surge 44% through early part of the season ahead of potential lockout",
+          "url": "https://www.foxnews.com/outkick-sports/mlb-television-ratings-surge-44-early-part-season-ahead-potential-lockout",
+          "source": "FOX News",
+          "summary": "MLB ratings have surged 44% this season, the best start in nine years, as rule changes and pace of play improvements fuel baseball's impressive growth.",
+          "published": "Wed, 06 May 2026 22:49:19 -0400",
+          "video_url": ""
+        }
+      ],
+      "summary": "Loaded 5 sources. Theme: global security. Top focus: Secretary Howard Lutnick is questioned by House lawmakers over his Epstein ties; Hantavirus-hit cruise ship leaves Cape Verde after three evacuated; and Justice Department can keep 2020 ballots seized from Fulton County in Georgia, judge rules.",
+      "categories": {
+        "global": {
+          "title": "Global News",
+          "items": [
+            {
+              "title": "Iran considering US proposal as Trump says war will be 'over quickly'",
+              "url": "https://www.bbc.com/news/articles/cj0pq2q8221o?at_medium=RSS&at_campaign=rss",
+              "source": "BBC World",
+              "summary": "Mediator Pakistan says it is \"endeavouring to convert this ceasefire into a permanent end to this war\".",
+              "published": "Thu, 07 May 2026 04:06:33 GMT",
+              "video_url": ""
+            },
+            {
+              "title": "South Korean court reduces Han Duck-soo\u2019s prison term in martial law case",
+              "url": "https://www.aljazeera.com/news/2026/5/7/south-korean-court-reduces-han-duck-soos-prison-term-in-martial-law-case?traffic_source=rss",
+              "source": "Al Jazeera",
+              "summary": "Seoul appeals court cuts Han Duck-soo's prison sentence from 23 years to 15.",
+              "published": "Thu, 07 May 2026 03:25:09 +0000",
+              "video_url": ""
+            }
+          ],
+          "summary": "Loaded 2 sources. Themes: global security and policy and government. Top focus: Iran considering US proposal as Trump says war will be 'over quickly'; alongside South Korean court reduces Han Duck-soo\u2019s prison term in martial law case."
+        },
+        "politics": {
+          "title": "Politics News",
+          "items": [
+            {
+              "title": "Secretary Howard Lutnick is questioned by House lawmakers over his Epstein ties",
+              "url": "https://www.npr.org/2026/05/06/nx-s1-5814081/howard-lutnick-epstein-files-house-oversight-committee",
+              "source": "NPR Politics",
+              "summary": "Lutnick said last year that he cut ties with Epstein, his former neighbor, in 2005. But the Epstein files indicate that the two kept in contact, including for a 2012 lunch on Epstein's private island.",
+              "published": "Wed, 06 May 2026 22:24:42 -0400",
+              "video_url": ""
+            },
+            {
+              "title": "Millions across England, Scotland and Wales to vote in key elections",
+              "url": "https://www.bbc.com/news/articles/c62xkw1pyvzo?at_medium=RSS&at_campaign=rss",
+              "source": "BBC Politics",
+              "summary": "The polls on Thursday will be the biggest test of public opinion since the general election in 2024.",
+              "published": "Wed, 06 May 2026 22:59:32 GMT",
+              "video_url": ""
+            },
+            {
+              "title": "California immigration judge sues DOJ, alleging she was fired for being a registered Democrat, a woman over 40",
+              "url": "https://www.foxnews.com/politics/california-immigration-judge-sues-doj-alleging-fired-registered-democrat-woman-over-40",
+              "source": "FOX Politics",
+              "summary": "A California immigration judge alleges in a lawsuit against the DOJ that she was terminated due to her political affiliation and advocacy ties.",
+              "published": "Wed, 06 May 2026 20:34:28 -0400",
+              "video_url": ""
+            }
+          ],
+          "summary": "Loaded 3 sources. Theme: policy and government. Top focus: Secretary Howard Lutnick is questioned by House lawmakers over his Epstein ties; Millions across England, Scotland and Wales to vote in key elections; and California immigration judge sues DOJ, alleging she was fired for being a registered Democrat, a woman over 40."
+        },
+        "local": {
+          "title": "Local News",
+          "items": [
+            {
+              "title": "Secretary Howard Lutnick is questioned by House lawmakers over his Epstein ties",
+              "url": "https://www.npr.org/2026/05/06/nx-s1-5814081/howard-lutnick-epstein-files-house-oversight-committee",
+              "source": "NPR",
+              "summary": "Lutnick said last year that he cut ties with Epstein, his former neighbor, in 2005. But the Epstein files indicate that the two kept in contact, including for a 2012 lunch on Epstein's private island.",
+              "published": "Wed, 06 May 2026 22:24:42 -0400",
+              "video_url": ""
+            },
+            {
+              "title": "What to know about potential US-Iran agreement",
+              "url": "https://abcnews.com/Politics/potential-us-iran-agreement/story?id=132727248",
+              "source": "ABC News",
+              "summary": "The one-page memo calls for negotiations over 30 days.",
+              "published": "Wed, 06 May 2026 21:04:10 -0400",
+              "video_url": ""
+            }
+          ],
+          "summary": "Loaded 2 sources. Theme: global security. Top focus: Secretary Howard Lutnick is questioned by House lawmakers over his Epstein ties; alongside What to know about potential US-Iran agreement."
+        },
+        "tech": {
+          "title": "Tech News",
+          "items": [
+            {
+              "title": "Musk\u2019s biggest loyalist became his biggest liability",
+              "url": "https://www.theverge.com/ai-artificial-intelligence/925665/musk-altman-trial-shivon-zilis-testimony",
+              "source": "The Verge",
+              "summary": "I sat down in the Musk v. Altman trial courtroom today, painfully aware that no one was going to ask Shivon Zilis the question on everyone's minds: Girl, what the fuck are you doing? Zilis, who testified und...",
+              "published": "2026-05-06T19:37:02-04:00",
+              "video_url": ""
+            },
+            {
+              "title": "SpaceX is starting to move on from the world's most successful rocket",
+              "url": "https://arstechnica.com/space/2026/05/spacex-is-starting-to-move-on-from-the-worlds-most-successful-rocket/",
+              "source": "Ars Technica",
+              "summary": "Vandenberg Space Force Base in California is set to become SpaceX's busiest launch site\u2014for now.",
+              "published": "Wed, 06 May 2026 22:28:47 +0000",
+              "video_url": ""
+            },
+            {
+              "title": "A 20-minute pitch wins Indian startup Pronto backing from Lachy Groom",
+              "url": "https://techcrunch.com/2026/05/06/a-20-minute-pitch-wins-indian-startup-pronto-backing-from-lachy-groom/",
+              "source": "TechCrunch",
+              "summary": "The investment comes as Pronto scales to 26,000 daily bookings and the market heads toward a potential $18 billion size.",
+              "published": "Wed, 06 May 2026 22:30:00 +0000",
+              "video_url": ""
+            }
+          ],
+          "summary": "Loaded 3 sources. Theme: economy and markets. Top focus: Musk\u2019s biggest loyalist became his biggest liability; SpaceX is starting to move on from the world's most successful rocket; and A 20-minute pitch wins Indian startup Pronto backing from Lachy Groom."
+        },
+        "crypto": {
+          "title": "Crypto News",
+          "items": [
+            {
+              "title": "AI agents becoming more relevant than humans by 2035 has Big Tech 'terrified', says Hoskinson",
+              "url": "https://www.coindesk.com/business/2026/05/06/ai-agents-will-become-more-relevant-than-humans-by-2035-says-charles-hoskinson",
+              "source": "CoinDesk",
+              "summary": "The founder and CEO of Cardano\u2019s Input Output said Google, Amazon and Facebook are terrified because AI agents will not behave like humans when confronted with ads.",
+              "published": "Wed, 06 May 2026 22:35:57 +0000",
+              "video_url": ""
+            },
+            {
+              "title": "Iran war threatens jet fuel shortage that could disrupt summer travel in Asia and Europe",
+              "url": "https://www.cnbc.com/2026/05/06/iran-war-jet-fuel-europe-asia-summer-flights.html",
+              "source": "CNBC Markets",
+              "summary": "Oil executives have warned that the supply disruption in the Middle East will soon cause actual fuel shortages in some parts of the world.",
+              "published": "Wed, 06 May 2026 20:34:42 GMT",
+              "video_url": ""
+            },
+            {
+              "title": "Hantavirus outbreaks rarely happen. This Andes strain is \u2018a complicated public-health situation.\u2019",
+              "url": "https://www.marketwatch.com/story/hantavirus-outbreaks-rarely-happen-this-andes-strain-is-a-complicated-public-health-situation-b0c7dbb4?mod=mw_rss_topstories",
+              "source": "MarketWatch",
+              "summary": "At least two people departed the MV Hondius cruise ship in late April and one has tested positive for the Andes strain, a type of hantavirus.",
+              "published": "Thu, 07 May 2026 02:15:00 GMT",
+              "video_url": ""
+            }
+          ],
+          "summary": "Loaded 3 sources. Themes: global security and technology. Top focus: AI agents becoming more relevant than humans by 2035 has Big Tech 'terrified', says Hoskinson; Iran war threatens jet fuel shortage that could disrupt summer travel in Asia and Europe; and Hantavirus outbreaks rarely happen. This Andes strain is \u2018a complicated public-health situation.\u2019."
+        }
+      },
+      "status": "ok",
+      "source_count": 5,
+      "category_count": 5
+    },
+    {
+      "type": "trust_status",
+      "data": {
+        "mode": "Online",
+        "last_external_call": "News update",
+        "data_egress": "Read-only external request",
+        "failure_state": "Normal",
+        "consecutive_failures": 0
+      }
+    },
+    {
+      "type": "chat_done",
+      "turn_id": "news_load"
+    },
+    {
+      "type": "chat",
+      "message": "Headline summary from loaded news context.\nLoaded headlines: 5\n1. Secretary Howard Lutnick is questioned by House lawmakers over his Epstein ties (NPR): Lutnick said last year that he cut ties with Epstein, his former neighbor, in 2005. But the Epstein files indicate that the two kept in contact, including for a 2012 lunch on Epstein's private island.\n2. Hantavirus-hit cruise ship leaves Cape Verde after three evacuated (BBC News): A British man is among three evacuees sent to the Netherlands after displaying symptoms while aboard the MV Hondius.\n3. Justice Department can keep 2020 ballots seized from Fulton County in Georgia, judge rules (PBS NewsHour): The Jan. 28 seizure by the FBI targeted the elections hub in Georgia's most populous county, which is heavily Democratic and includes most of the city of Atlanta.\n4. What to know about potential US-Iran agreement (ABC News): The one-page memo calls for negotiations over 30 days.\n5. MLB television ratings surge 44% through early part of the season ahead of potential lockout (FOX News): MLB ratings have surged 44% this season, the best start in nine years, as rule changes and pace of play improvements fuel baseball's impressive growth.\nThis summarized the loaded headline state only; no web search or external action was performed.",
+      "turn_id": "headline_summary_loaded",
+      "suggested_actions": [
+        {
+          "label": "Refresh news",
+          "command": "news"
+        },
+        {
+          "label": "Show sources",
+          "command": "sources"
+        }
+      ]
+    },
+    {
+      "type": "chat_done",
+      "turn_id": "headline_summary_loaded"
+    },
+    {
+      "type": "chat",
+      "message": "Okay. I'm on it.",
+      "turn_id": "nonsense_search"
+    },
+    {
+      "type": "trust_status",
+      "data": {
+        "mode": "Online",
+        "last_external_call": "Governed web search",
+        "data_egress": "Read-only external request",
+        "failure_state": "Normal",
+        "consecutive_failures": 0
+      }
+    },
+    {
+      "type": "chat",
+      "message": "Bottom line: Across multiple sources on \"qzxqzxqzx nonexistent topic with 1000 sources\", the top reports align on java - org.apache.kafka.common.errors.TimeoutException: Topic not present in metadata after 60000 ms and apache spark - Topic doesn't exist as expected in kafka - Stack Overflow. Details vary by outlet, so use the linked sources for full context.\nSearch answer for \"qzxqzxqzx nonexistent topic with 1000 sources\"\nSources:\n1. apache spark - Topic doesn't exist as expected in kafka - Stack Overflow - https://stackoverflow.com/questions/62991168/topic-doesnt-exist-as-expected-in-kafka\n2. java - org.apache.kafka.common.errors.TimeoutException: Topic not present in metadata after 60000 ms - https://stackoverflow.com/questions/63714401/org-apache-kafka-common-errors-timeoutexception-topic-not-present-in-metadata-a\n3. IAdminClient.GetMetadata(topic, timeout) creates the topic if it doesn't exit \u00b7 Issue #1622 \u00b7 conflu - https://github.com/confluentinc/confluent-kafka-dotnet/issues/1622\nConfidence: Low\nWhat is known: Governed search returned 5 results. Nova reviewed 3 source pages. Visible source URLs are available for review.\nWhat is unclear: Results may be weak or unrelated because visible result text barely matches the query. Current facts may change; use the linked sources for latest context.\nSource reading: reviewed 3 pages via Brave Search.\nTry next\n- show sources\n- research qzxqzxqzx nonexistent topic with 1000 sources\n- create an intelligence brief on qzxqzxqzx nonexistent topic with 1000 sources\n- analyze source reliability for qzxqzxqzx nonexistent topic with 1000 sources",
+      "turn_id": "nonsense_search"
+    },
+    {
+      "type": "search",
+      "data": {
+        "query": "qzxqzxqzx nonexistent topic with 1000 sources",
+        "provider": "Brave Search",
+        "latency_seconds": 0.44,
+        "result_count": 5,
+        "summary": "Across multiple sources on \"qzxqzxqzx nonexistent topic with 1000 sources\", the top reports align on java - org.apache.kafka.common.errors.TimeoutException: Topic not present in metadata after 60000 ms and apache spark - Topic doesn't exist as expected in kafka - Stack Overflow. Details vary by outlet, so use the linked sources for full context.",
+        "researched_summary": "Across multiple sources on \"qzxqzxqzx nonexistent topic with 1000 sources\", the top reports align on java - org.apache.kafka.common.errors.TimeoutException: Topic not present in metadata after 60000 ms and apache spark - Topic doesn't exist as expected in kafka - Stack Overflow. Details vary by outlet, so use the linked sources for full context.",
+        "source_pages_read": 3,
+        "evidence": {
+          "query": "qzxqzxqzx nonexistent topic with 1000 sources",
+          "claims": [
+            {
+              "claim": "java - org.apache.kafka.common.errors.TimeoutException: Topic not present in metadata after 60000 ms - Stack Overflow Skip to main content About Products For Teams Stack Internal Implement a knowledge platform layer to power your enterprise and AI tools.",
+              "source_url": "https://stackoverflow.com/questions/63714401/org-apache-kafka-common-errors-timeoutexception-topic-not-present-in-metadata-a",
+              "source_title": "java - org.apache.kafka.common.errors.TimeoutException: Topic not present in metadata after 60000 ms",
+              "confidence": "low",
+              "uncertainty": "Source-page excerpt was available; details may still need verification. Visible result text barely matches the query; this claim may be weak or unrelated."
+            },
+            {
+              "claim": "apache spark - Topic doesn&#39;t exist as expected in kafka - Stack Overflow Skip to main content About Products For Teams Stack Internal Implement a knowledge platform layer to power your enterprise and AI tools.",
+              "source_url": "https://stackoverflow.com/questions/62991168/topic-doesnt-exist-as-expected-in-kafka",
+              "source_title": "apache spark - Topic doesn't exist as expected in kafka - Stack Overflow",
+              "confidence": "low",
+              "uncertainty": "Source-page excerpt was available; details may still need verification. Visible result text barely matches the query; this claim may be weak or unrelated."
+            },
+            {
+              "claim": "IAdminClient.GetMetadata(topic, timeout) creates the topic if it doesn&#39;t exit \u00b7 Issue #1622 \u00b7 confluentinc/confluent-kafka-dotnet \u00b7 GitHub Skip to content Navigation Menu Toggle navigation Sign in Appearance settings Platform AI CODE CREATION GitHub Cop...",
+              "source_url": "https://github.com/confluentinc/confluent-kafka-dotnet/issues/1622",
+              "source_title": "IAdminClient.GetMetadata(topic, timeout) creates the topic if it doesn't exit \u00b7 Issue #1622 \u00b7 conflu",
+              "confidence": "low",
+              "uncertainty": "Source-page excerpt was available; details may still need verification. Visible result text barely matches the query; this claim may be weak or unrelated."
+            }
+          ],
+          "known": [
+            "Governed search returned 5 results.",
+            "Nova reviewed 3 source pages.",
+            "Visible source URLs are available for review."
+          ],
+          "unclear": [
+            "Results may be weak or unrelated because visible result text barely matches the query.",
+            "Current facts may change; use the linked sources for latest context."
+          ],
+          "source_urls": [
+            "https://stackoverflow.com/questions/63714401/org-apache-kafka-common-errors-timeoutexception-topic-not-present-in-metadata-a",
+            "https://stackoverflow.com/questions/62991168/topic-doesnt-exist-as-expected-in-kafka",
+            "https://github.com/confluentinc/confluent-kafka-dotnet/issues/1622",
+            "https://github.com/strimzi/strimzi-kafka-bridge/issues/64",
+            "https://forum.confluent.io/t/unknown-topic-or-partition-error-even-though-the-topic-should-be-created-automatically/2049"
+          ],
+          "confidence": "low",
+          "evidence_status": "source_backed",
+          "source_pages_read": 3,
+          "result_count": 5
+        },
+        "follow_up_prompts": [
+          "research qzxqzxqzx nonexistent topic with 1000 sources",
+          "create an intelligence brief on qzxqzxqzx nonexistent topic with 1000 sources",
+          "analyze source reliability for qzxqzxqzx nonexistent topic with 1000 sources"
+        ],
+        "suggested_actions": [
+          {
+            "label": "Research this topic",
+            "prompt": "research qzxqzxqzx nonexistent topic with 1000 sources"
+          },
+          {
+            "label": "Create brief",
+            "prompt": "create an intelligence brief on qzxqzxqzx nonexistent topic with 1000 sources"
+          },
+          {
+            "label": "Check source reliability",
+            "prompt": "analyze source reliability for qzxqzxqzx nonexistent topic with 1000 sources"
+          }
+        ],
+        "results": [
+          {
+            "title": "apache spark - Topic doesn't exist as expected in kafka - Stack Overflow",
+            "url": "https://stackoverflow.com/questions/62991168/topic-doesnt-exist-as-expected-in-kafka",
+            "snippet": "You have to either <strong>create the topic beforehand, or you can configure Kafka to autocreate topics</strong>."
+          },
+          {
+            "title": "java - org.apache.kafka.common.errors.TimeoutException: Topic not present in metadata after 60000 ms",
+            "url": "https://stackoverflow.com/questions/63714401/org-apache-kafka-common-errors-timeoutexception-topic-not-present-in-metadata-a",
+            "snippet": "@OneCricketeer sure, I have added the output of list and describe topic to the question, I set the replication factor to 1 as I&#x27;m working with one broker instance and the number of partitions to "
+          },
+          {
+            "title": "IAdminClient.GetMetadata(topic, timeout) creates the topic if it doesn't exit \u00b7 Issue #1622 \u00b7 conflu",
+            "url": "https://github.com/confluentinc/confluent-kafka-dotnet/issues/1622",
+            "snippet": "using Confluent.Kafka; using System; using System.Collections.Generic; using System.Linq; using System.Threading.Tasks; var client = new AdminClientBuilder( new[] { KeyValuePair.Create(&quot;bootstrap"
+          },
+          {
+            "title": "Sending messages to nonexistent topics \u00b7 Issue #64 \u00b7 strimzi/strimzi-kafka-bridge",
+            "url": "https://github.com/strimzi/strimzi-kafka-bridge/issues/64",
+            "snippet": "<strong>By default Kafka will create topics automatically when messages are send to a topic which doesn&#x27;t already exist</strong>. But the cluster can be configured not to do this. Currently the S"
+          },
+          {
+            "title": "Unknown Topic Or Partition error, even though the topic should be created automatically - Clients - ",
+            "url": "https://forum.confluent.io/t/unknown-topic-or-partition-error-even-though-the-topic-should-be-created-automatically/2049",
+            "snippet": "Hi there! This will basically be a duplication of this issue I opened on kafka-gos GitHub-page. I noticed the issue first using the Golang-client, however the longer I research this and try stuff out,"
+          }
+        ]
+      }
+    },
+    {
+      "type": "chat_done",
+      "turn_id": "nonsense_search"
+    },
+    {
+      "type": "trust_status",
+      "data": {
+        "mode": "Local-only",
+        "last_external_call": "Governed web search",
+        "data_egress": "No external call in this step",
+        "failure_state": "Normal",
+        "consecutive_failures": 0
+      }
+    },
+    {
+      "type": "chat",
+      "message": "TOPIC MEMORY MAP\n1. potential (2)\n2. secretary (1)\n3. howard (1)\n4. lutnick (1)\n5. questioned (1)\n6. house (1)\n7. lawmakers (1)\n8. epstein (1)\n9. ties (1)\n10. hantavirus (1)\n11. cruise (1)\n12. ship (1)",
+      "turn_id": "topic_map_direct"
+    },
+    {
+      "type": "topic_map",
+      "data": {
+        "topics": {
+          "potential": 2,
+          "secretary": 1,
+          "howard": 1,
+          "lutnick": 1,
+          "questioned": 1,
+          "house": 1,
+          "lawmakers": 1,
+          "epstein": 1,
+          "ties": 1,
+          "hantavirus": 1,
+          "cruise": 1,
+          "ship": 1
+        }
+      }
+    },
+    {
+      "type": "chat_done",
+      "turn_id": "topic_map_direct"
+    },
+    {
+      "type": "trust_status",
+      "data": {
+        "mode": "Local-only",
+        "last_external_call": "Governed web search",
+        "data_egress": "No external call in this step",
+        "failure_state": "Normal",
+        "consecutive_failures": 0
+      }
+    },
+    {
+      "type": "chat",
+      "message": "Story 'global security' is already tracked.\nLatest snapshot hash: d4aec4bc8704.\nTry next:\n- update story global security\n- show story global security",
+      "turn_id": "story_tracker_update"
+    },
+    {
+      "type": "story_tracker_update",
+      "data": {
+        "topic": "global security"
+      }
+    },
+    {
+      "type": "chat_done",
+      "turn_id": "story_tracker_update"
+    },
+    {
+      "type": "trust_status",
+      "data": {
+        "mode": "Local-only",
+        "last_external_call": "Governed web search",
+        "data_egress": "No external call in this step",
+        "failure_state": "Temporary issue",
+        "consecutive_failures": 1
+      }
+    },
+    {
+      "type": "chat",
+      "message": "No update performed since last snapshot.\nUse \"update story tracker\" to refresh.",
+      "turn_id": "story_tracker_view"
+    },
+    {
+      "type": "chat_done",
+      "turn_id": "story_tracker_view"
+    }
+  ],
+  "event_count": 28
+}
