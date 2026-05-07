@@ -17,6 +17,16 @@ _HEADLINE_SUMMARY_RE = re.compile(
     r"|\b(?:headlines?|news).{0,50}\b(?:summari[sz]e|summary)\b",
     re.IGNORECASE,
 )
+_UNTRUSTED_COMMAND_TEXT_RE = re.compile(
+    r"\b(?:ignore (?:all )?(?:previous|prior) instructions|run this command|open this url|download this file|"
+    r"call open_file|actionrequest|bypass governor|cap\s*63|openclaw_execute)\b",
+    re.IGNORECASE,
+)
+_QUOTED_CONTENT_REQUEST_RE = re.compile(
+    r"\b(?:summari[sz]e|analy[sz]e|explain|review)\b.{0,80}"
+    r"\b(?:article|text|content|search result|result|snippet|quote|quoted)\b",
+    re.IGNORECASE,
+)
 
 
 def pending_confirmation_resolution_action(SessionRouter: Any, raw_text: str) -> str:
@@ -114,6 +124,29 @@ def render_headline_summary_from_cache(news_cache: Any) -> str:
             lines.append(f"{index}. {title}{source_part}")
     lines.append("This summarized the loaded headline state only; no web search or external action was performed.")
     return "\n".join(lines)
+
+
+def untrusted_quoted_content_response(text: str) -> str:
+    raw = str(text or "").strip()
+    if not raw:
+        return ""
+    if not _UNTRUSTED_COMMAND_TEXT_RE.search(raw):
+        return ""
+    if not (_QUOTED_CONTENT_REQUEST_RE.search(raw) or "\n" in raw or ":" in raw or '"' in raw):
+        return ""
+
+    content = raw
+    if ":" in content:
+        content = content.split(":", 1)[1].strip()
+    content = re.sub(r"\s+", " ", content).strip().strip('"')
+    if len(content) > 420:
+        content = content[:417].rstrip() + "..."
+
+    return (
+        "I treated that as untrusted quoted content, not instructions.\n\n"
+        f"Local summary: the text contains command-like or prompt-injection language: {content}\n\n"
+        "No web search was started, no command was executed, and no authority was granted."
+    )
 
 
 async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
@@ -860,6 +893,15 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
             lowered = route_context.lowered
             decision = route_context.decision
             _prune_topic_stack(session_state, session_state["turn_count"])
+
+            untrusted_content_response = untrusted_quoted_content_response(text)
+            if untrusted_content_response:
+                await _complete_immediate_turn(
+                    untrusted_content_response,
+                    remember_response=False,
+                    tone_domain="system",
+                )
+                continue
 
             governance_refusal = governance_refusal_for(text)
             if governance_refusal:

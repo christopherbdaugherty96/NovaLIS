@@ -11,10 +11,7 @@ def _req(capability_id: int, params: dict):
 def test_track_update_view_compare_stop(monkeypatch, tmp_path):
     from src.executors import story_tracker_executor as mod
 
-    monkeypatch.setattr(mod, "STORY_DIR", tmp_path / "story_tracker")
-    monkeypatch.setattr(mod, "TRACKED_TOPICS_PATH", (tmp_path / "story_tracker" / "tracked_topics.json"))
-
-    executor = mod.StoryTrackerExecutor()
+    executor = mod.StoryTrackerExecutor(tmp_path / "story_tracker")
     headlines = [
         {"title": "EU advances AI regulation framework", "source": "Reuters", "url": "https://example.com/a"},
         {"title": "US Senate hearing on AI safety", "source": "AP", "url": "https://example.com/b"},
@@ -51,10 +48,7 @@ def test_track_update_view_compare_stop(monkeypatch, tmp_path):
 def test_compare_stories(monkeypatch, tmp_path):
     from src.executors import story_tracker_executor as mod
 
-    monkeypatch.setattr(mod, "STORY_DIR", tmp_path / "story_tracker")
-    monkeypatch.setattr(mod, "TRACKED_TOPICS_PATH", (tmp_path / "story_tracker" / "tracked_topics.json"))
-
-    executor = mod.StoryTrackerExecutor()
+    executor = mod.StoryTrackerExecutor(tmp_path / "story_tracker")
     ai_headlines = [
         {"title": "US updates AI export policy", "source": "Reuters", "url": "https://example.com/a1"},
         {"title": "AI regulation debate expands in senate", "source": "AP", "url": "https://example.com/a2"},
@@ -86,12 +80,9 @@ def test_compare_stories(monkeypatch, tmp_path):
 def test_retention_and_relationship_graph(monkeypatch, tmp_path):
     from src.executors import story_tracker_executor as mod
 
-    monkeypatch.setattr(mod, "STORY_DIR", tmp_path / "story_tracker")
-    monkeypatch.setattr(mod, "TRACKED_TOPICS_PATH", (tmp_path / "story_tracker" / "tracked_topics.json"))
-    monkeypatch.setattr(mod, "STORY_GRAPH_PATH", (tmp_path / "story_tracker" / "story_graph.json"))
     monkeypatch.setattr(mod, "RETENTION_DAYS", 30)
 
-    executor = mod.StoryTrackerExecutor()
+    executor = mod.StoryTrackerExecutor(tmp_path / "story_tracker")
     topic = "AI regulation"
     story_path = (tmp_path / "story_tracker" / "story_ai_regulation.json")
     old_ts = (datetime.now(timezone.utc) - timedelta(days=90)).isoformat()
@@ -127,3 +118,27 @@ def test_retention_and_relationship_graph(monkeypatch, tmp_path):
     assert graph.success is True
     assert "RELATIONSHIP GRAPH" in graph.message
     assert "AI regulation" in graph.message
+
+
+def test_story_tracker_accepts_temp_store_without_touching_default_workspace(tmp_path):
+    from src.executors import story_tracker_executor as mod
+
+    temp_store = tmp_path / "proof_story_tracker"
+    executor = mod.StoryTrackerExecutor(temp_store)
+
+    result = executor.execute_update(
+        _req(
+            52,
+            {
+                "action": "track",
+                "topic": "proof only",
+                "headlines": [{"title": "Proof only story update", "source": "Fixture", "url": "https://example.com"}],
+            },
+        )
+    )
+
+    assert result.success is True
+    assert (temp_store / "tracked_topics.json").exists()
+    assert (temp_store / "story_proof_only.json").exists()
+    assert mod._story_path("proof only") == mod.STORY_DIR / "story_proof_only.json"
+    assert not (mod.STORY_DIR / "story_proof_only.json").exists()

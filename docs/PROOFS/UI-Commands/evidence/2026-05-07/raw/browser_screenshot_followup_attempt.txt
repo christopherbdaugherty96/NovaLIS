@@ -1,0 +1,11 @@
+﻿Browser screenshot proof attempt - 2026-05-07
+
+Scope: evidence capture only. This did not add or exercise any Nova browser/computer-use capability.
+
+Attempted Browser Use in-app browser bootstrap with backend iab and local target http://127.0.0.1:8000.
+
+Result: blocked before page interaction.
+Observed failure:
+failed to write kernel assets: The system cannot find the path specified. (os error 3)
+
+Conclusion: no screenshot captured in this follow-up pass. Browser/computer-use screenshot proof remains blocked by the Codex/browser-use runtime setup issue, not by a Nova runtime change.
