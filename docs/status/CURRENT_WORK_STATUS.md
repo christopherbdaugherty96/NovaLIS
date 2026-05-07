@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-07 (malformed widget / rapid-submit proof progress)
+Last reviewed: 2026-05-07 (Web/News/UI proof lock qualified closeout)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -12,7 +12,7 @@ Generated runtime docs and actual code win if they conflict with this note.
 
 ## Priority Lock Status (2026-05-06)
 
-Current active priority lock:
+Most recently active priority lock:
 
 ```text
 Governed Web / News / Reporting + UI / Commands Proof + Stress Test
@@ -20,38 +20,52 @@ Governed Web / News / Reporting + UI / Commands Proof + Stress Test
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
 
-Paused prior priority lock:
+Closeout review:
+
+```text
+docs/status/WEB_NEWS_UI_PROOF_LOCK_CLOSEOUT_REVIEW_2026-05-07.md
+```
+
+Closeout status:
+
+```text
+qualified closed / screenshot proof explicitly blocked
+```
+
+Current active priority lock may now resume:
 
 ```text
 Trust Review Card MVP / Visible Non-Action Receipt Surface
 ```
 
-The Trust Review Card MVP lock is paused by user request. No Trust Review Card implementation work should proceed until the active proof/stress-test lock is complete, closed, or explicitly superseded.
+The Trust Review Card MVP lock was paused by user request while the Web/News/Reporting + UI/Commands proof/stress-test lock ran. With the qualified closeout recorded, Trust Review Card MVP may resume through its own narrow branch.
 
-The current active workstream is limited to validating and pressure-testing existing governed information/reporting and visible UI/button/command surfaces.
+The completed proof/stress-test workstream was limited to validating and pressure-testing existing governed information/reporting and visible UI/button/command surfaces.
 
-This is not an automation-expansion lock.
+This closeout is not an automation-expansion approval.
 
 PR #119 materially expanded the proof/evidence library.
 
 PR #121 added deterministic stress fixtures for contradictory reporting, duplicate/prior-state topic
-mapping, and split-topic headline comparison. It reduced those proof gaps, but it did not close the
-active lock.
+mapping, and split-topic headline comparison. It reduced those proof gaps.
 
 The current stale/provider/credibility fixture pass adds deterministic search evidence coverage for
 stale timestamps, malformed/degraded provider output, and weak/untrusted source credibility signals.
-It further reduces proof gaps, but still does not close the active lock.
+It further reduced proof gaps.
 
 The dashboard stale/degraded rendering pass adds visible search-widget rendering for the new evidence
 metadata: provider status, freshness status, source credibility rows, and empty degraded search state.
-It further reduces UI truthfulness gaps, but still does not close the active lock because screenshot and
-rapid-click/double-submit proof remain open.
+It further reduced UI truthfulness gaps.
 
 The malformed widget / rapid-submit proof pass adds a visible unsupported dashboard-message fallback and
 contract proof for overlapping send blocks, single-use send binding, manual-turn filtering, assistant-text
 de-dupe, and pending confirmation isolation. It reduces the rapid-click/double-submit and malformed widget
-proof gaps, but still does not close the active lock because screenshot/click-path proof and broader
-widget-specific visual proof remain open.
+proof gaps.
+
+The closeout review classifies the lock as qualified closed. Browser Use screenshot/click-path proof,
+high-frequency browser event replay, broader visual UI proof, deeper widget-specific fuzzing, and
+timeline-drift fixtures remain carried-forward follow-up work rather than reasons to keep this lock
+indefinitely open.
 
 ---
 
@@ -103,9 +117,9 @@ widget-specific visual proof remain open.
   docs were regenerated through the generator path, runtime fingerprint/hash alignment updated, proof
   artifact over-indexing in generated MOCs corrected, and OpenClawMediator/read-only workflow proof
   remained documented as non-executing/non-authorizing.
-- **Paused Trust Review Card MVP lock:** selected in PR #112 and paused by the active Web/News/Reporting
-  + UI/Commands proof/stress-test lock. It should not be implemented while this proof lock is active.
-- **Active Web/News/Reporting + UI/Commands proof lock:** validates existing governed information,
+- **Trust Review Card MVP lock:** selected in PR #112 and paused by the Web/News/Reporting + UI/Commands
+  proof/stress-test lock. It may resume after the qualified closeout through a narrow feature branch.
+- **Qualified-closed Web/News/Reporting + UI/Commands proof lock:** validated existing governed information,
   reporting, dashboard, button, command, widget, confirmation, degraded-state, and blocked-action surfaces.
   It does not approve new capabilities, OpenClaw execution expansion, browser/computer-use expansion,
   external writes, autonomous workflow execution, Google connector runtime expansion, capability registry
@@ -139,6 +153,10 @@ widget-specific visual proof remain open.
   It records `25 passed` for the focused dashboard/session proof suite and JS syntax checks for served and
   mirrored dashboard files. It does not add runtime authority, capabilities, browser/computer-use, external
   writes, OpenClaw expansion, autonomous workflow expansion, or direct Cap 63 shortcut use.
+- **Web/News/UI proof lock closeout review:** classifies the proof/stress-test lock as qualified closed.
+  It explicitly carries Browser Use screenshot/click-path proof, high-frequency browser event replay,
+  broader visual UI proof, deeper non-search widget fuzzing, and timeline-drift fixtures forward as proof
+  follow-up work. It does not add runtime authority or approve browser/computer-use expansion.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -147,7 +165,7 @@ widget-specific visual proof remain open.
 
 ## Planning-Only / Future Direction
 
-All future direction outside the active Web/News/Reporting + UI/Commands proof/stress-test lock requires a separate reviewed priority lock before work starts.
+All future direction outside the resumed Trust Review Card MVP scope requires a separate reviewed priority lock before work starts.
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
 
@@ -155,14 +173,14 @@ Current lock state:
 
 1. OpenClaw priority-lock sequence is complete and closed.
 2. Runtime truth regeneration / audit merged in PR #110 and is complete.
-3. Trust Review Card MVP priority lock was selected in PR #112 and is now paused.
-4. Web/News/Reporting + UI/Commands proof/stress-test lock is active.
+3. Trust Review Card MVP priority lock was selected in PR #112, paused during the proof/stress-test lock, and may now resume through a narrow MVP branch.
+4. Web/News/Reporting + UI/Commands proof/stress-test lock is qualified closed.
 5. PR #119 added the first evidence-backed proof library and UI verification matrix for the active lock.
 6. PR #121 reduced the contradiction and duplicate/split-topic proof gaps with deterministic fixtures.
 7. The stale-cache/provider-failure and source-credibility gaps now have deterministic backend fixture coverage.
 8. Dashboard-rendered stale/degraded search evidence state now has contract proof.
 9. Rapid-click/double-submit guard behavior and unsupported widget fallback now have contract proof.
-10. The active lock still remains open because Browser Use screenshot/click-path proof, broader visual UI/button proof, and deeper widget-specific malformed payload fixtures still need additional evidence.
-11. The next highest-ROI branch should focus on closeout review only after deciding whether screenshot/click-path proof remains a hard blocker, with screenshot proof still blocked until Browser Use runtime setup is fixed.
-12. The active lock allows only proof scaffolding, proof artifacts, simulations, stress-test prompts, and audit work for existing surfaces.
-13. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, installer work, and Trust Review Card implementation remain not approved.
+10. Browser Use screenshot/click-path proof, broader visual UI/button proof, deeper widget-specific malformed payload fixtures, and timeline-drift fixtures are carried forward as follow-up proof debt.
+11. The next highest-ROI branch may resume Trust Review Card MVP as a visible non-action receipt surface.
+12. Trust Review Card MVP scope remains non-authorizing and must not expand execution, OpenClaw, browser/computer-use, capabilities, or external writes.
+13. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, and installer work remain not approved.

@@ -1,6 +1,10 @@
 # Active Priority Lock - 2026-05-06 Web / News / Reporting + UI Proof / Stress Test
 
-Status: active.
+Status: qualified closed as of 2026-05-07.
+
+Closeout review: `docs/status/WEB_NEWS_UI_PROOF_LOCK_CLOSEOUT_REVIEW_2026-05-07.md`
+
+Browser Use screenshot/click-path proof remains explicitly blocked by runtime asset setup and is carried forward as proof-infrastructure debt, not as runtime authority or hidden success.
 
 This is human-maintained priority guidance, not generated runtime truth.
 
@@ -197,7 +201,7 @@ Standard visible states for this lock:
 - no direct Cap 63 shortcut use
 - no Google connector runtime expansion
 - no capability registry expansion
-- no Trust Review Card implementation work while paused
+- no Trust Review Card implementation work under this completed proof/stress-test lock
 - no installer work
 
 ---
@@ -223,16 +227,16 @@ This lock is complete only if:
 
 ## Boundary Rule
 
-This lock exists to validate and pressure-test existing governed information/reporting and UI/command surfaces.
+This lock existed to validate and pressure-test existing governed information/reporting and UI/command surfaces.
 
-It does not authorize broader automation or OpenClaw execution expansion.
+It did not authorize broader automation or OpenClaw execution expansion.
 
 ## Next After This Lock
 
-After this proof/stress-test lock closes, the recommended next reviewed workstream is:
+After this proof/stress-test lock's qualified closeout, the recommended next reviewed workstream is:
 
 ```text
 Trust Review Card MVP / Visible Non-Action Receipt Surface
 ```
 
-Do not resume Trust Review Card implementation from this lock.
+Trust Review Card implementation should resume only from its own narrow MVP branch, not by expanding this completed proof/stress-test lock.
