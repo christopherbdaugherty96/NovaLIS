@@ -51,3 +51,9 @@ Status: draft / review required
 1. **Headline summary command drift is resolved for loaded headline state**
    - Fix validation is recorded in the Web/News proof package.
    - Keep a regression fixture because the UI button text naturally depends on session state.
+
+2. **Dashboard stale/degraded search state is now contract-proven but not screenshot-proven**
+   - Fix validation: search widgets render `Evidence state`, provider/freshness chips, and source-signal rows when evidence metadata is present.
+   - Empty degraded/malformed search widgets remain visible as `Search state`.
+   - Evidence: `evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json`
+   - Remaining blocker: Browser Use screenshot/click-path proof still unavailable.

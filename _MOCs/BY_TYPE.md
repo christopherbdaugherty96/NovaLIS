@@ -931,7 +931,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 14f2c3025f89dfe1842b814d65b2779a5eb5f5c5265d1ff99faf99c88eceb484
+  summary: Runtime Fingerprint: 7f728f3fa437457585ad8263241a3a6c7bdfd8a4a7b17a99ecc91b24a5444df2
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -955,7 +955,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 95df11e25f14854a8cef6d9e7ce7eef2daeb57633742cf5d6d0aabcee2bc2362
+  summary: - runtimesurfacehash: 25719c7da2f8bdbc1f8b158ba47a554bdd748ff457ede35b54bd81ebe34898e5
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1828,7 +1828,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/design/ui_backend_contract|UI-Backend Contract Documentation]]
   summary: This document outlines the contract between the UI and backend services.
 
-## Proofs (211 docs, 18 code)
+## Proofs (213 docs, 19 code)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
@@ -1846,6 +1846,8 @@ concern is reflected across docs, code and tests.
   summary: id": "chat_basic",
 - [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-06/raw/websocket_command_probe_summary.json|websocket_command_probe_summary]]
   summary: id": "chat_basic",
+- [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json|dashboard_stale_degraded_rendering_contract]]
+  summary: proof_scope": "dashboard search widget rendering contract for stale/degraded/search evidence metadata",
 - [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/ui_blocker_fix_probe.json|ui_blocker_fix_probe]]
   summary: started_at_epoch": 1778127520.0930412,
 - [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/ui_followup_probe.json|ui_followup_probe]]
@@ -2180,6 +2182,8 @@ concern is reflected across docs, code and tests.
   summary: ﻿# Proofs Pointer
 - [doc] [[docs/PROOFS/UI-Commands/BLOCKERS|UI / Commands Blockers - 2026-05-06]]
   summary: Status: draft / review required
+- [doc] [[docs/PROOFS/UI-Commands/cases/DASHBOARD_STALE_DEGRADED_RENDERING_PROOF_2026-05-07|Dashboard Stale / Degraded Rendering Proof - 2026-05-07]]
+  summary: Status: pass / screenshot proof still blocked
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-06/raw/browser_use_failure.txt|browser_use_failure]]
   summary: ﻿Attempted in-app browser runtime through browser-client/iab. Node REPL browser setup failed before page interaction with: failed to write k...
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-06/raw/start_daemon_output.txt|start_daemon_output]]
@@ -2188,6 +2192,8 @@ concern is reflected across docs, code and tests.
   summary: [Nova] Stopping backend (PID 31132)...
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/browser_screenshot_followup_attempt.txt|browser_screenshot_followup_attempt]]
   summary: ﻿Browser screenshot proof attempt - 2026-05-07
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_pytest_results.txt|dashboard_stale_degraded_rendering_pytest_results]]
+  summary: Command:
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/focused_pytest_results.txt|focused_pytest_results - 2026-05-07/raw]]
   summary: ��. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . .         ...
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/followup_combined_pytest_results.txt|followup_combined_pytest_results - 2026-05-07/raw]]
@@ -2988,7 +2994,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST|Active Priority Lock - 2026-05-06 Web / News / Reporting + UI Proof / Stress Test]]
   summary: Status: active.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-07 (stale/provider/credibility fixture progress)
+  summary: Last reviewed: 2026-05-07 (dashboard stale/degraded rendering progress)
 - [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
   summary: Status: accepted as evidence baseline for the first read-only OpenClaw proof only / not authority-granting.
 - [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
