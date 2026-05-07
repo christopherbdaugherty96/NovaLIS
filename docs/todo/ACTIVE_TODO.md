@@ -2,17 +2,17 @@
 
 ## PRIORITY LOCK STATUS (2026-05-06)
 
-Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP.md`
+Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
 
-Updated: 2026-05-06 after Trust Review Card MVP lock selection.
+Updated: 2026-05-06 after Web/News/Reporting + UI/Commands proof/stress-test lock selection.
 
 Current active workstream:
 
 ```text
-Trust Review Card MVP / Visible Non-Action Receipt Surface
+Governed Web / News / Reporting + UI / Commands Proof + Stress Test
 ```
 
-This lock permits only a visible, read-only trust/review card surface and related non-action receipt display/proof work.
+This lock permits only proof scaffolding, proof artifacts, simulations, stress-test prompts, and audit work for existing governed information/reporting and visible UI/command surfaces.
 
 This is not an automation-expansion lock.
 
@@ -20,21 +20,44 @@ This is not an automation-expansion lock.
 
 ## Current Next TODO
 
-Implement the active Trust Review Card MVP priority lock.
+Build the proof/stress-test package for governed web/news/reporting and visible UI/button/command surfaces.
 
-Allowed implementation scope:
+Required proof focus:
 
-- render a minimal read-only RequestUnderstanding review card in the UI
-- render non-action / non-authorizing status fields clearly
-- render receipt fields such as:
-  - what happened
-  - what did not happen
-  - blocked actions
-  - history unavailable / not available states
-- add tests proving the trust card cannot imply execution occurred
-- improve trust wording clarity where needed
-- regenerate runtime docs through the generator path if runtime truth changes
-- audit wording for OpenClaw overstatement or authority drift
+- governed web search
+- browser/article open behavior
+- headline summaries
+- headline cluster comparison
+- multi-source reports
+- intelligence briefs
+- topic maps
+- story tracking
+- dashboard buttons/widgets
+- command entry flows
+- degraded/error states
+- confirmation prompts
+- blocked-action behavior
+- setup-required states
+- voice/media/system controls
+- analysis/memory/document surfaces
+
+Required stress-test focus:
+
+- malformed feeds
+- conflicting narratives
+- stale caches
+- duplicate stories
+- fake/low-credibility sources
+- governance bypass attempts
+- hallucinated attribution
+- topic-map instability
+- network failure paths
+- rapid repeated button presses
+- stale WebSocket state
+- malformed widget payloads
+- blocked-action coercion attempts
+- degraded-state rendering
+- prompt injection from article content
 
 Current completed audit outcomes:
 
@@ -43,29 +66,40 @@ Current completed audit outcomes:
 - proof-only OpenClaw artifacts were not inflated into runtime authority
 - raw proof evidence and screenshot folders are excluded from generated runtime/reference topical MOCs
 - runtime truth audit merged in PR #110
-- Trust Review Card MVP lock selected in PR #112
+- Trust Review Card MVP lock selected in PR #112 and later paused by user request
+- Web/News/Reporting + UI/Commands proof/stress-test lock created
 
 Do not broaden OpenClaw or start product/runtime expansion outside the active reviewed priority lock.
 
 References:
 
-- `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP.md`
+- `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
 - `docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06.md`
+- `docs/PROOFS/Web-News-Reporting/README.md`
+- `docs/PROOFS/UI-Commands/README.md`
 
 ## Lock Progress
 
 Current active lock:
 
-- Trust Review Card MVP / Visible Non-Action Receipt Surface
+- Governed Web / News / Reporting + UI / Commands Proof + Stress Test
 
 Planned lock targets:
 
-- minimal visible read-only UI trust/review card render
-- receipt/non-action rendering
-- history unavailable / not available state rendering
-- trust wording clarity pass
-- tests proving the UI cannot imply execution
-- audit for authority drift after implementation
+- governed information/reporting proof artifacts
+- UI/button/command proof artifacts
+- Codex/Claude simulation prompts
+- adversarial test suite
+- degraded-state verification
+- governance-boundary verification
+- hallucination/drift review
+- source credibility review
+- WebSocket/connectivity failure handling review
+- regression-test recommendations
+
+Paused prior lock:
+
+- Trust Review Card MVP / Visible Non-Action Receipt Surface
 
 Completed runtime truth audit lock:
 
@@ -99,47 +133,8 @@ Completed previous lock:
 - workflow automation expansion
 - scheduler expansion
 - installer work
+- Trust Review Card implementation while paused
 
 ---
 
-**Historical baseline below is retained for completed-context only. Work outside the active Trust Review Card MVP lock requires a new reviewed priority lock.**
-
-**Updated:** 2026-05-03 (cost posture pass)
-**Previous sprint goal:** Stage 6 - Routine surfaces. Context Pack and BrainTrace now live in prompt path.
-**Authority note:** This file is the public task snapshot. Exact runtime truth still comes from generated runtime docs and code.
-
-## Completed Baseline Before Priority Lock
-
-- Active proof closeout - PASS (Daily Brief, Search Evidence Synthesis, conversation continuity, prior full-suite proof)
-- Stage 3 Memory Loop - explicit remember / review-list / update / forget / why-used with receipts
-- Stage 4 Context Pack - bounded labeled context bridge with proof package
-- Stage 5 Brain discipline and BrainTrace - non-authorizing trace without private chain-of-thought exposure
-- Stage 6 RoutineGraph v0 - Daily Brief routine surface, non-authorizing
-- Plan My Week routine - proposal + approval record + receipt, non-authorizing
-- Cost posture metadata - visibility only, no runtime enforcement
-- Google read-only connector foundation plan - planning only, no OAuth/runtime connector
-
-## Previously Paused During The Completed Priority Lock
-
-- Plan My Week UI/API proof capture
-- business workflow demos
-- governed workflow workspace shell
-- workflow object model or workflow template schema
-- Google OAuth connector runtime work
-- Gmail/Calendar/Drive/Contacts runtime connector work
-- Gmail/Calendar/Drive write or send capabilities
-- Cap 64 P5 live signoff + lock
-- Cap 65 P5 live signoff + lock
-- Shopify write operations
-- OpenClaw broad automation
-- OpenClaw browser/computer-use expansion
-- OpenClaw scheduled external actions
-- Voice / ElevenLabs expansion
-- dashboard polish not directly required for the review card or signoff matrix
-- README screenshots/GIFs
-- waitlist activation
-- one-click installer work
-- Auralis social content runtime integration
-- YouTubeLIS runtime integration
-- free-first runtime enforcement beyond existing metadata unless directly required by signoff safety
-- general doc cleanup unless it directly supports this lock
+**Historical baseline below is retained for completed-context only. Work outside the active Web/News/Reporting + UI/Commands proof/stress-test lock requires a new reviewed priority lock.**
