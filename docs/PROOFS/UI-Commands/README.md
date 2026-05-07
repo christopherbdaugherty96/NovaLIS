@@ -161,6 +161,15 @@ Each proof should record:
 - screenshot/log reference if available
 - regression test recommendation
 
+## Current Proof Pass
+
+- `REPORT.md`
+- `VERIFICATION_MATRIX.md`
+- `BLOCKERS.md`
+- `FRICTION_LOG.md`
+- `REGRESSION_RECOMMENDATIONS.md`
+- `evidence/2026-05-06/raw/`
+
 ---
 
 ## Boundary

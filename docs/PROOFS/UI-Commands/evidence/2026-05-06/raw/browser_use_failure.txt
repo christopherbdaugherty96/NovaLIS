@@ -1,0 +1,1 @@
+﻿Attempted in-app browser runtime through browser-client/iab. Node REPL browser setup failed before page interaction with: failed to write kernel assets: The system cannot find the path specified. No UI screenshot was captured from computer-use in this pass. Fallback evidence uses local HTTP, WebSocket command probes, and static UI inventory.

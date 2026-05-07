@@ -115,3 +115,11 @@ Stress tests should focus on:
 - network failure behavior
 - credibility ranking drift
 - cache inconsistency
+
+## Current Proof Pass
+
+- `REPORT.md`
+- `BLOCKERS.md`
+- `FRICTION_LOG.md`
+- `REGRESSION_RECOMMENDATIONS.md`
+- `evidence/2026-05-06/raw/`
