@@ -4,35 +4,49 @@
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
 
-Updated: 2026-05-07 after the malformed widget / rapid-submit proof pass added unsupported widget fallback and rapid-submit contract coverage.
+Updated: 2026-05-07 after the Web/News/UI proof lock closeout review.
 
-Current active workstream:
+Most recently active workstream:
 
 ```text
 Governed Web / News / Reporting + UI / Commands Proof + Stress Test
 ```
 
-This lock permits only proof scaffolding, proof artifacts, simulations, stress-test prompts, and audit work for existing governed information/reporting and visible UI/command surfaces.
+Status:
+
+```text
+qualified closed / screenshot proof explicitly blocked
+```
+
+Closeout review:
+
+```text
+docs/status/WEB_NEWS_UI_PROOF_LOCK_CLOSEOUT_REVIEW_2026-05-07.md
+```
+
+This lock permitted only proof scaffolding, proof artifacts, simulations, stress-test prompts, and audit work for existing governed information/reporting and visible UI/command surfaces.
 
 This is not an automation-expansion lock.
 
 PR #119 improved proof-library coverage.
 
-PR #121 reduced the contradiction and duplicate/split-topic proof gaps with deterministic tests and proof evidence, but it did not close the active proof/stress-test lock.
+PR #121 reduced the contradiction and duplicate/split-topic proof gaps with deterministic tests and proof evidence.
 
-The stale/provider/credibility fixture pass reduces the stale-cache/provider-failure and source-credibility proof gaps, but it also does not close the active proof/stress-test lock.
+The stale/provider/credibility fixture pass reduced the stale-cache/provider-failure and source-credibility proof gaps.
 
-The dashboard stale/degraded rendering pass reduces the UI rendering gap for provider/freshness/source credibility metadata, but it also does not close the active proof/stress-test lock.
+The dashboard stale/degraded rendering pass reduced the UI rendering gap for provider/freshness/source credibility metadata.
 
-The malformed widget / rapid-submit proof pass reduces the rapid-click/double-submit and unsupported widget gaps, but it also does not close the active proof/stress-test lock.
+The malformed widget / rapid-submit proof pass reduced the rapid-click/double-submit and unsupported widget gaps.
+
+The closeout review carries Browser Use screenshot/click-path proof, high-frequency browser event replay, broader visual UI proof, deeper widget-specific malformed payload fixtures, and timeline-drift fixtures forward as follow-up proof debt.
 
 ---
 
 ## Current Next TODO
 
-Prepare the closeout review decision for the active proof/stress-test lock, while keeping screenshot/click-path and deeper visual UI proof gaps explicit.
+Resume the paused Trust Review Card MVP / Visible Non-Action Receipt Surface lock through a narrow non-authorizing implementation branch.
 
-Highest-priority remaining proof gaps:
+Carried-forward proof gaps:
 
 - Browser Use screenshot/click-path proof after runtime asset setup is fixed
 - broader visual UI/button coverage beyond command-path evidence
@@ -42,48 +56,22 @@ Highest-priority remaining proof gaps:
 Recommended next branch:
 
 ```text
-docs/web-news-ui-proof-lock-closeout-review
+feature/trust-review-card-mvp
 ```
 
-Expected proof outcome is truthful behavior, not guaranteed success.
+Scope for the next branch:
 
-Required proof focus retained from the active lock:
-
-- governed web search
-- browser/article open behavior
-- headline summaries
-- headline cluster comparison
-- multi-source reports
-- intelligence briefs
-- topic maps
-- story tracking
-- dashboard buttons/widgets
-- command entry flows
-- degraded/error states
-- confirmation prompts
-- blocked-action behavior
-- setup-required states
-- truthful UI state labels: working, blocked, setup-required, degraded, offline, unsupported
-- voice/media/system controls
-- analysis/memory/document surfaces
-
-Required stress-test focus retained from the active lock:
-
-- malformed feeds
-- conflicting narratives
-- stale caches
-- duplicate stories
-- fake/low-credibility sources
-- governance bypass attempts
-- hallucinated attribution
-- topic-map instability
-- network failure paths
-- rapid repeated button presses
-- stale WebSocket state
-- malformed widget payloads
-- blocked-action coercion attempts
-- degraded-state rendering
-- prompt injection from article content
+- visible non-action receipt card
+- planning/request-understanding display
+- confidence/boundary/status display
+- what Nova understood / can do / cannot do
+- whether execution is authorized
+- whether user confirmation is required
+- why no action happened
+- evidence/state if relevant
+- no execution authority
+- no OpenClaw expansion
+- no new capabilities
 
 Current completed audit/proof outcomes:
 
@@ -105,6 +93,7 @@ Current completed audit/proof outcomes:
 - the dashboard stale/degraded rendering pass recorded `4 passed`, `24 passed`, `2 passed`, and JS syntax checks for the focused rendering branch
 - the malformed widget / rapid-submit proof pass added an unsupported dashboard-message fallback and contract proof for overlapping send blocks, single-use send binding, turn-id filtering, assistant-text de-dupe, and pending confirmation isolation
 - the malformed widget / rapid-submit proof pass recorded `25 passed` and JS syntax checks for served/mirrored dashboard files
+- the Web/News/UI proof lock closeout review classified the lock as qualified closed and carried Browser Use screenshot/click-path proof forward as visual proof infrastructure debt
 
 Do not broaden OpenClaw or start product/runtime expansion outside the active reviewed priority lock.
 
@@ -122,9 +111,13 @@ References:
 
 Current active lock:
 
-- Governed Web / News / Reporting + UI / Commands Proof + Stress Test
+- Trust Review Card MVP / Visible Non-Action Receipt Surface
 
-Completed under current lock:
+Most recently completed lock:
+
+- Governed Web / News / Reporting + UI / Commands Proof + Stress Test: qualified closed
+
+Completed under the qualified-closed Web/News/UI proof lock:
 
 - proof package scaffolds created
 - Web/News proof library index created
@@ -143,15 +136,15 @@ Completed under current lock:
 - unsupported dashboard/WebSocket message fallback added and verified
 - rapid-click/double-submit contract guard coverage added and verified
 
-Still open under current lock:
+Carried-forward proof debt:
 
 - timeline-drift fixtures
 - Browser Use screenshot/click-path proof after asset setup is fixed
 - broader visual UI/button proof beyond command-path evidence
 - deeper widget-specific malformed payload fixtures beyond search/unsupported-message coverage
-- final lock closeout review
+- final lock closeout review added
 
-Paused prior lock:
+Resumed prior lock:
 
 - Trust Review Card MVP / Visible Non-Action Receipt Surface
 
@@ -187,8 +180,8 @@ Completed previous lock:
 - workflow automation expansion
 - scheduler expansion
 - installer work
-- Trust Review Card implementation while paused
+- Trust Review Card implementation outside the narrow resumed MVP/non-action receipt scope
 
 ---
 
-**Historical baseline below is retained for completed-context only. Work outside the active Web/News/Reporting + UI/Commands proof/stress-test lock requires a new reviewed priority lock.**
+**Historical baseline below is retained for completed-context only. Work outside the resumed Trust Review Card MVP / Visible Non-Action Receipt Surface scope requires a new reviewed priority lock.**
