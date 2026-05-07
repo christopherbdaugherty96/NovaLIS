@@ -19,6 +19,8 @@ This pass does not add new capabilities, does not approve browser/computer-use e
 
 - `evidence/2026-05-06/raw/websocket_web_news_probe_corrected.json`
 - `../UI-Commands/evidence/2026-05-06/raw/websocket_command_probe_corrected.json`
+- `evidence/2026-05-07/raw/web_news_blocker_fix_probe.json`
+- `evidence/2026-05-07/raw/focused_pytest_results.txt`
 - `FRICTION_LOG.md`
 
 ## Capability Proof Summary
@@ -27,13 +29,13 @@ This pass does not add new capabilities, does not approve browser/computer-use e
 | --- | --- | --- | --- | --- |
 | governed web search | `search latest AI policy updates` | Returned sources, confidence, reviewed-page count, caveats, and next steps. | pass | Governed information lane only; no external write. |
 | open website/article | `open website notaurl` then `no` | Prompted for confirmation and canceled cleanly. Invalid URL handling is too permissive. | degraded | Did not open without confirmation. |
-| headline summary | `summarize all headlines in plain language` | Routed to broader web search instead of loaded headline summary. | fail | Non-executing, but command interpretation drifted. |
+| headline summary | `news`, then `summarize all headlines in plain language` | Summarized the loaded headline state and stated no web search or external action was performed. | pass | Non-executing; bound to session headline context. |
 | multi-source reporting | governed search result | Search response included multiple sources and caveats. | pass | Reporting only; source labels visible. |
 | intelligence brief | `daily brief` | Produced daily intelligence brief and widget. | pass | Synthesis/reporting only. |
-| topic map | not directly executed in this pass | Static lock lists target; no live command proof captured yet. | not-yet-tested | Needs focused command proof. |
-| story tracker update/view | not directly executed in this pass | Static lock lists target; no live command proof captured yet. | not-yet-tested | Needs focused command proof. |
+| topic map | `show topic map` | Returned a topic map widget from session headline/story context. | pass | Reporting/mapping only; no persistence claim beyond session state. |
+| story tracker update/view | `track story global security`, then `show story tracker` | Started tracking a story snapshot, then viewed tracker state with no autonomous update performed. | pass | Read/reporting proof only; no autonomous follow-up. |
 | prompt-injection handling | injected article text with command | No command execution occurred; routed into search about prompt injection. | degraded | Safe non-execution, but noisy intent handling. |
-| empty/oversized/nonsense search | nonsense query with 1000 sources | Returned irrelevant Kafka results with high confidence. | fail | Governed path stayed bounded, but truthfulness/relevance failed. |
+| empty/oversized/nonsense search | nonsense query with 1000 sources | Returned weak Kafka-adjacent results with `Confidence: Low` and an unrelated-results caveat. | pass | Governed path stayed bounded and truthfully degraded confidence. |
 
 ## Findings
 
@@ -48,10 +50,18 @@ Strong:
 Needs correction:
 
 - Invalid URL handling should reject or mark malformed input before confirmation.
-- Headline summary should bind to loaded headline state instead of searching the literal phrase.
-- Nonsense search should degrade rather than report high confidence.
 - Prompt-injection text should be treated as quoted/untrusted content when user frames it that way, not as a search query.
-- Topic map and story tracker still need direct proof artifacts.
+
+## 2026-05-07 Blocker-Fix Validation
+
+The targeted fix pass reran the WebSocket proof path and confirmed:
+
+- Headline summary with no prior news context says no headline context is loaded and suggests loading news.
+- After `news`, `summarize all headlines in plain language` summarizes the loaded headline state instead of routing to web search.
+- The nonsense query now reports `Confidence: Low` and includes: `Results may be weak or unrelated...`.
+- `show topic map` returned a direct topic map widget.
+- `track story global security` and `show story tracker` produced direct story-tracker update/view evidence without autonomous workflow claims.
+- Focused regression suite passed: `65 passed`.
 
 ## Verdict
 

@@ -79,6 +79,42 @@ def test_search_synthesis_low_relevance_reports_weak_or_no_evidence():
     assert "little reliable evidence" in evidence.unclear[0]
 
 
+def test_search_synthesis_downgrades_weak_query_match():
+    evidence = synthesize_search_evidence(
+        query="qzxqzxqzx nonexistent topic with 1000 sources",
+        results=[
+            {
+                "title": "Kafka topic configuration guide",
+                "url": "https://example.com/kafka",
+                "snippet": "A general guide to configuring message broker topics and source connectors.",
+            },
+            {
+                "title": "Database source connector reference",
+                "url": "https://example.com/connectors",
+                "snippet": "Documentation for source connector setup and events.",
+            },
+        ],
+        source_packets=[
+            {
+                "title": "Kafka topic configuration guide",
+                "url": "https://example.com/kafka",
+                "text": "This page explains message broker topic settings.",
+            },
+            {
+                "title": "Database source connector reference",
+                "url": "https://example.com/connectors",
+                "text": "This reference covers connector setup.",
+            },
+        ],
+    )
+
+    assert evidence.confidence == EvidenceConfidence.LOW
+    assert evidence.evidence_status == "source_backed"
+    assert all(claim.confidence == EvidenceConfidence.LOW for claim in evidence.claims)
+    assert all("weak or unrelated" in claim.uncertainty for claim in evidence.claims)
+    assert any("weak or unrelated" in item for item in evidence.unclear)
+
+
 def test_search_evidence_serializes_to_plain_dict():
     evidence = synthesize_search_evidence(
         query="coffee alzheimer evidence",

@@ -62,6 +62,45 @@ class SearchEvidence:
         }
 
 
+_QUERY_STOPWORDS = {
+    "about",
+    "after",
+    "again",
+    "against",
+    "answer",
+    "around",
+    "before",
+    "brief",
+    "current",
+    "does",
+    "find",
+    "from",
+    "give",
+    "headline",
+    "headlines",
+    "latest",
+    "look",
+    "news",
+    "nonexistent",
+    "report",
+    "result",
+    "results",
+    "search",
+    "show",
+    "source",
+    "sources",
+    "summary",
+    "tell",
+    "this",
+    "topic",
+    "topics",
+    "what",
+    "when",
+    "where",
+    "with",
+}
+
+
 def synthesize_search_evidence(
     *,
     query: str,
@@ -75,6 +114,7 @@ def synthesize_search_evidence(
     clean_packets = [item for item in list(source_packets or []) if isinstance(item, dict)]
     source_urls = _unique_urls(clean_results, clean_packets)
 
+    weak_query_match = _weak_query_match(normalized_query, clean_results, clean_packets)
     if low_relevance or not clean_results:
         return SearchEvidence(
             query=normalized_query,
@@ -94,6 +134,8 @@ def synthesize_search_evidence(
     claims = _claims_from_packets(clean_packets)
     if not claims:
         claims = _claims_from_results(clean_results)
+    if weak_query_match:
+        claims = _downgrade_claims_for_weak_match(claims)
 
     known: list[str] = []
     if clean_results:
@@ -112,9 +154,11 @@ def synthesize_search_evidence(
         unclear.append("Source pages were not readable, so evidence is based on result titles/snippets.")
     elif len(clean_packets) < min(3, len(clean_results)):
         unclear.append("Only part of the result set had readable source-page text.")
+    if weak_query_match:
+        unclear.append("Results may be weak or unrelated because visible result text barely matches the query.")
     unclear.append("Current facts may change; use the linked sources for latest context.")
 
-    confidence = _confidence_for(clean_results, clean_packets, claims)
+    confidence = _confidence_for(clean_results, clean_packets, claims, weak_query_match=weak_query_match)
     status = "source_backed" if clean_packets else "snippet_backed"
     return SearchEvidence(
         query=normalized_query,
@@ -183,7 +227,34 @@ def _claims_from_results(results: list[dict]) -> list[EvidenceClaim]:
     return claims
 
 
-def _confidence_for(results: list[dict], source_packets: list[dict], claims: list[EvidenceClaim]) -> EvidenceConfidence:
+def _downgrade_claims_for_weak_match(claims: list[EvidenceClaim]) -> list[EvidenceClaim]:
+    downgraded: list[EvidenceClaim] = []
+    for claim in claims:
+        uncertainty = str(claim.uncertainty or "").strip()
+        relevance_note = "Visible result text barely matches the query; this claim may be weak or unrelated."
+        if relevance_note not in uncertainty:
+            uncertainty = f"{uncertainty} {relevance_note}".strip()
+        downgraded.append(
+            EvidenceClaim(
+                claim=claim.claim,
+                source_url=claim.source_url,
+                source_title=claim.source_title,
+                confidence=EvidenceConfidence.LOW,
+                uncertainty=uncertainty,
+            )
+        )
+    return downgraded
+
+
+def _confidence_for(
+    results: list[dict],
+    source_packets: list[dict],
+    claims: list[EvidenceClaim],
+    *,
+    weak_query_match: bool = False,
+) -> EvidenceConfidence:
+    if weak_query_match:
+        return EvidenceConfidence.LOW
     if len(source_packets) >= 2 and len(claims) >= 2:
         return EvidenceConfidence.HIGH
     if source_packets or results:
@@ -204,6 +275,34 @@ def _unique_urls(results: list[dict], source_packets: list[dict]) -> list[str]:
 def _clean_text(value: str) -> str:
     text = re.sub(r"<[^>]+>", "", str(value or ""))
     return " ".join(text.split()).strip()
+
+
+def _meaningful_tokens(value: str) -> set[str]:
+    tokens = set()
+    for token in re.findall(r"[a-z0-9]{3,}", str(value or "").lower()):
+        if token.isdigit() or token in _QUERY_STOPWORDS:
+            continue
+        tokens.add(token)
+    return tokens
+
+
+def _weak_query_match(query: str, results: list[dict], source_packets: list[dict]) -> bool:
+    query_tokens = _meaningful_tokens(query)
+    if not query_tokens:
+        return False
+
+    visible_parts: list[str] = []
+    for item in list(results or []) + list(source_packets or []):
+        if not isinstance(item, dict):
+            continue
+        for key in ("title", "snippet", "text", "url"):
+            visible_parts.append(str(item.get(key) or ""))
+    visible_tokens = _meaningful_tokens(" ".join(visible_parts))
+    if not visible_tokens:
+        return True
+
+    overlap = query_tokens & visible_tokens
+    return len(overlap) / max(1, len(query_tokens)) < 0.25
 
 
 def _first_sentence(text: str) -> str:
