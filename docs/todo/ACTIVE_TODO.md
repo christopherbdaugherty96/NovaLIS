@@ -4,7 +4,7 @@
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
 
-Updated: 2026-05-07 after the stale/provider/credibility fixture pass added deterministic search evidence coverage for stale timestamps, malformed/degraded provider output, and weak/untrusted source signals.
+Updated: 2026-05-07 after the dashboard stale/degraded rendering pass made search evidence metadata visible in the search widget contract.
 
 Current active workstream:
 
@@ -22,6 +22,8 @@ PR #121 reduced the contradiction and duplicate/split-topic proof gaps with dete
 
 The stale/provider/credibility fixture pass reduces the stale-cache/provider-failure and source-credibility proof gaps, but it also does not close the active proof/stress-test lock.
 
+The dashboard stale/degraded rendering pass reduces the UI rendering gap for provider/freshness/source credibility metadata, but it also does not close the active proof/stress-test lock.
+
 ---
 
 ## Current Next TODO
@@ -30,16 +32,15 @@ Build the next proof/stress-test pass for remaining governed web/news/reporting 
 
 Highest-priority remaining proof gaps:
 
-- dashboard-rendered stale/degraded state proof
 - rapid-click / double-submit UI behavior
-- malformed-widget payload behavior
+- malformed non-search widget payload behavior
 - Browser Use screenshot/click-path proof after runtime asset setup is fixed
 - broader visual UI/button coverage beyond command-path evidence
 
 Recommended next branch:
 
 ```text
-proof/malformed-widget-rapid-click-fixtures
+proof/rapid-click-double-submit-ui-fixtures
 ```
 
 Expected proof outcome is truthful behavior, not guaranteed success.
@@ -98,6 +99,8 @@ Current completed audit/proof outcomes:
 - PR #121 recorded `23 passed` for the adjacent web search / search synthesis / story tracker slice
 - the stale/provider/credibility fixture pass added deterministic search evidence/web search tests for stale timestamps, malformed provider payloads, degraded provider status, and weak/untrusted source signals
 - the stale/provider/credibility fixture pass recorded `24 passed` for the search evidence/web search slice and `28 passed` for the adjacent news/story slice
+- the dashboard stale/degraded rendering pass added visible search widget rendering for provider status, freshness status, source credibility rows, and empty degraded search state
+- the dashboard stale/degraded rendering pass recorded `4 passed`, `24 passed`, `2 passed`, and JS syntax checks for the focused rendering branch
 
 Do not broaden OpenClaw or start product/runtime expansion outside the active reviewed priority lock.
 
@@ -131,13 +134,14 @@ Completed under current lock:
 - stale-cache/provider-failure fixture coverage added and verified
 - source-credibility matrix fixture coverage added and verified
 - freshness labeling and confidence lowering under weak/old/untrusted source signals added and verified
+- dashboard-rendered stale/degraded search evidence state added and verified
+- malformed/degraded search widget empty-state rendering added and verified
 
 Still open under current lock:
 
-- dashboard-rendered stale/degraded state proof
 - timeline-drift fixtures
 - rapid-click/double-submit proof
-- malformed-widget proof
+- malformed non-search widget proof
 - Browser Use screenshot/click-path proof after asset setup is fixed
 - broader visual UI/button proof beyond command-path evidence
 - final lock closeout review

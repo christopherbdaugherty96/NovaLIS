@@ -33,6 +33,8 @@ This pass does not add new capabilities, does not approve browser/computer-use e
 - `evidence/2026-05-07/raw/stress_fixture_pytest_results.txt`
 - `evidence/2026-05-07/raw/stale_provider_credibility_payload.json`
 - `evidence/2026-05-07/raw/stale_provider_credibility_pytest_results.txt`
+- `../UI-Commands/evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json`
+- `../UI-Commands/evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_pytest_results.txt`
 
 ## Capability Proof Summary
 
@@ -51,6 +53,7 @@ This pass does not add new capabilities, does not approve browser/computer-use e
 | duplicate/split topic fixture | topic-map and headline-comparison fixtures | Merged duplicate/prior topic state and marked unrelated headline pairs as distinct. | pass | Reporting/mapping only; no persistence claim. |
 | stale cache/provider fixture | stale timestamp and malformed/degraded provider fixtures | Stale timestamps lower confidence; malformed provider output returns truthful empty search state; degraded provider status is preserved. | pass | Deterministic search evidence fixture only; no live network dependency. |
 | source credibility matrix | strong/weak/untrusted/unknown source fixtures | Emits conservative credibility rows and lowers confidence for weak/untrusted source signals. | pass | Evidence signal only; not a definitive truth score or authorization layer. |
+| dashboard evidence rendering | search widget evidence payload | Search widget renders provider/freshness/source credibility evidence state and empty degraded search state. | pass | Rendering only; no search/action authority added. |
 
 ## Findings
 
@@ -109,6 +112,17 @@ The follow-up fixture pass added deterministic search evidence coverage for stal
 - focused search evidence/web search regression suite passed: `24 passed`
 - adjacent news/story regression suite passed: `28 passed`
 
+## 2026-05-07 Dashboard Evidence Rendering Validation
+
+The UI rendering pass confirmed the search widget surfaces the new evidence metadata:
+
+- `provider_status` renders when not `ok`
+- `freshness_status` renders when not `unknown`
+- `source_credibility` renders as conservative source-signal rows
+- empty degraded/malformed search widgets remain visible as `Search state`
+- focused dashboard rendering suite passed: `4 passed`
+- adjacent search evidence/web search suite passed: `24 passed`
+
 ## Verdict
 
 Expected outcome is truthful bounded behavior, not guaranteed success.
@@ -127,5 +141,6 @@ The proof package now includes a case-level evidence library:
 - governance/adversarial/degraded behavior
 - deterministic stress fixtures for contradiction, duplicate topic state, and split-topic comparison
 - stale/provider/credibility fixtures for freshness labels, degraded provider behavior, and conservative source credibility signals
+- dashboard search widget rendering proof for provider/freshness/source-signal evidence state
 
 This is still not a lock closeout. Remaining evidence gaps are explicitly tracked in `PROOF_LIBRARY_INDEX.md`, `BLOCKERS.md`, and `FRICTION_LOG.md`.

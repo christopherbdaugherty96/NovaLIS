@@ -51,6 +51,89 @@ function appendConfidenceBadge(container, label) {
   container.appendChild(badge);
 }
 
+function normalizeSearchEvidence(data) {
+  const evidence = data && typeof data.evidence === "object" && data.evidence !== null ? data.evidence : null;
+  return evidence || {};
+}
+
+function hasVisibleSearchEvidence(evidence) {
+  if (!evidence || typeof evidence !== "object") return false;
+  const providerStatus = String(evidence.provider_status || "").trim();
+  const freshnessStatus = String(evidence.freshness_status || "").trim();
+  const confidence = String(evidence.confidence || "").trim();
+  const evidenceStatus = String(evidence.evidence_status || "").trim();
+  const sourceCredibility = Array.isArray(evidence.source_credibility) ? evidence.source_credibility : [];
+  return Boolean(
+    confidence ||
+    (evidenceStatus && evidenceStatus !== "no_evidence") ||
+    (providerStatus && providerStatus !== "ok") ||
+    (freshnessStatus && freshnessStatus !== "unknown") ||
+    sourceCredibility.length
+  );
+}
+
+function formatEvidenceLabel(value) {
+  return String(value || "")
+    .replace(/[_-]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function appendSearchEvidencePanel(container, evidence) {
+  if (!container || !hasVisibleSearchEvidence(evidence)) return;
+
+  const providerStatus = String(evidence.provider_status || "ok").trim();
+  const freshnessStatus = String(evidence.freshness_status || "unknown").trim();
+  const confidence = String(evidence.confidence || "").trim();
+  const evidenceStatus = String(evidence.evidence_status || "").trim();
+  const sourceCredibility = Array.isArray(evidence.source_credibility) ? evidence.source_credibility : [];
+  const unclear = Array.isArray(evidence.unclear) ? evidence.unclear.map((item) => String(item || "").trim()).filter(Boolean) : [];
+
+  const panel = document.createElement("div");
+  panel.className = "search-evidence-panel";
+
+  const title = document.createElement("div");
+  title.className = "search-evidence-title";
+  title.textContent = "Evidence state";
+  panel.appendChild(title);
+
+  const chips = document.createElement("div");
+  chips.className = "search-evidence-chips";
+
+  if (confidence) appendConfidenceBadge(chips, `Confidence: ${formatEvidenceLabel(confidence)}`);
+  if (evidenceStatus && evidenceStatus !== "no_evidence") appendConfidenceBadge(chips, `Evidence: ${formatEvidenceLabel(evidenceStatus)}`);
+  if (providerStatus && providerStatus !== "ok") appendConfidenceBadge(chips, `Provider: ${formatEvidenceLabel(providerStatus)}`);
+  if (freshnessStatus && freshnessStatus !== "unknown") appendConfidenceBadge(chips, `Freshness: ${formatEvidenceLabel(freshnessStatus)}`);
+  if (sourceCredibility.length) appendConfidenceBadge(chips, `Source signals: ${sourceCredibility.length}`);
+
+  if (chips.childElementCount) panel.appendChild(chips);
+
+  if (unclear.length) {
+    const note = document.createElement("p");
+    note.className = "search-evidence-note";
+    note.textContent = unclear.slice(0, 2).join(" ");
+    panel.appendChild(note);
+  }
+
+  if (sourceCredibility.length) {
+    const list = document.createElement("div");
+    list.className = "search-credibility-list";
+    sourceCredibility.slice(0, 3).forEach((row) => {
+      const item = document.createElement("div");
+      item.className = "search-credibility-row";
+      const source = String((row && row.source) || (row && row.domain) || "Unknown source").trim();
+      const credibility = formatEvidenceLabel(row && row.credibility || "unknown");
+      const reason = String(row && row.reason || "").trim();
+      item.textContent = reason ? `${source}: ${credibility} - ${reason}` : `${source}: ${credibility}`;
+      list.appendChild(item);
+    });
+    panel.appendChild(list);
+  }
+
+  container.appendChild(panel);
+}
+
 function deriveSourceCount(text) {
   const raw = String(text || "");
   const explicit = /Sources used:\s*(\d+)/i.exec(raw);
@@ -1588,11 +1671,12 @@ function renderNewsWidget(items, summaryText = "", categories = null) {
 function renderSearchWidget(data) {
   const container = $("search-widget");
   const results = Array.isArray(data && data.results) ? data.results : [];
+  const evidence = normalizeSearchEvidence(data);
   if (container) {
     clear(container);
     container.classList.remove("active");
 
-    if (!results.length) {
+    if (!results.length && !hasVisibleSearchEvidence(evidence)) {
       return;
     }
 
@@ -1613,11 +1697,19 @@ function renderSearchWidget(data) {
       appendConfidenceBadge(meta, `${Number(data.source_pages_read)} page${Number(data.source_pages_read) === 1 ? "" : "s"} read`);
     }
     if (data && data.provider) appendConfidenceBadge(meta, String(data.provider));
+    if (evidence && evidence.provider_status && evidence.provider_status !== "ok") {
+      appendConfidenceBadge(meta, `Provider: ${formatEvidenceLabel(evidence.provider_status)}`);
+    }
+    if (evidence && evidence.freshness_status && evidence.freshness_status !== "unknown") {
+      appendConfidenceBadge(meta, `Freshness: ${formatEvidenceLabel(evidence.freshness_status)}`);
+    }
     if (data && typeof data.latency_seconds === "number" && data.latency_seconds > 0) {
       appendConfidenceBadge(meta, `${Number(data.latency_seconds).toFixed(1)}s`);
     }
     header.appendChild(meta);
     container.appendChild(header);
+
+    appendSearchEvidencePanel(container, evidence);
 
     const focusTopic = queryText || String(results[0]?.title || "").trim();
     const summaryText = String((data && data.summary) || "").trim();
@@ -1626,12 +1718,16 @@ function renderSearchWidget(data) {
 
     const quickAnswerTitle = document.createElement("div");
     quickAnswerTitle.className = "search-quick-answer-title";
-    quickAnswerTitle.textContent = "Quick answer";
+    quickAnswerTitle.textContent = results.length ? "Quick answer" : "Search state";
     quickAnswer.appendChild(quickAnswerTitle);
 
     const quickAnswerBody = document.createElement("p");
     quickAnswerBody.className = "search-widget-summary";
-    quickAnswerBody.textContent = summaryText || `I found ${results.length} place${results.length === 1 ? "" : "s"} to start. Open the first result if you want the fastest overview.`;
+    quickAnswerBody.textContent = summaryText || (
+      results.length
+        ? `I found ${results.length} place${results.length === 1 ? "" : "s"} to start. Open the first result if you want the fastest overview.`
+        : "No reliable results are currently available for this search. Check the evidence state before retrying."
+    );
     quickAnswer.appendChild(quickAnswerBody);
 
     if (results[0]) {

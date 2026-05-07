@@ -370,7 +370,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/status/README|Status Notes]]
 - [doc] [[docs/design/Phase 9/# 🧬 NOVA MEMORY ARCHITECTURE USER.txt|🧬 NOVA MEMORY ARCHITECTURE: USER MEMORY & SYSTEM MEMORY]]
 
-## ux (83)
+## ux (87)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[nova_backend/static/favicon.ico|favicon.ico]]
@@ -391,6 +391,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/static/dashboard-surfaces.css|dashboard-surfaces - nova_backend/static]]
 - [code] [[Nova-Frontend-Dashboard/dashboard-workspace.js|dashboard-workspace - Nova-Frontend-Dashboard]]
 - [code] [[nova_backend/static/dashboard-workspace.js|dashboard-workspace - nova_backend/static]]
+- [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json|dashboard_stale_degraded_rendering_contract]]
 - [code] [[Nova-Frontend-Dashboard/index.html|index - Nova-Frontend-Dashboard]]
 - [code] [[nova_backend/static/index.html|index - nova_backend/static]]
 - [code] [[nova_backend/static/landing/index.html|index - static/landing]]
@@ -435,12 +436,15 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_workspace/story_tracker/tracked_topics.json|tracked_topics]]
 - [code] [[nova_backend/src/api/workspace_api.py|workspace_api]]
 - [doc] [[docs/demo_proof/brain_live_test/FRICTION_LOG|Brain Live Test Friction Log]]
+- [doc] [[docs/PROOFS/UI-Commands/cases/DASHBOARD_STALE_DEGRADED_RENDERING_PROOF_2026-05-07|Dashboard Stale / Degraded Rendering Proof - 2026-05-07]]
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_pytest_results.txt|dashboard_stale_degraded_rendering_pytest_results]]
 - [doc] [[docs/demo_proof/2026-04-28_user_test/FRICTION_LOG|Friction Log - 2026-04-28 User Test]]
 - [doc] [[docs/future/GOOGLE_WORKSPACE_CONNECTOR_PLAN|Google Workspace Connector Plan]]
 - [doc] [[docs/product/GOVERNED_WORKFLOW_WORKSPACE_ARCHITECTURE|Governed Workflow Workspace Architecture]]
 - [doc] [[docs/capability_verification/live_dashboard_basic_user_smoke_2026-04-23|Live Dashboard Basic User Smoke - 2026-04-23]]
 - [doc] [[docs/capability_verification/live_news_headlines_2026-04-23|Live News And Headlines Verification - 2026-04-23]]
 - [doc] [[docs/community/ONBOARDING|Nova Contributor Onboarding]]
+- [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
 - [doc] [[docs/design/Phase 4.5/NOVA_FRONTEND_FOUNDATION_AND_USABILITY_ROADMAP_2026-04-10|Nova Frontend Foundation And Usability Roadmap]]
 - [doc] [[docs/future/NOVA_GOOGLE_ACCOUNT_AND_CONNECTOR_ONBOARDING_PLAN|Nova Google Account And Connector Onboarding Plan]]
 - [doc] [[docs/design/Phase 4.5/NOVA_USABILITY_NEXT_STEPS_ROADMAP_2026-04-10|Nova Usability Next Steps Roadmap]]
@@ -518,7 +522,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (670)
+## testing (673)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -549,6 +553,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/simulation/scenarios/confused_open_it_without_context.json|confused_open_it_without_context]]
 - [code] [[nova_backend/tests/simulation/conversation_runner.py|conversation_runner]]
 - [code] [[nova_backend/tests/simulation/conversation_simulator.py|conversation_simulator]]
+- [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json|dashboard_stale_degraded_rendering_contract]]
 - [code] [[nova_backend/tests/simulation/scenarios/degraded_runtime_local_model_locked.json|degraded_runtime_local_model_locked]]
 - [code] [[nova_backend/tests/simulation/scenarios/developer_debugging_workflow.json|developer_debugging_workflow]]
 - [code] [[nova_backend/tests/simulation/scenarios/failed_provider_calendar_degrades.json|failed_provider_calendar_degrades]]
@@ -939,6 +944,8 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/testing/COGNITIVE_STRESS_TESTING|Cognitive Stress Testing]]
 - [doc] [[docs/PROOFS/Phase-4/CONVERSATION_NON_AUTHORIZING_PROOF|Conversation Non-Authorizing Proof]]
 - [doc] [[docs/testing/CONVERSATION_SIMULATION|Conversation Simulation]]
+- [doc] [[docs/PROOFS/UI-Commands/cases/DASHBOARD_STALE_DEGRADED_RENDERING_PROOF_2026-05-07|Dashboard Stale / Degraded Rendering Proof - 2026-05-07]]
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_pytest_results.txt|dashboard_stale_degraded_rendering_pytest_results]]
 - [doc] [[docs/dev/README|Developer Docs]]
 - [doc] [[docs/PROOFS/phase 3.5-4/CAPABILITY_SURFACE|docs/PROOFS/phase 3.5-4/CAPABILITY_SURFACE.md]]
 - [doc] [[docs/archive/Here are the two constitutionally s.txt|docs_bootstrap_structure.ps1]]

@@ -32,6 +32,9 @@ This pass is read-only with respect to runtime authority. It does not add capabi
 - `evidence/2026-05-07/raw/followup_pytest_results.txt`
 - `evidence/2026-05-07/raw/followup_combined_pytest_results.txt`
 - `evidence/2026-05-07/raw/browser_screenshot_followup_attempt.txt`
+- `cases/DASHBOARD_STALE_DEGRADED_RENDERING_PROOF_2026-05-07.md`
+- `evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json`
+- `evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_pytest_results.txt`
 - `VERIFICATION_MATRIX.md`
 - `FRICTION_LOG.md`
 
@@ -79,6 +82,20 @@ The follow-up branch closed the remaining UI command truthfulness gaps that did 
 - Focused follow-up regression suite passed: `20 passed`.
 - Combined follow-up regression suite passed: `75 passed`.
 - Browser screenshot capture was attempted again with Browser Use/iab and remained blocked by `failed to write kernel assets`; no screenshot was captured or substituted.
+
+## 2026-05-07 Dashboard Stale / Degraded Rendering Validation
+
+The dashboard rendering pass connected PR #123 evidence metadata to visible search widget state:
+
+- search widgets now render an `Evidence state` panel when evidence metadata is present
+- `provider_status` appears when not `ok`
+- `freshness_status` appears when not `unknown`
+- `source_credibility` appears as conservative source-signal rows
+- empty degraded/malformed search widgets remain visible as `Search state` rather than disappearing
+- focused dashboard rendering suite passed: `4 passed`
+- adjacent search evidence/web search suite passed: `24 passed`
+- adjacent dashboard bundle checks passed: `2 passed`
+- JS syntax checks passed for the served static dashboard and mirrored frontend dashboard file
 
 ## Verdict
 

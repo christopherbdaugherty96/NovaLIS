@@ -47,6 +47,11 @@ Status: draft / review required
    - Expected: summarize loaded headline state or clearly state no loaded headline context exists.
    - Current coverage: `nova_backend/tests/websocket/test_session_handler_proof_blockers.py`.
 
+9. **Dashboard search evidence rendering**
+   - Render a search widget payload with `provider_status`, `freshness_status`, and `source_credibility`.
+   - Expected: visible evidence panel, degraded/freshness chips, source-signal rows, and no hidden empty degraded widget.
+   - Current coverage: `nova_backend/tests/phase45/test_dashboard_search_widget_followups.py`.
+
 ## 2026-05-07 Targeted Suite
 
 Focused verification after the blocker fixes:
@@ -74,6 +79,19 @@ Combined follow-up verification:
 ```
 
 Evidence: `evidence/2026-05-07/raw/followup_combined_pytest_results.txt`.
+
+## 2026-05-07 Dashboard Stale / Degraded Rendering Suite
+
+Focused verification after rendering stale/degraded evidence metadata in the dashboard search widget:
+
+```text
+4 passed
+24 passed
+2 passed
+node --check passed
+```
+
+Evidence: `evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_pytest_results.txt`.
 
 ## Screenshot Regression Once Browser Runtime Works
 

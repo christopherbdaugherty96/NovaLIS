@@ -1,0 +1,37 @@
+{
+  "proof_scope": "dashboard search widget rendering contract for stale/degraded/search evidence metadata",
+  "visible_surfaces": [
+    {
+      "surface": "search widget",
+      "field": "provider_status",
+      "rendered_as": "Provider: <status> evidence chip when status is not ok",
+      "status": "pass"
+    },
+    {
+      "surface": "search widget",
+      "field": "freshness_status",
+      "rendered_as": "Freshness: <status> evidence chip when status is not unknown",
+      "status": "pass"
+    },
+    {
+      "surface": "search widget",
+      "field": "source_credibility",
+      "rendered_as": "Evidence state panel with source signal count and up to three credibility rows",
+      "status": "pass"
+    },
+    {
+      "surface": "search widget",
+      "field": "empty degraded search",
+      "rendered_as": "Search state panel instead of hidden widget when visible evidence exists",
+      "status": "pass"
+    }
+  ],
+  "did_not_happen": [
+    "No browser/computer-use capability was added.",
+    "No external write occurred.",
+    "No OpenClaw expansion occurred.",
+    "No autonomous workflow was added.",
+    "No direct Cap 63 shortcut was used."
+  ],
+  "screenshot_status": "not captured; Browser Use screenshot/click-path proof remains blocked by runtime asset setup"
+}

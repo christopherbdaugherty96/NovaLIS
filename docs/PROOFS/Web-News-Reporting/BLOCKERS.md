@@ -49,13 +49,15 @@ Status: draft / review required
 
 3. **Stale-cache/provider-failure UI proof still needed**
    - Deterministic search evidence fixtures now cover stale timestamps, malformed provider payloads, and degraded provider status.
-   - The remaining gap is visible dashboard/WebSocket rendering of stale/degraded states.
-   - Status: partial pass / UI proof still needed.
+   - Dashboard rendering proof now covers visible provider/freshness/source evidence state and empty degraded search state.
+   - The remaining gap is screenshot/click-path capture.
+   - Status: pass / screenshot proof still blocked.
 
 4. **Source-credibility matrix UI/taxonomy proof still needed**
    - Deterministic search evidence fixtures now emit conservative source credibility rows and lower confidence under weak/untrusted signals.
-   - The remaining gap is reviewed taxonomy breadth and visible dashboard rendering proof.
-   - Status: partial pass / taxonomy and UI proof still needed.
+   - Dashboard rendering proof now shows conservative source-signal rows.
+   - The remaining gap is reviewed taxonomy breadth and screenshot/click-path capture.
+   - Status: partial pass / taxonomy and screenshot proof still needed.
 
 ## Reduced In 2026-05-07 Stress Fixture Pass
 
@@ -76,3 +78,9 @@ Status: draft / review required
    - Validation: stale timestamps lower confidence, malformed provider output avoids fake success, and source credibility rows are emitted.
    - Evidence: `evidence/2026-05-07/raw/stale_provider_credibility_payload.json`.
    - Regression: `nova_backend/tests/brain/test_search_synthesis.py`, `nova_backend/tests/executors/test_web_search_executor.py`.
+
+4. **Dashboard stale/degraded rendering gap**
+   - Added search widget rendering for provider status, freshness status, source credibility rows, and empty degraded search state.
+   - Validation: dashboard contract tests confirm evidence metadata is visible instead of hidden.
+   - Evidence: `../UI-Commands/evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json`.
+   - Regression: `nova_backend/tests/phase45/test_dashboard_search_widget_followups.py`.

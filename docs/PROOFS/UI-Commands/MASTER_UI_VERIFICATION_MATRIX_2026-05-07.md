@@ -40,8 +40,9 @@ Allowed statuses:
 | Shopify report | `shopify report` | Read-only/setup-dependent. | Read-only/setup-dependent boundary captured. | No Shopify writes. | PASS | `evidence/2026-05-06/raw/websocket_command_probe_corrected.json` |
 | Browser screenshots/click path | Browser Use/iab | Capture visible dashboard/UI states. | Browser runtime failed before page interaction. | No Nova browser capability added. | BLOCKED | `evidence/2026-05-07/raw/browser_screenshot_followup_attempt.txt` |
 | Rapid clicks / double submit | UI interaction | Deterministic safe handling. | Not yet captured due screenshot/browser blocker. | No hidden execution. | NOT_YET_TESTED | `FRICTION_LOG.md` |
-| Malformed widget payload | simulated payload | Truthful degraded state. | Not yet captured. | No fake success. | NOT_YET_TESTED | `REGRESSION_RECOMMENDATIONS.md` |
+| Search evidence rendering | search widget evidence payload | Visible provider/freshness/source-signal state. | `Evidence state` panel renders provider/freshness/source credibility metadata. | Evidence only; no authority or execution. | PASS | `evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json` |
+| Malformed search widget payload | simulated payload | Truthful degraded state. | Empty degraded/malformed search widgets remain visible as `Search state`. | No fake success. | PASS | `evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json` |
 
 ## Current Verdict
 
-The matrix now has concrete evidence for the high-risk command and governed reporting paths. Full visual/button coverage remains blocked by Browser Use screenshot runtime setup and should be resumed as a screenshot-only proof after that tooling issue is fixed.
+The matrix now has concrete evidence for the high-risk command, governed reporting, and search evidence rendering paths. Full screenshot/click-path coverage remains blocked by Browser Use screenshot runtime setup and should be resumed as a screenshot-only proof after that tooling issue is fixed.

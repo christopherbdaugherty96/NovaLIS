@@ -31,10 +31,11 @@ This log records friction observed during the governed web/news/reporting proof 
 | WEB-F21 | Stale cache still unproven | Stale-cache/provider-failure behavior remains untested in this branch. | Freshness truthfulness under stale state still needs evidence. | `PROOF_LIBRARY_INDEX.md` | Add stale cache/provider failure fixture next. |
 | WEB-F22 | Credibility matrix is intentionally conservative | Source evidence now emits strong/weak/untrusted/unknown rows, but the local matrix is small and should not be treated as a definitive truth score. | Users get safer confidence/caveats, but source review still matters. | `cases/SOURCE_CREDIBILITY_MATRIX_PROOF_2026-05-07.md` | Expand taxonomy only after governance review; keep UI wording conservative. |
 | WEB-F23 | Stale/provider fixtures are not visual proof | Search evidence now lowers confidence for stale timestamps and records degraded provider status, but this pass does not prove dashboard rendering of those states. | Backend evidence is stronger, but visible stale/degraded UI still needs proof. | `cases/STALE_CACHE_PROVIDER_FAILURE_PROOF_2026-05-07.md` | Add WebSocket/dashboard stale/degraded fixture proof later. |
+| WEB-F24 | Stale/degraded rendering remains screenshot-blocked | Dashboard contract proof now renders evidence metadata, but Browser Use still blocks visual screenshot capture. | The UI contract is stronger; visual proof still waits on browser runtime setup. | `../UI-Commands/cases/DASHBOARD_STALE_DEGRADED_RENDERING_PROOF_2026-05-07.md` | Rerun screenshot/click proof once Browser Use asset setup works. |
 
 ## Friction Themes
 
 - The governed web/news path is useful and bounded, but relevance and confidence need harder proof.
 - Search/reporting surfaces did not become execution surfaces during prompt-injection and blocked-action tests.
-- Several active-lock targets still need direct proof, especially dashboard-rendered stale/degraded behavior, malformed widgets, rapid-click/double-submit behavior, and visual article-open behavior.
+- Several active-lock targets still need direct proof, especially rapid-click/double-submit behavior and visual article-open/search evidence behavior.
 - The next pass should use fixtures where possible so failures can be regression-tested rather than only observed manually.
