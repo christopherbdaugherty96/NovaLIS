@@ -1,12 +1,12 @@
 # Local Capability Signoff Matrix - 2026-05-06
 
-Status: draft / review required
+Status: accepted as evidence baseline for the first read-only OpenClaw proof only / not authority-granting.
 
 ## Purpose
 
 This document records current evidence for local, device, and runtime surfaces that OpenClaw may later want to rely on.
 
-It is a read-only evidence document for the active priority-lock sequence:
+It was created for the completed priority-lock sequence:
 
 ```text
 RequestUnderstanding trust/action-history review card
@@ -33,7 +33,9 @@ This document does not approve browser/computer-use.
 
 This document does not approve external write actions.
 
-This document does not create OpenClawMediator.
+This document does not approve direct Cap 63 shortcut use.
+
+This document does not approve autonomous workflow execution.
 
 This document does not modify the capability registry, runtime code, tests, generated runtime truth, connectors, voice, installer, Auralis, YouTubeLIS, or workflow automation.
 
@@ -44,6 +46,18 @@ User -> GovernorMediator -> Governor -> CapabilityRegistry -> SingleActionQueue 
 ```
 
 Generated runtime truth and code remain authoritative over this human-maintained matrix.
+
+## Acceptance Scope
+
+This matrix was accepted only as an evidence baseline for the first read-only OpenClaw workflow proof merged after it.
+
+It does not mean OpenClaw may rely on every listed surface.
+
+It does not mean the surfaces marked `setup-dependent`, `blocked`, or `not-yet-tested` are approved.
+
+It does not approve broad OpenClaw automation, browser/computer-use, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, Google connector expansion, or autonomous workflow execution.
+
+Any future OpenClaw reliance on a listed surface requires a separate reviewed priority lock and proof.
 
 ## Status Legend
 
@@ -69,7 +83,7 @@ Use only these statuses:
 | screen capture | `not-yet-tested` | Cap 58 `screen_capture` is active and request-time only in generated runtime truth; no background capture loop is documented. | This matrix did not run a fresh live screen-capture proof. Capture stores a snapshot and can expose sensitive visible data. | Fresh explicit-request proof showing no background capture, bounded capture scope, storage location, redaction/evidence hygiene, and receipt. | no |
 | screen analysis | `not-yet-tested` | Cap 59 `screen_analysis` and Cap 60 `explain_anything` are active read-only perception/explanation routes. | Analysis depends on a prior/current explicit capture and may include OCR-sensitive content. | Fresh proof that analysis only consumes explicit capture/context, does not trigger actions, and does not leak private/system state into OpenClaw. | no |
 | local command execution | `blocked` | Windows BAT launcher work exists for local operator startup/shutdown, but there is no approved OpenClaw general command-execution surface in the active lock. | A general command lane would be high risk and could bypass specific capabilities if not tightly mediated. | Dedicated command capability contract, allowlist, sandbox, timeout/resource limits, confirmation model, and receipts. Not approved for mediator skeleton. | no |
-| OpenClaw execute / Cap 63 | `blocked` | Cap 63 is active and generated docs describe read-only OpenClaw templates plus Phase 9 goal-based execution. Code search also shows current OpenClaw approval endpoint language for auto-allowed actions. | Existing Cap 63 behavior must not be treated as the new mediator boundary. The priority lock requires signoff first, then OpenClawMediator skeleton, then read-only proof. | Mediator skeleton must centralize delegation, remove/contain direct chat-to-action reliance for the proof path, bind envelopes, approvals, cancellation, and receipts, and prove blocked actions pause instead of execute. | no |
+| OpenClaw execute / Cap 63 | `blocked` | Cap 63 is active and generated docs describe read-only OpenClaw templates plus Phase 9 goal-based execution. Code search also shows current OpenClaw approval endpoint language for auto-allowed actions. | Existing Cap 63 behavior must not be treated as the new mediator boundary. Cap 63 remains a separate active runtime surface, not proof that broad OpenClaw delegation is approved. | Future integration must prove OpenClawMediator remains the delegation boundary, prevents direct Cap 63 shortcut use, binds envelopes, approvals, cancellation, receipts, and blocks unapproved actions instead of executing them. | no |
 | NetworkMediator routing | `pass` | Generated runtime truth lists `NetworkMediator` as the enforced outbound HTTP control and governance matrix shows network capabilities routed through `Governor -> NetworkMediator`. | Pass only covers the required network choke point. It does not approve new domains, browser automation, or connector expansion. | Mediator proof must show any OpenClaw network read uses allowed capability scope, logs through the governed path, and refuses direct HTTP bypass. | yes, as a required boundary only |
 | ledger / receipt creation | `pass` | Generated runtime truth lists `LedgerWriter` in the governance spine and runtime invariants require all execution logged to ledger. OpenClaw API code logs run-issued/completed/cancel/delivery events. | Existing ledger events are not the same as a complete OpenClawMediator receipt schema. | Define mediator receipt fields for run id, envelope, decision, action boundary, result, blocked actions, and non-action statement; prove they are written. | yes, as a required boundary only |
 | confirmation / approval boundary | `setup-dependent` | Generated matrix marks confirm-required capabilities such as Cap 22 and Cap 64; tests cover confirmation requirements for file/folder and Governor confirm-risk handling. | OpenClaw API currently has auto-allow transition language for action approval, so OpenClaw-specific approval is not signed off. | Mediator must prove per-action approval where required, no auto-approval for high-boundary actions, denial path, timeout/cancel behavior, and receipts. | no |
@@ -83,7 +97,6 @@ Use only these statuses:
 
 ## Blockers
 
-- OpenClawMediator does not exist yet and must not be skipped.
 - Cap 63/OpenClaw has active runtime surfaces, but those are not accepted as the new mediator boundary.
 - Browser/computer-use expansion is explicitly paused.
 - External write actions are explicitly not approved.
@@ -124,24 +137,24 @@ The only surfaces marked as allowable dependencies are foundational boundaries, 
 - approved path handling as a required local-read containment boundary
 - Windows runtime readiness as a local operator precondition
 
-## Required Before OpenClawMediator
+## Future Reliance Requirements
 
-Before OpenClawMediator work begins, reviewers should approve or edit this matrix and confirm:
+Before any future OpenClaw reliance on a specific surface, reviewers should approve or edit a new lock and confirm:
 
-1. The first mediator skeleton will not call browser/computer-use.
-2. The first mediator skeleton will not add external write authority.
-3. The first mediator skeleton will not use Cap 63 direct execution as an unreviewed shortcut.
+1. The work will not call browser/computer-use unless the lock explicitly approves a browser/computer-use proof.
+2. The work will not add external write authority unless the lock explicitly approves a write proof.
+3. The work will not use Cap 63 direct execution as an unreviewed shortcut.
 4. The mediator boundary will require explicit envelopes, policy checks, cancellation, and receipts.
-5. The first workflow proof will be read-only and preferably local/sample-data based.
-6. Any NetworkMediator reliance will be read-only and scoped.
+5. The workflow proof will be read-only unless a separate reviewed write lock exists.
+6. Any NetworkMediator reliance will be read-only and scoped unless explicitly approved otherwise.
 7. Any ledger reliance will include a non-action statement describing what did not happen.
 
 ## Review Verdict
 
-Draft verdict: review required before merge.
+Accepted for the completed first read-only OpenClaw workflow proof only.
 
-Recommended merge condition:
+Acceptance conditions that remain binding:
 
-- Merge only if reviewers agree this document is evidence-only and does not overstate OpenClaw readiness.
-- Merge only if any wording that appears to approve browser/computer-use, external write actions, or direct OpenClaw delegation is removed.
-- After merge, the next allowed step is `OpenClawMediator skeleton`, still without broad automation or browser/computer-use expansion.
+- This document is evidence-only and does not overstate OpenClaw readiness.
+- No wording in this document approves browser/computer-use, external write actions, or direct OpenClaw delegation.
+- Future OpenClaw expansion requires a new reviewed priority lock.
