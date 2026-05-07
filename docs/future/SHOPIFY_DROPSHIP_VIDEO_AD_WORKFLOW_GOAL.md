@@ -8,6 +8,33 @@ Research note: live web research was not available during this pass; this docume
 
 ---
 
+## Reviewer summary
+
+This document defines the true long-term Shopify direction for Nova: a governed dropshipping / third-party fulfillment / AI video-ad product-validation workflow.
+
+It does not authorize autonomous commerce. It does not modify Cap 65. It does not authorize store writes, paid ads, supplier purchases, customer support actions, or publishing.
+
+The first implementation should be manual-first:
+
+```text
+research cards
+→ supplier validation cards
+→ margin models
+→ claim reviews
+→ ad script drafts
+→ Shopify read-only performance summaries
+→ user-approved next-test recommendations
+```
+
+The central rule is simple:
+
+```text
+Nova may help think, draft, calculate, review, and recommend.
+Nova must not spend money, publish, fulfill, order, message customers, or mutate the store without a separate governed capability and explicit approval.
+```
+
+---
+
 ## Core goal
 
 The real Shopify goal is not only to read store metrics.
@@ -23,9 +50,7 @@ The intended business workflow is:
 7. Sell at a higher retail price while preserving honest shipping, refund, supplier, and product-quality expectations.
 8. Use Nova to read performance data, recommend next tests, and keep the workflow governed.
 
-This is a dropshipping / third-party fulfillment / product-validation model, not a traditional inventory-held storefront.
-
-This must be treated as a real commerce operation, not a get-rich-quick automation loop. The store owner remains responsible for product quality, delivery, customer support, refunds, chargebacks, taxes, platform rules, ad claims, and supplier failures.
+This is a real commerce operation, not a get-rich-quick automation loop. The store owner remains responsible for product quality, delivery, customer support, refunds, chargebacks, taxes, platform rules, ad claims, and supplier failures.
 
 ---
 
@@ -33,9 +58,7 @@ This must be treated as a real commerce operation, not a get-rich-quick automati
 
 The first version of this workflow must be manual-first and review-first.
 
-Nova may help organize, draft, calculate, review, and recommend. Nova must not execute commerce, advertising, publishing, purchasing, or fulfillment actions in the first implementation.
-
-First implementation allowed:
+Allowed in the first implementation:
 
 - Draft product research cards.
 - Draft supplier validation cards.
@@ -46,7 +69,7 @@ First implementation allowed:
 - Summarize Shopify performance from Cap 65.
 - Recommend next tests.
 
-First implementation forbidden:
+Forbidden in the first implementation:
 
 - Publishing Shopify listings.
 - Changing prices.
@@ -68,7 +91,7 @@ Legitimate version:
 - The supplier is known before the product is advertised.
 - Shipping windows are known before the product is advertised.
 - Product quality is checked before scaling.
-- The store page accurately describes the product.
+- The product page accurately describes the product.
 - The customer receives tracking and support.
 - Refund and return expectations are visible before checkout.
 - The seller can still make the customer whole if the supplier fails.
@@ -117,9 +140,7 @@ Acceptable framing:
 
 ## Product risk boundaries
 
-Some categories should be avoided or treated as high-risk until there is a specific compliance process.
-
-Avoid by default:
+Avoid by default until there is a specific compliance process:
 
 - Medical devices, supplements, health claims, weight-loss products, and pain-relief claims.
 - Baby/child safety products.
@@ -133,7 +154,9 @@ Nova should flag these as high-risk instead of optimizing ads for them.
 
 ---
 
-## Unit economics gate
+## Operating gates
+
+### Unit economics gate
 
 No product should move to paid ads until the margin model is explicit.
 
@@ -156,13 +179,11 @@ Acceptance gate:
 - [ ] Kill criteria are defined before paid spend.
 - [ ] Product can remain profitable after refunds, failed deliveries, payment fees, and ad spend.
 
----
-
-## Supplier SLA gate
+### Supplier SLA gate
 
 A product is not valid until the supplier can be treated like a fulfillment partner, not just a cheap listing.
 
-Required supplier checks:
+Required checks:
 
 - Processing time.
 - Delivery time to target country.
@@ -181,11 +202,7 @@ Acceptance gate:
 - [ ] Customer-facing shipping promise is equal to or slower than supplier reality.
 - [ ] Supplier failure path exists before scaling.
 
----
-
-## Platform-account health gate
-
-The workflow depends on Shopify, payment processors, and ad platforms trusting the store.
+### Platform-account health gate
 
 Nova must treat these as operational risks:
 
@@ -202,11 +219,7 @@ Acceptance gate:
 - [ ] Ad creative has claim review before publishing.
 - [ ] Platform policy review is re-run before paid scaling.
 
----
-
-## Customer service and post-purchase gate
-
-This model fails if post-purchase operations are ignored.
+### Customer service and post-purchase gate
 
 Required before taking real orders:
 
@@ -304,39 +317,18 @@ This card should be stored or ledger-linked so later decisions can be audited.
 
 ---
 
-## Why this matters for Nova
-
-Nova should eventually support the full loop:
-
-```text
-Product sourcing
-→ supplier validation
-→ Shopify listing
-→ AI video concept generation
-→ ad/script variant creation
-→ organic content testing
-→ Shopify performance reading
-→ recommendation generation
-→ user approval
-→ next test cycle
-```
-
-Nova should not autonomously choose products, publish ads, spend money, change prices, order inventory, or place supplier orders without explicit approval.
-
----
-
 ## Initial stack concept
 
 Potential tools and services:
 
-- Shopify — storefront and checkout
-- DSers, CJdropshipping, Zendrop, AutoDS, Spocket, Alibaba, AliExpress — sourcing/fulfillment candidates
-- CapCut, Canva, Creatify, HeyGen, Synthesia, Arcads, Runway, Pika, Kling — ad/video/avatar creation candidates
-- TikTok, Instagram Reels, YouTube Shorts — organic test channels
-- Meta Ads / TikTok Ads — paid testing only after organic proof
-- Judge.me — reviews, only real reviews
-- Track123 / AfterShip — tracking visibility
-- Shopify Email or Klaviyo — later email follow-up, governed separately
+- Shopify — storefront and checkout.
+- DSers, CJdropshipping, Zendrop, AutoDS, Spocket, Alibaba, AliExpress — sourcing/fulfillment candidates.
+- CapCut, Canva, Creatify, HeyGen, Synthesia, Arcads, Runway, Pika, Kling — ad/video/avatar creation candidates.
+- TikTok, Instagram Reels, YouTube Shorts — organic test channels.
+- Meta Ads / TikTok Ads — paid testing only after organic proof.
+- Judge.me — reviews, only real reviews.
+- Track123 / AfterShip — tracking visibility.
+- Shopify Email or Klaviyo — later email follow-up, governed separately.
 
 Free-first rule applies: prefer free or low-cost tools first; flag paid/API costs before adoption.
 
@@ -368,11 +360,9 @@ Acceptance gate:
 - [ ] Margin can survive product cost, shipping, payment fees, refunds, chargebacks, platform fees, taxes, and ad spend.
 - [ ] Product category is not high-risk or has been separately reviewed.
 
----
-
 ### Phase 2 — Shopify listing setup
 
-- [ ] Create Shopify product page.
+- [ ] Create Shopify product page draft.
 - [ ] Use accurate product description.
 - [ ] Use supplier-approved, licensed, or original product media.
 - [ ] State realistic shipping time.
@@ -384,11 +374,9 @@ Acceptance gate:
 
 Acceptance gate:
 
-- [ ] Product page is honest and ready to receive traffic.
+- [ ] Product page is honest and ready for manual review.
 - [ ] Fulfillment path is known before any paid ads run.
 - [ ] Customer support path exists before orders are accepted.
-
----
 
 ### Phase 3 — AI video ad generation
 
@@ -410,11 +398,9 @@ Acceptance gate:
 - [ ] No ad makes unsupported claims.
 - [ ] No ad uses stolen creative or impersonation.
 
----
-
 ### Phase 4 — Organic validation
 
-- [ ] Post videos organically on TikTok/Reels/Shorts.
+- [ ] Post videos manually on TikTok/Reels/Shorts.
 - [ ] Track views, saves, comments, clicks, add-to-carts, and orders.
 - [ ] Do not scale paid ads until organic signal exists.
 - [ ] Kill weak products quickly.
@@ -426,8 +412,6 @@ Acceptance gate:
 - [ ] At least one product/ad angle shows measurable interest.
 - [ ] Store metrics are readable through Shopify.
 - [ ] Customer objections are understood before paid scaling.
-
----
 
 ### Phase 5 — Paid ad test, only after proof
 
@@ -443,8 +427,6 @@ Acceptance gate:
 - [ ] Paid test has defined budget, kill criteria, and margin model.
 - [ ] No uncontrolled ad spend.
 - [ ] Product can be fulfilled reliably if sales spike.
-
----
 
 ### Phase 6 — Nova workflow expansion
 
@@ -537,4 +519,5 @@ Do not overload Cap 65 with sourcing, ad generation, publishing, product creatio
 2. Complete Cap 65 live signoff.
 3. Lock Cap 65.
 4. Re-check current platform/API/tool policies with live web research before implementation.
-5. Then create a separate design for the dropshipping/video-ad workflow using the authority-tier model above.
+5. Create the first manual-only workflow design: product candidate card, supplier validation card, margin model, claim review, and ad script draft.
+6. Only after that, consider separate governed capabilities for publishing, paid ads, supplier orders, or fulfillment.
