@@ -8,8 +8,11 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
+from datetime import datetime, timezone
+from email.utils import parsedate_to_datetime
 from enum import Enum
 from typing import Any
+from urllib.parse import urlparse
 
 
 class EvidenceConfidence(str, Enum):
@@ -47,6 +50,9 @@ class SearchEvidence:
     evidence_status: str = "no_evidence"
     source_pages_read: int = 0
     result_count: int = 0
+    provider_status: str = "ok"
+    freshness_status: str = "unknown"
+    source_credibility: list[dict[str, str]] = field(default_factory=list)
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -59,6 +65,9 @@ class SearchEvidence:
             "evidence_status": self.evidence_status,
             "source_pages_read": self.source_pages_read,
             "result_count": self.result_count,
+            "provider_status": self.provider_status,
+            "freshness_status": self.freshness_status,
+            "source_credibility": [dict(item) for item in self.source_credibility],
         }
 
 
@@ -107,28 +116,46 @@ def synthesize_search_evidence(
     results: list[dict],
     source_packets: list[dict] | None = None,
     low_relevance: bool = False,
+    provider_status: str = "ok",
+    reference_date: str | datetime | None = None,
+    stale_after_days: int = 30,
 ) -> SearchEvidence:
     """Build a deterministic evidence packet from governed search outputs."""
     normalized_query = " ".join(str(query or "").split()).strip()
     clean_results = [item for item in list(results or []) if isinstance(item, dict)]
     clean_packets = [item for item in list(source_packets or []) if isinstance(item, dict)]
     source_urls = _unique_urls(clean_results, clean_packets)
+    normalized_provider_status = _normalize_provider_status(provider_status)
+    freshness_status = _freshness_status(
+        clean_results,
+        clean_packets,
+        reference_date=reference_date,
+        stale_after_days=stale_after_days,
+    )
+    source_credibility = _source_credibility_matrix(clean_results, clean_packets)
+    weak_source_signal = _weak_source_signal(source_credibility)
 
     weak_query_match = _weak_query_match(normalized_query, clean_results, clean_packets)
-    if low_relevance or not clean_results:
+    if low_relevance or not clean_results or normalized_provider_status in {"failed", "unavailable"}:
+        unclear = [
+            "Search returned little reliable evidence for the requested claim or entity.",
+            "The query may be misspelled, fictional, private, too new, or not covered by reliable indexed sources.",
+        ]
+        if normalized_provider_status in {"failed", "unavailable"}:
+            unclear.insert(0, "The search provider was unavailable or failed, so Nova did not produce a confident answer.")
         return SearchEvidence(
             query=normalized_query,
             claims=[],
             known=[],
-            unclear=[
-                "Search returned little reliable evidence for the requested claim or entity.",
-                "The query may be misspelled, fictional, private, too new, or not covered by reliable indexed sources.",
-            ],
+            unclear=unclear,
             source_urls=source_urls,
             confidence=EvidenceConfidence.LOW,
             evidence_status="weak_or_no_evidence",
             source_pages_read=len(clean_packets),
             result_count=len(clean_results),
+            provider_status=normalized_provider_status,
+            freshness_status=freshness_status,
+            source_credibility=source_credibility,
         )
 
     claims = _claims_from_packets(clean_packets)
@@ -156,9 +183,26 @@ def synthesize_search_evidence(
         unclear.append("Only part of the result set had readable source-page text.")
     if weak_query_match:
         unclear.append("Results may be weak or unrelated because visible result text barely matches the query.")
+    if normalized_provider_status in {"degraded", "partial"}:
+        unclear.append("The search provider response was degraded or partial, so confidence is lowered.")
+    if freshness_status == "stale":
+        unclear.append("Available source timestamps appear stale for this query, so confidence is lowered.")
+    elif freshness_status == "mixed":
+        unclear.append("Available source timestamps are mixed; older sources may not reflect the current state.")
+    if weak_source_signal:
+        unclear.append("Source credibility signals are weak or unknown; treat claims as lower confidence.")
     unclear.append("Current facts may change; use the linked sources for latest context.")
 
     confidence = _confidence_for(clean_results, clean_packets, claims, weak_query_match=weak_query_match)
+    if normalized_provider_status in {"degraded", "partial"}:
+        confidence = _at_most(confidence, EvidenceConfidence.MEDIUM)
+    if freshness_status == "stale":
+        confidence = EvidenceConfidence.LOW
+    elif freshness_status == "mixed":
+        confidence = _at_most(confidence, EvidenceConfidence.MEDIUM)
+    if weak_source_signal:
+        confidence = _at_most(confidence, EvidenceConfidence.LOW)
+
     status = "source_backed" if clean_packets else "snippet_backed"
     return SearchEvidence(
         query=normalized_query,
@@ -170,6 +214,9 @@ def synthesize_search_evidence(
         evidence_status=status,
         source_pages_read=len(clean_packets),
         result_count=len(clean_results),
+        provider_status=normalized_provider_status,
+        freshness_status=freshness_status,
+        source_credibility=source_credibility,
     )
 
 
@@ -260,6 +307,152 @@ def _confidence_for(
     if source_packets or results:
         return EvidenceConfidence.MEDIUM
     return EvidenceConfidence.LOW
+
+
+def _at_most(confidence: EvidenceConfidence, maximum: EvidenceConfidence) -> EvidenceConfidence:
+    rank = {
+        EvidenceConfidence.LOW: 0,
+        EvidenceConfidence.MEDIUM: 1,
+        EvidenceConfidence.HIGH: 2,
+    }
+    return confidence if rank[confidence] <= rank[maximum] else maximum
+
+
+def _normalize_provider_status(value: str) -> str:
+    status = str(value or "ok").strip().lower().replace("-", "_")
+    allowed = {"ok", "partial", "degraded", "failed", "unavailable"}
+    return status if status in allowed else "ok"
+
+
+def _freshness_status(
+    results: list[dict],
+    source_packets: list[dict],
+    *,
+    reference_date: str | datetime | None,
+    stale_after_days: int,
+) -> str:
+    reference = _parse_datetime(reference_date) if reference_date is not None else None
+    if reference is None:
+        return "unknown"
+
+    published_values: list[datetime] = []
+    for item in list(source_packets or []) + list(results or []):
+        for key in ("published", "published_at", "date", "timestamp"):
+            parsed = _parse_datetime(item.get(key))
+            if parsed is not None:
+                published_values.append(parsed)
+                break
+
+    if not published_values:
+        return "unknown"
+
+    threshold_days = max(1, int(stale_after_days or 30))
+    stale_count = 0
+    for published in published_values:
+        age_days = (reference - published).days
+        if age_days > threshold_days:
+            stale_count += 1
+    if stale_count == len(published_values):
+        return "stale"
+    if stale_count:
+        return "mixed"
+    return "current"
+
+
+def _parse_datetime(value: Any) -> datetime | None:
+    if isinstance(value, datetime):
+        parsed = value
+    else:
+        text = str(value or "").strip()
+        if not text:
+            return None
+        try:
+            parsed = datetime.fromisoformat(text.replace("Z", "+00:00"))
+        except ValueError:
+            try:
+                parsed = parsedate_to_datetime(text)
+            except (TypeError, ValueError, IndexError, OverflowError):
+                return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _source_credibility_matrix(results: list[dict], source_packets: list[dict]) -> list[dict[str, str]]:
+    rows: list[dict[str, str]] = []
+    seen: set[str] = set()
+    for item in list(source_packets or []) + list(results or []):
+        url = str(item.get("url") or "").strip()
+        domain = _domain_from_url(url)
+        source = _clean_text(str(item.get("source") or item.get("publisher") or item.get("title") or domain or "unknown"))
+        key = domain or source.lower()
+        if not key or key in seen:
+            continue
+        seen.add(key)
+        label, reason = _credibility_signal(source=source, domain=domain)
+        rows.append(
+            {
+                "source": source,
+                "domain": domain or "unknown",
+                "credibility": label,
+                "reason": reason,
+            }
+        )
+        if len(rows) >= 5:
+            break
+    return rows
+
+
+def _domain_from_url(url: str) -> str:
+    parsed = urlparse(str(url or "").strip())
+    domain = (parsed.netloc or parsed.path.split("/")[0]).lower()
+    if domain.startswith("www."):
+        domain = domain[4:]
+    return domain
+
+
+def _credibility_signal(*, source: str, domain: str) -> tuple[str, str]:
+    haystack = f"{source} {domain}".lower()
+    strong_terms = {
+        "apnews.com",
+        "associated press",
+        "bbc.com",
+        "bbc.co.uk",
+        "npr.org",
+        "reuters.com",
+        "theguardian.com",
+    }
+    weak_terms = {
+        "blogspot.",
+        "rumor",
+        "rumour",
+        "unverified",
+        "wordpress.",
+    }
+    fake_terms = {
+        "fake",
+        "hoax",
+        "madeup",
+        "notarealsource",
+    }
+    if domain.endswith(".gov") or domain.endswith(".edu"):
+        return "strong", "government or education domain signal"
+    if any(term in haystack for term in strong_terms):
+        return "strong", "recognized major/source-of-record signal"
+    if any(term in haystack for term in fake_terms):
+        return "untrusted", "fake-looking source/domain signal"
+    if any(term in haystack for term in weak_terms):
+        return "weak", "weak or user-generated source signal"
+    return "unknown", "no durable credibility signal in local matrix"
+
+
+def _weak_source_signal(source_credibility: list[dict[str, str]]) -> bool:
+    if not source_credibility:
+        return False
+    labels = {str(item.get("credibility") or "") for item in source_credibility}
+    if "strong" in labels:
+        return False
+    return bool(labels & {"weak", "untrusted"})
 
 
 def _unique_urls(results: list[dict], source_packets: list[dict]) -> list[str]:

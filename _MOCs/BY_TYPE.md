@@ -931,7 +931,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 9ecf0299cc584b68011c8fcbd788a050c0c47b16e6171166b374248de42b7b72
+  summary: Runtime Fingerprint: 14f2c3025f89dfe1842b814d65b2779a5eb5f5c5265d1ff99faf99c88eceb484
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -955,7 +955,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: f0b5b877d895517b073db3ff737e88a323401e53235beeaf39279b7c3deec6e7
+  summary: - runtimesurfacehash: 95df11e25f14854a8cef6d9e7ce7eef2daeb57633742cf5d6d0aabcee2bc2362
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1828,7 +1828,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/design/ui_backend_contract|UI-Backend Contract Documentation]]
   summary: This document outlines the contract between the UI and backend services.
 
-## Proofs (206 docs, 16 code)
+## Proofs (211 docs, 18 code)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
@@ -1854,8 +1854,12 @@ concern is reflected across docs, code and tests.
   summary: id": "startup_greeting",
 - [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-06/raw/websocket_web_news_probe_corrected.json|websocket_web_news_probe_corrected]]
   summary: id": "news",
+- [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stale_provider_credibility_payload.json|stale_provider_credibility_payload]]
+  summary: proof_scope": "stale/provider/credibility deterministic search evidence fixtures; no live network or authority expansion",
 - [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/story_tracker_temp_store_proof.json|story_tracker_temp_store_proof]]
   summary: store_root": "C:\\Users\\Chris\\AppData\\Local\\Temp\\nova_story_tracker_proof_63sqxr2b\\story_tracker",
+- [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stress_fixture_payload.json|stress_fixture_payload]]
+  summary: proof_date": "2026-05-07",
 - [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/web_news_blocker_fix_probe.json|web_news_blocker_fix_probe]]
   summary: started_at_epoch": 1778127522.1517382,
 - [doc] [[docs/PROOFS/CAPABILITY_VERIFICATION_AUDIT_2026-03-25|CAPABILITY_VERIFICATION_AUDIT_2026-03-25]]
@@ -2252,6 +2256,12 @@ concern is reflected across docs, code and tests.
   summary: Status: pass / more stress fixtures still useful
 - [doc] [[docs/PROOFS/Web-News-Reporting/cases/OPEN_WEBSITE_ARTICLE_BEHAVIOR_PROOF_2026-05-07|Open Website / Article Behavior Proof - 2026-05-07]]
   summary: Status: pass for command boundary / screenshot blocked
+- [doc] [[docs/PROOFS/Web-News-Reporting/cases/SOURCE_CREDIBILITY_MATRIX_PROOF_2026-05-07|Source Credibility Matrix Proof - 2026-05-07]]
+  summary: Status: pass / matrix remains conservative
+- [doc] [[docs/PROOFS/Web-News-Reporting/cases/STALE_CACHE_PROVIDER_FAILURE_PROOF_2026-05-07|Stale Cache / Provider Failure Proof - 2026-05-07]]
+  summary: Status: pass / UI fixture follow-up still needed
+- [doc] [[docs/PROOFS/Web-News-Reporting/cases/STRESS_FIXTURE_PROOF_2026-05-07|Web / News Stress Fixture Proof - 2026-05-07]]
+  summary: Status: pass / fixture hardening still in progress
 - [doc] [[docs/PROOFS/Web-News-Reporting/cases/TOPIC_MAP_STORY_TRACKER_PROOF_2026-05-07|Topic Map + Story Tracker Proof - 2026-05-07]]
   summary: Status: pass / fixture hardening still needed
 - [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/focused_pytest_results.txt|focused_pytest_results - 2026-05-07/raw]]
@@ -2260,6 +2270,10 @@ concern is reflected across docs, code and tests.
   summary: ��. . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . . ...
 - [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/followup_pytest_results.txt|followup_pytest_results - 2026-05-07/raw]]
   summary: ��. . . . . . . . . . . . . . . . . . . .                                                                                                   ...
+- [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stale_provider_credibility_pytest_results.txt|stale_provider_credibility_pytest_results]]
+  summary: Command:
+- [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stress_fixture_pytest_results.txt|stress_fixture_pytest_results]]
+  summary: Command:
 - [doc] [[docs/PROOFS/Web-News-Reporting/FRICTION_LOG|Web / News / Reporting Friction Log - 2026-05-06]]
   summary: Status: draft / review required
 - [doc] [[docs/PROOFS/Web-News-Reporting/PROOF_LIBRARY_INDEX|Web / News / Reporting Proof Library Index - 2026-05-07]]
@@ -2974,7 +2988,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST|Active Priority Lock - 2026-05-06 Web / News / Reporting + UI Proof / Stress Test]]
   summary: Status: active.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-06 (Web/News/Reporting + UI/Commands proof lock active)
+  summary: Last reviewed: 2026-05-07 (stale/provider/credibility fixture progress)
 - [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
   summary: Status: accepted as evidence baseline for the first read-only OpenClaw proof only / not authority-granting.
 - [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]

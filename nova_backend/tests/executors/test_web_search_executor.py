@@ -130,6 +130,64 @@ def test_no_results_returns_empty_widget(executor, mock_network, sample_request)
     assert widget_data["result_count"] == 0
 
 
+def test_malformed_provider_payload_returns_truthful_empty_search_widget(executor, mock_network, sample_request):
+    mock_network.request.return_value = {
+        "status_code": 200,
+        "data": {"unexpected": {"shape": True}},
+    }
+
+    result = executor.execute(sample_request)
+
+    assert result.success
+    assert "couldn't find solid results" in result.message.lower()
+    widget_data = result.data["widget"]["data"]
+    assert widget_data["results"] == []
+    assert widget_data["result_count"] == 0
+    assert widget_data["evidence"]["confidence"] == "low"
+    assert widget_data["evidence"]["provider_status"] == "degraded"
+
+
+def test_search_widget_preserves_freshness_and_credibility_evidence(
+    executor, mock_network, monkeypatch
+):
+    from src.actions.action_request import ActionRequest
+
+    monkeypatch.setattr(
+        "src.executors.web_search_executor.generate_chat",
+        lambda *args, **kwargs: "Fallback-safe sourced summary.",
+    )
+    request = ActionRequest(
+        capability_id=16,
+        params={"query": "test query", "reference_date": "2026-05-07T00:00:00Z"},
+    )
+    mock_network.request.side_effect = [
+        {
+            "status_code": 200,
+            "data": {
+                "web": {
+                    "results": [
+                        {
+                            "title": "Old supply chain update",
+                            "url": "https://fake-example-news.test/supply-chain",
+                            "description": "A stale viral post claims the supply chain changed overnight.",
+                            "published": "2025-01-01T00:00:00Z",
+                        },
+                    ]
+                }
+            },
+        },
+        {"status_code": 200, "text": "<html><body><p>Thin.</p></body></html>"},
+    ]
+
+    result = executor.execute(request)
+
+    assert result.success
+    evidence = result.data["widget"]["data"]["evidence"]
+    assert evidence["freshness_status"] == "stale"
+    assert evidence["confidence"] == "low"
+    assert evidence["source_credibility"][0]["credibility"] == "untrusted"
+
+
 def test_low_relevance_search_admits_little_reliable_evidence(executor, mock_network, monkeypatch):
     from src.actions.action_request import ActionRequest
 

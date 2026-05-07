@@ -29,10 +29,12 @@ This log records friction observed during the governed web/news/reporting proof 
 | WEB-F19 | Fixture proof is executor-level | Contradictory reporting, topic-map duplicate state, and split-topic comparison are now covered by deterministic executor tests, not full dashboard click-path proof. | Stronger regression safety, but not a substitute for visible UI proof. | `evidence/2026-05-07/raw/stress_fixture_payload.json` | Keep as CI fixture proof and add UI/WebSocket fixture proof later. |
 | WEB-F20 | Credibility scoring remains qualitative | The contradiction fixture keeps sources visible and avoids high confidence, but does not score source credibility by outlet/domain/freshness. | Users get safer uncertainty, but not a full credibility matrix. | `cases/STRESS_FIXTURE_PROOF_2026-05-07.md` | Add source-credibility fixture matrix before proof-lock closeout. |
 | WEB-F21 | Stale cache still unproven | Stale-cache/provider-failure behavior remains untested in this branch. | Freshness truthfulness under stale state still needs evidence. | `PROOF_LIBRARY_INDEX.md` | Add stale cache/provider failure fixture next. |
+| WEB-F22 | Credibility matrix is intentionally conservative | Source evidence now emits strong/weak/untrusted/unknown rows, but the local matrix is small and should not be treated as a definitive truth score. | Users get safer confidence/caveats, but source review still matters. | `cases/SOURCE_CREDIBILITY_MATRIX_PROOF_2026-05-07.md` | Expand taxonomy only after governance review; keep UI wording conservative. |
+| WEB-F23 | Stale/provider fixtures are not visual proof | Search evidence now lowers confidence for stale timestamps and records degraded provider status, but this pass does not prove dashboard rendering of those states. | Backend evidence is stronger, but visible stale/degraded UI still needs proof. | `cases/STALE_CACHE_PROVIDER_FAILURE_PROOF_2026-05-07.md` | Add WebSocket/dashboard stale/degraded fixture proof later. |
 
 ## Friction Themes
 
 - The governed web/news path is useful and bounded, but relevance and confidence need harder proof.
 - Search/reporting surfaces did not become execution surfaces during prompt-injection and blocked-action tests.
-- Several active-lock targets still need direct proof, especially stale-cache behavior, source credibility, malformed widgets, rapid-click/double-submit behavior, and visual article-open behavior.
+- Several active-lock targets still need direct proof, especially dashboard-rendered stale/degraded behavior, malformed widgets, rapid-click/double-submit behavior, and visual article-open behavior.
 - The next pass should use fixtures where possible so failures can be regression-tested rather than only observed manually.

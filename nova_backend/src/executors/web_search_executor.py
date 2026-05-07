@@ -158,6 +158,8 @@ class WebSearchExecutor:
                         "title": (item.get("title") or "")[:100],
                         "url": item.get("url", ""),
                         "snippet": (item.get("description") or "")[:200],
+                        "published": item.get("age") or item.get("published") or item.get("published_at") or "",
+                        "source": item.get("profile", {}).get("name", "") if isinstance(item.get("profile"), dict) else "",
                     }
                 )
             return out
@@ -560,7 +562,12 @@ class WebSearchExecutor:
 
         results = self._parse_results(data)[:5]
         if not results:
-            evidence = synthesize_search_evidence(query=query, results=[])
+            evidence = synthesize_search_evidence(
+                query=query,
+                results=[],
+                provider_status="degraded" if data else "ok",
+                reference_date=request.params.get("reference_date"),
+            )
             return ActionResult.ok(
                 message=(
                     f"{boundary_notice} I couldn't find solid results for \"{query}\".\n"
@@ -571,7 +578,12 @@ class WebSearchExecutor:
             )
 
         if self._looks_low_relevance(query, results):
-            evidence = synthesize_search_evidence(query=query, results=results, low_relevance=True)
+            evidence = synthesize_search_evidence(
+                query=query,
+                results=results,
+                low_relevance=True,
+                reference_date=request.params.get("reference_date"),
+            )
             sources = self._format_visible_sources(results)
             message = "\n".join(
                 [
@@ -633,7 +645,12 @@ class WebSearchExecutor:
                 session_id=session_id,
                 timeout_seconds=min(SYNTHESIS_TIMEOUT_SECONDS, remaining_synthesis_budget),
             )
-        evidence = synthesize_search_evidence(query=query, results=results, source_packets=source_packets)
+        evidence = synthesize_search_evidence(
+            query=query,
+            results=results,
+            source_packets=source_packets,
+            reference_date=request.params.get("reference_date"),
+        )
         confidence_label, known_note, unclear_note = render_evidence_notes(evidence)
 
         report_sections = [

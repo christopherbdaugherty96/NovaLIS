@@ -47,13 +47,15 @@ Status: draft / review required
 2. **Open website/article visual proof remains blocked by browser-use runtime**
    - Article/open behavior remains proven through WebSocket confirmation evidence, not screenshots.
 
-3. **Stale-cache/provider-failure fixtures still needed**
-   - The current fixture pass did not simulate stale headline caches or provider-level failure through the UI/WebSocket path.
-   - Status: not-yet-tested.
+3. **Stale-cache/provider-failure UI proof still needed**
+   - Deterministic search evidence fixtures now cover stale timestamps, malformed provider payloads, and degraded provider status.
+   - The remaining gap is visible dashboard/WebSocket rendering of stale/degraded states.
+   - Status: partial pass / UI proof still needed.
 
-4. **Source-credibility matrix fixtures still needed**
-   - The current fixture pass keeps contradictory source attribution visible, but does not yet produce a durable credibility matrix.
-   - Status: not-yet-tested.
+4. **Source-credibility matrix UI/taxonomy proof still needed**
+   - Deterministic search evidence fixtures now emit conservative source credibility rows and lower confidence under weak/untrusted signals.
+   - The remaining gap is reviewed taxonomy breadth and visible dashboard rendering proof.
+   - Status: partial pass / taxonomy and UI proof still needed.
 
 ## Reduced In 2026-05-07 Stress Fixture Pass
 
@@ -68,3 +70,9 @@ Status: draft / review required
    - Validation: topic-map weights include repeated/prior state; unrelated headline pairs are marked distinct.
    - Evidence: `evidence/2026-05-07/raw/stress_fixture_payload.json`.
    - Regression: `nova_backend/tests/executors/test_news_intelligence_executor.py`.
+
+3. **Stale/provider/credibility fixture gap**
+   - Added deterministic search evidence and web search fixtures for stale timestamps, malformed provider payloads, degraded provider status, and weak/untrusted source signals.
+   - Validation: stale timestamps lower confidence, malformed provider output avoids fake success, and source credibility rows are emitted.
+   - Evidence: `evidence/2026-05-07/raw/stale_provider_credibility_payload.json`.
+   - Regression: `nova_backend/tests/brain/test_search_synthesis.py`, `nova_backend/tests/executors/test_web_search_executor.py`.
