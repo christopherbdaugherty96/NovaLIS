@@ -27,6 +27,10 @@ This pass is read-only with respect to runtime authority. It does not add capabi
 - `evidence/2026-05-06/raw/websocket_command_probe_summary.json`
 - `evidence/2026-05-07/raw/ui_blocker_fix_probe.json`
 - `evidence/2026-05-07/raw/focused_pytest_results.txt`
+- `evidence/2026-05-07/raw/ui_followup_probe.json`
+- `evidence/2026-05-07/raw/followup_pytest_results.txt`
+- `evidence/2026-05-07/raw/followup_combined_pytest_results.txt`
+- `evidence/2026-05-07/raw/browser_screenshot_followup_attempt.txt`
 - `VERIFICATION_MATRIX.md`
 - `FRICTION_LOG.md`
 
@@ -51,8 +55,6 @@ Pass / usable:
 Needs correction:
 
 - browser/computer-use screenshot capture was unavailable in this environment.
-- invalid `open website notaurl` was normalized to `https://notaurl` and prompted for confirmation instead of rejecting invalid input earlier.
-- prompt-injection text did not execute, but was routed into web search instead of treated as local untrusted article text.
 
 ## 2026-05-07 Blocker-Fix Validation
 
@@ -66,8 +68,16 @@ Targeted fixes and proof rerun covered the highest-value truthfulness blockers:
 Remaining friction is still recorded rather than hidden:
 
 - browser/computer-use screenshot capture remains unavailable in this environment.
-- invalid URL/domain validation for `open website notaurl` remains too permissive.
-- prompt-injection-as-quoted-content still needs a local untrusted-content handling pass.
+
+## 2026-05-07 Follow-Up Validation
+
+The follow-up branch closed the remaining UI command truthfulness gaps that did not require browser screenshots:
+
+- `open website notaurl` now returns an invalid-input message before confirmation: Nova could not verify it as a valid website.
+- Quoted prompt-injection/article text is treated as untrusted local content, summarized locally, and explicitly says no web search or command execution occurred.
+- Focused follow-up regression suite passed: `20 passed`.
+- Combined follow-up regression suite passed: `75 passed`.
+- Browser screenshot capture was attempted again with Browser Use/iab and remained blocked by `failed to write kernel assets`; no screenshot was captured or substituted.
 
 ## Verdict
 

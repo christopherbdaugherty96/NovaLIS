@@ -36,6 +36,16 @@ Status: draft / review required
    - Evidence: `../Web-News-Reporting/evidence/2026-05-07/raw/web_news_blocker_fix_probe.json`
    - Regression: `nova_backend/tests/brain/test_search_synthesis.py`
 
+4. **Invalid URL prompt was too permissive**
+   - Fix validation: `open website notaurl` now returns an invalid-input message before any confirmation prompt.
+   - Evidence: `evidence/2026-05-07/raw/ui_followup_probe.json`
+   - Regression: `nova_backend/tests/utils/test_web_target_planner.py`
+
+5. **Prompt-injection quoted content was safe but noisy**
+   - Fix validation: quoted article/search text containing command-like phrases is summarized as untrusted local content and explicitly says no web search or command execution occurred.
+   - Evidence: `evidence/2026-05-07/raw/ui_followup_probe.json`
+   - Regression: `nova_backend/tests/websocket/test_session_handler_proof_blockers.py`
+
 ## Non-Blocking But Important
 
 1. **Headline summary command drift is resolved for loaded headline state**
