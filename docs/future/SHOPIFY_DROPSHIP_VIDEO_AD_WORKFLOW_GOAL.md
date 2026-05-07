@@ -4,6 +4,7 @@ Status: future workflow goal
 Scope: Shopify business model planning
 Runtime impact: none
 Current capability impact: none — Cap 65 remains read-only Shopify intelligence reporting
+Research note: live web research was not available during this pass; this document is hardened using stable commerce, fulfillment, advertising, and Nova governance principles. Before implementation, re-check current Shopify, Meta, TikTok, YouTube, payment processor, and supplier platform policies.
 
 ---
 
@@ -100,6 +101,115 @@ Nova should flag these as high-risk instead of optimizing ads for them.
 
 ---
 
+## Unit economics gate
+
+No product should move to paid ads until the margin model is explicit.
+
+Required fields:
+
+- Product landed cost.
+- Supplier shipping cost.
+- Shopify/payment processing fees.
+- Expected refund allowance.
+- Expected chargeback allowance.
+- App/tool cost allocation.
+- Estimated tax/accounting reserve.
+- Maximum allowable cost per purchase.
+- Break-even ROAS.
+- Minimum target profit per order.
+
+Acceptance gate:
+
+- [ ] Break-even point is known before paid spend.
+- [ ] Kill criteria are defined before paid spend.
+- [ ] Product can remain profitable after refunds, failed deliveries, payment fees, and ad spend.
+
+---
+
+## Supplier SLA gate
+
+A product is not valid until the supplier can be treated like a fulfillment partner, not just a cheap listing.
+
+Required supplier checks:
+
+- Processing time.
+- Delivery time to target country.
+- Tracking availability.
+- Return/refund process.
+- Damaged-item policy.
+- Inventory reliability.
+- Order volume capacity.
+- Product media rights.
+- Packaging/branding expectations.
+- Backup supplier availability.
+
+Acceptance gate:
+
+- [ ] Supplier SLA is written down.
+- [ ] Customer-facing shipping promise is equal to or slower than supplier reality.
+- [ ] Supplier failure path exists before scaling.
+
+---
+
+## Platform-account health gate
+
+The workflow depends on Shopify, payment processors, and ad platforms trusting the store.
+
+Nova must treat these as operational risks:
+
+- Payment processor holds from high chargebacks or long shipping delays.
+- Shopify store suspension for deceptive claims or prohibited goods.
+- Ad account rejection for unsupported claims, misleading creative, or restricted products.
+- Social account trust damage from spam posting or low-quality creative.
+- Customer support overload from unclear delivery expectations.
+
+Acceptance gate:
+
+- [ ] Refund policy, shipping policy, privacy policy, and terms are present before launch.
+- [ ] Support inbox/process exists before orders are accepted.
+- [ ] Ad creative has claim review before publishing.
+- [ ] Platform policy review is re-run before paid scaling.
+
+---
+
+## Customer service and post-purchase gate
+
+This model fails if post-purchase operations are ignored.
+
+Required before taking real orders:
+
+- Order confirmation email.
+- Tracking email or tracking page.
+- Support email/contact form.
+- Refund/return policy.
+- Late-shipment response template.
+- Damaged-item response template.
+- Supplier failure/refund path.
+- Manual review flow for suspicious orders.
+
+Nova may draft templates, but support promises must be reviewed and approved by the user.
+
+---
+
+## Data model for future Nova workflow
+
+Future implementation should not be a loose chat-only process. It should use explicit records.
+
+Suggested records:
+
+- `ProductCandidate`: product idea, niche, supplier links, risk category, status.
+- `SupplierRecord`: supplier name, platform, cost, shipping estimate, SLA, backup status.
+- `MarginModel`: price, landed cost, fees, ad budget, break-even CPA, target profit.
+- `ClaimReview`: product claims, evidence, prohibited/risky claim flags.
+- `CreativeVariant`: hook, script, asset source, avatar disclosure, claim checklist.
+- `OrganicTestResult`: views, clicks, saves, comments, CTR, conversion signal.
+- `PaidTestPlan`: budget, kill criteria, platform, approved creative IDs.
+- `FulfillmentRun`: order ID, supplier used, tracking, delay/refund state.
+
+These records should be inspectable and ledger-linked. Nova should not rely on hidden memory for commerce operations.
+
+---
+
 ## Why this matters for Nova
 
 Nova should eventually support the full loop:
@@ -135,6 +245,8 @@ Potential tools and services:
 - Shopify Email or Klaviyo — later email follow-up, governed separately
 
 Free-first rule applies: prefer free or low-cost tools first; flag paid/API costs before adoption.
+
+Tool selection must be rechecked before implementation because platform pricing, API access, and terms change.
 
 ---
 
@@ -252,6 +364,29 @@ Future Nova support should be split by authority level:
 
 ---
 
+## Candidate Nova capability split
+
+Do not cram this workflow into Cap 65.
+
+Potential future capabilities should be separate and authority-scoped:
+
+- `shopify_product_candidate_review` — read/analysis only.
+- `shopify_supplier_validation` — read/analysis only; may use governed web/API lookups later.
+- `shopify_margin_simulation` — simulation only; no execution.
+- `shopify_ad_script_draft` — drafting only.
+- `shopify_creative_claim_review` — safety/trust review only.
+- `shopify_organic_test_report` — read-only performance report.
+- `shopify_paid_test_plan` — proposal only.
+- `shopify_product_listing_draft` — draft only.
+- `shopify_product_listing_publish` — write-capable, explicit approval required, dev-store first.
+- `shopify_supplier_order_prepare` — draft/prep only.
+- `shopify_supplier_order_execute` — purchase/spend action, explicit approval required, highest friction.
+- `shopify_ad_publish` — external publish/spend-related action, explicit approval required.
+
+Each write/spend/publish capability needs its own tests, NetworkMediator proof, ledger proof, and approval gate.
+
+---
+
 ## Required Nova safeguards
 
 Before Nova gains any execution power in this workflow:
@@ -289,4 +424,5 @@ Do not overload Cap 65 with sourcing, ad generation, publishing, product creatio
 1. Finish Shopify developer store setup.
 2. Complete Cap 65 live signoff.
 3. Lock Cap 65.
-4. Then create a separate design for the dropshipping/video-ad workflow using the authority-tier model above.
+4. Re-check current platform/API/tool policies with live web research before implementation.
+5. Then create a separate design for the dropshipping/video-ad workflow using the authority-tier model above.
