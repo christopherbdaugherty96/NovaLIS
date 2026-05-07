@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-06 (Trust Review Card MVP lock active)
+Last reviewed: 2026-05-06 (Web/News/Reporting + UI/Commands proof lock active)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -15,20 +15,20 @@ Generated runtime docs and actual code win if they conflict with this note.
 Current active priority lock:
 
 ```text
+Governed Web / News / Reporting + UI / Commands Proof + Stress Test
+```
+
+Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
+
+Paused prior priority lock:
+
+```text
 Trust Review Card MVP / Visible Non-Action Receipt Surface
 ```
 
-Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP.md`
+The Trust Review Card MVP lock is paused by user request. No Trust Review Card implementation work should proceed until the active proof/stress-test lock is complete, closed, or explicitly superseded.
 
-Completed prior priority lock:
-
-```text
-Runtime truth regeneration / audit after OpenClaw proof chain
-```
-
-The four-step OpenClaw sequence and the follow-up runtime truth audit are complete.
-
-The current active workstream is limited to a visible, read-only trust/review card surface for existing planning-only and read-only proof infrastructure.
+The current active workstream is limited to validating and pressure-testing existing governed information/reporting and visible UI/button/command surfaces.
 
 This is not an automation-expansion lock.
 
@@ -82,11 +82,13 @@ This is not an automation-expansion lock.
   docs were regenerated through the generator path, runtime fingerprint/hash alignment updated, proof
   artifact over-indexing in generated MOCs corrected, and OpenClawMediator/read-only workflow proof
   remained documented as non-executing/non-authorizing.
-- **Active Trust Review Card MVP lock:** selected in PR #112. It permits only a visible, read-only
-  RequestUnderstanding/trust review surface and non-action receipt display work. It does not approve
-  OpenClaw execution, direct Cap 63 shortcut use, browser/computer-use, filesystem writes, external
-  writes, email/calendar/Shopify/account actions, autonomous workflow execution, Google connector
-  runtime work, capability registry expansion, workflow automation expansion, scheduler expansion, or installer work.
+- **Paused Trust Review Card MVP lock:** selected in PR #112 and paused by the active Web/News/Reporting
+  + UI/Commands proof/stress-test lock. It should not be implemented while this proof lock is active.
+- **Active Web/News/Reporting + UI/Commands proof lock:** validates existing governed information,
+  reporting, dashboard, button, command, widget, confirmation, degraded-state, and blocked-action surfaces.
+  It does not approve new capabilities, OpenClaw execution expansion, browser/computer-use expansion,
+  external writes, autonomous workflow execution, Google connector runtime expansion, capability registry
+  expansion, scheduler expansion, or installer work.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -95,14 +97,15 @@ This is not an automation-expansion lock.
 
 ## Planning-Only / Future Direction
 
-All future direction outside the active Trust Review Card MVP lock requires a separate reviewed priority lock before work starts.
+All future direction outside the active Web/News/Reporting + UI/Commands proof/stress-test lock requires a separate reviewed priority lock before work starts.
 
-Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP.md`
+Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
 
 Current lock state:
 
 1. OpenClaw priority-lock sequence is complete and closed.
 2. Runtime truth regeneration / audit merged in PR #110 and is complete.
-3. Trust Review Card MVP priority lock was selected in PR #112 and is now active.
-4. The active lock allows only a visible read-only trust/review card surface and related non-action receipt display/proof work.
-5. Broad OpenClaw automation, browser/computer-use, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, and installer work remain not approved.
+3. Trust Review Card MVP priority lock was selected in PR #112 and is now paused.
+4. Web/News/Reporting + UI/Commands proof/stress-test lock is active.
+5. The active lock allows only proof scaffolding, proof artifacts, simulations, stress-test prompts, and audit work for existing surfaces.
+6. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, installer work, and Trust Review Card implementation remain not approved.
