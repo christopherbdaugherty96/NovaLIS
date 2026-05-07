@@ -1,0 +1,18 @@
+Command:
+python -m pytest nova_backend/tests/executors/test_news_intelligence_executor.py -q
+
+Result:
+24 passed in 4.99s
+
+Scope:
+- deterministic NewsIntelligenceExecutor fixture coverage
+- contradictory multi-source brief fixture
+- duplicate/prior-state topic map fixture
+- split-topic headline comparison fixture
+
+Boundary:
+- no browser/computer-use
+- no OpenClaw execution
+- no external writes
+- no autonomous workflow scheduling
+- no live network dependency

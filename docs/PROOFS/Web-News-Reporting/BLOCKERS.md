@@ -46,3 +46,25 @@ Status: draft / review required
 
 2. **Open website/article visual proof remains blocked by browser-use runtime**
    - Article/open behavior remains proven through WebSocket confirmation evidence, not screenshots.
+
+3. **Stale-cache/provider-failure fixtures still needed**
+   - The current fixture pass did not simulate stale headline caches or provider-level failure through the UI/WebSocket path.
+   - Status: not-yet-tested.
+
+4. **Source-credibility matrix fixtures still needed**
+   - The current fixture pass keeps contradictory source attribution visible, but does not yet produce a durable credibility matrix.
+   - Status: not-yet-tested.
+
+## Reduced In 2026-05-07 Stress Fixture Pass
+
+1. **Contradictory reporting fixture gap**
+   - Added deterministic Reuters/AP conflicting-report fixture.
+   - Validation: source disagreement remains visible, `Confidence: Medium` is used, and `external_effect` is false.
+   - Evidence: `evidence/2026-05-07/raw/stress_fixture_payload.json`.
+   - Regression: `nova_backend/tests/executors/test_news_intelligence_executor.py`.
+
+2. **Duplicate/split topic fixture gap**
+   - Added deterministic topic-map duplicate/prior-state fixture and split-topic headline comparison fixture.
+   - Validation: topic-map weights include repeated/prior state; unrelated headline pairs are marked distinct.
+   - Evidence: `evidence/2026-05-07/raw/stress_fixture_payload.json`.
+   - Regression: `nova_backend/tests/executors/test_news_intelligence_executor.py`.

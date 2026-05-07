@@ -20,15 +20,17 @@ This index turns the raw WebSocket and regression evidence into reviewer-readabl
 | Multi-source reporting + intelligence brief | partial pass | `cases/MULTI_SOURCE_REPORTING_AND_BRIEF_PROOF_2026-05-07.md` | Existing evidence proves source labeling/caveats and intelligence brief rendering. | Needs direct contradiction/timeline-drift report fixtures. |
 | Topic map + story tracking | pass / follow-up needed | `cases/TOPIC_MAP_STORY_TRACKER_PROOF_2026-05-07.md` | Topic map and story tracker have direct evidence; temp-store proof avoids workspace contamination. | Add duplicate/merged/split-topic fixtures. |
 | Governance/adversarial/degraded behavior | pass / blocked screenshot | `cases/GOVERNANCE_ADVERSARIAL_DEGRADED_PROOF_2026-05-07.md` | Coercion refusals and quoted prompt-injection handling are bounded and explicit. | Add UI click-path coercion proof after browser capture works. |
+| Deterministic stress fixtures | pass / fixture hardening ongoing | `cases/STRESS_FIXTURE_PROOF_2026-05-07.md` | Contradictory reporting, duplicate topic state, and split-topic comparison now have deterministic executor proof. | Stale-cache/provider-failure, credibility, malformed widget, and rapid-click proof still needed. |
 
 ## Regression Evidence
 
 - `docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/focused_pytest_results.txt`: `65 passed`
 - `docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/followup_pytest_results.txt`: `20 passed`
 - `docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/followup_combined_pytest_results.txt`: `75 passed`
+- `docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stress_fixture_pytest_results.txt`: `24 passed`
 
 ## Current Verdict
 
 The current Web/News/Reporting proof library now contains concrete raw evidence, case-level summaries, and regression references for the primary active-lock surfaces.
 
-The lock is not fully closed yet because screenshot/click-path proof, stale-cache fixtures, contradiction fixtures, and broader UI/button coverage still need more evidence.
+The lock is not fully closed yet because screenshot/click-path proof, stale-cache/provider-failure fixtures, source-credibility fixtures, malformed-widget proof, rapid-click/double-submit proof, and broader UI/button coverage still need more evidence.

@@ -40,6 +40,16 @@ Status: draft / review required
    - Current live evidence: `evidence/2026-05-07/raw/web_news_blocker_fix_probe.json`.
    - Current temp-store coverage: `nova_backend/tests/executors/test_story_tracker_executor.py`.
 
+8. **Contradictory reporting fixture**
+   - Use two source-page fixtures with opposing claims.
+   - Expected: keep disagreement visible, avoid high confidence, and preserve source attribution.
+   - Current coverage: `nova_backend/tests/executors/test_news_intelligence_executor.py`.
+
+9. **Duplicate/split topic fixture**
+   - Use repeated/prior topic-state fixtures and unrelated headline comparison fixtures.
+   - Expected: repeated terms influence topic-map weights; unrelated headline pairs are marked distinct.
+   - Current coverage: `nova_backend/tests/executors/test_news_intelligence_executor.py`.
+
 8. **Article open proof**
    - Use a valid safe URL and cancel confirmation.
    - Assert no opening occurs before explicit confirmation.
@@ -75,3 +85,13 @@ Combined follow-up verification:
 ```
 
 Evidence: `evidence/2026-05-07/raw/followup_combined_pytest_results.txt`.
+
+## 2026-05-07 Stress Fixture Suite
+
+Focused verification after adding contradiction/topic fixtures:
+
+```text
+24 passed
+```
+
+Evidence: `evidence/2026-05-07/raw/stress_fixture_pytest_results.txt`.

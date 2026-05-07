@@ -22,6 +22,11 @@ The temp-store proof recorded:
 - `default_workspace_story_exists: false`
 - `no_autonomous_followup_scheduled: true`
 
+The 2026-05-07 stress fixture pass added deterministic topic-map and headline-comparison coverage:
+
+- repeated/prior topic state affects topic-map weights
+- unrelated headline pairs are marked distinct instead of forced into a merged topic
+
 ## What Did Not Happen
 
 - No autonomous story follow-up was scheduled.
@@ -37,6 +42,8 @@ Topic mapping is a reporting/mapping surface. Story tracker update is an explici
 - `docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/web_news_blocker_fix_probe.json`
 - `docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/story_tracker_temp_store_proof.json`
 - `docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/followup_combined_pytest_results.txt`
+- `docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stress_fixture_payload.json`
+- `docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stress_fixture_pytest_results.txt`
 
 ## Regression Coverage
 
@@ -44,5 +51,5 @@ Topic mapping is a reporting/mapping surface. Story tracker update is an explici
 
 ## Remaining Follow-Up
 
-- Add duplicate story, merged topic, split topic, stale story chain, and wrong-clustering fixtures.
+- Add stale story chain and wrong-clustering fixtures.
 - Add receipt-style UI wording that explicitly says no autonomous follow-up was scheduled.

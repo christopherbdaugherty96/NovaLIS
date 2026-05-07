@@ -2249,7 +2249,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/Web-News-Reporting/cases/HEADLINE_SUMMARY_PROOF_2026-05-07|Headline Summary Proof - 2026-05-07]]
   summary: Status: pass / evidence-backed
 - [doc] [[docs/PROOFS/Web-News-Reporting/cases/MULTI_SOURCE_REPORTING_AND_BRIEF_PROOF_2026-05-07|Multi-Source Reporting + Intelligence Brief Proof - 2026-05-07]]
-  summary: Status: partial pass / more stress fixtures required
+  summary: Status: pass / more stress fixtures still useful
 - [doc] [[docs/PROOFS/Web-News-Reporting/cases/OPEN_WEBSITE_ARTICLE_BEHAVIOR_PROOF_2026-05-07|Open Website / Article Behavior Proof - 2026-05-07]]
   summary: Status: pass for command boundary / screenshot blocked
 - [doc] [[docs/PROOFS/Web-News-Reporting/cases/TOPIC_MAP_STORY_TRACKER_PROOF_2026-05-07|Topic Map + Story Tracker Proof - 2026-05-07]]
