@@ -4,7 +4,7 @@
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
 
-Updated: 2026-05-07 after PR #119 added the Web/News proof library, case files, adversarial prompt suite, master UI verification matrix, and generator-consistent MOC/runtime-doc refresh.
+Updated: 2026-05-07 after PR #121 added deterministic Web/News stress fixtures for contradictory reporting, duplicate/prior-state topic maps, and split-topic headline comparison.
 
 Current active workstream:
 
@@ -16,24 +16,32 @@ This lock permits only proof scaffolding, proof artifacts, simulations, stress-t
 
 This is not an automation-expansion lock.
 
-PR #119 improved proof-library coverage, but it did not close the active proof/stress-test lock.
+PR #119 improved proof-library coverage.
+
+PR #121 reduced the contradiction and duplicate/split-topic proof gaps with deterministic tests and proof evidence, but it did not close the active proof/stress-test lock.
 
 ---
 
 ## Current Next TODO
 
-Build the next proof/stress-test pass for remaining governed web/news/reporting and visible UI/button/command gaps.
+Build the next proof/stress-test pass for remaining governed web/news/reporting truthfulness gaps.
 
 Highest-priority remaining proof gaps:
 
-- stale-cache fixtures
-- provider-failure fixtures
-- contradictory-reporting fixtures
-- source-credibility fixtures
+- stale-cache/provider-failure fixtures
+- source-credibility matrix fixtures
+- freshness labeling
+- confidence lowering under weak/old/untrusted sources
 - rapid-click / double-submit UI behavior
 - malformed-widget payload behavior
 - Browser Use screenshot/click-path proof after runtime asset setup is fixed
 - broader visual UI/button coverage beyond command-path evidence
+
+Recommended next branch:
+
+```text
+proof/stale-provider-credibility-fixtures
+```
 
 Expected proof outcome is truthful behavior, not guaranteed success.
 
@@ -86,6 +94,9 @@ Current completed audit/proof outcomes:
 - Web/News/Reporting + UI/Commands proof/stress-test lock created in PR #114
 - Web/News proof library, case-level proof files, adversarial prompt suite, and master UI/button/command matrix merged in PR #119
 - PR #119 organized already-captured raw evidence into reviewer-readable proof cases and refreshed generated MOCs/runtime-doc indexes through the generator path
+- PR #121 added deterministic stress fixtures for contradictory reporting, duplicate/prior-state topic-map behavior, and split-topic headline comparison
+- PR #121 recorded `24 passed` for `nova_backend/tests/executors/test_news_intelligence_executor.py`
+- PR #121 recorded `23 passed` for the adjacent web search / search synthesis / story tracker slice
 
 Do not broaden OpenClaw or start product/runtime expansion outside the active reviewed priority lock.
 
@@ -113,12 +124,16 @@ Completed under current lock:
 - seeded adversarial prompt suite created
 - master UI/button/command verification matrix created
 - generator-consistent MOC/runtime-doc refresh completed after proof docs were added
+- contradictory reporting fixture added and verified
+- duplicate/prior-state topic-map fixture added and verified
+- split-topic headline comparison fixture added and verified
 
 Still open under current lock:
 
 - stale-cache/provider-failure fixtures
-- contradictory reporting and timeline-drift fixtures
-- source credibility fixtures
+- source-credibility matrix fixtures
+- freshness labeling and confidence lowering under weak/old/untrusted sources
+- timeline-drift fixtures
 - rapid-click/double-submit proof
 - malformed-widget proof
 - Browser Use screenshot/click-path proof after asset setup is fixed
