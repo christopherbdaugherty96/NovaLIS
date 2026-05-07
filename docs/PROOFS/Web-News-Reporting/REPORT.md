@@ -17,6 +17,9 @@ This pass does not add new capabilities, does not approve browser/computer-use e
 
 ## Evidence
 
+- `PROOF_LIBRARY_INDEX.md`
+- `cases/`
+- `adversarial_tests/PROMPT_SUITE_2026-05-07.md`
 - `evidence/2026-05-06/raw/websocket_web_news_probe_corrected.json`
 - `../UI-Commands/evidence/2026-05-06/raw/websocket_command_probe_corrected.json`
 - `evidence/2026-05-07/raw/web_news_blocker_fix_probe.json`
@@ -82,3 +85,16 @@ The follow-up pass confirmed:
 Expected outcome is truthful bounded behavior, not guaranteed success.
 
 This pass found useful governed web/news behavior, but also found truthfulness and command-routing gaps that should be addressed before broader automation expansion.
+
+## Proof Library Status
+
+The proof package now includes a case-level evidence library:
+
+- governed web search
+- open website / article behavior
+- headline summary
+- multi-source reporting and intelligence brief
+- topic map and story tracker
+- governance/adversarial/degraded behavior
+
+This is still not a lock closeout. Remaining evidence gaps are explicitly tracked in `PROOF_LIBRARY_INDEX.md`, `BLOCKERS.md`, and `FRICTION_LOG.md`.

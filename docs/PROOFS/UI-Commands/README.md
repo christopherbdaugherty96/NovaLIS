@@ -165,10 +165,12 @@ Each proof should record:
 
 - `REPORT.md`
 - `VERIFICATION_MATRIX.md`
+- `MASTER_UI_VERIFICATION_MATRIX_2026-05-07.md`
 - `BLOCKERS.md`
 - `FRICTION_LOG.md`
 - `REGRESSION_RECOMMENDATIONS.md`
 - `evidence/2026-05-06/raw/`
+- `evidence/2026-05-07/raw/`
 
 ---
 

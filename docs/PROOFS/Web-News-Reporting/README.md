@@ -118,8 +118,12 @@ Stress tests should focus on:
 
 ## Current Proof Pass
 
+- `PROOF_LIBRARY_INDEX.md`
 - `REPORT.md`
 - `BLOCKERS.md`
 - `FRICTION_LOG.md`
 - `REGRESSION_RECOMMENDATIONS.md`
+- `cases/`
+- `adversarial_tests/PROMPT_SUITE_2026-05-07.md`
 - `evidence/2026-05-06/raw/`
+- `evidence/2026-05-07/raw/`
