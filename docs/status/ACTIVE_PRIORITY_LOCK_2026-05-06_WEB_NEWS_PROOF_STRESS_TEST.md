@@ -1,4 +1,4 @@
-# Active Priority Lock - 2026-05-06 Web / News / Reporting Proof + Stress Test
+# Active Priority Lock - 2026-05-06 Web / News / Reporting + UI Proof / Stress Test
 
 Status: active.
 
@@ -11,28 +11,41 @@ Generated runtime docs and actual code remain authoritative if they conflict wit
 ## Active Workstream
 
 ```text
-Governed Web / News / Reporting Capability Proof + Stress Test
+Governed Web / News / Reporting + UI / Commands Proof + Stress Test
 ```
 
 ---
 
 ## Purpose
 
-Pause current Trust Review Card MVP implementation work and create a dedicated proof and stress-test package for the current governed web/news/reporting capability family.
+Pause current Trust Review Card MVP implementation work and create a dedicated proof and stress-test package for:
 
-The goal is to:
+1. governed web/news/reporting capability surfaces
+2. visible Nova UI/button/command behavior
+3. governance-boundary reliability
+4. stress/failure behavior
+5. simulation/adversarial testing
 
-1. Verify current runtime behavior matches claims.
-2. Create durable proof artifacts.
-3. Create simulation/stress-test plans for Codex/Claude/reviewer systems.
-4. Identify runtime drift, hallucination risk, governance bypass risk, and reliability gaps.
-5. Validate these capabilities before broader automation or Trust Panel expansion.
+The goal is to verify that Nova's visible surfaces actually behave correctly before broader automation or Trust Panel expansion.
+
+This includes verifying that all visible buttons, commands, widgets, and UI states either:
+
+- work correctly
+- refuse safely
+- clearly explain setup/dependency requirements
+- clearly show blocked/not-approved status
+
+No silent failures.
+
+No misleading authority.
 
 ---
 
 ## Capability Scope
 
-This lock focuses only on:
+This lock focuses on:
+
+### Governed information/reporting surfaces
 
 - governed_web_search
 - open_website
@@ -42,6 +55,20 @@ This lock focuses only on:
 - topic_memory_map
 - story_tracker_update
 - story_tracker_view
+
+### UI / command surfaces
+
+- dashboard UI
+- buttons
+- command entry
+- widgets
+- navigation
+- settings/status surfaces
+- confirmation prompts
+- degraded/error states
+- blocked-action messaging
+- voice/media/system controls
+- analysis/memory/document surfaces
 
 Related supporting systems allowed for proof context:
 
@@ -66,15 +93,20 @@ Nova should be able to:
 - build compact intelligence briefs
 - track stories over time
 - show topic maps of current headline themes
+- render working UI buttons/commands for approved surfaces
+- clearly refuse or explain unavailable surfaces
+- show setup-required states accurately
+- surface degraded/error states honestly
 
 ---
 
 ## Required Deliverables
 
-Create a dedicated proof folder tree for:
+Create/update proof folder trees for:
 
 ```text
 docs/PROOFS/Web-News-Reporting/
+docs/PROOFS/UI-Commands/
 ```
 
 Expected proof areas:
@@ -87,6 +119,8 @@ Expected proof areas:
 - intelligence brief proof
 - story tracker proof
 - topic map proof
+- UI/button proof
+- command proof
 - failure-mode proof
 - governance-boundary proof
 - hallucination/drift review
@@ -94,6 +128,8 @@ Expected proof areas:
 - adversarial prompt suite
 - latency/reliability observations
 - source-label and credibility verification
+- WebSocket/connectivity failure handling
+- degraded-state UI handling
 
 ---
 
@@ -115,6 +151,14 @@ Use Codex/Claude/reviewer systems to simulate:
 - network failure/retry paths
 - oversized result sets
 - prompt injection attempts from article content
+- rapid repeated button presses
+- stale WebSocket state
+- partial backend startup
+- missing API/provider configuration
+- malformed widget payloads
+- blocked-action UI coercion attempts
+- command alias/typo handling
+- degraded-state rendering
 
 ---
 
@@ -142,13 +186,15 @@ This lock is complete only if:
 4. Source-label and credibility behavior are verified.
 5. Hallucination/drift observations are documented.
 6. Codex/Claude stress-test prompts exist.
-7. No authority drift or execution expansion occurs.
-8. Runtime truth claims remain grounded.
+7. Visible UI/button/command behavior is verified.
+8. Buttons/commands either work, refuse safely, or clearly explain setup/block state.
+9. No authority drift or execution expansion occurs.
+10. Runtime truth claims remain grounded.
 
 ---
 
 ## Boundary Rule
 
-This lock exists to validate and pressure-test existing governed information/reporting surfaces.
+This lock exists to validate and pressure-test existing governed information/reporting and UI/command surfaces.
 
 It does not authorize broader automation or OpenClaw execution expansion.
