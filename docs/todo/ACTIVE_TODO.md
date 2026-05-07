@@ -1,10 +1,10 @@
 # Active TODO - Nova
 
-## PRIORITY LOCK STATUS (2026-05-06)
+## PRIORITY LOCK STATUS (2026-05-07)
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
 
-Updated: 2026-05-06 after Web/News/Reporting + UI/Commands proof/stress-test lock selection.
+Updated: 2026-05-07 after PR #119 added the Web/News proof library, case files, adversarial prompt suite, master UI verification matrix, and generator-consistent MOC/runtime-doc refresh.
 
 Current active workstream:
 
@@ -16,13 +16,28 @@ This lock permits only proof scaffolding, proof artifacts, simulations, stress-t
 
 This is not an automation-expansion lock.
 
+PR #119 improved proof-library coverage, but it did not close the active proof/stress-test lock.
+
 ---
 
 ## Current Next TODO
 
-Build the proof/stress-test package for governed web/news/reporting and visible UI/button/command surfaces.
+Build the next proof/stress-test pass for remaining governed web/news/reporting and visible UI/button/command gaps.
 
-Required proof focus:
+Highest-priority remaining proof gaps:
+
+- stale-cache fixtures
+- provider-failure fixtures
+- contradictory-reporting fixtures
+- source-credibility fixtures
+- rapid-click / double-submit UI behavior
+- malformed-widget payload behavior
+- Browser Use screenshot/click-path proof after runtime asset setup is fixed
+- broader visual UI/button coverage beyond command-path evidence
+
+Expected proof outcome is truthful behavior, not guaranteed success.
+
+Required proof focus retained from the active lock:
 
 - governed web search
 - browser/article open behavior
@@ -42,7 +57,7 @@ Required proof focus:
 - voice/media/system controls
 - analysis/memory/document surfaces
 
-Required stress-test focus:
+Required stress-test focus retained from the active lock:
 
 - malformed feeds
 - conflicting narratives
@@ -60,17 +75,17 @@ Required stress-test focus:
 - degraded-state rendering
 - prompt injection from article content
 
-Expected proof outcome is truthful behavior, not guaranteed success.
-
-Current completed audit outcomes:
+Current completed audit/proof outcomes:
 
 - generated runtime docs changed only through the generator path
 - runtime truth changes remained code-grounded and generator-consistent
 - proof-only OpenClaw artifacts were not inflated into runtime authority
-- raw proof evidence and screenshot folders are excluded from generated runtime/reference topical MOCs
+- raw proof evidence and screenshot folders are excluded from generated runtime/reference topical MOCs where appropriate
 - runtime truth audit merged in PR #110
 - Trust Review Card MVP lock selected in PR #112 and later paused by user request
-- Web/News/Reporting + UI/Commands proof/stress-test lock created
+- Web/News/Reporting + UI/Commands proof/stress-test lock created in PR #114
+- Web/News proof library, case-level proof files, adversarial prompt suite, and master UI/button/command matrix merged in PR #119
+- PR #119 organized already-captured raw evidence into reviewer-readable proof cases and refreshed generated MOCs/runtime-doc indexes through the generator path
 
 Do not broaden OpenClaw or start product/runtime expansion outside the active reviewed priority lock.
 
@@ -79,7 +94,10 @@ References:
 - `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
 - `docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06.md`
 - `docs/PROOFS/Web-News-Reporting/README.md`
+- `docs/PROOFS/Web-News-Reporting/PROOF_LIBRARY_INDEX.md`
+- `docs/PROOFS/Web-News-Reporting/adversarial_tests/PROMPT_SUITE_2026-05-07.md`
 - `docs/PROOFS/UI-Commands/README.md`
+- `docs/PROOFS/UI-Commands/MASTER_UI_VERIFICATION_MATRIX_2026-05-07.md`
 
 ## Lock Progress
 
@@ -87,18 +105,25 @@ Current active lock:
 
 - Governed Web / News / Reporting + UI / Commands Proof + Stress Test
 
-Planned lock targets:
+Completed under current lock:
 
-- governed information/reporting proof artifacts
-- UI/button/command proof artifacts
-- Codex/Claude simulation prompts
-- adversarial test suite
-- degraded-state verification
-- governance-boundary verification
-- hallucination/drift review
-- source credibility review
-- WebSocket/connectivity failure handling review
-- regression-test recommendations
+- proof package scaffolds created
+- Web/News proof library index created
+- case-level proof files created for governed web search, open website/article behavior, headline summaries, multi-source reporting/intelligence brief, topic map/story tracker, and governance/adversarial/degraded behavior
+- seeded adversarial prompt suite created
+- master UI/button/command verification matrix created
+- generator-consistent MOC/runtime-doc refresh completed after proof docs were added
+
+Still open under current lock:
+
+- stale-cache/provider-failure fixtures
+- contradictory reporting and timeline-drift fixtures
+- source credibility fixtures
+- rapid-click/double-submit proof
+- malformed-widget proof
+- Browser Use screenshot/click-path proof after asset setup is fixed
+- broader visual UI/button proof beyond command-path evidence
+- final lock closeout review
 
 Paused prior lock:
 
