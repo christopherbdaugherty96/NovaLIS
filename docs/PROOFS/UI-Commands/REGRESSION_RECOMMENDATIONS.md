@@ -52,6 +52,16 @@ Status: draft / review required
    - Expected: visible evidence panel, degraded/freshness chips, source-signal rows, and no hidden empty degraded widget.
    - Current coverage: `nova_backend/tests/phase45/test_dashboard_search_widget_followups.py`.
 
+10. **Unsupported/malformed dashboard widget fallback**
+   - Dispatch an unknown or malformed dashboard/WebSocket message type.
+   - Expected: visible `Unsupported` state, no fake success, no execution implication.
+   - Current coverage: `nova_backend/tests/phase45/test_dashboard_auto_widget_dispatch.py`.
+
+11. **Rapid click / double submit contract**
+   - Trigger overlapping manual sends and repeated send-button setup.
+   - Expected: no duplicate listener binding, no overlapping manual turn, no repeated assistant text in the same turn.
+   - Current coverage: `nova_backend/tests/phase45/test_dashboard_auto_widget_dispatch.py`.
+
 ## 2026-05-07 Targeted Suite
 
 Focused verification after the blocker fixes:
@@ -86,12 +96,23 @@ Focused verification after rendering stale/degraded evidence metadata in the das
 
 ```text
 4 passed
-24 passed
+25 passed
 2 passed
 node --check passed
 ```
 
 Evidence: `evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_pytest_results.txt`.
+
+## 2026-05-07 Malformed Widget / Rapid Submit Suite
+
+Focused verification after unsupported widget fallback and rapid-submit contract proof:
+
+```text
+24 passed
+node --check passed
+```
+
+Evidence: `evidence/2026-05-07/raw/ui_malformed_rapid_click_pytest_results.txt`.
 
 ## Screenshot Regression Once Browser Runtime Works
 

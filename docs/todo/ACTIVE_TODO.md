@@ -4,7 +4,7 @@
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
 
-Updated: 2026-05-07 after the dashboard stale/degraded rendering pass made search evidence metadata visible in the search widget contract.
+Updated: 2026-05-07 after the malformed widget / rapid-submit proof pass added unsupported widget fallback and rapid-submit contract coverage.
 
 Current active workstream:
 
@@ -24,23 +24,25 @@ The stale/provider/credibility fixture pass reduces the stale-cache/provider-fai
 
 The dashboard stale/degraded rendering pass reduces the UI rendering gap for provider/freshness/source credibility metadata, but it also does not close the active proof/stress-test lock.
 
+The malformed widget / rapid-submit proof pass reduces the rapid-click/double-submit and unsupported widget gaps, but it also does not close the active proof/stress-test lock.
+
 ---
 
 ## Current Next TODO
 
-Build the next proof/stress-test pass for remaining governed web/news/reporting and UI truthfulness gaps.
+Prepare the closeout review decision for the active proof/stress-test lock, while keeping screenshot/click-path and deeper visual UI proof gaps explicit.
 
 Highest-priority remaining proof gaps:
 
-- rapid-click / double-submit UI behavior
-- malformed non-search widget payload behavior
 - Browser Use screenshot/click-path proof after runtime asset setup is fixed
 - broader visual UI/button coverage beyond command-path evidence
+- deeper widget-specific malformed payload fixtures beyond search/unsupported-message coverage
+- timeline-drift fixtures
 
 Recommended next branch:
 
 ```text
-proof/rapid-click-double-submit-ui-fixtures
+docs/web-news-ui-proof-lock-closeout-review
 ```
 
 Expected proof outcome is truthful behavior, not guaranteed success.
@@ -101,6 +103,8 @@ Current completed audit/proof outcomes:
 - the stale/provider/credibility fixture pass recorded `24 passed` for the search evidence/web search slice and `28 passed` for the adjacent news/story slice
 - the dashboard stale/degraded rendering pass added visible search widget rendering for provider status, freshness status, source credibility rows, and empty degraded search state
 - the dashboard stale/degraded rendering pass recorded `4 passed`, `24 passed`, `2 passed`, and JS syntax checks for the focused rendering branch
+- the malformed widget / rapid-submit proof pass added an unsupported dashboard-message fallback and contract proof for overlapping send blocks, single-use send binding, turn-id filtering, assistant-text de-dupe, and pending confirmation isolation
+- the malformed widget / rapid-submit proof pass recorded `25 passed` and JS syntax checks for served/mirrored dashboard files
 
 Do not broaden OpenClaw or start product/runtime expansion outside the active reviewed priority lock.
 
@@ -136,14 +140,15 @@ Completed under current lock:
 - freshness labeling and confidence lowering under weak/old/untrusted source signals added and verified
 - dashboard-rendered stale/degraded search evidence state added and verified
 - malformed/degraded search widget empty-state rendering added and verified
+- unsupported dashboard/WebSocket message fallback added and verified
+- rapid-click/double-submit contract guard coverage added and verified
 
 Still open under current lock:
 
 - timeline-drift fixtures
-- rapid-click/double-submit proof
-- malformed non-search widget proof
 - Browser Use screenshot/click-path proof after asset setup is fixed
 - broader visual UI/button proof beyond command-path evidence
+- deeper widget-specific malformed payload fixtures beyond search/unsupported-message coverage
 - final lock closeout review
 
 Paused prior lock:
