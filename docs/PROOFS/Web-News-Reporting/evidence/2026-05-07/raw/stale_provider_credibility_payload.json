@@ -1,0 +1,140 @@
+{
+  "proof_scope": "stale/provider/credibility deterministic search evidence fixtures; no live network or authority expansion",
+  "cases": {
+    "stale_cache": {
+      "query": "current port strike status",
+      "claims": [
+        {
+          "claim": "Port workers remained on strike during negotiations.",
+          "source_url": "https://reuters.com/world/port-strike",
+          "source_title": "Port strike report",
+          "confidence": "medium",
+          "uncertainty": "Source-page excerpt was available; details may still need verification."
+        }
+      ],
+      "known": [
+        "Governed search returned 1 result.",
+        "Nova reviewed 1 source page.",
+        "Visible source URLs are available for review."
+      ],
+      "unclear": [
+        "Available source timestamps appear stale for this query, so confidence is lowered.",
+        "Current facts may change; use the linked sources for latest context."
+      ],
+      "source_urls": [
+        "https://reuters.com/world/port-strike"
+      ],
+      "confidence": "low",
+      "evidence_status": "source_backed",
+      "source_pages_read": 1,
+      "result_count": 1,
+      "provider_status": "ok",
+      "freshness_status": "stale",
+      "source_credibility": [
+        {
+          "source": "Port strike report",
+          "domain": "reuters.com",
+          "credibility": "strong",
+          "reason": "recognized major/source-of-record signal"
+        }
+      ]
+    },
+    "provider_degraded": {
+      "query": "latest energy market update",
+      "claims": [
+        {
+          "claim": "Markets moved after a policy update.",
+          "source_url": "https://reuters.com/business/energy",
+          "source_title": "Energy market update",
+          "confidence": "low",
+          "uncertainty": "Only search result title/snippet was available."
+        }
+      ],
+      "known": [
+        "Governed search returned 1 result.",
+        "Visible source URLs are available for review."
+      ],
+      "unclear": [
+        "Source pages were not readable, so evidence is based on result titles/snippets.",
+        "The search provider response was degraded or partial, so confidence is lowered.",
+        "Current facts may change; use the linked sources for latest context."
+      ],
+      "source_urls": [
+        "https://reuters.com/business/energy"
+      ],
+      "confidence": "medium",
+      "evidence_status": "snippet_backed",
+      "source_pages_read": 0,
+      "result_count": 1,
+      "provider_status": "degraded",
+      "freshness_status": "unknown",
+      "source_credibility": [
+        {
+          "source": "Energy market update",
+          "domain": "reuters.com",
+          "credibility": "strong",
+          "reason": "recognized major/source-of-record signal"
+        }
+      ]
+    },
+    "source_credibility": {
+      "query": "verified supply chain report",
+      "claims": [
+        {
+          "claim": "A viral post claims the supply chain changed overnight.",
+          "source_url": "https://fake-example-news.test/supply-chain",
+          "source_title": "Supply chain rumor",
+          "confidence": "low",
+          "uncertainty": "Only search result title/snippet was available."
+        },
+        {
+          "claim": "Anonymous sources say changes are coming.",
+          "source_url": "https://unknown-blog.test/update",
+          "source_title": "Unverified update",
+          "confidence": "low",
+          "uncertainty": "Only search result title/snippet was available."
+        }
+      ],
+      "known": [
+        "Governed search returned 2 results.",
+        "Visible source URLs are available for review."
+      ],
+      "unclear": [
+        "Source pages were not readable, so evidence is based on result titles/snippets.",
+        "Source credibility signals are weak or unknown; treat claims as lower confidence.",
+        "Current facts may change; use the linked sources for latest context."
+      ],
+      "source_urls": [
+        "https://fake-example-news.test/supply-chain",
+        "https://unknown-blog.test/update"
+      ],
+      "confidence": "low",
+      "evidence_status": "snippet_backed",
+      "source_pages_read": 0,
+      "result_count": 2,
+      "provider_status": "ok",
+      "freshness_status": "unknown",
+      "source_credibility": [
+        {
+          "source": "Supply chain rumor",
+          "domain": "fake-example-news.test",
+          "credibility": "untrusted",
+          "reason": "fake-looking source/domain signal"
+        },
+        {
+          "source": "Unverified update",
+          "domain": "unknown-blog.test",
+          "credibility": "weak",
+          "reason": "weak or user-generated source signal"
+        }
+      ]
+    }
+  },
+  "did_not_happen": [
+    "No browser/computer-use was added or invoked.",
+    "No external write occurred.",
+    "No OpenClaw execution was invoked.",
+    "No direct Cap 63 shortcut was used.",
+    "No live network dependency was required."
+  ]
+}

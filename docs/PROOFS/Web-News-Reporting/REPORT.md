@@ -31,6 +31,8 @@ This pass does not add new capabilities, does not approve browser/computer-use e
 - `FRICTION_LOG.md`
 - `evidence/2026-05-07/raw/stress_fixture_payload.json`
 - `evidence/2026-05-07/raw/stress_fixture_pytest_results.txt`
+- `evidence/2026-05-07/raw/stale_provider_credibility_payload.json`
+- `evidence/2026-05-07/raw/stale_provider_credibility_pytest_results.txt`
 
 ## Capability Proof Summary
 
@@ -47,6 +49,8 @@ This pass does not add new capabilities, does not approve browser/computer-use e
 | empty/oversized/nonsense search | nonsense query with 1000 sources | Returned weak Kafka-adjacent results with `Confidence: Low` and an unrelated-results caveat. | pass | Governed path stayed bounded and truthfully degraded confidence. |
 | contradictory reporting fixture | Reuters/AP ceasefire fixture | Kept disagreement visible, used `Confidence: Medium`, and had no external effect. | pass | Deterministic reporting fixture only; no live action. |
 | duplicate/split topic fixture | topic-map and headline-comparison fixtures | Merged duplicate/prior topic state and marked unrelated headline pairs as distinct. | pass | Reporting/mapping only; no persistence claim. |
+| stale cache/provider fixture | stale timestamp and malformed/degraded provider fixtures | Stale timestamps lower confidence; malformed provider output returns truthful empty search state; degraded provider status is preserved. | pass | Deterministic search evidence fixture only; no live network dependency. |
+| source credibility matrix | strong/weak/untrusted/unknown source fixtures | Emits conservative credibility rows and lowers confidence for weak/untrusted source signals. | pass | Evidence signal only; not a definitive truth score or authorization layer. |
 
 ## Findings
 
@@ -93,6 +97,18 @@ The fixture pass added deterministic executor coverage for remaining Web/News pr
 - Split-topic headline comparison does not force unrelated stories into one topic.
 - Focused news intelligence regression suite passed: `24 passed`.
 
+## 2026-05-07 Stale / Provider / Credibility Fixture Validation
+
+The follow-up fixture pass added deterministic search evidence coverage for stale/failure/credibility gaps:
+
+- stale source timestamps now set `freshness_status: stale` and lower confidence to `low`
+- malformed provider payloads return truthful empty search widgets instead of fake success
+- degraded provider status is preserved in structured evidence
+- source credibility rows distinguish strong, weak, untrusted, and unknown local signals
+- weak/untrusted source signals lower confidence and add a caveat
+- focused search evidence/web search regression suite passed: `24 passed`
+- adjacent news/story regression suite passed: `28 passed`
+
 ## Verdict
 
 Expected outcome is truthful bounded behavior, not guaranteed success.
@@ -110,5 +126,6 @@ The proof package now includes a case-level evidence library:
 - topic map and story tracker
 - governance/adversarial/degraded behavior
 - deterministic stress fixtures for contradiction, duplicate topic state, and split-topic comparison
+- stale/provider/credibility fixtures for freshness labels, degraded provider behavior, and conservative source credibility signals
 
 This is still not a lock closeout. Remaining evidence gaps are explicitly tracked in `PROOF_LIBRARY_INDEX.md`, `BLOCKERS.md`, and `FRICTION_LOG.md`.

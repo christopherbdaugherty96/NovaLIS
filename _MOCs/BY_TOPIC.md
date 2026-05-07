@@ -518,7 +518,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (663)
+## testing (670)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -583,8 +583,10 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/simulation/scenarios/research_analyst_workflow.json|research_analyst_workflow]]
 - [code] [[nova_backend/src/executors/response_verification_executor.py|response_verification_executor]]
 - [code] [[nova_backend/tests/simulation/scenarios/semantic_routing_music_ambiguous.json|semantic_routing_music_ambiguous]]
+- [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stale_provider_credibility_payload.json|stale_provider_credibility_payload]]
 - [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-06/raw/static_button_inventory.json|static_button_inventory]]
 - [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/story_tracker_temp_store_proof.json|story_tracker_temp_store_proof]]
+- [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stress_fixture_payload.json|stress_fixture_payload]]
 - [code] [[nova_backend/tests/simulation/stress/stress_generator.py|stress_generator]]
 - [code] [[nova_backend/tests/simulation/stress/stress_profiles.py|stress_profiles]]
 - [code] [[nova_backend/tests/simulation/stress/stress_runner.py|stress_runner]]
@@ -1148,9 +1150,13 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/Phase-4/Runtime_matrix_audit|Runtime_matrix_audit]]
 - [doc] [[docs/demo_proof/2026-04-28_user_test/SCREENSHOT_CHECKLIST|Screenshot Checklist - 2026-04-28 User Test]]
 - [doc] [[docs/testing/SIMULATION_ANALYTICS|Simulation Analytics]]
+- [doc] [[docs/PROOFS/Web-News-Reporting/cases/SOURCE_CREDIBILITY_MATRIX_PROOF_2026-05-07|Source Credibility Matrix Proof - 2026-05-07]]
 - [doc] [[docs/PROOFS/Phase-4/Governor Bypass Proof Document.txt|src/llm/inference_wrapper.py]]
+- [doc] [[docs/PROOFS/Web-News-Reporting/cases/STALE_CACHE_PROVIDER_FAILURE_PROOF_2026-05-07|Stale Cache / Provider Failure Proof - 2026-05-07]]
+- [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stale_provider_credibility_pytest_results.txt|stale_provider_credibility_pytest_results]]
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-06/raw/start_daemon_output.txt|start_daemon_output]]
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-06/raw/stop_daemon_output.txt|stop_daemon_output]]
+- [doc] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/stress_fixture_pytest_results.txt|stress_fixture_pytest_results]]
 - [doc] [[docs/reference/HUMAN_GUIDES/19_TEST_SUITE_DIRECTORY_GUIDE|Test Suite Directory Guide]]
 - [doc] [[docs/reference/HUMAN_GUIDES/16_TESTING_AND_VALIDATION|Testing and Validation Guide]]
 - [doc] [[docs/design/IDEAS/TIME_TEST_GOVERNOR_REFERENCE|TIME_TEST_GOVERNOR_REFERENCE]]
@@ -1172,6 +1178,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/Web-News-Reporting/README|Web / News / Reporting Proof Package]]
 - [doc] [[docs/PROOFS/Web-News-Reporting/REPORT|Web / News / Reporting Proof Report - 2026-05-06]]
 - [doc] [[docs/PROOFS/Web-News-Reporting/REGRESSION_RECOMMENDATIONS|Web / News / Reporting Regression Recommendations - 2026-05-06]]
+- [doc] [[docs/PROOFS/Web-News-Reporting/cases/STRESS_FIXTURE_PROOF_2026-05-07|Web / News Stress Fixture Proof - 2026-05-07]]
 - [doc] [[docs/PROOFS/Phase-4/NOVA INTERNET ACCESS & GOVERNED CONNECTION SPEC.txt|🌐 NOVA INTERNET ACCESS & GOVERNED CONNECTION SPEC]]
 - [doc] [[docs/PROOFS/unlock-decisions/phase 3.5/GOVERNOR SPINE INSTALLATION PROOF.txt|🔒 NOVA PHASE-3.5 — GOVERNOR SPINE INSTALLATION PROOF - unlock-decisions/phase 3.5]]
 - [doc] [[docs/PROOFS/UNLOCK/phase 3.5/GOVERNOR SPINE INSTALLATION PROOF.txt|🔒 NOVA PHASE-3.5 — GOVERNOR SPINE INSTALLATION PROOF - UNLOCK/phase 3.5]]
@@ -1184,7 +1191,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/archive/phase 4/check-in.txt|🧬 NOVA — Phase-4 Infrastructure Completion Record]]
 - [doc] [[docs/PROOFS/Phase-4/PHASE-4 PRE-UNLOCK STRUCTURAL CERTIFICATION.txt|🧬 NOVA — PHASE-4 PRE-UNLOCK STRUCTURAL CERTIFICATION]]
 
-## architecture (305)
+## architecture (306)
 
 - [doc] [[docs/design/archive/redundant_placeholders_2026-04-02/# 🧬 NOVA INTELLIGENCE CAPACITY THE.txt|# 🧬 NOVA INTELLIGENCE CAPACITY THE]]
 - [doc] [[docs/design/archive/redundant_placeholders_2026-04-02/# 🧬 NOVA PHASE 4.2 ROADMAP.txt|# 🧬 NOVA PHASE 4.2 ROADMAP]]
@@ -1428,6 +1435,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/Phase-4/Runtime_matrix_audit|Runtime_matrix_audit]]
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
+- [doc] [[docs/PROOFS/Web-News-Reporting/cases/SOURCE_CREDIBILITY_MATRIX_PROOF_2026-05-07|Source Credibility Matrix Proof - 2026-05-07]]
 - [doc] [[docs/design/Phase 4.5/SPEECH_AND_INPUT_NATURALNESS_PLAN_2026-03-20|Speech And Input Naturalness Plan]]
 - [doc] [[docs/design/Phase 7/websearch improvments..txt|src/executors/research_executor.py]]
 - [doc] [[docs/reference/HUMAN_GUIDES/01_START_HERE|Start Here - reference/HUMAN_GUIDES]]
