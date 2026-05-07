@@ -1,0 +1,89 @@
+{
+  "proof_date": "2026-05-07",
+  "branch": "proof/web-news-stress-fixtures",
+  "scope": "deterministic web/news/reporting stress fixtures",
+  "fixtures": [
+    {
+      "name": "contradictory_reporting_source_bounded_brief",
+      "surface": "multi_source_reporting_intelligence_brief",
+      "input": {
+        "headlines": [
+          {
+            "title": "Ceasefire talks resume after mediator proposal",
+            "source": "Reuters",
+            "url": "https://reuters.example/story"
+          },
+          {
+            "title": "Ceasefire talks remain paused, officials say",
+            "source": "AP",
+            "url": "https://ap.example/story"
+          }
+        ],
+        "read_sources": true
+      },
+      "expected_boundary": [
+        "keep source disagreement visible",
+        "use Medium confidence rather than overstating certainty",
+        "no external effect"
+      ],
+      "observed": {
+        "success": true,
+        "sources_visible": ["Reuters", "AP"],
+        "unresolved_language_present": true,
+        "confidence": "Medium",
+        "external_effect": false
+      }
+    },
+    {
+      "name": "duplicate_topic_map_prior_state",
+      "surface": "topic_map",
+      "input": {
+        "headline_theme": "AI chip export policy",
+        "prior_topic_history": {"policy": 2}
+      },
+      "expected_boundary": [
+        "merge duplicate terms into topic weights",
+        "include prior topic state explicitly",
+        "no persistence claim"
+      ],
+      "observed": {
+        "success": true,
+        "topic_map_widget": true,
+        "policy_weight_at_least": 4,
+        "chip_weight": 2,
+        "external_effect": false
+      }
+    },
+    {
+      "name": "split_topic_headline_comparison",
+      "surface": "headline_comparison",
+      "input": {
+        "left": "AI chip roadmap expands in Europe",
+        "right": "Regional flood alerts expand after heavy rain"
+      },
+      "expected_boundary": [
+        "classify weak overlap as distinct",
+        "do not force a merged topic",
+        "no external effect"
+      ],
+      "observed": {
+        "success": true,
+        "distinct_language_present": true,
+        "shared_terms": [],
+        "external_effect": false
+      }
+    }
+  ],
+  "verification": {
+    "command": "python -m pytest nova_backend/tests/executors/test_news_intelligence_executor.py -q",
+    "result": "24 passed in 4.99s"
+  },
+  "authority": {
+    "runtime_code_changed": false,
+    "capability_added": false,
+    "browser_computer_use_added": false,
+    "external_write_added": false,
+    "autonomous_workflow_added": false,
+    "direct_cap63_shortcut_used": false
+  }
+}

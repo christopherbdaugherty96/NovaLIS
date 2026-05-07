@@ -486,3 +486,88 @@ def test_brief_followup_actions_expand_compare_track():
     tracked = executor.execute_brief(_request(50, {"action": "track_cluster", "story_id": 2, "brief_clusters": clusters}))
     assert tracked.success is True
     assert tracked.data["track_topic"] == "Global Security"
+
+
+def test_brief_fixture_keeps_contradictory_reporting_source_bounded(monkeypatch):
+    from src.executors import news_intelligence_executor as mod
+
+    monkeypatch.setattr(
+        mod,
+        "generate_chat",
+        lambda *args, **kwargs: (
+            "Summary\n"
+            "Reuters says the talks resumed, while AP says talks remain paused.\n\n"
+            "Implication\n"
+            "Treat this as unresolved and keep the source disagreement visible."
+        ),
+    )
+
+    class _ContradictoryNetwork:
+        def request(self, capability_id, method, url, **kwargs):
+            del capability_id, method, kwargs
+            if "reuters" in url:
+                text = "Reuters reports that ceasefire talks resumed after a late mediator proposal."
+            else:
+                text = "AP reports that ceasefire talks remain paused pending a response."
+            return {"status_code": 200, "text": f"<html><body><p>{text}</p></body></html>"}
+
+    headlines = [
+        {
+            "title": "Ceasefire talks resume after mediator proposal",
+            "source": "Reuters",
+            "url": "https://reuters.example/story",
+        },
+        {
+            "title": "Ceasefire talks remain paused, officials say",
+            "source": "AP",
+            "url": "https://ap.example/story",
+        },
+    ]
+    executor = mod.NewsIntelligenceExecutor(network=_ContradictoryNetwork())
+    result = executor.execute_brief(_request(50, {"headlines": headlines, "read_sources": True}))
+
+    assert result.success is True
+    assert "NOVA DAILY INTELLIGENCE BRIEF" in result.message
+    assert "Reuters" in result.message
+    assert "AP" in result.message
+    assert "unresolved" in result.message.lower()
+    assert "Confidence: Medium" in result.message
+    assert result.data["widget"]["data"]["source_pages_read"] == 2
+    assert result.external_effect is False
+
+
+def test_topic_map_fixture_merges_duplicates_with_prior_state():
+    from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
+
+    headlines = [
+        {"title": "AI chip export policy expands", "source": "Reuters", "url": "https://example.com/a"},
+        {"title": "AI chip demand rises after policy shift", "source": "AP", "url": "https://example.com/b"},
+        {"title": "Weather service updates regional flood alerts", "source": "NOAA", "url": "https://example.com/c"},
+    ]
+    executor = NewsIntelligenceExecutor()
+    result = executor.execute_topic_map(_request(50, {"headlines": headlines, "topic_history": {"policy": 2}}))
+
+    assert result.success is True
+    assert result.data["widget"]["type"] == "topic_map"
+    assert result.data["topic_map"]["policy"] >= 4
+    assert result.data["topic_map"]["chip"] == 2
+    assert "TOPIC MEMORY MAP" in result.message
+    assert result.external_effect is False
+
+
+def test_compare_headline_fixture_marks_distinct_split_topics():
+    from src.executors.news_intelligence_executor import NewsIntelligenceExecutor
+
+    headlines = [
+        {"title": "AI chip roadmap expands in Europe", "source": "Tech Wire", "url": "https://example.com/tech"},
+        {"title": "Regional flood alerts expand after heavy rain", "source": "Weather Desk", "url": "https://example.com/weather"},
+    ]
+    executor = NewsIntelligenceExecutor()
+    result = executor.execute_summary(
+        _request(49, {"action": "compare_indices", "left_index": 1, "right_index": 2, "headlines": headlines})
+    )
+
+    assert result.success is True
+    assert "These stories appear distinct" in result.message
+    assert result.data["widget"]["data"]["comparison"]["shared_terms"] == []
+    assert result.external_effect is False
