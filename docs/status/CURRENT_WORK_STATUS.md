@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-07 (proof library progress sync after PR #119)
+Last reviewed: 2026-05-07 (stress fixture progress sync after PR #121)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -32,7 +32,11 @@ The current active workstream is limited to validating and pressure-testing exis
 
 This is not an automation-expansion lock.
 
-PR #119 materially expanded the proof/evidence library, but it did not close the active lock.
+PR #119 materially expanded the proof/evidence library.
+
+PR #121 added deterministic stress fixtures for contradictory reporting, duplicate/prior-state topic
+mapping, and split-topic headline comparison. It reduced those proof gaps, but it did not close the
+active lock.
 
 ---
 
@@ -96,6 +100,12 @@ PR #119 materially expanded the proof/evidence library, but it did not close the
   regression recommendations, and evidence links. Generated MOCs/runtime-doc indexes were refreshed
   through the generator path because proof docs were added to the indexed documentation surface; runtime
   authority/capability behavior was not expanded.
+- **PR #121 deterministic stress fixtures:** added test-backed Web/News/Reporting stress fixtures for
+  contradictory multi-source reporting, duplicate/prior-state topic-map weighting, and split-topic
+  headline comparison. It recorded focused verification of `24 passed` for the news intelligence suite
+  and `23 passed` for the adjacent web search/search synthesis/story tracker slice. It did not add a
+  capability, OpenClaw expansion, browser/computer-use expansion, external writes, autonomous workflow
+  expansion, direct Cap 63 shortcut use, or live-network dependency in the fixture tests.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -115,6 +125,8 @@ Current lock state:
 3. Trust Review Card MVP priority lock was selected in PR #112 and is now paused.
 4. Web/News/Reporting + UI/Commands proof/stress-test lock is active.
 5. PR #119 added the first evidence-backed proof library and UI verification matrix for the active lock.
-6. The active lock still remains open because stale-cache/provider-failure fixtures, contradictory-reporting fixtures, source-credibility fixtures, malformed-widget proof, rapid-click/double-submit proof, and Browser Use screenshot/click-path proof still need additional evidence.
-7. The active lock allows only proof scaffolding, proof artifacts, simulations, stress-test prompts, and audit work for existing surfaces.
-8. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, installer work, and Trust Review Card implementation remain not approved.
+6. PR #121 reduced the contradiction and duplicate/split-topic proof gaps with deterministic fixtures.
+7. The active lock still remains open because stale-cache/provider-failure fixtures, source-credibility fixtures, malformed-widget proof, rapid-click/double-submit proof, broader visual UI/button proof, and Browser Use screenshot/click-path proof still need additional evidence.
+8. The next highest-ROI branch should focus on stale-cache/provider-failure plus source-credibility matrix fixtures.
+9. The active lock allows only proof scaffolding, proof artifacts, simulations, stress-test prompts, and audit work for existing surfaces.
+10. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, installer work, and Trust Review Card implementation remain not approved.
