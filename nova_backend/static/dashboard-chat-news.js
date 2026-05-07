@@ -2072,6 +2072,20 @@ function widgetMessageMatchesActiveManualTurn(msg) {
   return ["weather", "news", "news_summary", "intelligence_brief", "search", "calendar"].includes(msg.type);
 }
 
+function renderUnsupportedWidgetEvent(msg) {
+  const rawType = String((msg && msg.type) || "unknown").trim() || "unknown";
+  const reason = rawType === "unknown"
+    ? "A dashboard message arrived without a recognized type."
+    : `Unsupported dashboard message "${rawType}" was ignored.`;
+  console.warn(`[Nova] ${reason}`);
+  appendChatMessage(
+    "assistant",
+    `${reason} Nova did not treat it as success or execute anything.`,
+    null,
+    "Unsupported",
+  );
+}
+
 function requestDeepSeekSecondOpinion() {
   appendChatMessage("user", "Second opinion");
   waitingForAssistant = true;
@@ -2541,6 +2555,9 @@ function connectWebSocket() {
         setThinkingBar(false);
         appendChatMessage("assistant", translateError(msg.code, msg.message), null, "System status");
         updateWorkflowFocusFromError(translateError(msg.code, msg.message));
+        break;
+      default:
+        renderUnsupportedWidgetEvent(msg);
         break;
     }
   };

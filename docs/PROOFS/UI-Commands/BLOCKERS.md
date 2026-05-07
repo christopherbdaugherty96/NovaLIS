@@ -57,3 +57,16 @@ Status: draft / review required
    - Empty degraded/malformed search widgets remain visible as `Search state`.
    - Evidence: `evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json`
    - Remaining blocker: Browser Use screenshot/click-path proof still unavailable.
+
+3. **Malformed/unsupported widget fallback is now contract-proven but not screenshot-proven**
+   - Fix validation: unsupported dashboard/WebSocket message types now produce a visible `Unsupported` assistant response.
+   - The response explicitly says Nova did not treat the payload as success or execute anything.
+   - Evidence: `evidence/2026-05-07/raw/ui_malformed_rapid_click_contract.json`
+   - Regression: `nova_backend/tests/phase45/test_dashboard_auto_widget_dispatch.py`
+   - Remaining blocker: direct browser screenshot/click-path proof still unavailable.
+
+4. **Rapid submit / double-submit guard is now contract-proven but not browser-replay-proven**
+   - Fix validation: overlapping manual sends are blocked while Nova is answering; send button binding is single-use; repeated assistant text in the same turn is deduped.
+   - Evidence: `evidence/2026-05-07/raw/ui_malformed_rapid_click_contract.json`
+   - Regression: `nova_backend/tests/phase45/test_dashboard_auto_widget_dispatch.py`
+   - Remaining blocker: high-frequency browser click replay still unavailable because Browser Use screenshot/click-path capture remains blocked.

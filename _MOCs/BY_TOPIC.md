@@ -370,7 +370,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/status/README|Status Notes]]
 - [doc] [[docs/design/Phase 9/# 🧬 NOVA MEMORY ARCHITECTURE USER.txt|🧬 NOVA MEMORY ARCHITECTURE: USER MEMORY & SYSTEM MEMORY]]
 
-## ux (87)
+## ux (86)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[nova_backend/static/favicon.ico|favicon.ico]]
@@ -444,7 +444,6 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/capability_verification/live_dashboard_basic_user_smoke_2026-04-23|Live Dashboard Basic User Smoke - 2026-04-23]]
 - [doc] [[docs/capability_verification/live_news_headlines_2026-04-23|Live News And Headlines Verification - 2026-04-23]]
 - [doc] [[docs/community/ONBOARDING|Nova Contributor Onboarding]]
-- [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
 - [doc] [[docs/design/Phase 4.5/NOVA_FRONTEND_FOUNDATION_AND_USABILITY_ROADMAP_2026-04-10|Nova Frontend Foundation And Usability Roadmap]]
 - [doc] [[docs/future/NOVA_GOOGLE_ACCOUNT_AND_CONNECTOR_ONBOARDING_PLAN|Nova Google Account And Connector Onboarding Plan]]
 - [doc] [[docs/design/Phase 4.5/NOVA_USABILITY_NEXT_STEPS_ROADMAP_2026-04-10|Nova Usability Next Steps Roadmap]]
@@ -522,7 +521,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (673)
+## testing (677)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -902,6 +901,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [code] [[nova_backend/tests/simulation/trial_evaluator.py|trial_evaluator]]
 - [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/ui_blocker_fix_probe.json|ui_blocker_fix_probe]]
 - [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/ui_followup_probe.json|ui_followup_probe]]
+- [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/ui_malformed_rapid_click_contract.json|ui_malformed_rapid_click_contract]]
 - [code] [[nova_backend/tests/simulation/scenarios/unsafe_request_credential_theft.json|unsafe_request_credential_theft]]
 - [code] [[nova_backend/tests/simulation/scenarios/unsafe_request_financial_trade.json|unsafe_request_financial_trade]]
 - [code] [[nova_backend/tests/simulation/scenarios/unsafe_request_malware.json|unsafe_request_malware]]
@@ -1001,6 +1001,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/capability_verification/live_checklists/cap_65_shopify_intelligence_report|Live Test Checklist — Cap 65: shopify_intelligence_report]]
 - [doc] [[docs/capability_verification/live_checklists/README|Live Test Checklists]]
 - [doc] [[docs/capability_verification/LOCAL_CAPABILITY_SIGNOFF_MATRIX_TEMPLATE|Local Capability Signoff Matrix Template]]
+- [doc] [[docs/PROOFS/UI-Commands/cases/MALFORMED_WIDGET_PAYLOAD_PROOF_2026-05-07|Malformed Widget Payload Proof - 2026-05-07]]
 - [doc] [[docs/PROOFS/UI-Commands/MASTER_UI_VERIFICATION_MATRIX_2026-05-07|Master UI / Button / Command Verification Matrix - 2026-05-07]]
 - [doc] [[docs/PROOFS/Phase-5/MEMORY_GOVERNANCE_RATIFICATION_ACT_2026-03-09|Memory Governance Ratification Act]]
 - [doc] [[docs/PROOFS/Phase-4/Model_Network_Mediation_Proof|Model_Network_Mediation_Proof]]
@@ -1153,6 +1154,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/demo_proof/2026-04-28_user_test/PROOF_INDEX|Proof Index - 2026-04-28 User Test]]
 - [doc] [[docs/demo_proof/brain_live_test/PROOF_INDEX|Proof Index - Brain Live Test]]
 - [doc] [[nova_backend/src/archive_quarantine/phase2_tests/QUARANTINE_NOTICE|QUARANTINE_NOTICE - archive_quarantine/phase2_tests]]
+- [doc] [[docs/PROOFS/UI-Commands/cases/RAPID_CLICK_DOUBLE_SUBMIT_PROOF_2026-05-07|Rapid Click / Double Submit Proof - 2026-05-07]]
 - [doc] [[docs/PROOFS/README|README]]
 - [doc] [[docs/PROOFS/Phase-4/Runtime_matrix_audit|Runtime_matrix_audit]]
 - [doc] [[docs/demo_proof/2026-04-28_user_test/SCREENSHOT_CHECKLIST|Screenshot Checklist - 2026-04-28 User Test]]
@@ -1178,6 +1180,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/UI-Commands/REPORT|UI / Commands Proof Report - 2026-05-06]]
 - [doc] [[docs/PROOFS/UI-Commands/REGRESSION_RECOMMENDATIONS|UI / Commands Regression Recommendations - 2026-05-06]]
 - [doc] [[docs/PROOFS/UI-Commands/VERIFICATION_MATRIX|UI / Commands Verification Matrix - 2026-05-06]]
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/ui_malformed_rapid_click_pytest_results.txt|ui_malformed_rapid_click_pytest_results]]
 - [doc] [[docs/PROOFS/Web-News-Reporting/adversarial_tests/PROMPT_SUITE_2026-05-07|Web / News / Reporting Adversarial Prompt Suite - 2026-05-07]]
 - [doc] [[docs/PROOFS/Web-News-Reporting/BLOCKERS|Web / News / Reporting Blockers - 2026-05-06]]
 - [doc] [[docs/PROOFS/Web-News-Reporting/FRICTION_LOG|Web / News / Reporting Friction Log - 2026-05-06]]

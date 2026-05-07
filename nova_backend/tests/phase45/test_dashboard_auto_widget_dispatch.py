@@ -6,6 +6,7 @@ from pathlib import Path
 
 PROJECT_ROOT = Path(__file__).resolve().parents[3]
 CHAT_NEWS_PATH = PROJECT_ROOT / "nova_backend" / "static" / "dashboard-chat-news.js"
+FRONTEND_CHAT_NEWS_PATH = PROJECT_ROOT / "Nova-Frontend-Dashboard" / "dashboard-chat-news.js"
 
 
 def test_websocket_open_hydrates_dashboard_widgets():
@@ -95,3 +96,34 @@ def test_dashboard_dedupes_repeated_assistant_text_within_turn():
     assert "role === \"assistant\" && activeManualTurnId" in source
     assert "const turnKey = `${activeManualTurnId}:${msgText.trim()}`;" in source
     assert "if (turnKey && turnKey === lastAssistantTurnKey) return;" in source
+
+
+def test_dashboard_surfaces_unsupported_widget_messages():
+    source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
+
+    assert "function renderUnsupportedWidgetEvent(msg)" in source
+    assert "Unsupported dashboard message" in source
+    assert "Nova did not treat it as success or execute anything." in source
+    assert "renderUnsupportedWidgetEvent(msg);" in source
+
+
+def test_dashboard_unsupported_widget_fallback_is_mirrored_to_frontend_copy():
+    backend_source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
+    frontend_source = FRONTEND_CHAT_NEWS_PATH.read_text(encoding="utf-8")
+
+    for expected in (
+        "function renderUnsupportedWidgetEvent(msg)",
+        "Unsupported dashboard message",
+        "Nova did not treat it as success or execute anything.",
+        "renderUnsupportedWidgetEvent(msg);",
+    ):
+        assert expected in backend_source
+        assert expected in frontend_source
+
+
+def test_dashboard_manual_submit_binding_is_single_use():
+    source = CHAT_NEWS_PATH.read_text(encoding="utf-8")
+
+    assert 'if (sendBtn && sendBtn.dataset.bound !== "1")' in source
+    assert 'sendBtn.dataset.bound = "1";' in source
+    assert 'sendBtn.addEventListener("click", sendChat);' in source

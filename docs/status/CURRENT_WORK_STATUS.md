@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-07 (dashboard stale/degraded rendering progress)
+Last reviewed: 2026-05-07 (malformed widget / rapid-submit proof progress)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -46,6 +46,12 @@ The dashboard stale/degraded rendering pass adds visible search-widget rendering
 metadata: provider status, freshness status, source credibility rows, and empty degraded search state.
 It further reduces UI truthfulness gaps, but still does not close the active lock because screenshot and
 rapid-click/double-submit proof remain open.
+
+The malformed widget / rapid-submit proof pass adds a visible unsupported dashboard-message fallback and
+contract proof for overlapping send blocks, single-use send binding, manual-turn filtering, assistant-text
+de-dupe, and pending confirmation isolation. It reduces the rapid-click/double-submit and malformed widget
+proof gaps, but still does not close the active lock because screenshot/click-path proof and broader
+widget-specific visual proof remain open.
 
 ---
 
@@ -127,6 +133,12 @@ rapid-click/double-submit proof remain open.
   search evidence/web search slice, `2 passed` for adjacent dashboard bundle checks, and JS syntax checks
   for served/mirrored dashboard files. It does not add runtime authority, capabilities, browser/computer-use,
   external writes, OpenClaw expansion, autonomous workflow expansion, or direct Cap 63 shortcut use.
+- **Malformed widget / rapid-submit proof pass:** adds a visible `Unsupported` fallback for unknown
+  dashboard/WebSocket message types and records contract proof for overlapping send blocking, single-use
+  send button binding, manual-turn filtering, assistant-text de-dupe, and pending confirmation isolation.
+  It records `25 passed` for the focused dashboard/session proof suite and JS syntax checks for served and
+  mirrored dashboard files. It does not add runtime authority, capabilities, browser/computer-use, external
+  writes, OpenClaw expansion, autonomous workflow expansion, or direct Cap 63 shortcut use.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -149,7 +161,8 @@ Current lock state:
 6. PR #121 reduced the contradiction and duplicate/split-topic proof gaps with deterministic fixtures.
 7. The stale-cache/provider-failure and source-credibility gaps now have deterministic backend fixture coverage.
 8. Dashboard-rendered stale/degraded search evidence state now has contract proof.
-9. The active lock still remains open because rapid-click/double-submit proof, malformed non-search widget proof, broader visual UI/button proof, and Browser Use screenshot/click-path proof still need additional evidence.
-10. The next highest-ROI branch should focus on rapid-click/double-submit and malformed non-search widget UI proof, with screenshot proof still blocked until Browser Use runtime setup is fixed.
-11. The active lock allows only proof scaffolding, proof artifacts, simulations, stress-test prompts, and audit work for existing surfaces.
-12. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, installer work, and Trust Review Card implementation remain not approved.
+9. Rapid-click/double-submit guard behavior and unsupported widget fallback now have contract proof.
+10. The active lock still remains open because Browser Use screenshot/click-path proof, broader visual UI/button proof, and deeper widget-specific malformed payload fixtures still need additional evidence.
+11. The next highest-ROI branch should focus on closeout review only after deciding whether screenshot/click-path proof remains a hard blocker, with screenshot proof still blocked until Browser Use runtime setup is fixed.
+12. The active lock allows only proof scaffolding, proof artifacts, simulations, stress-test prompts, and audit work for existing surfaces.
+13. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, installer work, and Trust Review Card implementation remain not approved.
