@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-06 (runtime truth audit completed)
+Last reviewed: 2026-05-06 (Trust Review Card MVP lock active)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -12,7 +12,15 @@ Generated runtime docs and actual code win if they conflict with this note.
 
 ## Priority Lock Status (2026-05-06)
 
-Completed priority lock:
+Current active priority lock:
+
+```text
+Trust Review Card MVP / Visible Non-Action Receipt Surface
+```
+
+Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP.md`
+
+Completed prior priority lock:
 
 ```text
 Runtime truth regeneration / audit after OpenClaw proof chain
@@ -20,7 +28,9 @@ Runtime truth regeneration / audit after OpenClaw proof chain
 
 The four-step OpenClaw sequence and the follow-up runtime truth audit are complete.
 
-Current next todo: select the next reviewed priority lock before starting new work.
+The current active workstream is limited to a visible, read-only trust/review card surface for existing planning-only and read-only proof infrastructure.
+
+This is not an automation-expansion lock.
 
 ---
 
@@ -56,9 +66,10 @@ Current next todo: select the next reviewed priority lock before starting new wo
   PR #103 and RequestUnderstanding review-card payload contract merged in PR #104. This establishes a
   planning-only, non-authorizing payload foundation for the future visible trust surface. No UI render,
   OpenClaw delegation, capability expansion, persistent history store, or execution authority was added.
-- **Completed OpenClaw lock step 2:** Local capability signoff matrix merged in PR #105. It records
-  read-only evidence and proof requirements for local/runtime surfaces before OpenClaw may rely on them;
-  it does not enable capabilities or grant OpenClaw authority.
+- **Completed OpenClaw lock step 2:** Local capability signoff matrix merged in PR #105 and later
+  clarified by PR #112 as accepted only as an evidence baseline for the first read-only OpenClaw proof,
+  not authority-granting. It records read-only evidence and proof requirements for local/runtime
+  surfaces before any future OpenClaw reliance; it does not enable capabilities or grant OpenClaw authority.
 - **Completed OpenClaw lock step 3:** OpenClawMediator skeleton merged in PR #106. It adds a
   non-executing envelope -> decision -> receipt boundary with hardened blocked-action matching, no
   runtime routes, no OpenClaw execution, and no Governor/capability/filesystem/browser/network calls.
@@ -71,6 +82,11 @@ Current next todo: select the next reviewed priority lock before starting new wo
   docs were regenerated through the generator path, runtime fingerprint/hash alignment updated, proof
   artifact over-indexing in generated MOCs corrected, and OpenClawMediator/read-only workflow proof
   remained documented as non-executing/non-authorizing.
+- **Active Trust Review Card MVP lock:** selected in PR #112. It permits only a visible, read-only
+  RequestUnderstanding/trust review surface and non-action receipt display work. It does not approve
+  OpenClaw execution, direct Cap 63 shortcut use, browser/computer-use, filesystem writes, external
+  writes, email/calendar/Shopify/account actions, autonomous workflow execution, Google connector
+  runtime work, capability registry expansion, workflow automation expansion, scheduler expansion, or installer work.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -79,14 +95,14 @@ Current next todo: select the next reviewed priority lock before starting new wo
 
 ## Planning-Only / Future Direction
 
-All future direction remains valid but requires a new reviewed priority lock before work starts.
+All future direction outside the active Trust Review Card MVP lock requires a separate reviewed priority lock before work starts.
 
-Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_RUNTIME_TRUTH_AUDIT.md`
+Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP.md`
 
 Current lock state:
 
 1. OpenClaw priority-lock sequence is complete and closed.
 2. Runtime truth regeneration / audit merged in PR #110 and is complete.
-3. Runtime docs were regenerated through the generator path and remained code-grounded.
-4. The audit surfaced proof-artifact over-indexing in generated MOCs; the overlay generator now excludes `docs/demo_proof/**/raw/*` and `docs/demo_proof/**/screenshots/*` from topical/runtime aggregation while keeping proof reports browsable.
-5. Broad OpenClaw automation, browser/computer-use, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, and Google connector expansion remain not approved.
+3. Trust Review Card MVP priority lock was selected in PR #112 and is now active.
+4. The active lock allows only a visible read-only trust/review card surface and related non-action receipt display/proof work.
+5. Broad OpenClaw automation, browser/computer-use, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, and installer work remain not approved.
