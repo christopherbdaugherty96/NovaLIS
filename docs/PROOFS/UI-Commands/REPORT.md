@@ -35,6 +35,10 @@ This pass is read-only with respect to runtime authority. It does not add capabi
 - `cases/DASHBOARD_STALE_DEGRADED_RENDERING_PROOF_2026-05-07.md`
 - `evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json`
 - `evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_pytest_results.txt`
+- `cases/MALFORMED_WIDGET_PAYLOAD_PROOF_2026-05-07.md`
+- `cases/RAPID_CLICK_DOUBLE_SUBMIT_PROOF_2026-05-07.md`
+- `evidence/2026-05-07/raw/ui_malformed_rapid_click_contract.json`
+- `evidence/2026-05-07/raw/ui_malformed_rapid_click_pytest_results.txt`
 - `VERIFICATION_MATRIX.md`
 - `FRICTION_LOG.md`
 
@@ -97,6 +101,32 @@ The dashboard rendering pass connected PR #123 evidence metadata to visible sear
 - adjacent dashboard bundle checks passed: `2 passed`
 - JS syntax checks passed for the served static dashboard and mirrored frontend dashboard file
 
+## 2026-05-07 Malformed Widget / Rapid Submit Validation
+
+The malformed/rapid-interaction pass reduced two remaining UI proof gaps without adding authority:
+
+- unsupported dashboard/WebSocket message types now render a visible `Unsupported` response rather than disappearing silently
+- the unsupported fallback explicitly says Nova did not treat the payload as success or execute anything
+- backend and mirrored frontend dashboard copies carry the same unsupported-widget fallback
+- malformed/degraded search widget behavior remains covered by the PR #124 `Search state` / `Evidence state` contract
+- overlapping manual chat sends remain blocked while Nova is answering
+- send button listener binding remains single-use through `sendBtn.dataset.bound`
+- repeated assistant text within the same manual turn remains deduped
+- pending website confirmation resolution remains limited to explicit yes/no/cancel style responses
+
+Focused verification passed:
+
+```text
+25 passed
+node --check passed
+```
+
+Remaining friction is still recorded rather than hidden:
+
+- Browser Use screenshot/click-path proof remains blocked by runtime asset setup.
+- High-frequency browser click replay remains unproven.
+- Known non-search widget field fuzzing remains partial beyond unsupported-message and safe-default contract coverage.
+
 ## Verdict
 
 Expected outcome is truthful bounded behavior, not guaranteed success.
@@ -107,4 +137,4 @@ It did find UI/command truthfulness gaps that should be fixed or regression-test
 
 ## Matrix Status
 
-The master matrix now records evidence-backed status for the high-risk visible command paths and marks screenshot/click-path coverage as blocked by Browser Use runtime setup rather than Nova runtime authority.
+The master matrix now records evidence-backed status for the high-risk visible command paths, malformed/unsupported widget fallback, and rapid-submit contract guards. Screenshot/click-path coverage remains blocked by Browser Use runtime setup rather than Nova runtime authority.

@@ -1,0 +1,61 @@
+{
+  "date": "2026-05-07",
+  "proof_branch": "proof/ui-malformed-rapid-click-stress",
+  "active_lock": "Governed Web / News / Reporting + UI / Commands Proof + Stress Test",
+  "scope": "malformed widget payload and rapid-click/double-submit contract proof",
+  "authority_expansion": false,
+  "capability_added": false,
+  "openclaw_expanded": false,
+  "browser_computer_use_expanded": false,
+  "external_write_added": false,
+  "autonomous_workflow_added": false,
+  "direct_cap63_shortcut_used": false,
+  "browser_screenshot_captured": false,
+  "browser_screenshot_status": "blocked_by_runtime_asset_setup",
+  "covered_behaviors": [
+    {
+      "behavior": "unsupported dashboard message fallback",
+      "status": "pass",
+      "evidence": "renderUnsupportedWidgetEvent(msg) surfaces unsupported dashboard messages and says Nova did not treat them as success or execute anything."
+    },
+    {
+      "behavior": "backend/frontend dashboard copy consistency",
+      "status": "pass",
+      "evidence": "unsupported widget fallback strings are present in both nova_backend/static/dashboard-chat-news.js and Nova-Frontend-Dashboard/dashboard-chat-news.js."
+    },
+    {
+      "behavior": "malformed/degraded search widget visibility",
+      "status": "pass",
+      "evidence": "PR #124 dashboard rendering proof keeps empty degraded search widgets visible as Search state and renders Evidence state metadata."
+    },
+    {
+      "behavior": "double submit guard",
+      "status": "pass",
+      "evidence": "sendChat blocks while waitingForAssistant or manualTurnInFlight is active."
+    },
+    {
+      "behavior": "single-use send button binding",
+      "status": "pass",
+      "evidence": "sendBtn.dataset.bound prevents repeated listener attachment."
+    },
+    {
+      "behavior": "manual turn duplicate assistant de-dupe",
+      "status": "pass",
+      "evidence": "lastAssistantTurnKey prevents repeated assistant text within an active manual turn."
+    },
+    {
+      "behavior": "pending confirmation isolation",
+      "status": "pass",
+      "evidence": "pending confirmation helper accepts explicit yes/no/cancel only, and prior proof showed unrelated weather command can cancel stale website confirmation before continuing."
+    }
+  ],
+  "focused_verification": {
+    "pytest": "25 passed",
+    "node_check": "passed"
+  },
+  "remaining_gaps": [
+    "Browser Use screenshot/click-path proof remains blocked.",
+    "High-frequency browser click replay remains unproven.",
+    "Known non-search widget-specific field fuzzing remains partial beyond unsupported-message and safe-default contract coverage."
+  ]
+}
