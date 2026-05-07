@@ -29,6 +29,38 @@ This must be treated as a real commerce operation, not a get-rich-quick automati
 
 ---
 
+## First implementation rule
+
+The first version of this workflow must be manual-first and review-first.
+
+Nova may help organize, draft, calculate, review, and recommend. Nova must not execute commerce, advertising, publishing, purchasing, or fulfillment actions in the first implementation.
+
+First implementation allowed:
+
+- Draft product research cards.
+- Draft supplier validation cards.
+- Draft margin models.
+- Draft product page copy.
+- Draft ad scripts.
+- Draft claim reviews.
+- Summarize Shopify performance from Cap 65.
+- Recommend next tests.
+
+First implementation forbidden:
+
+- Publishing Shopify listings.
+- Changing prices.
+- Launching ads.
+- Increasing ad budgets.
+- Posting social content.
+- Placing supplier orders.
+- Sending customer messages.
+- Issuing refunds.
+- Editing live policies.
+- Auto-selecting products for launch.
+
+---
+
 ## Business model boundary
 
 Legitimate version:
@@ -191,6 +223,24 @@ Nova may draft templates, but support promises must be reviewed and approved by 
 
 ---
 
+## Pause and kill-switch criteria
+
+The workflow should pause automatically at the planning/recommendation level if any of these are observed:
+
+- Supplier cannot provide tracking.
+- Delivery estimate becomes materially longer than customer-facing promise.
+- Chargeback/refund rate crosses a user-defined threshold.
+- Product quality complaints repeat.
+- Ad platform rejects creative for deceptive or restricted claims.
+- Payment processor flags or holds funds.
+- Product category is later found to be restricted, counterfeit, unsafe, or compliance-sensitive.
+- Customer support backlog exceeds the defined response window.
+- Margin model becomes negative after real costs are observed.
+
+Pause means: Nova stops recommending scale-up, stops drafting expansion actions, and surfaces a review card. It does not attempt to fix the issue autonomously.
+
+---
+
 ## Data model for future Nova workflow
 
 Future implementation should not be a loose chat-only process. It should use explicit records.
@@ -207,6 +257,50 @@ Suggested records:
 - `FulfillmentRun`: order ID, supplier used, tracking, delay/refund state.
 
 These records should be inspectable and ledger-linked. Nova should not rely on hidden memory for commerce operations.
+
+---
+
+## State model
+
+Every product candidate should move through explicit states.
+
+Suggested states:
+
+```text
+idea
+→ supplier_review
+→ rejected | listing_draft
+→ creative_draft
+→ organic_test
+→ paid_test_proposed
+→ paid_test_approved
+→ active_limited
+→ paused | killed | scaled_review
+```
+
+No state transition that creates external effects should happen without an explicit user approval event.
+
+A killed product should not be silently revived by Nova. It requires a new user-created review entry.
+
+---
+
+## Review card requirements
+
+Before a product moves past draft/planning, Nova should show a review card with:
+
+- Product name and category.
+- Supplier and backup supplier.
+- Shipping estimate.
+- Product cost and proposed sale price.
+- Break-even ad cost.
+- Refund/chargeback assumptions.
+- Risk category.
+- Product claim checklist.
+- Creative asset provenance.
+- Customer-facing shipping promise.
+- Required user decision: approve, revise, reject, or defer.
+
+This card should be stored or ledger-linked so later decisions can be audited.
 
 ---
 
@@ -404,6 +498,24 @@ Before Nova gains any execution power in this workflow:
 - [ ] Posting/publishing approval gate exists.
 - [ ] Supplier-order approval gate exists.
 - [ ] Ledger receipts record every external action.
+
+---
+
+## Explicit non-goals
+
+This document does not authorize:
+
+- Autonomous dropshipping.
+- Autonomous paid ads.
+- Autonomous supplier purchasing.
+- Autonomous customer support.
+- Autonomous refund handling.
+- Autonomous store edits.
+- Autonomous price changes.
+- Autonomous product launch decisions.
+- Automated deception, fake scarcity, fake reviews, or fake testimonials.
+
+Any future automation must be separately designed as a governed capability and reviewed against Nova's execution boundaries.
 
 ---
 
