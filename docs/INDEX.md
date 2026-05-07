@@ -24,6 +24,7 @@ Generated runtime truth files are the authority for exact live status.
 - [Google Connector Model](future/NOVA_GOOGLE_CONNECTOR_MODEL.md)
 - [Auralis Digital Client Intake OS](future/AURALIS_DIGITAL_CLIENT_INTAKE_OS.md)
 - [Auralis Digital Client Intake OS — Second Pass](future/AURALIS_DIGITAL_CLIENT_INTAKE_OS_SECOND_PASS.md)
+- [Auralis Digital Client Intake OS — Agreed Decision](future/AURALIS_DIGITAL_CLIENT_INTAKE_OS_AGREED_DECISION.md)
 
 ## What Nova Is
 Nova is a governed local AI runtime focused on separating reasoning from execution.
