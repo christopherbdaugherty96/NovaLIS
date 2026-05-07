@@ -26,8 +26,9 @@ def _slug(topic: str) -> str:
     return cleaned or "untitled"
 
 
-def _story_path(topic: str) -> Path:
-    return STORY_DIR / f"story_{_slug(topic)}.json"
+def _story_path(topic: str, story_dir: Path | None = None) -> Path:
+    root = Path(story_dir) if story_dir is not None else STORY_DIR
+    return root / f"story_{_slug(topic)}.json"
 
 
 def _read_json(path: Path, default: Any) -> Any:
@@ -48,6 +49,11 @@ def _snapshot_hash(snapshot: dict[str, Any]) -> str:
 
 
 class StoryTrackerExecutor:
+    def __init__(self, story_dir: str | Path | None = None) -> None:
+        self.story_dir = Path(story_dir) if story_dir is not None else STORY_DIR
+        self.tracked_topics_path = self.story_dir / "tracked_topics.json"
+        self.story_graph_path = self.story_dir / "story_graph.json"
+
     @staticmethod
     def _persistent_change_result(
         message: str,
@@ -88,7 +94,7 @@ class StoryTrackerExecutor:
         return counts
 
     def _tracked_topics(self) -> list[str]:
-        payload = _read_json(TRACKED_TOPICS_PATH, {"topics": []})
+        payload = _read_json(self.tracked_topics_path, {"topics": []})
         topics = payload.get("topics", []) if isinstance(payload, dict) else []
         return [str(t).strip() for t in topics if str(t).strip()]
 
@@ -97,17 +103,17 @@ class StoryTrackerExecutor:
         for t in topics:
             if t not in dedup:
                 dedup.append(t)
-        _write_json(TRACKED_TOPICS_PATH, {"topics": dedup, "updated_at": _utc_now()})
+        _write_json(self.tracked_topics_path, {"topics": dedup, "updated_at": _utc_now()})
 
     def _load_graph(self) -> dict[str, Any]:
-        payload = _read_json(STORY_GRAPH_PATH, {"links": []})
+        payload = _read_json(self.story_graph_path, {"links": []})
         if not isinstance(payload, dict):
             return {"links": []}
         payload.setdefault("links", [])
         return payload
 
     def _save_graph(self, graph: dict[str, Any]) -> None:
-        _write_json(STORY_GRAPH_PATH, graph)
+        _write_json(self.story_graph_path, graph)
 
     def _prune_snapshots(self, snapshots: list[dict[str, Any]]) -> list[dict[str, Any]]:
         cutoff = datetime.now(timezone.utc) - timedelta(days=RETENTION_DAYS)
@@ -123,7 +129,7 @@ class StoryTrackerExecutor:
         return kept
 
     def _load_story(self, topic: str) -> dict[str, Any]:
-        path = _story_path(topic)
+        path = _story_path(topic, self.story_dir)
         default = {
             "story_id": f"story_{_slug(topic)}",
             "topic": topic,
@@ -142,7 +148,7 @@ class StoryTrackerExecutor:
     def _save_story(self, story: dict[str, Any]) -> None:
         topic = story.get("topic", "untitled")
         story["snapshots"] = self._prune_snapshots(story.get("snapshots", []))
-        _write_json(_story_path(topic), story)
+        _write_json(_story_path(topic, self.story_dir), story)
 
     def _extract_events(self, topic: str, headlines: list[dict[str, str]]) -> list[dict[str, Any]]:
         topic_terms = [t for t in re.findall(r"[a-zA-Z0-9]+", topic.lower()) if len(t) >= 3]

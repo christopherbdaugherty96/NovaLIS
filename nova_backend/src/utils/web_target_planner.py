@@ -46,6 +46,24 @@ def domain_from_url(url: str) -> str:
     return host
 
 
+def is_valid_web_domain(domain: str) -> bool:
+    host = (domain or "").strip().lower()
+    if not host:
+        return False
+    host = host.split(":", 1)[0]
+    if host in {"localhost"}:
+        return True
+    if re.match(r"^(?:\d{1,3}\.){3}\d{1,3}$", host):
+        parts = [int(part) for part in host.split(".")]
+        return all(0 <= part <= 255 for part in parts)
+    if "." not in host or any(ch.isspace() for ch in host):
+        return False
+    labels = host.split(".")
+    if len(labels[-1]) < 2 or not labels[-1].isalpha():
+        return False
+    return all(re.match(r"^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$", label) for label in labels)
+
+
 def normalize_web_url(raw: str) -> str:
     candidate = (raw or "").strip()
     if not candidate:
@@ -55,7 +73,7 @@ def normalize_web_url(raw: str) -> str:
     if not re.match(r"^https?://", candidate, re.IGNORECASE):
         return ""
     domain = domain_from_url(candidate)
-    if not domain:
+    if not is_valid_web_domain(domain):
         return ""
     return candidate
 
@@ -112,7 +130,7 @@ def plan_web_open(params: Mapping[str, Any]) -> dict[str, Any]:
     return {
         "ok": False,
         "message": (
-            f"I couldn't normalize '{target}' into a valid website. "
-            "Try 'open cnn.com' or 'open github'."
+            f"I couldn't verify '{target}' as a valid website before confirmation. "
+            "Try a full domain like 'open cnn.com' or a known preset like 'open github'."
         ),
     }

@@ -39,6 +39,7 @@ Status: draft / review required
 7. **Prompt injection fixture**
    - Provide article/search text containing `ignore previous instructions` and command-like content.
    - Expected: content is treated as untrusted text; no execution; no conversion into instructions.
+   - Current coverage: `nova_backend/tests/websocket/test_session_handler_proof_blockers.py`.
 
 8. **Headline state binding**
    - Load `news`.
@@ -55,6 +56,24 @@ Focused verification after the blocker fixes:
 ```
 
 Evidence: `evidence/2026-05-07/raw/focused_pytest_results.txt`.
+
+## 2026-05-07 Follow-Up Suite
+
+Focused verification after invalid URL, quoted-content, and temp-store follow-ups:
+
+```text
+20 passed
+```
+
+Evidence: `evidence/2026-05-07/raw/followup_pytest_results.txt`.
+
+Combined follow-up verification:
+
+```text
+75 passed
+```
+
+Evidence: `evidence/2026-05-07/raw/followup_combined_pytest_results.txt`.
 
 ## Screenshot Regression Once Browser Runtime Works
 

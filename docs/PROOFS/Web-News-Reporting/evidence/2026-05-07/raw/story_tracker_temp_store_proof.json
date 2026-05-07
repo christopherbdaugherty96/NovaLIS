@@ -1,0 +1,12 @@
+{
+  "store_root": "C:\\Users\\Chris\\AppData\\Local\\Temp\\nova_story_tracker_proof_63sqxr2b\\story_tracker",
+  "success": true,
+  "message": "Started tracking story 'proof only'.\nSnapshot hash: be9f8ab9e47d.\nEvents captured: 1.\n\nTry next:\n- update story proof only\n- show story proof only",
+  "authority_class": "persistent_change",
+  "external_effect": false,
+  "tracked_topics_exists_in_temp": true,
+  "story_exists_in_temp": true,
+  "default_workspace_story_exists": false,
+  "no_autonomous_followup_scheduled": true,
+  "note": "Temp directory was removed after this proof run; no nova_workspace story_tracker artifact was committed."
+}
