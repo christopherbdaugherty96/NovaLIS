@@ -1042,6 +1042,41 @@ button.workspace-spotlight-card.active {
   line-height: 1.4;
 }
 
+.search-evidence-panel {
+  display: grid;
+  gap: 6px;
+  padding: 9px 10px;
+  border: 1px solid rgba(244, 191, 117, 0.26);
+  border-radius: 10px;
+  background: rgba(244, 191, 117, 0.08);
+}
+
+.search-evidence-title {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #fff0d6;
+  text-transform: uppercase;
+}
+
+.search-evidence-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.search-evidence-note,
+.search-credibility-row {
+  margin: 0;
+  font-size: 0.76rem;
+  line-height: 1.4;
+  color: #f5dfbd;
+}
+
+.search-credibility-list {
+  display: grid;
+  gap: 4px;
+}
+
 .search-quick-answer {
   display: grid;
   gap: 6px;

@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-07 (stale/provider/credibility fixture progress)
+Last reviewed: 2026-05-07 (dashboard stale/degraded rendering progress)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -41,6 +41,11 @@ active lock.
 The current stale/provider/credibility fixture pass adds deterministic search evidence coverage for
 stale timestamps, malformed/degraded provider output, and weak/untrusted source credibility signals.
 It further reduces proof gaps, but still does not close the active lock.
+
+The dashboard stale/degraded rendering pass adds visible search-widget rendering for the new evidence
+metadata: provider status, freshness status, source credibility rows, and empty degraded search state.
+It further reduces UI truthfulness gaps, but still does not close the active lock because screenshot and
+rapid-click/double-submit proof remain open.
 
 ---
 
@@ -116,6 +121,12 @@ It further reduces proof gaps, but still does not close the active lock.
   passed` for the adjacent news/story slice. It does not add a capability, OpenClaw expansion,
   browser/computer-use expansion, external writes, autonomous workflow expansion, direct Cap 63 shortcut
   use, or live-network dependency.
+- **Dashboard stale/degraded rendering pass:** adds visible search widget evidence rendering for
+  `provider_status`, `freshness_status`, `source_credibility`, and empty degraded/malformed search state.
+  It records `4 passed` for the dashboard search widget rendering contract, `24 passed` for the adjacent
+  search evidence/web search slice, `2 passed` for adjacent dashboard bundle checks, and JS syntax checks
+  for served/mirrored dashboard files. It does not add runtime authority, capabilities, browser/computer-use,
+  external writes, OpenClaw expansion, autonomous workflow expansion, or direct Cap 63 shortcut use.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -137,7 +148,8 @@ Current lock state:
 5. PR #119 added the first evidence-backed proof library and UI verification matrix for the active lock.
 6. PR #121 reduced the contradiction and duplicate/split-topic proof gaps with deterministic fixtures.
 7. The stale-cache/provider-failure and source-credibility gaps now have deterministic backend fixture coverage.
-8. The active lock still remains open because dashboard-rendered stale/degraded state proof, malformed-widget proof, rapid-click/double-submit proof, broader visual UI/button proof, and Browser Use screenshot/click-path proof still need additional evidence.
-9. The next highest-ROI branch should focus on malformed-widget plus rapid-click/double-submit UI proof, or dashboard-rendered stale/degraded state proof if the UI path is ready.
-10. The active lock allows only proof scaffolding, proof artifacts, simulations, stress-test prompts, and audit work for existing surfaces.
-11. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, installer work, and Trust Review Card implementation remain not approved.
+8. Dashboard-rendered stale/degraded search evidence state now has contract proof.
+9. The active lock still remains open because rapid-click/double-submit proof, malformed non-search widget proof, broader visual UI/button proof, and Browser Use screenshot/click-path proof still need additional evidence.
+10. The next highest-ROI branch should focus on rapid-click/double-submit and malformed non-search widget UI proof, with screenshot proof still blocked until Browser Use runtime setup is fixed.
+11. The active lock allows only proof scaffolding, proof artifacts, simulations, stress-test prompts, and audit work for existing surfaces.
+12. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, installer work, and Trust Review Card implementation remain not approved.

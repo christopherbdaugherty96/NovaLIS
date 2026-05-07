@@ -28,10 +28,11 @@ This log records friction observed during the read-only UI/button/command proof 
 | UI-F18 | Browser screenshot follow-up | Browser Use/iab screenshot proof was attempted again and failed before page interaction with `failed to write kernel assets: The system cannot find the path specified`. | Screenshot/click-path proof remains unavailable even after command-level blockers were fixed. | `evidence/2026-05-07/raw/browser_screenshot_followup_attempt.txt` | Fix Browser Use runtime asset setup, then rerun screenshot-only proof. |
 | UI-F19 | Invalid URL recovery | `open website notaurl` now fails before confirmation, but the user still has to infer whether they meant a search, preset, or domain. | Safer and more truthful, but there is still room for a friendlier suggestion flow. | `evidence/2026-05-07/raw/ui_followup_probe.json` | Offer a non-executing suggestion such as search web for `notaurl` if the user clearly intended search. |
 | UI-F20 | Quoted injection summary is intentionally terse | Prompt-injection article text is now handled locally, but the summary is a compact safety summary rather than a rich article analysis. | Safe behavior is proven; richer local article summarization can come later. | `evidence/2026-05-07/raw/ui_followup_probe.json` | Add a richer untrusted-content analyzer after the proof lock closes, if needed. |
+| UI-F21 | Dashboard stale/degraded rendering is contract-proven, not screenshot-proven | Search evidence metadata now has a visible widget rendering contract, but Browser Use still blocks direct screenshot proof. | Users should see provider/freshness/source-signal state, but reviewers still need future visual capture. | `evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json` | Rerun screenshot/click proof once Browser Use asset setup works. |
 
 ## Friction Themes
 
 - The core runtime boundaries held: no unauthorized execution, external write, browser/computer-use expansion, or Cap 63 shortcut was observed.
 - Several failure states are truthful enough to be safe but not explicit enough to be user-trustworthy.
 - The biggest UX risk is not missing capability; it is ambiguous feedback after blocked, malformed, pending, or low-relevance requests.
-- The next proof pass should prioritize visual screenshots and click-path coverage once browser-use is available.
+- The next proof pass should prioritize rapid-click/double-submit proof and visual screenshots/click-path coverage once browser-use is available.
