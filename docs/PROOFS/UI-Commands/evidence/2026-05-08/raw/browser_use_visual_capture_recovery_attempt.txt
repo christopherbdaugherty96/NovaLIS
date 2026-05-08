@@ -1,0 +1,93 @@
+Browser Use visual capture recovery attempt - 2026-05-08
+
+Scope:
+Proof infrastructure only. This attempt did not add, modify, or exercise any Nova browser/computer-use capability.
+
+Goal:
+Reproduce and diagnose the existing Browser Use screenshot/click-path proof blocker for existing Nova UI surfaces.
+
+Attempt 1:
+Used the Browser Use skill's required Node REPL / browser-client bootstrap path with backend `iab`:
+
+```javascript
+if (!globalThis.agent) {
+  const { setupAtlasRuntime } = await import("C:/Users/Chris/.codex/plugins/cache/openai-bundled/browser-use/0.1.0-alpha1/scripts/browser-client.mjs");
+  const backend = "iab";
+  await setupAtlasRuntime({ globals: globalThis, backend });
+}
+await agent.browser.nameSession("Visual proof recovery");
+if (typeof tab === "undefined") {
+  globalThis.tab = await agent.browser.tabs.new();
+}
+```
+
+Observed result:
+
+```text
+failed to write kernel assets: The system cannot find the path specified. (os error 3)
+```
+
+Outcome:
+Blocked before tab creation, page navigation, DOM inspection, screenshot capture, or click-path recording.
+
+Attempt 2:
+Reset the Node REPL kernel and attempted a trivial metadata read without Browser Use imports:
+
+```javascript
+nodeRepl.write(JSON.stringify({ cwd: nodeRepl.cwd, homeDir: nodeRepl.homeDir, tmpDir: nodeRepl.tmpDir }, null, 2));
+```
+
+Observed result:
+
+```text
+failed to write kernel assets: The system cannot find the path specified. (os error 3)
+```
+
+Outcome:
+The failure occurs before JavaScript execution in the Node REPL kernel asset setup layer. This means Browser Use/iab cannot currently be used for visual proof capture in this session.
+
+Environment checks:
+
+```text
+TEMP = C:\Users\Chris\AppData\Local\Temp
+TMP = C:\Users\Chris\AppData\Local\Temp
+LOCALAPPDATA = C:\Users\Chris\AppData\Local
+USERPROFILE = C:\Users\Chris
+TEMP exists = true
+TMP exists = true
+node shell check = passed
+```
+
+Additional diagnostic:
+
+```text
+C:\Users\Chris\package.json is invalid JSON:
+Bad escaped character in JSON at position 9 (line 1 column 10)
+```
+
+This matches older Browser Use friction recorded in:
+
+```text
+docs/demo_proof/2026-04-28_user_test/FRICTION_LOG.md
+docs/product/KNOWN_LIMITATIONS.md
+```
+
+Current classification:
+
+```text
+blocked / setup-required
+```
+
+What did not happen:
+
+- no Nova browser/computer-use capability was added
+- no Browser Use runtime path was added to Nova
+- no OpenClaw expansion occurred
+- no external write occurred
+- no autonomous browsing occurred
+- no UI screenshot was captured
+- no click-path proof was captured
+- no screenshot was substituted or faked
+
+Conclusion:
+Browser Use visual proof remains blocked by Codex/Browser Use/Node REPL runtime asset setup before page interaction. This is proof-infrastructure debt, not Nova runtime authority and not evidence of hidden Nova UI success.

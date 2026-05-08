@@ -4,7 +4,7 @@
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP.md`
 
-Updated: 2026-05-07 after the Trust Review Card MVP closeout review.
+Updated: 2026-05-08 after the Browser Use visual capture recovery attempt.
 
 Most recently completed workstream:
 
@@ -52,6 +52,18 @@ The closeout review carries Browser Use screenshot/click-path proof, high-freque
 
 Recover Browser Use screenshot/click-path proof capture as proof infrastructure only.
 
+Current recovery result:
+
+```text
+blocked / setup-required
+```
+
+Browser Use/iab still fails before JavaScript execution in the Node REPL kernel asset setup layer:
+
+```text
+failed to write kernel assets: The system cannot find the path specified. (os error 3)
+```
+
 Carried-forward proof gaps:
 
 - Browser Use screenshot/click-path proof after runtime asset setup is fixed
@@ -62,10 +74,24 @@ Carried-forward proof gaps:
 Recommended next branch:
 
 ```text
-proof/browser-use-visual-capture-recovery
+test/dashboard-event-replay-harness
 ```
 
+Reason:
+
+Browser Use visual capture is blocked by proof-infrastructure setup outside Nova runtime behavior. Do not keep expanding browser proof attempts inside Nova until the Browser Use / Node REPL setup blocker is repaired.
+
 Scope for the next branch:
+
+- deterministic dashboard event replay harness
+- repeated clicks
+- double submits
+- stale confirmation
+- rapid WebSocket messages
+- no duplicate unintended action
+- no hidden execution
+
+Browser Use proof-infrastructure follow-up remains:
 
 - repair screenshot/click-path proof capture only
 - capture visual evidence for existing UI surfaces if Browser Use runtime capture works
@@ -106,6 +132,7 @@ Current completed audit/proof outcomes:
 - the malformed widget / rapid-submit proof pass recorded `25 passed` and JS syntax checks for served/mirrored dashboard files
 - the Web/News/UI proof lock closeout review classified the lock as qualified closed and carried Browser Use screenshot/click-path proof forward as visual proof infrastructure debt
 - the Trust Review Card MVP closeout review accepted PR #127 as a display-only non-action receipt surface and kept Browser Use screenshot/click-path proof as separate proof-infrastructure debt
+- the Browser Use visual capture recovery attempt recorded `blocked / setup-required` because Node REPL fails before JavaScript execution with `failed to write kernel assets`; no screenshot or click-path proof was captured or faked
 
 Do not broaden OpenClaw or start product/runtime expansion outside the active reviewed priority lock.
 

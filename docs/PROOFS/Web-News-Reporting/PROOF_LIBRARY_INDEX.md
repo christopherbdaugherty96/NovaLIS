@@ -9,6 +9,7 @@ This index turns the raw WebSocket and regression evidence into reviewer-readabl
 - Raw 2026-05-06 evidence: `docs/PROOFS/Web-News-Reporting/evidence/2026-05-06/raw/`
 - Raw 2026-05-07 evidence: `docs/PROOFS/Web-News-Reporting/evidence/2026-05-07/raw/`
 - UI command evidence: `docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/`
+- UI visual-capture recovery evidence: `docs/PROOFS/UI-Commands/evidence/2026-05-08/raw/`
 
 ## Case Library
 
@@ -24,6 +25,7 @@ This index turns the raw WebSocket and regression evidence into reviewer-readabl
 | Stale cache / provider failure | pass / UI fixture follow-up needed | `cases/STALE_CACHE_PROVIDER_FAILURE_PROOF_2026-05-07.md` | Stale timestamps lower confidence; degraded/malformed provider output remains truthful. | Add dashboard/WebSocket rendering proof for stale/degraded states. |
 | Source credibility matrix | pass / taxonomy hardening ongoing | `cases/SOURCE_CREDIBILITY_MATRIX_PROOF_2026-05-07.md` | Search evidence now emits conservative credibility rows and lowers confidence for weak/untrusted sources. | Add broader reviewed source taxonomy. |
 | Dashboard stale/degraded rendering | pass / screenshot blocked | `../UI-Commands/cases/DASHBOARD_STALE_DEGRADED_RENDERING_PROOF_2026-05-07.md` | Search widget renders provider/freshness/source credibility evidence state and empty degraded search state. | Visual screenshot proof blocked by Browser Use asset setup. |
+| Browser Use visual capture recovery | blocked / setup-required | `../UI-Commands/cases/BROWSER_USE_VISUAL_CAPTURE_RECOVERY_2026-05-08.md` | Browser Use/iab remains blocked before JavaScript execution; no screenshot/click proof captured or faked. | Repair Browser Use / Node REPL runtime asset setup outside Nova authority. |
 
 ## Regression Evidence
 
@@ -38,4 +40,4 @@ This index turns the raw WebSocket and regression evidence into reviewer-readabl
 
 The current Web/News/Reporting proof library now contains concrete raw evidence, case-level summaries, and regression references for the primary active-lock surfaces.
 
-The lock is not fully closed yet because screenshot/click-path proof, rapid-click/double-submit proof, and broader UI/button coverage still need more evidence.
+The lock is qualified closed, but screenshot/click-path proof remains blocked/setup-required by Browser Use / Node REPL runtime asset setup. Rapid-click/double-submit contract proof exists; high-frequency browser event replay and broader UI/button visual coverage remain proof debt.
