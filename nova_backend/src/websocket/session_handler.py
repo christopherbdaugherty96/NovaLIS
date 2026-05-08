@@ -3982,7 +3982,16 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         escalation.get("context_snapshot", session_context[-5:]),
                         escalation.get("heuristic_result", {}),
                     )
-                    await send_chat_message(ws, message, tone_domain=skill_tone_domain)
+                    await send_chat_message(
+                        ws,
+                        message,
+                        tone_domain=skill_tone_domain,
+                        trust_review_card=(
+                            result_data.get("request_understanding_review_card")
+                            if skill_name == "general_chat"
+                            else None
+                        ),
+                    )
                     await send_chat_done(ws)
                     _maybe_auto_speak_for_voice_turn(
                         session_state,
@@ -4026,6 +4035,11 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         message,
                         message_id=message_id,
                         tone_domain=skill_tone_domain,
+                        trust_review_card=(
+                            result_data.get("request_understanding_review_card")
+                            if skill_name == "general_chat"
+                            else None
+                        ),
                     )
 
                 if skill_name in {"weather", "news"}:

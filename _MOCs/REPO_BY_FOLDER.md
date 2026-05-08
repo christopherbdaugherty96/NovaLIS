@@ -16,7 +16,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[.agent_context/brain_loop|Brain Loop Context]]
   summary: Nova's proposed Brain loop is:
 - [doc] [[.agent_context/current_priority|Current Priority]]
-  summary: Current priority remains:
+  summary: Current priority:
 - [doc] [[.agent_context/environments|Environment Context]]
   summary: Nova's Brain should reason about environments before execution.
 - [doc] [[.agent_context/governance|Governance Context]]
@@ -130,7 +130,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (915)
+## docs (916)
 
 - [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
   summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
@@ -527,7 +527,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/BYPASS_SURFACES|BYPASS_SURFACES]]
   summary: Read-only truth report of detectable bypass indicators from allowlisted runtime sources.
 - [doc] [[docs/current_runtime/CURRENT_RUNTIME_STATE|NOVA - CURRENT RUNTIME STATE]]
-  summary: Runtime Fingerprint: 505f89947b300d9e68241b497b6feaaa4f09dffa4c10c7b63790076fdcc0b512
+  summary: Runtime Fingerprint: 90d1e31f4a29cb975df010c6613d104703371e848aff06514d4e8669668b1e67
 - [doc] [[docs/current_runtime/DOC_LINK_INTEGRITY_REPORT_2026-03-12|Doc Link Integrity Report]]
   summary: Date: 2026-03-12
 - [doc] [[docs/current_runtime/DOCS_AUTHORITY_REMEDIATION_2026-03-12|DOCS_AUTHORITY_REMEDIATION_2026-03-12]]
@@ -551,7 +551,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/current_runtime/RUNTIME_DOC_UPDATE_PROOF_2026-03-12|Runtime Documentation Update Proof]]
   summary: Date: 2026-03-13
 - [doc] [[docs/current_runtime/RUNTIME_FINGERPRINT|RUNTIME_FINGERPRINT]]
-  summary: - runtimesurfacehash: 6f5d2a4fc074220ad093e1d1de6d608ee6274284e3d281142d670030304543ab
+  summary: - runtimesurfacehash: 7a4e45037750ca7fba53ced3f0711223410e37ce66d8c96aed4b2885d8274cc6
 - [doc] [[docs/current_runtime/RUNTIME_TRUTH_ADDENDUM_2026-03-12|RUNTIME_TRUTH_ADDENDUM_2026-03-12]]
   summary: ﻿# Runtime Truth Addendum (Docs-Only Corrections)
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
@@ -1915,11 +1915,11 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_RUNTIME_TRUTH_AUDIT|Active Priority Lock - 2026-05-06 Runtime Truth Audit]]
   summary: Status: completed.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP|Active Priority Lock - 2026-05-06 Trust Review Card MVP]]
-  summary: Status: paused by user request.
+  summary: Status: active / MVP implementation in progress.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST|Active Priority Lock - 2026-05-06 Web / News / Reporting + UI Proof / Stress Test]]
-  summary: Status: active.
+  summary: Status: qualified closed as of 2026-05-07.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-07 (malformed widget / rapid-submit proof progress)
+  summary: Last reviewed: 2026-05-07 (Trust Review Card MVP implementation progress)
 - [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
   summary: Status: accepted as evidence baseline for the first read-only OpenClaw proof only / not authority-granting.
 - [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
@@ -1928,6 +1928,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: This folder contains human-maintained work-continuity notes.
 - [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
   summary: Status: human-maintained alignment snapshot.
+- [doc] [[docs/status/WEB_NEWS_UI_PROOF_LOCK_CLOSEOUT_REVIEW_2026-05-07|Web / News / UI Proof Lock Closeout Review - 2026-05-07]]
+  summary: Status: qualified closeout / screenshot proof explicitly blocked
 - [doc] [[docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02|Workflow Stage Roadmap - 2026-05-02]]
   summary: Status: operational planning snapshot.
 - [doc] [[docs/testing/COGNITIVE_EVALUATION_SUITE|Cognitive Evaluation Suite]]
@@ -1939,7 +1941,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/testing/SIMULATION_ANALYTICS|Simulation Analytics]]
   summary: Nova's simulation analytics layer is post-run only and operates entirely in test/observability scope.
 - [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
-  summary: Refer to: docs/status/ACTIVEPRIORITYLOCK2026-05-06WEBNEWSPROOFSTRESSTEST.md
+  summary: Refer to: docs/status/ACTIVEPRIORITYLOCK2026-05-06TRUSTREVIEWCARDMVP.md
 - [doc] [[docs/todo/DOC_CLEANUP|Doc Cleanup — Nova]]
   summary: Updated: 2026-04-28
 - [doc] [[docs/todo/README|docs/todo — Task Folder]]

@@ -267,7 +267,12 @@ async def run_general_chat_fallback(
         block for block in (request_block, task_preview.prompt_block) if block
     )
 
-    return await general_chat_skill.handle(normalized_query, chat_context, skill_state)
+    result = await general_chat_skill.handle(normalized_query, chat_context, skill_state)
+    if result is not None and isinstance(result.data, dict):
+        review_card_payload = skill_state.get("request_understanding_review_card")
+        if isinstance(review_card_payload, dict):
+            result.data["request_understanding_review_card"] = dict(review_card_payload)
+    return result
 
 
 def _task_preview_session_context(

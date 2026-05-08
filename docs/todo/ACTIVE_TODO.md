@@ -2,23 +2,23 @@
 
 ## PRIORITY LOCK STATUS (2026-05-07)
 
-Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
+Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP.md`
 
-Updated: 2026-05-07 after the Web/News/UI proof lock closeout review.
+Updated: 2026-05-07 after the Trust Review Card MVP implementation pass began.
 
-Most recently active workstream:
+Current active workstream:
 
 ```text
-Governed Web / News / Reporting + UI / Commands Proof + Stress Test
+Trust Review Card MVP / Visible Non-Action Receipt Surface
 ```
 
 Status:
 
 ```text
-qualified closed / screenshot proof explicitly blocked
+implementation in progress / review required
 ```
 
-Closeout review:
+Prior proof-lock closeout:
 
 ```text
 docs/status/WEB_NEWS_UI_PROOF_LOCK_CLOSEOUT_REVIEW_2026-05-07.md
@@ -44,7 +44,7 @@ The closeout review carries Browser Use screenshot/click-path proof, high-freque
 
 ## Current Next TODO
 
-Resume the paused Trust Review Card MVP / Visible Non-Action Receipt Surface lock through a narrow non-authorizing implementation branch.
+Finish and review the Trust Review Card MVP / Visible Non-Action Receipt Surface implementation branch.
 
 Carried-forward proof gaps:
 
@@ -72,6 +72,12 @@ Scope for the next branch:
 - no execution authority
 - no OpenClaw expansion
 - no new capabilities
+
+Current implementation pass:
+
+- propagates existing `request_understanding_review_card` payloads into general-chat WebSocket responses
+- renders deterministic display-only card rows in chat
+- adds tests proving no action buttons, dispatch handlers, confirmation acceptance, capability calls, Governor calls, OpenClaw calls, or state mutation from rendering
 
 Current completed audit/proof outcomes:
 

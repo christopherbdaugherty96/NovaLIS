@@ -3300,6 +3300,7 @@ async def send_chat_message(
     turn_id: Optional[str] = None,
     confidence: Optional[str] = None,
     suggested_actions: Optional[list[dict[str, str]]] = None,
+    trust_review_card: Optional[dict[str, Any]] = None,
     apply_personality: bool = True,
     tone_domain: str = "general",
 ) -> str:
@@ -3318,6 +3319,8 @@ async def send_chat_message(
         payload["confidence"] = confidence
     if suggested_actions:
         payload["suggested_actions"] = suggested_actions
+    if isinstance(trust_review_card, dict) and trust_review_card:
+        payload["trust_review_card"] = trust_review_card
     await ws_send(ws, payload)
     return presented
 

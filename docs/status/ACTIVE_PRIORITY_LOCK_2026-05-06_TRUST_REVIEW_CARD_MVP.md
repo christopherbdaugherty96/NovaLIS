@@ -1,8 +1,8 @@
 # Active Priority Lock - 2026-05-06 Trust Review Card MVP
 
-Status: paused by user request.
+Status: active / MVP implementation in progress.
 
-Paused by: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST.md`
+Resumed after qualified closeout: `docs/status/WEB_NEWS_UI_PROOF_LOCK_CLOSEOUT_REVIEW_2026-05-07.md`
 
 This is human-maintained priority guidance, not generated runtime truth.
 
@@ -10,7 +10,7 @@ Generated runtime docs and actual code remain authoritative if they conflict wit
 
 ---
 
-## Paused Workstream
+## Active Workstream
 
 ```text
 Trust Review Card MVP / Visible Non-Action Receipt Surface
@@ -18,7 +18,7 @@ Trust Review Card MVP / Visible Non-Action Receipt Surface
 
 ---
 
-## Pause Reason
+## Resume Context
 
 The user requested a pause on current work to create a proof folder and stress-test plan for the governed web/news/reporting capability family:
 
@@ -31,7 +31,9 @@ The user requested a pause on current work to create a proof folder and stress-t
 - story tracking over time
 - topic maps of headline themes
 
-No Trust Review Card implementation work should proceed until the new proof/stress-test lock is complete or explicitly superseded.
+The Web/News/Reporting + UI/Commands proof/stress-test lock is now qualified closed. Browser Use screenshot/click-path proof, high-frequency browser event replay, broader visual UI proof, deeper widget-specific fuzzing, and timeline-drift fixtures are carried forward as proof debt.
+
+Trust Review Card MVP may resume as a narrow deterministic visibility surface.
 
 ---
 
@@ -45,9 +47,17 @@ The target is a minimal read-only review/trust card surface.
 
 This is not an automation-expansion lock.
 
+## MVP Principle
+
+```text
+derive, don't invent
+```
+
+The Trust Review Card must be an inspectability surface over existing state. It must not become a planner, router, executor, workflow engine, or LLM-generated trust narration surface.
+
 ---
 
-## Original Allowed Scope
+## Allowed Scope
 
 - render a minimal read-only RequestUnderstanding review card in the UI
 - render non-action / non-authorizing status fields clearly
@@ -63,7 +73,7 @@ This is not an automation-expansion lock.
 
 ---
 
-## Still Not Approved While Paused
+## Still Not Approved
 
 - no OpenClaw execution
 - no direct Cap 63 shortcut use
@@ -82,4 +92,4 @@ This is not an automation-expansion lock.
 
 ## Resume Rule
 
-Resume this lock only after the web/news/reporting proof/stress-test lock is complete, closed, or explicitly superseded by a reviewed priority-lock update.
+This lock has resumed after the Web/News/UI proof lock qualified closeout. Keep implementation narrow and display-only.
