@@ -521,7 +521,7 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/current_runtime/SKILL_SURFACE_MAP|SKILL_SURFACE_MAP]]
 - [doc] [[docs/archive/phase 3.5/phase4convo.txt|User must use explicit delegation syntax]]
 
-## testing (677)
+## testing (676)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/phase 3.5-4/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
@@ -921,7 +921,6 @@ Best used after [[_MOCs/USER_PATHS|Guided paths]] or [[_MOCs/BY_TYPE|By category
 - [doc] [[docs/PROOFS/phase 3.5-4/3.5 - Complete Mechanical Specification.txt|3.5 - Complete Mechanical Specification - PROOFS/phase 3.5-4]]
 - [doc] [[docs/PROOFS/Phase-4/ActionRequest_ActionResult_Contract_Proof|ActionRequest / ActionResult Contract Proof]]
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST|Active Priority Lock - 2026-05-06 Web / News / Reporting + UI Proof / Stress Test]]
-- [doc] [[docs/todo/ACTIVE_TODO|Active TODO - Nova]]
 - [doc] [[docs/AUDIT_ACTION_PLAN_2026-04-28|Audit Action Plan — 2026-04-28]]
 - [doc] [[docs/future/auralis_mock_leads/README|Auralis Mock Lead Fixture Library]]
 - [doc] [[docs/capability_verification/basic_conversation_understanding_2026-04-22|Basic Conversation and Understanding Verification - 2026-04-22]]
