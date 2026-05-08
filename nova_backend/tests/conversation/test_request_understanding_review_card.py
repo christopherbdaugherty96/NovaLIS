@@ -48,6 +48,22 @@ def _run_fallback(query: str, *, memory=_noop_memory, session_state=None) -> dic
     return skill.calls[0]["session_state"]
 
 
+def _run_fallback_result(query: str, *, memory=_noop_memory, session_state=None) -> SkillResult:
+    skill = _FakeGeneralChatSkill()
+    result = asyncio.run(
+        run_general_chat_fallback(
+            query,
+            general_chat_skill=skill,
+            session_state=dict(session_state or {}),
+            session_context=[],
+            project_threads=object(),
+            select_relevant_memory_context=memory,
+        )
+    )
+    assert result is not None
+    return result
+
+
 def test_task_like_summary_request_produces_review_card():
     state = _run_fallback(
         "summarize this task",
@@ -126,6 +142,17 @@ def test_review_card_contains_blocked_execution_actions():
     assert "open browser tabs" in blocked
     assert "send email" in blocked
     assert "authorize capabilities" in blocked
+
+
+def test_general_chat_result_carries_review_card_for_display_only_payload():
+    result = _run_fallback_result("make a bounded task envelope")
+
+    card = result.data["request_understanding_review_card"]
+
+    assert card["authority_effect"] == "none"
+    assert card["execution_performed"] is False
+    assert card["authorization_granted"] is False
+    assert "use OpenClaw" in card["blocked_execution_actions"]
 
 
 def test_builder_returns_none_without_task_preview():

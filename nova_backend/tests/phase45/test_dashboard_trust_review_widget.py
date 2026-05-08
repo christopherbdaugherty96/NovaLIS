@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 from tests._dashboard_bundle import load_dashboard_runtime_css, load_dashboard_runtime_js
@@ -63,3 +64,45 @@ def test_trust_center_page_includes_policy_readiness_sections():
     assert 'id="trust-center-policy-detail"' in source
     assert "selectedBlocked.next_step" in dashboard
     assert "selected.capability_name" in dashboard or "selected.capability_id" in dashboard
+
+
+def test_chat_trust_review_card_renders_deterministic_non_action_fields():
+    source = load_dashboard_runtime_js()
+    styles = load_dashboard_runtime_css()
+
+    assert "function renderTrustReviewCard(parent, card = null)" in source
+    assert 'panel.setAttribute("aria-label", "Trust Review Card");' in source
+    assert '["Understood", goal || requestText]' in source
+    assert '["Status", status]' in source
+    assert '["Authorized", authorizationGranted ? "Yes" : "No"]' in source
+    assert '["Needs confirmation", "Not granted by this card"]' in source
+    assert '["Why no action happened", whyNoAction]' in source
+    assert "This card is display-only; no execution was performed or authorized." in source
+    assert ".trust-review-card" in styles
+    assert ".trust-review-card-row" in styles
+
+
+def test_chat_trust_review_card_has_no_dispatch_or_action_controls():
+    source = load_dashboard_runtime_js()
+    match = re.search(
+        r"function renderTrustReviewCard\(parent, card = null\) \{(?P<body>.*?)\n\}\n\nfunction appendUsageStrip",
+        source,
+        flags=re.DOTALL,
+    )
+    assert match is not None
+    body = match.group("body")
+
+    assert 'createElement("button")' not in body
+    assert "addEventListener" not in body
+    assert "safeWSSend" not in body
+    assert "injectUserText" not in body
+    assert "setActivePage" not in body
+    assert "appendAssistantActions" not in body
+
+
+def test_chat_payload_passes_trust_review_card_to_display_renderer():
+    source = load_dashboard_runtime_js()
+
+    assert "trustReviewCard = null" in source
+    assert "renderTrustReviewCard(div, trustReviewCard);" in source
+    assert "msg.trust_review_card || null" in source

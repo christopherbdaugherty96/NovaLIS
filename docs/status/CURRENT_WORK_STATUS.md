@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-07 (Web/News/UI proof lock qualified closeout)
+Last reviewed: 2026-05-07 (Trust Review Card MVP implementation progress)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -39,6 +39,8 @@ Trust Review Card MVP / Visible Non-Action Receipt Surface
 ```
 
 The Trust Review Card MVP lock was paused by user request while the Web/News/Reporting + UI/Commands proof/stress-test lock ran. With the qualified closeout recorded, Trust Review Card MVP may resume through its own narrow branch.
+
+Trust Review Card MVP implementation is now in progress as a deterministic non-action receipt surface. It renders existing request-understanding review-card state in chat without action buttons, routing, authorization, confirmation acceptance, Governor calls, capability calls, OpenClaw calls, or browser/computer-use expansion.
 
 The completed proof/stress-test workstream was limited to validating and pressure-testing existing governed information/reporting and visible UI/button/command surfaces.
 
@@ -119,6 +121,10 @@ indefinitely open.
   remained documented as non-executing/non-authorizing.
 - **Trust Review Card MVP lock:** selected in PR #112 and paused by the Web/News/Reporting + UI/Commands
   proof/stress-test lock. It may resume after the qualified closeout through a narrow feature branch.
+- **Trust Review Card MVP implementation pass:** propagates the existing non-authorizing
+  `request_understanding_review_card` payload into chat responses and renders it as a deterministic
+  display-only card. Focused tests verify the card has no action buttons, no dispatch/event handlers, no
+  capability/Governor/OpenClaw path, no confirmation acceptance, and no state mutation from rendering.
 - **Qualified-closed Web/News/Reporting + UI/Commands proof lock:** validated existing governed information,
   reporting, dashboard, button, command, widget, confirmation, degraded-state, and blocked-action surfaces.
   It does not approve new capabilities, OpenClaw execution expansion, browser/computer-use expansion,
@@ -181,6 +187,6 @@ Current lock state:
 8. Dashboard-rendered stale/degraded search evidence state now has contract proof.
 9. Rapid-click/double-submit guard behavior and unsupported widget fallback now have contract proof.
 10. Browser Use screenshot/click-path proof, broader visual UI/button proof, deeper widget-specific malformed payload fixtures, and timeline-drift fixtures are carried forward as follow-up proof debt.
-11. The next highest-ROI branch may resume Trust Review Card MVP as a visible non-action receipt surface.
+11. Trust Review Card MVP implementation is in progress as a visible non-action receipt surface.
 12. Trust Review Card MVP scope remains non-authorizing and must not expand execution, OpenClaw, browser/computer-use, capabilities, or external writes.
 13. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, and installer work remain not approved.

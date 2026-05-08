@@ -89,3 +89,27 @@ def test_send_trust_status_includes_trust_review_snapshot(monkeypatch):
     assert message["data"]["reasoning_runtime"]["provider_label"] == "DeepSeek"
     assert message["data"]["bridge_runtime"]["status_label"] == "Enabled"
     assert message["data"]["connection_runtime"]["configured_provider_count"] == 1
+
+
+def test_send_chat_message_can_include_display_only_trust_review_card(monkeypatch):
+    monkeypatch.setattr(
+        brain_server.conversation_personality_agent,
+        "present",
+        lambda text, domain="general": text,
+    )
+    card = {
+        "request_text": "summarize this task",
+        "goal": "summarize this task",
+        "authority_effect": "none",
+        "execution_performed": False,
+        "authorization_granted": False,
+        "blocked_execution_actions": ["use OpenClaw"],
+    }
+
+    ws = _WebSocket()
+    asyncio.run(brain_server.send_chat_message(ws, "ok", trust_review_card=card))
+
+    message = ws.sent_messages[-1]
+    assert message["type"] == "chat"
+    assert message["trust_review_card"] == card
+    assert "suggested_actions" not in message

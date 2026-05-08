@@ -892,6 +892,40 @@ button.workspace-spotlight-card.active {
   color: #b7cae6;
 }
 
+.trust-review-card {
+  display: grid;
+  gap: 7px;
+  margin-top: 9px;
+  padding: 10px;
+  border: 1px solid rgba(143, 218, 255, 0.22);
+  border-radius: 8px;
+  background: rgba(13, 28, 44, 0.58);
+}
+
+.trust-review-card-title {
+  font-size: 0.74rem;
+  font-weight: 800;
+  color: #eef5ff;
+  text-transform: uppercase;
+}
+
+.trust-review-card-row {
+  display: grid;
+  grid-template-columns: minmax(112px, 0.35fr) 1fr;
+  gap: 8px;
+  align-items: start;
+  font-size: 0.76rem;
+}
+
+.trust-review-card-label {
+  color: #a9bed9;
+  font-weight: 700;
+}
+
+.trust-review-card-value {
+  color: #e6f0ff;
+}
+
 .message-usage-strip {
   margin-top: 8px;
   padding-top: 6px;

@@ -160,6 +160,85 @@ function appendTrustStrip(container, text, confidenceLabel = "") {
   container.appendChild(strip);
 }
 
+function renderTrustReviewCard(parent, card = null) {
+  if (!parent || !card || typeof card !== "object") return;
+
+  const goal = String(card.goal || card.request_text || "").trim();
+  const requestText = String(card.request_text || "").trim();
+  const blocked = Array.isArray(card.blocked_execution_actions)
+    ? card.blocked_execution_actions.map((item) => String(item || "").trim()).filter(Boolean)
+    : [];
+  const allowedPlanning = Array.isArray(card.allowed_planning_actions)
+    ? card.allowed_planning_actions.map((item) => String(item || "").trim()).filter(Boolean)
+    : [];
+  const contextUsed = Array.isArray(card.context_used) ? card.context_used.length : 0;
+  const historyStatus = String(card.history_status || "").trim();
+  const authorityEffect = String(card.authority_effect || "none").trim() || "none";
+  const executionPerformed = Boolean(card.execution_performed);
+  const authorizationGranted = Boolean(card.authorization_granted);
+  const clarificationNeeded = Boolean(card.clarification_needed);
+
+  if (!goal && !requestText && !blocked.length && !allowedPlanning.length && !historyStatus) return;
+
+  const status = clarificationNeeded
+    ? "Needs clarification"
+    : blocked.length
+      ? "Planning only"
+      : "Ready";
+  const boundary = [
+    `Authority effect: ${formatEvidenceLabel(authorityEffect)}`,
+    executionPerformed ? "Execution performed: yes" : "Execution performed: no",
+  ];
+  if (blocked.length) boundary.push(`Blocked: ${blocked.slice(0, 3).join(", ")}`);
+  const whyNoAction = executionPerformed
+    ? ""
+    : clarificationNeeded
+      ? "Clarification is needed before any action path can be considered."
+      : "This card is display-only; no execution was performed or authorized.";
+
+  const rows = [
+    ["Understood", goal || requestText],
+    ["Status", status],
+    ["Authorized", authorizationGranted ? "Yes" : "No"],
+    ["Needs confirmation", "Not granted by this card"],
+    ["Boundary", boundary.join(" | ")],
+    ["Why no action happened", whyNoAction],
+  ].filter(([, value]) => String(value || "").trim());
+
+  const evidence = [];
+  if (Number.isFinite(Number(card.confidence))) evidence.push(`Request confidence: ${Number(card.confidence).toFixed(2)}`);
+  if (contextUsed) evidence.push(`Context items: ${contextUsed}`);
+  if (historyStatus) evidence.push(`History: ${formatEvidenceLabel(historyStatus)}`);
+  if (evidence.length) rows.push(["Evidence", evidence.join(" | ")]);
+
+  if (!rows.length) return;
+
+  const panel = document.createElement("div");
+  panel.className = "trust-review-card";
+  panel.setAttribute("aria-label", "Trust Review Card");
+
+  const title = document.createElement("div");
+  title.className = "trust-review-card-title";
+  title.textContent = "Trust Review";
+  panel.appendChild(title);
+
+  rows.forEach(([label, value]) => {
+    const row = document.createElement("div");
+    row.className = "trust-review-card-row";
+    const key = document.createElement("span");
+    key.className = "trust-review-card-label";
+    key.textContent = label;
+    const detail = document.createElement("span");
+    detail.className = "trust-review-card-value";
+    detail.textContent = value;
+    row.appendChild(key);
+    row.appendChild(detail);
+    panel.appendChild(row);
+  });
+
+  parent.appendChild(panel);
+}
+
 function appendUsageStrip(container, usageMeta) {
   const meta = (usageMeta && typeof usageMeta === "object") ? usageMeta : null;
   if (!meta) return;
@@ -1010,7 +1089,7 @@ function appendAssistantActions(parent, text, suggestedActions = null) {
   }
 }
 
-function appendChatMessage(role, text, messageId = null, confidence = "", suggestedActions = null, usageMeta = null) {
+function appendChatMessage(role, text, messageId = null, confidence = "", suggestedActions = null, usageMeta = null, trustReviewCard = null) {
   const chat = $("chat-log");
   if (!chat) return;
 
@@ -1079,6 +1158,7 @@ function appendChatMessage(role, text, messageId = null, confidence = "", sugges
   if (role === "assistant") {
     appendTrustStrip(div, msgText, confidence);
     appendUsageStrip(div, usageMeta);
+    renderTrustReviewCard(div, trustReviewCard);
   }
 
   if (role === "assistant" && messageId) {
@@ -2410,7 +2490,9 @@ function connectWebSocket() {
           msg.message,
           msg.message_id || null,
           msg.confidence || "",
-          msg.suggested_actions || null
+          msg.suggested_actions || null,
+          null,
+          msg.trust_review_card || null
         );
         break;
       case "ack":
