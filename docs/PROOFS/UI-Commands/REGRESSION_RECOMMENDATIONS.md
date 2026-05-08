@@ -116,6 +116,18 @@ Evidence: `evidence/2026-05-07/raw/ui_malformed_rapid_click_pytest_results.txt`.
 
 ## Screenshot Regression Once Browser Runtime Works
 
+Current Browser Use recovery classification:
+
+```text
+blocked / setup-required
+```
+
+2026-05-08 evidence:
+
+```text
+evidence/2026-05-08/raw/browser_use_visual_capture_recovery_attempt.txt
+```
+
 Capture stable screenshots for:
 
 - dashboard loaded
@@ -127,3 +139,5 @@ Capture stable screenshots for:
 - degraded/offline banner
 
 Do not treat screenshot absence as proof of UI success.
+
+Do not add Browser Use/browser-computer-use capability to Nova to satisfy screenshot proof. This remains proof infrastructure only.

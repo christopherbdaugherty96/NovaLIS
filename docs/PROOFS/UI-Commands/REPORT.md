@@ -127,6 +127,39 @@ Remaining friction is still recorded rather than hidden:
 - High-frequency browser click replay remains unproven.
 - Known non-search widget field fuzzing remains partial beyond unsupported-message and safe-default contract coverage.
 
+## 2026-05-08 Browser Use Visual Capture Recovery Attempt
+
+The proof-infrastructure recovery branch attempted Browser Use/iab screenshot capture through the required Browser Use skill path.
+
+Result:
+
+```text
+blocked / setup-required
+```
+
+Observed failure:
+
+```text
+failed to write kernel assets: The system cannot find the path specified. (os error 3)
+```
+
+The blocker occurs before JavaScript execution in the Node REPL kernel asset setup layer. No tab was created, no page was loaded, no DOM was inspected, no screenshot was captured, and no click-path proof was recorded.
+
+Evidence:
+
+- `cases/BROWSER_USE_VISUAL_CAPTURE_RECOVERY_2026-05-08.md`
+- `evidence/2026-05-08/raw/browser_use_visual_capture_recovery_attempt.txt`
+- `evidence/2026-05-08/raw/browser_use_visual_capture_diagnostics.json`
+
+Boundary:
+
+- no Nova browser/computer-use capability was added
+- no Browser Use path was added to Nova runtime
+- no OpenClaw expansion occurred
+- no external write path was added
+- no autonomous workflow path was added
+- no screenshot was substituted or faked
+
 ## Verdict
 
 Expected outcome is truthful bounded behavior, not guaranteed success.
@@ -137,4 +170,4 @@ It did find UI/command truthfulness gaps that should be fixed or regression-test
 
 ## Matrix Status
 
-The master matrix now records evidence-backed status for the high-risk visible command paths, malformed/unsupported widget fallback, and rapid-submit contract guards. Screenshot/click-path coverage remains blocked by Browser Use runtime setup rather than Nova runtime authority.
+The master matrix now records evidence-backed status for the high-risk visible command paths, malformed/unsupported widget fallback, and rapid-submit contract guards. Screenshot/click-path coverage remains blocked/setup-required by Browser Use / Node REPL runtime asset setup rather than Nova runtime authority.

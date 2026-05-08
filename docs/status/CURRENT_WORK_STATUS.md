@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-07 (Trust Review Card MVP closeout review)
+Last reviewed: 2026-05-08 (Browser Use visual capture recovery attempt)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -78,6 +78,8 @@ The closeout review classifies the lock as qualified closed. Browser Use screens
 high-frequency browser event replay, broader visual UI proof, deeper widget-specific fuzzing, and
 timeline-drift fixtures remain carried-forward follow-up work rather than reasons to keep this lock
 indefinitely open.
+
+Browser Use visual capture recovery was attempted as proof infrastructure only. It remains blocked/setup-required because the Browser Use / Node REPL path fails before JavaScript execution with `failed to write kernel assets: The system cannot find the path specified`. No screenshot or click-path proof was captured, and no Nova browser/computer-use capability was added.
 
 ---
 
@@ -177,6 +179,11 @@ indefinitely open.
   It explicitly carries Browser Use screenshot/click-path proof, high-frequency browser event replay,
   broader visual UI proof, deeper non-search widget fuzzing, and timeline-drift fixtures forward as proof
   follow-up work. It does not add runtime authority or approve browser/computer-use expansion.
+- **Browser Use visual capture recovery attempt:** records that Browser Use/iab remains blocked before
+  JavaScript execution in the Node REPL kernel asset setup layer. It classifies visual proof capture as
+  blocked/setup-required, adds raw reproduction diagnostics, and does not add browser/computer-use
+  capability, runtime browser authority, OpenClaw expansion, external writes, autonomous workflows, or
+  direct Cap 63 shortcut use.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -202,6 +209,6 @@ Current lock state:
 9. Rapid-click/double-submit guard behavior and unsupported widget fallback now have contract proof.
 10. Browser Use screenshot/click-path proof, broader visual UI/button proof, deeper widget-specific malformed payload fixtures, and timeline-drift fixtures are carried forward as follow-up proof debt.
 11. Trust Review Card MVP is accepted as a visible non-action receipt surface with follow-ups tracked.
-12. Next recommended branch is Browser Use visual capture recovery as proof infrastructure only.
+12. Browser Use visual capture recovery has been attempted as proof infrastructure only and remains blocked/setup-required before page interaction.
 13. Trust Review Card and Browser Use proof follow-up scope remains non-authorizing and must not expand execution, OpenClaw, browser/computer-use capability, capabilities, external writes, or autonomous workflows.
 14. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, and installer work remain not approved.

@@ -8,6 +8,8 @@ Status: draft / review required
    - Prevented direct visual proof of news/article buttons in this pass.
    - UI screenshots should be captured once browser runtime is working.
    - Evidence: `../UI-Commands/evidence/2026-05-06/raw/browser_use_failure.txt`, `../UI-Commands/evidence/2026-05-07/raw/browser_screenshot_followup_attempt.txt`
+   - 2026-05-08 recovery result: still blocked/setup-required before JavaScript execution in the Node REPL kernel asset setup layer.
+   - Recovery evidence: `../UI-Commands/evidence/2026-05-08/raw/browser_use_visual_capture_recovery_attempt.txt`
 
 ## Resolved In 2026-05-07 Fix Pass
 
@@ -46,6 +48,7 @@ Status: draft / review required
 
 2. **Open website/article visual proof remains blocked by browser-use runtime**
    - Article/open behavior remains proven through WebSocket confirmation evidence, not screenshots.
+   - 2026-05-08 recovery status: `blocked / setup-required`.
 
 3. **Stale-cache/provider-failure UI proof still needed**
    - Deterministic search evidence fixtures now cover stale timestamps, malformed provider payloads, and degraded provider status.

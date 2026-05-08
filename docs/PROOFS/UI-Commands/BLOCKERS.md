@@ -8,6 +8,9 @@ Status: draft / review required
    - Attempted in-app browser runtime failed before page interaction with `failed to write kernel assets: The system cannot find the path specified`.
    - Impact: no direct UI screenshots or click-path evidence captured in this pass.
    - Evidence: `evidence/2026-05-06/raw/browser_use_failure.txt`
+   - 2026-05-08 recovery result: still blocked before JavaScript execution in the Node REPL kernel asset setup layer.
+   - Recovery evidence: `evidence/2026-05-08/raw/browser_use_visual_capture_recovery_attempt.txt`
+   - Classification: `blocked / setup-required`
 
 2. **Invalid URL prompt remains too permissive**
    - `open website notaurl` prompted `Open notaurl? URL: https://notaurl`.

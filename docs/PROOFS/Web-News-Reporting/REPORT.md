@@ -123,6 +123,31 @@ The UI rendering pass confirmed the search widget surfaces the new evidence meta
 - focused dashboard rendering suite passed: `4 passed`
 - adjacent search evidence/web search suite passed: `24 passed`
 
+## 2026-05-08 Browser Use Visual Capture Recovery Attempt
+
+Browser Use/iab screenshot/click-path recovery was attempted as proof infrastructure only.
+
+Result:
+
+```text
+blocked / setup-required
+```
+
+Observed failure:
+
+```text
+failed to write kernel assets: The system cannot find the path specified. (os error 3)
+```
+
+The blocker occurs before JavaScript execution and before page interaction. No web/news screenshot, article-open click path, or dashboard visual proof was captured or substituted.
+
+Evidence:
+
+```text
+../UI-Commands/evidence/2026-05-08/raw/browser_use_visual_capture_recovery_attempt.txt
+../UI-Commands/cases/BROWSER_USE_VISUAL_CAPTURE_RECOVERY_2026-05-08.md
+```
+
 ## Verdict
 
 Expected outcome is truthful bounded behavior, not guaranteed success.

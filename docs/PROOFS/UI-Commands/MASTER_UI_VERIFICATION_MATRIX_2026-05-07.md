@@ -38,7 +38,7 @@ Allowed statuses:
 | Voice status | `voice status` | Show setup/ready/degraded. | Voice status captured. | Status only; no mic action implied. | PASS | `evidence/2026-05-06/raw/websocket_command_probe_corrected.json` |
 | Email draft | draft email command | Draft/manual-send only. | Draft boundary captured. | No autonomous email send. | PASS | `evidence/2026-05-06/raw/websocket_command_probe_corrected.json` |
 | Shopify report | `shopify report` | Read-only/setup-dependent. | Read-only/setup-dependent boundary captured. | No Shopify writes. | PASS | `evidence/2026-05-06/raw/websocket_command_probe_corrected.json` |
-| Browser screenshots/click path | Browser Use/iab | Capture visible dashboard/UI states. | Browser runtime failed before page interaction. | No Nova browser capability added. | BLOCKED | `evidence/2026-05-07/raw/browser_screenshot_followup_attempt.txt` |
+| Browser screenshots/click path | Browser Use/iab | Capture visible dashboard/UI states. | Browser Use recovery still fails before JavaScript execution with `failed to write kernel assets`. No screenshot or click-path proof captured. | No Nova browser capability added. | SETUP_REQUIRED | `evidence/2026-05-08/raw/browser_use_visual_capture_recovery_attempt.txt` |
 | Rapid clicks / double submit | UI interaction | Deterministic safe handling. | Contract proof covers overlapping send block, single-use send binding, turn-id filtering, and assistant-text de-dupe. Browser replay remains blocked. | No hidden execution. | PASS | `evidence/2026-05-07/raw/ui_malformed_rapid_click_contract.json` |
 | Search evidence rendering | search widget evidence payload | Visible provider/freshness/source-signal state. | `Evidence state` panel renders provider/freshness/source credibility metadata. | Evidence only; no authority or execution. | PASS | `evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json` |
 | Malformed search widget payload | simulated payload | Truthful degraded state. | Empty degraded/malformed search widgets remain visible as `Search state`. | No fake success. | PASS | `evidence/2026-05-07/raw/dashboard_stale_degraded_rendering_contract.json` |
@@ -47,4 +47,4 @@ Allowed statuses:
 
 ## Current Verdict
 
-The matrix now has concrete evidence for the high-risk command, governed reporting, search evidence rendering, unsupported-widget fallback, and rapid-submit contract paths. Full screenshot/click-path coverage remains blocked by Browser Use screenshot runtime setup and should be resumed as a screenshot-only proof after that tooling issue is fixed.
+The matrix now has concrete evidence for the high-risk command, governed reporting, search evidence rendering, unsupported-widget fallback, and rapid-submit contract paths. Full screenshot/click-path coverage remains setup-required because Browser Use / Node REPL runtime asset setup fails before page interaction. No screenshot proof should be claimed until that proof-infrastructure blocker is repaired.
