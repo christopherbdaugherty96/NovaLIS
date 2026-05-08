@@ -2299,7 +2299,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/PROOFS/Web-News-Reporting/REPORT|Web / News / Reporting Proof Report - 2026-05-06]]
   summary: Status: draft / review required
 
-## Reference (385 docs, 30 code)
+## Reference (387 docs, 30 code)
 
 - [asset] [[docs/product/assets/dashboard-home.png|dashboard-home.png]]
 - [asset] [[docs/product/assets/report-output.png|report-output.png]]
@@ -3002,7 +3002,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST|Active Priority Lock - 2026-05-06 Web / News / Reporting + UI Proof / Stress Test]]
   summary: Status: qualified closed as of 2026-05-07.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-07 (Trust Review Card MVP implementation progress)
+  summary: Last reviewed: 2026-05-07 (Trust Review Card MVP closeout review)
 - [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
   summary: Status: accepted as evidence baseline for the first read-only OpenClaw proof only / not authority-granting.
 - [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
@@ -3011,6 +3011,10 @@ concern is reflected across docs, code and tests.
   summary: This folder contains human-maintained work-continuity notes.
 - [doc] [[docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01|Repo Branch and Workstream Status - 2026-05-01]]
   summary: Status: human-maintained alignment snapshot.
+- [doc] [[docs/status/TRUST_REVIEW_CARD_MVP_CLOSEOUT_REVIEW_2026-05-07|Trust Review Card MVP Closeout Review - 2026-05-07]]
+  summary: Status: merged / display-only / non-authorizing / follow-ups tracked
+- [doc] [[docs/status/TRUST_REVIEW_CARD_MVP_STATUS_2026-05-07|Trust Review Card MVP Status - 2026-05-07]]
+  summary: Status: implementation proof / review required
 - [doc] [[docs/status/WEB_NEWS_UI_PROOF_LOCK_CLOSEOUT_REVIEW_2026-05-07|Web / News / UI Proof Lock Closeout Review - 2026-05-07]]
   summary: Status: qualified closeout / screenshot proof explicitly blocked
 - [doc] [[docs/status/WORKFLOW_STAGE_ROADMAP_2026-05-02|Workflow Stage Roadmap - 2026-05-02]]
