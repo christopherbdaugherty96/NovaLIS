@@ -4,9 +4,9 @@
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP.md`
 
-Updated: 2026-05-07 after the Trust Review Card MVP implementation pass began.
+Updated: 2026-05-07 after the Trust Review Card MVP closeout review.
 
-Current active workstream:
+Most recently completed workstream:
 
 ```text
 Trust Review Card MVP / Visible Non-Action Receipt Surface
@@ -15,7 +15,13 @@ Trust Review Card MVP / Visible Non-Action Receipt Surface
 Status:
 
 ```text
-implementation in progress / review required
+merged / display-only / non-authorizing / follow-ups tracked
+```
+
+Closeout review:
+
+```text
+docs/status/TRUST_REVIEW_CARD_MVP_CLOSEOUT_REVIEW_2026-05-07.md
 ```
 
 Prior proof-lock closeout:
@@ -44,7 +50,7 @@ The closeout review carries Browser Use screenshot/click-path proof, high-freque
 
 ## Current Next TODO
 
-Finish and review the Trust Review Card MVP / Visible Non-Action Receipt Surface implementation branch.
+Recover Browser Use screenshot/click-path proof capture as proof infrastructure only.
 
 Carried-forward proof gaps:
 
@@ -56,28 +62,27 @@ Carried-forward proof gaps:
 Recommended next branch:
 
 ```text
-feature/trust-review-card-mvp
+proof/browser-use-visual-capture-recovery
 ```
 
 Scope for the next branch:
 
-- visible non-action receipt card
-- planning/request-understanding display
-- confidence/boundary/status display
-- what Nova understood / can do / cannot do
-- whether execution is authorized
-- whether user confirmation is required
-- why no action happened
-- evidence/state if relevant
+- repair screenshot/click-path proof capture only
+- capture visual evidence for existing UI surfaces if Browser Use runtime capture works
+- keep Browser Use screenshot/click-path proof explicitly blocked if runtime capture remains unavailable
+- no browser/computer-use capability expansion
+- no autonomous browsing
 - no execution authority
 - no OpenClaw expansion
 - no new capabilities
+- no external writes
 
-Current implementation pass:
+Completed Trust Review Card MVP pass:
 
 - propagates existing `request_understanding_review_card` payloads into general-chat WebSocket responses
 - renders deterministic display-only card rows in chat
 - adds tests proving no action buttons, dispatch handlers, confirmation acceptance, capability calls, Governor calls, OpenClaw calls, or state mutation from rendering
+- closeout review classifies PR #127 as merged / display-only / non-authorizing / follow-ups tracked
 
 Current completed audit/proof outcomes:
 
@@ -100,6 +105,7 @@ Current completed audit/proof outcomes:
 - the malformed widget / rapid-submit proof pass added an unsupported dashboard-message fallback and contract proof for overlapping send blocks, single-use send binding, turn-id filtering, assistant-text de-dupe, and pending confirmation isolation
 - the malformed widget / rapid-submit proof pass recorded `25 passed` and JS syntax checks for served/mirrored dashboard files
 - the Web/News/UI proof lock closeout review classified the lock as qualified closed and carried Browser Use screenshot/click-path proof forward as visual proof infrastructure debt
+- the Trust Review Card MVP closeout review accepted PR #127 as a display-only non-action receipt surface and kept Browser Use screenshot/click-path proof as separate proof-infrastructure debt
 
 Do not broaden OpenClaw or start product/runtime expansion outside the active reviewed priority lock.
 
@@ -152,7 +158,7 @@ Carried-forward proof debt:
 
 Resumed prior lock:
 
-- Trust Review Card MVP / Visible Non-Action Receipt Surface
+- Trust Review Card MVP / Visible Non-Action Receipt Surface: merged / display-only / non-authorizing / follow-ups tracked
 
 Completed runtime truth audit lock:
 
