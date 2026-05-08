@@ -130,7 +130,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[CONTRIBUTING|CONTRIBUTING]]
   summary: ﻿# CONTRIBUTING - Nova (Governance-First Rules)
 
-## docs (918)
+## docs (921)
 
 - [doc] [[docs/AI_TOOLING_BOUNDARIES|AI Tooling Boundaries]]
   summary: AI tools can accelerate work on NovaLIS. They should not replace judgment, evidence, governance, or truth.
@@ -1680,6 +1680,8 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: ﻿# Proofs Pointer
 - [doc] [[docs/PROOFS/UI-Commands/BLOCKERS|UI / Commands Blockers - 2026-05-06]]
   summary: Status: draft / review required
+- [doc] [[docs/PROOFS/UI-Commands/cases/BROWSER_USE_VISUAL_CAPTURE_RECOVERY_2026-05-08|Browser Use Visual Capture Recovery - 2026-05-08]]
+  summary: Status: blocked / setup-required
 - [doc] [[docs/PROOFS/UI-Commands/cases/DASHBOARD_STALE_DEGRADED_RENDERING_PROOF_2026-05-07|Dashboard Stale / Degraded Rendering Proof - 2026-05-07]]
   summary: Status: pass / screenshot proof still blocked
 - [doc] [[docs/PROOFS/UI-Commands/cases/MALFORMED_WIDGET_PAYLOAD_PROOF_2026-05-07|Malformed Widget Payload Proof - 2026-05-07]]
@@ -1720,6 +1722,10 @@ same layout you'd see on GitHub. Use this when you want the whole map.
   summary: date": "2026-05-07",
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/ui_malformed_rapid_click_pytest_results.txt|ui_malformed_rapid_click_pytest_results]]
   summary: Command:
+- [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-08/raw/browser_use_visual_capture_diagnostics.json|browser_use_visual_capture_diagnostics]]
+  summary: date": "2026-05-08",
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-08/raw/browser_use_visual_capture_recovery_attempt.txt|browser_use_visual_capture_recovery_attempt]]
+  summary: Browser Use visual capture recovery attempt - 2026-05-08
 - [doc] [[docs/PROOFS/UI-Commands/FRICTION_LOG|UI / Commands Friction Log - 2026-05-06]]
   summary: Status: draft / review required
 - [doc] [[docs/PROOFS/UI-Commands/MASTER_UI_VERIFICATION_MATRIX_2026-05-07|Master UI / Button / Command Verification Matrix - 2026-05-07]]
@@ -1919,7 +1925,7 @@ same layout you'd see on GitHub. Use this when you want the whole map.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST|Active Priority Lock - 2026-05-06 Web / News / Reporting + UI Proof / Stress Test]]
   summary: Status: qualified closed as of 2026-05-07.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-07 (Trust Review Card MVP closeout review)
+  summary: Last reviewed: 2026-05-08 (Browser Use visual capture recovery attempt)
 - [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
   summary: Status: accepted as evidence baseline for the first read-only OpenClaw proof only / not authority-granting.
 - [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]

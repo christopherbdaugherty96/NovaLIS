@@ -1828,7 +1828,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/design/ui_backend_contract|UI-Backend Contract Documentation]]
   summary: This document outlines the contract between the UI and backend services.
 
-## Proofs (216 docs, 20 code)
+## Proofs (218 docs, 21 code)
 
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.backup.jsonl|constitutional_corpus_v1.backup.jsonl - governance-tests/corpus]]
 - [asset] [[docs/PROOFS/governance-tests/corpus/constitutional_corpus_v1.jsonl|constitutional_corpus_v1.jsonl - governance-tests/corpus]]
@@ -1854,6 +1854,8 @@ concern is reflected across docs, code and tests.
   summary: started_at_epoch": 1778128269.2688813,
 - [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/ui_malformed_rapid_click_contract.json|ui_malformed_rapid_click_contract]]
   summary: date": "2026-05-07",
+- [code] [[docs/PROOFS/UI-Commands/evidence/2026-05-08/raw/browser_use_visual_capture_diagnostics.json|browser_use_visual_capture_diagnostics]]
+  summary: date": "2026-05-08",
 - [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-06/raw/websocket_web_news_probe.json|websocket_web_news_probe]]
   summary: id": "startup_greeting",
 - [code] [[docs/PROOFS/Web-News-Reporting/evidence/2026-05-06/raw/websocket_web_news_probe_corrected.json|websocket_web_news_probe_corrected]]
@@ -2184,6 +2186,8 @@ concern is reflected across docs, code and tests.
   summary: ﻿# Proofs Pointer
 - [doc] [[docs/PROOFS/UI-Commands/BLOCKERS|UI / Commands Blockers - 2026-05-06]]
   summary: Status: draft / review required
+- [doc] [[docs/PROOFS/UI-Commands/cases/BROWSER_USE_VISUAL_CAPTURE_RECOVERY_2026-05-08|Browser Use Visual Capture Recovery - 2026-05-08]]
+  summary: Status: blocked / setup-required
 - [doc] [[docs/PROOFS/UI-Commands/cases/DASHBOARD_STALE_DEGRADED_RENDERING_PROOF_2026-05-07|Dashboard Stale / Degraded Rendering Proof - 2026-05-07]]
   summary: Status: pass / screenshot proof still blocked
 - [doc] [[docs/PROOFS/UI-Commands/cases/MALFORMED_WIDGET_PAYLOAD_PROOF_2026-05-07|Malformed Widget Payload Proof - 2026-05-07]]
@@ -2208,6 +2212,8 @@ concern is reflected across docs, code and tests.
   summary: ��. . . . . . . . . . . . . . . . . . . .                                                                                                   ...
 - [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-07/raw/ui_malformed_rapid_click_pytest_results.txt|ui_malformed_rapid_click_pytest_results]]
   summary: Command:
+- [doc] [[docs/PROOFS/UI-Commands/evidence/2026-05-08/raw/browser_use_visual_capture_recovery_attempt.txt|browser_use_visual_capture_recovery_attempt]]
+  summary: Browser Use visual capture recovery attempt - 2026-05-08
 - [doc] [[docs/PROOFS/UI-Commands/FRICTION_LOG|UI / Commands Friction Log - 2026-05-06]]
   summary: Status: draft / review required
 - [doc] [[docs/PROOFS/UI-Commands/MASTER_UI_VERIFICATION_MATRIX_2026-05-07|Master UI / Button / Command Verification Matrix - 2026-05-07]]
@@ -3002,7 +3008,7 @@ concern is reflected across docs, code and tests.
 - [doc] [[docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_WEB_NEWS_PROOF_STRESS_TEST|Active Priority Lock - 2026-05-06 Web / News / Reporting + UI Proof / Stress Test]]
   summary: Status: qualified closed as of 2026-05-07.
 - [doc] [[docs/status/CURRENT_WORK_STATUS|Nova Current Work Status]]
-  summary: Last reviewed: 2026-05-07 (Trust Review Card MVP closeout review)
+  summary: Last reviewed: 2026-05-08 (Browser Use visual capture recovery attempt)
 - [doc] [[docs/status/LOCAL_CAPABILITY_SIGNOFF_MATRIX_2026-05-06|Local Capability Signoff Matrix - 2026-05-06]]
   summary: Status: accepted as evidence baseline for the first read-only OpenClaw proof only / not authority-granting.
 - [doc] [[docs/status/OPENCLAW_PRIORITY_LOCK_CLOSEOUT_2026-05-06|OpenClaw Priority Lock Closeout - 2026-05-06]]
