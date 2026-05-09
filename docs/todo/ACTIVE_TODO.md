@@ -4,7 +4,7 @@
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP.md`
 
-Updated: 2026-05-09 after the non-search widget fuzzing proof.
+Updated: 2026-05-09 after the proof infrastructure closeout review.
 
 Most recently completed workstream:
 
@@ -50,7 +50,7 @@ The closeout review carries Browser Use screenshot/click-path proof, high-freque
 
 ## Current Next TODO
 
-Prepare proof-infrastructure closeout review or visual regression index.
+Await Browser Use visual capture recovery or next reviewed priority lock.
 
 Current recovery result:
 
@@ -76,30 +76,38 @@ Current non-search widget fuzzing result:
 deterministic contract verification added / 21 passed (51 passed expanded)
 ```
 
-The non-search widget fuzzing pass covers malformed/null/missing fields for weather,
-calendar, memory, system/operator, trust_status, intelligence brief, news summary,
-screen capture, and run-status widgets without driving a browser or adding authority.
+Proof infrastructure closeout result:
+
+```text
+substantially reduced / closeout-ready
+closeout review: docs/status/PROOF_INFRASTRUCTURE_CLOSEOUT_REVIEW_2026-05-09.md
+```
+
+The proof infrastructure chain (PRs #129–#131) is classified as substantially reduced.
+Browser Use visual capture remains blocked/setup-required. Deeper widget fuzzing is
+deferred as low-urgency follow-up.
 
 Carried-forward proof gaps:
 
 - Browser Use screenshot/click-path proof after runtime asset setup is fixed
 - broader visual UI/button coverage beyond command-path evidence
-- policy widget deep field fuzzing (policy_id, readiness buckets)
-- voice/audio status widget field fuzzing
-- workspace/thread widget field fuzzing
-- timeline-drift fixtures
+- policy widget deep field fuzzing (deferred / low-urgency)
+- voice/audio status widget field fuzzing (deferred / low-urgency)
+- workspace/thread widget field fuzzing (deferred / low-urgency)
+- timeline-drift fixtures (deferred / low-urgency)
 
 Recommended next branch:
 
 ```text
-proof/visual-regression-index or docs/proof-infrastructure-closeout-review
+proof/browser-use-visual-capture-recovery (when setup is repaired)
+or no new proof infrastructure until visual capture is unblocked
 ```
 
 Reason:
 
-Non-search widget fuzzing has closed the highest-ROI deterministic proof gaps.
-The remaining gaps are either blocked by Browser Use setup or require a decision
-on whether deeper widget-specific fuzzing is needed before a closeout review.
+Deterministic proof infrastructure is substantially reduced. Remaining open items
+are either blocked at the Browser Use setup layer or low-urgency deferred follow-ups.
+No new proof infrastructure branches are needed until visual capture is unblocked.
 
 Browser Use proof-infrastructure follow-up remains:
 
@@ -145,6 +153,7 @@ Current completed audit/proof outcomes:
 - the Browser Use visual capture recovery attempt recorded `blocked / setup-required` because Node REPL fails before JavaScript execution with `failed to write kernel assets`; no screenshot or click-path proof was captured or faked
 - the dashboard event replay harness recorded `22 passed` for deterministic replay and adjacent dashboard contract checks, plus JS syntax checks for served/mirrored dashboard files
 - the non-search widget fuzzing pass recorded `21 passed` for focused malformed/degraded payload contract verification and `51 passed` for the expanded suite including prior harness and adjacent checks
+- the proof infrastructure closeout review classifies the full deterministic proof chain (PRs #129–#131) as substantially reduced and closeout-ready; Browser Use visual proof is carried forward as separate proof debt; deeper widget fuzzing is deferred as low-urgency follow-up
 
 Do not broaden OpenClaw or start product/runtime expansion outside the active reviewed priority lock.
 
@@ -188,6 +197,7 @@ Completed under the qualified-closed Web/News/UI proof lock:
 - rapid-click/double-submit contract guard coverage added and verified
 - dashboard event replay harness added and verified
 - non-search widget malformed/degraded payload fuzzing added and verified
+- proof infrastructure closeout review written and accepted
 
 Carried-forward proof debt:
 
