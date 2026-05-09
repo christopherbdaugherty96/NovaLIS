@@ -1,0 +1,69 @@
+{
+  "proof": "dashboard_event_replay_harness",
+  "date": "2026-05-08",
+  "status": "pass",
+  "classification": "deterministic_replay_only",
+  "authority_expansion": false,
+  "browser_computer_use_added": false,
+  "openclaw_expanded": false,
+  "external_writes_added": false,
+  "autonomous_workflows_added": false,
+  "direct_cap63_shortcut_used": false,
+  "browser_screenshot_click_path": "blocked_setup_required",
+  "verification": {
+    "pytest": {
+      "command": "python -m pytest nova_backend/tests/phase45/test_dashboard_event_replay_harness.py nova_backend/tests/phase45/test_dashboard_auto_widget_dispatch.py -q",
+      "result": "22 passed"
+    },
+    "node_check": {
+      "commands": [
+        "node --check nova_backend/static/dashboard-chat-news.js",
+        "node --check Nova-Frontend-Dashboard/dashboard-chat-news.js"
+      ],
+      "result": "passed"
+    }
+  },
+  "covered_behaviors": [
+    {
+      "behavior": "double_submit_block",
+      "result": "pass",
+      "evidence": "second manual send while waiting does not enqueue a second payload"
+    },
+    {
+      "behavior": "stale_turn_filtering",
+      "result": "pass",
+      "evidence": "stale chat and chat_done events with a mismatched turn_id are ignored"
+    },
+    {
+      "behavior": "early_chat_done_guard",
+      "result": "pass",
+      "evidence": "chat_done before assistant output does not fake completion"
+    },
+    {
+      "behavior": "active_widget_turn_completion",
+      "result": "pass",
+      "evidence": "active-turn widget message can mark assistant_seen and allow chat_done cleanup"
+    },
+    {
+      "behavior": "assistant_text_dedupe",
+      "result": "pass",
+      "evidence": "repeated assistant text within the same turn is deduped"
+    },
+    {
+      "behavior": "unsupported_event_non_action",
+      "result": "pass",
+      "evidence": "unsupported dashboard message is visible and says Nova did not treat it as success or execute anything"
+    },
+    {
+      "behavior": "socket_error_close_cleanup",
+      "result": "pass",
+      "evidence": "error and close cleanup clear pending manual-turn state without sending extra payloads"
+    }
+  ],
+  "remaining_gaps": [
+    "Browser Use screenshot/click-path proof remains blocked/setup-required",
+    "high-frequency physical browser click replay remains unavailable",
+    "deeper widget-specific malformed field fuzzing remains follow-up proof debt"
+  ]
+}
+

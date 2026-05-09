@@ -72,4 +72,7 @@ Status: draft / review required
    - Fix validation: overlapping manual sends are blocked while Nova is answering; send button binding is single-use; repeated assistant text in the same turn is deduped.
    - Evidence: `evidence/2026-05-07/raw/ui_malformed_rapid_click_contract.json`
    - Regression: `nova_backend/tests/phase45/test_dashboard_auto_widget_dispatch.py`
-   - Remaining blocker: high-frequency browser click replay still unavailable because Browser Use screenshot/click-path capture remains blocked.
+   - 2026-05-08 deterministic replay validation: stale turn events are ignored; early `chat_done` does not fake completion; active widget turn responses can complete a manual turn; unsupported message events remain visible non-action states.
+   - Replay evidence: `evidence/2026-05-08/raw/dashboard_event_replay_harness_results.json`
+   - Replay regression: `nova_backend/tests/phase45/test_dashboard_event_replay_harness.py`
+   - Remaining blocker: physical high-frequency browser click replay still unavailable because Browser Use screenshot/click-path capture remains blocked.
