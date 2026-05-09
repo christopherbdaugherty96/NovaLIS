@@ -62,6 +62,11 @@ Status: draft / review required
    - Expected: no duplicate listener binding, no overlapping manual turn, no repeated assistant text in the same turn.
    - Current coverage: `nova_backend/tests/phase45/test_dashboard_auto_widget_dispatch.py`.
 
+12. **Dashboard event replay harness**
+   - Replay repeated manual sends, stale turn messages, early `chat_done`, active-turn widget messages, unsupported event types, and socket error/close cleanup.
+   - Expected: no duplicate unintended payload, no stale turn completion, no fake success, no hidden execution, and no stuck pending state.
+   - Current coverage: `nova_backend/tests/phase45/test_dashboard_event_replay_harness.py`.
+
 ## 2026-05-07 Targeted Suite
 
 Focused verification after the blocker fixes:
