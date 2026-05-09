@@ -9,7 +9,7 @@ Non-search widget fuzzing / proof infrastructure only
 Status:
 
 ```text
-selected after dashboard event replay harness proof reduced deterministic interaction/event pressure debt
+completed / non-search widget malformed-payload contract verification added (21 passed)
 ```
 
 Trust Review Card MVP is merged and closeout-reviewed as display-only, non-authorizing, and follow-ups tracked. It renders existing request-understanding review-card state as a visible non-action receipt surface; it does not authorize, confirm, dispatch, mutate state, call capabilities, call GovernorMediator, call OpenClaw, add browser/computer-use, add external writes, or create autonomous workflows.
@@ -21,19 +21,25 @@ Browser Use visual capture recovery was attempted and remains blocked/setup-requ
 Completed most recent branch:
 
 ```text
+test/non-search-widget-fuzzing
+```
+
+Prior completed branch:
+
+```text
 test/dashboard-event-replay-harness
 ```
 
 Next branch:
 
 ```text
-test/non-search-widget-fuzzing
+proof/visual-regression-index or docs/proof-infrastructure-closeout-review
 ```
 
 Near-term focus:
 
-1. Add deterministic malformed-payload/fuzz proof for existing non-search dashboard widgets.
-2. Cover weather, calendar, memory/status/policy, setup-required, degraded, unsupported, and safe-default states where applicable.
+1. Assess whether non-search widget fuzzing pass is sufficient to close the carried-forward widget proof debt.
+2. If complete, prepare a proof-infrastructure closeout review doc or visual regression index for future browser proof capture.
 3. Preserve Browser Use visual capture as blocked/setup-required until the Node REPL/runtime asset issue is repaired.
 4. Preserve no-authority boundaries: no new capability, no OpenClaw expansion, no browser/computer-use capability, no external writes, no autonomous workflows, no direct Cap 63 shortcut.
 

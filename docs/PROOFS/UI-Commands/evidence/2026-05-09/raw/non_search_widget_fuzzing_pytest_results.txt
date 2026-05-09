@@ -1,0 +1,13 @@
+Command:
+python -m pytest nova_backend/tests/phase45/test_non_search_widget_fuzzing.py -q
+
+Result:
+.....................                                                    [100%]
+21 passed in 0.92s
+
+Expanded command:
+python -m pytest nova_backend/tests/phase45/test_dashboard_event_replay_harness.py nova_backend/tests/phase45/test_dashboard_auto_widget_dispatch.py nova_backend/tests/phase45/test_dashboard_no_auto_widget_dispatch.py nova_backend/tests/websocket/test_session_handler_proof_blockers.py nova_backend/tests/phase45/test_non_search_widget_fuzzing.py -q
+
+Result:
+...................................................                      [100%]
+51 passed in 8.70s
