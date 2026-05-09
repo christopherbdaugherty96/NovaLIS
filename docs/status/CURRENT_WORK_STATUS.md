@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-08 (dashboard event replay harness)
+Last reviewed: 2026-05-09 (non-search widget fuzzing)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -191,6 +191,11 @@ Dashboard event replay harness proof was added as deterministic proof infrastruc
   dashboard contract suite and JS syntax checks for served/mirrored dashboard files. It does not drive
   a browser, add browser/computer-use capability, expand OpenClaw, add external writes, create
   autonomous workflows, or use direct Cap 63 shortcuts.
+- **Non-search widget fuzzing:** adds malformed/degraded payload contract verification for weather,
+  calendar, memory, system/operator, trust_status, intelligence brief, news summary, screen capture,
+  and run-status widgets. It records `21 passed` for the focused fuzzing suite and `51 passed` for the
+  expanded suite including prior harness and adjacent checks. It does not add runtime authority,
+  browser/computer-use, OpenClaw expansion, external writes, autonomous workflows, or Cap 63 shortcuts.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -218,5 +223,6 @@ Current lock state:
 11. Trust Review Card MVP is accepted as a visible non-action receipt surface with follow-ups tracked.
 12. Browser Use visual capture recovery has been attempted as proof infrastructure only and remains blocked/setup-required before page interaction.
 13. Dashboard event replay harness proof has deterministic coverage for repeated sends, stale events, early completion guards, unsupported events, and socket cleanup.
-14. Trust Review Card, Browser Use proof follow-up, and dashboard event replay scope remain non-authorizing and must not expand execution, OpenClaw, browser/computer-use capability, capabilities, external writes, or autonomous workflows.
-15. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, and installer work remain not approved.
+14. Non-search widget fuzzing proof has deterministic contract coverage for malformed/null/missing fields across weather, calendar, memory, system, trust_status, and other non-search widget types.
+15. Trust Review Card, Browser Use proof follow-up, dashboard event replay, and non-search widget fuzzing scope remain non-authorizing and must not expand execution, OpenClaw, browser/computer-use capability, capabilities, external writes, or autonomous workflows.
+16. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, and installer work remain not approved.
