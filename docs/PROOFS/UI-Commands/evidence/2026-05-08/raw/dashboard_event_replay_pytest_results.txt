@@ -1,0 +1,14 @@
+Command:
+python -m pytest nova_backend/tests/phase45/test_dashboard_event_replay_harness.py nova_backend/tests/phase45/test_dashboard_auto_widget_dispatch.py -q
+
+Result:
+......................                                                   [100%]
+22 passed in 0.29s
+
+Additional syntax checks:
+node --check nova_backend/static/dashboard-chat-news.js
+node --check Nova-Frontend-Dashboard/dashboard-chat-news.js
+
+Result:
+passed
+

@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-08 (Browser Use visual capture recovery attempt)
+Last reviewed: 2026-05-08 (dashboard event replay harness)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -80,6 +80,8 @@ timeline-drift fixtures remain carried-forward follow-up work rather than reason
 indefinitely open.
 
 Browser Use visual capture recovery was attempted as proof infrastructure only. It remains blocked/setup-required because the Browser Use / Node REPL path fails before JavaScript execution with `failed to write kernel assets: The system cannot find the path specified`. No screenshot or click-path proof was captured, and no Nova browser/computer-use capability was added.
+
+Dashboard event replay harness proof was added as deterministic proof infrastructure after Browser Use remained blocked. It covers repeated sends, stale turn filtering, early `chat_done` handling, active widget turn completion, assistant-text de-dupe, unsupported event fallback, and socket cleanup without driving a browser, adding capabilities, expanding browser/computer-use, expanding OpenClaw, adding external writes, or creating autonomous workflows.
 
 ---
 
@@ -184,6 +186,11 @@ Browser Use visual capture recovery was attempted as proof infrastructure only. 
   blocked/setup-required, adds raw reproduction diagnostics, and does not add browser/computer-use
   capability, runtime browser authority, OpenClaw expansion, external writes, autonomous workflows, or
   direct Cap 63 shortcut use.
+- **Dashboard event replay harness:** adds deterministic proof coverage for existing dashboard
+  manual-turn guards under event pressure. It records `22 passed` for the focused replay/adjacent
+  dashboard contract suite and JS syntax checks for served/mirrored dashboard files. It does not drive
+  a browser, add browser/computer-use capability, expand OpenClaw, add external writes, create
+  autonomous workflows, or use direct Cap 63 shortcuts.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -210,5 +217,6 @@ Current lock state:
 10. Browser Use screenshot/click-path proof, broader visual UI/button proof, deeper widget-specific malformed payload fixtures, and timeline-drift fixtures are carried forward as follow-up proof debt.
 11. Trust Review Card MVP is accepted as a visible non-action receipt surface with follow-ups tracked.
 12. Browser Use visual capture recovery has been attempted as proof infrastructure only and remains blocked/setup-required before page interaction.
-13. Trust Review Card and Browser Use proof follow-up scope remains non-authorizing and must not expand execution, OpenClaw, browser/computer-use capability, capabilities, external writes, or autonomous workflows.
-14. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, and installer work remain not approved.
+13. Dashboard event replay harness proof has deterministic coverage for repeated sends, stale events, early completion guards, unsupported events, and socket cleanup.
+14. Trust Review Card, Browser Use proof follow-up, and dashboard event replay scope remain non-authorizing and must not expand execution, OpenClaw, browser/computer-use capability, capabilities, external writes, or autonomous workflows.
+15. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, and installer work remain not approved.

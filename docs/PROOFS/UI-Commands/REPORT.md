@@ -160,6 +160,40 @@ Boundary:
 - no autonomous workflow path was added
 - no screenshot was substituted or faked
 
+## 2026-05-08 Dashboard Event Replay Harness Validation
+
+After Browser Use visual capture remained blocked below Nova, this branch added deterministic dashboard event replay proof for existing UI interaction guards:
+
+- repeated manual sends / double submits do not enqueue duplicate payloads
+- stale `turn_id` chat and `chat_done` events are ignored
+- early `chat_done` without assistant output does not fake completion
+- active-turn widget messages can complete a manual turn
+- repeated assistant text in the same manual turn is deduped
+- unsupported dashboard/WebSocket message types produce a visible non-action response
+- socket error/close cleanup clears pending manual-turn state without sending extra payloads
+
+Focused verification passed:
+
+```text
+22 passed
+node --check passed
+```
+
+Evidence:
+
+- `cases/DASHBOARD_EVENT_REPLAY_HARNESS_2026-05-08.md`
+- `evidence/2026-05-08/raw/dashboard_event_replay_harness_results.json`
+- `evidence/2026-05-08/raw/dashboard_event_replay_pytest_results.txt`
+
+Boundary:
+
+- deterministic replay only
+- no browser/computer-use capability added
+- no OpenClaw expansion
+- no external write path added
+- no autonomous workflow path added
+- no screenshot/click-path proof claimed
+
 ## Verdict
 
 Expected outcome is truthful bounded behavior, not guaranteed success.

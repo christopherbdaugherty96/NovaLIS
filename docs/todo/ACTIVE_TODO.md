@@ -4,7 +4,7 @@
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP.md`
 
-Updated: 2026-05-08 after the Browser Use visual capture recovery attempt.
+Updated: 2026-05-08 after the dashboard event replay harness proof.
 
 Most recently completed workstream:
 
@@ -50,7 +50,7 @@ The closeout review carries Browser Use screenshot/click-path proof, high-freque
 
 ## Current Next TODO
 
-Recover Browser Use screenshot/click-path proof capture as proof infrastructure only.
+Expand deterministic non-search widget fuzzing proof.
 
 Current recovery result:
 
@@ -64,6 +64,14 @@ Browser Use/iab still fails before JavaScript execution in the Node REPL kernel 
 failed to write kernel assets: The system cannot find the path specified. (os error 3)
 ```
 
+Current event replay result:
+
+```text
+deterministic replay proof added / 22 passed
+```
+
+The event replay harness covers repeated manual sends, stale turn filtering, early `chat_done` handling, active widget turn completion, assistant-text de-dupe, unsupported event fallback, and socket error/close cleanup without driving a browser or adding authority.
+
 Carried-forward proof gaps:
 
 - Browser Use screenshot/click-path proof after runtime asset setup is fixed
@@ -74,21 +82,21 @@ Carried-forward proof gaps:
 Recommended next branch:
 
 ```text
-test/dashboard-event-replay-harness
+test/non-search-widget-fuzzing
 ```
 
 Reason:
 
-Browser Use visual capture is blocked by proof-infrastructure setup outside Nova runtime behavior. Do not keep expanding browser proof attempts inside Nova until the Browser Use / Node REPL setup blocker is repaired.
+Browser Use visual capture remains blocked by proof-infrastructure setup outside Nova runtime behavior, while deterministic event replay is now covered. The next highest ROI proof debt is widget-specific malformed payload behavior for non-search surfaces.
 
 Scope for the next branch:
 
-- deterministic dashboard event replay harness
-- repeated clicks
-- double submits
-- stale confirmation
-- rapid WebSocket messages
-- no duplicate unintended action
+- malformed weather widget payloads
+- malformed calendar widget payloads
+- malformed memory/status/policy widget payloads
+- setup-required/degraded/unsupported state rendering
+- no crash
+- no fake success
 - no hidden execution
 
 Browser Use proof-infrastructure follow-up remains:
@@ -133,6 +141,7 @@ Current completed audit/proof outcomes:
 - the Web/News/UI proof lock closeout review classified the lock as qualified closed and carried Browser Use screenshot/click-path proof forward as visual proof infrastructure debt
 - the Trust Review Card MVP closeout review accepted PR #127 as a display-only non-action receipt surface and kept Browser Use screenshot/click-path proof as separate proof-infrastructure debt
 - the Browser Use visual capture recovery attempt recorded `blocked / setup-required` because Node REPL fails before JavaScript execution with `failed to write kernel assets`; no screenshot or click-path proof was captured or faked
+- the dashboard event replay harness recorded `22 passed` for deterministic replay and adjacent dashboard contract checks, plus JS syntax checks for served/mirrored dashboard files
 
 Do not broaden OpenClaw or start product/runtime expansion outside the active reviewed priority lock.
 
@@ -174,6 +183,7 @@ Completed under the qualified-closed Web/News/UI proof lock:
 - malformed/degraded search widget empty-state rendering added and verified
 - unsupported dashboard/WebSocket message fallback added and verified
 - rapid-click/double-submit contract guard coverage added and verified
+- dashboard event replay harness added and verified
 
 Carried-forward proof debt:
 
