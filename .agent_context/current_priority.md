@@ -3,13 +3,13 @@
 Current priority:
 
 ```text
-Non-search widget fuzzing / proof infrastructure only
+Proof infrastructure closeout review
 ```
 
 Status:
 
 ```text
-completed / non-search widget malformed-payload contract verification added (21 passed)
+closeout review written / substantially reduced / visual proof blocked and carried forward
 ```
 
 Trust Review Card MVP is merged and closeout-reviewed as display-only, non-authorizing, and follow-ups tracked. It renders existing request-understanding review-card state as a visible non-action receipt surface; it does not authorize, confirm, dispatch, mutate state, call capabilities, call GovernorMediator, call OpenClaw, add browser/computer-use, add external writes, or create autonomous workflows.
@@ -21,28 +21,30 @@ Browser Use visual capture recovery was attempted and remains blocked/setup-requ
 Completed most recent branch:
 
 ```text
-test/non-search-widget-fuzzing
+docs/proof-infrastructure-closeout-review
 ```
 
-Prior completed branch:
+Prior completed branches:
 
 ```text
+test/non-search-widget-fuzzing
 test/dashboard-event-replay-harness
 ```
 
 Next branch:
 
 ```text
-proof/visual-regression-index or docs/proof-infrastructure-closeout-review
+proof/browser-use-visual-capture-recovery (when Browser Use setup is repaired)
+or no new proof infrastructure until visual capture is unblocked
 ```
 
 Near-term focus:
 
-1. Assess whether non-search widget fuzzing pass is sufficient to close the carried-forward widget proof debt.
-2. If complete, prepare a proof-infrastructure closeout review doc or visual regression index for future browser proof capture.
-3. Preserve Browser Use visual capture as blocked/setup-required until the Node REPL/runtime asset issue is repaired.
+1. Proof infrastructure closeout is accepted as substantially reduced.
+2. Browser Use screenshot/click-path proof remains blocked/setup-required; carry forward as proof debt, not capability expansion approval.
+3. Deferred deeper fuzzing (policy, voice, workspace widgets) is low-urgency follow-up only.
 4. Preserve no-authority boundaries: no new capability, no OpenClaw expansion, no browser/computer-use capability, no external writes, no autonomous workflows, no direct Cap 63 shortcut.
 
-Do not jump to Cap 64 P5, Shopify write work, OpenClaw browser automation, broad advanced features, scheduler/installer work, external-write workflows, richer receipt work, or browser/computer-use expansion until the non-search widget fuzzing branch is reviewed and merged or explicitly superseded.
+Do not jump to Cap 64 P5, Shopify write work, OpenClaw browser automation, broad advanced features, scheduler/installer work, external-write workflows, richer receipt work, or browser/computer-use expansion based on this closeout.
 
 This file is a working agent context note. Exact runtime truth still comes from code and generated runtime docs.
