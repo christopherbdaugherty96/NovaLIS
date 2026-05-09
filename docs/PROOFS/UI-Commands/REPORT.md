@@ -194,6 +194,48 @@ Boundary:
 - no autonomous workflow path added
 - no screenshot/click-path proof claimed
 
+## 2026-05-09 Non-Search Widget Fuzzing Validation
+
+After the dashboard event replay harness closed the event pressure gaps, this branch
+added malformed/degraded payload contract verification for all major non-search widget types:
+
+- weather: missing summary falls back, null alerts guarded, blank items filtered,
+  array capped, non-string fields coerced
+- calendar: missing summary and message fields have a chained fallback default
+- memory: all three dispatch cases present, null scope counts coerced to zero
+- system/operator: all downstream renderers receive {} when msg.data is null/missing
+- trust_status: non-object data guard, non-numeric counter coercion, || {} fallback
+- intelligence brief, news summary, screen capture, run-status: null data safe defaults
+- unsupported widget type: visible non-action fallback confirmed
+- dispatch breadth: >= 5 occurrences of msg.data || {} in the dispatch table
+
+Focused verification passed:
+
+```text
+21 passed
+```
+
+Expanded verification (new + prior harness + adjacent suites) passed:
+
+```text
+51 passed
+```
+
+Evidence:
+
+- `cases/NON_SEARCH_WIDGET_FUZZING_2026-05-09.md`
+- `evidence/2026-05-09/raw/non_search_widget_fuzzing_results.json`
+- `evidence/2026-05-09/raw/non_search_widget_fuzzing_pytest_results.txt`
+
+Boundary:
+
+- deterministic contract verification only
+- no browser/computer-use capability added
+- no OpenClaw expansion
+- no external write path added
+- no autonomous workflow path added
+- no screenshot/click-path proof claimed
+
 ## Verdict
 
 Expected outcome is truthful bounded behavior, not guaranteed success.
@@ -204,4 +246,4 @@ It did find UI/command truthfulness gaps that should be fixed or regression-test
 
 ## Matrix Status
 
-The master matrix now records evidence-backed status for the high-risk visible command paths, malformed/unsupported widget fallback, and rapid-submit contract guards. Screenshot/click-path coverage remains blocked/setup-required by Browser Use / Node REPL runtime asset setup rather than Nova runtime authority.
+The master matrix now records evidence-backed status for the high-risk visible command paths, malformed/unsupported widget fallback, rapid-submit contract guards, deterministic dashboard event replay, and non-search widget malformed/degraded payload contracts. Screenshot/click-path coverage remains blocked/setup-required by Browser Use / Node REPL runtime asset setup rather than Nova runtime authority.

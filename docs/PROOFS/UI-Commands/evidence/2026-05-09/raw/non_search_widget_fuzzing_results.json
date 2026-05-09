@@ -1,0 +1,105 @@
+{
+  "proof": "non_search_widget_fuzzing",
+  "date": "2026-05-09",
+  "status": "pass",
+  "classification": "deterministic_contract_verification_only",
+  "authority_expansion": false,
+  "browser_computer_use_added": false,
+  "openclaw_expanded": false,
+  "external_writes_added": false,
+  "autonomous_workflows_added": false,
+  "direct_cap63_shortcut_used": false,
+  "browser_screenshot_click_path": "blocked_setup_required",
+  "verification": {
+    "pytest_focused": {
+      "command": "python -m pytest nova_backend/tests/phase45/test_non_search_widget_fuzzing.py -q",
+      "result": "21 passed"
+    },
+    "pytest_expanded": {
+      "command": "python -m pytest nova_backend/tests/phase45/test_dashboard_event_replay_harness.py nova_backend/tests/phase45/test_dashboard_auto_widget_dispatch.py nova_backend/tests/phase45/test_dashboard_no_auto_widget_dispatch.py nova_backend/tests/websocket/test_session_handler_proof_blockers.py nova_backend/tests/phase45/test_non_search_widget_fuzzing.py -q",
+      "result": "51 passed"
+    }
+  },
+  "widgets_covered": [
+    {
+      "widget": "weather",
+      "behaviors": [
+        "missing summary falls back to 'Weather unavailable.'",
+        "null or non-array alerts field guarded by Array.isArray",
+        "blank alert items filtered before rendering",
+        "alerts array capped at two rows",
+        "non-string forecast and timestamp coerced via String()"
+      ],
+      "result": "pass"
+    },
+    {
+      "widget": "calendar",
+      "behaviors": [
+        "missing summary and message fields have chained fallback default",
+        "dispatch case present"
+      ],
+      "result": "pass"
+    },
+    {
+      "widget": "memory",
+      "behaviors": [
+        "dispatch cases present for memory_overview, memory_list, memory_item",
+        "null scope count fields coerced to zero via Number()"
+      ],
+      "result": "pass"
+    },
+    {
+      "widget": "system_operator",
+      "behaviors": [
+        "renderOperatorHealthWidget receives {} when msg.data is null/missing",
+        "renderCapabilitySurfaceWidget receives {} when msg.data is null/missing",
+        "renderTrustPanel receives {} when msg.data is null/missing"
+      ],
+      "result": "pass"
+    },
+    {
+      "widget": "trust_status",
+      "behaviors": [
+        "non-object msg.data skips all field reads",
+        "non-numeric consecutive_failures does not corrupt counter",
+        "renderTrustPanel always receives an object via || {}"
+      ],
+      "result": "pass"
+    },
+    {
+      "widget": "intelligence_brief",
+      "behaviors": ["null msg.data passed as {}"],
+      "result": "pass"
+    },
+    {
+      "widget": "news_summary",
+      "behaviors": ["null msg.data passed as {}"],
+      "result": "pass"
+    },
+    {
+      "widget": "unsupported_unknown",
+      "behaviors": [
+        "unknown type routes to renderUnsupportedWidgetEvent",
+        "fallback says 'Nova did not treat it as success or execute anything.'"
+      ],
+      "result": "pass"
+    },
+    {
+      "widget": "screen_capture",
+      "behaviors": ["null msg.data passed as {}"],
+      "result": "pass"
+    },
+    {
+      "widget": "run_status",
+      "behaviors": ["null msg.data passed as {}"],
+      "result": "pass"
+    }
+  ],
+  "remaining_gaps": [
+    "Browser Use screenshot/click-path proof remains blocked/setup-required",
+    "Visual proof of degraded widget rendering in browser unavailable",
+    "policy widget deep field fuzzing (policy_id, readiness buckets) deferred",
+    "voice/audio status widget field fuzzing deferred",
+    "workspace/thread widget field fuzzing deferred"
+  ]
+}
