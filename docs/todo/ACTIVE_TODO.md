@@ -4,7 +4,7 @@
 
 Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP.md`
 
-Updated: 2026-05-08 after the dashboard event replay harness proof.
+Updated: 2026-05-09 after the non-search widget fuzzing proof.
 
 Most recently completed workstream:
 
@@ -50,7 +50,7 @@ The closeout review carries Browser Use screenshot/click-path proof, high-freque
 
 ## Current Next TODO
 
-Expand deterministic non-search widget fuzzing proof.
+Prepare proof-infrastructure closeout review or visual regression index.
 
 Current recovery result:
 
@@ -70,34 +70,36 @@ Current event replay result:
 deterministic replay proof added / 22 passed
 ```
 
-The event replay harness covers repeated manual sends, stale turn filtering, early `chat_done` handling, active widget turn completion, assistant-text de-dupe, unsupported event fallback, and socket error/close cleanup without driving a browser or adding authority.
+Current non-search widget fuzzing result:
+
+```text
+deterministic contract verification added / 21 passed (51 passed expanded)
+```
+
+The non-search widget fuzzing pass covers malformed/null/missing fields for weather,
+calendar, memory, system/operator, trust_status, intelligence brief, news summary,
+screen capture, and run-status widgets without driving a browser or adding authority.
 
 Carried-forward proof gaps:
 
 - Browser Use screenshot/click-path proof after runtime asset setup is fixed
 - broader visual UI/button coverage beyond command-path evidence
-- deeper widget-specific malformed payload fixtures beyond search/unsupported-message coverage
+- policy widget deep field fuzzing (policy_id, readiness buckets)
+- voice/audio status widget field fuzzing
+- workspace/thread widget field fuzzing
 - timeline-drift fixtures
 
 Recommended next branch:
 
 ```text
-test/non-search-widget-fuzzing
+proof/visual-regression-index or docs/proof-infrastructure-closeout-review
 ```
 
 Reason:
 
-Browser Use visual capture remains blocked by proof-infrastructure setup outside Nova runtime behavior, while deterministic event replay is now covered. The next highest ROI proof debt is widget-specific malformed payload behavior for non-search surfaces.
-
-Scope for the next branch:
-
-- malformed weather widget payloads
-- malformed calendar widget payloads
-- malformed memory/status/policy widget payloads
-- setup-required/degraded/unsupported state rendering
-- no crash
-- no fake success
-- no hidden execution
+Non-search widget fuzzing has closed the highest-ROI deterministic proof gaps.
+The remaining gaps are either blocked by Browser Use setup or require a decision
+on whether deeper widget-specific fuzzing is needed before a closeout review.
 
 Browser Use proof-infrastructure follow-up remains:
 
@@ -142,6 +144,7 @@ Current completed audit/proof outcomes:
 - the Trust Review Card MVP closeout review accepted PR #127 as a display-only non-action receipt surface and kept Browser Use screenshot/click-path proof as separate proof-infrastructure debt
 - the Browser Use visual capture recovery attempt recorded `blocked / setup-required` because Node REPL fails before JavaScript execution with `failed to write kernel assets`; no screenshot or click-path proof was captured or faked
 - the dashboard event replay harness recorded `22 passed` for deterministic replay and adjacent dashboard contract checks, plus JS syntax checks for served/mirrored dashboard files
+- the non-search widget fuzzing pass recorded `21 passed` for focused malformed/degraded payload contract verification and `51 passed` for the expanded suite including prior harness and adjacent checks
 
 Do not broaden OpenClaw or start product/runtime expansion outside the active reviewed priority lock.
 
@@ -184,6 +187,7 @@ Completed under the qualified-closed Web/News/UI proof lock:
 - unsupported dashboard/WebSocket message fallback added and verified
 - rapid-click/double-submit contract guard coverage added and verified
 - dashboard event replay harness added and verified
+- non-search widget malformed/degraded payload fuzzing added and verified
 
 Carried-forward proof debt:
 

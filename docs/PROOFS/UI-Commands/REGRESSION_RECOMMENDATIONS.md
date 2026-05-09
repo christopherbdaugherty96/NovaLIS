@@ -67,6 +67,11 @@ Status: draft / review required
    - Expected: no duplicate unintended payload, no stale turn completion, no fake success, no hidden execution, and no stuck pending state.
    - Current coverage: `nova_backend/tests/phase45/test_dashboard_event_replay_harness.py`.
 
+13. **Non-search widget malformed/degraded payload fuzzing**
+   - Dispatch null/missing/malformed data to weather, calendar, memory, system, trust_status, intelligence brief, news summary, screen capture, and run-status widget handlers.
+   - Expected: no crash, fallback to safe defaults, no fake success, no hidden execution.
+   - Current coverage: `nova_backend/tests/phase45/test_non_search_widget_fuzzing.py`.
+
 ## 2026-05-07 Targeted Suite
 
 Focused verification after the blocker fixes:
@@ -118,6 +123,22 @@ node --check passed
 ```
 
 Evidence: `evidence/2026-05-07/raw/ui_malformed_rapid_click_pytest_results.txt`.
+
+## 2026-05-09 Non-Search Widget Fuzzing Suite
+
+Focused verification after non-search widget malformed/degraded payload contract proof:
+
+```text
+21 passed
+```
+
+Expanded verification (new + prior harness + adjacent suites):
+
+```text
+51 passed
+```
+
+Evidence: `evidence/2026-05-09/raw/non_search_widget_fuzzing_pytest_results.txt`.
 
 ## Screenshot Regression Once Browser Runtime Works
 
