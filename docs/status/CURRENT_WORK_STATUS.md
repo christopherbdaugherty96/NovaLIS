@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-09 (non-search widget fuzzing)
+Last reviewed: 2026-05-09 (proof infrastructure closeout review)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -196,6 +196,11 @@ Dashboard event replay harness proof was added as deterministic proof infrastruc
   and run-status widgets. It records `21 passed` for the focused fuzzing suite and `51 passed` for the
   expanded suite including prior harness and adjacent checks. It does not add runtime authority,
   browser/computer-use, OpenClaw expansion, external writes, autonomous workflows, or Cap 63 shortcuts.
+- **Proof infrastructure closeout review:** classifies the deterministic proof infrastructure
+  workstream (PRs #129–#131) as substantially reduced and closeout-ready. Browser Use
+  screenshot/click-path proof is carried forward as `proof/browser-use-visual-capture-recovery`.
+  Deeper policy/voice/workspace widget fuzzing is deferred as low-urgency follow-up. No capability
+  was added across the proof infrastructure chain.
 - Cap 64 remains confirmation-bound local `mailto:` draft only. No SMTP, inbox access, or
   autonomous send.
 - Cap 65 remains read-only Shopify intelligence. No Shopify writes.
@@ -224,5 +229,6 @@ Current lock state:
 12. Browser Use visual capture recovery has been attempted as proof infrastructure only and remains blocked/setup-required before page interaction.
 13. Dashboard event replay harness proof has deterministic coverage for repeated sends, stale events, early completion guards, unsupported events, and socket cleanup.
 14. Non-search widget fuzzing proof has deterministic contract coverage for malformed/null/missing fields across weather, calendar, memory, system, trust_status, and other non-search widget types.
-15. Trust Review Card, Browser Use proof follow-up, dashboard event replay, and non-search widget fuzzing scope remain non-authorizing and must not expand execution, OpenClaw, browser/computer-use capability, capabilities, external writes, or autonomous workflows.
-16. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, and installer work remain not approved.
+15. Proof infrastructure closeout review classifies the full deterministic proof chain as substantially reduced and closeout-ready; Browser Use visual proof is carried forward as separate proof debt.
+16. Trust Review Card, Browser Use proof follow-up, dashboard event replay, non-search widget fuzzing, and proof infrastructure closeout scope remain non-authorizing and must not expand execution, OpenClaw, browser/computer-use capability, capabilities, external writes, or autonomous workflows.
+17. Broad OpenClaw automation, browser/computer-use expansion, external writes, email/calendar/Shopify/account actions, direct Cap 63 shortcut use, autonomous workflow execution, Google connector expansion, capability registry expansion, workflow automation expansion, scheduler expansion, and installer work remain not approved.
