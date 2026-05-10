@@ -2,12 +2,12 @@
   "schema_version": "1.0",
   "updated": "2026-04-26",
   "phase_descriptions": {
-    "p1_unit": "Executor tested in isolation — validate, execute, ledger events, ActionResult governance fields",
-    "p2_routing": "GovernorMediator routes correctly — right cap_id, right params, no false positives",
-    "p3_integration": "Full Governor spine — lookup, execute boundary, ledger write, ActionResult from real governor",
-    "p4_api": "HTTP/WebSocket endpoint — response shape, status codes, error handling",
-    "p5_live": "User-verified live test — user runs actual command, verifies output, signs off",
-    "locked": "All 5 phases passed and locked — CI regression guard active"
+    "p1_unit": "Executor tested in isolation \u00e2\u20ac\u201d validate, execute, ledger events, ActionResult governance fields",
+    "p2_routing": "GovernorMediator routes correctly \u00e2\u20ac\u201d right cap_id, right params, no false positives",
+    "p3_integration": "Full Governor spine \u00e2\u20ac\u201d lookup, execute boundary, ledger write, ActionResult from real governor",
+    "p4_api": "HTTP/WebSocket endpoint \u00e2\u20ac\u201d response shape, status codes, error handling",
+    "p5_live": "User-verified live test \u00e2\u20ac\u201d user runs actual command, verifies output, signs off",
+    "locked": "All 5 phases passed and locked \u00e2\u20ac\u201d CI regression guard active"
   },
   "capabilities": {
     "16": {
@@ -38,12 +38,12 @@
       },
       "p5_live": {
         "status": "pass",
-        "date": "2026-05-09",
+        "date": "2026-05-10",
         "signed_off_by": "user",
         "notes": "Cap 16 live checklist passed: Test 1 basic search PASS (real Brave results, sources), Test 2 natural phrasing PASS (EV news results + search widget), Test 3 clarification PASS (bare search returns clarification), Test 4 ledger PASS (SEARCH_QUERY and ACTION_COMPLETED in ledger.jsonl). Verified via FastAPI TestClient with real BRAVE_API_KEY and real governor spine. 2026-05-10."
       },
       "locked": true,
-      "locked_date": "2026-05-09"
+      "locked_date": "2026-05-10"
     },
     "17": {
       "name": "open_website",

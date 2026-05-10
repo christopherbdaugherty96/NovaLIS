@@ -210,9 +210,11 @@ This branch does NOT:
 - add external writes
 - add autonomous workflows
 - change AGENTS.md
-- change `.agent_context/current_priority.md`
 - modify any executor, governor, or WebSocket handler source code
 - add new UI surface
+
+This branch DOES update `.agent_context/current_priority.md` — solely to record that Cap 16
+is locked and no active workstream is selected. No priority is assigned by that edit.
 
 ---
 
@@ -256,6 +258,10 @@ Verified via FastAPI TestClient with real BRAVE_API_KEY and real governor spine 
 
 Note: Test 1 failed on attempt 1 due to local Ollama CPU timeout during LLM synthesis; passed on
 attempt 2 after circuit breaker reset. This is a local resource constraint, not a Cap 16 issue.
+
+Date note: `certify_capability.py live-signoff` and `lock` commands ran at local system time
+2026-05-09 (US Eastern, late night). capability_locks.json dates have been normalized to
+2026-05-10 to match the proof packet date and UTC date at execution time.
 
 Live-signoff command:
 
