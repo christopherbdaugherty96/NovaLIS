@@ -3,13 +3,13 @@
 Current priority:
 
 ```text
-Proof infrastructure closeout review
+UI simplification inventory
 ```
 
 Status:
 
 ```text
-closeout review written / substantially reduced / visual proof blocked and carried forward
+inventory written / classify-only / no runtime changes
 ```
 
 Trust Review Card MVP is merged and closeout-reviewed as display-only, non-authorizing, and follow-ups tracked. It renders existing request-understanding review-card state as a visible non-action receipt surface; it does not authorize, confirm, dispatch, mutate state, call capabilities, call GovernorMediator, call OpenClaw, add browser/computer-use, add external writes, or create autonomous workflows.
@@ -21,12 +21,13 @@ Browser Use visual capture recovery was attempted and remains blocked/setup-requ
 Completed most recent branch:
 
 ```text
-docs/proof-infrastructure-closeout-review
+docs/ui-simplification-inventory
 ```
 
 Prior completed branches:
 
 ```text
+docs/proof-infrastructure-closeout-review
 test/non-search-widget-fuzzing
 test/dashboard-event-replay-harness
 ```
@@ -34,17 +35,16 @@ test/dashboard-event-replay-harness
 Next branch:
 
 ```text
-proof/browser-use-visual-capture-recovery (when Browser Use setup is repaired)
-or no new proof infrastructure until visual capture is unblocked
+ui/simplify-dashboard-default-experience
 ```
 
 Near-term focus:
 
-1. Proof infrastructure closeout is accepted as substantially reduced.
-2. Browser Use screenshot/click-path proof remains blocked/setup-required; carry forward as proof debt, not capability expansion approval.
-3. Deferred deeper fuzzing (policy, voice, workspace widgets) is low-urgency follow-up only.
+1. UI simplification inventory is complete. 86 buttons classified: ~55 KEEP / ~30 COLLAPSE / ~18 REMOVE.
+2. Next: implement inventory decisions in ui/simplify-dashboard-default-experience.
+3. After implementation: proof/live-manual-ui-verification — operator walks simplified UI and records results.
 4. Preserve no-authority boundaries: no new capability, no OpenClaw expansion, no browser/computer-use capability, no external writes, no autonomous workflows, no direct Cap 63 shortcut.
 
-Do not jump to Cap 64 P5, Shopify write work, OpenClaw browser automation, broad advanced features, scheduler/installer work, external-write workflows, richer receipt work, or browser/computer-use expansion based on this closeout.
+Do not jump to Cap 64 P5, Shopify write work, OpenClaw browser automation, broad advanced features, scheduler/installer work, external-write workflows, richer receipt work, or browser/computer-use expansion.
 
 This file is a working agent context note. Exact runtime truth still comes from code and generated runtime docs.
