@@ -182,6 +182,14 @@ OPEN_FOLDER_FRIENDLY_RE = re.compile(
     r"^\s*open\s+(?:my\s+)?(?P<folder>documents|downloads|desktop|pictures)(?:\s+folder)?\s*$",
     re.IGNORECASE,
 )
+SHOW_FOLDER_RE = re.compile(
+    r"^\s*(?:show|navigate to)\s+(?:me\s+)?(?:my\s+)?(?P<folder>documents|downloads|desktop|pictures)(?:\s+folder)?\s*$",
+    re.IGNORECASE,
+)
+GO_TO_SITE_RE = re.compile(
+    r"^\s*go\s+to\s+(?!(?:the\s+)?(?:website|site|webpage)\s)(?P<target>[A-Za-z0-9][A-Za-z0-9._\-]{1,64})\s*$",
+    re.IGNORECASE,
+)
 OPEN_FILE_RE = re.compile(r"^\s*open\s+(?:file|document)\s+(?P<path>.+?)\s*$", re.IGNORECASE)
 SET_VOLUME_RE = re.compile(r"^\s*set\s+volume(?:\s+to)?\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 VOLUME_VALUE_RE = re.compile(r"^\s*volume\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
@@ -189,7 +197,11 @@ SET_BRIGHTNESS_RE = re.compile(r"^\s*set\s+(?:screen\s+)?brightness(?:\s+to)?\s+
 BRIGHTNESS_VALUE_RE = re.compile(r"^\s*brightness\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 WEATHER_RE = re.compile(
     r"^\s*(?:weather|weather update|current weather|weather forecast|show me the weather|tell me the weather|how(?:'s| is) the weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|what(?:'s| is) (?:the )?weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|forecast(?: today| tomorrow)?"
-    r"|weather (?:this )?week|(?:this )?week(?:'s| s) weather|forecast for (?:the )?week|weekly (?:weather )?forecast|weather forecast for (?:the )?week|whats the weather|hows the weather)\s*$",
+    r"|weather (?:this )?week|(?:this )?week(?:'s| s) weather|forecast for (?:the )?week|weekly (?:weather )?forecast|weather forecast for (?:the )?week|whats the weather|hows the weather"
+    r"|(?:is it|will it) (?:going to )?rain(?: today| tomorrow| this week)?"
+    r"|(?:will|is) there (?:be )?rain(?: today| tomorrow)?"
+    r"|do i need (?:an? )?umbrella(?: today| tomorrow)?"
+    r"|outside temperature|temperature (?:today|outside|right now))\s*$",
     re.IGNORECASE,
 )
 NEWS_RE = re.compile(
@@ -202,8 +214,9 @@ CALENDAR_RE = re.compile(
     re.IGNORECASE,
 )
 SYSTEM_RE = re.compile(
-    r"^\s*(?:system|system check|system status|how(?:'s| is) the system doing|how(?:'s| is) nova doing|what(?:'s| is) (?:the )?system status"
-    r"|check (?:my )?system(?: status)?|os check|check (?:the )?system|system info|show (?:system|device) status|how(?:'s| is) (?:my )?system|device status)\s*$",
+    r"^\s*(?:system|system check|system status|how(?:'s| is) the system doing|how(?:'s| is) nova doing|what(?:'s| is) (?:the |my )?system status"
+    r"|check (?:my )?system(?: status)?|os check|check (?:the )?system|system info|show (?:system|device) status|how(?:'s| is) (?:my )?system|device status"
+    r"|how am i doing|how(?:'s| is) everything|whats my system status|what(?:'s| is) my system status)\s*$",
     re.IGNORECASE,
 )
 SCREEN_CAPTURE_RE = re.compile(
@@ -375,6 +388,14 @@ MEMORY_SAVE_FRIENDLY_RE = re.compile(
 )
 MEMORY_SAVE_NATURAL_RE = re.compile(
     r"^\s*remember\s+that\s+(?P<body>.+?)\s*$",
+    re.IGNORECASE,
+)
+MEMORY_NOTE_RE = re.compile(
+    r"^\s*(?:note|jot(?:\s+down)?)\s*[:\-]\s*(?P<body>.+?)\s*$",
+    re.IGNORECASE,
+)
+MEMORY_I_NEED_REMEMBER_RE = re.compile(
+    r"^\s*i\s+(?:need|want)\s+to\s+remember\s+(?:that\s+)?(?P<body>.+?)\s*$",
     re.IGNORECASE,
 )
 MEMORY_SAVE_RE = re.compile(
@@ -946,9 +967,15 @@ class GovernorMediator:
         if DOC_LIST_RE.match(t):
             return _invocation_if_enabled(54, {"action": "list"})
 
-        m = OPEN_FOLDER_RE.match(t) or OPEN_FOLDER_FRIENDLY_RE.match(t)
+        m = OPEN_FOLDER_RE.match(t) or OPEN_FOLDER_FRIENDLY_RE.match(t) or SHOW_FOLDER_RE.match(t)
         if m:
             return _invocation_if_enabled(22, {"target": m.group("folder").strip().lower()})
+
+        m = GO_TO_SITE_RE.match(t)
+        if m:
+            target = _normalize_web_target(m.group("target"))
+            if target and _looks_like_web_target(m.group("target"), target):
+                return _invocation_if_enabled(17, {"target": target.lower()})
 
         m = OPEN_FILE_RE.match(t)
         if m:
@@ -1237,6 +1264,32 @@ class GovernorMediator:
             )
 
         m = MEMORY_SAVE_NATURAL_RE.match(t)
+        if m:
+            body = m.group("body").strip()
+            title = body.split(":")[0].strip()[:80] or "Saved memory"
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "save",
+                    "title": title,
+                    "body": body,
+                },
+            )
+
+        m = MEMORY_NOTE_RE.match(t)
+        if m:
+            body = m.group("body").strip()
+            title = body.split(":")[0].strip()[:80] or "Note"
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "save",
+                    "title": title,
+                    "body": body,
+                },
+            )
+
+        m = MEMORY_I_NEED_REMEMBER_RE.match(t)
         if m:
             body = m.group("body").strip()
             title = body.split(":")[0].strip()[:80] or "Saved memory"
