@@ -69,7 +69,13 @@ Cap 64 P5 — paused until own lock
 
 ## Current Next TODO
 
-Await Browser Use visual capture recovery or next reviewed priority lock.
+Merge PR #135 if review passes, then begin:
+
+```text
+proof/everyday-ux-live-workflow-baseline
+```
+
+Run the 13 live workflow scenarios and record evidence. Do not make fixes in the baseline branch.
 
 Current recovery result:
 
