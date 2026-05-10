@@ -124,6 +124,72 @@ user goals.
 | Policy (`page-policy`) | Not top-level; fold into Settings / Governance / Advanced |
 | Agent (`page-agent`) | Not top-level; fold into Settings / Advanced |
 
+### Folded Page Destination Map
+
+Where each non-top-level page's content and buttons go:
+
+| Current page | New destination | Button fate |
+|---|---|---|
+| Home (`page-home`) | Chat sidebar / Settings | Morning/weather/calendar status → Chat contextual or Settings status section; diagnostic widgets → Settings / Diagnostics; shortcut chips → see Section 12 |
+| Memory (`page-memory`) | Settings / Memory | All memory action buttons (list, filter, edit, lock, defer, delete) move into Settings / Memory sub-section |
+| Workspace (`page-workspace`) | CRM (business-facing) + Settings / Workspace (diagnostic) | Board thread/architecture views → Settings / Workspace; business project context → CRM |
+| Trust (`page-trust`) | Settings / Governance | All trust subsection buttons become Settings / Governance accordions; no separate nav page |
+| Policy (`page-policy`) | Settings / Policy | Policy overview → Settings / Policy; policy create shortcuts → REMOVE |
+| Agent (`page-agent`) | Settings / Agent / Advanced | Agent refresh and status → Settings / Agent section; agent-to-trust/home nav links → obsolete |
+| Intro (`page-intro`) | Start screen | Becomes entry point; buttons reduced to Start + Settings link only |
+
+---
+
+### Settings Structure Map
+
+Settings absorbs six folded pages. New Settings sub-section structure:
+
+| Sub-section | Content | Source pages / buttons |
+|---|---|---|
+| General | Profile, identity, preferences, rules, accessibility, privacy, reset | Existing Settings buttons: profile-save-*, reset-defaults, accessibility, privacy |
+| Connections | External connections, calendar setup, API status | btn-connections-refresh, btn-settings-open-connections, btn-morning-calendar-connect |
+| Voice | Voice status, voice check | btn-settings-voice-status, btn-settings-voice-check |
+| Memory | Memory list, filter, edit, lock, defer, delete, export | All btn-memory-* from current Memory page |
+| Governance / Trust | Trust status summary, authority boundary, system/memory/bridge status | btn-trust-center-refresh + trust subsections (all as accordions) |
+| Policy | Policy overview, capability readiness | btn-policy-refresh, btn-policy-capability-map; no creation shortcuts |
+| Agent / OpenClaw | Agent and bridge status | btn-agent-refresh; read-only status only |
+| Workspace / Project context | Thread structure, board views | btn-workspace-board-* views; diagnostic only |
+| Diagnostics | Workflow steps, operational context, assistive notices, runtime refresh | btn-workflow-*, btn-operational-context-*, btn-assistive-*, btn-settings-refresh-runtime |
+| Advanced / Proof | Proof surfaces, capability surface widget, operator health, bridge reasoning grids | Collapsed by default; operator/developer view only |
+
+---
+
+### CRM Stub (current-state definition)
+
+CRM is future-facing. The stub page renders what exists today:
+
+```text
+CRM page (current state):
+
+Title: CRM
+
+Default state (no integrations configured):
+  - "Business integrations coming soon."
+  - One link: Settings / Connections (to configure)
+
+Shopify (if configured):
+  - Read-only store status / revenue summary from Cap 65
+  - No write actions. No create/update/delete product or order.
+
+Email (always):
+  - Email draft creation through Chat only, user-initiated, confirmation-bound
+  - User sends manually. No inbox access. No autonomous send.
+
+Calendar / business context:
+  - Read-only event list if calendar connected
+  - Setup-required state if not connected
+```
+
+No buttons: "Add lead", "Send follow-up", "Create deal", "Sync customer",
+"Assign task", or any CRM write action.
+
+---
+
 ### Intro / Start screen buttons (corrected from Section 10)
 
 The intro page is **KEEP** — it becomes the Start screen, not a page to remove.
@@ -144,19 +210,30 @@ Its buttons are reduced:
 
 ## Section 4 — Buttons: Chat Page
 
+### Chat vs News: resolved decision
+
+News has its own top-level page. Chat renders news widgets inline when the user
+asks, but Chat should not duplicate the full News control cluster as persistent
+shortcut buttons. Five news-specific buttons on the Chat page implies News is a
+Chat sub-feature, not a peer page.
+
+Decision: move persistent News controls to the News page. Remove them from the
+Chat default view. The user navigates to News to browse; news results appear in
+Chat when requested via natural language or a single chip ("Today's news").
+
 | Button ID | Label | Current behavior | Backend-backed? | Classification | Rationale |
 |---|---|---|---|---|---|
-| `btn-news` | News | Requests news widget | Yes | **KEEP** | Core |
-| `btn-news-summary` | Summary | Requests news summary | Yes | **KEEP** | Core |
-| `btn-news-refresh` | Refresh | Refreshes news | Yes | **KEEP** | Core |
-| `btn-news-expand` | Expand | Expands news list | Yes | **KEEP** | Useful |
-| `btn-news-search` | Search | Opens search input | Yes | **KEEP** | Core |
-| `btn-morning-toggle` | Morning | Toggles morning panel | Yes | **KEEP** | Useful summary |
-| `btn-morning-calendar-connect` | Connect calendar | Opens calendar setup | Partial — setup-required | **COLLAPSE** | Only relevant pre-setup; show inline in calendar widget when setup-required |
-| `btn-hints-toggle` | Hints | Toggles hint panel | No direct backend | **REMOVE** | Adds noise; hints are low-value in current form |
-| `btn-live-help-start` | Live help start | Starts live help session | Unclear / limited | **REMOVE** | Implies autonomy; unclear governed path |
-| `btn-live-help-stop` | Live help stop | Stops live help | Same | **REMOVE** | Same as above |
-| `btn-live-help-explain` | Explain | Explain via live help | Same | **REMOVE** | Same as above |
+| `btn-news` | News | Requests news widget | Yes | **REMOVE from Chat** | News page owns this; one nav chip in Chat is enough |
+| `btn-news-summary` | Summary | Requests news summary | Yes | **REMOVE from Chat** | Same |
+| `btn-news-refresh` | Refresh | Refreshes news | Yes | **REMOVE from Chat** | Same |
+| `btn-news-expand` | Expand | Expands news list | Yes | **REMOVE from Chat** | Same |
+| `btn-news-search` | Search | Opens search input | Yes | **REMOVE from Chat** | Same; search chip in Chat covers this |
+| `btn-morning-toggle` | Morning | Toggles morning panel | Yes | **KEEP** | Status/calendar/weather summary before Chat; stays in Chat |
+| `btn-morning-calendar-connect` | Connect calendar | Opens calendar setup | Partial — setup-required | **COLLAPSE** → **Settings / Connections** | Show as Settings link when setup-required; not a Chat button |
+| `btn-hints-toggle` | Hints | Toggles hint panel | No direct backend | **REMOVE** | Low-value in current form |
+| `btn-live-help-start` | Live help start | Starts live help session | Unclear / limited | **REMOVE** | No clear governed path |
+| `btn-live-help-stop` | Live help stop | Stops live help | Same | **REMOVE** | Same |
+| `btn-live-help-explain` | Explain | Explain via live help | Same | **REMOVE** | Same |
 
 ---
 
@@ -225,12 +302,12 @@ Its buttons are reduced:
 | `btn-settings-voice-status` | Voice status | Shows voice status | Yes | **KEEP** | Core |
 | `btn-settings-voice-check` | Voice check | Runs voice check | Partial | **COLLAPSE** | Only useful post-setup |
 | `btn-settings-open-connections` | Connections | Navigates to connections | Yes | **KEEP** | Core navigation |
-| `btn-settings-open-trust` | Trust center | Navigates to trust | Yes | **KEEP** | Core navigation |
-| `btn-settings-open-home` | Home | Navigates to home | Yes | **KEEP** | Navigation |
-| `btn-settings-open-agent` | Agent | Navigates to agent | Yes | **COLLAPSE** | Low-value if agent page collapses |
+| `btn-settings-open-trust` | Trust center | Navigates to trust | Yes | **RECLASSIFY** → scroll to Governance sub-section | Trust folds into Settings; this becomes a same-page scroll link, not cross-page nav |
+| `btn-settings-open-home` | Home | Navigates to home | Yes | **REMOVE** | Home is not top-level; no destination |
+| `btn-settings-open-agent` | Agent | Navigates to agent | Yes | **RECLASSIFY** → scroll to Agent / Advanced sub-section | Agent folds into Settings; same-page scroll |
 | `btn-settings-open-accessibility` | Accessibility | Opens accessibility settings | Yes | **KEEP** | Useful |
 | `btn-settings-open-privacy` | Privacy | Opens privacy settings | Yes | **KEEP** | Useful |
-| `btn-settings-open-intro` | Intro | Navigates to intro | Low | **REMOVE** | Intro page is low-value for ongoing sessions |
+| `btn-settings-open-intro` | Intro / Return to Start | Navigates to Start screen | Yes | **KEEP** | Intro is now the Start screen; return path is valid |
 | `btn-settings-reset-defaults` | Reset defaults | Resets settings | Yes | **KEEP** | Core — requires confirmation |
 | `btn-reset-confirm` | Confirm reset | Executes reset | Yes | **KEEP** | Required by reset flow |
 | `btn-reset-cancel` | Cancel reset | Aborts reset | Yes | **KEEP** | Required by reset flow |
@@ -240,20 +317,36 @@ Its buttons are reduced:
 
 ---
 
-## Section 9 — Buttons: Home, Workspace, Agent Pages
+## Section 9 — Buttons: Home, Workspace, Agent Pages (folded)
 
-| Button ID | Label | Current behavior | Backend-backed? | Classification | Rationale |
-|---|---|---|---|---|---|
-| `btn-home-threads` | Threads | Shows threads | Yes | **KEEP** | Core |
-| `btn-workspace-home-refresh` | Refresh | Refreshes workspace home | Yes | **KEEP** | Core |
-| `btn-workspace-board-refresh` | Refresh board | Refreshes board | Yes | **KEEP** | Core |
-| `btn-workspace-board-threads` | Threads view | Switches board view | Yes | **KEEP** | Core |
-| `btn-workspace-board-architecture` | Architecture view | Switches board view | Yes | **KEEP** | Useful |
-| `btn-workspace-board-visual` | Visual view | Switches board view | Yes | **KEEP** | Useful |
-| `btn-agent-refresh` | Refresh agent | Refreshes agent/bridge status | Yes | **KEEP** (if page kept) | Core for agent page |
-| `btn-agent-open-home` | Home | Navigates to home | Yes | **KEEP** | Navigation |
-| `btn-agent-open-settings` | Settings | Navigates to settings | Yes | **KEEP** | Navigation |
-| `btn-agent-open-trust` | Trust | Navigates to trust | Yes | **KEEP** | Navigation |
+Home, Workspace, and Agent are no longer standalone top-level pages. Their buttons
+do not KEEP on standalone pages — they fold into Settings sub-sections or CRM, as
+defined in the Section 3 Folded Page Destination Map.
+
+### Home page buttons
+
+| Button ID | Label | New destination | Classification |
+|---|---|---|---|
+| `btn-home-threads` | Threads | Settings / Workspace or CRM context | **COLLAPSE** into destination section |
+
+### Workspace page buttons
+
+| Button ID | Label | New destination | Classification |
+|---|---|---|---|
+| `btn-workspace-home-refresh` | Refresh | Settings / Workspace | **KEEP** in Settings / Workspace |
+| `btn-workspace-board-refresh` | Refresh board | Settings / Workspace | **KEEP** in Settings / Workspace |
+| `btn-workspace-board-threads` | Threads view | Settings / Workspace | **KEEP** in Settings / Workspace |
+| `btn-workspace-board-architecture` | Architecture view | Settings / Workspace | **KEEP** in Settings / Workspace |
+| `btn-workspace-board-visual` | Visual view | Settings / Workspace | **KEEP** in Settings / Workspace |
+
+### Agent page buttons
+
+| Button ID | Label | New destination | Classification |
+|---|---|---|---|
+| `btn-agent-refresh` | Refresh agent | Settings / Agent / Advanced | **KEEP** in Settings / Agent section |
+| `btn-agent-open-home` | Home | — | **REMOVE** — Home is not top-level |
+| `btn-agent-open-settings` | Settings | Settings | **KEEP** — still a valid nav link to parent page |
+| `btn-agent-open-trust` | Trust | Settings / Governance | **RECLASSIFY** — becomes section link within Settings |
 
 ---
 
@@ -307,20 +400,20 @@ inject text.
 | News | Daily brief | "daily brief" | Yes | **KEEP** | Core |
 | News | Compare stories | "compare headlines 1 and 2" | Partial | **COLLAPSE** | Context-dependent |
 | News | Explain this page | "what is this page" | Weak | **REMOVE** | Noise |
-| Home | System status | "system status" | Yes | **KEEP** | Core |
-| Home | Calendar | "calendar" | Yes | **KEEP** | Core |
-| Home | Weather | "weather" | Yes | **KEEP** | Core |
-| Home | Home agent | "bridge status" | Yes | **COLLAPSE** | Diagnostic |
-| Home | Explain this | "explain this" | Partial | **COLLAPSE** | Context-dependent |
-| Home | Analyze screen | "analyze this screen" | Partial — setup-required | **REMOVE** | Implies computer-use; only works with capture |
-| Home | Show threads | "show threads" | Yes | **KEEP** | Core |
-| Home | Project status | "project status this" | Partial | **COLLAPSE** | Context-dependent |
-| Home | Most blocked | "which project is most blocked…" | Partial | **REMOVE** | Implies deep project management; overpromises |
-| Home | Memory overview | "memory overview" | Yes | **KEEP** | Core |
-| Home | Tone settings | "tone status" | Yes | **COLLAPSE** | Secondary |
-| Home | Schedules | "show schedules" | Partial | **COLLAPSE** | Secondary |
-| Home | Pattern review | "pattern status" | Yes | **COLLAPSE** | Secondary |
-| Policy | Create calendar rule | "policy create weekday calendar…" | Partial | **REMOVE** | Implies policy automation |
+| Home | System status | "system status" | Yes | **MOVE to Chat chips** | Useful; keep as a Chat-page chip since Home dissolves |
+| Home | Calendar | "calendar" | Yes | **MOVE to Chat chips** | Contextual; Chat renders calendar widget on request |
+| Home | Weather | "weather" | Yes | **MOVE to Chat chips** | Contextual; Chat renders weather widget on request |
+| Home | Home agent | "bridge status" | Yes | **MOVE to Settings / Agent** | Diagnostic; Settings / Agent section surfaces this |
+| Home | Explain this | "explain this" | Partial | **REMOVE** | Context-dependent; better via natural language in Chat |
+| Home | Analyze screen | "analyze this screen" | Partial — setup-required | **REMOVE** | Implies computer-use; setup-required and misleading |
+| Home | Show threads | "show threads" | Yes | **MOVE to Chat chips** | Useful; keep as Chat-page chip |
+| Home | Project status | "project status this" | Partial | **COLLAPSE** | Context-dependent; keep as secondary Chat chip if anything |
+| Home | Most blocked | "which project is most blocked…" | Partial | **REMOVE** | Overpromises project management depth |
+| Home | Memory overview | "memory overview" | Yes | **MOVE to Chat chips** | Useful; keep as Chat-page chip |
+| Home | Tone settings | "tone status" | Yes | **REMOVE** | Diagnostic; available via natural language |
+| Home | Schedules | "show schedules" | Partial | **REMOVE** | Secondary; not a default chip |
+| Home | Pattern review | "pattern status" | Yes | **REMOVE** | Secondary; not a default chip |
+| Policy | Create calendar rule | "policy create weekday calendar…" | Partial | **REMOVE** | Implies policy automation; no shortcut |
 | Policy | Create weather rule | "policy create daily weather…" | Partial | **REMOVE** | Same |
 
 ---
@@ -357,11 +450,19 @@ These appear after assistant responses and inject follow-up commands.
 
 ## Summary Counts
 
-| Classification | Count (approx) |
-|---|---|
-| KEEP | ~55 |
-| COLLAPSE | ~30 |
-| REMOVE | ~18 |
+Counts revised after product-direction correction and structural patch.
+Original counts (KEEP ~55 / COLLAPSE ~30 / REMOVE ~18) were based on the 10-page
+standalone-page hierarchy and are no longer accurate.
+
+Revised approximate counts after folding non-top-level pages into Settings / CRM:
+
+| Classification | Count (approx) | Notes |
+|---|---|---|
+| KEEP (as-is or in new destination) | ~50 | Core chat, memory actions, settings actions, news page, workspace board views in Settings, agent refresh in Settings |
+| COLLAPSE (behind expand/accordion) | ~20 | Trust subsections, diagnostics, some quick-action chips |
+| REMOVE | ~30 | Home nav, Policy create shortcuts, live-help, noisy chips, cross-page nav to dissolved pages, 5 Chat news buttons |
+| MOVE (chip to different page) | ~5 | Home chips → Chat chips |
+| RECLASSIFY (cross-page nav → section link) | ~4 | trust, agent, workspace nav links become same-page Settings section links |
 
 ---
 
@@ -373,18 +474,37 @@ PR title: `ui: simplify dashboard to start plus core navigation`
 
 Implement in this order to limit blast radius:
 
-1. **Reduce nav to four tabs + Start** — Chat, News, CRM (setup-required stub), Settings; hide Home, Memory,
-   Workspace, Trust, Policy, Agent from top-level nav
+1. **Reduce nav to four tabs + Start** — Chat, News, CRM (setup-required stub), Settings; hide Home,
+   Memory, Workspace, Trust, Policy, Agent from top-level nav bar
+
 2. **Reduce intro/Start screen** — strip to: welcome text, one-line authority boundary, Start button,
-   Settings link; remove action shortcut buttons
-3. **Expand Settings** — add sections for memory, governance/trust, policy, agent/OpenClaw, diagnostics,
-   advanced/proof; all previously top-level pages render as Settings sub-sections
-4. **Add CRM stub** — read-only, setup-required placeholder; no write actions; Shopify read status if
-   configured
-5. **Remove live-help buttons** — no clear governed path
-6. **Remove policy create shortcut buttons** — misleading capability
-7. **Remove noisy quick-action chips** (chat_plan_goal, chat_build_page, analyze screen, most_blocked,
-   phase42 follow-up)
+   Settings link; remove `btn-intro-daily-brief`, `btn-intro-open-home`, `btn-intro-open-home-ready`,
+   `btn-intro-open-landing`
+
+3. **Expand Settings with sub-sections** (the largest step — break into sub-commits):
+   - 3a: Add Memory sub-section — surface btn-memory-* buttons inside Settings
+   - 3b: Add Governance / Trust sub-section — trust center as accordion inside Settings
+   - 3c: Add Policy sub-section — policy overview only; no creation shortcuts
+   - 3d: Add Agent / Advanced sub-section — agent refresh, bridge status
+   - 3e: Add Workspace / Project sub-section — board views
+   - 3f: Add Diagnostics sub-section — workflow, operational context, assistive, runtime refresh
+   - 3g: Remove `btn-settings-open-home`, reclassify `btn-settings-open-trust` and
+     `btn-settings-open-agent` as same-page section links, keep `btn-settings-open-intro`
+
+4. **Add CRM stub** — setup-required placeholder per Section 3 CRM Stub definition;
+   Shopify read status if configured; no write actions
+
+5. **Remove Chat-page News button cluster** — remove `btn-news`, `btn-news-summary`,
+   `btn-news-refresh`, `btn-news-expand`, `btn-news-search` from Chat; Chat renders news
+   results inline when user asks; add one "Open News" navigation chip if needed
+
+6. **Relocate Home chips to Chat** — move weather, calendar, system-status, show-threads,
+   memory-overview chips to Chat page chips; remove analyze-screen, most-blocked, tone-settings,
+   schedules, pattern-review, explain-this Home chips
+
+7. **Remove live-help buttons**, **policy create shortcut buttons**, and remaining noisy chips
+   (chat_plan_goal, chat_build_page, phase42 follow-up, policy create chips)
+
 8. **Collapse trust card expanded detail** — default "No action taken."; expand on click
 
 ### Files likely affected
