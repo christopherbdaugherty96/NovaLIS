@@ -394,7 +394,7 @@ inject text.
 | Chat | System status | "system status" | Yes | **KEEP** | Backend-backed |
 | Chat | Tone settings | "tone status" | Yes | **COLLAPSE** | Diagnostic; secondary |
 | Chat | Create analysis doc | "create analysis report on…" | Partial | **REMOVE** | Implies document creation beyond current scope |
-| Chat | Open analysis docs | "list analysis docs" | Partial | **COLLAPSE** | Secondary |
+| Chat | Open analysis docs | "list analysis docs" | Yes (Cap 54) | **COLLAPSE** | Lists real already-generated documents; only remaining path once Workspace folds into Settings |
 | News | Get headlines | "news" | Yes | **KEEP** | Core |
 | News | Source brief | "today's news" | Yes | **KEEP** | Core |
 | News | Daily brief | "daily brief" | Yes | **KEEP** | Core |
@@ -426,10 +426,12 @@ These appear after assistant responses and inject follow-up commands.
 |---|---|---|---|---|
 | "Follow-up analysis" | `phase42: follow up on this report…` | Partial | **REMOVE** | Internal command string visible to user; confusing |
 | "Expand", "Track story", "Compare" | Inject news follow-up commands | Yes | **KEEP** | Backend-backed news actions |
+| "Show topic map" | Injects "show topic map" after intel briefs | Yes (Cap 51) | **REMOVE or gate** | Cap 51 sends `topic_map` widget — no JS renderer; suggestion leads to unsupported widget fallback; remove until renderer exists |
 | "Copy" | Copies response text | Client-only | **KEEP** | Useful utility |
 | Suggested actions (derived) | Commands like "Today's brief", "3 bullet version" | Yes | **COLLAPSE** | Show one max; not the full set |
 | "Sources and confidence" | Shows search source detail | Yes | **KEEP** | Governance visibility |
 | "What matters most?", "Best next step" | Planning follow-ups | Yes | **COLLAPSE** | Secondary; one or zero per response |
+| "Second opinion" button (`#deepseek-btn`) | Permanent button in Chat input row; fires Cap 62 `external_reasoning_review` | Yes | **KEEP** | Always-visible, backend-backed, renders as enriched chat message with accuracy label |
 
 ---
 
@@ -445,6 +447,54 @@ These appear after assistant responses and inject follow-up commands.
 | `Confidence: …` badge | Responses | **KEEP** | Required for truthfulness |
 | `Evidence: …` / `Provider: …` / `Freshness: …` chips | Search widget | **COLLAPSE** | One-line summary visible; full detail behind expand |
 | Usage/route chips in chat | After responses | **COLLAPSE** | Debug info; collapse by default |
+
+---
+
+## Section 15 — Backend-Backed Widget Render Gaps
+
+These are not missing features. They are existing backend outputs that currently have no matching
+JavaScript render case. When the backend sends one of these widget types, the frontend dispatch
+falls to `renderUnsupportedWidgetEvent`. This was confirmed by cross-referencing all executor
+widget type emissions against the full JS dispatch table in `dashboard-chat-news.js`.
+
+Disposition decisions are required before live manual UI verification.
+
+| Widget type | Capability | Priority | Current symptom | Required disposition |
+|---|---|---|---|---|
+| `topic_map` | Cap 51 `topic_memory_map` | **High** | Cap 50 intel briefs inject "Show topic map" as a suggested action; clicking triggers Cap 51 which sends this widget → unsupported fallback | Remove "Show topic map" suggested action, OR add a renderer in the News flow |
+| `website_preview` | Cap 17 `open_website` | **High** | "open [url]" fires Cap 17 which classifies risk and emits this widget → unsupported fallback | Add a preview card renderer, OR remove the widget emit from Cap 17 and rely on the browser opening directly |
+| `story_tracker_update` / `story_tracker_view` | Cap 52/53 story tracker | **Medium** | "track story X" persists to disk and emits this widget → unsupported fallback | Remove "Track story" suggested actions for now, OR add a renderer in the News flow |
+| `shopify_intelligence_report` | Cap 65 Shopify intelligence | **Medium / CRM-blocking** | Any Shopify query fires Cap 65 which emits this widget → unsupported fallback | Must have a renderer before CRM stub can honestly list Shopify as available |
+
+### Fix vs defer guidance
+
+- `topic_map` — removing the "Show topic map" suggested action is a one-line config change and
+  the fastest safe option; add a renderer later under the News implementation
+- `website_preview` — either add a minimal renderer (domain + risk label + link) or strip the
+  widget emit from Cap 17 and open the browser directly via the existing confirmation flow
+- `story_tracker` — remove "Track story" suggested actions; defer renderer until a News story
+  tracking surface is designed
+- `shopify_intelligence_report` — must have a renderer before step 4 (CRM stub) is considered
+  done; a minimal Shopify card showing key metrics is sufficient
+
+---
+
+## Section 16 — Confirmed Non-Gaps
+
+The following were reviewed across three backend audit passes and are not dead render paths:
+
+| Item | Why not a gap |
+|---|---|
+| Cap 62 `external_reasoning_review` | Permanent `#deepseek-btn` "Second opinion" button in Chat input row; renders as enriched chat message |
+| `daily_brief` | Renders via `parseDailyBriefV2` from chat text; no standalone WS widget case needed |
+| `assistive_notices` | Sender in `working_context/assistive_noticing.py`; has JS case |
+| `operational_context` | Sender in `working_context/operational_remembrance.py`; has JS case |
+| `project_structure_map` | Sender in `utils/path_resolver.py`; has JS case |
+| `thread_map` | Sender in `working_context/project_threads.py`; has JS case |
+| `time_daily` / `time_weekly` | Internal policy trigger type strings; not sent as WS events |
+| `file` / `user_linked` | Internal data fields within executor results; not top-level WS events |
+| Token budget | Rendered via `token-budget-bar` element and `token_budget_update` WS case |
+| Provider policy | Rendered in `dashboard-control-center.js` settings section |
 
 ---
 
@@ -474,7 +524,14 @@ PR title: `ui: simplify dashboard to start plus core navigation`
 
 Implement in this order to limit blast radius:
 
-1. **Reduce nav to four tabs + Start** — Chat, News, CRM (setup-required stub), Settings; hide Home,
+1. **Dead-render disposition** — resolve each of the four widget render gaps before any nav change,
+   so live verification does not hit unsupported-widget fallbacks in normal use:
+   - Remove "Show topic map" suggested action (one-line config); defer `topic_map` renderer
+   - Add minimal `website_preview` renderer (domain + risk label + open link), or strip widget emit
+   - Remove "Track story" suggested actions; defer `story_tracker` renderer
+   - Add minimal `shopify_intelligence_report` card renderer (required before CRM stub step)
+
+2. **Reduce nav to four tabs + Start** — Chat, News, CRM (setup-required stub), Settings; hide Home,
    Memory, Workspace, Trust, Policy, Agent from top-level nav bar
 
 2. **Reduce intro/Start screen** — strip to: welcome text, one-line authority boundary, Start button,
@@ -529,14 +586,22 @@ python -m pytest nova_backend/tests/phase45/test_dashboard_event_replay_harness.
   nova_backend/tests/websocket/test_session_handler_proof_blockers.py \
   nova_backend/tests/phase45/test_non_search_widget_fuzzing.py -q
 
-Expected: 51 passed
+Expected: 51 passed (pre-simplification baseline)
+
+Note: if the implementation removes button IDs or JS strings that contract tests
+currently assert, those tests will fail by design, not by regression. Update
+assertions that reference removed elements; do not restore removed elements to
+make tests pass.
 ```
 
 ### Risks
 
 | Risk | Mitigation |
 |---|---|
-| Removing a button breaks a test assertion | Run full test suite before and after each removal batch |
+| Removing a button breaks a test assertion | Run suite before and after each removal batch; update assertions for intentional removals |
+| Dead-render fallback appears during verification | Resolve all four widget render gaps before live testing (Section 15) |
 | Collapse hides content the user actually needs | Start with clear-REMOVE items; review COLLAPSE list in PR |
+| Settings depth (10 sub-sections) feels cluttered | Group Governance+Policy as one "Governance" group; Agent+Workspace+Diagnostics as one "Advanced" group in the rendered UI |
 | `dashboard-config.js` chip removal breaks chip rendering | Chip renderer degrades safely if the list is shorter |
 | Frontend mirror drifts from backend | Mirror both `dashboard-chat-news.js` files in each commit |
+| CRM stub implies Shopify is ready before renderer exists | Step 1 (dead-render disposition) must complete the `shopify_intelligence_report` renderer before step 4 (CRM stub) ships |
