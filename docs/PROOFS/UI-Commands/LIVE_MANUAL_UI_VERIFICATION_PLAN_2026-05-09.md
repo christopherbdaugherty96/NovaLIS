@@ -1,12 +1,32 @@
 # Live Manual UI Verification Plan - 2026-05-09
 
-Status: planned / manual local verification only / results not yet recorded
+Status: **pre-simplification baseline / current UI only / results not yet recorded**
+
+## Framing
+
+```text
+PRE-SIMPLIFICATION BASELINE
+
+This plan tests the current 10-page dashboard as it exists before
+ui/simplify-dashboard-core-navigation is implemented.
+
+It is NOT a post-simplification proof plan.
+
+After the simplification implementation branch merges, a separate
+post-simplification verification plan must be created that tests:
+  Start / Chat / News / CRM / Settings
+and does NOT expect old standalone pages (page-trust, page-policy,
+page-home, page-workspace, page-agent) to exist at top-level navigation.
+
+Do not use this plan to validate the simplified UI. Create a new plan.
+```
 
 ## Classification
 
 ```text
 manual local proof
 operator-observed
+pre-simplification baseline only
 not Browser Use automation
 not automated browser proof
 not runtime authority expansion
@@ -14,13 +34,18 @@ not runtime authority expansion
 
 This plan covers direct local observation of the running dashboard after
 the deterministic proof infrastructure closeout. The operator starts Nova
-locally, opens the dashboard in a browser, and records observed behavior.
+locally, opens the dashboard in a browser, and records observed behavior
+against the **current** UI structure.
 
 No automated browser driver is used. No Browser Use capability is invoked.
 No new runtime authority is added. No features are changed to make checks pass.
 
 If a bug or discrepancy is found, it is logged as a finding in the results
 doc and addressed in a separate branch later.
+
+**Sections 5–10 of this plan test pages that will be folded into Settings or
+CRM by the simplification branch. Failures in those sections after simplification
+are expected, not regressions.**
 
 ## Prerequisites
 
