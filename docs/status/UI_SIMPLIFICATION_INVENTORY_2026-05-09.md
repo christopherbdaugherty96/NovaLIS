@@ -1,6 +1,38 @@
 # UI Simplification Inventory - 2026-05-09
 
-Status: draft inventory / no runtime changes in this branch
+Status: inventory / product-direction corrected 2026-05-09 / no runtime changes in this branch
+
+## Product Direction Correction (2026-05-09)
+
+The original inventory classified most pages as KEEP and the intro page as REMOVE.
+That was wrong for the product direction.
+
+The corrected target is:
+
+```text
+Start screen (Intro)
+↓
+Chat
+News
+CRM
+Settings
+```
+
+Everything else folds in:
+
+- Home → dissolve; useful status/morning pieces move into Chat or Settings
+- Memory → not top-level; exposed through Chat and Settings
+- Workspace → not top-level; business-facing pieces into CRM, diagnostics into Settings
+- Trust → not top-level; fold into Settings / Governance
+- Policy → not top-level; fold into Settings / Governance / Advanced
+- Agent → not top-level; fold into Settings / Advanced
+- CRM → new top-level; future-facing/read-only/setup-required
+
+CRM must be future-facing and read-only unless an exact governed backend capability
+exists. No CRM write actions. No Shopify writes. No email sends. No autonomous workflows.
+
+This changes the classification of navigation entries and intro page buttons below.
+All other section classifications remain valid.
 
 ## Purpose
 
@@ -65,23 +97,48 @@ These are the non-negotiable user-facing controls. Nothing here should change.
 
 ---
 
-## Section 3 — Navigation Tabs
+## Section 3 — Navigation: Target Product Hierarchy
 
-The nav bar is appropriate. All 10 pages have some backend-backed content.
-The issue is how full each page feels, not whether the tab exists.
+The corrected product hierarchy reduces top-level pages to four plus a Start screen.
+The current 10-tab structure is too wide and implies capabilities that are not top-level
+user goals.
 
-| Tab | Page | Backend-backed content? | Classification | Rationale |
-|---|---|---|---|---|
-| Chat | `page-chat` | Yes | **KEEP** | Primary page |
-| Home | `page-home` | Yes — system status, weather, calendar, threads | **KEEP** | Useful launch surface |
-| News | `page-news` | Yes — governed news/search | **KEEP** | Core feature |
-| Memory | `page-memory` | Yes — explicit memory store | **KEEP** | Core feature |
-| Workspace | `page-workspace` | Yes — thread/structure map | **KEEP** | Useful |
-| Trust | `page-trust` | Yes — trust/status surface | **KEEP** | Governance visibility |
-| Policy | `page-policy` | Partial — policy overview backend exists; creation is limited | **KEEP** (with note below) | Keep but clean up policy page action buttons |
-| Settings | `page-settings` | Yes — voice/runtime/connections | **KEEP** | Necessary |
-| Agent | `page-agent` | Partial — bridge status; limited live capability | **COLLAPSE** (into Settings or Trust) | Low user utility as a standalone tab; mostly duplicates Trust + Settings |
-| Intro | `page-intro` | Static onboarding content | **REMOVE** (or COLLAPSE to first-run only) | Not useful for ongoing sessions; should auto-dismiss after first use |
+### Target top-level pages
+
+| Page | Status | Notes |
+|---|---|---|
+| Start / Intro | **KEEP — new role** | Entry point; becomes a minimal welcome screen with one Start button and a Settings link |
+| Chat | **KEEP** | Primary page; unchanged |
+| News | **KEEP** | Core governed information feature; unchanged |
+| CRM | **ADD (future-facing)** | New page; read-only/setup-required; Shopify read status if configured; no writes |
+| Settings | **KEEP — expanded** | Absorbs governance, memory, voice, connections, policy, agent, diagnostics, advanced |
+
+### Pages folded out of top-level navigation
+
+| Current page | Disposition |
+|---|---|
+| Home (`page-home`) | Dissolve; morning/weather/status pieces move into Chat sidebar or Settings |
+| Memory (`page-memory`) | Not top-level; memory access through Chat (ask/remember) and Settings |
+| Workspace (`page-workspace`) | Not top-level; business-facing pieces into CRM; thread/structure into Settings / Advanced |
+| Trust (`page-trust`) | Not top-level; fold into Settings / Governance section |
+| Policy (`page-policy`) | Not top-level; fold into Settings / Governance / Advanced |
+| Agent (`page-agent`) | Not top-level; fold into Settings / Advanced |
+
+### Intro / Start screen buttons (corrected from Section 10)
+
+The intro page is **KEEP** — it becomes the Start screen, not a page to remove.
+Its buttons are reduced:
+
+| Button ID | Classification | Rationale |
+|---|---|---|
+| Start / enter-chat button | **KEEP** | One primary action: enter Chat |
+| `btn-intro-open-settings` | **KEEP** | Secondary link to Settings |
+| `btn-intro-open-connections` | **COLLAPSE** | Inline setup prompt is enough |
+| `btn-intro-daily-brief` | **REMOVE** | Specific action shortcut; not a launch button |
+| `btn-intro-open-home` | **REMOVE** | Home is not top-level |
+| `btn-intro-open-home-ready` | **REMOVE** | Same |
+| `btn-intro-open-landing` | **REMOVE** | Redundant |
+| `btn-intro-refresh-setup` | **COLLAPSE** | Surface inline; not a prominent button |
 
 ---
 
@@ -200,17 +257,10 @@ The issue is how full each page feels, not whether the tab exists.
 
 ---
 
-## Section 10 — Buttons: Intro Page
+## Section 10 — Buttons: Intro / Start Screen
 
-| Button ID | Label | Classification | Rationale |
-|---|---|---|---|
-| `btn-intro-daily-brief` | Daily brief | **REMOVE** (with intro page) | Part of page to remove/collapse |
-| `btn-intro-open-connections` | Connections | **REMOVE** (with intro page) | Same |
-| `btn-intro-open-home` | Open home | **REMOVE** (with intro page) | Same |
-| `btn-intro-open-home-ready` | Home ready | **REMOVE** (with intro page) | Same |
-| `btn-intro-open-landing` | Landing | **REMOVE** (with intro page) | Same |
-| `btn-intro-open-settings` | Settings | **REMOVE** (with intro page) | Same |
-| `btn-intro-refresh-setup` | Refresh setup | **REMOVE** (with intro page) | Same |
+**Corrected:** Intro page is KEEP as the Start screen (not REMOVE).
+See Section 3 for the corrected button-level classification.
 
 ---
 
@@ -317,17 +367,24 @@ These appear after assistant responses and inject follow-up commands.
 
 ## Recommended Implementation Order
 
-### Branch 2: `ui/simplify-dashboard-default-experience`
+### Branch 2: `ui/simplify-dashboard-core-navigation`
+
+PR title: `ui: simplify dashboard to start plus core navigation`
 
 Implement in this order to limit blast radius:
 
-1. **Remove intro page buttons** — lowest risk; intro page has no backend behavior
-2. **Remove live-help buttons** — no clear governed path
-3. **Remove policy create shortcut buttons** — misleading capability
-4. **Remove noisy quick-action chips** (chat_plan_goal, chat_build_page, analyze screen, most_blocked, phase42 follow-up)
-5. **Collapse trust center subsection buttons** — keep Refresh and Settings; put subsections behind expand
-6. **Collapse workflow/operational buttons** — move to a Diagnostics section
-7. **Collapse capability/operator health widgets** — keep on page but collapsed by default
+1. **Reduce nav to four tabs + Start** — Chat, News, CRM (setup-required stub), Settings; hide Home, Memory,
+   Workspace, Trust, Policy, Agent from top-level nav
+2. **Reduce intro/Start screen** — strip to: welcome text, one-line authority boundary, Start button,
+   Settings link; remove action shortcut buttons
+3. **Expand Settings** — add sections for memory, governance/trust, policy, agent/OpenClaw, diagnostics,
+   advanced/proof; all previously top-level pages render as Settings sub-sections
+4. **Add CRM stub** — read-only, setup-required placeholder; no write actions; Shopify read status if
+   configured
+5. **Remove live-help buttons** — no clear governed path
+6. **Remove policy create shortcut buttons** — misleading capability
+7. **Remove noisy quick-action chips** (chat_plan_goal, chat_build_page, analyze screen, most_blocked,
+   phase42 follow-up)
 8. **Collapse trust card expanded detail** — default "No action taken."; expand on click
 
 ### Files likely affected
