@@ -188,11 +188,13 @@ VOLUME_VALUE_RE = re.compile(r"^\s*volume\s+(?P<level>\d{1,3})\s*$", re.IGNORECA
 SET_BRIGHTNESS_RE = re.compile(r"^\s*set\s+(?:screen\s+)?brightness(?:\s+to)?\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 BRIGHTNESS_VALUE_RE = re.compile(r"^\s*brightness\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 WEATHER_RE = re.compile(
-    r"^\s*(?:weather|weather update|current weather|weather forecast|show me the weather|tell me the weather|how(?:'s| is) the weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|what(?:'s| is) (?:the )?weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|forecast(?: today| tomorrow)?)\s*$",
+    r"^\s*(?:weather|weather update|current weather|weather forecast|show me the weather|tell me the weather|how(?:'s| is) the weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|what(?:'s| is) (?:the )?weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|forecast(?: today| tomorrow)?"
+    r"|weather (?:this )?week|(?:this )?week(?:'s| s) weather|forecast for (?:the )?week|weekly (?:weather )?forecast|weather forecast for (?:the )?week|whats the weather|hows the weather)\s*$",
     re.IGNORECASE,
 )
 NEWS_RE = re.compile(
-    r"^\s*(?:news|headlines|(?:latest|current|recent|top)\s+headlines|latest news|top news|news update|catch me up on the news|what(?:'s| is) going on in the news|what(?:'s| is) (?:the )?news(?: today| now)?|what\s+are\s+(?:today'?s|the\s+latest|the\s+current|the\s+top)\s+headlines)\s*$",
+    r"^\s*(?:news|headlines|(?:latest|current|recent|top)\s+headlines|latest news|top news|news update|catch me up on the news|what(?:'s| is) going on in the news|what(?:'s| is) (?:the )?news(?: today| now)?|whats (?:the )?news(?: today| now)?|what\s+are\s+(?:today'?s|the\s+latest|the\s+current|the\s+top)\s+headlines"
+    r"|show me (?:the )?news|any news|any headlines|give me (?:the )?news|whats new|what's new|news today|today's news|today.?s headlines|got any news|pull up (?:the )?news)\s*$",
     re.IGNORECASE,
 )
 CALENDAR_RE = re.compile(
@@ -200,7 +202,8 @@ CALENDAR_RE = re.compile(
     re.IGNORECASE,
 )
 SYSTEM_RE = re.compile(
-    r"^\s*(?:system|system check|system status|how(?:'s| is) the system doing|how(?:'s| is) nova doing|what(?:'s| is) (?:the )?system status)\s*$",
+    r"^\s*(?:system|system check|system status|how(?:'s| is) the system doing|how(?:'s| is) nova doing|what(?:'s| is) (?:the )?system status"
+    r"|check (?:my )?system(?: status)?|os check|check (?:the )?system|system info|show (?:system|device) status|how(?:'s| is) (?:my )?system|device status)\s*$",
     re.IGNORECASE,
 )
 SCREEN_CAPTURE_RE = re.compile(
@@ -267,6 +270,10 @@ TOPIC_MAP_RE = re.compile(
     re.IGNORECASE,
 )
 TRACK_STORY_RE = re.compile(r"^\s*track\s+story\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
+STORY_TRACKER_SHORTHAND_RE = re.compile(
+    r"^\s*story\s+tracker\s*[:\-]\s*(?P<topic>.+?)\s*$",
+    re.IGNORECASE,
+)
 FOLLOW_STORY_RE = re.compile(r"^\s*(?:follow|keep\s+following)\s+(?:story\s+)?(?P<topic>.+?)\s*$", re.IGNORECASE)
 UPDATE_STORY_RE = re.compile(r"^\s*update\s+story\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
 SHOW_STORY_RE = re.compile(r"^\s*show\s+story\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
@@ -335,12 +342,12 @@ ORDINAL_WORD_TO_INDEX = {
 }
 VERIFY_RE = re.compile(
     r"^\s*(?:verify|double\s+check|fact\s*check|validate(?:\s+sources?)?)"
-    r"(?:\s+(?P<text>.+?))?\s*$",
+    r"(?:[\s:]+(?P<text>.+?))?\s*$",
     re.IGNORECASE,
 )
 SECOND_OPINION_RE = re.compile(
     r"^\s*(?:second\s+opinion|deepseek\s+second\s+opinion|review\s+this\s+answer|pressure\s*check)"
-    r"(?:\s+(?P<text>.+?))?\s*$",
+    r"(?:[\s:]+(?P<text>.+?))?\s*$",
     re.IGNORECASE,
 )
 DOC_CREATE_RE = re.compile(
@@ -364,6 +371,10 @@ DOC_LIST_RE = re.compile(
 )
 MEMORY_SAVE_FRIENDLY_RE = re.compile(
     r"^\s*(?:remember|save)\s+this(?:\s+in\s+memory)?\s*:\s*(?P<body>.+?)\s*$",
+    re.IGNORECASE,
+)
+MEMORY_SAVE_NATURAL_RE = re.compile(
+    r"^\s*remember\s+that\s+(?P<body>.+?)\s*$",
     re.IGNORECASE,
 )
 MEMORY_SAVE_RE = re.compile(
@@ -1114,6 +1125,10 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(52, {"action": "track", "topic": m.group("topic").strip()})
 
+        m = STORY_TRACKER_SHORTHAND_RE.match(t)
+        if m:
+            return _invocation_if_enabled(52, {"action": "track", "topic": m.group("topic").strip()})
+
         m = FOLLOW_STORY_RE.match(t)
         if m:
             return _invocation_if_enabled(52, {"action": "track", "topic": m.group("topic").strip()})
@@ -1209,6 +1224,19 @@ class GovernorMediator:
             return _invocation_if_enabled(61, {"action": "overview"})
 
         m = MEMORY_SAVE_FRIENDLY_RE.match(t)
+        if m:
+            body = m.group("body").strip()
+            title = body.split(":")[0].strip()[:80] or "Saved memory"
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "save",
+                    "title": title,
+                    "body": body,
+                },
+            )
+
+        m = MEMORY_SAVE_NATURAL_RE.match(t)
         if m:
             body = m.group("body").strip()
             title = body.split(":")[0].strip()[:80] or "Saved memory"

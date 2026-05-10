@@ -1578,37 +1578,36 @@ def _capability_help_message() -> str:
             connected_labels.append(str(item.get("label") or provider_id).strip())
 
     lines = [
-        "Nova Capabilities Right Now",
+        "Here's what Nova can do right now:",
         "",
-        "Here's what is actually live on this device right now:",
-        "- Local-first everyday help is ready: explain things, help with project work, save memory, open local folders, and check system status.",
-        "- Research and reporting: I can search the web, summarize headlines, build intelligence briefs, and create multi-source reports.",
-        "- Verification and review: I can verify an answer or run a governed second-opinion pass without turning that into action.",
-        "- Story tracking: I can follow a topic over time, refresh it, compare shifts, and show relationship views for tracked stories.",
-        "- Analysis and explanation: I can create analysis docs, explain a page or file, and help you understand what you're looking at.",
-        "- Screen help: I can capture the current screen on request, inspect it, and walk through what matters on it.",
-        "- Memory and continuity: I can save, list, edit, lock, defer, export, and reuse governed memory and project context.",
-        "- Local device help: I can open websites or allowed folders, read text aloud, and adjust volume, media, brightness, and system status.",
+        "- Everyday help: ask questions, get explanations, save notes, open folders, check system status.",
+        "- Search and research: search the web for current info, pull headlines, build topic reports.",
+        "- Double-check answers: I can verify a claim or get a second opinion on something — without taking action.",
+        "- Story tracking: follow a topic over time, see how it shifts, compare sources.",
+        "- Explanation: explain what something is, walk through a file or page, break down complex topics.",
+        "- Screen help: capture your screen on request and explain what's on it.",
+        "- Memory: save things I should remember, list what I know, and pick up where we left off.",
+        "- Device basics: open websites, read text aloud, adjust volume, media, and brightness.",
     ]
 
     if connected_labels:
-        lines.append(f"- Connected live sources: {', '.join(connected_labels)}.")
+        lines.append(f"- Connected right now: {', '.join(connected_labels)}.")
     else:
-        lines.append("- No live sources are connected yet, so I'll stay local-first until you add weather, news, calendar, or cloud reasoning in Settings.")
+        lines.append("- Weather, news, and calendar can be connected in Settings for a richer daily view.")
 
     if weather_live and calendar_live:
-        lines.append("- Best daily-use flow: I can give you a proper morning brief with weather, schedule, and headline context.")
+        lines.append("- With weather and calendar connected, I can do a full morning brief: weather, schedule, and headlines.")
     elif calendar_live:
-        lines.append("- Calendar is live, so I can answer things like today's schedule, tomorrow's schedule, and what's coming up.")
+        lines.append("- Calendar is connected — try: today's schedule, tomorrow, or what's coming up this week.")
     elif weather_live:
-        lines.append("- Weather is live, so I can give you forecast-aware check-ins and fold that into briefings.")
+        lines.append("- Weather is connected — try: what's the weather, today's forecast, or this week's weather.")
     elif news_live or brave_live:
-        lines.append("- News and search are live, so I can help with current events, topic research, and answer-first news summaries.")
+        lines.append("- News and search are live — try: latest news, search for X, or headlines.")
     else:
-        lines.append("- Even without extra connections, I'm still useful for explanation, writing, memory, project continuity, and local device help.")
+        lines.append("- Even without extra connections, I can explain things, help with projects, and keep track of what you're working on.")
 
     if openai_live:
-        lines.append("- Cloud reasoning is connected when you want it, but I still stay local-first by default.")
+        lines.append("- Cloud reasoning is available when you need it for harder problems.")
 
     lines.extend(
         [
