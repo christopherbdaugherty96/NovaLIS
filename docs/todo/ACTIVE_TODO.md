@@ -1,56 +1,81 @@
 # Active TODO - Nova
 
-## PRIORITY LOCK STATUS (2026-05-07)
+## PRIORITY LOCK STATUS (2026-05-10)
 
-Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-06_TRUST_REVIEW_CARD_MVP.md`
+Active priority lock:
 
-Updated: 2026-05-09 after the proof infrastructure closeout review.
+```text
+Everyday UX Friction + Live Daily Workflow Testing
+```
+
+Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-10_EVERYDAY_UX_FRICTION.md`
+
+Updated: 2026-05-10 after Cap 16 certification lock merged (PR #134).
 
 Most recently completed workstream:
 
 ```text
-Trust Review Card MVP / Visible Non-Action Receipt Surface
+Cap 16 governed_web_search certification lock
 ```
 
 Status:
 
 ```text
-merged / display-only / non-authorizing / follow-ups tracked
+LOCKED — P1–P5 passed / 60 tests / locked_date 2026-05-10
 ```
 
-Closeout review:
-
-```text
-docs/status/TRUST_REVIEW_CARD_MVP_CLOSEOUT_REVIEW_2026-05-07.md
-```
-
-Prior proof-lock closeout:
-
-```text
-docs/status/WEB_NEWS_UI_PROOF_LOCK_CLOSEOUT_REVIEW_2026-05-07.md
-```
-
-This lock permitted only proof scaffolding, proof artifacts, simulations, stress-test prompts, and audit work for existing governed information/reporting and visible UI/command surfaces.
-
-This is not an automation-expansion lock.
-
-PR #119 improved proof-library coverage.
-
-PR #121 reduced the contradiction and duplicate/split-topic proof gaps with deterministic tests and proof evidence.
-
-The stale/provider/credibility fixture pass reduced the stale-cache/provider-failure and source-credibility proof gaps.
-
-The dashboard stale/degraded rendering pass reduced the UI rendering gap for provider/freshness/source credibility metadata.
-
-The malformed widget / rapid-submit proof pass reduced the rapid-click/double-submit and unsupported widget gaps.
-
-The closeout review carries Browser Use screenshot/click-path proof, high-frequency browser event replay, broader visual UI proof, deeper widget-specific malformed payload fixtures, and timeline-drift fixtures forward as follow-up proof debt.
+PR #134 merged 2026-05-10.
 
 ---
 
+## Active TODO
+
+### PR 1 — docs/everyday-ux-friction-priority-lock (in progress)
+
+- [x] `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-10_EVERYDAY_UX_FRICTION.md`
+- [x] `docs/PROOFS/Everyday-UX/README.md`
+- [x] `docs/PROOFS/Everyday-UX/LIVE_DAILY_WORKFLOW_TEST_PLAN_2026-05-10.md`
+- [x] `.agent_context/current_priority.md` updated
+- [x] `docs/status/CURRENT_WORK_STATUS.md` updated
+- [x] `docs/todo/ACTIVE_TODO.md` updated
+
+### PR 2 — proof/everyday-ux-live-workflow-baseline (queued)
+
+Run 13 workflow scenarios against live Nova. Record prompt / expected / actual / UI state /
+friction / severity / proposed fix / boundary impact. No fixes in this branch.
+
+### PR 3 — docs/nova-conversation-response-contract (queued)
+
+Define response shapes for: normal answer, search result, clarification, blocked,
+setup-required, degraded, no result, confirmation-required, daily task help.
+
+### PR 4 — fix/everyday-ux-friction-slice-1 (queued)
+
+Small wording/label fixes only: clarification, blocked/setup-required, search framing,
+quick-action labels, dashboard helper text. No runtime routing changes.
+
+---
+
+## Queued / deferred
+
+```text
+ui/simplify-dashboard-core-navigation — needs own reviewed priority lock
+Cap 64 P5 — paused until own lock
+```
+
+---
+
+## Prior lock history (archive — 2026-05-07)
+
 ## Current Next TODO
 
-Await Browser Use visual capture recovery or next reviewed priority lock.
+Merge PR #135 if review passes, then begin:
+
+```text
+proof/everyday-ux-live-workflow-baseline
+```
+
+Run the 13 live workflow scenarios and record evidence. Do not make fixes in the baseline branch.
 
 Current recovery result:
 

@@ -3,42 +3,56 @@
 Current priority:
 
 ```text
-Awaiting reviewed priority lock — Cap 16 is complete and locked
+Everyday UX Friction + Live Daily Workflow Testing
 ```
 
 Status:
 
 ```text
-Cap 16 governed_web_search LOCKED 2026-05-10 (P1–P5 all pass, 60 tests)
-No active workstream. A new reviewed priority lock is required before the next branch begins.
+active — priority lock set 2026-05-10
 ```
 
-Cap 16 `governed_web_search` is fully certified and locked. All five phases passed:
-P1 unit (16), P2 routing (17), P3 integration (19), P4 API (8), P5 live (FastAPI TestClient
-with real BRAVE_API_KEY and real governor spine — basic search, natural phrasing, clarification
-flow, and ledger events all verified). Lock applied 2026-05-10.
+Priority lock: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-10_EVERYDAY_UX_FRICTION.md`
+
+Test plan: `docs/PROOFS/Everyday-UX/LIVE_DAILY_WORKFLOW_TEST_PLAN_2026-05-10.md`
+
+The question driving this workstream:
+
+```text
+Can a normal person use Nova every day without confusion?
+```
+
+Cap 16 `governed_web_search` is certified and locked (2026-05-10, P1–P5, 60 tests). This
+workstream was selected from a clean base after Cap 16 locked (no open PRs at selection time).
 
 ---
 
-## Queued / planned (not active)
-
-UI simplification inventory is complete and queued for a future implementation branch.
-It does not become the active priority until a new reviewed priority lock authorizes the switch.
+## Planned branch sequence
 
 ```text
-Inventory branch: docs/ui-simplification-inventory (merged via PR #133)
-Future implementation branch (queued): ui/simplify-dashboard-core-navigation
-Target: Start + Chat / News / CRM / Settings
+PR 1 (active): docs/everyday-ux-friction-priority-lock — priority lock + test plan (docs-only)
+PR 2:          proof/everyday-ux-live-workflow-baseline — live baseline evidence
+PR 3:          docs/nova-conversation-response-contract — response shape contract
+PR 4:          fix/everyday-ux-friction-slice-1 — first small implementation slice
 ```
 
-Do not begin ui/simplify-dashboard-core-navigation without a reviewed priority lock.
+---
+
+## Queued / planned (not active without their own lock)
+
+```text
+ui/simplify-dashboard-core-navigation — queued UI implementation (needs own lock)
+Cap 64 P5 — paused (needs own lock)
+```
+
+Do not begin either without a reviewed priority lock for that specific branch.
 
 ---
 
 ## Completed recent branches
 
 ```text
-proof/cap-16-certification-lock       — Cap 16 governed_web_search LOCKED (P1–P5)
+proof/cap-16-certification-lock       — Cap 16 governed_web_search LOCKED (P1–P5) — 2026-05-10
 docs/ui-simplification-inventory      — docs-only / queued UI inventory
 docs/proof-infrastructure-closeout-review
 test/non-search-widget-fuzzing
