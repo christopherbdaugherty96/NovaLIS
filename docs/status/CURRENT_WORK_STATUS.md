@@ -1,6 +1,6 @@
 # Nova Current Work Status
 
-Last reviewed: 2026-05-09 (proof infrastructure closeout review)
+Last reviewed: 2026-05-10 (Everyday UX Friction priority lock selected)
 
 This is a human-maintained continuity note for the current development slice.
 
@@ -10,7 +10,29 @@ Generated runtime docs and actual code win if they conflict with this note.
 
 ---
 
-## Priority Lock Status (2026-05-06)
+## Priority Lock Status (2026-05-10)
+
+Active priority lock:
+
+```text
+Everyday UX Friction + Live Daily Workflow Testing
+```
+
+Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-10_EVERYDAY_UX_FRICTION.md`
+
+Test plan: `docs/PROOFS/Everyday-UX/LIVE_DAILY_WORKFLOW_TEST_PLAN_2026-05-10.md`
+
+Most recently completed priority:
+
+```text
+Cap 16 governed_web_search certification lock
+```
+
+Closeout: PR #134 merged 2026-05-10. Cap 16 is locked (P1–P5, 60 tests, locked_date 2026-05-10).
+
+---
+
+## Priority Lock Status (archive — 2026-05-06)
 
 Most recently active priority lock:
 
