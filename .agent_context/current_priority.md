@@ -22,8 +22,8 @@ The question driving this workstream:
 Can a normal person use Nova every day without confusion?
 ```
 
-Cap 16 `governed_web_search` is certified and locked (2026-05-10, P1–P5, 60 tests). No open
-PRs. This workstream selects the next active priority on a clean base.
+Cap 16 `governed_web_search` is certified and locked (2026-05-10, P1–P5, 60 tests). This
+workstream was selected from a clean base after Cap 16 locked (no open PRs at selection time).
 
 ---
 
