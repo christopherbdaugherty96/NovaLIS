@@ -328,9 +328,9 @@ Say 'open website my email' or 'open file my email'.
 
 | Field | Value |
 |---|---|
-| friction | Wrong routing — email request routes to URL/file clarification instead of setup-required |
+| friction | Wrong routing — email request routes to URL/file clarification instead of an honest "not supported" message |
 | severity | **high** — confusing and sends user in the wrong direction |
-| proposed fix | Add "open my email", "check email", "email" as setup-required triggers for email capability. Response: "Email isn't connected yet. You can set it up in Settings." |
+| proposed fix | Add "open my email", "check email", "email inbox" as recognized phrases that return an honest capability boundary response. Nova's email capability (Cap 64) is `mailto:` draft only — no inbox access exists, and there is no setup path that enables it. Response should say: "I can help draft an email, but I can't access your inbox. Want me to draft one?" — not "set it up in Settings." |
 | boundary impact | Routing (SessionRouter or GovernorMediator) — runtime |
 
 ---
@@ -511,7 +511,7 @@ Fixes should be sequenced by: (1) highest severity, (2) smallest blast radius.
 **Round 2 — routing additions (keep change small):**
 
 6. Add "show me the news", "any news", "whats new" as news routing triggers
-7. Add "open my email", "check email" as email setup-required triggers
+7. Add "open my email", "check email", "email inbox" as recognized phrases → honest capability-boundary response ("I can draft emails but can't access your inbox")
 8. Add "what should I do today", "help me figure out my day" as daily-help triggers (not search)
 9. Add "idk", "idk what to do" as clarification triggers
 
