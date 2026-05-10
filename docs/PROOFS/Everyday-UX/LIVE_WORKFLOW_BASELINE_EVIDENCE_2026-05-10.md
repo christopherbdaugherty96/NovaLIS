@@ -528,3 +528,119 @@ None of the Round 1 or Round 2 fixes above add capabilities, expand OpenClaw, ad
 browser/computer-use, add external writes, or create autonomous workflows. They are
 wording changes and routing additions only. Round 3 items require investigation
 before any code change is made.
+
+---
+
+## Capability workflow test — live results against all 27 enabled caps
+
+**Date:** 2026-05-10  
+**Method:** Each capability tested in its own isolated WebSocket session via TestClient.
+Additional chained-session test run to capture workflow-level issues.
+
+### Result by capability
+
+| Cap | Name | Prompt used | Result | Notes |
+|---|---|---|---|---|
+| 16 | governed_web_search | `search nvidia news` | ✅ works | Real Brave results, sources listed |
+| 17 | open_website | `open google.com` | ✅ works | Asks confirmation before opening |
+| 18 | speak_text | not tested | — | — |
+| 19 | volume_up_down | not tested | — | — |
+| 20 | media_play_pause | not tested | — | — |
+| 21 | brightness_control | not tested | — | — |
+| 22 | open_file_folder | not tested | — | — |
+| 31 | response_verification | `verify this: the earth orbits the sun` | ✅ works | Confidence score, potential issues, structured report |
+| 31 | response_verification | `second opinion: is python better than JS` | ❌ misroutes | LLM acknowledges but doesn't verify |
+| 32 | os_diagnostics | `check my system status` | ❌ misroutes | Falls back to "I didn't quite get that" |
+| 32 | os_diagnostics | `os check` | ⚠️ partial | Routes but asks vague clarifying question |
+| 48 | multi_source_reporting | `build me a report on openai from multiple sources` | ⚠️ partial | Acknowledges ("I'm digging in") — no report delivered |
+| 49 | headline_summary | `summarize the top headlines` | ⚠️ blocked | Returns "no headline context loaded" — requires prior news call (not discoverable) |
+| 49 | headline_summary | `summarize all headlines` (after `headlines`) | ✅ works | Must be two-step: load news first |
+| 50 | intelligence_brief | `intelligence brief on the global AI chip supply` | ❌ timeout | "The request took too long and was cancelled." — Ollama CPU budget exceeded |
+| 51 | topic_memory_map | not tested | — | — |
+| 52 | story_tracker_update | `story tracker: AI regulation` | ❌ misroutes | LLM responds conversationally, no tracker action |
+| 53 | story_tracker_view | not tested | — | — |
+| 54 | analysis_document | not tested | — | — |
+| 55 | weather_snapshot | `what's the weather today` | ✅ works | Real weather, location, forecast, follow-up suggestions |
+| 55 | weather_snapshot | `what is the weather forecast for the week` | ❌ misroutes | Routes to Brave web search instead of weather cap |
+| 56 | news_snapshot | `headlines` | ✅ works | Loads 5 sources, theme, top story |
+| 56 | news_snapshot | `show me the news` | ❌ misroutes | Fallback message (as noted in S5) |
+| 57 | calendar_snapshot | not tested | — | — |
+| 58 | screen_capture | not tested | — | — |
+| 59 | screen_analysis | not tested | — | — |
+| 60 | explain_anything | `explain what bitcoin is` | ✅ works | Clear plain-English explanation |
+| 60 | explain_anything | `explain large language models simply` | ❌ misroutes | Fails when "explain" comes first without "what" |
+| 61 | memory_governance | `save this: I need to call the vendor tomorrow` | ✅ works | Memory ID, tier, scope, try-next suggestions |
+| 61 | memory_governance | `remember I am researching AI chips` | ⚠️ partial | Saves but response only says "Got it. Thinking about AI chips?" — no memory ID or confirmation |
+| 61 | memory_governance | `recent memories` | ✅ works | Shows memory list with ID and content |
+| 62 | external_reasoning_review | not tested | — | — |
+| 63 | openclaw_execute | not tested | — | — |
+| 64 | send_email_draft | `draft an email to my team: subject AI chip update, say we are researching options` | ⚠️ partial | Asks "What should the email draft be about?" despite full content in prompt. Then honestly states it cannot send. |
+| 65 | shopify_intelligence_report | not tested | — | — |
+
+### Workflow-level findings (chained session)
+
+A chained 8-step session (weather → news → search → brief → syscheck → explain → remember → email)
+revealed a **response-shift contamination** pattern:
+
+- When one step returns empty or fails fast (e.g., syscheck returning nothing), the `chat_done`
+  that ends that step is consumed by the next step's collection loop
+- The next step then collects the stale response from the *previous* step
+- Effect: responses shift by 1–2 steps downstream in a chained session
+
+This is a session/WebSocket protocol issue. It does not affect isolated sessions.
+
+```
+friction: chained sessions produce shifted responses when a step returns empty or times out fast
+severity: high — workflow use is broken when capabilities fail mid-chain
+proposed fix: ensure every governed invocation emits at least one chat message before chat_done,
+even on failure; this prevents empty-response shifts
+boundary impact: WebSocket/session handler — runtime
+```
+
+### Summary: capability usability by category
+
+**Works reliably with natural phrasing (7 caps):**
+- Cap 16: web search (`search X`, `search for X`)
+- Cap 17: open website (`open X.com`)
+- Cap 31: verify (`verify this: X`)
+- Cap 55: weather (`what's the weather`)
+- Cap 56: news (`headlines`, `news`, `top news`)
+- Cap 60: explain (`explain what X is`)
+- Cap 61: memory save (`save this: X`) and view (`recent memories`)
+
+**Works but phrasing-sensitive — easy to miss (4 caps):**
+- Cap 31: verify — `verify this:` works, `second opinion:` does not
+- Cap 49: headline summary — requires prior news load; no discovery path
+- Cap 55: weather — `what's the weather` works; `weather forecast for the week` routes to search
+- Cap 60: explain — `explain what X is` works; `explain X simply` does not
+- Cap 61: memory — `save this:` gives full confirmation; `remember X` gives vague acknowledgment
+- Cap 64: email draft — starts but asks redundant clarification when content already provided
+
+**Fails or times out in live environment (3 caps):**
+- Cap 32: os_diagnostics — common phrases don't route; partial route gives unhelpful response
+- Cap 50: intelligence_brief — CPU budget exceeded consistently
+- Cap 52: story_tracker — routing doesn't fire for natural phrasing
+
+**Not verified (13 caps):**
+speak_text, volume_up_down, media_play_pause, brightness_control, open_file_folder,
+topic_memory_map, story_tracker_view, analysis_document, calendar_snapshot,
+screen_capture, screen_analysis, external_reasoning_review, openclaw_execute,
+shopify_intelligence_report
+
+### Additional findings to add to fix list
+
+**Round 2 additions:**
+
+- Add `second opinion: X` as a routing alias for `verify this: X` (Cap 31)
+- Add `system check`, `check my system`, `system status` as os_diagnostics triggers (Cap 32)
+- Add `weather this week`, `forecast for the week` as weather triggers (Cap 55) — not search
+- Add `story tracker:` as a story tracker trigger (Cap 52)
+- Fix `explain X` routing to not require `what` — `explain X simply` should also route to Cap 60
+- Fix `remember X` to emit a memory ID confirmation same as `save this: X`
+- Fix email draft to not ask for content when content was already in the prompt
+
+**Round 3 (investigate before fixing):**
+
+- Chained-session response shift (empty step causes downstream response contamination)
+- Cap 50 intelligence_brief CPU budget timeouts — Ollama too slow for this cap's synthesis load
+- Cap 48 multi_source_reporting — starts but produces no output; may share the CPU issue
