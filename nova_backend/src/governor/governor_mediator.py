@@ -124,6 +124,8 @@ def _normalize_spoken_request(text: str) -> str:
         str(text or ""),
         flags=re.IGNORECASE,
     )
+    # Also strip standalone "nova" at the start (e.g. "nova show me the news")
+    normalized = re.sub(r"^\s*nova\b[\s,.\-!?:;]*", "", normalized, flags=re.IGNORECASE)
     normalized = re.sub(r"^\s*(?:can|could|would|will|do)\s+you\s+", "", normalized, flags=re.IGNORECASE)
     normalized = re.sub(r"^\s*please\s+", "", normalized, flags=re.IGNORECASE)
     normalized = re.sub(r"\s+please\s*$", "", normalized, flags=re.IGNORECASE)
@@ -190,13 +192,18 @@ GO_TO_SITE_RE = re.compile(
     r"^\s*go\s+to\s+(?!(?:the\s+)?(?:website|site|webpage)\s)(?P<target>[A-Za-z0-9][A-Za-z0-9._\-]{1,64})\s*$",
     re.IGNORECASE,
 )
+GO_TO_FOLDER_RE = re.compile(
+    r"^\s*go\s+to\s+(?:my\s+)?(?P<folder>documents|downloads|desktop|pictures)(?:\s+folder)?\s*$",
+    re.IGNORECASE,
+)
 OPEN_FILE_RE = re.compile(r"^\s*open\s+(?:file|document)\s+(?P<path>.+?)\s*$", re.IGNORECASE)
 SET_VOLUME_RE = re.compile(r"^\s*set\s+volume(?:\s+to)?\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 VOLUME_VALUE_RE = re.compile(r"^\s*volume\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 SET_BRIGHTNESS_RE = re.compile(r"^\s*set\s+(?:screen\s+)?brightness(?:\s+to)?\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 BRIGHTNESS_VALUE_RE = re.compile(r"^\s*brightness\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 WEATHER_RE = re.compile(
-    r"^\s*(?:weather|weather update|current weather|weather forecast|show me the weather|tell me the weather|how(?:'s| is) the weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|what(?:'s| is) (?:the )?weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|forecast(?: today| tomorrow)?"
+    r"^\s*(?:weather|weather update|current weather|weather forecast|show me the weather|tell me the weather|check (?:the )?weather|check weather"
+    r"|how(?:'s| is) the weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|what(?:'s| is) (?:the )?weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|forecast(?: today| tomorrow)?"
     r"|weather (?:this )?week|(?:this )?week(?:'s| s) weather|forecast for (?:the )?week|weekly (?:weather )?forecast|weather forecast for (?:the )?week|whats the weather|hows the weather"
     r"|(?:is it|will it) (?:going to )?rain(?: today| tomorrow| this week)?"
     r"|(?:will|is) there (?:be )?rain(?: today| tomorrow)?"
@@ -216,7 +223,8 @@ CALENDAR_RE = re.compile(
 SYSTEM_RE = re.compile(
     r"^\s*(?:system|system check|system status|how(?:'s| is) the system doing|how(?:'s| is) nova doing|what(?:'s| is) (?:the |my )?system status"
     r"|check (?:my )?system(?: status)?|os check|check (?:the )?system|system info|show (?:system|device) status|how(?:'s| is) (?:my )?system|device status"
-    r"|how am i doing|how(?:'s| is) everything|whats my system status|what(?:'s| is) my system status)\s*$",
+    r"|how am i doing|how(?:'s| is) everything|whats my system status|what(?:'s| is) my system status"
+    r"|is nova running|is everything (?:ok|okay|working|fine)|everything ok|status check)\s*$",
     re.IGNORECASE,
 )
 SCREEN_CAPTURE_RE = re.compile(
@@ -396,6 +404,10 @@ MEMORY_NOTE_RE = re.compile(
 )
 MEMORY_I_NEED_REMEMBER_RE = re.compile(
     r"^\s*i\s+(?:need|want)\s+to\s+remember\s+(?:that\s+)?(?P<body>.+?)\s*$",
+    re.IGNORECASE,
+)
+MEMORY_SAVE_LATER_RE = re.compile(
+    r"^\s*(?:save\s+(?:this|that)\s+for\s+later|write\s+(?:this|that)\s+down|log\s+(?:this|that))\s*[:\-]\s*(?P<body>.+?)\s*$",
     re.IGNORECASE,
 )
 MEMORY_SAVE_RE = re.compile(
@@ -967,7 +979,7 @@ class GovernorMediator:
         if DOC_LIST_RE.match(t):
             return _invocation_if_enabled(54, {"action": "list"})
 
-        m = OPEN_FOLDER_RE.match(t) or OPEN_FOLDER_FRIENDLY_RE.match(t) or SHOW_FOLDER_RE.match(t)
+        m = OPEN_FOLDER_RE.match(t) or OPEN_FOLDER_FRIENDLY_RE.match(t) or SHOW_FOLDER_RE.match(t) or GO_TO_FOLDER_RE.match(t)
         if m:
             return _invocation_if_enabled(22, {"target": m.group("folder").strip().lower()})
 
@@ -1035,9 +1047,9 @@ class GovernorMediator:
         if re.match(r"^\s*(speak that|read that|say it|read this out loud|say this out loud|read that to me)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(18, {})
 
-        if re.match(r"^\s*(?:volume\s+up|turn(?: the)? volume up|make it louder|make the volume louder)\s*$", t, re.IGNORECASE):
+        if re.match(r"^\s*(?:volume\s+up|turn(?: the)? volume up|make it louder|make the volume louder|louder|too quiet|it(?:'s| is) too quiet)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(19, {"action": "up"})
-        if re.match(r"^\s*(?:volume\s+down|turn(?: the)? volume down|make it quieter|make the volume quieter|make it softer)\s*$", t, re.IGNORECASE):
+        if re.match(r"^\s*(?:volume\s+down|turn(?: the)? volume down|make it quieter|make the volume quieter|make it softer|quieter|lower (?:the )?volume|too loud|it(?:'s| is) too loud)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(19, {"action": "down"})
         if re.match(r"^\s*(?:mute|mute volume|volume mute)\s*$", t, re.IGNORECASE):
             if not _platform_supports_volume_action("mute"):
@@ -1090,6 +1102,10 @@ class GovernorMediator:
                     message="Explicit play, pause, and resume are not available on this device yet.",
                 )
             return _invocation_if_enabled(20, {"action": t.lower()})
+
+        if re.match(r"^\s*(?:stop|pause)\s+(?:the\s+)?(?:music|song|playback|audio)\s*$", t, re.IGNORECASE):
+            if _platform_supports_media_action("pause"):
+                return _invocation_if_enabled(20, {"action": "pause"})
 
         if INTEL_BRIEF_RE.match(t):
             return _invocation_if_enabled(50, {})
@@ -1293,6 +1309,19 @@ class GovernorMediator:
         if m:
             body = m.group("body").strip()
             title = body.split(":")[0].strip()[:80] or "Saved memory"
+            return _invocation_if_enabled(
+                61,
+                {
+                    "action": "save",
+                    "title": title,
+                    "body": body,
+                },
+            )
+
+        m = MEMORY_SAVE_LATER_RE.match(t)
+        if m:
+            body = m.group("body").strip()
+            title = body.split(":")[0].strip()[:80] or "Note"
             return _invocation_if_enabled(
                 61,
                 {
