@@ -35,15 +35,19 @@ test/dashboard-event-replay-harness
 Next branch:
 
 ```text
-ui/simplify-dashboard-default-experience
+ui/simplify-dashboard-core-navigation
 ```
 
 Near-term focus:
 
-1. UI simplification inventory is complete. 86 buttons classified: ~55 KEEP / ~30 COLLAPSE / ~18 REMOVE.
-2. Next: implement inventory decisions in ui/simplify-dashboard-default-experience.
-3. After implementation: proof/live-manual-ui-verification — operator walks simplified UI and records results.
-4. Preserve no-authority boundaries: no new capability, no OpenClaw expansion, no browser/computer-use capability, no external writes, no autonomous workflows, no direct Cap 63 shortcut.
+1. UI simplification inventory is complete and product-direction corrected.
+2. Target: Start + Chat + News + CRM + Settings. Home/Memory/Workspace/Trust/Policy/Agent fold out of
+   top-level nav.
+3. CRM is future-facing/read-only/setup-required — no write actions.
+4. Next: implement in ui/simplify-dashboard-core-navigation.
+5. After implementation: proof/live-manual-ui-verification — operator walks simplified UI and records results.
+6. Preserve no-authority boundaries: no new capability, no OpenClaw expansion, no browser/computer-use
+   capability, no external writes, no autonomous workflows, no direct Cap 63 shortcut.
 
 Do not jump to Cap 64 P5, Shopify write work, OpenClaw browser automation, broad advanced features, scheduler/installer work, external-write workflows, richer receipt work, or browser/computer-use expansion.
 
