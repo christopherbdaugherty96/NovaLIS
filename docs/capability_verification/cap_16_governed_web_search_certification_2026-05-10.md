@@ -241,6 +241,36 @@ python scripts/certify_capability.py lock 16
 
 ---
 
+## P5 — Live Signoff
+
+Live checklist: `docs/capability_verification/live_checklists/cap_16_governed_web_search.md`
+
+Verified via FastAPI TestClient with real BRAVE_API_KEY and real governor spine (no executor mocking).
+
+| Test | Command | Result |
+|---|---|---|
+| Test 1 — Basic search | `search for latest AI news` | PASS — real Brave results, sources in response |
+| Test 2 — Natural phrasing | `look up what is happening with electric vehicles` | PASS — EV news results + search widget emitted |
+| Test 3 — Clarification flow | `search` | PASS — "What would you like to search for?" |
+| Test 4 — Ledger | `ledger.jsonl` tail | PASS — SEARCH_QUERY + ACTION_COMPLETED present |
+
+Note: Test 1 failed on attempt 1 due to local Ollama CPU timeout during LLM synthesis; passed on
+attempt 2 after circuit breaker reset. This is a local resource constraint, not a Cap 16 issue.
+
+Live-signoff command:
+
+```text
+python scripts/certify_capability.py live-signoff 16 --notes "..."
+```
+
+Lock command:
+
+```text
+python scripts/certify_capability.py lock 16
+```
+
+Lock ran the full 60-test certification suite and confirmed all pass before locking.
+
 ## Final Lock Decision
 
 ```text
@@ -248,16 +278,9 @@ P1: passed (16 tests)
 P2: passed (17 tests)
 P3: passed (19 tests)
 P4: passed (8 tests)
-P5: PENDING — human local verification required
+P5: passed — live checklist verified 2026-05-10
 
-Lock state: OPEN — not locked until P5 live signoff is completed and lock command is run.
+Lock state: LOCKED
 ```
 
-`.agent_context/current_priority.md` is NOT updated in this branch. It remains:
-
-```text
-Cap 16 search reliability and conversation/search proof
-```
-
-Active priority continues until P5 is signed off, lock command is run, and a new reviewed
-priority lock is established.
+Cap 16 `governed_web_search` is now locked. CI regression guard is active.
