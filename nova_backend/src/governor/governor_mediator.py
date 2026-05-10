@@ -224,7 +224,8 @@ SYSTEM_RE = re.compile(
     r"^\s*(?:system|system check|system status|how(?:'s| is) the system doing|how(?:'s| is) nova doing|what(?:'s| is) (?:the |my )?system status"
     r"|check (?:my )?system(?: status)?|os check|check (?:the )?system|system info|show (?:system|device) status|how(?:'s| is) (?:my )?system|device status"
     r"|how am i doing|how(?:'s| is) everything|whats my system status|what(?:'s| is) my system status"
-    r"|is nova running|is everything (?:ok|okay|working|fine)|everything ok|status check)\s*$",
+    r"|is nova running|is everything (?:ok|okay|working|fine)|everything ok|status check"
+    r"|check disk space|how much storage|disk space|storage space|free space|storage usage)\s*$",
     re.IGNORECASE,
 )
 SCREEN_CAPTURE_RE = re.compile(
@@ -290,7 +291,10 @@ TOPIC_MAP_RE = re.compile(
     r"^\s*(?:show|open|view)?\s*(?:the\s+)?topic(?:\s+memory)?\s+map\s*$",
     re.IGNORECASE,
 )
-TRACK_STORY_RE = re.compile(r"^\s*track\s+story\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
+TRACK_STORY_RE = re.compile(
+    r"^\s*(?:track\s+story\s+(?P<topic1>.+?)|track\s+(?:the\s+)?(?P<topic2>.+?)\s+story)\s*$",
+    re.IGNORECASE,
+)
 STORY_TRACKER_SHORTHAND_RE = re.compile(
     r"^\s*story\s+tracker\s*[:\-]\s*(?P<topic>.+?)\s*$",
     re.IGNORECASE,
@@ -447,7 +451,8 @@ MEMORY_SEARCH_RE = re.compile(
     re.IGNORECASE,
 )
 MEMORY_RECALL_FRIENDLY_RE = re.compile(
-    r"^\s*(?:what\s+do\s+you\s+remember|show\s+what\s+you\s+remember|what(?:'s| is)\s+in\s+(?:my\s+)?memory)\s*$",
+    r"^\s*(?:what\s+do\s+you\s+remember(?:\s+about\s+me)?|show\s+(?:me\s+)?what\s+you\s+(?:remember|know)(?:\s+about\s+me)?|what(?:'s| is)\s+in\s+(?:my\s+)?memory"
+    r"|recall\s+(?:my\s+)?(?:notes?|memories|memory)|show\s+me\s+my\s+(?:notes?|memories)|what\s+have\s+you\s+(?:saved|stored))\s*$",
     re.IGNORECASE,
 )
 MEMORY_SHOW_FRIENDLY_RE = re.compile(
@@ -1079,13 +1084,13 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(19, {"action": "set", "level": int(m.group("level"))})
 
-        if re.match(r"^\s*(?:brightness\s+up|turn(?: the)? brightness up|make(?: the screen)? brighter)\s*$", t, re.IGNORECASE):
+        if re.match(r"^\s*(?:brightness\s+up|turn(?: the)? brightness up|make(?: (?:the\s+)?screen)? brighter|screen\s+brighter|brighter)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(21, {"action": "up"})
-        if re.match(r"^\s*(?:brightness\s+down|turn(?: the)? brightness down|make(?: the screen)? dimmer)\s*$", t, re.IGNORECASE):
+        if re.match(r"^\s*(?:brightness\s+down|turn(?: the)? brightness down|make(?: (?:the\s+)?screen)? dimmer|screen\s+(?:brightness\s+)?down|dim\s+(?:the\s+)?screen|screen\s+dimmer)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(21, {"action": "down"})
-        if re.match(r"^\s*(?:increase|raise)\s+brightness\s*$", t, re.IGNORECASE):
+        if re.match(r"^\s*(?:increase|raise)\s+(?:screen\s+)?brightness\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(21, {"action": "up"})
-        if re.match(r"^\s*(?:decrease|lower|dim)\s+brightness\s*$", t, re.IGNORECASE):
+        if re.match(r"^\s*(?:decrease|lower|dim)\s+(?:screen\s+)?brightness\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(21, {"action": "down"})
 
         m = SET_BRIGHTNESS_RE.match(t)
@@ -1166,7 +1171,8 @@ class GovernorMediator:
 
         m = TRACK_STORY_RE.match(t)
         if m:
-            return _invocation_if_enabled(52, {"action": "track", "topic": m.group("topic").strip()})
+            topic = (m.group("topic1") or m.group("topic2") or "").strip()
+            return _invocation_if_enabled(52, {"action": "track", "topic": topic})
 
         m = STORY_TRACKER_SHORTHAND_RE.match(t)
         if m:
