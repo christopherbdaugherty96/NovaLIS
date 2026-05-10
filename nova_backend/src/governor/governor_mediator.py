@@ -193,11 +193,14 @@ GO_TO_SITE_RE = re.compile(
     re.IGNORECASE,
 )
 GO_TO_FOLDER_RE = re.compile(
-    r"^\s*go\s+to\s+(?:my\s+)?(?P<folder>documents|downloads|desktop|pictures)(?:\s+folder)?\s*$",
+    r"^\s*(?:go\s+to|take\s+me\s+to|bring\s+up)\s+(?:my\s+)?(?P<folder>documents|downloads|desktop|pictures)(?:\s+folder)?\s*$",
     re.IGNORECASE,
 )
 OPEN_FILE_RE = re.compile(r"^\s*open\s+(?:file|document)\s+(?P<path>.+?)\s*$", re.IGNORECASE)
-SET_VOLUME_RE = re.compile(r"^\s*set\s+volume(?:\s+to)?\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
+SET_VOLUME_RE = re.compile(
+    r"^\s*(?:set\s+(?:the\s+)?volume(?:\s+to)?|turn\s+(?:the\s+)?volume\s+to|volume\s+(?:to|at))\s+(?P<level>\d{1,3})(?:\s*%|(?:\s+percent))?\s*$",
+    re.IGNORECASE,
+)
 VOLUME_VALUE_RE = re.compile(r"^\s*volume\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 SET_BRIGHTNESS_RE = re.compile(r"^\s*set\s+(?:screen\s+)?brightness(?:\s+to)?\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 BRIGHTNESS_VALUE_RE = re.compile(r"^\s*brightness\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
@@ -228,7 +231,8 @@ SYSTEM_RE = re.compile(
     r"|check (?:my )?system(?: status)?|os check|check (?:the )?system|system info|show (?:system|device) status|how(?:'s| is) (?:my )?system|device status"
     r"|how am i doing|how(?:'s| is) everything|whats my system status|what(?:'s| is) my system status"
     r"|is nova running|is everything (?:ok|okay|working|fine)|everything ok|status check"
-    r"|check disk space|how much storage|disk space|storage space|free space|storage usage)\s*$",
+    r"|check disk space|how much storage|disk space|storage space|free space|storage usage"
+    r"|battery(?: status| level| life| charge)?|check battery|how(?:'s| is) (?:my )?battery|battery percentage)\s*$",
     re.IGNORECASE,
 )
 SCREEN_CAPTURE_RE = re.compile(
@@ -236,7 +240,9 @@ SCREEN_CAPTURE_RE = re.compile(
     re.IGNORECASE,
 )
 SCREEN_ANALYSIS_RE = re.compile(
-    r"^\s*(?:analy[sz]e\s+(?:the\s+)?screen|analy[sz]e\s+this\s+screen|explain\s+this\s+screen|help\s+me\s+understand\s+this\s+screen|read\s+this\s+screen)\s*$",
+    r"^\s*(?:analy[sz]e\s+(?:the\s+)?screen|analy[sz]e\s+this\s+screen|explain\s+this\s+screen|help\s+me\s+understand\s+this\s+screen|read\s+this\s+screen"
+    r"|what(?:'?s| is)?\s+on\s+(?:my\s+|the\s+)?screen|whats\s+on\s+(?:my\s+|the\s+)?screen|what\s+do\s+(?:i|you)\s+see\s+on\s+(?:the\s+|my\s+)?screen|help\s+me\s+read\s+this\s+screen"
+    r"|describe\s+(?:what'?s?\s+on\s+)?(?:the\s+|my\s+)?screen|look\s+at\s+(?:my\s+|the\s+)?screen)\s*$",
     re.IGNORECASE,
 )
 EXPLAIN_ANYTHING_RE = re.compile(
@@ -303,7 +309,12 @@ STORY_TRACKER_SHORTHAND_RE = re.compile(
     re.IGNORECASE,
 )
 FOLLOW_STORY_RE = re.compile(r"^\s*(?:follow|keep\s+following)\s+(?:story\s+)?(?P<topic>.+?)\s*$", re.IGNORECASE)
-UPDATE_STORY_RE = re.compile(r"^\s*update\s+story\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
+UPDATE_STORY_RE = re.compile(
+    r"^\s*(?:update\s+story\s+(?P<topic1>.+?)|update\s+(?:me\s+on|the\s+)?(?:the\s+)?(?P<topic2>.+?)\s+story"
+    r"|(?:what'?s?|whats)\s+new\s+on\s+(?P<topic3>.+?)|any\s+updates?\s+on\s+(?P<topic4>.+?)"
+    r"|news\s+on\s+(?P<topic5>.+?))\s*$",
+    re.IGNORECASE,
+)
 SHOW_STORY_RE = re.compile(r"^\s*show\s+story\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
 COMPARE_STORY_RE = re.compile(
     r"^\s*compare\s+story\s+(?P<topic>.+?)\s+last\s+(?P<days>\d{1,3})\s+days\s*$",
@@ -369,7 +380,7 @@ ORDINAL_WORD_TO_INDEX = {
     "tenth": 10,
 }
 VERIFY_RE = re.compile(
-    r"^\s*(?:verify|double\s+check|fact\s*check|validate(?:\s+sources?)?)"
+    r"^\s*(?:verify|double\s+check|fact\s*check|validate(?:\s+sources?)?|check\s+that\s+claim|is\s+that\s+(?:true|accurate|correct|right)|is\s+it\s+(?:true|accurate|correct|right)\s+that)"
     r"(?:[\s:]+(?P<text>.+?))?\s*$",
     re.IGNORECASE,
 )
@@ -953,6 +964,13 @@ class GovernorMediator:
         if m:
             return _invocation_if_enabled(48, {"query": f"why {m.group('q').strip()} is changing"})
 
+        # Verify/fact-check intent must be checked BEFORE Cap 16 heuristics.
+        # Phrases like "is it true that vaccines..." match CLAIM_CHECK_RE (Cap 16)
+        # and health heuristics — but should route to Cap 31 (response_verification).
+        vm_early = VERIFY_RE.match(t)
+        if vm_early:
+            return _invocation_if_enabled(31, {"text": (vm_early.group("text") or "").strip()})
+
         m = LATEST_ON_RE.match(t)
         if m:
             return _invocation_if_enabled(16, {"query": m.group("q").strip()})
@@ -1187,7 +1205,8 @@ class GovernorMediator:
 
         m = UPDATE_STORY_RE.match(t)
         if m:
-            return _invocation_if_enabled(52, {"action": "update", "topic": m.group("topic").strip()})
+            topic = (m.group("topic1") or m.group("topic2") or m.group("topic3") or m.group("topic4") or m.group("topic5") or "").strip()
+            return _invocation_if_enabled(52, {"action": "update", "topic": topic})
 
         if UPDATE_TRACKED_STORIES_RE.match(t):
             return _invocation_if_enabled(52, {"action": "update_all"})
