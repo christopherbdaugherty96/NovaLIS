@@ -213,13 +213,17 @@ WEATHER_RE = re.compile(
     r"|(?:is it|will it) (?:going to )?rain(?: today| tomorrow| this week)?"
     r"|(?:will|is) there (?:be )?rain(?: today| tomorrow)?"
     r"|do i need (?:an? )?umbrella(?: today| tomorrow)?"
-    r"|outside temperature|temperature (?:today|outside|right now))\s*$",
+    r"|outside temperature|temperature (?:today|outside|right now)"
+    r"|(?:is it|will it be) (?:cold|hot|warm|chilly|freezing)(?: outside| today| tomorrow)?"
+    r"|should i (?:bring|wear|take) (?:a\s+)?(?:jacket|coat|umbrella|raincoat)"
+    r"|what(?:'s|s) (?:the )?temperature(?: today| outside| right now)?)\s*$",
     re.IGNORECASE,
 )
 NEWS_RE = re.compile(
     r"^\s*(?:news|headlines|(?:latest|current|recent|top)\s+headlines|latest news|top news|news update|catch me up on the news|what(?:'s| is) going on in the news|what(?:'s| is) (?:the )?news(?: today| now)?|whats (?:the )?news(?: today| now)?|what\s+are\s+(?:today'?s|the\s+latest|the\s+current|the\s+top)\s+headlines"
     r"|show me (?:the )?news|any news|any headlines|give me (?:the )?news|whats new|what's new|news today|today's news|today.?s headlines|got any news|pull up (?:the )?news"
-    r"|news headlines|top stories(?: today| now)?|show me today'?s? news|what(?:'s| is) (?:the )?top stories)\s*$",
+    r"|news headlines|top stories(?: today| now)?|show me today'?s? news|what(?:'s| is) (?:the )?top stories"
+    r"|morning news|evening news|any news(?: today| now)?|what'?s? happening(?: in the world)?(?: today)?)\s*$",
     re.IGNORECASE,
 )
 CALENDAR_RE = re.compile(
@@ -242,7 +246,9 @@ SCREEN_CAPTURE_RE = re.compile(
 SCREEN_ANALYSIS_RE = re.compile(
     r"^\s*(?:analy[sz]e\s+(?:the\s+)?screen|analy[sz]e\s+this\s+screen|explain\s+this\s+screen|help\s+me\s+understand\s+this\s+screen|read\s+this\s+screen"
     r"|what(?:'?s| is)?\s+on\s+(?:my\s+|the\s+)?screen|whats\s+on\s+(?:my\s+|the\s+)?screen|what\s+do\s+(?:i|you)\s+see\s+on\s+(?:the\s+|my\s+)?screen|help\s+me\s+read\s+this\s+screen"
-    r"|describe\s+(?:what'?s?\s+on\s+)?(?:the\s+|my\s+)?screen|look\s+at\s+(?:my\s+|the\s+)?screen)\s*$",
+    r"|describe\s+(?:what'?s?\s+on\s+)?(?:the\s+|my\s+)?screen|look\s+at\s+(?:my\s+|the\s+)?screen"
+    r"|scan\s+(?:the\s+|my\s+)?screen|read\s+(?:what(?:'s|\s+is|s)\s+on\s+)?(?:the\s+|my\s+)?screen"
+    r"|what\s+does\s+(?:the\s+|my\s+)?screen\s+say|tell\s+me\s+what(?:'?s|\s+is)\s+on\s+(?:the\s+|my\s+)?screen)\s*$",
     re.IGNORECASE,
 )
 EXPLAIN_ANYTHING_RE = re.compile(
@@ -324,7 +330,7 @@ COMPARE_STORIES_RE = re.compile(
     r"^\s*compare\s+stories\s+(?P<left>.+?)\s+and\s+(?P<right>.+?)\s*$",
     re.IGNORECASE,
 )
-STOP_TRACKING_RE = re.compile(r"^\s*(?:stop\s+tracking|stop\s+following)\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
+STOP_TRACKING_RE = re.compile(r"^\s*(?:stop\s+tracking|stop\s+following|unfollow|drop)\s+(?:the\s+)?(?P<topic>.+?)(?:\s+story)?\s*$", re.IGNORECASE)
 UPDATE_TRACKED_STORIES_RE = re.compile(r"^\s*update\s+tracked\s+stories\s*$", re.IGNORECASE)
 BRIEF_WITH_TRACKING_RE = re.compile(r"^\s*brief\s+with\s+story\s+tracking\s*$", re.IGNORECASE)
 LINK_STORY_RE = re.compile(
@@ -461,12 +467,14 @@ MEMORY_RECENT_RE = re.compile(
     re.IGNORECASE,
 )
 MEMORY_SEARCH_RE = re.compile(
-    r"^\s*(?:memory\s+search|search\s+(?:my\s+)?memories?\s+for|find\s+(?:my\s+)?memories?\s+for|find\s+in\s+(?:my\s+)?memory)\s+(?P<query>.+?)\s*$",
+    r"^\s*(?:memory\s+search|search\s+(?:my\s+)?memories?\s+for|find\s+(?:my\s+)?memories?\s+for|find\s+in\s+(?:my\s+)?memory"
+    r"|find\s+(?:my\s+)?notes?\s+(?:about|on|for)|look\s+up\s+(?:my\s+)?notes?\s+(?:on|about))\s+(?P<query>.+?)\s*$",
     re.IGNORECASE,
 )
 MEMORY_RECALL_FRIENDLY_RE = re.compile(
     r"^\s*(?:what\s+do\s+you\s+remember(?:\s+about\s+me)?|show\s+(?:me\s+)?what\s+you\s+(?:remember|know)(?:\s+about\s+me)?|what(?:'s| is)\s+in\s+(?:my\s+)?memory"
-    r"|recall\s+(?:my\s+)?(?:notes?|memories|memory)|show\s+me\s+my\s+(?:notes?|memories)|what\s+have\s+you\s+(?:saved|stored))\s*$",
+    r"|recall\s+(?:my\s+)?(?:notes?|memories|memory)|show\s+me\s+my\s+(?:notes?|memories)|what\s+have\s+(?:you\s+)?(?:saved|stored)"
+    r"|what\s+did\s+(?:i|you)\s+(?:save|store|note|write|jot)|what\s+(?:is|was)\s+(?:saved|stored|noted))\s*$",
     re.IGNORECASE,
 )
 MEMORY_SHOW_FRIENDLY_RE = re.compile(
@@ -989,6 +997,12 @@ class GovernorMediator:
             return _invocation_if_enabled(16, {"query": t.strip()})
         if _looks_like_evidence_sensitive_health_query(t):
             return _invocation_if_enabled(16, {"query": t.strip()})
+
+        # Memory search must be checked before SEARCH_RE — "look up my notes on X" matches
+        # both SEARCH_RE ("look up ...") and MEMORY_SEARCH_RE.  Memory intent is specific.
+        mem_search_early = MEMORY_SEARCH_RE.match(t)
+        if mem_search_early:
+            return _invocation_if_enabled(61, {"action": "search", "query": mem_search_early.group("query").strip()})
 
         m = SEARCH_RE.match(t)
         if m:
