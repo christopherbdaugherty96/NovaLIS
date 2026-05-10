@@ -203,7 +203,9 @@ SET_BRIGHTNESS_RE = re.compile(r"^\s*set\s+(?:screen\s+)?brightness(?:\s+to)?\s+
 BRIGHTNESS_VALUE_RE = re.compile(r"^\s*brightness\s+(?P<level>\d{1,3})\s*$", re.IGNORECASE)
 WEATHER_RE = re.compile(
     r"^\s*(?:weather|weather update|current weather|weather forecast|show me the weather|tell me the weather|check (?:the )?weather|check weather"
+    r"|weather (?:today|now|tomorrow|tonight)|todays? weather|tonight'?s? weather|tomorrow'?s? weather"
     r"|how(?:'s| is) the weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|what(?:'s| is) (?:the )?weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|forecast(?: today| tomorrow)?"
+    r"|what'?s? the forecast|whats the forecast|the forecast|forecast (?:for )?today|forecast (?:for )?tomorrow"
     r"|weather (?:this )?week|(?:this )?week(?:'s| s) weather|forecast for (?:the )?week|weekly (?:weather )?forecast|weather forecast for (?:the )?week|whats the weather|hows the weather"
     r"|(?:is it|will it) (?:going to )?rain(?: today| tomorrow| this week)?"
     r"|(?:will|is) there (?:be )?rain(?: today| tomorrow)?"
@@ -213,7 +215,8 @@ WEATHER_RE = re.compile(
 )
 NEWS_RE = re.compile(
     r"^\s*(?:news|headlines|(?:latest|current|recent|top)\s+headlines|latest news|top news|news update|catch me up on the news|what(?:'s| is) going on in the news|what(?:'s| is) (?:the )?news(?: today| now)?|whats (?:the )?news(?: today| now)?|what\s+are\s+(?:today'?s|the\s+latest|the\s+current|the\s+top)\s+headlines"
-    r"|show me (?:the )?news|any news|any headlines|give me (?:the )?news|whats new|what's new|news today|today's news|today.?s headlines|got any news|pull up (?:the )?news)\s*$",
+    r"|show me (?:the )?news|any news|any headlines|give me (?:the )?news|whats new|what's new|news today|today's news|today.?s headlines|got any news|pull up (?:the )?news"
+    r"|news headlines|top stories(?: today| now)?|show me today'?s? news|what(?:'s| is) (?:the )?top stories)\s*$",
     re.IGNORECASE,
 )
 CALENDAR_RE = re.compile(
@@ -229,7 +232,7 @@ SYSTEM_RE = re.compile(
     re.IGNORECASE,
 )
 SCREEN_CAPTURE_RE = re.compile(
-    r"^\s*(?:take\s+(?:a\s+)?screenshot|capture\s+(?:the\s+)?screen|capture\s+this\s+screen|grab\s+(?:the\s+)?screen)\s*$",
+    r"^\s*(?:screenshot|take\s+(?:a\s+)?screenshot|take\s+(?:a\s+)?(?:picture|photo|snap)\s+of\s+(?:the\s+)?screen|capture\s+(?:the\s+)?screen|capture\s+this\s+screen|grab\s+(?:the\s+)?screen|snap\s+(?:the\s+)?screen)\s*$",
     re.IGNORECASE,
 )
 SCREEN_ANALYSIS_RE = re.compile(
@@ -403,7 +406,7 @@ MEMORY_SAVE_NATURAL_RE = re.compile(
     re.IGNORECASE,
 )
 MEMORY_NOTE_RE = re.compile(
-    r"^\s*(?:note|jot(?:\s+down)?)\s*[:\-]\s*(?P<body>.+?)\s*$",
+    r"^\s*(?:note|jot(?:\s+down)?|quick\s+note|save\s+note|add\s+(?:to\s+)?(?:my\s+)?notes?|jot\s+this)\s*[:\-]\s*(?P<body>.+?)\s*$",
     re.IGNORECASE,
 )
 MEMORY_I_NEED_REMEMBER_RE = re.compile(
@@ -1056,7 +1059,7 @@ class GovernorMediator:
             return _invocation_if_enabled(19, {"action": "up"})
         if re.match(r"^\s*(?:volume\s+down|turn(?: the)? volume down|make it quieter|make the volume quieter|make it softer|quieter|lower (?:the )?volume|too loud|it(?:'s| is) too loud)\s*$", t, re.IGNORECASE):
             return _invocation_if_enabled(19, {"action": "down"})
-        if re.match(r"^\s*(?:mute|mute volume|volume mute)\s*$", t, re.IGNORECASE):
+        if re.match(r"^\s*(?:mute|mute volume|volume mute|volume off|silence|sound off|go silent)\s*$", t, re.IGNORECASE):
             if not _platform_supports_volume_action("mute"):
                 return Clarification(
                     capability_id=19,
