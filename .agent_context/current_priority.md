@@ -3,24 +3,27 @@
 Current priority:
 
 ```text
-Cap 16 search reliability and conversation/search proof
+Awaiting reviewed priority lock — Cap 16 is complete and locked
 ```
 
 Status:
 
 ```text
-active / AGENTS.md governs this — do not override with UI simplification work
+Cap 16 governed_web_search LOCKED 2026-05-10 (P1–P5 all pass, 60 tests)
+No active workstream. A new reviewed priority lock is required before the next branch begins.
 ```
 
-Cap 64 P5 remains paused until the Cap 16 proof path is stable. See AGENTS.md.
+Cap 16 `governed_web_search` is fully certified and locked. All five phases passed:
+P1 unit (16), P2 routing (17), P3 integration (19), P4 API (8), P5 live (FastAPI TestClient
+with real BRAVE_API_KEY and real governor spine — basic search, natural phrasing, clarification
+flow, and ledger events all verified). Lock applied 2026-05-10.
 
 ---
 
 ## Queued / planned (not active)
 
 UI simplification inventory is complete and queued for a future implementation branch.
-It does not become the active priority until Cap 16 search reliability proof is stable
-and a reviewed priority lock authorizes the switch.
+It does not become the active priority until a new reviewed priority lock authorizes the switch.
 
 ```text
 Inventory branch: docs/ui-simplification-inventory (merged via PR #133)
@@ -28,14 +31,14 @@ Future implementation branch (queued): ui/simplify-dashboard-core-navigation
 Target: Start + Chat / News / CRM / Settings
 ```
 
-Do not begin ui/simplify-dashboard-core-navigation until the active Cap 16 priority
-lock is closed and a new reviewed priority lock is established.
+Do not begin ui/simplify-dashboard-core-navigation without a reviewed priority lock.
 
 ---
 
 ## Completed recent branches
 
 ```text
+proof/cap-16-certification-lock       — Cap 16 governed_web_search LOCKED (P1–P5)
 docs/ui-simplification-inventory      — docs-only / queued UI inventory
 docs/proof-infrastructure-closeout-review
 test/non-search-widget-fuzzing
