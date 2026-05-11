@@ -176,6 +176,67 @@ It does not yet prove unrestricted autonomous computer-use.
 
 ---
 
+# OpenClaw Two-Lane Execution Split
+
+The audit must distinguish OpenClaw lanes.
+
+## Lane A — bounded manual template lane
+
+`OpenClawAgentRunner.run_template()` appears materially constrained.
+
+Observed controls:
+
+- creates a `TaskEnvelope`
+- calls `evaluate_manual_envelope()`
+- applies strict preflight
+- meters steps
+- meters network calls
+- meters file reads
+- records budget usage
+- supports cancellation
+- blocks unavailable templates
+- records strict preflight details into run records
+
+Current classification:
+
+```text
+The bounded manual template lane appears significantly governed and constrained.
+```
+
+## Lane B — freeform goal lane
+
+`/api/openclaw/agent/goal` calls:
+
+```text
+deps.openclaw_agent_runner.run_goal(...)
+```
+
+Tests confirm `run_goal()` exists, returns structured results, records execution memory, records active/recent runs, handles cancellation/failure, and records goal runs using:
+
+```text
+template_id == "goal"
+```
+
+`ThinkingLoop` is used in the freeform goal path and selects tools from:
+
+```text
+registry.tool_names
+```
+
+Current classification:
+
+```text
+The strongest governance concern is the freeform goal execution lane, not the bounded manual template lane.
+```
+
+Unresolved:
+
+```text
+The exact run_goal() body still needs direct inspection to confirm whether it filters mutation tools, uses strict preflight, creates an envelope, or routes through Governor/ExecuteBoundary.
+```
+
+---
+
 # Critical Governance Finding
 
 `tool_registry.py` registers executor-backed mutation-capable tools:
@@ -363,6 +424,12 @@ Correct:
 OpenClaw is more implemented than older continuity summaries implied.
 ```
 
+Correct:
+
+```text
+The bounded manual template lane appears meaningfully constrained.
+```
+
 Not yet proven:
 
 ```text
@@ -408,7 +475,7 @@ confirmation enforcement
 
 Next audit focus:
 
-1. `OpenClawAgentRunner.run_goal()` restrictions
+1. exact `OpenClawAgentRunner.run_goal()` body
 2. actual tool allowlist enforcement path
 3. whether ThinkingLoop can invoke mutation tools live
 4. whether strict preflight always gates run_goal()
@@ -420,6 +487,7 @@ Next audit focus:
 10. whether OpenClaw tool execution bypasses capability receipts
 11. whether remote bridge surfaces can invoke goal execution
 12. whether scheduler paths can invoke unrestricted ThinkingLoop runs
+13. whether freeform goal execution should be disabled or read-only-filtered until full governance mediation exists
 
 ---
 
@@ -442,4 +510,11 @@ Second-pass final clarification:
 ```text
 The audit currently supports "potentially reachable governance bypass surface".
 It does NOT yet support claiming a confirmed unrestricted autonomous execution vulnerability.
+```
+
+Most precise current finding:
+
+```text
+Potential governance-bypass-capable surface likely exists specifically within the freeform goal execution path.
+The bounded manual template lane appears substantially more constrained.
 ```
