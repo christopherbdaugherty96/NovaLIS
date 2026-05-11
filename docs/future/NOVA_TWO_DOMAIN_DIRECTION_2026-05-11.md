@@ -5,7 +5,7 @@ Status: future direction / planning record / non-runtime-authority
 
 ## Purpose
 
-Record the intended long-term direction for Nova as a governed personal operational intelligence platform with two connected domains:
+Record what Nova is intended to be and the long-term direction for Nova as a governed personal operational intelligence platform with two connected domains:
 
 1. Everyday home / voice / local assistant platform
 2. Creator-business operational intelligence platform
@@ -16,6 +16,46 @@ The core rule remains:
 
 ```text
 Intelligence is not authority.
+```
+
+---
+
+## What Nova Is / What Nova Will Be
+
+Nova is intended to be a governed local-first operational intelligence platform.
+
+Nova is not just:
+
+- a chatbot
+- a voice UI
+- a dashboard
+- a business analytics tool
+- a home assistant clone
+- an automation script runner
+- an autonomous agent
+
+Nova is the governed intelligence and execution-control layer that can help with real life and real work while keeping authority bounded, visible, and reviewable.
+
+In practical terms:
+
+```text
+Nova understands, organizes, reports, drafts, recommends, and routes approved actions.
+```
+
+Nova should eventually support both:
+
+```text
+Everyday personal/home operation
++
+Creator-business operation
+```
+
+without turning into hidden autonomy.
+
+The product identity is:
+
+```text
+Governed local-first operational intelligence for everyday life and creator-business operations.
 ```
 
 ---
