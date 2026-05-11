@@ -97,6 +97,10 @@ class TestRC7HelpOrient:
         "nova where do i start",
         "hey nova help me",
         "ok nova help me",
+        # "i want help" forms — distinct from "i need help", same intent
+        "i want help",
+        "i want some help",
+        "nova i want help",
     ])
     def test_routes_to_help_orient(self, raw: str):
         assert _pipeline(raw) == "HELP_ORIENT", (
@@ -104,6 +108,20 @@ class TestRC7HelpOrient:
             f"got {_pipeline(raw)!r}. "
             f"Check PHRASE_NORMALIZATION in response_style_router.py — "
             f"normalizing these phrases to 'what can you do' bypasses RC-7."
+        )
+
+    @pytest.mark.parametrize("raw", [
+        # These start with "help me" but have a task suffix — should fall through to
+        # governor or LLM, not fire the short orienting question.
+        "help me write a letter",
+        "help me draft an email",
+        "help me plan my day",
+    ])
+    def test_help_with_task_does_not_route_to_help_orient(self, raw: str):
+        result = _pipeline(raw)
+        assert result != "HELP_ORIENT", (
+            f"{repr(raw)} has a task suffix — should NOT route to HELP_ORIENT; "
+            f"got {result!r}"
         )
 
 
