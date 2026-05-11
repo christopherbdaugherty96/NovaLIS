@@ -136,6 +136,7 @@ AMBIENT_CLARIFICATION_PATTERNS = [
 CAPABILITY_HELP_RE = re.compile(
     r"^\s*(?:"
     r"what can you do"
+    r"|what can u do"
     r"|nova what can you do"
     r"|tell me what you can do"
     r"|show me what you can do"
