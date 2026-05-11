@@ -9,6 +9,23 @@ Nova focuses on what the system is allowed to do, how actions are routed, and ho
 ## Why Nova
 Most AI tools optimize for capability expansion. Nova emphasizes bounded execution, reviewable actions, local ownership, and user-visible control.
 
+Nova is intended to evolve into:
+
+```text
+A governed personal operational intelligence platform.
+```
+
+The long-term direction has two connected domains:
+
+```text
+1. Everyday home / voice / local assistant platform
+2. Creator-business operational intelligence platform
+```
+
+See:
+- [Nova Two-Domain Direction](docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11.md)
+- [Nova Creator-Led Shopify POD Model](docs/future/NOVA_CREATOR_LED_SHOPIFY_POD_MODEL_2026-05-11.md)
+
 ## Start Here
 1. [Start Here](START_HERE.md)
 2. [Quickstart](QUICKSTART.md)
@@ -68,6 +85,8 @@ For current human-readable work continuity, including what is committed versus l
 For the 2026-05-01 branch/workstream alignment map, use [Repo Branch and Workstream Status](docs/status/REPO_BRANCH_AND_WORKSTREAM_STATUS_2026-05-01.md).
 
 ## Future Directions
+- [Nova Two-Domain Direction](docs/future/NOVA_TWO_DOMAIN_DIRECTION_2026-05-11.md)
+- [Nova Creator-Led Shopify POD Model](docs/future/NOVA_CREATOR_LED_SHOPIFY_POD_MODEL_2026-05-11.md)
 - [Realistic Scope and Priorities](docs/future/REALISTIC_SCOPE_AND_PRIORITIES.md)
 - [Google Connector Model](docs/future/NOVA_GOOGLE_CONNECTOR_MODEL.md)
 - [Google Connector Implementation Roadmap](docs/future/GOOGLE_CONNECTOR_IMPLEMENTATION_ROADMAP.md)
