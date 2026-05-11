@@ -4,6 +4,8 @@
 **Status:** LOCKED
 **Scope:** NovaLIS repo work, Claude/Codex prompts, ChatGPT project reviews, implementation branches, audits, and handoffs.
 
+This document governs contributor workflow discipline only. It does not modify runtime authority, capability scope, governance invariants, or GovernorMediator behavior. Nova's runtime authority is determined by live repo code and generated runtime truth docs — not by this file.
+
 This document records Christopher's enforced Nova work style as a binding operating profile for AI-assisted NovaLIS work.
 
 ---
@@ -73,6 +75,17 @@ NEXT ACTION
 - Do not add Google connector runtime expansion without its own reviewed lock.
 - Do not use direct Cap 63 shortcuts.
 - Do not merge, release, deploy, delete, force-push, rewrite history, or touch credentials without explicit user instruction.
+- Do not treat continuity, memory, handoff state, prior plans, or prior approvals as execution authority.
+
+---
+
+## Memory Boundary
+
+Continuity, memory, handoff state, prior plans, or prior approvals do not grant execution authority.
+
+All execution authority remains explicitly user-gated and Governor-bounded.
+
+Memory is not permission. Context retention is not authorization. A plan agreed to in a prior session does not authorize action in a new session without explicit re-approval.
 
 ---
 
@@ -190,15 +203,16 @@ HANDOFF
 - Not tested:
 - Risks:
 - Governance boundary:
+- ChatGPT second pass:
 - Open questions:
 - Recommended next action:
 ```
 
 ---
 
-## Autonomy Limit
+## Execution Discipline Limit
 
-Allowed autonomy is checkpointed autonomy only.
+Allowed execution is checkpointed execution discipline only.
 
 Allowed:
 
@@ -229,6 +243,7 @@ Known current boundaries:
 - Browser Use visual proof is blocked/setup-required and is not Nova runtime authority.
 - Trust Review Card is display-only and non-authorizing.
 - OpenClaw may reason/assist only inside governed, reviewed boundaries.
+- OpenClaw does not authorize persistent agents, recursive self-directed workflows, cross-model self-delegation, or agentic execution chains — even when reviewing or assisting with NovaLIS work.
 - Broad automation is not approved.
 
 ---
@@ -327,6 +342,7 @@ HANDOFF
 - Not tested:
 - Risks:
 - Governance boundary:
+- ChatGPT second pass:
 - Open questions:
 - Recommended next action:
 ```
