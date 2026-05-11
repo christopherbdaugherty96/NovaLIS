@@ -178,6 +178,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     CAPABILITY_HELP_RE = deps.CAPABILITY_HELP_RE
     HELP_ORIENT_RE = deps.HELP_ORIENT_RE
     AMBIENT_CLARIFICATION_PATTERNS = deps.AMBIENT_CLARIFICATION_PATTERNS
+    EMAIL_INBOX_RE = deps.EMAIL_INBOX_RE
+    EMAIL_INBOX_RESPONSE = deps.EMAIL_INBOX_RESPONSE
     _capability_help_message = deps._capability_help_message
     TIME_QUERY_RE = deps.TIME_QUERY_RE
     _render_local_time_message = deps._render_local_time_message
@@ -992,6 +994,17 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 if _ambient_match is not None:
                     await _complete_immediate_turn(_ambient_match)
                     continue
+
+            # RC-1: email inbox intent → scoped immediate response.
+            # Must fire before the governor so Cap 17 (website open) doesn't scoop it.
+            if EMAIL_INBOX_RE.match(command_text):
+                await _complete_immediate_turn(
+                    EMAIL_INBOX_RESPONSE,
+                    suggested_actions=[
+                        {"label": "Draft an email", "command": "draft an email"},
+                    ],
+                )
+                continue
 
             # RC-7: "help me", "i need help", "can you help" → short orienting question.
             # These mean the user is stuck and doesn't know what to ask.

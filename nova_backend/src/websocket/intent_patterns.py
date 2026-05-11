@@ -30,6 +30,29 @@ PHASE42_HELP_COMMANDS = {
 }
 
 # -------------------------------------------------
+# Email inbox intent (RC-1)
+# "open my email", "check my email", "my inbox" etc. → immediate scoped
+# response explaining Nova's mailto-only email scope.
+# Handled before the governor so Cap 17 (website) never scoops it.
+# -------------------------------------------------
+EMAIL_INBOX_RE = re.compile(
+    r"^\s*(?:"
+    r"open(?:\s+my)?\s+email(?:\s+inbox|s?)?"
+    r"|check(?:\s+my)?\s+email(?:\s+inbox|s?)?"
+    r"|(?:my\s+)?(?:email\s+)?inbox"
+    r"|read(?:\s+my)?\s+emails?"
+    r"|show(?:\s+me)?\s+(?:my\s+)?emails?"
+    r"|email\s+(?:account|client|app)"
+    r")\s*$",
+    re.IGNORECASE,
+)
+
+EMAIL_INBOX_RESPONSE = (
+    "Email in Nova is mailto-based — I can open a draft in your default mail app, "
+    "but I don't have inbox access. Want me to draft an email?"
+)
+
+# -------------------------------------------------
 # Help — orienting form (RC-7)
 # "help me", "i need help", "can you help" → short orienting question.
 # These are NOT capability lookups — the user doesn't know what to ask.
