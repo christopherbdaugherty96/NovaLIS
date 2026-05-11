@@ -30,7 +30,85 @@ PHASE42_HELP_COMMANDS = {
 }
 
 # -------------------------------------------------
-# Capability help
+# Help — orienting form (RC-7)
+# "help me", "i need help", "can you help" → short orienting question.
+# These are NOT capability lookups — the user doesn't know what to ask.
+# -------------------------------------------------
+HELP_ORIENT_RE = re.compile(
+    r"^\s*(?:"
+    r"help\s+me"
+    r"|i\s+need\s+(?:some\s+)?help"
+    r"|can\s+you\s+help(?:\s+me)?"
+    r"|could\s+you\s+help(?:\s+me)?"
+    r"|i\s+(?:could\s+)?use\s+(?:some\s+)?help"
+    r"|not\s+sure\s+what\s+to\s+(?:ask|do|say)"
+    r"|where\s+do\s+i\s+(?:start|begin)"
+    r")\s*$",
+    re.IGNORECASE,
+)
+
+# -------------------------------------------------
+# Ambient clarification patterns (RC-2, RC-3, RC-5, RC-6)
+# Context-free follow-ups and informal confusion phrases that require
+# prior session state to answer. Without context → immediate clarification.
+# With prior context → let the LLM handle as a follow-up.
+#
+# Structure: (pattern, clarification_prompt)
+# -------------------------------------------------
+AMBIENT_CLARIFICATION_PATTERNS = [
+    # RC-2: context-free follow-ups
+    (
+        re.compile(
+            r"^\s*(?:tell\s+me\s+more(?:\s+about\s+that)?|go\s+deeper(?:\s+on\s+that)?|expand(?:\s+on\s+that)?|"
+            r"more\s+detail(?:s)?(?:\s+please)?|elaborate(?:\s+on\s+that)?|"
+            r"give\s+me\s+more(?:\s+detail)?|can\s+you\s+expand(?:\s+on\s+that)?)\s*$",
+            re.IGNORECASE,
+        ),
+        "What should I go deeper on?",
+    ),
+    # RC-3: context-free error/failure questions
+    (
+        re.compile(
+            r"^\s*(?:what\s+went\s+wrong|why\s+didn'?t\s+(?:that|it)\s+work|"
+            r"what\s+(?:failed|broke)|why\s+(?:is\s+it|did\s+it)\s+(?:fail(?:ing)?|broken?|not\s+work(?:ing)?)|"
+            r"what(?:'s| is)\s+(?:the\s+)?(?:error|problem|issue))\s*$",
+            re.IGNORECASE,
+        ),
+        "What situation are you asking about?",
+    ),
+    # RC-5: informal confusion
+    (
+        re.compile(
+            r"^\s*(?:idk\s+what\s+to\s+do|i\s+don'?t\s+know\s+(?:what\s+to\s+do|where\s+to\s+start)|"
+            r"i'?m\s+(?:lost|stuck|confused)|i\s+have\s+no\s+idea|not\s+sure\s+where\s+to\s+start|"
+            r"what\s+do\s+i\s+(?:even\s+)?do|where\s+do\s+i\s+start)\s*$",
+            re.IGNORECASE,
+        ),
+        "Sounds like you're stuck — what are you working on?",
+    ),
+    # RC-6: context-free failure diagnosis
+    (
+        re.compile(
+            r"^\s*(?:why\s+did\s+(?:that|it)\s+fail|why\s+(?:did\s+it|is\s+it)\s+stop(?:ped)?|"
+            r"why\s+isn'?t\s+(?:this|it|that)\s+work(?:ing)?|what'?s?\s+wrong\s+with\s+(?:it|this|that))\s*$",
+            re.IGNORECASE,
+        ),
+        "What was the action or step that failed?",
+    ),
+    # RC-4: daily intent → clarification
+    (
+        re.compile(
+            r"^\s*(?:what\s+should\s+i\s+do\s+today|what(?:'s| is)\s+(?:my\s+)?(?:plan|agenda)\s+(?:for\s+)?today|"
+            r"what\s+do\s+i\s+need\s+to\s+do\s+today|what(?:'s| is)\s+on\s+my\s+plate(?:\s+today)?)\s*$",
+            re.IGNORECASE,
+        ),
+        "Are you checking your schedule, or looking for a productivity plan?",
+    ),
+]
+
+# -------------------------------------------------
+# Capability help — explicit lookup form
+# "help", "what can you do", "capabilities" → full capability list.
 # -------------------------------------------------
 CAPABILITY_HELP_RE = re.compile(
     r"^\s*(?:"

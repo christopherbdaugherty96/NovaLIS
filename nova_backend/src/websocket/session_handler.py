@@ -176,6 +176,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     _is_hard_action_command = deps._is_hard_action_command
     _topic_stack_message = deps._topic_stack_message
     CAPABILITY_HELP_RE = deps.CAPABILITY_HELP_RE
+    HELP_ORIENT_RE = deps.HELP_ORIENT_RE
+    AMBIENT_CLARIFICATION_PATTERNS = deps.AMBIENT_CLARIFICATION_PATTERNS
     _capability_help_message = deps._capability_help_message
     TIME_QUERY_RE = deps.TIME_QUERY_RE
     _render_local_time_message = deps._render_local_time_message
@@ -977,6 +979,33 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                 "what topic are we on",
             }:
                 await _complete_immediate_turn(_topic_stack_message(session_state, session_state["turn_count"]))
+                continue
+
+            # RC-2/3/4/5/6: Ambient clarification — context-free follow-ups and informal
+            # confusion phrases.  Fire only when the session has no useful prior context
+            # (no last_response). With prior context let the LLM handle as a follow-up.
+            if not (session_state.get("last_response") or "").strip():
+                _ambient_match = next(
+                    (prompt for pat, prompt in AMBIENT_CLARIFICATION_PATTERNS if pat.match(command_text)),
+                    None,
+                )
+                if _ambient_match is not None:
+                    await _complete_immediate_turn(_ambient_match)
+                    continue
+
+            # RC-7: "help me", "i need help", "can you help" → short orienting question.
+            # These mean the user is stuck and doesn't know what to ask.
+            # A capability brochure makes that worse; one warm question is right.
+            if HELP_ORIENT_RE.match(command_text):
+                await _complete_immediate_turn(
+                    "What are you working on? I can search the web, check the news or weather, "
+                    "remember things, or help you think through a problem.",
+                    suggested_actions=[
+                        {"label": "What's the news?", "command": "what's the news"},
+                        {"label": "Check the weather", "command": "check the weather"},
+                        {"label": "What can you do?", "command": "what can you do"},
+                    ],
+                )
                 continue
 
             if CAPABILITY_HELP_RE.match(command_text):
