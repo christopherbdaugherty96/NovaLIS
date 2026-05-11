@@ -1,7 +1,7 @@
 # Nova Two-Domain Direction
 
 Date: 2026-05-11
-Status: planning lock / future direction / non-runtime-authority
+Status: future direction / planning record / non-runtime-authority
 
 ## Purpose
 
