@@ -2,7 +2,7 @@
 
 Date: 2026-04-26
 
-Status: Future integration planning / aligned with [`NOVA_VOICE_STACK_OPERATING_MODEL_2026-04-26.md`](NOVA_VOICE_STACK_OPERATING_MODEL_2026-04-26.md)
+Status: Future optional cloud voice planning / Piper-first local voice direction
 
 Related docs:
 
@@ -22,32 +22,45 @@ Research references:
 
 ---
 
-## Executive Summary
+## Current Voice Direction
 
-ElevenLabs is the preferred future provider for Nova’s **standard high-quality online voice experience**.
+Nova's current voice direction is Piper-first.
 
-This corrects earlier wording that framed ElevenLabs as only an optional premium voice layer.
+Piper should be treated as the current/default local TTS path because it better matches Nova's local-first, private, free-first, offline-capable direction.
 
-The corrected model is:
+ElevenLabs remains a future optional cloud voice provider for higher-quality online speech after the local voice path is stable.
+
+Corrected model:
 
 ```text
 Nova = governor / orchestrator / authority
-Gemma = local-first reasoning / language brain
-OpenClaw = hands / worker / action runner
-ElevenLabs = standard high-quality online voice experience
-Local TTS/STT = offline/private voice fallback
+Gemma/local models = local-first reasoning where possible
+OpenClaw = governed worker / action runner where explicitly approved
+Piper = current/default local TTS path
+ElevenLabs = future optional high-quality online voice provider
 Dashboard/Text = review, editing, approvals, records, fallback
 ```
 
 Short rule:
 
-> **ElevenLabs speaks. Gemma reasons. OpenClaw acts. Nova governs.**
+> **Piper speaks now. ElevenLabs may polish later. Nova governs always.**
 
-ElevenLabs should **not** become Nova’s core control plane, authority layer, action controller, internal brain, or required offline/private dependency.
+ElevenLabs should not be Nova's default voice path yet. It should not become Nova's control plane, authority layer, action controller, internal brain, or required dependency.
 
-Correct integration direction:
+---
 
-> **ElevenLabs should be Nova’s standard governed online voice provider — useful for natural spoken feedback, possible transcription, and future voice-agent experiments — while local voice/text remains the offline/private fallback and Nova keeps authority.**
+## Executive Summary
+
+ElevenLabs is a strong future provider for Nova's high-quality online voice experience, but it is not the current default direction.
+
+The corrected voice priority is:
+
+```text
+1. Piper/local TTS first
+2. Text fallback always
+3. ElevenLabs later as optional online voice
+4. ElevenAgents only as a separately reviewed future experiment
+```
 
 Nova should remain:
 
@@ -57,7 +70,8 @@ text-supported
 dashboard-reviewed
 governed underneath
 local-first for reasoning where possible
-standard online voice through ElevenLabs
+Piper-first for current spoken output
+ElevenLabs-optional for future online polish
 offline/private fallback through local voice or text
 ```
 
@@ -91,9 +105,9 @@ For Nova, not all of these should be added immediately.
 
 ## Capabilities Relevant To Nova
 
-### 1. Text To Speech — First And Strongest Fit
+### 1. Text To Speech — Future Optional Online Fit
 
-ElevenLabs TTS is the best first integration target.
+ElevenLabs TTS is the best future ElevenLabs integration target.
 
 Relevant features:
 
@@ -108,31 +122,29 @@ higher-quality Multilingual/v3 models
 MP3/PCM/u-law/a-law/Opus output formats
 ```
 
-Why it fits Nova:
+Why it fits Nova later:
 
 ```text
-voice-first assistant output
-natural spoken daily summaries
+more natural spoken daily summaries
 business follow-up readouts
 home assistant reminders
 work-helper briefings
-standard polished online voice experience
-role voices later
-better demos
+polished online demos
 accessibility
+role voices later
 ```
 
 Nova recommendation:
 
-> Add ElevenLabs TTS first as the standard online `VoiceProvider` implementation, with local voice/text fallback.
+> Keep Piper as the current/default `VoiceOutputProvider`. Add ElevenLabs TTS later as an optional online `VoiceOutputProvider`, with local voice/text fallback.
 
-Do not make it the only possible voice path.
+Do not make ElevenLabs the only possible voice path.
 
 ---
 
 ### 2. Speech To Text — Useful, But Second Priority
 
-ElevenLabs STT is useful, especially for accurate transcription and multilingual use.
+ElevenLabs STT may be useful later, especially for accurate transcription and multilingual use.
 
 Relevant features:
 
@@ -148,7 +160,7 @@ smart language detection
 realtime STT over WebSockets
 ```
 
-Why it fits Nova:
+Why it fits Nova later:
 
 ```text
 voice-first command input
@@ -161,9 +173,9 @@ role-based voice sessions
 
 Nova recommendation:
 
-> Use local STT first where possible for private/offline mode. Add ElevenLabs STT as the standard online/high-quality transcription path after push-to-talk voice is stable.
+> Use local STT first where possible for private/offline mode. Add ElevenLabs STT only after push-to-talk voice is stable and cloud use has explicit user permission.
 
-Do not route all microphone input to cloud by default for sensitive/private mode.
+Do not route all microphone input to cloud by default.
 
 ---
 
@@ -216,7 +228,7 @@ could create SaaS cloud dependency too early
 
 Nova recommendation:
 
-> Do not make ElevenAgents Nova’s internal brain or action controller.
+> Do not make ElevenAgents Nova's internal brain or action controller.
 
 Acceptable future use:
 
@@ -229,7 +241,7 @@ telephony intake that sends requests into Nova for governed handling
 
 Required rule:
 
-> Any ElevenAgents tool/webhook action must call into Nova’s governed API boundary, not directly into business systems.
+> Any ElevenAgents tool/webhook action must call into Nova's governed API boundary, not directly into business systems.
 
 ---
 
@@ -300,9 +312,10 @@ role-specific voice styles
 Nova recommendation:
 
 ```text
-Phase 1: use one safe default ElevenLabs voice ID if configured
-Phase 2: allow user to choose from approved/saved voices
-Phase 3: role-specific voice presets
+Phase 1: keep Piper/local voice stable
+Phase 2: add one optional ElevenLabs voice ID if configured
+Phase 3: allow user to choose from approved/saved voices
+Phase 4: role-specific voice presets
 ```
 
 Do not make voice browsing a core MVP feature.
@@ -323,7 +336,7 @@ If added later:
 
 ```text
 require explicit user consent
-only allow cloning the authenticated user’s own voice or properly licensed voices
+only allow cloning the authenticated user's own voice or properly licensed voices
 show clear warnings
 store consent record
 never clone public figures or third parties without verified permission
@@ -383,7 +396,7 @@ Nova recommendation:
 
 ### 9. Sound Effects / Music / Dubbing / Image & Video — Not Core
 
-These are available ElevenLabs platform capabilities, but they are not important for Nova’s first voice assistant path.
+These are available ElevenLabs platform capabilities, but they are not important for Nova's first voice assistant path.
 
 Possible future uses:
 
@@ -447,7 +460,7 @@ free/local users should have local voice fallback
 sensitive/private mode should not require cloud voice
 ```
 
-Required Nova controls:
+Required Nova controls before ElevenLabs use:
 
 ```text
 monthly character budget
@@ -470,8 +483,8 @@ Add provider interfaces instead of hardcoding ElevenLabs.
 
 ```text
 VoiceOutputProvider
-- ElevenLabsTTSProvider        # standard online voice
-- LocalPiperVoiceProvider      # offline/private fallback
+- PiperVoiceProvider           # current/default local voice
+- ElevenLabsTTSProvider        # future optional online voice
 - TextOnlyProvider             # no spoken output fallback
 ```
 
@@ -540,8 +553,8 @@ Voice mode:
 - Conversation mode later
 
 Voice experience:
-- Standard natural voice
-- Local/private voice
+- Local/private voice (Piper)
+- Optional online natural voice (ElevenLabs, future)
 - Text only
 
 Cloud voice permission:
@@ -563,8 +576,8 @@ Role voice:
 Plain-language display:
 
 ```text
-Standard natural voice = best sound when online
-Local/private voice = better for offline or sensitive tasks
+Local/private voice = current default voice path
+Optional online natural voice = better sound later, requires internet/cloud permission
 Text only = no spoken output
 ```
 
@@ -591,7 +604,7 @@ employment records
 Default behavior:
 
 ```text
-Use local voice or text-only for sensitive content unless user explicitly allows cloud voice.
+Use Piper/local voice or text-only for sensitive content unless user explicitly allows cloud voice.
 ```
 
 ---
@@ -601,7 +614,7 @@ Use local voice or text-only for sensitive content unless user explicitly allows
 ### Home Assistant
 
 ```text
-read today’s reminders
+read today's reminders
 explain a bill
 make a grocery list
 set reminders
@@ -698,7 +711,7 @@ ElevenAgents handles voice conversation shell
 Nova handles policy, action decisions, logging, and execution authority
 ```
 
-This preserves Nova’s core principle:
+This preserves Nova's core principle:
 
 > Intelligence and speech can be external, but execution authority stays governed by Nova.
 
@@ -709,7 +722,7 @@ This preserves Nova’s core principle:
 ### Must Add For Voice-First MVP
 
 ```text
-Voice provider abstraction
+Piper-first VoiceOutputProvider
 Push-to-talk control
 Transcript display
 Spoken response output
@@ -717,19 +730,30 @@ Role selection by voice
 Safety commands
 Approval queue visibility
 Action history placeholder
-Local/private fallback path
-Cloud voice disclosure
-Voice budget limits
+Text fallback path
+Voice error visibility
 Voice provider ledger events
 ```
 
-### Should Add For Standard Online Voice
+### Should Add Before ElevenLabs
+
+```text
+Piper setup verification
+local voice model path/status display
+local voice fallback handling
+voice playback stop/cancel
+voice errors surfaced in UI
+voice output acceptance proof
+```
+
+### Should Add Later For Optional Online Voice
 
 ```text
 ElevenLabs TTS provider
+cloud voice disclosure
 Voice ID configuration
 Model selection
-Streaming playback support
+NetworkMediator route
 Character usage tracking
 Per-role voice presets
 Long readout confirmation
@@ -771,8 +795,8 @@ unapproved webhook actions
 ### Phase 0 — Keep Existing Local Voice Stable
 
 ```text
-verify current local TTS/STT behavior
-keep local/private mode as fallback
+verify current Piper/local TTS behavior
+verify local STT behavior where present
 make voice errors visible
 ensure text fallback always works
 ```
@@ -781,7 +805,7 @@ ensure text fallback always works
 
 ```text
 create VoiceOutputProvider interface
-wrap existing local TTS provider
+wrap Piper/local TTS provider
 add TextOnly fallback provider
 add provider settings
 add voice ledger events
@@ -793,12 +817,22 @@ add voice ledger events
 push-to-talk UI
 transcript after input
 role-aware response
-spoken output
+Piper spoken output
 stop/cancel command
 approval queue access
 ```
 
-### Phase 3 — ElevenLabs TTS Provider
+### Phase 3 — Piper Acceptance Proof
+
+```text
+prove Piper can speak Nova responses locally
+prove playback stop/cancel works
+prove voice errors are visible
+prove text fallback remains available
+prove no cloud dependency exists for default voice
+```
+
+### Phase 4 — ElevenLabs TTS Provider Later
 
 ```text
 environment variable for ELEVENLABS_API_KEY
@@ -810,10 +844,10 @@ sensitive-content checks
 usage ledger events
 cloud disclosure notice
 streaming playback if feasible
-local/text fallback
+Piper/text fallback
 ```
 
-### Phase 4 — Gemma / Local Reasoning Lane Alignment
+### Phase 5 — Gemma / Local Reasoning Lane Alignment
 
 ```text
 confirm Gemma local-first reasoning lane
@@ -823,17 +857,17 @@ separate reasoning provider from voice provider
 ensure Gemma cannot approve its own actions
 ```
 
-### Phase 5 — Business Assistant Voice Demo
+### Phase 6 — Business Assistant Voice Demo
 
 ```text
-“who do I need to follow up with?”
-“draft a reply”
-“create a quote”
-“what is waiting for approval?”
-“what did Nova do?”
+"who do I need to follow up with?"
+"draft a reply"
+"create a quote"
+"what is waiting for approval?"
+"what did Nova do?"
 ```
 
-### Phase 6 — Optional STT Upgrade
+### Phase 7 — Optional STT Upgrade
 
 ```text
 ElevenLabs STT provider as online/high-quality path
@@ -841,7 +875,7 @@ realtime STT experiment only after push-to-talk is stable
 local STT remains default for private/offline mode
 ```
 
-### Phase 7 — ElevenAgents Research Prototype
+### Phase 8 — ElevenAgents Research Prototype
 
 ```text
 no production use yet
@@ -857,6 +891,7 @@ evaluate website/phone intake use cases
 Do not start with:
 
 ```text
+ElevenLabs as default voice
 always-listening voice
 wake word before push-to-talk is stable
 conversation mode before cancel/stop works
@@ -873,22 +908,26 @@ full SaaS billing before core workflow works
 
 ## Final Recommendation
 
-ElevenLabs should be added to Nova as the standard high-quality online voice experience, but in a narrow and governed way.
+Piper should be Nova's current/default local TTS path.
 
 Best first use:
 
-> **Standard online TTS provider for natural spoken Nova responses.**
+> **Piper/local TTS for spoken Nova responses.**
 
 Second use:
 
-> **Online/high-quality STT provider for better transcription or multilingual support after the voice MVP is stable.**
+> **Push-to-talk voice MVP with visible transcript, stop/cancel, error visibility, and text fallback.**
+
+Later use:
+
+> **ElevenLabs as an optional high-quality online TTS provider after Piper/local voice is stable.**
 
 Later research:
 
-> **ElevenAgents for website/phone intake only if all tool calls route through Nova’s governed execution boundary.**
+> **ElevenAgents for website/phone intake only if all tool calls route through Nova's governed execution boundary.**
 
-Do not let ElevenLabs become Nova’s authority layer.
+Do not let ElevenLabs become Nova's default dependency or authority layer.
 
 Final product rule:
 
-> **Nova may use ElevenLabs for standard online voice quality, but Nova remains responsible for authority, policy, approvals, logs, and execution boundaries.**
+> **Nova uses Piper first for local spoken output. Nova may use ElevenLabs later for optional online voice quality, but Nova remains responsible for authority, policy, approvals, logs, and execution boundaries.**
