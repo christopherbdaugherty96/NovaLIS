@@ -61,6 +61,13 @@ Phase 8 active
 Phase 9 active
 ```
 
+Important audit note:
+
+```text
+Generated runtime truth is code-derived.
+The wording is not purely hand-written status prose.
+```
+
 ---
 
 # Capability Lock Truth
@@ -117,6 +124,13 @@ Not yet proven runtime defect.
 Needs explicit documentation.
 ```
 
+Second-pass clarification:
+
+```text
+This does not automatically mean the registry is stale.
+Phase 8 registry governance and Phase 9 runtime layers may intentionally coexist.
+```
+
 ---
 
 # OpenClaw Runtime Findings
@@ -151,6 +165,13 @@ But:
 
 ```text
 Broad autonomous external execution is NOT proven.
+```
+
+Second-pass clarification:
+
+```text
+Current evidence supports bounded/manual/semi-governed runtime surfaces.
+It does not yet prove unrestricted autonomous computer-use.
 ```
 
 ---
@@ -191,6 +212,20 @@ ExecuteBoundary
 
 This is the strongest governance concern found in Pass 1.
 
+Second-pass clarification:
+
+```text
+This is a governance-surface finding, not yet a proven live exploit.
+```
+
+The current audit has not yet proven:
+
+- unrestricted public reachability
+- unrestricted mutation execution
+- unrestricted scheduler-triggered execution
+- unrestricted external writes
+- unrestricted computer-use
+
 ---
 
 # Containment Findings
@@ -222,6 +257,13 @@ Strict preflight additionally constrains:
 - hostnames
 
 This reduces current risk exposure for manual template runs.
+
+Second-pass clarification:
+
+```text
+The containment findings currently apply primarily to inspected manual template paths.
+They are not yet proven to constrain all ThinkingLoop goal execution paths.
+```
 
 ---
 
@@ -260,6 +302,12 @@ Likely reachable unless additional restrictions exist in run_goal().
 
 Further Pass 2/3 verification still required before declaring an active exploit path.
 
+Second-pass clarification:
+
+```text
+The current audit has not yet verified whether run_goal() internally constrains tool categories before execution.
+```
+
 ---
 
 # Major Governance Escalation
@@ -293,6 +341,12 @@ This does not automatically prove uncontrolled execution because actual reachabl
 
 But current wording in docs must avoid overstating approval gating guarantees until this path is fully audited.
 
+Second-pass clarification:
+
+```text
+The approve-action endpoint is reachable code, not just dead placeholder text.
+```
+
 ---
 
 # Current Best Grounded Position
@@ -325,6 +379,29 @@ All actions still always pass the full GovernorMediator chain.
 
 because executor-backed adapter paths currently appear to exist.
 
+Second-pass clarification:
+
+```text
+Ledger logging alone is not equivalent to governance enforcement.
+```
+
+The audit must continue distinguishing:
+
+```text
+logging
+tracking
+visibility
+receipts
+```
+
+from:
+
+```text
+hard authority boundaries
+execution mediation
+confirmation enforcement
+```
+
 ---
 
 # Required Pass 2 / Pass 3 Focus
@@ -340,6 +417,9 @@ Next audit focus:
 7. whether ledgering alone is being mistaken for governance
 8. whether approve-action is placeholder-only or actually reachable
 9. whether runtime docs overstate or understate current authority
+10. whether OpenClaw tool execution bypasses capability receipts
+11. whether remote bridge surfaces can invoke goal execution
+12. whether scheduler paths can invoke unrestricted ThinkingLoop runs
 
 ---
 
@@ -356,3 +436,10 @@ A real potential governance bypass surface now exists in the audit record.
 ```
 
 This is currently the highest-priority governance concern identified in the audit.
+
+Second-pass final clarification:
+
+```text
+The audit currently supports "potentially reachable governance bypass surface".
+It does NOT yet support claiming a confirmed unrestricted autonomous execution vulnerability.
+```
