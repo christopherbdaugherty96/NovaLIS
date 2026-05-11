@@ -56,10 +56,10 @@ class ConversationRouter:
     SESSION_CONTEXT_RE = re.compile(r"\b(?:this|current|our)\s+session\b", re.IGNORECASE)
 
     MICRO_ACK = {
-        ConversationMode.ANALYSIS: "Okay. Let me think that through.",
-        ConversationMode.BRAINSTORM: "Okay. Let's map a few directions.",
-        ConversationMode.ACTION: "Okay. I'm on it.",
-        ConversationMode.DIRECT: "Okay. Let me check.",
+        ConversationMode.ANALYSIS: "",
+        ConversationMode.BRAINSTORM: "",
+        ConversationMode.ACTION: "",
+        ConversationMode.DIRECT: "",
     }
     NEVER_ESCALATE_PATTERNS = (
         re.compile(r"^\s*(hi|hello|hey|good morning|good afternoon|good evening)\b", re.IGNORECASE),
