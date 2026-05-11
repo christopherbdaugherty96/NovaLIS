@@ -14,7 +14,26 @@ Nova's reasoning layers may clarify, plan, search, summarize, and propose. Runti
 
 Read `.agent_context/current_priority.md`.
 
-As of this Brain package, the active priority remains Cap 16 search reliability and conversation/search proof. Cap 64 P5 remains paused until that proof path is stable.
+Current active task:
+
+```text
+Status / continuity synchronization after PR #144-#148.
+```
+
+No runtime implementation priority is selected until the continuity files are synchronized.
+
+Recent repo truth to preserve:
+
+```text
+PR #134 — Cap 16 governed_web_search certification locked.
+PR #144 — Everyday UX Friction workstream closed.
+PR #145 — Work Style Enforcement Lock merged.
+PR #146 — Creator-led Shopify/POD future model merged.
+PR #147 — Nova two-domain product direction merged.
+PR #148 — Piper-first voice direction merged.
+```
+
+Do not start UI simplification, Cap 64 P5, Google connector runtime work, Shopify writes, ElevenLabs implementation, OpenClaw expansion, browser/computer-use expansion, external writes, finance automation, social posting automation, or autonomous workflow execution without a separate reviewed priority lock.
 
 ## Required Context Files
 

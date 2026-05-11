@@ -1,94 +1,51 @@
 # Current Priority
 
-Current priority:
+Current active task:
 
 ```text
-Everyday UX Friction + Live Daily Workflow Testing
+Status / continuity synchronization after PR #144-#148.
 ```
 
-Status:
+No runtime implementation priority is selected until the continuity synchronization lands.
+
+## Recent merged truth
 
 ```text
-active — priority lock set 2026-05-10
+PR #134 — Cap 16 governed_web_search certification locked.
+PR #144 — Everyday UX Friction workstream closed.
+PR #145 — Work Style Enforcement Lock merged.
+PR #146 — Creator-led Shopify/POD future direction merged.
+PR #147 — Nova two-domain product direction merged.
+PR #148 — Piper-first voice direction merged.
 ```
 
-Priority lock: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-10_EVERYDAY_UX_FRICTION.md`
-
-Test plan: `docs/PROOFS/Everyday-UX/LIVE_DAILY_WORKFLOW_TEST_PLAN_2026-05-10.md`
-
-The question driving this workstream:
+## Open carried-forward follow-ups
 
 ```text
-Can a normal person use Nova every day without confusion?
+#141 — Search widget not surfacing in live WebSocket sessions.
+#142 — RS-2 capability list truncation needs reproduction.
+#143 — "tell me more" with prior context needs session-state-aware test.
 ```
 
-Cap 16 `governed_web_search` is certified and locked (2026-05-10, P1–P5, 60 tests). This
-workstream was selected from a clean base after Cap 16 locked (no open PRs at selection time).
-
----
-
-## Planned branch sequence
+## Queued / not active
 
 ```text
-PR 1 (active): docs/everyday-ux-friction-priority-lock — priority lock + test plan (docs-only)
-PR 2:          proof/everyday-ux-live-workflow-baseline — live baseline evidence
-PR 3:          docs/nova-conversation-response-contract — response shape contract
-PR 4:          fix/everyday-ux-friction-slice-1 — first small implementation slice
+UI simplification
+Cap 64 P5
+Google connector runtime implementation
+Shopify writes
+ElevenLabs implementation
+OpenClaw expansion
+browser/computer-use expansion
+external writes
+finance automation
+social posting automation
+autonomous workflow execution
 ```
 
----
-
-## Queued / planned (not active without their own lock)
-
-```text
-ui/simplify-dashboard-core-navigation — queued UI implementation (needs own lock)
-Cap 64 P5 — paused (needs own lock)
-```
-
-Do not begin either without a reviewed priority lock for that specific branch.
-
----
-
-## Completed recent branches
-
-```text
-proof/cap-16-certification-lock       — Cap 16 governed_web_search LOCKED (P1–P5) — 2026-05-10
-docs/ui-simplification-inventory      — docs-only / queued UI inventory
-docs/proof-infrastructure-closeout-review
-test/non-search-widget-fuzzing
-test/dashboard-event-replay-harness
-```
-
----
-
-## Context carried forward
-
-Trust Review Card MVP is merged and closeout-reviewed as display-only, non-authorizing,
-and follow-ups tracked. It renders existing request-understanding review-card state as a
-visible non-action receipt surface; it does not authorize, confirm, dispatch, mutate state,
-call capabilities, call GovernorMediator, call OpenClaw, add browser/computer-use, add
-external writes, or create autonomous workflows.
-
-The Web/News/UI proof lock is qualified closed. Browser Use screenshot/click-path proof,
-high-frequency browser event replay, broader visual UI proof, deeper widget-specific fuzzing,
-and timeline-drift fixtures are carried forward as proof debt, not as approval for
-browser/computer-use expansion.
-
-Browser Use visual capture recovery was attempted and remains blocked/setup-required because
-the Browser Use / Node REPL path fails before JavaScript execution with
-`failed to write kernel assets: The system cannot find the path specified`.
-This is proof-infrastructure debt, not Nova runtime authority.
-
----
-
-## Preserved no-authority boundaries
+## Preserved boundaries
 
 Do not add capabilities, expand OpenClaw, add browser/computer-use, add external writes,
-add autonomous workflows, or use direct Cap 63 shortcuts based on any queued UI work.
+add autonomous workflows, or bypass GovernorMediator during continuity synchronization.
 
-Do not jump to Cap 64 P5, Shopify write work, OpenClaw browser automation, broad advanced
-features, scheduler/installer work, external-write workflows, richer receipt work, or
-browser/computer-use expansion.
-
-This file is a working agent context note. Exact runtime truth still comes from code and
-generated runtime docs. AGENTS.md governs active priority.
+This file is an agent continuity note. Runtime truth still comes from code and generated runtime docs.
