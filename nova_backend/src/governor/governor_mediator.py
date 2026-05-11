@@ -894,6 +894,10 @@ class GovernorMediator:
         if WEATHER_RE.match(t):
             return _invocation_if_enabled(55, {})
 
+        # TODAY_NEWS_RE must fire before NEWS_RE — "today's news" is specific to Cap 50
+        if TODAY_NEWS_RE.match(t):
+            return _invocation_if_enabled(50, {"read_sources": True})
+
         if NEWS_RE.match(t):
             return _invocation_if_enabled(56, {})
 
@@ -977,7 +981,10 @@ class GovernorMediator:
         # and health heuristics — but should route to Cap 31 (response_verification).
         vm_early = VERIFY_RE.match(t)
         if vm_early:
-            return _invocation_if_enabled(31, {"text": (vm_early.group("text") or "").strip()})
+            _ve_candidate = (vm_early.group("text") or "").strip()
+            if _ve_candidate.lower() in {"this", "that", "it"}:
+                _ve_candidate = ""
+            return _invocation_if_enabled(31, {"text": _ve_candidate})
 
         m = LATEST_ON_RE.match(t)
         if m:
