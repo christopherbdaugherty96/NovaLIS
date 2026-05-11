@@ -237,6 +237,72 @@ The exact run_goal() body still needs direct inspection to confirm whether it fi
 
 ---
 
+# Pass 2 / 3 Reachability Findings
+
+Confirmed:
+
+```text
+The freeform goal lane is real and tested.
+```
+
+Evidence from test coverage:
+
+- `run_goal()` rejects empty goals
+- `run_goal()` returns structured results
+- `run_goal()` records execution memory
+- `run_goal()` records active and recent runs
+- `run_goal()` handles cancellation
+- `run_goal()` handles failures
+- `run_goal()` resets per-tool budget between runs
+- goal runs are recorded as `template_id == "goal"`
+
+Confirmed from API surface:
+
+```text
+/api/openclaw/agent/goal
+```
+
+is a live route that calls:
+
+```text
+deps.openclaw_agent_runner.run_goal(...)
+```
+
+Confirmed from ThinkingLoop:
+
+```text
+Tool selection is LLM-guided and based on registry.tool_names.
+```
+
+Confirmed from ToolRegistry:
+
+```text
+registry.tool_names includes collection/control/mutation tools unless externally filtered.
+```
+
+Current unresolved blocker:
+
+```text
+The exact body of OpenClawAgentRunner.run_goal() has not yet been extracted in full due to large-file truncation.
+```
+
+Current precise classification:
+
+```text
+Confirmed live freeform goal lane.
+Confirmed LLM-guided tool selection surface.
+Confirmed mutation-capable tools exist in registry.
+Unconfirmed whether run_goal() filters or blocks those tools before execution.
+```
+
+Audit consequence:
+
+```text
+Until run_goal() is directly inspected or tested for mutation-tool rejection, freeform goal execution must remain the highest-priority governance follow-up.
+```
+
+---
+
 # Critical Governance Finding
 
 `tool_registry.py` registers executor-backed mutation-capable tools:
@@ -488,6 +554,7 @@ Next audit focus:
 11. whether remote bridge surfaces can invoke goal execution
 12. whether scheduler paths can invoke unrestricted ThinkingLoop runs
 13. whether freeform goal execution should be disabled or read-only-filtered until full governance mediation exists
+14. add or inspect tests that force the LLM to select `volume`, `brightness`, `media`, `open_webpage`, or `screen_capture` through `run_goal()` and verify rejection
 
 ---
 
