@@ -7,10 +7,21 @@ Last reviewed: 2026-05-11
 ## Current Active Task
 
 ```text
-Status / continuity synchronization after PR #144-#148.
+Post-PR #149 continuity closeout / current-priority cleanup.
 ```
 
-No runtime implementation priority is selected until this continuity synchronization lands.
+PR #149 merged the continuity synchronization after PR #144-#148.
+
+This docs-only follow-up exists to:
+
+```text
+remove stale “until this sync lands” wording
+align continuity files with merged PR truth
+preserve code/runtime-grounded capability wording
+carry forward scoped follow-up issues without expanding authority
+```
+
+No runtime implementation priority is currently selected.
 
 ---
 
@@ -23,6 +34,7 @@ PR #145 — Work Style Enforcement Lock merged.
 PR #146 — Creator-led Shopify/POD future direction merged.
 PR #147 — Nova two-domain product direction merged.
 PR #148 — Piper-first voice direction merged.
+PR #149 — Continuity/status synchronization merged.
 ```
 
 ---
@@ -34,9 +46,16 @@ PR #148 — Piper-first voice direction merged.
 Scope:
 
 ```text
-WS transport / frontend render investigation only.
+WS/front-end surfacing investigation only.
+Cap 16 remains locked unless investigation shows a lower-layer issue.
 No capability changes.
 No authority changes.
+```
+
+Priority note:
+
+```text
+Highest-ROI runtime/proof candidate after this docs-only closeout lands.
 ```
 
 ### #142 — RS-2 capability list truncation
@@ -64,7 +83,7 @@ expected behavior correct / missing session-state-aware integration test
 Scope:
 
 ```text
-test-only change
+test-only change unless evidence disproves expected behavior
 ```
 
 ---
@@ -83,6 +102,8 @@ external writes
 finance automation
 social posting automation
 autonomous workflow execution
+branch deletion / cleanup
+CI baseline cleanup
 ```
 
 ---
@@ -120,6 +141,9 @@ Governed local-first operational intelligence for:
 2. creator-business operations
 ```
 
+This is planning/direction truth only.
+It does not expand runtime authority.
+
 ### Piper-first voice direction
 
 ```text
@@ -131,6 +155,27 @@ Current intended voice direction:
 ```text
 Piper = current/default local TTS path
 ElevenLabs = future optional cloud voice
+```
+
+---
+
+## Runtime / Capability Truth Checked
+
+```text
+27 active capabilities currently listed in runtime/registry truth.
+Cap 16 = locked.
+Cap 64 = active but not locked.
+Cap 65 = active but not locked.
+Cap 64 = local mailto draft only.
+Cap 65 = read-only Shopify intelligence only.
+```
+
+Sources checked:
+
+```text
+docs/current_runtime/CURRENT_RUNTIME_STATE.md
+nova_backend/src/config/registry.json
+nova_backend/src/config/capability_locks.json
 ```
 
 ---
@@ -157,4 +202,12 @@ The recent direction merges do not approve:
 
 ## Next Correct Step
 
-Complete review and merge of the continuity synchronization branch before selecting a new runtime implementation priority.
+Finish this docs-only continuity closeout before selecting a new runtime implementation priority.
+
+Recommended next candidate after this branch lands:
+
+```text
+#141 — Search widget not surfacing in live WebSocket sessions.
+```
+
+This is a recommendation only, not an automatically selected implementation priority.
