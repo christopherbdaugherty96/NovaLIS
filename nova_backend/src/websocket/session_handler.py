@@ -180,6 +180,8 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
     AMBIENT_CLARIFICATION_PATTERNS = deps.AMBIENT_CLARIFICATION_PATTERNS
     EMAIL_INBOX_RE = deps.EMAIL_INBOX_RE
     EMAIL_INBOX_RESPONSE = deps.EMAIL_INBOX_RESPONSE
+    REMIND_ME_TIMELESS_RE = deps.REMIND_ME_TIMELESS_RE
+    REMIND_ME_TIMELESS_RESPONSE = deps.REMIND_ME_TIMELESS_RESPONSE
     _capability_help_message = deps._capability_help_message
     TIME_QUERY_RE = deps.TIME_QUERY_RE
     _render_local_time_message = deps._render_local_time_message
@@ -1017,6 +1019,17 @@ async def run_websocket_session(ws: WebSocket, deps: Any) -> None:
                         {"label": "What's the news?", "command": "what's the news"},
                         {"label": "Check the weather", "command": "check the weather"},
                         {"label": "What can you do?", "command": "what can you do"},
+                    ],
+                )
+                continue
+
+            # Timeless reminder — "remind me to X" without a time spec.
+            # Full form ("remind me at 3pm to X") is handled downstream by REMIND_ME_RE.
+            if REMIND_ME_TIMELESS_RE.match(command_text):
+                await _complete_immediate_turn(
+                    REMIND_ME_TIMELESS_RESPONSE,
+                    suggested_actions=[
+                        {"label": "Remind me at 3pm", "command": "remind me at 3pm to "},
                     ],
                 )
                 continue

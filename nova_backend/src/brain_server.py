@@ -110,6 +110,7 @@ from src.websocket.session_handler import run_websocket_session
 from src.websocket.intent_patterns import (
     PHASE42_QUERY_RE, PHASE42_HELP_COMMANDS, CAPABILITY_HELP_RE, HELP_ORIENT_RE,
     AMBIENT_CLARIFICATION_PATTERNS, EMAIL_INBOX_RE, EMAIL_INBOX_RESPONSE, TIME_QUERY_RE,
+    REMIND_ME_TIMELESS_RE, REMIND_ME_TIMELESS_RESPONSE,
     LOCAL_PROJECT_CURRENT_RE, LOCAL_PROJECT_TARGET_RE, LOCAL_PROJECT_DISK_RE,
     CODEBASE_SUMMARY_CURRENT_RE, CODEBASE_SUMMARY_TARGET_RE, CODEBASE_SUMMARY_TARGET_ONLY_RE,
     CODEBASE_DO_RE, CODEBASE_CAPABILITY_RE, LOCAL_ARCHITECTURE_REPORT_RE,
@@ -1640,8 +1641,10 @@ def _capability_help_message() -> str:
 
 
 def _render_local_time_message() -> str:
-    rendered = _local_now().strftime("%I:%M %p").lstrip("0")
-    return f"It's {rendered}."
+    now = _local_now()
+    time_str = now.strftime("%I:%M %p").lstrip("0")
+    date_str = now.strftime("%A, %B %-d")
+    return f"It's {time_str} on {date_str}."
 
 
 def _maybe_handle_local_project_structure_map_request(

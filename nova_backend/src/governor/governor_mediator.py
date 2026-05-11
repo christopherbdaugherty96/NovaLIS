@@ -133,7 +133,10 @@ def _normalize_spoken_request(text: str) -> str:
     normalized = re.sub(r"\s+", " ", normalized).strip()
     return normalized
 
-SEARCH_RE = re.compile(r"^\s*(search(?: for)?|look up)\s+(?P<q>.+?)\s*$", re.IGNORECASE)
+SEARCH_RE = re.compile(
+    r"^\s*(?:search(?:\s+for)?|look\s+up|find\s+me|find\s+(?:me\s+)?(?:information|info|details|facts)\s+(?:about|on))\s+(?P<q>.+?)\s*$",
+    re.IGNORECASE,
+)
 SOURCE_RELIABILITY_RE = re.compile(
     r"^\s*analy[sz]e\s+source\s+reliability\s+(?:for|of|on)\s+(?P<q>.+?)\s*$",
     re.IGNORECASE,
@@ -210,12 +213,12 @@ WEATHER_RE = re.compile(
     r"|how(?:'s| is) the weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|what(?:'s| is) (?:the )?weather(?: in [a-z0-9 ,.\-]+)?(?: today| now| tomorrow)?|forecast(?: today| tomorrow)?"
     r"|what'?s? the forecast|whats the forecast|the forecast|forecast (?:for )?today|forecast (?:for )?tomorrow"
     r"|weather (?:this )?week|(?:this )?week(?:'s| s) weather|forecast for (?:the )?week|weekly (?:weather )?forecast|weather forecast for (?:the )?week|whats the weather|hows the weather"
-    r"|(?:is it|will it) (?:going to )?rain(?: today| tomorrow| this week)?"
-    r"|(?:will|is) there (?:be )?rain(?: today| tomorrow)?"
+    r"|(?:is it|will it) (?:going to )?(?:rain|snow|hail|sleet|storm)(?: today| tomorrow| this week)?"
+    r"|(?:will|is) there (?:be )?(?:rain|snow|hail|sleet)(?: today| tomorrow)?"
     r"|do i need (?:an? )?umbrella(?: today| tomorrow)?"
     r"|outside temperature|temperature (?:today|outside|right now)"
     r"|(?:is it|will it be) (?:cold|hot|warm|chilly|freezing)(?: outside| today| tomorrow)?"
-    r"|should i (?:bring|wear|take) (?:a\s+)?(?:jacket|coat|umbrella|raincoat)"
+    r"|should i (?:bring|wear|take) (?:an?\s+)?(?:jacket|coat|umbrella|raincoat)(?: today| tomorrow| this week)?"
     r"|what(?:'s|s) (?:the )?temperature(?: today| outside| right now)?)\s*$",
     re.IGNORECASE,
 )
@@ -223,7 +226,8 @@ NEWS_RE = re.compile(
     r"^\s*(?:news|headlines|(?:latest|current|recent|top)\s+headlines|latest news|top news|news update|catch me up on the news|what(?:'s| is) going on in the news|what(?:'s| is) (?:the )?news(?: today| now)?|whats (?:the )?news(?: today| now)?|what\s+are\s+(?:today'?s|the\s+latest|the\s+current|the\s+top)\s+headlines"
     r"|show me (?:the )?news|any news|any headlines|give me (?:the )?news|whats new|what's new|news today|today's news|today.?s headlines|got any news|pull up (?:the )?news"
     r"|news headlines|top stories(?: today| now)?|show me today'?s? news|what(?:'s| is) (?:the )?top stories"
-    r"|morning news|evening news|any news(?: today| now)?|what'?s? happening(?: in the world)?(?: today)?)\s*$",
+    r"|morning news|evening news|any news(?: today| now)?|what'?s? happening(?: in the world)?(?: today)?"
+    r"|catch me up|what did i miss|anything new(?: today| now)?)\s*$",
     re.IGNORECASE,
 )
 CALENDAR_RE = re.compile(
@@ -318,7 +322,7 @@ FOLLOW_STORY_RE = re.compile(r"^\s*(?:follow|keep\s+following)\s+(?:story\s+)?(?
 UPDATE_STORY_RE = re.compile(
     r"^\s*(?:update\s+story\s+(?P<topic1>.+?)|update\s+(?:me\s+on|the\s+)?(?:the\s+)?(?P<topic2>.+?)\s+story"
     r"|(?:what'?s?|whats)\s+new\s+on\s+(?P<topic3>.+?)|any\s+updates?\s+on\s+(?P<topic4>.+?)"
-    r"|news\s+on\s+(?P<topic5>.+?))\s*$",
+    r"|news\s+on\s+(?P<topic5>.+?)|how(?:'s| is)\s+(?:the\s+)?(?P<topic6>.+?)\s+story\s+(?:doing|going|progressing))\s*$",
     re.IGNORECASE,
 )
 SHOW_STORY_RE = re.compile(r"^\s*show\s+story\s+(?P<topic>.+?)\s*$", re.IGNORECASE)
@@ -473,8 +477,8 @@ MEMORY_SEARCH_RE = re.compile(
 )
 MEMORY_RECALL_FRIENDLY_RE = re.compile(
     r"^\s*(?:what\s+do\s+you\s+remember(?:\s+about\s+me)?|show\s+(?:me\s+)?what\s+you\s+(?:remember|know)(?:\s+about\s+me)?|what(?:'s| is)\s+in\s+(?:my\s+)?memory"
-    r"|recall\s+(?:my\s+)?(?:notes?|memories|memory)|show\s+me\s+my\s+(?:notes?|memories)|what\s+have\s+(?:you\s+)?(?:saved|stored)"
-    r"|what\s+did\s+(?:i|you)\s+(?:save|store|note|write|jot)|what\s+(?:is|was)\s+(?:saved|stored|noted))\s*$",
+    r"|recall\s+(?:my\s+)?(?:notes?|memories|memory)|show\s+me\s+my\s+(?:notes?|memories)|what\s+have\s+(?:you\s+)?(?:saved|stored)(?:\s+for\s+me)?"
+    r"|what\s+have\s+i\s+(?:saved|stored)|what\s+did\s+(?:i|you)\s+(?:save|store|note|write|jot)|what\s+(?:is|was)\s+(?:saved|stored|noted))\s*$",
     re.IGNORECASE,
 )
 MEMORY_SHOW_FRIENDLY_RE = re.compile(
@@ -543,8 +547,8 @@ SHOPIFY_REPORT_RE = re.compile(
     re.IGNORECASE,
 )
 SEND_EMAIL_DRAFT_RE = re.compile(
-    # verb + "email/e-mail"
-    r"^\s*(?:draft|compose|write|prepare)\s+(?:me\s+)?(?:an?\s+)?e?-?mail\b"
+    # verb + "email/e-mail" (including "send" and "help me write/draft" forms)
+    r"^\s*(?:(?:can\s+you\s+)?(?:help\s+(?:me\s+)?)?(?:draft|compose|write|prepare|send))\s+(?:me\s+)?(?:an?\s+)?e?-?mail\b"
     # optional "to <recipient>" — stops before keyword prepositions via negative lookahead
     r"(?:\s+to\s+(?P<to>[^\s]+(?:\s+(?!(?:about|regarding|re:|with\s+subject|subject)\b)[^\s]+)*))?"
     # optional "about / regarding / subject: <topic>"
@@ -1226,7 +1230,7 @@ class GovernorMediator:
 
         m = UPDATE_STORY_RE.match(t)
         if m:
-            topic = (m.group("topic1") or m.group("topic2") or m.group("topic3") or m.group("topic4") or m.group("topic5") or "").strip()
+            topic = (m.group("topic1") or m.group("topic2") or m.group("topic3") or m.group("topic4") or m.group("topic5") or m.group("topic6") or "").strip()
             return _invocation_if_enabled(52, {"action": "update", "topic": topic})
 
         if UPDATE_TRACKED_STORIES_RE.match(t):

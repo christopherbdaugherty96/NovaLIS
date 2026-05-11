@@ -162,8 +162,26 @@ TIME_QUERY_RE = re.compile(
     r"|what(?:'s| is)\s+(?:the\s+)?time"
     r"|what time is it"
     r"|tell me(?:\s+the)?\s+time"
+    r"|what day is it"
+    r"|what(?:'s| is)\s+(?:the\s+)?date(?:\s+today)?"
+    r"|what(?:'s| is)\s+today'?s?\s+date"
+    r"|what(?:'s| is)\s+today"
     r")\s*$",
     re.IGNORECASE,
+)
+
+# -------------------------------------------------
+# Reminder without time — clarification response
+# "remind me to call mom" (no "at TIME") → ask for time
+# Full form handled by REMIND_ME_RE downstream.
+# -------------------------------------------------
+REMIND_ME_TIMELESS_RE = re.compile(
+    r"^\s*(?:remind\s+me\s+to\s+.+|set\s+(?:a\s+)?reminder(?:\s+to\s+.+)?|add\s+(?:a\s+)?reminder(?:\s+to\s+.+)?)\s*$",
+    re.IGNORECASE,
+)
+REMIND_ME_TIMELESS_RESPONSE = (
+    "I need a time to set that reminder. Try: \"remind me at 3pm to call mom\" "
+    "or \"remind me daily at 9am to check email\"."
 )
 
 # -------------------------------------------------
