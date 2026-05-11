@@ -1612,7 +1612,7 @@ def _capability_help_message() -> str:
 
     lines.extend(
         [
-            f"- OpenClaw status: {active_run_summary}",
+            f"- Agent status: {active_run_summary}",
             "",
             "Good things to try next:",
         ]
@@ -1634,7 +1634,7 @@ def _capability_help_message() -> str:
 
     lines.append("")
     lines.append(
-        "If you want, ask about a specific lane like research, verification, story tracking, screen help, memory, local controls, or OpenClaw."
+        "If you want, ask about a specific area like research, verification, story tracking, screen help, memory, or local controls."
     )
     return "\n".join(lines)
 
