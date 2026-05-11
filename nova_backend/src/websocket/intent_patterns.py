@@ -60,7 +60,7 @@ EMAIL_INBOX_RESPONSE = (
 HELP_ORIENT_RE = re.compile(
     r"^\s*(?:"
     r"help\s+me"
-    r"|i\s+need\s+(?:some\s+)?help"
+    r"|i\s+(?:need|want)\s+(?:some\s+)?help"
     r"|can\s+you\s+help(?:\s+me)?"
     r"|could\s+you\s+help(?:\s+me)?"
     r"|i\s+(?:could\s+)?use\s+(?:some\s+)?help"

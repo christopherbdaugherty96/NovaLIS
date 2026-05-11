@@ -95,14 +95,16 @@ class InputNormalizer:
         (r"^\s*what are you good at\s*[.?!]*$", "what can you do"),
         (r"^\s*what do you know(?: how to do)?\s*[.?!]*$", "what can you do"),
         (r"^\s*what do you do\s*[.?!]*$", "what can you do"),
-        (r"^\s*(?:can|could) you help(?: me)?\s*[.?!]*$", "what can you do"),
-        (r"^\s*(?:i need|i want)\s+(?:some\s+)?help\s*[.?!]*$", "what can you do"),
-        (r"^\s*help me\s*[.?!]*$", "what can you do"),
         # Note: "who are you", "what is nova" are handled by the identity intent — not normalized here
+        # Note: "help me", "i need help", "can you help me", "where do i start" are intentionally
+        # NOT normalized here. They route to HELP_ORIENT_RE (RC-7 warm orienting question), not to
+        # the capability list. Normalizing them to "what can you do" would bypass that handler.
         (r"^\s*(?:show|list|tell me)\s+(?:your\s+)?(?:skills|features|options|commands|menu)\s*[.?!]*$", "what can you do"),
         (r"^\s*what(?:'s| is)\s+(?:available|possible)\s*[.?!]*$", "what can you do"),
         (r"^\s*(?:how do i|how can i)\s+use\s+(?:you|nova|this)\s*[.?!]*$", "what can you do"),
-        (r"^\s*(?:get started|where do i start|how do i start)\s*[.?!]*$", "what can you do"),
+        # "get started" and "how do i start" are explicit capability-discovery onboarding → list.
+        # "where do i start" is an orienting-help phrase → routes to HELP_ORIENT_RE instead.
+        (r"^\s*(?:get started|how do i start)\s*[.?!]*$", "what can you do"),
         (r"^\s*what(?:'s| is)\s+(?:the\s+)?time\s*$", "what time is it"),
         (r"^\s*time now\s*$", "what time is it"),
         (r"\bmake it louder\b", "volume up"),

@@ -1161,8 +1161,7 @@ class GovernorMediator:
         if INTEL_BRIEF_RE.match(t):
             return _invocation_if_enabled(50, {})
 
-        if TODAY_NEWS_RE.match(t):
-            return _invocation_if_enabled(50, {"read_sources": True})
+        # TODAY_NEWS_RE check removed: unreachable — early pre-check at L902 returns first.
 
         m = EXPAND_STORY_INDEX_RE.match(t)
         if m:
@@ -1260,12 +1259,7 @@ class GovernorMediator:
                 candidate = ""
             return _invocation_if_enabled(62, {"text": candidate})
 
-        vm = VERIFY_RE.match(t)
-        if vm:
-            candidate = (vm.group("text") or "").strip()
-            if candidate.lower() in {"this", "that", "it"}:
-                candidate = ""
-            return _invocation_if_enabled(31, {"text": candidate})
+        # VERIFY_RE check removed: unreachable — early pre-check at L986 returns first.
 
         m = DOC_CREATE_RE.match(t)
         if m:
@@ -1409,9 +1403,7 @@ class GovernorMediator:
         if MEMORY_RECENT_RE.match(t):
             return _invocation_if_enabled(61, {"action": "recent"})
 
-        m = MEMORY_SEARCH_RE.match(t)
-        if m:
-            return _invocation_if_enabled(61, {"action": "search", "query": m.group("query").strip()})
+        # MEMORY_SEARCH_RE check removed: unreachable — early pre-check at L1014 returns first.
 
         if MEMORY_RECALL_FRIENDLY_RE.match(t):
             return _invocation_if_enabled(61, {"action": "overview"})
