@@ -88,12 +88,23 @@ class ResponseFormatter:
         clean = re.sub(r"\s+", " ", clean).strip()
         return clean
 
+    HTML_ENTITY_PATTERN = re.compile(
+        r"&#\d+;|&[a-zA-Z]+;|â[]|‎",
+    )
+
+    @staticmethod
+    def strip_html_entities(text: str) -> str:
+        """Remove HTML entities and stray unicode punctuation from synthesis output."""
+        import html
+        clean = html.unescape(text or "")
+        clean = ResponseFormatter.HTML_ENTITY_PATTERN.sub("", clean)
+        return clean
+
     @staticmethod
     def friendly_fallback() -> str:
         return (
-            "I didn't quite get that — no worries. "
-            "Try something like: \"what's the news\", \"check the weather\", "
-            "\"draft an email\", or just say \"what can you do\" and I'll show you everything."
+            "Not sure what you mean — try: \"what's the news\", "
+            "\"check the weather\", or \"what can you do\"."
         )
 
     @staticmethod

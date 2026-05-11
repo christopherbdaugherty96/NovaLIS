@@ -30,7 +30,108 @@ PHASE42_HELP_COMMANDS = {
 }
 
 # -------------------------------------------------
-# Capability help
+# Email inbox intent (RC-1)
+# "open my email", "check my email", "my inbox" etc. → immediate scoped
+# response explaining Nova's mailto-only email scope.
+# Handled before the governor so Cap 17 (website) never scoops it.
+# -------------------------------------------------
+EMAIL_INBOX_RE = re.compile(
+    r"^\s*(?:"
+    r"open(?:\s+my)?\s+email(?:\s+inbox|s?)?"
+    r"|check(?:\s+my)?\s+email(?:\s+inbox|s?)?"
+    r"|(?:my\s+)?(?:email\s+)?inbox"
+    r"|read(?:\s+my)?\s+emails?"
+    r"|show(?:\s+me)?\s+(?:my\s+)?emails?"
+    r"|email\s+(?:account|client|app)"
+    r")\s*$",
+    re.IGNORECASE,
+)
+
+EMAIL_INBOX_RESPONSE = (
+    "Email in Nova is mailto-based — I can open a draft in your default mail app, "
+    "but I don't have inbox access. Want me to draft an email?"
+)
+
+# -------------------------------------------------
+# Help — orienting form (RC-7)
+# "help me", "i need help", "can you help" → short orienting question.
+# These are NOT capability lookups — the user doesn't know what to ask.
+# -------------------------------------------------
+HELP_ORIENT_RE = re.compile(
+    r"^\s*(?:"
+    r"help\s+me"
+    r"|i\s+need\s+(?:some\s+)?help"
+    r"|can\s+you\s+help(?:\s+me)?"
+    r"|could\s+you\s+help(?:\s+me)?"
+    r"|i\s+(?:could\s+)?use\s+(?:some\s+)?help"
+    r"|not\s+sure\s+what\s+to\s+(?:ask|do|say)"
+    r"|where\s+do\s+i\s+(?:start|begin)"
+    r")\s*$",
+    re.IGNORECASE,
+)
+
+# -------------------------------------------------
+# Ambient clarification patterns (RC-2, RC-3, RC-5, RC-6)
+# Context-free follow-ups and informal confusion phrases that require
+# prior session state to answer. Without context → immediate clarification.
+# With prior context → let the LLM handle as a follow-up.
+#
+# Structure: (pattern, clarification_prompt)
+# -------------------------------------------------
+AMBIENT_CLARIFICATION_PATTERNS = [
+    # RC-2: context-free follow-ups
+    (
+        re.compile(
+            r"^\s*(?:tell\s+me\s+more(?:\s+about\s+that)?|go\s+deeper(?:\s+on\s+that)?|expand(?:\s+on\s+that)?|"
+            r"more\s+detail(?:s)?(?:\s+please)?|elaborate(?:\s+on\s+that)?|"
+            r"give\s+me\s+more(?:\s+detail)?|can\s+you\s+expand(?:\s+on\s+that)?)\s*$",
+            re.IGNORECASE,
+        ),
+        "What should I go deeper on?",
+    ),
+    # RC-3: context-free error/failure questions
+    (
+        re.compile(
+            r"^\s*(?:what\s+went\s+wrong|why\s+didn'?t\s+(?:that|it)\s+work|"
+            r"what\s+(?:failed|broke)|why\s+(?:is\s+it|did\s+it)\s+(?:fail(?:ing)?|broken?|not\s+work(?:ing)?)|"
+            r"what(?:'s| is)\s+(?:the\s+)?(?:error|problem|issue))\s*$",
+            re.IGNORECASE,
+        ),
+        "What situation are you asking about?",
+    ),
+    # RC-5: informal confusion
+    (
+        re.compile(
+            r"^\s*(?:idk\s+what\s+to\s+do|i\s+don'?t\s+know\s+(?:what\s+to\s+do|where\s+to\s+start)|"
+            r"i'?m\s+(?:lost|stuck|confused)|i\s+have\s+no\s+idea|not\s+sure\s+where\s+to\s+start|"
+            r"what\s+do\s+i\s+(?:even\s+)?do|where\s+do\s+i\s+start)\s*$",
+            re.IGNORECASE,
+        ),
+        "Sounds like you're stuck — what are you working on?",
+    ),
+    # RC-6: context-free failure diagnosis
+    (
+        re.compile(
+            r"^\s*(?:why\s+did\s+(?:that|it)\s+fail|why\s+(?:did\s+it|is\s+it)\s+stop(?:ped)?|"
+            r"why\s+isn'?t\s+(?:this|it|that)\s+work(?:ing)?|what'?s?\s+wrong\s+with\s+(?:it|this|that))\s*$",
+            re.IGNORECASE,
+        ),
+        "What was the action or step that failed?",
+    ),
+    # RC-4: daily intent → clarification
+    (
+        re.compile(
+            r"^\s*(?:what\s+should\s+i\s+do\s+today|what(?:'s| is)\s+(?:my\s+)?(?:plan|agenda)\s+(?:for\s+)?today|"
+            r"what\s+do\s+i\s+need\s+to\s+do\s+today|what(?:'s| is)\s+on\s+my\s+plate(?:\s+today)?)\s*$",
+            re.IGNORECASE,
+        ),
+        "Are you checking your schedule, or looking for a productivity plan?",
+    ),
+]
+
+# -------------------------------------------------
+# Capability help — explicit lookup form
+# "help", "what can you do", "capabilities" → full capability list.
 # -------------------------------------------------
 CAPABILITY_HELP_RE = re.compile(
     r"^\s*(?:"
@@ -61,8 +162,26 @@ TIME_QUERY_RE = re.compile(
     r"|what(?:'s| is)\s+(?:the\s+)?time"
     r"|what time is it"
     r"|tell me(?:\s+the)?\s+time"
+    r"|what day is it"
+    r"|what(?:'s| is)\s+(?:the\s+)?date(?:\s+today)?"
+    r"|what(?:'s| is)\s+today'?s?\s+date"
+    r"|what(?:'s| is)\s+today"
     r")\s*$",
     re.IGNORECASE,
+)
+
+# -------------------------------------------------
+# Reminder without time — clarification response
+# "remind me to call mom" (no "at TIME") → ask for time
+# Full form handled by REMIND_ME_RE downstream.
+# -------------------------------------------------
+REMIND_ME_TIMELESS_RE = re.compile(
+    r"^\s*(?:remind\s+me\s+to\s+.+|set\s+(?:a\s+)?reminder(?:\s+to\s+.+)?|add\s+(?:a\s+)?reminder(?:\s+to\s+.+)?)\s*$",
+    re.IGNORECASE,
+)
+REMIND_ME_TIMELESS_RESPONSE = (
+    "I need a time to set that reminder. Try: \"remind me at 3pm to call mom\" "
+    "or \"remind me daily at 9am to check email\"."
 )
 
 # -------------------------------------------------

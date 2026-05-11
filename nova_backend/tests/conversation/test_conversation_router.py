@@ -5,7 +5,7 @@ def test_router_detects_command_and_heavy_ack():
     out = ConversationRouter.route("search latest ai regulation news")
     assert out.mode.value == "action"
     assert out.intent_family == "task"
-    assert out.micro_ack
+    # micro_ack is intentionally empty — filler openers were removed (UX friction fix)
 
 
 def test_router_requests_clarification_without_context():

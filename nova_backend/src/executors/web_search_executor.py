@@ -8,6 +8,7 @@ from concurrent.futures import ThreadPoolExecutor, TimeoutError as FuturesTimeou
 
 from src.actions.action_result import ActionResult
 from src.brain.search_synthesis import render_evidence_notes, synthesize_search_evidence
+from src.conversation.response_formatter import ResponseFormatter
 from src.llm.llm_gateway import generate_chat
 from src.utils.content_extractor import extract_text_from_html
 
@@ -354,6 +355,7 @@ class WebSearchExecutor:
         lines: list[str] = []
         for item in results[:limit]:
             title = re.sub(r"<[^>]+>", "", str(item.get("title") or "")).strip()
+            title = ResponseFormatter.strip_html_entities(title)
             url = str(item.get("url") or "").strip()
             if not url:
                 continue
@@ -653,6 +655,7 @@ class WebSearchExecutor:
         )
         confidence_label, known_note, unclear_note = render_evidence_notes(evidence)
 
+        researched_summary = ResponseFormatter.strip_html_entities(researched_summary)
         report_sections = [
             f"Bottom line: {researched_summary}",
             "",
