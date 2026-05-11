@@ -1,0 +1,358 @@
+# PASS 1 — Runtime / Generated Truth / OpenClaw Audit
+
+Date: 2026-05-11
+Branch: `audit/full-repo-doc-code-alignment`
+Audit mode: safety-bounded / audit-only
+
+---
+
+# Scope
+
+This pass audited:
+
+- generated runtime truth
+- runtime auditor source chain
+- capability registry truth
+- capability lock truth
+- OpenClaw runtime surfaces
+- OpenClaw API reachability
+- governance boundary consistency
+
+No runtime changes were made.
+
+---
+
+# Confirmed Runtime Truth
+
+Generated runtime source:
+
+```text
+scripts/generate_runtime_docs.py
+→ nova_backend/src/audit/runtime_auditor.py
+→ registry.json + runtime inspection
+```
+
+Current generated runtime truth:
+
+```text
+Runtime fingerprint: 8fbc67d96b285a2f0d2475156d80631f88ca0ea16813c32034a4b110831a99df
+Runtime surface hash: 6c532671bd6b0091781f76bfe779f00b2b41bfd77ac6b19a52c12c2adef5d379
+Capability count: 27
+Capabilities disabled: []
+```
+
+Enabled capability IDs:
+
+```text
+16,17,18,19,20,21,22,31,32,48,49,50,51,52,53,54,55,56,57,58,59,60,61,62,63,64,65
+```
+
+Generated runtime currently reports:
+
+```text
+Phase 3.5 complete
+Phase 4 complete
+Phase 4.2 complete
+Phase 4.5 partial
+Phase 5 complete
+Phase 6 complete
+Phase 7 complete
+Phase 8 active
+Phase 9 active
+```
+
+---
+
+# Capability Lock Truth
+
+Important audit distinction:
+
+```text
+active != certified
+active != locked
+active != live-signed-off
+```
+
+Capability lock state:
+
+```text
+Cap 16 — locked / P1-P5 passed
+Cap 64 — P1-P4 passed / P5 pending / not locked
+Cap 65 — P1-P4 passed / P5 pending / not locked
+Most other active capabilities — lock phases pending
+```
+
+Audit rule:
+
+Future docs and summaries must avoid implying that all active runtime capabilities are certification-locked.
+
+---
+
+# CapabilityRegistry Findings
+
+`CapabilityRegistry` currently:
+
+- fails closed on missing registry
+- fails closed on malformed registry
+- fails closed on duplicate capability IDs
+- requires governance fields
+- validates authority classes
+- validates profile/group references
+- rejects confirm-risk capabilities without confirmation requirements
+- hardcodes:
+
+```text
+EXPECTED_PHASE = "8"
+```
+
+Potential drift point:
+
+Generated runtime reports Phase 9 active while registry enforcement still expects Phase 8.
+
+Current classification:
+
+```text
+Likely naming/documentation drift.
+Not yet proven runtime defect.
+Needs explicit documentation.
+```
+
+---
+
+# OpenClaw Runtime Findings
+
+Confirmed:
+
+OpenClaw is substantially more implemented than earlier continuity summaries implied.
+
+Confirmed runtime surfaces include:
+
+- OpenClawAgentRunner
+- ThinkingLoop
+- ExecutionMemory
+- RobustExecutor
+- ToolRegistry
+- envelope issuance
+- runtime stores
+- scheduler support
+- cancellation support
+- bounded execution budgets
+- deterministic fallback summaries
+- optional metered OpenAI lane
+- governed remote bridge references
+
+Current correct characterization:
+
+```text
+OpenClaw has active bounded runtime surfaces.
+```
+
+But:
+
+```text
+Broad autonomous external execution is NOT proven.
+```
+
+---
+
+# Critical Governance Finding
+
+`tool_registry.py` registers executor-backed mutation-capable tools:
+
+```text
+volume
+brightness
+media
+open_webpage
+screen_capture
+```
+
+Those tools are wrapped through:
+
+```text
+ExecutorSkillAdapter
+```
+
+`ExecutorSkillAdapter` directly calls:
+
+```text
+executor.execute(request)
+```
+
+This path does not visibly traverse:
+
+```text
+GovernorMediator
+Governor
+CapabilityRegistry
+SingleActionQueue
+ExecuteBoundary
+```
+
+This is the strongest governance concern found in Pass 1.
+
+---
+
+# Containment Findings
+
+Manual template path currently appears constrained.
+
+`strict_preflight.py` currently allows only:
+
+```text
+calendar
+news
+project_read
+schedules
+summarize
+weather
+```
+
+Manual templates inspected so far also appear limited to read/summary-style tooling.
+
+Strict preflight additionally constrains:
+
+- max steps
+- max duration
+- network calls
+- files touched
+- bytes read
+- bytes written
+- allowed triggers
+- hostnames
+
+This reduces current risk exposure for manual template runs.
+
+---
+
+# Reachability Finding
+
+A live goal endpoint exists:
+
+```text
+/api/openclaw/agent/goal
+```
+
+This endpoint calls:
+
+```text
+deps.openclaw_agent_runner.run_goal(...)
+```
+
+`ThinkingLoop` selects tools from:
+
+```text
+registry.tool_names
+```
+
+Meaning:
+
+```text
+The LLM-visible tool surface may include mutation-capable executor-backed tools.
+```
+
+Current classification:
+
+```text
+Potential governance bypass surface.
+Likely reachable unless additional restrictions exist in run_goal().
+```
+
+Further Pass 2/3 verification still required before declaring an active exploit path.
+
+---
+
+# Major Governance Escalation
+
+Endpoint:
+
+```text
+/api/openclaw/approve-action
+```
+
+currently auto-allows actions:
+
+```text
+approval_state = auto_allowed
+decision = allow
+```
+
+Source comment states:
+
+```text
+Future phases will add real human-in-the-loop suspension and decision flow here.
+```
+
+Current classification:
+
+```text
+High-priority governance review item.
+```
+
+This does not automatically prove uncontrolled execution because actual reachable action categories still need verification.
+
+But current wording in docs must avoid overstating approval gating guarantees until this path is fully audited.
+
+---
+
+# Current Best Grounded Position
+
+Correct:
+
+```text
+OpenClaw exists as a real bounded runtime subsystem.
+```
+
+Correct:
+
+```text
+OpenClaw is more implemented than older continuity summaries implied.
+```
+
+Not yet proven:
+
+```text
+Broad autonomous computer-use.
+Broad unrestricted external mutation.
+Unbounded execution authority.
+```
+
+But also unsafe to claim:
+
+```text
+All actions still always pass the full GovernorMediator chain.
+```
+
+because executor-backed adapter paths currently appear to exist.
+
+---
+
+# Required Pass 2 / Pass 3 Focus
+
+Next audit focus:
+
+1. `OpenClawAgentRunner.run_goal()` restrictions
+2. actual tool allowlist enforcement path
+3. whether ThinkingLoop can invoke mutation tools live
+4. whether strict preflight always gates run_goal()
+5. scheduler reachability
+6. whether mutation tools can execute without ExecuteBoundary
+7. whether ledgering alone is being mistaken for governance
+8. whether approve-action is placeholder-only or actually reachable
+9. whether runtime docs overstate or understate current authority
+
+---
+
+# Current Audit Verdict
+
+```text
+No evidence yet of broad uncontrolled autonomy.
+```
+
+But:
+
+```text
+A real potential governance bypass surface now exists in the audit record.
+```
+
+This is currently the highest-priority governance concern identified in the audit.
