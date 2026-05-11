@@ -47,7 +47,7 @@ PR #149 — Continuity/status sync after PR #144-#148 merged.
 #141 — Search widget not surfacing in live WebSocket sessions.
        Scope: live WS/front-end surfacing investigation only. Cap 16 remains locked;
        do not change Cap 16 authority, registry scope, or search executor behavior unless
-       code evidence proves the issue is lower than the WS/render layer.
+       investigation shows the issue is below the WS/render layer.
 
 #142 — RS-2 capability list truncation needs reproduction.
        Scope: reproduce first; do not patch without captured live-session evidence.
