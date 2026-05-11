@@ -1,18 +1,26 @@
 # Active TODO - Nova
 
-## PRIORITY LOCK STATUS (2026-05-10)
+## PRIORITY LOCK STATUS (2026-05-11)
 
-Active priority lock:
+No active priority lock.
+
+Most recently completed workstream:
 
 ```text
 Everyday UX Friction + Live Daily Workflow Testing
 ```
 
-Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-10_EVERYDAY_UX_FRICTION.md`
+Status:
 
-Updated: 2026-05-10 after Cap 16 certification lock merged (PR #134).
+```text
+CLOSED — PR #135–#140 merged / closeout doc PR #144 / 2026-05-11
+Work-style enforcement lock: PR #145 merged / 2026-05-11
+```
 
-Most recently completed workstream:
+Final implementation PR #140 merged 2026-05-11. Final commit on main: `ae0fba5`.
+Closeout doc: `docs/PROOFS/Everyday-UX/EVERYDAY_UX_FRICTION_CLOSEOUT_2026-05-11.md`
+
+Prior completed workstream:
 
 ```text
 Cap 16 governed_web_search certification lock
@@ -30,29 +38,13 @@ PR #134 merged 2026-05-10.
 
 ## Active TODO
 
-### PR 1 — docs/everyday-ux-friction-priority-lock (in progress)
+None. No active priority lock.
 
-- [x] `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-10_EVERYDAY_UX_FRICTION.md`
-- [x] `docs/PROOFS/Everyday-UX/README.md`
-- [x] `docs/PROOFS/Everyday-UX/LIVE_DAILY_WORKFLOW_TEST_PLAN_2026-05-10.md`
-- [x] `.agent_context/current_priority.md` updated
-- [x] `docs/status/CURRENT_WORK_STATUS.md` updated
-- [x] `docs/todo/ACTIVE_TODO.md` updated
+Open follow-up issues (each needs own scoped investigation before becoming active):
 
-### PR 2 — proof/everyday-ux-live-workflow-baseline (queued)
-
-Run 13 workflow scenarios against live Nova. Record prompt / expected / actual / UI state /
-friction / severity / proposed fix / boundary impact. No fixes in this branch.
-
-### PR 3 — docs/nova-conversation-response-contract (queued)
-
-Define response shapes for: normal answer, search result, clarification, blocked,
-setup-required, degraded, no result, confirmation-required, daily task help.
-
-### PR 4 — fix/everyday-ux-friction-slice-1 (queued)
-
-Small wording/label fixes only: clarification, blocked/setup-required, search framing,
-quick-action labels, dashboard helper text. No runtime routing changes.
+- [ ] #141 — Search widget not surfacing in live WebSocket sessions
+- [ ] #142 — RS-2 capability list truncation (may be context-length dependent)
+- [ ] #143 — `"tell me more"` with prior context — session-state-aware test needed
 
 ---
 

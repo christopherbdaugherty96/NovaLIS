@@ -3,38 +3,52 @@
 Current priority:
 
 ```text
-Everyday UX Friction + Live Daily Workflow Testing
+No active priority lock. Everyday UX Friction is closed.
 ```
 
 Status:
 
 ```text
-active — priority lock set 2026-05-10
+CLOSED — final merge PR #140 / closeout doc PR #144 / 2026-05-11
 ```
 
-Priority lock: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-10_EVERYDAY_UX_FRICTION.md`
+Closeout doc: `docs/PROOFS/Everyday-UX/EVERYDAY_UX_FRICTION_CLOSEOUT_2026-05-11.md`
 
-Test plan: `docs/PROOFS/Everyday-UX/LIVE_DAILY_WORKFLOW_TEST_PLAN_2026-05-10.md`
+Priority lock (archived): `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-10_EVERYDAY_UX_FRICTION.md`
 
-The question driving this workstream:
+The question that drove this workstream:
 
 ```text
 Can a normal person use Nova every day without confusion?
 ```
 
-Cap 16 `governed_web_search` is certified and locked (2026-05-10, P1–P5, 60 tests). This
-workstream was selected from a clean base after Cap 16 locked (no open PRs at selection time).
+Answered: 7 friction points resolved, 12 phrases newly routed, RC-7 normalization-layer bug
+fixed, full-pipeline test methodology added (98 assertions). See closeout doc.
+
+Cap 16 `governed_web_search` remains certified and locked (2026-05-10, P1–P5, 60 tests).
 
 ---
 
-## Planned branch sequence
+## Deferred follow-ups (open GitHub issues — not active priority)
 
 ```text
-PR 1 (active): docs/everyday-ux-friction-priority-lock — priority lock + test plan (docs-only)
-PR 2:          proof/everyday-ux-live-workflow-baseline — live baseline evidence
-PR 3:          docs/nova-conversation-response-contract — response shape contract
-PR 4:          fix/everyday-ux-friction-slice-1 — first small implementation slice
+#141 — Search widget not surfacing in live WebSocket sessions
+#142 — RS-2 capability list truncation (context-length dependent)
+#143 — "tell me more" with prior context — session-state-aware test needed
 ```
+
+Each needs its own scoped investigation before it becomes an active priority.
+
+---
+
+## Next recommended (not active without its own reviewed lock)
+
+```text
+Interface Personality Layer MVP
+— response shaping only; no tools, no execution, no memory writes
+```
+
+Do not begin without a reviewed priority lock for that specific branch.
 
 ---
 

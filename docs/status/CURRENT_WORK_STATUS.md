@@ -10,19 +10,31 @@ Generated runtime docs and actual code win if they conflict with this note.
 
 ---
 
-## Priority Lock Status (2026-05-10)
+## Priority Lock Status (2026-05-11)
 
-Active priority lock:
+No active priority lock.
+
+Most recently completed priority:
 
 ```text
 Everyday UX Friction + Live Daily Workflow Testing
 ```
 
-Refer to: `docs/status/ACTIVE_PRIORITY_LOCK_2026-05-10_EVERYDAY_UX_FRICTION.md`
+Closeout: PR #144 merged 2026-05-11. Final implementation: PR #140 (slice-9), final commit
+`ae0fba5`. 7 routing corrections (RC-1–RC-7), 12 phrases newly routed, full-pipeline test
+suite (98 assertions). Work-style enforcement lock merged: PR #145.
 
-Test plan: `docs/PROOFS/Everyday-UX/LIVE_DAILY_WORKFLOW_TEST_PLAN_2026-05-10.md`
+Closeout doc: `docs/PROOFS/Everyday-UX/EVERYDAY_UX_FRICTION_CLOSEOUT_2026-05-11.md`
 
-Most recently completed priority:
+Open follow-ups (not active priority — need own scoped investigation):
+
+```text
+#141 — Search widget not surfacing in live WebSocket sessions
+#142 — RS-2 capability list truncation
+#143 — "tell me more" with prior context (session-state-aware test)
+```
+
+Prior completed priority:
 
 ```text
 Cap 16 governed_web_search certification lock
